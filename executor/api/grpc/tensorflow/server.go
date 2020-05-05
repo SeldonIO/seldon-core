@@ -2,6 +2,9 @@ package tensorflow
 
 import (
 	"context"
+	"net/url"
+	"strings"
+
 	"github.com/go-logr/logr"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
@@ -10,8 +13,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/predictor"
 	"github.com/seldonio/seldon-core/executor/proto/tensorflow/serving"
-	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	"net/url"
+	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
@@ -34,7 +36,9 @@ func NewGrpcTensorflowServer(predictor *v1.PredictorSpec, client client.SeldonAp
 }
 
 func (g *GrpcTensorflowServer) execute(ctx context.Context, req proto.Message, method string) (payload.SeldonPayload, error) {
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName(method), g.ServerUrl, g.Namespace, grpc.CollectMetadata(ctx))
+	md := grpc.CollectMetadata(ctx)
+	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, md[strings.ToLower(payload.SeldonPUIDHeader)][0])
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName(method), g.ServerUrl, g.Namespace, md)
 	reqPayload := payload.ProtoPayload{Msg: req}
 	return seldonPredictorProcess.Predict(g.predictor.Graph, &reqPayload)
 }

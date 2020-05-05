@@ -4,6 +4,7 @@ import (
 	"context"
 	"math"
 	"strconv"
+	"strings"
 
 	"github.com/go-logr/logr"
 	guuid "github.com/google/uuid"
@@ -65,14 +66,12 @@ func CreateGrpcServer(spec *v1.PredictorSpec, deploymentName string, annotations
 }
 
 func CollectMetadata(ctx context.Context) map[string][]string {
-	md, ok := metadata.FromIncomingContext(ctx)
-	if ok {
+	if md, ok := metadata.FromIncomingContext(ctx); ok {
 		val := md.Get(payload.SeldonPUIDHeader)
 		if len(val) == 0 {
 			md.Set(payload.SeldonPUIDHeader, guuid.New().String())
 		}
 		return md
-	} else {
-		return map[string][]string{payload.SeldonPUIDHeader: []string{guuid.New().String()}}
 	}
+	return map[string][]string{strings.ToLower(payload.SeldonPUIDHeader): []string{guuid.New().String()}}
 }

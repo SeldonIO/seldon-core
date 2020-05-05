@@ -51,9 +51,9 @@ func createPredictorProcessWithError(t *testing.T, errMethod *v1.PredictiveUnitM
 	return &pp
 }
 
-func createPredictorProcessWithoutPUID(t *testing.T) *PredictorProcess {
+func createPredictorProcessWithoutPUIDInContext(t *testing.T) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
-	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, nil)
+	ctx := context.TODO()
 	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{testCustomMetaKey: []string{testCustomMetaValue}})
 	return &pp
 }
@@ -378,7 +378,6 @@ func TestModelWithLogRequests(t *testing.T) {
 	modelName := "foo"
 	logged := false
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//g.Expect(r.Header.Get(logger.CloudEventsIdHeader)).Should(Equal(testEventId))
 		g.Expect(r.Header.Get(logger.CloudEventsTypeHeader)).To(Equal(logger.CEInferenceRequest))
 		g.Expect(r.Header.Get(logger.CloudEventsTypeSource)).To(Equal(testSourceUrl))
 		g.Expect(r.Header.Get(modelIdHeaderName)).To(Equal(modelName))
@@ -425,7 +424,6 @@ func TestModelWithLogResponses(t *testing.T) {
 	modelName := "foo"
 	logged := false
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//g.Expect(r.Header.Get(logger.CloudEventsIdHeader)).Should(Equal(testEventId))
 		g.Expect(r.Header.Get(logger.CloudEventsTypeHeader)).To(Equal(logger.CEInferenceResponse))
 		g.Expect(r.Header.Get(logger.CloudEventsTypeSource)).To(Equal(testSourceUrl))
 		g.Expect(r.Header.Get(modelIdHeaderName)).To(Equal(modelName))
@@ -464,84 +462,15 @@ func TestModelWithLogResponses(t *testing.T) {
 	g.Eventually(func() bool { return logged }).Should(Equal(true))
 }
 
-func TestModelWithLogRequestsNilPUIDError(t *testing.T) {
+func TestPredictNilPUIDError(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
-	modelName := "foo"
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//g.Expect(r.Header.Get(logger.CloudEventsIdHeader)).Should(Equal(testEventId))
-		g.Expect(r.Header.Get(logger.CloudEventsTypeHeader)).To(Equal(logger.CEInferenceRequest))
-		g.Expect(r.Header.Get(logger.CloudEventsTypeSource)).To(Equal(testSourceUrl))
-		g.Expect(r.Header.Get(modelIdHeaderName)).To(Equal(modelName))
-		g.Expect(r.Header.Get(contentTypeHeaderName)).To(Equal(grpc.ProtobufContentType))
-		g.Expect(r.Header.Get(requestIdHeaderName)).To(Equal(testSeldonPuid))
-		w.Write([]byte(""))
-		fmt.Printf("%+v\n", r.Header)
-		fmt.Printf("%+v\n", r.Body)
 	})
 	server := httptest.NewServer(handler)
 	defer server.Close()
-
-	logf.SetLogger(logf.ZapLogger(false))
-	log := logf.Log.WithName("entrypoint")
-	logger.StartDispatcher(1, log, "", "", "")
-
-	model := v1.MODEL
-	graph := &v1.PredictiveUnit{
-		Name: modelName,
-		Type: &model,
-		Endpoint: &v1.Endpoint{
-			ServiceHost: "foo",
-			ServicePort: 9000,
-			Type:        v1.REST,
-		},
-		Logger: &v1.Logger{
-			Mode: v1.LogRequest,
-			Url:  &server.URL,
-		},
-	}
-
-	_, err := createPredictorProcessWithoutPUID(t).Predict(graph, createPredictPayload(g))
-	g.Expect(err).NotTo(BeNil())
-	g.Expect(err.Error()).Should(Equal("context value Seldon PUID Header is nil: interface to string conversion failed"))
-}
-
-func TestModelWithLogResponsesNilPUIDError(t *testing.T) {
-	t.Logf("Started")
-	g := NewGomegaWithT(t)
-	modelName := "foo"
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//g.Expect(r.Header.Get(logger.CloudEventsIdHeader)).Should(Equal(testEventId))
-		g.Expect(r.Header.Get(logger.CloudEventsTypeHeader)).To(Equal(logger.CEInferenceResponse))
-		g.Expect(r.Header.Get(logger.CloudEventsTypeSource)).To(Equal(testSourceUrl))
-		g.Expect(r.Header.Get(modelIdHeaderName)).To(Equal(modelName))
-		g.Expect(r.Header.Get(contentTypeHeaderName)).To(Equal(grpc.ProtobufContentType))
-		g.Expect(r.Header.Get(requestIdHeaderName)).To(Equal(testSeldonPuid))
-		w.Write([]byte(""))
-	})
-	server := httptest.NewServer(handler)
-	defer server.Close()
-
-	logf.SetLogger(logf.ZapLogger(false))
-	log := logf.Log.WithName("entrypoint")
-	logger.StartDispatcher(1, log, "", "", "")
-
-	model := v1.MODEL
-	graph := &v1.PredictiveUnit{
-		Name: modelName,
-		Type: &model,
-		Endpoint: &v1.Endpoint{
-			ServiceHost: "foo",
-			ServicePort: 9000,
-			Type:        v1.REST,
-		},
-		Logger: &v1.Logger{
-			Mode: v1.LogResponse,
-			Url:  &server.URL,
-		},
-	}
-
-	_, err := createPredictorProcessWithoutPUID(t).Predict(graph, createPredictPayload(g))
+	graph := &v1.PredictiveUnit{}
+	_, err := createPredictorProcessWithoutPUIDInContext(t).Predict(graph, createPredictPayload(g))
 	g.Expect(err).NotTo(BeNil())
 	g.Expect(err.Error()).Should(Equal("context value Seldon PUID Header is nil: interface to string conversion failed"))
 }

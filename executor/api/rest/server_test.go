@@ -1,6 +1,14 @@
 package rest
 
 import (
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"strconv"
+	"strings"
+	"testing"
+
 	guuid "github.com/google/uuid"
 	. "github.com/onsi/gomega"
 	"github.com/prometheus/common/expfmt"
@@ -9,13 +17,6 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/api/test"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
-	"net/url"
-	"strconv"
-	"strings"
-	"testing"
 )
 
 const (
@@ -266,7 +267,6 @@ func TestModelWithServer(t *testing.T) {
 	r.Router.ServeHTTP(res, req)
 	g.Expect(res.Code).To(Equal(200))
 	g.Expect(called).To(Equal(true))
-
 }
 
 func TestServerMetrics(t *testing.T) {
