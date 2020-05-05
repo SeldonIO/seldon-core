@@ -8,20 +8,19 @@ curl 0.0.0.0:2222 -d '{"data":{"names":["c"],"tensor":{"shape":[2,1],"values":[5
 curl 0.0.0.0:2222 -d '{"data":{"names":["a","b"],"ndarray":[[1,2],[3,4]]}}' -H "Content-Type: application/json" -H "Ce-Inferenceservicename: ndarray" -H "Ce-Type: io.seldon.serving.inference.request" -H "Ce-Requestid: 2b"
 curl 0.0.0.0:2222 -d '{"data":{"names":["c"],"ndarray":[[7],[8]]}}' -H "Content-Type: application/json" -H "Ce-Inferenceservicename: ndarray" -H "Ce-Type: io.seldon.serving.inference.response" -H "Ce-Requestid: 2b"
 
-#ndarray containing string - also using modelid but not inferenceservicename
+#ndarray containing strings (batch) - also using modelid but not inferenceservicename
 curl 0.0.0.0:2222 -d '{"data":{"names":["a"],"ndarray":["test1","test2"]}}' -H "Content-Type: application/json" -H "Ce-Type: io.seldon.serving.inference.request" -H "Ce-Requestid: 3c" \
   -H "Ce-Modelid: classifier" -H "Ce-Namespace: default" -H "Ce-Endpoint: example"
 curl 0.0.0.0:2222 -d '{"data":{"names":["c"],"ndarray":[[7],[8]]}}' -H "Content-Type: application/json" -H "Ce-Type: io.seldon.serving.inference.response" -H "Ce-Requestid: 3c" \
   -H "Ce-Modelid: classifier" -H "Ce-Namespace: default" -H "Ce-Endpoint: example"
 
-#tensor again but this time no inferenceservice name or modelid - still allowed but will go to unknown
+#tensor again (two batches of tabular) but this time no inferenceservice name or modelid - still allowed but will go to unknown
 curl 0.0.0.0:2222 -d '{"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[1,2,3,4]}}}' -H "Content-Type: application/json" -H "Ce-Type: io.seldon.serving.inference.request" -H "Ce-Requestid: 4d"
 
-#different shape tensor
+#different shape tensor - this one is batch with one element per entry
 curl 0.0.0.0:2222 -d '{"data":{"names":["c"],"tensor":{"shape":[2,1],"values":[5,6]}}}' -H "Content-Type: application/json" -H "Ce-Inferenceservicename: tensor" -H "Ce-Type: io.seldon.serving.inference.request" -H "Ce-Requestid: 5e"
 
 #text in ndarray - based on moviesentiment example
-#note stored as tabular if names present but text without as k-v pairs assumed to be tabular
 curl 0.0.0.0:2222 -d '{"data": {"names": ["Text review"],"ndarray": ["this film has bad actors"]}}' -H "Ce-Inferenceservicename: moviesentiment" -H "Content-Type: application/json" -H "Ce-Type: io.seldon.serving.inference.request" -H "Ce-Requestid: 6f"
 curl 0.0.0.0:2222 -d '{"data":{"names":["t0","t1"],"ndarray":[[0.5,0.5]]}}' -H "Ce-Inferenceservicename: moviesentiment" -H "Content-Type: application/json" -H "Ce-Type: io.seldon.serving.inference.response" -H "Ce-Requestid: 6f"
 
@@ -37,3 +36,6 @@ curl 0.0.0.0:2222 -d '{"data": {"feature_score": null, "instance_score": null, "
 curl 0.0.0.0:2222 --data-binary "@cifardata.json" -H "Content-Type: application/json" -H "Ce-Type: org.kubeflow.serving.inference.request" -H "Ce-Namespace: default" -H "Ce-Inferenceservicename: cifar10" -H "Ce-Endpoint: default" -H "Ce-id: 9i" -H 'CE-SpecVersion: 0.2' -v
 curl 0.0.0.0:2222 -d '{"predictions":[2]}' -H "Content-Type: application/json" -H "Ce-Type: org.kubeflow.serving.inference.response" -H "Ce-Namespace: default" -H "Ce-Inferenceservicename: cifar10" -H "Ce-Endpoint: default" -H "Ce-id: 9i"
 curl 0.0.0.0:2222 -d '{"data": {"feature_score": null, "instance_score": null, "is_outlier": [1]}, "meta": {"name": "OutlierVAE", "detector_type": "offline", "data_type": "image"}}' -H "Content-Type: application/json" -H "Ce-Type: org.kubeflow.serving.inference.outlier" -H "Ce-Namespace: default" -H "Ce-Inferenceservicename: cifar10" -H "Ce-Endpoint: default" -H "Ce-id: 9i"
+
+#dummy tabular example
+curl 0.0.0.0:2222 -d '{"data": {"names": ["dummy feature"],"ndarray": [1.0]}}' -H "Ce-Inferenceservicename: dummytabular" -H "Content-Type: application/json" -H "Ce-Type: io.seldon.serving.inference.request" -H "Ce-Requestid: 10j"

@@ -209,6 +209,11 @@ def extract_data_part(content):
 
         copy["instance"] = json.loads(json.dumps(req_features, cls=log_helper.NumpyEncoder))
 
+        if isinstance(req_features, np.ndarray):
+            set_datatype_from_numpy(req_features, copy, req_features.item(0))
+
+
+
     #copy names into its own section of request
     if "data" in content:
         if "names" in content["data"]:
@@ -258,8 +263,6 @@ def extractRow(i:int,requestMsg: prediction_pb2.SeldonMessage,req_datatype: str,
             dataType="text"
             req_features= np.char.decode(req_features.astype('S'),"utf-8")
         dataReq = array_to_grpc_datadef(datatyReq, np.expand_dims(req_features[i], axis=0), req_datadef.names)
-    if len(req_datadef.names) > 0:
-        dataType="tabular"
     requestMsg2 = prediction_pb2.SeldonMessage(data=dataReq, meta=requestMsg.meta)
     reqJson = {}
     reqJson["payload"] = seldon_message_to_json(requestMsg2)
