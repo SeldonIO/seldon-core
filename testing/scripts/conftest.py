@@ -1,5 +1,5 @@
 import pytest
-from seldon_e2e_utils import clean_string, retry_run, get_s2i_python_version
+from seldon_e2e_utils import clean_string, retry_run, get_seldon_version
 from subprocess import run
 
 
@@ -32,6 +32,8 @@ def namespace(request):
 
     test_name = request.node.name
     namespace = clean_string(test_name)
+    if len(namespace) > 63:
+        namespace = namespace[0:63]
 
     # Create namespace
     retry_run(f"kubectl create namespace {namespace}")
@@ -66,7 +68,7 @@ def seldon_version(request):
         "seldonio/seldon-core-operator "
         "--namespace seldon-system "
         "--set istio.enabled=true "
-        "--set istio.gateway=seldon-gateway "
+        "--set istio.gateway=istio-system/seldon-gateway "
         "--set certManager.enabled=false "
         "--set executor.enabled=true "
         f"--version {seldon_version} "
@@ -82,7 +84,7 @@ def seldon_version(request):
         "../../helm-charts/seldon-core-operator "
         "--namespace seldon-system "
         "--set istio.enabled=true "
-        "--set istio.gateway=seldon-gateway "
+        "--set istio.gateway=istio-system/seldon-gateway "
         "--set certManager.enabled=false "
         "--set executor.enabled=true "
         "--wait",
@@ -102,4 +104,4 @@ def delete_seldon(name="seldon", namespace="seldon-system"):
 
 
 def do_s2i_python_version():
-    return get_s2i_python_version()
+    return get_seldon_version()

@@ -4,10 +4,10 @@ metadata:
   name: grpc-seldon
 spec:
   name: grpcseldon
+  protocol: seldon
+  transport: grpc
   predictors:
-  - protocol: seldon
-    transport: grpc
-    componentSpecs:
+  - componentSpecs:
     - spec:
         containers:
         - image: seldonio/mock_classifier_grpc:1.3

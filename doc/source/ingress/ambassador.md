@@ -1,4 +1,4 @@
-# Deployment Options running Seldon Core with Ambassador
+# Ingress with Ambassador
 
 Seldon Core works well with [Ambassador](https://www.getambassador.io/), allowing a single ingress to be used to expose ambassador and [running machine learning deployments can then be dynamically exposed](https://kubernetes.io/blog/2018/06/07/dynamic-ingress-in-kubernetes/) through seldon-created ambassador configurations. In this doc we will discuss how your Seldon Deployments are exposed via Ambassador and how you can use both to do various production rollout strategies.
 
@@ -39,6 +39,10 @@ curl -v 0.0.0.0:8003/seldon/mymodel/api/v1.0/predictions -d '{"data":{"names":["
 |`seldon.io/ambassador-shadow:true` | Activate shadowing for this deployment |
 |`seldon.io/grpc-read-timeout: <gRPC read timeout (msecs)>` | gRPC read timeout |
 |`seldon.io/rest-read-timeout:<REST read timeout (msecs)>` | REST read timeout |
+|`seldon.io/ambassador-circuit-breakers-max-connections:<maximum number of connections>` | The maximum number of connections will make to the Seldon Deployment |
+|`seldon.io/ambassador-circuit-breakers-max-pending-requests:<maximum number of queued requests>` | The maximum number of requests that will be queued while waiting for a connection |
+|`seldon.io/ambassador-circuit-breakers-max-requests:<maximum number of parallel outstanding requests>` | The maximum number of parallel outstanding requests to the Seldon Deployment |
+|`seldon.io/ambassador-circuit-breakers-max-retries:<maximum number of parallel retries>` | The maximum number of parallel retries allowed to the Seldon Deployment |
 
 All annotations should be placed in `spec.annotations`.
 
@@ -118,6 +122,24 @@ You simply need to add some annotations to your Seldon Deployment resource.
 A worked example for [header based routing](../examples/ambassador_headers.html) is provided.
 
 To understand more about the Ambassador configuration for this see [their docs on header based routing](https://www.getambassador.io/reference/headers).
+
+### Circuit Breakers
+By preventing additional connections or requests to an overloaded Seldon Deployment, circuit breakers help improve resilience of your system. 
+
+You simply need to add some annotations to your Seldon Deployment resource.
+
+  * `seldon.io/ambassador-circuit-breakers-max-connections:<maximum number of connections>` : The maximum number of connections will make to the Seldon Deployment
+     * Example:  `"seldon.io/ambassador-circuit-breakers-max-connections":"200"`
+  * `seldon.io/ambassador-circuit-breakers-max-pending-requests:<maximum number of queued requests>` : The maximum number of requests that will be queued while waiting for a connection
+     * Example:  `"seldon.io/ambassador-circuit-breakers-max-pending-requests":"100"`
+  * `seldon.io/ambassador-circuit-breakers-max-requests:<maximum number of parallel outstanding requests>` : The maximum number of parallel outstanding requests to the Seldon Deployment
+     * Example: `"seldon.io/ambassador-circuit-breakers-max-requests":"200"`
+  * `seldon.io/ambassador-circuit-breakers-max-retries:<maximum number of parallel retries>` : The maximum number of parallel retries allowed to the Seldon Deployment
+     * Example: `"seldon.io/ambassador-circuit-breakers-max-retries":"3"`
+
+A worked example for [circuit breakers](../examples/ambassador_circuit_breakers.html) is provided.
+
+To understand more about the Ambassador configuration for this see [their docs on circuit breakers](https://www.getambassador.io/docs/latest/topics/using/circuit-breakers/).
 
 ## Multiple Ambassadors in the same cluster
 

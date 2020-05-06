@@ -15,7 +15,7 @@ sleep 5
 helm install --name seldon-single-model ../../helm-charts/seldon-single-model/ --set engine.env.LOG_MESSAGES_EXTERNALLY="true"
 
 kubectl label nodes $(kubectl get nodes -o jsonpath='{.items[0].metadata.name}') role=locust --overwrite
-helm install --name seldon-core-loadtesting ../../helm-charts/seldon-core-loadtesting/ --set locust.host=http://seldon-single-model-seldon-single-model-seldon-single-model:8000 --set oauth.enabled=false --set oauth.key=oauth-key --set oauth.secret=oauth-secret --set locust.hatchRate=1 --set locust.clients=1 --set loadtest.sendFeedback=0 --set locust.minWait=0 --set locust.maxWait=0 --set replicaCount=1
+helm install --name seldon-core-loadtesting ../../helm-charts/seldon-core-loadtesting/ --set locust.host=http://seldon-single-model-default:8000 --set oauth.enabled=false --set oauth.key=oauth-key --set oauth.secret=oauth-secret --set locust.hatchRate=1 --set locust.clients=1 --set loadtest.sendFeedback=0 --set locust.minWait=0 --set locust.maxWait=0 --set replicaCount=1
 
 
 kubectl create namespace logs || echo "namespace logs exists"
@@ -23,7 +23,7 @@ helm install --name elasticsearch elasticsearch --version 7.6.0 --namespace=logs
 kubectl rollout status statefulset/elasticsearch-master -n logs
 kubectl patch svc elasticsearch-master -n logs -p '{"spec": {"type": "LoadBalancer"}}'
 
-helm install fluentd-elasticsearch --name fluentd --namespace=logs -f fluentd-values.yaml --repo https://kiwigrid.github.io
+helm install fluentd-elasticsearch --version 8.0.0 --name fluentd --namespace=logs -f fluentd-values.yaml --repo https://kiwigrid.github.io
 helm install kibana --version 7.6.0 --name=kibana --namespace=logs --set service.type=NodePort --repo https://helm.elastic.co --set image=docker.elastic.co/kibana/kibana-oss
 
 kubectl rollout status deployment/kibana-kibana -n logs

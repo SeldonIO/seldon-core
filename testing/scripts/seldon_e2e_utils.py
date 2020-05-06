@@ -19,23 +19,22 @@ API_AMBASSADOR = "localhost:8003"
 API_ISTIO_GATEWAY = "localhost:8004"
 
 
-def get_s2i_python_version():
-    cmd = (
-        "cd ../../wrappers/s2i/python && "
-        "grep 'IMAGE_VERSION=' Makefile |"
-        "cut -d'=' -f2"
-    )
-    ret = Popen(cmd, shell=True, stdout=subprocess.PIPE)
-    output = ret.stdout.readline()
-    version = output.decode("utf-8").rstrip()
-    return version
-
-
 def get_seldon_version():
     ret = Popen("cat ../../version.txt", shell=True, stdout=subprocess.PIPE)
     output = ret.stdout.readline()
     version = output.decode("utf-8").strip()
     return version
+
+
+def wait_for_pod_shutdown(pod_name, namespace, timeout="10m"):
+    cmd = (
+        "kubectl wait --for=delete "
+        f"--timeout={timeout} "
+        f"-n {namespace} "
+        f"pod/{pod_name}"
+    )
+
+    return run(cmd, shell=True)
 
 
 def wait_for_shutdown(deployment_name, namespace, timeout="10m"):
@@ -49,6 +48,31 @@ def wait_for_shutdown(deployment_name, namespace, timeout="10m"):
     return run(cmd, shell=True)
 
 
+def get_pod_name_for_sdep(sdep_name, namespace, attempts=20, sleep=5):
+    for _ in range(attempts):
+        ret = run(
+            f"kubectl get -n {namespace} pod -l seldon-deployment-id={sdep_name} -o json",
+            shell=True,
+            stdout=subprocess.PIPE,
+        )
+        if ret.returncode == 0:
+            logging.info(f"Successfully waited for pod for {sdep_name}")
+            break
+        logging.warning(
+            f"Unsuccessful wait command but retrying for SeldonDeployment pod {sdep_name}"
+        )
+        time.sleep(sleep)
+    assert ret.returncode == 0, "Failed to get  pod names: non-zero return code"
+    data = json.loads(ret.stdout)
+    pod_names = []
+    for item in data["items"]:
+        pod_names.append(item["metadata"]["name"])
+    logging.info(
+        f"For SeldonDeployment {sdep_name} " f"found following pod: {pod_names}"
+    )
+    return pod_names
+
+
 def get_deployment_names(sdep_name, namespace, attempts=20, sleep=5):
     for _ in range(attempts):
         ret = run(
@@ -57,7 +81,7 @@ def get_deployment_names(sdep_name, namespace, attempts=20, sleep=5):
             stdout=subprocess.PIPE,
         )
         if ret.returncode == 0:
-            logging.warning(f"Successfully waited for SeldonDeployment {sdep_name}")
+            logging.info(f"Successfully waited for SeldonDeployment {sdep_name}")
             break
         logging.warning(
             f"Unsuccessful wait command but retrying for SeldonDeployment {sdep_name}"
@@ -66,8 +90,8 @@ def get_deployment_names(sdep_name, namespace, attempts=20, sleep=5):
     assert ret.returncode == 0, "Failed to get deployment names: non-zero return code"
     data = json.loads(ret.stdout)
     # The `deploymentStatus` is dictionary which keys are names of deployments
-    deployment_names = list(data["status"]["deploymentStatus"])
-    logging.warning(
+    deployment_names = list(data.get("status", {}).get("deploymentStatus", {}))
+    logging.info(
         f"For SeldonDeployment {sdep_name} "
         f"found following deployments: {deployment_names}"
     )
@@ -84,6 +108,7 @@ def wait_for_rollout(
 
         if deployments == expected_deployments:
             break
+        time.sleep(sleep)
 
     error_msg = (
         f"Expected {expected_deployments} deployment(s) but got {len(deployment_names)}"
@@ -91,14 +116,14 @@ def wait_for_rollout(
     assert len(deployment_names) == expected_deployments, error_msg
 
     for deployment_name in deployment_names:
-        logging.warning(f"Waiting for deployment {deployment_name}")
+        logging.info(f"Waiting for deployment {deployment_name}")
         for _ in range(attempts):
             ret = run(
                 f"kubectl rollout status -n {namespace} deploy/{deployment_name}",
                 shell=True,
             )
             if ret.returncode == 0:
-                logging.warning(f"Successfully waited for deployment {deployment_name}")
+                logging.info(f"Successfully waited for deployment {deployment_name}")
                 break
             logging.warning(
                 f"Unsuccessful wait command but retrying for {deployment_name}"
@@ -113,7 +138,7 @@ def retry_run(cmd, attempts=10, sleep=5):
     for i in range(attempts):
         ret = run(cmd, shell=True)
         if ret.returncode == 0:
-            logging.warning(f"Successfully ran command: {cmd}")
+            logging.info(f"Successfully ran command: {cmd}")
             break
         logging.warning(f"Unsuccessful command but retrying: {cmd}")
         time.sleep(sleep)
@@ -130,7 +155,7 @@ def wait_for_status(name, namespace, attempts=20, sleep=5):
         )
         data = json.loads(ret.stdout)
         if ("status" in data) and (data["status"]["state"] == "Available"):
-            logging.warning(f"Status for SeldonDeployment {name} is ready.")
+            logging.info(f"Status for SeldonDeployment {name} is ready.")
             return data
         else:
             logging.warning("Failed to find status - sleeping")
@@ -160,6 +185,8 @@ def rest_request(
     data=None,
     dtype="tensor",
     names=None,
+    method="predict",
+    predictor_name="default",
 ):
     try:
         r = rest_request_ambassador(
@@ -171,6 +198,8 @@ def rest_request(
             data=data,
             dtype=dtype,
             names=names,
+            method=method,
+            predictor_name=predictor_name,
         )
         if not r.status_code == 200:
             logging.warning(f"Bad status:{r.status_code}")
@@ -191,6 +220,7 @@ def initial_rest_request(
     data=None,
     dtype="tensor",
     names=None,
+    method="predict",
 ):
     sleeping_times = [1, 5, 10]
     attempt = 0
@@ -206,6 +236,7 @@ def initial_rest_request(
             data=data,
             dtype=dtype,
             names=names,
+            method=method,
         )
 
         if r is None or r.status_code != 200:
@@ -213,7 +244,7 @@ def initial_rest_request(
                 finished = True
             else:
                 sleep = sleeping_times[attempt]
-                logging.warning(f"Sleeping {sleep} sec and trying again")
+                logging.info(f"Sleeping {sleep} sec and trying again")
                 time.sleep(sleep)
                 attempt += 1
         else:
@@ -294,6 +325,9 @@ def rest_request_ambassador(
     data=None,
     dtype="tensor",
     names=None,
+    method="predict",
+    predictor_name="default",
+    model_name="classifier",
 ):
     if data is None:
         shape, arr = create_random_data(data_size, rows)
@@ -311,16 +345,7 @@ def rest_request_ambassador(
     if names is not None:
         payload["data"]["names"] = names
 
-    if namespace is None:
-        response = requests.post(
-            "http://"
-            + endpoint
-            + "/seldon/"
-            + deployment_name
-            + "/api/v0.1/predictions",
-            json=payload,
-        )
-    else:
+    if method == "predict":
         response = requests.post(
             "http://"
             + endpoint
@@ -331,6 +356,52 @@ def rest_request_ambassador(
             + "/api/v0.1/predictions",
             json=payload,
         )
+    elif method == "explain":
+        response = requests.post(
+            "http://"
+            + endpoint
+            + "/seldon/"
+            + namespace
+            + "/"
+            + deployment_name
+            + "-explainer"
+            + "/"
+            + predictor_name
+            + "/api/v0.1/explain",
+            json=payload,
+        )
+    elif method == "metadata":
+        response = requests.get(
+            "http://"
+            + endpoint
+            + "/seldon/"
+            + namespace
+            + "/"
+            + deployment_name
+            + "/api/v0.1/metadata/"
+            + model_name
+        )
+    elif method == "openapi_ui":
+        response = requests.get(
+            "http://"
+            + endpoint
+            + "/seldon/"
+            + namespace
+            + "/"
+            + deployment_name
+            + "/api/v0.1/doc/"
+        )
+    elif method == "openapi_schema":
+        response = requests.get(
+            "http://"
+            + endpoint
+            + "/seldon/"
+            + namespace
+            + "/"
+            + deployment_name
+            + "/api/v0.1/doc/seldon.json"
+        )
+
     return response
 
 
@@ -404,9 +475,13 @@ def grpc_request_ambassador(
         metadata = [("seldon", deployment_name)]
     else:
         metadata = [("seldon", deployment_name), ("namespace", namespace)]
-    response = stub.Predict(request=request, metadata=metadata)
-    channel.close()
-    return response
+    try:
+        response = stub.Predict(request=request, metadata=metadata)
+        channel.close()
+        return response
+    except Exception as e:
+        channel.close()
+        raise e
 
 
 def grpc_request_ambassador2(

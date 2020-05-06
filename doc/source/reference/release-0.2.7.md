@@ -92,7 +92,7 @@ We added an HPA spec referring to the PodTemplateSpec:
     }], 
 ```
 
-For full documentation see [here](../graph/autoscaling.html)
+For full documentation see [here](../graph/scaling.html)
 
 ## Official Ambassador and Redis Helm Charts
 We have updated our `seldon-core` helm chart to utilize the offical Helm charts for [Ambassador](https://github.com/helm/charts/tree/master/stable/ambassador) and [Redis](https://github.com/helm/charts/tree/master/stable/redis). This provides users with a clear installation artifact for these components and also provides the flexibility for installing these components standalone if desired. It is planned in future releases to remove the particular ingress component from our Helm charts and for users to install these themselves for the API gateway they wish to use, for example Ambassador, Seldon's OAuth gateway or in future [istio-ingress gateway](https://istio.io/docs/tasks/traffic-management/ingress/).

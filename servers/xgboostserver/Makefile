@@ -1,21 +1,25 @@
-VERSION=0.2
+VERSION=0.4
 IMAGE_BASE=seldonio/xgboostserver
+S2I_IMAGE_VERSION=1.1.1-SNAPSHOT
 
-build_rest:
-	s2i build -E environment_rest ./xgboostserver seldonio/seldon-core-s2i-python37:0.12-SNAPSHOT ${IMAGE_BASE}_rest:${VERSION}
+build_%:
+	s2i build \
+		-E environment_$* \
+		./xgboostserver \
+		seldonio/seldon-core-s2i-python37:${S2I_IMAGE_VERSION} \
+		${IMAGE_BASE}_$*:${VERSION}
 
-push_rest:
-	docker push ${IMAGE_BASE}_rest:${VERSION}
+push_%:
+	docker push ${IMAGE_BASE}_$*:${VERSION}
 
-build_grpc:
-	s2i build -E environment_grpc ./xgboostserver seldonio/seldon-core-s2i-python37:0.12-SNAPSHOT ${IMAGE_BASE}_grpc:${VERSION}
-
-push_grpc:
-	docker push ${IMAGE_BASE}_grpc:${VERSION}
-
+kind_load_%:
+	kind load -v 3 docker-image ${IMAGE_BASE}_$*:${VERSION}
 
 .PHONY: push_all
 push_all: push_rest push_grpc
 
 .PHONY: build_all
 build_all: build_rest build_grpc
+
+.PHONY: kind_load_all
+kind_load_all: kind_load_rest kind_load_grpc

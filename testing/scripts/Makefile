@@ -58,7 +58,7 @@ install_seldon: install_cert_manager
 		../../helm-charts/seldon-core-operator \
 		--namespace seldon-system \
 		--set istio.enabled=true \
-		--set istio.gateway=seldon-gateway \
+		--set istio.gateway=istio-system/seldon-gateway \
 		--set certManager.enabled=false \
 		--set executor.enabled=true \
 		--wait
@@ -68,6 +68,7 @@ install_istio:
 	kubectl rollout status deployment.apps/istio-ingressgateway -n istio-system
 	kubectl rollout status deployment.apps/istio-pilot -n istio-system
 	kubectl rollout status deployment.apps/istio-citadel -n istio-system
+	kubectl create -f ../resources/seldon-gateway.yaml -n istio-system
 
 
 create_namespaces:
@@ -77,7 +78,11 @@ create_namespaces:
 set_namespace:
 	kubectl config set-context $$(kubectl config current-context) --namespace=seldon
 
-kind_setup: create_namespaces helm_setup install_ambassador install_istio install_jaeger install_seldon set_namespace
+# Derived from https://github.com/kubernetes-sigs/kind/issues/398#issuecomment-478325705
+install_metrics:
+	kubectl apply -f metrics.yaml
+
+kind_setup: create_namespaces helm_setup install_ambassador install_istio install_jaeger install_seldon set_namespace install_metrics
 port-forward-ambassador:
 	kubectl port-forward $$(kubectl get pods -n seldon -l app.kubernetes.io/name=ambassador -o jsonpath='{.items[0].metadata.name}') -n seldon 8003:8080
 
@@ -98,16 +103,18 @@ build_protos:
 
 install:
 	pip install -r dev_requirements.txt
+	pip install -e ../../python
 
-.PHONY: test
-test: build_protos install
+test_parallel: build_protos install
 	# Run the core tests in parallel
 	pytest \
 		--verbose \
 		-s \
 		-W ignore \
 		-n $(PYTEST_WORKERS) \
-		-m "not sequential" 2>&1
+		-m "not sequential and not notebooks" 2>&1
+
+test_sequential: build_protos install
 	# Then run the s2i tests in sequence (as they currently fail in parallel
 	pytest \
 		--verbose \
@@ -120,6 +127,7 @@ test_notebooks: build_protos install
 	pytest \
 		--verbose \
 		-s \
+		-m "notebooks" \
 		-W ignore test_notebooks.py::TestNotebooks 2>&1
 
 .PHONY: clean

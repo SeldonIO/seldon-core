@@ -7,6 +7,7 @@ from PIL import Image
 import io
 
 from seldon_core.wrapper import get_rest_microservice, SeldonModelGRPC, get_grpc_server
+from seldon_core.metrics import SeldonMetrics
 from seldon_core.proto import prediction_pb2
 from seldon_core.user_model import SeldonComponent
 from seldon_core.utils import seldon_message_to_json, json_to_seldon_message
@@ -43,7 +44,13 @@ def rs232_checksum(the_bytes):
 
 class UserObject(SeldonComponent):
     HEALTH_STATUS_REPONSE = [0.123]
-    METADATA_RESPONSE = {"metadata": {"name": "mymodel"}}
+    METADATA_RESPONSE = {
+        "name": "my-model-name",
+        "versions": ["model-version"],
+        "platform": "model-platform",
+        "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1]}],
+        "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1]}],
+    }
 
     def __init__(self, metrics_ok=True, ret_nparray=False, ret_meta=False):
         self.metrics_ok = metrics_ok
@@ -87,7 +94,7 @@ class UserObject(SeldonComponent):
     def health_status(self):
         return self.predict(self.HEALTH_STATUS_REPONSE, ["some_float"])
 
-    def metadata(self):
+    def init_metadata(self):
         return self.METADATA_RESPONSE
 
 
@@ -229,7 +236,8 @@ class UserObjectLowLevelGrpc(SeldonComponent):
 
 def test_model_ok():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/predict?json={"data":{"names":["a","b"],"ndarray":[[1,2]]}}')
     j = json.loads(rv.data)
@@ -244,7 +252,8 @@ def test_model_ok():
 
 def test_model_v01_ok():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
 
     payload = {"data": {"names": ["a", "b"], "ndarray": [[1, 2]]}}
@@ -261,7 +270,8 @@ def test_model_v01_ok():
 
 def test_model_v10_ok():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
 
     payload = {"data": {"names": ["a", "b"], "ndarray": [[1, 2]]}}
@@ -278,7 +288,8 @@ def test_model_v10_ok():
 
 def test_model_puid_ok():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get(
         '/predict?json={"meta":{"puid":"123"},"data":{"names":["a","b"],"ndarray":[[1,2]]}}'
@@ -296,7 +307,8 @@ def test_model_puid_ok():
 
 def test_model_lowlevel_ok():
     user_object = UserObjectLowLevel()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/predict?json={"data":{"ndarray":[1,2]}}')
     j = json.loads(rv.data)
@@ -307,7 +319,8 @@ def test_model_lowlevel_ok():
 
 def test_model_lowlevel_multi_form_data_text_file_ok():
     user_object = UserObjectLowLevelWithPredictRaw("txt")
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.post(
         "/predict",
@@ -328,7 +341,8 @@ def test_model_lowlevel_multi_form_data_text_file_ok():
 
 def test_model_lowlevel_multi_form_data_img_file_ok():
     user_object = UserObjectLowLevelWithPredictRaw("img")
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.post(
         "/predict",
@@ -348,7 +362,8 @@ def test_model_lowlevel_multi_form_data_img_file_ok():
 
 def test_model_lowlevel_multi_form_data_strData_ok():
     user_object = UserObjectLowLevelWithPredictRaw("strData")
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.post(
         "/predict",
@@ -369,7 +384,8 @@ def test_model_lowlevel_multi_form_data_strData_ok():
 
 def test_model_lowlevel_multi_form_data_strData_non200status():
     user_object = UserObjectLowLevelWithStatusInResponseWithPredictRaw("strData")
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.post(
         "/predict",
@@ -390,7 +406,8 @@ def test_model_lowlevel_multi_form_data_strData_non200status():
 
 def test_model_multi_form_data_ok():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.post(
         "/predict",
@@ -409,7 +426,8 @@ def test_model_multi_form_data_ok():
 
 def test_model_feedback_ok():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get(
         '/send-feedback?json={"request":{"data":{"ndarray":[]}},"reward":1.0}'
@@ -421,7 +439,8 @@ def test_model_feedback_ok():
 
 def test_feedback_v10_ok():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
 
     payload = {
@@ -436,7 +455,8 @@ def test_feedback_v10_ok():
 
 def test_feedback_v01_ok():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
 
     payload = {
@@ -451,7 +471,8 @@ def test_feedback_v01_ok():
 
 def test_model_feedback_lowlevel_ok():
     user_object = UserObjectLowLevel()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get(
         '/send-feedback?json={"request":{"data":{"ndarray":[]}},"reward":1.0}'
@@ -463,7 +484,8 @@ def test_model_feedback_lowlevel_ok():
 
 def test_model_non200status_lowlevel():
     user_object = UserObjectLowLevelWithStatusInResponse()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/predict?json={"request":{"data":{"ndarray":[]}},"reward":1.0}')
     j = json.loads(rv.data)
@@ -474,7 +496,8 @@ def test_model_non200status_lowlevel():
 @skipif_tf_missing
 def test_model_tftensor_ok():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(tftensor=tf.make_tensor_proto(arr))
@@ -496,7 +519,8 @@ def test_model_tftensor_ok():
 
 def test_model_ok_with_names():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/predict?json={"data":{"names":["a","b"],"ndarray":[[1,2]]}}')
     j = json.loads(rv.data)
@@ -508,7 +532,8 @@ def test_model_ok_with_names():
 
 def test_model_bin_data():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     bdata = b"123"
     bdata_base64 = base64.b64encode(bdata).decode("utf-8")
@@ -523,7 +548,8 @@ def test_model_bin_data():
 
 def test_model_bin_data_nparray():
     user_object = UserObject(ret_nparray=True)
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     encoded = base64.b64encode(b"1234").decode("utf-8")
     rv = client.get('/predict?json={"binData":"' + encoded + '"}')
@@ -538,7 +564,8 @@ def test_model_bin_data_nparray():
 
 def test_model_str_data():
     user_object = UserObject(ret_nparray=True)
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/predict?json={"strData":"my data"}')
     j = json.loads(rv.data)
@@ -552,7 +579,8 @@ def test_model_str_data():
 
 def test_model_str_data_identity():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/predict?json={"strData":"my data"}')
     j = json.loads(rv.data)
@@ -566,7 +594,8 @@ def test_model_str_data_identity():
 
 def test_model_no_json():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     uo = UserObject()
     rv = client.get("/predict?")
@@ -577,12 +606,13 @@ def test_model_no_json():
 
 def test_model_bad_metrics():
     user_object = UserObject(metrics_ok=False)
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/predict?json={"data":{"ndarray":[]}}')
     j = json.loads(rv.data)
     logging.info(j)
-    assert rv.status_code == 400
+    assert rv.status_code == 500
 
 
 def test_model_error_status_code():
@@ -591,7 +621,8 @@ def test_model_error_status_code():
             raise SeldonMicroserviceException("foo", status_code=403)
 
     user_object = ErrorUserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     uo = UserObject()
     rv = client.get('/predict?json={"strData":"my data"}')
@@ -602,7 +633,8 @@ def test_model_error_status_code():
 
 def test_model_gets_meta():
     user_object = UserObject(ret_meta=True)
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/predict?json={"meta":{"puid": "abc"},"data":{"ndarray":[]}}')
     j = json.loads(rv.data)
@@ -616,7 +648,8 @@ def test_model_gets_meta():
 
 def test_model_passes_through_tags():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get(
         '/predict?json={"meta":{"tags":{"foo":"bar"}},"data":{"ndarray":[]}}'
@@ -630,9 +663,29 @@ def test_model_passes_through_tags():
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
 
 
+def test_model_passes_through_metrics():
+    user_object = UserObject()
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
+    client = app.test_client()
+    rv = client.get(
+        '/predict?json={"meta":{"metrics":[{"key":"request_gauge","type":"GAUGE","value":100}]},"data":{"ndarray":[]}}'
+    )
+    j = json.loads(rv.data)
+    logging.info(j)
+
+    assert rv.status_code == 200
+    assert j["meta"]["metrics"][0]["key"] == "request_gauge"
+    assert j["meta"]["metrics"][0]["value"] == 100
+
+    assert j["meta"]["metrics"][1]["key"] == user_object.metrics()[0]["key"]
+    assert j["meta"]["metrics"][1]["value"] == user_object.metrics()[0]["value"]
+
+
 def test_model_seldon_json_ok():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get("/seldon.json")
     assert rv.status_code == 200
@@ -640,7 +693,8 @@ def test_model_seldon_json_ok():
 
 def test_model_health_ping():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get(HEALTH_PING_URL)
     assert rv.status_code == 200
@@ -649,7 +703,8 @@ def test_model_health_ping():
 
 def test_model_health_status():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get(HEALTH_STATUS_URL)
     assert rv.status_code == 200
@@ -660,7 +715,8 @@ def test_model_health_status():
 
 def test_model_health_status_raw():
     user_object = UserObjectLowLevel()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get(HEALTH_STATUS_URL)
     assert rv.status_code == 200
@@ -670,7 +726,8 @@ def test_model_health_status_raw():
 
 def test_model_metadata():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get(METADATA_URL)
     assert rv.status_code == 200
@@ -681,7 +738,8 @@ def test_model_metadata():
 
 def test_proto_ok():
     user_object = UserObject()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
         tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
@@ -700,10 +758,11 @@ def test_proto_ok():
 
 def test_proto_passes_through_tags():
     user_object = UserObject()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
-        tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr),
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
     )
     meta = prediction_pb2.Meta()
     json_format.ParseDict({"tags": {"foo": "bar"}}, meta)
@@ -719,9 +778,38 @@ def test_proto_passes_through_tags():
     assert j["data"]["tensor"]["values"] == [1, 2]
 
 
+def test_proto_passes_through_metrics():
+    user_object = UserObject()
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
+    arr = np.array([1, 2])
+    datadef = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
+    )
+    meta = prediction_pb2.Meta()
+    json_format.ParseDict(
+        {"metrics": [{"key": "request_gauge", "type": "GAUGE", "value": 100}]}, meta
+    )
+    request = prediction_pb2.SeldonMessage(data=datadef, meta=meta)
+    resp = app.Predict(request, None)
+    jStr = json_format.MessageToJson(resp)
+    j = json.loads(jStr)
+    logging.info(j)
+
+    assert j["meta"]["metrics"][0]["key"] == "request_gauge"
+    assert j["meta"]["metrics"][0]["value"] == 100
+
+    assert j["meta"]["metrics"][1]["key"] == user_object.metrics()[0]["key"]
+    assert j["meta"]["metrics"][1]["value"] == user_object.metrics()[0]["value"]
+
+    assert j["data"]["tensor"]["shape"] == [2, 1]
+    assert j["data"]["tensor"]["values"] == [1, 2]
+
+
 def test_proto_lowlevel():
     user_object = UserObjectLowLevelGrpc()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
         tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
@@ -737,7 +825,8 @@ def test_proto_lowlevel():
 
 def test_proto_feedback():
     user_object = UserObject()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
         tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
@@ -749,7 +838,8 @@ def test_proto_feedback():
 
 def test_proto_feedback_custom():
     user_object = UserObjectLowLevel()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
         tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
@@ -762,7 +852,8 @@ def test_proto_feedback_custom():
 @skipif_tf_missing
 def test_proto_tftensor_ok():
     user_object = UserObject()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(tftensor=tf.make_tensor_proto(arr))
     request = prediction_pb2.SeldonMessage(data=datadef)
@@ -779,7 +870,8 @@ def test_proto_tftensor_ok():
 
 def test_proto_bin_data():
     user_object = UserObject()
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     bdata = b"123"
     bdata_base64 = base64.b64encode(bdata)
     request = prediction_pb2.SeldonMessage(binData=bdata_base64)
@@ -789,7 +881,8 @@ def test_proto_bin_data():
 
 def test_proto_bin_data_nparray():
     user_object = UserObject(ret_nparray=True)
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     binData = b"\0\1"
     request = prediction_pb2.SeldonMessage(binData=binData)
     resp = app.Predict(request, None)
@@ -801,12 +894,14 @@ def test_proto_bin_data_nparray():
 
 def test_get_grpc_server():
     user_object = UserObject(ret_nparray=True)
-    server = get_grpc_server(user_object)
+    seldon_metrics = SeldonMetrics()
+    server = get_grpc_server(user_object, seldon_metrics)
 
 
 def test_proto_gets_meta():
     user_object = UserObject(ret_meta=True)
-    app = SeldonModelGRPC(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
     arr = np.array([1, 2])
     datadef = prediction_pb2.DefaultData(
         tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
@@ -832,7 +927,8 @@ def test_unimplemented_predict_raw_on_seldon_component():
             return X * 2
 
     user_object = CustomSeldonComponent()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/predict?json={"data":{"names":["a","b"],"ndarray":[[1,2]]}}')
     j = json.loads(rv.data)
@@ -848,7 +944,8 @@ def test_unimplemented_predict_raw():
             return X * 2
 
     user_object = CustomObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/predict?json={"data":{"names":["a","b"],"ndarray":[[1,2]]}}')
     j = json.loads(rv.data)
@@ -864,7 +961,8 @@ def test_unimplemented_feedback_raw_on_seldon_component():
             logging.info("Feedback called")
 
     user_object = CustomSeldonComponent()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get(
         '/send-feedback?json={"request":{"data":{"ndarray":[]}},"reward":1.0}'
@@ -881,7 +979,8 @@ def test_unimplemented_feedback_raw():
             logging.info("Feedback called")
 
     user_object = CustomObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get(
         '/send-feedback?json={"request":{"data":{"ndarray":[]}},"reward":1.0}'

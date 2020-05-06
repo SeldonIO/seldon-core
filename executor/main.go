@@ -20,7 +20,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/k8s"
 	loghandler "github.com/seldonio/seldon-core/executor/logger"
 	"github.com/seldonio/seldon-core/executor/proto/tensorflow/serving"
-	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"io/ioutil"
 	"net"
 	"net/url"
@@ -208,6 +208,12 @@ func main() {
 				panic(err)
 			}
 		}
+	}
+
+	// Ensure standard OpenAPI seldon API file has this deployment's values
+	err = rest.EmbedSeldonDeploymentValuesInSwaggerFile(*namespace, *sdepName)
+	if err != nil {
+		log.Error(err, "Failed to embed variables on OpenAPI template")
 	}
 
 	annotations, err := k8s.GetAnnotations()

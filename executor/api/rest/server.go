@@ -15,12 +15,20 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/predictor"
-	"github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
-	"time"
+)
+
+const (
+	CLOUDEVENTS_HEADER_ID_NAME             = "Ce-Id"
+	CLOUDEVENTS_HEADER_SPECVERSION_NAME    = "Ce-Specversion"
+	CLOUDEVENTS_HEADER_SOURCE_NAME         = "Ce-Source"
+	CLOUDEVENTS_HEADER_TYPE_NAME           = "Ce-Type"
+	CLOUDEVENTS_HEADER_PATH_NAME           = "Ce-Path"
+	CLOUDEVENTS_HEADER_SPECVERSION_DEFAULT = "0.3"
 )
 
 type SeldonRestApi struct {
@@ -62,12 +70,12 @@ func (r *SeldonRestApi) CreateHttpServer(port int) *http.Server {
 	address := fmt.Sprintf("0.0.0.0:%d", port)
 	r.Log.Info("Listening", "Address", address)
 
+	// Note that we leave the Server timeouts to 0. This means that the server
+	// will apply no timeout at all. Instead, we control that through the
+	// http.Client instance making requests to the underlying node graph servers.
 	return &http.Server{
 		Handler: r.Router,
 		Addr:    address,
-		// Good practice: enforce timeouts for servers you create!
-		WriteTimeout: 15 * time.Second,
-		ReadTimeout:  15 * time.Second,
 	}
 }
 
@@ -81,14 +89,27 @@ func (r *SeldonRestApi) respondWithSuccess(w http.ResponseWriter, code int, payl
 	}
 }
 
-func (r *SeldonRestApi) respondWithError(w http.ResponseWriter, err error) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusInternalServerError)
+func (r *SeldonRestApi) respondWithError(w http.ResponseWriter, payload payload.SeldonPayload, err error) {
 
-	errPayload := r.Client.CreateErrorPayload(err)
-	err = r.Client.Marshall(w, errPayload)
-	if err != nil {
-		r.Log.Error(err, "Failed to write error payload")
+	if serr, ok := err.(*httpStatusError); ok {
+		w.WriteHeader(serr.StatusCode)
+	} else {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	if payload != nil && payload.GetPayload() != nil {
+		w.Header().Set("Content-Type", payload.GetContentType())
+		err := r.Client.Marshall(w, payload)
+		if err != nil {
+			r.Log.Error(err, "Failed to write response")
+		}
+	} else {
+		errPayload := r.Client.CreateErrorPayload(err)
+		w.Header().Set("Content-Type", errPayload.GetContentType())
+		err = r.Client.Marshall(w, errPayload)
+		if err != nil {
+			r.Log.Error(err, "Failed to write error payload")
+		}
 	}
 }
 
@@ -110,7 +131,9 @@ func (r *SeldonRestApi) Initialise() {
 	r.Router.HandleFunc("/live", r.alive)
 	r.Router.Handle(r.prometheusPath, promhttp.Handler())
 	if !r.ProbesOnly {
+		cloudeventHeaderMiddleware := CloudeventHeaderMiddleware{deploymentName: r.DeploymentName, namespace: r.Namespace}
 		r.Router.Use(puidHeader)
+		r.Router.Use(cloudeventHeaderMiddleware.Middleware)
 		switch r.Protocol {
 		case api.ProtocolSeldon:
 			//v0.1 API
@@ -118,25 +141,55 @@ func (r *SeldonRestApi) Initialise() {
 			api01.Handle("/predictions", r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions))
 			r.Router.NewRoute().Path("/api/v0.1/status/{" + ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
 			r.Router.NewRoute().Path("/api/v0.1/metadata/{" + ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.metadata))
+			r.Router.NewRoute().PathPrefix("/api/v0.1/doc/").Handler(http.StripPrefix("/api/v0.1/doc/", http.FileServer(http.Dir("./openapi/"))))
 			//v1.0 API
 			api1 := r.Router.PathPrefix("/api/v1.0").Methods("POST").Subrouter()
 			api1.Handle("/predictions", r.wrapMetrics(metric.PredictionServiceMetricName, r.predictions))
 			r.Router.NewRoute().Path("/api/v1.0/status/{" + ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
 			r.Router.NewRoute().Path("/api/v1.0/metadata/{" + ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.metadata))
+			r.Router.NewRoute().PathPrefix("/api/v1.0/doc/").Handler(http.StripPrefix("/api/v1.0/doc/", http.FileServer(http.Dir("./openapi/"))))
 
 		case api.ProtocolTensorflow:
 			r.Router.NewRoute().Path("/v1/models/{" + ModelHttpPathVariable + "}/:predict").Methods("POST").HandlerFunc(r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions))
+			r.Router.NewRoute().Path("/v1/models/:predict").Methods("POST").HandlerFunc(r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions)) // Nonstandard path - Seldon extension
 			r.Router.NewRoute().Path("/v1/models/{" + ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
 			r.Router.NewRoute().Path("/v1/models/{" + ModelHttpPathVariable + "}/metadata").Methods("GET").HandlerFunc(r.wrapMetrics(metric.MetadataHttpServiceName, r.metadata))
 		}
 	}
 }
 
+type CloudeventHeaderMiddleware struct {
+	deploymentName string
+	namespace      string
+}
+
+func (h *CloudeventHeaderMiddleware) Middleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Checking if request is cloudevent based on specname being present
+		if _, ok := r.Header[CLOUDEVENTS_HEADER_SPECVERSION_NAME]; ok {
+			puid := r.Header.Get(payload.SeldonPUIDHeader)
+			w.Header().Set(CLOUDEVENTS_HEADER_ID_NAME, puid)
+			w.Header().Set(CLOUDEVENTS_HEADER_SPECVERSION_NAME, CLOUDEVENTS_HEADER_SPECVERSION_DEFAULT)
+			w.Header().Set(CLOUDEVENTS_HEADER_PATH_NAME, r.URL.Path)
+			w.Header().Set(CLOUDEVENTS_HEADER_TYPE_NAME, "seldon."+h.deploymentName+"."+h.namespace+".response")
+			w.Header().Set(CLOUDEVENTS_HEADER_SOURCE_NAME, "seldon."+h.deploymentName)
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func puidHeader(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if puid := r.Header.Get(payload.SeldonPUIDHeader); puid == "" {
-			r.Header.Set(payload.SeldonPUIDHeader, guuid.New().String())
+		puid := r.Header.Get(payload.SeldonPUIDHeader)
+		if len(puid) == 0 {
+			puid = guuid.New().String()
+			r.Header.Set(payload.SeldonPUIDHeader, puid)
 		}
+		if res_puid := w.Header().Get(payload.SeldonPUIDHeader); len(res_puid) == 0 {
+			w.Header().Set(payload.SeldonPUIDHeader, puid)
+		}
+
 		next.ServeHTTP(w, r)
 	})
 }
@@ -153,21 +206,6 @@ func (r *SeldonRestApi) checkReady(w http.ResponseWriter, req *http.Request) {
 
 func (r *SeldonRestApi) alive(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusOK)
-}
-
-func (r *SeldonRestApi) failWithError(w http.ResponseWriter, err error) {
-	r.Log.Error(err, "Failed")
-	r.respondWithError(w, err)
-}
-
-func getGraphNodeForModelName(req *http.Request, graph *v1.PredictiveUnit) (*v1.PredictiveUnit, error) {
-	vars := mux.Vars(req)
-	modelName := vars[ModelHttpPathVariable]
-	if graphNode := v1.GetPredictiveUnit(graph, modelName); graphNode == nil {
-		return nil, fmt.Errorf("Failed to find model %s", modelName)
-	} else {
-		return graphNode, nil
-	}
 }
 
 func setupTracing(ctx context.Context, req *http.Request, spanName string) (context.Context, opentracing.Span) {
@@ -194,7 +232,7 @@ func (r *SeldonRestApi) metadata(w http.ResponseWriter, req *http.Request) {
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header)
 	resPayload, err := seldonPredictorProcess.Metadata(r.predictor.Graph, modelName, nil)
 	if err != nil {
-		r.failWithError(w, err)
+		r.respondWithError(w, resPayload, err)
 		return
 	}
 	r.respondWithSuccess(w, http.StatusOK, resPayload)
@@ -216,7 +254,7 @@ func (r *SeldonRestApi) status(w http.ResponseWriter, req *http.Request) {
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header)
 	resPayload, err := seldonPredictorProcess.Status(r.predictor.Graph, modelName, nil)
 	if err != nil {
-		r.failWithError(w, err)
+		r.respondWithError(w, resPayload, err)
 		return
 	}
 	r.respondWithSuccess(w, http.StatusOK, resPayload)
@@ -238,7 +276,7 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 
 	bodyBytes, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		r.failWithError(w, err)
+		r.respondWithError(w, nil, err)
 		return
 	}
 
@@ -246,23 +284,28 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 
 	reqPayload, err := seldonPredictorProcess.Client.Unmarshall(bodyBytes)
 	if err != nil {
-		r.failWithError(w, err)
+		r.respondWithError(w, nil, err)
 		return
 	}
 
 	var graphNode *v1.PredictiveUnit
 	if r.Protocol == api.ProtocolTensorflow {
-		graphNode, err = getGraphNodeForModelName(req, r.predictor.Graph)
-		if err != nil {
-			r.failWithError(w, err)
-			return
+		vars := mux.Vars(req)
+		modelName := vars[ModelHttpPathVariable]
+		if modelName != "" {
+			if graphNode = v1.GetPredictiveUnit(r.predictor.Graph, modelName); graphNode == nil {
+				r.respondWithError(w, nil, fmt.Errorf("Failed to find model %s", modelName))
+				return
+			}
+		} else {
+			graphNode = r.predictor.Graph
 		}
 	} else {
 		graphNode = r.predictor.Graph
 	}
 	resPayload, err := seldonPredictorProcess.Predict(graphNode, reqPayload)
 	if err != nil {
-		r.failWithError(w, err)
+		r.respondWithError(w, resPayload, err)
 		return
 	}
 	r.respondWithSuccess(w, http.StatusOK, resPayload)

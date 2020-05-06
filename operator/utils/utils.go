@@ -4,10 +4,21 @@ import (
 	"encoding/json"
 	"strings"
 
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 )
+
+func GetPredictionPath(mlDep *machinelearningv1.SeldonDeployment) string {
+	protocol := mlDep.Spec.Protocol
+
+	if protocol == "tensorflow" {
+		// This will be updated as part of https://github.com/SeldonIO/seldon-core/issues/1611
+		return "/v1/models/" + mlDep.Spec.Predictors[0].Graph.Name + "/:predict"
+	} else {
+		return "/api/v1.0/predictions"
+	}
+}
 
 func GetPredictiveUnitAsJson(params []machinelearningv1.Parameter) string {
 	str, err := json.Marshal(params)

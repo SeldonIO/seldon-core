@@ -12,6 +12,7 @@ create:
 .PHONY: create_helper
 create_helper:
 	./create_templates.sh namespaced1
+	./create_templates.sh lite
 	./create_templates.sh spartakus
 
 .PHONY: clean

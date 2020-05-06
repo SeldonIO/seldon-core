@@ -1,5 +1,6 @@
 syntax = "proto3";
 
+import "google/protobuf/any.proto";
 import "google/protobuf/struct.proto";
 import "tensorflow/core/framework/tensor.proto";
 
@@ -20,6 +21,7 @@ message SeldonMessage {
     bytes binData = 4;
     string strData = 5;
     google.protobuf.Value jsonData = 6;
+    google.protobuf.Any customData = 7;
   }
 }
 
@@ -38,7 +40,7 @@ message Tensor {
 }
 
 message Meta {
-  string puid = 1; 
+  string puid = 1;
   map<string,google.protobuf.Value> tags = 2;
   map<string,int32> routing = 3;
   map<string,string> requestPath = 4;
@@ -101,7 +103,7 @@ service Generic {
 
 service Model {
   rpc Predict(SeldonMessage) returns (SeldonMessage) {};
-  rpc SendFeedback(Feedback) returns (SeldonMessage) {};  
+  rpc SendFeedback(Feedback) returns (SeldonMessage) {};
  }
 
 service Router {

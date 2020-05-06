@@ -1,0 +1,34 @@
+# Build the manager binary
+FROM golang:1.13 as builder
+
+WORKDIR /workspace
+# Copy the Go Modules manifests
+COPY go.mod go.mod
+COPY go.sum go.sum
+COPY proto/ proto/
+# cache deps before building and copying source so that we don't need to re-download as much
+# and so that source changes don't invalidate our downloaded layer
+RUN go mod download
+
+# Copy the go source
+COPY main.go main.go
+COPY api/ api/
+COPY predictor/ predictor/
+COPY logger/ logger/
+COPY k8s/ k8s/
+
+# Build
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o executor main.go
+
+FROM registry.access.redhat.com/ubi8/ubi-minimal
+LABEL name="Seldon Executor" \
+      vendor="Seldon Technologies" \
+      version="v1.1.0" \
+      release="1" \
+      summary="The service orchestrator for Seldon Core" \
+      description="The service orchestrator for Seldon Core which manages the request/response flow through the Seldon Core inference graphs deployed via the Seldon Core Operator as SeldonDeployments custom resources"
+
+WORKDIR /
+COPY --from=builder /workspace/executor .
+COPY licenses/license.txt licenses/license.txt
+ENTRYPOINT ["/executor"]

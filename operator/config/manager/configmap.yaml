@@ -32,31 +32,31 @@ data:
         "SKLEARN_SERVER": {
             "rest": {
               "image": "seldonio/sklearnserver_rest",
-              "defaultImageVersion": "0.2"
+              "defaultImageVersion": "0.3"
             },
             "grpc": {
               "image": "seldonio/sklearnserver_grpc",
-              "defaultImageVersion": "0.2"
+              "defaultImageVersion": "0.3"
             }
         },
         "XGBOOST_SERVER": {
             "rest": {
               "image": "seldonio/xgboostserver_rest",
-              "defaultImageVersion": "0.2"
+              "defaultImageVersion": "0.4"
             },
             "grpc": {
               "image": "seldonio/xgboostserver_grpc",
-              "defaultImageVersion": "0.2"
+              "defaultImageVersion": "0.4"
             }
         },
         "MLFLOW_SERVER": {
             "rest": {
               "image": "seldonio/mlflowserver_rest",
-              "defaultImageVersion": "0.2"
+              "defaultImageVersion": "0.5"
             },
             "grpc": {
               "image": "seldonio/mlflowserver_grpc",
-              "defaultImageVersion": "0.2"
+              "defaultImageVersion": "0.5"
             }
         }
     }

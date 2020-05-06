@@ -17,16 +17,17 @@ limitations under the License.
 package controllers
 
 import (
-	"os"
-	"strconv"
-	"strings"
-
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	"fmt"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	"github.com/seldonio/seldon-core/operator/constants"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"os"
+	"strconv"
+	"strings"
 )
 
 const (
@@ -34,13 +35,28 @@ const (
 	ENV_DEFAULT_EXECUTOR_SERVER_GRPC_PORT = "EXECUTOR_SERVER_GRPC_PORT"
 	ENV_EXECUTOR_PROMETHEUS_PATH          = "EXECUTOR_PROMETHEUS_PATH"
 	ENV_ENGINE_PROMETHEUS_PATH            = "ENGINE_PROMETHEUS_PATH"
+	ENV_EXECUTOR_USER                     = "EXECUTOR_CONTAINER_USER"
+	ENV_ENGINE_USER                       = "ENGINE_CONTAINER_USER"
+	ENV_USE_EXECUTOR                      = "USE_EXECUTOR"
 
 	DEFAULT_EXECUTOR_CONTAINER_PORT = 8000
 	DEFAULT_EXECUTOR_GRPC_PORT      = 5001
+
+	ENV_EXECUTOR_IMAGE         = "EXECUTOR_CONTAINER_IMAGE_AND_VERSION"
+	ENV_EXECUTOR_IMAGE_RELATED = "RELATED_IMAGE_EXECUTOR" //RedHat specific
+	ENV_ENGINE_IMAGE           = "ENGINE_CONTAINER_IMAGE_AND_VERSION"
+	ENV_ENGINE_IMAGE_RELATED   = "RELATED_IMAGE_ENGINE" //Redhat specific
 )
 
 var (
-	EngineContainerName = "seldon-container-engine"
+	EngineContainerName     = "seldon-container-engine"
+	envExecutorImage        = os.Getenv(ENV_EXECUTOR_IMAGE)
+	envExecutorImageRelated = os.Getenv(ENV_EXECUTOR_IMAGE_RELATED)
+	envEngineImage          = os.Getenv(ENV_ENGINE_IMAGE)
+	envEngineImageRelated   = os.Getenv(ENV_ENGINE_IMAGE_RELATED)
+	envEngineUser           = os.Getenv(ENV_ENGINE_USER)
+	envExecutorUser         = os.Getenv(ENV_EXECUTOR_USER)
+	envUseExecutor          = os.Getenv(ENV_USE_EXECUTOR)
 )
 
 func addEngineToDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, engine_http_port int, engine_grpc_port int, pSvcName string, deploy *appsv1.Deployment) error {
@@ -79,10 +95,6 @@ func addEngineToDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machine
 	for _, ann := range p.Annotations {
 		deploy.Spec.Template.Annotations[ann] = p.Annotations[ann]
 	}
-	// Add prometheus annotations
-	deploy.Spec.Template.Annotations["prometheus.io/path"] = getPrometheusPath(mlDep)
-	deploy.Spec.Template.Annotations["prometheus.io/port"] = strconv.Itoa(engine_http_port)
-	deploy.Spec.Template.Annotations["prometheus.io/scrape"] = "true"
 
 	deploy.ObjectMeta.Labels[machinelearningv1.Label_seldon_app] = pSvcName
 	deploy.Spec.Selector.MatchLabels[machinelearningv1.Label_seldon_app] = pSvcName
@@ -134,8 +146,7 @@ func getExecutorGrpcPort() (engine_grpc_port int, err error) {
 
 func isExecutorEnabled(mlDep *machinelearningv1.SeldonDeployment) bool {
 	useExecutor := getAnnotation(mlDep, machinelearningv1.ANNOTATION_EXECUTOR, "false")
-	useExecutorEnv := GetEnv("USE_EXECUTOR", "false")
-	return useExecutor == "true" || useExecutorEnv == "true"
+	return useExecutor == "true" || envUseExecutor == "true"
 }
 
 func getPrometheusPath(mlDep *machinelearningv1.SeldonDeployment) string {
@@ -162,33 +173,35 @@ func getSvcOrchSvcAccountName(mlDep *machinelearningv1.SeldonDeployment) string 
 	return svcAccount
 }
 
-func getSvcOrchUser(mlDep *machinelearningv1.SeldonDeployment) (int64, error) {
-	var engineUser int64 = -1
+func getSvcOrchUser(mlDep *machinelearningv1.SeldonDeployment) (*int64, error) {
+
 	if isExecutorEnabled(mlDep) {
-		if engineUserEnv, ok := os.LookupEnv("EXECUTOR_CONTAINER_USER"); ok {
-			user, err := strconv.Atoi(engineUserEnv)
+		if envExecutorUser != "" {
+			user, err := strconv.Atoi(envExecutorUser)
 			if err != nil {
-				return -1, err
+				return nil, err
 			} else {
-				engineUser = int64(user)
+				engineUser := int64(user)
+				return &engineUser, nil
 			}
 		}
 
 	} else {
-		if engineUserEnv, ok := os.LookupEnv("ENGINE_CONTAINER_USER"); ok {
-			user, err := strconv.Atoi(engineUserEnv)
+		if envEngineUser != "" {
+			user, err := strconv.Atoi(envEngineUser)
 			if err != nil {
-				return -1, err
+				return nil, err
 			} else {
-				engineUser = int64(user)
+				engineUser := int64(user)
+				return &engineUser, nil
 			}
 		}
 	}
-	return engineUser, nil
+	return nil, nil
 }
 
-func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, predictorB64 string, http_port int, grpc_port int, resources *corev1.ResourceRequirements) corev1.Container {
-	transport := p.Transport
+func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, predictorB64 string, http_port int, grpc_port int, resources *corev1.ResourceRequirements) (*corev1.Container, error) {
+	transport := mlDep.Spec.Transport
 	//Backwards compatible with older resources
 	if transport == "" {
 		if p.Graph.Endpoint.Type == machinelearningv1.GRPC {
@@ -197,14 +210,23 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 			transport = machinelearningv1.TransportRest
 		}
 	}
-	protocol := p.Protocol
+	protocol := mlDep.Spec.Protocol
 	//Backwards compatibility for older resources
 	if protocol == "" {
 		protocol = machinelearningv1.ProtocolSeldon
 	}
-	return corev1.Container{
+
+	// Get executor image from env vars in order of priority
+	var executorImage string
+	if executorImage = envExecutorImageRelated; executorImage == "" {
+		if executorImage = envExecutorImage; executorImage == "" {
+			return nil, fmt.Errorf("Failed to find executor image from environment. Check %s or %s are set.", ENV_EXECUTOR_IMAGE, ENV_EXECUTOR_IMAGE_RELATED)
+		}
+	}
+
+	return &corev1.Container{
 		Name:  EngineContainerName,
-		Image: GetEnv("EXECUTOR_CONTAINER_IMAGE_AND_VERSION", "seldonio/seldon-core-executor:1.0.1-SNAPSHOT"),
+		Image: executorImage,
 		Args: []string{
 			"--sdep", mlDep.Name,
 			"--namespace", mlDep.Namespace,
@@ -226,9 +248,11 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 		},
 		Env: []corev1.EnvVar{
 			{Name: "ENGINE_PREDICTOR", Value: predictorB64},
+			{Name: "REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX", Value: GetEnv("EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX", "")},
 		},
 		Ports: []corev1.ContainerPort{
 			{ContainerPort: int32(http_port), Protocol: corev1.ProtocolTCP},
+			{ContainerPort: int32(http_port), Protocol: corev1.ProtocolTCP, Name: constants.MetricsPortName},
 			{ContainerPort: int32(grpc_port), Protocol: corev1.ProtocolTCP},
 		},
 		ReadinessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(http_port), Path: "/ready", Scheme: corev1.URISchemeHTTP}},
@@ -244,14 +268,22 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 			SuccessThreshold:    1,
 			TimeoutSeconds:      60},
 		Resources: *resources,
-	}
+	}, nil
 }
 
 func createEngineContainerSpec(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, predictorB64 string,
-	engine_http_port int, engine_grpc_port int, engineResources *corev1.ResourceRequirements) corev1.Container {
-	return corev1.Container{
+	engine_http_port int, engine_grpc_port int, engineResources *corev1.ResourceRequirements) (*corev1.Container, error) {
+
+	// Get engine image from env vars in order of priority
+	var engineImage string
+	if engineImage = envEngineImageRelated; engineImage == "" {
+		if engineImage = envEngineImage; engineImage == "" {
+			return nil, fmt.Errorf("Failed to find engine image from environment. Check %s or %s are set.", ENV_ENGINE_IMAGE, ENV_ENGINE_IMAGE_RELATED)
+		}
+	}
+	return &corev1.Container{
 		Name:                     EngineContainerName,
-		Image:                    GetEnv("ENGINE_CONTAINER_IMAGE_AND_VERSION", "seldonio/engine:0.4.0"),
+		Image:                    engineImage,
 		ImagePullPolicy:          corev1.PullPolicy(GetEnv("ENGINE_CONTAINER_IMAGE_PULL_POLICY", "IfNotPresent")),
 		TerminationMessagePath:   "/dev/termination-log",
 		TerminationMessagePolicy: corev1.TerminationMessageReadFile,
@@ -267,10 +299,11 @@ func createEngineContainerSpec(mlDep *machinelearningv1.SeldonDeployment, p *mac
 			{Name: "DEPLOYMENT_NAMESPACE", Value: mlDep.ObjectMeta.Namespace},
 			{Name: "ENGINE_SERVER_PORT", Value: strconv.Itoa(engine_http_port)},
 			{Name: "ENGINE_SERVER_GRPC_PORT", Value: strconv.Itoa(engine_grpc_port)},
-			{Name: "JAVA_OPTS", Value: getAnnotation(mlDep, machinelearningv1.ANNOTATION_JAVA_OPTS, "-server -Dcom.sun.management.jmxremote.rmi.port=9090 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9090 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.local.only=false -Djava.rmi.server.hostname=127.0.0.1")},
+			{Name: "JAVA_OPTS", Value: getAnnotation(mlDep, machinelearningv1.ANNOTATION_JAVA_OPTS, "-server")},
 		},
 		Ports: []corev1.ContainerPort{
 			{ContainerPort: int32(engine_http_port), Protocol: corev1.ProtocolTCP},
+			{ContainerPort: int32(engine_http_port), Protocol: corev1.ProtocolTCP, Name: constants.MetricsPortName},
 			{ContainerPort: int32(engine_grpc_port), Protocol: corev1.ProtocolTCP},
 			{ContainerPort: 8082, Name: "admin", Protocol: corev1.ProtocolTCP},
 			{ContainerPort: 9090, Name: "jmx", Protocol: corev1.ProtocolTCP},
@@ -293,7 +326,7 @@ func createEngineContainerSpec(mlDep *machinelearningv1.SeldonDeployment, p *mac
 			},
 		},
 		Resources: *engineResources,
-	}
+	}, nil
 }
 
 // Create the Container for the service orchestrator.
@@ -323,7 +356,7 @@ func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machine
 		}
 	}
 
-	var c corev1.Container
+	var c *corev1.Container
 	if isExecutorEnabled(mlDep) {
 		executor_http_port, err := getExecutorHttpPort()
 		if err != nil {
@@ -333,13 +366,19 @@ func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machine
 		if err != nil {
 			return nil, err
 		}
-		c = createExecutorContainer(mlDep, p, predictorB64, executor_http_port, executor_grpc_port, engineResources)
+		c, err = createExecutorContainer(mlDep, p, predictorB64, executor_http_port, executor_grpc_port, engineResources)
+		if err != nil {
+			return nil, err
+		}
 	} else {
-		c = createEngineContainerSpec(mlDep, p, predictorB64, engine_http_port, engine_grpc_port, engineResources)
+		c, err = createEngineContainerSpec(mlDep, p, predictorB64, engine_http_port, engine_grpc_port, engineResources)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	if engineUser != -1 {
-		c.SecurityContext = &corev1.SecurityContext{RunAsUser: &engineUser}
+	if engineUser != nil {
+		c.SecurityContext = &corev1.SecurityContext{RunAsUser: engineUser}
 	}
 
 	// Environment vars if specified
@@ -369,7 +408,7 @@ func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machine
 	} else {
 		c.Env = append(c.Env, corev1.EnvVar{Name: "SELDON_LOG_MESSAGES_EXTERNALLY", Value: GetEnv("ENGINE_LOG_MESSAGES_EXTERNALLY", "false")})
 	}
-	return &c, nil
+	return c, nil
 }
 
 // Create the service orchestrator.
@@ -399,8 +438,8 @@ func createEngineDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machin
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{machinelearningv1.Label_seldon_app: seldonId, machinelearningv1.Label_seldon_id: seldonId, "app": depName},
 					Annotations: map[string]string{
-						"prometheus.io/path":   getPrometheusPath(mlDep),
-						"prometheus.io/port":   strconv.Itoa(engine_http_port),
+						"prometheus.io/path": getPrometheusPath(mlDep),
+						// "prometheus.io/port":   strconv.Itoa(engine_http_port),
 						"prometheus.io/scrape": "true",
 					},
 				},
@@ -421,8 +460,16 @@ func createEngineDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machin
 				},
 			},
 			Strategy: appsv1.DeploymentStrategy{RollingUpdate: &appsv1.RollingUpdateDeployment{MaxUnavailable: &intstr.IntOrString{StrVal: "10%"}}},
-			Replicas: &p.Replicas,
 		},
+	}
+
+	// Set replicas from more specific to more general settings in spec
+	if p.SvcOrchSpec.Replicas != nil {
+		deploy.Spec.Replicas = p.SvcOrchSpec.Replicas
+	} else if p.Replicas != nil {
+		deploy.Spec.Replicas = p.Replicas
+	} else if mlDep.Spec.Replicas != nil {
+		deploy.Spec.Replicas = mlDep.Spec.Replicas
 	}
 
 	// Add a particular service account rather than default for the engine

@@ -1,6 +1,9 @@
 VERSION := $(shell cat ../version.txt)
 # Image URL to use all building/pushing image targets
-IMG ?= seldonio/seldon-core-executor:${VERSION}
+IMAGE_NAME_BASE=seldon-core-executor
+IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
+IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${VERSION}
+IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -30,9 +33,10 @@ copy_protos:
 
 .PHONY: compile_seldon_proto
 compile_seldon_proto:
-	cp ../proto/prediction.proto api/grpc
-	cd api/grpc && protoc -I. -I${GOPATH}/src/github.com/tensorflow/tensorflow --go_out=paths=source_relative,plugins=grpc:. prediction.proto
-	rm api/grpc/prediction.proto
+	cp ../proto/prediction.proto api/grpc/seldon/proto
+	cd api/grpc/seldon/proto && protoc -I. -I${GOPATH}/src/github.com/tensorflow/tensorflow --go_out=paths=source_relative,plugins=grpc:. prediction.proto
+	sed -i "s/package api/package proto/" api/grpc/seldon/proto/prediction.pb.go
+	rm api/grpc/seldon/proto/prediction.proto
 
 # https://github.com/tensorflow/serving/issues/1365#issuecomment-525351995
 .PHONY: compile_tensorflow_proto
@@ -53,17 +57,38 @@ add_protos:
 test: fmt vet
 	go test ./api/... ./predictor/... ./k8s/...  -coverprofile cover.out
 
+copy_openapi_resources:
+	mkdir -p api/rest/openapi/
+	cp ../openapi/swagger-ui/* api/rest/openapi/
+	cp ../openapi/engine.oas3.json api/rest/openapi/seldon.json
+
 # Build the docker image
-docker-build: test
-	docker build . -t ${IMG}
+docker-build: test copy_openapi_resources
+	docker build -f Dockerfile -t ${IMG} .
+
+# Build the docker image for Redhat
+docker-build-redhat: test copy-openapi-resources
+	docker build . -f Dockerfile.redhat -t ${IMG_REDHAT}
 
 # Push the docker image
 docker-push:
 	docker push ${IMG}
 
+# Push the docker image
+docker-push-redhat:
+	docker push ${IMG_REDHAT}
+
+# password can be found at: https://connect.redhat.com/project/3977851/view
+redhat-image-scan:
+	docker login -u unused scan.connect.redhat.com
+	docker tag ${IMG_REDHAT} scan.connect.redhat.com/ospid-fffb6f6b-90b5-4f1d-be69-71baa8fb16cb/${IMG_VERSION_REDHAT}
+	docker push scan.connect.redhat.com/ospid-fffb6f6b-90b5-4f1d-be69-71baa8fb16cb/${IMG_VERSION_REDHAT}
 
 kind-image-install: docker-build
 	kind load -v 3 docker-image ${IMG}
+
+kind-image-install-redhat: docker-build-redhat
+	kind load -v 3 docker-image ${IMG_REDHAT}
 
 
 .PHONY: clean

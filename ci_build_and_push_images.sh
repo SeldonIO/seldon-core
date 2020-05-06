@@ -25,66 +25,79 @@ done
 # AVOID EXIT ON ERROR FOR FOLLOWING CMDS
 set +o errexit
 
-
-echo "Files changed in python folder:"
-git --no-pager diff --exit-code --name-only origin/master python
-PYTHON_MODIFIED=$?
-if [[ $PYTHON_MODIFIED -gt 0 ]]; then
+function build_push_python {
     (cd wrappers/s2i/python/build_scripts \
-        && ./build_all_local.sh \
-        && ./push_all.sh)
+	    && ./build_all_local.sh \
+	    && ./push_all.sh)
     PYTHON_EXIT_VALUE=$?
-else
-    echo "SKIPPING PYTHON IMAGE BUILD..."
-    PYTHON_EXIT_VALUE=0
-fi
+}
 
-echo "Files changed in operator folder:"
-git --no-pager diff --exit-code --name-only origin/master operator
-OPERATOR_MODIFIED=$?
-if [[ $OPERATOR_MODIFIED -gt 0 ]]; then
+function build_push_operator {
     make \
-        -C operator \
-        docker-build \
-        docker-push
+	-C operator \
+	docker-build \
+	docker-push \
+	docker-build-redhat    
     OPERATOR_EXIT_VALUE=$?
-else
-    echo "SKIPPING OPERATOR IMAGE BUILD..."
-    OPERATOR_EXIT_VALUE=0
-fi
+}
 
-echo "Files changed in executor folder:"
-git --no-pager diff --exit-code --name-only origin/master executor
-EXECUTOR_MODIFIED=$?
-if [[ $EXECUTOR_MODIFIED -gt 0 ]]; then
+function build_push_executor {
     make \
-        -C executor \
-        docker-build \
-        docker-push
+	-C executor \
+	docker-build \
+	docker-push \
+	docker-build-redhat    
     EXECUTOR_EXIT_VALUE=$?
-else
-    echo "SKIPPING EXECUTOR IMAGE BUILD..."
-    EXECUTOR_EXIT_VALUE=0
-fi
+}
 
-echo "Files changed in engine folder:"
-git --no-pager diff --exit-code --name-only origin/master engine
-ENGINE_MODIFIED=$?
-if [[ $ENGINE_MODIFIED -gt 0 ]]; then
+function build_push_engine {
     make \
-        -C testing/scripts \
-        build_protos
+	-C testing/scripts \
+	build_protos
     make \
-        -C engine \
-        build_image \
-        push_to_registry
+	-C engine \
+	build_image \
+	push_to_registry \
+	docker-build-redhat
     ENGINE_EXIT_VALUE=$?
-else
-    echo "SKIPPING ENGINE IMAGE BUILD..."
-    ENGINE_EXIT_VALUE=0
-fi
+}
 
+function build_push_mock {
+    make \
+	-C examples/models/mean_classifier \
+	build_rest \
+	build_grpc \
+	push_rest \
+	push_grpc \
+	docker-build-redhat     
+    MOCK_MODEL_EXIT_VALUE=$?
+}
 
+function build_push_alibi_detect {
+    make \
+	-C components/alibi-detect-server \
+	docker-build \
+	docker-push \
+	docker-build-redhat
+    ALIBI_DETECT_EXIT_VALUE=$?
+}
+
+function build_push_request_logger {
+    make \
+	-C components/seldon-request-logger \
+        build_image \
+	push_image \
+	docker-build-redhat
+    LOGGER_EXIT_VALUE=$?
+}
+
+build_push_python
+build_push_operator
+build_push_executor
+build_push_engine
+build_push_mock
+build_push_alibi_detect
+build_push_request_logger
 
 #######################################
 # EXIT STOPS COMMANDS FROM HERE ONWARDS
@@ -95,8 +108,20 @@ docker ps -aq | xargs -r docker rm -f || true
 service docker stop || true
 
 # NOW THAT WE'VE CLEANED WE CAN EXIT ON TEST EXIT VALUE
+echo "Python exit value: $PYTHON_EXIT_VALUE"
+echo "Operator exit value: $OPERATOR_EXIT_VALUE"
+echo "Engine exit value: $ENGINE_EXIT_VALUE"
+echo "Executor exit value: $EXECUTOR_EXIT_VALUE"
+echo "Mock model exit value: $MOCK_MODEL_EXIT_VALUE"
+echo "Alibi Detect exit value: $ALIBI_DETECT_EXIT_VALUE"
+echo "Request Logger exit value: $LOGGER_EXIT_VALUE"
+
 exit $((${PYTHON_EXIT_VALUE} \
     + ${OPERATOR_EXIT_VALUE} \
-    + ${ENGINE_EXIT_VALUE})) \
-    + ${EXECUTOR_EXIT_VALUE}))
+    + ${ENGINE_EXIT_VALUE} \
+    + ${EXECUTOR_EXIT_VALUE} \
+    + ${MOCK_MODEL_EXIT_VALUE} \
+    + ${ALIBI_DETECT_EXIT_VALUE} \
+    + ${LOGGER_EXIT_VALUE}))
+
 

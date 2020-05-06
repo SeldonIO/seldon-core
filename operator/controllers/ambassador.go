@@ -1,11 +1,12 @@
 package controllers
 
 import (
-	"github.com/seldonio/seldon-core/operator/constants"
 	"strconv"
 	"strings"
 
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	"github.com/seldonio/seldon-core/operator/constants"
+
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"gopkg.in/yaml.v2"
 )
 
@@ -19,35 +20,99 @@ const (
 	ANNOTATION_AMBASSADOR_ID           = "seldon.io/ambassador-id"
 	ANNOTATION_AMBASSADOR_RETRIES      = "seldon.io/ambassador-retries"
 
+	ANNOTATION_AMBASSADOR_CIRCUIT_BREAKING_MAX_CONNECTIONS      = "seldon.io/ambassador-circuit-breakers-max-connections"
+	ANNOTATION_AMBASSADOR_CIRCUIT_BREAKING_MAX_PENDING_REQUESTS = "seldon.io/ambassador-circuit-breakers-max-pending-requests"
+	ANNOTATION_AMBASSADOR_CIRCUIT_BREAKING_MAX_REQUESTS         = "seldon.io/ambassador-circuit-breakers-max-requests"
+	ANNOTATION_AMBASSADOR_CIRCUIT_BREAKING_MAX_RETRIES          = "seldon.io/ambassador-circuit-breakers-max-retries"
+
 	YAML_SEP = "---\n"
 
 	AMBASSADOR_IDLE_TIMEOUT    = 300000
 	AMBASSADOR_DEFAULT_RETRIES = "0"
 )
 
+// AmbassadorCircuitBreakerConfig - struct for ambassador circuit breaker
+type AmbassadorCircuitBreakerConfig struct {
+	MaxConnections     int `yaml:"max_connections,omitempty"`
+	MaxPendingRequests int `yaml:"max_pending_requests,omitempty"`
+	MaxRequests        int `yaml:"max_requests,omitempty"`
+	MaxRetries         int `yaml:"max_retries,omitempty"`
+}
+
 // Struct for Ambassador configuration
 type AmbassadorConfig struct {
-	ApiVersion    string                 `yaml:"apiVersion"`
-	Kind          string                 `yaml:"kind"`
-	Name          string                 `yaml:"name"`
-	Grpc          *bool                  `yaml:"grpc,omitempty"`
-	Prefix        string                 `yaml:"prefix"`
-	PrefixRegex   *bool                  `yaml:"prefix_regex,omitempty"`
-	Rewrite       string                 `yaml:"rewrite"`
-	Service       string                 `yaml:"service"`
-	TimeoutMs     int                    `yaml:"timeout_ms"`
-	IdleTimeoutMs *int                   `yaml:"idle_timeout_ms,omitempty"`
-	Headers       map[string]string      `yaml:"headers,omitempty"`
-	RegexHeaders  map[string]string      `yaml:"regex_headers,omitempty"`
-	Weight        int32                  `yaml:"weight,omitempty"`
-	Shadow        *bool                  `yaml:"shadow,omitempty"`
-	RetryPolicy   *AmbassadorRetryPolicy `yaml:"retry_policy,omitempty"`
-	InstanceId    string                 `yaml:"ambassador_id,omitempty"`
+	ApiVersion      string                            `yaml:"apiVersion"`
+	Kind            string                            `yaml:"kind"`
+	Name            string                            `yaml:"name"`
+	Grpc            *bool                             `yaml:"grpc,omitempty"`
+	Prefix          string                            `yaml:"prefix"`
+	PrefixRegex     *bool                             `yaml:"prefix_regex,omitempty"`
+	Rewrite         string                            `yaml:"rewrite"`
+	Service         string                            `yaml:"service"`
+	TimeoutMs       int                               `yaml:"timeout_ms"`
+	IdleTimeoutMs   *int                              `yaml:"idle_timeout_ms,omitempty"`
+	Headers         map[string]string                 `yaml:"headers,omitempty"`
+	RegexHeaders    map[string]string                 `yaml:"regex_headers,omitempty"`
+	Weight          int32                             `yaml:"weight,omitempty"`
+	Shadow          *bool                             `yaml:"shadow,omitempty"`
+	RetryPolicy     *AmbassadorRetryPolicy            `yaml:"retry_policy,omitempty"`
+	InstanceId      string                            `yaml:"ambassador_id,omitempty"`
+	CircuitBreakers []*AmbassadorCircuitBreakerConfig `yaml:"circuit_breakers,omitempty"`
 }
 
 type AmbassadorRetryPolicy struct {
 	RetryOn    string `yaml:"retry_on,omitempty"`
 	NumRetries int    `yaml:"num_retries,omitempty"`
+}
+
+func getAmbassadorCircuitBreakerConfig(
+	mlDep *machinelearningv1.SeldonDeployment,
+) (*AmbassadorCircuitBreakerConfig, error) {
+
+	circuitBreakersMaxConnections := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_CIRCUIT_BREAKING_MAX_CONNECTIONS, "")
+	circuitBreakersMaxPendingRequests := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_CIRCUIT_BREAKING_MAX_PENDING_REQUESTS, "")
+	circuitBreakersMaxRequests := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_CIRCUIT_BREAKING_MAX_REQUESTS, "")
+	circuitBreakersMaxRetries := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_CIRCUIT_BREAKING_MAX_RETRIES, "")
+
+	// circuit breaker exists
+	if circuitBreakersMaxConnections != "" ||
+		circuitBreakersMaxPendingRequests != "" ||
+		circuitBreakersMaxRequests != "" ||
+		circuitBreakersMaxRetries != "" {
+
+		circuitBreaker := AmbassadorCircuitBreakerConfig{}
+
+		if circuitBreakersMaxConnections != "" {
+			maxConnections, err := strconv.Atoi(circuitBreakersMaxConnections)
+			if err != nil {
+				return nil, err
+			}
+			circuitBreaker.MaxConnections = maxConnections
+		}
+		if circuitBreakersMaxPendingRequests != "" {
+			maxPendingRequests, err := strconv.Atoi(circuitBreakersMaxPendingRequests)
+			if err != nil {
+				return nil, err
+			}
+			circuitBreaker.MaxPendingRequests = maxPendingRequests
+		}
+		if circuitBreakersMaxRequests != "" {
+			maxRequests, err := strconv.Atoi(circuitBreakersMaxRequests)
+			if err != nil {
+				return nil, err
+			}
+			circuitBreaker.MaxRequests = maxRequests
+		}
+		if circuitBreakersMaxRetries != "" {
+			maxRetries, err := strconv.Atoi(circuitBreakersMaxRetries)
+			if err != nil {
+				return nil, err
+			}
+			circuitBreaker.MaxRetries = maxRetries
+		}
+		return &circuitBreaker, nil
+	}
+	return nil, nil
 }
 
 // Return a REST configuration for Ambassador with optional custom settings.
@@ -61,7 +126,7 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
 	weight *int32,
 	shadowing bool,
 	engine_http_port int,
-	nameOverride string,
+	isExplainer bool,
 	instance_id string) (string, error) {
 
 	namespace := getNamespace(mlDep)
@@ -78,9 +143,9 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
 	}
 
 	name := p.Name
-	if nameOverride != "" {
-		name = nameOverride
-		serviceNameExternal = nameOverride
+	if isExplainer {
+		name = p.Name + constants.ExplainerNameSuffix
+		serviceNameExternal = serviceNameExternal + constants.ExplainerPathSuffix + "/" + p.Name
 	}
 
 	c := AmbassadorConfig{
@@ -93,9 +158,10 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
 		TimeoutMs:  timeout,
 	}
 
+	// Ambassador only allows a single RetryOn: https://github.com/datawire/ambassador/issues/1570
 	if retries != 0 {
 		c.RetryPolicy = &AmbassadorRetryPolicy{
-			RetryOn:    "connect-failure",
+			RetryOn:    "gateway-error",
 			NumRetries: retries,
 		}
 	}
@@ -138,6 +204,17 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
 	if instance_id != "" {
 		c.InstanceId = instance_id
 	}
+
+	circuitBreakerConfig, err := getAmbassadorCircuitBreakerConfig(mlDep)
+	if err != nil {
+		return "", err
+	}
+	if circuitBreakerConfig != nil {
+		c.CircuitBreakers = []*AmbassadorCircuitBreakerConfig{
+			circuitBreakerConfig,
+		}
+	}
+
 	v, err := yaml.Marshal(c)
 	if err != nil {
 		return "", err
@@ -156,7 +233,7 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 	weight *int32,
 	shadowing bool,
 	engine_grpc_port int,
-	nameOverride string,
+	isExplainer bool,
 	instance_id string) (string, error) {
 
 	grpc := true
@@ -174,9 +251,9 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 	}
 
 	name := p.Name
-	if nameOverride != "" {
-		name = nameOverride
-		serviceNameExternal = nameOverride
+	if isExplainer {
+		name = name + constants.ExplainerNameSuffix
+		serviceNameExternal = serviceNameExternal + constants.ExplainerPathSuffix
 	}
 
 	c := AmbassadorConfig{
@@ -192,9 +269,10 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 		TimeoutMs:   timeout,
 	}
 
+	// Ambassador only allows a single RetryOn: https://github.com/datawire/ambassador/issues/1570
 	if retries != 0 {
 		c.RetryPolicy = &AmbassadorRetryPolicy{
-			RetryOn:    "connect-failure",
+			RetryOn:    "gateway-error",
 			NumRetries: retries,
 		}
 	}
@@ -235,6 +313,17 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 	if instance_id != "" {
 		c.InstanceId = instance_id
 	}
+
+	circuitBreakerConfig, err := getAmbassadorCircuitBreakerConfig(mlDep)
+	if err != nil {
+		return "", err
+	}
+	if circuitBreakerConfig != nil {
+		c.CircuitBreakers = []*AmbassadorCircuitBreakerConfig{
+			circuitBreakerConfig,
+		}
+	}
+
 	v, err := yaml.Marshal(c)
 	if err != nil {
 		return "", err
@@ -245,7 +334,7 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 // Get the configuration for ambassador using the servce name serviceName.
 // Up to 4 confgurations will be created covering REST, GRPC and cluster-wide and namespaced varieties.
 // Annotations for Ambassador will be used to customize the configuration returned.
-func getAmbassadorConfigs(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, serviceName string, engine_http_port, engine_grpc_port int, nameOverride string) (string, error) {
+func getAmbassadorConfigs(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, serviceName string, engine_http_port, engine_grpc_port int, isExplainer bool) (string, error) {
 	if annotation := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_CUSTOM, ""); annotation != "" {
 		return annotation, nil
 	} else {
@@ -257,25 +346,25 @@ func getAmbassadorConfigs(mlDep *machinelearningv1.SeldonDeployment, p *machinel
 		}
 
 		shadowing := p.Shadow
-		serviceNameExternal := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_SERVICE, mlDep.ObjectMeta.Name)
+		serviceNameExternal := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_SERVICE, mlDep.GetName())
 		customHeader := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_HEADER, "")
 		customRegexHeader := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_REGEX_HEADER, "")
 		instance_id := getAnnotation(mlDep, ANNOTATION_AMBASSADOR_ID, "")
 
-		cRestGlobal, err := getAmbassadorRestConfig(mlDep, p, true, serviceName, serviceNameExternal, customHeader, customRegexHeader, weight, shadowing, engine_http_port, nameOverride, instance_id)
+		cRestGlobal, err := getAmbassadorRestConfig(mlDep, p, true, serviceName, serviceNameExternal, customHeader, customRegexHeader, weight, shadowing, engine_http_port, isExplainer, instance_id)
 		if err != nil {
 			return "", err
 		}
-		cGrpcGlobal, err := getAmbassadorGrpcConfig(mlDep, p, true, serviceName, serviceNameExternal, customHeader, customRegexHeader, weight, shadowing, engine_grpc_port, nameOverride, instance_id)
+		cGrpcGlobal, err := getAmbassadorGrpcConfig(mlDep, p, true, serviceName, serviceNameExternal, customHeader, customRegexHeader, weight, shadowing, engine_grpc_port, isExplainer, instance_id)
 		if err != nil {
 			return "", err
 		}
-		cRestNamespaced, err := getAmbassadorRestConfig(mlDep, p, false, serviceName, serviceNameExternal, customHeader, customRegexHeader, weight, shadowing, engine_http_port, nameOverride, instance_id)
+		cRestNamespaced, err := getAmbassadorRestConfig(mlDep, p, false, serviceName, serviceNameExternal, customHeader, customRegexHeader, weight, shadowing, engine_http_port, isExplainer, instance_id)
 		if err != nil {
 			return "", err
 		}
 
-		cGrpcNamespaced, err := getAmbassadorGrpcConfig(mlDep, p, false, serviceName, serviceNameExternal, customHeader, customRegexHeader, weight, shadowing, engine_grpc_port, nameOverride, instance_id)
+		cGrpcNamespaced, err := getAmbassadorGrpcConfig(mlDep, p, false, serviceName, serviceNameExternal, customHeader, customRegexHeader, weight, shadowing, engine_grpc_port, isExplainer, instance_id)
 		if err != nil {
 			return "", err
 		}

@@ -45,23 +45,23 @@ cd "${FAKE_REPOPATH}"
 
 OUTPUT_PKG=${FAKE_REPOPATH}/client 
 
-for file in apis/machinelearning/*/ ; do
+for file in apis/machinelearning.seldon.io/*/ ; do
      file="${file%/}"     # strip trailing slash
      d="${file##*/}"   # strip path and leading slash
 
      echo "$d"
      # run the generators
-     #"${BINDIR}/deepcopy-gen" -v 9 -i ./apis/machinelearning/${d}/ -O zz_generated_new.deepcopy --go-header-file hack/boilerplate.go.txt
+     #"${BINDIR}/deepcopy-gen" -v 9 -i ./apis/machinelearning.seldon.io/${d}/ -O zz_generated_new.deepcopy --go-header-file hack/boilerplate.go.txt
 
-     "${BINDIR}/client-gen" -v 9 --input-base ${PKG_BASE}/apis --clientset-name versioned -i ./apis/machinelearning/${d}/ --input machinelearning/${d} --output-package ${PKG_BASE}/client/machinelearning/${d}/clientset --go-header-file hack/boilerplate.go.txt -o ${FAKE_GOPATH}/src
+     "${BINDIR}/client-gen" -v 9 --input-base ${PKG_BASE}/apis --clientset-name versioned -i ./apis/machinelearning.seldon.io/${d}/ --input machinelearning.seldon.io/${d} --output-package ${PKG_BASE}/client/machinelearning.seldon.io/${d}/clientset --go-header-file hack/boilerplate.go.txt -o ${FAKE_GOPATH}/src
 
-     "${BINDIR}/lister-gen" -v 5 -i ${PKG_BASE}/apis/machinelearning/${d} --output-package ${PKG_BASE}/client/machinelearning/${d}/listers --go-header-file hack/boilerplate.go.txt -o ${FAKE_GOPATH}/src
+     "${BINDIR}/lister-gen" -v 5 -i ${PKG_BASE}/apis/machinelearning.seldon.io/${d} --output-package ${PKG_BASE}/client/machinelearning.seldon.io/${d}/listers --go-header-file hack/boilerplate.go.txt -o ${FAKE_GOPATH}/src
 
      "${BINDIR}/informer-gen" -v 5 \
-          -i ${PKG_BASE}/apis/machinelearning/${d} \
-          --versioned-clientset-package "${PKG_BASE}/client/machinelearning/${d}/clientset/versioned" \
-          --listers-package "${PKG_BASE}/client/machinelearning/${d}/listers" \
-          --output-package ${PKG_BASE}/client/machinelearning/${d}/informers \
+          -i ${PKG_BASE}/apis/machinelearning.seldon.io/${d} \
+          --versioned-clientset-package "${PKG_BASE}/client/machinelearning.seldon.io/${d}/clientset/versioned" \
+          --listers-package "${PKG_BASE}/client/machinelearning.seldon.io/${d}/listers" \
+          --output-package ${PKG_BASE}/client/machinelearning.seldon.io/${d}/informers \
           --go-header-file hack/boilerplate.go.txt \
           -o ${FAKE_GOPATH}/src
 done

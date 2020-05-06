@@ -1,0 +1,16 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: movie
+spec:
+  name: movie
+  predictors:
+  - graph:
+      children: []
+      implementation: SKLEARN_SERVER
+      modelUri: gs://seldon-models/sklearn/moviesentiment
+      name: classifier
+    explainer:
+      type: AnchorText
+    name: movies-predictor
+    replicas: 1

@@ -27,11 +27,15 @@ For Seldon graphs the protocol will work as expected for single model graphs for
  * Sending the response from the first as a request to the second. This will be done automatically when you defined a chain of models as a Seldon graph. It is up to the user to ensure the response of each changed model can be fed a request to the next in the chain.
  * Only Predict calls can be handled in multiple model chaining.
 
+
 General considerations:
 
   * Seldon components marked as MODELS, INPUT_TRANSFORMER and OUTPUT_TRANSFORMERS will allow a PredictionService Predict method to be called.
   * GetModelStatus for any model in the graph is available.
   * GetModelMetadata for any model in the graph is available.
   * Combining and Routing with the Tensorflow protocol is not presently supported.
+  * `status` and `metadata` calls can be asked for any model in the graph
+  * a non-standard Seldon extension is available to call predict on the graph as a whole: `/v1/models/:predict`.
+  * The name of the model in the `graph` section of the SeldonDeployment spec must match the name of the model loaded onto the Tensorflow Server.
 
 

@@ -24,10 +24,8 @@ The MLflow built-in server will create the Conda environment specified on your
 Note that this approach may slow down your Kubernetes `SeldonDeployment`
 startup time considerably.
 
-In some cases, it may be worth consider creating your own custom reusable
-server using
-[s2i](https://docs.seldon.io/projects/seldon-core/en/latest/python/python_wrapping_s2i.html)
-with the `seldonio/seldon-core-s2i-conda` template image.
+In some cases, it may be worth to consider [creating your own custom reusable
+server](./custom.md).
 For example, when the Conda environment can be considered stable, you can
 create your own image with a fixed set of dependencies.
 This image can then be re-used across different model versions using the same

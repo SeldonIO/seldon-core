@@ -1,5 +1,5 @@
 SELDON_CORE_DIR=..
-VERSION=1.0.2
+VERSION := $(shell cat ../version.txt)
 
 .PHONY: get_apis
 get_apis:
@@ -97,7 +97,7 @@ setup_linter:
 
 run_linter:
 	black \
-		./ ../testing \
+		./ ../testing ../operator/helm ../operator/seldon-operator/hack \
 		--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs|.tox)"
 
 run_linter_check:

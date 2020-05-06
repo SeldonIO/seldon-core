@@ -1,4 +1,4 @@
-# Istio
+# Ingress with Istio
 
 Seldon core can be used in conjuction with [istio](https://istio.io/). Istio provides an [ingress gateway](https://istio.io/docs/tasks/traffic-management/ingress/) which Seldon Core can automatically wire up new deployments to. The steps to using istio are described below.
 

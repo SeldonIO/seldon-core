@@ -31,7 +31,16 @@ spec:
         args:
         - --enable-leader-election
         - --webhook-port=443
+        - --create-resources=$(CREATE_RESOURCES)
         env:
+        - name: WATCH_NAMESPACE
+          value: ""
+        - name: RELATED_IMAGE_EXECUTOR
+          value: ""
+        - name: RELATED_IMAGE_ENGINE
+          value: ""
+        - name: CREATE_RESOURCES
+          value: "false"
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -43,7 +52,7 @@ spec:
         - name: AMBASSADOR_SINGLE_NAMESPACE
           value: "false"
         - name: ENGINE_CONTAINER_IMAGE_AND_VERSION
-          value: docker.io/seldonio/engine:1.0.3-SNAPSHOT
+          value: docker.io/seldonio/engine:1.1.1-SNAPSHOT
         - name: ENGINE_CONTAINER_IMAGE_PULL_POLICY
           value: IfNotPresent
         - name: ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME
@@ -54,6 +63,8 @@ spec:
           value: "false"
         - name: PREDICTIVE_UNIT_SERVICE_PORT
           value: "9000"
+        - name: PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME
+          value: ""
         - name: ENGINE_SERVER_GRPC_PORT
           value: "5001"
         - name: ENGINE_SERVER_PORT
@@ -63,13 +74,13 @@ spec:
         - name: ISTIO_ENABLED
           value: "false"
         - name: ISTIO_GATEWAY
-          value: seldon-gateway
+          value: istio-system/seldon-gateway
         - name: ISTIO_TLS_MODE
           value: ""
         - name: USE_EXECUTOR
           value: "true"
         - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
-          value: seldonio/seldon-core-executor:1.0.3-SNAPSHOT
+          value: seldonio/seldon-core-executor:1.1.1-SNAPSHOT
         - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
           value: IfNotPresent
         - name: EXECUTOR_PROMETHEUS_PATH
@@ -82,6 +93,10 @@ spec:
           value: "8888"          
         - name: EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME
           value: default
+        - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX
+          value: "http://default-broker."
+        - name: DEFAULT_USER_ID
+          value: ''
         image: controller:latest
         name: manager
         resources:

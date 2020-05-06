@@ -1,13 +1,20 @@
 from seldon_core.metrics import validate_metrics
 from seldon_core.flask_utils import SeldonMicroserviceException
 import json
-from typing import Dict, List, Union, Iterable, Callable, Optional
+from typing import Dict, List, Union, Iterable
 import numpy as np
 from seldon_core.proto import prediction_pb2
+from seldon_core.metrics import SeldonMetrics
 import inspect
 import logging
+import os
 
 logger = logging.getLogger(__name__)
+
+
+INCLUDE_METRICS_IN_CLIENT_RESPONSE = (
+    os.environ.get("INCLUDE_METRICS_IN_CLIENT_RESPONSE", "true").lower() == "true"
+)
 
 
 class SeldonNotImplementedError(SeldonMicroserviceException):
@@ -112,6 +119,9 @@ class SeldonComponent(object):
     def metadata(self) -> Dict:
         raise SeldonNotImplementedError("metadata is not implemented")
 
+    def init_metadata(self) -> Dict:
+        raise SeldonNotImplementedError("init_metadata is not implemented")
+
 
 def client_custom_tags(user_model: SeldonComponent) -> Dict:
     """
@@ -131,7 +141,7 @@ def client_custom_tags(user_model: SeldonComponent) -> Dict:
             return user_model.tags()
         except SeldonNotImplementedError:
             pass
-    logger.info("custom_tags is not implemented")
+    logger.debug("custom_tags is not implemented")
     return {}
 
 
@@ -159,11 +169,11 @@ def client_class_names(
                 except SeldonNotImplementedError:
                     pass
             else:
-                logger.info(
+                logger.warning(
                     "class_names attribute is deprecated. Please define a class_names method"
                 )
                 return user_model.class_names
-        logger.info("class_names is not implemented")
+        logger.debug("class_names is not implemented")
         n_targets = predictions.shape[1]
         return ["t:{}".format(i) for i in range(n_targets)]
     else:
@@ -201,7 +211,7 @@ def client_predict(
                 return user_model.predict(features, feature_names)
         except SeldonNotImplementedError:
             pass
-    logger.info("predict is not implemented")
+    logger.debug("predict is not implemented")
     return []
 
 
@@ -238,7 +248,7 @@ def client_transform_input(
                 return user_model.transform_input(features, feature_names)
         except SeldonNotImplementedError:
             pass
-    logger.info("transform_input is not implemented")
+    logger.debug("transform_input is not implemented")
     return features
 
 
@@ -274,18 +284,25 @@ def client_transform_output(
                 return user_model.transform_output(features, feature_names)
         except SeldonNotImplementedError:
             pass
-    logger.info("transform_output is not implemented")
+    logger.debug("transform_output is not implemented")
     return features
 
 
-def client_custom_metrics(user_model: SeldonComponent) -> List[Dict]:
+def client_custom_metrics(
+    user_model: SeldonComponent, seldon_metrics: SeldonMetrics
+) -> List[Dict]:
     """
-    Get custom metrics
+    Get custom metrics for client and update SeldonMetrics.
+
+    This function will return empty list if INCLUDE_METRICS_IN_CLIENT_RESPONSE environmental
+    variable is NOT set to "true" or "True".
 
     Parameters
     ----------
     user_model
        A Seldon user model
+    seldon_metrics
+        A SeldonMetrics instance
 
     Returns
     -------
@@ -299,12 +316,18 @@ def client_custom_metrics(user_model: SeldonComponent) -> List[Dict]:
                 j_str = json.dumps(metrics)
                 raise SeldonMicroserviceException(
                     "Bad metric created during request: " + j_str,
+                    status_code=500,
                     reason="MICROSERVICE_BAD_METRIC",
                 )
-            return metrics
+
+            seldon_metrics.update(metrics)
+            if INCLUDE_METRICS_IN_CLIENT_RESPONSE:
+                return metrics
+            else:
+                return []
         except SeldonNotImplementedError:
             pass
-    logger.info("custom_metrics is not implemented")
+    logger.debug("custom_metrics is not implemented")
     return []
 
 
@@ -329,7 +352,7 @@ def client_feature_names(
             return user_model.feature_names()
         except SeldonNotImplementedError:
             pass
-    logger.info("feature_names is not implemented")
+    logger.debug("feature_names is not implemented")
     return original
 
 
@@ -371,7 +394,7 @@ def client_send_feedback(
             )
         except SeldonNotImplementedError:
             pass
-    logger.info("send_feedback is not implemented")
+    logger.debug("send_feedback is not implemented")
     return None
 
 

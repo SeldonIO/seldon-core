@@ -1,0 +1,15 @@
+
+# define environment variables here as a map of key: value
+env:
+  SELDON_LOG_LEVEL: DEBUG
+
+model:
+  name: seldon-model-server
+# The types can be:
+# * SKLEARN_SERVER
+# * MLFLOW_SERVER
+# * TENSORFLOW_SERVER
+# * XGBOOST_SERVER
+  type: SKLEARN_SERVER
+
+

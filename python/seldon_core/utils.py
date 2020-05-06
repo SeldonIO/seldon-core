@@ -4,7 +4,7 @@ import sys
 import base64
 import numpy as np
 
-from google.protobuf import json_format
+from google.protobuf import json_format, any_pb2
 from google.protobuf.json_format import MessageToDict, ParseDict
 from google.protobuf.struct_pb2 import ListValue
 
@@ -12,13 +12,11 @@ from seldon_core.proto import prediction_pb2
 from seldon_core.flask_utils import SeldonMicroserviceException
 from seldon_core.user_model import (
     client_class_names,
-    client_custom_metrics,
     client_custom_tags,
     client_feature_names,
     SeldonComponent,
 )
 from seldon_core.imports_helper import _TF_PRESENT
-
 from typing import Tuple, Dict, Union, List, Optional, Iterable
 
 if _TF_PRESENT:
@@ -157,6 +155,8 @@ def get_data_from_proto(
         return request.strData
     elif data_type == "jsonData":
         return MessageToDict(request.jsonData)
+    elif data_type == "customData":
+        return request.customData
     else:
         raise SeldonMicroserviceException("Unknown data in SeldonMessage")
 
@@ -323,6 +323,7 @@ def construct_response_json(
     client_request_raw: Union[List, Dict],
     client_raw_response: Union[np.ndarray, str, bytes, dict],
     meta: dict = None,
+    custom_metrics: List[Dict] = None,
 ) -> Union[List, Dict]:
     """
     This class converts a raw REST response into a JSON object that has the same structure as
@@ -413,14 +414,17 @@ def construct_response_json(
     response["meta"] = {}
     if meta:
         tags = meta.get("tags", {})
+        metrics = meta.get("metrics", [])
     else:
         tags = {}
+        metrics = []
     custom_tags = client_custom_tags(user_model)
     if custom_tags:
         tags.update(custom_tags)
+    if custom_metrics:
+        metrics.extend(custom_metrics)
     if tags:
         response["meta"]["tags"] = tags
-    metrics = client_custom_metrics(user_model)
     if metrics:
         response["meta"]["metrics"] = metrics
     puid = client_request_raw.get("meta", {}).get("puid", None)
@@ -434,8 +438,9 @@ def construct_response(
     user_model: SeldonComponent,
     is_request: bool,
     client_request: prediction_pb2.SeldonMessage,
-    client_raw_response: Union[np.ndarray, str, bytes, dict],
+    client_raw_response: Union[np.ndarray, str, bytes, dict, any_pb2.Any],
     meta: dict = None,
+    custom_metrics: List[Dict] = None,
 ) -> prediction_pb2.SeldonMessage:
     """
 
@@ -461,15 +466,17 @@ def construct_response(
 
     if meta:
         tags = meta.get("tags", {})
+        metrics = meta.get("metrics", [])
     else:
         tags = {}
+        metrics = []
     custom_tags = client_custom_tags(user_model)
     if custom_tags:
         tags.update(custom_tags)
+    if custom_metrics:
+        metrics.extend(custom_metrics)
     if tags:
         meta_json["tags"] = tags
-
-    metrics = client_custom_metrics(user_model)
     if metrics:
         meta_json["metrics"] = metrics
     if client_request.meta:
@@ -507,6 +514,10 @@ def construct_response(
         return prediction_pb2.SeldonMessage(jsonData=jsonDataResponse, meta=meta_pb)
     elif isinstance(client_raw_response, (bytes, bytearray)):
         return prediction_pb2.SeldonMessage(binData=client_raw_response, meta=meta_pb)
+    elif isinstance(client_raw_response, any_pb2.Any):
+        return prediction_pb2.SeldonMessage(
+            customData=client_raw_response, meta=meta_pb
+        )
     else:
         raise SeldonMicroserviceException(
             "Unknown data type returned as payload:" + client_raw_response

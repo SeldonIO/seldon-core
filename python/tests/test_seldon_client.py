@@ -10,11 +10,13 @@ from seldon_core.utils import (
     json_to_seldon_message,
 )
 from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
+from google.protobuf import any_pb2
 import numpy as np
 import json
 import logging
 
 JSON_TEST_DATA = {"test": [0.0, 1.0]}
+CUSTOM_TEST_DATA = any_pb2.Any(value=b"test")
 
 
 class MockResponse:
@@ -144,7 +146,7 @@ def test_explain_rest_json_data_ambassador(mock_post):
     sc = SeldonClient(
         deployment_name="mymodel", gateway="ambassador", client_return_type="dict"
     )
-    response = sc.explain(json_data=JSON_TEST_DATA)
+    response = sc.explain(json_data=JSON_TEST_DATA, predictor="default")
     json_response = response.response
     # Currently this doesn't need to convert to JSON due to #1083
     # i.e. json_response = seldon_message_to_json(response.response)
@@ -159,7 +161,7 @@ def test_explain_rest_json_data_ambassador_dict_response(mock_post):
     sc = SeldonClient(
         deployment_name="mymodel", gateway="ambassador", client_return_type="dict"
     )
-    response = sc.explain(json_data=JSON_TEST_DATA)
+    response = sc.explain(json_data=JSON_TEST_DATA, predictor="default")
     json_response = response.response
     # Currently this doesn't need to convert to JSON due to #1083
     # i.e. json_response = seldon_message_to_json(response.response)
@@ -288,6 +290,13 @@ def test_grpc_predict_json_data_ambassador():
 
 
 @mock.patch("seldon_core.seldon_client.prediction_pb2_grpc.SeldonStub", new=MyStub)
+def test_grpc_predict_custom_data_ambassador():
+    sc = SeldonClient(deployment_name="mymodel", transport="grpc", gateway="ambassador")
+    response = sc.predict(custom_data=CUSTOM_TEST_DATA, client_return_type="proto")
+    assert response.response.strData == "predict"
+
+
+@mock.patch("seldon_core.seldon_client.prediction_pb2_grpc.SeldonStub", new=MyStub)
 @mock.patch("seldon_core.seldon_client.get_token", side_effect=mock_get_token)
 def test_predict_grpc_seldon(mock_get_token):
     sc = SeldonClient(deployment_name="mymodel", transport="grpc", gateway="seldon")
@@ -306,6 +315,19 @@ def test_grpc_predict_json_data_seldon(mock_get_token):
         client_return_type="proto",
     )
     response = sc.predict(json_data=JSON_TEST_DATA)
+    assert response.response.strData == "predict"
+
+
+@mock.patch("seldon_core.seldon_client.prediction_pb2_grpc.SeldonStub", new=MyStub)
+@mock.patch("seldon_core.seldon_client.get_token", side_effect=mock_get_token)
+def test_grpc_predict_custom_data_seldon(mock_get_token):
+    sc = SeldonClient(
+        deployment_name="mymodel",
+        transport="grpc",
+        gateway="seldon",
+        client_return_type="proto",
+    )
+    response = sc.predict(custom_data=CUSTOM_TEST_DATA)
     assert response.response.strData == "predict"
 
 

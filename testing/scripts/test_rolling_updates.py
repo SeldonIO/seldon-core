@@ -6,15 +6,15 @@ from subprocess import run
 from seldon_e2e_utils import (
     wait_for_status,
     wait_for_rollout,
-    wait_for_shutdown,
     rest_request_ambassador,
-    get_deployment_names,
     initial_rest_request,
     assert_model,
     assert_model_during_op,
     retry_run,
     API_AMBASSADOR,
     API_ISTIO_GATEWAY,
+    get_pod_name_for_sdep,
+    wait_for_pod_shutdown,
 )
 
 
@@ -27,15 +27,12 @@ with_api_gateways = pytest.mark.parametrize(
 )
 
 
+@pytest.mark.sequential
 @pytest.mark.flaky(max_runs=3)
 @with_api_gateways
 class TestRollingHttp(object):
     # Test updating a model to a multi predictor model
     def test_rolling_update5(self, namespace, api_gateway):
-        if api_gateway == API_ISTIO_GATEWAY:
-            retry_run(
-                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
-            )
         retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
         wait_for_status("mymodel", namespace)
         wait_for_rollout("mymodel", namespace)
@@ -67,10 +64,6 @@ class TestRollingHttp(object):
 
     # Test updating a model with a new image version as the only change
     def test_rolling_update6(self, namespace, api_gateway):
-        if api_gateway == API_ISTIO_GATEWAY:
-            retry_run(
-                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
-            )
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
         wait_for_status("mymodel", namespace)
         wait_for_rollout("mymodel", namespace, expected_deployments=2)
@@ -102,10 +95,6 @@ class TestRollingHttp(object):
 
     # test changing the image version and the name of its container
     def test_rolling_update7(self, namespace, api_gateway):
-        if api_gateway == API_ISTIO_GATEWAY:
-            retry_run(
-                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
-            )
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
         wait_for_status("mymodel", namespace)
         wait_for_rollout("mymodel", namespace, expected_deployments=2)
@@ -137,10 +126,6 @@ class TestRollingHttp(object):
 
     # Test updating a model with a new resource request but same image
     def test_rolling_update8(self, namespace, api_gateway):
-        if api_gateway == API_ISTIO_GATEWAY:
-            retry_run(
-                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
-            )
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
         wait_for_status("mymodel", namespace)
         wait_for_rollout("mymodel", namespace, expected_deployments=2)
@@ -165,10 +150,6 @@ class TestRollingHttp(object):
 
     # Test updating a model with a multi deployment new model
     def test_rolling_update9(self, namespace, api_gateway):
-        if api_gateway == API_ISTIO_GATEWAY:
-            retry_run(
-                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
-            )
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
         wait_for_status("mymodel", namespace)
         wait_for_rollout("mymodel", namespace, expected_deployments=2)
@@ -193,10 +174,6 @@ class TestRollingHttp(object):
 
     # Test updating a model to a multi predictor model
     def test_rolling_update10(self, namespace, api_gateway):
-        if api_gateway == API_ISTIO_GATEWAY:
-            retry_run(
-                f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}"
-            )
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
         wait_for_status("mymodel", namespace)
         wait_for_rollout("mymodel", namespace, expected_deployments=2)
@@ -229,36 +206,38 @@ class TestRollingHttp(object):
 @pytest.mark.flaky(max_runs=3)
 @with_api_gateways
 @pytest.mark.parametrize(
-    "from_deployment,to_deployment",
+    "from_deployment,to_deployment,change",
     [
-        ("graph1.json", "graph2.json"),  # New image version
-        ("graph1.json", "graph3.json"),  # New image version and new name of container
-        ("graph1.json", "graph4.json"),  # New resource request but same image
-        ("graph1.json", "graph5.json"),  # Update with multi-deployment new model
-        ("graph1.json", "graph8.json"),  # From v1alpha2 to v1
-        ("graph7.json", "graph8.json"),  # From v1alpha3 to v1
+        ("graph1.json", "graph2.json", True),  # New image version
+        (
+            "graph1.json",
+            "graph3.json",
+            True,
+        ),  # New image version and new name of container
+        ("graph1.json", "graph4.json", True),  # New resource request but same image
+        ("graph1.json", "graph5.json", True),  # Update with multi-deployment new model
+        ("graph1.json", "graph8.json", True),  # From v1alpha2 to v1
+        ("graph7.json", "graph8.json", False),  # From v1alpha3 to v1
     ],
 )
-def test_rolling_update_deployment(
-    namespace, api_gateway, from_deployment, to_deployment
+def test_rolling_deployment(
+    namespace, api_gateway, from_deployment, to_deployment, change
 ):
-    if api_gateway == API_ISTIO_GATEWAY:
-        retry_run(f"kubectl create -f ../resources/seldon-gateway.yaml -n {namespace}")
-
     from_file_path = to_resources_path(from_deployment)
     retry_run(f"kubectl apply -f {from_file_path} -n {namespace}")
     wait_for_status("mymodel", namespace)
     wait_for_rollout("mymodel", namespace)
     assert_model("mymodel", namespace, initial=True, endpoint=api_gateway)
 
-    old_deployment_name = get_deployment_names("mymodel", namespace)[0]
+    old_pod_name = get_pod_name_for_sdep("mymodel", namespace)[0]
     to_file_path = to_resources_path(to_deployment)
 
     def _update_model():
         retry_run(f"kubectl apply -f {to_file_path} -n {namespace}")
-        wait_for_shutdown(old_deployment_name, namespace)
+        if change:
+            wait_for_pod_shutdown(old_pod_name, namespace)
         wait_for_status("mymodel", namespace)
-        wait_for_rollout("mymodel", namespace)
+        time.sleep(2)  # Wait a little after deployment marked Available
 
     assert_model_during_op(_update_model, "mymodel", namespace, endpoint=api_gateway)
 

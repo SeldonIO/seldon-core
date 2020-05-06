@@ -4,12 +4,12 @@ metadata:
   name: fixed
 spec:
   name: fixed
+  protocol: seldon
+  transport: rest
   annotations:
     seldon.io/engine-separate-pod: "true"
   predictors:
-  - protocol: seldon
-    transport: rest
-    componentSpecs:
+  - componentSpecs:
     - spec:
         containers:
         - image: seldonio/fixed-model:0.1

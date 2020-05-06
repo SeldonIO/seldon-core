@@ -1,0 +1,4 @@
+apiVersion: v1
+description: Seldon Model Server for MLOps
+name: seldon-model-server
+version: 0.0.1-SNAPSHOT

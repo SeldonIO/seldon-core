@@ -1,3 +1,4 @@
+{{- if not .Values.createResources }}
 apiVersion: v1
 data:
   credentials: '{{ .Values.credentials | toJson }}'
@@ -13,3 +14,4 @@ metadata:
     control-plane: seldon-controller-manager
   name: seldon-config
   namespace: '{{ .Release.Namespace }}'
+{{- end }}

@@ -1,28 +1,35 @@
 package controllers
 
 import (
-	. "github.com/onsi/gomega"
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
-	"gopkg.in/yaml.v2"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strings"
 	"testing"
+
+	. "github.com/onsi/gomega"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	"github.com/seldonio/seldon-core/operator/constants"
+	"gopkg.in/yaml.v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
 	TEST_DEFAULT_EXPECTED_RETRIES = 0
 )
 
-func basicAbassadorTests(t *testing.T, mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, expectedWeight int32, expectedInstanceId string, expectedRetries int) {
+func basicAbassadorTests(t *testing.T, mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, expectedWeight int32, expectedInstanceId string, expectedRetries int, isExplainer bool) {
 	g := NewGomegaWithT(t)
-	s, err := getAmbassadorConfigs(mlDep, p, "myservice", 9000, 5000, "")
+	s, err := getAmbassadorConfigs(mlDep, p, "myservice", 9000, 5000, isExplainer)
 	g.Expect(err).To(BeNil())
 	parts := strings.Split(s, "---\n")[1:]
 	g.Expect(len(parts)).To(Equal(2))
 	c := AmbassadorConfig{}
 	err = yaml.Unmarshal([]byte(parts[0]), &c)
 	g.Expect(err).To(BeNil())
-	g.Expect(c.Prefix).To(Equal("/seldon/default/mymodel/"))
+	if isExplainer {
+		g.Expect(c.Prefix).To(Equal("/seldon/default/mymodel" + constants.ExplainerPathSuffix + "/" + p.Name + "/"))
+	} else {
+		g.Expect(c.Prefix).To(Equal("/seldon/default/mymodel/"))
+	}
+
 	g.Expect(c.Weight).To(Equal(expectedWeight))
 	g.Expect(c.InstanceId).To(Equal(expectedInstanceId))
 	if expectedRetries > 0 {
@@ -42,7 +49,9 @@ func TestAmbassadorSingle(t *testing.T) {
 			},
 		},
 	}
-	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES)
+
+	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
+	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, true)
 }
 
 func TestAmbassadorCanary(t *testing.T) {
@@ -56,8 +65,11 @@ func TestAmbassadorCanary(t *testing.T) {
 			},
 		},
 	}
-	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES)
-	basicAbassadorTests(t, &mlDep, &p2, 80, "", TEST_DEFAULT_EXPECTED_RETRIES)
+
+	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
+	basicAbassadorTests(t, &mlDep, &p2, 80, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
+	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, true)
+	basicAbassadorTests(t, &mlDep, &p2, 80, "", TEST_DEFAULT_EXPECTED_RETRIES, true)
 }
 
 func TestAmbassadorCanaryEqual(t *testing.T) {
@@ -71,8 +83,9 @@ func TestAmbassadorCanaryEqual(t *testing.T) {
 			},
 		},
 	}
-	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES)
-	basicAbassadorTests(t, &mlDep, &p2, 50, "", TEST_DEFAULT_EXPECTED_RETRIES)
+
+	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
+	basicAbassadorTests(t, &mlDep, &p2, 50, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
 }
 
 func TestAmbassadorCanaryThree(t *testing.T) {
@@ -88,9 +101,10 @@ func TestAmbassadorCanaryThree(t *testing.T) {
 			},
 		},
 	}
-	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES)
-	basicAbassadorTests(t, &mlDep, &p2, 20, "", TEST_DEFAULT_EXPECTED_RETRIES)
-	basicAbassadorTests(t, &mlDep, &p3, 20, "", TEST_DEFAULT_EXPECTED_RETRIES)
+
+	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
+	basicAbassadorTests(t, &mlDep, &p2, 20, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
+	basicAbassadorTests(t, &mlDep, &p3, 20, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
 }
 
 func TestAmbassadorCanaryThreeEqual(t *testing.T) {
@@ -106,9 +120,10 @@ func TestAmbassadorCanaryThreeEqual(t *testing.T) {
 			},
 		},
 	}
-	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES)
-	basicAbassadorTests(t, &mlDep, &p2, 33, "", TEST_DEFAULT_EXPECTED_RETRIES)
-	basicAbassadorTests(t, &mlDep, &p3, 33, "", TEST_DEFAULT_EXPECTED_RETRIES)
+
+	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
+	basicAbassadorTests(t, &mlDep, &p2, 33, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
+	basicAbassadorTests(t, &mlDep, &p3, 33, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
 }
 
 func TestAmbassadorID(t *testing.T) {
@@ -122,7 +137,7 @@ func TestAmbassadorID(t *testing.T) {
 			},
 		},
 	}
-	basicAbassadorTests(t, &mlDep, &p1, 0, instanceId, TEST_DEFAULT_EXPECTED_RETRIES)
+	basicAbassadorTests(t, &mlDep, &p1, 0, instanceId, TEST_DEFAULT_EXPECTED_RETRIES, false)
 }
 
 func TestAmbassadorRetriesAnnotation(t *testing.T) {
@@ -135,5 +150,63 @@ func TestAmbassadorRetriesAnnotation(t *testing.T) {
 			},
 		},
 	}
-	basicAbassadorTests(t, &mlDep, &p, 0, "", 2)
+	basicAbassadorTests(t, &mlDep, &p, 0, "", 2, false)
+}
+
+func circuitBreakerAbassadorTests(t *testing.T,
+	mlDep *machinelearningv1.SeldonDeployment,
+	p *machinelearningv1.PredictorSpec,
+	expectedNumCircuitBreaker int,
+	expectedMaxConnections int,
+	expectedMaxPendingRequests int,
+	expectedMaxRequests int,
+	expectedMaxRetries int,
+) {
+	g := NewGomegaWithT(t)
+	s, err := getAmbassadorConfigs(mlDep, p, "myservice", 9000, 5000, false)
+	g.Expect(err).To(BeNil())
+	parts := strings.Split(s, "---\n")[1:]
+	g.Expect(len(parts)).To(Equal(2))
+	c := AmbassadorConfig{}
+	err = yaml.Unmarshal([]byte(parts[0]), &c)
+	g.Expect(err).To(BeNil())
+	g.Expect(c.Prefix).To(Equal("/seldon/default/mymodel/"))
+
+	g.Expect(len(c.CircuitBreakers)).To(Equal(expectedNumCircuitBreaker))
+	if expectedNumCircuitBreaker > 0 {
+		g.Expect(c.CircuitBreakers[0].MaxConnections).To(Equal(expectedMaxConnections))
+		g.Expect(c.CircuitBreakers[0].MaxPendingRequests).To(Equal(expectedMaxPendingRequests))
+		g.Expect(c.CircuitBreakers[0].MaxRequests).To(Equal(expectedMaxRequests))
+		g.Expect(c.CircuitBreakers[0].MaxRetries).To(Equal(expectedMaxRetries))
+	}
+}
+
+func TestAmbassadorNoCircuitBreakerAnnotation(t *testing.T) {
+	p := machinelearningv1.PredictorSpec{Name: "p"}
+	mlDep := machinelearningv1.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Predictors: []machinelearningv1.PredictorSpec{
+				p,
+			},
+		},
+	}
+	circuitBreakerAbassadorTests(t, &mlDep, &p, 0, 0, 0, 0, 0)
+}
+
+func TestAmbassadorCircuitBreakerAnnotation(t *testing.T) {
+	p := machinelearningv1.PredictorSpec{Name: "p"}
+	mlDep := machinelearningv1.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Annotations: map[string]string{
+				ANNOTATION_AMBASSADOR_CIRCUIT_BREAKING_MAX_CONNECTIONS:      "10",
+				ANNOTATION_AMBASSADOR_CIRCUIT_BREAKING_MAX_PENDING_REQUESTS: "15",
+				ANNOTATION_AMBASSADOR_CIRCUIT_BREAKING_MAX_REQUESTS:         "20",
+				ANNOTATION_AMBASSADOR_CIRCUIT_BREAKING_MAX_RETRIES:          "5",
+			},
+			Predictors: []machinelearningv1.PredictorSpec{
+				p,
+			},
+		},
+	}
+	circuitBreakerAbassadorTests(t, &mlDep, &p, 1, 10, 15, 20, 5)
 }

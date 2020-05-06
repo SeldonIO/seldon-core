@@ -1,0 +1,12 @@
+
+name: iris
+versions: [iris/pachyderm:789a6e406b90450185b4280ab16b7f14]
+platform: sklearn
+inputs:
+- datatype: BYTES
+  name: input
+  shape: [ 1, 4 ]
+outputs:
+- datatype: BYTES
+  name: output
+  shape: [ 3 ]
