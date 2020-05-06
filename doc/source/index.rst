@@ -77,6 +77,7 @@ Documentation Index
    NodeJS Language Wrapper [ALPHA] <nodejs/README.md>
    Go Language Wrapper [ALPHA] <go/go_wrapper_link.rst>
    Stream Processing with KNative <streaming/knative_eventing.md>
+   Metadata [Incubating] <reference/apis/metadata.md>
 
 .. toctree::
    :maxdepth: 1

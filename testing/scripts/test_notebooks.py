@@ -94,6 +94,9 @@ class TestNotebooks(object):
     def test_metadata(self):
         create_and_run_script("../../examples/models/metadata", "metadata")
 
+    def test_graph_metadata(self):
+        create_and_run_script("../../examples/models/metadata", "graph_metadata")
+
     def test_payload_logging(self):
         create_and_run_script(
             "../../examples/models/payload_logging", "payload_logging"
