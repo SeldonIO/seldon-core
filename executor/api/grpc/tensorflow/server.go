@@ -3,7 +3,6 @@ package tensorflow
 import (
 	"context"
 	"net/url"
-	"strings"
 
 	"github.com/go-logr/logr"
 	"github.com/golang/protobuf/proto"
@@ -37,7 +36,7 @@ func NewGrpcTensorflowServer(predictor *v1.PredictorSpec, client client.SeldonAp
 
 func (g *GrpcTensorflowServer) execute(ctx context.Context, req proto.Message, method string) (payload.SeldonPayload, error) {
 	md := grpc.CollectMetadata(ctx)
-	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, md[strings.ToLower(payload.SeldonPUIDHeader)][0])
+	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, md.Get(payload.SeldonPUIDHeader)[0])
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName(method), g.ServerUrl, g.Namespace, md)
 	reqPayload := payload.ProtoPayload{Msg: req}
 	return seldonPredictorProcess.Predict(g.predictor.Graph, &reqPayload)
