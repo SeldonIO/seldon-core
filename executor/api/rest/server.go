@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"net/url"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	"time"
 )
 
 const (
@@ -74,8 +75,9 @@ func (r *SeldonRestApi) CreateHttpServer(port int) *http.Server {
 	// will apply no timeout at all. Instead, we control that through the
 	// http.Client instance making requests to the underlying node graph servers.
 	return &http.Server{
-		Handler: r.Router,
-		Addr:    address,
+		Handler:     r.Router,
+		Addr:        address,
+		IdleTimeout: 65 * time.Second,
 	}
 }
 
