@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"strings"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -16,7 +15,7 @@ func TestAddPuid(t *testing.T) {
 	ctx := context.Background()
 	meta := CollectMetadata(ctx)
 
-	g.Expect(meta[strings.ToLower(payload.SeldonPUIDHeader)]).NotTo(BeNil())
+	g.Expect(meta.Get(payload.SeldonPUIDHeader)).NotTo(BeNil())
 }
 
 func TestExistingPuid(t *testing.T) {
@@ -26,6 +25,6 @@ func TestExistingPuid(t *testing.T) {
 	ctx := metadata.NewIncomingContext(context.TODO(), metadata.New(map[string]string{payload.SeldonPUIDHeader: guid}))
 	meta := CollectMetadata(ctx)
 
-	g.Expect(meta[strings.ToLower(payload.SeldonPUIDHeader)]).NotTo(BeNil())
-	g.Expect(meta[strings.ToLower(payload.SeldonPUIDHeader)][0]).To(Equal(guid))
+	g.Expect(meta.Get(payload.SeldonPUIDHeader)).NotTo(BeNil())
+	g.Expect(meta.Get(payload.SeldonPUIDHeader)[0]).To(Equal(guid))
 }

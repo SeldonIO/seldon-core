@@ -3,7 +3,6 @@ package seldon
 import (
 	"context"
 	"net/url"
-	"strings"
 
 	"github.com/go-logr/logr"
 	"github.com/seldonio/seldon-core/executor/api/client"
@@ -35,7 +34,7 @@ func NewGrpcSeldonServer(predictor *v1.PredictorSpec, client client.SeldonApiCli
 
 func (g GrpcSeldonServer) Predict(ctx context.Context, req *proto.SeldonMessage) (*proto.SeldonMessage, error) {
 	md := grpc.CollectMetadata(ctx)
-	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, md[strings.ToLower(payload.SeldonPUIDHeader)][0])
+	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, md.Get(payload.SeldonPUIDHeader)[0])
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("SeldonMessageRestClient"), g.ServerUrl, g.Namespace, md)
 	reqPayload := payload.ProtoPayload{Msg: req}
 	resPayload, err := seldonPredictorProcess.Predict(g.predictor.Graph, &reqPayload)
