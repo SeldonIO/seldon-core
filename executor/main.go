@@ -221,6 +221,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to create listener: %v", err)
 	}
+	defer lis.Close()
 
 	// Create a cmux object.
 	tcpm := cmux.New(lis)
