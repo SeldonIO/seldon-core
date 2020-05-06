@@ -30,7 +30,7 @@ deploy/olm-catalog/seldon-operator/${VERSION}/seldon-operator.v${VERSION}.cluste
 
 update_csv: clean_csv_${VERSION} deploy/olm-catalog/seldon-operator/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
 	sed -i s/${PREV_VERSION}/${VERSION}/ deploy/olm-catalog/seldon-operator/seldon-operator.package.yaml
-
+	sed -i 's/containerImage:.*/containerImage: seldonio\/seldon-core-operator:'${VERSION}'/' deploy/olm-catalog/seldon-operator/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
 #
 # TESTS
 #

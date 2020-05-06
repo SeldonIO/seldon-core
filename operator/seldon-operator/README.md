@@ -16,10 +16,10 @@ Recreate the core yaml from these resources:
 make deploy/operator.yaml
 ```
 
-Create a new rule in the Makefile to generate the operator CSV from a previous version using the latest yaml. For 1.1.0 this is an initial rule based off a phony previous release 1.0.0.
+Create new CSV.
 
 ```
-make clean_1.1.0 deploy/olm-catalog/seldon-operator/1.1.0/seldon-operator.v1.1.0.clusterserviceversion.yaml
+make update_csv
 ```
 
 Check the OLM bundle. For this you need to have installed [operator-courier](https://github.com/operator-framework/operator-courier).
@@ -152,7 +152,7 @@ export QUAY_TOKEN="basic f2VsAG9uNmZydXsd12I2R0hPUCpwc3Vy"
 Then run
 
 ```
-make operator-courier_push 
+make community-quay-push
 ```
 
 You will need to delete any old application from quay before this will succeed.
