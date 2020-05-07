@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"os"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -210,7 +209,7 @@ func TestDefaultSingleContainer(t *testing.T) {
 	spec.DefaultSeldonDeployment("mydep", "default")
 
 	// Test Metric Ports
-	metricPort := GetPort(constants.DefaultMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
+	metricPort := GetPort(envPredictiveUnitMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
 	g.Expect(metricPort).NotTo(BeNil())
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber))
 
@@ -267,11 +266,11 @@ func TestMetricsPortAddedTwoContainers(t *testing.T) {
 
 	//Metrics
 	spec.DefaultSeldonDeployment("mydep", "default")
-	metricPort := GetPort(constants.DefaultMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
+	metricPort := GetPort(envPredictiveUnitMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
 	g.Expect(metricPort).NotTo(BeNil())
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber))
 
-	metricPort = GetPort(constants.DefaultMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[1].Ports)
+	metricPort = GetPort(envPredictiveUnitMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[1].Ports)
 	g.Expect(metricPort).NotTo(BeNil())
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber + 1))
 
@@ -351,10 +350,10 @@ func TestMetricsPortAddedTwoComponentSpecsTwoContainers(t *testing.T) {
 	spec.DefaultSeldonDeployment(name, namespace)
 
 	// Metrics
-	metricPort := GetPort(constants.DefaultMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
+	metricPort := GetPort(envPredictiveUnitMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
 	g.Expect(metricPort).NotTo(BeNil())
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber))
-	metricPort = GetPort(constants.DefaultMetricsPortName, spec.Predictors[0].ComponentSpecs[1].Spec.Containers[0].Ports)
+	metricPort = GetPort(envPredictiveUnitMetricsPortName, spec.Predictors[0].ComponentSpecs[1].Spec.Containers[0].Ports)
 	g.Expect(metricPort).NotTo(BeNil())
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber + 1))
 
@@ -392,8 +391,6 @@ func TestMetricsPortAddedTwoComponentSpecsTwoContainers(t *testing.T) {
 }
 
 func TestOverrideMetricsPortName(t *testing.T) {
-	os.Setenv(ENV_PREDICTIVE_UNIT_METRICS_PORT_NAME, "myMetricsPort")
-	defer os.Unsetenv(ENV_PREDICTIVE_UNIT_METRICS_PORT_NAME)
 	g := NewGomegaWithT(t)
 	scheme := runtime.NewScheme()
 	C = fake.NewFakeClientWithScheme(scheme)
@@ -410,11 +407,12 @@ func TestOverrideMetricsPortName(t *testing.T) {
 		},
 	}
 
+	envPredictiveUnitMetricsPortName = "myMetricsPort"
 	spec.DefaultSeldonDeployment("mydep", "default")
 	// Metrics
-	metricPort := GetPort("myMetricsPort", spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
-	g.Expect(metricPort).NotTo(BeNil())
-	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber))
+	customMetricsPort := GetPort("myMetricsPort", spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
+	g.Expect(customMetricsPort).NotTo(BeNil())
+	g.Expect(customMetricsPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber))
 
 	defaultMetricsPort := GetPort(constants.DefaultMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
 	g.Expect(defaultMetricsPort).To(BeNil())
@@ -456,7 +454,7 @@ func TestPortUseExisting(t *testing.T) {
 	}
 
 	spec.DefaultSeldonDeployment("mydep", "default")
-	metricPort := GetPort(constants.DefaultMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
+	metricPort := GetPort(envPredictiveUnitMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
 	g.Expect(metricPort).NotTo(BeNil())
 	g.Expect(metricPort.ContainerPort).To(Equal(containerPortMetrics))
 
