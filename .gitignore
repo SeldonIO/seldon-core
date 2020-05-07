@@ -190,6 +190,7 @@ wrappers/s2i/python-conda/_python/
 seldon-controller/go
 
 testing/scripts/go
+testing/scripts/tempresources
 
 # pyenv
 .python-version

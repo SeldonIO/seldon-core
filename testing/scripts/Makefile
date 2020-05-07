@@ -3,6 +3,9 @@ VERSION := $(shell cat ../../version.txt)
 # This can be "Auto" or a Number
 PYTEST_WORKERS ?= "4"
 
+kubectl_install:
+	./kubectl_install.sh
+
 kind_create_cluster:
 	kind create cluster --config ../resources/kind_config.yaml
 
@@ -45,15 +48,15 @@ install_jaeger:
 		--set rbac.clusterRole=true \
 		--namespace seldon \
 		--wait
-	kubectl apply -f ../resources/jaeger.yaml --namespace seldon
+	tempresources/kubectl apply -f ../resources/jaeger.yaml --namespace seldon
 
 
 install_cert_manager:
 	cd ../../operator && make install-cert-manager
 	sleep 5 #https://github.com/jetstack/cert-manager/issues/2273
 
-install_seldon: install_cert_manager
-	kubectl create namespace seldon-system || echo "namespace seldon-system exists"
+install_seldon: install_cert_manager kubectl_install
+	tempresources/kubectl create namespace seldon-system || echo "namespace seldon-system exists"
 	helm install seldon \
 		../../helm-charts/seldon-core-operator \
 		--namespace seldon-system \
@@ -63,28 +66,28 @@ install_seldon: install_cert_manager
 		--set executor.enabled=true \
 		--wait
 
-install_istio:
-	kubectl apply -f istio-1.4.2.yaml
-	kubectl rollout status deployment.apps/istio-ingressgateway -n istio-system
-	kubectl rollout status deployment.apps/istio-pilot -n istio-system
-	kubectl rollout status deployment.apps/istio-citadel -n istio-system
-	kubectl create -f ../resources/seldon-gateway.yaml -n istio-system
+install_istio: kubectl_install
+	tempresources/kubectl apply -f istio-1.4.2.yaml
+	tempresources/kubectl rollout status deployment.apps/istio-ingressgateway -n istio-system
+	tempresources/kubectl rollout status deployment.apps/istio-pilot -n istio-system
+	tempresources/kubectl rollout status deployment.apps/istio-citadel -n istio-system
+	tempresources/kubectl create -f ../resources/seldon-gateway.yaml -n istio-system
 
 
-create_namespaces:
-	kubectl create namespace seldon || echo "Namespace seldon already exists"
-	kubectl create namespace test1 || echo "Namespace test1 already exists"
+create_namespaces: kubectl_install
+	tempresources/kubectl create namespace seldon || echo "Namespace seldon already exists"
+	tempresources/kubectl create namespace test1 || echo "Namespace test1 already exists"
 
-set_namespace:
-	kubectl config set-context $$(kubectl config current-context) --namespace=seldon
+set_namespace: kubectl_install
+	tempresources/kubectl config set-context $$(tempresources/kubectl config current-context) --namespace=seldon
 
 # Derived from https://github.com/kubernetes-sigs/kind/issues/398#issuecomment-478325705
-install_metrics:
-	kubectl apply -f metrics.yaml
+install_metrics: kubectl_install
+	tempresources/kubectl apply -f metrics.yaml
 
 kind_setup: create_namespaces helm_setup install_ambassador install_istio install_jaeger install_seldon set_namespace install_metrics
-port-forward-ambassador:
-	kubectl port-forward $$(kubectl get pods -n seldon -l app.kubernetes.io/name=ambassador -o jsonpath='{.items[0].metadata.name}') -n seldon 8003:8080
+port-forward-ambassador: kubectl_install
+	tempresources/kubectl port-forward $$(tempresources/kubectl get pods -n seldon -l app.kubernetes.io/name=ambassador -o jsonpath='{.items[0].metadata.name}') -n seldon 8003:8080
 
 
 s2i_build_base_images:
