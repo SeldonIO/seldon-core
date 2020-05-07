@@ -17,6 +17,6 @@ FILE=tempresources/kubectl
 # If it doesn't already exist, install kubectl binary into tempresources directory
 [ ! -f "$FILE" ] && \
 	mkdir -p tempresources && \
-	curl -o tempresources/kubectl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && \
+	curl -o tempresources/kubectl -L https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && \
 	chmod +x tempresources/kubectl
 exit 0
