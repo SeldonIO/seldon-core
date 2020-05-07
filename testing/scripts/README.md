@@ -4,7 +4,15 @@
 
 ### Prerequisites
 
-We use [Kind](https://github.com/kubernetes-sigs/kind), [S2I](https://github.com/openshift/source-to-image) and [Kustomize](https://github.com/kubernetes-sigs/kustomize/blob/master/docs/INSTALL.md).
+We use:
+
+[Kind](https://github.com/kubernetes-sigs/kind) v0.6.1
+
+[S2I](https://github.com/openshift/source-to-image) v1.1.14
+
+[Kustomize](https://github.com/kubernetes-sigs/kustomize/blob/master/docs/INSTALL.md) v3.2.3
+
+[Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) v1.16.2
 
 Install `python -m pip install grpcio-tools`.
 
@@ -27,7 +35,13 @@ export KUBECONFIG="$(kind get kubeconfig-path)"
 Then to run the tests and log output to a file:
 
 ```
-make test > test.log
+make test_sequential > test_sequential.log
+```
+```
+make test_parallel > test_parallel.log
+```
+```
+make test_notebooks > test_notebooks.log
 ```
 
 ### Logs
@@ -35,7 +49,7 @@ make test > test.log
 To view test logs in a separate terminal:
 
 ```
-tail -f test.log
+tail -f test_sequential.log
 ```
 
 To also follow controller logs in a separate terminal:
