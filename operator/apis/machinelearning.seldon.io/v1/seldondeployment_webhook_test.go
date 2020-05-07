@@ -439,7 +439,7 @@ func TestPortUseExisting(t *testing.T) {
 								{
 									Image: "seldonio/mock_classifier:1.0",
 									Name:  "classifier",
-									Ports: []v1.ContainerPort{{Name: constants.DefaultMetricsPortName, ContainerPort: containerPortMetrics},
+									Ports: []v1.ContainerPort{{Name: envPredictiveUnitMetricsPortName, ContainerPort: containerPortMetrics},
 										{Name: constants.HttpPortName, ContainerPort: containerPortAPI}},
 								},
 							},
@@ -487,7 +487,7 @@ func TestMetricsPortAddedToPrepacked(t *testing.T) {
 	}
 
 	spec.DefaultSeldonDeployment("mydep", "default")
-	metricPort := GetPort(constants.DefaultMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
+	metricPort := GetPort(envPredictiveUnitMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
 	g.Expect(metricPort).NotTo(BeNil())
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber))
 
@@ -518,7 +518,7 @@ func TestPredictorProtocolGrpc(t *testing.T) {
 	}
 
 	spec.DefaultSeldonDeployment("mydep", "default")
-	metricPort := GetPort(constants.DefaultMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
+	metricPort := GetPort(envPredictiveUnitMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
 	g.Expect(metricPort).NotTo(BeNil())
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber))
 
@@ -560,7 +560,7 @@ func TestPrepackedWithExistingContainer(t *testing.T) {
 	}
 
 	spec.DefaultSeldonDeployment("mydep", "default")
-	metricPort := GetPort(constants.DefaultMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
+	metricPort := GetPort(envPredictiveUnitMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
 	g.Expect(metricPort).NotTo(BeNil())
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber))
 
@@ -599,11 +599,11 @@ func TestMetricsPortAddedToTwoPrepacked(t *testing.T) {
 	}
 
 	spec.DefaultSeldonDeployment("mydep", "default")
-	metricPort := GetPort(constants.DefaultMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
+	metricPort := GetPort(envPredictiveUnitMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
 	g.Expect(metricPort).NotTo(BeNil())
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber))
 
-	metricPort = GetPort(constants.DefaultMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[1].Ports)
+	metricPort = GetPort(envPredictiveUnitMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[1].Ports)
 	g.Expect(metricPort).NotTo(BeNil())
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber + 1))
 
