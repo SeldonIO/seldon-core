@@ -45,7 +45,7 @@ var (
 	C                                   client.Client
 	envPredictiveUnitServicePort        = os.Getenv(ENV_PREDICTIVE_UNIT_SERVICE_PORT)
 	envPredictiveUnitServicePortMetrics = os.Getenv(ENV_PREDICTIVE_UNIT_SERVICE_PORT_METRICS)
-	predictiveUnitMetricsPortName       = GetEnv(ENV_PREDICTIVE_UNIT_METRICS_ENDPOINT, constants.DefaultMetricsPortName)
+	predictiveUnitMetricsPortName       = GetEnv(ENV_PREDICTIVE_UNIT_METRICS_PORT_NAME, constants.DefaultMetricsPortName)
 )
 
 const PredictorServerConfigMapKeyName = "predictor_servers"
@@ -189,6 +189,7 @@ func getUpdatePortNumMap(name string, nextPortNum *int32, portMap map[string]int
 
 func addMetricsPortAndIncrement(nextMetricsPortNum *int32, con *corev1.Container) {
 	existingMetricPort := GetPort(predictiveUnitMetricsPortName, con.Ports)
+	predictiveUnitMetricsPortName = GetEnv(ENV_PREDICTIVE_UNIT_METRICS_PORT_NAME, constants.DefaultMetricsPortName)
 	if existingMetricPort == nil {
 		con.Ports = append(con.Ports, corev1.ContainerPort{
 			Name:          predictiveUnitMetricsPortName,
