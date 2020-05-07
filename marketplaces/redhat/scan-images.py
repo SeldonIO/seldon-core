@@ -33,7 +33,7 @@ def scan_images(debug=False):
     "servers/xgboostserver",
     "integrations/tfserving",
     "components/alibi-explain-server",
-    "components/storage_initializer"
+    "components/storage-initializer"
     ]
 
     for path in paths:

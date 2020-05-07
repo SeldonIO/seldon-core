@@ -37,5 +37,5 @@ redhat-image-scan-%:
 	docker tag ${IMAGE_BASE}_$*:${VERSION} scan.connect.redhat.com/${scan_$*}/${IMAGE_NAME_BASE}_$*:${VERSION}
 	docker push scan.connect.redhat.com/${scan_$*}/${IMAGE_NAME_BASE}_$*:${VERSION}
 
-.PHONY: redhat-image-scan-all
-redhat-image-scan-all: redhat-image-scan-rest redhat-image-scan-grpc
+.PHONY: redhat-image-scan
+redhat-image-scan: redhat-image-scan-rest redhat-image-scan-grpc

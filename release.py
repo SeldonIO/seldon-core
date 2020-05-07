@@ -9,8 +9,6 @@ from subprocess import Popen, PIPE
 import os
 import sys
 import argparse
-import re
-import shutil
 import json
 
 
@@ -60,6 +58,7 @@ def update_pom_file(fpath, seldon_core_version, debug=False):
     if debug:
         print("processing [{}]".format(fpath))
     comp_dir_path = os.path.dirname(fpath)
+    cwd = os.getcwd()
     os.chdir(comp_dir_path)
 
     MAVEN_REPOSITORY_LOCATION = os.getenv('MAVEN_REPOSITORY_LOCATION')
@@ -85,6 +84,7 @@ def update_pom_file(fpath, seldon_core_version, debug=False):
     else:
         print("error {fpath}".format(**locals()))
         print(err)
+    os.chdir(cwd)
 
 
 def update_chart_yaml_file(fpath, seldon_core_version, debug=False):
@@ -145,6 +145,27 @@ def update_operator_values_yaml_file_prepackaged_images(fpath, seldon_core_versi
         print("updated operator values yaml for prepackaged server images".format(**locals()))
     else:
         print("error updating operator values yaml for prepackaged server images".format(**locals()))
+        print(err)
+
+def update_operator_kustomize_prepackaged_images(fpath, seldon_core_version, debug=False):
+    fpath = os.path.realpath(fpath)
+    if debug:
+        print("processing [{}]".format(fpath))
+    args = [
+        "sed",
+        "-i",
+        "s/\"defaultImageVersion\": \(.*\)/\"defaultImageVersion\": \"{seldon_core_version}\"/".format(
+            **locals()
+        ),
+        fpath,
+    ]
+    err, out = run_command(args, debug)
+    # pp(out)
+    # pp(err)
+    if err == None:
+        print("updated operator kustomize yaml for prepackaged server images".format(**locals()))
+    else:
+        print("error updating operator kustomize yaml for prepackaged server images".format(**locals()))
         print(err)
 
 def update_versions_txt(seldon_core_version, debug=False):
@@ -216,6 +237,7 @@ def update_image_metadata_json(seldon_core_version, debug=False):
         "servers/xgboostserver/xgboostserver/image_metadata.json"
     ]
     for path in paths:
+        path = os.path.realpath(path)
         if debug:
             print("processing [{}]".format(path))
         with open(path) as json_file:
@@ -259,6 +281,7 @@ def set_version(
     pom_files,
     chart_yaml_files,
     operator_values_yaml_file,
+    operator_kustomize_yaml_file,
     debug=False,
 ):
     # Normalize file paths
@@ -267,6 +290,11 @@ def set_version(
     operator_values_yaml_file_realpath = (
         os.path.realpath(operator_values_yaml_file)
         if operator_values_yaml_file != None
+        else None
+    )
+    operator_kustomize_yaml_file_realpath = (
+        os.path.realpath(operator_kustomize_yaml_file)
+        if operator_kustomize_yaml_file != None
         else None
     )
 
@@ -299,6 +327,11 @@ def set_version(
            operator_values_yaml_file_realpath, seldon_core_version, debug
         )
 
+    if operator_kustomize_yaml_file != None:
+        update_operator_kustomize_prepackaged_images(
+           operator_kustomize_yaml_file_realpath, seldon_core_version, debug
+        )
+
     # Update image version labels
     update_image_metadata_json(seldon_core_version,debug)
     update_dockerfile_label_version(seldon_core_version, debug)
@@ -311,6 +344,7 @@ def main(argv):
         "helm-charts/seldon-core-analytics/Chart.yaml",
     ]
     OPERATOR_VALUES_YAML_FILE = "helm-charts/seldon-core-operator/values.yaml"
+    OPERATOR_KUSTOMIZE_CONFIGMAP = "operator/config/manager/configmap.yaml"
 
     opts = getOpts(argv[1:])
     if opts.debug:
@@ -320,6 +354,7 @@ def main(argv):
         POM_FILES,
         CHART_YAML_FILES,
         OPERATOR_VALUES_YAML_FILE,
+        OPERATOR_KUSTOMIZE_CONFIGMAP,
         opts.debug,
     )
     print("done")

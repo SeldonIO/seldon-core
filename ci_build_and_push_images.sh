@@ -133,7 +133,7 @@ function build_push_alibi_explainer {
 
 function build_push_storage_initializer {
     make \
-	-C components/storage_initializer \
+	-C components/storage-initializer \
         docker-build \
 	docker-push 
     STORAGE_INITIALIZER_EXIT_VALUE=$?
