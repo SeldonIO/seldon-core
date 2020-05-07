@@ -275,6 +275,20 @@ def update_dockerfile_label_version(seldon_core_version, debug=False):
             print("error updating {path}".format(**locals()))
             print(err)
 
+def update_python_wrapper_fixed_versions(seldon_core_version, debug=False):
+
+    args = [
+        "./hack/update_python_version.sh",
+        "{seldon_core_version}".format(**locals()),
+    ]
+    err, out = run_command(args, debug)
+    # pp(out)
+    # pp(err)
+    if err == None:
+        print("Updated python wrapper in matching files".format(**locals()))
+    else:
+        print("error updating python wrapper in matching files".format(**locals()))
+        print(err)
 
 def set_version(
     seldon_core_version,
@@ -284,6 +298,8 @@ def set_version(
     operator_kustomize_yaml_file,
     debug=False,
 ):
+    update_python_wrapper_fixed_versions(seldon_core_version, debug)
+
     # Normalize file paths
     pom_files_realpaths = [os.path.realpath(x) for x in pom_files]
     chart_yaml_file_realpaths = [os.path.realpath(x) for x in chart_yaml_files]
@@ -335,6 +351,7 @@ def set_version(
     # Update image version labels
     update_image_metadata_json(seldon_core_version,debug)
     update_dockerfile_label_version(seldon_core_version, debug)
+
 
 
 def main(argv):
