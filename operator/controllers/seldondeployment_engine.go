@@ -218,7 +218,6 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 			"--namespace", mlDep.Namespace,
 			"--predictor", p.Name,
 			"--port", strconv.Itoa(port),
-			"--transport", string(transport),
 			"--protocol", string(protocol),
 			"--prometheus_path", getPrometheusPath(mlDep),
 		},

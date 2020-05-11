@@ -214,3 +214,4 @@ examples/models/autoscaling/autoscaling_example.py
 
 # testing
 *.coverprofile
+*.log
