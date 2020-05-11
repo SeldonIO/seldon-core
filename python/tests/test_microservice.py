@@ -18,6 +18,18 @@ import unittest.mock as mock
 from google.protobuf import json_format
 
 
+def repeat_method(method, exception, args=(), kwargs={}, n=10, sleep=1):
+    counter = 0
+    while counter < n:
+        try:
+            logging.info(f"Calling method... try: {counter}")
+            return method(*args, **kwargs)
+        except exception as e:
+            counter += 1
+            time.sleep(sleep)
+    logging.error("Failed to call method successfully.")
+
+
 @contextmanager
 def start_microservice(app_location, tracing=False, grpc=False, envs={}):
     p = None
@@ -64,14 +76,17 @@ def start_microservice(app_location, tracing=False, grpc=False, envs={}):
 
         time.sleep(1)
         for q in range(10):
+            logging.info(f"checking microservice state... retry: {q}")
             s1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             r1 = s1.connect_ex(("127.0.0.1", 5000))
             s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             r2 = s2.connect_ex(("127.0.0.1", 6005))
             if r1 == 0 and r2 == 0:
+                logging.info("microservice ready")
                 break
             time.sleep(5)
         else:
+            logging.error("microservice failed to stary")
             raise RuntimeError("Server did not bind to 127.0.0.1:5000")
         yield
     finally:
@@ -187,7 +202,9 @@ def test_model_template_app_grpc(tracing):
         request = prediction_pb2.SeldonMessage(data=datadef)
         channel = grpc.insecure_channel("0.0.0.0:5000")
         stub = prediction_pb2_grpc.ModelStub(channel)
-        response = stub.Predict(request=request)
+        response = repeat_method(
+            stub.Predict, grpc.RpcError, kwargs=dict(request=request)
+        )
         assert response.data.tensor.shape[0] == 1
         assert response.data.tensor.shape[1] == 2
         assert response.data.tensor.values[0] == 1
@@ -218,7 +235,9 @@ def test_model_template_app_grpc_tags(tracing):
         request = prediction_pb2.SeldonMessage(data=datadef, meta=meta)
         channel = grpc.insecure_channel("0.0.0.0:5000")
         stub = prediction_pb2_grpc.ModelStub(channel)
-        response = stub.Predict(request=request)
+        response = repeat_method(
+            stub.Predict, grpc.RpcError, kwargs=dict(request=request)
+        )
         assert response.data.tensor.shape[0] == 1
         assert response.data.tensor.shape[1] == 2
         assert response.data.tensor.values[0] == 1
@@ -245,7 +264,9 @@ def test_model_template_app_grpc_metrics(tracing):
         request = prediction_pb2.SeldonMessage(data=datadef, meta=meta)
         channel = grpc.insecure_channel("0.0.0.0:5000")
         stub = prediction_pb2_grpc.ModelStub(channel)
-        response = stub.Predict(request=request)
+        response = repeat_method(
+            stub.Predict, grpc.RpcError, kwargs=dict(request=request)
+        )
         assert response.data.tensor.shape[0] == 1
         assert response.data.tensor.shape[1] == 2
         assert response.data.tensor.values[0] == 1
