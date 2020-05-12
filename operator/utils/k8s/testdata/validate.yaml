@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/instance: seldon1
     app.kubernetes.io/name: seldon
     app.kubernetes.io/version: v0.5
-  name: seldon-validating-webhook-configuration
+  name: seldon-validating-webhook
 webhooks:
 - clientConfig:
     caBundle: Cg==

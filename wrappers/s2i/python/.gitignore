@@ -1,1 +1,5 @@
+_python
+test/model-template-app/.git
+test/router-template-app/.git
+test/transformer-template-app/.git
 version.txt

@@ -14,6 +14,7 @@ SELDON_CORE_DIR=../../..
 .PHONY: get_local_repo
 get_local_repo:
 	mkdir -p _python
+	cp ../../../version.txt version.txt
 	cp -r $(SELDON_CORE_DIR)/python _python
 
 .PHONY: build
@@ -58,6 +59,7 @@ test_local:
 
 .PHONY: clean
 clean:
+	rm version.txt
 	rm -rf _python
 	rm -rf test/model-template-app/.git
 	rm -rf test/router-template-app/.git
