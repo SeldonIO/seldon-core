@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/cloudevents/sdk-go v0.10.2
+	github.com/confluentinc/confluent-kafka-go v1.4.2
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v0.1.0
 	github.com/golang/protobuf v1.3.2

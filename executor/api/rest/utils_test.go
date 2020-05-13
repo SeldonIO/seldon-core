@@ -3,8 +3,22 @@ package rest
 import (
 	"encoding/json"
 	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/executor/api/payload"
 	"testing"
 )
+
+func TestCombineExtractMessages(t *testing.T) {
+	g := NewGomegaWithT(t)
+	sm1 := &payload.BytesPayload{Msg: []byte(`{"a":1}`)}
+	sm2 := &payload.BytesPayload{Msg: []byte(`{"a":1}`)}
+	arr := []payload.SeldonPayload{sm1, sm2}
+	msg, err := CombineSeldonMessagesToJson(arr)
+	g.Expect(err).To(BeNil())
+	arr2, err := ExtractSeldonMessagesFromJson(msg)
+	g.Expect(err).To(BeNil())
+	g.Expect(arr2[0]).To(Equal(sm1))
+	g.Expect(arr2[1]).To(Equal(sm2))
+}
 
 func TestConversions(t *testing.T) {
 	g := NewGomegaWithT(t)

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/go-logr/logr"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/opentracing/opentracing-go"
@@ -16,7 +15,6 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
-	"github.com/seldonio/seldon-core/executor/api/util"
 	"github.com/seldonio/seldon-core/executor/k8s"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"io"
@@ -243,7 +241,7 @@ func (smc *JSONRestClient) Chain(ctx context.Context, modelName string, msg payl
 	case api.ProtocolSeldon: // Seldon Messages can always be chained together
 		return msg, nil
 	case api.ProtocolTensorflow: // Attempt to chain tensorflow payload
-		return ChainTensorflow(msg)
+		return payload.ChainTensorflow(msg)
 	}
 	return nil, errors.Errorf("Unknown protocol %s", smc.Protocol)
 }
@@ -262,24 +260,7 @@ func (smc *JSONRestClient) Route(ctx context.Context, modelName string, host str
 	if err != nil {
 		return 0, err
 	} else {
-		var routes []int
-		msg := sp.GetPayload().([]byte)
-
-		var sm proto.SeldonMessage
-		value := string(msg)
-		err := jsonpb.UnmarshalString(value, &sm)
-		if err == nil {
-			//Remove in future
-			routes = util.ExtractRouteFromSeldonMessage(&sm)
-		} else {
-			routes, err = ExtractRouteAsJsonArray(msg)
-			if err != nil {
-				return 0, err
-			}
-		}
-
-		//Only returning first route. API could be extended to allow multiple routes
-		return routes[0], nil
+		return ExtractRouteFromJson(sp)
 	}
 }
 
@@ -289,20 +270,11 @@ func isJSON(data []byte) bool {
 }
 
 func (smc *JSONRestClient) Combine(ctx context.Context, modelName string, host string, port int32, msgs []payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
-	// Extract into string array checking the data is JSON
-	strData := make([]string, len(msgs))
-	for i, sm := range msgs {
-		if !isJSON(sm.GetPayload().([]byte)) {
-			return nil, fmt.Errorf("Data is not JSON")
-		} else {
-			strData[i] = string(sm.GetPayload().([]byte))
-		}
+	req, err := CombineSeldonMessagesToJson(msgs)
+	if err != nil {
+		return nil, err
 	}
-	// Create JSON list of messages
-	joined := strings.Join(strData, ",")
-	jStr := "[" + joined + "]"
-	req := payload.BytesPayload{Msg: []byte(jStr)}
-	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonCombinePath, modelName), host, port, &req, meta)
+	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonCombinePath, modelName), host, port, req, meta)
 }
 
 func (smc *JSONRestClient) TransformOutput(ctx context.Context, modelName string, host string, port int32, req payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {

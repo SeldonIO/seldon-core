@@ -139,21 +139,21 @@ func (r *SeldonRestApi) Initialise() {
 			//v0.1 API
 			api01 := r.Router.PathPrefix("/api/v0.1").Methods("POST").Subrouter()
 			api01.Handle("/predictions", r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions))
-			r.Router.NewRoute().Path("/api/v0.1/status/{" + ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
-			r.Router.NewRoute().Path("/api/v0.1/metadata/{" + ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.metadata))
+			r.Router.NewRoute().Path("/api/v0.1/status/{" + payload.ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
+			r.Router.NewRoute().Path("/api/v0.1/metadata/{" + payload.ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.metadata))
 			r.Router.NewRoute().PathPrefix("/api/v0.1/doc/").Handler(http.StripPrefix("/api/v0.1/doc/", http.FileServer(http.Dir("./openapi/"))))
 			//v1.0 API
 			api1 := r.Router.PathPrefix("/api/v1.0").Methods("POST").Subrouter()
 			api1.Handle("/predictions", r.wrapMetrics(metric.PredictionServiceMetricName, r.predictions))
-			r.Router.NewRoute().Path("/api/v1.0/status/{" + ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
-			r.Router.NewRoute().Path("/api/v1.0/metadata/{" + ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.metadata))
+			r.Router.NewRoute().Path("/api/v1.0/status/{" + payload.ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
+			r.Router.NewRoute().Path("/api/v1.0/metadata/{" + payload.ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.metadata))
 			r.Router.NewRoute().PathPrefix("/api/v1.0/doc/").Handler(http.StripPrefix("/api/v1.0/doc/", http.FileServer(http.Dir("./openapi/"))))
 
 		case api.ProtocolTensorflow:
-			r.Router.NewRoute().Path("/v1/models/{" + ModelHttpPathVariable + "}/:predict").Methods("POST").HandlerFunc(r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions))
+			r.Router.NewRoute().Path("/v1/models/{" + payload.ModelHttpPathVariable + "}/:predict").Methods("POST").HandlerFunc(r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions))
 			r.Router.NewRoute().Path("/v1/models/:predict").Methods("POST").HandlerFunc(r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions)) // Nonstandard path - Seldon extension
-			r.Router.NewRoute().Path("/v1/models/{" + ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
-			r.Router.NewRoute().Path("/v1/models/{" + ModelHttpPathVariable + "}/metadata").Methods("GET").HandlerFunc(r.wrapMetrics(metric.MetadataHttpServiceName, r.metadata))
+			r.Router.NewRoute().Path("/v1/models/{" + payload.ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
+			r.Router.NewRoute().Path("/v1/models/{" + payload.ModelHttpPathVariable + "}/metadata").Methods("GET").HandlerFunc(r.wrapMetrics(metric.MetadataHttpServiceName, r.metadata))
 		}
 	}
 }
@@ -227,7 +227,7 @@ func (r *SeldonRestApi) metadata(w http.ResponseWriter, req *http.Request) {
 	}
 
 	vars := mux.Vars(req)
-	modelName := vars[ModelHttpPathVariable]
+	modelName := vars[payload.ModelHttpPathVariable]
 
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header)
 	resPayload, err := seldonPredictorProcess.Metadata(r.predictor.Graph, modelName, nil)
@@ -249,7 +249,7 @@ func (r *SeldonRestApi) status(w http.ResponseWriter, req *http.Request) {
 	}
 
 	vars := mux.Vars(req)
-	modelName := vars[ModelHttpPathVariable]
+	modelName := vars[payload.ModelHttpPathVariable]
 
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header)
 	resPayload, err := seldonPredictorProcess.Status(r.predictor.Graph, modelName, nil)
@@ -291,7 +291,7 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 	var graphNode *v1.PredictiveUnit
 	if r.Protocol == api.ProtocolTensorflow {
 		vars := mux.Vars(req)
-		modelName := vars[ModelHttpPathVariable]
+		modelName := vars[payload.ModelHttpPathVariable]
 		if modelName != "" {
 			if graphNode = v1.GetPredictiveUnit(r.predictor.Graph, modelName); graphNode == nil {
 				r.respondWithError(w, nil, fmt.Errorf("Failed to find model %s", modelName))
