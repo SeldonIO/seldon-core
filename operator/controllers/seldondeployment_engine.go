@@ -260,7 +260,7 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 		},
 		Ports: []corev1.ContainerPort{
 			{ContainerPort: int32(port), Protocol: corev1.ProtocolTCP},
-			{ContainerPort: int32(port), Protocol: corev1.ProtocolTCP, Name: constants.MetricsPortName},
+			{ContainerPort: int32(port), Protocol: corev1.ProtocolTCP, Name: executorMetricsPortName},
 		},
 		ReadinessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(port), Path: "/ready", Scheme: corev1.URISchemeHTTP}},
 			InitialDelaySeconds: 20,
