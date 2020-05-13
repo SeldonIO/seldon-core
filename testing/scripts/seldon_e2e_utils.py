@@ -381,6 +381,26 @@ def rest_request_ambassador(
             + "/api/v0.1/metadata/"
             + model_name
         )
+    elif method == "openapi_ui":
+        response = requests.get(
+            "http://"
+            + endpoint
+            + "/seldon/"
+            + namespace
+            + "/"
+            + deployment_name
+            + "/api/v0.1/doc/"
+        )
+    elif method == "openapi_schema":
+        response = requests.get(
+            "http://"
+            + endpoint
+            + "/seldon/"
+            + namespace
+            + "/"
+            + deployment_name
+            + "/api/v0.1/doc/seldon.json"
+        )
 
     return response
 

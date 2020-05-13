@@ -66,6 +66,10 @@ func (wc *WebhookCreator) CreateMutatingWebhookConfigurationFromFile(rawYaml []b
 		return err
 	}
 
+	if watchNamespace {
+		mwc.Name = mwc.Name + "-" + namespace
+	}
+
 	for idx, _ := range mwc.Webhooks {
 		// add caBundle
 		mwc.Webhooks[idx].ClientConfig.CABundle = []byte(wc.certs.caPEM)
@@ -112,6 +116,11 @@ func (wc *WebhookCreator) CreateValidatingWebhookConfigurationFromFile(rawYaml [
 	if err != nil {
 		return err
 	}
+
+	if watchNamespace {
+		vwc.Name = vwc.Name + "-" + namespace
+	}
+
 	// add caBundle
 	for idx, _ := range vwc.Webhooks {
 		vwc.Webhooks[idx].ClientConfig.CABundle = []byte(wc.certs.caPEM)

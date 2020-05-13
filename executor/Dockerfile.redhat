@@ -30,5 +30,5 @@ LABEL name="Seldon Executor" \
 
 WORKDIR /
 COPY --from=builder /workspace/executor .
-COPY licenses/license.txt .
+COPY licenses/license.txt licenses/license.txt
 ENTRYPOINT ["/executor"]

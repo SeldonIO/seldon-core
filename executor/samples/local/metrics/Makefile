@@ -10,7 +10,7 @@ run_dummy_rest_model:
 	cd ${BASE}/../examples/models/mean_classifier && make run_rest_local 
 
 curl_rest:
-	curl -v localhost:8000/api/v0.1/predictions -d '{"data":{"ndarray":[[1.0,2.0]]}}' 
+	curl -v localhost:8000/api/v0.1/predictions -d '{"data":{"ndarray":[[1.0,2.0]]}}' -H "Accept: application/json" -H "Content-Type: application/json"
 
 
 ## GRPC

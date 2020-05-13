@@ -24,8 +24,9 @@ Seldon handles scaling to thousands of production machine learning models and pr
 
 With over 2M installs, Seldon Core is used across organisations to manage large scale deployment of machine learning models, and key benefits include:
 
- * Cloud agnostic and tested on AWS EKS, Azure AKS, Google GKE, Alicloud, Digital Ocean and Openshift.
  * Easy way to containerise ML models using our language wrappers or pre-packaged inference servers.
+ * Out of the box endpoints which can be tested through Swagger UI, Seldon Python Client or Curl / GRPCurl
+ * Cloud agnostic and tested on AWS EKS, Azure AKS, Google GKE, Alicloud, Digital Ocean and Openshift.
  * Powerful and rich inference graphs made out of predictors, transformers, routers, combiners, and more.
  * A standardised serving layer across models from heterogeneous toolkits and languages.
  * Advanced and customisable metrics with integration to Prometheus and Grafana.
@@ -85,7 +86,13 @@ END
 
 #### Send API requests to your deployed model
 
-Once our model is deployed we can send requests using either the REST or GRPC endpoint:
+Every model deployed exposes a standardised User Interface to send requests using our OpenAPI schema.
+
+This can be accessed through the endpoint `http://<ingress_url>/seldon/<namespace>/<model-name>/api/v1.0/doc/` which will allow you to send requests directly through your browser.
+
+![](https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/images/rest-openapi.jpg)
+
+Or alternatively you can send requests programmatically using our [Seldon Python Client](https://docs.seldon.io/projects/seldon-core/en/latest/python/seldon_client.html) or another Linux CLI:
 
 ```console
 $ curl -X POST http://<ingress>/seldon/model-namespace/iris-model/api/v1.0/predictions \
@@ -158,10 +165,15 @@ spec:
 END
 ```
 
-
 #### Send API requests to your deployed model
 
-Once our model is deployed we can send requests using either the REST or GRPC endpoint:
+Every model deployed exposes a standardised User Interface to send requests using our OpenAPI schema.
+
+This can be accessed through the endpoint `http://<ingress_url>/seldon/<namespace>/<model-name>/api/v1.0/doc/` which will allow you to send requests directly through your browser.
+
+![](https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/images/rest-openapi.jpg)
+
+Or alternatively you can send requests programmatically using our [Seldon Python Client](https://docs.seldon.io/projects/seldon-core/en/latest/python/seldon_client.html) or another Linux CLI:
 
 ```console
 $ curl -X POST http://<ingress>/seldon/model-namespace/iris-model/api/v1.0/predictions \

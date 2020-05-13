@@ -34,6 +34,7 @@ import (
 const (
 	ENV_DEFAULT_EXECUTOR_SERVER_PORT      = "EXECUTOR_SERVER_PORT"
 	ENV_DEFAULT_EXECUTOR_SERVER_GRPC_PORT = "EXECUTOR_SERVER_GRPC_PORT"
+	ENV_EXECUTOR_METRICS_PORT_NAME        = "EXECUTOR_SERVER_METRICS_PORT_NAME"
 	ENV_EXECUTOR_PROMETHEUS_PATH          = "EXECUTOR_PROMETHEUS_PATH"
 	ENV_ENGINE_PROMETHEUS_PATH            = "ENGINE_PROMETHEUS_PATH"
 	ENV_EXECUTOR_USER                     = "EXECUTOR_CONTAINER_USER"
@@ -58,6 +59,8 @@ var (
 	envEngineUser           = os.Getenv(ENV_ENGINE_USER)
 	envExecutorUser         = os.Getenv(ENV_EXECUTOR_USER)
 	envUseExecutor          = os.Getenv(ENV_USE_EXECUTOR)
+
+	executorMetricsPortName = GetEnv(ENV_EXECUTOR_METRICS_PORT_NAME, constants.DefaultMetricsPortName)
 )
 
 func addEngineToDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, engine_http_port int, engine_grpc_port int, pSvcName string, deploy *appsv1.Deployment) error {
@@ -306,9 +309,9 @@ func createEngineContainerSpec(mlDep *machinelearningv1.SeldonDeployment, p *mac
 			{Name: "JAVA_OPTS", Value: getAnnotation(mlDep, machinelearningv1.ANNOTATION_JAVA_OPTS, "-server")},
 		},
 		Ports: []corev1.ContainerPort{
-			{ContainerPort: int32(engine_http_port), Protocol: corev1.ProtocolTCP},
-			{ContainerPort: int32(engine_http_port), Protocol: corev1.ProtocolTCP, Name: constants.MetricsPortName},
-			{ContainerPort: int32(engine_grpc_port), Protocol: corev1.ProtocolTCP},
+			{ContainerPort: int32(engine_http_port), Protocol: corev1.ProtocolTCP, Name: constants.HttpPortName},
+			{ContainerPort: int32(engine_http_port), Protocol: corev1.ProtocolTCP, Name: executorMetricsPortName},
+			{ContainerPort: int32(engine_grpc_port), Protocol: corev1.ProtocolTCP, Name: constants.GrpcPortName},
 			{ContainerPort: 8082, Name: "admin", Protocol: corev1.ProtocolTCP},
 			{ContainerPort: 9090, Name: "jmx", Protocol: corev1.ProtocolTCP},
 		},
