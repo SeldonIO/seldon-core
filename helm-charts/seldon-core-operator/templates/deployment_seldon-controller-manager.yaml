@@ -91,6 +91,8 @@ spec:
           value: '{{ .Values.engine.logMessagesExternally }}'
         - name: PREDICTIVE_UNIT_SERVICE_PORT
           value: '{{ .Values.predictiveUnit.port }}'
+        - name: PREDICTIVE_UNIT_METRICS_PORT_NAME
+          value: '{{ .Values.predictiveUnit.metricsPortName }}'
         - name: PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME
           value: '{{ .Values.predictiveUnit.defaultEnvSecretRefName }}'
         - name: ENGINE_SERVER_GRPC_PORT
@@ -117,6 +119,8 @@ spec:
           value: '{{ .Values.engine.grpc.port }}'
         - name: EXECUTOR_SERVER_PORT
           value: '{{ .Values.executor.port }}'
+        - name: EXECUTOR_SERVER_METRICS_PORT_NAME
+          value: '{{ .Values.executor.metricsPortName }}'
         - name: EXECUTOR_CONTAINER_USER
           value: '{{ .Values.executor.user }}'
         - name: EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME

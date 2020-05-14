@@ -58,13 +58,13 @@ add_protos:
 test: fmt vet
 	go test ./api/... ./predictor/... ./k8s/...  -coverprofile cover.out
 
-copy-openapi-resources:
-	mkdir -p openapi/
-	cp ../openapi/swagger-ui/* openapi/
-	cp ../openapi/engine.oas3.json openapi/seldon.json
+copy_openapi_resources:
+	mkdir -p api/rest/openapi/
+	cp ../openapi/swagger-ui/* api/rest/openapi/
+	cp ../openapi/engine.oas3.json api/rest/openapi/seldon.json
 
 # Build the docker image
-docker-build: test copy-openapi-resources
+docker-build: test copy_openapi_resources
 	docker build -f Dockerfile -t ${IMG} .
 
 # Build the docker image for Redhat

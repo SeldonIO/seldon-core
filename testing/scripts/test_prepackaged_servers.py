@@ -10,6 +10,7 @@ from seldon_e2e_utils import (
 from subprocess import run
 import time
 import logging
+import requests
 
 
 class TestPrepack(object):
@@ -141,4 +142,26 @@ class TestPrepack(object):
         )
         assert e.status_code == 200
         logging.warning("Success for test_prepack_sklearn")
+        run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
+
+    # Test openAPI endpoints for documentation
+    def test_openapi_sklearn(self, namespace):
+        spec = "../../servers/sklearnserver/samples/iris.yaml"
+        retry_run(f"kubectl apply -f {spec} -n {namespace}")
+        wait_for_status("sklearn", namespace)
+        wait_for_rollout("sklearn", namespace)
+        time.sleep(1)
+        logging.warning("Initial request")
+
+        r = initial_rest_request("sklearn", namespace, method="openapi_ui")
+        assert r.status_code == 200
+        content_type_header = r.headers.get("content-type")
+        assert "text/html" in content_type_header
+
+        r = initial_rest_request("sklearn", namespace, method="openapi_schema")
+        assert r.status_code == 200
+        openapi_schema = r.json()
+        assert "openapi" in openapi_schema
+
+        logging.warning("Success for test_openapi_sklearn")
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)

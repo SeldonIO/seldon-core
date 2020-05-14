@@ -49,7 +49,7 @@ kubectl create namespace logs || echo "namespace logs exists"
 helm upgrade --install elasticsearch elasticsearch --version 7.6.0 --namespace=logs --set service.type=ClusterIP --set antiAffinity="soft" --repo https://helm.elastic.co --set image=docker.elastic.co/elasticsearch/elasticsearch-oss
 kubectl rollout status statefulset/elasticsearch-master -n logs
 
-helm upgrade --install fluentd fluentd-elasticsearch --namespace=logs -f fluentd-values.yaml --repo https://kiwigrid.github.io
+helm upgrade --install fluentd fluentd-elasticsearch --version 8.0.0 --namespace=logs -f fluentd-values.yaml --repo https://kiwigrid.github.io
 helm upgrade --install kibana kibana --version 7.6.0 --namespace=logs --set service.type=ClusterIP -f ./kubeflow/kibana-values.yaml --repo https://helm.elastic.co --set image=docker.elastic.co/kibana/kibana-oss
 
 kubectl apply -f ./kubeflow/virtualservice-kibana.yaml

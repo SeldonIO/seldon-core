@@ -128,6 +128,7 @@ def connect_elasticsearch():
     elastic_protocol = os.getenv('ELASTICSEARCH_PROTOCOL', 'http')
     elastic_user = os.getenv('ELASTICSEARCH_USER')
     elastic_pass = os.getenv('ELASTICSEARCH_PASS')
+    elastic_token = os.getenv('ELASTICSEARCH_TOKEN')
 
     connection_string = elastic_protocol +'://'
 
@@ -135,8 +136,12 @@ def connect_elasticsearch():
         connection_string = connection_string + elastic_user + ':' + elastic_pass + '@'
 
     connection_string = connection_string + elastic_host + ':' + str(elastic_port)
+    headers = None
 
-    _es = Elasticsearch(connection_string,verify_certs=False,connection_class=RequestsHttpConnection)
+    if elastic_token:
+        headers = {"Authorization": "Bearer "+elastic_token}
+
+    _es = Elasticsearch(connection_string,verify_certs=False,connection_class=RequestsHttpConnection,headers=headers)
     if _es.ping():
         print('Connected to Elasticsearch')
         sys.stdout.flush()

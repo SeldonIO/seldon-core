@@ -767,7 +767,8 @@ func createContainerService(deploy *appsv1.Deployment,
 	}...)
 
 	//Add Metric Env Var
-	metricPort := getPort(constants.MetricsPortName, con.Ports)
+	predictiveUnitMetricsPortName := GetEnv(machinelearningv1.ENV_PREDICTIVE_UNIT_METRICS_PORT_NAME, constants.DefaultMetricsPortName)
+	metricPort := getPort(predictiveUnitMetricsPortName, con.Ports)
 	if metricPort != nil {
 		con.Env = append(con.Env, []corev1.EnvVar{
 			corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT_METRICS, Value: strconv.Itoa(int(metricPort.ContainerPort))},

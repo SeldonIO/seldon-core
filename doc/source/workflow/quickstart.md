@@ -112,7 +112,13 @@ END
 
 **4. Send a request in Kubernetes cluster**
 
-Once you deploy your model you can access it through the Kubernetes ingress you exposed, or by port forwarding the service:
+Every model deployed exposes a standardised User Interface to send requests using our OpenAPI schema.
+
+This can be accessed through the endpoint `http://<ingress_url>/seldon/<namespace>/<model-name>/api/v1.0/doc/` which will allow you to send requests directly through your browser.
+
+![](https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/images/rest-openapi.jpg)
+
+Or alternatively you can send requests programmatically using our [Seldon Python Client](https://docs.seldon.io/projects/seldon-core/en/latest/python/seldon_client.html) or another Linux CLI:
 
 ```console
 $ curl -X POST http://<ingress>/seldon/model-namespace/iris-model/api/v1.0/predictions \
@@ -242,7 +248,13 @@ END
 
 **6. Send a request to your deployed model in Kubernetes**
 
-Finally we can just send a request to the model and see the reply by the server.
+Every model deployed exposes a standardised User Interface to send requests using our OpenAPI schema.
+
+This can be accessed through the endpoint `http://<ingress_url>/seldon/<namespace>/<model-name>/api/v1.0/doc/` which will allow you to send requests directly through your browser.
+
+![](https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/images/rest-openapi.jpg)
+
+Or alternatively you can send requests programmatically using our [Seldon Python Client](https://docs.seldon.io/projects/seldon-core/en/latest/python/seldon_client.html) or another Linux CLI:
 
 ```console
 $ curl -X POST http://<ingress>/seldon/model-namespace/iris-model/api/v1.0/predictions \

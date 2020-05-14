@@ -16,6 +16,7 @@ COPY ./s2i/bin/ /s2i/bin
 
 # Install Seldon Core from local copy
 COPY _python /microservice
+COPY version.txt /microservice/version.txt
 RUN cd /microservice/python && make install
 
 RUN mkdir -p /.conda && chmod a+rwx /.conda

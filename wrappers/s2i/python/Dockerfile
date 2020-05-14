@@ -16,6 +16,7 @@ COPY ./s2i/bin/ /s2i/bin
 
 # keep install of seldon-core after the COPY to force re-build of layer
 COPY requirements.txt ./requirements.txt
+COPY version.txt /microservice/version.txt
 COPY _python/python/licenses/license.txt .
 RUN pip install -r requirements.txt
 
