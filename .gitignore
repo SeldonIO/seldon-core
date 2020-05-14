@@ -212,5 +212,6 @@ examples/models/custom_metrics/customMetrics.py
 examples/models/tracing/tracing.py
 examples/models/autoscaling/autoscaling_example.py
 
-# test coverage
+# testing
 *.coverprofile
+*.log

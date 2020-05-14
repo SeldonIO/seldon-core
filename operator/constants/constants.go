@@ -22,9 +22,10 @@ const (
 	HttpPortName          = "http"
 )
 
+// Metrics-related constants
 const (
-	MetricsPortName        = "metrics"
 	FirstMetricsPortNumber = int32(6000)
+	DefaultMetricsPortName = "metrics"
 )
 
 const (
