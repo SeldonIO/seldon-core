@@ -1,5 +1,5 @@
-executor
-kafka-proxy
+/executor
+/kafka-proxy
 ./vendor/
 ./tensorflow/
 ./serving/
