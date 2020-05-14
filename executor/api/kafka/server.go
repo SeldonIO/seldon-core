@@ -114,35 +114,39 @@ func (ks *SeldonKafkaServer) Serve() error {
 					ks.Log.Info("Received", "headers", e.Headers)
 				}
 				headers := collectHeaders(e.Headers)
-				ctx := context.Background()
-				// Add Seldon Puid to Context
-				ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, headers[payload.SeldonPUIDHeader][0])
-
-				seldonPredictorProcess := predictor.NewPredictorProcess(ctx, ks.Client, logf.Log.WithName("KafkaClient"), ks.ServerUrl, ks.Namespace, headers)
-				reqPayload, err := seldonPredictorProcess.Client.Unmarshall(e.Value)
+				reqPayload, err := ks.Client.Unmarshall(e.Value)
 				if err != nil {
 					ks.Log.Error(err, "Failed to unmarshall payload")
 					continue
 				}
-				resPayload, err := seldonPredictorProcess.Predict(ks.predictor.Graph, reqPayload)
-				if err != nil {
-					ks.Log.Error(err, "Failed prediction")
-					continue
-				}
-				resBytes, err := resPayload.GetBytes()
-				if err != nil {
-					ks.Log.Error(err, "Failed to get bytes from prediction response")
-					continue
-				}
 
-				err = p.Produce(&kafka.Message{
-					TopicPartition: kafka.TopicPartition{Topic: &ks.TopicOut, Partition: kafka.PartitionAny},
-					Value:          resBytes,
-					Headers:        []kafka.Header{{Key: "myTestHeader", Value: []byte("header values are binary")}},
-				}, nil)
-				if err != nil {
-					ks.Log.Error(err, "Failed to produce response")
-				}
+				go func() {
+					ctx := context.Background()
+					// Add Seldon Puid to Context
+					ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, headers[payload.SeldonPUIDHeader][0])
+
+					seldonPredictorProcess := predictor.NewPredictorProcess(ctx, ks.Client, logf.Log.WithName("KafkaClient"), ks.ServerUrl, ks.Namespace, headers)
+
+					resPayload, err := seldonPredictorProcess.Predict(ks.predictor.Graph, reqPayload)
+					if err != nil {
+						ks.Log.Error(err, "Failed prediction")
+						return
+					}
+					resBytes, err := resPayload.GetBytes()
+					if err != nil {
+						ks.Log.Error(err, "Failed to get bytes from prediction response")
+						return
+					}
+
+					err = p.Produce(&kafka.Message{
+						TopicPartition: kafka.TopicPartition{Topic: &ks.TopicOut, Partition: kafka.PartitionAny},
+						Value:          resBytes,
+						Headers:        []kafka.Header{{Key: "myTestHeader", Value: []byte("header values are binary")}},
+					}, nil)
+					if err != nil {
+						ks.Log.Error(err, "Failed to produce response")
+					}
+				}()
 
 			case kafka.Error:
 				// Errors should generally be considered
