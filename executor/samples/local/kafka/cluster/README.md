@@ -1,22 +1,35 @@
-## Test Kafka Cluster using Strimzi
+# Install Kafka
+
+```
+make install
+```
+
+Wait for Strimzi operator pod to start
+
+```
+make create_cluster
+```
+
+Wait for zookeeper and cluster pods to start
+
+
+```
+make create_topic
+```
 
 ## Smoke test
 
- * Start kind cluster
- * install, create cluster and topic using makefile
- * assuming cluster is running in default: get nodeport
+Start a consumer
 
 ```
-kubectl get service my-cluster-kafka-external-bootstrap -n default -o=jsonpath='{.spec.ports[0].nodePort}{"\n"}'
+make start_consumer
 ```
 
-Use nodeport in consumer, producer on default Kind ip address, e.g.
+Start a producer
 
 ```
-kafka-console-consumer.sh --bootstrap-server 172.17.0.2:31415 --topic my-topic --from-beginning
+make start_producer
 ```
 
-```
-kafka-console-producer.sh --broker-list 172.17.0.2:31415 --topic my-topic
-```
+enter messages on command line and check they are received.
 
