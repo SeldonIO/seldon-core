@@ -61,17 +61,18 @@ class MicroserviceWrapper:
         )
 
         if tracing:
-            cmd = f"{cmd} --tracing"
+            cmd += ("--tracing",)
 
         return cmd
 
     def __enter__(self):
         try:
-            logging.info("starting: %s", " ".join(self.cmd))
+            logging.info(f"starting: {' '.join(self.cmd)}")
             self.p = Popen(
                 self.cmd, cwd=self.app_location, env=self.env_vars, preexec_fn=os.setsid
             )
 
+            time.sleep(1)
             self._wait_until_ready()
 
             return self.p
@@ -79,19 +80,9 @@ class MicroserviceWrapper:
             logging.error("microservice failed to start")
             raise RuntimeError("Server did not bind to 127.0.0.1:5000")
 
-    @retry(
-        wait=wait_fixed(4),
-        stop=stop_after_attempt(10),
-        retry=retry_if_exception_type(EOFError),
-    )
+    @retry(wait=wait_fixed(4), stop=stop_after_attempt(10))
     def _wait_until_ready(self):
-        # Make sure process hasn't crashed
-        # NOTE: The process takes a couple of seconds to fail, so it should be
-        # preceeded by a sleep.
-        ret = self._get_return_code()
-        if ret is not None:
-            raise RuntimeError(f"Server crashed with error code {ret}")
-
+        logging.debug("=== trying again")
         s1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         r1 = s1.connect_ex(("127.0.0.1", 5000))
         s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -107,4 +98,5 @@ class MicroserviceWrapper:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.p:
+            # Kill the entire process groups (including subprocesses of self.p)
             os.killpg(os.getpgid(self.p.pid), signal.SIGTERM)
