@@ -2,10 +2,16 @@ import os
 import socket
 import signal
 import logging
+import time
 
 from contextlib import contextmanager
 from subprocess import Popen
-from tenacity import retry, wait_exponential, stop_after_attempt
+from tenacity import (
+    retry,
+    wait_exponential,
+    stop_after_attempt,
+    retry_if_exception_type,
+)
 
 
 class MicroserviceWrapper:
@@ -65,25 +71,40 @@ class MicroserviceWrapper:
             self.p = Popen(
                 self.cmd, cwd=self.app_location, env=self.env_vars, preexec_fn=os.setsid
             )
+
             self._wait_until_ready()
 
             return self.p
         except Exception:
-            logging.error("microservice failed to stary")
+            logging.error("microservice failed to start")
             raise RuntimeError("Server did not bind to 127.0.0.1:5000")
 
-    @retry(wait=wait_exponential(max=10), stop=stop_after_attempt(10))
+    @retry(
+        wait=wait_exponential(max=10),
+        stop=stop_after_attempt(10),
+        retry=retry_if_exception_type(EOFError),
+    )
     def _wait_until_ready(self):
+        # Make sure process hasn't crashed
+        # NOTE: The process takes a couple of seconds to fail, so it should be
+        # preceeded by a sleep.
+        ret = self._get_return_code()
+        if ret is not None:
+            raise RuntimeError(f"Server crashed with error code {ret}")
+
         s1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         r1 = s1.connect_ex(("127.0.0.1", 5000))
         s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         r2 = s2.connect_ex(("127.0.0.1", 6005))
-        if r1 == 0 and r2 == 0:
-            logging.info("microservice ready")
-            return
-        else:
-            raise ValueError("Server not ready yet")
+        if r1 != 0 or r2 != 0:
+            raise EOFError("Server not ready yet")
 
-    def __exit__(self):
+        logging.info("microservice ready")
+
+    def _get_return_code(self):
+        self.p.poll()
+        return self.p.returncode
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
         if self.p:
-            os.killpg(os.getpgid(self.p.pid), signal.SIGTERM)
+            self.p.terminate()
