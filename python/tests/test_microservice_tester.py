@@ -1,3 +1,8 @@
+import pytest
+import json
+import logging
+import numpy as np
+
 from seldon_core.microservice_tester import (
     run_method,
     run_send_feedback,
@@ -7,11 +12,9 @@ from seldon_core.microservice_tester import (
 from unittest import mock
 from seldon_core.utils import array_to_grpc_datadef, seldon_message_to_json
 from seldon_core.proto import prediction_pb2
-import numpy as np
 from os.path import dirname, join
-import pytest
-import json
-import logging
+
+from .conftest import RESOURCES_PATH
 
 
 class MockResponse:
@@ -40,7 +43,7 @@ class Bunch(object):
 
 @mock.patch("requests.post", side_effect=mocked_requests_post_success)
 def test_predict_rest(mock_post):
-    filename = join(dirname(__file__), "model-template-app", "contract.json")
+    filename = join(RESOURCES_PATH, "model-template-app", "contract.json")
     args_dict = {
         "contract": filename,
         "host": "a",
@@ -66,7 +69,7 @@ def test_predict_rest(mock_post):
 
 @mock.patch("requests.post", side_effect=mocked_requests_post_success)
 def test_feedback_rest(mock_post):
-    filename = join(dirname(__file__), "model-template-app", "contract.json")
+    filename = join(RESOURCES_PATH, "model-template-app", "contract.json")
     args_dict = {
         "contract": filename,
         "host": "a",
