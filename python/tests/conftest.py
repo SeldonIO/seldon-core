@@ -1,7 +1,6 @@
 import os
 import pytest
 import logging
-
 import seldon_core
 
 from .helpers import MicroserviceWrapper
@@ -24,8 +23,11 @@ def client_gets_metrics(monkeypatch, request):
 
 
 @pytest.fixture
-def microservice(request):
-    opts = request.param
+def microservice(request=None):
+    # Make it compatible for both direct and indirect usage
+    opts = {}
+    if request:
+        opts = request.params
 
     # Extract opts from request' param
     app_name = opts.get("app_name", "model-template-app")
