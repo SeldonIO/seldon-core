@@ -21,7 +21,8 @@ func createTestSeldonDeployment() *machinelearningv1.SeldonDeployment {
 			Namespace: key.Namespace,
 		},
 		Spec: machinelearningv1.SeldonDeploymentSpec{
-			Name: "mydep",
+			Name:        "mydep",
+			Annotations: make(map[string]string),
 			Predictors: []machinelearningv1.PredictorSpec{
 				{
 					Name: "p1",
@@ -56,6 +57,39 @@ func cleanEnvImages() {
 	envExecutorImageRelated = ""
 	envEngineImage = ""
 	envEngineImageRelated = ""
+}
+
+func setUseExecutorAnnotation(mlDep *machinelearningv1.SeldonDeployment, useExecutor string) {
+	mlDep.Spec.Annotations[machinelearningv1.ANNOTATION_EXECUTOR] = useExecutor
+}
+
+func conductExecutorUsageTest(t *testing.T, testEnvUseExecutor, testAnnotationUseExecutor string, expectedExecutorEnabled bool) {
+	g := NewGomegaWithT(t)
+	cleanEnvImages()
+	mlDep := createTestSeldonDeployment()
+	if testAnnotationUseExecutor != "" {
+		setUseExecutorAnnotation(mlDep, testAnnotationUseExecutor)
+	}
+	if testEnvUseExecutor != "" {
+		envUseExecutor = testEnvUseExecutor
+	}
+	executorEnabled := isExecutorEnabled(mlDep)
+	g.Expect(executorEnabled).To(Equal(expectedExecutorEnabled))
+	cleanEnvImages()
+}
+
+func TestUseExecutor(t *testing.T) {
+	conductExecutorUsageTest(t, "", "", false)
+
+	// environment variable works as default if annotation is not set
+	conductExecutorUsageTest(t, "false", "", false)
+	conductExecutorUsageTest(t, "true", "", true)
+
+	// annotation always takes priority
+	conductExecutorUsageTest(t, "true", "true", true)
+	conductExecutorUsageTest(t, "true", "false", false)
+	conductExecutorUsageTest(t, "false", "true", true)
+	conductExecutorUsageTest(t, "false", "false", false)
 }
 
 func TestExecutorCreateNoEnv(t *testing.T) {
