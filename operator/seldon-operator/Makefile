@@ -93,7 +93,7 @@ certified_validate_ui:
 
 
 certified_push_quay:
-	operator-courier push bundle/certified/ seldon seldon-operator-certified 1.1.0 "$$QUAY_TOKEN"
+	operator-courier push bundle/certified/ seldon seldon-operator-certified ${VERSION} "$$QUAY_TOKEN"
 
 
 certified_zip:

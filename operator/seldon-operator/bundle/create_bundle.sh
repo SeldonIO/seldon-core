@@ -44,8 +44,8 @@ function update_images {
     sed -i 's#\(^.*\)\(- name: RELATED_IMAGE_MLFLOWSERVER_GRPC$\)#\1\2\n\1  value: '${MLFLOWSERVER_GRPC_IMAGE}:${VERSION}'#' certified/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
     sed -i 's#\(^.*\)\(- name: RELATED_IMAGE_TFPROXY_REST$\)#\1\2\n\1  value: '${TFPROXY_REST_IMAGE}:${VERSION}'#' certified/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
     sed -i 's#\(^.*\)\(- name: RELATED_IMAGE_TFPROXY_GRPC$\)#\1\2\n\1  value: '${TFPROXY_GRPC_IMAGE}:${VERSION}'#' certified/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
-    sed -i 's#\(^.*\)\(- name: RELATED_IMAGE_TENSORFLOW$\)#\1\2\n\1  value: '${TENSORFLOW_IMAGE}:${VERSION}'#' certified/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
-    sed -i 's#\(^.*\)\(- name: RELATED_IMAGE_EXPLAINER$\)#\1\2\n\1  value: '${EXPLAINER_IMAGE}:${VERSION}'#' certified/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml                
+    sed -i 's#\(^.*\)\(- name: RELATED_IMAGE_TENSORFLOW$\)#\1\2\n\1  value: '${TENSORFLOW_IMAGE}:2.1.0'#' certified/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
+    sed -i 's#\(^.*\)\(- name: RELATED_IMAGE_EXPLAINER$\)#\1\2\n\1  value: '${EXPLAINER_IMAGE}:${VERSION}'#' certified/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
 }
 
 function update_package {

@@ -186,10 +186,10 @@ For community operators:
 
 For certified operators:
 
- * Create UBI images for operator, executor and engine.
- * Create a new release on https://connect.redhat.com/content/seldon-core with
-    * new ubi images
-    * new bundle that refrences then. TODO: create bundle from community bundle.
+ * Create new uni images. Run `/marketplace/redhat/scan-images.py`. You will need the passwords from passpack.
+ * Create new bundle
+
+* new bundle that refrences then.
 
 For Marketplace:
 
