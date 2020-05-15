@@ -23,11 +23,11 @@ def client_gets_metrics(monkeypatch, request):
 
 
 @pytest.fixture
-def microservice(request=None):
+def microservice(request):
     # Make it compatible for both direct and indirect usage
     opts = {}
-    if request:
-        opts = request.params
+    if hasattr(request, "param"):
+        opts = request.param
 
     # Extract opts from request' param
     app_name = opts.get("app_name", "model-template-app")
