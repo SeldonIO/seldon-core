@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from subprocess import Popen
 from tenacity import (
     retry,
-    wait_exponential,
+    wait_fixed,
     stop_after_attempt,
     retry_if_exception_type,
 )
@@ -80,7 +80,7 @@ class MicroserviceWrapper:
             raise RuntimeError("Server did not bind to 127.0.0.1:5000")
 
     @retry(
-        wait=wait_exponential(max=10),
+        wait=wait_fixed(4),
         stop=stop_after_attempt(10),
         retry=retry_if_exception_type(EOFError),
     )
@@ -107,4 +107,4 @@ class MicroserviceWrapper:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.p:
-            self.p.terminate()
+            os.killpg(os.getpgid(self.p.pid), signal.SIGTERM)
