@@ -132,7 +132,7 @@ func (kp *KafkaProxy) Consume() error {
 
 				reqPayload, err := kp.Client.Unmarshall(e.Value)
 				if err != nil {
-					kp.Log.Error(err, "Failed to unmarshall payload")
+					kp.Log.Error(err, "Failed to unmarshall Payload")
 					continue
 				}
 
@@ -144,7 +144,7 @@ func (kp *KafkaProxy) Consume() error {
 				case client.SeldonCombinePath:
 					msgs, err := rest.ExtractSeldonMessagesFromJson(reqPayload)
 					if err != nil {
-						kp.Log.Error(err, "Failed to extract payload")
+						kp.Log.Error(err, "Failed to extract Payload")
 						continue
 					}
 					resPayload, err = kp.Client.Combine(ctx, kp.ModelName, kp.Hostname, kp.Port, msgs, headers)

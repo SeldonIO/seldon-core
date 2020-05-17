@@ -2,25 +2,38 @@ package kafka
 
 import (
 	"context"
+	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/go-logr/logr"
+	proto2 "github.com/golang/protobuf/proto"
 	guuid "github.com/google/uuid"
+	"github.com/seldonio/seldon-core/executor/api"
 	"github.com/seldonio/seldon-core/executor/api/client"
+	"github.com/seldonio/seldon-core/executor/api/grpc/seldon"
+	"github.com/seldonio/seldon-core/executor/api/grpc/tensorflow"
 	"github.com/seldonio/seldon-core/executor/api/payload"
+	"github.com/seldonio/seldon-core/executor/api/rest"
 	"github.com/seldonio/seldon-core/executor/predictor"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"net/url"
 	"os"
 	"os/signal"
+	"reflect"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"syscall"
+)
+
+const (
+	kafkaPayloadJson  = "json"
+	kafkaPayloadProto = "proto"
 )
 
 type SeldonKafkaServer struct {
 	Client         client.SeldonApiClient
 	DeploymentName string
 	Namespace      string
-	predictor      *v1.PredictorSpec
+	Transport      string
+	Predictor      *v1.PredictorSpec
 	Broker         string
 	TopicIn        string
 	TopicOut       string
@@ -28,23 +41,44 @@ type SeldonKafkaServer struct {
 	Log            logr.Logger
 }
 
-func NewKafkaServer(deploymentName, namespace, protocol string, annotations map[string]string, serverUrl *url.URL, predictor *v1.PredictorSpec, broker, topicIn, topicOut string, log logr.Logger) *SeldonKafkaServer {
-	client := NewKafkaClient(serverUrl.Hostname(), deploymentName, namespace, protocol, predictor, broker, log)
+func NewKafkaServer(graphInternal bool, deploymentName, namespace, protocol, transport string, annotations map[string]string, serverUrl *url.URL, predictor *v1.PredictorSpec, broker, topicIn, topicOut string, log logr.Logger) (*SeldonKafkaServer, error) {
+	var apiClient client.SeldonApiClient
+	var err error
+	if graphInternal {
+		apiClient = NewKafkaClient(serverUrl.Hostname(), deploymentName, namespace, protocol, transport, predictor, broker, log)
+	} else {
+		switch transport {
+		case api.TransportRest:
+			apiClient, err = rest.NewJSONRestClient(protocol, deploymentName, predictor, annotations)
+			if err != nil {
+				return nil, err
+			}
+		case api.TransportGrpc:
+			if protocol == "seldon" {
+				apiClient = seldon.NewSeldonGrpcClient(predictor, deploymentName, annotations)
+			} else {
+				apiClient = tensorflow.NewTensorflowGrpcClient(predictor, deploymentName, annotations)
+			}
+		default:
+			return nil, fmt.Errorf("Unknown transport %s", transport)
+		}
+	}
 	return &SeldonKafkaServer{
-		Client:         client,
+		Client:         apiClient,
 		DeploymentName: deploymentName,
 		Namespace:      namespace,
-		predictor:      predictor,
+		Transport:      transport,
+		Predictor:      predictor,
 		Broker:         broker,
 		TopicIn:        topicIn,
 		TopicOut:       topicOut,
 		ServerUrl:      serverUrl,
 		Log:            log.WithName("KafkaServer"),
-	}
+	}, nil
 }
 
 func (ks *SeldonKafkaServer) getGroupName() string {
-	return ks.predictor.Name + "." + ks.DeploymentName + "." + ks.Namespace
+	return ks.Predictor.Name + "." + ks.DeploymentName + "." + ks.Namespace
 }
 
 func collectHeaders(headers []kafka.Header) map[string][]string {
@@ -67,6 +101,13 @@ func collectHeaders(headers []kafka.Header) map[string][]string {
 		sheaders[payload.SeldonPUIDHeader] = []string{guuid.New().String()}
 	}
 	return sheaders
+}
+
+func getProto(messageType string, messageBytes []byte) (proto2.Message, error) {
+	pbtype := proto2.MessageType(messageType)
+	msg := reflect.New(pbtype.Elem()).Interface().(proto2.Message)
+	err := proto2.Unmarshal(messageBytes, msg)
+	return msg, err
 }
 
 func (ks *SeldonKafkaServer) Serve() error {
@@ -114,10 +155,31 @@ func (ks *SeldonKafkaServer) Serve() error {
 					ks.Log.Info("Received", "headers", e.Headers)
 				}
 				headers := collectHeaders(e.Headers)
-				reqPayload, err := ks.Client.Unmarshall(e.Value)
-				if err != nil {
-					ks.Log.Error(err, "Failed to unmarshall payload")
-					continue
+
+				var reqPayload payload.SeldonPayload
+				var err error
+				switch ks.Transport {
+				case api.TransportRest:
+					reqPayload, err = ks.Client.Unmarshall(e.Value)
+					if err != nil {
+						ks.Log.Error(err, "Failed to unmarshall Payload")
+						continue
+					}
+				case api.TransportGrpc:
+					if val, ok := headers[KeyProtoName]; ok && len(val) == 1 {
+						protoName := val[0]
+						proto, err := getProto(protoName, e.Value)
+						if err != nil {
+							ks.Log.Error(err, "Failed to get proto from bytes")
+							continue
+						}
+						reqPayload = &payload.ProtoPayload{Msg: proto}
+
+					} else {
+						ks.Log.Info("Failed to find proto name in headers")
+						continue
+					}
+
 				}
 
 				go func() {
@@ -127,7 +189,7 @@ func (ks *SeldonKafkaServer) Serve() error {
 
 					seldonPredictorProcess := predictor.NewPredictorProcess(ctx, ks.Client, logf.Log.WithName("KafkaClient"), ks.ServerUrl, ks.Namespace, headers)
 
-					resPayload, err := seldonPredictorProcess.Predict(ks.predictor.Graph, reqPayload)
+					resPayload, err := seldonPredictorProcess.Predict(ks.Predictor.Graph, reqPayload)
 					if err != nil {
 						ks.Log.Error(err, "Failed prediction")
 						return
@@ -138,10 +200,15 @@ func (ks *SeldonKafkaServer) Serve() error {
 						return
 					}
 
+					kafkaHeaders := make([]kafka.Header, 0)
+					if ks.Transport == api.TransportGrpc {
+						kafkaHeaders = []kafka.Header{{Key: KeyProtoName, Value: []byte(proto2.MessageName(resPayload.GetPayload().(*payload.ProtoPayload).Msg))}}
+					}
+
 					err = p.Produce(&kafka.Message{
 						TopicPartition: kafka.TopicPartition{Topic: &ks.TopicOut, Partition: kafka.PartitionAny},
 						Value:          resBytes,
-						Headers:        []kafka.Header{{Key: "myTestHeader", Value: []byte("header values are binary")}},
+						Headers:        kafkaHeaders,
 					}, nil)
 					if err != nil {
 						ks.Log.Error(err, "Failed to produce response")

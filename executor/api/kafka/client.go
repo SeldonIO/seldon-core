@@ -18,18 +18,20 @@ type KafkaClient struct {
 	DeploymentName string
 	Namespace      string
 	Protocol       string
+	Transport      string
 	predictor      *v1.PredictorSpec
 	Broker         string
 	Log            logr.Logger
 	topicHandlers  map[string]*KafkaRPC
 }
 
-func NewKafkaClient(hostname, deploymentName, namespace, protocol string, predictor *v1.PredictorSpec, broker string, log logr.Logger) client.SeldonApiClient {
+func NewKafkaClient(hostname, deploymentName, namespace, protocol, transport string, predictor *v1.PredictorSpec, broker string, log logr.Logger) client.SeldonApiClient {
 	skc := &KafkaClient{
 		Hostname:       hostname,
 		DeploymentName: deploymentName,
 		Namespace:      namespace,
 		Protocol:       protocol,
+		Transport:      transport,
 		predictor:      predictor,
 		Broker:         broker,
 		Log:            log.WithName("KafkaClient"),
@@ -70,7 +72,7 @@ func getPuidFromMeta(meta map[string][]string) (string, error) {
 func (kc *KafkaClient) kafkaRPC(msg payload.SeldonPayload, meta map[string][]string, modelName string, method string) (payload.SeldonPayload, error) {
 	bytes, err := msg.GetBytes()
 	if err != nil {
-		kc.Log.Error(err, "Failed to get bytes from predict request")
+		kc.Log.Error(err, "Failed to get bytes from request")
 		return nil, err
 	}
 	puid, err := getPuidFromMeta(meta)
@@ -121,7 +123,7 @@ func (kc *KafkaClient) Chain(ctx context.Context, modelName string, msg payload.
 	switch kc.Protocol {
 	case api.ProtocolSeldon: // Seldon Messages can always be chained together
 		return msg, nil
-	case api.ProtocolTensorflow: // Attempt to chain tensorflow payload
+	case api.ProtocolTensorflow: // Attempt to chain tensorflow Payload
 		return payload.ChainTensorflow(msg)
 	}
 	return nil, errors.Errorf("Unknown protocol %s", kc.Protocol)

@@ -5,4 +5,3 @@ const ProtocolTensorflow = "tensorflow"
 
 const TransportRest = "rest"
 const TransportGrpc = "grpc"
-const TransportKafka = "kafka"

@@ -30,22 +30,24 @@ import (
 )
 
 var (
-	configPath     = flag.String("config", "", "Path to kubconfig")
-	sdepName       = flag.String("sdep", "", "Seldon deployment name")
-	namespace      = flag.String("namespace", "", "Namespace")
-	predictorName  = flag.String("predictor", "", "Name of the predictor inside the SeldonDeployment")
-	httpPort       = flag.Int("http_port", 8080, "Executor port")
-	grpcPort       = flag.Int("grpc_port", 8000, "Executor port")
-	wait           = flag.Duration("graceful_timeout", time.Second*15, "Graceful shutdown secs")
-	protocol       = flag.String("protocol", "seldon", "The payload protocol")
-	transport      = flag.String("transport", "rest", "The network transport http or grpc")
-	filename       = flag.String("file", "", "Load graph from file")
-	hostname       = flag.String("hostname", "", "The hostname of the running server")
-	logWorkers     = flag.Int("logger_workers", 5, "Number of workers handling payload logging")
-	prometheusPath = flag.String("prometheus_path", "/metrics", "The prometheus metrics path")
-	kafkaBroker    = flag.String("kafka_broker", "", "The kafka broker as host:port")
-	kafkaTopicIn   = flag.String("kafka_topic_in", "", "The kafka input topic")
-	kafkaTopicOut  = flag.String("kafka_topic_out", "", "The kafka output topic")
+	serverType         = flag.String("server_type", "rpc", "Server type: rpc or kafka")
+	configPath         = flag.String("config", "", "Path to kubconfig")
+	sdepName           = flag.String("sdep", "", "Seldon deployment name")
+	namespace          = flag.String("namespace", "", "Namespace")
+	predictorName      = flag.String("predictor", "", "Name of the predictor inside the SeldonDeployment")
+	httpPort           = flag.Int("http_port", 8080, "Executor port")
+	grpcPort           = flag.Int("grpc_port", 8000, "Executor port")
+	wait               = flag.Duration("graceful_timeout", time.Second*15, "Graceful shutdown secs")
+	protocol           = flag.String("protocol", "seldon", "The payload protocol")
+	transport          = flag.String("transport", "rest", "The network transport machanism rest, grpc")
+	filename           = flag.String("file", "", "Load graph from file")
+	hostname           = flag.String("hostname", "", "The hostname of the running server")
+	logWorkers         = flag.Int("logger_workers", 5, "Number of workers handling payload logging")
+	prometheusPath     = flag.String("prometheus_path", "/metrics", "The prometheus metrics path")
+	kafkaBroker        = flag.String("kafka_broker", "", "The kafka broker as host:port")
+	kafkaTopicIn       = flag.String("kafka_topic_in", "", "The kafka input topic")
+	kafkaTopicOut      = flag.String("kafka_topic_out", "", "The kafka output topic")
+	kafkaGraphInternal = flag.Bool("kafka_graph_internal", false, "Use kafka for internal graph processing")
 )
 
 func getServerUrl(hostname string, port int) (*url.URL, error) {
@@ -131,11 +133,11 @@ func main() {
 		log.Fatal("Invalid protocol: must be seldon or tensorflow")
 	}
 
-	if !(*transport == api.TransportRest || *transport == api.TransportGrpc || *transport == api.TransportKafka) {
-		log.Fatal("Invalid transport: Only rest, grpc and kafka supported")
+	if !(*transport == api.TransportRest || *transport == api.TransportGrpc) {
+		log.Fatal("Invalid transport: Only rest or grpc supported")
 	}
 
-	if *transport == api.TransportKafka {
+	if *serverType == "kafka" {
 		if *kafkaBroker == "" {
 			log.Fatal("Required argument kafka_broker missing")
 		}
@@ -186,37 +188,40 @@ func main() {
 	//Start Logger Dispacther
 	loghandler.StartDispatcher(*logWorkers, logger, *sdepName, *namespace, *predictorName)
 
-	//Init Tracing
-	if *transport != api.TransportKafka {
+	switch *serverType {
+	case "rpc":
+		//Init Tracing
 		closer, err := tracing.InitTracing()
 		if err != nil {
 			log.Fatal("Could not initialize jaeger tracer", err.Error())
 		}
 		defer closer.Close()
-	}
-
-	switch *transport {
-	case api.TransportGrpc:
-		logger.Info("Running http probes only server ", "port", *httpPort)
-		go runHttpServer(logger, predictor, nil, *httpPort, true, serverUrl, *namespace, *protocol, *sdepName, *prometheusPath)
-		logger.Info("Running grpc server ", "port", *grpcPort)
-		var clientGrpc seldonclient.SeldonApiClient
-		if *protocol == "seldon" {
-			clientGrpc = seldon.NewSeldonGrpcClient(predictor, *sdepName, annotations)
-		} else {
-			clientGrpc = tensorflow.NewTensorflowGrpcClient(predictor, *sdepName, annotations)
+		switch *transport {
+		case api.TransportGrpc:
+			logger.Info("Running http probes only server ", "port", *httpPort)
+			go runHttpServer(logger, predictor, nil, *httpPort, true, serverUrl, *namespace, *protocol, *sdepName, *prometheusPath)
+			logger.Info("Running grpc server ", "port", *grpcPort)
+			var clientGrpc seldonclient.SeldonApiClient
+			if *protocol == "seldon" {
+				clientGrpc = seldon.NewSeldonGrpcClient(predictor, *sdepName, annotations)
+			} else {
+				clientGrpc = tensorflow.NewTensorflowGrpcClient(predictor, *sdepName, annotations)
+			}
+			runGrpcServer(logger, predictor, clientGrpc, *grpcPort, serverUrl, *namespace, *protocol, *sdepName, annotations)
+		case api.TransportRest:
+			clientRest, err := rest.NewJSONRestClient(*protocol, *sdepName, predictor, annotations)
+			if err != nil {
+				log.Fatalf("Failed to create http client: %v", err)
+			}
+			logger.Info("Running http server ", "port", *httpPort)
+			runHttpServer(logger, predictor, clientRest, *httpPort, false, serverUrl, *namespace, *protocol, *sdepName, *prometheusPath)
 		}
-		runGrpcServer(logger, predictor, clientGrpc, *grpcPort, serverUrl, *namespace, *protocol, *sdepName, annotations)
-	case api.TransportRest:
-		clientRest, err := rest.NewJSONRestClient(*protocol, *sdepName, predictor, annotations)
+	case "kafka":
+		kafkaServer, err := kafka.NewKafkaServer(*kafkaGraphInternal, *sdepName, *namespace, *protocol, *transport, annotations, serverUrl, predictor, *kafkaBroker, *kafkaTopicIn, *kafkaTopicOut, logger)
 		if err != nil {
-			log.Fatalf("Failed to create http client: %v", err)
+			log.Fatalf("Failed to create kafka server: %v", err)
 		}
-		logger.Info("Running http server ", "port", *httpPort)
-		runHttpServer(logger, predictor, clientRest, *httpPort, false, serverUrl, *namespace, *protocol, *sdepName, *prometheusPath)
-	case api.TransportKafka:
-		kafkaServer := kafka.NewKafkaServer(*sdepName, *namespace, *protocol, annotations, serverUrl, predictor, *kafkaBroker, *kafkaTopicIn, *kafkaTopicOut, logger)
-		err := kafkaServer.Serve()
+		err = kafkaServer.Serve()
 		if err != nil {
 			log.Fatal("Failed to serve kafka", err)
 		}

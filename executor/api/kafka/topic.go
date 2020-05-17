@@ -14,6 +14,7 @@ import (
 const (
 	KeyTopicResponse = "topic-response"
 	KeyMethod        = "seldon-method"
+	KeyProtoName     = "proto-name"
 )
 
 type KafkaRPC struct {
