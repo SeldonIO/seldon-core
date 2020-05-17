@@ -79,6 +79,7 @@ spec:
   jwtRules:
   - issuer: "testing@secure.istio.io"
     jwksUri: "https://raw.githubusercontent.com/istio/istio/release-1.5/security/tools/jwt/samples/jwks.json"
+    outputPayloadToHeader: "Seldon-Core-User"
 EOF
 ```
 
@@ -147,7 +148,7 @@ curl -X POST http://$INGRESS_HOST/seldon/foo/iris-model/api/v1.0/predictions    
        notRequestPrincipals: ["*"]
 ```
 
-7. This can be extended to Seldon deployment component level by selecting specific components by matching labels
+7. This can be extended to Seldon deployment component level by selecting specific components by matching labels. Further the seldon core executor/engine can base64 decode the user claims from the header `Seldon-Core-User` as configured in the RequestAuthentication with as outputPayloadToHeader.
 
 
 ## Authorization based on user id token claims
@@ -230,6 +231,7 @@ spec:
   jwtRules:
   - issuer: "testing@secure.istio.io"
     jwksUri: "https://raw.githubusercontent.com/istio/istio/release-1.5/security/tools/jwt/samples/jwks.json"
+    outputPayloadToHeader: "Seldon-Core-User"
 EOF
 ```
 
