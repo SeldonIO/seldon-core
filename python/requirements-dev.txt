@@ -6,7 +6,7 @@ Pillow==7.1.1
 pytest==5.4.2
 pytest-cov==2.8.1
 tox<4.0.0
-grpcio-tools==1.27.2
+grpcio-tools==1.29.0
 mypy-protobuf==1.20
 
 # tenacity - used for smart retrying
