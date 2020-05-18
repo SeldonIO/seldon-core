@@ -12,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#
+# Copied from kfserving project as starter.
+#
+
+
 import glob
 import logging
 import tempfile
@@ -20,6 +25,8 @@ import re
 from urllib.parse import urlparse
 from azure.storage.blob import BlockBlobService
 from minio import Minio
+from seldon_core.imports_helper import _GCS_PRESENT
+from seldon_core.utils import getenv
 
 if _GCS_PRESENT:
     from google.auth import exceptions
