@@ -78,6 +78,10 @@ func (s SeldonMessageTestClient) Feedback(ctx context.Context, modelName string,
 	if s.ErrMethod != nil && *s.ErrMethod == v1.SEND_FEEDBACK {
 		return nil, s.Err
 	}
-	resp := &payload.ProtoPayload{Msg: msg.GetPayload().(*proto.Feedback).Request}
-	return resp, nil
+	protoFeedback, ok := msg.GetPayload().(*proto.Feedback)
+	if ok == true {
+		resp := &payload.ProtoPayload{Msg: protoFeedback.Request}
+		return resp, nil
+	}
+	return msg, nil
 }

@@ -19,11 +19,12 @@ package v1
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"strconv"
+
 	"github.com/seldonio/seldon-core/operator/constants"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strconv"
 )
 
 const (
@@ -49,6 +50,7 @@ const (
 	ENV_PREDICTIVE_UNIT_SERVICE_PORT         = "PREDICTIVE_UNIT_SERVICE_PORT"
 	ENV_PREDICTIVE_UNIT_SERVICE_PORT_METRICS = "PREDICTIVE_UNIT_METRICS_SERVICE_PORT"
 	ENV_PREDICTIVE_UNIT_METRICS_ENDPOINT     = "PREDICTIVE_UNIT_METRICS_ENDPOINT"
+	ENV_PREDICTIVE_UNIT_METRICS_PORT_NAME    = "PREDICTIVE_UNIT_METRICS_PORT_NAME"
 	ENV_PREDICTIVE_UNIT_PARAMETERS           = "PREDICTIVE_UNIT_PARAMETERS"
 	ENV_PREDICTIVE_UNIT_IMAGE                = "PREDICTIVE_UNIT_IMAGE"
 	ENV_PREDICTIVE_UNIT_ID                   = "PREDICTIVE_UNIT_ID"

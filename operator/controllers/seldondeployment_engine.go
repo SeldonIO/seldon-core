@@ -18,6 +18,10 @@ package controllers
 
 import (
 	"fmt"
+	"os"
+	"strconv"
+	"strings"
+
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
 	appsv1 "k8s.io/api/apps/v1"
@@ -25,14 +29,12 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"os"
-	"strconv"
-	"strings"
 )
 
 const (
 	ENV_DEFAULT_EXECUTOR_SERVER_PORT      = "EXECUTOR_SERVER_PORT"
 	ENV_DEFAULT_EXECUTOR_SERVER_GRPC_PORT = "EXECUTOR_SERVER_GRPC_PORT"
+	ENV_EXECUTOR_METRICS_PORT_NAME        = "EXECUTOR_SERVER_METRICS_PORT_NAME"
 	ENV_EXECUTOR_PROMETHEUS_PATH          = "EXECUTOR_PROMETHEUS_PATH"
 	ENV_ENGINE_PROMETHEUS_PATH            = "ENGINE_PROMETHEUS_PATH"
 	ENV_EXECUTOR_USER                     = "EXECUTOR_CONTAINER_USER"
@@ -57,6 +59,8 @@ var (
 	envEngineUser           = os.Getenv(ENV_ENGINE_USER)
 	envExecutorUser         = os.Getenv(ENV_EXECUTOR_USER)
 	envUseExecutor          = os.Getenv(ENV_USE_EXECUTOR)
+
+	executorMetricsPortName = GetEnv(ENV_EXECUTOR_METRICS_PORT_NAME, constants.DefaultMetricsPortName)
 )
 
 func addEngineToDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, engine_http_port int, engine_grpc_port int, pSvcName string, deploy *appsv1.Deployment) error {
@@ -145,8 +149,9 @@ func getExecutorGrpcPort() (engine_grpc_port int, err error) {
 }
 
 func isExecutorEnabled(mlDep *machinelearningv1.SeldonDeployment) bool {
-	useExecutor := getAnnotation(mlDep, machinelearningv1.ANNOTATION_EXECUTOR, "false")
-	return useExecutor == "true" || envUseExecutor == "true"
+	// useExecutor flag comes from annotation and takes the priority (default: not set)
+	useExecutor := getAnnotation(mlDep, machinelearningv1.ANNOTATION_EXECUTOR, "")
+	return useExecutor == "true" || (envUseExecutor == "true" && useExecutor != "false")
 }
 
 func getPrometheusPath(mlDep *machinelearningv1.SeldonDeployment) string {
@@ -251,9 +256,9 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 			{Name: "REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX", Value: GetEnv("EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX", "")},
 		},
 		Ports: []corev1.ContainerPort{
-			{ContainerPort: int32(http_port), Protocol: corev1.ProtocolTCP},
-			{ContainerPort: int32(http_port), Protocol: corev1.ProtocolTCP, Name: constants.MetricsPortName},
-			{ContainerPort: int32(grpc_port), Protocol: corev1.ProtocolTCP},
+			{ContainerPort: int32(http_port), Protocol: corev1.ProtocolTCP, Name: constants.HttpPortName},
+			{ContainerPort: int32(http_port), Protocol: corev1.ProtocolTCP, Name: executorMetricsPortName},
+			{ContainerPort: int32(grpc_port), Protocol: corev1.ProtocolTCP, Name: constants.GrpcPortName},
 		},
 		ReadinessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(http_port), Path: "/ready", Scheme: corev1.URISchemeHTTP}},
 			InitialDelaySeconds: 20,
@@ -302,9 +307,9 @@ func createEngineContainerSpec(mlDep *machinelearningv1.SeldonDeployment, p *mac
 			{Name: "JAVA_OPTS", Value: getAnnotation(mlDep, machinelearningv1.ANNOTATION_JAVA_OPTS, "-server")},
 		},
 		Ports: []corev1.ContainerPort{
-			{ContainerPort: int32(engine_http_port), Protocol: corev1.ProtocolTCP},
-			{ContainerPort: int32(engine_http_port), Protocol: corev1.ProtocolTCP, Name: constants.MetricsPortName},
-			{ContainerPort: int32(engine_grpc_port), Protocol: corev1.ProtocolTCP},
+			{ContainerPort: int32(engine_http_port), Protocol: corev1.ProtocolTCP, Name: constants.HttpPortName},
+			{ContainerPort: int32(engine_http_port), Protocol: corev1.ProtocolTCP, Name: executorMetricsPortName},
+			{ContainerPort: int32(engine_grpc_port), Protocol: corev1.ProtocolTCP, Name: constants.GrpcPortName},
 			{ContainerPort: 8082, Name: "admin", Protocol: corev1.ProtocolTCP},
 			{ContainerPort: 9090, Name: "jmx", Protocol: corev1.ProtocolTCP},
 		},

@@ -135,11 +135,11 @@ docker-push:
 docker-push-redhat:
 	docker push ${IMG_REDHAT}
 
-# password can be found at: https://connect.redhat.com/project/1074021/view
+# password can be found at: https://connect.redhat.com/project/1366481/view
 redhat-image-scan:
 	docker login -u unused scan.connect.redhat.com
-	docker tag ${IMG_REDHAT} scan.connect.redhat.com/ospid-82f819a9-f40d-4d59-b67c-136491f22cfb/${IMG_VERSION_REDHAT}
-	docker push scan.connect.redhat.com/ospid-82f819a9-f40d-4d59-b67c-136491f22cfb/${IMG_VERSION_REDHAT}
+	docker tag ${IMG_REDHAT} scan.connect.redhat.com/ospid-7f50cebe-122b-495a-a143-41426dfcb6c9/${IMG_VERSION_REDHAT}
+	docker push scan.connect.redhat.com/ospid-7f50cebe-122b-495a-a143-41426dfcb6c9/${IMG_VERSION_REDHAT}
 
 kind-image-install: docker-build
 	docker save ${IMG} > operator.tar

@@ -1,5 +1,5 @@
 elasticsearch:
-  host: 'elasticsearch-master'
+  hosts: ['elasticsearch-master']
   logstash_prefix: 'kubernetes_cluster'
 
 configMaps:

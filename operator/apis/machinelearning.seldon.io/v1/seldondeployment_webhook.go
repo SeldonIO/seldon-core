@@ -20,6 +20,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"strconv"
+
 	"github.com/seldonio/seldon-core/operator/constants"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -28,12 +31,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	k8types "k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
-	"strconv"
 )
 
 var (
@@ -44,6 +45,7 @@ var (
 	C                                   client.Client
 	envPredictiveUnitServicePort        = os.Getenv(ENV_PREDICTIVE_UNIT_SERVICE_PORT)
 	envPredictiveUnitServicePortMetrics = os.Getenv(ENV_PREDICTIVE_UNIT_SERVICE_PORT_METRICS)
+	envPredictiveUnitMetricsPortName    = GetEnv(ENV_PREDICTIVE_UNIT_METRICS_PORT_NAME, constants.DefaultMetricsPortName)
 )
 
 const PredictorServerConfigMapKeyName = "predictor_servers"
@@ -186,10 +188,10 @@ func getUpdatePortNumMap(name string, nextPortNum *int32, portMap map[string]int
 }
 
 func addMetricsPortAndIncrement(nextMetricsPortNum *int32, con *corev1.Container) {
-	existingMetricPort := GetPort(constants.MetricsPortName, con.Ports)
+	existingMetricPort := GetPort(envPredictiveUnitMetricsPortName, con.Ports)
 	if existingMetricPort == nil {
 		con.Ports = append(con.Ports, corev1.ContainerPort{
-			Name:          constants.MetricsPortName,
+			Name:          envPredictiveUnitMetricsPortName,
 			ContainerPort: *nextMetricsPortNum,
 			Protocol:      corev1.ProtocolTCP,
 		})

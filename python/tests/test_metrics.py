@@ -17,13 +17,30 @@ from seldon_core.metrics import (
     create_counter,
     create_gauge,
     create_timer,
+    split_image_tag,
     validate_metrics,
     COUNTER,
     BINS,
 )
 from seldon_core.user_model import client_custom_metrics
 
-import seldon_core
+
+def test_split_image_tag():
+    image = "seldonio/sklearn-iris:0.1"
+    expected_name = "seldonio/sklearn-iris"
+    expected_version = "0.1"
+    name, version = split_image_tag(image)
+    assert name == expected_name
+    assert version == expected_version
+
+
+def test_split_image_tag_with_colon():
+    image = "localhost:32000/sklearn-iris:0.1"
+    expected_name = "localhost:32000/sklearn-iris"
+    expected_version = "0.1"
+    name, version = split_image_tag(image)
+    assert name == expected_name
+    assert version == expected_version
 
 
 def test_create_counter():

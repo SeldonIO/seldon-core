@@ -1,6 +1,6 @@
-VERSION=0.4
+VERSION=0.5
 IMAGE_BASE=seldonio/mlflowserver
-S2I_IMAGE_VERSION=1.1.0-SNAPSHOT
+S2I_IMAGE_VERSION=1.1.1-SNAPSHOT
 
 build_%:
 	s2i build \

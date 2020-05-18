@@ -152,3 +152,61 @@ func TestAmbassadorRetriesAnnotation(t *testing.T) {
 	}
 	basicAbassadorTests(t, &mlDep, &p, 0, "", 2, false)
 }
+
+func circuitBreakerAbassadorTests(t *testing.T,
+	mlDep *machinelearningv1.SeldonDeployment,
+	p *machinelearningv1.PredictorSpec,
+	expectedNumCircuitBreaker int,
+	expectedMaxConnections int,
+	expectedMaxPendingRequests int,
+	expectedMaxRequests int,
+	expectedMaxRetries int,
+) {
+	g := NewGomegaWithT(t)
+	s, err := getAmbassadorConfigs(mlDep, p, "myservice", 9000, 5000, false)
+	g.Expect(err).To(BeNil())
+	parts := strings.Split(s, "---\n")[1:]
+	g.Expect(len(parts)).To(Equal(2))
+	c := AmbassadorConfig{}
+	err = yaml.Unmarshal([]byte(parts[0]), &c)
+	g.Expect(err).To(BeNil())
+	g.Expect(c.Prefix).To(Equal("/seldon/default/mymodel/"))
+
+	g.Expect(len(c.CircuitBreakers)).To(Equal(expectedNumCircuitBreaker))
+	if expectedNumCircuitBreaker > 0 {
+		g.Expect(c.CircuitBreakers[0].MaxConnections).To(Equal(expectedMaxConnections))
+		g.Expect(c.CircuitBreakers[0].MaxPendingRequests).To(Equal(expectedMaxPendingRequests))
+		g.Expect(c.CircuitBreakers[0].MaxRequests).To(Equal(expectedMaxRequests))
+		g.Expect(c.CircuitBreakers[0].MaxRetries).To(Equal(expectedMaxRetries))
+	}
+}
+
+func TestAmbassadorNoCircuitBreakerAnnotation(t *testing.T) {
+	p := machinelearningv1.PredictorSpec{Name: "p"}
+	mlDep := machinelearningv1.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Predictors: []machinelearningv1.PredictorSpec{
+				p,
+			},
+		},
+	}
+	circuitBreakerAbassadorTests(t, &mlDep, &p, 0, 0, 0, 0, 0)
+}
+
+func TestAmbassadorCircuitBreakerAnnotation(t *testing.T) {
+	p := machinelearningv1.PredictorSpec{Name: "p"}
+	mlDep := machinelearningv1.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Annotations: map[string]string{
+				ANNOTATION_AMBASSADOR_CIRCUIT_BREAKING_MAX_CONNECTIONS:      "10",
+				ANNOTATION_AMBASSADOR_CIRCUIT_BREAKING_MAX_PENDING_REQUESTS: "15",
+				ANNOTATION_AMBASSADOR_CIRCUIT_BREAKING_MAX_REQUESTS:         "20",
+				ANNOTATION_AMBASSADOR_CIRCUIT_BREAKING_MAX_RETRIES:          "5",
+			},
+			Predictors: []machinelearningv1.PredictorSpec{
+				p,
+			},
+		},
+	}
+	circuitBreakerAbassadorTests(t, &mlDep, &p, 1, 10, 15, 20, 5)
+}

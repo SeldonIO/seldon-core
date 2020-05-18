@@ -291,7 +291,7 @@ def test_aggregate_bad_metrics():
     )
     j = json.loads(rv.data)
     logging.info(j)
-    assert rv.status_code == 400
+    assert rv.status_code == 500
 
 
 def test_aggreate_ok_lowlevel():

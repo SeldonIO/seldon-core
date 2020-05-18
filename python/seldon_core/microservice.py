@@ -245,6 +245,12 @@ def main():
         default=int(os.environ.get("GUNICORN_MAX_REQUESTS_JITTER", "0")),
         help="Maximum random jitter to add to max-requests.",
     )
+    parser.add_argument(
+        "--single-threaded",
+        type=int,
+        default=int(os.environ.get("FLASK_SINGLE_THREADED", "0")),
+        help="Force the Flask app to run single-threaded",
+    )
 
     args = parser.parse_args()
 
@@ -342,9 +348,17 @@ def main():
                     logger.info("Set JAEGER_EXTRA_TAGS %s", jaeger_extra_tags)
                     tracing = FlaskTracing(tracer, True, app, jaeger_extra_tags)
 
-                app.run(host="0.0.0.0", port=port)
+                app.run(
+                    host="0.0.0.0",
+                    port=port,
+                    threaded=False if args.single_threaded else True,
+                )
 
-            logger.info("REST microservice running on port %i", port)
+            logger.info(
+                "REST microservice running on port %i single-threaded=%s",
+                port,
+                args.single_threaded,
+            )
             server1_func = rest_prediction_server
 
     elif args.api_type == "GRPC":
