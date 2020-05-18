@@ -7,6 +7,8 @@ workflow:
   namespace: default
 # Seldon deployment to be created for batch processing
 seldonDeployment:
+  # Whether to create the deployment or to skip creation
+  create: true
   # Name to use for the seldon deployment which by default appends generated workflow ID
   name: seldon-{{workflow.uid}}
   # Image to use for the batch client
