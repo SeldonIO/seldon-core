@@ -3,10 +3,6 @@ package rest
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"net/url"
-
 	"github.com/go-logr/logr"
 	guuid "github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -19,7 +15,10 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/predictor"
-	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	"io/ioutil"
+	"net/http"
+	"net/url"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
@@ -37,6 +36,7 @@ type SeldonRestApi struct {
 	Client         client.SeldonApiClient
 	predictor      *v1.PredictorSpec
 	Log            logr.Logger
+	ProbesOnly     bool
 	ServerUrl      *url.URL
 	Namespace      string
 	Protocol       string
@@ -45,14 +45,17 @@ type SeldonRestApi struct {
 	prometheusPath string
 }
 
-func NewServerRestApi(predictor *v1.PredictorSpec, client client.SeldonApiClient, serverUrl *url.URL, namespace string, protocol string, deploymentName string, prometheusPath string) *SeldonRestApi {
+func NewServerRestApi(predictor *v1.PredictorSpec, client client.SeldonApiClient, probesOnly bool, serverUrl *url.URL, namespace string, protocol string, deploymentName string, prometheusPath string) *SeldonRestApi {
 	var serverMetrics *metric.ServerMetrics
-	serverMetrics = metric.NewServerMetrics(predictor, deploymentName)
+	if !probesOnly {
+		serverMetrics = metric.NewServerMetrics(predictor, deploymentName)
+	}
 	return &SeldonRestApi{
 		mux.NewRouter(),
 		client,
 		predictor,
 		logf.Log.WithName("SeldonRestApi"),
+		probesOnly,
 		serverUrl,
 		namespace,
 		protocol,

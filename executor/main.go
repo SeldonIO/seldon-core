@@ -93,10 +93,10 @@ func getServerUrl(hostname string, port int) (*url.URL, error) {
 }
 
 func runHttpServer(lis net.Listener, logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int,
-	serverUrl *url.URL, namespace string, protocol string, deploymentName string, prometheusPath string) {
+	probesOnly bool, serverUrl *url.URL, namespace string, protocol string, deploymentName string, prometheusPath string) {
 
 	// Create REST API
-	seldonRest := rest.NewServerRestApi(predictor, client, serverUrl, namespace, protocol, deploymentName, prometheusPath)
+	seldonRest := rest.NewServerRestApi(predictor, client, probesOnly, serverUrl, namespace, protocol, deploymentName, prometheusPath)
 	seldonRest.Initialise()
 	srv := seldonRest.CreateHttpServer(port)
 
