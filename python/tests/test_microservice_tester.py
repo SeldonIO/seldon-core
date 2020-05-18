@@ -1,3 +1,4 @@
+import os
 import pytest
 import json
 import logging
@@ -12,7 +13,6 @@ from seldon_core.microservice_tester import (
 from unittest import mock
 from seldon_core.utils import array_to_grpc_datadef, seldon_message_to_json
 from seldon_core.proto import prediction_pb2
-from os.path import dirname, join
 
 from .conftest import RESOURCES_PATH
 
@@ -43,7 +43,7 @@ class Bunch(object):
 
 @mock.patch("requests.post", side_effect=mocked_requests_post_success)
 def test_predict_rest(mock_post):
-    filename = join(RESOURCES_PATH, "model-template-app", "contract.json")
+    filename = os.path.join(RESOURCES_PATH, "model-template-app", "contract.json")
     args_dict = {
         "contract": filename,
         "host": "a",
@@ -69,7 +69,7 @@ def test_predict_rest(mock_post):
 
 @mock.patch("requests.post", side_effect=mocked_requests_post_success)
 def test_feedback_rest(mock_post):
-    filename = join(RESOURCES_PATH, "model-template-app", "contract.json")
+    filename = os.path.join(RESOURCES_PATH, "model-template-app", "contract.json")
     args_dict = {
         "contract": filename,
         "host": "a",
@@ -87,7 +87,7 @@ def test_feedback_rest(mock_post):
 
 @mock.patch("requests.post", side_effect=mocked_requests_post_success)
 def test_predict_rest_categorical(mock_post):
-    filename = join(dirname(__file__), "resources", "contract.json")
+    filename = os.path.join(RESOURCES_PATH, "contract.json")
     args_dict = {
         "contract": filename,
         "host": "a",
@@ -111,7 +111,7 @@ def test_reconciliate_exception():
 
 def test_bad_contract():
     with pytest.raises(SeldonTesterException):
-        filename = join(dirname(__file__), "resources", "bad_contract.json")
+        filename = os.path.join(RESOURCES_PATH, "bad_contract.json")
         args_dict = {
             "contract": filename,
             "host": "a",
