@@ -149,8 +149,9 @@ func getExecutorGrpcPort() (engine_grpc_port int, err error) {
 }
 
 func isExecutorEnabled(mlDep *machinelearningv1.SeldonDeployment) bool {
-	useExecutor := getAnnotation(mlDep, machinelearningv1.ANNOTATION_EXECUTOR, "false")
-	return useExecutor == "true" || envUseExecutor == "true"
+	// useExecutor flag comes from annotation and takes the priority (default: not set)
+	useExecutor := getAnnotation(mlDep, machinelearningv1.ANNOTATION_EXECUTOR, "")
+	return useExecutor == "true" || (envUseExecutor == "true" && useExecutor != "false")
 }
 
 func getPrometheusPath(mlDep *machinelearningv1.SeldonDeployment) string {
