@@ -3,6 +3,10 @@ package rest
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+
 	"github.com/go-logr/logr"
 	guuid "github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -15,10 +19,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/predictor"
-	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	"io/ioutil"
-	"net/http"
-	"net/url"
+	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
@@ -139,14 +140,16 @@ func (r *SeldonRestApi) Initialise() {
 			//v0.1 API
 			api01 := r.Router.PathPrefix("/api/v0.1").Methods("POST").Subrouter()
 			api01.Handle("/predictions", r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions))
+			api01.Handle("/feedback", r.wrapMetrics(metric.FeedbackHttpServiceName, r.feedback))
 			r.Router.NewRoute().Path("/api/v0.1/status/{" + ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
-			r.Router.NewRoute().Path("/api/v0.1/metadata/{" + ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.metadata))
+			r.Router.NewRoute().Path("/api/v0.1/metadata/{" + ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.MetadataHttpServiceName, r.metadata))
 			r.Router.NewRoute().PathPrefix("/api/v0.1/doc/").Handler(http.StripPrefix("/api/v0.1/doc/", http.FileServer(http.Dir("./openapi/"))))
 			//v1.0 API
-			api1 := r.Router.PathPrefix("/api/v1.0").Methods("POST").Subrouter()
-			api1.Handle("/predictions", r.wrapMetrics(metric.PredictionServiceMetricName, r.predictions))
+			api10 := r.Router.PathPrefix("/api/v1.0").Methods("POST").Subrouter()
+			api10.Handle("/predictions", r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions))
+			api10.Handle("/feedback", r.wrapMetrics(metric.FeedbackHttpServiceName, r.feedback))
 			r.Router.NewRoute().Path("/api/v1.0/status/{" + ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
-			r.Router.NewRoute().Path("/api/v1.0/metadata/{" + ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.metadata))
+			r.Router.NewRoute().Path("/api/v1.0/metadata/{" + ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.MetadataHttpServiceName, r.metadata))
 			r.Router.NewRoute().PathPrefix("/api/v1.0/doc/").Handler(http.StripPrefix("/api/v1.0/doc/", http.FileServer(http.Dir("./openapi/"))))
 
 		case api.ProtocolTensorflow:
