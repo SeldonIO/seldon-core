@@ -14,6 +14,8 @@ import (
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 )
 
+const NilPUIDError = "context value for Seldon PUID Header is nil"
+
 type PredictorProcess struct {
 	Ctx       context.Context
 	Client    client.SeldonApiClient
@@ -270,7 +272,7 @@ func (p *PredictorProcess) getPUIDHeader() (string, error) {
 	if puid, ok := p.Ctx.Value(payload.SeldonPUIDHeader).(string); ok {
 		return puid, nil
 	}
-	return "", fmt.Errorf("context value Seldon PUID Header is nil: interface to string conversion failed")
+	return "", fmt.Errorf(NilPUIDError)
 }
 
 func (p *PredictorProcess) Predict(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {

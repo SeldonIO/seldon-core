@@ -472,5 +472,5 @@ func TestPredictNilPUIDError(t *testing.T) {
 	graph := &v1.PredictiveUnit{}
 	_, err := createPredictorProcessWithoutPUIDInContext(t).Predict(graph, createPredictPayload(g))
 	g.Expect(err).NotTo(BeNil())
-	g.Expect(err.Error()).Should(Equal("context value Seldon PUID Header is nil: interface to string conversion failed"))
+	g.Expect(err.Error()).Should(Equal(NilPUIDError))
 }
