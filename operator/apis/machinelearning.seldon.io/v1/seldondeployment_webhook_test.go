@@ -399,7 +399,7 @@ func TestOverrideMetricsPortName(t *testing.T) {
 		Predictors: []PredictorSpec{
 			{
 				Name: "p1",
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name:           "classifier",
 					Implementation: &impl,
 				},
@@ -418,7 +418,7 @@ func TestOverrideMetricsPortName(t *testing.T) {
 	g.Expect(defaultMetricsPort).To(BeNil())
 
 	// Graph
-	pu := GetPredictiveUnit(spec.Predictors[0].Graph, "classifier")
+	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.Type).To(Equal(REST))
 	g.Expect(*pu.Type).To(Equal(MODEL))
