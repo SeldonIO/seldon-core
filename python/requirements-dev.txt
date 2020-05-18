@@ -10,7 +10,7 @@ grpcio-tools==1.27.2
 mypy-protobuf==1.20
 
 # tenacity - used for smart retrying
-tenacity==6.0.0
+tenacity==6.2.0
 
 # 2nd lvl dep on cov required to avoid sqllite dep
 coverage==5.1
