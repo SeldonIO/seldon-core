@@ -14,10 +14,11 @@ CHOICES_METHOD = ["predictions", "explain"]
 CHOICES_LOG_LEVEL = ["debug", "info", "warning", "error"]
 
 # Create uuid file
-DATA_TEMP_DIRPATH = os.path.join(__file__, "TEMP_DATA_FILES")
+dir_path = os.path.dirname(os.path.realpath(__file__))
+DATA_TEMP_DIRPATH = os.path.join(dir_path, "TEMP_DATA_FILES")
 DATA_TEMP_UUID = str(uuid.uuid4())
-DATA_TEMP_INPUT_FILENAME = f"{DATA_TEMP_UUID}-input.txt"
 DATA_TEMP_OUTPUT_FILENAME = f"{DATA_TEMP_UUID}-output.txt"
+DATA_TEMP_INPUT_FOLDERNAME = f"{DATA_TEMP_UUID}-output-folder"
 
 
 @click.command()
@@ -116,11 +117,14 @@ def run_cli(
 
     local_input_data_path = None
     if is_remote_input_path:
-        local_input_data_path = os.path.join(
-            DATA_TEMP_DIRPATH, DATA_TEMP_INPUT_FILENAME
+        local_input_folder_path = os.path.join(
+            DATA_TEMP_DIRPATH, DATA_TEMP_INPUT_FOLDERNAME
         )
-        Storage.download(input_data_path, DATA_TEMP_INPUT_FILENAME)
-        if os.path.isdir(DATA_TEMP_INPUT_FILENAME):
+        # The Storage downloader can only download to a folder
+        Storage.download(input_data_path, local_input_folder_path)
+        remote_file_name = input_data_path.split("/")[-1]
+        local_input_data_path = os.path.join(local_input_folder_path, remote_file_name)
+        if os.path.isdir(local_input_data_path):
             raise RuntimeError(
                 "Only single files are supported - "
                 f"directory {input_data_path} is not valid. "
