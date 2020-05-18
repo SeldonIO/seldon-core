@@ -20,11 +20,11 @@ func TestAddPuid(t *testing.T) {
 
 func TestExistingPuid(t *testing.T) {
 	g := NewGomegaWithT(t)
-	guid := "1"
+	puid := "1"
 
-	ctx := metadata.NewIncomingContext(context.TODO(), metadata.New(map[string]string{payload.SeldonPUIDHeader: guid}))
+	ctx := metadata.NewIncomingContext(context.TODO(), metadata.New(map[string]string{payload.SeldonPUIDHeader: puid}))
 	meta := CollectMetadata(ctx)
 
 	g.Expect(meta.Get(payload.SeldonPUIDHeader)).NotTo(BeNil())
-	g.Expect(meta.Get(payload.SeldonPUIDHeader)[0]).To(Equal(guid))
+	g.Expect(meta.Get(payload.SeldonPUIDHeader)[0]).To(Equal(puid))
 }
