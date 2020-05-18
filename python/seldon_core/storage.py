@@ -1,4 +1,4 @@
-# Copyright 2019 kubeflow.org.
+# Copyright 2020 kubeflow.org.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#
-# Copied from kfserving project as starter.
-#
-
 import glob
 import logging
 import tempfile
@@ -24,13 +20,10 @@ import re
 from urllib.parse import urlparse
 from azure.storage.blob import BlockBlobService
 from minio import Minio
-from seldon_core.imports_helper import _GCS_PRESENT
-from seldon_core.utils import getenv
 
 if _GCS_PRESENT:
     from google.auth import exceptions
     from google.cloud import storage
-
 
 _GCS_PREFIX = "gs://"
 _S3_PREFIX = "s3://"
@@ -244,22 +237,17 @@ The path or model %s does not exist."
 
     @staticmethod
     def _create_minio_client():
-        # Remove possible http scheme for Minio
-        url = urlparse(os.getenv("AWS_ENDPOINT_URL", "s3.amazonaws.com"))
+        # Adding prefixing "http" in urlparse is necessary for it to be the netloc
+        url = urlparse(os.getenv("AWS_ENDPOINT_URL", "http://s3.amazonaws.com"))
         use_ssl = (
             url.scheme == "https"
             if url.scheme
-            # KFServing uses S3_USE_HTTPS, whereas Seldon was already using
-            # USE_SSL.
-            # To keep compatibility with the storage init layer we support
-            # both, giving priority to USE_SSL.
-            # https://github.com/SeldonIO/seldon-core/pull/827
-            # https://github.com/kubeflow/kfserving/pull/362
-            else bool(getenv("USE_SSL", "S3_USE_HTTPS", "false"))
+            else bool(os.getenv("S3_USE_HTTPS", "true"))
         )
         return Minio(
             url.netloc,
             access_key=os.getenv("AWS_ACCESS_KEY_ID", ""),
             secret_key=os.getenv("AWS_SECRET_ACCESS_KEY", ""),
+            region=os.getenv("AWS_REGION", ""),
             secure=use_ssl,
         )
