@@ -42,10 +42,18 @@ _LOCAL_PREFIX = "file://"
 
 class Storage(object):  # pylint: disable=too-few-public-methods
     @staticmethod
+    def is_remote_path(path: str) -> bool:
+        return (
+            path.startswith(_GCS_PREFIX)
+            or path.startswith(_S3_PREFIX)
+            or re.search(_BLOB_RE, path)
+        )
+
+    @staticmethod
     def upload(in_path: str, uri: str):
         logging.info("Copying contents of local to %s", uri)
 
-        if uri.startswith(_GCS_PREFIX):
+        if uri.startswith(_S3_PREFIX):
             Storage._upload_s3(in_path, uri)
         else:
             raise Exception(
@@ -119,18 +127,24 @@ class Storage(object):  # pylint: disable=too-few-public-methods
                     f"with result {upload_result}"
                 )
             except ResponseError as err:
-                logging.error("Failed uploading file {in_path} to {uri}", exc_info=True)
+                logging.error(
+                    f"Failed uploading file {in_path} to {uri}", exc_info=True
+                )
         else:
             in_path_length = len(in_path)
             files = glob.glob(os.path.join(in_path, "**"), recursive=True)
             logging.info(f"Uploading directory {in_path} to {uri}")
             for file in files:
+                if not os.path.isfile(file):
+                    continue
                 bucket_suffix_path = file[in_path_length:]
                 bucket_joint_path = os.path.join(bucket_path, bucket_suffix_path)
+                if bucket_joint_path.startswith("/"):
+                    bucket_joint_path = bucket_joint_path[1:]
                 logging.info(f"Uploading directory file {file} to {bucket_joint_path}")
                 try:
                     upload_result = client.fput_object(
-                        bucket_name, bucket_joint_path, in_path
+                        bucket_name, bucket_joint_path, file
                     )
                     logging.info(
                         f"Successfully uploaded file {file} to {bucket_joint_path} "
@@ -138,7 +152,7 @@ class Storage(object):  # pylint: disable=too-few-public-methods
                     )
                 except ResponseError as err:
                     logging.error(
-                        "Failed uploading file {file} to {bucket_joint_path}",
+                        f"Failed uploading file {file} to {bucket_joint_path}",
                         exc_info=True,
                     )
 
