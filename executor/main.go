@@ -242,7 +242,7 @@ func main() {
 		log.Fatalf("Failed to create http client: %v", err)
 	}
 	logger.Info("Running HTTP server ", "port", *port)
-	go runHttpServer(httpl, logger, predictor, clientRest, *port, false, serverUrl, *namespace, *protocol, *sdepName, *prometheusPath)
+	go runHttpServer(httpl, logger, predictor, clientRest, *port, serverUrl, *namespace, *protocol, *sdepName, *prometheusPath)
 
 	var clientGrpc seldonclient.SeldonApiClient
 	if *protocol == "seldon" {
