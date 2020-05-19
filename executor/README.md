@@ -2,9 +2,6 @@
 
 This Go project replaces the Seldon Java Engine.  It is presently in development.
 
-** Do not use in production **
-
-
 ## Functionality
 
 The focus is to provide a smaller more efficient graph orchestror.

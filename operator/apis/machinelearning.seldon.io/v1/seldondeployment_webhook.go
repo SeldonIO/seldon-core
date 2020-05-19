@@ -20,6 +20,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"strconv"
+
 	"github.com/seldonio/seldon-core/operator/constants"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -28,12 +31,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	k8types "k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
-	"strconv"
 )
 
 var (
@@ -44,6 +45,7 @@ var (
 	C                                   client.Client
 	envPredictiveUnitServicePort        = os.Getenv(ENV_PREDICTIVE_UNIT_SERVICE_PORT)
 	envPredictiveUnitServicePortMetrics = os.Getenv(ENV_PREDICTIVE_UNIT_SERVICE_PORT_METRICS)
+	envPredictiveUnitMetricsPortName    = GetEnv(ENV_PREDICTIVE_UNIT_METRICS_PORT_NAME, constants.DefaultMetricsPortName)
 )
 
 const PredictorServerConfigMapKeyName = "predictor_servers"
@@ -186,10 +188,10 @@ func getUpdatePortNumMap(name string, nextPortNum *int32, portMap map[string]int
 }
 
 func addMetricsPortAndIncrement(nextMetricsPortNum *int32, con *corev1.Container) {
-	existingMetricPort := GetPort(constants.MetricsPortName, con.Ports)
+	existingMetricPort := GetPort(envPredictiveUnitMetricsPortName, con.Ports)
 	if existingMetricPort == nil {
 		con.Ports = append(con.Ports, corev1.ContainerPort{
-			Name:          constants.MetricsPortName,
+			Name:          envPredictiveUnitMetricsPortName,
 			ContainerPort: *nextMetricsPortNum,
 			Protocol:      corev1.ProtocolTCP,
 		})
@@ -283,9 +285,8 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 		if _, present := p.Labels["version"]; !present {
 			p.Labels["version"] = p.Name
 		}
-		addDefaultsToGraph(p.Graph)
 
-		r.Predictors[i] = p
+		addDefaultsToGraph(&p.Graph)
 
 		for j := 0; j < len(p.ComponentSpecs); j++ {
 			cSpec := r.Predictors[i].ComponentSpecs[j]
@@ -297,7 +298,7 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 				getUpdatePortNumMap(con.Name, &nextPortNum, portMap)
 				portNum := portMap[con.Name]
 
-				pu := GetPredictiveUnit(p.Graph, con.Name)
+				pu := GetPredictiveUnit(&p.Graph, con.Name)
 
 				if pu != nil {
 					r.setContainerPredictiveUnitDefaults(j, portNum, &nextMetricsPortNum, mldepName, namespace, &p, pu, con)
@@ -305,7 +306,7 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 			}
 		}
 
-		pus := GetPredictiveUnitList(p.Graph)
+		pus := GetPredictiveUnitList(&p.Graph)
 
 		//some pus might not have a container spec so pick those up
 		for l := 0; l < len(pus); l++ {
@@ -353,6 +354,8 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 				}
 			}
 		}
+
+		r.Predictors[i] = p
 	}
 }
 
@@ -460,10 +463,10 @@ func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 	predictorNames := make(map[string]bool)
 	for i, p := range r.Predictors {
 
-		collectTransports(p.Graph, transports)
+		collectTransports(&p.Graph, transports)
 
 		_, noEngine := p.Annotations[ANNOTATION_NO_ENGINE]
-		if noEngine && sizeOfGraph(p.Graph) > 1 {
+		if noEngine && sizeOfGraph(&p.Graph) > 1 {
 			fldPath := field.NewPath("spec").Child("predictors").Index(i)
 			allErrs = append(allErrs, field.Invalid(fldPath, p.Name, "Running without engine only valid for single element graphs"))
 		}
@@ -473,7 +476,7 @@ func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 			allErrs = append(allErrs, field.Invalid(fldPath, p.Name, "Duplicate predictor name"))
 		}
 		predictorNames[p.Name] = true
-		allErrs = checkPredictiveUnits(p.Graph, &p, field.NewPath("spec").Child("predictors").Index(i).Child("graph"), allErrs)
+		allErrs = checkPredictiveUnits(&p.Graph, &p, field.NewPath("spec").Child("predictors").Index(i).Child("graph"), allErrs)
 	}
 
 	if len(transports) > 1 {

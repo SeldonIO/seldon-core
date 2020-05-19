@@ -1,6 +1,8 @@
 package v1
 
 import (
+	"testing"
+
 	. "github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/operator/constants"
 	v1 "k8s.io/api/core/v1"
@@ -8,7 +10,6 @@ import (
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
-	"testing"
 )
 
 func TestValidateBadProtocol(t *testing.T) {
@@ -30,7 +31,7 @@ func TestValidateBadProtocol(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 				},
 			},
@@ -67,7 +68,7 @@ func TestValidateBadTransport(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 					Type: &impl,
 				},
@@ -109,7 +110,7 @@ func TestValidateMixedTransport(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 					Type: &impl,
 					Endpoint: &Endpoint{
@@ -159,7 +160,7 @@ func TestValidateMixedMultipleTransport(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 					Type: &impl,
 					Endpoint: &Endpoint{
@@ -198,7 +199,7 @@ func TestDefaultSingleContainer(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 				},
 			},
@@ -208,13 +209,12 @@ func TestDefaultSingleContainer(t *testing.T) {
 	spec.DefaultSeldonDeployment("mydep", "default")
 
 	// Test Metric Ports
-	metricPort := GetPort(constants.MetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
+	metricPort := GetPort(envPredictiveUnitMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
 	g.Expect(metricPort).NotTo(BeNil())
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber))
-	g.Expect(metricPort.Name).To(Equal(constants.MetricsPortName))
 
 	// Graph
-	pu := GetPredictiveUnit(spec.Predictors[0].Graph, "classifier")
+	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
@@ -252,7 +252,7 @@ func TestMetricsPortAddedTwoContainers(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 					Children: []PredictiveUnit{
 						{
@@ -266,24 +266,22 @@ func TestMetricsPortAddedTwoContainers(t *testing.T) {
 
 	//Metrics
 	spec.DefaultSeldonDeployment("mydep", "default")
-	metricPort := GetPort(constants.MetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
+	metricPort := GetPort(envPredictiveUnitMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
 	g.Expect(metricPort).NotTo(BeNil())
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber))
-	g.Expect(metricPort.Name).To(Equal(constants.MetricsPortName))
 
-	metricPort = GetPort(constants.MetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[1].Ports)
+	metricPort = GetPort(envPredictiveUnitMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[1].Ports)
 	g.Expect(metricPort).NotTo(BeNil())
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber + 1))
-	g.Expect(metricPort.Name).To(Equal(constants.MetricsPortName))
 
 	//Graph
-	pu := GetPredictiveUnit(spec.Predictors[0].Graph, "classifier")
+	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
 	g.Expect(pu.Endpoint.Type).To(Equal(REST))
 
-	pu = GetPredictiveUnit(spec.Predictors[0].Graph, "classifier2")
+	pu = GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier2")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstPortNumber + 1))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
@@ -335,7 +333,7 @@ func TestMetricsPortAddedTwoComponentSpecsTwoContainers(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 					Children: []PredictiveUnit{
 						{
@@ -352,23 +350,21 @@ func TestMetricsPortAddedTwoComponentSpecsTwoContainers(t *testing.T) {
 	spec.DefaultSeldonDeployment(name, namespace)
 
 	// Metrics
-	metricPort := GetPort(constants.MetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
+	metricPort := GetPort(envPredictiveUnitMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
 	g.Expect(metricPort).NotTo(BeNil())
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber))
-	g.Expect(metricPort.Name).To(Equal(constants.MetricsPortName))
-	metricPort = GetPort(constants.MetricsPortName, spec.Predictors[0].ComponentSpecs[1].Spec.Containers[0].Ports)
+	metricPort = GetPort(envPredictiveUnitMetricsPortName, spec.Predictors[0].ComponentSpecs[1].Spec.Containers[0].Ports)
 	g.Expect(metricPort).NotTo(BeNil())
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber + 1))
-	g.Expect(metricPort.Name).To(Equal(constants.MetricsPortName))
 
 	//Graph
-	pu := GetPredictiveUnit(spec.Predictors[0].Graph, "classifier")
+	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
 	g.Expect(pu.Endpoint.Type).To(Equal(REST))
 
-	pu = GetPredictiveUnit(spec.Predictors[0].Graph, "classifier2")
+	pu = GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier2")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstPortNumber + 1))
 	containerServiceValue := GetContainerServiceName(name, spec.Predictors[0], &spec.Predictors[0].ComponentSpecs[1].Spec.Containers[0])
@@ -394,6 +390,40 @@ func TestMetricsPortAddedTwoComponentSpecsTwoContainers(t *testing.T) {
 	g.Expect(volFound).To(BeTrue())
 }
 
+func TestOverrideMetricsPortName(t *testing.T) {
+	g := NewGomegaWithT(t)
+	scheme := runtime.NewScheme()
+	C = fake.NewFakeClientWithScheme(scheme)
+	impl := PredictiveUnitImplementation(constants.PrePackedServerTensorflow)
+	spec := &SeldonDeploymentSpec{
+		Predictors: []PredictorSpec{
+			{
+				Name: "p1",
+				Graph: PredictiveUnit{
+					Name:           "classifier",
+					Implementation: &impl,
+				},
+			},
+		},
+	}
+
+	envPredictiveUnitMetricsPortName = "myMetricsPort"
+	spec.DefaultSeldonDeployment("mydep", "default")
+	// Metrics
+	customMetricsPort := GetPort("myMetricsPort", spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
+	g.Expect(customMetricsPort).NotTo(BeNil())
+	g.Expect(customMetricsPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber))
+
+	defaultMetricsPort := GetPort(constants.DefaultMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
+	g.Expect(defaultMetricsPort).To(BeNil())
+
+	// Graph
+	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
+	g.Expect(pu).ToNot(BeNil())
+	g.Expect(pu.Endpoint.Type).To(Equal(REST))
+	g.Expect(*pu.Type).To(Equal(MODEL))
+}
+
 func TestPortUseExisting(t *testing.T) {
 	g := NewGomegaWithT(t)
 	containerPortMetrics := int32(1234)
@@ -409,14 +439,14 @@ func TestPortUseExisting(t *testing.T) {
 								{
 									Image: "seldonio/mock_classifier:1.0",
 									Name:  "classifier",
-									Ports: []v1.ContainerPort{{Name: constants.MetricsPortName, ContainerPort: containerPortMetrics},
+									Ports: []v1.ContainerPort{{Name: envPredictiveUnitMetricsPortName, ContainerPort: containerPortMetrics},
 										{Name: constants.HttpPortName, ContainerPort: containerPortAPI}},
 								},
 							},
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 				},
 			},
@@ -424,13 +454,12 @@ func TestPortUseExisting(t *testing.T) {
 	}
 
 	spec.DefaultSeldonDeployment("mydep", "default")
-	metricPort := GetPort(constants.MetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
+	metricPort := GetPort(envPredictiveUnitMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
 	g.Expect(metricPort).NotTo(BeNil())
 	g.Expect(metricPort.ContainerPort).To(Equal(containerPortMetrics))
-	g.Expect(metricPort.Name).To(Equal(constants.MetricsPortName))
 
 	//Graph
-	pu := GetPredictiveUnit(spec.Predictors[0].Graph, "classifier")
+	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(containerPortAPI))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
@@ -446,7 +475,7 @@ func TestMetricsPortAddedToPrepacked(t *testing.T) {
 		Predictors: []PredictorSpec{
 			{
 				Name: "p1",
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name:           "classifier",
 					Implementation: &impl,
 					Endpoint: &Endpoint{
@@ -458,13 +487,12 @@ func TestMetricsPortAddedToPrepacked(t *testing.T) {
 	}
 
 	spec.DefaultSeldonDeployment("mydep", "default")
-	metricPort := GetPort(constants.MetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
+	metricPort := GetPort(envPredictiveUnitMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
 	g.Expect(metricPort).NotTo(BeNil())
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber))
-	g.Expect(metricPort.Name).To(Equal(constants.MetricsPortName))
 
 	//Graph
-	pu := GetPredictiveUnit(spec.Predictors[0].Graph, "classifier")
+	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
@@ -481,7 +509,7 @@ func TestPredictorProtocolGrpc(t *testing.T) {
 		Predictors: []PredictorSpec{
 			{
 				Name: "p1",
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name:           "classifier",
 					Implementation: &impl,
 				},
@@ -490,13 +518,12 @@ func TestPredictorProtocolGrpc(t *testing.T) {
 	}
 
 	spec.DefaultSeldonDeployment("mydep", "default")
-	metricPort := GetPort(constants.MetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
+	metricPort := GetPort(envPredictiveUnitMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
 	g.Expect(metricPort).NotTo(BeNil())
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber))
-	g.Expect(metricPort.Name).To(Equal(constants.MetricsPortName))
 
 	//Graph
-	pu := GetPredictiveUnit(spec.Predictors[0].Graph, "classifier")
+	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
@@ -524,7 +551,7 @@ func TestPrepackedWithExistingContainer(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name:           "classifier",
 					Implementation: &impl,
 				},
@@ -533,16 +560,15 @@ func TestPrepackedWithExistingContainer(t *testing.T) {
 	}
 
 	spec.DefaultSeldonDeployment("mydep", "default")
-	metricPort := GetPort(constants.MetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
+	metricPort := GetPort(envPredictiveUnitMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
 	g.Expect(metricPort).NotTo(BeNil())
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber))
-	g.Expect(metricPort.Name).To(Equal(constants.MetricsPortName))
 
 	// empty image name as no configmap - but is set
 	g.Expect(spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Image).To(Equal(":"))
 
 	//Graph
-	pu := GetPredictiveUnit(spec.Predictors[0].Graph, "classifier")
+	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
@@ -558,7 +584,7 @@ func TestMetricsPortAddedToTwoPrepacked(t *testing.T) {
 		Predictors: []PredictorSpec{
 			{
 				Name: "p1",
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name:           "classifier",
 					Implementation: &impl,
 					Children: []PredictiveUnit{
@@ -573,24 +599,22 @@ func TestMetricsPortAddedToTwoPrepacked(t *testing.T) {
 	}
 
 	spec.DefaultSeldonDeployment("mydep", "default")
-	metricPort := GetPort(constants.MetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
+	metricPort := GetPort(envPredictiveUnitMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Ports)
 	g.Expect(metricPort).NotTo(BeNil())
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber))
-	g.Expect(metricPort.Name).To(Equal(constants.MetricsPortName))
 
-	metricPort = GetPort(constants.MetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[1].Ports)
+	metricPort = GetPort(envPredictiveUnitMetricsPortName, spec.Predictors[0].ComponentSpecs[0].Spec.Containers[1].Ports)
 	g.Expect(metricPort).NotTo(BeNil())
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber + 1))
-	g.Expect(metricPort.Name).To(Equal(constants.MetricsPortName))
 
 	//Graph
-	pu := GetPredictiveUnit(spec.Predictors[0].Graph, "classifier")
+	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
 	g.Expect(pu.Endpoint.Type).To(Equal(REST))
 
-	pu = GetPredictiveUnit(spec.Predictors[0].Graph, "classifier2")
+	pu = GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier2")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstPortNumber + 1))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
@@ -606,7 +630,7 @@ func TestDefaultPrepackagedServerType(t *testing.T) {
 		Predictors: []PredictorSpec{
 			{
 				Name: "p1",
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name:           "classifier",
 					Implementation: &impl,
 				},
@@ -617,7 +641,7 @@ func TestDefaultPrepackagedServerType(t *testing.T) {
 	spec.DefaultSeldonDeployment("mydep", "default")
 
 	// Graph
-	pu := GetPredictiveUnit(spec.Predictors[0].Graph, "classifier")
+	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.Type).To(Equal(REST))
 	g.Expect(*pu.Type).To(Equal(MODEL))
@@ -641,7 +665,7 @@ func TestValidateSingleModel(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 				},
 			},
@@ -671,7 +695,7 @@ func TestValidateSingleModelNoName(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{},
+				Graph: PredictiveUnit{},
 			},
 		},
 	}
@@ -715,7 +739,7 @@ func TestValidateNoEngineMultiGraph(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 					Children: []PredictiveUnit{
 						{
@@ -755,7 +779,7 @@ func TestValidateDuplPredictorName(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 				},
 				Traffic: 50,
@@ -774,7 +798,7 @@ func TestValidateDuplPredictorName(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 				},
 				Traffic: 50,
@@ -810,7 +834,7 @@ func TestValidateTrafficSum(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 				},
 			},
@@ -828,7 +852,7 @@ func TestValidateTrafficSum(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 				},
 			},
@@ -868,7 +892,7 @@ func TestDefaultABTest(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Implementation: &impl,
 					Children: []PredictiveUnit{
 						{
@@ -891,4 +915,22 @@ func TestDefaultABTest(t *testing.T) {
 	g.Expect(*graph.Implementation).To(Equal(RANDOM_ABTEST))
 	g.Expect(*graph.Children[0].Type).To(Equal(MODEL))
 	g.Expect(*graph.Children[1].Type).To(Equal(MODEL))
+}
+
+func TestPredictorNoGraph(t *testing.T) {
+	g := NewGomegaWithT(t)
+	scheme := runtime.NewScheme()
+	C = fake.NewFakeClientWithScheme(scheme)
+	spec := &SeldonDeploymentSpec{
+		Transport: TransportGrpc,
+		Predictors: []PredictorSpec{
+			{
+				Name: "p1",
+			},
+		},
+	}
+
+	spec.DefaultSeldonDeployment("mydep", "default")
+	err := spec.ValidateSeldonDeployment()
+	g.Expect(err).ToNot(BeNil())
 }

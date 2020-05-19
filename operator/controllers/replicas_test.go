@@ -37,7 +37,7 @@ func createSeldonDeploymentWithReplicas(name string, namespace string, specRepli
 							},
 						},
 					},
-					Graph: &machinelearningv1.PredictiveUnit{
+					Graph: machinelearningv1.PredictiveUnit{
 						Name: "classifier",
 						Type: &modelType,
 					},

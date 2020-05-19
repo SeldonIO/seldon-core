@@ -39,6 +39,7 @@ defaultUserID: ""
 executor:
   enabled: true
   port: 8000
+  metricsPortName: metrics
   grpc:
     port: 5001
   image:
@@ -88,6 +89,7 @@ webhook:
 # ## Predictive Unit Values
 predictiveUnit:
   port: 9000
+  metricsPortName: metrics
   # If you would like to add extra environment variables to the init container to make available
   #   secrets such as cloud credentials, you can provide a default secret name that will be loaded
   #   to all the containers. You can then override this using the envSecretRefName in SeldonDeployments
