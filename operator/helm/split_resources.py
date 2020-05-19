@@ -24,8 +24,8 @@ HELM_VERSION_IF_START = (
 )
 HELM_KUBEFLOW_IF_START = "{{- if .Values.kubeflow }}\n"
 HELM_KUBEFLOW_IF_NOT_START = "{{- if not .Values.kubeflow }}\n"
-HELM_CREATERESOURCES_IF_START = "{{- if not .Values.createResources }}\n"
-HELM_CREATERESOURCES_RBAC_IF_START = "{{- if .Values.createResources }}\n"
+HELM_CREATERESOURCES_IF_START = "{{- if not .Values.managerCreateResources }}\n"
+HELM_CREATERESOURCES_RBAC_IF_START = "{{- if .Values.managerCreateResources }}\n"
 # HELM_SECRET_IF_START = '{{- if .Values.webhook.secretProvided -}}\n'
 HELM_IF_END = "{{- end }}\n"
 
@@ -51,7 +51,7 @@ HELM_ENV_SUBST = {
     "EXECUTOR_PROMETHEUS_PATH": "executor.prometheus.path",
     "EXECUTOR_CONTAINER_USER": "executor.user",
     "EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME": "executor.serviceAccount.name",
-    "CREATE_RESOURCES": "createResources",
+    "MANAGER_CREATE_RESOURCES": "managerCreateResources",
     "EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX": "executor.defaultRequestLoggerEndpointPrefix",
     "DEFAULT_USER_ID": "defaultUserID",
 }
