@@ -41,4 +41,3 @@ spec:
       type: MODEL
     name: example2
     traffic: 50
-
