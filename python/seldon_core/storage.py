@@ -249,7 +249,13 @@ The path or model %s does not exist."
         use_ssl = (
             url.scheme == "https"
             if url.scheme
-            else bool(os.getenv("S3_USE_HTTPS", "true"))
+            # USE_SSL.
+            # KFServing uses S3_USE_HTTPS, whereas Seldon was already using
+            # To keep compatibility with the storage init layer we support
+            # both, giving priority to USE_SSL.
+            # https://github.com/SeldonIO/seldon-core/pull/827
+            # https://github.com/kubeflow/kfserving/pull/362
+            else bool(getenv("USE_SSL", "S3_USE_HTTPS", "false"))
         )
         return Minio(
             url.netloc,
