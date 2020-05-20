@@ -15,6 +15,9 @@ else
 GOBIN=$(shell go env GOBIN)
 endif
 
+GOOS ?= $(shell go env GOOS)
+GOARCH ?= $(shell go env GOARCH)
+
 # Run go fmt against code
 fmt:
 	go fmt ./...
@@ -26,7 +29,7 @@ vet:
 
 # Build manager binary
 executor: fmt vet
-	go build -o executor main.go
+	CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) GO111MODULE=on go build -o executor main.go
 
 
 .PHONY: copy_protos

@@ -17,6 +17,9 @@ else
 GOBIN=$(shell go env GOBIN)
 endif
 
+GOOS ?= $(shell go env GOOS)
+GOARCH ?= $(shell go env GOARCH)
+
 .PHONY:show_image
 show_image:
 	echo ${IMG}
@@ -29,7 +32,7 @@ test: generate fmt vet manifests generate-resources
 
 # Build manager binary
 manager: generate fmt vet
-	go build -o bin/manager main.go
+	CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) GO111MODULE=on go build -o bin/manager main.go
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
 run: generate fmt vet manifests

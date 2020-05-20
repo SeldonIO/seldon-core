@@ -18,14 +18,14 @@ COPY constants/ constants/
 COPY client/ client/
 
 # Build
-RUN go build -a -o manager main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=$(go env GOARCH) GO111MODULE=on go build -a -o manager main.go
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM gcr.io/distroless/base:latest
 WORKDIR /
 COPY --from=builder /workspace/manager .
-COPY licenses/license.txt licenses/license.txt 
+COPY licenses/license.txt licenses/license.txt
 COPY generated/admissionregistration.k8s.io_v1beta1_mutatingwebhookconfiguration_seldon-mutating-webhook-configuration.yaml /tmp/operator-resources/mutate.yaml
 COPY generated/admissionregistration.k8s.io_v1beta1_validatingwebhookconfiguration_seldon-validating-webhook-configuration.yaml /tmp/operator-resources/validate.yaml
 COPY generated/~g_v1_service_seldon-webhook-service.yaml /tmp/operator-resources/service.yaml
