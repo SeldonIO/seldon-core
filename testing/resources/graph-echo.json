@@ -1,0 +1,58 @@
+{
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": {
+    "labels": {
+      "app": "seldon"
+    },
+    "name": "mymodel"
+  },
+  "spec": {
+    "name": "mymodel",
+    "annotations": {
+      "seldon.io/ambassador-retries": "3",
+      "seldon.io/istio-retries": "3"
+    },
+    "predictors": [
+      {
+        "svcOrchSpec": {
+          "env": [
+            {
+              "name": "SELDON_LOG_LEVEL",
+              "value": "DEBUG"
+            }
+          ]
+        },
+        "componentSpecs": [
+          {
+            "spec": {
+              "containers": [
+                {
+                  "image": "seldonio/echo-model:0.1",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "complex-model",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi"
+                    }
+                  }
+                }
+              ],
+              "terminationGracePeriodSeconds": 1
+            }
+          }
+        ],
+        "graph": {
+          "children": [],
+          "name": "complex-model",
+          "endpoint": {
+            "type": "REST"
+          },
+          "type": "MODEL"
+        },
+        "name": "mymodel",
+        "replicas": 1
+      }
+    ]
+  }
+}
