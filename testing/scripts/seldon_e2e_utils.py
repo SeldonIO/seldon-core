@@ -1,3 +1,4 @@
+import os
 import requests
 import re
 import grpc
@@ -17,6 +18,8 @@ from seldon_core.proto import prediction_pb2_grpc
 
 API_AMBASSADOR = "localhost:8003"
 API_ISTIO_GATEWAY = "localhost:8004"
+
+RESOURCES_PATH = os.path.join(os.path.dirname(__file__), "resources")
 
 
 def get_seldon_version():
@@ -564,3 +567,7 @@ def assert_model(sdep_name, namespace, initial=False, endpoint=API_AMBASSADOR):
         shell=True,
     )
     assert ret.returncode == 0
+
+
+def to_resources_path(file_name):
+    return os.path.join(RESOURCES_PATH, file_name)
