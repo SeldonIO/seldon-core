@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/go-logr/logr"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/opentracing/opentracing-go"
@@ -52,7 +51,16 @@ func (smc *JSONRestClient) CreateErrorPayload(err error) payload.SeldonPayload {
 }
 
 func (smc *JSONRestClient) Marshall(w io.Writer, msg payload.SeldonPayload) error {
-	_, err := w.Write(msg.GetPayload().([]byte))
+	payload, ok := msg.GetPayload().([]byte)
+	if !ok {
+		return invalidPayload("couldn't convert to []byte")
+	}
+
+	var escaped bytes.Buffer
+
+	json.HTMLEscape(&escaped, payload)
+	_, err := escaped.WriteTo(w)
+
 	return err
 }
 
@@ -293,7 +301,7 @@ func (smc *JSONRestClient) Combine(ctx context.Context, modelName string, host s
 	strData := make([]string, len(msgs))
 	for i, sm := range msgs {
 		if !isJSON(sm.GetPayload().([]byte)) {
-			return nil, fmt.Errorf("Data is not JSON")
+			return nil, invalidPayload("Data is not JSON")
 		} else {
 			strData[i] = string(sm.GetPayload().([]byte))
 		}
