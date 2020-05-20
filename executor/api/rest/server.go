@@ -125,6 +125,8 @@ func (r *SeldonRestApi) Initialise() {
 		cloudeventHeaderMiddleware := CloudeventHeaderMiddleware{deploymentName: r.DeploymentName, namespace: r.Namespace}
 		r.Router.Use(puidHeader)
 		r.Router.Use(cloudeventHeaderMiddleware.Middleware)
+		r.Router.Use(xssMiddleware)
+
 		switch r.Protocol {
 		case api.ProtocolSeldon:
 			//v0.1 API
