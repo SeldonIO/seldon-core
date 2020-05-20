@@ -103,8 +103,8 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
             echo "SKIPPING EXECUTOR IMAGE BUILD..."
         fi
 
-        echo "Build fixed models"
-        make kind_build_fixed_models
+        echo "Build test models"
+        make kind_build_test_models
         KIND_BUILD_EXIT_VALUE=$?
         if [[ $KIND_BUILD_EXIT_VALUE -gt 0 ]]; then
             echo "Kind build has errors"
