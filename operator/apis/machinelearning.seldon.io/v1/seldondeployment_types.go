@@ -44,7 +44,7 @@ const (
 	Label_canary             = "canary"
 	Label_explainer          = "explainer"
 
-	PODINFO_VOLUME_NAME = "podinfo"
+	PODINFO_VOLUME_NAME = "seldon-podinfo"
 	PODINFO_VOLUME_PATH = "/etc/podinfo"
 
 	ENV_PREDICTIVE_UNIT_SERVICE_PORT         = "PREDICTIVE_UNIT_SERVICE_PORT"
