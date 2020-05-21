@@ -26,8 +26,11 @@ s2i usage seldonio/seldon-core-s2i-python3:0.18
 To use our s2i builder image to package your python model you will need:
 
  * A python file with a class that runs your model
- * requirements.txt  or setup.py
- * .s2i/environment - model definitions used by the s2i builder to correctly wrap your model
+ * Your model's dependencies and environment, which can be described using either of:
+   - `requirements.txt`
+   - `setup.py`
+   - `environment.yaml`
+ * `.s2i/environment` - model definitions used by the s2i builder to correctly wrap your model
 
 We will go into detail for each of these steps:
 
@@ -37,12 +40,14 @@ Your source code should contain a python file which defines a class of the same 
 ```python
 class MyModel(object):
     """
-    Model template. You can load your model parameters in __init__ from a location accessible at runtime
+    Model template.
+    You can load your model parameters in __init__ from a location accessible at runtime.
     """
 
     def __init__(self):
         """
-        Add any initialization parameters. These will be passed at runtime from the graph definition parameters defined in your seldondeployment kubernetes resource manifest.
+        Add any initialization parameters.
+        These will be passed at runtime from the graph definition parameters defined in your seldondeployment kubernetes resource manifest.
         """
         print("Initializing")
 
@@ -64,8 +69,49 @@ class MyModel(object):
  * You can add any required initialization inside the class init method.
  * Your return array should be at least 2-dimensional.
 
-### requirements.txt
-Populate a requirements.txt with any software dependencies your code requires. These will be installed via pip when creating the image. You can instead provide a setup.py if you prefer.
+### Dependencies
+
+You can describe your model's dependencies using either of: `requirements.txt`,
+`setup.py` or `environment.yaml`.
+
+#### requirements.txt
+
+Populate a `requirements.txt` with any software dependencies your code requires.
+These will be installed via pip when creating the image.
+
+#### setup.py
+
+Similar to a `requirements.txt` file, you can also describe your model's
+dependencies using a `setup.py` file:
+
+```python
+from setuptools import setup
+
+setup(
+  name="my-model",
+  # ...
+  install_requires=[
+    "scikit-learn",
+  ]
+)
+```
+
+#### environment.yaml
+
+Describe your Conda environment using an `environment.yaml` file:
+
+```yaml
+name: my-conda-environment
+channels:
+  - defaults
+dependencies:
+  - python=3.6
+  - scikit-learn=0.19.1
+```
+
+During image creation, `s2i` will create your Conda environment, fetching all
+the required dependencies.
+At run time, the created Conda environment will get activated at startup.
 
 ### .s2i/environment
 
