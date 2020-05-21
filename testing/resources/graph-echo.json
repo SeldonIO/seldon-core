@@ -1,12 +1,7 @@
 {
   "apiVersion": "machinelearning.seldon.io/v1alpha2",
   "kind": "SeldonDeployment",
-  "metadata": {
-    "labels": {
-      "app": "seldon"
-    },
-    "name": "mymodel"
-  },
+  "metadata": { "labels": { "app": "seldon" }, "name": "mymodel" },
   "spec": {
     "name": "mymodel",
     "annotations": {
@@ -16,12 +11,7 @@
     "predictors": [
       {
         "svcOrchSpec": {
-          "env": [
-            {
-              "name": "SELDON_LOG_LEVEL",
-              "value": "DEBUG"
-            }
-          ]
+          "env": [{ "name": "SELDON_LOG_LEVEL", "value": "DEBUG" }]
         },
         "componentSpecs": [
           {
@@ -31,11 +21,7 @@
                   "image": "seldonio/echo-model:0.1",
                   "imagePullPolicy": "IfNotPresent",
                   "name": "complex-model",
-                  "resources": {
-                    "requests": {
-                      "memory": "1Mi"
-                    }
-                  }
+                  "resources": { "requests": { "memory": "1Mi" } }
                 }
               ],
               "terminationGracePeriodSeconds": 1
