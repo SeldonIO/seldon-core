@@ -43,7 +43,6 @@ helm install seldon-core seldon-core-operator \
     --repo https://storage.googleapis.com/seldon-charts \
     --namespace seldon-system \
     --set istio.enabled=true \
-    --set istio.gateway="seldon-gateway.foo.svc.cluster.local" \
     --set image.repository="sachinmv31/seldon-core-operator" \
     --set image.tag="1.1.1-SNAPSHOT"
 ```
@@ -283,7 +282,7 @@ kubectl -n foo delete requestauthentication seldon-auth-example
 
 ## Authentication at the Ingress Level
 
-Similarly, you can also setup RequestAuthentication and AuthorizationPolicy at the ingress level by changing the selector
+Similarly, you can also setup RequestAuthentication and AuthorizationPolicy at the ingress gateway level by changing the selector
 
 1. Setup request Authentication as follow:
 
@@ -352,6 +351,8 @@ kubectl delete namespace foo
 ```
 
 ## Relevant Links
+
+- https://istio.io/docs/concepts/security/
 
 - https://istio.io/docs/reference/config/security/request_authentication/
 
