@@ -19,7 +19,8 @@ from seldon_core.proto import prediction_pb2_grpc
 API_AMBASSADOR = "localhost:8003"
 API_ISTIO_GATEWAY = "localhost:8004"
 
-RESOURCES_PATH = os.path.join(os.path.dirname(__file__), "resources")
+TESTING_ROOT_PATH = os.path.dirname(os.path.dirname(__file__))
+RESOURCES_PATH = os.path.join(TESTING_ROOT_PATH, "resources")
 
 
 def get_seldon_version():
@@ -342,6 +343,8 @@ def rest_request_ambassador(
 
     if dtype == "tensor":
         payload = {"data": {"tensor": {"shape": shape, "values": arr.tolist()}}}
+    elif dtype == "strData":
+        payload = {"strData": arr}
     else:
         payload = {"data": {"ndarray": arr}}
 
