@@ -115,8 +115,8 @@ spec:
           value: "8888"          
         - name: EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME
           value: default
-        - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX
-          value: "http://default-broker."
+        - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT
+          value: "http://default-broker"
         - name: DEFAULT_USER_ID
           value: ''
         image: controller:latest

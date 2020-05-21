@@ -242,7 +242,7 @@ func (p *PredictorProcess) getLogUrl(logger *v1.Logger) (*url.URL, error) {
 	if logger.Url != nil {
 		return url.Parse(*logger.Url)
 	} else {
-		return url.Parse(payloadLogger.GetLoggerDefaultUrl(p.Namespace))
+		return url.Parse(payloadLogger.GetLoggerDefaultUrl())
 	}
 }
 
