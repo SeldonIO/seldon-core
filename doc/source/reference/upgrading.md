@@ -6,6 +6,16 @@ If you were running our Openshift 0.4.2 certified operator and are looking to up
 
 Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed features and bug-fixes in each version.
 
+## Upgrading to 1.2
+
+The values.yaml for the seldon-core-operator helm chart has changed. The field `defaultRequestLoggerEndpointPrefix` is replaced by:
+
+```
+  requestLogger:
+    defaultEndpoint: 'http://default-broker'
+```
+
+This default value will find a broker in the model's namespace. To point to another namespace it would be `default-broker.anothernamespace`.
 
 ## Upgrading to 1.1 from previous versions
 
