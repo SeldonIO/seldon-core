@@ -40,10 +40,12 @@
                     "children": [],
                     "name": "{{ .Values.model.name }}",
                     "type": "MODEL",
-{{- if .Values.model.logger }}
+{{- if .Values.model.logger.enabled }}
                     "logger": {
                        "mode": "all",
-                       "url": "{{ .Values.model.logger }}"
+{{- if .Values.model.logger.url }}
+                       "url": "{{ .Values.model.logger.url }}"
+{{- end}}
                      },
 {{- end}}
                     "endpoint": {

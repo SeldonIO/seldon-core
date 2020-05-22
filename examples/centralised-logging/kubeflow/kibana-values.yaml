@@ -1,3 +1,0 @@
-extraEnvs:
-  - name: SERVER_BASEPATH
-    value: "/kibana"
