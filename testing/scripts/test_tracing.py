@@ -6,7 +6,7 @@ from seldon_e2e_utils import (
     wait_for_rollout,
     initial_rest_request,
 )
-from jaeger_utils import get_traces
+from e2e_utils.jaeger import get_traces
 
 
 def assert_trace(trace, expected_operations):
