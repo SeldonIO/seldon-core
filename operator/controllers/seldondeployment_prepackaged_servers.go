@@ -284,6 +284,11 @@ func createStandaloneModelServers(r *SeldonDeploymentReconciler, mlDep *machinel
 			deploy = createDeploymentWithoutEngine(depName, seldonId, sPodSpec, p, mlDep, podSecurityContext)
 		}
 
+		// apply serviceAccountName defined in predictors to prepackaged containers
+		if pu.ServiceAccountName != "" {
+			deploy.Spec.Template.Spec.ServiceAccountName = pu.ServiceAccountName
+		}
+
 		ServerConfig := machinelearningv1.GetPrepackServerConfig(string(*pu.Implementation))
 
 		if err := addModelDefaultServers(r, pu, p, deploy, ServerConfig); err != nil {
