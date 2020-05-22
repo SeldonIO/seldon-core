@@ -13,7 +13,9 @@ model:
     LOG_LEVEL: INFO
   annotations:
     seldon.io/headless-svc: "false"
-  logger: ""
+  logger:
+    enabled: false
+    url: ""
 replicas: 1
 
 predictor:

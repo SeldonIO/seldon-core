@@ -1,14 +1,12 @@
  
 kind delete cluster
-cd ..
-kind create cluster --config kind_config.yaml --image kindest/node:v1.15.6
+#had a problem with 1.15.6 image https://github.com/SeldonIO/seldon-core/pull/1861#issuecomment-632587125
+kind create cluster --config kind_config.yaml --image kindest/node:v1.14.2
 
 kubectl create namespace seldon-system
 
 helm install seldon-core ../../helm-charts/seldon-core-operator/ --namespace seldon-system
 
-
-cd request-logging
 ./install_istio.sh
 ./install_knative.sh
 
@@ -28,9 +26,7 @@ kubectl -n default get broker
 
 kubectl rollout status -n seldon-system deployment/seldon-controller-manager
 
-helm install seldon-single-model ../../../helm-charts/seldon-single-model/ --set model.logger="http://default-broker"
-
-cd ..
+helm install seldon-single-model ../../helm-charts/seldon-single-model/ --set model.logger.enabled=true
 
 kubectl create namespace logs
 kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
@@ -52,7 +48,7 @@ kubectl label nodes $(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')
 
 helm install seldon-core-loadtesting ../../helm-charts/seldon-core-loadtesting/ --set locust.host=http://seldon-single-model-default:8000 --set oauth.enabled=false --set oauth.key=oauth-key --set oauth.secret=oauth-secret --set locust.hatchRate=1 --set locust.clients=1 --set loadtest.sendFeedback=0 --set locust.minWait=1000 --set locust.maxWait=1000 --set replicaCount=1
 
-cd request-logging
+
 #do this at end as otherwise sometimes gets stuck in terminating and then have to reinstall these
 kubectl apply -f ./trigger.yaml
 
