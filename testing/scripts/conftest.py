@@ -1,8 +1,11 @@
+import os
 import pytest
 from seldon_e2e_utils import clean_string, retry_run, get_seldon_version
 
 from e2e_utils.install import install_seldon, delete_seldon
 from subprocess import run
+
+SELDON_E2E_TESTS_USE_ENGINE = os.getenv("SELDON_E2E_TESTS_USE_ENGINE", False)
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -65,13 +68,13 @@ def seldon_version(request):
 
     # Delete source version cluster-wide and install new one
     delete_seldon()
-    install_seldon(version=seldon_version)
+    install_seldon(version=seldon_version, engine=SELDON_E2E_TESTS_USE_ENGINE)
 
     yield seldon_version
 
     # Re-install source code version cluster-wide
     delete_seldon()
-    install_seldon()
+    install_seldon(engine=SELDON_E2E_TESTS_USE_ENGINE)
 
 
 def do_s2i_python_version():
