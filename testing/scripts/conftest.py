@@ -1,5 +1,7 @@
 import pytest
 from seldon_e2e_utils import clean_string, retry_run, get_seldon_version
+
+from e2e_utils.install import install_seldon, delete_seldon
 from subprocess import run
 
 
@@ -63,44 +65,13 @@ def seldon_version(request):
 
     # Delete source version cluster-wide and install new one
     delete_seldon()
-    retry_run(
-        "helm install seldon "
-        "seldonio/seldon-core-operator "
-        "--namespace seldon-system "
-        "--set istio.enabled=true "
-        "--set istio.gateway=istio-system/seldon-gateway "
-        "--set certManager.enabled=false "
-        "--set executor.enabled=true "
-        f"--version {seldon_version} "
-        "--wait"
-    )
+    install_seldon(version=seldon_version)
 
     yield seldon_version
 
     # Re-install source code version cluster-wide
     delete_seldon()
-    retry_run(
-        "helm install seldon "
-        "../../helm-charts/seldon-core-operator "
-        "--namespace seldon-system "
-        "--set istio.enabled=true "
-        "--set istio.gateway=istio-system/seldon-gateway "
-        "--set certManager.enabled=false "
-        "--set executor.enabled=true "
-        "--wait",
-        attempts=2,
-    )
-
-
-def delete_seldon(name="seldon", namespace="seldon-system"):
-    retry_run(f"helm delete {name} -n {namespace}", attempts=3)
-
-    # Helm 3.0.3 doesn't delete CRDs
-    retry_run(
-        "kubectl delete crd --ignore-not-found "
-        "seldondeployments.machinelearning.seldon.io ",
-        attempts=3,
-    )
+    install_seldon()
 
 
 def do_s2i_python_version():
