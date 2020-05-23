@@ -145,12 +145,12 @@ Can only by 0 at present. In future, will allow the state of the component to be
 
 #### MODEL
 
-- [A minimal skeleton for model source code](https://github.com/seldonio/seldon-core/tree/incubating/wrappers/s2i/R/test/model-template-app)
+- [A minimal skeleton for model source code](https://github.com/SeldonIO/seldon-core/tree/master/incubating/wrappers/s2i/R/test/model-template-app)
 - [Example models](../examples/notebooks.html)
 
 #### ROUTER
-- [A minimal skeleton for router source code](https://github.com/seldonio/seldon-core/tree/incubating/wrappers/s2i/R/test/router-template-app)
+- [A minimal skeleton for router source code](https://github.com/SeldonIO/seldon-core/tree/master/incubating/wrappers/s2i/R/test/router-template-app)
 
 #### TRANSFORMER
 
-- [A minimal skeleton for transformer source code](https://github.com/seldonio/seldon-core/tree/incubating/wrappers/s2i/R/test/transformer-template-app)
+- [A minimal skeleton for transformer source code](https://github.com/SeldonIO/seldon-core/tree/master/incubating/wrappers/s2i/R/test/transformer-template-app)

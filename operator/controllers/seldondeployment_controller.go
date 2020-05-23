@@ -378,7 +378,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 		p := mlDep.Spec.Predictors[i]
 		_, noEngine := p.Annotations[machinelearningv1.ANNOTATION_NO_ENGINE]
 		if noEngine && len(p.ComponentSpecs) > 0 && len(p.ComponentSpecs[0].Spec.Containers) > 0 {
-			pu := machinelearningv1.GetPredictiveUnit(p.Graph, p.ComponentSpecs[0].Spec.Containers[0].Name)
+			pu := machinelearningv1.GetPredictiveUnit(&p.Graph, p.ComponentSpecs[0].Spec.Containers[0].Name)
 			if pu != nil {
 				if pu.Endpoint != nil && pu.Endpoint.Type == machinelearningv1.GRPC {
 					httpAllowed = false
@@ -500,7 +500,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 		}
 
 		pi := NewPrePackedInitializer(r.ClientSet)
-		err = pi.createStandaloneModelServers(mlDep, &p, &c, p.Graph, securityContext)
+		err = pi.createStandaloneModelServers(mlDep, &p, &c, &p.Graph, securityContext)
 		if err != nil {
 			return nil, err
 		}
@@ -513,7 +513,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 				found := false
 
 				// find the pu that the webhook marked as localhost as its corresponding deployment should get the engine
-				pu := machinelearningv1.GetEnginePredictiveUnit(p.Graph)
+				pu := machinelearningv1.GetEnginePredictiveUnit(&p.Graph)
 				if pu == nil {
 					// below should never happen - if it did would suggest problem in webhook
 					return nil, fmt.Errorf("Engine not separate and no pu with localhost service - not clear where to inject engine")
@@ -661,7 +661,7 @@ func createContainerService(deploy *appsv1.Deployment,
 	//containerServiceKey := machinelearningv1.GetPredictorServiceNameKey(con)
 	containerServiceKey := machinelearningv1.Label_seldon_app_svc
 	containerServiceValue := machinelearningv1.GetContainerServiceName(mlDep.Name, p, con)
-	pu := machinelearningv1.GetPredictiveUnit(p.Graph, con.Name)
+	pu := machinelearningv1.GetPredictiveUnit(&p.Graph, con.Name)
 
 	// only create services for containers defined as pus in the graph
 	if pu == nil {

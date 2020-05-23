@@ -118,7 +118,7 @@ func TestValidateBadProtocol(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 				},
 			},
@@ -155,7 +155,7 @@ func TestValidateBadTransport(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 					Type: &impl,
 				},
@@ -197,7 +197,7 @@ func TestValidateMixedTransport(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 					Type: &impl,
 					Endpoint: &Endpoint{
@@ -247,7 +247,7 @@ func TestValidateMixedMultipleTransport(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 					Type: &impl,
 					Endpoint: &Endpoint{
@@ -286,7 +286,7 @@ func TestDefaultSingleContainer(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 				},
 			},
@@ -301,7 +301,7 @@ func TestDefaultSingleContainer(t *testing.T) {
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber))
 
 	// Graph
-	pu := GetPredictiveUnit(spec.Predictors[0].Graph, "classifier")
+	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
@@ -339,7 +339,7 @@ func TestMetricsPortAddedTwoContainers(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 					Children: []PredictiveUnit{
 						{
@@ -362,13 +362,13 @@ func TestMetricsPortAddedTwoContainers(t *testing.T) {
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber + 1))
 
 	//Graph
-	pu := GetPredictiveUnit(spec.Predictors[0].Graph, "classifier")
+	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
 	g.Expect(pu.Endpoint.Type).To(Equal(REST))
 
-	pu = GetPredictiveUnit(spec.Predictors[0].Graph, "classifier2")
+	pu = GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier2")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstPortNumber + 1))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
@@ -420,7 +420,7 @@ func TestMetricsPortAddedTwoComponentSpecsTwoContainers(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 					Children: []PredictiveUnit{
 						{
@@ -445,13 +445,13 @@ func TestMetricsPortAddedTwoComponentSpecsTwoContainers(t *testing.T) {
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber + 1))
 
 	//Graph
-	pu := GetPredictiveUnit(spec.Predictors[0].Graph, "classifier")
+	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
 	g.Expect(pu.Endpoint.Type).To(Equal(REST))
 
-	pu = GetPredictiveUnit(spec.Predictors[0].Graph, "classifier2")
+	pu = GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier2")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstPortNumber + 1))
 	containerServiceValue := GetContainerServiceName(name, spec.Predictors[0], &spec.Predictors[0].ComponentSpecs[1].Spec.Containers[0])
@@ -486,7 +486,7 @@ func TestOverrideMetricsPortName(t *testing.T) {
 		Predictors: []PredictorSpec{
 			{
 				Name: "p1",
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name:           "classifier",
 					Implementation: &impl,
 				},
@@ -505,7 +505,7 @@ func TestOverrideMetricsPortName(t *testing.T) {
 	g.Expect(defaultMetricsPort).To(BeNil())
 
 	// Graph
-	pu := GetPredictiveUnit(spec.Predictors[0].Graph, "classifier")
+	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.Type).To(Equal(REST))
 	g.Expect(*pu.Type).To(Equal(MODEL))
@@ -533,7 +533,7 @@ func TestPortUseExisting(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 				},
 			},
@@ -546,7 +546,7 @@ func TestPortUseExisting(t *testing.T) {
 	g.Expect(metricPort.ContainerPort).To(Equal(containerPortMetrics))
 
 	//Graph
-	pu := GetPredictiveUnit(spec.Predictors[0].Graph, "classifier")
+	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(containerPortAPI))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
@@ -562,7 +562,7 @@ func TestMetricsPortAddedToPrepacked(t *testing.T) {
 		Predictors: []PredictorSpec{
 			{
 				Name: "p1",
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name:           "classifier",
 					Implementation: &impl,
 					Endpoint: &Endpoint{
@@ -579,7 +579,7 @@ func TestMetricsPortAddedToPrepacked(t *testing.T) {
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber))
 
 	//Graph
-	pu := GetPredictiveUnit(spec.Predictors[0].Graph, "classifier")
+	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
@@ -596,7 +596,7 @@ func TestPredictorProtocolGrpc(t *testing.T) {
 		Predictors: []PredictorSpec{
 			{
 				Name: "p1",
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name:           "classifier",
 					Implementation: &impl,
 				},
@@ -610,7 +610,7 @@ func TestPredictorProtocolGrpc(t *testing.T) {
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber))
 
 	//Graph
-	pu := GetPredictiveUnit(spec.Predictors[0].Graph, "classifier")
+	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
@@ -638,7 +638,7 @@ func TestPrepackedWithExistingContainer(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name:           "classifier",
 					Implementation: &impl,
 				},
@@ -655,7 +655,7 @@ func TestPrepackedWithExistingContainer(t *testing.T) {
 	g.Expect(spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Image).To(Equal("seldonio/tfserving-proxy_grpc:0.7"))
 
 	//Graph
-	pu := GetPredictiveUnit(spec.Predictors[0].Graph, "classifier")
+	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
@@ -672,7 +672,7 @@ func TestPrepackedWithCustom(t *testing.T) {
 		Predictors: []PredictorSpec{
 			{
 				Name: "p1",
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name:           "classifier",
 					Implementation: &impl,
 				},
@@ -690,7 +690,7 @@ func TestPrepackedWithCustom(t *testing.T) {
 	g.Expect(spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Image).To(Equal("custom_grpc:0.2"))
 
 	//Graph
-	pu := GetPredictiveUnit(spec.Predictors[0].Graph, "classifier")
+	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
@@ -720,7 +720,7 @@ func TestPrepackedWithExistingContainerAndImage(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name:           "classifier",
 					Implementation: &impl,
 				},
@@ -738,7 +738,7 @@ func TestPrepackedWithExistingContainerAndImage(t *testing.T) {
 	g.Expect(spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0].Image).To(Equal(image))
 
 	//Graph
-	pu := GetPredictiveUnit(spec.Predictors[0].Graph, "classifier")
+	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
@@ -754,7 +754,7 @@ func TestMetricsPortAddedToTwoPrepacked(t *testing.T) {
 		Predictors: []PredictorSpec{
 			{
 				Name: "p1",
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name:           "classifier",
 					Implementation: &impl,
 					Children: []PredictiveUnit{
@@ -778,13 +778,13 @@ func TestMetricsPortAddedToTwoPrepacked(t *testing.T) {
 	g.Expect(metricPort.ContainerPort).To(Equal(constants.FirstMetricsPortNumber + 1))
 
 	//Graph
-	pu := GetPredictiveUnit(spec.Predictors[0].Graph, "classifier")
+	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
 	g.Expect(pu.Endpoint.Type).To(Equal(REST))
 
-	pu = GetPredictiveUnit(spec.Predictors[0].Graph, "classifier2")
+	pu = GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier2")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstPortNumber + 1))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
@@ -800,7 +800,7 @@ func TestDefaultPrepackagedServerType(t *testing.T) {
 		Predictors: []PredictorSpec{
 			{
 				Name: "p1",
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name:           "classifier",
 					Implementation: &impl,
 				},
@@ -811,7 +811,7 @@ func TestDefaultPrepackagedServerType(t *testing.T) {
 	spec.DefaultSeldonDeployment("mydep", "default")
 
 	// Graph
-	pu := GetPredictiveUnit(spec.Predictors[0].Graph, "classifier")
+	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.Type).To(Equal(REST))
 	g.Expect(*pu.Type).To(Equal(MODEL))
@@ -835,7 +835,7 @@ func TestValidateSingleModel(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 				},
 			},
@@ -865,7 +865,7 @@ func TestValidateSingleModelNoName(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{},
+				Graph: PredictiveUnit{},
 			},
 		},
 	}
@@ -909,7 +909,7 @@ func TestValidateNoEngineMultiGraph(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 					Children: []PredictiveUnit{
 						{
@@ -949,7 +949,7 @@ func TestValidateDuplPredictorName(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 				},
 				Traffic: 50,
@@ -968,7 +968,7 @@ func TestValidateDuplPredictorName(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 				},
 				Traffic: 50,
@@ -1004,7 +1004,7 @@ func TestValidateTrafficSum(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 				},
 			},
@@ -1022,7 +1022,7 @@ func TestValidateTrafficSum(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name: "classifier",
 				},
 			},
@@ -1062,7 +1062,7 @@ func TestDefaultABTest(t *testing.T) {
 						},
 					},
 				},
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Implementation: &impl,
 					Children: []PredictiveUnit{
 						{
@@ -1097,7 +1097,7 @@ func TestValidateTensorflowProtocolNormalPrepackaged(t *testing.T) {
 		Predictors: []PredictorSpec{
 			{
 				Name: "p1",
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name:           "classifier",
 					Implementation: &impl,
 					ModelURI:       "s3://mybucket/model",
@@ -1126,7 +1126,7 @@ func TestValidateTensorflowProtocolNormal(t *testing.T) {
 		Predictors: []PredictorSpec{
 			{
 				Name: "p1",
-				Graph: &PredictiveUnit{
+				Graph: PredictiveUnit{
 					Name:           "classifier",
 					Implementation: &impl,
 					ModelURI:       "s3://mybucket/model",
@@ -1138,4 +1138,22 @@ func TestValidateTensorflowProtocolNormal(t *testing.T) {
 	spec.DefaultSeldonDeployment("mydep", "default")
 	err = spec.ValidateSeldonDeployment()
 	g.Expect(err).To(BeNil())
+}
+
+func TestPredictorNoGraph(t *testing.T) {
+	g := NewGomegaWithT(t)
+	scheme := runtime.NewScheme()
+	C = fake.NewFakeClientWithScheme(scheme)
+	spec := &SeldonDeploymentSpec{
+		Transport: TransportGrpc,
+		Predictors: []PredictorSpec{
+			{
+				Name: "p1",
+			},
+		},
+	}
+
+	spec.DefaultSeldonDeployment("mydep", "default")
+	err := spec.ValidateSeldonDeployment()
+	g.Expect(err).ToNot(BeNil())
 }

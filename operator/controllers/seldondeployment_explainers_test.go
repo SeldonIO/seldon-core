@@ -62,7 +62,7 @@ func createTestSDepWithExplainer() *machinelearningv1.SeldonDeployment {
 							},
 						},
 					},
-					Graph: &machinelearningv1.PredictiveUnit{
+					Graph: machinelearningv1.PredictiveUnit{
 						Name: "classifier",
 						Type: &modelType,
 					},
@@ -185,7 +185,7 @@ var _ = Describe("Create a Seldon Deployment with explainer", func() {
 								},
 							},
 						},
-						Graph: &machinelearningv1.PredictiveUnit{
+						Graph: machinelearningv1.PredictiveUnit{
 							Name: "classifier",
 							Type: &modelType,
 						},

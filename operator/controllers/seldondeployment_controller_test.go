@@ -66,7 +66,7 @@ var _ = Describe("Create a Seldon Deployment", func() {
 								},
 							},
 						},
-						Graph: &machinelearningv1.PredictiveUnit{
+						Graph: machinelearningv1.PredictiveUnit{
 							Name: "classifier",
 							Type: &modelType,
 						},
@@ -182,7 +182,7 @@ var _ = Describe("Create a Seldon Deployment", func() {
 								},
 							},
 						},
-						Graph: &machinelearningv1.PredictiveUnit{
+						Graph: machinelearningv1.PredictiveUnit{
 							Name: "classifier",
 							Type: &modelType,
 						},
@@ -300,7 +300,7 @@ var _ = Describe("Create a Seldon Deployment with two ComponentSpecs", func() {
 								},
 							},
 						},
-						Graph: &machinelearningv1.PredictiveUnit{
+						Graph: machinelearningv1.PredictiveUnit{
 							Name: "classifier",
 							Type: &modelType,
 							Children: []machinelearningv1.PredictiveUnit{
@@ -439,7 +439,7 @@ var _ = Describe("Create a Seldon Deployment with hpa", func() {
 								},
 							},
 						},
-						Graph: &machinelearningv1.PredictiveUnit{
+						Graph: machinelearningv1.PredictiveUnit{
 							Name: "classifier",
 							Type: &modelType,
 						},
@@ -558,7 +558,7 @@ var _ = Describe("Create a Seldon Deployment and then a new one", func() {
 								},
 							},
 						},
-						Graph: &machinelearningv1.PredictiveUnit{
+						Graph: machinelearningv1.PredictiveUnit{
 							Name: "classifier",
 							Type: &modelType,
 						},
@@ -589,7 +589,7 @@ var _ = Describe("Create a Seldon Deployment and then a new one", func() {
 								},
 							},
 						},
-						Graph: &machinelearningv1.PredictiveUnit{
+						Graph: machinelearningv1.PredictiveUnit{
 							Name: "classifier2",
 							Type: &modelType,
 						},
@@ -738,7 +738,7 @@ var _ = Describe("Create a Seldon Deployment with long name", func() {
 								},
 							},
 						},
-						Graph: &machinelearningv1.PredictiveUnit{
+						Graph: machinelearningv1.PredictiveUnit{
 							Name: "classifier",
 							Type: &modelType,
 						},
@@ -860,7 +860,7 @@ func TestCreateDeploymentWithLabelsAndAnnotations(t *testing.T) {
 							},
 						},
 					},
-					Graph: &machinelearningv1.PredictiveUnit{
+					Graph: machinelearningv1.PredictiveUnit{
 						Name: "classifier",
 						Type: &modelType,
 					},
@@ -905,7 +905,7 @@ func TestCreateDeploymentWithNoLabelsAndAnnotations(t *testing.T) {
 							},
 						},
 					},
-					Graph: &machinelearningv1.PredictiveUnit{
+					Graph: machinelearningv1.PredictiveUnit{
 						Name: "classifier",
 						Type: &modelType,
 					},

@@ -19,8 +19,7 @@ You can see basic examples for all options in the [protocol examples notebook](.
 ## Design
 
 The service orchestrator's core concern is to manage the request/response flow of calls through the defined inference graph. Given a graph shown below:
-
-```
+```YAML
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
@@ -58,11 +57,23 @@ For more complex inference graphs the service orchestrator will handle routing c
 
 ## Using the Java engine
 
-You can continue to use the Java engine Service Orchestrator but this will be deprecated in release 1.2.
+You can continue to use the Java engine Service Orchestrator but this may get deprecated in future release.
 
   * For Helm installs `--set executor.enabled=false`
   * For Kustomize - update [manager.yaml](https://github.com/SeldonIO/seldon-core/blob/master/operator/config/manager/manager.yaml) env with `USE_EXECUTOR: "false"`
 
+You can also overwrite this for a given deployment by setting value of annotation `seldon.io/executor`:
+```YAML
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: ...
+spec:
+  annotations:
+    seldon.io/executor: "false"
+  name: ...
+  ...
+```
 
 For further details on the Java engine see previous versions of this page in the docs.
 
@@ -152,4 +163,3 @@ spec:
 In these cases the external API requests will be sent directly to your model. At present only the python wrapper (>=0.13-SNAPSHOT) has been modified to allow this.
 
 Note no metrics or extra data will be added to the request so this would need to be done by your model itself if needed.
-

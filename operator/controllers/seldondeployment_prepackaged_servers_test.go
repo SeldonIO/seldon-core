@@ -42,7 +42,7 @@ var _ = Describe("Create a prepacked sklearn server", func() {
 				Predictors: []machinelearningv1.PredictorSpec{
 					{
 						Name: "p1",
-						Graph: &machinelearningv1.PredictiveUnit{
+						Graph: machinelearningv1.PredictiveUnit{
 							Name:           "classifier",
 							Type:           &modelType,
 							Implementation: &impl,
@@ -116,7 +116,7 @@ var _ = Describe("Create a prepacked tfserving server for Seldon protocol and RE
 				Predictors: []machinelearningv1.PredictorSpec{
 					{
 						Name: name,
-						Graph: &machinelearningv1.PredictiveUnit{
+						Graph: machinelearningv1.PredictiveUnit{
 							Name:           "classifier",
 							Type:           &modelType,
 							Implementation: &impl,
@@ -204,7 +204,7 @@ var _ = Describe("Create a prepacked tfserving server for tensorflow protocol an
 				Predictors: []machinelearningv1.PredictorSpec{
 					{
 						Name: "p1",
-						Graph: &machinelearningv1.PredictiveUnit{
+						Graph: machinelearningv1.PredictiveUnit{
 							Name:           modelName,
 							Type:           &modelType,
 							Implementation: &impl,
@@ -307,7 +307,7 @@ var _ = Describe("Create a prepacked tfserving server for tensorflow protocol an
 								},
 							},
 						},
-						Graph: &machinelearningv1.PredictiveUnit{
+						Graph: machinelearningv1.PredictiveUnit{
 							Name:           modelName,
 							Type:           &modelType,
 							Implementation: &impl,
@@ -437,7 +437,7 @@ var _ = Describe("Create a prepacked tfserving server for tensorflow protocol an
 				Predictors: []machinelearningv1.PredictorSpec{
 					{
 						Name: "p1",
-						Graph: &machinelearningv1.PredictiveUnit{
+						Graph: machinelearningv1.PredictiveUnit{
 							Name:           modelName,
 							Type:           &modelType,
 							Implementation: &impl,
@@ -524,7 +524,7 @@ var _ = Describe("Create a prepacked sklearn server", func() {
 				Predictors: []machinelearningv1.PredictorSpec{
 					{
 						Name: "p1",
-						Graph: &machinelearningv1.PredictiveUnit{
+						Graph: machinelearningv1.PredictiveUnit{
 							Name:           "classifier",
 							Type:           &modelType,
 							Implementation: &impl,

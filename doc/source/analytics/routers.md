@@ -1,7 +1,7 @@
 # Routers in Seldon Core
 
 ## Definitions
-A router is one of the pre-defined types of [predictive units](../reference/seldon-deployment.md#proto-buffer-definition) in Seldon Core. It is a microservice to route requests to one of its children and optionally receive feedback rewards for making the routing choices. The REST and gRPC internal APIs that the router components must conform to are covered in the [internal API](.,/reference/docs/reference/apis/internal-api.md#router) reference.
+A router is one of the pre-defined types of [predictive units](../reference/seldon-deployment.md#proto-buffer-definition) in Seldon Core. It is a microservice to route requests to one of its children and optionally receive feedback rewards for making the routing choices. The REST and gRPC internal APIs that the router components must conform to are covered in the [internal API](../reference/docs/reference/apis/internal-api.md#router) reference.
 
 ## Implementations
 Currently we provide two reference implementations of routers in Python. Both are instances of [multi-armed bandits](https://en.wikipedia.org/wiki/Multi-armed_bandit#Semi-uniform_strategies):
