@@ -23,9 +23,9 @@ kind create cluster --config kind_config.yaml --image kindest/node:v1.15.6
 Install elastic with KIND config:
 
 ```
-kubectl create namespace logs
+kubectl create namespace seldon-logs
 kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
-helm install elasticsearch elasticsearch --version 7.6.0 --namespace=logs -f elastic-kind.yaml --repo https://helm.elastic.co --set image=docker.elastic.co/elasticsearch/elasticsearch-oss
+helm install elasticsearch elasticsearch --version 7.6.0 --namespace=seldon-logs -f elastic-kind.yaml --repo https://helm.elastic.co --set image=docker.elastic.co/elasticsearch/elasticsearch-oss
 ```
 
 ## Setup Elastic - Minikube
@@ -39,8 +39,8 @@ minikube start --cpus 6 --memory 10240 --disk-size=30g --kubernetes-version='1.1
 Install elasticsearch with minikube configuration:
 
 ```
-kubectl create namespace logs
-helm install elasticsearch elasticsearch --version 7.6.0 --namespace=logs -f elastic-minikube.yaml --repo https://helm.elastic.co --set image=docker.elastic.co/elasticsearch/elasticsearch-oss
+kubectl create namespace seldon-logs
+helm install elasticsearch elasticsearch --version 7.6.0 --namespace=seldon-logs -f elastic-minikube.yaml --repo https://helm.elastic.co --set image=docker.elastic.co/elasticsearch/elasticsearch-oss
 ```
 
 ## Fluentd and Kibana
@@ -48,13 +48,13 @@ helm install elasticsearch elasticsearch --version 7.6.0 --namespace=logs -f ela
 Then fluentd as a collection agent (chosen in preference to fluentbit - see notes at end):
 
 ```
-helm install fluentd fluentd-elasticsearch --namespace=logs -f fluentd-values.yaml --repo https://kiwigrid.github.io
+helm install fluentd fluentd-elasticsearch --version 8.0.0 --namespace=seldon-logs -f fluentd-values.yaml --repo https://kiwigrid.github.io
 ```
 
 And kibana UI:
 
 ```
-helm install kibana kibana --version 7.6.0 --namespace=logs --set service.type=NodePort --repo https://helm.elastic.co --set image=docker.elastic.co/kibana/kibana-oss
+helm install kibana kibana --version 7.6.0 --namespace=seldon-logs --set service.type=NodePort --repo https://helm.elastic.co --set image=docker.elastic.co/kibana/kibana-oss
 ```
 
 
@@ -76,7 +76,7 @@ Check that it now recognises the seldon CRD by running `kubectl get sdep`.
 Now a model:
 
 ```
-helm install seldon-single-model ../../helm-charts/seldon-single-model/
+helm install seldon-single-model ../../helm-charts/seldon-single-model/ --set model.logger.enabled=true --set model.logger.url="http://default-broker.seldon-logs"
 ```
 
 ## Setting up Request Logging
@@ -95,14 +95,14 @@ Run `kubectl apply -f seldon-request-logger.yaml`
 Create broker:
 
 ```
-kubectl label namespace default knative-eventing-injection=enabled
+kubectl label namespace seldon-logs knative-eventing-injection=enabled
 sleep 3
-kubectl -n default get broker default
+kubectl -n seldon-logs get broker default
 ```
 
 The broker should show 'READY' as True.
 
-Note that SeldonDeployments will log requests to a broker in their namespace unless told otherwise. So this is assuming the SeldonDeployment will be in the default namespace.
+Note that when we installed the seldon model earlier we told it to log to a broker in the seldon-logs namespace.
 
 And trigger:
 
@@ -125,7 +125,7 @@ helm install seldon-core-loadtesting ../../helm-charts/seldon-core-loadtesting/ 
 
 Access kibana with a port-forward to `localhost:5601`:
 ```
-kubectl port-forward svc/kibana-kibana -n logs 5601:5601
+kubectl port-forward svc/kibana-kibana -n seldon-logs 5601:5601
 ```
 
 When Kibana appears for the first time there will be a brief animation while it initializes.
