@@ -43,7 +43,11 @@ kubectl rollout status -n seldon-logs statefulset/elasticsearch-master
 #SELDON CORE
 kubectl create namespace seldon-system
 
-helm install seldon-core ../../helm-charts/seldon-core-operator/ --namespace seldon-system
+# istio gateway not strictly necessary and example works without - just adding in case we want to call service via ingress
+# (loadtest uses internal service endpoint so doesn't need istio gateway)
+kubectl apply -f ../../notebooks/resources/seldon-gateway.yaml
+helm install seldon-core ../../helm-charts/seldon-core-operator/ --namespace seldon-system --set istio.enabled="true" --set istio.gateway="seldon-gateway.istio-system.svc.cluster.local"
+#if this were with kubeflow above would use kubeflow-gateway.kubeflow.svc.cluster.local and certManager.enabled="true"
 
 kubectl rollout status -n seldon-system deployment/seldon-controller-manager
 
