@@ -147,6 +147,29 @@ def update_operator_values_yaml_file_prepackaged_images(fpath, seldon_core_versi
         print("error updating operator values yaml for prepackaged server images".format(**locals()))
         print(err)
 
+def update_operator_values_yaml_file_explainer_image(fpath, seldon_core_version, debug=False):
+    fpath = os.path.realpath(fpath)
+    if debug:
+        print("processing [{}]".format(fpath))
+    args = [
+        "sed",
+        "-i",
+        "s|seldonio/alibiexplainer:\(.*\)|seldonio/alibiexplainer:{seldon_core_version}|".format(
+            **locals()
+        ),
+        fpath,
+    ]
+    err, out = run_command(args, debug)
+    # pp(out)
+    # pp(err)
+    if err == None:
+        print("updated operator values yaml for prepackaged server images".format(**locals()))
+    else:
+        print("error updating operator values yaml for prepackaged server images".format(**locals()))
+        print(err)
+
+
+
 def update_operator_kustomize_prepackaged_images(fpath, seldon_core_version, debug=False):
     fpath = os.path.realpath(fpath)
     if debug:
@@ -342,6 +365,10 @@ def set_version(
         update_operator_values_yaml_file_prepackaged_images(
            operator_values_yaml_file_realpath, seldon_core_version, debug
         )
+        update_operator_values_yaml_file_explainer_image(
+           operator_values_yaml_file_realpath, seldon_core_version, debug
+        )
+
 
     if operator_kustomize_yaml_file != None:
         update_operator_kustomize_prepackaged_images(
