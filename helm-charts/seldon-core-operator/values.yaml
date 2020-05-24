@@ -164,4 +164,4 @@ engine:
 
 # Explainer image
 explainer:
-  image: seldonio/alibiexplainer:1.1.1-SNAPSHOT
+  image: seldonio/alibiexplainer:1.1.1-rc
