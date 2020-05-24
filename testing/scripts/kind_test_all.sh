@@ -111,6 +111,14 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
             return 1
         fi
 
+	echo "Build prepacked servers and alibi wrappers"
+	make kind_build_prepackaged kind_build_alibi kind_build_misc
+        KIND_BUILD_EXIT_VALUE=$?
+        if [[ $KIND_BUILD_EXIT_VALUE -gt 0 ]]; then
+            echo "Kind build has errors"
+            return 1
+        fi
+	
         # KIND CLUSTER SETUP
         make kind_setup
         SETUP_EXIT_VALUE=$?
