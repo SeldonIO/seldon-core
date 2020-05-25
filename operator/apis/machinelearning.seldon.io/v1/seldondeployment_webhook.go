@@ -380,7 +380,7 @@ func collectTransports(pu *PredictiveUnit, transportsFound map[EndpointType]bool
 func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 	var allErrs field.ErrorList
 
-	if r.Protocol != "" && !(r.Protocol == ProtocolSeldon || r.Protocol == ProtocolTensorflow) {
+	if r.Protocol != "" && !(r.Protocol == ProtocolSeldon || r.Protocol == ProtocolTensorflow || r.Protocol == ProtocolKfserving) {
 		fldPath := field.NewPath("spec")
 		allErrs = append(allErrs, field.Invalid(fldPath, r.Protocol, "Invalid protocol"))
 	}

@@ -23,7 +23,8 @@ const (
 
 	TritonDefaultGrpcPort = 2001
 	TritonDefaultHttpPort = 2000
-	TritonProbePath       = "/v2/health/live"
+	TritonProbeLivePath   = "/v2/health/live"
+	TritonProbeReadyPath  = "/v2/health/ready"
 )
 
 // Metrics-related constants

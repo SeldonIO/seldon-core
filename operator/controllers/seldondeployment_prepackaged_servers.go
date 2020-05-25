@@ -178,7 +178,7 @@ func (pi *PrePackedInitialiser) addTritonServer(pu *machinelearningv1.Predictive
 		},
 		ReadinessProbe: &v1.Probe{
 			Handler: v1.Handler{HTTPGet: &v1.HTTPGetAction{
-				Path: constants.TritonProbePath,
+				Path: constants.TritonProbeReadyPath,
 				Port: intstr.FromString("http"),
 			}},
 			InitialDelaySeconds: 20,
@@ -189,7 +189,7 @@ func (pi *PrePackedInitialiser) addTritonServer(pu *machinelearningv1.Predictive
 		},
 		LivenessProbe: &v1.Probe{
 			Handler: v1.Handler{HTTPGet: &v1.HTTPGetAction{
-				Path: constants.TritonProbePath,
+				Path: constants.TritonProbeLivePath,
 				Port: intstr.FromString("http"),
 			}},
 			InitialDelaySeconds: 60,

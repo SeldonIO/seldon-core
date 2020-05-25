@@ -167,8 +167,8 @@ func main() {
 		log.Fatal("Predictor must be provied")
 	}
 
-	if !(*protocol == api.ProtocolSeldon || *protocol == api.ProtocolTensorflow) {
-		log.Fatal("Protocol must be seldon or tensorflow")
+	if !(*protocol == api.ProtocolSeldon || *protocol == api.ProtocolTensorflow || *protocol == api.ProtocolKfserving) {
+		log.Fatal("Protocol must be seldon, tensorflow or kfserving")
 	}
 
 	if !(*transport == "rest" || *transport == "grpc") {
