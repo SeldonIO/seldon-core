@@ -227,6 +227,7 @@ type Protocol string
 const (
 	ProtocolSeldon     Protocol = "seldon"
 	ProtocolTensorflow Protocol = "tensorflow"
+	ProtocolKfserving  Protocol = "kfserving"
 )
 
 type Transport string

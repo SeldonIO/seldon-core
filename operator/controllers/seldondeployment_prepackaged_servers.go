@@ -24,6 +24,7 @@ import (
 	"github.com/seldonio/seldon-core/operator/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
 	"strconv"
 	"strings"
@@ -135,6 +136,93 @@ func (pi *PrePackedInitialiser) addTFServerContainer(mlDep *machinelearningv1.Se
 
 	mi := NewModelInitializer(pi.clientset)
 	_, err := mi.InjectModelInitializer(deploy, tfServingContainer.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (pi *PrePackedInitialiser) addTritonServer(pu *machinelearningv1.PredictiveUnit, deploy *appsv1.Deployment, serverConfig *machinelearningv1.PredictorServerConfig) error {
+
+	c := utils.GetContainerForDeployment(deploy, pu.Name)
+	existing := c != nil
+
+	httpPort := int32(constants.TritonDefaultHttpPort)
+	grpcPort := int32(constants.TritonDefaultGrpcPort)
+	if pu.Endpoint.Type == machinelearningv1.GRPC {
+		grpcPort = pu.Endpoint.ServicePort
+	} else {
+		httpPort = pu.Endpoint.ServicePort
+	}
+	tritonUser := int64(1000)
+
+	cServer := &v1.Container{
+		Name: pu.Name,
+		Args: []string{
+			"/opt/tritonserver/bin/tritonserver",
+			"--grpc-port=" + strconv.Itoa(int(grpcPort)),
+			"--http-port=" + strconv.Itoa(int(httpPort)),
+			"--model-repository=" + DefaultModelLocalMountPath,
+		},
+		Ports: []v1.ContainerPort{
+			{
+				Name:          "grpc",
+				ContainerPort: grpcPort,
+				Protocol:      v1.ProtocolTCP,
+			},
+			{
+				Name:          "http",
+				ContainerPort: httpPort,
+				Protocol:      v1.ProtocolTCP,
+			},
+		},
+		ReadinessProbe: &v1.Probe{
+			Handler: v1.Handler{HTTPGet: &v1.HTTPGetAction{
+				Path: constants.TritonProbePath,
+				Port: intstr.FromString("http"),
+			}},
+			InitialDelaySeconds: 20,
+			TimeoutSeconds:      1,
+			PeriodSeconds:       10,
+			SuccessThreshold:    1,
+			FailureThreshold:    3,
+		},
+		LivenessProbe: &v1.Probe{
+			Handler: v1.Handler{HTTPGet: &v1.HTTPGetAction{
+				Path: constants.TritonProbePath,
+				Port: intstr.FromString("http"),
+			}},
+			InitialDelaySeconds: 60,
+			TimeoutSeconds:      1,
+			PeriodSeconds:       10,
+			SuccessThreshold:    1,
+			FailureThreshold:    3,
+		},
+		SecurityContext: &v1.SecurityContext{
+			RunAsUser: &tritonUser,
+		},
+		VolumeMounts: []v1.VolumeMount{
+			{
+				Name:      machinelearningv1.PODINFO_VOLUME_NAME,
+				MountPath: machinelearningv1.PODINFO_VOLUME_PATH,
+			},
+		},
+	}
+	machinelearningv1.SetImageNameForPrepackContainer(pu, cServer, serverConfig)
+
+	if existing {
+		cServer.DeepCopyInto(c)
+	} else {
+		if len(deploy.Spec.Template.Spec.Containers) > 0 {
+			deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, *c)
+		} else {
+			deploy.Spec.Template.Spec.Containers = []v1.Container{*c}
+		}
+	}
+
+	envSecretRefName := extractEnvSecretRefName(pu)
+	mi := NewModelInitializer(pi.clientset)
+	_, err := mi.InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName)
 	if err != nil {
 		return err
 	}
@@ -287,15 +375,22 @@ func (pi *PrePackedInitialiser) createStandaloneModelServers(mlDep *machinelearn
 
 		serverConfig := machinelearningv1.GetPrepackServerConfig(string(*pu.Implementation))
 		if serverConfig != nil {
-			if *pu.Implementation != machinelearningv1.PrepackTensorflowName {
-				if err := pi.addModelDefaultServers(pu, deploy, serverConfig); err != nil {
-					return err
-				}
-			} else {
+			switch *pu.Implementation {
+			case machinelearningv1.PrepackTensorflowName:
 				if err := pi.addTFServerContainer(mlDep, pu, deploy, serverConfig); err != nil {
 					return err
 				}
+			case machinelearningv1.PrepackTritonName:
+				if err := pi.addTritonServer(pu, deploy, serverConfig); err != nil {
+					return err
+				}
+			default:
+				if err := pi.addModelDefaultServers(pu, deploy, serverConfig); err != nil {
+					return err
+				}
 			}
+		} else {
+			return fmt.Errorf("Failed to get server config for %s", *pu.Implementation)
 		}
 
 		if !existing {

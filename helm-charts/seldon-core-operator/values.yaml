@@ -125,6 +125,13 @@ predictor_servers:
     rest:
       defaultImageVersion: "1.1.1-rc"
       image: seldonio/xgboostserver_rest
+  TRITON_SERVER:
+    grpc:
+      defaultImageVersion: "20.05-20200524"
+      image: seldonio/tritonserver
+    rest:
+      defaultImageVersion: "20.05-20200524"
+      image: seldonio/tritonserver
 
 # ## Other
 # You can choose the crds to not be installed if you already installed them

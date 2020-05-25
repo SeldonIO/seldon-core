@@ -331,7 +331,6 @@ func TestTimeout(t *testing.T) {
 	g.Expect(err).ToNot(BeNil())
 }
 
-
 func TestIsJson(t *testing.T) {
 	g := NewGomegaWithT(t)
 	badJson := "ab"

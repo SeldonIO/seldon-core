@@ -23,6 +23,7 @@ const (
 	PrepackSklearnName               = "SKLEARN_SERVER"
 	PrepackXgboostName               = "XGBOOST_SERVER"
 	PrepackMlflowName                = "MLFLOW_SERVER"
+	PrepackTritonName                = "TRITON_SERVER"
 )
 
 const PredictorServerConfigMapKeyName = "predictor_servers"

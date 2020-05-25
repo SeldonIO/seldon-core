@@ -59,6 +59,16 @@ data:
               "defaultImageVersion": "1.1.1-rc"
             }
         }
+        "TRITON_SERVER": {
+            "rest": {
+              "image": "seldonio/tritonserver",
+              "defaultImageVersion": "20.05-20200524"
+            },
+            "grpc": {
+              "image": "seldonio/tritonserver",
+              "defaultImageVersion": "20.05-20200524"
+            }
+        }
     }
   storageInitializer: |-
     {

@@ -20,6 +20,10 @@ const (
 	DNSClusterLocalSuffix = ".svc.cluster.local."
 	GrpcPortName          = "grpc"
 	HttpPortName          = "http"
+
+	TritonDefaultGrpcPort = 2001
+	TritonDefaultHttpPort = 2000
+	TritonProbePath       = "/v2/health/live"
 )
 
 // Metrics-related constants
