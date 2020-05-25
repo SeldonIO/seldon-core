@@ -1,0 +1,46 @@
+ARG TF_SERVING_VERSION=latest
+ARG TF_SERVING_BUILD_IMAGE=tensorflow/serving:${TF_SERVING_VERSION}-devel
+
+FROM ${TF_SERVING_BUILD_IMAGE} as build_image
+FROM registry.access.redhat.com/ubi8/ubi-minimal
+LABEL name="Seldon Tensorflow Serving Server" \
+      vendor="Seldon Technologies" \
+      version="1.1.1-rc" \
+      release="1" \
+      summary="Tensorflow serving for Seldon Core" \
+      description="Tensorflow serving for Seldon Core to server Tensorflow models"
+
+ARG TF_SERVING_VERSION_GIT_BRANCH=master
+ARG TF_SERVING_VERSION_GIT_COMMIT=head
+
+LABEL maintainer="cc@seldon.io"
+LABEL tensorflow_serving_github_branchtag=${TF_SERVING_VERSION_GIT_BRANCH}
+LABEL tensorflow_serving_github_commit=${TF_SERVING_VERSION_GIT_COMMIT}
+
+RUN microdnf install openssl ca-certificates wget \
+    && microdnf update; microdnf clean all
+
+# Install TF Serving pkg
+COPY --from=build_image /usr/local/bin/tensorflow_model_server /usr/bin/tensorflow_model_server
+
+# Expose ports
+# gRPC
+EXPOSE 8500
+
+# REST
+EXPOSE 8501
+
+# Set where models should be stored in the container
+ENV MODEL_BASE_PATH=/models
+RUN mkdir -p ${MODEL_BASE_PATH}
+
+# The only required piece is the model name in order to differentiate endpoints
+ENV MODEL_NAME=model
+
+COPY tf_serving_entrypoint.sh /usr/bin
+
+RUN ln -s /etc/ssl/certs/ca-bundle.crt /etc/ssl/certs/ca-certificates.crt
+
+RUN mkdir /licenses && wget -O /licenses/license.txt https://raw.githubusercontent.com/tensorflow/serving/master/LICENSE
+
+ENTRYPOINT ["/usr/bin/tf_serving_entrypoint.sh"]

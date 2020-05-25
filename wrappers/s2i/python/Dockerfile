@@ -1,9 +1,12 @@
-FROM continuumio/miniconda3:%CONDA_VERSION%
+ARG CONDA_VERSION
+ARG BASE_IMAGE
+FROM $BASE_IMAGE:$CONDA_VERSION
 
 LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
 
 # This is to install desired version of Python without updating conda version
-RUN conda install --yes python=%PYTHON_VERSION% conda=%CONDA_VERSION%
+ARG PYTHON_VERSION
+RUN conda install --yes python=$PYTHON_VERSION conda=$CONDA_VERSION
 RUN apt-get update --yes && apt-get install --yes gcc make build-essential
 
 RUN mkdir microservice
@@ -11,10 +14,11 @@ WORKDIR /microservice
 
 COPY ./s2i/bin/ /s2i/bin
 
-# Install Seldon Core from local copy
-COPY _python /microservice
+# keep install of seldon-core after the COPY to force re-build of layer
+COPY requirements.txt ./requirements.txt
 COPY version.txt /microservice/version.txt
-RUN cd /microservice/python && make install
+COPY _python/python/licenses/license.txt .
+RUN pip install -r requirements.txt
 
 RUN mkdir -p /.conda && chmod a+rwx /.conda
 

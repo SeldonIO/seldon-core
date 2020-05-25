@@ -45,6 +45,28 @@ spec:
           value: ''
         - name: RELATED_IMAGE_ENGINE
           value: ''
+        - name: RELATED_IMAGE_STORAGE_INITIALIZER
+          value: ''
+        - name: RELATED_IMAGE_SKLEARNSERVER_REST
+          value: ''
+        - name: RELATED_IMAGE_SKLEARNSERVER_GRPC
+          value: ''
+        - name: RELATED_IMAGE_XGBOOSTSERVER_REST
+          value: ''
+        - name: RELATED_IMAGE_XGBOOSTSERVER_GRPC
+          value: ''
+        - name: RELATED_IMAGE_MLFLOWSERVER_REST
+          value: ''
+        - name: RELATED_IMAGE_MLFLOWSERVER_GRPC
+          value: ''
+        - name: RELATED_IMAGE_TFPROXY_REST
+          value: ''
+        - name: RELATED_IMAGE_TFPROXY_GRPC
+          value: ''
+        - name: RELATED_IMAGE_TENSORFLOW
+          value: ''
+        - name: RELATED_IMAGE_EXPLAINER
+          value: ''
         - name: CREATE_RESOURCES
           value: '{{ .Values.createResources }}'
         - name: POD_NAMESPACE

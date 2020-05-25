@@ -18,6 +18,7 @@ package main
 
 import (
 	"flag"
+	"k8s.io/client-go/kubernetes"
 	"os"
 
 	"github.com/seldonio/seldon-core/operator/constants"
@@ -112,6 +113,7 @@ func main() {
 
 	if err = (&controllers.SeldonDeploymentReconciler{
 		Client:    mgr.GetClient(),
+		ClientSet: kubernetes.NewForConfigOrDie(config),
 		Log:       ctrl.Log.WithName("controllers").WithName("SeldonDeployment"),
 		Scheme:    mgr.GetScheme(),
 		Namespace: namespace,

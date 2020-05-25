@@ -6,12 +6,7 @@ import time
 
 from contextlib import contextmanager
 from subprocess import Popen
-from tenacity import (
-    retry,
-    wait_fixed,
-    stop_after_attempt,
-    retry_if_exception_type,
-)
+from tenacity import retry, wait_fixed, stop_after_attempt, retry_if_exception_type
 
 
 class MicroserviceWrapper:

@@ -39,6 +39,28 @@ spec:
           value: ""
         - name: RELATED_IMAGE_ENGINE
           value: ""
+        - name: RELATED_IMAGE_STORAGE_INITIALIZER
+          value: ""          
+        - name: RELATED_IMAGE_SKLEARNSERVER_REST
+          value: ""          
+        - name: RELATED_IMAGE_SKLEARNSERVER_GRPC
+          value: ""
+        - name: RELATED_IMAGE_XGBOOSTSERVER_REST
+          value: ""          
+        - name: RELATED_IMAGE_XGBOOSTSERVER_GRPC
+          value: ""          
+        - name: RELATED_IMAGE_MLFLOWSERVER_REST
+          value: ""          
+        - name: RELATED_IMAGE_MLFLOWSERVER_GRPC
+          value: ""          
+        - name: RELATED_IMAGE_TFPROXY_REST
+          value: ""          
+        - name: RELATED_IMAGE_TFPROXY_GRPC
+          value: ""          
+        - name: RELATED_IMAGE_TENSORFLOW
+          value: ""          
+        - name: RELATED_IMAGE_EXPLAINER
+          value: ""          
         - name: CREATE_RESOURCES
           value: "false"
         - name: POD_NAMESPACE
@@ -52,7 +74,7 @@ spec:
         - name: AMBASSADOR_SINGLE_NAMESPACE
           value: "false"
         - name: ENGINE_CONTAINER_IMAGE_AND_VERSION
-          value: docker.io/seldonio/engine:1.1.1-SNAPSHOT
+          value: docker.io/seldonio/engine:1.1.1-rc
         - name: ENGINE_CONTAINER_IMAGE_PULL_POLICY
           value: IfNotPresent
         - name: ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME
@@ -80,7 +102,7 @@ spec:
         - name: USE_EXECUTOR
           value: "true"
         - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
-          value: seldonio/seldon-core-executor:1.1.1-SNAPSHOT
+          value: seldonio/seldon-core-executor:1.1.1-rc
         - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
           value: IfNotPresent
         - name: EXECUTOR_PROMETHEUS_PATH

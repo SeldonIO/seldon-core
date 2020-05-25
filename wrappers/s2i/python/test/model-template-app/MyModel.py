@@ -22,7 +22,7 @@ class MyModel(object):
         print("Predict called - will run idenity function")
         return X
 
-    def send_feedback(self,features,feature_names,reward,truth):
+    def send_feedback(self,features,feature_names,reward,truth,routing):
         """
         Handle feedback
 

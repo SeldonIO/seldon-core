@@ -23,7 +23,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o executor
 FROM registry.access.redhat.com/ubi8/ubi-minimal
 LABEL name="Seldon Executor" \
       vendor="Seldon Technologies" \
-      version="v1.1.0" \
+      version="1.1.1-rc" \
       release="1" \
       summary="The service orchestrator for Seldon Core" \
       description="The service orchestrator for Seldon Core which manages the request/response flow through the Seldon Core inference graphs deployed via the Seldon Core Operator as SeldonDeployments custom resources"
