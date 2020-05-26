@@ -9,7 +9,7 @@ The Seldon Core exposes a generic external API to connect your ML runtime predic
 ### Prediction
 
  - endpoint : POST /api/v1.0/predictions
- - payload : JSON representation of ```SeldonMessage``` - see [proto definition](./prediction.md#proto-buffer-and-grpc-definition)
+ - payload : JSON representation of `SeldonMessage` - see [proto definition](./prediction.md#proto-buffer-and-grpc-definition)
  - example payload :
 
    ```json
@@ -19,7 +19,57 @@ The Seldon Core exposes a generic external API to connect your ML runtime predic
 ### Feedback
 
  - endpoint : POST /api/v1.0/feedback
- - payload : JSON representation of ```Feedback``` - see [proto definition](./prediction.md#proto-buffer-and-grpc-definition)
+ - payload : JSON representation of `Feedback` - see [proto definition](./prediction.md#proto-buffer-and-grpc-definition)
+
+### Metadata - Graph Level (incubating)
+
+- endpoint : GET /api/v1.0/metadata/
+- example response :
+
+```json
+{
+  "name": "example",
+  "models": {
+    "model-1": {
+      "name": "Model 1",
+      "platform": "platform-name",
+      "versions": ["model-version"],
+      "inputs": [{"datatype": "BYTES", "name": "input", "shape": [1, 5]}],
+      "outputs": [{"datatype": "BYTES", "name": "output", "shape": [1, 3]}]
+    },
+    "model-2": {
+      "name": "Model 2",
+      "platform": "platform-name",
+      "versions": ["model-version"],
+      "inputs": [{"datatype": "BYTES", "name": "input", "shape": [1, 3]}],
+      "outputs": [{"datatype": "BYTES", "name": "output", "shape": [3]}]
+    }
+  },
+  "graphinputs": [{"datatype": "BYTES", "name": "input", "shape": [1, 5]}],
+  "graphoutputs": [{"datatype": "BYTES", "name": "output", "shape": [3]}]
+}
+```
+
+see metadata [documentation](./metadata.md) for more details.
+
+
+### Metadata - Model Level (incubating)
+
+- endpoint : GET /api/v1.0/metadata/{MODEL_NAME}
+- example response:
+
+```json
+{
+  "name": "Model 1",
+  "versions": ["model-version"],
+  "platform": "platform-name",
+  "inputs": [{"datatype": "BYTES", "name": "input", "shape": [1, 5]}],
+  "outputs": [{"datatype": "BYTES", "name": "output", "shape": [1, 3]}],
+}
+```
+
+see metadata [documentation](./metadata.md) for more details.
+
 
 ## gRPC
 
@@ -31,4 +81,3 @@ service Seldon {
 ```
 
 see full [proto definition](./prediction.md#proto-buffer-and-grpc-definition)
-

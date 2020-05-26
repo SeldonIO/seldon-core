@@ -457,6 +457,46 @@ func TestSeldonFeedback(t *testing.T) {
 	g.Expect(res.Code).To(Equal(200))
 }
 
+func TestSeldonGraphMetadata(t *testing.T) {
+	t.Logf("Started")
+	g := NewGomegaWithT(t)
+
+	model := v1.MODEL
+	p := v1.PredictorSpec{
+		Name: "predictor-name",
+		Graph: &v1.PredictiveUnit{
+			Name: "model-1",
+			Type: &model,
+			Endpoint: &v1.Endpoint{
+				ServiceHost: "foo",
+				ServicePort: 9000,
+				Type:        v1.REST,
+			},
+			Children: []v1.PredictiveUnit{
+				{
+					Name: "model-2",
+					Type: &model,
+					Endpoint: &v1.Endpoint{
+						ServiceHost: "foo",
+						ServicePort: 9001,
+						Type:        v1.REST,
+					},
+				},
+			},
+		},
+	}
+
+	url, _ := url.Parse("http://localhost")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
+	r.Initialise()
+
+	req, _ := http.NewRequest("GET", "/api/v1.0/metadata", nil)
+	res := httptest.NewRecorder()
+	r.Router.ServeHTTP(res, req)
+	g.Expect(res.Code).To(Equal(200))
+	g.Expect(res.Body.String()).To(Equal(strings.Join(strings.Fields(test.TestGraphMeta), "")))
+}
+
 func TestTensorflowMetadata(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)

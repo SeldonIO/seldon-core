@@ -2,6 +2,7 @@ package rest
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -141,6 +142,7 @@ func (r *SeldonRestApi) Initialise() {
 			api10.Handle("/predictions", r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions))
 			api10.Handle("/feedback", r.wrapMetrics(metric.FeedbackHttpServiceName, r.feedback))
 			r.Router.NewRoute().Path("/api/v1.0/status/{" + ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
+			r.Router.NewRoute().Path("/api/v1.0/metadata").Methods("GET").HandlerFunc(r.wrapMetrics(metric.MetadataHttpServiceName, r.graphMetadata))
 			r.Router.NewRoute().Path("/api/v1.0/metadata/{" + ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.MetadataHttpServiceName, r.metadata))
 			r.Router.NewRoute().PathPrefix("/api/v1.0/doc/").Handler(http.StripPrefix("/api/v1.0/doc/", http.FileServer(http.Dir("./openapi/"))))
 
@@ -299,4 +301,32 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	r.respondWithSuccess(w, http.StatusOK, resPayload)
+}
+
+func (r *SeldonRestApi) graphMetadata(w http.ResponseWriter, req *http.Request) {
+	r.Log.Info("Graph Metadata called.")
+
+	ctx := req.Context()
+
+	r.Log.Info("Tracing:", opentracing.IsGlobalTracerRegistered())
+	// Apply tracing if active
+	if opentracing.IsGlobalTracerRegistered() {
+		var serverSpan opentracing.Span
+		ctx, serverSpan = setupTracing(ctx, req, TracingMetadataName)
+		defer serverSpan.Finish()
+	}
+
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header)
+
+	output, err := predictor.NewGraphMetadata(&seldonPredictorProcess, r.predictor)
+
+	if err != nil {
+		r.respondWithError(w, nil, err)
+		return
+	}
+
+	msg, _ := json.Marshal(output)
+	resPayload := payload.BytesPayload{Msg: msg, ContentType: ContentTypeJSON}
+
+	r.respondWithSuccess(w, http.StatusOK, &resPayload)
 }

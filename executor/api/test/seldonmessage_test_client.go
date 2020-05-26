@@ -19,14 +19,88 @@ const (
 	TestClientStatusResponse   = `{"status":"ok"}`
 	TestClientMetadataResponse = `{"metadata":{"name":"mymodel"}}`
 	TestContentType            = "application/json"
+	TestGraphMeta              = `{
+		"name": "predictor-name",
+		"models": {
+			"model-1": {
+				"name": "model-1",
+				"platform": "platform-name",
+				"versions": ["model-version"],
+				"inputs": [{"datatype": "BYTES", "name": "input", "shape": [1, 5]}],
+				"outputs": [{"datatype": "BYTES", "name": "output", "shape": [1, 3]}]
+			},
+			"model-2": {
+				"name": "model-2",
+				"platform": "platform-name",
+				"versions": ["model-version"],
+				"inputs": [{"datatype": "BYTES", "name": "input", "shape": [1, 3]}],
+				"outputs": [{"datatype": "BYTES", "name": "output", "shape": [3]}]}
+			},
+		"graphinputs": [{"datatype": "BYTES", "name": "input", "shape": [1, 5]}],
+		"graphoutputs": [{"datatype": "BYTES", "name": "output", "shape": [3]}]
+	}`
 )
+
+var metadataMap = map[string]string{
+	"mymodel": TestClientMetadataResponse,
+	"model-1": `{
+		"name": "model-1",
+		"versions": ["model-version"],
+		"platform": "platform-name",
+		"inputs": [{"name": "input", "datatype": "BYTES", "shape": [1, 5]}],
+		"outputs": [{"name": "output", "datatype": "BYTES", "shape": [1, 3]}]
+    }`,
+	"model-2": `{
+		"name": "model-2",
+		"versions": ["model-version"],
+		"platform": "platform-name",
+		"inputs": [{"name": "input", "datatype": "BYTES", "shape": [1, 3]}],
+		"outputs": [{"name": "output", "datatype": "BYTES", "shape": [3]}]
+    }`,
+	"model-a1": `{
+        "name": "model-a1",
+        "versions": ["model-version"],
+        "platform": "platform-name",
+        "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1, 5]}],
+        "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1, 10]}]
+    }`,
+	"model-a2": `{
+        "name": "model-a2",
+        "versions": ["model-version"],
+        "platform": "platform-name",
+        "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1, 5]}],
+        "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1, 20]}]
+    }`,
+	"model-b1": `{
+        "name": "model-b1",
+        "versions": ["model-version"],
+        "platform": "platform-name",
+        "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1, 5]}],
+        "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1, 10]}]
+    }`,
+	"model-router": `{
+        "name": "model-router",
+        "versions": ["model-version"],
+        "platform": "platform-name"
+    }`,
+	"model-combiner": `{
+        "name": "model-combiner",
+        "versions": ["model-version"],
+        "platform": "platform-name",
+        "inputs": [
+            {"name": "input-1", "datatype": "BYTES", "shape": [1, 10]},
+            {"name": "input-2", "datatype": "BYTES", "shape": [1, 20]}
+        ],
+        "outputs": [{"name": "combined output", "datatype": "BYTES", "shape": [3]}]
+    }`,
+}
 
 func (s SeldonMessageTestClient) Status(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	return &payload.BytesPayload{Msg: []byte(TestClientStatusResponse)}, nil
 }
 
 func (s SeldonMessageTestClient) Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
-	return &payload.BytesPayload{Msg: []byte(TestClientMetadataResponse)}, nil
+	return &payload.BytesPayload{Msg: []byte(metadataMap[modelName])}, nil
 }
 
 func (s SeldonMessageTestClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
