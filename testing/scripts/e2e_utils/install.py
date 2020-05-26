@@ -13,7 +13,7 @@ SC_NAME = "seldon"
 SC_NAMESPACE = "seldon-system"
 
 
-def install_seldon(name=SC_NAME, namespace=SC_NAMESPACE, engine=False, version=None):
+def install_seldon(name=SC_NAME, namespace=SC_NAMESPACE, executor=True, version=None):
     chart_path = "seldonio/seldon-core-operator"
     if version is None:
         # Use local
@@ -25,7 +25,7 @@ def install_seldon(name=SC_NAME, namespace=SC_NAMESPACE, engine=False, version=N
         "certManager.enabled": "false",
     }
 
-    if engine:
+    if not executor:
         values["executor.enabled"] = "false"
 
     helm.install(
