@@ -7,6 +7,7 @@ Blog articles featuring different use cases of Seldon:
 .. toctree::
    :maxdepth: 1
 
+   Stream-Based Model Serving with Cloudflow and Seldon <https://www.lightbend.com/blog/stream-based-model-serving-with-cloudflow-and-seldon>
    Seldon Inference Graph: Serving your Models in a Pipeline <https://medium.com/@shirish.ph/seldon-inference-graph-pipelined-model-serving-211c6b095f62>
    Open Source Model Management Roundup <https://www.anaconda.com/blog/developer-blog/open-source-model-management-roundup-polyaxon-argo-and-seldon/>
    Polyaxon, Argo and Seldon for model training <https://danielfrg.com/blog/2018/10/model-management-polyaxon-argo-seldon/>
