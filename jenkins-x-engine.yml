@@ -17,9 +17,9 @@ pipelineConfig:
               - name: SELDON_E2E_TESTS_TO_RUN
                 value: base
               - name: SELDON_E2E_TESTS_POD_INFORMATION
-                value: true
+                value: "true"
               - name: SELDON_E2E_TESTS_USE_EXECUTOR
-                value: false
+                value: "false"
             steps:
               - name: test-end-to-end
                 command: cd
