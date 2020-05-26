@@ -5,11 +5,22 @@ from seldon_e2e_utils import clean_string, retry_run, get_seldon_version
 from e2e_utils.install import install_seldon, delete_seldon
 from subprocess import run
 
-# By default, SELDON_E2E_TESTS_USE_EXECUTOR should be True
-SELDON_E2E_TESTS_USE_EXECUTOR = os.getenv("SELDON_E2E_TESTS_USE_EXECUTOR") != "false"
+
+def _to_python_bool(val):
+    # From Flask's docs:
+    # https://flask.palletsprojects.com/en/1.1.x/config/#configuring-from-environment-variables
+    return val.lower() in {"1", "t", "true"}
 
 
-@pytest.fixture(scope="session", autouse=True)
+SELDON_E2E_TESTS_USE_EXECUTOR = _to_python_bool(
+    os.getenv("SELDON_E2E_TESTS_USE_EXECUTOR", default="true")
+)
+SELDON_E2E_TESTS_POD_INFORMATION = _to_python_bool(
+    os.getenv("SELDON_E2E_TESTS_POD_INFORMATION", default="false")
+)
+
+
+@pytest.fixture(scope="session", autouse=SELDON_E2E_TESTS_POD_INFORMATION)
 def run_pod_information_in_background(request):
     # This command runs the pod information and prints it in the background
     # every time there's a new update
