@@ -5,7 +5,7 @@ from seldon_e2e_utils import clean_string, retry_run, get_seldon_version
 from e2e_utils.install import install_seldon, delete_seldon
 from subprocess import run
 
-SELDON_E2E_TESTS_USE_ENGINE = os.getenv("SELDON_E2E_TESTS_USE_ENGINE", False)
+SELDON_E2E_TESTS_USE_ENGINE = os.getenv("SELDON_E2E_TESTS_USE_ENGINE") == "true"
 
 
 @pytest.fixture(scope="session", autouse=True)
