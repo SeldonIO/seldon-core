@@ -2,6 +2,7 @@ VERSION := $(shell cat ../../version.txt)
 
 # This can be "Auto" or a Number
 PYTEST_WORKERS ?= "4"
+SELDON_E2E_TESTS_USE_EXECUTOR ?= "true"
 
 kind_create_cluster:
 	kind create cluster --config ../resources/kind_config.yaml
@@ -75,7 +76,7 @@ install_seldon: install_cert_manager
 		--set istio.enabled=true \
 		--set istio.gateway=istio-system/seldon-gateway \
 		--set certManager.enabled=false \
-		--set executor.enabled=${!SELDON_E2E_TESTS_USE_ENGINE} \
+		--set executor.enabled=$(SELDON_E2E_TESTS_USE_EXECUTOR) \
 		--wait
 
 install_istio:
