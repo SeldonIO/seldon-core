@@ -21,15 +21,26 @@ while true; do
     fi
 done
 
+# Get the most recent branch before this one to compare
+# Explanation: all branches -> find the ones with dates -> sort in reverse -> get the 2nd latest -> remove new line
+PREV_BRANCH=$(git branch --all | grep -P "\d{14}" | sort --reverse | sed -n '2p' | tr -d '\n')
+
+
 #######################################
 # AVOID EXIT ON ERROR FOR FOLLOWING CMDS
 set +o errexit
 
 function build_push_python {
-    (cd wrappers/s2i/python/build_scripts \
-	    && ./build_all_local.sh \
-	    && ./push_all.sh)
-    PYTHON_EXIT_VALUE=$?
+    git --no-pager diff --exit-code --name-only PREV_BRANCH python/ wrappers/s2i/python/
+    PYTHON_MODIFIED=$?
+    if [[ $PYTHON_MODIFIED -gt 0 ]]; then
+        make \
+            -C wrappers/s2i/python \
+            build_push_all
+        PYTHON_EXIT_VALUE=$?
+    else
+        echo "SKIPPING PREPACKAGED IMAGE BUILD..."
+    fi
 }
 
 function build_push_operator {
