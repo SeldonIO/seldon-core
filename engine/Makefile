@@ -14,6 +14,9 @@ build_jar: update_proto update_swagger
 build_image: update_proto update_swagger
 	docker build  -f Dockerfile -t ${IMG} .
 
+test: update_proto update_swagger
+	mvn test
+
 docker-build-redhat: update_proto update_swagger
 	docker build  -f Dockerfile.redhat -t ${IMG_REDHAT} .
 
