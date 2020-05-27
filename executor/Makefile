@@ -49,6 +49,17 @@ compile_tensorflow_proto:
 	cd proto/tensorflow/core && go mod init github.com/tensorflow/tensorflow/tensorflow/go/core && cd -
 	go build ./proto/tensorflow/serving
 
+
+compile_kfserving_proto:
+	git clone https://github.com/NVIDIA/triton-inference-server
+	mkdir -p api/grpc/kfserving/proto
+	cp triton-inference-server/src/core/*.proto api/grpc/kfserving/proto
+	cd api/grpc/kfserving/proto && protoc -I. --go_out=paths=source_relative,plugins=grpc:. grpc_service.proto && protoc -I. --go_out=paths=source_relative,plugins=grpc:. model_config.proto && protoc -I. --go_out=paths=source_relative,plugins=grpc:. server_status.proto
+	sed -i "s/package nvidia_inferenceserver/package proto/" api/grpc/kfserving/proto/grpc_service.pb.go
+	sed -i "s/package nvidia_inferenceserver/package proto/" api/grpc/kfserving/proto/model_config.pb.go
+	sed -i "s/package nvidia_inferenceserver/package proto/" api/grpc/kfserving/proto/server_status.pb.go
+
+
 .PHONY: add_protos
 add_protos:
 	cd tensorflow && find ./tensorflow -name '*.proto' | cpio -pdm ../proto
@@ -99,6 +110,7 @@ clean:
 	rm -rf vendor
 	rm -rf tensorflow
 	rm -rf serving
+	rm -rf triton-inference-server
 
 licenses/dep.txt:
 	go list -m all | cut -d ' ' -f 1 > licenses/dep.txt

@@ -12,6 +12,8 @@ import (
 	"github.com/seldonio/seldon-core/executor/api"
 	seldonclient "github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/grpc"
+	"github.com/seldonio/seldon-core/executor/api/grpc/kfserving"
+	kfproto "github.com/seldonio/seldon-core/executor/api/grpc/kfserving/proto"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/grpc/tensorflow"
@@ -138,13 +140,17 @@ func runGrpcServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldo
 	if err != nil {
 		log.Fatalf("Failed to create grpc server: %v", err)
 	}
-	if protocol == api.ProtocolSeldon {
+	switch protocol {
+	case api.ProtocolSeldon:
 		seldonGrpcServer := seldon.NewGrpcSeldonServer(predictor, client, serverUrl, namespace)
 		proto.RegisterSeldonServer(grpcServer, seldonGrpcServer)
-	} else {
+	case api.ProtocolTensorflow:
 		tensorflowGrpcServer := tensorflow.NewGrpcTensorflowServer(predictor, client, serverUrl, namespace)
 		serving.RegisterPredictionServiceServer(grpcServer, tensorflowGrpcServer)
 		serving.RegisterModelServiceServer(grpcServer, tensorflowGrpcServer)
+	case api.ProtocolKfserving:
+		kfservingGrpcServer := kfserving.NewGrpcKFServingServer(predictor, client, serverUrl, namespace)
+		kfproto.RegisterGRPCInferenceServiceServer(grpcServer, kfservingGrpcServer)
 	}
 	err = grpcServer.Serve(lis)
 	if err != nil {
@@ -243,10 +249,15 @@ func main() {
 		go runHttpServer(logger, predictor, nil, *httpPort, true, serverUrl, *namespace, *protocol, *sdepName, *prometheusPath)
 		logger.Info("Running grpc server ", "port", *grpcPort)
 		var clientGrpc seldonclient.SeldonApiClient
-		if *protocol == "seldon" {
+		switch *protocol {
+		case api.ProtocolSeldon:
 			clientGrpc = seldon.NewSeldonGrpcClient(predictor, *sdepName, annotations)
-		} else {
+		case api.ProtocolTensorflow:
 			clientGrpc = tensorflow.NewTensorflowGrpcClient(predictor, *sdepName, annotations)
+		case api.ProtocolKfserving:
+			clientGrpc = kfserving.NewKFServingGrpcClient(predictor, *sdepName, annotations)
+		default:
+			log.Fatalf("Failed to create grpc client. Unknown protocol %s: %v", *protocol, err)
 		}
 		runGrpcServer(logger, predictor, clientGrpc, *grpcPort, serverUrl, *namespace, *protocol, *sdepName, annotations)
 
