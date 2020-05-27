@@ -6,16 +6,15 @@ set -o pipefail
 set -o noclobber
 set -o noglob
 
-# Usage:
-# tag-docker-image-no-pull.sh repo image from-tag to-tag /path/to/.docker/config.json
+# usage which is printed if failure
+USAGE="Usage: ./tag-docker-image-no-pull.sh repo image from-tag to-tag /path/to/.docker/config.json"
 
+# Get parameters as per usage
 REPOSITORY="$1"
 IMAGE_NAME="$2"
 FROM_TAG="$3"
 TO_TAG="$4"
 CONFIG_PATH=${5-"/.docker/config.json"}
-
-USAGE="Usage: ./tag-docker-image-no-pull.sh repo image from-tag to-tag /path/to/.docker/config.json"
 
 if [[ -z "${REPOSITORY}" || -z "${IMAGE_NAME}" || -z "${FROM_TAG}" || -z "${TO_TAG}" || -z "${CONFIG_PATH}" ]]; then
   echo "ERROR"
@@ -23,14 +22,12 @@ if [[ -z "${REPOSITORY}" || -z "${IMAGE_NAME}" || -z "${FROM_TAG}" || -z "${TO_T
   exit
 fi
 
+# We need to receive the docker distribution manifest which is defined as contenttype
 CONTENT_TYPE="application/vnd.docker.distribution.manifest.v2+json"
 DOCKER_URL="https://registry-1.docker.io"
 
-# Get Username and password from docker config file
+# Use the docker creds for processing
 DOCKER_AUTH=$(cat $CONFIG_PATH | jq -r '.auths | .["https://index.docker.io/v1/"] | .auth')
-DOCKER_CREDS=$(echo -n "$DOCKER_AUTH" | base64 -d)
-DOCKER_USERNAME=$(echo -n "$DOCKER_CREDS" | awk -F':' '{print $1}')
-DOCKER_PASSWORD=$(echo -n "$DOCKER_CREDS" | awk -F':' '{print $2}')
 
 # Get authentication token
 DOCKER_TOKEN=$(curl -s -u $DOCKER_CREDS "https://auth.docker.io/token?service=registry.docker.io&scope=repository:$REPOSITORY/$IMAGE_NAME:pull,push" | jq -r '.token')
