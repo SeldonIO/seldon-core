@@ -111,14 +111,48 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
             return 1
         fi
 
-	echo "Build prepacked servers and alibi wrappers"
-	make kind_build_prepackaged kind_build_alibi kind_build_misc
-        KIND_BUILD_EXIT_VALUE=$?
-        if [[ $KIND_BUILD_EXIT_VALUE -gt 0 ]]; then
-            echo "Kind build has errors"
-            return 1
+        echo "Files changed in prepackaged folder:"
+        git --no-pager diff --exit-code --name-only origin/master ../../servers ../../integrations
+        PREPACKAGED_MODIFIED=$?
+        if [[ $PREPACKAGED_MODIFIED -gt 0 ]]; then
+            make kind_build_prepackaged
+            PREPACKAGED_EXIT_VALUE=$?
+            if [[ $PREPACKAGED_EXIT_VALUE -gt 0 ]]; then
+                echo "Prepackaged server build returned errors"
+                return 1
+            fi
+        else
+            echo "SKIPPING PREPACKAGED IMAGE BUILD..."
         fi
-	
+
+        echo "Files changed in alibi folder:"
+        git --no-pager diff --exit-code --name-only origin/master ../../components/alibi-detect-server ../../components/alibi-explain-server/
+        ALIBI_MODIFIED=$?
+        if [[ $ALIBI_MODIFIED -gt 0 ]]; then
+            make kind_build_alibi
+            ALIBI_EXIT_VALUE=$?
+            if [[ $ALIBI_EXIT_VALUE -gt 0 ]]; then
+                echo "Alibi server build returned errors"
+                return 1
+            fi
+        else
+            echo "SKIPPING ALIBI IMAGE BUILD..."
+        fi
+
+        echo "Files changed in misc folders:"
+        git --no-pager diff --exit-code --name-only origin/master ../../components/seldon-request-logger ../../components/storage-initializer
+        MISC_MODIFIED=$?
+        if [[ $MISC_MODIFIED -gt 0 ]]; then
+            make kind_build_alibi
+            MISC_EXIT_VALUE=$?
+            if [[ $MISC_EXIT_VALUE -gt 0 ]]; then
+                echo "Misc server build returned errors"
+                return 1
+            fi
+        else
+            echo "SKIPPING MISC IMAGE BUILD..."
+        fi
+
         # KIND CLUSTER SETUP
         make kind_setup
         SETUP_EXIT_VALUE=$?
