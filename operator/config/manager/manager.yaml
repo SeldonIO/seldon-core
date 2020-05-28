@@ -107,8 +107,6 @@ spec:
           value: IfNotPresent
         - name: EXECUTOR_PROMETHEUS_PATH
           value: "/prometheus"
-        - name: EXECUTOR_SERVER_GRPC_PORT
-          value: "5001"
         - name: EXECUTOR_SERVER_PORT
           value: "8000"
         - name: EXECUTOR_CONTAINER_USER
