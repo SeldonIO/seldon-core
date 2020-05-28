@@ -15,6 +15,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api"
 	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
+	"github.com/seldonio/seldon-core/executor/api/tracing"
 	"github.com/seldonio/seldon-core/executor/api/test"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 )
@@ -40,31 +41,38 @@ func TestAliveEndpoint(t *testing.T) {
 
 func TestSimpleModel(t *testing.T) {
 	t.Logf("Started")
-	g := NewGomegaWithT(t)
 
-	model := v1.MODEL
-	p := v1.PredictorSpec{
-		Name: "p",
-		Graph: &v1.PredictiveUnit{
-			Type: &model,
-			Endpoint: &v1.Endpoint{
-				ServiceHost: "foo",
-				ServicePort: 9000,
-				Type:        v1.REST,
+	for _, testTracing := range []bool{true, false} {
+		g := NewGomegaWithT(t)
+
+		if testTracing {
+			tracing.InitTracing()
+		}
+
+		model := v1.MODEL
+		p := v1.PredictorSpec{
+			Name: "p",
+			Graph: &v1.PredictiveUnit{
+				Type: &model,
+				Endpoint: &v1.Endpoint{
+					ServiceHost: "foo",
+					ServicePort: 9000,
+					Type:        v1.REST,
+				},
 			},
-		},
+		}
+
+		url, _ := url.Parse("http://localhost")
+		r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
+		r.Initialise()
+		var data = ` {"data":{"ndarray":[1.1,2.0]}}`
+
+		req, _ := http.NewRequest("POST", "/api/v0.1/predictions", strings.NewReader(data))
+		req.Header = map[string][]string{"Content-Type": []string{"application/json"}}
+		res := httptest.NewRecorder()
+		r.Router.ServeHTTP(res, req)
+		g.Expect(res.Code).To(Equal(200))
 	}
-
-	url, _ := url.Parse("http://localhost")
-	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
-	r.Initialise()
-	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
-
-	req, _ := http.NewRequest("POST", "/api/v0.1/predictions", strings.NewReader(data))
-	req.Header = map[string][]string{"Content-Type": []string{"application/json"}}
-	res := httptest.NewRecorder()
-	r.Router.ServeHTTP(res, req)
-	g.Expect(res.Code).To(Equal(200))
 }
 
 func TestCloudeventHeaderIsSet(t *testing.T) {
