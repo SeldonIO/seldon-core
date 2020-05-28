@@ -1,2 +1,3 @@
 readme:
-	jupyter nbconvert README.ipynb --to markdown
+	jupyter nbconvert jenkins_classic.ipynb --to markdown
+	mv jenkins_classic.md README.md
