@@ -4,6 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"testing"
+
 	"github.com/golang/protobuf/jsonpb"
 	. "github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/executor/api/grpc"
@@ -11,12 +16,8 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/api/test"
 	"github.com/seldonio/seldon-core/executor/logger"
-	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	"net/http"
-	"net/http/httptest"
-	"net/url"
+	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
-	"testing"
 )
 
 const (
@@ -47,6 +48,13 @@ func createPredictorProcessWithError(t *testing.T, errMethod *v1.PredictiveUnitM
 	url, _ := url.Parse(testSourceUrl)
 	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, testSeldonPuid)
 	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{ErrMethod: errMethod, Err: err, ErrPayload: errPayload}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{})
+	return &pp
+}
+
+func createPredictorProcessWithoutPUIDInContext(t *testing.T) *PredictorProcess {
+	url, _ := url.Parse(testSourceUrl)
+	ctx := context.TODO()
+	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{testCustomMetaKey: []string{testCustomMetaValue}})
 	return &pp
 }
 
@@ -370,7 +378,6 @@ func TestModelWithLogRequests(t *testing.T) {
 	modelName := "foo"
 	logged := false
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//g.Expect(r.Header.Get(logger.CloudEventsIdHeader)).Should(Equal(testEventId))
 		g.Expect(r.Header.Get(logger.CloudEventsTypeHeader)).To(Equal(logger.CEInferenceRequest))
 		g.Expect(r.Header.Get(logger.CloudEventsTypeSource)).To(Equal(testSourceUrl))
 		g.Expect(r.Header.Get(modelIdHeaderName)).To(Equal(modelName))
@@ -417,7 +424,6 @@ func TestModelWithLogResponses(t *testing.T) {
 	modelName := "foo"
 	logged := false
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//g.Expect(r.Header.Get(logger.CloudEventsIdHeader)).Should(Equal(testEventId))
 		g.Expect(r.Header.Get(logger.CloudEventsTypeHeader)).To(Equal(logger.CEInferenceResponse))
 		g.Expect(r.Header.Get(logger.CloudEventsTypeSource)).To(Equal(testSourceUrl))
 		g.Expect(r.Header.Get(modelIdHeaderName)).To(Equal(modelName))
@@ -454,4 +460,17 @@ func TestModelWithLogResponses(t *testing.T) {
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(Equal(1.1))
 	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(Equal(2.0))
 	g.Eventually(func() bool { return logged }).Should(Equal(true))
+}
+
+func TestPredictNilPUIDError(t *testing.T) {
+	t.Logf("Started")
+	g := NewGomegaWithT(t)
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	})
+	server := httptest.NewServer(handler)
+	defer server.Close()
+	graph := &v1.PredictiveUnit{}
+	_, err := createPredictorProcessWithoutPUIDInContext(t).Predict(graph, createPredictPayload(g))
+	g.Expect(err).NotTo(BeNil())
+	g.Expect(err.Error()).Should(Equal(NilPUIDError))
 }

@@ -44,7 +44,7 @@ const (
 	Label_canary             = "canary"
 	Label_explainer          = "explainer"
 
-	PODINFO_VOLUME_NAME = "podinfo"
+	PODINFO_VOLUME_NAME = "seldon-podinfo"
 	PODINFO_VOLUME_PATH = "/etc/podinfo"
 
 	ENV_PREDICTIVE_UNIT_SERVICE_PORT         = "PREDICTIVE_UNIT_SERVICE_PORT"
@@ -210,7 +210,7 @@ type SeldonDeploymentSpec struct {
 
 type PredictorSpec struct {
 	Name            string                  `json:"name" protobuf:"string,1,opt,name=name"`
-	Graph           *PredictiveUnit         `json:"graph" protobuf:"bytes,2,opt,name=predictiveUnit"`
+	Graph           PredictiveUnit          `json:"graph" protobuf:"bytes,2,opt,name=predictiveUnit"`
 	ComponentSpecs  []*SeldonPodSpec        `json:"componentSpecs,omitempty" protobuf:"bytes,3,opt,name=componentSpecs"`
 	Replicas        *int32                  `json:"replicas,omitempty" protobuf:"string,4,opt,name=replicas"`
 	Annotations     map[string]string       `json:"annotations,omitempty" protobuf:"bytes,5,opt,name=annotations"`

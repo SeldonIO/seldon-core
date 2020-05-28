@@ -206,13 +206,19 @@ func getSvcOrchUser(mlDep *machinelearningv1.SeldonDeployment) (*int64, error) {
 }
 
 func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, predictorB64 string, http_port int, grpc_port int, resources *corev1.ResourceRequirements) (*corev1.Container, error) {
+	port := 0
 	transport := mlDep.Spec.Transport
-	//Backwards compatible with older resources
-	if transport == "" {
+	switch transport {
+	case machinelearningv1.TransportGrpc:
+		port = grpc_port
+	case machinelearningv1.TransportRest:
+		port = http_port
+	default:
+		//Backwards compatible with older resources
 		if p.Graph.Endpoint.Type == machinelearningv1.GRPC {
-			transport = machinelearningv1.TransportGrpc
+			port = grpc_port
 		} else {
-			transport = machinelearningv1.TransportRest
+			port = http_port
 		}
 	}
 	protocol := mlDep.Spec.Protocol
@@ -236,9 +242,7 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 			"--sdep", mlDep.Name,
 			"--namespace", mlDep.Namespace,
 			"--predictor", p.Name,
-			"--http_port", strconv.Itoa(http_port),
-			"--grpc_port", strconv.Itoa(grpc_port),
-			"--transport", string(transport),
+			"--port", strconv.Itoa(port),
 			"--protocol", string(protocol),
 			"--prometheus_path", getPrometheusPath(mlDep),
 		},
@@ -256,17 +260,16 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 			{Name: "REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX", Value: GetEnv("EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX", "")},
 		},
 		Ports: []corev1.ContainerPort{
-			{ContainerPort: int32(http_port), Protocol: corev1.ProtocolTCP, Name: constants.HttpPortName},
-			{ContainerPort: int32(http_port), Protocol: corev1.ProtocolTCP, Name: executorMetricsPortName},
-			{ContainerPort: int32(grpc_port), Protocol: corev1.ProtocolTCP, Name: constants.GrpcPortName},
+			{ContainerPort: int32(port), Protocol: corev1.ProtocolTCP},
+			{ContainerPort: int32(port), Protocol: corev1.ProtocolTCP, Name: executorMetricsPortName},
 		},
-		ReadinessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(http_port), Path: "/ready", Scheme: corev1.URISchemeHTTP}},
+		ReadinessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(port), Path: "/ready", Scheme: corev1.URISchemeHTTP}},
 			InitialDelaySeconds: 20,
 			PeriodSeconds:       5,
 			FailureThreshold:    3,
 			SuccessThreshold:    1,
 			TimeoutSeconds:      60},
-		LivenessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(http_port), Path: "/live", Scheme: corev1.URISchemeHTTP}},
+		LivenessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(port), Path: "/live", Scheme: corev1.URISchemeHTTP}},
 			InitialDelaySeconds: 20,
 			PeriodSeconds:       5,
 			FailureThreshold:    3,

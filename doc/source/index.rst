@@ -16,7 +16,7 @@ Quick Links
 * Read the `Seldon Core Documentation <https://docs.seldon.io/projects/seldon-core/en/latest/>`_
 * Join our `community Slack <https://join.slack.com/t/seldondev/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU>`_ to ask any questions
 * Get started with `Seldon Core Notebook Examples <https://docs.seldon.io/projects/seldon-core/en/latest/examples/notebooks.html>`_
-* Join our fortnightly `online community calls <https://docs.seldon.io/projects/seldon-core/en/latest/developer/community.html>`_
+* Join our fortnightly `online community calls <https://docs.seldon.io/projects/seldon-core/en/latest/developer/community.html#community-calls>`_
 * Learn how you can `start contributing <https://docs.seldon.io/projects/seldon-core/en/latest/developer/contributing.html>`_
 * Check out `Blogs <https://docs.seldon.io/projects/seldon-core/en/latest/tutorials/blogs.html>`_ that dive into Seldon Core components
 * Watch some of the `Videos and Talks <https://docs.seldon.io/projects/seldon-core/en/latest/tutorials/videos.html>`_ using Seldon Core
@@ -77,6 +77,7 @@ Documentation Index
    NodeJS Language Wrapper [ALPHA] <nodejs/README.md>
    Go Language Wrapper [ALPHA] <go/go_wrapper_link.rst>
    Stream Processing with KNative <streaming/knative_eventing.md>
+   Metadata [Incubating] <reference/apis/metadata.md>
 
 .. toctree::
    :maxdepth: 1

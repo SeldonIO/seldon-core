@@ -22,7 +22,7 @@ class MyRouter(object):
         """
         return 0
         
-    def send_feedback(self,features,feature_names,routing,reward,truth):
+    def send_feedback(self,features,feature_names,reward,truth,routing):
         """
         Handle feedback for your routings. Optional.
 

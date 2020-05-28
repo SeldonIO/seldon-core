@@ -59,7 +59,7 @@ func createTestSeldonDeploymentForCleaners(mlDepName string, namespace string) *
 							},
 						},
 					},
-					Graph: &machinelearningv1.PredictiveUnit{
+					Graph: machinelearningv1.PredictiveUnit{
 						Name: "classifier",
 					},
 				},

@@ -2,16 +2,20 @@ package predictor
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/url"
+	"sync"
+
 	"github.com/go-logr/logr"
 	guuid "github.com/google/uuid"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	payloadLogger "github.com/seldonio/seldon-core/executor/logger"
-	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	"net/url"
-	"sync"
+	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 )
+
+const NilPUIDError = "context value for Seldon PUID Header is nil"
 
 type PredictorProcess struct {
 	Ctx       context.Context
@@ -242,7 +246,7 @@ func (p *PredictorProcess) getLogUrl(logger *v1.Logger) (*url.URL, error) {
 	}
 }
 
-func (p *PredictorProcess) logPayload(nodeName string, logger *v1.Logger, reqType payloadLogger.LogRequestType, msg payload.SeldonPayload) error {
+func (p *PredictorProcess) logPayload(nodeName string, logger *v1.Logger, reqType payloadLogger.LogRequestType, msg payload.SeldonPayload, puid string) error {
 	data, err := msg.GetBytes()
 	if err != nil {
 		return err
@@ -251,7 +255,6 @@ func (p *PredictorProcess) logPayload(nodeName string, logger *v1.Logger, reqTyp
 	if err != nil {
 		return err
 	}
-
 	payloadLogger.QueueLogRequest(payloadLogger.LogRequest{
 		Url:         logUrl,
 		Bytes:       &data,
@@ -260,15 +263,30 @@ func (p *PredictorProcess) logPayload(nodeName string, logger *v1.Logger, reqTyp
 		Id:          guuid.New().String(),
 		SourceUri:   p.ServerUrl,
 		ModelId:     nodeName,
-		RequestId:   p.Ctx.Value(payload.SeldonPUIDHeader).(string),
+		RequestId:   puid,
 	})
 	return nil
 }
 
+func (p *PredictorProcess) getPUIDHeader() (string, error) {
+	// Check request ID is not nil
+	if puid, ok := p.Ctx.Value(payload.SeldonPUIDHeader).(string); ok {
+		return puid, nil
+	}
+	return "", fmt.Errorf(NilPUIDError)
+}
+
 func (p *PredictorProcess) Predict(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+	puid, err := p.getPUIDHeader()
+	if err != nil {
+		return nil, err
+	}
 	//Log Request
 	if node.Logger != nil && (node.Logger.Mode == v1.LogRequest || node.Logger.Mode == v1.LogAll) {
-		p.logPayload(node.Name, node.Logger, payloadLogger.InferenceRequest, msg)
+		err := p.logPayload(node.Name, node.Logger, payloadLogger.InferenceRequest, msg, puid)
+		if err != nil {
+			return nil, err
+		}
 	}
 	tmsg, err := p.transformInput(node, msg)
 	if err != nil {
@@ -281,7 +299,10 @@ func (p *PredictorProcess) Predict(node *v1.PredictiveUnit, msg payload.SeldonPa
 	response, err := p.transformOutput(node, cmsg)
 	// Log Response
 	if err == nil && node.Logger != nil && (node.Logger.Mode == v1.LogResponse || node.Logger.Mode == v1.LogAll) {
-		p.logPayload(node.Name, node.Logger, payloadLogger.InferenceResponse, response)
+		err := p.logPayload(node.Name, node.Logger, payloadLogger.InferenceResponse, response, puid)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return response, err
 }
@@ -308,4 +329,36 @@ func (p *PredictorProcess) Feedback(node *v1.PredictiveUnit, msg payload.SeldonP
 		return tmsg, err
 	}
 	return p.feedback(node, msg)
+}
+
+func (p *PredictorProcess) MetadataMap(node *v1.PredictiveUnit) (map[string]ModelMetadata, error) {
+	resPayload, err := p.Client.Metadata(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, nil, p.Meta.Meta)
+	if err != nil {
+		return nil, err
+	}
+
+	resString, err := resPayload.GetBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	var nodeMeta ModelMetadata
+	err = json.Unmarshal(resString, &nodeMeta)
+	if err != nil {
+		return nil, err
+	}
+
+	var output = map[string]ModelMetadata{
+		node.Name: nodeMeta,
+	}
+	for _, child := range node.Children {
+		childMeta, err := p.MetadataMap(&child)
+		if err != nil {
+			return nil, err
+		}
+		for k, v := range childMeta {
+			output[k] = v
+		}
+	}
+	return output, nil
 }

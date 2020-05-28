@@ -1,10 +1,5 @@
+SHELL := /bin/bash
 VERSION := $(shell cat ../../version.txt)
-
-build_image:
-	docker build . -t seldonio/seldon-request-logger:${VERSION}
-
-push_image:
-	docker push seldonio/seldon-request-logger:${VERSION}
 
 run_container:
 	docker run -p 2222:8080 seldonio/seldon-request-logger:latest
@@ -40,24 +35,26 @@ test_single_dim:
       -d '{"request": {"meta": {"puid": "71dlk7k1rhmci0cd8g5rmeolmn", "tags": {}, "routing": {}, "requestPath": {}, "metrics": []}, "data": {"names": ["f0", "f1"], "ndarray": [0.77, 0.63]}, "date": "2019-06-17T10:59:55.693Z[GMT]"}, "response": {"meta": {"puid": "71dlk7k1rhmci0cd8g5rmeolmn", "tags": {}, "routing": {}, "requestPath": {"classifier": "seldonio/mock_classifier:1.0"}, "metrics": []}, "data": {"names": ["proba"], "ndarray": [0.09826376903346358]}, "date": "2019-06-17T10:59:55.696Z[GMT]"}, "sdepName": "seldon-single-model"}'
 
 
+IMAGE=seldon-request-logger
+
+build_image:
+	docker build . -t seldonio/${IMAGE}:${VERSION}
+
+push_image:
+	docker push seldonio/${IMAGE}:${VERSION}
+
+kind_load: build_image
+	kind load docker-image seldonio/${IMAGE}:${VERSION}
+
+
 #
 # RedHat
 #
 
-IMAGE_NAME_BASE=seldon-request-logger
-IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${VERSION}
-IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
-
-# Build the docker image for Redhat
-docker-build-redhat: 
-	docker build . -f Dockerfile.redhat -t ${IMG_REDHAT}
-
-# Push the docker image
-docker-push-redhat:
-	docker push ${IMG_REDHAT}
-
 # password can be found at: https://connect.redhat.com/project/3993051/view
 redhat-image-scan:
-	docker login -u unused scan.connect.redhat.com
-	docker tag ${IMG_REDHAT} scan.connect.redhat.com/ospid-62dca88a-015b-4d08-8c52-b709e55a7790/${IMG_VERSION_REDHAT}
-	docker push scan.connect.redhat.com/ospid-62dca88a-015b-4d08-8c52-b709e55a7790/${IMG_VERSION_REDHAT}
+	docker pull seldonio/${IMAGE}:${VERSION}
+	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
+		echo $${rh_password_request_logger} | docker login -u unused scan.connect.redhat.com --password-stdin
+	docker tag seldonio/${IMAGE}:${VERSION} scan.connect.redhat.com/ospid-62dca88a-015b-4d08-8c52-b709e55a7790/${IMAGE}:${VERSION}
+	docker push scan.connect.redhat.com/ospid-62dca88a-015b-4d08-8c52-b709e55a7790/${IMAGE}:${VERSION}

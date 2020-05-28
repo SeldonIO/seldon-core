@@ -4,12 +4,16 @@ SHELL:=/bin/bash
 PYTHON_VERSION=3.7
 CONDA_VERSION=4.7.12
 IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | sed 's/\.//g'`
-BASE_IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | cut -d. -f1`
+DEFAULT_IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | cut -d. -f1`
 IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python${IMAGE_PYTHON_VERSION}
-BASE_IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python${BASE_IMAGE_PYTHON_VERSION}
+DEFAULT_IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python${DEFAULT_IMAGE_PYTHON_VERSION}
 GPU_IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python3-tf-gpu
 
 SELDON_CORE_DIR=../../..
+
+# Base images to build the s2i builder images from
+BASE_IMAGE=continuumio/miniconda3
+CONDA_BASE_IMAGE=docker.io/seldonio/conda-ubi8
 
 .PHONY: get_local_repo
 get_local_repo:
@@ -19,42 +23,45 @@ get_local_repo:
 
 .PHONY: build
 build: get_local_repo
-	cat Dockerfile.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" | sed  -e "s|%CONDA_VERSION%|$(CONDA_VERSION)|" > Dockerfile
-	set -x && docker build -t $(IMAGE_NAME):$(IMAGE_VERSION) .
+	set -x && docker build -f Dockerfile --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${BASE_IMAGE} -t $(IMAGE_NAME):$(IMAGE_VERSION) .
 
 .PHONY: build_gpu
 build_gpu: get_local_repo
-	cat Dockerfile.gpu.tmpl > Dockerfile
-	docker build -t ${GPU_IMAGE_NAME}:${IMAGE_VERSION} .
-
+	docker build -f Dockerfile.gpu -t ${GPU_IMAGE_NAME}:${IMAGE_VERSION} .
 
 .PHONY: build_local
 build_local: get_local_repo
-	cat Dockerfile.local.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" | sed  -e "s|%CONDA_VERSION%|$(CONDA_VERSION)|" > Dockerfile
-	set -x && docker build -t $(IMAGE_NAME):$(IMAGE_VERSION) .
+	set -x && docker build -f Dockerfile.local --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${BASE_IMAGE} -t $(IMAGE_NAME):$(IMAGE_VERSION) .
+
+.PHONY: build_redhat
+build_redhat: get_local_repo
+	set -x && docker build -f Dockerfile.redhat --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${CONDA_BASE_IMAGE} -t $(IMAGE_NAME)-ubi8:$(IMAGE_VERSION) .
+
+
 
 tag_base_python:
-	docker tag $(IMAGE_NAME):$(IMAGE_VERSION) $(BASE_IMAGE_NAME):$(IMAGE_VERSION)
+	docker tag $(IMAGE_NAME):$(IMAGE_VERSION) $(DEFAULT_IMAGE_NAME):$(IMAGE_VERSION)
 
 push_to_dockerhub_base_python:
-	docker push $(BASE_IMAGE_NAME):$(IMAGE_VERSION)
+	docker push $(DEFAULT_IMAGE_NAME):$(IMAGE_VERSION)
 
 push_to_dockerhub:
 	docker push $(IMAGE_NAME):$(IMAGE_VERSION)
+
+push_redhat_to_dockerhub:
+	docker push $(IMAGE_NAME)-ubi8:$(IMAGE_VERSION)
 
 push_gpu_to_dockerhub:
 	docker push ${GPU_IMAGE_NAME}:${IMAGE_VERSION}
 
 .PHONY: test
 test:
-	cat Dockerfile.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" | sed  -e "s|%CONDA_VERSION%|$(CONDA_VERSION)|" > Dockerfile
-	docker build -t $(IMAGE_NAME)-candidate .
+	docker build --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${BASE_IMAGE} -t $(IMAGE_NAME)-candidate .
 	IMAGE_NAME=$(IMAGE_NAME)-candidate test/run
 
 .PHONY: test_local
 test_local:
-	cat Dockerfile.local.tmpl | sed  -e "s|%PYTHON_VERSION%|$(PYTHON_VERSION)|" | sed  -e "s|%CONDA_VERSION%|$(CONDA_VERSION)|" > Dockerfile
-	docker build -t $(IMAGE_NAME)-candidate .
+	docker build -f Dockerfile.local --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${BASE_IMAGE} -t $(IMAGE_NAME)-candidate .
 	IMAGE_NAME=$(IMAGE_NAME)-candidate test/run
 
 .PHONY: clean
@@ -68,3 +75,8 @@ clean:
 after_build_image_seldon_core_check:
 	docker run --rm -it docker.io/seldonio/seldon-core-s2i-python36:$(IMAGE_VERSION) python -c 'import seldon_core; print(seldon_core.version.__version__)'
 	docker run --rm -it docker.io/seldonio/seldon-core-s2i-python37:$(IMAGE_VERSION) python -c 'import seldon_core; print(seldon_core.version.__version__)'
+
+
+
+build_conda_base:
+	docker build -f Dockerfile.conda --build-arg CONDA_VERSION=${CONDA_VERSION} -t ${CONDA_BASE_IMAGE}:${CONDA_VERSION} .

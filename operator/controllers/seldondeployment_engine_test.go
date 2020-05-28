@@ -1,12 +1,13 @@
 package controllers
 
 import (
+	"testing"
+
 	. "github.com/onsi/gomega"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"testing"
 )
 
 func createTestSeldonDeployment() *machinelearningv1.SeldonDeployment {
@@ -38,7 +39,7 @@ func createTestSeldonDeployment() *machinelearningv1.SeldonDeployment {
 							},
 						},
 					},
-					Graph: &machinelearningv1.PredictiveUnit{
+					Graph: machinelearningv1.PredictiveUnit{
 						Name: "classifier",
 						Type: &modelType,
 						Endpoint: &machinelearningv1.Endpoint{

@@ -2,10 +2,13 @@ package grpc
 
 import (
 	"context"
+	"math"
+	"strconv"
+
 	"github.com/go-logr/logr"
 	guuid "github.com/google/uuid"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	"github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
+	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	"github.com/opentracing/opentracing-go"
 	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
@@ -13,8 +16,6 @@ import (
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-	"math"
-	"strconv"
 )
 
 const (
@@ -63,15 +64,13 @@ func CreateGrpcServer(spec *v1.PredictorSpec, deploymentName string, annotations
 	return grpcServer, nil
 }
 
-func CollectMetadata(ctx context.Context) map[string][]string {
-	md, ok := metadata.FromIncomingContext(ctx)
-	if ok {
-		val := md.Get(payload.SeldonPUIDHeader)
+func CollectMetadata(ctx context.Context) metadata.MD {
+	if mdFromIncoming, ok := metadata.FromIncomingContext(ctx); ok {
+		val := mdFromIncoming.Get(payload.SeldonPUIDHeader)
 		if len(val) == 0 {
-			md.Set(payload.SeldonPUIDHeader, guuid.New().String())
+			mdFromIncoming.Set(payload.SeldonPUIDHeader, guuid.New().String())
 		}
-		return md
-	} else {
-		return map[string][]string{payload.SeldonPUIDHeader: []string{guuid.New().String()}}
+		return mdFromIncoming
 	}
+	return metadata.New(map[string]string{payload.SeldonPUIDHeader: guuid.New().String()})
 }

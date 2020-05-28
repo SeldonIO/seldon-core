@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/json"
@@ -329,4 +330,56 @@ func TestTimeout(t *testing.T) {
 
 	_, err = seldonRestClient.Status(createTestContext(), "model", host, int32(port), nil, map[string][]string{})
 	g.Expect(err).ToNot(BeNil())
+}
+
+func TestIsJson(t *testing.T) {
+	g := NewGomegaWithT(t)
+	badJson := "ab"
+	res := isJSON([]byte(badJson))
+	g.Expect(res).To(Equal(false))
+
+	goodJson := "{\"foo\":\"bar\"}"
+	res = isJSON([]byte(goodJson))
+	g.Expect(res).To(Equal(true))
+}
+
+func TestMarshall(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	tests := []struct {
+		response string
+		expected string
+	}{
+		{
+			response: okPredictResponse,
+			expected: okPredictResponse,
+		},
+		{
+			response: `"<div class=\"div-class\"></div>"`,
+			expected: `"\u003cdiv class=\"div-class\"\u003e\u003c/div\u003e"`,
+		},
+		{
+			response: `{
+        "strData": "<div class=\"div-class\"></div>"
+      }`,
+			expected: `{
+        "strData": "\u003cdiv class=\"div-class\"\u003e\u003c/div\u003e"
+      }`,
+		},
+	}
+
+	smc := &JSONRestClient{}
+
+	for _, test := range tests {
+		res := &payload.BytesPayload{
+			Msg:         []byte(test.response),
+			ContentType: ContentTypeJSON,
+		}
+
+		var w bytes.Buffer
+		err := smc.Marshall(&w, res)
+
+		g.Expect(err).ToNot(HaveOccurred())
+		g.Expect(w.String()).To(Equal(test.expected))
+	}
 }
