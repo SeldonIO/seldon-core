@@ -4,7 +4,7 @@ This page provides with instructions on how to upgrade from previous versions. E
 
 If you were running our Openshift 0.4.2 certified operator and are looking to upgrade to our 1.1 certified operator, you will also need to follow the "upgrading process" steps in the "Upgrading to 0.5.2 from previous versions" section.
 
-Make sure you also [read the CHANGELOG](https://docs.seldon.io/projects/seldon-core/en/latest/reference/changelog.html) to see the detailed features and bug-fixes in each version.
+Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed features and bug-fixes in each version.
 
 
 ## Upgrading to 1.1 from previous versions
@@ -31,7 +31,7 @@ metadata:
 spec:
   name: restseldon
   protocol: seldon
-  transport: rest  
+  transport: rest
   predictors:
   - componentSpecs:
     - spec:
@@ -51,7 +51,7 @@ For the above resource, one Deployment will be created with name:
 rest-seldon-model-0-classifier
 ```
 
-This will change how rolling updates are done. Now any change to the first PodSpec above will be updated via a rolling update as expected if the names of the containers are not changed. If however you changed "classifier" to "classifier2" you would get a new deployment created which would replace the old deployment when running. 
+This will change how rolling updates are done. Now any change to the first PodSpec above will be updated via a rolling update as expected if the names of the containers are not changed. If however you changed "classifier" to "classifier2" you would get a new deployment created which would replace the old deployment when running.
 
 
 #### New Service Orchestrator
@@ -77,7 +77,7 @@ The Python Wrapper was using naming convention in the format 0.1 ... 0.18. In th
 
 ### Dated SNAPSHOTS
 
-Whenever a new PR was merged to master, we have set up our CI to build a "SNAPSHOT" version, which would contain the Docker images for that specific development / master-branch code. 
+Whenever a new PR was merged to master, we have set up our CI to build a "SNAPSHOT" version, which would contain the Docker images for that specific development / master-branch code.
 
 Previously, we always had the SNAPSHOT tag being overriden with the latest. This didn't allow us to know what version someone may be trying out when using master, so we wanted to introduce a way to actually get unique tags for every image that gets landed into master.
 
@@ -154,6 +154,3 @@ The Helm chart `seldon-core-operator` will require clusterwide RBAC and should b
 ##### Dropping support for KSonnet
 
 Ksonnet is now deprecated. You should convert to using Helm to install Seldon Core.
-
-
-
