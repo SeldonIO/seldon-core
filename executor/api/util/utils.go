@@ -10,7 +10,11 @@ func ExtractRouteFromSeldonMessage(msg *proto.SeldonMessage) []int {
 		values := msg.GetData().GetNdarray().GetValues()
 		routeArr := make([]int, len(values))
 		for i, value := range values {
-			routeArr[i] = int(value.GetNumberValue())
+			if listValue := value.GetListValue(); listValue != nil {
+				routeArr[i] = int(listValue.GetValues()[0].GetNumberValue())
+			} else {
+				routeArr[i] = int(value.GetNumberValue())
+			}
 		}
 		return routeArr
 	case *proto.DefaultData_Tensor:
