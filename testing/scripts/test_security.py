@@ -15,13 +15,20 @@ def test_xss_escaping(namespace):
     wait_for_rollout(sdep_name, namespace)
 
     payload = '<div class="div-class"></div>'
-    expected = '\\u003cdiv class=\\"div-class\\"\\u003e\\u003c/div\\u003e'
+
+    # There is a small difference between the engine and the executor, where
+    # the engine will escape the `=` symbol as its unicode equivalent, so we
+    # need to consider both.
+    expected = [
+        '\\u003cdiv class=\\"div-class\\"\\u003e\\u003c/div\\u003e',
+        '\\u003cdiv class\\u003d\\"div-class\\"\\u003e\\u003c/div\\u003e',
+    ]
 
     res = rest_request(sdep_name, namespace, data=payload, dtype="strData")
 
-    # We need to compare raw text. Otherwise, Python interprets the escaped
-    # sequences.
-    assert res.text == f'{{"meta":{{}},"strData":"{expected}"}}\n'
+    # We need to compare raw text (instead of `.json()`). Otherwise, Python
+    # interprets the escaped sequences.
+    assert any([exp in res.text for exp in expected])
 
 
 def test_xss_header(namespace):
