@@ -1,5 +1,5 @@
-from .conftest import SELDON_E2E_TESTS_USE_EXECUTOR
-from .seldon_e2e_utils import (
+from conftest import SELDON_E2E_TESTS_USE_EXECUTOR
+from seldon_e2e_utils import (
     wait_for_status,
     wait_for_rollout,
     retry_run,
@@ -20,7 +20,7 @@ def test_xss_escaping(namespace):
     # There is a small difference between the engine and the executor, where
     # the engine will escape the `=` symbol as its unicode equivalent, so we
     # need to consider both.
-    expected = ('\\u003cdiv class=\\"div-class\\"\\u003e\\u003c/div\\u003e',)
+    expected = '\\u003cdiv class=\\"div-class\\"\\u003e\\u003c/div\\u003e'
     if not SELDON_E2E_TESTS_USE_EXECUTOR:
         expected = '\\u003cdiv class\\u003d\\"div-class\\"\\u003e\\u003c/div\\u003e'
 
