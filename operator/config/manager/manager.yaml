@@ -87,6 +87,8 @@ spec:
           value: "9000"
         - name: PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME
           value: ""
+        - name: PREDICTIVE_UNIT_METRICS_PORT_NAME
+          value: "metrics"
         - name: ENGINE_SERVER_GRPC_PORT
           value: "5001"
         - name: ENGINE_SERVER_PORT
@@ -115,6 +117,8 @@ spec:
           value: "8888"          
         - name: EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME
           value: default
+        - name: EXECUTOR_SERVER_METRICS_PORT_NAME
+          value: "metrics"
         - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT
           value: "http://default-broker"
         - name: DEFAULT_USER_ID

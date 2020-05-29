@@ -93,6 +93,8 @@ spec:
           value: '{{ .Values.predictiveUnit.port }}'
         - name: PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME
           value: '{{ .Values.predictiveUnit.defaultEnvSecretRefName }}'
+        - name: PREDICTIVE_UNIT_METRICS_PORT_NAME
+          value: '{{ .Values.predictiveUnit.metricsPortName }}'
         - name: ENGINE_SERVER_GRPC_PORT
           value: '{{ .Values.engine.grpc.port }}'
         - name: ENGINE_SERVER_PORT
@@ -121,6 +123,8 @@ spec:
           value: '{{ .Values.executor.user }}'
         - name: EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME
           value: '{{ .Values.executor.serviceAccount.name }}'
+        - name: EXECUTOR_SERVER_METRICS_PORT_NAME
+          value: '{{ .Values.executor.metricsPortName }}'
         - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT
           value: '{{ .Values.executor.requestLogger.defaultEndpoint }}'
         - name: DEFAULT_USER_ID
