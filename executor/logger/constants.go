@@ -9,8 +9,6 @@ const (
 
 // Variables to cache the value of ENV default request logger
 var defaultRequestLogger string = ""
-var defaultRequestLoggerEndpointNamespace string = ""
-var defaultRequestLoggerEndpointInModelNamespace string = ""
 
 func GetLoggerDefaultUrl() string {
 	if defaultRequestLogger == "" {
