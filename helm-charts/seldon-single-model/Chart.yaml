@@ -1,13 +1,13 @@
 apiVersion: v1
+name: seldon-single-model
 description: |
   Chart to deploy a model in Seldon Core.
 
   The chart bli bla blu
+version: 0.2.0
+home: https://github.com/SeldonIO/seldon-core
+sources:
+  - https://github.com/SeldonIO/seldon-core
 keywords:
   - kubernetes
   - machine-learning
-name: seldon-single-model
-sources:
-  - https://github.com/SeldonIO/seldon-core
-appVersion: 1.1.1-rc
-version: 0.2.0
