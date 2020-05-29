@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"os"
 	"sync"
 
 	"github.com/go-logr/logr"
@@ -15,7 +16,14 @@ import (
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 )
 
-const NilPUIDError = "context value for Seldon PUID Header is nil"
+const (
+	NilPUIDError                        = "context value for Seldon PUID Header is nil"
+	ENV_REQUEST_LOGGER_DEFAULT_ENDPOINT = "REQUEST_LOGGER_DEFAULT_ENDPOINT"
+)
+
+var (
+	envRequestLoggerDefaultEndpoint = os.Getenv(ENV_REQUEST_LOGGER_DEFAULT_ENDPOINT)
+)
 
 type PredictorProcess struct {
 	Ctx       context.Context
@@ -242,7 +250,7 @@ func (p *PredictorProcess) getLogUrl(logger *v1.Logger) (*url.URL, error) {
 	if logger.Url != nil {
 		return url.Parse(*logger.Url)
 	} else {
-		return url.Parse(payloadLogger.GetLoggerDefaultUrl())
+		return url.Parse(envRequestLoggerDefaultEndpoint)
 	}
 }
 

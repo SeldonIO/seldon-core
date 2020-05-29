@@ -55,7 +55,7 @@ kubectl rollout status -n seldon-system deployment/seldon-controller-manager
 sleep 5
 
 #EXAMPLE MODEL
-helm install seldon-single-model ../../helm-charts/seldon-single-model/ --set model.logger.enabled=true --set model.logger.url="http://default-broker.seldon-logs"
+helm install seldon-single-model ../../helm-charts/seldon-single-model/ --set model.logger.enabled=true
 
 #LOADTESTER
 kubectl label nodes kind-worker role=locust --overwrite
