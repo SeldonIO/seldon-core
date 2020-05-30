@@ -1,0 +1,27 @@
+
+Showing logs for build [32mmeta-seldonio-seldon-core-gh-pa-57ffx-432[0m stage [32mmeta-pipeline[0m and container [32mstep-credential-initializer-j4c9m[0m
+{"level":"warn","ts":1590858949.270342,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1590858949.2716982,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-gh-pa-57ffx-432[0m stage [32mmeta-pipeline[0m and container [32mstep-working-dir-initializer-xgjwq[0m
+{"level":"warn","ts":1590858955.389907,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1590858955.392385,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-gh-pa-57ffx-432[0m stage [32mmeta-pipeline[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-gh-pa-57ffx-432[0m stage [32mmeta-pipeline[0m and container [32mstep-git-source-meta-seldonio-seldon-core-gh-pa-fntlx[0m
+{"level":"warn","ts":1590858961.7354546,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1590858975.0058692,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ 10704b15e36a744616ceaedd66395259cb08c586 in path /workspace/source"}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-gh-pa-57ffx-432[0m stage [32mmeta-pipeline[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=gh-pages:10704b15e36a744616ceaedd66395259cb08c586
+WARNING: no SHAs to merge, falling back to initial cloned commit
+
+Showing logs for build [32mmeta-seldonio-seldon-core-gh-pa-57ffx-432[0m stage [32mmeta-pipeline[0m and container [32mstep-merge-pull-refs[0m
+SKIP merge-pull-refs: Nothing to merge
+
+Showing logs for build [32mmeta-seldonio-seldon-core-gh-pa-57ffx-432[0m stage [32mmeta-pipeline[0m and container [32mstep-create-effective-pipeline[0m
+performing pack detection in folder /workspace/source
+error: failed to discover the build pack: failed to discover task pack in dir /workspace/source: there was an error detecting the language
+[31m
+Pipeline failed on stage 'meta-pipeline' : container 'step-create-effective-pipeline'. The execution of the pipeline has stopped.[0m
