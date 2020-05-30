@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	http2 "github.com/cloudevents/sdk-go/pkg/bindings/http"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -238,7 +239,7 @@ func (r *SeldonRestApi) feedback(w http.ResponseWriter, req *http.Request) {
 	}
 
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header)
-	reqPayload, err := seldonPredictorProcess.Client.Unmarshall(bodyBytes)
+	reqPayload, err := seldonPredictorProcess.Client.Unmarshall(bodyBytes, req.Header.Get(http2.ContentType))
 	if err != nil {
 		r.respondWithError(w, nil, err)
 		return
@@ -274,7 +275,7 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header)
 
-	reqPayload, err := seldonPredictorProcess.Client.Unmarshall(bodyBytes)
+	reqPayload, err := seldonPredictorProcess.Client.Unmarshall(bodyBytes, req.Header.Get(http2.ContentType))
 	if err != nil {
 		r.respondWithError(w, nil, err)
 		return
