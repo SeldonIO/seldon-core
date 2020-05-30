@@ -1,7 +1,6 @@
 package kafka
 
 import (
-	"context"
 	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/go-logr/logr"
@@ -13,13 +12,11 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/grpc/tensorflow"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/api/rest"
-	"github.com/seldonio/seldon-core/executor/predictor"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"net/url"
 	"os"
 	"os/signal"
 	"reflect"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"syscall"
 )
 
@@ -28,8 +25,17 @@ const (
 	kafkaPayloadProto = "proto"
 )
 
+const (
+	ENV_KAFKA_BROKER       = "KAFKA_BROKER"
+	ENV_KAFKA_INPUT_TOPIC  = "KAFKA_INPUT_TOPIC"
+	ENV_KAFKA_OUTPUT_TOPIC = "KAFKA_OUTPUT_TOPIC"
+	ENV_KAFKA_FULL_GRAPH   = "KAFKA_FULL_GRAPH"
+	ENV_KAFKA_WORKERS      = "KAFKA_WORKERS"
+)
+
 type SeldonKafkaServer struct {
 	Client         client.SeldonApiClient
+	Producer       *kafka.Producer
 	DeploymentName string
 	Namespace      string
 	Transport      string
@@ -38,22 +44,26 @@ type SeldonKafkaServer struct {
 	TopicIn        string
 	TopicOut       string
 	ServerUrl      *url.URL
+	Workers        int
 	Log            logr.Logger
 }
 
-func NewKafkaServer(graphInternal bool, deploymentName, namespace, protocol, transport string, annotations map[string]string, serverUrl *url.URL, predictor *v1.PredictorSpec, broker, topicIn, topicOut string, log logr.Logger) (*SeldonKafkaServer, error) {
+func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, protocol, transport string, annotations map[string]string, serverUrl *url.URL, predictor *v1.PredictorSpec, broker, topicIn, topicOut string, log logr.Logger) (*SeldonKafkaServer, error) {
 	var apiClient client.SeldonApiClient
 	var err error
-	if graphInternal {
+	if fullGraph {
+		log.Info("Starting full graph kafka server")
 		apiClient = NewKafkaClient(serverUrl.Hostname(), deploymentName, namespace, protocol, transport, predictor, broker, log)
 	} else {
 		switch transport {
 		case api.TransportRest:
+			log.Info("Start http kafka graph")
 			apiClient, err = rest.NewJSONRestClient(protocol, deploymentName, predictor, annotations)
 			if err != nil {
 				return nil, err
 			}
 		case api.TransportGrpc:
+			log.Info("Start grpc kafka graph")
 			if protocol == "seldon" {
 				apiClient = seldon.NewSeldonGrpcClient(predictor, deploymentName, annotations)
 			} else {
@@ -63,8 +73,18 @@ func NewKafkaServer(graphInternal bool, deploymentName, namespace, protocol, tra
 			return nil, fmt.Errorf("Unknown transport %s", transport)
 		}
 	}
+
+	// Create Producer
+	log.Info("Creating producer", "broker", broker)
+	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": broker})
+	if err != nil {
+		return nil, err
+	}
+	log.Info("Created", "producer", p.String())
+
 	return &SeldonKafkaServer{
 		Client:         apiClient,
+		Producer:       p,
 		DeploymentName: deploymentName,
 		Namespace:      namespace,
 		Transport:      transport,
@@ -73,6 +93,7 @@ func NewKafkaServer(graphInternal bool, deploymentName, namespace, protocol, tra
 		TopicIn:        topicIn,
 		TopicOut:       topicOut,
 		ServerUrl:      serverUrl,
+		Workers:        workers,
 		Log:            log.WithName("KafkaServer"),
 	}, nil
 }
@@ -122,12 +143,6 @@ func (ks *SeldonKafkaServer) Serve() error {
 	}
 	ks.Log.Info("Created", "consumer", c.String())
 
-	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": ks.Broker})
-	if err != nil {
-		return err
-	}
-	ks.Log.Info("Created", "producer", p.String())
-
 	err = c.SubscribeTopics([]string{ks.TopicIn}, nil)
 	if err != nil {
 		return err
@@ -136,6 +151,14 @@ func (ks *SeldonKafkaServer) Serve() error {
 	run := true
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
+
+	// create a cancel channel
+	cancelChan := make(chan struct{})
+	// make a channel with a capacity of the number of workers
+	jobChan := make(chan *KafkaJob, ks.Workers)
+	for i := 0; i < ks.Workers; i++ {
+		go ks.worker(jobChan, cancelChan)
+	}
 
 	for run == true {
 		select {
@@ -182,38 +205,12 @@ func (ks *SeldonKafkaServer) Serve() error {
 
 				}
 
-				go func() {
-					ctx := context.Background()
-					// Add Seldon Puid to Context
-					ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, headers[payload.SeldonPUIDHeader][0])
-
-					seldonPredictorProcess := predictor.NewPredictorProcess(ctx, ks.Client, logf.Log.WithName("KafkaClient"), ks.ServerUrl, ks.Namespace, headers)
-
-					resPayload, err := seldonPredictorProcess.Predict(ks.Predictor.Graph, reqPayload)
-					if err != nil {
-						ks.Log.Error(err, "Failed prediction")
-						return
-					}
-					resBytes, err := resPayload.GetBytes()
-					if err != nil {
-						ks.Log.Error(err, "Failed to get bytes from prediction response")
-						return
-					}
-
-					kafkaHeaders := make([]kafka.Header, 0)
-					if ks.Transport == api.TransportGrpc {
-						kafkaHeaders = []kafka.Header{{Key: KeyProtoName, Value: []byte(proto2.MessageName(resPayload.GetPayload().(*payload.ProtoPayload).Msg))}}
-					}
-
-					err = p.Produce(&kafka.Message{
-						TopicPartition: kafka.TopicPartition{Topic: &ks.TopicOut, Partition: kafka.PartitionAny},
-						Value:          resBytes,
-						Headers:        kafkaHeaders,
-					}, nil)
-					if err != nil {
-						ks.Log.Error(err, "Failed to produce response")
-					}
-				}()
+				job := KafkaJob{
+					headers:    headers,
+					reqPayload: reqPayload,
+				}
+				// enqueue a job
+				jobChan <- &job
 
 			case kafka.Error:
 				// Errors should generally be considered
@@ -232,6 +229,7 @@ func (ks *SeldonKafkaServer) Serve() error {
 	}
 
 	ks.Log.Info("Closing consumer")
+	close(cancelChan)
 	c.Close()
 	return nil
 }

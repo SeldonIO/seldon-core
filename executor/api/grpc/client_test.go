@@ -47,5 +47,11 @@ func TestUnmarshal(t *testing.T) {
 	g.Expect(err).Should(BeNil())
 
 	sm2 := getProto(tyName, b)
-	g.Expect(sm2).To(Equal(&sm))
+
+	m := jsonpb.Marshaler{}
+	sm2Str, err := m.MarshalToString(sm2)
+	g.Expect(err).Should(BeNil())
+	smStr, err := m.MarshalToString(&sm)
+	g.Expect(err).Should(BeNil())
+	g.Expect(sm2Str).To(Equal(smStr))
 }

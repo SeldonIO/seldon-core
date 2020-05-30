@@ -204,6 +204,7 @@ type SeldonDeploymentSpec struct {
 	Protocol    Protocol          `json:"protocol,omitempty" protobuf:"bytes,6,opt,name=protocol"`
 	Transport   Transport         `json:"transport,omitempty" protobuf:"bytes,7,opt,name=transport"`
 	Replicas    *int32            `json:"replicas,omitempty" protobuf:"bytes,8,opt,name=replicas"`
+	ServerType  ServerType        `json:"serverType,omitempty" protobuf:"bytes,8,opt,name=serverType"`
 }
 
 type PredictorSpec struct {
@@ -232,6 +233,13 @@ type Transport string
 const (
 	TransportRest Transport = "rest"
 	TransportGrpc Transport = "grpc"
+)
+
+type ServerType string
+
+const (
+	ServerRPC   ServerType = "rpc"
+	ServerKafka ServerType = "kafka"
 )
 
 type SvcOrchSpec struct {

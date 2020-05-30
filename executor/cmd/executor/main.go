@@ -25,29 +25,31 @@ import (
 	"os"
 	"os/signal"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	"strconv"
 	"syscall"
 	"time"
 )
 
 var (
-	serverType         = flag.String("server_type", "rpc", "Server type: rpc or kafka")
-	configPath         = flag.String("config", "", "Path to kubconfig")
-	sdepName           = flag.String("sdep", "", "Seldon deployment name")
-	namespace          = flag.String("namespace", "", "Namespace")
-	predictorName      = flag.String("predictor", "", "Name of the predictor inside the SeldonDeployment")
-	httpPort           = flag.Int("http_port", 8080, "Executor port")
-	grpcPort           = flag.Int("grpc_port", 8000, "Executor port")
-	wait               = flag.Duration("graceful_timeout", time.Second*15, "Graceful shutdown secs")
-	protocol           = flag.String("protocol", "seldon", "The payload protocol")
-	transport          = flag.String("transport", "rest", "The network transport machanism rest, grpc")
-	filename           = flag.String("file", "", "Load graph from file")
-	hostname           = flag.String("hostname", "", "The hostname of the running server")
-	logWorkers         = flag.Int("logger_workers", 5, "Number of workers handling payload logging")
-	prometheusPath     = flag.String("prometheus_path", "/metrics", "The prometheus metrics path")
-	kafkaBroker        = flag.String("kafka_broker", "", "The kafka broker as host:port")
-	kafkaTopicIn       = flag.String("kafka_topic_in", "", "The kafka input topic")
-	kafkaTopicOut      = flag.String("kafka_topic_out", "", "The kafka output topic")
-	kafkaGraphInternal = flag.Bool("kafka_graph_internal", false, "Use kafka for internal graph processing")
+	serverType     = flag.String("server_type", "rpc", "Server type: rpc or kafka")
+	configPath     = flag.String("config", "", "Path to kubconfig")
+	sdepName       = flag.String("sdep", "", "Seldon deployment name")
+	namespace      = flag.String("namespace", "", "Namespace")
+	predictorName  = flag.String("predictor", "", "Name of the predictor inside the SeldonDeployment")
+	httpPort       = flag.Int("http_port", 8080, "Executor port")
+	grpcPort       = flag.Int("grpc_port", 8000, "Executor port")
+	wait           = flag.Duration("graceful_timeout", time.Second*15, "Graceful shutdown secs")
+	protocol       = flag.String("protocol", "seldon", "The payload protocol")
+	transport      = flag.String("transport", "rest", "The network transport machanism rest, grpc")
+	filename       = flag.String("file", "", "Load graph from file")
+	hostname       = flag.String("hostname", "", "The hostname of the running server")
+	logWorkers     = flag.Int("logger_workers", 5, "Number of workers handling payload logging")
+	prometheusPath = flag.String("prometheus_path", "/metrics", "The prometheus metrics path")
+	kafkaBroker    = flag.String("kafka_broker", "", "The kafka broker as host:port")
+	kafkaTopicIn   = flag.String("kafka_input_topic", "", "The kafka input topic")
+	kafkaTopicOut  = flag.String("kafka_output_topic", "", "The kafka output topic")
+	kafkaFullGraph = flag.Bool("kafka_full_graph", false, "Use kafka for internal graph processing")
+	kafkaWorkers   = flag.Int("kafka_workers", 4, "Number of kafka workers")
 )
 
 func getServerUrl(hostname string, port int) (*url.URL, error) {
@@ -138,12 +140,49 @@ func main() {
 	}
 
 	if *serverType == "kafka" {
+		// Get Broker
 		if *kafkaBroker == "" {
-			log.Fatal("Required argument kafka_broker missing")
+			*kafkaBroker = os.Getenv(kafka.ENV_KAFKA_BROKER)
+			if *kafkaBroker == "" {
+				log.Fatal("Required argument kafka_broker missing")
+			}
 		}
+		// Get input topic
 		if *kafkaTopicIn == "" {
-			log.Fatal("Required argument kafka_topic_in missing")
+			*kafkaTopicIn = os.Getenv(kafka.ENV_KAFKA_INPUT_TOPIC)
+			if *kafkaTopicIn == "" {
+				log.Fatal("Required argument kafka_input_topic missing")
+			}
 		}
+		// Get output topic
+		if *kafkaTopicOut == "" {
+			*kafkaTopicOut = os.Getenv(kafka.ENV_KAFKA_OUTPUT_TOPIC)
+			if *kafkaTopicOut == "" {
+				log.Fatal("Required argument kafka_output_topic missing")
+			}
+		}
+		// Get Full Graph
+		kafkaFullGraphFromEnv := os.Getenv(kafka.ENV_KAFKA_FULL_GRAPH)
+		if kafkaFullGraphFromEnv != "" {
+			kafkaFullGraphFromEnvBool, err := strconv.ParseBool(kafkaFullGraphFromEnv)
+			if err != nil {
+				log.Fatalf("Failed to parse %s %s", kafka.ENV_KAFKA_FULL_GRAPH, kafkaFullGraphFromEnv)
+			} else {
+				*kafkaFullGraph = kafkaFullGraphFromEnvBool
+			}
+		}
+
+		//Kafka workers
+		kafkaWorkersFromEnv := os.Getenv(kafka.ENV_KAFKA_WORKERS)
+		if kafkaWorkersFromEnv != "" {
+			kafkaWorkersFromEnvInt, err := strconv.Atoi(kafkaWorkersFromEnv)
+			if err != nil {
+				log.Fatalf("Failed to parse %s %s", kafka.ENV_KAFKA_WORKERS, kafkaWorkersFromEnv)
+			} else {
+				*kafkaWorkers = kafkaWorkersFromEnvInt
+			}
+		}
+
 	}
 
 	logf.SetLogger(logf.ZapLogger(false))
@@ -217,7 +256,10 @@ func main() {
 			runHttpServer(logger, predictor, clientRest, *httpPort, false, serverUrl, *namespace, *protocol, *sdepName, *prometheusPath)
 		}
 	case "kafka":
-		kafkaServer, err := kafka.NewKafkaServer(*kafkaGraphInternal, *sdepName, *namespace, *protocol, *transport, annotations, serverUrl, predictor, *kafkaBroker, *kafkaTopicIn, *kafkaTopicOut, logger)
+		logger.Info("Running http probes only server ", "port", *httpPort)
+		go runHttpServer(logger, predictor, nil, *httpPort, true, serverUrl, *namespace, *protocol, *sdepName, *prometheusPath)
+		log.Info("Starting kafka server")
+		kafkaServer, err := kafka.NewKafkaServer(*kafkaFullGraph, *kafkaWorkers, *sdepName, *namespace, *protocol, *transport, annotations, serverUrl, predictor, *kafkaBroker, *kafkaTopicIn, *kafkaTopicOut, logger)
 		if err != nil {
 			log.Fatalf("Failed to create kafka server: %v", err)
 		}

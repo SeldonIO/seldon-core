@@ -442,6 +442,36 @@ func collectTransports(pu *PredictiveUnit, transportsFound map[EndpointType]bool
 	}
 }
 
+const (
+	ENV_KAFKA_BROKER       = "KAFKA_BROKER"
+	ENV_KAFKA_INPUT_TOPIC  = "KAFKA_INPUT_TOPIC"
+	ENV_KAFKA_OUTPUT_TOPIC = "KAFKA_OUTPUT_TOPIC"
+)
+
+func (r *SeldonDeploymentSpec) validateKafka(allErrs field.ErrorList) field.ErrorList {
+	if r.ServerType == ServerKafka {
+		for i, p := range r.Predictors {
+			if len(p.SvcOrchSpec.Env) == 0 {
+				fldPath := field.NewPath("spec").Child("predictors").Index(i)
+				allErrs = append(allErrs, field.Invalid(fldPath, p.Name, "For kafka please supply svcOrchSpec envs KAFKA_BROKER, KAFKA_INPUT_TOPIC, KAFKA_OUTPUT_TOPIC"))
+			} else {
+				found := 0
+				for _, env := range p.SvcOrchSpec.Env {
+					switch env.Name {
+					case ENV_KAFKA_BROKER, ENV_KAFKA_INPUT_TOPIC, ENV_KAFKA_OUTPUT_TOPIC:
+						found = found + 1
+					}
+				}
+				if found < 3 {
+					fldPath := field.NewPath("spec").Child("predictors").Index(i)
+					allErrs = append(allErrs, field.Invalid(fldPath, p.Name, "For kafka please supply svcOrchSpec envs KAFKA_BROKER, KAFKA_INPUT_TOPIC, KAFKA_OUTPUT_TOPIC"))
+				}
+			}
+		}
+	}
+	return allErrs
+}
+
 func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 	var allErrs field.ErrorList
 
@@ -454,6 +484,13 @@ func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 		fldPath := field.NewPath("spec")
 		allErrs = append(allErrs, field.Invalid(fldPath, r.Transport, "Invalid transport"))
 	}
+
+	if r.ServerType != "" && !(r.ServerType == ServerRPC || r.ServerType == ServerKafka) {
+		fldPath := field.NewPath("spec")
+		allErrs = append(allErrs, field.Invalid(fldPath, r.ServerType, "Invalid server_type"))
+	}
+
+	allErrs = r.validateKafka(allErrs)
 
 	transports := make(map[EndpointType]bool)
 

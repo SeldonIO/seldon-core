@@ -2,12 +2,15 @@ BASE=../../../..
 KAFKA_BIN=../kafka_2.12-2.5.0/bin
 KAFKA_PORT := $(shell kubectl get service my-cluster-kafka-external-bootstrap -n default -o=jsonpath='{.spec.ports[0].nodePort}{"\n"}')
 
+docker_run_executor_rest:
+	docker run -it --rm --net=host -v ${PWD}:/models seldonio/seldon-core-executor:1.1.1-SNAPSHOT  --sdep seldon-model --namespace default --predictor example --file /models/model_single.yaml --http_port 8000 --server_type kafka --kafka_broker 172.17.0.2:${KAFKA_PORT} -transport rest --kafka_input_topic testin --kafka_output_topic testout 
+
 
 run_executor_rest:
-	${BASE}/executor --sdep seldon-model --namespace default --predictor example --file ./model_single.yaml --http_port 8000 --server_type kafka --kafka_broker 172.17.0.2:${KAFKA_PORT} -transport rest --kafka_topic_in testin --kafka_topic_out testout 
+	${BASE}/executor --sdep seldon-model --namespace default --predictor example --file ./model_single.yaml --http_port 8000 --server_type kafka --kafka_broker 172.17.0.2:${KAFKA_PORT} -transport rest --kafka_input_topic testin --kafka_output_topic testout 
 
 run_executor_rest_graph:
-	${BASE}/executor --sdep seldon-model --namespace default --predictor example --file ./model_single.yaml --http_port 8000 --server_type kafka --kafka_broker 172.17.0.2:${KAFKA_PORT} -transport rest --kafka_topic_in testin --kafka_topic_out testout --kafka_graph_internal
+	${BASE}/executor --sdep seldon-model --namespace default --predictor example --file ./model_single.yaml --http_port 8000 --server_type kafka --kafka_broker 172.17.0.2:${KAFKA_PORT} -transport rest --kafka_input_topic testin --kafka_output_topic testout --kafka_full_graph
 
 
 run_proxy:

@@ -216,6 +216,11 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 		protocol = machinelearningv1.ProtocolSeldon
 	}
 
+	serverType := mlDep.Spec.ServerType
+	if serverType == "" {
+		serverType = machinelearningv1.ServerRPC
+	}
+
 	// Get executor image from env vars in order of priority
 	var executorImage string
 	if executorImage = envExecutorImageRelated; executorImage == "" {
@@ -236,6 +241,7 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 			"--transport", string(transport),
 			"--protocol", string(protocol),
 			"--prometheus_path", getPrometheusPath(mlDep),
+			"--server_type", string(mlDep.Spec.ServerType),
 		},
 		ImagePullPolicy:          corev1.PullPolicy(GetEnv("EXECUTOR_CONTAINER_IMAGE_PULL_POLICY", "IfNotPresent")),
 		TerminationMessagePath:   "/dev/termination-log",

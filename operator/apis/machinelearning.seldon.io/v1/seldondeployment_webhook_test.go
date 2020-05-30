@@ -11,6 +11,39 @@ import (
 	"testing"
 )
 
+func TestValidProtocolTransportServerType(t *testing.T) {
+	g := NewGomegaWithT(t)
+	spec := &SeldonDeploymentSpec{
+		ServerType: ServerRPC,
+		Protocol:   ProtocolTensorflow,
+		Transport:  TransportGrpc,
+		Predictors: []PredictorSpec{
+			{
+				Name: "p1",
+				ComponentSpecs: []*SeldonPodSpec{
+					{
+						Spec: v1.PodSpec{
+							Containers: []v1.Container{
+								{
+									Image: "seldonio/mock_classifier:1.0",
+									Name:  "classifier",
+								},
+							},
+						},
+					},
+				},
+				Graph: &PredictiveUnit{
+					Name: "classifier",
+				},
+			},
+		},
+	}
+
+	spec.DefaultSeldonDeployment("mydep", "default")
+	err := spec.ValidateSeldonDeployment()
+	g.Expect(err).To(BeNil())
+}
+
 func TestValidateBadProtocol(t *testing.T) {
 	g := NewGomegaWithT(t)
 	spec := &SeldonDeploymentSpec{
@@ -81,6 +114,42 @@ func TestValidateBadTransport(t *testing.T) {
 	serr := err.(*errors.StatusError)
 	g.Expect(serr.Status().Code).To(Equal(int32(422)))
 	g.Expect(len(serr.Status().Details.Causes)).To(Equal(2))
+	g.Expect(serr.Status().Details.Causes[0].Type).To(Equal(v12.CauseTypeFieldValueInvalid))
+	g.Expect(serr.Status().Details.Causes[0].Field).To(Equal("spec"))
+}
+
+func TestValidateBadServerType(t *testing.T) {
+	g := NewGomegaWithT(t)
+	spec := &SeldonDeploymentSpec{
+		ServerType: "abc",
+		Predictors: []PredictorSpec{
+			{
+				Name: "p1",
+				ComponentSpecs: []*SeldonPodSpec{
+					{
+						Spec: v1.PodSpec{
+							Containers: []v1.Container{
+								{
+									Image: "seldonio/mock_classifier:1.0",
+									Name:  "classifier",
+								},
+							},
+						},
+					},
+				},
+				Graph: &PredictiveUnit{
+					Name: "classifier",
+				},
+			},
+		},
+	}
+
+	spec.DefaultSeldonDeployment("mydep", "default")
+	err := spec.ValidateSeldonDeployment()
+	g.Expect(err).ToNot(BeNil())
+	serr := err.(*errors.StatusError)
+	g.Expect(serr.Status().Code).To(Equal(int32(422)))
+	g.Expect(len(serr.Status().Details.Causes)).To(Equal(1))
 	g.Expect(serr.Status().Details.Causes[0].Type).To(Equal(v12.CauseTypeFieldValueInvalid))
 	g.Expect(serr.Status().Details.Causes[0].Field).To(Equal("spec"))
 }
