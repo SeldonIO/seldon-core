@@ -1,0 +1,38 @@
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-18-58679-9[0m stage [32mmeta-pipeline[0m and container [32mstep-credential-initializer-zlqxj[0m
+{"level":"warn","ts":1590858661.4907439,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1590858661.4917965,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-18-58679-9[0m stage [32mmeta-pipeline[0m and container [32mstep-working-dir-initializer-8lnmn[0m
+{"level":"warn","ts":1590858662.791486,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1590858662.7938898,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-18-58679-9[0m stage [32mmeta-pipeline[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-18-58679-9[0m stage [32mmeta-pipeline[0m and container [32mstep-git-source-meta-seldonio-seldon-core-pr-18-lw59g[0m
+{"level":"warn","ts":1590858666.909329,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1590858670.5345309,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ 2a9a360fc668b2528245d6ffc566dbda27a510f3 in path /workspace/source"}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-18-58679-9[0m stage [32mmeta-pipeline[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:2a9a360fc668b2528245d6ffc566dbda27a510f3,1848:f076644e53186ec4c3db34e8fd1a65394d56942a
+DEBUG: ran git fetch --unshallow origin f076644e53186ec4c3db34e8fd1a65394d56942a: 2a9a360fc668b2528245d6ffc566dbda27a510f3: in 
+DEBUG: ran git checkout master in 
+DEBUG: ran git reset --hard 2a9a360fc668b2528245d6ffc566dbda27a510f3 in 
+DEBUG: ran clean --force -d . in 
+error: error during merge: merging f076644e53186ec4c3db34e8fd1a65394d56942a into master: git output: Auto-merging operator/helm/split_resources.py
+CONFLICT (content): Merge conflict in operator/helm/split_resources.py
+Auto-merging operator/config/manager/manager.yaml
+Auto-merging helm-charts/seldon-core-operator/values.yaml
+Auto-merging helm-charts/seldon-core-operator/templates/deployment_seldon-controller-manager.yaml
+Auto-merging doc/source/reference/upgrading.md
+CONFLICT (content): Merge conflict in doc/source/reference/upgrading.md
+Automatic merge failed; fix conflicts and then commit the result.: failed to run 'git merge f076644e53186ec4c3db34e8fd1a65394d56942a' command in directory '', output: 'Auto-merging operator/helm/split_resources.py
+CONFLICT (content): Merge conflict in operator/helm/split_resources.py
+Auto-merging operator/config/manager/manager.yaml
+Auto-merging helm-charts/seldon-core-operator/values.yaml
+Auto-merging helm-charts/seldon-core-operator/templates/deployment_seldon-controller-manager.yaml
+Auto-merging doc/source/reference/upgrading.md
+CONFLICT (content): Merge conflict in doc/source/reference/upgrading.md
+Automatic merge failed; fix conflicts and then commit the result.'
+[31m
+Pipeline failed on stage 'meta-pipeline' : container 'step-git-merge'. The execution of the pipeline has stopped.[0m
