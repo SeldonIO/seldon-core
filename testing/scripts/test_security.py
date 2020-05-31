@@ -4,7 +4,7 @@ from seldon_e2e_utils import (
     retry_run,
     to_resources_path,
     rest_request,
-    initial_rest_request
+    initial_rest_request,
 )
 
 
