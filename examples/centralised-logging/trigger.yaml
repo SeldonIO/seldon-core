@@ -2,7 +2,7 @@ apiVersion: eventing.knative.dev/v1alpha1
 kind: Trigger
 metadata:
   name: seldon-request-logger-trigger
-  namespace: default
+  namespace: seldon-logs
 spec:
   subscriber:
     ref:

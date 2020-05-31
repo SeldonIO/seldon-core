@@ -54,7 +54,8 @@ executor:
   user: 8888
 # If you want to make available your own request logger for ELK integration you can set this
 # For more information see the Production Integration for Payload Request Logging with ELK in the docs
-  defaultRequestLoggerEndpointPrefix: 'http://default-broker.'
+  requestLogger:
+    defaultEndpoint: 'http://default-broker'
 
 # ## Seldon Core Controller Manager Options
 image:
