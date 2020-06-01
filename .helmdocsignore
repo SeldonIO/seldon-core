@@ -1,4 +1,6 @@
-# Ignore until we add helm-docs to them
+# NOTE: helm-docs only works with a ignore file at the repository root
+
+# Ignore these charts until we prepare them for helm-docs
 seldon-abtest
 seldon-core-analytics
 seldon-core-controller
