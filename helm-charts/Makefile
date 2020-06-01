@@ -10,7 +10,7 @@ push_all:
 docs: 
 	# NOTE: helm-docs will ignore the charts listed in the .helmdocsignore file
 	# (in the repository root)
-	helm-docs -o README.md -t README.md.tpl
+	helm-docs -o README.md -t ../README.md.tpl
 
 package:
 	mkdir -p build && \

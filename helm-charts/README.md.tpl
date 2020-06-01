@@ -5,12 +5,6 @@
 
 {{ template "chart.description" . }}
 
-{{ if .Annotations.longDescription }}
-
-{{ .Annotations.longDescription }}
-
-{{ end }}
-
 ## Usage
 
 To use this chart, you will first need to add the `seldonio` Helm repo:
