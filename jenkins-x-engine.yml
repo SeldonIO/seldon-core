@@ -15,7 +15,7 @@ pipelineConfig:
           - name: end-to-end
             env:
               - name: SELDON_E2E_TESTS_TO_RUN
-                value: base
+                value: parallel
               - name: SELDON_E2E_TESTS_POD_INFORMATION
                 value: "true"
               - name: SELDON_E2E_TESTS_USE_EXECUTOR
