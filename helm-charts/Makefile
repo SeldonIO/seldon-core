@@ -8,7 +8,7 @@ push_all:
 	gsutil cp build/index.yaml build/*.tgz gs://seldon-charts/
 
 docs: 
-	make -C seldon-single-model docs
+	helm-docs -o README.md -t README.md.tpl
 
 package:
 	mkdir -p build && \

@@ -5,12 +5,19 @@
 
 {{ template "chart.description" . }}
 
+{{ if .Annotations.longDescription }}
+
+{{ .Annotations.longDescription }}
+
+{{ end }}
+
 ## Usage
 
 To use this chart, you will first need to add the `seldonio` Helm repo:
 
 ```shell
 helm repo add seldonio https://storage.googleapis.com/seldon-charts
+helm repo update
 ```
 
 Once that's done, you should be able to generate your `SeldonDeployment`

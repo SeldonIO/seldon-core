@@ -1,0 +1,10 @@
+# Ignore until we add helm-docs to them
+seldon-abtest
+seldon-core-analytics
+seldon-core-controller
+seldon-core-kafka
+seldon-core-loadtesting
+seldon-core-operator
+seldon-mab
+seldon-od-model
+seldon-od-transformer
