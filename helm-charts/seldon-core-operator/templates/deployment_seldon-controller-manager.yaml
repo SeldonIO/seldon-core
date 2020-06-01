@@ -34,7 +34,7 @@ spec:
       - args:
         - --enable-leader-election
         - --webhook-port={{ .Values.webhook.port }}
-        - --create-resources=$(CREATE_RESOURCES)
+        - --create-resources=$(MANAGER_CREATE_RESOURCES)
         - '{{- if .Values.singleNamespace }}--namespace={{ .Release.Namespace }}{{- end }}'
         command:
         - /manager
@@ -67,8 +67,8 @@ spec:
           value: ''
         - name: RELATED_IMAGE_EXPLAINER
           value: ''
-        - name: CREATE_RESOURCES
-          value: '{{ .Values.createResources }}'
+        - name: MANAGER_CREATE_RESOURCES
+          value: '{{ .Values.managerCreateResources }}'
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -146,7 +146,7 @@ spec:
           requests:
             cpu: '{{ .Values.manager.cpuRequest }}'
             memory: '{{ .Values.manager.memoryRequest }}'
-{{- if not .Values.createResources }}
+{{- if not .Values.managerCreateResources }}
         volumeMounts:
         - mountPath: /tmp/k8s-webhook-server/serving-certs
           name: cert
@@ -154,7 +154,7 @@ spec:
 {{- end }}
       serviceAccountName: seldon-manager
       terminationGracePeriodSeconds: 10
-{{- if not .Values.createResources }}
+{{- if not .Values.managerCreateResources }}
       volumes:
       - name: cert
         secret:

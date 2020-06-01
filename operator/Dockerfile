@@ -30,4 +30,5 @@ COPY generated/admissionregistration.k8s.io_v1beta1_mutatingwebhookconfiguration
 COPY generated/admissionregistration.k8s.io_v1beta1_validatingwebhookconfiguration_seldon-validating-webhook-configuration.yaml /tmp/operator-resources/validate.yaml
 COPY generated/~g_v1_service_seldon-webhook-service.yaml /tmp/operator-resources/service.yaml
 COPY generated/~g_v1_configmap_seldon-config.yaml /tmp/operator-resources/configmap.yaml
+COPY generated/apiextensions.k8s.io_v1beta1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml /tmp/operator-resources/crd.yaml
 ENTRYPOINT ["/manager"]

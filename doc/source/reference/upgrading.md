@@ -6,7 +6,14 @@ If you were running our Openshift 0.4.2 certified operator and are looking to up
 
 Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed features and bug-fixes in each version.
 
-## Upgrading to 1.2
+## Upgrading to 1.2 from 1.1
+
+### New Features / Breaking Changes
+
+ * The helm value `createResources` has been renamed `managerCreateResources`.
+ * To allow CRDs to be created by the manager. If `managerCreateResources` is true then extra RBAC to `create` CRDs is added from the previous versions RBAC which was to just list and get.
+
+### Request Logger
 
 The values.yaml for the seldon-core-operator helm chart has changed. The field `defaultRequestLoggerEndpointPrefix` is replaced by:
 
