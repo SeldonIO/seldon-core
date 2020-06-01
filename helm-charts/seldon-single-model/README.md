@@ -1,17 +1,39 @@
-seldon-single-model
-===================
+# seldon-single-model
+
+![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square)
+
 Chart to deploy a model in Seldon Core.
 
 The chart bli bla blu
 
+## Usage
 
-Current chart version is `0.2.0`
+To use this chart, you will first need to add the `seldonio` Helm repo:
 
-Source code can be found [here](https://github.com/SeldonIO/seldon-core)
+```shell
+helm repo add seldonio https://storage.googleapis.com/seldon-charts
+```
 
+Once that's done, you should be able to generate your `SeldonDeployment`
+resources as:
 
+```shell
+helm template $MY_MODEL_NAME seldonio/seldon-single-model --namespace $MODELS_NAMESPACE
+```
 
-## Chart Values
+Note that you can also install / deploy the chart directly to your cluster using:
+
+```shell
+helm install $MY_MODEL_NAME seldonio/seldon-single-model --namespace $MODELS_NAMESPACE
+```
+
+**Homepage:** <https://github.com/SeldonIO/seldon-core>
+
+## Source Code
+
+* <https://github.com/SeldonIO/seldon-core>
+
+## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
