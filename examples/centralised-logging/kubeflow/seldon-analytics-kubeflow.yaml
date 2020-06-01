@@ -1,6 +1,0 @@
-prometheus:
-  nodeExporter:
-    hostNetwork: false
-    service:
-      hostPort: 9200
-      servicePort: 9200

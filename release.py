@@ -191,10 +191,17 @@ def update_operator_kustomize_prepackaged_images(fpath, seldon_core_version, deb
         print("error updating operator kustomize yaml for prepackaged server images".format(**locals()))
         print(err)
 
+
 def update_versions_txt(seldon_core_version, debug=False):
     with open("version.txt", "w") as f:
         f.write("{seldon_core_version}\n".format(**locals()))
     print("Updated version.txt")
+
+
+def update_versions_py(seldon_core_version, debug=False):
+    with open("python/seldon_core/version.py", "w") as f:
+        f.write('__version__ = "{seldon_core_version}"\n'.format(**locals()))
+    print("Updated python/seldon_core/version.py")
 
 
 def update_kustomize_engine_version(seldon_core_version, debug=False):
@@ -346,6 +353,9 @@ def set_version(
     #
     # Update top level versions.txt
     update_versions_txt(seldon_core_version, debug)
+    #
+    # Update version.py in python/seldon_core
+    update_versions_py(seldon_core_version, debug)
     #
     # update the pom files
     for fpath in pom_files_realpaths:

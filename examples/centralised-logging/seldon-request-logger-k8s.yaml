@@ -3,7 +3,7 @@ apiVersion: eventing.knative.dev/v1alpha1
 kind: Trigger
 metadata:
   name: seldon-request-logger-trigger
-  namespace: default
+  namespace: seldon-logs
 spec:
   subscriber:
     ref:
@@ -15,7 +15,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: seldon-request-logger
-  namespace: default
+  namespace: seldon-logs
   labels:
     app: seldon-request-logger
 spec:
@@ -34,7 +34,7 @@ spec:
           imagePullPolicy: Always
           env:
             - name: ELASTICSEARCH_HOST
-              value: "elasticsearch-master.logs.svc.cluster.local"
+              value: "elasticsearch-master.seldon-logs.svc.cluster.local"
             - name: ELASTICSEARCH_PORT
               value: "9200"
 ---
