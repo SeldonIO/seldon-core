@@ -43,7 +43,9 @@ helm install $MY_MODEL_NAME seldonio/seldon-single-model --namespace $MODELS_NAM
 | hpa.metrics | list | `[{"resource":{"name":"cpu","targetAverageUtilization":10},"type":"Resource"}]` | Metrics that autoscaler should check |
 | hpa.minReplicas | int | `1` | Minimum number of replicas for HPA |
 | labels | list | `[]` | Labels applied to the deployment |
-| model.env | object | `{}` | Environment variables injected into the model's container |
+| model.env | object | `{"LOG_LEVEL":"INFO"}` | Environment variables injected into the model's container |
 | model.image | string | `""` | Docker image used by the model |
-| model.resources | object | `{"requests":{"cpu":"500m"}}` | Resource requests and limits for the model's container |
+| model.logger.enabled | bool | `false` |  |
+| model.logger.url | string | `""` |  |
+| model.resources | object | `{"requests":{"memory":"1Mi"}}` | Resource requests and limits for the model's container |
 | replicas | int | `1` | Number of replicas for the predictor |
