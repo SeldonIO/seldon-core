@@ -2,9 +2,7 @@
 
 ![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square)
 
-Chart to deploy a model in Seldon Core.
-
-The chart bli bla blu
+Chart to deploy a machine learning model in Seldon Core.
 
 ## Usage
 
@@ -32,6 +30,7 @@ helm install $MY_MODEL_NAME seldonio/seldon-single-model --namespace $MODELS_NAM
 ## Source Code
 
 * <https://github.com/SeldonIO/seldon-core>
+* <https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-single-model>
 
 ## Values
 
