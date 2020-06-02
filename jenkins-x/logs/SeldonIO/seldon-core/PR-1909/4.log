@@ -1,0 +1,567 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-1909-in-7fkzj-4[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-r2szl[0m
+{"level":"warn","ts":1591095047.6874888,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1591095047.6886685,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1909-in-7fkzj-4[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-72mgg[0m
+{"level":"warn","ts":1591095072.6167948,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1591095072.6190908,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1909-in-7fkzj-4[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-1909-in-7fkzj-4[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-c6fnn[0m
+{"level":"warn","ts":1591095085.5205212,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1591095085.5232186,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1909-in-7fkzj-4[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-1909-in-hnqlz[0m
+{"level":"warn","ts":1591095085.855284,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1591095091.2650232,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1909-in-7fkzj-4[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:ff7274350e83f370d7b957f9dcbbc3174f482900,1909:538bf8dfbd1658be12ec589915e8dc9ad36b71db
+DEBUG: ran git fetch --unshallow origin 538bf8dfbd1658be12ec589915e8dc9ad36b71db: ff7274350e83f370d7b957f9dcbbc3174f482900: in 
+DEBUG: ran git checkout master in 
+DEBUG: ran git reset --hard ff7274350e83f370d7b957f9dcbbc3174f482900 in 
+DEBUG: ran clean --force -d . in 
+DEBUG: ran git merge 538bf8dfbd1658be12ec589915e8dc9ad36b71db in 
+Merged SHA 3224e4387ad142b2b8842f1149b4ed83de07e4d8 with commit message 'Merge commit '538bf8dfbd1658be12ec589915e8dc9ad36b71db'' into base branch master
+Merged SHA 538bf8dfbd1658be12ec589915e8dc9ad36b71db with commit message 'Added extra steps to check if components are modified in tests' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-1909-in-7fkzj-4[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=1909
++ BUILD_NUMBER=4
++ PIPELINE_CONTEXT=integration
+++ cat
++++ date
++ COMMENT_MSG='Tue Jun  2 10:51:43 UTC 2020
+The logs for [integration] [4] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-1909/4.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-1909 --build=4'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=1909 '--comment=Tue Jun  2 10:51:43 UTC 2020
+The logs for [integration] [4] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-1909/4.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-1909 --build=4'
+
+Showing logs for build [32mseldonio-seldon-core-pr-1909-in-7fkzj-4[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-1909-in-2xjr7[0m
+{"level":"warn","ts":1591095105.8078096,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1591095106.0650747,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1909-in-7fkzj-4[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-1909-in-sr2n9[0m
+{"level":"warn","ts":1591095106.202403,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1591095106.9983377,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1909-in-7fkzj-4[0m stage [32mend-to-end[0m and container [32mstep-credential-initializer-4btkl[0m
+{"level":"warn","ts":1591095158.1350024,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1591095158.135693,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1909-in-7fkzj-4[0m stage [32mend-to-end[0m and container [32mstep-working-dir-initializer-cd2jt[0m
+{"level":"warn","ts":1591095159.268416,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1591095159.3027906,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1909-in-7fkzj-4[0m stage [32mend-to-end[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-1909-in-7fkzj-4[0m stage [32mend-to-end[0m and container [32mstep-create-dir-workspace-4xxwg[0m
+{"level":"warn","ts":1591095213.5185952,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1591095213.5202541,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1909-in-7fkzj-4[0m stage [32mend-to-end[0m and container [32mstep-source-copy-workspace-n5vsh[0m
+{"level":"warn","ts":1591095214.4515429,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1591095220.3791115,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1909-in-7fkzj-4[0m stage [32mend-to-end[0m and container [32mstep-test-end-to-end[0m
+Test run type is: [base]
+Starting Docker: docker.
+kind create cluster --config ../resources/kind_config.yaml
+Creating cluster "kind" ...
+ • Ensuring node image (kindest/node:v1.16.3) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.16.3) 🖼
+ • Preparing nodes 📦  ...
+ ✓ Preparing nodes 📦
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+ • Joining worker nodes 🚜  ...
+ ✓ Joining worker nodes 🚜
+Set kubectl context to "kind-kind"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-kind
+
+Have a nice day! 👋
+`kind get kubeconfig-path` is deprecated!
+
+KIND will export and merge kubeconfig like kops, minikube, etc.
+This command is now unnecessary and will be removed in a future release.
+
+For more info see: https://github.com/kubernetes-sigs/kind/issues/1060
+See also the output of `kind create cluster`
+
+Files changed in python folder:
+SKIPPING PYTHON IMAGE BUILD...
+Files changed in operator folder:
+SKIPPING OPERATOR IMAGE BUILD...
+Files changed in engine folder:
+SKIPPING ENGINE IMAGE BUILD...
+Files changed in executor folder:
+SKIPPING EXECUTOR IMAGE BUILD...
+Build test models
+make -C ../docker/fixed-model kind_load_images
+make[1]: Entering directory '/workspace/source/testing/docker/fixed-model'
+s2i build -E environment_rest_v1 . seldonio/seldon-core-s2i-python3:0.15 seldonio/fixed-model:0.1
+---> Installing application source...
+Build completed successfully
+s2i build -E environment_rest_v2 . seldonio/seldon-core-s2i-python3:0.15 seldonio/fixed-model:0.2
+---> Installing application source...
+Build completed successfully
+kind load -v 3 docker-image seldonio/fixed-model:0.1
+Image: "seldonio/fixed-model:0.1" with ID "sha256:1c79edfa951c483d1cd3a4a22d68673f469caabb9850cc623cf9b5a990a17383" not present on node "kind-worker"
+Image: "seldonio/fixed-model:0.1" with ID "sha256:1c79edfa951c483d1cd3a4a22d68673f469caabb9850cc623cf9b5a990a17383" not present on node "kind-control-plane"
+kind load -v 3 docker-image seldonio/fixed-model:0.2
+Image: "seldonio/fixed-model:0.2" with ID "sha256:4f8d46d945fab89a0ecf01c4462927709a652316272f1d9a918974bbaba74039" not present on node "kind-worker"
+Image: "seldonio/fixed-model:0.2" with ID "sha256:4f8d46d945fab89a0ecf01c4462927709a652316272f1d9a918974bbaba74039" not present on node "kind-control-plane"
+make[1]: Leaving directory '/workspace/source/testing/docker/fixed-model'
+make -C ../docker/echo-model kind_load_image
+make[1]: Entering directory '/workspace/source/testing/docker/echo-model'
+s2i build \
+	-E environment_rest \
+	.\
+	seldonio/seldon-core-s2i-python3:1.1.1-SNAPSHOT\
+	seldonio/echo-model:0.1
+---> Installing application source...
+Build completed successfully
+kind load -v 3 docker-image seldonio/echo-model:0.1
+Image: "seldonio/echo-model:0.1" with ID "sha256:917cab7186aa95941bfc21cf345613877689b171154d532fa81712de366e1e58" not present on node "kind-worker"
+Image: "seldonio/echo-model:0.1" with ID "sha256:917cab7186aa95941bfc21cf345613877689b171154d532fa81712de366e1e58" not present on node "kind-control-plane"
+make[1]: Leaving directory '/workspace/source/testing/docker/echo-model'
+Files changed in prepackaged folder:
+SKIPPING PREPACKAGED IMAGE BUILD...
+Files changed in alibi folder:
+SKIPPING ALIBI IMAGE BUILD...
+Files changed in misc folders:
+SKIPPING MISC IMAGE BUILD...
+kubectl create namespace seldon || echo "Namespace seldon already exists"
+namespace/seldon created
+kubectl create namespace test1 || echo "Namespace test1 already exists"
+namespace/test1 created
+helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+"stable" has been added to your repositories
+helm repo add seldonio https://storage.googleapis.com/seldon-charts
+"seldonio" has been added to your repositories
+helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
+"jaegertracing" has been added to your repositories
+helm repo update
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "jaegertracing" chart repository
+...Successfully got an update from the "seldonio" chart repository
+...Successfully got an update from the "stable" chart repository
+Update Complete. ⎈ Happy Helming!⎈ 
+helm install ambassador \
+	stable/ambassador \
+	-f ../resources/ambassador_values.yaml \
+	--set crds.keep=false \
+	--namespace seldon \
+	--set replicaCount=1 \
+	--wait
+WARNING: This chart is deprecated
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+NAME: ambassador
+LAST DEPLOYED: Tue Jun  2 11:29:20 2020
+NAMESPACE: seldon
+STATUS: deployed
+REVISION: 1
+NOTES:
+DEPRECATED!! This version of the chart has been deprecated.
+Please use https://github.com/datawire/ambassador-chart
+
+Congratulations! You've successfully installed Ambassador.
+
+For help, visit our Slack at https://d6e.co/slack or view the documentation online at https://www.getambassador.io.
+
+To get the IP address of Ambassador, run the following commands:
+  export NODE_PORT=$(kubectl get --namespace seldon -o jsonpath="{.spec.ports[0].nodePort}" services ambassador)
+  export NODE_IP=$(kubectl get nodes --namespace seldon -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+kubectl apply -f istio-1.4.2.yaml
+clusterrole.rbac.authorization.k8s.io/istio-reader-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-reader-istio-system created
+customresourcedefinition.apiextensions.k8s.io/attributemanifests.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/clusterrbacconfigs.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/destinationrules.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/envoyfilters.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/gateways.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/httpapispecbindings.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/httpapispecs.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/meshpolicies.authentication.istio.io created
+customresourcedefinition.apiextensions.k8s.io/policies.authentication.istio.io created
+customresourcedefinition.apiextensions.k8s.io/quotaspecbindings.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/quotaspecs.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/rbacconfigs.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/rules.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/serviceentries.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/servicerolebindings.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/serviceroles.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/virtualservices.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/adapters.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/instances.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/templates.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/handlers.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/sidecars.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/authorizationpolicies.security.istio.io created
+namespace/istio-system created
+serviceaccount/istio-reader-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-citadel-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-citadel-istio-system created
+deployment.apps/istio-citadel created
+poddisruptionbudget.policy/istio-citadel created
+service/istio-citadel created
+serviceaccount/istio-citadel-service-account created
+deployment.apps/istio-egressgateway created
+poddisruptionbudget.policy/istio-egressgateway created
+gateway.networking.istio.io/istio-multicluster-egressgateway created
+virtualservice.networking.istio.io/istio-multicluster-egressgateway created
+envoyfilter.networking.istio.io/istio-multicluster-egressgateway created
+destinationrule.networking.istio.io/istio-multicluster-destinationrule created
+service/istio-egressgateway created
+role.rbac.authorization.k8s.io/istio-egressgateway-sds created
+rolebinding.rbac.authorization.k8s.io/istio-egressgateway-sds created
+serviceaccount/istio-egressgateway-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-galley-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-galley-*****-role-binding-istio-system created
+configmap/istio-mesh-galley created
+configmap/istio-galley-configuration created
+deployment.apps/istio-galley created
+poddisruptionbudget.policy/istio-galley created
+service/istio-galley created
+serviceaccount/istio-galley-service-account created
+configmap/istio-grafana-configuration-dashboards-citadel-dashboard created
+configmap/istio-grafana-configuration-dashboards-galley-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-mesh-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-performance-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-service-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-workload-dashboard created
+configmap/istio-grafana-configuration-dashboards-mixer-dashboard created
+configmap/istio-grafana-configuration-dashboards-pilot-dashboard created
+configmap/istio-grafana created
+deployment.apps/grafana created
+policy.authentication.istio.io/grafana-ports-mtls-disabled created
+service/grafana created
+deployment.apps/istio-ingressgateway created
+gateway.networking.istio.io/ingressgateway created
+poddisruptionbudget.policy/ingressgateway created
+service/istio-ingressgateway created
+serviceaccount/istio-ingressgateway-service-account created
+sidecar.networking.istio.io/default created
+clusterrole.rbac.authorization.k8s.io/istio-sidecar-injector-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-sidecar-injector-*****-role-binding-istio-system created
+configmap/injector-mesh created
+deployment.apps/istio-sidecar-injector created
+mutatingwebhookconfiguration.admissionregistration.k8s.io/istio-sidecar-injector created
+poddisruptionbudget.policy/istio-sidecar-injector created
+service/istio-sidecar-injector created
+serviceaccount/istio-sidecar-injector-service-account created
+configmap/istio-sidecar-injector created
+clusterrole.rbac.authorization.k8s.io/kiali created
+clusterrole.rbac.authorization.k8s.io/kiali-viewer created
+clusterrolebinding.rbac.authorization.k8s.io/kiali created
+configmap/kiali created
+secret/kiali created
+deployment.apps/kiali created
+service/kiali created
+serviceaccount/kiali-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-pilot-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-pilot-istio-system created
+configmap/pilot-envoy-config created
+configmap/istio created
+deployment.apps/istio-pilot created
+meshpolicy.authentication.istio.io/default created
+poddisruptionbudget.policy/istio-pilot created
+service/istio-pilot created
+serviceaccount/istio-pilot-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-policy created
+clusterrolebinding.rbac.authorization.k8s.io/istio-policy-*****-role-binding-istio-system created
+destinationrule.networking.istio.io/istio-policy created
+deployment.apps/istio-policy created
+poddisruptionbudget.policy/istio-policy created
+service/istio-policy created
+serviceaccount/istio-policy-service-account created
+clusterrole.rbac.authorization.k8s.io/prometheus-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/prometheus-istio-system created
+configmap/prometheus created
+deployment.apps/prometheus created
+service/prometheus created
+serviceaccount/prometheus created
+horizontalpodautoscaler.autoscaling/istio-telemetry created
+clusterrole.rbac.authorization.k8s.io/istio-mixer-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-mixer-*****-role-binding-istio-system created
+attributemanifest.config.istio.io/istioproxy created
+attributemanifest.config.istio.io/kubernetes created
+handler.config.istio.io/stdio created
+instance.config.istio.io/accesslog created
+instance.config.istio.io/tcpaccesslog created
+rule.config.istio.io/stdio created
+rule.config.istio.io/stdiotcp created
+instance.config.istio.io/requestcount created
+instance.config.istio.io/requestduration created
+instance.config.istio.io/requestsize created
+instance.config.istio.io/responsesize created
+instance.config.istio.io/tcpbytesent created
+instance.config.istio.io/tcpbytereceived created
+instance.config.istio.io/tcpconnectionsopened created
+instance.config.istio.io/tcpconnectionsclosed created
+handler.config.istio.io/prometheus created
+rule.config.istio.io/promhttp created
+rule.config.istio.io/promtcp created
+rule.config.istio.io/promtcpconnectionopen created
+rule.config.istio.io/promtcpconnectionclosed created
+handler.config.istio.io/kubernetesenv created
+rule.config.istio.io/kubeattrgenrulerule created
+rule.config.istio.io/tcpkubeattrgenrulerule created
+instance.config.istio.io/attributes created
+destinationrule.networking.istio.io/istio-telemetry created
+configmap/telemetry-envoy-config created
+deployment.apps/istio-telemetry created
+poddisruptionbudget.policy/istio-telemetry created
+service/istio-telemetry created
+serviceaccount/istio-mixer-service-account created
+deployment.apps/istio-tracing created
+service/jaeger-query created
+service/jaeger-collector created
+service/jaeger-agent created
+service/zipkin created
+service/tracing created
+kubectl rollout status deployment.apps/istio-ingressgateway -n istio-system
+Waiting for deployment "istio-ingressgateway" rollout to finish: 0 of 1 updated replicas are available...
+deployment "istio-ingressgateway" successfully rolled out
+kubectl rollout status deployment.apps/istio-pilot -n istio-system
+deployment "istio-pilot" successfully rolled out
+kubectl rollout status deployment.apps/istio-citadel -n istio-system
+deployment "istio-citadel" successfully rolled out
+kubectl create -f ../resources/seldon-gateway.yaml -n istio-system
+gateway.networking.istio.io/seldon-gateway created
+helm install jaeger-operator \
+	jaegertracing/jaeger-operator \
+	--set rbac.clusterRole=true \
+	--namespace seldon \
+	--wait
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+NAME: jaeger-operator
+LAST DEPLOYED: Tue Jun  2 11:40:14 2020
+NAMESPACE: seldon
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+jaeger-operator is installed.
+
+
+Check the jaeger-operator logs
+  export POD=$(kubectl get pods-l app.kubernetes.io/instance=jaeger-operator -lapp.kubernetes.io/name=jaeger-operator --namespace seldon --output name)
+  kubectl logs $POD --namespace=seldon
+kubectl apply -f ../resources/jaeger.yaml --namespace seldon
+jaeger.jaegertracing.io/jaeger created
+mapping.getambassador.io/jaeger created
+cd ../../operator && make install-cert-manager
+make[1]: Entering directory '/workspace/source/operator'
+kubectl create namespace cert-manager || echo "Namespace cert-manager-exists"
+namespace/cert-manager created
+kubectl label namespace cert-manager cert-manager.io/disable-validation=true || echo "namespace cert-manager-already labelled"
+namespace/cert-manager labeled
+kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml
+customresourcedefinition.apiextensions.k8s.io/certificaterequests.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/certificates.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/challenges.acme.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/clusterissuers.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/issuers.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/orders.acme.cert-manager.io created
+Warning: kubectl apply should be used on resource created by either kubectl create --save-config or kubectl apply
+namespace/cert-manager configured
+serviceaccount/cert-manager-cainjector created
+serviceaccount/cert-manager created
+serviceaccount/cert-manager-webhook created
+error when retrieving current configuration of:
+Resource: "rbac.authorization.k8s.io/v1beta1, Resource=clusterroles", GroupVersionKind: "rbac.authorization.k8s.io/v1beta1, Kind=ClusterRole"
+Name: "cert-manager-cainjector", Namespace: ""
+Object: &{map["apiVersion":"rbac.authorization.k8s.io/v1beta1" "kind":"ClusterRole" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"cainjector" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cainjector" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager-cainjector"] "rules":[map["apiGroups":["cert-manager.io"] "resources":["certificates"] "verbs":["get" "list" "watch"]] map["apiGroups":[""] "resources":["secrets"] "verbs":["get" "list" "watch"]] map["apiGroups":[""] "resources":["events"] "verbs":["get" "create" "update" "patch"]] map["apiGroups":["admissionregistration.k8s.io"] "resources":["validatingwebhookconfigurations" "mutatingwebhookconfigurations"] "verbs":["get" "list" "watch" "update"]] map["apiGroups":["apiregistration.k8s.io"] "resources":["apiservices"] "verbs":["get" "list" "watch" "update"]] map["apiGroups":["apiextensions.k8s.io"] "resources":["customresourcedefinitions"] "verbs":["get" "list" "watch" "update"]]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/rbac.authorization.k8s.io/v1beta1/clusterroles/cert-manager-cainjector: http2: server sent GOAWAY and closed the connection; LastStreamID=49, ErrCode=NO_ERROR, debug=""
+error when retrieving current configuration of:
+Resource: "rbac.authorization.k8s.io/v1beta1, Resource=clusterrolebindings", GroupVersionKind: "rbac.authorization.k8s.io/v1beta1, Kind=ClusterRoleBinding"
+Name: "cert-manager-cainjector", Namespace: ""
+Object: &{map["apiVersion":"rbac.authorization.k8s.io/v1beta1" "kind":"ClusterRoleBinding" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"cainjector" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cainjector" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager-cainjector"] "roleRef":map["apiGroup":"rbac.authorization.k8s.io" "kind":"ClusterRole" "name":"cert-manager-cainjector"] "subjects":[map["kind":"ServiceAccount" "name":"cert-manager-cainjector" "namespace":"cert-manager"]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/rbac.authorization.k8s.io/v1beta1/clusterrolebindings/cert-manager-cainjector: EOF
+error when retrieving current configuration of:
+Resource: "rbac.authorization.k8s.io/v1beta1, Resource=roles", GroupVersionKind: "rbac.authorization.k8s.io/v1beta1, Kind=Role"
+Name: "cert-manager-cainjector:leaderelection", Namespace: "kube-system"
+Object: &{map["apiVersion":"rbac.authorization.k8s.io/v1beta1" "kind":"Role" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"cainjector" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cainjector" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager-cainjector:leaderelection" "namespace":"kube-system"] "rules":[map["apiGroups":[""] "resources":["configmaps"] "verbs":["get" "create" "update" "patch"]]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/rbac.authorization.k8s.io/v1beta1/namespaces/kube-system/roles/cert-manager-cainjector:leaderelection: EOF
+error when retrieving current configuration of:
+Resource: "rbac.authorization.k8s.io/v1beta1, Resource=rolebindings", GroupVersionKind: "rbac.authorization.k8s.io/v1beta1, Kind=RoleBinding"
+Name: "cert-manager-cainjector:leaderelection", Namespace: "kube-system"
+Object: &{map["apiVersion":"rbac.authorization.k8s.io/v1beta1" "kind":"RoleBinding" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"cainjector" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cainjector" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager-cainjector:leaderelection" "namespace":"kube-system"] "roleRef":map["apiGroup":"rbac.authorization.k8s.io" "kind":"Role" "name":"cert-manager-cainjector:leaderelection"] "subjects":[map["apiGroup":"" "kind":"ServiceAccount" "name":"cert-manager-cainjector" "namespace":"cert-manager"]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/rbac.authorization.k8s.io/v1beta1/namespaces/kube-system/rolebindings/cert-manager-cainjector:leaderelection: EOF
+error when retrieving current configuration of:
+Resource: "rbac.authorization.k8s.io/v1beta1, Resource=clusterrolebindings", GroupVersionKind: "rbac.authorization.k8s.io/v1beta1, Kind=ClusterRoleBinding"
+Name: "cert-manager-webhook:auth-delegator", Namespace: ""
+Object: &{map["apiVersion":"rbac.authorization.k8s.io/v1beta1" "kind":"ClusterRoleBinding" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"webhook" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"webhook" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager-webhook:auth-delegator"] "roleRef":map["apiGroup":"rbac.authorization.k8s.io" "kind":"ClusterRole" "name":"system:auth-delegator"] "subjects":[map["apiGroup":"" "kind":"ServiceAccount" "name":"cert-manager-webhook" "namespace":"cert-manager"]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/rbac.authorization.k8s.io/v1beta1/clusterrolebindings/cert-manager-webhook:auth-delegator: EOF
+error when retrieving current configuration of:
+Resource: "rbac.authorization.k8s.io/v1beta1, Resource=rolebindings", GroupVersionKind: "rbac.authorization.k8s.io/v1beta1, Kind=RoleBinding"
+Name: "cert-manager-webhook:webhook-authentication-reader", Namespace: "kube-system"
+Object: &{map["apiVersion":"rbac.authorization.k8s.io/v1beta1" "kind":"RoleBinding" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"webhook" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"webhook" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager-webhook:webhook-authentication-reader" "namespace":"kube-system"] "roleRef":map["apiGroup":"rbac.authorization.k8s.io" "kind":"Role" "name":"extension-apiserver-authentication-reader"] "subjects":[map["apiGroup":"" "kind":"ServiceAccount" "name":"cert-manager-webhook" "namespace":"cert-manager"]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/rbac.authorization.k8s.io/v1beta1/namespaces/kube-system/rolebindings/cert-manager-webhook:webhook-authentication-reader: EOF
+error when retrieving current configuration of:
+Resource: "rbac.authorization.k8s.io/v1, Resource=clusterroles", GroupVersionKind: "rbac.authorization.k8s.io/v1, Kind=ClusterRole"
+Name: "cert-manager-webhook:webhook-requester", Namespace: ""
+Object: &{map["apiVersion":"rbac.authorization.k8s.io/v1" "kind":"ClusterRole" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"webhook" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"webhook" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager-webhook:webhook-requester"] "rules":[map["apiGroups":["admission.cert-manager.io"] "resources":["certificates" "certificaterequests" "issuers" "clusterissuers"] "verbs":["create"]]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/rbac.authorization.k8s.io/v1/clusterroles/cert-manager-webhook:webhook-requester: EOF
+error when retrieving current configuration of:
+Resource: "rbac.authorization.k8s.io/v1beta1, Resource=roles", GroupVersionKind: "rbac.authorization.k8s.io/v1beta1, Kind=Role"
+Name: "cert-manager:leaderelection", Namespace: "kube-system"
+Object: &{map["apiVersion":"rbac.authorization.k8s.io/v1beta1" "kind":"Role" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"cert-manager" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cert-manager" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager:leaderelection" "namespace":"kube-system"] "rules":[map["apiGroups":[""] "resources":["configmaps"] "verbs":["get" "create" "update" "patch"]]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/rbac.authorization.k8s.io/v1beta1/namespaces/kube-system/roles/cert-manager:leaderelection: EOF
+error when retrieving current configuration of:
+Resource: "rbac.authorization.k8s.io/v1beta1, Resource=rolebindings", GroupVersionKind: "rbac.authorization.k8s.io/v1beta1, Kind=RoleBinding"
+Name: "cert-manager:leaderelection", Namespace: "kube-system"
+Object: &{map["apiVersion":"rbac.authorization.k8s.io/v1beta1" "kind":"RoleBinding" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"cert-manager" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cert-manager" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager:leaderelection" "namespace":"kube-system"] "roleRef":map["apiGroup":"rbac.authorization.k8s.io" "kind":"Role" "name":"cert-manager:leaderelection"] "subjects":[map["apiGroup":"" "kind":"ServiceAccount" "name":"cert-manager" "namespace":"cert-manager"]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/rbac.authorization.k8s.io/v1beta1/namespaces/kube-system/rolebindings/cert-manager:leaderelection: EOF
+error when retrieving current configuration of:
+Resource: "rbac.authorization.k8s.io/v1beta1, Resource=clusterroles", GroupVersionKind: "rbac.authorization.k8s.io/v1beta1, Kind=ClusterRole"
+Name: "cert-manager-controller-issuers", Namespace: ""
+Object: &{map["apiVersion":"rbac.authorization.k8s.io/v1beta1" "kind":"ClusterRole" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"cert-manager" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cert-manager" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager-controller-issuers"] "rules":[map["apiGroups":["cert-manager.io"] "resources":["issuers" "issuers/status"] "verbs":["update"]] map["apiGroups":["cert-manager.io"] "resources":["issuers"] "verbs":["get" "list" "watch"]] map["apiGroups":[""] "resources":["secrets"] "verbs":["get" "list" "watch" "create" "update" "delete"]] map["apiGroups":[""] "resources":["events"] "verbs":["create" "patch"]]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/rbac.authorization.k8s.io/v1beta1/clusterroles/cert-manager-controller-issuers: EOF
+error when retrieving current configuration of:
+Resource: "rbac.authorization.k8s.io/v1beta1, Resource=clusterroles", GroupVersionKind: "rbac.authorization.k8s.io/v1beta1, Kind=ClusterRole"
+Name: "cert-manager-controller-clusterissuers", Namespace: ""
+Object: &{map["apiVersion":"rbac.authorization.k8s.io/v1beta1" "kind":"ClusterRole" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"cert-manager" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cert-manager" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager-controller-clusterissuers"] "rules":[map["apiGroups":["cert-manager.io"] "resources":["clusterissuers" "clusterissuers/status"] "verbs":["update"]] map["apiGroups":["cert-manager.io"] "resources":["clusterissuers"] "verbs":["get" "list" "watch"]] map["apiGroups":[""] "resources":["secrets"] "verbs":["get" "list" "watch" "create" "update" "delete"]] map["apiGroups":[""] "resources":["events"] "verbs":["create" "patch"]]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/rbac.authorization.k8s.io/v1beta1/clusterroles/cert-manager-controller-clusterissuers: EOF
+error when retrieving current configuration of:
+Resource: "rbac.authorization.k8s.io/v1beta1, Resource=clusterroles", GroupVersionKind: "rbac.authorization.k8s.io/v1beta1, Kind=ClusterRole"
+Name: "cert-manager-controller-certificates", Namespace: ""
+Object: &{map["apiVersion":"rbac.authorization.k8s.io/v1beta1" "kind":"ClusterRole" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"cert-manager" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cert-manager" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager-controller-certificates"] "rules":[map["apiGroups":["cert-manager.io"] "resources":["certificates" "certificates/status" "certificaterequests" "certificaterequests/status"] "verbs":["update"]] map["apiGroups":["cert-manager.io"] "resources":["certificates" "certificaterequests" "clusterissuers" "issuers"] "verbs":["get" "list" "watch"]] map["apiGroups":["cert-manager.io"] "resources":["certificates/finalizers" "certificaterequests/finalizers"] "verbs":["update"]] map["apiGroups":["acme.cert-manager.io"] "resources":["orders"] "verbs":["create" "delete" "get" "list" "watch"]] map["apiGroups":[""] "resources":["secrets"] "verbs":["get" "list" "watch" "create" "update" "delete"]] map["apiGroups":[""] "resources":["events"] "verbs":["create" "patch"]]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/rbac.authorization.k8s.io/v1beta1/clusterroles/cert-manager-controller-certificates: EOF
+error when retrieving current configuration of:
+Resource: "rbac.authorization.k8s.io/v1beta1, Resource=clusterroles", GroupVersionKind: "rbac.authorization.k8s.io/v1beta1, Kind=ClusterRole"
+Name: "cert-manager-controller-orders", Namespace: ""
+Object: &{map["apiVersion":"rbac.authorization.k8s.io/v1beta1" "kind":"ClusterRole" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"cert-manager" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cert-manager" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager-controller-orders"] "rules":[map["apiGroups":["acme.cert-manager.io"] "resources":["orders" "orders/status"] "verbs":["update"]] map["apiGroups":["acme.cert-manager.io"] "resources":["orders" "challenges"] "verbs":["get" "list" "watch"]] map["apiGroups":["cert-manager.io"] "resources":["clusterissuers" "issuers"] "verbs":["get" "list" "watch"]] map["apiGroups":["acme.cert-manager.io"] "resources":["challenges"] "verbs":["create" "delete"]] map["apiGroups":["acme.cert-manager.io"] "resources":["orders/finalizers"] "verbs":["update"]] map["apiGroups":[""] "resources":["secrets"] "verbs":["get" "list" "watch"]] map["apiGroups":[""] "resources":["events"] "verbs":["create" "patch"]]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/rbac.authorization.k8s.io/v1beta1/clusterroles/cert-manager-controller-orders: EOF
+error when retrieving current configuration of:
+Resource: "rbac.authorization.k8s.io/v1beta1, Resource=clusterroles", GroupVersionKind: "rbac.authorization.k8s.io/v1beta1, Kind=ClusterRole"
+Name: "cert-manager-controller-challenges", Namespace: ""
+Object: &{map["apiVersion":"rbac.authorization.k8s.io/v1beta1" "kind":"ClusterRole" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"cert-manager" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cert-manager" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager-controller-challenges"] "rules":[map["apiGroups":["acme.cert-manager.io"] "resources":["challenges" "challenges/status"] "verbs":["update"]] map["apiGroups":["acme.cert-manager.io"] "resources":["challenges"] "verbs":["get" "list" "watch"]] map["apiGroups":["cert-manager.io"] "resources":["issuers" "clusterissuers"] "verbs":["get" "list" "watch"]] map["apiGroups":[""] "resources":["secrets"] "verbs":["get" "list" "watch"]] map["apiGroups":[""] "resources":["events"] "verbs":["create" "patch"]] map["apiGroups":[""] "resources":["pods" "services"] "verbs":["get" "list" "watch" "create" "delete"]] map["apiGroups":["extensions"] "resources":["ingresses"] "verbs":["get" "list" "watch" "create" "delete" "update"]] map["apiGroups":["acme.cert-manager.io"] "resources":["challenges/finalizers"] "verbs":["update"]] map["apiGroups":[""] "resources":["secrets"] "verbs":["get" "list" "watch"]]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/rbac.authorization.k8s.io/v1beta1/clusterroles/cert-manager-controller-challenges: EOF
+error when retrieving current configuration of:
+Resource: "rbac.authorization.k8s.io/v1beta1, Resource=clusterroles", GroupVersionKind: "rbac.authorization.k8s.io/v1beta1, Kind=ClusterRole"
+Name: "cert-manager-controller-ingress-shim", Namespace: ""
+Object: &{map["apiVersion":"rbac.authorization.k8s.io/v1beta1" "kind":"ClusterRole" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"cert-manager" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cert-manager" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager-controller-ingress-shim"] "rules":[map["apiGroups":["cert-manager.io"] "resources":["certificates" "certificaterequests"] "verbs":["create" "update" "delete"]] map["apiGroups":["cert-manager.io"] "resources":["certificates" "certificaterequests" "issuers" "clusterissuers"] "verbs":["get" "list" "watch"]] map["apiGroups":["extensions"] "resources":["ingresses"] "verbs":["get" "list" "watch"]] map["apiGroups":["extensions"] "resources":["ingresses/finalizers"] "verbs":["update"]] map["apiGroups":[""] "resources":["events"] "verbs":["create" "patch"]]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/rbac.authorization.k8s.io/v1beta1/clusterroles/cert-manager-controller-ingress-shim: EOF
+error when retrieving current configuration of:
+Resource: "rbac.authorization.k8s.io/v1beta1, Resource=clusterrolebindings", GroupVersionKind: "rbac.authorization.k8s.io/v1beta1, Kind=ClusterRoleBinding"
+Name: "cert-manager-controller-issuers", Namespace: ""
+Object: &{map["apiVersion":"rbac.authorization.k8s.io/v1beta1" "kind":"ClusterRoleBinding" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"cert-manager" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cert-manager" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager-controller-issuers"] "roleRef":map["apiGroup":"rbac.authorization.k8s.io" "kind":"ClusterRole" "name":"cert-manager-controller-issuers"] "subjects":[map["kind":"ServiceAccount" "name":"cert-manager" "namespace":"cert-manager"]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/rbac.authorization.k8s.io/v1beta1/clusterrolebindings/cert-manager-controller-issuers: EOF
+error when retrieving current configuration of:
+Resource: "rbac.authorization.k8s.io/v1beta1, Resource=clusterrolebindings", GroupVersionKind: "rbac.authorization.k8s.io/v1beta1, Kind=ClusterRoleBinding"
+Name: "cert-manager-controller-clusterissuers", Namespace: ""
+Object: &{map["apiVersion":"rbac.authorization.k8s.io/v1beta1" "kind":"ClusterRoleBinding" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"cert-manager" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cert-manager" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager-controller-clusterissuers"] "roleRef":map["apiGroup":"rbac.authorization.k8s.io" "kind":"ClusterRole" "name":"cert-manager-controller-clusterissuers"] "subjects":[map["kind":"ServiceAccount" "name":"cert-manager" "namespace":"cert-manager"]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/rbac.authorization.k8s.io/v1beta1/clusterrolebindings/cert-manager-controller-clusterissuers: EOF
+error when retrieving current configuration of:
+Resource: "rbac.authorization.k8s.io/v1beta1, Resource=clusterrolebindings", GroupVersionKind: "rbac.authorization.k8s.io/v1beta1, Kind=ClusterRoleBinding"
+Name: "cert-manager-controller-certificates", Namespace: ""
+Object: &{map["apiVersion":"rbac.authorization.k8s.io/v1beta1" "kind":"ClusterRoleBinding" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"cert-manager" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cert-manager" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager-controller-certificates"] "roleRef":map["apiGroup":"rbac.authorization.k8s.io" "kind":"ClusterRole" "name":"cert-manager-controller-certificates"] "subjects":[map["kind":"ServiceAccount" "name":"cert-manager" "namespace":"cert-manager"]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/rbac.authorization.k8s.io/v1beta1/clusterrolebindings/cert-manager-controller-certificates: EOF
+error when retrieving current configuration of:
+Resource: "rbac.authorization.k8s.io/v1beta1, Resource=clusterrolebindings", GroupVersionKind: "rbac.authorization.k8s.io/v1beta1, Kind=ClusterRoleBinding"
+Name: "cert-manager-controller-orders", Namespace: ""
+Object: &{map["apiVersion":"rbac.authorization.k8s.io/v1beta1" "kind":"ClusterRoleBinding" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"cert-manager" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cert-manager" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager-controller-orders"] "roleRef":map["apiGroup":"rbac.authorization.k8s.io" "kind":"ClusterRole" "name":"cert-manager-controller-orders"] "subjects":[map["kind":"ServiceAccount" "name":"cert-manager" "namespace":"cert-manager"]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/rbac.authorization.k8s.io/v1beta1/clusterrolebindings/cert-manager-controller-orders: EOF
+error when retrieving current configuration of:
+Resource: "rbac.authorization.k8s.io/v1beta1, Resource=clusterrolebindings", GroupVersionKind: "rbac.authorization.k8s.io/v1beta1, Kind=ClusterRoleBinding"
+Name: "cert-manager-controller-challenges", Namespace: ""
+Object: &{map["apiVersion":"rbac.authorization.k8s.io/v1beta1" "kind":"ClusterRoleBinding" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"cert-manager" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cert-manager" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager-controller-challenges"] "roleRef":map["apiGroup":"rbac.authorization.k8s.io" "kind":"ClusterRole" "name":"cert-manager-controller-challenges"] "subjects":[map["kind":"ServiceAccount" "name":"cert-manager" "namespace":"cert-manager"]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/rbac.authorization.k8s.io/v1beta1/clusterrolebindings/cert-manager-controller-challenges: EOF
+error when retrieving current configuration of:
+Resource: "rbac.authorization.k8s.io/v1beta1, Resource=clusterrolebindings", GroupVersionKind: "rbac.authorization.k8s.io/v1beta1, Kind=ClusterRoleBinding"
+Name: "cert-manager-controller-ingress-shim", Namespace: ""
+Object: &{map["apiVersion":"rbac.authorization.k8s.io/v1beta1" "kind":"ClusterRoleBinding" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"cert-manager" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cert-manager" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager-controller-ingress-shim"] "roleRef":map["apiGroup":"rbac.authorization.k8s.io" "kind":"ClusterRole" "name":"cert-manager-controller-ingress-shim"] "subjects":[map["kind":"ServiceAccount" "name":"cert-manager" "namespace":"cert-manager"]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/rbac.authorization.k8s.io/v1beta1/clusterrolebindings/cert-manager-controller-ingress-shim: EOF
+error when retrieving current configuration of:
+Resource: "rbac.authorization.k8s.io/v1, Resource=clusterroles", GroupVersionKind: "rbac.authorization.k8s.io/v1, Kind=ClusterRole"
+Name: "cert-manager-view", Namespace: ""
+Object: &{map["apiVersion":"rbac.authorization.k8s.io/v1" "kind":"ClusterRole" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"cert-manager" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cert-manager" "helm.sh/chart":"cert-manager-v0.12.0" "rbac.authorization.k8s.io/aggregate-to-*****":"true" "rbac.authorization.k8s.io/aggregate-to-edit":"true" "rbac.authorization.k8s.io/aggregate-to-view":"true"] "name":"cert-manager-view"] "rules":[map["apiGroups":["cert-manager.io"] "resources":["certificates" "certificaterequests" "issuers"] "verbs":["get" "list" "watch"]]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/rbac.authorization.k8s.io/v1/clusterroles/cert-manager-view: EOF
+error when retrieving current configuration of:
+Resource: "rbac.authorization.k8s.io/v1, Resource=clusterroles", GroupVersionKind: "rbac.authorization.k8s.io/v1, Kind=ClusterRole"
+Name: "cert-manager-edit", Namespace: ""
+Object: &{map["apiVersion":"rbac.authorization.k8s.io/v1" "kind":"ClusterRole" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"cert-manager" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cert-manager" "helm.sh/chart":"cert-manager-v0.12.0" "rbac.authorization.k8s.io/aggregate-to-*****":"true" "rbac.authorization.k8s.io/aggregate-to-edit":"true"] "name":"cert-manager-edit"] "rules":[map["apiGroups":["cert-manager.io"] "resources":["certificates" "certificaterequests" "issuers"] "verbs":["create" "delete" "deletecollection" "patch" "update"]]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/rbac.authorization.k8s.io/v1/clusterroles/cert-manager-edit: EOF
+error when retrieving current configuration of:
+Resource: "/v1, Resource=services", GroupVersionKind: "/v1, Kind=Service"
+Name: "cert-manager", Namespace: "cert-manager"
+Object: &{map["apiVersion":"v1" "kind":"Service" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"cert-manager" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cert-manager" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager" "namespace":"cert-manager"] "spec":map["ports":[map["port":'\u24ba' "protocol":"TCP" "targetPort":'\u24ba']] "selector":map["app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/name":"cert-manager"] "type":"ClusterIP"]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/api/v1/namespaces/cert-manager/services/cert-manager: EOF
+error when retrieving current configuration of:
+Resource: "/v1, Resource=services", GroupVersionKind: "/v1, Kind=Service"
+Name: "cert-manager-webhook", Namespace: "cert-manager"
+Object: &{map["apiVersion":"v1" "kind":"Service" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"webhook" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"webhook" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager-webhook" "namespace":"cert-manager"] "spec":map["ports":[map["name":"https" "port":'\u01bb' "targetPort":'\u280a']] "selector":map["app":"webhook" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"webhook"] "type":"ClusterIP"]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/api/v1/namespaces/cert-manager/services/cert-manager-webhook: EOF
+error when retrieving current configuration of:
+Resource: "apps/v1, Resource=deployments", GroupVersionKind: "apps/v1, Kind=Deployment"
+Name: "cert-manager-cainjector", Namespace: "cert-manager"
+Object: &{map["apiVersion":"apps/v1" "kind":"Deployment" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"cainjector" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cainjector" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager-cainjector" "namespace":"cert-manager"] "spec":map["replicas":'\x01' "selector":map["matchLabels":map["app":"cainjector" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cainjector"]] "template":map["metadata":map["annotations":<nil> "labels":map["app":"cainjector" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cainjector" "helm.sh/chart":"cert-manager-v0.12.0"]] "spec":map["containers":[map["args":["--v=2" "--leader-election-namespace=kube-system"] "env":[map["name":"POD_NAMESPACE" "valueFrom":map["fieldRef":map["fieldPath":"metadata.namespace"]]]] "image":"quay.io/jetstack/cert-manager-cainjector:v0.12.0" "imagePullPolicy":"IfNotPresent" "name":"cert-manager" "resources":map[]]] "serviceAccountName":"cert-manager-cainjector"]]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/apps/v1/namespaces/cert-manager/deployments/cert-manager-cainjector: EOF
+error when retrieving current configuration of:
+Resource: "apps/v1, Resource=deployments", GroupVersionKind: "apps/v1, Kind=Deployment"
+Name: "cert-manager", Namespace: "cert-manager"
+Object: &{map["apiVersion":"apps/v1" "kind":"Deployment" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"cert-manager" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cert-manager" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager" "namespace":"cert-manager"] "spec":map["replicas":'\x01' "selector":map["matchLabels":map["app":"cert-manager" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cert-manager"]] "template":map["metadata":map["annotations":map["prometheus.io/path":"/metrics" "prometheus.io/port":"9402" "prometheus.io/scrape":"true"] "labels":map["app":"cert-manager" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"cert-manager" "helm.sh/chart":"cert-manager-v0.12.0"]] "spec":map["containers":[map["args":["--v=2" "--cluster-resource-namespace=$(POD_NAMESPACE)" "--leader-election-namespace=kube-system" "--webhook-namespace=$(POD_NAMESPACE)" "--webhook-ca-secret=cert-manager-webhook-ca" "--webhook-serving-secret=cert-manager-webhook-tls" "--webhook-dns-names=cert-manager-webhook,cert-manager-webhook.cert-manager,cert-manager-webhook.cert-manager.svc"] "env":[map["name":"POD_NAMESPACE" "valueFrom":map["fieldRef":map["fieldPath":"metadata.namespace"]]]] "image":"quay.io/jetstack/cert-manager-controller:v0.12.0" "imagePullPolicy":"IfNotPresent" "name":"cert-manager" "ports":[map["containerPort":'\u24ba' "protocol":"TCP"]] "resources":map["requests":map["cpu":"10m" "memory":"32Mi"]]]] "serviceAccountName":"cert-manager"]]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/apps/v1/namespaces/cert-manager/deployments/cert-manager: EOF
+error when retrieving current configuration of:
+Resource: "apps/v1, Resource=deployments", GroupVersionKind: "apps/v1, Kind=Deployment"
+Name: "cert-manager-webhook", Namespace: "cert-manager"
+Object: &{map["apiVersion":"apps/v1" "kind":"Deployment" "metadata":map["annotations":map["kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"webhook" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"webhook" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager-webhook" "namespace":"cert-manager"] "spec":map["replicas":'\x01' "selector":map["matchLabels":map["app":"webhook" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"webhook"]] "template":map["metadata":map["annotations":<nil> "labels":map["app":"webhook" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"webhook" "helm.sh/chart":"cert-manager-v0.12.0"]] "spec":map["containers":[map["args":["--v=2" "--secure-port=10250" "--tls-cert-file=/certs/tls.crt" "--tls-private-key-file=/certs/tls.key"] "env":[map["name":"POD_NAMESPACE" "valueFrom":map["fieldRef":map["fieldPath":"metadata.namespace"]]]] "image":"quay.io/jetstack/cert-manager-webhook:v0.12.0" "imagePullPolicy":"IfNotPresent" "livenessProbe":map["httpGet":map["path":"/livez" "port":'\u17c0' "scheme":"HTTP"]] "name":"cert-manager" "readinessProbe":map["httpGet":map["path":"/healthz" "port":'\u17c0' "scheme":"HTTP"]] "resources":map[] "volumeMounts":[map["mountPath":"/certs" "name":"certs"]]]] "serviceAccountName":"cert-manager-webhook" "volumes":[map["name":"certs" "secret":map["secretName":"cert-manager-webhook-tls"]]]]]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/apps/v1/namespaces/cert-manager/deployments/cert-manager-webhook: EOF
+error when retrieving current configuration of:
+Resource: "admissionregistration.k8s.io/v1beta1, Resource=mutatingwebhookconfigurations", GroupVersionKind: "admissionregistration.k8s.io/v1beta1, Kind=MutatingWebhookConfiguration"
+Name: "cert-manager-webhook", Namespace: ""
+Object: &{map["apiVersion":"admissionregistration.k8s.io/v1beta1" "kind":"MutatingWebhookConfiguration" "metadata":map["annotations":map["cert-manager.io/inject-ca-from-secret":"cert-manager/cert-manager-webhook-tls" "kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"webhook" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"webhook" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager-webhook"] "webhooks":[map["clientConfig":map["service":map["name":"cert-manager-webhook" "namespace":"cert-manager" "path":"/mutate"]] "failurePolicy":"Fail" "name":"webhook.cert-manager.io" "rules":[map["apiGroups":["cert-manager.io" "acme.cert-manager.io"] "apiVersions":["v1alpha2"] "operations":["CREATE" "UPDATE"] "resources":["*/*"]]] "sideEffects":"None"]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/admissionregistration.k8s.io/v1beta1/mutatingwebhookconfigurations/cert-manager-webhook: EOF
+error when retrieving current configuration of:
+Resource: "admissionregistration.k8s.io/v1beta1, Resource=validatingwebhookconfigurations", GroupVersionKind: "admissionregistration.k8s.io/v1beta1, Kind=ValidatingWebhookConfiguration"
+Name: "cert-manager-webhook", Namespace: ""
+Object: &{map["apiVersion":"admissionregistration.k8s.io/v1beta1" "kind":"ValidatingWebhookConfiguration" "metadata":map["annotations":map["cert-manager.io/inject-ca-from-secret":"cert-manager/cert-manager-webhook-tls" "kubectl.kubernetes.io/last-applied-configuration":""] "labels":map["app":"webhook" "app.kubernetes.io/instance":"cert-manager" "app.kubernetes.io/managed-by":"Tiller" "app.kubernetes.io/name":"webhook" "helm.sh/chart":"cert-manager-v0.12.0"] "name":"cert-manager-webhook"] "webhooks":[map["clientConfig":map["service":map["name":"cert-manager-webhook" "namespace":"cert-manager" "path":"/mutate"]] "failurePolicy":"Fail" "name":"webhook.cert-manager.io" "namespaceSelector":map["matchExpressions":[map["key":"cert-manager.io/disable-validation" "operator":"NotIn" "values":["true"]] map["key":"name" "operator":"NotIn" "values":["cert-manager"]]]] "rules":[map["apiGroups":["cert-manager.io" "acme.cert-manager.io"] "apiVersions":["v1alpha2"] "operations":["CREATE" "UPDATE"] "resources":["*/*"]]] "sideEffects":"None"]]]}
+from server for: "https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml": Get https://127.0.0.1:38365/apis/admissionregistration.k8s.io/v1beta1/validatingwebhookconfigurations/cert-manager-webhook: EOF
+make[1]: Leaving directory '/workspace/source/operator'
+make[1]: *** [Makefile:39: install-cert-manager] Error 1
+make: *** [Makefile:67: install_cert_manager] Error 2
+Kind setup returned errors
+kind delete cluster
+Deleting cluster "kind" ...
+Stopping Docker: dockerProgram process in pidfile '/var/run/docker-ssd.pid', 1 process(es), refused to die.
+[31m
+Pipeline failed on stage 'end-to-end' : container 'step-test-end-to-end'. The execution of the pipeline has stopped.[0m
