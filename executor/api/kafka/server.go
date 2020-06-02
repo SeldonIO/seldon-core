@@ -160,6 +160,7 @@ func (ks *SeldonKafkaServer) Serve() error {
 		go ks.worker(jobChan, cancelChan)
 	}
 
+	cnt := 0
 	for run == true {
 		select {
 		case sig := <-sigchan:
@@ -173,9 +174,9 @@ func (ks *SeldonKafkaServer) Serve() error {
 
 			switch e := ev.(type) {
 			case *kafka.Message:
-				ks.Log.Info("Message", "Partition", e.TopicPartition)
-				if e.Headers != nil {
-					ks.Log.Info("Received", "headers", e.Headers)
+				cnt += 1
+				if cnt%1000 == 0 {
+					ks.Log.Info("Processed", "messages", cnt)
 				}
 				headers := collectHeaders(e.Headers)
 
@@ -228,6 +229,7 @@ func (ks *SeldonKafkaServer) Serve() error {
 		}
 	}
 
+	ks.Log.Info("Final Processed", "messages", cnt)
 	ks.Log.Info("Closing consumer")
 	close(cancelChan)
 	c.Close()

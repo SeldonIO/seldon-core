@@ -3,8 +3,6 @@ package kafka
 import (
 	"context"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-	proto2 "github.com/golang/protobuf/proto"
-	"github.com/seldonio/seldon-core/executor/api"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/predictor"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
@@ -46,9 +44,11 @@ func (ks *SeldonKafkaServer) processKafkaRequest(job *KafkaJob) {
 	}
 
 	kafkaHeaders := make([]kafka.Header, 0)
-	if ks.Transport == api.TransportGrpc {
-		kafkaHeaders = []kafka.Header{{Key: KeyProtoName, Value: []byte(proto2.MessageName(resPayload.GetPayload().(*payload.ProtoPayload).Msg))}}
-	}
+	// Could in the future add the proto message name. At present seems we need to know the class to cast to so would need to do
+	// an exhaustive check, e.g. check its a tensorflow_serving.predict_pb2.PredictResponse, etc
+	//if ks.Transport == api.TransportGrpc {
+	//	kafkaHeaders = []kafka.Header{{Key: KeyProtoName, Value: []byte(proto2.MessageName(*resPayload.GetPayload().(*proto2.Message)))}}
+	//}
 
 	err = ks.Producer.Produce(&kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &ks.TopicOut, Partition: kafka.PartitionAny},

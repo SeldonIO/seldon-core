@@ -241,7 +241,7 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 			"--transport", string(transport),
 			"--protocol", string(protocol),
 			"--prometheus_path", getPrometheusPath(mlDep),
-			"--server_type", string(mlDep.Spec.ServerType),
+			"--server_type", string(serverType),
 		},
 		ImagePullPolicy:          corev1.PullPolicy(GetEnv("EXECUTOR_CONTAINER_IMAGE_PULL_POLICY", "IfNotPresent")),
 		TerminationMessagePath:   "/dev/termination-log",
