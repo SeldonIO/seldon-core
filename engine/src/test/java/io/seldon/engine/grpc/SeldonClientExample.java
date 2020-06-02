@@ -18,18 +18,13 @@ package io.seldon.engine.grpc;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.protos.PredictionProtos.DefaultData;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 import io.seldon.protos.PredictionProtos.Tensor;
 import io.seldon.protos.SeldonGrpc;
 import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SeldonClientExample {
-  protected static Logger logger = LoggerFactory.getLogger(SeldonClientExample.class.getName());
-
   private final ManagedChannel channel;
   private final SeldonGrpc.SeldonBlockingStub blockingStub;
   private final SeldonGrpc.SeldonStub asyncStub;
@@ -57,9 +52,7 @@ public class SeldonClientExample {
                 DefaultData.newBuilder().setTensor(Tensor.newBuilder().addValues(1.0).addShape(1)))
             .build();
 
-    SeldonMessage response = blockingStub.predict(request);
-
-    logger.info(ProtoBufUtils.toJson(response));
+    blockingStub.predict(request);
   }
 
   /**
