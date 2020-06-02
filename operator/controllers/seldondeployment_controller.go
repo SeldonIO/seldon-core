@@ -20,11 +20,12 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"k8s.io/client-go/kubernetes"
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"k8s.io/client-go/kubernetes"
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	types2 "github.com/gogo/protobuf/types"
 	"github.com/seldonio/seldon-core/operator/constants"
@@ -630,7 +631,7 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 	}
 
 	if engine_grpc_port != 0 && len(psvc.Spec.Ports) < 2 {
-		psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_grpc_port), TargetPort: intstr.FromInt(engine_grpc_port), Name: "grpc"})
+		psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_grpc_port), TargetPort: intstr.FromInt(engine_http_port), Name: "grpc"})
 	}
 
 	if GetEnv("AMBASSADOR_ENABLED", "false") == "true" {
