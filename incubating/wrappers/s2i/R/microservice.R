@@ -246,7 +246,7 @@ extract_parmeters <- function(params) {
   j = fromJSON(params)
   values <- list()
   names <- list()
-  for (i in seq_along(j))
+  for (i in seq_len(NROW(j)))
   {
     name <- j[i,"name"]
     value <- j[i,"value"]
