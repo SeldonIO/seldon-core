@@ -2,7 +2,7 @@
 
 ![Version: 1.1.1-rc](https://img.shields.io/badge/Version-1.1.1-rc-informational?style=flat-square)
 
-Seldon Core CRD and controller helm chart for Kubernetes
+Seldon Core CRD and controller helm chart for Kubernetes.
 
 ## Usage
 
