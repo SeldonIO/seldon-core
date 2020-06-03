@@ -40,6 +40,14 @@ seldon\_core.imports\_helper module
     :undoc-members:
     :show-inheritance:
 
+seldon\_core.metadata module
+----------------------------
+
+.. automodule:: seldon_core.metadata
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 seldon\_core.metrics module
 ---------------------------
 

@@ -136,12 +136,9 @@ func (smc *JSONRestClient) addHeaders(req *http.Request, m map[string][]string) 
 }
 
 func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method string, url *url.URL, msg []byte, meta map[string][]string) ([]byte, string, error) {
-	smc.Log.Info("Calling HTTP", "URL", url)
-
 	var req *http.Request
 	var err error
 	if msg != nil {
-		smc.Log.Info("Building message")
 		req, err = http.NewRequest("POST", url.String(), bytes.NewBuffer(msg))
 		if err != nil {
 			return nil, "", err

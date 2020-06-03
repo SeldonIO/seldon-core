@@ -76,7 +76,6 @@ Documentation Index
    R Language Wrapper [ALPHA] <R/README.md>
    NodeJS Language Wrapper [ALPHA] <nodejs/README.md>
    Go Language Wrapper [ALPHA] <go/go_wrapper_link.rst>
-   Stream Processing with KNative <streaming/knative_eventing.md>
 
 .. toctree::
    :maxdepth: 1
@@ -96,7 +95,14 @@ Documentation Index
    Distributed Tracing with Jaeger <graph/distributed-tracing.md>
    Replica Scaling  <graph/scaling.md>
    Custom Inference Servers <servers/custom.md>
-      
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Streaming and Batch Processing
+
+   Stream Processing with KNative <streaming/knative_eventing.md>
+   Native Kafka Integration <streaming/kafka.md>
+   
 .. toctree::
    :maxdepth: 1
    :caption: Advanced Inference

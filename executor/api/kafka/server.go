@@ -12,12 +12,14 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/grpc/tensorflow"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/api/rest"
+	"github.com/seldonio/seldon-core/executor/predictor"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"net/url"
 	"os"
 	"os/signal"
 	"reflect"
 	"syscall"
+	"time"
 )
 
 const (
@@ -158,6 +160,17 @@ func (ks *SeldonKafkaServer) Serve() error {
 	jobChan := make(chan *KafkaJob, ks.Workers)
 	for i := 0; i < ks.Workers; i++ {
 		go ks.worker(jobChan, cancelChan)
+	}
+
+	//wait for graph to be ready
+	ready := false
+	for ready == false {
+		err := predictor.Ready(ks.Predictor.Graph)
+		ready = err == nil
+		if !ready {
+			ks.Log.Info("Waiting for graph to be ready")
+			time.Sleep(2 * time.Second)
+		}
 	}
 
 	cnt := 0
