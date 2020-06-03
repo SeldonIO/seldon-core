@@ -5,13 +5,10 @@ workflow:
   useNameAsGenerateName: false
   # Namespace where to create the workflow and all resources in batch job
   namespace: default
-pvc:
-  # Name of the persistent volume claim to be created
-  name: seldon-pvc
-  # Size of the storage volume to be created for the batch job 
-  storage: 2Mi
 # Seldon deployment to be created for batch processing
 seldonDeployment:
+  # Whether to create the deployment or to skip creation
+  create: true
   # Name to use for the seldon deployment which by default appends generated workflow ID
   name: seldon-{{workflow.uid}}
   # Image to use for the batch client
@@ -30,8 +27,6 @@ batchWorker:
   workers: 100
   # Number of times client will try to send a request if it fails
   retries: 3
-  # Waiting time before checks for deployment to ensure kubernetes cluster registers create
-  waitTime: 5
 minio:
   # The location of the minio endpoint 
   endpoint: http://minio.default.svc.cluster.local:9000
