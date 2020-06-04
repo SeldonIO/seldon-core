@@ -1,0 +1,30 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  labels:
+    app: seldon
+  name: seldon-mock-model
+spec:
+  annotations:
+    seldon.io/executor: "true"
+  name: mock-deployment
+  predictors:
+  - graph:
+      name: model-combiner
+      type: COMBINER
+      endpoint:
+        service_host: 0.0.0.0
+        service_port: 9010
+      children:
+      - name: model-a1
+        type: MODEL
+        endpoint:
+          service_host: 0.0.0.0
+          service_port: 9011
+      - name: model-a2
+        type: MODEL
+        endpoint:
+          service_host: 0.0.0.0
+          service_port: 9012
+    name: example
+    replicas: 1

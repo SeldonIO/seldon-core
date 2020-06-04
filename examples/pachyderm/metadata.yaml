@@ -1,6 +1,6 @@
 
 name: iris
-versions: [iris/pachyderm:789a6e406b90450185b4280ab16b7f14]
+versions: [iris/pachyderm:f8849a38b3f64c4b8998abf1f732f486]
 platform: sklearn
 inputs:
 - datatype: BYTES

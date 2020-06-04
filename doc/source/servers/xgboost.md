@@ -5,7 +5,9 @@ If you have a trained XGBoost model saved you can deploy it simply using Seldon'
 Prequisites:
 
   * Use xgboost v0.82
-  * The model pickle must be named `model.bst`
+  * The model must be named `model.bst`
+  * You must save your model using `bst.save_model(file_path)`
+  * The model is loaded with `xgb.Booster(model_file=model_file)`
 
 An example for a saved Iris prediction model:
 

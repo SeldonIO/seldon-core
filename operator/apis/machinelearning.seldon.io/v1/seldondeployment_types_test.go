@@ -35,7 +35,7 @@ func TestGetDeploymentNameOneModel(t *testing.T) {
 							},
 						},
 					},
-					Graph: &PredictiveUnit{
+					Graph: PredictiveUnit{
 						Name: modelName,
 					},
 				},
@@ -79,7 +79,7 @@ func TestGetDeploymentNameLong(t *testing.T) {
 							},
 						},
 					},
-					Graph: &PredictiveUnit{
+					Graph: PredictiveUnit{
 						Name: modelName,
 					},
 				},

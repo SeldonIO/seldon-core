@@ -19,10 +19,6 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
-	"testing"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
@@ -35,12 +31,15 @@ import (
 	"k8s.io/client-go/kubernetes"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	"os"
+	"path/filepath"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"testing"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -66,7 +65,7 @@ var configs = map[string]string{
 	"predictor_servers": `{
              "TENSORFLOW_SERVER": {
                  "tensorflow": true,
-                 "tfImage": "tensorflow/serving:latest",
+                 "tfImage": "tensorflow/serving:2.1",
                  "rest": {
                    "image": "seldonio/tfserving-proxy_rest",
                    "defaultImageVersion": "0.7"
@@ -107,6 +106,18 @@ var configs = map[string]string{
                  }
              }
          }`,
+	"storageInitializer": `
+	{
+	"image" : "gcr.io/kfserving/storage-initializer:0.2.2",
+	"memoryRequest": "100Mi",
+	"memoryLimit": "1Gi",
+	"cpuRequest": "100m",
+	"cpuLimit": "1"
+	}`,
+	"explainer": `
+	{
+	"image" : "seldonio/alibiexplainer:1.2.0"
+	}`,
 }
 
 // Create configmap
@@ -124,6 +135,8 @@ var _ = JustBeforeEach(func() {
 	envExecutorImageRelated = "b"
 	envEngineImage = "c"
 	envEngineImageRelated = "d"
+	envDefaultUser = ""
+	envExplainerImage = ""
 })
 
 var _ = BeforeSuite(func(done Done) {
@@ -178,10 +191,11 @@ var _ = BeforeSuite(func(done Done) {
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&SeldonDeploymentReconciler{
-		Client:   k8sManager.GetClient(),
-		Log:      ctrl.Log.WithName("controllers").WithName("SeldonDeployment"),
-		Scheme:   k8sManager.GetScheme(),
-		Recorder: k8sManager.GetEventRecorderFor(constants.ControllerName),
+		Client:    k8sManager.GetClient(),
+		ClientSet: clientset,
+		Log:       ctrl.Log.WithName("controllers").WithName("SeldonDeployment"),
+		Scheme:    k8sManager.GetScheme(),
+		Recorder:  k8sManager.GetEventRecorderFor(constants.ControllerName),
 	}).SetupWithManager(k8sManager, constants.ControllerName)
 	Expect(err).ToNot(HaveOccurred())
 

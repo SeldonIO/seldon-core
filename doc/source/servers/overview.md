@@ -6,6 +6,7 @@ Seldon provides several prepacked servers you can use to deploy trained models:
 - [XGBoost Server](xgboost.html)
 - [Tensorflow Serving](tensorflow.html)
 - [MLflow Server](mlflow.html)
+- [Custom Servers](custom.md)
 
 For these servers you only need the location of the saved model in a local filestore, Google bucket, S3 bucket, azure or minio. An example manifest with an sklearn server is shown below:
 
@@ -140,7 +141,7 @@ data:
   USE_SSL: XXXX
 ```
 
-You can also create the secret with the following command:
+It is also possible to create a `Secret` object from the command line:
 
 ```
 kubectl create secret generic seldon-init-container-secret \
@@ -150,26 +151,24 @@ kubectl create secret generic seldon-init-container-secret \
     --from-literal=USE_SSL=false
 ```
 
-You can create a `Secret` object from command line by setting the exact environment variables:
-
-and you can [read more](https://kubernetes.io/docs/concepts/configuration/secret/) about interacting with `Secret` object.
+You can read the [documentation of Kubernetes](https://kubernetes.io/docs/concepts/configuration/secret/) to learn more about Kubernetes Secrets.
 
 ### 3. Ensure your SeldonDeployment has access to the secret
 
 In order for your SeldonDeployment to know what is the name of the secret, we have to specify the name of the secret we created - in the example above we named the secret `seldon-init-container-secret`.
 
-#### 3.1 Default Seldon Core Manager Controller value
+#### Option 1: Default Seldon Core Manager Controller value
 
 You can set a global default when you install Seldon Core through the Helm chart through the `values.yaml` variable `executor.defaultEnvSecretRefName`. You can see all the variables available in the [Advanced Helm Installation Page](../reference/helm.rst).
 
 ```yaml
 # ... other variables
-executor:
-  defaultEnvSecretRefName: seldon-core-init-container-secret
+predictiveUnit:
+  defaultEnvSecretRefName: seldon-init-container-secret
 # ... other variables
 ```
 
-#### 3.2 Override through SeldonDeployment config
+#### Option 2: Override through SeldonDeployment config
 
 It is also possible to provide an override value when you deploy your model using the SeldonDeploymen YAML. You can do this through the `envSecretRefName` value:
 

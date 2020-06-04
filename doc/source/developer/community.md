@@ -21,7 +21,7 @@ We always announce the community call in our Community Slack and social media (T
 
 We use Zoom for the conference calls - you can join through the following link:
 
-* https://zoom.us/j/630847085
+* https://us02web.zoom.us/j/81583903861
 
 **Community Calls Masterdoc**
 

@@ -25,8 +25,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
@@ -40,13 +38,13 @@ type CredentialConfig struct {
 }
 
 type CredentialBuilder struct {
-	client client.Client
-	config CredentialConfig
+	clientset kubernetes.Interface
+	config    CredentialConfig
 }
 
 var log = logf.Log.WithName("CredentialBulder")
 
-func NewCredentialBulder(client client.Client, config *v1.ConfigMap) *CredentialBuilder {
+func NewCredentialBulder(config *v1.ConfigMap, clientset kubernetes.Interface) *CredentialBuilder {
 	credentialConfig := CredentialConfig{}
 	if credential, ok := config.Data[CredentialConfigKeyName]; ok {
 		err := json.Unmarshal([]byte(credential), &credentialConfig)
@@ -55,8 +53,8 @@ func NewCredentialBulder(client client.Client, config *v1.ConfigMap) *Credential
 		}
 	}
 	return &CredentialBuilder{
-		client: client,
-		config: credentialConfig,
+		clientset: clientset,
+		config:    credentialConfig,
 	}
 }
 
@@ -77,14 +75,13 @@ func (c *CredentialBuilder) CreateSecretVolumeAndEnv(namespace string, serviceAc
 		gcsCredentialFileName = c.config.GCS.GCSCredentialFileName
 	}
 
-	clientset := kubernetes.NewForConfigOrDie(ctrl.GetConfigOrDie())
-	serviceAccount, err := clientset.CoreV1().ServiceAccounts(namespace).Get(serviceAccountName, metav1.GetOptions{})
+	serviceAccount, err := c.clientset.CoreV1().ServiceAccounts(namespace).Get(serviceAccountName, metav1.GetOptions{})
 	if err != nil {
 		log.Error(err, "Failed to find service account", "ServiceAccountName", serviceAccountName)
 		return nil
 	}
 	for _, secretRef := range serviceAccount.Secrets {
-		secret, err := clientset.CoreV1().Secrets(namespace).Get(secretRef.Name, metav1.GetOptions{})
+		secret, err := c.clientset.CoreV1().Secrets(namespace).Get(secretRef.Name, metav1.GetOptions{})
 		if err != nil {
 			log.Error(err, "Failed to find secret", "SecretName", secretRef.Name)
 			continue

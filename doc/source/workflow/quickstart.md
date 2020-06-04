@@ -4,7 +4,7 @@ In this page we have put together a very containerised example that will get you
 
 We will show you how to deploy your model using a pre-packaged model server, as well as a language wrapper for more custom servers.
 
-You can dive into a deeper dive of each of the components and stages of the [Seldon Core Workflow](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/index.html).
+You can dive into a deeper dive of each of the components and stages of the [Seldon Core Workflow](../workflow/index.html).
 
 ## Seldon Core Workflow
 
@@ -18,7 +18,7 @@ Once you've [installed Seldon Core](install.md), you can productionise your mode
 
 The components you want to run in production need to be wrapped as Docker containers that respect the [Seldon microservice API](../reference/apis/internal-api.md). You can create models that serve predictions, routers that decide on where requests go, such as A-B Tests, Combiners that combine responses and transformers that provide generic components that can transform requests and/or responses.
 
-To allow users to easily wrap machine learning components built using different languages and toolkits we provide wrappers that allow you easily to build a docker container from your code that can be run inside seldon-core. Our current recommended tool is RedHat's Source-to-Image. More detail can be found in [Wrapping your models docs](../wrappers/README.md).
+To allow users to easily wrap machine learning components built using different languages and toolkits we provide wrappers that allow you easily to build a docker container from your code that can be run inside seldon-core. Our current recommended tool is RedHat's Source-to-Image. More detail can be found in [Wrapping your models docs](../wrappers/language_wrappers.md).
 
 ### 2. Define Runtime Service Graph
 
@@ -49,7 +49,7 @@ helm install seldon-core seldon-core-operator \
     # You can set ambassador instead with --set ambassador.enabled=true
 ```
 
-For a more advanced guide that shows you how to install Seldon Core with many different options and parameters you can dive further in our [detailed installation guide](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html).
+For a more advanced guide that shows you how to install Seldon Core with many different options and parameters you can dive further in our [detailed installation guide](./install.html).
 
 ### Productionise your first Model with Seldon Core
 
@@ -66,7 +66,7 @@ A typical workflow would normally be programmatic (triggered through CI/CD), how
 
 **1. Export your model binaries / artifacts**
 
-Export your model binaries using the instructions provided in the requirements outlined in the respective [pre-packaged model server](https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html) you are planning to use.
+Export your model binaries using the instructions provided in the requirements outlined in the respective [pre-packaged model server](../servers/overview.html) you are planning to use.
 
 ```python
 >>my_sklearn_model.train(...)
@@ -89,7 +89,7 @@ $ gsutil cp model.pickle gs://seldon-models/sklearn/iris/model.pickle
 
 **3. Deploy to Seldon Core in Kubernetes**
 
-Finally you can just deploy your model by loading the binaries/artifacts using the pre-packaged model server of your choice. You can build [complex inference graphs]() that use multiple components for inference.
+Finally you can just deploy your model by loading the binaries/artifacts using the pre-packaged model server of your choice. You can build [complex inference graphs](../graph/inference-graph.html) that use multiple components for inference.
 
 ```yaml
 $ kubectl apply -f - << END
@@ -116,9 +116,9 @@ Every model deployed exposes a standardised User Interface to send requests usin
 
 This can be accessed through the endpoint `http://<ingress_url>/seldon/<namespace>/<model-name>/api/v1.0/doc/` which will allow you to send requests directly through your browser.
 
-![](https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/images/rest-openapi.jpg)
+![](../images/rest-openapi.jpg)
 
-Or alternatively you can send requests programmatically using our [Seldon Python Client](https://docs.seldon.io/projects/seldon-core/en/latest/python/seldon_client.html) or another Linux CLI:
+Or alternatively you can send requests programmatically using our [Seldon Python Client](../python/seldon_client.html) or another Linux CLI:
 
 ```console
 $ curl -X POST http://<ingress>/seldon/model-namespace/iris-model/api/v1.0/predictions \
@@ -148,7 +148,7 @@ $ curl -X POST http://<ingress>/seldon/model-namespace/iris-model/api/v1.0/predi
 
 Below are the high level steps required to containerise your model using Seldon Core's Language Wrappers.
 
-Language wrappers are used for more custom use-cases that require dependencies that are not covered by our pre-packaged model servers. Langauge wrappers can be built using our graduated Python and Java wrappers - for further details check out our [Language Wrappers section]().
+Language wrappers are used for more custom use-cases that require dependencies that are not covered by our pre-packaged model servers. Langauge wrappers can be built using our graduated Python and Java wrappers - for further details check out our [Language Wrappers section](../wrappers/language_wrappers.html).
 
 **1. Export your model binaries and/or artifacts:**
 
@@ -179,7 +179,7 @@ class Model:
 
 **3. Test model locally**
 
-Before we deploy our model to production, we can actually run our model locally using the [Python seldon-core Module](../python/python_module) microservice CLI functionality.
+Before we deploy our model to production, we can actually run our model locally using the [Python seldon-core Module](../python/python_module.md) microservice CLI functionality.
 
 ```console
 $ seldon-core-microservice Model REST --service-type MODEL
@@ -212,12 +212,12 @@ $ curl -X POST localhost:5000/api/v1.0/predictions \
 
 **4. Use the Seldon tools to containerise your model**
 
-Now we can use the Seldon Core utilities to convert our python class into a fully fledged Seldon Core microservice. In this case we are also containerising the model binaries. 
+Now we can use the Seldon Core utilities to convert our python class into a fully fledged Seldon Core microservice. In this case we are also containerising the model binaries.
 
 The result below is a container with the name `sklearn_iris` and the tag `0.1` which we will be able to deploy using Seldon Core.
 
 ```console
-s2i build . seldonio/seldon-core-s2i-python3:0.18 sklearn_iris:0.1 
+s2i build . seldonio/seldon-core-s2i-python3:1.1.1-rc sklearn_iris:0.1
 ```
 
 **5. Deploy to Kubernetes**
@@ -254,7 +254,7 @@ This can be accessed through the endpoint `http://<ingress_url>/seldon/<namespac
 
 ![](https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/images/rest-openapi.jpg)
 
-Or alternatively you can send requests programmatically using our [Seldon Python Client](https://docs.seldon.io/projects/seldon-core/en/latest/python/seldon_client.html) or another Linux CLI:
+Or alternatively you can send requests programmatically using our [Seldon Python Client](../python/seldon_client.html) or another Linux CLI:
 
 ```console
 $ curl -X POST http://<ingress>/seldon/model-namespace/iris-model/api/v1.0/predictions \
@@ -286,37 +286,36 @@ Below are a set of Jupyter notebooks that you can try out yourself for deploying
 
 #### Prepacked Model Servers
 
- * [Deploy a SciKit-learn Pickle/Binary](../servers/sklearn.html) 
- * [Deploy an XGBoost model](../servers/xgboost.html) 
- * [Deploy a Tensorflow exported model](../servers/tensorflow.html)
- * [Deploy an MLFlow Exported model](https://docs.seldon.io/projects/seldon-core/en/latest/examples/server_examples.html#Serve-MLflow-Elasticnet-Wines-Model)
- 
+ * [Deploy a Scikit-learn Model Binary](../servers/sklearn.html)
+ * [Deploy a Tensorflow Exported Model](../servers/tensorflow.html)
+ * [MLflow Pre-packaged Model Server A/B Test](../examples/mlflow_server_ab_test_ambassador.html)
+ * [Deploy an XGBoost Model Binary](../servers/xgboost.html)
+ * [Deploy Pre-packaged Model Server with Cluster's MinIO](../examples/minio-sklearn.html)
+
 #### Recommended starter tutorials for custom inference code
 
-* [Tensorflow Deep MNIST Tutorial](https://docs.seldon.io/projects/seldon-core/en/latest/examples/deep_mnist.html) (Try it also in [AWS](https://docs.seldon.io/projects/seldon-core/en/latest/examples/aws_eks_deep_mnist.html), [Azure](https://docs.seldon.io/projects/seldon-core/en/latest/examples/azure_aks_deep_mnist.html) and [GKE with GPU](https://github.com/SeldonIO/seldon-core/tree/master/examples/models/gpu_tensorflow_deep_mnist))
-* [SKlearn SpaCy Reddit Text Classification Tutorial](https://docs.seldon.io/projects/seldon-core/en/latest/examples/sklearn_spacy_text_classifier_example.html)
-* Deploy your R models with the [MNIST example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/r_mnist.html) and the [Iris example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/r_iris.html)
-* [Deploy your Java models with the H2O example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/h2o_mojo.html)
+* [Tensorflow Deep MNIST Tutorial](../examples/tfserving_mnist.html) (Try it also in [AWS](../examples/aws_eks_deep_mnist.html), [Azure](../examples/azure_aks_deep_mnist.html), [GKE with GPU](../examples/gpu_tensorflow_deep_mnist.html) and [Alibaba Cloud](../examples/alibaba_ack_deep_mnist.html))
+* [SKlearn SpaCy Reddit Text Classification Tutorial](../examples/sklearn_spacy_text_classifier_example.html)
+* [Deploy your Java models with the H2O example](../examples/h2o_mojo.html)
 
 #### More complex deployments
 
-* [Example Seldon Core Deployments using Helm](https://docs.seldon.io/projects/seldon-core/en/latest/examples/helm_examples.html)
-* [Canary deployment with Seldon and Istio](https://docs.seldon.io/projects/seldon-core/en/latest/examples/istio_canary.html)
-* [Autoscaling Seldon Example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/autoscaling_example.html)
-* [Seldon Model with Custom Metrics](https://docs.seldon.io/projects/seldon-core/en/latest/examples/tmpl_model_with_metrics.html)
+* [Example Seldon Core Deployments using Helm](../examples/helm_examples.html)
+* [Canary deployment with Seldon and Istio](../examples/istio_canary.html)
+* [Autoscaling Seldon Example](../examples/autoscaling_example.html)
+* [Seldon Model with Custom Metrics](../examples/custom_metrics.html)
 
 #### End-to-end / use-case tutorials
 
-* [End-to-end Reusable ML Pipeline with Seldon and Kubeflow](https://docs.seldon.io/projects/seldon-core/en/latest/examples/kubeflow_seldon_e2e_pipeline.html)
-* [Seldon Deployment of Income Classifier and Alibi Anchor Explainer](https://docs.seldon.io/projects/seldon-core/en/latest/examples/alibi_anchor_tabular.html)
+* [End-to-end Reusable ML Pipeline with Seldon and Kubeflow](../examples/kubeflow_seldon_e2e_pipeline.html)
+* [Seldon Deployment of Income Classifier and Alibi Anchor Explainer](../examples/explainer_examples.html)
 
 #### Integration with other platforms
 
-* [Sagemaker (Seldon SKLearn integration example)](https://docs.seldon.io/projects/seldon-core/en/latest/examples/sagemaker_sklearn.html)
-* [Tensorflow Serving (TFServing) integration example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/tfserving_mnist.html)
-* [MLFlow integration example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/mlflow.html)
+* [Sagemaker (Seldon SKLearn integration example)](../examples/sagemaker_sklearn.html)
+* [Tensorflow Serving (TFServing) integration example](../examples/tfserving_mnist.html)
+* [MLFlow integration example](../examples/mlflow_server_ab_test_ambassador.html)
 
 ## About the name "Seldon Core"
 
 The name Seldon (ˈSɛldən) Core was inspired from [the Foundation Series (Scifi Novel)](https://en.wikipedia.org/wiki/Foundation_series) where it's premise consists of a mathematician called "Hari Seldon" who spends his life developing a theory of Psychohistory, a new and effective mathematical sociology which allows for the future to be predicted extremely accurate through long periods of time (across hundreds of thousands of years).
-

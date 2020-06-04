@@ -65,7 +65,7 @@ func createManagerDeployment(client kubernetes.Interface, namespace string) (*ap
 	return client.AppsV1().Deployments(namespace).Create(deployment)
 }
 
-func createCRD(client apiextensionsclient.Interface) (*v1beta1.CustomResourceDefinition, error) {
+func createTestCRD(client apiextensionsclient.Interface) (*v1beta1.CustomResourceDefinition, error) {
 	crd := &v1beta1.CustomResourceDefinition{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: CRDName,
@@ -103,7 +103,7 @@ func TestMutatingWebhookCreate(t *testing.T) {
 	g.Expect(err).To(BeNil())
 	client := fake.NewSimpleClientset()
 	apiExtensionsFake := apiextensionsfake.NewSimpleClientset()
-	crd, err := createCRD(apiExtensionsFake)
+	crd, err := createTestCRD(apiExtensionsFake)
 	g.Expect(err).To(BeNil())
 	hosts := []string{"seldon-webhook-service.seldon-system", "seldon-webhook-service.seldon-system.svc"}
 	certs, err := certSetup(hosts)
@@ -123,7 +123,7 @@ func TestMutatingWebhookCreateNamespaced(t *testing.T) {
 	g.Expect(err).To(BeNil())
 	client := fake.NewSimpleClientset()
 	apiExtensionsFake := apiextensionsfake.NewSimpleClientset()
-	crd, err := createCRD(apiExtensionsFake)
+	crd, err := createTestCRD(apiExtensionsFake)
 	g.Expect(err).To(BeNil())
 	hosts := []string{"seldon-webhook-service.seldon-system", "seldon-webhook-service.seldon-system.svc"}
 	certs, err := certSetup(hosts)
@@ -143,7 +143,7 @@ func TestValidatingWebhookCreate(t *testing.T) {
 	g.Expect(err).To(BeNil())
 	client := fake.NewSimpleClientset()
 	apiExtensionsFake := apiextensionsfake.NewSimpleClientset()
-	crd, err := createCRD(apiExtensionsFake)
+	crd, err := createTestCRD(apiExtensionsFake)
 	g.Expect(err).To(BeNil())
 	hosts := []string{"seldon-webhook-service.seldon-system", "seldon-webhook-service.seldon-system.svc"}
 	certs, err := certSetup(hosts)
@@ -163,7 +163,7 @@ func TestValidatingWebhookCreateNamespaced(t *testing.T) {
 	g.Expect(err).To(BeNil())
 	client := fake.NewSimpleClientset()
 	apiExtensionsFake := apiextensionsfake.NewSimpleClientset()
-	crd, err := createCRD(apiExtensionsFake)
+	crd, err := createTestCRD(apiExtensionsFake)
 	g.Expect(err).To(BeNil())
 	hosts := []string{"seldon-webhook-service.seldon-system", "seldon-webhook-service.seldon-system.svc"}
 	certs, err := certSetup(hosts)
