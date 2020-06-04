@@ -11,7 +11,9 @@ To use this chart, you will first need to add the `seldonio` Helm repo:
 ```shell
 helm repo add seldonio https://storage.googleapis.com/seldon-charts
 helm repo update
-```You can now deploy the chart as:
+```
+
+You can now deploy the chart as:
 
 ```shell
 kubectl create namespace seldon-system
