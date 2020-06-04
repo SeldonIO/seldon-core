@@ -3,22 +3,19 @@ import json
 import requests
 from queue import Queue
 from threading import Thread
-from seldon_core.storage import Storage
+from seldon_core.seldon_client import SeldonClient
+import numpy as np
 import os
 import uuid
 
 CHOICES_GATEWAY_TYPE = ["ambassador", "istio", "seldon"]
 CHOICES_TRANSPORT = ["rest", "grpc"]
-CHOICES_PAYLOAD_TYPE = ["data", "json", "bytes", "str"]
+CHOICES_PAYLOAD_TYPE = ["data", "json", "str"]
 CHOICES_DATA_TYPE = ["ndarray", "tensor", "tftensor"]
-CHOICES_METHOD = ["predictions", "explain"]
+# TODO: Add explainer support
+CHOICES_METHOD = ["predict"]
 CHOICES_LOG_LEVEL = ["debug", "info", "warning", "error"]
-
-# Create uuid file
-DATA_TEMP_DIRPATH = os.path.join(__file__, "TEMP_DATA_FILES")
-DATA_TEMP_UUID = str(uuid.uuid4())
-DATA_TEMP_INPUT_FILENAME = f"{DATA_TEMP_UUID}-input.txt"
-DATA_TEMP_OUTPUT_FILENAME = f"{DATA_TEMP_UUID}-output.txt"
+CHOICES_INDEX_TYPE = ["enumerate", "unique"]
 
 
 @click.command()
@@ -81,7 +78,7 @@ DATA_TEMP_OUTPUT_FILENAME = f"{DATA_TEMP_UUID}-output.txt"
     "-m",
     envvar="SELDON_BATCH_METHOD",
     type=click.Choice(CHOICES_METHOD),
-    default="predictions",
+    default="predict",
 )
 @click.option(
     "--log-level",
@@ -91,10 +88,10 @@ DATA_TEMP_OUTPUT_FILENAME = f"{DATA_TEMP_UUID}-output.txt"
     default="info",
 )
 @click.option(
-    "--generate-id",
-    "-u",
-    envvar="SELDON_BATCH_LOG_LEVEL",
-    type=click.Choice(CHOICES_LOG_LEVEL),
+    "--index-type",
+    "-x",
+    envvar="SELDON_BATCH_INDEX_TYPE",
+    type=click.Choice(CHOICES_INDEX_TYPE),
     default="info",
 )
 def run_cli(
@@ -103,6 +100,7 @@ def run_cli(
     namespace,
     host,
     transport,
+    data_type,
     payload_type,
     workers,
     retries,
@@ -110,62 +108,70 @@ def run_cli(
     output_data_path,
     method,
     log_level,
+    index_type,
 ):
-    is_remote_input_path = Storage.is_remote_path(input_data_path)
-    is_remote_output_path = Storage.is_remote_path(output_data_path)
-
-    local_output_data_path = None
-    if is_remote_output_path:
-        try:
-            os.mkdir(DATA_TEMP_DIRPATH)
-        except FileExistsError:
-            pass
-        local_output_data_path = os.path.join(
-            DATA_TEMP_DIRPATH, DATA_TEMP_OUTPUT_FILENAME
-        )
-    else:
-        # Check if file path is correct and is not directory by creating temp file
-        with open(output_data_path, "x") as tempfile:
-            pass
-        local_output_data_path = output_data_path
-
-    local_input_data_path = None
-    if is_remote_input_path:
-        local_input_data_path = os.path.join(
-            DATA_TEMP_DIRPATH, DATA_TEMP_INPUT_FILENAME
-        )
-        Storage.download(input_data_path, DATA_TEMP_INPUT_FILENAME)
-        if os.path.isdir(DATA_TEMP_INPUT_FILENAME):
-            raise RuntimeError(
-                "Only single files are supported - "
-                f"directory {input_data_path} is not valid. "
-                "Please provide a file, not a directory."
-            )
-    else:
-        local_input_data_path = input_data_path
-
-    # TODO: Add checks that url is valid
-    url = f"http://{host}/seldon/{namespace}/{deployment_name}/api/v1.0/{method}"
     q_in = Queue(workers * 2)
     q_out = Queue(workers * 2)
 
-    def _start_request_worker():
-        with requests.Session() as session:
-            while True:
-                line = q_in.get()
-                headers = {"Content-Type": "application/json"}
-                # TODO: Use Seldon Client instead after optimising it
-                # TODO: Deal with failed requests
-                response = session.post(url, data=line, headers=headers)
+    sc = SeldonClient(
+        gateway=gateway_type,
+        transport=transport,
+        deployment_name=deployment_name,
+        payload_type=payload_type,
+        gateway_endpoint=host,
+        namespace=namespace,
+        client_return_type="dict",
+    )
 
-                q_out.put(response.text)
-                q_in.task_done()
+    def _start_request_worker():
+        while True:
+            batch_uid, batch_idx, input_raw = q_in.get()
+            data = json.loads(input_raw)
+
+            predict_kwargs = {}
+            meta = {"tags": {"batch_uid": batch_uid, "batch_idx": batch_idx}}
+            predict_kwargs["meta"] = meta
+            predict_kwargs["headers"] = {"Seldon-Puid": batch_uid}
+
+            # TODO: Add functionality to send "raw" data
+            if payload_type == "data":
+                # TODO: Update client to avoid requiring a numpy array
+                data_np = np.array(data)
+                predict_kwargs["data"] = data_np
+            elif payload_type == "str":
+                predict_kwargs["str_data"] = data
+            elif payload_type == "json":
+                predict_kwargs["json_data"] = data
+
+            str_output = None
+            for _ in range(retries):
+                try:
+                    # TODO: Add functionality for explainer
+                    #   as explainer currently doesn't support meta
+                    # if method == "predict":
+                    seldon_payload = sc.predict(**predict_kwargs)
+                    assert seldon_payload.success
+                    str_output = json.dumps(seldon_payload.response)
+                    break
+                # catch all exceptions to ensure the task is marked as done
+                except Exception as e:
+                    # TODO: Change to log
+                    print(str(e))
+                    error_resp = {
+                        "status": {"info": "FAILURE", "reason": str(e), "status": 1},
+                        "meta": meta,
+                    }
+                    str_output = json.dumps(error_resp)
+
+            # Mark task as done in the queue to add space for new tasks
+            q_out.put(str_output)
+            q_in.task_done()
 
     def _start_file_worker():
-        output_data_file = open(local_output_data_path, "w")
+        output_data_file = open(output_data_path, "w")
         while True:
             line = q_out.get()
-            output_data_file.write(f"{line}")
+            output_data_file.write(f"{line}\n")
             q_out.task_done()
 
     for _ in range(workers):
@@ -177,12 +183,13 @@ def run_cli(
     t.daemon = True
     t.start()
 
-    input_data_file = open(local_input_data_path, "r")
+    input_data_file = open(input_data_path, "r")
+
+    enum_idx = 0
     for line in input_data_file:
-        q_in.put(line)
+        unique_id = str(uuid.uuid1())
+        q_in.put((enum_idx, unique_id, line))
+        enum_idx += 1
 
     q_in.join()
     q_out.join()
-
-    if is_remote_output_path:
-        Storage.upload(local_output_data_path, output_data_path)
