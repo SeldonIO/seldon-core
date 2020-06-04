@@ -9,7 +9,8 @@ import uuid
 
 CHOICES_GATEWAY_TYPE = ["ambassador", "istio", "seldon"]
 CHOICES_TRANSPORT = ["rest", "grpc"]
-CHOICES_PAYLOAD_TYPE = ["ndarray", "tensor", "tftensor", "json", "bytes", "str", "raw"]
+CHOICES_PAYLOAD_TYPE = ["data", "json", "bytes", "str"]
+CHOICES_DATA_TYPE = ["ndarray", "tensor", "tftensor"]
 CHOICES_METHOD = ["predictions", "explain"]
 CHOICES_LOG_LEVEL = ["debug", "info", "warning", "error"]
 
@@ -46,11 +47,18 @@ DATA_TEMP_OUTPUT_FILENAME = f"{DATA_TEMP_UUID}-output.txt"
     default="rest",
 )
 @click.option(
+    "--data-type",
+    "-a",
+    envvar="SELDON_BATCH_DATA_TYPE",
+    type=click.Choice(CHOICES_DATA_TYPE),
+    default="data",
+)
+@click.option(
     "--payload-type",
     "-p",
     envvar="SELDON_BATCH_PAYLOAD_TYPE",
     type=click.Choice(CHOICES_PAYLOAD_TYPE),
-    default="raw",
+    default="ndarray",
 )
 @click.option("--workers", "-w", envvar="SELDON_BATCH_WORKERS", type=int, default=1)
 @click.option("--retries", "-r", envvar="SELDON_BATCH_RETRIES", type=int, default=3)
@@ -78,6 +86,13 @@ DATA_TEMP_OUTPUT_FILENAME = f"{DATA_TEMP_UUID}-output.txt"
 @click.option(
     "--log-level",
     "-l",
+    envvar="SELDON_BATCH_LOG_LEVEL",
+    type=click.Choice(CHOICES_LOG_LEVEL),
+    default="info",
+)
+@click.option(
+    "--generate-id",
+    "-u",
     envvar="SELDON_BATCH_LOG_LEVEL",
     type=click.Choice(CHOICES_LOG_LEVEL),
     default="info",
