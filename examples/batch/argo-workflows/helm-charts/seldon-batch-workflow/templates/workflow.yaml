@@ -110,6 +110,8 @@ spec:
             --namespace "{{ .Values.workflow.namespace }}" \
             --host "{{ .Values.batchWorker.host }}" \
             --workers "{{ .Values.batchWorker.workers }}" \
+            --data-type "{{ .Values.batchWorker.dataType }}" \
+            --payload-type "{{ .Values.batchWorker.payloadType }}" \
             --retries "{{ .Values.batchWorker.retries }}" \
             --input-data-path "/assets/input-data.txt" \
             --output-data-path "/assets/output-data.txt"
