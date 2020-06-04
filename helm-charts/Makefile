@@ -12,6 +12,9 @@ docs:
 	# (in the repository root)
 	helm-docs -o README.md -t ../README.md.tpl
 
+install:
+	GO111MODULE=on go get github.com/norwoodj/helm-docs/cmd/helm-docs@f66fdbd6fe
+
 package:
 	mkdir -p build && \
 		helm package $(CHARTS) && \

@@ -35,3 +35,25 @@ For examples of using some of the above charts see [here](https://github.com/Sel
 
  * [seldon-core-loadtesting](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core-loadtesting)
    * Utility to load test
+
+## Documentation
+
+To generate the documentation of our Helm charts, we use
+[`helm-docs`](https://github.com/norwoodj/helm-docs).
+This tool will read the metadata included in the `Chart.yaml` and `values.yaml`
+to generate a `README.md` page.
+
+### Generating documentation locally
+
+You can install the latest version of `helm-docs` using the `install` target of
+the `Makefile`:
+
+```shell
+make install
+```
+
+Afterwards, you can use the `docs` target of the `Makefile`:
+
+```shell
+make docs
+```
