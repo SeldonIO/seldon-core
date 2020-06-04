@@ -8,346 +8,6 @@ Dependencies:
 * Argo Workfklows installed in cluster (and argo CLI for commands)
 
 
-## Argo Workflows Example
-
-Let's try an argo workflows example to see intuitively how it works. 
-
-In this case we will trigger a workflow with 3 steps (first one will execute and the other two jobs are dependent on that).
-
-The example below will basically run a workflow in the following order:
-
-![](assets/argo-example.jpg)
-
-
-```python
-mkdir -p assets
-```
-
-
-```python
-%%writefile assets/argo-example.yaml
----
-apiVersion: argoproj.io/v1alpha1
-kind: Workflow
-metadata:
-  name: argo-basic-example
-spec:
-  entrypoint: hello-hello-hello
-  # This spec contains two templates: hello-hello-hello and whalesay
-  templates:
-  - name: hello-hello-hello
-    # Instead of just running a container
-    # This template has a sequence of steps
-    steps:
-    - - name: hello1            # hello1 is run before the following steps
-        template: whalesay
-        arguments:
-          parameters:
-          - name: message
-            value: "hello1"
-    - - name: hello2a           # double dash => run after previous step
-        template: whalesay
-        arguments:
-          parameters:
-          - name: message
-            value: "hello2a"
-      - name: hello2b           # single dash => run in parallel with previous step
-        template: whalesay
-        arguments:
-          parameters:
-          - name: message
-            value: "hello2b"
-  # This is the same template as from the previous example
-  - name: whalesay
-    inputs:
-      parameters:
-      - name: message
-    container:
-      image: docker/whalesay
-      command: [cowsay]
-      args: ["{{inputs.parameters.message}}"]
-        
-```
-
-    Overwriting assets/argo-example.yaml
-
-
-
-```python
-!argo submit assets/argo-example.yaml
-```
-
-    Name:                argo-basic-example
-    Namespace:           default
-    ServiceAccount:      default
-    Status:              Pending
-    Created:             Sat May 02 12:15:51 +0100 (now)
-
-
-
-```python
-!argo list
-```
-
-    NAME                 STATUS    AGE   DURATION   PRIORITY
-    argo-basic-example   Running   2s    2s         0
-
-
-
-```python
-!argo get argo-basic-example
-```
-
-    Name:                argo-basic-example
-    Namespace:           default
-    ServiceAccount:      default
-    Status:              Succeeded
-    Created:             Sat May 02 12:15:51 +0100 (47 seconds ago)
-    Started:             Sat May 02 12:15:51 +0100 (47 seconds ago)
-    Finished:            Sat May 02 12:16:38 +0100 (now)
-    Duration:            47 seconds
-    
-    [39mSTEP[0m                                       PODNAME                        DURATION  MESSAGE
-     [32m✔[0m argo-basic-example (hello-hello-hello)                                           
-     ├---[32m✔[0m hello1 (whalesay)                   argo-basic-example-3663002391  39s       
-     └-·-[32m✔[0m hello2a (whalesay)                  argo-basic-example-3531035296  3s        
-       └-[32m✔[0m hello2b (whalesay)                  argo-basic-example-3581368153  5s        
-
-
-
-```python
-!argo logs -w argo-basic-example
-```
-
-    [37mhello1[0m:	 ________ 
-    [37mhello1[0m:	< hello1 >
-    [37mhello1[0m:	 -------- 
-    [37mhello1[0m:	    \
-    [37mhello1[0m:	     \
-    [37mhello1[0m:	      \     
-    [37mhello1[0m:	                    ##        .            
-    [37mhello1[0m:	              ## ## ##       ==            
-    [37mhello1[0m:	           ## ## ## ##      ===            
-    [37mhello1[0m:	       /""""""""""""""""___/ ===        
-    [37mhello1[0m:	  ~~~ {~~ ~~~~ ~~~ ~~~~ ~~ ~ /  ===- ~~~   
-    [37mhello1[0m:	       \______ o          __/            
-    [37mhello1[0m:	        \    \        __/             
-    [37mhello1[0m:	          \____\______/   
-    [37mhello2a[0m:	 _________ 
-    [37mhello2a[0m:	< hello2a >
-    [37mhello2a[0m:	 --------- 
-    [37mhello2a[0m:	    \
-    [37mhello2a[0m:	     \
-    [37mhello2a[0m:	      \     
-    [37mhello2a[0m:	                    ##        .            
-    [37mhello2a[0m:	              ## ## ##       ==            
-    [37mhello2a[0m:	           ## ## ## ##      ===            
-    [37mhello2a[0m:	       /""""""""""""""""___/ ===        
-    [37mhello2a[0m:	  ~~~ {~~ ~~~~ ~~~ ~~~~ ~~ ~ /  ===- ~~~   
-    [37mhello2a[0m:	       \______ o          __/            
-    [37mhello2a[0m:	        \    \        __/             
-    [37mhello2a[0m:	          \____\______/   
-    [34mhello2b[0m:	 _________ 
-    [34mhello2b[0m:	< hello2b >
-    [34mhello2b[0m:	 --------- 
-    [34mhello2b[0m:	    \
-    [34mhello2b[0m:	     \
-    [34mhello2b[0m:	      \     
-    [34mhello2b[0m:	                    ##        .            
-    [34mhello2b[0m:	              ## ## ##       ==            
-    [34mhello2b[0m:	           ## ## ## ##      ===            
-    [34mhello2b[0m:	       /""""""""""""""""___/ ===        
-    [34mhello2b[0m:	  ~~~ {~~ ~~~~ ~~~ ~~~~ ~~ ~ /  ===- ~~~   
-    [34mhello2b[0m:	       \______ o          __/            
-    [34mhello2b[0m:	        \    \        __/             
-    [34mhello2b[0m:	          \____\______/   
-
-
-
-```python
-!argo delete argo-basic-example
-```
-
-    Workflow 'argo-basic-example' deleted
-
-
-## Seldon Core Batch 
-Now we can leverage this functionality by using seldon core batch.
-
-The structure of this job will be the following:
-
-![](assets/seldon-batch-simple.jpg)
-
-THe file below denotes the structure of the three steps in this workflow:
-
-
-```python
-%%writefile assets/seldon-batch.yaml
----
-apiVersion: argoproj.io/v1alpha1
-kind: Workflow
-metadata:
-  name: seldon-batch-simple
-spec:
-  entrypoint: seldon-batch-process
-  templates:
-  - name: seldon-batch-process
-    steps:
-    - - name: create-seldon-resource            
-        template: create-seldon-resource-template
-    - - name: wait-seldon-resource
-        template: wait-seldon-resource-template
-    - - name: process-batch-inputs
-        template: process-batch-inputs-template
-            
-  - name: create-seldon-resource-template
-    resource:
-      action: create
-      manifest: |
-        apiVersion: machinelearning.seldon.io/v1
-        kind: SeldonDeployment
-        metadata:
-          name: "{{workflow.uid}}"
-          ownerReferences:
-          - apiVersion: argoproj.io/v1alpha1
-            blockOwnerDeletion: true
-            kind: Workflow
-            name: "{{workflow.name}}"
-            uid: "{{workflow.uid}}"
-        spec:
-          name: "{{workflow.uid}}"
-          predictors:
-            - graph:
-                children: []
-                implementation: SKLEARN_SERVER
-                modelUri: gs://seldon-models/sklearn/iris
-                name: classifier
-              name: default
-              replicas: 1
-                
-  - name: wait-seldon-resource-template
-    script:
-      image: seldonio/core-builder:0.14
-      command: [bash]
-      source: |
-        sleep 5
-        kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id="{{workflow.uid}}" -o jsonpath='{.items[0].metadata.name}')
-        
-  - name: process-batch-inputs-template
-    script:
-      image: seldonio/seldon-core-s2i-python3:1.1.1-SNAPSHOT
-      command: [python]
-      source: |
-        from seldon_core.seldon_client import SeldonClient
-        import numpy as np
-        import time
-        sc = SeldonClient(
-            gateway_endpoint="istio-ingressgateway.istio-system.svc.cluster.local",
-            deployment_name="{{workflow.uid}}",
-            namespace="default")
-        for i in range(10):
-            data = np.array([[i, i, i, i]])
-            output = sc.predict(data=data)
-            print(output.response)
-            
-```
-
-    Overwriting assets/seldon-batch.yaml
-
-
-
-```python
-!argo submit assets/seldon-batch.yaml
-```
-
-    Name:                seldon-batch-simple
-    Namespace:           default
-    ServiceAccount:      default
-    Status:              Pending
-    Created:             Sat May 02 12:14:04 +0100 (now)
-
-
-
-```python
-!argo list
-```
-
-    NAME                  STATUS    AGE   DURATION   PRIORITY
-    seldon-batch-simple   Running   8s    8s         0
-
-
-
-```python
-!argo get seldon-batch-simple
-```
-
-    Name:                seldon-batch-simple
-    Namespace:           default
-    ServiceAccount:      default
-    Status:              Running
-    Created:             Sat May 02 12:14:04 +0100 (9 seconds ago)
-    Started:             Sat May 02 12:14:04 +0100 (9 seconds ago)
-    Duration:            9 seconds
-    
-    [39mSTEP[0m                                                             PODNAME                         DURATION  MESSAGE
-     [36m●[0m seldon-batch-simple (seldon-batch-process)                                                              
-     ├---[32m✔[0m create-seldon-resource (create-seldon-resource-template)  seldon-batch-simple-3724798319  2s        
-     └---[36m●[0m wait-seldon-resource (wait-seldon-resource-template)      seldon-batch-simple-4145437349  7s        
-
-
-
-```python
-!argo logs -w seldon-batch-simple
-```
-
-    [35mcreate-seldon-resource[0m:	time="2020-05-02T11:14:05Z" level=info msg="Starting Workflow Executor" version=vv2.7.4+50b209c.dirty
-    [35mcreate-seldon-resource[0m:	time="2020-05-02T11:14:05Z" level=info msg="Creating a docker executor"
-    [35mcreate-seldon-resource[0m:	time="2020-05-02T11:14:05Z" level=info msg="Executor (version: vv2.7.4+50b209c.dirty, build_date: 2020-04-16T16:37:57Z) initialized (pod: default/seldon-batch-simple-3724798319) with template:\n{\"name\":\"create-seldon-resource-template\",\"arguments\":{},\"inputs\":{},\"outputs\":{},\"metadata\":{},\"resource\":{\"action\":\"create\",\"manifest\":\"apiVersion: machinelearning.seldon.io/v1\\nkind: SeldonDeployment\\nmetadata:\\n  name: \\\"b754cbcc-e2f2-49ee-978b-643699dee396\\\"\\n  ownerReferences:\\n  - apiVersion: argoproj.io/v1alpha1\\n    blockOwnerDeletion: true\\n    kind: Workflow\\n    name: \\\"seldon-batch-simple\\\"\\n    uid: \\\"b754cbcc-e2f2-49ee-978b-643699dee396\\\"\\nspec:\\n  name: \\\"b754cbcc-e2f2-49ee-978b-643699dee396\\\"\\n  predictors:\\n    - graph:\\n        children: []\\n        implementation: SKLEARN_SERVER\\n        modelUri: gs://seldon-models/sklearn/iris\\n        name: classifier\\n      name: default\\n      replicas: 1\\n        \\n\"}}"
-    [35mcreate-seldon-resource[0m:	time="2020-05-02T11:14:05Z" level=info msg="Loading manifest to /tmp/manifest.yaml"
-    [35mcreate-seldon-resource[0m:	time="2020-05-02T11:14:05Z" level=info msg="kubectl create -f /tmp/manifest.yaml -o json"
-    [35mcreate-seldon-resource[0m:	time="2020-05-02T11:14:06Z" level=info msg=default/SeldonDeployment.machinelearning.seldon.io/b754cbcc-e2f2-49ee-978b-643699dee396
-    [35mcreate-seldon-resource[0m:	time="2020-05-02T11:14:06Z" level=info msg="No output parameters"
-    [32mwait-seldon-resource[0m:	Waiting for deployment "b754cbcc-e2f2-49ee-978b-643699dee396-default-0-classifier" rollout to finish: 0 of 1 updated replicas are available...
-    [32mwait-seldon-resource[0m:	deployment "b754cbcc-e2f2-49ee-978b-643699dee396-default-0-classifier" successfully rolled out
-    [39mprocess-batch-inputs[0m:	{'data': {'names': ['t:0', 't:1', 't:2'], 'tensor': {'shape': [1, 3], 'values': [0.3664487684438811, 0.48528762951761806, 0.14826360203850078]}}, 'meta': {}}
-    [39mprocess-batch-inputs[0m:	{'data': {'names': ['t:0', 't:1', 't:2'], 'tensor': {'shape': [1, 3], 'values': [0.2075509473561692, 0.2443463805811625, 0.5481026720626684]}}, 'meta': {}}
-    [39mprocess-batch-inputs[0m:	{'data': {'names': ['t:0', 't:1', 't:2'], 'tensor': {'shape': [1, 3], 'values': [0.06995304386311439, 0.04864300564562103, 0.8814039504912645]}}, 'meta': {}}
-    [39mprocess-batch-inputs[0m:	{'data': {'names': ['t:0', 't:1', 't:2'], 'tensor': {'shape': [1, 3], 'values': [0.01859472366015777, 0.006956450489196832, 0.9744488258506454]}}, 'meta': {}}
-    [39mprocess-batch-inputs[0m:	{'data': {'names': ['t:0', 't:1', 't:2'], 'tensor': {'shape': [1, 3], 'values': [0.004653433216061866, 0.0009398331072469446, 0.9944067336766912]}}, 'meta': {}}
-    [39mprocess-batch-inputs[0m:	{'data': {'names': ['t:0', 't:1', 't:2'], 'tensor': {'shape': [1, 3], 'values': [0.0011463235173706913, 0.0001256712307515923, 0.9987280052518777]}}, 'meta': {}}
-    [39mprocess-batch-inputs[0m:	{'data': {'names': ['t:0', 't:1', 't:2'], 'tensor': {'shape': [1, 3], 'values': [0.0002812079399700444, 1.6767055911301234e-05, 0.9997020250041186]}}, 'meta': {}}
-    [39mprocess-batch-inputs[0m:	{'data': {'names': ['t:0', 't:1', 't:2'], 'tensor': {'shape': [1, 3], 'values': [6.890870086562858e-05, 2.235872103887171e-06, 0.9999288554270304]}}, 'meta': {}}
-    [39mprocess-batch-inputs[0m:	{'data': {'names': ['t:0', 't:1', 't:2'], 'tensor': {'shape': [1, 3], 'values': [1.6881012306246608e-05, 2.981118341014688e-07, 0.9999828208758597]}}, 'meta': {}}
-    [39mprocess-batch-inputs[0m:	{'data': {'names': ['t:0', 't:1', 't:2'], 'tensor': {'shape': [1, 3], 'values': [4.135155685795574e-06, 3.974630518304911e-08, 0.9999958250980091]}}, 'meta': {}}
-
-
-
-```python
-outputs = !(argo logs -w seldon-batch-simple --no-color | grep "process-batch-inputs" | cut -c 23-)
-for o in outputs:
-    print(o)
-```
-
-    {'data': {'names': ['t:0', 't:1', 't:2'], 'tensor': {'shape': [1, 3], 'values': [0.3664487684438811, 0.48528762951761806, 0.14826360203850078]}}, 'meta': {}}
-    {'data': {'names': ['t:0', 't:1', 't:2'], 'tensor': {'shape': [1, 3], 'values': [0.2075509473561692, 0.2443463805811625, 0.5481026720626684]}}, 'meta': {}}
-    {'data': {'names': ['t:0', 't:1', 't:2'], 'tensor': {'shape': [1, 3], 'values': [0.06995304386311439, 0.04864300564562103, 0.8814039504912645]}}, 'meta': {}}
-    {'data': {'names': ['t:0', 't:1', 't:2'], 'tensor': {'shape': [1, 3], 'values': [0.01859472366015777, 0.006956450489196832, 0.9744488258506454]}}, 'meta': {}}
-    {'data': {'names': ['t:0', 't:1', 't:2'], 'tensor': {'shape': [1, 3], 'values': [0.004653433216061866, 0.0009398331072469446, 0.9944067336766912]}}, 'meta': {}}
-    {'data': {'names': ['t:0', 't:1', 't:2'], 'tensor': {'shape': [1, 3], 'values': [0.0011463235173706913, 0.0001256712307515923, 0.9987280052518777]}}, 'meta': {}}
-    {'data': {'names': ['t:0', 't:1', 't:2'], 'tensor': {'shape': [1, 3], 'values': [0.0002812079399700444, 1.6767055911301234e-05, 0.9997020250041186]}}, 'meta': {}}
-    {'data': {'names': ['t:0', 't:1', 't:2'], 'tensor': {'shape': [1, 3], 'values': [6.890870086562858e-05, 2.235872103887171e-06, 0.9999288554270304]}}, 'meta': {}}
-    {'data': {'names': ['t:0', 't:1', 't:2'], 'tensor': {'shape': [1, 3], 'values': [1.6881012306246608e-05, 2.981118341014688e-07, 0.9999828208758597]}}, 'meta': {}}
-    {'data': {'names': ['t:0', 't:1', 't:2'], 'tensor': {'shape': [1, 3], 'values': [4.135155685795574e-06, 3.974630518304911e-08, 0.9999958250980091]}}, 'meta': {}}
-
-
-
-```python
-!argo delete seldon-batch-simple
-```
-
-    Workflow 'seldon-batch-simple' deleted
-
-
 ## Seldon Core Batch with Object Store
 
 In some cases we may want to read the data from an object source.
@@ -356,7 +16,7 @@ In this case we will show how you can read from an object store, in this case mi
 
 The workflow will look as follows:
 
-![](assets/seldon-batch-store.jpg)
+![](assets/seldon-batch.jpg)
 
 For this we will assume you have installed the Minio (mc) CLI - we will use a Minio client in the cluster but you can use another object store provider like S3, Google Cloud, Azure, etc.
 
@@ -417,54 +77,6 @@ kubectl port-forward svc/minio 9000:9000
     [m[32mAdded `minio-local` successfully.[0m
     [0m
 
-### Configure bucket for Argo Artefact passing
-
-
-```python
-%%writefile assets/argo-config.yaml
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: workflow-controller-configmap
-data:
-  config: |
-    artifactRepository:
-      s3:
-        bucket: argo-artifacts
-        endpoint: minio.default.svc.cluster.local:9000
-        insecure: true
-        accessKeySecret:
-          name: minio
-          key: accesskey
-        secretKeySecret:
-          name: minio
-          key: secretkey
-```
-
-    Overwriting assets/argo-config.yaml
-
-
-### Make sure the configmap is in the same location as your argo controller
-
-
-```python
-!kubectl apply -n argo -f assets/argo-config.yaml
-```
-
-    configmap/workflow-controller-configmap unchanged
-
-
-### Create the bucket for artifact passing
-
-
-```python
-!mc mb minio-local/argo-artifacts
-```
-
-    [m[32;1mBucket created successfully `minio-local/argo-artifacts`.[0m
-    [0m
-
 ### Create some input for our model
 
 We will create a file that will contain the inputs that will be sent to our model
@@ -505,8 +117,8 @@ with open("assets/input-data.txt", "w") as f:
 !mc cp assets/input-data.txt minio-local/data/
 ```
 
-    [m[32;1mBucket created successfully `minio-local/data`.[0m
-    ...-data.txt:  614.15 KiB / 614.15 KiB ┃▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓┃ 9.74 MiB/s 0s[0m[0m[m[32;1m
+    [33;3mmc: <ERROR> [0m[33;3mUnable to make bucket `minio-local/data`. Your previous request to create the named bucket succeeded and you already own it.
+    ...-data.txt:  614.15 KiB / 614.15 KiB ┃▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓┃ 5.67 MiB/s 0s[0m[0m[m[32;1m
 
 ### Create Argo Workflow
 
@@ -521,8 +133,8 @@ We will run a batch job that will set up a Seldon Deployment with 10 replicas an
 !helm template seldon-batch-workflow helm-charts/seldon-batch-workflow/ \
     --set workflow.name=seldon-batch-process \
     --set seldonDeployment.name=sklearn \
-    --set replicas 10 \
-    --set workers 100 \
+    --set seldonDeployment.replicas=1 \
+    --set batchWorker.workers=100 \
     | argo submit -
 ```
 
@@ -530,7 +142,7 @@ We will run a batch job that will set up a Seldon Deployment with 10 replicas an
     Namespace:           default
     ServiceAccount:      default
     Status:              Pending
-    Created:             Sat May 02 12:06:45 +0100 (now)
+    Created:             Thu Jun 04 13:21:04 +0100 (now)
 
 
 
@@ -538,8 +150,8 @@ We will run a batch job that will set up a Seldon Deployment with 10 replicas an
 !argo list
 ```
 
-    NAME                   STATUS    AGE   DURATION   PRIORITY
-    seldon-batch-process   Running   2s    2s         0
+    NAME                   STATUS      AGE   DURATION   PRIORITY
+    seldon-batch-process   Succeeded   2m    1m         0
 
 
 
@@ -551,18 +163,18 @@ We will run a batch job that will set up a Seldon Deployment with 10 replicas an
     Namespace:           default
     ServiceAccount:      default
     Status:              Succeeded
-    Created:             Sat May 02 12:06:45 +0100 (1 minute ago)
-    Started:             Sat May 02 12:06:45 +0100 (1 minute ago)
-    Finished:            Sat May 02 12:07:54 +0100 (2 seconds ago)
-    Duration:            1 minute 9 seconds
+    Created:             Thu Jun 04 13:21:04 +0100 (2 minutes ago)
+    Started:             Thu Jun 04 13:21:04 +0100 (2 minutes ago)
+    Finished:            Thu Jun 04 13:22:31 +0100 (1 minute ago)
+    Duration:            1 minute 27 seconds
     
     [39mSTEP[0m                                                             PODNAME                          DURATION  MESSAGE
      [32m✔[0m seldon-batch-process (seldon-batch-process)                                                              
      ├---[32m✔[0m create-seldon-resource (create-seldon-resource-template)  seldon-batch-process-3626514072  2s        
-     ├---[32m✔[0m wait-seldon-resource (wait-seldon-resource-template)      seldon-batch-process-2052519094  23s       
-     ├---[32m✔[0m download-object-store (download-object-store-template)    seldon-batch-process-1257652469  2s        
-     ├---[32m✔[0m process-batch-inputs (process-batch-inputs-template)      seldon-batch-process-2033515954  27s       
-     └---[32m✔[0m upload-object-store (upload-object-store-template)        seldon-batch-process-2123074048  2s        
+     ├---[32m✔[0m wait-seldon-resource (wait-seldon-resource-template)      seldon-batch-process-2052519094  26s       
+     ├---[32m✔[0m download-object-store (download-object-store-template)    seldon-batch-process-1257652469  3s        
+     ├---[32m✔[0m process-batch-inputs (process-batch-inputs-template)      seldon-batch-process-2033515954  48s       
+     └---[32m✔[0m upload-object-store (upload-object-store-template)        seldon-batch-process-2123074048  3s        
 
 
 
@@ -570,25 +182,23 @@ We will run a batch job that will set up a Seldon Deployment with 10 replicas an
 !argo logs -w seldon-batch-process 
 ```
 
-    [35mcreate-seldon-resource[0m:	time="2020-05-02T11:06:46Z" level=info msg="Starting Workflow Executor" version=vv2.7.4+50b209c.dirty
-    [35mcreate-seldon-resource[0m:	time="2020-05-02T11:06:46Z" level=info msg="Creating a docker executor"
-    [35mcreate-seldon-resource[0m:	time="2020-05-02T11:06:46Z" level=info msg="Executor (version: vv2.7.4+50b209c.dirty, build_date: 2020-04-16T16:37:57Z) initialized (pod: default/seldon-batch-process-3626514072) with template:\n{\"name\":\"create-seldon-resource-template\",\"arguments\":{},\"inputs\":{},\"outputs\":{},\"metadata\":{},\"resource\":{\"action\":\"create\",\"manifest\":\"apiVersion: machinelearning.seldon.io/v1\\nkind: SeldonDeployment\\nmetadata:\\n  name: \\\"sklearn\\\"\\n  namespace: default\\n  ownerReferences:\\n  - apiVersion: argoproj.io/v1alpha1\\n    blockOwnerDeletion: true\\n    kind: Workflow\\n    name: \\\"seldon-batch-process\\\"\\n    uid: \\\"72ad4430-c70a-4976-8043-2ba6c2f56772\\\"\\nspec:\\n  name: \\\"sklearn\\\"\\n  predictors:\\n    - graph:\\n        children: []\\n        implementation: SKLEARN_SERVER\\n        modelUri: gs://seldon-models/sklearn/iris\\n        name: classifier\\n      name: default\\n      replicas: 10\\n        \\n\"}}"
-    [35mcreate-seldon-resource[0m:	time="2020-05-02T11:06:46Z" level=info msg="Loading manifest to /tmp/manifest.yaml"
-    [35mcreate-seldon-resource[0m:	time="2020-05-02T11:06:46Z" level=info msg="kubectl create -f /tmp/manifest.yaml -o json"
-    [35mcreate-seldon-resource[0m:	time="2020-05-02T11:06:47Z" level=info msg=default/SeldonDeployment.machinelearning.seldon.io/sklearn
-    [35mcreate-seldon-resource[0m:	time="2020-05-02T11:06:47Z" level=info msg="No output parameters"
-    [32mwait-seldon-resource[0m:	Waiting for deployment "sklearn-default-0-classifier" rollout to finish: 5 of 10 updated replicas are available...
-    [32mwait-seldon-resource[0m:	Waiting for deployment "sklearn-default-0-classifier" rollout to finish: 6 of 10 updated replicas are available...
-    [32mwait-seldon-resource[0m:	Waiting for deployment "sklearn-default-0-classifier" rollout to finish: 7 of 10 updated replicas are available...
-    [32mwait-seldon-resource[0m:	Waiting for deployment "sklearn-default-0-classifier" rollout to finish: 8 of 10 updated replicas are available...
-    [32mwait-seldon-resource[0m:	Waiting for deployment "sklearn-default-0-classifier" rollout to finish: 9 of 10 updated replicas are available...
+    [35mcreate-seldon-resource[0m:	time="2020-06-04T12:21:05Z" level=info msg="Starting Workflow Executor" version=v2.8.0-rc4+8f69617.dirty
+    [35mcreate-seldon-resource[0m:	time="2020-06-04T12:21:05Z" level=info msg="Creating a docker executor"
+    [35mcreate-seldon-resource[0m:	time="2020-06-04T12:21:05Z" level=info msg="Executor (version: v2.8.0-rc4+8f69617.dirty, build_date: 2020-05-12T15:17:15Z) initialized (pod: default/seldon-batch-process-3626514072) with template:\n{\"name\":\"create-seldon-resource-template\",\"arguments\":{},\"inputs\":{},\"outputs\":{},\"metadata\":{},\"resource\":{\"action\":\"create\",\"manifest\":\"apiVersion: machinelearning.seldon.io/v1\\nkind: SeldonDeployment\\nmetadata:\\n  name: \\\"sklearn\\\"\\n  namespace: default\\n  ownerReferences:\\n  - apiVersion: argoproj.io/v1alpha1\\n    blockOwnerDeletion: true\\n    kind: Workflow\\n    name: \\\"seldon-batch-process\\\"\\n    uid: \\\"ddfdfd72-3382-474f-9ed9-255deb6e22ce\\\"\\nspec:\\n  name: \\\"sklearn\\\"\\n  predictors:\\n    - graph:\\n        children: []\\n        implementation: SKLEARN_SERVER\\n        modelUri: gs://seldon-models/sklearn/iris\\n        name: classifier\\n      name: default\\n      replicas: 1\\n        \\n\"}}"
+    [35mcreate-seldon-resource[0m:	time="2020-06-04T12:21:05Z" level=info msg="Loading manifest to /tmp/manifest.yaml"
+    [35mcreate-seldon-resource[0m:	time="2020-06-04T12:21:05Z" level=info msg="kubectl create -f /tmp/manifest.yaml -o json"
+    [35mcreate-seldon-resource[0m:	time="2020-06-04T12:21:06Z" level=info msg=default/SeldonDeployment.machinelearning.seldon.io/sklearn
+    [35mcreate-seldon-resource[0m:	time="2020-06-04T12:21:06Z" level=info msg="No output parameters"
+    [32mwait-seldon-resource[0m:	sleep: missing operand
+    [32mwait-seldon-resource[0m:	Try 'sleep --help' for more information.
+    [32mwait-seldon-resource[0m:	Waiting for deployment "sklearn-default-0-classifier" rollout to finish: 0 of 1 updated replicas are available...
     [32mwait-seldon-resource[0m:	deployment "sklearn-default-0-classifier" successfully rolled out
     [34mdownload-object-store[0m:	Added `minio-local` successfully.
     [34mdownload-object-store[0m:	`minio-local/data/input-data.txt` -> `/assets/input-data.txt`
-    [34mdownload-object-store[0m:	Total: 0 B, Transferred: 614.15 KiB, Speed: 61.21 MiB/s
+    [34mdownload-object-store[0m:	Total: 0 B, Transferred: 614.15 KiB, Speed: 69.45 MiB/s
     [31mupload-object-store[0m:	Added `minio-local` successfully.
-    [31mupload-object-store[0m:	`/assets/output-data.txt` -> `minio-local/data/output-data-72ad4430-c70a-4976-8043-2ba6c2f56772.txt`
-    [31mupload-object-store[0m:	Total: 0 B, Transferred: 1.31 MiB, Speed: 25.94 MiB/s
+    [31mupload-object-store[0m:	`/assets/output-data.txt` -> `minio-local/data/output-data-ddfdfd72-3382-474f-9ed9-255deb6e22ce.txt`
+    [31mupload-object-store[0m:	Total: 0 B, Transferred: 1.31 MiB, Speed: 58.35 MiB/s
 
 
 ## Check output in object store
@@ -606,7 +216,7 @@ WF_ID = wf["metadata"]["uid"]
 print(f"Workflow ID is {WF_ID}")
 ```
 
-    Workflow ID is 72ad4430-c70a-4976-8043-2ba6c2f56772
+    Workflow ID is ddfdfd72-3382-474f-9ed9-255deb6e22ce
 
 
 
@@ -614,7 +224,7 @@ print(f"Workflow ID is {WF_ID}")
 !mc ls minio-local/data/output-data-"$WF_ID".txt
 ```
 
-    [m[32m[2020-05-02 12:07:51 BST] [0m[33m 1.3MiB [0m[1moutput-data-72ad4430-c70a-4976-8043-2ba6c2f56772.txt[0m
+    [m[32m[2020-06-04 13:22:29 BST] [0m[33m 1.3MiB [0m[1moutput-data-ddfdfd72-3382-474f-9ed9-255deb6e22ce.txt[0m
     [0m
 
 Now we can output the contents of the file created using the `mc head` command.
@@ -625,16 +235,16 @@ Now we can output the contents of the file created using the `mc head` command.
 !head assets/output-data.txt
 ```
 
-    ...56772.txt:  1.31 MiB / 1.31 MiB ┃▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓┃ 23.35 MiB/s 0s[0m[0m[m[32;1m{"data":{"names":["t:0","t:1","t:2"],"ndarray":[[0.0006985194531162841,0.003668039039435755,0.9956334415074478]]},"meta":{"puid":"1"}}
-    {"data":{"names":["t:0","t:1","t:2"],"ndarray":[[0.0006985194531162841,0.003668039039435755,0.9956334415074478]]},"meta":{"puid":"5"}}
-    {"data":{"names":["t:0","t:1","t:2"],"ndarray":[[0.0006985194531162841,0.003668039039435755,0.9956334415074478]]},"meta":{"puid":"0"}}
+    ...e22ce.txt:  1.31 MiB / 1.31 MiB ┃▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓┃ 19.51 MiB/s 0s[0m[0m[m[32;1m{"data":{"names":["t:0","t:1","t:2"],"ndarray":[[0.0006985194531162841,0.003668039039435755,0.9956334415074478]]},"meta":{"puid":"1"}}
     {"data":{"names":["t:0","t:1","t:2"],"ndarray":[[0.0006985194531162841,0.003668039039435755,0.9956334415074478]]},"meta":{"puid":"3"}}
-    {"data":{"names":["t:0","t:1","t:2"],"ndarray":[[0.0006985194531162841,0.003668039039435755,0.9956334415074478]]},"meta":{"puid":"7"}}
+    {"data":{"names":["t:0","t:1","t:2"],"ndarray":[[0.0006985194531162841,0.003668039039435755,0.9956334415074478]]},"meta":{"puid":"0"}}
     {"data":{"names":["t:0","t:1","t:2"],"ndarray":[[0.0006985194531162841,0.003668039039435755,0.9956334415074478]]},"meta":{"puid":"2"}}
     {"data":{"names":["t:0","t:1","t:2"],"ndarray":[[0.0006985194531162841,0.003668039039435755,0.9956334415074478]]},"meta":{"puid":"4"}}
-    {"data":{"names":["t:0","t:1","t:2"],"ndarray":[[0.0006985194531162841,0.003668039039435755,0.9956334415074478]]},"meta":{"puid":"9"}}
-    {"data":{"names":["t:0","t:1","t:2"],"ndarray":[[0.0006985194531162841,0.003668039039435755,0.9956334415074478]]},"meta":{"puid":"100"}}
     {"data":{"names":["t:0","t:1","t:2"],"ndarray":[[0.0006985194531162841,0.003668039039435755,0.9956334415074478]]},"meta":{"puid":"6"}}
+    {"data":{"names":["t:0","t:1","t:2"],"ndarray":[[0.0006985194531162841,0.003668039039435755,0.9956334415074478]]},"meta":{"puid":"7"}}
+    {"data":{"names":["t:0","t:1","t:2"],"ndarray":[[0.0006985194531162841,0.003668039039435755,0.9956334415074478]]},"meta":{"puid":"5"}}
+    {"data":{"names":["t:0","t:1","t:2"],"ndarray":[[0.0006985194531162841,0.003668039039435755,0.9956334415074478]]},"meta":{"puid":"102"}}
+    {"data":{"names":["t:0","t:1","t:2"],"ndarray":[[0.0006985194531162841,0.003668039039435755,0.9956334415074478]]},"meta":{"puid":"14"}}
 
 
 
@@ -644,3 +254,8 @@ Now we can output the contents of the file created using the `mc head` command.
 
     Workflow 'seldon-batch-process' deleted
 
+
+
+```python
+
+```
