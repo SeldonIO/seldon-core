@@ -143,7 +143,7 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
         git --no-pager diff --exit-code --name-only origin/master ../../components/seldon-request-logger ../../components/storage-initializer
         MISC_MODIFIED=$?
         if [[ $MISC_MODIFIED -gt 0 ]]; then
-            make kind_build_alibi
+            make kind_build_misc
             MISC_EXIT_VALUE=$?
             if [[ $MISC_EXIT_VALUE -gt 0 ]]; then
                 echo "Misc server build returned errors"
