@@ -11,24 +11,18 @@ To use this chart, you will first need to add the `seldonio` Helm repo:
 ```shell
 helm repo add seldonio https://storage.googleapis.com/seldon-charts
 helm repo update
-```
-
-Once that's done, you should be able to generate your `SeldonDeployment`
-resources as:
+```You can now deploy the chart as:
 
 ```shell
-helm template $MY_MODEL_NAME seldonio/seldon-core-operator --namespace $MODELS_NAMESPACE
-```
-
-Note that you can also install / deploy the chart directly to your cluster using:
-
-```shell
-helm install $MY_MODEL_NAME seldonio/seldon-core-operator --namespace $MODELS_NAMESPACE
+kubectl create namespace seldon-system
+helm install seldon-core-operator seldonio/seldon-core-operator --namespace seldon-system
 ```
 
 ## Source Code
 
 * <https://github.com/SeldonIO/seldon-core>
+* <https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core-operator>
+* <https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html>
 
 ## Values
 

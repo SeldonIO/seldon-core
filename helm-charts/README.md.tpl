@@ -14,18 +14,33 @@ helm repo add seldonio https://storage.googleapis.com/seldon-charts
 helm repo update
 ```
 
-Once that's done, you should be able to generate your `SeldonDeployment`
-resources as:
+{{- /* We need to differentiate between "app charts" and "inference graph charts" */ -}}
+{{- $appCharts := list "seldon-core-operator" "seldon-core-oauth-gateway" "seldon-core-analytics" -}}
+{{- if has .Name $appCharts -}}
+
+You can now deploy the chart as:
+
+```shell
+kubectl create namespace seldon-system
+helm install {{ .Name }} seldonio/{{ .Name }} --namespace seldon-system
+```
+
+{{- else -}}
+
+Once that's done, you should be able to use the inference graph template as:
 
 ```shell
 helm template $MY_MODEL_NAME seldonio/{{ .Name }} --namespace $MODELS_NAMESPACE
 ```
 
-Note that you can also install / deploy the chart directly to your cluster using:
+Note that you can also deploy the inference graph directly to your cluster
+using:
 
 ```shell
 helm install $MY_MODEL_NAME seldonio/{{ .Name }} --namespace $MODELS_NAMESPACE
 ```
+
+{{- end -}}
 
 {{ template "chart.homepageLine" . }}
 

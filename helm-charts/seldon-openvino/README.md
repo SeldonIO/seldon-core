@@ -13,16 +13,14 @@ To use this chart, you will first need to add the `seldonio` Helm repo:
 ```shell
 helm repo add seldonio https://storage.googleapis.com/seldon-charts
 helm repo update
-```
-
-Once that's done, you should be able to generate your `SeldonDeployment`
-resources as:
+```Once that's done, you should be able to use the inference graph template as:
 
 ```shell
 helm template $MY_MODEL_NAME seldonio/seldon-openvino --namespace $MODELS_NAMESPACE
 ```
 
-Note that you can also install / deploy the chart directly to your cluster using:
+Note that you can also deploy the inference graph directly to your cluster
+using:
 
 ```shell
 helm install $MY_MODEL_NAME seldonio/seldon-openvino --namespace $MODELS_NAMESPACE

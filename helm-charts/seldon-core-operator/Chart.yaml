@@ -6,4 +6,6 @@ keywords:
 name: seldon-core-operator
 sources:
   - https://github.com/SeldonIO/seldon-core
+  - https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core-operator
+  - https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html
 version: 1.1.1-rc
