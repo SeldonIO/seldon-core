@@ -32,10 +32,12 @@ batchWorker:
   workers: 100
   # Number of times client will try to send a request if it fails
   retries: 3
-  # The type of data that is expected in the input data
-  payloadType: "data"
-  # The data type to convert if choosing "data" as the payload-type
-  dataType: "ndarray"
+  # The payload type to convert if choosing "data" as the data-type param
+  payloadType: "ndarray"
+  # The type of data that is expected in the input data (json, str, data)
+  dataType: "data"
+  # Whether to enable benchmarking on the batch processor worker
+  enableBenchmark: true
 minio:
   # The location of the minio endpoint 
   endpoint: http://minio.default.svc.cluster.local:9000

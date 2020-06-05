@@ -107,6 +107,9 @@ spec:
       source: |
         seldon-batch-processor \
             --deployment-name "{{ .Values.seldonDeployment.name }}" \
+            {{- if eq .Values.batchWorker.enableBenchmark true }}
+            --benchmark \
+            {{- end }}
             --namespace "{{ .Values.workflow.namespace }}" \
             --host "{{ .Values.batchWorker.host }}" \
             --workers "{{ .Values.batchWorker.workers }}" \
