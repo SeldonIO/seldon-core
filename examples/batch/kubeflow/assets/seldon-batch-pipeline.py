@@ -44,7 +44,6 @@ spec:
       modelUri: "{model_path}"
       name: classifier
     name: default
-    replicas: 1
     """
 
     deploy_step = dsl.ResourceOp(
@@ -59,7 +58,7 @@ spec:
         command="bash",
         arguments=[
             "-c",
-            f"sleep 10 && kubectl scale --namesace {namespace} --replicas={replicas} sdep/{deployment_name} && sleep 2 && kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id={deployment_name} -o jsonpath='{{.items[0].metadata.name'}})",
+            f"sleep 10 && kubectl scale --namespace {namespace} --replicas={replicas} sdep/{deployment_name} && sleep 2 && kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id={deployment_name} -o jsonpath='{{.items[0].metadata.name'}})",
         ],
     )
 
