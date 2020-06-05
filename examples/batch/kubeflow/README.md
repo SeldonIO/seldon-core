@@ -124,7 +124,6 @@ from kubernetes import client as k8s
   description='A batch processing pipeline for seldon models'
 )
 def nlp_pipeline(
-        deployment_name="seldon-batch",
         namespace="kubeflow",
         seldon_server="SKLEARN_SERVER",
         model_path="gs://seldon-models/sklearn/iris",
@@ -149,10 +148,10 @@ def nlp_pipeline(
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: "{deployment_name}"
+  name: "{{{{workflow.name}}}}"
   namespace: "{namespace}"
 spec:
-  name: "{deployment_name}"
+  name: "{{{{workflow.name}}}}"
   predictors:
   - graph:
       children: []
@@ -173,7 +172,7 @@ spec:
         command="bash",
         arguments=[
             "-c",
-            f"sleep 10 && kubectl scale --namespace {namespace} --replicas={replicas} sdep/{deployment_name} && sleep 2 && kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id={deployment_name} -o jsonpath='{{.items[0].metadata.name'}})"   
+            f"sleep 10 && kubectl scale --namespace {namespace} --replicas={replicas} sdep/{{{{workflow.name}}}} && sleep 2 && kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id={{{{workflow.name}}}} -o jsonpath='{{.items[0].metadata.name'}})"   
         ])
     
     download_from_object_store = dsl.ContainerOp(
@@ -192,12 +191,13 @@ spec:
         image='seldonio/seldon-core-s2i-python37:1.1.1-rc',
         command="seldon-batch-processor",
         arguments=[
-            "--deployment-name", deployment_name,
+            "--deployment-name", "{{workflow.name}}",
             "--namespace", namespace,
             "--host", gateway_endpoint,
             "--retries", retries,
             "--input-data-path", "/assets/input-data.txt",
-            "--output-data-path", "/assets/output-data.txt"
+            "--output-data-path", "/assets/output-data.txt",
+            "--benchmark"
         ],
         pvolumes={ "/assets": vop.volume }
     )
