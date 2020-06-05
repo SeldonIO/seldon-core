@@ -17,6 +17,217 @@ CHOICES_METHOD = ["predict"]
 CHOICES_LOG_LEVEL = ["debug", "info", "warning", "error"]
 
 
+def start_multithreaded_batch_worker(
+    deployment_name: str,
+    gateway_type: str,
+    namespace: str,
+    host: str,
+    transport: str,
+    data_type: str,
+    payload_type: str,
+    workers: int,
+    retries: int,
+    input_data_path: str,
+    output_data_path: str,
+    method: str,
+    log_level: str,
+    benchmark: bool,
+) -> None:
+    """
+    Starts the multithreaded batch worker which consists of three worker types and
+    two queues; the input_file_worker which reads a file and puts all lines in an
+    input queue, which are then read by the multiple request_processor_workers (the
+    number of parallel workers is specified by the workers param), which puts the output
+    in the output queue and then the output_file_worker which puts all the outputs in the
+    output file in a thread-safe approach.
+
+    All parameters are defined and explained in detail in the run_cli function.
+    """
+    start_time = time.time()
+
+    q_in = Queue(workers * 2)
+    q_out = Queue(workers * 2)
+
+    sc = SeldonClient(
+        gateway=gateway_type,
+        transport=transport,
+        deployment_name=deployment_name,
+        payload_type=payload_type,
+        gateway_endpoint=host,
+        namespace=namespace,
+        client_return_type="dict",
+    )
+
+    Thread(
+        target=_start_input_file_worker, args=(q_in, input_data_path), daemon=True
+    ).start()
+
+    for _ in range(workers):
+        Thread(
+            target=_start_request_worker,
+            args=(q_in, q_out, data_type, sc, retries),
+            daemon=True,
+        ).start()
+
+    Thread(
+        target=_start_output_file_worker, args=(q_out, output_data_path), daemon=True
+    ).start()
+
+    q_in.join()
+    q_out.join()
+
+    if benchmark:
+        print(f"Elapsed time: {time.time() - start_time}")
+
+
+def _start_input_file_worker(q_in: Queue, input_data_path: str) -> None:
+    """
+    Runs logic for the input file worker which reads the input file from filestore
+    and puts all of the lines into the input queue so it can be processed.
+
+    Parameters
+    ---
+    q_in
+        The queue to put all the data into for further processing
+    input_data_path
+        The local file to read the data from to be processed
+    """
+    input_data_file = open(input_data_path, "r")
+    enum_idx = 0
+    for line in input_data_file:
+        unique_id = str(uuid.uuid1())
+        q_in.put((enum_idx, unique_id, line))
+        enum_idx += 1
+
+
+def _start_output_file_worker(q_out: Queue, output_data_path: str) -> None:
+    """
+    Runs logic for the output file worker which receives all the processed output
+    fro the request worker through the queue and adds it into the output file in a 
+    thread safe manner.
+
+    Parameters
+    ---
+    q_out
+        The queue to read the results from
+    output_data_path
+        The local file to write the results into
+    """
+    output_data_file = open(output_data_path, "w")
+    while True:
+        line = q_out.get()
+        output_data_file.write(f"{line}\n")
+        q_out.task_done()
+
+
+def _start_request_worker(
+    q_in: Queue, q_out: Queue, data_type: str, sc: SeldonClient, retries: int
+) -> None:
+    """
+    Runs logic for the worker that sends requests from the queue until the queue
+    gets completely empty. The worker marks the task as done when it finishes processing
+    to ensure that the queue gets populated as it's currently configured with a threshold.
+
+    Parameters
+    ---
+    q_in
+        Queue to read the input data from
+    q_out
+        Queue to put the resulting requests into
+    data_type
+        The json/str/data type to send the requests as
+    sc
+        An initialised Seldon Client configured to send the requests to
+    retries
+        The number of attempts to try for each request
+    """
+    while True:
+        batch_idx, batch_uid, input_raw = q_in.get()
+        str_output = _send_batch_predict(
+            batch_idx, batch_uid, input_raw, data_type, sc, retries
+        )
+        # Mark task as done in the queue to add space for new tasks
+        q_out.put(str_output)
+        q_in.task_done()
+
+
+def _send_batch_predict(
+    batch_idx: int,
+    batch_uid: int,
+    input_raw: str,
+    data_type: str,
+    sc: SeldonClient,
+    retries: int,
+) -> str:
+    """
+    Send an request using the Seldon Client with batch context including the
+    unique ID of the batch and the Batch enumerated index as metadata. This
+    function also uses the unique batch ID as request ID so the request can be
+    traced back individually in the Seldon Request Logger context. Each request
+    will be attempted for the number of retries, and will return the string 
+    serialised result.
+
+    Paramters
+    ---
+    batch_idx
+        The enumerated index given to the batch datapoint in order of local dataset
+    batch_uid
+        The unique ID of the batch datapoint created with the python uuid function
+    input_raw
+        The raw input in string format to be loaded to the respective format
+    data_type
+        The data type to send which can be str, json and data
+    sc
+        The instance of SeldonClient to use to send the requests to the seldon model
+    retries
+        The number of times to retry the request
+
+    Returns
+    ---
+        A string serialised result of the response (or equivallent data with error info)
+    """
+
+    predict_kwargs = {}
+    meta = {"tags": {"batch_uid": batch_uid, "batch_idx": batch_idx}}
+    predict_kwargs["meta"] = meta
+    predict_kwargs["headers"] = {"Seldon-Puid": batch_uid}
+    try:
+        data = json.loads(input_raw)
+
+        # TODO: Add functionality to send "raw" payload
+        if data_type == "data":
+            # TODO: Update client to avoid requiring a numpy array
+            data_np = np.array(data)
+            predict_kwargs["data"] = data_np
+        elif data_type == "str":
+            predict_kwargs["str_data"] = data
+        elif data_type == "json":
+            predict_kwargs["json_data"] = data
+
+        str_output = None
+        for i in range(retries):
+            try:
+                # TODO: Add functionality for explainer
+                #   as explainer currently doesn't support meta
+                # TODO: Optimize client to share session for requests
+                seldon_payload = sc.predict(**predict_kwargs)
+                assert seldon_payload.success
+                str_output = json.dumps(seldon_payload.response)
+                break
+            except requests.exceptions.RequestException:
+                if i == (retries - 1):
+                    raise
+
+    except Exception as e:
+        error_resp = {
+            "status": {"info": "FAILURE", "reason": str(e), "status": 1},
+            "meta": meta,
+        }
+        str_output = json.dumps(error_resp)
+
+    return str_output
+
+
 @click.command()
 @click.option(
     "--deployment-name",
@@ -128,185 +339,3 @@ CHOICES_LOG_LEVEL = ["debug", "info", "warning", "error"]
 )
 def run_cli(**kwargs):
     start_multithreaded_batch_worker(**kwargs)
-
-
-def start_multithreaded_batch_worker(
-    deployment_name: str,
-    gateway_type: str,
-    namespace: str,
-    host: str,
-    transport: str,
-    data_type: str,
-    payload_type: str,
-    workers: int,
-    retries: int,
-    input_data_path: str,
-    output_data_path: str,
-    method: str,
-    log_level: str,
-    benchmark: bool,
-):
-    """
-    Starts the multithreaded batch worker which consists of three worker types and
-    two queues; the input_file_worker which reads a file and puts all lines in an
-    input queue, which are then read by the multiple request_processor_workers (the
-    number of parallel workers is specified by the workers param), which puts the output
-    in the output queue and then the output_file_worker which puts all the outputs in the
-    output file in a thread-safe approach.
-    """
-    start_time = time.time()
-
-    q_in = Queue(workers * 2)
-    q_out = Queue(workers * 2)
-
-    sc = SeldonClient(
-        gateway=gateway_type,
-        transport=transport,
-        deployment_name=deployment_name,
-        payload_type=payload_type,
-        gateway_endpoint=host,
-        namespace=namespace,
-        client_return_type="dict",
-    )
-
-    Thread(
-        target=_start_input_file_worker, args=(q_in, input_data_path), daemon=True
-    ).start()
-
-    for _ in range(workers):
-        Thread(
-            target=_start_request_worker,
-            args=(q_in, q_out, data_type, sc, retries),
-            daemon=True,
-        ).start()
-
-    Thread(
-        target=_start_output_file_worker, args=(q_out, output_data_path), daemon=True
-    ).start()
-
-    q_in.join()
-    q_out.join()
-
-    if benchmark:
-        print(f"Elapsed time: {time.time() - start_time}")
-
-
-def _start_input_file_worker(q_in: Queue, input_data_path: str) -> None:
-    """
-    Runs logic for the input file worker which reads the input file from filestore
-    and puts all of the lines into the input queue so it can be processed.
-    """
-    input_data_file = open(input_data_path, "r")
-    enum_idx = 0
-    for line in input_data_file:
-        unique_id = str(uuid.uuid1())
-        q_in.put((enum_idx, unique_id, line))
-        enum_idx += 1
-
-
-def _start_output_file_worker(q_out: Queue, output_data_path: str) -> None:
-    """
-    Runs logic for the output file worker which receives all the processed output
-    fro the request worker through the queue and adds it into the output file in a 
-    thread safe manner.
-    """
-    output_data_file = open(output_data_path, "w")
-    while True:
-        line = q_out.get()
-        output_data_file.write(f"{line}\n")
-        q_out.task_done()
-
-
-def _start_request_worker(
-    q_in: Queue, q_out: Queue, data_type: str, sc: SeldonClient, retries: int
-) -> None:
-    """
-    Runs logic for the worker that sends requests from the queue until the queue
-    gets completely empty. The worker marks the task as done when it finishes processing
-    to ensure that the queue gets populated as it's currently configured with a threshold.
-    """
-    while True:
-        batch_idx, batch_uid, input_raw = q_in.get()
-        str_output = _send_batch_predict(
-            batch_idx, batch_uid, input_raw, data_type, sc, retries
-        )
-        # Mark task as done in the queue to add space for new tasks
-        q_out.put(str_output)
-        q_in.task_done()
-
-
-def _send_batch_predict(
-    batch_idx: int,
-    batch_uid: int,
-    input_raw: str,
-    data_type: str,
-    sc: SeldonClient,
-    retries: int,
-) -> str:
-    """
-    Send an request using the Seldon Client with batch context including the
-    unique ID of the batch and the Batch enumerated index as metadata. This
-    function also uses the unique batch ID as request ID so the request can be
-    traced back individually in the Seldon Request Logger context. Each request
-    will be attempted for the number of retries, and will return the string 
-    serialised result.
-
-    Paramters
-    ---
-    batch_idx
-        The enumerated index given to the batch datapoint in order of local dataset
-    batch_uid
-        The unique ID of the batch datapoint created with the python uuid function
-    input_raw
-        The raw input in string format to be loaded to the respective format
-    data_type
-        The data type to send which can be str, json and data
-    sc
-        The instance of SeldonClient to use to send the requests to the seldon model
-    retries
-        The number of times to retry the request
-
-    Returns
-    ---
-        A string serialised result of the response (or equivallent data with error info)
-    """
-
-    predict_kwargs = {}
-    meta = {"tags": {"batch_uid": batch_uid, "batch_idx": batch_idx}}
-    predict_kwargs["meta"] = meta
-    predict_kwargs["headers"] = {"Seldon-Puid": batch_uid}
-    try:
-        data = json.loads(input_raw)
-
-        # TODO: Add functionality to send "raw" payload
-        if data_type == "data":
-            # TODO: Update client to avoid requiring a numpy array
-            data_np = np.array(data)
-            predict_kwargs["data"] = data_np
-        elif data_type == "str":
-            predict_kwargs["str_data"] = data
-        elif data_type == "json":
-            predict_kwargs["json_data"] = data
-
-        str_output = None
-        for i in range(retries):
-            try:
-                # TODO: Add functionality for explainer
-                #   as explainer currently doesn't support meta
-                # TODO: Optimize client to share session for requests
-                seldon_payload = sc.predict(**predict_kwargs)
-                assert seldon_payload.success
-                str_output = json.dumps(seldon_payload.response)
-                break
-            except requests.exceptions.RequestException:
-                if i == (retries - 1):
-                    raise
-
-    except Exception as e:
-        error_resp = {
-            "status": {"info": "FAILURE", "reason": str(e), "status": 1},
-            "meta": meta,
-        }
-        str_output = json.dumps(error_resp)
-
-    return str_output
