@@ -25,8 +25,8 @@ class TestBatchWorker(object):
         time.sleep(1)
 
         batch_size = 1000
-        input_data_path = "resources/input-data.txt"
-        output_data_path = "resources/output-data.txt"
+        input_data_path = "input-data.txt"
+        output_data_path = "output-data.txt"
 
         with open(input_data_path, "w") as f:
             for i in range(batch_size):
