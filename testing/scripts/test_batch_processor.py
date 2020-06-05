@@ -55,5 +55,5 @@ class TestBatchWorker(object):
                 # Ensure all requests are successful
                 assert output.get("data", {}).get("ndarray", False)
 
-        logging.warning("Success for test_prepack_sklearn")
+        logging.info("Success for test_batch_worker")
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
