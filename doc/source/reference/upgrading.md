@@ -12,7 +12,8 @@ Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed fe
 
  * The helm value `createResources` has been renamed `managerCreateResources`.
  * To allow CRDs to be created by the manager. If `managerCreateResources` is true then extra RBAC to `create` CRDs is added from the previous versions RBAC which was to just list and get.
-
+ * If upgrading the analytics helm chart then a `kubectl delete deployment -n seldon-system -l app=grafana` should be [run first](https://github.com/SeldonIO/seldon-core/pull/1917)
+ 
 ### Request Logger
 
 The values.yaml for the seldon-core-operator helm chart has changed. The field `defaultRequestLoggerEndpointPrefix` is replaced by:
