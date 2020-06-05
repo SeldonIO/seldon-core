@@ -12,10 +12,8 @@ CHOICES_GATEWAY_TYPE = ["ambassador", "istio", "seldon"]
 CHOICES_TRANSPORT = ["rest", "grpc"]
 CHOICES_PAYLOAD_TYPE = ["data", "json", "str"]
 CHOICES_DATA_TYPE = ["ndarray", "tensor", "tftensor"]
-# TODO: Add explainer support
 CHOICES_METHOD = ["predict"]
 CHOICES_LOG_LEVEL = ["debug", "info", "warning", "error"]
-CHOICES_INDEX_TYPE = ["enumerate", "unique"]
 
 
 @click.command()
@@ -87,13 +85,6 @@ CHOICES_INDEX_TYPE = ["enumerate", "unique"]
     type=click.Choice(CHOICES_LOG_LEVEL),
     default="info",
 )
-@click.option(
-    "--index-type",
-    "-x",
-    envvar="SELDON_BATCH_INDEX_TYPE",
-    type=click.Choice(CHOICES_INDEX_TYPE),
-    default="info",
-)
 def run_cli(
     deployment_name,
     gateway_type,
@@ -108,7 +99,6 @@ def run_cli(
     output_data_path,
     method,
     log_level,
-    index_type,
 ):
     q_in = Queue(workers * 2)
     q_out = Queue(workers * 2)
@@ -125,71 +115,76 @@ def run_cli(
 
     def _start_request_worker():
         while True:
-            batch_uid, batch_idx, input_raw = q_in.get()
-            data = json.loads(input_raw)
-
+            batch_idx, batch_uid, input_raw = q_in.get()
             predict_kwargs = {}
             meta = {"tags": {"batch_uid": batch_uid, "batch_idx": batch_idx}}
             predict_kwargs["meta"] = meta
             predict_kwargs["headers"] = {"Seldon-Puid": batch_uid}
+            try:
+                data = json.loads(input_raw)
 
-            # TODO: Add functionality to send "raw" data
-            if payload_type == "data":
-                # TODO: Update client to avoid requiring a numpy array
-                data_np = np.array(data)
-                predict_kwargs["data"] = data_np
-            elif payload_type == "str":
-                predict_kwargs["str_data"] = data
-            elif payload_type == "json":
-                predict_kwargs["json_data"] = data
+                # TODO: Add functionality to send "raw" payload
+                if payload_type == "data":
+                    # TODO: Update client to avoid requiring a numpy array
+                    data_np = np.array(data)
+                    predict_kwargs["data"] = data_np
+                elif payload_type == "str":
+                    predict_kwargs["str_data"] = data
+                elif payload_type == "json":
+                    predict_kwargs["json_data"] = data
 
-            str_output = None
-            for _ in range(retries):
-                try:
-                    # TODO: Add functionality for explainer
-                    #   as explainer currently doesn't support meta
-                    # if method == "predict":
-                    seldon_payload = sc.predict(**predict_kwargs)
-                    assert seldon_payload.success
-                    str_output = json.dumps(seldon_payload.response)
-                    break
-                # catch all exceptions to ensure the task is marked as done
-                except Exception as e:
-                    # TODO: Change to log
-                    print(str(e))
-                    error_resp = {
-                        "status": {"info": "FAILURE", "reason": str(e), "status": 1},
-                        "meta": meta,
-                    }
-                    str_output = json.dumps(error_resp)
+                str_output = None
+                for i in range(retries):
+                    try:
+                        # TODO: Add functionality for explainer
+                        #   as explainer currently doesn't support meta
+                        # TODO: Optimize client to share session for requests
+                        seldon_payload = sc.predict(**predict_kwargs)
+                        assert seldon_payload.success
+                        str_output = json.dumps(seldon_payload.response)
+                        break
+                    except requests.exceptions.RequestException:
+                        if i == (retries - 1):
+                            raise
+
+            except Exception as e:
+                error_resp = {
+                    "status": {"info": "FAILURE", "reason": str(e), "status": 1},
+                    "meta": meta,
+                }
+                str_output = json.dumps(error_resp)
 
             # Mark task as done in the queue to add space for new tasks
             q_out.put(str_output)
             q_in.task_done()
-
-    def _start_file_worker():
-        output_data_file = open(output_data_path, "w")
-        while True:
-            line = q_out.get()
-            output_data_file.write(f"{line}\n")
-            q_out.task_done()
 
     for _ in range(workers):
         t = Thread(target=_start_request_worker)
         t.daemon = True
         t.start()
 
-    t = Thread(target=_start_file_worker)
+    def _start_output_file_worker():
+        output_data_file = open(output_data_path, "w")
+        while True:
+            line = q_out.get()
+            output_data_file.write(f"{line}\n")
+            q_out.task_done()
+
+    t = Thread(target=_start_output_file_worker)
     t.daemon = True
     t.start()
 
-    input_data_file = open(input_data_path, "r")
+    def _start_input_file_worker():
+        input_data_file = open(input_data_path, "r")
+        enum_idx = 0
+        for line in input_data_file:
+            unique_id = str(uuid.uuid1())
+            q_in.put((enum_idx, unique_id, line))
+            enum_idx += 1
 
-    enum_idx = 0
-    for line in input_data_file:
-        unique_id = str(uuid.uuid1())
-        q_in.put((enum_idx, unique_id, line))
-        enum_idx += 1
+    t = Thread(target=_start_input_file_worker)
+    t.daemon = True
+    t.start()
 
     q_in.join()
     q_out.join()
