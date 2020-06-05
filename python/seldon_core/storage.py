@@ -28,8 +28,6 @@ from minio import Minio
 from seldon_core.imports_helper import _GCS_PRESENT
 from seldon_core.utils import getenv
 
-from minio.error import ResponseError, BucketAlreadyOwnedByYou, BucketAlreadyExists
-
 if _GCS_PRESENT:
     from google.auth import exceptions
     from google.cloud import storage
@@ -41,27 +39,6 @@ _LOCAL_PREFIX = "file://"
 
 
 class Storage(object):  # pylint: disable=too-few-public-methods
-    @staticmethod
-    def is_remote_path(path: str) -> bool:
-        return (
-            path.startswith(_GCS_PREFIX)
-            or path.startswith(_S3_PREFIX)
-            or re.search(_BLOB_RE, path)
-        )
-
-    @staticmethod
-    def upload(in_path: str, uri: str):
-        logging.info("Copying contents of local to %s", uri)
-
-        if uri.startswith(_S3_PREFIX):
-            Storage._upload_s3(in_path, uri)
-        else:
-            raise Exception(
-                "Cannot recognize storage type for "
-                + uri
-                + "\n'%s' is the current available storage type." % (_S3_PREFIX)
-            )
-
     @staticmethod
     def download(uri: str, out_dir: str = None) -> str:
         logging.info("Copying contents of %s to local", uri)
@@ -94,67 +71,6 @@ class Storage(object):  # pylint: disable=too-few-public-methods
 
         logging.info("Successfully copied %s to %s", uri, out_dir)
         return out_dir
-
-    @staticmethod
-    def _upload_s3(in_path: str, uri: str):
-        is_dir = False
-        if os.path.isfile(in_path):
-            pass
-        elif os.path.isdir(in_path):
-            is_dir = True
-        else:
-            raise RuntimeError(f"Input path {in_path} not valid file or folder.")
-
-        client = Storage._create_minio_client()
-        bucket_args = uri.replace(_S3_PREFIX, "", 1).split("/", 1)
-        bucket_name = bucket_args[0]
-        bucket_path = bucket_args[1] if len(bucket_args) > 1 else ""
-        # Create bucket if doesn't exist
-        try:
-            client.make_bucket(bucket_name)
-        except (BucketAlreadyOwnedByYou, BucketAlreadyExists) as err:
-            pass
-        except ResponseError as err:
-            raise
-
-        if not is_dir:
-            files = [in_path]
-            logging.info(f"uploading single file {in_path} to {uri}")
-            try:
-                upload_result = client.fput_object(bucket_name, bucket_path, in_path)
-                logging.info(
-                    f"Successfully uploaded file {in_path} to {uri} "
-                    f"with result {upload_result}"
-                )
-            except ResponseError as err:
-                logging.error(
-                    f"Failed uploading file {in_path} to {uri}", exc_info=True
-                )
-        else:
-            in_path_length = len(in_path)
-            files = glob.glob(os.path.join(in_path, "**"), recursive=True)
-            logging.info(f"Uploading directory {in_path} to {uri}")
-            for file in files:
-                if not os.path.isfile(file):
-                    continue
-                bucket_suffix_path = file[in_path_length:]
-                bucket_joint_path = os.path.join(bucket_path, bucket_suffix_path)
-                if bucket_joint_path.startswith("/"):
-                    bucket_joint_path = bucket_joint_path[1:]
-                logging.info(f"Uploading directory file {file} to {bucket_joint_path}")
-                try:
-                    upload_result = client.fput_object(
-                        bucket_name, bucket_joint_path, file
-                    )
-                    logging.info(
-                        f"Successfully uploaded file {file} to {bucket_joint_path} "
-                        f"with result {upload_result}"
-                    )
-                except ResponseError as err:
-                    logging.error(
-                        f"Failed uploading file {file} to {bucket_joint_path}",
-                        exc_info=True,
-                    )
 
     @staticmethod
     def _download_s3(uri, temp_dir: str):
