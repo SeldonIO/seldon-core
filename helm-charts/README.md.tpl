@@ -15,7 +15,7 @@ helm repo update
 ```
 
 {{- /* We need to differentiate between "app charts" and "inference graph charts" */ -}}
-{{- $appCharts := list "seldon-core-operator" "seldon-core-oauth-gateway" "seldon-core-analytics" -}}
+{{- $appCharts := list "seldon-core-operator" "seldon-core-analytics" -}}
 {{ if has .Name $appCharts }}
 
 You can now deploy the chart as:
