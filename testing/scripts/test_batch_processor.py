@@ -49,7 +49,7 @@ class TestBatchWorker(object):
             True,
         )
 
-        with open(input_data_path, "r") as f:
+        with open(output_data_path, "r") as f:
             total = 0
             for line in f:
                 output = json.loads(line)
