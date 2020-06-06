@@ -255,8 +255,9 @@ Check the pipeline has been created:
 !ls assets/
 ```
 
-    input-data.txt	       seldon-batch-pipeline.py
-    kubeflow-pipeline.jpg  seldon-batch-pipeline.py.tar.gz
+    input-data.txt		  seldon-batch-pipeline.py.tar.gz
+    kubeflow-pipeline.jpg	  seldon-kubeflow-batch.gif
+    seldon-batch-pipeline.py
 
 
 ## Open the Kubeflow Pipelines UI
