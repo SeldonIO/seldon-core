@@ -71,6 +71,14 @@ Advanced Machine Learning Insights
    Tabular, Text and Image Model Explainers <explainer_examples>
    Outlier Detection on CIFAR10 <outlier_cifar10>
   
+Batch Processing with Seldon Core
+-----
+
+.. toctree::
+   :titlesonly:
+   Batch Processing with Argo Workflows <argo_workflows_batch>
+   Batch Processing with Kubeflow Pipelines <kubeflow_pipelines_batch>
+
 
 MLOps: Scaling and Monitoring and Observability
 -----
