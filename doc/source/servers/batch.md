@@ -141,5 +141,9 @@ This allows the requests to be identified and matched against the initial reques
 
 ### Performance
 
-The implementation of the module is done leveraging Python's Threading system. Benchmarking was carried out to assess performance of Threading vs Twisted vs AsyncIO. The results showed better performance with Asyncio, however given that the logic in the worker is quite minimal (ie sending a request) and most of the time is waiting for the request, the implementation with Python's native threading was able to perform at speeds that were efficient enough to very easily scale to thousands of workers.
+The implementation of the module is done leveraging Python's Threading system. 
+
+Benchmarking was carried out using vanilla Python requests module to assess performance of Threading vs Twisted vs AsyncIO. The results showed better performance with Asyncio, however given that the logic in the worker is quite minimal (ie sending a request) and most of the time is waiting for the request, the implementation with Python's native threading was able to perform at speeds that were efficient enough to very easily scale to thousands of workers.
+
+However currently the implementation uses the Seldon Client which does not leverage quite a few optimization requirements to increase the performance of processing, such as re-using a requests.py session. However even without these optimisations the worker will still reach a highly concurrent performance, and these optimizations will be introduced as adoption of this component (and feedback) grows.
 
