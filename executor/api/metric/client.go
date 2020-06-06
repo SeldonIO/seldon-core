@@ -19,6 +19,8 @@ type ClientMetrics struct {
 	ImageVersion           string
 }
 
+var RecreateClientHistogram = false
+
 func NewClientMetrics(spec *v1.PredictorSpec, deploymentName string, modelName string) *ClientMetrics {
 	histogram := prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
@@ -31,8 +33,15 @@ func NewClientMetrics(spec *v1.PredictorSpec, deploymentName string, modelName s
 
 	err := prometheus.Register(histogram)
 	if err != nil {
-		prometheus.Unregister(histogram)
-		prometheus.Register(histogram)
+		if e, ok := err.(prometheus.AlreadyRegisteredError); ok {
+			if RecreateClientHistogram {
+				prometheus.Unregister(e.ExistingCollector)
+				prometheus.Register(histogram)
+			} else {
+				histogram = e.ExistingCollector.(*prometheus.HistogramVec)
+			}
+
+		}
 	}
 	container := v1.GetContainerForPredictiveUnit(spec, modelName)
 	imageName := ""

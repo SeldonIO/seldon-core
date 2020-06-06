@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+var RecreateServerHistogram = false
+
 type ServerMetrics struct {
 	ServerHandledHistogram *prometheus.HistogramVec
 	Predictor              *v1.PredictorSpec
@@ -26,8 +28,15 @@ func NewServerMetrics(spec *v1.PredictorSpec, deploymentName string) *ServerMetr
 	)
 	err := prometheus.Register(histogram)
 	if err != nil {
-		prometheus.Unregister(histogram)
-		prometheus.Register(histogram)
+		if e, ok := err.(prometheus.AlreadyRegisteredError); ok {
+			if RecreateServerHistogram {
+				prometheus.Unregister(e.ExistingCollector)
+				prometheus.Register(histogram)
+			} else {
+				histogram = e.ExistingCollector.(*prometheus.HistogramVec)
+			}
+
+		}
 	}
 	return &ServerMetrics{
 		ServerHandledHistogram: histogram,

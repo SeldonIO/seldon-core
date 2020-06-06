@@ -13,13 +13,13 @@ Seldon handles scaling to thousands of production machine learning models and pr
 Quick Links
 -----
 
-* Read the `Seldon Core Documentation <https://docs.seldon.io/projects/seldon-core/en/latest/>`_
+* Read the `Seldon Core Documentation <./>`_
 * Join our `community Slack <https://join.slack.com/t/seldondev/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU>`_ to ask any questions
-* Get started with `Seldon Core Notebook Examples <https://docs.seldon.io/projects/seldon-core/en/latest/examples/notebooks.html>`_
-* Join our fortnightly `online community calls <https://docs.seldon.io/projects/seldon-core/en/latest/developer/community.html>`_
-* Learn how you can `start contributing <https://docs.seldon.io/projects/seldon-core/en/latest/developer/contributing.html>`_
-* Check out `Blogs <https://docs.seldon.io/projects/seldon-core/en/latest/tutorials/blogs.html>`_ that dive into Seldon Core components
-* Watch some of the `Videos and Talks <https://docs.seldon.io/projects/seldon-core/en/latest/tutorials/videos.html>`_ using Seldon Core
+* Get started with `Seldon Core Notebook Examples <./examples/notebooks.html>`_
+* Join our fortnightly `online community calls <./developer/community.html#community-calls>`_
+* Learn how you can `start contributing <./developer/contributing.html>`_
+* Check out `Blogs <./tutorials/blogs.html>`_ that dive into Seldon Core components
+* Watch some of the `Videos and Talks <./tutorials/videos.html>`_ using Seldon Core
 
 .. image:: ./images/seldon-core-high-level.jpg
    :alt: Seldon logo
@@ -40,7 +40,7 @@ Documentation Index
 .. toctree::
    :maxdepth: 1
    :caption: Seldon Core Deep Dive
-  
+
    Detailed Installation Parameters <reference/helm.rst>
    Pre-packaged Inreference Servers <servers/overview.md>
    Language Wrappers for Custom Models <wrappers/language_wrappers.md>
@@ -56,12 +56,12 @@ Documentation Index
 .. toctree::
    :maxdepth: 1
    :caption: Pre-Packaged Inference Servers
-	     
+
    MLflow Server <servers/mlflow.md>
    SKLearn server <servers/sklearn.md>
    Tensorflow Serving <servers/tensorflow.md>
    XGBoost server <servers/xgboost.md>
-   
+
 .. toctree::
    :maxdepth: 1
    :caption: Language Wrappers (Production)
@@ -76,6 +76,7 @@ Documentation Index
    R Language Wrapper [ALPHA] <R/README.md>
    NodeJS Language Wrapper [ALPHA] <nodejs/README.md>
    Go Language Wrapper [ALPHA] <go/go_wrapper_link.rst>
+   Metadata [Incubating] <reference/apis/metadata.md>
 
 .. toctree::
    :maxdepth: 1
@@ -109,9 +110,9 @@ Documentation Index
 
    Model Explanations <analytics/explainers.md>
    Outlier Detection <analytics/outlier_detection.md>
-   Drift Detection <analytics/drift_detection.md>   
-   Routers (incl. Multi Armed Bandits)  <analytics/routers.md>   
-   
+   Drift Detection <analytics/drift_detection.md>
+   Routers (incl. Multi Armed Bandits)  <analytics/routers.md>
+
 .. toctree::
    :maxdepth: 1
    :caption: Examples
@@ -125,18 +126,18 @@ Documentation Index
    :maxdepth: 1
    :caption: Reference
 
-   Annotation-based Configuration <graph/annotations.md>   	     
+   Annotation-based Configuration <graph/annotations.md>
    AWS Marketplace Install <reference/aws-mp-install.md>
-   Benchmarking <reference/benchmarking.md>   
+   Benchmarking <reference/benchmarking.md>
    General Availability <reference/ga.md>
    Helm Charts <graph/helm_charts.md>
    Images <reference/images.md>
-   Logging & Log Level <analytics/log_level.md>   
-   Private Docker Registry <graph/private_registries.md>   
-   Prediction APIs <reference/apis/index>   
+   Logging & Log Level <analytics/log_level.md>
+   Private Docker Registry <graph/private_registries.md>
+   Prediction APIs <reference/apis/index>
    Python API reference <python/api/modules>
-   Release Highlights <reference/release-highlights>   
-   Seldon Deployment CRD <reference/seldon-deployment.md>   
+   Release Highlights <reference/release-highlights>
+   Seldon Deployment CRD <reference/seldon-deployment.md>
    Service Orchestrator <graph/svcorch.md>
    Kubeflow <analytics/kubeflow.md>
 
@@ -149,4 +150,3 @@ Documentation Index
    End to End Tests <developer/e2e.rst>
    Roadmap <developer/roadmap.md>
    Build using private repo <developer/build-using-private-repo.md>
-

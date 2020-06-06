@@ -1,5 +1,6 @@
-PREV_VERSION=1.0.0
-VERSION=1.1.0
+SHELL := /bin/bash
+VERSION ?= $(shell cat ../../version.txt)
+PREV_VERSION=1.1.0
 COMMUNITY_OPERATORS_BASE=/home/clive/work/seldon-core/redhat/community-operators
 
 .PHONY: recreate-generated
@@ -28,7 +29,8 @@ deploy/olm-catalog/seldon-operator/${VERSION}/seldon-operator.v${VERSION}.cluste
 	operator-sdk generate csv --csv-version ${VERSION} --from-version ${PREV_VERSION} --update-crds
 
 update_csv: clean_csv_${VERSION} deploy/olm-catalog/seldon-operator/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
-
+	sed -i s/${PREV_VERSION}/${VERSION}/ deploy/olm-catalog/seldon-operator/seldon-operator.package.yaml
+	sed -i 's/containerImage:.*/containerImage: seldonio\/seldon-core-operator:'${VERSION}'/' deploy/olm-catalog/seldon-operator/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
 #
 # TESTS
 #
@@ -91,7 +93,7 @@ certified_validate_ui:
 
 
 certified_push_quay:
-	operator-courier push bundle/certified/ seldon seldon-operator-certified 1.1.0 "$$QUAY_TOKEN"
+	operator-courier push bundle/certified/ seldon seldon-operator-certified ${VERSION} "$$QUAY_TOKEN"
 
 
 certified_zip:

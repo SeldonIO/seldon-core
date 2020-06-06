@@ -1,6 +1,6 @@
 # Tensorflow Serving
 
-If you have a trained Tensorflow model you can deploy this directly via REST or gRPC servers.
+If you have a trained Tensorflow model you can deploy this directly via REST or gRPC servers. 
 
 ## MNIST Example
 

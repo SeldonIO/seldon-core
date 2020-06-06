@@ -10,7 +10,6 @@ import io.seldon.protos.DeploymentProtos.PredictorSpec;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -119,7 +118,6 @@ public class TestRestClientControllerExternalGraphs {
                     .contentType(MediaType.APPLICATION_JSON_UTF8))
             .andReturn();
     String response = res.getResponse().getContentAsString();
-    System.out.println(response);
     Assert.assertEquals(200, res.getResponse().getStatus());
 
     SeldonMessage.Builder builder = SeldonMessage.newBuilder();
@@ -143,7 +141,6 @@ public class TestRestClientControllerExternalGraphs {
     MvcResult res2 = mvc.perform(MockMvcRequestBuilders.get("/prometheus")).andReturn();
     Assert.assertEquals(200, res2.getResponse().getStatus());
     response = res2.getResponse().getContentAsString();
-    System.out.println("response is [" + response + "]");
     Assert.assertTrue(
         response.indexOf(
                 "mycounter_total{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")
@@ -156,7 +153,6 @@ public class TestRestClientControllerExternalGraphs {
         response.indexOf(
                 "mygauge{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 22.0")
             > -1);
-    System.out.println(response);
 
     res =
         mvc.perform(
@@ -166,7 +162,6 @@ public class TestRestClientControllerExternalGraphs {
                     .contentType(MediaType.APPLICATION_JSON_UTF8))
             .andReturn();
     response = res.getResponse().getContentAsString();
-    System.out.println(response);
     Assert.assertEquals(200, res.getResponse().getStatus());
 
     builder = SeldonMessage.newBuilder();
@@ -202,7 +197,6 @@ public class TestRestClientControllerExternalGraphs {
         response.indexOf(
                 "mygauge{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 100.0")
             > -1);
-    System.out.println(response);
   }
 
   @Test
@@ -235,7 +229,6 @@ public class TestRestClientControllerExternalGraphs {
                     .contentType(MediaType.APPLICATION_JSON_UTF8))
             .andReturn();
     String response = res.getResponse().getContentAsString();
-    System.out.println(response);
     Assert.assertEquals(200, res.getResponse().getStatus());
 
     SeldonMessage.Builder builder = SeldonMessage.newBuilder();
@@ -267,7 +260,6 @@ public class TestRestClientControllerExternalGraphs {
         response.indexOf(
                 "mytimer_seconds_count{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transformer\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")
             > -1);
-    System.out.println(response);
   }
 
   @Test
@@ -301,7 +293,6 @@ public class TestRestClientControllerExternalGraphs {
                     .contentType(MediaType.APPLICATION_JSON_UTF8))
             .andReturn();
     String response = res.getResponse().getContentAsString();
-    System.out.println(response);
     Assert.assertEquals(200, res.getResponse().getStatus());
 
     SeldonMessage.Builder builder = SeldonMessage.newBuilder();
@@ -325,7 +316,6 @@ public class TestRestClientControllerExternalGraphs {
     MvcResult res2 = mvc.perform(MockMvcRequestBuilders.get("/prometheus")).andReturn();
     Assert.assertEquals(200, res2.getResponse().getStatus());
     response = res2.getResponse().getContentAsString();
-    System.out.println(response);
     Assert.assertTrue(
         response.indexOf(
                 "mycounter_total{deployment_name=\"None\",model_image=\"seldonio/transformer\",model_name=\"transform_output\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")
@@ -380,7 +370,6 @@ public class TestRestClientControllerExternalGraphs {
                     .contentType(MediaType.APPLICATION_JSON_UTF8))
             .andReturn();
     String response = res.getResponse().getContentAsString();
-    System.out.println(response);
     Assert.assertEquals(200, res.getResponse().getStatus());
 
     SeldonMessage.Builder builder = SeldonMessage.newBuilder();
@@ -416,7 +405,6 @@ public class TestRestClientControllerExternalGraphs {
     MvcResult res2 = mvc.perform(MockMvcRequestBuilders.get("/prometheus")).andReturn();
     Assert.assertEquals(200, res2.getResponse().getStatus());
     response = res2.getResponse().getContentAsString();
-    System.out.println(response);
     Assert.assertTrue(
         response.indexOf(
                 "myroutercounter_total{deployment_name=\"None\",model_image=\"seldonio/router\",model_name=\"router\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")
@@ -465,7 +453,6 @@ public class TestRestClientControllerExternalGraphs {
                     .contentType(MediaType.APPLICATION_JSON_UTF8))
             .andReturn();
     String response = res.getResponse().getContentAsString();
-    System.out.println(response);
     Assert.assertEquals(200, res.getResponse().getStatus());
 
     SeldonMessage.Builder builder = SeldonMessage.newBuilder();
@@ -489,9 +476,6 @@ public class TestRestClientControllerExternalGraphs {
     MvcResult res2 = mvc.perform(MockMvcRequestBuilders.get("/prometheus")).andReturn();
     Assert.assertEquals(200, res2.getResponse().getStatus());
     response = res2.getResponse().getContentAsString();
-    System.out.println("----------------------------------------");
-    System.out.println("----------------------------------------");
-    System.out.println(response);
     Assert.assertTrue(
         response.indexOf(
                 "mycounter_total{deployment_name=\"None\",model_image=\"seldonio/combiner\",model_name=\"combiner\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")
@@ -546,7 +530,6 @@ public class TestRestClientControllerExternalGraphs {
                     .contentType(MediaType.APPLICATION_JSON_UTF8))
             .andReturn();
     String response = res.getResponse().getContentAsString();
-    System.out.println(response);
     Assert.assertEquals(200, res.getResponse().getStatus());
 
     SeldonMessage.Builder builder = SeldonMessage.newBuilder();
@@ -570,7 +553,6 @@ public class TestRestClientControllerExternalGraphs {
     MvcResult res2 = mvc.perform(MockMvcRequestBuilders.get("/prometheus")).andReturn();
     Assert.assertEquals(200, res2.getResponse().getStatus());
     response = res2.getResponse().getContentAsString();
-    System.out.println("response is [" + response + "]");
     Assert.assertTrue(
         response.indexOf(
                 "mycounter1_total{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")
@@ -583,7 +565,6 @@ public class TestRestClientControllerExternalGraphs {
         response.indexOf(
                 "mygauge1{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 22.0")
             > -1);
-    System.out.println(response);
 
     res =
         mvc.perform(
@@ -593,7 +574,6 @@ public class TestRestClientControllerExternalGraphs {
                     .contentType(MediaType.APPLICATION_JSON_UTF8))
             .andReturn();
     response = res.getResponse().getContentAsString();
-    System.out.println(response);
     Assert.assertEquals(200, res.getResponse().getStatus());
 
     builder = SeldonMessage.newBuilder();
@@ -629,7 +609,6 @@ public class TestRestClientControllerExternalGraphs {
         response.indexOf(
                 "mygauge1{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 100.0")
             > -1);
-    System.out.println(response);
   }
 
   @Test
@@ -676,7 +655,6 @@ public class TestRestClientControllerExternalGraphs {
                     .contentType(MediaType.APPLICATION_JSON_UTF8))
             .andReturn();
     String response = res.getResponse().getContentAsString();
-    System.out.println(response);
     Assert.assertEquals(200, res.getResponse().getStatus());
 
     SeldonMessage.Builder builder = SeldonMessage.newBuilder();
@@ -700,7 +678,6 @@ public class TestRestClientControllerExternalGraphs {
     MvcResult res2 = mvc.perform(MockMvcRequestBuilders.get("/prometheus")).andReturn();
     Assert.assertEquals(200, res2.getResponse().getStatus());
     response = res2.getResponse().getContentAsString();
-    System.out.println("response is [" + response + "]");
     Assert.assertTrue(
         response.indexOf(
                 "mycounter2_total{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",mytag1=\"mytagval1\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 1.0")
@@ -713,7 +690,6 @@ public class TestRestClientControllerExternalGraphs {
         response.indexOf(
                 "mygauge2{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 22.0")
             > -1);
-    System.out.println(response);
 
     res =
         mvc.perform(
@@ -723,7 +699,6 @@ public class TestRestClientControllerExternalGraphs {
                     .contentType(MediaType.APPLICATION_JSON_UTF8))
             .andReturn();
     response = res.getResponse().getContentAsString();
-    System.out.println(response);
     Assert.assertEquals(200, res.getResponse().getStatus());
 
     builder = SeldonMessage.newBuilder();
@@ -759,39 +734,44 @@ public class TestRestClientControllerExternalGraphs {
         response.indexOf(
                 "mygauge2{deployment_name=\"None\",model_image=\"seldonio/mock_classifier\",model_name=\"mean-classifier\",model_version=\"0.6\",predictor_name=\"fx-market-predictor\",predictor_version=\"unknown\",} 100.0")
             > -1);
-    System.out.println(response);
   }
 
   @Test
   public void testModelPredictionNon200Response() throws Exception {
     String jsonStr = readFile("src/test/resources/model_simple.json", StandardCharsets.UTF_8);
     String responseStr =
-            readFile("src/test/resources/response_status.json", StandardCharsets.UTF_8);
-    io.seldon.protos.DeploymentProtos.PredictorSpec.Builder PredictorSpecBuilder = io.seldon.protos.DeploymentProtos.PredictorSpec.newBuilder();
+        readFile("src/test/resources/response_status.json", StandardCharsets.UTF_8);
+    io.seldon.protos.DeploymentProtos.PredictorSpec.Builder PredictorSpecBuilder =
+        io.seldon.protos.DeploymentProtos.PredictorSpec.newBuilder();
     EnginePredictor.updateMessageBuilderFromJson(PredictorSpecBuilder, jsonStr);
     io.seldon.protos.DeploymentProtos.PredictorSpec predictorSpec = PredictorSpecBuilder.build();
     final String predictJson = "{" + "\"binData\": \"MTIz\"" + "}";
     ReflectionTestUtils.setField(enginePredictor, "predictorSpec", predictorSpec);
 
-    HttpStatusCodeException exception = HttpServerErrorException.InternalServerError
-            .create(HttpStatus.BAD_REQUEST, "status text", HttpHeaders.EMPTY, responseStr.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
+    HttpStatusCodeException exception =
+        HttpServerErrorException.InternalServerError.create(
+            HttpStatus.BAD_REQUEST,
+            "status text",
+            HttpHeaders.EMPTY,
+            responseStr.getBytes(StandardCharsets.UTF_8),
+            StandardCharsets.UTF_8);
 
     Mockito.when(
             testRestTemplate
-                    .getRestTemplate()
-                    .postForEntity(
-                            Matchers.<URI>any(),
-                            Matchers.<HttpEntity<MultiValueMap<String, String>>>any(),
-                            Matchers.<Class<String>>any()))
-            .thenThrow(exception);
+                .getRestTemplate()
+                .postForEntity(
+                    Matchers.<URI>any(),
+                    Matchers.<HttpEntity<MultiValueMap<String, String>>>any(),
+                    Matchers.<Class<String>>any()))
+        .thenThrow(exception);
 
     MvcResult res =
-            mvc.perform(
-                    MockMvcRequestBuilders.post("/api/v0.1/predictions")
-                            .accept(MediaType.APPLICATION_JSON_UTF8)
-                            .content(predictJson)
-                            .contentType(MediaType.APPLICATION_JSON_UTF8))
-                    .andReturn();
+        mvc.perform(
+                MockMvcRequestBuilders.post("/api/v0.1/predictions")
+                    .accept(MediaType.APPLICATION_JSON_UTF8)
+                    .content(predictJson)
+                    .contentType(MediaType.APPLICATION_JSON_UTF8))
+            .andReturn();
 
     // Check for returned response that wraps the ApiException into SeldonMessage
     Assert.assertEquals(200, res.getResponse().getStatus());

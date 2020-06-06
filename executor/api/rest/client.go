@@ -50,7 +50,16 @@ func (smc *JSONRestClient) CreateErrorPayload(err error) payload.SeldonPayload {
 }
 
 func (smc *JSONRestClient) Marshall(w io.Writer, msg payload.SeldonPayload) error {
-	_, err := w.Write(msg.GetPayload().([]byte))
+	payload, ok := msg.GetPayload().([]byte)
+	if !ok {
+		return invalidPayload("couldn't convert to []byte")
+	}
+
+	var escaped bytes.Buffer
+
+	json.HTMLEscape(&escaped, payload)
+	_, err := escaped.WriteTo(w)
+
 	return err
 }
 
@@ -157,10 +166,14 @@ func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method 
 	if opentracing.IsGlobalTracerRegistered() {
 		tracer := opentracing.GlobalTracer()
 
+		startSpanOptions := make([]opentracing.StartSpanOption, 0)
 		parentSpan := opentracing.SpanFromContext(ctx)
+		if parentSpan != nil {
+			startSpanOptions = append(startSpanOptions, opentracing.ChildOf(parentSpan.Context()))
+		}
 		clientSpan := opentracing.StartSpan(
 			method,
-			opentracing.ChildOf(parentSpan.Context()))
+			startSpanOptions...)
 		defer clientSpan.Finish()
 		tracer.Inject(clientSpan.Context(), opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(req.Header))
 	}

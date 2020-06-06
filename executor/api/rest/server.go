@@ -2,9 +2,13 @@ package rest
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+
 	"github.com/go-logr/logr"
-	guuid "github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
@@ -15,20 +19,8 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/predictor"
-	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	"io/ioutil"
-	"net/http"
-	"net/url"
+	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
-)
-
-const (
-	CLOUDEVENTS_HEADER_ID_NAME             = "Ce-Id"
-	CLOUDEVENTS_HEADER_SPECVERSION_NAME    = "Ce-Specversion"
-	CLOUDEVENTS_HEADER_SOURCE_NAME         = "Ce-Source"
-	CLOUDEVENTS_HEADER_TYPE_NAME           = "Ce-Type"
-	CLOUDEVENTS_HEADER_PATH_NAME           = "Ce-Path"
-	CLOUDEVENTS_HEADER_SPECVERSION_DEFAULT = "0.3"
 )
 
 type SeldonRestApi struct {
@@ -134,19 +126,25 @@ func (r *SeldonRestApi) Initialise() {
 		cloudeventHeaderMiddleware := CloudeventHeaderMiddleware{deploymentName: r.DeploymentName, namespace: r.Namespace}
 		r.Router.Use(puidHeader)
 		r.Router.Use(cloudeventHeaderMiddleware.Middleware)
+		r.Router.Use(xssMiddleware)
+
 		switch r.Protocol {
 		case api.ProtocolSeldon:
 			//v0.1 API
 			api01 := r.Router.PathPrefix("/api/v0.1").Methods("POST").Subrouter()
 			api01.Handle("/predictions", r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions))
+			api01.Handle("/feedback", r.wrapMetrics(metric.FeedbackHttpServiceName, r.feedback))
 			r.Router.NewRoute().Path("/api/v0.1/status/{" + payload.ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
+			r.Router.NewRoute().Path("/api/v0.1/metadata").Methods("GET").HandlerFunc(r.wrapMetrics(metric.MetadataHttpServiceName, r.graphMetadata))
 			r.Router.NewRoute().Path("/api/v0.1/metadata/{" + payload.ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.metadata))
 			r.Router.NewRoute().PathPrefix("/api/v0.1/doc/").Handler(http.StripPrefix("/api/v0.1/doc/", http.FileServer(http.Dir("./openapi/"))))
 			//v1.0 API
-			api1 := r.Router.PathPrefix("/api/v1.0").Methods("POST").Subrouter()
-			api1.Handle("/predictions", r.wrapMetrics(metric.PredictionServiceMetricName, r.predictions))
+			api10 := r.Router.PathPrefix("/api/v1.0").Methods("POST").Subrouter()
+			api10.Handle("/predictions", r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions))
+			api10.Handle("/feedback", r.wrapMetrics(metric.FeedbackHttpServiceName, r.feedback))
 			r.Router.NewRoute().Path("/api/v1.0/status/{" + payload.ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
-			r.Router.NewRoute().Path("/api/v1.0/metadata/{" + payload.ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.metadata))
+			r.Router.NewRoute().Path("/api/v1.0/metadata").Methods("GET").HandlerFunc(r.wrapMetrics(metric.MetadataHttpServiceName, r.graphMetadata))
+			r.Router.NewRoute().Path("/api/v1.0/metadata/{" + payload.ModelHttpPathVariable + "}").Methods("GET").HandlerFunc(r.wrapMetrics(metric.MetadataHttpServiceName, r.metadata))
 			r.Router.NewRoute().PathPrefix("/api/v1.0/doc/").Handler(http.StripPrefix("/api/v1.0/doc/", http.FileServer(http.Dir("./openapi/"))))
 
 		case api.ProtocolTensorflow:
@@ -156,42 +154,6 @@ func (r *SeldonRestApi) Initialise() {
 			r.Router.NewRoute().Path("/v1/models/{" + payload.ModelHttpPathVariable + "}/metadata").Methods("GET").HandlerFunc(r.wrapMetrics(metric.MetadataHttpServiceName, r.metadata))
 		}
 	}
-}
-
-type CloudeventHeaderMiddleware struct {
-	deploymentName string
-	namespace      string
-}
-
-func (h *CloudeventHeaderMiddleware) Middleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Checking if request is cloudevent based on specname being present
-		if _, ok := r.Header[CLOUDEVENTS_HEADER_SPECVERSION_NAME]; ok {
-			puid := r.Header.Get(payload.SeldonPUIDHeader)
-			w.Header().Set(CLOUDEVENTS_HEADER_ID_NAME, puid)
-			w.Header().Set(CLOUDEVENTS_HEADER_SPECVERSION_NAME, CLOUDEVENTS_HEADER_SPECVERSION_DEFAULT)
-			w.Header().Set(CLOUDEVENTS_HEADER_PATH_NAME, r.URL.Path)
-			w.Header().Set(CLOUDEVENTS_HEADER_TYPE_NAME, "seldon."+h.deploymentName+"."+h.namespace+".response")
-			w.Header().Set(CLOUDEVENTS_HEADER_SOURCE_NAME, "seldon."+h.deploymentName)
-		}
-
-		next.ServeHTTP(w, r)
-	})
-}
-
-func puidHeader(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		puid := r.Header.Get(payload.SeldonPUIDHeader)
-		if len(puid) == 0 {
-			puid = guuid.New().String()
-			r.Header.Set(payload.SeldonPUIDHeader, puid)
-		}
-		if res_puid := w.Header().Get(payload.SeldonPUIDHeader); len(res_puid) == 0 {
-			w.Header().Set(payload.SeldonPUIDHeader, puid)
-		}
-
-		next.ServeHTTP(w, r)
-	})
 }
 
 func (r *SeldonRestApi) checkReady(w http.ResponseWriter, req *http.Request) {
@@ -260,6 +222,37 @@ func (r *SeldonRestApi) status(w http.ResponseWriter, req *http.Request) {
 	r.respondWithSuccess(w, http.StatusOK, resPayload)
 }
 
+func (r *SeldonRestApi) feedback(w http.ResponseWriter, req *http.Request) {
+	ctx := req.Context()
+
+	// Apply tracing if active
+	if opentracing.IsGlobalTracerRegistered() {
+		var serverSpan opentracing.Span
+		ctx, serverSpan = setupTracing(ctx, req, TracingStatusName)
+		defer serverSpan.Finish()
+	}
+
+	bodyBytes, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		r.respondWithError(w, nil, err)
+		return
+	}
+
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header)
+	reqPayload, err := seldonPredictorProcess.Client.Unmarshall(bodyBytes)
+	if err != nil {
+		r.respondWithError(w, nil, err)
+		return
+	}
+
+	resPayload, err := seldonPredictorProcess.Feedback(r.predictor.Graph, reqPayload)
+	if err != nil {
+		r.respondWithError(w, resPayload, err)
+		return
+	}
+	r.respondWithSuccess(w, http.StatusOK, resPayload)
+}
+
 func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 	r.Log.Info("Predictions called")
 
@@ -309,4 +302,32 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	r.respondWithSuccess(w, http.StatusOK, resPayload)
+}
+
+func (r *SeldonRestApi) graphMetadata(w http.ResponseWriter, req *http.Request) {
+	r.Log.Info("Graph Metadata called.")
+
+	ctx := req.Context()
+
+	r.Log.Info("Tracing:", opentracing.IsGlobalTracerRegistered())
+	// Apply tracing if active
+	if opentracing.IsGlobalTracerRegistered() {
+		var serverSpan opentracing.Span
+		ctx, serverSpan = setupTracing(ctx, req, TracingMetadataName)
+		defer serverSpan.Finish()
+	}
+
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header)
+
+	output, err := predictor.NewGraphMetadata(&seldonPredictorProcess, r.predictor)
+
+	if err != nil {
+		r.respondWithError(w, nil, err)
+		return
+	}
+
+	msg, _ := json.Marshal(output)
+	resPayload := payload.BytesPayload{Msg: msg, ContentType: ContentTypeJSON}
+
+	r.respondWithSuccess(w, http.StatusOK, &resPayload)
 }

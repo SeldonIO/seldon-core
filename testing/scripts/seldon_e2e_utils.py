@@ -1,3 +1,4 @@
+import os
 import requests
 import re
 import grpc
@@ -17,6 +18,9 @@ from seldon_core.proto import prediction_pb2_grpc
 
 API_AMBASSADOR = "localhost:8003"
 API_ISTIO_GATEWAY = "localhost:8004"
+
+TESTING_ROOT_PATH = os.path.dirname(os.path.dirname(__file__))
+RESOURCES_PATH = os.path.join(TESTING_ROOT_PATH, "resources")
 
 
 def get_seldon_version():
@@ -99,7 +103,7 @@ def get_deployment_names(sdep_name, namespace, attempts=20, sleep=5):
 
 
 def wait_for_rollout(
-    sdep_name, namespace, attempts=20, sleep=5, expected_deployments=1
+    sdep_name, namespace, attempts=30, sleep=5, expected_deployments=1
 ):
     deployment_names = []
     for _ in range(attempts):
@@ -339,6 +343,8 @@ def rest_request_ambassador(
 
     if dtype == "tensor":
         payload = {"data": {"tensor": {"shape": shape, "values": arr.tolist()}}}
+    elif dtype == "strData":
+        payload = {"strData": arr}
     else:
         payload = {"data": {"ndarray": arr}}
 
@@ -564,3 +570,7 @@ def assert_model(sdep_name, namespace, initial=False, endpoint=API_AMBASSADOR):
         shell=True,
     )
     assert ret.returncode == 0
+
+
+def to_resources_path(file_name):
+    return os.path.join(RESOURCES_PATH, file_name)

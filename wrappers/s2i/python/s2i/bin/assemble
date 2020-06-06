@@ -69,3 +69,10 @@ elif [[ -f environment.yml ]]; then
     fi
     conda env create --name $CONDA_ENV_NAME --file environment.yml
 fi
+
+
+# Add licences
+pip install pip-licenses
+mkdir ./licenses && pip-licenses --from=mixed --format=csv --output-file=./licenses/license_info.csv && \
+    pip-licenses --from=mixed --format=plain-vertical --with-license-file --no-license-path --output-file=./licenses/license.txt
+mv ./licenses /licenses

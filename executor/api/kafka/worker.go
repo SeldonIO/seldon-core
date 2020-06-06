@@ -3,6 +3,8 @@ package kafka
 import (
 	"context"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/predictor"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
@@ -29,6 +31,14 @@ func (ks *SeldonKafkaServer) processKafkaRequest(job *KafkaJob) {
 	ctx := context.Background()
 	// Add Seldon Puid to Context
 	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, job.headers[payload.SeldonPUIDHeader][0])
+
+	// Apply tracing if active
+	if opentracing.IsGlobalTracerRegistered() {
+		tracer := opentracing.GlobalTracer()
+		serverSpan := tracer.StartSpan("kafkaServer", ext.RPCServerOption(nil))
+		ctx = opentracing.ContextWithSpan(ctx, serverSpan)
+		defer serverSpan.Finish()
+	}
 
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, ks.Client, logf.Log.WithName("KafkaClient"), ks.ServerUrl, ks.Namespace, job.headers)
 

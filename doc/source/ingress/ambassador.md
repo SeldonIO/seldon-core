@@ -37,8 +37,8 @@ curl -v 0.0.0.0:8003/seldon/mymodel/api/v1.0/predictions -d '{"data":{"names":["
 |`seldon.io/ambassador-retries:<number of retries>` | The number of times ambassador will retry request on connect-failure. Default 0. Use custom configuration if more control needed.|
 |`seldon.io/ambassador-service-name:<existing_deployment_name>`| The name of the existing Seldon Deployment for shadow or header based routing |
 |`seldon.io/ambassador-shadow:true` | Activate shadowing for this deployment |
-|`seldon.io/grpc-read-timeout: <gRPC read timeout (msecs)>` | gRPC read timeout |
-|`seldon.io/rest-read-timeout:<REST read timeout (msecs)>` | REST read timeout |
+|`seldon.io/grpc-timeout: <gRPC read timeout (msecs)>` | gRPC read timeout |
+|`seldon.io/rest-timeout:<REST read timeout (msecs)>` | REST read timeout |
 |`seldon.io/ambassador-circuit-breakers-max-connections:<maximum number of connections>` | The maximum number of connections will make to the Seldon Deployment |
 |`seldon.io/ambassador-circuit-breakers-max-pending-requests:<maximum number of queued requests>` | The maximum number of requests that will be queued while waiting for a connection |
 |`seldon.io/ambassador-circuit-breakers-max-requests:<maximum number of parallel outstanding requests>` | The maximum number of parallel outstanding requests to the Seldon Deployment |
@@ -162,7 +162,7 @@ spec:
 
 Note that your Ambassador instance must be configured with matching `ambassador_id`.
 
-See [AMBASSADOR_ID](https://github.com/datawire/ambassador/blob/master/docs/reference/running.md#ambassador_id) for details
+See [AMBASSADOR_ID](https://www.getambassador.io/docs/latest/topics/running/running/#ambassador_id) for details
 
 ### Custom Amabassador configuration
 

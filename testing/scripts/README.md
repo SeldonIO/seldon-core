@@ -14,7 +14,11 @@ We use:
 
 [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) v1.16.2
 
-Install `python -m pip install grpcio-tools`.
+[Pytest](https://docs.pytest.org/en/latest/getting-started.html#install-pytest)
+`pip install -U pytest`
+
+[gRPC.io Tools](https://grpc.io/docs/quickstart/python/#grpc-tools)
+`python -m pip install grpcio-tools`
 
 ### Setup
 
@@ -42,6 +46,11 @@ make test_parallel > test_parallel.log
 ```
 ```
 make test_notebooks > test_notebooks.log
+```
+
+To run a single test:
+```
+pytest -sv test_tags.py::TestTagsPythonS2iK8s::test_model_single_grpc > test_model_single_grpc.log
 ```
 
 ### Logs

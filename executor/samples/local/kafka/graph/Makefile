@@ -7,10 +7,10 @@ docker_run_executor_rest:
 
 
 run_executor_rest:
-	${BASE}/executor --sdep seldon-model --namespace default --predictor example --file ./model_single.yaml --http_port 8000 --server_type kafka --kafka_broker 172.17.0.2:${KAFKA_PORT} -transport rest --kafka_input_topic testin --kafka_output_topic testout 
+	${BASE}/executor --sdep seldon-model --namespace default --predictor example --file ./model_single.yaml --port 8000 --server_type kafka --kafka_broker 172.17.0.2:${KAFKA_PORT} -transport rest --kafka_input_topic testin --kafka_output_topic testout 
 
 run_executor_rest_graph:
-	${BASE}/executor --sdep seldon-model --namespace default --predictor example --file ./model_single.yaml --http_port 8000 --server_type kafka --kafka_broker 172.17.0.2:${KAFKA_PORT} -transport rest --kafka_input_topic testin --kafka_output_topic testout --kafka_full_graph
+	${BASE}/executor --sdep seldon-model --namespace default --predictor example --file ./model_single.yaml --port 8000 --server_type kafka --kafka_broker 172.17.0.2:${KAFKA_PORT} -transport rest --kafka_input_topic testin --kafka_output_topic testout --kafka_full_graph
 
 
 run_proxy:
