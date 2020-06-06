@@ -32,6 +32,7 @@ def start_multithreaded_batch_worker(
     method: str,
     log_level: str,
     benchmark: bool,
+    batch_id: str,
 ) -> None:
     """
     Starts the multithreaded batch worker which consists of three worker types and
@@ -65,7 +66,7 @@ def start_multithreaded_batch_worker(
     for _ in range(workers):
         Thread(
             target=_start_request_worker,
-            args=(q_in, q_out, data_type, sc, retries),
+            args=(q_in, q_out, data_type, sc, retries, batch_id),
             daemon=True,
         ).start()
 
@@ -121,7 +122,12 @@ def _start_output_file_worker(q_out: Queue, output_data_path: str) -> None:
 
 
 def _start_request_worker(
-    q_in: Queue, q_out: Queue, data_type: str, sc: SeldonClient, retries: int
+    q_in: Queue,
+    q_out: Queue,
+    data_type: str,
+    sc: SeldonClient,
+    retries: int,
+    batch_id: str,
 ) -> None:
     """
     Runs logic for the worker that sends requests from the queue until the queue
@@ -140,11 +146,13 @@ def _start_request_worker(
         An initialised Seldon Client configured to send the requests to
     retries
         The number of attempts to try for each request
+    batch_id
+        The unique identifier for the batch which is passed to all requests
     """
     while True:
-        batch_idx, batch_uid, input_raw = q_in.get()
+        batch_idx, batch_instance_id, input_raw = q_in.get()
         str_output = _send_batch_predict(
-            batch_idx, batch_uid, input_raw, data_type, sc, retries
+            batch_idx, batch_instance_id, input_raw, data_type, sc, retries, batch_id
         )
         # Mark task as done in the queue to add space for new tasks
         q_out.put(str_output)
@@ -153,11 +161,12 @@ def _start_request_worker(
 
 def _send_batch_predict(
     batch_idx: int,
-    batch_uid: int,
+    batch_instance_id: int,
     input_raw: str,
     data_type: str,
     sc: SeldonClient,
     retries: int,
+    batch_id: str,
 ) -> str:
     """
     Send an request using the Seldon Client with batch context including the
@@ -171,7 +180,7 @@ def _send_batch_predict(
     ---
     batch_idx
         The enumerated index given to the batch datapoint in order of local dataset
-    batch_uid
+    batch_instance_id
         The unique ID of the batch datapoint created with the python uuid function
     input_raw
         The raw input in string format to be loaded to the respective format
@@ -181,6 +190,8 @@ def _send_batch_predict(
         The instance of SeldonClient to use to send the requests to the seldon model
     retries
         The number of times to retry the request
+    batch_id
+        The unique identifier for the batch which is passed to all requests
 
     Returns
     ---
@@ -188,9 +199,15 @@ def _send_batch_predict(
     """
 
     predict_kwargs = {}
-    meta = {"tags": {"batch_uid": batch_uid, "batch_idx": batch_idx}}
+    meta = {
+        "tags": {
+            "batch_id": batch_id,
+            "batch_instance_id": batch_instance_id,
+            "batch_index": batch_idx,
+        }
+    }
     predict_kwargs["meta"] = meta
-    predict_kwargs["headers"] = {"Seldon-Puid": batch_uid}
+    predict_kwargs["headers"] = {"Seldon-Puid": batch_instance_id}
     try:
         data = json.loads(input_raw)
 
@@ -336,6 +353,14 @@ def _send_batch_predict(
     envvar="SELDON_BATCH_BENCHMARK",
     is_flag=True,
     help="If true the batch processor will print the elapsed time taken to run the process",
+)
+@click.option(
+    "--batch-id",
+    "-u",
+    envvar="SELDON_BATCH_ID",
+    default=str(uuid.uuid1()),
+    type=str,
+    help="Unique batch ID to identify all datapoints processed in this batch, if not provided is auto generated",
 )
 def run_cli(**kwargs):
     start_multithreaded_batch_worker(**kwargs)

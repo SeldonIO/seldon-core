@@ -13,6 +13,7 @@ import time
 import logging
 import json
 import requests
+import uuid
 from seldon_core.batch_processor import start_multithreaded_batch_worker
 
 
@@ -47,6 +48,7 @@ class TestBatchWorker(object):
             "predict",
             "debug",
             True,
+            str(uuid.uuid1()),
         )
 
         with open(output_data_path, "r") as f:
