@@ -2,6 +2,8 @@
 
 Seldon Core provides a command line component that allows for highly parallelizable batch processing with the horizontally scalable seldon core kubernetes model deployments.
 
+For stream processing with Seldon Core please see [Stream Processing with KNative Eventing](../streaming/knative_eventing.md).
+
 ![](../images/batch-processor.jpg)
 
 ## Horizontally Scalable Workers and Replicas
