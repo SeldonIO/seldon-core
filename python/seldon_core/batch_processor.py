@@ -362,5 +362,48 @@ def _send_batch_predict(
     type=str,
     help="Unique batch ID to identify all datapoints processed in this batch, if not provided is auto generated",
 )
-def run_cli(**kwargs):
-    start_multithreaded_batch_worker(**kwargs)
+def run_cli(
+    deployment_name: str,
+    gateway_type: str,
+    namespace: str,
+    host: str,
+    transport: str,
+    data_type: str,
+    payload_type: str,
+    workers: int,
+    retries: int,
+    input_data_path: str,
+    output_data_path: str,
+    method: str,
+    log_level: str,
+    benchmark: bool,
+    batch_id: str,
+):
+    """
+    Command line interface for Seldon Batch Processor, which can be used to send requests
+    through configurable parallel workers to Seldon Core models. It is recommended that the
+    respective Seldon Core model is also optimized with number of replicas to distribute
+    and scale out the batch processing work. The processor is able to process data from local
+    filestore input file in various formats supported by the SeldonClient module. It is also
+    suggested to use the batch processor component integrated with an ETL Workflow Manager
+    such as Kubeflow, Argo Pipelines, Airflow, etc. which would allow for extra setup / teardown
+    steps such as downloading the data from object store or starting a seldon core model with replicas.
+    See the Seldon Core examples folder for implementations of this batch module with Seldon Core.
+    """
+    start_multithreaded_batch_worker(
+        deployment_name,
+        gateway_type,
+        namespace,
+        host,
+        transport,
+        data_type,
+        payload_type,
+        workers,
+        retries,
+        input_data_path,
+        output_data_path,
+        method,
+        log_level,
+        benchmark,
+        batch_id,
+    )
