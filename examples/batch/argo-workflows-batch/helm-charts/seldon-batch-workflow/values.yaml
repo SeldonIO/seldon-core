@@ -40,7 +40,7 @@ batchWorker:
   enableBenchmark: true
 minio:
   # The location of the minio endpoint 
-  endpoint: http://minio.default.svc.cluster.local:9000
+  endpoint: http://minio.minio-system.svc.cluster.local:9000
   # This is the secret that should contain the values to access minio
   secret:
     # The name of the secret which by default is "minio" but you can create a different one
