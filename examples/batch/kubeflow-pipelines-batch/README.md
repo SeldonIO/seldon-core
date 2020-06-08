@@ -1,4 +1,4 @@
-# Batch processing with Kubeflow Pipelines
+## Batch processing with Kubeflow Pipelines
 In this notebook we will dive into how you can run batch processing with Kubeflow Pipelines and Seldon Core.
 
 Dependencies:
@@ -273,3 +273,8 @@ And we can open it locally in our browser via [http://localhost:8000](http://loc
 Now we can follow the standard steps to create and deploy the kubeflow pipline
 
 ![](assets/seldon-kubeflow-batch.gif)
+
+
+```python
+
+```
