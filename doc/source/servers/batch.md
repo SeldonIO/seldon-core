@@ -8,7 +8,7 @@ For stream processing with Seldon Core please see [Stream Processing with KNativ
 
 ## Horizontally Scalable Workers and Replicas
 
-The parallelizable batch processor worker allows for high throughput as it is able to leverage the Seldon Core horizontal scaling replicas as well as autoscaling, and hence providing flexibility to the user to optimize configuration as required. 
+The parallelizable batch processor worker allows for high throughput as it is able to leverage the Seldon Core horizontal scaling replicas as well as autoscaling, and hence providing flexibility to the user to optimize their configuration as required. 
 
 The diagram below shows a standard workflow where data can be downloaded and then uploaded through an object store, and the Seldon model can be created and deleted when the job finishes successfully.
 
@@ -18,7 +18,7 @@ The diagram below shows a standard workflow where data can be downloaded and the
 
 The Seldon Batch component has been built to be modular and flexible such that it can be integrated across any workflow managers.
 
-This allows you to leverage Seldon on a large number of batch applications, including triggers that have to take place on a schedule basis (e.g. once a day, once a month, etc), or jobs that can be triggered programmatically.
+This allows you to leverage Seldon on a large number of batch applications, including triggers that have to take place on a scheduled basis (e.g. once a day, once a month, etc), or jobs that can be triggered programmatically.
 
 ![](../images/batch-workflow-managers.jpg)
 
@@ -143,7 +143,7 @@ This allows the requests to be identified and matched against the initial reques
 
 The implementation of the module is done leveraging Python's Threading system. 
 
-Benchmarking was carried out using vanilla Python requests module to assess performance of Threading vs Twisted vs AsyncIO. The results showed better performance with Asyncio, however given that the logic in the worker is quite minimal (ie sending a request) and most of the time is waiting for the request, the implementation with Python's native threading was able to perform at speeds that were efficient enough to very easily scale to thousands of workers.
+Benchmarking was carried out using vanilla Python requests module to assess performance of Threading vs Twisted vs AsyncIO. The results showed better performance with Asyncio, however given that the logic in the worker is quite minimal (ie sending a request) and most of the time is waiting for the response, the implementation with Python's native threading was able to perform at speeds that were efficient enough to very easily scale to thousands of workers.
 
 However currently the implementation uses the Seldon Client which does not leverage quite a few optimization requirements to increase the performance of processing, such as re-using a requests.py session. However even without these optimisations the worker will still reach a highly concurrent performance, and these optimizations will be introduced as adoption of this component (and feedback) grows.
 
