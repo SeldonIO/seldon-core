@@ -21,11 +21,21 @@ Use the notebook to [set-up Minio in your cluster](https://docs.seldon.io/projec
 
 We need to re-use the minio secret for the batch job, so this can be done by just copying the minio secret created in the `minio-system`
 
-The command below just copies the secred with th e name "minio" from the minio-system namespace to the default namespace.
+The command below just copies the secred with the name "minio" from the minio-system namespace to the default namespace.
 
 
 ```python
 !kubectl get secret minio -n minio-system -o json | jq '{apiVersion,data,kind,metadata,type} | .metadata |= {"annotations", "name"}' | kubectl apply -n default -f -
+```
+
+### Install Argo Workflows
+You can follow the instructions from the official [Argo Workflows Documentation](https://github.com/argoproj/argo/blob/master/docs/getting-started.md#1-download-the-argo-cli).
+
+You also need to make sure that argo has permissions to create seldon deployments - for this you can just create a default-admin rolebinding as follows:
+
+
+```python
+!kubectl create rolebinding default-admin --clusterrole=admin --serviceaccount=default:default
 ```
 
 ## Create some input for our model
