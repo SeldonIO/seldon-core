@@ -34,6 +34,11 @@ We will create a file that will contain the inputs that will be sent to our mode
 
 
 ```python
+mkdir -p assets/
+```
+
+
+```python
 with open("assets/input-data.txt", "w") as f:
     for i in range(10000):
         f.write('[[1, 2, 3, 4]]\n')
@@ -192,9 +197,21 @@ Now we can output the contents of the file created using the `mc head` command.
 
 
 ```python
-!mc cp minio-local/data/output-data-"$WF_ID".txt assets/output-data.txt
+!mc cp minio-seldon/data/output-data-"$WF_ID".txt assets/output-data.txt
 !head assets/output-data.txt
 ```
+
+    ...3b744.txt:  2.75 MiB / 2.75 MiB ┃▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓┃ 24.68 MiB/s 0s[0m[0m[m[32;1m{"data": {"names": ["t:0", "t:1", "t:2"], "ndarray": [[0.0006985194531162841, 0.003668039039435755, 0.9956334415074478]]}, "meta": {"tags": {"tags": {"batch_id": "03403156-a977-11ea-88f0-ea5c4746b555", "batch_index": 2.0, "batch_instance_id": "0340bbe4-a977-11ea-9ca4-ea5c4746b555"}}}}
+    {"data": {"names": ["t:0", "t:1", "t:2"], "ndarray": [[0.0006985194531162841, 0.003668039039435755, 0.9956334415074478]]}, "meta": {"tags": {"tags": {"batch_id": "03403156-a977-11ea-88f0-ea5c4746b555", "batch_index": 6.0, "batch_instance_id": "03411da0-a977-11ea-9ca4-ea5c4746b555"}}}}
+    {"data": {"names": ["t:0", "t:1", "t:2"], "ndarray": [[0.0006985194531162841, 0.003668039039435755, 0.9956334415074478]]}, "meta": {"tags": {"tags": {"batch_id": "03403156-a977-11ea-88f0-ea5c4746b555", "batch_index": 9.0, "batch_instance_id": "03415234-a977-11ea-9ca4-ea5c4746b555"}}}}
+    {"data": {"names": ["t:0", "t:1", "t:2"], "ndarray": [[0.0006985194531162841, 0.003668039039435755, 0.9956334415074478]]}, "meta": {"tags": {"tags": {"batch_id": "03403156-a977-11ea-88f0-ea5c4746b555", "batch_index": 3.0, "batch_instance_id": "03410f72-a977-11ea-9ca4-ea5c4746b555"}}}}
+    {"data": {"names": ["t:0", "t:1", "t:2"], "ndarray": [[0.0006985194531162841, 0.003668039039435755, 0.9956334415074478]]}, "meta": {"tags": {"tags": {"batch_id": "03403156-a977-11ea-88f0-ea5c4746b555", "batch_index": 1.0, "batch_instance_id": "0340b8ce-a977-11ea-9ca4-ea5c4746b555"}}}}
+    {"data": {"names": ["t:0", "t:1", "t:2"], "ndarray": [[0.0006985194531162841, 0.003668039039435755, 0.9956334415074478]]}, "meta": {"tags": {"tags": {"batch_id": "03403156-a977-11ea-88f0-ea5c4746b555", "batch_index": 0.0, "batch_instance_id": "0340b432-a977-11ea-9ca4-ea5c4746b555"}}}}
+    {"data": {"names": ["t:0", "t:1", "t:2"], "ndarray": [[0.0006985194531162841, 0.003668039039435755, 0.9956334415074478]]}, "meta": {"tags": {"tags": {"batch_id": "03403156-a977-11ea-88f0-ea5c4746b555", "batch_index": 8.0, "batch_instance_id": "034123b8-a977-11ea-9ca4-ea5c4746b555"}}}}
+    {"data": {"names": ["t:0", "t:1", "t:2"], "ndarray": [[0.0006985194531162841, 0.003668039039435755, 0.9956334415074478]]}, "meta": {"tags": {"tags": {"batch_id": "03403156-a977-11ea-88f0-ea5c4746b555", "batch_index": 7.0, "batch_instance_id": "0341208e-a977-11ea-9ca4-ea5c4746b555"}}}}
+    {"data": {"names": ["t:0", "t:1", "t:2"], "ndarray": [[0.0006985194531162841, 0.003668039039435755, 0.9956334415074478]]}, "meta": {"tags": {"tags": {"batch_id": "03403156-a977-11ea-88f0-ea5c4746b555", "batch_index": 5.0, "batch_instance_id": "03411a9e-a977-11ea-9ca4-ea5c4746b555"}}}}
+    {"data": {"names": ["t:0", "t:1", "t:2"], "ndarray": [[0.0006985194531162841, 0.003668039039435755, 0.9956334415074478]]}, "meta": {"tags": {"tags": {"batch_id": "03403156-a977-11ea-88f0-ea5c4746b555", "batch_index": 4.0, "batch_instance_id": "03411288-a977-11ea-9ca4-ea5c4746b555"}}}}
+
 
 
 ```python
