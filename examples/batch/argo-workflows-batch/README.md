@@ -14,7 +14,7 @@ Dependencies:
 ### Install Seldon Core
 Use the notebook to [set-up Seldon Core with Ambassador or Istio Ingress](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html).
 
-Note: This example won't work in KIND (Kubernetes in Docker) due to a known requirement from Argo which mounts the docker socket: https://github.com/argoproj/argo/issues/826
+Note: If running with KIND you need to make sure do follow [these steps](https://github.com/argoproj/argo/issues/2376#issuecomment-595593237) as workaround to the `/.../docker.sock` known issue.
 
 ### Set up Minio in your cluster
 Use the notebook to [set-up Minio in your cluster](https://docs.seldon.io/projects/seldon-core/en/latest/examples/minio_setup.html).
@@ -149,7 +149,7 @@ We will run a batch job that will set up a Seldon Deployment with 10 replicas an
 
 
 ```python
-!argo logs -w seldon-batch-process 
+!argo logs -w seldon-batch-process || argo logs seldon-batch-process # The 2nd command is for argo 2.8+
 ```
 
     [35mcreate-seldon-resource[0m:	time="2020-06-08T10:57:58Z" level=info msg="Starting Workflow Executor" version=v2.8.0-rc4+8f69617.dirty
