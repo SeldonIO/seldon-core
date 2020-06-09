@@ -2,12 +2,13 @@ package metric
 
 import (
 	"context"
+	"strings"
+	"time"
+
 	"github.com/prometheus/client_golang/prometheus"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
-	"strings"
-	"time"
 )
 
 type ClientMetrics struct {
@@ -18,6 +19,8 @@ type ClientMetrics struct {
 	ImageName              string
 	ImageVersion           string
 }
+
+var RecreateClientHistogram = false
 
 func NewClientMetrics(spec *v1.PredictorSpec, deploymentName string, modelName string) *ClientMetrics {
 	histogram := prometheus.NewHistogramVec(
@@ -31,8 +34,16 @@ func NewClientMetrics(spec *v1.PredictorSpec, deploymentName string, modelName s
 
 	err := prometheus.Register(histogram)
 	if err != nil {
-		prometheus.Unregister(histogram)
-		prometheus.Register(histogram)
+		if e, ok := err.(prometheus.AlreadyRegisteredError); ok {
+			if RecreateClientHistogram {
+				prometheus.Unregister(e.ExistingCollector)
+				prometheus.Register(histogram)
+			} else {
+				histogram = e.ExistingCollector.(*prometheus.HistogramVec)
+			}
+
+		}
+
 	}
 	container := v1.GetContainerForPredictiveUnit(spec, modelName)
 	imageName := ""
