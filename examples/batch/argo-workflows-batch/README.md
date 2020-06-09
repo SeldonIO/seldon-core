@@ -14,6 +14,8 @@ Dependencies:
 ### Install Seldon Core
 Use the notebook to [set-up Seldon Core with Ambassador or Istio Ingress](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html).
 
+Note: This example won't work in KIND (Kubernetes in Docker) due to a known requirement from Argo which mounts the docker socket: https://github.com/argoproj/argo/issues/826
+
 ### Set up Minio in your cluster
 Use the notebook to [set-up Minio in your cluster](https://docs.seldon.io/projects/seldon-core/en/latest/examples/minio_setup.html).
 
