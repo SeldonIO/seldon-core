@@ -2,12 +2,15 @@ package metric
 
 import (
 	"context"
+	"time"
+
 	"github.com/prometheus/client_golang/prometheus"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
-	"time"
 )
+
+var RecreateServerHistogram = false
 
 type ServerMetrics struct {
 	ServerHandledHistogram *prometheus.HistogramVec
@@ -26,8 +29,16 @@ func NewServerMetrics(spec *v1.PredictorSpec, deploymentName string) *ServerMetr
 	)
 	err := prometheus.Register(histogram)
 	if err != nil {
-		prometheus.Unregister(histogram)
-		prometheus.Register(histogram)
+		if e, ok := err.(prometheus.AlreadyRegisteredError); ok {
+			if RecreateServerHistogram {
+				prometheus.Unregister(e.ExistingCollector)
+				prometheus.Register(histogram)
+			} else {
+				histogram = e.ExistingCollector.(*prometheus.HistogramVec)
+			}
+
+		}
+
 	}
 	return &ServerMetrics{
 		ServerHandledHistogram: histogram,

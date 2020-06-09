@@ -22,6 +22,6 @@ run_dummy_grpc_model:
 	cd ${BASE}/../examples/models/mean_classifier && make run_grpc_local 
 
 grpc_test:
-	cd ${BASE}/proto && grpcurl -d '{"data":{"ndarray":[[1.0,2.0]]}}' -plaintext -proto ./prediction.proto  0.0.0.0:5000 seldon.protos.Seldon/Predict
+	cd ${BASE}/proto && grpcurl -d '{"data":{"ndarray":[[1.0,2.0]]}}' -plaintext -proto ./prediction.proto  0.0.0.0:8000 seldon.protos.Seldon/Predict
 
 
