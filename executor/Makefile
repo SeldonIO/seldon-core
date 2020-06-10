@@ -72,7 +72,7 @@ docker-build: test copy_openapi_resources
 
 # Build the docker image for Redhat
 docker-build-redhat: #test copy_openapi_resources
-	docker build . -f Dockerfile.redhat -t ${IMG_REDHAT}
+	docker build . -f Dockerfile.executor.redhat -t ${IMG_REDHAT}
 
 # Push the docker image
 docker-push:
