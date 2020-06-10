@@ -11,22 +11,26 @@ COPY proto/ proto/
 RUN go mod download
 
 # Copy the go source
-COPY main.go main.go
+COPY cmd/ cmd/
 COPY api/ api/
 COPY predictor/ predictor/
 COPY logger/ logger/
 COPY k8s/ k8s/
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o executor main.go
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o executor cmd/executor/main.go
 
-FROM registry.access.redhat.com/ubi8/ubi-minimal
+FROM registry.access.redhat.com/ubi7/ubi
 LABEL name="Seldon Executor" \
       vendor="Seldon Technologies" \
       version="1.1.1-rc" \
       release="1" \
       summary="The service orchestrator for Seldon Core" \
       description="The service orchestrator for Seldon Core which manages the request/response flow through the Seldon Core inference graphs deployed via the Seldon Core Operator as SeldonDeployments custom resources"
+
+RUN rpm --import https://packages.confluent.io/rpm/5.5/archive.key
+COPY confluent.repo /etc/yum.repos.d/
+RUN yum clean all && yum install -y librdkafka-devel
 
 WORKDIR /
 COPY --from=builder /workspace/executor .

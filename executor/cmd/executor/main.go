@@ -41,7 +41,7 @@ var (
 	port           = flag.Int("port", 8080, "Executor port")
 	wait           = flag.Duration("graceful_timeout", time.Second*15, "Graceful shutdown secs")
 	protocol       = flag.String("protocol", "seldon", "The payload protocol")
-	transport      = flag.String("transport", "rest", "The network transport machanism rest, grpc")
+	transport      = flag.String("transport", "rest", "The network transport mechanism rest, grpc")
 	filename       = flag.String("file", "", "Load graph from file")
 	hostname       = flag.String("hostname", "", "The hostname of the running server")
 	logWorkers     = flag.Int("logger_workers", 5, "Number of workers handling payload logging")

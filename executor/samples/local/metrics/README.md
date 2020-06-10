@@ -84,7 +84,7 @@ make grpc_test
 Check the metrics endpoint:
 
 ```
-make curl_matrics
+make curl_metrics
 ```
 
 You should see metrics including:

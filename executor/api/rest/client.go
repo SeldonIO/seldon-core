@@ -274,11 +274,6 @@ func (smc *JSONRestClient) Route(ctx context.Context, modelName string, host str
 	}
 }
 
-func isJSON(data []byte) bool {
-	var js json.RawMessage
-	return json.Unmarshal(data, &js) == nil
-}
-
 func (smc *JSONRestClient) Combine(ctx context.Context, modelName string, host string, port int32, msgs []payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	req, err := CombineSeldonMessagesToJson(msgs)
 	if err != nil {

@@ -422,7 +422,7 @@ func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 
 	if r.ServerType != "" && !(r.ServerType == ServerRPC || r.ServerType == ServerKafka) {
 		fldPath := field.NewPath("spec")
-		allErrs = append(allErrs, field.Invalid(fldPath, r.ServerType, "Invalid server_type"))
+		allErrs = append(allErrs, field.Invalid(fldPath, r.ServerType, "Invalid serverType"))
 	}
 
 	allErrs = r.validateKafka(allErrs)

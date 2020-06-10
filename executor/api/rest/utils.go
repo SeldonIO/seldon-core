@@ -168,3 +168,8 @@ func EmbedSeldonDeploymentValuesInSwaggerFile(namespace string, sdepName string)
 
 	return nil
 }
+
+func isJSON(data []byte) bool {
+	var js json.RawMessage
+	return json.Unmarshal(data, &js) == nil
+}

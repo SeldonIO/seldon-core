@@ -140,3 +140,14 @@ func TestEmbedSeldonDeploymentValuesToSwaggerFile(t *testing.T) {
 	g.Expect(unmarshallErr).To(BeNil())
 	g.Expect(embedErr).ToNot(BeNil())
 }
+
+func TestIsJson(t *testing.T) {
+	g := NewGomegaWithT(t)
+	badJson := "ab"
+	res := isJSON([]byte(badJson))
+	g.Expect(res).To(Equal(false))
+
+	goodJson := "{\"foo\":\"bar\"}"
+	res = isJSON([]byte(goodJson))
+	g.Expect(res).To(Equal(true))
+}

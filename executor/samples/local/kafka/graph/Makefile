@@ -1,9 +1,11 @@
 BASE=../../../..
 KAFKA_BIN=../kafka_2.12-2.5.0/bin
 KAFKA_PORT := $(shell kubectl get service my-cluster-kafka-external-bootstrap -n default -o=jsonpath='{.spec.ports[0].nodePort}{"\n"}')
+VERSION := $(shell cat ../../../../../version.txt)
+EXECUTOR_IMAGE=seldonio/seldon-core-executor-ubi8
 
 docker_run_executor_rest:
-	docker run -it --rm --net=host -v ${PWD}:/models seldonio/seldon-core-executor:1.1.1-SNAPSHOT  --sdep seldon-model --namespace default --predictor example --file /models/model_single.yaml --http_port 8000 --server_type kafka --kafka_broker 172.17.0.2:${KAFKA_PORT} -transport rest --kafka_input_topic testin --kafka_output_topic testout 
+	docker run -it --rm --net=host -v ${PWD}:/models ${EXECUTOR_IMAGE}:${VERSION}  --sdep seldon-model --namespace default --predictor example --file /models/model_single.yaml --port 8000 --server_type kafka --kafka_broker 172.17.0.2:${KAFKA_PORT} -transport rest --kafka_input_topic testin --kafka_output_topic testout 
 
 
 run_executor_rest:
