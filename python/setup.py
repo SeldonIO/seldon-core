@@ -26,6 +26,7 @@ setup(
     python_requires=">=3.6",
     install_requires=[
         "Flask<2.0.0",
+        "jsonschema<4.0.0",
         "Flask-cors<4.0.0",
         "redis<4.0.0",
         "requests<3.0.0",

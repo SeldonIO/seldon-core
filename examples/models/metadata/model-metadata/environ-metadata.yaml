@@ -8,18 +8,25 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/model-with-metadata-02_rest:0.1
+        - image: seldonio/metadata-generic-node:0.2
           name: my-model
           env:
           - name: SELDON_LOG_LEVEL
             value: DEBUG
           - name: MODEL_METADATA
             value: |
-              {"name": "my-model-name",
-               "versions": ["my-model-version-02"],
-               "platform": "seldon-custom",
-               "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1]}],
-               "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1]}]}
+              ---
+              name: my-model-name
+              versions: [ my-model-version-01 ]
+              platform: seldon-custom
+              inputs:
+              - datatype: BYTES
+                name: input
+                shape: [ 1, 4 ]
+              outputs:
+              - datatype: BYTES
+                name: output
+                shape: [ 3 ]
     graph:
       children: []
       endpoint:

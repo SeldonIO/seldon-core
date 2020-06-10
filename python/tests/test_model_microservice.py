@@ -733,7 +733,7 @@ def test_model_metadata():
     assert rv.status_code == 200
     j = json.loads(rv.data)
     logging.info(j)
-    assert j == UserObject.METADATA_RESPONSE
+    assert j == {"apiVersion": "v2", **UserObject.METADATA_RESPONSE}
 
 
 def test_proto_ok():
