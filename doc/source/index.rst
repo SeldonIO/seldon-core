@@ -64,15 +64,34 @@ Documentation Index
 
 .. toctree::
    :maxdepth: 1
-   :caption: Language Wrappers (Production)
+   :caption: Production
 
-   Python Language Wrapper [Production] <python/index.rst>
+   Supported API Protocols <graph/protocols.md>
+   CI/CD MLOps at Scale <analytics/cicd-mlops.md>
+   Metrics with Prometheus <analytics/analytics.md>
+   Payload Logging with ELK <analytics/logging.md>
+   Distributed Tracing with Jaeger <graph/distributed-tracing.md>
+   Replica Scaling  <graph/scaling.md>
+   Custom Inference Servers <servers/custom.md>
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Batch Processing with Seldon
+
+   Overview of Batch Processing <servers/batch.md>
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Language Wrappers
+
+   Python Language Wrapper <python/index.rst>
 
 .. toctree::
    :maxdepth: 1
    :caption: Incubating Projects
 
-   Java Language Wrapper [Incubating] <java/README.md>
+   Java Language Wrapper <java/README.md>
+   Metadata <reference/apis/metadata.md>
    R Language Wrapper [ALPHA] <R/README.md>
    NodeJS Language Wrapper [ALPHA] <nodejs/README.md>
    Go Language Wrapper [ALPHA] <go/go_wrapper_link.rst>

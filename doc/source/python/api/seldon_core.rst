@@ -24,6 +24,14 @@ seldon\_core.api\_tester module
     :undoc-members:
     :show-inheritance:
 
+seldon\_core.batch\_processor module
+------------------------------------
+
+.. automodule:: seldon_core.batch_processor
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 seldon\_core.flask\_utils module
 --------------------------------
 

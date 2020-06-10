@@ -31,20 +31,14 @@ kubectl create namespace foo
 
 kubectl label namespace foo istio-injection=enabled
 
-kubectl apply -f seldon-gateway.yaml
+kubectl apply -f ../../notebooks/resources/seldon-gateway.yaml
 ```
 
-3. Create a `seldon-system` namespace and install Seldon Core using Helm. Also add gateway location and enable istio by setting the helm values as shown.
-   (Using a custom operator image because of https://github.com/istio/istio/issues/22246)
+3. Create a `seldon-system` namespace and install Seldon Core using Helm.
 
 ```
 kubectl create namespace seldon-system
-helm install seldon-core seldon-core-operator \
-    --repo https://storage.googleapis.com/seldon-charts \
-    --namespace seldon-system \
-    --set istio.enabled=true \
-    --set image.repository="sachinmv31/seldon-core-operator" \
-    --set image.tag="1.1.1-SNAPSHOT"
+helm install seldon-core ../../helm-charts/seldon-core-operator/ --namespace seldon-system --set istio.enabled=true
 ```
 
 4. Deploy an iris model by applying the seldon manifest shown below,
