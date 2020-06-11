@@ -3,20 +3,20 @@
   "apiVersion": "{{ .Values.apiVersion }}",
   "metadata": {
     "name": "{{ .Release.Name }}",
-    "namespace": "{{ .Release.Namespace }}"
-    "labels": [
-      {{- range $label := .Values.labels }}
-        "{{ $label }}"
-      {{- end }}
-    ]
+    "namespace": "{{ .Release.Namespace }}",
+    "labels": {
+      {{- range $name, $val := .Values.labels }}
+        "{{ $name }}": "{{ $val }}"
+      {{ end -}}
+    }
   },
   "spec": {
     "name": "{{ .Release.Name }}",
-    "annotations": [
-      {{- range $annotation := .Values.annotations }}
-        "{{ $annotation }}"
-      {{- end }}
-    ],
+    "annotations": {
+      {{- range $name, $val := .Values.annotations }}
+        "{{ $name }}": "{{ $val }}"
+      {{ end -}}
+    },
     "predictors": [
       {
         "name": "default",
@@ -45,7 +45,7 @@
                         "name": "{{ $var }}",
                         "value": "{{ $val }}"
                       },
-                    {{- end }}
+                    {{ end -}}
                   ],
                   "resources": {{ .Values.model.resources | toJson }},
                 }
