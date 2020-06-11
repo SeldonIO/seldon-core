@@ -35,12 +35,13 @@ helm install $MY_MODEL_NAME seldonio/seldon-single-model --namespace $MODELS_NAM
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| annotations | list | `[]` | Annotations applied to the deployment |
+| annotations | object | `{}` | Annotations applied to the deployment |
+| apiVersion | string | `"machinelearning.seldon.io/v1"` | Version of the SeldonDeployment CRD |
 | hpa.enabled | bool | `false` | Whether to add an HPA spec to the deployment |
 | hpa.maxReplicas | int | `5` | Maximum number of replicas for HPA |
 | hpa.metrics | list | `[{"resource":{"name":"cpu","targetAverageUtilization":10},"type":"Resource"}]` | Metrics that autoscaler should check |
 | hpa.minReplicas | int | `1` | Minimum number of replicas for HPA |
-| labels | list | `[]` | Labels applied to the deployment |
+| labels | object | `{}` | Labels applied to the deployment |
 | model.env | object | `{"LOG_LEVEL":"INFO"}` | Environment variables injected into the model's container |
 | model.image | string | `""` | Docker image used by the model |
 | model.logger.enabled | bool | `false` |  |

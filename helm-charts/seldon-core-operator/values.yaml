@@ -40,8 +40,6 @@ executor:
   enabled: true
   port: 8000
   metricsPortName: metrics
-  grpc:
-    port: 5001
   image:
     pullPolicy: IfNotPresent
     registry: docker.io
