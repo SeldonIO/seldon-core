@@ -63,6 +63,12 @@ You only have to upload your model binaries into your preferred object store, in
 gs://seldon-models/sklearn/iris/model.pickle
 ```
 
+Create a namespace to run your model in:
+
+```
+kubectl create namespace seldon
+```
+
 We then can deploy this model with Seldon Core to our Kubernetes cluster using the pre-packaged model server for scikit-learn (SKLEARN_SERVER) by running the `kubectl apply` command below:
 
 ```yaml
@@ -71,7 +77,7 @@ apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
   name: iris-model
-  namespace: model-namespace
+  namespace: seldon
 spec:
   name: iris
   predictors:
@@ -95,9 +101,9 @@ This can be accessed through the endpoint `http://<ingress_url>/seldon/<namespac
 Or alternatively you can send requests programmatically using our [Seldon Python Client](https://docs.seldon.io/projects/seldon-core/en/latest/python/seldon_client.html) or another Linux CLI:
 
 ```console
-$ curl -X POST http://<ingress>/seldon/model-namespace/iris-model/api/v1.0/predictions \
+$ curl -X POST http://<ingress>/seldon/seldon/iris-model/api/v1.0/predictions \
     -H 'Content-Type: application/json' \
-    -d '{ "data": { "ndarray": [1,2,3,4] } }' | json_pp
+    -d '{ "data": { "ndarray": [[1,2,3,4]] } }' 
 
 {
    "meta" : {},
