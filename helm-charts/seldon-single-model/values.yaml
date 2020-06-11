@@ -21,10 +21,10 @@ model:
 replicas: 1
 
 # labels -- Labels applied to the deployment
-labels: []
+labels: {}
 
 # annotations -- Annotations applied to the deployment
-annotations: []
+annotations: {}
 
 hpa:
   # hpa.enabled -- Whether to add an HPA spec to the deployment
