@@ -33,10 +33,12 @@ func addLabelsToService(svc *corev1.Service, pu *machinelearningv1.PredictiveUni
 	if !isEmptyExplainer(p.Explainer) {
 		svc.Labels[machinelearningv1.Label_explainer] = "true"
 	}
+	svc.Labels[machinelearningv1.Label_managed_by] = machinelearningv1.Label_value_seldon
 }
 
 func addLabelsToDeployment(deploy *appsv1.Deployment, containerServiceKey, containerServiceValue string) {
 	deploy.ObjectMeta.Labels[containerServiceKey] = containerServiceValue
 	deploy.Spec.Selector.MatchLabels[containerServiceKey] = containerServiceValue
 	deploy.Spec.Template.ObjectMeta.Labels[containerServiceKey] = containerServiceValue
+	deploy.ObjectMeta.Labels[machinelearningv1.Label_managed_by] = machinelearningv1.Label_value_seldon
 }
