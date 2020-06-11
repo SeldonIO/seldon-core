@@ -34,4 +34,4 @@ def test_api_version(namespace, apiVersion):
     assert r.status_code == 200
     assert len(r.json()["data"]["tensor"]["values"]) == 1
 
-    run(f"helm delete mymodel", shell=True)
+    run("helm delete mymodel", shell=True)
