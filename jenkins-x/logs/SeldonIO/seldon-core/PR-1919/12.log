@@ -1,0 +1,42 @@
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-19-chnx8-12[0m stage [32mmeta-pipeline[0m and container [32mstep-credential-initializer-cpq88[0m
+{"level":"warn","ts":1591896959.1764638,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1591896959.181408,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-19-chnx8-12[0m stage [32mmeta-pipeline[0m and container [32mstep-working-dir-initializer-fwvjw[0m
+{"level":"warn","ts":1591896960.180224,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1591896960.2646697,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-19-chnx8-12[0m stage [32mmeta-pipeline[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-19-chnx8-12[0m stage [32mmeta-pipeline[0m and container [32mstep-git-source-meta-seldonio-seldon-core-pr-19-r8l4w[0m
+{"level":"warn","ts":1591896967.9953978,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1591896972.4829524,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ 00c691d0f947f5fe21fb408dd613a669d87062fc in path /workspace/source"}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-19-chnx8-12[0m stage [32mmeta-pipeline[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:00c691d0f947f5fe21fb408dd613a669d87062fc,1919:ce4abdccbcb5ca814385df82b66de4032b3e9c09
+DEBUG: ran git fetch --unshallow origin ce4abdccbcb5ca814385df82b66de4032b3e9c09: 00c691d0f947f5fe21fb408dd613a669d87062fc: in 
+DEBUG: ran git checkout master in 
+DEBUG: ran git reset --hard 00c691d0f947f5fe21fb408dd613a669d87062fc in 
+DEBUG: ran clean --force -d . in 
+error: error during merge: merging ce4abdccbcb5ca814385df82b66de4032b3e9c09 into master: git output: Auto-merging operator/controllers/seldondeployment_engine_test.go
+Auto-merging operator/controllers/seldondeployment_engine.go
+Auto-merging executor/samples/local/metrics/Makefile
+Auto-merging executor/api/rest/client_test.go
+CONFLICT (content): Merge conflict in executor/api/rest/client_test.go
+Auto-merging executor/api/metric/server.go
+CONFLICT (content): Merge conflict in executor/api/metric/server.go
+Auto-merging executor/api/metric/client.go
+CONFLICT (content): Merge conflict in executor/api/metric/client.go
+Automatic merge failed; fix conflicts and then commit the result.: failed to run 'git merge ce4abdccbcb5ca814385df82b66de4032b3e9c09' command in directory '', output: 'Auto-merging operator/controllers/seldondeployment_engine_test.go
+Auto-merging operator/controllers/seldondeployment_engine.go
+Auto-merging executor/samples/local/metrics/Makefile
+Auto-merging executor/api/rest/client_test.go
+CONFLICT (content): Merge conflict in executor/api/rest/client_test.go
+Auto-merging executor/api/metric/server.go
+CONFLICT (content): Merge conflict in executor/api/metric/server.go
+Auto-merging executor/api/metric/client.go
+CONFLICT (content): Merge conflict in executor/api/metric/client.go
+Automatic merge failed; fix conflicts and then commit the result.'
+[31m
+Pipeline failed on stage 'meta-pipeline' : container 'step-git-merge'. The execution of the pipeline has stopped.[0m
