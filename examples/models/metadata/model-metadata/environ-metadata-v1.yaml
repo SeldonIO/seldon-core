@@ -19,7 +19,7 @@ spec:
               apiVersion: v1
               name: my-model-name
               versions: [ my-model-version-01 ]
-              platform: seldon-custom
+              platform: seldon
               inputs:
                 datatype: array
                 shape: [ 2, 2 ]

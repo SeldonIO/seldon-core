@@ -64,7 +64,7 @@ def test_v1_array():
         apiVersion: v1
         name: my-model-name
         versions: [ my-model-version-01 ]
-        platform: seldon-custom
+        platform: seldon
         inputs:
           datatype: array
           shape: [ 2, 2 ]
@@ -80,7 +80,7 @@ def test_v1_json():
         apiVersion: v1
         name: my-model-name
         versions: [ my-model-version-01 ]
-        platform: seldon-custom
+        platform: seldon
         inputs:
           datatype: jsonData
         outputs:
@@ -95,7 +95,7 @@ def test_v1_json_with_schema():
         apiVersion: v1
         name: my-model-name
         versions: [ my-model-version-01 ]
-        platform: seldon-custom
+        platform: seldon
         inputs:
           datatype: jsonData
           schema:
@@ -122,7 +122,7 @@ def test_v1_str_data():
         apiVersion: v1
         name: my-model-name
         versions: [ my-model-version-01 ]
-        platform: seldon-custom
+        platform: seldon
         inputs:
           datatype: strData
         outputs:
@@ -137,7 +137,7 @@ def test_v1_bin_data():
         apiVersion: v1
         name: my-model-name
         versions: [ my-model-version-01 ]
-        platform: seldon-custom
+        platform: seldon
         inputs:
           datatype: binData
         outputs:
@@ -184,7 +184,7 @@ def test_v2():
         apiVersion: v2
         name: my-model-name
         versions: [ my-model-version-01 ]
-        platform: seldon-custom
+        platform: seldon
         inputs:
         - datatype: BYTES
           name: input
@@ -281,7 +281,7 @@ json_meta = """
 {
     "name": "test_name_json",
     "versions": ["test-version"],
-    "platform": "seldon-custom",
+    "platform": "seldon",
     "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1, 2]}],
     "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1, 2, 3]}],
 }

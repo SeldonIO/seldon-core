@@ -18,7 +18,7 @@ spec:
               ---
               name: my-model-name
               versions: [ my-model-version-01 ]
-              platform: seldon-custom
+              platform: seldon
               inputs:
               - datatype: BYTES
                 name: input

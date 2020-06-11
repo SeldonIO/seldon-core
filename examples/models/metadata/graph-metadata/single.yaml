@@ -17,7 +17,7 @@ spec:
               ---
               name: single-node
               versions: [ generic-node/v0.2 ]
-              platform: seldon-custom
+              platform: seldon
               inputs:
               - datatype: BYTES
                 name: input
