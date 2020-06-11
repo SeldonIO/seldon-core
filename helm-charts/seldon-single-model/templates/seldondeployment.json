@@ -1,6 +1,6 @@
 {
   "kind": "SeldonDeployment",
-  "apiVersion": "machinelearning.seldon.io/v1",
+  "apiVersion": "{{ .Values.apiVersion }}",
   "metadata": {
     "name": "{{ .Release.Name }}",
     "namespace": "{{ .Release.Namespace }}"
