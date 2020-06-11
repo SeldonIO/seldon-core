@@ -74,8 +74,12 @@ def inject_base_reqs(env_file_path):
     if "dependencies" not in conda_env:
         conda_env["dependencies"] = []
 
-    new_entry = {"pip": [f"-r {BASE_REQS_PATH}"]}
-    conda_env["dependencies"].append(new_entry)
+    dependency = next((dep for dep in conda_env["dependencies"] if "pip" in dep), None)
+    if dependency is not None:
+        dependency["pip"].append(f"-r {BASE_REQS_PATH}")
+    else:
+        new_entry = {"pip": [f"-r {BASE_REQS_PATH}"]}
+        conda_env["dependencies"].append(new_entry)
 
     temp_dir = tempfile.mkdtemp()
     new_env_path = os.path.join(temp_dir, "conda.yaml")
