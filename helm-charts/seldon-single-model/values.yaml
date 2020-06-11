@@ -1,3 +1,6 @@
+# apiVersion -- Version of the SeldonDeployment CRD
+apiVersion: machinelearning.seldon.io/v1
+
 model:
   # model.image -- Docker image used by the model
   image: ""
