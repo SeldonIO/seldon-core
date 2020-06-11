@@ -2,9 +2,7 @@ import pytest
 from seldon_e2e_utils import (
     wait_for_rollout,
     wait_for_status,
-    initial_rest_request,
-    rest_request_ambassador,
-    API_AMBASSADOR,
+    assert_model,
 )
 from subprocess import run
 
@@ -21,17 +19,14 @@ def test_api_version(namespace, apiVersion):
     command = (
         "helm install mymodel ../../helm-charts/seldon-single-model "
         f"--set apiVersion={apiVersion} "
+        f"--set model.image=seldonio/fixed-model:0.1 "
         f"--namespace {namespace}"
     )
     run(command, shell=True, check=True)
 
     wait_for_status("mymodel", namespace)
     wait_for_rollout("mymodel", namespace)
-    initial_rest_request("mymodel", namespace)
 
-    r = rest_request_ambassador("mymodel", namespace, API_AMBASSADOR)
-
-    assert r.status_code == 200
-    assert len(r.json()["data"]["tensor"]["values"]) == 1
+    assert_model("mymodel", namespace, initial=True)
 
     run("helm delete mymodel", shell=True)
