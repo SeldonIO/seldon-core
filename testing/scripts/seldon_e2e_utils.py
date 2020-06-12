@@ -103,7 +103,7 @@ def get_deployment_names(sdep_name, namespace, attempts=20, sleep=5):
 
 
 def wait_for_rollout(
-    sdep_name, namespace, attempts=30, sleep=5, expected_deployments=1
+    sdep_name, namespace, attempts=50, sleep=5, expected_deployments=1
 ):
     deployment_names = []
     for _ in range(attempts):
