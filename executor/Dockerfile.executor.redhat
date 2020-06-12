@@ -30,7 +30,7 @@ LABEL name="Seldon Executor" \
 
 RUN rpm --import https://packages.confluent.io/rpm/5.5/archive.key
 COPY confluent.repo /etc/yum.repos.d/
-RUN yum clean all && yum install -y librdkafka-devel
+RUN yum clean all && yum install -y librdkafka-devel-1.4.0_confluent5.5.0
 
 WORKDIR /
 COPY --from=builder /workspace/executor .
