@@ -9,26 +9,26 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/metadata-generic-node_rest:0.1
+        - image: seldonio/metadata-generic-node:0.2
           name: node-router
-        - image: seldonio/metadata-generic-node_rest:0.1
+        - image: seldonio/metadata-generic-node:0.2
           name: node-one
           env:
           - name: MODEL_METADATA
             value: |
               {"name": "node-one",
-               "versions": ["generic-node/v0.1"],
-               "platform": "seldon-custom",
+               "versions": ["generic-node/v0.2"],
+               "platform": "seldon",
                "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1, 10]}],
                "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1, 20]}]}            
-        - image: seldonio/metadata-generic-node_rest:0.1
+        - image: seldonio/metadata-generic-node:0.2
           name: node-two
           env:
           - name: MODEL_METADATA
             value: |
               {"name": "node-two",
-               "versions": ["generic-node/v0.1"],
-               "platform": "seldon-custom",
+               "versions": ["generic-node/v0.2"],
+               "platform": "seldon",
                "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1, 10]}],
                "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1, 20]}]}               
     graph:
