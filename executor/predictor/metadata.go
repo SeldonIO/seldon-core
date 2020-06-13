@@ -12,18 +12,18 @@ type MetadataTensor struct {
 }
 
 type ModelMetadata struct {
-	Name     string           `json:"name,omitempty"`
-	Platform string           `json:"platform,omitempty"`
-	Versions []string         `json:"versions,omitempty"`
-	Inputs   []MetadataTensor `json:"inputs,omitempty"`
-	Outputs  []MetadataTensor `json:"outputs,omitempty"`
+	Name     string      `json:"name,omitempty"`
+	Platform string      `json:"platform,omitempty"`
+	Versions []string    `json:"versions,omitempty"`
+	Inputs   interface{} `json:"inputs,omitempty"`
+	Outputs  interface{} `json:"outputs,omitempty"`
 }
 
 type GraphMetadata struct {
 	Name         string                   `json:"name"`
 	Models       map[string]ModelMetadata `json:"models"`
-	GraphInputs  []MetadataTensor         `json:"graphinputs"`
-	GraphOutputs []MetadataTensor         `json:"graphoutputs"`
+	GraphInputs  interface{}              `json:"graphinputs"`
+	GraphOutputs interface{}              `json:"graphoutputs"`
 }
 
 func NewGraphMetadata(p *PredictorProcess, spec *v1.PredictorSpec) (*GraphMetadata, error) {
@@ -40,7 +40,7 @@ func NewGraphMetadata(p *PredictorProcess, spec *v1.PredictorSpec) (*GraphMetada
 }
 
 func (gm *GraphMetadata) getShapeFromGraph(node *v1.PredictiveUnit) (
-	input []MetadataTensor, output []MetadataTensor,
+	input interface{}, output interface{},
 ) {
 	nodeMeta := gm.Models[node.Name]
 	nodeInputs := nodeMeta.Inputs

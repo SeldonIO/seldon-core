@@ -6,6 +6,8 @@ IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
 IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${VERSION}
 IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
 
+KIND_NAME ?= kind
+
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
 GOBIN=$(shell go env GOPATH)/bin
@@ -91,10 +93,10 @@ redhat-image-scan:
 	docker push scan.connect.redhat.com/ospid-fffb6f6b-90b5-4f1d-be69-71baa8fb16cb/${IMG_VERSION_REDHAT}
 
 kind-image-install: docker-build
-	kind load -v 3 docker-image ${IMG}
+	kind load -v 3 docker-image ${IMG} --name ${KIND_NAME}
 
 kind-image-install-redhat: docker-build-redhat
-	kind load -v 3 docker-image ${IMG_REDHAT}
+	kind load -v 3 docker-image ${IMG_REDHAT} --name ${KIND_NAME}
 
 
 .PHONY: clean
@@ -105,4 +107,3 @@ clean:
 
 licenses/dep.txt:
 	go list -m all | cut -d ' ' -f 1 > licenses/dep.txt
-
