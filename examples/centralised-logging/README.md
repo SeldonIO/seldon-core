@@ -76,7 +76,11 @@ Check that it now recognises the seldon CRD by running `kubectl get sdep`.
 Now a model:
 
 ```
-helm install seldon-single-model ../../helm-charts/seldon-single-model/ --set model.logger.enabled=true --set model.logger.url="http://default-broker.seldon-logs"
+helm install seldon-single-model \
+  ../../helm-charts/seldon-single-model/ \
+  --set 'model.image=seldonio/mock_classifier_rest:1.3' \
+  --set model.logger.enabled=true \
+  --set model.logger.url="http://default-broker.seldon-logs"
 ```
 
 ## Setting up Request Logging
