@@ -18,7 +18,7 @@ COPY logger/ logger/
 COPY k8s/ k8s/
 
 # Build
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -a -o executor -ldflags '-w -extldflags "-static"'  cmd/executor/main.go
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -tags netgo -a -o executor cmd/executor/main.go
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
