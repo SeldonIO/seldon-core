@@ -74,10 +74,13 @@ def inject_base_reqs(env_file_path):
     if "dependencies" not in conda_env:
         conda_env["dependencies"] = []
 
-    dependency = next((dep for dep in conda_env["dependencies"] if "pip" in dep), None)
-    if dependency is not None:
-        dependency["pip"].append(f"-r {BASE_REQS_PATH}")
-    else:
+    pip_exists = False
+    for dep in conda_env["dependencies"]:
+        if isinstance(dep, dict) and "pip" in dep:
+            pip_exists = True
+            dep["pip"].append(f"-r {BASE_REQS_PATH}")
+            break
+    if not pip_exists:
         new_entry = {"pip": [f"-r {BASE_REQS_PATH}"]}
         conda_env["dependencies"].append(new_entry)
 
