@@ -35,6 +35,7 @@ func TestAddLabelsToDeployment(t *testing.T) {
 		g.Expect(d.Spec.Selector.MatchLabels["TestKey"]).To(Equal("TestValue"))
 		g.Expect(d.Spec.Template.ObjectMeta.Labels["TestKey"]).To(Equal("TestValue"))
 		g.Expect(d.ObjectMeta.Labels[machinelearningv1.Label_managed_by]).To(Equal(machinelearningv1.Label_value_seldon))
+		g.Expect(d.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_managed_by]).To(Equal(machinelearningv1.Label_value_seldon))
 	})
 }
 
