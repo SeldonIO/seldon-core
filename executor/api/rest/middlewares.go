@@ -47,7 +47,10 @@ func (h *CloudeventHeaderMiddleware) Middleware(next http.Handler) http.Handler 
 	})
 }
 
-func corsHeaders(next http.Handler) http.Handler {
+// handleCORSRequests adds CORS-required headers, and during CORS Preflight
+// requests, it will exit the request and the request status will be
+// http.StatusOK
+func handleCORSRequests(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set(corsAllowOriginHeader, corsAllowOriginValue)
 		w.Header().Set(corsAllowMethodsHeader, corsAllowMethodsValue)

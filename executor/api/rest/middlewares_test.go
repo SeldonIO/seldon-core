@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestCORSHeadersGet(t *testing.T) {
+func TestCORSHeadersGetRequest(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	m := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
@@ -31,7 +31,7 @@ func TestCORSHeadersGet(t *testing.T) {
 	g.Expect(headerValAllowMethods).To(Equal(corsAllowMethodsValue))
 }
 
-func TestCORSHeadersOptions(t *testing.T) {
+func TestCORSHeadersOptionsRequest(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	m := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})

@@ -127,7 +127,7 @@ func (r *SeldonRestApi) Initialise() {
 		r.Router.Use(puidHeader)
 		r.Router.Use(cloudeventHeaderMiddleware.Middleware)
 		r.Router.Use(xssMiddleware)
-		r.Router.Use(corsHeaders)
+		r.Router.Use(handleCORSRequests)
 
 		switch r.Protocol {
 		case api.ProtocolSeldon:
