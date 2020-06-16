@@ -5,6 +5,7 @@ import (
 
 	guuid "github.com/google/uuid"
 	"github.com/seldonio/seldon-core/executor/api/payload"
+	"github.com/seldonio/seldon-core/executor/api/util"
 )
 
 const (
@@ -18,12 +19,12 @@ const (
 	contentTypeOptsHeader = "X-Content-Type-Options"
 	contentTypeOptsValue  = "nosniff"
 
-	corsAllowOriginHeader  = "Access-Control-Allow-Origin"
-	corsAllowOriginValue   = "*"
-	corsAllowMethodsHeader = "Access-Control-Allow-Methods"
-	corsAllowMethodsValue  = "GET, OPTIONS, POST"
-	corsAllowHeadersHeader = "Access-Control-Allow-Headers"
-	corsAllowHeadersValue  = "Accept, Accept-Encoding, Authorization, Content-Length, Content-Type, X-CSRF-Token"
+	corsAllowOriginEnvVar        = "CORS_ALLOWED_ORIGINS"
+	corsAllowOriginHeader        = "Access-Control-Allow-Origin"
+	corsAllowOriginValueAll      = "*"
+	corsAllowOriginHeadersVar    = "CORS_ALLOWED_HEADERS"
+	corsAllowHeadersHeader       = "Access-Control-Allow-Headers"
+	corsAllowHeadersValueDefault = "Accept, Accept-Encoding, Authorization, Content-Length, Content-Type, X-CSRF-Token"
 )
 
 type CloudeventHeaderMiddleware struct {
@@ -52,12 +53,12 @@ func (h *CloudeventHeaderMiddleware) Middleware(next http.Handler) http.Handler 
 // http.StatusOK
 func handleCORSRequests(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		corsAllowOriginValue := util.GetEnv(corsAllowOriginEnvVar, corsAllowOriginValueAll)
+		corsAllowHeadersValue := util.GetEnv(corsAllowOriginHeadersVar, corsAllowHeadersValueDefault)
 		w.Header().Set(corsAllowOriginHeader, corsAllowOriginValue)
-		w.Header().Set(corsAllowMethodsHeader, corsAllowMethodsValue)
 		w.Header().Set(corsAllowHeadersHeader, corsAllowHeadersValue)
 		// Don't pass along OPTIONS (CORS Prefetch) Requests
 		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
 			return
 		}
 		next.ServeHTTP(w, r)

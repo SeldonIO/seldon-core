@@ -1,6 +1,8 @@
 package util
 
 import (
+	"os"
+
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 )
 
@@ -33,4 +35,12 @@ func ExtractRouteFromSeldonMessage(msg *proto.SeldonMessage) []int {
 		return routeArr
 	}
 	return []int{-1}
+}
+
+// Get an environment variable given by key or return the fallback.
+func GetEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
 }

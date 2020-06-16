@@ -3,16 +3,22 @@ package rest
 import (
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	. "github.com/onsi/gomega"
 )
 
-func TestCORSHeadersGetRequest(t *testing.T) {
+func TestEnvVars(t *testing.T) {
 	g := NewGomegaWithT(t)
 
+	os.Setenv(corsAllowOriginEnvVar, "http://www.google.com")
+	os.Setenv(corsAllowOriginHeadersVar, "Accept")
+	defer os.Unsetenv(corsAllowOriginEnvVar)
+	defer os.Unsetenv(corsAllowOriginHeadersVar)
+
 	m := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
-	wrapped := corsHeaders(m)
+	wrapped := handleCORSRequests(m)
 
 	req := httptest.NewRequest("GET", "http://example.com/foo", nil)
 	w := httptest.NewRecorder()
@@ -22,20 +28,37 @@ func TestCORSHeadersGetRequest(t *testing.T) {
 	defer res.Body.Close()
 
 	headerValAllowOrigin := res.Header.Get(corsAllowOriginHeader)
-	g.Expect(headerValAllowOrigin).To(Equal(corsAllowOriginValue))
+	g.Expect(headerValAllowOrigin).To(Equal("http://www.google.com"))
 
 	headerValAllowHeaders := res.Header.Get(corsAllowHeadersHeader)
-	g.Expect(headerValAllowHeaders).To(Equal(corsAllowHeadersValue))
+	g.Expect(headerValAllowHeaders).To(Equal("Accept"))
+}
 
-	headerValAllowMethods := res.Header.Get(corsAllowMethodsHeader)
-	g.Expect(headerValAllowMethods).To(Equal(corsAllowMethodsValue))
+func TestCORSHeadersGetRequest(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	m := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
+	wrapped := handleCORSRequests(m)
+
+	req := httptest.NewRequest("GET", "http://example.com/foo", nil)
+	w := httptest.NewRecorder()
+	wrapped.ServeHTTP(w, req)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	headerValAllowOrigin := res.Header.Get(corsAllowOriginHeader)
+	g.Expect(headerValAllowOrigin).To(Equal(corsAllowOriginValueAll))
+
+	headerValAllowHeaders := res.Header.Get(corsAllowHeadersHeader)
+	g.Expect(headerValAllowHeaders).To(Equal(corsAllowHeadersValueDefault))
 }
 
 func TestCORSHeadersOptionsRequest(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	m := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
-	wrapped := corsHeaders(m)
+	wrapped := handleCORSRequests(m)
 
 	req := httptest.NewRequest("GET", "http://example.com/foo", nil)
 	w := httptest.NewRecorder()
@@ -45,13 +68,10 @@ func TestCORSHeadersOptionsRequest(t *testing.T) {
 	defer res.Body.Close()
 
 	headerValAllowOrigin := res.Header.Get(corsAllowOriginHeader)
-	g.Expect(headerValAllowOrigin).To(Equal(corsAllowOriginValue))
+	g.Expect(headerValAllowOrigin).To(Equal(corsAllowOriginValueAll))
 
 	headerValAllowHeaders := res.Header.Get(corsAllowHeadersHeader)
-	g.Expect(headerValAllowHeaders).To(Equal(corsAllowHeadersValue))
-
-	headerValAllowMethods := res.Header.Get(corsAllowMethodsHeader)
-	g.Expect(headerValAllowMethods).To(Equal(corsAllowMethodsValue))
+	g.Expect(headerValAllowHeaders).To(Equal(corsAllowHeadersValueDefault))
 
 	statusCode := res.StatusCode
 	g.Expect(statusCode).To(Equal(http.StatusOK))
