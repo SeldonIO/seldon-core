@@ -4,7 +4,7 @@ flake8==3.8.1
 mypy<0.781
 Pillow==7.1.1
 pytest==5.4.2
-pytest-cov==2.9.0
+pytest-cov==2.10.0
 tox<4.0.0
 grpcio-tools==1.27.2
 mypy-protobuf==1.22
