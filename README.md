@@ -372,8 +372,8 @@ Below are some of the core components together with link to the logs that provid
 
 The name Seldon (ˈSɛldən) Core was inspired from [the Foundation Series (Scifi Novel)](https://en.wikipedia.org/wiki/Foundation_series) where it's premise consists of a mathematician called "Hari Seldon" who spends his life developing a theory of Psychohistory, a new and effective mathematical sociology which allows for the future to be predicted extremely accurate through long periods of time (across hundreds of thousands of years).
 
-## Commerical Support
+## Commercial Support
 
 ![](https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/images/deploy-logo.png)
 
-We offer commerical support via our enterprise product Seldon Deploy. Please visit [https://www.seldon.io/](https://www.seldon.io/) for details and a trial.
+We offer commercial support via our enterprise product Seldon Deploy. Please visit [https://www.seldon.io/](https://www.seldon.io/) for details and a trial.
