@@ -20,6 +20,10 @@ COPY k8s/ k8s/
 # Build
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o executor main.go
 
+# Copy OpenAPI folder and change the permissions
+COPY api/rest/openapi/ /openapi/
+RUN chmod -R 660 /openapi/
+
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM gcr.io/distroless/static:latest
@@ -27,6 +31,6 @@ WORKDIR /
 COPY --from=builder /workspace/executor .
 COPY licenses/license.txt licenses/license.txt
 # Copy openapi spec and swagger UI files
-COPY api/rest/openapi/ /openapi/
+COPY --from=builder /openapi/ /openapi/
 
 ENTRYPOINT ["/executor"]
