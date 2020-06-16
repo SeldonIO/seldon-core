@@ -20,7 +20,7 @@ COPY k8s/ k8s/
 # Build
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o executor main.go
 
-# Change the permissions
+# Copy OpenAPI folder and change the permissions
 COPY api/rest/openapi/ /openapi/
 RUN chmod -R 660 /openapi/
 
