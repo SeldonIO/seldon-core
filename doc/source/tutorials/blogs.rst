@@ -21,4 +21,5 @@ Blog articles featuring different use cases of Seldon:
    MLOps: The end of end-to-end <https://www.mosaicventures.com/mosaicblog/2020/2/20/mlops-the-end-of-end-to-end>
    What would machine learning look like if you mixed in DevOps? <https://www.theregister.co.uk/2020/03/07/devops_machine_learning_mlops/>
    [Archive] Move Fast and Break Things? The AI Governance Dilemma <https://web.archive.org/web/20200212160350/https://hackernoon.com/move-fast-and-break-things-the-ai-governance-dilemma-dsq32ix>
+   开源史海钩沉系列 Seldon Core <https://zhuanlan.zhihu.com/p/145143582>
 

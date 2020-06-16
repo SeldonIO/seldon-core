@@ -64,30 +64,6 @@ Documentation Index
 
 .. toctree::
    :maxdepth: 1
-   :caption: Language Wrappers (Production)
-
-   Python Language Wrapper [Production] <python/index.rst>
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Incubating Projects
-
-   Java Language Wrapper [Incubating] <java/README.md>
-   R Language Wrapper [ALPHA] <R/README.md>
-   NodeJS Language Wrapper [ALPHA] <nodejs/README.md>
-   Go Language Wrapper [ALPHA] <go/go_wrapper_link.rst>
-   Stream Processing with KNative <streaming/knative_eventing.md>
-   Metadata [Incubating] <reference/apis/metadata.md>
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Ingress
-
-   Ambassador Ingress <ingress/ambassador.md>
-   Istio Ingress <ingress/istio.md>
-
-.. toctree::
-   :maxdepth: 1
    :caption: Production
 
    Supported API Protocols <graph/protocols.md>
@@ -97,6 +73,36 @@ Documentation Index
    Distributed Tracing with Jaeger <graph/distributed-tracing.md>
    Replica Scaling  <graph/scaling.md>
    Custom Inference Servers <servers/custom.md>
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Batch Processing with Seldon
+
+   Overview of Batch Processing <servers/batch.md>
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Language Wrappers
+
+   Python Language Wrapper <python/index.rst>
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Incubating Projects
+
+   Java Language Wrapper <java/README.md>
+   Metadata <reference/apis/metadata.md>
+   R Language Wrapper [ALPHA] <R/README.md>
+   NodeJS Language Wrapper [ALPHA] <nodejs/README.md>
+   Go Language Wrapper [ALPHA] <go/go_wrapper_link.rst>
+   Stream Processing with KNative <streaming/knative_eventing.md>
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Ingress
+
+   Ambassador Ingress <ingress/ambassador.md>
+   Istio Ingress <ingress/istio.md>
 
 .. toctree::
    :maxdepth: 1

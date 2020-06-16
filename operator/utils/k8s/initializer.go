@@ -5,7 +5,6 @@ import (
 	"github.com/go-logr/logr"
 	"io/ioutil"
 	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -22,6 +21,7 @@ const (
 	CertsTLSCa  = "ca.crt"
 
 	ResourceFolder            = "/tmp/operator-resources"
+	CRDFilename               = "crd.yaml"
 	MutatingWebhookFilename   = "mutate.yaml"
 	ValidatingWebhookFilename = "validate.yaml"
 	ConfigMapFilename         = "configmap.yaml"
@@ -41,11 +41,6 @@ func findMyDeployment(clientset kubernetes.Interface, namespace string) (*appsv1
 	return client.Get(ManagerDeploymentName, v1.GetOptions{})
 }
 
-func findCRD(clientset apiextensionsclient.Interface) (*v1beta1.CustomResourceDefinition, error) {
-	client := clientset.ApiextensionsV1beta1().CustomResourceDefinitions()
-	return client.Get(CRDName, v1.GetOptions{})
-}
-
 func InitializeOperator(config *rest.Config, namespace string, logger logr.Logger, scheme *runtime.Scheme, watchNamespace bool) error {
 
 	apiExtensionClient, err := apiextensionsclient.NewForConfig(config)
@@ -53,7 +48,12 @@ func InitializeOperator(config *rest.Config, namespace string, logger logr.Logge
 		return err
 	}
 
-	crd, err := findCRD(apiExtensionClient)
+	crdCreator := NewCrdCreator(apiExtensionClient, logger)
+	bytes, err := LoadBytesFromFile(ResourceFolder, CRDFilename)
+	if err != nil {
+		return err
+	}
+	crd, err := crdCreator.findOrCreateCRD(bytes)
 	if err != nil {
 		return err
 	}
@@ -83,7 +83,7 @@ func InitializeOperator(config *rest.Config, namespace string, logger logr.Logge
 	}
 
 	//Create/Update Mutating Webhook
-	bytes, err := LoadBytesFromFile(ResourceFolder, MutatingWebhookFilename)
+	bytes, err = LoadBytesFromFile(ResourceFolder, MutatingWebhookFilename)
 	if err != nil {
 		return err
 	}

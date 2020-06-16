@@ -1,5 +1,5 @@
 import os
-import json
+import yaml
 import logging
 from seldon_core.utils import (
     extract_request_parts,
@@ -540,14 +540,16 @@ def init_metadata(user_model: Any) -> Dict:
 
     # meta_env: load metadata from environmental variable
     try:
-        meta_env = json.loads(os.environ.get("MODEL_METADATA", "{}"))
-    except json.JSONDecodeError:
+        meta_env = yaml.safe_load(os.environ.get("MODEL_METADATA", "{}"))
+    except yaml.YAMLError as e:
+        logger.error(f"Reading metadata from MODEL_METADATA env variable failed: {e}")
         meta_env = {}
 
     meta = {**meta_user, **meta_env}
 
     try:
         return validate_model_metadata(meta)
-    except SeldonInvalidMetadataError:
+    except SeldonInvalidMetadataError as e:
+        logger.error(f"Metadata validation error\n{e}")
         logger.error(f"Failed to validate metadata {meta}")
         return None

@@ -26,7 +26,7 @@ certManager:
 controllerId: ""
 
 # Whether operator should create the webhooks and configmap on startup (false means created from chart)
-createResources: false
+managerCreateResources: false
 
 # Default user id to add to all Pod Security Context as the default
 # Use this to ensure all container run as non-root by default
@@ -40,8 +40,6 @@ executor:
   enabled: true
   port: 8000
   metricsPortName: metrics
-  grpc:
-    port: 5001
   image:
     pullPolicy: IfNotPresent
     registry: docker.io
@@ -129,6 +127,8 @@ predictor_servers:
 
 # ## Other
 # You can choose the crds to not be installed if you already installed them
+# This applies to just the yaml template. If you set managerCreateResources=true then
+# it will try to create the CRD but only if it does not exist
 crd:
   create: true
 

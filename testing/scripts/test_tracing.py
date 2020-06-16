@@ -6,7 +6,8 @@ from seldon_e2e_utils import (
     wait_for_rollout,
     initial_rest_request,
 )
-from jaeger_utils import get_traces
+from e2e_utils.jaeger import get_traces
+from conftest import SELDON_E2E_TESTS_USE_EXECUTOR
 
 
 def assert_trace(trace, expected_operations):
@@ -53,13 +54,22 @@ def test_tracing_rest(namespace):
     pod_names = get_pod_names(deployment_name, namespace)
     pod_name = pod_names[0]
 
+    # The engine and the executor identify as different services and different
+    # operations against Jaeger. We need to consider both.
+    service = "executor"
+    operation = "predictions"
+    request_operation = "/predict"
+
+    if not SELDON_E2E_TESTS_USE_EXECUTOR:
+        service = "seldon-svc-orch"
+        operation = "/api/v0.1/predictions"
+        request_operation = "POST"
+
     # Get traces and assert their content
-    traces = get_traces(
-        pod_name, "executor", "predictions", _should_retry=_is_jaeger_syncing
-    )
+    traces = get_traces(pod_name, service, operation, _should_retry=_is_jaeger_syncing)
     assert len(traces) == 1
 
     trace = traces[0]
     processes = trace["processes"]
     assert len(processes) == 2
-    assert_trace(trace, expected_operations=["predictions", "/predict", "Predict"])
+    assert_trace(trace, expected_operations=[operation, request_operation, "Predict"])

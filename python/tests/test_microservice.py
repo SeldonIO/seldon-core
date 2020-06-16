@@ -3,11 +3,11 @@ import requests
 import pytest
 import grpc
 import numpy as np
-import signal
 
 from os.path import dirname, join
 from unittest import mock
 from tenacity import Retrying, stop_after_attempt, wait_exponential
+from seldon_core import __version__
 from seldon_core.proto import prediction_pb2
 from seldon_core.proto import prediction_pb2_grpc
 from seldon_core import microservice
@@ -26,6 +26,13 @@ def retry_method(method, args=(), kwargs={}, stop_after=5, max_sleep=10):
         with attempt:
             logging.info(f"Calling method... try: {attempt.retry_state.attempt_number}")
             return method(*args, **kwargs)
+
+
+def test_microservice_version():
+    fname = join(dirname(__file__), "..", "..", "version.txt")
+    with open(fname, "r") as f:
+        version = f.readline().strip()
+    assert version == __version__
 
 
 def test_model_template_app_rest(microservice):

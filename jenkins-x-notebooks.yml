@@ -8,19 +8,23 @@ pipelineConfig:
         stages:
           - name: pr-build-comment
             steps:
-            - agent:
-                image: gcr.io/jenkinsxio/builder-go:2.0.916-264
-              dir: ci
-              sh: "./add-pr-build-comment"
+              - agent:
+                  image: gcr.io/jenkinsxio/builder-go:2.0.916-264
+                dir: ci
+                sh: "./add-pr-build-comment"
           - name: end-to-end
+            env:
+              - name: SELDON_E2E_TESTS_TO_RUN
+                value: notebooks
+              - name: SELDON_E2E_TESTS_POD_INFORMATION
+                value: "true"
             steps:
-            - name: test-end-to-end
-              command: cd
-              args:
-              - testing/scripts &&
-              - SELDON_E2E_TESTS_TO_RUN="notebooks"
-              - bash
-              - kind_test_all.sh
+              - name: test-end-to-end
+                command: cd
+                args:
+                  - testing/scripts &&
+                  - bash
+                  - kind_test_all.sh
             options:
               containerOptions:
                 volumeMounts:

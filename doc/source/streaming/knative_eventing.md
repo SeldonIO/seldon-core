@@ -4,6 +4,8 @@ Seldon has an integration with KNative eventing that allows for real time proces
 
 This allow Seldon Core users to connect SeldonDeployments through triggers that will receive any relevant Cloudevents.
 
+![](../images/stream-processing-knative.jpg)
+
 ## Triggers
 
 The way that KNative Eventing works is by creating triggers that send any relevant Cloudevents that match a specific setup into the relevant addressable location.
