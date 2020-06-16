@@ -7,6 +7,7 @@ import logging
 import argparse
 import json
 import yaml
+import re
 import tempfile
 from subprocess import run
 from seldon_core.microservice import PARAMETERS_ENV_NAME, parse_parameters
@@ -78,7 +79,16 @@ def inject_base_reqs(env_file_path):
     for dep in conda_env["dependencies"]:
         if isinstance(dep, dict) and "pip" in dep:
             pip_exists = True
-            dep["pip"].append(f"-r {BASE_REQS_PATH}")
+            r = re.compile("=|>|<| ")
+            package_list = [r.split(p)[0] for p in dep["pip"]]
+            with open(BASE_REQS_PATH) as f:
+                for line in f:
+                    line = line.rstrip()
+                    if not line or line.startswith("#"):
+                        continue
+                    package_name = r.split(line)[0]
+                    if package_name not in package_list:
+                        dep["pip"].append(line)
             break
     if not pip_exists:
         new_entry = {"pip": [f"-r {BASE_REQS_PATH}"]}
