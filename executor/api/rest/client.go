@@ -156,7 +156,7 @@ func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method 
 	var req *http.Request
 	var err error
 	if msg != nil {
-		smc.Log.Info("Building message")
+		smc.Log.Info("Building message", "contentType", contentType, "msg", string(msg))
 		req, err = http.NewRequest("POST", url.String(), bytes.NewBuffer(msg))
 		if err != nil {
 			return nil, "", err
@@ -203,6 +203,8 @@ func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method 
 	if response.StatusCode != http.StatusOK {
 		smc.Log.Info("httpPost failed", "response code", response.StatusCode)
 		err = &httpStatusError{StatusCode: response.StatusCode, Url: url}
+	} else {
+		smc.Log.Info("Success response ", "contentType", contentTypeResponse)
 	}
 
 	return b, contentTypeResponse, err
@@ -316,7 +318,7 @@ func (smc *JSONRestClient) Combine(ctx context.Context, modelName string, host s
 	// Create JSON list of messages
 	joined := strings.Join(strData, ",")
 	jStr := "[" + joined + "]"
-	req := payload.BytesPayload{Msg: []byte(jStr)}
+	req := payload.BytesPayload{Msg: []byte(jStr), ContentType: ContentTypeJSON}
 	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonCombinePath, modelName), host, port, &req, meta)
 }
 
