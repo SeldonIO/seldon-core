@@ -12,13 +12,15 @@ This can be changed into DEBUG, INFO, WARNING and ERROR by following the followi
 
 The change can be done by setting the `SELDON_LOG_LEVEL` environment variable in the respective container.
 
-For example, to set it in the Seldon Engine, you would do it as follows:
+For example, to set it in each container running with the python wrapper, you would do it as follows by adding the environment variable SELDON_LOG_LEVEL to the containers running images wrapped by the python wrapper:
 
 ```
 ...
 "spec": {
   "containers": [
       { 
+          "name": "mymodel",
+          "image": "x.y:123",
           "env": [
               {
                   "name": SELDON_LOG_LEVEL,
