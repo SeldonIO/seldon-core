@@ -144,7 +144,7 @@ func (smc *JSONRestClient) addHeaders(req *http.Request, m map[string][]string) 
 	for k, vv := range m {
 		if _, ok := headersIgnore[k]; !ok {
 			for _, v := range vv {
-				req.Header.Set(k, v)
+				req.Header.Add(k, v)
 			}
 		}
 	}
@@ -156,7 +156,6 @@ func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method 
 	var req *http.Request
 	var err error
 	if msg != nil {
-		smc.Log.Info("Building message", "contentType", contentType, "msg", string(msg))
 		req, err = http.NewRequest("POST", url.String(), bytes.NewBuffer(msg))
 		if err != nil {
 			return nil, "", err
@@ -203,8 +202,6 @@ func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method 
 	if response.StatusCode != http.StatusOK {
 		smc.Log.Info("httpPost failed", "response code", response.StatusCode)
 		err = &httpStatusError{StatusCode: response.StatusCode, Url: url}
-	} else {
-		smc.Log.Info("Success response ", "contentType", contentTypeResponse)
 	}
 
 	return b, contentTypeResponse, err
