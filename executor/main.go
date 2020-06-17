@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net"
 	"net/url"
 	"os"
@@ -17,7 +18,6 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/go-logr/logr"
-	"github.com/prometheus/common/log"
 	"github.com/seldonio/seldon-core/executor/api"
 	seldonclient "github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/grpc"
@@ -133,7 +133,7 @@ func runHttpServer(lis net.Listener, logger logr.Logger, predictor *v1.Predictor
 func runGrpcServer(lis net.Listener, logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int, serverUrl *url.URL, namespace string, protocol string, deploymentName string, annotations map[string]string) {
 	grpcServer, err := grpc.CreateGrpcServer(predictor, deploymentName, annotations, logger)
 	if err != nil {
-		log.Fatalf("Failed to create grpc server: %v", err)
+		log.Fatalf("Failed to create gRPC server: %v", err)
 	}
 	if protocol == api.ProtocolSeldon {
 		seldonGrpcServer := seldon.NewGrpcSeldonServer(predictor, client, serverUrl, namespace)
@@ -145,7 +145,7 @@ func runGrpcServer(lis net.Listener, logger logr.Logger, predictor *v1.Predictor
 	}
 	err = grpcServer.Serve(lis)
 	if err != nil {
-		log.Errorf("Grpc server error: %v", err)
+		logger.Error(err, "gRPC server error")
 	}
 }
 
@@ -204,12 +204,12 @@ func main() {
 	// Ensure standard OpenAPI seldon API file has this deployment's values
 	err = rest.EmbedSeldonDeploymentValuesInSwaggerFile(*namespace, *sdepName)
 	if err != nil {
-		log.Error(err, "Failed to embed variables on OpenAPI template")
+		logger.Error(err, "Failed to embed variables on OpenAPI template")
 	}
 
 	annotations, err := k8s.GetAnnotations()
 	if err != nil {
-		log.Error(err, "Failed to load annotations")
+		logger.Error(err, "Failed to load annotations")
 	}
 
 	//Start Logger Dispacther
