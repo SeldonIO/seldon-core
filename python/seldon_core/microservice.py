@@ -197,7 +197,11 @@ def main():
         "--parameters", type=str, default=os.environ.get(PARAMETERS_ENV_NAME, "[]")
     )
     parser.add_argument(
-        "--log-level", type=str, default=os.environ.get(LOG_LEVEL_ENV, "INFO")
+        "--log-level",
+        type=str,
+        choices=["DEBUG", "INFO", "WARNING", "ERROR"],
+        default="WARNING",
+        help="Log level of the inference server",
     )
     parser.add_argument(
         "--debug",
