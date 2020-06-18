@@ -7,7 +7,7 @@ level (or the equivalent less verbose settings).
 The verbosity level can be increased to also log `DEBUG` and `INFO` messages by
 following these instructions.
 
-## Log level in Python Wrapper
+## Log level in Python inference servers
 
 .. Note:: 
    Setting the ``SELDON_LOG_LEVEL`` to ``WARNING`` and above in the Python
