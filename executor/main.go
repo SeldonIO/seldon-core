@@ -150,6 +150,20 @@ func runGrpcServer(lis net.Listener, logger logr.Logger, predictor *v1.Predictor
 	}
 }
 
+func setupLogger(debug bool) {
+	// NOTE: The Go logger doesn't use `DEBUG`, `WARNING`, etc.  but we can mimic
+	// it to maintain compatibility.
+	logLevel := os.Getenv("SELDON_LOG_LEVEL")
+
+	if logLevel == "DEBUG" || logLevel == "INFO" {
+		debug = true
+	} else if logLevel == "WARN" || logLevel == "WARNING" || logLevel == "ERROR" {
+		debug = false
+	}
+
+	logf.SetLogger(logf.ZapLogger(debug))
+}
+
 func main() {
 	flag.Parse()
 
@@ -174,7 +188,7 @@ func main() {
 		log.Fatal("Failed to create server url from", *hostname, *port)
 	}
 
-	logf.SetLogger(logf.ZapLogger(*debug))
+	setupLogger(*debug)
 	logger := logf.Log.WithName("entrypoint")
 
 	var predictor *v1.PredictorSpec
