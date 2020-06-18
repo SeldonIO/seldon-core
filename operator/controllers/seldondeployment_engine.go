@@ -338,7 +338,7 @@ func createEngineContainerSpec(mlDep *machinelearningv1.SeldonDeployment, p *mac
 }
 
 // Create the Container for the service orchestrator.
-func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, engine_http_port, engine_grpc_port int) (*corev1.Container, error) {
+func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, engine_http_port int, engine_grpc_port int) (*corev1.Container, error) {
 	// Get engine user
 	engineUser, err := getSvcOrchUser(mlDep)
 	if err != nil {
