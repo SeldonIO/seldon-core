@@ -173,6 +173,30 @@ def setup_tracing(interface_name: str) -> object:
     return config.initialize_tracer()
 
 
+def setup_logger(log_level: str) -> logging.Logger:
+    # set up log level
+    log_level_raw = os.environ.get(LOG_LEVEL_ENV, log_level.upper())
+    log_level_num = getattr(logging, log_level_raw, None)
+    if not isinstance(log_level_num, int):
+        raise ValueError("Invalid log level: %s", log_level)
+
+    logger.setLevel(log_level_num)
+
+    # Set right level on access logs
+    flask_logger = logging.getLogger("werkzeug")
+    flask_logger.setLevel(log_level_num)
+
+    logger.debug("Log level set to %s:%s", log_level, log_level_num)
+
+    # set log level for the imported microservice type
+    seldon_microservice.logger.setLevel(log_level_num)
+    logging.getLogger().setLevel(log_level_num)
+    for handler in logger.handlers:
+        handler.setLevel(log_level_num)
+
+    return logger
+
+
 def main():
     LOG_FORMAT = (
         "%(asctime)s - %(name)s:%(funcName)s:%(lineno)s - %(levelname)s:  %(message)s"
@@ -254,8 +278,9 @@ def main():
     )
 
     args = parser.parse_args()
-
     parameters = parse_parameters(json.loads(args.parameters))
+
+    setup_logger(args.log_level)
 
     # set flask trace jaeger extra tags
     jaeger_extra_tags = list(
@@ -265,14 +290,6 @@ def main():
         )
     )
     logger.info("Parse JAEGER_EXTRA_TAGS %s", jaeger_extra_tags)
-
-    # set up log level
-    log_level_num = getattr(logging, args.log_level, None)
-    if not isinstance(log_level_num, int):
-        raise ValueError("Invalid log level: %s", args.log_level)
-
-    logger.setLevel(log_level_num)
-    logger.debug("Log level set to %s:%s", args.log_level, log_level_num)
 
     annotations = load_annotations()
     logger.info("Annotations: %s", annotations)
@@ -293,12 +310,6 @@ def main():
         persistence.persist(user_object, parameters.get("push_frequency"))
     else:
         user_object = user_class(**parameters)
-
-    # set log level for the imported microservice type
-    seldon_microservice.logger.setLevel(log_level_num)
-    logging.getLogger().setLevel(log_level_num)
-    for handler in logger.handlers:
-        handler.setLevel(log_level_num)
 
     port = int(os.environ.get(SERVICE_PORT_ENV_NAME, DEFAULT_PORT))
     metrics_port = int(
