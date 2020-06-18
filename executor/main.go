@@ -46,6 +46,7 @@ var (
 	hostname       = flag.String("hostname", "localhost", "The hostname of the running server")
 	logWorkers     = flag.Int("logger_workers", 5, "Number of workers handling payload logging")
 	prometheusPath = flag.String("prometheus_path", "/metrics", "The prometheus metrics path")
+	debug          = flag.Bool("debug", false, "Enable debug mode. Logs will be more verbose, and not structured.")
 )
 
 func getPredictorFromEnv() (*v1.PredictorSpec, error) {
@@ -173,7 +174,7 @@ func main() {
 		log.Fatal("Failed to create server url from", *hostname, *port)
 	}
 
-	logf.SetLogger(logf.ZapLogger(false))
+	logf.SetLogger(logf.ZapLogger(*debug))
 	logger := logf.Log.WithName("entrypoint")
 
 	var predictor *v1.PredictorSpec
