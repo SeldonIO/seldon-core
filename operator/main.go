@@ -67,6 +67,7 @@ func main() {
 	var namespace string
 	var operatorNamespace string
 	var createResources bool
+	var debug bool
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
@@ -74,9 +75,10 @@ func main() {
 	flag.StringVar(&namespace, "namespace", "", "The namespace to restrict the operator.")
 	flag.StringVar(&operatorNamespace, "operator-namespace", "default", "The namespace of the running operator")
 	flag.BoolVar(&createResources, "create-resources", false, "Create resources such as webhooks and configmaps on startup")
+	flag.BoolVar(&debug, "debug", false, "Enable debug mode. Logs will be more verbose, and not structured.")
 	flag.Parse()
 
-	ctrl.SetLogger(zap.Logger(true))
+	ctrl.SetLogger(zap.Logger(debug))
 
 	config := ctrl.GetConfigOrDie()
 
