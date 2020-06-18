@@ -1,21 +1,33 @@
-# Seldon Core Analytics
+# Logging and log level
 
 Seldon core metrics containers are able to provide different log levels. 
+By default the containers come out of the box with `WARNING` as default log
+level (or the equivalent less verbose settings).
 
-By default the containers come out of the box with WARNING as default log level.
+The verbosity level can be increased to also log `DEBUG` and `INFO` messages by
+following these instructions.
 
-This can be changed into DEBUG, INFO, WARNING and ERROR by following the following instructions.
+## Log level in Python Wrapper
 
-## Setting the environment variable
+.. Note:: 
+   Setting the ``SELDON_LOG_LEVEL`` to ``WARNING`` and above in the Python
+   wrapper will disable the server's access logs.
 
-### Setting log level in a Python Wrapper
+When using the [Python wrapper](../python) (including the
+[MLflow](../servers/mlflow), [SKLearn](../servers/sklearn) and
+[XGBoost](../servers/xgboost) pre-package servers), you can control the log
+level using the `SELDON_LOG_LEVEL` environment variable.
+This variable can be set to `DEBUG`, `INFO`, `WARNING` or `ERROR` to adjust the
+log level accordingly.
+Note that this has to be set in the **respective container** within your
+inference graph.
 
-The change can be done by setting the `SELDON_LOG_LEVEL` environment variable in the respective container.
+For example, to set it in each container running with the python wrapper, you
+would do it as follows by adding the environment variable `SELDON_LOG_LEVEL` to
+the containers running images wrapped by the python wrapper:
 
-For example, to set it in each container running with the python wrapper, you would do it as follows by adding the environment variable SELDON_LOG_LEVEL to the containers running images wrapped by the python wrapper:
-
-```
-...
+```jsonc
+// ...
 "spec": {
   "containers": [
       { 
@@ -30,24 +42,30 @@ For example, to set it in each container running with the python wrapper, you wo
       }
   ]
 }
-...
+// ...
 ```
 
 Once this has been set, it's possible to use the log in your wrapper code as follows:
 
-```
+```python
 import logging
 
 log = logging.getLogger()
-
 log.debug(...)
 ```
 
-### Setting log level in the Seldon Engine
+## Log level in the service orchestrator
 
-In order to set the log level in the SeldonEngine this can be done by providing the env option to the svcOrchSpec, as follows:
+.. Note:: 
+   When using the Go implementation, setting the ``SELDON_LOG_LEVEL`` to
+   ``WARNING`` and above in the service orchestrator will also change the
+   structure of the log messages, which will be logged as JSON, and will enable
+   log sampling.
 
-```
+In order to set the log level in the Seldon engine this can be done by
+providing the env option to the svcOrchSpec, as follows:
+
+```json
 "svcOrchSpec": {
     "env": [
         {
@@ -60,9 +78,9 @@ In order to set the log level in the SeldonEngine this can be done by providing 
 
 Here is a full example configuration file with a loglevel selection.
 
-```
+```json
 {    
-    "apiVersion": "machinelearning.seldon.io/v1alpha2",
+    "apiVersion": "machinelearning.seldon.io/v1",
     "kind": "SeldonDeployment",
     "metadata": {
         "labels": {
@@ -71,9 +89,6 @@ Here is a full example configuration file with a loglevel selection.
         "name": "seldon-model"
     },
     "spec": {
-        "name": "test-deployment",
-        "oauth_key": "oauth-key",
-        "oauth_secret": "oauth-secret",
         "predictors": [
             {
                 "componentSpecs": [
@@ -121,5 +136,4 @@ Here is a full example configuration file with a loglevel selection.
     }
 }
 ```
-
 
