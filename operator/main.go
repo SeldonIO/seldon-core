@@ -60,6 +60,20 @@ func init() {
 	// +kubebuilder:scaffold:scheme
 }
 
+func setupLogger(debug bool) {
+	// NOTE: The Go logger doesn't use `DEBUG`, `WARNING`, etc.  but we can mimic
+	// it to maintain compatibility.
+	logLevel := os.Getenv("SELDON_LOG_LEVEL")
+
+	if logLevel == "DEBUG" || logLevel == "INFO" {
+		debug = true
+	} else if logLevel == "WARN" || logLevel == "WARNING" || logLevel == "ERROR" {
+		debug = false
+	}
+
+	ctrl.SetLogger(zap.Logger(debug))
+}
+
 func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
@@ -68,6 +82,7 @@ func main() {
 	var operatorNamespace string
 	var createResources bool
 	var debug bool
+
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
@@ -78,7 +93,7 @@ func main() {
 	flag.BoolVar(&debug, "debug", false, "Enable debug mode. Logs will be more verbose, and not structured.")
 	flag.Parse()
 
-	ctrl.SetLogger(zap.Logger(debug))
+	setupLogger(debug)
 
 	config := ctrl.GetConfigOrDie()
 
