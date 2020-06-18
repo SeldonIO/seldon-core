@@ -66,10 +66,10 @@ func (s *TensorflowGrpcClient) getConnection(host string, port int32, modelName 
 func (s *TensorflowGrpcClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	switch v := msg.GetPayload().(type) {
 	case *serving.PredictRequest, *serving.ClassificationRequest, *serving.MultiInferenceRequest:
-		s.Log.Info("Identity chain")
+		s.Log.V(1).Info("Identity chain")
 		return msg, nil
 	case *serving.PredictResponse:
-		s.Log.Info("Chain!")
+		s.Log.V(1).Info("Chain!")
 		pr := serving.PredictRequest{
 			ModelSpec: &serving.ModelSpec{
 				Name: modelName,
