@@ -7,6 +7,8 @@ import logging
 import argparse
 import json
 import yaml
+import tempfile
+import shutil
 from subprocess import run
 from seldon_core.microservice import PARAMETERS_ENV_NAME, parse_parameters
 from seldon_core import Storage
@@ -47,6 +49,7 @@ def setup_env(model_folder):
     pyfunc_flavour = flavours["python_function"]
     env_file_name = pyfunc_flavour["env"]
     env_file_path = os.path.join(model_folder, env_file_name)
+    env_file_path = copy_env(env_file_path)
 
     create_env(env_file_path)
     install_base_reqs()
@@ -105,6 +108,17 @@ def create_env(env_file_path):
 
     cmd = f"conda env create -n {env_name} --file {env_file_path}"
     run(cmd, shell=True, check=True)
+
+
+def copy_env(env_file_path):
+    """Copy conda.yaml to temp dir
+    to prevent the case where the existing file is on Read-only file system.
+    """
+    temp_dir = tempfile.mkdtemp()
+    new_env_path = os.path.join(temp_dir, "conda.yaml")
+    shutil.copy2(env_file_path, new_env_path)
+
+    return new_env_path
 
 
 def install_base_reqs():
