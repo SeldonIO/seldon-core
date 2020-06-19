@@ -1,13 +1,27 @@
 version: 1
 
+python: &python
+  package_manager: "python"
+  update_schedule: "weekly"
+  default_reviewers:
+    - adriangonz
+
+java: &java
+  package_manager: "java:maven"
+  update_schedule: "weekly"
+  default_reviewers:
+    - adriangonz
+
+go: &go
+  package_manager: "go:mod"
+  update_schedule: "weekly"
+  default_reviewers:
+    - adriangonz
+
 update_configs:
-  - package_manager: "python"
-    directory: "/python"
-    update_schedule: "weekly"
-    default_reviewers:
-      - adriangonz
-  - package_manager: "java:maven"
-    directory: "/engine"
-    update_schedule: "weekly"
-    default_reviewers:
-      - adriangonz
+  - directory: "/python"
+    <<<: *python
+  - directory: "/engine"
+    <<<: *java
+  - directory: "/executor"
+    <<<: *go
