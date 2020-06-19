@@ -49,6 +49,35 @@ def json_to_seldon_message(
         raise SeldonMicroserviceException("Invalid JSON: " + str(pbExc))
 
 
+def json_to_seldon_model_metadata(
+    metadata_json: Dict,
+) -> prediction_pb2.SeldonModelMetadata:
+    """
+    Parses JSON input to SeldonModelMetadata proto
+
+    Parameters
+    ----------
+    metadata_json
+        JSON input
+
+    Returns
+    -------
+        SeldonModelMetadata
+    """
+    if metadata_json is None:
+        metadata_json = {}
+    if metadata_json["apiVersion"] == "v1":
+        metadata_json = dict(metadata_json)
+        metadata_json["input"] = metadata_json.pop("inputs")
+        metadata_json["output"] = metadata_json.pop("outputs")
+    metadata_proto = prediction_pb2.SeldonModelMetadata()
+    try:
+        json_format.ParseDict(metadata_json, metadata_proto, ignore_unknown_fields=True)
+        return metadata_proto
+    except json_format.ParseError as pbExc:
+        raise SeldonMicroserviceException(f"Invalid metadata: {pbExc}")
+
+
 def json_to_feedback(message_json: Dict) -> prediction_pb2.Feedback:
     """
     Parse a JSON message to a Feedback proto
