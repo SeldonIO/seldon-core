@@ -347,6 +347,15 @@ if __name__ == "__main__":
                     + HELM_IF_END
                     + HELM_IF_END
                 )
+            elif (
+                name == "seldon-leader-election-rolebinding"
+                or name == "seldon-leader-election-role"
+                ):
+                fdata = (
+                        HELM_RBAC_IF_START
+                        + fdata
+                        + HELM_IF_END
+                )
             elif name == "seldon-manager" and kind == "serviceaccount":
                 fdata = HELM_SA_IF_START + fdata + HELM_IF_END
             elif kind == "issuer" or kind == "certificate":
