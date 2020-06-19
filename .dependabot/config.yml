@@ -12,7 +12,7 @@ update_configs:
     default_reviewers:
       - adriangonz
   - directory: "/executor"
-    package_manager: "go:mod"
+    package_manager: "go:modules"
     update_schedule: "weekly"
     default_reviewers:
       - adriangonz
