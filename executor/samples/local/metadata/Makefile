@@ -32,5 +32,25 @@ request:
 		 -d '{"data": {"names": ["input"], "ndarray": ["data"]}}' \
 		 http://localhost:${EXECUTOR_PORT}/api/v1.0/predictions | jq .
 
+
 metadata:
+	curl -s http://localhost:${EXECUTOR_PORT}/api/v1.0/metadata/mock-model | jq .
+
+
+graph-metadata:
 	curl -s http://localhost:${EXECUTOR_PORT}/api/v1.0/metadata | jq .
+
+
+request-grpc:
+	cd ${BASE}/proto && grpcurl \
+		-d '{"data": {"names": ["input"], "ndarray": ["data"]}}' \
+		-plaintext -proto ./prediction.proto  0.0.0.0:8000 seldon.protos.Seldon/Predict
+
+metadata-grpc:
+	cd ${BASE}/proto && grpcurl \
+	-d '{"name": "mock-model"}' \
+	-plaintext -proto ./prediction.proto  0.0.0.0:8000 seldon.protos.Seldon/Metadata
+
+graph-metadata-grpc:
+	cd ${BASE}/proto && grpcurl \
+	-plaintext -proto ./prediction.proto  0.0.0.0:8000 seldon.protos.Seldon/GraphMetadata

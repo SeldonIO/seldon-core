@@ -6,6 +6,8 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 	"github.com/seldonio/seldon-core/executor/api/client"
+
+	"github.com/golang/protobuf/ptypes/empty"
 	grpc2 "github.com/seldonio/seldon-core/executor/api/grpc"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
@@ -174,5 +176,16 @@ func (s *SeldonMessageGrpcClient) Status(ctx context.Context, modelName string, 
 }
 
 func (s *SeldonMessageGrpcClient) Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
-	return nil, errors.Errorf("Not implemented")
+	conn, err := s.getConnection(host, port, modelName)
+	if err != nil {
+		return s.CreateErrorPayload(err), err
+	}
+	grpcClient := proto.NewModelClient(conn)
+	resp, err := grpcClient.Metadata(grpc2.AddMetadataToOutgoingGrpcContext(ctx, meta), &empty.Empty{}, s.callOptions...)
+	if err != nil {
+		return s.CreateErrorPayload(err), err
+	}
+
+	resPayload := payload.ProtoPayload{Msg: resp}
+	return &resPayload, nil
 }

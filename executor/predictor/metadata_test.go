@@ -497,9 +497,10 @@ func TestGraphV1Array(t *testing.T) {
 		Name: "predictor-name",
 		Models: map[string]ModelMetadata{
 			"model-v1-array": {
-				Name:     "model-v1-array",
-				Platform: "platform-name",
-				Versions: []string{"model-version"},
+				ApiVersion: "v1",
+				Name:       "model-v1-array",
+				Platform:   "platform-name",
+				Versions:   []string{"model-version"},
 				Inputs: map[string]interface{}{
 					"datatype": "array",
 					"shape":    []int{2, 2},
@@ -554,9 +555,10 @@ func TestGraphV1JsonData(t *testing.T) {
 		Name: "predictor-name",
 		Models: map[string]ModelMetadata{
 			"model-v1-jsondata": {
-				Name:     "model-v1-jsondata",
-				Platform: "platform-name",
-				Versions: []string{"model-version"},
+				ApiVersion: "v1",
+				Name:       "model-v1-jsondata",
+				Platform:   "platform-name",
+				Versions:   []string{"model-version"},
 				Inputs: map[string]interface{}{
 					"datatype": "jsonData",
 				},
@@ -613,9 +615,10 @@ func TestGraphV1ArrayStringMix(t *testing.T) {
 		Name: "predictor-name",
 		Models: map[string]ModelMetadata{
 			"model-v1-array-string-mix": {
-				Name:     "model-v1-array-string-mix",
-				Platform: "platform-name",
-				Versions: []string{"model-version"},
+				ApiVersion: "v1",
+				Name:       "model-v1-array-string-mix",
+				Platform:   "platform-name",
+				Versions:   []string{"model-version"},
 				Inputs: map[string]interface{}{
 					"datatype": "array",
 					"shape":    []int{2, 2},

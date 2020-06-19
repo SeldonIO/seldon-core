@@ -124,7 +124,7 @@ func (s SeldonMessageTestClient) Status(ctx context.Context, modelName string, h
 }
 
 func (s SeldonMessageTestClient) Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
-	return &payload.BytesPayload{Msg: []byte(metadataMap[modelName])}, nil
+	return &payload.BytesPayload{ContentType: "application/json", Msg: []byte(metadataMap[modelName])}, nil
 }
 
 func (s SeldonMessageTestClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
