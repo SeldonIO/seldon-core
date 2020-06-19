@@ -1,4 +1,5 @@
 {{- if .Values.managerCreateResources }}
+{{- if .Values.rbac.create }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -44,4 +45,5 @@ rules:
   - get
   - patch
   - update
+{{- end }}
 {{- end }}
