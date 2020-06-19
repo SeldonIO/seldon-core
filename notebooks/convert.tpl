@@ -6,7 +6,7 @@ import time
 {% if "kubectl rollout status" in super() or "delete" in super() %}
 time.sleep(10)
 {{ super() }}
-time.sleep(2)
+time.sleep(5)
 {% elif "docker run" in super() %}
 {{ super() }}
 time.sleep(3)

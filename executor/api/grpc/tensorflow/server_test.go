@@ -62,8 +62,8 @@ func (s TestTensorflowClient) Chain(ctx context.Context, modelName string, msg p
 	return msg, nil
 }
 
-func (s TestTensorflowClient) Unmarshall(msg []byte) (payload.SeldonPayload, error) {
-	reqPayload := payload.BytesPayload{Msg: msg, ContentType: "application/json"}
+func (s TestTensorflowClient) Unmarshall(msg []byte, contentType string) (payload.SeldonPayload, error) {
+	reqPayload := payload.BytesPayload{Msg: msg, ContentType: contentType}
 	return &reqPayload, nil
 }
 

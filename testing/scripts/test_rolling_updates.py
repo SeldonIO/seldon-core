@@ -1,4 +1,3 @@
-import os
 import time
 import logging
 import pytest
@@ -25,7 +24,7 @@ with_api_gateways = pytest.mark.parametrize(
 
 
 @pytest.mark.sequential
-@pytest.mark.flaky(max_runs=3)
+@pytest.mark.flaky(max_runs=5)
 @with_api_gateways
 class TestRollingHttp(object):
     # Test updating a model to a multi predictor model

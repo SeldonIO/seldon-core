@@ -3,6 +3,7 @@ pytest-xdist==1.30.0
 pytest-cov==2.8.1
 flaky==3.6.1
 tenacity==6.0.0
+sh==1.13.1
 
 # notebooks test deps
 ipython==7.13.0

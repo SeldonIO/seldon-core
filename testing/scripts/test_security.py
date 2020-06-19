@@ -1,9 +1,10 @@
+from conftest import SELDON_E2E_TESTS_USE_EXECUTOR
 from seldon_e2e_utils import (
     wait_for_status,
     wait_for_rollout,
     retry_run,
     to_resources_path,
-    rest_request,
+    initial_rest_request,
 )
 
 
@@ -15,13 +16,19 @@ def test_xss_escaping(namespace):
     wait_for_rollout(sdep_name, namespace)
 
     payload = '<div class="div-class"></div>'
+
+    # There is a small difference between the engine and the executor, where
+    # the engine will escape the `=` symbol as its unicode equivalent, so we
+    # need to consider both.
     expected = '\\u003cdiv class=\\"div-class\\"\\u003e\\u003c/div\\u003e'
+    if not SELDON_E2E_TESTS_USE_EXECUTOR:
+        expected = '\\u003cdiv class\\u003d\\"div-class\\"\\u003e\\u003c/div\\u003e'
 
-    res = rest_request(sdep_name, namespace, data=payload, dtype="strData")
+    res = initial_rest_request(sdep_name, namespace, data=payload, dtype="strData")
 
-    # We need to compare raw text. Otherwise, Python interprets the escaped
-    # sequences.
-    assert res.text == f'{{"meta":{{}},"strData":"{expected}"}}\n'
+    # We need to compare raw text (instead of `.json()`). Otherwise, Python
+    # interprets the escaped sequences.
+    assert expected in res.text
 
 
 def test_xss_header(namespace):
@@ -31,7 +38,7 @@ def test_xss_header(namespace):
     wait_for_status(sdep_name, namespace)
     wait_for_rollout(sdep_name, namespace)
 
-    res = rest_request(sdep_name, namespace)
+    res = initial_rest_request(sdep_name, namespace)
 
     assert "X-Content-Type-Options" in res.headers
     assert res.headers["X-Content-Type-Options"] == "nosniff"

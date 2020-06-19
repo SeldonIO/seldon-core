@@ -3,7 +3,6 @@ An open source platform to deploy your machine learning models on Kubernetes at 
 
 ![](https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/images/core-logo-small.png)
 
-
 ## Overview
 
 Seldon core converts your ML models (Tensorflow, Pytorch, H2o, etc.) or language wrappers (Python, Java, etc.) into production REST/GRPC microservices.
@@ -63,6 +62,12 @@ You only have to upload your model binaries into your preferred object store, in
 gs://seldon-models/sklearn/iris/model.pickle
 ```
 
+Create a namespace to run your model in:
+
+```
+kubectl create namespace seldon
+```
+
 We then can deploy this model with Seldon Core to our Kubernetes cluster using the pre-packaged model server for scikit-learn (SKLEARN_SERVER) by running the `kubectl apply` command below:
 
 ```yaml
@@ -71,7 +76,7 @@ apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
   name: iris-model
-  namespace: model-namespace
+  namespace: seldon
 spec:
   name: iris
   predictors:
@@ -95,9 +100,9 @@ This can be accessed through the endpoint `http://<ingress_url>/seldon/<namespac
 Or alternatively you can send requests programmatically using our [Seldon Python Client](https://docs.seldon.io/projects/seldon-core/en/latest/python/seldon_client.html) or another Linux CLI:
 
 ```console
-$ curl -X POST http://<ingress>/seldon/model-namespace/iris-model/api/v1.0/predictions \
+$ curl -X POST http://<ingress>/seldon/seldon/iris-model/api/v1.0/predictions \
     -H 'Content-Type: application/json' \
-    -d '{ "data": { "ndarray": [1,2,3,4] } }' | json_pp
+    -d '{ "data": { "ndarray": [[1,2,3,4]] } }' 
 
 {
    "meta" : {},
@@ -367,3 +372,8 @@ Below are some of the core components together with link to the logs that provid
 
 The name Seldon (ˈSɛldən) Core was inspired from [the Foundation Series (Scifi Novel)](https://en.wikipedia.org/wiki/Foundation_series) where it's premise consists of a mathematician called "Hari Seldon" who spends his life developing a theory of Psychohistory, a new and effective mathematical sociology which allows for the future to be predicted extremely accurate through long periods of time (across hundreds of thousands of years).
 
+## Commercial Support
+
+![](https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/images/deploy-logo.png)
+
+We offer commercial support via our enterprise product Seldon Deploy. Please visit [https://www.seldon.io/](https://www.seldon.io/) for details and a trial.

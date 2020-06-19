@@ -1,12 +1,13 @@
 package predictor
 
 import (
+	"encoding/json"
 	. "github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"testing"
 )
 
-func TestGraphMetadata(t *testing.T) {
+func TestGraphMetadataSimple(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 	model := v1.MODEL
@@ -49,7 +50,14 @@ func TestGraphMetadata(t *testing.T) {
 
 	graphMetadata, err := NewGraphMetadata(createPredictorProcess(t), spec)
 	g.Expect(err).Should(BeNil())
-	g.Expect(*graphMetadata).To(Equal(expectedGrahMetadata))
+
+	expectedJson, err := json.Marshal(expectedGrahMetadata)
+	g.Expect(err).Should(BeNil())
+
+	actualJson, err := json.Marshal(graphMetadata)
+	g.Expect(err).Should(BeNil())
+
+	g.Expect(actualJson).To(MatchJSON(expectedJson))
 }
 
 func TestGraphMetadataTwoLevel(t *testing.T) {
@@ -116,7 +124,14 @@ func TestGraphMetadataTwoLevel(t *testing.T) {
 
 	graphMetadata, err := NewGraphMetadata(createPredictorProcess(t), spec)
 	g.Expect(err).Should(BeNil())
-	g.Expect(*graphMetadata).To(Equal(expectedGrahMetadata))
+
+	expectedJson, err := json.Marshal(expectedGrahMetadata)
+	g.Expect(err).Should(BeNil())
+
+	actualJson, err := json.Marshal(graphMetadata)
+	g.Expect(err).Should(BeNil())
+
+	g.Expect(actualJson).To(MatchJSON(expectedJson))
 }
 
 func TestGraphMetadataInputTransformer(t *testing.T) {
@@ -184,7 +199,14 @@ func TestGraphMetadataInputTransformer(t *testing.T) {
 
 	graphMetadata, err := NewGraphMetadata(createPredictorProcess(t), spec)
 	g.Expect(err).Should(BeNil())
-	g.Expect(*graphMetadata).To(Equal(expectedGrahMetadata))
+
+	expectedJson, err := json.Marshal(expectedGrahMetadata)
+	g.Expect(err).Should(BeNil())
+
+	actualJson, err := json.Marshal(graphMetadata)
+	g.Expect(err).Should(BeNil())
+
+	g.Expect(actualJson).To(MatchJSON(expectedJson))
 }
 
 func TestGraphMetadataOutputTransformer(t *testing.T) {
@@ -252,7 +274,14 @@ func TestGraphMetadataOutputTransformer(t *testing.T) {
 
 	graphMetadata, err := NewGraphMetadata(createPredictorProcess(t), spec)
 	g.Expect(err).Should(BeNil())
-	g.Expect(*graphMetadata).To(Equal(expectedGrahMetadata))
+
+	expectedJson, err := json.Marshal(expectedGrahMetadata)
+	g.Expect(err).Should(BeNil())
+
+	actualJson, err := json.Marshal(graphMetadata)
+	g.Expect(err).Should(BeNil())
+
+	g.Expect(actualJson).To(MatchJSON(expectedJson))
 }
 
 func TestGraphMetadataCombinerModel(t *testing.T) {
@@ -344,7 +373,13 @@ func TestGraphMetadataCombinerModel(t *testing.T) {
 	graphMetadata, err := NewGraphMetadata(createPredictorProcess(t), spec)
 	g.Expect(err).Should(BeNil())
 
-	g.Expect(*graphMetadata).To(Equal(expectedGrahMetadata))
+	expectedJson, err := json.Marshal(expectedGrahMetadata)
+	g.Expect(err).Should(BeNil())
+
+	actualJson, err := json.Marshal(graphMetadata)
+	g.Expect(err).Should(BeNil())
+
+	g.Expect(actualJson).To(MatchJSON(expectedJson))
 }
 
 func TestGraphMetadataRouter(t *testing.T) {
@@ -431,5 +466,182 @@ func TestGraphMetadataRouter(t *testing.T) {
 	graphMetadata, err := NewGraphMetadata(createPredictorProcess(t), spec)
 	g.Expect(err).Should(BeNil())
 
-	g.Expect(*graphMetadata).To(Equal(expectedGrahMetadata))
+	expectedJson, err := json.Marshal(expectedGrahMetadata)
+	g.Expect(err).Should(BeNil())
+
+	actualJson, err := json.Marshal(graphMetadata)
+	g.Expect(err).Should(BeNil())
+
+	g.Expect(actualJson).To(MatchJSON(expectedJson))
+}
+
+func TestGraphV1Array(t *testing.T) {
+	t.Logf("Started")
+	g := NewGomegaWithT(t)
+	model := v1.MODEL
+
+	spec := &v1.PredictorSpec{
+		Name: "predictor-name",
+		Graph: &v1.PredictiveUnit{
+			Name: "model-v1-array",
+			Type: &model,
+			Endpoint: &v1.Endpoint{
+				ServiceHost: "foo",
+				ServicePort: 9000,
+				Type:        v1.REST,
+			},
+		},
+	}
+
+	expectedGrahMetadata := GraphMetadata{
+		Name: "predictor-name",
+		Models: map[string]ModelMetadata{
+			"model-v1-array": {
+				Name:     "model-v1-array",
+				Platform: "platform-name",
+				Versions: []string{"model-version"},
+				Inputs: map[string]interface{}{
+					"datatype": "array",
+					"shape":    []int{2, 2},
+				},
+				Outputs: map[string]interface{}{
+					"datatype": "array",
+					"shape":    []int{1},
+				},
+			},
+		},
+		GraphInputs: map[string]interface{}{
+			"datatype": "array",
+			"shape":    []int{2, 2},
+		},
+		GraphOutputs: map[string]interface{}{
+			"datatype": "array",
+			"shape":    []int{1},
+		},
+	}
+
+	graphMetadata, err := NewGraphMetadata(createPredictorProcess(t), spec)
+	g.Expect(err).Should(BeNil())
+
+	expectedJson, err := json.Marshal(expectedGrahMetadata)
+	g.Expect(err).Should(BeNil())
+
+	actualJson, err := json.Marshal(graphMetadata)
+	g.Expect(err).Should(BeNil())
+
+	g.Expect(actualJson).To(MatchJSON(expectedJson))
+}
+
+func TestGraphV1JsonData(t *testing.T) {
+	t.Logf("Started")
+	g := NewGomegaWithT(t)
+	model := v1.MODEL
+
+	spec := &v1.PredictorSpec{
+		Name: "predictor-name",
+		Graph: &v1.PredictiveUnit{
+			Name: "model-v1-jsondata",
+			Type: &model,
+			Endpoint: &v1.Endpoint{
+				ServiceHost: "foo",
+				ServicePort: 9000,
+				Type:        v1.REST,
+			},
+		},
+	}
+
+	expectedGrahMetadata := GraphMetadata{
+		Name: "predictor-name",
+		Models: map[string]ModelMetadata{
+			"model-v1-jsondata": {
+				Name:     "model-v1-jsondata",
+				Platform: "platform-name",
+				Versions: []string{"model-version"},
+				Inputs: map[string]interface{}{
+					"datatype": "jsonData",
+				},
+				Outputs: map[string]interface{}{
+					"datatype": "jsonData",
+					"schema": map[string]string{
+						"custom": "definition",
+					},
+				},
+			},
+		},
+		GraphInputs: map[string]interface{}{
+			"datatype": "jsonData",
+		},
+		GraphOutputs: map[string]interface{}{
+			"datatype": "jsonData",
+			"schema": map[string]string{
+				"custom": "definition",
+			},
+		},
+	}
+
+	graphMetadata, err := NewGraphMetadata(createPredictorProcess(t), spec)
+	g.Expect(err).Should(BeNil())
+
+	expectedJson, err := json.Marshal(expectedGrahMetadata)
+	g.Expect(err).Should(BeNil())
+
+	actualJson, err := json.Marshal(graphMetadata)
+	g.Expect(err).Should(BeNil())
+
+	g.Expect(actualJson).To(MatchJSON(expectedJson))
+}
+
+func TestGraphV1ArrayStringMix(t *testing.T) {
+	t.Logf("Started")
+	g := NewGomegaWithT(t)
+	model := v1.MODEL
+
+	spec := &v1.PredictorSpec{
+		Name: "predictor-name",
+		Graph: &v1.PredictiveUnit{
+			Name: "model-v1-array-string-mix",
+			Type: &model,
+			Endpoint: &v1.Endpoint{
+				ServiceHost: "foo",
+				ServicePort: 9000,
+				Type:        v1.REST,
+			},
+		},
+	}
+
+	expectedGrahMetadata := GraphMetadata{
+		Name: "predictor-name",
+		Models: map[string]ModelMetadata{
+			"model-v1-array-string-mix": {
+				Name:     "model-v1-array-string-mix",
+				Platform: "platform-name",
+				Versions: []string{"model-version"},
+				Inputs: map[string]interface{}{
+					"datatype": "array",
+					"shape":    []int{2, 2},
+				},
+				Outputs: map[string]interface{}{
+					"datatype": "strData",
+				},
+			},
+		},
+		GraphInputs: map[string]interface{}{
+			"datatype": "array",
+			"shape":    []int{2, 2},
+		},
+		GraphOutputs: map[string]interface{}{
+			"datatype": "strData",
+		},
+	}
+
+	graphMetadata, err := NewGraphMetadata(createPredictorProcess(t), spec)
+	g.Expect(err).Should(BeNil())
+
+	expectedJson, err := json.Marshal(expectedGrahMetadata)
+	g.Expect(err).Should(BeNil())
+
+	actualJson, err := json.Marshal(graphMetadata)
+	g.Expect(err).Should(BeNil())
+
+	g.Expect(actualJson).To(MatchJSON(expectedJson))
 }

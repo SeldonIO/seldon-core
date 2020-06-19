@@ -27,6 +27,7 @@ def create_and_run_script(folder, notebook):
         raise e
 
 
+@pytest.mark.flaky(max_runs=2)
 @pytest.mark.notebooks
 class TestNotebooks(object):
 
@@ -89,7 +90,15 @@ class TestNotebooks(object):
         create_and_run_script("../../examples/models/tracing", "tracing")
 
     def test_metrics(self):
-        create_and_run_script("../../examples/models/metrics", "metrics")
+        try:
+            create_and_run_script("../../examples/models/metrics", "metrics")
+        except CalledProcessError as e:
+            run(
+                f"helm delete seldon-core-analytics --namespace seldon-system",
+                shell=True,
+                check=False,
+            )
+            raise e
 
     def test_metadata(self):
         create_and_run_script("../../examples/models/metadata", "metadata")

@@ -93,6 +93,30 @@ var metadataMap = map[string]string{
         ],
         "outputs": [{"name": "combined output", "datatype": "BYTES", "shape": [3]}]
     }`,
+	"model-v1-array": `{
+		"apiVersion": "v1",
+		"name": "model-v1-array",
+		"versions": ["model-version"],
+		"platform": "platform-name",
+		"inputs": {"datatype": "array", "shape": [2, 2]},
+		"outputs": {"datatype": "array", "shape": [1]}
+	}`,
+	"model-v1-jsondata": `{
+		"apiVersion": "v1",
+		"name": "model-v1-jsondata",
+		"versions": ["model-version"],
+		"platform": "platform-name",
+		"inputs": {"datatype": "jsonData"},
+		"outputs": {"datatype": "jsonData", "schema": {"custom": "definition"}}
+	}`,
+	"model-v1-array-string-mix": `{
+		"apiVersion": "v1",
+		"name": "model-v1-array-string-mix",
+		"versions": ["model-version"],
+		"platform": "platform-name",
+		"inputs": {"datatype": "array", "shape": [2, 2]},
+		"outputs": {"datatype": "strData"}
+	}`,
 }
 
 func (s SeldonMessageTestClient) Status(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
@@ -107,8 +131,8 @@ func (s SeldonMessageTestClient) Chain(ctx context.Context, modelName string, ms
 	return msg, nil
 }
 
-func (s SeldonMessageTestClient) Unmarshall(msg []byte) (payload.SeldonPayload, error) {
-	reqPayload := payload.BytesPayload{Msg: msg, ContentType: TestContentType}
+func (s SeldonMessageTestClient) Unmarshall(msg []byte, contentType string) (payload.SeldonPayload, error) {
+	reqPayload := payload.BytesPayload{Msg: msg, ContentType: contentType}
 	return &reqPayload, nil
 }
 

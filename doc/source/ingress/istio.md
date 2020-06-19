@@ -17,7 +17,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
   name: seldon-gateway
-  naemspace: istio-system
+  namespace: istio-system
 spec:
   selector:
     istio: ingressgateway # use istio default controller

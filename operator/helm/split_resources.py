@@ -46,7 +46,6 @@ HELM_ENV_SUBST = {
     "PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME": "predictiveUnit.defaultEnvSecretRefName",
     "PREDICTIVE_UNIT_METRICS_PORT_NAME": "predictiveUnit.metricsPortName",
     "USE_EXECUTOR": "executor.enabled",
-    "EXECUTOR_SERVER_GRPC_PORT": "engine.grpc.port",
     "EXECUTOR_CONTAINER_IMAGE_PULL_POLICY": "executor.image.pullPolicy",
     "EXECUTOR_SERVER_PORT": "executor.port",
     "EXECUTOR_SERVER_METRICS_PORT_NAME": "executor.metricsPortName",
