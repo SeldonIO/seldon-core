@@ -2,6 +2,7 @@ syntax = "proto3";
 
 import "google/protobuf/any.proto";
 import "google/protobuf/struct.proto";
+import "google/protobuf/empty.proto";
 import "tensorflow/core/framework/tensor.proto";
 
 package seldon.protos;
@@ -88,6 +89,55 @@ message RequestResponse {
   SeldonMessage response = 2;
 }
 
+
+message SeldonModelMetadataRequest
+{
+  string name = 1;
+}
+
+
+
+
+message SeldonMessageMeta
+{
+  string datatype = 1;
+  repeated int64 shape = 2;
+  google.protobuf.Value schema = 3;
+}
+
+message TensorMetadata
+{
+  string name = 1;
+  string datatype = 2;
+  repeated int64 shape = 3;
+}
+
+message SeldonModelMetadata
+{
+  string apiVersion = 1;
+  string name = 2;
+  repeated string versions = 3;
+  string platform = 4;
+  SeldonMessageMeta input = 5;
+  SeldonMessageMeta output = 6;
+  repeated TensorMetadata inputs = 7;
+  repeated TensorMetadata outputs = 8;
+}
+
+message SeldonGraphMetadata
+{
+  string name = 1;
+  map<string, SeldonModelMetadata> models = 2;
+
+  google.protobuf.Value value_inputs = 3;
+  google.protobuf.Value value_outputs = 4;
+
+  SeldonMessageMeta input = 5;
+  SeldonMessageMeta output = 6;
+  repeated TensorMetadata inputs = 7;
+  repeated TensorMetadata outputs = 8;
+}
+
 // [END Messages]
 
 
@@ -104,12 +154,13 @@ service Generic {
 service Model {
   rpc Predict(SeldonMessage) returns (SeldonMessage) {};
   rpc SendFeedback(Feedback) returns (SeldonMessage) {};
- }
+  rpc Metadata(google.protobuf.Empty) returns (SeldonModelMetadata) {};
+}
 
 service Router {
   rpc Route(SeldonMessage) returns (SeldonMessage) {};
   rpc SendFeedback(Feedback) returns (SeldonMessage) {};
- }
+}
 
 service Transformer {
   rpc TransformInput(SeldonMessage) returns (SeldonMessage) {};
@@ -127,6 +178,8 @@ service Combiner {
 service Seldon {
   rpc Predict(SeldonMessage) returns (SeldonMessage) {};
   rpc SendFeedback(Feedback) returns (SeldonMessage) {};
- }
+  rpc Metadata(SeldonModelMetadataRequest) returns (SeldonModelMetadata) {};
+  rpc GraphMetadata(google.protobuf.Empty) returns (SeldonGraphMetadata) {};
+}
 
 // [END Services]
