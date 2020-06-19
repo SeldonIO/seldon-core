@@ -3,14 +3,19 @@ package seldon
 import (
 	"context"
 	"net/url"
+	// "encoding/json"
 
+	"fmt"
 	"github.com/go-logr/logr"
+	empty "github.com/golang/protobuf/ptypes/empty"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/grpc"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/predictor"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	// codes "google.golang.org/grpc/codes"
+	// status "google.golang.org/grpc/status"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
@@ -56,9 +61,46 @@ func (g GrpcSeldonServer) SendFeedback(ctx context.Context, req *proto.Feedback)
 	return payloadToMessage(resPayload), nil
 }
 
+func (g GrpcSeldonServer) Metadata(ctx context.Context, req *proto.SeldonModelMetadataRequest) (*proto.SeldonModelMetadata, error) {
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("SeldonMessageRestClient"), g.ServerUrl, g.Namespace, grpc.CollectMetadata(ctx))
+	resPayload, err := seldonPredictorProcess.Metadata(g.predictor.Graph, req.GetName(), nil)
+	if err != nil {
+		return nil, err
+	}
+	return payloadToModelMetadata(resPayload), nil
+}
+
+func (g GrpcSeldonServer) GraphMetadata(ctx context.Context, req *empty.Empty) (*proto.SeldonGraphMetadata, error) {
+
+	g.Log.Info("I am here!")
+	fmt.Println("I am here!!")
+
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("SeldonMessageRestClient"), g.ServerUrl, g.Namespace, grpc.CollectMetadata(ctx))
+
+	graphMetadata, err := predictor.NewGraphMetadata(&seldonPredictorProcess, g.predictor)
+	if err != nil {
+		return nil, err
+	}
+	return graphMetadata.ToProto(), nil
+}
+
 func payloadToMessage(p payload.SeldonPayload) *proto.SeldonMessage {
 	if m, ok := p.GetPayload().(*proto.SeldonMessage); ok {
 		return m
 	}
 	return nil
 }
+
+func payloadToModelMetadata(p payload.SeldonPayload) *proto.SeldonModelMetadata {
+	if m, ok := p.GetPayload().(*proto.SeldonModelMetadata); ok {
+		return m
+	}
+	return nil
+}
+
+// func payloadToGraphMetadata(p payload.SeldonPayload) *proto.SeldonGraphMetadata {
+// 	if m, ok := p.GetPayload().(*proto.SeldonGraphMetadata); ok {
+// 		return m
+// 	}
+// 	return nil
+// }

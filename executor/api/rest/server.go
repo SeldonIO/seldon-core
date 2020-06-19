@@ -311,7 +311,6 @@ func (r *SeldonRestApi) graphMetadata(w http.ResponseWriter, req *http.Request) 
 
 	ctx := req.Context()
 
-	r.Log.Info("Tracing:", opentracing.IsGlobalTracerRegistered())
 	// Apply tracing if active
 	if opentracing.IsGlobalTracerRegistered() {
 		var serverSpan opentracing.Span
