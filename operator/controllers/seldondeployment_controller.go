@@ -416,13 +416,11 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 
 		// SSL config is used to set ssl on each container
 		certSecretRefName := ""
-		certEnvVar := &corev1.EnvVar{}
-		predictorCertConfig := p.Graph.SSL
+		predictorCertConfig := p.SSL
 		if predictorCertConfig != nil {
 			if len(predictorCertConfig.SecretNameOverride) > 0 {
 				// SecretNameOverride completely overrides all certmanager setup
 				certSecretRefName = predictorCertConfig.SecretNameOverride
-				certEnvVar = &corev1.EnvVar{Name: ENV_VAR_NAME_CERT_SECRET_NAME, Value: envDefaultCertIssuerRefName}
 			} else {
 				certSpec := predictorCertConfig.CertSpecOverrides
 				if certSpec == nil {
@@ -444,7 +442,6 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 				if len(certSecretRefName) <= 0 {
 					certSecretRefName = machinelearningv1.GenerateSecretName(seldonId, &p)
 					cert.Spec.SecretName = certSecretRefName
-					certEnvVar = &corev1.EnvVar{Name: ENV_VAR_NAME_CERT_SECRET_NAME, Value: certSecretRefName}
 				}
 				// Set to default set in env variable if not provided
 				if len(cert.Spec.IssuerRef.Name) <= 0 {
@@ -466,7 +463,10 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 			}
 
 			// Add secret ref name to the container of the separate svcorch if created
-			utils.AddEnvVarToDeploymentContainers(deploy, certEnvVar)
+			if len(certSecretRefName) > 0 {
+				certEnvVar := &corev1.EnvVar{Name: ENV_VAR_NAME_CERT_SECRET_NAME, Value: certSecretRefName}
+				utils.AddEnvVarToDeploymentContainers(deploy, certEnvVar)
+			}
 			c.deployments = append(c.deployments, deploy)
 		}
 
@@ -572,17 +572,6 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 			return nil, err
 		}
 
-		// Find the current deployment and add the environment variables for the certificate
-		sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(&p, p.Graph.Name)
-		currentDeployName := machinelearningv1.GetDeploymentName(mlDep, p, sPodSpec, idx)
-		for i := 0; i < len(c.deployments); i++ {
-			d := c.deployments[i]
-			if strings.Compare(d.Name, currentDeployName) == 0 {
-				utils.AddEnvVarToDeploymentContainers(d, certEnvVar)
-				break
-			}
-		}
-
 		if !noEngine {
 
 			// Add service orchestrator to engine deployment if needed
@@ -616,6 +605,20 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 					return nil, err
 				}
 
+			}
+
+			// Find the current deployment and add the environment variables for the certificate
+			if len(certSecretRefName) > 0 {
+				sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(&p, p.Graph.Name)
+				currentDeployName := machinelearningv1.GetDeploymentName(mlDep, p, sPodSpec, idx)
+				for i := 0; i < len(c.deployments); i++ {
+					d := c.deployments[i]
+					if strings.Compare(d.Name, currentDeployName) == 0 {
+						certEnvVar := &corev1.EnvVar{Name: ENV_VAR_NAME_CERT_SECRET_NAME, Value: certSecretRefName}
+						utils.AddEnvVarToDeploymentContainers(d, certEnvVar)
+						break
+					}
+				}
 			}
 
 			//Create Service for Predictor - exposed externally (ambassador or istio) and points at engine
@@ -1106,7 +1109,7 @@ func (r *SeldonDeploymentReconciler) createCertificates(components *components, 
 		err := r.Get(context.TODO(), types.NamespacedName{Name: cert.Name, Namespace: cert.Namespace}, found)
 		if err != nil && errors.IsNotFound(err) {
 			ready = false
-			log.Info("Creating Certificate", "all", "namespace", cert.Namespace, "name", cert.Name)
+			log.Info("Creating Certificate", "namespace", cert.Namespace, "name", cert.Name)
 			err = r.Create(context.TODO(), cert)
 			if err != nil {
 				return ready, err
