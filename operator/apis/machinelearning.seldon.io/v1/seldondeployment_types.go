@@ -88,6 +88,25 @@ func GetSeldonDeploymentName(mlDep *SeldonDeployment) string {
 	}
 }
 
+func GetCertificateName(sdepName string, predictorSpec *PredictorSpec) string {
+	name := sdepName + "-" + predictorSpec.Name + constants.CertificateNameSuffix
+	if len(name) > 63 {
+		return "seldon-" + hash(name)
+	} else {
+		return name
+	}
+}
+
+// This function only generates default secret name but secret name can be overriden
+func GenerateSecretName(sdepName string, predictorSpec *PredictorSpec) string {
+	name := sdepName + "-" + predictorSpec.Name + constants.CertificateSecretSuffix
+	if len(name) > 63 {
+		return "seldon-" + hash(name)
+	} else {
+		return name
+	}
+}
+
 func GetExplainerDeploymentName(sdepName string, predictorSpec *PredictorSpec) string {
 	name := sdepName + "-" + predictorSpec.Name + constants.ExplainerNameSuffix
 	if len(name) > 63 {
@@ -353,7 +372,6 @@ type Parameter struct {
 }
 
 type SSL struct {
-	Enabled            bool                           `json:"enabled,omitempty" protobuf:"bytes,1,opt,name=enabled"`
 	SecretNameOverride string                         `json:"secretNameOverride,omitempty" protobuf:"string,2,opt,name=secretNameOverride"`
 	CertSpecOverrides  *certv1alphav2.CertificateSpec `json:"certSpecOverrides,omitempty" protobuf:"bytes,3,opt,name=certSpecOverrides"`
 }
