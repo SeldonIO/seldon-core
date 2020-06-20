@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
+	"encoding/base64"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -9,6 +12,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"path"
 	"strings"
 	"syscall"
 	"time"
@@ -37,17 +41,16 @@ import (
 )
 
 const (
-	logLevelEnvVar  = "SELDON_LOG_LEVEL"
-	logLevelDefault = "INFO"
-	debugEnvVar     = "SELDON_DEBUG"
+	logLevelEnvVar          = "SELDON_LOG_LEVEL"
+	logLevelDefault         = "INFO"
+	debugEnvVar             = "SELDON_DEBUG"
+	ENV_VAR_CERT_MOUNT_PATH = "SELDON_CERT_MOUNT_PATH"
 )
 
 var (
-
-	serverType     = flag.String("server_type", "rpc", "Server type: rpc or kafka")
+	serverType = flag.String("server_type", "rpc", "Server type: rpc or kafka")
 
 	debugDefault = false
-
 
 	configPath     = flag.String("config", "", "Path to kubconfig")
 	sdepName       = flag.String("sdep", "", "Seldon deployment name")
@@ -76,6 +79,8 @@ var (
 		util.GetEnv(logLevelEnvVar, logLevelDefault),
 		"Log level.",
 	)
+
+	envCertMountPath = util.GetEnv(ENV_VAR_CERT_MOUNT_PATH, "")
 )
 
 func getServerUrl(hostname string, port int) (*url.URL, error) {
@@ -278,9 +283,25 @@ func main() {
 	}
 	defer closer.Close()
 	// Create a listener at the desired port.
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
-	if err != nil {
-		log.Fatalf("failed to create listener: %v", err)
+	var lis net.Listener
+	if len(envCertMountPath) > 0 {
+		logger.Info("Creating TLS listener", "port", *port)
+		certPath := path.Join(envCertMountPath, "tls.crt")
+		keyPath := path.Join(envCertMountPath, "tls.key")
+		cert, err := tls.LoadX509KeyPair(certPath, keyPath)
+		if err != nil {
+			log.Fatalf("Error certificate could not be found: %v", err)
+		}
+		lis, err = tls.Listen("tcp", fmt.Sprintf(":%d", *port), &tls.Config{Certificates: []tls.Certificate{cert}})
+		if err != nil {
+			log.Fatalf("failed to create listener: %v", err)
+		}
+	} else {
+		logger.Info("Creating non-TLS listener", "port", *port)
+		lis, err = net.Listen("tcp", fmt.Sprintf(":%d", *port))
+		if err != nil {
+			log.Fatalf("failed to create listener: %v", err)
+		}
 	}
 	defer lis.Close()
 
