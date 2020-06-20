@@ -62,7 +62,8 @@ const (
 	ENV_CONTROLLER_ID                   = "CONTROLLER_ID"
 
 	ENV_DEFAULT_CERT_ISSUER_REF_NAME = "DEFAULT_CERT_ISSUER_REF_NAME"
-	ENV_VAR_NAME_CERT_SECRET_NAME    = "SELDON_CERT_SECRET_NAME"
+	ENV_DEFAULT_CERT_MOUNT_PATH_NAME = "DEFAULT_CERT_MOUNT_PATH_NAME"
+	SELDON_MOUNT_PATH_ENV_NAME       = "SELDON_CERT_MOUNT_PATH"
 
 	DEFAULT_ENGINE_CONTAINER_PORT = 8000
 	DEFAULT_ENGINE_GRPC_PORT      = 5001
@@ -73,6 +74,7 @@ const (
 
 var (
 	envDefaultCertIssuerRefName = GetEnv(ENV_ISTIO_GATEWAY, "selfsigned-issuer")
+	envDefaultCertMountPath     = GetEnv(ENV_DEFAULT_CERT_MOUNT_PATH_NAME, "/cert/")
 )
 
 // SeldonDeploymentReconciler reconciles a SeldonDeployment object
@@ -464,7 +466,8 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 
 			// Add secret ref name to the container of the separate svcorch if created
 			if len(certSecretRefName) > 0 {
-				certEnvVar := &corev1.EnvVar{Name: ENV_VAR_NAME_CERT_SECRET_NAME, Value: certSecretRefName}
+				utils.MountSecretToDeploymentContainers(deploy, certSecretRefName, envDefaultCertMountPath)
+				certEnvVar := &corev1.EnvVar{Name: SELDON_MOUNT_PATH_ENV_NAME, Value: envDefaultCertMountPath}
 				utils.AddEnvVarToDeploymentContainers(deploy, certEnvVar)
 			}
 			c.deployments = append(c.deployments, deploy)
@@ -614,7 +617,8 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 				for i := 0; i < len(c.deployments); i++ {
 					d := c.deployments[i]
 					if strings.Compare(d.Name, currentDeployName) == 0 {
-						certEnvVar := &corev1.EnvVar{Name: ENV_VAR_NAME_CERT_SECRET_NAME, Value: certSecretRefName}
+						utils.MountSecretToDeploymentContainers(d, certSecretRefName, envDefaultCertMountPath)
+						certEnvVar := &corev1.EnvVar{Name: SELDON_MOUNT_PATH_ENV_NAME, Value: envDefaultCertMountPath}
 						utils.AddEnvVarToDeploymentContainers(d, certEnvVar)
 						break
 					}
