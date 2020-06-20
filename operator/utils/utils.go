@@ -11,6 +11,13 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
+func AddEnvVarToDeploymentContainers(deploy *appsv1.Deployment, envVar *v1.EnvVar) {
+	for containerIdx := 0; containerIdx < len(deploy.Spec.Template.Spec.Containers); containerIdx++ {
+		deployContainer := &deploy.Spec.Template.Spec.Containers[containerIdx]
+		deployContainer.Env = append(deployContainer.Env, *envVar)
+	}
+}
+
 func GetPredictionPath(mlDep *machinelearningv1.SeldonDeployment) string {
 	protocol := mlDep.Spec.Protocol
 

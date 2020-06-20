@@ -28,6 +28,7 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	types2 "github.com/gogo/protobuf/types"
+	certv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	"github.com/seldonio/seldon-core/operator/constants"
 	"github.com/seldonio/seldon-core/operator/utils"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -60,11 +61,18 @@ const (
 	ENV_DEFAULT_ENGINE_SERVER_GRPC_PORT = "ENGINE_SERVER_GRPC_PORT"
 	ENV_CONTROLLER_ID                   = "CONTROLLER_ID"
 
+	ENV_DEFAULT_CERT_ISSUER_REF_NAME = "DEFAULT_CERT_ISSUER_REF_NAME"
+	ENV_VAR_NAME_CERT_SECRET_NAME    = "SELDON_CERT_SECRET_NAME"
+
 	DEFAULT_ENGINE_CONTAINER_PORT = 8000
 	DEFAULT_ENGINE_GRPC_PORT      = 5001
 
 	AMBASSADOR_ANNOTATION = "getambassador.io/config"
 	LABEL_CONTROLLER_ID   = "seldon.io/controller-id"
+)
+
+var (
+	envDefaultCertIssuerRefName = GetEnv(ENV_ISTIO_GATEWAY, "selfsigned-issuer")
 )
 
 // SeldonDeploymentReconciler reconciles a SeldonDeployment object
@@ -86,6 +94,7 @@ type components struct {
 	hpas                  []*autoscaling.HorizontalPodAutoscaler
 	virtualServices       []*istio.VirtualService
 	destinationRules      []*istio.DestinationRule
+	certificates          []*certv1alpha2.Certificate
 	defaultDeploymentName string
 	addressable           *machinelearningv1.SeldonAddressable
 }
@@ -404,6 +413,47 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 		noEngine := strings.ToLower(p.Annotations[machinelearningv1.ANNOTATION_NO_ENGINE]) == "true"
 		pSvcName := machinelearningv1.GetPredictorKey(mlDep, &p)
 		log.Info("pSvcName", "val", pSvcName)
+
+		// SSL config is used to set ssl on each container
+		certSecretRefName := ""
+		certEnvVar := &corev1.EnvVar{}
+		predictorCertConfig := p.Graph.SSL
+		if predictorCertConfig != nil {
+			if len(predictorCertConfig.SecretNameOverride) > 0 {
+				// SecretNameOverride completely overrides all certmanager setup
+				certSecretRefName = predictorCertConfig.SecretNameOverride
+				certEnvVar = &corev1.EnvVar{Name: ENV_VAR_NAME_CERT_SECRET_NAME, Value: envDefaultCertIssuerRefName}
+			} else {
+				certSpec := predictorCertConfig.CertSpecOverrides
+				if certSpec == nil {
+					certSpec = &certv1alpha2.CertificateSpec{}
+				}
+
+				certName := machinelearningv1.GetCertificateName(seldonId, &p)
+				cert := &certv1alpha2.Certificate{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      certName,
+						Namespace: namespace,
+					},
+					Spec: *certSpec,
+				}
+
+				// Secret name and issuer name are the two compulsory attributes
+				// so we make sure these have defaults
+				certSecretRefName = cert.Spec.SecretName
+				if len(certSecretRefName) <= 0 {
+					certSecretRefName = machinelearningv1.GenerateSecretName(seldonId, &p)
+					cert.Spec.SecretName = certSecretRefName
+					certEnvVar = &corev1.EnvVar{Name: ENV_VAR_NAME_CERT_SECRET_NAME, Value: certSecretRefName}
+				}
+				// Set to default set in env variable if not provided
+				if len(cert.Spec.IssuerRef.Name) <= 0 {
+					cert.Spec.IssuerRef.Name = envDefaultCertIssuerRefName
+				}
+
+				c.certificates = append(c.certificates, cert)
+			}
+		}
 		// Add engine deployment if separate
 		hasSeparateEnginePod := strings.ToLower(mlDep.Spec.Annotations[machinelearningv1.ANNOTATION_SEPARATE_ENGINE]) == "true"
 		if hasSeparateEnginePod && !noEngine {
@@ -414,6 +464,9 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 			if securityContext != nil {
 				deploy.Spec.Template.Spec.SecurityContext = securityContext
 			}
+
+			// Add secret ref name to the container of the separate svcorch if created
+			utils.AddEnvVarToDeploymentContainers(deploy, certEnvVar)
 			c.deployments = append(c.deployments, deploy)
 		}
 
@@ -517,6 +570,17 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 		err = pi.createStandaloneModelServers(mlDep, &p, &c, &p.Graph, securityContext)
 		if err != nil {
 			return nil, err
+		}
+
+		// Find the current deployment and add the environment variables for the certificate
+		sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(&p, p.Graph.Name)
+		currentDeployName := machinelearningv1.GetDeploymentName(mlDep, p, sPodSpec, idx)
+		for i := 0; i < len(c.deployments); i++ {
+			d := c.deployments[i]
+			if strings.Compare(d.Name, currentDeployName) == 0 {
+				utils.AddEnvVarToDeploymentContainers(d, certEnvVar)
+				break
+			}
 		}
 
 		if !noEngine {
@@ -1032,6 +1096,65 @@ func (r *SeldonDeploymentReconciler) createIstioServices(components *components,
 
 	return ready, nil
 }
+func (r *SeldonDeploymentReconciler) createCertificates(components *components, instance *machinelearningv1.SeldonDeployment, log logr.Logger) (bool, error) {
+	ready := true
+	for _, cert := range components.certificates {
+		if err := ctrl.SetControllerReference(instance, cert, r.Scheme); err != nil {
+			return ready, err
+		}
+		found := &certv1alpha2.Certificate{}
+		err := r.Get(context.TODO(), types.NamespacedName{Name: cert.Name, Namespace: cert.Namespace}, found)
+		if err != nil && errors.IsNotFound(err) {
+			ready = false
+			log.Info("Creating Certificate", "all", "namespace", cert.Namespace, "name", cert.Name)
+			err = r.Create(context.TODO(), cert)
+			if err != nil {
+				return ready, err
+			}
+			r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsCreateCertificate, "Created certificate%q", cert.GetName())
+		} else if err != nil {
+			return ready, err
+		} else {
+			// Update the found object and write the result back if there are any changes
+			if !equality.Semantic.DeepEqual(cert.Spec, found.Spec) {
+				desiredCert := found.DeepCopy()
+				found.Spec = cert.Spec
+				log.Info("Updating Cert", "namespace", cert.Namespace, "name", cert.Name)
+				err = r.Update(context.TODO(), found)
+				if err != nil {
+					return ready, err
+				}
+
+				// Check if what came back from server modulo the defaults applied by k8s is the same or not
+				if !equality.Semantic.DeepEqual(desiredCert.Spec, found.Spec) {
+					ready = false
+					r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsUpdateService, "Updated  Certificate%q", cert.GetName())
+					//For debugging we will show the difference
+					diff, err := kmp.SafeDiff(desiredCert, found)
+					if err != nil {
+						log.Error(err, "Failed to diff")
+					} else {
+						log.Info(fmt.Sprintf("Difference in Certs: %v", diff))
+					}
+				} else {
+					log.Info("The SVCs are the same - api server defaults ignored")
+				}
+			} else {
+				log.Info("Found identical Certificate", "namespace", found.Namespace, "name", found.Name, "status", found.Status)
+				if len(found.Status.Conditions) > 0 {
+					// We check on the latest condition on whether it's ready
+					latestCertStatus := found.Status.Conditions[len(found.Status.Conditions)-1]
+					ready = latestCertStatus.Type == "Ready"
+				} else {
+					ready = false
+				}
+			}
+		}
+
+	}
+
+	return ready, nil
+}
 
 // Create Services specified in components.
 func (r *SeldonDeploymentReconciler) createServices(components *components, instance *machinelearningv1.SeldonDeployment, all bool, log logr.Logger) (bool, error) {
@@ -1479,6 +1602,13 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		return ctrl.Result{}, err
 	}
 
+	certificatesReady, err := r.createCertificates(components, instance, log)
+	if err != nil {
+		r.Recorder.Eventf(instance, corev1.EventTypeWarning, constants.EventsInternalError, err.Error())
+		r.updateStatusForError(instance, err, log)
+		return ctrl.Result{}, err
+	}
+
 	servicesReady, err := r.createServices(components, instance, false, log)
 	if err != nil {
 		r.Recorder.Eventf(instance, corev1.EventTypeWarning, constants.EventsInternalError, err.Error())
@@ -1509,7 +1639,7 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		}
 	}
 
-	if deploymentsReady && servicesReady && hpasReady {
+	if deploymentsReady && servicesReady && hpasReady && certificatesReady {
 		instance.Status.State = machinelearningv1.StatusStateAvailable
 		instance.Status.Description = ""
 	} else {
