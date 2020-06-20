@@ -159,11 +159,6 @@ func (in *PredictiveUnit) DeepCopyInto(out *PredictiveUnit) {
 		*out = make([]Parameter, len(*in))
 		copy(*out, *in)
 	}
-	if in.SSL != nil {
-		in, out := &in.SSL, &out.SSL
-		*out = new(SSL)
-		(*in).DeepCopyInto(*out)
-	}
 	if in.Logger != nil {
 		in, out := &in.Logger, &out.Logger
 		*out = new(Logger)
@@ -252,6 +247,11 @@ func (in *PredictorSpec) DeepCopyInto(out *PredictorSpec) {
 	if in.Explainer != nil {
 		in, out := &in.Explainer, &out.Explainer
 		*out = new(Explainer)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.SSL != nil {
+		in, out := &in.SSL, &out.SSL
+		*out = new(SSL)
 		(*in).DeepCopyInto(*out)
 	}
 }
