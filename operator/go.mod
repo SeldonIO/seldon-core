@@ -7,6 +7,7 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v0.1.0
 	github.com/gogo/protobuf v1.3.1
+
 	github.com/google/go-cmp v0.5.0
 	github.com/onsi/ginkgo v1.14.0
 	github.com/onsi/gomega v1.10.1
@@ -20,4 +21,5 @@ require (
 	k8s.io/client-go v0.17.9
 	knative.dev/pkg v0.0.0-20200513151758-7b6bb61326ae
 	sigs.k8s.io/controller-runtime v0.5.8
+
 )
