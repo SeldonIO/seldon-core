@@ -21,6 +21,7 @@ import (
 	"encoding/hex"
 	"strconv"
 
+	certv1alphav2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	"github.com/seldonio/seldon-core/operator/constants"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta1"
 	v1 "k8s.io/api/core/v1"
@@ -351,6 +352,12 @@ type Parameter struct {
 	Type  ParmeterType `json:"type" protobuf:"int,3,opt,name=type"`
 }
 
+type SSL struct {
+	Enabled            bool                           `json:"enabled,omitempty" protobuf:"bytes,1,opt,name=enabled"`
+	SecretNameOverride string                         `json:"secretNameOverride,omitempty" protobuf:"string,2,opt,name=secretNameOverride"`
+	CertSpecOverrides  *certv1alphav2.CertificateSpec `json:"certSpecOverrides,omitempty" protobuf:"bytes,3,opt,name=certSpecOverrides"`
+}
+
 type PredictiveUnit struct {
 	Name               string                        `json:"name" protobuf:"string,1,opt,name=name"`
 	Children           []PredictiveUnit              `json:"children,omitempty" protobuf:"bytes,2,opt,name=children"`
@@ -362,6 +369,7 @@ type PredictiveUnit struct {
 	ModelURI           string                        `json:"modelUri,omitempty" protobuf:"bytes,8,opt,name=modelUri"`
 	ServiceAccountName string                        `json:"serviceAccountName,omitempty" protobuf:"bytes,9,opt,name=serviceAccountName"`
 	EnvSecretRefName   string                        `json:"envSecretRefName,omitempty" protobuf:"bytes,10,opt,name=envSecretRefName"`
+	SSL                *SSL                          `json:"ssl,omitempty" protobuf:"bytes,11,opt,name=ssl"`
 	// Request/response  payload logging. v2alpha1 feature that is added to v1 for backwards compatibility while v1 is the storage version.
 	Logger *Logger `json:"logger,omitempty"`
 }
