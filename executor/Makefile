@@ -111,5 +111,4 @@ lint: licenses/dep.txt
 	git \
 		--no-pager diff \
 		--exit-code \
-		--name-only \
 		./licenses

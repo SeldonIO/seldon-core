@@ -109,7 +109,6 @@ lint: licenses
 	git \
 		--no-pager diff \
 		--exit-code \
-		--name-only \
 		./licenses
 
 .PHONY: clean
