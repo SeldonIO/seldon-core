@@ -407,6 +407,11 @@ class SeldonStub(object):
         request_serializer=proto_dot_prediction__pb2.SeldonModelMetadataRequest.SerializeToString,
         response_deserializer=proto_dot_prediction__pb2.SeldonModelMetadata.FromString,
         )
+    self.GraphMetadata = channel.unary_unary(
+        '/seldon.protos.Seldon/GraphMetadata',
+        request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+        response_deserializer=proto_dot_prediction__pb2.SeldonGraphMetadata.FromString,
+        )
 
 
 class SeldonServicer(object):
@@ -434,6 +439,13 @@ class SeldonServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def GraphMetadata(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_SeldonServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -451,6 +463,11 @@ def add_SeldonServicer_to_server(servicer, server):
           servicer.Metadata,
           request_deserializer=proto_dot_prediction__pb2.SeldonModelMetadataRequest.FromString,
           response_serializer=proto_dot_prediction__pb2.SeldonModelMetadata.SerializeToString,
+      ),
+      'GraphMetadata': grpc.unary_unary_rpc_method_handler(
+          servicer.GraphMetadata,
+          request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+          response_serializer=proto_dot_prediction__pb2.SeldonGraphMetadata.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
