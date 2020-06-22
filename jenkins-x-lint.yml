@@ -24,3 +24,21 @@ pipelineConfig:
                       - -C python
                       - install_dev
                       - lint
+              - name: lint-operator
+                agent:
+                  image: seldonio/core-builder:0.15
+                steps:
+                  - name: lint-operator
+                    command: make
+                    args:
+                      - -C operator
+                      - lint
+              - name: lint-executor
+                agent:
+                  image: seldonio/core-builder:0.15
+                steps:
+                  - name: lint-executor
+                    command: make
+                    args:
+                      - -C executor
+                      - lint
