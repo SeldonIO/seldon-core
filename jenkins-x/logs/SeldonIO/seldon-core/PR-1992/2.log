@@ -1,0 +1,303 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-1992-li-tpqzc-2[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-s7wqs[0m
+{"level":"warn","ts":1592830567.10665,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1592830567.1345775,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1992-li-tpqzc-2[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-22878[0m
+{"level":"warn","ts":1592830608.0780702,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1592830608.1009502,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1992-li-tpqzc-2[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-1992-li-tpqzc-2[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-htbnv[0m
+{"level":"warn","ts":1592830642.8770897,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1592830642.8805737,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1992-li-tpqzc-2[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-1992-li-bsdpw[0m
+{"level":"warn","ts":1592830643.1030135,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1592830654.0948899,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1992-li-tpqzc-2[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:abf55701d52f252c8a0f954f1db07ae86f451dc8,1992:8e945875de074ef28529b5fbd109d726c68b606c
+DEBUG: ran git fetch --unshallow origin 8e945875de074ef28529b5fbd109d726c68b606c: abf55701d52f252c8a0f954f1db07ae86f451dc8: in 
+DEBUG: ran git checkout master in 
+DEBUG: ran git reset --hard abf55701d52f252c8a0f954f1db07ae86f451dc8 in 
+DEBUG: ran clean --force -d . in 
+DEBUG: ran git merge 8e945875de074ef28529b5fbd109d726c68b606c in 
+Merged SHA 8e945875de074ef28529b5fbd109d726c68b606c with commit message 'Bump grpc.version from 1.25.0 to 1.30.1 in /engine' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-1992-li-tpqzc-2[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=1992
++ BUILD_NUMBER=2
++ PIPELINE_CONTEXT=lint
+++ cat
++++ date
++ COMMENT_MSG='Mon Jun 22 12:57:54 UTC 2020
+The logs for [lint] [2] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-1992/2.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-1992 --build=2'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=1992 '--comment=Mon Jun 22 12:57:54 UTC 2020
+The logs for [lint] [2] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-1992/2.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-1992 --build=2'
+
+Showing logs for build [32mseldonio-seldon-core-pr-1992-li-tpqzc-2[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-1992-li-9vqnr[0m
+{"level":"warn","ts":1592830677.8545763,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1592830677.9164047,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1992-li-tpqzc-2[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-1992-li-vnk7t[0m
+{"level":"warn","ts":1592830678.013043,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1592830679.0702028,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1992-li-tpqzc-2[0m stage [32mlint-python[0m and container [32mstep-credential-initializer-8f5bw[0m
+{"level":"warn","ts":1592830701.7455266,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1592830701.7485404,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1992-li-tpqzc-2[0m stage [32mlint-python[0m and container [32mstep-working-dir-initializer-vhwlx[0m
+{"level":"warn","ts":1592830708.7367675,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1592830708.7681477,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1992-li-tpqzc-2[0m stage [32mlint-python[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-1992-li-tpqzc-2[0m stage [32mlint-python[0m and container [32mstep-create-dir-workspace-2gpgd[0m
+{"level":"warn","ts":1592830798.4840937,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1592830798.4924362,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1992-li-tpqzc-2[0m stage [32mlint-python[0m and container [32mstep-source-copy-workspace-vn2qz[0m
+{"level":"warn","ts":1592830799.4841833,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1592830811.795187,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-1992-li-tpqzc-2[0m stage [32mlint-python[0m and container [32mstep-lint-python[0m
+make: Entering directory '/workspace/source/python'
+pip install -e . -r requirements-dev.txt
+Obtaining file:///workspace/source/python
+Collecting Flask<2.0.0 (from -r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/f2/28/2a03252dfb9ebf377f40fba6a7841b47083260bf8bd8e737b0c6952df83f/Flask-1.1.2-py2.py3-none-any.whl (94kB)
+Collecting jsonschema<4.0.0 (from -r requirements.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/c5/8f/51e89ce52a085483359217bc72cdbf6e75ee595d5b1d4b5ade40c7e018b8/jsonschema-3.2.0-py2.py3-none-any.whl (56kB)
+Collecting Flask-cors<4.0.0 (from -r requirements.txt (line 3))
+  Downloading https://files.pythonhosted.org/packages/78/38/e68b11daa5d613e3a91e4bf3da76c94ac9ee0d9cd515af9c1ab80d36f709/Flask_Cors-3.0.8-py2.py3-none-any.whl
+Collecting redis<4.0.0 (from -r requirements.txt (line 4))
+  Downloading https://files.pythonhosted.org/packages/a7/7c/24fb0511df653cf1a5d938d8f5d19802a88cef255706fdda242ff97e91b7/redis-3.5.3-py2.py3-none-any.whl (72kB)
+Requirement already satisfied: requests<3.0.0 in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 5)) (2.21.0)
+Collecting numpy<2.0.0 (from -r requirements.txt (line 6))
+  Downloading https://files.pythonhosted.org/packages/b4/93/76311932b0c7efd3111f6604609f36d568b912e16bebd86d99f0612d3930/numpy-1.19.0-cp37-cp37m-manylinux1_x86_64.whl (13.5MB)
+Requirement already satisfied: flatbuffers<2.0.0 in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 7)) (1.11)
+Requirement already satisfied: protobuf<4.0.0 in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 8)) (3.7.1)
+Requirement already satisfied: grpcio<2.0.0 in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 9)) (1.20.1)
+Collecting Flask-OpenTracing<1.2.0,>=1.1.0 (from -r requirements.txt (line 10))
+  Downloading https://files.pythonhosted.org/packages/58/6c/6417701ba5ecc8854670c6db3207bcc3e5fbc96289a7cb18d5516d99a1c6/Flask-OpenTracing-1.1.0.tar.gz
+Collecting opentracing<2.3.0,>=2.2.0 (from -r requirements.txt (line 11))
+  Downloading https://files.pythonhosted.org/packages/94/9f/289424136addf621fb4c75624ef9a3a80e8575da3993a87950c57e93217e/opentracing-2.2.0.tar.gz (47kB)
+Collecting jaeger-client<4.2.0,>=4.1.0 (from -r requirements.txt (line 12))
+  Downloading https://files.pythonhosted.org/packages/f1/da/569a4f1bc3d0c412c7f903053f09ef62fa10949374ca90bc852b22dd3860/jaeger-client-4.1.0.tar.gz (80kB)
+Collecting grpcio-opentracing<1.2.0,>=1.1.4 (from -r requirements.txt (line 13))
+  Downloading https://files.pythonhosted.org/packages/db/82/2fcad380697c3dab25de76ee590bcab3eb9bbfb4add916044d7e83ec2b10/grpcio_opentracing-1.1.4-py3-none-any.whl
+Collecting pyaml<20.0.0 (from -r requirements.txt (line 14))
+  Downloading https://files.pythonhosted.org/packages/35/1e/eda9fe07f752ced7afcef590e7d74390f0d9c9c0b7ff98317afbaa0697e3/pyaml-19.12.0-py2.py3-none-any.whl
+Collecting gunicorn<20.1.0,>=19.9.0 (from -r requirements.txt (line 15))
+  Downloading https://files.pythonhosted.org/packages/69/ca/926f7cd3a2014b16870086b2d0fdc84a9e49473c68a8dff8b57f7c156f43/gunicorn-20.0.4-py2.py3-none-any.whl (77kB)
+Collecting minio<6.0.0,>=4.0.9 (from -r requirements.txt (line 16))
+  Downloading https://files.pythonhosted.org/packages/aa/60/81f4a1dc2d320832840288d7ec88aa3e4ee495d8f1452b4c79d8bd67136b/minio-5.0.10-py2.py3-none-any.whl (75kB)
+Collecting azure-storage-blob<3.0.0,>=2.0.1 (from -r requirements.txt (line 17))
+  Downloading https://files.pythonhosted.org/packages/3e/84/610f379b46d7d3c2d48eadeed6a12b6d46a43100fea70534f5992d0ac996/azure_storage_blob-2.1.0-py2.py3-none-any.whl (88kB)
+Collecting setuptools>=41.0.0 (from -r requirements.txt (line 18))
+  Downloading https://files.pythonhosted.org/packages/e9/93/4860cebd5ad3ff2664ad3c966490ccb46e3b88458b2095145bca11727ca4/setuptools-47.3.1-py3-none-any.whl (582kB)
+Collecting google-cloud-storage>=1.16.0 (from -r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/98/8c/41398b95ad0d612e1cfc3c1816292540bac76242ef2aaa4b7adb06da5f6b/google_cloud_storage-1.29.0-py2.py3-none-any.whl (85kB)
+Collecting prometheus_client<0.9.0,>=0.7.1 (from -r requirements.txt (line 20))
+  Downloading https://files.pythonhosted.org/packages/3f/0e/554a265ffdc56e1494ef08e18f765b0cdec78797f510c58c45cf37abb4f4/prometheus_client-0.8.0-py2.py3-none-any.whl (53kB)
+Collecting black==19.10b0 (from -r requirements-dev.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/fd/bb/ad34bbc93d1bea3de086d7c59e528d4a503ac8fe318bd1fa48605584c3d2/black-19.10b0-py36-none-any.whl (97kB)
+Collecting flake8==3.8.1 (from -r requirements-dev.txt (line 3))
+  Downloading https://files.pythonhosted.org/packages/bf/47/36e51603431e1a5289eb41636199d2c225fcb1ca286e29c02d219c8e6e88/flake8-3.8.1-py2.py3-none-any.whl (72kB)
+Collecting mypy<0.781 (from -r requirements-dev.txt (line 4))
+  Downloading https://files.pythonhosted.org/packages/ed/63/c21d4086d4f24b2192285273a253ab1708940dbdc2ff15bac7c131111970/mypy-0.780-cp37-cp37m-manylinux1_x86_64.whl (20.2MB)
+Collecting Pillow==7.1.1 (from -r requirements-dev.txt (line 5))
+  Downloading https://files.pythonhosted.org/packages/3f/b6/6979d88601932b0434854bcdd5cafeb239c4ed8a8c6c86c8363dd194f9a1/Pillow-7.1.1-cp37-cp37m-manylinux1_x86_64.whl (2.1MB)
+Collecting pytest==5.4.2 (from -r requirements-dev.txt (line 6))
+  Downloading https://files.pythonhosted.org/packages/6c/f9/9f2b6c672c8f8bb87a4c1bd52c1b57213627b035305aad745d015b2a62ae/pytest-5.4.2-py3-none-any.whl (247kB)
+Collecting pytest-cov==2.10.0 (from -r requirements-dev.txt (line 7))
+  Downloading https://files.pythonhosted.org/packages/3d/13/ae3dec587b1cc07fb9f294e52ea9ad140266aea55adb9e12eade3625bd27/pytest_cov-2.10.0-py2.py3-none-any.whl
+Collecting tox<4.0.0 (from -r requirements-dev.txt (line 8))
+  Downloading https://files.pythonhosted.org/packages/c6/36/b0e6016724ae598ba30168618a91d3ee2d7510c20cb05deb8cdc3f7d53b3/tox-3.15.2-py2.py3-none-any.whl (137kB)
+Collecting grpcio-tools==1.27.2 (from -r requirements-dev.txt (line 9))
+  Downloading https://files.pythonhosted.org/packages/b6/2a/58c0e6fedda4f632c4ce04c6ef394eb74f1e1727921f770b744855fff676/grpcio_tools-1.27.2-cp37-cp37m-manylinux1_x86_64.whl (2.3MB)
+Collecting mypy-protobuf==1.22 (from -r requirements-dev.txt (line 10))
+  Downloading https://files.pythonhosted.org/packages/ec/9c/36adfc9a4aee35f8c6ae45f91cb3ef2e041e4c9ef6be1401e369f46c47c6/mypy_protobuf-1.22-py3-none-any.whl
+Collecting tenacity==6.2.0 (from -r requirements-dev.txt (line 13))
+  Downloading https://files.pythonhosted.org/packages/b5/05/ff089032442058bd3386f9cd991cd88ccac81dca1494d78751621ee35e62/tenacity-6.2.0-py2.py3-none-any.whl
+Collecting coverage==5.1 (from -r requirements-dev.txt (line 16))
+  Downloading https://files.pythonhosted.org/packages/0d/85/b055f9c1a210f0c7e16e675b286ce4e16d80ba4c4e566de143e8d58dd7f2/coverage-5.1-cp37-cp37m-manylinux1_x86_64.whl (227kB)
+Collecting pandas==1.0.1 (from -r requirements-dev.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/61/af/ceb7523e86753d5643ed00e8c17a42bdcfe819782c3449d9bbbf5d01867a/pandas-1.0.1-cp37-cp37m-manylinux1_x86_64.whl (10.1MB)
+Collecting pip-licenses==2.2.0 (from -r requirements-dev.txt (line 22))
+  Downloading https://files.pythonhosted.org/packages/44/ae/327f41f9bf6a3d84f51764eb1b1c76b5f72289dafeb3b33e109e2be4d180/pip_licenses-2.2.0-py3-none-any.whl
+Collecting Jinja2>=2.10.1 (from Flask<2.0.0->-r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/30/9e/f663a2aa66a09d838042ae1a2c5659828bb9b41ea3a6efa20a20fd92b121/Jinja2-2.11.2-py2.py3-none-any.whl (125kB)
+Collecting Werkzeug>=0.15 (from Flask<2.0.0->-r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/cc/94/5f7079a0e00bd6863ef8f1da638721e9da21e5bacee597595b318f71d62e/Werkzeug-1.0.1-py2.py3-none-any.whl (298kB)
+Collecting itsdangerous>=0.24 (from Flask<2.0.0->-r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/76/ae/44b03b253d6fade317f32c24d100b3b35c2239807046a4c953c7b89fa49e/itsdangerous-1.1.0-py2.py3-none-any.whl
+Collecting click>=5.1 (from Flask<2.0.0->-r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/d2/3d/fa76db83bf75c4f8d338c2fd15c8d33fdd7ad23a9b5e57eb6c5de26b430e/click-7.1.2-py2.py3-none-any.whl (82kB)
+Collecting attrs>=17.4.0 (from jsonschema<4.0.0->-r requirements.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/a2/db/4313ab3be961f7a763066401fb77f7748373b6094076ae2bda2806988af6/attrs-19.3.0-py2.py3-none-any.whl
+Collecting importlib-metadata; python_version < "3.8" (from jsonschema<4.0.0->-r requirements.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/98/13/a1d703ec396ade42c1d33df0e1cb691a28b7c08b336a5683912c87e04cd7/importlib_metadata-1.6.1-py2.py3-none-any.whl
+Collecting pyrsistent>=0.14.0 (from jsonschema<4.0.0->-r requirements.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/9f/0d/cbca4d0bbc5671822a59f270e4ce3f2195f8a899c97d0d5abb81b191efb5/pyrsistent-0.16.0.tar.gz (108kB)
+Requirement already satisfied: six>=1.11.0 in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->-r requirements.txt (line 2)) (1.12.0)
+Requirement already satisfied: urllib3<1.25,>=1.21.1 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (1.24.1)
+Requirement already satisfied: idna<2.9,>=2.5 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (2.8)
+Requirement already satisfied: chardet<3.1.0,>=3.0.2 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (3.0.4)
+Requirement already satisfied: certifi>=2017.4.17 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (2018.11.29)
+Collecting threadloop<2,>=1 (from jaeger-client<4.2.0,>=4.1.0->-r requirements.txt (line 12))
+  Downloading https://files.pythonhosted.org/packages/d3/1d/8398c1645b97dc008d3c658e04beda01ede3d90943d40c8d56863cf891bd/threadloop-1.0.2.tar.gz
+Collecting thrift (from jaeger-client<4.2.0,>=4.1.0->-r requirements.txt (line 12))
+  Downloading https://files.pythonhosted.org/packages/97/1e/3284d19d7be99305eda145b8aa46b0c33244e4a496ec66440dac19f8274d/thrift-0.13.0.tar.gz (59kB)
+Collecting tornado<6,>=4.3 (from jaeger-client<4.2.0,>=4.1.0->-r requirements.txt (line 12))
+  Downloading https://files.pythonhosted.org/packages/e6/78/6e7b5af12c12bdf38ca9bfe863fcaf53dc10430a312d0324e76c1e5ca426/tornado-5.1.1.tar.gz (516kB)
+Collecting PyYAML (from pyaml<20.0.0->-r requirements.txt (line 14))
+  Downloading https://files.pythonhosted.org/packages/64/c2/b80047c7ac2478f9501676c988a5411ed5572f35d1beff9cae07d321512c/PyYAML-5.3.1.tar.gz (269kB)
+Collecting configparser (from minio<6.0.0,>=4.0.9->-r requirements.txt (line 16))
+  Downloading https://files.pythonhosted.org/packages/4b/6b/01baa293090240cf0562cc5eccb69c6f5006282127f2b846fad011305c79/configparser-5.0.0-py3-none-any.whl
+Collecting pytz (from minio<6.0.0,>=4.0.9->-r requirements.txt (line 16))
+  Downloading https://files.pythonhosted.org/packages/4f/a4/879454d49688e2fad93e59d7d4efda580b783c745fd2ec2a3adf87b0808d/pytz-2020.1-py2.py3-none-any.whl (510kB)
+Collecting python-dateutil (from minio<6.0.0,>=4.0.9->-r requirements.txt (line 16))
+  Downloading https://files.pythonhosted.org/packages/d4/70/d60450c3dd48ef87586924207ae8907090de0b306af2bce5d134d78615cb/python_dateutil-2.8.1-py2.py3-none-any.whl (227kB)
+Collecting azure-common>=1.1.5 (from azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17))
+  Downloading https://files.pythonhosted.org/packages/e5/4d/d000fc3c5af601d00d55750b71da5c231fcb128f42ac95b208ed1091c2c1/azure_common-1.1.25-py2.py3-none-any.whl
+Collecting azure-storage-common~=2.1 (from azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17))
+  Downloading https://files.pythonhosted.org/packages/6b/a0/6794b318ce0118d1a4053bdf0149a60807407db9b710354f2b203c2f5975/azure_storage_common-2.1.0-py2.py3-none-any.whl (47kB)
+Collecting google-auth<2.0dev,>=1.11.0 (from google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/21/57/d706964a7e4056f3f2244e16705388c11631fbb53d3e2d2a2d0fbc24d470/google_auth-1.18.0-py2.py3-none-any.whl (90kB)
+Collecting google-resumable-media<0.6dev,>=0.5.0 (from google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/f2/cc/cd05c633298fcbba5d61b6b8844de598e001954281a004fc1a13c61a5121/google_resumable_media-0.5.1-py2.py3-none-any.whl
+Collecting google-cloud-core<2.0dev,>=1.2.0 (from google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/89/3c/8a7531839028c9690e6d14c650521f3bbaf26e53baaeb2784b8c3eb2fb97/google_cloud_core-1.3.0-py2.py3-none-any.whl
+Collecting pathspec<1,>=0.6 (from black==19.10b0->-r requirements-dev.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/5d/d0/887c58853bd4b6ffc7aa9cdba4fc57d7b979b45888a6bd47e4568e1cf868/pathspec-0.8.0-py2.py3-none-any.whl
+Collecting typed-ast>=1.4.0 (from black==19.10b0->-r requirements-dev.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/5d/10/0c1e8aa723a2b0c4032e048d8e511df82c8a1262f0e1df5e4c54eb2613e9/typed_ast-1.4.1-cp37-cp37m-manylinux1_x86_64.whl (737kB)
+Collecting regex (from black==19.10b0->-r requirements-dev.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/ac/9e/7019ecdbae4537b4c7d0cc800840889c30a36e7a4b319f8272882292b19a/regex-2020.6.8-cp37-cp37m-manylinux1_x86_64.whl (661kB)
+Collecting toml>=0.9.4 (from black==19.10b0->-r requirements-dev.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/9f/e1/1b40b80f2e1663a6b9f497123c11d7d988c0919abbf3c3f2688e448c5363/toml-0.10.1-py2.py3-none-any.whl
+Collecting appdirs (from black==19.10b0->-r requirements-dev.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/3b/00/2344469e2084fb287c2e0b57b72910309874c3245463acd6cf5e3db69324/appdirs-1.4.4-py2.py3-none-any.whl
+Collecting pyflakes<2.3.0,>=2.2.0 (from flake8==3.8.1->-r requirements-dev.txt (line 3))
+  Downloading https://files.pythonhosted.org/packages/69/5b/fd01b0c696f2f9a6d2c839883b642493b431f28fa32b29abc465ef675473/pyflakes-2.2.0-py2.py3-none-any.whl (66kB)
+Collecting pycodestyle<2.7.0,>=2.6.0a1 (from flake8==3.8.1->-r requirements-dev.txt (line 3))
+  Downloading https://files.pythonhosted.org/packages/10/5b/88879fb861ab79aef45c7e199cae3ef7af487b5603dcb363517a50602dd7/pycodestyle-2.6.0-py2.py3-none-any.whl (41kB)
+Collecting mccabe<0.7.0,>=0.6.0 (from flake8==3.8.1->-r requirements-dev.txt (line 3))
+  Downloading https://files.pythonhosted.org/packages/87/89/479dc97e18549e21354893e4ee4ef36db1d237534982482c3681ee6e7b57/mccabe-0.6.1-py2.py3-none-any.whl
+Collecting mypy-extensions<0.5.0,>=0.4.3 (from mypy<0.781->-r requirements-dev.txt (line 4))
+  Downloading https://files.pythonhosted.org/packages/5c/eb/975c7c080f3223a5cdaff09612f3a5221e4ba534f7039db34c35d95fa6a5/mypy_extensions-0.4.3-py2.py3-none-any.whl
+Collecting typing-extensions>=3.7.4 (from mypy<0.781->-r requirements-dev.txt (line 4))
+  Downloading https://files.pythonhosted.org/packages/0c/0e/3f026d0645d699e7320b59952146d56ad7c374e9cd72cd16e7c74e657a0f/typing_extensions-3.7.4.2-py3-none-any.whl
+Collecting py>=1.5.0 (from pytest==5.4.2->-r requirements-dev.txt (line 6))
+  Downloading https://files.pythonhosted.org/packages/ae/12/76710702ccf77dab01246ecb55fbe43175131c0738d0be29f3de50d31071/py-1.8.2-py2.py3-none-any.whl (83kB)
+Collecting wcwidth (from pytest==5.4.2->-r requirements-dev.txt (line 6))
+  Downloading https://files.pythonhosted.org/packages/ef/94/a17155b400812f0558093c6fb99f92ba823e24757d5884e3ec60f5e81319/wcwidth-0.2.4-py2.py3-none-any.whl
+Collecting packaging (from pytest==5.4.2->-r requirements-dev.txt (line 6))
+  Downloading https://files.pythonhosted.org/packages/46/19/c5ab91b1b05cfe63cccd5cfc971db9214c6dd6ced54e33c30d5af1d2bc43/packaging-20.4-py2.py3-none-any.whl
+Collecting pluggy<1.0,>=0.12 (from pytest==5.4.2->-r requirements-dev.txt (line 6))
+  Downloading https://files.pythonhosted.org/packages/a0/28/85c7aa31b80d150b772fbe4a229487bc6644da9ccb7e427dd8cc60cb8a62/pluggy-0.13.1-py2.py3-none-any.whl
+Collecting more-itertools>=4.0.0 (from pytest==5.4.2->-r requirements-dev.txt (line 6))
+  Downloading https://files.pythonhosted.org/packages/ef/9b/6c35ec5483710492e21252465160ee508170159f7e0e2d6cd769022f52f6/more_itertools-8.4.0-py3-none-any.whl (43kB)
+Collecting virtualenv!=20.0.0,!=20.0.1,!=20.0.2,!=20.0.3,!=20.0.4,!=20.0.5,!=20.0.6,!=20.0.7,>=16.0.0 (from tox<4.0.0->-r requirements-dev.txt (line 8))
+  Downloading https://files.pythonhosted.org/packages/31/f7/9e525f298976fa7f3222a3ea8cd84f694850d7bb70554da0afaefbf35a8e/virtualenv-20.0.24-py2.py3-none-any.whl (4.7MB)
+Collecting filelock>=3.0.0 (from tox<4.0.0->-r requirements-dev.txt (line 8))
+  Downloading https://files.pythonhosted.org/packages/93/83/71a2ee6158bb9f39a90c0dea1637f81d5eef866e188e1971a1b1ab01a35a/filelock-3.0.12-py3-none-any.whl
+Collecting PTable (from pip-licenses==2.2.0->-r requirements-dev.txt (line 22))
+  Downloading https://files.pythonhosted.org/packages/ab/b3/b54301811173ca94119eb474634f120a49cd370f257d1aae5a4abaf12729/PTable-0.9.2.tar.gz
+Collecting MarkupSafe>=0.23 (from Jinja2>=2.10.1->Flask<2.0.0->-r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/98/7b/ff284bd8c80654e471b769062a9b43cc5d03e7a615048d96f4619df8d420/MarkupSafe-1.1.1-cp37-cp37m-manylinux1_x86_64.whl
+Collecting zipp>=0.5 (from importlib-metadata; python_version < "3.8"->jsonschema<4.0.0->-r requirements.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/b2/34/bfcb43cc0ba81f527bc4f40ef41ba2ff4080e047acb0586b56b3d017ace4/zipp-3.1.0-py3-none-any.whl
+Requirement already satisfied: cryptography in /opt/conda/lib/python3.7/site-packages (from azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (2.4.2)
+Collecting pyasn1-modules>=0.2.1 (from google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/95/de/214830a981892a3e286c3794f41ae67a4495df1108c3da8a9f62159b9a9d/pyasn1_modules-0.2.8-py2.py3-none-any.whl (155kB)
+Collecting cachetools<5.0,>=2.0.0 (from google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/b3/59/524ffb454d05001e2be74c14745b485681c6ed5f2e625f71d135704c0909/cachetools-4.1.0-py3-none-any.whl
+Collecting rsa<5,>=3.1.4; python_version >= "3" (from google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/1c/df/c3587a667d6b308fadc90b99e8bc8774788d033efcc70f4ecaae7fad144b/rsa-4.6-py3-none-any.whl (47kB)
+Collecting google-api-core<2.0.0dev,>=1.16.0 (from google-cloud-core<2.0dev,>=1.2.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/48/76/bd5e3ebd571b9f688ae123a2bd84b2dc9f75e1214a83b8a759bc16e2fc35/google_api_core-1.21.0-py2.py3-none-any.whl (90kB)
+Collecting pyparsing>=2.0.2 (from packaging->pytest==5.4.2->-r requirements-dev.txt (line 6))
+  Downloading https://files.pythonhosted.org/packages/8a/bb/488841f56197b13700afd5658fc279a2025a39e22449b7cf29864669b15d/pyparsing-2.4.7-py2.py3-none-any.whl (67kB)
+Collecting distlib<1,>=0.3.0 (from virtualenv!=20.0.0,!=20.0.1,!=20.0.2,!=20.0.3,!=20.0.4,!=20.0.5,!=20.0.6,!=20.0.7,>=16.0.0->tox<4.0.0->-r requirements-dev.txt (line 8))
+  Downloading https://files.pythonhosted.org/packages/7d/29/694a3a4d7c0e1aef76092e9167fbe372e0f7da055f5dcf4e1313ec21d96a/distlib-0.3.0.zip (571kB)
+Requirement already satisfied: cffi!=1.11.3,>=1.7 in /opt/conda/lib/python3.7/site-packages (from cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (1.11.5)
+Requirement already satisfied: asn1crypto>=0.21.0 in /opt/conda/lib/python3.7/site-packages (from cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (0.24.0)
+Collecting pyasn1<0.5.0,>=0.4.6 (from pyasn1-modules>=0.2.1->google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/62/1e/a94a8d635fa3ce4cfc7f506003548d0a2447ae76fd5ca53932970fe3053f/pyasn1-0.4.8-py2.py3-none-any.whl (77kB)
+Collecting googleapis-common-protos<2.0dev,>=1.6.0 (from google-api-core<2.0.0dev,>=1.16.0->google-cloud-core<2.0dev,>=1.2.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/03/74/3956721ea1eb4bcf7502a311fdaa60b85bd751de4e57d1943afe9b334141/googleapis_common_protos-1.52.0-py2.py3-none-any.whl (100kB)
+Requirement already satisfied: pycparser in /opt/conda/lib/python3.7/site-packages (from cffi!=1.11.3,>=1.7->cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (2.19)
+Building wheels for collected packages: Flask-OpenTracing, opentracing, jaeger-client, pyrsistent, threadloop, thrift, tornado, PyYAML, PTable, distlib
+  Running setup.py bdist_wheel for Flask-OpenTracing: started
+  Running setup.py bdist_wheel for Flask-OpenTracing: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/7b/dc/25/3cf0b35c129232ee596c413f13d1d1f5a8e38c427266276dfd
+  Running setup.py bdist_wheel for opentracing: started
+  Running setup.py bdist_wheel for opentracing: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/93/e9/b5/1cdc3544f99a54caca13832b5afa26fd98701fe709dc049576
+  Running setup.py bdist_wheel for jaeger-client: started
+  Running setup.py bdist_wheel for jaeger-client: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/f2/84/7f/e89da3ee8ce35598d6382b6389fa2ada5d66acca2422537994
+  Running setup.py bdist_wheel for pyrsistent: started
+  Running setup.py bdist_wheel for pyrsistent: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/c2/85/ad/bc6d41e2c4b35c9fdfed48f0fcd411ffc4164e67755ddf9ebb
+  Running setup.py bdist_wheel for threadloop: started
+  Running setup.py bdist_wheel for threadloop: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/d7/7a/30/d212623a4cd34f6cce400f8122b1b7af740d3440c68023d51f
+  Running setup.py bdist_wheel for thrift: started
+  Running setup.py bdist_wheel for thrift: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/02/a2/46/689ccfcf40155c23edc7cdbd9de488611c8fdf49ff34b1706e
+  Running setup.py bdist_wheel for tornado: started
+  Running setup.py bdist_wheel for tornado: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/6d/e1/ce/f4ee2fa420cc6b940123c64992b81047816d0a9fad6b879325
+  Running setup.py bdist_wheel for PyYAML: started
+  Running setup.py bdist_wheel for PyYAML: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/a7/c1/ea/cf5bd31012e735dc1dfea3131a2d5eae7978b251083d6247bd
+  Running setup.py bdist_wheel for PTable: started
+  Running setup.py bdist_wheel for PTable: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/22/cc/2e/55980bfe86393df3e9896146a01f6802978d09d7ebcba5ea56
+  Running setup.py bdist_wheel for distlib: started
+  Running setup.py bdist_wheel for distlib: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/6e/e8/db/c73dae4867666e89ba3cfbc4b5c092446f0e584eda6f409cbb
+Successfully built Flask-OpenTracing opentracing jaeger-client pyrsistent threadloop thrift tornado PyYAML PTable distlib
+grpcio-tools 1.27.2 has requirement grpcio>=1.27.2, but you'll have grpcio 1.20.1 which is incompatible.
+google-api-core 1.21.0 has requirement protobuf>=3.12.0, but you'll have protobuf 3.7.1 which is incompatible.
+tox 3.15.2 has requirement six>=1.14.0, but you'll have six 1.12.0 which is incompatible.
+Installing collected packages: MarkupSafe, Jinja2, Werkzeug, itsdangerous, click, Flask, attrs, zipp, importlib-metadata, setuptools, pyrsistent, jsonschema, Flask-cors, redis, numpy, opentracing, Flask-OpenTracing, tornado, threadloop, thrift, jaeger-client, grpcio-opentracing, PyYAML, pyaml, gunicorn, configparser, pytz, python-dateutil, minio, azure-common, azure-storage-common, azure-storage-blob, pyasn1, pyasn1-modules, cachetools, rsa, google-auth, google-resumable-media, googleapis-common-protos, google-api-core, google-cloud-core, google-cloud-storage, prometheus-client, pathspec, typed-ast, regex, toml, appdirs, black, pyflakes, pycodestyle, mccabe, flake8, mypy-extensions, typing-extensions, mypy, Pillow, py, wcwidth, pyparsing, packaging, pluggy, more-itertools, pytest, coverage, pytest-cov, filelock, distlib, virtualenv, tox, grpcio-tools, mypy-protobuf, tenacity, pandas, PTable, pip-licenses, seldon-core
+  Found existing installation: setuptools 40.6.3
+    Uninstalling setuptools-40.6.3:
+      Successfully uninstalled setuptools-40.6.3
+  Found existing installation: grpcio-tools 1.20.1
+    Uninstalling grpcio-tools-1.20.1:
+      Successfully uninstalled grpcio-tools-1.20.1
+  Found existing installation: mypy-protobuf 1.10
+    Uninstalling mypy-protobuf-1.10:
+      Successfully uninstalled mypy-protobuf-1.10
+  Running setup.py develop for seldon-core
+Successfully installed Flask-1.1.2 Flask-OpenTracing-1.1.0 Flask-cors-3.0.8 Jinja2-2.11.2 MarkupSafe-1.1.1 PTable-0.9.2 Pillow-7.1.1 PyYAML-5.3.1 Werkzeug-1.0.1 appdirs-1.4.4 attrs-19.3.0 azure-common-1.1.25 azure-storage-blob-2.1.0 azure-storage-common-2.1.0 black-19.10b0 cachetools-4.1.0 click-7.1.2 configparser-5.0.0 coverage-5.1 distlib-0.3.0 filelock-3.0.12 flake8-3.8.1 google-api-core-1.21.0 google-auth-1.18.0 google-cloud-core-1.3.0 google-cloud-storage-1.29.0 google-resumable-media-0.5.1 googleapis-common-protos-1.52.0 grpcio-opentracing-1.1.4 grpcio-tools-1.27.2 gunicorn-20.0.4 importlib-metadata-1.6.1 itsdangerous-1.1.0 jaeger-client-4.1.0 jsonschema-3.2.0 mccabe-0.6.1 minio-5.0.10 more-itertools-8.4.0 mypy-0.780 mypy-extensions-0.4.3 mypy-protobuf-1.22 numpy-1.19.0 opentracing-2.2.0 packaging-20.4 pandas-1.0.1 pathspec-0.8.0 pip-licenses-2.2.0 pluggy-0.13.1 prometheus-client-0.8.0 py-1.8.2 pyaml-19.12.0 pyasn1-0.4.8 pyasn1-modules-0.2.8 pycodestyle-2.6.0 pyflakes-2.2.0 pyparsing-2.4.7 pyrsistent-0.16.0 pytest-5.4.2 pytest-cov-2.10.0 python-dateutil-2.8.1 pytz-2020.1 redis-3.5.3 regex-2020.6.8 rsa-4.6 seldon-core setuptools-47.3.1 tenacity-6.2.0 threadloop-1.0.2 thrift-0.13.0 toml-0.10.1 tornado-5.1.1 tox-3.15.2 typed-ast-1.4.1 typing-extensions-3.7.4.2 virtualenv-20.0.24 wcwidth-0.2.4 zipp-3.1.0
+black \
+	--check ./ ../testing \
+	--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs|.tox)"
+All done! ✨ 🍰 ✨
+71 files would be left unchanged.
+flake8
+0
+make: Leaving directory '/workspace/source/python'
