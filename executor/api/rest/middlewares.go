@@ -1,9 +1,11 @@
 package rest
 
 import (
+	"net/http"
+
 	guuid "github.com/google/uuid"
 	"github.com/seldonio/seldon-core/executor/api/payload"
-	"net/http"
+	"github.com/seldonio/seldon-core/executor/api/util"
 )
 
 const (
@@ -16,6 +18,13 @@ const (
 
 	contentTypeOptsHeader = "X-Content-Type-Options"
 	contentTypeOptsValue  = "nosniff"
+
+	corsAllowOriginEnvVar        = "CORS_ALLOWED_ORIGINS"
+	corsAllowOriginHeader        = "Access-Control-Allow-Origin"
+	corsAllowOriginValueAll      = "*"
+	corsAllowOriginHeadersVar    = "CORS_ALLOWED_HEADERS"
+	corsAllowHeadersHeader       = "Access-Control-Allow-Headers"
+	corsAllowHeadersValueDefault = "Accept, Accept-Encoding, Authorization, Content-Length, Content-Type, X-CSRF-Token"
 )
 
 type CloudeventHeaderMiddleware struct {
@@ -35,6 +44,23 @@ func (h *CloudeventHeaderMiddleware) Middleware(next http.Handler) http.Handler 
 			w.Header().Set(CLOUDEVENTS_HEADER_SOURCE_NAME, "seldon."+h.deploymentName)
 		}
 
+		next.ServeHTTP(w, r)
+	})
+}
+
+// handleCORSRequests adds CORS-required headers, and during CORS Preflight
+// requests, it will exit the request and the request status will be
+// http.StatusOK
+func handleCORSRequests(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		corsAllowOriginValue := util.GetEnv(corsAllowOriginEnvVar, corsAllowOriginValueAll)
+		corsAllowHeadersValue := util.GetEnv(corsAllowOriginHeadersVar, corsAllowHeadersValueDefault)
+		w.Header().Set(corsAllowOriginHeader, corsAllowOriginValue)
+		w.Header().Set(corsAllowHeadersHeader, corsAllowHeadersValue)
+		// Don't pass along OPTIONS (CORS Prefetch) Requests
+		if r.Method == "OPTIONS" {
+			return
+		}
 		next.ServeHTTP(w, r)
 	})
 }
