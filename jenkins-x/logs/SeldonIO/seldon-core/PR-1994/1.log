@@ -1,0 +1,240 @@
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-19-f4g5g-1[0m stage [32mmeta-pipeline[0m and container [32mstep-credential-initializer-rbcwj[0m
+{"level":"warn","ts":1592829278.0512056,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1592829278.0522516,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-19-f4g5g-1[0m stage [32mmeta-pipeline[0m and container [32mstep-working-dir-initializer-gxjjf[0m
+{"level":"warn","ts":1592829279.3832927,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1592829279.3858721,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-19-f4g5g-1[0m stage [32mmeta-pipeline[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-19-f4g5g-1[0m stage [32mmeta-pipeline[0m and container [32mstep-git-source-meta-seldonio-seldon-core-pr-19-7l2j2[0m
+{"level":"warn","ts":1592829351.4733903,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1592829355.9784737,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ abf55701d52f252c8a0f954f1db07ae86f451dc8 in path /workspace/source"}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-19-f4g5g-1[0m stage [32mmeta-pipeline[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:abf55701d52f252c8a0f954f1db07ae86f451dc8,1994:9a92ac5d368d8ca94c74819819a93528f8abbbc1
+DEBUG: ran git fetch --unshallow origin 9a92ac5d368d8ca94c74819819a93528f8abbbc1: abf55701d52f252c8a0f954f1db07ae86f451dc8: in 
+DEBUG: ran git checkout master in 
+DEBUG: ran git reset --hard abf55701d52f252c8a0f954f1db07ae86f451dc8 in 
+DEBUG: ran clean --force -d . in 
+error: error during merge: merging 9a92ac5d368d8ca94c74819819a93528f8abbbc1 into master: git output: Auto-merging version.txt
+CONFLICT (content): Merge conflict in version.txt
+Auto-merging servers/xgboostserver/xgboostserver/image_metadata.json
+CONFLICT (content): Merge conflict in servers/xgboostserver/xgboostserver/image_metadata.json
+Auto-merging servers/tfserving/Dockerfile.redhat
+CONFLICT (content): Merge conflict in servers/tfserving/Dockerfile.redhat
+Auto-merging servers/sklearnserver/sklearnserver/image_metadata.json
+CONFLICT (content): Merge conflict in servers/sklearnserver/sklearnserver/image_metadata.json
+Auto-merging servers/mlflowserver/mlflowserver/image_metadata.json
+CONFLICT (content): Merge conflict in servers/mlflowserver/mlflowserver/image_metadata.json
+Auto-merging python/seldon_core/version.py
+CONFLICT (content): Merge conflict in python/seldon_core/version.py
+Auto-merging operator/config/manager/manager.yaml
+CONFLICT (content): Merge conflict in operator/config/manager/manager.yaml
+Auto-merging operator/config/manager/kustomization.yaml
+CONFLICT (content): Merge conflict in operator/config/manager/kustomization.yaml
+Auto-merging operator/config/manager/configmap.yaml
+CONFLICT (content): Merge conflict in operator/config/manager/configmap.yaml
+Auto-merging operator/Dockerfile.redhat
+CONFLICT (content): Merge conflict in operator/Dockerfile.redhat
+Auto-merging integrations/tfserving/image_metadata.json
+CONFLICT (content): Merge conflict in integrations/tfserving/image_metadata.json
+Auto-merging helm-charts/seldon-core-operator/values.yaml
+CONFLICT (content): Merge conflict in helm-charts/seldon-core-operator/values.yaml
+Auto-merging helm-charts/seldon-core-operator/Chart.yaml
+CONFLICT (content): Merge conflict in helm-charts/seldon-core-operator/Chart.yaml
+Auto-merging helm-charts/seldon-core-analytics/Chart.yaml
+CONFLICT (content): Merge conflict in helm-charts/seldon-core-analytics/Chart.yaml
+Auto-merging executor/Dockerfile.redhat
+CONFLICT (content): Merge conflict in executor/Dockerfile.redhat
+Auto-merging examples/output_transformers/Makefile
+CONFLICT (content): Merge conflict in examples/output_transformers/Makefile
+Auto-merging examples/models/xss/xss-example.ipynb
+CONFLICT (content): Merge conflict in examples/models/xss/xss-example.ipynb
+Auto-merging examples/models/xss/Makefile
+CONFLICT (content): Merge conflict in examples/models/xss/Makefile
+Auto-merging examples/models/sklearn_spacy_text/sklearn_spacy_text_classifier_example.ipynb
+CONFLICT (content): Merge conflict in examples/models/sklearn_spacy_text/sklearn_spacy_text_classifier_example.ipynb
+Auto-merging examples/models/sklearn_iris_jsondata/sklearn_iris_jsondata.ipynb
+CONFLICT (content): Merge conflict in examples/models/sklearn_iris_jsondata/sklearn_iris_jsondata.ipynb
+Auto-merging examples/models/sklearn_iris_jsondata/Makefile
+CONFLICT (content): Merge conflict in examples/models/sklearn_iris_jsondata/Makefile
+Auto-merging examples/models/sklearn_iris_customdata/sklearn_iris_customdata.ipynb
+CONFLICT (content): Merge conflict in examples/models/sklearn_iris_customdata/sklearn_iris_customdata.ipynb
+Auto-merging examples/models/sklearn_iris_customdata/Makefile
+CONFLICT (content): Merge conflict in examples/models/sklearn_iris_customdata/Makefile
+Auto-merging examples/models/sklearn_iris/sklearn_iris.ipynb
+CONFLICT (content): Merge conflict in examples/models/sklearn_iris/sklearn_iris.ipynb
+Auto-merging examples/models/sklearn_iris/Makefile
+CONFLICT (content): Merge conflict in examples/models/sklearn_iris/Makefile
+Auto-merging examples/models/sk_mnist/Makefile
+CONFLICT (content): Merge conflict in examples/models/sk_mnist/Makefile
+Auto-merging examples/models/resnet/reset.ipynb
+CONFLICT (content): Merge conflict in examples/models/resnet/reset.ipynb
+Auto-merging examples/models/resnet/Makefile
+CONFLICT (content): Merge conflict in examples/models/resnet/Makefile
+Auto-merging examples/models/nvidia-mnist/nvidia_mnist.ipynb
+CONFLICT (content): Merge conflict in examples/models/nvidia-mnist/nvidia_mnist.ipynb
+Auto-merging examples/models/nvidia-mnist/Makefile
+CONFLICT (content): Merge conflict in examples/models/nvidia-mnist/Makefile
+Auto-merging examples/models/mean_classifier/image_metadata.json
+CONFLICT (content): Merge conflict in examples/models/mean_classifier/image_metadata.json
+Auto-merging examples/models/deep_mnist/Makefile
+CONFLICT (content): Merge conflict in examples/models/deep_mnist/Makefile
+Auto-merging examples/models/chainer_mnist/chainer_mnist.ipynb
+CONFLICT (content): Merge conflict in examples/models/chainer_mnist/chainer_mnist.ipynb
+Auto-merging examples/models/azure_aks_deep_mnist/azure_aks_deep_mnist.ipynb
+CONFLICT (content): Merge conflict in examples/models/azure_aks_deep_mnist/azure_aks_deep_mnist.ipynb
+Auto-merging examples/models/aws_eks_deep_mnist/aws_eks_deep_mnist.ipynb
+CONFLICT (content): Merge conflict in examples/models/aws_eks_deep_mnist/aws_eks_deep_mnist.ipynb
+Auto-merging examples/models/alibaba_ack_deep_mnist/alibaba_cloud_ack_deep_mnist.ipynb
+CONFLICT (content): Merge conflict in examples/models/alibaba_ack_deep_mnist/alibaba_cloud_ack_deep_mnist.ipynb
+Auto-merging examples/kubeflow/kubeflow_seldon_e2e_pipeline.ipynb
+CONFLICT (content): Merge conflict in examples/kubeflow/kubeflow_seldon_e2e_pipeline.ipynb
+Auto-merging examples/input_tranformer/spam-classification.ipynb
+CONFLICT (content): Merge conflict in examples/input_tranformer/spam-classification.ipynb
+Auto-merging examples/explainers/imagenet/resources/transformer/Makefile
+CONFLICT (content): Merge conflict in examples/explainers/imagenet/resources/transformer/Makefile
+Auto-merging examples/combiners/spam_clf_combiner/spam-classification.ipynb
+CONFLICT (content): Merge conflict in examples/combiners/spam_clf_combiner/spam-classification.ipynb
+Auto-merging examples/cicd/sig-mlops-seldon-jenkins-x/seldon_custom_server_README.ipynb
+CONFLICT (content): Merge conflict in examples/cicd/sig-mlops-seldon-jenkins-x/seldon_custom_server_README.ipynb
+Auto-merging examples/cicd/sig-mlops-jenkins-classic/servers/torchserver/test/sklearn_iris.ipynb
+CONFLICT (content): Merge conflict in examples/cicd/sig-mlops-jenkins-classic/servers/torchserver/test/sklearn_iris.ipynb
+Auto-merging examples/cicd/sig-mlops-jenkins-classic/servers/torchserver/Makefile
+CONFLICT (content): Merge conflict in examples/cicd/sig-mlops-jenkins-classic/servers/torchserver/Makefile
+Auto-merging examples/cicd/sig-mlops-jenkins-classic/models/news_classifier/seldon_custom_server_README.ipynb
+CONFLICT (content): Merge conflict in examples/cicd/sig-mlops-jenkins-classic/models/news_classifier/seldon_custom_server_README.ipynb
+Auto-merging examples/cicd/sig-mlops-jenkins-classic/models/image_classifier/seldon_custom_server_README.ipynb
+CONFLICT (content): Merge conflict in examples/cicd/sig-mlops-jenkins-classic/models/image_classifier/seldon_custom_server_README.ipynb
+Auto-merging examples/batch/kubeflow-pipelines-batch/README.ipynb
+CONFLICT (content): Merge conflict in examples/batch/kubeflow-pipelines-batch/README.ipynb
+Auto-merging engine/pom.xml
+CONFLICT (content): Merge conflict in engine/pom.xml
+Auto-merging engine/Dockerfile.redhat
+CONFLICT (content): Merge conflict in engine/Dockerfile.redhat
+Auto-merging doc/source/workflow/quickstart.md
+CONFLICT (content): Merge conflict in doc/source/workflow/quickstart.md
+Auto-merging doc/source/python/python_wrapping_s2i.md
+CONFLICT (content): Merge conflict in doc/source/python/python_wrapping_s2i.md
+Auto-merging components/storage-initializer/Dockerfile
+CONFLICT (content): Merge conflict in components/storage-initializer/Dockerfile
+Auto-merging components/seldon-request-logger/Dockerfile
+CONFLICT (content): Merge conflict in components/seldon-request-logger/Dockerfile
+Auto-merging components/alibi-explain-server/Dockerfile
+CONFLICT (content): Merge conflict in components/alibi-explain-server/Dockerfile
+Auto-merging components/alibi-detect-server/Dockerfile
+CONFLICT (content): Merge conflict in components/alibi-detect-server/Dockerfile
+Automatic merge failed; fix conflicts and then commit the result.: failed to run 'git merge 9a92ac5d368d8ca94c74819819a93528f8abbbc1' command in directory '', output: 'Auto-merging version.txt
+CONFLICT (content): Merge conflict in version.txt
+Auto-merging servers/xgboostserver/xgboostserver/image_metadata.json
+CONFLICT (content): Merge conflict in servers/xgboostserver/xgboostserver/image_metadata.json
+Auto-merging servers/tfserving/Dockerfile.redhat
+CONFLICT (content): Merge conflict in servers/tfserving/Dockerfile.redhat
+Auto-merging servers/sklearnserver/sklearnserver/image_metadata.json
+CONFLICT (content): Merge conflict in servers/sklearnserver/sklearnserver/image_metadata.json
+Auto-merging servers/mlflowserver/mlflowserver/image_metadata.json
+CONFLICT (content): Merge conflict in servers/mlflowserver/mlflowserver/image_metadata.json
+Auto-merging python/seldon_core/version.py
+CONFLICT (content): Merge conflict in python/seldon_core/version.py
+Auto-merging operator/config/manager/manager.yaml
+CONFLICT (content): Merge conflict in operator/config/manager/manager.yaml
+Auto-merging operator/config/manager/kustomization.yaml
+CONFLICT (content): Merge conflict in operator/config/manager/kustomization.yaml
+Auto-merging operator/config/manager/configmap.yaml
+CONFLICT (content): Merge conflict in operator/config/manager/configmap.yaml
+Auto-merging operator/Dockerfile.redhat
+CONFLICT (content): Merge conflict in operator/Dockerfile.redhat
+Auto-merging integrations/tfserving/image_metadata.json
+CONFLICT (content): Merge conflict in integrations/tfserving/image_metadata.json
+Auto-merging helm-charts/seldon-core-operator/values.yaml
+CONFLICT (content): Merge conflict in helm-charts/seldon-core-operator/values.yaml
+Auto-merging helm-charts/seldon-core-operator/Chart.yaml
+CONFLICT (content): Merge conflict in helm-charts/seldon-core-operator/Chart.yaml
+Auto-merging helm-charts/seldon-core-analytics/Chart.yaml
+CONFLICT (content): Merge conflict in helm-charts/seldon-core-analytics/Chart.yaml
+Auto-merging executor/Dockerfile.redhat
+CONFLICT (content): Merge conflict in executor/Dockerfile.redhat
+Auto-merging examples/output_transformers/Makefile
+CONFLICT (content): Merge conflict in examples/output_transformers/Makefile
+Auto-merging examples/models/xss/xss-example.ipynb
+CONFLICT (content): Merge conflict in examples/models/xss/xss-example.ipynb
+Auto-merging examples/models/xss/Makefile
+CONFLICT (content): Merge conflict in examples/models/xss/Makefile
+Auto-merging examples/models/sklearn_spacy_text/sklearn_spacy_text_classifier_example.ipynb
+CONFLICT (content): Merge conflict in examples/models/sklearn_spacy_text/sklearn_spacy_text_classifier_example.ipynb
+Auto-merging examples/models/sklearn_iris_jsondata/sklearn_iris_jsondata.ipynb
+CONFLICT (content): Merge conflict in examples/models/sklearn_iris_jsondata/sklearn_iris_jsondata.ipynb
+Auto-merging examples/models/sklearn_iris_jsondata/Makefile
+CONFLICT (content): Merge conflict in examples/models/sklearn_iris_jsondata/Makefile
+Auto-merging examples/models/sklearn_iris_customdata/sklearn_iris_customdata.ipynb
+CONFLICT (content): Merge conflict in examples/models/sklearn_iris_customdata/sklearn_iris_customdata.ipynb
+Auto-merging examples/models/sklearn_iris_customdata/Makefile
+CONFLICT (content): Merge conflict in examples/models/sklearn_iris_customdata/Makefile
+Auto-merging examples/models/sklearn_iris/sklearn_iris.ipynb
+CONFLICT (content): Merge conflict in examples/models/sklearn_iris/sklearn_iris.ipynb
+Auto-merging examples/models/sklearn_iris/Makefile
+CONFLICT (content): Merge conflict in examples/models/sklearn_iris/Makefile
+Auto-merging examples/models/sk_mnist/Makefile
+CONFLICT (content): Merge conflict in examples/models/sk_mnist/Makefile
+Auto-merging examples/models/resnet/reset.ipynb
+CONFLICT (content): Merge conflict in examples/models/resnet/reset.ipynb
+Auto-merging examples/models/resnet/Makefile
+CONFLICT (content): Merge conflict in examples/models/resnet/Makefile
+Auto-merging examples/models/nvidia-mnist/nvidia_mnist.ipynb
+CONFLICT (content): Merge conflict in examples/models/nvidia-mnist/nvidia_mnist.ipynb
+Auto-merging examples/models/nvidia-mnist/Makefile
+CONFLICT (content): Merge conflict in examples/models/nvidia-mnist/Makefile
+Auto-merging examples/models/mean_classifier/image_metadata.json
+CONFLICT (content): Merge conflict in examples/models/mean_classifier/image_metadata.json
+Auto-merging examples/models/deep_mnist/Makefile
+CONFLICT (content): Merge conflict in examples/models/deep_mnist/Makefile
+Auto-merging examples/models/chainer_mnist/chainer_mnist.ipynb
+CONFLICT (content): Merge conflict in examples/models/chainer_mnist/chainer_mnist.ipynb
+Auto-merging examples/models/azure_aks_deep_mnist/azure_aks_deep_mnist.ipynb
+CONFLICT (content): Merge conflict in examples/models/azure_aks_deep_mnist/azure_aks_deep_mnist.ipynb
+Auto-merging examples/models/aws_eks_deep_mnist/aws_eks_deep_mnist.ipynb
+CONFLICT (content): Merge conflict in examples/models/aws_eks_deep_mnist/aws_eks_deep_mnist.ipynb
+Auto-merging examples/models/alibaba_ack_deep_mnist/alibaba_cloud_ack_deep_mnist.ipynb
+CONFLICT (content): Merge conflict in examples/models/alibaba_ack_deep_mnist/alibaba_cloud_ack_deep_mnist.ipynb
+Auto-merging examples/kubeflow/kubeflow_seldon_e2e_pipeline.ipynb
+CONFLICT (content): Merge conflict in examples/kubeflow/kubeflow_seldon_e2e_pipeline.ipynb
+Auto-merging examples/input_tranformer/spam-classification.ipynb
+CONFLICT (content): Merge conflict in examples/input_tranformer/spam-classification.ipynb
+Auto-merging examples/explainers/imagenet/resources/transformer/Makefile
+CONFLICT (content): Merge conflict in examples/explainers/imagenet/resources/transformer/Makefile
+Auto-merging examples/combiners/spam_clf_combiner/spam-classification.ipynb
+CONFLICT (content): Merge conflict in examples/combiners/spam_clf_combiner/spam-classification.ipynb
+Auto-merging examples/cicd/sig-mlops-seldon-jenkins-x/seldon_custom_server_README.ipynb
+CONFLICT (content): Merge conflict in examples/cicd/sig-mlops-seldon-jenkins-x/seldon_custom_server_README.ipynb
+Auto-merging examples/cicd/sig-mlops-jenkins-classic/servers/torchserver/test/sklearn_iris.ipynb
+CONFLICT (content): Merge conflict in examples/cicd/sig-mlops-jenkins-classic/servers/torchserver/test/sklearn_iris.ipynb
+Auto-merging examples/cicd/sig-mlops-jenkins-classic/servers/torchserver/Makefile
+CONFLICT (content): Merge conflict in examples/cicd/sig-mlops-jenkins-classic/servers/torchserver/Makefile
+Auto-merging examples/cicd/sig-mlops-jenkins-classic/models/news_classifier/seldon_custom_server_README.ipynb
+CONFLICT (content): Merge conflict in examples/cicd/sig-mlops-jenkins-classic/models/news_classifier/seldon_custom_server_README.ipynb
+Auto-merging examples/cicd/sig-mlops-jenkins-classic/models/image_classifier/seldon_custom_server_README.ipynb
+CONFLICT (content): Merge conflict in examples/cicd/sig-mlops-jenkins-classic/models/image_classifier/seldon_custom_server_README.ipynb
+Auto-merging examples/batch/kubeflow-pipelines-batch/README.ipynb
+CONFLICT (content): Merge conflict in examples/batch/kubeflow-pipelines-batch/README.ipynb
+Auto-merging engine/pom.xml
+CONFLICT (content): Merge conflict in engine/pom.xml
+Auto-merging engine/Dockerfile.redhat
+CONFLICT (content): Merge conflict in engine/Dockerfile.redhat
+Auto-merging doc/source/workflow/quickstart.md
+CONFLICT (content): Merge conflict in doc/source/workflow/quickstart.md
+Auto-merging doc/source/python/python_wrapping_s2i.md
+CONFLICT (content): Merge conflict in doc/source/python/python_wrapping_s2i.md
+Auto-merging components/storage-initializer/Dockerfile
+CONFLICT (content): Merge conflict in components/storage-initializer/Dockerfile
+Auto-merging components/seldon-request-logger/Dockerfile
+CONFLICT (content): Merge conflict in components/seldon-request-logger/Dockerfile
+Auto-merging components/alibi-explain-server/Dockerfile
+CONFLICT (content): Merge conflict in components/alibi-explain-server/Dockerfile
+Auto-merging components/alibi-detect-server/Dockerfile
+CONFLICT (content): Merge conflict in components/alibi-detect-server/Dockerfile
+Automatic merge failed; fix conflicts and then commit the result.'
+[31m
+Pipeline failed on stage 'meta-pipeline' : container 'step-git-merge'. The execution of the pipeline has stopped.[0m
