@@ -1,6 +1,6 @@
-VERSION=0.2
+VERSION=0.3
 IMAGE_BASE=seldonio/model-with-metadata
-S2I_IMAGE_VERSION=1.1.1-rc
+S2I_IMAGE_VERSION=1.2.1-dev
 
 KIND_NAME ?= kind
 

@@ -26,22 +26,13 @@ type ModelMetadata struct {
 }
 
 func (m *ModelMetadata) ToProto() *proto.SeldonModelMetadata {
-	output := &proto.SeldonModelMetadata{
-		ApiVersion: m.ApiVersion,
-		Name:       m.Name,
-		Versions:   m.Versions,
-		Platform:   m.Platform,
+	return &proto.SeldonModelMetadata{
+		Name:     m.Name,
+		Versions: m.Versions,
+		Platform: m.Platform,
+		Inputs:   m.Inputs.([]*proto.SeldonMessageMetadata),
+		Outputs:  m.Outputs.([]*proto.SeldonMessageMetadata),
 	}
-	fmt.Println("ApiVersion:", m.ApiVersion)
-	switch m.ApiVersion {
-	case "v1":
-		output.Input = m.Inputs.(*proto.SeldonMessageMeta)
-		output.Output = m.Outputs.(*proto.SeldonMessageMeta)
-	case "v2":
-		output.Inputs = m.Inputs.([]*proto.TensorMetadata)
-		output.Outputs = m.Outputs.([]*proto.TensorMetadata)
-	}
-	return output
 }
 
 type GraphMetadata struct {
@@ -55,52 +46,15 @@ type GraphMetadata struct {
 
 func (gm *GraphMetadata) ToProto() *proto.SeldonGraphMetadata {
 	output := &proto.SeldonGraphMetadata{
-		Name: gm.Name,
+		Name:    gm.Name,
+		Inputs:  gm.inputNodeMeta.ToProto().Inputs,
+		Outputs: gm.outputNodeMeta.ToProto().Outputs,
 	}
 	output.Models = map[string]*proto.SeldonModelMetadata{}
 	for name, modelMetadata := range gm.Models {
 		output.Models[name] = modelMetadata.ToProto()
 	}
-
-	switch gm.inputNodeMeta.ApiVersion {
-	case "v1":
-		output.Input = gm.inputNodeMeta.ToProto().Input
-	case "v2":
-		output.Inputs = gm.inputNodeMeta.ToProto().Inputs
-	}
-
-	switch gm.outputNodeMeta.ApiVersion {
-	case "v1":
-		output.Output = gm.outputNodeMeta.ToProto().Output
-	case "v2":
-		output.Outputs = gm.outputNodeMeta.ToProto().Outputs
-	}
-
 	return output
-}
-
-func v1ProtoToModelMetadata(meta *proto.SeldonModelMetadata) (*ModelMetadata, error) {
-	output := &ModelMetadata{
-		ApiVersion: meta.GetApiVersion(),
-		Name:       meta.GetName(),
-		Platform:   meta.GetPlatform(),
-		Versions:   meta.GetVersions(),
-		Inputs:     meta.GetInput(),
-		Outputs:    meta.GetOutput(),
-	}
-	return output, nil
-}
-
-func v2ProtoToModelMetadata(meta *proto.SeldonModelMetadata) (*ModelMetadata, error) {
-	output := &ModelMetadata{
-		ApiVersion: meta.GetApiVersion(),
-		Name:       meta.GetName(),
-		Platform:   meta.GetPlatform(),
-		Versions:   meta.GetVersions(),
-		Inputs:     meta.GetInputs(),
-		Outputs:    meta.GetOutputs(),
-	}
-	return output, nil
 }
 
 func protoToModelMetadata(p payload.SeldonPayload) (*ModelMetadata, error) {
@@ -108,16 +62,14 @@ func protoToModelMetadata(p payload.SeldonPayload) (*ModelMetadata, error) {
 	if !ok {
 		return nil, errors.New("Wrong Payload")
 	}
-	switch meta.GetApiVersion() {
-	case "v1":
-		modelMetadata, err := v1ProtoToModelMetadata(meta)
-		return modelMetadata, err
-	case "v2":
-		modelMetadata, err := v2ProtoToModelMetadata(meta)
-		return modelMetadata, err
-	default:
-		return nil, errors.New("Unsupported ModelMetadata protocol")
+	output := &ModelMetadata{
+		Name:     meta.GetName(),
+		Platform: meta.GetPlatform(),
+		Versions: meta.GetVersions(),
+		Inputs:   meta.GetInputs(),
+		Outputs:  meta.GetOutputs(),
 	}
+	return output, nil
 }
 
 func jsonToModelMetadata(p payload.SeldonPayload) (*ModelMetadata, error) {

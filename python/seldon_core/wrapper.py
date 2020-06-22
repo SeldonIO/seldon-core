@@ -229,6 +229,9 @@ class SeldonModelGRPC(object):
     def Metadata(self, request_grpc, context):
         return json_to_seldon_model_metadata(self.metadata_data)
 
+    def GraphMetadata(self, request_grpc, context):
+        return json_to_seldon_model_metadata(self.metadata_data)
+
 
 def get_grpc_server(user_model, seldon_metrics, annotations={}, trace_interceptor=None):
     seldon_model = SeldonModelGRPC(user_model, seldon_metrics)

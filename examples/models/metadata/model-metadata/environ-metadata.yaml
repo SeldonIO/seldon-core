@@ -1,3 +1,4 @@
+
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
@@ -8,7 +9,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/metadata-generic-node:0.2
+        - image: seldonio/metadata-generic-node:0.3
           name: my-model
           env:
           - name: SELDON_LOG_LEVEL
@@ -29,8 +30,6 @@ spec:
                 shape: [ 3 ]
     graph:
       children: []
-      endpoint:
-        type: REST
       name: my-model
       type: MODEL
     name: example

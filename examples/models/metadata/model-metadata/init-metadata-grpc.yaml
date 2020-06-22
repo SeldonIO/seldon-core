@@ -12,6 +12,8 @@ spec:
         - image: seldonio/model-with-metadata:0.3
           name: my-model
           env:
+          - name: API_TYPE
+            value: GRPC            
           - name: SELDON_LOG_LEVEL
             value: DEBUG
     graph:

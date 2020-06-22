@@ -66,10 +66,6 @@ def json_to_seldon_model_metadata(
     """
     if metadata_json is None:
         metadata_json = {}
-    if metadata_json["apiVersion"] == "v1":
-        metadata_json = dict(metadata_json)
-        metadata_json["input"] = metadata_json.pop("inputs")
-        metadata_json["output"] = metadata_json.pop("outputs")
     metadata_proto = prediction_pb2.SeldonModelMetadata()
     try:
         json_format.ParseDict(metadata_json, metadata_proto, ignore_unknown_fields=True)
