@@ -96,46 +96,35 @@ message SeldonModelMetadataRequest
 }
 
 
-
-
-message SeldonMessageMeta
-{
-  string datatype = 1;
-  repeated int64 shape = 2;
-  google.protobuf.Value schema = 3;
-}
-
-message TensorMetadata
+message SeldonMessageMetadata
 {
   string name = 1;
   string datatype = 2;
   repeated int64 shape = 3;
+
+  string messagetype = 4;
+  repeated string names = 5;
+  google.protobuf.Value schema = 6;
 }
+
 
 message SeldonModelMetadata
 {
-  string apiVersion = 1;
-  string name = 2;
-  repeated string versions = 3;
-  string platform = 4;
-  SeldonMessageMeta input = 5;
-  SeldonMessageMeta output = 6;
-  repeated TensorMetadata inputs = 7;
-  repeated TensorMetadata outputs = 8;
+  string name = 1;
+  repeated string versions = 2;
+  string platform = 3;
+  repeated SeldonMessageMetadata inputs = 4;
+  repeated SeldonMessageMetadata outputs = 5;
 }
+
 
 message SeldonGraphMetadata
 {
   string name = 1;
   map<string, SeldonModelMetadata> models = 2;
 
-  google.protobuf.Value value_inputs = 3;
-  google.protobuf.Value value_outputs = 4;
-
-  SeldonMessageMeta input = 5;
-  SeldonMessageMeta output = 6;
-  repeated TensorMetadata inputs = 7;
-  repeated TensorMetadata outputs = 8;
+  repeated SeldonMessageMetadata inputs = 3;
+  repeated SeldonMessageMetadata outputs = 4;
 }
 
 // [END Messages]
