@@ -3,7 +3,6 @@ package predictor
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
@@ -36,19 +35,17 @@ func (m *ModelMetadata) ToProto() *proto.SeldonModelMetadata {
 }
 
 type GraphMetadata struct {
-	Name           string                   `json:"name"`
-	Models         map[string]ModelMetadata `json:"models"`
-	GraphInputs    interface{}              `json:"graphinputs"`
-	GraphOutputs   interface{}              `json:"graphoutputs"`
-	inputNodeMeta  *ModelMetadata
-	outputNodeMeta *ModelMetadata
+	Name         string                   `json:"name"`
+	Models       map[string]ModelMetadata `json:"models"`
+	GraphInputs  interface{}              `json:"graphinputs"`
+	GraphOutputs interface{}              `json:"graphoutputs"`
 }
 
 func (gm *GraphMetadata) ToProto() *proto.SeldonGraphMetadata {
 	output := &proto.SeldonGraphMetadata{
 		Name:    gm.Name,
-		Inputs:  gm.inputNodeMeta.ToProto().Inputs,
-		Outputs: gm.outputNodeMeta.ToProto().Outputs,
+		Inputs:  gm.GraphInputs.([]*proto.SeldonMessageMetadata),
+		Outputs: gm.GraphOutputs.([]*proto.SeldonMessageMetadata),
 	}
 	output.Models = map[string]*proto.SeldonModelMetadata{}
 	for name, modelMetadata := range gm.Models {
@@ -89,8 +86,6 @@ func jsonToModelMetadata(p payload.SeldonPayload) (*ModelMetadata, error) {
 }
 
 func payloadToModelMetadata(p payload.SeldonPayload) (*ModelMetadata, error) {
-	fmt.Println("Works 1")
-
 	switch p.GetContentType() {
 	case "application/json":
 		return jsonToModelMetadata(p)
@@ -121,8 +116,10 @@ func NewGraphMetadata(p *PredictorProcess, spec *v1.PredictorSpec) (*GraphMetada
 		Models: models,
 	}
 
-	output.inputNodeMeta, output.outputNodeMeta = output.getEdgeNodes(spec.Graph)
-	output.GraphInputs, output.GraphOutputs = output.getShapeFromGraph(spec.Graph)
+	inputNodeMeta, outputNodeMeta := output.getEdgeNodes(spec.Graph)
+	output.GraphInputs = inputNodeMeta.Inputs
+	output.GraphOutputs = outputNodeMeta.Outputs
+
 	return output, nil
 }
 
@@ -158,48 +155,6 @@ func (gm *GraphMetadata) getEdgeNodes(node *v1.PredictiveUnit) (
 		// We assume that all children take same type of inputs.
 		childInput, childOutputs := gm.getEdgeNodes(&node.Children[0])
 		return childInput, childOutputs
-	}
-
-	// If we got here it means none of the cases above
-	logger := log.Log.WithName("GraphMetadata")
-	logger.Info("Unimplemented case: Couldn't derive graph-level inputs and outputs.")
-	return nil, nil
-}
-
-func (gm *GraphMetadata) getShapeFromGraph(node *v1.PredictiveUnit) (
-	input interface{}, output interface{},
-) {
-	nodeMeta := gm.Models[node.Name]
-	nodeInputs := nodeMeta.Inputs
-	nodeOutputs := nodeMeta.Outputs
-
-	// Single node graphs: code path terminates here if this is the case
-	if node.Children == nil || len(node.Children) == 0 {
-		// We treat node's inputs/outputs as global despite its Type
-		return nodeInputs, nodeOutputs
-	}
-
-	// Multi nodes graphs
-	if *node.Type == v1.MODEL || *node.Type == v1.TRANSFORMER {
-		// Ignore all children except first one for Models and Transformers
-		_, childOutputs := gm.getShapeFromGraph(&node.Children[0])
-		return nodeInputs, childOutputs
-	} else if *node.Type == v1.OUTPUT_TRANSFORMER {
-		// Ignore all children except first one for Output Transformers
-		// OUTPUT_TRANSFORMER first passes its input to (first) child and returns the output.
-		childInputs, _ := gm.getShapeFromGraph(&node.Children[0])
-		return childInputs, nodeOutputs
-	} else if *node.Type == v1.COMBINER {
-		// Combiner will pass request to all of its children and combine their output.
-		// We assume that all children take same type of inputs.
-		childInputs, _ := gm.getShapeFromGraph(&node.Children[0])
-
-		return childInputs, nodeOutputs
-	} else if *node.Type == v1.ROUTER {
-		// ROUTER will pass request to one of its children and return child's output.
-		// We assume that all children take same type of inputs.
-		childInputs, childOutputs := gm.getShapeFromGraph(&node.Children[0])
-		return childInputs, childOutputs
 	}
 
 	// If we got here it means none of the cases above

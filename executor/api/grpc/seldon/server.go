@@ -2,10 +2,6 @@ package seldon
 
 import (
 	"context"
-	"net/url"
-	// "encoding/json"
-
-	"fmt"
 	"github.com/go-logr/logr"
 	empty "github.com/golang/protobuf/ptypes/empty"
 	"github.com/seldonio/seldon-core/executor/api/client"
@@ -14,8 +10,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/predictor"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	// codes "google.golang.org/grpc/codes"
-	// status "google.golang.org/grpc/status"
+	"net/url"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
@@ -71,9 +66,6 @@ func (g GrpcSeldonServer) Metadata(ctx context.Context, req *proto.SeldonModelMe
 }
 
 func (g GrpcSeldonServer) GraphMetadata(ctx context.Context, req *empty.Empty) (*proto.SeldonGraphMetadata, error) {
-
-	g.Log.Info("I am here!")
-	fmt.Println("I am here!!")
 
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("SeldonMessageRestClient"), g.ServerUrl, g.Namespace, grpc.CollectMetadata(ctx))
 
