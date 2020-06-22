@@ -10,7 +10,7 @@ require (
 	github.com/golang/protobuf v1.3.5
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/mux v1.7.3
-	github.com/grpc-ecosystem/go-grpc-middleware v1.1.0
+	github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/onsi/gomega v1.8.1
 	github.com/opentracing/opentracing-go v1.1.0
