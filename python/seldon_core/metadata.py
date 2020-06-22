@@ -111,6 +111,22 @@ JSON_SCHEMA = {
 }
 
 
+
+# SELDON_MESSAGE_SCHEMA = {
+#     "type": "object",
+#     "properties": {
+#         "payloadtype": {
+#             "type": "string",
+#             "enum": ["data", "jsonData", "strData", "binData"],
+#         },
+#         "datatype": {"type": "string", "enum": TENSOR_DATA_TYPES},
+#         "names": {"type": "array", "items": {"type": "string"}},
+#         "shape": {"type": "array", "items": {"type": "integer"}},
+#     },
+# }
+
+
+
 def validate_model_metadata(data: Dict) -> Dict:
     """Validate metadata.
 
@@ -145,6 +161,8 @@ def validate_model_metadata(data: Dict) -> Dict:
         "inputs": [],
         "outputs": [],
     }
+
+    data = {**default_meta, **data}
 
     try:
         validate(data, JSON_SCHEMA)

@@ -12,8 +12,10 @@ spec:
         - image: seldonio/metadata-generic-node:0.3
           name: my-model
           env:
+          - name: API_TYPE
+            value: GRPC                
           - name: SELDON_LOG_LEVEL
-            value: DEBUG
+            value: DEBUG               
           - name: MODEL_METADATA
             value: |
               ---
@@ -21,15 +23,15 @@ spec:
               versions: [ my-model-version-01 ]
               platform: seldon
               inputs:
-              - messagetype: array
-                shape: [ 2, 2 ]
+              - datatype: BYTES
+                name: input
+                shape: [ 1, 4 ]
               outputs:
-              - messagetype: array
-                shape: [ 1 ]
+              - datatype: BYTES
+                name: output
+                shape: [ 3 ]
     graph:
       children: []
-      endpoint:
-        type: REST
       name: my-model
       type: MODEL
     name: example
