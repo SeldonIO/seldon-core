@@ -7,10 +7,7 @@ from unittest.mock import patch
 
 from seldon_core.metrics import SeldonMetrics
 from seldon_core.wrapper import get_rest_microservice
-from seldon_core.metadata import (
-    SeldonInvalidMetadataError,
-    validate_model_metadata,
-)
+from seldon_core.metadata import SeldonInvalidMetadataError, validate_model_metadata
 
 from jsonschema.exceptions import ValidationError
 import os
@@ -322,7 +319,7 @@ def test_model_metadata_ok():
     assert json.loads(rv.data) == {"apiVersion": "v2", **UserObject.METADATA_RESPONSE}
 
 
-@pytest.mark.parametrize("env_value", [json_meta, yaml_meta,])
+@pytest.mark.parametrize("env_value", [json_meta, yaml_meta])
 def test_model_metadata_value_in_env(env_value):
     user_object = UserObject()
     seldon_metrics = SeldonMetrics()
