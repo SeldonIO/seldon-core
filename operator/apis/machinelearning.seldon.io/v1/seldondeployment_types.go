@@ -21,7 +21,6 @@ import (
 	"encoding/hex"
 	"strconv"
 
-	certv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	"github.com/seldonio/seldon-core/operator/constants"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta1"
 	v1 "k8s.io/api/core/v1"
@@ -81,25 +80,6 @@ func hash(text string) string {
 
 func GetSeldonDeploymentName(mlDep *SeldonDeployment) string {
 	name := mlDep.Name
-	if len(name) > 63 {
-		return "seldon-" + hash(name)
-	} else {
-		return name
-	}
-}
-
-func GetCertificateName(sdepName string, predictorSpec *PredictorSpec) string {
-	name := sdepName + "-" + predictorSpec.Name + constants.CertificateNameSuffix
-	if len(name) > 63 {
-		return "seldon-" + hash(name)
-	} else {
-		return name
-	}
-}
-
-// This function only generates default secret name but secret name can be overriden
-func GenerateSecretName(sdepName string, predictorSpec *PredictorSpec) string {
-	name := sdepName + "-" + predictorSpec.Name + constants.CertificateSecretSuffix
 	if len(name) > 63 {
 		return "seldon-" + hash(name)
 	} else {
@@ -234,8 +214,7 @@ type SeldonDeploymentSpec struct {
 }
 
 type SSL struct {
-	SecretNameOverride string                        `json:"secretNameOverride,omitempty" protobuf:"string,2,opt,name=secretNameOverride"`
-	CertSpecOverrides  *certv1alpha2.CertificateSpec `json:"certSpecOverrides,omitempty" protobuf:"bytes,3,opt,name=certSpecOverrides"`
+	CertSecretName string `json:"secretNameOverride,omitempty" protobuf:"string,2,opt,name=secretNameOverride"`
 }
 
 type PredictorSpec struct {
