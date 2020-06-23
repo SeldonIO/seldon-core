@@ -467,7 +467,6 @@ class SeldonMessageMetadata(google___protobuf___message___Message):
     datatype = ... # type: typing___Text
     shape = ... # type: google___protobuf___internal___containers___RepeatedScalarFieldContainer[builtin___int]
     messagetype = ... # type: typing___Text
-    names = ... # type: google___protobuf___internal___containers___RepeatedScalarFieldContainer[typing___Text]
 
     @property
     def schema(self) -> google___protobuf___struct_pb2___Value: ...
@@ -478,7 +477,6 @@ class SeldonMessageMetadata(google___protobuf___message___Message):
         datatype : typing___Optional[typing___Text] = None,
         shape : typing___Optional[typing___Iterable[builtin___int]] = None,
         messagetype : typing___Optional[typing___Text] = None,
-        names : typing___Optional[typing___Iterable[typing___Text]] = None,
         schema : typing___Optional[google___protobuf___struct_pb2___Value] = None,
         ) -> None: ...
     if sys.version_info >= (3,):
@@ -490,7 +488,7 @@ class SeldonMessageMetadata(google___protobuf___message___Message):
     def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
     def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
     def HasField(self, field_name: typing_extensions___Literal[u"schema",b"schema"]) -> builtin___bool: ...
-    def ClearField(self, field_name: typing_extensions___Literal[u"datatype",b"datatype",u"messagetype",b"messagetype",u"name",b"name",u"names",b"names",u"schema",b"schema",u"shape",b"shape"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions___Literal[u"datatype",b"datatype",u"messagetype",b"messagetype",u"name",b"name",u"schema",b"schema",u"shape",b"shape"]) -> None: ...
 global___SeldonMessageMetadata = SeldonMessageMetadata
 
 class SeldonModelMetadata(google___protobuf___message___Message):
