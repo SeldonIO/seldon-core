@@ -1,3 +1,4 @@
+ARG CONDA_VERSION
 FROM nvidia/cuda:10.0-cudnn7-runtime-ubuntu18.04
 
 LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
@@ -14,7 +15,7 @@ RUN apt-get update -y && apt-get install -qy --no-install-recommends \
 ENV PATH /opt/conda/bin:$PATH
 
 # Install Miniconda3
-RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-4.5.11-Linux-x86_64.sh -O ~/miniconda.sh && \
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-$CONDA_VERSION-Linux-x86_64.sh -O ~/miniconda.sh && \
     /bin/bash ~/miniconda.sh -b -p /opt/conda && \
     rm ~/miniconda.sh && \
     /opt/conda/bin/conda clean -tipsy && \
