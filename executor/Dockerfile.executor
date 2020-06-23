@@ -18,7 +18,7 @@ COPY logger/ logger/
 COPY k8s/ k8s/
 
 # Build
-RUN go build -tags netgo -a -o executor cmd/executor/main.go
+RUN go build -a -o executor cmd/executor/main.go
 
 # Copy OpenAPI folder and change the permissions
 COPY api/rest/openapi/ /openapi/
