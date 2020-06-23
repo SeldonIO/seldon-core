@@ -6695,6 +6695,11 @@ spec:
                     type: integer
                   shadow:
                     type: boolean
+                  ssl:
+                    properties:
+                      secretNameOverride:
+                        type: string
+                    type: object
                   svcOrchSpec:
                     properties:
                       env:

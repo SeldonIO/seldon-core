@@ -214,7 +214,7 @@ type SeldonDeploymentSpec struct {
 }
 
 type SSL struct {
-	CertSecretName string `json:"secretNameOverride,omitempty" protobuf:"string,2,opt,name=secretNameOverride"`
+	CertSecretName string `json:"certSecretName,omitempty" protobuf:"string,2,opt,name=certSecretName"`
 }
 
 type PredictorSpec struct {
