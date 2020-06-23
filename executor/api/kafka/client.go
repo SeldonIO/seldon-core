@@ -124,7 +124,7 @@ func (kc *KafkaClient) Chain(ctx context.Context, modelName string, msg payload.
 	case api.ProtocolSeldon: // Seldon Messages can always be chained together
 		return msg, nil
 	case api.ProtocolTensorflow: // Attempt to chain tensorflow Payload
-		return payload.ChainTensorflow(msg)
+		return rest.ChainTensorflow(msg)
 	}
 	return nil, errors.Errorf("Unknown protocol %s", kc.Protocol)
 }
@@ -146,7 +146,7 @@ func (kc *KafkaClient) Marshall(w io.Writer, msg payload.SeldonPayload) error {
 	return err
 }
 
-func (kc *KafkaClient) Unmarshall(msg []byte) (payload.SeldonPayload, error) {
-	reqPayload := payload.BytesPayload{Msg: msg, ContentType: "application/octet-stream"}
+func (kc *KafkaClient) Unmarshall(msg []byte, contentType string) (payload.SeldonPayload, error) {
+	reqPayload := payload.BytesPayload{Msg: msg, ContentType: contentType}
 	return &reqPayload, nil
 }

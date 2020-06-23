@@ -617,7 +617,7 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 			Name:      pSvcName,
 			Namespace: namespace,
 			Labels: map[string]string{machinelearningv1.Label_seldon_app: pSvcName,
-				machinelearningv1.Label_seldon_id: seldonId},
+				machinelearningv1.Label_seldon_id: seldonId, machinelearningv1.Label_managed_by: machinelearningv1.Label_value_seldon},
 		},
 		Spec: corev1.ServiceSpec{
 			Selector:        map[string]string{machinelearningv1.Label_seldon_app: pSvcName},

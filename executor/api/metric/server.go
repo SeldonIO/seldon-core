@@ -23,7 +23,7 @@ func NewServerMetrics(spec *v1.PredictorSpec, deploymentName string) *ServerMetr
 		prometheus.HistogramOpts{
 			Name:    ServerRequestsMetricName,
 			Help:    "A histogram of latencies for executor server",
-			Buckets: prometheus.DefBuckets,
+			Buckets: DefBuckets,
 		},
 		[]string{DeploymentNameMetric, PredictorNameMetric, PredictorVersionMetric, ServiceMetric, "method", "code"},
 	)

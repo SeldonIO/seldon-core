@@ -1,15 +1,16 @@
-package payload
+package rest
 
 import (
 	"encoding/json"
 	"github.com/pkg/errors"
+	"github.com/seldonio/seldon-core/executor/api/payload"
 )
 
 const (
 	ModelHttpPathVariable = "model"
 )
 
-func ChainTensorflow(msg SeldonPayload) (SeldonPayload, error) {
+func ChainTensorflow(msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	var f interface{}
 	err := json.Unmarshal(msg.GetPayload().([]byte), &f)
 	if err != nil {
@@ -27,7 +28,7 @@ func ChainTensorflow(msg SeldonPayload) (SeldonPayload, error) {
 		if err != nil {
 			return nil, err
 		} else {
-			p := BytesPayload{Msg: b}
+			p := payload.BytesPayload{Msg: b, ContentType: msg.GetContentType()}
 			return &p, nil
 		}
 	} else {

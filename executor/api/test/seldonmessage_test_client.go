@@ -131,8 +131,8 @@ func (s SeldonMessageTestClient) Chain(ctx context.Context, modelName string, ms
 	return msg, nil
 }
 
-func (s SeldonMessageTestClient) Unmarshall(msg []byte) (payload.SeldonPayload, error) {
-	reqPayload := payload.BytesPayload{Msg: msg, ContentType: TestContentType}
+func (s SeldonMessageTestClient) Unmarshall(msg []byte, contentType string) (payload.SeldonPayload, error) {
+	reqPayload := payload.BytesPayload{Msg: msg, ContentType: contentType}
 	return &reqPayload, nil
 }
 

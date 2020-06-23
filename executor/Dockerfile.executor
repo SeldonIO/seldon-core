@@ -18,7 +18,11 @@ COPY logger/ logger/
 COPY k8s/ k8s/
 
 # Build
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -tags netgo -a -o executor cmd/executor/main.go
+RUN go build -tags netgo -a -o executor cmd/executor/main.go
+
+# Copy OpenAPI folder and change the permissions
+COPY api/rest/openapi/ /openapi/
+RUN chmod -R 660 /openapi/
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
@@ -27,6 +31,6 @@ WORKDIR /
 COPY --from=builder /workspace/executor .
 COPY licenses/license.txt licenses/license.txt
 # Copy openapi spec and swagger UI files
-COPY api/rest/openapi/ /openapi/
+COPY --from=builder /openapi/ /openapi/
 
 ENTRYPOINT ["/executor"]

@@ -3,7 +3,7 @@ module github.com/seldonio/seldon-core/executor
 go 1.12
 
 require (
-	github.com/cloudevents/sdk-go v0.10.2
+	github.com/cloudevents/sdk-go v1.2.0
 	github.com/confluentinc/confluent-kafka-go v1.4.2
 	github.com/fullstorydev/grpcurl v1.6.0 // indirect
 	github.com/ghodss/yaml v1.0.0

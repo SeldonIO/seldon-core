@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"github.com/cloudevents/sdk-go/pkg/bindings/http"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/go-logr/logr"
 	"github.com/seldonio/seldon-core/executor/api/client"
@@ -130,7 +131,14 @@ func (kp *KafkaProxy) Consume() error {
 				// Add Seldon Puid to Context
 				ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, puid)
 
-				reqPayload, err := kp.Client.Unmarshall(e.Value)
+				// Assume JSON if no content type - should maybe be application/octet-stream?
+				contentType := rest.ContentTypeJSON
+				if ct, ok := headers[http.ContentType]; ok {
+					if len(ct) == 1 {
+						contentType = ct[0]
+					}
+				}
+				reqPayload, err := kp.Client.Unmarshall(e.Value, contentType)
 				if err != nil {
 					kp.Log.Error(err, "Failed to unmarshall Payload")
 					continue

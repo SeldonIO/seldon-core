@@ -2,9 +2,11 @@ package kafka
 
 import (
 	"fmt"
+	"github.com/cloudevents/sdk-go/pkg/bindings/http"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/go-logr/logr"
 	"github.com/seldonio/seldon-core/executor/api/payload"
+	"github.com/seldonio/seldon-core/executor/api/rest"
 	"os"
 	"os/signal"
 	"sync"
@@ -108,7 +110,17 @@ func (tp *KafkaRPC) start() {
 				switch e := ev.(type) {
 				case *kafka.Message:
 					tp.Log.Info("Message", "Partition", e.TopicPartition)
-					msg, err := tp.Client.Unmarshall(e.Value)
+
+					headers := collectHeaders(e.Headers)
+
+					// Assume JSON if no content type - should maybe be application/octet-stream?
+					contentType := rest.ContentTypeJSON
+					if ct, ok := headers[http.ContentType]; ok {
+						if len(ct) == 1 {
+							contentType = ct[0]
+						}
+					}
+					msg, err := tp.Client.Unmarshall(e.Value, contentType)
 					if err != nil {
 						tp.Log.Error(err, "Failed to unmarshal consume", "topic")
 					} else {

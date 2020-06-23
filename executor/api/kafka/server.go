@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"fmt"
+	"github.com/cloudevents/sdk-go/pkg/bindings/http"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/go-logr/logr"
 	proto2 "github.com/golang/protobuf/proto"
@@ -197,7 +198,14 @@ func (ks *SeldonKafkaServer) Serve() error {
 				var err error
 				switch ks.Transport {
 				case api.TransportRest:
-					reqPayload, err = ks.Client.Unmarshall(e.Value)
+					// Assume JSON if no content type - should maybe be application/octet-stream?
+					contentType := rest.ContentTypeJSON
+					if ct, ok := headers[http.ContentType]; ok {
+						if len(ct) == 1 {
+							contentType = ct[0]
+						}
+					}
+					reqPayload, err = ks.Client.Unmarshall(e.Value, contentType)
 					if err != nil {
 						ks.Log.Error(err, "Failed to unmarshall Payload")
 						continue
