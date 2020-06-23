@@ -775,10 +775,6 @@ IN THE SOFTWARE.
 cryptography
 2.9.2
 Apache Software License, BSD License
-This software is made available under the terms of *either* of the licenses
-found in LICENSE.APACHE or LICENSE.BSD. Contributions to cryptography are made
-under the terms of *both* these licenses.
-
 1. This LICENSE AGREEMENT is between the Python Software Foundation ("PSF"), and
    the Individual or Organization ("Licensee") accessing and otherwise using Python
    2.7.12 software in source or binary form and its associated documentation.
@@ -820,6 +816,7 @@ under the terms of *both* these licenses.
 
 8. By copying, installing or otherwise using Python 2.7.12, Licensee agrees
    to be bound by the terms and conditions of this License Agreement.
+
 
 flatbuffers
 1.12
