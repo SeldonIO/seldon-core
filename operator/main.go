@@ -40,7 +40,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	zapf "sigs.k8s.io/controller-runtime/pkg/log/zap"
 	// +kubebuilder:scaffold:imports
-	certv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 )
 
 const (

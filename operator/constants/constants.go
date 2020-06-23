@@ -48,9 +48,6 @@ const (
 	EventsCreateDeployment      = "CreateDeployment"
 	EventsUpdateDeployment      = "UpdateDeployment"
 	EventsDeleteDeployment      = "DeleteDeployment"
-	EventsCreateCertificate     = "CreateCertificate"
-	EventsUpdateCertificate     = "UpdateCertificate"
-	EventsDeleteCertificate     = "DeleteCertificate"
 	EventsInternalError         = "InternalError"
 	EventsUpdated               = "Updated"
 	EventsUpdateFailed          = "UpdateFailed"
@@ -60,10 +57,4 @@ const (
 const (
 	ExplainerPathSuffix = "-explainer"
 	ExplainerNameSuffix = "-explainer"
-)
-
-// Certificates
-const (
-	CertificateNameSuffix   = "-cert"
-	CertificateSecretSuffix = "-cert"
 )
