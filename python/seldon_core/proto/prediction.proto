@@ -103,8 +103,7 @@ message SeldonMessageMetadata
   repeated int64 shape = 3;
 
   string messagetype = 4;
-  repeated string names = 5;
-  google.protobuf.Value schema = 6;
+  google.protobuf.Value schema = 5;
 }
 
 
