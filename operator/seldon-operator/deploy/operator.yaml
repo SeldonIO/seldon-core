@@ -33,7 +33,7 @@ spec:
       - args:
         - --enable-leader-election
         - --webhook-port=8443
-        - --create-resources=$(CREATE_RESOURCES)
+        - --create-resources=$(MANAGER_CREATE_RESOURCES)
         command:
         - /manager
         env:
@@ -65,7 +65,7 @@ spec:
           value: ''
         - name: RELATED_IMAGE_EXPLAINER
           value: ''
-        - name: CREATE_RESOURCES
+        - name: MANAGER_CREATE_RESOURCES
           value: 'true'
         - name: POD_NAMESPACE
           valueFrom:
@@ -78,7 +78,7 @@ spec:
         - name: AMBASSADOR_SINGLE_NAMESPACE
           value: 'false'
         - name: ENGINE_CONTAINER_IMAGE_AND_VERSION
-          value: docker.io/seldonio/engine:1.1.1-rc
+          value: docker.io/seldonio/engine:1.2.0
         - name: ENGINE_CONTAINER_IMAGE_PULL_POLICY
           value: IfNotPresent
         - name: ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME
@@ -91,6 +91,8 @@ spec:
           value: '9000'
         - name: PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME
           value: ''
+        - name: PREDICTIVE_UNIT_METRICS_PORT_NAME
+          value: metrics
         - name: ENGINE_SERVER_GRPC_PORT
           value: '5001'
         - name: ENGINE_SERVER_PORT
@@ -106,24 +108,24 @@ spec:
         - name: USE_EXECUTOR
           value: 'true'
         - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
-          value: seldonio/seldon-core-executor:1.1.1-rc
+          value: seldonio/seldon-core-executor:1.2.0
         - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
           value: IfNotPresent
         - name: EXECUTOR_PROMETHEUS_PATH
           value: /prometheus
-        - name: EXECUTOR_SERVER_GRPC_PORT
-          value: '5001'
         - name: EXECUTOR_SERVER_PORT
           value: '8000'
         - name: EXECUTOR_CONTAINER_USER
           value: ''
         - name: EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME
           value: default
+        - name: EXECUTOR_SERVER_METRICS_PORT_NAME
+          value: metrics
         - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT
           value: http://default-broker
         - name: DEFAULT_USER_ID
           value: ''
-        image: seldonio/seldon-core-operator:1.1.1-rc
+        image: seldonio/seldon-core-operator:1.2.0
         name: manager
         ports:
         - containerPort: 8443
