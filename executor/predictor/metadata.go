@@ -16,12 +16,11 @@ type MetadataTensor struct {
 }
 
 type ModelMetadata struct {
-	ApiVersion string      `json:"apiVersion,omitempty"`
-	Name       string      `json:"name,omitempty"`
-	Platform   string      `json:"platform,omitempty"`
-	Versions   []string    `json:"versions,omitempty"`
-	Inputs     interface{} `json:"inputs,omitempty"`
-	Outputs    interface{} `json:"outputs,omitempty"`
+	Name     string      `json:"name,omitempty"`
+	Platform string      `json:"platform,omitempty"`
+	Versions []string    `json:"versions,omitempty"`
+	Inputs   interface{} `json:"inputs,omitempty"`
+	Outputs  interface{} `json:"outputs,omitempty"`
 }
 
 func (m *ModelMetadata) ToProto() *proto.SeldonModelMetadata {

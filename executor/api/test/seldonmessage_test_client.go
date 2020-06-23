@@ -94,7 +94,6 @@ var metadataMap = map[string]string{
         "outputs": [{"name": "combined output", "datatype": "BYTES", "shape": [3]}]
     }`,
 	"model-v1-array": `{
-		"apiVersion": "v1",
 		"name": "model-v1-array",
 		"versions": ["model-version"],
 		"platform": "platform-name",
@@ -102,7 +101,6 @@ var metadataMap = map[string]string{
 		"outputs": {"datatype": "array", "shape": [1]}
 	}`,
 	"model-v1-jsondata": `{
-		"apiVersion": "v1",
 		"name": "model-v1-jsondata",
 		"versions": ["model-version"],
 		"platform": "platform-name",
@@ -110,7 +108,6 @@ var metadataMap = map[string]string{
 		"outputs": {"datatype": "jsonData", "schema": {"custom": "definition"}}
 	}`,
 	"model-v1-array-string-mix": `{
-		"apiVersion": "v1",
 		"name": "model-v1-array-string-mix",
 		"versions": ["model-version"],
 		"platform": "platform-name",
