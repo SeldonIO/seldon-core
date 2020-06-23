@@ -22,11 +22,17 @@ class SeldonInvalidMetadataError(Exception):
 SELDON_ARRAY_SCHEMA = {
     "type": "object",
     "properties": {
-        "messagetype": {"type": "string", "enum": ["array"]},
-        "names": {"type": "array", "items": {"type": "string"}},
-        "shape": {"type": "array", "items": {"type": "integer"}},
+        "messagetype": {"type": "string", "enum": ["tensor", "ndarray", "tftensor"]},
+        "schema": {
+            "type": "object",
+            "properties": {
+                "names": {"type": "array", "items": {"type": "string"}},
+                "shape": {"type": "array", "items": {"type": "integer"}},
+                # Shall we also include field for datatype (as in dtype for np.array)?
+            },
+        },
     },
-    "required": ["messagetype", "shape"],
+    "required": ["messagetype"],
     "additionalProperties": False,
 }
 
@@ -55,6 +61,14 @@ SELDON_BIN_SCHEMA = {
 }
 
 
+SELDON_CUSTOM_DEFINITION = {
+    "type": "object",
+    "properties": {"messagetype": {"type": "string"}, "schema": {"type": "object"},},
+    "required": ["messagetype"],
+    "additionalProperties": False,
+}
+
+
 TENSOR_DATA_TYPES = [
     "BOOL",
     "UINT8",
@@ -75,8 +89,8 @@ TENSOR_DATA_TYPES = [
 METADATA_TENSOR_SCHEMA = {
     "type": "object",
     "properties": {
-        "datatype": {"type": "string", "enum": TENSOR_DATA_TYPES},
         "name": {"type": "string"},
+        "datatype": {"type": "string", "enum": TENSOR_DATA_TYPES},
         "shape": {"type": "array", "items": {"type": "integer"}},
     },
     "additionalProperties": False,
@@ -86,11 +100,12 @@ METADATA_TENSOR_SCHEMA = {
 INPUTS_OUTPUTS_SCHEMA = {
     "type": "array",
     "items": {
-        "oneOf": [
+        "anyOf": [
             SELDON_ARRAY_SCHEMA,
             SELDON_JSON_SCHEMA,
             SELDON_STR_SCHEMA,
             SELDON_BIN_SCHEMA,
+            SELDON_CUSTOM_DEFINITION,
             METADATA_TENSOR_SCHEMA,
         ]
     },
@@ -109,22 +124,6 @@ JSON_SCHEMA = {
     },
     "additionalProperties": False,
 }
-
-
-
-# SELDON_MESSAGE_SCHEMA = {
-#     "type": "object",
-#     "properties": {
-#         "payloadtype": {
-#             "type": "string",
-#             "enum": ["data", "jsonData", "strData", "binData"],
-#         },
-#         "datatype": {"type": "string", "enum": TENSOR_DATA_TYPES},
-#         "names": {"type": "array", "items": {"type": "string"}},
-#         "shape": {"type": "array", "items": {"type": "integer"}},
-#     },
-# }
-
 
 
 def validate_model_metadata(data: Dict) -> Dict:

@@ -21,11 +21,14 @@ spec:
               versions: [ my-model-version-01 ]
               platform: seldon
               inputs:
-              - messagetype: array
-                shape: [ 2, 2 ]
+              - messagetype: tensor
+                schema:
+                  names: [a, b, c, d]
+                  shape: [ 2, 2 ]
               outputs:
-              - messagetype: array
-                shape: [ 1 ]
+              - messagetype: tensor
+                schema:
+                  shape: [ 1 ]
     graph:
       children: []
       endpoint:
