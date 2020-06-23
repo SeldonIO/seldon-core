@@ -11,15 +11,22 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
+// Attempts to add environment variable but does NOT override if already existing
 func AddEnvVarToDeploymentContainers(deploy *appsv1.Deployment, envVar *v1.EnvVar) {
 	for containerIdx := 0; containerIdx < len(deploy.Spec.Template.Spec.Containers); containerIdx++ {
 		deployContainer := &deploy.Spec.Template.Spec.Containers[containerIdx]
+		// Before adding it ensures it doesn't exist as it will NOT override
+		for _, e := range deployContainer.Env {
+			if e.Name == envVar.Name {
+				break
+			}
+		}
 		deployContainer.Env = append(deployContainer.Env, *envVar)
 	}
 }
 
+// Create a volume from the secret provided and mounts it to all the containers of deployment
 func MountSecretToDeploymentContainers(deploy *appsv1.Deployment, secretRefName, containerMountPath string) {
-	// Create a volume that uses the secret from the cert
 	volumeName := "cert-volume"
 	volume := v1.Volume{
 		Name: volumeName,
