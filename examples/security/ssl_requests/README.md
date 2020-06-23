@@ -35,7 +35,7 @@ END
 
 
 ```python
-!kubectl get issuer 
+!kubectl get issuer
 ```
 
     NAME                READY   AGE
@@ -44,7 +44,37 @@ END
 
 
 ```bash
+%%bash 
+kubectl apply -f - << END
+apiVersion: cert-manager.io/v1alpha3
+kind: Certificate
+metadata:
+  name: sklearn-default-cert
+spec:
+  dnsNames:
+  - example.com
+  issuerRef:
+    name: selfsigned-issuer
+  secretName: sklearn-default-cert
+END
+```
+
+    certificate.cert-manager.io/sklearn-default-cert created
+
+
+
+```python
+!kubectl get certificate
+```
+
+    NAME                   READY   SECRET                 AGE
+    sklearn-default-cert   True    sklearn-default-cert   10s
+
+
+
+```bash
 %%bash
+kubectl apply -f - << END
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
@@ -60,19 +90,16 @@ spec:
     name: default
     replicas: 1
     ssl:
-      certSpecOverrides:
-        issuerRef:
-          name: selfsigned-issuer
-        dnsNames:
-        - example.com
+      certSecretName: sklearn-default-cert 
+END
 ```
 
-    certificate.cert-manager.io/selfsigned-crt created
+    seldondeployment.machinelearning.seldon.io/sklearn created
 
 
 
 ```python
-!kubectl get certificate
+!kubectl get sdep
 ```
 
     NAME                   READY   SECRET                 AGE
