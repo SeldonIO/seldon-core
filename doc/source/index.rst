@@ -76,12 +76,6 @@ Documentation Index
 
 .. toctree::
    :maxdepth: 1
-   :caption: Batch Processing with Seldon
-
-   Overview of Batch Processing <servers/batch.md>
-
-.. toctree::
-   :maxdepth: 1
    :caption: Language Wrappers
 
    Python Language Wrapper <python/index.rst>
@@ -120,6 +114,7 @@ Documentation Index
    :maxdepth: 1
    :caption: Streaming and Batch Processing
 
+   Overview of Batch Processing <servers/batch.md>	     
    Stream Processing with KNative <streaming/knative_eventing.md>
    Native Kafka Integration <streaming/kafka.md>
    
