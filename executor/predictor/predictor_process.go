@@ -338,7 +338,7 @@ func (p *PredictorProcess) Feedback(node *v1.PredictiveUnit, msg payload.SeldonP
 	return p.feedback(node, msg)
 }
 
-func (p *PredictorProcess) MetadataMap(node *v1.PredictiveUnit) (map[string]payload.ModelMetadata, error) {
+func (p *PredictorProcess) ModelMetadataMap(node *v1.PredictiveUnit) (map[string]payload.ModelMetadata, error) {
 	resPayload, err := p.Client.ModelMetadata(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, nil, p.Meta.Meta)
 	if err != nil {
 		return nil, err
@@ -348,7 +348,7 @@ func (p *PredictorProcess) MetadataMap(node *v1.PredictiveUnit) (map[string]payl
 		node.Name: resPayload,
 	}
 	for _, child := range node.Children {
-		childMeta, err := p.MetadataMap(&child)
+		childMeta, err := p.ModelMetadataMap(&child)
 		if err != nil {
 			return nil, err
 		}

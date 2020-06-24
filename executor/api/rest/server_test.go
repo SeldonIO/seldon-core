@@ -486,8 +486,33 @@ func TestSeldonGraphMetadata(t *testing.T) {
 		},
 	}
 
+	metadataMap := map[string]payload.ModelMetadata{
+		"model-1": {
+			Name:     "model-1",
+			Platform: "platform-name",
+			Versions: []string{"model-version"},
+			Inputs: []map[string]interface{}{
+				{"name": "input", "datatype": "BYTES", "shape": []int{1, 5}},
+			},
+			Outputs: []map[string]interface{}{
+				{"name": "output", "datatype": "BYTES", "shape": []int{1, 3}},
+			},
+		},
+		"model-2": {
+			Name:     "model-2",
+			Platform: "platform-name",
+			Versions: []string{"model-version"},
+			Inputs: []map[string]interface{}{
+				{"name": "input", "datatype": "BYTES", "shape": []int{1, 3}},
+			},
+			Outputs: []map[string]interface{}{
+				{"name": "output", "datatype": "BYTES", "shape": []int{3}},
+			},
+		},
+	}
+
 	url, _ := url.Parse("http://localhost")
-	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{ModelMetadataMap: metadataMap}, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
 	r.Initialise()
 
 	req, _ := http.NewRequest("GET", "/api/v1.0/metadata", nil)

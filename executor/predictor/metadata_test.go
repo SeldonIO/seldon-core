@@ -8,6 +8,122 @@ import (
 	"testing"
 )
 
+var metadataMap = map[string]payload.ModelMetadata{
+	"model-1": {
+		Name:     "model-1",
+		Platform: "platform-name",
+		Versions: []string{"model-version"},
+		Inputs: []MetadataTensor{
+			{Name: "input", DataType: "BYTES", Shape: []int{1, 5}},
+		},
+		Outputs: []MetadataTensor{
+			{Name: "output", DataType: "BYTES", Shape: []int{1, 3}},
+		},
+	},
+	"model-2": {
+		Name:     "model-2",
+		Platform: "platform-name",
+		Versions: []string{"model-version"},
+		Inputs: []MetadataTensor{
+			{Name: "input", DataType: "BYTES", Shape: []int{1, 3}},
+		},
+		Outputs: []MetadataTensor{
+			{Name: "output", DataType: "BYTES", Shape: []int{3}},
+		},
+	},
+	"model-combiner": {
+		Name:     "model-combiner",
+		Platform: "platform-name",
+		Versions: []string{"model-version"},
+		Inputs: []MetadataTensor{
+			{Name: "input-1", DataType: "BYTES", Shape: []int{1, 10}},
+			{Name: "input-2", DataType: "BYTES", Shape: []int{1, 20}},
+		},
+		Outputs: []MetadataTensor{
+			{Name: "combined output", DataType: "BYTES", Shape: []int{3}},
+		},
+	},
+	"model-a1": {
+		Name:     "model-a1",
+		Platform: "platform-name",
+		Versions: []string{"model-version"},
+		Inputs: []MetadataTensor{
+			{Name: "input", DataType: "BYTES", Shape: []int{1, 5}},
+		},
+		Outputs: []MetadataTensor{
+			{Name: "output", DataType: "BYTES", Shape: []int{1, 10}},
+		},
+	},
+	"model-a2": {
+		Name:     "model-a2",
+		Platform: "platform-name",
+		Versions: []string{"model-version"},
+		Inputs: []MetadataTensor{
+			{Name: "input", DataType: "BYTES", Shape: []int{1, 5}},
+		},
+		Outputs: []MetadataTensor{
+			{Name: "output", DataType: "BYTES", Shape: []int{1, 20}},
+		},
+	},
+	"model-b1": {
+		Name:     "model-b1",
+		Platform: "platform-name",
+		Versions: []string{"model-version"},
+		Inputs: []MetadataTensor{
+			{Name: "input", DataType: "BYTES", Shape: []int{1, 5}},
+		},
+		Outputs: []MetadataTensor{
+			{Name: "output", DataType: "BYTES", Shape: []int{1, 10}},
+		},
+	},
+	"model-router": {
+		Name:     "model-router",
+		Platform: "platform-name",
+		Versions: []string{"model-version"},
+		Inputs:   nil,
+		Outputs:  nil,
+	},
+	"model-v1-array": {
+		Name:     "model-v1-array",
+		Platform: "platform-name",
+		Versions: []string{"model-version"},
+		Inputs: map[string]interface{}{
+			"datatype": "array",
+			"shape":    []int{2, 2},
+		},
+		Outputs: map[string]interface{}{
+			"datatype": "array",
+			"shape":    []int{1},
+		},
+	},
+	"model-v1-jsondata": {
+		Name:     "model-v1-jsondata",
+		Platform: "platform-name",
+		Versions: []string{"model-version"},
+		Inputs: map[string]interface{}{
+			"datatype": "jsonData",
+		},
+		Outputs: map[string]interface{}{
+			"datatype": "jsonData",
+			"schema": map[string]string{
+				"custom": "definition",
+			},
+		},
+	},
+	"model-v1-array-string-mix": {
+		Name:     "model-v1-array-string-mix",
+		Platform: "platform-name",
+		Versions: []string{"model-version"},
+		Inputs: map[string]interface{}{
+			"datatype": "array",
+			"shape":    []int{2, 2},
+		},
+		Outputs: map[string]interface{}{
+			"datatype": "strData",
+		},
+	},
+}
+
 func TestGraphMetadataSimple(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
@@ -29,17 +145,7 @@ func TestGraphMetadataSimple(t *testing.T) {
 	expectedGrahMetadata := GraphMetadata{
 		Name: "predictor-name",
 		Models: map[string]payload.ModelMetadata{
-			"model-1": {
-				Name:     "model-1",
-				Platform: "platform-name",
-				Versions: []string{"model-version"},
-				Inputs: []MetadataTensor{
-					{Name: "input", DataType: "BYTES", Shape: []int{1, 5}},
-				},
-				Outputs: []MetadataTensor{
-					{Name: "output", DataType: "BYTES", Shape: []int{1, 3}},
-				},
-			},
+			"model-1": metadataMap["model-1"],
 		},
 		GraphInputs: []MetadataTensor{
 			{Name: "input", DataType: "BYTES", Shape: []int{1, 5}},
@@ -49,7 +155,7 @@ func TestGraphMetadataSimple(t *testing.T) {
 		},
 	}
 
-	graphMetadata, err := NewGraphMetadata(createPredictorProcess(t), spec)
+	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, metadataMap), spec)
 	g.Expect(err).Should(BeNil())
 
 	expectedJson, err := json.Marshal(expectedGrahMetadata)
@@ -92,28 +198,8 @@ func TestGraphMetadataTwoLevel(t *testing.T) {
 	expectedGrahMetadata := GraphMetadata{
 		Name: "predictor-name",
 		Models: map[string]payload.ModelMetadata{
-			"model-1": {
-				Name:     "model-1",
-				Platform: "platform-name",
-				Versions: []string{"model-version"},
-				Inputs: []MetadataTensor{
-					{Name: "input", DataType: "BYTES", Shape: []int{1, 5}},
-				},
-				Outputs: []MetadataTensor{
-					{Name: "output", DataType: "BYTES", Shape: []int{1, 3}},
-				},
-			},
-			"model-2": {
-				Name:     "model-2",
-				Platform: "platform-name",
-				Versions: []string{"model-version"},
-				Inputs: []MetadataTensor{
-					{Name: "input", DataType: "BYTES", Shape: []int{1, 3}},
-				},
-				Outputs: []MetadataTensor{
-					{Name: "output", DataType: "BYTES", Shape: []int{3}},
-				},
-			},
+			"model-1": metadataMap["model-1"],
+			"model-2": metadataMap["model-2"],
 		},
 		GraphInputs: []MetadataTensor{
 			{Name: "input", DataType: "BYTES", Shape: []int{1, 5}},
@@ -123,7 +209,7 @@ func TestGraphMetadataTwoLevel(t *testing.T) {
 		},
 	}
 
-	graphMetadata, err := NewGraphMetadata(createPredictorProcess(t), spec)
+	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, metadataMap), spec)
 	g.Expect(err).Should(BeNil())
 
 	expectedJson, err := json.Marshal(expectedGrahMetadata)
@@ -167,28 +253,8 @@ func TestGraphMetadataInputTransformer(t *testing.T) {
 	expectedGrahMetadata := GraphMetadata{
 		Name: "predictor-name",
 		Models: map[string]payload.ModelMetadata{
-			"model-1": {
-				Name:     "model-1",
-				Platform: "platform-name",
-				Versions: []string{"model-version"},
-				Inputs: []MetadataTensor{
-					{Name: "input", DataType: "BYTES", Shape: []int{1, 5}},
-				},
-				Outputs: []MetadataTensor{
-					{Name: "output", DataType: "BYTES", Shape: []int{1, 3}},
-				},
-			},
-			"model-2": {
-				Name:     "model-2",
-				Platform: "platform-name",
-				Versions: []string{"model-version"},
-				Inputs: []MetadataTensor{
-					{Name: "input", DataType: "BYTES", Shape: []int{1, 3}},
-				},
-				Outputs: []MetadataTensor{
-					{Name: "output", DataType: "BYTES", Shape: []int{3}},
-				},
-			},
+			"model-1": metadataMap["model-1"],
+			"model-2": metadataMap["model-2"],
 		},
 		GraphInputs: []MetadataTensor{
 			{Name: "input", DataType: "BYTES", Shape: []int{1, 5}},
@@ -198,7 +264,7 @@ func TestGraphMetadataInputTransformer(t *testing.T) {
 		},
 	}
 
-	graphMetadata, err := NewGraphMetadata(createPredictorProcess(t), spec)
+	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, metadataMap), spec)
 	g.Expect(err).Should(BeNil())
 
 	expectedJson, err := json.Marshal(expectedGrahMetadata)
@@ -242,28 +308,8 @@ func TestGraphMetadataOutputTransformer(t *testing.T) {
 	expectedGrahMetadata := GraphMetadata{
 		Name: "predictor-name",
 		Models: map[string]payload.ModelMetadata{
-			"model-1": {
-				Name:     "model-1",
-				Platform: "platform-name",
-				Versions: []string{"model-version"},
-				Inputs: []MetadataTensor{
-					{Name: "input", DataType: "BYTES", Shape: []int{1, 5}},
-				},
-				Outputs: []MetadataTensor{
-					{Name: "output", DataType: "BYTES", Shape: []int{1, 3}},
-				},
-			},
-			"model-2": {
-				Name:     "model-2",
-				Platform: "platform-name",
-				Versions: []string{"model-version"},
-				Inputs: []MetadataTensor{
-					{Name: "input", DataType: "BYTES", Shape: []int{1, 3}},
-				},
-				Outputs: []MetadataTensor{
-					{Name: "output", DataType: "BYTES", Shape: []int{3}},
-				},
-			},
+			"model-1": metadataMap["model-1"],
+			"model-2": metadataMap["model-2"],
 		},
 		GraphInputs: []MetadataTensor{
 			{Name: "input", DataType: "BYTES", Shape: []int{1, 5}},
@@ -273,7 +319,7 @@ func TestGraphMetadataOutputTransformer(t *testing.T) {
 		},
 	}
 
-	graphMetadata, err := NewGraphMetadata(createPredictorProcess(t), spec)
+	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, metadataMap), spec)
 	g.Expect(err).Should(BeNil())
 
 	expectedJson, err := json.Marshal(expectedGrahMetadata)
@@ -328,40 +374,9 @@ func TestGraphMetadataCombinerModel(t *testing.T) {
 	expectedGrahMetadata := GraphMetadata{
 		Name: "predictor-name",
 		Models: map[string]payload.ModelMetadata{
-			"model-combiner": {
-				Name:     "model-combiner",
-				Platform: "platform-name",
-				Versions: []string{"model-version"},
-				Inputs: []MetadataTensor{
-					{Name: "input-1", DataType: "BYTES", Shape: []int{1, 10}},
-					{Name: "input-2", DataType: "BYTES", Shape: []int{1, 20}},
-				},
-				Outputs: []MetadataTensor{
-					{Name: "combined output", DataType: "BYTES", Shape: []int{3}},
-				},
-			},
-			"model-a1": {
-				Name:     "model-a1",
-				Platform: "platform-name",
-				Versions: []string{"model-version"},
-				Inputs: []MetadataTensor{
-					{Name: "input", DataType: "BYTES", Shape: []int{1, 5}},
-				},
-				Outputs: []MetadataTensor{
-					{Name: "output", DataType: "BYTES", Shape: []int{1, 10}},
-				},
-			},
-			"model-a2": {
-				Name:     "model-a2",
-				Platform: "platform-name",
-				Versions: []string{"model-version"},
-				Inputs: []MetadataTensor{
-					{Name: "input", DataType: "BYTES", Shape: []int{1, 5}},
-				},
-				Outputs: []MetadataTensor{
-					{Name: "output", DataType: "BYTES", Shape: []int{1, 20}},
-				},
-			},
+			"model-combiner": metadataMap["model-combiner"],
+			"model-a1":       metadataMap["model-a1"],
+			"model-a2":       metadataMap["model-a2"],
 		},
 		GraphInputs: []MetadataTensor{
 			{Name: "input", DataType: "BYTES", Shape: []int{1, 5}},
@@ -371,7 +386,7 @@ func TestGraphMetadataCombinerModel(t *testing.T) {
 		},
 	}
 
-	graphMetadata, err := NewGraphMetadata(createPredictorProcess(t), spec)
+	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, metadataMap), spec)
 	g.Expect(err).Should(BeNil())
 
 	expectedJson, err := json.Marshal(expectedGrahMetadata)
@@ -426,35 +441,9 @@ func TestGraphMetadataRouter(t *testing.T) {
 	expectedGrahMetadata := GraphMetadata{
 		Name: "predictor-name",
 		Models: map[string]payload.ModelMetadata{
-			"model-router": {
-				Name:     "model-router",
-				Platform: "platform-name",
-				Versions: []string{"model-version"},
-				Inputs:   nil,
-				Outputs:  nil,
-			},
-			"model-a1": {
-				Name:     "model-a1",
-				Platform: "platform-name",
-				Versions: []string{"model-version"},
-				Inputs: []MetadataTensor{
-					{Name: "input", DataType: "BYTES", Shape: []int{1, 5}},
-				},
-				Outputs: []MetadataTensor{
-					{Name: "output", DataType: "BYTES", Shape: []int{1, 10}},
-				},
-			},
-			"model-b1": {
-				Name:     "model-b1",
-				Platform: "platform-name",
-				Versions: []string{"model-version"},
-				Inputs: []MetadataTensor{
-					{Name: "input", DataType: "BYTES", Shape: []int{1, 5}},
-				},
-				Outputs: []MetadataTensor{
-					{Name: "output", DataType: "BYTES", Shape: []int{1, 10}},
-				},
-			},
+			"model-router": metadataMap["model-router"],
+			"model-a1":     metadataMap["model-a1"],
+			"model-b1":     metadataMap["model-b1"],
 		},
 		GraphInputs: []MetadataTensor{
 			{Name: "input", DataType: "BYTES", Shape: []int{1, 5}},
@@ -464,7 +453,7 @@ func TestGraphMetadataRouter(t *testing.T) {
 		},
 	}
 
-	graphMetadata, err := NewGraphMetadata(createPredictorProcess(t), spec)
+	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, metadataMap), spec)
 	g.Expect(err).Should(BeNil())
 
 	expectedJson, err := json.Marshal(expectedGrahMetadata)
@@ -497,19 +486,7 @@ func TestGraphV1Array(t *testing.T) {
 	expectedGrahMetadata := GraphMetadata{
 		Name: "predictor-name",
 		Models: map[string]payload.ModelMetadata{
-			"model-v1-array": {
-				Name:     "model-v1-array",
-				Platform: "platform-name",
-				Versions: []string{"model-version"},
-				Inputs: map[string]interface{}{
-					"datatype": "array",
-					"shape":    []int{2, 2},
-				},
-				Outputs: map[string]interface{}{
-					"datatype": "array",
-					"shape":    []int{1},
-				},
-			},
+			"model-v1-array": metadataMap["model-v1-array"],
 		},
 		GraphInputs: map[string]interface{}{
 			"datatype": "array",
@@ -521,7 +498,7 @@ func TestGraphV1Array(t *testing.T) {
 		},
 	}
 
-	graphMetadata, err := NewGraphMetadata(createPredictorProcess(t), spec)
+	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, metadataMap), spec)
 	g.Expect(err).Should(BeNil())
 
 	expectedJson, err := json.Marshal(expectedGrahMetadata)
@@ -554,20 +531,7 @@ func TestGraphV1JsonData(t *testing.T) {
 	expectedGrahMetadata := GraphMetadata{
 		Name: "predictor-name",
 		Models: map[string]payload.ModelMetadata{
-			"model-v1-jsondata": {
-				Name:     "model-v1-jsondata",
-				Platform: "platform-name",
-				Versions: []string{"model-version"},
-				Inputs: map[string]interface{}{
-					"datatype": "jsonData",
-				},
-				Outputs: map[string]interface{}{
-					"datatype": "jsonData",
-					"schema": map[string]string{
-						"custom": "definition",
-					},
-				},
-			},
+			"model-v1-jsondata": metadataMap["model-v1-jsondata"],
 		},
 		GraphInputs: map[string]interface{}{
 			"datatype": "jsonData",
@@ -580,7 +544,7 @@ func TestGraphV1JsonData(t *testing.T) {
 		},
 	}
 
-	graphMetadata, err := NewGraphMetadata(createPredictorProcess(t), spec)
+	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, metadataMap), spec)
 	g.Expect(err).Should(BeNil())
 
 	expectedJson, err := json.Marshal(expectedGrahMetadata)
@@ -613,18 +577,7 @@ func TestGraphV1ArrayStringMix(t *testing.T) {
 	expectedGrahMetadata := GraphMetadata{
 		Name: "predictor-name",
 		Models: map[string]payload.ModelMetadata{
-			"model-v1-array-string-mix": {
-				Name:     "model-v1-array-string-mix",
-				Platform: "platform-name",
-				Versions: []string{"model-version"},
-				Inputs: map[string]interface{}{
-					"datatype": "array",
-					"shape":    []int{2, 2},
-				},
-				Outputs: map[string]interface{}{
-					"datatype": "strData",
-				},
-			},
+			"model-v1-array-string-mix": metadataMap["model-v1-array-string-mix"],
 		},
 		GraphInputs: map[string]interface{}{
 			"datatype": "array",
@@ -635,7 +588,7 @@ func TestGraphV1ArrayStringMix(t *testing.T) {
 		},
 	}
 
-	graphMetadata, err := NewGraphMetadata(createPredictorProcess(t), spec)
+	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, metadataMap), spec)
 	g.Expect(err).Should(BeNil())
 
 	expectedJson, err := json.Marshal(expectedGrahMetadata)

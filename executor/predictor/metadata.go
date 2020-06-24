@@ -21,7 +21,7 @@ type MetadataTensor struct {
 }
 
 func NewGraphMetadata(p *PredictorProcess, spec *v1.PredictorSpec) (*GraphMetadata, error) {
-	metadataMap, err := p.MetadataMap(spec.Graph)
+	metadataMap, err := p.ModelMetadataMap(spec.Graph)
 	if err != nil {
 		return nil, err
 	}

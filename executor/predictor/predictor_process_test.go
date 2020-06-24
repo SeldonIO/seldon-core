@@ -37,6 +37,13 @@ func createPredictorProcess(t *testing.T) *PredictorProcess {
 	return &pp
 }
 
+func createPredictorProcessWithMetadata(t *testing.T, modelMetadataMap map[string]payload.ModelMetadata) *PredictorProcess {
+	url, _ := url.Parse(testSourceUrl)
+	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, testSeldonPuid)
+	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{ModelMetadataMap: modelMetadataMap}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{testCustomMetaKey: []string{testCustomMetaValue}})
+	return &pp
+}
+
 func createPredictorProcessWithRoute(t *testing.T, chosenRoute int) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
 	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, testSeldonPuid)
