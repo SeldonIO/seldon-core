@@ -12,6 +12,7 @@ import (
 
 type SeldonMessageTestClient struct {
 	ChosenRoute      int
+	MetadataResponse payload.SeldonPayload
 	ModelMetadataMap map[string]payload.ModelMetadata
 	ErrMethod        *v1.PredictiveUnitMethod
 	Err              error
@@ -19,10 +20,9 @@ type SeldonMessageTestClient struct {
 }
 
 const (
-	TestClientStatusResponse   = `{"status":"ok"}`
-	TestClientMetadataResponse = `{"metadata":{"name":"mymodel"}}`
-	TestContentType            = "application/json"
-	TestGraphMeta              = `{
+	TestClientStatusResponse = `{"status":"ok"}`
+	TestContentType          = "application/json"
+	TestGraphMeta            = `{
 		"name": "predictor-name",
 		"models": {
 			"model-1": {
@@ -49,7 +49,10 @@ func (s SeldonMessageTestClient) Status(ctx context.Context, modelName string, h
 }
 
 func (s SeldonMessageTestClient) Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
-	return &payload.BytesPayload{Msg: []byte(TestClientMetadataResponse)}, nil
+	if s.MetadataResponse == nil {
+		return nil, fmt.Errorf("Metadata %s not present in test client", modelName)
+	}
+	return s.MetadataResponse, nil
 }
 
 func (s SeldonMessageTestClient) ModelMetadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.ModelMetadata, error) {

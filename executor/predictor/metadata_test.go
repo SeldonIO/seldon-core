@@ -155,7 +155,7 @@ func TestGraphMetadataSimple(t *testing.T) {
 		},
 	}
 
-	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, metadataMap), spec)
+	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, nil, metadataMap), spec)
 	g.Expect(err).Should(BeNil())
 
 	expectedJson, err := json.Marshal(expectedGrahMetadata)
@@ -209,7 +209,7 @@ func TestGraphMetadataTwoLevel(t *testing.T) {
 		},
 	}
 
-	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, metadataMap), spec)
+	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, nil, metadataMap), spec)
 	g.Expect(err).Should(BeNil())
 
 	expectedJson, err := json.Marshal(expectedGrahMetadata)
@@ -264,7 +264,7 @@ func TestGraphMetadataInputTransformer(t *testing.T) {
 		},
 	}
 
-	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, metadataMap), spec)
+	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, nil, metadataMap), spec)
 	g.Expect(err).Should(BeNil())
 
 	expectedJson, err := json.Marshal(expectedGrahMetadata)
@@ -319,7 +319,7 @@ func TestGraphMetadataOutputTransformer(t *testing.T) {
 		},
 	}
 
-	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, metadataMap), spec)
+	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, nil, metadataMap), spec)
 	g.Expect(err).Should(BeNil())
 
 	expectedJson, err := json.Marshal(expectedGrahMetadata)
@@ -386,7 +386,7 @@ func TestGraphMetadataCombinerModel(t *testing.T) {
 		},
 	}
 
-	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, metadataMap), spec)
+	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, nil, metadataMap), spec)
 	g.Expect(err).Should(BeNil())
 
 	expectedJson, err := json.Marshal(expectedGrahMetadata)
@@ -453,7 +453,7 @@ func TestGraphMetadataRouter(t *testing.T) {
 		},
 	}
 
-	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, metadataMap), spec)
+	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, nil, metadataMap), spec)
 	g.Expect(err).Should(BeNil())
 
 	expectedJson, err := json.Marshal(expectedGrahMetadata)
@@ -498,7 +498,7 @@ func TestGraphV1Array(t *testing.T) {
 		},
 	}
 
-	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, metadataMap), spec)
+	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, nil, metadataMap), spec)
 	g.Expect(err).Should(BeNil())
 
 	expectedJson, err := json.Marshal(expectedGrahMetadata)
@@ -544,7 +544,7 @@ func TestGraphV1JsonData(t *testing.T) {
 		},
 	}
 
-	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, metadataMap), spec)
+	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, nil, metadataMap), spec)
 	g.Expect(err).Should(BeNil())
 
 	expectedJson, err := json.Marshal(expectedGrahMetadata)
@@ -588,7 +588,7 @@ func TestGraphV1ArrayStringMix(t *testing.T) {
 		},
 	}
 
-	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, metadataMap), spec)
+	graphMetadata, err := NewGraphMetadata(createPredictorProcessWithMetadata(t, nil, metadataMap), spec)
 	g.Expect(err).Should(BeNil())
 
 	expectedJson, err := json.Marshal(expectedGrahMetadata)
