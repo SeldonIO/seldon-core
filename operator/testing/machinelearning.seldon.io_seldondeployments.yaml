@@ -6697,7 +6697,7 @@ spec:
                     type: boolean
                   ssl:
                     properties:
-                      secretNameOverride:
+                      certSecretName:
                         type: string
                     type: object
                   svcOrchSpec:
