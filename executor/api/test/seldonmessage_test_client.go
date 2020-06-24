@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
@@ -125,7 +126,21 @@ func (s SeldonMessageTestClient) Metadata(ctx context.Context, modelName string,
 }
 
 func (s SeldonMessageTestClient) ModelMetadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.ModelMetadata, error) {
-	return payload.ModelMetadata{}, nil
+	resPayload, err := s.Metadata(ctx, modelName, host, port, msg, meta)
+	if err != nil {
+		return payload.ModelMetadata{}, err
+	}
+
+	resString, err := resPayload.GetBytes()
+	if err != nil {
+		return payload.ModelMetadata{}, err
+	}
+	var modelMetadata payload.ModelMetadata
+	err = json.Unmarshal(resString, &modelMetadata)
+	if err != nil {
+		return payload.ModelMetadata{}, err
+	}
+	return modelMetadata, nil
 }
 
 func (s SeldonMessageTestClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
