@@ -1,8 +1,8 @@
 package kafka
 
 import (
-	"github.com/gogo/protobuf/proto"
 	"github.com/golang/protobuf/jsonpb"
+	"github.com/golang/protobuf/proto"
 	. "github.com/onsi/gomega"
 	seldon "github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"testing"

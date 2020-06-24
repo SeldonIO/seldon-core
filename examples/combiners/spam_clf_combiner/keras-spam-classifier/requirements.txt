@@ -1,3 +1,4 @@
+TensorFlow>=2.2.0
 scikit-learn==0.21.2
 numpy>=1.9.2
 keras
