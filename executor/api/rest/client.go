@@ -252,6 +252,24 @@ func (smc *JSONRestClient) Metadata(ctx context.Context, modelName string, host 
 	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonMetadataPath, modelName), host, port, msg, meta)
 }
 
+func (smc *JSONRestClient) ModelMetadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.ModelMetadata, error) {
+	resPayload, err := smc.Metadata(ctx, modelName, host, port, msg, meta)
+	if err != nil {
+		return payload.ModelMetadata{}, err
+	}
+
+	resString, err := resPayload.GetBytes()
+	if err != nil {
+		return payload.ModelMetadata{}, err
+	}
+	var modelMetadata payload.ModelMetadata
+	err = json.Unmarshal(resString, &modelMetadata)
+	if err != nil {
+		return payload.ModelMetadata{}, err
+	}
+	return modelMetadata, nil
+}
+
 func (smc *JSONRestClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	switch smc.Protocol {
 	case api.ProtocolSeldon: // Seldon Messages can always be chained together

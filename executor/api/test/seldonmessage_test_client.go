@@ -124,6 +124,10 @@ func (s SeldonMessageTestClient) Metadata(ctx context.Context, modelName string,
 	return &payload.BytesPayload{ContentType: "application/json", Msg: []byte(metadataMap[modelName])}, nil
 }
 
+func (s SeldonMessageTestClient) ModelMetadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.ModelMetadata, error) {
+	return payload.ModelMetadata{}, nil
+}
+
 func (s SeldonMessageTestClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	return msg, nil
 }

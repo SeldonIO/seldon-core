@@ -73,7 +73,24 @@ func (g GrpcSeldonServer) GraphMetadata(ctx context.Context, req *empty.Empty) (
 	if err != nil {
 		return nil, err
 	}
-	return graphMetadata.ToProto(), nil
+
+	output := &proto.SeldonGraphMetadata{
+		Name:    graphMetadata.Name,
+		Inputs:  graphMetadata.GraphInputs.([]*proto.SeldonMessageMetadata),
+		Outputs: graphMetadata.GraphOutputs.([]*proto.SeldonMessageMetadata),
+	}
+	output.Models = map[string]*proto.SeldonModelMetadata{}
+	for name, modelMetadata := range graphMetadata.Models {
+		output.Models[name] = &proto.SeldonModelMetadata{
+			Name:     modelMetadata.Name,
+			Versions: modelMetadata.Versions,
+			Platform: modelMetadata.Platform,
+			Inputs:   modelMetadata.Inputs.([]*proto.SeldonMessageMetadata),
+			Outputs:  modelMetadata.Outputs.([]*proto.SeldonMessageMetadata),
+		}
+	}
+
+	return output, nil
 }
 
 func payloadToMessage(p payload.SeldonPayload) *proto.SeldonMessage {

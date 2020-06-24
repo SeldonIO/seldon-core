@@ -1,98 +1,23 @@
 package predictor
 
 import (
-	"encoding/json"
-	"errors"
-	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
+	// "github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
+type GraphMetadata struct {
+	Name         string                           `json:"name"`
+	Models       map[string]payload.ModelMetadata `json:"models"`
+	GraphInputs  interface{}                      `json:"graphinputs"`
+	GraphOutputs interface{}                      `json:"graphoutputs"`
+}
+
 type MetadataTensor struct {
 	DataType string `json:"datatype,omitempty"`
 	Name     string `json:"name,omitempty"`
 	Shape    []int  `json:"shape,omitempty"`
-}
-
-type ModelMetadata struct {
-	Name     string      `json:"name,omitempty"`
-	Platform string      `json:"platform,omitempty"`
-	Versions []string    `json:"versions,omitempty"`
-	Inputs   interface{} `json:"inputs,omitempty"`
-	Outputs  interface{} `json:"outputs,omitempty"`
-}
-
-func (m *ModelMetadata) ToProto() *proto.SeldonModelMetadata {
-	return &proto.SeldonModelMetadata{
-		Name:     m.Name,
-		Versions: m.Versions,
-		Platform: m.Platform,
-		Inputs:   m.Inputs.([]*proto.SeldonMessageMetadata),
-		Outputs:  m.Outputs.([]*proto.SeldonMessageMetadata),
-	}
-}
-
-type GraphMetadata struct {
-	Name         string                   `json:"name"`
-	Models       map[string]ModelMetadata `json:"models"`
-	GraphInputs  interface{}              `json:"graphinputs"`
-	GraphOutputs interface{}              `json:"graphoutputs"`
-}
-
-func (gm *GraphMetadata) ToProto() *proto.SeldonGraphMetadata {
-	output := &proto.SeldonGraphMetadata{
-		Name:    gm.Name,
-		Inputs:  gm.GraphInputs.([]*proto.SeldonMessageMetadata),
-		Outputs: gm.GraphOutputs.([]*proto.SeldonMessageMetadata),
-	}
-	output.Models = map[string]*proto.SeldonModelMetadata{}
-	for name, modelMetadata := range gm.Models {
-		output.Models[name] = modelMetadata.ToProto()
-	}
-	return output
-}
-
-func protoToModelMetadata(p payload.SeldonPayload) (*ModelMetadata, error) {
-	meta, ok := p.GetPayload().(*proto.SeldonModelMetadata)
-	if !ok {
-		return nil, errors.New("Wrong Payload")
-	}
-	output := &ModelMetadata{
-		Name:     meta.GetName(),
-		Platform: meta.GetPlatform(),
-		Versions: meta.GetVersions(),
-		Inputs:   meta.GetInputs(),
-		Outputs:  meta.GetOutputs(),
-	}
-	return output, nil
-}
-
-func jsonToModelMetadata(p payload.SeldonPayload) (*ModelMetadata, error) {
-	if p.GetContentType() != "application/json" {
-		return nil, errors.New("Expected application/json ContentType")
-	}
-	resString, err := p.GetBytes()
-	if err != nil {
-		return nil, err
-	}
-	var meta ModelMetadata
-	err = json.Unmarshal(resString, &meta)
-	if err != nil {
-		return nil, err
-	}
-	return &meta, nil
-}
-
-func payloadToModelMetadata(p payload.SeldonPayload) (*ModelMetadata, error) {
-	switch p.GetContentType() {
-	case "application/json":
-		return jsonToModelMetadata(p)
-	case "application/protobuf":
-		return protoToModelMetadata(p)
-	default:
-		return nil, errors.New("Unknown ContentType")
-	}
 }
 
 func NewGraphMetadata(p *PredictorProcess, spec *v1.PredictorSpec) (*GraphMetadata, error) {
@@ -101,18 +26,9 @@ func NewGraphMetadata(p *PredictorProcess, spec *v1.PredictorSpec) (*GraphMetada
 		return nil, err
 	}
 
-	var models = map[string]ModelMetadata{}
-	for key, payload := range metadataMap {
-		modelMetadata, err := payloadToModelMetadata(payload)
-		if err != nil {
-			return nil, err
-		}
-		models[key] = *modelMetadata
-	}
-
 	output := &GraphMetadata{
 		Name:   spec.Name,
-		Models: models,
+		Models: metadataMap,
 	}
 
 	inputNodeMeta, outputNodeMeta := output.getEdgeNodes(spec.Graph)
@@ -123,7 +39,7 @@ func NewGraphMetadata(p *PredictorProcess, spec *v1.PredictorSpec) (*GraphMetada
 }
 
 func (gm *GraphMetadata) getEdgeNodes(node *v1.PredictiveUnit) (
-	input *ModelMetadata, output *ModelMetadata,
+	input *payload.ModelMetadata, output *payload.ModelMetadata,
 ) {
 	nodeMeta := gm.Models[node.Name]
 

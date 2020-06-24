@@ -3,6 +3,7 @@ package predictor
 import (
 	"encoding/json"
 	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"testing"
 )
@@ -27,7 +28,7 @@ func TestGraphMetadataSimple(t *testing.T) {
 
 	expectedGrahMetadata := GraphMetadata{
 		Name: "predictor-name",
-		Models: map[string]ModelMetadata{
+		Models: map[string]payload.ModelMetadata{
 			"model-1": {
 				Name:     "model-1",
 				Platform: "platform-name",
@@ -90,7 +91,7 @@ func TestGraphMetadataTwoLevel(t *testing.T) {
 	}
 	expectedGrahMetadata := GraphMetadata{
 		Name: "predictor-name",
-		Models: map[string]ModelMetadata{
+		Models: map[string]payload.ModelMetadata{
 			"model-1": {
 				Name:     "model-1",
 				Platform: "platform-name",
@@ -165,7 +166,7 @@ func TestGraphMetadataInputTransformer(t *testing.T) {
 	}
 	expectedGrahMetadata := GraphMetadata{
 		Name: "predictor-name",
-		Models: map[string]ModelMetadata{
+		Models: map[string]payload.ModelMetadata{
 			"model-1": {
 				Name:     "model-1",
 				Platform: "platform-name",
@@ -240,7 +241,7 @@ func TestGraphMetadataOutputTransformer(t *testing.T) {
 	}
 	expectedGrahMetadata := GraphMetadata{
 		Name: "predictor-name",
-		Models: map[string]ModelMetadata{
+		Models: map[string]payload.ModelMetadata{
 			"model-1": {
 				Name:     "model-1",
 				Platform: "platform-name",
@@ -326,7 +327,7 @@ func TestGraphMetadataCombinerModel(t *testing.T) {
 
 	expectedGrahMetadata := GraphMetadata{
 		Name: "predictor-name",
-		Models: map[string]ModelMetadata{
+		Models: map[string]payload.ModelMetadata{
 			"model-combiner": {
 				Name:     "model-combiner",
 				Platform: "platform-name",
@@ -424,7 +425,7 @@ func TestGraphMetadataRouter(t *testing.T) {
 
 	expectedGrahMetadata := GraphMetadata{
 		Name: "predictor-name",
-		Models: map[string]ModelMetadata{
+		Models: map[string]payload.ModelMetadata{
 			"model-router": {
 				Name:     "model-router",
 				Platform: "platform-name",
@@ -495,7 +496,7 @@ func TestGraphV1Array(t *testing.T) {
 
 	expectedGrahMetadata := GraphMetadata{
 		Name: "predictor-name",
-		Models: map[string]ModelMetadata{
+		Models: map[string]payload.ModelMetadata{
 			"model-v1-array": {
 				Name:     "model-v1-array",
 				Platform: "platform-name",
@@ -552,7 +553,7 @@ func TestGraphV1JsonData(t *testing.T) {
 
 	expectedGrahMetadata := GraphMetadata{
 		Name: "predictor-name",
-		Models: map[string]ModelMetadata{
+		Models: map[string]payload.ModelMetadata{
 			"model-v1-jsondata": {
 				Name:     "model-v1-jsondata",
 				Platform: "platform-name",
@@ -611,7 +612,7 @@ func TestGraphV1ArrayStringMix(t *testing.T) {
 
 	expectedGrahMetadata := GraphMetadata{
 		Name: "predictor-name",
-		Models: map[string]ModelMetadata{
+		Models: map[string]payload.ModelMetadata{
 			"model-v1-array-string-mix": {
 				Name:     "model-v1-array-string-mix",
 				Platform: "platform-name",

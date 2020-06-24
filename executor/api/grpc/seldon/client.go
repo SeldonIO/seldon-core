@@ -189,3 +189,23 @@ func (s *SeldonMessageGrpcClient) Metadata(ctx context.Context, modelName string
 	resPayload := payload.ProtoPayload{Msg: resp}
 	return &resPayload, nil
 }
+
+func (s *SeldonMessageGrpcClient) ModelMetadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.ModelMetadata, error) {
+	resPayload, err := s.Metadata(ctx, modelName, host, port, msg, meta)
+	if err != nil {
+		return payload.ModelMetadata{}, err
+	}
+
+	protoPayload, ok := resPayload.GetPayload().(*proto.SeldonModelMetadata)
+	if !ok {
+		return payload.ModelMetadata{}, errors.New("Wrong Payload")
+	}
+	output := payload.ModelMetadata{
+		Name:     protoPayload.GetName(),
+		Platform: protoPayload.GetPlatform(),
+		Versions: protoPayload.GetVersions(),
+		Inputs:   protoPayload.GetInputs(),
+		Outputs:  protoPayload.GetOutputs(),
+	}
+	return output, nil
+}
