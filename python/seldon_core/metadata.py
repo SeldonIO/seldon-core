@@ -30,6 +30,7 @@ SELDON_ARRAY_SCHEMA = {
                 "shape": {"type": "array", "items": {"type": "integer"}},
                 # Shall we also include field for datatype (as in dtype for np.array)?
             },
+            "additionalProperties": False,
         },
     },
     "required": ["messagetype"],
@@ -63,7 +64,22 @@ SELDON_BIN_SCHEMA = {
 
 SELDON_CUSTOM_DEFINITION = {
     "type": "object",
-    "properties": {"messagetype": {"type": "string"}, "schema": {"type": "object"},},
+    "properties": {
+        "messagetype": {
+            "type": "string",
+            "not": {
+                "enum": [
+                    "tensor",
+                    "ndarray",
+                    "tftensor",
+                    "jsonData",
+                    "strData",
+                    "binData",
+                ]
+            },
+        },
+        "schema": {"type": "object"},
+    },
     "required": ["messagetype"],
     "additionalProperties": False,
 }

@@ -276,6 +276,33 @@ def test_v1_invalid_inputs(invalid_input):
         validate_model_metadata({**valid_base, **{"outputs": invalid_input}})
 
 
+@pytest.mark.parametrize(
+    "messagetype",
+    ["tensor", "ndarray", "tftensor", "binData", "strData"],
+)
+def test_v1_invalid_schema_fields(messagetype):
+    meta = {
+        "inputs": [
+            {"messagetype": messagetype, "schema": {"custom-field": "custom-def"}}
+        ]
+    }
+    with pytest.raises(SeldonInvalidMetadataError):
+        validate_model_metadata(meta)
+
+
+@pytest.mark.parametrize(
+    "messagetype",
+    ["jsonData", "customData"],
+)
+def test_v1_valid_custom_schema(messagetype):
+    meta = {
+        "inputs": [
+            {"messagetype": messagetype, "schema": {"custom-field": "custom-def"}}
+        ]
+    }
+    validate_model_metadata(meta)
+
+
 # V2 meta tests
 
 
