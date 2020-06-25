@@ -10,14 +10,16 @@ import (
 )
 
 type GrpcSeldonTestServer struct {
-	log   logr.Logger
-	delay int
+	log           logr.Logger
+	delay         int
+	modelMetadata *proto.SeldonModelMetadata
 }
 
-func NewSeldonTestServer(delay int) *GrpcSeldonTestServer {
+func NewSeldonTestServer(delay int, modelMetadata *proto.SeldonModelMetadata) *GrpcSeldonTestServer {
 	return &GrpcSeldonTestServer{
-		log:   logf.Log.WithName("GrpcSeldonTestServer"),
-		delay: delay,
+		log:           logf.Log.WithName("GrpcSeldonTestServer"),
+		delay:         delay,
+		modelMetadata: modelMetadata,
 	}
 }
 
@@ -33,5 +35,5 @@ func (g GrpcSeldonTestServer) SendFeedback(ctx context.Context, req *proto.Feedb
 }
 
 func (g GrpcSeldonTestServer) Metadata(ctx context.Context, nothing *empty.Empty) (*proto.SeldonModelMetadata, error) {
-	panic("Not implemented")
+	return g.modelMetadata, nil
 }
