@@ -15,16 +15,21 @@ Incubating update 1:
 - we added `v1` format that better describes current SeldonMessage
 - definition through environmental variables now accepts both `yaml` and `json` input
 
+Incubating update 2:
+- we added GRPC support for both Model and Graph metadata
+- adjustments to `v1` (it is now also an array of inputs/outputs metadata) and removed explicit distinction
 
+We plan to graduate metadata features with the 1.3 release of Seldon Core.
 
 ## Examples
-- [Basic Examples for Model with Metadata](../../examples/metadata.html)
-- [SKLearn Server example with MinIO](../../examples/minio-sklearn.html)
-- [Deployment Level Metadata](../../examples/graph-metadata.html).
+- [Model Metadata (examples)](../../examples/metadata.html)
+- [Model Metadata (format examples)](../../examples/metadata_schema.html)
+- [Deployment Level Metadata](../../examples/graph-metadata.html)
+- [Metadata with GRPC](../../examples/metadata_grpc.html)
 
+- [SKLearn Server example with MinIO](../../examples/minio-sklearn.html)
 - [Deploying models trained with Pachyderm](../../examples/pachyderm.html)
 - [Deploying models trained with DVC](../../examples/dvc.html)
-
 
 
 ## Model Metadata (incubating)
@@ -40,13 +45,14 @@ name: my-model
 versions: [my-model/v1]
 platform: platform-name
 inputs:
-- datatype: BYTES
-  name: input
-  shape: [ 1, 4 ]
+- messagetype: tensor
+  schema:
+    names: [a, b, c, d]
+    shape: [4]
 outputs:
-- datatype: BYTES
-  name: output
-  shape: [ 3 ]
+- messagetype: tensor
+  schema:
+    shape: [ 1 ]
 ```
 
 See [SKLearn Server example with MinIO](../../examples/minio-sklearn.html) for more details.
@@ -61,11 +67,16 @@ class Model:
     ...
     def init_metadata(self):
         meta = {
-            "name": "my-model",
-            "versions": ["my-model/v1"],
-            "platform": "platform-name",
-            "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1, 4]}],
-            "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1]}],
+            "name": "my-model-name",
+            "versions": ["my-model-version-01"],
+            "platform": "seldon",
+            "inputs": [
+                {
+                    "messagetype": "tensor",
+                    "schema": {"names": ["a", "b", "c", "d"], "shape": [4]},
+                }
+            ],
+            "outputs": [{"messagetype": "tensor", "schema": {"shape": [1]}}],
         }
         return meta
 ```
@@ -99,13 +110,14 @@ spec:
               versions: [ my-model-version ]
               platform: seldon
               inputs:
-              - datatype: BYTES
-                name: input
-                shape: [ 1, 4 ]
+              - messagetype: tensor
+                schema:
+                  names: [a, b, c, d]
+                  shape: [4]
               outputs:
-              - datatype: BYTES
-                name: output
-                shape: [ 3 ]
+              - messagetype: tensor
+                schema:
+                  shape: [ 1 ]
     graph:
       name: my-model
       ...
@@ -123,25 +135,37 @@ It will then expose them together with all nodes' metadata at a single endpoint 
 Example response:
 ```json
 {
-  "name": "example",
-  "models": {
-    "model-1": {
-      "name": "Model 1",
-      "platform": "platform-name",
-      "versions": ["model-version"],
-      "inputs": [{"datatype": "BYTES", "name": "input", "shape": [1, 5]}],
-      "outputs": [{"datatype": "BYTES", "name": "output", "shape": [1, 3]}]
+    "name": "example",
+    "models": {
+        "node-one": {
+            "name": "node-one",
+            "platform": "seldon",
+            "versions": ["generic-node/v0.3"],
+            "inputs": [
+                {"messagetype": "tensor", "schema": {"names": ["one-input"]}}
+            ],
+            "outputs": [
+                {"messagetype": "tensor", "schema": {"names": ["one-output"]}}
+            ],
+        },
+        "node-two": {
+            "name": "node-two",
+            "platform": "seldon",
+            "versions": ["generic-node/v0.3"],
+            "inputs": [
+                {"messagetype": "tensor", "schema": {"names": ["two-input"]}}
+            ],
+            "outputs": [
+                {"messagetype": "tensor", "schema": {"names": ["two-output"]}}
+            ],
+        }
     },
-    "model-2": {
-      "name": "Model 2",
-      "platform": "platform-name",
-      "versions": ["model-version"],
-      "inputs": [{"datatype": "BYTES", "name": "input", "shape": [1, 3]}],
-      "outputs": [{"datatype": "BYTES", "name": "output", "shape": [3]}]
-    }
-  },
-  "graphinputs": [{"datatype": "BYTES", "name": "input", "shape": [1, 5]}],
-  "graphoutputs": [{"datatype": "BYTES", "name": "output", "shape": [3]}]
+    "graphinputs": [
+        {"messagetype": "tensor", "schema": {"names": ["one-input"]}}
+    ],
+    "graphoutputs": [
+        {"messagetype": "tensor", "schema": {"names": ["two-output"]}}
+    ]
 }
 ```
 
@@ -159,54 +183,50 @@ Example response:
   "name": "my-model",
   "versions": ["my-model/v1"],
   "platform": "platform-name",
-  "inputs": [{"datatype": "BYTES", "name": "input", "shape": [1, 5]}],
-  "outputs": [{"datatype": "BYTES", "name": "output", "shape": [1, 3]}],
+  "inputs": [{"messagetype": "tensor", "schema": {"shape": [1, 5]}}],
+  "outputs": [{"messagetype": "tensor", "schema": {"shape": [1, 3]}}]
 }
 ```
 
 
-## V1/V2 format reference
+## SeldonMessage metadata vs kfserving TensorMetadata
 
-You can add metadata using one of two formats:
+You can define inputs/outputs of your model metadata using one of two formats:
 - `v1` format that closely correlates to the current structure of `SeldonMessage`
 - `v2` format that is future-proof and fully compatible with [kfserving dataplane proposal](https://github.com/kubeflow/kfserving/blob/master/docs/predict-api/v2/required_api.md#model-metadata) dataplane proposal
 
-As you will see in following sections difference is minimal and mostly relates to the input/output format.
+### SeldonMessage metadata
 
-### V1 DataPlane
-
-In order to use `v1` metadata format you need to specify `apiVersion: v1`.
-
-#### Array input/output
+#### ndarray input/output
 ```YAML
-apiVersion: v1
 name: my-model-name
 versions: [ my-model-version-01 ]
 platform: seldon
 inputs:
-  datatype: array
-  shape: [ 2, 2 ]
+- messagetype: ndarray
+  schema:
+    names: [a, b]
+    shape: [ 2, 2 ]
 outputs:
-  datatype: array
-  shape: [ 1 ]
+- messagetype: ndarray
+  schema:
+    shape: [ 1 ]
 ```
-This metadata would mean that following two inputs are valid for this model:
+
+This metadata would mean that following two input is valid for this model:
 ```JSON
-{"data": {"names": ["input"], "ndarray": [[1, 2], [3, 4]]}}
+{"data": {"names": ["a", "b"], "ndarray": [[1, 2], [3, 4]]}}
 ```
-and
-```JSON
-{"data": {"names": ["input"], "tensor": {"values": [1, 2, 3, 4], "shape": [2, 2]}}
-```
+
+Note: similar format is valid for messagetype of `tensor` and `tftensor`.
 
 #### jsonData input/output
 ```YAML
-apiVersion: v1
 name: my-model-name
 versions: [ my-model-version-01 ]
 platform: seldon
 inputs:
-  datatype: jsonData
+- messagetype: jsonData
   schema:
       type: object
       properties:
@@ -220,8 +240,9 @@ inputs:
                 type: number
                 format: double
 outputs:
-  datatype: array
-  shape: [ 1 ]
+- messagetype: ndarray
+  schema:
+    shape: [ 1 ]
 ```
 
 Example model input:
@@ -235,15 +256,13 @@ Note: as you can see you can mix inputs and outputs of different types!
 
 #### strData input/output
 ```YAML
-apiVersion: v1
 name: my-model-name
 versions: [ my-model-version-01 ]
 platform: seldon
 inputs:
-  datatype: strData
+- messagetype: strData
 outputs:
-  datatype: array
-  shape: [ 1 ]
+- messagetype: strData
 ```
 
 Example model input:
@@ -251,8 +270,27 @@ Example model input:
 {"strData": "some test input"}
 ```
 
+#### custom input/output format
 
-### V2 DataPlane
+You can also specify your custom `messagetype`. In this case there are no restrictions
+on keys that you define under the `schema` field. This may be useful for `raw` methods.
+
+```YAML
+name: my-model-name
+versions: [ my-model-version-01 ]
+platform: seldon
+inputs:
+- messagetype: customData
+  schema:
+    my-names: ["a", "b", "c"]
+outputs:
+- messagetype: tensor
+  schema:
+    shape: [ 1 ]
+```
+
+
+### kfserving TensorMetadata
 You can easily define metadata for your models that is compatible with [kfserving dataplane proposal](https://github.com/kubeflow/kfserving/blob/master/docs/predict-api/v2/required_api.md#model-metadata) specification.
 ```
 $metadata_model_response =
@@ -274,4 +312,17 @@ $metadata_tensor =
 }
 ```
 
-Note: this the default format so you do not need to specify `apiVersion`.
+Example definition
+```YAML
+name: my-model-name
+versions: [ my-model-version-01 ]
+platform: seldon
+inputs:
+- datatype: BYTES
+  name: input
+  shape: [ 1, 4 ]
+outputs:
+- datatype: BYTES
+  name: output
+  shape: [ 3 ]
+```
