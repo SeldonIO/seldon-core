@@ -22,10 +22,12 @@ spec:
               - messagetype: tensor
                 schema:
                   names: [node-input]
+                  shape: [ 1 ]
               outputs:
               - messagetype: tensor
                 schema:
                   names: [node-output]
+                  shape: [ 1 ]
     graph:
       name: model
       type: MODEL

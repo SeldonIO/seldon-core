@@ -23,11 +23,13 @@ spec:
               inputs:
               - messagetype: tensor
                 schema:
-                  names: [common-input]
+                  names: [ a, b ]
+                  shape: [ 2 ]
               outputs:
               - messagetype: tensor
                 schema:
-                  names: [common-output]       
+                  names: [ node-output ]       
+                  shape: [ 1 ]
         - image: seldonio/metadata-generic-node_rest:0.3
           name: node-two
           env:
@@ -40,11 +42,13 @@ spec:
               inputs:
               - messagetype: tensor
                 schema:
-                  names: [common-input]
+                  names: [ a, b ]
+                  shape: [ 2 ]
               outputs:
               - messagetype: tensor
                 schema:
-                  names: [common-output]               
+                  names: [ node-output ]       
+                  shape: [ 1 ]
     graph:
       name: node-router
       type: ROUTER

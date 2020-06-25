@@ -22,10 +22,12 @@ spec:
               - messagetype: tensor
                 schema:
                   names: [transformer-input]
+                  shape: [ 1 ]
               outputs:
               - messagetype: tensor
                 schema:
                   names: [transformer-output]                          
+                  shape: [ 1 ]  
         - image: seldonio/metadata-generic-node_rest:0.3
           name: node
           env:
@@ -39,10 +41,12 @@ spec:
               - messagetype: tensor
                 schema:
                   names: [node-input]
+                  shape: [ 1 ]  
               outputs:
               - messagetype: tensor
                 schema:
                   names: [transformer-input]       
+                  shape: [ 1 ]  
     graph:
       name: node-output-transformer
       type: OUTPUT_TRANSFORMER

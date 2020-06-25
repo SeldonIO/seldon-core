@@ -21,14 +21,17 @@ spec:
               inputs:
               - messagetype: tensor
                 schema:
-                  names: [one-output]
+                  names: [ c1 ]
+                  shape: [ 1 ]                       
               - messagetype: tensor
                 schema:
-                  names: [two-output]                    
+                  names: [ c2 ]
+                  shape: [ 1 ]  
               outputs:
               - messagetype: tensor
                 schema:
                   names: [combiner-output]
+                  shape: [ 1 ]  
         - image: seldonio/metadata-generic-node_rest:0.3
           name: node-one
           env:
@@ -41,11 +44,13 @@ spec:
               inputs:
               - messagetype: tensor
                 schema:
-                  names: [common-input]
+                  names: [a, b]
+                  shape: [ 2 ]      
               outputs:
               - messagetype: tensor
                 schema:
-                  names: [one-output]       
+                  names: [ c1 ]
+                  shape: [ 1 ]  
         - image: seldonio/metadata-generic-node_rest:0.3
           name: node-two
           env:
@@ -58,11 +63,13 @@ spec:
               inputs:
               - messagetype: tensor
                 schema:
-                  names: [common-input]
+                  names: [a, b]
+                  shape: [ 2 ]      
               outputs:
               - messagetype: tensor
                 schema:
-                  names: [two-output]           
+                  names: [ c2 ]
+                  shape: [ 1 ]  
     graph:
       name: node-combiner
       type: COMBINER

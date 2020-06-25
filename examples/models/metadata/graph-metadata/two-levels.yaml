@@ -21,11 +21,13 @@ spec:
               inputs:
               - messagetype: tensor
                 schema:
-                  names: [one-input]
+                  names: [ a1, a2 ]
+                  shape: [ 2 ]
               outputs:
               - messagetype: tensor
                 schema:
-                  names: [one-output]
+                  names: [ a3 ]
+                  shape: [ 1 ]  
         - image: seldonio/metadata-generic-node_rest:0.3
           name: node-two
           env:
@@ -38,11 +40,13 @@ spec:
               inputs:
               - messagetype: tensor
                 schema:
-                  names: [two-input]
+                  names: [ a3 ]
+                  shape: [ 1 ]  
               outputs:
               - messagetype: tensor
                 schema:
-                  names: [two-output]
+                  names: [b1, b2]
+                  shape: [ 2 ]  
     graph:
       name: node-one
       type: MODEL

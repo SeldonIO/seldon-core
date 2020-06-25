@@ -175,7 +175,7 @@ func (s *SeldonMessageGrpcClient) Status(ctx context.Context, modelName string, 
 	return nil, errors.Errorf("Not implemented")
 }
 
-// Return model's metadata as payload.SeldonPaylaod (to use without inspecting its content)
+// Return model's metadata as payload.SeldonPaylaod (to expose as received on corresponding executor endpoint)
 func (s *SeldonMessageGrpcClient) Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
