@@ -2,7 +2,7 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: seldon-model
+  name: seldon-model-init-metadata
 spec:
   name: test-deployment
   predictors:

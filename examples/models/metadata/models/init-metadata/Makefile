@@ -16,3 +16,5 @@ push:
 
 kind_load:
 	kind load -v 3 docker-image ${IMAGE_BASE}:${VERSION} --name ${KIND_NAME}
+
+kind_image_install: build kind_load

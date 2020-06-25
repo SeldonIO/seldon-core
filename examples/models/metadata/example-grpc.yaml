@@ -2,7 +2,7 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: graph-metadata-combiner
+  name: graph-metadata-grpc
 spec:
   name: test-deployment
   predictors:
@@ -10,28 +10,10 @@ spec:
     - spec:
         containers:
         - image: seldonio/metadata-generic-node:0.3
-          name: node-combiner
-          env:
-          - name: MODEL_METADATA
-            value: |
-              ---
-              name: node-combiner
-              versions: [ generic-node/v0.3 ]
-              platform: seldon
-              inputs:
-              - messagetype: tensor
-                schema:
-                  names: [one-output]
-              - messagetype: tensor
-                schema:
-                  names: [two-output]                    
-              outputs:
-              - messagetype: tensor
-                schema:
-                  names: [combiner-output]
-        - image: seldonio/metadata-generic-node:0.3
           name: node-one
           env:
+          - name: API_TYPE
+            value: GRPC             
           - name: MODEL_METADATA
             value: |
               ---
@@ -41,14 +23,16 @@ spec:
               inputs:
               - messagetype: tensor
                 schema:
-                  names: [common-input]
+                  names: [one-input]
               outputs:
               - messagetype: tensor
                 schema:
-                  names: [one-output]       
+                  names: [one-output]
         - image: seldonio/metadata-generic-node:0.3
           name: node-two
           env:
+          - name: API_TYPE
+            value: GRPC             
           - name: MODEL_METADATA
             value: |
               ---
@@ -58,18 +42,15 @@ spec:
               inputs:
               - messagetype: tensor
                 schema:
-                  names: [common-input]
+                  names: [two-input]
               outputs:
               - messagetype: tensor
                 schema:
-                  names: [two-output]           
+                  names: [two-output]
     graph:
-      name: node-combiner
-      type: COMBINER
+      name: node-one
+      type: MODEL
       children:
-      - name: node-one
-        type: MODEL
-        children: []   
       - name: node-two
         type: MODEL
         children: []   

@@ -2,7 +2,7 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: seldon-model
+  name: seldon-model-environ-metadata
 spec:
   name: test-deployment
   predictors:
@@ -21,13 +21,14 @@ spec:
               versions: [ my-model-version-01 ]
               platform: seldon
               inputs:
-              - datatype: BYTES
-                name: input
-                shape: [ 1, 4 ]
+              - messagetype: tensor
+                schema:
+                  names: [a, b, c, d]
+                  shape: [4]
               outputs:
-              - datatype: BYTES
-                name: output
-                shape: [ 3 ]
+              - messagetype: tensor
+                schema:
+                  shape: [ 1 ]
     graph:
       children: []
       name: my-model

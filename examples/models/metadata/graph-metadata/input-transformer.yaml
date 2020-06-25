@@ -9,26 +9,40 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/metadata-generic-node:0.2
+        - image: seldonio/metadata-generic-node:0.3
           name: node-input-transformer
           env:
           - name: MODEL_METADATA
             value: |
-              {"name": "node-input-transformer",
-               "versions": ["generic-node/v0.2"],
-               "platform": "seldon",
-               "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1, 10]}],
-               "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1, 20]}]}            
-        - image: seldonio/metadata-generic-node:0.2
+              ---
+              name: node-input-transformer
+              versions: [ generic-node/v0.3 ]
+              platform: seldon
+              inputs:
+              - messagetype: tensor
+                schema:
+                  names: [transformer-input]
+              outputs:
+              - messagetype: tensor
+                schema:
+                  names: [transformer-output]                          
+        - image: seldonio/metadata-generic-node:0.3
           name: node
           env:
           - name: MODEL_METADATA
             value: |
-              {"name": "node",
-               "versions": ["generic-node/v0.2"],
-               "platform": "seldon",
-               "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1, 20]}],
-               "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1]}]}               
+              ---
+              name: node
+              versions: [ generic-node/v0.3 ]
+              platform: seldon
+              inputs:
+              - messagetype: tensor
+                schema:
+                  names: [transformer-output]
+              outputs:
+              - messagetype: tensor
+                schema:
+                  names: [node-output]
     graph:
       name: node-input-transformer
       type: TRANSFORMER
