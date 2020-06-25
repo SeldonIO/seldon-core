@@ -9,9 +9,9 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/metadata-generic-node:0.3
+        - image: seldonio/metadata-generic-node_rest:0.3
           name: node-router
-        - image: seldonio/metadata-generic-node:0.3
+        - image: seldonio/metadata-generic-node_rest:0.3
           name: node-one
           env:
           - name: MODEL_METADATA
@@ -28,7 +28,7 @@ spec:
               - messagetype: tensor
                 schema:
                   names: [common-output]       
-        - image: seldonio/metadata-generic-node:0.3
+        - image: seldonio/metadata-generic-node_rest:0.3
           name: node-two
           env:
           - name: MODEL_METADATA

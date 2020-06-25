@@ -9,11 +9,9 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/metadata-generic-node:0.3
+        - image: seldonio/metadata-generic-node_grpc:0.3
           name: node-one
-          env:
-          - name: API_TYPE
-            value: GRPC             
+          env:           
           - name: MODEL_METADATA
             value: |
               ---
@@ -28,11 +26,10 @@ spec:
               - messagetype: tensor
                 schema:
                   names: [one-output]
-        - image: seldonio/metadata-generic-node:0.3
+        - image: seldonio/metadata-generic-node_grpc:0.3
           name: node-two
           env:
-          - name: API_TYPE
-            value: GRPC             
+         
           - name: MODEL_METADATA
             value: |
               ---

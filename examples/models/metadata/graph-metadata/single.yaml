@@ -9,7 +9,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/metadata-generic-node:0.3
+        - image: seldonio/metadata-generic-node_rest:0.3
           name: model
           env:
           - name: MODEL_METADATA

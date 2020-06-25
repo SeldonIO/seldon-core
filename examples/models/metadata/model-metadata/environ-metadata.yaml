@@ -9,7 +9,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/metadata-generic-node:0.3
+        - image: seldonio/metadata-generic-node_rest:0.3
           name: my-model
           env:
           - name: SELDON_LOG_LEVEL
