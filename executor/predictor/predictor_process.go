@@ -330,6 +330,24 @@ func (p *PredictorProcess) Metadata(node *v1.PredictiveUnit, modelName string, m
 	}
 }
 
+func (p *PredictorProcess) GraphMetadata(spec *v1.PredictorSpec) (*GraphMetadata, error) {
+	metadataMap, err := p.ModelMetadataMap(spec.Graph)
+	if err != nil {
+		return nil, err
+	}
+
+	output := &GraphMetadata{
+		Name:   spec.Name,
+		Models: metadataMap,
+	}
+
+	inputNodeMeta, outputNodeMeta := output.getEdgeNodes(spec.Graph)
+	output.GraphInputs = inputNodeMeta.Inputs
+	output.GraphOutputs = outputNodeMeta.Outputs
+
+	return output, nil
+}
+
 func (p *PredictorProcess) Feedback(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	tmsg, err := p.feedbackChildren(node, msg)
 	if err != nil {

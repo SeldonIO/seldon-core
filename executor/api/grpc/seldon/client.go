@@ -175,6 +175,7 @@ func (s *SeldonMessageGrpcClient) Status(ctx context.Context, modelName string, 
 	return nil, errors.Errorf("Not implemented")
 }
 
+// Return model's metadata as payload.SeldonPaylaod (to use without inspecting its content)
 func (s *SeldonMessageGrpcClient) Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
@@ -190,6 +191,7 @@ func (s *SeldonMessageGrpcClient) Metadata(ctx context.Context, modelName string
 	return &resPayload, nil
 }
 
+// Return model's metadata decoded to payload.ModelMetadata (to build GraphMetadata)
 func (s *SeldonMessageGrpcClient) ModelMetadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.ModelMetadata, error) {
 	resPayload, err := s.Metadata(ctx, modelName, host, port, msg, meta)
 	if err != nil {

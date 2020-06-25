@@ -20,24 +20,6 @@ type MetadataTensor struct {
 	Shape    []int  `json:"shape,omitempty"`
 }
 
-func NewGraphMetadata(p *PredictorProcess, spec *v1.PredictorSpec) (*GraphMetadata, error) {
-	metadataMap, err := p.ModelMetadataMap(spec.Graph)
-	if err != nil {
-		return nil, err
-	}
-
-	output := &GraphMetadata{
-		Name:   spec.Name,
-		Models: metadataMap,
-	}
-
-	inputNodeMeta, outputNodeMeta := output.getEdgeNodes(spec.Graph)
-	output.GraphInputs = inputNodeMeta.Inputs
-	output.GraphOutputs = outputNodeMeta.Outputs
-
-	return output, nil
-}
-
 func (gm *GraphMetadata) getEdgeNodes(node *v1.PredictiveUnit) (
 	input *payload.ModelMetadata, output *payload.ModelMetadata,
 ) {

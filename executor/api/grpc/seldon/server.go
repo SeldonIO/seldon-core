@@ -69,7 +69,7 @@ func (g GrpcSeldonServer) GraphMetadata(ctx context.Context, req *empty.Empty) (
 
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("SeldonMessageRestClient"), g.ServerUrl, g.Namespace, grpc.CollectMetadata(ctx))
 
-	graphMetadata, err := predictor.NewGraphMetadata(&seldonPredictorProcess, g.predictor)
+	graphMetadata, err := seldonPredictorProcess.GraphMetadata(g.predictor)
 	if err != nil {
 		return nil, err
 	}
@@ -106,10 +106,3 @@ func payloadToModelMetadata(p payload.SeldonPayload) *proto.SeldonModelMetadata 
 	}
 	return nil
 }
-
-// func payloadToGraphMetadata(p payload.SeldonPayload) *proto.SeldonGraphMetadata {
-// 	if m, ok := p.GetPayload().(*proto.SeldonGraphMetadata); ok {
-// 		return m
-// 	}
-// 	return nil
-// }

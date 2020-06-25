@@ -248,10 +248,12 @@ func (smc *JSONRestClient) Status(ctx context.Context, modelName string, host st
 	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonStatusPath, modelName), host, port, msg, meta)
 }
 
+// Return model's metadata as payload.SeldonPaylaod (to use without inspecting its content)
 func (smc *JSONRestClient) Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonMetadataPath, modelName), host, port, msg, meta)
 }
 
+// Return model's metadata decoded to payload.ModelMetadata (to build GraphMetadata)
 func (smc *JSONRestClient) ModelMetadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.ModelMetadata, error) {
 	resPayload, err := smc.Metadata(ctx, modelName, host, port, msg, meta)
 	if err != nil {
