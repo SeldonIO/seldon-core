@@ -98,12 +98,14 @@ message SeldonModelMetadataRequest
 
 message SeldonMessageMetadata
 {
-  string name = 1;
-  string datatype = 2;
-  repeated int64 shape = 3;
+  // SeldonMessage Metadata fields
+  string messagetype = 1;
+  google.protobuf.Value schema = 2;
 
-  string messagetype = 4;
-  google.protobuf.Value schema = 5;
+  // KFserving tesnor metadata fields
+  string name = 3;
+  string datatype = 4;
+  repeated int64 shape = 5;
 }
 
 

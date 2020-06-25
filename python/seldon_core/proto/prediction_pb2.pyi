@@ -463,21 +463,21 @@ global___SeldonModelMetadataRequest = SeldonModelMetadataRequest
 
 class SeldonMessageMetadata(google___protobuf___message___Message):
     DESCRIPTOR: google___protobuf___descriptor___Descriptor = ...
+    messagetype = ... # type: typing___Text
     name = ... # type: typing___Text
     datatype = ... # type: typing___Text
     shape = ... # type: google___protobuf___internal___containers___RepeatedScalarFieldContainer[builtin___int]
-    messagetype = ... # type: typing___Text
 
     @property
     def schema(self) -> google___protobuf___struct_pb2___Value: ...
 
     def __init__(self,
         *,
+        messagetype : typing___Optional[typing___Text] = None,
+        schema : typing___Optional[google___protobuf___struct_pb2___Value] = None,
         name : typing___Optional[typing___Text] = None,
         datatype : typing___Optional[typing___Text] = None,
         shape : typing___Optional[typing___Iterable[builtin___int]] = None,
-        messagetype : typing___Optional[typing___Text] = None,
-        schema : typing___Optional[google___protobuf___struct_pb2___Value] = None,
         ) -> None: ...
     if sys.version_info >= (3,):
         @classmethod
