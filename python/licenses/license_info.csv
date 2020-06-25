@@ -47,7 +47,6 @@
 "opt-einsum","3.2.1","MIT"
 "prometheus-client","0.8.0","Apache Software License"
 "protobuf","3.12.2","3-Clause BSD License"
-"pyaml","19.12.0","WTFPL"
 "pyasn1","0.4.8","BSD License"
 "pyasn1-modules","0.2.8","BSD License"
 "pycparser","2.20","BSD License"
