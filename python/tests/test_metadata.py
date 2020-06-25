@@ -277,8 +277,7 @@ def test_v1_invalid_inputs(invalid_input):
 
 
 @pytest.mark.parametrize(
-    "messagetype",
-    ["tensor", "ndarray", "tftensor", "binData", "strData"],
+    "messagetype", ["tensor", "ndarray", "tftensor", "binData", "strData"],
 )
 def test_v1_invalid_schema_fields(messagetype):
     meta = {
@@ -291,8 +290,7 @@ def test_v1_invalid_schema_fields(messagetype):
 
 
 @pytest.mark.parametrize(
-    "messagetype",
-    ["jsonData", "customData"],
+    "messagetype", ["jsonData", "customData"],
 )
 def test_v1_valid_custom_schema(messagetype):
     meta = {
