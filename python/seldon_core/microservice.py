@@ -7,16 +7,15 @@ import logging
 import multiprocessing as mp
 import threading
 import sys
-import seldon_core.persistence as persistence
-from seldon_core.metrics import SeldonMetrics
-from distutils.util import strtobool
-from seldon_core.flask_utils import ANNOTATIONS_FILE
-import seldon_core.wrapper as seldon_microservice
+
 from typing import Dict, Callable
-from seldon_core.flask_utils import SeldonMicroserviceException
-from seldon_core import __version__
+from distutils.util import strtobool
+
+from seldon_core import persistence, __version__, wrapper as seldon_microservice
+from seldon_core.metrics import SeldonMetrics
+from seldon_core.flask_utils import ANNOTATIONS_FILE, SeldonMicroserviceException
 from seldon_core.utils import getenv_as_bool
-import gunicorn.app.base
+from seldon_core.app import StandaloneApplication, UserModelApplication
 
 logger = logging.getLogger(__name__)
 
@@ -167,34 +166,6 @@ def setup_tracing(interface_name: str) -> object:
             )
     # this call also sets opentracing.tracer
     return config.initialize_tracer()
-
-
-class StandaloneApplication(gunicorn.app.base.BaseApplication):
-    def __init__(self, app, user_object, options: Dict = None):
-        self.application = app
-        self.user_object = user_object
-        self.options = options
-        super(StandaloneApplication, self).__init__()
-
-    def load_config(self):
-        config = dict(
-            [
-                (key, value)
-                for key, value in self.options.items()
-                if key in self.cfg.settings and value is not None
-            ]
-        )
-        for key, value in config.items():
-            self.cfg.set(key.lower(), value)
-
-    def load(self):
-        logger.debug("LOADING APP %d", os.getpid())
-        try:
-            logger.debug("Calling user load method")
-            self.user_object.load()
-        except (NotImplementedError, AttributeError):
-            logger.debug("No load method in user model")
-        return self.application
 
 
 def main():
@@ -366,7 +337,7 @@ def main():
                 app = seldon_microservice.get_rest_microservice(
                     user_object, seldon_metrics
                 )
-                StandaloneApplication(app, user_object, options=options).run()
+                UserModelApplication(app, user_object, options=options).run()
 
             logger.info("REST gunicorn microservice running on port %i", port)
             server1_func = rest_prediction_server
@@ -413,7 +384,19 @@ def main():
 
     def rest_metrics_server():
         app = seldon_microservice.get_metrics_microservice(seldon_metrics)
-        app.run(host="0.0.0.0", port=metrics_port)
+        if args.debug:
+            app.run(host="0.0.0.0", port=metrics_port)
+        else:
+            options = {
+                "bind": "%s:%s" % ("0.0.0.0", metrics_port),
+                "access_logfile": "-",
+                "loglevel": args.log_level,
+                "timeout": 5000,
+                "max_requests": args.max_requests,
+                "max_requests_jitter": args.max_requests_jitter,
+            }
+            app = seldon_microservice.get_rest_microservice(seldon_metrics)
+            StandaloneApplication(app, options=options).run()
 
     logger.info("REST metrics microservice running on port %i", metrics_port)
     metrics_server_func = rest_metrics_server
