@@ -77,7 +77,7 @@ see metadata [documentation](./metadata.md) for more details.
 service Seldon {
   rpc Predict(SeldonMessage) returns (SeldonMessage) {};
   rpc SendFeedback(Feedback) returns (SeldonMessage) {};
-  rpc Metadata(SeldonModelMetadataRequest) returns (SeldonModelMetadata) {};
+  rpc ModelMetadata(SeldonModelMetadataRequest) returns (SeldonModelMetadata) {};
   rpc GraphMetadata(google.protobuf.Empty) returns (SeldonGraphMetadata) {};
 }
 ```

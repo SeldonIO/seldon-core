@@ -98,7 +98,7 @@ func TestMetadata(t *testing.T) {
 	metadataPayload := payload.ProtoPayload{Msg: &protoMetadata}
 	server := NewGrpcSeldonServer(&p, &test.SeldonMessageTestClient{MetadataResponse: &metadataPayload}, url, "default")
 
-	res, err := server.Metadata(context.TODO(), &proto.SeldonModelMetadataRequest{})
+	res, err := server.ModelMetadata(context.TODO(), &proto.SeldonModelMetadataRequest{})
 	g.Expect(err).To(BeNil())
 	g.Expect(res.GetName()).To(Equal("mymodel"))
 }

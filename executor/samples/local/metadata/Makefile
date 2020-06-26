@@ -49,7 +49,7 @@ request-grpc:
 metadata-grpc:
 	cd ${BASE}/proto && grpcurl \
 	-d '{"name": "mock-model"}' \
-	-plaintext -proto ./prediction.proto  0.0.0.0:8000 seldon.protos.Seldon/Metadata
+	-plaintext -proto ./prediction.proto  0.0.0.0:8000 seldon.protos.Seldon/ModelMetadata
 
 graph-metadata-grpc:
 	cd ${BASE}/proto && grpcurl \

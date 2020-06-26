@@ -227,10 +227,16 @@ class SeldonModelGRPC(object):
         )
 
     def Metadata(self, request_grpc, context):
+        """Metadata method of rpc Model service"""
+        return json_to_seldon_model_metadata(self.metadata_data)
+
+    def ModelMetadata(self, request_grpc, context):
+        """ModelMetadata method of rpc Seldon service"""
         return json_to_seldon_model_metadata(self.metadata_data)
 
     def GraphMetadata(self, request_grpc, context):
-        return json_to_seldon_model_metadata(self.metadata_data)
+        """GraphMetadata method of rpc Seldon service"""
+        raise NotImplementedError("GraphMetadata not available on the Model level.")
 
 
 def get_grpc_server(user_model, seldon_metrics, annotations={}, trace_interceptor=None):

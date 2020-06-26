@@ -402,8 +402,8 @@ class SeldonStub(object):
         request_serializer=proto_dot_prediction__pb2.Feedback.SerializeToString,
         response_deserializer=proto_dot_prediction__pb2.SeldonMessage.FromString,
         )
-    self.Metadata = channel.unary_unary(
-        '/seldon.protos.Seldon/Metadata',
+    self.ModelMetadata = channel.unary_unary(
+        '/seldon.protos.Seldon/ModelMetadata',
         request_serializer=proto_dot_prediction__pb2.SeldonModelMetadataRequest.SerializeToString,
         response_deserializer=proto_dot_prediction__pb2.SeldonModelMetadata.FromString,
         )
@@ -432,7 +432,7 @@ class SeldonServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def Metadata(self, request, context):
+  def ModelMetadata(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -459,8 +459,8 @@ def add_SeldonServicer_to_server(servicer, server):
           request_deserializer=proto_dot_prediction__pb2.Feedback.FromString,
           response_serializer=proto_dot_prediction__pb2.SeldonMessage.SerializeToString,
       ),
-      'Metadata': grpc.unary_unary_rpc_method_handler(
-          servicer.Metadata,
+      'ModelMetadata': grpc.unary_unary_rpc_method_handler(
+          servicer.ModelMetadata,
           request_deserializer=proto_dot_prediction__pb2.SeldonModelMetadataRequest.FromString,
           response_serializer=proto_dot_prediction__pb2.SeldonModelMetadata.SerializeToString,
       ),
