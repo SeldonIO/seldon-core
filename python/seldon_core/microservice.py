@@ -357,7 +357,7 @@ def main():
                 options = {
                     "bind": "%s:%s" % ("0.0.0.0", port),
                     "access_logfile": "-",
-                    "loglevel": "info",
+                    "loglevel": args.log_level,
                     "timeout": 5000,
                     "workers": args.workers,
                     "max_requests": args.max_requests,
