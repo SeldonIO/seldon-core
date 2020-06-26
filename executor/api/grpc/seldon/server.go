@@ -56,6 +56,7 @@ func (g GrpcSeldonServer) SendFeedback(ctx context.Context, req *proto.Feedback)
 	return payloadToMessage(resPayload), nil
 }
 
+// Returns ModelMetadata - name Metadata come from protos definition.
 func (g GrpcSeldonServer) Metadata(ctx context.Context, req *proto.SeldonModelMetadataRequest) (*proto.SeldonModelMetadata, error) {
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("SeldonMessageRestClient"), g.ServerUrl, g.Namespace, grpc.CollectMetadata(ctx))
 	resPayload, err := seldonPredictorProcess.Metadata(g.predictor.Graph, req.GetName(), nil)
