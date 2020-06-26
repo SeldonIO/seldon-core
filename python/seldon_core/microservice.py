@@ -224,7 +224,12 @@ def main():
         "--log-level", type=str, default=os.environ.get(LOG_LEVEL_ENV, "INFO")
     )
     parser.add_argument(
-        "--debug", type=bool, default=getenv_as_bool(DEBUG_ENV, default=False)
+        "--debug",
+        nargs="?",
+        type=bool,
+        default=getenv_as_bool(DEBUG_ENV, default=False),
+        const=True,
+        help="Enable debug mode.",
     )
     parser.add_argument(
         "--tracing",
