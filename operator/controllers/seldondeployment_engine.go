@@ -318,6 +318,9 @@ func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machine
 	pCopy := p.DeepCopy()
 	// Set traffic to zero to ensure this doesn't cause a diff in the resulting  deployment created
 	pCopy.Traffic = 0
+	// Set replicas to zero to ensure this doesn't cause a diff in the resulting deployment created
+	var replicasCopy int32 = 0
+	pCopy.Replicas = &replicasCopy
 	predictorB64, err := getEngineVarJson(pCopy)
 	if err != nil {
 		return nil, err
