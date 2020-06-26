@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 VERSION ?= $(shell cat ../../version.txt)
-PREV_VERSION=1.1.0
+PREV_VERSION=1.2.0
 COMMUNITY_OPERATORS_BASE=/home/clive/work/seldon-core/redhat/community-operators
 
 .PHONY: recreate-generated

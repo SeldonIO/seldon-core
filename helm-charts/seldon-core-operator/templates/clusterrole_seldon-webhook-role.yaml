@@ -19,6 +19,7 @@ rules:
   - get
   - list
   - create
+  - delete
   - update
 - apiGroups:
   - apps
