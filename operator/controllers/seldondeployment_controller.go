@@ -877,7 +877,7 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 
 	volFound := false
 	for _, vol := range deploy.Spec.Template.Spec.Volumes {
-		if vol.Name == machinelearningv1.PODINFO_VOLUME_NAME {
+		if vol.Name == machinelearningv1.PODINFO_VOLUME_NAME || vol.Name == machinelearningv1.OLD_PODINFO_VOLUME_NAME {
 			volFound = true
 		}
 	}

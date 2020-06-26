@@ -145,7 +145,7 @@ func (r *SeldonDeploymentSpec) setContainerPredictiveUnitDefaults(compSpecIdx in
 
 	volFound := false
 	for _, vol := range con.VolumeMounts {
-		if vol.Name == PODINFO_VOLUME_NAME {
+		if vol.Name == PODINFO_VOLUME_NAME || vol.Name == OLD_PODINFO_VOLUME_NAME {
 			volFound = true
 		}
 	}

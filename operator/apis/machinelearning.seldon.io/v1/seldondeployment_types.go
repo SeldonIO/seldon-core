@@ -47,6 +47,7 @@ const (
 	Label_value_seldon       = "seldon-core"
 
 	PODINFO_VOLUME_NAME = "seldon-podinfo"
+	OLD_PODINFO_VOLUME_NAME = "podinfo"
 	PODINFO_VOLUME_PATH = "/etc/podinfo"
 
 	ENV_PREDICTIVE_UNIT_SERVICE_PORT         = "PREDICTIVE_UNIT_SERVICE_PORT"
