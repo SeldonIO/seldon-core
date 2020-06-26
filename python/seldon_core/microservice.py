@@ -15,7 +15,7 @@ from seldon_core import persistence, __version__, wrapper as seldon_microservice
 from seldon_core.metrics import SeldonMetrics
 from seldon_core.flask_utils import ANNOTATIONS_FILE, SeldonMicroserviceException
 from seldon_core.utils import getenv_as_bool
-from seldon_core.app import StandaloneApplication, UserModelApplication
+from seldon_core.app import StandaloneApplication, UserModelApplication, accesslog
 
 logger = logging.getLogger(__name__)
 
@@ -327,8 +327,8 @@ def main():
             def rest_prediction_server():
                 options = {
                     "bind": "%s:%s" % ("0.0.0.0", port),
-                    "access_logfile": "-",
-                    "loglevel": args.log_level,
+                    "accesslog": accesslog(args.log_level),
+                    "loglevel": args.log_level.lower(),
                     "timeout": 5000,
                     "workers": args.workers,
                     "max_requests": args.max_requests,
@@ -389,13 +389,12 @@ def main():
         else:
             options = {
                 "bind": "%s:%s" % ("0.0.0.0", metrics_port),
-                "access_logfile": "-",
-                "loglevel": args.log_level,
+                "accesslog": accesslog(args.log_level),
+                "loglevel": args.log_level.lower(),
                 "timeout": 5000,
                 "max_requests": args.max_requests,
                 "max_requests_jitter": args.max_requests_jitter,
             }
-            app = seldon_microservice.get_rest_microservice(seldon_metrics)
             StandaloneApplication(app, options=options).run()
 
     logger.info("REST metrics microservice running on port %i", metrics_port)

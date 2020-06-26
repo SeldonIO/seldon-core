@@ -1,10 +1,21 @@
 import os
 import logging
 
-from typing import Dict
+from typing import Dict, Union
 from gunicorn.app.base import BaseApplication
 
 logger = logging.getLogger(__name__)
+
+
+def accesslog(log_level: str) -> Union[str, None]:
+    """
+    Enable / disable access log in Gunicorn depending on the log level.
+    """
+
+    if log_level in ["WARNING", "ERROR", "CRITICAL"]:
+        return None
+
+    return "-"
 
 
 class StandaloneApplication(BaseApplication):
