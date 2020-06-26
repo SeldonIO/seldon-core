@@ -2,7 +2,7 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: seldon-model-environ-metadata
+  name: seldon-model-invalid-environ-metadata
 spec:
   name: test-deployment
   predictors:
@@ -17,13 +17,8 @@ spec:
           - name: MODEL_METADATA
             value: |
               ---
-              name: second-example-model-name
-              versions: [ my-model-version-01 ]
-              inputs:
-              - messagetype: tensor
-                schema:
-                  names: [alpha, beta, gamma, delta]
-                  shape: [4]
+              name: my-model-name
+              versions: my-model-version-01
     graph:
       children: []
       name: my-model
