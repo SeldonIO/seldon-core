@@ -644,3 +644,16 @@ def getenv(*env_vars, default=None):
             return os.environ.get(env_var)
 
     return default
+
+
+def getenv_as_bool(*env_vars, default=False):
+    """
+    Read environment variable, parsing it to a boolean.
+    """
+
+    val = getenv(*env_vars)
+
+    if val is None:
+        return default
+
+    return val.lower() in ["1", "true", "t"]
