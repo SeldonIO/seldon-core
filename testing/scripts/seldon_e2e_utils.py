@@ -573,7 +573,7 @@ def assert_model(sdep_name, namespace, initial=False, endpoint=API_AMBASSADOR):
     data = json.loads(ret.stdout)
     assert "status" in data
     assert "state" in data["status"]
-    assert data['status']['state'] != "Failed"
+    assert data["status"]["state"] != "Failed"
 
 
 def to_resources_path(file_name):
