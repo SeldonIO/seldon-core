@@ -1,0 +1,158 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-2018-in-mlsjj-3[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-9d8ct[0m
+{"level":"warn","ts":1593189949.059202,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1593189949.0600224,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2018-in-mlsjj-3[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-m8chq[0m
+{"level":"warn","ts":1593189951.9961598,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1593189951.9985442,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2018-in-mlsjj-3[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2018-in-mlsjj-3[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-swjwn[0m
+{"level":"warn","ts":1593189962.240796,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1593189962.2421055,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2018-in-mlsjj-3[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-2018-in-sckvs[0m
+{"level":"warn","ts":1593189962.9553325,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1593189968.0897048,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2018-in-mlsjj-3[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:47380b578b9cdc5565c3cfd9e3796d6ecc4ddada,2018:0501f49f6bac618321fcfd62807f56afa56b37d3
+DEBUG: ran git fetch --unshallow origin 0501f49f6bac618321fcfd62807f56afa56b37d3: 47380b578b9cdc5565c3cfd9e3796d6ecc4ddada: in 
+DEBUG: ran git checkout master in 
+DEBUG: ran git reset --hard 47380b578b9cdc5565c3cfd9e3796d6ecc4ddada in 
+DEBUG: ran clean --force -d . in 
+DEBUG: ran git merge 0501f49f6bac618321fcfd62807f56afa56b37d3 in 
+Merged SHA 0501f49f6bac618321fcfd62807f56afa56b37d3 with commit message 'first expand test for upgrade status' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-2018-in-mlsjj-3[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=2018
++ BUILD_NUMBER=3
++ PIPELINE_CONTEXT=integration
+++ cat
++++ date
++ COMMENT_MSG='Fri Jun 26 16:46:15 UTC 2020
+The logs for [integration] [3] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2018/3.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2018 --build=3'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=2018 '--comment=Fri Jun 26 16:46:15 UTC 2020
+The logs for [integration] [3] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2018/3.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2018 --build=3'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2018-in-mlsjj-3[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-2018-in-8xrzq[0m
+{"level":"warn","ts":1593189976.8380418,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1593189976.8523443,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2018-in-mlsjj-3[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-2018-in-qpj7s[0m
+{"level":"warn","ts":1593189977.4254673,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1593189978.1984615,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2018-in-mlsjj-3[0m stage [32mend-to-end[0m and container [32mstep-credential-initializer-wfzmt[0m
+{"level":"warn","ts":1593189993.4058383,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: \"ref: refs/heads/0.8.0-**-support-backwards-incompats\" is not a valid GitHub commit ID"}
+{"level":"info","ts":1593189993.4065185,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2018-in-mlsjj-3[0m stage [32mend-to-end[0m and container [32mstep-working-dir-initializer-b5b8q[0m
+{"level":"warn","ts":1593189994.4942017,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1593189994.4960403,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2018-in-mlsjj-3[0m stage [32mend-to-end[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2018-in-mlsjj-3[0m stage [32mend-to-end[0m and container [32mstep-create-dir-workspace-mx2qc[0m
+{"level":"warn","ts":1593190004.0477643,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1593190004.0500011,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2018-in-mlsjj-3[0m stage [32mend-to-end[0m and container [32mstep-source-copy-workspace-rvkjb[0m
+{"level":"warn","ts":1593190004.6722867,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1593190009.4664648,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2018-in-mlsjj-3[0m stage [32mend-to-end[0m and container [32mstep-test-end-to-end[0m
+Test run type is: [base]
+Starting Docker: docker.
+[SETUP] Waiting for Docker to be ready, sleeping for 1 seconds ...
+kind create cluster --config ../resources/kind_config.yaml
+Creating cluster "kind" ...
+ • Ensuring node image (kindest/node:v1.16.3) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.16.3) 🖼
+ • Preparing nodes 📦  ...
+ ✓ Preparing nodes 📦
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+ • Joining worker nodes 🚜  ...
+ ✓ Joining worker nodes 🚜
+Set kubectl context to "kind-kind"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-kind
+
+Thanks for using kind! 😊
+`kind get kubeconfig-path` is deprecated!
+
+KIND will export and merge kubeconfig like kops, minikube, etc.
+This command is now unnecessary and will be removed in a future release.
+
+For more info see: https://github.com/kubernetes-sigs/kind/issues/1060
+See also the output of `kind create cluster`
+
+Files changed in python folder:
+SKIPPING PYTHON IMAGE BUILD...
+Files changed in operator folder:
+SKIPPING OPERATOR IMAGE BUILD...
+Files changed in engine folder:
+SKIPPING ENGINE IMAGE BUILD...
+Files changed in executor folder:
+SKIPPING EXECUTOR IMAGE BUILD...
+Build test models
+make -C ../docker/fixed-model kind_load_images
+make[1]: Entering directory '/workspace/source/testing/docker/fixed-model'
+s2i build -E environment_rest_v1 . seldonio/seldon-core-s2i-python3:0.15 seldonio/fixed-model:0.1
+---> Installing application source...
+Build completed successfully
+s2i build -E environment_rest_v2 . seldonio/seldon-core-s2i-python3:0.15 seldonio/fixed-model:0.2
+---> Installing application source...
+Build completed successfully
+kind load -v 3 docker-image seldonio/fixed-model:0.1
+Image: "seldonio/fixed-model:0.1" with ID "sha256:f81516daa718308de348e72f17e099536bd2a1f6b52b3432fb2580c9b7d06e7e" not present on node "kind-control-plane"
+Image: "seldonio/fixed-model:0.1" with ID "sha256:f81516daa718308de348e72f17e099536bd2a1f6b52b3432fb2580c9b7d06e7e" not present on node "kind-worker"
+kind load -v 3 docker-image seldonio/fixed-model:0.2
+Image: "seldonio/fixed-model:0.2" with ID "sha256:5e52bd6f18d33ebbe248bc3e9477f2d694a5e0c7d167cbafa41d391ef5db19c2" not present on node "kind-control-plane"
+Image: "seldonio/fixed-model:0.2" with ID "sha256:5e52bd6f18d33ebbe248bc3e9477f2d694a5e0c7d167cbafa41d391ef5db19c2" not present on node "kind-worker"
+make[1]: Leaving directory '/workspace/source/testing/docker/fixed-model'
+make -C ../docker/echo-model kind_load_image
+make[1]: Entering directory '/workspace/source/testing/docker/echo-model'
+s2i build \
+	-E environment_rest \
+	.\
+	seldonio/seldon-core-s2i-python3:1.1.1-SNAPSHOT\
+	seldonio/echo-model:0.1
+ERROR: Error writing header for "scripts": io: read/write on closed pipe
+ERROR: Error writing tar: io: read/write on closed pipe
+Build failed
+ERROR: An error occurred: context deadline exceeded
+make[1]: Leaving directory '/workspace/source/testing/docker/echo-model'
+make[1]: *** [Makefile:6: build_image] Error 1
+make: *** [Makefile:25: kind_build_test_models] Error 2
+Kind build has errors
+kind delete cluster
+Deleting cluster "kind" ...
+e5eabe80031f
+Stopping Docker: dockerProgram process in pidfile '/var/run/docker-ssd.pid', 1 process(es), refused to die.
+[31m
+Pipeline failed on stage 'end-to-end' : container 'step-test-end-to-end'. The execution of the pipeline has stopped.[0m
