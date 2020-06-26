@@ -1,0 +1,35 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: mymodel-manifestmetadata
+spec:
+  name: test-deployment
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - name: my-model
+          image: seldonio/test_metadata_manifestmetadata_rest:0.1
+          imagePullPolicy: Never
+          env:
+          - name: MODEL_METADATA
+            value: |
+              ---
+              name: my-model-name
+              versions: [ my-model-version-01 ]
+              platform: seldon
+              inputs:
+              - messagetype: tensor
+                schema:
+                  names: [a, b, c, d]
+                  shape: [ 4 ]
+              outputs:
+              - messagetype: tensor
+                schema:
+                  shape: [ 1 ]
+    graph:
+      children: []
+      name: my-model
+      type: MODEL
+    name: example
+    replicas: 1
