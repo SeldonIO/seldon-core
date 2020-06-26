@@ -565,11 +565,12 @@ def assert_model(sdep_name, namespace, initial=False, endpoint=API_AMBASSADOR):
     # a Kubernetes resource. This covers cases where some resources (e.g. CRD
     # versions or webhooks) may get inadvertently removed between versions.
     ret = run(
-        f"kubectl get -n {namespace} sdep {sdep_name}",
-        stdout=subprocess.DEVNULL,
+        f"kubectl get -n {namespace} sdep {sdep_name} -o=jsonpath='{.status.state}'",
+        stdout=subprocess.PIPE,
         shell=True,
     )
     assert ret.returncode == 0
+    assert ret.stdout != "Failed"
 
 
 def to_resources_path(file_name):
