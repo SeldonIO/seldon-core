@@ -170,7 +170,7 @@ func (s *KFServingGrpcClient) Metadata(ctx context.Context, modelName string, ho
 	return &resPayload, nil
 }
 
-func (s *KFServingGrpcClient) Unmarshall(msg []byte) (payload.SeldonPayload, error) {
+func (s *KFServingGrpcClient) Unmarshall(msg []byte, contentType string) (payload.SeldonPayload, error) {
 	panic("implement me")
 }
 
