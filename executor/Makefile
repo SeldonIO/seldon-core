@@ -17,11 +17,11 @@ endif
 
 # Run go fmt against code
 fmt:
-	go fmt ./...
+	go fmt ./api ./k8s ./logger ./predictor 
 
 # Run go vet against code
 vet:
-	go vet ./...
+	go vet ./api ./k8s ./logger ./predictor
 
 
 # Build manager binary
