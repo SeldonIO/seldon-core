@@ -8,6 +8,8 @@ Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed fe
 
 ## Upgrading to 1.2 from 1.1
 
+*[NOTE]* Currently there is an issue where all Seldon Deployments are marked as "NotReady" as there is a [bug caused by a volumeName update](https://github.com/SeldonIO/seldon-core/issues/2017). This can be resolved by following the 1.2.0 volume patch [as outlined by this example](../examples/patch_1_2"). It is recommended to upgrade to version 1.2.1 directly instead.
+
 ### New Features / Breaking Changes
 
  * The helm value `createResources` has been renamed `managerCreateResources`.
