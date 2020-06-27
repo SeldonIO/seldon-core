@@ -134,3 +134,11 @@ Ingress
    Istio Canary <istio_canary>
    Istio Examples <istio_examples>   
 
+Infrastructure
+-----
+
+.. toctree::
+   :titlesonly:
+  
+   Patch Volumes for Version 1.2.0 Upgrade <patch_1_2>
+   
