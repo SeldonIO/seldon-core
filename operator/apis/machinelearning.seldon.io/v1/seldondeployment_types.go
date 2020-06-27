@@ -43,8 +43,10 @@ const (
 	Label_shadow             = "shadow"
 	Label_canary             = "canary"
 	Label_explainer          = "explainer"
+	Label_managed_by         = "app.kubernetes.io/managed-by"
+	Label_value_seldon       = "seldon-core"
 
-	PODINFO_VOLUME_NAME = "podinfo"
+	PODINFO_VOLUME_NAME = "seldon-podinfo"
 	PODINFO_VOLUME_PATH = "/etc/podinfo"
 
 	ENV_PREDICTIVE_UNIT_SERVICE_PORT         = "PREDICTIVE_UNIT_SERVICE_PORT"

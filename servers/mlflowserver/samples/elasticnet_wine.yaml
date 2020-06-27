@@ -5,7 +5,31 @@ metadata:
 spec:
   name: wines
   predictors:
-  - graph:
+  - componentSpecs:
+    - spec:
+        # We are setting high failureThreshold as installing conda dependencies
+        # can take long time and we want to avoid k8s killing the container prematurely
+        containers:
+        - name: classifier
+          livenessProbe:
+            initialDelaySeconds: 60
+            failureThreshold: 100
+            periodSeconds: 5
+            successThreshold: 1
+            httpGet:
+              path: /health/ping
+              port: http
+              scheme: HTTP
+          readinessProbe:
+            initialDelaySeconds: 60
+            failureThreshold: 100
+            periodSeconds: 5
+            successThreshold: 1
+            httpGet:
+              path: /health/ping
+              port: http
+              scheme: HTTP
+    graph:
       children: []
       implementation: MLFLOW_SERVER
       modelUri: gs://seldon-models/mlflow/elasticnet_wine

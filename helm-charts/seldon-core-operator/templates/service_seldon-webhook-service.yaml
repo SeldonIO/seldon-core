@@ -1,4 +1,4 @@
-{{- if not .Values.createResources }}
+{{- if not .Values.managerCreateResources }}
 apiVersion: v1
 kind: Service
 metadata:

@@ -1,37 +1,41 @@
-protocol: REST
+# apiVersion -- Version of the SeldonDeployment CRD
 apiVersion: machinelearning.seldon.io/v1
+
 model:
-  image:
-    name: seldonio/mock_classifier
-    version: 1.3
-    pullPolicy: IfNotPresent
-  name: classifier
+  # model.image -- Docker image used by the model
+  image: ""
+  # model.env -- Environment variables injected into the model's container
+  env:
+    LOG_LEVEL: INFO
+  # model.resources -- Resource requests and limits for the model's container
   resources:
     requests:
       memory: "1Mi"
-  env:
-    LOG_LEVEL: INFO
-  annotations:
-    seldon.io/headless-svc: "false"
-  logger: ""
+  logger:
+    # logger.enabled -- Whether to enable an external logger
+    enabled: false
+    # logger.url -- Remote URL for logger
+    url: ""
+
+# replicas -- Number of replicas for the predictor
 replicas: 1
 
-predictor:
-  name: "default"
+# labels -- Labels applied to the deployment
+labels: {}
 
-engine:
-  resources:
-    requests:
-      cpu: "0.1"
+# annotations -- Annotations applied to the deployment
+annotations: {}
 
-# Add oauth key and secret if using the default API Oauth Gateway for ingress
-oauth:
-  key:
-  secret:
-
-sdepLabels:
-  app: "seldon"
-
-predictorLabels:
-  version: "v1"
-  fluentd: "true"
+hpa:
+  # hpa.enabled -- Whether to add an HPA spec to the deployment
+  enabled: false
+  # hpa.minReplicas -- Minimum number of replicas for HPA
+  minReplicas: 1
+  # hpa.maxReplicas -- Maximum number of replicas for HPA
+  maxReplicas: 5
+  # hpa.metrics -- Metrics that autoscaler should check
+  metrics:
+    - resource:
+        name: cpu
+        targetAverageUtilization: 10
+      type: Resource

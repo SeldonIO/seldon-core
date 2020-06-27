@@ -155,7 +155,7 @@ func (s *SeldonMessageGrpcClient) Feedback(ctx context.Context, modelName string
 	return &resPayload, nil
 }
 
-func (s *SeldonMessageGrpcClient) Unmarshall(msg []byte) (payload.SeldonPayload, error) {
+func (s *SeldonMessageGrpcClient) Unmarshall(msg []byte, contentType string) (payload.SeldonPayload, error) {
 	panic("Not implemented")
 }
 

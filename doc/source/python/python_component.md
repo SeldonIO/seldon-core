@@ -479,6 +479,9 @@ class Model:
 The python wrapper will automatically expose a `/metadata` endpoint to return metadata about the loaded model.
 It is up to the developer to implement a `metadata` method in their class to provide a `dict` back containing the model metadata.
 
+See metadata [documentation](../reference/apis/metadata.md) for more details.
+
+
 #### Example format:
 ```python
 class Model:

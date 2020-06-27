@@ -156,7 +156,7 @@ func (s *TensorflowGrpcClient) Feedback(ctx context.Context, modelName string, h
 	panic("implement me")
 }
 
-func (s *TensorflowGrpcClient) Unmarshall(msg []byte) (payload.SeldonPayload, error) {
+func (s *TensorflowGrpcClient) Unmarshall(msg []byte, contentType string) (payload.SeldonPayload, error) {
 	panic("Not implemented")
 }
 

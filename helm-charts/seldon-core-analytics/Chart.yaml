@@ -3,11 +3,11 @@ dependencies:
 - condition: grafana.enabled
   name: grafana
   repository: https://kubernetes-charts.storage.googleapis.com
-  version: ~4.2.3
+  version: ~5.1.4
 - condition: prometheus.enabled
   name: prometheus
   repository: https://kubernetes-charts.storage.googleapis.com
-  version: ~9.7.3
+  version: ~11.4.0
 description: Seldon Core Analytics
 keywords:
 - seldon-core
@@ -18,4 +18,4 @@ keywords:
 name: seldon-core-analytics
 sources:
 - https://github.com/SeldonIO/seldon-core
-version: 1.1.1-rc
+version: 1.2.1-dev

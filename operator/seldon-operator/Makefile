@@ -12,11 +12,6 @@ generate-resources:
 deploy/operator.yaml: generated
 	python hack/create_resources.py --input generated --output deploy --version ${VERSION}
 
-# DO NOT RUN - used during development and can be used for next version
-deploy/olm-catalog/seldon-operator/1.0.2/seldon-operator.v1.0.2.clusterserviceversion.yaml: 
-	operator-sdk generate csv --csv-version 1.0.2 --from-version 0.1.5
-
-# DO NOT RUN - used during development and can be used for next version
 .PHONY: clean_csv_${VERSION}
 clean_csv_${VERSION}:
 	rm -f deploy/olm-catalog/seldon-operator/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
@@ -26,7 +21,7 @@ clean_csv: clean_csv_${VERSION}
 
 # DO NOT RUN - used during development and can be used for next version
 deploy/olm-catalog/seldon-operator/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml: 
-	operator-sdk generate csv --csv-version ${VERSION} --from-version ${PREV_VERSION} --update-crds
+	operator-sdk generate csv --make-manifests=false --csv-version ${VERSION} --from-version ${PREV_VERSION} --update-crds
 
 update_csv: clean_csv_${VERSION} deploy/olm-catalog/seldon-operator/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
 	sed -i s/${PREV_VERSION}/${VERSION}/ deploy/olm-catalog/seldon-operator/seldon-operator.package.yaml
@@ -37,6 +32,11 @@ update_csv: clean_csv_${VERSION} deploy/olm-catalog/seldon-operator/${VERSION}/s
 
 scorecard:
 	operator-sdk scorecard -o text --bundle deploy/olm-catalog/seldon-operator --kubeconfig ~/.kube/config
+
+#
+# REQUIRED operator-courier 2.1.7
+# master version of code is broken as of June 2020
+#
 
 operator-courier_ui_validate:
 	operator-courier verify --ui_validate_io deploy/olm-catalog/seldon-operator
@@ -52,6 +52,7 @@ community-quay-push:
 #
 
 # Set COMMUNITY_OPERATORS_BASE env
+# Note you need to sign commits using git commit -s
 
 .PHONY: update_community
 update_community:

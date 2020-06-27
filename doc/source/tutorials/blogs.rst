@@ -7,6 +7,7 @@ Blog articles featuring different use cases of Seldon:
 .. toctree::
    :maxdepth: 1
 
+   Stream-Based Model Serving with Cloudflow and Seldon <https://www.lightbend.com/blog/stream-based-model-serving-with-cloudflow-and-seldon>
    Seldon Inference Graph: Serving your Models in a Pipeline <https://medium.com/@shirish.ph/seldon-inference-graph-pipelined-model-serving-211c6b095f62>
    Open Source Model Management Roundup <https://www.anaconda.com/blog/developer-blog/open-source-model-management-roundup-polyaxon-argo-and-seldon/>
    Polyaxon, Argo and Seldon for model training <https://danielfrg.com/blog/2018/10/model-management-polyaxon-argo-seldon/>
@@ -20,4 +21,5 @@ Blog articles featuring different use cases of Seldon:
    MLOps: The end of end-to-end <https://www.mosaicventures.com/mosaicblog/2020/2/20/mlops-the-end-of-end-to-end>
    What would machine learning look like if you mixed in DevOps? <https://www.theregister.co.uk/2020/03/07/devops_machine_learning_mlops/>
    [Archive] Move Fast and Break Things? The AI Governance Dilemma <https://web.archive.org/web/20200212160350/https://hackernoon.com/move-fast-and-break-things-the-ai-governance-dilemma-dsq32ix>
+   开源史海钩沉系列 Seldon Core <https://zhuanlan.zhihu.com/p/145143582>
 

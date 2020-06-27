@@ -1,3 +1,8 @@
+import time
+import logging
+import pytest
+from subprocess import run
+
 from seldon_e2e_utils import (
     wait_for_rollout,
     initial_rest_request,
@@ -7,15 +12,17 @@ from seldon_e2e_utils import (
     wait_for_status,
     rest_request,
 )
-from subprocess import run
-import time
-import logging
-import requests
+from conftest import SELDON_E2E_TESTS_USE_EXECUTOR
+
+skipif_engine = pytest.mark.skipif(
+    not SELDON_E2E_TESTS_USE_EXECUTOR, reason="Not supported by the Java engine"
+)
 
 
 class TestPrepack(object):
 
     # Test prepackaged server for sklearn
+    @skipif_engine
     def test_sklearn(self, namespace):
         spec = "../../servers/sklearnserver/samples/iris.yaml"
         retry_run(f"kubectl apply -f {spec} -n {namespace}")
@@ -58,6 +65,7 @@ class TestPrepack(object):
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
 
     # Test prepackaged server for xgboost
+    @skipif_engine
     def test_xgboost(self, namespace):
         spec = "../../servers/xgboostserver/samples/iris.yaml"
         retry_run(f"kubectl apply -f {spec}  -n {namespace}")
@@ -82,6 +90,7 @@ class TestPrepack(object):
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
 
     # Test prepackaged server for MLflow
+    @skipif_engine
     def test_mlflow(self, namespace):
         spec = "../../servers/mlflowserver/samples/elasticnet_wine.yaml"
         retry_run(f"kubectl apply -f {spec} -n {namespace}")
@@ -145,6 +154,7 @@ class TestPrepack(object):
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
 
     # Test openAPI endpoints for documentation
+    @skipif_engine
     def test_openapi_sklearn(self, namespace):
         spec = "../../servers/sklearnserver/samples/iris.yaml"
         retry_run(f"kubectl apply -f {spec} -n {namespace}")

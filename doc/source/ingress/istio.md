@@ -10,13 +10,14 @@ Ensure when you install the seldon-core operator via Helm that you enabled istio
 helm install seldon-core-operator --name seldon-core --set istio.enabled=true --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true
 ```
 
-You need an istio gateway installed. By default we assume one called seldon-gateway. For example you can create this with the following yaml:
+You need an istio gateway installed in the `istio-system` namespace. By default we assume one called seldon-gateway. For example you can create this with the following yaml:
 
 ```
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
   name: seldon-gateway
+  namespace: istio-system
 spec:
   selector:
     istio: ingressgateway # use istio default controller
@@ -36,6 +37,17 @@ helm install seldon-core-operator --name seldon-core --set istio.enabled=true --
 ```
 
 You can also provide the gateway on a per Seldon Deployment resource basis by providing it with the annotation `seldon.io/istio-gateway`.
+
+## Istio Configuration Annotation Reference
+
+| Annotation | Default |Description | 
+|------------|---------|------------|
+|`seldon.io/istio-gateway:<gateway name>`| istio-system/seldon-gateway | The gateway to use for this deployment. If no namespace prefix is applied it will refer to the namespace of the Seldon Deployment. |
+| `seldon.io/istio-retries` | None | The number of istio retries |
+| `seldon.io/istio-retries-timeout` | None | The per try timeout if istio retries is set |
+
+All annotations should be placed in `spec.annotations`.
+
 
 ## Traffic Routing
 

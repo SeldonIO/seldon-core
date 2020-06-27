@@ -28,7 +28,7 @@ func ChainTensorflow(msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 		if err != nil {
 			return nil, err
 		} else {
-			p := payload.BytesPayload{Msg: b}
+			p := payload.BytesPayload{Msg: b, ContentType: msg.GetContentType()}
 			return &p, nil
 		}
 	} else {

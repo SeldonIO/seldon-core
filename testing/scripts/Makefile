@@ -2,6 +2,7 @@ VERSION := $(shell cat ../../version.txt)
 
 # This can be "Auto" or a Number
 PYTEST_WORKERS ?= "4"
+SELDON_E2E_TESTS_USE_EXECUTOR ?= "true"
 
 kind_create_cluster:
 	kind create cluster --config ../resources/kind_config.yaml
@@ -19,8 +20,9 @@ kind_build_operator:
 kind_build_executor:
 	cd ../../executor && make kind-image-install
 
-kind_build_fixed_models:
-	cd ../docker/fixed-model && make kind_load_images
+kind_build_test_models:
+	make -C ../docker/fixed-model kind_load_images
+	make -C ../docker/echo-model kind_load_image
 
 kind_build_prepackaged:
 	cd ../../servers/sklearnserver && make kind_load
@@ -36,7 +38,7 @@ kind_build_misc:
 	cd ../../components/seldon-request-logger && make kind_load
 	cd ../../components/storage-initializer && make kind_load
 
-kind_build_images: build_protos kind_build_engine kind_build_operator kind_build_executor kind_build_fixed_models kind_build_prepackaged kind_build_alibi kind_build_misc
+kind_build_images: build_protos kind_build_engine kind_build_operator kind_build_executor kind_build_test_models kind_build_prepackaged kind_build_alibi kind_build_misc
 
 helm_setup:
 	helm repo add stable https://kubernetes-charts.storage.googleapis.com/
@@ -74,7 +76,7 @@ install_seldon: install_cert_manager
 		--set istio.enabled=true \
 		--set istio.gateway=istio-system/seldon-gateway \
 		--set certManager.enabled=false \
-		--set executor.enabled=true \
+		--set executor.enabled=$(SELDON_E2E_TESTS_USE_EXECUTOR) \
 		--wait
 
 install_istio:

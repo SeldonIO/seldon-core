@@ -40,7 +40,6 @@ public class TestJsonParse {
   public void multiDimTest() throws JsonProcessingException, IOException {
     String json = "{\"request\":{\"values\":[[1.0]]}}";
 
-    System.out.println(json);
     ObjectMapper mapper = new ObjectMapper();
     JsonFactory factory = mapper.getFactory();
     JsonParser parser = factory.createParser(json);
@@ -52,7 +51,6 @@ public class TestJsonParse {
     int[] shape = {v.length, v[0].length};
     ((ObjectNode) j.get("request")).replace("values", mapper.valueToTree(vs));
     ((ObjectNode) j.get("request")).set("shape", mapper.valueToTree(shape));
-    System.out.println(j.toString());
   }
 
   private JsonNode combineRequestResponse(

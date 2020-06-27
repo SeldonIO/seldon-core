@@ -4,12 +4,8 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TestProtoBufUtils {
-  private static final Logger logger = LoggerFactory.getLogger(TestProtoBufUtils.class);
-
   private String toJson(SeldonMessage request) throws InvalidProtocolBufferException {
     String withNewlines = ProtoBufUtils.toJson(request, true);
     return withNewlines.replace("\n", "").replace("\r", "");

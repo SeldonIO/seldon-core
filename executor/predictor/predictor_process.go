@@ -2,8 +2,10 @@ package predictor
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/url"
+	"os"
 	"sync"
 
 	"github.com/go-logr/logr"
@@ -14,7 +16,14 @@ import (
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 )
 
-const NilPUIDError = "context value for Seldon PUID Header is nil"
+const (
+	NilPUIDError                        = "context value for Seldon PUID Header is nil"
+	ENV_REQUEST_LOGGER_DEFAULT_ENDPOINT = "REQUEST_LOGGER_DEFAULT_ENDPOINT"
+)
+
+var (
+	envRequestLoggerDefaultEndpoint = os.Getenv(ENV_REQUEST_LOGGER_DEFAULT_ENDPOINT)
+)
 
 type PredictorProcess struct {
 	Ctx       context.Context
@@ -241,7 +250,7 @@ func (p *PredictorProcess) getLogUrl(logger *v1.Logger) (*url.URL, error) {
 	if logger.Url != nil {
 		return url.Parse(*logger.Url)
 	} else {
-		return url.Parse(payloadLogger.GetLoggerDefaultUrl(p.Namespace))
+		return url.Parse(envRequestLoggerDefaultEndpoint)
 	}
 }
 
@@ -328,4 +337,36 @@ func (p *PredictorProcess) Feedback(node *v1.PredictiveUnit, msg payload.SeldonP
 		return tmsg, err
 	}
 	return p.feedback(node, msg)
+}
+
+func (p *PredictorProcess) MetadataMap(node *v1.PredictiveUnit) (map[string]ModelMetadata, error) {
+	resPayload, err := p.Client.Metadata(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, nil, p.Meta.Meta)
+	if err != nil {
+		return nil, err
+	}
+
+	resString, err := resPayload.GetBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	var nodeMeta ModelMetadata
+	err = json.Unmarshal(resString, &nodeMeta)
+	if err != nil {
+		return nil, err
+	}
+
+	var output = map[string]ModelMetadata{
+		node.Name: nodeMeta,
+	}
+	for _, child := range node.Children {
+		childMeta, err := p.MetadataMap(&child)
+		if err != nil {
+			return nil, err
+		}
+		for k, v := range childMeta {
+			output[k] = v
+		}
+	}
+	return output, nil
 }

@@ -1,0 +1,34 @@
+
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: graph-metadata-single
+spec:
+  name: test-deployment
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/metadata-generic-node:0.2
+          name: model
+          env:
+          - name: MODEL_METADATA
+            value: |
+              ---
+              name: single-node
+              versions: [ generic-node/v0.2 ]
+              platform: seldon
+              inputs:
+              - datatype: BYTES
+                name: input
+                shape: [ 1, 10 ]
+              outputs:
+              - datatype: BYTES
+                name: output
+                shape: [ 1 ]
+    graph:
+      name: model
+      type: MODEL
+      children: []        
+    name: example
+    replicas: 1

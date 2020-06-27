@@ -16,7 +16,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/api/test"
 	"github.com/seldonio/seldon-core/executor/logger"
-	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
@@ -407,6 +407,53 @@ func TestModelWithLogRequests(t *testing.T) {
 		Logger: &v1.Logger{
 			Mode: v1.LogRequest,
 			Url:  &server.URL,
+		},
+	}
+
+	pResp, err := createPredictorProcess(t).Predict(graph, createPredictPayload(g))
+	g.Expect(err).Should(BeNil())
+	smRes := pResp.GetPayload().(*proto.SeldonMessage)
+	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(Equal(1.1))
+	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(Equal(2.0))
+	g.Eventually(func() bool { return logged }).Should(Equal(true))
+}
+
+func TestModelWithLogRequestsAtDefaultedUrl(t *testing.T) {
+	t.Logf("Started")
+	g := NewGomegaWithT(t)
+	modelName := "foo"
+	logged := false
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		g.Expect(r.Header.Get(logger.CloudEventsTypeHeader)).To(Equal(logger.CEInferenceRequest))
+		g.Expect(r.Header.Get(logger.CloudEventsTypeSource)).To(Equal(testSourceUrl))
+		g.Expect(r.Header.Get(modelIdHeaderName)).To(Equal(modelName))
+		g.Expect(r.Header.Get(contentTypeHeaderName)).To(Equal(grpc.ProtobufContentType))
+		g.Expect(r.Header.Get(requestIdHeaderName)).To(Equal(testSeldonPuid))
+		w.Write([]byte(""))
+		logged = true
+		fmt.Printf("%+v\n", r.Header)
+		fmt.Printf("%+v\n", r.Body)
+	})
+	server := httptest.NewServer(handler)
+	defer server.Close()
+
+	envRequestLoggerDefaultEndpoint = server.URL
+
+	logf.SetLogger(logf.ZapLogger(false))
+	log := logf.Log.WithName("entrypoint")
+	logger.StartDispatcher(1, log, "", "", "")
+
+	model := v1.MODEL
+	graph := &v1.PredictiveUnit{
+		Name: modelName,
+		Type: &model,
+		Endpoint: &v1.Endpoint{
+			ServiceHost: "foo",
+			ServicePort: 9000,
+			Type:        v1.REST,
+		},
+		Logger: &v1.Logger{
+			Mode: v1.LogRequest,
 		},
 	}
 

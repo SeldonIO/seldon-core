@@ -96,7 +96,6 @@ public class TestRandomABTest {
                       .contentType(MediaType.APPLICATION_JSON_UTF8))
               .andReturn();
       String response = res.getResponse().getContentAsString();
-      System.out.println(response);
       Assert.assertEquals(200, res.getResponse().getStatus());
 
       SeldonMessage.Builder builder = SeldonMessage.newBuilder();
@@ -108,8 +107,6 @@ public class TestRandomABTest {
       else routeBCount++;
     }
     double split = routeACount / (double) (routeACount + routeBCount);
-    System.out.println(routeACount);
-    System.out.println(routeBCount);
     Assert.assertEquals(0.5, split, 0.2);
   }
 }
