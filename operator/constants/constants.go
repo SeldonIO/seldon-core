@@ -4,7 +4,7 @@ const (
 	PU_PARAMETER_ENVVAR    = "PREDICTIVE_UNIT_PARAMETERS"
 	TFServingContainerName = "tfserving"
 
-	GRPCRegExMatchAmbassador = "/(seldon.protos.*|tensorflow.serving.*)/.*"
+	GRPCRegExMatchAmbassador = "/(seldon.protos.*|tensorflow.serving.*|nvidia.inferenceserver.*)/.*"
 	GRPCRegExMatchIstio      = ".*tensorflow.*|.*seldon.protos.*"
 
 	PrePackedServerTensorflow = "TENSORFLOW_SERVER"

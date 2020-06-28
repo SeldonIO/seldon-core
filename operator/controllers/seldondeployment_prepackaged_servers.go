@@ -163,6 +163,7 @@ func (pi *PrePackedInitialiser) addTritonServer(pu *machinelearningv1.Predictive
 			"--grpc-port=" + strconv.Itoa(int(grpcPort)),
 			"--http-port=" + strconv.Itoa(int(httpPort)),
 			"--model-repository=" + DefaultModelLocalMountPath,
+			"--api-version=2",
 		},
 		Ports: []v1.ContainerPort{
 			{

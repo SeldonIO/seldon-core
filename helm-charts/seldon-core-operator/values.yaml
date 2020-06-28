@@ -126,11 +126,11 @@ predictor_servers:
       image: seldonio/xgboostserver_rest
   TRITON_SERVER:
     grpc:
-      defaultImageVersion: "20.05-20200524"
-      image: seldonio/tritonserver
+      defaultImageVersion: "20.03.1-py3"
+      image: nvcr.io/nvidia/tritonserver
     rest:
-      defaultImageVersion: "20.05-20200524"
-      image: seldonio/tritonserver
+      defaultImageVersion: "20.03.1-py3"
+      image: nvcr.io/nvidia/tritonserver
 
 # ## Other
 # You can choose the crds to not be installed if you already installed them

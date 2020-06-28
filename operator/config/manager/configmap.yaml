@@ -61,12 +61,12 @@ data:
         }
         "TRITON_SERVER": {
             "rest": {
-              "image": "seldonio/tritonserver",
-              "defaultImageVersion": "20.05-20200524"
+              "image": "nvcr.io/nvidia/tritonserver",
+              "defaultImageVersion": "20.03.1-py3"
             },
             "grpc": {
-              "image": "seldonio/tritonserver",
-              "defaultImageVersion": "20.05-20200524"
+              "image": "nvcr.io/nvidia/tritonserver",
+              "defaultImageVersion": "20.03.1-py3"
             }
         }
     }
