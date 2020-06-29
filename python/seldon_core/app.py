@@ -18,6 +18,18 @@ def accesslog(log_level: str) -> Union[str, None]:
     return "-"
 
 
+def worker_class(single_threaded: bool) -> str:
+    """
+    Use gthread workers to run every request on a separate thread (unless we
+    explicitly force the code on a single thread).
+    """
+
+    if single_threaded:
+        return "sync"
+
+    return "gthread"
+
+
 class StandaloneApplication(BaseApplication):
     """
     Standalone Application to run a Flask app in Gunicorn.

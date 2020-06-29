@@ -15,7 +15,12 @@ from seldon_core import persistence, __version__, wrapper as seldon_microservice
 from seldon_core.metrics import SeldonMetrics
 from seldon_core.flask_utils import ANNOTATIONS_FILE, SeldonMicroserviceException
 from seldon_core.utils import getenv_as_bool
-from seldon_core.app import StandaloneApplication, UserModelApplication, accesslog
+from seldon_core.app import (
+    StandaloneApplication,
+    UserModelApplication,
+    accesslog,
+    worker_class,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -330,6 +335,7 @@ def main():
                     "accesslog": accesslog(args.log_level),
                     "loglevel": args.log_level.lower(),
                     "timeout": 5000,
+                    "worker_class": worker_class(args.single_threaded),
                     "workers": args.workers,
                     "max_requests": args.max_requests,
                     "max_requests_jitter": args.max_requests_jitter,
@@ -392,6 +398,7 @@ def main():
                 "accesslog": accesslog(args.log_level),
                 "loglevel": args.log_level.lower(),
                 "timeout": 5000,
+                "worker_class": worker_class(args.single_threaded),
                 "max_requests": args.max_requests,
                 "max_requests_jitter": args.max_requests_jitter,
             }
