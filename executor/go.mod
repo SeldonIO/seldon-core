@@ -6,7 +6,7 @@ require (
 	github.com/cloudevents/sdk-go v1.2.0
 	github.com/fullstorydev/grpcurl v1.5.1 // indirect
 	github.com/ghodss/yaml v1.0.0
-	github.com/go-logr/logr v0.1.0
+	github.com/go-logr/logr v0.2.0
 	github.com/golang/protobuf v1.4.2
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/mux v1.7.4
