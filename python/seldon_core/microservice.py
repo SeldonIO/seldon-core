@@ -19,7 +19,7 @@ from seldon_core.app import (
     StandaloneApplication,
     UserModelApplication,
     accesslog,
-    worker_class,
+    threads,
 )
 
 logger = logging.getLogger(__name__)
@@ -214,12 +214,20 @@ def main():
         const=1,
         type=int,
     )
-    # gunicorn settings, defaults are from http://docs.gunicorn.org/en/stable/settings.html
+
+    # gunicorn settings, defaults are from
+    # http://docs.gunicorn.org/en/stable/settings.html
     parser.add_argument(
         "--workers",
         type=int,
         default=int(os.environ.get("GUNICORN_WORKERS", "1")),
-        help="Number of gunicorn workers for handling requests.",
+        help="Number of Gunicorn workers for handling requests.",
+    )
+    parser.add_argument(
+        "--threads",
+        type=int,
+        default=int(os.environ.get("GUNICORN_THREADS", "10")),
+        help="Number of threads to run per Gunicorn worker.",
     )
     parser.add_argument(
         "--max-requests",
@@ -233,11 +241,12 @@ def main():
         default=int(os.environ.get("GUNICORN_MAX_REQUESTS_JITTER", "0")),
         help="Maximum random jitter to add to max-requests.",
     )
+
     parser.add_argument(
         "--single-threaded",
         type=int,
         default=int(os.environ.get("FLASK_SINGLE_THREADED", "0")),
-        help="Force the Flask app to run single-threaded",
+        help="Force the Flask app to run single-threaded. Also applies to Gunicorn.",
     )
 
     args = parser.parse_args()
@@ -335,7 +344,7 @@ def main():
                     "accesslog": accesslog(args.log_level),
                     "loglevel": args.log_level.lower(),
                     "timeout": 5000,
-                    "worker_class": worker_class(args.single_threaded),
+                    "threads": threads(args.threads, args.single_threaded),
                     "workers": args.workers,
                     "max_requests": args.max_requests,
                     "max_requests_jitter": args.max_requests_jitter,
@@ -398,7 +407,6 @@ def main():
                 "accesslog": accesslog(args.log_level),
                 "loglevel": args.log_level.lower(),
                 "timeout": 5000,
-                "worker_class": worker_class(args.single_threaded),
                 "max_requests": args.max_requests,
                 "max_requests_jitter": args.max_requests_jitter,
             }

@@ -18,16 +18,15 @@ def accesslog(log_level: str) -> Union[str, None]:
     return "-"
 
 
-def worker_class(single_threaded: bool) -> str:
+def threads(threads: int, single_threaded: bool) -> int:
     """
-    Use gthread workers to run every request on a separate thread (unless we
-    explicitly force the code on a single thread).
+    Number of threads to run in each Gunicorn worker.
     """
 
     if single_threaded:
-        return "sync"
+        return 1
 
-    return "gthread"
+    return threads
 
 
 class StandaloneApplication(BaseApplication):
