@@ -8,6 +8,8 @@ RUN apt-get update -y && apt-get install -qy --no-install-recommends \
     libxext6 \
     libxrender-dev \
     libglib2.0-0 \
+    git \
+    build-essential \
     && \
     rm -rf /var/lib/apt/lists/*
 
@@ -15,7 +17,7 @@ ENV PATH /opt/conda/bin:$PATH
 
 # Install Miniconda3
 ARG CONDA_VERSION
-RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-$CONDA_VERSION-Linux-x86_64.sh -O ~/miniconda.sh && \
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-${CONDA_VERSION}-Linux-x86_64.sh -O ~/miniconda.sh && \
     /bin/bash ~/miniconda.sh -b -p /opt/conda && \
     rm ~/miniconda.sh && \
     /opt/conda/bin/conda clean -tipsy && \
@@ -26,15 +28,19 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-$CONDA_VERSION-L
     find /opt/conda/ -follow -type f -name '*.js.map' -delete && \
     /opt/conda/bin/conda clean -afy
 
+
 RUN mkdir microservice
 WORKDIR /microservice
 
 COPY ./s2i/bin/ /s2i/bin
 
-# keep install of seldon-core after the COPY to force re-build of layer
-COPY requirements_gpu.txt ./requirements.txt
+# Install Seldon Core from local copy
+COPY _python /microservice
 COPY version.txt /microservice/version.txt
-COPY _python/python/licenses/license.txt .
+RUN cd /microservice/python && make install
+
+# Add gpu specific requirements
+COPY requirements_gpu.txt ./requirements.txt
 RUN pip install -r requirements.txt
 
 RUN mkdir -p /.conda && chmod a+rwx /.conda
