@@ -17,6 +17,7 @@ You can use the following links to navigate the Python seldon-core module:
    Wrap using S2I <python_wrapping_s2i.md>
    Wrap using Docker <python_wrapping_docker.md>
    Seldon Python Client <seldon_client.md>
+   Seldon Python Server <python_server.md>
    Python API reference <api/modules>
 
 
