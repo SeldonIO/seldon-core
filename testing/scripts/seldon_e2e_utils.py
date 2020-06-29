@@ -575,7 +575,7 @@ def assert_model(sdep_name, namespace, initial=False, endpoint=API_AMBASSADOR):
     assert "state" in data["status"]
     #sdeps momentarily go to 'Failed' during an upgrade so retry
     if data["status"]["state"] == "Failed":
-        sleep(0.5)
+        time.sleep(0.5)
         ret = run(
                 f"kubectl get -n {namespace} sdep {sdep_name} -o=json",
                 stdout=subprocess.PIPE,
