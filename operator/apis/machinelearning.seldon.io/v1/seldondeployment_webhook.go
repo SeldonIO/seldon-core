@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"log"
 	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -145,10 +146,25 @@ func (r *SeldonDeploymentSpec) setContainerPredictiveUnitDefaults(compSpecIdx in
 
 	volFound := false
 	for _, vol := range con.VolumeMounts {
-		if vol.Name == PODINFO_VOLUME_NAME || vol.Name == OLD_PODINFO_VOLUME_NAME {
+		if vol.Name == PODINFO_VOLUME_NAME {
 			volFound = true
 		}
 	}
+	//SeldonDeployments first deployed before 1.2 have OLD_PODINFO_VOLUME_NAME
+	//they retain that name indefinitely
+	oldVolIndex := -1
+	for idx, vol := range con.VolumeMounts {
+		if vol.Name == OLD_PODINFO_VOLUME_NAME {
+			log.Println("found old vol of name " + OLD_PODINFO_VOLUME_NAME)
+			oldVolIndex = idx
+		}
+	}
+	if oldVolIndex > -1 {
+		con.VolumeMounts[oldVolIndex] = con.VolumeMounts[len(con.VolumeMounts)-1] // Copy last element to index i.
+		con.VolumeMounts[len(con.VolumeMounts)-1] = corev1.VolumeMount{}          // Erase last element (write zero value).
+		con.VolumeMounts = con.VolumeMounts[:len(con.VolumeMounts)-1]             // Truncate slice.
+	}
+
 	if !volFound {
 		con.VolumeMounts = append(con.VolumeMounts, corev1.VolumeMount{
 			Name:      PODINFO_VOLUME_NAME,
