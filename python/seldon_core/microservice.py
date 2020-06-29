@@ -278,15 +278,15 @@ def main():
     annotations = load_annotations()
     logger.info("Annotations: %s", annotations)
 
-    parts = args.interface_name.rsplit(".", 1)
+    parts = args.interface_name.rsplit(".")
     if len(parts) == 1:
         logger.info("Importing %s", args.interface_name)
         interface_file = importlib.import_module(args.interface_name)
         user_class = getattr(interface_file, args.interface_name)
     else:
         logger.info("Importing submodule %s", parts)
-        interface_file = importlib.import_module(parts[0])
-        user_class = getattr(interface_file, parts[1])
+        interface_file = importlib.import_module(".".join(parts[:-1]))
+        user_class = getattr(interface_file, parts[-1])
 
     if args.persistence:
         logger.info("Restoring persisted component")
