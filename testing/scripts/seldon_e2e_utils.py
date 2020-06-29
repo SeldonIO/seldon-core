@@ -564,24 +564,10 @@ def assert_model(sdep_name, namespace, initial=False, endpoint=API_AMBASSADOR):
     # NOTE: The following will test if the `SeldonDeployment` can be fetched as
     # a Kubernetes resource. This covers cases where some resources (e.g. CRD
     # versions or webhooks) may get inadvertently removed between versions.
-    ret = run(
-        f"kubectl get -n {namespace} sdep {sdep_name} -o=json",
-        stdout=subprocess.PIPE,
-        shell=True,
-    )
-    assert ret.returncode == 0
-    data = json.loads(ret.stdout)
+    # sdeps momentarily go to 'Failed' during an upgrade so retry
+    data = wait_for_status(name=sdep_name,namespace=namespace,5,1)
     assert "status" in data
     assert "state" in data["status"]
-    # sdeps momentarily go to 'Failed' during an upgrade so retry
-    if data["status"]["state"] == "Failed":
-        time.sleep(0.5)
-        ret = run(
-            f"kubectl get -n {namespace} sdep {sdep_name} -o=json",
-            stdout=subprocess.PIPE,
-            shell=True,
-        )
-        data = json.loads(ret.stdout)
 
     assert data["status"]["state"] != "Failed"
 
