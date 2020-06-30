@@ -158,6 +158,7 @@ def wait_for_status(name, namespace, attempts=20, sleep=5):
             stdout=subprocess.PIPE,
         )
         data = json.loads(ret.stdout)
+        # should prob be checking for Failed but https://github.com/SeldonIO/seldon-core/issues/2044
         if ("status" in data) and (data["status"]["state"] == "Available"):
             logging.info(f"Status for SeldonDeployment {name} is ready.")
             return data
@@ -564,6 +565,7 @@ def assert_model(sdep_name, namespace, initial=False, endpoint=API_AMBASSADOR):
     # NOTE: The following will test if the `SeldonDeployment` can be fetched as
     # a Kubernetes resource. This covers cases where some resources (e.g. CRD
     # versions or webhooks) may get inadvertently removed between versions.
+    # not checking status here as wait_for_status called previously
     ret = run(
         f"kubectl get -n {namespace} sdep {sdep_name}",
         stdout=subprocess.DEVNULL,
