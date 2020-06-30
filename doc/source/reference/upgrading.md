@@ -6,9 +6,11 @@ If you were running our Openshift 0.4.2 certified operator and are looking to up
 
 Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed features and bug-fixes in each version.
 
-## Upgrading to 1.2 from 1.1
+## Upgrading to 1.2.1
 
-*[NOTE]* Currently there is an issue where all Seldon Deployments are marked as "NotReady" as there is a [bug caused by a volumeName update](https://github.com/SeldonIO/seldon-core/issues/2017). This can be resolved by following the 1.2.0 volume patch [as outlined by this example](../examples/patch_1_2.html). It is recommended to upgrade to version 1.2.1 directly instead.
+*[NOTE]* 1.2.0 has issue where all Seldon Deployments are marked as "NotReady" as there is a [bug caused by a volumeName update](https://github.com/SeldonIO/seldon-core/issues/2017). This can be resolved by following the 1.2.0 volume patch [as outlined by this example](../examples/patch_1_2.html). It is recommended to upgrade to version 1.2.1 directly instead.
+
+All seldon-managed pods will be subject to a rolling update as part of this upgrade.
 
 ### New Features / Breaking Changes
 
