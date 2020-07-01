@@ -1,5 +1,68 @@
 # Changelog
 
+
+## [v1.2.1](https://github.com/seldonio/seldon-core/tree/v1.2.1) (2020-07-01)
+
+[Full Changelog](https://github.com/seldonio/seldon-core/compare/v1.2.0...v1.2.1)
+
+**Fixed bugs:**
+
+- upgrading from 1.1 to 1.2 with existing sdep leads to volume mount error [\#2017](https://github.com/SeldonIO/seldon-core/issues/2017)
+- Seldon Operator automatic update from v1.1.0 to v1.2.0  causes seldondeployment failures [\#2009](https://github.com/SeldonIO/seldon-core/issues/2009)
+- Changing predictor.replicas causes all deployment pods to be replaced [\#2008](https://github.com/SeldonIO/seldon-core/issues/2008)
+- requests per second from seldon\_api\_executor\_cient\_requests\_count not right? [\#2004](https://github.com/SeldonIO/seldon-core/issues/2004)
+- Cannot connect to metrics port 6000 for custom models wrapped with s2i. [\#1988](https://github.com/SeldonIO/seldon-core/issues/1988)
+- Helm switch rbac.create=false does not fully work [\#1982](https://github.com/SeldonIO/seldon-core/issues/1982)
+- serviceAccount.name not used in Helm chart templates [\#1977](https://github.com/SeldonIO/seldon-core/issues/1977)
+- executor service not targeting to executor [\#1975](https://github.com/SeldonIO/seldon-core/issues/1975)
+- Issue in "seldon-container-engine" with MLFLOW\_SERVER [\#1922](https://github.com/SeldonIO/seldon-core/issues/1922)
+- Permission denied while reading ./openapi/seldon.json in seldon-container-engine [\#1855](https://github.com/SeldonIO/seldon-core/issues/1855)
+- Allow custom pip dependencies in MLFLOW\_SERVER [\#1547](https://github.com/SeldonIO/seldon-core/issues/1547)
+- Stop integration tests if setup fails [\#1417](https://github.com/SeldonIO/seldon-core/issues/1417)
+
+**Closed issues:**
+
+- upgrading notes for 1.2.1 [\#2051](https://github.com/SeldonIO/seldon-core/issues/2051)
+- Dependabot can't resolve your Go dependency files [\#2003](https://github.com/SeldonIO/seldon-core/issues/2003)
+- Set executor port from model deployment file [\#1974](https://github.com/SeldonIO/seldon-core/issues/1974)
+- Readiness probe failed seldon-container-engine while deploying the pipeline  [\#1963](https://github.com/SeldonIO/seldon-core/issues/1963)
+- Potential dependency conflicts between seldon-core and opentracing [\#1867](https://github.com/SeldonIO/seldon-core/issues/1867)
+- Add documentation that explains how to configure the named port [\#1853](https://github.com/SeldonIO/seldon-core/issues/1853)
+- Built-in header based routing [\#1739](https://github.com/SeldonIO/seldon-core/issues/1739)
+- Update release process [\#1732](https://github.com/SeldonIO/seldon-core/issues/1732)
+- Include prepackeged servers in GA and version using version.txt [\#1726](https://github.com/SeldonIO/seldon-core/issues/1726)
+- Can't create resources under v1.18 [\#1678](https://github.com/SeldonIO/seldon-core/issues/1678)
+- Use zap.New instead of zap.Logger [\#1657](https://github.com/SeldonIO/seldon-core/issues/1657)
+- Wrong package for YAML [\#1609](https://github.com/SeldonIO/seldon-core/issues/1609)
+- Batch Processing Exploration for Seldon Core [\#1413](https://github.com/SeldonIO/seldon-core/issues/1413)
+- Offline Batch Integration [\#1391](https://github.com/SeldonIO/seldon-core/issues/1391)
+- Add Health and Status endpoints to grpc spec [\#1387](https://github.com/SeldonIO/seldon-core/issues/1387)
+
+**Merged pull requests:**
+
+- upgrading to 1.2.1 [\#2052](https://github.com/SeldonIO/seldon-core/pull/2052) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- fix notebook server\_examples to not fail on MLFlow server [\#2050](https://github.com/SeldonIO/seldon-core/pull/2050) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- fix typo in upgrading [\#2035](https://github.com/SeldonIO/seldon-core/pull/2035) ([cliveseldon](https://github.com/cliveseldon))
+- Fix version of sphinx [\#2025](https://github.com/SeldonIO/seldon-core/pull/2025) ([cliveseldon](https://github.com/cliveseldon))
+- Example and script to patch the bug when upgrading 1.1 to 1.2 [\#2021](https://github.com/SeldonIO/seldon-core/pull/2021) ([axsaucedo](https://github.com/axsaucedo))
+- volume mount names upgrade fix [\#2019](https://github.com/SeldonIO/seldon-core/pull/2019) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- Allow predictor replica changes to not cause rolling update [\#2016](https://github.com/SeldonIO/seldon-core/pull/2016) ([cliveseldon](https://github.com/cliveseldon))
+- Fix for ensuring old clusterwide webhook is deleted [\#2013](https://github.com/SeldonIO/seldon-core/pull/2013) ([cliveseldon](https://github.com/cliveseldon))
+- Use correct YAML package [\#2010](https://github.com/SeldonIO/seldon-core/pull/2010) ([adriangonz](https://github.com/adriangonz))
+- Update requirements.txt and readme file for KerasSpamClassifier [\#2002](https://github.com/SeldonIO/seldon-core/pull/2002) ([maorlipchuk](https://github.com/maorlipchuk))
+- Bump github.com/prometheus/common from 0.7.0 to 0.10.0 in /executor [\#2001](https://github.com/SeldonIO/seldon-core/pull/2001) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- Bump google.golang.org/grpc from 1.28.0 to 1.29.1 in /executor [\#2000](https://github.com/SeldonIO/seldon-core/pull/2000) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- Bump github.com/golang/protobuf from 1.3.5 to 1.4.2 in /executor [\#1998](https://github.com/SeldonIO/seldon-core/pull/1998) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- Bump github.com/gorilla/mux from 1.7.3 to 1.7.4 in /executor [\#1997](https://github.com/SeldonIO/seldon-core/pull/1997) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- Redhat v1.2.0 [\#1996](https://github.com/SeldonIO/seldon-core/pull/1996) ([cliveseldon](https://github.com/cliveseldon))
+- Add executor to dependabot [\#1984](https://github.com/SeldonIO/seldon-core/pull/1984) ([adriangonz](https://github.com/adriangonz))
+- Update seldon-core-operator Helm to fix bugs  [\#1983](https://github.com/SeldonIO/seldon-core/pull/1983) ([cliveseldon](https://github.com/cliveseldon))
+- Switch on executor enabled for service ports [\#1981](https://github.com/SeldonIO/seldon-core/pull/1981) ([glindsell](https://github.com/glindsell))
+- Updating master for v1.2.1-dev [\#1979](https://github.com/SeldonIO/seldon-core/pull/1979) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- Updating master for v1.2.1-rc [\#1978](https://github.com/SeldonIO/seldon-core/pull/1978) ([axsaucedo](https://github.com/axsaucedo))
+- Added CORS headers to enable Front-End inputs on Go Engine [\#1952](https://github.com/SeldonIO/seldon-core/pull/1952) ([ericandrewmeadows](https://github.com/ericandrewmeadows))
+- Support custom pip environment in MLFLOW\_SERVER [\#1929](https://github.com/SeldonIO/seldon-core/pull/1929) ([ttapjinda](https://github.com/ttapjinda))
+
 ## [v1.2.0](https://github.com/seldonio/seldon-core/tree/v1.2.0) (2020-06-18)
 
 [Full Changelog](https://github.com/seldonio/seldon-core/compare/v1.1.0...v1.2.0)
@@ -172,7 +235,6 @@
 - Bump flake8 from 3.7.9 to 3.8.1 in /python [\#1838](https://github.com/SeldonIO/seldon-core/pull/1838) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
 - Authentication and authorization for seldon core requests example [\#1834](https://github.com/SeldonIO/seldon-core/pull/1834) ([SachinVarghese](https://github.com/SachinVarghese))
 - expose rest feedback endpoint in executor [\#1833](https://github.com/SeldonIO/seldon-core/pull/1833) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
-- make seldon.io/executor annotation setting a priority [\#1831](https://github.com/SeldonIO/seldon-core/pull/1831) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
 - graph level metadata [\#1803](https://github.com/SeldonIO/seldon-core/pull/1803) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
 - Add Seldon PUID Header to gRPC context + tests [\#1790](https://github.com/SeldonIO/seldon-core/pull/1790) ([glindsell](https://github.com/glindsell))
 - Prepackaged RedHat Model Servers [\#1775](https://github.com/SeldonIO/seldon-core/pull/1775) ([cliveseldon](https://github.com/cliveseldon))
@@ -1632,7 +1694,6 @@
 - Update epsilon-greedy example to Python 3 [\#231](https://github.com/SeldonIO/seldon-core/pull/231) ([jklaise](https://github.com/jklaise))
 - Update kubectl\_demo\_minikube\_rbac.ipynb [\#230](https://github.com/SeldonIO/seldon-core/pull/230) ([benoitbayol](https://github.com/benoitbayol))
 - GRPC API for javascript models with Nodejs s2i wrapper [\#224](https://github.com/SeldonIO/seldon-core/pull/224) ([SachinVarghese](https://github.com/SachinVarghese))
-- Support for ONNX exported models for inference [\#221](https://github.com/SeldonIO/seldon-core/pull/221) ([cliveseldon](https://github.com/cliveseldon))
 
 ## [v0.2.3](https://github.com/seldonio/seldon-core/tree/v0.2.3) (2018-09-17)
 
@@ -1655,6 +1716,7 @@
 
 - Update SeldonDeployment status for lifecycle conditions [\#223](https://github.com/SeldonIO/seldon-core/pull/223) ([cliveseldon](https://github.com/cliveseldon))
 - Update use of python wrappers to version 0.2 [\#222](https://github.com/SeldonIO/seldon-core/pull/222) ([cliveseldon](https://github.com/cliveseldon))
+- Support for ONNX exported models for inference [\#221](https://github.com/SeldonIO/seldon-core/pull/221) ([cliveseldon](https://github.com/cliveseldon))
 - Private repo build and run [\#220](https://github.com/SeldonIO/seldon-core/pull/220) ([gsunner](https://github.com/gsunner))
 - Nodejs s2i wrapper for JavaScript models [\#218](https://github.com/SeldonIO/seldon-core/pull/218) ([SachinVarghese](https://github.com/SachinVarghese))
 - Update seldon metrics [\#217](https://github.com/SeldonIO/seldon-core/pull/217) ([cliveseldon](https://github.com/cliveseldon))
