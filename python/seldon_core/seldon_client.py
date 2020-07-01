@@ -175,7 +175,7 @@ class SeldonClient(object):
         Parameters
         ----------
         gateway
-           API Gateway - either ambassador, istio or seldon
+           API Gateway - either ambassador, istio, contour, or seldon
         transport
            API transport - grpc or rest
         namespace
@@ -243,9 +243,9 @@ class SeldonClient(object):
         -------
 
         """
-        if not (gateway == "ambassador" or gateway == "seldon" or gateway == "istio"):
+        if not (gateway == "ambassador" or gateway == "seldon" or gateway == "istio" or gateway == "contour"):
             raise SeldonClientException(
-                "Valid values for gateway are 'ambassador', 'istio', or 'seldon'"
+                "Valid values for gateway are 'ambassador', 'istio', 'contour', or 'seldon'"
             )
         if not (transport == "rest" or transport == "grpc"):
             raise SeldonClientException(
@@ -261,7 +261,8 @@ class SeldonClient(object):
             or method is None
         ):
             raise SeldonClientException(
-                "Valid values for method are 'predict', 'route', 'transform-input', 'transform-output', 'aggregate' or None"
+                "Valid values for method are 'predict', 'route', 'transform-input', 'transform-output', 'aggregate' "
+                "or None "
             )
         if not (data is None or isinstance(data, np.ndarray)):
             raise SeldonClientException("Valid values for data are None or numpy array")
@@ -302,7 +303,7 @@ class SeldonClient(object):
         Parameters
         ----------
         gateway
-           API Gateway - either ambassador, istio or seldon
+           API Gateway - either ambassador, istio, contour, or seldon
         transport
            API transport - grpc or rest
         namespace
@@ -323,10 +324,6 @@ class SeldonClient(object):
            Gateway endpoint
         microservice_endpoint
            Running microservice endpoint
-        grpc_max_send_message_length
-           Max grpc send message size in bytes
-        grpc_max_receive_message_length
-           Max grpc receive message size in bytes
         data
            Numpy Array Payload to send
         bin_data
@@ -381,8 +378,10 @@ class SeldonClient(object):
             client_return_type=client_return_type,
         )
         self._validate_args(**k)
-        if k["gateway"] == "ambassador" or k["gateway"] == "istio":
+        if k["gateway"] == "ambassador" or k["gateway"] == "istio" or k["gateway"] == "contour":
             if k["transport"] == "rest":
+                if k["gateway"] == "contour" and k["gateway_prefix"] is None:
+                    k["gateway_prefix"] = ""
                 return rest_predict_gateway(**k)
             elif k["transport"] == "grpc":
                 return grpc_predict_gateway(**k)
@@ -430,7 +429,7 @@ class SeldonClient(object):
         reward
            A reward to send in feedback
         gateway
-           API Gateway - either ambassador, istio or seldon
+           API Gateway - either ambassador, istio, contour or seldon
         transport
            API transport - grpc or rest
         deployment_name
@@ -449,10 +448,6 @@ class SeldonClient(object):
            Gateway endpoint
         microservice_endpoint
            Running microservice endpoint
-        grpc_max_send_message_length
-           Max grpc send message size in bytes
-        grpc_max_receive_message_length
-           Max grpc receive message size in bytes
         method
            The microservice method to call
         shape
@@ -484,8 +479,10 @@ class SeldonClient(object):
             client_return_type=client_return_type,
         )
         self._validate_args(**k)
-        if k["gateway"] == "ambassador" or k["gateway"] == "istio":
+        if k["gateway"] == "ambassador" or k["gateway"] == "istio" or k["gateway"] == "contour":
             if k["transport"] == "rest":
+                if k["gateway"] == "contour" and k["gateway_prefix"] is None:
+                    k["gateway_prefix"] = ""
                 return rest_feedback_gateway(
                     prediction_request, prediction_response, reward, **k
                 )
@@ -534,7 +531,7 @@ class SeldonClient(object):
         Parameters
         ----------
         gateway
-           API Gateway - either ambassador, istio or seldon
+           API Gateway - either ambassador, istio, contour, or seldon
         transport
            API transport - grpc or rest
         namespace
@@ -543,18 +540,8 @@ class SeldonClient(object):
            name of seldon deployment
         payload_type
            type of payload - tensor, ndarray or tftensor
-        seldon_rest_endpoint
-           REST endpoint to seldon api server
-        seldon_grpc_endpoint
-           gRPC endpoint to seldon api server
         gateway_endpoint
            Gateway endpoint
-        microservice_endpoint
-           Running microservice endpoint
-        grpc_max_send_message_length
-           Max grpc send message size in bytes
-        grpc_max_receive_message_length
-           Max grpc receive message size in bytes
         data
            Numpy Array Payload to send
         bin_data
@@ -600,8 +587,10 @@ class SeldonClient(object):
             predictor=predictor,
         )
         self._validate_args(**k)
-        if k["gateway"] == "ambassador" or k["gateway"] == "istio":
+        if k["gateway"] == "ambassador" or k["gateway"] == "istio" or k["gateway"] == "contour":
             if k["transport"] == "rest":
+                if k["gateway"] == "contour" and k["gateway_prefix"] is None:
+                    k["gateway_prefix"] = ""
                 return explain_predict_gateway(**k)
             elif k["transport"] == "grpc":
                 raise SeldonClientException("gRPC not supported for explain")
@@ -639,7 +628,7 @@ class SeldonClient(object):
         Parameters
         ----------
         gateway
-           API Gateway - either ambassador, istio or seldon
+           API Gateway - either ambassador, istio, contour or seldon
         transport
            API transport - grpc or rest
         deployment_name
