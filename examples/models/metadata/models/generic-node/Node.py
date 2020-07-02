@@ -1,3 +1,4 @@
+
 import logging
 import random
 import os
@@ -13,10 +14,10 @@ class Node:
         logging.info(f"model meta: {meta}")
         return features.tolist()
 
-    def input_transformer(self, features, names=[], meta=[]):
+    def transform_input(self, features, names=[], meta=[]):
         return self.predict(features, names, meta)
 
-    def output_transformer(self, features, names=[], meta=[]):
+    def transform_output(self, features, names=[], meta=[]):
         return self.predict(features, names, meta)
 
     def aggregate(self, features, names=[], meta=[]):

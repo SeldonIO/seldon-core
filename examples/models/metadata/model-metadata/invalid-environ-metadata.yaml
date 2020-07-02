@@ -1,14 +1,15 @@
+
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: seldon-model
+  name: seldon-model-invalid-environ-metadata
 spec:
   name: test-deployment
   predictors:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/metadata-generic-node:0.2
+        - image: seldonio/model-with-metadata:0.3
           name: my-model
           env:
           - name: SELDON_LOG_LEVEL
@@ -16,20 +17,10 @@ spec:
           - name: MODEL_METADATA
             value: |
               ---
-              apiVersion: v1
               name: my-model-name
-              versions: [ my-model-version-01 ]
-              platform: seldon
-              inputs:
-                datatype: array
-                shape: [ 2, 2 ]
-              outputs:
-                datatype: array
-                shape: [ 1 ]
+              versions: my-model-version-01
     graph:
       children: []
-      endpoint:
-        type: REST
       name: my-model
       type: MODEL
     name: example

@@ -77,7 +77,9 @@ see metadata [documentation](./metadata.md) for more details.
 service Seldon {
   rpc Predict(SeldonMessage) returns (SeldonMessage) {};
   rpc SendFeedback(Feedback) returns (SeldonMessage) {};
- }
+  rpc ModelMetadata(SeldonModelMetadataRequest) returns (SeldonModelMetadata) {};
+  rpc GraphMetadata(google.protobuf.Empty) returns (SeldonGraphMetadata) {};
+}
 ```
 
 see full [proto definition](./prediction.md#proto-buffer-and-grpc-definition)

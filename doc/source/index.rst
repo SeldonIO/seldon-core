@@ -69,6 +69,7 @@ Documentation Index
    Supported API Protocols <graph/protocols.md>
    CI/CD MLOps at Scale <analytics/cicd-mlops.md>
    Metrics with Prometheus <analytics/analytics.md>
+   Model Metadata <reference/apis/metadata.md>
    Payload Logging with ELK <analytics/logging.md>
    Distributed Tracing with Jaeger <graph/distributed-tracing.md>
    Replica Scaling  <graph/scaling.md>
@@ -91,7 +92,6 @@ Documentation Index
    :caption: Incubating Projects
 
    Java Language Wrapper <java/README.md>
-   Metadata <reference/apis/metadata.md>
    R Language Wrapper [ALPHA] <R/README.md>
    NodeJS Language Wrapper [ALPHA] <nodejs/README.md>
    Go Language Wrapper [ALPHA] <go/go_wrapper_link.rst>
