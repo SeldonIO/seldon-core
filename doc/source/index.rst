@@ -32,9 +32,9 @@ Documentation Index
    :maxdepth: 1
    :caption: Getting Started
 
-   Overview <workflow/github-readme.rst>
-   Quickstart Guide <workflow/quickstart.md>
-   Install Seldon Core on Kubernetes <workflow/install.md>
+   Quickstart Guide <workflow/github-readme.rst>
+   Overview of Components <workflow/overview.md>
+   Install on Kubernetes <workflow/install.md>
    Join the Community <developer/community.md>
 
 .. toctree::
