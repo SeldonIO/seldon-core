@@ -21,7 +21,7 @@ require (
 	github.com/soheilhy/cmux v0.1.4
 	github.com/tensorflow/tensorflow v1.14.0 // indirect
 	github.com/tensorflow/tensorflow/tensorflow/go/core v0.0.0-00010101000000-000000000000
-	github.com/uber/jaeger-client-go v2.21.1+incompatible
+	github.com/uber/jaeger-client-go v2.24.0+incompatible
 	github.com/uber/jaeger-lib v2.2.0+incompatible // indirect
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
 	google.golang.org/grpc v1.30.0
