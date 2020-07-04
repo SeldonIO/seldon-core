@@ -1,6 +1,5 @@
+
 import logging
-import json
-import os
 
 
 class Model:
@@ -17,8 +16,13 @@ class Model:
             "name": "my-model-name",
             "versions": ["my-model-version-01"],
             "platform": "seldon",
-            "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1, 5]}],
-            "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1]}],
+            "inputs": [
+                {
+                    "messagetype": "tensor",
+                    "schema": {"names": ["a", "b", "c", "d"], "shape": [4]},
+                }
+            ],
+            "outputs": [{"messagetype": "tensor", "schema": {"shape": [1]}}],
         }
 
         return meta

@@ -37,6 +37,13 @@ func createPredictorProcess(t *testing.T) *PredictorProcess {
 	return &pp
 }
 
+func createPredictorProcessWithMetadata(t *testing.T, metadataResponse payload.SeldonPayload, modelMetadataMap map[string]payload.ModelMetadata) *PredictorProcess {
+	url, _ := url.Parse(testSourceUrl)
+	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, testSeldonPuid)
+	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{MetadataResponse: metadataResponse, ModelMetadataMap: modelMetadataMap}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{testCustomMetaKey: []string{testCustomMetaValue}})
+	return &pp
+}
+
 func createPredictorProcessWithRoute(t *testing.T, chosenRoute int) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
 	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, testSeldonPuid)
@@ -61,6 +68,14 @@ func createPredictorProcessWithoutPUIDInContext(t *testing.T) *PredictorProcess 
 func createPredictPayload(g *GomegaWithT) payload.SeldonPayload {
 	var sm proto.SeldonMessage
 	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
+	err := jsonpb.UnmarshalString(data, &sm)
+	g.Expect(err).Should(BeNil())
+	return &payload.ProtoPayload{Msg: &sm}
+}
+
+func createMetadataPayload(g *GomegaWithT) payload.SeldonPayload {
+	var sm proto.SeldonModelMetadata
+	var data = `{"name": "mymodel"}`
 	err := jsonpb.UnmarshalString(data, &sm)
 	g.Expect(err).Should(BeNil())
 	return &payload.ProtoPayload{Msg: &sm}
@@ -131,11 +146,13 @@ func TestMetadata(t *testing.T) {
 		},
 	}
 
-	pResp, err := createPredictorProcess(t).Metadata(graph, modelName, nil)
+	data := `{"metadata":{"name":"mymodel"}}`
+	metadataResponse := payload.BytesPayload{Msg: []byte(data)}
+
+	pResp, err := createPredictorProcessWithMetadata(t, &metadataResponse, nil).Metadata(graph, modelName, createMetadataPayload(g))
 	g.Expect(err).Should(BeNil())
 	smRes := string(pResp.GetPayload().([]byte))
-	g.Expect(smRes).To(Equal(test.TestClientMetadataResponse))
-
+	g.Expect(smRes).To(Equal(data))
 }
 
 func TestTwoLevelModel(t *testing.T) {

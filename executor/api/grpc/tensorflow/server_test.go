@@ -9,7 +9,9 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/proto/tensorflow/serving"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	codes "google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	status "google.golang.org/grpc/status"
 	"io"
 	"net/http"
 	"net/url"
@@ -56,6 +58,10 @@ func (s TestTensorflowClient) Metadata(ctx context.Context, modelName string, ho
 	}
 	sm := payload.ProtoPayload{Msg: &st}
 	return &sm, nil
+}
+
+func (s TestTensorflowClient) ModelMetadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.ModelMetadata, error) {
+	return payload.ModelMetadata{}, status.Errorf(codes.Unimplemented, "ModelMetadata not implemented")
 }
 
 func (s TestTensorflowClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {

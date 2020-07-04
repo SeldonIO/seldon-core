@@ -9,28 +9,46 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/metadata-generic-node:0.2
+        - image: seldonio/metadata-generic-node_rest:0.3
           name: node-router
-        - image: seldonio/metadata-generic-node:0.2
+        - image: seldonio/metadata-generic-node_rest:0.3
           name: node-one
           env:
           - name: MODEL_METADATA
             value: |
-              {"name": "node-one",
-               "versions": ["generic-node/v0.2"],
-               "platform": "seldon",
-               "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1, 10]}],
-               "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1, 20]}]}            
-        - image: seldonio/metadata-generic-node:0.2
+              ---
+              name: node-one
+              versions: [ generic-node/v0.3 ]
+              platform: seldon
+              inputs:
+              - messagetype: tensor
+                schema:
+                  names: [ a, b ]
+                  shape: [ 2 ]
+              outputs:
+              - messagetype: tensor
+                schema:
+                  names: [ node-output ]       
+                  shape: [ 1 ]
+        - image: seldonio/metadata-generic-node_rest:0.3
           name: node-two
           env:
           - name: MODEL_METADATA
             value: |
-              {"name": "node-two",
-               "versions": ["generic-node/v0.2"],
-               "platform": "seldon",
-               "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1, 10]}],
-               "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1, 20]}]}               
+              ---
+              name: node-two
+              versions: [ generic-node/v0.3 ]
+              platform: seldon
+              inputs:
+              - messagetype: tensor
+                schema:
+                  names: [ a, b ]
+                  shape: [ 2 ]
+              outputs:
+              - messagetype: tensor
+                schema:
+                  names: [ node-output ]       
+                  shape: [ 1 ]
     graph:
       name: node-router
       type: ROUTER

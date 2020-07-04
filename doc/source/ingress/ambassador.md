@@ -2,28 +2,50 @@
 
 Seldon Core works well with [Ambassador](https://www.getambassador.io/), allowing a single ingress to be used to expose ambassador and [running machine learning deployments can then be dynamically exposed](https://kubernetes.io/blog/2018/06/07/dynamic-ingress-in-kubernetes/) through seldon-created ambassador configurations. In this doc we will discuss how your Seldon Deployments are exposed via Ambassador and how you can use both to do various production rollout strategies.
 
+## Installing Ambassador
+
+You have two options when installing Ambassador:
+
+### Option 1: Ambassador API Gateway
+
+The [Ambassador API Gateway](https://www.getambassador.io/products/api-gateway/) is open source and provides all the functionality of a traditional ingress controller. Follow the instructions [here]() to install it on your kubernetes cluster. 
+
+### Option 2: Ambassador Edge Stack
+
+The [Ambassador Edge Stack](https://www.getambassador.io/products/edge-stack/) is the easiest way to get started with ambassador. The ```edgectl install``` command will provision a load balancer, configure TLS, and provide you with an edgestack.me subdomain. The edgestack.me subdomain allows the Ambassador Edge Stack to automatically provision TLS and HTTPS for a domain name. To install AES using edgectl follow the installation instructions [here](https://www.getambassador.io/docs/latest/topics/install/).
+
+Once the installation has finished, you can run ```edgectl login --namespace=ambassador <ambassadorEndpoint>``` to access the Ambassador Edge Policy Console where you can manage your deployment. The 'Hosts' tab will provide information about the domain that Ambassador set up during the installation process.
+
 ## Ambassador REST
 
 Assuming Ambassador is exposed at ```<ambassadorEndpoint>``` and with a Seldon deployment name ```<deploymentName>``` running in a namespace ```namespace```:
 
 For Seldon Core restricted to a namespace, `singleNamespace=true`, the endpoints exposed are:
 
- * ```http://<ambassadorEndpoint>/seldon/<deploymentName>/api/v1.0/predictions```
- * ```http://<ambassadorEndpoint>/seldon/<namespace>/<deploymentName>/api/v1.0/predictions```
+ * ```http(s)://<ambassadorEndpoint>/seldon/<deploymentName>/api/v1.0/predictions```
+ * ```http(s)://<ambassadorEndpoint>/seldon/<namespace>/<deploymentName>/api/v1.0/predictions```
 
 For Seldon Core running cluster wide, `singleNamespace=false`, the endpoints exposed are all namespaced:
 
- * ```http://<ambassadorEndpoint>/seldon/<namespace>/<deploymentName>/api/v1.0/predictions```
+ * ```http(s)://<ambassadorEndpoint>/seldon/<namespace>/<deploymentName>/api/v1.0/predictions```
+ 
+ Note here that if you chose to install the Ambassador Edge Stack then you will need to use https and the ```<AmbassadorEndpoint>``` referenced above will be the domain name that Ambassador created for you (e.g. ```random-name-1234.edgestack.me```)
 
 
 ## Example Curl
 
 ### Ambassador REST
 
-Assuming a Seldon Deployment ```mymodel``` with Ambassador exposed on `0.0.0.0:8003`:
+If you installed the OSS Ambassador API Gateway, and assuming a Seldon Deployment ```mymodel``` with Ambassador exposed on ```0.0.0.0:8003``` you can send a curl request as follows:
 
 ```bash
 curl -v 0.0.0.0:8003/seldon/mymodel/api/v1.0/predictions -d '{"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[0,0,1,1]}}}' -H "Content-Type: application/json"
+```
+
+Alternatively, if you installed the Ambassador Edge Stack, and assuming a Seldon Deployment ```mymodel``` with the Ambassador hostname `random-hostname-1234.edgestack.me`:
+
+```bash
+curl -v https://random-hostname-1234.edgestack.me/seldon/mymodel/api/v1.0/predictions -d '{"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[0,0,1,1]}}}' -H "Content-Type: application/json"
 ```
 
 ## Ambassador Configuration Annotations Reference
