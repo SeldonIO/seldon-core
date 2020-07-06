@@ -2,6 +2,7 @@ package util
 
 import (
 	"os"
+	"strconv"
 
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 )
@@ -42,5 +43,17 @@ func GetEnv(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return value
 	}
+	return fallback
+}
+
+// Get an environment variable given by key or return the fallback.
+func GetEnvAsBool(key string, fallback bool) bool {
+	if raw, ok := os.LookupEnv(key); ok {
+		val, err := strconv.ParseBool(raw)
+		if err == nil {
+			return val
+		}
+	}
+
 	return fallback
 }
