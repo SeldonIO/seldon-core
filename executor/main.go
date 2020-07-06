@@ -26,6 +26,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/grpc/tensorflow"
 	"github.com/seldonio/seldon-core/executor/api/rest"
 	"github.com/seldonio/seldon-core/executor/api/tracing"
+	"github.com/seldonio/seldon-core/executor/api/util"
 	"github.com/seldonio/seldon-core/executor/k8s"
 	loghandler "github.com/seldonio/seldon-core/executor/logger"
 	"github.com/seldonio/seldon-core/executor/proto/tensorflow/serving"
@@ -34,7 +35,15 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
+const (
+	logLevelEnvVar  = "SELDON_LOG_LEVEL"
+	logLevelDefault = "WARNING"
+	debugEnvVar     = "SELDON_DEBUG"
+)
+
 var (
+	debugDefault = false
+
 	configPath     = flag.String("config", "", "Path to kubconfig")
 	sdepName       = flag.String("sdep", "", "Seldon deployment name")
 	namespace      = flag.String("namespace", "", "Namespace")
@@ -46,7 +55,16 @@ var (
 	hostname       = flag.String("hostname", "localhost", "The hostname of the running server")
 	logWorkers     = flag.Int("logger_workers", 5, "Number of workers handling payload logging")
 	prometheusPath = flag.String("prometheus_path", "/metrics", "The prometheus metrics path")
-	debug          = flag.Bool("debug", false, "Enable debug mode. Logs will be more verbose, and not structured.")
+	debug          = flag.Bool(
+		"debug",
+		util.GetEnvAsBool(debugEnvVar, debugDefault),
+		"Enable debug mode. Logs will be sampled and less structured.",
+	)
+	logLevel = flag.String(
+		"log_level",
+		util.GetEnv(logLevelEnvVar, logLevelDefault),
+		"Log level.",
+	)
 )
 
 func getPredictorFromEnv() (*v1.PredictorSpec, error) {
