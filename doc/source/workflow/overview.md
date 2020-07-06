@@ -1,12 +1,8 @@
 # Overview of Seldon Core Components
 
+Seldon core converts your ML models into production ready REST/gRPC microservices.
 
-Seldon Core is build out of many components that deployed to Kubernetes works together as microservices.
-
-
-
-
-These are core Seldon's components:
+These are Seldon Core main components:
 - Reusable and non-reusable [model servers](./overview.html#model-servers)
 - [Language Wrappers](./overview.html#language-wrappers) to containerise models
 - [SeldonDeployment](./overview.html#seldondeployment-crd) CRD and [Seldon Core Operator](./overview.html#seldon-core-operator)
@@ -21,19 +17,26 @@ as well as integration with third-party systems:
 Keep reading to learn more!
 
 
+## E2E Serving with Model Servers
+
+With `Seldon Core` you can take and put it directly into the production using our flexible `Model Servers`.
+
 ![](../images/e2e-model-serving.svg)
 
+Using the so-called `Reusable Model Servers` you can deploy your models into Kubernetes cluster in just a few steps:
 
-Usual e2e model serving with Seldon consists of few very important steps:
-1. *Data Scientist* prepare ML `model` using state of the art libraries (mlflow, dvc, xgboost, scikit-learn just to name a few).
+1. *Data Scientist* prepares ML `model` using state of the art libraries (mlflow, dvc, xgboost, scikit-learn just to name a few).
 2. Trained model is uploaded to the central repository (e.g. S3 storage).
-3. *Software Engineer* prepare a `Model Server` which is uploaded as Docker image to the Image Registry.
-4. Deployment manifest (`SeldonDeployment` CRD) is created and applied to the Kubernetes cluster.
+3. *Software Engineer* prepares a `Reusable Model Server` using `Seldon Core` which is uploaded as Docker Image to the Image Registry.
+4. Deployment manifest (`Seldon Deployment` CRD) is created and applied to the Kubernetes cluster.
 5. Seldon Core `Operator` creates all required Kubernetes resources.
-6. Inference requests are served by Seldon Core `Orchestrator`.
-7. Metrics and tracing data is written to the third party systems.
+6. Inference requests sent to the `Seldon Deployment` are passed to all internal models by the `Service Orchestrator`.
+7. Metrics and tracing data can be collected by leveraging our integrations with third party frameworks.
 
-## Model Servers
+If you would be to use the `Non-Reusable Model Servers` in steps 2. and 3. you would prepare a Docker image with your ML Model embedded.
+We discuss difference between these two approaches in the next section.
+
+## Two Types of Model Servers
 
 With Seldon Core you can build two type of servers: reusable and non-reusable ones.
 Each of these are useful depending on the context and the actual use case.
@@ -57,9 +60,9 @@ Read how to build your own pre-packaged model server [here](../servers/custom.ht
 
 ## Language Wrappers
 
-Language wrappers allows Seldon Core users to build reusable and non-reusable model servers.
+Language wrappers allows Seldon Core users to build `Reusable` and `Non-Reusable` model servers.
 As you will see, the whole process is very simple and requires user to only define logic that
-loads models and perform inference prediction as well as required runtime dependencies.
+loads models and perform inference prediction as well as the required runtime dependencies.
 
 ![](../images/language-wrappers-1.svg)
 
@@ -67,18 +70,38 @@ loads models and perform inference prediction as well as required runtime depend
 Model loading and inference logic is defined in `Model.py` file:
 ```python
 class Model:
-  def __init__(self):
-    # custom logic that prepare model
-    self._model = ...
+  def __init__(self, ...):
+    """Custom logic that prepares model.
+
+    - Reusable servers: your_loader downloads model from remote repository.
+    - Non-Reusable servers: your_loader loads model from a file embedded in the image.
+    """
+    self._model = your_loader(...)
 
   def predict(self, features, names=[], meta=[]):
-    # custom inference logic
+    """Custom inference logic.""""
     return self._model.predict(...)
 ```
 
-If `Model`'s `__init__` method does not contain logic to load models this would be the non-reusable model server.
+Main difference between `Reusable` and `Non-Reusable` model servers is if the model is loaded dynamically
+or embedded in the image itself.
 
-The `seldon-core-microservice` Python wrapper can be used to turn `Model.py` into a fully operational microservice.
+The `seldon-core-microservice` Python wrapper can be used to turn `Model.py` into a fully operational microservice:
+```bash
+$ seldon-core-microservice Model --service-type MODEL
+```
+
+That serves the inference requests on its endpoint (default: 9000):
+```bash
+$ curl http://localhost:9000/api/v1.0/predictions \
+    -H 'Content-Type: application/json' \
+    -d '{"data": {"names": ..., "ndarray": ...}}'
+
+{
+   "meta" : {...},
+   "data" : {"names": ..., "ndarray" : ...}
+}
+```
 
 ![](../images/language-wrappers-2.svg)
 
@@ -97,20 +120,27 @@ Read more about Python `Language Wrapper` on its dedicated documentation [page](
 
 ## Seldon Deployment CRD
 
-Seldon Deployment CRD is the real strength of Seldon Core. It allows you to easily deploy your inference model to the Kubernetes cluster and handle some real production traffic!
+Seldon Deployment CRD (Custom Resource Definition) is the real strength of Seldon Core.
+It allows you to easily deploy your inference model to the Kubernetes cluster and handle some real production traffic!
+
+[Custom Resources](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) are basically extensions of the Kubernetes API.
+They allow one to create a custom combination of basic Kubernetes objects that acts together.
+In Seldon Core we use CRDs to define the inference graph through the manifest yaml files.
 
 The manifest file that you write is very powerful yet simple.
 You can easily define what models do you want in your deployment and how they are connected in the inference graph.
 
-
 ![](../images/seldondeployment-crd.svg)
+
+You can think about the CRD as an abstraction around the actual deployment and services that are created in the cluster.
+Once the manifest is applied to the cluster, Seldon Core `Operator` creates all Kubernetes objects required to serve the inference requests.
 
 Read more about Seldon Deployment CRD on its dedicated documentation [page](../reference/seldon-deployment.html).
 
 
 ## Seldon Core Operator
 
-Seldon Core `Operator` is what controls your `Seldon Deployments` in the `Kubernetes` cluster.
+Seldon Core `Operator`, build using [Kubebuilder](https://github.com/kubernetes-sigs/kubebuilder), is what controls your `Seldon Deployments` in the `Kubernetes` cluster.
 It reads the CRD definition of `Seldon Deployment` resources applied to the cluster and takes
 care that all required components like `Pods` and `Services` are created.
 
@@ -192,7 +222,21 @@ You can use Open Tracing to trace your API calls to Seldon Core. By default we s
 Read more about tracing on its dedicated documentation [page](../graph/distributed-tracing.html).
 
 
-## Why Seldon Core?
+## So.... Why just not wrap my model with Flask?
+
+You may ask yourself: why wouldn't I just simply wrap my model with [Flask](https://flask.palletsprojects.com/)?
+
+Here are some benefits of choosing Seldon Core:
+- all hard work is already done
+- complex inference graphs possible out of the box
+- reusable model servers (build once, deploy many)
+- integration with metrics and tracing solutions
+- automated ingress configuration
+- Seldon Core is battle-tested by wide community of both open-source and commercial users
+
+
+
+## Other features of Seldon Core?
 
 With over 2M installs, Seldon Core is used across organisations to manage large scale deployment of machine learning models, and key benefits include:
 
@@ -204,5 +248,3 @@ With over 2M installs, Seldon Core is used across organisations to manage large 
  * Advanced and customisable metrics with integration to Prometheus and Grafana.
  * Full auditability through model input-output request logging integration with Elasticsearch.
  * Microservice tracing through integration to Jaeger for insights on latency across microservice hops.
-
-![](../images/why_not_flask.svg)
