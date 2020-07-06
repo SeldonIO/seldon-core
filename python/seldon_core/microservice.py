@@ -29,6 +29,8 @@ SERVICE_PORT_ENV_NAME = "PREDICTIVE_UNIT_SERVICE_PORT"
 METRICS_SERVICE_PORT_ENV_NAME = "PREDICTIVE_UNIT_METRICS_SERVICE_PORT"
 
 LOG_LEVEL_ENV = "SELDON_LOG_LEVEL"
+DEFAULT_LOG_LEVEL = "INFO"
+
 DEFAULT_PORT = 5000
 DEFAULT_METRICS_PORT = 6000
 
@@ -224,7 +226,7 @@ def main():
         "--log-level",
         type=str,
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
-        default="WARNING",
+        default=DEFAULT_LOG_LEVEL,
         help="Log level of the inference server",
     )
     parser.add_argument(
