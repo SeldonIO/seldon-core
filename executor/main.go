@@ -32,6 +32,8 @@ import (
 	"github.com/seldonio/seldon-core/executor/proto/tensorflow/serving"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/soheilhy/cmux"
+	"go.uber.org/zap"
+	zapf "sigs.k8s.io/controller-runtime/pkg/log/zap"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
@@ -169,17 +171,29 @@ func runGrpcServer(lis net.Listener, logger logr.Logger, predictor *v1.Predictor
 }
 
 func setupLogger(debug bool) {
-	// NOTE: The Go logger doesn't use `DEBUG`, `WARNING`, etc.  but we can mimic
-	// it to maintain compatibility.
-	logLevel := os.Getenv("SELDON_LOG_LEVEL")
-
-	if logLevel == "DEBUG" || logLevel == "INFO" {
-		debug = true
-	} else if logLevel == "WARN" || logLevel == "WARNING" || logLevel == "ERROR" {
-		debug = false
+	level := zap.WarnLevel
+	switch *logLevel {
+	case "DEBUG":
+		level = zap.DebugLevel
+	case "INFO":
+		level = zap.InfoLevel
+	case "WARN":
+	case "WARNING":
+		level = zap.WarnLevel
+	case "ERROR":
+		level = zap.ErrorLevel
+	case "FATAL":
+		level = zap.FatalLevel
 	}
 
-	logf.SetLogger(logf.ZapLogger(debug))
+	atomicLevel := zap.NewAtomicLevelAt(level)
+
+	logger := zapf.New(
+		zapf.UseDevMode(debug),
+		zapf.Level(&atomicLevel),
+	)
+
+	logf.SetLogger(logger)
 }
 
 func main() {
