@@ -52,7 +52,7 @@ setsid dockerd \
   --bip="${DOCKERD_BIP:-172.17.1.1/24}" \
   --mtu="${DOCKERD_MTU:-1400}" \
   --raw-logs \
-  ${DOCKER_ARGS:-} >/var/log/docker/dockerd.log 2>&1 &
+  ${DOCKER_ARGS:-} &
 
 # Wait until dockerd is ready.
 until docker ps >/dev/null 2>&1
