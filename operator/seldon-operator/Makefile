@@ -30,12 +30,15 @@ update_csv: clean_csv_${VERSION} deploy/olm-catalog/seldon-operator/${VERSION}/s
 # TESTS
 #
 
+#
+# Tested with 0.18.2 (0.18.1 fails)
+#
+
 scorecard:
 	operator-sdk scorecard -o text --bundle deploy/olm-catalog/seldon-operator --kubeconfig ~/.kube/config
 
 #
 # REQUIRED operator-courier 2.1.7
-# master version of code is broken as of June 2020
 #
 
 operator-courier_ui_validate:

@@ -48,10 +48,11 @@ def scan_images(debug=False):
         if err == None:
             print("updated {path}".format(**locals()))
         else:
-            errStr = str(err["stderr"])
-            if errStr.index("The image tag you are pushing already exists.") > 0:
-                print(f"Warning: Image already exists for {path}.")
-            else:
+            try:
+                errStr = str(err["stderr"])
+                if errStr.index("The image tag you are pushing already exists.") > 0:
+                    print(f"Warning: Image already exists for {path}.")
+            except ValueError:
                 print("error updating {path}".format(**locals()))
                 print(err)
 
