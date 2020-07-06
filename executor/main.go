@@ -39,7 +39,7 @@ import (
 
 const (
 	logLevelEnvVar  = "SELDON_LOG_LEVEL"
-	logLevelDefault = "WARNING"
+	logLevelDefault = "INFO"
 	debugEnvVar     = "SELDON_DEBUG"
 )
 
@@ -171,7 +171,7 @@ func runGrpcServer(lis net.Listener, logger logr.Logger, predictor *v1.Predictor
 }
 
 func setupLogger(debug bool) {
-	level := zap.WarnLevel
+	level := zap.InfoLevel
 	switch *logLevel {
 	case "DEBUG":
 		level = zap.DebugLevel
