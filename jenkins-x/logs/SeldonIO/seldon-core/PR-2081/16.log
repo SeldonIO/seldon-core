@@ -1,0 +1,191 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-p9t5l-16[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-tmpmz[0m
+{"level":"info","ts":1594065257.555241,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1594065257.5558457,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-p9t5l-16[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-zfprf[0m
+{"level":"info","ts":1594065257.9715295,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594065257.9731245,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-p9t5l-16[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-p9t5l-16[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-v6b9g[0m
+{"level":"info","ts":1594065264.0823054,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594065264.0842106,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-p9t5l-16[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-2081-in-p9t5l-8chnv[0m
+{"level":"info","ts":1594065264.3496952,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1594065268.8607874,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-p9t5l-16[0m stage [32mpr-build-comment[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-p9t5l-16[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:96cf61bcb999e92551df26df00fcef056746af23,2081:dd4a70deeebe06641309632b354959df133f6fcc
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git fetch origin --unshallow dd4a70deeebe06641309632b354959df133f6fcc: 96cf61bcb999e92551df26df00fcef056746af23:
+DEBUG: ran git fetch --unshallow origin dd4a70deeebe06641309632b354959df133f6fcc: 96cf61bcb999e92551df26df00fcef056746af23: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard 96cf61bcb999e92551df26df00fcef056746af23
+DEBUG: ran git reset --hard 96cf61bcb999e92551df26df00fcef056746af23 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git merge dd4a70deeebe06641309632b354959df133f6fcc
+DEBUG: ran git merge dd4a70deeebe06641309632b354959df133f6fcc in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git log --format=%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%s%n%b%x1e 96cf61bcb999e92551df26df00fcef056746af23..HEAD
+Merged SHA 64d83f6f311bccc5c996b1d8d8e498dd77a0a6c2 with commit message 'Merge commit 'dd4a70deeebe06641309632b354959df133f6fcc'' into base branch master
+Merged SHA dd4a70deeebe06641309632b354959df133f6fcc with commit message 'Updated kind cluster config to reflect cgroup-root' into base branch master
+Merged SHA 51a29851f86364976b780888d995e4b9ba74307d with commit message 'Updated tests to use dockerd in different cgroup' into base branch master
+Merged SHA b184f4d0b5c77598e9f7c96064daf5a86fa18de7 with commit message 'Removing logfile' into base branch master
+Merged SHA e31b19139e6a0071bc8945c620713e0600cdc22d with commit message 'Testing with custom cgroup' into base branch master
+Merged SHA 46066ae2fdd3d980f277c9cffe67b72db6f28bb1 with commit message 'Added integration tests comments to test container shutdown' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-p9t5l-16[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=2081
++ BUILD_NUMBER=16
++ PIPELINE_CONTEXT=integration
+++ cat
++++ date
++ COMMENT_MSG='Mon Jul  6 19:54:37 UTC 2020
+The logs for [integration] [16] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2081/16.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2081 --build=16'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=2081 '--comment=Mon Jul  6 19:54:37 UTC 2020
+The logs for [integration] [16] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2081/16.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2081 --build=16'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-p9t5l-16[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-2081-in-p9t5l-kk957[0m
+{"level":"info","ts":1594065279.2416134,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594065279.244683,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-p9t5l-16[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-2081-in-p9t5l-7wmsv[0m
+{"level":"info","ts":1594065279.472431,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594065279.7855413,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-p9t5l-16[0m stage [32mend-to-end[0m and container [32mstep-credential-initializer-d2fc5[0m
+{"level":"info","ts":1594065283.6871874,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1594065283.6875923,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-p9t5l-16[0m stage [32mend-to-end[0m and container [32mstep-working-dir-initializer-xvzzz[0m
+{"level":"info","ts":1594065284.7600694,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594065284.761515,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-p9t5l-16[0m stage [32mend-to-end[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-p9t5l-16[0m stage [32mend-to-end[0m and container [32mstep-create-dir-workspace-cjn5b[0m
+{"level":"info","ts":1594065290.8999875,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594065290.9018464,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-p9t5l-16[0m stage [32mend-to-end[0m and container [32mstep-source-copy-workspace-j6b8z[0m
+{"level":"info","ts":1594065291.1283016,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594065293.7814012,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-p9t5l-16[0m stage [32mend-to-end[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-p9t5l-16[0m stage [32mend-to-end[0m and container [32mstep-test-end-to-end[0m
+Test run type is: [base]
+Waiting for dockerd...
+time="2020-07-06T19:54:54.479759329Z" level=info msg="Starting up"
+time="2020-07-06T19:54:54.482646784Z" level=info msg="libcontainerd: started new containerd process" pid=35
+time="2020-07-06T19:54:54.482708623Z" level=info msg="parsed scheme: \"unix\"" module=grpc
+time="2020-07-06T19:54:54.482717488Z" level=info msg="scheme \"unix\" not registered, fallback to default scheme" module=grpc
+time="2020-07-06T19:54:54.482737724Z" level=info msg="ccResolverWrapper: sending update to cc: {[{unix:///var/run/docker/containerd/containerd.sock 0  <nil>}] <nil>}" module=grpc
+time="2020-07-06T19:54:54.482761631Z" level=info msg="ClientConn switching balancer to \"pick_first\"" module=grpc
+time="2020-07-06T19:54:54.524565533Z" level=info msg="starting containerd" revision=7ad184331fa3e55e52b890ea95e65ba581ae3429 version=1.2.13 
+time="2020-07-06T19:54:54.524986639Z" level=info msg="loading plugin "io.containerd.content.v1.content"..." type=io.containerd.content.v1 
+time="2020-07-06T19:54:54.525121732Z" level=info msg="loading plugin "io.containerd.snapshotter.v1.btrfs"..." type=io.containerd.snapshotter.v1 
+time="2020-07-06T19:54:54.525355064Z" level=warning msg="failed to load plugin io.containerd.snapshotter.v1.btrfs" error="path /var/lib/docker/containerd/daemon/io.containerd.snapshotter.v1.btrfs must be a btrfs filesystem to be used with the btrfs snapshotter" 
+time="2020-07-06T19:54:54.525376091Z" level=info msg="loading plugin "io.containerd.snapshotter.v1.aufs"..." type=io.containerd.snapshotter.v1 
+time="2020-07-06T19:54:54.529066486Z" level=warning msg="failed to load plugin io.containerd.snapshotter.v1.aufs" error="modprobe aufs failed: "modprobe: FATAL: Module aufs not found in directory /lib/modules/4.14.138+\n": exit status 1" 
+time="2020-07-06T19:54:54.529103815Z" level=info msg="loading plugin "io.containerd.snapshotter.v1.native"..." type=io.containerd.snapshotter.v1 
+time="2020-07-06T19:54:54.529348470Z" level=info msg="loading plugin "io.containerd.snapshotter.v1.overlayfs"..." type=io.containerd.snapshotter.v1 
+time="2020-07-06T19:54:54.529609774Z" level=info msg="loading plugin "io.containerd.snapshotter.v1.zfs"..." type=io.containerd.snapshotter.v1 
+time="2020-07-06T19:54:54.529897189Z" level=info msg="skip loading plugin "io.containerd.snapshotter.v1.zfs"..." type=io.containerd.snapshotter.v1 
+time="2020-07-06T19:54:54.529914158Z" level=info msg="loading plugin "io.containerd.metadata.v1.bolt"..." type=io.containerd.metadata.v1 
+time="2020-07-06T19:54:54.530022989Z" level=warning msg="could not use snapshotter btrfs in metadata plugin" error="path /var/lib/docker/containerd/daemon/io.containerd.snapshotter.v1.btrfs must be a btrfs filesystem to be used with the btrfs snapshotter" 
+time="2020-07-06T19:54:54.530034168Z" level=warning msg="could not use snapshotter aufs in metadata plugin" error="modprobe aufs failed: "modprobe: FATAL: Module aufs not found in directory /lib/modules/4.14.138+\n": exit status 1" 
+time="2020-07-06T19:54:54.530042356Z" level=warning msg="could not use snapshotter zfs in metadata plugin" error="path /var/lib/docker/containerd/daemon/io.containerd.snapshotter.v1.zfs must be a zfs filesystem to be used with the zfs snapshotter: skip plugin" 
+time="2020-07-06T19:54:55.068554435Z" level=info msg="loading plugin "io.containerd.differ.v1.walking"..." type=io.containerd.differ.v1 
+time="2020-07-06T19:54:55.068606252Z" level=info msg="loading plugin "io.containerd.gc.v1.scheduler"..." type=io.containerd.gc.v1 
+time="2020-07-06T19:54:55.068679849Z" level=info msg="loading plugin "io.containerd.service.v1.containers-service"..." type=io.containerd.service.v1 
+time="2020-07-06T19:54:55.068693043Z" level=info msg="loading plugin "io.containerd.service.v1.content-service"..." type=io.containerd.service.v1 
+time="2020-07-06T19:54:55.068705275Z" level=info msg="loading plugin "io.containerd.service.v1.diff-service"..." type=io.containerd.service.v1 
+time="2020-07-06T19:54:55.068722090Z" level=info msg="loading plugin "io.containerd.service.v1.images-service"..." type=io.containerd.service.v1 
+time="2020-07-06T19:54:55.068738531Z" level=info msg="loading plugin "io.containerd.service.v1.leases-service"..." type=io.containerd.service.v1 
+time="2020-07-06T19:54:55.068754408Z" level=info msg="loading plugin "io.containerd.service.v1.namespaces-service"..." type=io.containerd.service.v1 
+time="2020-07-06T19:54:55.068765055Z" level=info msg="loading plugin "io.containerd.service.v1.snapshots-service"..." type=io.containerd.service.v1 
+time="2020-07-06T19:54:55.068776118Z" level=info msg="loading plugin "io.containerd.runtime.v1.linux"..." type=io.containerd.runtime.v1 
+time="2020-07-06T19:54:55.107915132Z" level=info msg="loading plugin "io.containerd.runtime.v2.task"..." type=io.containerd.runtime.v2 
+time="2020-07-06T19:54:55.108084882Z" level=info msg="loading plugin "io.containerd.monitor.v1.cgroups"..." type=io.containerd.monitor.v1 
+time="2020-07-06T19:54:55.108890978Z" level=info msg="loading plugin "io.containerd.service.v1.tasks-service"..." type=io.containerd.service.v1 
+time="2020-07-06T19:54:55.108937952Z" level=info msg="loading plugin "io.containerd.internal.v1.restart"..." type=io.containerd.internal.v1 
+time="2020-07-06T19:54:55.109046864Z" level=info msg="loading plugin "io.containerd.grpc.v1.containers"..." type=io.containerd.grpc.v1 
+time="2020-07-06T19:54:55.109059543Z" level=info msg="loading plugin "io.containerd.grpc.v1.content"..." type=io.containerd.grpc.v1 
+time="2020-07-06T19:54:55.109070495Z" level=info msg="loading plugin "io.containerd.grpc.v1.diff"..." type=io.containerd.grpc.v1 
+time="2020-07-06T19:54:55.109080417Z" level=info msg="loading plugin "io.containerd.grpc.v1.events"..." type=io.containerd.grpc.v1 
+time="2020-07-06T19:54:55.109089285Z" level=info msg="loading plugin "io.containerd.grpc.v1.healthcheck"..." type=io.containerd.grpc.v1 
+time="2020-07-06T19:54:55.109110240Z" level=info msg="loading plugin "io.containerd.grpc.v1.images"..." type=io.containerd.grpc.v1 
+time="2020-07-06T19:54:55.109122817Z" level=info msg="loading plugin "io.containerd.grpc.v1.leases"..." type=io.containerd.grpc.v1 
+time="2020-07-06T19:54:55.109132477Z" level=info msg="loading plugin "io.containerd.grpc.v1.namespaces"..." type=io.containerd.grpc.v1 
+time="2020-07-06T19:54:55.109142065Z" level=info msg="loading plugin "io.containerd.internal.v1.opt"..." type=io.containerd.internal.v1 
+time="2020-07-06T19:54:55.113919099Z" level=info msg="loading plugin "io.containerd.grpc.v1.snapshots"..." type=io.containerd.grpc.v1 
+time="2020-07-06T19:54:55.113963418Z" level=info msg="loading plugin "io.containerd.grpc.v1.tasks"..." type=io.containerd.grpc.v1 
+time="2020-07-06T19:54:55.113977038Z" level=info msg="loading plugin "io.containerd.grpc.v1.version"..." type=io.containerd.grpc.v1 
+time="2020-07-06T19:54:55.113991682Z" level=info msg="loading plugin "io.containerd.grpc.v1.introspection"..." type=io.containerd.grpc.v1 
+time="2020-07-06T19:54:55.114361045Z" level=info msg=serving... address="/var/run/docker/containerd/containerd-debug.sock" 
+time="2020-07-06T19:54:55.114520830Z" level=info msg=serving... address="/var/run/docker/containerd/containerd.sock" 
+time="2020-07-06T19:54:55.114584321Z" level=info msg="containerd successfully booted in 0.590740s" 
+time="2020-07-06T19:54:55.130308863Z" level=info msg="parsed scheme: \"unix\"" module=grpc
+time="2020-07-06T19:54:55.130375332Z" level=info msg="scheme \"unix\" not registered, fallback to default scheme" module=grpc
+time="2020-07-06T19:54:55.130413661Z" level=info msg="ccResolverWrapper: sending update to cc: {[{unix:///var/run/docker/containerd/containerd.sock 0  <nil>}] <nil>}" module=grpc
+time="2020-07-06T19:54:55.130430569Z" level=info msg="ClientConn switching balancer to \"pick_first\"" module=grpc
+time="2020-07-06T19:54:55.132597268Z" level=info msg="parsed scheme: \"unix\"" module=grpc
+time="2020-07-06T19:54:55.132627173Z" level=info msg="scheme \"unix\" not registered, fallback to default scheme" module=grpc
+time="2020-07-06T19:54:55.132660425Z" level=info msg="ccResolverWrapper: sending update to cc: {[{unix:///var/run/docker/containerd/containerd.sock 0  <nil>}] <nil>}" module=grpc
+time="2020-07-06T19:54:55.132672011Z" level=info msg="ClientConn switching balancer to \"pick_first\"" module=grpc
+time="2020-07-06T19:54:55.176300041Z" level=info msg="Loading containers: start."
+time="2020-07-06T19:54:55.494127423Z" level=info msg="Loading containers: done."
+time="2020-07-06T19:54:55.531344926Z" level=info msg="Docker daemon" commit=afacb8b7f0 graphdriver(s)=overlay2 version=19.03.8
+time="2020-07-06T19:54:55.531713303Z" level=info msg="Daemon has completed initialization"
+time="2020-07-06T19:54:55.565535457Z" level=info msg="API listen on /var/run/docker.sock"
+kind create cluster --config ../resources/kind_config.yaml
+Creating cluster "kind" ...
+ • Ensuring node image (kindest/node:v1.16.3) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.16.3) 🖼
+ • Preparing nodes 📦  ...
+time="2020-07-06T19:55:36.830057438Z" level=info msg="shim containerd-shim started" address="/containerd-shim/moby/662957ea3cc306a103379c27e819709be305807a98af75b4df3a8d5eb699dd8d/shim.sock" debug=false pid=410 
+time="2020-07-06T19:55:36.833291586Z" level=info msg="shim containerd-shim started" address="/containerd-shim/moby/578fce7ddaa572675f17e27938eb95064fa08cae3637306bb3db08dba9532a47/shim.sock" debug=false pid=414 
+ ✓ Preparing nodes 📦
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✗ Starting control-plane 🕹️
+time="2020-07-06T19:57:38.560173911Z" level=info msg="shim reaped" id=662957ea3cc306a103379c27e819709be305807a98af75b4df3a8d5eb699dd8d 
+time="2020-07-06T19:57:38.570665888Z" level=info msg="ignoring event" module=libcontainerd namespace=moby topic=/tasks/delete type="*events.TaskDelete"
+time="2020-07-06T19:57:38.597091080Z" level=info msg="shim reaped" id=578fce7ddaa572675f17e27938eb95064fa08cae3637306bb3db08dba9532a47 
+time="2020-07-06T19:57:38.607397143Z" level=info msg="ignoring event" module=libcontainerd namespace=moby topic=/tasks/delete type="*events.TaskDelete"
+ERROR: failed to create cluster: failed to init node with kubeadm: command "docker exec --privileged kind-control-plane kubeadm init --ignore-preflight-errors=all --config=/kind/kubeadm.conf --skip-token-print --v=6" failed with error: exit status 1
+make: *** [Makefile:8: kind_create_cluster] Error 1
+`kind get kubeconfig-path` is deprecated!
+
+KIND will export and merge kubeconfig like kops, minikube, etc.
+This command is now unnecessary and will be removed in a future release.
+
+For more info see: https://github.com/kubernetes-sigs/kind/issues/1060
+See also the output of `kind create cluster`
+
+Existing kind cluster or failure starting - 2
+kind delete cluster
+Deleting cluster "kind" ...
+Finished tests exiting with value: 0
