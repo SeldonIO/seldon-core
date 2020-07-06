@@ -144,8 +144,8 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 	httpAllowed bool,
 	grpcAllowed bool) ([]*istio.VirtualService, []*istio.DestinationRule, error) {
 
-	istio_gateway := GetEnv(ENV_ISTIO_GATEWAY, "seldon-gateway")
-	istioTLSMode := GetEnv(ENV_ISTIO_TLS_MODE, "")
+	istio_gateway := utils.GetEnv(ENV_ISTIO_GATEWAY, "seldon-gateway")
+	istioTLSMode := utils.GetEnv(ENV_ISTIO_TLS_MODE, "")
 	istioRetriesAnnotation := getAnnotation(mlDep, ANNOTATION_ISTIO_RETRIES, "")
 	istioRetriesTimeoutAnnotation := getAnnotation(mlDep, ANNOTATION_ISTIO_RETRIES_TIMEOUT, "1")
 	istioRetries := 0
@@ -328,7 +328,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 func getEngineHttpPort() (engine_http_port int, err error) {
 	// Get engine http port from environment or use default
 	engine_http_port = DEFAULT_ENGINE_CONTAINER_PORT
-	var env_engine_http_port = GetEnv(ENV_DEFAULT_ENGINE_SERVER_PORT, "")
+	var env_engine_http_port = utils.GetEnv(ENV_DEFAULT_ENGINE_SERVER_PORT, "")
 	if env_engine_http_port != "" {
 		engine_http_port, err = strconv.Atoi(env_engine_http_port)
 		if err != nil {
@@ -341,7 +341,7 @@ func getEngineHttpPort() (engine_http_port int, err error) {
 func getEngineGrpcPort() (engine_grpc_port int, err error) {
 	// Get engine grpc port from environment or use default
 	engine_grpc_port = DEFAULT_ENGINE_GRPC_PORT
-	var env_engine_grpc_port = GetEnv(ENV_DEFAULT_ENGINE_SERVER_GRPC_PORT, "")
+	var env_engine_grpc_port = utils.GetEnv(ENV_DEFAULT_ENGINE_SERVER_GRPC_PORT, "")
 	if env_engine_grpc_port != "" {
 		engine_grpc_port, err = strconv.Atoi(env_engine_grpc_port)
 		if err != nil {
@@ -592,7 +592,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 	}
 
 	//TODO Fixme - not changed to handle per predictor scenario
-	if GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
+	if utils.GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
 		vsvcs, dstRule, err := createIstioResources(mlDep, seldonId, namespace, externalPorts, httpAllowed, grpcAllowed)
 		if err != nil {
 			return nil, err
@@ -644,7 +644,7 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 		}
 	}
 
-	if GetEnv("AMBASSADOR_ENABLED", "false") == "true" {
+	if utils.GetEnv("AMBASSADOR_ENABLED", "false") == "true" {
 		psvc.Annotations = make(map[string]string)
 		//Create top level Service
 		ambassadorConfig, err := getAmbassadorConfigs(mlDep, p, pSvcName, engine_http_port, engine_grpc_port, isExplainer)
@@ -778,7 +778,7 @@ func createContainerService(deploy *appsv1.Deployment,
 	}...)
 
 	//Add Metric Env Var
-	predictiveUnitMetricsPortName := GetEnv(machinelearningv1.ENV_PREDICTIVE_UNIT_METRICS_PORT_NAME, constants.DefaultMetricsPortName)
+	predictiveUnitMetricsPortName := utils.GetEnv(machinelearningv1.ENV_PREDICTIVE_UNIT_METRICS_PORT_NAME, constants.DefaultMetricsPortName)
 	metricPort := getPort(predictiveUnitMetricsPortName, con.Ports)
 	if metricPort != nil {
 		con.Env = append(con.Env, []corev1.EnvVar{
@@ -1434,7 +1434,7 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 	}
 
 	// Check we should reconcile this by matching controller-id
-	controllerId := GetEnv(ENV_CONTROLLER_ID, "")
+	controllerId := utils.GetEnv(ENV_CONTROLLER_ID, "")
 	desiredControllerId := instance.Labels[LABEL_CONTROLLER_ID]
 	if desiredControllerId != controllerId {
 		log.Info("Skipping reconcile of deployment.", "Our controller ID form Env", controllerId, " desired controller ID from label", desiredControllerId)
@@ -1588,7 +1588,7 @@ func (r *SeldonDeploymentReconciler) SetupWithManager(mgr ctrl.Manager, name str
 		return err
 	}
 
-	if GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
+	if utils.GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
 		if err := mgr.GetFieldIndexer().IndexField(&istio.VirtualService{}, ownerKey, func(rawObj runtime.Object) []string {
 			// grab the deployment object, extract the owner...
 			vsvc := rawObj.(*istio.VirtualService)

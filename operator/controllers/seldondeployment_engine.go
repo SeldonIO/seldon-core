@@ -24,6 +24,7 @@ import (
 
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
+	"github.com/seldonio/seldon-core/operator/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -58,7 +59,7 @@ var (
 	envExecutorUser         = os.Getenv(ENV_EXECUTOR_USER)
 	envUseExecutor          = os.Getenv(ENV_USE_EXECUTOR)
 
-	executorMetricsPortName = GetEnv(ENV_EXECUTOR_METRICS_PORT_NAME, constants.DefaultMetricsPortName)
+	executorMetricsPortName = utils.GetEnv(ENV_EXECUTOR_METRICS_PORT_NAME, constants.DefaultMetricsPortName)
 )
 
 func addEngineToDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, engine_http_port int, engine_grpc_port int, pSvcName string, deploy *appsv1.Deployment) error {
@@ -123,7 +124,7 @@ func addEngineToDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machine
 func getExecutorHttpPort() (engine_http_port int, err error) {
 	// Get engine http port from environment or use default
 	engine_http_port = DEFAULT_EXECUTOR_CONTAINER_PORT
-	var env_engine_http_port = GetEnv(ENV_DEFAULT_EXECUTOR_SERVER_PORT, "")
+	var env_engine_http_port = utils.GetEnv(ENV_DEFAULT_EXECUTOR_SERVER_PORT, "")
 	if env_engine_http_port != "" {
 		engine_http_port, err = strconv.Atoi(env_engine_http_port)
 		if err != nil {
@@ -142,9 +143,9 @@ func isExecutorEnabled(mlDep *machinelearningv1.SeldonDeployment) bool {
 func getPrometheusPath(mlDep *machinelearningv1.SeldonDeployment) string {
 	prometheusPath := "/prometheus"
 	if isExecutorEnabled(mlDep) {
-		prometheusPath = GetEnv(ENV_EXECUTOR_PROMETHEUS_PATH, prometheusPath)
+		prometheusPath = utils.GetEnv(ENV_EXECUTOR_PROMETHEUS_PATH, prometheusPath)
 	} else {
-		prometheusPath = GetEnv(ENV_ENGINE_PROMETHEUS_PATH, prometheusPath)
+		prometheusPath = utils.GetEnv(ENV_ENGINE_PROMETHEUS_PATH, prometheusPath)
 	}
 	return prometheusPath
 }
@@ -216,7 +217,7 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 			"--protocol", string(protocol),
 			"--prometheus_path", getPrometheusPath(mlDep),
 		},
-		ImagePullPolicy:          corev1.PullPolicy(GetEnv("EXECUTOR_CONTAINER_IMAGE_PULL_POLICY", "IfNotPresent")),
+		ImagePullPolicy:          corev1.PullPolicy(utils.GetEnv("EXECUTOR_CONTAINER_IMAGE_PULL_POLICY", "IfNotPresent")),
 		TerminationMessagePath:   "/dev/termination-log",
 		TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 		VolumeMounts: []corev1.VolumeMount{
@@ -227,7 +228,7 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 		},
 		Env: []corev1.EnvVar{
 			{Name: "ENGINE_PREDICTOR", Value: predictorB64},
-			{Name: "REQUEST_LOGGER_DEFAULT_ENDPOINT", Value: GetEnv("EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT", "http://default-broker")},
+			{Name: "REQUEST_LOGGER_DEFAULT_ENDPOINT", Value: utils.GetEnv("EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT", "http://default-broker")},
 		},
 		Ports: []corev1.ContainerPort{
 			{ContainerPort: int32(port), Protocol: corev1.ProtocolTCP},
@@ -262,7 +263,7 @@ func createEngineContainerSpec(mlDep *machinelearningv1.SeldonDeployment, p *mac
 	return &corev1.Container{
 		Name:                     EngineContainerName,
 		Image:                    engineImage,
-		ImagePullPolicy:          corev1.PullPolicy(GetEnv("ENGINE_CONTAINER_IMAGE_PULL_POLICY", "IfNotPresent")),
+		ImagePullPolicy:          corev1.PullPolicy(utils.GetEnv("ENGINE_CONTAINER_IMAGE_PULL_POLICY", "IfNotPresent")),
 		TerminationMessagePath:   "/dev/termination-log",
 		TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 		VolumeMounts: []corev1.VolumeMount{
@@ -383,7 +384,7 @@ func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machine
 	if _, ok := svcOrchEnvMap["SELDON_LOG_MESSAGES_EXTERNALLY"]; ok {
 		//this env var is set already so no need to set a default
 	} else {
-		c.Env = append(c.Env, corev1.EnvVar{Name: "SELDON_LOG_MESSAGES_EXTERNALLY", Value: GetEnv("ENGINE_LOG_MESSAGES_EXTERNALLY", "false")})
+		c.Env = append(c.Env, corev1.EnvVar{Name: "SELDON_LOG_MESSAGES_EXTERNALLY", Value: utils.GetEnv("ENGINE_LOG_MESSAGES_EXTERNALLY", "false")})
 	}
 	return c, nil
 }

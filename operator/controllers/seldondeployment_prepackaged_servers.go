@@ -34,7 +34,7 @@ const (
 )
 
 var (
-	PredictiveUnitDefaultEnvSecretRefName = GetEnv(ENV_PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME, "")
+	PredictiveUnitDefaultEnvSecretRefName = utils.GetEnv(ENV_PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME, "")
 )
 
 type PrePackedInitialiser struct {
