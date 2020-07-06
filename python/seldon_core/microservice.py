@@ -227,7 +227,7 @@ def main():
         type=str,
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
         default=DEFAULT_LOG_LEVEL,
-        help="Log level of the inference server",
+        help="Log level of the inference server.",
     )
     parser.add_argument(
         "--debug",
