@@ -170,7 +170,7 @@ func runGrpcServer(lis net.Listener, logger logr.Logger, predictor *v1.Predictor
 	}
 }
 
-func setupLogger(debug bool) {
+func setupLogger() {
 	level := zap.InfoLevel
 	switch *logLevel {
 	case "DEBUG":
@@ -189,7 +189,7 @@ func setupLogger(debug bool) {
 	atomicLevel := zap.NewAtomicLevelAt(level)
 
 	logger := zapf.New(
-		zapf.UseDevMode(debug),
+		zapf.UseDevMode(*debug),
 		zapf.Level(&atomicLevel),
 	)
 
@@ -220,7 +220,7 @@ func main() {
 		log.Fatal("Failed to create server url from", *hostname, *port)
 	}
 
-	setupLogger(*debug)
+	setupLogger()
 	logger := logf.Log.WithName("entrypoint")
 
 	var predictor *v1.PredictorSpec
