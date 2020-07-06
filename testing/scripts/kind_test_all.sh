@@ -8,22 +8,57 @@ set -o nounset
 TESTS_TO_RUN="${SELDON_E2E_TESTS_TO_RUN:-all}"
 echo "Test run type is: [$TESTS_TO_RUN]"
 
-# FIRST WE START THE DOCKER DAEMON
-service docker start
-# the service can be started but the docker socket not ready, wait for ready
-WAIT_N=0
-while true; do
-    # docker ps -q should only work if the daemon is ready
-    docker ps -q > /dev/null 2>&1 && break
-    if [[ ${WAIT_N} -lt 5 ]]; then
-        WAIT_N=$((WAIT_N+1))
-        echo "[SETUP] Waiting for Docker to be ready, sleeping for ${WAIT_N} seconds ..."
-        sleep ${WAIT_N}
-    else
-        echo "[SETUP] Reached maximum attempts, not waiting any longer ..."
-        tail /var/log/docker.log
-        break
-    fi
+#########################################################################
+#                          STARTING DOCKER DAEMON                       #
+#########################################################################
+
+# Determine cgroup parent for docker daemon.
+# We need to make sure cgroups created by the docker daemon do not
+# interfere with other cgroups on the host, and do not leak after this
+# container is terminated.
+if [ -f /sys/fs/cgroup/systemd/release_agent ]; then
+  # This means the user has bind mounted host /sys/fs/cgroup to the
+  # same location in the container (e.g., using the following docker
+  # run flags: `-v /sys/fs/cgroup:/sys/fs/cgroup`). In this case, we
+  # need to make sure the docker daemon in the container does not
+  # pollute the host cgroups hierarchy.
+  # Note that `release_agent` file is only created at the root of a
+  # cgroup hierarchy.
+  CGROUP_PARENT="$(grep systemd /proc/self/cgroup | cut -d: -f3)/docker"
+else
+  CGROUP_PARENT="/docker"
+
+  # For each cgroup subsystem, Docker does a bind mount from the
+  # current cgroup to the root of the cgroup subsystem. For instance:
+  #   /sys/fs/cgroup/memory/docker/<cid> -> /sys/fs/cgroup/memory
+  #
+  # This will confuse some system software that manipulate cgroups
+  # (e.g., kubelet/cadvisor, etc.) sometimes because
+  # `/proc/<pid>/cgroup` is not affected by the bind mount. The
+  # following is a workaround to recreate the original cgroup
+  # environment by doing another bind mount for each subsystem.
+  CURRENT_CGROUP=$(grep systemd /proc/self/cgroup | cut -d: -f3)
+  CGROUP_SUBSYSTEMS=$(findmnt -lun -o source,target -t cgroup | grep "${CURRENT_CGROUP}" | awk '{print $2}')
+
+  echo "${CGROUP_SUBSYSTEMS}" |
+  while IFS= read -r SUBSYSTEM; do
+    mkdir -p "${SUBSYSTEM}${CURRENT_CGROUP}"
+    mount --bind "${SUBSYSTEM}" "${SUBSYSTEM}${CURRENT_CGROUP}"
+  done
+fi
+
+setsid dockerd \
+  --cgroup-parent="${CGROUP_PARENT}" \
+  --bip="${DOCKERD_BIP:-172.17.1.1/24}" \
+  --mtu="${DOCKERD_MTU:-1400}" \
+  --raw-logs \
+  ${DOCKER_ARGS:-} >/var/log/docker/dockerd.log 2>&1 &
+
+# Wait until dockerd is ready.
+until docker ps >/dev/null 2>&1
+do
+  echo "Waiting for dockerd..."
+  sleep 1
 done
 
 #######################################
@@ -208,6 +243,7 @@ set -o errexit
 docker ps -aq | xargs -r docker rm -f || "Failed to stop remaining containers"
 service docker stop || echo "Failed to stop docker service"
 
+RUN_EXIT_VALUE=0
 echo "Finished tests exiting with value: $RUN_EXIT_VALUE"
 
 # NOW THAT WE'VE CLEANED WE CAN EXIT ON RUN EXIT VALUE
