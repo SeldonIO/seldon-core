@@ -1,0 +1,546 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-qxz6d-22[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-2kh7x[0m
+{"level":"info","ts":1594068008.331283,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1594068008.331915,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-qxz6d-22[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-dvpsg[0m
+{"level":"info","ts":1594068009.3700733,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594068009.3715627,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-qxz6d-22[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-qxz6d-22[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-7t7cr[0m
+{"level":"info","ts":1594068015.5324168,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594068015.5341325,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-qxz6d-22[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-2081-in-qxz6d-jfkzz[0m
+{"level":"info","ts":1594068015.7754836,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1594068020.26286,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-qxz6d-22[0m stage [32mpr-build-comment[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-qxz6d-22[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:96cf61bcb999e92551df26df00fcef056746af23,2081:ba81f9ee0744a614bb9122ce627ff73593de788e
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch origin --unshallow ba81f9ee0744a614bb9122ce627ff73593de788e: 96cf61bcb999e92551df26df00fcef056746af23:
+DEBUG: ran git fetch --unshallow origin ba81f9ee0744a614bb9122ce627ff73593de788e: 96cf61bcb999e92551df26df00fcef056746af23: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard 96cf61bcb999e92551df26df00fcef056746af23
+DEBUG: ran git reset --hard 96cf61bcb999e92551df26df00fcef056746af23 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git merge ba81f9ee0744a614bb9122ce627ff73593de788e
+DEBUG: ran git merge ba81f9ee0744a614bb9122ce627ff73593de788e in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git log --format=%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%s%n%b%x1e 96cf61bcb999e92551df26df00fcef056746af23..HEAD
+Merged SHA b3ccea1c3de4a0654d8150e342a4bfe9de56f219 with commit message 'Merge commit 'ba81f9ee0744a614bb9122ce627ff73593de788e'' into base branch master
+Merged SHA ba81f9ee0744a614bb9122ce627ff73593de788e with commit message 'Added sleep' into base branch master
+Merged SHA dd4a70deeebe06641309632b354959df133f6fcc with commit message 'Updated kind cluster config to reflect cgroup-root' into base branch master
+Merged SHA 51a29851f86364976b780888d995e4b9ba74307d with commit message 'Updated tests to use dockerd in different cgroup' into base branch master
+Merged SHA b184f4d0b5c77598e9f7c96064daf5a86fa18de7 with commit message 'Removing logfile' into base branch master
+Merged SHA e31b19139e6a0071bc8945c620713e0600cdc22d with commit message 'Testing with custom cgroup' into base branch master
+Merged SHA 46066ae2fdd3d980f277c9cffe67b72db6f28bb1 with commit message 'Added integration tests comments to test container shutdown' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-qxz6d-22[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=2081
++ BUILD_NUMBER=22
++ PIPELINE_CONTEXT=integration
+++ cat
++++ date
++ COMMENT_MSG='Mon Jul  6 20:40:27 UTC 2020
+The logs for [integration] [22] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2081/22.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2081 --build=22'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=2081 '--comment=Mon Jul  6 20:40:27 UTC 2020
+The logs for [integration] [22] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2081/22.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2081 --build=22'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-qxz6d-22[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-2081-in-qxz6d-88vkb[0m
+{"level":"info","ts":1594068029.693423,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594068029.697159,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-qxz6d-22[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-2081-in-qxz6d-4bf54[0m
+{"level":"info","ts":1594068029.9384308,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594068030.265463,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-qxz6d-22[0m stage [32mend-to-end[0m and container [32mstep-credential-initializer-zpswf[0m
+{"level":"info","ts":1594068032.8925385,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1594068032.8929718,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-qxz6d-22[0m stage [32mend-to-end[0m and container [32mstep-working-dir-initializer-z9cpf[0m
+{"level":"info","ts":1594068033.2408466,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594068033.2420657,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-qxz6d-22[0m stage [32mend-to-end[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-qxz6d-22[0m stage [32mend-to-end[0m and container [32mstep-create-dir-workspace-mmk5k[0m
+{"level":"info","ts":1594068040.4057522,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594068040.4074574,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-qxz6d-22[0m stage [32mend-to-end[0m and container [32mstep-source-copy-workspace-fzq6n[0m
+{"level":"info","ts":1594068040.621332,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594068040.9339445,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-qxz6d-22[0m stage [32mend-to-end[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2081-in-qxz6d-22[0m stage [32mend-to-end[0m and container [32mstep-test-end-to-end[0m
+Test run type is: [base]
+kind create cluster --config ../resources/kind_config.yaml
+Creating cluster "kind" ...
+ • Ensuring node image (kindest/node:v1.18.2) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.18.2) 🖼
+ • Preparing nodes 📦   ...
+ ✓ Preparing nodes 📦 
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✗ Starting control-plane 🕹️
+ERROR: failed to create cluster: failed to init node with kubeadm: command "docker exec --privileged kind-control-plane kubeadm init --ignore-preflight-errors=all --config=/kind/kubeadm.conf --skip-token-print --v=6" failed with error: exit status 1
+
+Command Output: I0706 21:40:52.203390     161 initconfiguration.go:200] loading configuration from "/kind/kubeadm.conf"
+[config] WARNING: Ignored YAML document with GroupVersionKind kubeadm.k8s.io/v1beta2, Kind=JoinConfiguration
+I0706 21:40:52.209125     161 interface.go:400] Looking for default routes with IPv4 addresses
+I0706 21:40:52.209146     161 interface.go:405] Default route transits interface "eth0"
+I0706 21:40:52.209281     161 interface.go:208] Interface eth0 is up
+I0706 21:40:52.209371     161 interface.go:256] Interface "eth0" has 3 addresses :[172.18.0.2/16 fc00:f853:ccd:e793::2/64 fe80::42:acff:fe12:2/64].
+I0706 21:40:52.209435     161 interface.go:223] Checking addr  172.18.0.2/16.
+I0706 21:40:52.209461     161 interface.go:230] IP found 172.18.0.2
+I0706 21:40:52.209504     161 interface.go:262] Found valid IPv4 address 172.18.0.2 for interface "eth0".
+I0706 21:40:52.209512     161 interface.go:411] Found active IP 172.18.0.2 
+W0706 21:40:52.213029     161 configset.go:202] WARNING: kubeadm cannot validate component configs for API groups [kubelet.config.k8s.io kubeproxy.config.k8s.io]
+[init] Using Kubernetes version: v1.18.2
+[preflight] Running pre-flight checks
+I0706 21:40:52.214422     161 checks.go:577] validating Kubernetes and kubeadm version
+I0706 21:40:52.214668     161 checks.go:166] validating if the firewall is enabled and active
+I0706 21:40:52.226784     161 checks.go:201] validating availability of port 6443
+I0706 21:40:52.227497     161 checks.go:201] validating availability of port 10259
+I0706 21:40:52.227805     161 checks.go:201] validating availability of port 10257
+I0706 21:40:52.228020     161 checks.go:286] validating the existence of file /etc/kubernetes/manifests/kube-apiserver.yaml
+I0706 21:40:52.228221     161 checks.go:286] validating the existence of file /etc/kubernetes/manifests/kube-controller-manager.yaml
+I0706 21:40:52.228379     161 checks.go:286] validating the existence of file /etc/kubernetes/manifests/kube-scheduler.yaml
+I0706 21:40:52.228573     161 checks.go:286] validating the existence of file /etc/kubernetes/manifests/etcd.yaml
+I0706 21:40:52.228765     161 checks.go:432] validating if the connectivity type is via proxy or direct
+I0706 21:40:52.229075     161 checks.go:471] validating http connectivity to first IP address in the CIDR
+I0706 21:40:52.229309     161 checks.go:471] validating http connectivity to first IP address in the CIDR
+I0706 21:40:52.229506     161 checks.go:102] validating the container runtime
+I0706 21:40:52.249836     161 checks.go:376] validating the presence of executable crictl
+I0706 21:40:52.250245     161 checks.go:335] validating the contents of file /proc/sys/net/bridge/bridge-nf-call-iptables
+	[WARNING FileContent--proc-sys-net-bridge-bridge-nf-call-iptables]: /proc/sys/net/bridge/bridge-nf-call-iptables does not exist
+I0706 21:40:52.250712     161 checks.go:335] validating the contents of file /proc/sys/net/ipv4/ip_forward
+I0706 21:40:52.250994     161 checks.go:649] validating whether swap is enabled or not
+I0706 21:40:52.251238     161 checks.go:376] validating the presence of executable conntrack
+I0706 21:40:52.251490     161 checks.go:376] validating the presence of executable ip
+I0706 21:40:52.251701     161 checks.go:376] validating the presence of executable iptables
+I0706 21:40:52.251918     161 checks.go:376] validating the presence of executable mount
+I0706 21:40:52.252094     161 checks.go:376] validating the presence of executable nsenter
+I0706 21:40:52.252334     161 checks.go:376] validating the presence of executable ebtables
+I0706 21:40:52.252574     161 checks.go:376] validating the presence of executable ethtool
+I0706 21:40:52.252773     161 checks.go:376] validating the presence of executable socat
+I0706 21:40:52.252995     161 checks.go:376] validating the presence of executable tc
+I0706 21:40:52.253202     161 checks.go:376] validating the presence of executable touch
+I0706 21:40:52.253420     161 checks.go:520] running all checks
+I0706 21:40:52.259267     161 checks.go:406] checking whether the given node name is reachable using net.LookupHost
+I0706 21:40:52.269409     161 checks.go:618] validating kubelet version
+I0706 21:40:52.368817     161 checks.go:128] validating if the service is enabled and active
+I0706 21:40:52.382173     161 checks.go:201] validating availability of port 10250
+I0706 21:40:52.382857     161 checks.go:201] validating availability of port 2379
+I0706 21:40:52.383132     161 checks.go:201] validating availability of port 2380
+I0706 21:40:52.383360     161 checks.go:249] validating the existence and emptiness of directory /var/lib/etcd
+[preflight] Pulling images required for setting up a Kubernetes cluster
+[preflight] This might take a minute or two, depending on the speed of your internet connection
+[preflight] You can also perform this action in beforehand using 'kubeadm config images pull'
+I0706 21:40:52.397385     161 checks.go:838] image exists: k8s.gcr.io/kube-apiserver:v1.18.2
+I0706 21:40:52.408655     161 checks.go:838] image exists: k8s.gcr.io/kube-controller-manager:v1.18.2
+I0706 21:40:52.421507     161 checks.go:838] image exists: k8s.gcr.io/kube-scheduler:v1.18.2
+I0706 21:40:52.438940     161 checks.go:838] image exists: k8s.gcr.io/kube-proxy:v1.18.2
+I0706 21:40:52.450894     161 checks.go:838] image exists: k8s.gcr.io/pause:3.2
+I0706 21:40:52.462360     161 checks.go:838] image exists: k8s.gcr.io/etcd:3.4.3-0
+I0706 21:40:52.476803     161 checks.go:838] image exists: k8s.gcr.io/coredns:1.6.7
+I0706 21:40:52.477154     161 kubelet.go:64] Stopping the kubelet
+[kubelet-start] Writing kubelet environment file with flags to file "/var/lib/kubelet/kubeadm-flags.env"
+[kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
+[kubelet-start] Starting the kubelet
+I0706 21:40:52.589259     161 certs.go:103] creating a new certificate authority for ca
+[certs] Using certificateDir folder "/etc/kubernetes/pki"
+[certs] Generating "ca" certificate and key
+[certs] Generating "apiserver" certificate and key
+[certs] apiserver serving cert is signed for DNS names [kind-control-plane kubernetes kubernetes.default kubernetes.default.svc kubernetes.default.svc.cluster.local kind-control-plane localhost] and IPs [10.246.0.1 172.18.0.2 127.0.0.1]
+[certs] Generating "apiserver-kubelet-client" certificate and key
+I0706 21:40:53.115665     161 certs.go:103] creating a new certificate authority for front-proxy-ca
+[certs] Generating "front-proxy-ca" certificate and key
+[certs] Generating "front-proxy-client" certificate and key
+I0706 21:40:53.812749     161 certs.go:103] creating a new certificate authority for etcd-ca
+[certs] Generating "etcd/ca" certificate and key
+[certs] Generating "etcd/server" certificate and key
+[certs] etcd/server serving cert is signed for DNS names [kind-control-plane localhost] and IPs [172.18.0.2 127.0.0.1 ::1]
+[certs] Generating "etcd/peer" certificate and key
+[certs] etcd/peer serving cert is signed for DNS names [kind-control-plane localhost] and IPs [172.18.0.2 127.0.0.1 ::1]
+[certs] Generating "etcd/healthcheck-client" certificate and key
+[certs] Generating "apiserver-etcd-client" certificate and key
+I0706 21:40:54.698988     161 certs.go:69] creating new public/private key files for signing service account users
+[certs] Generating "sa" key and public key
+[kubeconfig] Using kubeconfig folder "/etc/kubernetes"
+I0706 21:40:54.840153     161 kubeconfig.go:79] creating kubeconfig file for *****.conf
+[kubeconfig] Writing "*****.conf" kubeconfig file
+I0706 21:40:54.895889     161 kubeconfig.go:79] creating kubeconfig file for kubelet.conf
+[kubeconfig] Writing "kubelet.conf" kubeconfig file
+I0706 21:40:55.092086     161 kubeconfig.go:79] creating kubeconfig file for controller-manager.conf
+[kubeconfig] Writing "controller-manager.conf" kubeconfig file
+I0706 21:40:55.344369     161 kubeconfig.go:79] creating kubeconfig file for scheduler.conf
+[kubeconfig] Writing "scheduler.conf" kubeconfig file
+[control-plane] Using manifest folder "/etc/kubernetes/manifests"
+[control-plane] Creating static Pod manifest for "kube-apiserver"
+I0706 21:40:55.469256     161 manifests.go:91] [control-plane] getting StaticPodSpecs
+I0706 21:40:55.470086     161 manifests.go:104] [control-plane] adding volume "ca-certs" for component "kube-apiserver"
+I0706 21:40:55.470331     161 manifests.go:104] [control-plane] adding volume "etc-ca-certificates" for component "kube-apiserver"
+I0706 21:40:55.470520     161 manifests.go:104] [control-plane] adding volume "k8s-certs" for component "kube-apiserver"
+I0706 21:40:55.470707     161 manifests.go:104] [control-plane] adding volume "usr-local-share-ca-certificates" for component "kube-apiserver"
+I0706 21:40:55.470883     161 manifests.go:104] [control-plane] adding volume "usr-share-ca-certificates" for component "kube-apiserver"
+I0706 21:40:55.477315     161 manifests.go:121] [control-plane] wrote static Pod manifest for component "kube-apiserver" to "/etc/kubernetes/manifests/kube-apiserver.yaml"
+[control-plane] Creating static Pod manifest for "kube-controller-manager"
+I0706 21:40:55.477831     161 manifests.go:91] [control-plane] getting StaticPodSpecs
+W0706 21:40:55.478117     161 manifests.go:225] the default kube-apiserver authorization-mode is "Node,RBAC"; using "Node,RBAC"
+I0706 21:40:55.478600     161 manifests.go:104] [control-plane] adding volume "ca-certs" for component "kube-controller-manager"
+I0706 21:40:55.478797     161 manifests.go:104] [control-plane] adding volume "etc-ca-certificates" for component "kube-controller-manager"
+I0706 21:40:55.478974     161 manifests.go:104] [control-plane] adding volume "flexvolume-dir" for component "kube-controller-manager"
+I0706 21:40:55.479153     161 manifests.go:104] [control-plane] adding volume "k8s-certs" for component "kube-controller-manager"
+I0706 21:40:55.479318     161 manifests.go:104] [control-plane] adding volume "kubeconfig" for component "kube-controller-manager"
+I0706 21:40:55.479498     161 manifests.go:104] [control-plane] adding volume "usr-local-share-ca-certificates" for component "kube-controller-manager"
+I0706 21:40:55.479603     161 manifests.go:104] [control-plane] adding volume "usr-share-ca-certificates" for component "kube-controller-manager"
+I0706 21:40:55.492010     161 manifests.go:121] [control-plane] wrote static Pod manifest for component "kube-controller-manager" to "/etc/kubernetes/manifests/kube-controller-manager.yaml"
+[control-plane] Creating static Pod manifest for "kube-scheduler"
+I0706 21:40:55.492336     161 manifests.go:91] [control-plane] getting StaticPodSpecs
+W0706 21:40:55.492587     161 manifests.go:225] the default kube-apiserver authorization-mode is "Node,RBAC"; using "Node,RBAC"
+I0706 21:40:55.493120     161 manifests.go:104] [control-plane] adding volume "kubeconfig" for component "kube-scheduler"
+I0706 21:40:55.495102     161 manifests.go:121] [control-plane] wrote static Pod manifest for component "kube-scheduler" to "/etc/kubernetes/manifests/kube-scheduler.yaml"
+[etcd] Creating static Pod manifest for local etcd in "/etc/kubernetes/manifests"
+I0706 21:40:55.497101     161 local.go:72] [etcd] wrote Static Pod manifest for a local etcd member to "/etc/kubernetes/manifests/etcd.yaml"
+I0706 21:40:55.497337     161 waitcontrolplane.go:87] [wait-control-plane] Waiting for the API server to be healthy
+I0706 21:40:55.498482     161 loader.go:375] Config loaded from file:  /etc/kubernetes/*****.conf
+[wait-control-plane] Waiting for the kubelet to boot up the control plane as static Pods from directory "/etc/kubernetes/manifests". This can take up to 4m0s
+I0706 21:40:55.513280     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 13 milliseconds
+I0706 21:40:56.024065     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:40:56.521911     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 7 milliseconds
+I0706 21:40:57.023032     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:40:57.522424     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:40:58.024345     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 10 milliseconds
+I0706 21:40:58.525498     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 11 milliseconds
+I0706 21:40:59.024540     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 10 milliseconds
+I0706 21:40:59.522855     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:00.029016     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 14 milliseconds
+I0706 21:41:00.524265     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 10 milliseconds
+I0706 21:41:01.024374     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 10 milliseconds
+I0706 21:41:01.523883     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:41:02.023033     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:41:02.521950     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 7 milliseconds
+I0706 21:41:03.022937     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:03.521666     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 7 milliseconds
+I0706 21:41:04.022800     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:04.521744     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 7 milliseconds
+I0706 21:41:05.025463     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 11 milliseconds
+I0706 21:41:05.522042     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:06.022387     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:06.522335     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:07.023216     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:41:07.522702     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:08.023123     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:08.522783     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:09.023447     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:41:09.522662     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:10.025026     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 11 milliseconds
+I0706 21:41:10.522308     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:11.022801     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:11.522813     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:12.023329     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:41:12.522748     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:13.022919     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:13.522715     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:14.022952     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:41:14.522552     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:15.025354     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 11 milliseconds
+I0706 21:41:15.523049     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:41:16.022961     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:16.522380     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:17.022416     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:17.522675     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:18.022974     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:41:18.522250     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:19.025051     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 11 milliseconds
+I0706 21:41:19.522373     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:20.026203     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 12 milliseconds
+I0706 21:41:20.522817     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:21.023148     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:21.521780     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 7 milliseconds
+I0706 21:41:22.022438     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:22.522289     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:23.022051     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 7 milliseconds
+I0706 21:41:23.522713     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:24.021950     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 7 milliseconds
+I0706 21:41:24.522668     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:25.026413     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 12 milliseconds
+I0706 21:41:25.522493     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:26.022551     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:26.521894     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 7 milliseconds
+I0706 21:41:27.023729     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:41:27.522775     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:28.022920     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:28.523145     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:41:29.021916     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:29.522361     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:30.025529     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 11 milliseconds
+I0706 21:41:30.522131     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:31.022784     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:31.521821     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 7 milliseconds
+I0706 21:41:32.022845     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:32.523043     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:41:33.023057     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:41:33.525987     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 12 milliseconds
+I0706 21:41:34.022886     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:34.522406     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:35.025064     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 11 milliseconds
+[kubelet-check] Initial timeout of 40s passed.
+[kubelet-check] It seems like the kubelet isn't running or healthy.
+[kubelet-check] The HTTP call equal to 'curl -sSL http://localhost:10248/healthz' failed with error: Get http://localhost:10248/healthz: dial tcp [::1]:10248: connect: connection refused.
+I0706 21:41:35.521190     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 7 milliseconds
+I0706 21:41:36.022932     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:41:36.522290     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:37.022785     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:37.523034     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:41:38.023413     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:41:38.522718     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:39.023010     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:41:39.522461     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:40.025317     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 11 milliseconds
+I0706 21:41:40.522858     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+[kubelet-check] It seems like the kubelet isn't running or healthy.
+[kubelet-check] The HTTP call equal to 'curl -sSL http://localhost:10248/healthz' failed with error: Get http://localhost:10248/healthz: dial tcp [::1]:10248: connect: connection refused.
+I0706 21:41:41.022974     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:41.523460     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:41:42.022290     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:42.522635     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:43.024378     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:41:43.523328     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:41:44.022188     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:44.522568     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:45.025337     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 11 milliseconds
+I0706 21:41:45.522485     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:46.023749     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:41:46.522781     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:47.022594     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:47.522890     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:41:48.024560     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 10 milliseconds
+I0706 21:41:48.522286     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:49.022826     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:49.522550     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:50.025778     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 11 milliseconds
+I0706 21:41:50.522399     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+[kubelet-check] It seems like the kubelet isn't running or healthy.
+[kubelet-check] The HTTP call equal to 'curl -sSL http://localhost:10248/healthz' failed with error: Get http://localhost:10248/healthz: dial tcp [::1]:10248: connect: connection refused.
+I0706 21:41:51.022678     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:51.522137     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:52.022857     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:52.522236     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:53.022385     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:53.523403     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:41:54.022536     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:54.522305     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:55.024860     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 10 milliseconds
+I0706 21:41:55.523050     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:41:56.022576     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:56.521733     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 7 milliseconds
+I0706 21:41:57.022646     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:57.522618     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:58.021954     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:41:58.526665     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 12 milliseconds
+I0706 21:41:59.024512     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 10 milliseconds
+I0706 21:41:59.522779     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:00.025718     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 11 milliseconds
+I0706 21:42:00.522561     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:01.023066     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:01.523331     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:02.022228     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:02.521510     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 7 milliseconds
+I0706 21:42:03.022891     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:03.522414     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:04.023910     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:04.523989     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:05.026754     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 12 milliseconds
+I0706 21:42:05.522828     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:06.023307     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:06.523203     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:07.023917     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:07.522681     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:08.023623     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:08.522539     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:09.028048     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 13 milliseconds
+I0706 21:42:09.523391     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:10.024782     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 10 milliseconds
+I0706 21:42:10.524337     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+[kubelet-check] It seems like the kubelet isn't running or healthy.
+[kubelet-check] The HTTP call equal to 'curl -sSL http://localhost:10248/healthz' failed with error: Get http://localhost:10248/healthz: dial tcp [::1]:10248: connect: connection refused.
+I0706 21:42:11.023689     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:11.522763     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:12.022834     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:12.523861     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:13.023194     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:13.522728     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:14.023678     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:14.522353     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:15.025883     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 11 milliseconds
+I0706 21:42:15.522133     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:16.023731     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:16.522326     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:17.023238     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:17.522445     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:18.022745     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:18.524364     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 10 milliseconds
+I0706 21:42:19.022763     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:19.523334     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:20.025722     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 11 milliseconds
+I0706 21:42:20.523722     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:21.024138     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 10 milliseconds
+I0706 21:42:21.522852     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:22.023242     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:22.522965     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:23.024312     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 10 milliseconds
+I0706 21:42:23.523061     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:24.023165     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:24.522891     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:25.026610     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 12 milliseconds
+I0706 21:42:25.523130     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:26.023104     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:26.521999     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:27.022206     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:27.523062     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:28.022602     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:28.522782     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:29.023160     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:29.522747     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:30.026752     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 12 milliseconds
+I0706 21:42:30.524155     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 10 milliseconds
+I0706 21:42:31.023092     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:31.521719     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 7 milliseconds
+I0706 21:42:32.022621     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:32.522638     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:33.022609     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:33.524077     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 10 milliseconds
+I0706 21:42:34.025366     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 11 milliseconds
+I0706 21:42:34.525614     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 11 milliseconds
+I0706 21:42:35.029765     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 14 milliseconds
+I0706 21:42:35.528640     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 14 milliseconds
+I0706 21:42:36.023545     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:36.523154     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:37.024241     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 10 milliseconds
+I0706 21:42:37.524636     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 10 milliseconds
+I0706 21:42:38.024030     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:38.523653     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:39.023676     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:39.523773     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:40.026125     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 11 milliseconds
+I0706 21:42:40.523251     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:41.023565     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:41.523330     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:42.023377     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:42.523150     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:43.023021     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:43.523591     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:44.023190     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:44.523732     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:45.027796     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 13 milliseconds
+I0706 21:42:45.522969     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:46.022949     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:46.522394     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:47.022854     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:47.522485     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:48.023606     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:48.523150     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 9 milliseconds
+I0706 21:42:49.022593     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:49.522655     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+I0706 21:42:50.026325     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 12 milliseconds
+I0706 21:42:50.522073     161 round_trippers.go:443] GET https://kind-control-plane:6443/healthz?timeout=10s  in 8 milliseconds
+[kubelet-check] It seems like the kubelet isn't running or healthy.
+[kubelet-check] The HTTP call equal to 'curl -sSL http://localhost:10248/healthz' failed with error: Get http://localhost:10248/healthz: dial tcp [::1]:10248: connect: connection refused.
+
+	Unfortunately, an error has occurred:
+		timed out waiting for the condition
+
+	This error is likely caused by:
+		- The kubelet is not running
+		- The kubelet is unhealthy due to a misconfiguration of the node in some way (required cgroups disabled)
+
+	If you are on a systemd-powered system, you can try to troubleshoot the error with the following commands:
+		- 'systemctl status kubelet'
+		- 'journalctl -xeu kubelet'
+
+	Additionally, a control plane component may have crashed or exited when started by the container runtime.
+	To troubleshoot, list all containers using your preferred container runtimes CLI.
+
+	Here is one example how you may list all Kubernetes containers running in cri-o/containerd using crictl:
+		- 'crictl --runtime-endpoint /run/containerd/containerd.sock ps -a | grep kube | grep -v pause'
+		Once you have found the failing container, you can inspect its logs with:
+		- 'crictl --runtime-endpoint /run/containerd/containerd.sock logs CONTAINERID'
+
+couldn't initialize a Kubernetes cluster
+k8s.io/kubernetes/cmd/kubeadm/app/cmd/phases/init.runWaitControlPlanePhase
+	/go/src/k8s.io/kubernetes/_output/dockerized/go/src/k8s.io/kubernetes/cmd/kubeadm/app/cmd/phases/init/waitcontrolplane.go:114
+k8s.io/kubernetes/cmd/kubeadm/app/cmd/phases/workflow.(*Runner).Run.func1
+	/go/src/k8s.io/kubernetes/_output/dockerized/go/src/k8s.io/kubernetes/cmd/kubeadm/app/cmd/phases/workflow/runner.go:234
+k8s.io/kubernetes/cmd/kubeadm/app/cmd/phases/workflow.(*Runner).visitAll
+	/go/src/k8s.io/kubernetes/_output/dockerized/go/src/k8s.io/kubernetes/cmd/kubeadm/app/cmd/phases/workflow/runner.go:422
+k8s.io/kubernetes/cmd/kubeadm/app/cmd/phases/workflow.(*Runner).Run
+	/go/src/k8s.io/kubernetes/_output/dockerized/go/src/k8s.io/kubernetes/cmd/kubeadm/app/cmd/phases/workflow/runner.go:207
+k8s.io/kubernetes/cmd/kubeadm/app/cmd.NewCmdInit.func1
+	/go/src/k8s.io/kubernetes/_output/dockerized/go/src/k8s.io/kubernetes/cmd/kubeadm/app/cmd/init.go:147
+k8s.io/kubernetes/vendor/github.com/spf13/cobra.(*Command).execute
+	/go/src/k8s.io/kubernetes/_output/dockerized/go/src/k8s.io/kubernetes/vendor/github.com/spf13/cobra/command.go:826
+k8s.io/kubernetes/vendor/github.com/spf13/cobra.(*Command).ExecuteC
+	/go/src/k8s.io/kubernetes/_output/dockerized/go/src/k8s.io/kubernetes/vendor/github.com/spf13/cobra/command.go:914
+k8s.io/kubernetes/vendor/github.com/spf13/cobra.(*Command).Execute
+	/go/src/k8s.io/kubernetes/_output/dockerized/go/src/k8s.io/kubernetes/vendor/github.com/spf13/cobra/command.go:864
+k8s.io/kubernetes/cmd/kubeadm/app.Run
+	/go/src/k8s.io/kubernetes/_output/dockerized/go/src/k8s.io/kubernetes/cmd/kubeadm/app/kubeadm.go:50
+main.main
+	_output/dockerized/go/src/k8s.io/kubernetes/cmd/kubeadm/kubeadm.go:25
+runtime.main
+	/usr/local/go/src/runtime/proc.go:203
+runtime.goexit
+	/usr/local/go/src/runtime/asm_amd64.s:1357
+error execution phase wait-control-plane
+k8s.io/kubernetes/cmd/kubeadm/app/cmd/phases/workflow.(*Runner).Run.func1
+	/go/src/k8s.io/kubernetes/_output/dockerized/go/src/k8s.io/kubernetes/cmd/kubeadm/app/cmd/phases/workflow/runner.go:235
+k8s.io/kubernetes/cmd/kubeadm/app/cmd/phases/workflow.(*Runner).visitAll
+	/go/src/k8s.io/kubernetes/_output/dockerized/go/src/k8s.io/kubernetes/cmd/kubeadm/app/cmd/phases/workflow/runner.go:422
+k8s.io/kubernetes/cmd/kubeadm/app/cmd/phases/workflow.(*Runner).Run
+	/go/src/k8s.io/kubernetes/_output/dockerized/go/src/k8s.io/kubernetes/cmd/kubeadm/app/cmd/phases/workflow/runner.go:207
+k8s.io/kubernetes/cmd/kubeadm/app/cmd.NewCmdInit.func1
+	/go/src/k8s.io/kubernetes/_output/dockerized/go/src/k8s.io/kubernetes/cmd/kubeadm/app/cmd/init.go:147
+k8s.io/kubernetes/vendor/github.com/spf13/cobra.(*Command).execute
+	/go/src/k8s.io/kubernetes/_output/dockerized/go/src/k8s.io/kubernetes/vendor/github.com/spf13/cobra/command.go:826
+k8s.io/kubernetes/vendor/github.com/spf13/cobra.(*Command).ExecuteC
+	/go/src/k8s.io/kubernetes/_output/dockerized/go/src/k8s.io/kubernetes/vendor/github.com/spf13/cobra/command.go:914
+k8s.io/kubernetes/vendor/github.com/spf13/cobra.(*Command).Execute
+	/go/src/k8s.io/kubernetes/_output/dockerized/go/src/k8s.io/kubernetes/vendor/github.com/spf13/cobra/command.go:864
+k8s.io/kubernetes/cmd/kubeadm/app.Run
+	/go/src/k8s.io/kubernetes/_output/dockerized/go/src/k8s.io/kubernetes/cmd/kubeadm/app/kubeadm.go:50
+main.main
+	_output/dockerized/go/src/k8s.io/kubernetes/cmd/kubeadm/kubeadm.go:25
+runtime.main
+	/usr/local/go/src/runtime/proc.go:203
+runtime.goexit
+	/usr/local/go/src/runtime/asm_amd64.s:1357
+make: *** [Makefile:8: kind_create_cluster] Error 1
+Existing kind cluster or failure starting - 2
+kind delete cluster
+Deleting cluster "kind" ...
+Finished tests exiting with value: 0
