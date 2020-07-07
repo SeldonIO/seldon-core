@@ -31,14 +31,6 @@ pipelineConfig:
               - update_package
               - install_dev
               - test
-          - name: seldon-engine
-            steps:
-            - name: test-engine
-              command: make
-              args:
-              - -C engine
-              - -f Makefile
-              - build_jar
           - name: seldon-operator
             steps:
             - name: test-operator
