@@ -36,8 +36,18 @@ install_helm:
 	kubectl rollout status deploy/tiller-deploy -n kube-system
 
 install_ambassador:
-	helm install stable/ambassador -f integration/ambassador_values.yaml --name ambassador --set crds.keep=false --namespace seldon --set replicaCount=1
-	kubectl rollout status deployment.apps/ambassador --namespace seldon
+	helm repo add datawire https://www.getambassador.io
+	helm repo update
+
+	helm install ambassador \
+		datawire/ambassador \
+		-f integration/ambassador_values.yaml \
+		--set image.repository=quay.io/datawire/ambassador \
+		--set crds.keep=false \
+		--set enableAES=false \
+		--namespace seldon \
+		--set replicaCount=1 \
+		--wait
 
 install_seldon:
 	helm install seldon-core-operator --name seldon-core-operator --repo https://storage.googleapis.com/seldon-charts --namespace seldon

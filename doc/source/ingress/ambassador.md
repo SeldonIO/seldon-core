@@ -8,7 +8,19 @@ You have two options when installing Ambassador:
 
 ### Option 1: Ambassador API Gateway
 
-The [Ambassador API Gateway](https://www.getambassador.io/products/api-gateway/) is open source and provides all the functionality of a traditional ingress controller. Follow the instructions [here]() to install it on your kubernetes cluster. 
+The [Ambassador API Gateway](https://www.getambassador.io/products/api-gateway/) is open source and provides all the functionality of a traditional ingress controller. Follow the instructions [here](https://www.getambassador.io/docs/latest/topics/install/install-ambassador-oss/) to install it on your kubernetes cluster.
+
+Using `helm` the steps can be summarised as
+```bash
+kubectl create namespace ambassador || echo "namespace ambassador exists"
+
+helm repo add datawire https://www.getambassador.io
+helm install ambassador datawire/ambassador \
+  --set image.repository=quay.io/datawire/ambassador \
+  --set enableAES=false \
+  --set crds.keep=false \
+  --namespace ambassador
+```
 
 ### Option 2: Ambassador Edge Stack
 
@@ -28,7 +40,7 @@ For Seldon Core restricted to a namespace, `singleNamespace=true`, the endpoints
 For Seldon Core running cluster wide, `singleNamespace=false`, the endpoints exposed are all namespaced:
 
  * ```http(s)://<ambassadorEndpoint>/seldon/<namespace>/<deploymentName>/api/v1.0/predictions```
- 
+
  Note here that if you chose to install the Ambassador Edge Stack then you will need to use https and the ```<AmbassadorEndpoint>``` referenced above will be the domain name that Ambassador created for you (e.g. ```random-name-1234.edgestack.me```)
 
 
@@ -120,7 +132,7 @@ A worked example for [canary deployments](../examples/ambassador_canary.html) is
 
 ### Shadow Deployments
 
-Shadow deployments allow you to send duplicate requests to a parallel deployment but throw away the response. This allows you to test machine learning models under load and compare the results to the live deployment. 
+Shadow deployments allow you to send duplicate requests to a parallel deployment but throw away the response. This allows you to test machine learning models under load and compare the results to the live deployment.
 
 Simply set the `shadow` boolean in your shadow predictor.
 
@@ -134,11 +146,11 @@ Header based routing allows you to route requests to particular Seldon Deploymen
 
 You simply need to add some annotations to your Seldon Deployment resource.
 
-  * `seldon.io/ambassador-header:<header>` : The header to add to Ambassador configuration	    
+  * `seldon.io/ambassador-header:<header>` : The header to add to Ambassador configuration
      * Example:  `"seldon.io/ambassador-header":"location: london"	    `
-  * `seldon.io/ambassador-regex-header:<header>` : The regular expression header to add to Ambassador configuration	    
+  * `seldon.io/ambassador-regex-header:<header>` : The regular expression header to add to Ambassador configuration
      * Example:  `"seldon.io/ambassador-header":"location: lond.*"	    `
-  * `seldon.io/ambassador-service-name:<existing_deployment_name>` : The name of the existing Seldon Deployment you want to attach to as an alternative mapping for requests. 
+  * `seldon.io/ambassador-service-name:<existing_deployment_name>` : The name of the existing Seldon Deployment you want to attach to as an alternative mapping for requests.
      * Example: `"seldon.io/ambassador-service-name":"example"`
 
 A worked example for [header based routing](../examples/ambassador_headers.html) is provided.
@@ -146,7 +158,7 @@ A worked example for [header based routing](../examples/ambassador_headers.html)
 To understand more about the Ambassador configuration for this see [their docs on header based routing](https://www.getambassador.io/reference/headers).
 
 ### Circuit Breakers
-By preventing additional connections or requests to an overloaded Seldon Deployment, circuit breakers help improve resilience of your system. 
+By preventing additional connections or requests to an overloaded Seldon Deployment, circuit breakers help improve resilience of your system.
 
 You simply need to add some annotations to your Seldon Deployment resource.
 
@@ -194,6 +206,3 @@ The above discussed configurations should cover most cases but there maybe a cas
     * Example: `"seldon.io/ambassador-config":"apiVersion: ambassador/v1\nkind: Mapping\nname: seldon_example_rest_mapping\nprefix: /mycompany/ml/\nservice: production-model-example.seldon:8000\ntimeout_ms: 3000"`
 
 A worked example for [custom Ambassador config](../examples/ambassador_custom.html) is provided.
-
-
-
