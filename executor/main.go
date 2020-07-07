@@ -24,6 +24,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/grpc/tensorflow"
+	logf "github.com/seldonio/seldon-core/executor/api/log"
 	"github.com/seldonio/seldon-core/executor/api/rest"
 	"github.com/seldonio/seldon-core/executor/api/tracing"
 	"github.com/seldonio/seldon-core/executor/k8s"
@@ -31,7 +32,6 @@ import (
 	"github.com/seldonio/seldon-core/executor/proto/tensorflow/serving"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/soheilhy/cmux"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
 var (
@@ -173,7 +173,7 @@ func main() {
 		log.Fatal("Failed to create server url from", *hostname, *port)
 	}
 
-	logf.SetLogger(logf.ZapLogger(false))
+	// logf.SetLogger(logf.ZapLogger(false))
 	logger := logf.Log.WithName("entrypoint")
 
 	var predictor *v1.PredictorSpec

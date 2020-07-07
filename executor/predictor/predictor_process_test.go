@@ -13,11 +13,11 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/executor/api/grpc"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
+	logf "github.com/seldonio/seldon-core/executor/api/log"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/api/test"
 	"github.com/seldonio/seldon-core/executor/logger"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
 const (

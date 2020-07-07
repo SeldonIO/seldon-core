@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	grpc2 "github.com/seldonio/seldon-core/executor/api/grpc"
+	logf "github.com/seldonio/seldon-core/executor/api/log"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/proto/tensorflow/serving"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
@@ -16,7 +17,6 @@ import (
 	status "google.golang.org/grpc/status"
 	"io"
 	"math"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
 type TensorflowGrpcClient struct {
