@@ -13,7 +13,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/k8s"
-	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	v1 "github.com/seldonio/seldon-core/executor/api/seldon"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )

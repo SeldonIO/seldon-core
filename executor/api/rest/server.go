@@ -21,7 +21,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/predictor"
-	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	v1 "github.com/seldonio/seldon-core/executor/api/seldon"
 )
 
 type SeldonRestApi struct {

@@ -12,7 +12,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	payloadLogger "github.com/seldonio/seldon-core/executor/logger"
-	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	v1 "github.com/seldonio/seldon-core/executor/api/seldon"
 )
 
 const (

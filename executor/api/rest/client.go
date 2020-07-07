@@ -19,7 +19,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/api/util"
 	"github.com/seldonio/seldon-core/executor/k8s"
-	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	v1 "github.com/seldonio/seldon-core/executor/api/seldon"
 	"io"
 	"io/ioutil"
 	"net"
