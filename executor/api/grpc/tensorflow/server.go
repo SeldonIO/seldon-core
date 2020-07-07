@@ -39,7 +39,7 @@ func (g *GrpcTensorflowServer) execute(ctx context.Context, req proto.Message, m
 	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, md.Get(payload.SeldonPUIDHeader)[0])
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName(method), g.ServerUrl, g.Namespace, md)
 	reqPayload := payload.ProtoPayload{Msg: req}
-	return seldonPredictorProcess.Predict(g.predictor.Graph, &reqPayload)
+	return seldonPredictorProcess.Predict(&g.predictor.Graph, &reqPayload)
 }
 
 func (g *GrpcTensorflowServer) Classify(ctx context.Context, req *serving.ClassificationRequest) (*serving.ClassificationResponse, error) {
@@ -79,7 +79,7 @@ func (g *GrpcTensorflowServer) MultiInference(ctx context.Context, req *serving.
 func (g *GrpcTensorflowServer) GetModelMetadata(ctx context.Context, req *serving.GetModelMetadataRequest) (*serving.GetModelMetadataResponse, error) {
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("GrpcGetModelMetadata"), g.ServerUrl, g.Namespace, grpc.CollectMetadata(ctx))
 	reqPayload := payload.ProtoPayload{Msg: req}
-	resPayload, err := seldonPredictorProcess.Metadata(g.predictor.Graph, req.ModelSpec.Name, &reqPayload)
+	resPayload, err := seldonPredictorProcess.Metadata(&g.predictor.Graph, req.ModelSpec.Name, &reqPayload)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func (g *GrpcTensorflowServer) GetModelMetadata(ctx context.Context, req *servin
 func (g *GrpcTensorflowServer) GetModelStatus(ctx context.Context, req *serving.GetModelStatusRequest) (*serving.GetModelStatusResponse, error) {
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("GrpcGetModelStatus"), g.ServerUrl, g.Namespace, grpc.CollectMetadata(ctx))
 	reqPayload := payload.ProtoPayload{Msg: req}
-	resPayload, err := seldonPredictorProcess.Status(g.predictor.Graph, req.ModelSpec.Name, &reqPayload)
+	resPayload, err := seldonPredictorProcess.Status(&g.predictor.Graph, req.ModelSpec.Name, &reqPayload)
 	if err != nil {
 		return nil, err
 	}

@@ -159,7 +159,7 @@ func (r *SeldonRestApi) Initialise() {
 }
 
 func (r *SeldonRestApi) checkReady(w http.ResponseWriter, req *http.Request) {
-	err := predictor.Ready(r.predictor.Graph)
+	err := predictor.Ready(&r.predictor.Graph)
 	if err != nil {
 		r.Log.Error(err, "Ready check failed")
 		w.WriteHeader(http.StatusServiceUnavailable)
@@ -194,7 +194,7 @@ func (r *SeldonRestApi) metadata(w http.ResponseWriter, req *http.Request) {
 	modelName := vars[ModelHttpPathVariable]
 
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header)
-	resPayload, err := seldonPredictorProcess.Metadata(r.predictor.Graph, modelName, nil)
+	resPayload, err := seldonPredictorProcess.Metadata(&r.predictor.Graph, modelName, nil)
 	if err != nil {
 		r.respondWithError(w, resPayload, err)
 		return
@@ -216,7 +216,7 @@ func (r *SeldonRestApi) status(w http.ResponseWriter, req *http.Request) {
 	modelName := vars[ModelHttpPathVariable]
 
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header)
-	resPayload, err := seldonPredictorProcess.Status(r.predictor.Graph, modelName, nil)
+	resPayload, err := seldonPredictorProcess.Status(&r.predictor.Graph, modelName, nil)
 	if err != nil {
 		r.respondWithError(w, resPayload, err)
 		return
@@ -247,7 +247,7 @@ func (r *SeldonRestApi) feedback(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	resPayload, err := seldonPredictorProcess.Feedback(r.predictor.Graph, reqPayload)
+	resPayload, err := seldonPredictorProcess.Feedback(&r.predictor.Graph, reqPayload)
 	if err != nil {
 		r.respondWithError(w, resPayload, err)
 		return
@@ -288,15 +288,15 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 		vars := mux.Vars(req)
 		modelName := vars[ModelHttpPathVariable]
 		if modelName != "" {
-			if graphNode = v1.GetPredictiveUnit(r.predictor.Graph, modelName); graphNode == nil {
+			if graphNode = v1.GetPredictiveUnit(&r.predictor.Graph, modelName); graphNode == nil {
 				r.respondWithError(w, nil, fmt.Errorf("Failed to find model %s", modelName))
 				return
 			}
 		} else {
-			graphNode = r.predictor.Graph
+			graphNode = &r.predictor.Graph
 		}
 	} else {
-		graphNode = r.predictor.Graph
+		graphNode = &r.predictor.Graph
 	}
 	resPayload, err := seldonPredictorProcess.Predict(graphNode, reqPayload)
 	if err != nil {
