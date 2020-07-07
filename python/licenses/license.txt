@@ -629,7 +629,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 cachetools
-4.1.0
+4.1.1
 MIT License
 The MIT License (MIT)
 
@@ -2717,7 +2717,7 @@ BSD License
 UNKNOWN
 
 idna
-2.9
+2.10
 BSD License
 License
 -------
@@ -2756,7 +2756,7 @@ modification, are permitted provided that the following conditions are met:
 
 
 importlib-metadata
-1.6.1
+1.7.0
 Apache Software License
 Copyright 2017-2019 Jason R. Coombs, Barry Warsaw
 
@@ -4739,7 +4739,7 @@ BSD License
 UNKNOWN
 
 seldon-core
-1.2.1.dev0
+1.2.2.dev0
 Apache 2.0
 UNKNOWN
 
@@ -5558,7 +5558,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 tensorboard-plugin-wit
-1.6.0.post3
+1.7.0
 Apache 2.0
 UNKNOWN
 
