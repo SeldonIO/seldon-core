@@ -55,7 +55,7 @@ install_dev:
 
 .PHONY: licenses
 licenses:
-	tox -e licenses
+	tox --recreate -e licenses
 
 .PHONY: uninstall
 uninstall:
