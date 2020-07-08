@@ -12,6 +12,68 @@ state this explicitly, by submitting any copyrighted material via pull request, 
 other means you agree to license the material under the project's open source license and
 warrant that you have the legal authority to do so.
 
+## Release notes
+
+Our process to manage release notes is modelled after how the Kubernetes project handles them.
+This process can be separated into 2 separate phases: 
+
+- Adding notes on each PR. Happens at **PR creation time**.
+- Compiling all PR notes before a release. Happens at **release time**.
+
+### Adding notes on each PR
+
+When a PR is created, a [Prow / Lighthouse
+plugin](https://prow.k8s.io/command-help#release_note_none) will check if there
+is a populated `release-note` block in the PR body such as:
+
+````
+```release-note
+Some public-facing release note.
+```
+````
+
+If there isn't, the PR will be labelled as
+`do-not-merge/release-note-label-needed`.
+Note that to speed things up, the default PR template will create an empty
+`release-notes` block for you.
+For PRs that don't need public-facing release notes (e.g. fixes on the
+integration tests), you can use the `/release-note-none` Prow command.
+
+#### Conventions
+
+There are a number of conventions that we can use so that the changes are more
+semantic.
+These are mainly based around keywords which will affect how the release notes
+will get displayed.
+
+- Use the words `Added`, `Changed`, `Fixed`, `Removed` or `Deprecated` to
+  describe the contents of the PR.
+  For example:
+  
+  ````
+  ```release-note
+  Added metadata support to Python wrapper
+  ```
+  ````
+
+- Use the expression `Action required` to describe breaking changes.
+  For example:
+
+  ````
+  ```release-note
+  Action required: The helm value `createResources` has been renamed
+  `managerCreateResources`.
+  ```
+  ````
+
+### Compiling all PR notes before a release
+
+At release time, there is a [release-notes
+command](https://github.com/kubernetes/release/blob/master/cmd/release-notes/README.md)
+which crawls over all the PRs between 2 particular tags (e.g. `v1.1.0` to
+`v1.2.0`), extracting the release-notes blocks.
+These blocks can then be used to generate the final release notes.
+
 ## Coding conventions
 
 We use [pre-commit](https://pre-commit.com/) to handle a number of Git hooks
