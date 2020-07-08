@@ -3,7 +3,6 @@ module github.com/seldonio/seldon-core/operator
 go 1.13
 
 require (
-	github.com/Azure/go-autorest v14.2.0+incompatible //indirect
 	github.com/Azure/go-autorest/autorest/adal v0.9.0 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v0.1.0
