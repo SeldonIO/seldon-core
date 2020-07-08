@@ -34,7 +34,9 @@ Some public-facing release note.
 
 If there isn't, the PR will be labelled as
 `do-not-merge/release-note-label-needed`.
-Note that to speed things up, the default PR template will create an empty
+Note that to speed things up, the [default PR
+template](https://github.com/SeldonIO/seldon-core/blob/master/.github/PULL_REQUEST_TEMPLATE.md)
+will create an empty
 `release-notes` block for you.
 For PRs that don't need public-facing release notes (e.g. fixes on the
 integration tests), you can use the `/release-note-none` Prow command.
