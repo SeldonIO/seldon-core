@@ -118,8 +118,6 @@ Complex Graph Examples
   
    Combiner Example <combiner>
    Chainer MNIST <chainer_mnist>
-   Spam Classification TRANSFORMER <transformer_spam_model>
-   Spam Classification TRANSFORMER + COMBINER  <combiner_spam_model>
 
 Ingress
 -----
