@@ -17,10 +17,13 @@ limitations under the License.
 package controllers
 
 import (
+	"fmt"
+	"k8s.io/client-go/kubernetes"
 	"sort"
 	"strconv"
 	"strings"
 
+	"encoding/json"
 	"github.com/go-logr/logr"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
@@ -30,9 +33,51 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"os"
 )
 
-func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pSvcName string, podSecurityContect *corev1.PodSecurityContext, log logr.Logger) error {
+const (
+	ExplainerConfigMapKeyName = "explainer"
+	EnvExplainerImageRelated  = "RELATED_IMAGE_EXPLAINER"
+)
+
+var (
+	envExplainerImage = os.Getenv(EnvExplainerImageRelated)
+)
+
+type ExplainerInitialiser struct {
+	clientset kubernetes.Interface
+}
+
+func NewExplainerInitializer(clientset kubernetes.Interface) *ExplainerInitialiser {
+	return &ExplainerInitialiser{clientset: clientset}
+}
+
+type ExplainerConfig struct {
+	Image string `json:"image"`
+}
+
+func (ei *ExplainerInitialiser) getExplainerConfigs() (*ExplainerConfig, error) {
+	configMap, err := ei.clientset.CoreV1().ConfigMaps(ControllerNamespace).Get(ControllerConfigMapName, metav1.GetOptions{})
+	if err != nil {
+		//log.Error(err, "Failed to find config map", "name", ControllerConfigMapName)
+		return nil, err
+	}
+	return getExplainerConfigsFromMap(configMap)
+}
+
+func getExplainerConfigsFromMap(configMap *corev1.ConfigMap) (*ExplainerConfig, error) {
+	explainerConfig := &ExplainerConfig{}
+	if initializerConfig, ok := configMap.Data[ExplainerConfigMapKeyName]; ok {
+		err := json.Unmarshal([]byte(initializerConfig), &explainerConfig)
+		if err != nil {
+			panic(fmt.Errorf("Unable to unmarshall %v json string due to %v ", ExplainerConfigMapKeyName, err))
+		}
+	}
+	return explainerConfig, nil
+}
+
+func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pSvcName string, podSecurityContect *corev1.PodSecurityContext, log logr.Logger) error {
 
 	if !isEmptyExplainer(p.Explainer) {
 
@@ -54,9 +99,17 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.Sel
 			p.Graph.Endpoint = &machinelearningv1.Endpoint{Type: machinelearningv1.REST}
 		}
 
+		// Image from configMap or Relalated Image if its not set
 		if explainerContainer.Image == "" {
-			// TODO: should use explainer type but this is the only one available currently
-			explainerContainer.Image = "seldonio/alibiexplainer:1.1.0"
+			if envExplainerImage != "" {
+				explainerContainer.Image = envExplainerImage
+			} else {
+				config, err := ei.getExplainerConfigs()
+				if err != nil {
+					return err
+				}
+				explainerContainer.Image = config.Image
+			}
 		}
 
 		// explainer can get port from spec or from containerSpec or fall back on default
@@ -152,7 +205,9 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.Sel
 
 		if p.Explainer.ModelUri != "" {
 			var err error
-			deploy, err = InjectModelInitializer(deploy, explainerContainer.Name, p.Explainer.ModelUri, p.Explainer.ServiceAccountName, p.Explainer.EnvSecretRefName, r.Client)
+
+			mi := NewModelInitializer(ei.clientset)
+			deploy, err = mi.InjectModelInitializer(deploy, explainerContainer.Name, p.Explainer.ModelUri, p.Explainer.ServiceAccountName, p.Explainer.EnvSecretRefName)
 			if err != nil {
 				return err
 			}

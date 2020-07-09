@@ -2,6 +2,8 @@ package logger
 
 import "fmt"
 
+const LoggerWorkerQueueSize = 100
+
 // A buffered channel that we can send work requests on.
 var WorkQueue = make(chan LogRequest, LoggerWorkerQueueSize)
 

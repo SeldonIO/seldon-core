@@ -55,7 +55,7 @@ install_dev:
 
 .PHONY: licenses
 licenses:
-	tox -e licenses
+	tox --recreate -e licenses
 
 .PHONY: uninstall
 uninstall:
@@ -95,16 +95,21 @@ push_conda:
 setup_linter:
 	pip install black==19.3b0
 
-run_linter:
+fmt:
 	black \
 		./ ../testing ../operator/helm ../operator/seldon-operator/hack \
 		--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs|.tox)"
 
-run_linter_check:
+lint: licenses
 	black \
 		--check ./ ../testing \
 		--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs|.tox)"
 	flake8
+	# Check if licenses have changed
+	git \
+		--no-pager diff \
+		--exit-code \
+		./licenses
 
 .PHONY: clean
 clean:

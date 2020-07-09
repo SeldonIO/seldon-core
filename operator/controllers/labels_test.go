@@ -34,6 +34,8 @@ func TestAddLabelsToDeployment(t *testing.T) {
 		g.Expect(d.ObjectMeta.Labels["TestKey"]).To(Equal("TestValue"))
 		g.Expect(d.Spec.Selector.MatchLabels["TestKey"]).To(Equal("TestValue"))
 		g.Expect(d.Spec.Template.ObjectMeta.Labels["TestKey"]).To(Equal("TestValue"))
+		g.Expect(d.ObjectMeta.Labels[machinelearningv1.Label_managed_by]).To(Equal(machinelearningv1.Label_value_seldon))
+		g.Expect(d.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_managed_by]).To(Equal(machinelearningv1.Label_value_seldon))
 	})
 }
 
@@ -60,6 +62,7 @@ var _ = Describe("addLabelsToService", func() {
 			addLabelsToService(svc, pu, p)
 
 			Expect(svc.Labels[result]).To(Equal("true"))
+			Expect(svc.Labels[machinelearningv1.Label_managed_by]).To(Equal(machinelearningv1.Label_value_seldon))
 		},
 		Entry("router", machinelearningv1.ROUTER, machinelearningv1.Label_router),
 		Entry("combiner", machinelearningv1.COMBINER, machinelearningv1.Label_combiner),

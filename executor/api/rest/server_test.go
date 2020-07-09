@@ -222,6 +222,39 @@ func TestRequestPuuidHeaderIsSet(t *testing.T) {
 	g.Expect(called).To(Equal(true))
 }
 
+func TestXSSHeaderIsSet(t *testing.T) {
+	t.Logf("Started")
+	g := NewGomegaWithT(t)
+
+	model := v1.MODEL
+	p := v1.PredictorSpec{
+		Name: "p",
+		Graph: &v1.PredictiveUnit{
+			Type: &model,
+			Endpoint: &v1.Endpoint{
+				ServiceHost: "foo",
+				ServicePort: 9000,
+				Type:        v1.REST,
+			},
+		},
+	}
+
+	url, _ := url.Parse("http://localhost")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
+	r.Initialise()
+	var data = ` {"data":{"ndarray":[1.1,2.0]}}`
+
+	req, _ := http.NewRequest("POST", "/api/v0.1/predictions", strings.NewReader(data))
+	req.Header = map[string][]string{"Content-Type": []string{"application/json"}}
+	res := httptest.NewRecorder()
+	r.Router.ServeHTTP(res, req)
+	g.Expect(res.Code).To(Equal(200))
+
+	// Check that the XSS middleware is set
+	headerVal := res.Header().Get(contentTypeOptsHeader)
+	g.Expect(headerVal).To(Equal(contentTypeOptsValue))
+}
+
 func TestModelWithServer(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
@@ -385,15 +418,18 @@ func TestSeldonMetadata(t *testing.T) {
 		},
 	}
 
+	data := `{"metadata":{"name":"mymodel"}}`
+	metadataResponse := payload.BytesPayload{Msg: []byte(data)}
+
 	url, _ := url.Parse("http://localhost")
-	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{MetadataResponse: &metadataResponse}, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
 	r.Initialise()
 
 	req, _ := http.NewRequest("GET", "/api/v1.0/metadata/mymodel", nil)
 	res := httptest.NewRecorder()
 	r.Router.ServeHTTP(res, req)
 	g.Expect(res.Code).To(Equal(200))
-	g.Expect(res.Body.String()).To(Equal(test.TestClientMetadataResponse))
+	g.Expect(res.Body.String()).To(Equal(data))
 }
 
 func TestSeldonFeedback(t *testing.T) {
@@ -424,6 +460,71 @@ func TestSeldonFeedback(t *testing.T) {
 	g.Expect(res.Code).To(Equal(200))
 }
 
+func TestSeldonGraphMetadata(t *testing.T) {
+	t.Logf("Started")
+	g := NewGomegaWithT(t)
+
+	model := v1.MODEL
+	p := v1.PredictorSpec{
+		Name: "predictor-name",
+		Graph: &v1.PredictiveUnit{
+			Name: "model-1",
+			Type: &model,
+			Endpoint: &v1.Endpoint{
+				ServiceHost: "foo",
+				ServicePort: 9000,
+				Type:        v1.REST,
+			},
+			Children: []v1.PredictiveUnit{
+				{
+					Name: "model-2",
+					Type: &model,
+					Endpoint: &v1.Endpoint{
+						ServiceHost: "foo",
+						ServicePort: 9001,
+						Type:        v1.REST,
+					},
+				},
+			},
+		},
+	}
+
+	metadataMap := map[string]payload.ModelMetadata{
+		"model-1": {
+			Name:     "model-1",
+			Platform: "platform-name",
+			Versions: []string{"model-version"},
+			Inputs: []map[string]interface{}{
+				{"name": "input", "datatype": "BYTES", "shape": []int{1, 5}},
+			},
+			Outputs: []map[string]interface{}{
+				{"name": "output", "datatype": "BYTES", "shape": []int{1, 3}},
+			},
+		},
+		"model-2": {
+			Name:     "model-2",
+			Platform: "platform-name",
+			Versions: []string{"model-version"},
+			Inputs: []map[string]interface{}{
+				{"name": "input", "datatype": "BYTES", "shape": []int{1, 3}},
+			},
+			Outputs: []map[string]interface{}{
+				{"name": "output", "datatype": "BYTES", "shape": []int{3}},
+			},
+		},
+	}
+
+	url, _ := url.Parse("http://localhost")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{ModelMetadataMap: metadataMap}, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
+	r.Initialise()
+
+	req, _ := http.NewRequest("GET", "/api/v1.0/metadata", nil)
+	res := httptest.NewRecorder()
+	r.Router.ServeHTTP(res, req)
+	g.Expect(res.Code).To(Equal(200))
+	g.Expect(res.Body.String()).To(Equal(strings.Join(strings.Fields(test.TestGraphMeta), "")))
+}
+
 func TestTensorflowMetadata(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
@@ -442,15 +543,18 @@ func TestTensorflowMetadata(t *testing.T) {
 		},
 	}
 
+	data := `{"metadata":{"name":"mymodel"}}`
+	metadataResponse := payload.BytesPayload{Msg: []byte(data)}
+
 	url, _ := url.Parse("http://localhost")
-	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolTensorflow, "test", "/metrics")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{MetadataResponse: &metadataResponse}, false, url, "default", api.ProtocolTensorflow, "test", "/metrics")
 	r.Initialise()
 
 	req, _ := http.NewRequest("GET", "/v1/models/mymodel/metadata", nil)
 	res := httptest.NewRecorder()
 	r.Router.ServeHTTP(res, req)
 	g.Expect(res.Code).To(Equal(200))
-	g.Expect(res.Body.String()).To(Equal(test.TestClientMetadataResponse))
+	g.Expect(res.Body.String()).To(Equal(data))
 }
 
 func TestPredictErrorWithServer(t *testing.T) {

@@ -1,4 +1,5 @@
-{{- if not .Values.createResources }}
+{{- if .Values.managerCreateResources }}
+{{- if .Values.rbac.create }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -16,4 +17,5 @@ subjects:
 - kind: ServiceAccount
   name: seldon-manager
   namespace: '{{ .Release.Namespace }}'
+{{- end }}
 {{- end }}

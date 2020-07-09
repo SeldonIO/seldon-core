@@ -17,50 +17,31 @@ limitations under the License.
 package v1
 
 import (
-	"context"
-	"encoding/json"
-	"fmt"
-	"os"
-	"strconv"
-
 	"github.com/seldonio/seldon-core/operator/constants"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	k8types "k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"log"
+	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"strconv"
 )
 
 var (
 	// log is for logging in this package.
 	seldondeploymentlog                 = logf.Log.WithName("seldondeployment")
 	ControllerNamespace                 = GetEnv("POD_NAMESPACE", "seldon-system")
-	ControllerConfigMapName             = "seldon-config"
 	C                                   client.Client
 	envPredictiveUnitServicePort        = os.Getenv(ENV_PREDICTIVE_UNIT_SERVICE_PORT)
 	envPredictiveUnitServicePortMetrics = os.Getenv(ENV_PREDICTIVE_UNIT_SERVICE_PORT_METRICS)
 	envPredictiveUnitMetricsPortName    = GetEnv(ENV_PREDICTIVE_UNIT_METRICS_PORT_NAME, constants.DefaultMetricsPortName)
 )
-
-const PredictorServerConfigMapKeyName = "predictor_servers"
-
-type PredictorImageConfig struct {
-	ContainerImage      string `json:"image"`
-	DefaultImageVersion string `json:"defaultImageVersion"`
-}
-
-type PredictorServerConfig struct {
-	Tensorflow      bool                 `json:"tensorflow,omitempty"`
-	TensorflowImage string               `json:"tfImage,omitempty"`
-	RestConfig      PredictorImageConfig `json:"rest,omitempty"`
-	GrpcConfig      PredictorImageConfig `json:"grpc,omitempty"`
-}
 
 // Get an environment variable given by key or return the fallback.
 func GetEnv(key, fallback string) string {
@@ -68,31 +49,6 @@ func GetEnv(key, fallback string) string {
 		return value
 	}
 	return fallback
-}
-
-func getPredictorServerConfigs() (map[string]PredictorServerConfig, error) {
-	configMap := &corev1.ConfigMap{}
-
-	err := C.Get(context.TODO(), k8types.NamespacedName{Name: ControllerConfigMapName, Namespace: ControllerNamespace}, configMap)
-
-	if err != nil {
-		fmt.Println("Failed to find config map " + ControllerConfigMapName)
-		fmt.Println(err)
-		return map[string]PredictorServerConfig{}, err
-	}
-	return getPredictorServerConfigsFromMap(configMap)
-}
-
-func getPredictorServerConfigsFromMap(configMap *corev1.ConfigMap) (map[string]PredictorServerConfig, error) {
-	predictorServerConfig := make(map[string]PredictorServerConfig)
-	if predictorConfig, ok := configMap.Data[PredictorServerConfigMapKeyName]; ok {
-		err := json.Unmarshal([]byte(predictorConfig), &predictorServerConfig)
-		if err != nil {
-			panic(fmt.Errorf("Unable to unmarshall %v json string due to %v ", PredictorServerConfigMapKeyName, err))
-		}
-	}
-
-	return predictorServerConfig, nil
 }
 
 func (r *SeldonDeployment) SetupWebhookWithManager(mgr ctrl.Manager) error {
@@ -124,40 +80,6 @@ func GetPort(name string, ports []corev1.ContainerPort) *corev1.ContainerPort {
 		}
 	}
 	return nil
-}
-
-func IsPrepack(pu *PredictiveUnit) bool {
-	isPrepack := len(*pu.Implementation) > 0 && *pu.Implementation != SIMPLE_MODEL && *pu.Implementation != SIMPLE_ROUTER && *pu.Implementation != RANDOM_ABTEST && *pu.Implementation != AVERAGE_COMBINER && *pu.Implementation != UNKNOWN_IMPLEMENTATION
-	return isPrepack
-}
-
-func GetPrepackServerConfig(serverName string) PredictorServerConfig {
-	ServersConfigs, err := getPredictorServerConfigs()
-
-	if err != nil {
-		seldondeploymentlog.Error(err, "Failed to read prepacked model servers from configmap")
-	}
-	ServerConfig, ok := ServersConfigs[serverName]
-	if !ok {
-		seldondeploymentlog.Error(nil, "No entry in predictors map for "+serverName)
-	}
-	return ServerConfig
-}
-
-func SetImageNameForPrepackContainer(pu *PredictiveUnit, c *corev1.Container) {
-	//Add missing fields
-	// Add image
-	if c.Image == "" {
-
-		ServerConfig := GetPrepackServerConfig(string(*pu.Implementation))
-
-		if pu.Endpoint.Type == REST {
-			c.Image = ServerConfig.RestConfig.ContainerImage + ":" + ServerConfig.RestConfig.DefaultImageVersion
-		} else {
-			c.Image = ServerConfig.GrpcConfig.ContainerImage + ":" + ServerConfig.GrpcConfig.DefaultImageVersion
-		}
-
-	}
 }
 
 // -----
@@ -228,6 +150,21 @@ func (r *SeldonDeploymentSpec) setContainerPredictiveUnitDefaults(compSpecIdx in
 			volFound = true
 		}
 	}
+	//SeldonDeployments first deployed before 1.2 have OLD_PODINFO_VOLUME_NAME
+	//they retain that name indefinitely
+	oldVolIndex := -1
+	for idx, vol := range con.VolumeMounts {
+		if vol.Name == OLD_PODINFO_VOLUME_NAME {
+			log.Println("found old vol of name " + OLD_PODINFO_VOLUME_NAME)
+			oldVolIndex = idx
+		}
+	}
+	if oldVolIndex > -1 {
+		con.VolumeMounts[oldVolIndex] = con.VolumeMounts[len(con.VolumeMounts)-1] // Copy last element to index i.
+		con.VolumeMounts[len(con.VolumeMounts)-1] = corev1.VolumeMount{}          // Erase last element (write zero value).
+		con.VolumeMounts = con.VolumeMounts[:len(con.VolumeMounts)-1]             // Truncate slice.
+	}
+
 	if !volFound {
 		con.VolumeMounts = append(con.VolumeMounts, corev1.VolumeMount{
 			Name:      PODINFO_VOLUME_NAME,
@@ -329,11 +266,17 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 					}
 				}
 
-				getUpdatePortNumMap(con.Name, &nextPortNum, portMap)
+				getUpdatePortNumMap(pu.Name, &nextPortNum, portMap)
 				portNum := portMap[pu.Name]
 
 				r.setContainerPredictiveUnitDefaults(0, portNum, &nextMetricsPortNum, mldepName, namespace, &p, pu, con)
-				SetImageNameForPrepackContainer(pu, con)
+				//Only set image default for non tensorflow graphs
+				if r.Protocol != ProtocolTensorflow {
+					serverConfig := GetPrepackServerConfig(string(*pu.Implementation))
+					if serverConfig != nil {
+						SetImageNameForPrepackContainer(pu, con, serverConfig)
+					}
+				}
 
 				// if new Add container to componentSpecs
 				if !existing {
@@ -362,7 +305,7 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 // --- Validating
 
 // Check the predictive units to ensure the graph matches up with defined containers.
-func checkPredictiveUnits(pu *PredictiveUnit, p *PredictorSpec, fldPath *field.Path, allErrs field.ErrorList) field.ErrorList {
+func (r *SeldonDeploymentSpec) checkPredictiveUnits(pu *PredictiveUnit, p *PredictorSpec, fldPath *field.Path, allErrs field.ErrorList) field.ErrorList {
 	if *pu.Implementation == UNKNOWN_IMPLEMENTATION {
 
 		if GetContainerForPredictiveUnit(p, pu.Name) == nil {
@@ -378,6 +321,11 @@ func checkPredictiveUnits(pu *PredictiveUnit, p *PredictorSpec, fldPath *field.P
 			allErrs = append(allErrs, field.Invalid(fldPath, pu.Name, "Predictive unit modelUri required when using standalone servers"))
 		}
 		c := GetContainerForPredictiveUnit(p, pu.Name)
+
+		//Current non tensorflow serving prepack servers can not handle tensorflow protocol
+		if r.Protocol == ProtocolTensorflow && (*pu.Implementation == PrepackSklearnName || *pu.Implementation == PrepackXgboostName || *pu.Implementation == PrepackMlflowName) {
+			allErrs = append(allErrs, field.Invalid(fldPath, pu.Name, "Prepackaged server does not handle tendorflow protocol "+string(*pu.Implementation)))
+		}
 
 		if c == nil || c.Image == "" {
 
@@ -401,7 +349,7 @@ func checkPredictiveUnits(pu *PredictiveUnit, p *PredictorSpec, fldPath *field.P
 	}
 
 	for i := 0; i < len(pu.Children); i++ {
-		allErrs = checkPredictiveUnits(&pu.Children[i], p, fldPath.Index(i), allErrs)
+		allErrs = r.checkPredictiveUnits(&pu.Children[i], p, fldPath.Index(i), allErrs)
 	}
 
 	return allErrs
@@ -476,7 +424,8 @@ func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 			allErrs = append(allErrs, field.Invalid(fldPath, p.Name, "Duplicate predictor name"))
 		}
 		predictorNames[p.Name] = true
-		allErrs = checkPredictiveUnits(&p.Graph, &p, field.NewPath("spec").Child("predictors").Index(i).Child("graph"), allErrs)
+
+		allErrs = r.checkPredictiveUnits(&p.Graph, &p, field.NewPath("spec").Child("predictors").Index(i).Child("graph"), allErrs)
 	}
 
 	if len(transports) > 1 {

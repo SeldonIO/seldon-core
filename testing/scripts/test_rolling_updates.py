@@ -1,4 +1,3 @@
-import os
 import time
 import logging
 import pytest
@@ -15,11 +14,8 @@ from seldon_e2e_utils import (
     API_ISTIO_GATEWAY,
     get_pod_name_for_sdep,
     wait_for_pod_shutdown,
+    to_resources_path,
 )
-
-
-def to_resources_path(file_name):
-    return os.path.join("..", "resources", file_name)
 
 
 with_api_gateways = pytest.mark.parametrize(
@@ -28,7 +24,7 @@ with_api_gateways = pytest.mark.parametrize(
 
 
 @pytest.mark.sequential
-@pytest.mark.flaky(max_runs=3)
+@pytest.mark.flaky(max_runs=5)
 @with_api_gateways
 class TestRollingHttp(object):
     # Test updating a model to a multi predictor model

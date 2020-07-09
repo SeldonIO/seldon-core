@@ -13,13 +13,13 @@ Seldon handles scaling to thousands of production machine learning models and pr
 Quick Links
 -----
 
-* Read the `Seldon Core Documentation <https://docs.seldon.io/projects/seldon-core/en/latest/>`_
+* Read the `Seldon Core Documentation <./>`_
 * Join our `community Slack <https://join.slack.com/t/seldondev/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU>`_ to ask any questions
-* Get started with `Seldon Core Notebook Examples <https://docs.seldon.io/projects/seldon-core/en/latest/examples/notebooks.html>`_
-* Join our fortnightly `online community calls <https://docs.seldon.io/projects/seldon-core/en/latest/developer/community.html#community-calls>`_
-* Learn how you can `start contributing <https://docs.seldon.io/projects/seldon-core/en/latest/developer/contributing.html>`_
-* Check out `Blogs <https://docs.seldon.io/projects/seldon-core/en/latest/tutorials/blogs.html>`_ that dive into Seldon Core components
-* Watch some of the `Videos and Talks <https://docs.seldon.io/projects/seldon-core/en/latest/tutorials/videos.html>`_ using Seldon Core
+* Get started with `Seldon Core Notebook Examples <./examples/notebooks.html>`_
+* Join our fortnightly `online community calls <./developer/community.html#community-calls>`_ : `Google Calendar <https://calendar.google.com/event?action=TEMPLATE&tmeid=MXBtNzI1cjk0dG9kczhsZTRkcWlmcm1kdjVfMjAyMDA3MDlUMTUwMDAwWiBzZWxkb24uaW9fbTRuMnZtcmZubDI3M3FsczVnYjlwNjVpMHNAZw&tmsrc=seldon.io_m4n2vmrfnl273qls5gb9p65i0s%40group.calendar.google.com&scp=ALL>`_
+* Learn how you can `start contributing <./developer/contributing.html>`_
+* Check out `Blogs <./tutorials/blogs.html>`_ that dive into Seldon Core components
+* Watch some of the `Videos and Talks <./tutorials/videos.html>`_ using Seldon Core
 
 .. image:: ./images/seldon-core-high-level.jpg
    :alt: Seldon logo
@@ -32,15 +32,15 @@ Documentation Index
    :maxdepth: 1
    :caption: Getting Started
 
-   Overview <workflow/github-readme.rst>
-   Quickstart Guide <workflow/quickstart.md>
-   Install Seldon Core on Kubernetes <workflow/install.md>
+   Quickstart Guide <workflow/github-readme.rst>
+   Overview of Components <workflow/overview.md>
+   Install on Kubernetes <workflow/install.md>
    Join the Community <developer/community.md>
 
 .. toctree::
    :maxdepth: 1
    :caption: Seldon Core Deep Dive
-  
+
    Detailed Installation Parameters <reference/helm.rst>
    Pre-packaged Inreference Servers <servers/overview.md>
    Language Wrappers for Custom Models <wrappers/language_wrappers.md>
@@ -56,23 +56,42 @@ Documentation Index
 .. toctree::
    :maxdepth: 1
    :caption: Pre-Packaged Inference Servers
-	     
+
    MLflow Server <servers/mlflow.md>
    SKLearn server <servers/sklearn.md>
    Tensorflow Serving <servers/tensorflow.md>
    XGBoost server <servers/xgboost.md>
-   
+
 .. toctree::
    :maxdepth: 1
-   :caption: Language Wrappers (Production)
+   :caption: Production
 
-   Python Language Wrapper [Production] <python/index.rst>
+   Supported API Protocols <graph/protocols.md>
+   CI/CD MLOps at Scale <analytics/cicd-mlops.md>
+   Metrics with Prometheus <analytics/analytics.md>
+   Model Metadata <reference/apis/metadata.md>
+   Payload Logging with ELK <analytics/logging.md>
+   Distributed Tracing with Jaeger <graph/distributed-tracing.md>
+   Replica Scaling  <graph/scaling.md>
+   Custom Inference Servers <servers/custom.md>
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Batch Processing with Seldon
+
+   Overview of Batch Processing <servers/batch.md>
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Language Wrappers
+
+   Python Language Wrapper <python/index.rst>
 
 .. toctree::
    :maxdepth: 1
    :caption: Incubating Projects
 
-   Java Language Wrapper [Incubating] <java/README.md>
+   Java Language Wrapper <java/README.md>
    R Language Wrapper [ALPHA] <R/README.md>
    NodeJS Language Wrapper [ALPHA] <nodejs/README.md>
    Go Language Wrapper [ALPHA] <go/go_wrapper_link.rst>
@@ -87,25 +106,13 @@ Documentation Index
 
 .. toctree::
    :maxdepth: 1
-   :caption: Production
-
-   Supported API Protocols <graph/protocols.md>
-   CI/CD MLOps at Scale <analytics/cicd-mlops.md>
-   Metrics with Prometheus <analytics/analytics.md>
-   Payload Logging with ELK <analytics/logging.md>
-   Distributed Tracing with Jaeger <graph/distributed-tracing.md>
-   Replica Scaling  <graph/scaling.md>
-   Custom Inference Servers <servers/custom.md>
-      
-.. toctree::
-   :maxdepth: 1
    :caption: Advanced Inference
 
    Model Explanations <analytics/explainers.md>
    Outlier Detection <analytics/outlier_detection.md>
-   Drift Detection <analytics/drift_detection.md>   
-   Routers (incl. Multi Armed Bandits)  <analytics/routers.md>   
-   
+   Drift Detection <analytics/drift_detection.md>
+   Routers (incl. Multi Armed Bandits)  <analytics/routers.md>
+
 .. toctree::
    :maxdepth: 1
    :caption: Examples
@@ -119,18 +126,18 @@ Documentation Index
    :maxdepth: 1
    :caption: Reference
 
-   Annotation-based Configuration <graph/annotations.md>   	     
+   Annotation-based Configuration <graph/annotations.md>
    AWS Marketplace Install <reference/aws-mp-install.md>
-   Benchmarking <reference/benchmarking.md>   
+   Benchmarking <reference/benchmarking.md>
    General Availability <reference/ga.md>
    Helm Charts <graph/helm_charts.md>
    Images <reference/images.md>
-   Logging & Log Level <analytics/log_level.md>   
-   Private Docker Registry <graph/private_registries.md>   
-   Prediction APIs <reference/apis/index>   
+   Logging & Log Level <analytics/log_level.md>
+   Private Docker Registry <graph/private_registries.md>
+   Prediction APIs <reference/apis/index>
    Python API reference <python/api/modules>
-   Release Highlights <reference/release-highlights>   
-   Seldon Deployment CRD <reference/seldon-deployment.md>   
+   Release Highlights <reference/release-highlights>
+   Seldon Deployment CRD <reference/seldon-deployment.md>
    Service Orchestrator <graph/svcorch.md>
    Kubeflow <analytics/kubeflow.md>
 
@@ -143,4 +150,3 @@ Documentation Index
    End to End Tests <developer/e2e.rst>
    Roadmap <developer/roadmap.md>
    Build using private repo <developer/build-using-private-repo.md>
-

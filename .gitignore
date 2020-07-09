@@ -71,7 +71,6 @@ examples/models/keras_mnist/build/
 examples/models/mean_classifier/build/
 notebooks/my-ml-deployment/
 
-wrappers/s2i/python/Dockerfile
 wrappers/s2i/python/_wrappers
 
 .Rhistory
@@ -114,7 +113,7 @@ examples/models/onnx_resnet50/cpu_codegen/Function_0_codegen.cpp
 examples/models/onnx_resnet50/resnet.onnx
 
 #logging example
-examples/centralised-logging/request-logging/istio-**
+examples/centralised-logging/istio-**
 
 #openapi
 engine/src/main/resources/static/seldon.json

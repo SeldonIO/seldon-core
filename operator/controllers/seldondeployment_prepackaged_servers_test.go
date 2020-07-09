@@ -9,6 +9,7 @@ import (
 	"github.com/seldonio/seldon-core/operator/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"strconv"
@@ -265,6 +266,112 @@ var _ = Describe("Create a prepacked tfserving server for tensorflow protocol an
 
 })
 
+var _ = Describe("Create a prepacked tfserving server for tensorflow protocol and REST with existing container", func() {
+	const interval = time.Second * 1
+	const name = "pp3"
+	const sdepName = "prepack3b"
+	modelName := "classifier"
+	By("Creating a resource")
+	It("should create a resource with defaults", func() {
+		Expect(k8sClient).NotTo(BeNil())
+		cpuRequest, err := resource.ParseQuantity("2")
+		Expect(err).To(BeNil())
+		var modelType = machinelearningv1.MODEL
+		var impl = machinelearningv1.PredictiveUnitImplementation(constants.PrePackedServerTensorflow)
+		key := types.NamespacedName{
+			Name:      sdepName,
+			Namespace: "default",
+		}
+		instance := &machinelearningv1.SeldonDeployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      key.Name,
+				Namespace: key.Namespace,
+			},
+			Spec: machinelearningv1.SeldonDeploymentSpec{
+				Name:     name,
+				Protocol: machinelearningv1.ProtocolTensorflow,
+				Predictors: []machinelearningv1.PredictorSpec{
+					{
+						Name: "p1",
+						ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
+							{
+								Spec: corev1.PodSpec{
+									Containers: []corev1.Container{
+										{
+											Name: modelName,
+											Resources: corev1.ResourceRequirements{
+												Requests: corev1.ResourceList{corev1.ResourceCPU: cpuRequest},
+											},
+										},
+									},
+								},
+							},
+						},
+						Graph: machinelearningv1.PredictiveUnit{
+							Name:           modelName,
+							Type:           &modelType,
+							Implementation: &impl,
+							Endpoint:       &machinelearningv1.Endpoint{Type: machinelearningv1.REST},
+						},
+					},
+				},
+			},
+		}
+
+		configMapName := types.NamespacedName{Name: "seldon-config",
+			Namespace: "seldon-system"}
+
+		configResult := &corev1.ConfigMap{}
+		const timeout = time.Second * 300
+		Eventually(func() error { return k8sClient.Get(context.TODO(), configMapName, configResult) }, timeout).
+			Should(Succeed())
+
+		// Run Defaulter
+		instance.Default()
+
+		Expect(k8sClient.Create(context.Background(), instance)).Should(Succeed())
+		//time.Sleep(time.Second * 5)
+
+		fetched := &machinelearningv1.SeldonDeployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), key, fetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+		Expect(fetched.Name).Should(Equal(sdepName))
+
+		sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(&instance.Spec.Predictors[0], instance.Spec.Predictors[0].Graph.Name)
+		depName := machinelearningv1.GetDeploymentName(instance, instance.Spec.Predictors[0], sPodSpec, idx)
+		depKey := types.NamespacedName{
+			Name:      depName,
+			Namespace: "default",
+		}
+		depFetched := &appsv1.Deployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), depKey, depFetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+		Expect(len(depFetched.Spec.Template.Spec.Containers)).Should(Equal(2))
+		for _, c := range depFetched.Spec.Template.Spec.Containers {
+			if c.Name == modelName {
+				Expect(c.Image).ToNot(BeNil())
+				Expect(c.Resources.Requests.Cpu()).ToNot(BeNil())
+				Expect(*c.Resources.Requests.Cpu()).To(Equal(cpuRequest))
+				for _, arg := range c.Args {
+					if strings.Index(arg, constants.TfServingArgPort) == 0 {
+						Expect(arg).To(Equal(constants.TfServingArgPort + strconv.Itoa(constants.TfServingGrpcPort)))
+					}
+					if strings.Index(arg, constants.TfServingArgRestPort) == 0 {
+						Expect(arg).To(Equal(constants.TfServingArgRestPort + strconv.Itoa(int(constants.FirstPortNumber))))
+					}
+				}
+			}
+		}
+
+		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
+	})
+
+})
+
 var _ = Describe("Test override of environment variable", func() {
 	const blankName = ""
 	const secretName = "SECRET_NAME"
@@ -396,7 +503,7 @@ var _ = Describe("Create a prepacked sklearn server", func() {
 	const timeout = time.Second * 30
 	const interval = time.Second * 1
 	const name = "pp1"
-	const sdepName = "prepack1"
+	const sdepName = "prepack5"
 	envExecutorUser = "2"
 	By("Creating a resource")
 	It("should create a resource with defaults and security context", func() {
@@ -441,7 +548,7 @@ var _ = Describe("Create a prepacked sklearn server", func() {
 
 		//set security user
 		envUseExecutor = "true"
-		envExecutorUser = "2"
+		envDefaultUser = "2"
 
 		Expect(k8sClient.Create(context.Background(), instance)).Should(Succeed())
 		//time.Sleep(time.Second * 5)

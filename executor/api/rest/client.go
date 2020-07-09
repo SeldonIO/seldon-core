@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
+	http2 "github.com/cloudevents/sdk-go/pkg/bindings/http"
 	"github.com/go-logr/logr"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/opentracing/opentracing-go"
@@ -34,6 +34,8 @@ const (
 	ContentTypeJSON = "application/json"
 )
 
+var headersIgnore = map[string]bool{http2.ContentType: true}
+
 type JSONRestClient struct {
 	httpClient     *http.Client
 	Log            logr.Logger
@@ -52,12 +54,21 @@ func (smc *JSONRestClient) CreateErrorPayload(err error) payload.SeldonPayload {
 }
 
 func (smc *JSONRestClient) Marshall(w io.Writer, msg payload.SeldonPayload) error {
-	_, err := w.Write(msg.GetPayload().([]byte))
+	payload, ok := msg.GetPayload().([]byte)
+	if !ok {
+		return invalidPayload("couldn't convert to []byte")
+	}
+
+	var escaped bytes.Buffer
+
+	json.HTMLEscape(&escaped, payload)
+	_, err := escaped.WriteTo(w)
+
 	return err
 }
 
-func (smc *JSONRestClient) Unmarshall(msg []byte) (payload.SeldonPayload, error) {
-	reqPayload := payload.BytesPayload{Msg: msg, ContentType: ContentTypeJSON}
+func (smc *JSONRestClient) Unmarshall(msg []byte, contentType string) (payload.SeldonPayload, error) {
+	reqPayload := payload.BytesPayload{Msg: msg, ContentType: contentType}
 	return &reqPayload, nil
 }
 
@@ -131,24 +142,25 @@ func (smc *JSONRestClient) getMetricsRoundTripper(modelName string, service stri
 
 func (smc *JSONRestClient) addHeaders(req *http.Request, m map[string][]string) {
 	for k, vv := range m {
-		for _, v := range vv {
-			req.Header.Set(k, v)
+		if _, ok := headersIgnore[k]; !ok {
+			for _, v := range vv {
+				req.Header.Add(k, v)
+			}
 		}
 	}
 }
 
-func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method string, url *url.URL, msg []byte, meta map[string][]string) ([]byte, string, error) {
+func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method string, url *url.URL, msg []byte, meta map[string][]string, contentType string) ([]byte, string, error) {
 	smc.Log.Info("Calling HTTP", "URL", url)
 
 	var req *http.Request
 	var err error
 	if msg != nil {
-		smc.Log.Info("Building message")
 		req, err = http.NewRequest("POST", url.String(), bytes.NewBuffer(msg))
 		if err != nil {
 			return nil, "", err
 		}
-		req.Header.Set("Content-Type", ContentTypeJSON)
+		req.Header.Set(http2.ContentType, contentType)
 	} else {
 		req, err = http.NewRequest("GET", url.String(), nil)
 		if err != nil {
@@ -185,14 +197,14 @@ func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method 
 	}
 	defer response.Body.Close()
 
-	contentType := response.Header.Get("Content-Type")
+	contentTypeResponse := response.Header.Get(http2.ContentType)
 
 	if response.StatusCode != http.StatusOK {
 		smc.Log.Info("httpPost failed", "response code", response.StatusCode)
 		err = &httpStatusError{StatusCode: response.StatusCode, Url: url}
 	}
 
-	return b, contentType, err
+	return b, contentTypeResponse, err
 }
 
 func (smc *JSONRestClient) modifyMethod(method string, modelName string) string {
@@ -222,10 +234,12 @@ func (smc *JSONRestClient) call(ctx context.Context, modelName string, method st
 		Path:   method,
 	}
 	var bytes []byte
+	var contentType = ContentTypeJSON
 	if req != nil {
 		bytes = req.GetPayload().([]byte)
+		contentType = req.GetContentType()
 	}
-	sm, contentType, err := smc.doHttp(ctx, modelName, method, &url, bytes, meta)
+	sm, contentType, err := smc.doHttp(ctx, modelName, method, &url, bytes, meta, contentType)
 	res := payload.BytesPayload{Msg: sm, ContentType: contentType}
 	return &res, err
 }
@@ -234,8 +248,28 @@ func (smc *JSONRestClient) Status(ctx context.Context, modelName string, host st
 	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonStatusPath, modelName), host, port, msg, meta)
 }
 
+// Return model's metadata as payload.SeldonPaylaod (to expose as received on corresponding executor endpoint)
 func (smc *JSONRestClient) Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonMetadataPath, modelName), host, port, msg, meta)
+}
+
+// Return model's metadata decoded to payload.ModelMetadata (to build GraphMetadata)
+func (smc *JSONRestClient) ModelMetadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.ModelMetadata, error) {
+	resPayload, err := smc.Metadata(ctx, modelName, host, port, msg, meta)
+	if err != nil {
+		return payload.ModelMetadata{}, err
+	}
+
+	resString, err := resPayload.GetBytes()
+	if err != nil {
+		return payload.ModelMetadata{}, err
+	}
+	var modelMetadata payload.ModelMetadata
+	err = json.Unmarshal(resString, &modelMetadata)
+	if err != nil {
+		return payload.ModelMetadata{}, err
+	}
+	return modelMetadata, nil
 }
 
 func (smc *JSONRestClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
@@ -293,7 +327,7 @@ func (smc *JSONRestClient) Combine(ctx context.Context, modelName string, host s
 	strData := make([]string, len(msgs))
 	for i, sm := range msgs {
 		if !isJSON(sm.GetPayload().([]byte)) {
-			return nil, fmt.Errorf("Data is not JSON")
+			return nil, invalidPayload("Data is not JSON")
 		} else {
 			strData[i] = string(sm.GetPayload().([]byte))
 		}
@@ -301,7 +335,7 @@ func (smc *JSONRestClient) Combine(ctx context.Context, modelName string, host s
 	// Create JSON list of messages
 	joined := strings.Join(strData, ",")
 	jStr := "[" + joined + "]"
-	req := payload.BytesPayload{Msg: []byte(jStr)}
+	req := payload.BytesPayload{Msg: []byte(jStr), ContentType: ContentTypeJSON}
 	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonCombinePath, modelName), host, port, &req, meta)
 }
 

@@ -1,9 +1,18 @@
 package rest
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/json"
+	"net"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"strconv"
+	"testing"
+	"time"
+
 	"github.com/golang/protobuf/jsonpb"
 	. "github.com/onsi/gomega"
 	"github.com/prometheus/client_golang/prometheus"
@@ -15,13 +24,6 @@ import (
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	v12 "k8s.io/api/core/v1"
 	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net"
-	"net/http"
-	"net/http/httptest"
-	"net/url"
-	"strconv"
-	"testing"
-	"time"
 )
 
 const (
@@ -40,9 +42,8 @@ const (
         "status": "ok"
 	}`
 	okMetadataResponse = `{
-        "metadata": {
-          "name":"mymodel"
-        }
+		"name": "mymodel",
+		"platform": "seldon-platform"
 	}`
 	errorPredictResponse = `{
        "status":"failed"
@@ -214,6 +215,9 @@ func TestCombiner(t *testing.T) {
 
 func TestClientMetrics(t *testing.T) {
 	t.Logf("Started")
+	metric.RecreateServerHistogram = true
+	metric.RecreateClientHistogram = true
+
 	g := NewGomegaWithT(t)
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(okPredictResponse))
@@ -329,4 +333,56 @@ func TestTimeout(t *testing.T) {
 
 	_, err = seldonRestClient.Status(createTestContext(), "model", host, int32(port), nil, map[string][]string{})
 	g.Expect(err).ToNot(BeNil())
+}
+
+func TestIsJson(t *testing.T) {
+	g := NewGomegaWithT(t)
+	badJson := "ab"
+	res := isJSON([]byte(badJson))
+	g.Expect(res).To(Equal(false))
+
+	goodJson := "{\"foo\":\"bar\"}"
+	res = isJSON([]byte(goodJson))
+	g.Expect(res).To(Equal(true))
+}
+
+func TestMarshall(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	tests := []struct {
+		response string
+		expected string
+	}{
+		{
+			response: okPredictResponse,
+			expected: okPredictResponse,
+		},
+		{
+			response: `"<div class=\"div-class\"></div>"`,
+			expected: `"\u003cdiv class=\"div-class\"\u003e\u003c/div\u003e"`,
+		},
+		{
+			response: `{
+        "strData": "<div class=\"div-class\"></div>"
+      }`,
+			expected: `{
+        "strData": "\u003cdiv class=\"div-class\"\u003e\u003c/div\u003e"
+      }`,
+		},
+	}
+
+	smc := &JSONRestClient{}
+
+	for _, test := range tests {
+		res := &payload.BytesPayload{
+			Msg:         []byte(test.response),
+			ContentType: ContentTypeJSON,
+		}
+
+		var w bytes.Buffer
+		err := smc.Marshall(&w, res)
+
+		g.Expect(err).ToNot(HaveOccurred())
+		g.Expect(w.String()).To(Equal(test.expected))
+	}
 }

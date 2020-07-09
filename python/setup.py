@@ -26,6 +26,7 @@ setup(
     python_requires=">=3.6",
     install_requires=[
         "Flask<2.0.0",
+        "jsonschema<4.0.0",
         "Flask-cors<4.0.0",
         "redis<4.0.0",
         "requests<3.0.0",
@@ -37,14 +38,14 @@ setup(
         "opentracing >= 2.2.0, < 2.3.0",
         "jaeger-client >= 4.1.0, < 4.2.0",
         "grpcio-opentracing >= 1.1.4, < 1.2.0",
-        "pyaml<20.0.0",
+        "PyYAML<5.4",
         "gunicorn >= 19.9.0, < 20.1.0",
         "minio >= 4.0.9, < 6.0.0",
         "azure-storage-blob >= 2.0.1, < 3.0.0",
         "setuptools >= 41.0.0",
-        "prometheus_client >= 0.7.1, < 0.8.0",
+        "prometheus_client >= 0.7.1, < 0.9.0",
     ],
-    tests_require=["pytest<6.0.0", "pytest-cov<3.0.0", "Pillow==7.1.1"],
+    tests_require=["pytest<6.0.0", "pytest-cov<3.0.0", "Pillow==7.2.0"],
     extras_require=extras,
     test_suite="tests",
     entry_points={
@@ -53,6 +54,7 @@ setup(
             "seldon-core-tester = seldon_core.microservice_tester:main",
             "seldon-core-microservice-tester = seldon_core.microservice_tester:main",
             "seldon-core-api-tester = seldon_core.api_tester:main",
+            "seldon-batch-processor = seldon_core.batch_processor:run_cli",
         ]
     },
     zip_safe=False,

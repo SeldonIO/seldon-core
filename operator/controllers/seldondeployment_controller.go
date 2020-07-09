@@ -24,6 +24,9 @@ import (
 	"strconv"
 	"strings"
 
+	"k8s.io/client-go/kubernetes"
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
+
 	types2 "github.com/gogo/protobuf/types"
 	"github.com/seldonio/seldon-core/operator/constants"
 	"github.com/seldonio/seldon-core/operator/utils"
@@ -71,6 +74,7 @@ type SeldonDeploymentReconciler struct {
 	Scheme    *runtime.Scheme
 	Namespace string
 	Recorder  record.EventRecorder
+	ClientSet kubernetes.Interface
 }
 
 //---------------- Old part
@@ -496,7 +500,8 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 			c.deployments = append(c.deployments, deploy)
 		}
 
-		err = createStandaloneModelServers(r, mlDep, &p, &c, &p.Graph, securityContext)
+		pi := NewPrePackedInitializer(r.ClientSet)
+		err = pi.createStandaloneModelServers(mlDep, &p, &c, &p.Graph, securityContext)
 		if err != nil {
 			return nil, err
 		}
@@ -573,7 +578,8 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 			externalPorts[i] = httpGrpcPorts{httpPort: httpPort, grpcPort: grpcPort}
 		}
 
-		err = createExplainer(r, mlDep, &p, &c, pSvcName, securityContext, log)
+		ei := NewExplainerInitializer(r.ClientSet)
+		err = ei.createExplainer(mlDep, &p, &c, pSvcName, securityContext, log)
 		if err != nil {
 			return nil, err
 		}
@@ -611,7 +617,7 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 			Name:      pSvcName,
 			Namespace: namespace,
 			Labels: map[string]string{machinelearningv1.Label_seldon_app: pSvcName,
-				machinelearningv1.Label_seldon_id: seldonId},
+				machinelearningv1.Label_seldon_id: seldonId, machinelearningv1.Label_managed_by: machinelearningv1.Label_value_seldon},
 		},
 		Spec: corev1.ServiceSpec{
 			Selector:        map[string]string{machinelearningv1.Label_seldon_app: pSvcName},
@@ -620,12 +626,22 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 		},
 	}
 
-	if engine_http_port != 0 && len(psvc.Spec.Ports) == 0 {
-		psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_http_port), TargetPort: intstr.FromInt(engine_http_port), Name: "http"})
-	}
+	if isExecutorEnabled(mlDep) {
+		if engine_http_port != 0 && len(psvc.Spec.Ports) == 0 {
+			psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_http_port), TargetPort: intstr.FromInt(engine_http_port), Name: "http"})
+		}
 
-	if engine_grpc_port != 0 && len(psvc.Spec.Ports) < 2 {
-		psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_grpc_port), TargetPort: intstr.FromInt(engine_grpc_port), Name: "grpc"})
+		if engine_grpc_port != 0 && len(psvc.Spec.Ports) < 2 {
+			psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_grpc_port), TargetPort: intstr.FromInt(engine_http_port), Name: "grpc"})
+		}
+	} else {
+		if engine_http_port != 0 && len(psvc.Spec.Ports) == 0 {
+			psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_http_port), TargetPort: intstr.FromInt(engine_http_port), Name: "http"})
+		}
+
+		if engine_grpc_port != 0 && len(psvc.Spec.Ports) < 2 {
+			psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_grpc_port), TargetPort: intstr.FromInt(engine_grpc_port), Name: "grpc"})
+		}
 	}
 
 	if GetEnv("AMBASSADOR_ENABLED", "false") == "true" {

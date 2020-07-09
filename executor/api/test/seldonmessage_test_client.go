@@ -2,6 +2,8 @@ package test
 
 import (
 	"context"
+	// "errors"
+	"fmt"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
@@ -9,16 +11,37 @@ import (
 )
 
 type SeldonMessageTestClient struct {
-	ChosenRoute int
-	ErrMethod   *v1.PredictiveUnitMethod
-	Err         error
-	ErrPayload  payload.SeldonPayload
+	ChosenRoute      int
+	MetadataResponse payload.SeldonPayload
+	ModelMetadataMap map[string]payload.ModelMetadata
+	ErrMethod        *v1.PredictiveUnitMethod
+	Err              error
+	ErrPayload       payload.SeldonPayload
 }
 
 const (
-	TestClientStatusResponse   = `{"status":"ok"}`
-	TestClientMetadataResponse = `{"metadata":{"name":"mymodel"}}`
-	TestContentType            = "application/json"
+	TestClientStatusResponse = `{"status":"ok"}`
+	TestContentType          = "application/json"
+	TestGraphMeta            = `{
+		"name": "predictor-name",
+		"models": {
+			"model-1": {
+				"name": "model-1",
+				"platform": "platform-name",
+				"versions": ["model-version"],
+				"inputs": [{"datatype": "BYTES", "name": "input", "shape": [1, 5]}],
+				"outputs": [{"datatype": "BYTES", "name": "output", "shape": [1, 3]}]
+			},
+			"model-2": {
+				"name": "model-2",
+				"platform": "platform-name",
+				"versions": ["model-version"],
+				"inputs": [{"datatype": "BYTES", "name": "input", "shape": [1, 3]}],
+				"outputs": [{"datatype": "BYTES", "name": "output", "shape": [3]}]}
+			},
+		"graphinputs": [{"datatype": "BYTES", "name": "input", "shape": [1, 5]}],
+		"graphoutputs": [{"datatype": "BYTES", "name": "output", "shape": [3]}]
+	}`
 )
 
 func (s SeldonMessageTestClient) Status(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
@@ -26,15 +49,26 @@ func (s SeldonMessageTestClient) Status(ctx context.Context, modelName string, h
 }
 
 func (s SeldonMessageTestClient) Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
-	return &payload.BytesPayload{Msg: []byte(TestClientMetadataResponse)}, nil
+	if s.MetadataResponse == nil {
+		return nil, fmt.Errorf("Metadata %s not present in test client", modelName)
+	}
+	return s.MetadataResponse, nil
+}
+
+func (s SeldonMessageTestClient) ModelMetadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.ModelMetadata, error) {
+	output, present := s.ModelMetadataMap[modelName]
+	if !present {
+		return payload.ModelMetadata{}, fmt.Errorf("Metadata %s not present in test client", modelName)
+	}
+	return output, nil
 }
 
 func (s SeldonMessageTestClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	return msg, nil
 }
 
-func (s SeldonMessageTestClient) Unmarshall(msg []byte) (payload.SeldonPayload, error) {
-	reqPayload := payload.BytesPayload{Msg: msg, ContentType: TestContentType}
+func (s SeldonMessageTestClient) Unmarshall(msg []byte, contentType string) (payload.SeldonPayload, error) {
+	reqPayload := payload.BytesPayload{Msg: msg, ContentType: contentType}
 	return &reqPayload, nil
 }
 

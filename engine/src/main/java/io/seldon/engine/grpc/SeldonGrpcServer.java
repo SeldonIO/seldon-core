@@ -22,6 +22,7 @@ import io.seldon.engine.config.AnnotationsConfig;
 import io.seldon.engine.service.PredictionService;
 import io.seldon.engine.tracing.TracingProvider;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,7 +100,6 @@ public class SeldonGrpcServer {
   public void runServer() throws InterruptedException, IOException {
     logger.info("Starting grpc server");
     start();
-    blockUntilShutdown();
   }
 
   /** Start serving requests. */
@@ -113,23 +113,20 @@ public class SeldonGrpcServer {
               public void run() {
                 // Use stderr here since the logger may has been reset by its JVM shutdown hook.
                 System.err.println("*** shutting down gRPC server since JVM is shutting down");
-                SeldonGrpcServer.this.stop();
+                try {
+                  SeldonGrpcServer.this.stop();
+                } catch (InterruptedException e) {
+                  e.printStackTrace(System.err);
+                }
                 System.err.println("*** server shut down");
               }
             });
   }
 
   /** Stop serving requests and shutdown resources. */
-  public void stop() {
+  public void stop() throws InterruptedException {
     if (server != null) {
-      server.shutdown();
-    }
-  }
-
-  /** Await termination on the main thread since the grpc library uses daemon threads. */
-  private void blockUntilShutdown() throws InterruptedException {
-    if (server != null) {
-      server.awaitTermination();
+      server.shutdown().awaitTermination(30, TimeUnit.SECONDS);
     }
   }
 }

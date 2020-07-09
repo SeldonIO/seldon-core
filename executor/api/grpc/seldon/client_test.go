@@ -2,6 +2,7 @@ package seldon
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/golang/protobuf/jsonpb"
 	. "github.com/onsi/gomega"
@@ -15,6 +16,18 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"testing"
 )
+
+var testProtoModelMetadata = proto.SeldonModelMetadata{
+	Name:     "Test-GRPC-Metadata",
+	Versions: []string{"GRPC-TEST/V1"},
+	Platform: "Seldon-Test-Platform",
+	Inputs: []*proto.SeldonMessageMetadata{
+		{Name: "Input-GRPC-Metadata"},
+	},
+	Outputs: []*proto.SeldonMessageMetadata{
+		{Name: "Output-GRPC-Metadata"},
+	},
+}
 
 func createPredictPayload(g *GomegaWithT) payload.SeldonPayload {
 	var sm proto.SeldonMessage
@@ -48,7 +61,7 @@ func createTestGrpcServer(g *GomegaWithT, annotations map[string]string) (*v1.Pr
 	grpcServer, err := grpc.CreateGrpcServer(&p, deploymentName, annotations, logger)
 	g.Expect(err).To(BeNil())
 
-	testSeldonGrpcServer := test.NewSeldonTestServer(1)
+	testSeldonGrpcServer := test.NewSeldonTestServer(1, &testProtoModelMetadata)
 	proto.RegisterModelServer(grpcServer, testSeldonGrpcServer)
 
 	go grpcServer.Serve(lis)
@@ -104,4 +117,58 @@ func TestClientPredictMessageSize(t *testing.T) {
 	_, err := client.Predict(context.TODO(), "m", host, port, req, nil)
 	g.Expect(err).NotTo(BeNil())
 	g.Expect(err.Error()).To(Equal("rpc error: code = ResourceExhausted desc = grpc: received message larger than max (26 vs. 1)"))
+}
+
+func TestClientMetadata(t *testing.T) {
+	t.Logf("Started")
+	g := NewGomegaWithT(t)
+
+	p, host, port, stopFunc := createTestGrpcServer(g, nil)
+	defer stopFunc()
+
+	client := NewSeldonGrpcClient(p, "", nil)
+	resp, err := client.Metadata(context.TODO(), "m", host, port, nil, nil)
+
+	respSm := resp.GetPayload().(*proto.SeldonModelMetadata)
+	g.Expect(err).To(BeNil())
+
+	// Comparing json representation will skip comparison of internal GRPC
+	// fields: XXX_NoUnkeyedLiteral, XXX_unrecognized, and XXX_sizecache
+	expectedJson, err := json.Marshal(testProtoModelMetadata)
+	g.Expect(err).Should(BeNil())
+
+	actualJson, err := json.Marshal(respSm)
+	g.Expect(err).Should(BeNil())
+
+	g.Expect(actualJson).To(MatchJSON(expectedJson))
+}
+
+func TestClientModelMetadata(t *testing.T) {
+	t.Logf("Started")
+	g := NewGomegaWithT(t)
+
+	p, host, port, stopFunc := createTestGrpcServer(g, nil)
+	defer stopFunc()
+
+	client := NewSeldonGrpcClient(p, "", nil)
+	resp, err := client.ModelMetadata(context.TODO(), "m", host, port, nil, nil)
+	g.Expect(err).To(BeNil())
+
+	expectedModelMetadata := payload.ModelMetadata{
+		Name:     testProtoModelMetadata.GetName(),
+		Platform: testProtoModelMetadata.GetPlatform(),
+		Versions: testProtoModelMetadata.GetVersions(),
+		Inputs:   testProtoModelMetadata.GetInputs(),
+		Outputs:  testProtoModelMetadata.GetOutputs(),
+	}
+
+	// Comparing json representation will skip comparison of internal GRPC
+	// fields: XXX_NoUnkeyedLiteral, XXX_unrecognized, and XXX_sizecache
+	expectedJson, err := json.Marshal(expectedModelMetadata)
+	g.Expect(err).Should(BeNil())
+
+	actualJson, err := json.Marshal(resp)
+	g.Expect(err).Should(BeNil())
+
+	g.Expect(actualJson).To(MatchJSON(expectedJson))
 }

@@ -66,7 +66,21 @@ func (wc *WebhookCreator) CreateMutatingWebhookConfigurationFromFile(rawYaml []b
 		return err
 	}
 
+	// create or update via client
+	client := wc.clientset.AdmissionregistrationV1beta1().MutatingWebhookConfigurations()
+
 	if watchNamespace {
+		// Try to delete clusterwide webhook config if available
+		_, err := client.Get(mwc.Name, v1.GetOptions{})
+		if err != nil && errors.IsNotFound(err) {
+			wc.logger.Info("existing clusterwide mwc not found", "name", mwc.Name)
+		} else {
+			client.Delete(mwc.Name, &v1.DeleteOptions{})
+			if err != nil {
+				return err
+			}
+			wc.logger.Info("Deleted clusterwide mwc", "name", mwc.Name)
+		}
 		mwc.Name = mwc.Name + "-" + namespace
 	}
 
@@ -94,9 +108,6 @@ func (wc *WebhookCreator) CreateMutatingWebhookConfigurationFromFile(rawYaml []b
 		return err
 	}
 
-	// create or update via client
-	client := wc.clientset.AdmissionregistrationV1beta1().MutatingWebhookConfigurations()
-
 	found, err := client.Get(mwc.Name, v1.GetOptions{})
 	if err != nil && errors.IsNotFound(err) {
 		wc.logger.Info("Creating mutating webhook")
@@ -117,7 +128,21 @@ func (wc *WebhookCreator) CreateValidatingWebhookConfigurationFromFile(rawYaml [
 		return err
 	}
 
+	// create or update via client
+	client := wc.clientset.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations()
+
 	if watchNamespace {
+		// Try to delete clusterwide webhook config if available
+		_, err := client.Get(vwc.Name, v1.GetOptions{})
+		if err != nil && errors.IsNotFound(err) {
+			wc.logger.Info("existing clusterwide vwc not found", "name", vwc.Name)
+		} else {
+			client.Delete(vwc.Name, &v1.DeleteOptions{})
+			if err != nil {
+				return err
+			}
+			wc.logger.Info("Deleted clusterwide vwc", "name", vwc.Name)
+		}
 		vwc.Name = vwc.Name + "-" + namespace
 	}
 
@@ -139,9 +164,6 @@ func (wc *WebhookCreator) CreateValidatingWebhookConfigurationFromFile(rawYaml [
 	if err != nil {
 		return err
 	}
-
-	// create or update via client
-	client := wc.clientset.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations()
 
 	found, err := client.Get(vwc.Name, v1.GetOptions{})
 	if err != nil && errors.IsNotFound(err) {

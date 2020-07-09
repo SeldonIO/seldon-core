@@ -1,0 +1,75 @@
+{
+  "kind": "SeldonDeployment",
+  "apiVersion": "{{ .Values.apiVersion }}",
+  "metadata": {
+    "name": "{{ .Release.Name }}",
+    "namespace": "{{ .Release.Namespace }}",
+    "labels": {
+      {{- range $name, $val := .Values.labels }}
+        "{{ $name }}": "{{ $val }}",
+      {{ end -}}
+    }
+  },
+  "spec": {
+    "name": "{{ .Release.Name }}",
+    "annotations": {
+      {{- range $name, $val := .Values.annotations }}
+        "{{ $name }}": "{{ $val }}",
+      {{ end -}}
+    },
+    "predictors": [
+      {
+        "name": "default",
+        "graph": {
+          "name": "model",
+          {{- if .Values.model.implementation }}
+          "implementation": "{{ .Values.model.implementation }}",
+          {{- end}}
+          {{- if .Values.model.uri }}
+          "modelUri": "{{ .Values.model.uri }}",
+          {{- end}}
+          "type": "MODEL",
+          {{- if .Values.model.logger.enabled }}
+          "logger": {
+             "mode": "all",
+             {{- if .Values.model.logger.url }}
+             "url": "{{ .Values.model.logger.url }}",
+             {{- end}}
+          },
+          {{- end}}
+        },
+        "componentSpecs": [
+          {
+            "spec": {
+              "containers": [
+                {
+                  "name": "model",
+                  {{- if .Values.model.image }}
+                  "image": "{{ .Values.model.image }}",
+                  {{- end}}
+                  "env": [
+                    {{- range $var, $val := .Values.model.env }}
+                      {
+                        "name": "{{ $var }}",
+                        "value": "{{ $val }}"
+                      },
+                    {{ end -}}
+                  ],
+                  "resources": {{ .Values.model.resources | toJson }},
+                }
+              ]
+            },
+            {{- if .Values.hpa.enabled }}
+            "hpaSpec": {
+              "minReplicas": {{ int .Values.hpa.minReplicas }},
+              "maxReplicas": {{ int .Values.hpa.maxReplicas }},
+              "metrics": {{ .Values.hpa.metrics | toJson }},
+            }
+            {{- end }}
+          }
+        ],
+        "replicas": {{ int .Values.replicas }}
+      }
+    ]
+  }
+}

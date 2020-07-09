@@ -1,0 +1,84 @@
+
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: graph-metadata-combiner
+spec:
+  name: test-deployment
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/metadata-generic-node_rest:0.3
+          name: node-combiner
+          env:
+          - name: MODEL_METADATA
+            value: |
+              ---
+              name: node-combiner
+              versions: [ generic-node/v0.3 ]
+              platform: seldon
+              inputs:
+              - messagetype: tensor
+                schema:
+                  names: [ c1 ]
+                  shape: [ 1 ]                       
+              - messagetype: tensor
+                schema:
+                  names: [ c2 ]
+                  shape: [ 1 ]  
+              outputs:
+              - messagetype: tensor
+                schema:
+                  names: [combiner-output]
+                  shape: [ 1 ]  
+        - image: seldonio/metadata-generic-node_rest:0.3
+          name: node-one
+          env:
+          - name: MODEL_METADATA
+            value: |
+              ---
+              name: node-one
+              versions: [ generic-node/v0.3 ]
+              platform: seldon
+              inputs:
+              - messagetype: tensor
+                schema:
+                  names: [a, b]
+                  shape: [ 2 ]      
+              outputs:
+              - messagetype: tensor
+                schema:
+                  names: [ c1 ]
+                  shape: [ 1 ]  
+        - image: seldonio/metadata-generic-node_rest:0.3
+          name: node-two
+          env:
+          - name: MODEL_METADATA
+            value: |
+              ---
+              name: node-two
+              versions: [ generic-node/v0.3 ]
+              platform: seldon
+              inputs:
+              - messagetype: tensor
+                schema:
+                  names: [a, b]
+                  shape: [ 2 ]      
+              outputs:
+              - messagetype: tensor
+                schema:
+                  names: [ c2 ]
+                  shape: [ 1 ]  
+    graph:
+      name: node-combiner
+      type: COMBINER
+      children:
+      - name: node-one
+        type: MODEL
+        children: []   
+      - name: node-two
+        type: MODEL
+        children: []   
+    name: example
+    replicas: 1

@@ -1,0 +1,27 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  labels:
+    app: seldon
+  name: seldon-mock-model
+spec:
+  annotations:
+    seldon.io/executor: "true"
+  name: mock-deployment
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: mock-model:latest
+          name: mock-model
+    graph:
+      children: []
+      endpoint:
+        service_host: 0.0.0.0
+        service_port: 9000
+      name: mock-model
+      type: MODEL
+    labels:
+      version: v1
+    name: example
+    replicas: 1

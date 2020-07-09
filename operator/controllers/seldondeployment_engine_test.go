@@ -1,12 +1,13 @@
 package controllers
 
 import (
+	"testing"
+
 	. "github.com/onsi/gomega"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"testing"
 )
 
 func createTestSeldonDeployment() *machinelearningv1.SeldonDeployment {
@@ -98,7 +99,7 @@ func TestExecutorCreateNoEnv(t *testing.T) {
 	envExecutorImage = ""
 	envExecutorImageRelated = ""
 	mlDep := createTestSeldonDeployment()
-	_, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
+	_, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, &v1.ResourceRequirements{})
 	g.Expect(err).ToNot(BeNil())
 	cleanEnvImages()
 }
@@ -110,7 +111,7 @@ func TestExecutorCreateEnv(t *testing.T) {
 	envExecutorImage = imageName
 	envExecutorImageRelated = ""
 	mlDep := createTestSeldonDeployment()
-	con, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
+	con, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, &v1.ResourceRequirements{})
 	g.Expect(err).To(BeNil())
 	g.Expect(con.Image).To(Equal(imageName))
 	cleanEnvImages()
@@ -124,7 +125,7 @@ func TestExecutorCreateEnvRelated(t *testing.T) {
 	envExecutorImage = imageName
 	envExecutorImageRelated = imageNameRelated
 	mlDep := createTestSeldonDeployment()
-	con, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
+	con, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, &v1.ResourceRequirements{})
 	g.Expect(err).To(BeNil())
 	g.Expect(con.Image).To(Equal(imageNameRelated))
 	cleanEnvImages()

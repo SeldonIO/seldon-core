@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"os"
 	"sync"
 
 	"github.com/go-logr/logr"
@@ -14,7 +15,14 @@ import (
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 )
 
-const NilPUIDError = "context value for Seldon PUID Header is nil"
+const (
+	NilPUIDError                        = "context value for Seldon PUID Header is nil"
+	ENV_REQUEST_LOGGER_DEFAULT_ENDPOINT = "REQUEST_LOGGER_DEFAULT_ENDPOINT"
+)
+
+var (
+	envRequestLoggerDefaultEndpoint = os.Getenv(ENV_REQUEST_LOGGER_DEFAULT_ENDPOINT)
+)
 
 type PredictorProcess struct {
 	Ctx       context.Context
@@ -241,7 +249,7 @@ func (p *PredictorProcess) getLogUrl(logger *v1.Logger) (*url.URL, error) {
 	if logger.Url != nil {
 		return url.Parse(*logger.Url)
 	} else {
-		return url.Parse(payloadLogger.GetLoggerDefaultUrl(p.Namespace))
+		return url.Parse(envRequestLoggerDefaultEndpoint)
 	}
 }
 
@@ -322,10 +330,49 @@ func (p *PredictorProcess) Metadata(node *v1.PredictiveUnit, modelName string, m
 	}
 }
 
+func (p *PredictorProcess) GraphMetadata(spec *v1.PredictorSpec) (*GraphMetadata, error) {
+	metadataMap, err := p.ModelMetadataMap(spec.Graph)
+	if err != nil {
+		return nil, err
+	}
+
+	output := &GraphMetadata{
+		Name:   spec.Name,
+		Models: metadataMap,
+	}
+
+	inputNodeMeta, outputNodeMeta := output.getEdgeNodes(spec.Graph)
+	output.GraphInputs = inputNodeMeta.Inputs
+	output.GraphOutputs = outputNodeMeta.Outputs
+
+	return output, nil
+}
+
 func (p *PredictorProcess) Feedback(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	tmsg, err := p.feedbackChildren(node, msg)
 	if err != nil {
 		return tmsg, err
 	}
 	return p.feedback(node, msg)
+}
+
+func (p *PredictorProcess) ModelMetadataMap(node *v1.PredictiveUnit) (map[string]payload.ModelMetadata, error) {
+	resPayload, err := p.Client.ModelMetadata(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, nil, p.Meta.Meta)
+	if err != nil {
+		return nil, err
+	}
+
+	var output = map[string]payload.ModelMetadata{
+		node.Name: resPayload,
+	}
+	for _, child := range node.Children {
+		childMeta, err := p.ModelMetadataMap(&child)
+		if err != nil {
+			return nil, err
+		}
+		for k, v := range childMeta {
+			output[k] = v
+		}
+	}
+	return output, nil
 }

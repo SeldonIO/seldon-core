@@ -8,3 +8,4 @@ spec:
   name: seldon-operator
   source: seldon-operators
   sourceNamespace: marketplace
+  startingCSV: seldon-operator.v1.1.0

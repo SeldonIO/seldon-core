@@ -24,7 +24,8 @@ HELM_VERSION_IF_START = (
 )
 HELM_KUBEFLOW_IF_START = "{{- if .Values.kubeflow }}\n"
 HELM_KUBEFLOW_IF_NOT_START = "{{- if not .Values.kubeflow }}\n"
-HELM_CREATERESOURCES_IF_START = "{{- if not .Values.createResources }}\n"
+HELM_CREATERESOURCES_IF_START = "{{- if not .Values.managerCreateResources }}\n"
+HELM_CREATERESOURCES_RBAC_IF_START = "{{- if .Values.managerCreateResources }}\n"
 # HELM_SECRET_IF_START = '{{- if .Values.webhook.secretProvided -}}\n'
 HELM_IF_END = "{{- end }}\n"
 
@@ -43,15 +44,16 @@ HELM_ENV_SUBST = {
     "ISTIO_TLS_MODE": "istio.tlsMode",
     "PREDICTIVE_UNIT_SERVICE_PORT": "predictiveUnit.port",
     "PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME": "predictiveUnit.defaultEnvSecretRefName",
+    "PREDICTIVE_UNIT_METRICS_PORT_NAME": "predictiveUnit.metricsPortName",
     "USE_EXECUTOR": "executor.enabled",
-    "EXECUTOR_SERVER_GRPC_PORT": "engine.grpc.port",
     "EXECUTOR_CONTAINER_IMAGE_PULL_POLICY": "executor.image.pullPolicy",
     "EXECUTOR_SERVER_PORT": "executor.port",
+    "EXECUTOR_SERVER_METRICS_PORT_NAME": "executor.metricsPortName",
     "EXECUTOR_PROMETHEUS_PATH": "executor.prometheus.path",
     "EXECUTOR_CONTAINER_USER": "executor.user",
     "EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME": "executor.serviceAccount.name",
-    "CREATE_RESOURCES": "createResources",
-    "EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX": "executor.defaultRequestLoggerEndpointPrefix",
+    "MANAGER_CREATE_RESOURCES": "managerCreateResources",
+    "EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT": "executor.requestLogger.defaultEndpoint",
     "DEFAULT_USER_ID": "defaultUserID",
 }
 HELM_VALUES_IMAGE_PULL_POLICY = "{{ .Values.image.pullPolicy }}"
@@ -120,6 +122,9 @@ if __name__ == "__main__":
                     "image"
                 ] = "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
 
+                # ServiceAccount
+                res["spec"]["template"]["spec"]["serviceAccountName"] = helm_value("serviceAccount.name")
+
                 # Resource requests
                 res["spec"]["template"]["spec"]["containers"][0]["resources"][
                     "requests"
@@ -174,6 +179,7 @@ if __name__ == "__main__":
                 res["data"]["storageInitializer"] = helm_value_json(
                     "storageInitializer"
                 )
+                res["data"]["explainer"] = helm_value_json("explainer")
 
             if kind == "serviceaccount" and name == "seldon-manager":
                 res["metadata"]["name"] = helm_value("serviceAccount.name")
@@ -276,7 +282,13 @@ if __name__ == "__main__":
             if name.find("spartakus") > -1:
                 fdata = HELM_SPARTAKUS_IF_START + fdata + HELM_IF_END
             elif name == "seldon-webhook-rolebinding" or name == "seldon-webhook-role":
-                fdata = HELM_CREATERESOURCES_IF_START + fdata + HELM_IF_END
+                fdata = (
+                        HELM_CREATERESOURCES_RBAC_IF_START
+                        + HELM_RBAC_IF_START
+                        + fdata
+                        + HELM_IF_END
+                        + HELM_IF_END
+                )
             # cluster roles for single namespace
             elif name == "seldon-manager-rolebinding" or name == "seldon-manager-role":
                 fdata = (
@@ -334,6 +346,15 @@ if __name__ == "__main__":
                     + fdata
                     + HELM_IF_END
                     + HELM_IF_END
+                )
+            elif (
+                name == "seldon-leader-election-rolebinding"
+                or name == "seldon-leader-election-role"
+                ):
+                fdata = (
+                        HELM_RBAC_IF_START
+                        + fdata
+                        + HELM_IF_END
                 )
             elif name == "seldon-manager" and kind == "serviceaccount":
                 fdata = HELM_SA_IF_START + fdata + HELM_IF_END

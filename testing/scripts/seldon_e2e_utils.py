@@ -1,3 +1,4 @@
+import os
 import requests
 import re
 import grpc
@@ -15,8 +16,13 @@ from requests.auth import HTTPBasicAuth
 from seldon_core.proto import prediction_pb2
 from seldon_core.proto import prediction_pb2_grpc
 
+from google.protobuf import empty_pb2
+
 API_AMBASSADOR = "localhost:8003"
 API_ISTIO_GATEWAY = "localhost:8004"
+
+TESTING_ROOT_PATH = os.path.dirname(os.path.dirname(__file__))
+RESOURCES_PATH = os.path.join(TESTING_ROOT_PATH, "resources")
 
 
 def get_seldon_version():
@@ -99,7 +105,7 @@ def get_deployment_names(sdep_name, namespace, attempts=20, sleep=5):
 
 
 def wait_for_rollout(
-    sdep_name, namespace, attempts=20, sleep=5, expected_deployments=1
+    sdep_name, namespace, attempts=50, sleep=5, expected_deployments=1
 ):
     deployment_names = []
     for _ in range(attempts):
@@ -154,6 +160,7 @@ def wait_for_status(name, namespace, attempts=20, sleep=5):
             stdout=subprocess.PIPE,
         )
         data = json.loads(ret.stdout)
+        # should prob be checking for Failed but https://github.com/SeldonIO/seldon-core/issues/2044
         if ("status" in data) and (data["status"]["state"] == "Available"):
             logging.info(f"Status for SeldonDeployment {name} is ready.")
             return data
@@ -339,6 +346,8 @@ def rest_request_ambassador(
 
     if dtype == "tensor":
         payload = {"data": {"tensor": {"shape": shape, "values": arr.tolist()}}}
+    elif dtype == "strData":
+        payload = {"strData": arr}
     else:
         payload = {"data": {"ndarray": arr}}
 
@@ -380,6 +389,16 @@ def rest_request_ambassador(
             + deployment_name
             + "/api/v0.1/metadata/"
             + model_name
+        )
+    elif method == "graph-metadata":
+        response = requests.get(
+            "http://"
+            + endpoint
+            + "/seldon/"
+            + namespace
+            + "/"
+            + deployment_name
+            + "/api/v1.0/metadata"
         )
     elif method == "openapi_ui":
         response = requests.get(
@@ -484,6 +503,31 @@ def grpc_request_ambassador(
         raise e
 
 
+def grpc_request_ambassador_metadata(
+    deployment_name, namespace, endpoint="localhost:8004", model_name=None,
+):
+    if model_name is None:
+        request = empty_pb2.Empty()
+    else:
+        request = prediction_pb2.SeldonModelMetadataRequest(name=model_name)
+    channel = grpc.insecure_channel(endpoint)
+    stub = prediction_pb2_grpc.SeldonStub(channel)
+    if namespace is None:
+        metadata = [("seldon", deployment_name)]
+    else:
+        metadata = [("seldon", deployment_name), ("namespace", namespace)]
+    try:
+        if model_name is None:
+            response = stub.GraphMetadata(request=request, metadata=metadata)
+        else:
+            response = stub.ModelMetadata(request=request, metadata=metadata)
+        channel.close()
+        return response
+    except Exception as e:
+        channel.close()
+        raise e
+
+
 def grpc_request_ambassador2(
     deployment_name,
     namespace,
@@ -558,9 +602,14 @@ def assert_model(sdep_name, namespace, initial=False, endpoint=API_AMBASSADOR):
     # NOTE: The following will test if the `SeldonDeployment` can be fetched as
     # a Kubernetes resource. This covers cases where some resources (e.g. CRD
     # versions or webhooks) may get inadvertently removed between versions.
+    # not checking status here as wait_for_status called previously
     ret = run(
         f"kubectl get -n {namespace} sdep {sdep_name}",
         stdout=subprocess.DEVNULL,
         shell=True,
     )
     assert ret.returncode == 0
+
+
+def to_resources_path(file_name):
+    return os.path.join(RESOURCES_PATH, file_name)

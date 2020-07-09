@@ -1,5 +1,5 @@
-scipy>= 0.13.3
-scikit-learn>=0.18
-spacy==2.0.18
-dill==0.2.9
-seldon-core==0.2.7
+seldon-core>=1.1
+scipy>=1.0
+scikit-learn>=0.20
+spacy>=2.2
+dill>=0.3
