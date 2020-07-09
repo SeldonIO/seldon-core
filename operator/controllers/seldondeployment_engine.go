@@ -104,7 +104,7 @@ func addEngineToDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machine
 
 	volFound := false
 	for _, vol := range deploy.Spec.Template.Spec.Volumes {
-		if vol.Name == machinelearningv1.PODINFO_VOLUME_NAME {
+		if vol.Name == machinelearningv1.PODINFO_VOLUME_NAME || vol.Name == machinelearningv1.OLD_PODINFO_VOLUME_NAME {
 			volFound = true
 		}
 	}
@@ -335,6 +335,9 @@ func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machine
 	pCopy := p.DeepCopy()
 	// Set traffic to zero to ensure this doesn't cause a diff in the resulting  deployment created
 	pCopy.Traffic = 0
+	// Set replicas to zero to ensure this doesn't cause a diff in the resulting deployment created
+	var replicasCopy int32 = 0
+	pCopy.Replicas = &replicasCopy
 	predictorB64, err := getEngineVarJson(pCopy)
 	if err != nil {
 		return nil, err

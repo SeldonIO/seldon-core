@@ -312,7 +312,6 @@ func (r *SeldonRestApi) graphMetadata(w http.ResponseWriter, req *http.Request) 
 
 	ctx := req.Context()
 
-	r.Log.Info("Tracing:", opentracing.IsGlobalTracerRegistered())
 	// Apply tracing if active
 	if opentracing.IsGlobalTracerRegistered() {
 		var serverSpan opentracing.Span
@@ -322,14 +321,14 @@ func (r *SeldonRestApi) graphMetadata(w http.ResponseWriter, req *http.Request) 
 
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header)
 
-	output, err := predictor.NewGraphMetadata(&seldonPredictorProcess, r.predictor)
+	graphMetadata, err := seldonPredictorProcess.GraphMetadata(r.predictor)
 
 	if err != nil {
 		r.respondWithError(w, nil, err)
 		return
 	}
 
-	msg, _ := json.Marshal(output)
+	msg, _ := json.Marshal(graphMetadata)
 	resPayload := payload.BytesPayload{Msg: msg, ContentType: ContentTypeJSON}
 
 	r.respondWithSuccess(w, http.StatusOK, &resPayload)

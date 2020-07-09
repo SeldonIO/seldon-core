@@ -115,8 +115,6 @@ spec:
           value: '{{ .Values.executor.image.pullPolicy }}'
         - name: EXECUTOR_PROMETHEUS_PATH
           value: '{{ .Values.executor.prometheus.path }}'
-        - name: EXECUTOR_SERVER_GRPC_PORT
-          value: '{{ .Values.engine.grpc.port }}'
         - name: EXECUTOR_SERVER_PORT
           value: '{{ .Values.executor.port }}'
         - name: EXECUTOR_CONTAINER_USER
@@ -152,7 +150,7 @@ spec:
           name: cert
           readOnly: true
 {{- end }}
-      serviceAccountName: seldon-manager
+      serviceAccountName: '{{ .Values.serviceAccount.name }}'
       terminationGracePeriodSeconds: 10
 {{- if not .Values.managerCreateResources }}
       volumes:

@@ -150,3 +150,7 @@ func (kc *KafkaClient) Unmarshall(msg []byte, contentType string) (payload.Seldo
 	reqPayload := payload.BytesPayload{Msg: msg, ContentType: contentType}
 	return &reqPayload, nil
 }
+
+func (kc *KafkaClient) ModelMetadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.ModelMetadata, error) {
+	panic("implement me")
+}

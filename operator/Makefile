@@ -8,6 +8,8 @@ IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
 
+KIND_NAME ?= kind
+
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
 GOBIN=$(shell go env GOPATH)/bin
@@ -21,9 +23,16 @@ show_image:
 
 all: manager
 
+lint: licenses/dep.txt
+	# Check if licenses have changed
+	git \
+		--no-pager diff \
+		--exit-code \
+		./licenses
+
 # Run tests
 test: generate fmt vet manifests generate-resources
-	ginkgo -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis  
+	ginkgo -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis
 
 # Build manager binary
 manager: generate fmt vet
@@ -117,7 +126,7 @@ generate: controller-gen
 
 # Generate Clientset
 create-client: test
-	./hack/update-codegen.sh	
+	./hack/update-codegen.sh
 
 # Build the docker image
 docker-build: test generate-resources
@@ -146,11 +155,11 @@ redhat-image-scan:
 
 kind-image-install: docker-build
 	docker save ${IMG} > operator.tar
-	kind load image-archive operator.tar 
+	kind load image-archive operator.tar --name ${KIND_NAME}
 
 kind-image-install-redhat: docker-build-redhat
 	docker save ${IMG_REDHAT} > operator.tar
-	kind load image-archive operator.tar 
+	kind load image-archive operator.tar --name ${KIND_NAME}
 
 # find or download controller-gen
 # download controller-gen if necessary

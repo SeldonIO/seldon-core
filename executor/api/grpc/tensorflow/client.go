@@ -12,6 +12,8 @@ import (
 	"github.com/seldonio/seldon-core/executor/proto/tensorflow/serving"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	"io"
 	"math"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
@@ -149,6 +151,10 @@ func (s *TensorflowGrpcClient) Metadata(ctx context.Context, modelName string, h
 	}
 	resPayload := payload.ProtoPayload{Msg: resp}
 	return &resPayload, nil
+}
+
+func (s *TensorflowGrpcClient) ModelMetadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.ModelMetadata, error) {
+	return payload.ModelMetadata{}, status.Errorf(codes.Unimplemented, "ModelMetadata not implemented")
 }
 
 func (s *TensorflowGrpcClient) Feedback(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {

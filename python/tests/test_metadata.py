@@ -6,11 +6,14 @@ import pytest
 from unittest.mock import patch
 
 from seldon_core.metrics import SeldonMetrics
-from seldon_core.wrapper import get_rest_microservice
+from seldon_core.proto import prediction_pb2
+from seldon_core.wrapper import get_rest_microservice, SeldonModelGRPC
 from seldon_core.metadata import SeldonInvalidMetadataError, validate_model_metadata
+from seldon_core.utils import json_to_seldon_model_metadata
 
-from jsonschema.exceptions import ValidationError
-import os
+from google.protobuf import json_format
+
+
 
 # test default values
 
@@ -18,7 +21,6 @@ import os
 def test_default_values():
     meta = validate_model_metadata({})
     assert meta == {
-        "apiVersion": "v2",
         "name": "",
         "versions": [""],
         "platform": "",
@@ -31,7 +33,6 @@ def test_default_values_with_env():
     with patch("seldon_core.metadata.MODEL_IMAGE", "seldonio/sklearn-iris:0.1"):
         meta = validate_model_metadata({})
     assert meta == {
-        "apiVersion": "v2",
         "name": "seldonio/sklearn-iris",
         "versions": ["0.1"],
         "platform": "",
@@ -44,7 +45,6 @@ def test_default_values_with_colon_in_env():
     with patch("seldon_core.metadata.MODEL_IMAGE", "localhost:32000/sklearn-iris:0.1"):
         meta = validate_model_metadata({})
     assert meta == {
-        "apiVersion": "v2",
         "name": "localhost:32000/sklearn-iris",
         "versions": ["0.1"],
         "platform": "",
@@ -56,45 +56,135 @@ def test_default_values_with_colon_in_env():
 # V1 meta tests
 
 
-def test_v1_array():
-    data = """
-        apiVersion: v1
+@pytest.mark.parametrize(
+    "messagetype",
+    ["tensor", "ndarray", "tftensor", "jsonData", "binData", "strData", "custom_data"],
+)
+def test_v1_only_messagetype(messagetype):
+    data = f"""
         name: my-model-name
         versions: [ my-model-version-01 ]
         platform: seldon
         inputs:
-          datatype: array
-          shape: [ 2, 2 ]
+        - messagetype: {messagetype}
         outputs:
-          datatype: array
-          shape: [ 1 ]
+        - messagetype: {messagetype}
     """
-    validate_model_metadata(yaml.safe_load(data))
+    meta_json = validate_model_metadata(yaml.safe_load(data))
+    meta_proto = json_to_seldon_model_metadata(meta_json)
+    assert meta_json == {
+        "name": "my-model-name",
+        "versions": ["my-model-version-01"],
+        "platform": "seldon",
+        "inputs": [{"messagetype": f"{messagetype}"}],
+        "outputs": [{"messagetype": f"{messagetype}"}],
+    }
+    assert json.loads(json_format.MessageToJson(meta_proto)) == {
+        "name": "my-model-name",
+        "versions": ["my-model-version-01"],
+        "platform": "seldon",
+        "inputs": [{"messagetype": f"{messagetype}"}],
+        "outputs": [{"messagetype": f"{messagetype}"}],
+    }
 
 
-def test_v1_json():
+def test_v1_mixed_multiple_inputs():
     data = """
-        apiVersion: v1
         name: my-model-name
         versions: [ my-model-version-01 ]
         platform: seldon
         inputs:
-          datatype: jsonData
+        - messagetype: "tensor"
+          schema:
+            names: [a, b, c, d]
+            shape: [ 2, 2 ]
+        - messagetype: jsonData
         outputs:
-          datatype: array
-          shape: [ 1 ]
+        - messagetype: "binData"
     """
-    validate_model_metadata(yaml.safe_load(data))
+    meta_json = validate_model_metadata(yaml.safe_load(data))
+    meta_proto = json_to_seldon_model_metadata(meta_json)
+    assert meta_json == {
+        "name": "my-model-name",
+        "versions": ["my-model-version-01"],
+        "platform": "seldon",
+        "inputs": [
+            {
+                "messagetype": "tensor",
+                "schema": {"names": ["a", "b", "c", "d"], "shape": [2, 2]},
+            },
+            {"messagetype": "jsonData"},
+        ],
+        "outputs": [{"messagetype": "binData"}],
+    }
+    assert json.loads(json_format.MessageToJson(meta_proto)) == {
+        "name": "my-model-name",
+        "versions": ["my-model-version-01"],
+        "platform": "seldon",
+        "inputs": [
+            {
+                "messagetype": "tensor",
+                "schema": {"names": ["a", "b", "c", "d"], "shape": [2, 2]},
+            },
+            {"messagetype": "jsonData"},
+        ],
+        "outputs": [{"messagetype": "binData"}],
+    }
+
+
+@pytest.mark.parametrize(
+    "messagetype", ["tensor", "ndarray", "tftensor", "custom_data"]
+)
+def test_v1_array(messagetype):
+    data = f"""
+        name: my-model-name
+        versions: [ my-model-version-01 ]
+        platform: seldon
+        inputs:
+        - messagetype: {messagetype}
+          schema:
+            names: [a, b, c, d]
+            shape: [ 2, 2 ]
+        outputs:
+        - messagetype: {messagetype}
+          schema:
+            shape: [ 1 ]
+    """
+    meta_json = validate_model_metadata(yaml.safe_load(data))
+    meta_proto = json_to_seldon_model_metadata(meta_json)
+    assert meta_json == {
+        "name": "my-model-name",
+        "versions": ["my-model-version-01"],
+        "platform": "seldon",
+        "inputs": [
+            {
+                "messagetype": f"{messagetype}",
+                "schema": {"names": ["a", "b", "c", "d"], "shape": [2, 2]},
+            }
+        ],
+        "outputs": [{"messagetype": f"{messagetype}", "schema": {"shape": [1]}}],
+    }
+    assert json.loads(json_format.MessageToJson(meta_proto)) == {
+        "name": "my-model-name",
+        "versions": ["my-model-version-01"],
+        "platform": "seldon",
+        "inputs": [
+            {
+                "messagetype": f"{messagetype}",
+                "schema": {"names": ["a", "b", "c", "d"], "shape": [2.0, 2.0]},
+            }
+        ],
+        "outputs": [{"messagetype": f"{messagetype}", "schema": {"shape": [1.0]}}],
+    }
 
 
 def test_v1_json_with_schema():
     data = """
-        apiVersion: v1
         name: my-model-name
         versions: [ my-model-version-01 ]
         platform: seldon
         inputs:
-          datatype: jsonData
+        - messagetype: jsonData
           schema:
               type: object
               properties:
@@ -108,40 +198,52 @@ def test_v1_json_with_schema():
                         type: number
                         format: double
         outputs:
-          datatype: array
-          shape: [ 1 ]
+        - messagetype: jsonData
     """
-    validate_model_metadata(yaml.safe_load(data))
-
-
-def test_v1_str_data():
-    data = """
-        apiVersion: v1
-        name: my-model-name
-        versions: [ my-model-version-01 ]
-        platform: seldon
-        inputs:
-          datatype: strData
-        outputs:
-          datatype: array
-          shape: [ 1 ]
-    """
-    validate_model_metadata(yaml.safe_load(data))
-
-
-def test_v1_bin_data():
-    data = """
-        apiVersion: v1
-        name: my-model-name
-        versions: [ my-model-version-01 ]
-        platform: seldon
-        inputs:
-          datatype: binData
-        outputs:
-          datatype: array
-          shape: [ 1 ]
-    """
-    validate_model_metadata(yaml.safe_load(data))
+    meta_json = validate_model_metadata(yaml.safe_load(data))
+    meta_proto = json_to_seldon_model_metadata(meta_json)
+    assert meta_json == {
+        "name": "my-model-name",
+        "versions": ["my-model-version-01"],
+        "platform": "seldon",
+        "inputs": [
+            {
+                "messagetype": "jsonData",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "names": {"type": "array", "items": {"type": "string"}},
+                        "data": {
+                            "type": "array",
+                            "items": {"type": "number", "format": "double"},
+                        },
+                    },
+                },
+            }
+        ],
+        "outputs": [{"messagetype": "jsonData"}],
+    }
+    assert json.loads(json_format.MessageToJson(meta_proto)) == {
+        "name": "my-model-name",
+        "versions": ["my-model-version-01"],
+        "platform": "seldon",
+        "inputs": [
+            {
+                "messagetype": "jsonData",
+                "schema": {
+                    "properties": {
+                        "names": {"items": {"type": "string"}, "type": "array"},
+                        "data": {
+                            "type": "array",
+                            "items": {"type": "number", "format": "double"},
+                        },
+                    },
+                    "type": "object",
+                },
+            }
+        ],
+        "outputs": [{"messagetype": "jsonData"}],
+    }
 
 
 # V1 meta tests (failures)
@@ -151,26 +253,48 @@ def test_v1_bin_data():
     "invalid_input",
     [
         {},  # no such schema
-        {"datatype": "mytype"},  # to such valid schema
-        {"datatype": "array"},  # fails because shape is missing
-        {"datatype": "array", "shape": "1, 2"},  # shape is wrong type
-        {"datatype": "array", "shape": "1, 2"},  # shape is wrong type
-        {"datatype": "array", "shape": [2, 2], "invalid": "field"},
-        {"datatype": "jsonData", "invalid": "field"},
-        {"datatype": "jsonData", "schema": "some string"},  # schema should be dict
-        {"datatype": "strData", "invalid": "field"},
-        {"datatype": "binData", "invalid": "field"},
+        {"messagetype": "mytype"},  # to such valid schema
+        {"messagetype": "array"},  # fails because shape is missing
+        {"messagetype": "array", "shape": "1, 2"},  # shape is wrong type
+        {"messagetype": "array", "shape": "1, 2"},  # shape is wrong type
+        {"messagetype": "array", "shape": [2, 2], "invalid": "field"},
+        {"messagetype": "jsonData", "invalid": "field"},
+        {"messagetype": "jsonData", "schema": "some string"},  # schema should be dict
+        {"messagetype": "strData", "invalid": "field"},
+        {"messagetype": "binData", "invalid": "field"},
     ],
 )
 def test_v1_invalid_inputs(invalid_input):
     valid_base = {
-        "apiVersion": "v1",
-        "inputs": {"datatype": "strData"},
-        "outputs": {"datatype": "strData"},
+        "inputs": [{"messagetype": "strData"}],
+        "outputs": [{"messagetype": "strData"}],
     }
     with pytest.raises(SeldonInvalidMetadataError):
         validate_model_metadata({**valid_base, **{"inputs": invalid_input}})
         validate_model_metadata({**valid_base, **{"outputs": invalid_input}})
+
+
+@pytest.mark.parametrize(
+    "messagetype", ["tensor", "ndarray", "tftensor", "binData", "strData"]
+)
+def test_v1_invalid_schema_fields(messagetype):
+    meta = {
+        "inputs": [
+            {"messagetype": messagetype, "schema": {"custom-field": "custom-def"}}
+        ]
+    }
+    with pytest.raises(SeldonInvalidMetadataError):
+        validate_model_metadata(meta)
+
+
+@pytest.mark.parametrize("messagetype", ["jsonData", "customData"])
+def test_v1_valid_custom_schema(messagetype):
+    meta = {
+        "inputs": [
+            {"messagetype": messagetype, "schema": {"custom-field": "custom-def"}}
+        ]
+    }
+    validate_model_metadata(meta)
 
 
 # V2 meta tests
@@ -178,7 +302,6 @@ def test_v1_invalid_inputs(invalid_input):
 
 def test_v2():
     data = """
-        apiVersion: v2
         name: my-model-name
         versions: [ my-model-version-01 ]
         platform: seldon
@@ -191,7 +314,64 @@ def test_v2():
           name: output
           shape: [ 3 ]
     """
-    validate_model_metadata(yaml.safe_load(data))
+    meta_json = validate_model_metadata(yaml.safe_load(data))
+    meta_proto = json_to_seldon_model_metadata(meta_json)
+    assert meta_json == {
+        "name": "my-model-name",
+        "versions": ["my-model-version-01"],
+        "platform": "seldon",
+        "inputs": [{"datatype": "BYTES", "name": "input", "shape": [1, 4]}],
+        "outputs": [{"datatype": "BYTES", "name": "output", "shape": [3]}],
+    }
+    assert json.loads(json_format.MessageToJson(meta_proto)) == {
+        "name": "my-model-name",
+        "versions": ["my-model-version-01"],
+        "platform": "seldon",
+        "inputs": [{"name": "input", "datatype": "BYTES", "shape": ["1", "4"]}],
+        "outputs": [{"name": "output", "datatype": "BYTES", "shape": ["3"]}],
+    }
+
+
+# mix test
+
+
+def test_v1_v2_mix():
+    data = """
+        name: my-model-name
+        versions: [ my-model-version-01 ]
+        platform: seldon
+        inputs:
+        - datatype: BYTES
+          name: input
+          shape: [ 1, 4 ]
+        - messagetype: jsonData
+        outputs:
+        - datatype: BYTES
+          name: output
+          shape: [ 3 ]
+    """
+    meta_json = validate_model_metadata(yaml.safe_load(data))
+    meta_proto = json_to_seldon_model_metadata(meta_json)
+    assert meta_json == {
+        "name": "my-model-name",
+        "versions": ["my-model-version-01"],
+        "platform": "seldon",
+        "inputs": [
+            {"datatype": "BYTES", "name": "input", "shape": [1, 4]},
+            {"messagetype": "jsonData"},
+        ],
+        "outputs": [{"datatype": "BYTES", "name": "output", "shape": [3]}],
+    }
+    assert json.loads(json_format.MessageToJson(meta_proto)) == {
+        "name": "my-model-name",
+        "versions": ["my-model-version-01"],
+        "platform": "seldon",
+        "inputs": [
+            {"name": "input", "datatype": "BYTES", "shape": ["1", "4"]},
+            {"messagetype": "jsonData"},
+        ],
+        "outputs": [{"name": "output", "datatype": "BYTES", "shape": ["3"]}],
+    }
 
 
 # validate_model_metadata tests block
@@ -206,7 +386,7 @@ def test_validate_model_metadata():
         "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1]}],
     }
     with patch("seldon_core.metadata.MODEL_IMAGE", None):
-        assert {"apiVersion": "v2", **meta} == validate_model_metadata(meta)
+        assert meta == validate_model_metadata(meta)
 
 
 def test_validate_model_metadata_with_env():
@@ -218,7 +398,7 @@ def test_validate_model_metadata_with_env():
         "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1]}],
     }
     with patch("seldon_core.metadata.MODEL_IMAGE", "seldonio/sklearn-iris:0.1"):
-        assert {"apiVersion": "v2", **meta} == validate_model_metadata(meta)
+        assert meta == validate_model_metadata(meta)
 
 
 def test_validate_model_metadata_with_colon_in_env():
@@ -230,7 +410,7 @@ def test_validate_model_metadata_with_colon_in_env():
         "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1]}],
     }
     with patch("seldon_core.metadata.MODEL_IMAGE", "localhost:32000/sklearn-iris:0.1"):
-        assert {"apiVersion": "v2", **meta} == validate_model_metadata(meta)
+        assert meta == validate_model_metadata(meta)
 
 
 @pytest.mark.parametrize("invalid_versions", ["v1", [1], "[v]", "[1]", 1, 1.1])
@@ -316,7 +496,21 @@ def test_model_metadata_ok():
 
     rv = client.get("/metadata")
     assert rv.status_code == 200
-    assert json.loads(rv.data) == {"apiVersion": "v2", **UserObject.METADATA_RESPONSE}
+
+
+def test_model_metadata_ok_grpc():
+    user_object = UserObject()
+    seldon_metrics = SeldonMetrics()
+
+    app = SeldonModelGRPC(user_object, seldon_metrics)
+    resp = app.Metadata(None, None)
+    assert json.loads(json_format.MessageToJson(resp)) == {
+        "name": "my-model-name",
+        "versions": ["model-version"],
+        "platform": "model-platform",
+        "inputs": [{"name": "input", "datatype": "BYTES", "shape": ["1"]}],
+        "outputs": [{"name": "output", "datatype": "BYTES", "shape": ["1"]}],
+    }
 
 
 @pytest.mark.parametrize("env_value", [json_meta, yaml_meta])
@@ -338,7 +532,6 @@ def test_model_metadata_value_in_env(env_value):
     assert rv.status_code == 200
     assert json.loads(rv.data) == {
         **UserObject.METADATA_RESPONSE,
-        "apiVersion": "v2",
         **yaml.safe_load(env_value),
     }
 

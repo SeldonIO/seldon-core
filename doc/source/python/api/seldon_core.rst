@@ -24,6 +24,14 @@ seldon\_core.api\_tester module
     :undoc-members:
     :show-inheritance:
 
+seldon\_core.app module
+-----------------------
+
+.. automodule:: seldon_core.app
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 seldon\_core.batch\_processor module
 ------------------------------------
 

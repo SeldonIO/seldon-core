@@ -38,7 +38,9 @@ Example response payload
 ```protobuf
 service Model {
   rpc Predict(SeldonMessage) returns (SeldonMessage) {};
- }
+  rpc SendFeedback(Feedback) returns (SeldonMessage) {};
+  rpc Metadata(google.protobuf.Empty) returns (SeldonModelMetadata) {};
+}
 ```
 
 ## Route
@@ -194,4 +196,3 @@ service OutputTransformer {
   rpc TransformOutput(SeldonMessage) returns (SeldonMessage) {};
 }
 ```
-

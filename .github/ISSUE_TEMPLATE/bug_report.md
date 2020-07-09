@@ -30,10 +30,14 @@ To help us address your issue, please provide us as much of the information requ
 ## Environment
 <!-- Description of environment -->
 
-* Kubernetes Version: [e.g. 1.15]
+<!-- You Can fill it manually or paste the output of the command below:
+
 * Cloud Provider: [e.g. GKE, AWS, Bare Metal, Kind, Minikube]
+* Kubernetes Cluster Version [Output of `kubectl version`] 
 * Deployed Seldon System Images: [Output of `kubectl get --namespace seldon-system deploy seldon-controller-manager -o yaml  | grep seldonio`]
-* Kubernetes Cluster Version [Output of `kubectl version`]
+
+Alternatively run `echo "#### Kubernetes version:\n $(kubectl version) \n\n#### Seldon Images:\n$(kubectl get --namespace seldon-system deploy seldon-controller-manager -o yaml  | grep seldonio)"`
+-->
 
 ## Model Details <!-- If the issue is with your deployed model you can also provide the following for fulll insights -->
 * Images of your model: [Output of: `kubectl get seldondeployment -n <yourmodelnamespace> <seldondepname> -o yaml | grep image:` where `<yourmodelnamespace>`]

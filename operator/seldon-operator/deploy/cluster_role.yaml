@@ -42,6 +42,7 @@ rules:
   - get
   - list
   - create
+  - delete
   - update
 - apiGroups:
   - apps
@@ -56,6 +57,7 @@ rules:
   resources:
   - customresourcedefinitions
   verbs:
+  - create
   - get
   - list
 - apiGroups:
