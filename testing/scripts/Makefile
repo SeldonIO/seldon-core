@@ -44,13 +44,16 @@ helm_setup:
 	helm repo add stable https://kubernetes-charts.storage.googleapis.com/
 	helm repo add seldonio https://storage.googleapis.com/seldon-charts
 	helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
+	helm repo add datawire https://www.getambassador.io
 	helm repo update
 
 install_ambassador:
 	helm install ambassador \
-		stable/ambassador \
+		datawire/ambassador \
 		-f ../resources/ambassador_values.yaml \
+		--set image.repository=quay.io/datawire/ambassador \
 		--set crds.keep=false \
+		--set enableAES=false \
 		--namespace seldon \
 		--set replicaCount=1 \
 		--wait

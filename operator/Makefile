@@ -23,6 +23,13 @@ show_image:
 
 all: manager
 
+lint: licenses/dep.txt
+	# Check if licenses have changed
+	git \
+		--no-pager diff \
+		--exit-code \
+		./licenses
+
 # Run tests
 test: generate fmt vet manifests generate-resources
 	ginkgo -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis

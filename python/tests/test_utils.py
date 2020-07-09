@@ -442,3 +442,27 @@ def test_getenv(monkeypatch, env, expected):
 
     value = scu.getenv("FOO1", "FOO2", "FOO3", default="DEF")
     assert value == expected
+
+
+@pytest.mark.parametrize(
+    "env_val,expected",
+    [
+        ("TRUE", True),
+        ("true", True),
+        ("t", True),
+        ("1", True),
+        ("FALSE", False),
+        ("false", False),
+        ("f", False),
+        ("0", False),
+        (None, False),
+    ],
+)
+def test_getenv_as_bool(monkeypatch, env_val, expected):
+    env_var = "MY_BOOL_VAR"
+
+    if env_val is not None:
+        monkeypatch.setenv(env_var, env_val)
+
+    value = scu.getenv_as_bool(env_var, default=False)
+    assert value == expected
