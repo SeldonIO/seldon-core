@@ -129,10 +129,7 @@ class TestTagsPythonS2iK8s(object):
         assert r.status_code == 200
 
         r = rest_request_ambassador(
-            "mymodel-modelmetadata",
-            namespace,
-            method="metadata",
-            model_name="my-model",
+            "mymodel-modelmetadata", namespace, method="metadata", model_name="my-model"
         )
 
         assert r.status_code == 200
@@ -143,7 +140,7 @@ class TestTagsPythonS2iK8s(object):
         assert res == model_metadata
 
         r = rest_request_ambassador(
-            "mymodel-modelmetadata", namespace, method="graph-metadata",
+            "mymodel-modelmetadata", namespace, method="graph-metadata"
         )
 
         assert r.status_code == 200
@@ -184,7 +181,7 @@ class TestTagsPythonS2iK8s(object):
         assert res == model_metadata
 
         r = rest_request_ambassador(
-            "mymodel-manifestmetadata", namespace, method="graph-metadata",
+            "mymodel-manifestmetadata", namespace, method="graph-metadata"
         )
 
         assert r.status_code == 200
@@ -204,7 +201,7 @@ class TestTagsPythonS2iK8s(object):
         r = initial_grpc_request("mymodel-modelmetadata", namespace)
 
         r = grpc_request_ambassador_metadata(
-            "mymodel-modelmetadata", namespace, model_name="my-model",
+            "mymodel-modelmetadata", namespace, model_name="my-model"
         )
 
         res = json.loads(json_format.MessageToJson(r))

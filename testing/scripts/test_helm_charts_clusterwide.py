@@ -34,9 +34,7 @@ class TestClusterWide(object):
             "helm install myabtest ../../helm-charts/seldon-abtest "
             f"--namespace {namespace}"
         )
-        run(
-            command, shell=True, check=True,
-        )
+        run(command, shell=True, check=True)
         wait_for_status("myabtest", namespace)
         wait_for_rollout("myabtest", namespace, expected_deployments=2)
         initial_rest_request("myabtest", namespace)
