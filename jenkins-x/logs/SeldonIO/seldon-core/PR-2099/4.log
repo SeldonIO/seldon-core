@@ -1,0 +1,92 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-2099-in-dsphf-4[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-9nxpb[0m
+{"level":"info","ts":1594297727.5490305,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1594297727.5497491,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2099-in-dsphf-4[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-q7kkm[0m
+{"level":"info","ts":1594297728.9371414,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594297728.9394464,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2099-in-dsphf-4[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2099-in-dsphf-4[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-4dvrq[0m
+{"level":"info","ts":1594297734.0235014,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594297734.0252578,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2099-in-dsphf-4[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-2099-in-dsphf-f2qjz[0m
+{"level":"info","ts":1594297734.3580647,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1594297740.9482515,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2099-in-dsphf-4[0m stage [32mpr-build-comment[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2099-in-dsphf-4[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:a352b9e1ad537df7d92044c0a439498c023deda3,2099:5b452b4249427158b8e69eaba67c0e988dd8c992
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git fetch origin --unshallow 5b452b4249427158b8e69eaba67c0e988dd8c992: a352b9e1ad537df7d92044c0a439498c023deda3:
+DEBUG: ran git fetch --unshallow origin 5b452b4249427158b8e69eaba67c0e988dd8c992: a352b9e1ad537df7d92044c0a439498c023deda3: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard a352b9e1ad537df7d92044c0a439498c023deda3
+DEBUG: ran git reset --hard a352b9e1ad537df7d92044c0a439498c023deda3 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git merge 5b452b4249427158b8e69eaba67c0e988dd8c992
+DEBUG: ran git merge 5b452b4249427158b8e69eaba67c0e988dd8c992 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git log --format=%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%s%n%b%x1e a352b9e1ad537df7d92044c0a439498c023deda3..HEAD
+Merged SHA 5b452b4249427158b8e69eaba67c0e988dd8c992 with commit message 'initial cleanup of executor deps' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-2099-in-dsphf-4[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=2099
++ BUILD_NUMBER=4
++ PIPELINE_CONTEXT=integration
+++ cat
++++ date
++ COMMENT_MSG='Thu Jul  9 12:29:31 UTC 2020
+The logs for [integration] [4] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2099/4.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2099 --build=4'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=2099 '--comment=Thu Jul  9 12:29:31 UTC 2020
+The logs for [integration] [4] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2099/4.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2099 --build=4'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2099-in-dsphf-4[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-2099-in-dsphf-8tc6b[0m
+{"level":"info","ts":1594297773.7085695,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594297773.7853508,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2099-in-dsphf-4[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-2099-in-dsphf-8fx78[0m
+{"level":"info","ts":1594297773.8770354,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594297774.4669318,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2099-in-dsphf-4[0m stage [32mend-to-end[0m and container [32mstep-credential-initializer-7trxz[0m
+Unable to retrieve container logs for docker://7cf5e268757258936137c0538f59a69b6fb4aec1fe38e1dd78b168b12ebad9cb
+
+Showing logs for build [32mseldonio-seldon-core-pr-2099-in-dsphf-4[0m stage [32mend-to-end[0m and container [32mstep-working-dir-initializer-9lnkk[0m
+Unable to retrieve container logs for docker://142f67aad2ccefc0242cc879b4662937f251c6e44b29995291f3fb56354bccd4
+
+Showing logs for build [32mseldonio-seldon-core-pr-2099-in-dsphf-4[0m stage [32mend-to-end[0m and container [32mstep-place-tools[0m
+Unable to retrieve container logs for docker://35ebf95e44c2bc8af616034132d9f537e9c0796ffa555e10ace1e75c767c7fa9
+
+Showing logs for build [32mseldonio-seldon-core-pr-2099-in-dsphf-4[0m stage [32mend-to-end[0m and container [32mstep-create-dir-workspace-tj8r7[0m
+Unable to retrieve container logs for docker://a61325492ef4caa0bbfda82ea203c376720e1ec67ab2bd3281f5550548ac8061
+
+Showing logs for build [32mseldonio-seldon-core-pr-2099-in-dsphf-4[0m stage [32mend-to-end[0m and container [32mstep-source-copy-workspace-6x8nb[0m
+Unable to retrieve container logs for docker://94063399c2d09906b983c484825ec309612ef318ab3eb081009f04fcb146f2be
+
+Showing logs for build [32mseldonio-seldon-core-pr-2099-in-dsphf-4[0m stage [32mend-to-end[0m and container [32mstep-setup-builder-home[0m
+Unable to retrieve container logs for docker://4737f266648b243f3d9acef383cae1d1188f18d2cb16a0230de808203ca14e60
+
+Showing logs for build [32mseldonio-seldon-core-pr-2099-in-dsphf-4[0m stage [32mend-to-end[0m and container [32mstep-test-end-to-end[0m
+Unable to retrieve container logs for docker://8821d92b97fefebbafa7133680d6983645cf3110ca401173e7e6e337270afa76
+[31m
+Pipeline failed on stage 'end-to-end' : container 'step-test-end-to-end'. The execution of the pipeline has stopped.[0m
