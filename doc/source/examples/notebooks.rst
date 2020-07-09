@@ -20,7 +20,7 @@ Python Language Wrapper Examples
 .. toctree::
    :titlesonly:
 
-   Scikit-learn Spacy Reddit Text Classification Tutorial <sklearn_spacy_text_classifier_example>
+   SKLearn Spacy NLP <sklearn_spacy_text_classifier_example>
    SKLearn Iris Classifier <iris>
    SKLearn MNIST <sklearn_mnist>
    Sagemaker SKLearn Example <sagemaker_sklearn>   
