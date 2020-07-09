@@ -8,10 +8,7 @@ from unittest.mock import patch
 from seldon_core.metrics import SeldonMetrics
 from seldon_core.proto import prediction_pb2
 from seldon_core.wrapper import get_rest_microservice, SeldonModelGRPC
-from seldon_core.metadata import (
-    SeldonInvalidMetadataError,
-    validate_model_metadata,
-)
+from seldon_core.metadata import SeldonInvalidMetadataError, validate_model_metadata
 from seldon_core.utils import json_to_seldon_model_metadata
 
 from google.protobuf import json_format
@@ -115,7 +112,7 @@ def test_v1_mixed_multiple_inputs():
                 "messagetype": "tensor",
                 "schema": {"names": ["a", "b", "c", "d"], "shape": [2, 2]},
             },
-            {"messagetype": "jsonData",},
+            {"messagetype": "jsonData"},
         ],
         "outputs": [{"messagetype": "binData"}],
     }
@@ -128,7 +125,7 @@ def test_v1_mixed_multiple_inputs():
                 "messagetype": "tensor",
                 "schema": {"names": ["a", "b", "c", "d"], "shape": [2, 2]},
             },
-            {"messagetype": "jsonData",},
+            {"messagetype": "jsonData"},
         ],
         "outputs": [{"messagetype": "binData"}],
     }
@@ -277,7 +274,7 @@ def test_v1_invalid_inputs(invalid_input):
 
 
 @pytest.mark.parametrize(
-    "messagetype", ["tensor", "ndarray", "tftensor", "binData", "strData"],
+    "messagetype", ["tensor", "ndarray", "tftensor", "binData", "strData"]
 )
 def test_v1_invalid_schema_fields(messagetype):
     meta = {
@@ -289,9 +286,7 @@ def test_v1_invalid_schema_fields(messagetype):
         validate_model_metadata(meta)
 
 
-@pytest.mark.parametrize(
-    "messagetype", ["jsonData", "customData"],
-)
+@pytest.mark.parametrize("messagetype", ["jsonData", "customData"])
 def test_v1_valid_custom_schema(messagetype):
     meta = {
         "inputs": [
@@ -517,7 +512,7 @@ def test_model_metadata_ok_grpc():
     }
 
 
-@pytest.mark.parametrize("env_value", [json_meta, yaml_meta,])
+@pytest.mark.parametrize("env_value", [json_meta, yaml_meta])
 def test_model_metadata_value_in_env(env_value):
     user_object = UserObject()
     seldon_metrics = SeldonMetrics()

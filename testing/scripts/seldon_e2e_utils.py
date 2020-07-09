@@ -504,7 +504,7 @@ def grpc_request_ambassador(
 
 
 def grpc_request_ambassador_metadata(
-    deployment_name, namespace, endpoint="localhost:8004", model_name=None,
+    deployment_name, namespace, endpoint="localhost:8004", model_name=None
 ):
     if model_name is None:
         request = empty_pb2.Empty()
