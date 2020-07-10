@@ -1,0 +1,48 @@
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-19-p66wq-35[0m stage [32mmeta-pipeline[0m and container [32mstep-credential-initializer-sj6jr[0m
+{"level":"info","ts":1594395292.1405592,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1594395292.1604958,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-19-p66wq-35[0m stage [32mmeta-pipeline[0m and container [32mstep-working-dir-initializer-9jszf[0m
+{"level":"info","ts":1594395294.0643847,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594395294.137185,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-19-p66wq-35[0m stage [32mmeta-pipeline[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-19-p66wq-35[0m stage [32mmeta-pipeline[0m and container [32mstep-git-source-meta-seldonio-seldon-core-pr-19-p66wq-n7927[0m
+{"level":"info","ts":1594395301.805149,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1594395308.2427683,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ 5bb6f6034d6247a51961920c124612701b312b78 in path /workspace/source"}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-19-p66wq-35[0m stage [32mmeta-pipeline[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-19-p66wq-35[0m stage [32mmeta-pipeline[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:5bb6f6034d6247a51961920c124612701b312b78,1921:b58af6e9258d277bb62c77326cfc4f4f1d15079f
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git fetch origin --unshallow b58af6e9258d277bb62c77326cfc4f4f1d15079f: 5bb6f6034d6247a51961920c124612701b312b78:
+DEBUG: ran git fetch --unshallow origin b58af6e9258d277bb62c77326cfc4f4f1d15079f: 5bb6f6034d6247a51961920c124612701b312b78: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard 5bb6f6034d6247a51961920c124612701b312b78
+DEBUG: ran git reset --hard 5bb6f6034d6247a51961920c124612701b312b78 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git merge b58af6e9258d277bb62c77326cfc4f4f1d15079f
+error: error during merge: merging b58af6e9258d277bb62c77326cfc4f4f1d15079f into master: git output: Auto-merging testing/scripts/seldon_e2e_utils.py
+Auto-merging operator/helm/split_resources.py
+Auto-merging operator/go.sum
+CONFLICT (content): Merge conflict in operator/go.sum
+Auto-merging operator/go.mod
+CONFLICT (content): Merge conflict in operator/go.mod
+Removing operator/controllers/istio.go
+Removing operator/controllers/cleaners.go
+Automatic merge failed; fix conflicts and then commit the result.: failed to run 'git merge b58af6e9258d277bb62c77326cfc4f4f1d15079f' command in directory '', output: 'Auto-merging testing/scripts/seldon_e2e_utils.py
+Auto-merging operator/helm/split_resources.py
+Auto-merging operator/go.sum
+CONFLICT (content): Merge conflict in operator/go.sum
+Auto-merging operator/go.mod
+CONFLICT (content): Merge conflict in operator/go.mod
+Removing operator/controllers/istio.go
+Removing operator/controllers/cleaners.go
+Automatic merge failed; fix conflicts and then commit the result.'
+[31m
+Pipeline failed on stage 'meta-pipeline' : container 'step-git-merge'. The execution of the pipeline has stopped.[0m
