@@ -192,7 +192,7 @@ func main() {
 		log.Fatal("Failed to create server url from", *hostname, *port)
 	}
 
-	logf.Init(*debug, *logLevel)
+	logf.SetLogger(*debug, *logLevel)
 	logger := logf.WithName("entrypoint")
 
 	var predictor *v1.PredictorSpec

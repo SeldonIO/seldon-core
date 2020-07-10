@@ -9,15 +9,28 @@ import (
 
 var defaultLogger logr.Logger
 
-func Init(debug bool, logLevel string) (logr.Logger, error) {
+func init() {
+	// Instantiate a null logger (i.e. no-op) by default.
+	// NOTE: You *must* call SetLogger to get any logging done.
+	defaultLogger = &nullLogger{}
+}
+
+func SetLogger(debug bool, logLevel string) (logr.Logger, error) {
+	var err error
+	defaultLogger, err = NewLogger(debug, logLevel)
+
+	return defaultLogger, err
+}
+
+func NewLogger(debug bool, logLevel string) (logr.Logger, error) {
 	conf := loggerConfig(debug, logLevel)
 	logger, err := conf.Build()
 	if err != nil {
 		return nil, err
 	}
 
-	defaultLogger = zapr.NewLogger(logger)
-	return defaultLogger, nil
+	l := zapr.NewLogger(logger)
+	return l, nil
 }
 
 func loggerConfig(debug bool, logLevel string) *zap.Config {
