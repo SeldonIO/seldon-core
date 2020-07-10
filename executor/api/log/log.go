@@ -24,7 +24,10 @@ func SetLogger(debug bool, logLevel string) (logr.Logger, error) {
 
 func NewLogger(debug bool, logLevel string) (logr.Logger, error) {
 	conf := loggerConfig(debug, logLevel)
-	logger, err := conf.Build()
+	// NOTE: We skip the 1st caller to avoid logging the wrapping code everytime.
+	// https://github.com/kubernetes-sigs/controller-runtime/blob/2f1eb810d360cb6a68f7dfbcf4a7fa380538bca3/pkg/log/zap/zap.go#L206
+	// https://godoc.org/go.uber.org/zap#AddCallerSkip
+	logger, err := conf.Build(zap.AddCallerSkip(1))
 	if err != nil {
 		return nil, err
 	}
