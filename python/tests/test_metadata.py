@@ -14,7 +14,6 @@ from seldon_core.utils import json_to_seldon_model_metadata
 from google.protobuf import json_format
 
 
-
 # test default values
 
 
