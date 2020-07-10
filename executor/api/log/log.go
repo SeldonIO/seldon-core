@@ -21,18 +21,18 @@ func Init(debug bool, logLevel string) (logr.Logger, error) {
 }
 
 func loggerConfig(debug bool, logLevel string) *zap.Config {
-	var config *zap.Config
+	var config zap.Config
 
 	if debug {
-		config = &zap.NewDevelopmentConfig()
+		config = zap.NewDevelopmentConfig()
 	} else {
-		config = &zap.NewProductionConfig()
+		config = zap.NewProductionConfig()
 	}
 
 	level := loggerLevel(logLevel)
 	config.Level.SetLevel(level)
 
-	return config
+	return &config
 }
 
 func loggerLevel(logLevel string) zapcore.Level {
@@ -48,9 +48,9 @@ func loggerLevel(logLevel string) zapcore.Level {
 		return zap.ErrorLevel
 	case "FATAL":
 		return zap.FatalLevel
-	default:
-		return zap.InfoLevel
 	}
+
+	return zap.InfoLevel
 }
 
 // Info is a package-level helper using default logger.
@@ -60,12 +60,17 @@ func Info(msg string, keysAndValues ...interface{}) {
 
 // Error is a package-level helper using the default logger.
 func Error(err error, msg string, keysAndValues ...interface{}) {
-	defaultLogger.Error(msg, keysAndValues...)
+	defaultLogger.Error(err, msg, keysAndValues...)
 }
 
 // V is a package-level helper using the default logger.
 func V(level int) logr.Logger {
-	return defaultLogger.V(level)
+	// NOTE: go-logr 0.2.0 removed InfoLogger, however V() returns an InfoLogger.
+	// To make the upgrade easier, cast to a logr.Logger to avoid using the
+	// deprecated interface.
+	// TODO: Remove manual casting once we ugprade to go-loger 0.2.0.
+	logV := defaultLogger.V(level)
+	return logV.(logr.Logger)
 }
 
 // WithValues is a package-level helper using the default logger.
