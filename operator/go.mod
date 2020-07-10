@@ -10,8 +10,8 @@ require (
 	github.com/google/go-cmp v0.5.0
 	github.com/onsi/ginkgo v1.14.0
 	github.com/onsi/gomega v1.10.1
-	gopkg.in/yaml.v2 v2.3.0
 	go.uber.org/zap v1.10.0
+	gopkg.in/yaml.v2 v2.3.0
 	istio.io/api v0.0.0-20191115173247-e1a1952e5b81
 	istio.io/client-go v0.0.0-20191120150049-26c62a04cdbc
 	k8s.io/api v0.17.8
