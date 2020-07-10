@@ -26,6 +26,7 @@ require (
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.17.2
 	k8s.io/apimachinery v0.17.2
+	sigs.k8s.io/controller-runtime v0.5.0
 )
 
 replace github.com/tensorflow/tensorflow/tensorflow/go/core => ./proto/tensorflow/core
