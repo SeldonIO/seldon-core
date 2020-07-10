@@ -1,10 +1,9 @@
 package predictor
 
 import (
-	// "github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
+	logf "github.com/seldonio/seldon-core/executor/api/log"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	"sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
 type GraphMetadata struct {
@@ -55,7 +54,7 @@ func (gm *GraphMetadata) getEdgeNodes(node *v1.PredictiveUnit) (
 	}
 
 	// If we got here it means none of the cases above
-	logger := log.Log.WithName("GraphMetadata")
+	logger := logf.WithName("GraphMetadata")
 	logger.Info("Unimplemented case: Couldn't derive graph-level inputs and outputs.")
 	return nil, nil
 }

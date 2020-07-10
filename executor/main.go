@@ -24,6 +24,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/grpc/tensorflow"
+	logf "github.com/seldonio/seldon-core/executor/api/log"
 	"github.com/seldonio/seldon-core/executor/api/rest"
 	"github.com/seldonio/seldon-core/executor/api/tracing"
 	"github.com/seldonio/seldon-core/executor/api/util"
@@ -32,9 +33,6 @@ import (
 	"github.com/seldonio/seldon-core/executor/proto/tensorflow/serving"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/soheilhy/cmux"
-	"go.uber.org/zap"
-	zapf "sigs.k8s.io/controller-runtime/pkg/log/zap"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
 const (
@@ -170,32 +168,6 @@ func runGrpcServer(lis net.Listener, logger logr.Logger, predictor *v1.Predictor
 	}
 }
 
-func setupLogger() {
-	level := zap.InfoLevel
-	switch *logLevel {
-	case "DEBUG":
-		level = zap.DebugLevel
-	case "INFO":
-		level = zap.InfoLevel
-	case "WARN":
-	case "WARNING":
-		level = zap.WarnLevel
-	case "ERROR":
-		level = zap.ErrorLevel
-	case "FATAL":
-		level = zap.FatalLevel
-	}
-
-	atomicLevel := zap.NewAtomicLevelAt(level)
-
-	logger := zapf.New(
-		zapf.UseDevMode(*debug),
-		zapf.Level(&atomicLevel),
-	)
-
-	logf.SetLogger(logger)
-}
-
 func main() {
 	flag.Parse()
 
@@ -220,8 +192,8 @@ func main() {
 		log.Fatal("Failed to create server url from", *hostname, *port)
 	}
 
-	setupLogger()
-	logger := logf.Log.WithName("entrypoint")
+	logf.Init(*debug, *logLevel)
+	logger := logf.WithName("entrypoint")
 
 	var predictor *v1.PredictorSpec
 	if *filename != "" {

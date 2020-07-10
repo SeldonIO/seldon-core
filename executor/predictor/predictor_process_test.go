@@ -13,11 +13,11 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/executor/api/grpc"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
+	logf "github.com/seldonio/seldon-core/executor/api/log"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/api/test"
 	"github.com/seldonio/seldon-core/executor/logger"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
 const (
@@ -33,35 +33,35 @@ const (
 func createPredictorProcess(t *testing.T) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
 	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, testSeldonPuid)
-	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{testCustomMetaKey: []string{testCustomMetaValue}})
+	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{}, logf.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{testCustomMetaKey: []string{testCustomMetaValue}})
 	return &pp
 }
 
 func createPredictorProcessWithMetadata(t *testing.T, metadataResponse payload.SeldonPayload, modelMetadataMap map[string]payload.ModelMetadata) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
 	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, testSeldonPuid)
-	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{MetadataResponse: metadataResponse, ModelMetadataMap: modelMetadataMap}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{testCustomMetaKey: []string{testCustomMetaValue}})
+	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{MetadataResponse: metadataResponse, ModelMetadataMap: modelMetadataMap}, logf.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{testCustomMetaKey: []string{testCustomMetaValue}})
 	return &pp
 }
 
 func createPredictorProcessWithRoute(t *testing.T, chosenRoute int) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
 	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, testSeldonPuid)
-	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{ChosenRoute: chosenRoute}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{})
+	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{ChosenRoute: chosenRoute}, logf.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{})
 	return &pp
 }
 
 func createPredictorProcessWithError(t *testing.T, errMethod *v1.PredictiveUnitMethod, err error, errPayload payload.SeldonPayload) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
 	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, testSeldonPuid)
-	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{ErrMethod: errMethod, Err: err, ErrPayload: errPayload}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{})
+	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{ErrMethod: errMethod, Err: err, ErrPayload: errPayload}, logf.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{})
 	return &pp
 }
 
 func createPredictorProcessWithoutPUIDInContext(t *testing.T) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
 	ctx := context.TODO()
-	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{testCustomMetaKey: []string{testCustomMetaValue}})
+	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{}, logf.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{testCustomMetaKey: []string{testCustomMetaValue}})
 	return &pp
 }
 
@@ -408,8 +408,7 @@ func TestModelWithLogRequests(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	logf.SetLogger(logf.ZapLogger(false))
-	log := logf.Log.WithName("entrypoint")
+	log := logf.WithName("entrypoint")
 	logger.StartDispatcher(1, log, "", "", "")
 
 	model := v1.MODEL
@@ -456,8 +455,7 @@ func TestModelWithLogRequestsAtDefaultedUrl(t *testing.T) {
 
 	envRequestLoggerDefaultEndpoint = server.URL
 
-	logf.SetLogger(logf.ZapLogger(false))
-	log := logf.Log.WithName("entrypoint")
+	log := logf.WithName("entrypoint")
 	logger.StartDispatcher(1, log, "", "", "")
 
 	model := v1.MODEL
@@ -499,8 +497,7 @@ func TestModelWithLogResponses(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	logf.SetLogger(logf.ZapLogger(false))
-	log := logf.Log.WithName("entrypoint")
+	log := logf.WithName("entrypoint")
 	logger.StartDispatcher(1, log, "", "", "")
 
 	model := v1.MODEL

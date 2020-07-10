@@ -6,6 +6,7 @@ require (
 	github.com/cloudevents/sdk-go v1.2.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v0.1.0
+	github.com/go-logr/zapr v0.1.0
 	github.com/golang/protobuf v1.4.2
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/mux v1.7.4
@@ -23,10 +24,10 @@ require (
 	go.uber.org/zap v1.15.0
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
 	google.golang.org/grpc v1.30.0
+	google.golang.org/grpc/examples v0.0.0-20200709232328-d8193ee9cc3e // indirect
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.17.8
 	k8s.io/apimachinery v0.17.8
-	sigs.k8s.io/controller-runtime v0.5.8
 )
 
 replace github.com/tensorflow/tensorflow/tensorflow/go/core => ./proto/tensorflow/core

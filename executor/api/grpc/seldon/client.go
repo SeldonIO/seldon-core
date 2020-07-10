@@ -10,6 +10,7 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	grpc2 "github.com/seldonio/seldon-core/executor/api/grpc"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
+	logf "github.com/seldonio/seldon-core/executor/api/log"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/api/util"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
@@ -17,7 +18,6 @@ import (
 	"io"
 	"math"
 	"net/http"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
 type SeldonMessageGrpcClient struct {
@@ -35,7 +35,7 @@ func NewSeldonGrpcClient(spec *v1.PredictorSpec, deploymentName string, annotati
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
 	}
 	smgc := SeldonMessageGrpcClient{
-		Log:            logf.Log.WithName("SeldonGrpcClient"),
+		Log:            logf.WithName("SeldonGrpcClient"),
 		callOptions:    opts,
 		conns:          make(map[string]*grpc.ClientConn),
 		Predictor:      spec,
