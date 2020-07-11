@@ -6,7 +6,6 @@ LABEL name="Seldon Request Logger" \
       summary="The payload logger for Seldon Core" \
       description="The Seldon Payload Logger allows request and response payloads from a Seldon Core inference graph to be processed and sent to an ELK endpoint"
 
-COPY app app
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 RUN pip install gunicorn
@@ -18,6 +17,8 @@ RUN mkdir ./licenses && pip-licenses --from=mixed --format=csv --output-file=./l
 USER root
 RUN mv ./licenses /licenses
 USER default
+
+COPY app app
 
 EXPOSE 8080
 ENTRYPOINT ["python"]
