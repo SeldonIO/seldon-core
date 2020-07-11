@@ -20,9 +20,9 @@ sys.stdout.flush()
 
 log = logging.getLogger("werkzeug")
 log.setLevel(logging.ERROR)
+print("NEW VERSION")
 
 es = log_helper.connect_elasticsearch()
-
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -34,6 +34,7 @@ def index():
 
     body = request.get_json(force=True)
 
+    # TODO: Document environment variables
     # max size is configurable with env var or defaults to constant
     max_payload_bytes = log_helper.get_max_payload_bytes(MAX_PAYLOAD_BYTES)
 
@@ -63,13 +64,12 @@ def index():
     # sys.stdout.flush()
 
     try:
-
         # now process and update the doc
-        doc = process_and_update_elastic_doc(
+        process_and_update_elastic_doc(
             es, message_type, body, request_id, request.headers, index_name
         )
 
-        return str(doc)
+        return ""
     except Exception as ex:
         print(ex)
     sys.stdout.flush()
@@ -125,6 +125,13 @@ def process_and_update_elastic_doc(
             upsert_doc_to_elastic(
                 elastic_object, message_type, doc_body, item_request_id, index_name
             )
+    # TODO: Process feedback TRUTH in same format as normal data to index elements
+    elif "truth" in new_content_part:
+        item_request_id = build_request_id_batched(request_id, 1, 0)
+        upsert_doc_to_elastic(
+            elastic_object, message_type, doc_body, item_request_id, index_name
+        )
+    # TODO: Confirm if outliers don't support other message types
     elif "data" in new_content_part and message_type == "outlier":
         no_items_in_batch = len(doc_body[message_type]["data"]["is_outlier"])
         index = 0
@@ -253,6 +260,7 @@ def extract_data_part(content):
 
         (req_features, _, req_datadef, req_datatype) = extract_request_parts(requestMsg)
 
+        # TODO: Document assumptions
         # set sensible defaults for non-tabular dataTypes
         # tabular should be iterable and get inferred through later block
         if req_datatype == "strData":

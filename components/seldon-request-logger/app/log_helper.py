@@ -68,6 +68,7 @@ def build_index_name(headers):
 
 
 def parse_message_type(type_header):
+    print(f"Type header: {type_header}")
     if (
         type_header == "io.seldon.serving.inference.request"
         or type_header == "org.kubeflow.serving.inference.request"
@@ -84,6 +85,11 @@ def parse_message_type(type_header):
         or type_header == "org.kubeflow.serving.inference.outlier"
     ):
         return "outlier"
+    if (
+        type_header == "io.seldon.serving.feedback"
+        or type_header == "org.kubeflow.serving.feedback"
+    ):
+        return "feedback"
     return "unknown"
 
 
