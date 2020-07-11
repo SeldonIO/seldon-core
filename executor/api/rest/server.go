@@ -226,6 +226,7 @@ func (r *SeldonRestApi) status(w http.ResponseWriter, req *http.Request) {
 
 func (r *SeldonRestApi) feedback(w http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
+	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, req.Header.Get(payload.SeldonPUIDHeader))
 
 	// Apply tracing if active
 	if opentracing.IsGlobalTracerRegistered() {
