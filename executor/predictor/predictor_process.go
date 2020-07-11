@@ -349,6 +349,21 @@ func (p *PredictorProcess) GraphMetadata(spec *v1.PredictorSpec) (*GraphMetadata
 }
 
 func (p *PredictorProcess) Feedback(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+
+	// TODO: Confirm whether we want to fail or pass if there is no PUUID - fail may be more desired as we may want to know id
+	// TODO: Explore whether we also may want to capture feedback response from children
+	if node.Logger != nil && (node.Logger.Mode == v1.LogResponse || node.Logger.Mode == v1.LogAll) {
+		puid, puiderr := p.getPUIDHeader()
+		if puiderr != nil {
+			p.Log.Error(puiderr, "Error retrieving uuid for feedback and could not send feedback")
+		} else {
+			err := p.logPayload(node.Name, node.Logger, payloadLogger.InferenceFeedback, msg, puid)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	tmsg, err := p.feedbackChildren(node, msg)
 	if err != nil {
 		return tmsg, err
