@@ -1,5 +1,7 @@
 ## Stateful Basic Model Feedback Metrics 
 
+![](img/diagram.jpg)
+
 ### Setup dependencies
 * Istio
 * Seldon Core (with Istio + Req Logger)
@@ -653,11 +655,23 @@ plt.show()
 ![png](README_files/README_49_0.png)
 
 
-### Advanced ML Metrics
+### Advanced ML Insights
 
 In the case where more advanced ML Metrics are to be computed, these can be done in two ways:
+* Add stateful processing of the feedback provided
 * Perform the calculation in the request logger
 * Retrieve all of the datapoints from ELK and calculate the metrics
+
+#### Add stateful processing of the feedback provided
+
+Similar to the design pattern that Seldon Core introduced with request logging and outlier detectors through asynchronous eventing, it's possible to do the same for metrics.
+
+More specifically, it is possible to set up a stateful feedback processor which retrieves all the metrics on start and registers for feedback events to provide real time insights on any new incoming requests.
+
+These can then be visualised through different areas such as through prometheus metrics, using a grafana dashboard. Below is a brief example of how this can be achieved through a simple implementation.
+
+![](img/metrics-processor.jpg)
+
 
 #### Perform the calculation in the request logger
 
@@ -667,12 +681,8 @@ In this, you woudl be able to add logic to retrieve the specific request from th
 
 Finally these results can be stored back into the Elasticsearch index using an "upsert" (update + insert).
 
-The example below shows sample code that could be used for the check, but not for the full request logger implementation.
+![](img/req-logger.jpg)
 
-
-```python
-# TODO: Add request logger implementation
-```
 
 #### Retrieve all of the datapoints from ELK and calculate the metrics
 
@@ -680,9 +690,8 @@ In this second option, you would be able to fetch all of the datapoints for a sp
 
 This would allow you to have more flexibility, especially for calculations which would require maintaining a global metric across your data, such as for global AI explanation techniques.
 
-The example below shows how you would be able to retrieve this data and process it. Given that these
+The example below shows how you would be able to retrieve this data and process it. 
 
+Given that these would often be stateful, you may want to run this in an async fashion and store it for later/efficient retrieval.
 
-```python
-
-```
+![](img/custom-aggreg.jpg)
