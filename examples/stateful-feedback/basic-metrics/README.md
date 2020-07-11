@@ -10,6 +10,11 @@
 * Request logger
 * Model with request logger
 
+By the end we will be able to see real time metrics for ml metrics as follows:
+![](README_files/README_49_0.png)
+
+We also cover approaches to extend for advanced types of custom metrics, as well as real time monitoring of metrics with prometheus. 
+
 #### Istio
 
 
@@ -643,10 +648,12 @@ no_feedback = es_count["count"] - feedback_total
 
 plt.subplots(figsize=(12, 6))
 plt.subplot(1, 2, 1)
-plt.pie([feedback_incorrect, feedback_correct], explode=(0, 0.1), labels=('Correct', 'Incorrect'), autopct='%1.1f%%', shadow=True, startangle=90)
+plt.title("Accuracy (Correct vs Incorrect)")
+plt.pie([feedback_incorrect, feedback_correct], explode=(0, 0.1), labels=('Incorrect', 'Correct'), autopct='%1.1f%%', shadow=True, startangle=90, colors=['yellow', 'lightskyblue'])  
 
 plt.subplot(1, 2, 2)
-plt.pie([feedback_total, no_feedback], explode=(0.1, 0), labels=('Feedback Proved', 'No Feedback'), autopct='%.0f', shadow=True, startangle=90, colors=['green', 'red'])
+plt.title("Total Requests vs Feedback Proveded")
+plt.pie([feedback_total, no_feedback], explode=(0.1, 0), labels=('Feedback Provided', 'No Feedback'), autopct='%.0f', shadow=True, startangle=90, colors=['green', 'red'])
 
 plt.show()
 ```
