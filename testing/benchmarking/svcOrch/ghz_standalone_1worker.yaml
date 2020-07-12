@@ -12,23 +12,23 @@ spec:
     spec:
       containers:
         - args:
-            - vegeta -cpus=1 attack -duration=30m -rate=0 -max-workers=1 -targets=/var/vegeta/cfg
-              | vegeta report -type=json
+            - ghz --insecure --keepalive=30m --proto /proto/prediction_service.proto --call tensorflow.serving.PredictionService/Predict -B /var/ghz/flowers.bin -c 1 -n 1000000 -x 30m -O json tf-flowers-default.seldon.svc.cluster.local:9000
+              | jq -c 'del(.histogram)|del(.details)'
           command:
             - sh
             - -c
-          image: peterevans/vegeta:latest
+          image: seldonio/ghz:v0.55.0
           imagePullPolicy: Always
-          name: vegeta
+          name: ghz
           volumeMounts:
-            - mountPath: /var/vegeta
-              name: tf-vegeta-cfg
+            - mountPath: /var/ghz
+              name: tf-ghz-cfg
       restartPolicy: Never
       volumes:
         - configMap:
             defaultMode: 420
-            name: tf-vegeta-cfg
-          name: tf-vegeta-cfg
+            name: tf-ghz-cfg
+          name: tf-ghz-cfg
       tolerations:
       - key: loadtester
         operator: Exists

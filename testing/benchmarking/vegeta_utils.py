@@ -24,10 +24,22 @@ def run_model(model_name):
             if state == "Available":
                 break
             time.sleep(1)
-        print(state)
+        for i in range(60):
+            ret = Popen(
+                f"kubectl get pods -l seldon-deployment-id={metaName} -o json",
+                shell=True,
+                stdout=subprocess.PIPE,
+            )
+            raw = ret.stdout.read().decode("utf-8")
+            results = json.loads(raw)
+            numPods = len(results["items"])
+            if numPods == 1:
+                break
+            time.sleep(1)
+        print(state,"with",numPods,"pods")
 
 
-def run_test(vegeta_cfg, vegeta_job, wait_time):
+def run_vegeta_test(vegeta_cfg, vegeta_job, wait_time):
     with open(vegeta_job, "r") as stream:
         resource = yaml.safe_load(stream)
         metaName = resource["metadata"]["name"]
@@ -48,8 +60,7 @@ def run_test(vegeta_cfg, vegeta_job, wait_time):
         run(f"kubectl delete -f {vegeta_job}", shell=True)
         return results
 
-
-def print_results(results):
+def print_vegeta_results(results):
     print("Latencies:")
     print("\tmean:", results["latencies"]["mean"] / 1e6, "ms")
     print("\t50th:", results["latencies"]["50th"] / 1e6, "ms")
@@ -59,3 +70,24 @@ def print_results(results):
     print("")
     print("Throughput:", str(results["throughput"]) + "/s")
     print("Errors:", len(results["errors"]) > 0)
+
+def run_ghz_test(payload, ghz_job, wait_time):
+    with open(ghz_job, "r") as stream:
+        resource = yaml.safe_load(stream)
+        metaName = resource["metadata"]["name"]
+        run(f"kubectl create configmap tf-ghz-cfg --from-file {payload}", shell=True)
+        run(f"kubectl create -f {ghz_job}", shell=True)
+        run(
+            f"kubectl wait --for=condition=complete --timeout={wait_time} job/tf-load-test",
+            shell=True,
+        )
+        ret = Popen(
+            f"kubectl logs $(kubectl get pods -l job-name={metaName} -o  jsonpath='{{.items[0].metadata.name}}')",
+            shell=True,
+            stdout=subprocess.PIPE,
+        )
+        raw = ret.stdout.readline().decode("utf-8")
+        results = json.loads(raw)
+        run(f"kubectl delete -f tf-ghz-cfg", shell=True)
+        run(f"kubectl delete -f {ghz_job}", shell=True)
+        return results
