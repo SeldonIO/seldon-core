@@ -73,7 +73,7 @@ def index():
     except Exception as ex:
         print(ex)
     sys.stdout.flush()
-    return "problem logging request"
+    return Response("Problem logging request", 500)
 
 
 def process_and_update_elastic_doc(
