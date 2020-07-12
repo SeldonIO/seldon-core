@@ -26,6 +26,9 @@ spec:
      app: seldon-stateful-metrics-sklearn
  template:
    metadata:
+     annotations:
+       prometheus.io/path: /metrics
+       prometheus.io/scrape: "true"
      labels:
        app: seldon-stateful-metrics-sklearn
    spec:
@@ -33,6 +36,13 @@ spec:
        - name: user-container
          image: docker.io/seldonio/stateful-metrics-server:1.2.2-dev
          imagePullPolicy: IfNotPresent
+         ports:
+         - containerPort: 8080
+           name: metrics
+           protocol: TCP
+         - containerPort: 8080
+           name: http
+           protocol: TCP
          env:
            - name: ELASTICSEARCH_HOST
              value: "elasticsearch-master.seldon-logs.svc.cluster.local"

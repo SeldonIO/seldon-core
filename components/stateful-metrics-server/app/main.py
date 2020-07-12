@@ -27,11 +27,11 @@ def _calculate_initial_metrics() -> (int, int):
     total = 0
     correct = 0
     for elem in query.get("hits", {}).get("hits", []):
-        feedback = elem.get("_source", {}).get("feedback")
+        feedback = elem.get("_source", {}).get("feedback", {})
         if not feedback:
             continue
         total += 1
-        if feedback["reward"] > 0:
+        if feedback.get("reward", 0) > 0:
             correct += 1
 
     return (total, correct)
@@ -46,17 +46,18 @@ def _add_counter(total: int, correct: int) -> None:
     seldon_metrics.update(metrics)
 
 
-@app.route("/", methods=["GET"])
+@app.route("/", methods=["GET", "POST"])
 def index():
     body = request.get_json(force=True)
     # Currently we don't count requests unless they have reward
     # TODO: reconsider as we may want to add extra field(s) to reward
     if not isinstance(body, dict) or "reward" not in body:
-        return False
+        print("Error")
+        return Response("", 500)
     reward = int(body["reward"]) > 0
     # We now add one to total, and add one if correct
     _add_counter(1, reward)
-    return ""
+    return Response("", status=200)
 
 
 @app.route(METRICS_ENDPOINT, methods=["GET"])
