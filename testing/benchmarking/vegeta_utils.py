@@ -36,7 +36,7 @@ def run_model(model_name):
             if numPods == 1:
                 break
             time.sleep(1)
-        print(state,"with",numPods,"pods")
+        print(state, "with", numPods, "pods")
 
 
 def run_vegeta_test(vegeta_cfg, vegeta_job, wait_time):
@@ -60,6 +60,7 @@ def run_vegeta_test(vegeta_cfg, vegeta_job, wait_time):
         run(f"kubectl delete -f {vegeta_job}", shell=True)
         return results
 
+
 def print_vegeta_results(results):
     print("Latencies:")
     print("\tmean:", results["latencies"]["mean"] / 1e6, "ms")
@@ -70,6 +71,7 @@ def print_vegeta_results(results):
     print("")
     print("Throughput:", str(results["throughput"]) + "/s")
     print("Errors:", len(results["errors"]) > 0)
+
 
 def run_ghz_test(payload, ghz_job, wait_time):
     with open(ghz_job, "r") as stream:
