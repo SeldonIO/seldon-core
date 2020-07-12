@@ -577,7 +577,7 @@ es_count = es.count(index="inference-log-seldon-seldon-sklearn-default")
 print(es_count)
 ```
 
-    {'count': 100, '_shards': {'total': 1, 'successful': 1, 'skipped': 0, 'failed': 0}}
+    {'count': 212, '_shards': {'total': 1, 'successful': 1, 'skipped': 0, 'failed': 0}}
 
 
 #### Then send the feedback
@@ -595,8 +595,8 @@ for idx, sid in enumerate(ids_list):
     feedback["truth"] = {} if idx < MAX_CORRECT else default_truth_val
     feedback["truth"]["meta"] = default_truth_meta
     
-    pred_resp = requests.post(f"{url}/feedback", json=feedback, headers={"seldon-puid": sid})
-    assert pred_resp.status_code == 200
+    feed_resp = requests.post(f"{url}/feedback", json=feedback, headers={"seldon-puid": sid})
+    assert feed_resp.status_code == 200
 ```
 
 ### Exposing Feedback Metrics
@@ -679,6 +679,158 @@ These can then be visualised through different areas such as through prometheus 
 
 ![](img/metrics-processor.jpg)
 
+
+#### Example of custom stateful metrics processor
+First we deploy the Seldon Core Analyitcs
+
+
+```python
+!helm install seldon-core-analytics ../../../helm-charts/seldon-core-analytics --namespace seldon-system
+```
+
+Now we should be able to access the grafana dashboard for the model. You can access it by port-forwarding the grafana dashboard with:
+```
+kubectl port-forward -n seldon-system svc/seldon-core-analytics-grafana 7000:80
+```
+This way you can now access it via `http://localhost:7000` with the username `admin` and password `password`.
+
+You should be able to see the following dashboard out of the box:
+![](img/base-dashboard.jpg)
+
+Now we can deploy our [stateful metrics component](../../../components/stateful-metrics-server/) with the following configuration:
+
+
+```bash
+%%bash
+kubectl apply -n seldon-logs -f - << END
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: seldon-stateful-metrics-sklearn-deployment
+ labels:
+   app: seldon-stateful-metrics-sklearn
+spec:
+ replicas: 1
+ selector:
+   matchLabels:
+     app: seldon-stateful-metrics-sklearn
+ template:
+   metadata:
+     annotations:
+       prometheus.io/path: /metrics
+       prometheus.io/scrape: "true"
+     labels:
+       app: seldon-stateful-metrics-sklearn
+   spec:
+     containers:
+       - name: user-container
+         image: docker.io/seldonio/stateful-metrics-server:1.2.2-dev
+         imagePullPolicy: IfNotPresent
+         ports:
+         - containerPort: 8080
+           name: metrics
+           protocol: TCP
+         - containerPort: 8080
+           name: http
+           protocol: TCP
+         env:
+           - name: ELASTICSEARCH_HOST
+             value: "elasticsearch-master.seldon-logs.svc.cluster.local"
+           - name: ELASTICSEARCH_PORT
+             value: "9200"
+---
+apiVersion: v1
+kind: Service
+metadata:
+ name: seldon-stateful-metrics-sklearn-svc
+spec:
+ selector:
+   app: seldon-stateful-metrics-sklearn
+ ports:
+   - protocol: TCP
+     port: 80
+     targetPort: 8080
+END
+```
+
+A couple of things to notice, is that here we have enabled prometheus scraping to the `/metrics` endpoint, and we've also added the named `metrcs` port, which `seldon-core-analytics` is configured to scrape from.
+
+Now we can actually deploy the trigger for the model we've built:
+
+
+```bash
+%%bash
+kubectl apply -n seldon-logs -f - << END
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Trigger
+metadata:
+  name: seldon-stateful-metrics-sklearn-trigger
+spec:
+  subscriber:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: seldon-stateful-metrics-sklearn-svc
+  filter:
+    attributes:
+      type: io.seldon.serving.feedback
+      inferenceservicename: sklearn
+END
+```
+
+You can see that this trigger is filtering on the `type: io.seldon.serving.feedback` and `inferenceservicename: sklearn`.
+
+Once we have this, we actually would see that it automatically collects all of the available logs and starts producing metrics that are being collected with prometheus.
+
+We can confirm this by proceeding to our dashboard and adding a new dashboard, with the prometheus datasource, and the metric would have as value `sum(correct_total) / sum(total_total)` which basically is the metric `correct_total` divided by the `total_total` which shoudl give us the real time accuracy.
+
+You should be able to see the following: 
+
+![](img/accuracy-dashboard.jpg)
+
+Once you add this dashboard, you can set it to refresh every 5 minutes, and in turn, we will now be able to see real time accuracy changing, let's actually start some data:
+
+
+```python
+import time
+import random
+
+CORRECT_PROBABILITY = 0.8
+
+pred_req = {"data":{"ndarray":[[1,2,3,4]]}}
+default_truth_val = {'data': { 'names': ['t:0', 't:1', 't:2'], 'ndarray': [[0, 0, 1]]}}
+default_truth_meta = {"tags": {"user": "Seldon Admin", "date": "11/07/2020"}}
+
+while True:
+    pred_resp = requests.post(f"{url}/predictions", json=pred_req)
+    assert pred_resp.status_code == 200
+    idx = pred_resp.headers["seldon-puid"]
+    time.sleep(0.1)
+    
+    pred = 1 if random.random() > CORRECT_PROBABILITY else 0
+    print(f"Sending: {pred} ")
+    feedback = {}
+    feedback["reward"] = 1 if pred else 0
+    feedback["truth"] = {} if pred else default_truth_val
+    feedback["truth"]["meta"] = default_truth_meta
+    feed_resp = requests.post(f"{url}/feedback", json=feedback, headers={"seldon-puid": sid})
+    assert feed_resp.status_code == 200
+    time.sleep(0.5)    
+```
+
+This will send requests that will show 80% probablility of incorrect predictions, showing a steady decline in accuracy as per the image below.
+
+![](img/realtime-accuracy.jpg)
+
+This could be quite powerful as it could be connected with something like Alertmanager to ensure alerts are sent if the model metric drops below a specific percentage.
+
+If you wish to load the dashboard directly, you can also do this by importing the json below in your grafana dashboard:
+
+
+```python
+{"annotations": {"list": [{"builtIn": 1,"datasource": "-- Grafana --","enable": true,"hide": true,"iconColor": "rgba(0, 211, 255, 1)","name": "Annotations & Alerts","type": "dashboard"}]},"editable": true,"gnetId": null,"graphTooltip": 0,"id": null,"links": [],"panels": [{"aliasColors": {},"bars": true,"dashLength": 10,"dashes": false,"datasource": "prometheus","description": "","fieldConfig": {"defaults": {"custom": {}},"overrides": []},"fill": 1,"fillGradient": 0,"gridPos": {"h": 12,"w": 24,"x": 0,"y": 0},"hiddenSeries": false,"id": 2,"legend": {"avg": false,"current": false,"max": false,"min": false,"show": true,"total": false,"values": false},"lines": true,"linewidth": 1,"nullPointMode": "null","options": {"dataLinks": []},"percentage": false,"pointradius": 2,"points": false,"renderer": "flot","seriesOverrides": [],"spaceLength": 10,"stack": false,"steppedLine": false,"targets": [{"expr": "sum(correct_total) / sum(total_total)","interval": "","legendFormat": "Accuracy %","refId": "A"}],"thresholds": [],"timeFrom": null,"timeRegions": [],"timeShift": null,"title": "Real Time Model Accuracy","tooltip": {"shared": true,"sort": 0,"value_type": "individual"},"type": "graph","xaxis": {"buckets": null,"mode": "time","name": null,"show": true,"values": []},"yaxes": [{"decimals": null,"format": "short","label": null,"logBase": 1,"max": "1","min": "0","show": true},{"format": "short","label": null,"logBase": 1,"max": null,"min": null,"show": true}],"yaxis": {"align": false,"alignLevel": null}}],"refresh": "5s","schemaVersion": 25,"style": "dark","tags": [],"templating": {"list": []},"time": {"from": "now-5m","to": "now"},"timepicker": {"refresh_intervals": ["10s","30s","1m","5m","15m","30m","1h","2h","1d"]},"timezone": "","title": "New dashboard","uid": null,"version": 0}
+```
 
 #### Perform the calculation in the request logger
 
