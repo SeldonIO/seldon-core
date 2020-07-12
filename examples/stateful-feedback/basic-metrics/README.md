@@ -663,14 +663,7 @@ plt.show()
 ![png](README_files/README_49_0.png)
 
 
-### Advanced ML Insights
-
-In the case where more advanced ML Metrics are to be computed, these can be done in two ways:
-* Add stateful processing of the feedback provided
-* Perform the calculation in the request logger
-* Retrieve all of the datapoints from ELK and calculate the metrics
-
-#### Add stateful processing of the feedback provided
+## Real Time Metrics Example
 
 Similar to the design pattern that Seldon Core introduced with request logging and outlier detectors through asynchronous eventing, it's possible to do the same for metrics.
 
