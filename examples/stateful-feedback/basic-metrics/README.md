@@ -11,7 +11,8 @@
 * Model with request logger
 
 By the end we will be able to see real time metrics for ml metrics as follows:
-![](README_files/README_49_0.png)
+
+![](img/realtime-accuracy.jpg)
 
 We also cover approaches to extend for advanced types of custom metrics, as well as real time monitoring of metrics with prometheus. 
 
