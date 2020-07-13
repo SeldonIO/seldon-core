@@ -331,7 +331,7 @@ func (p *PredictorProcess) Metadata(node *v1.PredictiveUnit, modelName string, m
 }
 
 func (p *PredictorProcess) GraphMetadata(spec *v1.PredictorSpec) (*GraphMetadata, error) {
-	metadataMap, err := p.ModelMetadataMap(spec.Graph)
+	metadataMap, err := p.ModelMetadataMap(&spec.Graph)
 	if err != nil {
 		return nil, err
 	}
@@ -341,7 +341,7 @@ func (p *PredictorProcess) GraphMetadata(spec *v1.PredictorSpec) (*GraphMetadata
 		Models: metadataMap,
 	}
 
-	inputNodeMeta, outputNodeMeta := output.getEdgeNodes(spec.Graph)
+	inputNodeMeta, outputNodeMeta := output.getEdgeNodes(&spec.Graph)
 	output.GraphInputs = inputNodeMeta.Inputs
 	output.GraphOutputs = outputNodeMeta.Outputs
 

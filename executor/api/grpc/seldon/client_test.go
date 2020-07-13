@@ -45,7 +45,7 @@ func createTestGrpcServer(g *GomegaWithT, annotations map[string]string) (*v1.Pr
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: predictorName,
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Type: &model,
 			Endpoint: &v1.Endpoint{
 				ServiceHost: host,
