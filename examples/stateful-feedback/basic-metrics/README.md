@@ -1,7 +1,5 @@
 ## Stateful Basic Model Feedback Metrics 
 
-![](img/diagram.jpg)
-
 We will be able to see real time metrics for ml metrics as follows:
 
 ![](img/realtime-accuracy.jpg)
@@ -11,6 +9,21 @@ At the end we will be able to compare two models performance against each other.
 The screenshot below shows the shadow and default model performance.
 
 ![](img/comparison.jpg)
+
+This will explore two architecture to achieve this, namely:
+* Through a separate stateful metrics server using knative eventing (left)
+* Through the model server leveraging custom metrics (right)
+
+<table>
+<tr>
+<td>
+    <img src="img/custom-stateful.jpg">
+</td>
+<td>
+    <img src="img/standard-server.jpg">
+</td>
+</tr>
+</table>
 
 ### Setup dependencies
 * Istio
@@ -683,7 +696,8 @@ Below we dive into both examples together with tradeoffs.
 
 These can then be visualised through different areas such as through prometheus metrics, using a grafana dashboard. Below is a brief example of how this can be achieved through a simple implementation.
 
-![](img/metrics-processor.jpg)
+
+<img src="img/custom-stateful.jpg">
 
 
 
@@ -851,6 +865,9 @@ Not only it's possible to store the metrics, but given that the models are loade
 Let's have a look at an example with the iris classifier example.
 
 We will deploy two models as shadows and compare them using statistical metrics.
+
+
+<img src="img/standard-server.jpg">
 
 #### Train models
 
