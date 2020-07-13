@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net"
 	"net/url"
 	"os"
@@ -17,7 +18,6 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/go-logr/logr"
-	"github.com/prometheus/common/log"
 	"github.com/seldonio/seldon-core/executor/api"
 	seldonclient "github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/grpc"
@@ -26,15 +26,26 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/grpc/tensorflow"
 	"github.com/seldonio/seldon-core/executor/api/rest"
 	"github.com/seldonio/seldon-core/executor/api/tracing"
+	"github.com/seldonio/seldon-core/executor/api/util"
 	"github.com/seldonio/seldon-core/executor/k8s"
 	loghandler "github.com/seldonio/seldon-core/executor/logger"
 	"github.com/seldonio/seldon-core/executor/proto/tensorflow/serving"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/soheilhy/cmux"
+	"go.uber.org/zap"
+	zapf "sigs.k8s.io/controller-runtime/pkg/log/zap"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
+const (
+	logLevelEnvVar  = "SELDON_LOG_LEVEL"
+	logLevelDefault = "INFO"
+	debugEnvVar     = "SELDON_DEBUG"
+)
+
 var (
+	debugDefault = false
+
 	configPath     = flag.String("config", "", "Path to kubconfig")
 	sdepName       = flag.String("sdep", "", "Seldon deployment name")
 	namespace      = flag.String("namespace", "", "Namespace")
@@ -46,6 +57,16 @@ var (
 	hostname       = flag.String("hostname", "localhost", "The hostname of the running server")
 	logWorkers     = flag.Int("logger_workers", 5, "Number of workers handling payload logging")
 	prometheusPath = flag.String("prometheus_path", "/metrics", "The prometheus metrics path")
+	debug          = flag.Bool(
+		"debug",
+		util.GetEnvAsBool(debugEnvVar, debugDefault),
+		"Enable debug mode. Logs will be sampled and less structured.",
+	)
+	logLevel = flag.String(
+		"log_level",
+		util.GetEnv(logLevelEnvVar, logLevelDefault),
+		"Log level.",
+	)
 )
 
 func getPredictorFromEnv() (*v1.PredictorSpec, error) {
@@ -133,7 +154,7 @@ func runHttpServer(lis net.Listener, logger logr.Logger, predictor *v1.Predictor
 func runGrpcServer(lis net.Listener, logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int, serverUrl *url.URL, namespace string, protocol string, deploymentName string, annotations map[string]string) {
 	grpcServer, err := grpc.CreateGrpcServer(predictor, deploymentName, annotations, logger)
 	if err != nil {
-		log.Fatalf("Failed to create grpc server: %v", err)
+		log.Fatalf("Failed to create gRPC server: %v", err)
 	}
 	if protocol == api.ProtocolSeldon {
 		seldonGrpcServer := seldon.NewGrpcSeldonServer(predictor, client, serverUrl, namespace)
@@ -145,8 +166,34 @@ func runGrpcServer(lis net.Listener, logger logr.Logger, predictor *v1.Predictor
 	}
 	err = grpcServer.Serve(lis)
 	if err != nil {
-		log.Errorf("Grpc server error: %v", err)
+		logger.Error(err, "gRPC server error")
 	}
+}
+
+func setupLogger() {
+	level := zap.InfoLevel
+	switch *logLevel {
+	case "DEBUG":
+		level = zap.DebugLevel
+	case "INFO":
+		level = zap.InfoLevel
+	case "WARN":
+	case "WARNING":
+		level = zap.WarnLevel
+	case "ERROR":
+		level = zap.ErrorLevel
+	case "FATAL":
+		level = zap.FatalLevel
+	}
+
+	atomicLevel := zap.NewAtomicLevelAt(level)
+
+	logger := zapf.New(
+		zapf.UseDevMode(*debug),
+		zapf.Level(&atomicLevel),
+	)
+
+	logf.SetLogger(logger)
 }
 
 func main() {
@@ -173,7 +220,7 @@ func main() {
 		log.Fatal("Failed to create server url from", *hostname, *port)
 	}
 
-	logf.SetLogger(logf.ZapLogger(false))
+	setupLogger()
 	logger := logf.Log.WithName("entrypoint")
 
 	var predictor *v1.PredictorSpec
@@ -204,12 +251,12 @@ func main() {
 	// Ensure standard OpenAPI seldon API file has this deployment's values
 	err = rest.EmbedSeldonDeploymentValuesInSwaggerFile(*namespace, *sdepName)
 	if err != nil {
-		log.Error(err, "Failed to embed variables on OpenAPI template")
+		logger.Error(err, "Failed to embed variables on OpenAPI template")
 	}
 
 	annotations, err := k8s.GetAnnotations()
 	if err != nil {
-		log.Error(err, "Failed to load annotations")
+		logger.Error(err, "Failed to load annotations")
 	}
 
 	//Start Logger Dispacther

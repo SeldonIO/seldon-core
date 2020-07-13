@@ -2,6 +2,8 @@ package utils
 
 import (
 	"encoding/json"
+	"os"
+	"strconv"
 	"strings"
 
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
@@ -81,4 +83,24 @@ func SetEnvVar(envVars []v1.EnvVar, newVar v1.EnvVar) (newEnvVars []v1.EnvVar) {
 		newEnvVars = append(newEnvVars, newVar)
 	}
 	return newEnvVars
+}
+
+// Get an environment variable given by key or return the fallback.
+func GetEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
+}
+
+// Get an environment variable given by key or return the fallback.
+func GetEnvAsBool(key string, fallback bool) bool {
+	if raw, ok := os.LookupEnv(key); ok {
+		val, err := strconv.ParseBool(raw)
+		if err == nil {
+			return val
+		}
+	}
+
+	return fallback
 }

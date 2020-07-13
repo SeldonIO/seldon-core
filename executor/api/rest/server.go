@@ -256,7 +256,7 @@ func (r *SeldonRestApi) feedback(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
-	r.Log.Info("Predictions called")
+	r.Log.V(1).Info("Predictions called")
 
 	ctx := req.Context()
 	// Add Seldon Puid to Context
@@ -307,7 +307,7 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *SeldonRestApi) graphMetadata(w http.ResponseWriter, req *http.Request) {
-	r.Log.Info("Graph Metadata called.")
+	r.Log.V(1).Info("Graph Metadata called.")
 
 	ctx := req.Context()
 

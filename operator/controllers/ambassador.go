@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/seldonio/seldon-core/operator/constants"
+	"github.com/seldonio/seldon-core/operator/utils"
 
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"gopkg.in/yaml.v2"
@@ -371,19 +372,19 @@ func getAmbassadorConfigs(mlDep *machinelearningv1.SeldonDeployment, p *machinel
 
 		// Return the appropriate set of config based on whether http and/or grpc is active
 		if engine_http_port > 0 && engine_grpc_port > 0 {
-			if GetEnv("AMBASSADOR_SINGLE_NAMESPACE", "false") == "true" {
+			if utils.GetEnv("AMBASSADOR_SINGLE_NAMESPACE", "false") == "true" {
 				return YAML_SEP + cRestGlobal + YAML_SEP + cGrpcGlobal + YAML_SEP + cRestNamespaced + YAML_SEP + cGrpcNamespaced, nil
 			} else {
 				return YAML_SEP + cRestGlobal + YAML_SEP + cGrpcGlobal, nil
 			}
 		} else if engine_http_port > 0 {
-			if GetEnv("AMBASSADOR_SINGLE_NAMESPACE", "false") == "true" {
+			if utils.GetEnv("AMBASSADOR_SINGLE_NAMESPACE", "false") == "true" {
 				return YAML_SEP + cRestGlobal + YAML_SEP + cRestNamespaced, nil
 			} else {
 				return YAML_SEP + cRestGlobal, nil
 			}
 		} else if engine_grpc_port > 0 {
-			if GetEnv("AMBASSADOR_SINGLE_NAMESPACE", "false") == "true" {
+			if utils.GetEnv("AMBASSADOR_SINGLE_NAMESPACE", "false") == "true" {
 				return YAML_SEP + cGrpcGlobal + YAML_SEP + cGrpcNamespaced, nil
 			} else {
 				return YAML_SEP + cGrpcGlobal, nil
