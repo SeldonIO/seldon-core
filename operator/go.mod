@@ -18,5 +18,5 @@ require (
 	k8s.io/apimachinery v0.17.8
 	k8s.io/client-go v0.17.8
 	knative.dev/pkg v0.0.0-20200306225627-d1665814487e
-	sigs.k8s.io/controller-runtime v0.5.0
+	sigs.k8s.io/controller-runtime v0.5.8
 )
