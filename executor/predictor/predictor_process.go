@@ -350,8 +350,7 @@ func (p *PredictorProcess) GraphMetadata(spec *v1.PredictorSpec) (*GraphMetadata
 
 func (p *PredictorProcess) Feedback(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 
-	// TODO: Confirm whether we want to fail or pass if there is no PUUID - fail may be more desired as we may want to know id
-	// TODO: Explore whether we also may want to capture feedback response from children
+	// TODO: Send request payload logger after feedback request is sent in case it's to be overriden
 	if node.Logger != nil && (node.Logger.Mode == v1.LogResponse || node.Logger.Mode == v1.LogAll) {
 		puid, puiderr := p.getPUIDHeader()
 		if puiderr != nil {

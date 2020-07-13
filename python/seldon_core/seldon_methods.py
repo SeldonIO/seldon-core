@@ -9,6 +9,7 @@ from seldon_core.utils import (
     construct_response_json,
     extract_request_parts_json,
     extract_feedback_request_parts,
+    json_to_feedback,
 )
 from seldon_core.user_model import (
     INCLUDE_METRICS_IN_CLIENT_RESPONSE,
@@ -116,7 +117,10 @@ def predict(
 
 
 def send_feedback(
-    user_model: Any, request: prediction_pb2.Feedback, predictive_unit_id: str
+    user_model: Any,
+    request: prediction_pb2.Feedback,
+    predictive_unit_id: str,
+    seldon_metrics: SeldonMetrics,
 ) -> prediction_pb2.SeldonMessage:
     """
 
@@ -133,35 +137,50 @@ def send_feedback(
     -------
 
     """
-    if hasattr(user_model, "send_feedback_rest"):
+    is_proto = isinstance(request, prediction_pb2.Feedback)
+    if hasattr(user_model, "send_feedback_rest") and not is_proto:
         logger.warning("send_feedback_rest is deprecated. Please use send_feedback_raw")
-        request_json = json_format.MessageToJson(request)
-        response_json = user_model.send_feedback_rest(request_json)
-        return json_to_seldon_message(response_json)
-    elif hasattr(user_model, "send_feedback_grpc"):
+        return user_model.send_feedback_rest(request)
+    elif hasattr(user_model, "send_feedback_grpc") and is_proto:
         logger.warning("send_feedback_grpc is deprecated. Please use send_feedback_raw")
-        response_json = user_model.send_feedback_grpc(request)
-        return json_to_seldon_message(response_json)
-    else:
-        if hasattr(user_model, "send_feedback_raw"):
-            try:
-                return user_model.send_feedback_raw(request)
-            except SeldonNotImplementedError:
-                pass
+        return user_model.send_feedback_grpc(request)
+    elif hasattr(user_model, "send_feedback_raw"):
+        try:
+            response = user_model.send_feedback_raw(request)
+            handle_raw_custom_metrics(response, seldon_metrics, is_proto)
+            return response
+        except SeldonNotImplementedError:
+            pass
+    elif hasattr(user_model, "send_feedback"):
+        if not is_proto:
+            request_proto = json_to_feedback(request)
 
+        # TODO: This was never updated to align with the json vs proto structure so need to update
         (datadef_request, features, truth, reward) = extract_feedback_request_parts(
-            request
+            request_proto
         )
-        routing = request.response.meta.routing.get(predictive_unit_id)
+
+        metrics = client_custom_metrics(user_model, seldon_metrics)
+
+        # TODO: Currently routing is not made available anymore so this needs to be updated
+        routing = request_proto.response.meta.routing.get(predictive_unit_id)
         client_response = client_send_feedback(
             user_model, features, datadef_request.names, reward, truth, routing
         )
 
-        if client_response is None:
-            client_response = np.array([])
+        metrics = client_custom_metrics(user_model, seldon_metrics)
+
+        if is_proto:
+            return construct_response(
+                user_model, False, request_proto.request, client_response
+            )
         else:
-            client_response = np.array(client_response)
-        return construct_response(user_model, False, request.request, client_response)
+            return construct_response_json(
+                user_model, False, request["request"], client_response
+            )
+    else:
+        # TODO: Implement when nothing passed
+        raise Exception("TODO: Not implemented")
 
 
 def transform_input(

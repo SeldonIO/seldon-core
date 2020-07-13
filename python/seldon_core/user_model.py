@@ -363,7 +363,7 @@ def client_send_feedback(
     reward: float,
     truth: Union[np.ndarray, str, bytes],
     routing: Union[int, None],
-) -> Union[np.ndarray, List, str, bytes, None]:
+) -> Union[np.ndarray, Dict, List, str, bytes, None]:
     """
     Feedback to user model
 
