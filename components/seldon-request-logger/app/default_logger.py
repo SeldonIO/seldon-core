@@ -16,6 +16,8 @@ sys.stdout.flush()
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
+es = log_helper.connect_elasticsearch()
+
 
 @app.route("/", methods=['GET','POST'])
 def index():
@@ -45,8 +47,6 @@ def index():
     # print(str(body))
     # print('----')
     # sys.stdout.flush()
-
-    es = log_helper.connect_elasticsearch()
 
 
     try:

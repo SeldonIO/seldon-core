@@ -141,7 +141,8 @@ def connect_elasticsearch():
     if elastic_token:
         headers = {"Authorization": "Bearer "+elastic_token}
 
-    _es = Elasticsearch(connection_string,verify_certs=False,connection_class=RequestsHttpConnection,headers=headers)
+    _es = Elasticsearch(connection_string,verify_certs=False,connection_class=RequestsHttpConnection,headers=headers,
+                        retry_on_timeout=True,sniff_on_start = True,sniff_on_connection_fail = True,sniff_timeout = 60)
     if _es.ping():
         print('Connected to Elasticsearch')
         sys.stdout.flush()
