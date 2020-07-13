@@ -2,6 +2,16 @@
 
 ![](img/diagram.jpg)
 
+We will be able to see real time metrics for ml metrics as follows:
+
+![](img/realtime-accuracy.jpg)
+
+At the end we will be able to compare two models performance against each other.
+
+The screenshot below shows the shadow and default model performance.
+
+![](img/comparison.jpg)
+
 ### Setup dependencies
 * Istio
 * Seldon Core (with Istio + Req Logger)
@@ -9,12 +19,6 @@
 * Knative eventing
 * Request logger
 * Model with request logger
-
-By the end we will be able to see real time metrics for ml metrics as follows:
-
-![](img/realtime-accuracy.jpg)
-
-We also cover approaches to extend for advanced types of custom metrics, as well as real time monitoring of metrics with prometheus. 
 
 #### Istio
 
@@ -669,12 +673,20 @@ Similar to the design pattern that Seldon Core introduced with request logging a
 
 More specifically, it is possible to set up a stateful feedback processor which retrieves all the metrics on start and registers for feedback events to provide real time insights on any new incoming requests.
 
+In this notebook we show how this can be achieved thorugh two different approaches:
+* As a separate stateful metrics processor using KNative Eventing
+* Implemented in the seldon model itself
+
+Below we dive into both examples together with tradeoffs.
+
+#### Example of custom stateful metrics processor
+
 These can then be visualised through different areas such as through prometheus metrics, using a grafana dashboard. Below is a brief example of how this can be achieved through a simple implementation.
 
 ![](img/metrics-processor.jpg)
 
 
-#### Example of custom stateful metrics processor
+
 First we deploy the Seldon Core Analyitcs
 
 
@@ -826,25 +838,366 @@ If you wish to load the dashboard directly, you can also do this by importing th
 {"annotations": {"list": [{"builtIn": 1,"datasource": "-- Grafana --","enable": true,"hide": true,"iconColor": "rgba(0, 211, 255, 1)","name": "Annotations & Alerts","type": "dashboard"}]},"editable": true,"gnetId": null,"graphTooltip": 0,"id": null,"links": [],"panels": [{"aliasColors": {},"bars": true,"dashLength": 10,"dashes": false,"datasource": "prometheus","description": "","fieldConfig": {"defaults": {"custom": {}},"overrides": []},"fill": 1,"fillGradient": 0,"gridPos": {"h": 12,"w": 24,"x": 0,"y": 0},"hiddenSeries": false,"id": 2,"legend": {"avg": false,"current": false,"max": false,"min": false,"show": true,"total": false,"values": false},"lines": true,"linewidth": 1,"nullPointMode": "null","options": {"dataLinks": []},"percentage": false,"pointradius": 2,"points": false,"renderer": "flot","seriesOverrides": [],"spaceLength": 10,"stack": false,"steppedLine": false,"targets": [{"expr": "sum(correct_total) / sum(total_total)","interval": "","legendFormat": "Accuracy %","refId": "A"}],"thresholds": [],"timeFrom": null,"timeRegions": [],"timeShift": null,"title": "Real Time Model Accuracy","tooltip": {"shared": true,"sort": 0,"value_type": "individual"},"type": "graph","xaxis": {"buckets": null,"mode": "time","name": null,"show": true,"values": []},"yaxes": [{"decimals": null,"format": "short","label": null,"logBase": 1,"max": "1","min": "0","show": true},{"format": "short","label": null,"logBase": 1,"max": null,"min": null,"show": true}],"yaxis": {"align": false,"alignLevel": null}}],"refresh": "5s","schemaVersion": 25,"style": "dark","tags": [],"templating": {"list": []},"time": {"from": "now-5m","to": "now"},"timepicker": {"refresh_intervals": ["10s","30s","1m","5m","15m","30m","1h","2h","1d"]},"timezone": "","title": "New dashboard","uid": null,"version": 0}
 ```
 
-#### Perform the calculation in the request logger
+### Example using python wrapper
 
-If this is to eb performed in the request logger, it's possible to build your own custom request logger.
+For this second example we will show how we can implement the stateful metrics in the python wrapper itself.
 
-In this, you woudl be able to add logic to retrieve the specific request from the prediction, and then calculate the performance against the specific metrics you are required. 
+The reason why this is possible, is because the metrics server above is actually implemented in a very similar way to the wrapper.
 
-Finally these results can be stored back into the Elasticsearch index using an "upsert" (update + insert).
+Because of this, it will be possible to just use the wrapper itself and enable for more complex functionality.
 
-![](img/req-logger.jpg)
+Not only it's possible to store the metrics, but given that the models are loaded, it's possible to perform complex comparisons in the model itself.
+
+Let's have a look at an example with the iris classifier example.
+
+We will deploy two models as shadows and compare them using statistical metrics.
+
+#### Train models
+
+We will create a language wrapper, and we will have two models that we want to compare.
+
+The first model is a LogisticRegression model, and the second is a Perceptron model.
+
+We will first set everyhthing up with the LogisticRegression model.
 
 
-#### Retrieve all of the datapoints from ELK and calculate the metrics
+```python
+%%writefile requirements.txt
+joblib==0.14.1
+scikit-learn==0.20.3
+```
 
-In this second option, you would be able to fetch all of the datapoints for a specific model and perform processing on top.
+    Writing requirements.txt
 
-This would allow you to have more flexibility, especially for calculations which would require maintaining a global metric across your data, such as for global AI explanation techniques.
 
-The example below shows how you would be able to retrieve this data and process it. 
+We install the dependencies for the training and inference of the model
 
-Given that these would often be stateful, you may want to run this in an async fashion and store it for later/efficient retrieval.
 
-![](img/custom-aggreg.jpg)
+```python
+!pip install -r requirememnts.txt
+```
+
+Now we can build the model wrapper which uses sklearn 
+
+
+```python
+import joblib
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import LogisticRegression, Perceptron
+from sklearn import datasets
+
+parameters = [
+    {"clf": LogisticRegression(solver="liblinear", multi_class="ovr"), "name": "iris-lr.joblib"},
+    {"clf": Perceptron(n_iter=40, eta0=0.1, random_state=0), "name": "iris-percept.joblib"}
+]
+
+def main():
+    for param in parameters:
+        clf = param["clf"]
+        p = Pipeline([("clf", clf)])
+        print("Training model...")
+        p.fit(X, y)
+        print("Model trained!")
+
+        print(f"Saving model in {param['name']}")
+        joblib.dump(p, param['name'])
+        print("Model saved!")
+
+
+if __name__ == "__main__":
+    print("Loading iris data set...")
+    iris = datasets.load_iris()
+    X, y = iris.data, iris.target
+    print("Dataset loaded!")
+
+    main()
+```
+
+    Loading iris data set...
+    Dataset loaded!
+    Training model...
+    Model trained!
+    Saving model in iris-lr.joblib
+    Model saved!
+    Training model...
+    Model trained!
+    Saving model in iris-percept.joblib
+    Model saved!
+
+
+    /home/alejandro/miniconda3/lib/python3.7/site-packages/sklearn/linear_model/stochastic_gradient.py:152: DeprecationWarning: n_iter parameter is deprecated in 0.19 and will be removed in 0.21. Use max_iter and tol instead.
+      DeprecationWarning)
+
+
+We can see both our logistic regression model and the perceptron models are available
+
+
+```python
+!ls
+```
+
+    IrisClassifier.py  README_files  iris-lr.joblib       train_iris.py
+    README.ipynb	   __pycache__	 iris-percept.joblib
+    README.md	   img		 requirements.txt
+
+
+We can now create our simple wrapper. In this wrapper we will be exposing some of the key custom metrics
+
+
+```python
+%%writefile IrisClassifier.py
+import joblib
+
+class IrisClassifier:
+
+    def __init__(self, model_name="iris-lr.joblib"):
+        self.scores = {"correct": 0, "incorrect": 0}
+        self.model = joblib.load(model_name)
+
+    def predict(self, X, features_names=None, meta=None):
+        return self.model.predict(X)
+
+    def send_feedback(self, features, feature_names, reward, truth, routing=""):
+        predicted = self.predict(features)
+        if int(predicted[0]) == int(truth[0]):
+            self.scores["correct"] += 1
+        else:
+            self.scores["incorrect"] += 1
+        return [] # Ignore return statement as its not used
+        
+    def metrics(self):
+        return [
+            {"type": "GAUGE", "key": "correct", "value": self.scores["correct"]},
+            {"type": "GAUGE", "key": "incorrect", "value": self.scores["incorrect"]},
+        ]
+```
+
+    Overwriting IrisClassifier.py
+
+
+Now we can build the image
+
+
+```python
+!s2i build . seldonio/seldon-core-s2i-python37:1.2.2-dev iris_perf:0.1 \
+        --env MODEL_NAME=IrisClassifier --env API_TYPE=REST --env SERVICE_TYPE=MODEL --env PERSISTENCE=0
+```
+
+    ---> Installing application source...
+    ---> Installing dependencies ...
+    Looking in links: /whl
+    Collecting joblib==0.14.1 (from -r requirements.txt (line 1))
+      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+    Downloading https://files.pythonhosted.org/packages/28/5c/cf6a2b65a321c4a209efcdf64c2689efae2cb62661f8f6f4bb28547cf1bf/joblib-0.14.1-py2.py3-none-any.whl (294kB)
+    Collecting scikit-learn==0.20.3 (from -r requirements.txt (line 2))
+      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+    Downloading https://files.pythonhosted.org/packages/aa/cc/a84e1748a2a70d0f3e081f56cefc634f3b57013b16faa6926d3a6f0598df/scikit_learn-0.20.3-cp37-cp37m-manylinux1_x86_64.whl (5.4MB)
+    Collecting scipy>=0.13.3 (from scikit-learn==0.20.3->-r requirements.txt (line 2))
+      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+    Downloading https://files.pythonhosted.org/packages/30/45/ff9df4beceab76f979ee0ea7f5d248596aa5b0c179aa3d30589a3f4549eb/scipy-1.5.1-cp37-cp37m-manylinux1_x86_64.whl (25.9MB)
+    Requirement already satisfied: numpy>=1.8.2 in /opt/conda/lib/python3.7/site-packages (from scikit-learn==0.20.3->-r requirements.txt (line 2)) (1.19.0)
+    Installing collected packages: joblib, scipy, scikit-learn
+    Successfully installed joblib-0.14.1 scikit-learn-0.20.3 scipy-1.5.1
+    Collecting pip-licenses
+    Downloading https://files.pythonhosted.org/packages/2e/8a/b8eb114545d9e984fcc013ef544c487aa2c02489a66185a82108625784a5/pip_licenses-2.2.1-py3-none-any.whl
+    Collecting PTable (from pip-licenses)
+    Downloading https://files.pythonhosted.org/packages/ab/b3/b54301811173ca94119eb474634f120a49cd370f257d1aae5a4abaf12729/PTable-0.9.2.tar.gz
+    Building wheels for collected packages: PTable
+    Building wheel for PTable (setup.py): started
+    Building wheel for PTable (setup.py): finished with status 'done'
+    Created wheel for PTable: filename=PTable-0.9.2-cp37-none-any.whl size=22906 sha256=9b6965b595a29f2f93c8c3bbb06938e11ca7a969381dbdd23ebbb31707710ffa
+    Stored in directory: /root/.cache/pip/wheels/22/cc/2e/55980bfe86393df3e9896146a01f6802978d09d7ebcba5ea56
+    Successfully built PTable
+    Installing collected packages: PTable, pip-licenses
+    Successfully installed PTable-0.9.2 pip-licenses-2.2.1
+    created path: ./licenses/license_info.csv
+    created path: ./licenses/license.txt
+    Build completed successfully
+
+
+Now we can deploy a simple model to initially visualise the custom metrics that are generated
+
+
+```bash
+%%bash
+kubectl apply -n seldon -f - <<END
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: iris-perf
+spec:
+  name: iris-perf
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: iris_perf:0.1
+          imagePullPolicy: IfNotPresent
+          name: classifier
+    graph:
+      children: []
+      endpoint:
+        type: REST
+      parameters:
+      - name: model_name
+        type: STRING
+        value: iris-lr.joblib
+      name: classifier
+      type: MODEL
+    name: default
+    replicas: 1
+END
+```
+
+    seldondeployment.machinelearning.seldon.io/iris-lr configured
+
+
+
+```python
+!kubectl get pods -n seldon | grep iris-lr
+```
+
+    iris-lr-default-0-classifier-b6cb8c496-n4m55   2/2     Running   0          62s
+
+
+Now that we have deployed the model let's send a couple of requests so we can generate metrics, and we can create the dashboard.
+
+
+```python
+import requests
+
+url = "http://localhost:80/seldon/seldon/iris-perf/api/v1.0"
+
+correct = {"reward": 0, "request": {"data": {"ndarray": [[1,2,3,4]]}}, "truth":{"data": {"ndarray": [[1]]}}}
+incorrect = {"reward": 0, "request": {"data": {"ndarray": [[1,2,3,4]]}}, "truth":{"data": {"ndarray": [[2]]}}}
+
+for i in range(7):
+    requests.post(f"{url}/feedback", json=incorrect)
+for i in range(93):
+    requests.post(f"{url}/feedback", json=incorrect)
+```
+
+Now we can go to grafana and create a dashboard. We just need to go to the dashboard and provide the custom metrics to create the dashboard.
+
+For this, we just have to select "prometheus" as the main source, and then we just have to add `sum(correct)/(sum(incorrect)+sum(correct))` as the equation.
+
+We should then be able to see the following dashboard:
+
+![](img/model-perf.jpg)
+
+#### Compare two models performance
+Now we can actually run two models in parallel and compare their performance against each other.
+
+The previous model was trained with a LogisticRegrssion model, this one will be trained with a different SVM model
+
+
+```bash
+%%bash
+kubectl apply -n seldon -f - <<END
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: iris-perf
+spec:
+  name: iris-perf
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: iris_perf:0.1
+          imagePullPolicy: IfNotPresent
+          name: classifier
+    graph:
+      children: []
+      endpoint:
+        type: REST
+      parameters:
+      - name: model_name
+        type: STRING
+        value: iris-lr.joblib
+      name: classifier
+      type: MODEL
+    name: default
+    replicas: 1
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: iris_perf:0.1
+          imagePullPolicy: IfNotPresent
+          name: classifier
+    graph:
+      children: []
+      endpoint:
+        type: REST
+      parameters:
+      - name: model_name
+        type: STRING
+        value: iris-percept.joblib
+      name: classifier
+      type: MODEL
+    name: shadow
+    replicas: 1
+    shadow: true
+END
+```
+
+    seldondeployment.machinelearning.seldon.io/iris-perf created
+
+
+We can now see that the logistic regression (default) and perceptron (shadow) models are running
+
+
+```python
+!kubectl get pods -n seldon | grep iris
+```
+
+    iris-perf-default-0-classifier-76998fb887-xjg79   2/2     Running   0          10m
+    iris-perf-shadow-0-classifier-7b4bffb85f-t68lw    2/2     Running   0          10m
+
+
+We now just need to send some data. We can send the data one by one to simulate live data.
+
+We will be able to see the data as it's computed in the dashboard
+
+
+```python
+from sklearn import datasets
+
+iris = datasets.load_iris()
+X_in, y_in = iris.data, iris.target
+```
+
+
+```python
+import time
+
+url = "http://localhost:80/seldon/seldon/iris-perf/api/v1.0"
+
+for x, y in zip(X_in, y_in):
+    data = {"reward": 0, "request": {"data": {"ndarray": [x.tolist()]}}, "truth":{"data": {"ndarray": [[y.tolist()]]}}}
+    requests.post(f"{url}/feedback", json=data)
+    time.sleep(0.1)
+```
+
+We can now see in real time the performance of both models in regards to accuracy.
+
+We can see that our logistic regression model is performing better than our perceptron model.
+
+In this case we would be able to programmatically promote the logistic regression model without loss of performance.
+
+![](img/comparison.jpg)
+
+As an extension, it's possible to easily implement further components including:
+* Loading the historical feedback from elasticsearch upon starting (similar to the metrics server)
+* Adding further statistical metrics (such as precision, recall, etc), and support multiclass metrics
+* Storing feedback created by the python wrapper component
+
+Based on this implementation, it seems that it's possible to:
+* Explore providing out-of-the-box statistical metrics on accuracy
+* Adding ability to amend feedback to provdie more advanced components to store in elasticsearch
+* Provide out of the box means to load historical data for evaluation
+
+
+```python
+
+```
