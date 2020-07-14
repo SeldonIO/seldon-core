@@ -28,7 +28,7 @@ class BinaryClassifier:
             if int(predicted[0]) == int(truth[0]):
                 self.scores.TN += 1
             else:
-                self.scores.TP += 1
+                self.scores.FP += 1
         return []  # Ignore return statement as its not used
 
     def metrics(self):
