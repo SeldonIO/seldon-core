@@ -1,0 +1,42 @@
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-21-c7cq4-2[0m stage [32mmeta-pipeline[0m and container [32mstep-credential-initializer-7k9kv[0m
+{"level":"info","ts":1594743050.32998,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1594743050.3309333,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-21-c7cq4-2[0m stage [32mmeta-pipeline[0m and container [32mstep-working-dir-initializer-jzt74[0m
+{"level":"info","ts":1594743052.9143112,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594743052.9167702,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-21-c7cq4-2[0m stage [32mmeta-pipeline[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-21-c7cq4-2[0m stage [32mmeta-pipeline[0m and container [32mstep-git-source-meta-seldonio-seldon-core-pr-21-c7cq4-dnjts[0m
+{"level":"info","ts":1594743063.3130503,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1594743070.2161047,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ b8a92914e17e719377518735864e8c02077f0917 in path /workspace/source"}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-21-c7cq4-2[0m stage [32mmeta-pipeline[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-21-c7cq4-2[0m stage [32mmeta-pipeline[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:b8a92914e17e719377518735864e8c02077f0917,2130:44d8861c316a6be83b85a819a5b0ac6f69336b80
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch origin --unshallow 44d8861c316a6be83b85a819a5b0ac6f69336b80: b8a92914e17e719377518735864e8c02077f0917:
+DEBUG: ran git fetch --unshallow origin 44d8861c316a6be83b85a819a5b0ac6f69336b80: b8a92914e17e719377518735864e8c02077f0917: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard b8a92914e17e719377518735864e8c02077f0917
+DEBUG: ran git reset --hard b8a92914e17e719377518735864e8c02077f0917 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git merge 44d8861c316a6be83b85a819a5b0ac6f69336b80
+error: error during merge: merging 44d8861c316a6be83b85a819a5b0ac6f69336b80 into master: git output: Auto-merging operator/controllers/seldondeployment_prepackaged_servers.go
+Auto-merging operator/controllers/seldondeployment_explainers.go
+Auto-merging operator/controllers/seldondeployment_engine.go
+Auto-merging operator/controllers/seldondeployment_controller.go
+CONFLICT (content): Merge conflict in operator/controllers/seldondeployment_controller.go
+Automatic merge failed; fix conflicts and then commit the result.: failed to run 'git merge 44d8861c316a6be83b85a819a5b0ac6f69336b80' command in directory '', output: 'Auto-merging operator/controllers/seldondeployment_prepackaged_servers.go
+Auto-merging operator/controllers/seldondeployment_explainers.go
+Auto-merging operator/controllers/seldondeployment_engine.go
+Auto-merging operator/controllers/seldondeployment_controller.go
+CONFLICT (content): Merge conflict in operator/controllers/seldondeployment_controller.go
+Automatic merge failed; fix conflicts and then commit the result.'
+[31m
+Pipeline failed on stage 'meta-pipeline' : container 'step-git-merge'. The execution of the pipeline has stopped.[0m
