@@ -12,8 +12,8 @@ require (
 	github.com/onsi/gomega v1.10.1
 	go.uber.org/zap v1.10.0
 	gopkg.in/yaml.v2 v2.3.0
-	istio.io/api v0.0.0-20191115173247-e1a1952e5b81
-	istio.io/client-go v0.0.0-20191120150049-26c62a04cdbc
+	istio.io/api v0.0.0-20200513175333-ae3da0d240e3
+	istio.io/client-go v0.0.0-20200513180646-f8d9d8ff84e6
 	k8s.io/api v0.17.8
 	k8s.io/apiextensions-apiserver v0.17.8
 	k8s.io/apimachinery v0.17.8
