@@ -29,3 +29,7 @@ spec:
             defaultMode: 420
             name: tf-vegeta-cfg
           name: tf-vegeta-cfg
+      tolerations:
+      - key: loadtester
+        operator: Exists
+        effect: NoSchedule
