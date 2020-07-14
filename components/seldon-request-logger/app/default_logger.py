@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, Response
 from seldon_core.utils import (
     json_to_seldon_message,
     extract_request_parts,
@@ -181,6 +181,7 @@ def build_request_id_batched(request_id, no_items_in_batch, item_index):
 def upsert_doc_to_elastic(
     elastic_object, message_type, upsert_body, request_id, index_name
 ):
+    print(upsert_body)
     upsert_doc = {
         "doc_as_upsert": True,
         "doc": upsert_body,
