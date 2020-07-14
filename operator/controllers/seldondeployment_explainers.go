@@ -18,12 +18,15 @@ package controllers
 
 import (
 	"fmt"
-	"k8s.io/client-go/kubernetes"
 	"sort"
 	"strconv"
 	"strings"
 
+	"k8s.io/client-go/kubernetes"
+
 	"encoding/json"
+	"os"
+
 	"github.com/go-logr/logr"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
@@ -33,7 +36,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"os"
 )
 
 const (
@@ -80,6 +82,7 @@ func getExplainerConfigsFromMap(configMap *corev1.ConfigMap) (*ExplainerConfig, 
 func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pSvcName string, podSecurityContect *corev1.PodSecurityContext, log logr.Logger) error {
 
 	if !isEmptyExplainer(p.Explainer) {
+		pu := machinelearningv1.GetPredictiveUnit(&p.Graph, p.ComponentSpecs[0].Spec.Containers[0].Name)
 
 		seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
 
@@ -201,7 +204,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 			Containers: []corev1.Container{explainerContainer},
 		}}
 
-		deploy := createDeploymentWithoutEngine(depName, seldonId, &seldonPodSpec, p, mlDep, podSecurityContect)
+		deploy := createDeploymentWithoutEngine(depName, seldonId, &seldonPodSpec, pu, p, mlDep, podSecurityContect)
 
 		if p.Explainer.ModelUri != "" {
 			var err error
@@ -222,7 +225,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		c.deployments = append(c.deployments, deploy)
 
 		// Use seldondeployment name dash explainer as the external service name. This should allow canarying.
-		eSvc, err := createPredictorService(eSvcName, seldonId, p, mlDep, httpPort, grpcPort, true, log)
+		eSvc, err := createPredictorService(eSvcName, seldonId, pu, p, mlDep, httpPort, grpcPort, true, log)
 		if err != nil {
 			return err
 		}

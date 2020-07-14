@@ -18,6 +18,9 @@ package controllers
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
@@ -28,8 +31,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/rand"
-	"testing"
-	"time"
 )
 
 var _ = Describe("Create a Seldon Deployment", func() {
@@ -869,7 +870,7 @@ func TestCreateDeploymentWithLabelsAndAnnotations(t *testing.T) {
 		},
 	}
 
-	dep := createDeploymentWithoutEngine(depName, "a", instance.Spec.Predictors[0].ComponentSpecs[0], &instance.Spec.Predictors[0], instance, nil)
+	dep := createDeploymentWithoutEngine(depName, "a", instance.Spec.Predictors[0].ComponentSpecs[0], &instance.Spec.Predictors[0].Graph, &instance.Spec.Predictors[0], instance, nil)
 	g.Expect(dep.Labels[labelKey1]).To(Equal(labelValue1))
 	g.Expect(dep.Labels[labelKey2]).To(Equal(labelValue2))
 	g.Expect(dep.Spec.Template.ObjectMeta.Labels[labelKey1]).To(Equal(labelValue1))
@@ -914,5 +915,5 @@ func TestCreateDeploymentWithNoLabelsAndAnnotations(t *testing.T) {
 		},
 	}
 
-	_ = createDeploymentWithoutEngine(depName, "a", instance.Spec.Predictors[0].ComponentSpecs[0], &instance.Spec.Predictors[0], instance, nil)
+	_ = createDeploymentWithoutEngine(depName, "a", instance.Spec.Predictors[0].ComponentSpecs[0], &instance.Spec.Predictors[0].Graph, &instance.Spec.Predictors[0], instance, nil)
 }

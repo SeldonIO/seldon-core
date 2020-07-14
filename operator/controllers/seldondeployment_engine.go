@@ -389,7 +389,7 @@ func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machine
 }
 
 // Create the service orchestrator.
-func createEngineDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, seldonId string, engine_http_port, engine_grpc_port int) (*appsv1.Deployment, error) {
+func createEngineDeployment(mlDep *machinelearningv1.SeldonDeployment, pu *machinelearningv1.PredictiveUnit, p *machinelearningv1.PredictorSpec, seldonId string, engine_http_port, engine_grpc_port int) (*appsv1.Deployment, error) {
 
 	var terminationGracePeriodSecs = int64(20)
 	var defaultMode = corev1.DownwardAPIVolumeSourceDefaultMode
@@ -402,9 +402,16 @@ func createEngineDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machin
 	}
 	deploy := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        depName,
-			Namespace:   getNamespace(mlDep),
-			Labels:      map[string]string{machinelearningv1.Label_svc_orch: "true", machinelearningv1.Label_seldon_app: seldonId, machinelearningv1.Label_seldon_id: seldonId, "app": depName, "version": "v1", "fluentd": "true"},
+			Name:      depName,
+			Namespace: getNamespace(mlDep),
+			Labels: map[string]string{
+				machinelearningv1.Label_svc_orch:   "true",
+				machinelearningv1.Label_seldon_app: seldonId,
+				machinelearningv1.Label_seldon_id:  seldonId,
+				"app":                              depName,
+				"version":                          "v1",
+				"fluentd":                          "true",
+			},
 			Annotations: mlDep.Spec.Annotations,
 		},
 		Spec: appsv1.DeploymentSpec{
@@ -459,6 +466,6 @@ func createEngineDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machin
 		deploy.ObjectMeta.Labels[k] = v
 		deploy.Spec.Template.ObjectMeta.Labels[k] = v
 	}
-
+	addLabelsToDeployment(deploy, pu, p)
 	return deploy, nil
 }
