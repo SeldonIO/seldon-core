@@ -1,14 +1,28 @@
 ## Stateful Basic Model Feedback Metrics 
 
-We will be able to see real time metrics for ml metrics as follows:
+In this example we will be able to see how we can add stateful ML metrics into our models.
 
-![](img/realtime-accuracy.jpg)
+Initially we will see how to use simple statistical metrics for a binary model.
 
-At the end we will be able to compare two models performance against each other.
+We will be able to leverage this to compare the performance of two models at the same time.
 
-The screenshot below shows the shadow and default model performance.
+<table>
+<tr>
+<td>
+    <img src="img/realtime-accuracy.jpg">
+</td>
+<td>
+    <img src="img/model-perf-comp.jpg">
+</td>
+</tr>
+</table>
 
-![](img/comparison.jpg)
+
+At the end we will be able to show how this can be extended to multiclass models as well.
+
+This can be seen in the dashboard below.
+
+![](img/comparison-multiclass.jpg)
 
 This will explore two architecture to achieve this, namely:
 * Through a separate stateful metrics server using knative eventing (left)
@@ -680,7 +694,7 @@ plt.show()
 ![png](README_files/README_49_0.png)
 
 
-## Real Time Metrics Example
+## Real Time Metrics Example with separate service
 
 Similar to the design pattern that Seldon Core introduced with request logging and outlier detectors through asynchronous eventing, it's possible to do the same for metrics.
 
@@ -852,7 +866,7 @@ If you wish to load the dashboard directly, you can also do this by importing th
 {"annotations": {"list": [{"builtIn": 1,"datasource": "-- Grafana --","enable": true,"hide": true,"iconColor": "rgba(0, 211, 255, 1)","name": "Annotations & Alerts","type": "dashboard"}]},"editable": true,"gnetId": null,"graphTooltip": 0,"id": null,"links": [],"panels": [{"aliasColors": {},"bars": true,"dashLength": 10,"dashes": false,"datasource": "prometheus","description": "","fieldConfig": {"defaults": {"custom": {}},"overrides": []},"fill": 1,"fillGradient": 0,"gridPos": {"h": 12,"w": 24,"x": 0,"y": 0},"hiddenSeries": false,"id": 2,"legend": {"avg": false,"current": false,"max": false,"min": false,"show": true,"total": false,"values": false},"lines": true,"linewidth": 1,"nullPointMode": "null","options": {"dataLinks": []},"percentage": false,"pointradius": 2,"points": false,"renderer": "flot","seriesOverrides": [],"spaceLength": 10,"stack": false,"steppedLine": false,"targets": [{"expr": "sum(correct_total) / sum(total_total)","interval": "","legendFormat": "Accuracy %","refId": "A"}],"thresholds": [],"timeFrom": null,"timeRegions": [],"timeShift": null,"title": "Real Time Model Accuracy","tooltip": {"shared": true,"sort": 0,"value_type": "individual"},"type": "graph","xaxis": {"buckets": null,"mode": "time","name": null,"show": true,"values": []},"yaxes": [{"decimals": null,"format": "short","label": null,"logBase": 1,"max": "1","min": "0","show": true},{"format": "short","label": null,"logBase": 1,"max": null,"min": null,"show": true}],"yaxis": {"align": false,"alignLevel": null}}],"refresh": "5s","schemaVersion": 25,"style": "dark","tags": [],"templating": {"list": []},"time": {"from": "now-5m","to": "now"},"timepicker": {"refresh_intervals": ["10s","30s","1m","5m","15m","30m","1h","2h","1d"]},"timezone": "","title": "New dashboard","uid": null,"version": 0}
 ```
 
-### Example using python wrapper
+### Example using python wrapper for Binary Classifier
 
 For this second example we will show how we can implement the stateful metrics in the python wrapper itself.
 
@@ -862,20 +876,18 @@ Because of this, it will be possible to just use the wrapper itself and enable f
 
 Not only it's possible to store the metrics, but given that the models are loaded, it's possible to perform complex comparisons in the model itself.
 
-Let's have a look at an example with the iris classifier example.
+We will see how to compute complex statistical metrics for a binary model, and then how it can be approached for multi-class models.
 
-We will deploy two models as shadows and compare them using statistical metrics.
+This will allow us to deploy a shadow deployment and compare the metrics against both models.
 
 
 <img src="img/standard-server.jpg">
 
-#### Train models
 
-We will create a language wrapper, and we will have two models that we want to compare.
 
-The first model is a LogisticRegression model, and the second is a Perceptron model.
+#### Setup Requirements
 
-We will first set everyhthing up with the LogisticRegression model.
+Install required dependencies and make file available for language wrapper.
 
 
 ```python
@@ -884,17 +896,16 @@ joblib==0.14.1
 scikit-learn==0.20.3
 ```
 
-    Writing requirements.txt
-
-
-We install the dependencies for the training and inference of the model
-
 
 ```python
 !pip install -r requirememnts.txt
 ```
 
-Now we can build the model wrapper which uses sklearn 
+#### Train the binary models we'll deploy
+
+The first model is a LogisticRegression model, and the second is a Perceptron model.
+
+We will first set everyhthing up with the LogisticRegression model.
 
 
 ```python
@@ -904,42 +915,307 @@ from sklearn.linear_model import LogisticRegression, Perceptron
 from sklearn import datasets
 
 parameters = [
-    {"clf": LogisticRegression(solver="liblinear", multi_class="ovr"), "name": "iris-lr.joblib"},
-    {"clf": Perceptron(n_iter=40, eta0=0.1, random_state=0), "name": "iris-percept.joblib"}
+    {"clf": LogisticRegression(solver="liblinear", multi_class="ovr"), "name": "binary-lr.joblib"},
+    {"clf": Perceptron(n_iter=40, eta0=0.1, random_state=0), "name": "binary-percept.joblib"},
 ]
 
-def main():
-    for param in parameters:
-        clf = param["clf"]
-        p = Pipeline([("clf", clf)])
-        print("Training model...")
-        p.fit(X, y)
-        print("Model trained!")
+X, y = datasets.load_breast_cancer(return_X_y=True)
 
-        print(f"Saving model in {param['name']}")
-        joblib.dump(p, param['name'])
-        print("Model saved!")
+for param in parameters:
+    clf = param["clf"]
+    clf.fit(X, y)
 
-
-if __name__ == "__main__":
-    print("Loading iris data set...")
-    iris = datasets.load_iris()
-    X, y = iris.data, iris.target
-    print("Dataset loaded!")
-
-    main()
+    print(f"Saving model in {param['name']}")
+    joblib.dump(clf, param['name'])
 ```
 
-    Loading iris data set...
-    Dataset loaded!
-    Training model...
-    Model trained!
-    Saving model in iris-lr.joblib
-    Model saved!
-    Training model...
-    Model trained!
-    Saving model in iris-percept.joblib
-    Model saved!
+    Saving model in binary-lr.joblib
+    Saving model in binary-percept.joblib
+
+
+    /home/alejandro/miniconda3/lib/python3.7/site-packages/sklearn/linear_model/stochastic_gradient.py:152: DeprecationWarning: n_iter parameter is deprecated in 0.19 and will be removed in 0.21. Use max_iter and tol instead.
+      DeprecationWarning)
+
+
+
+```python
+%%writefile BinaryClassifier.py
+import joblib
+
+
+class Score:
+    def __init__(self, TP, FP, TN, FN):
+        self.TP = TP
+        self.FP = FP
+        self.TN = TN
+        self.FN = FN
+
+
+class BinaryClassifier:
+    def __init__(self, model_name="binary-lr.joblib"):
+        self.scores = Score(0, 0, 0, 0)
+        self.model = joblib.load(model_name)
+
+    def predict(self, X, features_names=None, meta=None):
+        return self.model.predict(X)
+
+    def send_feedback(self, features, feature_names, reward, truth, routing=""):
+        predicted = self.predict(features)
+        if int(truth[0]) == 1:
+            if int(predicted[0]) == int(truth[0]):
+                self.scores.TP += 1
+            else:
+                self.scores.FN += 1
+        else:
+            if int(predicted[0]) == int(truth[0]):
+                self.scores.TN += 1
+            else:
+                self.scores.FP += 1
+        return []  # Ignore return statement as its not used
+
+    def metrics(self):
+        return [
+            {"type": "GAUGE", "key": "true_pos", "value": self.scores.TP},
+            {"type": "GAUGE", "key": "true_neg", "value": self.scores.FN},
+            {"type": "GAUGE", "key": "false_pos", "value": self.scores.TN},
+            {"type": "GAUGE", "key": "false_neg", "value": self.scores.FP},
+        ]
+```
+
+    Overwriting BinaryClassifier.py
+
+
+Now we can build the image using the s2i utility which will create our microservice to deploy.
+
+
+```python
+!s2i build . seldonio/seldon-core-s2i-python37:1.2.2-dev binary_perf:0.1 \
+        --env MODEL_NAME=BinaryClassifier --env API_TYPE=REST --env SERVICE_TYPE=MODEL --env PERSISTENCE=0
+```
+
+    ---> Installing application source...
+    ---> Installing dependencies ...
+    Looking in links: /whl
+    Collecting joblib==0.14.1 (from -r requirements.txt (line 1))
+      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+    ^C
+
+
+And we can deploy a simple model with the yaml below
+
+
+```bash
+%%bash
+kubectl apply -n seldon -f - <<END
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: binary-perf
+spec:
+  name: binary-perf
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: binary_perf:0.1
+          imagePullPolicy: IfNotPresent
+          name: classifier
+    graph:
+      children: []
+      endpoint:
+        type: REST
+      parameters:
+      - name: model_name
+        type: STRING
+        value: binary-lr.joblib
+      name: classifier
+      type: MODEL
+    name: default
+    replicas: 1
+END
+```
+
+    seldondeployment.machinelearning.seldon.io/binary-perf configured
+
+
+
+```python
+!kubectl get pods -n seldon | grep binary
+```
+
+    binary-perf-default-0-classifier-6bb78d67d4-ppgc9   2/2     Running   0          44s
+
+
+Now we can send a couple of initial requests to be able to set up the initial dashboard in grafana with the metrics generated in prometheus
+
+
+```python
+import requests
+
+url = "http://localhost:80/seldon/seldon/binary-perf/api/v1.0"
+
+tn = {"reward": 0, "request": {"data": {"ndarray": [X[0].tolist()]}}, "truth":{"data": {"ndarray": [[0]]}}}
+fp = {"reward": 0, "request": {"data": {"ndarray": [X[0].tolist()]}}, "truth":{"data": {"ndarray": [[1]]}}}
+tp = {"reward": 0, "request": {"data": {"ndarray": [X[-1].tolist()]}}, "truth":{"data": {"ndarray": [[1]]}}}
+fn = {"reward": 0, "request": {"data": {"ndarray": [X[-1].tolist()]}}, "truth":{"data": {"ndarray": [[0]]}}}
+
+samp_list = [tn, tp, fp, fn]
+
+for s in samp_list:
+    for i in range(10):
+        requests.post(f"{url}/feedback", json=s)
+```
+
+We can now create a dashboard with these values to display the following statistical metrics:
+* Accuracy (tp + tn) / (tp + tn + fp + fn)
+* Precision tp / (tp + fp)
+* Recall tp / (fp + fn)
+* Specificity tn / (tn + fp)
+    
+![](img/stat-metrics.jpg)
+
+You can import the dashboard using the json below:
+
+
+```python
+{"annotations": {"list": [{"builtIn": 1,"datasource": "-- Grafana --","enable": true,"hide": true,"iconColor": "rgba(0, 211, 255, 1)","name": "Annotations & Alerts","type": "dashboard"}]},"editable": true,"gnetId": null,"graphTooltip": 0,"links": [],"panels": [{"aliasColors": {},"bars": false,"dashLength": 10,"dashes": false,"datasource": "prometheus","description": "","fieldConfig": {"defaults": {"custom": {},"mappings": [],"thresholds": {"mode": "absolute","steps": [{"color": "green","value": null},{"color": "red","value": 80}]}},"overrides": []},"fill": 1,"fillGradient": 0,"gridPos": {"h": 8,"w": 12,"x": 0,"y": 0},"hiddenSeries": false,"id": 2,"legend": {"avg": false,"current": false,"max": false,"min": false,"show": true,"total": false,"values": false},"lines": true,"linewidth": 1,"nullPointMode": "null","options": {"dataLinks": []},"percentage": false,"pluginVersion": "7.0.3","pointradius": 2,"points": true,"renderer": "flot","seriesOverrides": [],"spaceLength": 10,"stack": false,"steppedLine": false,"targets": [{"expr": "(true_pos+true_neg)/(true_pos + true_neg + false_neg + false_pos)","interval": "","legendFormat": "{{app}}","refId": "A"}],"thresholds": [],"timeFrom": null,"timeRegions": [],"timeShift": null,"title": "Real Time Model Accuracy","tooltip": {"shared": true,"sort": 0,"value_type": "individual"},"type": "graph","xaxis": {"buckets": null,"mode": "time","name": null,"show": true,"values": []},"yaxes": [{"$$hashKey": "object:211","decimals": null,"format": "short","label": null,"logBase": 1,"max": "1","min": "0","show": true},{"$$hashKey": "object:212","format": "short","label": null,"logBase": 1,"max": null,"min": null,"show": true}],"yaxis": {"align": false,"alignLevel": null}},{"aliasColors": {},"bars": false,"dashLength": 10,"dashes": false,"datasource": "prometheus","description": "","fieldConfig": {"defaults": {"custom": {"align": null},"mappings": [],"thresholds": {"mode": "absolute","steps": [{"color": "green","value": null},{"color": "red","value": 80}]}},"overrides": []},"fill": 1,"fillGradient": 0,"gridPos": {"h": 8,"w": 12,"x": 12,"y": 0},"hiddenSeries": false,"id": 3,"legend": {"avg": false,"current": false,"max": false,"min": false,"show": true,"total": false,"values": false},"lines": true,"linewidth": 1,"nullPointMode": "null","options": {"dataLinks": []},"percentage": false,"pluginVersion": "7.0.3","pointradius": 2,"points": true,"renderer": "flot","seriesOverrides": [],"spaceLength": 10,"stack": false,"steppedLine": false,"targets": [{"expr": "true_pos/(true_pos + false_pos)","interval": "","legendFormat": "{{app}}","refId": "A"}],"thresholds": [],"timeFrom": null,"timeRegions": [],"timeShift": null,"title": "Real Time Model Precision","tooltip": {"shared": true,"sort": 0,"value_type": "individual"},"type": "graph","xaxis": {"buckets": null,"mode": "time","name": null,"show": true,"values": []},"yaxes": [{"$$hashKey": "object:260","decimals": null,"format": "short","label": null,"logBase": 1,"max": "1","min": "0","show": true},{"$$hashKey": "object:261","format": "short","label": null,"logBase": 1,"max": null,"min": null,"show": true}],"yaxis": {"align": false,"alignLevel": null}},{"aliasColors": {},"bars": false,"dashLength": 10,"dashes": false,"datasource": "prometheus","description": "","fieldConfig": {"defaults": {"custom": {},"mappings": [],"thresholds": {"mode": "absolute","steps": [{"color": "green","value": null},{"color": "red","value": 80}]}},"overrides": []},"fill": 1,"fillGradient": 0,"gridPos": {"h": 8,"w": 12,"x": 0,"y": 8},"hiddenSeries": false,"id": 5,"legend": {"avg": false,"current": false,"max": false,"min": false,"show": true,"total": false,"values": false},"lines": true,"linewidth": 1,"nullPointMode": "null","options": {"dataLinks": []},"percentage": false,"pluginVersion": "7.0.3","pointradius": 2,"points": true,"renderer": "flot","seriesOverrides": [],"spaceLength": 10,"stack": false,"steppedLine": false,"targets": [{"expr": "true_pos/(true_pos + false_neg)","interval": "","legendFormat": "{{app}}","refId": "A"}],"thresholds": [],"timeFrom": null,"timeRegions": [],"timeShift": null,"title": "Real Time Model Recall","tooltip": {"shared": true,"sort": 0,"value_type": "individual"},"type": "graph","xaxis": {"buckets": null,"mode": "time","name": null,"show": true,"values": []},"yaxes": [{"$$hashKey": "object:309","decimals": null,"format": "short","label": null,"logBase": 1,"max": "1","min": "0","show": true},{"$$hashKey": "object:310","format": "short","label": null,"logBase": 1,"max": null,"min": null,"show": true}],"yaxis": {"align": false,"alignLevel": null}},{"aliasColors": {},"bars": false,"dashLength": 10,"dashes": false,"datasource": "prometheus","description": "","fieldConfig": {"defaults": {"custom": {},"mappings": [],"thresholds": {"mode": "absolute","steps": [{"color": "green","value": null},{"color": "red","value": 80}]}},"overrides": []},"fill": 1,"fillGradient": 0,"gridPos": {"h": 8,"w": 12,"x": 12,"y": 8},"hiddenSeries": false,"id": 4,"legend": {"avg": false,"current": false,"max": false,"min": false,"show": true,"total": false,"values": false},"lines": true,"linewidth": 1,"nullPointMode": "null","options": {"dataLinks": []},"percentage": false,"pluginVersion": "7.0.3","pointradius": 2,"points": true,"renderer": "flot","seriesOverrides": [],"spaceLength": 10,"stack": false,"steppedLine": false,"targets": [{"expr": "true_neg/(true_neg + false_pos)","interval": "","legendFormat": "{{app}}","refId": "A"}],"thresholds": [],"timeFrom": null,"timeRegions": [],"timeShift": null,"title": "Real Time Model Specificity","tooltip": {"shared": true,"sort": 0,"value_type": "individual"},"type": "graph","xaxis": {"buckets": null,"mode": "time","name": null,"show": true,"values": []},"yaxes": [{"$$hashKey": "object:358","decimals": null,"format": "short","label": null,"logBase": 1,"max": "1","min": "0","show": true},{"$$hashKey": "object:359","format": "short","label": null,"logBase": 1,"max": null,"min": null,"show": true}],"yaxis": {"align": false,"alignLevel": null}}],"refresh": false,"schemaVersion": 25,"style": "dark","tags": [],"templating": {"list": []},"time": {"from": "now-5m","to": "now"},"timepicker": {"refresh_intervals": ["5s","10s","30s","1m","5m","15m","30m","1h","2h","1d"],"time_options": ["5m","15m","1h","6h","12h","24h","2d","7d","30d"]},"timezone": "browser","title": "metrics-test","uid": "zmkrlZ7Gk","version": 1}
+```
+
+We can now use this to compare the performance of two models next to each other.
+
+We'll delete the model and create a new shadow deployment
+
+
+```python
+!kubectl delete sdep -n seldon binary-perf
+```
+
+    seldondeployment.machinelearning.seldon.io "binary-perf" deleted
+
+
+Now the command below will create two models, with a shadow deployment where the traffic will be forwarded to both models (but only the main one will return value)
+
+
+```bash
+%%bash
+kubectl apply -n seldon -f - <<END
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: binary-perf
+spec:
+  name: binary-perf
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: binary_perf:0.1
+          imagePullPolicy: IfNotPresent
+          name: classifier
+    graph:
+      children: []
+      endpoint:
+        type: REST
+      parameters:
+      - name: model_name
+        type: STRING
+        value: binary-lr.joblib
+      name: classifier
+      type: MODEL
+    name: default
+    replicas: 1
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: binary_perf:0.1
+          imagePullPolicy: IfNotPresent
+          name: classifier
+    graph:
+      children: []
+      endpoint:
+        type: REST
+      parameters:
+      - name: model_name
+        type: STRING
+        value: binary-percept.joblib
+      name: classifier
+      type: MODEL
+    name: shadow
+    replicas: 1
+    shadow: true
+END
+```
+
+    seldondeployment.machinelearning.seldon.io/binary-perf created
+
+
+
+```python
+!kubectl get pods -n seldon | grep binary
+```
+
+    binary-perf-default-0-classifier-6bb78d67d4-tcp5f   2/2     Running   0          29s
+    binary-perf-shadow-0-classifier-5dbcf7997b-mxmn4    2/2     Running   0          29s
+
+
+Now that we have both models deployed, we can send requests with 0.1 sec delay to see the real time metrics comparison
+
+
+```python
+import time
+from sklearn import datasets
+
+X_in, y_in = datasets.load_breast_cancer(return_X_y=True)
+
+url = "http://localhost:80/seldon/seldon/binary-perf/api/v1.0"
+
+for x, y in zip(X_in, y_in):
+    data = {"reward": 0, "request": {"data": {"ndarray": [x.tolist()]}}, "truth":{"data": {"ndarray": [[y.tolist()]]}}}
+    requests.post(f"{url}/feedback", json=data)
+    time.sleep(0.1)
+```
+
+Now with our model we are able to see the detailed performance by looking at the dashboard we created.
+
+We can see that in this case, both models have very similar perfromance on accuracy, however one model has better performance on precision, which would be important if you need to minimise false positives.
+
+![](img/model-perf-comp.jpg)
+
+### Example using python wrapper for Multiclass Classifier
+
+Now we can build the model wrapper which uses the iris dataset.
+
+This will have 3 classes available, and we will be able to use this for deploying and evaluation.
+
+FOr this example the metrics used are only accuracy, but we can explore how to abstract for multi-class classification.
+
+#### STart by training the models to deploy
+
+
+```python
+import joblib
+from sklearn.linear_model import LogisticRegression, Perceptron
+from sklearn.model_selection import train_test_split
+from sklearn import datasets
+
+parameters = [
+    {"clf": LogisticRegression(solver="liblinear", multi_class="ovr"), "name": "multiclass-lr.joblib"},
+    {"clf": Perceptron(n_iter=40, eta0=0.1, random_state=0), "name": "multiclass-percept.joblib"},
+]
+
+X, y = datasets.load_iris(return_X_y=True)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.9)
+
+for param in parameters:
+    clf = param["clf"]
+    clf.fit(X_train, y_train)
+
+    print(f"Saving model in {param['name']}")
+    joblib.dump(clf, param['name'])
+```
+
+    Saving model in multiclass-lr.joblib
+    Saving model in multiclass-percept.joblib
 
 
     /home/alejandro/miniconda3/lib/python3.7/site-packages/sklearn/linear_model/stochastic_gradient.py:152: DeprecationWarning: n_iter parameter is deprecated in 0.19 and will be removed in 0.21. Use max_iter and tol instead.
@@ -948,27 +1224,25 @@ if __name__ == "__main__":
 
 We can see both our logistic regression model and the perceptron models are available
 
-
-```python
-!ls
-```
-
-    IrisClassifier.py  README_files  iris-lr.joblib       train_iris.py
-    README.ipynb	   __pycache__	 iris-percept.joblib
-    README.md	   img		 requirements.txt
-
-
 We can now create our simple wrapper. In this wrapper we will be exposing some of the key custom metrics
 
 
 ```python
-%%writefile IrisClassifier.py
+%%writefile MulticlassClassifier.py
 import joblib
 
-class IrisClassifier:
 
-    def __init__(self, model_name="iris-lr.joblib"):
-        self.scores = {"correct": 0, "incorrect": 0}
+class Scores:
+    def __init__(self, numclass):
+        self.TP = [0] * numclass
+        self.FP = [0] * numclass
+        self.FN = [0] * numclass
+        # self.TN = [0] * numclass # Most often there won't be true negatives in multiclass although w
+        # We could explore using reward (or a binary param) to define if expected TN, but that seems more custom
+
+class MulticlassClassifier:
+    def __init__(self, model_name="multiclass-lr.joblib"):
+        self.scores = Scores(3)
         self.model = joblib.load(model_name)
 
     def predict(self, X, features_names=None, meta=None):
@@ -976,28 +1250,34 @@ class IrisClassifier:
 
     def send_feedback(self, features, feature_names, reward, truth, routing=""):
         predicted = self.predict(features)
+        print(f"Predicted: {predicted}")
+        print(f"Truth: {truth}")
         if int(predicted[0]) == int(truth[0]):
-            self.scores["correct"] += 1
+            self.scores.TP[int(truth[0])] += 1
         else:
-            self.scores["incorrect"] += 1
-        return [] # Ignore return statement as its not used
-        
+            self.scores.FN[int(truth[0])] += 1
+            self.scores.FP[int(predicted[0])] += 1
+        return []  # Ignore return statement as its not used
+
     def metrics(self):
-        return [
-            {"type": "GAUGE", "key": "correct", "value": self.scores["correct"]},
-            {"type": "GAUGE", "key": "incorrect", "value": self.scores["incorrect"]},
-        ]
+        metrics = []
+        for score, arr in vars(self.scores).items():
+            for i,val in enumerate(arr):
+                metric = {"type": "GAUGE", "key": f"score_{score}", "value": val, "tags": {"class": f"class_{i}"}}
+                print(metric)
+                metrics.append(metric)
+        return metrics
 ```
 
-    Overwriting IrisClassifier.py
+    Overwriting MulticlassClassifier.py
 
 
 Now we can build the image
 
 
 ```python
-!s2i build . seldonio/seldon-core-s2i-python37:1.2.2-dev iris_perf:0.1 \
-        --env MODEL_NAME=IrisClassifier --env API_TYPE=REST --env SERVICE_TYPE=MODEL --env PERSISTENCE=0
+!s2i build . seldonio/seldon-core-s2i-python37:1.2.2-dev multiclass_perf:0.1 \
+        --env MODEL_NAME=MulticlassClassifier --env API_TYPE=REST --env SERVICE_TYPE=MODEL --env PERSISTENCE=0
 ```
 
     ---> Installing application source...
@@ -1009,10 +1289,10 @@ Now we can build the image
     Collecting scikit-learn==0.20.3 (from -r requirements.txt (line 2))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
     Downloading https://files.pythonhosted.org/packages/aa/cc/a84e1748a2a70d0f3e081f56cefc634f3b57013b16faa6926d3a6f0598df/scikit_learn-0.20.3-cp37-cp37m-manylinux1_x86_64.whl (5.4MB)
+    Requirement already satisfied: numpy>=1.8.2 in /opt/conda/lib/python3.7/site-packages (from scikit-learn==0.20.3->-r requirements.txt (line 2)) (1.19.0)
     Collecting scipy>=0.13.3 (from scikit-learn==0.20.3->-r requirements.txt (line 2))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
     Downloading https://files.pythonhosted.org/packages/30/45/ff9df4beceab76f979ee0ea7f5d248596aa5b0c179aa3d30589a3f4549eb/scipy-1.5.1-cp37-cp37m-manylinux1_x86_64.whl (25.9MB)
-    Requirement already satisfied: numpy>=1.8.2 in /opt/conda/lib/python3.7/site-packages (from scikit-learn==0.20.3->-r requirements.txt (line 2)) (1.19.0)
     Installing collected packages: joblib, scipy, scikit-learn
     Successfully installed joblib-0.14.1 scikit-learn-0.20.3 scipy-1.5.1
     Collecting pip-licenses
@@ -1022,7 +1302,7 @@ Now we can build the image
     Building wheels for collected packages: PTable
     Building wheel for PTable (setup.py): started
     Building wheel for PTable (setup.py): finished with status 'done'
-    Created wheel for PTable: filename=PTable-0.9.2-cp37-none-any.whl size=22906 sha256=9b6965b595a29f2f93c8c3bbb06938e11ca7a969381dbdd23ebbb31707710ffa
+    Created wheel for PTable: filename=PTable-0.9.2-cp37-none-any.whl size=22906 sha256=5f073412ad839b78d4f136738f699d50fd4340a9f3482d860fbed0595f4c86cf
     Stored in directory: /root/.cache/pip/wheels/22/cc/2e/55980bfe86393df3e9896146a01f6802978d09d7ebcba5ea56
     Successfully built PTable
     Installing collected packages: PTable, pip-licenses
@@ -1041,14 +1321,14 @@ kubectl apply -n seldon -f - <<END
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: iris-perf
+  name: multiclass-perf
 spec:
-  name: iris-perf
+  name: multiclass-perf
   predictors:
   - componentSpecs:
     - spec:
         containers:
-        - image: iris_perf:0.1
+        - image: multiclass_perf:0.1
           imagePullPolicy: IfNotPresent
           name: classifier
     graph:
@@ -1058,7 +1338,7 @@ spec:
       parameters:
       - name: model_name
         type: STRING
-        value: iris-lr.joblib
+        value: multiclass-percept.joblib
       name: classifier
       type: MODEL
     name: default
@@ -1066,15 +1346,16 @@ spec:
 END
 ```
 
-    seldondeployment.machinelearning.seldon.io/iris-lr configured
+    seldondeployment.machinelearning.seldon.io/multiclass-perf configured
 
 
 
 ```python
-!kubectl get pods -n seldon | grep iris-lr
+!kubectl get pods -n seldon | grep multiclass
 ```
 
-    iris-lr-default-0-classifier-b6cb8c496-n4m55   2/2     Running   0          62s
+    multiclass-perf-default-0-classifier-77d74bd8f7-tt6wr   2/2     Terminating   0          4m10s
+    multiclass-perf-default-0-classifier-ff47b85dc-g9r4k    2/2     Running       0          28s
 
 
 Now that we have deployed the model let's send a couple of requests so we can generate metrics, and we can create the dashboard.
@@ -1082,25 +1363,26 @@ Now that we have deployed the model let's send a couple of requests so we can ge
 
 ```python
 import requests
+from sklearn import datasets
+import random
 
-url = "http://localhost:80/seldon/seldon/iris-perf/api/v1.0"
+url = "http://localhost:80/seldon/seldon/multiclass-perf/api/v1.0"
 
-correct = {"reward": 0, "request": {"data": {"ndarray": [[1,2,3,4]]}}, "truth":{"data": {"ndarray": [[1]]}}}
-incorrect = {"reward": 0, "request": {"data": {"ndarray": [[1,2,3,4]]}}, "truth":{"data": {"ndarray": [[2]]}}}
-
-for i in range(7):
-    requests.post(f"{url}/feedback", json=incorrect)
-for i in range(93):
-    requests.post(f"{url}/feedback", json=incorrect)
+for x_i, y_i in zip(X_test, y_test):
+    data = {"reward": 0, "request": {"data": {"ndarray": [x_i.tolist()]}}, "truth":{"data": {"ndarray": [[y_i.tolist()]]}}}
+    requests.post(f"{url}/feedback", json=data)
+    time.sleep(0.1)
 ```
 
 Now we can go to grafana and create a dashboard. We just need to go to the dashboard and provide the custom metrics to create the dashboard.
 
-For this, we just have to select "prometheus" as the main source, and then we just have to add `sum(correct)/(sum(incorrect)+sum(correct))` as the equation.
+For this, we are able to build a flexible dashboard that is able to display the metrics for each of the subclasses, together with the global metrics.
+
+The way that this is done is scalable, as we will see that once we deploy a second model we will be able to see that it automatically appears as well.
 
 We should then be able to see the following dashboard:
 
-![](img/model-perf.jpg)
+![](img/model-perf-multiclass.jpg)
 
 #### Compare two models performance
 Now we can actually run two models in parallel and compare their performance against each other.
@@ -1114,14 +1396,14 @@ kubectl apply -n seldon -f - <<END
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: iris-perf
+  name: multiclass-perf
 spec:
-  name: iris-perf
+  name: multiclass-perf
   predictors:
   - componentSpecs:
     - spec:
         containers:
-        - image: iris_perf:0.1
+        - image: multiclass_perf:0.1
           imagePullPolicy: IfNotPresent
           name: classifier
     graph:
@@ -1131,7 +1413,7 @@ spec:
       parameters:
       - name: model_name
         type: STRING
-        value: iris-lr.joblib
+        value: multiclass-lr.joblib
       name: classifier
       type: MODEL
     name: default
@@ -1139,7 +1421,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: iris_perf:0.1
+        - image: multiclass_perf:0.1
           imagePullPolicy: IfNotPresent
           name: classifier
     graph:
@@ -1149,7 +1431,7 @@ spec:
       parameters:
       - name: model_name
         type: STRING
-        value: iris-percept.joblib
+        value: multiclass-percept.joblib
       name: classifier
       type: MODEL
     name: shadow
@@ -1158,18 +1440,19 @@ spec:
 END
 ```
 
-    seldondeployment.machinelearning.seldon.io/iris-perf created
+    seldondeployment.machinelearning.seldon.io/multiclass-perf configured
 
 
 We can now see that the logistic regression (default) and perceptron (shadow) models are running
 
 
 ```python
-!kubectl get pods -n seldon | grep iris
+!kubectl get pods -n seldon | grep multiclass
 ```
 
-    iris-perf-default-0-classifier-76998fb887-xjg79   2/2     Running   0          10m
-    iris-perf-shadow-0-classifier-7b4bffb85f-t68lw    2/2     Running   0          10m
+    multiclass-perf-default-0-classifier-77d74bd8f7-nn8n9   0/2     Running   0          3s
+    multiclass-perf-default-0-classifier-ff47b85dc-sgmvz    2/2     Running   0          5m58s
+    multiclass-perf-shadow-0-classifier-7f4646bc4-xwmkc     0/2     Running   0          3s
 
 
 We now just need to send some data. We can send the data one by one to simulate live data.
@@ -1178,43 +1461,25 @@ We will be able to see the data as it's computed in the dashboard
 
 
 ```python
+import requests
 from sklearn import datasets
+import random
 
-iris = datasets.load_iris()
-X_in, y_in = iris.data, iris.target
-```
+url = "http://localhost:80/seldon/seldon/multiclass-perf/api/v1.0"
 
-
-```python
-import time
-
-url = "http://localhost:80/seldon/seldon/iris-perf/api/v1.0"
-
-for x, y in zip(X_in, y_in):
-    data = {"reward": 0, "request": {"data": {"ndarray": [x.tolist()]}}, "truth":{"data": {"ndarray": [[y.tolist()]]}}}
-    requests.post(f"{url}/feedback", json=data)
-    time.sleep(0.1)
+for i in range(2):
+    for x_i, y_i in zip(X_test, y_test):
+        data = {"reward": 0, "request": {"data": {"ndarray": [x_i.tolist()]}}, "truth":{"data": {"ndarray": [[y_i.tolist()]]}}}
+        requests.post(f"{url}/feedback", json=data)
+        time.sleep(0.1)
 ```
 
 We can now see in real time the performance of both models in regards to accuracy.
 
-We can see that our logistic regression model is performing better than our perceptron model.
+We can see that our perceptron model is performing better than our logistic regression model.
 
-In this case we would be able to programmatically promote the logistic regression model without loss of performance.
+In this case we would be able to programmatically promote the 2nd model model without loss of performance.
 
-![](img/comparison.jpg)
+Both models are performing badly in this case to show some noise but this can be tweaked by increasing the training size earlier in the example.
 
-As an extension, it's possible to easily implement further components including:
-* Loading the historical feedback from elasticsearch upon starting (similar to the metrics server)
-* Adding further statistical metrics (such as precision, recall, etc), and support multiclass metrics
-* Storing feedback created by the python wrapper component
-
-Based on this implementation, it seems that it's possible to:
-* Explore providing out-of-the-box statistical metrics on accuracy
-* Adding ability to amend feedback to provdie more advanced components to store in elasticsearch
-* Provide out of the box means to load historical data for evaluation
-
-
-```python
-
-```
+![](img/comparison-multiclass.jpg)
