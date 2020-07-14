@@ -418,11 +418,24 @@ END
 ```
 
     seldon ns exists
-    seldondeployment.machinelearning.seldon.io/sklearn configured
+    seldondeployment.machinelearning.seldon.io/sklearn created
 
 
     Error from server (AlreadyExists): namespaces "seldon" already exists
 
+
+### Set up elasticsearch client and clean the index
+
+
+```python
+from elasticsearch import Elasticsearch
+es = Elasticsearch(['http://localhost:9200'])
+```
+
+
+```python
+es.indices.delete(index='inference-log-seldon-seldon-sklearn-default', ignore=[400, 404])
+```
 
 ## Send Request
 
@@ -444,17 +457,11 @@ print(f"Response ID: {pred_resp_1.headers.get('seldon-puid')}")
 print(pred_resp_1.json())
 ```
 
-    Response ID: b470c0a1-e207-43d4-90d4-db64b879d068
+    Response ID: 2cfe7cb7-9467-467e-b9ea-1361042c3d60
     {'data': {'names': ['t:0', 't:1', 't:2'], 'ndarray': [[0.0006985194531162841, 0.003668039039435755, 0.9956334415074478]]}, 'meta': {}}
 
 
 ### Check request was sent to Elasticsearch
-
-
-```python
-from elasticsearch import Elasticsearch
-es = Elasticsearch(['http://localhost:9200'])
-```
 
 See the index that has been created
 
@@ -482,10 +489,10 @@ print(res["hits"]["hits"][0]["_source"]["response"])
 ```
 
     Logged Request:
-    {'ce-source': 'http:localhost:8000', 'instance': [1.0, 2.0, 3.0, 4.0], 'payload': {'data': {'ndarray': [[1, 2, 3, 4]]}}, 'dataType': 'tabular', 'elements': {}, 'ce-time': '2020-07-11T08:41:50.378621945Z'}
+    {'payload': {'data': {'ndarray': [[1, 2, 3, 4]]}}, 'dataType': 'tabular', 'elements': {}, 'instance': [1.0, 2.0, 3.0, 4.0], 'ce-time': '2020-07-14T19:51:55.897123716Z', 'ce-source': 'http:localhost:8000'}
     
     Logged Response:
-    {'payload': {'data': {'names': ['t:0', 't:1', 't:2'], 'ndarray': [[0.0006985194531162841, 0.003668039039435755, 0.9956334415074478]]}, 'meta': {}}, 'dataType': 'tabular', 'elements': {'t:0': [0.0006985194531162841], 't:1': [0.003668039039435755], 't:2': [0.9956334415074478]}, 'instance': [0.0006985194531162841, 0.003668039039435755, 0.9956334415074478], 'names': ['t:0', 't:1', 't:2'], 'ce-time': '2020-07-11T08:41:50.384083245Z', 'ce-source': 'http:localhost:8000'}
+    {'ce-source': 'http:localhost:8000', 'instance': [0.0006985194531162841, 0.003668039039435755, 0.9956334415074478], 'names': ['t:0', 't:1', 't:2'], 'payload': {'data': {'names': ['t:0', 't:1', 't:2'], 'ndarray': [[0.0006985194531162841, 0.003668039039435755, 0.9956334415074478]]}, 'meta': {}}, 'dataType': 'tabular', 'elements': {'t:1': [0.003668039039435755], 't:0': [0.0006985194531162841], 't:2': [0.9956334415074478]}, 'ce-time': '2020-07-14T19:51:55.900570216Z'}
 
 
 ### Now we can send feedback 
@@ -501,7 +508,7 @@ puid_seldon_1 = pred_resp_1.headers.get("seldon-puid")
 print(puid_seldon_1)
 ```
 
-    b470c0a1-e207-43d4-90d4-db64b879d068
+    2cfe7cb7-9467-467e-b9ea-1361042c3d60
 
 
 We will also be able to add extra metadata, such as the user providing the feedback, date, time, etc.
@@ -557,7 +564,7 @@ res = es.search(index="inference-log-seldon-seldon-sklearn-default", body={"quer
 print(res["hits"]["hits"][0]["_source"]["feedback"])
 ```
 
-    {'reward': 0, 'ce-source': 'http:localhost:8000', 'truth': {'data': {'names': ['t:0', 't:1', 't:2'], 'ndarray': [[0.0006985194531162841, 0.003668039039435755, 0.9956334415074478]]}, 'meta': {'tags': {'date': '11/07/2020', 'user': 'Seldon Admin'}}}, 'ce-time': '2020-07-11T09:00:44.310299646Z'}
+    {'reward': 0, 'ce-source': 'http:localhost:8000', 'truth': {'data': {'names': ['t:0', 't:1', 't:2'], 'ndarray': [[0, 0, 1]]}, 'meta': {'tags': {'date': '11/07/2020', 'user': 'Seldon Admin'}}}, 'ce-time': '2020-07-14T19:52:10.51310669Z'}
 
 
 ### Stateful metrics Overview
@@ -609,7 +616,7 @@ es_count = es.count(index="inference-log-seldon-seldon-sklearn-default")
 print(es_count)
 ```
 
-    {'count': 212, '_shards': {'total': 1, 'successful': 1, 'skipped': 0, 'failed': 0}}
+    {'count': 100, '_shards': {'total': 1, 'successful': 1, 'skipped': 0, 'failed': 0}}
 
 
 #### Then send the feedback
@@ -659,7 +666,7 @@ feedback_metrics = es.search(index="inference-log-seldon-seldon-sklearn-default"
 print(feedback_metrics["aggregations"])
 ```
 
-    {'reward_sum': {'value': 46.0, 'value_as_string': 'true'}, 'reward_count': {'doc_count': 63}}
+    {'reward_sum': {'value': 31.0, 'value_as_string': 'true'}, 'reward_count': {'doc_count': 40}}
 
 
 This can also be performed for a specified datetime, so you can actually filter the accuracy / performance based on:
@@ -691,7 +698,7 @@ plt.show()
 ```
 
 
-![png](README_files/README_49_0.png)
+![png](README_files/README_51_0.png)
 
 
 ## Real Time Metrics Example with separate service
@@ -853,6 +860,112 @@ while True:
     time.sleep(0.5)    
 ```
 
+    Sending: 1 
+    Sending: 0 
+    Sending: 1 
+    Sending: 0 
+    Sending: 0 
+    Sending: 1 
+    Sending: 0 
+    Sending: 1 
+    Sending: 0 
+    Sending: 1 
+    Sending: 0 
+    Sending: 1 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 1 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 1 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 1 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 1 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 1 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 1 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 1 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 1 
+    Sending: 1 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 1 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+    Sending: 1 
+    Sending: 0 
+    Sending: 0 
+    Sending: 0 
+
+
+
+    -----------------------
+
+    KeyboardInterruptTraceback (most recent call last)
+
+    <ipython-input-80-fc7bc223c77e> in <module>
+         22     feed_resp = requests.post(f"{url}/feedback", json=feedback, headers={"seldon-puid": sid})
+         23     assert feed_resp.status_code == 200
+    ---> 24     time.sleep(0.5)
+    
+
+    KeyboardInterrupt: 
+
+
 This will send requests that will show 80% probablility of incorrect predictions, showing a steady decline in accuracy as per the image below.
 
 ![](img/realtime-accuracy.jpg)
@@ -998,7 +1111,31 @@ Now we can build the image using the s2i utility which will create our microserv
     Looking in links: /whl
     Collecting joblib==0.14.1 (from -r requirements.txt (line 1))
       WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    ^C
+    Downloading https://files.pythonhosted.org/packages/28/5c/cf6a2b65a321c4a209efcdf64c2689efae2cb62661f8f6f4bb28547cf1bf/joblib-0.14.1-py2.py3-none-any.whl (294kB)
+    Collecting scikit-learn==0.20.3 (from -r requirements.txt (line 2))
+      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+    Downloading https://files.pythonhosted.org/packages/aa/cc/a84e1748a2a70d0f3e081f56cefc634f3b57013b16faa6926d3a6f0598df/scikit_learn-0.20.3-cp37-cp37m-manylinux1_x86_64.whl (5.4MB)
+    Collecting scipy>=0.13.3 (from scikit-learn==0.20.3->-r requirements.txt (line 2))
+      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+    Downloading https://files.pythonhosted.org/packages/30/45/ff9df4beceab76f979ee0ea7f5d248596aa5b0c179aa3d30589a3f4549eb/scipy-1.5.1-cp37-cp37m-manylinux1_x86_64.whl (25.9MB)
+    Requirement already satisfied: numpy>=1.8.2 in /opt/conda/lib/python3.7/site-packages (from scikit-learn==0.20.3->-r requirements.txt (line 2)) (1.19.0)
+    Installing collected packages: joblib, scipy, scikit-learn
+    Successfully installed joblib-0.14.1 scikit-learn-0.20.3 scipy-1.5.1
+    Collecting pip-licenses
+    Downloading https://files.pythonhosted.org/packages/2e/8a/b8eb114545d9e984fcc013ef544c487aa2c02489a66185a82108625784a5/pip_licenses-2.2.1-py3-none-any.whl
+    Collecting PTable (from pip-licenses)
+    Downloading https://files.pythonhosted.org/packages/ab/b3/b54301811173ca94119eb474634f120a49cd370f257d1aae5a4abaf12729/PTable-0.9.2.tar.gz
+    Building wheels for collected packages: PTable
+    Building wheel for PTable (setup.py): started
+    Building wheel for PTable (setup.py): finished with status 'done'
+    Created wheel for PTable: filename=PTable-0.9.2-cp37-none-any.whl size=22906 sha256=879ef5389c9fde9164b54781263911d3dddbc07f3c552ca98188f6774b64104a
+    Stored in directory: /root/.cache/pip/wheels/22/cc/2e/55980bfe86393df3e9896146a01f6802978d09d7ebcba5ea56
+    Successfully built PTable
+    Installing collected packages: PTable, pip-licenses
+    Successfully installed PTable-0.9.2 pip-licenses-2.2.1
+    created path: ./licenses/license_info.csv
+    created path: ./licenses/license.txt
+    Build completed successfully
 
 
 And we can deploy a simple model with the yaml below
@@ -1035,7 +1172,7 @@ spec:
 END
 ```
 
-    seldondeployment.machinelearning.seldon.io/binary-perf configured
+    seldondeployment.machinelearning.seldon.io/binary-perf created
 
 
 
@@ -1043,7 +1180,7 @@ END
 !kubectl get pods -n seldon | grep binary
 ```
 
-    binary-perf-default-0-classifier-6bb78d67d4-ppgc9   2/2     Running   0          44s
+    binary-perf-default-0-classifier-6bb78d67d4-2b2gh           2/2     Running   0          24s
 
 
 Now we can send a couple of initial requests to be able to set up the initial dashboard in grafana with the metrics generated in prometheus
@@ -1146,7 +1283,7 @@ spec:
 END
 ```
 
-    seldondeployment.machinelearning.seldon.io/binary-perf created
+    seldondeployment.machinelearning.seldon.io/binary-perf configured
 
 
 
@@ -1237,10 +1374,11 @@ class Scores:
         self.TP = [0] * numclass
         self.FP = [0] * numclass
         self.FN = [0] * numclass
-        self.N = 0
-        self.DELTA = [0] * numclass # [0, 0, 0]
-        self.DELTA_SQ = [0] * numclass
-        self.LOG_DELTA = [0] * numclass
+        # Further parameters can be added for more advanced metrics
+#         self.N = 0
+#         self.DELTA = [0] * numclass # [0, 0, 0]
+#         self.DELTA_SQ = [0] * numclass
+#         self.LOG_DELTA = [0] * numclass
         # self.TN = [0] * numclass # Most often there won't be true negatives in multiclass although w
         # We could explore using reward (or a binary param) to define if expected TN, but that seems more custom
 
@@ -1251,23 +1389,18 @@ class MulticlassClassifier:
         self.proba = proba
 
     def predict(self, X, features_names=None, meta=None):
-        return self.model.predict_proba(X)
+        return self.model.predict(X)
 
     def send_feedback(self, features, feature_names, reward, truth, routing=""):
         predicted = self.predict(features)
         print(f"Predicted: {predicted}")
         print(f"Truth: {truth}")
-        #  truth = [0, 0, 0.7] 
-        #  features = [0, 0.6, 0] 
-        
-        delta = truth - predicted
-        delta_sq = delta ** 2
-        delta_sq = math.log(delta)
-        
-        self.score.DELTA += delta
-        self.score.DELTA_SQ += delta_sq
-        
-        # [ 0 0 0.1 ]
+        # These parameters could also be set for other metrics
+#         delta = truth - predicted
+#         delta_sq = delta ** 2
+#         delta_sq = math.log(delta)
+#         self.score.DELTA += delta
+#         self.score.DELTA_SQ += delta_sq
         
         if int(predicted[0]) == int(truth[0]):
             self.scores.TP[int(truth[0])] += 1
@@ -1319,7 +1452,7 @@ Now we can build the image
     Building wheels for collected packages: PTable
     Building wheel for PTable (setup.py): started
     Building wheel for PTable (setup.py): finished with status 'done'
-    Created wheel for PTable: filename=PTable-0.9.2-cp37-none-any.whl size=22906 sha256=5f073412ad839b78d4f136738f699d50fd4340a9f3482d860fbed0595f4c86cf
+    Created wheel for PTable: filename=PTable-0.9.2-cp37-none-any.whl size=22906 sha256=dcd92a9d34f16e4b8fa793b7146ceea7d8d8ff0306edded2c7a38f907a52daea
     Stored in directory: /root/.cache/pip/wheels/22/cc/2e/55980bfe86393df3e9896146a01f6802978d09d7ebcba5ea56
     Successfully built PTable
     Installing collected packages: PTable, pip-licenses
@@ -1363,7 +1496,7 @@ spec:
 END
 ```
 
-    seldondeployment.machinelearning.seldon.io/multiclass-perf configured
+    seldondeployment.machinelearning.seldon.io/multiclass-perf created
 
 
 
@@ -1371,8 +1504,7 @@ END
 !kubectl get pods -n seldon | grep multiclass
 ```
 
-    multiclass-perf-default-0-classifier-77d74bd8f7-tt6wr   2/2     Terminating   0          4m10s
-    multiclass-perf-default-0-classifier-ff47b85dc-g9r4k    2/2     Running       0          28s
+    multiclass-perf-default-0-classifier-ff47b85dc-q95fr        2/2     Running   0          58s
 
 
 Now that we have deployed the model let's send a couple of requests so we can generate metrics, and we can create the dashboard.
@@ -1507,3 +1639,13 @@ In this case we would be able to programmatically promote the 2nd model model wi
 Both models are performing badly in this case to show some noise but this can be tweaked by increasing the training size earlier in the example.
 
 ![](img/comparison-multiclass.jpg)
+
+As a side note, the current idea as extension is:
+* Out of the box, all models will come with basic statistical metrics (accuracy, precision, recall), without even implementing the feedback function, as long as you send the feedback with the statMetrics info (that's something I have still to specifically define, but it would be of similar structure to the Score  class in the multiclass example)
+* Feature to override the feedback that is stored in the ELK database, which would just require returning the value from Feedback. This new Feedback message would also be the one that would be used for the model itself ot display the metrics
+* Feature to override and extend your own statistical metrics on the model, which basically owuld be exactly how I'm doing it in the example provided (or at least very similar)
+
+
+```python
+
+```
