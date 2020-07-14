@@ -6,6 +6,8 @@ IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
 IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${VERSION}
 IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
 
+EXECUTOR_FOLDERS ?= ./api/... ./predictor/... ./k8s/...
+
 KIND_NAME ?= kind
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -17,11 +19,11 @@ endif
 
 # Run go fmt against code
 fmt:
-	go fmt ./...
+	go fmt ${EXECUTOR_FOLDERS}
 
 # Run go vet against code
 vet:
-	go vet ./...
+	go vet ${EXECUTOR_FOLDERS}
 
 
 # Build manager binary
@@ -58,7 +60,7 @@ add_protos:
 
 # Run tests
 test: fmt vet
-	go test ./api/... ./predictor/... ./k8s/...  -coverprofile cover.out
+	go test ${EXECUTOR_FOLDERS} -coverprofile cover.out
 
 copy_openapi_resources:
 	mkdir -p api/rest/openapi/
@@ -67,11 +69,11 @@ copy_openapi_resources:
 
 # Build the docker image
 docker-build: test copy_openapi_resources
-	docker build -f Dockerfile -t ${IMG} .
+	cd .. && docker build -f executor/Dockerfile -t ${IMG} .
 
 # Build the docker image for Redhat
 docker-build-redhat: test copy_openapi_resources
-	docker build . -f Dockerfile.redhat -t ${IMG_REDHAT}
+	cd .. && docker build -f executor/Dockerfile.redhat -t ${IMG_REDHAT} .
 
 # Push the docker image
 docker-push:
