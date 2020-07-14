@@ -1237,21 +1237,38 @@ class Scores:
         self.TP = [0] * numclass
         self.FP = [0] * numclass
         self.FN = [0] * numclass
+        self.N = 0
+        self.DELTA = [0] * numclass # [0, 0, 0]
+        self.DELTA_SQ = [0] * numclass
+        self.LOG_DELTA = [0] * numclass
         # self.TN = [0] * numclass # Most often there won't be true negatives in multiclass although w
         # We could explore using reward (or a binary param) to define if expected TN, but that seems more custom
 
 class MulticlassClassifier:
-    def __init__(self, model_name="multiclass-lr.joblib"):
-        self.scores = Scores(3)
+    def __init__(self, model_name="multiclass-lr.joblib", class_num=3, proba=False):
+        self.scores = Scores(class_num)
         self.model = joblib.load(model_name)
+        self.proba = proba
 
     def predict(self, X, features_names=None, meta=None):
-        return self.model.predict(X)
+        return self.model.predict_proba(X)
 
     def send_feedback(self, features, feature_names, reward, truth, routing=""):
         predicted = self.predict(features)
         print(f"Predicted: {predicted}")
         print(f"Truth: {truth}")
+        #  truth = [0, 0, 0.7] 
+        #  features = [0, 0.6, 0] 
+        
+        delta = truth - predicted
+        delta_sq = delta ** 2
+        delta_sq = math.log(delta)
+        
+        self.score.DELTA += delta
+        self.score.DELTA_SQ += delta_sq
+        
+        # [ 0 0 0.1 ]
+        
         if int(predicted[0]) == int(truth[0]):
             self.scores.TP[int(truth[0])] += 1
         else:
@@ -1383,6 +1400,13 @@ The way that this is done is scalable, as we will see that once we deploy a seco
 We should then be able to see the following dashboard:
 
 ![](img/model-perf-multiclass.jpg)
+
+You can load/import the full dashboard with the json below:
+
+
+```python
+{"annotations": {"list": [{"builtIn": 1,"datasource": "-- Grafana --","enable": true,"hide": true,"iconColor": "rgba(0, 211, 255, 1)","name": "Annotations & Alerts","type": "dashboard"}]},"editable": true,"gnetId": null,"graphTooltip": 0,"id": 4,"links": [],"panels": [{"datasource": "prometheus","description": "","fieldConfig": {"defaults": {"custom": {},"mappings": [],"thresholds": {"mode": "absolute","steps": [{"color": "green","value": null},{"color": "red","value": 80}]}},"overrides": []},"gridPos": {"h": 5,"w": 8,"x": 0,"y": 0},"id": 5,"options": {"colorMode": "background","graphMode": "area","justifyMode": "auto","orientation": "auto","reduceOptions": {"calcs": ["mean"],"fields": "","values": false}},"pluginVersion": "7.0.3","targets": [{"expr": "(sum(score_TP) by (seldon_app)) / (sum(score_TP + score_FN + score_FP) by (seldon_app))","interval": "","legendFormat": "{{class}} - {{seldon_app}}","refId": "A"}],"timeFrom": null,"timeShift": null,"title": "ACCURACY","transparent": true,"type": "stat"},{"datasource": "prometheus","description": "","fieldConfig": {"defaults": {"custom": {},"mappings": [],"thresholds": {"mode": "absolute","steps": [{"color": "green","value": null},{"color": "red","value": 80}]}},"overrides": []},"gridPos": {"h": 5,"w": 8,"x": 8,"y": 0},"id": 6,"options": {"colorMode": "value","graphMode": "area","justifyMode": "auto","orientation": "auto","reduceOptions": {"calcs": ["mean"],"fields": "","values": false}},"pluginVersion": "7.0.3","targets": [{"expr": "(sum(score_TP) by (seldon_app)) / (sum(score_TP + score_FP) by (seldon_app))","interval": "","legendFormat": "{{class}} - {{seldon_app}}","refId": "A"}],"timeFrom": null,"timeShift": null,"title": "PRECISION","transparent": true,"type": "stat"},{"datasource": "prometheus","description": "","fieldConfig": {"defaults": {"custom": {},"mappings": [],"thresholds": {"mode": "absolute","steps": [{"color": "green","value": null},{"color": "red","value": 80}]}},"overrides": []},"gridPos": {"h": 5,"w": 8,"x": 16,"y": 0},"id": 7,"options": {"colorMode": "value","graphMode": "area","justifyMode": "auto","orientation": "auto","reduceOptions": {"calcs": ["mean"],"fields": "","values": false}},"pluginVersion": "7.0.3","targets": [{"expr": "(sum(score_TP) by (seldon_app)) / (sum(score_TP + score_FN) by (seldon_app))","interval": "","legendFormat": "{{class}} - {{seldon_app}}","refId": "A"}],"timeFrom": null,"timeShift": null,"title": "Recall","transparent": true,"type": "stat"},{"aliasColors": {},"bars": false,"dashLength": 10,"dashes": false,"datasource": "prometheus","description": "","fieldConfig": {"defaults": {"custom": {}},"overrides": []},"fill": 1,"fillGradient": 0,"gridPos": {"h": 6,"w": 24,"x": 0,"y": 5},"hiddenSeries": false,"id": 3,"legend": {"avg": false,"current": false,"max": false,"min": false,"show": true,"total": false,"values": false},"lines": true,"linewidth": 1,"nullPointMode": "null","options": {"dataLinks": []},"percentage": false,"pointradius": 2,"points": true,"renderer": "flot","seriesOverrides": [],"spaceLength": 10,"stack": false,"steppedLine": false,"targets": [{"expr": "sum(score_TP / (score_TP + score_FN + score_FP)) by (class, seldon_app)","interval": "","legendFormat": "{{class}} - {{seldon_app}}","refId": "A"}],"thresholds": [],"timeFrom": null,"timeRegions": [],"timeShift": null,"title": "Real Time Model ACCURACY by Class","tooltip": {"shared": true,"sort": 0,"value_type": "individual"},"transparent": true,"type": "graph","xaxis": {"buckets": null,"mode": "time","name": null,"show": true,"values": []},"yaxes": [{"decimals": null,"format": "short","label": null,"logBase": 1,"max": "1","min": "0","show": true},{"format": "short","label": null,"logBase": 1,"max": null,"min": null,"show": true}],"yaxis": {"align": false,"alignLevel": null}},{"aliasColors": {},"bars": false,"dashLength": 10,"dashes": false,"datasource": "prometheus","description": "","fieldConfig": {"defaults": {"custom": {}},"overrides": []},"fill": 1,"fillGradient": 0,"gridPos": {"h": 7,"w": 12,"x": 0,"y": 11},"hiddenSeries": false,"id": 2,"legend": {"avg": false,"current": false,"max": false,"min": false,"show": true,"total": false,"values": false},"lines": true,"linewidth": 1,"nullPointMode": "null","options": {"dataLinks": []},"percentage": false,"pointradius": 2,"points": true,"renderer": "flot","seriesOverrides": [],"spaceLength": 10,"stack": false,"steppedLine": false,"targets": [{"expr": "sum(score_TP / (score_TP + score_FP)) by (class, seldon_app)","interval": "","legendFormat": "{{class}} - {{seldon_app}}","refId": "A"}],"thresholds": [],"timeFrom": null,"timeRegions": [],"timeShift": null,"title": "Real Time Model PRECISION by Class","tooltip": {"shared": true,"sort": 0,"value_type": "individual"},"type": "graph","xaxis": {"buckets": null,"mode": "time","name": null,"show": true,"values": []},"yaxes": [{"decimals": null,"format": "short","label": null,"logBase": 1,"max": "1","min": "0","show": true},{"format": "short","label": null,"logBase": 1,"max": null,"min": null,"show": true}],"yaxis": {"align": false,"alignLevel": null}},{"aliasColors": {},"bars": false,"dashLength": 10,"dashes": false,"datasource": "prometheus","description": "","fieldConfig": {"defaults": {"custom": {}},"overrides": []},"fill": 1,"fillGradient": 0,"gridPos": {"h": 7,"w": 12,"x": 12,"y": 11},"hiddenSeries": false,"id": 4,"legend": {"avg": false,"current": false,"max": false,"min": false,"show": true,"total": false,"values": false},"lines": true,"linewidth": 1,"nullPointMode": "null","options": {"dataLinks": []},"percentage": false,"pointradius": 2,"points": true,"renderer": "flot","seriesOverrides": [],"spaceLength": 10,"stack": false,"steppedLine": false,"targets": [{"expr": "sum(score_TP / (score_TP + score_FN)) by (class, seldon_app)","interval": "","legendFormat": "{{class}} - {{seldon_app}}","refId": "A"}],"thresholds": [],"timeFrom": null,"timeRegions": [],"timeShift": null,"title": "Real Time Model RECALL by Class","tooltip": {"shared": true,"sort": 0,"value_type": "individual"},"type": "graph","xaxis": {"buckets": null,"mode": "time","name": null,"show": true,"values": []},"yaxes": [{"decimals": null,"format": "short","label": null,"logBase": 1,"max": "1","min": "0","show": true},{"format": "short","label": null,"logBase": 1,"max": null,"min": null,"show": true}],"yaxis": {"align": false,"alignLevel": null}}],"refresh": "5s","schemaVersion": 25,"style": "dark","tags": [],"templating": {"list": []},"time": {"from": "now-1m","to": "now"},"timepicker": {"refresh_intervals": ["10s","30s","1m","5m","15m","30m","1h","2h","1d"]},"timezone": "","title": "MultiClass Prediction Statistics","uid": "St9vqHnGk","version": 2}
+```
 
 #### Compare two models performance
 Now we can actually run two models in parallel and compare their performance against each other.
