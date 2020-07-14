@@ -140,3 +140,13 @@ Infrastructure
   
    Patch Volumes for Version 1.2.0 Upgrade <patch_1_2>
    
+
+Benchmarking and Load Tests
+-----
+
+.. toctree::
+   :titlesonly:
+  
+   Service Orchestrator <bench_svcOrch>
+   Tensorflow <bench_tensorflow>   
+   
