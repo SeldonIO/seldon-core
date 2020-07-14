@@ -23,7 +23,7 @@ RUN go build -a -o manager main.go
 FROM registry.access.redhat.com/ubi8/ubi-minimal
 LABEL name="Seldon Operator" \
       vendor="Seldon Technologies" \
-      version="1.2.2-dev" \
+      version="1.2.2-dev_20200714204738" \
       release="1" \
       summary="An Operator to deploy, monitor, explain and manage production machine learning models at scale." \
       description="The Seldon operator for management, monitoring and operations of machine learning systems through the Seldon Engine. Once installed, the Seldon Operator provides multiple functions which facilitate the productisation, monitoring and maintenance of machine learning systems at scale."
