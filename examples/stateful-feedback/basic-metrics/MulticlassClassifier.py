@@ -1,8 +1,8 @@
 import joblib
 
 
-class IrisClassifier:
-    def __init__(self, model_name="iris-lr.joblib"):
+class MulticlassClassifier:
+    def __init__(self, model_name="multiclass-lr.joblib"):
         self.scores = {"correct": 0, "incorrect": 0}
         self.model = joblib.load(model_name)
 
@@ -11,8 +11,6 @@ class IrisClassifier:
 
     def send_feedback(self, features, feature_names, reward, truth, routing=""):
         predicted = self.predict(features)
-        print(predicted)
-        print(truth)
         if int(predicted[0]) == int(truth[0]):
             self.scores["correct"] += 1
         else:
