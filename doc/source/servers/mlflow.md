@@ -54,7 +54,7 @@ spec:
 
 ## MLFlow xtype
 
-By default the server will call your loaded model's predict function with a `numpy.ndarray`. If you wish for it to call it with `pandas.DataFrame` instead, you can pass a parameter `X_type` and set it to `DataFrame`. For example:   
+By default the server will call your loaded model's predict function with a `numpy.ndarray`. If you wish for it to call it with `pandas.DataFrame` instead, you can pass a parameter `xtype` and set it to `DataFrame`. For example:   
 
 ```yaml
 apiVersion: machinelearning.seldon.io/v1alpha2
