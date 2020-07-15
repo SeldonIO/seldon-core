@@ -1,6 +1,7 @@
 import numpy as np
 import logging
 import requests
+import pandas as pd
 from mlflow import pyfunc
 from seldon_core import Storage
 from seldon_core.user_model import SeldonComponent
@@ -33,8 +34,11 @@ class MLFlowServer(SeldonComponent):
 
         if not self.ready:
             raise requests.HTTPError("Model not loaded yet")
-
-        result = self._model.predict(X)
+        if feature_names is not None and len(feature_names) > 0:
+            df = pd.DataFrame(data=X, columns=feature_names)
+        else:
+            df = pd.DataFrame(data=X)
+        result = self._model.predict(df)
         logger.info(f"Prediction result: {result}")
         return result
 
