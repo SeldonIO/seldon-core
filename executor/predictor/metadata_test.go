@@ -131,7 +131,7 @@ func TestGraphMetadataSimple(t *testing.T) {
 
 	spec := &v1.PredictorSpec{
 		Name: "predictor-name",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: "model-1",
 			Type: &model,
 			Endpoint: &v1.Endpoint{
@@ -174,7 +174,7 @@ func TestGraphMetadataTwoLevel(t *testing.T) {
 
 	spec := &v1.PredictorSpec{
 		Name: "predictor-name",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: "model-1",
 			Type: &model,
 			Endpoint: &v1.Endpoint{
@@ -229,7 +229,7 @@ func TestGraphMetadataInputTransformer(t *testing.T) {
 
 	spec := &v1.PredictorSpec{
 		Name: "predictor-name",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: "model-1",
 			Type: &transformer,
 			Endpoint: &v1.Endpoint{
@@ -284,7 +284,7 @@ func TestGraphMetadataOutputTransformer(t *testing.T) {
 
 	spec := &v1.PredictorSpec{
 		Name: "predictor-name",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: "model-2",
 			Type: &outputTransformer,
 			Endpoint: &v1.Endpoint{
@@ -340,7 +340,7 @@ func TestGraphMetadataCombinerModel(t *testing.T) {
 
 	spec := &v1.PredictorSpec{
 		Name: "predictor-name",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: "model-combiner",
 			Type: &combiner,
 			Endpoint: &v1.Endpoint{
@@ -407,7 +407,7 @@ func TestGraphMetadataRouter(t *testing.T) {
 
 	spec := &v1.PredictorSpec{
 		Name: "predictor-name",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: "model-router",
 			Type: &router,
 			Endpoint: &v1.Endpoint{
@@ -472,7 +472,7 @@ func TestGraphV1Array(t *testing.T) {
 
 	spec := &v1.PredictorSpec{
 		Name: "predictor-name",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: "model-v1-array",
 			Type: &model,
 			Endpoint: &v1.Endpoint{
@@ -517,7 +517,7 @@ func TestGraphV1JsonData(t *testing.T) {
 
 	spec := &v1.PredictorSpec{
 		Name: "predictor-name",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: "model-v1-jsondata",
 			Type: &model,
 			Endpoint: &v1.Endpoint{
@@ -563,7 +563,7 @@ func TestGraphV1ArrayStringMix(t *testing.T) {
 
 	spec := &v1.PredictorSpec{
 		Name: "predictor-name",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: "model-v1-array-string-mix",
 			Type: &model,
 			Endpoint: &v1.Endpoint{

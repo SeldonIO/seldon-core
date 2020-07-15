@@ -17,7 +17,7 @@ func TestNewFromtMeta(t *testing.T) {
 	const deploymentName = "dep"
 	predictor := v1.PredictorSpec{
 		Name: "",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: modelName,
 		},
 		ComponentSpecs: []*v1.SeldonPodSpec{
