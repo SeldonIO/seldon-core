@@ -24,10 +24,12 @@ require (
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
 	google.golang.org/grpc v1.30.0
 	gotest.tools v2.2.0+incompatible
-	k8s.io/api v0.17.8
-	k8s.io/apimachinery v0.17.8
-	sigs.k8s.io/controller-runtime v0.5.8
+	k8s.io/api v0.18.4
+	k8s.io/apimachinery v0.18.4
+	k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29 // indirect
+	sigs.k8s.io/controller-runtime v0.6.1
 )
 
 replace github.com/tensorflow/tensorflow/tensorflow/go/core => ./proto/tensorflow/core
+
 replace github.com/seldonio/seldon-core/operator => ./operator
