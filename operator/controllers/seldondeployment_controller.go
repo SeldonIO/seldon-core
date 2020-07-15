@@ -377,7 +377,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 	// Attempt to set httpAllowed and grpcAllowed to false if we have an noEngine predictor
 	for i := 0; i < len(mlDep.Spec.Predictors); i++ {
 		p := mlDep.Spec.Predictors[i]
-		_, noEngine := p.Annotations[machinelearningv1.ANNOTATION_NO_ENGINE]
+		noEngine := strings.ToLower(p.Annotations[machinelearningv1.ANNOTATION_NO_ENGINE]) == "true"
 		if noEngine && len(p.ComponentSpecs) > 0 && len(p.ComponentSpecs[0].Spec.Containers) > 0 {
 			pu := machinelearningv1.GetPredictiveUnit(&p.Graph, p.ComponentSpecs[0].Spec.Containers[0].Name)
 			if pu != nil {
@@ -393,11 +393,11 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 
 	for i := 0; i < len(mlDep.Spec.Predictors); i++ {
 		p := mlDep.Spec.Predictors[i]
-		_, noEngine := p.Annotations[machinelearningv1.ANNOTATION_NO_ENGINE]
+		noEngine := strings.ToLower(p.Annotations[machinelearningv1.ANNOTATION_NO_ENGINE]) == "true"
 		pSvcName := machinelearningv1.GetPredictorKey(mlDep, &p)
 		log.Info("pSvcName", "val", pSvcName)
 		// Add engine deployment if separate
-		_, hasSeparateEnginePod := mlDep.Spec.Annotations[machinelearningv1.ANNOTATION_SEPARATE_ENGINE]
+		hasSeparateEnginePod := strings.ToLower(mlDep.Spec.Annotations[machinelearningv1.ANNOTATION_SEPARATE_ENGINE]) == "true"
 		if hasSeparateEnginePod && !noEngine {
 			deploy, err := createEngineDeployment(mlDep, &p, pSvcName, engine_http_port, engine_grpc_port)
 			if err != nil {
