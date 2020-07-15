@@ -61,7 +61,6 @@ github.com/evanphx/json-patch
 github.com/fatih/color
 github.com/fortytw2/leaktest
 github.com/fsnotify/fsnotify
-github.com/fullstorydev/grpcurl
 github.com/ghodss/yaml
 github.com/globalsign/mgo
 github.com/go-kit/kit
@@ -79,7 +78,6 @@ github.com/go-openapi/strfmt
 github.com/go-openapi/swag
 github.com/go-openapi/validate
 github.com/go-stack/stack
-github.com/gobuffalo/flect
 github.com/gogo/protobuf
 github.com/golang/glog
 github.com/golang/groupcache
@@ -91,6 +89,7 @@ github.com/google/go-cmp
 github.com/google/gofuzz
 github.com/google/martian
 github.com/google/pprof
+github.com/google/renameio
 github.com/google/uuid
 github.com/googleapis/gax-go/v2
 github.com/googleapis/gnostic
@@ -107,7 +106,6 @@ github.com/hashicorp/hcl
 github.com/hpcloud/tail
 github.com/imdario/mergo
 github.com/inconshreveable/mousetrap
-github.com/jhump/protoreflect
 github.com/jonboulle/clockwork
 github.com/json-iterator/go
 github.com/jstemmer/go-junit-report
@@ -120,6 +118,7 @@ github.com/kr/logfmt
 github.com/kr/pretty
 github.com/kr/pty
 github.com/kr/text
+github.com/lightstep/tracecontext.go
 github.com/magiconair/properties
 github.com/mailru/easyjson
 github.com/mattn/go-colorable
@@ -138,6 +137,7 @@ github.com/nats-io/nats-server/v2
 github.com/nats-io/nats.go
 github.com/nats-io/nkeys
 github.com/nats-io/nuid
+github.com/nxadm/tail
 github.com/olekukonko/tablewriter
 github.com/onsi/ginkgo
 github.com/onsi/gomega
@@ -157,6 +157,7 @@ github.com/prometheus/procfs
 github.com/rcrowley/go-metrics
 github.com/remyoudompheng/bigfft
 github.com/rogpeppe/fastuuid
+github.com/rogpeppe/go-internal
 github.com/russross/blackfriday
 github.com/seldonio/seldon-core/operator
 github.com/sergi/go-diff
@@ -170,7 +171,6 @@ github.com/spf13/pflag
 github.com/spf13/viper
 github.com/stretchr/objx
 github.com/stretchr/testify
-github.com/tensorflow/tensorflow
 github.com/tensorflow/tensorflow/tensorflow/go/core
 github.com/tidwall/pretty
 github.com/tmc/grpc-websocket-proxy
@@ -178,6 +178,7 @@ github.com/uber/jaeger-client-go
 github.com/uber/jaeger-lib
 github.com/ugorji/go/codec
 github.com/urfave/cli
+github.com/valyala/bytebufferpool
 github.com/vektah/gqlparser
 github.com/xiang90/probing
 github.com/xordataexchange/crypt
@@ -187,12 +188,14 @@ go.mongodb.org/mongo-driver
 go.opencensus.io
 go.uber.org/atomic
 go.uber.org/multierr
+go.uber.org/tools
 go.uber.org/zap
 golang.org/x/crypto
 golang.org/x/exp
 golang.org/x/image
 golang.org/x/lint
 golang.org/x/mobile
+golang.org/x/mod
 golang.org/x/net
 golang.org/x/oauth2
 golang.org/x/sync
@@ -208,9 +211,11 @@ google.golang.org/api
 google.golang.org/appengine
 google.golang.org/genproto
 google.golang.org/grpc
+google.golang.org/protobuf
 gopkg.in/alecthomas/kingpin.v2
 gopkg.in/check.v1
 gopkg.in/cheggaaa/pb.v1
+gopkg.in/errgo.v2
 gopkg.in/fsnotify.v1
 gopkg.in/inf.v0
 gopkg.in/natefinch/lumberjack.v2
@@ -243,7 +248,5 @@ modernc.org/xc
 pack.ag/amqp
 rsc.io/binaryregexp
 sigs.k8s.io/controller-runtime
-sigs.k8s.io/controller-tools
 sigs.k8s.io/structured-merge-diff
-sigs.k8s.io/testing_frameworks
 sigs.k8s.io/yaml

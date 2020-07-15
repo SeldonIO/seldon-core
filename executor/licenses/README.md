@@ -1,3 +1,15 @@
+# Executor licenses
+
+## Usage
+
+Use the `Makefile` in the parent `executor` folder:
+
+```shell
+make licenses/license.txt
+```
+
+## How it works
+
 Follow https://github.com/kubeflow/testing/tree/master/py/kubeflow/testing/go-license-tools
 
 e.g.,
