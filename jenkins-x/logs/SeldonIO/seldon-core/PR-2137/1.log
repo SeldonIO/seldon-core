@@ -1,0 +1,40 @@
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-21-8xjcr-1[0m stage [32mmeta-pipeline[0m and container [32mstep-credential-initializer-ds2mj[0m
+{"level":"info","ts":1594825671.1845613,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1594825671.1852975,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-21-8xjcr-1[0m stage [32mmeta-pipeline[0m and container [32mstep-working-dir-initializer-t2hrx[0m
+{"level":"info","ts":1594825673.8847375,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594825673.975444,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-21-8xjcr-1[0m stage [32mmeta-pipeline[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-21-8xjcr-1[0m stage [32mmeta-pipeline[0m and container [32mstep-git-source-meta-seldonio-seldon-core-pr-21-8xjcr-z7564[0m
+{"level":"info","ts":1594825680.5770414,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1594825686.9623795,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ 37307699ad07802e860e8aecaff402b2274ae3df in path /workspace/source"}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-21-8xjcr-1[0m stage [32mmeta-pipeline[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-21-8xjcr-1[0m stage [32mmeta-pipeline[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:37307699ad07802e860e8aecaff402b2274ae3df,2137:403c4ca741a7c057889403a8cd96ab035d7a3f7d
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch origin --unshallow 403c4ca741a7c057889403a8cd96ab035d7a3f7d: 37307699ad07802e860e8aecaff402b2274ae3df:
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git fetch origin 403c4ca741a7c057889403a8cd96ab035d7a3f7d: 37307699ad07802e860e8aecaff402b2274ae3df:
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git remote update
+DEBUG: ran git remote update in 
+DEBUG: ran git fetch origin 403c4ca741a7c057889403a8cd96ab035d7a3f7d: 37307699ad07802e860e8aecaff402b2274ae3df: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git rev-parse --is-shallow-repository
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch --unshallow
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch --tags
+Converted  to an unshallow repository
+DEBUG: Unshallowed git repo in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard 37307699ad07802e860e8aecaff402b2274ae3df
+DEBUG: ran git reset --hard 37307699ad07802e860e8aecaff402b2274ae3df in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git merge 403c4ca741a7c057889403a8cd96ab035d7a3f7d
+error: error during merge: merging 403c4ca741a7c057889403a8cd96ab035d7a3f7d into master: git output: merge: 403c4ca741a7c057889403a8cd96ab035d7a3f7d - not something we can merge: failed to run 'git merge 403c4ca741a7c057889403a8cd96ab035d7a3f7d' command in directory '', output: 'merge: 403c4ca741a7c057889403a8cd96ab035d7a3f7d - not something we can merge'
+[31m
+Pipeline failed on stage 'meta-pipeline' : container 'step-git-merge'. The execution of the pipeline has stopped.[0m
