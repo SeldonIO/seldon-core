@@ -108,7 +108,7 @@ install-dev:
 		'git+https://github.com/kubeflow/testing#egg=go-license-tools&subdirectory=py/kubeflow/testing/go-license-tools'
 
 
-licenses/dep.txt: go.sum
+licenses/dep.txt: go.mod
 	go list -m all | cut -d ' ' -f 1 > licenses/dep.txt
 
 .PHONY: licenses
