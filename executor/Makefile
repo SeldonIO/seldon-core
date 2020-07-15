@@ -111,7 +111,8 @@ install-dev:
 licenses/dep.txt: go.sum
 	go list -m all | cut -d ' ' -f 1 > licenses/dep.txt
 
-licenses/license.txt: licenses/dep.txt licenses/dep_repo.manual.csv
+.PHONY: licenses
+licenses:
 	# NOTE: You need to create a file in ~/.github_api_token with a GitHub token.
 	get-github-repo \
 		-o licenses/repo.txt \

@@ -5,7 +5,8 @@
 Use the `Makefile` in the parent `executor` folder:
 
 ```shell
-make licenses/license.txt
+make install-dev
+make licenses
 ```
 
 ## How it works
