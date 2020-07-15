@@ -198,7 +198,7 @@ clean-cert:
 	rm -r self-signed-cert
 
 
-licenses/dep.txt:
+licenses/dep.txt: go.sum
 	go list -m all | cut -d ' ' -f 1 > licenses/dep.txt
 
 generate-resources:
