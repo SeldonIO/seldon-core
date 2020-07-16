@@ -10,14 +10,14 @@ pipelineConfig:
     pullRequest:
       preBuild:
         steps:
-          - name: pr-build-comment
+        - name: pr-build-comment
           agent:
             image: gcr.io/jenkinsxio/builder-go:2.0.916-264
           dir: ci
           sh: "./add-pr-build-comment"
       postBuild:
         steps:
-          - name: pr-build-comment
+        - name: pr-build-comment
           agent:
             image: gcr.io/jenkinsxio/builder-go:2.0.916-264
           dir: ci
