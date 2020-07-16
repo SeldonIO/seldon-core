@@ -1,0 +1,55 @@
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-21-mfq66-1[0m stage [32mmeta-pipeline[0m and container [32mstep-credential-initializer-c4bzc[0m
+{"level":"info","ts":1594931438.8240325,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1594931438.8280685,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-21-mfq66-1[0m stage [32mmeta-pipeline[0m and container [32mstep-working-dir-initializer-4lkvs[0m
+{"level":"info","ts":1594931440.1012833,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594931440.201242,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-21-mfq66-1[0m stage [32mmeta-pipeline[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-21-mfq66-1[0m stage [32mmeta-pipeline[0m and container [32mstep-git-source-meta-seldonio-seldon-core-pr-21-mfq66-ss8gz[0m
+{"level":"info","ts":1594931446.611612,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1594931458.9992545,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ e8cf37f3de5fe350abf89b03b6f1c8fe04eedc4f in path /workspace/source"}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-21-mfq66-1[0m stage [32mmeta-pipeline[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-21-mfq66-1[0m stage [32mmeta-pipeline[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:e8cf37f3de5fe350abf89b03b6f1c8fe04eedc4f,2149:fef171f7d4110d0823798702ba7b3468236cb094
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch origin --unshallow fef171f7d4110d0823798702ba7b3468236cb094: e8cf37f3de5fe350abf89b03b6f1c8fe04eedc4f:
+DEBUG: ran git fetch --unshallow origin fef171f7d4110d0823798702ba7b3468236cb094: e8cf37f3de5fe350abf89b03b6f1c8fe04eedc4f: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard e8cf37f3de5fe350abf89b03b6f1c8fe04eedc4f
+DEBUG: ran git reset --hard e8cf37f3de5fe350abf89b03b6f1c8fe04eedc4f in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git merge fef171f7d4110d0823798702ba7b3468236cb094
+DEBUG: ran git merge fef171f7d4110d0823798702ba7b3468236cb094 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git log --format=%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%s%n%b%x1e e8cf37f3de5fe350abf89b03b6f1c8fe04eedc4f..HEAD
+Merged SHA fef171f7d4110d0823798702ba7b3468236cb094 with commit message 'Added pipeline pre/post check' into base branch master
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-21-mfq66-1[0m stage [32mmeta-pipeline[0m and container [32mstep-merge-pull-refs[0m
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch origin --unshallow fef171f7d4110d0823798702ba7b3468236cb094: e8cf37f3de5fe350abf89b03b6f1c8fe04eedc4f:
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch origin fef171f7d4110d0823798702ba7b3468236cb094: e8cf37f3de5fe350abf89b03b6f1c8fe04eedc4f:
+DEBUG: ran git fetch origin fef171f7d4110d0823798702ba7b3468236cb094: e8cf37f3de5fe350abf89b03b6f1c8fe04eedc4f: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git rev-parse --is-shallow-repository
+DEBUG: Unshallowed git repo in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard e8cf37f3de5fe350abf89b03b6f1c8fe04eedc4f
+DEBUG: ran git reset --hard e8cf37f3de5fe350abf89b03b6f1c8fe04eedc4f in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git merge fef171f7d4110d0823798702ba7b3468236cb094
+DEBUG: ran git merge fef171f7d4110d0823798702ba7b3468236cb094 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git log --format=%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%s%n%b%x1e e8cf37f3de5fe350abf89b03b6f1c8fe04eedc4f..HEAD
+Merged SHA fef171f7d4110d0823798702ba7b3468236cb094 with commit message 'Added pipeline pre/post check' into base branch master
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-21-mfq66-1[0m stage [32mmeta-pipeline[0m and container [32mstep-create-effective-pipeline[0m
+error: failed to load project config in dir /workspace/source: failed to validate YAML file /workspace/source/jenkins-x.yml due to yaml: line 13: did not find expected '-' indicator
+[31m
+Pipeline failed on stage 'meta-pipeline' : container 'step-create-effective-pipeline'. The execution of the pipeline has stopped.[0m
