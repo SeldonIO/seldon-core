@@ -74,7 +74,7 @@ def get_rest_microservice(user_model, seldon_metrics):
         requestProto = json_to_feedback(requestJson)
         logger.debug("Proto Request: %s", requestProto)
         responseProto = seldon_core.seldon_methods.send_feedback(
-            user_model, requestProto, PRED_UNIT_ID
+            user_model, requestProto, PRED_UNIT_ID, seldon_metrics
         )
         jsonDict = seldon_message_to_json(responseProto)
         return jsonify(jsonDict)
@@ -203,7 +203,7 @@ class SeldonModelGRPC(object):
 
     def SendFeedback(self, feedback_grpc, context):
         return seldon_core.seldon_methods.send_feedback(
-            self.user_model, feedback_grpc, PRED_UNIT_ID
+            self.user_model, feedback_grpc, PRED_UNIT_ID, self.seldon_metrics
         )
 
     def TransformInput(self, request_grpc, context):
