@@ -65,6 +65,7 @@ google/go-cmp,https://github.com/google/go-cmp/blob/master/LICENSE,BSD 3-Clause 
 google/gofuzz,https://github.com/google/gofuzz/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/google/gofuzz/master/LICENSE
 google/martian,https://github.com/google/martian/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/google/martian/master/LICENSE
 google/pprof,https://github.com/google/pprof/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/google/pprof/master/LICENSE
+google/renameio,https://github.com/google/renameio/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/google/renameio/master/LICENSE
 google/uuid,https://github.com/google/uuid/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/google/uuid/master/LICENSE
 googleapis/gax-go,https://github.com/googleapis/gax-go/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/googleapis/gax-go/master/LICENSE
 googleapis/gnostic,https://github.com/googleapis/gnostic/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/googleapis/gnostic/master/LICENSE
@@ -102,6 +103,7 @@ modern-go/reflect2,https://github.com/modern-go/reflect2/blob/master/LICENSE,Apa
 munnerz/goautoneg,https://github.com/munnerz/goautoneg/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/munnerz/goautoneg/master/LICENSE
 mwitkow/go-conntrack,https://github.com/mwitkow/go-conntrack/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/mwitkow/go-conntrack/master/LICENSE
 mxk/go-flowrate,https://github.com/mxk/go-flowrate/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/mxk/go-flowrate/master/LICENSE
+nxadm/tail,https://github.com/nxadm/tail/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/nxadm/tail/master/LICENSE
 olekukonko/tablewriter,https://github.com/olekukonko/tablewriter/blob/master/LICENSE.md,MIT License,https://raw.githubusercontent.com/olekukonko/tablewriter/master/LICENSE.md
 onsi/ginkgo,https://github.com/onsi/ginkgo/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/onsi/ginkgo/master/LICENSE
 onsi/gomega,https://github.com/onsi/gomega/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/onsi/gomega/master/LICENSE
@@ -117,6 +119,7 @@ prometheus/common,https://github.com/prometheus/common/blob/master/LICENSE,Apach
 prometheus/procfs,https://github.com/prometheus/procfs/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/prometheus/procfs/master/LICENSE
 remyoudompheng/bigfft,https://github.com/remyoudompheng/bigfft/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/remyoudompheng/bigfft/master/LICENSE
 rogpeppe/fastuuid,https://github.com/rogpeppe/fastuuid/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/rogpeppe/fastuuid/master/LICENSE
+rogpeppe/go-internal,https://github.com/rogpeppe/go-internal/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/rogpeppe/go-internal/master/LICENSE
 russross/blackfriday,https://github.com/russross/blackfriday/blob/master/LICENSE.txt,BSD 2-Clause "Simplified" License,https://raw.githubusercontent.com/russross/blackfriday/master/LICENSE.txt
 sergi/go-diff,https://github.com/sergi/go-diff/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/sergi/go-diff/master/LICENSE
 sirupsen/logrus,https://github.com/sirupsen/logrus/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/sirupsen/logrus/master/LICENSE
@@ -142,12 +145,14 @@ mongodb/mongo-go-driver,https://github.com/mongodb/mongo-go-driver/blob/master/L
 census-instrumentation/opencensus-go,https://github.com/census-instrumentation/opencensus-go/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/census-instrumentation/opencensus-go/master/LICENSE
 uber-go/atomic,https://github.com/uber-go/atomic/blob/master/LICENSE.txt,MIT License,https://raw.githubusercontent.com/uber-go/atomic/master/LICENSE.txt
 uber-go/multierr,https://github.com/uber-go/multierr/blob/master/LICENSE.txt,MIT License,https://raw.githubusercontent.com/uber-go/multierr/master/LICENSE.txt
+uber-go/tools,https://github.com/uber-go/tools/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/uber-go/tools/master/LICENSE
 uber-go/zap,https://github.com/uber-go/zap/blob/master/LICENSE.txt,MIT License,https://raw.githubusercontent.com/uber-go/zap/master/LICENSE.txt
 golang/crypto,https://github.com/golang/crypto/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/golang/crypto/master/LICENSE
 golang/exp,https://github.com/golang/exp/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/golang/exp/master/LICENSE
 golang/image,https://github.com/golang/image/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/golang/image/master/LICENSE
 golang/lint,https://github.com/golang/lint/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/golang/lint/master/LICENSE
 golang/mobile,https://github.com/golang/mobile/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/golang/mobile/master/LICENSE
+golang/mod,https://github.com/golang/mod/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/golang/mod/master/LICENSE
 golang/net,https://github.com/golang/net/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/golang/net/master/LICENSE
 golang/oauth2,https://github.com/golang/oauth2/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/golang/oauth2/master/LICENSE
 golang/sync,https://github.com/golang/sync/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/golang/sync/master/LICENSE
@@ -163,9 +168,11 @@ googleapis/google-api-go-client,https://github.com/googleapis/google-api-go-clie
 golang/appengine,https://github.com/golang/appengine/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/golang/appengine/master/LICENSE
 googleapis/go-genproto,https://github.com/googleapis/go-genproto/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/googleapis/go-genproto/master/LICENSE
 grpc/grpc-go,https://github.com/grpc/grpc-go/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/grpc/grpc-go/master/LICENSE
+protocolbuffers/protobuf-go,https://github.com/protocolbuffers/protobuf-go/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/protocolbuffers/protobuf-go/master/LICENSE
 alecthomas/kingpin,https://github.com/alecthomas/kingpin/blob/master/COPYING,MIT License,https://raw.githubusercontent.com/alecthomas/kingpin/master/COPYING
 go-check/check,https://github.com/go-check/check/blob/v1/LICENSE,BSD 2-Clause "Simplified" License,https://raw.githubusercontent.com/go-check/check/v1/LICENSE
 cheggaaa/pb,https://github.com/cheggaaa/pb/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/cheggaaa/pb/master/LICENSE
+go-errgo/errgo,https://github.com/go-errgo/errgo/blob/v1/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/go-errgo/errgo/v1/LICENSE
 go-inf/inf,https://github.com/go-inf/inf/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/go-inf/inf/master/LICENSE
 natefinch/lumberjack,https://github.com/natefinch/lumberjack/blob/v2.0/LICENSE,MIT License,https://raw.githubusercontent.com/natefinch/lumberjack/v2.0/LICENSE
 go-resty/resty,https://github.com/go-resty/resty/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/go-resty/resty/master/LICENSE
