@@ -27,6 +27,8 @@ ENV_MODEL_IMAGE = "PREDICTIVE_UNIT_IMAGE"
 ENV_PREDICTOR_NAME = "PREDICTOR_ID"
 ENV_PREDICTOR_LABELS = "PREDICTOR_LABELS"
 
+REWARD_KEY = "seldon_api_model_feedback_reward"
+
 COUNTER = "COUNTER"
 GAUGE = "GAUGE"
 TIMER = "TIMER"
@@ -83,6 +85,12 @@ class SeldonMetrics:
 
     def __del__(self):
         self._manager.shutdown()
+
+    def update_reward(self, reward: float):
+        """"Update metrics key corresponding to feedback reward counter."""
+        if not reward:
+            return
+        self.update([{"type": "COUNTER", "key": REWARD_KEY, "value": reward}])
 
     def update(self, custom_metrics):
         # Read a corresponding worker's metric data with lock as Proxy objects
