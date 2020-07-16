@@ -4,6 +4,7 @@ contrib.go.opencensus.io/exporter/ocagent
 contrib.go.opencensus.io/exporter/prometheus
 github.com/Azure/azure-sdk-for-go
 github.com/Azure/go-ansiterm
+github.com/Azure/go-autorest
 github.com/Azure/go-autorest/autorest
 github.com/Azure/go-autorest/autorest/adal
 github.com/Azure/go-autorest/autorest/date
@@ -237,6 +238,7 @@ k8s.io/code-generator
 k8s.io/component-base
 k8s.io/gengo
 k8s.io/klog
+k8s.io/klog/v2
 k8s.io/kube-openapi
 k8s.io/utils
 knative.dev/pkg
@@ -249,4 +251,5 @@ pack.ag/amqp
 rsc.io/binaryregexp
 sigs.k8s.io/controller-runtime
 sigs.k8s.io/structured-merge-diff
+sigs.k8s.io/structured-merge-diff/v2
 sigs.k8s.io/yaml

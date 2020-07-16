@@ -206,7 +206,7 @@ licenses/dep.txt: go.mod
 	go list -m all | cut -d ' ' -f 1 > licenses/dep.txt
 
 .PHONY: licenses
-licenses:
+licenses: licenses/dep.txt
 	# NOTE: You need to create a file in ~/.github_api_token with a GitHub token.
 	get-github-repo \
 		-o licenses/repo.txt \
