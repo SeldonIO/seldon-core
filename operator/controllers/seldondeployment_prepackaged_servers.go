@@ -286,6 +286,11 @@ func (pi *PrePackedInitialiser) createStandaloneModelServers(mlDep *machinelearn
 			deploy = createDeploymentWithoutEngine(depName, seldonId, sPodSpec, pu, p, mlDep, podSecurityContext)
 		}
 
+		// apply serviceAccountName to pod to enable EKS fine-grained IAM roles
+		if pu.ServiceAccountName != "" {
+			deploy.Spec.Template.Spec.ServiceAccountName = pu.ServiceAccountName
+		}
+
 		serverConfig := machinelearningv1.GetPrepackServerConfig(string(*pu.Implementation))
 		if serverConfig != nil {
 			if *pu.Implementation != machinelearningv1.PrepackTensorflowName {

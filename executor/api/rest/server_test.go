@@ -45,7 +45,7 @@ func TestSimpleModel(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Type: &model,
 			Endpoint: &v1.Endpoint{
 				ServiceHost: "foo",
@@ -77,7 +77,7 @@ func TestCloudeventHeaderIsSet(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Type: &model,
 			Endpoint: &v1.Endpoint{
 				ServiceHost: "foo",
@@ -116,7 +116,7 @@ func TestCloudeventHeaderIsNotSet(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Type: &model,
 			Endpoint: &v1.Endpoint{
 				ServiceHost: "foo",
@@ -150,7 +150,7 @@ func TestReponsePuuidHeaderIsSet(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Type: &model,
 			Endpoint: &v1.Endpoint{
 				ServiceHost: "foo",
@@ -198,7 +198,7 @@ func TestRequestPuuidHeaderIsSet(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Type: &model,
 			Endpoint: &v1.Endpoint{
 				ServiceHost: urlParts[0],
@@ -229,7 +229,7 @@ func TestXSSHeaderIsSet(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Type: &model,
 			Endpoint: &v1.Endpoint{
 				ServiceHost: "foo",
@@ -278,7 +278,7 @@ func TestModelWithServer(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Type: &model,
 			Endpoint: &v1.Endpoint{
 				ServiceHost: urlParts[0],
@@ -309,7 +309,7 @@ func TestServerMetrics(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Type: &model,
 			Endpoint: &v1.Endpoint{
 				ServiceHost: "foo",
@@ -349,7 +349,7 @@ func TestTensorflowStatus(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: "mymodel",
 			Type: &model,
 			Endpoint: &v1.Endpoint{
@@ -378,7 +378,7 @@ func TestSeldonStatus(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: "mymodel",
 			Type: &model,
 			Endpoint: &v1.Endpoint{
@@ -407,7 +407,7 @@ func TestSeldonMetadata(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: "mymodel",
 			Type: &model,
 			Endpoint: &v1.Endpoint{
@@ -439,7 +439,7 @@ func TestSeldonFeedback(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Type: &model,
 			Endpoint: &v1.Endpoint{
 				ServiceHost: "foo",
@@ -467,7 +467,7 @@ func TestSeldonGraphMetadata(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "predictor-name",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: "model-1",
 			Type: &model,
 			Endpoint: &v1.Endpoint{
@@ -532,7 +532,7 @@ func TestTensorflowMetadata(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: "mymodel",
 			Type: &model,
 			Endpoint: &v1.Endpoint{
@@ -582,7 +582,7 @@ func TestPredictErrorWithServer(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Type: &model,
 			Endpoint: &v1.Endpoint{
 				ServiceHost: urlParts[0],
@@ -616,7 +616,7 @@ func TestTensorflowModel(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: "mymodel",
 			Type: &model,
 			Endpoint: &v1.Endpoint{
@@ -646,7 +646,7 @@ func TestTensorflowModelBadModelName(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: "mymodel",
 			Type: &model,
 			Endpoint: &v1.Endpoint{

@@ -122,7 +122,7 @@ func TestPredict(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Type: &model,
 			Endpoint: &v1.Endpoint{
 				ServiceHost: "foo",
@@ -154,7 +154,7 @@ func TestGetModelStatus(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: "model",
 			Type: &model,
 			Endpoint: &v1.Endpoint{
@@ -188,7 +188,7 @@ func TestGetModelMetadata(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: modelName,
 			Type: &model,
 			Endpoint: &v1.Endpoint{
