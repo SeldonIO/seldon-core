@@ -1,0 +1,879 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-82d2c[0m
+{"level":"info","ts":1594920303.6981618,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1594920303.6988924,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-djbxr[0m
+{"level":"info","ts":1594920304.723913,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594920304.7256627,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-5vvnz[0m
+{"level":"info","ts":1594920312.061797,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594920312.0646832,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-2075-li-jh79k-dslj8[0m
+{"level":"info","ts":1594920312.4358659,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1594920317.6061993,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mpr-build-comment[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:e8cf37f3de5fe350abf89b03b6f1c8fe04eedc4f,2075:8500e4e3b711b37dfa06b747fca3c7b096ea7a09
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch origin --unshallow 8500e4e3b711b37dfa06b747fca3c7b096ea7a09: e8cf37f3de5fe350abf89b03b6f1c8fe04eedc4f:
+DEBUG: ran git fetch --unshallow origin 8500e4e3b711b37dfa06b747fca3c7b096ea7a09: e8cf37f3de5fe350abf89b03b6f1c8fe04eedc4f: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard e8cf37f3de5fe350abf89b03b6f1c8fe04eedc4f
+DEBUG: ran git reset --hard e8cf37f3de5fe350abf89b03b6f1c8fe04eedc4f in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git merge 8500e4e3b711b37dfa06b747fca3c7b096ea7a09
+DEBUG: ran git merge 8500e4e3b711b37dfa06b747fca3c7b096ea7a09 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git log --format=%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%s%n%b%x1e e8cf37f3de5fe350abf89b03b6f1c8fe04eedc4f..HEAD
+Merged SHA 66b75c5faa9c4cd5a45555a58361e2e52695cbf0 with commit message 'Merge commit '8500e4e3b711b37dfa06b747fca3c7b096ea7a09'' into base branch master
+Merged SHA 8500e4e3b711b37dfa06b747fca3c7b096ea7a09 with commit message 'Add docs' into base branch master
+Merged SHA 0207fc7ad89915f818ed19e38c3a7a337ba2cce4 with commit message 'fmt' into base branch master
+Merged SHA 16025fa40c3c54fbcda6c127d6b1da709069ec7a with commit message 'Add grpc tests' into base branch master
+Merged SHA e06172a10c80240e6cede471314a34b19399de68 with commit message 'fmt' into base branch master
+Merged SHA ac939b838839fcaf4f101bddfd2af05fdd14d594 with commit message 'Merge branch 'master' into benchmarks' into base branch master
+Merged SHA 7d627ff9e687863f2351cdbbad1868658ee15ecd with commit message 'Merge branch 'master' into benchmarks' into base branch master
+Merged SHA 284e2c3026126049271771b3dfb1fe1fa97f19a1 with commit message 'separate out svcOrch' into base branch master
+Merged SHA 48093427d08f9935401291bced69b5d3cc47358d with commit message 'Updat notebook : resources' into base branch master
+Merged SHA ef80fbe106b6550e92a14ada415b7c758d1f7f91 with commit message 'benchmarking' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=2075
++ BUILD_NUMBER=17
++ PIPELINE_CONTEXT=lint
+++ cat
++++ date
++ COMMENT_MSG='Thu Jul 16 17:25:27 UTC 2020
+The logs for [lint] [17] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2075/17.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2075 --build=17'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=2075 '--comment=Thu Jul 16 17:25:27 UTC 2020
+The logs for [lint] [17] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2075/17.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2075 --build=17'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-2075-li-jh79k-td8q6[0m
+{"level":"info","ts":1594920331.9780958,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594920331.991251,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-2075-li-jh79k-rq9qp[0m
+{"level":"info","ts":1594920332.345433,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594920332.8609836,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mlint-operator[0m and container [32mstep-credential-initializer-wncnq[0m
+{"level":"info","ts":1594920336.33659,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1594920336.3389115,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mlint-operator[0m and container [32mstep-working-dir-initializer-flsr5[0m
+{"level":"info","ts":1594920337.9297886,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594920337.9315715,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mlint-operator[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mlint-operator[0m and container [32mstep-create-dir-workspace-4bx6f[0m
+{"level":"info","ts":1594920350.6448207,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594920350.648549,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mlint-operator[0m and container [32mstep-source-copy-workspace-zh49w[0m
+{"level":"info","ts":1594920351.0586724,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594920351.5281656,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mlint-operator[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mlint-operator[0m and container [32mstep-lint-operator[0m
+make: Entering directory '/workspace/source/operator'
+go list -m all | cut -d ' ' -f 1 > licenses/dep.txt
+go: finding cloud.google.com/go v0.38.0
+go: finding github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78
+go: finding github.com/Azure/go-autorest v14.2.0+incompatible
+go: finding github.com/Azure/go-autorest/autorest v0.9.0
+go: finding github.com/Azure/go-autorest/autorest/adal v0.9.0
+go: finding github.com/Azure/go-autorest/autorest/date v0.3.0
+go: finding github.com/Azure/go-autorest/autorest/mocks v0.4.0
+go: finding github.com/Azure/go-autorest/logger v0.1.0
+go: finding github.com/Azure/go-autorest/tracing v0.6.0
+go: finding github.com/BurntSushi/toml v0.3.1
+go: finding github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802
+go: finding github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
+go: finding github.com/PuerkitoBio/purell v1.1.1
+go: finding github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
+go: finding github.com/agnivade/levenshtein v1.0.1
+go: finding github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc
+go: finding github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf
+go: finding github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
+go: finding github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6
+go: finding github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
+go: finding github.com/beorn7/perks v1.0.1
+go: finding github.com/bgentry/speakeasy v0.1.0
+go: finding github.com/blang/semver v3.5.0+incompatible
+go: finding github.com/client9/misspell v0.3.4
+go: finding github.com/cockroachdb/datadriven v0.0.0-20190809214429-80d97fb3cbaa
+go: finding github.com/coreos/etcd v3.3.10+incompatible
+go: finding github.com/coreos/go-etcd v2.0.0+incompatible
+go: finding github.com/coreos/go-oidc v2.1.0+incompatible
+go: finding github.com/coreos/go-semver v0.3.0
+go: finding github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e
+go: finding github.com/coreos/pkg v0.0.0-20180108230652-97fdf19511ea
+go: finding github.com/cpuguy83/go-md2man v1.0.10
+go: finding github.com/creack/pty v1.1.7
+go: finding github.com/davecgh/go-spew v1.1.1
+go: finding github.com/dgrijalva/jwt-go v3.2.0+incompatible
+go: finding github.com/docker/docker v0.7.3-0.20190327010347-be7ac8be2ae0
+go: finding github.com/docker/go-units v0.4.0
+go: finding github.com/docker/spdystream v0.0.0-20160310174837-449fdfce4d96
+go: finding github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
+go: finding github.com/dustin/go-humanize v1.0.0
+go: finding github.com/elazarl/goproxy v0.0.0-20170405201442-c4fc26588b6e
+go: finding github.com/emicklei/go-restful v2.9.5+incompatible
+go: finding github.com/evanphx/json-patch v4.5.0+incompatible
+go: finding github.com/fatih/color v1.7.0
+go: finding github.com/fsnotify/fsnotify v1.4.9
+go: finding github.com/ghodss/yaml v1.0.0
+go: finding github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
+go: finding github.com/go-kit/kit v0.8.0
+go: finding github.com/go-logfmt/logfmt v0.3.0
+go: finding github.com/go-logr/logr v0.1.0
+go: finding github.com/go-logr/zapr v0.1.0
+go: finding github.com/go-openapi/analysis v0.19.5
+go: finding github.com/go-openapi/errors v0.19.2
+go: finding github.com/go-openapi/jsonpointer v0.19.3
+go: finding github.com/go-openapi/jsonreference v0.19.3
+go: finding github.com/go-openapi/loads v0.19.4
+go: finding github.com/go-openapi/runtime v0.19.4
+go: finding github.com/go-openapi/spec v0.19.3
+go: finding github.com/go-openapi/strfmt v0.19.3
+go: finding github.com/go-openapi/swag v0.19.5
+go: finding github.com/go-openapi/validate v0.19.5
+go: finding github.com/go-stack/stack v1.8.0
+go: finding github.com/gogo/protobuf v1.3.1
+go: finding github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
+go: finding github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6
+go: finding github.com/golang/mock v1.2.0
+go: finding github.com/golang/protobuf v1.4.2
+go: finding github.com/google/btree v1.0.0
+go: finding github.com/google/go-cmp v0.5.0
+go: finding github.com/google/gofuzz v1.0.0
+go: finding github.com/google/martian v2.1.0+incompatible
+go: finding github.com/google/pprof v0.0.0-20181206194817-3ea8567a2e57
+go: finding github.com/google/renameio v0.1.0
+go: finding github.com/google/uuid v1.1.1
+go: finding github.com/googleapis/gax-go/v2 v2.0.4
+go: finding github.com/googleapis/gnostic v0.3.1
+go: finding github.com/gophercloud/gophercloud v0.1.0
+go: finding github.com/gorilla/websocket v1.4.0
+go: finding github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7
+go: finding github.com/grpc-ecosystem/go-grpc-middleware v1.0.1-0.20190118093823-f849b5445de4
+go: finding github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
+go: finding github.com/grpc-ecosystem/grpc-gateway v1.9.5
+go: finding github.com/hashicorp/golang-lru v0.5.4
+go: finding github.com/hashicorp/hcl v1.0.0
+go: finding github.com/hpcloud/tail v1.0.0
+go: finding github.com/imdario/mergo v0.3.9
+go: finding github.com/inconshreveable/mousetrap v1.0.0
+go: finding github.com/jonboulle/clockwork v0.1.0
+go: finding github.com/json-iterator/go v1.1.10
+go: finding github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024
+go: finding github.com/julienschmidt/httprouter v1.2.0
+go: finding github.com/kisielk/errcheck v1.2.0
+go: finding github.com/kisielk/gotool v1.0.0
+go: finding github.com/konsorten/go-windows-terminal-sequences v1.0.1
+go: finding github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515
+go: finding github.com/kr/pretty v0.1.0
+go: finding github.com/kr/pty v1.1.5
+go: finding github.com/kr/text v0.1.0
+go: finding github.com/magiconair/properties v1.8.0
+go: finding github.com/mailru/easyjson v0.7.0
+go: finding github.com/mattn/go-colorable v0.0.9
+go: finding github.com/mattn/go-isatty v0.0.4
+go: finding github.com/mattn/go-runewidth v0.0.2
+go: finding github.com/matttproud/golang_protobuf_extensions v1.0.1
+go: finding github.com/mitchellh/go-homedir v1.1.0
+go: finding github.com/mitchellh/mapstructure v1.1.2
+go: finding github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+go: finding github.com/modern-go/reflect2 v1.0.1
+go: finding github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822
+go: finding github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223
+go: finding github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f
+go: finding github.com/nxadm/tail v1.4.4
+go: finding github.com/olekukonko/tablewriter v0.0.0-20170122224234-a0225b3f23b5
+go: finding github.com/onsi/ginkgo v1.14.0
+go: finding github.com/onsi/gomega v1.10.1
+go: finding github.com/pborman/uuid v1.2.0
+go: finding github.com/pelletier/go-toml v1.2.0
+go: finding github.com/peterbourgon/diskv v2.0.1+incompatible
+go: finding github.com/pkg/errors v0.8.1
+go: finding github.com/pmezard/go-difflib v1.0.0
+go: finding github.com/pquerna/cachecontrol v0.0.0-20171018203845-0dec1b30a021
+go: finding github.com/prometheus/client_golang v1.0.0
+go: finding github.com/prometheus/client_model v0.0.0-20190129233127-fd36f4220a90
+go: finding github.com/prometheus/common v0.4.1
+go: finding github.com/prometheus/procfs v0.0.11
+go: finding github.com/remyoudompheng/bigfft v0.0.0-20170806203942-52369c62f446
+go: finding github.com/rogpeppe/fastuuid v0.0.0-20150106093220-6724a57986af
+go: finding github.com/rogpeppe/go-internal v1.3.0
+go: finding github.com/russross/blackfriday v1.5.2
+go: finding github.com/sergi/go-diff v1.0.0
+go: finding github.com/sirupsen/logrus v1.4.2
+go: finding github.com/soheilhy/cmux v0.1.4
+go: finding github.com/spf13/afero v1.2.2
+go: finding github.com/spf13/cast v1.3.0
+go: finding github.com/spf13/cobra v0.0.5
+go: finding github.com/spf13/jwalterweatherman v1.0.0
+go: finding github.com/spf13/pflag v1.0.5
+go: finding github.com/spf13/viper v1.3.2
+go: finding github.com/stretchr/ob** v0.2.0
+go: finding github.com/stretchr/testify v1.4.0
+go: finding github.com/tidwall/pretty v1.0.0
+go: finding github.com/tmc/grpc-websocket-proxy v0.0.0-20170815181823-89b8d40f7ca8
+go: finding github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8
+go: finding github.com/urfave/cli v1.20.0
+go: finding github.com/vektah/gqlparser v1.1.2
+go: finding github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2
+go: finding github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77
+go: finding go.etcd.io/bbolt v1.3.3
+go: finding go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
+go: finding go.mongodb.org/mongo-driver v1.1.2
+go: finding go.opencensus.io v0.21.0
+go: finding go.uber.org/atomic v1.6.0
+go: finding go.uber.org/multierr v1.5.0
+go: finding go.uber.org/tools v0.0.0-20190618225709-2cfd321de3ee
+go: finding go.uber.org/zap v1.15.0
+go: finding golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+go: finding golang.org/x/exp v0.0.0-20190312203227-4b39c73a6495
+go: finding golang.org/x/image v0.0.0-20190227222117-0694c2d4d067
+go: finding golang.org/x/lint v0.0.0-20190930215403-16217165b5de
+go: finding golang.org/x/mobile v0.0.0-20190312151609-d3739f865fa6
+go: finding golang.org/x/mod v0.0.0-20190513183733-4bf6d317e70e
+go: finding golang.org/x/net v0.0.0-20200520004742-59133d7f0dd7
+go: finding golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+go: finding golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
+go: finding golang.org/x/sys v0.0.0-20200519105757-fe76b779f299
+go: finding golang.org/x/text v0.3.3
+go: finding golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0
+go: finding golang.org/x/tools v0.0.0-20191029190741-b9c20aec41a5
+go: finding golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+go: finding gomodules.xyz/jsonpatch/v2 v2.0.1
+go: finding gonum.org/v1/gonum v0.0.0-20190331200053-3d26580ed485
+go: finding gonum.org/v1/netlib v0.0.0-20190331212654-76723241ea4e
+go: finding google.golang.org/api v0.4.0
+go: finding google.golang.org/appengine v1.6.5
+go: finding google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
+go: finding google.golang.org/grpc v1.23.1
+go: finding google.golang.org/protobuf v1.23.0
+go: finding gopkg.in/alecthomas/kingpin.v2 v2.2.6
+go: finding gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
+go: finding gopkg.in/cheggaaa/pb.v1 v1.0.25
+go: finding gopkg.in/errgo.v2 v2.1.0
+go: finding gopkg.in/fsnotify.v1 v1.4.7
+go: finding gopkg.in/inf.v0 v0.9.1
+go: finding gopkg.in/natefinch/lumberjack.v2 v2.0.0
+go: finding gopkg.in/resty.v1 v1.12.0
+go: finding gopkg.in/square/go-jose.v2 v2.2.2
+go: finding gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
+go: finding gopkg.in/yaml.v2 v2.3.0
+go: finding gotest.tools v2.2.0+incompatible
+go: finding honnef.co/go/tools v0.0.1-2019.2.3
+go: finding istio.io/api v0.0.0-20200513175333-ae3da0d240e3
+go: finding istio.io/client-go v0.0.0-20200513180646-f8d9d8ff84e6
+go: finding istio.io/gogo-genproto v0.0.0-20190930162913-45029607206a
+go: finding k8s.io/api v0.17.8
+go: finding k8s.io/apiextensions-apiserver v0.17.8
+go: finding k8s.io/apimachinery v0.17.8
+go: finding k8s.io/apiserver v0.17.8
+go: finding k8s.io/client-go v0.17.8
+go: finding k8s.io/code-generator v0.17.8
+go: finding k8s.io/component-base v0.17.8
+go: finding k8s.io/gengo v0.0.0-20190822140433-26a664648505
+go: finding k8s.io/klog v1.0.0
+go: finding k8s.io/klog/v2 v2.0.0
+go: finding k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29
+go: finding k8s.io/utils v0.0.0-20200619165400-6e3d28b6ed19
+go: finding knative.dev/pkg v0.0.0-20200513151758-7b6bb61326ae
+go: finding modernc.org/cc v1.0.0
+go: finding modernc.org/golex v1.0.0
+go: finding modernc.org/mathutil v1.0.0
+go: finding modernc.org/strutil v1.0.0
+go: finding modernc.org/xc v1.0.0
+go: finding sigs.k8s.io/controller-runtime v0.5.8
+go: finding sigs.k8s.io/structured-merge-diff v0.0.0-20190525122527-15d366b2352e
+go: finding sigs.k8s.io/structured-merge-diff/v2 v2.0.1
+go: finding sigs.k8s.io/yaml v1.1.0
+# Check if licenses have changed
+git \
+	--no-pager diff \
+	--exit-code \
+	./licenses
+make: Leaving directory '/workspace/source/operator'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mlint-python[0m and container [32mstep-credential-initializer-sjzzm[0m
+{"level":"info","ts":1594920337.7742565,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1594920337.7767174,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mlint-python[0m and container [32mstep-working-dir-initializer-5fcr8[0m
+{"level":"info","ts":1594920340.4609878,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594920340.462753,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mlint-python[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mlint-python[0m and container [32mstep-create-dir-workspace-m6bwh[0m
+{"level":"info","ts":1594920422.397739,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594920422.4007351,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mlint-python[0m and container [32mstep-source-copy-workspace-zlkgw[0m
+{"level":"info","ts":1594920422.803229,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594920423.4738073,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mlint-python[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mlint-python[0m and container [32mstep-lint-python[0m
+make: Entering directory '/workspace/source/python'
+pip install -e . -r requirements-dev.txt
+Obtaining file:///workspace/source/python
+Collecting Flask<2.0.0 (from -r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/f2/28/2a03252dfb9ebf377f40fba6a7841b47083260bf8bd8e737b0c6952df83f/Flask-1.1.2-py2.py3-none-any.whl (94kB)
+Collecting jsonschema<4.0.0 (from -r requirements.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/c5/8f/51e89ce52a085483359217bc72cdbf6e75ee595d5b1d4b5ade40c7e018b8/jsonschema-3.2.0-py2.py3-none-any.whl (56kB)
+Collecting Flask-cors<4.0.0 (from -r requirements.txt (line 3))
+  Downloading https://files.pythonhosted.org/packages/78/38/e68b11daa5d613e3a91e4bf3da76c94ac9ee0d9cd515af9c1ab80d36f709/Flask_Cors-3.0.8-py2.py3-none-any.whl
+Collecting redis<4.0.0 (from -r requirements.txt (line 4))
+  Downloading https://files.pythonhosted.org/packages/a7/7c/24fb0511df653cf1a5d938d8f5d19802a88cef255706fdda242ff97e91b7/redis-3.5.3-py2.py3-none-any.whl (72kB)
+Requirement already satisfied: requests<3.0.0 in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 5)) (2.21.0)
+Collecting numpy<2.0.0 (from -r requirements.txt (line 6))
+  Downloading https://files.pythonhosted.org/packages/b4/93/76311932b0c7efd3111f6604609f36d568b912e16bebd86d99f0612d3930/numpy-1.19.0-cp37-cp37m-manylinux1_x86_64.whl (13.5MB)
+Requirement already satisfied: flatbuffers<2.0.0 in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 7)) (1.11)
+Requirement already satisfied: protobuf<4.0.0 in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 8)) (3.7.1)
+Requirement already satisfied: grpcio<2.0.0 in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 9)) (1.20.1)
+Collecting Flask-OpenTracing<1.2.0,>=1.1.0 (from -r requirements.txt (line 10))
+  Downloading https://files.pythonhosted.org/packages/58/6c/6417701ba5ecc8854670c6db3207bcc3e5fbc96289a7cb18d5516d99a1c6/Flask-OpenTracing-1.1.0.tar.gz
+Collecting opentracing<2.3.0,>=2.2.0 (from -r requirements.txt (line 11))
+  Downloading https://files.pythonhosted.org/packages/94/9f/289424136addf621fb4c75624ef9a3a80e8575da3993a87950c57e93217e/opentracing-2.2.0.tar.gz (47kB)
+Collecting jaeger-client<4.2.0,>=4.1.0 (from -r requirements.txt (line 12))
+  Downloading https://files.pythonhosted.org/packages/f1/da/569a4f1bc3d0c412c7f903053f09ef62fa10949374ca90bc852b22dd3860/jaeger-client-4.1.0.tar.gz (80kB)
+Collecting grpcio-opentracing<1.2.0,>=1.1.4 (from -r requirements.txt (line 13))
+  Downloading https://files.pythonhosted.org/packages/db/82/2fcad380697c3dab25de76ee590bcab3eb9bbfb4add916044d7e83ec2b10/grpcio_opentracing-1.1.4-py3-none-any.whl
+Collecting PyYAML<5.4 (from -r requirements.txt (line 14))
+  Downloading https://files.pythonhosted.org/packages/64/c2/b80047c7ac2478f9501676c988a5411ed5572f35d1beff9cae07d321512c/PyYAML-5.3.1.tar.gz (269kB)
+Collecting gunicorn<20.1.0,>=19.9.0 (from -r requirements.txt (line 15))
+  Downloading https://files.pythonhosted.org/packages/69/ca/926f7cd3a2014b16870086b2d0fdc84a9e49473c68a8dff8b57f7c156f43/gunicorn-20.0.4-py2.py3-none-any.whl (77kB)
+Collecting minio<6.0.0,>=4.0.9 (from -r requirements.txt (line 16))
+  Downloading https://files.pythonhosted.org/packages/aa/60/81f4a1dc2d320832840288d7ec88aa3e4ee495d8f1452b4c79d8bd67136b/minio-5.0.10-py2.py3-none-any.whl (75kB)
+Collecting azure-storage-blob<3.0.0,>=2.0.1 (from -r requirements.txt (line 17))
+  Downloading https://files.pythonhosted.org/packages/3e/84/610f379b46d7d3c2d48eadeed6a12b6d46a43100fea70534f5992d0ac996/azure_storage_blob-2.1.0-py2.py3-none-any.whl (88kB)
+Collecting setuptools>=41.0.0 (from -r requirements.txt (line 18))
+  Downloading https://files.pythonhosted.org/packages/8e/11/9e10f1cad4518cb307b484c255cae61e97f05b82f6d536932b1714e01b47/setuptools-49.2.0-py3-none-any.whl (789kB)
+Collecting google-cloud-storage>=1.16.0 (from -r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/98/8c/41398b95ad0d612e1cfc3c1816292540bac76242ef2aaa4b7adb06da5f6b/google_cloud_storage-1.29.0-py2.py3-none-any.whl (85kB)
+Collecting prometheus_client<0.9.0,>=0.7.1 (from -r requirements.txt (line 20))
+  Downloading https://files.pythonhosted.org/packages/3f/0e/554a265ffdc56e1494ef08e18f765b0cdec78797f510c58c45cf37abb4f4/prometheus_client-0.8.0-py2.py3-none-any.whl (53kB)
+Collecting black==19.10b0 (from -r requirements-dev.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/fd/bb/ad34bbc93d1bea3de086d7c59e528d4a503ac8fe318bd1fa48605584c3d2/black-19.10b0-py36-none-any.whl (97kB)
+Collecting flake8==3.8.1 (from -r requirements-dev.txt (line 3))
+  Downloading https://files.pythonhosted.org/packages/bf/47/36e51603431e1a5289eb41636199d2c225fcb1ca286e29c02d219c8e6e88/flake8-3.8.1-py2.py3-none-any.whl (72kB)
+Collecting mypy<0.783 (from -r requirements-dev.txt (line 4))
+  Downloading https://files.pythonhosted.org/packages/a7/25/da35a577040effa507d465102a0e001b29279d759f46218af91985ab0392/mypy-0.782-cp37-cp37m-manylinux1_x86_64.whl (20.8MB)
+Collecting Pillow==7.2.0 (from -r requirements-dev.txt (line 5))
+  Downloading https://files.pythonhosted.org/packages/e8/f2/6722dd0c22e3a143ac792ccb2424924ac72af4adea756b1165b4cad50da7/Pillow-7.2.0-cp37-cp37m-manylinux1_x86_64.whl (2.2MB)
+Collecting pytest==5.4.2 (from -r requirements-dev.txt (line 6))
+  Downloading https://files.pythonhosted.org/packages/6c/f9/9f2b6c672c8f8bb87a4c1bd52c1b57213627b035305aad745d015b2a62ae/pytest-5.4.2-py3-none-any.whl (247kB)
+Collecting pytest-cov==2.10.0 (from -r requirements-dev.txt (line 7))
+  Downloading https://files.pythonhosted.org/packages/3d/13/ae3dec587b1cc07fb9f294e52ea9ad140266aea55adb9e12eade3625bd27/pytest_cov-2.10.0-py2.py3-none-any.whl
+Collecting tox<4.0.0 (from -r requirements-dev.txt (line 8))
+  Downloading https://files.pythonhosted.org/packages/62/92/cff9157a7b74b06237f830f05521e96b25e53e4d6ecfab75e69b6632143a/tox-3.17.1-py2.py3-none-any.whl (82kB)
+Collecting grpcio-tools==1.30.0 (from -r requirements-dev.txt (line 9))
+  Downloading https://files.pythonhosted.org/packages/da/3c/bed275484f6cc262b5de6ceaae36798c60d7904cdd05dc79cc830b880687/grpcio-tools-1.30.0.tar.gz (2.1MB)
+Collecting mypy-protobuf==1.22 (from -r requirements-dev.txt (line 10))
+  Downloading https://files.pythonhosted.org/packages/ec/9c/36adfc9a4aee35f8c6ae45f91cb3ef2e041e4c9ef6be1401e369f46c47c6/mypy_protobuf-1.22-py3-none-any.whl
+Collecting tenacity==6.2.0 (from -r requirements-dev.txt (line 13))
+  Downloading https://files.pythonhosted.org/packages/b5/05/ff089032442058bd3386f9cd991cd88ccac81dca1494d78751621ee35e62/tenacity-6.2.0-py2.py3-none-any.whl
+Collecting coverage==5.2 (from -r requirements-dev.txt (line 16))
+  Downloading https://files.pythonhosted.org/packages/dd/ee/2cc12177fe77d116d5a0c5e7c2fb2c1f5f3d5dd287e8bb67a17948684ede/coverage-5.2-cp37-cp37m-manylinux1_x86_64.whl (229kB)
+Collecting pandas==1.0.1 (from -r requirements-dev.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/61/af/ceb7523e86753d5643ed00e8c17a42bdcfe819782c3449d9bbbf5d01867a/pandas-1.0.1-cp37-cp37m-manylinux1_x86_64.whl (10.1MB)
+Collecting pip-licenses==2.2.1 (from -r requirements-dev.txt (line 22))
+  Downloading https://files.pythonhosted.org/packages/2e/8a/b8eb114545d9e984fcc013ef544c487aa2c02489a66185a82108625784a5/pip_licenses-2.2.1-py3-none-any.whl
+Collecting click>=5.1 (from Flask<2.0.0->-r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/d2/3d/fa76db83bf75c4f8d338c2fd15c8d33fdd7ad23a9b5e57eb6c5de26b430e/click-7.1.2-py2.py3-none-any.whl (82kB)
+Collecting itsdangerous>=0.24 (from Flask<2.0.0->-r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/76/ae/44b03b253d6fade317f32c24d100b3b35c2239807046a4c953c7b89fa49e/itsdangerous-1.1.0-py2.py3-none-any.whl
+Collecting Jinja2>=2.10.1 (from Flask<2.0.0->-r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/30/9e/f663a2aa66a09d838042ae1a2c5659828bb9b41ea3a6efa20a20fd92b121/Jinja2-2.11.2-py2.py3-none-any.whl (125kB)
+Collecting Werkzeug>=0.15 (from Flask<2.0.0->-r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/cc/94/5f7079a0e00bd6863ef8f1da638721e9da21e5bacee597595b318f71d62e/Werkzeug-1.0.1-py2.py3-none-any.whl (298kB)
+Collecting pyrsistent>=0.14.0 (from jsonschema<4.0.0->-r requirements.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/9f/0d/cbca4d0bbc5671822a59f270e4ce3f2195f8a899c97d0d5abb81b191efb5/pyrsistent-0.16.0.tar.gz (108kB)
+Collecting attrs>=17.4.0 (from jsonschema<4.0.0->-r requirements.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/a2/db/4313ab3be961f7a763066401fb77f7748373b6094076ae2bda2806988af6/attrs-19.3.0-py2.py3-none-any.whl
+Collecting importlib-metadata; python_version < "3.8" (from jsonschema<4.0.0->-r requirements.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/8e/58/cdea07eb51fc2b906db0968a94700866fc46249bdc75cac23f9d13168929/importlib_metadata-1.7.0-py2.py3-none-any.whl
+Requirement already satisfied: six>=1.11.0 in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->-r requirements.txt (line 2)) (1.12.0)
+Requirement already satisfied: idna<2.9,>=2.5 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (2.8)
+Requirement already satisfied: chardet<3.1.0,>=3.0.2 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (3.0.4)
+Requirement already satisfied: urllib3<1.25,>=1.21.1 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (1.24.1)
+Requirement already satisfied: certifi>=2017.4.17 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (2018.11.29)
+Collecting threadloop<2,>=1 (from jaeger-client<4.2.0,>=4.1.0->-r requirements.txt (line 12))
+  Downloading https://files.pythonhosted.org/packages/d3/1d/8398c1645b97dc008d3c658e04beda01ede3d90943d40c8d56863cf891bd/threadloop-1.0.2.tar.gz
+Collecting thrift (from jaeger-client<4.2.0,>=4.1.0->-r requirements.txt (line 12))
+  Downloading https://files.pythonhosted.org/packages/97/1e/3284d19d7be99305eda145b8aa46b0c33244e4a496ec66440dac19f8274d/thrift-0.13.0.tar.gz (59kB)
+Collecting tornado<6,>=4.3 (from jaeger-client<4.2.0,>=4.1.0->-r requirements.txt (line 12))
+  Downloading https://files.pythonhosted.org/packages/e6/78/6e7b5af12c12bdf38ca9bfe863fcaf53dc10430a312d0324e76c1e5ca426/tornado-5.1.1.tar.gz (516kB)
+Collecting configparser (from minio<6.0.0,>=4.0.9->-r requirements.txt (line 16))
+  Downloading https://files.pythonhosted.org/packages/4b/6b/01baa293090240cf0562cc5eccb69c6f5006282127f2b846fad011305c79/configparser-5.0.0-py3-none-any.whl
+Collecting pytz (from minio<6.0.0,>=4.0.9->-r requirements.txt (line 16))
+  Downloading https://files.pythonhosted.org/packages/4f/a4/879454d49688e2fad93e59d7d4efda580b783c745fd2ec2a3adf87b0808d/pytz-2020.1-py2.py3-none-any.whl (510kB)
+Collecting python-dateutil (from minio<6.0.0,>=4.0.9->-r requirements.txt (line 16))
+  Downloading https://files.pythonhosted.org/packages/d4/70/d60450c3dd48ef87586924207ae8907090de0b306af2bce5d134d78615cb/python_dateutil-2.8.1-py2.py3-none-any.whl (227kB)
+Collecting azure-common>=1.1.5 (from azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17))
+  Downloading https://files.pythonhosted.org/packages/e5/4d/d000fc3c5af601d00d55750b71da5c231fcb128f42ac95b208ed1091c2c1/azure_common-1.1.25-py2.py3-none-any.whl
+Collecting azure-storage-common~=2.1 (from azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17))
+  Downloading https://files.pythonhosted.org/packages/6b/a0/6794b318ce0118d1a4053bdf0149a60807407db9b710354f2b203c2f5975/azure_storage_common-2.1.0-py2.py3-none-any.whl (47kB)
+Collecting google-cloud-core<2.0dev,>=1.2.0 (from google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/89/3c/8a7531839028c9690e6d14c650521f3bbaf26e53baaeb2784b8c3eb2fb97/google_cloud_core-1.3.0-py2.py3-none-any.whl
+Collecting google-resumable-media<0.6dev,>=0.5.0 (from google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/f2/cc/cd05c633298fcbba5d61b6b8844de598e001954281a004fc1a13c61a5121/google_resumable_media-0.5.1-py2.py3-none-any.whl
+Collecting google-auth<2.0dev,>=1.11.0 (from google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/10/4e/09f6ad6b69cdc443e985875a70df29ae68d8b0b357e176e83c82c8e38083/google_auth-1.19.1-py2.py3-none-any.whl (91kB)
+Collecting pathspec<1,>=0.6 (from black==19.10b0->-r requirements-dev.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/5d/d0/887c58853bd4b6ffc7aa9cdba4fc57d7b979b45888a6bd47e4568e1cf868/pathspec-0.8.0-py2.py3-none-any.whl
+Collecting appdirs (from black==19.10b0->-r requirements-dev.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/3b/00/2344469e2084fb287c2e0b57b72910309874c3245463acd6cf5e3db69324/appdirs-1.4.4-py2.py3-none-any.whl
+Collecting regex (from black==19.10b0->-r requirements-dev.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/b6/0b/571619431d3ab416b9ffeca1fdf6cc1b388581b087250fb56e7227d16088/regex-2020.7.14-cp37-cp37m-manylinux1_x86_64.whl (660kB)
+Collecting typed-ast>=1.4.0 (from black==19.10b0->-r requirements-dev.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/5d/10/0c1e8aa723a2b0c4032e048d8e511df82c8a1262f0e1df5e4c54eb2613e9/typed_ast-1.4.1-cp37-cp37m-manylinux1_x86_64.whl (737kB)
+Collecting toml>=0.9.4 (from black==19.10b0->-r requirements-dev.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/9f/e1/1b40b80f2e1663a6b9f497123c11d7d988c0919abbf3c3f2688e448c5363/toml-0.10.1-py2.py3-none-any.whl
+Collecting mccabe<0.7.0,>=0.6.0 (from flake8==3.8.1->-r requirements-dev.txt (line 3))
+  Downloading https://files.pythonhosted.org/packages/87/89/479dc97e18549e21354893e4ee4ef36db1d237534982482c3681ee6e7b57/mccabe-0.6.1-py2.py3-none-any.whl
+Collecting pyflakes<2.3.0,>=2.2.0 (from flake8==3.8.1->-r requirements-dev.txt (line 3))
+  Downloading https://files.pythonhosted.org/packages/69/5b/fd01b0c696f2f9a6d2c839883b642493b431f28fa32b29abc465ef675473/pyflakes-2.2.0-py2.py3-none-any.whl (66kB)
+Collecting pycodestyle<2.7.0,>=2.6.0a1 (from flake8==3.8.1->-r requirements-dev.txt (line 3))
+  Downloading https://files.pythonhosted.org/packages/10/5b/88879fb861ab79aef45c7e199cae3ef7af487b5603dcb363517a50602dd7/pycodestyle-2.6.0-py2.py3-none-any.whl (41kB)
+Collecting mypy-extensions<0.5.0,>=0.4.3 (from mypy<0.783->-r requirements-dev.txt (line 4))
+  Downloading https://files.pythonhosted.org/packages/5c/eb/975c7c080f3223a5cdaff09612f3a5221e4ba534f7039db34c35d95fa6a5/mypy_extensions-0.4.3-py2.py3-none-any.whl
+Collecting typing-extensions>=3.7.4 (from mypy<0.783->-r requirements-dev.txt (line 4))
+  Downloading https://files.pythonhosted.org/packages/0c/0e/3f026d0645d699e7320b59952146d56ad7c374e9cd72cd16e7c74e657a0f/typing_extensions-3.7.4.2-py3-none-any.whl
+Collecting packaging (from pytest==5.4.2->-r requirements-dev.txt (line 6))
+  Downloading https://files.pythonhosted.org/packages/46/19/c5ab91b1b05cfe63cccd5cfc971db9214c6dd6ced54e33c30d5af1d2bc43/packaging-20.4-py2.py3-none-any.whl
+Collecting more-itertools>=4.0.0 (from pytest==5.4.2->-r requirements-dev.txt (line 6))
+  Downloading https://files.pythonhosted.org/packages/ef/9b/6c35ec5483710492e21252465160ee508170159f7e0e2d6cd769022f52f6/more_itertools-8.4.0-py3-none-any.whl (43kB)
+Collecting pluggy<1.0,>=0.12 (from pytest==5.4.2->-r requirements-dev.txt (line 6))
+  Downloading https://files.pythonhosted.org/packages/a0/28/85c7aa31b80d150b772fbe4a229487bc6644da9ccb7e427dd8cc60cb8a62/pluggy-0.13.1-py2.py3-none-any.whl
+Collecting py>=1.5.0 (from pytest==5.4.2->-r requirements-dev.txt (line 6))
+  Downloading https://files.pythonhosted.org/packages/68/0f/41a43535b52a81e4f29e420a151032d26f08b62206840c48d14b70e53376/py-1.9.0-py2.py3-none-any.whl (99kB)
+Collecting wcwidth (from pytest==5.4.2->-r requirements-dev.txt (line 6))
+  Downloading https://files.pythonhosted.org/packages/59/7c/e39aca596badaf1b78e8f547c807b04dae603a433d3e7a7e04d67f2ef3e5/wcwidth-0.2.5-py2.py3-none-any.whl
+Collecting filelock>=3.0.0 (from tox<4.0.0->-r requirements-dev.txt (line 8))
+  Downloading https://files.pythonhosted.org/packages/93/83/71a2ee6158bb9f39a90c0dea1637f81d5eef866e188e1971a1b1ab01a35a/filelock-3.0.12-py3-none-any.whl
+Collecting virtualenv!=20.0.0,!=20.0.1,!=20.0.2,!=20.0.3,!=20.0.4,!=20.0.5,!=20.0.6,!=20.0.7,>=16.0.0 (from tox<4.0.0->-r requirements-dev.txt (line 8))
+  Downloading https://files.pythonhosted.org/packages/45/24/27197e06ff269e54a05fcb7e270d5648fafe076eafd4ec289859a3dc4905/virtualenv-20.0.27-py2.py3-none-any.whl (4.9MB)
+Collecting PTable (from pip-licenses==2.2.1->-r requirements-dev.txt (line 22))
+  Downloading https://files.pythonhosted.org/packages/ab/b3/b54301811173ca94119eb474634f120a49cd370f257d1aae5a4abaf12729/PTable-0.9.2.tar.gz
+Collecting MarkupSafe>=0.23 (from Jinja2>=2.10.1->Flask<2.0.0->-r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/98/7b/ff284bd8c80654e471b769062a9b43cc5d03e7a615048d96f4619df8d420/MarkupSafe-1.1.1-cp37-cp37m-manylinux1_x86_64.whl
+Collecting zipp>=0.5 (from importlib-metadata; python_version < "3.8"->jsonschema<4.0.0->-r requirements.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/b2/34/bfcb43cc0ba81f527bc4f40ef41ba2ff4080e047acb0586b56b3d017ace4/zipp-3.1.0-py3-none-any.whl
+Requirement already satisfied: cryptography in /opt/conda/lib/python3.7/site-packages (from azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (2.4.2)
+Collecting google-api-core<2.0.0dev,>=1.16.0 (from google-cloud-core<2.0dev,>=1.2.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/48/76/bd5e3ebd571b9f688ae123a2bd84b2dc9f75e1214a83b8a759bc16e2fc35/google_api_core-1.21.0-py2.py3-none-any.whl (90kB)
+Collecting cachetools<5.0,>=2.0.0 (from google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/cd/5c/f3aa86b6d5482f3051b433c7616668a9b96fbe49a622210e2c9781938a5c/cachetools-4.1.1-py3-none-any.whl
+Collecting pyasn1-modules>=0.2.1 (from google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/95/de/214830a981892a3e286c3794f41ae67a4495df1108c3da8a9f62159b9a9d/pyasn1_modules-0.2.8-py2.py3-none-any.whl (155kB)
+Collecting rsa<5,>=3.1.4; python_version >= "3" (from google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/1c/df/c3587a667d6b308fadc90b99e8bc8774788d033efcc70f4ecaae7fad144b/rsa-4.6-py3-none-any.whl (47kB)
+Collecting pyparsing>=2.0.2 (from packaging->pytest==5.4.2->-r requirements-dev.txt (line 6))
+  Downloading https://files.pythonhosted.org/packages/8a/bb/488841f56197b13700afd5658fc279a2025a39e22449b7cf29864669b15d/pyparsing-2.4.7-py2.py3-none-any.whl (67kB)
+Collecting distlib<1,>=0.3.1 (from virtualenv!=20.0.0,!=20.0.1,!=20.0.2,!=20.0.3,!=20.0.4,!=20.0.5,!=20.0.6,!=20.0.7,>=16.0.0->tox<4.0.0->-r requirements-dev.txt (line 8))
+  Downloading https://files.pythonhosted.org/packages/f5/0a/490fa011d699bb5a5f3a0cf57de82237f52a6db9d40f33c53b2736c9a1f9/distlib-0.3.1-py2.py3-none-any.whl (335kB)
+Requirement already satisfied: asn1crypto>=0.21.0 in /opt/conda/lib/python3.7/site-packages (from cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (0.24.0)
+Requirement already satisfied: cffi!=1.11.3,>=1.7 in /opt/conda/lib/python3.7/site-packages (from cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (1.11.5)
+Collecting googleapis-common-protos<2.0dev,>=1.6.0 (from google-api-core<2.0.0dev,>=1.16.0->google-cloud-core<2.0dev,>=1.2.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/03/74/3956721ea1eb4bcf7502a311fdaa60b85bd751de4e57d1943afe9b334141/googleapis_common_protos-1.52.0-py2.py3-none-any.whl (100kB)
+Collecting pyasn1<0.5.0,>=0.4.6 (from pyasn1-modules>=0.2.1->google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/62/1e/a94a8d635fa3ce4cfc7f506003548d0a2447ae76fd5ca53932970fe3053f/pyasn1-0.4.8-py2.py3-none-any.whl (77kB)
+Requirement already satisfied: pycparser in /opt/conda/lib/python3.7/site-packages (from cffi!=1.11.3,>=1.7->cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (2.19)
+Building wheels for collected packages: Flask-OpenTracing, opentracing, jaeger-client, PyYAML, grpcio-tools, pyrsistent, threadloop, thrift, tornado, PTable
+  Running setup.py bdist_wheel for Flask-OpenTracing: started
+  Running setup.py bdist_wheel for Flask-OpenTracing: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/7b/dc/25/3cf0b35c129232ee596c413f13d1d1f5a8e38c427266276dfd
+  Running setup.py bdist_wheel for opentracing: started
+  Running setup.py bdist_wheel for opentracing: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/93/e9/b5/1cdc3544f99a54caca13832b5afa26fd98701fe709dc049576
+  Running setup.py bdist_wheel for jaeger-client: started
+  Running setup.py bdist_wheel for jaeger-client: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/f2/84/7f/e89da3ee8ce35598d6382b6389fa2ada5d66acca2422537994
+  Running setup.py bdist_wheel for PyYAML: started
+  Running setup.py bdist_wheel for PyYAML: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/a7/c1/ea/cf5bd31012e735dc1dfea3131a2d5eae7978b251083d6247bd
+  Running setup.py bdist_wheel for grpcio-tools: started
+  Running setup.py bdist_wheel for grpcio-tools: still running...
+  Running setup.py bdist_wheel for grpcio-tools: still running...
+  Running setup.py bdist_wheel for grpcio-tools: still running...
+  Running setup.py bdist_wheel for grpcio-tools: still running...
+  Running setup.py bdist_wheel for grpcio-tools: still running...
+  Running setup.py bdist_wheel for grpcio-tools: still running...
+  Running setup.py bdist_wheel for grpcio-tools: still running...
+  Running setup.py bdist_wheel for grpcio-tools: still running...
+  Running setup.py bdist_wheel for grpcio-tools: still running...
+  Running setup.py bdist_wheel for grpcio-tools: still running...
+  Running setup.py bdist_wheel for grpcio-tools: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/83/94/68/d3464c124f6508da859f2b05a80e040dc99e7ebaaacbe86c6a
+  Running setup.py bdist_wheel for pyrsistent: started
+  Running setup.py bdist_wheel for pyrsistent: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/c2/85/ad/bc6d41e2c4b35c9fdfed48f0fcd411ffc4164e67755ddf9ebb
+  Running setup.py bdist_wheel for threadloop: started
+  Running setup.py bdist_wheel for threadloop: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/d7/7a/30/d212623a4cd34f6cce400f8122b1b7af740d3440c68023d51f
+  Running setup.py bdist_wheel for thrift: started
+  Running setup.py bdist_wheel for thrift: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/02/a2/46/689ccfcf40155c23edc7cdbd9de488611c8fdf49ff34b1706e
+  Running setup.py bdist_wheel for tornado: started
+  Running setup.py bdist_wheel for tornado: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/6d/e1/ce/f4ee2fa420cc6b940123c64992b81047816d0a9fad6b879325
+  Running setup.py bdist_wheel for PTable: started
+  Running setup.py bdist_wheel for PTable: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/22/cc/2e/55980bfe86393df3e9896146a01f6802978d09d7ebcba5ea56
+Successfully built Flask-OpenTracing opentracing jaeger-client PyYAML grpcio-tools pyrsistent threadloop thrift tornado PTable
+grpcio-tools 1.30.0 has requirement grpcio>=1.30.0, but you'll have grpcio 1.20.1 which is incompatible.
+google-api-core 1.21.0 has requirement protobuf>=3.12.0, but you'll have protobuf 3.7.1 which is incompatible.
+tox 3.17.1 has requirement six>=1.14.0, but you'll have six 1.12.0 which is incompatible.
+Installing collected packages: click, itsdangerous, MarkupSafe, Jinja2, Werkzeug, Flask, setuptools, pyrsistent, attrs, zipp, importlib-metadata, jsonschema, Flask-cors, redis, numpy, opentracing, Flask-OpenTracing, tornado, threadloop, thrift, jaeger-client, grpcio-opentracing, PyYAML, gunicorn, configparser, pytz, python-dateutil, minio, azure-common, azure-storage-common, azure-storage-blob, googleapis-common-protos, cachetools, pyasn1, pyasn1-modules, rsa, google-auth, google-api-core, google-cloud-core, google-resumable-media, google-cloud-storage, prometheus-client, pathspec, appdirs, regex, typed-ast, toml, black, mccabe, pyflakes, pycodestyle, flake8, mypy-extensions, typing-extensions, mypy, Pillow, pyparsing, packaging, more-itertools, pluggy, py, wcwidth, pytest, coverage, pytest-cov, filelock, distlib, virtualenv, tox, grpcio-tools, mypy-protobuf, tenacity, pandas, PTable, pip-licenses, seldon-core
+  Found existing installation: setuptools 40.6.3
+    Uninstalling setuptools-40.6.3:
+      Successfully uninstalled setuptools-40.6.3
+  Found existing installation: grpcio-tools 1.20.1
+    Uninstalling grpcio-tools-1.20.1:
+      Successfully uninstalled grpcio-tools-1.20.1
+  Found existing installation: mypy-protobuf 1.10
+    Uninstalling mypy-protobuf-1.10:
+      Successfully uninstalled mypy-protobuf-1.10
+  Running setup.py develop for seldon-core
+Successfully installed Flask-1.1.2 Flask-OpenTracing-1.1.0 Flask-cors-3.0.8 Jinja2-2.11.2 MarkupSafe-1.1.1 PTable-0.9.2 Pillow-7.2.0 PyYAML-5.3.1 Werkzeug-1.0.1 appdirs-1.4.4 attrs-19.3.0 azure-common-1.1.25 azure-storage-blob-2.1.0 azure-storage-common-2.1.0 black-19.10b0 cachetools-4.1.1 click-7.1.2 configparser-5.0.0 coverage-5.2 distlib-0.3.1 filelock-3.0.12 flake8-3.8.1 google-api-core-1.21.0 google-auth-1.19.1 google-cloud-core-1.3.0 google-cloud-storage-1.29.0 google-resumable-media-0.5.1 googleapis-common-protos-1.52.0 grpcio-opentracing-1.1.4 grpcio-tools-1.30.0 gunicorn-20.0.4 importlib-metadata-1.7.0 itsdangerous-1.1.0 jaeger-client-4.1.0 jsonschema-3.2.0 mccabe-0.6.1 minio-5.0.10 more-itertools-8.4.0 mypy-0.782 mypy-extensions-0.4.3 mypy-protobuf-1.22 numpy-1.19.0 opentracing-2.2.0 packaging-20.4 pandas-1.0.1 pathspec-0.8.0 pip-licenses-2.2.1 pluggy-0.13.1 prometheus-client-0.8.0 py-1.9.0 pyasn1-0.4.8 pyasn1-modules-0.2.8 pycodestyle-2.6.0 pyflakes-2.2.0 pyparsing-2.4.7 pyrsistent-0.16.0 pytest-5.4.2 pytest-cov-2.10.0 python-dateutil-2.8.1 pytz-2020.1 redis-3.5.3 regex-2020.7.14 rsa-4.6 seldon-core setuptools-49.2.0 tenacity-6.2.0 threadloop-1.0.2 thrift-0.13.0 toml-0.10.1 tornado-5.1.1 tox-3.17.1 typed-ast-1.4.1 typing-extensions-3.7.4.2 virtualenv-20.0.27 wcwidth-0.2.5 zipp-3.1.0
+tox --recreate -e licenses
+GLOB sdist-make: /workspace/source/python/setup.py
+licenses create: /workspace/source/python/.tox/licenses
+licenses installdeps: pip-licenses
+licenses inst: /workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip
+licenses installed: absl-py==0.9.0,astunparse==1.6.3,attrs==19.3.0,azure-common==1.1.25,azure-storage-blob==2.1.0,azure-storage-common==2.1.0,cachetools==4.1.1,certifi==2020.6.20,cffi==1.14.0,chardet==3.0.4,click==7.1.2,configparser==5.0.0,cryptography==2.9.2,Flask==1.1.2,Flask-Cors==3.0.8,Flask-OpenTracing==1.1.0,flatbuffers==1.12,gast==0.3.3,google-api-core==1.21.0,google-auth==1.19.1,google-auth-oauthlib==0.4.1,google-cloud-core==1.3.0,google-cloud-storage==1.29.0,google-pasta==0.2.0,google-resumable-media==0.5.1,googleapis-common-protos==1.52.0,grpcio==1.30.0,grpcio-opentracing==1.1.4,gunicorn==20.0.4,h5py==2.10.0,idna==2.10,importlib-metadata==1.7.0,itsdangerous==1.1.0,jaeger-client==4.1.0,Jinja2==2.11.2,jsonschema==3.2.0,Keras-Preprocessing==1.1.2,Markdown==3.2.2,MarkupSafe==1.1.1,minio==5.0.10,numpy==1.19.0,oauthlib==3.1.0,opentracing==2.2.0,opt-einsum==3.2.1,pip-licenses==2.2.1,prometheus-client==0.8.0,protobuf==3.12.2,PTable==0.9.2,pyasn1==0.4.8,pyasn1-modules==0.2.8,pycparser==2.20,pyrsistent==0.16.0,python-dateutil==2.8.1,pytz==2020.1,PyYAML==5.3.1,redis==3.5.3,requests==2.24.0,requests-oauthlib==1.3.0,rsa==4.6,scipy==1.4.1,seldon-core @ file:///workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip,six==1.15.0,tensorboard==2.2.2,tensorboard-plugin-wit==1.7.0,tensorflow==2.2.0,tensorflow-estimator==2.2.0,termcolor==1.1.0,threadloop==1.0.2,thrift==0.13.0,tornado==5.1.1,urllib3==1.25.9,Werkzeug==1.0.1,wrapt==1.12.1,zipp==3.1.0
+licenses run-test-pre: PYTHONHASHSEED='286013734'
+licenses run-test: commands[0] | pip-licenses --from=mixed --format=csv --output-file=./licenses/license_info.csv
+created path: ./licenses/license_info.csv
+licenses run-test: commands[1] | pip-licenses --from=mixed --format=plain-vertical --with-license-file --no-license-path --output-file=./licenses/license.txt
+created path: ./licenses/license.txt
+___________________________________ summary ____________________________________
+  licenses: commands succeeded
+  congratulations :)
+cut -d, -f1,3 ./licenses/license_info.csv \
+	> ./licenses/license_info.no_versions.csv
+black \
+	--check ./ ../testing \
+	--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs|.tox)"
+All done! ✨ 🍰 ✨
+77 files would be left unchanged.
+flake8
+0
+# Check if licenses have changed
+git \
+	--no-pager diff \
+	--exit-code \
+	./licenses/license_info.no_versions.csv
+make: Leaving directory '/workspace/source/python'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mlint-executor[0m and container [32mstep-credential-initializer-cfsvb[0m
+{"level":"info","ts":1594920341.0480986,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1594920341.0485358,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mlint-executor[0m and container [32mstep-working-dir-initializer-2rjnq[0m
+{"level":"info","ts":1594920341.5667498,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594920341.568892,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mlint-executor[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mlint-executor[0m and container [32mstep-create-dir-workspace-b9lzz[0m
+{"level":"info","ts":1594920351.5917947,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594920351.5933084,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mlint-executor[0m and container [32mstep-source-copy-workspace-w7z2t[0m
+{"level":"info","ts":1594920351.949705,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1594920352.6132119,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mlint-executor[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2075-li-jh79k-17[0m stage [32mlint-executor[0m and container [32mstep-lint-executor[0m
+make: Entering directory '/workspace/source/executor'
+go list -m all | cut -d ' ' -f 1 > licenses/dep.txt
+go: finding cloud.google.com/go v0.40.0
+go: finding contrib.go.opencensus.io/exporter/ocagent v0.4.12
+go: finding contrib.go.opencensus.io/exporter/prometheus v0.1.0
+go: finding github.com/Azure/azure-sdk-for-go v30.1.0+incompatible
+go: finding github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78
+go: finding github.com/Azure/go-autorest v14.2.0+incompatible
+go: finding github.com/Azure/go-autorest/autorest v0.9.0
+go: finding github.com/Azure/go-autorest/autorest/adal v0.9.0
+go: finding github.com/Azure/go-autorest/autorest/date v0.3.0
+go: finding github.com/Azure/go-autorest/autorest/mocks v0.4.0
+go: finding github.com/Azure/go-autorest/autorest/to v0.2.0
+go: finding github.com/Azure/go-autorest/autorest/validation v0.1.0
+go: finding github.com/Azure/go-autorest/logger v0.1.0
+go: finding github.com/Azure/go-autorest/tracing v0.6.0
+go: finding github.com/BurntSushi/toml v0.3.1
+go: finding github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802
+go: finding github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
+go: finding github.com/PuerkitoBio/purell v1.1.1
+go: finding github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
+go: finding github.com/Shopify/sarama v1.19.0
+go: finding github.com/Shopify/toxiproxy v2.1.4+incompatible
+go: finding github.com/agnivade/levenshtein v1.0.1
+go: finding github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
+go: finding github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4
+go: finding github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
+go: finding github.com/apache/thrift v0.12.0
+go: finding github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6
+go: finding github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
+go: finding github.com/beorn7/perks v1.0.1
+go: finding github.com/bgentry/speakeasy v0.1.0
+go: finding github.com/blang/semver v3.5.0+incompatible
+go: finding github.com/census-instrumentation/opencensus-proto v0.2.1
+go: finding github.com/cespare/xxhash/v2 v2.1.1
+go: finding github.com/client9/misspell v0.3.4
+go: finding github.com/cloudevents/sdk-go v1.2.0
+go: finding github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f
+go: finding github.com/cockroachdb/datadriven v0.0.0-20190809214429-80d97fb3cbaa
+go: finding github.com/coreos/etcd v3.3.10+incompatible
+go: finding github.com/coreos/go-etcd v2.0.0+incompatible
+go: finding github.com/coreos/go-oidc v2.1.0+incompatible
+go: finding github.com/coreos/go-semver v0.3.0
+go: finding github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e
+go: finding github.com/coreos/pkg v0.0.0-20180108230652-97fdf19511ea
+go: finding github.com/cpuguy83/go-md2man v1.0.10
+go: finding github.com/creack/pty v1.1.7
+go: finding github.com/davecgh/go-spew v1.1.1
+go: finding github.com/dgrijalva/jwt-go v3.2.0+incompatible
+go: finding github.com/docker/docker v0.7.3-0.20190327010347-be7ac8be2ae0
+go: finding github.com/docker/go-units v0.4.0
+go: finding github.com/docker/spdystream v0.0.0-20160310174837-449fdfce4d96
+go: finding github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
+go: finding github.com/dustin/go-humanize v1.0.0
+go: finding github.com/eapache/go-resiliency v1.1.0
+go: finding github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21
+go: finding github.com/eapache/queue v1.1.0
+go: finding github.com/elazarl/goproxy v0.0.0-20170405201442-c4fc26588b6e
+go: finding github.com/emicklei/go-restful v2.9.5+incompatible
+go: finding github.com/envoyproxy/go-control-plane v0.9.4
+go: finding github.com/envoyproxy/protoc-gen-validate v0.1.0
+go: finding github.com/evanphx/json-patch v4.5.0+incompatible
+go: finding github.com/fatih/color v1.7.0
+go: finding github.com/fortytw2/leaktest v1.3.0
+go: finding github.com/fsnotify/fsnotify v1.4.9
+go: finding github.com/ghodss/yaml v1.0.0
+go: finding github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
+go: finding github.com/go-kit/kit v0.9.0
+go: finding github.com/go-logfmt/logfmt v0.4.0
+go: finding github.com/go-logr/logr v0.1.0
+go: finding github.com/go-logr/zapr v0.1.0
+go: finding github.com/go-openapi/analysis v0.19.5
+go: finding github.com/go-openapi/errors v0.19.2
+go: finding github.com/go-openapi/jsonpointer v0.19.3
+go: finding github.com/go-openapi/jsonreference v0.19.3
+go: finding github.com/go-openapi/loads v0.19.4
+go: finding github.com/go-openapi/runtime v0.19.4
+go: finding github.com/go-openapi/spec v0.19.3
+go: finding github.com/go-openapi/strfmt v0.19.3
+go: finding github.com/go-openapi/swag v0.19.5
+go: finding github.com/go-openapi/validate v0.19.5
+go: finding github.com/go-stack/stack v1.8.0
+go: finding github.com/gogo/protobuf v1.3.1
+go: finding github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
+go: finding github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6
+go: finding github.com/golang/mock v1.2.0
+go: finding github.com/golang/protobuf v1.4.2
+go: finding github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db
+go: finding github.com/google/btree v1.0.0
+go: finding github.com/google/go-cmp v0.5.0
+go: finding github.com/google/gofuzz v1.0.0
+go: finding github.com/google/martian v2.1.0+incompatible
+go: finding github.com/google/pprof v0.0.0-20181206194817-3ea8567a2e57
+go: finding github.com/google/renameio v0.1.0
+go: finding github.com/google/uuid v1.1.1
+go: finding github.com/googleapis/gax-go/v2 v2.0.5
+go: finding github.com/googleapis/gnostic v0.3.1
+go: finding github.com/gophercloud/gophercloud v0.1.0
+go: finding github.com/gorilla/context v1.1.1
+go: finding github.com/gorilla/mux v1.7.4
+go: finding github.com/gorilla/websocket v1.4.0
+go: finding github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7
+go: finding github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
+go: finding github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
+go: finding github.com/grpc-ecosystem/grpc-gateway v1.9.5
+go: finding github.com/hashicorp/golang-lru v0.5.4
+go: finding github.com/hashicorp/hcl v1.0.0
+go: finding github.com/hpcloud/tail v1.0.0
+go: finding github.com/imdario/mergo v0.3.9
+go: finding github.com/inconshreveable/mousetrap v1.0.0
+go: finding github.com/jonboulle/clockwork v0.1.0
+go: finding github.com/json-iterator/go v1.1.10
+go: finding github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024
+go: finding github.com/julienschmidt/httprouter v1.2.0
+go: finding github.com/kelseyhightower/envconfig v1.4.0
+go: finding github.com/kisielk/errcheck v1.2.0
+go: finding github.com/kisielk/gotool v1.0.0
+go: finding github.com/konsorten/go-windows-terminal-sequences v1.0.1
+go: finding github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515
+go: finding github.com/kr/pretty v0.2.0
+go: finding github.com/kr/pty v1.1.5
+go: finding github.com/kr/text v0.1.0
+go: finding github.com/lightstep/tracecontext.go v0.0.0-20181129014701-1757c391b1ac
+go: finding github.com/magiconair/properties v1.8.0
+go: finding github.com/mailru/easyjson v0.7.0
+go: finding github.com/mattn/go-colorable v0.0.9
+go: finding github.com/mattn/go-isatty v0.0.4
+go: finding github.com/mattn/go-runewidth v0.0.2
+go: finding github.com/matttproud/golang_protobuf_extensions v1.0.1
+go: finding github.com/mitchellh/go-homedir v1.1.0
+go: finding github.com/mitchellh/mapstructure v1.1.2
+go: finding github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+go: finding github.com/modern-go/reflect2 v1.0.1
+go: finding github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822
+go: finding github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223
+go: finding github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f
+go: finding github.com/nats-io/jwt v0.3.2
+go: finding github.com/nats-io/nats-server/v2 v2.1.2
+go: finding github.com/nats-io/nats.go v1.9.1
+go: finding github.com/nats-io/nkeys v0.1.3
+go: finding github.com/nats-io/nuid v1.0.1
+go: finding github.com/nxadm/tail v1.4.4
+go: finding github.com/olekukonko/tablewriter v0.0.0-20170122224234-a0225b3f23b5
+go: finding github.com/onsi/ginkgo v1.14.0
+go: finding github.com/onsi/gomega v1.10.1
+go: finding github.com/opentracing/opentracing-go v1.2.0
+go: finding github.com/openzipkin/zipkin-go v0.1.6
+go: finding github.com/pborman/uuid v1.2.0
+go: finding github.com/pelletier/go-toml v1.2.0
+go: finding github.com/peterbourgon/diskv v2.0.1+incompatible
+go: finding github.com/pierrec/lz4 v2.0.5+incompatible
+go: finding github.com/pkg/errors v0.9.1
+go: finding github.com/pmezard/go-difflib v1.0.0
+go: finding github.com/pquerna/cachecontrol v0.0.0-20171018203845-0dec1b30a021
+go: finding github.com/prometheus/client_golang v1.7.1
+go: finding github.com/prometheus/client_model v0.2.0
+go: finding github.com/prometheus/common v0.10.0
+go: finding github.com/prometheus/procfs v0.1.3
+go: finding github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a
+go: finding github.com/remyoudompheng/bigfft v0.0.0-20170806203942-52369c62f446
+go: finding github.com/rogpeppe/fastuuid v0.0.0-20150106093220-6724a57986af
+go: finding github.com/rogpeppe/go-internal v1.3.0
+go: finding github.com/russross/blackfriday v1.5.2
+go: finding github.com/sergi/go-diff v1.0.0
+go: finding github.com/sirupsen/logrus v1.4.2
+go: finding github.com/soheilhy/cmux v0.1.4
+go: finding github.com/spf13/afero v1.2.2
+go: finding github.com/spf13/cast v1.3.0
+go: finding github.com/spf13/cobra v0.0.5
+go: finding github.com/spf13/jwalterweatherman v1.0.0
+go: finding github.com/spf13/pflag v1.0.5
+go: finding github.com/spf13/viper v1.3.2
+go: finding github.com/stretchr/ob** v0.2.0
+go: finding github.com/stretchr/testify v1.4.0
+go: finding github.com/tidwall/pretty v1.0.0
+go: finding github.com/tmc/grpc-websocket-proxy v0.0.0-20170815181823-89b8d40f7ca8
+go: finding github.com/uber/jaeger-client-go v2.24.0+incompatible
+go: finding github.com/uber/jaeger-lib v2.2.0+incompatible
+go: finding github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8
+go: finding github.com/urfave/cli v1.20.0
+go: finding github.com/valyala/bytebufferpool v1.0.0
+go: finding github.com/vektah/gqlparser v1.1.2
+go: finding github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2
+go: finding github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77
+go: finding go.etcd.io/bbolt v1.3.3
+go: finding go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
+go: finding go.mongodb.org/mongo-driver v1.1.2
+go: finding go.opencensus.io v0.22.0
+go: finding go.uber.org/atomic v1.6.0
+go: finding go.uber.org/multierr v1.5.0
+go: finding go.uber.org/tools v0.0.0-20190618225709-2cfd321de3ee
+go: finding go.uber.org/zap v1.15.0
+go: finding golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+go: finding golang.org/x/exp v0.0.0-20190312203227-4b39c73a6495
+go: finding golang.org/x/image v0.0.0-20190227222117-0694c2d4d067
+go: finding golang.org/x/lint v0.0.0-20190930215403-16217165b5de
+go: finding golang.org/x/mobile v0.0.0-20190312151609-d3739f865fa6
+go: finding golang.org/x/mod v0.0.0-20190513183733-4bf6d317e70e
+go: finding golang.org/x/net v0.0.0-20200520004742-59133d7f0dd7
+go: finding golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+go: finding golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
+go: finding golang.org/x/sys v0.0.0-20200615200032-f1bc736245b1
+go: finding golang.org/x/text v0.3.3
+go: finding golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0
+go: finding golang.org/x/tools v0.0.0-20191029190741-b9c20aec41a5
+go: finding golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+go: finding gomodules.xyz/jsonpatch/v2 v2.0.1
+go: finding gonum.org/v1/gonum v0.0.0-20190331200053-3d26580ed485
+go: finding gonum.org/v1/netlib v0.0.0-20190331212654-76723241ea4e
+go: finding google.golang.org/api v0.15.0
+go: finding google.golang.org/appengine v1.6.5
+go: finding google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
+go: finding google.golang.org/grpc v1.30.0
+go: finding google.golang.org/protobuf v1.23.0
+go: finding gopkg.in/alecthomas/kingpin.v2 v2.2.6
+go: finding gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
+go: finding gopkg.in/cheggaaa/pb.v1 v1.0.25
+go: finding gopkg.in/errgo.v2 v2.1.0
+go: finding gopkg.in/fsnotify.v1 v1.4.7
+go: finding gopkg.in/inf.v0 v0.9.1
+go: finding gopkg.in/natefinch/lumberjack.v2 v2.0.0
+go: finding gopkg.in/resty.v1 v1.12.0
+go: finding gopkg.in/square/go-jose.v2 v2.2.2
+go: finding gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
+go: finding gopkg.in/yaml.v2 v2.3.0
+go: finding gotest.tools v2.2.0+incompatible
+go: finding honnef.co/go/tools v0.0.1-2019.2.3
+go: finding istio.io/api v0.0.0-20200513175333-ae3da0d240e3
+go: finding istio.io/client-go v0.0.0-20200513180646-f8d9d8ff84e6
+go: finding istio.io/gogo-genproto v0.0.0-20190930162913-45029607206a
+go: finding k8s.io/api v0.17.8
+go: finding k8s.io/apiextensions-apiserver v0.17.8
+go: finding k8s.io/apimachinery v0.17.8
+go: finding k8s.io/apiserver v0.17.8
+go: finding k8s.io/client-go v0.17.8
+go: finding k8s.io/code-generator v0.17.8
+go: finding k8s.io/component-base v0.17.8
+go: finding k8s.io/gengo v0.0.0-20190822140433-26a664648505
+go: finding k8s.io/klog v1.0.0
+go: finding k8s.io/klog/v2 v2.0.0
+go: finding k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29
+go: finding k8s.io/utils v0.0.0-20200619165400-6e3d28b6ed19
+go: finding knative.dev/pkg v0.0.0-20200513151758-7b6bb61326ae
+go: finding modernc.org/cc v1.0.0
+go: finding modernc.org/golex v1.0.0
+go: finding modernc.org/mathutil v1.0.0
+go: finding modernc.org/strutil v1.0.0
+go: finding modernc.org/xc v1.0.0
+go: finding pack.ag/amqp v0.11.0
+go: finding rsc.io/binaryregexp v0.2.0
+go: finding sigs.k8s.io/controller-runtime v0.5.8
+go: finding sigs.k8s.io/structured-merge-diff v0.0.0-20190525122527-15d366b2352e
+go: finding sigs.k8s.io/structured-merge-diff/v2 v2.0.1
+go: finding sigs.k8s.io/yaml v1.1.0
+# Check if licenses have changed
+git \
+	--no-pager diff \
+	--exit-code \
+	./licenses
+make: Leaving directory '/workspace/source/executor'
