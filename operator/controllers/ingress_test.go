@@ -4,9 +4,12 @@ import (
 	. "github.com/onsi/gomega"
 	contour "github.com/projectcontour/contour/apis/projectcontour/v1"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	"gopkg.in/yaml.v2"
+	"io"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"strings"
 	"testing"
 )
 
@@ -166,6 +169,21 @@ func TestAmbassadorIngress(t *testing.T) {
 	pSvc := c.services[1]
 	g.Expect(pSvc.Name).To(Equal("dep-p1"))
 	g.Expect(len(pSvc.Annotations)).To(Equal(1))
-	_, ok := pSvc.Annotations[AMBASSADOR_ANNOTATION]
+	annotation, ok := pSvc.Annotations[AMBASSADOR_ANNOTATION]
 	g.Expect(ok).To(BeTrue())
+	reader := strings.NewReader(annotation)
+	decoder := yaml.NewDecoder(reader)
+	var mappings []*AmbassadorConfig
+	for {
+		var mapping AmbassadorConfig
+		err = decoder.Decode(&mapping)
+		if err == io.EOF {
+			break
+		}
+		g.Expect(err).To(BeNil())
+		mappings = append(mappings, &mapping)
+	}
+	// We expect a mapping for each protocol
+	g.Expect(len(mappings)).To(Equal(2))
+	g.Expect(err).To(BeNil())
 }

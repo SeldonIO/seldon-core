@@ -15,7 +15,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	types2 "k8s.io/apimachinery/pkg/types"
@@ -52,7 +51,7 @@ var (
 	envContourControllerLabel       = utils.GetEnv(ENV_CONTOUR_CONTROLLER_LABEL, "seldon")
 	envContourExplainerfqdnTemplate = utils.GetEnv(ENV_CONTOUR_EXPLAINER_FQDN_TEMPLATE, "{{.Name}}-explainer.{{.ObjectMeta.Namespace}}")
 	envContourIngressClass          = utils.GetEnv(ENV_CONTOUR_INGRESS_CLASS, "")
-	envContourPathRewriteEnabled    = utils.GetEnv(ENV_CONTOUR_DISABLE_PATH_REWRITE, "false") == "true"
+	envContourPathRewriteEnabled    = utils.GetEnv(ENV_CONTOUR_DISABLE_PATH_REWRITE, "false") != "true"
 	envContourPerModelVhostEnabled  = utils.GetEnv(ENV_CONTOUR_PER_MODEL_VHOST_ENABLED, "false") == "true"
 	envContourPredictorfqdnTemplate = utils.GetEnv(ENV_CONTOUR_PREDICTOR_FQDN_TEMPLATE, "{{.Name}}.{{.ObjectMeta.Namespace}}")
 	envContourVirtualHostFqdn       = utils.GetEnv(ENV_CONTOUR_VIRTUALHOST_FQDN, "seldon.io")
@@ -340,6 +339,7 @@ func (i *ContourIngress) CreateResources(resources map[IngressResourceType][]run
 
 		httpProxyList := &contour.HTTPProxyList{}
 		_ = i.client.List(context.Background(), httpProxyList, &client.ListOptions{Namespace: instance.Namespace})
+		log.Info("Cleanup HTTPProxies", "found", len(httpProxyList.Items))
 		var deleted []*contour.HTTPProxy
 		for _, httpProxy := range httpProxyList.Items {
 			for _, ownerRef := range httpProxy.OwnerReferences {
@@ -372,12 +372,17 @@ func (i *ContourIngress) CreateResources(resources map[IngressResourceType][]run
 			return false, err
 		}
 		// Get all HTTPProxies managed by this Seldon controller that are not the root HTTPProxy
+		// TODO(jpg): Should probably be limited to WATCH_NAMESPACE etc if specified
 		httpProxyList := &contour.HTTPProxyList{}
-		_ = i.client.List(context.Background(), httpProxyList, &client.ListOptions{Namespace: instance.Namespace, LabelSelector: labelSelector, FieldSelector: fields.OneTermNotEqualSelector("metadata.name", envContourVirtualHostName)})
+		_ = i.client.List(context.Background(), httpProxyList, &client.ListOptions{LabelSelector: labelSelector})
 
 		// Generate list of included HTTPProxies
-		includes := make([]contour.Include, len(httpProxyList.Items), len(httpProxyList.Items))
+		var includes []contour.Include
 		for _, childHttpProxy := range httpProxyList.Items {
+			// TODO(jpg): Replace with field selector when can get it working
+			if childHttpProxy.Name == envContourVirtualHostName {
+				continue
+			}
 			includes = append(includes, contour.Include{Name: childHttpProxy.Name, Namespace: childHttpProxy.Namespace})
 		}
 

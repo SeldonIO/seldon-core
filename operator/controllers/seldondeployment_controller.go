@@ -405,9 +405,6 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 }
 
 func mergeAnnotations(tgt map[string]string, src map[string]string) map[string]string {
-	if src == nil {
-		return nil
-	}
 	if tgt == nil {
 		tgt = make(map[string]string, len(src))
 	}
