@@ -19,7 +19,9 @@ pipelineConfig:
               image: seldonio/python-builder:0.2
             steps:
             - name: temp
-              command: jx step pr comment --owner=$REPO_OWNER --repository=$REPO_NAME --pull-request=$PULL_NUMBER --comment="Testing on finish"
+                image: gcr.io/jenkinsxio/builder-go:2.0.916-264
+              dir: ci
+              sh: jx step pr comment --owner=${REPO_OWNER} --repository=${REPO_NAME} --pull-request=${PULL_NUMBER} --comment="Test comment"
               #- name: test-python
               #  command: make
               #  args:
