@@ -735,6 +735,9 @@ func createContainerService(deploy *appsv1.Deployment,
 	}
 	addLabelsToService(svc, pu, &p)
 	addLabelsToDeployment(deploy, pu, &p)
+	deploy.ObjectMeta.Labels[containerServiceKey] = containerServiceValue
+	deploy.Spec.Selector.MatchLabels[containerServiceKey] = containerServiceValue
+	deploy.Spec.Template.ObjectMeta.Labels[containerServiceKey] = containerServiceValue
 
 	if existingPort == nil || con.Ports == nil {
 		con.Ports = append(con.Ports, corev1.ContainerPort{Name: portType, ContainerPort: portNum, Protocol: corev1.ProtocolTCP})
