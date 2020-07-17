@@ -30,4 +30,5 @@ require (
 )
 
 replace github.com/tensorflow/tensorflow/tensorflow/go/core => ./proto/tensorflow/core
+
 replace github.com/seldonio/seldon-core/operator => ./operator
