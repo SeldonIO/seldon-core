@@ -308,7 +308,7 @@ error_handler <- function(req, res, err) {
     res$status <- 500
     list(error = "500 - Internal server error")
   } else {
-    res$status <- err$status
+    res$status <- err$status_code
     list(
       status = list(
         status=jsonlite::unbox("FAILURE"),
