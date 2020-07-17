@@ -17,6 +17,15 @@ istio:
 # If you have contour enabled you can configure it with the following flags
 contour:
   enabled: false
+  controllerLabel: "seldon"
+  # Configure the virtualhost* setting when using single virtualhost mode (default)
+  virtualhost:
+    fqdn: "seldon"
+    name: "seldon"
+    namespace: ""
+  # Instead configure these when using the per-model vhost mode
+  perModelVhostEnabled: false
+  disablePathRewrite: false
   predictorTemplate: "{{.Name}}.{{.ObjectMeta.Namespace}}"
   explainerTemplate: "{{.Name}}-explainer.{{.ObjectMeta.Namespace}}"
   ingressClass: ""

@@ -77,6 +77,8 @@ install_seldon: install_cert_manager
 		../../helm-charts/seldon-core-operator \
 		--namespace seldon-system \
 		--set contour.enabled=true \
+		--set contour.virtualhost.namespace=seldon-system \
+		--set contour.virtualhost.fqdn=localhost \
 		--set istio.enabled=true \
 		--set istio.gateway=istio-system/seldon-gateway \
 		--set certManager.enabled=false \
