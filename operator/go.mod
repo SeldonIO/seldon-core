@@ -5,7 +5,7 @@ go 1.13
 require (
 	github.com/Azure/go-autorest/autorest/adal v0.9.0 // indirect
 	github.com/ghodss/yaml v1.0.0
-	github.com/go-logr/logr v0.1.0
+	github.com/go-logr/logr v0.2.0
 	github.com/gogo/protobuf v1.3.1
 	github.com/google/go-cmp v0.5.0
 	github.com/onsi/ginkgo v1.14.0
