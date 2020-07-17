@@ -7,26 +7,7 @@ pipelineConfig:
       stage: promote
       step:
         command: echo "skipping promote"
-    - name: pr-comment
-      pipeline: pullRequest
-      stage: preBuild
-      step:
-        command: sh ./add-pr-build-comment
     pullRequest:
-      setVersion:
-        steps:
-        - name: pr-build-comment
-          agent:
-            image: gcr.io/jenkinsxio/builder-go:2.0.916-264
-          dir: ci
-          sh: "./add-pr-build-comment"
-      promote:
-        steps:
-        - name: pr-build-comment
-          agent:
-            image: gcr.io/jenkinsxio/builder-go:2.0.916-264
-          dir: ci
-          sh: jx step pr comment --owner=$REPO_OWNER --repository=$REPO_NAME --pull-request=$PULL_NUMBER --comment="Testing on finish"
       pipeline:
         agent:
           image: seldonio/core-builder:0.15
@@ -38,7 +19,7 @@ pipelineConfig:
               image: seldonio/python-builder:0.2
             steps:
             - name: temp
-              sh: echo "done"
+              sh: jx step pr comment --owner=$REPO_OWNER --repository=$REPO_NAME --pull-request=$PULL_NUMBER --comment="Testing on finish"
               #- name: test-python
               #  command: make
               #  args:
