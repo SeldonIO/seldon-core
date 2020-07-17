@@ -1,4 +1,4 @@
-DOCKER_IMAGE_NAME=seldonvio/core-builder
+DOCKER_IMAGE_NAME=seldonio/core-builder
 DOCKER_IMAGE_VERSION=0.16
 
 build_docker_image:
