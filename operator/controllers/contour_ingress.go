@@ -15,6 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	types2 "k8s.io/apimachinery/pkg/types"
@@ -67,6 +68,7 @@ type ContourIngress struct {
 	client   client.Client
 	recorder record.EventRecorder
 	scheme   *runtime.Scheme
+	namespace string
 }
 
 func NewContourIngress() Ingress {
@@ -77,11 +79,12 @@ func (i *ContourIngress) AddToScheme(scheme *runtime.Scheme) {
 	contour.AddKnownTypes(scheme)
 }
 
-func (i *ContourIngress) SetupWithManager(mgr ctrl.Manager) ([]runtime.Object, error) {
+func (i *ContourIngress) SetupWithManager(mgr ctrl.Manager, namespace string) ([]runtime.Object, error) {
 	// Store the client, recorder and scheme for use later
 	i.client = mgr.GetClient()
 	i.recorder = mgr.GetEventRecorderFor(constants.ControllerName)
 	i.scheme = mgr.GetScheme()
+	i.namespace = namespace
 
 	// Index HTTPProxy by OwnerReference.Name
 	if err := mgr.GetFieldIndexer().IndexField(&contour.HTTPProxy{}, ownerKey, func(rawObj runtime.Object) []string {
@@ -372,17 +375,16 @@ func (i *ContourIngress) CreateResources(resources map[IngressResourceType][]run
 			return false, err
 		}
 		// Get all HTTPProxies managed by this Seldon controller that are not the root HTTPProxy
-		// TODO(jpg): Should probably be limited to WATCH_NAMESPACE etc if specified
 		httpProxyList := &contour.HTTPProxyList{}
-		_ = i.client.List(context.Background(), httpProxyList, &client.ListOptions{LabelSelector: labelSelector})
+		_ = i.client.List(context.Background(), httpProxyList, &client.ListOptions{
+			Namespace: i.namespace,
+			LabelSelector: labelSelector,
+			FieldSelector: fields.OneTermNotEqualSelector("metadata.name", envContourVirtualHostName),
+		})
 
 		// Generate list of included HTTPProxies
-		var includes []contour.Include
+		includes := make([]contour.Include, 0, len(httpProxyList.Items))
 		for _, childHttpProxy := range httpProxyList.Items {
-			// TODO(jpg): Replace with field selector when can get it working
-			if childHttpProxy.Name == envContourVirtualHostName {
-				continue
-			}
 			includes = append(includes, contour.Include{Name: childHttpProxy.Name, Namespace: childHttpProxy.Namespace})
 		}
 

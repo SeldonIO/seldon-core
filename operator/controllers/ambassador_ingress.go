@@ -55,7 +55,7 @@ func NewAmbassadorIngress() Ingress {
 // Ambassador support doesn't require any k8s custom types
 func (i *AmbassadorIngress) AddToScheme(scheme *runtime.Scheme) {}
 
-func (i *AmbassadorIngress) SetupWithManager(mgr ctrl.Manager) ([]runtime.Object, error) {
+func (i *AmbassadorIngress) SetupWithManager(mgr ctrl.Manager, namespace string) ([]runtime.Object, error) {
 	return nil, nil
 }
 

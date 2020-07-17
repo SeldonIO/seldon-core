@@ -57,7 +57,7 @@ func (i *IstioIngress) AddToScheme(scheme *runtime.Scheme) {
 	_ = istio.AddToScheme(scheme)
 }
 
-func (i *IstioIngress) SetupWithManager(mgr ctrl.Manager) ([]runtime.Object, error) {
+func (i *IstioIngress) SetupWithManager(mgr ctrl.Manager, namespace string) ([]runtime.Object, error) {
 	// Store the client, recorder and scheme for use later
 	i.client = mgr.GetClient()
 	i.recorder = mgr.GetEventRecorderFor(constants.ControllerName)

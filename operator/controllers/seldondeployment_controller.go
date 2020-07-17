@@ -1282,7 +1282,7 @@ func (r *SeldonDeploymentReconciler) SetupWithManager(mgr ctrl.Manager, name str
 
 	var ingressObjects []runtime.Object
 	for _, ingress := range r.Ingresses {
-		objs, err := ingress.SetupWithManager(mgr)
+		objs, err := ingress.SetupWithManager(mgr, r.Namespace)
 		if err != nil {
 			return err
 		}
