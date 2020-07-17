@@ -1,6 +1,6 @@
 FROM openjdk:13.0.1-jdk-buster
 
-ENV PYTHON_VERSION "3.6.10"
+ENV PYTHON_VERSION "3.7.4"
 
 # install docker
 RUN \
@@ -60,40 +60,33 @@ ENV MAVEN_CONFIG="$USER_HOME_DIR/.m2"
 # compression and ssl libs required for installation python and dependencies (pandas)
 RUN apt-get upgrade && \
         apt-get update && \
+        apt-get dist-upgrade -y && \
+        apt-get install libncursesw5-dev libgdbm-dev libc6-dev -y && \
         apt-get install zlib1g -y && \
-        apt-get install zlib1g-dev -y && \
-        apt-get install libssl-dev -y && \
+        apt-get install zlib1g-dev libsqlite3-dev tk-dev -y && \
+        apt-get install openssl libssl-dev -y && \
 	apt-get install libbz2-dev -y && \
-	apt-get install liblzma-dev -y
+	apt-get install liblzma-dev -y && \
+    apt-get install libffi-dev -y
 
-RUN curl -SLO https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz \
-    && tar xvf Python-${PYTHON_VERSION}.tgz \
-    && cd Python-${PYTHON_VERSION} \
-    && ./configure --prefix=/usr/local --with-openssl \
-    && make \
-    && make altinstall \
-    && cd / \
-    && rm -rf Python-${PYTHON_VERSION}* \
-    && (cd /usr/local/bin && ln -svn python3.6 python)
+ENV CONDA_VERSION=4.7.12
 
-# Ensure python3 and pip3 are default
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py >>setup.py && \
-        python setup.py
-RUN update-alternatives --install /usr/bin/python python /usr/local/bin/python3.6 1
-RUN rm -rf /usr/local/bin/pip && \
-        ln -s /usr/local/bin/pip3.6 /usr/local/bin/pip
-
-RUN pip install --upgrade pip
-RUN pip install --upgrade setuptools
-RUN pip install pyyaml
-RUN pip install grpcio
-RUN pip install grpcio-tools
-RUN apt-get remove -y --auto-remove && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-${CONDA_VERSION}-Linux-x86_64.sh -O ~/miniconda.sh && \
+    /bin/bash ~/miniconda.sh -b -p /opt/conda && \
+    rm ~/miniconda.sh && \
+    /opt/conda/bin/conda clean -tipsy && \
+    ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
+    echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
+    echo "conda activate base" >> ~/.bashrc && \
+    find /opt/conda/ -follow -type f -name '*.a' -delete && \
+    find /opt/conda/ -follow -type f -name '*.js.map' -delete && \
+    /opt/conda/bin/conda clean -afy
 
 # INSTALL GO
+ENV GO_VERSION=1.14.6
 ENV PATH /usr/local/go/bin:$PATH
-RUN wget https://dl.google.com/go/go1.13.8.linux-amd64.tar.gz && \
-        tar -zxvf go1.13.8.linux-amd64.tar.gz && \
+RUN wget "https://dl.google.com/go/go$GO_VERSION.linux-amd64.tar.gz" && \
+        tar -zxvf "go$GO_VERSION.linux-amd64.tar.gz" && \
         mv go/ /usr/local/go
 RUN curl -sL https://go.kubebuilder.io/dl/2.3.0/linux/amd64 | tar -xz -C /tmp/ && \
         mv /tmp/kubebuilder_2.3.0_linux_amd64 /usr/local/kubebuilder/
@@ -112,21 +105,35 @@ RUN \
     update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy && \
     update-alternatives --set iptables /usr/sbin/iptables-legacy
 
+# Make RUN commands use the CONDA environment - see https://pythonspeed.com/articles/activate-conda-dockerfile/
+SHELL ["/opt/conda/bin/conda", "run", "-n", "base", "/bin/bash", "-c"]
+
 # install jupyter
 RUN pip install jupyter
 
+# Ginkgo
+RUN go get github.com/onsi/ginkgo/ginkgo
+
 # Install grpcurl
-RUN go get github.com/fullstorydev/grpcurl && \
-    go install github.com/fullstorydev/grpcurl/cmd/grpcurl
+RUN wget https://github.com/fullstorydev/grpcurl/releases/download/v1.6.1/grpcurl_1.6.1_linux_x86_64.tar.gz && \
+        tar -zxvf grpcurl_1.6.1_linux_x86_64.tar.gz && \
+        chmod +x grpcurl && \
+        mv grpcurl /usr/local/bin/grpcurl
 
 ENV PATH="${PATH}:/root/go/bin"
 
 # Notebooks python requirements
-COPY dev_requirements.txt /tmp/requirements.txt
-RUN pip install -r /tmp/requirements.txt
+COPY dev_requirements.txt /tmp/dev_requirements.txt
+RUN pip install -r /tmp/dev_requirements.txt
+# General python requirements
+COPY requirements.txt /tmp/requirements.txt
+COPY requirements-dev.txt /tmp/requirements-dev.txt
+RUN cd /tmp && pip install -r requirements-dev.txt
 
-# Ginkgo
-RUN go get -u github.com/onsi/ginkgo/ginkgo
+# Install Jenkins X CLI
+RUN curl -L "https://github.com/jenkins-x/jx/releases/download/v2.1.95/jx-darwin-amd64.tar.gz" | tar xzv "jx" && \
+        chmod +x ./jx && \
+        mv ./jx /usr/bin/jx
 
 WORKDIR /work
 
