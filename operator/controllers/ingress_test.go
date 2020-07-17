@@ -176,7 +176,7 @@ func TestAmbassadorIngress(t *testing.T) {
 	var mappings []*AmbassadorConfig
 	for {
 		var mapping AmbassadorConfig
-		err = decoder.Decode(&mapping)
+		err := decoder.Decode(&mapping)
 		if err == io.EOF {
 			break
 		}
@@ -185,5 +185,4 @@ func TestAmbassadorIngress(t *testing.T) {
 	}
 	// We expect a mapping for each protocol
 	g.Expect(len(mappings)).To(Equal(2))
-	g.Expect(err).To(BeNil())
 }
