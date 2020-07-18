@@ -1,0 +1,1089 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-qmkrv[0m
+{"level":"info","ts":1595061023.938016,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1595061023.9384406,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-7k8lw[0m
+{"level":"info","ts":1595061024.7071292,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595061024.7088418,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-qd8wd[0m
+{"level":"info","ts":1595061032.1402037,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595061032.1423693,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-2149-pr-ftfk9-bhdtx[0m
+{"level":"info","ts":1595061032.4110374,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1595061038.142891,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mpr-build-comment[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:296d02420fb3010cbb7155795099d023d9c35e57,2149:c9757cc5db5ff71eeb3c54bc5cb46466ab9b4f5f
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch origin --unshallow c9757cc5db5ff71eeb3c54bc5cb46466ab9b4f5f: 296d02420fb3010cbb7155795099d023d9c35e57:
+DEBUG: ran git fetch --unshallow origin c9757cc5db5ff71eeb3c54bc5cb46466ab9b4f5f: 296d02420fb3010cbb7155795099d023d9c35e57: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard 296d02420fb3010cbb7155795099d023d9c35e57
+DEBUG: ran git reset --hard 296d02420fb3010cbb7155795099d023d9c35e57 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git merge c9757cc5db5ff71eeb3c54bc5cb46466ab9b4f5f
+DEBUG: ran git merge c9757cc5db5ff71eeb3c54bc5cb46466ab9b4f5f in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git log --format=%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%s%n%b%x1e 296d02420fb3010cbb7155795099d023d9c35e57..HEAD
+Merged SHA bda727b2eacf6067e55c1ee1bc0193483d1e3b5d with commit message 'Merge commit 'c9757cc5db5ff71eeb3c54bc5cb46466ab9b4f5f'' into base branch master
+Merged SHA c9757cc5db5ff71eeb3c54bc5cb46466ab9b4f5f with commit message 'Updated typo' into base branch master
+Merged SHA dc2112fe848f1db552f0b9f20aef786fae1ffff8 with commit message 'Added parallel testing for python' into base branch master
+Merged SHA d3bb9a2745c3f7cdf19e51be22eab67c3e249411 with commit message 'Update dockerfile' into base branch master
+Merged SHA 925e1e1759bfb982e03c8e5c610f5e5b65ac5397 with commit message 'Updated image' into base branch master
+Merged SHA 90dae5ff01e238b045be87c4579a11785ff11d5b with commit message 'Reverted python' into base branch master
+Merged SHA af8d5ee4560a6cb1b1d71ce23f63ad65007f1334 with commit message 'Updated makefiles' into base branch master
+Merged SHA a04ed2882adafc5994b239ea12fe2bdf4aec86ee with commit message 'Updated makefiles' into base branch master
+Merged SHA 7585c98cc808449df55f276e5624a515fe36e98e with commit message 'Updated makefiles' into base branch master
+Merged SHA ad9c917fe8e9413ea362c2796e5941b444a14df5 with commit message 'Updated jenkins files' into base branch master
+Merged SHA 65d30326af5493f91324fde169c9f3c49521bdef with commit message 'Updated core builder' into base branch master
+Merged SHA 7be1b1c519eb67fb6f17efe0635f1794b8345c81 with commit message 'Testing main comment' into base branch master
+Merged SHA aa7524c33f2c1a0e8e504af170597c96a6114af5 with commit message 'Testing main comment' into base branch master
+Merged SHA ea7064b58b3154053c131140aa3c99169ea5a0bf with commit message 'Testing main comment' into base branch master
+Merged SHA d2bdaebf8a877abbbc11b2213e6a799204d01ffb with commit message 'Testing main comment' into base branch master
+Merged SHA 914888dea31b05a61385642addc814d4ec53e207 with commit message 'Added override for temp fast build' into base branch master
+Merged SHA 781be799063bf1fc4fab5a8b4d81e11ba76a1cdc with commit message 'Added override for temp fast build' into base branch master
+Merged SHA fd73daa0dbf8ea4270effe173563d12e59224bd2 with commit message 'updated pipeline to test other pre/post' into base branch master
+Merged SHA 501cbc7f51ddd8d21105eb82eaf0486faf496e58 with commit message 'Fixed formating on yaml' into base branch master
+Merged SHA fef171f7d4110d0823798702ba7b3468236cb094 with commit message 'Added pipeline pre/post check' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=2149
++ BUILD_NUMBER=38
++ PIPELINE_CONTEXT=pr-build
+++ cat
++++ date
++ COMMENT_MSG='Sat Jul 18 08:30:46 UTC 2020
+The logs for [pr-build] [38] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2149/38.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2149 --build=38'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=2149 '--comment=Sat Jul 18 08:30:46 UTC 2020
+The logs for [pr-build] [38] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2149/38.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2149 --build=38'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-2149-pr-ftfk9-fl56v[0m
+{"level":"info","ts":1595061047.996938,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595061048.000975,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-2149-pr-ftfk9-pn8q9[0m
+{"level":"info","ts":1595061048.2993047,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595061048.6955917,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-python-all[0m and container [32mstep-credential-initializer-z7vxd[0m
+{"level":"info","ts":1595061068.2632043,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1595061068.2637694,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-python-all[0m and container [32mstep-working-dir-initializer-9x74j[0m
+{"level":"info","ts":1595061068.836632,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595061068.8387187,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-python-all[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-python-all[0m and container [32mstep-create-dir-workspace-br7n7[0m
+{"level":"info","ts":1595061082.559856,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595061082.561742,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-python-all[0m and container [32mstep-source-copy-workspace-8czzw[0m
+{"level":"info","ts":1595061082.9245741,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595061083.4772222,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-python-all[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-python-all[0m and container [32mstep-test-python-all[0m
+make: Entering directory '/workspace/source/python'
+# Protobuf
+cp ../proto/prediction.proto seldon_core/proto/
+make -C ../proto/tensorflow/ create_protos
+make[1]: Entering directory '/workspace/source/proto/tensorflow'
+./create-protos.sh
+Downloading proto files for master
+make[1]: Leaving directory '/workspace/source/proto/tensorflow'
+cp -r ../proto/tensorflow/tensorflow \
+	seldon_core/proto/
+make -C ../proto/tensorflow clean
+make[1]: Entering directory '/workspace/source/proto/tensorflow'
+removed 'tensorflow/core/framework/resource_handle.proto'
+removed 'tensorflow/core/framework/tensor_shape.proto'
+removed 'tensorflow/core/framework/tensor.proto'
+removed 'tensorflow/core/framework/types.proto'
+removed directory 'tensorflow/core/framework'
+removed directory 'tensorflow/core'
+removed directory 'tensorflow'
+make[1]: Leaving directory '/workspace/source/proto/tensorflow'
+# OpenAPI
+cp ../openapi/wrapper.oas3.json seldon_core/openapi/seldon.json
+# Protobuf
+cd seldon_core && python \
+	-m grpc.tools.protoc \
+	-I./ \
+	-I./proto/ \
+	--python_out=./ \
+	--grpc_python_out=./ \
+	--mypy_out=./ \
+	./proto/prediction.proto
+Writing mypy to proto/prediction_pb2.pyi
+## We build TF's protobufs as well in case the tensorflow package
+## is not found
+cd seldon_core/proto && python \
+	-m grpc.tools.protoc \
+	-I./ \
+	-I../ \
+	--python_out=./ \
+	./tensorflow/core/framework/*.proto
+sed -i "s/from tensorflow/from seldon_core.proto.tensorflow/" seldon_core/proto/*.py
+sed -i "s/from tensorflow.core.framework/from ./" \
+	seldon_core/proto/tensorflow/core/framework/resource_handle_pb2.py seldon_core/proto/tensorflow/core/framework/tensor_pb2.py seldon_core/proto/tensorflow/core/framework/tensor_shape_pb2.py seldon_core/proto/tensorflow/core/framework/types_pb2.py
+sed -i "s/from proto/from seldon_core.proto/g" seldon_core/proto/prediction_pb2_grpc.py
+sed -i 's/__version__ = .*/__version__ = "1.2.2-dev"/g' seldon_core/version.py
+pip install -e . -r requirements-dev.txt
+Obtaining file:///workspace/source/python
+Requirement already satisfied: Flask<2.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 1)) (1.1.2)
+Requirement already satisfied: jsonschema<4.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 2)) (3.2.0)
+Requirement already satisfied: Flask-cors<4.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 3)) (3.0.8)
+Requirement already satisfied: redis<4.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 4)) (3.5.3)
+Requirement already satisfied: requests<3.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 5)) (2.24.0)
+Requirement already satisfied: numpy<2.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 6)) (1.19.0)
+Requirement already satisfied: flatbuffers<2.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 7)) (1.12)
+Requirement already satisfied: protobuf<4.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 8)) (3.12.2)
+Requirement already satisfied: grpcio<2.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 9)) (1.30.0)
+Requirement already satisfied: Flask-OpenTracing<1.2.0,>=1.1.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 10)) (1.1.0)
+Requirement already satisfied: opentracing<2.3.0,>=2.2.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 11)) (2.2.0)
+Requirement already satisfied: jaeger-client<4.2.0,>=4.1.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 12)) (4.1.0)
+Requirement already satisfied: grpcio-opentracing<1.2.0,>=1.1.4 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 13)) (1.1.4)
+Requirement already satisfied: PyYAML<5.4 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 14)) (5.3.1)
+Requirement already satisfied: gunicorn<20.1.0,>=19.9.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 15)) (20.0.4)
+Requirement already satisfied: minio<6.0.0,>=4.0.9 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 16)) (5.0.10)
+Requirement already satisfied: azure-storage-blob<3.0.0,>=2.0.1 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 17)) (2.1.0)
+Requirement already satisfied: setuptools>=41.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 18)) (49.2.0)
+Requirement already satisfied: google-cloud-storage>=1.16.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 19)) (1.29.0)
+Requirement already satisfied: prometheus_client<0.9.0,>=0.7.1 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 20)) (0.8.0)
+Requirement already satisfied: black==19.10b0 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 2)) (19.10b0)
+Requirement already satisfied: flake8==3.8.1 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 3)) (3.8.1)
+Requirement already satisfied: mypy<0.783 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 4)) (0.782)
+Requirement already satisfied: Pillow==7.2.0 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 5)) (7.2.0)
+Requirement already satisfied: pytest==5.4.2 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 6)) (5.4.2)
+Requirement already satisfied: pytest-cov==2.10.0 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 7)) (2.10.0)
+Requirement already satisfied: tox<4.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 8)) (3.17.1)
+Requirement already satisfied: grpcio-tools==1.30.0 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 9)) (1.30.0)
+Requirement already satisfied: mypy-protobuf==1.22 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 10)) (1.22)
+Requirement already satisfied: tenacity==6.2.0 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 13)) (6.2.0)
+Requirement already satisfied: coverage==5.2 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 16)) (5.2)
+Requirement already satisfied: pandas==1.0.1 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 19)) (1.0.1)
+Requirement already satisfied: pip-licenses==2.2.1 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 22)) (2.2.1)
+Requirement already satisfied: click>=5.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->-r requirements.txt (line 1)) (7.1.2)
+Requirement already satisfied: itsdangerous>=0.24 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->-r requirements.txt (line 1)) (1.1.0)
+Requirement already satisfied: Jinja2>=2.10.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->-r requirements.txt (line 1)) (2.11.2)
+Requirement already satisfied: Werkzeug>=0.15 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->-r requirements.txt (line 1)) (1.0.1)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->-r requirements.txt (line 2)) (1.7.0)
+Requirement already satisfied: attrs>=17.4.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->-r requirements.txt (line 2)) (19.3.0)
+Requirement already satisfied: six>=1.11.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->-r requirements.txt (line 2)) (1.15.0)
+Requirement already satisfied: pyrsistent>=0.14.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->-r requirements.txt (line 2)) (0.16.0)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (2.10)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (3.0.4)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (2020.6.20)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (1.25.9)
+Requirement already satisfied: thrift in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.2.0,>=4.1.0->-r requirements.txt (line 12)) (0.13.0)
+Requirement already satisfied: threadloop<2,>=1 in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.2.0,>=4.1.0->-r requirements.txt (line 12)) (1.0.2)
+Requirement already satisfied: tornado<6,>=4.3 in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.2.0,>=4.1.0->-r requirements.txt (line 12)) (5.1.1)
+Requirement already satisfied: python-dateutil in /usr/local/lib/python3.6/site-packages (from minio<6.0.0,>=4.0.9->-r requirements.txt (line 16)) (2.8.1)
+Requirement already satisfied: configparser in /usr/local/lib/python3.6/site-packages (from minio<6.0.0,>=4.0.9->-r requirements.txt (line 16)) (5.0.0)
+Requirement already satisfied: pytz in /usr/local/lib/python3.6/site-packages (from minio<6.0.0,>=4.0.9->-r requirements.txt (line 16)) (2020.1)
+Requirement already satisfied: azure-storage-common~=2.1 in /usr/local/lib/python3.6/site-packages (from azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (2.1.0)
+Requirement already satisfied: azure-common>=1.1.5 in /usr/local/lib/python3.6/site-packages (from azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (1.1.25)
+Requirement already satisfied: google-cloud-core<2.0dev,>=1.2.0 in /usr/local/lib/python3.6/site-packages (from google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (1.3.0)
+Requirement already satisfied: google-auth<2.0dev,>=1.11.0 in /usr/local/lib/python3.6/site-packages (from google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (1.19.2)
+Requirement already satisfied: google-resumable-media<0.6dev,>=0.5.0 in /usr/local/lib/python3.6/site-packages (from google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (0.5.1)
+Requirement already satisfied: toml>=0.9.4 in /usr/local/lib/python3.6/site-packages (from black==19.10b0->-r requirements-dev.txt (line 2)) (0.10.1)
+Requirement already satisfied: regex in /usr/local/lib/python3.6/site-packages (from black==19.10b0->-r requirements-dev.txt (line 2)) (2020.7.14)
+Requirement already satisfied: pathspec<1,>=0.6 in /usr/local/lib/python3.6/site-packages (from black==19.10b0->-r requirements-dev.txt (line 2)) (0.8.0)
+Requirement already satisfied: typed-ast>=1.4.0 in /usr/local/lib/python3.6/site-packages (from black==19.10b0->-r requirements-dev.txt (line 2)) (1.4.1)
+Requirement already satisfied: appdirs in /usr/local/lib/python3.6/site-packages (from black==19.10b0->-r requirements-dev.txt (line 2)) (1.4.4)
+Requirement already satisfied: pycodestyle<2.7.0,>=2.6.0a1 in /usr/local/lib/python3.6/site-packages (from flake8==3.8.1->-r requirements-dev.txt (line 3)) (2.6.0)
+Requirement already satisfied: pyflakes<2.3.0,>=2.2.0 in /usr/local/lib/python3.6/site-packages (from flake8==3.8.1->-r requirements-dev.txt (line 3)) (2.2.0)
+Requirement already satisfied: mccabe<0.7.0,>=0.6.0 in /usr/local/lib/python3.6/site-packages (from flake8==3.8.1->-r requirements-dev.txt (line 3)) (0.6.1)
+Requirement already satisfied: typing-extensions>=3.7.4 in /usr/local/lib/python3.6/site-packages (from mypy<0.783->-r requirements-dev.txt (line 4)) (3.7.4.2)
+Requirement already satisfied: mypy-extensions<0.5.0,>=0.4.3 in /usr/local/lib/python3.6/site-packages (from mypy<0.783->-r requirements-dev.txt (line 4)) (0.4.3)
+Requirement already satisfied: wcwidth in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (0.2.5)
+Requirement already satisfied: py>=1.5.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (1.9.0)
+Requirement already satisfied: more-itertools>=4.0.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (8.4.0)
+Requirement already satisfied: pluggy<1.0,>=0.12 in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (0.13.1)
+Requirement already satisfied: packaging in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (20.4)
+Requirement already satisfied: virtualenv!=20.0.0,!=20.0.1,!=20.0.2,!=20.0.3,!=20.0.4,!=20.0.5,!=20.0.6,!=20.0.7,>=16.0.0 in /usr/local/lib/python3.6/site-packages (from tox<4.0.0->-r requirements-dev.txt (line 8)) (20.0.27)
+Requirement already satisfied: filelock>=3.0.0 in /usr/local/lib/python3.6/site-packages (from tox<4.0.0->-r requirements-dev.txt (line 8)) (3.0.12)
+Requirement already satisfied: PTable in /usr/local/lib/python3.6/site-packages (from pip-licenses==2.2.1->-r requirements-dev.txt (line 22)) (0.9.2)
+Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from Jinja2>=2.10.1->Flask<2.0.0->-r requirements.txt (line 1)) (1.1.1)
+Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.6/site-packages (from importlib-metadata; python_version < "3.8"->jsonschema<4.0.0->-r requirements.txt (line 2)) (3.1.0)
+Requirement already satisfied: cryptography in /usr/local/lib/python3.6/site-packages (from azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (2.9.2)
+Requirement already satisfied: google-api-core<2.0.0dev,>=1.16.0 in /usr/local/lib/python3.6/site-packages (from google-cloud-core<2.0dev,>=1.2.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (1.21.0)
+Requirement already satisfied: pyasn1-modules>=0.2.1 in /usr/local/lib/python3.6/site-packages (from google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (0.2.8)
+Requirement already satisfied: rsa<5,>=3.1.4; python_version >= "3" in /usr/local/lib/python3.6/site-packages (from google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (4.6)
+Requirement already satisfied: cachetools<5.0,>=2.0.0 in /usr/local/lib/python3.6/site-packages (from google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (4.1.1)
+Requirement already satisfied: pyparsing>=2.0.2 in /usr/local/lib/python3.6/site-packages (from packaging->pytest==5.4.2->-r requirements-dev.txt (line 6)) (2.4.7)
+Requirement already satisfied: importlib-resources>=1.0; python_version < "3.7" in /usr/local/lib/python3.6/site-packages (from virtualenv!=20.0.0,!=20.0.1,!=20.0.2,!=20.0.3,!=20.0.4,!=20.0.5,!=20.0.6,!=20.0.7,>=16.0.0->tox<4.0.0->-r requirements-dev.txt (line 8)) (3.0.0)
+Requirement already satisfied: distlib<1,>=0.3.1 in /usr/local/lib/python3.6/site-packages (from virtualenv!=20.0.0,!=20.0.1,!=20.0.2,!=20.0.3,!=20.0.4,!=20.0.5,!=20.0.6,!=20.0.7,>=16.0.0->tox<4.0.0->-r requirements-dev.txt (line 8)) (0.3.1)
+Requirement already satisfied: cffi!=1.11.3,>=1.8 in /usr/local/lib/python3.6/site-packages (from cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (1.14.0)
+Requirement already satisfied: googleapis-common-protos<2.0dev,>=1.6.0 in /usr/local/lib/python3.6/site-packages (from google-api-core<2.0.0dev,>=1.16.0->google-cloud-core<2.0dev,>=1.2.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (1.52.0)
+Requirement already satisfied: pyasn1<0.5.0,>=0.4.6 in /usr/local/lib/python3.6/site-packages (from pyasn1-modules>=0.2.1->google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (0.4.8)
+Requirement already satisfied: pycparser in /usr/local/lib/python3.6/site-packages (from cffi!=1.11.3,>=1.8->cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (2.20)
+Installing collected packages: seldon-core
+  Running setup.py develop for seldon-core
+Successfully installed seldon-core
+tox all
+GLOB sdist-make: /workspace/source/python/setup.py
+py3 create: /workspace/source/python/.tox/py3
+py3 installdeps: tenacity, pytest, pytest-cov, Pillow
+py3 inst: /workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip
+py3 installed: attrs==19.3.0,azure-common==1.1.25,azure-storage-blob==2.1.0,azure-storage-common==2.1.0,certifi==2020.6.20,cffi==1.14.0,chardet==3.0.4,click==7.1.2,configparser==5.0.0,coverage==5.2,cryptography==2.9.2,Flask==1.1.2,Flask-Cors==3.0.8,Flask-OpenTracing==1.1.0,flatbuffers==1.12,grpcio==1.30.0,grpcio-opentracing==1.1.4,gunicorn==20.0.4,idna==2.10,importlib-metadata==1.7.0,itsdangerous==1.1.0,jaeger-client==4.1.0,Jinja2==2.11.2,jsonschema==3.2.0,MarkupSafe==1.1.1,minio==5.0.10,more-itertools==8.4.0,numpy==1.19.0,opentracing==2.2.0,packaging==20.4,Pillow==7.2.0,pluggy==0.13.1,prometheus-client==0.8.0,protobuf==3.12.2,py==1.9.0,pycparser==2.20,pyparsing==2.4.7,pyrsistent==0.16.0,pytest==5.4.3,pytest-cov==2.10.0,python-dateutil==2.8.1,pytz==2020.1,PyYAML==5.3.1,redis==3.5.3,requests==2.24.0,seldon-core @ file:///workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip,six==1.15.0,tenacity==6.2.0,threadloop==1.0.2,thrift==0.13.0,tornado==5.1.1,urllib3==1.25.9,wcwidth==0.2.5,Werkzeug==1.0.1,zipp==3.1.0
+py3 run-test-pre: PYTHONHASHSEED='2788469063'
+py3 run-test: commands[0] | pytest all
+============================= test session starts ==============================
+platform linux -- Python 3.6.10, pytest-5.4.3, py-1.9.0, pluggy-0.13.1
+cachedir: .tox/py3/.pytest_cache
+rootdir: /workspace/source/python, inifile: setup.cfg
+plugins: cov-2.10.0
+collected 0 items
+
+============================ no tests ran in 0.01s =============================
+ERROR: file not found: all
+
+ERROR: InvocationError for command /workspace/source/python/.tox/py3/bin/pytest all (exited with code 4)
+tensorflow create: /workspace/source/python/.tox/tensorflow
+tensorflow installdeps: tenacity, pytest, pytest-cov, Pillow
+tensorflow inst: /workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip
+tensorflow installed: absl-py==0.9.0,astunparse==1.6.3,attrs==19.3.0,azure-common==1.1.25,azure-storage-blob==2.1.0,azure-storage-common==2.1.0,cachetools==4.1.1,certifi==2020.6.20,cffi==1.14.0,chardet==3.0.4,click==7.1.2,configparser==5.0.0,coverage==5.2,cryptography==2.9.2,Flask==1.1.2,Flask-Cors==3.0.8,Flask-OpenTracing==1.1.0,flatbuffers==1.12,gast==0.3.3,google-auth==1.19.2,google-auth-oauthlib==0.4.1,google-pasta==0.2.0,grpcio==1.30.0,grpcio-opentracing==1.1.4,gunicorn==20.0.4,h5py==2.10.0,idna==2.10,importlib-metadata==1.7.0,itsdangerous==1.1.0,jaeger-client==4.1.0,Jinja2==2.11.2,jsonschema==3.2.0,Keras-Preprocessing==1.1.2,Markdown==3.2.2,MarkupSafe==1.1.1,minio==5.0.10,more-itertools==8.4.0,numpy==1.19.0,oauthlib==3.1.0,opentracing==2.2.0,opt-einsum==3.2.1,packaging==20.4,Pillow==7.2.0,pluggy==0.13.1,prometheus-client==0.8.0,protobuf==3.12.2,py==1.9.0,pyasn1==0.4.8,pyasn1-modules==0.2.8,pycparser==2.20,pyparsing==2.4.7,pyrsistent==0.16.0,pytest==5.4.3,pytest-cov==2.10.0,python-dateutil==2.8.1,pytz==2020.1,PyYAML==5.3.1,redis==3.5.3,requests==2.24.0,requests-oauthlib==1.3.0,rsa==4.6,scipy==1.4.1,seldon-core @ file:///workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip,six==1.15.0,tenacity==6.2.0,tensorboard==2.2.2,tensorboard-plugin-wit==1.7.0,tensorflow==2.2.0,tensorflow-estimator==2.2.0,termcolor==1.1.0,threadloop==1.0.2,thrift==0.13.0,tornado==5.1.1,urllib3==1.25.9,wcwidth==0.2.5,Werkzeug==1.0.1,wrapt==1.12.1,zipp==3.1.0
+tensorflow run-test-pre: PYTHONHASHSEED='2788469063'
+tensorflow run-test: commands[0] | pytest all
+============================= test session starts ==============================
+platform linux -- Python 3.6.10, pytest-5.4.3, py-1.9.0, pluggy-0.13.1
+cachedir: .tox/tensorflow/.pytest_cache
+rootdir: /workspace/source/python, inifile: setup.cfg
+plugins: cov-2.10.0
+collected 0 items
+
+============================ no tests ran in 0.01s =============================
+ERROR: file not found: all
+
+ERROR: InvocationError for command /workspace/source/python/.tox/tensorflow/bin/pytest all (exited with code 4)
+gcs create: /workspace/source/python/.tox/gcs
+gcs installdeps: tenacity, pytest, pytest-cov, Pillow
+gcs inst: /workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip
+gcs installed: attrs==19.3.0,azure-common==1.1.25,azure-storage-blob==2.1.0,azure-storage-common==2.1.0,cachetools==4.1.1,certifi==2020.6.20,cffi==1.14.0,chardet==3.0.4,click==7.1.2,configparser==5.0.0,coverage==5.2,cryptography==2.9.2,Flask==1.1.2,Flask-Cors==3.0.8,Flask-OpenTracing==1.1.0,flatbuffers==1.12,google-api-core==1.21.0,google-auth==1.19.2,google-cloud-core==1.3.0,google-cloud-storage==1.29.0,google-resumable-media==0.5.1,googleapis-common-protos==1.52.0,grpcio==1.30.0,grpcio-opentracing==1.1.4,gunicorn==20.0.4,idna==2.10,importlib-metadata==1.7.0,itsdangerous==1.1.0,jaeger-client==4.1.0,Jinja2==2.11.2,jsonschema==3.2.0,MarkupSafe==1.1.1,minio==5.0.10,more-itertools==8.4.0,numpy==1.19.0,opentracing==2.2.0,packaging==20.4,Pillow==7.2.0,pluggy==0.13.1,prometheus-client==0.8.0,protobuf==3.12.2,py==1.9.0,pyasn1==0.4.8,pyasn1-modules==0.2.8,pycparser==2.20,pyparsing==2.4.7,pyrsistent==0.16.0,pytest==5.4.3,pytest-cov==2.10.0,python-dateutil==2.8.1,pytz==2020.1,PyYAML==5.3.1,redis==3.5.3,requests==2.24.0,rsa==4.6,seldon-core @ file:///workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip,six==1.15.0,tenacity==6.2.0,threadloop==1.0.2,thrift==0.13.0,tornado==5.1.1,urllib3==1.25.9,wcwidth==0.2.5,Werkzeug==1.0.1,zipp==3.1.0
+gcs run-test-pre: PYTHONHASHSEED='2788469063'
+gcs run-test: commands[0] | pytest all
+============================= test session starts ==============================
+platform linux -- Python 3.6.10, pytest-5.4.3, py-1.9.0, pluggy-0.13.1
+cachedir: .tox/gcs/.pytest_cache
+rootdir: /workspace/source/python, inifile: setup.cfg
+plugins: cov-2.10.0
+collected 0 items
+
+============================ no tests ran in 0.01s =============================
+ERROR: file not found: all
+
+ERROR: InvocationError for command /workspace/source/python/.tox/gcs/bin/pytest all (exited with code 4)
+all create: /workspace/source/python/.tox/all
+all installdeps: tenacity, pytest, pytest-cov, Pillow
+all inst: /workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip
+all installed: absl-py==0.9.0,astunparse==1.6.3,attrs==19.3.0,azure-common==1.1.25,azure-storage-blob==2.1.0,azure-storage-common==2.1.0,cachetools==4.1.1,certifi==2020.6.20,cffi==1.14.0,chardet==3.0.4,click==7.1.2,configparser==5.0.0,coverage==5.2,cryptography==2.9.2,Flask==1.1.2,Flask-Cors==3.0.8,Flask-OpenTracing==1.1.0,flatbuffers==1.12,gast==0.3.3,google-api-core==1.21.0,google-auth==1.19.2,google-auth-oauthlib==0.4.1,google-cloud-core==1.3.0,google-cloud-storage==1.29.0,google-pasta==0.2.0,google-resumable-media==0.5.1,googleapis-common-protos==1.52.0,grpcio==1.30.0,grpcio-opentracing==1.1.4,gunicorn==20.0.4,h5py==2.10.0,idna==2.10,importlib-metadata==1.7.0,itsdangerous==1.1.0,jaeger-client==4.1.0,Jinja2==2.11.2,jsonschema==3.2.0,Keras-Preprocessing==1.1.2,Markdown==3.2.2,MarkupSafe==1.1.1,minio==5.0.10,more-itertools==8.4.0,numpy==1.19.0,oauthlib==3.1.0,opentracing==2.2.0,opt-einsum==3.2.1,packaging==20.4,Pillow==7.2.0,pluggy==0.13.1,prometheus-client==0.8.0,protobuf==3.12.2,py==1.9.0,pyasn1==0.4.8,pyasn1-modules==0.2.8,pycparser==2.20,pyparsing==2.4.7,pyrsistent==0.16.0,pytest==5.4.3,pytest-cov==2.10.0,python-dateutil==2.8.1,pytz==2020.1,PyYAML==5.3.1,redis==3.5.3,requests==2.24.0,requests-oauthlib==1.3.0,rsa==4.6,scipy==1.4.1,seldon-core @ file:///workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip,six==1.15.0,tenacity==6.2.0,tensorboard==2.2.2,tensorboard-plugin-wit==1.7.0,tensorflow==2.2.0,tensorflow-estimator==2.2.0,termcolor==1.1.0,threadloop==1.0.2,thrift==0.13.0,tornado==5.1.1,urllib3==1.25.9,wcwidth==0.2.5,Werkzeug==1.0.1,wrapt==1.12.1,zipp==3.1.0
+all run-test-pre: PYTHONHASHSEED='2788469063'
+all run-test: commands[0] | pytest all
+============================= test session starts ==============================
+platform linux -- Python 3.6.10, pytest-5.4.3, py-1.9.0, pluggy-0.13.1
+cachedir: .tox/all/.pytest_cache
+rootdir: /workspace/source/python, inifile: setup.cfg
+plugins: cov-2.10.0
+collected 0 items
+
+============================ no tests ran in 0.01s =============================
+ERROR: file not found: all
+
+ERROR: InvocationError for command /workspace/source/python/.tox/all/bin/pytest all (exited with code 4)
+___________________________________ summary ____________________________________
+ERROR:   py3: commands failed
+ERROR:   tensorflow: commands failed
+ERROR:   gcs: commands failed
+ERROR:   all: commands failed
+make: *** [Makefile:70: test] Error 1
+make: Leaving directory '/workspace/source/python'
+[31m
+Pipeline failed on stage 'seldon-python-all' : container 'step-test-python-all'. The execution of the pipeline has stopped.[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-python-gcs[0m and container [32mstep-credential-initializer-ftjdb[0m
+{"level":"info","ts":1595061067.6564162,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1595061067.6577168,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-python-gcs[0m and container [32mstep-working-dir-initializer-qqb9q[0m
+{"level":"info","ts":1595061068.890041,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595061068.8928688,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-python-gcs[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-python-gcs[0m and container [32mstep-create-dir-workspace-kgvdd[0m
+{"level":"info","ts":1595061083.5814626,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595061083.5831432,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-python-gcs[0m and container [32mstep-source-copy-workspace-sz6hs[0m
+{"level":"info","ts":1595061083.9052794,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595061084.5811563,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-python-gcs[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-python-gcs[0m and container [32mstep-test-python-gcs[0m
+make: Entering directory '/workspace/source/python'
+# Protobuf
+cp ../proto/prediction.proto seldon_core/proto/
+make -C ../proto/tensorflow/ create_protos
+make[1]: Entering directory '/workspace/source/proto/tensorflow'
+./create-protos.sh
+Downloading proto files for master
+make[1]: Leaving directory '/workspace/source/proto/tensorflow'
+cp -r ../proto/tensorflow/tensorflow \
+	seldon_core/proto/
+make -C ../proto/tensorflow clean
+make[1]: Entering directory '/workspace/source/proto/tensorflow'
+removed 'tensorflow/core/framework/resource_handle.proto'
+removed 'tensorflow/core/framework/tensor_shape.proto'
+removed 'tensorflow/core/framework/tensor.proto'
+removed 'tensorflow/core/framework/types.proto'
+removed directory 'tensorflow/core/framework'
+removed directory 'tensorflow/core'
+removed directory 'tensorflow'
+make[1]: Leaving directory '/workspace/source/proto/tensorflow'
+# OpenAPI
+cp ../openapi/wrapper.oas3.json seldon_core/openapi/seldon.json
+# Protobuf
+cd seldon_core && python \
+	-m grpc.tools.protoc \
+	-I./ \
+	-I./proto/ \
+	--python_out=./ \
+	--grpc_python_out=./ \
+	--mypy_out=./ \
+	./proto/prediction.proto
+Writing mypy to proto/prediction_pb2.pyi
+## We build TF's protobufs as well in case the tensorflow package
+## is not found
+cd seldon_core/proto && python \
+	-m grpc.tools.protoc \
+	-I./ \
+	-I../ \
+	--python_out=./ \
+	./tensorflow/core/framework/*.proto
+sed -i "s/from tensorflow/from seldon_core.proto.tensorflow/" seldon_core/proto/*.py
+sed -i "s/from tensorflow.core.framework/from ./" \
+	seldon_core/proto/tensorflow/core/framework/resource_handle_pb2.py seldon_core/proto/tensorflow/core/framework/tensor_pb2.py seldon_core/proto/tensorflow/core/framework/tensor_shape_pb2.py seldon_core/proto/tensorflow/core/framework/types_pb2.py
+sed -i "s/from proto/from seldon_core.proto/g" seldon_core/proto/prediction_pb2_grpc.py
+sed -i 's/__version__ = .*/__version__ = "1.2.2-dev"/g' seldon_core/version.py
+pip install -e . -r requirements-dev.txt
+Obtaining file:///workspace/source/python
+Requirement already satisfied: Flask<2.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 1)) (1.1.2)
+Requirement already satisfied: jsonschema<4.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 2)) (3.2.0)
+Requirement already satisfied: Flask-cors<4.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 3)) (3.0.8)
+Requirement already satisfied: redis<4.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 4)) (3.5.3)
+Requirement already satisfied: requests<3.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 5)) (2.24.0)
+Requirement already satisfied: numpy<2.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 6)) (1.19.0)
+Requirement already satisfied: flatbuffers<2.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 7)) (1.12)
+Requirement already satisfied: protobuf<4.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 8)) (3.12.2)
+Requirement already satisfied: grpcio<2.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 9)) (1.30.0)
+Requirement already satisfied: Flask-OpenTracing<1.2.0,>=1.1.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 10)) (1.1.0)
+Requirement already satisfied: opentracing<2.3.0,>=2.2.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 11)) (2.2.0)
+Requirement already satisfied: jaeger-client<4.2.0,>=4.1.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 12)) (4.1.0)
+Requirement already satisfied: grpcio-opentracing<1.2.0,>=1.1.4 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 13)) (1.1.4)
+Requirement already satisfied: PyYAML<5.4 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 14)) (5.3.1)
+Requirement already satisfied: gunicorn<20.1.0,>=19.9.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 15)) (20.0.4)
+Requirement already satisfied: minio<6.0.0,>=4.0.9 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 16)) (5.0.10)
+Requirement already satisfied: azure-storage-blob<3.0.0,>=2.0.1 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 17)) (2.1.0)
+Requirement already satisfied: setuptools>=41.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 18)) (49.2.0)
+Requirement already satisfied: google-cloud-storage>=1.16.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 19)) (1.29.0)
+Requirement already satisfied: prometheus_client<0.9.0,>=0.7.1 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 20)) (0.8.0)
+Requirement already satisfied: black==19.10b0 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 2)) (19.10b0)
+Requirement already satisfied: flake8==3.8.1 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 3)) (3.8.1)
+Requirement already satisfied: mypy<0.783 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 4)) (0.782)
+Requirement already satisfied: Pillow==7.2.0 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 5)) (7.2.0)
+Requirement already satisfied: pytest==5.4.2 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 6)) (5.4.2)
+Requirement already satisfied: pytest-cov==2.10.0 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 7)) (2.10.0)
+Requirement already satisfied: tox<4.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 8)) (3.17.1)
+Requirement already satisfied: grpcio-tools==1.30.0 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 9)) (1.30.0)
+Requirement already satisfied: mypy-protobuf==1.22 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 10)) (1.22)
+Requirement already satisfied: tenacity==6.2.0 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 13)) (6.2.0)
+Requirement already satisfied: coverage==5.2 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 16)) (5.2)
+Requirement already satisfied: pandas==1.0.1 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 19)) (1.0.1)
+Requirement already satisfied: pip-licenses==2.2.1 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 22)) (2.2.1)
+Requirement already satisfied: Werkzeug>=0.15 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->-r requirements.txt (line 1)) (1.0.1)
+Requirement already satisfied: itsdangerous>=0.24 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->-r requirements.txt (line 1)) (1.1.0)
+Requirement already satisfied: click>=5.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->-r requirements.txt (line 1)) (7.1.2)
+Requirement already satisfied: Jinja2>=2.10.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->-r requirements.txt (line 1)) (2.11.2)
+Requirement already satisfied: attrs>=17.4.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->-r requirements.txt (line 2)) (19.3.0)
+Requirement already satisfied: pyrsistent>=0.14.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->-r requirements.txt (line 2)) (0.16.0)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->-r requirements.txt (line 2)) (1.7.0)
+Requirement already satisfied: six>=1.11.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->-r requirements.txt (line 2)) (1.15.0)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (2020.6.20)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (3.0.4)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (1.25.9)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (2.10)
+Requirement already satisfied: threadloop<2,>=1 in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.2.0,>=4.1.0->-r requirements.txt (line 12)) (1.0.2)
+Requirement already satisfied: thrift in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.2.0,>=4.1.0->-r requirements.txt (line 12)) (0.13.0)
+Requirement already satisfied: tornado<6,>=4.3 in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.2.0,>=4.1.0->-r requirements.txt (line 12)) (5.1.1)
+Requirement already satisfied: pytz in /usr/local/lib/python3.6/site-packages (from minio<6.0.0,>=4.0.9->-r requirements.txt (line 16)) (2020.1)
+Requirement already satisfied: python-dateutil in /usr/local/lib/python3.6/site-packages (from minio<6.0.0,>=4.0.9->-r requirements.txt (line 16)) (2.8.1)
+Requirement already satisfied: configparser in /usr/local/lib/python3.6/site-packages (from minio<6.0.0,>=4.0.9->-r requirements.txt (line 16)) (5.0.0)
+Requirement already satisfied: azure-common>=1.1.5 in /usr/local/lib/python3.6/site-packages (from azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (1.1.25)
+Requirement already satisfied: azure-storage-common~=2.1 in /usr/local/lib/python3.6/site-packages (from azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (2.1.0)
+Requirement already satisfied: google-auth<2.0dev,>=1.11.0 in /usr/local/lib/python3.6/site-packages (from google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (1.19.2)
+Requirement already satisfied: google-resumable-media<0.6dev,>=0.5.0 in /usr/local/lib/python3.6/site-packages (from google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (0.5.1)
+Requirement already satisfied: google-cloud-core<2.0dev,>=1.2.0 in /usr/local/lib/python3.6/site-packages (from google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (1.3.0)
+Requirement already satisfied: toml>=0.9.4 in /usr/local/lib/python3.6/site-packages (from black==19.10b0->-r requirements-dev.txt (line 2)) (0.10.1)
+Requirement already satisfied: typed-ast>=1.4.0 in /usr/local/lib/python3.6/site-packages (from black==19.10b0->-r requirements-dev.txt (line 2)) (1.4.1)
+Requirement already satisfied: pathspec<1,>=0.6 in /usr/local/lib/python3.6/site-packages (from black==19.10b0->-r requirements-dev.txt (line 2)) (0.8.0)
+Requirement already satisfied: appdirs in /usr/local/lib/python3.6/site-packages (from black==19.10b0->-r requirements-dev.txt (line 2)) (1.4.4)
+Requirement already satisfied: regex in /usr/local/lib/python3.6/site-packages (from black==19.10b0->-r requirements-dev.txt (line 2)) (2020.7.14)
+Requirement already satisfied: pyflakes<2.3.0,>=2.2.0 in /usr/local/lib/python3.6/site-packages (from flake8==3.8.1->-r requirements-dev.txt (line 3)) (2.2.0)
+Requirement already satisfied: pycodestyle<2.7.0,>=2.6.0a1 in /usr/local/lib/python3.6/site-packages (from flake8==3.8.1->-r requirements-dev.txt (line 3)) (2.6.0)
+Requirement already satisfied: mccabe<0.7.0,>=0.6.0 in /usr/local/lib/python3.6/site-packages (from flake8==3.8.1->-r requirements-dev.txt (line 3)) (0.6.1)
+Requirement already satisfied: mypy-extensions<0.5.0,>=0.4.3 in /usr/local/lib/python3.6/site-packages (from mypy<0.783->-r requirements-dev.txt (line 4)) (0.4.3)
+Requirement already satisfied: typing-extensions>=3.7.4 in /usr/local/lib/python3.6/site-packages (from mypy<0.783->-r requirements-dev.txt (line 4)) (3.7.4.2)
+Requirement already satisfied: pluggy<1.0,>=0.12 in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (0.13.1)
+Requirement already satisfied: packaging in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (20.4)
+Requirement already satisfied: more-itertools>=4.0.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (8.4.0)
+Requirement already satisfied: py>=1.5.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (1.9.0)
+Requirement already satisfied: wcwidth in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (0.2.5)
+Requirement already satisfied: filelock>=3.0.0 in /usr/local/lib/python3.6/site-packages (from tox<4.0.0->-r requirements-dev.txt (line 8)) (3.0.12)
+Requirement already satisfied: virtualenv!=20.0.0,!=20.0.1,!=20.0.2,!=20.0.3,!=20.0.4,!=20.0.5,!=20.0.6,!=20.0.7,>=16.0.0 in /usr/local/lib/python3.6/site-packages (from tox<4.0.0->-r requirements-dev.txt (line 8)) (20.0.27)
+Requirement already satisfied: PTable in /usr/local/lib/python3.6/site-packages (from pip-licenses==2.2.1->-r requirements-dev.txt (line 22)) (0.9.2)
+Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from Jinja2>=2.10.1->Flask<2.0.0->-r requirements.txt (line 1)) (1.1.1)
+Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.6/site-packages (from importlib-metadata; python_version < "3.8"->jsonschema<4.0.0->-r requirements.txt (line 2)) (3.1.0)
+Requirement already satisfied: cryptography in /usr/local/lib/python3.6/site-packages (from azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (2.9.2)
+Requirement already satisfied: rsa<5,>=3.1.4; python_version >= "3" in /usr/local/lib/python3.6/site-packages (from google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (4.6)
+Requirement already satisfied: pyasn1-modules>=0.2.1 in /usr/local/lib/python3.6/site-packages (from google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (0.2.8)
+Requirement already satisfied: cachetools<5.0,>=2.0.0 in /usr/local/lib/python3.6/site-packages (from google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (4.1.1)
+Requirement already satisfied: google-api-core<2.0.0dev,>=1.16.0 in /usr/local/lib/python3.6/site-packages (from google-cloud-core<2.0dev,>=1.2.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (1.21.0)
+Requirement already satisfied: pyparsing>=2.0.2 in /usr/local/lib/python3.6/site-packages (from packaging->pytest==5.4.2->-r requirements-dev.txt (line 6)) (2.4.7)
+Requirement already satisfied: importlib-resources>=1.0; python_version < "3.7" in /usr/local/lib/python3.6/site-packages (from virtualenv!=20.0.0,!=20.0.1,!=20.0.2,!=20.0.3,!=20.0.4,!=20.0.5,!=20.0.6,!=20.0.7,>=16.0.0->tox<4.0.0->-r requirements-dev.txt (line 8)) (3.0.0)
+Requirement already satisfied: distlib<1,>=0.3.1 in /usr/local/lib/python3.6/site-packages (from virtualenv!=20.0.0,!=20.0.1,!=20.0.2,!=20.0.3,!=20.0.4,!=20.0.5,!=20.0.6,!=20.0.7,>=16.0.0->tox<4.0.0->-r requirements-dev.txt (line 8)) (0.3.1)
+Requirement already satisfied: cffi!=1.11.3,>=1.8 in /usr/local/lib/python3.6/site-packages (from cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (1.14.0)
+Requirement already satisfied: pyasn1>=0.1.3 in /usr/local/lib/python3.6/site-packages (from rsa<5,>=3.1.4; python_version >= "3"->google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (0.4.8)
+Requirement already satisfied: googleapis-common-protos<2.0dev,>=1.6.0 in /usr/local/lib/python3.6/site-packages (from google-api-core<2.0.0dev,>=1.16.0->google-cloud-core<2.0dev,>=1.2.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (1.52.0)
+Requirement already satisfied: pycparser in /usr/local/lib/python3.6/site-packages (from cffi!=1.11.3,>=1.8->cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (2.20)
+Installing collected packages: seldon-core
+  Running setup.py develop for seldon-core
+Successfully installed seldon-core
+tox gcs
+GLOB sdist-make: /workspace/source/python/setup.py
+py3 create: /workspace/source/python/.tox/py3
+py3 installdeps: tenacity, pytest, pytest-cov, Pillow
+py3 inst: /workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip
+py3 installed: attrs==19.3.0,azure-common==1.1.25,azure-storage-blob==2.1.0,azure-storage-common==2.1.0,certifi==2020.6.20,cffi==1.14.0,chardet==3.0.4,click==7.1.2,configparser==5.0.0,coverage==5.2,cryptography==2.9.2,Flask==1.1.2,Flask-Cors==3.0.8,Flask-OpenTracing==1.1.0,flatbuffers==1.12,grpcio==1.30.0,grpcio-opentracing==1.1.4,gunicorn==20.0.4,idna==2.10,importlib-metadata==1.7.0,itsdangerous==1.1.0,jaeger-client==4.1.0,Jinja2==2.11.2,jsonschema==3.2.0,MarkupSafe==1.1.1,minio==5.0.10,more-itertools==8.4.0,numpy==1.19.0,opentracing==2.2.0,packaging==20.4,Pillow==7.2.0,pluggy==0.13.1,prometheus-client==0.8.0,protobuf==3.12.2,py==1.9.0,pycparser==2.20,pyparsing==2.4.7,pyrsistent==0.16.0,pytest==5.4.3,pytest-cov==2.10.0,python-dateutil==2.8.1,pytz==2020.1,PyYAML==5.3.1,redis==3.5.3,requests==2.24.0,seldon-core @ file:///workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip,six==1.15.0,tenacity==6.2.0,threadloop==1.0.2,thrift==0.13.0,tornado==5.1.1,urllib3==1.25.9,wcwidth==0.2.5,Werkzeug==1.0.1,zipp==3.1.0
+py3 run-test-pre: PYTHONHASHSEED='2084703445'
+py3 run-test: commands[0] | pytest gcs
+============================= test session starts ==============================
+platform linux -- Python 3.6.10, pytest-5.4.3, py-1.9.0, pluggy-0.13.1
+cachedir: .tox/py3/.pytest_cache
+rootdir: /workspace/source/python, inifile: setup.cfg
+plugins: cov-2.10.0
+collected 0 items
+
+============================ no tests ran in 0.01s =============================
+ERROR: file not found: gcs
+
+ERROR: InvocationError for command /workspace/source/python/.tox/py3/bin/pytest gcs (exited with code 4)
+tensorflow create: /workspace/source/python/.tox/tensorflow
+tensorflow installdeps: tenacity, pytest, pytest-cov, Pillow
+tensorflow inst: /workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip
+tensorflow installed: absl-py==0.9.0,astunparse==1.6.3,attrs==19.3.0,azure-common==1.1.25,azure-storage-blob==2.1.0,azure-storage-common==2.1.0,cachetools==4.1.1,certifi==2020.6.20,cffi==1.14.0,chardet==3.0.4,click==7.1.2,configparser==5.0.0,coverage==5.2,cryptography==2.9.2,Flask==1.1.2,Flask-Cors==3.0.8,Flask-OpenTracing==1.1.0,flatbuffers==1.12,gast==0.3.3,google-auth==1.19.2,google-auth-oauthlib==0.4.1,google-pasta==0.2.0,grpcio==1.30.0,grpcio-opentracing==1.1.4,gunicorn==20.0.4,h5py==2.10.0,idna==2.10,importlib-metadata==1.7.0,itsdangerous==1.1.0,jaeger-client==4.1.0,Jinja2==2.11.2,jsonschema==3.2.0,Keras-Preprocessing==1.1.2,Markdown==3.2.2,MarkupSafe==1.1.1,minio==5.0.10,more-itertools==8.4.0,numpy==1.19.0,oauthlib==3.1.0,opentracing==2.2.0,opt-einsum==3.2.1,packaging==20.4,Pillow==7.2.0,pluggy==0.13.1,prometheus-client==0.8.0,protobuf==3.12.2,py==1.9.0,pyasn1==0.4.8,pyasn1-modules==0.2.8,pycparser==2.20,pyparsing==2.4.7,pyrsistent==0.16.0,pytest==5.4.3,pytest-cov==2.10.0,python-dateutil==2.8.1,pytz==2020.1,PyYAML==5.3.1,redis==3.5.3,requests==2.24.0,requests-oauthlib==1.3.0,rsa==4.6,scipy==1.4.1,seldon-core @ file:///workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip,six==1.15.0,tenacity==6.2.0,tensorboard==2.2.2,tensorboard-plugin-wit==1.7.0,tensorflow==2.2.0,tensorflow-estimator==2.2.0,termcolor==1.1.0,threadloop==1.0.2,thrift==0.13.0,tornado==5.1.1,urllib3==1.25.9,wcwidth==0.2.5,Werkzeug==1.0.1,wrapt==1.12.1,zipp==3.1.0
+tensorflow run-test-pre: PYTHONHASHSEED='2084703445'
+tensorflow run-test: commands[0] | pytest gcs
+============================= test session starts ==============================
+platform linux -- Python 3.6.10, pytest-5.4.3, py-1.9.0, pluggy-0.13.1
+cachedir: .tox/tensorflow/.pytest_cache
+rootdir: /workspace/source/python, inifile: setup.cfg
+plugins: cov-2.10.0
+collected 0 items
+
+============================ no tests ran in 0.01s =============================
+ERROR: file not found: gcs
+
+ERROR: InvocationError for command /workspace/source/python/.tox/tensorflow/bin/pytest gcs (exited with code 4)
+gcs create: /workspace/source/python/.tox/gcs
+gcs installdeps: tenacity, pytest, pytest-cov, Pillow
+gcs inst: /workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip
+gcs installed: attrs==19.3.0,azure-common==1.1.25,azure-storage-blob==2.1.0,azure-storage-common==2.1.0,cachetools==4.1.1,certifi==2020.6.20,cffi==1.14.0,chardet==3.0.4,click==7.1.2,configparser==5.0.0,coverage==5.2,cryptography==2.9.2,Flask==1.1.2,Flask-Cors==3.0.8,Flask-OpenTracing==1.1.0,flatbuffers==1.12,google-api-core==1.21.0,google-auth==1.19.2,google-cloud-core==1.3.0,google-cloud-storage==1.29.0,google-resumable-media==0.5.1,googleapis-common-protos==1.52.0,grpcio==1.30.0,grpcio-opentracing==1.1.4,gunicorn==20.0.4,idna==2.10,importlib-metadata==1.7.0,itsdangerous==1.1.0,jaeger-client==4.1.0,Jinja2==2.11.2,jsonschema==3.2.0,MarkupSafe==1.1.1,minio==5.0.10,more-itertools==8.4.0,numpy==1.19.0,opentracing==2.2.0,packaging==20.4,Pillow==7.2.0,pluggy==0.13.1,prometheus-client==0.8.0,protobuf==3.12.2,py==1.9.0,pyasn1==0.4.8,pyasn1-modules==0.2.8,pycparser==2.20,pyparsing==2.4.7,pyrsistent==0.16.0,pytest==5.4.3,pytest-cov==2.10.0,python-dateutil==2.8.1,pytz==2020.1,PyYAML==5.3.1,redis==3.5.3,requests==2.24.0,rsa==4.6,seldon-core @ file:///workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip,six==1.15.0,tenacity==6.2.0,threadloop==1.0.2,thrift==0.13.0,tornado==5.1.1,urllib3==1.25.9,wcwidth==0.2.5,Werkzeug==1.0.1,zipp==3.1.0
+gcs run-test-pre: PYTHONHASHSEED='2084703445'
+gcs run-test: commands[0] | pytest gcs
+============================= test session starts ==============================
+platform linux -- Python 3.6.10, pytest-5.4.3, py-1.9.0, pluggy-0.13.1
+cachedir: .tox/gcs/.pytest_cache
+rootdir: /workspace/source/python, inifile: setup.cfg
+plugins: cov-2.10.0
+collected 0 items
+
+============================ no tests ran in 0.01s =============================
+ERROR: file not found: gcs
+
+ERROR: InvocationError for command /workspace/source/python/.tox/gcs/bin/pytest gcs (exited with code 4)
+all create: /workspace/source/python/.tox/all
+all installdeps: tenacity, pytest, pytest-cov, Pillow
+all inst: /workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip
+all installed: absl-py==0.9.0,astunparse==1.6.3,attrs==19.3.0,azure-common==1.1.25,azure-storage-blob==2.1.0,azure-storage-common==2.1.0,cachetools==4.1.1,certifi==2020.6.20,cffi==1.14.0,chardet==3.0.4,click==7.1.2,configparser==5.0.0,coverage==5.2,cryptography==2.9.2,Flask==1.1.2,Flask-Cors==3.0.8,Flask-OpenTracing==1.1.0,flatbuffers==1.12,gast==0.3.3,google-api-core==1.21.0,google-auth==1.19.2,google-auth-oauthlib==0.4.1,google-cloud-core==1.3.0,google-cloud-storage==1.29.0,google-pasta==0.2.0,google-resumable-media==0.5.1,googleapis-common-protos==1.52.0,grpcio==1.30.0,grpcio-opentracing==1.1.4,gunicorn==20.0.4,h5py==2.10.0,idna==2.10,importlib-metadata==1.7.0,itsdangerous==1.1.0,jaeger-client==4.1.0,Jinja2==2.11.2,jsonschema==3.2.0,Keras-Preprocessing==1.1.2,Markdown==3.2.2,MarkupSafe==1.1.1,minio==5.0.10,more-itertools==8.4.0,numpy==1.19.0,oauthlib==3.1.0,opentracing==2.2.0,opt-einsum==3.2.1,packaging==20.4,Pillow==7.2.0,pluggy==0.13.1,prometheus-client==0.8.0,protobuf==3.12.2,py==1.9.0,pyasn1==0.4.8,pyasn1-modules==0.2.8,pycparser==2.20,pyparsing==2.4.7,pyrsistent==0.16.0,pytest==5.4.3,pytest-cov==2.10.0,python-dateutil==2.8.1,pytz==2020.1,PyYAML==5.3.1,redis==3.5.3,requests==2.24.0,requests-oauthlib==1.3.0,rsa==4.6,scipy==1.4.1,seldon-core @ file:///workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip,six==1.15.0,tenacity==6.2.0,tensorboard==2.2.2,tensorboard-plugin-wit==1.7.0,tensorflow==2.2.0,tensorflow-estimator==2.2.0,termcolor==1.1.0,threadloop==1.0.2,thrift==0.13.0,tornado==5.1.1,urllib3==1.25.9,wcwidth==0.2.5,Werkzeug==1.0.1,wrapt==1.12.1,zipp==3.1.0
+all run-test-pre: PYTHONHASHSEED='2084703445'
+all run-test: commands[0] | pytest gcs
+============================= test session starts ==============================
+platform linux -- Python 3.6.10, pytest-5.4.3, py-1.9.0, pluggy-0.13.1
+cachedir: .tox/all/.pytest_cache
+rootdir: /workspace/source/python, inifile: setup.cfg
+plugins: cov-2.10.0
+collected 0 items
+
+============================ no tests ran in 0.01s =============================
+ERROR: file not found: gcs
+
+ERROR: InvocationError for command /workspace/source/python/.tox/all/bin/pytest gcs (exited with code 4)
+___________________________________ summary ____________________________________
+ERROR:   py3: commands failed
+ERROR:   tensorflow: commands failed
+ERROR:   gcs: commands failed
+ERROR:   all: commands failed
+make: *** [Makefile:70: test] Error 1
+make: Leaving directory '/workspace/source/python'
+[31m
+Pipeline failed on stage 'seldon-python-gcs' : container 'step-test-python-gcs'. The execution of the pipeline has stopped.[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-operator[0m and container [32mstep-credential-initializer-zzhs2[0m
+{"level":"info","ts":1595061064.9285018,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1595061064.9290235,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-operator[0m and container [32mstep-working-dir-initializer-49pxn[0m
+{"level":"info","ts":1595061066.408587,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595061066.4116795,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-operator[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-operator[0m and container [32mstep-create-dir-workspace-zlq5v[0m
+{"level":"info","ts":1595061078.8030531,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595061078.8050885,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-operator[0m and container [32mstep-source-copy-workspace-nzjqz[0m
+{"level":"info","ts":1595061079.1181412,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595061081.7895453,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-operator[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-operator[0m and container [32mstep-test-operator[0m
+make: Entering directory '/workspace/source/operator'
+go: creating new go.mod: module tmp
+go: downloading sigs.k8s.io/controller-tools v0.2.5
+go: found sigs.k8s.io/controller-tools/cmd/controller-gen in sigs.k8s.io/controller-tools v0.2.5
+go: downloading github.com/spf13/cobra v0.0.5
+go: downloading github.com/fatih/color v1.7.0
+go: downloading k8s.io/apimachinery v0.17.0
+go: downloading k8s.io/api v0.17.0
+go: downloading golang.org/x/tools v0.0.0-20190920225731-5eefd052ad72
+go: downloading sigs.k8s.io/yaml v1.1.0
+go: downloading gopkg.in/yaml.v3 v3.0.0-20190905181640-827449938966
+go: downloading k8s.io/apiextensions-apiserver v0.17.0
+go: downloading github.com/mattn/go-isatty v0.0.8
+go: downloading gopkg.in/yaml.v2 v2.2.4
+go: downloading github.com/inconshreveable/mousetrap v1.0.0
+go: downloading golang.org/x/sys v0.0.0-20190826190057-c7b8b68b1456
+go: downloading github.com/spf13/pflag v1.0.5
+go: downloading github.com/mattn/go-colorable v0.1.2
+go: downloading github.com/gobuffalo/flect v0.2.0
+go: downloading k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
+go: downloading github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
+go: downloading gopkg.in/inf.v0 v0.9.1
+go: downloading golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
+go: downloading github.com/google/gofuzz v1.0.0
+go: downloading k8s.io/klog v1.0.0
+go: downloading golang.org/x/text v0.3.2
+/builder/home/go/bin/controller-gen object:headerFile=./hack/boilerplate.go.txt paths="./..."
+go fmt ./...
+go vet ./...
+go: downloading github.com/onsi/gomega v1.10.1
+go: downloading github.com/onsi/ginkgo v1.14.0
+go: downloading golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+go: downloading github.com/nxadm/tail v1.4.4
+go: downloading gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
+go: downloading github.com/fsnotify/fsnotify v1.4.9
+/builder/home/go/bin/controller-gen "crd:trivialVersions=true" rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+rm -rf generated
+mkdir generated
+kustomize build config/default/ -o generated
+cp generated/apiextensions.k8s.io_v1beta1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml testing/machinelearning.seldon.io_seldondeployments.yaml
+ginkgo -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis
+[1595061179] [1mController Suite[0m - 37/37 specs test k8s client
+&{Reader:0xc000773e20 Writer:0xc0008e6d50 StatusClient:0xc0008e6d50}
+[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0mE0718 08:34:27.730231   21289 event.go:272] Unable to write event: 'Post "http://127.0.0.1:37853/api/v1/namespaces/default/events": dial tcp 127.0.0.1:37853: connect: connection refused' (may retry after sleeping)
+E0718 08:34:27.771946   21289 reflector.go:309] pkg/mod/k8s.io/client-go@v0.17.8/tools/cache/reflector.go:105: Failed to watch *v1alpha3.VirtualService: Get "http://127.0.0.1:37853/apis/networking.istio.io/v1alpha3/virtualservices?allowWatchBookmarks=true&resourceVersion=119&timeoutSeconds=440&watch=true": dial tcp 127.0.0.1:37853: connect: connection refused
+E0718 08:34:27.772607   21289 reflector.go:309] pkg/mod/k8s.io/client-go@v0.17.8/tools/cache/reflector.go:105: Failed to watch *v2beta1.HorizontalPodAutoscaler: Get "http://127.0.0.1:37853/apis/autoscaling/v2beta1/horizontalpodautoscalers?allowWatchBookmarks=true&resourceVersion=324&timeoutSeconds=384&watch=true": dial tcp 127.0.0.1:37853: connect: connection refused
+E0718 08:34:27.773046   21289 reflector.go:309] pkg/mod/k8s.io/client-go@v0.17.8/tools/cache/reflector.go:105: Failed to watch *v1.ConfigMap: Get "http://127.0.0.1:37853/api/v1/configmaps?allowWatchBookmarks=true&resourceVersion=118&timeoutSeconds=387&watch=true": dial tcp 127.0.0.1:37853: connect: connection refused
+E0718 08:34:27.774219   21289 reflector.go:309] pkg/mod/k8s.io/client-go@v0.17.8/tools/cache/reflector.go:105: Failed to watch *v1.Service: Get "http://127.0.0.1:37853/api/v1/services?allowWatchBookmarks=true&resourceVersion=366&timeoutSeconds=503&watch=true": dial tcp 127.0.0.1:37853: connect: connection refused
+E0718 08:34:27.774659   21289 reflector.go:309] pkg/mod/k8s.io/client-go@v0.17.8/tools/cache/reflector.go:105: Failed to watch *v1.Namespace: Get "http://127.0.0.1:37853/api/v1/namespaces?allowWatchBookmarks=true&resourceVersion=316&timeoutSeconds=365&watch=true": dial tcp 127.0.0.1:37853: connect: connection refused
+E0718 08:34:27.775197   21289 reflector.go:309] pkg/mod/k8s.io/client-go@v0.17.8/tools/cache/reflector.go:105: Failed to watch *v1.Deployment: Get "http://127.0.0.1:37853/apis/apps/v1/deployments?allowWatchBookmarks=true&resourceVersion=368&timeoutSeconds=360&watch=true": dial tcp 127.0.0.1:37853: connect: connection refused
+E0718 08:34:27.775648   21289 reflector.go:309] pkg/mod/k8s.io/client-go@v0.17.8/tools/cache/reflector.go:105: Failed to watch *v1.SeldonDeployment: Get "http://127.0.0.1:37853/apis/machinelearning.seldon.io/v1/seldondeployments?allowWatchBookmarks=true&resourceVersion=370&timeoutSeconds=408&watch=true": dial tcp 127.0.0.1:37853: connect: connection refused
+
+ [32mSUCCESS![0m 52.358323755s PASS
+coverage: 65.5% of statements
+=== RUN   TestGcsSecret
+--- PASS: TestGcsSecret (0.00s)
+PASS
+coverage: 100.0% of statements
+=== RUN   TestS3Secret
+--- PASS: TestS3Secret (0.00s)
+PASS
+coverage: 94.6% of statements
+=== RUN   TestGetEnvAsBool
+--- PASS: TestGetEnvAsBool (0.00s)
+PASS
+coverage: 10.9% of statements
+=== RUN   TestGenerateCerts
+--- PASS: TestGenerateCerts (2.20s)
+=== RUN   TestConfigmapCreate
+--- PASS: TestConfigmapCreate (0.00s)
+=== RUN   TestCRDCreate
+--- PASS: TestCRDCreate (0.06s)
+=== RUN   TestMutatingWebhookCreate
+--- PASS: TestMutatingWebhookCreate (2.47s)
+=== RUN   TestMutatingWebhookCreateNamespaced
+--- PASS: TestMutatingWebhookCreateNamespaced (2.06s)
+=== RUN   TestValidatingWebhookCreate
+--- PASS: TestValidatingWebhookCreate (0.97s)
+=== RUN   TestValidatingWebhookCreateNamespaced
+--- PASS: TestValidatingWebhookCreateNamespaced (2.12s)
+=== RUN   TestWebHookSvcCreate
+--- PASS: TestWebHookSvcCreate (2.59s)
+PASS
+coverage: 52.1% of statements
+=== RUN   TestImageSetNormal
+    prepack_test.go:50: Scenario: GRPC image with version
+    prepack_test.go:50: Scenario: GRPC image with no version
+    prepack_test.go:50: Scenario: REST image with version
+    prepack_test.go:50: Scenario: REST image with no version
+--- PASS: TestImageSetNormal (0.01s)
+=== RUN   TestGetPredictorConfig
+    prepack_test.go:81: Scenario: related image sklearn
+    prepack_test.go:81: Scenario: default image sklearn
+--- PASS: TestGetPredictorConfig (0.01s)
+=== RUN   TestGetDeploymentNameOneModel
+--- PASS: TestGetDeploymentNameOneModel (0.00s)
+=== RUN   TestGetDeploymentNameLong
+--- PASS: TestGetDeploymentNameLong (0.00s)
+=== RUN   TestValidateBadProtocol
+--- PASS: TestValidateBadProtocol (0.00s)
+=== RUN   TestValidateBadTransport
+--- PASS: TestValidateBadTransport (0.00s)
+=== RUN   TestValidateMixedTransport
+--- PASS: TestValidateMixedTransport (0.00s)
+=== RUN   TestValidateMixedMultipleTransport
+--- PASS: TestValidateMixedMultipleTransport (0.00s)
+=== RUN   TestDefaultSingleContainer
+--- PASS: TestDefaultSingleContainer (0.00s)
+=== RUN   TestMetricsPortAddedTwoContainers
+--- PASS: TestMetricsPortAddedTwoContainers (0.00s)
+=== RUN   TestMetricsPortAddedTwoComponentSpecsTwoContainers
+--- PASS: TestMetricsPortAddedTwoComponentSpecsTwoContainers (0.00s)
+=== RUN   TestOverrideMetricsPortName
+Failed to find config map seldon-config
+no kind is registered for the type v1.ConfigMap in scheme "pkg/runtime/scheme.go:101"
+--- PASS: TestOverrideMetricsPortName (0.00s)
+=== RUN   TestPortUseExisting
+--- PASS: TestPortUseExisting (0.00s)
+=== RUN   TestMetricsPortAddedToPrepacked
+--- PASS: TestMetricsPortAddedToPrepacked (0.00s)
+=== RUN   TestPredictorProtocolGrpc
+--- PASS: TestPredictorProtocolGrpc (0.00s)
+=== RUN   TestPrepackedWithExistingContainer
+--- PASS: TestPrepackedWithExistingContainer (0.00s)
+=== RUN   TestPrepackedWithCustom
+--- PASS: TestPrepackedWithCustom (0.01s)
+=== RUN   TestPrepackedWithExistingContainerAndImage
+--- PASS: TestPrepackedWithExistingContainerAndImage (0.00s)
+=== RUN   TestMetricsPortAddedToTwoPrepacked
+--- PASS: TestMetricsPortAddedToTwoPrepacked (0.00s)
+=== RUN   TestDefaultPrepackagedServerType
+--- PASS: TestDefaultPrepackagedServerType (0.00s)
+=== RUN   TestValidateSingleModel
+--- PASS: TestValidateSingleModel (0.00s)
+=== RUN   TestValidateSingleModelNoName
+--- PASS: TestValidateSingleModelNoName (0.00s)
+=== RUN   TestValidateNoEngineMultiGraph
+--- PASS: TestValidateNoEngineMultiGraph (0.00s)
+=== RUN   TestValidateDuplPredictorName
+--- PASS: TestValidateDuplPredictorName (0.00s)
+=== RUN   TestValidateTrafficSum
+--- PASS: TestValidateTrafficSum (0.00s)
+=== RUN   TestDefaultABTest
+--- PASS: TestDefaultABTest (0.00s)
+=== RUN   TestValidateTensorflowProtocolNormalPrepackaged
+--- PASS: TestValidateTensorflowProtocolNormalPrepackaged (0.01s)
+=== RUN   TestValidateTensorflowProtocolNormal
+--- PASS: TestValidateTensorflowProtocolNormal (0.00s)
+=== RUN   TestPredictorNoGraph
+--- PASS: TestPredictorNoGraph (0.00s)
+PASS
+coverage: 41.6% of statements
+path is /workspace/source/operator
+All profiles combined
+
+Ginkgo ran 6 suites in 1m41.583796045s
+Test Suite Passed
+make: Leaving directory '/workspace/source/operator'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-python-tensorflow[0m and container [32mstep-credential-initializer-wlrzc[0m
+{"level":"info","ts":1595061065.5628307,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1595061065.563257,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-python-tensorflow[0m and container [32mstep-working-dir-initializer-wqdjg[0m
+{"level":"info","ts":1595061066.4129324,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595061066.4148674,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-python-tensorflow[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-python-tensorflow[0m and container [32mstep-create-dir-workspace-xrf95[0m
+{"level":"info","ts":1595061164.0313625,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595061164.0338173,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-python-tensorflow[0m and container [32mstep-source-copy-workspace-fdvrr[0m
+{"level":"info","ts":1595061164.260648,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595061164.714663,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-python-tensorflow[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-python-tensorflow[0m and container [32mstep-test-python-tensorflow[0m
+make: Entering directory '/workspace/source/python'
+# Protobuf
+cp ../proto/prediction.proto seldon_core/proto/
+make -C ../proto/tensorflow/ create_protos
+make[1]: Entering directory '/workspace/source/proto/tensorflow'
+./create-protos.sh
+Downloading proto files for master
+make[1]: Leaving directory '/workspace/source/proto/tensorflow'
+cp -r ../proto/tensorflow/tensorflow \
+	seldon_core/proto/
+make -C ../proto/tensorflow clean
+make[1]: Entering directory '/workspace/source/proto/tensorflow'
+removed 'tensorflow/core/framework/resource_handle.proto'
+removed 'tensorflow/core/framework/tensor_shape.proto'
+removed 'tensorflow/core/framework/tensor.proto'
+removed 'tensorflow/core/framework/types.proto'
+removed directory 'tensorflow/core/framework'
+removed directory 'tensorflow/core'
+removed directory 'tensorflow'
+make[1]: Leaving directory '/workspace/source/proto/tensorflow'
+# OpenAPI
+cp ../openapi/wrapper.oas3.json seldon_core/openapi/seldon.json
+# Protobuf
+cd seldon_core && python \
+	-m grpc.tools.protoc \
+	-I./ \
+	-I./proto/ \
+	--python_out=./ \
+	--grpc_python_out=./ \
+	--mypy_out=./ \
+	./proto/prediction.proto
+Writing mypy to proto/prediction_pb2.pyi
+## We build TF's protobufs as well in case the tensorflow package
+## is not found
+cd seldon_core/proto && python \
+	-m grpc.tools.protoc \
+	-I./ \
+	-I../ \
+	--python_out=./ \
+	./tensorflow/core/framework/*.proto
+sed -i "s/from tensorflow/from seldon_core.proto.tensorflow/" seldon_core/proto/*.py
+sed -i "s/from tensorflow.core.framework/from ./" \
+	seldon_core/proto/tensorflow/core/framework/resource_handle_pb2.py seldon_core/proto/tensorflow/core/framework/tensor_pb2.py seldon_core/proto/tensorflow/core/framework/tensor_shape_pb2.py seldon_core/proto/tensorflow/core/framework/types_pb2.py
+sed -i "s/from proto/from seldon_core.proto/g" seldon_core/proto/prediction_pb2_grpc.py
+sed -i 's/__version__ = .*/__version__ = "1.2.2-dev"/g' seldon_core/version.py
+pip install -e . -r requirements-dev.txt
+Obtaining file:///workspace/source/python
+Requirement already satisfied: Flask<2.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 1)) (1.1.2)
+Requirement already satisfied: jsonschema<4.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 2)) (3.2.0)
+Requirement already satisfied: Flask-cors<4.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 3)) (3.0.8)
+Requirement already satisfied: redis<4.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 4)) (3.5.3)
+Requirement already satisfied: requests<3.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 5)) (2.24.0)
+Requirement already satisfied: numpy<2.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 6)) (1.19.0)
+Requirement already satisfied: flatbuffers<2.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 7)) (1.12)
+Requirement already satisfied: protobuf<4.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 8)) (3.12.2)
+Requirement already satisfied: grpcio<2.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 9)) (1.30.0)
+Requirement already satisfied: Flask-OpenTracing<1.2.0,>=1.1.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 10)) (1.1.0)
+Requirement already satisfied: opentracing<2.3.0,>=2.2.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 11)) (2.2.0)
+Requirement already satisfied: jaeger-client<4.2.0,>=4.1.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 12)) (4.1.0)
+Requirement already satisfied: grpcio-opentracing<1.2.0,>=1.1.4 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 13)) (1.1.4)
+Requirement already satisfied: PyYAML<5.4 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 14)) (5.3.1)
+Requirement already satisfied: gunicorn<20.1.0,>=19.9.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 15)) (20.0.4)
+Requirement already satisfied: minio<6.0.0,>=4.0.9 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 16)) (5.0.10)
+Requirement already satisfied: azure-storage-blob<3.0.0,>=2.0.1 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 17)) (2.1.0)
+Requirement already satisfied: setuptools>=41.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 18)) (49.2.0)
+Requirement already satisfied: google-cloud-storage>=1.16.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 19)) (1.29.0)
+Requirement already satisfied: prometheus_client<0.9.0,>=0.7.1 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 20)) (0.8.0)
+Requirement already satisfied: black==19.10b0 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 2)) (19.10b0)
+Requirement already satisfied: flake8==3.8.1 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 3)) (3.8.1)
+Requirement already satisfied: mypy<0.783 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 4)) (0.782)
+Requirement already satisfied: Pillow==7.2.0 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 5)) (7.2.0)
+Requirement already satisfied: pytest==5.4.2 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 6)) (5.4.2)
+Requirement already satisfied: pytest-cov==2.10.0 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 7)) (2.10.0)
+Requirement already satisfied: tox<4.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 8)) (3.17.1)
+Requirement already satisfied: grpcio-tools==1.30.0 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 9)) (1.30.0)
+Requirement already satisfied: mypy-protobuf==1.22 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 10)) (1.22)
+Requirement already satisfied: tenacity==6.2.0 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 13)) (6.2.0)
+Requirement already satisfied: coverage==5.2 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 16)) (5.2)
+Requirement already satisfied: pandas==1.0.1 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 19)) (1.0.1)
+Requirement already satisfied: pip-licenses==2.2.1 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 22)) (2.2.1)
+Requirement already satisfied: Werkzeug>=0.15 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->-r requirements.txt (line 1)) (1.0.1)
+Requirement already satisfied: click>=5.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->-r requirements.txt (line 1)) (7.1.2)
+Requirement already satisfied: Jinja2>=2.10.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->-r requirements.txt (line 1)) (2.11.2)
+Requirement already satisfied: itsdangerous>=0.24 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->-r requirements.txt (line 1)) (1.1.0)
+Requirement already satisfied: pyrsistent>=0.14.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->-r requirements.txt (line 2)) (0.16.0)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->-r requirements.txt (line 2)) (1.7.0)
+Requirement already satisfied: attrs>=17.4.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->-r requirements.txt (line 2)) (19.3.0)
+Requirement already satisfied: six>=1.11.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->-r requirements.txt (line 2)) (1.15.0)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (3.0.4)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (1.25.9)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (2.10)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (2020.6.20)
+Requirement already satisfied: tornado<6,>=4.3 in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.2.0,>=4.1.0->-r requirements.txt (line 12)) (5.1.1)
+Requirement already satisfied: thrift in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.2.0,>=4.1.0->-r requirements.txt (line 12)) (0.13.0)
+Requirement already satisfied: threadloop<2,>=1 in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.2.0,>=4.1.0->-r requirements.txt (line 12)) (1.0.2)
+Requirement already satisfied: configparser in /usr/local/lib/python3.6/site-packages (from minio<6.0.0,>=4.0.9->-r requirements.txt (line 16)) (5.0.0)
+Requirement already satisfied: pytz in /usr/local/lib/python3.6/site-packages (from minio<6.0.0,>=4.0.9->-r requirements.txt (line 16)) (2020.1)
+Requirement already satisfied: python-dateutil in /usr/local/lib/python3.6/site-packages (from minio<6.0.0,>=4.0.9->-r requirements.txt (line 16)) (2.8.1)
+Requirement already satisfied: azure-common>=1.1.5 in /usr/local/lib/python3.6/site-packages (from azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (1.1.25)
+Requirement already satisfied: azure-storage-common~=2.1 in /usr/local/lib/python3.6/site-packages (from azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (2.1.0)
+Requirement already satisfied: google-auth<2.0dev,>=1.11.0 in /usr/local/lib/python3.6/site-packages (from google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (1.19.2)
+Requirement already satisfied: google-cloud-core<2.0dev,>=1.2.0 in /usr/local/lib/python3.6/site-packages (from google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (1.3.0)
+Requirement already satisfied: google-resumable-media<0.6dev,>=0.5.0 in /usr/local/lib/python3.6/site-packages (from google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (0.5.1)
+Requirement already satisfied: toml>=0.9.4 in /usr/local/lib/python3.6/site-packages (from black==19.10b0->-r requirements-dev.txt (line 2)) (0.10.1)
+Requirement already satisfied: regex in /usr/local/lib/python3.6/site-packages (from black==19.10b0->-r requirements-dev.txt (line 2)) (2020.7.14)
+Requirement already satisfied: typed-ast>=1.4.0 in /usr/local/lib/python3.6/site-packages (from black==19.10b0->-r requirements-dev.txt (line 2)) (1.4.1)
+Requirement already satisfied: pathspec<1,>=0.6 in /usr/local/lib/python3.6/site-packages (from black==19.10b0->-r requirements-dev.txt (line 2)) (0.8.0)
+Requirement already satisfied: appdirs in /usr/local/lib/python3.6/site-packages (from black==19.10b0->-r requirements-dev.txt (line 2)) (1.4.4)
+Requirement already satisfied: pycodestyle<2.7.0,>=2.6.0a1 in /usr/local/lib/python3.6/site-packages (from flake8==3.8.1->-r requirements-dev.txt (line 3)) (2.6.0)
+Requirement already satisfied: pyflakes<2.3.0,>=2.2.0 in /usr/local/lib/python3.6/site-packages (from flake8==3.8.1->-r requirements-dev.txt (line 3)) (2.2.0)
+Requirement already satisfied: mccabe<0.7.0,>=0.6.0 in /usr/local/lib/python3.6/site-packages (from flake8==3.8.1->-r requirements-dev.txt (line 3)) (0.6.1)
+Requirement already satisfied: mypy-extensions<0.5.0,>=0.4.3 in /usr/local/lib/python3.6/site-packages (from mypy<0.783->-r requirements-dev.txt (line 4)) (0.4.3)
+Requirement already satisfied: typing-extensions>=3.7.4 in /usr/local/lib/python3.6/site-packages (from mypy<0.783->-r requirements-dev.txt (line 4)) (3.7.4.2)
+Requirement already satisfied: packaging in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (20.4)
+Requirement already satisfied: py>=1.5.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (1.9.0)
+Requirement already satisfied: wcwidth in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (0.2.5)
+Requirement already satisfied: more-itertools>=4.0.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (8.4.0)
+Requirement already satisfied: pluggy<1.0,>=0.12 in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (0.13.1)
+Requirement already satisfied: virtualenv!=20.0.0,!=20.0.1,!=20.0.2,!=20.0.3,!=20.0.4,!=20.0.5,!=20.0.6,!=20.0.7,>=16.0.0 in /usr/local/lib/python3.6/site-packages (from tox<4.0.0->-r requirements-dev.txt (line 8)) (20.0.27)
+Requirement already satisfied: filelock>=3.0.0 in /usr/local/lib/python3.6/site-packages (from tox<4.0.0->-r requirements-dev.txt (line 8)) (3.0.12)
+Requirement already satisfied: PTable in /usr/local/lib/python3.6/site-packages (from pip-licenses==2.2.1->-r requirements-dev.txt (line 22)) (0.9.2)
+Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from Jinja2>=2.10.1->Flask<2.0.0->-r requirements.txt (line 1)) (1.1.1)
+Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.6/site-packages (from importlib-metadata; python_version < "3.8"->jsonschema<4.0.0->-r requirements.txt (line 2)) (3.1.0)
+Requirement already satisfied: cryptography in /usr/local/lib/python3.6/site-packages (from azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (2.9.2)
+Requirement already satisfied: cachetools<5.0,>=2.0.0 in /usr/local/lib/python3.6/site-packages (from google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (4.1.1)
+Requirement already satisfied: rsa<5,>=3.1.4; python_version >= "3" in /usr/local/lib/python3.6/site-packages (from google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (4.6)
+Requirement already satisfied: pyasn1-modules>=0.2.1 in /usr/local/lib/python3.6/site-packages (from google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (0.2.8)
+Requirement already satisfied: google-api-core<2.0.0dev,>=1.16.0 in /usr/local/lib/python3.6/site-packages (from google-cloud-core<2.0dev,>=1.2.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (1.21.0)
+Requirement already satisfied: pyparsing>=2.0.2 in /usr/local/lib/python3.6/site-packages (from packaging->pytest==5.4.2->-r requirements-dev.txt (line 6)) (2.4.7)
+Requirement already satisfied: importlib-resources>=1.0; python_version < "3.7" in /usr/local/lib/python3.6/site-packages (from virtualenv!=20.0.0,!=20.0.1,!=20.0.2,!=20.0.3,!=20.0.4,!=20.0.5,!=20.0.6,!=20.0.7,>=16.0.0->tox<4.0.0->-r requirements-dev.txt (line 8)) (3.0.0)
+Requirement already satisfied: distlib<1,>=0.3.1 in /usr/local/lib/python3.6/site-packages (from virtualenv!=20.0.0,!=20.0.1,!=20.0.2,!=20.0.3,!=20.0.4,!=20.0.5,!=20.0.6,!=20.0.7,>=16.0.0->tox<4.0.0->-r requirements-dev.txt (line 8)) (0.3.1)
+Requirement already satisfied: cffi!=1.11.3,>=1.8 in /usr/local/lib/python3.6/site-packages (from cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (1.14.0)
+Requirement already satisfied: pyasn1>=0.1.3 in /usr/local/lib/python3.6/site-packages (from rsa<5,>=3.1.4; python_version >= "3"->google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (0.4.8)
+Requirement already satisfied: googleapis-common-protos<2.0dev,>=1.6.0 in /usr/local/lib/python3.6/site-packages (from google-api-core<2.0.0dev,>=1.16.0->google-cloud-core<2.0dev,>=1.2.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19)) (1.52.0)
+Requirement already satisfied: pycparser in /usr/local/lib/python3.6/site-packages (from cffi!=1.11.3,>=1.8->cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (2.20)
+Installing collected packages: seldon-core
+  Running setup.py develop for seldon-core
+Successfully installed seldon-core
+tox tensorflow
+GLOB sdist-make: /workspace/source/python/setup.py
+py3 create: /workspace/source/python/.tox/py3
+py3 installdeps: tenacity, pytest, pytest-cov, Pillow
+py3 inst: /workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip
+py3 installed: attrs==19.3.0,azure-common==1.1.25,azure-storage-blob==2.1.0,azure-storage-common==2.1.0,certifi==2020.6.20,cffi==1.14.0,chardet==3.0.4,click==7.1.2,configparser==5.0.0,coverage==5.2,cryptography==2.9.2,Flask==1.1.2,Flask-Cors==3.0.8,Flask-OpenTracing==1.1.0,flatbuffers==1.12,grpcio==1.30.0,grpcio-opentracing==1.1.4,gunicorn==20.0.4,idna==2.10,importlib-metadata==1.7.0,itsdangerous==1.1.0,jaeger-client==4.1.0,Jinja2==2.11.2,jsonschema==3.2.0,MarkupSafe==1.1.1,minio==5.0.10,more-itertools==8.4.0,numpy==1.19.0,opentracing==2.2.0,packaging==20.4,Pillow==7.2.0,pluggy==0.13.1,prometheus-client==0.8.0,protobuf==3.12.2,py==1.9.0,pycparser==2.20,pyparsing==2.4.7,pyrsistent==0.16.0,pytest==5.4.3,pytest-cov==2.10.0,python-dateutil==2.8.1,pytz==2020.1,PyYAML==5.3.1,redis==3.5.3,requests==2.24.0,seldon-core @ file:///workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip,six==1.15.0,tenacity==6.2.0,threadloop==1.0.2,thrift==0.13.0,tornado==5.1.1,urllib3==1.25.9,wcwidth==0.2.5,Werkzeug==1.0.1,zipp==3.1.0
+py3 run-test-pre: PYTHONHASHSEED='3266267810'
+py3 run-test: commands[0] | pytest tensorflow
+============================= test session starts ==============================
+platform linux -- Python 3.6.10, pytest-5.4.3, py-1.9.0, pluggy-0.13.1
+cachedir: .tox/py3/.pytest_cache
+rootdir: /workspace/source/python, inifile: setup.cfg
+plugins: cov-2.10.0
+collected 0 items
+
+============================ no tests ran in 0.01s =============================
+ERROR: file not found: tensorflow
+
+ERROR: InvocationError for command /workspace/source/python/.tox/py3/bin/pytest tensorflow (exited with code 4)
+tensorflow create: /workspace/source/python/.tox/tensorflow
+tensorflow installdeps: tenacity, pytest, pytest-cov, Pillow
+tensorflow inst: /workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip
+tensorflow installed: absl-py==0.9.0,astunparse==1.6.3,attrs==19.3.0,azure-common==1.1.25,azure-storage-blob==2.1.0,azure-storage-common==2.1.0,cachetools==4.1.1,certifi==2020.6.20,cffi==1.14.0,chardet==3.0.4,click==7.1.2,configparser==5.0.0,coverage==5.2,cryptography==2.9.2,Flask==1.1.2,Flask-Cors==3.0.8,Flask-OpenTracing==1.1.0,flatbuffers==1.12,gast==0.3.3,google-auth==1.19.2,google-auth-oauthlib==0.4.1,google-pasta==0.2.0,grpcio==1.30.0,grpcio-opentracing==1.1.4,gunicorn==20.0.4,h5py==2.10.0,idna==2.10,importlib-metadata==1.7.0,itsdangerous==1.1.0,jaeger-client==4.1.0,Jinja2==2.11.2,jsonschema==3.2.0,Keras-Preprocessing==1.1.2,Markdown==3.2.2,MarkupSafe==1.1.1,minio==5.0.10,more-itertools==8.4.0,numpy==1.19.0,oauthlib==3.1.0,opentracing==2.2.0,opt-einsum==3.2.1,packaging==20.4,Pillow==7.2.0,pluggy==0.13.1,prometheus-client==0.8.0,protobuf==3.12.2,py==1.9.0,pyasn1==0.4.8,pyasn1-modules==0.2.8,pycparser==2.20,pyparsing==2.4.7,pyrsistent==0.16.0,pytest==5.4.3,pytest-cov==2.10.0,python-dateutil==2.8.1,pytz==2020.1,PyYAML==5.3.1,redis==3.5.3,requests==2.24.0,requests-oauthlib==1.3.0,rsa==4.6,scipy==1.4.1,seldon-core @ file:///workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip,six==1.15.0,tenacity==6.2.0,tensorboard==2.2.2,tensorboard-plugin-wit==1.7.0,tensorflow==2.2.0,tensorflow-estimator==2.2.0,termcolor==1.1.0,threadloop==1.0.2,thrift==0.13.0,tornado==5.1.1,urllib3==1.25.9,wcwidth==0.2.5,Werkzeug==1.0.1,wrapt==1.12.1,zipp==3.1.0
+tensorflow run-test-pre: PYTHONHASHSEED='3266267810'
+tensorflow run-test: commands[0] | pytest tensorflow
+============================= test session starts ==============================
+platform linux -- Python 3.6.10, pytest-5.4.3, py-1.9.0, pluggy-0.13.1
+cachedir: .tox/tensorflow/.pytest_cache
+rootdir: /workspace/source/python, inifile: setup.cfg
+plugins: cov-2.10.0
+collected 0 items
+
+============================ no tests ran in 0.01s =============================
+ERROR: file not found: tensorflow
+
+ERROR: InvocationError for command /workspace/source/python/.tox/tensorflow/bin/pytest tensorflow (exited with code 4)
+gcs create: /workspace/source/python/.tox/gcs
+gcs installdeps: tenacity, pytest, pytest-cov, Pillow
+gcs inst: /workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip
+gcs installed: attrs==19.3.0,azure-common==1.1.25,azure-storage-blob==2.1.0,azure-storage-common==2.1.0,cachetools==4.1.1,certifi==2020.6.20,cffi==1.14.0,chardet==3.0.4,click==7.1.2,configparser==5.0.0,coverage==5.2,cryptography==2.9.2,Flask==1.1.2,Flask-Cors==3.0.8,Flask-OpenTracing==1.1.0,flatbuffers==1.12,google-api-core==1.21.0,google-auth==1.19.2,google-cloud-core==1.3.0,google-cloud-storage==1.29.0,google-resumable-media==0.5.1,googleapis-common-protos==1.52.0,grpcio==1.30.0,grpcio-opentracing==1.1.4,gunicorn==20.0.4,idna==2.10,importlib-metadata==1.7.0,itsdangerous==1.1.0,jaeger-client==4.1.0,Jinja2==2.11.2,jsonschema==3.2.0,MarkupSafe==1.1.1,minio==5.0.10,more-itertools==8.4.0,numpy==1.19.0,opentracing==2.2.0,packaging==20.4,Pillow==7.2.0,pluggy==0.13.1,prometheus-client==0.8.0,protobuf==3.12.2,py==1.9.0,pyasn1==0.4.8,pyasn1-modules==0.2.8,pycparser==2.20,pyparsing==2.4.7,pyrsistent==0.16.0,pytest==5.4.3,pytest-cov==2.10.0,python-dateutil==2.8.1,pytz==2020.1,PyYAML==5.3.1,redis==3.5.3,requests==2.24.0,rsa==4.6,seldon-core @ file:///workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip,six==1.15.0,tenacity==6.2.0,threadloop==1.0.2,thrift==0.13.0,tornado==5.1.1,urllib3==1.25.9,wcwidth==0.2.5,Werkzeug==1.0.1,zipp==3.1.0
+gcs run-test-pre: PYTHONHASHSEED='3266267810'
+gcs run-test: commands[0] | pytest tensorflow
+============================= test session starts ==============================
+platform linux -- Python 3.6.10, pytest-5.4.3, py-1.9.0, pluggy-0.13.1
+cachedir: .tox/gcs/.pytest_cache
+rootdir: /workspace/source/python, inifile: setup.cfg
+plugins: cov-2.10.0
+collected 0 items
+
+============================ no tests ran in 0.01s =============================
+ERROR: file not found: tensorflow
+
+ERROR: InvocationError for command /workspace/source/python/.tox/gcs/bin/pytest tensorflow (exited with code 4)
+all create: /workspace/source/python/.tox/all
+all installdeps: tenacity, pytest, pytest-cov, Pillow
+all inst: /workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip
+all installed: absl-py==0.9.0,astunparse==1.6.3,attrs==19.3.0,azure-common==1.1.25,azure-storage-blob==2.1.0,azure-storage-common==2.1.0,cachetools==4.1.1,certifi==2020.6.20,cffi==1.14.0,chardet==3.0.4,click==7.1.2,configparser==5.0.0,coverage==5.2,cryptography==2.9.2,Flask==1.1.2,Flask-Cors==3.0.8,Flask-OpenTracing==1.1.0,flatbuffers==1.12,gast==0.3.3,google-api-core==1.21.0,google-auth==1.19.2,google-auth-oauthlib==0.4.1,google-cloud-core==1.3.0,google-cloud-storage==1.29.0,google-pasta==0.2.0,google-resumable-media==0.5.1,googleapis-common-protos==1.52.0,grpcio==1.30.0,grpcio-opentracing==1.1.4,gunicorn==20.0.4,h5py==2.10.0,idna==2.10,importlib-metadata==1.7.0,itsdangerous==1.1.0,jaeger-client==4.1.0,Jinja2==2.11.2,jsonschema==3.2.0,Keras-Preprocessing==1.1.2,Markdown==3.2.2,MarkupSafe==1.1.1,minio==5.0.10,more-itertools==8.4.0,numpy==1.19.0,oauthlib==3.1.0,opentracing==2.2.0,opt-einsum==3.2.1,packaging==20.4,Pillow==7.2.0,pluggy==0.13.1,prometheus-client==0.8.0,protobuf==3.12.2,py==1.9.0,pyasn1==0.4.8,pyasn1-modules==0.2.8,pycparser==2.20,pyparsing==2.4.7,pyrsistent==0.16.0,pytest==5.4.3,pytest-cov==2.10.0,python-dateutil==2.8.1,pytz==2020.1,PyYAML==5.3.1,redis==3.5.3,requests==2.24.0,requests-oauthlib==1.3.0,rsa==4.6,scipy==1.4.1,seldon-core @ file:///workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip,six==1.15.0,tenacity==6.2.0,tensorboard==2.2.2,tensorboard-plugin-wit==1.7.0,tensorflow==2.2.0,tensorflow-estimator==2.2.0,termcolor==1.1.0,threadloop==1.0.2,thrift==0.13.0,tornado==5.1.1,urllib3==1.25.9,wcwidth==0.2.5,Werkzeug==1.0.1,wrapt==1.12.1,zipp==3.1.0
+all run-test-pre: PYTHONHASHSEED='3266267810'
+all run-test: commands[0] | pytest tensorflow
+============================= test session starts ==============================
+platform linux -- Python 3.6.10, pytest-5.4.3, py-1.9.0, pluggy-0.13.1
+cachedir: .tox/all/.pytest_cache
+rootdir: /workspace/source/python, inifile: setup.cfg
+plugins: cov-2.10.0
+collected 0 items
+
+============================ no tests ran in 0.01s =============================
+ERROR: file not found: tensorflow
+
+ERROR: InvocationError for command /workspace/source/python/.tox/all/bin/pytest tensorflow (exited with code 4)
+___________________________________ summary ____________________________________
+ERROR:   py3: commands failed
+ERROR:   tensorflow: commands failed
+ERROR:   gcs: commands failed
+ERROR:   all: commands failed
+make: Leaving directory '/workspace/source/python'
+make: *** [Makefile:70: test] Error 1
+[31m
+Pipeline failed on stage 'seldon-python-tensorflow' : container 'step-test-python-tensorflow'. The execution of the pipeline has stopped.[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-executor[0m and container [32mstep-credential-initializer-7krrl[0m
+{"level":"info","ts":1595061068.7877562,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1595061068.78828,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-executor[0m and container [32mstep-working-dir-initializer-gshbg[0m
+{"level":"info","ts":1595061070.35694,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595061070.3588548,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-executor[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-executor[0m and container [32mstep-create-dir-workspace-9grnv[0m
+{"level":"info","ts":1595061083.9143386,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595061083.9161706,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-executor[0m and container [32mstep-source-copy-workspace-xmzpf[0m
+{"level":"info","ts":1595061084.2151718,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595061084.6648052,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-executor[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2149-pr-ftfk9-38[0m stage [32mseldon-executor[0m and container [32mstep-test-executor[0m
+make: Entering directory '/workspace/source/executor'
+go fmt ./api/... ./predictor/... ./k8s/...
+go: downloading github.com/pkg/errors v0.9.1
+go: downloading github.com/golang/protobuf v1.4.2
+go: downloading github.com/google/uuid v1.1.1
+go: downloading github.com/uber/jaeger-client-go v2.24.0+incompatible
+go: downloading google.golang.org/grpc v1.30.0
+go: downloading sigs.k8s.io/controller-runtime v0.5.8
+go: downloading github.com/opentracing/opentracing-go v1.2.0
+go: downloading golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+go: downloading k8s.io/apimachinery v0.17.8
+go: downloading google.golang.org/protobuf v1.23.0
+go: downloading k8s.io/api v0.17.8
+go: downloading go.uber.org/atomic v1.6.0
+go: downloading github.com/gorilla/mux v1.7.4
+go: downloading github.com/spf13/pflag v1.0.5
+go: downloading github.com/go-logr/logr v0.1.0
+go: downloading github.com/uber/jaeger-lib v2.2.0+incompatible
+go: downloading go.uber.org/zap v1.15.0
+go: downloading github.com/gogo/protobuf v1.3.1
+go: downloading google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
+go: downloading github.com/cloudevents/sdk-go v1.2.0
+go: downloading github.com/prometheus/client_golang v1.7.1
+go: downloading gopkg.in/fsnotify.v1 v1.4.7
+go: downloading k8s.io/client-go v0.17.8
+go: downloading gomodules.xyz/jsonpatch/v2 v2.0.1
+go: downloading golang.org/x/sys v0.0.0-20200615200032-f1bc736245b1
+go: downloading github.com/prometheus/common v0.10.0
+go: downloading github.com/beorn7/perks v1.0.1
+go: downloading github.com/cespare/xxhash/v2 v2.1.1
+go: downloading github.com/prometheus/procfs v0.1.3
+go: downloading github.com/matttproud/golang_protobuf_extensions v1.0.1
+go: downloading github.com/go-logr/zapr v0.1.0
+go: downloading go.opencensus.io v0.22.0
+go: downloading golang.org/x/net v0.0.0-20200520004742-59133d7f0dd7
+go: downloading k8s.io/apiextensions-apiserver v0.17.8
+go: downloading k8s.io/utils v0.0.0-20200619165400-6e3d28b6ed19
+go: downloading github.com/davecgh/go-spew v1.1.1
+go: downloading gopkg.in/inf.v0 v0.9.1
+go: downloading github.com/prometheus/client_model v0.2.0
+go: downloading k8s.io/klog v1.0.0
+go: downloading github.com/google/gofuzz v1.0.0
+go: downloading github.com/modern-go/reflect2 v1.0.1
+go: downloading github.com/json-iterator/go v1.1.10
+go: downloading github.com/evanphx/json-patch v4.5.0+incompatible
+go: downloading github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6
+go: downloading github.com/lightstep/tracecontext.go v0.0.0-20181129014701-1757c391b1ac
+go: downloading golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0
+go: downloading github.com/imdario/mergo v0.3.9
+go: downloading golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+go: downloading github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+go: downloading sigs.k8s.io/yaml v1.1.0
+go: downloading github.com/googleapis/gnostic v0.3.1
+go: downloading go.uber.org/multierr v1.5.0
+go: downloading k8s.io/klog/v2 v2.0.0
+go: downloading github.com/hashicorp/golang-lru v0.5.4
+go: downloading golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+go: downloading gopkg.in/yaml.v2 v2.3.0
+go: downloading k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29
+go: downloading github.com/google/go-cmp v0.5.0
+go: downloading github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
+go: downloading golang.org/x/text v0.3.3
+go vet ./api/... ./predictor/... ./k8s/...
+go: downloading gotest.tools v2.2.0+incompatible
+go: downloading github.com/onsi/gomega v1.10.1
+go test ./api/... ./predictor/... ./k8s/... -coverprofile cover.out
+?   	github.com/seldonio/seldon-core/executor/api	[no test files]
+?   	github.com/seldonio/seldon-core/executor/api/client	[no test files]
+ok  	github.com/seldonio/seldon-core/executor/api/grpc	0.098s	coverage: 18.0% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/grpc/seldon	1.264s	coverage: 48.5% of statements
+?   	github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto	[no test files]
+?   	github.com/seldonio/seldon-core/executor/api/grpc/seldon/test	[no test files]
+ok  	github.com/seldonio/seldon-core/executor/api/grpc/tensorflow	0.226s	coverage: 19.0% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/metric	0.141s	coverage: 31.6% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/payload	0.022s	coverage: 64.3% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/rest	1.141s	coverage: 67.4% of statements
+?   	github.com/seldonio/seldon-core/executor/api/test	[no test files]
+ok  	github.com/seldonio/seldon-core/executor/api/tracing	0.021s	coverage: 72.2% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/util	0.203s	coverage: 48.1% of statements
+ok  	github.com/seldonio/seldon-core/executor/predictor	0.127s	coverage: 78.5% of statements
+ok  	github.com/seldonio/seldon-core/executor/k8s	0.084s	coverage: 72.7% of statements
+make: Leaving directory '/workspace/source/executor'
