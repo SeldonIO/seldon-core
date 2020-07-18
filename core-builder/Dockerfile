@@ -1,6 +1,6 @@
 FROM openjdk:13.0.1-jdk-buster
 
-ENV PYTHON_VERSION "3.7.4"
+ENV PYTHON_VERSION "3.6.10"
 
 # install docker
 RUN \
@@ -88,6 +88,22 @@ RUN pip install --upgrade setuptools
 RUN pip install pyyaml
 RUN pip install grpcio
 RUN pip install grpcio-tools
+RUN pip install flatbuffers
+RUN pip install twine
+RUN pip install mypy-protobuf
+
+# Install flatc
+RUN apt-get install cmake -y
+RUN INSTALL_DIR=/tmp/flatc-install && \
+    mkdir $INSTALL_DIR && \
+    cd $INSTALL_DIR && \
+    git clone https://github.com/google/flatbuffers.git && \
+    cd flatbuffers && \
+    cmake -G "Unix Makefiles" && \
+    make && \
+    cp ./flatc /usr/local/bin/ && \
+    rm -rf $INSTALL_DIR
+
 RUN apt-get remove -y --auto-remove && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # INSTALL GO
@@ -112,9 +128,6 @@ RUN wget https://github.com/kubernetes-sigs/kustomize/releases/download/kustomiz
 RUN \
     update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy && \
     update-alternatives --set iptables /usr/sbin/iptables-legacy
-
-# Make RUN commands use the CONDA environment - see https://pythonspeed.com/articles/activate-conda-dockerfile/
-SHELL ["/opt/conda/bin/conda", "run", "-n", "base", "/bin/bash", "-c"]
 
 # install jupyter
 RUN pip install jupyter
