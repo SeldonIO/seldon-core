@@ -21,22 +21,28 @@ pipelineConfig:
         - name: build-and-test
           parallel:
           - name: test-python
-            command: make
-            args:
-            - -C python
-            - update_package
-            - install_dev
-            - test
+            steps:
+            - name: test-python
+              command: make
+              args:
+              - -C python
+              - update_package
+              - install_dev
+              - test
           - name: seldon-operator
-            command: make
-            args:
-            - -C operator
-            - test
+            steps:
+            - name: test-operator
+              command: make
+              args:
+              - -C operator
+              - test
           - name: seldon-executor
-            command: make
-            args:
-            - -C executor
-            - test
+            steps:
+            - name: test-executor
+              command: make
+              args:
+              - -C executor
+              - test
     release:
       setVersion:
         steps:
@@ -52,7 +58,7 @@ pipelineConfig:
           command: echo "skipping tag"
       pipeline:
         agent:
-          image: seldonio/core-builder:0.16
+          image: seldonio/core-builder:0.15
         stages:
           - name: build-and-push
             steps:
