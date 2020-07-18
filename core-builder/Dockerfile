@@ -64,12 +64,13 @@ RUN apt-get upgrade && \
         apt-get install zlib1g-dev -y && \
         apt-get install libssl-dev -y && \
 	apt-get install libbz2-dev -y && \
+	apt-get install libsqlite3-dev && \
 	apt-get install liblzma-dev -y
 
 RUN curl -SLO https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz \
     && tar xvf Python-${PYTHON_VERSION}.tgz \
     && cd Python-${PYTHON_VERSION} \
-    && ./configure --prefix=/usr/local --with-openssl \
+    && ./configure --prefix=/usr/local --with-openssl --enable-loadable-sqlite-extensions \
     && make \
     && make altinstall \
     && cd / \
@@ -91,6 +92,8 @@ RUN pip install grpcio-tools
 RUN pip install flatbuffers
 RUN pip install twine
 RUN pip install mypy-protobuf
+RUN pip install pysqlite3
+RUN pip install db-sqlite3
 
 # Install flatc
 RUN apt-get install cmake -y
