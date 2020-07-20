@@ -67,12 +67,6 @@ pipelineConfig:
               args:
               - -C executor
               - test
-        - name: pr-build-comment-success
-          steps:
-          - agent:
-              image: gcr.io/jenkinsxio/builder-go:2.0.916-264
-            dir: ci
-            sh: jx step pr comment --owner=$REPO_OWNER --repository=$REPO_NAME --pull-request=$PULL_NUMBER --comment="$PIPELINE_CONTEXT - $BUILD_NUMBER [SUCCESS ✅] Well done! 😎"
     release:
       setVersion:
         steps:
