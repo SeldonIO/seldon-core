@@ -67,7 +67,7 @@ uninstall:
 
 .PHONY: test
 test:
-	tox -e $(TOX_TEST)
+	tox $(TOX_TEST)
 
 .PHONY: type_check
 type_check:
