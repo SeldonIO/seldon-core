@@ -28,15 +28,19 @@ pipelineConfig:
             - install_dev
             - test
           - name: seldon-operator
-            command: make
-            args:
-            - -C operator
-            - test
+            steps:
+            - name: test-operator
+              command: make
+              args:
+              - -C operator
+              - test
           - name: seldon-executor
-            command: make
-            args:
-            - -C executor
-            - test
+            steps:
+            - name: test-executor
+              command: make
+              args:
+              - -C executor
+              - test
     release:
       setVersion:
         steps:
