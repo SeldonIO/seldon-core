@@ -43,6 +43,16 @@ pipelineConfig:
               - install_dev
               - test
               - TOX_TEST=gcs
+          - name: seldon-python-azure
+            steps:
+            - name: test-python-azure
+              command: make
+              args:
+              - -C python
+              - update_package
+              - install_dev
+              - test
+              - TOX_TEST=azure
           - name: seldon-python-tensorflow
             steps:
             - name: test-python-tensorflow
