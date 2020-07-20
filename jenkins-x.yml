@@ -23,30 +23,15 @@ pipelineConfig:
             sh: "./add-pr-build-comment"
         - name: build-and-test
           parallel:
-          - name: test-python-all
-            command: make
-            args:
-            - -C python
-            - update_package
-            - install_dev
-            - test
-            - TOX_TEST=all
-          - name: test-python-all
-            command: make
-            args:
-            - -C python
-            - update_package
-            - install_dev
-            - test
-            - TOX_TEST=gcs
-          - name: test-python-all
-            command: make
-            args:
-            - -C python
-            - update_package
-            - install_dev
-            - test
-            - TOX_TEST=tensorflow
+          - name: test-python
+            steps:
+            - name: test-python
+              command: make
+              args:
+              - -C python
+              - update_package
+              - install_dev
+              - test
           - name: seldon-operator
             steps:
             - name: test-operator
