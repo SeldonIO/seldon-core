@@ -8,24 +8,16 @@ pipelineConfig:
       step:
         command: echo "skipping promote"
     pullRequest:
-      preBuild:
-        steps:
-          - name: pr-build-comment
-          agent:
-            image: gcr.io/jenkinsxio/builder-go:2.0.916-264
-          dir: ci
-          sh: "./add-pr-build-comment"
-      postBuild:
-        steps:
-          - name: pr-build-comment
-          agent:
-            image: gcr.io/jenkinsxio/builder-go:2.0.916-264
-          dir: ci
-          sh: jx step pr comment --owner=$REPO_OWNER --repository=$REPO_NAME --pull-request=$PULL_NUMBER --comment="Testing on finish"
       pipeline:
         agent:
           image: seldonio/core-builder:0.15
         stages:
+        - name: pr-build-comment
+          steps:
+          - agent:
+              image: gcr.io/jenkinsxio/builder-go:2.0.916-264
+            dir: ci
+            sh: "./add-pr-build-comment"
         - name: build-and-test
           parallel:
           - name: test-python
