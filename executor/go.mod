@@ -18,7 +18,7 @@ require (
 	github.com/seldonio/seldon-core/operator v0.0.0-00010101000000-000000000000
 	github.com/soheilhy/cmux v0.1.4
 	github.com/tensorflow/tensorflow/tensorflow/go/core v0.0.0-00010101000000-000000000000
-	github.com/uber/jaeger-client-go v2.24.0+incompatible
+	github.com/uber/jaeger-client-go v2.25.0+incompatible
 	github.com/uber/jaeger-lib v2.2.0+incompatible // indirect
 	go.uber.org/zap v1.15.0
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
