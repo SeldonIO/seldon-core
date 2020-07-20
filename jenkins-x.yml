@@ -7,11 +7,6 @@ pipelineConfig:
       stage: promote
       step:
         command: echo "skipping promote"
-    - name: pr-comment
-      pipeline: pullRequest
-      stage: preBuild
-      step:
-        command: sh ./add-pr-build-comment
     pullRequest:
       setVersion:
         steps:
