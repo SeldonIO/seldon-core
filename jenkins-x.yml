@@ -19,7 +19,7 @@ pipelineConfig:
               image: seldonio/python-builder:0.2
             steps:
             - name: temp
-              command: jx step pr comment --owner=$REPO_OWNER --repository=$REPO_NAME --pull-request=$PULL_NUMBER --comment="Testing on finish"
+              sh: jx step pr comment --owner=$REPO_OWNER --repository=$REPO_NAME --pull-request=$PULL_NUMBER --comment="Testing on finish"
               #- name: test-python
               #  command: make
               #  args:
