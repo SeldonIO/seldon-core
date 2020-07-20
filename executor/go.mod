@@ -25,7 +25,7 @@ require (
 	google.golang.org/grpc v1.30.0
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.17.8
-	k8s.io/apimachinery v0.17.8
+	k8s.io/apimachinery v0.18.6
 	sigs.k8s.io/controller-runtime v0.5.8
 )
 
