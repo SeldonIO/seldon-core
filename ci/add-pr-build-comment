@@ -18,13 +18,15 @@ BUILD_NUMBER=${BUILD_NUMBER}
 PIPELINE_CONTEXT=${PIPELINE_CONTEXT}
 
 COMMENT_MSG=$(cat <<EOF
-## STARTING TEST [ ${PIPELINE_CONTEXT} # ${BUILD_NUMBER} ]
+# STARTING TEST [ ${PIPELINE_CONTEXT} # ${BUILD_NUMBER} ]
 
 Logs will be available when test completes in the following link:
 https://github.com/${REPO_OWNER}/${REPO_NAME}/blob/gh-pages/jenkins-x/logs/${REPO_OWNER}/${REPO_NAME}/PR-${PULL_NUMBER}/${BUILD_NUMBER}.log
 
-Impatient try:
+impatient try
+```
 jx get build logs ${REPO_OWNER}/${REPO_NAME}/PR-${PULL_NUMBER} --build=${BUILD_NUMBER}
+```
 EOF
 )
 
