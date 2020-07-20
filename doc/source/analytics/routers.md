@@ -16,3 +16,7 @@ As an example, consider writing a custom A/B/C... testing component with a user-
 Because routers are generic components that only need to implement the ```Route``` method, there is considerable flexibility in designing the routing logic. Some example concepts going beyond random testing and multi-armed bandits:
 * Routing depending on external conditions, e.g. use the time of day to route traffic to a model that has been known to perform best during a particular time period.
 * Model as a router: use a predictive model within a router component to first determine a higher level class membership (e.g. cat vs dog) and according to the decision route traffic to more specific models (e.g. dog-specific model to infer a breed).
+
+## Limitations
+
+The current default orchestrator in Go the "executor" does not return routing meta data in request calls. This is a [known issue](https://github.com/SeldonIO/seldon-core/issues/1823). 
