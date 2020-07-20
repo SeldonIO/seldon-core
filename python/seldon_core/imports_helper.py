@@ -36,7 +36,7 @@ except ImportError:
         or
 
             $ pip install seldon_core[all]
-    """
+        """
     )
     logger.info(notice)
 
@@ -58,7 +58,7 @@ except ImportError:
         or
 
             $ pip install seldon_core[all]
-    """
+        """
     )
     logger.info(notice)
 
@@ -79,6 +79,6 @@ except ImportError:
         or
 
             $ pip install seldon_core[all]
-    """
+        """
     )
     logger.info(notice)
