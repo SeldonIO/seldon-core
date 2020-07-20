@@ -64,9 +64,3 @@ pipelineConfig:
                     type: Directory
                 - name: dind-storage
                   emptyDir: {}
-          - name: pr-build-comment-success
-            steps:
-              - agent:
-                  image: gcr.io/jenkinsxio/builder-go:2.0.916-264
-                dir: ci
-                sh: "./add-pr-build-comment-success"
