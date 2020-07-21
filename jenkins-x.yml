@@ -14,15 +14,6 @@ pipelineConfig:
         options:
           containerOptions:
             imagePullPolicy: Always
-            resources:
-              requests:
-                cpu: 2
-                memory: 1000Mi
-                ephemeral-storage: "6Gi"
-              limits:
-                cpu: 2
-                memory: 1000Mi
-                ephemeral-storage: "6Gi"
         stages:
         - name: pr-build-comment
           steps:
@@ -31,10 +22,16 @@ pipelineConfig:
             dir: ci
             sh: "./add-pr-build-comment"
         - name: build-and-test
+          options:
+            containerOptions:
+              imagePullPolicy: Always
+              resources:
+                limits:
+                  cpu: 2
+                  memory: 1000Mi
+                  ephemeral-storage: "2Gi"
           parallel:
           - name: seldon-python-all
-            agent:
-              image: seldonio/core-builder:0.15
             steps:
             - name: test-python-all
               command: make
@@ -65,6 +62,13 @@ pipelineConfig:
               - test
               - TOX_TEST=tensorflow
           - name: seldon-operator
+            options:
+              containerOptions:
+                resources:
+                  limits:
+                    cpu: 7
+                    memory: 1000Mi
+                    ephemeral-storage: "2Gi"
             steps:
             - name: test-operator
               command: make
