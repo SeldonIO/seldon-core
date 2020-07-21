@@ -5,6 +5,35 @@ pipelineConfig:
       pipeline:
         agent:
           image: seldonio/core-builder:0.16
+        options:
+          containerOptions:
+            volumeMounts:
+              - mountPath: /lib/modules
+                name: modules
+                readOnly: true
+              - mountPath: /sys/fs/cgroup
+                name: cgroup
+              - name: dind-storage
+                mountPath: /var/lib/docker
+            resources:
+              requests:
+                cpu: 4
+                memory: 8000Mi
+                ephemeral-storage: "6Gi"
+            securityContext:
+              privileged: true
+            imagePullPolicy: Always
+          volumes:
+            - name: modules
+              hostPath:
+                path: /lib/modules
+                type: Directory
+            - name: cgroup
+              hostPath:
+                path: /sys/fs/cgroup
+                type: Directory
+            - name: dind-storage
+              emptyDir: {}
         stages:
           - name: pr-build-comment
             steps:
@@ -35,35 +64,6 @@ pipelineConfig:
                   - testing/scripts &&
                   - bash
                   - kind_test_all.sh
-            options:
-              containerOptions:
-                volumeMounts:
-                  - mountPath: /lib/modules
-                    name: modules
-                    readOnly: true
-                  - mountPath: /sys/fs/cgroup
-                    name: cgroup
-                  - name: dind-storage
-                    mountPath: /var/lib/docker
-                resources:
-                  requests:
-                    cpu: 4
-                    memory: 8000Mi
-                    ephemeral-storage: "6Gi"
-                securityContext:
-                  privileged: true
-                imagePullPolicy: Always
-              volumes:
-                - name: modules
-                  hostPath:
-                    path: /lib/modules
-                    type: Directory
-                - name: cgroup
-                  hostPath:
-                    path: /sys/fs/cgroup
-                    type: Directory
-                - name: dind-storage
-                  emptyDir: {}
           - name: pr-build-comment-success
             steps:
               - agent:

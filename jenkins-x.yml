@@ -14,6 +14,17 @@ pipelineConfig:
             imagePullPolicy: Always
         agent:
           image: seldonio/core-builder:0.16
+        options:
+          containerOptions:
+            resources:
+              requests:
+                cpu: 2
+                memory: 1000Mi
+                ephemeral-storage: "6Gi"
+              limits:
+                cpu: 2
+                memory: 1000Mi
+                ephemeral-storage: "6Gi"
         stages:
         - name: pr-build-comment
           steps:
@@ -24,6 +35,8 @@ pipelineConfig:
         - name: build-and-test
           parallel:
           - name: seldon-python-all
+            agent:
+              image: seldonio/core-builder:0.15
             steps:
             - name: test-python-all
               command: make
