@@ -60,6 +60,7 @@ const (
 	ENV_PREDICTOR_ID                         = "PREDICTOR_ID"
 	ENV_PREDICTOR_LABELS                     = "PREDICTOR_LABELS"
 	ENV_SELDON_DEPLOYMENT_ID                 = "SELDON_DEPLOYMENT_ID"
+	ENV_SELDON_EXECUTOR_ENABLED              = "SELDON_EXECUTOR_ENABLED"
 
 	ANNOTATION_JAVA_OPTS       = "seldon.io/engine-java-opts"
 	ANNOTATION_SEPARATE_ENGINE = "seldon.io/engine-separate-pod"

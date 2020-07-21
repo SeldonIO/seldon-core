@@ -58,6 +58,8 @@ class UserObject(SeldonComponent):
         self.nparray = np.array([1, 2, 3])
         self.ret_meta = ret_meta
 
+        self.rewards = []
+
     def predict(self, X, features_names, **kwargs):
         """
         Return a prediction.
@@ -76,7 +78,8 @@ class UserObject(SeldonComponent):
             logging.info(X)
             return X
 
-    def feedback(self, features, feature_names, reward, truth):
+    def send_feedback(self, features, feature_names, reward, truth, routing=None):
+        self.rewards.append(reward)
         logging.info("Feedback called")
 
     def tags(self):
@@ -435,6 +438,7 @@ def test_model_feedback_ok():
     j = json.loads(rv.data)
     logging.info(j)
     assert rv.status_code == 200
+    assert user_object.rewards[-1] == 1.0
 
 
 def test_feedback_v10_ok():
