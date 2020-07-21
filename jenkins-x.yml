@@ -27,13 +27,13 @@ pipelineConfig:
               imagePullPolicy: Always
               resources:
                 requests:
-                  cpu: 2
+                  cpu: 4
                   memory: 1500Mi
-                  ephemeral-storage: "2Gi"
+                  ephemeral-storage: "4Gi"
                 limits:
-                  cpu: 2
+                  cpu: 4
                   memory: 1500Mi
-                  ephemeral-storage: "2Gi"
+                  ephemeral-storage: "4Gi"
           parallel:
           - name: seldon-python-all
             steps:
@@ -71,12 +71,12 @@ pipelineConfig:
                 resources:
                   requests:
                     cpu: 7
-                    memory: 1000Mi
-                    ephemeral-storage: "2Gi"
+                    memory: 2000Mi
+                    ephemeral-storage: "4Gi"
                   limits:
                     cpu: 7
-                    memory: 1000Mi
-                    ephemeral-storage: "2Gi"
+                    memory: 2000Mi
+                    ephemeral-storage: "4Gi"
             steps:
             - name: test-operator
               command: make
@@ -90,11 +90,11 @@ pipelineConfig:
                   requests:
                     cpu: 7
                     memory: 2000Mi
-                    ephemeral-storage: "2Gi"
+                    ephemeral-storage: "4Gi"
                   limits:
                     cpu: 7
                     memory: 2000Mi
-                    ephemeral-storage: "2Gi"
+                    ephemeral-storage: "4Gi"
             steps:
             - name: test-executor
               command: make
