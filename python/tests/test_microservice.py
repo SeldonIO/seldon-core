@@ -113,7 +113,7 @@ def test_model_template_app_grpc(microservice):
         tensor=prediction_pb2.Tensor(shape=data.shape, values=data.flatten())
     )
     request = prediction_pb2.SeldonMessage(data=datadef)
-    channel = grpc.insecure_channel("localhost:5000")
+    channel = grpc.insecure_channel("0.0.0.0:5000")
     stub = prediction_pb2_grpc.ModelStub(channel)
     response = retry_method(stub.Predict, kwargs=dict(request=request))
     assert response.data.tensor.shape[0] == 1
@@ -141,7 +141,7 @@ def test_model_template_app_grpc_tags(microservice):
     json_format.ParseDict({"tags": {"foo": "bar"}}, meta)
 
     request = prediction_pb2.SeldonMessage(data=datadef, meta=meta)
-    channel = grpc.insecure_channel("localhost:5000")
+    channel = grpc.insecure_channel("0.0.0.0:5000")
     stub = prediction_pb2_grpc.ModelStub(channel)
     response = retry_method(stub.Predict, kwargs=dict(request=request))
     assert response.data.tensor.shape[0] == 1
@@ -165,7 +165,7 @@ def test_model_template_app_grpc_metrics(microservice):
     )
 
     request = prediction_pb2.SeldonMessage(data=datadef, meta=meta)
-    channel = grpc.insecure_channel("localhost:5000")
+    channel = grpc.insecure_channel("0.0.0.0:5000")
     stub = prediction_pb2_grpc.ModelStub(channel)
     response = retry_method(stub.Predict, kwargs=dict(request=request))
     assert response.data.tensor.shape[0] == 1
