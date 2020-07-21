@@ -1,0 +1,1209 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-mzrz6[0m
+{"level":"info","ts":1595350157.6268752,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1595350157.6274018,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-phrx8[0m
+{"level":"info","ts":1595350158.627316,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595350158.628821,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-lkvvk[0m
+{"level":"info","ts":1595350164.9073865,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595350164.9107642,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-2159-pr-cgnpb-xthws[0m
+{"level":"info","ts":1595350165.2973638,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1595350170.3543878,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mpr-build-comment[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:a15b95c6e0e12ec990e6dffcfa2db82a76ab3d9a,2159:10588544d800045b197855ca43a6883de269f989
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git fetch origin --unshallow 10588544d800045b197855ca43a6883de269f989: a15b95c6e0e12ec990e6dffcfa2db82a76ab3d9a:
+DEBUG: ran git fetch --unshallow origin 10588544d800045b197855ca43a6883de269f989: a15b95c6e0e12ec990e6dffcfa2db82a76ab3d9a: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard a15b95c6e0e12ec990e6dffcfa2db82a76ab3d9a
+DEBUG: ran git reset --hard a15b95c6e0e12ec990e6dffcfa2db82a76ab3d9a in 
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git merge 10588544d800045b197855ca43a6883de269f989
+DEBUG: ran git merge 10588544d800045b197855ca43a6883de269f989 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git log --format=%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%s%n%b%x1e a15b95c6e0e12ec990e6dffcfa2db82a76ab3d9a..HEAD
+Merged SHA 91a3df755cf74f572088270aa40f444e47a4643d with commit message 'Merge commit '10588544d800045b197855ca43a6883de269f989'' into base branch master
+Merged SHA 10588544d800045b197855ca43a6883de269f989 with commit message 'fixed Spring 2 maven plugin jar packaging' into base branch master
+Merged SHA 083ebf66442df11b27a2ec1172629627b5207c33 with commit message 'cleanup' into base branch master
+Merged SHA e1afd420f2e837f72a06132193fedeffedd8e1e5 with commit message 'updated maven compiler java versions' into base branch master
+Merged SHA a1518f81bb5edd6441fb605b2ca439b06b29134f with commit message 'updated project' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=2159
++ BUILD_NUMBER=8
++ PIPELINE_CONTEXT=pr-build
+++ cat
++++ date
++ COMMENT_MSG='Tue Jul 21 16:49:42 UTC 2020
+The logs for [pr-build] [8] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2159/8.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2159 --build=8'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=2159 '--comment=Tue Jul 21 16:49:42 UTC 2020
+The logs for [pr-build] [8] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2159/8.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2159 --build=8'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-2159-pr-cgnpb-2xmq5[0m
+{"level":"info","ts":1595350187.4645202,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595350187.6228523,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-2159-pr-cgnpb-lw7kw[0m
+{"level":"info","ts":1595350188.1214945,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595350188.6603835,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mseldon-operator[0m and container [32mstep-credential-initializer-xsd8v[0m
+{"level":"info","ts":1595350192.6420457,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1595350192.6428034,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mseldon-operator[0m and container [32mstep-working-dir-initializer-bttw2[0m
+{"level":"info","ts":1595350194.1153593,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595350194.1170893,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mseldon-operator[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mseldon-operator[0m and container [32mstep-create-dir-workspace-gcjhj[0m
+{"level":"info","ts":1595350207.5833237,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595350207.585866,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mseldon-operator[0m and container [32mstep-source-copy-workspace-srg4v[0m
+{"level":"info","ts":1595350207.9222002,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595350208.3595622,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mseldon-operator[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mseldon-operator[0m and container [32mstep-test-operator[0m
+make: Entering directory '/workspace/source/operator'
+go: creating new go.mod: module tmp
+go: finding sigs.k8s.io v0.2.5
+go: finding sigs.k8s.io/controller-tools/cmd v0.2.5
+go: finding sigs.k8s.io/controller-tools v0.2.5
+go: finding sigs.k8s.io/controller-tools/cmd/controller-gen v0.2.5
+go: downloading sigs.k8s.io/controller-tools v0.2.5
+go: extracting sigs.k8s.io/controller-tools v0.2.5
+go: downloading github.com/spf13/cobra v0.0.5
+go: downloading k8s.io/apiextensions-apiserver v0.17.0
+go: downloading k8s.io/apimachinery v0.17.0
+go: downloading k8s.io/api v0.17.0
+go: downloading golang.org/x/tools v0.0.0-20190920225731-5eefd052ad72
+go: downloading sigs.k8s.io/yaml v1.1.0
+go: extracting sigs.k8s.io/yaml v1.1.0
+go: extracting github.com/spf13/cobra v0.0.5
+go: downloading github.com/spf13/pflag v1.0.5
+go: extracting github.com/spf13/pflag v1.0.5
+go: downloading gopkg.in/yaml.v2 v2.2.4
+go: extracting gopkg.in/yaml.v2 v2.2.4
+go: downloading github.com/gobuffalo/flect v0.2.0
+go: extracting k8s.io/apimachinery v0.17.0
+go: downloading github.com/fatih/color v1.7.0
+go: downloading k8s.io/klog v1.0.0
+go: downloading github.com/inconshreveable/mousetrap v1.0.0
+go: extracting k8s.io/apiextensions-apiserver v0.17.0
+go: extracting github.com/gobuffalo/flect v0.2.0
+go: downloading github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
+go: downloading github.com/google/gofuzz v1.0.0
+go: downloading gopkg.in/inf.v0 v0.9.1
+go: downloading gopkg.in/yaml.v3 v3.0.0-20190905181640-827449938966
+go: extracting github.com/inconshreveable/mousetrap v1.0.0
+go: extracting k8s.io/klog v1.0.0
+go: extracting github.com/fatih/color v1.7.0
+go: extracting k8s.io/api v0.17.0
+go: downloading github.com/mattn/go-colorable v0.1.2
+go: downloading k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
+go: downloading github.com/mattn/go-isatty v0.0.8
+go: extracting golang.org/x/tools v0.0.0-20190920225731-5eefd052ad72
+go: extracting gopkg.in/yaml.v3 v3.0.0-20190905181640-827449938966
+go: extracting github.com/google/gofuzz v1.0.0
+go: extracting gopkg.in/inf.v0 v0.9.1
+go: downloading golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
+go: extracting github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
+go: extracting k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
+go: extracting github.com/mattn/go-isatty v0.0.8
+go: downloading golang.org/x/sys v0.0.0-20190826190057-c7b8b68b1456
+go: extracting github.com/mattn/go-colorable v0.1.2
+go: extracting golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
+go: extracting golang.org/x/sys v0.0.0-20190826190057-c7b8b68b1456
+go: downloading golang.org/x/text v0.3.2
+go: extracting golang.org/x/text v0.3.2
+go: finding k8s.io/api v0.17.0
+go: finding gopkg.in/yaml.v3 v3.0.0-20190905181640-827449938966
+go: finding k8s.io/apimachinery v0.17.0
+go: finding github.com/spf13/cobra v0.0.5
+go: finding k8s.io/apiextensions-apiserver v0.17.0
+go: finding github.com/fatih/color v1.7.0
+go: finding golang.org/x/tools v0.0.0-20190920225731-5eefd052ad72
+go: finding github.com/gobuffalo/flect v0.2.0
+go: finding sigs.k8s.io/yaml v1.1.0
+go: finding github.com/mattn/go-colorable v0.1.2
+go: finding github.com/mattn/go-isatty v0.0.8
+go: finding github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
+go: finding github.com/spf13/pflag v1.0.5
+go: finding github.com/google/gofuzz v1.0.0
+go: finding gopkg.in/yaml.v2 v2.2.4
+go: finding gopkg.in/inf.v0 v0.9.1
+go: finding k8s.io/klog v1.0.0
+go: finding k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
+go: finding golang.org/x/sys v0.0.0-20190826190057-c7b8b68b1456
+go: finding golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
+go: finding golang.org/x/text v0.3.2
+/builder/home/go/bin/controller-gen object:headerFile=./hack/boilerplate.go.txt paths="./..."
+go fmt ./...
+go vet ./...
+go: downloading github.com/onsi/ginkgo v1.14.0
+go: downloading github.com/onsi/gomega v1.10.1
+go: extracting github.com/onsi/ginkgo v1.14.0
+go: extracting github.com/onsi/gomega v1.10.1
+go: downloading github.com/nxadm/tail v1.4.4
+go: extracting github.com/nxadm/tail v1.4.4
+go: downloading golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+go: downloading gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
+go: extracting golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+go: downloading github.com/fsnotify/fsnotify v1.4.9
+go: extracting gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
+go: extracting github.com/fsnotify/fsnotify v1.4.9
+/builder/home/go/bin/controller-gen "crd:trivialVersions=true" rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+rm -rf generated
+mkdir generated
+kustomize build config/default/ -o generated
+cp generated/apiextensions.k8s.io_v1beta1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml testing/machinelearning.seldon.io_seldondeployments.yaml
+ginkgo -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis
+[1595350313] [1mController Suite[0m - 37/37 specs test k8s client
+&{Reader:0xc0002e1600 Writer:0xc0002e5aa0 StatusClient:0xc0002e5aa0}
+[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m
+[90m------------------------------[0m
+[32m• [SLOW TEST:7.080 seconds][0m
+[90mCreate a Seldon Deployment with two ComponentSpecs [0m[0mshould create the correct resources [0m
+[37m/workspace/source/operator/controllers/seldondeployment_controller_test.go:264[0m
+[90m------------------------------[0m
+E0721 16:52:57.664821   22451 reflector.go:309] pkg/mod/k8s.io/client-go@v0.17.9/tools/cache/reflector.go:105: Failed to watch *v1alpha3.VirtualService: Get http://127.0.0.1:34739/apis/networking.istio.io/v1alpha3/virtualservices?allowWatchBookmarks=true&resourceVersion=118&timeoutSeconds=395&watch=true: dial tcp 127.0.0.1:34739: connect: connection refused
+E0721 16:52:57.665719   22451 reflector.go:309] pkg/mod/k8s.io/client-go@v0.17.9/tools/cache/reflector.go:105: Failed to watch *v1.Service: Get http://127.0.0.1:34739/api/v1/services?allowWatchBookmarks=true&resourceVersion=356&timeoutSeconds=440&watch=true: dial tcp 127.0.0.1:34739: connect: connection refused
+E0721 16:52:57.666388   22451 reflector.go:309] pkg/mod/k8s.io/client-go@v0.17.9/tools/cache/reflector.go:105: Failed to watch *v2beta1.HorizontalPodAutoscaler: Get http://127.0.0.1:34739/apis/autoscaling/v2beta1/horizontalpodautoscalers?allowWatchBookmarks=true&resourceVersion=257&timeoutSeconds=384&watch=true: dial tcp 127.0.0.1:34739: connect: connection refused
+E0721 16:52:57.666922   22451 reflector.go:309] pkg/mod/k8s.io/client-go@v0.17.9/tools/cache/reflector.go:105: Failed to watch *v1.ConfigMap: Get http://127.0.0.1:34739/api/v1/configmaps?allowWatchBookmarks=true&resourceVersion=117&timeoutSeconds=387&watch=true: dial tcp 127.0.0.1:34739: connect: connection refused
+E0721 16:52:57.667657   22451 reflector.go:309] pkg/mod/k8s.io/client-go@v0.17.9/tools/cache/reflector.go:105: Failed to watch *v1.SeldonDeployment: Get http://127.0.0.1:34739/apis/machinelearning.seldon.io/v1/seldondeployments?allowWatchBookmarks=true&resourceVersion=364&timeoutSeconds=503&watch=true: dial tcp 127.0.0.1:34739: connect: connection refused
+E0721 16:52:57.668282   22451 reflector.go:309] pkg/mod/k8s.io/client-go@v0.17.9/tools/cache/reflector.go:105: Failed to watch *v1.Deployment: Get http://127.0.0.1:34739/apis/apps/v1/deployments?allowWatchBookmarks=true&resourceVersion=360&timeoutSeconds=365&watch=true: dial tcp 127.0.0.1:34739: connect: connection refused
+E0721 16:52:57.668843   22451 reflector.go:309] pkg/mod/k8s.io/client-go@v0.17.9/tools/cache/reflector.go:105: Failed to watch *v1.Namespace: Get http://127.0.0.1:34739/api/v1/namespaces?allowWatchBookmarks=true&resourceVersion=346&timeoutSeconds=360&watch=true: dial tcp 127.0.0.1:34739: connect: connection refused
+E0721 16:52:58.665415   22451 reflector.go:309] pkg/mod/k8s.io/client-go@v0.17.9/tools/cache/reflector.go:105: Failed to watch *v1alpha3.VirtualService: Get http://127.0.0.1:34739/apis/networking.istio.io/v1alpha3/virtualservices?allowWatchBookmarks=true&resourceVersion=118&timeoutSeconds=408&watch=true: dial tcp 127.0.0.1:34739: connect: connection refused
+E0721 16:52:58.666589   22451 reflector.go:309] pkg/mod/k8s.io/client-go@v0.17.9/tools/cache/reflector.go:105: Failed to watch *v1.Service: Get http://127.0.0.1:34739/api/v1/services?allowWatchBookmarks=true&resourceVersion=356&timeoutSeconds=471&watch=true: dial tcp 127.0.0.1:34739: connect: connection refused
+E0721 16:52:58.667653   22451 reflector.go:309] pkg/mod/k8s.io/client-go@v0.17.9/tools/cache/reflector.go:105: Failed to watch *v2beta1.HorizontalPodAutoscaler: Get http://127.0.0.1:34739/apis/autoscaling/v2beta1/horizontalpodautoscalers?allowWatchBookmarks=true&resourceVersion=257&timeoutSeconds=558&watch=true: dial tcp 127.0.0.1:34739: connect: connection refused
+E0721 16:52:58.668716   22451 reflector.go:309] pkg/mod/k8s.io/client-go@v0.17.9/tools/cache/reflector.go:105: Failed to watch *v1.ConfigMap: Get http://127.0.0.1:34739/api/v1/configmaps?allowWatchBookmarks=true&resourceVersion=117&timeoutSeconds=387&watch=true: dial tcp 127.0.0.1:34739: connect: connection refused
+E0721 16:52:58.669836   22451 reflector.go:309] pkg/mod/k8s.io/client-go@v0.17.9/tools/cache/reflector.go:105: Failed to watch *v1.SeldonDeployment: Get http://127.0.0.1:34739/apis/machinelearning.seldon.io/v1/seldondeployments?allowWatchBookmarks=true&resourceVersion=364&timeoutSeconds=389&watch=true: dial tcp 127.0.0.1:34739: connect: connection refused
+E0721 16:52:58.671857   22451 reflector.go:309] pkg/mod/k8s.io/client-go@v0.17.9/tools/cache/reflector.go:105: Failed to watch *v1.Deployment: Get http://127.0.0.1:34739/apis/apps/v1/deployments?allowWatchBookmarks=true&resourceVersion=360&timeoutSeconds=525&watch=true: dial tcp 127.0.0.1:34739: connect: connection refused
+E0721 16:52:58.672998   22451 reflector.go:309] pkg/mod/k8s.io/client-go@v0.17.9/tools/cache/reflector.go:105: Failed to watch *v1.Namespace: Get http://127.0.0.1:34739/api/v1/namespaces?allowWatchBookmarks=true&resourceVersion=346&timeoutSeconds=361&watch=true: dial tcp 127.0.0.1:34739: connect: connection refused
+
+ [32mSUCCESS![0m 36.853584052s PASS
+coverage: 65.3% of statements
+=== RUN   TestGcsSecret
+--- PASS: TestGcsSecret (0.00s)
+PASS
+coverage: 100.0% of statements
+=== RUN   TestS3Secret
+--- PASS: TestS3Secret (0.00s)
+PASS
+coverage: 94.6% of statements
+=== RUN   TestGetEnvAsBool
+--- PASS: TestGetEnvAsBool (0.00s)
+PASS
+coverage: 10.9% of statements
+=== RUN   TestGenerateCerts
+--- PASS: TestGenerateCerts (5.52s)
+=== RUN   TestConfigmapCreate
+--- PASS: TestConfigmapCreate (0.00s)
+=== RUN   TestCRDCreate
+--- PASS: TestCRDCreate (0.07s)
+=== RUN   TestMutatingWebhookCreate
+--- PASS: TestMutatingWebhookCreate (2.06s)
+=== RUN   TestMutatingWebhookCreateNamespaced
+--- PASS: TestMutatingWebhookCreateNamespaced (1.02s)
+=== RUN   TestValidatingWebhookCreate
+--- PASS: TestValidatingWebhookCreate (3.43s)
+=== RUN   TestValidatingWebhookCreateNamespaced
+--- PASS: TestValidatingWebhookCreateNamespaced (2.45s)
+=== RUN   TestWebHookSvcCreate
+--- PASS: TestWebHookSvcCreate (1.79s)
+PASS
+coverage: 52.1% of statements
+=== RUN   TestImageSetNormal
+--- PASS: TestImageSetNormal (0.00s)
+    prepack_test.go:50: Scenario: REST image with no version
+    prepack_test.go:50: Scenario: GRPC image with version
+    prepack_test.go:50: Scenario: GRPC image with no version
+    prepack_test.go:50: Scenario: REST image with version
+=== RUN   TestGetPredictorConfig
+--- PASS: TestGetPredictorConfig (0.00s)
+    prepack_test.go:81: Scenario: related image sklearn
+    prepack_test.go:81: Scenario: default image sklearn
+=== RUN   TestGetDeploymentNameOneModel
+--- PASS: TestGetDeploymentNameOneModel (0.00s)
+=== RUN   TestGetDeploymentNameLong
+--- PASS: TestGetDeploymentNameLong (0.00s)
+=== RUN   TestValidateBadProtocol
+--- PASS: TestValidateBadProtocol (0.00s)
+=== RUN   TestValidateBadTransport
+--- PASS: TestValidateBadTransport (0.00s)
+=== RUN   TestValidateMixedTransport
+--- PASS: TestValidateMixedTransport (0.00s)
+=== RUN   TestValidateMixedMultipleTransport
+--- PASS: TestValidateMixedMultipleTransport (0.00s)
+=== RUN   TestDefaultSingleContainer
+--- PASS: TestDefaultSingleContainer (0.00s)
+=== RUN   TestMetricsPortAddedTwoContainers
+--- PASS: TestMetricsPortAddedTwoContainers (0.00s)
+=== RUN   TestMetricsPortAddedTwoComponentSpecsTwoContainers
+--- PASS: TestMetricsPortAddedTwoComponentSpecsTwoContainers (0.00s)
+=== RUN   TestOverrideMetricsPortName
+Failed to find config map seldon-config
+no kind is registered for the type v1.ConfigMap in scheme "pkg/runtime/scheme.go:101"
+--- PASS: TestOverrideMetricsPortName (0.00s)
+=== RUN   TestPortUseExisting
+--- PASS: TestPortUseExisting (0.00s)
+=== RUN   TestMetricsPortAddedToPrepacked
+--- PASS: TestMetricsPortAddedToPrepacked (0.00s)
+=== RUN   TestPredictorProtocolGrpc
+--- PASS: TestPredictorProtocolGrpc (0.00s)
+=== RUN   TestPrepackedWithExistingContainer
+--- PASS: TestPrepackedWithExistingContainer (0.00s)
+=== RUN   TestPrepackedWithCustom
+--- PASS: TestPrepackedWithCustom (0.00s)
+=== RUN   TestPrepackedWithExistingContainerAndImage
+--- PASS: TestPrepackedWithExistingContainerAndImage (0.00s)
+=== RUN   TestMetricsPortAddedToTwoPrepacked
+--- PASS: TestMetricsPortAddedToTwoPrepacked (0.00s)
+=== RUN   TestDefaultPrepackagedServerType
+--- PASS: TestDefaultPrepackagedServerType (0.00s)
+=== RUN   TestValidateSingleModel
+--- PASS: TestValidateSingleModel (0.00s)
+=== RUN   TestValidateSingleModelNoName
+--- PASS: TestValidateSingleModelNoName (0.00s)
+=== RUN   TestValidateNoEngineMultiGraph
+--- PASS: TestValidateNoEngineMultiGraph (0.00s)
+=== RUN   TestValidateDuplPredictorName
+--- PASS: TestValidateDuplPredictorName (0.00s)
+=== RUN   TestValidateTrafficSum
+--- PASS: TestValidateTrafficSum (0.00s)
+=== RUN   TestDefaultABTest
+--- PASS: TestDefaultABTest (0.00s)
+=== RUN   TestValidateTensorflowProtocolNormalPrepackaged
+--- PASS: TestValidateTensorflowProtocolNormalPrepackaged (0.00s)
+=== RUN   TestValidateTensorflowProtocolNormal
+--- PASS: TestValidateTensorflowProtocolNormal (0.00s)
+=== RUN   TestPredictorNoGraph
+--- PASS: TestPredictorNoGraph (0.00s)
+PASS
+coverage: 41.6% of statements
+path is /workspace/source/operator
+All profiles combined
+
+Ginkgo ran 6 suites in 1m21.899113628s
+Test Suite Passed
+make: Leaving directory '/workspace/source/operator'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mtest-python[0m and container [32mstep-credential-initializer-fqv9r[0m
+{"level":"info","ts":1595350191.368206,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1595350191.3700082,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mtest-python[0m and container [32mstep-working-dir-initializer-lslnv[0m
+{"level":"info","ts":1595350192.7901125,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595350192.7918892,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mtest-python[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mtest-python[0m and container [32mstep-create-dir-workspace-bj497[0m
+{"level":"info","ts":1595350206.6717672,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595350206.6731365,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mtest-python[0m and container [32mstep-source-copy-workspace-jgqst[0m
+{"level":"info","ts":1595350207.0120122,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595350207.5149481,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mtest-python[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mtest-python[0m and container [32mstep-test-python[0m
+make: Entering directory '/workspace/source/python'
+# Protobuf
+cp ../proto/prediction.proto seldon_core/proto/
+make -C ../proto/tensorflow/ create_protos
+make[1]: Entering directory '/workspace/source/proto/tensorflow'
+./create-protos.sh
+Downloading proto files for master
+make[1]: Leaving directory '/workspace/source/proto/tensorflow'
+cp -r ../proto/tensorflow/tensorflow \
+	seldon_core/proto/
+make -C ../proto/tensorflow clean
+make[1]: Entering directory '/workspace/source/proto/tensorflow'
+removed 'tensorflow/core/framework/resource_handle.proto'
+removed 'tensorflow/core/framework/tensor_shape.proto'
+removed 'tensorflow/core/framework/tensor.proto'
+removed 'tensorflow/core/framework/types.proto'
+removed directory 'tensorflow/core/framework'
+removed directory 'tensorflow/core'
+removed directory 'tensorflow'
+make[1]: Leaving directory '/workspace/source/proto/tensorflow'
+# OpenAPI
+cp ../openapi/wrapper.oas3.json seldon_core/openapi/seldon.json
+# Protobuf
+cd seldon_core && python \
+	-m grpc.tools.protoc \
+	-I./ \
+	-I./proto/ \
+	--python_out=./ \
+	--grpc_python_out=./ \
+	--mypy_out=./ \
+	./proto/prediction.proto
+Writing mypy to proto/prediction_pb2.pyi
+## We build TF's protobufs as well in case the tensorflow package
+## is not found
+cd seldon_core/proto && python \
+	-m grpc.tools.protoc \
+	-I./ \
+	-I../ \
+	--python_out=./ \
+	./tensorflow/core/framework/*.proto
+sed -i "s/from tensorflow/from seldon_core.proto.tensorflow/" seldon_core/proto/*.py
+sed -i "s/from tensorflow.core.framework/from ./" \
+	seldon_core/proto/tensorflow/core/framework/resource_handle_pb2.py seldon_core/proto/tensorflow/core/framework/tensor_pb2.py seldon_core/proto/tensorflow/core/framework/tensor_shape_pb2.py seldon_core/proto/tensorflow/core/framework/types_pb2.py
+sed -i "s/from proto/from seldon_core.proto/g" seldon_core/proto/prediction_pb2_grpc.py
+sed -i 's/__version__ = .*/__version__ = "1.2.2-dev"/g' seldon_core/version.py
+pip install -e . -r requirements-dev.txt
+Obtaining file:///workspace/source/python
+Collecting Flask<2.0.0 (from -r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/f2/28/2a03252dfb9ebf377f40fba6a7841b47083260bf8bd8e737b0c6952df83f/Flask-1.1.2-py2.py3-none-any.whl (94kB)
+Collecting jsonschema<4.0.0 (from -r requirements.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/c5/8f/51e89ce52a085483359217bc72cdbf6e75ee595d5b1d4b5ade40c7e018b8/jsonschema-3.2.0-py2.py3-none-any.whl (56kB)
+Collecting Flask-cors<4.0.0 (from -r requirements.txt (line 3))
+  Downloading https://files.pythonhosted.org/packages/78/38/e68b11daa5d613e3a91e4bf3da76c94ac9ee0d9cd515af9c1ab80d36f709/Flask_Cors-3.0.8-py2.py3-none-any.whl
+Collecting redis<4.0.0 (from -r requirements.txt (line 4))
+  Downloading https://files.pythonhosted.org/packages/a7/7c/24fb0511df653cf1a5d938d8f5d19802a88cef255706fdda242ff97e91b7/redis-3.5.3-py2.py3-none-any.whl (72kB)
+Requirement already satisfied: requests<3.0.0 in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 5)) (2.21.0)
+Collecting numpy<2.0.0 (from -r requirements.txt (line 6))
+  Downloading https://files.pythonhosted.org/packages/b4/93/76311932b0c7efd3111f6604609f36d568b912e16bebd86d99f0612d3930/numpy-1.19.0-cp37-cp37m-manylinux1_x86_64.whl (13.5MB)
+Requirement already satisfied: flatbuffers<2.0.0 in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 7)) (1.11)
+Requirement already satisfied: protobuf<4.0.0 in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 8)) (3.7.1)
+Requirement already satisfied: grpcio<2.0.0 in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 9)) (1.20.1)
+Collecting Flask-OpenTracing<1.2.0,>=1.1.0 (from -r requirements.txt (line 10))
+  Downloading https://files.pythonhosted.org/packages/58/6c/6417701ba5ecc8854670c6db3207bcc3e5fbc96289a7cb18d5516d99a1c6/Flask-OpenTracing-1.1.0.tar.gz
+Collecting opentracing<2.4.0,>=2.2.0 (from -r requirements.txt (line 11))
+  Downloading https://files.pythonhosted.org/packages/e4/a8/df5285f42cd07782409d0ae835785fae6e2a0f7e8b0036ea302f1422fd25/opentracing-2.3.0.tar.gz (48kB)
+Collecting jaeger-client<4.4.0,>=4.1.0 (from -r requirements.txt (line 12))
+  Downloading https://files.pythonhosted.org/packages/2b/75/17a937a61135671cebc175ab5c299dc0f7477042469482fd9a6f91262c68/jaeger-client-4.3.0.tar.gz (81kB)
+Collecting grpcio-opentracing<1.2.0,>=1.1.4 (from -r requirements.txt (line 13))
+  Downloading https://files.pythonhosted.org/packages/db/82/2fcad380697c3dab25de76ee590bcab3eb9bbfb4add916044d7e83ec2b10/grpcio_opentracing-1.1.4-py3-none-any.whl
+Collecting PyYAML<5.4 (from -r requirements.txt (line 14))
+  Downloading https://files.pythonhosted.org/packages/64/c2/b80047c7ac2478f9501676c988a5411ed5572f35d1beff9cae07d321512c/PyYAML-5.3.1.tar.gz (269kB)
+Collecting gunicorn<20.1.0,>=19.9.0 (from -r requirements.txt (line 15))
+  Downloading https://files.pythonhosted.org/packages/69/ca/926f7cd3a2014b16870086b2d0fdc84a9e49473c68a8dff8b57f7c156f43/gunicorn-20.0.4-py2.py3-none-any.whl (77kB)
+Collecting minio<6.0.0,>=4.0.9 (from -r requirements.txt (line 16))
+  Downloading https://files.pythonhosted.org/packages/aa/60/81f4a1dc2d320832840288d7ec88aa3e4ee495d8f1452b4c79d8bd67136b/minio-5.0.10-py2.py3-none-any.whl (75kB)
+Collecting azure-storage-blob<3.0.0,>=2.0.1 (from -r requirements.txt (line 17))
+  Downloading https://files.pythonhosted.org/packages/3e/84/610f379b46d7d3c2d48eadeed6a12b6d46a43100fea70534f5992d0ac996/azure_storage_blob-2.1.0-py2.py3-none-any.whl (88kB)
+Collecting setuptools>=41.0.0 (from -r requirements.txt (line 18))
+  Downloading https://files.pythonhosted.org/packages/8e/11/9e10f1cad4518cb307b484c255cae61e97f05b82f6d536932b1714e01b47/setuptools-49.2.0-py3-none-any.whl (789kB)
+Collecting google-cloud-storage>=1.16.0 (from -r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/98/8c/41398b95ad0d612e1cfc3c1816292540bac76242ef2aaa4b7adb06da5f6b/google_cloud_storage-1.29.0-py2.py3-none-any.whl (85kB)
+Collecting prometheus_client<0.9.0,>=0.7.1 (from -r requirements.txt (line 20))
+  Downloading https://files.pythonhosted.org/packages/3f/0e/554a265ffdc56e1494ef08e18f765b0cdec78797f510c58c45cf37abb4f4/prometheus_client-0.8.0-py2.py3-none-any.whl (53kB)
+Collecting black==19.10b0 (from -r requirements-dev.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/fd/bb/ad34bbc93d1bea3de086d7c59e528d4a503ac8fe318bd1fa48605584c3d2/black-19.10b0-py36-none-any.whl (97kB)
+Collecting flake8==3.8.1 (from -r requirements-dev.txt (line 3))
+  Downloading https://files.pythonhosted.org/packages/bf/47/36e51603431e1a5289eb41636199d2c225fcb1ca286e29c02d219c8e6e88/flake8-3.8.1-py2.py3-none-any.whl (72kB)
+Collecting mypy<0.783 (from -r requirements-dev.txt (line 4))
+  Downloading https://files.pythonhosted.org/packages/a7/25/da35a577040effa507d465102a0e001b29279d759f46218af91985ab0392/mypy-0.782-cp37-cp37m-manylinux1_x86_64.whl (20.8MB)
+Collecting Pillow==7.2.0 (from -r requirements-dev.txt (line 5))
+  Downloading https://files.pythonhosted.org/packages/e8/f2/6722dd0c22e3a143ac792ccb2424924ac72af4adea756b1165b4cad50da7/Pillow-7.2.0-cp37-cp37m-manylinux1_x86_64.whl (2.2MB)
+Collecting pytest==5.4.2 (from -r requirements-dev.txt (line 6))
+  Downloading https://files.pythonhosted.org/packages/6c/f9/9f2b6c672c8f8bb87a4c1bd52c1b57213627b035305aad745d015b2a62ae/pytest-5.4.2-py3-none-any.whl (247kB)
+Collecting pytest-cov==2.10.0 (from -r requirements-dev.txt (line 7))
+  Downloading https://files.pythonhosted.org/packages/3d/13/ae3dec587b1cc07fb9f294e52ea9ad140266aea55adb9e12eade3625bd27/pytest_cov-2.10.0-py2.py3-none-any.whl
+Collecting tox<4.0.0 (from -r requirements-dev.txt (line 8))
+  Downloading https://files.pythonhosted.org/packages/62/92/cff9157a7b74b06237f830f05521e96b25e53e4d6ecfab75e69b6632143a/tox-3.17.1-py2.py3-none-any.whl (82kB)
+Collecting grpcio-tools==1.30.0 (from -r requirements-dev.txt (line 9))
+  Downloading https://files.pythonhosted.org/packages/da/3c/bed275484f6cc262b5de6ceaae36798c60d7904cdd05dc79cc830b880687/grpcio-tools-1.30.0.tar.gz (2.1MB)
+Collecting mypy-protobuf==1.22 (from -r requirements-dev.txt (line 10))
+  Downloading https://files.pythonhosted.org/packages/ec/9c/36adfc9a4aee35f8c6ae45f91cb3ef2e041e4c9ef6be1401e369f46c47c6/mypy_protobuf-1.22-py3-none-any.whl
+Collecting tenacity==6.2.0 (from -r requirements-dev.txt (line 13))
+  Downloading https://files.pythonhosted.org/packages/b5/05/ff089032442058bd3386f9cd991cd88ccac81dca1494d78751621ee35e62/tenacity-6.2.0-py2.py3-none-any.whl
+Collecting coverage==5.2 (from -r requirements-dev.txt (line 16))
+  Downloading https://files.pythonhosted.org/packages/dd/ee/2cc12177fe77d116d5a0c5e7c2fb2c1f5f3d5dd287e8bb67a17948684ede/coverage-5.2-cp37-cp37m-manylinux1_x86_64.whl (229kB)
+Collecting pandas==1.0.1 (from -r requirements-dev.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/61/af/ceb7523e86753d5643ed00e8c17a42bdcfe819782c3449d9bbbf5d01867a/pandas-1.0.1-cp37-cp37m-manylinux1_x86_64.whl (10.1MB)
+Collecting pip-licenses==2.2.1 (from -r requirements-dev.txt (line 22))
+  Downloading https://files.pythonhosted.org/packages/2e/8a/b8eb114545d9e984fcc013ef544c487aa2c02489a66185a82108625784a5/pip_licenses-2.2.1-py3-none-any.whl
+Collecting Jinja2>=2.10.1 (from Flask<2.0.0->-r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/30/9e/f663a2aa66a09d838042ae1a2c5659828bb9b41ea3a6efa20a20fd92b121/Jinja2-2.11.2-py2.py3-none-any.whl (125kB)
+Collecting Werkzeug>=0.15 (from Flask<2.0.0->-r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/cc/94/5f7079a0e00bd6863ef8f1da638721e9da21e5bacee597595b318f71d62e/Werkzeug-1.0.1-py2.py3-none-any.whl (298kB)
+Collecting click>=5.1 (from Flask<2.0.0->-r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/d2/3d/fa76db83bf75c4f8d338c2fd15c8d33fdd7ad23a9b5e57eb6c5de26b430e/click-7.1.2-py2.py3-none-any.whl (82kB)
+Collecting itsdangerous>=0.24 (from Flask<2.0.0->-r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/76/ae/44b03b253d6fade317f32c24d100b3b35c2239807046a4c953c7b89fa49e/itsdangerous-1.1.0-py2.py3-none-any.whl
+Collecting importlib-metadata; python_version < "3.8" (from jsonschema<4.0.0->-r requirements.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/8e/58/cdea07eb51fc2b906db0968a94700866fc46249bdc75cac23f9d13168929/importlib_metadata-1.7.0-py2.py3-none-any.whl
+Collecting attrs>=17.4.0 (from jsonschema<4.0.0->-r requirements.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/a2/db/4313ab3be961f7a763066401fb77f7748373b6094076ae2bda2806988af6/attrs-19.3.0-py2.py3-none-any.whl
+Collecting pyrsistent>=0.14.0 (from jsonschema<4.0.0->-r requirements.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/9f/0d/cbca4d0bbc5671822a59f270e4ce3f2195f8a899c97d0d5abb81b191efb5/pyrsistent-0.16.0.tar.gz (108kB)
+Requirement already satisfied: six>=1.11.0 in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->-r requirements.txt (line 2)) (1.12.0)
+Requirement already satisfied: idna<2.9,>=2.5 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (2.8)
+Requirement already satisfied: certifi>=2017.4.17 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (2018.11.29)
+Requirement already satisfied: chardet<3.1.0,>=3.0.2 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (3.0.4)
+Requirement already satisfied: urllib3<1.25,>=1.21.1 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (1.24.1)
+Collecting threadloop<2,>=1 (from jaeger-client<4.4.0,>=4.1.0->-r requirements.txt (line 12))
+  Downloading https://files.pythonhosted.org/packages/d3/1d/8398c1645b97dc008d3c658e04beda01ede3d90943d40c8d56863cf891bd/threadloop-1.0.2.tar.gz
+Collecting thrift (from jaeger-client<4.4.0,>=4.1.0->-r requirements.txt (line 12))
+  Downloading https://files.pythonhosted.org/packages/97/1e/3284d19d7be99305eda145b8aa46b0c33244e4a496ec66440dac19f8274d/thrift-0.13.0.tar.gz (59kB)
+Collecting tornado>=4.3 (from jaeger-client<4.4.0,>=4.1.0->-r requirements.txt (line 12))
+  Downloading https://files.pythonhosted.org/packages/95/84/119a46d494f008969bf0c775cb2c6b3579d3c4cc1bb1b41a022aa93ee242/tornado-6.0.4.tar.gz (496kB)
+Collecting pytz (from minio<6.0.0,>=4.0.9->-r requirements.txt (line 16))
+  Downloading https://files.pythonhosted.org/packages/4f/a4/879454d49688e2fad93e59d7d4efda580b783c745fd2ec2a3adf87b0808d/pytz-2020.1-py2.py3-none-any.whl (510kB)
+Collecting python-dateutil (from minio<6.0.0,>=4.0.9->-r requirements.txt (line 16))
+  Downloading https://files.pythonhosted.org/packages/d4/70/d60450c3dd48ef87586924207ae8907090de0b306af2bce5d134d78615cb/python_dateutil-2.8.1-py2.py3-none-any.whl (227kB)
+Collecting configparser (from minio<6.0.0,>=4.0.9->-r requirements.txt (line 16))
+  Downloading https://files.pythonhosted.org/packages/4b/6b/01baa293090240cf0562cc5eccb69c6f5006282127f2b846fad011305c79/configparser-5.0.0-py3-none-any.whl
+Collecting azure-storage-common~=2.1 (from azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17))
+  Downloading https://files.pythonhosted.org/packages/6b/a0/6794b318ce0118d1a4053bdf0149a60807407db9b710354f2b203c2f5975/azure_storage_common-2.1.0-py2.py3-none-any.whl (47kB)
+Collecting azure-common>=1.1.5 (from azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17))
+  Downloading https://files.pythonhosted.org/packages/e5/4d/d000fc3c5af601d00d55750b71da5c231fcb128f42ac95b208ed1091c2c1/azure_common-1.1.25-py2.py3-none-any.whl
+Collecting google-cloud-core<2.0dev,>=1.2.0 (from google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/89/3c/8a7531839028c9690e6d14c650521f3bbaf26e53baaeb2784b8c3eb2fb97/google_cloud_core-1.3.0-py2.py3-none-any.whl
+Collecting google-auth<2.0dev,>=1.11.0 (from google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/b7/4b/ad22f901ef599ac6dcce285f87e8b48067f2b6ff2a5eb0f4ef08227d057f/google_auth-1.19.2-py2.py3-none-any.whl (91kB)
+Collecting google-resumable-media<0.6dev,>=0.5.0 (from google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/f2/cc/cd05c633298fcbba5d61b6b8844de598e001954281a004fc1a13c61a5121/google_resumable_media-0.5.1-py2.py3-none-any.whl
+Collecting toml>=0.9.4 (from black==19.10b0->-r requirements-dev.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/9f/e1/1b40b80f2e1663a6b9f497123c11d7d988c0919abbf3c3f2688e448c5363/toml-0.10.1-py2.py3-none-any.whl
+Collecting typed-ast>=1.4.0 (from black==19.10b0->-r requirements-dev.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/5d/10/0c1e8aa723a2b0c4032e048d8e511df82c8a1262f0e1df5e4c54eb2613e9/typed_ast-1.4.1-cp37-cp37m-manylinux1_x86_64.whl (737kB)
+Collecting regex (from black==19.10b0->-r requirements-dev.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/b6/0b/571619431d3ab416b9ffeca1fdf6cc1b388581b087250fb56e7227d16088/regex-2020.7.14-cp37-cp37m-manylinux1_x86_64.whl (660kB)
+Collecting pathspec<1,>=0.6 (from black==19.10b0->-r requirements-dev.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/5d/d0/887c58853bd4b6ffc7aa9cdba4fc57d7b979b45888a6bd47e4568e1cf868/pathspec-0.8.0-py2.py3-none-any.whl
+Collecting appdirs (from black==19.10b0->-r requirements-dev.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/3b/00/2344469e2084fb287c2e0b57b72910309874c3245463acd6cf5e3db69324/appdirs-1.4.4-py2.py3-none-any.whl
+Collecting mccabe<0.7.0,>=0.6.0 (from flake8==3.8.1->-r requirements-dev.txt (line 3))
+  Downloading https://files.pythonhosted.org/packages/87/89/479dc97e18549e21354893e4ee4ef36db1d237534982482c3681ee6e7b57/mccabe-0.6.1-py2.py3-none-any.whl
+Collecting pyflakes<2.3.0,>=2.2.0 (from flake8==3.8.1->-r requirements-dev.txt (line 3))
+  Downloading https://files.pythonhosted.org/packages/69/5b/fd01b0c696f2f9a6d2c839883b642493b431f28fa32b29abc465ef675473/pyflakes-2.2.0-py2.py3-none-any.whl (66kB)
+Collecting pycodestyle<2.7.0,>=2.6.0a1 (from flake8==3.8.1->-r requirements-dev.txt (line 3))
+  Downloading https://files.pythonhosted.org/packages/10/5b/88879fb861ab79aef45c7e199cae3ef7af487b5603dcb363517a50602dd7/pycodestyle-2.6.0-py2.py3-none-any.whl (41kB)
+Collecting typing-extensions>=3.7.4 (from mypy<0.783->-r requirements-dev.txt (line 4))
+  Downloading https://files.pythonhosted.org/packages/0c/0e/3f026d0645d699e7320b59952146d56ad7c374e9cd72cd16e7c74e657a0f/typing_extensions-3.7.4.2-py3-none-any.whl
+Collecting mypy-extensions<0.5.0,>=0.4.3 (from mypy<0.783->-r requirements-dev.txt (line 4))
+  Downloading https://files.pythonhosted.org/packages/5c/eb/975c7c080f3223a5cdaff09612f3a5221e4ba534f7039db34c35d95fa6a5/mypy_extensions-0.4.3-py2.py3-none-any.whl
+Collecting pluggy<1.0,>=0.12 (from pytest==5.4.2->-r requirements-dev.txt (line 6))
+  Downloading https://files.pythonhosted.org/packages/a0/28/85c7aa31b80d150b772fbe4a229487bc6644da9ccb7e427dd8cc60cb8a62/pluggy-0.13.1-py2.py3-none-any.whl
+Collecting packaging (from pytest==5.4.2->-r requirements-dev.txt (line 6))
+  Downloading https://files.pythonhosted.org/packages/46/19/c5ab91b1b05cfe63cccd5cfc971db9214c6dd6ced54e33c30d5af1d2bc43/packaging-20.4-py2.py3-none-any.whl
+Collecting more-itertools>=4.0.0 (from pytest==5.4.2->-r requirements-dev.txt (line 6))
+  Downloading https://files.pythonhosted.org/packages/ef/9b/6c35ec5483710492e21252465160ee508170159f7e0e2d6cd769022f52f6/more_itertools-8.4.0-py3-none-any.whl (43kB)
+Collecting py>=1.5.0 (from pytest==5.4.2->-r requirements-dev.txt (line 6))
+  Downloading https://files.pythonhosted.org/packages/68/0f/41a43535b52a81e4f29e420a151032d26f08b62206840c48d14b70e53376/py-1.9.0-py2.py3-none-any.whl (99kB)
+Collecting wcwidth (from pytest==5.4.2->-r requirements-dev.txt (line 6))
+  Downloading https://files.pythonhosted.org/packages/59/7c/e39aca596badaf1b78e8f547c807b04dae603a433d3e7a7e04d67f2ef3e5/wcwidth-0.2.5-py2.py3-none-any.whl
+Collecting filelock>=3.0.0 (from tox<4.0.0->-r requirements-dev.txt (line 8))
+  Downloading https://files.pythonhosted.org/packages/93/83/71a2ee6158bb9f39a90c0dea1637f81d5eef866e188e1971a1b1ab01a35a/filelock-3.0.12-py3-none-any.whl
+Collecting virtualenv!=20.0.0,!=20.0.1,!=20.0.2,!=20.0.3,!=20.0.4,!=20.0.5,!=20.0.6,!=20.0.7,>=16.0.0 (from tox<4.0.0->-r requirements-dev.txt (line 8))
+  Downloading https://files.pythonhosted.org/packages/45/24/27197e06ff269e54a05fcb7e270d5648fafe076eafd4ec289859a3dc4905/virtualenv-20.0.27-py2.py3-none-any.whl (4.9MB)
+Collecting PTable (from pip-licenses==2.2.1->-r requirements-dev.txt (line 22))
+  Downloading https://files.pythonhosted.org/packages/ab/b3/b54301811173ca94119eb474634f120a49cd370f257d1aae5a4abaf12729/PTable-0.9.2.tar.gz
+Collecting MarkupSafe>=0.23 (from Jinja2>=2.10.1->Flask<2.0.0->-r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/98/7b/ff284bd8c80654e471b769062a9b43cc5d03e7a615048d96f4619df8d420/MarkupSafe-1.1.1-cp37-cp37m-manylinux1_x86_64.whl
+Collecting zipp>=0.5 (from importlib-metadata; python_version < "3.8"->jsonschema<4.0.0->-r requirements.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/b2/34/bfcb43cc0ba81f527bc4f40ef41ba2ff4080e047acb0586b56b3d017ace4/zipp-3.1.0-py3-none-any.whl
+Requirement already satisfied: cryptography in /opt/conda/lib/python3.7/site-packages (from azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (2.4.2)
+Collecting google-api-core<2.0.0dev,>=1.16.0 (from google-cloud-core<2.0dev,>=1.2.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/48/76/bd5e3ebd571b9f688ae123a2bd84b2dc9f75e1214a83b8a759bc16e2fc35/google_api_core-1.21.0-py2.py3-none-any.whl (90kB)
+Collecting rsa<5,>=3.1.4; python_version >= "3" (from google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/1c/df/c3587a667d6b308fadc90b99e8bc8774788d033efcc70f4ecaae7fad144b/rsa-4.6-py3-none-any.whl (47kB)
+Collecting pyasn1-modules>=0.2.1 (from google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/95/de/214830a981892a3e286c3794f41ae67a4495df1108c3da8a9f62159b9a9d/pyasn1_modules-0.2.8-py2.py3-none-any.whl (155kB)
+Collecting cachetools<5.0,>=2.0.0 (from google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/cd/5c/f3aa86b6d5482f3051b433c7616668a9b96fbe49a622210e2c9781938a5c/cachetools-4.1.1-py3-none-any.whl
+Collecting pyparsing>=2.0.2 (from packaging->pytest==5.4.2->-r requirements-dev.txt (line 6))
+  Downloading https://files.pythonhosted.org/packages/8a/bb/488841f56197b13700afd5658fc279a2025a39e22449b7cf29864669b15d/pyparsing-2.4.7-py2.py3-none-any.whl (67kB)
+Collecting distlib<1,>=0.3.1 (from virtualenv!=20.0.0,!=20.0.1,!=20.0.2,!=20.0.3,!=20.0.4,!=20.0.5,!=20.0.6,!=20.0.7,>=16.0.0->tox<4.0.0->-r requirements-dev.txt (line 8))
+  Downloading https://files.pythonhosted.org/packages/f5/0a/490fa011d699bb5a5f3a0cf57de82237f52a6db9d40f33c53b2736c9a1f9/distlib-0.3.1-py2.py3-none-any.whl (335kB)
+Requirement already satisfied: cffi!=1.11.3,>=1.7 in /opt/conda/lib/python3.7/site-packages (from cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (1.11.5)
+Requirement already satisfied: asn1crypto>=0.21.0 in /opt/conda/lib/python3.7/site-packages (from cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (0.24.0)
+Collecting googleapis-common-protos<2.0dev,>=1.6.0 (from google-api-core<2.0.0dev,>=1.16.0->google-cloud-core<2.0dev,>=1.2.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/03/74/3956721ea1eb4bcf7502a311fdaa60b85bd751de4e57d1943afe9b334141/googleapis_common_protos-1.52.0-py2.py3-none-any.whl (100kB)
+Collecting pyasn1>=0.1.3 (from rsa<5,>=3.1.4; python_version >= "3"->google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->-r requirements.txt (line 19))
+  Downloading https://files.pythonhosted.org/packages/62/1e/a94a8d635fa3ce4cfc7f506003548d0a2447ae76fd5ca53932970fe3053f/pyasn1-0.4.8-py2.py3-none-any.whl (77kB)
+Requirement already satisfied: pycparser in /opt/conda/lib/python3.7/site-packages (from cffi!=1.11.3,>=1.7->cryptography->azure-storage-common~=2.1->azure-storage-blob<3.0.0,>=2.0.1->-r requirements.txt (line 17)) (2.19)
+Building wheels for collected packages: Flask-OpenTracing, opentracing, jaeger-client, PyYAML, grpcio-tools, pyrsistent, threadloop, thrift, tornado, PTable
+  Running setup.py bdist_wheel for Flask-OpenTracing: started
+  Running setup.py bdist_wheel for Flask-OpenTracing: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/7b/dc/25/3cf0b35c129232ee596c413f13d1d1f5a8e38c427266276dfd
+  Running setup.py bdist_wheel for opentracing: started
+  Running setup.py bdist_wheel for opentracing: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/66/b5/60/322949294afda71a9558eb25a1e536d1191665ef71759646b7
+  Running setup.py bdist_wheel for jaeger-client: started
+  Running setup.py bdist_wheel for jaeger-client: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/a4/46/e1/316c9ea87f46b9685c2f4258950a27bad1ae072c56224e4489
+  Running setup.py bdist_wheel for PyYAML: started
+  Running setup.py bdist_wheel for PyYAML: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/a7/c1/ea/cf5bd31012e735dc1dfea3131a2d5eae7978b251083d6247bd
+  Running setup.py bdist_wheel for grpcio-tools: started
+  Running setup.py bdist_wheel for grpcio-tools: still running...
+  Running setup.py bdist_wheel for grpcio-tools: still running...
+  Running setup.py bdist_wheel for grpcio-tools: still running...
+  Running setup.py bdist_wheel for grpcio-tools: still running...
+  Running setup.py bdist_wheel for grpcio-tools: still running...
+  Running setup.py bdist_wheel for grpcio-tools: still running...
+  Running setup.py bdist_wheel for grpcio-tools: still running...
+  Running setup.py bdist_wheel for grpcio-tools: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/83/94/68/d3464c124f6508da859f2b05a80e040dc99e7ebaaacbe86c6a
+  Running setup.py bdist_wheel for pyrsistent: started
+  Running setup.py bdist_wheel for pyrsistent: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/c2/85/ad/bc6d41e2c4b35c9fdfed48f0fcd411ffc4164e67755ddf9ebb
+  Running setup.py bdist_wheel for threadloop: started
+  Running setup.py bdist_wheel for threadloop: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/d7/7a/30/d212623a4cd34f6cce400f8122b1b7af740d3440c68023d51f
+  Running setup.py bdist_wheel for thrift: started
+  Running setup.py bdist_wheel for thrift: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/02/a2/46/689ccfcf40155c23edc7cdbd9de488611c8fdf49ff34b1706e
+  Running setup.py bdist_wheel for tornado: started
+  Running setup.py bdist_wheel for tornado: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/93/84/2f/409c7b2bb3afc3aa727f7ee8787975e0793f74d1165f4d0104
+  Running setup.py bdist_wheel for PTable: started
+  Running setup.py bdist_wheel for PTable: finished with status 'done'
+  Stored in directory: /builder/home/.cache/pip/wheels/22/cc/2e/55980bfe86393df3e9896146a01f6802978d09d7ebcba5ea56
+Successfully built Flask-OpenTracing opentracing jaeger-client PyYAML grpcio-tools pyrsistent threadloop thrift tornado PTable
+grpcio-tools 1.30.0 has requirement grpcio>=1.30.0, but you'll have grpcio 1.20.1 which is incompatible.
+google-api-core 1.21.0 has requirement protobuf>=3.12.0, but you'll have protobuf 3.7.1 which is incompatible.
+tox 3.17.1 has requirement six>=1.14.0, but you'll have six 1.12.0 which is incompatible.
+Installing collected packages: MarkupSafe, Jinja2, Werkzeug, click, itsdangerous, Flask, zipp, importlib-metadata, attrs, pyrsistent, setuptools, jsonschema, Flask-cors, redis, numpy, opentracing, Flask-OpenTracing, tornado, threadloop, thrift, jaeger-client, grpcio-opentracing, PyYAML, gunicorn, pytz, python-dateutil, configparser, minio, azure-common, azure-storage-common, azure-storage-blob, pyasn1, rsa, pyasn1-modules, cachetools, google-auth, googleapis-common-protos, google-api-core, google-cloud-core, google-resumable-media, google-cloud-storage, prometheus-client, toml, typed-ast, regex, pathspec, appdirs, black, mccabe, pyflakes, pycodestyle, flake8, typing-extensions, mypy-extensions, mypy, Pillow, pluggy, pyparsing, packaging, more-itertools, py, wcwidth, pytest, coverage, pytest-cov, filelock, distlib, virtualenv, tox, grpcio-tools, mypy-protobuf, tenacity, pandas, PTable, pip-licenses, seldon-core
+  Found existing installation: setuptools 40.6.3
+    Uninstalling setuptools-40.6.3:
+      Successfully uninstalled setuptools-40.6.3
+  Found existing installation: grpcio-tools 1.20.1
+    Uninstalling grpcio-tools-1.20.1:
+      Successfully uninstalled grpcio-tools-1.20.1
+  Found existing installation: mypy-protobuf 1.10
+    Uninstalling mypy-protobuf-1.10:
+      Successfully uninstalled mypy-protobuf-1.10
+  Running setup.py develop for seldon-core
+Successfully installed Flask-1.1.2 Flask-OpenTracing-1.1.0 Flask-cors-3.0.8 Jinja2-2.11.2 MarkupSafe-1.1.1 PTable-0.9.2 Pillow-7.2.0 PyYAML-5.3.1 Werkzeug-1.0.1 appdirs-1.4.4 attrs-19.3.0 azure-common-1.1.25 azure-storage-blob-2.1.0 azure-storage-common-2.1.0 black-19.10b0 cachetools-4.1.1 click-7.1.2 configparser-5.0.0 coverage-5.2 distlib-0.3.1 filelock-3.0.12 flake8-3.8.1 google-api-core-1.21.0 google-auth-1.19.2 google-cloud-core-1.3.0 google-cloud-storage-1.29.0 google-resumable-media-0.5.1 googleapis-common-protos-1.52.0 grpcio-opentracing-1.1.4 grpcio-tools-1.30.0 gunicorn-20.0.4 importlib-metadata-1.7.0 itsdangerous-1.1.0 jaeger-client-4.3.0 jsonschema-3.2.0 mccabe-0.6.1 minio-5.0.10 more-itertools-8.4.0 mypy-0.782 mypy-extensions-0.4.3 mypy-protobuf-1.22 numpy-1.19.0 opentracing-2.3.0 packaging-20.4 pandas-1.0.1 pathspec-0.8.0 pip-licenses-2.2.1 pluggy-0.13.1 prometheus-client-0.8.0 py-1.9.0 pyasn1-0.4.8 pyasn1-modules-0.2.8 pycodestyle-2.6.0 pyflakes-2.2.0 pyparsing-2.4.7 pyrsistent-0.16.0 pytest-5.4.2 pytest-cov-2.10.0 python-dateutil-2.8.1 pytz-2020.1 redis-3.5.3 regex-2020.7.14 rsa-4.6 seldon-core setuptools-49.2.0 tenacity-6.2.0 threadloop-1.0.2 thrift-0.13.0 toml-0.10.1 tornado-6.0.4 tox-3.17.1 typed-ast-1.4.1 typing-extensions-3.7.4.2 virtualenv-20.0.27 wcwidth-0.2.5 zipp-3.1.0
+tox
+GLOB sdist-make: /workspace/source/python/setup.py
+py3 create: /workspace/source/python/.tox/py3
+py3 installdeps: tenacity, pytest, pytest-cov, Pillow
+py3 inst: /workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip
+py3 installed: attrs==19.3.0,azure-common==1.1.25,azure-storage-blob==2.1.0,azure-storage-common==2.1.0,certifi==2020.6.20,cffi==1.14.0,chardet==3.0.4,click==7.1.2,configparser==5.0.0,coverage==5.2,cryptography==3.0,Flask==1.1.2,Flask-Cors==3.0.8,Flask-OpenTracing==1.1.0,flatbuffers==1.12,grpcio==1.30.0,grpcio-opentracing==1.1.4,gunicorn==20.0.4,idna==2.10,importlib-metadata==1.7.0,itsdangerous==1.1.0,jaeger-client==4.3.0,Jinja2==2.11.2,jsonschema==3.2.0,MarkupSafe==1.1.1,minio==5.0.10,more-itertools==8.4.0,numpy==1.19.0,opentracing==2.3.0,packaging==20.4,Pillow==7.2.0,pluggy==0.13.1,prometheus-client==0.8.0,protobuf==3.12.2,py==1.9.0,pycparser==2.20,pyparsing==2.4.7,pyrsistent==0.16.0,pytest==5.4.3,pytest-cov==2.10.0,python-dateutil==2.8.1,pytz==2020.1,PyYAML==5.3.1,redis==3.5.3,requests==2.24.0,seldon-core @ file:///workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip,six==1.15.0,tenacity==6.2.0,threadloop==1.0.2,thrift==0.13.0,tornado==6.0.4,urllib3==1.25.9,wcwidth==0.2.5,Werkzeug==1.0.1,zipp==3.1.0
+py3 run-test-pre: PYTHONHASHSEED='1600543635'
+py3 run-test: commands[0] | pytest
+============================= test session starts ==============================
+platform linux -- Python 3.7.1, pytest-5.4.3, py-1.9.0, pluggy-0.13.1
+cachedir: .tox/py3/.pytest_cache
+rootdir: /workspace/source/python, inifile: setup.cfg
+plugins: cov-2.10.0
+collected 371 items
+
+tests/test_api_tester.py ..                                              [  0%]
+tests/test_application_exception_microservice.py ..                      [  1%]
+tests/test_azure_storage.py ......                                       [  2%]
+tests/test_combiner_microservice.py .....................                [  8%]
+tests/test_metadata.py ................................................. [ 21%]
+...                                                                      [ 22%]
+tests/test_metrics.py .................................................. [ 35%]
+...................                                                      [ 40%]
+tests/test_microservice.py .............                                 [ 44%]
+tests/test_microservice_tester.py .....                                  [ 45%]
+tests/test_model_microservice.py ...............s......................s [ 56%]
+........                                                                 [ 58%]
+tests/test_router_microservice.py .................                      [ 63%]
+tests/test_s3_storage.py ...                                             [ 63%]
+tests/test_seldon_client.py ..................................           [ 73%]
+tests/test_storage.py ...s...s                                           [ 75%]
+tests/test_transformer_microservice.py ................................. [ 84%]
+........                                                                 [ 86%]
+tests/test_user_model.py ....                                            [ 87%]
+tests/test_utils.py ..............................sss..............      [100%]
+
+----------- coverage: platform linux, python 3.7.1-final-0 -----------
+Name                                                                                                      Stmts   Miss  Cover
+-----------------------------------------------------------------------------------------------------------------------------
+.tox/py3/lib/python3.7/site-packages/seldon_core/__init__.py                                                  2      0   100%
+.tox/py3/lib/python3.7/site-packages/seldon_core/api_tester.py                                               81     81     0%
+.tox/py3/lib/python3.7/site-packages/seldon_core/app.py                                                      36      3    92%
+.tox/py3/lib/python3.7/site-packages/seldon_core/batch_processor.py                                          94     94     0%
+.tox/py3/lib/python3.7/site-packages/seldon_core/flask_utils.py                                              44     24    45%
+.tox/py3/lib/python3.7/site-packages/seldon_core/imports_helper.py                                           19      2    89%
+.tox/py3/lib/python3.7/site-packages/seldon_core/metadata.py                                                 32      3    91%
+.tox/py3/lib/python3.7/site-packages/seldon_core/metrics.py                                                 128     58    55%
+.tox/py3/lib/python3.7/site-packages/seldon_core/microservice.py                                            199     65    67%
+.tox/py3/lib/python3.7/site-packages/seldon_core/microservice_tester.py                                     140    140     0%
+.tox/py3/lib/python3.7/site-packages/seldon_core/persistence.py                                              45     23    49%
+.tox/py3/lib/python3.7/site-packages/seldon_core/proto/__init__.py                                            0      0   100%
+.tox/py3/lib/python3.7/site-packages/seldon_core/proto/prediction_pb2.py                                    160      0   100%
+.tox/py3/lib/python3.7/site-packages/seldon_core/proto/prediction_pb2_grpc.py                               137     89    35%
+.tox/py3/lib/python3.7/site-packages/seldon_core/proto/tensorflow/core/framework/__init__.py                  3      1    67%
+.tox/py3/lib/python3.7/site-packages/seldon_core/proto/tensorflow/core/framework/resource_handle_pb2.py      22      0   100%
+.tox/py3/lib/python3.7/site-packages/seldon_core/proto/tensorflow/core/framework/tensor_pb2.py               36      0   100%
+.tox/py3/lib/python3.7/site-packages/seldon_core/proto/tensorflow/core/framework/tensor_shape_pb2.py         18      0   100%
+.tox/py3/lib/python3.7/site-packages/seldon_core/proto/tensorflow/core/framework/types_pb2.py                62      0   100%
+.tox/py3/lib/python3.7/site-packages/seldon_core/seldon_client.py                                           599    599     0%
+.tox/py3/lib/python3.7/site-packages/seldon_core/seldon_methods.py                                          240    190    21%
+.tox/py3/lib/python3.7/site-packages/seldon_core/serving_test_gen.py                                         40     40     0%
+.tox/py3/lib/python3.7/site-packages/seldon_core/storage.py                                                 154    126    18%
+.tox/py3/lib/python3.7/site-packages/seldon_core/user_model.py                                              162     92    43%
+.tox/py3/lib/python3.7/site-packages/seldon_core/utils.py                                                   282    144    49%
+.tox/py3/lib/python3.7/site-packages/seldon_core/version.py                                                   1      0   100%
+.tox/py3/lib/python3.7/site-packages/seldon_core/wrapper.py                                                 148     75    49%
+seldon_core/__init__.py                                                                                       2      0   100%
+seldon_core/api_tester.py                                                                                    81     38    53%
+seldon_core/app.py                                                                                           36     22    39%
+seldon_core/batch_processor.py                                                                               94     94     0%
+seldon_core/flask_utils.py                                                                                   44      3    93%
+seldon_core/imports_helper.py                                                                                19      2    89%
+seldon_core/metadata.py                                                                                      32      0   100%
+seldon_core/metrics.py                                                                                      128      2    98%
+seldon_core/microservice.py                                                                                 199    120    40%
+seldon_core/microservice_tester.py                                                                          140     43    69%
+seldon_core/persistence.py                                                                                   45     23    49%
+seldon_core/proto/__init__.py                                                                                 0      0   100%
+seldon_core/proto/prediction_pb2.py                                                                         160      0   100%
+seldon_core/proto/prediction_pb2_grpc.py                                                                    137     65    53%
+seldon_core/proto/tensorflow/core/framework/__init__.py                                                       3      1    67%
+seldon_core/proto/tensorflow/core/framework/resource_handle_pb2.py                                           22      0   100%
+seldon_core/proto/tensorflow/core/framework/tensor_pb2.py                                                    36      0   100%
+seldon_core/proto/tensorflow/core/framework/tensor_shape_pb2.py                                              18      0   100%
+seldon_core/proto/tensorflow/core/framework/types_pb2.py                                                     62      0   100%
+seldon_core/seldon_client.py                                                                                599    284    53%
+seldon_core/seldon_methods.py                                                                               240     11    95%
+seldon_core/serving_test_gen.py                                                                              40     40     0%
+seldon_core/storage.py                                                                                      154     53    66%
+seldon_core/user_model.py                                                                                   162     25    85%
+seldon_core/utils.py                                                                                        282     43    85%
+seldon_core/version.py                                                                                        1      0   100%
+seldon_core/wrapper.py                                                                                      148     11    93%
+-----------------------------------------------------------------------------------------------------------------------------
+TOTAL                                                                                                      5768   2729    53%
+
+
+================== 364 passed, 7 skipped in 93.94s (0:01:33) ===================
+tensorflow create: /workspace/source/python/.tox/tensorflow
+tensorflow installdeps: tenacity, pytest, pytest-cov, Pillow
+tensorflow inst: /workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip
+tensorflow installed: absl-py==0.9.0,astunparse==1.6.3,attrs==19.3.0,azure-common==1.1.25,azure-storage-blob==2.1.0,azure-storage-common==2.1.0,cachetools==4.1.1,certifi==2020.6.20,cffi==1.14.0,chardet==3.0.4,click==7.1.2,configparser==5.0.0,coverage==5.2,cryptography==3.0,Flask==1.1.2,Flask-Cors==3.0.8,Flask-OpenTracing==1.1.0,flatbuffers==1.12,gast==0.3.3,google-auth==1.19.2,google-auth-oauthlib==0.4.1,google-pasta==0.2.0,grpcio==1.30.0,grpcio-opentracing==1.1.4,gunicorn==20.0.4,h5py==2.10.0,idna==2.10,importlib-metadata==1.7.0,itsdangerous==1.1.0,jaeger-client==4.3.0,Jinja2==2.11.2,jsonschema==3.2.0,Keras-Preprocessing==1.1.2,Markdown==3.2.2,MarkupSafe==1.1.1,minio==5.0.10,more-itertools==8.4.0,numpy==1.19.0,oauthlib==3.1.0,opentracing==2.3.0,opt-einsum==3.3.0,packaging==20.4,Pillow==7.2.0,pluggy==0.13.1,prometheus-client==0.8.0,protobuf==3.12.2,py==1.9.0,pyasn1==0.4.8,pyasn1-modules==0.2.8,pycparser==2.20,pyparsing==2.4.7,pyrsistent==0.16.0,pytest==5.4.3,pytest-cov==2.10.0,python-dateutil==2.8.1,pytz==2020.1,PyYAML==5.3.1,redis==3.5.3,requests==2.24.0,requests-oauthlib==1.3.0,rsa==4.6,scipy==1.4.1,seldon-core @ file:///workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip,six==1.15.0,tenacity==6.2.0,tensorboard==2.2.2,tensorboard-plugin-wit==1.7.0,tensorflow==2.2.0,tensorflow-estimator==2.2.0,termcolor==1.1.0,threadloop==1.0.2,thrift==0.13.0,tornado==6.0.4,urllib3==1.25.9,wcwidth==0.2.5,Werkzeug==1.0.1,wrapt==1.12.1,zipp==3.1.0
+tensorflow run-test-pre: PYTHONHASHSEED='1600543635'
+tensorflow run-test: commands[0] | pytest
+============================= test session starts ==============================
+platform linux -- Python 3.7.1, pytest-5.4.3, py-1.9.0, pluggy-0.13.1
+cachedir: .tox/tensorflow/.pytest_cache
+rootdir: /workspace/source/python, inifile: setup.cfg
+plugins: cov-2.10.0
+collected 371 items
+
+tests/test_api_tester.py ..                                              [  0%]
+tests/test_application_exception_microservice.py ..                      [  1%]
+tests/test_azure_storage.py ......                                       [  2%]
+tests/test_combiner_microservice.py .....................                [  8%]
+tests/test_metadata.py ................................................. [ 21%]
+...                                                                      [ 22%]
+tests/test_metrics.py .................................................. [ 35%]
+...................                                                      [ 40%]
+tests/test_microservice.py .............                                 [ 44%]
+tests/test_microservice_tester.py .....                                  [ 45%]
+tests/test_model_microservice.py ....................................... [ 56%]
+........                                                                 [ 58%]
+tests/test_router_microservice.py .................                      [ 63%]
+tests/test_s3_storage.py ...                                             [ 63%]
+tests/test_seldon_client.py ..................................           [ 73%]
+tests/test_storage.py ...s...s                                           [ 75%]
+tests/test_transformer_microservice.py ................................. [ 84%]
+........                                                                 [ 86%]
+tests/test_user_model.py ....                                            [ 87%]
+tests/test_utils.py ...............................................      [100%]
+
+----------- coverage: platform linux, python 3.7.1-final-0 -----------
+Name                                                                                                  Stmts   Miss  Cover
+-------------------------------------------------------------------------------------------------------------------------
+.tox/tensorflow/lib/python3.7/site-packages/seldon_core/__init__.py                                       2      0   100%
+.tox/tensorflow/lib/python3.7/site-packages/seldon_core/api_tester.py                                    81     81     0%
+.tox/tensorflow/lib/python3.7/site-packages/seldon_core/app.py                                           36      3    92%
+.tox/tensorflow/lib/python3.7/site-packages/seldon_core/batch_processor.py                               94     94     0%
+.tox/tensorflow/lib/python3.7/site-packages/seldon_core/flask_utils.py                                   44     24    45%
+.tox/tensorflow/lib/python3.7/site-packages/seldon_core/imports_helper.py                                19      5    74%
+.tox/tensorflow/lib/python3.7/site-packages/seldon_core/metadata.py                                      32      3    91%
+.tox/tensorflow/lib/python3.7/site-packages/seldon_core/metrics.py                                      128     58    55%
+.tox/tensorflow/lib/python3.7/site-packages/seldon_core/microservice.py                                 199     65    67%
+.tox/tensorflow/lib/python3.7/site-packages/seldon_core/microservice_tester.py                          140    140     0%
+.tox/tensorflow/lib/python3.7/site-packages/seldon_core/persistence.py                                   45     23    49%
+.tox/tensorflow/lib/python3.7/site-packages/seldon_core/proto/__init__.py                                 0      0   100%
+.tox/tensorflow/lib/python3.7/site-packages/seldon_core/proto/prediction_pb2.py                         160      0   100%
+.tox/tensorflow/lib/python3.7/site-packages/seldon_core/proto/prediction_pb2_grpc.py                    137     89    35%
+.tox/tensorflow/lib/python3.7/site-packages/seldon_core/proto/tensorflow/core/framework/__init__.py       3      0   100%
+.tox/tensorflow/lib/python3.7/site-packages/seldon_core/seldon_client.py                                599    599     0%
+.tox/tensorflow/lib/python3.7/site-packages/seldon_core/seldon_methods.py                               240    190    21%
+.tox/tensorflow/lib/python3.7/site-packages/seldon_core/serving_test_gen.py                              40     40     0%
+.tox/tensorflow/lib/python3.7/site-packages/seldon_core/storage.py                                      154    126    18%
+.tox/tensorflow/lib/python3.7/site-packages/seldon_core/user_model.py                                   162     92    43%
+.tox/tensorflow/lib/python3.7/site-packages/seldon_core/utils.py                                        282    142    50%
+.tox/tensorflow/lib/python3.7/site-packages/seldon_core/version.py                                        1      0   100%
+.tox/tensorflow/lib/python3.7/site-packages/seldon_core/wrapper.py                                      148     75    49%
+seldon_core/__init__.py                                                                                   2      0   100%
+seldon_core/api_tester.py                                                                                81     38    53%
+seldon_core/app.py                                                                                       36     22    39%
+seldon_core/batch_processor.py                                                                           94     94     0%
+seldon_core/flask_utils.py                                                                               44      3    93%
+seldon_core/imports_helper.py                                                                            19      5    74%
+seldon_core/metadata.py                                                                                  32      0   100%
+seldon_core/metrics.py                                                                                  128      2    98%
+seldon_core/microservice.py                                                                             199    120    40%
+seldon_core/microservice_tester.py                                                                      140     43    69%
+seldon_core/persistence.py                                                                               45     23    49%
+seldon_core/proto/__init__.py                                                                             0      0   100%
+seldon_core/proto/prediction_pb2.py                                                                     160      0   100%
+seldon_core/proto/prediction_pb2_grpc.py                                                                137     65    53%
+seldon_core/proto/tensorflow/core/framework/__init__.py                                                   3      0   100%
+seldon_core/seldon_client.py                                                                            599    284    53%
+seldon_core/seldon_methods.py                                                                           240     11    95%
+seldon_core/serving_test_gen.py                                                                          40     40     0%
+seldon_core/storage.py                                                                                  154     53    66%
+seldon_core/user_model.py                                                                               162     25    85%
+seldon_core/utils.py                                                                                    282     31    89%
+seldon_core/version.py                                                                                    1      0   100%
+seldon_core/wrapper.py                                                                                  148     11    93%
+-------------------------------------------------------------------------------------------------------------------------
+TOTAL                                                                                                  5492   2719    50%
+
+
+================== 369 passed, 2 skipped in 148.89s (0:02:28) ==================
+gcs create: /workspace/source/python/.tox/gcs
+gcs installdeps: tenacity, pytest, pytest-cov, Pillow
+gcs inst: /workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip
+gcs installed: attrs==19.3.0,azure-common==1.1.25,azure-storage-blob==2.1.0,azure-storage-common==2.1.0,cachetools==4.1.1,certifi==2020.6.20,cffi==1.14.0,chardet==3.0.4,click==7.1.2,configparser==5.0.0,coverage==5.2,cryptography==3.0,Flask==1.1.2,Flask-Cors==3.0.8,Flask-OpenTracing==1.1.0,flatbuffers==1.12,google-api-core==1.21.0,google-auth==1.19.2,google-cloud-core==1.3.0,google-cloud-storage==1.29.0,google-resumable-media==0.5.1,googleapis-common-protos==1.52.0,grpcio==1.30.0,grpcio-opentracing==1.1.4,gunicorn==20.0.4,idna==2.10,importlib-metadata==1.7.0,itsdangerous==1.1.0,jaeger-client==4.3.0,Jinja2==2.11.2,jsonschema==3.2.0,MarkupSafe==1.1.1,minio==5.0.10,more-itertools==8.4.0,numpy==1.19.0,opentracing==2.3.0,packaging==20.4,Pillow==7.2.0,pluggy==0.13.1,prometheus-client==0.8.0,protobuf==3.12.2,py==1.9.0,pyasn1==0.4.8,pyasn1-modules==0.2.8,pycparser==2.20,pyparsing==2.4.7,pyrsistent==0.16.0,pytest==5.4.3,pytest-cov==2.10.0,python-dateutil==2.8.1,pytz==2020.1,PyYAML==5.3.1,redis==3.5.3,requests==2.24.0,rsa==4.6,seldon-core @ file:///workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip,six==1.15.0,tenacity==6.2.0,threadloop==1.0.2,thrift==0.13.0,tornado==6.0.4,urllib3==1.25.9,wcwidth==0.2.5,Werkzeug==1.0.1,zipp==3.1.0
+gcs run-test-pre: PYTHONHASHSEED='1600543635'
+gcs run-test: commands[0] | pytest
+============================= test session starts ==============================
+platform linux -- Python 3.7.1, pytest-5.4.3, py-1.9.0, pluggy-0.13.1
+cachedir: .tox/gcs/.pytest_cache
+rootdir: /workspace/source/python, inifile: setup.cfg
+plugins: cov-2.10.0
+collected 371 items
+
+tests/test_api_tester.py ..                                              [  0%]
+tests/test_application_exception_microservice.py ..                      [  1%]
+tests/test_azure_storage.py ......                                       [  2%]
+tests/test_combiner_microservice.py .....................                [  8%]
+tests/test_metadata.py ................................................. [ 21%]
+...                                                                      [ 22%]
+tests/test_metrics.py .................................................. [ 35%]
+...................                                                      [ 40%]
+tests/test_microservice.py .............                                 [ 44%]
+tests/test_microservice_tester.py .....                                  [ 45%]
+tests/test_model_microservice.py ...............s......................s [ 56%]
+........                                                                 [ 58%]
+tests/test_router_microservice.py .................                      [ 63%]
+tests/test_s3_storage.py ...                                             [ 63%]
+tests/test_seldon_client.py ..................................           [ 73%]
+tests/test_storage.py ........                                           [ 75%]
+tests/test_transformer_microservice.py ................................. [ 84%]
+........                                                                 [ 86%]
+tests/test_user_model.py ....                                            [ 87%]
+tests/test_utils.py ..............................sss..............      [100%]
+
+----------- coverage: platform linux, python 3.7.1-final-0 -----------
+Name                                                                                                      Stmts   Miss  Cover
+-----------------------------------------------------------------------------------------------------------------------------
+.tox/gcs/lib/python3.7/site-packages/seldon_core/__init__.py                                                  2      0   100%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/api_tester.py                                               81     81     0%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/app.py                                                      36      3    92%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/batch_processor.py                                          94     94     0%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/flask_utils.py                                              44     24    45%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/imports_helper.py                                           19      5    74%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/metadata.py                                                 32      3    91%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/metrics.py                                                 128     58    55%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/microservice.py                                            199     65    67%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/microservice_tester.py                                     140    140     0%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/persistence.py                                              45     23    49%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/proto/__init__.py                                            0      0   100%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/proto/prediction_pb2.py                                    160      0   100%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/proto/prediction_pb2_grpc.py                               137     89    35%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/proto/tensorflow/core/framework/__init__.py                  3      1    67%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/proto/tensorflow/core/framework/resource_handle_pb2.py      22      0   100%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/proto/tensorflow/core/framework/tensor_pb2.py               36      0   100%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/proto/tensorflow/core/framework/tensor_shape_pb2.py         18      0   100%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/proto/tensorflow/core/framework/types_pb2.py                62      0   100%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/seldon_client.py                                           599    599     0%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/seldon_methods.py                                          240    190    21%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/serving_test_gen.py                                         40     40     0%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/storage.py                                                 154    124    19%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/user_model.py                                              162     92    43%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/utils.py                                                   282    144    49%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/version.py                                                   1      0   100%
+.tox/gcs/lib/python3.7/site-packages/seldon_core/wrapper.py                                                 148     75    49%
+seldon_core/__init__.py                                                                                       2      0   100%
+seldon_core/api_tester.py                                                                                    81     38    53%
+seldon_core/app.py                                                                                           36     22    39%
+seldon_core/batch_processor.py                                                                               94     94     0%
+seldon_core/flask_utils.py                                                                                   44      3    93%
+seldon_core/imports_helper.py                                                                                19      5    74%
+seldon_core/metadata.py                                                                                      32      0   100%
+seldon_core/metrics.py                                                                                      128      2    98%
+seldon_core/microservice.py                                                                                 199    120    40%
+seldon_core/microservice_tester.py                                                                          140     43    69%
+seldon_core/persistence.py                                                                                   45     23    49%
+seldon_core/proto/__init__.py                                                                                 0      0   100%
+seldon_core/proto/prediction_pb2.py                                                                         160      0   100%
+seldon_core/proto/prediction_pb2_grpc.py                                                                    137     65    53%
+seldon_core/proto/tensorflow/core/framework/__init__.py                                                       3      1    67%
+seldon_core/proto/tensorflow/core/framework/resource_handle_pb2.py                                           22      0   100%
+seldon_core/proto/tensorflow/core/framework/tensor_pb2.py                                                    36      0   100%
+seldon_core/proto/tensorflow/core/framework/tensor_shape_pb2.py                                              18      0   100%
+seldon_core/proto/tensorflow/core/framework/types_pb2.py                                                     62      0   100%
+seldon_core/seldon_client.py                                                                                599    284    53%
+seldon_core/seldon_methods.py                                                                               240     11    95%
+seldon_core/serving_test_gen.py                                                                              40     40     0%
+seldon_core/storage.py                                                                                      154     28    82%
+seldon_core/user_model.py                                                                                   162     25    85%
+seldon_core/utils.py                                                                                        282     43    85%
+seldon_core/version.py                                                                                        1      0   100%
+seldon_core/wrapper.py                                                                                      148     11    93%
+-----------------------------------------------------------------------------------------------------------------------------
+TOTAL                                                                                                      5768   2708    53%
+
+
+================== 366 passed, 5 skipped in 94.69s (0:01:34) ===================
+all create: /workspace/source/python/.tox/all
+all installdeps: tenacity, pytest, pytest-cov, Pillow
+all inst: /workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip
+all installed: absl-py==0.9.0,astunparse==1.6.3,attrs==19.3.0,azure-common==1.1.25,azure-storage-blob==2.1.0,azure-storage-common==2.1.0,cachetools==4.1.1,certifi==2020.6.20,cffi==1.14.0,chardet==3.0.4,click==7.1.2,configparser==5.0.0,coverage==5.2,cryptography==3.0,Flask==1.1.2,Flask-Cors==3.0.8,Flask-OpenTracing==1.1.0,flatbuffers==1.12,gast==0.3.3,google-api-core==1.21.0,google-auth==1.19.2,google-auth-oauthlib==0.4.1,google-cloud-core==1.3.0,google-cloud-storage==1.29.0,google-pasta==0.2.0,google-resumable-media==0.5.1,googleapis-common-protos==1.52.0,grpcio==1.30.0,grpcio-opentracing==1.1.4,gunicorn==20.0.4,h5py==2.10.0,idna==2.10,importlib-metadata==1.7.0,itsdangerous==1.1.0,jaeger-client==4.3.0,Jinja2==2.11.2,jsonschema==3.2.0,Keras-Preprocessing==1.1.2,Markdown==3.2.2,MarkupSafe==1.1.1,minio==5.0.10,more-itertools==8.4.0,numpy==1.19.0,oauthlib==3.1.0,opentracing==2.3.0,opt-einsum==3.3.0,packaging==20.4,Pillow==7.2.0,pluggy==0.13.1,prometheus-client==0.8.0,protobuf==3.12.2,py==1.9.0,pyasn1==0.4.8,pyasn1-modules==0.2.8,pycparser==2.20,pyparsing==2.4.7,pyrsistent==0.16.0,pytest==5.4.3,pytest-cov==2.10.0,python-dateutil==2.8.1,pytz==2020.1,PyYAML==5.3.1,redis==3.5.3,requests==2.24.0,requests-oauthlib==1.3.0,rsa==4.6,scipy==1.4.1,seldon-core @ file:///workspace/source/python/.tox/.tmp/package/1/seldon-core-1.2.2.dev0.zip,six==1.15.0,tenacity==6.2.0,tensorboard==2.2.2,tensorboard-plugin-wit==1.7.0,tensorflow==2.2.0,tensorflow-estimator==2.2.0,termcolor==1.1.0,threadloop==1.0.2,thrift==0.13.0,tornado==6.0.4,urllib3==1.25.9,wcwidth==0.2.5,Werkzeug==1.0.1,wrapt==1.12.1,zipp==3.1.0
+all run-test-pre: PYTHONHASHSEED='1600543635'
+all run-test: commands[0] | pytest
+============================= test session starts ==============================
+platform linux -- Python 3.7.1, pytest-5.4.3, py-1.9.0, pluggy-0.13.1
+cachedir: .tox/all/.pytest_cache
+rootdir: /workspace/source/python, inifile: setup.cfg
+plugins: cov-2.10.0
+collected 371 items
+
+tests/test_api_tester.py ..                                              [  0%]
+tests/test_application_exception_microservice.py ..                      [  1%]
+tests/test_azure_storage.py ......                                       [  2%]
+tests/test_combiner_microservice.py .....................                [  8%]
+tests/test_metadata.py ................................................. [ 21%]
+...                                                                      [ 22%]
+tests/test_metrics.py .................................................. [ 35%]
+...................                                                      [ 40%]
+tests/test_microservice.py .............                                 [ 44%]
+tests/test_microservice_tester.py .....                                  [ 45%]
+tests/test_model_microservice.py ....................................... [ 56%]
+........                                                                 [ 58%]
+tests/test_router_microservice.py .................                      [ 63%]
+tests/test_s3_storage.py ...                                             [ 63%]
+tests/test_seldon_client.py ..................................           [ 73%]
+tests/test_storage.py ........                                           [ 75%]
+tests/test_transformer_microservice.py ................................. [ 84%]
+........                                                                 [ 86%]
+tests/test_user_model.py ....                                            [ 87%]
+tests/test_utils.py ...............................................      [100%]
+
+----------- coverage: platform linux, python 3.7.1-final-0 -----------
+Name                                                                                           Stmts   Miss  Cover
+------------------------------------------------------------------------------------------------------------------
+.tox/all/lib/python3.7/site-packages/seldon_core/__init__.py                                       2      0   100%
+.tox/all/lib/python3.7/site-packages/seldon_core/api_tester.py                                    81     81     0%
+.tox/all/lib/python3.7/site-packages/seldon_core/app.py                                           36      3    92%
+.tox/all/lib/python3.7/site-packages/seldon_core/batch_processor.py                               94     94     0%
+.tox/all/lib/python3.7/site-packages/seldon_core/flask_utils.py                                   44     24    45%
+.tox/all/lib/python3.7/site-packages/seldon_core/imports_helper.py                                19      8    58%
+.tox/all/lib/python3.7/site-packages/seldon_core/metadata.py                                      32      3    91%
+.tox/all/lib/python3.7/site-packages/seldon_core/metrics.py                                      128     58    55%
+.tox/all/lib/python3.7/site-packages/seldon_core/microservice.py                                 199     65    67%
+.tox/all/lib/python3.7/site-packages/seldon_core/microservice_tester.py                          140    140     0%
+.tox/all/lib/python3.7/site-packages/seldon_core/persistence.py                                   45     23    49%
+.tox/all/lib/python3.7/site-packages/seldon_core/proto/__init__.py                                 0      0   100%
+.tox/all/lib/python3.7/site-packages/seldon_core/proto/prediction_pb2.py                         160      0   100%
+.tox/all/lib/python3.7/site-packages/seldon_core/proto/prediction_pb2_grpc.py                    137     89    35%
+.tox/all/lib/python3.7/site-packages/seldon_core/proto/tensorflow/core/framework/__init__.py       3      0   100%
+.tox/all/lib/python3.7/site-packages/seldon_core/seldon_client.py                                599    599     0%
+.tox/all/lib/python3.7/site-packages/seldon_core/seldon_methods.py                               240    190    21%
+.tox/all/lib/python3.7/site-packages/seldon_core/serving_test_gen.py                              40     40     0%
+.tox/all/lib/python3.7/site-packages/seldon_core/storage.py                                      154    124    19%
+.tox/all/lib/python3.7/site-packages/seldon_core/user_model.py                                   162     92    43%
+.tox/all/lib/python3.7/site-packages/seldon_core/utils.py                                        282    142    50%
+.tox/all/lib/python3.7/site-packages/seldon_core/version.py                                        1      0   100%
+.tox/all/lib/python3.7/site-packages/seldon_core/wrapper.py                                      148     75    49%
+seldon_core/__init__.py                                                                            2      0   100%
+seldon_core/api_tester.py                                                                         81     38    53%
+seldon_core/app.py                                                                                36     22    39%
+seldon_core/batch_processor.py                                                                    94     94     0%
+seldon_core/flask_utils.py                                                                        44      3    93%
+seldon_core/imports_helper.py                                                                     19      8    58%
+seldon_core/metadata.py                                                                           32      0   100%
+seldon_core/metrics.py                                                                           128      2    98%
+seldon_core/microservice.py                                                                      199    120    40%
+seldon_core/microservice_tester.py                                                               140     43    69%
+seldon_core/persistence.py                                                                        45     23    49%
+seldon_core/proto/__init__.py                                                                      0      0   100%
+seldon_core/proto/prediction_pb2.py                                                              160      0   100%
+seldon_core/proto/prediction_pb2_grpc.py                                                         137     65    53%
+seldon_core/proto/tensorflow/core/framework/__init__.py                                            3      0   100%
+seldon_core/seldon_client.py                                                                     599    284    53%
+seldon_core/seldon_methods.py                                                                    240     11    95%
+seldon_core/serving_test_gen.py                                                                   40     40     0%
+seldon_core/storage.py                                                                           154     28    82%
+seldon_core/user_model.py                                                                        162     25    85%
+seldon_core/utils.py                                                                             282     31    89%
+seldon_core/version.py                                                                             1      0   100%
+seldon_core/wrapper.py                                                                           148     11    93%
+------------------------------------------------------------------------------------------------------------------
+TOTAL                                                                                           5492   2698    51%
+
+
+======================= 371 passed in 139.56s (0:02:19) ========================
+___________________________________ summary ____________________________________
+  py3: commands succeeded
+  tensorflow: commands succeeded
+  gcs: commands succeeded
+  all: commands succeeded
+  congratulations :)
+make: Leaving directory '/workspace/source/python'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mseldon-executor[0m and container [32mstep-credential-initializer-xt9dp[0m
+{"level":"info","ts":1595350193.7662423,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1595350193.7667687,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mseldon-executor[0m and container [32mstep-working-dir-initializer-7nz8v[0m
+{"level":"info","ts":1595350195.6668005,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595350195.6691272,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mseldon-executor[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mseldon-executor[0m and container [32mstep-create-dir-workspace-m9fnq[0m
+{"level":"info","ts":1595350207.830636,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595350207.8330572,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mseldon-executor[0m and container [32mstep-source-copy-workspace-kmcrw[0m
+{"level":"info","ts":1595350208.1207008,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1595350208.7489607,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mseldon-executor[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2159-pr-cgnpb-8[0m stage [32mseldon-executor[0m and container [32mstep-test-executor[0m
+make: Entering directory '/workspace/source/executor'
+go fmt ./api/... ./predictor/... ./k8s/...
+go: downloading google.golang.org/grpc v1.30.0
+go: downloading github.com/golang/protobuf v1.4.2
+go: downloading github.com/opentracing/opentracing-go v1.2.0
+go: downloading github.com/go-logr/logr v0.1.0
+go: downloading github.com/google/uuid v1.1.1
+go: downloading github.com/prometheus/client_golang v1.7.1
+go: extracting github.com/google/uuid v1.1.1
+go: downloading github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
+go: extracting github.com/go-logr/logr v0.1.0
+go: downloading sigs.k8s.io/controller-runtime v0.5.8
+go: extracting github.com/golang/protobuf v1.4.2
+go: extracting github.com/opentracing/opentracing-go v1.2.0
+go: downloading google.golang.org/protobuf v1.23.0
+go: extracting github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
+go: extracting github.com/prometheus/client_golang v1.7.1
+go: downloading k8s.io/apimachinery v0.17.9
+go: extracting sigs.k8s.io/controller-runtime v0.5.8
+go: extracting google.golang.org/grpc v1.30.0
+go: extracting google.golang.org/protobuf v1.23.0
+go: extracting k8s.io/apimachinery v0.17.9
+go: downloading github.com/gorilla/mux v1.7.4
+go: extracting github.com/gorilla/mux v1.7.4
+go: downloading github.com/uber/jaeger-client-go v2.25.0+incompatible
+go: downloading github.com/gogo/protobuf v1.3.1
+go: downloading k8s.io/api v0.17.9
+go: downloading github.com/cloudevents/sdk-go v1.2.0
+go: downloading k8s.io/client-go v0.17.9
+go: downloading github.com/modern-go/reflect2 v1.0.1
+go: downloading github.com/beorn7/perks v1.0.1
+go: downloading github.com/pkg/errors v0.9.1
+go: extracting github.com/uber/jaeger-client-go v2.25.0+incompatible
+go: downloading github.com/prometheus/client_model v0.2.0
+go: extracting github.com/modern-go/reflect2 v1.0.1
+go: extracting github.com/beorn7/perks v1.0.1
+go: downloading gomodules.xyz/jsonpatch/v2 v2.0.1
+go: extracting github.com/cloudevents/sdk-go v1.2.0
+go: extracting github.com/pkg/errors v0.9.1
+go: downloading github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+go: extracting k8s.io/client-go v0.17.9
+go: downloading gopkg.in/fsnotify.v1 v1.4.7
+go: downloading golang.org/x/net v0.0.0-20200520004742-59133d7f0dd7
+go: extracting github.com/gogo/protobuf v1.3.1
+go: extracting k8s.io/api v0.17.9
+go: extracting github.com/prometheus/client_model v0.2.0
+go: downloading github.com/prometheus/common v0.10.0
+go: extracting gomodules.xyz/jsonpatch/v2 v2.0.1
+go: extracting gopkg.in/fsnotify.v1 v1.4.7
+go: downloading github.com/evanphx/json-patch v4.5.0+incompatible
+go: extracting github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+go: downloading golang.org/x/sys v0.0.0-20200615200032-f1bc736245b1
+go: extracting github.com/prometheus/common v0.10.0
+go: extracting github.com/evanphx/json-patch v4.5.0+incompatible
+go: extracting golang.org/x/net v0.0.0-20200520004742-59133d7f0dd7
+go: downloading github.com/cespare/xxhash/v2 v2.1.1
+go: downloading k8s.io/utils v0.0.0-20200619165400-6e3d28b6ed19
+go: downloading github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6
+go: downloading github.com/davecgh/go-spew v1.1.1
+go: downloading go.uber.org/zap v1.15.0
+go: downloading github.com/prometheus/procfs v0.1.3
+go: downloading github.com/spf13/pflag v1.0.5
+go: downloading github.com/uber/jaeger-lib v2.2.0+incompatible
+go: extracting k8s.io/utils v0.0.0-20200619165400-6e3d28b6ed19
+go: extracting github.com/cespare/xxhash/v2 v2.1.1
+go: downloading k8s.io/klog v1.0.0
+go: downloading golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0
+go: extracting golang.org/x/sys v0.0.0-20200615200032-f1bc736245b1
+go: extracting github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6
+go: extracting github.com/davecgh/go-spew v1.1.1
+go: downloading golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+go: downloading github.com/google/go-cmp v0.5.0
+go: downloading github.com/json-iterator/go v1.1.10
+go: extracting go.uber.org/zap v1.15.0
+go: extracting github.com/prometheus/procfs v0.1.3
+go: extracting github.com/uber/jaeger-lib v2.2.0+incompatible
+go: extracting k8s.io/klog v1.0.0
+go: extracting golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0
+go: downloading google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
+go: downloading go.opencensus.io v0.22.0
+go: downloading k8s.io/klog/v2 v2.0.0
+go: downloading gopkg.in/inf.v0 v0.9.1
+go: extracting github.com/spf13/pflag v1.0.5
+go: downloading go.uber.org/atomic v1.6.0
+go: downloading go.uber.org/multierr v1.5.0
+go: downloading github.com/go-logr/zapr v0.1.0
+go: extracting github.com/google/go-cmp v0.5.0
+go: extracting golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+go: extracting github.com/json-iterator/go v1.1.10
+go: downloading k8s.io/apiextensions-apiserver v0.17.9
+go: downloading sigs.k8s.io/yaml v1.1.0
+go: extracting go.opencensus.io v0.22.0
+go: extracting go.uber.org/multierr v1.5.0
+go: extracting go.uber.org/atomic v1.6.0
+go: downloading k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29
+go: downloading github.com/hashicorp/golang-lru v0.5.4
+go: extracting k8s.io/klog/v2 v2.0.0
+go: extracting gopkg.in/inf.v0 v0.9.1
+go: downloading golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+go: downloading github.com/matttproud/golang_protobuf_extensions v1.0.1
+go: downloading github.com/lightstep/tracecontext.go v0.0.0-20181129014701-1757c391b1ac
+go: downloading github.com/google/gofuzz v1.0.0
+go: extracting github.com/go-logr/zapr v0.1.0
+go: downloading golang.org/x/text v0.3.3
+go: extracting sigs.k8s.io/yaml v1.1.0
+go: downloading gopkg.in/yaml.v2 v2.3.0
+go: extracting k8s.io/apiextensions-apiserver v0.17.9
+go: extracting k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29
+go: extracting golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+go: extracting github.com/hashicorp/golang-lru v0.5.4
+go: extracting github.com/matttproud/golang_protobuf_extensions v1.0.1
+go: extracting github.com/lightstep/tracecontext.go v0.0.0-20181129014701-1757c391b1ac
+go: extracting github.com/google/gofuzz v1.0.0
+go: downloading github.com/googleapis/gnostic v0.3.1
+go: downloading golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+go: extracting google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
+go: downloading github.com/imdario/mergo v0.3.9
+go: extracting gopkg.in/yaml.v2 v2.3.0
+go: extracting golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+go: extracting github.com/imdario/mergo v0.3.9
+go: extracting github.com/googleapis/gnostic v0.3.1
+go: extracting golang.org/x/text v0.3.3
+go: finding github.com/go-logr/logr v0.1.0
+go: finding github.com/golang/protobuf v1.4.2
+go: finding github.com/pkg/errors v0.9.1
+go: finding github.com/opentracing/opentracing-go v1.2.0
+go: finding golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+go: finding github.com/prometheus/client_golang v1.7.1
+go: finding github.com/uber/jaeger-client-go v2.25.0+incompatible
+go: finding github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
+go: finding sigs.k8s.io/controller-runtime v0.5.8
+go: finding github.com/google/uuid v1.1.1
+go: finding google.golang.org/protobuf v1.23.0
+go: finding google.golang.org/grpc v1.30.0
+go: finding github.com/cloudevents/sdk-go v1.2.0
+go: finding google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
+go: finding k8s.io/api v0.17.9
+go: finding github.com/beorn7/perks v1.0.1
+go: finding k8s.io/apimachinery v0.17.9
+go: finding github.com/gorilla/mux v1.7.4
+go: finding github.com/cespare/xxhash/v2 v2.1.1
+go: finding github.com/go-logr/zapr v0.1.0
+go: finding github.com/spf13/pflag v1.0.5
+go: finding golang.org/x/net v0.0.0-20200520004742-59133d7f0dd7
+go: finding github.com/prometheus/client_model v0.2.0
+go: finding go.uber.org/zap v1.15.0
+go: finding github.com/uber/jaeger-lib v2.2.0+incompatible
+go: finding github.com/prometheus/common v0.10.0
+go: finding github.com/gogo/protobuf v1.3.1
+go: finding github.com/prometheus/procfs v0.1.3
+go: finding golang.org/x/sys v0.0.0-20200615200032-f1bc736245b1
+go: finding github.com/google/gofuzz v1.0.0
+go: finding go.opencensus.io v0.22.0
+go: finding github.com/evanphx/json-patch v4.5.0+incompatible
+go: finding golang.org/x/text v0.3.3
+go: finding gopkg.in/inf.v0 v0.9.1
+go: finding github.com/lightstep/tracecontext.go v0.0.0-20181129014701-1757c391b1ac
+go: finding k8s.io/client-go v0.17.9
+go: finding gomodules.xyz/jsonpatch/v2 v2.0.1
+go: finding go.uber.org/atomic v1.6.0
+go: finding go.uber.org/multierr v1.5.0
+go: finding k8s.io/klog v1.0.0
+go: finding github.com/matttproud/golang_protobuf_extensions v1.0.1
+go: finding k8s.io/utils v0.0.0-20200619165400-6e3d28b6ed19
+go: finding github.com/imdario/mergo v0.3.9
+go: finding golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+go: finding github.com/hashicorp/golang-lru v0.5.4
+go: finding gopkg.in/fsnotify.v1 v1.4.7
+go: finding github.com/json-iterator/go v1.1.10
+go: finding golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0
+go: finding github.com/modern-go/reflect2 v1.0.1
+go: finding github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6
+go: finding github.com/davecgh/go-spew v1.1.1
+go: finding sigs.k8s.io/yaml v1.1.0
+go: finding github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+go: finding k8s.io/apiextensions-apiserver v0.17.9
+go: finding github.com/googleapis/gnostic v0.3.1
+go: finding k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29
+go: finding github.com/google/go-cmp v0.5.0
+go: finding golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+go: finding gopkg.in/yaml.v2 v2.3.0
+go: finding k8s.io/klog/v2 v2.0.0
+go vet ./api/... ./predictor/... ./k8s/...
+go: downloading github.com/onsi/gomega v1.10.1
+go: downloading gotest.tools v2.2.0+incompatible
+go: extracting github.com/onsi/gomega v1.10.1
+go: extracting gotest.tools v2.2.0+incompatible
+go: finding github.com/onsi/gomega v1.10.1
+go: finding gotest.tools v2.2.0+incompatible
+go test ./api/... ./predictor/... ./k8s/... -coverprofile cover.out
+?   	github.com/seldonio/seldon-core/executor/api	[no test files]
+?   	github.com/seldonio/seldon-core/executor/api/client	[no test files]
+ok  	github.com/seldonio/seldon-core/executor/api/grpc	0.127s	coverage: 18.0% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/grpc/seldon	1.210s	coverage: 48.5% of statements
+?   	github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto	[no test files]
+?   	github.com/seldonio/seldon-core/executor/api/grpc/seldon/test	[no test files]
+ok  	github.com/seldonio/seldon-core/executor/api/grpc/tensorflow	0.333s	coverage: 19.0% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/metric	0.088s	coverage: 31.6% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/payload	0.067s	coverage: 64.3% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/rest	0.218s	coverage: 67.4% of statements
+?   	github.com/seldonio/seldon-core/executor/api/test	[no test files]
+ok  	github.com/seldonio/seldon-core/executor/api/tracing	0.021s	coverage: 72.2% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/util	0.729s	coverage: 48.1% of statements
+ok  	github.com/seldonio/seldon-core/executor/predictor	0.205s	coverage: 78.5% of statements
+ok  	github.com/seldonio/seldon-core/executor/k8s	0.073s	coverage: 72.7% of statements
+make: Leaving directory '/workspace/source/executor'
