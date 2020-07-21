@@ -10,28 +10,28 @@ func addLabelsToService(svc *corev1.Service, pu *machinelearningv1.PredictiveUni
 	if pu.Type != nil {
 		switch *pu.Type {
 		case machinelearningv1.ROUTER:
-			svc.Labels[machinelearningv1.Label_component] = machinelearningv1.Label_router
+			svc.Labels[machinelearningv1.Label_router] = "true"
 		case machinelearningv1.COMBINER:
-			svc.Labels[machinelearningv1.Label_component] = machinelearningv1.Label_combiner
+			svc.Labels[machinelearningv1.Label_combiner] = "true"
 		case machinelearningv1.MODEL:
-			svc.Labels[machinelearningv1.Label_component] = machinelearningv1.Label_model
+			svc.Labels[machinelearningv1.Label_model] = "true"
 		case machinelearningv1.TRANSFORMER:
-			svc.Labels[machinelearningv1.Label_component] = machinelearningv1.Label_transformer
+			svc.Labels[machinelearningv1.Label_transformer] = "true"
 		case machinelearningv1.OUTPUT_TRANSFORMER:
-			svc.Labels[machinelearningv1.Label_component] = machinelearningv1.Label_output_transformer
+			svc.Labels[machinelearningv1.Label_output_transformer] = "true"
 		}
 	}
 	if p.Shadow != true && (p.Traffic >= 50 || p.Traffic == 0) {
-		svc.Labels[machinelearningv1.Label_endpoint] = machinelearningv1.Label_default
+		svc.Labels[machinelearningv1.Label_default] = "true"
 	}
 	if p.Shadow == true {
-		svc.Labels[machinelearningv1.Label_endpoint] = machinelearningv1.Label_shadow
+		svc.Labels[machinelearningv1.Label_shadow] = "true"
 	}
 	if p.Traffic < 50 && p.Traffic > 0 {
-		svc.Labels[machinelearningv1.Label_endpoint] = machinelearningv1.Label_canary
+		svc.Labels[machinelearningv1.Label_canary] = "true"
 	}
 	if !isEmptyExplainer(p.Explainer) {
-		svc.Labels[machinelearningv1.Label_endpoint] = machinelearningv1.Label_explainer
+		svc.Labels[machinelearningv1.Label_explainer] = "true"
 	}
 	svc.Labels[machinelearningv1.Label_managed_by] = machinelearningv1.Label_value_seldon
 }
@@ -40,37 +40,37 @@ func addLabelsToDeployment(deploy *appsv1.Deployment, pu *machinelearningv1.Pred
 	if pu.Type != nil {
 		switch *pu.Type {
 		case machinelearningv1.ROUTER:
-			deploy.Labels[machinelearningv1.Label_component] = machinelearningv1.Label_router
-			deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_component] = machinelearningv1.Label_router
+			deploy.Labels[machinelearningv1.Label_router] = "true"
+			deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_router] = "true"
 		case machinelearningv1.COMBINER:
-			deploy.Labels[machinelearningv1.Label_component] = machinelearningv1.Label_combiner
-			deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_component] = machinelearningv1.Label_combiner
+			deploy.Labels[machinelearningv1.Label_combiner] = "true"
+			deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_combiner] = "true"
 		case machinelearningv1.MODEL:
-			deploy.Labels[machinelearningv1.Label_component] = machinelearningv1.Label_model
-			deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_component] = machinelearningv1.Label_model
+			deploy.Labels[machinelearningv1.Label_model] = "true"
+			deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_model] = "true"
 		case machinelearningv1.TRANSFORMER:
-			deploy.Labels[machinelearningv1.Label_component] = machinelearningv1.Label_transformer
-			deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_component] = machinelearningv1.Label_transformer
+			deploy.Labels[machinelearningv1.Label_transformer] = "true"
+			deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_transformer] = "true"
 		case machinelearningv1.OUTPUT_TRANSFORMER:
-			deploy.Labels[machinelearningv1.Label_component] = machinelearningv1.Label_output_transformer
-			deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_component] = machinelearningv1.Label_output_transformer
+			deploy.Labels[machinelearningv1.Label_output_transformer] = "true"
+			deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_output_transformer] = "true"
 		}
 	}
 	if p.Shadow != true && (p.Traffic >= 50 || p.Traffic == 0) {
-		deploy.Labels[machinelearningv1.Label_endpoint] = machinelearningv1.Label_default
-		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_endpoint] = machinelearningv1.Label_default
+		deploy.Labels[machinelearningv1.Label_default] = "true"
+		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_default] = "true"
 	}
 	if p.Shadow == true {
-		deploy.Labels[machinelearningv1.Label_endpoint] = machinelearningv1.Label_shadow
-		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_endpoint] = machinelearningv1.Label_shadow
+		deploy.Labels[machinelearningv1.Label_shadow] = "true"
+		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_shadow] = "true"
 	}
 	if p.Traffic < 50 && p.Traffic > 0 {
-		deploy.Labels[machinelearningv1.Label_endpoint] = machinelearningv1.Label_canary
-		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_endpoint] = machinelearningv1.Label_canary
+		deploy.Labels[machinelearningv1.Label_canary] = "true"
+		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_canary] = "true"
 	}
 	if !isEmptyExplainer(p.Explainer) {
-		deploy.Labels[machinelearningv1.Label_endpoint] = machinelearningv1.Label_explainer
-		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_endpoint] = machinelearningv1.Label_explainer
+		deploy.Labels[machinelearningv1.Label_explainer] = "true"
+		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_explainer] = "true"
 	}
 	deploy.ObjectMeta.Labels[machinelearningv1.Label_managed_by] = machinelearningv1.Label_value_seldon
 	deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_managed_by] = machinelearningv1.Label_value_seldon
