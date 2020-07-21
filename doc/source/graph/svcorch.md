@@ -129,7 +129,7 @@ You can set custom resource request and limits for this component by specifying 
 
 ```
 
-## Bypass Service Orchestrator (version >= 0.5.0, alpha feature)
+## Bypass Service Orchestrator (version >= 0.5.0)
 
 If you are deploying a single model then for those wishing to minimize the latency and resource usage for their deployed model you can opt out of having the service orchestrator included. To do this add the annotation `seldon.io/no-engine: "true"` to the predictor. The predictor must contain just a single node graph. An example is shown below:
 
@@ -163,3 +163,7 @@ spec:
 In these cases the external API requests will be sent directly to your model. At present only the python wrapper (>=0.13-SNAPSHOT) has been modified to allow this.
 
 Note no metrics or extra data will be added to the request so this would need to be done by your model itself if needed.
+
+## Routing in Metadata
+
+The current default orchestrator in Go the "executor" does not return routing meta data in request calls. This is a [known issue](https://github.com/SeldonIO/seldon-core/issues/1823). 
