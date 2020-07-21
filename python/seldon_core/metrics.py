@@ -27,6 +27,9 @@ ENV_MODEL_IMAGE = "PREDICTIVE_UNIT_IMAGE"
 ENV_PREDICTOR_NAME = "PREDICTOR_ID"
 ENV_PREDICTOR_LABELS = "PREDICTOR_LABELS"
 
+FEEDBACK_KEY = "seldon_api_model_feedback"
+FEEDBACK_REWARD_KEY = "seldon_api_model_feedback_reward"
+
 COUNTER = "COUNTER"
 GAUGE = "GAUGE"
 TIMER = "TIMER"
@@ -54,21 +57,28 @@ def split_image_tag(tag: str) -> Tuple[str]:
 
 # Development placeholder
 image = os.environ.get(ENV_MODEL_IMAGE, f"{NONIMPLEMENTED_MSG}:{NONIMPLEMENTED_MSG}")
-image_name, image_version = split_image_tag(image)
+model_image, model_version = split_image_tag(image)
 predictor_version = json.loads(os.environ.get(ENV_PREDICTOR_LABELS, "{}")).get(
     "version", f"{NONIMPLEMENTED_MSG}"
 )
 
+legacy_mode = os.environ.get("SELDON_EXECUTOR_ENABLED", "true").lower() == "false"
+
 DEFAULT_LABELS = {
-    "seldon_deployment_name": os.environ.get(
+    "deployment_name": os.environ.get(
         ENV_SELDON_DEPLOYMENT_NAME, f"{NONIMPLEMENTED_MSG}"
     ),
     "model_name": os.environ.get(ENV_MODEL_NAME, f"{NONIMPLEMENTED_MSG}"),
-    "image_name": image_name,
-    "image_version": image_version,
+    "model_image": model_image,
+    "model_version": model_version,
     "predictor_name": os.environ.get(ENV_PREDICTOR_NAME, f"{NONIMPLEMENTED_MSG}"),
     "predictor_version": predictor_version,
 }
+
+# Compatibility layer of tags until Seldon-Core 1.3
+DEFAULT_LABELS["seldon_deployment_name"] = DEFAULT_LABELS["deployment_name"]
+DEFAULT_LABELS["image_name"] = DEFAULT_LABELS["model_image"]
+DEFAULT_LABELS["image_version"] = DEFAULT_LABELS["model_version"]
 
 
 class SeldonMetrics:
@@ -83,6 +93,13 @@ class SeldonMetrics:
 
     def __del__(self):
         self._manager.shutdown()
+
+    def update_reward(self, reward: float):
+        """"Update metrics key corresponding to feedback reward counter."""
+        if not reward or legacy_mode:
+            return
+        self.update([{"type": "COUNTER", "key": FEEDBACK_KEY, "value": 1}])
+        self.update([{"type": "COUNTER", "key": FEEDBACK_REWARD_KEY, "value": reward}])
 
     def update(self, custom_metrics):
         # Read a corresponding worker's metric data with lock as Proxy objects

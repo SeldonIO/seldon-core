@@ -22,6 +22,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/predictor"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	"time"
 )
 
 type SeldonRestApi struct {
@@ -67,8 +68,9 @@ func (r *SeldonRestApi) CreateHttpServer(port int) *http.Server {
 	// will apply no timeout at all. Instead, we control that through the
 	// http.Client instance making requests to the underlying node graph servers.
 	return &http.Server{
-		Handler: r.Router,
-		Addr:    address,
+		Handler:     r.Router,
+		Addr:        address,
+		IdleTimeout: 65 * time.Second,
 	}
 }
 

@@ -1,8 +1,6 @@
 SELDON_CORE_DIR=..
 VERSION := $(shell cat ../version.txt)
 
-TOX_TEST := "all" # Specify which tox test run when running python tests
-
 .PHONY: get_apis
 get_apis:
 	# Protobuf
@@ -67,12 +65,13 @@ uninstall:
 
 .PHONY: test
 test:
-	tox -e $(TOX_TEST)
+	tox
 
 .PHONY: type_check
 type_check:
 	mypy --ignore-missing-imports --no-strict-optional seldon_core
 
+.PHONY: build_pypi
 build_pypi:
 	python setup.py sdist bdist_wheel
 

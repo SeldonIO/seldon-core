@@ -177,3 +177,4 @@ class TestNotebooks(object):
             create_and_run_script("../../notebooks", "operator_upgrade")
         except:
             run("make install_seldon", shell=True, check=False)
+            raise
