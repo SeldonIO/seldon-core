@@ -9,13 +9,11 @@ pipelineConfig:
         command: echo "skipping promote"
     pullRequest:
       pipeline:
-        options:
-          containerOptions:
-            imagePullPolicy: Always
         agent:
           image: seldonio/core-builder:0.16
         options:
           containerOptions:
+            imagePullPolicy: Always
             resources:
               requests:
                 cpu: 2
