@@ -20,7 +20,7 @@ import pytest
 import seldon_core
 from minio import Minio, error
 import unittest.mock as mock
-from .utils import skipif_gcs_missing
+from .utils import skipif_gcs_missing, skipif_azure_missing
 from seldon_core.imports_helper import _GCS_PRESENT
 
 if _GCS_PRESENT:
@@ -61,6 +61,7 @@ def test_mock_gcs(mock_storage):
     assert seldon_core.Storage.download(gcs_path)
 
 
+@skipif_azure_missing
 def test_storage_blob_exception():
     blob_path = "https://accountname.blob.core.windows.net/container/some/blob/"
     with pytest.raises(Exception):
