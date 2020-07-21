@@ -26,9 +26,13 @@ pipelineConfig:
             containerOptions:
               imagePullPolicy: Always
               resources:
+                requests:
+                  cpu: 2
+                  memory: 1500Mi
+                  ephemeral-storage: "2Gi"
                 limits:
                   cpu: 2
-                  memory: 1000Mi
+                  memory: 1500Mi
                   ephemeral-storage: "2Gi"
           parallel:
           - name: seldon-python-all
@@ -65,6 +69,10 @@ pipelineConfig:
             options:
               containerOptions:
                 resources:
+                  requests:
+                    cpu: 7
+                    memory: 1000Mi
+                    ephemeral-storage: "2Gi"
                   limits:
                     cpu: 7
                     memory: 1000Mi
@@ -76,6 +84,17 @@ pipelineConfig:
               - -C operator
               - test
           - name: seldon-executor
+            options:
+              containerOptions:
+                resources:
+                  requests:
+                    cpu: 7
+                    memory: 2000Mi
+                    ephemeral-storage: "2Gi"
+                  limits:
+                    cpu: 7
+                    memory: 2000Mi
+                    ephemeral-storage: "2Gi"
             steps:
             - name: test-executor
               command: make
