@@ -633,7 +633,7 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 		}
 
 		if engine_grpc_port != 0 && len(psvc.Spec.Ports) < 2 {
-			psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_grpc_port), TargetPort: intstr.FromInt(engine_http_port), Name: "grpc"})
+			psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_grpc_port), TargetPort: intstr.FromInt(engine_http_port), Name: "http2"})
 		}
 	} else {
 		if engine_http_port != 0 && len(psvc.Spec.Ports) == 0 {
@@ -641,7 +641,7 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 		}
 
 		if engine_grpc_port != 0 && len(psvc.Spec.Ports) < 2 {
-			psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_grpc_port), TargetPort: intstr.FromInt(engine_grpc_port), Name: "grpc"})
+			psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_grpc_port), TargetPort: intstr.FromInt(engine_grpc_port), Name: "http2"})
 		}
 	}
 
