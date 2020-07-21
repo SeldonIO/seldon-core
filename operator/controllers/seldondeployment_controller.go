@@ -247,6 +247,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 						},
 					},
 				},
+				TrafficPolicy: &istio_networking.TrafficPolicy{ConnectionPool: &istio_networking.ConnectionPoolSettings{Http: &istio_networking.ConnectionPoolSettings_HTTPSettings{IdleTimeout: &types2.Duration{Seconds: 60}}}},
 			},
 		}
 

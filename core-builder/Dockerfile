@@ -64,12 +64,13 @@ RUN apt-get upgrade && \
         apt-get install zlib1g-dev -y && \
         apt-get install libssl-dev -y && \
 	apt-get install libbz2-dev -y && \
+	apt-get install libsqlite3-dev && \
 	apt-get install liblzma-dev -y
 
 RUN curl -SLO https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz \
     && tar xvf Python-${PYTHON_VERSION}.tgz \
     && cd Python-${PYTHON_VERSION} \
-    && ./configure --prefix=/usr/local --with-openssl \
+    && ./configure --prefix=/usr/local --with-openssl --enable-loadable-sqlite-extensions \
     && make \
     && make altinstall \
     && cd / \
@@ -88,12 +89,31 @@ RUN pip install --upgrade setuptools
 RUN pip install pyyaml
 RUN pip install grpcio
 RUN pip install grpcio-tools
+RUN pip install flatbuffers
+RUN pip install twine
+RUN pip install mypy-protobuf
+RUN pip install pysqlite3
+RUN pip install db-sqlite3
+
+# Install flatc
+RUN apt-get install cmake -y
+RUN INSTALL_DIR=/tmp/flatc-install && \
+    mkdir $INSTALL_DIR && \
+    cd $INSTALL_DIR && \
+    git clone https://github.com/google/flatbuffers.git && \
+    cd flatbuffers && \
+    cmake -G "Unix Makefiles" && \
+    make && \
+    cp ./flatc /usr/local/bin/ && \
+    rm -rf $INSTALL_DIR
+
 RUN apt-get remove -y --auto-remove && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # INSTALL GO
+ENV GO_VERSION=1.14.6
 ENV PATH /usr/local/go/bin:$PATH
-RUN wget https://dl.google.com/go/go1.13.8.linux-amd64.tar.gz && \
-        tar -zxvf go1.13.8.linux-amd64.tar.gz && \
+RUN wget "https://dl.google.com/go/go$GO_VERSION.linux-amd64.tar.gz" && \
+        tar -zxvf "go$GO_VERSION.linux-amd64.tar.gz" && \
         mv go/ /usr/local/go
 RUN curl -sL https://go.kubebuilder.io/dl/2.3.0/linux/amd64 | tar -xz -C /tmp/ && \
         mv /tmp/kubebuilder_2.3.0_linux_amd64 /usr/local/kubebuilder/
@@ -115,18 +135,29 @@ RUN \
 # install jupyter
 RUN pip install jupyter
 
+# Ginkgo
+RUN go get github.com/onsi/ginkgo/ginkgo
+
 # Install grpcurl
-RUN go get github.com/fullstorydev/grpcurl && \
-    go install github.com/fullstorydev/grpcurl/cmd/grpcurl
+RUN wget https://github.com/fullstorydev/grpcurl/releases/download/v1.6.1/grpcurl_1.6.1_linux_x86_64.tar.gz && \
+        tar -zxvf grpcurl_1.6.1_linux_x86_64.tar.gz && \
+        chmod +x grpcurl && \
+        mv grpcurl /usr/local/bin/grpcurl
 
 ENV PATH="${PATH}:/root/go/bin"
 
 # Notebooks python requirements
-COPY dev_requirements.txt /tmp/requirements.txt
-RUN pip install -r /tmp/requirements.txt
+COPY dev_requirements.txt /tmp/dev_requirements.txt
+RUN pip install -r /tmp/dev_requirements.txt
+# General python requirements
+COPY requirements.txt /tmp/requirements.txt
+COPY requirements-dev.txt /tmp/requirements-dev.txt
+RUN cd /tmp && pip install -r requirements-dev.txt
 
-# Ginkgo
-RUN go get -u github.com/onsi/ginkgo/ginkgo
+# Install Jenkins X CLI
+RUN curl -L "https://github.com/jenkins-x/jx/releases/download/v2.1.95/jx-darwin-amd64.tar.gz" | tar xzv "jx" && \
+        chmod +x ./jx && \
+        mv ./jx /usr/bin/jx
 
 WORKDIR /work
 

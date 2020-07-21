@@ -73,6 +73,7 @@ install_cert_manager:
 
 install_seldon: install_cert_manager
 	kubectl create namespace seldon-system || echo "namespace seldon-system exists"
+	helm delete seldon --namespace seldon-system || echo "seldon-core not installed"
 	helm install seldon \
 		../../helm-charts/seldon-core-operator \
 		--namespace seldon-system \

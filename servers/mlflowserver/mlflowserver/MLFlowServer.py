@@ -1,6 +1,7 @@
 import numpy as np
 import logging
 import requests
+import pandas as pd
 from mlflow import pyfunc
 from seldon_core import Storage
 from seldon_core.user_model import SeldonComponent
@@ -14,10 +15,12 @@ MLFLOW_SERVER = "model"
 
 
 class MLFlowServer(SeldonComponent):
-    def __init__(self, model_uri: str):
+    def __init__(self, model_uri: str, xtype: str = 'ndarray'):
         super().__init__()
         logger.info(f"Creating MLFLow server with URI {model_uri}")
+        logger.info(f"xtype: {xtype}")
         self.model_uri = model_uri
+        self.xtype = xtype
         self.ready = False
 
     def load(self):
@@ -34,7 +37,14 @@ class MLFlowServer(SeldonComponent):
         if not self.ready:
             raise requests.HTTPError("Model not loaded yet")
 
-        result = self._model.predict(X)
+        if self.xtype == "ndarray":
+            result = self._model.predict(X)
+        else:
+            if feature_names is not None and len(feature_names) > 0:
+                df = pd.DataFrame(data=X, columns=feature_names)
+            else:
+                df = pd.DataFrame(data=X)
+            result = self._model.predict(df)
         logger.info(f"Prediction result: {result}")
         return result
 
