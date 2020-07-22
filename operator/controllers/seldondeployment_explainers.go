@@ -82,7 +82,6 @@ func getExplainerConfigsFromMap(configMap *corev1.ConfigMap) (*ExplainerConfig, 
 func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pSvcName string, podSecurityContect *corev1.PodSecurityContext, log logr.Logger) error {
 
 	if !isEmptyExplainer(p.Explainer) {
-		pu := machinelearningv1.GetPredictiveUnit(&p.Graph, p.ComponentSpecs[0].Spec.Containers[0].Name)
 
 		seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
 
@@ -93,6 +92,8 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		if explainerContainer.Name == "" {
 			explainerContainer.Name = depName
 		}
+
+		pu := machinelearningv1.GetPredictiveUnit(&p.Graph, explainerContainer.Name)
 
 		if explainerContainer.ImagePullPolicy == "" {
 			explainerContainer.ImagePullPolicy = corev1.PullIfNotPresent
@@ -204,7 +205,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 			Containers: []corev1.Container{explainerContainer},
 		}}
 
-		deploy := createDeploymentWithoutEngine(depName, seldonId, &seldonPodSpec, pu, p, mlDep, podSecurityContect)
+		deploy := createDeploymentWithoutEngine(depName, seldonId, &seldonPodSpec, p, mlDep, podSecurityContect)
 
 		if p.Explainer.ModelUri != "" {
 			var err error
@@ -219,16 +220,18 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		// for explainer use same service name as its Deployment
 		eSvcName := machinelearningv1.GetExplainerDeploymentName(mlDep.GetName(), p)
 
+		addLabelsToDeployment(deploy, pu, p)
 		deploy.ObjectMeta.Labels[machinelearningv1.Label_seldon_app] = eSvcName
 		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_seldon_app] = eSvcName
 
 		c.deployments = append(c.deployments, deploy)
 
 		// Use seldondeployment name dash explainer as the external service name. This should allow canarying.
-		eSvc, err := createPredictorService(eSvcName, seldonId, pu, p, mlDep, httpPort, grpcPort, true, log)
+		eSvc, err := createPredictorService(eSvcName, seldonId, p, mlDep, httpPort, grpcPort, true, log)
 		if err != nil {
 			return err
 		}
+		addLabelsToService(eSvc, pu, p)
 		c.services = append(c.services, eSvc)
 		c.serviceDetails[eSvcName] = &machinelearningv1.ServiceStatus{
 			SvcName:      eSvcName,

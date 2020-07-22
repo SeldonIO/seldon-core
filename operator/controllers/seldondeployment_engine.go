@@ -390,7 +390,7 @@ func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machine
 }
 
 // Create the service orchestrator.
-func createEngineDeployment(mlDep *machinelearningv1.SeldonDeployment, pu *machinelearningv1.PredictiveUnit, p *machinelearningv1.PredictorSpec, seldonId string, engine_http_port, engine_grpc_port int) (*appsv1.Deployment, error) {
+func createEngineDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, seldonId string, engine_http_port, engine_grpc_port int) (*appsv1.Deployment, error) {
 
 	var terminationGracePeriodSecs = int64(20)
 	var defaultMode = corev1.DownwardAPIVolumeSourceDefaultMode
@@ -467,6 +467,5 @@ func createEngineDeployment(mlDep *machinelearningv1.SeldonDeployment, pu *machi
 		deploy.ObjectMeta.Labels[k] = v
 		deploy.Spec.Template.ObjectMeta.Labels[k] = v
 	}
-	addLabelsToDeployment(deploy, pu, p)
 	return deploy, nil
 }

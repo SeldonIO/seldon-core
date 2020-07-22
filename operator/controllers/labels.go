@@ -7,7 +7,7 @@ import (
 )
 
 func addLabelsToService(svc *corev1.Service, pu *machinelearningv1.PredictiveUnit, p *machinelearningv1.PredictorSpec) {
-	if pu.Type != nil {
+	if pu != nil && pu.Type != nil {
 		switch *pu.Type {
 		case machinelearningv1.ROUTER:
 			svc.Labels[machinelearningv1.Label_router] = "true"
@@ -37,7 +37,7 @@ func addLabelsToService(svc *corev1.Service, pu *machinelearningv1.PredictiveUni
 }
 
 func addLabelsToDeployment(deploy *appsv1.Deployment, pu *machinelearningv1.PredictiveUnit, p *machinelearningv1.PredictorSpec) {
-	if pu.Type != nil {
+	if pu != nil && pu.Type != nil {
 		switch *pu.Type {
 		case machinelearningv1.ROUTER:
 			deploy.Labels[machinelearningv1.Label_router] = "true"

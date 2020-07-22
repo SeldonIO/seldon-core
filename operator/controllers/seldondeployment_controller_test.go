@@ -870,7 +870,7 @@ func TestCreateDeploymentWithLabelsAndAnnotations(t *testing.T) {
 		},
 	}
 
-	dep := createDeploymentWithoutEngine(depName, "a", instance.Spec.Predictors[0].ComponentSpecs[0], &instance.Spec.Predictors[0].Graph, &instance.Spec.Predictors[0], instance, nil)
+	dep := createDeploymentWithoutEngine(depName, "a", instance.Spec.Predictors[0].ComponentSpecs[0], &instance.Spec.Predictors[0], instance, nil)
 	g.Expect(dep.Labels[labelKey1]).To(Equal(labelValue1))
 	g.Expect(dep.Labels[labelKey2]).To(Equal(labelValue2))
 	g.Expect(dep.Spec.Template.ObjectMeta.Labels[labelKey1]).To(Equal(labelValue1))
@@ -915,5 +915,5 @@ func TestCreateDeploymentWithNoLabelsAndAnnotations(t *testing.T) {
 		},
 	}
 
-	_ = createDeploymentWithoutEngine(depName, "a", instance.Spec.Predictors[0].ComponentSpecs[0], &instance.Spec.Predictors[0].Graph, &instance.Spec.Predictors[0], instance, nil)
+	_ = createDeploymentWithoutEngine(depName, "a", instance.Spec.Predictors[0].ComponentSpecs[0], &instance.Spec.Predictors[0], instance, nil)
 }
