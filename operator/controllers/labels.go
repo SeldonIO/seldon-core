@@ -20,6 +20,8 @@ func addLabelsToService(svc *corev1.Service, pu *machinelearningv1.PredictiveUni
 		case machinelearningv1.OUTPUT_TRANSFORMER:
 			svc.Labels[machinelearningv1.Label_output_transformer] = "true"
 		}
+	} else if !isEmptyExplainer(p.Explainer) {
+		svc.Labels[machinelearningv1.Label_explainer] = "true"
 	}
 	if p.Shadow != true && (p.Traffic >= 50 || p.Traffic == 0) {
 		svc.Labels[machinelearningv1.Label_default] = "true"
@@ -29,9 +31,6 @@ func addLabelsToService(svc *corev1.Service, pu *machinelearningv1.PredictiveUni
 	}
 	if p.Traffic < 50 && p.Traffic > 0 {
 		svc.Labels[machinelearningv1.Label_canary] = "true"
-	}
-	if !isEmptyExplainer(p.Explainer) {
-		svc.Labels[machinelearningv1.Label_explainer] = "true"
 	}
 	svc.Labels[machinelearningv1.Label_managed_by] = machinelearningv1.Label_value_seldon
 }
@@ -55,6 +54,9 @@ func addLabelsToDeployment(deploy *appsv1.Deployment, pu *machinelearningv1.Pred
 			deploy.Labels[machinelearningv1.Label_output_transformer] = "true"
 			deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_output_transformer] = "true"
 		}
+	} else if !isEmptyExplainer(p.Explainer) {
+		deploy.Labels[machinelearningv1.Label_explainer] = "true"
+		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_explainer] = "true"
 	}
 	if p.Shadow != true && (p.Traffic >= 50 || p.Traffic == 0) {
 		deploy.Labels[machinelearningv1.Label_default] = "true"
@@ -67,10 +69,6 @@ func addLabelsToDeployment(deploy *appsv1.Deployment, pu *machinelearningv1.Pred
 	if p.Traffic < 50 && p.Traffic > 0 {
 		deploy.Labels[machinelearningv1.Label_canary] = "true"
 		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_canary] = "true"
-	}
-	if !isEmptyExplainer(p.Explainer) {
-		deploy.Labels[machinelearningv1.Label_explainer] = "true"
-		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_explainer] = "true"
 	}
 	deploy.ObjectMeta.Labels[machinelearningv1.Label_managed_by] = machinelearningv1.Label_value_seldon
 	deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_managed_by] = machinelearningv1.Label_value_seldon

@@ -63,8 +63,12 @@ var _ = Describe("addLabelsToDeployment", func() {
 
 			// Required until https://github.com/SeldonIO/seldon-core/pull/1600 is
 			// merged. We should remove afterwards.
-			puType := machinelearningv1.MODEL
-			pu.Type = &puType
+			if explainer != nil {
+				pu.Type = nil
+			} else {
+				puType := machinelearningv1.MODEL
+				pu.Type = &puType
+			}
 
 			addLabelsToDeployment(dep, pu, p)
 
@@ -181,8 +185,12 @@ var _ = Describe("addLabelsToService", func() {
 
 			// Required until https://github.com/SeldonIO/seldon-core/pull/1600 is
 			// merged. We should remove afterwards.
-			puType := machinelearningv1.MODEL
-			pu.Type = &puType
+			if explainer != nil {
+				pu.Type = nil
+			} else {
+				puType := machinelearningv1.MODEL
+				pu.Type = &puType
+			}
 
 			addLabelsToService(svc, pu, p)
 

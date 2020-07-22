@@ -93,7 +93,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 			explainerContainer.Name = depName
 		}
 
-		pu := machinelearningv1.GetPredictiveUnit(&p.Graph, explainerContainer.Name)
+		//pu := machinelearningv1.GetPredictiveUnit(&p.Graph, explainerContainer.Name)
 
 		if explainerContainer.ImagePullPolicy == "" {
 			explainerContainer.ImagePullPolicy = corev1.PullIfNotPresent
@@ -220,7 +220,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		// for explainer use same service name as its Deployment
 		eSvcName := machinelearningv1.GetExplainerDeploymentName(mlDep.GetName(), p)
 
-		addLabelsToDeployment(deploy, pu, p)
+		addLabelsToDeployment(deploy, nil, p)
 		deploy.ObjectMeta.Labels[machinelearningv1.Label_seldon_app] = eSvcName
 		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_seldon_app] = eSvcName
 
@@ -231,7 +231,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		if err != nil {
 			return err
 		}
-		addLabelsToService(eSvc, pu, p)
+		addLabelsToService(eSvc, nil, p)
 		c.services = append(c.services, eSvc)
 		c.serviceDetails[eSvcName] = &machinelearningv1.ServiceStatus{
 			SvcName:      eSvcName,
