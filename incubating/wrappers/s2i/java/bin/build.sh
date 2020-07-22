@@ -1,4 +1,28 @@
 #!/usr/bin/env bash
+
+#
+# Description:
+#   This is a helper script to produce an S2I Build and S2I Runtime images
+#   to build and run the Java Wrapper. This helper script provides the flexibility
+#   to specify the source images to be used for the S2I Build and S2I Runtime images.
+#
+#   This allows you to build a custom images based on different source / base images which
+#   could be used for testing or pushed to Docker Hub.
+#
+# Example:
+#   bash bin/build.sh \
+#	    --build-source-image seldonio/core-builder:0.15 \
+#	    --runtime-source-image adoptopenjdk/openjdk13:alpine-slim \
+#	    jw-0.2.0-jre-13
+#
+#   will produce two images:
+#       1. docker.io/seldonio/seldon-core-s2i-java-build:jw-0.2.0-jre-13
+#       1. docker.io/seldonio/seldon-core-s2i-java-runtime:jw-0.2.0-jre-13
+#
+# Authors:
+#   Assaf Moldavsky (assaf.moldavsky@gmail.com)
+#
+
 set -x
 
 #
