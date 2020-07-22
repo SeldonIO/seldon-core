@@ -1,7 +1,7 @@
 FROM registry.access.redhat.com/ubi8/python-36
 LABEL name="Seldon Alibi Detect Server" \
       vendor="Seldon Technologies" \
-      version="1.2.2" \
+      version="1.2.2_20200722175720" \
       release="1" \
       summary="Alibi Detect Server for Seldon Core" \
       description="The Alibi Detect Server provides outlier, drift and adversarial detection services for Seldon Core"
