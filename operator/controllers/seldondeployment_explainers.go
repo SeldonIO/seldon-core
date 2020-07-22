@@ -93,8 +93,6 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 			explainerContainer.Name = depName
 		}
 
-		//pu := machinelearningv1.GetPredictiveUnit(&p.Graph, explainerContainer.Name)
-
 		if explainerContainer.ImagePullPolicy == "" {
 			explainerContainer.ImagePullPolicy = corev1.PullIfNotPresent
 		}
