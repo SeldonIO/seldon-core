@@ -218,7 +218,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		// for explainer use same service name as its Deployment
 		eSvcName := machinelearningv1.GetExplainerDeploymentName(mlDep.GetName(), p)
 
-		addLabelsToDeployment(deploy, nil, p)
+		deploy = addLabelsToDeployment(deploy, nil, p)
 		deploy.ObjectMeta.Labels[machinelearningv1.Label_seldon_app] = eSvcName
 		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_seldon_app] = eSvcName
 
@@ -229,7 +229,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		if err != nil {
 			return err
 		}
-		addLabelsToService(eSvc, nil, p)
+		eSvc = addLabelsToService(eSvc, nil, p)
 		c.services = append(c.services, eSvc)
 		c.serviceDetails[eSvcName] = &machinelearningv1.ServiceStatus{
 			SvcName:      eSvcName,

@@ -6,7 +6,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-func addLabelsToService(svc *corev1.Service, pu *machinelearningv1.PredictiveUnit, p *machinelearningv1.PredictorSpec) {
+func addLabelsToService(svc *corev1.Service, pu *machinelearningv1.PredictiveUnit, p *machinelearningv1.PredictorSpec) *corev1.Service {
 	if pu != nil && pu.Type != nil {
 		switch *pu.Type {
 		case machinelearningv1.ROUTER:
@@ -33,9 +33,10 @@ func addLabelsToService(svc *corev1.Service, pu *machinelearningv1.PredictiveUni
 		svc.Labels[machinelearningv1.Label_canary] = "true"
 	}
 	svc.Labels[machinelearningv1.Label_managed_by] = machinelearningv1.Label_value_seldon
+	return svc
 }
 
-func addLabelsToDeployment(deploy *appsv1.Deployment, pu *machinelearningv1.PredictiveUnit, p *machinelearningv1.PredictorSpec) {
+func addLabelsToDeployment(deploy *appsv1.Deployment, pu *machinelearningv1.PredictiveUnit, p *machinelearningv1.PredictorSpec) *appsv1.Deployment {
 	if pu != nil && pu.Type != nil {
 		switch *pu.Type {
 		case machinelearningv1.ROUTER:
@@ -72,4 +73,5 @@ func addLabelsToDeployment(deploy *appsv1.Deployment, pu *machinelearningv1.Pred
 	}
 	deploy.ObjectMeta.Labels[machinelearningv1.Label_managed_by] = machinelearningv1.Label_value_seldon
 	deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_managed_by] = machinelearningv1.Label_value_seldon
+	return deploy
 }

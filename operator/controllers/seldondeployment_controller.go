@@ -443,7 +443,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 				// we need the reference as we may have to modify the container when creating the Service (e.g. to add probes)
 				con = utils.GetContainerForDeployment(deploy, cSpec.Spec.Containers[k].Name)
 				pu := machinelearningv1.GetPredictiveUnit(&p.Graph, con.Name)
-				addLabelsToDeployment(deploy, pu, &p)
+				deploy = addLabelsToDeployment(deploy, pu, &p)
 
 				// engine will later get a special predictor service as it is entrypoint for graph
 				// and no need to expose tfserving container as it's accessed via proxy
@@ -452,7 +452,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 					// service for hitting a model directly, not via engine - also adds ports to container if needed
 					svc := createContainerService(deploy, p, mlDep, con, c, seldonId)
 					if svc != nil {
-						addLabelsToService(svc, pu, &p)
+						svc = addLabelsToService(svc, pu, &p)
 						c.services = append(c.services, svc)
 					} else {
 						// a user-supplied container may not be a pu so we may not create service for that
@@ -474,7 +474,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 							if err != nil {
 								return nil, err
 							}
-							addLabelsToService(psvc, pu, &p)
+							psvc = addLabelsToService(psvc, pu, &p)
 
 							c.services = append(c.services, psvc)
 
@@ -489,7 +489,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 							if err != nil {
 								return nil, err
 							}
-							addLabelsToService(psvc, pu, &p)
+							psvc = addLabelsToService(psvc, pu, &p)
 
 							c.services = append(c.services, psvc)
 
