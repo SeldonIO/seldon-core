@@ -279,6 +279,22 @@ def main():
         help="Force the Flask app to run single-threaded. Also applies to Gunicorn.",
     )
 
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=int(os.environ.get(SERVICE_PORT_ENV_NAME, DEFAULT_PORT)),
+        help="Set port of seldon service",
+    )
+
+    parser.add_argument(
+        "--metrics_port",
+        type=int,
+        default=int(
+            os.environ.get(METRICS_SERVICE_PORT_ENV_NAME, DEFAULT_METRICS_PORT)
+        ),
+        help="Set port of seldon service",
+    )
+
     args = parser.parse_args()
     parameters = parse_parameters(json.loads(args.parameters))
 
@@ -313,10 +329,8 @@ def main():
     else:
         user_object = user_class(**parameters)
 
-    port = int(os.environ.get(SERVICE_PORT_ENV_NAME, DEFAULT_PORT))
-    metrics_port = int(
-        os.environ.get(METRICS_SERVICE_PORT_ENV_NAME, DEFAULT_METRICS_PORT)
-    )
+    port = args.port
+    metrics_port = args.metrics_port
 
     if args.tracing:
         tracer = setup_tracing(args.interface_name)
