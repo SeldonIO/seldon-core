@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+#
+# add-pr-build-comment
+#
+set -o nounset
+set -o errexit
+set -o pipefail
+set -o noclobber
+set -o noglob
+set -o xtrace
+
+VERSION=$(cat ../version.txt)
+
+# Check if version has trailing -dev otherwise exit
+if [ ${VERSION##*-dev} ]; then
+    echo "Version does not end with -dev"
+    exit 1
+fi
+
+# Remove trailing dev as that will be our release version
+VERSION=${VERSION%"-dev"}
+BRANCH_NAME="release-$VERSION"
+
+# Don't exit on failure so we can test branch exists
+set +o errexit
+    git checkout -b $BRANCH_NAME
+    RETVAL=$?
+    if [[ ${RETVAL} -eq 0 ]]; then
+        echo "Branch already exists"
+        git checkout $BRANCH_NAME
+        git rebase master
+    fi
+set -o errexit
+
+# Perform required actions for release
+(cd ../engine && mvn versions:set -DnewVersion=$(cat ../version.txt))
+(cd ../ && python release.py $(cat version.txt))
+
+# Push updated changes for release
+git add ..
+git commit -m $BRANCH_NAME
+git push origin $BRANCH_NAME
+
+
