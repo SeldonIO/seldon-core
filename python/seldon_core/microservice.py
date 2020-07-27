@@ -287,12 +287,12 @@ def main():
     )
 
     parser.add_argument(
-        "--metrics_port",
+        "--metrics-port",
         type=int,
         default=int(
             os.environ.get(METRICS_SERVICE_PORT_ENV_NAME, DEFAULT_METRICS_PORT)
         ),
-        help="Set port of seldon service",
+        help="Set metrics port of seldon service",
     )
 
     args = parser.parse_args()
