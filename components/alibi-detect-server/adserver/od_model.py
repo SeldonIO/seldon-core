@@ -82,13 +82,24 @@ class AlibiDetectOutlierModel(CEModel):  # pylint:disable=c-extension-no-member
             and headers[HEADER_RETURN_FEATURE_SCORE] == "true"
         ):
             ret_feature_score = True
-        od_preds = self.model.predict(
-            X,
-            outlier_type=outlier_type,
-            # use 'feature' or 'instance' level
-            return_feature_score=ret_feature_score,
-            # scores used to determine outliers
-            return_instance_score=ret_instance_score,
-        )
+        op_preds = {}
+        name = self.model.meta['name']
+        if name == 'IForest' or name == 'OutlierAEGMM' or \
+                name == 'Mahalanobis' or name == 'SpectralResidual' or \
+                name == 'OutlierVAEGMM':
+            od_preds = self.model.predict(
+                X,
+                # scores used to determine outliers
+                return_instance_score=ret_instance_score,
+            )
+        else:
+            od_preds = self.model.predict(
+               X,
+               outlier_type=outlier_type,
+               # use 'feature' or 'instance' level
+               return_feature_score=ret_feature_score,
+               # scores used to determine outliers
+               return_instance_score=ret_instance_score,
+            )
 
         return json.loads(json.dumps(od_preds, cls=NumpyEncoder))
