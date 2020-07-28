@@ -116,7 +116,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		var httpPort = 0
 		var grpcPort = 0
 		var portNum int32 = 9000
-		var explainerProtocol string
+		var explainerTransport string
 		if p.Explainer.Endpoint != nil && p.Explainer.Endpoint.ServicePort != 0 {
 			portNum = p.Explainer.Endpoint.ServicePort
 		}
@@ -126,12 +126,17 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		httpPort = int(portNum)
 		customPort := getPort(portType, explainerContainer.Ports)
 
-		if p.Explainer.Endpoint != nil && p.Explainer.Endpoint.Type == machinelearningv1.GRPC {
-			explainerProtocol = "grpc"
+		if mlDep.Spec.Transport == machinelearningv1.TransportGrpc || (p.Explainer.Endpoint != nil && p.Explainer.Endpoint.Type == machinelearningv1.GRPC) {
+			explainerTransport = "grpc"
 			pSvcEndpoint = c.serviceDetails[pSvcName].GrpcEndpoint
 		} else {
-			explainerProtocol = "http"
+			explainerTransport = "http"
 			pSvcEndpoint = c.serviceDetails[pSvcName].HttpEndpoint
+		}
+
+		explainerProtocol := string(machinelearningv1.ProtocolSeldon)
+		if mlDep.Spec.Protocol == machinelearningv1.ProtocolTensorflow {
+			explainerProtocol = string(machinelearningv1.ProtocolTensorflow)
 		}
 
 		if customPort == nil {
@@ -156,7 +161,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		explainerContainer.Args = []string{
 			"--model_name=" + mlDep.Name,
 			"--predictor_host=" + pSvcEndpoint,
-			"--protocol=" + "seldon." + explainerProtocol,
+			"--protocol=" + explainerProtocol + "." + explainerTransport,
 			"--http_port=" + strconv.Itoa(int(portNum)),
 		}
 
