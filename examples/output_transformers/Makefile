@@ -2,4 +2,4 @@ IMAGE_VERSION=0.1
 IMAGE_NAME = seldonio/output_transformer
 
 build:
-	s2i build . seldonio/seldon-core-s2i-python3:1.2.2 $(IMAGE_NAME):$(IMAGE_VERSION)
+	s2i build . seldonio/seldon-core-s2i-python3:1.2.2_20200728171012 $(IMAGE_NAME):$(IMAGE_VERSION)
