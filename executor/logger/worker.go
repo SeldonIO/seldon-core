@@ -1,6 +1,9 @@
 package logger
 
 import (
+	"os"
+
+	"encoding/json"
 	"context"
 	"fmt"
 	"github.com/cloudevents/sdk-go"
@@ -19,6 +22,13 @@ const (
 	InferenceServiceNameAttr = "inferenceservicename"
 	NamespaceAttr            = "namespace"
 	EndpointAttr             = "endpoint"
+	SELDON_LOG_REQUESTS      = "SELDON_LOG_REQUESTS"
+	SELDON_LOG_RESPONSES     = "SELDON_LOG_RESPONSES"
+)
+
+var (
+	logRequests  = os.Getenv(SELDON_LOG_REQUESTS)
+	logResponses = os.Getenv(SELDON_LOG_RESPONSES)
 )
 
 // NewWorker creates, and returns a new Worker object. Its only argument
@@ -93,6 +103,13 @@ func (W *Worker) sendCloudEvent(logReq LogRequest) error {
 		return fmt.Errorf("while setting cloudevents data: %s", err)
 	}
 
+	if logRequests == "true" && logReq.ReqType == InferenceRequest || logResponses == "true" && logReq.ReqType == InferenceResponse {
+		bytes, err := json.Marshal(event)
+		if err != nil {
+			W.Log.Error(err, "Failed to marshal cloud event")
+		}
+		W.Log.Info(string(bytes))
+	}
 	//fmt.Printf("%+v\n", event)
 
 	if _, _, err := c.Send(W.CeCtx, event); err != nil {
