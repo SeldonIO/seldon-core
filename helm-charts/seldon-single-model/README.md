@@ -24,7 +24,9 @@ using:
 
 ```shell
 helm install $MY_MODEL_NAME seldonio/seldon-single-model --namespace $MODELS_NAMESPACE
-```**Homepage:** <https://github.com/SeldonIO/seldon-core>
+```
+
+**Homepage:** <https://github.com/SeldonIO/seldon-core>
 
 ## Source Code
 
