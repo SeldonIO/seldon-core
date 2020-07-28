@@ -22,4 +22,4 @@ pipelineConfig:
             steps:
             - name: create-release-step
               dir: ci
-              sh: "./add-pr-build-comment"
+              sh: "./create-release"
