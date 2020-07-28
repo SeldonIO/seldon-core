@@ -24,6 +24,7 @@ setup(
     description="Seldon Core client and microservice wrapper",
     url="https://github.com/SeldonIO/seldon-core",
     license="Apache 2.0",
+    license_files=["LICENSE"],
     packages=find_packages(),
     include_package_data=True,
     setup_requires=["pytest-runner"],
