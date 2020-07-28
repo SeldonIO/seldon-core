@@ -21,6 +21,10 @@ fi
 VERSION=${VERSION%"-dev"}
 BRANCH_NAME="release-$VERSION"
 
+# Check out master branch to use as base
+git fetch origin master
+git checkout master
+
 # Don't exit on failure so we can test branch exists
 set +o errexit
     git checkout -b $BRANCH_NAME
@@ -38,7 +42,7 @@ set -o errexit
 
 # Push updated changes for release
 git add ..
-git commit -m $BRANCH_NAME
+git commit -m "Updating $BRANCH_NAME"
 git push origin $BRANCH_NAME
 
 
