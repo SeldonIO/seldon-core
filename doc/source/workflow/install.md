@@ -6,6 +6,9 @@
 * Installer method
     * Helm version equal or higher than 3.0
     * Kustomize version equal or higher than 0.1.0
+* Ingress
+    * Istio ( sample installation using Istio 1.5 can be found at https://github.com/SeldonIO/seldon-core/tree/master/examples/auth )
+    * Ambassador
 
 #### Running older versions of Seldon Core? 
 
