@@ -29,6 +29,12 @@ require (
 	sigs.k8s.io/controller-runtime v0.5.8
 )
 
-replace github.com/tensorflow/tensorflow/tensorflow/go/core => ./proto/tensorflow/core
+replace (
+	github.com/tensorflow/tensorflow/tensorflow/go/core => ./proto/tensorflow/core
+	github.com/seldonio/seldon-core/operator => ./operator
 
-replace github.com/seldonio/seldon-core/operator => ./operator
+	golang.org/x/text => golang.org/x/text v0.3.3
+	k8s.io/apimachinery => k8s.io/apimachinery v0.17.9
+	github.com/apache/thrift => github.com/apache/thrift v0.13.0
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.17.9
+)

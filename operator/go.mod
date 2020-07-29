@@ -21,3 +21,9 @@ require (
 	knative.dev/pkg v0.0.0-20200513151758-7b6bb61326ae
 	sigs.k8s.io/controller-runtime v0.5.8
 )
+
+replace (
+	golang.org/x/text => golang.org/x/text v0.3.3
+	k8s.io/apimachinery => k8s.io/apimachinery v0.17.9
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.17.9
+)
