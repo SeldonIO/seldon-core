@@ -634,13 +634,7 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 		},
 	}
 	if isExecutorEnabled(mlDep) {
-		if engine_http_port != 0 && len(psvc.Spec.Ports) == 0 {
-			psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_http_port), TargetPort: intstr.FromInt(engine_http_port), Name: "http"})
-		}
-
-		if engine_grpc_port != 0 && len(psvc.Spec.Ports) < 2 {
-			psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_grpc_port), TargetPort: intstr.FromInt(engine_http_port), Name: "http2"})
-		}
+		psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_http_port), TargetPort: intstr.FromInt(engine_http_port), Name: "http2"})
 	} else {
 		if engine_http_port != 0 && len(psvc.Spec.Ports) == 0 {
 			psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_http_port), TargetPort: intstr.FromInt(engine_http_port), Name: "http"})
@@ -751,7 +745,7 @@ func createContainerService(deploy *appsv1.Deployment,
 		con.ReadinessProbe = &corev1.Probe{Handler: corev1.Handler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromString(portType)}}, InitialDelaySeconds: 20, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 3, TimeoutSeconds: 1}
 	}
 
-	// Add livecycle probe
+	// Add lifecycle probe
 	if con.Lifecycle == nil {
 		con.Lifecycle = &corev1.Lifecycle{PreStop: &corev1.Handler{Exec: &corev1.ExecAction{Command: []string{"/bin/sh", "-c", "/bin/sleep 10"}}}}
 	}
@@ -832,6 +826,9 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 	// Add prometheus annotations
 	deploy.Spec.Template.Annotations["prometheus.io/path"] = getPrometheusPath(mlDep)
 	deploy.Spec.Template.Annotations["prometheus.io/scrape"] = "true"
+
+	// Add istio HTTP liveness probe rewrite as explained here: https://istio.io/latest/docs/ops/configuration/mesh/app-health-check/#use-annotations-on-pod
+	deploy.Spec.Template.Annotations["sidecar.istio.io/rewriteAppHTTPProbers"] = "true"
 
 	if p.Shadow == true {
 		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_shadow] = "true"
