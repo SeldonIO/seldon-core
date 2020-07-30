@@ -12,7 +12,7 @@
     "node": ">=8.11.0"
   },
   "dependencies": {
-    "@tensorflow/tfjs": "0.12.7",
+    "@tensorflow/tfjs": "0.15.3",
     "@tensorflow/tfjs-node": "0.1.15"
   }
 }
