@@ -15,7 +15,7 @@
     "argparse": "1.0.10",
     "body-parser": "1.18.3",
     "express": "4.16.3",
-    "google-protobuf": "3.6.1",
+    "google-protobuf": "3.12.2",
     "grpc": "1.15.1",
     "numjs": "0.16.0"
   }
