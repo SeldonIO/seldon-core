@@ -127,9 +127,13 @@ Now that you have Seldon Core installed, you can set it up with:
 
 If you have a Google Cloud Platform account you can install via the [GCP Marketplace](https://console.cloud.google.com/marketplace/details/seldon-portal/seldon-core).
 
-#### AWS MarketPlace
+#### OpenShift
 
-If you have a AWS account you can install via the [AWS Marketplace](https://aws.amazon.com/marketplace/pp/B07KCNBCHV). See our [AWS Install Documentation](../reference/aws-mp-install.md).
+You can install Seldon Core via OperatorHub on the OpenShift console UI.
+
+#### OperatorHub
+
+You can install Seldon Core from [Operator Hub](https://operatorhub.io/operator/seldon-operator).
 
 ## Upgrading from Previous Versions
 

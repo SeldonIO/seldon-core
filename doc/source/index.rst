@@ -103,7 +103,8 @@ Documentation Index
 
    Ambassador Ingress <ingress/ambassador.md>
    Istio Ingress <ingress/istio.md>
-
+   OpenShift <ingress/openshift.md>
+   
 .. toctree::
    :maxdepth: 1
    :caption: Advanced Inference

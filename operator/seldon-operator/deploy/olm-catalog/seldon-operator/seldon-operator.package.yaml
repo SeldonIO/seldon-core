@@ -1,5 +1,5 @@
 channels:
-- currentCSV: seldon-operator.v1.2.1
+- currentCSV: seldon-operator.v1.2.2
   name: alpha
 defaultChannel: alpha
 packageName: seldon-operator
