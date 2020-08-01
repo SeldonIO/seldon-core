@@ -17,7 +17,7 @@ If you are not familiar with s2i you can read [general instructions on using s2i
 To check everything is working you can run
 
 ```bash
-s2i usage seldonio/seldon-core-s2i-python3:1.3.0-dev 
+s2i usage seldonio/seldon-core-s2i-python3:1.3.0-dev
 ```
 
 

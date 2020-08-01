@@ -19,14 +19,15 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
+
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
 	"github.com/seldonio/seldon-core/operator/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
-	"strconv"
-	"strings"
 )
 
 const (
