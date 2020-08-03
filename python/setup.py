@@ -49,7 +49,7 @@ setup(
         "setuptools >= 41.0.0",
         "prometheus_client >= 0.7.1, < 0.9.0",
     ],
-    tests_require=["pytest<6.0.0", "pytest-cov<3.0.0", "Pillow==7.2.0"],
+    tests_require=["pytest<7.0.0", "pytest-cov<3.0.0", "Pillow==7.2.0"],
     extras_require=extras,
     test_suite="tests",
     entry_points={

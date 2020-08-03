@@ -3,7 +3,7 @@ black==19.10b0
 flake8==3.8.1
 mypy<0.783
 Pillow==7.2.0
-pytest==5.4.2
+pytest==6.0.1
 pytest-cov==2.10.0
 tox<4.0.0
 grpcio-tools==1.30.0
