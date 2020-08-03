@@ -45,7 +45,7 @@ setup(
         "grpcio-opentracing >= 1.1.4, < 1.2.0",
         "PyYAML<5.4",
         "gunicorn >= 19.9.0, < 20.1.0",
-        "minio >= 4.0.9, < 6.0.0",
+        "minio >= 4.0.9, < 7.0.0",
         "setuptools >= 41.0.0",
         "prometheus_client >= 0.7.1, < 0.9.0",
     ],
