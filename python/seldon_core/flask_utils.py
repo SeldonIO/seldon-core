@@ -28,7 +28,10 @@ def get_multi_form_data_request() -> Dict:
         The bytes data needs to be base64 encode because the protobuf trys to do base64 decode for bytes
         """
         if fileKey == "binData":
-            req_dict[fileKey] = base64.b64encode(request.files[fileKey].read())
+            binDatas = []
+            for file_item in request.files.getlist(fileKey):
+                binDatas.append(base64.b64encode(file_item.read()))
+            req_dict[fileKey] = binDatas
         else:
             """
             This is the case when strData can be passed as file as well
