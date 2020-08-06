@@ -17,7 +17,7 @@ If you are not familiar with s2i you can read [general instructions on using s2i
 To check everything is working you can run
 
 ```bash
-s2i usage seldonio/seldon-core-s2i-python3:0.16
+s2i usage seldonio/seldon-core-s2i-python3:1.3.0-dev
 ```
 
 
@@ -26,8 +26,11 @@ s2i usage seldonio/seldon-core-s2i-python3:0.16
 To use our s2i builder image to package your python model you will need:
 
  * A python file with a class that runs your model
- * requirements.txt  or setup.py
- * .s2i/environment - model definitions used by the s2i builder to correctly wrap your model
+ * Your model's dependencies and environment, which can be described using either of:
+   - `requirements.txt`
+   - `setup.py`
+   - `environment.yaml`
+ * `.s2i/environment` - model definitions used by the s2i builder to correctly wrap your model
 
 We will go into detail for each of these steps:
 
@@ -37,12 +40,14 @@ Your source code should contain a python file which defines a class of the same 
 ```python
 class MyModel(object):
     """
-    Model template. You can load your model parameters in __init__ from a location accessible at runtime
+    Model template.
+    You can load your model parameters in __init__ from a location accessible at runtime.
     """
 
     def __init__(self):
         """
-        Add any initialization parameters. These will be passed at runtime from the graph definition parameters defined in your seldondeployment kubernetes resource manifest.
+        Add any initialization parameters.
+        These will be passed at runtime from the graph definition parameters defined in your seldondeployment kubernetes resource manifest.
         """
         print("Initializing")
 
@@ -64,8 +69,49 @@ class MyModel(object):
  * You can add any required initialization inside the class init method.
  * Your return array should be at least 2-dimensional.
 
-### requirements.txt
-Populate a requirements.txt with any software dependencies your code requires. These will be installed via pip when creating the image. You can instead provide a setup.py if you prefer.
+### Dependencies
+
+You can describe your model's dependencies using either of: `requirements.txt`,
+`setup.py` or `environment.yaml`.
+
+#### requirements.txt
+
+Populate a `requirements.txt` with any software dependencies your code requires.
+These will be installed via pip when creating the image.
+
+#### setup.py
+
+Similar to a `requirements.txt` file, you can also describe your model's
+dependencies using a `setup.py` file:
+
+```python
+from setuptools import setup
+
+setup(
+  name="my-model",
+  # ...
+  install_requires=[
+    "scikit-learn",
+  ]
+)
+```
+
+#### environment.yaml
+
+Describe your Conda environment using an `environment.yaml` file:
+
+```yaml
+name: my-conda-environment
+channels:
+  - defaults
+dependencies:
+  - python=3.6
+  - scikit-learn=0.19.1
+```
+
+During image creation, `s2i` will create your Conda environment, fetching all
+the required dependencies.
+At run time, the created Conda environment will get activated at startup.
 
 ### .s2i/environment
 
@@ -83,14 +129,14 @@ These values can also be provided or overridden on the command line when buildin
 ## Step 3 - Build your image
 Use ```s2i build``` to create your Docker image from source code. You will need Docker installed on the machine and optionally git if your source code is in a public git repo. You can choose from three python builder images
 
- * Python 3.6 : seldonio/seldon-core-s2i-python36:0.16, seldonio/seldon-core-s2i-python3:0.16
+ * Python 3.6 : seldonio/seldon-core-s2i-python36:1.3.0-dev seldonio/seldon-core-s2i-python3:1.3.0-dev
    * Note there are [issues running TensorFlow under Python 3.7](https://github.com/tensorflow/tensorflow/issues/20444) (Nov 2018) and Python 3.7 is not officially supported by TensorFlow (Dec 2018).
  * Python 3.6 plus ONNX support via [Intel nGraph](https://github.com/NervanaSystems/ngraph) : seldonio/seldon-core-s2i-python3-ngraph-onnx:0.1
 
 Using s2i you can build directly from a git repo or from a local source folder. See the [s2i docs](https://github.com/openshift/source-to-image/blob/master/docs/cli.md#s2i-build) for further details. The general format is:
 
 ```bash
-s2i build <src-folder> seldonio/seldon-core-s2i-python3:0.16 <my-image-name>
+s2i build <src-folder> seldonio/seldon-core-s2i-python3:1.3.0-dev <my-image-name>
 ```
 
 Change to seldonio/seldon-core-s2i-python3 if using python 3.
@@ -98,7 +144,7 @@ Change to seldonio/seldon-core-s2i-python3 if using python 3.
 An example invocation using the test template model inside seldon-core:
 
 ```bash
-s2i build https://github.com/seldonio/seldon-core.git --context-dir=wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python3:0.16 seldon-core-template-model
+s2i build https://github.com/seldonio/seldon-core.git --context-dir=wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python3:1.3.0-dev seldon-core-template-model
 ```
 
 The above s2i build invocation:
@@ -113,13 +159,13 @@ For building from a local source folder, an example where we clone the seldon-co
 ```bash
 git clone https://github.com/seldonio/seldon-core.git
 cd seldon-core
-s2i build wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python3:0.16 seldon-core-template-model
+s2i build wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python3:1.3.0-dev seldon-core-template-model
 ```
 
 For more help see:
 
 ```bash
-s2i usage seldonio/seldon-core-s2i-python3:0.16
+s2i usage seldonio/seldon-core-s2i-python3:1.3.0-dev
 s2i build --help
 ```
 
@@ -157,16 +203,16 @@ Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved pe
 
 ### MODEL
 
- * [A minimal skeleton for model source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/model-template-app)
+ * [A minimal skeleton for model source code](https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i/python/test/model-template-app)
  * [Example model notebooks](../examples/notebooks.html)
 
 ### ROUTER
- * [Description of routers in Seldon Core](../components/routers.html)
- * [A minimal skeleton for router source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/router-template-app)
+ * [Description of routers in Seldon Core](../analytics/routers.html)
+ * [A minimal skeleton for router source code](https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i/python/test/router-template-app)
 
 ### TRANSFORMER
 
- * [A minimal skeleton for transformer source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/transformer-template-app)
+ * [A minimal skeleton for transformer source code](https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i/python/test/transformer-template-app)
  * [Example transformers](https://github.com/SeldonIO/seldon-core/tree/master/examples/transformers)
 
 
@@ -185,38 +231,37 @@ These arguments can be set when deploying in a Seldon Deployment. An example can
 
 ```
  "graph": {
-		    "name": "tfserving-proxy",
-		    "endpoint": { "type" : "REST" },
-		    "type": "MODEL",
-		    "children": [],
-		    "parameters":
-		    [
-			{
-			    "name":"grpc_endpoint",
-			    "type":"STRING",
-			    "value":"localhost:8000"
-			},
-			{
-			    "name":"model_name",
-			    "type":"STRING",
-			    "value":"mnist-model"
-			},
-			{
-			    "name":"model_output",
-			    "type":"STRING",
-			    "value":"scores"
-			},
-			{
-			    "name":"model_input",
-			    "type":"STRING",
-			    "value":"images"
-			},
-			{
-			    "name":"signature_name",
-			    "type":"STRING",
-			    "value":"predict_images"
-			}
-		    ]
+    "name": "tfserving-proxy",
+    "endpoint": {"type" : "REST"},
+    "type": "MODEL",
+    "children": [],
+    "parameters": [
+        {
+            "name":"grpc_endpoint",
+            "type":"STRING",
+            "value":"localhost:8000"
+        },
+        {
+            "name":"model_name",
+            "type":"STRING",
+            "value":"mnist-model"
+        },
+        {
+            "name":"model_output",
+            "type":"STRING",
+            "value":"scores"
+        },
+        {
+            "name":"model_input",
+            "type":"STRING",
+            "value":"images"
+        },
+        {
+            "name":"signature_name",
+            "type":"STRING",
+            "value":"predict_images"
+        }
+    ]
 },
 ```
 
@@ -230,7 +275,7 @@ The allowable ```type``` values for the parameters are defined in the [proto buf
 To use a private repository for installing Python dependencies use the following build command:
 
 ```bash
-s2i build -i <python-wheel-folder>:/whl <src-folder> seldonio/seldon-core-s2i-python3:0.16 <my-image-name>
+s2i build -i <python-wheel-folder>:/whl <src-folder> seldonio/seldon-core-s2i-python3:1.3.0-dev <my-image-name>
 ```
 
 This command will look for local Python wheels in the ```<python-wheel-folder>``` and use these before searching PyPI.
@@ -240,36 +285,31 @@ This command will look for local Python wheels in the ```<python-wheel-folder>``
 
 To add custom metrics to your response you can define an optional method ```metrics``` in your class that returns a list of metric dicts. An example is shown below:
 
-```
+```python
 class MyModel(object):
 
-    def predict(self,X,features_names):
+    def predict(self, X, features_names):
         return X
 
     def metrics(self):
-    	return [{"type":"COUNTER","key":"mycounter","value":1}]
+        return [{"type": "COUNTER", "key": "mycounter", "value": 1}]
 ```
 
-For more details on custom metrics and the format of the metric dict see [here](../custom_metrics.md).
+For more details on custom metrics and the format of the metric dict see [here](../analytics/analytics.html#custom-metrics).
 
-There is an [example notebook illustrating a model with custom metrics in python](../examples/tmpl_model_with_metrics.html).
+There is an [example notebook illustrating a model with custom metrics in python](../examples/custom_metrics.html).
 
-### Custom Meta Data
+### Custom Request Tags
 ```from version 0.3```
 
-To add custom meta data you can add an optional method ```tags``` which can return a dict of custom meta tags as shown in the example below:
+To add custom request tags data you can add an optional method ```tags``` which can return a dict of custom meta tags as shown in the example below:
 
-```
-class UserObject(object):
+```python
+class MyModel(object):
 
-    def predict(self,X,features_names):
+    def predict(self, X, features_names):
         return X
 
     def tags(self):
-        return {"mytag":1}
+        return {"mytag": 1}
 ```
-
-
-
-
-

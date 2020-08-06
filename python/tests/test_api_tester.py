@@ -1,9 +1,13 @@
+import logging
+import os
+import numpy as np
+
 from seldon_core.api_tester import run_predict, run_send_feedback
 from unittest import mock
 from seldon_core.utils import array_to_grpc_datadef, seldon_message_to_json
 from seldon_core.proto import prediction_pb2
-import numpy as np
-from os.path import dirname, join
+
+from .conftest import RESOURCES_PATH
 
 
 class MockResponse:
@@ -32,7 +36,7 @@ class Bunch(object):
 
 @mock.patch("requests.post", side_effect=mocked_requests_post_success)
 def test_predict_rest(mock_post):
-    filename = join(dirname(__file__), "model-template-app", "contract.json")
+    filename = os.path.join(RESOURCES_PATH, "model-template-app", "contract.json")
     args_dict = {
         "contract": filename,
         "host": "a",
@@ -50,7 +54,7 @@ def test_predict_rest(mock_post):
     }
     args = Bunch(args_dict)
     run_predict(args)
-    print(mock_post.call_args)
+    logging.info(mock_post.call_args)
     assert mock_post.call_args[1]["json"]["data"]["names"] == [
         "sepal_length",
         "sepal_width",
@@ -61,7 +65,7 @@ def test_predict_rest(mock_post):
 
 @mock.patch("requests.post", side_effect=mocked_requests_post_success)
 def test_feedback_rest(mock_post):
-    filename = join(dirname(__file__), "model-template-app", "contract.json")
+    filename = os.path.join(RESOURCES_PATH, "model-template-app", "contract.json")
     args_dict = {
         "contract": filename,
         "host": "a",

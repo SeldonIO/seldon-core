@@ -164,4 +164,4 @@ An example SeldonDeployment Kubernetes resource taken from the MNIST demo is sho
 
 Examples: 
 
- * [MNIST with Nvidia Inference Server](../../examples/models/nvidia-mnist/nvidia_mnist.ipynb).
+ * [MNIST with Nvidia Inference Server](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/nvidia-mnist/nvidia_mnist.ipynb).

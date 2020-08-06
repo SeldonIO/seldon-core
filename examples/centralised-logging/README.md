@@ -1,16 +1,34 @@
-# Centralised Logging Example
+# Centralised and Request Logging Example
+
+Centralized logging means pulling pod logs and bringing together in a single place - elasticsearch.
+
+Request logging means also logging the http requests and responses in elasticsearch.
 
 ## Introduction
 
 Here we will set up EFK (elasticsearch, fluentd/fluentbit, kibana) as a stack to gather logs from SeldonDeployments and make them searchable.
 
-This demo is aimed at minikube.
+This demo is aimed at KIND or minikube but can also work with a cloud provider. Uses helm v3.
 
-Alternatives are available and if you are running in cloud then you can consider a managed service from your cloud provider.
+Either run through step-by-step or use full-kind-setup.sh.
 
-If you just want to bootstrap a full logging and request tracking setup for minikube, run ./full-setup.sh. That includes the [request logging setup](./request-logging/README.md)
+## Setup Elastic - KIND
 
-## Setup
+Start cluster
+
+```
+kind create cluster --config kind_config.yaml --image kindest/node:v1.15.6
+```
+
+Install elastic with KIND config:
+
+```
+kubectl create namespace seldon-logs
+kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
+helm install elasticsearch elasticsearch --version 7.6.0 --namespace=seldon-logs -f elastic-kind.yaml --repo https://helm.elastic.co --set image=docker.elastic.co/elasticsearch/elasticsearch-oss
+```
+
+## Setup Elastic - Minikube
 
 Start Minikube with flags as shown:
 
@@ -21,26 +39,27 @@ minikube start --cpus 6 --memory 10240 --disk-size=30g --kubernetes-version='1.1
 Install elasticsearch with minikube configuration:
 
 ```
-kubectl create namespace logs
+kubectl create namespace seldon-logs
+helm install elasticsearch elasticsearch --version 7.6.0 --namespace=seldon-logs -f elastic-minikube.yaml --repo https://helm.elastic.co --set image=docker.elastic.co/elasticsearch/elasticsearch-oss
 ```
 
-```
-helm install elasticsearch elasticsearch --version 7.1.1 --namespace=logs -f elastic-minikube.yaml --repo https://helm.elastic.co
-```
+## Fluentd and Kibana
 
 Then fluentd as a collection agent (chosen in preference to fluentbit - see notes at end):
 
 ```
-helm install fluentd fluentd-elasticsearch --namespace=logs -f fluentd-values.yaml --repo https://kiwigrid.github.io
+helm install fluentd fluentd-elasticsearch --version 8.0.0 --namespace=seldon-logs -f fluentd-values.yaml --repo https://kiwigrid.github.io
 ```
 
 And kibana UI:
 
 ```
-helm install kibana kibana --version 7.1.1 --namespace=logs --set service.type=NodePort --repo https://helm.elastic.co
+helm install kibana kibana --version 7.6.0 --namespace=seldon-logs --set service.type=NodePort --repo https://helm.elastic.co --set image=docker.elastic.co/kibana/kibana-oss
 ```
 
-## Generating Logging
+
+
+## Setting Up Model
 
 First we need seldon and a seldon deployment.
 
@@ -57,29 +76,66 @@ Check that it now recognises the seldon CRD by running `kubectl get sdep`.
 Now a model:
 
 ```
-helm install seldon-single-model ../../helm-charts/seldon-single-model/ --set engine.env.LOG_MESSAGES_EXTERNALLY="false"
+helm install seldon-single-model \
+  ../../helm-charts/seldon-single-model/ \
+  --set 'model.image=seldonio/mock_classifier_rest:1.3' \
+  --set model.logger.enabled=true \
+  --set model.logger.url="http://default-broker.seldon-logs"
 ```
 
-And the loadtester:
+## Setting up Request Logging
+
+The approach is:
+
+1 Configure a seldon deployment to send the requests and responses of the HTTP traffic into a knative broker.
+2 The broker sends these to a knative service for logging, called seldon-request-logger
+3 seldon-request-logger processes and sends to elasticsearch
+
+The seldon-request-logger enriches the raw message to optimise for searching.
+
+Run `kubectl apply -f seldon-request-logger.yaml`
+
+
+Create broker:
 
 ```
+kubectl label namespace seldon-logs knative-eventing-injection=enabled
+sleep 3
+kubectl -n seldon-logs get broker default
+```
+
+The broker should show 'READY' as True.
+
+Note that when we installed the seldon model earlier we told it to log to a broker in the seldon-logs namespace.
+
+And trigger:
+
+```
+kubectl apply -f ./trigger.yaml
+```
+
+## Generating Logging
+
+And the loadtester (first line is only needed for KIND):
+
+```
+kubectl label nodes kind-worker role=locust --overwrite
 kubectl label nodes $(kubectl get nodes -o jsonpath='{.items[0].metadata.name}') role=locust --overwrite
 
-helm install seldon-core-loadtesting ../../helm-charts/seldon-core-loadtesting/ --set locust.host=http://seldon-single-model-seldon-single-model:8000 --set oauth.enabled=false --set oauth.key=oauth-key --set oauth.secret=oauth-secret --set locust.hatchRate=1 --set locust.clients=1 --set loadtest.sendFeedback=0 --set locust.minWait=0 --set locust.maxWait=0 --set replicaCount=1
+helm install seldon-core-loadtesting ../../helm-charts/seldon-core-loadtesting/ --set locust.host=http://seldon-single-model-default:8000 --set oauth.enabled=false --set oauth.key=oauth-key --set oauth.secret=oauth-secret --set locust.hatchRate=1 --set locust.clients=1 --set loadtest.sendFeedback=0 --set locust.minWait=1000 --set locust.maxWait=1000 --set replicaCount=1
 ```
 
 ## Inspecting Logging and Search for Requests
 
-To find kibana URL
-
+Access kibana with a port-forward to `localhost:5601`:
 ```
-echo $(minikube ip)":"$(kubectl get svc kibana-kibana -n logs -o=jsonpath='{.spec.ports[?(@.port==5601)].nodePort}')
+kubectl port-forward svc/kibana-kibana -n seldon-logs 5601:5601
 ```
 
 When Kibana appears for the first time there will be a brief animation while it initializes.
 On the Welcome page click Explore on my own.
 From the top-left or from the `Visualize and Explore Data` panel select the `Discover` item.
-In the form field Index pattern enter logstash-*
+In the form field Index pattern enter *
 It should read "Success!" and Click the `> Next` step button on the right.
 In the next form select timestamp from the dropdown labeled `Time Filter` field name.
 From the bottom-right of the form select `Create index pattern`.
@@ -88,31 +144,16 @@ From the top-left or the home screen's `Visualize and Explore Data` panel, selec
 The log list will appear.
 Refine the list a bit by selecting `log` near the bottom the left-hand Selected fields list.
 When you hover over or click on the word `log`, click the `Add` button to the right of the label.
-You can create a filter using the `Add Filter` button under `Search`. The field can be `kubernetes.labels.seldon-app` and the value can be an 'is' match on `seldon-single-model-seldon-single-model`.
+You can create a filter using the `Add Filter` button under `Search`. The field can be `kubernetes.labels.seldon-app` and the value can be an 'is' match on `seldon-single-model-default`.
 
-The custom fields in the request bodies may not currently be in the index. If you hover over one in a request you may see `No cached mapping for this field`.
+To add mappings, go to `Management` at the bottom-left and then `Index Patterns`. Hit `Refresh` on the index created earlier. The number of fields should increase.
 
-To add mappings, go to `Management` at the bottom-left and then `Index Patterns`. Hit `Refresh` on the index created earlier. The number of fields should increase and `request.data.names` should be present.
+Now we can go back and add further filters if we want.
 
-Now we can go back and add a further filter for `data.names` with the operator `exists`. We can add further filters if we want, such as the presence of a feature name or the presence of a feature value.
+Adding a filter for `Ce-Inferenceservicename` exists will restrict to just request-response pairs.
 
 ![picture](./kibana-custom-search.png)
 
-## Notes
-
-The fluentd setup is configured to ensure only labelled pods are logged and seldon pods are automatically labelled.
-
-Fluentbit can be chosen instead. This could be installed with:
-
-```
-helm install --name=fluent-bit stable/fluent-bit --namespace=logs --set backend.type=es --set backend.es.host=elasticsearch-master
-```
-
-In that case pods would be logged. At the time of writing fluentbit only supports [excluding pods by label, not including](https://github.com/fluent/fluent-bit/issues/737).
-
-Seldon can also be used to log full HTTP requests. See [request logging guide](./request-logging/README.md)
-
-The elasticsearch backend is not available externally by default but can be exposed if needed for debugging with `kubectl patch svc elasticsearch-master -n logs -p '{"spec": {"type": "LoadBalancer"}}'`
 
 ## Credits
 

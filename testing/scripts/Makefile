@@ -2,9 +2,10 @@ VERSION := $(shell cat ../../version.txt)
 
 # This can be "Auto" or a Number
 PYTEST_WORKERS ?= "4"
+SELDON_E2E_TESTS_USE_EXECUTOR ?= "true"
 
 kind_create_cluster:
-	kind create cluster --config kind_config.yaml
+	kind create cluster --config ../resources/kind_config.yaml
 
 kind_delete_cluster:
 	kind delete cluster
@@ -16,15 +17,55 @@ kind_build_engine:
 kind_build_operator:
 	cd ../../operator && make kind-image-install
 
-kind_build_images: build_protos kind_build_engine kind_build_operator
+kind_build_executor:
+	cd ../../executor && make kind-image-install
+
+kind_build_test_models:
+	make -C ../docker/fixed-model kind_load_images
+	make -C ../docker/echo-model kind_load_image
+
+kind_build_prepackaged:
+	cd ../../servers/sklearnserver && make kind_load
+	cd ../../servers/xgboostserver && make kind_load
+	cd ../../servers/mlflowserver && make kind_load
+	cd ../../integrations/tfserving && make kind_load
+
+kind_build_alibi:
+	cd ../../components/alibi-detect-server && make kind_load
+	cd ../../components/alibi-explain-server && make kind_load
+
+kind_build_misc:
+	cd ../../components/seldon-request-logger && make kind_load
+	cd ../../components/storage-initializer && make kind_load
+
+kind_build_images: build_protos kind_build_engine kind_build_operator kind_build_executor kind_build_test_models kind_build_prepackaged kind_build_alibi kind_build_misc
 
 helm_setup:
 	helm repo add stable https://kubernetes-charts.storage.googleapis.com/
 	helm repo add seldonio https://storage.googleapis.com/seldon-charts
+	helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
+	helm repo add datawire https://www.getambassador.io
 	helm repo update
 
 install_ambassador:
-	helm install --wait ambassador stable/ambassador -f ambassador_values.yaml --set crds.keep=false --namespace seldon --set replicaCount=1
+	helm install ambassador \
+		datawire/ambassador \
+		-f ../resources/ambassador_values.yaml \
+		--set image.repository=quay.io/datawire/ambassador \
+		--set crds.keep=false \
+		--set enableAES=false \
+		--namespace seldon \
+		--set replicaCount=1 \
+		--wait
+
+install_jaeger:
+	helm install jaeger-operator \
+		jaegertracing/jaeger-operator \
+		--set rbac.clusterRole=true \
+		--namespace seldon \
+		--wait
+	kubectl apply -f ../resources/jaeger.yaml --namespace seldon
+
 
 install_cert_manager:
 	cd ../../operator && make install-cert-manager
@@ -32,13 +73,22 @@ install_cert_manager:
 
 install_seldon: install_cert_manager
 	kubectl create namespace seldon-system || echo "namespace seldon-system exists"
-	helm install --wait seldon ../../helm-charts/seldon-core-operator --namespace seldon-system --set istio.enabled=true --set istio.gateway=seldon-gateway --set certManager.enabled=false
+	helm delete seldon --namespace seldon-system || echo "seldon-core not installed"
+	helm install seldon \
+		../../helm-charts/seldon-core-operator \
+		--namespace seldon-system \
+		--set istio.enabled=true \
+		--set istio.gateway=istio-system/seldon-gateway \
+		--set certManager.enabled=false \
+		--set executor.enabled=$(SELDON_E2E_TESTS_USE_EXECUTOR) \
+		--wait
 
 install_istio:
 	kubectl apply -f istio-1.4.2.yaml
 	kubectl rollout status deployment.apps/istio-ingressgateway -n istio-system
 	kubectl rollout status deployment.apps/istio-pilot -n istio-system
 	kubectl rollout status deployment.apps/istio-citadel -n istio-system
+	kubectl create -f ../resources/seldon-gateway.yaml -n istio-system
 
 
 create_namespaces:
@@ -48,7 +98,11 @@ create_namespaces:
 set_namespace:
 	kubectl config set-context $$(kubectl config current-context) --namespace=seldon
 
-kind_setup: create_namespaces helm_setup install_ambassador install_istio install_seldon set_namespace
+# Derived from https://github.com/kubernetes-sigs/kind/issues/398#issuecomment-478325705
+install_metrics:
+	kubectl apply -f metrics.yaml
+
+kind_setup: create_namespaces helm_setup install_ambassador install_istio install_jaeger install_seldon set_namespace install_metrics
 port-forward-ambassador:
 	kubectl port-forward $$(kubectl get pods -n seldon -l app.kubernetes.io/name=ambassador -o jsonpath='{.items[0].metadata.name}') -n seldon 8003:8080
 
@@ -69,16 +123,18 @@ build_protos:
 
 install:
 	pip install -r dev_requirements.txt
+	pip install -e ../../python
 
-.PHONY: test
-test: build_protos install
+test_parallel: build_protos install
 	# Run the core tests in parallel
 	pytest \
 		--verbose \
 		-s \
 		-W ignore \
 		-n $(PYTEST_WORKERS) \
-		-m "not sequential" 2>&1
+		-m "not sequential and not notebooks" 2>&1
+
+test_sequential: build_protos install
 	# Then run the s2i tests in sequence (as they currently fail in parallel
 	pytest \
 		--verbose \
@@ -86,6 +142,13 @@ test: build_protos install
 		-W ignore \
 		-n 0 \
 		-m "sequential" 2>&1
+
+test_notebooks: build_protos install
+	pytest \
+		--verbose \
+		-s \
+		-m "notebooks" \
+		-W ignore test_notebooks.py::TestNotebooks 2>&1
 
 .PHONY: clean
 clean:

@@ -1,8 +1,14 @@
+SHELL := /bin/bash
 VERSION := $(shell cat ../version.txt)
 # Image URL to use all building/pushing image targets
-IMG ?= seldonio/seldon-core-operator:${VERSION}
+IMAGE_NAME_BASE=seldon-core-operator
+IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
+IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${VERSION}
+IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
+
+KIND_NAME ?= kind
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -17,9 +23,16 @@ show_image:
 
 all: manager
 
+lint: licenses/dep.txt
+	# Check if licenses have changed
+	git \
+		--no-pager diff \
+		--exit-code \
+		./licenses
+
 # Run tests
-test: generate fmt vet manifests
-	go test ./... -coverprofile cover.out
+test: generate fmt vet manifests generate-resources
+	ginkgo -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis
 
 # Build manager binary
 manager: generate fmt vet
@@ -66,6 +79,10 @@ undeploy-controllerid: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
 	kustomize build config/controllerid | kubectl delete -f -
 
+undeploy-lite: manifests
+	cd config/manager && kustomize edit set image controller=${IMG}
+	kustomize build config/lite | kubectl delete -f -
+
 deploy-local: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
 	kustomize build config/local | kubectl apply -f -
@@ -86,6 +103,10 @@ deploy-cert: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
 	kustomize build config/cert | kubectl apply -f -
 
+deploy-lite: manifests
+	cd config/manager && kustomize edit set image controller=${IMG}
+	kustomize build config/lite | kubectl apply -f -
+
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: controller-gen
@@ -105,23 +126,44 @@ generate: controller-gen
 
 # Generate Clientset
 create-client: test
-	./hack/update-codegen.sh	
+	./hack/update-codegen.sh
 
 # Build the docker image
-docker-build: test
+docker-build: test generate-resources
 	docker build . -t ${IMG}
+
+# Build the docker image for Redhat
+docker-build-redhat: test generate-resources
+	docker build . -f Dockerfile.redhat -t ${IMG_REDHAT}
+
 
 # Push the docker image
 docker-push:
 	docker push ${IMG}
 
+# Push the docker image
+docker-push-redhat:
+	docker push ${IMG_REDHAT}
+
+# password can be found at: https://connect.redhat.com/project/1366481/view
+redhat-image-scan:
+	docker pull ${IMG_REDHAT}
+	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
+		echo $${rh_password_operator} | docker login -u unused scan.connect.redhat.com --password-stdin
+	docker tag ${IMG_REDHAT} scan.connect.redhat.com/ospid-7f50cebe-122b-495a-a143-41426dfcb6c9/${IMG_VERSION_REDHAT}
+	docker push scan.connect.redhat.com/ospid-7f50cebe-122b-495a-a143-41426dfcb6c9/${IMG_VERSION_REDHAT}
 
 kind-image-install: docker-build
 	docker save ${IMG} > operator.tar
-	kind load image-archive operator.tar 
+	kind load image-archive operator.tar --name ${KIND_NAME}
+
+kind-image-install-redhat: docker-build-redhat
+	docker save ${IMG_REDHAT} > operator.tar
+	kind load image-archive operator.tar --name ${KIND_NAME}
 
 # find or download controller-gen
 # download controller-gen if necessary
+
 controller-gen:
 ifeq (, $(shell which controller-gen))
 	@{ \
@@ -129,9 +171,10 @@ ifeq (, $(shell which controller-gen))
 	CONTROLLER_GEN_TMP_DIR=$$(mktemp -d) ;\
 	cd $$CONTROLLER_GEN_TMP_DIR ;\
 	go mod init tmp ;\
-	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.2.4 ;\
+	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.2.5 ;\
 	rm -rf $$CONTROLLER_GEN_TMP_DIR ;\
 	}
+
 CONTROLLER_GEN=$(GOBIN)/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)
@@ -154,3 +197,29 @@ self-signed-cert:
 clean-cert:
 	rm -r self-signed-cert
 
+install-dev:
+	# Tool to generate license info
+	pip install \
+		'git+https://github.com/kubeflow/testing#egg=go-license-tools&subdirectory=py/kubeflow/testing/go-license-tools'
+
+licenses/dep.txt: go.mod
+	go list -m all | cut -d ' ' -f 1 > licenses/dep.txt
+
+.PHONY: licenses
+licenses: licenses/dep.txt
+	# NOTE: You need to create a file in ~/.github_api_token with a GitHub token.
+	get-github-repo \
+		-o licenses/repo.txt \
+		--manual-dep-repo-mapping licenses/dep_repo.manual.csv \
+		licenses/dep.txt
+	get-github-license-info -o licenses/license_info.csv licenses/repo.txt
+	python -m 'patch_additional_license_info' \
+		licenses/license_info.csv \
+		licenses/additional_license_info.csv
+	concatenate-license -o licenses/license.txt licenses/license_info.csv
+
+generate-resources:
+	rm -rf generated
+	mkdir generated
+	kustomize build config/default/ -o generated
+	cp generated/apiextensions.k8s.io_v1beta1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml testing/machinelearning.seldon.io_seldondeployments.yaml

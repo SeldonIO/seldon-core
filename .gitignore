@@ -7,6 +7,9 @@ cluster-manager/.m2/
 
 .ipynb_checkpoints
 
+# osx
+.DS_Store
+
 # Tags
 .tags
 
@@ -48,6 +51,9 @@ tests/CLUSTER_MANAGER_ENDPOINT
 tests/out.log
 cluster-manager/settings.sh
 engine/target/
+incubating/wrappers/java/target/
+incubating/wrappers/java/src/main/proto/prediction.proto
+incubating/wrappers/java/src/main/proto/tensorflow/
 zookeeper-k8s/zookeeper.json
 monitoring/alertmanager/config.yml
 monitoring/grafana/auth/grafana-prom-admin-password.txt
@@ -68,7 +74,6 @@ examples/models/keras_mnist/build/
 examples/models/mean_classifier/build/
 notebooks/my-ml-deployment/
 
-wrappers/s2i/python/Dockerfile
 wrappers/s2i/python/_wrappers
 
 .Rhistory
@@ -81,8 +86,6 @@ examples/models/pyspark_pmml/.gitignore
 examples/models/h2o_mojo/src/main/resources/model.zip
 
 #created model folders
-examples/models/deep_mnist/MNIST_data/
-examples/models/deep_mnist/model/
 examples/models/sklearn_iris/IrisClassifier.sav
 examples/istio/canary_update/MNIST_data/
 examples/istio/canary_update/tmp/
@@ -96,8 +99,6 @@ examples/models/r_mnist/t10k-images-idx3-ubyte
 examples/models/r_mnist/t10k-labels-idx1-ubyte
 examples/models/r_mnist/train-images-idx3-ubyte
 examples/models/r_mnist/train-labels-idx1-ubyte
-examples/models/sk_mnist/MNIST_data/
-examples/models/sk_mnist/sk.pkl
 examples/models/sklearn_iris_fbs/IrisClassifier.sav
 
 # Pickle files
@@ -113,6 +114,9 @@ wrappers/python/fbs/
 #ONNX example
 examples/models/onnx_resnet50/cpu_codegen/Function_0_codegen.cpp
 examples/models/onnx_resnet50/resnet.onnx
+
+#logging example
+examples/centralised-logging/istio-**
 
 #openapi
 engine/src/main/resources/static/seldon.json
@@ -194,3 +198,22 @@ testing/scripts/go
 .tox
 
 operator/operator.tar
+operator/helm/tmp/
+
+# vim
+*.swp
+
+notebooks/helm_examples.py
+notebooks/*.py
+examples/ambassador/canary/ambassador_canary.py
+examples/ambassador/custom/ambassador_custom.py
+examples/ambassador/headers/ambassador_headers.py
+examples/ambassador/shadow/ambassador_shadow.py
+examples/models/metrics/metrics.py
+examples/models/custom_metrics/customMetrics.py
+examples/models/tracing/tracing.py
+examples/models/autoscaling/autoscaling_example.py
+
+# testing
+*.coverprofile
+*.log

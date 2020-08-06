@@ -3,6 +3,7 @@ import logging
 import datetime
 import os
 import sys
+import boto3
 from urllib.parse import urlparse
 from google.cloud import storage
 from openvino.inference_engine import IENetwork, IEPlugin

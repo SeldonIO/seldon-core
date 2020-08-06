@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import sys, getopt, argparse
 import logging
@@ -24,7 +25,7 @@ if __name__ == '__main__':
     consumer.assign([partition])
     consumer.seek(partition, 0)
     for msg in consumer:
-        print msg
+        print(msg)
         message = ppb.PredictionRequestResponseDef()
         message.ParseFromString(msg.value)
-        print message
+        print(message)

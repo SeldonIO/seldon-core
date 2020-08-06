@@ -3,11 +3,10 @@ package controllers
 import (
 	"encoding/base64"
 	"encoding/json"
-	"os"
 	"sort"
 	"strings"
 
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -30,21 +29,13 @@ func getEngineVarJson(p *machinelearningv1.PredictorSpec) (string, error) {
 	for _, compSpec := range pcopy.ComponentSpecs {
 		compSpec.Metadata.CreationTimestamp = metav1.Time{}
 	}
-	pcopy.Explainer = machinelearningv1.Explainer{}
+	pcopy.Explainer = nil
 
 	str, err := json.Marshal(pcopy)
 	if err != nil {
 		return "", err
 	}
 	return base64.StdEncoding.EncodeToString(str), nil
-}
-
-// Get an environment variable given by key or return the fallback.
-func GetEnv(key, fallback string) string {
-	if value, ok := os.LookupEnv(key); ok {
-		return value
-	}
-	return fallback
 }
 
 // Get an annotation from the Seldon Deployment given by annotationKey or return the fallback.
@@ -77,4 +68,10 @@ func getEngineEnvAnnotations(mlDep *machinelearningv1.SeldonDeployment) []corev1
 		}
 	}
 	return envVars
+}
+
+// isEmptyExplainer will return true if the explainer can be considered empty
+// (either by being nil or by having unset fields)
+func isEmptyExplainer(explainer *machinelearningv1.Explainer) bool {
+	return explainer == nil || explainer.Type == ""
 }

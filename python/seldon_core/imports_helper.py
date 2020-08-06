@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 # not
 _TF_PRESENT = False
 _GCS_PRESENT = False
+_AZURE_PRESENT = False
 
 try:
     #  Fix for https://github.com/SeldonIO/seldon-core/issues/1076
@@ -35,7 +36,7 @@ except ImportError:
         or
 
             $ pip install seldon_core[all]
-    """
+        """
     )
     logger.info(notice)
 
@@ -57,6 +58,27 @@ except ImportError:
         or
 
             $ pip install seldon_core[all]
-    """
+        """
+    )
+    logger.info(notice)
+
+try:
+    from azure.storage.blob import BlockBlobService  # noqa: F401
+
+    _AZURE_PRESENT = True
+except ImportError:
+    _AZURE_PRESENT = False
+    notice = textwrap.dedent(
+        """
+        Support for Azure Blob Storage is not installed.
+        If you want to download resources from Azure Blob Storage
+        install `azure-storage-blob` or install `seldon_core` as
+
+            $ pip install seldon_core[azure]
+
+        or
+
+            $ pip install seldon_core[all]
+        """
     )
     logger.info(notice)

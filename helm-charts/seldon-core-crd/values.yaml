@@ -1,6 +1,0 @@
-usage_metrics:
-  enabled: false
-  database: http://seldon-core-stats.seldon.io
-rbac:
-  enabled: true
-

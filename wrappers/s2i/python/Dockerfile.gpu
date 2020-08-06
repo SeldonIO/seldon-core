@@ -1,0 +1,48 @@
+FROM nvidia/cuda:10.0-cudnn7-runtime-ubuntu18.04
+
+LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
+
+RUN apt-get update -y && apt-get install -qy --no-install-recommends \
+    wget \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libglib2.0-0 \
+    git \
+    build-essential \
+    && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV PATH /opt/conda/bin:$PATH
+
+# Install Miniconda3
+ARG CONDA_VERSION
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-${CONDA_VERSION}-Linux-x86_64.sh -O ~/miniconda.sh && \
+    /bin/bash ~/miniconda.sh -b -p /opt/conda && \
+    rm ~/miniconda.sh && \
+    /opt/conda/bin/conda clean -tipsy && \
+    ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
+    echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
+    echo "conda activate base" >> ~/.bashrc && \
+    find /opt/conda/ -follow -type f -name '*.a' -delete && \
+    find /opt/conda/ -follow -type f -name '*.js.map' -delete && \
+    /opt/conda/bin/conda clean -afy
+
+
+RUN mkdir microservice
+WORKDIR /microservice
+
+COPY ./s2i/bin/ /s2i/bin
+
+# Install Seldon Core from local copy
+COPY _python /microservice
+COPY version.txt /microservice/version.txt
+RUN cd /microservice/python && make install
+
+# Add gpu specific requirements
+COPY requirements_gpu.txt ./requirements.txt
+RUN pip install -r requirements.txt
+
+RUN mkdir -p /.conda && chmod a+rwx /.conda
+
+EXPOSE 5000

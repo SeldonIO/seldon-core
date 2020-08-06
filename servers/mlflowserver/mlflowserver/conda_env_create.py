@@ -8,6 +8,7 @@ import argparse
 import json
 import yaml
 import tempfile
+import shutil
 from subprocess import run
 from seldon_core.microservice import PARAMETERS_ENV_NAME, parse_parameters
 from seldon_core import Storage
@@ -48,41 +49,10 @@ def setup_env(model_folder):
     pyfunc_flavour = flavours["python_function"]
     env_file_name = pyfunc_flavour["env"]
     env_file_path = os.path.join(model_folder, env_file_name)
-    env_file_path = inject_base_reqs(env_file_path)
+    env_file_path = copy_env(env_file_path)
 
     create_env(env_file_path)
-
-
-def inject_base_reqs(env_file_path):
-    """Injects the base set of requirements.
-
-    Adds a new `pip` entry to in the Conda environment with the base set of
-    requirements for `MLFlowServer.py`.
-    This list of base packages is defined in `requirements.txt`.
-
-    Parameters
-    --------
-    env_file_path
-        Path to the Conda YAML environment.
-
-    Returns
-    -------
-    str
-        Path to the new YAML environment with the injected base dependencies.
-    """
-    conda_env = _read_yaml(env_file_path)
-    if "dependencies" not in conda_env:
-        conda_env["dependencies"] = []
-
-    new_entry = {"pip": [f"-r {BASE_REQS_PATH}"]}
-    conda_env["dependencies"].append(new_entry)
-
-    temp_dir = tempfile.mkdtemp()
-    new_env_path = os.path.join(temp_dir, "conda.yaml")
-    with open(new_env_path, "w") as new_env:
-        yaml.dump(conda_env, new_env)
-
-    return new_env_path
+    install_base_reqs()
 
 
 def read_mlmodel(model_folder):
@@ -137,6 +107,32 @@ def create_env(env_file_path):
     log.info(f"Creating Conda environment '{env_name}' from {env_file_name}")
 
     cmd = f"conda env create -n {env_name} --file {env_file_path}"
+    run(cmd, shell=True, check=True)
+
+
+def copy_env(env_file_path):
+    """Copy conda.yaml to temp dir
+    to prevent the case where the existing file is on Read-only file system.
+    """
+    temp_dir = tempfile.mkdtemp()
+    new_env_path = os.path.join(temp_dir, "conda.yaml")
+    shutil.copy2(env_file_path, new_env_path)
+
+    return new_env_path
+
+
+def install_base_reqs():
+    """Install additional requirements from requirements.txt to existing conda environment
+    The environment name is read from the `CONDA_ENV_NAME` environment
+    variable.
+    If the variable is not defined, it falls back to `mlflow`.
+    """
+    env_name = os.getenv("CONDA_ENV_NAME", DEFAULT_CONDA_ENV_NAME)
+    env_name = quote(env_name)
+
+    log.info(f"Install additional package from requirements.txt")
+
+    cmd = f"conda run -n {env_name} pip install -r {BASE_REQS_PATH}"
     run(cmd, shell=True, check=True)
 
 

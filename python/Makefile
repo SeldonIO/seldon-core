@@ -1,5 +1,5 @@
 SELDON_CORE_DIR=..
-VERSION=1.0.1
+VERSION := $(shell cat ../version.txt)
 
 .PHONY: get_apis
 get_apis:
@@ -53,6 +53,12 @@ install:
 install_dev:
 	pip install -e . -r requirements-dev.txt
 
+.PHONY: licenses
+licenses:
+	tox --recreate -e licenses
+	cut -d, -f1,3 ./licenses/license_info.csv \
+		> ./licenses/license_info.no_versions.csv
+
 .PHONY: uninstall
 uninstall:
 	pip uninstall seldon-core
@@ -91,15 +97,21 @@ push_conda:
 setup_linter:
 	pip install black==19.3b0
 
-run_linter:
+fmt:
 	black \
-		./ ../testing \
+		./ ../testing ../operator/helm ../operator/seldon-operator/hack \
 		--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs|.tox)"
 
-run_linter_check:
+lint: licenses
 	black \
 		--check ./ ../testing \
 		--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs|.tox)"
+	flake8
+	# Check if licenses have changed
+	git \
+		--no-pager diff \
+		--exit-code \
+		./licenses/license_info.no_versions.csv
 
 .PHONY: clean
 clean:

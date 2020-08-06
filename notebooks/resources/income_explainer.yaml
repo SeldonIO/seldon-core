@@ -1,9 +1,11 @@
-apiVersion: machinelearning.seldon.io/v1alpha2
+apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
   name: income
 spec:
   name: income
+  annotations:
+    seldon.io/rest-timeout: "100000"
   predictors:
   - graph:
       children: []

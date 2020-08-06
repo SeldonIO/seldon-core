@@ -1,6 +1,6 @@
 FROM openjdk:13.0.1-jdk-buster
 
-ENV PYTHON_VERSION "3.6.0"
+ENV PYTHON_VERSION "3.6.10"
 
 # install docker
 RUN \
@@ -57,12 +57,14 @@ RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
 ENV MAVEN_HOME=/usr/share/maven
 ENV MAVEN_CONFIG="$USER_HOME_DIR/.m2"
 
-# ZLIB1G required for installation python
+# compression and ssl libs required for installation python and dependencies (pandas)
 RUN apt-get upgrade && \
         apt-get update && \
         apt-get install zlib1g -y && \
         apt-get install zlib1g-dev -y && \
-        apt-get install libssl-dev -y
+        apt-get install libssl-dev -y && \
+	apt-get install libbz2-dev -y && \
+	apt-get install liblzma-dev -y
 
 RUN curl -SLO https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz \
     && tar xvf Python-${PYTHON_VERSION}.tgz \
@@ -83,22 +85,22 @@ RUN rm -rf /usr/local/bin/pip && \
 
 RUN pip install --upgrade pip
 RUN pip install --upgrade setuptools
-RUN pip install pyyaml 
+RUN pip install pyyaml
 RUN pip install grpcio
 RUN pip install grpcio-tools
 RUN apt-get remove -y --auto-remove && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # INSTALL GO
 ENV PATH /usr/local/go/bin:$PATH
-RUN wget https://dl.google.com/go/go1.12.5.linux-amd64.tar.gz && \
-        tar -zxvf go1.12.5.linux-amd64.tar.gz && \
+RUN wget https://dl.google.com/go/go1.13.8.linux-amd64.tar.gz && \
+        tar -zxvf go1.13.8.linux-amd64.tar.gz && \
         mv go/ /usr/local/go
-RUN curl -sL https://go.kubebuilder.io/dl/2.0.1/linux/amd64 | tar -xz -C /tmp/ && \
-        mv /tmp/kubebuilder_2.0.1_linux_amd64 /usr/local/kubebuilder/
+RUN curl -sL https://go.kubebuilder.io/dl/2.3.0/linux/amd64 | tar -xz -C /tmp/ && \
+        mv /tmp/kubebuilder_2.3.0_linux_amd64 /usr/local/kubebuilder/
 ENV PATH /usr/local/kubebuilder/bin:$PATH
 
 # DOWNLOAD HELM
-RUN curl -L https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+RUN curl -L https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash -s -- --version v3.2.0
 
 # DOWNLOAD KUSTOMIZE
 RUN wget https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv3.2.3/kustomize_kustomize.v3.2.3_linux_amd64 && \
@@ -110,8 +112,23 @@ RUN \
     update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy && \
     update-alternatives --set iptables /usr/sbin/iptables-legacy
 
+# install jupyter
+RUN pip install jupyter
+
+# Install grpcurl
+RUN go get github.com/fullstorydev/grpcurl && \
+    go install github.com/fullstorydev/grpcurl/cmd/grpcurl
+
+ENV PATH="${PATH}:/root/go/bin"
+
+# Notebooks python requirements
+COPY dev_requirements.txt /tmp/requirements.txt
+RUN pip install -r /tmp/requirements.txt
+
+# Ginkgo
+RUN go get -u github.com/onsi/ginkgo/ginkgo
+
 WORKDIR /work
 
 # Define default command.
 CMD ["bash"]
-

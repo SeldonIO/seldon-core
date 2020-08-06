@@ -119,16 +119,16 @@ If nothing is specified, flask's default value is used.
 
 ### MODEL
 
- * [A minimal skeleton for model source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/model-template-app)
+ * [A minimal skeleton for model source code](https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i/python/test/model-template-app)
  * [Example model notebooks](../examples/notebooks.html)
 
 ### ROUTER
- * [Description of routers in Seldon Core](../components/routers.html)
- * [A minimal skeleton for router source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/router-template-app)
+ * [Description of routers in Seldon Core](../analytics/routers.html)
+ * [A minimal skeleton for router source code](https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i/python/test/router-template-app)
 
 ### TRANSFORMER
 
- * [A minimal skeleton for transformer source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/transformer-template-app)
+ * [A minimal skeleton for transformer source code](https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i/python/test/transformer-template-app)
  * [Example transformers](https://github.com/SeldonIO/seldon-core/tree/master/examples/transformers)
 
 
@@ -147,38 +147,37 @@ These arguments can be set when deploying in a Seldon Deployment. An example can
 
 ```
  "graph": {
-		    "name": "tfserving-proxy",
-		    "endpoint": { "type" : "REST" },
-		    "type": "MODEL",
-		    "children": [],
-		    "parameters":
-		    [
-			{
-			    "name":"grpc_endpoint",
-			    "type":"STRING",
-			    "value":"localhost:8000"
-			},
-			{
-			    "name":"model_name",
-			    "type":"STRING",
-			    "value":"mnist-model"
-			},
-			{
-			    "name":"model_output",
-			    "type":"STRING",
-			    "value":"scores"
-			},
-			{
-			    "name":"model_input",
-			    "type":"STRING",
-			    "value":"images"
-			},
-			{
-			    "name":"signature_name",
-			    "type":"STRING",
-			    "value":"predict_images"
-			}
-		    ]
+    "name": "tfserving-proxy",
+    "endpoint": {"type" : "REST"},
+    "type": "MODEL",
+    "children": [],
+    "parameters": [
+    	{
+    	    "name":"grpc_endpoint",
+    	    "type":"STRING",
+    	    "value":"localhost:8000"
+    	},
+    	{
+    	    "name":"model_name",
+    	    "type":"STRING",
+    	    "value":"mnist-model"
+    	},
+    	{
+    	    "name":"model_output",
+    	    "type":"STRING",
+    	    "value":"scores"
+    	},
+    	{
+    	    "name":"model_input",
+    	    "type":"STRING",
+    	    "value":"images"
+    	},
+    	{
+    	    "name":"signature_name",
+    	    "type":"STRING",
+    	    "value":"predict_images"
+    	}
+    ]
 },
 ```
 
@@ -191,36 +190,31 @@ The allowable ```type``` values for the parameters are defined in the [proto buf
 
 To add custom metrics to your response you can define an optional method ```metrics``` in your class that returns a list of metric dicts. An example is shown below:
 
-```
+```python
 class MyModel(object):
 
-    def predict(self,X,features_names):
+    def predict(self, X, features_names):
         return X
 
     def metrics(self):
-    	return [{"type":"COUNTER","key":"mycounter","value":1}]
+    	return [{"type": "COUNTER", "key": "mycounter", "value": 1}]
 ```
 
-For more details on custom metrics and the format of the metric dict see [here](../custom_metrics.md).
+For more details on custom metrics and the format of the metric dict see [here](../analytics/analytics.html#custom-metrics).
 
-There is an [example notebook illustrating a model with custom metrics in python](../examples/tmpl_model_with_metrics.html).
+There is an [example notebook illustrating a model with custom metrics in python](../examples/custom_metrics.html).
 
-### Custom Meta Data
+### Custom Request Tags
 ```from version 0.3```
 
-To add custom meta data you can add an optional method ```tags``` which can return a dict of custom meta tags as shown in the example below:
+To add custom request tags data you can add an optional method ```tags``` which can return a dict of custom meta tags as shown in the example below:
 
-```
+```python
 class MyModel(object):
 
-    def predict(self,X,features_names):
+    def predict(self, X, features_names):
         return X
 
     def tags(self):
-        return {"mytag":1}
+        return {"mytag": 1}
 ```
-
-
-
-
-

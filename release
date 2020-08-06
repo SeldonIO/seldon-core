@@ -6,8 +6,12 @@ set -o pipefail
 
 STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
+MAVEN_REPOSITORY_LOCATION=/tmp/.m2/repository
+
 docker run --rm -it \
-    -v ${HOME}/.m2:/root/.m2 \
+    --user=$(id -u):$(id -g) \
+    -e MAVEN_REPOSITORY_LOCATION=${MAVEN_REPOSITORY_LOCATION} \
+    -v ${HOME}/.m2/repository:${MAVEN_REPOSITORY_LOCATION} \
     -v "${STARTUP_DIR}":/work \
-    seldonio/core-builder:0.8 python3 release.py "$@"
+    seldonio/core-builder:0.15 python release.py "$@"
 

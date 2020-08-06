@@ -18,7 +18,7 @@
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/sk-example-mnist:0.2",
+                                "image": "seldonio/sk-example-mnist:0.3",
                                 "imagePullPolicy": "IfNotPresent",
                                 "name": "sk-mnist-classifier",
                                 "resources": {
@@ -41,17 +41,25 @@
                 },
                 "name": "sk-mnist-predictor",
                 "replicas": 1,
-		"labels":{
-		    "version":"v1"
-		},
-		"traffic": 75
+               "svcOrchSpec": {
+                    "env": [
+                        {
+                            "name": "SELDON_LOG_LEVEL",
+                            "value": "DEBUG"
+                        }
+                    ]
+                },
+        "labels":{
+            "version":"v1"
+        },
+        "traffic": 75
             },
             {
                 "componentSpecs": [{
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/tf-example-mnist:0.1",
+                                "image": "seldonio/tf-example-mnist:0.2",
                                 "imagePullPolicy": "IfNotPresent",
                                 "name": "tf-mnist-classifier",
                                 "resources": {
@@ -74,12 +82,19 @@
                 },
                 "name": "tf-mnist-predictor",
                 "replicas": 1,
-		"labels":{
-		    "version":"v2"
-		},
-		"traffic": 25
+               "svcOrchSpec": {
+                    "env": [
+                        {
+                            "name": "SELDON_LOG_LEVEL",
+                            "value": "DEBUG"
+                        }
+                    ]
+                },
+        "labels":{
+            "version":"v2"
+        },
+        "traffic": 25
             }
-	    
         ]
     }
 }

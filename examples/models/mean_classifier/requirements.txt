@@ -1,1 +1,2 @@
+seldon-core
 numpy

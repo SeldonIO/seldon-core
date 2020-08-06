@@ -1,6 +1,8 @@
+{{- if not .Values.managerCreateResources }}
 apiVersion: v1
 data:
   credentials: '{{ .Values.credentials | toJson }}'
+  explainer: '{{ .Values.explainer | toJson }}'
   predictor_servers: '{{ .Values.predictor_servers | toJson }}'
   storageInitializer: '{{ .Values.storageInitializer | toJson }}'
 kind: ConfigMap
@@ -13,3 +15,4 @@ metadata:
     control-plane: seldon-controller-manager
   name: seldon-config
   namespace: '{{ .Release.Namespace }}'
+{{- end }}

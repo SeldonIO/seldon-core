@@ -1,12 +1,29 @@
+import os
 import pytest
-from seldon_e2e_utils import clean_string, retry_run, get_s2i_python_version
+from seldon_e2e_utils import clean_string, retry_run, get_seldon_version
+
+from e2e_utils.install import install_seldon, delete_seldon
 from subprocess import run
 
 
-@pytest.fixture(scope="session", autouse=True)
+def _to_python_bool(val):
+    # From Flask's docs:
+    # https://flask.palletsprojects.com/en/1.1.x/config/#configuring-from-environment-variables
+    return val.lower() in {"1", "t", "true"}
+
+
+SELDON_E2E_TESTS_USE_EXECUTOR = _to_python_bool(
+    os.getenv("SELDON_E2E_TESTS_USE_EXECUTOR", default="true")
+)
+SELDON_E2E_TESTS_POD_INFORMATION = _to_python_bool(
+    os.getenv("SELDON_E2E_TESTS_POD_INFORMATION", default="false")
+)
+
+
+@pytest.fixture(scope="session", autouse=SELDON_E2E_TESTS_POD_INFORMATION)
 def run_pod_information_in_background(request):
-    # This command runs the pod information and prints it
-    #   in the background every time there's a new update
+    # This command runs the pod information and prints it in the background
+    # every time there's a new update
     run(
         (
             "kubectl get pods --all-namespaces -w | "
@@ -32,6 +49,8 @@ def namespace(request):
 
     test_name = request.node.name
     namespace = clean_string(test_name)
+    if len(namespace) > 63:
+        namespace = namespace[0:63]
 
     # Create namespace
     retry_run(f"kubectl create namespace {namespace}")
@@ -59,31 +78,16 @@ def seldon_version(request):
     """
     seldon_version = request.param
 
-    # Install past version cluster-wide
-    retry_run("helm delete seldon -n seldon-system")
-    retry_run(
-        "helm install seldon "
-        "seldonio/seldon-core-operator "
-        "--namespace seldon-system "
-        f"--version {seldon_version} "
-        "--wait"
-    )
+    # Delete source version cluster-wide and install new one
+    delete_seldon()
+    install_seldon(version=seldon_version, executor=SELDON_E2E_TESTS_USE_EXECUTOR)
 
     yield seldon_version
 
     # Re-install source code version cluster-wide
-    retry_run("helm delete seldon -n seldon-system")
-    retry_run(
-        "helm install seldon "
-        "../../helm-charts/seldon-core-operator "
-        "--namespace seldon-system "
-        "--set istio.enabled=true "
-        "--set istio.gateway=seldon-gateway "
-        "--set certManager.enabled=false "
-        "--wait",
-        attempts=2,
-    )
+    delete_seldon()
+    install_seldon(executor=SELDON_E2E_TESTS_USE_EXECUTOR)
 
 
 def do_s2i_python_version():
-    return get_s2i_python_version()
+    return get_seldon_version()

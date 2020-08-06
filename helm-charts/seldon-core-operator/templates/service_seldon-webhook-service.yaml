@@ -1,3 +1,4 @@
+{{- if not .Values.managerCreateResources }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -18,3 +19,4 @@ spec:
     app.kubernetes.io/name: seldon
     app.kubernetes.io/version: v0.5
     control-plane: seldon-controller-manager
+{{- end }}

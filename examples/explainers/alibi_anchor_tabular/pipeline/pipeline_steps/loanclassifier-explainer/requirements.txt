@@ -1,4 +1,0 @@
-scikit-learn==0.20.1
-dill==0.3.1.
-alibi==0.3.2
-seldon-core==0.5.1

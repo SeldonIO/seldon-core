@@ -5,6 +5,8 @@ approvers:
 - ryandawsonuk
 - adriangonz
 - SachinVarghese
+- glindsell
+- RafalSkolasinski
 reviewers:
 - axsaucedo
 - gsunner
@@ -17,3 +19,4 @@ reviewers:
 - phsiao
 - SachinVarghese
 - RafalSkolasinski
+- glindsell

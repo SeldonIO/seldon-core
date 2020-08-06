@@ -1,20 +1,16 @@
 # Distributed Tracing
 
-You can use Jaeger Open Tracing to trace your API calls to Seldon Core.
-
-This feature is available from versions >=0.2.5-SNAPSHOT of the core images and presently in:
-
- * Python wrappers >=0.5-SNAPSHOT
+You can use Open Tracing to trace your API calls to Seldon Core. By default we support Jaeger for Distributed Tracing, which will allow you to obtain insights on latency and performance across each microservice-hop in your Seldon deployment.
 
 ## Install Jaeger
 
-You will need to install Jaeger on your Kubernetes cluster. Follow their [documentation](https://github.com/jaegertracing/jaeger-kubernetes).
+You will need to install Jaeger on your Kubernetes cluster. Follow their [documentation](https://www.jaegertracing.io/docs/1.16/operator/)
 
 ## Configuration
 
 You will need to annotate your Seldon Deployment resource with environment variables to make tracing active and set the appropriate Jaeger configuration variables.
 
-  * For the Seldon Service Orchestrator you will need to set the environment variables in the ```spec.predictors[].svcOrchSpec.env``` section. See the [Jaeger Java docs](https://github.com/jaegertracing/jaeger-client-java/tree/master/jaeger-core#configuration-via-environment) for available configuration variables.
+  * For the Seldon Service Orchestrator you will need to set the environment variables in the `spec.predictors[].svcOrchSpec.env` section. See the [Jaeger Java docs](https://github.com/jaegertracing/jaeger-client-java/tree/master/jaeger-core#configuration-via-environment) for available configuration variables.
   * For each Seldon component you run (e.g., model transformer etc.) you will need to add environment variables to the container section.
 
 
@@ -28,106 +24,56 @@ To provide a custom configuration following the Jaeger Python configuration yaml
 
 An example is show below:
 
-```json
-{
-    "apiVersion": "machinelearning.seldon.io/v1alpha2",
-    "kind": "SeldonDeployment",
-    "metadata": {
-        "labels": {
-            "app": "seldon"
-        },
-        "name": "tracing-example",
-	"namespace": "seldon"	
-    },
-    "spec": {
-        "name": "tracing-example",
-        "oauth_key": "oauth-key",
-        "oauth_secret": "oauth-secret",
-        "predictors": [
-            {
-                "componentSpecs": [{
-                    "spec": {
-                        "containers": [
-                            {
-                                "name": "model1",				
-                                "image": "seldonio/mock_classifier_rest:1.1",
-				"env": [
-				    {
-					"name": "TRACING",
-					"value": "1"
-				    },
-				    {
-					"name": "JAEGER_CONFIG_PATH",
-					"value": "/etc/tracing/config/tracing.yml"
-				    }
-				],
-				"volumeMounts": [
-				    {
-					"mountPath": "/etc/tracing/config",
-					"name": "tracing-config"
-				    }
-				]
-                            }
-			],
-			"terminationGracePeriodSeconds": 1,
-			"volumes": [
-			    {
-				"name": "tracing-config",
-				"volumeSource" : {
-				    "configMap": {
-					"localObjectReference" :
-					{
-					    "name": "tracing-config"
-					},
-					"items": [
-					    {
-						"key": "tracing.yml",
-						"path":  "tracing.yml"
-					    }
-					]
-				    }
-				}
-			    }
-			]
-		    }
-		}],
-                "graph": {
-		    "name": "model1",
-		    "endpoint": { "type" : "REST" },
-		    "type": "MODEL",
-		    "children": [
-		    ]
-		},
-                "name": "tracing",
-                "replicas": 1,
-		"svcOrchSpec" : {
-		    "env": [
-			{
-			    "name": "TRACING",
-			    "value": "1"
-			},
-			{
-			    "name": "JAEGER_AGENT_HOST",
-			    "value": "jaeger-agent"
-			},
-			{
-			    "name": "JAEGER_AGENT_PORT",
-			    "value": "5775"
-			},
-			{
-			    "name": "JAEGER_SAMPLER_TYPE",
-			    "value": "const"
-			},
-			{
-			    "name": "JAEGER_SAMPLER_PARAM",
-			    "value": "1"
-			}
-		    ]				
-		}
-            }
-        ]
-    }
-}
+```yaml
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: tracing-example
+  namespace: seldon
+spec:
+  name: tracing-example
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - env:
+          - name: TRACING
+            value: '1'
+          - name: JAEGER_AGENT_HOST
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          - name: JAEGER_AGENT_PORT
+            value: '5775'
+          - name: JAEGER_SAMPLER_TYPE
+            value: const
+          - name: JAEGER_SAMPLER_PARAM
+            value: '1'
+          image: seldonio/mock_classifier_rest:1.3
+          name: model1
+        terminationGracePeriodSeconds: 1
+    graph:
+      children: []
+      endpoint:
+        type: REST
+      name: model1
+      type: MODEL
+    name: tracing
+    replicas: 1
+    svcOrchSpec:
+      env:
+      - name: TRACING
+        value: '1'
+      - name: JAEGER_AGENT_HOST
+        valueFrom:
+          fieldRef:
+            fieldPath: status.hostIP
+      - name: JAEGER_AGENT_PORT
+        value: '5775'
+      - name: JAEGER_SAMPLER_TYPE
+        value: const
+      - name: JAEGER_SAMPLER_PARAM
+        value: '1'
 ```
         
 
@@ -143,4 +89,6 @@ An example is show below:
 
 ## Worked Example
 
-[A fully worked template example](../examples/tmpl_model_tracing.html) is provided.
+You can see it in action and try it yourself by following the example below:
+
+[A fully worked template example](../examples/tracing.html) is provided.

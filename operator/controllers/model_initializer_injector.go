@@ -25,8 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	"os"
 )
 
 // TODO: change image to seldon? is at least configurable by configmap now (with fixed version there)
@@ -41,12 +40,22 @@ const (
 	PvcSourceMountPath                 = "/mnt/pvc"
 	ModelInitializerVolumeSuffix       = "provision-location"
 	ModelInitializerContainerSuffix    = "model-initializer"
+	EnvStorageInitializerImageRelated  = "RELATED_IMAGE_STORAGE_INITIALIZER"
 )
 
 var (
-	ControllerNamespace     = GetEnv("POD_NAMESPACE", "seldon-system")
-	ControllerConfigMapName = "seldon-config"
+	ControllerNamespace        = utils.GetEnv("POD_NAMESPACE", "seldon-system")
+	ControllerConfigMapName    = "seldon-config"
+	envStorageInitializerImage = os.Getenv(EnvStorageInitializerImageRelated)
 )
+
+type ModelInitialiser struct {
+	clientset kubernetes.Interface
+}
+
+func NewModelInitializer(clientset kubernetes.Interface) *ModelInitialiser {
+	return &ModelInitialiser{clientset: clientset}
+}
 
 type StorageInitializerConfig struct {
 	Image         string `json:"image"`
@@ -56,22 +65,19 @@ type StorageInitializerConfig struct {
 	MemoryLimit   string `json:"memoryLimit"`
 }
 
-func credentialsBuilder(Client client.Client) (credentialsBuilder *credentials.CredentialBuilder, err error) {
-
-	clientset := kubernetes.NewForConfigOrDie(ctrl.GetConfigOrDie())
-	configMap, err := clientset.CoreV1().ConfigMaps(ControllerNamespace).Get(ControllerConfigMapName, metav1.GetOptions{})
+func (mi *ModelInitialiser) credentialsBuilder() (credentialsBuilder *credentials.CredentialBuilder, err error) {
+	configMap, err := mi.clientset.CoreV1().ConfigMaps(ControllerNamespace).Get(ControllerConfigMapName, metav1.GetOptions{})
 	if err != nil {
 		//log.Error(err, "Failed to find config map", "name", ControllerConfigMapName)
 		return nil, err
 	}
 
-	credentialBuilder := credentials.NewCredentialBulder(Client, configMap)
+	credentialBuilder := credentials.NewCredentialBulder(configMap, mi.clientset)
 	return credentialBuilder, nil
 }
 
-func getStorageInitializerConfigs(Client client.Client) (*StorageInitializerConfig, error) {
-	clientset := kubernetes.NewForConfigOrDie(ctrl.GetConfigOrDie())
-	configMap, err := clientset.CoreV1().ConfigMaps(ControllerNamespace).Get(ControllerConfigMapName, metav1.GetOptions{})
+func (mi *ModelInitialiser) getStorageInitializerConfigs() (*StorageInitializerConfig, error) {
+	configMap, err := mi.clientset.CoreV1().ConfigMaps(ControllerNamespace).Get(ControllerConfigMapName, metav1.GetOptions{})
 	if err != nil {
 		//log.Error(err, "Failed to find config map", "name", ControllerConfigMapName)
 		return nil, err
@@ -103,7 +109,7 @@ func getStorageInitializerConfigsFromMap(configMap *corev1.ConfigMap) (*StorageI
 }
 
 // InjectModelInitializer injects an init container to provision model data
-func InjectModelInitializer(deployment *appsv1.Deployment, containerName string, srcURI string, serviceAccountName string, envSecretRefName string, Client client.Client) (deploy *appsv1.Deployment, err error) {
+func (mi *ModelInitialiser) InjectModelInitializer(deployment *appsv1.Deployment, containerName string, srcURI string, serviceAccountName string, envSecretRefName string) (deploy *appsv1.Deployment, err error) {
 
 	if srcURI == "" {
 		return deployment, nil
@@ -194,13 +200,15 @@ func InjectModelInitializer(deployment *appsv1.Deployment, containerName string,
 	}
 	modelInitializerMounts = append(modelInitializerMounts, sharedVolumeWriteMount)
 
-	config, err := getStorageInitializerConfigs(Client)
+	config, err := mi.getStorageInitializerConfigs()
 	if err != nil {
 		return nil, err
 	}
 
 	storageInitializerImage := ModelInitializerContainerImage + ":" + ModelInitializerContainerVersion
-	if config != nil && config.Image != "" {
+	if envStorageInitializerImage != "" {
+		storageInitializerImage = envStorageInitializerImage
+	} else if config != nil && config.Image != "" {
 		storageInitializerImage = config.Image
 	}
 
@@ -233,7 +241,7 @@ func InjectModelInitializer(deployment *appsv1.Deployment, containerName string,
 	podSpec.Volumes = append(podSpec.Volumes, podVolumes...)
 
 	// Inject credentials
-	credentialsBuilder, err := credentialsBuilder(Client)
+	credentialsBuilder, err := mi.credentialsBuilder()
 	if err != nil {
 		return nil, err
 	}

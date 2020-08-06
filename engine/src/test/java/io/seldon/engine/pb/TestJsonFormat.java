@@ -25,13 +25,9 @@ import junitparams.Parameters;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @RunWith(JUnitParamsRunner.class)
 public class TestJsonFormat {
-  private static final Logger logger = LoggerFactory.getLogger(TestJsonFormat.class);
-
   @Test
   public void testEscapeHTML() throws InvalidProtocolBufferException {
     final String val = "<div class=\"div-class\"></div>";

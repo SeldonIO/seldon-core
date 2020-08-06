@@ -19,6 +19,8 @@ spec:
   replicas: 1
   template:
     metadata:
+      annotations:
+        sidecar.istio.io/inject: 'false'
       labels:
         control-plane: seldon-controller-manager
     spec:
@@ -29,7 +31,40 @@ spec:
         args:
         - --enable-leader-election
         - --webhook-port=443
+        - --create-resources=$(MANAGER_CREATE_RESOURCES)
         env:
+        - name: WATCH_NAMESPACE
+          value: ""
+        - name: RELATED_IMAGE_EXECUTOR
+          value: ""
+        - name: RELATED_IMAGE_ENGINE
+          value: ""
+        - name: RELATED_IMAGE_STORAGE_INITIALIZER
+          value: ""          
+        - name: RELATED_IMAGE_SKLEARNSERVER_REST
+          value: ""          
+        - name: RELATED_IMAGE_SKLEARNSERVER_GRPC
+          value: ""
+        - name: RELATED_IMAGE_XGBOOSTSERVER_REST
+          value: ""          
+        - name: RELATED_IMAGE_XGBOOSTSERVER_GRPC
+          value: ""          
+        - name: RELATED_IMAGE_MLFLOWSERVER_REST
+          value: ""          
+        - name: RELATED_IMAGE_MLFLOWSERVER_GRPC
+          value: ""          
+        - name: RELATED_IMAGE_TFPROXY_REST
+          value: ""          
+        - name: RELATED_IMAGE_TFPROXY_GRPC
+          value: ""          
+        - name: RELATED_IMAGE_TENSORFLOW
+          value: ""          
+        - name: RELATED_IMAGE_EXPLAINER
+          value: ""          
+        - name: RELATED_IMAGE_MOCK_CLASSIFIER
+          value: ""          
+        - name: MANAGER_CREATE_RESOURCES          
+          value: "false"
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -41,7 +76,7 @@ spec:
         - name: AMBASSADOR_SINGLE_NAMESPACE
           value: "false"
         - name: ENGINE_CONTAINER_IMAGE_AND_VERSION
-          value: docker.io/seldonio/engine:1.0.2-SNAPSHOT
+          value: docker.io/seldonio/engine:1.3.0-dev
         - name: ENGINE_CONTAINER_IMAGE_PULL_POLICY
           value: IfNotPresent
         - name: ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME
@@ -52,25 +87,49 @@ spec:
           value: "false"
         - name: PREDICTIVE_UNIT_SERVICE_PORT
           value: "9000"
+        - name: PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME
+          value: ""
+        - name: PREDICTIVE_UNIT_METRICS_PORT_NAME
+          value: "metrics"
         - name: ENGINE_SERVER_GRPC_PORT
           value: "5001"
         - name: ENGINE_SERVER_PORT
           value: "8000"
         - name: ENGINE_PROMETHEUS_PATH
-          value: prometheus
+          value: "/prometheus"
         - name: ISTIO_ENABLED
           value: "false"
         - name: ISTIO_GATEWAY
-          value: seldon-gateway
+          value: istio-system/seldon-gateway
         - name: ISTIO_TLS_MODE
           value: ""
+        - name: USE_EXECUTOR
+          value: "true"
+        - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
+          value: seldonio/seldon-core-executor:1.3.0-dev
+        - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
+          value: IfNotPresent
+        - name: EXECUTOR_PROMETHEUS_PATH
+          value: "/prometheus"
+        - name: EXECUTOR_SERVER_PORT
+          value: "8000"
+        - name: EXECUTOR_CONTAINER_USER
+          value: "8888"          
+        - name: EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME
+          value: default
+        - name: EXECUTOR_SERVER_METRICS_PORT_NAME
+          value: "metrics"
+        - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT
+          value: "http://default-broker"
+        - name: DEFAULT_USER_ID
+          value: ''
         image: controller:latest
         name: manager
         resources:
           limits:
-            cpu: 100m
-            memory: 30Mi
+            cpu: 500m
+            memory: 300Mi
           requests:
             cpu: 100m
-            memory: 20Mi
+            memory: 200Mi
       terminationGracePeriodSeconds: 10

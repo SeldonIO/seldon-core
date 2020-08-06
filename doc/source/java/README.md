@@ -206,5 +206,5 @@ The service type being created. Available options are:
 
 ### MODEL
 
- * [A minimal skeleton for model source code](https://github.com/seldonio/seldon-core/tree/incubating/wrappers/s2i/java/test/model-template-app)
+ * [A minimal skeleton for model source code](https://github.com/SeldonIO/seldon-core/tree/master/incubating/wrappers/s2i/java/test/model-template-app)
  * [Example H2O MOJO](../examples/h2o_mojo.html)

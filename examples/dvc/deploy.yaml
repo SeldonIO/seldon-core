@@ -1,0 +1,19 @@
+
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: minio-dvc-sklearn
+spec:
+  annotations:
+    seldon.io/executor: "true"
+  name: iris
+  predictors:
+  - componentSpecs:
+    graph:
+      children: []
+      implementation: SKLEARN_SERVER
+      modelUri: s3://dvc-iris
+      envSecretRefName: seldon-init-container-secret
+      name: classifier
+    name: default
+    replicas: 1

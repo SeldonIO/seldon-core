@@ -1,0 +1,409 @@
+import click
+import json
+import requests
+from queue import Queue
+from threading import Thread
+from seldon_core.seldon_client import SeldonClient
+import numpy as np
+import os
+import uuid
+import time
+
+CHOICES_GATEWAY_TYPE = ["ambassador", "istio", "seldon"]
+CHOICES_TRANSPORT = ["rest", "grpc"]
+CHOICES_PAYLOAD_TYPE = ["ndarray", "tensor", "tftensor"]
+CHOICES_DATA_TYPE = ["data", "json", "str"]
+CHOICES_METHOD = ["predict"]
+CHOICES_LOG_LEVEL = ["debug", "info", "warning", "error"]
+
+
+def start_multithreaded_batch_worker(
+    deployment_name: str,
+    gateway_type: str,
+    namespace: str,
+    host: str,
+    transport: str,
+    data_type: str,
+    payload_type: str,
+    workers: int,
+    retries: int,
+    input_data_path: str,
+    output_data_path: str,
+    method: str,
+    log_level: str,
+    benchmark: bool,
+    batch_id: str,
+) -> None:
+    """
+    Starts the multithreaded batch worker which consists of three worker types and
+    two queues; the input_file_worker which reads a file and puts all lines in an
+    input queue, which are then read by the multiple request_processor_workers (the
+    number of parallel workers is specified by the workers param), which puts the output
+    in the output queue and then the output_file_worker which puts all the outputs in the
+    output file in a thread-safe approach.
+
+    All parameters are defined and explained in detail in the run_cli function.
+    """
+    start_time = time.time()
+
+    q_in = Queue(workers * 2)
+    q_out = Queue(workers * 2)
+
+    sc = SeldonClient(
+        gateway=gateway_type,
+        transport=transport,
+        deployment_name=deployment_name,
+        payload_type=payload_type,
+        gateway_endpoint=host,
+        namespace=namespace,
+        client_return_type="dict",
+    )
+
+    Thread(
+        target=_start_input_file_worker, args=(q_in, input_data_path), daemon=True
+    ).start()
+
+    for _ in range(workers):
+        Thread(
+            target=_start_request_worker,
+            args=(q_in, q_out, data_type, sc, retries, batch_id),
+            daemon=True,
+        ).start()
+
+    Thread(
+        target=_start_output_file_worker, args=(q_out, output_data_path), daemon=True
+    ).start()
+
+    q_in.join()
+    q_out.join()
+
+    if benchmark:
+        print(f"Elapsed time: {time.time() - start_time}")
+
+
+def _start_input_file_worker(q_in: Queue, input_data_path: str) -> None:
+    """
+    Runs logic for the input file worker which reads the input file from filestore
+    and puts all of the lines into the input queue so it can be processed.
+
+    Parameters
+    ---
+    q_in
+        The queue to put all the data into for further processing
+    input_data_path
+        The local file to read the data from to be processed
+    """
+    input_data_file = open(input_data_path, "r")
+    enum_idx = 0
+    for line in input_data_file:
+        unique_id = str(uuid.uuid1())
+        q_in.put((enum_idx, unique_id, line))
+        enum_idx += 1
+
+
+def _start_output_file_worker(q_out: Queue, output_data_path: str) -> None:
+    """
+    Runs logic for the output file worker which receives all the processed output
+    fro the request worker through the queue and adds it into the output file in a 
+    thread safe manner.
+
+    Parameters
+    ---
+    q_out
+        The queue to read the results from
+    output_data_path
+        The local file to write the results into
+    """
+    output_data_file = open(output_data_path, "w")
+    while True:
+        line = q_out.get()
+        output_data_file.write(f"{line}\n")
+        q_out.task_done()
+
+
+def _start_request_worker(
+    q_in: Queue,
+    q_out: Queue,
+    data_type: str,
+    sc: SeldonClient,
+    retries: int,
+    batch_id: str,
+) -> None:
+    """
+    Runs logic for the worker that sends requests from the queue until the queue
+    gets completely empty. The worker marks the task as done when it finishes processing
+    to ensure that the queue gets populated as it's currently configured with a threshold.
+
+    Parameters
+    ---
+    q_in
+        Queue to read the input data from
+    q_out
+        Queue to put the resulting requests into
+    data_type
+        The json/str/data type to send the requests as
+    sc
+        An initialised Seldon Client configured to send the requests to
+    retries
+        The number of attempts to try for each request
+    batch_id
+        The unique identifier for the batch which is passed to all requests
+    """
+    while True:
+        batch_idx, batch_instance_id, input_raw = q_in.get()
+        str_output = _send_batch_predict(
+            batch_idx, batch_instance_id, input_raw, data_type, sc, retries, batch_id
+        )
+        # Mark task as done in the queue to add space for new tasks
+        q_out.put(str_output)
+        q_in.task_done()
+
+
+def _send_batch_predict(
+    batch_idx: int,
+    batch_instance_id: int,
+    input_raw: str,
+    data_type: str,
+    sc: SeldonClient,
+    retries: int,
+    batch_id: str,
+) -> str:
+    """
+    Send an request using the Seldon Client with batch context including the
+    unique ID of the batch and the Batch enumerated index as metadata. This
+    function also uses the unique batch ID as request ID so the request can be
+    traced back individually in the Seldon Request Logger context. Each request
+    will be attempted for the number of retries, and will return the string 
+    serialised result.
+
+    Paramters
+    ---
+    batch_idx
+        The enumerated index given to the batch datapoint in order of local dataset
+    batch_instance_id
+        The unique ID of the batch datapoint created with the python uuid function
+    input_raw
+        The raw input in string format to be loaded to the respective format
+    data_type
+        The data type to send which can be str, json and data
+    sc
+        The instance of SeldonClient to use to send the requests to the seldon model
+    retries
+        The number of times to retry the request
+    batch_id
+        The unique identifier for the batch which is passed to all requests
+
+    Returns
+    ---
+        A string serialised result of the response (or equivallent data with error info)
+    """
+
+    predict_kwargs = {}
+    meta = {
+        "tags": {
+            "batch_id": batch_id,
+            "batch_instance_id": batch_instance_id,
+            "batch_index": batch_idx,
+        }
+    }
+    predict_kwargs["meta"] = meta
+    predict_kwargs["headers"] = {"Seldon-Puid": batch_instance_id}
+    try:
+        data = json.loads(input_raw)
+
+        # TODO: Add functionality to send "raw" payload
+        if data_type == "data":
+            # TODO: Update client to avoid requiring a numpy array
+            data_np = np.array(data)
+            predict_kwargs["data"] = data_np
+        elif data_type == "str":
+            predict_kwargs["str_data"] = data
+        elif data_type == "json":
+            predict_kwargs["json_data"] = data
+
+        str_output = None
+        for i in range(retries):
+            try:
+                # TODO: Add functionality for explainer
+                #   as explainer currently doesn't support meta
+                # TODO: Optimize client to share session for requests
+                seldon_payload = sc.predict(**predict_kwargs)
+                assert seldon_payload.success
+                str_output = json.dumps(seldon_payload.response)
+                break
+            except requests.exceptions.RequestException:
+                if i == (retries - 1):
+                    raise
+
+    except Exception as e:
+        error_resp = {
+            "status": {"info": "FAILURE", "reason": str(e), "status": 1},
+            "meta": meta,
+        }
+        str_output = json.dumps(error_resp)
+
+    return str_output
+
+
+@click.command()
+@click.option(
+    "--deployment-name",
+    "-d",
+    envvar="SELDON_BATCH_DEPLOYMENT_NAME",
+    required=True,
+    help="The name of the SeldonDeployment to send the requests to",
+)
+@click.option(
+    "--gateway-type",
+    "-g",
+    envvar="SELDON_BATCH_GATEWAY_TYPE",
+    type=click.Choice(CHOICES_GATEWAY_TYPE),
+    default="istio",
+    help="The gateway type for the seldon model, which can be through the ingress provider (istio/ambassador) or directly through the service (seldon)",
+)
+@click.option(
+    "--namespace",
+    "-n",
+    envvar="SELDON_BATCH_NAMESPACE",
+    default="default",
+    help="The Kubernetes namespace where the SeldonDeployment is deployed in",
+)
+@click.option(
+    "--host",
+    "-h",
+    envvar="SELDON_BATCH_HOST",
+    default="istio-ingressgateway.istio-system.svc.cluster.local:80",
+    help="The hostname for the seldon model to send the request to, which can be the ingress of the Seldon model or the service itself",
+)
+@click.option(
+    "--transport",
+    "-t",
+    envvar="SELDON_BATCH_TRANSPORT",
+    type=click.Choice(CHOICES_TRANSPORT),
+    default="rest",
+    help="The transport type of the SeldonDeployment model which can be REST or GRPC",
+)
+@click.option(
+    "--data-type",
+    "-a",
+    envvar="SELDON_BATCH_DATA_TYPE",
+    type=click.Choice(CHOICES_DATA_TYPE),
+    default="data",
+    help="Whether to use json, strData or Seldon Data type for the payload to send to the SeldonDeployment which aligns with the SeldonClient format",
+)
+@click.option(
+    "--payload-type",
+    "-p",
+    envvar="SELDON_BATCH_PAYLOAD_TYPE",
+    type=click.Choice(CHOICES_PAYLOAD_TYPE),
+    default="ndarray",
+    help="The payload type expected by the SeldonDeployment and hence the expected format for the data in the input file which can be an array",
+)
+@click.option(
+    "--workers",
+    "-w",
+    envvar="SELDON_BATCH_WORKERS",
+    type=int,
+    default=1,
+    help="The number of parallel request processor workers to run for parallel processing",
+)
+@click.option(
+    "--retries",
+    "-r",
+    envvar="SELDON_BATCH_RETRIES",
+    type=int,
+    default=3,
+    help="The number of retries for each request before marking an error",
+)
+@click.option(
+    "--input-data-path",
+    "-i",
+    envvar="SELDON_BATCH_INPUT_DATA_PATH",
+    type=click.Path(),
+    default="/assets/input-data.txt",
+    help="The local filestore path where the input file with the data to process is located",
+)
+@click.option(
+    "--output-data-path",
+    "-o",
+    envvar="SELDON_BATCH_OUTPUT_DATA_PATH",
+    type=click.Path(),
+    default="/assets/input-data.txt",
+    help="The local filestore path where the output file should be written with the outputs of the batch processing",
+)
+@click.option(
+    "--method",
+    "-m",
+    envvar="SELDON_BATCH_METHOD",
+    type=click.Choice(CHOICES_METHOD),
+    default="predict",
+    help="The method of the SeldonDeployment to send the request to which currently only supports the predict method",
+)
+@click.option(
+    "--log-level",
+    "-l",
+    envvar="SELDON_BATCH_LOG_LEVEL",
+    type=click.Choice(CHOICES_LOG_LEVEL),
+    default="info",
+    help="The log level for the batch processor",
+)
+@click.option(
+    "--benchmark",
+    "-b",
+    envvar="SELDON_BATCH_BENCHMARK",
+    is_flag=True,
+    help="If true the batch processor will print the elapsed time taken to run the process",
+)
+@click.option(
+    "--batch-id",
+    "-u",
+    envvar="SELDON_BATCH_ID",
+    default=str(uuid.uuid1()),
+    type=str,
+    help="Unique batch ID to identify all datapoints processed in this batch, if not provided is auto generated",
+)
+def run_cli(
+    deployment_name: str,
+    gateway_type: str,
+    namespace: str,
+    host: str,
+    transport: str,
+    data_type: str,
+    payload_type: str,
+    workers: int,
+    retries: int,
+    input_data_path: str,
+    output_data_path: str,
+    method: str,
+    log_level: str,
+    benchmark: bool,
+    batch_id: str,
+):
+    """
+    Command line interface for Seldon Batch Processor, which can be used to send requests
+    through configurable parallel workers to Seldon Core models. It is recommended that the
+    respective Seldon Core model is also optimized with number of replicas to distribute
+    and scale out the batch processing work. The processor is able to process data from local
+    filestore input file in various formats supported by the SeldonClient module. It is also
+    suggested to use the batch processor component integrated with an ETL Workflow Manager
+    such as Kubeflow, Argo Pipelines, Airflow, etc. which would allow for extra setup / teardown
+    steps such as downloading the data from object store or starting a seldon core model with replicas.
+    See the Seldon Core examples folder for implementations of this batch module with Seldon Core.
+    """
+    start_multithreaded_batch_worker(
+        deployment_name,
+        gateway_type,
+        namespace,
+        host,
+        transport,
+        data_type,
+        payload_type,
+        workers,
+        retries,
+        input_data_path,
+        output_data_path,
+        method,
+        log_level,
+        benchmark,
+        batch_id,
+    )

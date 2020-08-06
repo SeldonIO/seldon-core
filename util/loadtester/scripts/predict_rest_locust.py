@@ -1,3 +1,4 @@
+from __future__ import print_function
 from locust.stats import RequestStats
 from locust import HttpLocust, TaskSet, task, events
 import os
@@ -43,9 +44,9 @@ def parse_arguments():
     args, unknown = parser.parse_known_args() 
     #args = parser.parse_args()
     opts = vars(args)
-    print args
+    print(args)
     if args.slave:
-        print "Sleeping 10 secs hack"
+        print("Sleeping 10 secs hack")
         time.sleep(10)
         connect_to_master(args.master_host,args.master_port)
     return args.host, args.clients, args.hatch_rate
@@ -54,12 +55,12 @@ HOST, MAX_USERS_NUMBER, USERS_PER_SECOND = parse_arguments()
 
 rsrc = resource.RLIMIT_NOFILE
 soft, hard = resource.getrlimit(rsrc)
-print 'RLIMIT_NOFILE soft limit starts as  :', soft
+print('RLIMIT_NOFILE soft limit starts as  :', soft)
 
 #resource.setrlimit(rsrc, (65535, hard)) #limit to one kilobyte
 
 soft, hard = resource.getrlimit(rsrc)
-print 'RLIMIT_NOFILE soft limit changed to :', soft
+print('RLIMIT_NOFILE soft limit changed to :', soft)
 
 def getEnviron(key,default):
     if key in os.environ:
@@ -72,19 +73,19 @@ class SeldonJsLocust(TaskSet):
 
 
     def get_token(self):
-        print "Getting access token"
+        print("Getting access token")
         r = self.client.request("POST","/oauth/token",headers={"Accept":"application/json"},data={"grant_type":"client_credentials"},auth=(self.oauth_key,self.oauth_secret))
         if r.status_code == 200:
             j = json.loads(r.content)
             self.access_token =  j["access_token"]
-            print "got access token "+self.access_token
+            print("got access token "+self.access_token)
         else:
-            print "failed to get access token"
+            print("failed to get access token")
             sys.exit(1)
 
 
     def on_start(self):
-        print "on_start"
+        print("on_start")
         self.oauth_enabled = getEnviron('OAUTH_ENABLED',"true")
         self.oauth_key = getEnviron('OAUTH_KEY',"key")
         self.oauth_secret = getEnviron('OAUTH_SECRET',"secret")
@@ -109,7 +110,7 @@ class SeldonJsLocust(TaskSet):
             else:
                 self.routeRewards[route] = 0.5
         rewardProba = self.routeRewards[route]
-        print route,rewardProba
+        print(route,rewardProba)
         if random()>rewardProba:
             j = {"response":response,"reward":1.0}
         else:
@@ -117,12 +118,12 @@ class SeldonJsLocust(TaskSet):
         jStr = json.dumps(j)
         r = self.client.request("POST",self.path_prefix+"/api/v0.1/feedback",headers={"Content-Type":"application/json","Accept":"application/json","Authorization":"Bearer "+self.access_token},name="feedback",data=jStr)
         if not r.status_code == 200:
-            print "Failed feedback request "+str(r.status_code)
+            print("Failed feedback request "+str(r.status_code))
             if r.status_code == 401:
                 if self.oauth_enabled == "true":
                     self.get_token()
             else:
-                print r.headers
+                print(r.headers)
                 r.raise_for_status()
         
 
@@ -138,12 +139,12 @@ class SeldonJsLocust(TaskSet):
                 j = json.loads(r.content)
                 self.sendFeedback(j)
         else:
-            print "Failed prediction request "+str(r.status_code)
+            print("Failed prediction request "+str(r.status_code))
             if r.status_code == 401:
                 if self.oauth_enabled == "true":
                     self.get_token()
             else:
-                print r.headers
+                print(r.headers)
                 r.raise_for_status()
 
 class WebsiteUser(HttpLocust):

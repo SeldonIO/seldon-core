@@ -24,10 +24,8 @@ The MLflow built-in server will create the Conda environment specified on your
 Note that this approach may slow down your Kubernetes `SeldonDeployment`
 startup time considerably.
 
-In some cases, it may be worth consider creating your own custom reusable
-server using
-[s2i](https://docs.seldon.io/projects/seldon-core/en/latest/python/python_wrapping_s2i.html)
-with the `seldonio/seldon-core-s2i-conda` template image.
+In some cases, it may be worth to consider [creating your own custom reusable
+server](./custom.md).
 For example, when the Conda environment can be considered stable, you can
 create your own image with a fixed set of dependencies.
 This image can then be re-used across different model versions using the same
@@ -54,6 +52,32 @@ spec:
       replicas: 1
 ```
 
+## MLFlow xtype
+
+By default the server will call your loaded model's predict function with a `numpy.ndarray`. If you wish for it to call it with `pandas.DataFrame` instead, you can pass a parameter `xtype` and set it to `DataFrame`. For example:   
+
+```yaml
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: mlflow
+spec:
+  name: wines
+  predictors:
+    - graph:
+        children: []
+        implementation: MLFLOW_SERVER
+        modelUri: gs://seldon-models/mlflow/elasticnet_wine
+        name: classifier
+      parameters:
+        - name: xtype
+          type: STRING
+          value: DataFrame
+      name: default
+      replicas: 1
+```
+
+```
 You can also try out a [worked
 notebook](../examples/server_examples.html#Serve-MLflow-Elasticnet-Wines-Model)
 or check our [talk at the Spark + AI Summit

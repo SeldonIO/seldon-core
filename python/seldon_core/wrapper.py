@@ -1,9 +1,13 @@
 import grpc
 from concurrent import futures
-from flask import jsonify, Flask, send_from_directory, request
+from flask import jsonify, Flask, send_from_directory, request, Response
 from flask_cors import CORS
 import logging
-from seldon_core.utils import seldon_message_to_json, json_to_feedback
+from seldon_core.utils import (
+    seldon_message_to_json,
+    json_to_seldon_model_metadata,
+    json_to_feedback,
+)
 from seldon_core.flask_utils import get_request
 import seldon_core.seldon_methods
 from seldon_core.flask_utils import (
@@ -11,18 +15,24 @@ from seldon_core.flask_utils import (
     ANNOTATION_GRPC_MAX_MSG_SIZE,
 )
 from seldon_core.proto import prediction_pb2_grpc
+from seldon_core.proto import prediction_pb2
 import os
 
 logger = logging.getLogger(__name__)
 
 PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID", "0")
+METRICS_ENDPOINT = os.environ.get("PREDICTIVE_UNIT_METRICS_ENDPOINT", "/metrics")
 
 
-def get_rest_microservice(user_model):
+def get_rest_microservice(user_model, seldon_metrics):
     app = Flask(__name__, static_url_path="")
     CORS(app)
 
     _set_flask_app_configs(app)
+
+    # dict representing the validated model metadata
+    # None value will represent a validation error
+    metadata_data = seldon_core.seldon_methods.init_metadata(user_model)
 
     if hasattr(user_model, "model_error_handler"):
         logger.info("Registering the custom error handler...")
@@ -45,7 +55,9 @@ def get_rest_microservice(user_model):
     def Predict():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        response = seldon_core.seldon_methods.predict(user_model, requestJson)
+        response = seldon_core.seldon_methods.predict(
+            user_model, requestJson, seldon_metrics
+        )
         json_response = jsonify(response)
         if "status" in response and "code" in response["status"]:
             json_response.status_code = response["status"]["code"]
@@ -62,7 +74,7 @@ def get_rest_microservice(user_model):
         requestProto = json_to_feedback(requestJson)
         logger.debug("Proto Request: %s", requestProto)
         responseProto = seldon_core.seldon_methods.send_feedback(
-            user_model, requestProto, PRED_UNIT_ID
+            user_model, requestProto, PRED_UNIT_ID, seldon_metrics
         )
         jsonDict = seldon_message_to_json(responseProto)
         return jsonify(jsonDict)
@@ -71,7 +83,9 @@ def get_rest_microservice(user_model):
     def TransformInput():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        response = seldon_core.seldon_methods.transform_input(user_model, requestJson)
+        response = seldon_core.seldon_methods.transform_input(
+            user_model, requestJson, seldon_metrics
+        )
         logger.debug("REST Response: %s", response)
         return jsonify(response)
 
@@ -79,7 +93,9 @@ def get_rest_microservice(user_model):
     def TransformOutput():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        response = seldon_core.seldon_methods.transform_output(user_model, requestJson)
+        response = seldon_core.seldon_methods.transform_output(
+            user_model, requestJson, seldon_metrics
+        )
         logger.debug("REST Response: %s", response)
         return jsonify(response)
 
@@ -87,7 +103,9 @@ def get_rest_microservice(user_model):
     def Route():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        response = seldon_core.seldon_methods.route(user_model, requestJson)
+        response = seldon_core.seldon_methods.route(
+            user_model, requestJson, seldon_metrics
+        )
         logger.debug("REST Response: %s", response)
         return jsonify(response)
 
@@ -95,7 +113,9 @@ def get_rest_microservice(user_model):
     def Aggregate():
         requestJson = get_request()
         logger.debug("REST Request: %s", request)
-        response = seldon_core.seldon_methods.aggregate(user_model, requestJson)
+        response = seldon_core.seldon_methods.aggregate(
+            user_model, requestJson, seldon_metrics
+        )
         logger.debug("REST Response: %s", response)
         return jsonify(response)
 
@@ -109,9 +129,39 @@ def get_rest_microservice(user_model):
     @app.route("/health/status", methods=["GET"])
     def HealthStatus():
         logger.debug("REST Health Status Request")
-        response = seldon_core.seldon_methods.health_status(user_model)
+        response = seldon_core.seldon_methods.health_status(user_model, seldon_metrics)
         logger.debug("REST Health Status Response: %s", response)
         return jsonify(response)
+
+    @app.route("/metadata", methods=["GET"])
+    def Metadata():
+        if metadata_data is None:
+            # None value represents validation error in current implementation
+            # if user_model would not define init_metadata than metadata_data
+            # would just contain a default values
+            raise SeldonMicroserviceException(
+                "Model metadata unavailable",
+                status_code=500,
+                reason="MICROSERVICE_BAD_METADATA",
+            )
+        logger.debug("REST Metadata Request")
+        logger.debug("REST Metadata Response: %s", metadata_data)
+        return jsonify(metadata_data)
+
+    return app
+
+
+def get_metrics_microservice(seldon_metrics):
+    app = Flask(__name__, static_url_path="")
+    CORS(app)
+
+    _set_flask_app_configs(app)
+
+    @app.route(METRICS_ENDPOINT, methods=["GET"])
+    def Metrics():
+        logger.debug("REST Metrics Request")
+        metrics, mimetype = seldon_metrics.generate_metrics()
+        return Response(metrics, mimetype=mimetype)
 
     return app
 
@@ -140,34 +190,57 @@ def _set_flask_app_configs(app):
 
 
 class SeldonModelGRPC(object):
-    def __init__(self, user_model):
+    def __init__(self, user_model, seldon_metrics):
         self.user_model = user_model
+        self.seldon_metrics = seldon_metrics
+
+        self.metadata_data = seldon_core.seldon_methods.init_metadata(user_model)
 
     def Predict(self, request_grpc, context):
-        return seldon_core.seldon_methods.predict(self.user_model, request_grpc)
+        return seldon_core.seldon_methods.predict(
+            self.user_model, request_grpc, self.seldon_metrics
+        )
 
     def SendFeedback(self, feedback_grpc, context):
         return seldon_core.seldon_methods.send_feedback(
-            self.user_model, feedback_grpc, PRED_UNIT_ID
+            self.user_model, feedback_grpc, PRED_UNIT_ID, self.seldon_metrics
         )
 
     def TransformInput(self, request_grpc, context):
-        return seldon_core.seldon_methods.transform_input(self.user_model, request_grpc)
+        return seldon_core.seldon_methods.transform_input(
+            self.user_model, request_grpc, self.seldon_metrics
+        )
 
     def TransformOutput(self, request_grpc, context):
         return seldon_core.seldon_methods.transform_output(
-            self.user_model, request_grpc
+            self.user_model, request_grpc, self.seldon_metrics
         )
 
     def Route(self, request_grpc, context):
-        return seldon_core.seldon_methods.route(self.user_model, request_grpc)
+        return seldon_core.seldon_methods.route(
+            self.user_model, request_grpc, self.seldon_metrics
+        )
 
     def Aggregate(self, request_grpc, context):
-        return seldon_core.seldon_methods.aggregate(self.user_model, request_grpc)
+        return seldon_core.seldon_methods.aggregate(
+            self.user_model, request_grpc, self.seldon_metrics
+        )
+
+    def Metadata(self, request_grpc, context):
+        """Metadata method of rpc Model service"""
+        return json_to_seldon_model_metadata(self.metadata_data)
+
+    def ModelMetadata(self, request_grpc, context):
+        """ModelMetadata method of rpc Seldon service"""
+        return json_to_seldon_model_metadata(self.metadata_data)
+
+    def GraphMetadata(self, request_grpc, context):
+        """GraphMetadata method of rpc Seldon service"""
+        raise NotImplementedError("GraphMetadata not available on the Model level.")
 
 
-def get_grpc_server(user_model, annotations={}, trace_interceptor=None):
-    seldon_model = SeldonModelGRPC(user_model)
+def get_grpc_server(user_model, seldon_metrics, annotations={}, trace_interceptor=None):
+    seldon_model = SeldonModelGRPC(user_model, seldon_metrics)
     options = []
     if ANNOTATION_GRPC_MAX_MSG_SIZE in annotations:
         max_msg = int(annotations[ANNOTATION_GRPC_MAX_MSG_SIZE])

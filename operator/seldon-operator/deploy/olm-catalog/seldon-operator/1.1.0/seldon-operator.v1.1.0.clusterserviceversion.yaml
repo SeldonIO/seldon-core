@@ -1,0 +1,525 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: |-
+      [
+        {
+          "apiVersion": "machinelearning.seldon.io/v1",
+          "kind": "SeldonDeployment",
+          "metadata": {
+            "name": "seldon-model"
+          },
+          "spec": {
+            "name": "test-deployment",
+            "predictors": [
+              {
+                "componentSpecs": [
+                  {
+                    "spec": {
+                      "containers": [
+                        {
+                          "image": "seldonio/mock_classifier_rest:1.3",
+                          "name": "classifier"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "graph": {
+                  "children": [],
+                  "endpoint": {
+                    "type": "REST"
+                  },
+                  "name": "classifier",
+                  "type": "MODEL"
+                },
+                "name": "example",
+                "replicas": 1
+              }
+            ]
+          }
+        }
+      ]
+    capabilities: Seamless Upgrades
+    categories: AI/Machine Learning
+    certified: "false"
+    containerImage: seldonio/seldon-core-operator:1.1.0
+    createdAt: "2019-05-21 15:00:00"
+    description: The Seldon operator for management, monitoring and operations of
+      machine learning systems through the Seldon Engine. Once installed, the Seldon
+      Operator provides multiple functions which facilitate the productisation, monitoring
+      and maintenance of machine learning systems at scale.
+    repository: https://github.com/SeldonIO/seldon-core
+    support: Clive Cox
+  name: seldon-operator.v1.1.0
+  namespace: seldon-operator-system
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - description: A seldon engine deployment
+      displayName: Seldon Delpoyment
+      kind: SeldonDeployment
+      name: seldondeployments.machinelearning.seldon.io
+      resources:
+      - kind: SeldonDeployment
+        name: ""
+        version: v1
+      - kind: Deployment
+        name: ""
+        version: v1
+      - kind: ConfigMap
+        name: ""
+        version: v1
+      - kind: Namespace
+        name: ""
+        version: v1
+      - kind: Service
+        name: ""
+        version: v1
+      - kind: Event
+        name: ""
+        version: v1
+      - kind: HorizontalPodAutoscaler
+        name: ""
+        version: v2beta1
+      - kind: MutatingWebhookConfiguration
+        name: ""
+        version: v1beta1
+      - kind: ValidatingWebhookConfiguration
+        name: ""
+        version: v1beta1
+      - kind: customresourcedefinitions
+        name: ""
+        version: v1beta1
+      specDescriptors:
+      - description: Name of the seldon deployment
+        displayName: name
+        path: name
+      - description: List of predictors
+        displayName: predictors
+        path: predictors
+      statusDescriptors:
+      - description: State of the SeldonDeployment
+        displayName: state
+        path: state
+      - description: State of the services created from the SeldonDeployment
+        displayName: serviceStatus
+        path: serviceStatus
+      - description: State of the deployments created from the SeldonDeployment
+        displayName: deploymentStatus
+        path: deploymentStatus
+      - description: The number of default replicas for predictors who do not override
+          the value
+        displayName: replicas
+        path: replicas
+      - description: The URL of the main default predictor service
+        displayName: address
+        path: address
+      version: v1
+  description: "The Seldon operator enables for native operation of production machine
+    learning workloads, including monitoring and operations of language-agnostic models
+    with the benefits of real-time metrics and log analysis.\n   \n## Overview\nSeldon
+    Core is an open source platform for deploying machine learning models on a Kubernetes
+    cluster.\n\n* Deploy machine learning models in the cloud or on-premise.\n* Get
+    metrics and ensure proper governance and compliance for your running machine learning
+    models.\n* Create powerful inference graphs made up of multiple components.\n*
+    Provide a consistent serving layer for models built using heterogeneous ML toolkits.\n\nYou
+    can get started by following the guides in our documentation at https://docs.seldon.io/projects/seldon-core/en/latest/workflow/README.html\n"
+  displayName: Seldon Operator
+  icon:
+  - base64data: /9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCAChAegDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9U6KKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiio7i4is7eWeeVIYIlLySSMFV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
+    mediatype: image/jpeg
+  install:
+    spec:
+      clusterPermissions:
+      - rules:
+        - apiGroups:
+          - ""
+          resources:
+          - secrets
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - configmaps
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - serviceaccounts
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - admissionregistration.k8s.io
+          resources:
+          - mutatingwebhookconfigurations
+          - validatingwebhookconfigurations
+          verbs:
+          - get
+          - list
+          - create
+          - update
+        - apiGroups:
+          - apps
+          resources:
+          - deployments/finalizers
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - apiextensions.k8s.io
+          resources:
+          - customresourcedefinitions
+          verbs:
+          - get
+          - list
+        - apiGroups:
+          - apiextensions.k8s.io
+          resources:
+          - customresourcedefinitions/finalizers
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - ""
+          resources:
+          - events
+          verbs:
+          - create
+          - patch
+        - apiGroups:
+          - ""
+          resources:
+          - namespaces
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - services
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - apps
+          resources:
+          - deployments
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - apps
+          resources:
+          - deployments/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - autoscaling
+          resources:
+          - horizontalpodautoscalers
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - autoscaling
+          resources:
+          - horizontalpodautoscalers/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - machinelearning.seldon.io
+          resources:
+          - seldondeployments
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - machinelearning.seldon.io
+          resources:
+          - seldondeployments/finalizers
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - machinelearning.seldon.io
+          resources:
+          - seldondeployments/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - networking.istio.io
+          resources:
+          - destinationrules
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - networking.istio.io
+          resources:
+          - destinationrules/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - networking.istio.io
+          resources:
+          - virtualservices
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - networking.istio.io
+          resources:
+          - virtualservices/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - v1
+          resources:
+          - namespaces
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - v1
+          resources:
+          - services
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - v1
+          resources:
+          - services/status
+          verbs:
+          - get
+          - patch
+          - update
+        serviceAccountName: seldon-manager
+      deployments:
+      - name: seldon-controller-manager
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              app: seldon
+              app.kubernetes.io/instance: seldon1
+              app.kubernetes.io/name: seldon
+              app.kubernetes.io/version: v0.5
+              control-plane: seldon-controller-manager
+          strategy: {}
+          template:
+            metadata:
+              annotations:
+                sidecar.istio.io/inject: "false"
+              labels:
+                app: seldon
+                app.kubernetes.io/instance: seldon1
+                app.kubernetes.io/name: seldon
+                app.kubernetes.io/version: v0.5
+                control-plane: seldon-controller-manager
+            spec:
+              containers:
+              - args:
+                - --enable-leader-election
+                - --webhook-port=8443
+                - --create-resources=$(CREATE_RESOURCES)
+                command:
+                - /manager
+                env:
+                - name: WATCH_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.annotations['olm.targetNamespaces']
+                - name: RELATED_IMAGE_EXECUTOR
+                - name: RELATED_IMAGE_ENGINE
+                - name: CREATE_RESOURCES
+                  value: "true"
+                - name: POD_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.namespace
+                - name: CONTROLLER_ID
+                - name: AMBASSADOR_ENABLED
+                  value: "true"
+                - name: AMBASSADOR_SINGLE_NAMESPACE
+                  value: "false"
+                - name: ENGINE_CONTAINER_IMAGE_AND_VERSION
+                  value: docker.io/seldonio/engine:1.1.0
+                - name: ENGINE_CONTAINER_IMAGE_PULL_POLICY
+                  value: IfNotPresent
+                - name: ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME
+                  value: default
+                - name: ENGINE_CONTAINER_USER
+                - name: ENGINE_LOG_MESSAGES_EXTERNALLY
+                  value: "false"
+                - name: PREDICTIVE_UNIT_SERVICE_PORT
+                  value: "9000"
+                - name: PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME
+                - name: ENGINE_SERVER_GRPC_PORT
+                  value: "5001"
+                - name: ENGINE_SERVER_PORT
+                  value: "8000"
+                - name: ENGINE_PROMETHEUS_PATH
+                  value: /prometheus
+                - name: ISTIO_ENABLED
+                  value: "false"
+                - name: ISTIO_GATEWAY
+                  value: istio-system/seldon-gateway
+                - name: ISTIO_TLS_MODE
+                - name: USE_EXECUTOR
+                  value: "true"
+                - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
+                  value: seldonio/seldon-core-executor:1.1.0
+                - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
+                  value: IfNotPresent
+                - name: EXECUTOR_PROMETHEUS_PATH
+                  value: /prometheus
+                - name: EXECUTOR_SERVER_GRPC_PORT
+                  value: "5001"
+                - name: EXECUTOR_SERVER_PORT
+                  value: "8000"
+                - name: EXECUTOR_CONTAINER_USER
+                - name: EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME
+                  value: default
+                - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT_PREFIX
+                  value: http://default-broker.
+                - name: DEFAULT_USER_ID
+                image: seldonio/seldon-core-operator:1.1.0
+                name: manager
+                ports:
+                - containerPort: 8443
+                  name: webhook-server
+                  protocol: TCP
+                resources:
+                  limits:
+                    cpu: 500m
+                    memory: 300Mi
+                  requests:
+                    cpu: 100m
+                    memory: 200Mi
+              serviceAccountName: seldon-manager
+              terminationGracePeriodSeconds: 10
+      permissions:
+      - rules:
+        - apiGroups:
+          - ""
+          resources:
+          - configmaps
+          verbs:
+          - get
+          - list
+          - watch
+          - create
+          - update
+          - patch
+          - delete
+        - apiGroups:
+          - ""
+          resources:
+          - configmaps/status
+          verbs:
+          - get
+          - update
+          - patch
+        - apiGroups:
+          - ""
+          resources:
+          - events
+          verbs:
+          - create
+        serviceAccountName: seldon-manager
+    strategy: deployment
+  installModes:
+  - supported: true
+    type: OwnNamespace
+  - supported: true
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - mlops
+  - aiops
+  - production
+  - monitoring
+  labels:
+    name: seldon-operator
+  links:
+  - name: Website
+    url: https://www.seldon.io/
+  - name: Documentation
+    url: https://docs.seldon.io/projects/seldon-core/en/latest/
+  maintainers:
+  - email: hello@seldon.io
+    name: Seldon Technologies
+  maturity: alpha
+  minKubeVersion: 1.13.0
+  provider:
+    name: Seldon Technologies
+  replaces: seldonoperator.v0.1.5
+  selector:
+    matchLabels:
+      name: seldon-operator
+  version: 1.1.0

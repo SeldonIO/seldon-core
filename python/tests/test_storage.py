@@ -20,7 +20,7 @@ import pytest
 import seldon_core
 from minio import Minio, error
 import unittest.mock as mock
-from .utils import skipif_gcs_missing
+from .utils import skipif_gcs_missing, skipif_azure_missing
 from seldon_core.imports_helper import _GCS_PRESENT
 
 if _GCS_PRESENT:
@@ -61,10 +61,26 @@ def test_mock_gcs(mock_storage):
     assert seldon_core.Storage.download(gcs_path)
 
 
+@skipif_azure_missing
 def test_storage_blob_exception():
     blob_path = "https://accountname.blob.core.windows.net/container/some/blob/"
     with pytest.raises(Exception):
         seldon_core.Storage.download(blob_path)
+
+
+@mock.patch("urllib3.PoolManager")
+@mock.patch(STORAGE_MODULE + ".Minio")
+def test_storage_s3_exception(mock_connection, mock_minio):
+    minio_path = "s3://foo/bar"
+    # Create mock connection
+    mock_server = mock.MagicMock()
+    mock_connection.return_value = mock_server
+    # Create mock client
+    mock_minio.return_value = Minio(
+        "s3.us.cloud-object-storage.appdomain.cloud", secure=True
+    )
+    with pytest.raises(Exception):
+        seldon_core.Storage.download(minio_path)
 
 
 @mock.patch("urllib3.PoolManager")

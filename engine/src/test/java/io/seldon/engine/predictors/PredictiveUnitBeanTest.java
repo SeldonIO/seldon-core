@@ -48,8 +48,6 @@ public class PredictiveUnitBeanTest {
 
     String r1str = ProtoBufUtils.toJson(r1.getMeta());
     String j1 = ProtoBufUtils.toJson(s1.getMeta());
-    System.out.println(r1str);
-    System.out.println(j1);
     Assert.assertEquals(r1str, j1);
 
     DefaultData.Builder d3 = DefaultData.newBuilder();
@@ -64,8 +62,6 @@ public class PredictiveUnitBeanTest {
     SeldonMessage r2 = (SeldonMessage) mergeMeta.invoke(pu, s1, messages, puid);
 
     String r2str = ProtoBufUtils.toJson(r2.getMeta());
-    System.out.println(r2str);
-    System.out.println(j1);
     Assert.assertEquals(r2str, j1);
   }
 
@@ -99,8 +95,6 @@ public class PredictiveUnitBeanTest {
 
     String r1str = ProtoBufUtils.toJson(r1.getMeta());
     String j1 = ProtoBufUtils.toJson(s1.getMeta());
-    System.out.println(r1str);
-    System.out.println(j1);
     Assert.assertEquals(r1str, j1);
   }
 }

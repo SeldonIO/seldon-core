@@ -1,9 +1,10 @@
+import os
 import json
 import sys
 import base64
 import numpy as np
 
-from google.protobuf import json_format
+from google.protobuf import json_format, any_pb2
 from google.protobuf.json_format import MessageToDict, ParseDict
 from google.protobuf.struct_pb2 import ListValue
 
@@ -11,13 +12,11 @@ from seldon_core.proto import prediction_pb2
 from seldon_core.flask_utils import SeldonMicroserviceException
 from seldon_core.user_model import (
     client_class_names,
-    client_custom_metrics,
     client_custom_tags,
     client_feature_names,
     SeldonComponent,
 )
 from seldon_core.imports_helper import _TF_PRESENT
-
 from typing import Tuple, Dict, Union, List, Optional, Iterable
 
 if _TF_PRESENT:
@@ -48,6 +47,31 @@ def json_to_seldon_message(
         return message_proto
     except json_format.ParseError as pbExc:
         raise SeldonMicroserviceException("Invalid JSON: " + str(pbExc))
+
+
+def json_to_seldon_model_metadata(
+    metadata_json: Dict,
+) -> prediction_pb2.SeldonModelMetadata:
+    """
+    Parses JSON input to SeldonModelMetadata proto
+
+    Parameters
+    ----------
+    metadata_json
+        JSON input
+
+    Returns
+    -------
+        SeldonModelMetadata
+    """
+    if metadata_json is None:
+        metadata_json = {}
+    metadata_proto = prediction_pb2.SeldonModelMetadata()
+    try:
+        json_format.ParseDict(metadata_json, metadata_proto, ignore_unknown_fields=True)
+        return metadata_proto
+    except json_format.ParseError as pbExc:
+        raise SeldonMicroserviceException(f"Invalid metadata: {pbExc}")
 
 
 def json_to_feedback(message_json: Dict) -> prediction_pb2.Feedback:
@@ -156,6 +180,8 @@ def get_data_from_proto(
         return request.strData
     elif data_type == "jsonData":
         return MessageToDict(request.jsonData)
+    elif data_type == "customData":
+        return request.customData
     else:
         raise SeldonMicroserviceException("Unknown data in SeldonMessage")
 
@@ -321,6 +347,8 @@ def construct_response_json(
     is_request: bool,
     client_request_raw: Union[List, Dict],
     client_raw_response: Union[np.ndarray, str, bytes, dict],
+    meta: dict = None,
+    custom_metrics: List[Dict] = None,
 ) -> Union[List, Dict]:
     """
     This class converts a raw REST response into a JSON object that has the same structure as
@@ -409,11 +437,19 @@ def construct_response_json(
         response["data"]["names"] = names
 
     response["meta"] = {}
-    client_custom_tags(user_model)
-    tags = client_custom_tags(user_model)
+    if meta:
+        tags = meta.get("tags", {})
+        metrics = meta.get("metrics", [])
+    else:
+        tags = {}
+        metrics = []
+    custom_tags = client_custom_tags(user_model)
+    if custom_tags:
+        tags.update(custom_tags)
+    if custom_metrics:
+        metrics.extend(custom_metrics)
     if tags:
         response["meta"]["tags"] = tags
-    metrics = client_custom_metrics(user_model)
     if metrics:
         response["meta"]["metrics"] = metrics
     puid = client_request_raw.get("meta", {}).get("puid", None)
@@ -427,7 +463,9 @@ def construct_response(
     user_model: SeldonComponent,
     is_request: bool,
     client_request: prediction_pb2.SeldonMessage,
-    client_raw_response: Union[np.ndarray, str, bytes, dict],
+    client_raw_response: Union[np.ndarray, str, bytes, dict, any_pb2.Any],
+    meta: dict = None,
+    custom_metrics: List[Dict] = None,
 ) -> prediction_pb2.SeldonMessage:
     """
 
@@ -448,18 +486,28 @@ def construct_response(
 
     """
     data_type = client_request.WhichOneof("data_oneof")
-    meta = prediction_pb2.Meta()
+    meta_pb = prediction_pb2.Meta()
     meta_json: Dict = {}
-    tags = client_custom_tags(user_model)
+
+    if meta:
+        tags = meta.get("tags", {})
+        metrics = meta.get("metrics", [])
+    else:
+        tags = {}
+        metrics = []
+    custom_tags = client_custom_tags(user_model)
+    if custom_tags:
+        tags.update(custom_tags)
+    if custom_metrics:
+        metrics.extend(custom_metrics)
     if tags:
         meta_json["tags"] = tags
-    metrics = client_custom_metrics(user_model)
     if metrics:
         meta_json["metrics"] = metrics
     if client_request.meta:
         if client_request.meta.puid:
             meta_json["puid"] = client_request.meta.puid
-    json_format.ParseDict(meta_json, meta)
+    json_format.ParseDict(meta_json, meta_pb)
     if isinstance(client_raw_response, np.ndarray) or isinstance(
         client_raw_response, list
     ):
@@ -481,16 +529,20 @@ def construct_response(
             else:
                 default_data_type = "ndarray"
         data = array_to_grpc_datadef(default_data_type, client_raw_response, names)
-        return prediction_pb2.SeldonMessage(data=data, meta=meta)
+        return prediction_pb2.SeldonMessage(data=data, meta=meta_pb)
     elif isinstance(client_raw_response, str):
-        return prediction_pb2.SeldonMessage(strData=client_raw_response, meta=meta)
+        return prediction_pb2.SeldonMessage(strData=client_raw_response, meta=meta_pb)
     elif isinstance(client_raw_response, dict):
         jsonDataResponse = ParseDict(
             client_raw_response, prediction_pb2.SeldonMessage().jsonData
         )
-        return prediction_pb2.SeldonMessage(jsonData=jsonDataResponse, meta=meta)
+        return prediction_pb2.SeldonMessage(jsonData=jsonDataResponse, meta=meta_pb)
     elif isinstance(client_raw_response, (bytes, bytearray)):
-        return prediction_pb2.SeldonMessage(binData=client_raw_response, meta=meta)
+        return prediction_pb2.SeldonMessage(binData=client_raw_response, meta=meta_pb)
+    elif isinstance(client_raw_response, any_pb2.Any):
+        return prediction_pb2.SeldonMessage(
+            customData=client_raw_response, meta=meta_pb
+        )
     else:
         raise SeldonMicroserviceException(
             "Unknown data type returned as payload:" + client_raw_response
@@ -520,21 +572,17 @@ def extract_request_parts_json(
     if not isinstance(request, dict):
         raise SeldonMicroserviceException(f"Invalid request data type: {request}")
     meta = request.get("meta", None)
-    datadef_type = None
     datadef = None
 
     if "data" in request:
         data_type = "data"
         datadef = request["data"]
         if "tensor" in datadef:
-            datadef_type = "tensor"
             tensor = datadef["tensor"]
             features = np.array(tensor["values"]).reshape(tensor["shape"])
         elif "ndarray" in datadef:
-            datadef_type = "ndarray"
             features = np.array(datadef["ndarray"])
         elif "tftensor" in datadef:
-            datadef_type = "tftensor"
             tf_proto = TensorProto()
             json_format.ParseDict(datadef["tftensor"], tf_proto)
             features = tf.make_ndarray(tf_proto)
@@ -597,3 +645,40 @@ def extract_feedback_request_parts(
     truth = grpc_datadef_to_array(request.truth.data)
     reward = request.reward
     return request.request.data, features, truth, reward
+
+
+def getenv(*env_vars, default=None):
+    """
+    Overload of os.getenv() to allow falling back through multiple environment
+    variables. The environment variables will be checked sequentially until one
+    of them is found.
+
+    Parameters
+    ------
+    *env_vars
+        Variadic list of environment variable names to check.
+    default
+        Default value to return if none of the environment variables exist.
+
+    Returns
+    ------
+        Value of the first environment variable set or default.
+    """
+    for env_var in env_vars:
+        if env_var in os.environ:
+            return os.environ.get(env_var)
+
+    return default
+
+
+def getenv_as_bool(*env_vars, default=False):
+    """
+    Read environment variable, parsing it to a boolean.
+    """
+
+    val = getenv(*env_vars)
+
+    if val is None:
+        return default
+
+    return val.lower() in ["1", "true", "t"]

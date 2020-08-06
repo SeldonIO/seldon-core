@@ -1,0 +1,50 @@
+version: '3.1'
+
+services:
+
+  default:
+    build:
+      context: .
+    ports:
+      - "127.0.0.1:9000:5000"
+
+  model_1:
+    build:
+      context: .
+    ports:
+      - "127.0.0.1:9001:5000"
+    environment:
+      - "NODE_NAME=Model 1"
+
+  model_2:
+    build:
+      context: .
+    ports:
+      - "127.0.0.1:9002:5000"
+    environment:
+      - "NODE_NAME=Model 2"
+
+
+  model_combiner:
+    build:
+      context: .
+    ports:
+      - "127.0.0.1:9010:5000"
+    environment:
+      - "NODE_NAME=Model Combiner"
+
+  model_a1:
+    build:
+      context: .
+    ports:
+      - "127.0.0.1:9011:5000"
+    environment:
+      - "NODE_NAME=Model A1"
+
+  model_a2:
+    build:
+      context: .
+    ports:
+      - "127.0.0.1:9012:5000"
+    environment:
+      - "NODE_NAME=Model A2"

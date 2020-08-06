@@ -1,8 +1,22 @@
 -r requirements.txt
-mypy<0.762
-Pillow==7.0.0
+black==19.10b0
+flake8==3.8.1
+mypy<0.783
+Pillow==7.2.0
+pytest==5.4.2
+pytest-cov==2.10.0
 tox<4.0.0
-pytest==5.3.1
-pytest-cov==2.8.1
+grpcio-tools==1.30.0
+mypy-protobuf==1.22
+
+# tenacity - used for smart retrying
+tenacity==6.2.0
+
 # 2nd lvl dep on cov required to avoid sqllite dep
-coverage==4.5.4
+coverage==5.2
+
+# Used in serving_test_gen
+pandas==1.1.0
+
+# Fetch licenses
+pip-licenses==2.3.0

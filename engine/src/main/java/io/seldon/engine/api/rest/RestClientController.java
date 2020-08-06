@@ -16,6 +16,7 @@
 package io.seldon.engine.api.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.micrometer.core.annotation.Timed;
 import io.opentracing.Span;
@@ -27,12 +28,6 @@ import io.seldon.engine.service.PredictionService;
 import io.seldon.engine.tracing.TracingProvider;
 import io.seldon.protos.PredictionProtos.Feedback;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +41,16 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+
+import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static io.seldon.engine.util.StreamUtils.toByteArray;
 
 @RestController
 public class RestClientController {
@@ -120,6 +125,61 @@ public class RestClientController {
     ready.set(true);
     logger.warn("App UnPaused");
     return "unpaused";
+  }
+  
+  @Timed
+  @CrossOrigin(origins = "*")
+  @RequestMapping(
+          value = {"/api/v1.0/predictions", "/api/v0.1/predictions"},
+          method = RequestMethod.POST,
+          consumes = "text/*; charset=utf-8",
+          produces = "application/json; charset=utf-8")
+  public ResponseEntity<String> predictions_text(RequestEntity<String> requestEntity) {
+    logger.debug("Received text predict request");
+    Span tracingSpan = null;
+    if (tracingProvider.isActive()) {
+      Tracer tracer = tracingProvider.getTracer();
+      tracingSpan = tracer.buildSpan("/api/v0.1/predictions").start();
+      tracer.scopeManager().activate(tracingSpan);
+    }
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      Map<String, Object> protoBody = new HashMap<String, Object>() {{
+        put("strData", requestEntity.getBody());
+      }};
+      return _predictions(mapper.writeValueAsString(protoBody));
+    } catch (IOException e) {
+      logger.error("Bad request", e);
+      throw new APIException(ApiExceptionType.REQUEST_IO_EXCEPTION, e.getMessage());
+    } finally {
+      if (tracingSpan != null) {
+        tracingSpan.finish();
+      }
+    }
+  }
+
+  @Timed
+  @CrossOrigin(origins = "*")
+  @RequestMapping(
+          value = {"/api/v1.0/predictions", "/api/v0.1/predictions"},
+          method = RequestMethod.POST,
+          consumes = "application/octet-stream",
+          produces = "application/json; charset=utf-8")
+  public ResponseEntity<String> predictions_binary(RequestEntity<byte[]> requestEntity) {
+    logger.debug("Received binary predict request");
+    Span tracingSpan = null;
+    if (tracingProvider.isActive()) {
+      Tracer tracer = tracingProvider.getTracer();
+      tracingSpan = tracer.buildSpan("/api/v0.1/predictions").start();
+      tracer.scopeManager().activate(tracingSpan);
+    }
+    try {
+      return _predictions(requestEntity.getBody());
+    } finally {
+      if (tracingSpan != null) {
+        tracingSpan.finish();
+      }
+    }
   }
 
   @Timed
@@ -213,6 +273,31 @@ public class RestClientController {
       throw new APIException(ApiExceptionType.ENGINE_INVALID_JSON, json);
     }
 
+    return _predictions(request);
+  }
+
+  /**
+   * It calls the prediction service for the input byte array.
+   *
+   * @param bytes - Input byte array to predict REST api
+   * @return The response for prediction service
+   */
+  private ResponseEntity<String> _predictions(byte[] bytes) {
+    SeldonMessage request = SeldonMessage.newBuilder()
+            .setBinData(ByteString.copyFrom(bytes))
+            .build();
+
+    return _predictions(request);
+  }
+
+  /**
+   * It calls the prediction service for the request. It is the base function for all forms of
+   * request Content-type
+   *
+   * @param request - The SeldonMessage request to the predict REST api
+   * @return The response for prediction service
+   */
+  private ResponseEntity<String> _predictions(SeldonMessage request) {
     try {
       SeldonMessage response = predictionService.predict(request);
       String responseJson = ProtoBufUtils.toJson(response);

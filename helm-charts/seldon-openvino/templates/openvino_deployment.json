@@ -12,10 +12,29 @@
             {
                 "componentSpecs": [{
                     "spec": {
+			"initContainers" : [
+			    {
+				"image": "gcr.io/kfserving/storage-initializer:0.2.2",
+				"name": "storage-initializer",
+				"args": [ "{{ .Values.openvino.model.src }}", "/opt/ml" ],
+				"volumeMounts": [
+				    {
+					"name": "modelstore",
+					"mountPath": "/opt/ml"
+				    }
+				]
+			    }
+			],
                         "containers": [
                             {
                                 "image": "{{ .Values.tfserving_proxy.image }}",
-                                "name": "tfserving-proxy"
+                                "name": "tfserving-proxy",
+				"volumeMounts": [
+				    {
+					"name": "modelstore",
+					"mountPath": "/opt/ml"
+				    }
+				]
                             },
 			    {
                         "name": "openvino-model-server",
@@ -40,14 +59,7 @@
                                 "protocol": "TCP"
                             }
                         ],
-                        "env": [
-{{- range $key, $value := .Values.openvino.model.env }}
-{
-"name": "{{ $key }}",
-"value": "{{ $value }}"
-},
-{{- end}}
-],
+                        "env": [{{- range $key, $value := .Values.openvino.model.env }}{"name": "{{ $key }}","value": "{{ $value }}"},{{- end}}],
                         "resources": {{ .Values.openvino.model.resources | toJson }},
                         "volumeMounts": [
                             {
@@ -60,10 +72,8 @@
 			"terminationGracePeriodSeconds": 1,
 			"volumes": [
 			    {
-				"name": "modelstore",
-				"persistentVolumeClaim": {
-				    "claimName": "model-store-pvc"
-				}
+				"emptyDir": {},
+				"name": "modelstore"
 			    }
 			]
 		    }

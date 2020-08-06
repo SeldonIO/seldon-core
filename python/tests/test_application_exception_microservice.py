@@ -1,9 +1,11 @@
 import json
+import logging
 import numpy as np
 from google.protobuf import json_format
 import base64
 
 from seldon_core.wrapper import get_rest_microservice, SeldonModelGRPC, get_grpc_server
+from seldon_core.metrics import SeldonMetrics
 from seldon_core.proto import prediction_pb2
 from seldon_core.user_model import SeldonComponent
 
@@ -75,21 +77,23 @@ class UserObjectLowLevel(SeldonComponent):
 
 def test_raise_exception():
     user_object = UserObject()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/predict?json={"data":{"names":["a","b"],"ndarray":[[1,2]]}}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 402
     assert j["status"]["app_code"] == 1402
 
 
 def test_raise_eception_lowlevel():
     user_object = UserObjectLowLevel()
-    app = get_rest_microservice(user_object)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/predict?json={"data":{"ndarray":[1,2]}}')
     j = json.loads(rv.data)
-    print(j)
+    logging.info(j)
     assert rv.status_code == 402
     assert j["status"]["app_code"] == 1402

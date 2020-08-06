@@ -1,6 +1,7 @@
 openvino:
-  image: intelaipg/openvino-model-server:0.2
+  image: intelaipg/openvino-model-server:0.3
   model:
+    src: gs://seldon-models/openvino/squeezenet
     path: /opt/ml/squeezenet
     name: squeezenet1.1
     input: data

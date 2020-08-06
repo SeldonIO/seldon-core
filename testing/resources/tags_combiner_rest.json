@@ -1,0 +1,67 @@
+{
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": {
+    "name": "mymodel-tags-combiner"
+  },
+  "spec": {
+    "name": "mymodel-tags-combiner",
+    "oauth_key": "oauth-key",
+    "oauth_secret": "oauth-secret",
+    "predictors": [
+      {
+        "componentSpecs": [
+          {
+            "spec": {
+              "containers": [
+                {
+                  "image": "seldonio/test_tags_one_rest:0.1",
+                  "imagePullPolicy": "Never",
+                  "name": "model-one"
+                },
+                {
+                  "image": "seldonio/test_tags_two_rest:0.1",
+                  "imagePullPolicy": "Never",
+                  "name": "model-two"
+                },
+                {
+                  "image": "seldonio/test_tags_combiner_rest:0.1",
+                  "imagePullPolicy": "Never",
+                  "name": "combiner"
+                }
+              ],
+              "terminationGracePeriodSeconds": 1
+            }
+          }
+        ],
+        "graph": {
+          "children": [
+            {
+              "children": [],
+              "endpoint": {
+                "type": "REST"
+              },
+              "name": "model-one",
+              "type": "MODEL"
+            },
+            {
+              "children": [],
+              "endpoint": {
+                "type": "REST"
+              },
+              "name": "model-two",
+              "type": "MODEL"
+            }
+          ],
+          "endpoint": {
+            "type": "REST"
+          },
+          "name": "combiner",
+          "type": "COMBINER"
+        },
+        "name": "mymodel-tags-graph",
+        "replicas": 1
+      }
+    ]
+  }
+}

@@ -47,3 +47,18 @@
 .wy-nav-top{
    background:#ff4072;
 }
+
+h1 {
+    font-size: 250%;
+}
+
+h2 {
+    font-size: 200%;
+}
+h3 {
+    font-size: 160%;
+}
+h4 {
+    font-size: 140%;
+    font-weight: normal;
+}

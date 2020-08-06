@@ -15,6 +15,8 @@
  */
 package io.seldon.engine.api.rest;
 
+import static io.seldon.engine.util.TestUtils.readFileBase64;
+import static io.seldon.engine.util.TestUtils.readFileBytes;
 import static org.mockito.Mockito.when;
 
 import io.opentracing.mock.MockSpan;
@@ -24,13 +26,12 @@ import io.seldon.engine.pb.ProtoBufUtils;
 import io.seldon.engine.tracing.TracingProvider;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
 import java.util.*;
+import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -50,8 +51,6 @@ import org.springframework.web.context.WebApplicationContext;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 // @AutoConfigureMockMvc
 public class TestRestClientController {
-  private static final Logger logger = LoggerFactory.getLogger(TestRestClientController.class);
-
   @Autowired private WebApplicationContext context;
 
   @MockBean private TracingProvider mockTracingProvider;
@@ -104,7 +103,7 @@ public class TestRestClientController {
 
     Assert.assertEquals(1, finishedSpans.size());
   }
-  
+
   @Test
   public void testPredict_v01_activateSpan() throws Exception {
     final String predictJson = "{" + "\"request\": {" + "\"ndarray\": [[1.0]]}" + "}";
@@ -121,7 +120,6 @@ public class TestRestClientController {
     Assert.assertEquals(1, finishedSpans.size());
   }
 
- 
   @Test
   public void testPredict_11dim_ndarry() throws Exception {
     final String predictJson = "{" + "\"request\": {" + "\"ndarray\": [[1.0]]}" + "}";
@@ -134,7 +132,6 @@ public class TestRestClientController {
                     .contentType(MediaType.APPLICATION_JSON_UTF8))
             .andReturn();
     String response = res.getResponse().getContentAsString();
-    System.out.println(response);
     Assert.assertEquals(200, res.getResponse().getStatus());
   }
 
@@ -150,7 +147,6 @@ public class TestRestClientController {
                     .contentType(MediaType.APPLICATION_JSON_UTF8))
             .andReturn();
     String response = res.getResponse().getContentAsString();
-    System.out.println(response);
     Assert.assertEquals(200, res.getResponse().getStatus());
     SeldonMessage.Builder builder = SeldonMessage.newBuilder();
     ProtoBufUtils.updateMessageBuilderFromJson(builder, response);
@@ -174,7 +170,6 @@ public class TestRestClientController {
                     .contentType(MediaType.APPLICATION_JSON_UTF8))
             .andReturn();
     String response = res.getResponse().getContentAsString();
-    System.out.println(response);
     Assert.assertEquals(200, res.getResponse().getStatus());
     SeldonMessage.Builder builder = SeldonMessage.newBuilder();
     ProtoBufUtils.updateMessageBuilderFromJson(builder, response);
@@ -198,7 +193,6 @@ public class TestRestClientController {
                     .contentType(MediaType.MULTIPART_FORM_DATA))
             .andReturn();
     String response = res.getResponse().getContentAsString();
-    System.out.println(response);
     Assert.assertEquals(200, res.getResponse().getStatus());
   }
 
@@ -215,7 +209,6 @@ public class TestRestClientController {
                     .contentType(MediaType.MULTIPART_FORM_DATA))
             .andReturn();
     String response = res.getResponse().getContentAsString();
-    System.out.println(response);
     Assert.assertEquals(200, res.getResponse().getStatus());
     SeldonMessage.Builder builder = SeldonMessage.newBuilder();
     ProtoBufUtils.updateMessageBuilderFromJson(builder, response);
@@ -240,7 +233,6 @@ public class TestRestClientController {
                     .contentType(MediaType.MULTIPART_FORM_DATA))
             .andReturn();
     String response = res.getResponse().getContentAsString();
-    System.out.println(response);
     Assert.assertEquals(200, res.getResponse().getStatus());
     SeldonMessage.Builder builder = SeldonMessage.newBuilder();
     ProtoBufUtils.updateMessageBuilderFromJson(builder, response);
@@ -266,7 +258,6 @@ public class TestRestClientController {
                     .contentType(MediaType.MULTIPART_FORM_DATA))
             .andReturn();
     String response = res.getResponse().getContentAsString();
-    System.out.println(response);
     Assert.assertEquals(200, res.getResponse().getStatus());
     SeldonMessage.Builder builder = SeldonMessage.newBuilder();
     ProtoBufUtils.updateMessageBuilderFromJson(builder, response);
@@ -294,7 +285,6 @@ public class TestRestClientController {
                     .contentType(MediaType.MULTIPART_FORM_DATA))
             .andReturn();
     String response = res.getResponse().getContentAsString();
-    System.out.println(response);
     Assert.assertEquals(200, res.getResponse().getStatus());
     SeldonMessage.Builder builder = SeldonMessage.newBuilder();
     ProtoBufUtils.updateMessageBuilderFromJson(builder, response);
@@ -322,7 +312,6 @@ public class TestRestClientController {
                     .contentType(MediaType.MULTIPART_FORM_DATA))
             .andReturn();
     String response = res.getResponse().getContentAsString();
-    System.out.println(response);
     Assert.assertEquals(200, res.getResponse().getStatus());
     SeldonMessage.Builder builder = SeldonMessage.newBuilder();
     ProtoBufUtils.updateMessageBuilderFromJson(builder, response);
@@ -333,5 +322,55 @@ public class TestRestClientController {
     Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
     Assert.assertEquals(strdata, seldonMessage.getStrData());
     Assert.assertEquals("1234", seldonMessage.getMeta().getPuid());
+  }
+
+  @Test
+  public void testPredict_b64img_as_text() throws Exception {
+    String base64Image = readFileBase64("src/test/resources/pug-690566_640.jpg");
+    MvcResult res =
+        mvc.perform(
+                MockMvcRequestBuilders.post("/api/v1.0/predictions")
+                    .accept(MediaType.APPLICATION_JSON_UTF8)
+                    .content(base64Image)
+                    .contentType(MediaType.TEXT_PLAIN))
+            .andReturn();
+    String response = res.getResponse().getContentAsString();
+    Assert.assertEquals(200, res.getResponse().getStatus());
+    SeldonMessage.Builder builder = SeldonMessage.newBuilder();
+    ProtoBufUtils.updateMessageBuilderFromJson(builder, response);
+    SeldonMessage seldonMessage = builder.build();
+    Assert.assertEquals(3, seldonMessage.getMeta().getMetricsCount());
+    Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(0).getType().toString());
+    Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
+    Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
+    Assert.assertEquals(base64Image, seldonMessage.getStrData());
+    // No Puid specified in request, verify response generated random of correct length
+    Assert.assertNotNull(seldonMessage.getMeta().getPuid());
+    Assert.assertTrue(Pattern.matches("[a-z0-9]{26}", seldonMessage.getMeta().getPuid()));
+  }
+
+  @Test
+  public void testPredict_img_as_binary() throws Exception {
+    byte[] imageBytes = readFileBytes("src/test/resources/pug-690566_640.jpg");
+    MvcResult res =
+        mvc.perform(
+                MockMvcRequestBuilders.post("/api/v1.0/predictions")
+                    .accept(MediaType.APPLICATION_JSON_UTF8)
+                    .content(imageBytes)
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM))
+            .andReturn();
+    byte[] response = res.getResponse().getContentAsByteArray();
+    Assert.assertEquals(200, res.getResponse().getStatus());
+    SeldonMessage.Builder builder = SeldonMessage.newBuilder();
+    ProtoBufUtils.updateMessageBuilderFromJson(builder, new String(response));
+    SeldonMessage seldonMessage = builder.build();
+    Assert.assertEquals(3, seldonMessage.getMeta().getMetricsCount());
+    Assert.assertEquals("COUNTER", seldonMessage.getMeta().getMetrics(0).getType().toString());
+    Assert.assertEquals("GAUGE", seldonMessage.getMeta().getMetrics(1).getType().toString());
+    Assert.assertEquals("TIMER", seldonMessage.getMeta().getMetrics(2).getType().toString());
+    Assert.assertArrayEquals(imageBytes, seldonMessage.getBinData().toByteArray());
+    // No Puid specified in request, verify response generated random of correct length
+    Assert.assertNotNull(seldonMessage.getMeta().getPuid());
+    Assert.assertTrue(Pattern.matches("[a-z0-9]{26}", seldonMessage.getMeta().getPuid()));
   }
 }

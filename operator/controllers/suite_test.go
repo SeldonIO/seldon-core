@@ -21,21 +21,22 @@ import (
 	"fmt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	"github.com/seldonio/seldon-core/operator/constants"
+	istio "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
-	istio "knative.dev/pkg/apis/istio/v1alpha3"
 	"os"
 	"path/filepath"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
+	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"testing"
@@ -57,14 +58,14 @@ func TestAPIs(t *testing.T) {
 
 	RunSpecsWithDefaultAndCustomReporters(t,
 		"Controller Suite",
-		[]Reporter{envtest.NewlineReporter{}})
+		[]Reporter{printer.NewlineReporter{}})
 }
 
 var configs = map[string]string{
 	"predictor_servers": `{
              "TENSORFLOW_SERVER": {
                  "tensorflow": true,
-                 "tfImage": "tensorflow/serving:latest",
+                 "tfImage": "tensorflow/serving:2.1",
                  "rest": {
                    "image": "seldonio/tfserving-proxy_rest",
                    "defaultImageVersion": "0.7"
@@ -105,6 +106,18 @@ var configs = map[string]string{
                  }
              }
          }`,
+	"storageInitializer": `
+	{
+	"image" : "gcr.io/kfserving/storage-initializer:0.2.2",
+	"memoryRequest": "100Mi",
+	"memoryLimit": "1Gi",
+	"cpuRequest": "100m",
+	"cpuLimit": "1"
+	}`,
+	"explainer": `
+	{
+	"image" : "seldonio/alibiexplainer:1.2.0"
+	}`,
 }
 
 // Create configmap
@@ -116,6 +129,16 @@ var configMap = &corev1.ConfigMap{
 	Data: configs,
 }
 
+var _ = JustBeforeEach(func() {
+	envUseExecutor = "true"
+	envExecutorImage = "a"
+	envExecutorImageRelated = "b"
+	envEngineImage = "c"
+	envEngineImageRelated = "d"
+	envDefaultUser = ""
+	envExplainerImage = ""
+})
+
 var _ = BeforeSuite(func(done Done) {
 	logf.SetLogger(zap.LoggerTo(GinkgoWriter, true))
 
@@ -125,7 +148,8 @@ var _ = BeforeSuite(func(done Done) {
 	//apiServerFlags = append(apiServerFlags, "--admission-control=MutatingAdmissionWebhook")
 
 	testEnv = &envtest.Environment{
-		CRDDirectoryPaths: []string{filepath.Join("..", "config", "crd", "bases"),
+		CRDDirectoryPaths: []string{
+			//filepath.Join("..", "config", "crd", "bases"),
 			filepath.Join("..", "testing")},
 	}
 
@@ -167,10 +191,12 @@ var _ = BeforeSuite(func(done Done) {
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&SeldonDeploymentReconciler{
-		Client: k8sManager.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("SeldonDeployment"),
-		Scheme: k8sManager.GetScheme(),
-	}).SetupWithManager(k8sManager)
+		Client:    k8sManager.GetClient(),
+		ClientSet: clientset,
+		Log:       ctrl.Log.WithName("controllers").WithName("SeldonDeployment"),
+		Scheme:    k8sManager.GetScheme(),
+		Recorder:  k8sManager.GetEventRecorderFor(constants.ControllerName),
+	}).SetupWithManager(k8sManager, constants.ControllerName)
 	Expect(err).ToNot(HaveOccurred())
 
 	//k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})

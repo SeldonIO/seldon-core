@@ -1,0 +1,86 @@
+//properties([pipelineTriggers([githubPush()])])
+
+def label = "worker-${UUID.randomUUID().toString()}"
+
+podTemplate(label: label, 
+  workspaceVolume: dynamicPVC(requestsSize: "4Gi"),
+  containers: [
+  containerTemplate(
+      name: 'news_classifier-builder', 
+      image: 'seldonio/core-builder:0.4', 
+      command: 'cat', 
+      ttyEnabled: true,
+      privileged: true,
+      resourceRequestCpu: '200m',
+      resourceLimitCpu: '500m',
+      resourceRequestMemory: '1500Mi',
+      resourceLimitMemory: '1500Mi',
+  ),
+  containerTemplate(
+      name: 'jnlp', 
+      image: 'jenkins/jnlp-slave:3.35-5-alpine', 
+      args: '${computer.jnlpmac} ${computer.name}')
+],
+yaml:'''
+spec:
+  securityContext:
+    fsGroup: 1000
+  containers:
+  - name: jnlp
+    imagePullPolicy: IfNotPresent
+    resources:
+      limits:
+        ephemeral-storage: "500Mi"
+      requests:
+        ephemeral-storage: "500Mi"
+  - name: news_classifier-builder
+    imagePullPolicy: IfNotPresent
+    resources:
+      limits:
+        ephemeral-storage: "15Gi"
+      requests:
+        ephemeral-storage: "15Gi"
+''',
+volumes: [
+  hostPathVolume(mountPath: '/sys/fs/cgroup', hostPath: '/sys/fs/cgroup'),
+  hostPathVolume(mountPath: '/lib/modules', hostPath: '/lib/modules'),
+  emptyDirVolume(mountPath: '/var/lib/docker'),
+]) {
+  node(label) {
+    def myRepo = checkout scm
+    def gitCommit = myRepo.GIT_COMMIT
+    def gitBranch = myRepo.GIT_BRANCH
+    def shortGitCommit = "${gitCommit[0..10]}"
+    def previousGitCommit = sh(script: "git rev-parse ${gitCommit}~", returnStdout: true)
+ 
+    stage('Test') {
+      container('news_classifier-builder') {
+        sh """
+          pwd
+          make -C models/news_classifier \
+            install_dev \
+            test 
+          """
+      }
+    }
+
+    stage('Test integration') {
+      container('news_classifier-builder') {
+        sh 'models/news_classifier/integration/kind_test_all.sh'
+      }
+    }
+
+    stage('Promote application') {
+      container('news_classifier-builder') {
+        withCredentials([[$class: 'UsernamePasswordMultiBinding',
+              credentialsId: 'github-access',
+              usernameVariable: 'GIT_USERNAME',
+              passwordVariable: 'GIT_PASSWORD']]) {
+
+          sh 'models/news_classifier/promote_application.sh'
+        }
+      }
+    }
+  }
+}
+

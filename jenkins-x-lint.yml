@@ -4,7 +4,7 @@ pipelineConfig:
     pullRequest:
       pipeline:
         agent:
-          image: seldonio/core-builder:0.10
+          image: seldonio/core-builder:0.15
         stages:
         - name: pr-build-comment
           steps:
@@ -14,12 +14,31 @@ pipelineConfig:
             sh: "./add-pr-build-comment"
         - name: lint-checks
           parallel:
-          - name: python-lint-task
+          - name: lint-python
+            agent:
+              image: seldonio/python-builder:0.2
             steps:
-            - name: python-lint
-              args:
-              - -C python
-              - setup_linter
-              - run_linter_check
-              command: make
-              
+              - name: lint-python
+                command: make
+                args:
+                - -C python
+                - install_dev
+                - lint 
+          - name: lint-operator
+            agent:
+              image: seldonio/core-builder:0.15
+            steps:
+              - name: lint-operator
+                command: make
+                args:
+                  - -C operator
+                  - lint
+          - name: lint-executor
+            agent:
+              image: seldonio/core-builder:0.15
+            steps:
+              - name: lint-executor
+                command: make
+                args:
+                  - -C executor
+                  - lint

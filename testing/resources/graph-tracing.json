@@ -1,0 +1,95 @@
+{
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": {
+    "labels": {
+      "app": "seldon"
+    },
+    "name": "mymodel"
+  },
+  "spec": {
+    "name": "mymodel",
+    "oauth_key": "oauth-key",
+    "oauth_secret": "oauth-secret",
+    "predictors": [
+      {
+        "svcOrchSpec": {
+          "env": [
+            {
+              "name": "SELDON_LOG_LEVEL",
+              "value": "DEBUG"
+            },
+            {
+              "name": "TRACING",
+              "value": "1"
+            },
+            {
+              "name": "JAEGER_AGENT_HOST",
+              "value": "jaeger-agent.seldon"
+            },
+            {
+              "name": "JAEGER_AGENT_PORT",
+              "value": "5775"
+            },
+            {
+              "name": "JAEGER_SAMPLER_TYPE",
+              "value": "const"
+            },
+            {
+              "name": "JAEGER_SAMPLER_PARAM",
+              "value": "1"
+            }
+          ]
+        },
+        "componentSpecs": [
+          {
+            "spec": {
+              "containers": [
+                {
+                  "image": "seldonio/fixed-model:0.1",
+                  "imagePullPolicy": "IfNotPresent",
+                  "env": [
+                    { "name": "TRACING", "value": "1" },
+                    {
+                      "name": "JAEGER_AGENT_HOST",
+                      "value": "jaeger-agent.seldon"
+                    },
+                    {
+                      "name": "JAEGER_AGENT_PORT",
+                      "value": "5775"
+                    },
+                    {
+                      "name": "JAEGER_SAMPLER_TYPE",
+                      "value": "const"
+                    },
+                    {
+                      "name": "JAEGER_SAMPLER_PARAM",
+                      "value": "1"
+                    }
+                  ],
+                  "name": "complex-model",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi"
+                    }
+                  }
+                }
+              ],
+              "terminationGracePeriodSeconds": 1
+            }
+          }
+        ],
+        "graph": {
+          "children": [],
+          "name": "complex-model",
+          "endpoint": {
+            "type": "REST"
+          },
+          "type": "MODEL"
+        },
+        "name": "mymodel",
+        "replicas": 1
+      }
+    ]
+  }
+}

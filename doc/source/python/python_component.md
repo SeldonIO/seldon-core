@@ -103,7 +103,7 @@ To return metrics associated with a call create a method with signature as shown
     def metrics(self) -> List[Dict]:
 ```
 
-This method should return a Dictionary of metrics as described in the [custom metrics](../analytics/custom_metrics.md) docs.
+This method should return a Dictionary of metrics as described in the [custom metrics](../analytics/analytics.md#custom-metrics) docs.
 
 An illustrative example is shown below:
 
@@ -119,11 +119,19 @@ class ModelWithMetrics(object):
 
     def metrics(self):
         return [
-            {"type":"COUNTER","key":"mycounter","value":1}, # a counter which will increase by the given value
-            {"type":"GAUGE","key":"mygauge","value":100}, # a gauge which will be set to given value
-            {"type":"TIMER","key":"mytimer","value":20.2}, # a timer which will add sum and count metrics - assumed millisecs
-            ]
+            {"type": "COUNTER", "key": "mycounter", "value": 1}, # a counter which will increase by the given value
+            {"type": "GAUGE", "key": "mygauge", "value": 100},   # a gauge which will be set to given value
+            {"type": "TIMER", "key": "mytimer", "value": 20.2},  # a timer which will add sum and count metrics - assumed millisecs
+        ]
+```
 
+Note: prior to Seldon Core 1.1 custom metrics have always been returned to client. From SC 1.1 you can control this behaviour setting `INCLUDE_METRICS_IN_CLIENT_RESPONSE` environmental variable to either `true` or `false`. Despite value of this environmental variable custom metrics will always be exposed to Prometheus.
+
+Prior to Seldon Core 1.1.0 not implementing custom metrics logs a message at the info level at each predict call. Starting with Seldon Core 1.1.0 this is logged at the debug level. To supress this warning implement a metrics function returning an empty list:
+
+```python
+def metrics(self):
+    return []
 ```
 
 ## Returning Tags
@@ -137,7 +145,7 @@ If we wish to add arbitrary tags to the returned metadata you can provide a `tag
 A simple example is shown below:
 
 ```python
-class ModelWithMetrics(object):
+class ModelWithTags(object):
 
     def predict(self,X,features_names):
         return X
@@ -145,6 +153,7 @@ class ModelWithMetrics(object):
     def tags(self,X):
     	return {"system":"production"}
 ```
+
 
 ## REST Health Endpoint
 If you wish to add a REST health point, you can implement the `health_status` method with signature as shown below:
@@ -302,45 +311,33 @@ class UserCustomException(Exception):
 
 ```
 
-### Gunicorn (Alpha Feature)
+## Multi-value numpy arrays
 
-To run your class under gunicorn set the environment variable `GUNICORN_WORKERS` to an integer value > 1.
+By default, when using the data ndarray parameter, the conversion to ndarray (by default) converts all inner types into the same type. With models that may take as input arrays with different value types, you will be able to do so by overriding the `predict_raw` function yourself which gives you access to the raw request, and creating the numpy array as follows:
 
 ```
-apiVersion: machinelearning.seldon.io/v1alpha2
-kind: SeldonDeployment
-metadata:
-  name: gunicorn
-spec:
-  name: worker
-  predictors:
-  - componentSpecs:
-    - spec:
-        containers:
-        - image: seldonio/mock_classifier:1.0
-          name: classifier
-          env:
-          - name: GUNICORN_WORKERS
-            value: '4'
-        terminationGracePeriodSeconds: 1
-    graph:
-      children: []
-      endpoint:
-        type: REST
-      name: classifier
-      type: MODEL
-    labels:
-      version: v1
-    name: example
-    replicas: 1
+import numpy as np
 
+class Model:
+    def predict_raw(self, request):
+        data = request.get("data", {}).get("ndarray")
+        if data:
+            mult_types_array = np.array(data, dtype=object)
+
+        # Handle other data types as required + your logic
 ```
 
 ## Gunicorn and load
 
-If the wrapped python class is run under [gunicorn](https://gunicorn.org/) then as part of initialization of each gunicorn worker a `load` method will be called on your class if it has it. You should use this method to load and initialise your model. This is important for Tensorflow models which need their session created in each worker process. The [Tensorflow MNIST example](../examples/deep_mnist.html) does this.
+If the wrapped python class is [served under Gunicorn](./python_server) then as
+part of initialization of each gunicorn worker a `load` method will be called
+on your class if it has it.
+You should use this method to load and initialise your model.
+This is important for Tensorflow models which need their session created in
+each worker process.
+The [Tensorflow MNIST example](../examples/deep_mnist.html) does this.
 
-```
+```python
 import tensorflow as tf
 import numpy as np
 import os
@@ -366,22 +363,6 @@ class DeepMnist(object):
             self.load()
         predictions = self.sess.run(self.y,feed_dict={self.x:X})
         return predictions.astype(np.float64)
-```
-
-## Multi-value numpy arrays
-
-By default, when using the data ndarray parameter, the conversion to ndarray (by default) converts all inner types into the same type. With models that may take as input arrays with different value types, you will be able to do so by overriding the `predict_raw` function yourself which gives you access to the raw request, and creating the numpy array as follows:
-
-```
-import numpy as np
-
-class Model:
-    def predict_raw(self, request):
-        data = request.get("data", {}).get("ndarray")
-        if data:
-            mult_types_array = np.array(data, dtype=object)
-
-        # Handle other data types as required + your logic
 ```
 
 ## Integer numbers
@@ -421,6 +402,65 @@ class Model:
 
         # Make predictions using float_array
 ```
+
+
+## Incubating features
+
+
+### REST Metadata Endpoint
+The python wrapper will automatically expose a `/metadata` endpoint to return metadata about the loaded model.
+It is up to the developer to implement a `metadata` method in their class to provide a `dict` back containing the model metadata.
+
+See metadata [documentation](../reference/apis/metadata.md) for more details.
+
+
+#### Example format:
+```python
+class Model:
+    ...
+
+    def init_metadata(self):
+
+        meta = {
+            "name": "model-name",
+            "versions": ["model-version"],
+            "platform": "platform-name",
+            "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1]}],
+            "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1]}],
+        }
+
+        return meta
+```
+
+#### Validation
+Output of developer-defined `metadata` method will be validated to follow the [kfserving dataplane proposal](https://github.com/kubeflow/kfserving/blob/master/docs/predict-api/v2/required_api.md#model-metadata) protocol, see [this](https://github.com/SeldonIO/seldon-core/issues/1638) GitHub issue for details:
+```
+$metadata_model_response =
+{
+  "name" : $string,
+  "versions" : [ $string, ... ] #optional,
+  "platform" : $string,
+  "inputs" : [ $metadata_tensor, ... ],
+  "outputs" : [ $metadata_tensor, ... ]
+}
+```
+with
+```
+$metadata_tensor =
+{
+  "name" : $string,
+  "datatype" : $string,
+  "shape" : [ $number, ... ]
+}
+```
+
+If validation fails server will reply with `500` response `MICROSERVICE_BAD_METADATA` when requested for `metadata`.
+
+#### Examples:
+- [Basic Examples for Model with Metadata](../examples/metadata.html)
+- [SKLearn Server example with MinIO](../examples/minio-sklearn.html)
+
+
 
 ## Next Steps
 

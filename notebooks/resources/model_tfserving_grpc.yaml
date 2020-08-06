@@ -1,0 +1,30 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: grpc-tfserving
+spec:
+  name: grpctfserving
+  protocol: tensorflow
+  transport: grpc
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - args: 
+          - --port=8500
+          - --rest_api_port=8501
+          - --model_name=halfplustwo
+          - --model_base_path=gs://seldon-models/tfserving/half_plus_two
+          image: tensorflow/serving
+          name: halfplustwo
+          ports:
+          - containerPort: 8500
+            name: grpc
+    graph:
+      name: halfplustwo
+      type: MODEL
+      endpoint:
+        service_port: 8500
+        type: GRPC
+    name: model
+    replicas: 1

@@ -17,26 +17,75 @@ limitations under the License.
 package controllers
 
 import (
-	"github.com/go-logr/logr"
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning/v1"
-	"github.com/seldonio/seldon-core/operator/utils"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
-	"knative.dev/pkg/apis/istio/common/v1alpha1"
-	istio "knative.dev/pkg/apis/istio/v1alpha3"
+	"fmt"
 	"sort"
 	"strconv"
 	"strings"
+
+	"k8s.io/client-go/kubernetes"
+
+	"encoding/json"
+	"os"
+
+	"github.com/go-logr/logr"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	"github.com/seldonio/seldon-core/operator/constants"
+	"github.com/seldonio/seldon-core/operator/utils"
+	istio_networking "istio.io/api/networking/v1alpha3"
+	istio "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pSvcName string, log logr.Logger) error {
+const (
+	ExplainerConfigMapKeyName = "explainer"
+	EnvExplainerImageRelated  = "RELATED_IMAGE_EXPLAINER"
+)
 
-	if p.Explainer.Type != "" {
+var (
+	envExplainerImage = os.Getenv(EnvExplainerImageRelated)
+)
+
+type ExplainerInitialiser struct {
+	clientset kubernetes.Interface
+}
+
+func NewExplainerInitializer(clientset kubernetes.Interface) *ExplainerInitialiser {
+	return &ExplainerInitialiser{clientset: clientset}
+}
+
+type ExplainerConfig struct {
+	Image string `json:"image"`
+}
+
+func (ei *ExplainerInitialiser) getExplainerConfigs() (*ExplainerConfig, error) {
+	configMap, err := ei.clientset.CoreV1().ConfigMaps(ControllerNamespace).Get(ControllerConfigMapName, metav1.GetOptions{})
+	if err != nil {
+		//log.Error(err, "Failed to find config map", "name", ControllerConfigMapName)
+		return nil, err
+	}
+	return getExplainerConfigsFromMap(configMap)
+}
+
+func getExplainerConfigsFromMap(configMap *corev1.ConfigMap) (*ExplainerConfig, error) {
+	explainerConfig := &ExplainerConfig{}
+	if initializerConfig, ok := configMap.Data[ExplainerConfigMapKeyName]; ok {
+		err := json.Unmarshal([]byte(initializerConfig), &explainerConfig)
+		if err != nil {
+			panic(fmt.Errorf("Unable to unmarshall %v json string due to %v ", ExplainerConfigMapKeyName, err))
+		}
+	}
+	return explainerConfig, nil
+}
+
+func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pSvcName string, podSecurityContect *corev1.PodSecurityContext, log logr.Logger) error {
+
+	if !isEmptyExplainer(p.Explainer) {
 
 		seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
 
-		depName := machinelearningv1.GetExplainerDeploymentName(mlDep.ObjectMeta.Name, p)
+		depName := machinelearningv1.GetExplainerDeploymentName(mlDep.GetName(), p)
 
 		explainerContainer := p.Explainer.ContainerSpec
 
@@ -52,16 +101,24 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.Sel
 			p.Graph.Endpoint = &machinelearningv1.Endpoint{Type: machinelearningv1.REST}
 		}
 
+		// Image from configMap or Relalated Image if its not set
 		if explainerContainer.Image == "" {
-			// TODO: should use explainer type but this is the only one available currently
-			explainerContainer.Image = "seldonio/alibiexplainer:0.1"
+			if envExplainerImage != "" {
+				explainerContainer.Image = envExplainerImage
+			} else {
+				config, err := ei.getExplainerConfigs()
+				if err != nil {
+					return err
+				}
+				explainerContainer.Image = config.Image
+			}
 		}
 
 		// explainer can get port from spec or from containerSpec or fall back on default
 		var httpPort = 0
 		var grpcPort = 0
 		var portNum int32 = 9000
-		var explainerProtocol string
+		var explainerTransport string
 		if p.Explainer.Endpoint != nil && p.Explainer.Endpoint.ServicePort != 0 {
 			portNum = p.Explainer.Endpoint.ServicePort
 		}
@@ -71,12 +128,17 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.Sel
 		httpPort = int(portNum)
 		customPort := getPort(portType, explainerContainer.Ports)
 
-		if p.Explainer.Endpoint != nil && p.Explainer.Endpoint.Type == machinelearningv1.GRPC {
-			explainerProtocol = "grpc"
+		if mlDep.Spec.Transport == machinelearningv1.TransportGrpc || (p.Explainer.Endpoint != nil && p.Explainer.Endpoint.Type == machinelearningv1.GRPC) {
+			explainerTransport = "grpc"
 			pSvcEndpoint = c.serviceDetails[pSvcName].GrpcEndpoint
 		} else {
-			explainerProtocol = "http"
+			explainerTransport = "http"
 			pSvcEndpoint = c.serviceDetails[pSvcName].HttpEndpoint
+		}
+
+		explainerProtocol := string(machinelearningv1.ProtocolSeldon)
+		if mlDep.Spec.Protocol == machinelearningv1.ProtocolTensorflow {
+			explainerProtocol = string(machinelearningv1.ProtocolTensorflow)
 		}
 
 		if customPort == nil {
@@ -101,7 +163,7 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.Sel
 		explainerContainer.Args = []string{
 			"--model_name=" + mlDep.Name,
 			"--predictor_host=" + pSvcEndpoint,
-			"--protocol=" + "seldon." + explainerProtocol,
+			"--protocol=" + explainerProtocol + "." + explainerTransport,
 			"--http_port=" + strconv.Itoa(int(portNum)),
 		}
 
@@ -146,29 +208,33 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.Sel
 			Containers: []corev1.Container{explainerContainer},
 		}}
 
-		deploy := createDeploymentWithoutEngine(depName, seldonId, &seldonPodSpec, p, mlDep)
+		deploy := createDeploymentWithoutEngine(depName, seldonId, &seldonPodSpec, p, mlDep, podSecurityContect)
 
 		if p.Explainer.ModelUri != "" {
 			var err error
-			deploy, err = InjectModelInitializer(deploy, explainerContainer.Name, p.Explainer.ModelUri, p.Explainer.ServiceAccountName, p.Explainer.EnvSecretRefName, r.Client)
+
+			mi := NewModelInitializer(ei.clientset)
+			deploy, err = mi.InjectModelInitializer(deploy, explainerContainer.Name, p.Explainer.ModelUri, p.Explainer.ServiceAccountName, p.Explainer.EnvSecretRefName)
 			if err != nil {
 				return err
 			}
 		}
 
 		// for explainer use same service name as its Deployment
-		eSvcName := machinelearningv1.GetExplainerDeploymentName(mlDep.ObjectMeta.Name, p)
+		eSvcName := machinelearningv1.GetExplainerDeploymentName(mlDep.GetName(), p)
 
+		deploy = addLabelsToDeployment(deploy, nil, p)
 		deploy.ObjectMeta.Labels[machinelearningv1.Label_seldon_app] = eSvcName
 		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_seldon_app] = eSvcName
 
 		c.deployments = append(c.deployments, deploy)
 
 		// Use seldondeployment name dash explainer as the external service name. This should allow canarying.
-		eSvc, err := createPredictorService(eSvcName, seldonId, p, mlDep, httpPort, grpcPort, mlDep.ObjectMeta.Name+"-explainer", log)
+		eSvc, err := createPredictorService(eSvcName, seldonId, p, mlDep, httpPort, grpcPort, true, log)
 		if err != nil {
 			return err
 		}
+		eSvc = addLabelsToService(eSvc, nil, p)
 		c.services = append(c.services, eSvc)
 		c.serviceDetails[eSvcName] = &machinelearningv1.ServiceStatus{
 			SvcName:      eSvcName,
@@ -178,7 +244,7 @@ func createExplainer(r *SeldonDeploymentReconciler, mlDep *machinelearningv1.Sel
 		if grpcPort > 0 {
 			c.serviceDetails[eSvcName].GrpcEndpoint = eSvcName + "." + eSvc.Namespace + ":" + strconv.Itoa(grpcPort)
 		}
-		if GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
+		if utils.GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
 			vsvcs, dstRule := createExplainerIstioResources(eSvcName, p, mlDep, seldonId, getNamespace(mlDep), httpPort, grpcPort)
 			c.virtualServices = append(c.virtualServices, vsvcs...)
 			c.destinationRules = append(c.destinationRules, dstRule...)
@@ -209,23 +275,23 @@ func createExplainerIstioResources(pSvcName string, p *machinelearningv1.Predict
 		vsNameGrpc = strings.TrimSuffix(vsNameGrpc, "-")
 	}
 
-	istio_gateway := GetEnv(ENV_ISTIO_GATEWAY, "seldon-gateway")
+	istio_gateway := utils.GetEnv(ENV_ISTIO_GATEWAY, "seldon-gateway")
 	httpVsvc := &istio.VirtualService{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      vsNameHttp,
 			Namespace: namespace,
 		},
-		Spec: istio.VirtualServiceSpec{
+		Spec: istio_networking.VirtualService{
 			Hosts:    []string{"*"},
 			Gateways: []string{getAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
-			HTTP: []istio.HTTPRoute{
+			Http: []*istio_networking.HTTPRoute{
 				{
-					Match: []istio.HTTPMatchRequest{
+					Match: []*istio_networking.HTTPMatchRequest{
 						{
-							URI: &v1alpha1.StringMatch{Prefix: "/seldon/" + namespace + "/" + mlDep.Name + "/" + p.Name + "/explainer/"},
+							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Prefix{Prefix: "/seldon/" + namespace + "/" + mlDep.GetName() + constants.ExplainerPathSuffix + "/" + p.Name + "/"}},
 						},
 					},
-					Rewrite: &istio.HTTPRewrite{URI: "/"},
+					Rewrite: &istio_networking.HTTPRewrite{Uri: "/"},
 				},
 			},
 		},
@@ -236,17 +302,17 @@ func createExplainerIstioResources(pSvcName string, p *machinelearningv1.Predict
 			Name:      vsNameGrpc,
 			Namespace: namespace,
 		},
-		Spec: istio.VirtualServiceSpec{
+		Spec: istio_networking.VirtualService{
 			Hosts:    []string{"*"},
 			Gateways: []string{getAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
-			HTTP: []istio.HTTPRoute{
+			Http: []*istio_networking.HTTPRoute{
 				{
-					Match: []istio.HTTPMatchRequest{
+					Match: []*istio_networking.HTTPMatchRequest{
 						{
-							URI: &v1alpha1.StringMatch{Prefix: "/seldon.protos.Seldon/"},
-							Headers: map[string]v1alpha1.StringMatch{
-								"seldon":    v1alpha1.StringMatch{Exact: mlDep.Name}, //TODO: change this?
-								"namespace": v1alpha1.StringMatch{Exact: namespace},
+							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Prefix{Prefix: "/seldon.protos.Seldon/"}},
+							Headers: map[string]*istio_networking.StringMatch{
+								"seldon":    &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Exact{Exact: mlDep.GetName()}},
+								"namespace": &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Exact{Exact: namespace}},
 							},
 						},
 					},
@@ -255,8 +321,8 @@ func createExplainerIstioResources(pSvcName string, p *machinelearningv1.Predict
 		},
 	}
 
-	routesHttp := make([]istio.HTTPRouteDestination, 1)
-	routesGrpc := make([]istio.HTTPRouteDestination, 1)
+	routesHttp := make([]*istio_networking.HTTPRouteDestination, 1)
+	routesGrpc := make([]*istio_networking.HTTPRouteDestination, 1)
 	drules := make([]*istio.DestinationRule, 1)
 
 	drule := &istio.DestinationRule{
@@ -264,9 +330,9 @@ func createExplainerIstioResources(pSvcName string, p *machinelearningv1.Predict
 			Name:      pSvcName,
 			Namespace: namespace,
 		},
-		Spec: istio.DestinationRuleSpec{
+		Spec: istio_networking.DestinationRule{
 			Host: pSvcName,
-			Subsets: []istio.Subset{
+			Subsets: []*istio_networking.Subset{
 				{
 					Name: p.Name,
 					Labels: map[string]string{
@@ -277,30 +343,30 @@ func createExplainerIstioResources(pSvcName string, p *machinelearningv1.Predict
 		},
 	}
 
-	routesHttp[0] = istio.HTTPRouteDestination{
-		Destination: istio.Destination{
+	routesHttp[0] = &istio_networking.HTTPRouteDestination{
+		Destination: &istio_networking.Destination{
 			Host:   pSvcName,
 			Subset: p.Name,
-			Port: istio.PortSelector{
+			Port: &istio_networking.PortSelector{
 				Number: uint32(engine_http_port),
 			},
 		},
-		Weight: int(100),
+		Weight: int32(100),
 	}
-	routesGrpc[0] = istio.HTTPRouteDestination{
-		Destination: istio.Destination{
+	routesGrpc[0] = &istio_networking.HTTPRouteDestination{
+		Destination: &istio_networking.Destination{
 			Host:   pSvcName,
 			Subset: p.Name,
-			Port: istio.PortSelector{
+			Port: &istio_networking.PortSelector{
 				Number: uint32(engine_grpc_port),
 			},
 		},
-		Weight: int(100),
+		Weight: int32(100),
 	}
 	drules[0] = drule
 
-	httpVsvc.Spec.HTTP[0].Route = routesHttp
-	grpcVsvc.Spec.HTTP[0].Route = routesGrpc
+	httpVsvc.Spec.Http[0].Route = routesHttp
+	grpcVsvc.Spec.Http[0].Route = routesGrpc
 	vscs := make([]*istio.VirtualService, 0, 2)
 	// explainer may not expose REST and grpc (presumably engine ensures predictors do?)
 	if engine_http_port > 0 {
