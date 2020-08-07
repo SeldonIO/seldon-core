@@ -2,7 +2,7 @@ workflow:
   # Name of the overarching argo workflow
   name: seldon-benchmark-process
   # If true the randomly generated string will be apended as the name of the workflow
-  useNameAsGenerateName: false
+  useNameAsGenerateName: "false"
   # Namespace where to create the workflow and all resources in benchmark job
   namespace: default
 seldonDeployment:
@@ -25,7 +25,7 @@ seldonDeployment:
   # The number of workers spawned by Python Gunicorn Flask server
   serverWorkers: 1
   # Whether to enable resources
-  enableResources: false
+  enableResources: "false"
   requests:
     # Requests for CPU (only added if enableResources is enabled)
     cpu: 50m
