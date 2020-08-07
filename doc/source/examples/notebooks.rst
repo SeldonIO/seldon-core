@@ -149,4 +149,5 @@ Benchmarking and Load Tests
   
    Service Orchestrator <bench_svcOrch>
    Tensorflow <bench_tensorflow>   
+   Argo Workflows Benchmarking <vegeta_bench_argo_workflows>   
    
