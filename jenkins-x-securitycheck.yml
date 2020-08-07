@@ -1,0 +1,33 @@
+buildPack: none
+pipelineConfig:
+  pipelines:
+    overrides:
+    - name: changelog
+      pipeline: release
+      stage: promote
+      step:
+        command: echo "skipping promote"
+    pullRequest:
+      pipeline:
+        stages:
+          - name: pr-build-comment
+            steps:
+            - agent:
+                image: gcr.io/jenkinsxio/builder-go:2.0.916-264
+              dir: ci
+              sh: "./add-pr-build-comment"
+          - name: create-release
+            steps:
+            - agent:
+                image: snyk/snyk:linux
+              dir: ci
+              sh: "./run-security-checks"
+              env:
+              - name: SNYK_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: snyk-token
+                    key: token
+              - name: PROJECT_PATH
+                value: ""
+
