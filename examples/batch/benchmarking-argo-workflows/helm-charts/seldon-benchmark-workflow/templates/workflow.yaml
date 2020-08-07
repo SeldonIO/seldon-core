@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
-  {{- if eq .Values.workflow.useNameAsGenerateName false }}
+  {{- if eq .Values.workflow.useNameAsGenerateName "false" }}
   name: {{ .Values.workflow.name }}
   {{- else }}
   generateName: {{ .Values.workflow.name }}
@@ -48,6 +48,7 @@ spec:
                     value: {{ .Values.seldonDeployment.serverThreads }}
                   - name: GUNICORN_WORKERS
                     value: {{ .Values.seldonDeployment.serverWorkers }}
+                  {{- if eq .Values.seldonDeployment.enableResources "true" }}
                   resources:
                     requests:
                       cpu: {{ .Values.seldonDeployment.requests.cpu }}
@@ -55,6 +56,7 @@ spec:
                     limits:
                       cpu: {{ .Values.seldonDeployment.limits.cpu }}
                       memory: {{ .Values.seldonDeployment.limits.memory }}
+                  {{- end }}
               graph:
                 children: []
                 implementation: {{ .Values.seldonDeployment.server }}
