@@ -3,6 +3,8 @@ pipelineConfig:
   pipelines:
     pullRequest:
       pipeline:
+        agent:
+          image: snyk/snyk:golang
         env:
         - name: SNYK_TOKEN
           valueFrom:
