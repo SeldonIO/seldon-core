@@ -37,6 +37,7 @@ spec:
             uid: "{{`{{workflow.uid}}`}}"
         spec:
           name: "{{ .Values.seldonDeployment.name }}"
+          transport: {{ .Values.seldonDeployment.apiType }}
           predictors:
             - componentSpecs:
               - spec:
@@ -75,8 +76,39 @@ spec:
     script:
       image: "{{ .Values.benchmark.image }}"
       command: [sh]
+      {{- if eq .Values.seldonDeployment.apiType "rest" }}
       source: |
-        echo '{"method": "POST", "header": {"Content-Type": ["application/json"] }, "url": "http://{{ .Values.benchmark.host }}/seldon/{{ .Values.workflow.namespace }}/{{ .Values.seldonDeployment.name }}/api/v1.0/predictions", "body": "{{ .Values.benchmark.data | b64enc }}" }' \
-          | vegeta -cpus={{ .Values.benchmark.cpus }} attack -duration={{ .Values.benchmark.duration }} -rate={{ .Values.benchmark.rate }} -max-workers={{ .Values.benchmark.maxWorkers }} -format=json \
-          | vegeta report -type=json
+        echo '{"method": "POST", \
+                "header": {"Content-Type": ["application/json"] }, \
+                "url": "http://{{ .Values.benchmark.host }}/seldon/{{ .Values.workflow.namespace }}/{{ .Values.seldonDeployment.name }}/api/v1.0/predictions", \
+                "body": "{{ .Values.benchmark.data | b64enc }}" }' \
+          | vegeta \
+                attack \
+                -cpus={{ .Values.benchmark.cpus }} \
+                -duration={{ .Values.benchmark.duration }} \
+                -rate={{ .Values.benchmark.rate }} \
+                -max-workers={{ .Values.benchmark.maxWorkers }} \
+                -format=json \
+          | vegeta \
+                report \
+                -type=json
+
+      {{- else }}
+      source: |
+        ghz \
+            --insecure \
+            --proto /proto/prediction.proto \
+            --call seldon.protos.Seldon/Predict \
+            --data='{{ .Values.benchmark.data }}' \
+            --qps={{ .Values.benchmark.rate }} \
+            --cpus={{ .Values.benchmark.cpus }} \
+            --duration="{{ .Values.benchmark.duration }}"
+            --format json \
+            --metadata='{"seldon": "{{ .Values.seldonDeployment.name }}", "namespace": "{{ .Values.workflow.namespace }}"}' \
+            http://{{ .Values.benchmark.host }} \
+        | jq \
+          -c \
+          'del(.histogram)|del(.details)'
+
+      {{- end }}
 

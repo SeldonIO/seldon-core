@@ -14,6 +14,8 @@ seldonDeployment:
   server: SKLEARN_SERVER
   # The URL for the model that is to be used
   modelUri: gs://seldon-models/sklearn/iris
+  # The API Type (REST vs GRPC)
+  apiType: rest
   # The number of seldon deployment replicas to launch
   replicas: 2
   # Waiting time before checks for deployment to ensure kubernetes cluster registers create
