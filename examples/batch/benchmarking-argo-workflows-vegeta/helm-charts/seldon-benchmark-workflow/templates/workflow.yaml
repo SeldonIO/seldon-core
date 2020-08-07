@@ -9,9 +9,9 @@ metadata:
   {{- end }}
   namespace: {{ .Values.workflow.namespace }}
 spec:
-  entrypoint: seldon-batch-process
+  entrypoint: seldon-benchmark-process
   templates:
-  - name: seldon-batch-process
+  - name: seldon-benchmark-process
     steps:
     - - name: create-seldon-resource            
         template: create-seldon-resource-template
@@ -74,17 +74,20 @@ spec:
 
   - name: run-benchmark-template
     script:
-      image: "{{ .Values.benchmark.image }}"
+      {{- if .Values.benchmark.imageOverride }}
+      image: "{{ .Values.benchmark.imageOverride }}"
+      {{- else if eq .Values.seldonDeployment.apiType "rest" }}
+      image: peterevans/vegeta:6.8.1
+      {{- else }}
+      image: seldonio/ghz:v0.55.0
+      {{- end }}
       command: [sh]
       {{- if eq .Values.seldonDeployment.apiType "rest" }}
       source: |
-        echo '{"method": "POST", \
-                "header": {"Content-Type": ["application/json"] }, \
-                "url": "http://{{ .Values.benchmark.host }}/seldon/{{ .Values.workflow.namespace }}/{{ .Values.seldonDeployment.name }}/api/v1.0/predictions", \
-                "body": "{{ .Values.benchmark.data | b64enc }}" }' \
+        echo '{"method": "POST", "header": {"Content-Type": ["application/json"] }, "url": "http://{{ .Values.benchmark.host }}/seldon/{{ .Values.workflow.namespace }}/{{ .Values.seldonDeployment.name }}/api/v1.0/predictions", "body": "{{ .Values.benchmark.data | b64enc }}" }' \
           | vegeta \
-                attack \
                 -cpus={{ .Values.benchmark.cpus }} \
+                attack \
                 -duration={{ .Values.benchmark.duration }} \
                 -rate={{ .Values.benchmark.rate }} \
                 -max-workers={{ .Values.benchmark.maxWorkers }} \
@@ -102,10 +105,10 @@ spec:
             --data='{{ .Values.benchmark.data }}' \
             --qps={{ .Values.benchmark.rate }} \
             --cpus={{ .Values.benchmark.cpus }} \
-            --duration="{{ .Values.benchmark.duration }}"
+            --duration="{{ .Values.benchmark.duration }}" \
             --format json \
             --metadata='{"seldon": "{{ .Values.seldonDeployment.name }}", "namespace": "{{ .Values.workflow.namespace }}"}' \
-            http://{{ .Values.benchmark.host }} \
+            {{ .Values.benchmark.host }} \
         | jq \
           -c \
           'del(.histogram)|del(.details)'
