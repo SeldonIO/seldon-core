@@ -25,12 +25,5 @@ pipelineConfig:
             - agent:
                 image: snyk/snyk:python-3.7
               dir: python
-              command:
-              - sh
-              - -c
-              args:
-              - make
-              - install &&
-              - snyk
-              - test
+              sh: "make install && snyk test"
 
