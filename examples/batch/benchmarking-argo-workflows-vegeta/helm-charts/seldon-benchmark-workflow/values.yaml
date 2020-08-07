@@ -39,7 +39,7 @@ seldonDeployment:
 # The benchmark worker is the component that will send the requests from the files
 benchmark:
   # Endpoint of for the benchmark client to contact the seldon deployment
-  host: istio-ingressgateway.istio-system.svc.cluster.local
+  host: istio-ingressgateway.istio-system.svc.cluster.local:80
   # Number of parallel benchmark client workers to process the data
   cpus: 4
   # Maximum number of workers to allocate for a benchmark
@@ -48,9 +48,7 @@ benchmark:
   duration: 30s
   # Rate (number of requests per second [0 = infinity])
   rate: 0
-  # Number of times client will try to send a request if it fails
-  retries: 3
   # Image to use for benchmark
-  image: peterevans/vegeta:6.8.1
+  imageOverride:
   # Data that the benchmark worker will use to send
-  data: '{"data": {"ndarray": [[0,1,2,3]], "names": []}}'
+  data: '{"data": {"ndarray": [[0,1,2,3]]}}'

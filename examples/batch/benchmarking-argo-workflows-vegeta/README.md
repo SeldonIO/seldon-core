@@ -39,21 +39,26 @@ We will run a batch job that will set up a Seldon Deployment with 1 replicas and
 
 
 ```python
-!helm template seldon-batch-workflow helm-charts/seldon-batch-workflow/ \
-    --set workflow.name=seldon-batch-process \
+!helm template seldon-benchmark-workflow helm-charts/seldon-benchmark-workflow/ \
+    --set workflow.name=seldon-benchmark-process \
     --set seldonDeployment.name=sklearn \
     --set seldonDeployment.replicas=1 \
     --set seldonDeployment.serverWorkers=1 \
     --set seldonDeployment.serverThreads=10 \
+    --set seldonDeployment.apiType=rest \
     --set benchmark.cpus=4 \
+    --set benchmark.maxWorkers=100 \
+    --set benchmark.duration=30s \
+    --set benchmark.rate=0 \
+    --set benchmark.data='\{"data": {"ndarray": [[0\,1\,2\,3]]\}\}' \
     | argo submit -
 ```
 
-    Name:                seldon-batch-process
+    Name:                seldon-benchmark-process
     Namespace:           default
     ServiceAccount:      default
     Status:              Pending
-    Created:             Thu Aug 06 14:54:09 +0100 (now)
+    Created:             Fri Aug 07 17:55:06 +0100 (now)
 
 
 
@@ -61,89 +66,197 @@ We will run a batch job that will set up a Seldon Deployment with 1 replicas and
 !argo list
 ```
 
-    NAME                   STATUS      AGE   DURATION   PRIORITY
-    seldon-batch-process   Succeeded   1m    1m         0
+    NAME                       STATUS    AGE   DURATION   PRIORITY
+    seldon-benchmark-process   Running   3s    3s         0
 
 
 
 ```python
-!argo get seldon-batch-process
+!argo get seldon-benchmark-process
 ```
 
-    Name:                seldon-batch-process
+    Name:                seldon-benchmark-process
     Namespace:           default
     ServiceAccount:      default
     Status:              Succeeded
-    Created:             Thu Aug 06 14:40:51 +0100 (1 minute ago)
-    Started:             Thu Aug 06 14:40:51 +0100 (1 minute ago)
-    Finished:            Thu Aug 06 14:41:57 +0100 (7 seconds ago)
-    Duration:            1 minute 6 seconds
+    Created:             Fri Aug 07 17:55:06 +0100 (1 minute ago)
+    Started:             Fri Aug 07 17:55:06 +0100 (1 minute ago)
+    Finished:            Fri Aug 07 17:56:11 +0100 (3 seconds ago)
+    Duration:            1 minute 5 seconds
     
-    [39mSTEP[0m                                                             PODNAME                          DURATION  MESSAGE
-     [32m✔[0m seldon-batch-process (seldon-batch-process)                                                              
-     ├---[32m✔[0m create-seldon-resource (create-seldon-resource-template)  seldon-batch-process-3626514072  1s        
-     ├---[32m✔[0m wait-seldon-resource (wait-seldon-resource-template)      seldon-batch-process-2052519094  27s       
-     └---[32m✔[0m run-benchmark (run-benchmark-template)                    seldon-batch-process-244800534   33s       
+    [39mSTEP[0m                                                             PODNAME                              DURATION  MESSAGE
+     [32m✔[0m seldon-benchmark-process (seldon-benchmark-process)                                                          
+     ├---[32m✔[0m create-seldon-resource (create-seldon-resource-template)  seldon-benchmark-process-3980407503  2s        
+     ├---[32m✔[0m wait-seldon-resource (wait-seldon-resource-template)      seldon-benchmark-process-2136965893  27s       
+     └---[32m✔[0m run-benchmark (run-benchmark-template)                    seldon-benchmark-process-780051119   32s       
 
 
 
 ```python
-!argo logs -w seldon-batch-process 
+!argo logs -w seldon-benchmark-process 
 ```
 
-    [35mcreate-seldon-resource[0m:	time="2020-08-06T13:54:10.329Z" level=info msg="Starting Workflow Executor" version=v2.9.3
-    [35mcreate-seldon-resource[0m:	time="2020-08-06T13:54:10.333Z" level=info msg="Creating a docker executor"
-    [35mcreate-seldon-resource[0m:	time="2020-08-06T13:54:10.333Z" level=info msg="Executor (version: v2.9.3, build_date: 2020-07-18T19:11:19Z) initialized (pod: default/seldon-batch-process-3626514072) with template:\n{\"name\":\"create-seldon-resource-template\",\"arguments\":{},\"inputs\":{},\"outputs\":{},\"metadata\":{},\"resource\":{\"action\":\"create\",\"manifest\":\"apiVersion: machinelearning.seldon.io/v1\\nkind: SeldonDeployment\\nmetadata:\\n  name: \\\"sklearn\\\"\\n  namespace: default\\n  ownerReferences:\\n  - apiVersion: argoproj.io/v1alpha1\\n    blockOwnerDeletion: true\\n    kind: Workflow\\n    name: \\\"seldon-batch-process\\\"\\n    uid: \\\"853b463e-cd3f-42f8-b99a-0f82a83cf6f4\\\"\\nspec:\\n  name: \\\"sklearn\\\"\\n  predictors:\\n    - componentSpecs:\\n      - spec:\\n        containers:\\n        - name: classifier\\n          env:\\n          - name: GUNICORN_THREADS\\n            value: 10\\n          - name: GUNICORN_WORKERS\\n            value: 1\\n          resources:\\n            requests:\\n              cpu: 50m\\n              memory: 100Mi\\n            limits:\\n              cpu: 50m\\n              memory: 1000Mi\\n      graph:\\n        children: []\\n        implementation: SKLEARN_SERVER\\n        modelUri: gs://seldon-models/sklearn/iris\\n        name: classifier\\n      name: default\\n      replicas: 1\\n\"}}"
-    [35mcreate-seldon-resource[0m:	time="2020-08-06T13:54:10.333Z" level=info msg="Loading manifest to /tmp/manifest.yaml"
-    [35mcreate-seldon-resource[0m:	time="2020-08-06T13:54:10.333Z" level=info msg="kubectl create -f /tmp/manifest.yaml -o json"
-    [35mcreate-seldon-resource[0m:	time="2020-08-06T13:54:10.945Z" level=info msg=default/SeldonDeployment.machinelearning.seldon.io/sklearn
-    [35mcreate-seldon-resource[0m:	time="2020-08-06T13:54:10.945Z" level=info msg="No output parameters"
+    [35mcreate-seldon-resource[0m:	time="2020-08-07T16:55:07.490Z" level=info msg="Starting Workflow Executor" version=v2.9.3
+    [35mcreate-seldon-resource[0m:	time="2020-08-07T16:55:07.497Z" level=info msg="Creating a docker executor"
+    [35mcreate-seldon-resource[0m:	time="2020-08-07T16:55:07.499Z" level=info msg="Executor (version: v2.9.3, build_date: 2020-07-18T19:11:19Z) initialized (pod: default/seldon-benchmark-process-3980407503) with template:\n{\"name\":\"create-seldon-resource-template\",\"arguments\":{},\"inputs\":{},\"outputs\":{},\"metadata\":{},\"resource\":{\"action\":\"create\",\"manifest\":\"apiVersion: machinelearning.seldon.io/v1\\nkind: SeldonDeployment\\nmetadata:\\n  name: \\\"sklearn\\\"\\n  namespace: default\\n  ownerReferences:\\n  - apiVersion: argoproj.io/v1alpha1\\n    blockOwnerDeletion: true\\n    kind: Workflow\\n    name: \\\"seldon-benchmark-process\\\"\\n    uid: \\\"b56998f0-2f6c-4f76-89b3-8b8b24ee9ec4\\\"\\nspec:\\n  name: \\\"sklearn\\\"\\n  transport: rest\\n  predictors:\\n    - componentSpecs:\\n      - spec:\\n        containers:\\n        - name: classifier\\n          env:\\n          - name: GUNICORN_THREADS\\n            value: 10\\n          - name: GUNICORN_WORKERS\\n            value: 1\\n          resources:\\n            requests:\\n              cpu: 50m\\n              memory: 100Mi\\n            limits:\\n              cpu: 50m\\n              memory: 1000Mi\\n      graph:\\n        children: []\\n        implementation: SKLEARN_SERVER\\n        modelUri: gs://seldon-models/sklearn/iris\\n        name: classifier\\n      name: default\\n      replicas: 1\\n\"}}"
+    [35mcreate-seldon-resource[0m:	time="2020-08-07T16:55:07.499Z" level=info msg="Loading manifest to /tmp/manifest.yaml"
+    [35mcreate-seldon-resource[0m:	time="2020-08-07T16:55:07.499Z" level=info msg="kubectl create -f /tmp/manifest.yaml -o json"
+    [35mcreate-seldon-resource[0m:	time="2020-08-07T16:55:08.210Z" level=info msg=default/SeldonDeployment.machinelearning.seldon.io/sklearn
+    [35mcreate-seldon-resource[0m:	time="2020-08-07T16:55:08.211Z" level=info msg="No output parameters"
     [32mwait-seldon-resource[0m:	Waiting for deployment "sklearn-default-0-classifier" rollout to finish: 0 of 1 updated replicas are available...
     [32mwait-seldon-resource[0m:	deployment "sklearn-default-0-classifier" successfully rolled out
-    [35mrun-benchmark[0m:	{"latencies":{"total":3013824928755,"mean":263055331,"50th":261546418,"90th":289796292,"95th":297608972,"99th":324027882,"max":1364625689,"min":22613200},"bytes_in":{"total":1420668,"mean":124},"bytes_out":{"total":538479,"mean":47},"earliest":"2020-08-06T13:54:42.340084846Z","latest":"2020-08-06T13:55:12.339980392Z","end":"2020-08-06T13:55:12.624864691Z","duration":29999895546,"wait":284884299,"requests":11457,"rate":381.9013297040498,"throughput":378.3088422183642,"success":1,"status_codes":{"200":11457},"errors":[]}
+    [35mrun-benchmark[0m:	{"latencies":{"total":3009995580656,"mean":273785299,"50th":223315257,"90th":262145632,"95th":271603494,"99th":2137159641,"max":5772979420,"min":17831002},"bytes_in":{"total":1363256,"mean":124},"bytes_out":{"total":373796,"mean":34},"earliest":"2020-08-07T16:55:39.319895683Z","latest":"2020-08-07T16:56:09.320730933Z","end":"2020-08-07T16:56:09.523609512Z","duration":30000835250,"wait":202878579,"requests":10994,"rate":366.4564639079507,"throughput":363.9949730103768,"success":1,"status_codes":{"200":10994},"errors":[]}
 
-
-
-```python
-def print_vegeta_results(results):
-    print("Latencies:")
-    print("\tmean:", results["latencies"]["mean"] / 1e6, "ms")
-    print("\t50th:", results["latencies"]["50th"] / 1e6, "ms")
-    print("\t90th:", results["latencies"]["90th"] / 1e6, "ms")
-    print("\t95th:", results["latencies"]["95th"] / 1e6, "ms")
-    print("\t99th:", results["latencies"]["99th"] / 1e6, "ms")
-    print("")
-    print("Throughput:", str(results["throughput"]) + "/s")
-    print("Errors:", len(results["errors"]) > 0)
-```
 
 
 ```python
 import json
-wf_logs = !argo logs -w seldon-batch-process 
+wf_logs = !argo logs -w seldon-benchmark-process 
 wf_bench = wf_logs[-1]
 wf_json_str = wf_bench[24:]
-wf_json = json.loads(wf_json_str)
-print_vegeta_results(wf_json)
+results = json.loads(wf_json_str)
+
+print("Latencies:")
+print("\tmean:", results["latencies"]["mean"] / 1e6, "ms")
+print("\t50th:", results["latencies"]["50th"] / 1e6, "ms")
+print("\t90th:", results["latencies"]["90th"] / 1e6, "ms")
+print("\t95th:", results["latencies"]["95th"] / 1e6, "ms")
+print("\t99th:", results["latencies"]["99th"] / 1e6, "ms")
+print("")
+print("Throughput:", str(results["throughput"]) + "/s")
+print("Errors:", len(results["errors"]) > 0)
 ```
 
     Latencies:
-    	mean: 263.055331 ms
-    	50th: 261.546418 ms
-    	90th: 289.796292 ms
-    	95th: 297.608972 ms
-    	99th: 324.027882 ms
+    	mean: 273.785299 ms
+    	50th: 223.315257 ms
+    	90th: 262.145632 ms
+    	95th: 271.603494 ms
+    	99th: 2137.159641 ms
     
-    Throughput: 378.3088422183642/s
+    Throughput: 363.9949730103768/s
     Errors: False
 
 
 
 ```python
-!argo delete seldon-batch-process
+!argo delete seldon-benchmark-process
 ```
 
-    Workflow 'seldon-batch-process' deleted
+    Workflow 'seldon-benchmark-process' deleted
+
+
+## Create GRPC benchmark with GHZ and Argo Workflows 
+
+
+```python
+!helm template seldon-benchmark-workflow helm-charts/seldon-benchmark-workflow/ \
+    --set workflow.name=seldon-benchmark-process \
+    --set seldonDeployment.name=sklearn \
+    --set seldonDeployment.replicas=1 \
+    --set seldonDeployment.serverWorkers=1 \
+    --set seldonDeployment.serverThreads=10 \
+    --set seldonDeployment.apiType=grpc \
+    --set benchmark.cpus=4 \
+    --set benchmark.maxWorkers=100 \
+    --set benchmark.duration="30s" \
+    --set benchmark.rate=0 \
+    --set benchmark.data='\{"data": {"ndarray": [[0\,1\,2\,3]]\}\}' \
+    | argo submit -
+```
+
+    Name:                seldon-benchmark-process
+    Namespace:           default
+    ServiceAccount:      default
+    Status:              Pending
+    Created:             Fri Aug 07 17:56:34 +0100 (now)
+
+
+
+```python
+!argo list
+```
+
+    NAME                       STATUS    AGE   DURATION   PRIORITY
+    seldon-benchmark-process   Running   3s    3s         0
+
+
+
+```python
+!argo get seldon-benchmark-process
+```
+
+    Name:                seldon-benchmark-process
+    Namespace:           default
+    ServiceAccount:      default
+    Status:              Succeeded
+    Created:             Fri Aug 07 17:56:34 +0100 (1 minute ago)
+    Started:             Fri Aug 07 17:56:34 +0100 (1 minute ago)
+    Finished:            Fri Aug 07 17:57:36 +0100 (6 seconds ago)
+    Duration:            1 minute 2 seconds
+    
+    [39mSTEP[0m                                                             PODNAME                              DURATION  MESSAGE
+     [32m✔[0m seldon-benchmark-process (seldon-benchmark-process)                                                          
+     ├---[32m✔[0m create-seldon-resource (create-seldon-resource-template)  seldon-benchmark-process-3980407503  1s        
+     ├---[32m✔[0m wait-seldon-resource (wait-seldon-resource-template)      seldon-benchmark-process-2136965893  25s       
+     └---[32m✔[0m run-benchmark (run-benchmark-template)                    seldon-benchmark-process-780051119   31s       
+
+
+
+```python
+!argo logs -w seldon-benchmark-process 
+```
+
+    [35mcreate-seldon-resource[0m:	time="2020-08-07T16:56:35.211Z" level=info msg="Starting Workflow Executor" version=v2.9.3
+    [35mcreate-seldon-resource[0m:	time="2020-08-07T16:56:35.214Z" level=info msg="Creating a docker executor"
+    [35mcreate-seldon-resource[0m:	time="2020-08-07T16:56:35.214Z" level=info msg="Executor (version: v2.9.3, build_date: 2020-07-18T19:11:19Z) initialized (pod: default/seldon-benchmark-process-3980407503) with template:\n{\"name\":\"create-seldon-resource-template\",\"arguments\":{},\"inputs\":{},\"outputs\":{},\"metadata\":{},\"resource\":{\"action\":\"create\",\"manifest\":\"apiVersion: machinelearning.seldon.io/v1\\nkind: SeldonDeployment\\nmetadata:\\n  name: \\\"sklearn\\\"\\n  namespace: default\\n  ownerReferences:\\n  - apiVersion: argoproj.io/v1alpha1\\n    blockOwnerDeletion: true\\n    kind: Workflow\\n    name: \\\"seldon-benchmark-process\\\"\\n    uid: \\\"8164ae2c-9578-47d1-8007-356c5c9c4d65\\\"\\nspec:\\n  name: \\\"sklearn\\\"\\n  transport: grpc\\n  predictors:\\n    - componentSpecs:\\n      - spec:\\n        containers:\\n        - name: classifier\\n          env:\\n          - name: GUNICORN_THREADS\\n            value: 10\\n          - name: GUNICORN_WORKERS\\n            value: 1\\n          resources:\\n            requests:\\n              cpu: 50m\\n              memory: 100Mi\\n            limits:\\n              cpu: 50m\\n              memory: 1000Mi\\n      graph:\\n        children: []\\n        implementation: SKLEARN_SERVER\\n        modelUri: gs://seldon-models/sklearn/iris\\n        name: classifier\\n      name: default\\n      replicas: 1\\n\"}}"
+    [35mcreate-seldon-resource[0m:	time="2020-08-07T16:56:35.214Z" level=info msg="Loading manifest to /tmp/manifest.yaml"
+    [35mcreate-seldon-resource[0m:	time="2020-08-07T16:56:35.214Z" level=info msg="kubectl create -f /tmp/manifest.yaml -o json"
+    [35mcreate-seldon-resource[0m:	time="2020-08-07T16:56:35.772Z" level=info msg=default/SeldonDeployment.machinelearning.seldon.io/sklearn
+    [35mcreate-seldon-resource[0m:	time="2020-08-07T16:56:35.772Z" level=info msg="No output parameters"
+    [32mwait-seldon-resource[0m:	Waiting for deployment "sklearn-default-0-classifier" rollout to finish: 0 of 1 updated replicas are available...
+    [32mwait-seldon-resource[0m:	deployment "sklearn-default-0-classifier" successfully rolled out
+    [35mrun-benchmark[0m:	{"date":"2020-08-07T16:57:35Z","endReason":"timeout","options":{"host":"istio-ingressgateway.istio-system.svc.cluster.local:80","proto":"/proto/prediction.proto","import-paths":["/proto","."],"call":"seldon.protos.Seldon/Predict","insecure":true,"total":2147483647,"concurrency":50,"connections":1,"duration":30000000000,"timeout":20000000000,"dial-timeout":10000000000,"data":{"data":{"ndarray":[[0,1,2,3]]}},"binary":false,"metadata":{"namespace":"default","seldon":"sklearn"},"CPUs":4},"count":15426,"total":30000789586,"average":96978401,"fastest":25564101,"slowest":213825809,"rps":514.1864668521462,"errorDistribution":{"rpc error: code = Unavailable desc = transport is closing":50},"statusCodeDistribution":{"OK":15376,"Unavailable":50},"latencyDistribution":[{"percentage":10,"latency":74147803},{"percentage":25,"latency":81290000},{"percentage":50,"latency":95194883},{"percentage":75,"latency":108884099},{"percentage":90,"latency":123530079},{"percentage":95,"latency":133409105},{"percentage":99,"latency":153339606}]}
+
+
+
+```python
+import json
+wf_logs = !argo logs -w seldon-benchmark-process 
+wf_bench = wf_logs[-1]
+wf_json_str = wf_bench[24:]
+results = json.loads(wf_json_str)
+
+print("Latencies:")
+print("\tmean:", results["average"] / 1e6, "ms")
+print("\t50th:", results["latencyDistribution"][-5]["latency"] / 1e6, "ms")
+print("\t90th:", results["latencyDistribution"][-3]["latency"] / 1e6, "ms")
+print("\t95th:", results["latencyDistribution"][-2]["latency"] / 1e6, "ms")
+print("\t99th:", results["latencyDistribution"][-1]["latency"] / 1e6, "ms")
+print("")
+print("Rate:", str(results["rps"]) + "/s")
+print("Errors:", results["statusCodeDistribution"].get("Unavailable", 0) > 0)
+print("Errors:", results["statusCodeDistribution"])
+```
+
+    Latencies:
+    	mean: 96.978401 ms
+    	50th: 95.194883 ms
+    	90th: 123.530079 ms
+    	95th: 133.409105 ms
+    	99th: 153.339606 ms
+    
+    rps: 514.1864668521462/s
+    Errors: True
+    Errors: {'OK': 15376, 'Unavailable': 50}
+
+
+
+```python
+!argo delete seldon-benchmark-process
+```
+
+    Workflow 'seldon-benchmark-process' deleted
 
 
 
