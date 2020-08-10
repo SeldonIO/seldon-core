@@ -14,7 +14,7 @@ require (
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.7.1
-	github.com/prometheus/common v0.10.0
+	github.com/prometheus/common v0.11.1
 	github.com/seldonio/seldon-core/operator v0.0.0-00010101000000-000000000000
 	github.com/soheilhy/cmux v0.1.4
 	github.com/tensorflow/tensorflow/tensorflow/go/core v0.0.0-00010101000000-000000000000
