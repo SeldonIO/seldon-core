@@ -418,7 +418,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
       <!-- Waiting on https://github.com/jaegertracing/jaeger-client-java/issues/666 -->
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>okhttp</artifactId>
-      <version>4.8.0</version>
+      <version>4.8.1</version>
     </dependency>
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
