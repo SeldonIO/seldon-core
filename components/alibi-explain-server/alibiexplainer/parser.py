@@ -23,6 +23,7 @@ import kfserving
 import logging
 import os
 from alibiexplainer.explainer import ExplainerMethod  # pylint:disable=no-name-in-module
+import alibiexplainer
 
 logging.basicConfig(level=kfserving.constants.KFSERVING_LOGLEVEL)
 
@@ -150,7 +151,7 @@ def addCommonParserArgs(parser):
 
 
 def parse_args(sys_args):
-    parser = argparse.ArgumentParser(parents=[kfserving.kfserver.parser])
+    parser = argparse.ArgumentParser(parents=[alibiexplainer.server.parser])
     parser.add_argument(
         "--model_name",
         default=DEFAULT_EXPLAINER_NAME,
@@ -164,6 +165,14 @@ def parse_args(sys_args):
         help="The URI of a pretrained explainer",
         default=os.environ.get(ENV_STORAGE_URI),
     )
+
+    # Additions for Seldon
+    parser.add_argument('--protocol', default=str(alibiexplainer.Protocol.seldon_grpc),
+                        choices=[str(p) for p in alibiexplainer.Protocol],
+                        help='Whether to use grpc to call predictor')
+    parser.add_argument('--tf_data_type',
+                        help='Tensorflow payload datatype - only with seldon.grpc')
+
     subparsers = parser.add_subparsers(help="sub-command help", dest="command")
 
     # Anchor Tabular Arguments

@@ -45,9 +45,15 @@ curl_predict_adult:
 run_explainer_adult:
 	python -m alibiexplainer --model_name adult --protocol seldon.http --storage_uri gs://seldon-models/sklearn/income/alibi/0.4.0 --predictor_host localhost:5000 AnchorTabular
 
+run_explainer_adult_docker:
+	docker run --rm -d --name "explainer" --network=host -p 8080:8080 seldonio/${IMAGE}:${VERSION} --model_name adult --protocol seldon.http --storage_uri gs://seldon-models/sklearn/income/alibi/0.4.0 --predictor_host localhost:5000 AnchorTabular
+
 curl_explain_adult:
 	curl -d '{"data": {"ndarray":[[39, 7, 1, 1, 1, 1, 4, 1, 2174, 0, 40, 9]]}}'    -X POST http://localhost:8080/api/v1.0/explain    -H "Content-Type: application/json"
 
+cleanup_adult:
+	docker rm -f sklearnserver
+	docker rm -f explainer
 
 #
 # Test Text Explanations
@@ -62,9 +68,15 @@ curl_predict_movie:
 run_explainer_movie:
 	python -m alibiexplainer --model_name adult --protocol seldon.http --predictor_host localhost:5000 AnchorText
 
+run_explainer_movie_docker:
+	docker run --rm -d --name "explainer" --network=host -p 8080:8080 seldonio/${IMAGE}:${VERSION} --model_name adult --protocol seldon.http --predictor_host localhost:5000 AnchorText
+
 curl_explain_movie:
 	curl -d '{"data": {"ndarray":["a visually exquisite but narratively opaque and emotionally vapid experience of style and mystification"]}}'    -X POST http://localhost:8080/api/v1.0/explain    -H "Content-Type: application/json"
 
+cleanup_movie:
+	docker rm -f sklearnserver
+	docker rm -f explainer
 
 #
 # Test Image Explanation
@@ -85,6 +97,12 @@ curl_predict_image:
 run_explainer_image:
 	python -m alibiexplainer --model_name resnet32 --protocol tensorflow.http --storage_uri gs://seldon-models/tfserving/imagenet/alibi/0.4.0 --predictor_host localhost:8501 AnchorImages
 
+run_explainer_image_docker:
+	docker run --rm -d --name "explainer" --network=host -p 8080:8080 seldonio/${IMAGE}:${VERSION} --model_name resnet32 --protocol tensorflow.http --storage_uri gs://seldon-models/tfserving/imagenet/alibi/0.4.0 --predictor_host localhost:8501 AnchorImages
 
 curl_explain_image:
 	curl -d @./input.json  -X POST http://localhost:8080/v1/models/resnet32:explain    -H "Content-Type: application/json"
+
+cleanup_image:
+	docker rm -f tfserver
+	docker rm -f explainer
