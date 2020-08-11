@@ -634,7 +634,7 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 		},
 	}
 	if isExecutorEnabled(mlDep) {
-		psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_http_port), TargetPort: intstr.FromInt(engine_http_port), Name: "http2"})
+		psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_http_port), TargetPort: intstr.FromInt(engine_http_port), Name: "executor"})
 	} else {
 		if engine_http_port != 0 && len(psvc.Spec.Ports) == 0 {
 			psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_http_port), TargetPort: intstr.FromInt(engine_http_port), Name: "http"})
