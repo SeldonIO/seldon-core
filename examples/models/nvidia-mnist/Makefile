@@ -7,7 +7,7 @@ clean:
 	rm -f tmp.json
 
 build_transformer:
-	s2i build . seldonio/seldon-core-s2i-python3:1.3.0-dev ${TRANSFORMER_IMAGE}
+	s2i build . seldonio/seldon-core-s2i-python3:1.3.0-dev_20200811141454 ${TRANSFORMER_IMAGE}
 
 push_transformer:
 	docker push ${TRANSFORMER_IMAGE}
