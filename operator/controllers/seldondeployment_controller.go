@@ -206,10 +206,45 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 			},
 		},
 	}
+
+	http2Vsvc := &istio.VirtualService{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      seldonId + "-http2",
+			Namespace: namespace,
+		},
+		Spec: istio_networking.VirtualService{
+			Hosts:    []string{"*"},
+			Gateways: []string{getAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
+			Http: []*istio_networking.HTTPRoute{
+				{
+					Match: []*istio_networking.HTTPMatchRequest{
+						{
+							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Prefix{Prefix: "/seldon/" + namespace + "/" + mlDep.Name + "/"}},
+						},
+					},
+					Rewrite: &istio_networking.HTTPRewrite{Uri: "/"},
+				},
+				{
+					Match: []*istio_networking.HTTPMatchRequest{
+						{
+							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Regex{Regex: constants.GRPCRegExMatchIstio}},
+							Headers: map[string]*istio_networking.StringMatch{
+								"seldon":    &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Exact{Exact: mlDep.Name}},
+								"namespace": &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Exact{Exact: namespace}},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
 	// Add retries
 	if istioRetries > 0 {
 		httpVsvc.Spec.Http[0].Retries = &istio_networking.HTTPRetry{Attempts: int32(istioRetries), PerTryTimeout: &types2.Duration{Seconds: int64(istioRetriesTimeout)}, RetryOn: "gateway-error,connect-failure,refused-stream"}
 		grpcVsvc.Spec.Http[0].Retries = &istio_networking.HTTPRetry{Attempts: int32(istioRetries), PerTryTimeout: &types2.Duration{Seconds: int64(istioRetriesTimeout)}, RetryOn: "gateway-error,connect-failure,refused-stream"}
+		http2Vsvc.Spec.Http[0].Retries = &istio_networking.HTTPRetry{Attempts: int32(istioRetries), PerTryTimeout: &types2.Duration{Seconds: int64(istioRetriesTimeout)}, RetryOn: "gateway-error,connect-failure,refused-stream"}
+		http2Vsvc.Spec.Http[1].Retries = &istio_networking.HTTPRetry{Attempts: int32(istioRetries), PerTryTimeout: &types2.Duration{Seconds: int64(istioRetriesTimeout)}, RetryOn: "gateway-error,connect-failure,refused-stream"}
 	}
 
 	// shadows don't get destinations in the vs as a shadow is a mirror instead
@@ -223,6 +258,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 
 	routesHttp := make([]*istio_networking.HTTPRouteDestination, len(mlDep.Spec.Predictors)-shadows)
 	routesGrpc := make([]*istio_networking.HTTPRouteDestination, len(mlDep.Spec.Predictors)-shadows)
+	routesHttp2 := make([]*istio_networking.HTTPRouteDestination, len(mlDep.Spec.Predictors)-shadows)
 
 	// the shdadow/mirror entry does need a DestinationRule though
 	drules := make([]*istio.DestinationRule, len(mlDep.Spec.Predictors))
@@ -279,6 +315,22 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 				},
 			}
 
+			http2Vsvc.Spec.Http[0].Mirror = &istio_networking.Destination{
+				Host:   pSvcName,
+				Subset: p.Name,
+				Port: &istio_networking.PortSelector{
+					Number: uint32(ports[i].httpPort),
+				},
+			}
+
+			http2Vsvc.Spec.Http[1].Mirror = &istio_networking.Destination{
+				Host:   pSvcName,
+				Subset: p.Name,
+				Port: &istio_networking.PortSelector{
+					Number: uint32(ports[i].httpPort),
+				},
+			}
+
 			continue
 		}
 
@@ -304,13 +356,30 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 			},
 			Weight: p.Traffic,
 		}
+
+		routesHttp2[routesIdx] = &istio_networking.HTTPRouteDestination{
+			Destination: &istio_networking.Destination{
+				Host:   pSvcName,
+				Subset: p.Name,
+				Port: &istio_networking.PortSelector{
+					Number: uint32(ports[i].httpPort),
+				},
+			},
+			Weight: p.Traffic,
+		}
 		routesIdx += 1
 
 	}
 	httpVsvc.Spec.Http[0].Route = routesHttp
 	grpcVsvc.Spec.Http[0].Route = routesGrpc
+	http2Vsvc.Spec.Http[0].Route = routesHttp2
+	http2Vsvc.Spec.Http[1].Route = routesHttp2
 
-	if httpAllowed && grpcAllowed {
+	if isExecutorEnabled(mlDep) {
+		vscs := make([]*istio.VirtualService, 1)
+		vscs[0] = http2Vsvc
+		return vscs, drules, nil
+	} else if httpAllowed && grpcAllowed {
 		vscs := make([]*istio.VirtualService, 2)
 		vscs[0] = httpVsvc
 		vscs[1] = grpcVsvc
