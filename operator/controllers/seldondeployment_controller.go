@@ -95,6 +95,13 @@ type httpGrpcPorts struct {
 	grpcPort int
 }
 
+func init() {
+	// Allow unknown fields in Istio API client.  This is so that we are more resilience
+	// in cases user clusers have malformed resources.
+	istio_networking.VirtualServiceUnmarshaler.AllowUnknownFields = true
+	istio_networking.GatewayUnmarshaler.AllowUnknownFields = true
+}
+
 func createAddressableResource(mlDep *machinelearningv1.SeldonDeployment, namespace string) (*machinelearningv1.SeldonAddressable, error) {
 	// It was an explicit design decision to expose the service name instead of the ingress
 	// Currently there will only be a URL for the first predictor, and assumes always REST
