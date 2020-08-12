@@ -24,6 +24,7 @@ import logging
 import os
 from alibiexplainer.explainer import ExplainerMethod  # pylint:disable=no-name-in-module
 import alibiexplainer
+from alibiexplainer import server_parser
 
 logging.basicConfig(level=kfserving.constants.KFSERVING_LOGLEVEL)
 
@@ -151,7 +152,7 @@ def addCommonParserArgs(parser):
 
 
 def parse_args(sys_args):
-    parser = argparse.ArgumentParser(parents=[alibiexplainer.server.parser])
+    parser = argparse.ArgumentParser(parents=[server_parser])
     parser.add_argument(
         "--model_name",
         default=DEFAULT_EXPLAINER_NAME,

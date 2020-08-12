@@ -17,9 +17,7 @@ from setuptools import setup, find_packages
 tests_require = [
     'pytest',
     'pytest-tornasync',
-    'mypy',
-    "tensorflow>=1.10.1,<1.14",
-    "keras-applications==1.0.8"
+    'mypy'
 ]
 
 setup(
@@ -34,18 +32,13 @@ setup(
     packages=find_packages("alibiexplainer"),
     install_requires=[
         "kfserving>=0.3.0",
-        "alibi==0.4.0",
+        "alibi==0.5.2",
         "scikit-learn== 0.20.3",
         "argparse>=1.4.0",
         "requests>=2.22.0",
         "joblib>=0.13.2",
-        "pandas>=0.24.2",
-        "numpy>=1.16.3",
         "dill>=0.3.0",
-        "spacy>=2.1.4",
-        "grpcio>=1.22.0",
-        "tensorflow>=1.10.1,<1.14",
-        "keras-applications==1.0.8"
+        "grpcio>=1.22.0"
     ],
     tests_require=tests_require,
     extras_require={'test': tests_require}

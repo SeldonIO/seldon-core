@@ -16,16 +16,16 @@ DEFAULT_HTTP_PORT = 8080
 DEFAULT_GRPC_PORT = 8081
 DEFAULT_MAX_BUFFER_SIZE = 104857600
 
-parser = argparse.ArgumentParser(add_help=False)
-parser.add_argument('--http_port', default=DEFAULT_HTTP_PORT, type=int,
-                    help='The HTTP Port listened to by the model server.')
-parser.add_argument('--grpc_port', default=DEFAULT_GRPC_PORT, type=int,
-                    help='The GRPC Port listened to by the model server.')
-parser.add_argument('--max_buffer_size', default=DEFAULT_MAX_BUFFER_SIZE, type=int,
-                    help='The max buffer size for tornado.')
-parser.add_argument('--workers', default=0, type=int,
-                    help='The number of works to fork')
-args, _ = parser.parse_known_args()
+server_parser = argparse.ArgumentParser(add_help=False)
+server_parser.add_argument('--http_port', default=DEFAULT_HTTP_PORT, type=int,
+                           help='The HTTP Port listened to by the model server.')
+server_parser.add_argument('--grpc_port', default=DEFAULT_GRPC_PORT, type=int,
+                           help='The GRPC Port listened to by the model server.')
+server_parser.add_argument('--max_buffer_size', default=DEFAULT_MAX_BUFFER_SIZE, type=int,
+                           help='The max buffer size for tornado.')
+server_parser.add_argument('--workers', default=0, type=int,
+                           help='The number of works to fork')
+args, _ = server_parser.parse_known_args()
 
 tornado.log.enable_pretty_logging()
 

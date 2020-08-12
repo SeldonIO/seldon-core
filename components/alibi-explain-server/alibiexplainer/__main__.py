@@ -21,7 +21,7 @@ import logging
 import os
 import kfserving
 import dill
-from alibiexplainer.server import parser, ExplainerServer
+from alibiexplainer.server import server_parser, ExplainerServer
 from alibiexplainer import AlibiExplainer, Protocol
 from alibiexplainer.explainer import ExplainerMethod  # pylint:disable=no-name-in-module
 from alibiexplainer.constants import SELDON_LOGLEVEL
