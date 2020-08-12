@@ -121,6 +121,7 @@ Documentation Index
    Articles/Blogs <tutorials/blogs>
    Videos <tutorials/videos>
    Podcasts <tutorials/podcasts>
+   Kubeflow Pipelines <https://github.com/kubeflow/pipelines/blob/master/samples/contrib/e2e-outlier-drift-explainer/seldon/README.md>
 
 .. toctree::
    :maxdepth: 1
