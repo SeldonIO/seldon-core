@@ -1,0 +1,408 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-2g9zg[0m
+{"level":"info","ts":1597330672.491659,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1597330672.4942374,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-ljvxz[0m
+{"level":"info","ts":1597330674.802457,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1597330674.8045459,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-jc29j[0m
+{"level":"info","ts":1597330753.856668,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1597330753.8587396,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-2275-se-5f4hk-q9gnw[0m
+{"level":"info","ts":1597330754.3252828,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1597330764.4490206,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mpr-build-comment[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:3cefc466e6c77e2b89d8f9372ec83b4b54cad05f,2275:c6df0207dbee6035a78417a22b64dcc795dcba8c
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch origin --unshallow c6df0207dbee6035a78417a22b64dcc795dcba8c: 3cefc466e6c77e2b89d8f9372ec83b4b54cad05f:
+DEBUG: ran git fetch --unshallow origin c6df0207dbee6035a78417a22b64dcc795dcba8c: 3cefc466e6c77e2b89d8f9372ec83b4b54cad05f: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard 3cefc466e6c77e2b89d8f9372ec83b4b54cad05f
+DEBUG: ran git reset --hard 3cefc466e6c77e2b89d8f9372ec83b4b54cad05f in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git merge c6df0207dbee6035a78417a22b64dcc795dcba8c
+DEBUG: ran git merge c6df0207dbee6035a78417a22b64dcc795dcba8c in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git log --format=%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%s%n%b%x1e 3cefc466e6c77e2b89d8f9372ec83b4b54cad05f..HEAD
+Merged SHA c6df0207dbee6035a78417a22b64dcc795dcba8c with commit message 'Updating release-1.2.3' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=2275
++ BUILD_NUMBER=5
++ PIPELINE_CONTEXT=securitychecks
+++ cat
++++ date
++ COMMENT_MSG='Thu Aug 13 14:59:36 UTC 2020
+The logs for [securitychecks] [5] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2275/5.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2275 --build=5'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=2275 '--comment=Thu Aug 13 14:59:36 UTC 2020
+The logs for [securitychecks] [5] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2275/5.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2275 --build=5'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-2275-se-5f4hk-7vp8h[0m
+{"level":"info","ts":1597330778.5259979,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1597330778.6674178,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-2275-se-5f4hk-9ddr2[0m
+{"level":"info","ts":1597330778.886833,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1597330780.0772283,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mrun-executor-tests[0m and container [32mstep-credential-initializer-2cprf[0m
+{"level":"info","ts":1597330787.1335251,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1597330787.1560092,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mrun-executor-tests[0m and container [32mstep-working-dir-initializer-mvsnb[0m
+{"level":"info","ts":1597330789.7777398,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1597330789.7807112,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mrun-executor-tests[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mrun-executor-tests[0m and container [32mstep-create-dir-workspace-6brw9[0m
+{"level":"info","ts":1597330806.7844079,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1597330806.7891378,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mrun-executor-tests[0m and container [32mstep-source-copy-workspace-gwg5s[0m
+{"level":"info","ts":1597330806.9440062,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1597330808.0137758,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mrun-executor-tests[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mrun-executor-tests[0m and container [32mstep-step2[0m
+
+Testing /workspace/source/executor...
+
+Organization:      as-swz
+Package manager:   gomodules
+Target file:       go.mod
+Project name:      github.com/seldonio/seldon-core/executor
+Open source:       no
+Project path:      /workspace/source/executor
+Licenses:          enabled
+
+✓ Tested 432 dependencies for known issues, no vulnerable paths found.
+
+-------------------------------------------------------
+
+Testing /workspace/source/executor...
+
+Organization:      as-swz
+Package manager:   gomodules
+Target file:       hack/tools/go.mod
+Project name:      sigs.k8s.io/kind/hack/tools
+Open source:       no
+Project path:      /workspace/source/executor
+Licenses:          enabled
+
+✓ Tested 203 dependencies for known issues, no vulnerable paths found.
+
+-------------------------------------------------------
+
+Testing /workspace/source/executor...
+
+Organization:      as-swz
+Package manager:   gomodules
+Target file:       operator/go.mod
+Project name:      github.com/seldonio/seldon-core/operator
+Open source:       no
+Project path:      /workspace/source/executor
+Licenses:          enabled
+
+✓ Tested 345 dependencies for known issues, no vulnerable paths found.
+
+-------------------------------------------------------
+
+Testing /workspace/source/executor...
+
+Organization:      as-swz
+Package manager:   gomodules
+Target file:       operator/hack/tools/go.mod
+Project name:      sigs.k8s.io/kind/hack/tools
+Open source:       no
+Project path:      /workspace/source/executor
+Licenses:          enabled
+
+✓ Tested 219 dependencies for known issues, no vulnerable paths found.
+
+-------------------------------------------------------
+
+Testing /workspace/source/executor...
+
+Organization:      as-swz
+Package manager:   gomodules
+Target file:       proto/tensorflow/core/go.mod
+Project name:      github.com/tensorflow/tensorflow/tensorflow/go/core
+Open source:       no
+Project path:      /workspace/source/executor
+Licenses:          enabled
+
+✓ Tested 32 dependencies for known issues, no vulnerable paths found.
+
+
+Tested 5 projects, no vulnerable paths were found.
+
+
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mrun-operator-tests[0m and container [32mstep-credential-initializer-svxc2[0m
+{"level":"info","ts":1597330786.966041,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1597330786.9730237,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mrun-operator-tests[0m and container [32mstep-working-dir-initializer-lgv5q[0m
+{"level":"info","ts":1597330788.071927,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1597330788.0779076,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mrun-operator-tests[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mrun-operator-tests[0m and container [32mstep-create-dir-workspace-vp6rk[0m
+{"level":"info","ts":1597330804.8994057,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1597330804.9034102,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mrun-operator-tests[0m and container [32mstep-source-copy-workspace-hkcpg[0m
+{"level":"info","ts":1597330805.3297513,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1597330806.223776,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mrun-operator-tests[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mrun-operator-tests[0m and container [32mstep-step2[0m
+
+Testing /workspace/source/operator...
+
+Organization:      as-swz
+Package manager:   gomodules
+Target file:       go.mod
+Project name:      github.com/seldonio/seldon-core/operator
+Open source:       no
+Project path:      /workspace/source/operator
+Licenses:          enabled
+
+✓ Tested 345 dependencies for known issues, no vulnerable paths found.
+
+-------------------------------------------------------
+
+Testing /workspace/source/operator...
+
+Organization:      as-swz
+Package manager:   gomodules
+Target file:       hack/tools/go.mod
+Project name:      sigs.k8s.io/kind/hack/tools
+Open source:       no
+Project path:      /workspace/source/operator
+Licenses:          enabled
+
+✓ Tested 219 dependencies for known issues, no vulnerable paths found.
+
+
+Tested 2 projects, no vulnerable paths were found.
+
+
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mrun-python-tests[0m and container [32mstep-credential-initializer-nfd4g[0m
+{"level":"info","ts":1597330787.6321597,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1597330787.632698,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mrun-python-tests[0m and container [32mstep-working-dir-initializer-t4lkz[0m
+{"level":"info","ts":1597330789.151585,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1597330789.267799,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mrun-python-tests[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mrun-python-tests[0m and container [32mstep-create-dir-workspace-vbjnz[0m
+{"level":"info","ts":1597330805.9858801,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1597330805.9905899,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mrun-python-tests[0m and container [32mstep-source-copy-workspace-s5kx6[0m
+{"level":"info","ts":1597330806.583112,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1597330807.1991432,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mrun-python-tests[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2275-se-5f4hk-5[0m stage [32mrun-python-tests[0m and container [32mstep-step2[0m
+Collecting Flask<2.0.0
+  Downloading Flask-1.1.2-py2.py3-none-any.whl (94 kB)
+Collecting jsonschema<4.0.0
+  Downloading jsonschema-3.2.0-py2.py3-none-any.whl (56 kB)
+Collecting Flask-cors<4.0.0
+  Downloading Flask_Cors-3.0.8-py2.py3-none-any.whl (14 kB)
+Collecting redis<4.0.0
+  Downloading redis-3.5.3-py2.py3-none-any.whl (72 kB)
+Collecting requests<3.0.0
+  Downloading requests-2.24.0-py2.py3-none-any.whl (61 kB)
+Collecting numpy<2.0.0
+  Downloading numpy-1.19.1-cp37-cp37m-manylinux2010_x86_64.whl (14.5 MB)
+Collecting flatbuffers<2.0.0
+  Downloading flatbuffers-1.12-py2.py3-none-any.whl (15 kB)
+Collecting protobuf<4.0.0
+  Downloading protobuf-3.12.4-cp37-cp37m-manylinux1_x86_64.whl (1.3 MB)
+Collecting grpcio<2.0.0
+  Downloading grpcio-1.31.0-cp37-cp37m-manylinux2014_x86_64.whl (3.4 MB)
+Collecting Flask-OpenTracing<1.2.0,>=1.1.0
+  Downloading Flask-OpenTracing-1.1.0.tar.gz (8.2 kB)
+Collecting opentracing<2.4.0,>=2.2.0
+  Downloading opentracing-2.3.0.tar.gz (48 kB)
+Collecting jaeger-client<4.4.0,>=4.1.0
+  Downloading jaeger-client-4.3.0.tar.gz (81 kB)
+Collecting grpcio-opentracing<1.2.0,>=1.1.4
+  Downloading grpcio_opentracing-1.1.4-py3-none-any.whl (14 kB)
+Collecting PyYAML<5.4
+  Downloading PyYAML-5.3.1.tar.gz (269 kB)
+Collecting gunicorn<20.1.0,>=19.9.0
+  Downloading gunicorn-20.0.4-py2.py3-none-any.whl (77 kB)
+Collecting minio<6.0.0,>=4.0.9
+  Downloading minio-5.0.10-py2.py3-none-any.whl (75 kB)
+Collecting azure-storage-blob<3.0.0,>=2.0.1
+  Downloading azure_storage_blob-2.1.0-py2.py3-none-any.whl (88 kB)
+Requirement already satisfied: setuptools>=41.0.0 in /usr/local/lib/python3.7/site-packages (from -r requirements.txt (line 18)) (49.2.0)
+Collecting google-cloud-storage>=1.16.0
+  Downloading google_cloud_storage-1.30.0-py2.py3-none-any.whl (86 kB)
+Collecting prometheus_client<0.9.0,>=0.7.1
+  Downloading prometheus_client-0.8.0-py2.py3-none-any.whl (53 kB)
+Collecting itsdangerous>=0.24
+  Downloading itsdangerous-1.1.0-py2.py3-none-any.whl (16 kB)
+Collecting Werkzeug>=0.15
+  Downloading Werkzeug-1.0.1-py2.py3-none-any.whl (298 kB)
+Collecting Jinja2>=2.10.1
+  Downloading Jinja2-2.11.2-py2.py3-none-any.whl (125 kB)
+Collecting click>=5.1
+  Downloading click-7.1.2-py2.py3-none-any.whl (82 kB)
+Collecting pyrsistent>=0.14.0
+  Downloading pyrsistent-0.16.0.tar.gz (108 kB)
+Collecting attrs>=17.4.0
+  Downloading attrs-19.3.0-py2.py3-none-any.whl (39 kB)
+Collecting importlib-metadata; python_version < "3.8"
+  Downloading importlib_metadata-1.7.0-py2.py3-none-any.whl (31 kB)
+Collecting six>=1.11.0
+  Downloading six-1.15.0-py2.py3-none-any.whl (10 kB)
+Collecting certifi>=2017.4.17
+  Downloading certifi-2020.6.20-py2.py3-none-any.whl (156 kB)
+Collecting chardet<4,>=3.0.2
+  Downloading chardet-3.0.4-py2.py3-none-any.whl (133 kB)
+Collecting urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1
+  Downloading urllib3-1.25.10-py2.py3-none-any.whl (127 kB)
+Collecting idna<3,>=2.5
+  Downloading idna-2.10-py2.py3-none-any.whl (58 kB)
+Collecting threadloop<2,>=1
+  Downloading threadloop-1.0.2.tar.gz (4.9 kB)
+Collecting thrift
+  Downloading thrift-0.13.0.tar.gz (59 kB)
+Collecting tornado>=4.3
+  Downloading tornado-6.0.4.tar.gz (496 kB)
+Collecting python-dateutil
+  Downloading python_dateutil-2.8.1-py2.py3-none-any.whl (227 kB)
+Collecting pytz
+  Downloading pytz-2020.1-py2.py3-none-any.whl (510 kB)
+Collecting configparser
+  Downloading configparser-5.0.0-py3-none-any.whl (22 kB)
+Collecting azure-common>=1.1.5
+  Downloading azure_common-1.1.25-py2.py3-none-any.whl (12 kB)
+Collecting azure-storage-common~=2.1
+  Downloading azure_storage_common-2.1.0-py2.py3-none-any.whl (47 kB)
+Collecting google-resumable-media<2.0dev,>=0.6.0
+  Downloading google_resumable_media-0.7.1-py2.py3-none-any.whl (42 kB)
+Collecting google-auth<2.0dev,>=1.11.0
+  Downloading google_auth-1.20.1-py2.py3-none-any.whl (91 kB)
+Collecting google-cloud-core<2.0dev,>=1.2.0
+  Downloading google_cloud_core-1.4.1-py2.py3-none-any.whl (26 kB)
+Collecting MarkupSafe>=0.23
+  Downloading MarkupSafe-1.1.1-cp37-cp37m-manylinux1_x86_64.whl (27 kB)
+Collecting zipp>=0.5
+  Downloading zipp-3.1.0-py3-none-any.whl (4.9 kB)
+Collecting cryptography
+  Downloading cryptography-3.0-cp35-abi3-manylinux2010_x86_64.whl (2.7 MB)
+Collecting google-crc32c<0.2dev,>=0.1.0; python_version >= "3.5"
+  Downloading google_crc32c-0.1.0-cp37-cp37m-manylinux2010_x86_64.whl (39 kB)
+Collecting pyasn1-modules>=0.2.1
+  Downloading pyasn1_modules-0.2.8-py2.py3-none-any.whl (155 kB)
+Collecting cachetools<5.0,>=2.0.0
+  Downloading cachetools-4.1.1-py3-none-any.whl (10 kB)
+Collecting rsa<5,>=3.1.4; python_version >= "3.5"
+  Downloading rsa-4.6-py3-none-any.whl (47 kB)
+Collecting google-api-core<2.0.0dev,>=1.19.0
+  Downloading google_api_core-1.22.1-py2.py3-none-any.whl (91 kB)
+Collecting cffi!=1.11.3,>=1.8
+  Downloading cffi-1.14.1-cp37-cp37m-manylinux1_x86_64.whl (401 kB)
+Collecting pyasn1<0.5.0,>=0.4.6
+  Downloading pyasn1-0.4.8-py2.py3-none-any.whl (77 kB)
+Collecting googleapis-common-protos<2.0dev,>=1.6.0
+  Downloading googleapis_common_protos-1.52.0-py2.py3-none-any.whl (100 kB)
+Collecting pycparser
+  Downloading pycparser-2.20-py2.py3-none-any.whl (112 kB)
+Building wheels for collected packages: Flask-OpenTracing, opentracing, jaeger-client, PyYAML, pyrsistent, threadloop, thrift, tornado
+  Building wheel for Flask-OpenTracing (setup.py): started
+  Building wheel for Flask-OpenTracing (setup.py): finished with status 'done'
+  Created wheel for Flask-OpenTracing: filename=Flask_OpenTracing-1.1.0-py3-none-any.whl size=9070 sha256=ad2da65a0da1a4572898448749a86ed3600d7510ba1678268ca57cd677c991d4
+  Stored in directory: /builder/home/.cache/pip/wheels/42/22/cd/ccb93fa68f4a01fb6c10082f97bcb2af9eb8e43565ce38a292
+  Building wheel for opentracing (setup.py): started
+  Building wheel for opentracing (setup.py): finished with status 'done'
+  Created wheel for opentracing: filename=opentracing-2.3.0-py3-none-any.whl size=51347 sha256=f355517ebd475871ffc06850a326a48ab39aacbffd763047ef6ebbcaa53fc4a1
+  Stored in directory: /builder/home/.cache/pip/wheels/19/c5/4b/b030afc055aa78698cd96eb4b168b7f91bd9254191bf4e9f9f
+  Building wheel for jaeger-client (setup.py): started
+  Building wheel for jaeger-client (setup.py): finished with status 'done'
+  Created wheel for jaeger-client: filename=jaeger_client-4.3.0-py3-none-any.whl size=64291 sha256=1ccb3c00735b95f3f5b76bf3d88e3fab6ed99e185fd0be733fab6bf87aea2acf
+  Stored in directory: /builder/home/.cache/pip/wheels/4b/b9/d9/efe18893b02a4bc5abb68e0174d4ab10147f7f184dd170758e
+  Building wheel for PyYAML (setup.py): started
+  Building wheel for PyYAML (setup.py): finished with status 'done'
+  Created wheel for PyYAML: filename=PyYAML-5.3.1-cp37-cp37m-linux_x86_64.whl size=471268 sha256=b891543f0ebd080fe3bf5ac0cf417e31a88a66b290ff26d0a482631b8e5410af
+  Stored in directory: /builder/home/.cache/pip/wheels/5e/03/1e/e1e954795d6f35dfc7b637fe2277bff021303bd9570ecea653
+  Building wheel for pyrsistent (setup.py): started
+  Building wheel for pyrsistent (setup.py): finished with status 'done'
+  Created wheel for pyrsistent: filename=pyrsistent-0.16.0-cp37-cp37m-linux_x86_64.whl size=124354 sha256=2e364c235356d154fe9e18af395ed340b663a12da8eaaaf924c8095e1e6a6aa9
+  Stored in directory: /builder/home/.cache/pip/wheels/22/52/11/f0920f95c23ed7d2d0b05f2b7b2f4509e87a20cfe8ea43d987
+  Building wheel for threadloop (setup.py): started
+  Building wheel for threadloop (setup.py): finished with status 'done'
+  Created wheel for threadloop: filename=threadloop-1.0.2-py3-none-any.whl size=3423 sha256=256d695fe68e6bc317be39a51e739fb940f2dec9f44b260d1a0a5a30c4b4fe25
+  Stored in directory: /builder/home/.cache/pip/wheels/08/93/e3/037c2555d98964d9ca537dabb39827a2b72470a679b5c0de37
+  Building wheel for thrift (setup.py): started
+  Building wheel for thrift (setup.py): finished with status 'done'
+  Created wheel for thrift: filename=thrift-0.13.0-cp37-cp37m-linux_x86_64.whl size=486863 sha256=d485e9194bc99c0c60ec06772356a48b9b09171f0ac3937ad61a33395747a890
+  Stored in directory: /builder/home/.cache/pip/wheels/79/35/5a/19f5dadf91f62bd783aaa8385f700de9bc14772e09ab0f006a
+  Building wheel for tornado (setup.py): started
+  Building wheel for tornado (setup.py): finished with status 'done'
+  Created wheel for tornado: filename=tornado-6.0.4-cp37-cp37m-linux_x86_64.whl size=428923 sha256=30f818dd609a64a9aa13a33498d3aaa49204fcc731331051b54dedaa8ffe9091
+  Stored in directory: /builder/home/.cache/pip/wheels/7d/14/fa/d88fb5da77d813ea0ffca38a2ab2a052874e9e1142bad0b348
+Successfully built Flask-OpenTracing opentracing jaeger-client PyYAML pyrsistent threadloop thrift tornado
+Installing collected packages: itsdangerous, Werkzeug, MarkupSafe, Jinja2, click, Flask, six, pyrsistent, attrs, zipp, importlib-metadata, jsonschema, Flask-cors, redis, certifi, chardet, urllib3, idna, requests, numpy, flatbuffers, protobuf, grpcio, opentracing, Flask-OpenTracing, tornado, threadloop, thrift, jaeger-client, grpcio-opentracing, PyYAML, gunicorn, python-dateutil, pytz, configparser, minio, azure-common, pycparser, cffi, cryptography, azure-storage-common, azure-storage-blob, google-crc32c, google-resumable-media, pyasn1, pyasn1-modules, cachetools, rsa, google-auth, googleapis-common-protos, google-api-core, google-cloud-core, google-cloud-storage, prometheus-client
+Successfully installed Flask-1.1.2 Flask-OpenTracing-1.1.0 Flask-cors-3.0.8 Jinja2-2.11.2 MarkupSafe-1.1.1 PyYAML-5.3.1 Werkzeug-1.0.1 attrs-19.3.0 azure-common-1.1.25 azure-storage-blob-2.1.0 azure-storage-common-2.1.0 cachetools-4.1.1 certifi-2020.6.20 cffi-1.14.1 chardet-3.0.4 click-7.1.2 configparser-5.0.0 cryptography-3.0 flatbuffers-1.12 google-api-core-1.22.1 google-auth-1.20.1 google-cloud-core-1.4.1 google-cloud-storage-1.30.0 google-crc32c-0.1.0 google-resumable-media-0.7.1 googleapis-common-protos-1.52.0 grpcio-1.31.0 grpcio-opentracing-1.1.4 gunicorn-20.0.4 idna-2.10 importlib-metadata-1.7.0 itsdangerous-1.1.0 jaeger-client-4.3.0 jsonschema-3.2.0 minio-5.0.10 numpy-1.19.1 opentracing-2.3.0 prometheus-client-0.8.0 protobuf-3.12.4 pyasn1-0.4.8 pyasn1-modules-0.2.8 pycparser-2.20 pyrsistent-0.16.0 python-dateutil-2.8.1 pytz-2020.1 redis-3.5.3 requests-2.24.0 rsa-4.6 six-1.15.0 threadloop-1.0.2 thrift-0.13.0 tornado-6.0.4 urllib3-1.25.10 zipp-3.1.0
+WARNING: You are using pip version 20.2; however, version 20.2.2 is available.
+You should consider upgrading via the '/usr/local/bin/python -m pip install --upgrade pip' command.
+
+Testing /workspace/source/python...
+
+Tested 57 dependencies for known issues, found 1 issue, 1 vulnerable path.
+
+
+Issues with no direct upgrade or patch:
+  ✗ Arbitrary Code Execution [High Severity][https://snyk.io/vuln/SNYK-PYTHON-PYYAML-590151] in pyyaml@5.3.1
+  No upgrade or patch available
+
+
+
+Organization:      as-swz
+Package manager:   pip
+Target file:       requirements.txt
+Project name:      python
+Open source:       no
+Project path:      /workspace/source/python
+Licenses:          enabled
+
+[31m
+Pipeline failed on stage 'run-python-tests' : container 'step-step2'. The execution of the pipeline has stopped.[0m
