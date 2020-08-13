@@ -29,7 +29,7 @@ git checkout master
 set +o errexit
     git checkout -b $BRANCH_NAME
     RETVAL=$?
-    if [[ ${RETVAL} -eq 0 ]]; then
+    if [[ ${RETVAL} -gt 0 ]]; then
         echo "Branch already exists"
         git checkout $BRANCH_NAME
         git rebase master
