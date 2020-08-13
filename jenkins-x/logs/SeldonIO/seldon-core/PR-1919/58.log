@@ -1,0 +1,90 @@
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-19-5mszm-58[0m stage [32mmeta-pipeline[0m and container [32mstep-credential-initializer-fjv2v[0m
+{"level":"info","ts":1597308757.5552635,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1597308757.5559688,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-19-5mszm-58[0m stage [32mmeta-pipeline[0m and container [32mstep-working-dir-initializer-krvjn[0m
+{"level":"info","ts":1597308758.5885255,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1597308758.5901582,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-19-5mszm-58[0m stage [32mmeta-pipeline[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-19-5mszm-58[0m stage [32mmeta-pipeline[0m and container [32mstep-git-source-meta-seldonio-seldon-core-pr-19-5mszm-c27g9[0m
+{"level":"info","ts":1597308763.7664316,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1597308769.4556823,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ f70e5ec74b686678e44ec3bc553173f025266eb9 in path /workspace/source"}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-19-5mszm-58[0m stage [32mmeta-pipeline[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-19-5mszm-58[0m stage [32mmeta-pipeline[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:f70e5ec74b686678e44ec3bc553173f025266eb9,1919:b5523a9d10b4157b903a43fa6e91d486d5d18361
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch origin --unshallow b5523a9d10b4157b903a43fa6e91d486d5d18361: f70e5ec74b686678e44ec3bc553173f025266eb9:
+DEBUG: ran git fetch --unshallow origin b5523a9d10b4157b903a43fa6e91d486d5d18361: f70e5ec74b686678e44ec3bc553173f025266eb9: in 
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard f70e5ec74b686678e44ec3bc553173f025266eb9
+DEBUG: ran git reset --hard f70e5ec74b686678e44ec3bc553173f025266eb9 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git merge b5523a9d10b4157b903a43fa6e91d486d5d18361
+error: error during merge: merging b5523a9d10b4157b903a43fa6e91d486d5d18361 into master: git output: Auto-merging operator/controllers/seldondeployment_engine.go
+Auto-merging operator/apis/machinelearning.seldon.io/v1/seldondeployment_types.go
+Auto-merging executor/licenses/repo.txt
+CONFLICT (content): Merge conflict in executor/licenses/repo.txt
+Auto-merging executor/licenses/license_info.csv
+CONFLICT (content): Merge conflict in executor/licenses/license_info.csv
+Auto-merging executor/licenses/license.txt
+CONFLICT (content): Merge conflict in executor/licenses/license.txt
+Auto-merging executor/licenses/dep.txt
+CONFLICT (content): Merge conflict in executor/licenses/dep.txt
+Auto-merging executor/go.sum
+CONFLICT (content): Merge conflict in executor/go.sum
+Auto-merging executor/go.mod
+CONFLICT (content): Merge conflict in executor/go.mod
+Auto-merging executor/cmd/executor/main.go
+CONFLICT (content): Merge conflict in executor/cmd/executor/main.go
+Auto-merging executor/api/rest/server.go
+Auto-merging executor/api/rest/client.go
+Auto-merging executor/api/grpc/tensorflow/client.go
+CONFLICT (content): Merge conflict in executor/api/grpc/tensorflow/client.go
+Auto-merging executor/Makefile
+CONFLICT (content): Merge conflict in executor/Makefile
+Auto-merging executor/Dockerfile.executor.redhat
+CONFLICT (content): Merge conflict in executor/Dockerfile.executor.redhat
+Auto-merging executor/Dockerfile.executor
+CONFLICT (content): Merge conflict in executor/Dockerfile.executor
+Auto-merging executor/.gitignore
+Auto-merging doc/source/index.rst
+Auto-merging doc/source/examples/notebooks.rst
+Automatic merge failed; fix conflicts and then commit the result.: failed to run 'git merge b5523a9d10b4157b903a43fa6e91d486d5d18361' command in directory '', output: 'Auto-merging operator/controllers/seldondeployment_engine.go
+Auto-merging operator/apis/machinelearning.seldon.io/v1/seldondeployment_types.go
+Auto-merging executor/licenses/repo.txt
+CONFLICT (content): Merge conflict in executor/licenses/repo.txt
+Auto-merging executor/licenses/license_info.csv
+CONFLICT (content): Merge conflict in executor/licenses/license_info.csv
+Auto-merging executor/licenses/license.txt
+CONFLICT (content): Merge conflict in executor/licenses/license.txt
+Auto-merging executor/licenses/dep.txt
+CONFLICT (content): Merge conflict in executor/licenses/dep.txt
+Auto-merging executor/go.sum
+CONFLICT (content): Merge conflict in executor/go.sum
+Auto-merging executor/go.mod
+CONFLICT (content): Merge conflict in executor/go.mod
+Auto-merging executor/cmd/executor/main.go
+CONFLICT (content): Merge conflict in executor/cmd/executor/main.go
+Auto-merging executor/api/rest/server.go
+Auto-merging executor/api/rest/client.go
+Auto-merging executor/api/grpc/tensorflow/client.go
+CONFLICT (content): Merge conflict in executor/api/grpc/tensorflow/client.go
+Auto-merging executor/Makefile
+CONFLICT (content): Merge conflict in executor/Makefile
+Auto-merging executor/Dockerfile.executor.redhat
+CONFLICT (content): Merge conflict in executor/Dockerfile.executor.redhat
+Auto-merging executor/Dockerfile.executor
+CONFLICT (content): Merge conflict in executor/Dockerfile.executor
+Auto-merging executor/.gitignore
+Auto-merging doc/source/index.rst
+Auto-merging doc/source/examples/notebooks.rst
+Automatic merge failed; fix conflicts and then commit the result.'
+[31m
+Pipeline failed on stage 'meta-pipeline' : container 'step-git-merge'. The execution of the pipeline has stopped.[0m
