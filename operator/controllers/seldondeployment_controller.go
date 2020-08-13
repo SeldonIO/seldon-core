@@ -615,7 +615,6 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 				}
 
 			}
-
 			//Create Service for Predictor - exposed externally (ambassador or istio) and points at engine
 			httpPort := engine_http_port
 			if httpAllowed == false {
@@ -704,6 +703,23 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 	}
 	if isExecutorEnabled(mlDep) {
 		psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_http_port), TargetPort: intstr.FromInt(engine_http_port), Name: "executor"})
+		// Set service ports for multiplexing when executor enabled
+		for i := 0; i < len(mlDep.Spec.Predictors); i++ {
+			p := mlDep.Spec.Predictors[i]
+			if len(p.ComponentSpecs) > 0 && len(p.ComponentSpecs[0].Spec.Containers) > 0 {
+				pu := machinelearningv1.GetPredictiveUnit(&p.Graph, p.ComponentSpecs[0].Spec.Containers[0].Name)
+				if pu != nil {
+					if pu.Endpoint != nil && pu.Endpoint.Type == machinelearningv1.GRPC {
+						engine_grpc_port = engine_http_port
+						engine_http_port = 0
+					}
+					if pu.Endpoint == nil || pu.Endpoint.Type == machinelearningv1.REST {
+						engine_grpc_port = 0
+					}
+				}
+			}
+		}
+
 	} else {
 		if engine_http_port != 0 && len(psvc.Spec.Ports) == 0 {
 			psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_http_port), TargetPort: intstr.FromInt(engine_http_port), Name: "http"})
