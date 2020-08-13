@@ -5,7 +5,6 @@
 set -o nounset
 set -o errexit
 set -o pipefail
-set -o noclobber
 set -o noglob
 set -o xtrace
 
@@ -37,6 +36,7 @@ set +o errexit
 set -o errexit
 
 # Perform required actions for release
+echo "$VERSION" > ../version.txt
 (cd ../engine && mvn versions:set -DnewVersion=$(cat ../version.txt))
 (cd ../ && python release.py $(cat version.txt))
 
