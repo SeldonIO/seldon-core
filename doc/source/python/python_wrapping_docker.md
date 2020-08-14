@@ -1,19 +1,19 @@
 # Packaging a Python model for Seldon Core using Docker
 
-
 In this guide, we illustrate the steps needed to wrap your own python model in a docker image ready for deployment with Seldon Core using Docker.
 
 ## Step 1 - Create your source code
 
 You will need:
 
- * A python file with a class that runs your model
- * A requirements.txt with a seldon-core entry
+- A python file with a class that runs your model
+- A requirements.txt with a seldon-core entry
 
 We will go into detail for each of these steps:
 
 ### Python file
-Your source code should contain a python file which defines a class of the same name as the file. For example, looking at our skeleton python model file at ```wrappers/s2i/python/test/model-template-app/MyModel.py```:
+
+Your source code should contain a python file which defines a class of the same name as the file. For example, looking at our skeleton python model file at `wrappers/s2i/python/test/model-template-app/MyModel.py`:
 
 ```python
 class MyModel(object):
@@ -40,12 +40,13 @@ class MyModel(object):
         return X
 ```
 
- * The file is called MyModel.py and it defines a class MyModel
- * The class contains a predict method that takes an array (numpy) X and feature_names and returns an array of predictions.
- * You can add any required initialization inside the class init method.
- * Your return array should be at least 2-dimensional.
+- The file is called MyModel.py and it defines a class MyModel
+- The class contains a predict method that takes an array (numpy) X and feature_names and returns an array of predictions.
+- You can add any required initialization inside the class init method.
+- Your return array should be at least 2-dimensional.
 
 ### requirements.txt
+
 Populate a requirements.txt with any software dependencies your code requires. At a minimum the file should contain:
 
 ```
@@ -72,19 +73,20 @@ ENV PERSISTENCE 0
 CMD exec seldon-core-microservice $MODEL_NAME $API_TYPE --service-type $SERVICE_TYPE --persistence $PERSISTENCE
 ```
 
-
 ## Step 3 - Build your image
-Use ```docker build . -t $ORG/$MODEL_NAME:$TAG``` to create your Docker image from source code. A simple name can be used but convention is to use the ORG/IMAGE:TAG format.
+
+Use `docker build . -t $ORG/$MODEL_NAME:$TAG` to create your Docker image from source code. A simple name can be used but convention is to use the ORG/IMAGE:TAG format.
 
 ## Using with Keras/Tensorflow Models
 
 To ensure Keras models with the Tensorflow backend work correctly you may need to call `_make_predict_function()` on your model after it is loaded. This is because Flask may call the prediction request in a separate thread from the one that initialised your model. See the [keras issue](https://github.com/keras-team/keras/issues/6462) for further discussion.
 
 ## Environment Variables
+
 The required environment variables understood by the builder image are explained below. You can provide them in the Dockerfile or as `-e` parameters to `docker run`.
 
-
 ### MODEL_NAME
+
 The name of the class containing the model. Also the name of the python file which will be imported.
 
 ### API_TYPE
@@ -95,11 +97,11 @@ API type to create. Can be REST or GRPC
 
 The service type being created. Available options are:
 
- * MODEL
- * ROUTER
- * TRANSFORMER
- * COMBINER
- * OUTLIER_DETECTOR
+- MODEL
+- ROUTER
+- TRANSFORMER
+- COMBINER
+- OUTLIER_DETECTOR
 
 ### PERSISTENCE
 
@@ -107,35 +109,41 @@ Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved pe
 
 ### FLASK_JSONIFY_PRETTYPRINT_REGULAR
 
-Sets the flask application configuration `JSONIFY_PRETTYPRINT_REGULAR` for the REST API. Available options are `True`
+Sets the flask application configuration `JSONIFY_PRETTYPRINT_REGULAR` (see [Configuration Handling - JSONIFY_PRETTYPRINT_REGULAR](https://flask.palletsprojects.com/config/#JSONIFY_PRETTYPRINT_REGULAR)) for the REST API. Available options are `True`
 or `False`. If nothing is specified, flask's default value is used.
 
 ### FLASK_JSON_SORT_KEYS
 
-Sets the flask application configuration `JSON_SORT_KEYS` for the REST API. Available options are `True` or `False`.
+Sets the flask application configuration `JSON_SORT_KEYS` (see [Configuration Handling - JSON_SORT_KEYS](https://flask.palletsprojects.com/config/#JSON_SORT_KEYS)) for the REST API. Available options are `True` or `False`.
+If nothing is specified, flask's default value is used.
+
+### FLASK_PROPAGATE_EXCEPTIONS
+
+Sets the flask application configuration `PROPAGATE_EXCEPTIONS` (see [Configuration Handling - PROPAGATE_EXCEPTIONS](https://flask.palletsprojects.com/config/#PROPAGATE_EXCEPTIONS)) for the REST API. Available options are `True` or `False`.
 If nothing is specified, flask's default value is used.
 
 ## Creating different service types
 
 ### MODEL
 
- * [A minimal skeleton for model source code](https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i/python/test/model-template-app)
- * [Example model notebooks](../examples/notebooks.html)
+- [A minimal skeleton for model source code](https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i/python/test/model-template-app)
+- [Example model notebooks](../examples/notebooks.html)
 
 ### ROUTER
- * [Description of routers in Seldon Core](../analytics/routers.html)
- * [A minimal skeleton for router source code](https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i/python/test/router-template-app)
+
+- [Description of routers in Seldon Core](../analytics/routers.html)
+- [A minimal skeleton for router source code](https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i/python/test/router-template-app)
 
 ### TRANSFORMER
 
- * [A minimal skeleton for transformer source code](https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i/python/test/transformer-template-app)
- * [Example transformers](https://github.com/SeldonIO/seldon-core/tree/master/examples/transformers)
-
+- [A minimal skeleton for transformer source code](https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i/python/test/transformer-template-app)
+- [Example transformers](https://github.com/SeldonIO/seldon-core/tree/master/examples/transformers)
 
 ## Advanced Usage
 
 ### Model Class Arguments
-You can add arguments to your component which will be populated from the ```parameters``` defined in the SeldonDeloyment when you deploy your image on Kubernetes. For example, our [Python TFServing proxy](https://github.com/SeldonIO/seldon-core/tree/master/integrations/tfserving) has the class init method signature defined as below:
+
+You can add arguments to your component which will be populated from the `parameters` defined in the SeldonDeloyment when you deploy your image on Kubernetes. For example, our [Python TFServing proxy](https://github.com/SeldonIO/seldon-core/tree/master/integrations/tfserving) has the class init method signature defined as below:
 
 ```python
 class TfServingProxy(object):
@@ -143,7 +151,7 @@ class TfServingProxy(object):
     def __init__(self,rest_endpoint=None,grpc_endpoint=None,model_name=None,signature_name=None,model_input=None,model_output=None):
 ```
 
-These arguments can be set when deploying in a Seldon Deployment. An example can be found in the [MNIST TFServing example](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/tfserving-mnist/tfserving-mnist.ipynb) where the arguments are defined in the [SeldonDeployment](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/tfserving-mnist/mnist_tfserving_deployment.json.template)  which is partly show below:
+These arguments can be set when deploying in a Seldon Deployment. An example can be found in the [MNIST TFServing example](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/tfserving-mnist/tfserving-mnist.ipynb) where the arguments are defined in the [SeldonDeployment](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/tfserving-mnist/mnist_tfserving_deployment.json.template) which is partly show below:
 
 ```
  "graph": {
@@ -181,14 +189,13 @@ These arguments can be set when deploying in a Seldon Deployment. An example can
 },
 ```
 
-
-The allowable ```type``` values for the parameters are defined in the [proto buffer definition](https://github.com/SeldonIO/seldon-core/blob/44f7048efd0f6be80a857875058d23efc4221205/proto/seldon_deployment.proto#L117-L131).
-
+The allowable `type` values for the parameters are defined in the [proto buffer definition](https://github.com/SeldonIO/seldon-core/blob/44f7048efd0f6be80a857875058d23efc4221205/proto/seldon_deployment.proto#L117-L131).
 
 ### Custom Metrics
-```from version 0.3```
 
-To add custom metrics to your response you can define an optional method ```metrics``` in your class that returns a list of metric dicts. An example is shown below:
+`from version 0.3`
+
+To add custom metrics to your response you can define an optional method `metrics` in your class that returns a list of metric dicts. An example is shown below:
 
 ```python
 class MyModel(object):
@@ -205,9 +212,10 @@ For more details on custom metrics and the format of the metric dict see [here](
 There is an [example notebook illustrating a model with custom metrics in python](../examples/custom_metrics.html).
 
 ### Custom Meta Data
-```from version 0.3```
 
-To add custom meta data you can add an optional method ```tags``` which can return a dict of custom meta tags as shown in the example below:
+`from version 0.3`
+
+To add custom meta data you can add an optional method `tags` which can return a dict of custom meta tags as shown in the example below:
 
 ```python
 class MyModel(object):
