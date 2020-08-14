@@ -179,6 +179,7 @@ def _set_flask_app_configs(app):
     env_to_config_map = {
         "FLASK_JSONIFY_PRETTYPRINT_REGULAR": "JSONIFY_PRETTYPRINT_REGULAR",
         "FLASK_JSON_SORT_KEYS": "JSON_SORT_KEYS",
+        "FLASK_PROPAGATE_EXCEPTIONS": "PROPAGATE_EXCEPTIONS",
     }
 
     for env_var, config_name in env_to_config_map.items():
@@ -198,7 +199,9 @@ class SeldonModelGRPC(object):
         self.user_model = user_model
         self.seldon_metrics = seldon_metrics
 
-        self.metadata_data = seldon_core.seldon_methods.init_metadata(user_model)
+        self.metadata_data = seldon_core.seldon_methods.init_metadata(
+            user_model
+        )
 
     def Predict(self, request_grpc, context):
         return seldon_core.seldon_methods.predict(
@@ -240,7 +243,9 @@ class SeldonModelGRPC(object):
 
     def GraphMetadata(self, request_grpc, context):
         """GraphMetadata method of rpc Seldon service"""
-        raise NotImplementedError("GraphMetadata not available on the Model level.")
+        raise NotImplementedError(
+            "GraphMetadata not available on the Model level."
+        )
 
 
 def get_grpc_server(
