@@ -1,0 +1,30 @@
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-rc4lq-404[0m stage [32mmeta-pipeline[0m and container [32mstep-credential-initializer-cz649[0m
+{"level":"info","ts":1597399972.1233017,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1597399972.123845,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-rc4lq-404[0m stage [32mmeta-pipeline[0m and container [32mstep-working-dir-initializer-zwsgf[0m
+{"level":"info","ts":1597399973.4958968,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1597399973.4978209,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-rc4lq-404[0m stage [32mmeta-pipeline[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-rc4lq-404[0m stage [32mmeta-pipeline[0m and container [32mstep-git-source-meta-seldonio-seldon-core-maste-rc4lq-q6bmc[0m
+Unable to retrieve container logs for docker://2aa1988855ba35ee5cabfaa9fdba5698783c2d6808ad5c2fe533faadab433a10
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-rc4lq-404[0m stage [32mmeta-pipeline[0m and container [32mstep-setup-builder-home[0m
+Unable to retrieve container logs for docker://a4c89105346d7395407744da428f2ebbfd4f92255585715db993e191bb455875
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-rc4lq-404[0m stage [32mmeta-pipeline[0m and container [32mstep-git-merge[0m
+Unable to retrieve container logs for docker://c96cc39161698ea0d60128b3ce9c7c0c660a08e33cd1560d963370381078d015
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-rc4lq-404[0m stage [32mmeta-pipeline[0m and container [32mstep-merge-pull-refs[0m
+Unable to retrieve container logs for docker://4a9d6c460f13b707109d014a6b9626fbc4d559fe38c9f5684a8e0420a53dfaa2
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-rc4lq-404[0m stage [32mmeta-pipeline[0m and container [32mstep-create-effective-pipeline[0m
+Unable to retrieve container logs for docker://db5011a8780ad1165202920b9a4a9b709d6d046d840ccc00e5db5262c767ace5
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-rc4lq-404[0m stage [32mmeta-pipeline[0m and container [32mstep-create-tekton-crds[0m
+Unable to retrieve container logs for docker://5000c997be43e6f31cde0b461f4330b480e63805b7ff080b3dc31ec65b7ba2a7
+[31m
+Pipeline failed on stage 'meta-pipeline' : container 'step-create-tekton-crds'. The execution of the pipeline has stopped.[0m
