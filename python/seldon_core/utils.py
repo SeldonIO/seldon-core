@@ -49,6 +49,31 @@ def json_to_seldon_message(
         raise SeldonMicroserviceException("Invalid JSON: " + str(pbExc))
 
 
+def json_to_seldon_model_metadata(
+    metadata_json: Dict,
+) -> prediction_pb2.SeldonModelMetadata:
+    """
+    Parses JSON input to SeldonModelMetadata proto
+
+    Parameters
+    ----------
+    metadata_json
+        JSON input
+
+    Returns
+    -------
+        SeldonModelMetadata
+    """
+    if metadata_json is None:
+        metadata_json = {}
+    metadata_proto = prediction_pb2.SeldonModelMetadata()
+    try:
+        json_format.ParseDict(metadata_json, metadata_proto, ignore_unknown_fields=True)
+        return metadata_proto
+    except json_format.ParseError as pbExc:
+        raise SeldonMicroserviceException(f"Invalid metadata: {pbExc}")
+
+
 def json_to_feedback(message_json: Dict) -> prediction_pb2.Feedback:
     """
     Parse a JSON message to a Feedback proto
@@ -644,3 +669,16 @@ def getenv(*env_vars, default=None):
             return os.environ.get(env_var)
 
     return default
+
+
+def getenv_as_bool(*env_vars, default=False):
+    """
+    Read environment variable, parsing it to a boolean.
+    """
+
+    val = getenv(*env_vars)
+
+    if val is None:
+        return default
+
+    return val.lower() in ["1", "true", "t"]

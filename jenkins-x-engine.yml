@@ -12,6 +12,14 @@ pipelineConfig:
                   image: gcr.io/jenkinsxio/builder-go:2.0.916-264
                 dir: ci
                 sh: "./add-pr-build-comment"
+          - name: pr-build
+            steps:
+              - name: test-engine
+                command: make
+                args:
+                  - -C engine
+                  - -f Makefile
+                  - build_jar
           - name: end-to-end
             env:
               - name: SELDON_E2E_TESTS_TO_RUN

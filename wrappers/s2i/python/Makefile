@@ -27,7 +27,7 @@ build: get_local_repo
 
 .PHONY: build_gpu
 build_gpu: get_local_repo
-	docker build -f Dockerfile.gpu -t ${GPU_IMAGE_NAME}:${IMAGE_VERSION} .
+	docker build -f Dockerfile.gpu --build-arg CONDA_VERSION=${CONDA_VERSION} -t ${GPU_IMAGE_NAME}:${IMAGE_VERSION} .
 
 .PHONY: build_local
 build_local: get_local_repo

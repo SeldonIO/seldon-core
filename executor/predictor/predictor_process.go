@@ -2,7 +2,6 @@ package predictor
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/url"
 	"os"
@@ -331,6 +330,24 @@ func (p *PredictorProcess) Metadata(node *v1.PredictiveUnit, modelName string, m
 	}
 }
 
+func (p *PredictorProcess) GraphMetadata(spec *v1.PredictorSpec) (*GraphMetadata, error) {
+	metadataMap, err := p.ModelMetadataMap(&spec.Graph)
+	if err != nil {
+		return nil, err
+	}
+
+	output := &GraphMetadata{
+		Name:   spec.Name,
+		Models: metadataMap,
+	}
+
+	inputNodeMeta, outputNodeMeta := output.getEdgeNodes(&spec.Graph)
+	output.GraphInputs = inputNodeMeta.Inputs
+	output.GraphOutputs = outputNodeMeta.Outputs
+
+	return output, nil
+}
+
 func (p *PredictorProcess) Feedback(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	tmsg, err := p.feedbackChildren(node, msg)
 	if err != nil {
@@ -339,28 +356,17 @@ func (p *PredictorProcess) Feedback(node *v1.PredictiveUnit, msg payload.SeldonP
 	return p.feedback(node, msg)
 }
 
-func (p *PredictorProcess) MetadataMap(node *v1.PredictiveUnit) (map[string]ModelMetadata, error) {
-	resPayload, err := p.Client.Metadata(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, nil, p.Meta.Meta)
+func (p *PredictorProcess) ModelMetadataMap(node *v1.PredictiveUnit) (map[string]payload.ModelMetadata, error) {
+	resPayload, err := p.Client.ModelMetadata(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, nil, p.Meta.Meta)
 	if err != nil {
 		return nil, err
 	}
 
-	resString, err := resPayload.GetBytes()
-	if err != nil {
-		return nil, err
-	}
-
-	var nodeMeta ModelMetadata
-	err = json.Unmarshal(resString, &nodeMeta)
-	if err != nil {
-		return nil, err
-	}
-
-	var output = map[string]ModelMetadata{
-		node.Name: nodeMeta,
+	var output = map[string]payload.ModelMetadata{
+		node.Name: resPayload,
 	}
 	for _, child := range node.Children {
-		childMeta, err := p.MetadataMap(&child)
+		childMeta, err := p.ModelMetadataMap(&child)
 		if err != nil {
 			return nil, err
 		}

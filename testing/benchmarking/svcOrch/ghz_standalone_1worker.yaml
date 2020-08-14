@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: tf-load-test
+spec:
+  backoffLimit: 6
+  parallelism: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+        - args:
+            - ghz --insecure --keepalive=30m --proto /proto/prediction_service.proto --call tensorflow.serving.PredictionService/Predict -B /var/ghz/flowers.bin -c 1 -n 1000000 -x 30m -O json tf-flowers-default.seldon.svc.cluster.local:9000
+              | jq -c 'del(.histogram)|del(.details)'
+          command:
+            - sh
+            - -c
+          image: seldonio/ghz:v0.55.0
+          imagePullPolicy: Always
+          name: ghz
+          volumeMounts:
+            - mountPath: /var/ghz
+              name: tf-ghz-cfg
+      restartPolicy: Never
+      volumes:
+        - configMap:
+            defaultMode: 420
+            name: tf-ghz-cfg
+          name: tf-ghz-cfg
+      tolerations:
+      - key: loadtester
+        operator: Exists
+        effect: NoSchedule

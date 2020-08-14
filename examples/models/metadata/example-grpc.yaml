@@ -1,0 +1,55 @@
+
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: graph-metadata-grpc
+spec:
+  name: test-deployment
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/metadata-generic-node_grpc:0.3
+          name: node-one
+          env:           
+          - name: MODEL_METADATA
+            value: |
+              ---
+              name: node-one
+              versions: [ generic-node/v0.3 ]
+              platform: seldon
+              inputs:
+              - messagetype: tensor
+                schema:
+                  names: [one-input]
+              outputs:
+              - messagetype: tensor
+                schema:
+                  names: [one-output]
+        - image: seldonio/metadata-generic-node_grpc:0.3
+          name: node-two
+          env:
+         
+          - name: MODEL_METADATA
+            value: |
+              ---
+              name: node-two
+              versions: [ generic-node/v0.3 ]
+              platform: seldon
+              inputs:
+              - messagetype: tensor
+                schema:
+                  names: [two-input]
+              outputs:
+              - messagetype: tensor
+                schema:
+                  names: [two-output]
+    graph:
+      name: node-one
+      type: MODEL
+      children:
+      - name: node-two
+        type: MODEL
+        children: []   
+    name: example
+    replicas: 1

@@ -18,12 +18,15 @@ package controllers
 
 import (
 	"fmt"
-	"k8s.io/client-go/kubernetes"
 	"sort"
 	"strconv"
 	"strings"
 
+	"k8s.io/client-go/kubernetes"
+
 	"encoding/json"
+	"os"
+
 	"github.com/go-logr/logr"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
@@ -33,7 +36,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"os"
 )
 
 const (
@@ -116,7 +118,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		var httpPort = 0
 		var grpcPort = 0
 		var portNum int32 = 9000
-		var explainerProtocol string
+		var explainerTransport string
 		if p.Explainer.Endpoint != nil && p.Explainer.Endpoint.ServicePort != 0 {
 			portNum = p.Explainer.Endpoint.ServicePort
 		}
@@ -126,12 +128,17 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		httpPort = int(portNum)
 		customPort := getPort(portType, explainerContainer.Ports)
 
-		if p.Explainer.Endpoint != nil && p.Explainer.Endpoint.Type == machinelearningv1.GRPC {
-			explainerProtocol = "grpc"
+		if mlDep.Spec.Transport == machinelearningv1.TransportGrpc || (p.Explainer.Endpoint != nil && p.Explainer.Endpoint.Type == machinelearningv1.GRPC) {
+			explainerTransport = "grpc"
 			pSvcEndpoint = c.serviceDetails[pSvcName].GrpcEndpoint
 		} else {
-			explainerProtocol = "http"
+			explainerTransport = "http"
 			pSvcEndpoint = c.serviceDetails[pSvcName].HttpEndpoint
+		}
+
+		explainerProtocol := string(machinelearningv1.ProtocolSeldon)
+		if mlDep.Spec.Protocol == machinelearningv1.ProtocolTensorflow {
+			explainerProtocol = string(machinelearningv1.ProtocolTensorflow)
 		}
 
 		if customPort == nil {
@@ -156,7 +163,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		explainerContainer.Args = []string{
 			"--model_name=" + mlDep.Name,
 			"--predictor_host=" + pSvcEndpoint,
-			"--protocol=" + "seldon." + explainerProtocol,
+			"--protocol=" + explainerProtocol + "." + explainerTransport,
 			"--http_port=" + strconv.Itoa(int(portNum)),
 		}
 
@@ -216,6 +223,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		// for explainer use same service name as its Deployment
 		eSvcName := machinelearningv1.GetExplainerDeploymentName(mlDep.GetName(), p)
 
+		deploy = addLabelsToDeployment(deploy, nil, p)
 		deploy.ObjectMeta.Labels[machinelearningv1.Label_seldon_app] = eSvcName
 		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_seldon_app] = eSvcName
 
@@ -226,6 +234,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		if err != nil {
 			return err
 		}
+		eSvc = addLabelsToService(eSvc, nil, p)
 		c.services = append(c.services, eSvc)
 		c.serviceDetails[eSvcName] = &machinelearningv1.ServiceStatus{
 			SvcName:      eSvcName,
@@ -235,7 +244,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		if grpcPort > 0 {
 			c.serviceDetails[eSvcName].GrpcEndpoint = eSvcName + "." + eSvc.Namespace + ":" + strconv.Itoa(grpcPort)
 		}
-		if GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
+		if utils.GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
 			vsvcs, dstRule := createExplainerIstioResources(eSvcName, p, mlDep, seldonId, getNamespace(mlDep), httpPort, grpcPort)
 			c.virtualServices = append(c.virtualServices, vsvcs...)
 			c.destinationRules = append(c.destinationRules, dstRule...)
@@ -266,7 +275,7 @@ func createExplainerIstioResources(pSvcName string, p *machinelearningv1.Predict
 		vsNameGrpc = strings.TrimSuffix(vsNameGrpc, "-")
 	}
 
-	istio_gateway := GetEnv(ENV_ISTIO_GATEWAY, "seldon-gateway")
+	istio_gateway := utils.GetEnv(ENV_ISTIO_GATEWAY, "seldon-gateway")
 	httpVsvc := &istio.VirtualService{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      vsNameHttp,

@@ -122,6 +122,11 @@ if __name__ == "__main__":
                     "image"
                 ] = "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
 
+                # ServiceAccount
+                res["spec"]["template"]["spec"]["serviceAccountName"] = helm_value(
+                    "serviceAccount.name"
+                )
+
                 # Resource requests
                 res["spec"]["template"]["spec"]["containers"][0]["resources"][
                     "requests"
@@ -279,7 +284,13 @@ if __name__ == "__main__":
             if name.find("spartakus") > -1:
                 fdata = HELM_SPARTAKUS_IF_START + fdata + HELM_IF_END
             elif name == "seldon-webhook-rolebinding" or name == "seldon-webhook-role":
-                fdata = HELM_CREATERESOURCES_RBAC_IF_START + fdata + HELM_IF_END
+                fdata = (
+                    HELM_CREATERESOURCES_RBAC_IF_START
+                    + HELM_RBAC_IF_START
+                    + fdata
+                    + HELM_IF_END
+                    + HELM_IF_END
+                )
             # cluster roles for single namespace
             elif name == "seldon-manager-rolebinding" or name == "seldon-manager-role":
                 fdata = (
@@ -338,6 +349,11 @@ if __name__ == "__main__":
                     + HELM_IF_END
                     + HELM_IF_END
                 )
+            elif (
+                name == "seldon-leader-election-rolebinding"
+                or name == "seldon-leader-election-role"
+            ):
+                fdata = HELM_RBAC_IF_START + fdata + HELM_IF_END
             elif name == "seldon-manager" and kind == "serviceaccount":
                 fdata = HELM_SA_IF_START + fdata + HELM_IF_END
             elif kind == "issuer" or kind == "certificate":

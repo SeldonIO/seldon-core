@@ -4,7 +4,7 @@ from sh import helm, kubectl
 
 SC_ROOT_PATH = os.path.abspath(
     os.path.join(
-        __file__, os.path.pardir, os.path.pardir, os.path.pardir, os.path.pardir,
+        __file__, os.path.pardir, os.path.pardir, os.path.pardir, os.path.pardir
     )
 )
 HELM_CHARTS_PATH = os.path.join(SC_ROOT_PATH, "helm-charts")
@@ -43,7 +43,7 @@ def delete_seldon(name=SC_NAME, namespace=SC_NAMESPACE):
 
     # Helm 3.0.3 doesn't delete CRDs
     kubectl.delete(
-        "crd", "seldondeployments.machinelearning.seldon.io", ignore_not_found=True,
+        "crd", "seldondeployments.machinelearning.seldon.io", ignore_not_found=True
     )
 
 

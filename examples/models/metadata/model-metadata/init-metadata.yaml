@@ -1,22 +1,21 @@
+
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: seldon-model
+  name: seldon-model-init-metadata
 spec:
   name: test-deployment
   predictors:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/model-with-metadata:0.2
+        - image: seldonio/model-with-metadata:0.3
           name: my-model
           env:
           - name: SELDON_LOG_LEVEL
             value: DEBUG
     graph:
       children: []
-      endpoint:
-        type: REST
       name: my-model
       type: MODEL
     name: example

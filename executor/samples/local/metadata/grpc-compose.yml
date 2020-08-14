@@ -1,0 +1,57 @@
+version: '3.1'
+
+services:
+
+  default:
+    build:
+      context: .
+    ports:
+      - "127.0.0.1:9000:5000"
+    environment:
+      - "API_TYPE=GRPC"
+
+  model_1:
+    build:
+      context: .
+    ports:
+      - "127.0.0.1:9001:5000"
+    environment:
+      - "NODE_NAME=Model 1"
+      - "API_TYPE=GRPC"
+
+  model_2:
+    build:
+      context: .
+    ports:
+      - "127.0.0.1:9002:5000"
+    environment:
+      - "NODE_NAME=Model 2"
+      - "API_TYPE=GRPC"
+
+
+  model_combiner:
+    build:
+      context: .
+    ports:
+      - "127.0.0.1:9010:5000"
+    environment:
+      - "NODE_NAME=Model Combiner"
+      - "API_TYPE=GRPC"
+
+  model_a1:
+    build:
+      context: .
+    ports:
+      - "127.0.0.1:9011:5000"
+    environment:
+      - "NODE_NAME=Model A1"
+      - "API_TYPE=GRPC"
+
+  model_a2:
+    build:
+      context: .
+    ports:
+      - "127.0.0.1:9012:5000"
+    environment:
+      - "NODE_NAME=Model A2"
+      - "API_TYPE=GRPC"

@@ -27,7 +27,7 @@ func NewClientMetrics(spec *v1.PredictorSpec, deploymentName string, modelName s
 		prometheus.HistogramOpts{
 			Name:    ClientRequestsMetricName,
 			Help:    "A histogram of latencies for client calls from executor",
-			Buckets: prometheus.DefBuckets,
+			Buckets: DefBuckets,
 		},
 		[]string{DeploymentNameMetric, PredictorNameMetric, PredictorVersionMetric, ServiceMetric, ModelNameMetric, ModelImageMetric, ModelVersionMetric, "method", "code"},
 	)

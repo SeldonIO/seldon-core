@@ -493,7 +493,13 @@ In EKS it automatically creates an Elastic Load Balancer, which you can configur
 
 
 ```python
-!helm install stable/ambassador --name ambassador --set crds.keep=false
+%%bash
+helm repo add datawire https://www.getambassador.io
+helm repo update
+helm install ambassador datawire/ambassador \
+    --set image.repository=quay.io/datawire/ambassador \
+    --set enableAES=false \
+    --set crds.keep=false
 ```
 
     NAME:   ambassador

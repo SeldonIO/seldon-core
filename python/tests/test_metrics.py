@@ -353,6 +353,35 @@ def test_seldon_metrics_predict(cls, client_gets_metrics):
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
+def test_seldon_metrics_send_feedback(cls):
+    user_object = cls()
+    seldon_metrics = SeldonMetrics()
+
+    app = get_rest_microservice(user_object, seldon_metrics)
+    client = app.test_client()
+
+    rv = client.get('/send-feedback?json={"reward": 42}')
+    assert rv.status_code == 200
+
+    data = seldon_metrics.data[os.getpid()]
+
+    assert data["COUNTER", "seldon_api_model_feedback_reward"] == {
+        "value": 42.0,
+        "tags": {},
+    }
+
+    rv = client.get('/send-feedback?json={"reward": 42}')
+    assert rv.status_code == 200
+
+    data = seldon_metrics.data[os.getpid()]
+
+    assert data["COUNTER", "seldon_api_model_feedback_reward"] == {
+        "value": 84.0,
+        "tags": {},
+    }
+
+
+@pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
 def test_seldon_metrics_aggregate(cls, client_gets_metrics):
     user_object = cls()
     seldon_metrics = SeldonMetrics()

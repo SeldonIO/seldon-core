@@ -18,14 +18,22 @@ COPY constants/ constants/
 COPY client/ client/
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager main.go
+RUN go build -a -o manager main.go
+
+# Get MPL licensed dependencies
+RUN wget -O hashicorp-golang-lru.tar.gz https://github.com/hashicorp/golang-lru/archive/master.tar.gz
+RUN wget -O armon-consul-api.tar.gz https://github.com/armon/consul-api/archive/master.tar.gz
+RUN wget -O hasicorp-hcl.tar.gz https://github.com/hashicorp/hcl/archive/master.tar.gz
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM gcr.io/distroless/static:latest
+FROM gcr.io/distroless/base:latest
 WORKDIR /
 COPY --from=builder /workspace/manager .
-COPY licenses/license.txt licenses/license.txt 
+COPY licenses/license.txt licenses/license.txt
+COPY --from=builder /workspace/hashicorp-golang-lru.tar.gz licenses/mpl_source/hashicorp-golang-lru.tar.gz
+COPY --from=builder /workspace/armon-consul-api.tar.gz licenses/mpl_source/armon-consul-api.tar.gz
+COPY --from=builder /workspace/hasicorp-hcl.tar.gz licenses/mpl_source/hasicorp-hcl.tar.gz
 COPY generated/admissionregistration.k8s.io_v1beta1_mutatingwebhookconfiguration_seldon-mutating-webhook-configuration.yaml /tmp/operator-resources/mutate.yaml
 COPY generated/admissionregistration.k8s.io_v1beta1_validatingwebhookconfiguration_seldon-validating-webhook-configuration.yaml /tmp/operator-resources/validate.yaml
 COPY generated/~g_v1_service_seldon-webhook-service.yaml /tmp/operator-resources/service.yaml

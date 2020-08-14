@@ -30,7 +30,7 @@ spec:
     spec:    
       containers:
         - name: user-container
-          image: docker.io/seldonio/seldon-request-logger:0.3.1
+          image: docker.io/seldonio/seldon-request-logger:0.3.2
           imagePullPolicy: Always
           env:
             - name: ELASTICSEARCH_HOST
@@ -42,7 +42,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: seldon-request-logger
-  namespace: default
+  namespace: seldon-logs
 spec:
   selector:
     app: seldon-request-logger

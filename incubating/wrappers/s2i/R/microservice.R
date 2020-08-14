@@ -12,31 +12,31 @@ parseQS <- function(qs){
   if (stri_startswith_fixed(qs, "?")) {
     qs <- substr(qs, 2, nchar(qs))
   }
-  
+
   parts <- strsplit(qs, "&", fixed = TRUE)[[1]]
   kv <- strsplit(parts, "=", fixed = TRUE)
   kv <- kv[sapply(kv, length) == 2] # Ignore incompletes
-  
+
   keys <- sapply(kv, "[[", 1)
   keys <- unname(sapply(keys, url_decode))
-  
+
   vals <- sapply(kv, "[[", 2)
   vals[is.na(vals)] <- ""
   vals <- unname(sapply(vals, url_decode))
-  
+
   ret <- as.list(vals)
   names(ret) <- keys
-  
+
   # If duplicates, combine
   combine_elements <- function(name){
     unname(unlist(ret[names(ret)==name]))
   }
-  
+
   unique_names <- unique(names(ret))
-  
+
   ret <- lapply(unique_names, combine_elements)
   names(ret) <- unique_names
-  
+
   ret
 }
 
@@ -97,7 +97,7 @@ create_response <- function(req_df,res_df){
   if ("ndarray" %in% names(req_df$data)){
     templ <- '{"data":{"names":%s,"ndarray":%s}}'
     names <- toJSON(colnames(res_df))
-    values <- toJSON(as.matrix(res_df))
+    values <- toJSON(res_df, dataframe = "values", na = "null") #  The "dataframe" argument is for data type persistence and "na" argument is for null value persistence
     sprintf(templ,names,values)
   } else {
     templ <- '{"data":{"names":%s,"tensor":{"shape":%s,"values":%s}}}'
@@ -111,7 +111,9 @@ create_response <- function(req_df,res_df){
 create_dataframe <- function(jdf) {
   data = extract_data(jdf)
   names = extract_names(jdf)
-  df <- data.frame(data)
+  df <- data.frame(do.call(rbind, lapply(data, rbind)))  # The step is to  binding the output from fromJSON(json, simplifyVector = F) in endpoints
+  df[df == "NULL"] <- NA # Replace NULL value by  NA if input value contain null 
+  df <- data.frame(lapply(df, unlist), stringsAsFactors = F) # unlist all columns because columns are list structure
   colnames(df) <- names
   df
 }
@@ -127,11 +129,11 @@ parse_data <- function(req){
 }
 
 predict_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
-  #for ( obj in ls(req) ) { 
-  #  print(c(obj,get(obj,envir = req))) 
+  #for ( obj in ls(req) ) {
+  #  print(c(obj,get(obj,envir = req)))
   #}
   json <- parse_data(req) # Hack as Plumber using URLDecode which doesn't decode +
-  jdf <- fromJSON(json)
+  jdf <- fromJSON(json, simplifyVector = F) # The simplifyVector argument is for data type persistence, avoid to convert numeric value to character
   valid_input <- validate_json(jdf)
   if (valid_input[1] == "OK") {
     df <- create_dataframe(jdf)
@@ -147,7 +149,7 @@ predict_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
 
 send_feedback_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
   json <- parse_data(req)
-  jdf <- fromJSON(json)
+  jdf <- fromJSON(json, simplifyVector = F) # The simplifyVector argument is for data type persistence, avoid to convert numeric value to character
   valid_input <- validate_feedback(jdf)
   if (valid_input[1] == "OK") {
     request <- create_dataframe(jdf$request)
@@ -169,7 +171,7 @@ send_feedback_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
 
 transform_input_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
   json <- parse_data(req)
-  jdf <- fromJSON(json)
+  jdf <- fromJSON(json, simplifyVector = F) # The simplifyVector argument is for data type persistence, avoid to convert numeric value to character
   valid_input <- validate_json(jdf)
   if (valid_input[1] == "OK") {
     df <- create_dataframe(jdf)
@@ -185,7 +187,7 @@ transform_input_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
 
 transform_output_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
   json <- parse_data(req)
-  jdf <- fromJSON(json)
+  jdf <- fromJSON(json, simplifyVector = F) # The simplifyVector argument is for data type persistence, avoid to convert numeric value to character
   valid_input <- validate_json(jdf)
   if (valid_input[1] == "OK") {
     df <- create_dataframe(jdf)
@@ -201,7 +203,7 @@ transform_output_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
 
 route_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
   json <- parse_data(req)
-  jdf <- fromJSON(json)
+  jdf <- fromJSON(json, simplifyVector = F) # The simplifyVector argument is for data type persistence, avoid to convert numeric value to character
   valid_input <- validate_json(jdf)
   if (valid_input[1] == "OK") {
     df <- create_dataframe(jdf)
@@ -229,15 +231,15 @@ parse_commandline <- function() {
                        help="Persistence", metavar = "persistence", default = 0)
   args <- parse_args(parser, args = commandArgs(trailingOnly = TRUE),
                      convert_hyphens_to_underscores = TRUE)
-  
+
   if (is.null(args$parameters)){
     args$parameters <- Sys.getenv("PREDICTIVE_UNIT_PARAMETERS")
   }
-  
+
   if (args$parameters == ''){
     args$parameters = "[]"
   }
-  
+
   args
 }
 
@@ -301,7 +303,27 @@ route <- function(x,...) UseMethod("route",x)
 transform_input <- function(x,...) UseMethod("transform_input",x)
 transform_output <- function(x,...) UseMethod("transform_output",x)
 
+error_handler <- function(req, res, err) {
+  if (!inherits(err, "seldon_microservice_error")) {
+    print(err)
+
+    res$status <- 500
+    list(error = "500 - Internal server error")
+  } else {
+    res$status <- err$status_code
+    list(
+      status = list(
+        status=jsonlite::unbox("FAILURE"),
+        info=jsonlite::unbox(err$message),
+        code=jsonlite::unbox(err$status_code),
+        reason=jsonlite::unbox(err$reason)
+      )
+    )
+  }
+}
+
 serve_model <- plumber$new()
+serve_model$setErrorHandler(error_handler)
 if (args$service == "MODEL") {
   serve_model$handle("POST", "/predict",predict_endpoint)
   serve_model$handle("GET", "/predict",predict_endpoint)
@@ -312,12 +334,12 @@ if (args$service == "MODEL") {
   serve_model$handle("GET", "/route",route_endpoint)
   serve_model$handle("POST", "/send-feedback",send_feedback_endpoint)
   serve_model$handle("GET", "/send-feedback",send_feedback_endpoint)
-}  else if (args$service == "TRANSFORMER") {  
+}  else if (args$service == "TRANSFORMER") {
   serve_model$handle("POST", "/transform-output",transform_output_endpoint)
   serve_model$handle("GET", "/transform-output",transform_output_endpoint)
   serve_model$handle("POST", "/transform-input",transform_input_endpoint)
   serve_model$handle("GET", "/transform-input",transform_input_endpoint)
-  
+
 } else
 {
   v("Unknown service type [%s]\n",args$service)

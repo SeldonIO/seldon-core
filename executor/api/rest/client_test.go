@@ -42,9 +42,8 @@ const (
         "status": "ok"
 	}`
 	okMetadataResponse = `{
-        "metadata": {
-          "name":"mymodel"
-        }
+		"name": "mymodel",
+		"platform": "seldon-platform"
 	}`
 	errorPredictResponse = `{
        "status":"failed"
