@@ -16,7 +16,9 @@ import os
 logger = logging.getLogger(__name__)
 
 PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID", "0")
-METRICS_ENDPOINT = os.environ.get("PREDICTIVE_UNIT_METRICS_ENDPOINT", "/metrics")
+METRICS_ENDPOINT = os.environ.get(
+    "PREDICTIVE_UNIT_METRICS_ENDPOINT", "/metrics"
+)
 
 
 def get_rest_microservice(user_model, seldon_metrics):
@@ -124,7 +126,9 @@ def get_rest_microservice(user_model, seldon_metrics):
     @app.route("/health/status", methods=["GET"])
     def HealthStatus():
         logger.debug("REST Health Status Request")
-        response = seldon_core.seldon_methods.health_status(user_model, seldon_metrics)
+        response = seldon_core.seldon_methods.health_status(
+            user_model, seldon_metrics
+        )
         logger.debug("REST Health Status Response: %s", response)
         return jsonify(response)
 
@@ -220,17 +224,23 @@ class SeldonModelGRPC(object):
         )
 
 
-def get_grpc_server(user_model, seldon_metrics, annotations={}, trace_interceptor=None):
+def get_grpc_server(
+    user_model, seldon_metrics, annotations={}, trace_interceptor=None
+):
     seldon_model = SeldonModelGRPC(user_model, seldon_metrics)
     options = []
     if ANNOTATION_GRPC_MAX_MSG_SIZE in annotations:
         max_msg = int(annotations[ANNOTATION_GRPC_MAX_MSG_SIZE])
-        logger.info("Setting grpc max message and receive length to %d", max_msg)
+        logger.info(
+            "Setting grpc max message and receive length to %d", max_msg
+        )
         options.append(("grpc.max_message_length", max_msg))
         options.append(("grpc.max_send_message_length", max_msg))
         options.append(("grpc.max_receive_message_length", max_msg))
 
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options=options)
+    server = grpc.server(
+        futures.ThreadPoolExecutor(max_workers=10), options=options
+    )
 
     if trace_interceptor:
         from grpc_opentracing.grpcext import intercept_server
@@ -240,7 +250,9 @@ def get_grpc_server(user_model, seldon_metrics, annotations={}, trace_intercepto
     prediction_pb2_grpc.add_GenericServicer_to_server(seldon_model, server)
     prediction_pb2_grpc.add_ModelServicer_to_server(seldon_model, server)
     prediction_pb2_grpc.add_TransformerServicer_to_server(seldon_model, server)
-    prediction_pb2_grpc.add_OutputTransformerServicer_to_server(seldon_model, server)
+    prediction_pb2_grpc.add_OutputTransformerServicer_to_server(
+        seldon_model, server
+    )
     prediction_pb2_grpc.add_CombinerServicer_to_server(seldon_model, server)
     prediction_pb2_grpc.add_RouterServicer_to_server(seldon_model, server)
     prediction_pb2_grpc.add_SeldonServicer_to_server(seldon_model, server)
