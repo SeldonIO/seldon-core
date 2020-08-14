@@ -173,6 +173,7 @@ def get_metrics_microservice(seldon_metrics):
 def _set_flask_app_configs(app):
     """
     Set the configs for the flask app based on environment variables
+    See https://flask.palletsprojects.com/config/#builtin-configuration-values
     :param app:
     :return:
     """
@@ -180,13 +181,15 @@ def _set_flask_app_configs(app):
     FLASK_CONFIGS_BOOL = [
         "DEBUG",
         "EXPLAIN_TEMPLATE_LOADING",
-        "TESTING",
+        "JSONIFY_PRETTYPRINT_REGULAR",
+        "JSON_SORT_KEYS",
         "PROPAGATE_EXCEPTIONS",
         "PRESERVE_CONTEXT_ON_EXCEPTION",
         "SESSION_COOKIE_HTTPONLY",
         "SESSION_COOKIE_SECURE",
         "SESSION_REFRESH_EACH_REQUEST",
         "TEMPLATES_AUTO_RELOAD",
+        "TESTING",
         "TRAP_HTTP_EXCEPTIONS",
         "TRAP_BAD_REQUEST_ERRORS",
         "USE_X_SENDFILE",
