@@ -202,7 +202,7 @@ def _set_flask_app_configs(app):
         if flask_config not in FLASK_CONFIGS_BOOL:
             continue
         # Environment variables come as strings, convert them to boolean
-        app.config[flask_config] = value == "true"
+        app.config[flask_config] = value.lower() == "true"
     logger.info(f"App Config:  {app.config}")
 
 
