@@ -215,7 +215,7 @@ There is an [example notebook illustrating a model with custom metrics in python
 ### Custom Request Tags
 ```from version 0.3```
 
-To add custom request tags you can add an optional method ```tags``` which can return a dict of custom meta tags as shown in the example below:
+To add custom request tags data you can add an optional method ```tags``` which can return a dict of custom meta tags as shown in the example below:
 
 ```python
 class MyModel(object):
