@@ -196,6 +196,9 @@ def _set_flask_app_configs(app):
             continue
         flask_config = env_var.replace(FLASK_CONFIG_IDENTIFIER, "")
         if flask_config not in FLASK_CONFIGS_BOOL:
+            logger.warning(
+                f"The Flask Configuration Parameter, {flask_config}, is not configured for use with Seldon"
+            )
             continue
         # Environment variables come as strings, convert them to boolean
         app.config[flask_config] = value.lower() == "true"
