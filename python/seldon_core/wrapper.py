@@ -176,17 +176,31 @@ def _set_flask_app_configs(app):
     :param app:
     :return:
     """
-    env_to_config_map = {
-        "FLASK_JSONIFY_PRETTYPRINT_REGULAR": "JSONIFY_PRETTYPRINT_REGULAR",
-        "FLASK_JSON_SORT_KEYS": "JSON_SORT_KEYS",
-        "FLASK_PROPAGATE_EXCEPTIONS": "PROPAGATE_EXCEPTIONS",
-    }
+    FLASK_CONFIG_IDENTIFIER = "FLASK_"
+    FLASK_CONFIGS_BOOL = [
+        "DEBUG",
+        "EXPLAIN_TEMPLATE_LOADING",
+        "TESTING",
+        "PROPAGATE_EXCEPTIONS",
+        "PRESERVE_CONTEXT_ON_EXCEPTION",
+        "SESSION_COOKIE_HTTPONLY",
+        "SESSION_COOKIE_SECURE",
+        "SESSION_REFRESH_EACH_REQUEST",
+        "TEMPLATES_AUTO_RELOAD",
+        "TRAP_HTTP_EXCEPTIONS",
+        "TRAP_BAD_REQUEST_ERRORS",
+        "USE_X_SENDFILE",
+    ]
 
-    for env_var, config_name in env_to_config_map.items():
-        if os.environ.get(env_var):
-            # Environment variables come as strings, convert them to boolean
-            bool_env_value = os.environ.get(env_var).lower() == "true"
-            app.config[config_name] = bool_env_value
+    for env_var, value in os.environ.items():
+        if not env_var.startswith(FLASK_CONFIG_IDENTIFIER):
+            continue
+        flask_config = env_var.replace(FLASK_CONFIG_IDENTIFIER, "")
+        if flask_config not in FLASK_CONFIGS_BOOL:
+            continue
+        # Environment variables come as strings, convert them to boolean
+        app.config[flask_config] = value == "true"
+    logger.info(f"App Config:  {app.config}")
 
 
 # ----------------------------
