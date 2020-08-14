@@ -20,7 +20,7 @@ Python Language Wrapper Examples
 .. toctree::
    :titlesonly:
 
-   Scikit-learn Spacy Reddit Text Classification Tutorial <sklearn_spacy_text_classifier_example>
+   SKLearn Spacy NLP <sklearn_spacy_text_classifier_example>
    SKLearn Iris Classifier <iris>
    SKLearn MNIST <sklearn_mnist>
    Sagemaker SKLearn Example <sagemaker_sklearn>   
@@ -118,8 +118,6 @@ Complex Graph Examples
   
    Combiner Example <combiner>
    Chainer MNIST <chainer_mnist>
-   Spam Classification TRANSFORMER <transformer_spam_model>
-   Spam Classification TRANSFORMER + COMBINER  <combiner_spam_model>
 
 Ingress
 -----
@@ -134,3 +132,22 @@ Ingress
    Istio Canary <istio_canary>
    Istio Examples <istio_examples>   
 
+Infrastructure
+-----
+
+.. toctree::
+   :titlesonly:
+  
+   Patch Volumes for Version 1.2.0 Upgrade <patch_1_2>
+   
+
+Benchmarking and Load Tests
+-----
+
+.. toctree::
+   :titlesonly:
+  
+   Service Orchestrator <bench_svcOrch>
+   Tensorflow <bench_tensorflow>   
+   Argo Workflows Benchmarking <vegeta_bench_argo_workflows>   
+   

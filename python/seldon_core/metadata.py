@@ -22,88 +22,121 @@ class SeldonInvalidMetadataError(Exception):
 SELDON_ARRAY_SCHEMA = {
     "type": "object",
     "properties": {
-        "datatype": {"type": "string", "enum": ["array"]},
-        "shape": {"type": "array", "items": {"type": "integer"}},
+        "messagetype": {"type": "string", "enum": ["tensor", "ndarray", "tftensor"]},
+        "schema": {
+            "type": "object",
+            "properties": {
+                "names": {"type": "array", "items": {"type": "string"}},
+                "shape": {"type": "array", "items": {"type": "integer"}},
+                # Shall we also include field for datatype (as in dtype for np.array)?
+            },
+            "additionalProperties": False,
+        },
     },
-    "required": ["datatype", "shape"],
+    "required": ["messagetype"],
     "additionalProperties": False,
 }
 
 SELDON_JSON_SCHEMA = {
     "type": "object",
     "properties": {
-        "datatype": {"type": "string", "enum": ["jsonData"]},
+        "messagetype": {"type": "string", "enum": ["jsonData"]},
         "schema": {"type": "object"},
     },
-    "required": ["datatype"],
+    "required": ["messagetype"],
     "additionalProperties": False,
 }
 
 SELDON_STR_SCHEMA = {
     "type": "object",
-    "properties": {"datatype": {"type": "string", "enum": ["strData"]}},
-    "required": ["datatype"],
+    "properties": {"messagetype": {"type": "string", "enum": ["strData"]}},
+    "required": ["messagetype"],
     "additionalProperties": False,
 }
 
 SELDON_BIN_SCHEMA = {
     "type": "object",
-    "properties": {"datatype": {"type": "string", "enum": ["binData"]}},
-    "required": ["datatype"],
+    "properties": {"messagetype": {"type": "string", "enum": ["binData"]}},
+    "required": ["messagetype"],
     "additionalProperties": False,
 }
+
+
+SELDON_CUSTOM_DEFINITION = {
+    "type": "object",
+    "properties": {
+        "messagetype": {
+            "type": "string",
+            "not": {
+                "enum": [
+                    "tensor",
+                    "ndarray",
+                    "tftensor",
+                    "jsonData",
+                    "strData",
+                    "binData",
+                ]
+            },
+        },
+        "schema": {"type": "object"},
+    },
+    "required": ["messagetype"],
+    "additionalProperties": False,
+}
+
+
+TENSOR_DATA_TYPES = [
+    "BOOL",
+    "UINT8",
+    "UINT16",
+    "UINT32",
+    "UINT64",
+    "INT8",
+    "INT16",
+    "INT32",
+    "INT64",
+    "FP16",
+    "FP32",
+    "FP64",
+    "BYTES",
+]
+
 
 METADATA_TENSOR_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "name": {"type": "string"},
+        "datatype": {"type": "string", "enum": TENSOR_DATA_TYPES},
+        "shape": {"type": "array", "items": {"type": "integer"}},
+    },
+    "additionalProperties": False,
+}
+
+
+INPUTS_OUTPUTS_SCHEMA = {
     "type": "array",
     "items": {
-        "type": "object",
-        "properties": {
-            "datatype": {"type": "string"},
-            "name": {"type": "string"},
-            "shape": {"type": "array", "items": {"type": "integer"}},
-        },
-        "additionalProperties": False,
+        "anyOf": [
+            SELDON_ARRAY_SCHEMA,
+            SELDON_JSON_SCHEMA,
+            SELDON_STR_SCHEMA,
+            SELDON_BIN_SCHEMA,
+            SELDON_CUSTOM_DEFINITION,
+            METADATA_TENSOR_SCHEMA,
+        ]
     },
     "additionalProperties": False,
 }
 
-V1_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "apiVersion": {"type": "string", "enum": ["v1"]},
-        "name": {"type": "string"},
-        "versions": {"type": "array", "items": {"type": "string"}},
-        "platform": {"type": "string"},
-        "inputs": {
-            "oneOf": [
-                SELDON_ARRAY_SCHEMA,
-                SELDON_JSON_SCHEMA,
-                SELDON_STR_SCHEMA,
-                SELDON_BIN_SCHEMA,
-            ]
-        },
-        "outputs": {
-            "oneOf": [
-                SELDON_ARRAY_SCHEMA,
-                SELDON_JSON_SCHEMA,
-                SELDON_STR_SCHEMA,
-                SELDON_BIN_SCHEMA,
-            ]
-        },
-    },
-    "additionalProperties": False,
-    "required": ["apiVersion"],
-}
 
-V2_SCHEMA = {
+JSON_SCHEMA = {
     "type": "object",
     "properties": {
-        "apiVersion": {"type": "string", "enum": ["v2"]},
         "name": {"type": "string"},
         "versions": {"type": "array", "items": {"type": "string"}},
         "platform": {"type": "string"},
-        "inputs": METADATA_TENSOR_SCHEMA,
-        "outputs": METADATA_TENSOR_SCHEMA,
+        "inputs": INPUTS_OUTPUTS_SCHEMA,
+        "outputs": INPUTS_OUTPUTS_SCHEMA,
     },
     "additionalProperties": False,
 }
@@ -137,7 +170,6 @@ def validate_model_metadata(data: Dict) -> Dict:
         image_name, image_version = "", ""
 
     default_meta = {
-        "apiVersion": "v2",
         "name": image_name,
         "versions": [image_version],
         "platform": "",
@@ -146,17 +178,9 @@ def validate_model_metadata(data: Dict) -> Dict:
     }
 
     data = {**default_meta, **data}
-    v = data.get("apiVersion", "v2")
-
-    if v == "v1":
-        schema = V1_SCHEMA
-    elif v == "v2":
-        schema = V2_SCHEMA
-    else:
-        raise SeldonInvalidMetadataError(f"Unknown metadata schema: {v}")
 
     try:
-        validate(data, schema)
+        validate(data, JSON_SCHEMA)
     except ValidationError as e:
         raise SeldonInvalidMetadataError(e)
 

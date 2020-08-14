@@ -7,15 +7,20 @@ import logging
 import multiprocessing as mp
 import threading
 import sys
-import seldon_core.persistence as persistence
-from seldon_core.metrics import SeldonMetrics
-from distutils.util import strtobool
-from seldon_core.flask_utils import ANNOTATIONS_FILE
-import seldon_core.wrapper as seldon_microservice
+
 from typing import Dict, Callable
-from seldon_core.flask_utils import SeldonMicroserviceException
-from seldon_core import __version__
-import gunicorn.app.base
+from distutils.util import strtobool
+
+from seldon_core import persistence, __version__, wrapper as seldon_microservice
+from seldon_core.metrics import SeldonMetrics
+from seldon_core.flask_utils import ANNOTATIONS_FILE, SeldonMicroserviceException
+from seldon_core.utils import getenv_as_bool
+from seldon_core.app import (
+    StandaloneApplication,
+    UserModelApplication,
+    accesslog,
+    threads,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -24,11 +29,12 @@ SERVICE_PORT_ENV_NAME = "PREDICTIVE_UNIT_SERVICE_PORT"
 METRICS_SERVICE_PORT_ENV_NAME = "PREDICTIVE_UNIT_METRICS_SERVICE_PORT"
 
 LOG_LEVEL_ENV = "SELDON_LOG_LEVEL"
+DEFAULT_LOG_LEVEL = "INFO"
+
 DEFAULT_PORT = 5000
 DEFAULT_METRICS_PORT = 6000
 
-DEBUG_PARAMETER = "SELDON_DEBUG"
-DEBUG = False
+DEBUG_ENV = "SELDON_DEBUG"
 
 
 def start_servers(
@@ -169,32 +175,28 @@ def setup_tracing(interface_name: str) -> object:
     return config.initialize_tracer()
 
 
-class StandaloneApplication(gunicorn.app.base.BaseApplication):
-    def __init__(self, app, user_object, options: Dict = None):
-        self.application = app
-        self.user_object = user_object
-        self.options = options
-        super(StandaloneApplication, self).__init__()
+def setup_logger(log_level: str) -> logging.Logger:
+    # set up log level
+    log_level_raw = os.environ.get(LOG_LEVEL_ENV, log_level.upper())
+    log_level_num = getattr(logging, log_level_raw, None)
+    if not isinstance(log_level_num, int):
+        raise ValueError("Invalid log level: %s", log_level)
 
-    def load_config(self):
-        config = dict(
-            [
-                (key, value)
-                for key, value in self.options.items()
-                if key in self.cfg.settings and value is not None
-            ]
-        )
-        for key, value in config.items():
-            self.cfg.set(key.lower(), value)
+    logger.setLevel(log_level_num)
 
-    def load(self):
-        logger.debug("LOADING APP %d", os.getpid())
-        try:
-            logger.debug("Calling user load method")
-            self.user_object.load()
-        except (NotImplementedError, AttributeError):
-            logger.debug("No load method in user model")
-        return self.application
+    # Set right level on access logs
+    flask_logger = logging.getLogger("werkzeug")
+    flask_logger.setLevel(log_level_num)
+
+    logger.debug("Log level set to %s:%s", log_level, log_level_num)
+
+    # set log level for the imported microservice type
+    seldon_microservice.logger.setLevel(log_level_num)
+    logging.getLogger().setLevel(log_level_num)
+    for handler in logger.handlers:
+        handler.setLevel(log_level_num)
+
+    return logger
 
 
 def main():
@@ -220,7 +222,21 @@ def main():
     parser.add_argument(
         "--parameters", type=str, default=os.environ.get(PARAMETERS_ENV_NAME, "[]")
     )
-    parser.add_argument("--log-level", type=str, default="INFO")
+    parser.add_argument(
+        "--log-level",
+        type=str,
+        choices=["DEBUG", "INFO", "WARNING", "ERROR"],
+        default=DEFAULT_LOG_LEVEL,
+        help="Log level of the inference server.",
+    )
+    parser.add_argument(
+        "--debug",
+        nargs="?",
+        type=bool,
+        default=getenv_as_bool(DEBUG_ENV, default=False),
+        const=True,
+        help="Enable debug mode.",
+    )
     parser.add_argument(
         "--tracing",
         nargs="?",
@@ -228,12 +244,20 @@ def main():
         const=1,
         type=int,
     )
-    # gunicorn settings, defaults are from http://docs.gunicorn.org/en/stable/settings.html
+
+    # gunicorn settings, defaults are from
+    # http://docs.gunicorn.org/en/stable/settings.html
     parser.add_argument(
         "--workers",
         type=int,
         default=int(os.environ.get("GUNICORN_WORKERS", "1")),
-        help="Number of gunicorn workers for handling requests.",
+        help="Number of Gunicorn workers for handling requests.",
+    )
+    parser.add_argument(
+        "--threads",
+        type=int,
+        default=int(os.environ.get("GUNICORN_THREADS", "10")),
+        help="Number of threads to run per Gunicorn worker.",
     )
     parser.add_argument(
         "--max-requests",
@@ -247,16 +271,34 @@ def main():
         default=int(os.environ.get("GUNICORN_MAX_REQUESTS_JITTER", "0")),
         help="Maximum random jitter to add to max-requests.",
     )
+
     parser.add_argument(
         "--single-threaded",
         type=int,
         default=int(os.environ.get("FLASK_SINGLE_THREADED", "0")),
-        help="Force the Flask app to run single-threaded",
+        help="Force the Flask app to run single-threaded. Also applies to Gunicorn.",
+    )
+
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=int(os.environ.get(SERVICE_PORT_ENV_NAME, DEFAULT_PORT)),
+        help="Set port of seldon service",
+    )
+
+    parser.add_argument(
+        "--metrics-port",
+        type=int,
+        default=int(
+            os.environ.get(METRICS_SERVICE_PORT_ENV_NAME, DEFAULT_METRICS_PORT)
+        ),
+        help="Set metrics port of seldon service",
     )
 
     args = parser.parse_args()
-
     parameters = parse_parameters(json.loads(args.parameters))
+
+    setup_logger(args.log_level)
 
     # set flask trace jaeger extra tags
     jaeger_extra_tags = list(
@@ -266,14 +308,6 @@ def main():
         )
     )
     logger.info("Parse JAEGER_EXTRA_TAGS %s", jaeger_extra_tags)
-    # set up log level
-    log_level_raw = os.environ.get(LOG_LEVEL_ENV, args.log_level.upper())
-    log_level_num = getattr(logging, log_level_raw, None)
-    if not isinstance(log_level_num, int):
-        raise ValueError("Invalid log level: %s", args.log_level)
-
-    logger.setLevel(log_level_num)
-    logger.debug("Log level set to %s:%s", args.log_level, log_level_num)
 
     annotations = load_annotations()
     logger.info("Annotations: %s", annotations)
@@ -295,16 +329,8 @@ def main():
     else:
         user_object = user_class(**parameters)
 
-    # set log level for the imported microservice type
-    seldon_microservice.logger.setLevel(log_level_num)
-    logging.getLogger().setLevel(log_level_num)
-    for handler in logger.handlers:
-        handler.setLevel(log_level_num)
-
-    port = int(os.environ.get(SERVICE_PORT_ENV_NAME, DEFAULT_PORT))
-    metrics_port = int(
-        os.environ.get(METRICS_SERVICE_PORT_ENV_NAME, DEFAULT_METRICS_PORT)
-    )
+    port = args.port
+    metrics_port = args.metrics_port
 
     if args.tracing:
         tracer = setup_tracing(args.interface_name)
@@ -312,29 +338,8 @@ def main():
     if args.api_type == "REST":
         seldon_metrics = SeldonMetrics(worker_id_func=os.getpid)
 
-        if args.workers > 1:
-
-            def rest_prediction_server():
-                options = {
-                    "bind": "%s:%s" % ("0.0.0.0", port),
-                    "access_logfile": "-",
-                    "loglevel": "info",
-                    "timeout": 5000,
-                    "reload": "true",
-                    "workers": args.workers,
-                    "max_requests": args.max_requests,
-                    "max_requests_jitter": args.max_requests_jitter,
-                }
-                app = seldon_microservice.get_rest_microservice(
-                    user_object, seldon_metrics
-                )
-                StandaloneApplication(app, user_object, options=options).run()
-
-            logger.info("REST gunicorn microservice running on port %i", port)
-            server1_func = rest_prediction_server
-
-        else:
-
+        if args.debug:
+            # Start Flask debug server
             def rest_prediction_server():
                 app = seldon_microservice.get_rest_microservice(
                     user_object, seldon_metrics
@@ -348,7 +353,7 @@ def main():
                     from flask_opentracing import FlaskTracing
 
                     logger.info("Set JAEGER_EXTRA_TAGS %s", jaeger_extra_tags)
-                    tracing = FlaskTracing(tracer, True, app, jaeger_extra_tags)
+                    FlaskTracing(tracer, True, app, jaeger_extra_tags)
 
                 app.run(
                     host="0.0.0.0",
@@ -361,6 +366,26 @@ def main():
                 port,
                 args.single_threaded,
             )
+            server1_func = rest_prediction_server
+        else:
+            # Start production server
+            def rest_prediction_server():
+                options = {
+                    "bind": "%s:%s" % ("0.0.0.0", port),
+                    "accesslog": accesslog(args.log_level),
+                    "loglevel": args.log_level.lower(),
+                    "timeout": 5000,
+                    "threads": threads(args.threads, args.single_threaded),
+                    "workers": args.workers,
+                    "max_requests": args.max_requests,
+                    "max_requests_jitter": args.max_requests_jitter,
+                }
+                app = seldon_microservice.get_rest_microservice(
+                    user_object, seldon_metrics
+                )
+                UserModelApplication(app, user_object, options=options).run()
+
+            logger.info("REST gunicorn microservice running on port %i", port)
             server1_func = rest_prediction_server
 
     elif args.api_type == "GRPC":
@@ -405,7 +430,18 @@ def main():
 
     def rest_metrics_server():
         app = seldon_microservice.get_metrics_microservice(seldon_metrics)
-        app.run(host="0.0.0.0", port=metrics_port)
+        if args.debug:
+            app.run(host="0.0.0.0", port=metrics_port)
+        else:
+            options = {
+                "bind": "%s:%s" % ("0.0.0.0", metrics_port),
+                "accesslog": accesslog(args.log_level),
+                "loglevel": args.log_level.lower(),
+                "timeout": 5000,
+                "max_requests": args.max_requests,
+                "max_requests_jitter": args.max_requests_jitter,
+            }
+            StandaloneApplication(app, options=options).run()
 
     logger.info("REST metrics microservice running on port %i", metrics_port)
     metrics_server_func = rest_metrics_server

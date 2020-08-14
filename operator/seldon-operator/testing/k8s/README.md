@@ -4,3 +4,4 @@ Follow https://github.com/operator-framework/community-operators/blob/master/doc
 
 Using resource in this folder.
 
+We set `startingCSV` to allow us to test auto upgrades by OLM. It should cycle through all operators from 1.1.0 onwards.

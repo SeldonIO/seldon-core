@@ -19,3 +19,32 @@ https://github.com/go-inf/inf/blob/master/LICENSE,BSD 3-Clause "New" or "Revised
 https://github.com/go-tomb/tomb/blob/v1/LICENSE,BSD 3-Clause "New" or "Revised" License
 https://github.com/go-yaml/yaml/blob/v2/LICENSE,Apache License 2.0
 https://github.com/kubernetes-sigs/yaml/blob/master/LICENSE,MIT License
+https://github.com/kr/logfmt/blob/master/Readme,MIT License
+https://github.com/golang/exp/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
+https://github.com/golang/xerrors/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
+https://github.com/googleapis/google-api-go-client/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
+https://github.com/gotestyourself/gotest.tools/blob/master/LICENSE,Apache License 2.0
+https://github.com/go-check/check/blob/v1/LICENSE,BSD 2-Clause "Simplified" License
+https://github.com/go-inf/inf/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
+https://github.com/go-tomb/tomb/blob/v1/LICENSE,BSD 3-Clause "New" or "Revised" License
+https://github.com/go-yaml/yaml/blob/v2/LICENSE,Apache License 2.0
+https://github.com/kubernetes-sigs/yaml/blob/master/LICENSE,MIT License
+https://github.com/dominikh/go-tools/blob/master/LICENSE,MIT License
+https://github.com/BurntSushi/xgb/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
+https://github.com/bgentry/speakeasy/blob/master/LICENSE,MIT License
+https://github.com/docker/spdystream/blob/master/LICENSE,Apache License 2.0
+https://github.com/dustin/go-humanize/blob/master/LICENSE,MIT License
+https://github.com/globalsign/mgo/blob/master/LICENSE,BSD 2-Clause "Simplified" License
+https://github.com/mxk/go-flowrate/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
+https://github.com/rcrowley/go-metrics/blob/master/LICENSE,BSD 2-Clause "Simplified" License
+https://github.com/russross/blackfriday/blob/master/LICENSE.txt,BSD 2-Clause "Simplified" License
+https://github.com/sergi/go-diff/blob/master/LICENSE,MIT License
+https://github.com/golang/image/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
+https://github.com/golang/mobile/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
+https://github.com/golang/mod/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
+https://github.com/cznic/cc/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
+https://github.com/cznic/golex/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
+https://github.com/cznic/mathutil/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
+https://github.com/cznic/strutil/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
+https://github.com/cznic/xc/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
+https://github.com/protocolbuffers/protobuf-go/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License

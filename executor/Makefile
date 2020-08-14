@@ -6,6 +6,8 @@ IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
 IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${VERSION}
 IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
 
+EXECUTOR_FOLDERS ?= ./api/... ./predictor/... ./k8s/...
+
 KIND_NAME ?= kind
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -17,11 +19,11 @@ endif
 
 # Run go fmt against code
 fmt:
-	go fmt ./...
+	go fmt ${EXECUTOR_FOLDERS}
 
 # Run go vet against code
 vet:
-	go vet ./...
+	go vet ${EXECUTOR_FOLDERS}
 
 
 # Build manager binary
@@ -58,7 +60,7 @@ add_protos:
 
 # Run tests
 test: fmt vet
-	go test ./api/... ./predictor/... ./k8s/...  -coverprofile cover.out
+	go test ${EXECUTOR_FOLDERS} -coverprofile cover.out
 
 copy_openapi_resources:
 	mkdir -p api/rest/openapi/
@@ -67,11 +69,11 @@ copy_openapi_resources:
 
 # Build the docker image
 docker-build: test copy_openapi_resources
-	docker build -f Dockerfile -t ${IMG} .
+	cd .. && docker build -f executor/Dockerfile -t ${IMG} .
 
 # Build the docker image for Redhat
-docker-build-redhat: test copy-openapi-resources
-	docker build . -f Dockerfile.redhat -t ${IMG_REDHAT}
+docker-build-redhat: test copy_openapi_resources
+	cd .. && docker build -f executor/Dockerfile.redhat -t ${IMG_REDHAT} .
 
 # Push the docker image
 docker-push:
@@ -102,5 +104,32 @@ clean:
 	rm -rf tensorflow
 	rm -rf serving
 
-licenses/dep.txt:
+install-dev:
+	# Tool to generate license info
+	pip install \
+		'git+https://github.com/kubeflow/testing#egg=go-license-tools&subdirectory=py/kubeflow/testing/go-license-tools'
+
+
+licenses/dep.txt: go.mod
 	go list -m all | cut -d ' ' -f 1 > licenses/dep.txt
+
+.PHONY: licenses
+licenses: licenses/dep.txt
+	# NOTE: You need to create a file in ~/.github_api_token with a GitHub token.
+	get-github-repo \
+		-o licenses/repo.txt \
+		--manual-dep-repo-mapping licenses/dep_repo.manual.csv \
+		licenses/dep.txt
+	get-github-license-info -o licenses/license_info.csv licenses/repo.txt
+	python -m 'patch_additional_license_info' \
+		licenses/license_info.csv \
+		licenses/additional_license_info.csv
+	concatenate-license -o licenses/license.txt licenses/license_info.csv
+
+
+lint: licenses/dep.txt
+	# Check if licenses have changed
+	git \
+		--no-pager diff \
+		--exit-code \
+		./licenses

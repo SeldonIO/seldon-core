@@ -44,7 +44,7 @@ const (
 )
 
 var (
-	ControllerNamespace        = GetEnv("POD_NAMESPACE", "seldon-system")
+	ControllerNamespace        = utils.GetEnv("POD_NAMESPACE", "seldon-system")
 	ControllerConfigMapName    = "seldon-config"
 	envStorageInitializerImage = os.Getenv(EnvStorageInitializerImageRelated)
 )

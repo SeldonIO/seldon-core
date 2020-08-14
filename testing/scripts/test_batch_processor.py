@@ -23,7 +23,7 @@ class TestBatchWorker(object):
         retry_run(f"kubectl apply -f {spec} -n {namespace}")
         wait_for_status("sklearn", namespace)
         wait_for_rollout("sklearn", namespace)
-        time.sleep(1)
+        time.sleep(10)
 
         batch_size = 1000
         input_data_path = "input-data.txt"

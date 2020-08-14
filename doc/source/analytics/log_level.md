@@ -1,112 +1,57 @@
-# Seldon Core Analytics
+# Logging and log level
 
-Seldon core metrics containers are able to provide different log levels. 
+Out of the box, your Seldon deployments will be pre-configured to a sane set of
+defaults when it comes to logging.
+These settings involve both the logging level and the structure of the log
+messages.
 
-By default the containers come out of the box with WARNING as default log level.
+These settings can be changed on a per-component basis.
 
-This can be changed into DEBUG, INFO, WARNING and ERROR by following the following instructions.
+## Log level
 
-## Setting the environment variable
+By default, all the components in your Seldon deployment will come out of the
+box with `INFO` as the default log level.
 
-### Setting log level in a Python Wrapper
+To change the log level you can use the `SELDON_LOG_LEVEL` environment
+variable.
+In general, this variable can be set to the following log levels (from more to
+less verbose):
 
-The change can be done by setting the `SELDON_LOG_LEVEL` environment variable in the respective container.
+- `DEBUG`
+- `INFO`
+- `WARNING` 
+- `ERROR`
 
-For example, to set it in the Seldon Engine, you would do it as follows:
+### Python inference servers
 
-```
-...
+.. Note:: 
+   Setting the ``SELDON_LOG_LEVEL`` to ``WARNING`` and above in the Python
+   wrapper will disable the server's access logs, which are considered
+   ``INFO``-level logs.
+
+When using the [Python wrapper](../python) (including the
+[MLflow](../servers/mlflow), [SKLearn](../servers/sklearn) and
+[XGBoost](../servers/xgboost) pre-package servers), you can control the log
+level using the `SELDON_LOG_LEVEL` environment variable.
+Note that the `SELDON_LOG_LEVEL` variable has to be set in the **respective
+container** within your inference graph.
+
+For example, to set it in each container running with the python wrapper, you
+would do it as follows by adding the environment variable `SELDON_LOG_LEVEL` to
+the containers running images wrapped by the python wrapper:
+
+```jsonc
 "spec": {
-  "containers": [
-      { 
-          "env": [
-              {
-                  "name": SELDON_LOG_LEVEL,
-                  "value": DEBUG
-              }
-          ]
-      }
-  ]
-}
-...
-```
-
-Once this has been set, it's possible to use the log in your wrapper code as follows:
-
-```
-import logging
-
-log = logging.getLogger()
-
-log.debug(...)
-```
-
-### Setting log level in the Seldon Engine
-
-In order to set the log level in the SeldonEngine this can be done by providing the env option to the svcOrchSpec, as follows:
-
-```
-"svcOrchSpec": {
-    "env": [
+  // ...
+  "predictors": [
+    {
+      "componentSpecs": [
         {
-            "name": "SELDON_LOG_LEVEL",
-            "value": "DEBUG"
-        }
-    ]
-}
-```
-
-Here is a full example configuration file with a loglevel selection.
-
-```
-{    
-    "apiVersion": "machinelearning.seldon.io/v1alpha2",
-    "kind": "SeldonDeployment",
-    "metadata": {
-        "labels": {
-            "app": "seldon"
-        },
-        "name": "seldon-model"
-    },
-    "spec": {
-        "name": "test-deployment",
-        "oauth_key": "oauth-key",
-        "oauth_secret": "oauth-secret",
-        "predictors": [
-            {
-                "componentSpecs": [
-                    {
-                        "spec": {
-                            "containers": [
-                                {
-                                    "image": "seldonio/mock_classifier:1.0",
-                                    "imagePullPolicy": "IfNotPresent",
-                                    "name": "classifier",
-                                    "resources": {
-                                        "requests": {
-                                            "memory": "1Mi"
-                                        }
-                                    }
-                                }
-                            ],
-                            "terminationGracePeriodSeconds": 1
-                        }
-                    }
-                ],
-                "graph": {
-                    "children": [],
-                    "endpoint": {
-                        "type": "REST"
-                    },
-                    "name": "classifier",
-                    "type": "MODEL"
-                },
-                "labels": {
-                    "version": "v1"
-                },
-                "name": "example",
-                "replicas": 1,
-                "svcOrchSpec": {
+          "spec": {
+            "containers": [
+                { 
+                    "name": "mymodel",
+                    "image": "x.y:123",
                     "env": [
                         {
                             "name": "SELDON_LOG_LEVEL",
@@ -114,10 +59,76 @@ Here is a full example configuration file with a loglevel selection.
                         }
                     ]
                 }
-            }
-        ]
+            ]
+          }
+        }
+      ]
     }
+  ]
+  // ...
 }
 ```
 
+Once this has been set, it's possible to use the log in your wrapper code as follows:
 
+```python
+import logging
+
+log = logging.getLogger()
+log.debug(...)
+```
+
+### Log level in the service orchestrator
+
+To change the log level in the service orchestrator, you can set the
+`SELDON_LOG_LEVEL`  environment variable on the `svcOrchSpec` section of the
+`SeldonDeployment` CRD:
+
+```jsonc
+"spec": {
+  // ...
+  "predictors": [
+    {
+      "svcOrchSpec": {
+          "env": [
+              {
+                  "name": "SELDON_LOG_LEVEL",
+                  "value": "DEBUG"
+              }
+          ]
+      }
+    }
+  ]
+  // ...
+}
+```
+
+## Log format and sampling
+
+By default, Seldon's service orchestrator and operator will serialise the log
+messages as JSON and will enable log sampling.
+This behaviour can be disabled by setting the `SELDON_DEBUG` variable to
+`true`.
+Note that this will **enable "debug mode"**, which can also have other side
+effects.
+
+For example, to change this on the service orchestrator, you would do:
+
+```jsonc
+"spec": {
+  // ...
+  "predictors": [
+    {
+      "svcOrchSpec": {
+          "env": [
+              {
+                  "name": "SELDON_DEBUG",
+                  "value": "true"
+              }
+          ]
+      }
+    }
+  ]
+  // ...
+}
+```

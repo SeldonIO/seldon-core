@@ -16,7 +16,7 @@ Quick Links
 * Read the `Seldon Core Documentation <./>`_
 * Join our `community Slack <https://join.slack.com/t/seldondev/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU>`_ to ask any questions
 * Get started with `Seldon Core Notebook Examples <./examples/notebooks.html>`_
-* Join our fortnightly `online community calls <./developer/community.html#community-calls>`_
+* Join our fortnightly `online community calls <./developer/community.html#community-calls>`_ : `Google Calendar <https://calendar.google.com/event?action=TEMPLATE&tmeid=MXBtNzI1cjk0dG9kczhsZTRkcWlmcm1kdjVfMjAyMDA3MDlUMTUwMDAwWiBzZWxkb24uaW9fbTRuMnZtcmZubDI3M3FsczVnYjlwNjVpMHNAZw&tmsrc=seldon.io_m4n2vmrfnl273qls5gb9p65i0s%40group.calendar.google.com&scp=ALL>`_
 * Learn how you can `start contributing <./developer/contributing.html>`_
 * Check out `Blogs <./tutorials/blogs.html>`_ that dive into Seldon Core components
 * Watch some of the `Videos and Talks <./tutorials/videos.html>`_ using Seldon Core
@@ -32,9 +32,9 @@ Documentation Index
    :maxdepth: 1
    :caption: Getting Started
 
-   Overview <workflow/github-readme.rst>
-   Quickstart Guide <workflow/quickstart.md>
-   Install Seldon Core on Kubernetes <workflow/install.md>
+   Quickstart Guide <workflow/github-readme.rst>
+   Overview of Components <workflow/overview.md>
+   Install on Kubernetes <workflow/install.md>
    Join the Community <developer/community.md>
 
 .. toctree::
@@ -69,6 +69,7 @@ Documentation Index
    Supported API Protocols <graph/protocols.md>
    CI/CD MLOps at Scale <analytics/cicd-mlops.md>
    Metrics with Prometheus <analytics/analytics.md>
+   Model Metadata <reference/apis/metadata.md>
    Payload Logging with ELK <analytics/logging.md>
    Distributed Tracing with Jaeger <graph/distributed-tracing.md>
    Replica Scaling  <graph/scaling.md>
@@ -91,7 +92,6 @@ Documentation Index
    :caption: Incubating Projects
 
    Java Language Wrapper <java/README.md>
-   Metadata <reference/apis/metadata.md>
    R Language Wrapper [ALPHA] <R/README.md>
    NodeJS Language Wrapper [ALPHA] <nodejs/README.md>
    Go Language Wrapper [ALPHA] <go/go_wrapper_link.rst>
@@ -103,7 +103,8 @@ Documentation Index
 
    Ambassador Ingress <ingress/ambassador.md>
    Istio Ingress <ingress/istio.md>
-
+   OpenShift <ingress/openshift.md>
+   
 .. toctree::
    :maxdepth: 1
    :caption: Advanced Inference
@@ -121,6 +122,7 @@ Documentation Index
    Articles/Blogs <tutorials/blogs>
    Videos <tutorials/videos>
    Podcasts <tutorials/podcasts>
+   Kubeflow Pipelines <https://github.com/kubeflow/pipelines/blob/master/samples/contrib/e2e-outlier-drift-explainer/seldon/README.md>
 
 .. toctree::
    :maxdepth: 1

@@ -5,12 +5,12 @@
         "labels": {
             "app": "seldon"
         },
-        "name": "example"
+        "name": "example-custom"
     },
     "spec": {	
         "name": "production-model",
 	"annotations": {
-	    "seldon.io/ambassador-config":"apiVersion: ambassador/v1\nkind: Mapping\nname: seldon_example_rest_mapping\nprefix: /mycompany/ml/\nservice: example-single.seldon:8000\ntimeout_ms: 3000"
+	    "seldon.io/ambassador-config":"apiVersion: ambassador/v1\nkind: Mapping\nname: seldon_example_rest_mapping\nprefix: /mycompany/ml/\nservice: example-custom-single.seldon:8000\ntimeout_ms: 3000"
 	},	
         "predictors": [
             {

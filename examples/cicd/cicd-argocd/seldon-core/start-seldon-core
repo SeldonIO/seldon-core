@@ -15,5 +15,12 @@ KUBECTL="kubectl --context=${KUBE_CONTEXT}"
  ${KUBECTL} apply -f ${STARTUP_DIR}/seldon-aggregate-to-admin.json
 
 helm install --kube-context="${KUBE_CONTEXT}" ${SELDON_CORE_DIR}/helm-charts/seldon-core-operator --name seldon-core --set usageMetrics.enabled=true --namespace seldon-system
-helm install --kube-context="${KUBE_CONTEXT}" stable/ambassador --name ambassador --namespace default --set crds.keep=false --set replicaCount=1
 
+helm repo add datawire https://www.getambassador.io
+helm install ambassador datawire/ambassador \
+    --kube-context="${KUBE_CONTEXT}" \
+    --set image.repository=quay.io/datawire/ambassador \
+    --set enableAES=false \
+    --set crds.keep=false \
+    --set replicaCount=1 \
+    --namespace default

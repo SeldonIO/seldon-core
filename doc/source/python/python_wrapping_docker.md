@@ -211,11 +211,10 @@ For more details on custom metrics and the format of the metric dict see [here](
 
 There is an [example notebook illustrating a model with custom metrics in python](../examples/custom_metrics.html).
 
-### Custom Meta Data
+### Custom Request Tags
+```from version 0.3```
 
-`from version 0.3`
-
-To add custom meta data you can add an optional method `tags` which can return a dict of custom meta tags as shown in the example below:
+To add custom request tags data you can add an optional method ```tags``` which can return a dict of custom meta tags as shown in the example below:
 
 ```python
 class MyModel(object):

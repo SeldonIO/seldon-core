@@ -28,8 +28,11 @@ type SeldonApiClient interface {
 	Feedback(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error)
 	Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error)
 	Status(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error)
+	// Return model's metadata as payload.SeldonPaylaod (to expose as received on corresponding executor endpoint)
 	Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error)
-	Unmarshall(msg []byte) (payload.SeldonPayload, error)
+	// Return model's metadata decoded to payload.ModelMetadata (to build GraphMetadata)
+	ModelMetadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.ModelMetadata, error)
+	Unmarshall(msg []byte, contentType string) (payload.SeldonPayload, error)
 	Marshall(out io.Writer, msg payload.SeldonPayload) error
 	CreateErrorPayload(err error) payload.SeldonPayload
 }

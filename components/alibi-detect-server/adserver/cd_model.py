@@ -73,7 +73,7 @@ class AlibiDetectConceptDriftModel(
                 self.batch.shape[0],
                 self.drift_batch_size,
             )
-            cd_preds = self.model.predict(X)
+            cd_preds = self.model.predict(self.batch)
             self.batch = None
             return json.loads(json.dumps(cd_preds, cls=NumpyEncoder))
         else:

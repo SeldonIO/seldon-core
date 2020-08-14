@@ -6,7 +6,7 @@
     "namespace": "{{ .Release.Namespace }}",
     "labels": {
       {{- range $name, $val := .Values.labels }}
-        "{{ $name }}": "{{ $val }}"
+        "{{ $name }}": "{{ $val }}",
       {{ end -}}
     }
   },
@@ -14,7 +14,7 @@
     "name": "{{ .Release.Name }}",
     "annotations": {
       {{- range $name, $val := .Values.annotations }}
-        "{{ $name }}": "{{ $val }}"
+        "{{ $name }}": "{{ $val }}",
       {{ end -}}
     },
     "predictors": [
@@ -22,6 +22,12 @@
         "name": "default",
         "graph": {
           "name": "model",
+          {{- if .Values.model.implementation }}
+          "implementation": "{{ .Values.model.implementation }}",
+          {{- end}}
+          {{- if .Values.model.uri }}
+          "modelUri": "{{ .Values.model.uri }}",
+          {{- end}}
           "type": "MODEL",
           {{- if .Values.model.logger.enabled }}
           "logger": {
@@ -38,7 +44,9 @@
               "containers": [
                 {
                   "name": "model",
+                  {{- if .Values.model.image }}
                   "image": "{{ .Values.model.image }}",
+                  {{- end}}
                   "env": [
                     {{- range $var, $val := .Values.model.env }}
                       {

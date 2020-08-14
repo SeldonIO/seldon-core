@@ -19,8 +19,14 @@
 import unittest.mock as mock
 import itertools
 import pytest
-from azure.common import AzureMissingResourceHttpError
 import seldon_core
+
+from seldon_core.imports_helper import _AZURE_PRESENT
+
+from .utils import skipif_azure_missing
+
+if _AZURE_PRESENT:
+    from azure.common import AzureMissingResourceHttpError
 
 
 def create_mock_item(path):
@@ -47,6 +53,7 @@ def get_call_args(call_args_list):
 # pylint: disable=protected-access
 
 
+@skipif_azure_missing
 @mock.patch("seldon_core.storage.os.makedirs")
 @mock.patch("seldon_core.storage.BlockBlobService")
 def test_blob(mock_storage, mock_makedirs):  # pylint: disable=unused-argument
@@ -69,6 +76,7 @@ def test_blob(mock_storage, mock_makedirs):  # pylint: disable=unused-argument
     mock_storage.assert_called_with(account_name="seldon_core")
 
 
+@skipif_azure_missing
 @mock.patch("seldon_core.storage.os.makedirs")
 @mock.patch("seldon_core.storage.Storage._get_azure_storage_token")
 @mock.patch("seldon_core.storage.BlockBlobService")
@@ -99,6 +107,7 @@ def test_secure_blob(
     ]
 
 
+@skipif_azure_missing
 @mock.patch("seldon_core.storage.os.makedirs")
 @mock.patch("seldon_core.storage.BlockBlobService")
 def test_deep_blob(mock_storage, mock_makedirs):  # pylint: disable=unused-argument
@@ -123,6 +132,7 @@ def test_deep_blob(mock_storage, mock_makedirs):  # pylint: disable=unused-argum
     assert actual_calls == expected_calls
 
 
+@skipif_azure_missing
 @mock.patch("seldon_core.storage.os.makedirs")
 @mock.patch("seldon_core.storage.BlockBlobService")
 def test_blob_file(mock_storage, mock_makedirs):  # pylint: disable=unused-argument
@@ -145,6 +155,7 @@ def test_blob_file(mock_storage, mock_makedirs):  # pylint: disable=unused-argum
     assert actual_calls == expected_calls
 
 
+@skipif_azure_missing
 @mock.patch("seldon_core.storage.os.makedirs")
 @mock.patch("seldon_core.storage.BlockBlobService")
 def test_blob_fq_file(mock_storage, mock_makedirs):  # pylint: disable=unused-argument
@@ -167,6 +178,7 @@ def test_blob_fq_file(mock_storage, mock_makedirs):  # pylint: disable=unused-ar
     assert actual_calls == expected_calls
 
 
+@skipif_azure_missing
 @mock.patch("seldon_core.storage.os.makedirs")
 @mock.patch("seldon_core.storage.BlockBlobService")
 def test_blob_no_prefix(mock_storage, mock_makedirs):  # pylint: disable=unused-argument

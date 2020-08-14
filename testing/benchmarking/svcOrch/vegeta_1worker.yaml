@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: tf-load-test
+spec:
+  backoffLimit: 6
+  parallelism: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+        - args:
+            - vegeta -cpus=1 attack -duration=30m -rate=0 -max-workers=1 -targets=/var/vegeta/cfg
+              | vegeta report -type=json
+          command:
+            - sh
+            - -c
+          image: peterevans/vegeta:latest
+          imagePullPolicy: Always
+          name: vegeta
+          volumeMounts:
+            - mountPath: /var/vegeta
+              name: tf-vegeta-cfg
+      restartPolicy: Never
+      volumes:
+        - configMap:
+            defaultMode: 420
+            name: tf-vegeta-cfg
+          name: tf-vegeta-cfg
+      tolerations:
+      - key: loadtester
+        operator: Exists
+        effect: NoSchedule
