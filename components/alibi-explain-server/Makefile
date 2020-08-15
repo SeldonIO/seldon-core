@@ -37,7 +37,7 @@ clean:
 #
 
 run_predictor_adult:
-	docker run --rm -d --name "sklearnserver"  -p 5000:5000 -e PREDICTIVE_UNIT_PARAMETERS='[{"type":"STRING","name":"model_uri","value":"gs://seldon-models/sklearn/income/model"}]' seldonio/sklearnserver_rest:1.3.0-dev
+	docker run --rm -d --name "sklearnserver"  -p 5000:5000 -e PREDICTIVE_UNIT_PARAMETERS='[{"type":"STRING","name":"model_uri","value":"gs://seldon-models/sklearn/income/model-0.23.2"}]' seldonio/sklearnserver_rest:${VERSION}
 
 curl_predict_adult:
 	curl -d '{"data": {"ndarray":[[39, 7, 1, 1, 1, 1, 4, 1, 2174, 0, 40, 9]]}}'    -X POST http://localhost:5000/api/v1.0/predictions    -H "Content-Type: application/json"
@@ -60,7 +60,7 @@ cleanup_adult:
 #
 
 run_predictor_movie:
-	docker run --rm -d --name "sklearnserver"  -p 5000:5000 -e PREDICTIVE_UNIT_PARAMETERS='[{"type":"STRING","name":"model_uri","value":"gs://seldon-models/sklearn/moviesentiment"}]' seldonio/sklearnserver_rest:1.3.0-dev
+	docker run --rm -d --name "sklearnserver"  -p 5000:5000 -e PREDICTIVE_UNIT_PARAMETERS='[{"type":"STRING","name":"model_uri","value":"gs://seldon-models/sklearn/moviesentiment"}]' seldonio/sklearnserver_rest:${VERSION}
 
 curl_predict_movie:
 	curl -d '{"data": {"ndarray":["a visually exquisite but narratively opaque and emotionally vapid experience of style and mystification"]}}'    -X POST http://localhost:5000/api/v1.0/predictions    -H "Content-Type: application/json"
@@ -105,4 +105,25 @@ curl_explain_image:
 
 cleanup_image:
 	docker rm -f tfserver
+	docker rm -f explainer
+
+
+#
+# Test Kernel Shap Explanation
+#
+
+
+run_explainer_kernelshap:
+	python -m alibiexplainer --model_name adult --protocol seldon.http --storage_uri gs://seldon-models/sklearn/adult_shap/kernelshap/py36 --predictor_host localhost:5000 KernelShap
+
+#
+# Docker image is py36 - need to dill.save in py36 the explainer otherwise
+# 
+
+
+run_explainer_kernelshap_docker:
+	docker run --rm -d --name "explainer" --network=host -p 8080:8080 seldonio/${IMAGE}:${VERSION} --model_name adult --protocol seldon.http --storage_uri gs://seldon-models/sklearn/adult_shap/kernelshap/py36 --predictor_host localhost:5000 KernelShap
+
+cleanup_kernelshap:
+	docker rm -f sklearnserver
 	docker rm -f explainer

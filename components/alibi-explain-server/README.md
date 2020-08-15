@@ -5,43 +5,28 @@
 To start the server locally for development needs, run the following command under this folder in your github repository. 
 
 ```
-pip install -e .
+make dev_install
 ```
 
-After pip has installed dependencies you should see:
+Run tests
 
 ```
-	      Successfully installed alibiexplainer
+make test
 ```
 
-You can check for successful installation by running the following command
-
-```
-usage: __main__.py [-h] [--http_port HTTP_PORT] [--grpc_port GRPC_PORT]
-                   [--predict_url PREDICT_URL] [--method {ExplainerMethod.anchor_tabular}]
-__main__.py: error: the following arguments are required: --predict_url
-```
+The Makefile also has tests for full worked examples.
 
 ## Development
 
 Install the development dependencies with:
 
 ```bash
-pip install -e .[test]
+make dev_install
 ```
 
-The following indicates a successful install.
+### Notes
 
-```
-      Successfully installed alibiexplainer
-	      
-```
-
-To run static type checks:
-
-```bash
-mypy --ignore-missing-imports sklearnserver
-```
-An empty result will indicate success.
+ * Pythin 3.8 ubi can not be presently used because this would require all explainer models to be saved as python 3.8 in examples otherwise dill load issues happen.
+ * KernelShap has issues for models not saved in matching pyhthon to Docker container - e.g., py36
 
 

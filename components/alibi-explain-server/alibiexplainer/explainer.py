@@ -25,6 +25,7 @@ import numpy as np
 from alibiexplainer.anchor_images import AnchorImages
 from alibiexplainer.anchor_tabular import AnchorTabular
 from alibiexplainer.anchor_text import AnchorText
+from alibiexplainer.kernel_shap import KernelShap
 from alibiexplainer.explainer_wrapper import ExplainerWrapper
 from alibiexplainer.proto import prediction_pb2
 from alibiexplainer.proto import prediction_pb2_grpc
@@ -54,6 +55,7 @@ class ExplainerMethod(Enum):
     anchor_tabular = "AnchorTabular"
     anchor_images = "AnchorImages"
     anchor_text = "AnchorText"
+    kernel_shap = "KernelShap"
 
     def __str__(self):
         return self.value
@@ -82,6 +84,8 @@ class AlibiExplainer(ExplainerModel):
             self.wrapper = AnchorImages(self._predict_fn, explainer, **config)
         elif self.method is ExplainerMethod.anchor_text:
             self.wrapper = AnchorText(self._predict_fn, explainer, **config)
+        elif self.method is ExplainerMethod.kernel_shap:
+            self.wrapper = KernelShap(self._predict_fn, explainer, **config)
         else:
             raise NotImplementedError
 
@@ -122,7 +126,8 @@ class AlibiExplainer(ExplainerModel):
             return np.array(response.json()["predictions"])
 
     def explain(self, request: Dict) -> Any:
-        if self.method is ExplainerMethod.anchor_tabular or self.method is ExplainerMethod.anchor_images or self.method is ExplainerMethod.anchor_text:
+        if self.method is ExplainerMethod.anchor_tabular or self.method is ExplainerMethod.anchor_images or \
+                self.method is ExplainerMethod.anchor_text or self.method is ExplainerMethod.kernel_shap:
             if self.protocol == Protocol.tensorflow_http:
                 explanation: Explanation = self.wrapper.explain(request["instances"])
             else:

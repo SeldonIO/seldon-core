@@ -230,6 +230,10 @@ def parse_args(sys_args):
     )
     addCommonParserArgs(parser_anchor_images)
 
+    # KernelShap Arguments
+    parser_kernel_shap = subparsers.add_parser(str(ExplainerMethod.kernel_shap))
+    addCommonParserArgs(parser_kernel_shap)
+
     args, _ = parser.parse_known_args(sys_args)
 
     argdDict = vars(args).copy()

@@ -33,7 +33,7 @@ setup(
     install_requires=[
         "kfserving>=0.3.0",
         "alibi==0.5.2",
-        "scikit-learn== 0.20.3",
+        "scikit-learn>= 0.23.0",
         "argparse>=1.4.0",
         "requests>=2.22.0",
         "joblib>=0.13.2",
