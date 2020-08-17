@@ -24,9 +24,9 @@ s2i usage seldonio/seldon-core-s2i-java-build:0.1
 
 To use our s2i builder image to package your Java model you will need:
 
- * A Maven project that depends on ```io.seldon.wrapper``` library
+ * A Maven project that depends on `io.seldon.wrapper` library
  * A Spring Boot configuration class
- * A class that implements ```io.seldon.wrapper.api.SeldonPredictionService``` for the type of component you are creating
+ * A class that implements `io.seldon.wrapper.api.SeldonPredictionService` for the type of component you are creating
  * .s2i/environment - model definitions used by the s2i builder to correctly wrap your model
 
 We will go into detail for each of these steps:
@@ -38,18 +38,18 @@ Create a Spring Boot Maven project and include the dependency:
 <dependency>
 	<groupId>io.seldon.wrapper</groupId>
 	<artifactId>seldon-core-wrapper</artifactId>
-	<version>0.1.3</version>
+	<version>0.2.0</version>
 </dependency>
 ```
 
-A full example can be found at ```incubating/wrappers/s2i/java/test/model-template-app/pom.xml```.
+A full example can be found at `incubating/wrappers/s2i/java/test/model-template-app/pom.xml`.
 
 ### Spring Boot Intialization
 
 Create a main App class:
   * Add @EnableAsync annotation (to allow the embedded gRPC server to start at Spring Boot startup)
-  * include the ```io.seldon.wrapper``` in the scan base packages list along with your App's package, in the example below the Apps's package is ```io.seldon.example```.
-  * Import the config class at ```io.seldon.wrapper.config.AppConfig.class```
+  * include the `io.seldon.wrapper` in the scan base packages list along with your App's package, in the example below the Apps's package is `io.seldon.example`.
+  * Import the config class at `io.seldon.wrapper.config.AppConfig.class`
 
 For example:
 
@@ -65,7 +65,7 @@ public class App {
 ```
 
 ### Prediction Class
-To handle requests to your model or other component you need to implement one or more of the methods in ```io.seldon.wrapper.api.SeldonPredictionService```, in particular:
+To handle requests to your model or other component you need to implement one or more of the methods in `io.seldon.wrapper.api.SeldonPredictionService`, in particular:
 
 ```java
 default public SeldonMessage predict(SeldonMessage request);
@@ -76,7 +76,7 @@ default public SeldonMessage transformOutput(SeldonMessage request);
 default public SeldonMessage aggregate(SeldonMessageList request);
 ```
 
-Your implementing class should be created as a Spring Component so it will be managed by Spring. There is a full H2O example in ```examples/models/h2o_mojo/src/main/java/io/seldon/example/h2o/model```, whose implementation is shown below:
+Your implementing class should be created as a Spring Component so it will be managed by Spring. There is a full H2O example in `examples/models/h2o_mojo/src/main/java/io/seldon/example/h2o/model`, whose implementation is shown below:
 
 ```java
 @Component
@@ -122,15 +122,15 @@ The above code:
 
   * loads a model from the local resources folder on startup
   * Converts the proto buffer message into H2O RowData using provided utility classes.
-  * Runs a BionomialModel prediction and converts the result back into a ```SeldonMessage``` for return
+  * Runs a BionomialModel prediction and converts the result back into a `SeldonMessage` for return
 
 #### H2O Helper Classes
 
-We provide H2O utility class ```io.seldon.wrapper.utils.H2OUtils``` in seldon-core-wrapper to convert to and from the seldon-core proto buffer message types.
+We provide H2O utility class `io.seldon.wrapper.utils.H2OUtils` in seldon-core-wrapper to convert to and from the seldon-core proto buffer message types.
 
 #### DL4J Helper Classes
 
-We provide a DL4J utility class ```io.seldon.wrapper.utils.DL4JUtils``` in seldon-core-wrapper to convert to and from the seldon-core proto buffer message types.
+We provide a DL4J utility class `io.seldon.wrapper.utils.DL4JUtils` in seldon-core-wrapper to convert to and from the seldon-core proto buffer message types.
 
 ### .s2i/environment
 
@@ -144,7 +144,7 @@ SERVICE_TYPE=MODEL
 These values can also be provided or overridden on the command line when building the image.
 
 ## Step 3 - Build your image
-Use ```s2i build``` to create your Docker image from source code. You will need Docker installed on the machine and optionally git if your source code is in a public git repo.
+Use `s2i build` to create your Docker image from source code. You will need Docker installed on the machine and optionally git if your source code is in a public git repo.
 
 Using s2i you can build directly from a git repo or from a local source folder. See the [s2i docs](https://github.com/openshift/source-to-image/blob/master/docs/cli.md#s2i-build) for further details. The general format is:
 
@@ -161,10 +161,10 @@ s2i build https://github.com/seldonio/seldon-core.git --context-dir=incubating/w
 
 The above s2i build invocation:
 
- * uses the GitHub repo: https://github.com/seldonio/seldon-core.git and the directory ```incubating/wrappers/s2i/java/test/model-template-app``` inside that repo.
- * uses the builder image ```seldonio/seldon-core-s2i-java-build```
- * uses the runtime image ```seldonio/seldon-core-s2i-java-runtime```
- * creates a docker image ```seldon-core-template-model```
+ * uses the GitHub repo: https://github.com/seldonio/seldon-core.git and the directory `incubating/wrappers/s2i/java/test/model-template-app` inside that repo.
+ * uses the builder image `seldonio/seldon-core-s2i-java-build`
+ * uses the runtime image `seldonio/seldon-core-s2i-java-runtime`
+ * creates a docker image `seldon-core-template-model`
 
 
 For building from a local source folder, an example where we clone the seldon-core repo:
@@ -185,7 +185,7 @@ s2i build --help
 ## Reference
 
 ## Environment Variables
-The required environment variables understood by the builder image are explained below. You can provide them in the ```.s2i/environment``` file or on the ```s2i build``` command line.
+The required environment variables understood by the builder image are explained below. You can provide them in the `.s2i/environment` file or on the `s2i build` command line.
 
 
 ### API_TYPE
