@@ -27,21 +27,30 @@ from alibiexplainer.explainer import ExplainerMethod  # pylint:disable=no-name-i
 from alibiexplainer.constants import SELDON_LOGLEVEL
 from alibiexplainer.parser import parse_args
 import sys
+from tensorflow import keras
 
 logging.basicConfig(level=SELDON_LOGLEVEL)
 EXPLAINER_FILENAME = "explainer.dill"
+KERAS_MODEL = "model.h5"
 
 def main():
     args, extra = parse_args(sys.argv[1:])
     # Pretrained Alibi explainer
     alibi_model = None
+    keras_model = None
     if args.storage_uri is not None:
-        alibi_model = os.path.join(
-            kfserving.Storage.download(args.storage_uri), EXPLAINER_FILENAME
-        )
-        with open(alibi_model, "rb") as f:
-            logging.info("Loading Alibi model")
-            alibi_model = dill.load(f)
+        path = kfserving.Storage.download(args.storage_uri)
+        alibi_model = os.path.join(path, EXPLAINER_FILENAME)
+        if os.path.exists(alibi_model):
+            with open(alibi_model, "rb") as f:
+                logging.info("Loading Alibi model")
+                alibi_model = dill.load(f)
+        else:
+            keras_path = os.path.join(path, KERAS_MODEL)
+            if os.path.exists(keras_path):
+                with open(keras_path, "rb") as f:
+                    logging.info("Loading Keras model")
+                    keras_model = keras.models.load_model(keras_path)
 
     explainer = AlibiExplainer(
         args.model_name,
@@ -50,7 +59,8 @@ def main():
         extra,
         alibi_model,
         Protocol(args.protocol),
-        args.tf_data_type
+        args.tf_data_type,
+        keras_model
     )
     explainer.load()
     ExplainerServer().start(explainer)

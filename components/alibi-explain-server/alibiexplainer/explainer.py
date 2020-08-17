@@ -26,6 +26,7 @@ from alibiexplainer.anchor_images import AnchorImages
 from alibiexplainer.anchor_tabular import AnchorTabular
 from alibiexplainer.anchor_text import AnchorText
 from alibiexplainer.kernel_shap import KernelShap
+from alibiexplainer.integrated_gradients import IntegratedGradients
 from alibiexplainer.explainer_wrapper import ExplainerWrapper
 from alibiexplainer.proto import prediction_pb2
 from alibiexplainer.proto import prediction_pb2_grpc
@@ -36,6 +37,7 @@ import alibiexplainer.seldon_http as seldon
 import requests
 import os
 from alibiexplainer.model import ExplainerModel
+from tensorflow import keras
 
 SELDON_LOGLEVEL = os.environ.get('SELDON_LOGLEVEL', 'INFO').upper()
 logging.basicConfig(level=SELDON_LOGLEVEL)
@@ -56,6 +58,7 @@ class ExplainerMethod(Enum):
     anchor_images = "AnchorImages"
     anchor_text = "AnchorText"
     kernel_shap = "KernelShap"
+    integrated_gradients = "IntegratedGradients"
 
     def __str__(self):
         return self.value
@@ -69,7 +72,8 @@ class AlibiExplainer(ExplainerModel):
                  config: Mapping,
                  explainer: object = None,
                  protocol: Protocol = Protocol.seldon_grpc,
-                 tf_data_type: str = None):
+                 tf_data_type: str = None,
+                 keras_model: keras.Model = None ):
         super().__init__(name)
         self.predictor_host = predictor_host
         logging.info("Predict URL set to %s", self.predictor_host)
@@ -86,6 +90,8 @@ class AlibiExplainer(ExplainerModel):
             self.wrapper = AnchorText(self._predict_fn, explainer, **config)
         elif self.method is ExplainerMethod.kernel_shap:
             self.wrapper = KernelShap(self._predict_fn, explainer, **config)
+        elif self.method is ExplainerMethod.integrated_gradients:
+            self.wrapper = IntegratedGradients(keras_model, **config)
         else:
             raise NotImplementedError
 
@@ -127,7 +133,8 @@ class AlibiExplainer(ExplainerModel):
 
     def explain(self, request: Dict) -> Any:
         if self.method is ExplainerMethod.anchor_tabular or self.method is ExplainerMethod.anchor_images or \
-                self.method is ExplainerMethod.anchor_text or self.method is ExplainerMethod.kernel_shap:
+                self.method is ExplainerMethod.anchor_text or self.method is ExplainerMethod.kernel_shap or \
+                self.method is ExplainerMethod.integrated_gradients:
             if self.protocol == Protocol.tensorflow_http:
                 explanation: Explanation = self.wrapper.explain(request["instances"])
             else:

@@ -159,7 +159,7 @@ def parse_args(sys_args):
         help="The name of model explainer.",
     )
     parser.add_argument(
-        "--predictor_host", help="The host for the predictor", required=True
+        "--predictor_host", help="The host for the predictor", required=False
     )
     parser.add_argument(
         "--storage_uri",
@@ -233,6 +233,10 @@ def parse_args(sys_args):
     # KernelShap Arguments
     parser_kernel_shap = subparsers.add_parser(str(ExplainerMethod.kernel_shap))
     addCommonParserArgs(parser_kernel_shap)
+
+    # Integrated Gradients Arguments
+    parser_integrated_gradients = subparsers.add_parser(str(ExplainerMethod.integrated_gradients))
+    addCommonParserArgs(parser_integrated_gradients)
 
     args, _ = parser.parse_known_args(sys_args)
 

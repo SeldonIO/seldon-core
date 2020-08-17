@@ -127,3 +127,18 @@ run_explainer_kernelshap_docker:
 cleanup_kernelshap:
 	docker rm -f sklearnserver
 	docker rm -f explainer
+
+
+#
+# Test Integrated Gradients
+#
+
+run_explainer_integratedgradients:
+	python -m alibiexplainer --model_name adult --protocol seldon.http --storage_uri gs://seldon-models/keras/imdb IntegratedGradients IntegratedGradients
+
+
+run_explainer_integratedgradients_docker:
+	docker run --rm -d --name "explainer" --network=host -p 8080:8080 seldonio/${IMAGE}:${VERSION} --model_name adult --protocol seldon.http --storage_uri gs://seldon-models/keras/imdb IntegratedGradients
+
+curl_explain_imdb:
+	curl -d '{"data": {"ndarray":[[   0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    1, 591,  202,   14,   31,    6,  717,   10,   10,    2,    2,    5, 4,  360,    7,    4,  177, 5760,  394,  354,    4,  123,    9, 1035, 1035, 1035,   10,   10,   13,   92,  124,   89,  488, 7944, 100,   28, 1668,   14,   31,   23,   27, 7479,   29,  220,  468, 8,  124,   14,  286,  170,    8,  157,   46,    5,   27,  239, 16,  179,    2,   38,   32,   25, 7944,  451,  202,   14,    6, 717]]}}'    -X POST http://localhost:8080/api/v1.0/explain    -H "Content-Type: application/json"

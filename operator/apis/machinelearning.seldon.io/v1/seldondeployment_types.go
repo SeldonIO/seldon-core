@@ -254,6 +254,8 @@ const (
 	AlibiAnchorsTextExplainer     AlibiExplainerType = "AnchorText"
 	AlibiCounterfactualsExplainer AlibiExplainerType = "Counterfactuals"
 	AlibiContrastiveExplainer     AlibiExplainerType = "Contrastive"
+	AlibiKernelShapExplainer      AlibiExplainerType = "KernelShap"
+	AlibiIntegratedGradientsExplainer AlibiExplainerType = "IntegratedGradients"
 )
 
 type Explainer struct {
