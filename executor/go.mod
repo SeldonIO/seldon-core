@@ -22,7 +22,7 @@ require (
 	github.com/uber/jaeger-lib v2.2.0+incompatible // indirect
 	go.uber.org/zap v1.15.0
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
-	google.golang.org/grpc v1.30.0
+	google.golang.org/grpc v1.31.0
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.17.9
 	k8s.io/apimachinery v0.17.9
