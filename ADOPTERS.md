@@ -5,6 +5,7 @@ This page show organisations that are using Seldon Core in production or providi
 | Organisation | URL |
 | ------------ | ----|
 | CaiCloud | https://caicloud.io/ |
+| Capital One | https://www.capitalone.com/tech |
 | JobCase | https://www.jobcase.com/ |
 | OpenDataHub | https://opendatahub.io/ |
 | PostMates | https://postmates.com/ |
