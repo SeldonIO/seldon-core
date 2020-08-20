@@ -41,10 +41,12 @@ import (
 )
 
 const (
-	logLevelEnvVar      = "SELDON_LOG_LEVEL"
-	logLevelDefault     = "INFO"
-	debugEnvVar         = "SELDON_DEBUG"
-	certMountPathEnvVar = "SELDON_CERT_MOUNT_PATH"
+	logLevelEnvVar        = "SELDON_LOG_LEVEL"
+	logLevelDefault       = "INFO"
+	debugEnvVar           = "SELDON_DEBUG"
+	certMountPathEnvVar   = "SELDON_CERT_MOUNT_PATH"
+	certFileEnvVar        = "SELDON_CERT_FILE_NAME"
+	certKeyFileNameEnvVar = "SELDON_CERT_KEY_FILE_NAME"
 )
 
 var (
@@ -80,7 +82,9 @@ var (
 		"Log level.",
 	)
 
-	envCertMountPath = util.GetEnv(certMountPathEnvVar, "")
+	certMountPath   = util.GetEnv(certMountPathEnvVar, "")
+	certFileName    = util.GetEnv(certFileEnvVar, "tls.crt")
+	certKeyFileName = util.GetEnv(certFileEnvVar, "tls.key")
 )
 
 func getServerUrl(hostname string, port int) (*url.URL, error) {
@@ -284,10 +288,10 @@ func main() {
 	defer closer.Close()
 	// Create a listener at the desired port.
 	var lis net.Listener
-	if len(envCertMountPath) > 0 {
+	if len(certMountPath) > 0 {
 		logger.Info("Creating TLS listener", "port", *port)
-		certPath := path.Join(envCertMountPath, "tls.crt")
-		keyPath := path.Join(envCertMountPath, "tls.key")
+		certPath := path.Join(certMountPath, certFileName)
+		keyPath := path.Join(certMountPath, certKeyFileName)
 		cert, err := tls.LoadX509KeyPair(certPath, keyPath)
 		if err != nil {
 			log.Fatalf("Error certificate could not be found: %v", err)
