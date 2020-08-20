@@ -41,10 +41,10 @@ import (
 )
 
 const (
-	logLevelEnvVar          = "SELDON_LOG_LEVEL"
-	logLevelDefault         = "INFO"
-	debugEnvVar             = "SELDON_DEBUG"
-	ENV_VAR_CERT_MOUNT_PATH = "SELDON_CERT_MOUNT_PATH"
+	logLevelEnvVar      = "SELDON_LOG_LEVEL"
+	logLevelDefault     = "INFO"
+	debugEnvVar         = "SELDON_DEBUG"
+	certMountPathEnvVar = "SELDON_CERT_MOUNT_PATH"
 )
 
 var (
@@ -80,7 +80,7 @@ var (
 		"Log level.",
 	)
 
-	envCertMountPath = util.GetEnv(ENV_VAR_CERT_MOUNT_PATH, "")
+	envCertMountPath = util.GetEnv(certMountPathEnvVar, "")
 )
 
 func getServerUrl(hostname string, port int) (*url.URL, error) {
