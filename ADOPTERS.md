@@ -8,5 +8,5 @@ This page show organisations that are using Seldon Core in production or providi
 | Capital One | https://www.capitalone.com/tech |
 | JobCase | https://www.jobcase.com/ |
 | OpenDataHub | https://opendatahub.io/ |
-| PostMates | https://postmates.com/ |
 | Pachyderm | https://pachyderm.io/ |
+| PostMates | https://postmates.com/ |
