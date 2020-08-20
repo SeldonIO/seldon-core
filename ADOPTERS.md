@@ -9,3 +9,4 @@ This page show organisations that are using Seldon Core in production or providi
 | JobCase | https://www.jobcase.com/ |
 | OpenDataHub | https://opendatahub.io/ |
 | PostMates | https://postmates.com/ |
+| Pachyderm | https://pachyderm.io/ |
