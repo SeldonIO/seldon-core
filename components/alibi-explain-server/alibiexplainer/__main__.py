@@ -63,7 +63,7 @@ def main():
         keras_model
     )
     explainer.load()
-    ExplainerServer().start(explainer)
+    ExplainerServer(args.http_port).start(explainer)
 
 if __name__ == "__main__":
     main()

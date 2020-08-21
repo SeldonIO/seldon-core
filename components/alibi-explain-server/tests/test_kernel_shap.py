@@ -27,5 +27,3 @@ def test_kernel_shap():
         explanation = kernel_shap.explain(X_test[0:1].tolist())
         exp_json = json.loads(explanation.to_json())
         print(exp_json)
-        #assert exp_json["data"]["anchor"][0] == "Age <= 28.00"
-        #assert exp_json["data"]["anchor"][1] == "Marital Status = Never-Married"

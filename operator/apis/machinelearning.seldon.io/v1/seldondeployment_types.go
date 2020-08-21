@@ -249,12 +249,12 @@ type SvcOrchSpec struct {
 type AlibiExplainerType string
 
 const (
-	AlibiAnchorsTabularExplainer  AlibiExplainerType = "AnchorTabular"
-	AlibiAnchorsImageExplainer    AlibiExplainerType = "AnchorImages"
-	AlibiAnchorsTextExplainer     AlibiExplainerType = "AnchorText"
-	AlibiCounterfactualsExplainer AlibiExplainerType = "Counterfactuals"
-	AlibiContrastiveExplainer     AlibiExplainerType = "Contrastive"
-	AlibiKernelShapExplainer      AlibiExplainerType = "KernelShap"
+	AlibiAnchorsTabularExplainer      AlibiExplainerType = "AnchorTabular"
+	AlibiAnchorsImageExplainer        AlibiExplainerType = "AnchorImages"
+	AlibiAnchorsTextExplainer         AlibiExplainerType = "AnchorText"
+	AlibiCounterfactualsExplainer     AlibiExplainerType = "Counterfactuals"
+	AlibiContrastiveExplainer         AlibiExplainerType = "Contrastive"
+	AlibiKernelShapExplainer          AlibiExplainerType = "KernelShap"
 	AlibiIntegratedGradientsExplainer AlibiExplainerType = "IntegratedGradients"
 )
 
