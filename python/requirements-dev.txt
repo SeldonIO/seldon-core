@@ -1,4 +1,4 @@
--r requirements.txt
+# Test and linters
 black==19.10b0
 flake8==3.8.1
 mypy<0.783
