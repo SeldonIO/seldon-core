@@ -37,11 +37,11 @@ class Storage:
         if out_dir is None:
             if is_local:
                 # noop if out_dir is not set and the path is local
-                return _download_local(uri)
+                return Storage._download_local(uri)
             out_dir = tempfile.mkdtemp()
 
         if is_local:
-            return _download_local(uri, out_dir)
+            return Storage._download_local(uri, out_dir)
         else:
             raise Exception(
                 f"Cannot recognize storage type for {uri}. "

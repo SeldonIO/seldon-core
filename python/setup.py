@@ -8,11 +8,7 @@ with open(os.path.join(dir_path, "seldon_core/version.py")) as fp:
     exec(fp.read(), version)
 
 # Extra dependencies, with special 'all' key
-extras = {
-    "tensorflow": ["tensorflow"],
-    "gcs": ["google-cloud-storage >= 1.16.0"],
-    "azure": ["azure-storage-blob >= 2.0.1, < 3.0.0"],
-}
+extras = {"tensorflow": ["tensorflow"]}
 all_extra_deps = chain.from_iterable(extras.values())
 extras["all"] = list(set(all_extra_deps))
 
@@ -45,7 +41,6 @@ setup(
         "grpcio-opentracing >= 1.1.4, < 1.2.0",
         "PyYAML<5.4",
         "gunicorn >= 19.9.0, < 20.1.0",
-        "minio >= 4.0.9, < 6.0.0",
         "setuptools >= 41.0.0",
         "prometheus_client >= 0.7.1, < 0.9.0",
     ],
