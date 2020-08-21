@@ -32,10 +32,18 @@ def test_storage_local_path():
     )
 
 
-def test_storage_local_path_exception():
-    not_exist_path = "file:///some/random/path"
+@pytest.mark.parametrize(
+    "uri",
+    [
+        "file:///not/existing/path",
+        "s3://foo/bar",
+        "gs://foo/bar",
+        "https://accountname.blob.core.windows.net/container/some/blob/",
+    ],
+)
+def test_invalid_storage_uri(uri):
     with pytest.raises(Exception):
-        seldon_core.Storage.download(not_exist_path)
+        seldon_core.Storage.download(uri)
 
 
 def test_no_prefix_local_path():
