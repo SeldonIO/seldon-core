@@ -29,5 +29,5 @@ class KernelShap(ExplainerWrapper):
         self.kernel_shap._explainer.model = Model(self.predict_fn,None)
         logging.info("kernel Shap call with %s", self.kwargs)
         logging.info("kernel shap data shape %s",arr.shape)
-        anchor_exp = self.kernel_shap.explain(arr, l1_reg=False, **self.kwargs)
-        return anchor_exp
+        shap_exp = self.kernel_shap.explain(arr, l1_reg=False, **self.kwargs)
+        return shap_exp

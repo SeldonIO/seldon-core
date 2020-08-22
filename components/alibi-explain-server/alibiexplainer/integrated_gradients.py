@@ -17,14 +17,17 @@ class IntegratedGradients(ExplainerWrapper):
         n_steps: int = 50,
         internal_batch_size: int = 100,
         method: str = "gausslegendre",
-        layer: int = 1,
+        layer: Optional[int] = None,
         **kwargs
     ):
         if keras_model is None:
             raise Exception("Integrated Gradients requires a Keras model")
         self.keras_model : keras.Model = keras_model
+        keras_layer = None
+        if layer is not None:
+            keras_layer = keras_model.layers[layer]
         self.integrated_gradients: alibi.explainers.integrated_gradients = alibi.explainers.IntegratedGradients(keras_model,
-                                 layer=keras_model.layers[layer],
+                                 layer=keras_layer,
                                  n_steps=n_steps,
                                  method=method,
                                  internal_batch_size=internal_batch_size)
@@ -35,5 +38,6 @@ class IntegratedGradients(ExplainerWrapper):
         print(arr.shape)
         logging.info("Integrated gradients call")
         predictions = self.keras_model(arr).numpy().argmax(axis=1)
-        anchor_exp = self.integrated_gradients.explain(arr,baselines=None, target=predictions)
-        return anchor_exp
+        logging.info("predictions shape %s", predictions.shape)
+        explanation = self.integrated_gradients.explain(arr,baselines=None, target=predictions)
+        return explanation

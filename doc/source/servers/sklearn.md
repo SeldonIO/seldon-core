@@ -5,7 +5,7 @@ If you have a trained SKLearn model saved as a pickle you can deploy it simply u
 Pre-requisites:
 
   * The model pickle must be saved using joblib and presently be named `model.joblib`
-  * We presently use sklearn version 0.20.3. Your pickled model must be compatible with this version
+  * We presently use sklearn version 0.23.2. Your pickled model must be compatible with this version
 
 An example for a saved Iris prediction model:
 
@@ -52,4 +52,57 @@ spec:
     replicas: 1
 ```
 
+Acceptable values for the `method` parameter are `predict`, `predict_proba`, `decision_function`.
+
 Try out a [worked notebook](../examples/server_examples.html)
+
+## Version
+
+The version of sklearn used depends on the version of seldon install as follows:
+
+| Seldon Version | SKLearn Version |
+| -------------- | --------------- |
+| >=1.3          | 0.23.2          |
+| <1.3 (latest 1.2.3)          | 0.20.3          |
+
+If you wish to use an earlier sklearn image from seldon you can set the image in the componentSpecs, e.g.
+
+```
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: sklearn
+spec:
+  name: iris
+  predictors:
+  - componentSpecs:
+    - spec:
+       containers:
+       - name: classifier
+         image: seldonio/sklearnserver_rest:1.2.3
+    graph:
+      children: []
+      implementation: SKLEARN_SERVER
+      modelUri: gs://seldon-models/sklearn/iris
+      name: classifier
+    name: default
+    replicas: 1
+    svcOrchSpec: 
+      env: 
+      - name: SELDON_LOG_LEVEL
+        value: DEBUG
+```
+
+If you wish to use a different version of sklearn then you should build your own image from the code in https://github.com/SeldonIO/seldon-core/tree/master/servers/sklearnserver and set that image as above.
+
+If you wish the server image for the sklearn server to be globally changed you can also change the configMap used by the Seldon Operator. For the helm chart this can be done by editing the `values.yaml` which contains the images to use for each server. For example:
+
+```
+  SKLEARN_SERVER:
+    grpc:
+      defaultImageVersion: "1.2.3"
+      image: seldonio/sklearnserver_grpc
+    rest:
+      defaultImageVersion: "1.2.3"
+      image: seldonio/sklearnserver_rest
+```

@@ -139,3 +139,31 @@ def test_anchor_images_parser():
     parser, _ = parse_args(args)
     assert parser.predictor_host == PREDICTOR_HOST
     assert parser.explainer.p_sample == P_SAMPLE
+
+
+METHOD = "gausslegrandre"
+LAYER = 1
+N_STEPS = 50
+INTERNAL_BATCH_SIZE = 100
+
+def test_integrated_gradients_parser():
+    args = [
+        "--predictor_host",
+        PREDICTOR_HOST,
+        "IntegratedGradients",
+        "--method",
+        str(METHOD),
+        "--layer",
+        str(LAYER),
+        "--n_steps",
+        str(N_STEPS),
+        "--internal_batch_size",
+        str(INTERNAL_BATCH_SIZE)
+
+    ]
+    parser, _ = parse_args(args)
+    assert parser.predictor_host == PREDICTOR_HOST
+    assert parser.explainer.method == METHOD
+    assert parser.explainer.layer == LAYER
+    assert parser.explainer.n_steps == N_STEPS
+    assert parser.explainer.internal_batch_size == INTERNAL_BATCH_SIZE

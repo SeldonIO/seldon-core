@@ -212,9 +212,8 @@ def parse_args(sys_args):
     )
     parser_anchor_text.add_argument(
         "--temperature",
-        type=float,
         action=GroupedAction,
-        dest="explainer.temperature",
+        dest="explainer.method",
         default=argparse.SUPPRESS,
     )
     addCommonParserArgs(parser_anchor_text)
@@ -238,6 +237,36 @@ def parse_args(sys_args):
     parser_integrated_gradients = subparsers.add_parser(str(ExplainerMethod.integrated_gradients))
     addCommonParserArgs(parser_integrated_gradients)
 
+    parser_integrated_gradients.add_argument(
+        "--layer",
+        type=int,
+        action=GroupedAction,
+        dest="explainer.layer",
+        default=argparse.SUPPRESS,
+    )
+
+    parser_integrated_gradients.add_argument(
+        "--method",
+        action=GroupedAction,
+        dest="explainer.method",
+        default=argparse.SUPPRESS,
+    )
+
+    parser_integrated_gradients.add_argument(
+        "--n_steps",
+        type=int,
+        action=GroupedAction,
+        dest="explainer.n_steps",
+        default=argparse.SUPPRESS,
+    )
+
+    parser_integrated_gradients.add_argument(
+        "--internal_batch_size",
+        type=int,
+        action=GroupedAction,
+        dest="explainer.internal_batch_size",
+        default=argparse.SUPPRESS,
+    )
     args, _ = parser.parse_known_args(sys_args)
 
     argdDict = vars(args).copy()
