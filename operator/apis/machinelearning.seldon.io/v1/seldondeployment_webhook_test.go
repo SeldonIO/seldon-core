@@ -1157,3 +1157,44 @@ func TestPredictorNoGraph(t *testing.T) {
 	err := spec.ValidateSeldonDeployment()
 	g.Expect(err).ToNot(BeNil())
 }
+
+func TestShadowPredictor(t *testing.T) {
+	g := NewGomegaWithT(t)
+	scheme := runtime.NewScheme()
+	C = fake.NewFakeClientWithScheme(scheme)
+	err := setupTestConfigMap()
+	g.Expect(err).To(BeNil())
+	impl := PredictiveUnitImplementation(constants.PrePackedServerTensorflow)
+	spec := &SeldonDeploymentSpec{
+		Transport: TransportGrpc,
+		Predictors: []PredictorSpec{
+			{
+				Name:   "p1",
+				Shadow: true,
+				Graph: PredictiveUnit{
+					Name:           "classifier",
+					Implementation: &impl,
+					ModelURI:       "s3://mybucket/model",
+				},
+			},
+		},
+	}
+
+	spec.DefaultSeldonDeployment("mydep", "default")
+	err = spec.ValidateSeldonDeployment()
+	g.Expect(err).ToNot(BeNil())
+}
+
+func TestNoPredictors(t *testing.T) {
+	g := NewGomegaWithT(t)
+	scheme := runtime.NewScheme()
+	C = fake.NewFakeClientWithScheme(scheme)
+	spec := &SeldonDeploymentSpec{
+		Transport:  TransportGrpc,
+		Predictors: []PredictorSpec{},
+	}
+
+	spec.DefaultSeldonDeployment("mydep", "default")
+	err := spec.ValidateSeldonDeployment()
+	g.Expect(err).ToNot(BeNil())
+}
