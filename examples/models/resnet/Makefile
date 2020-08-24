@@ -1,7 +1,7 @@
 
 
 build_image:
-	s2i build -E environment_grpc . seldonio/seldon-core-s2i-python36:1.2.3-dev seldon-resnet2.4
+	s2i build -E environment_grpc . seldonio/seldon-core-s2i-python36:1.2.3-dev_20200824141559 seldon-resnet2.4
 
 
 clean:
