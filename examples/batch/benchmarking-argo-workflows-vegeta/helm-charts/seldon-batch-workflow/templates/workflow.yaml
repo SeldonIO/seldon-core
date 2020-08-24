@@ -1,0 +1,82 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  {{- if eq .Values.workflow.useNameAsGenerateName false }}
+  name: {{ .Values.workflow.name }}
+  {{- else }}
+  generateName: {{ .Values.workflow.name }}
+  {{- end }}
+  namespace: {{ .Values.workflow.namespace }}
+spec:
+  entrypoint: seldon-batch-process
+  templates:
+  - name: seldon-batch-process
+    steps:
+    - - name: create-seldon-resource            
+        template: create-seldon-resource-template
+    - - name: wait-seldon-resource
+        template: wait-seldon-resource-template
+    - - name: run-benchmark
+        template: run-benchmark-template
+            
+  - name: create-seldon-resource-template
+    resource:
+      action: create
+      manifest: |
+        apiVersion: machinelearning.seldon.io/v1
+        kind: SeldonDeployment
+        metadata:
+          name: "{{ .Values.seldonDeployment.name }}"
+          namespace: {{ .Values.workflow.namespace }}
+          ownerReferences:
+          - apiVersion: argoproj.io/v1alpha1
+            blockOwnerDeletion: true
+            kind: Workflow
+            name: "{{`{{workflow.name}}`}}"
+            uid: "{{`{{workflow.uid}}`}}"
+        spec:
+          name: "{{ .Values.seldonDeployment.name }}"
+          predictors:
+            - componentSpecs:
+              - spec:
+                containers:
+                - name: classifier
+                  env:
+                  - name: GUNICORN_THREADS
+                    value: {{ .Values.seldonDeployment.serverThreads }}
+                  - name: GUNICORN_WORKERS
+                    value: {{ .Values.seldonDeployment.serverWorkers }}
+                  resources:
+                    requests:
+                      cpu: {{ .Values.seldonDeployment.requests.cpu }}
+                      memory: {{ .Values.seldonDeployment.requests.memory }}
+                    limits:
+                      cpu: {{ .Values.seldonDeployment.limits.cpu }}
+                      memory: {{ .Values.seldonDeployment.limits.memory }}
+              graph:
+                children: []
+                implementation: {{ .Values.seldonDeployment.server }}
+                modelUri: {{ .Values.seldonDeployment.modelUri }}
+                name: classifier
+              name: default
+              replicas: {{ .Values.seldonDeployment.replicas }}
+
+  - name: wait-seldon-resource-template
+    script:
+      image: bitnami/kubectl:1.17
+      command: [bash]
+      source: |
+        sleep {{ .Values.seldonDeployment.waitTime }}
+        kubectl rollout status \
+            deploy/$(kubectl get deploy -l seldon-deployment-id="{{ .Values.seldonDeployment.name }}" -o jsonpath='{.items[0].metadata.name}')
+
+  - name: run-benchmark-template
+    script:
+      image: "{{ .Values.benchmark.image }}"
+      command: [sh]
+      source: |
+        echo '{"method": "POST", "header": {"Content-Type": ["application/json"] }, "url": "http://{{ .Values.benchmark.host }}/seldon/{{ .Values.workflow.namespace }}/{{ .Values.seldonDeployment.name }}/api/v1.0/predictions", "body": "{{ .Values.benchmark.data | b64enc }}" }' \
+          | vegeta -cpus={{ .Values.benchmark.cpus }} attack -duration={{ .Values.benchmark.duration }} -rate={{ .Values.benchmark.rate }} -max-workers={{ .Values.benchmark.maxWorkers }} -format=json \
+          | vegeta report -type=json
+

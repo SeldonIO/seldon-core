@@ -14,7 +14,7 @@
                     "spec": {
 			"initContainers" : [
 			    {
-				"image": "gcr.io/kfserving/storage-initializer:0.2.2",
+				"image": "gcr.io/kfserving/storage-initializer:v0.4.0",
 				"name": "storage-initializer",
 				"args": [ "{{ .Values.openvino.model.src }}", "/opt/ml" ],
 				"volumeMounts": [

@@ -97,7 +97,7 @@ create_response <- function(req_df,res_df){
   if ("ndarray" %in% names(req_df$data)){
     templ <- '{"data":{"names":%s,"ndarray":%s}}'
     names <- toJSON(colnames(res_df))
-    values <- toJSON(as.matrix(res_df))
+    values <- toJSON(res_df, dataframe = "values", na = "null") #  The "dataframe" argument is for data type persistence and "na" argument is for null value persistence
     sprintf(templ,names,values)
   } else {
     templ <- '{"data":{"names":%s,"tensor":{"shape":%s,"values":%s}}}'
@@ -111,7 +111,9 @@ create_response <- function(req_df,res_df){
 create_dataframe <- function(jdf) {
   data = extract_data(jdf)
   names = extract_names(jdf)
-  df <- data.frame(data)
+  df <- data.frame(do.call(rbind, lapply(data, rbind)))  # The step is to  binding the output from fromJSON(json, simplifyVector = F) in endpoints
+  df[df == "NULL"] <- NA # Replace NULL value by  NA if input value contain null 
+  df <- data.frame(lapply(df, unlist), stringsAsFactors = F) # unlist all columns because columns are list structure
   colnames(df) <- names
   df
 }
@@ -131,7 +133,7 @@ predict_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
   #  print(c(obj,get(obj,envir = req)))
   #}
   json <- parse_data(req) # Hack as Plumber using URLDecode which doesn't decode +
-  jdf <- fromJSON(json)
+  jdf <- fromJSON(json, simplifyVector = F) # The simplifyVector argument is for data type persistence, avoid to convert numeric value to character
   valid_input <- validate_json(jdf)
   if (valid_input[1] == "OK") {
     df <- create_dataframe(jdf)
@@ -147,7 +149,7 @@ predict_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
 
 send_feedback_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
   json <- parse_data(req)
-  jdf <- fromJSON(json)
+  jdf <- fromJSON(json, simplifyVector = F) # The simplifyVector argument is for data type persistence, avoid to convert numeric value to character
   valid_input <- validate_feedback(jdf)
   if (valid_input[1] == "OK") {
     request <- create_dataframe(jdf$request)
@@ -169,7 +171,7 @@ send_feedback_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
 
 transform_input_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
   json <- parse_data(req)
-  jdf <- fromJSON(json)
+  jdf <- fromJSON(json, simplifyVector = F) # The simplifyVector argument is for data type persistence, avoid to convert numeric value to character
   valid_input <- validate_json(jdf)
   if (valid_input[1] == "OK") {
     df <- create_dataframe(jdf)
@@ -185,7 +187,7 @@ transform_input_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
 
 transform_output_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
   json <- parse_data(req)
-  jdf <- fromJSON(json)
+  jdf <- fromJSON(json, simplifyVector = F) # The simplifyVector argument is for data type persistence, avoid to convert numeric value to character
   valid_input <- validate_json(jdf)
   if (valid_input[1] == "OK") {
     df <- create_dataframe(jdf)
@@ -201,7 +203,7 @@ transform_output_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
 
 route_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
   json <- parse_data(req)
-  jdf <- fromJSON(json)
+  jdf <- fromJSON(json, simplifyVector = F) # The simplifyVector argument is for data type persistence, avoid to convert numeric value to character
   valid_input <- validate_json(jdf)
   if (valid_input[1] == "OK") {
     df <- create_dataframe(jdf)

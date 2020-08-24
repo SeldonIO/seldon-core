@@ -103,7 +103,8 @@ Documentation Index
 
    Ambassador Ingress <ingress/ambassador.md>
    Istio Ingress <ingress/istio.md>
-
+   OpenShift <ingress/openshift.md>
+   
 .. toctree::
    :maxdepth: 1
    :caption: Advanced Inference
@@ -121,6 +122,7 @@ Documentation Index
    Articles/Blogs <tutorials/blogs>
    Videos <tutorials/videos>
    Podcasts <tutorials/podcasts>
+   Kubeflow Pipelines <https://github.com/kubeflow/pipelines/blob/master/samples/contrib/e2e-outlier-drift-explainer/seldon/README.md>
 
 .. toctree::
    :maxdepth: 1

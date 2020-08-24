@@ -98,7 +98,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/mock_classifier:1.0
+        - image: seldonio/mock_classifier_rest:1.2.1
           name: classifier
     graph:
       children: []
@@ -112,7 +112,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/mock_classifier_rest:1.1
+        - image: seldonio/mock_classifier_rest:1.2.2
           name: classifier
     graph:
       children: []

@@ -23,14 +23,15 @@ Seldon handles scaling to thousands of production machine learning models and pr
 
 With over 2M installs, Seldon Core is used across organisations to manage large scale deployment of machine learning models, and key benefits include:
 
- * Easy way to containerise ML models using our language wrappers or pre-packaged inference servers.
- * Out of the box endpoints which can be tested through Swagger UI, Seldon Python Client or Curl / GRPCurl
- * Cloud agnostic and tested on AWS EKS, Azure AKS, Google GKE, Alicloud, Digital Ocean and Openshift.
- * Powerful and rich inference graphs made out of predictors, transformers, routers, combiners, and more.
- * A standardised serving layer across models from heterogeneous toolkits and languages.
- * Advanced and customisable metrics with integration to Prometheus and Grafana.
- * Full auditability through model input-output request logging integration with Elasticsearch.
- * Microservice tracing through integration to Jaeger for insights on latency across microservice hops.
+ * Easy way to containerise ML models using our [pre-packaged inference servers](https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html), [custom serviers](https://docs.seldon.io/projects/seldon-core/en/latest/servers/custom.html), or [language wrappers](https://docs.seldon.io/projects/seldon-core/en/latest/wrappers/language_wrappers.html).
+ * Out of the box endpoints which can be tested through [Swagger UI](https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/openapi.html?highlight=swagger), [Seldon Python Client or Curl / GRPCurl](https://docs.seldon.io/projects/seldon-core/en/latest/python/python_module.html#seldon-core-python-api-client).
+ * Cloud agnostic and tested on [AWS EKS, Azure AKS, Google GKE, Alicloud, Digital Ocean and Openshift](https://docs.seldon.io/projects/seldon-core/en/latest/examples/notebooks.html#cloud-specific-examples).
+ * Powerful and rich inference graphs made out of [predictors, transformers, routers, combiners, and more](https://docs.seldon.io/projects/seldon-core/en/latest/examples/graph-metadata.html).
+ * Metadata provenance to ensure each model can be traced back to its respective[ training system, data and metrics](https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/metadata.html).
+ * Advanced and customisable metrics with integration [to Prometheus and Grafana](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/analytics.html).
+ * Full auditability through model input-output request (logging integration with Elasticsearch)[https://docs.seldon.io/projects/seldon-core/en/latest/analytics/log_level.html].
+ * Microservice distributed tracing through [integration to Jaeger](https://docs.seldon.io/projects/seldon-core/en/latest/graph/distributed-tracing.html) for insights on latency across microservice hops.
+ * Secure, reliable and robust system maintained through a consistent [security & updates policy](https://github.com/SeldonIO/seldon-core/blob/master/SECURITY.md).
 
 
 ## Getting Started

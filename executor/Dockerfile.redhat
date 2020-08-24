@@ -21,6 +21,11 @@ COPY executor/k8s/ k8s/
 # Build
 RUN go build -a -o executor main.go
 
+# Get MPL licensed dependencies
+RUN wget -O hashicorp-golang-lru.tar.gz https://github.com/hashicorp/golang-lru/archive/master.tar.gz
+RUN wget -O armon-consul-api.tar.gz https://github.com/armon/consul-api/archive/master.tar.gz
+RUN wget -O hasicorp-hcl.tar.gz https://github.com/hashicorp/hcl/archive/master.tar.gz
+
 # Copy OpenAPI folder and change the permissions
 COPY executor/api/rest/openapi/ /openapi/
 RUN chmod -R 660 /openapi/
@@ -28,7 +33,7 @@ RUN chmod -R 660 /openapi/
 FROM registry.access.redhat.com/ubi8/ubi-minimal
 LABEL name="Seldon Executor" \
       vendor="Seldon Technologies" \
-      version="1.3.0-dev" \
+      version="1.2.3-dev" \
       release="1" \
       summary="The service orchestrator for Seldon Core" \
       description="The service orchestrator for Seldon Core which manages the request/response flow through the Seldon Core inference graphs deployed via the Seldon Core Operator as SeldonDeployments custom resources"
@@ -36,6 +41,9 @@ LABEL name="Seldon Executor" \
 WORKDIR /
 COPY --from=builder /workspace/executor .
 COPY executor/licenses/license.txt licenses/license.txt
+COPY --from=builder /workspace/hashicorp-golang-lru.tar.gz licenses/mpl_source/hashicorp-golang-lru.tar.gz
+COPY --from=builder /workspace/armon-consul-api.tar.gz licenses/mpl_source/armon-consul-api.tar.gz
+COPY --from=builder /workspace/hasicorp-hcl.tar.gz licenses/mpl_source/hasicorp-hcl.tar.gz
 
 # Copy openapi spec and swagger UI files
 COPY --from=builder /openapi/ /openapi/
