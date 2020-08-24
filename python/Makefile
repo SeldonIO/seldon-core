@@ -56,6 +56,8 @@ install_dev:
 .PHONY: licenses
 licenses:
 	tox --recreate -e licenses
+	cut -d, -f1,3 ./licenses/license_info.csv \
+		> ./licenses/license_info.no_versions.csv
 
 .PHONY: uninstall
 uninstall:
@@ -109,7 +111,7 @@ lint: licenses
 	git \
 		--no-pager diff \
 		--exit-code \
-		./licenses
+		./licenses/license_info.no_versions.csv
 
 .PHONY: clean
 clean:

@@ -42,7 +42,7 @@ func (ks *SeldonKafkaServer) processKafkaRequest(job *KafkaJob) {
 
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, ks.Client, logf.Log.WithName("KafkaClient"), ks.ServerUrl, ks.Namespace, job.headers)
 
-	resPayload, err := seldonPredictorProcess.Predict(ks.Predictor.Graph, job.reqPayload)
+	resPayload, err := seldonPredictorProcess.Predict(&ks.Predictor.Graph, job.reqPayload)
 	if err != nil {
 		ks.Log.Error(err, "Failed prediction")
 		return

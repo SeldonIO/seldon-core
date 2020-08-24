@@ -40,7 +40,7 @@ using:
 helm install $MY_MODEL_NAME seldonio/{{ .Name }} --namespace $MODELS_NAMESPACE
 ```
 
-{{- end -}}
+{{ end -}}
 
 {{ template "chart.homepageLine" . }}
 

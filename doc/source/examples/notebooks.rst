@@ -69,6 +69,7 @@ Advanced Machine Learning Insights
 .. toctree::
    :titlesonly:
 
+   Real time monitoring of statistical metrics <feedback_reward_custom_metrics>
    Tabular, Text and Image Model Explainers <explainer_examples>
    Outlier Detection on CIFAR10 <outlier_cifar10>
   
@@ -140,4 +141,15 @@ Infrastructure
    :titlesonly:
   
    Patch Volumes for Version 1.2.0 Upgrade <patch_1_2>
+   
+
+Benchmarking and Load Tests
+-----
+
+.. toctree::
+   :titlesonly:
+  
+   Service Orchestrator <bench_svcOrch>
+   Tensorflow <bench_tensorflow>   
+   Argo Workflows Benchmarking <vegeta_bench_argo_workflows>   
    

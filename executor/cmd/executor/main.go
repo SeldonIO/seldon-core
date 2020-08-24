@@ -4,8 +4,16 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log"
+	"net"
+	"net/url"
+	"os"
+	"os/signal"
+	"strings"
+	"syscall"
+	"time"
+
 	"github.com/go-logr/logr"
-	"github.com/prometheus/common/log"
 	"github.com/seldonio/seldon-core/executor/api"
 	seldonclient "github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/grpc"
@@ -15,25 +23,32 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/kafka"
 	"github.com/seldonio/seldon-core/executor/api/rest"
 	"github.com/seldonio/seldon-core/executor/api/tracing"
+	"github.com/seldonio/seldon-core/executor/api/util"
 	"github.com/seldonio/seldon-core/executor/k8s"
 	loghandler "github.com/seldonio/seldon-core/executor/logger"
 	predictor2 "github.com/seldonio/seldon-core/executor/predictor"
 	"github.com/seldonio/seldon-core/executor/proto/tensorflow/serving"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/soheilhy/cmux"
-	"net"
-	"net/url"
-	"os"
-	"os/signal"
+	"go.uber.org/zap"
+	zapf "sigs.k8s.io/controller-runtime/pkg/log/zap"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"strconv"
-	"strings"
-	"syscall"
-	"time"
+)
+
+const (
+	logLevelEnvVar  = "SELDON_LOG_LEVEL"
+	logLevelDefault = "INFO"
+	debugEnvVar     = "SELDON_DEBUG"
 )
 
 var (
+
 	serverType     = flag.String("server_type", "rpc", "Server type: rpc or kafka")
+
+	debugDefault = false
+
+
 	configPath     = flag.String("config", "", "Path to kubconfig")
 	sdepName       = flag.String("sdep", "", "Seldon deployment name")
 	namespace      = flag.String("namespace", "", "Namespace")
@@ -51,6 +66,16 @@ var (
 	kafkaTopicOut  = flag.String("kafka_output_topic", "", "The kafka output topic")
 	kafkaFullGraph = flag.Bool("kafka_full_graph", false, "Use kafka for internal graph processing")
 	kafkaWorkers   = flag.Int("kafka_workers", 4, "Number of kafka workers")
+	debug          = flag.Bool(
+		"debug",
+		util.GetEnvAsBool(debugEnvVar, debugDefault),
+		"Enable debug mode. Logs will be sampled and less structured.",
+	)
+	logLevel = flag.String(
+		"log_level",
+		util.GetEnv(logLevelEnvVar, logLevelDefault),
+		"Log level.",
+	)
 )
 
 func getServerUrl(hostname string, port int) (*url.URL, error) {
@@ -98,7 +123,7 @@ func runHttpServer(lis net.Listener, logger logr.Logger, predictor *v1.Predictor
 func runGrpcServer(lis net.Listener, logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int, serverUrl *url.URL, namespace string, protocol string, deploymentName string, annotations map[string]string) {
 	grpcServer, err := grpc.CreateGrpcServer(predictor, deploymentName, annotations, logger)
 	if err != nil {
-		log.Fatalf("Failed to create grpc server: %v", err)
+		log.Fatalf("Failed to create gRPC server: %v", err)
 	}
 	if protocol == api.ProtocolSeldon {
 		seldonGrpcServer := seldon.NewGrpcSeldonServer(predictor, client, serverUrl, namespace)
@@ -110,8 +135,34 @@ func runGrpcServer(lis net.Listener, logger logr.Logger, predictor *v1.Predictor
 	}
 	err = grpcServer.Serve(lis)
 	if err != nil {
-		log.Errorf("Grpc server error: %v", err)
+		logger.Error(err, "gRPC server error")
 	}
+}
+
+func setupLogger() {
+	level := zap.InfoLevel
+	switch *logLevel {
+	case "DEBUG":
+		level = zap.DebugLevel
+	case "INFO":
+		level = zap.InfoLevel
+	case "WARN":
+	case "WARNING":
+		level = zap.WarnLevel
+	case "ERROR":
+		level = zap.ErrorLevel
+	case "FATAL":
+		level = zap.FatalLevel
+	}
+
+	atomicLevel := zap.NewAtomicLevelAt(level)
+
+	logger := zapf.New(
+		zapf.UseDevMode(*debug),
+		zapf.Level(&atomicLevel),
+	)
+
+	logf.SetLogger(logger)
 }
 
 func main() {
@@ -179,7 +230,7 @@ func main() {
 
 	}
 
-	logf.SetLogger(logf.ZapLogger(false))
+	setupLogger()
 	logger := logf.Log.WithName("entrypoint")
 
 	// Set hostname
@@ -201,19 +252,20 @@ func main() {
 
 	predictor, err := predictor2.GetPredictor(*predictorName, *filename, *sdepName, *namespace, configPath)
 	if err != nil {
-		log.Error(err, "Failed to get predictor")
+		logger.Error(err, "Failed to get predictor")
 		os.Exit(-1)
+
 	}
 
 	// Ensure standard OpenAPI seldon API file has this deployment's values
 	err = rest.EmbedSeldonDeploymentValuesInSwaggerFile(*namespace, *sdepName)
 	if err != nil {
-		log.Error(err, "Failed to embed variables on OpenAPI template")
+		logger.Error(err, "Failed to embed variables on OpenAPI template")
 	}
 
 	annotations, err := k8s.GetAnnotations()
 	if err != nil {
-		log.Error(err, "Failed to load annotations")
+		logger.Error(err, "Failed to load annotations")
 	}
 
 	//Start Logger Dispacther
@@ -257,7 +309,7 @@ func main() {
 	go runHttpServer(httpl, logger, predictor, clientRest, *port, false, serverUrl, *namespace, *protocol, *sdepName, *prometheusPath)
 
 	if *serverType == "kafka" {
-		log.Info("Starting kafka server")
+		logger.Info("Starting kafka server")
 		kafkaServer, err := kafka.NewKafkaServer(*kafkaFullGraph, *kafkaWorkers, *sdepName, *namespace, *protocol, *transport, annotations, serverUrl, predictor, *kafkaBroker, *kafkaTopicIn, *kafkaTopicOut, logger)
 		if err != nil {
 			log.Fatalf("Failed to create kafka server: %v", err)

@@ -55,7 +55,6 @@ evanphx/json-patch
 fatih/color
 fortytw2/leaktest
 fsnotify/fsnotify
-fullstorydev/grpcurl
 ghodss/yaml
 globalsign/mgo
 go-kit/kit
@@ -73,7 +72,6 @@ go-openapi/strfmt
 go-openapi/swag
 go-openapi/validate
 go-stack/stack
-gobuffalo/flect
 gogo/protobuf
 golang/glog
 golang/groupcache
@@ -103,7 +101,6 @@ hashicorp/hcl
 hpcloud/tail
 imdario/mergo
 inconshreveable/mousetrap
-jhump/protoreflect
 jonboulle/clockwork
 json-iterator/go
 jstemmer/go-junit-report
@@ -116,6 +113,7 @@ kr/logfmt
 kr/pretty
 kr/pty
 kr/text
+lightstep/tracecontext.go
 magiconair/properties
 mailru/easyjson
 mattn/go-colorable
@@ -135,6 +133,7 @@ nats-io/nats.go
 nats-io/nkeys
 nats-io/nuid
 nishanths/predeclared
+nxadm/tail
 olekukonko/tablewriter
 onsi/ginkgo
 onsi/gomega
@@ -174,6 +173,7 @@ uber/jaeger-client-go
 uber/jaeger-lib
 ugorji/go
 urfave/cli
+valyala/bytebufferpool
 vektah/gqlparser
 xiang90/probing
 xordataexchange/crypt
@@ -184,6 +184,7 @@ mongodb/mongo-go-driver
 census-instrumentation/opencensus-go
 uber-go/atomic
 uber-go/multierr
+uber-go/tools
 uber-go/zap
 golang/crypto
 golang/exp
@@ -206,6 +207,7 @@ googleapis/google-api-go-client
 golang/appengine
 googleapis/go-genproto
 grpc/grpc-go
+protocolbuffers/protobuf-go
 alecthomas/kingpin
 go-check/check
 cheggaaa/pb
@@ -241,7 +243,5 @@ cznic/xc
 vcabbage/amqp
 rsc/binaryregexp
 kubernetes-sigs/controller-runtime
-kubernetes-sigs/controller-tools
 kubernetes-sigs/structured-merge-diff
-kubernetes-sigs/testing_frameworks
 kubernetes-sigs/yaml

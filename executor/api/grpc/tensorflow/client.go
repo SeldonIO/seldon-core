@@ -68,7 +68,7 @@ func (s *TensorflowGrpcClient) Chain(ctx context.Context, modelName string, msg 
 	case *serving.PredictRequest, *serving.ClassificationRequest, *serving.MultiInferenceRequest:
 		return msg, nil
 	case *serving.PredictResponse:
-		s.Log.Info("Chain!")
+		s.Log.V(1).Info("Chain!")
 		pr := serving.PredictRequest{
 			ModelSpec: &serving.ModelSpec{
 				Name: modelName,

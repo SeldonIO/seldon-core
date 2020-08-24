@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ghodss/yaml"
-	seldonclient "github.com/seldonio/seldon-core/executor/api/client"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"io/ioutil"
 	"os"
@@ -21,20 +20,7 @@ func GetPredictor(predictorName, filename, sdepName, namespace string, configPat
 			return predictor, nil
 		}
 	} else {
-		predictor, err := getPredictorFromEnv()
-		if err != nil {
-			return nil, err
-		} else if predictor == nil {
-			seldonDeploymentClient := seldonclient.NewSeldonDeploymentClient(configPath)
-			predictor, err = seldonDeploymentClient.GetPredictor(sdepName, namespace, predictorName)
-			if err != nil {
-				return nil, err
-			} else {
-				return predictor, nil
-			}
-		} else {
-			return predictor, nil
-		}
+		return getPredictorFromEnv()
 	}
 }
 

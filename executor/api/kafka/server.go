@@ -166,7 +166,7 @@ func (ks *SeldonKafkaServer) Serve() error {
 	//wait for graph to be ready
 	ready := false
 	for ready == false {
-		err := predictor.Ready(ks.Predictor.Graph)
+		err := predictor.Ready(&ks.Predictor.Graph)
 		ready = err == nil
 		if !ready {
 			ks.Log.Info("Waiting for graph to be ready")

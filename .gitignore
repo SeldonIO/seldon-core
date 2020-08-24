@@ -7,6 +7,9 @@ cluster-manager/.m2/
 
 .ipynb_checkpoints
 
+# osx
+.DS_Store
+
 # Tags
 .tags
 

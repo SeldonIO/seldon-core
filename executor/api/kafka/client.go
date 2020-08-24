@@ -37,7 +37,7 @@ func NewKafkaClient(hostname, deploymentName, namespace, protocol, transport str
 		Log:            log.WithName("KafkaClient"),
 		topicHandlers:  make(map[string]*KafkaRPC),
 	}
-	skc.createTopicHandlers(predictor.Graph)
+	skc.createTopicHandlers(&predictor.Graph)
 	return skc
 }
 

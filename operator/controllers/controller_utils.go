@@ -3,7 +3,6 @@ package controllers
 import (
 	"encoding/base64"
 	"encoding/json"
-	"os"
 	"sort"
 	"strings"
 
@@ -37,14 +36,6 @@ func getEngineVarJson(p *machinelearningv1.PredictorSpec) (string, error) {
 		return "", err
 	}
 	return base64.StdEncoding.EncodeToString(str), nil
-}
-
-// Get an environment variable given by key or return the fallback.
-func GetEnv(key, fallback string) string {
-	if value, ok := os.LookupEnv(key); ok {
-		return value
-	}
-	return fallback
 }
 
 // Get an annotation from the Seldon Deployment given by annotationKey or return the fallback.

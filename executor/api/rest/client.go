@@ -150,7 +150,7 @@ func (smc *JSONRestClient) addHeaders(req *http.Request, m map[string][]string) 
 }
 
 func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method string, url *url.URL, msg []byte, meta map[string][]string, contentType string) ([]byte, string, error) {
-	smc.Log.Info("Calling HTTP", "URL", url)
+	smc.Log.V(1).Info("Calling HTTP", "URL", url)
 
 	var req *http.Request
 	var err error

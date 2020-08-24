@@ -23,14 +23,17 @@ import tempfile
 import os
 import re
 from urllib.parse import urlparse
-from azure.storage.blob import BlockBlobService
 from minio import Minio
-from seldon_core.imports_helper import _GCS_PRESENT
+from seldon_core.imports_helper import _AZURE_PRESENT, _GCS_PRESENT
 from seldon_core.utils import getenv
 
 if _GCS_PRESENT:
     from google.auth import exceptions
     from google.cloud import storage
+
+if _AZURE_PRESENT:
+    from azure.storage.blob import BlockBlobService
+
 
 _GCS_PREFIX = "gs://"
 _S3_PREFIX = "s3://"

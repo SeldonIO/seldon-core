@@ -23,7 +23,16 @@ from seldon_core.user_model import (
     SeldonNotImplementedError,
 )
 from seldon_core.flask_utils import SeldonMicroserviceException
-from seldon_core.metrics import SeldonMetrics
+from seldon_core.metrics import (
+    SeldonMetrics,
+    FEEDBACK_METRIC_METHOD_TAG,
+    PREDICT_METRIC_METHOD_TAG,
+    INPUT_TRANSFORM_METRIC_METHOD_TAG,
+    OUTPUT_TRANSFORM_METRIC_METHOD_TAG,
+    ROUTER_METRIC_METHOD_TAG,
+    AGGREGATE_METRIC_METHOD_TAG,
+    HEALTH_METRIC_METHOD_TAG,
+)
 from seldon_core.metadata import validate_model_metadata, SeldonInvalidMetadataError
 from google.protobuf import json_format
 from seldon_core.proto import prediction_pb2
@@ -37,6 +46,7 @@ def handle_raw_custom_metrics(
     msg: Union[prediction_pb2.SeldonMessage, Dict],
     seldon_metrics: SeldonMetrics,
     is_proto: bool,
+    method: str,
 ):
     """
     Update SeldonMetrics object with custom metrics from raw methods.
@@ -51,7 +61,7 @@ def handle_raw_custom_metrics(
         metrics = msg.get("meta", {}).get("metrics", [])
         if metrics and not INCLUDE_METRICS_IN_CLIENT_RESPONSE:
             del msg["meta"]["metrics"]
-    seldon_metrics.update(metrics)
+    seldon_metrics.update(metrics, method)
 
 
 def predict(
@@ -85,7 +95,9 @@ def predict(
         if hasattr(user_model, "predict_raw"):
             try:
                 response = user_model.predict_raw(request)
-                handle_raw_custom_metrics(response, seldon_metrics, is_proto)
+                handle_raw_custom_metrics(
+                    response, seldon_metrics, is_proto, PREDICT_METRIC_METHOD_TAG
+                )
                 return response
             except SeldonNotImplementedError:
                 pass
@@ -96,7 +108,9 @@ def predict(
                 user_model, features, datadef.names, meta=meta
             )
 
-            metrics = client_custom_metrics(user_model, seldon_metrics)
+            metrics = client_custom_metrics(
+                user_model, seldon_metrics, PREDICT_METRIC_METHOD_TAG
+            )
 
             return construct_response(
                 user_model, False, request, client_response, meta, metrics
@@ -108,7 +122,9 @@ def predict(
                 user_model, features, class_names, meta=meta
             )
 
-            metrics = client_custom_metrics(user_model, seldon_metrics)
+            metrics = client_custom_metrics(
+                user_model, seldon_metrics, PREDICT_METRIC_METHOD_TAG
+            )
 
             return construct_response_json(
                 user_model, False, request, client_response, meta, metrics
@@ -116,7 +132,10 @@ def predict(
 
 
 def send_feedback(
-    user_model: Any, request: prediction_pb2.Feedback, predictive_unit_id: str
+    user_model: Any,
+    request: prediction_pb2.Feedback,
+    predictive_unit_id: str,
+    seldon_metrics: SeldonMetrics,
 ) -> prediction_pb2.SeldonMessage:
     """
 
@@ -133,6 +152,9 @@ def send_feedback(
     -------
 
     """
+    is_proto = isinstance(request, prediction_pb2.SeldonMessage)
+    seldon_metrics.update_reward(request.reward)
+
     if hasattr(user_model, "send_feedback_rest"):
         logger.warning("send_feedback_rest is deprecated. Please use send_feedback_raw")
         request_json = json_format.MessageToJson(request)
@@ -145,7 +167,11 @@ def send_feedback(
     else:
         if hasattr(user_model, "send_feedback_raw"):
             try:
-                return user_model.send_feedback_raw(request)
+                response = user_model.send_feedback_raw(request)
+                handle_raw_custom_metrics(
+                    response, seldon_metrics, is_proto, FEEDBACK_METRIC_METHOD_TAG
+                )
+                return response
             except SeldonNotImplementedError:
                 pass
 
@@ -157,10 +183,15 @@ def send_feedback(
             user_model, features, datadef_request.names, reward, truth, routing
         )
 
+        metrics = client_custom_metrics(
+            user_model, seldon_metrics, FEEDBACK_METRIC_METHOD_TAG
+        )
+
         if client_response is None:
             client_response = np.array([])
         else:
             client_response = np.array(client_response)
+
         return construct_response(user_model, False, request.request, client_response)
 
 
@@ -199,7 +230,12 @@ def transform_input(
         if hasattr(user_model, "transform_input_raw"):
             try:
                 response = user_model.transform_input_raw(request)
-                handle_raw_custom_metrics(response, seldon_metrics, is_proto)
+                handle_raw_custom_metrics(
+                    response,
+                    seldon_metrics,
+                    is_proto,
+                    INPUT_TRANSFORM_METRIC_METHOD_TAG,
+                )
                 return response
             except SeldonNotImplementedError:
                 pass
@@ -210,7 +246,9 @@ def transform_input(
                 user_model, features, datadef.names, meta=meta
             )
 
-            metrics = client_custom_metrics(user_model, seldon_metrics)
+            metrics = client_custom_metrics(
+                user_model, seldon_metrics, INPUT_TRANSFORM_METRIC_METHOD_TAG
+            )
 
             return construct_response(
                 user_model, False, request, client_response, meta, metrics
@@ -222,7 +260,9 @@ def transform_input(
                 user_model, features, class_names, meta=meta
             )
 
-            metrics = client_custom_metrics(user_model, seldon_metrics)
+            metrics = client_custom_metrics(
+                user_model, seldon_metrics, INPUT_TRANSFORM_METRIC_METHOD_TAG
+            )
 
             return construct_response_json(
                 user_model, False, request, client_response, meta, metrics
@@ -264,7 +304,12 @@ def transform_output(
         if hasattr(user_model, "transform_output_raw"):
             try:
                 response = user_model.transform_output_raw(request)
-                handle_raw_custom_metrics(response, seldon_metrics, is_proto)
+                handle_raw_custom_metrics(
+                    response,
+                    seldon_metrics,
+                    is_proto,
+                    OUTPUT_TRANSFORM_METRIC_METHOD_TAG,
+                )
                 return response
             except SeldonNotImplementedError:
                 pass
@@ -275,7 +320,9 @@ def transform_output(
                 user_model, features, datadef.names, meta=meta
             )
 
-            metrics = client_custom_metrics(user_model, seldon_metrics)
+            metrics = client_custom_metrics(
+                user_model, seldon_metrics, OUTPUT_TRANSFORM_METRIC_METHOD_TAG
+            )
 
             return construct_response(
                 user_model, False, request, client_response, meta, metrics
@@ -287,7 +334,9 @@ def transform_output(
                 user_model, features, class_names, meta=meta
             )
 
-            metrics = client_custom_metrics(user_model, seldon_metrics)
+            metrics = client_custom_metrics(
+                user_model, seldon_metrics, OUTPUT_TRANSFORM_METRIC_METHOD_TAG
+            )
 
             return construct_response_json(
                 user_model, False, request, client_response, meta, metrics
@@ -326,7 +375,9 @@ def route(
         if hasattr(user_model, "route_raw"):
             try:
                 response = user_model.route_raw(request)
-                handle_raw_custom_metrics(response, seldon_metrics, is_proto)
+                handle_raw_custom_metrics(
+                    response, seldon_metrics, is_proto, ROUTER_METRIC_METHOD_TAG
+                )
                 return response
             except SeldonNotImplementedError:
                 pass
@@ -342,7 +393,9 @@ def route(
                 )
             client_response_arr = np.array([[client_response]])
 
-            metrics = client_custom_metrics(user_model, seldon_metrics)
+            metrics = client_custom_metrics(
+                user_model, seldon_metrics, ROUTER_METRIC_METHOD_TAG
+            )
 
             return construct_response(
                 user_model, False, request, client_response_arr, None, metrics
@@ -357,7 +410,9 @@ def route(
                 )
             client_response_arr = np.array([[client_response]])
 
-            metrics = client_custom_metrics(user_model, seldon_metrics)
+            metrics = client_custom_metrics(
+                user_model, seldon_metrics, ROUTER_METRIC_METHOD_TAG
+            )
 
             return construct_response_json(
                 user_model, False, request, client_response_arr, None, metrics
@@ -414,7 +469,9 @@ def aggregate(
         if hasattr(user_model, "aggregate_raw"):
             try:
                 response = user_model.aggregate_raw(request)
-                handle_raw_custom_metrics(response, seldon_metrics, is_proto)
+                handle_raw_custom_metrics(
+                    response, seldon_metrics, is_proto, AGGREGATE_METRIC_METHOD_TAG
+                )
                 return response
             except SeldonNotImplementedError:
                 pass
@@ -432,7 +489,9 @@ def aggregate(
 
             client_response = client_aggregate(user_model, features_list, names_list)
 
-            metrics = client_custom_metrics(user_model, seldon_metrics)
+            metrics = client_custom_metrics(
+                user_model, seldon_metrics, AGGREGATE_METRIC_METHOD_TAG
+            )
 
             return construct_response(
                 user_model,
@@ -467,7 +526,9 @@ def aggregate(
 
             client_response = client_aggregate(user_model, features_list, names_list)
 
-            metrics = client_custom_metrics(user_model, seldon_metrics)
+            metrics = client_custom_metrics(
+                user_model, seldon_metrics, AGGREGATE_METRIC_METHOD_TAG
+            )
 
             return construct_response_json(
                 user_model,
@@ -504,7 +565,9 @@ def health_status(
             pass
 
     client_response = client_health_status(user_model)
-    metrics = client_custom_metrics(user_model, seldon_metrics)
+    metrics = client_custom_metrics(
+        user_model, seldon_metrics, HEALTH_METRIC_METHOD_TAG
+    )
 
     return construct_response_json(
         user_model, False, {}, client_response, None, metrics
