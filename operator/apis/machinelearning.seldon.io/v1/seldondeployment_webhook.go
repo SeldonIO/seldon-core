@@ -393,6 +393,14 @@ func collectTransports(pu *PredictiveUnit, transportsFound map[EndpointType]bool
 	}
 }
 
+func (r *SeldonDeploymentSpec) validateShadow(allErrs field.ErrorList) field.ErrorList {
+	if len(r.Predictors) == 1 && r.Predictors[0].Shadow {
+		fldPath := field.NewPath("spec").Child("predictors").Index(0)
+		allErrs = append(allErrs, field.Invalid(fldPath, r.Predictors[0].Name, "Shadow can not exist as only predictor"))
+	}
+	return allErrs
+}
+
 func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 	var allErrs field.ErrorList
 
@@ -406,7 +414,14 @@ func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 		allErrs = append(allErrs, field.Invalid(fldPath, r.Transport, "Invalid transport"))
 	}
 
+	allErrs = r.validateShadow(allErrs)
+
 	transports := make(map[EndpointType]bool)
+
+	if len(r.Predictors) == 0 {
+		fldPath := field.NewPath("spec")
+		allErrs = append(allErrs, field.Invalid(fldPath, r.Transport, "Graph contains no predictors"))
+	}
 
 	predictorNames := make(map[string]bool)
 	for i, p := range r.Predictors {
