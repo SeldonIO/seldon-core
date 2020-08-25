@@ -69,7 +69,7 @@ def predict(
     user_model: Any,
     request: Union[prediction_pb2.SeldonMessage, List, Dict, bytes],
     seldon_metrics: SeldonMetrics,
-) -> Union[prediction_pb2.SeldonMessage, List, Dict]:
+) -> Union[prediction_pb2.SeldonMessage, List, Dict, bytes]:
     """
     Call the user model to get a prediction and package the response
 
