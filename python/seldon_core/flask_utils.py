@@ -39,7 +39,7 @@ def get_multi_form_data_request() -> Dict:
     return req_dict
 
 
-def get_request(skip_decoding=True) -> Union[Dict, str]:
+def get_request(skip_decoding=True) -> Union[Dict, bytes]:
     """
     Parse a request to get JSON dict
 
@@ -84,11 +84,11 @@ def get_request(skip_decoding=True) -> Union[Dict, str]:
 
 def jsonify(response, skip_encoding=True):
     if skip_encoding:
-        return flask_jsonify(response)
+        return current_app.response_class(
+            response=response, status=HTTPStatus.OK, mimetype="application/json"
+        )
 
-    return current_app.response_class(
-        response=response, status=HTTPStatus.OK, mimetype="application/json"
-    )
+    return flask_jsonify(response)
 
 
 class SeldonMicroserviceException(Exception):
