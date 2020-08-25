@@ -7,7 +7,7 @@ from seldon_core.flask_utils import jsonify
 @pytest.mark.parametrize(
     "skip_encoding, response, expected",
     [
-        (True, b'{"foo": "bar"}', b'{"foo": "bar"}'),
+        (True, '{"foo": "bar"}', b'{"foo": "bar"}'),
         (False, {"foo": "bar"}, b'{"foo":"bar"}\n'),
     ],
 )
