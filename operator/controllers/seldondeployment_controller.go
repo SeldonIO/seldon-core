@@ -71,7 +71,7 @@ const (
 )
 
 var (
-	envDefaultCertMountPath = GetEnv(ENV_DEFAULT_CERT_MOUNT_PATH_NAME, "/cert/")
+	envDefaultCertMountPath = utils.GetEnv(ENV_DEFAULT_CERT_MOUNT_PATH_NAME, "/cert/")
 )
 
 // SeldonDeploymentReconciler reconciles a SeldonDeployment object
