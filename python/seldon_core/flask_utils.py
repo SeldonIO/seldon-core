@@ -39,7 +39,7 @@ def get_multi_form_data_request() -> Dict:
     return req_dict
 
 
-def get_request(skip_decoding=True) -> Union[Dict, str]:
+def get_request(skip_decoding=False) -> Union[Dict, str]:
     """
     Parse a request to get JSON dict
 
@@ -77,7 +77,7 @@ def get_request(skip_decoding=True) -> Union[Dict, str]:
     return message
 
 
-def jsonify(response, skip_encoding=True):
+def jsonify(response, skip_encoding=False):
     if skip_encoding:
         return current_app.response_class(
             response=response, status=HTTPStatus.OK, mimetype="application/json"
