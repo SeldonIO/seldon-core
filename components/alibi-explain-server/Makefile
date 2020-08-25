@@ -1,6 +1,41 @@
+SELDON_CORE_DIR=../..
 SHELL := /bin/bash
 VERSION := $(shell cat ../../version.txt)
 IMAGE=alibiexplainer
+
+.PHONY: get_apis
+get_apis:
+	# Protobuf
+	cp ${SELDON_CORE_DIR}/proto/prediction.proto alibiexplainer/proto/
+	$(MAKE) -C ${SELDON_CORE_DIR}/proto/tensorflow/ create_protos
+	cp -r $(SELDON_CORE_DIR)/proto/tensorflow/tensorflow \
+		alibiexplainer/proto/
+	$(MAKE) -C ${SELDON_CORE_DIR}/proto/tensorflow clean
+
+.PHONY: build_apis
+build_apis: get_apis
+	# Protobuf
+	cd alibiexplainer && python \
+		-m grpc.tools.protoc \
+		-I./ \
+		-I./proto/ \
+		--python_out=./ \
+		--grpc_python_out=./ \
+		--mypy_out=./ \
+		./proto/prediction.proto
+	## We build TF's protobufs as well in case the tensorflow package
+	## is not found
+	cd alibiexplainer/proto && python \
+		-m grpc.tools.protoc \
+		-I./ \
+		-I../ \
+		--python_out=./ \
+		./tensorflow/core/framework/*.proto
+	sed -i "s/from tensorflow/from alibiexplainer.proto.tensorflow/" alibiexplainer/proto/*.py
+	sed -i "s/from tensorflow.core.framework/from ./" \
+		$(addprefix alibiexplainer/proto/tensorflow/core/framework/, \
+			resource_handle_pb2.py tensor_pb2.py tensor_shape_pb2.py types_pb2.py)
+	sed -i "s/from proto/from alibiexplainer.proto/g" alibiexplainer/proto/prediction_pb2_grpc.py
 
 dev_install:
 	pip install -e .[test]
@@ -11,7 +46,7 @@ test: type_check
 type_check:
 	mypy --ignore-missing-imports alibiexplainer
 
-docker-build:
+docker-build: build_apis
 	docker build --file=Dockerfile --force-rm=true -t seldonio/${IMAGE}:${VERSION} .
 
 docker-push:
