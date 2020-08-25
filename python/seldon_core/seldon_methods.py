@@ -54,12 +54,6 @@ def handle_raw_custom_metrics(
     If INCLUDE_METRICS_IN_CLIENT_RESPONSE environmental variable is set to "true"
     metrics will be dropped from msg.
     """
-    # If response encoding is disabled, the response will be already serialised
-    # and we can't read the metrics from the payload
-    SHOULD_ENCODE = getenv_as_bool("SHOULD_ENCODE", default=True)
-    if not SHOULD_ENCODE:
-        return
-
     if is_proto:
         metrics = seldon_message_to_json(msg.meta).get("metrics", [])
         if metrics and not INCLUDE_METRICS_IN_CLIENT_RESPONSE:
