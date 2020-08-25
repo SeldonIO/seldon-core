@@ -139,7 +139,7 @@ func getAmbassadorTLSContextConfig(mlDep *machinelearningv1.SeldonDeployment, p 
 	c := AmbassadorTLSContextConfig{
 		ApiVersion: "ambassador/v1",
 		Kind:       "TLSContext",
-		Name:       "seldon_" + namespace + "_" + mlDep.ObjectMeta.Name + "_" + name + "_tls_config",
+		Name:       "seldon_" + mlDep.ObjectMeta.Name + "_" + name + "_tls_config",
 		Hosts:      []string{},
 		Secret:     p.SSL.CertSecretName,
 	}
