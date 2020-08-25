@@ -7,6 +7,7 @@ from seldon_core.utils import (
     seldon_message_to_json,
     json_to_seldon_model_metadata,
     json_to_feedback,
+    getenv_as_bool,
 )
 from seldon_core.flask_utils import get_request
 import seldon_core.seldon_methods
@@ -23,6 +24,9 @@ logger = logging.getLogger(__name__)
 
 PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID", "0")
 METRICS_ENDPOINT = os.environ.get("PREDICTIVE_UNIT_METRICS_ENDPOINT", "/metrics")
+
+SHOULD_DECODE = getenv_as_bool("SHOULD_DECODE", default=True)
+SHOULD_ENCODE = getenv_as_bool("SHOULD_ENCODE", default=True)
 
 
 def get_rest_microservice(user_model, seldon_metrics):
@@ -54,12 +58,20 @@ def get_rest_microservice(user_model, seldon_metrics):
     @app.route("/api/v1.0/predictions", methods=["POST"])
     @app.route("/api/v0.1/predictions", methods=["POST"])
     def Predict():
-        requestJson = get_request()
+        logger.debug(f"SHOULD_DECODE = {SHOULD_DECODE}")
+        requestJson = get_request(decode=SHOULD_DECODE)
         logger.debug("REST Request: %s", request)
         response = seldon_core.seldon_methods.predict(
             user_model, requestJson, seldon_metrics
         )
-        json_response = jsonify(response)
+
+        if SHOULD_ENCODE:
+            json_response = jsonify(response)
+        else:
+            json_response = app.response_class(
+                response=response, status=200, mimetype="application/json"
+            )
+
         if "status" in response and "code" in response["status"]:
             json_response.status_code = response["status"]["code"]
 
