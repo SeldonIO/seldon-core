@@ -212,8 +212,9 @@ def parse_args(sys_args):
     )
     parser_anchor_text.add_argument(
         "--temperature",
+        type=float,
         action=GroupedAction,
-        dest="explainer.method",
+        dest="explainer.temperature",
         default=argparse.SUPPRESS,
     )
     addCommonParserArgs(parser_anchor_text)

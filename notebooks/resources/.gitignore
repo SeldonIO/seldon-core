@@ -9,3 +9,5 @@ model_v2_grpc.yaml
 model_v2_rest.yaml
 income_explainer.yaml
 wine_explainer.yaml
+imagenet_explainer_grpc.yaml
+mnist_rest_explainer.yaml

@@ -82,6 +82,7 @@ class AlibiExplainer(ExplainerModel):
         self.tf_data_type = tf_data_type
         logging.info("Protocol is %s",str(self.protocol))
 
+        # Add type for first value to help pass mypy type checks
         if self.method is ExplainerMethod.anchor_tabular:
             self.wrapper:ExplainerWrapper = AnchorTabular(self._predict_fn, explainer, **config)
         elif self.method is ExplainerMethod.anchor_images:

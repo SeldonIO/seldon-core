@@ -9,7 +9,6 @@ from alibiexplainer.model import ExplainerModel
 from alibiexplainer.constants import SELDON_LOGLEVEL
 import argparse
 
-
 logging.basicConfig(level=SELDON_LOGLEVEL)
 
 DEFAULT_HTTP_PORT = 8080
@@ -26,8 +25,6 @@ server_parser.add_argument('--max_buffer_size', default=DEFAULT_MAX_BUFFER_SIZE,
 server_parser.add_argument('--workers', default=0, type=int,
                            help='The number of works to fork')
 args, _ = server_parser.parse_known_args()
-
-tornado.log.enable_pretty_logging()
 
 class ExplainerServer(object):
     def __init__(
