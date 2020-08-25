@@ -9,6 +9,12 @@ from subprocess import Popen
 from tenacity import retry, wait_fixed, stop_after_attempt, retry_if_exception_type
 
 
+class UserObject:
+    def predict(self, X, features_names):
+        logging.info("Predict called")
+        return X
+
+
 class MicroserviceWrapper:
     def __init__(self, app_location, envs={}, grpc=False, tracing=False):
         self.app_location = app_location

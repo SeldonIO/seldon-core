@@ -67,7 +67,7 @@ def handle_raw_custom_metrics(
 
 def predict(
     user_model: Any,
-    request: Union[prediction_pb2.SeldonMessage, List, Dict],
+    request: Union[prediction_pb2.SeldonMessage, List, Dict, bytes],
     seldon_metrics: SeldonMetrics,
 ) -> Union[prediction_pb2.SeldonMessage, List, Dict]:
     """
@@ -84,6 +84,8 @@ def predict(
     -------
       The prediction
     """
+    # TODO: Find a way to choose predict_rest or predict_grpc when payload is
+    # not decoded
     is_proto = isinstance(request, prediction_pb2.SeldonMessage)
 
     if hasattr(user_model, "predict_rest") and not is_proto:

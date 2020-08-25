@@ -3,7 +3,9 @@ import pytest
 import logging
 import seldon_core
 
-from .helpers import MicroserviceWrapper
+from seldon_core.wrapper import get_rest_microservice
+from seldon_core.metrics import SeldonMetrics
+from .helpers import UserObject, MicroserviceWrapper
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -42,3 +44,10 @@ def microservice(request):
 
     with wrapper:
         yield wrapper
+
+
+@pytest.fixture
+def app():
+    user_object = UserObject()
+    seldon_metrics = SeldonMetrics()
+    return get_rest_microservice(user_object, seldon_metrics)
