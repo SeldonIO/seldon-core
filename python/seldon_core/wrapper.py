@@ -1,32 +1,29 @@
 import grpc
-from concurrent import futures
-from flask import jsonify, Flask, send_from_directory, request, Response
-from flask_cors import CORS
+import os
 import logging
+import seldon_core.seldon_methods
+
+from concurrent import futures
+from flask import Flask, send_from_directory, request, Response
+from flask_cors import CORS
 from seldon_core.utils import (
     seldon_message_to_json,
     json_to_seldon_model_metadata,
     json_to_feedback,
     getenv_as_bool,
 )
-from seldon_core.flask_utils import get_request
-import seldon_core.seldon_methods
+from seldon_core.flask_utils import get_request, jsonify
 from seldon_core.flask_utils import (
     SeldonMicroserviceException,
     ANNOTATION_GRPC_MAX_MSG_SIZE,
 )
 from seldon_core.proto import prediction_pb2_grpc
-from seldon_core.proto import prediction_pb2
-from seldon_core.utils import getenv_as_bool
-import os
 
 logger = logging.getLogger(__name__)
 
 PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID", "0")
 METRICS_ENDPOINT = os.environ.get("PREDICTIVE_UNIT_METRICS_ENDPOINT", "/metrics")
-
-SHOULD_DECODE = getenv_as_bool("SHOULD_DECODE", default=True)
-SHOULD_ENCODE = getenv_as_bool("SHOULD_ENCODE", default=True)
+PAYLOAD_PASSTHROUGH = getenv_as_bool("PAYLOAD_PASSTHROUGH", default=False)
 
 
 def get_rest_microservice(user_model, seldon_metrics):
@@ -58,19 +55,13 @@ def get_rest_microservice(user_model, seldon_metrics):
     @app.route("/api/v1.0/predictions", methods=["POST"])
     @app.route("/api/v0.1/predictions", methods=["POST"])
     def Predict():
-        logger.debug(f"SHOULD_DECODE = {SHOULD_DECODE}")
-        requestJson = get_request(decode=SHOULD_DECODE)
+        requestJson = get_request(skip_decoding=PAYLOAD_PASSTHROUGH)
         logger.debug("REST Request: %s", request)
         response = seldon_core.seldon_methods.predict(
             user_model, requestJson, seldon_metrics
         )
 
-        if SHOULD_ENCODE:
-            json_response = jsonify(response)
-        else:
-            json_response = app.response_class(
-                response=response, status=200, mimetype="application/json"
-            )
+        json_response = jsonify(response, skip_encoding=PAYLOAD_PASSTHROUGH)
 
         if "status" in response and "code" in response["status"]:
             json_response.status_code = response["status"]["code"]
