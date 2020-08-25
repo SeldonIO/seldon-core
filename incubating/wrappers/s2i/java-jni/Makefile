@@ -8,7 +8,7 @@ KIND_NAME ?= kind
 build_%:
 	s2i build \
 		-E environment_$* \
-		./mlflowserver \
+		./java-jni \
 		seldonio/seldon-core-s2i-python37-ubi8:${S2I_VERSION} \
 		${IMAGE_BASE}_$*:${VERSION}
 
