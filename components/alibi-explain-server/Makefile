@@ -12,8 +12,12 @@ get_apis:
 		alibiexplainer/proto/
 	$(MAKE) -C ${SELDON_CORE_DIR}/proto/tensorflow clean
 
+.PHONY: install_requirements
+install_requirements:
+	pip install -r requirements-dev.txt
+
 .PHONY: build_apis
-build_apis: get_apis
+build_apis: get_apis install_requirements
 	# Protobuf
 	cd alibiexplainer && python \
 		-m grpc.tools.protoc \
