@@ -1,6 +1,6 @@
 from flask import request
 import json
-from typing import Dict
+from typing import Dict, Union
 import base64
 
 
@@ -37,7 +37,7 @@ def get_multi_form_data_request() -> Dict:
     return req_dict
 
 
-def get_request() -> Dict:
+def get_request(decode=True) -> Union[Dict, str]:
     """
     Parse a request to get JSON dict
 
@@ -55,15 +55,26 @@ def get_request() -> Dict:
 
     j_str = request.form.get("json")
     if j_str:
+        if not decode:
+            return j_str
+
         message = json.loads(j_str)
     else:
         j_str = request.args.get("json")
         if j_str:
+            if not decode:
+                return j_str
+
             message = json.loads(j_str)
         else:
-            message = request.get_json()
+            if decode:
+                message = request.get_json()
+            else:
+                message = request.get_data()
+
             if message is None:
                 raise SeldonMicroserviceException("Can't find JSON in data")
+
     if message is None:
         raise SeldonMicroserviceException("Invalid Data Format - empty JSON")
     return message
