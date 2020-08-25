@@ -32,8 +32,8 @@ class JavaJNIServer(SeldonComponent):
         java__MyModel = jpype.JPackage("io").seldon.demo.MyModel
         self._model = java__MyModel()
 
-    def predict_rest(self, request: bytes) -> str:
+    def predict_rest(self, request: bytes) -> bytes:
         logger.debug("Sending request to Java model")
-        prediction_raw = self._model.predictREST(request)
+        prediction_raw = self._model.predictRawREST(request)
 
         return prediction_raw

@@ -39,7 +39,7 @@ def get_multi_form_data_request() -> Dict:
     return req_dict
 
 
-def get_request(skip_decoding=False) -> Union[Dict, str]:
+def get_request(skip_decoding=False) -> Union[Dict, bytes]:
     """
     Parse a request to get JSON dict
 
@@ -69,6 +69,8 @@ def get_request(skip_decoding=False) -> Union[Dict, str]:
         data = request.get_data()
         if data is None:
             raise SeldonMicroserviceException("Can't find data")
+
+        return data
 
     message = request.get_json()
     if message is None:
