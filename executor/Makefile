@@ -28,7 +28,10 @@ vet:
 
 # Build manager binary
 executor: fmt vet
-	go build -o executor main.go
+	go build -o executor cmd/executor/main.go
+
+kafka-proxy: fmt vet
+	go build -o kafka-proxy cmd/proxy/main.go
 
 
 .PHONY: copy_protos
@@ -69,11 +72,11 @@ copy_openapi_resources:
 
 # Build the docker image
 docker-build: test copy_openapi_resources
-	cd .. && docker build -f executor/Dockerfile -t ${IMG} .
+	cd .. && docker build -f executor/Dockerfile.executor -t ${IMG} .
 
 # Build the docker image for Redhat
 docker-build-redhat: test copy_openapi_resources
-	cd .. && docker build -f executor/Dockerfile.redhat -t ${IMG_REDHAT} .
+	cd .. && docker build -f executor/Dockerfile.executor.redhat -t ${IMG_REDHAT} .
 
 # Push the docker image
 docker-push:

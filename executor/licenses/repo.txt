@@ -41,6 +41,7 @@ client9/misspell
 cloudevents/sdk-go
 cncf/udpa
 cockroachdb/datadriven
+confluentinc/confluent-kafka-go
 codahale/hdrhistogram
 coreos/etcd
 coreos/go-etcd
@@ -107,6 +108,7 @@ google/uuid
 googleapis/gax-go
 googleapis/gnostic
 gophercloud/gophercloud
+gordonklaus/ineffassign
 gopherjs/gopherjs
 gorilla/context
 gorilla/mux
@@ -180,6 +182,7 @@ nats-io/nats-server
 nats-io/nats.go
 nats-io/nkeys
 nats-io/nuid
+nishanths/predeclared
 nxadm/tail
 oklog/oklog
 oklog/run
@@ -244,6 +247,7 @@ valyala/bytebufferpool
 vektah/gqlparser
 xiang90/probing
 xordataexchange/crypt
+yuin/goldmark
 etcd-io/bbolt
 etcd-io/etcd
 mongodb/mongo-go-driver

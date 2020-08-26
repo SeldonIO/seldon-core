@@ -49,6 +49,7 @@ Incubating Projects Examples
    Deploy your R models with the R <deep_mnist>
    Outlier Detection with Combiner <outlier_combiner>
    Stream Processing with KNative Eventing <knative_eventing_streaming>
+   Kafka CIFAR10 <cifar10_kafka>
 
 
 Cloud-Specific Examples

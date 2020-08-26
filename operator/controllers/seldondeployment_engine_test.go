@@ -168,3 +168,13 @@ func TestEngineCreateEnvRelated(t *testing.T) {
 	g.Expect(con.Image).To(Equal(imageNameRelated))
 	cleanEnvImages()
 }
+
+func TestExecutorCreateKafka(t *testing.T) {
+	g := NewGomegaWithT(t)
+	cleanEnvImages()
+	mlDep := createTestSeldonDeployment()
+	mlDep.Spec.ServerType = machinelearningv1.ServerKafka
+	_, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, &v1.ResourceRequirements{})
+	g.Expect(err).ToNot(BeNil())
+	cleanEnvImages()
+}

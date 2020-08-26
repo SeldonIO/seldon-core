@@ -141,6 +141,7 @@ func (r *SeldonRestApi) Initialise() {
 			api01.Handle("/feedback", r.wrapMetrics(metric.FeedbackHttpServiceName, r.feedback))
 			r.Router.NewRoute().Path("/api/v0.1/status/{"+ModelHttpPathVariable+"}").Methods("GET", "OPTIONS").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
 			r.Router.NewRoute().Path("/api/v0.1/metadata/{"+ModelHttpPathVariable+"}").Methods("GET", "OPTIONS").HandlerFunc(r.wrapMetrics(metric.MetadataHttpServiceName, r.metadata))
+
 			r.Router.NewRoute().PathPrefix("/api/v0.1/doc/").Handler(http.StripPrefix("/api/v0.1/doc/", http.FileServer(http.Dir("./openapi/"))))
 			//v1.0 API
 			api10 := r.Router.PathPrefix("/api/v1.0").Methods("OPTIONS", "POST").Subrouter()

@@ -12,14 +12,14 @@ COPY executor/operator/ operator/
 RUN go mod download
 
 # Copy the go source
-COPY executor/main.go main.go
+COPY executor/cmd/ cmd/
 COPY executor/api/ api/
 COPY executor/predictor/ predictor/
 COPY executor/logger/ logger/
 COPY executor/k8s/ k8s/
 
 # Build
-RUN go build -a -o executor main.go
+RUN go build -a -o executor cmd/executor/main.go
 
 # Get MPL licensed dependencies
 RUN wget -O hashicorp-golang-lru.tar.gz https://github.com/hashicorp/golang-lru/archive/master.tar.gz

@@ -50,6 +50,7 @@ github.com/client9/misspell
 github.com/cloudevents/sdk-go
 github.com/cncf/udpa/go
 github.com/cockroachdb/datadriven
+github.com/confluentinc/confluent-kafka-go
 github.com/codahale/hdrhistogram
 github.com/coreos/etcd
 github.com/coreos/go-etcd
@@ -117,6 +118,7 @@ github.com/google/uuid
 github.com/googleapis/gax-go/v2
 github.com/googleapis/gnostic
 github.com/gophercloud/gophercloud
+github.com/gordonklaus/ineffassign
 github.com/gopherjs/gopherjs
 github.com/gorilla/context
 github.com/gorilla/mux
@@ -191,6 +193,7 @@ github.com/nats-io/nats-server/v2
 github.com/nats-io/nats.go
 github.com/nats-io/nkeys
 github.com/nats-io/nuid
+github.com/nishanths/predeclared
 github.com/nxadm/tail
 github.com/oklog/oklog
 github.com/oklog/run
@@ -257,6 +260,7 @@ github.com/valyala/bytebufferpool
 github.com/vektah/gqlparser
 github.com/xiang90/probing
 github.com/xordataexchange/crypt
+github.com/yuin/goldmark
 go.etcd.io/bbolt
 go.etcd.io/etcd
 go.mongodb.org/mongo-driver

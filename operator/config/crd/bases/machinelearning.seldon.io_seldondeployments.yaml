@@ -8088,6 +8088,8 @@ spec:
             replicas:
               format: int32
               type: integer
+            serverType:
+              type: string
             transport:
               type: string
           required:
