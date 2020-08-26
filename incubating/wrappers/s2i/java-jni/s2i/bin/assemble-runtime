@@ -7,59 +7,7 @@
 #	https://github.com/openshift/source-to-image/blob/master/docs/builder_image.md
 #
 
-function _assemble_java() {
-  # Move jar binary with inference runtime implementation
-  mv ./build/target/*.jar ./model.jar
-}
-
-function _assemble_python() {
-  # Restore artifacts from the previous build (if they exist).
-  if [ "$(ls /tmp/artifacts/ 2>/dev/null)" ]; then
-    echo "---> Restoring build artifacts..."
-    mv /tmp/artifacts/. ./
-  fi
-
-  echo "---> Installing application source..."
-  cp -Rf /tmp/src/. ./
-
-  if [[ -f requirements.txt ]]; then
-      if [[ -n "$EXTRA_INDEX_URL" ]]; then
-          echo "---> Adding extra index url to pip..."
-          pip config set global.extra-index-url "${EXTRA_INDEX_URL}"
-      fi
-      echo "---> Installing dependencies ..."
-      pip install --find-links /whl -r requirements.txt
-  elif [[ -f setup.py ]]; then
-      echo "---> Installing application ..."
-      pip install --find-links /whl -e .
-  elif [[ -f environment.yml ]]; then
-      echo "---> Creating environment with Conda..."
-      if [[ -z "$CONDA_ENV_NAME" ]]; then
-          echo "----> Failed to find env var CONDA_ENV_NAME."
-          echo "      Falling back to default CONDA_ENV_NAME=microservice."
-          CONDA_ENV_NAME=microservice
-      fi
-      conda env create --name $CONDA_ENV_NAME --file environment.yml
-  fi
-
-
-  # Add licences
-  pip install pip-licenses
-  mkdir ./licenses && pip-licenses --from=mixed --format=csv --output-file=./licenses/license_info.csv && \
-      pip-licenses --from=mixed --format=plain-vertical --with-license-file --no-license-path --output-file=./licenses/license.txt
-  mv ./licenses /licenses
-}
-
-#check environment vars
-if [[ -z "$MODEL_NAME" || -z "$API_TYPE" || -z "$SERVICE_TYPE" || -z "$PERSISTENCE" ]]; then
-
-    echo "Failed to find required env vars MODEL_NAME, API_TYPE, SERVICE_TYPE, PERSISTENCE"
-    exit 1
-fi
-
-cd /microservice
-
-_assemble_java
-_assemble_python
+# Move jar binary with inference runtime implementation
+mv /microservice/build/target/*.jar /microservice/model.jar
 
 

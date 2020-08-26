@@ -2,16 +2,15 @@ FROM openjdk:13.0.1-jdk-buster
 
 ENV PYTHON_VERSION "3.6.10"
 
-RUN apk update && apk add bash
-
 # Compression and SSL libs required for installing Python
 RUN apt-get upgrade && \
         apt-get update && \
+        apt-get install build-essential -y && \
         apt-get install zlib1g -y && \
         apt-get install zlib1g-dev -y && \
         apt-get install libssl-dev -y && \
-	apt-get install libbz2-dev -y && \
-	apt-get install liblzma-dev -y
+        apt-get install libbz2-dev -y && \
+        apt-get install liblzma-dev -y
 
 # Build and install Python
 RUN curl -SLO https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz \

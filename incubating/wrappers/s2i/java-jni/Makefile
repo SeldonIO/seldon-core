@@ -1,16 +1,14 @@
 SHELL := /bin/bash
+SELDON_CORE_DIR = ../../../..
 VERSION := 0.3.0
 IMAGE_REGISTRY = docker.io/seldonio
-IMAGE_NAME_BUILD=${IMAGE_REGISTRY}/java-jni-server-build:${VERSION}
-IMAGE_NAME_RUNTIME=${IMAGE_REGISTRY}/java-jni-server-runtime:${VERSION}
-S2I_VERSION := $(shell cat ../../version.txt)
-KIND_NAME ?= kind
-SELDON_CORE_DIR=../../../..
+IMAGE_NAME_BUILD = ${IMAGE_REGISTRY}/java-jni-server-build:${VERSION}
+IMAGE_NAME_RUNTIME = ${IMAGE_REGISTRY}/java-jni-server-runtime:${VERSION}
 
 .PHONY: get_local_repo
 get_local_repo:
 	mkdir -p _python
-	cp ../../../version.txt version.txt
+	cp ${SELDON_CORE_DIR}/version.txt version.txt
 	cp -r $(SELDON_CORE_DIR)/python _python
 
 .PHONY: build
