@@ -1,18 +1,14 @@
-import joblib
+import kfserving
 import numpy as np
-import seldon_core
-from seldon_core.user_model import SeldonComponent
 from typing import Dict, List, Union, Iterable
 import os
 import logging
-import yaml
-
-logger = logging.getLogger(__name__)
+import joblib
 
 JOBLIB_FILE = "model.joblib"
+logger = logging.getLogger(__name__)
 
-
-class SKLearnServer(SeldonComponent):
+class SKLearnServer():
     def __init__(self, model_uri: str = None, method: str = "predict_proba"):
         super().__init__()
         self.model_uri = model_uri
@@ -25,42 +21,27 @@ class SKLearnServer(SeldonComponent):
     def load(self):
         logger.info("load")
         model_file = os.path.join(
-            seldon_core.Storage.download(self.model_uri), JOBLIB_FILE
+            kfserving.Storage.download(self.model_uri), JOBLIB_FILE
         )
         logger.info(f"model file: {model_file}")
         self._joblib = joblib.load(model_file)
         self.ready = True
 
-    def predict(
-        self, X: np.ndarray, names: Iterable[str], meta: Dict = None
-    ) -> Union[np.ndarray, List, str, bytes]:
+    def predict(self, X: np.ndarray) -> Union[np.ndarray, List, str, bytes]:
+        if not isinstance(X, np.ndarray):
+            if isinstance(X,list):
+                X = np.array(X)
+            else:
+                X = np.array([X])
         try:
             if not self.ready:
                 self.load()
             if self.method == "predict_proba":
                 logger.info("Calling predict_proba")
                 result = self._joblib.predict_proba(X)
-            elif self.method == "decision_function":
-                logger.info("Calling decision_function")
-                result = self._joblib.decision_function(X)
             else:
                 logger.info("Calling predict")
                 result = self._joblib.predict(X)
             return result
         except Exception as ex:
             logging.exception("Exception during predict")
-
-    def init_metadata(self):
-        file_path = os.path.join(self.model_uri, "metadata.yaml")
-
-        try:
-            with open(file_path, "r") as f:
-                return yaml.safe_load(f.read())
-        except FileNotFoundError:
-            logger.debug(f"metadata file {file_path} does not exist")
-            return {}
-        except yaml.YAMLError:
-            logger.error(
-                f"metadata file {file_path} present but does not contain valid yaml"
-            )
-            return {}
