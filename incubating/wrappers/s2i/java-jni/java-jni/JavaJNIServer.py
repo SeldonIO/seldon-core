@@ -18,19 +18,30 @@ class JavaJNIServer(SeldonComponent):
         More details can be found here:
         https://jpype.readthedocs.io/en/latest/userguide.html#multiprocessing
         """
-        # TODO: Read JAR path from somewhere
-        current_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-        classpath = os.path.join(current_dir, "java", "build", "libs", "model-all.jar")
+        model_jar_path = os.getenv("JAVA_JAR_PATH")
 
-        logger.debug(f"Starting JVM with classpath {classpath}")
+        logger.debug(f"Starting JVM with jar: {model_jar_path}")
         # NOTE: convertStrings must be set to True to avoid an explosion of
         # interop calls when working with the returned Java strings
-        jpype.startJVM(classpath=[classpath], convertStrings=True)
+        jpype.startJVM(classpath=[model_jar_path], convertStrings=True)
 
         # TODO: Make class name configurable
         logger.debug("Instantiating MyModel object")
-        java__MyModel = jpype.JPackage("io").seldon.demo.MyModel
-        self._model = java__MyModel()
+        model_import_path = os.getenv("JAVA_IMPORT_PATH")
+        java__SeldonComponent = self._import_model(model_import_path)
+        self._model = java__SeldonComponent()
+
+    def _import_model(self, model_import_path: str):
+        packages = model_import_path.split(".")
+        if len(packages) < 2:
+            raise RuntimeError(f"Invalid Java import path: {model_import_path}")
+
+        root = packages[0]
+        current_package = jpype.JPackage(root)
+        for package in packages[1:]:
+            current_package = getattr(current_package, package)
+
+        return current_package
 
     def predict_rest(self, request: bytes) -> bytes:
         logger.debug("Sending request to Java model")
