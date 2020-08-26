@@ -37,6 +37,9 @@ spec:
               value: "elasticsearch-master.seldon-logs.svc.cluster.local"
             - name: ELASTICSEARCH_PORT
               value: "9200"
+            #if SELDON_ENVIRONMENT is defined index_prefix will be inferenece-log-${SELDON_ENVIRONMENT}-... instead of inference-log-...
+            - name: SELDON_ENVIRONMENT
+              value: "dev"
 ---
 apiVersion: v1
 kind: Service
