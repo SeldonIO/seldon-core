@@ -1,25 +1,24 @@
 SHELL := /bin/bash
 VERSION := 0.3.0
-IMAGE_NAME_BASE=java-jni-server
-IMAGE_BASE=seldonio/${IMAGE_NAME_BASE}
+IMAGE_REGISTRY = docker.io/seldonio
+IMAGE_NAME_BUILD=${IMAGE_REGISTRY}/java-jni-server-build:${VERSION}
+IMAGE_NAME_RUNTIME=${IMAGE_REGISTRY}/java-jni-server-runtime:${VERSION}
 S2I_VERSION := $(shell cat ../../version.txt)
 KIND_NAME ?= kind
+SELDON_CORE_DIR=../../../..
 
-build_%:
-	s2i build \
-		-E environment_$* \
-		./java-jni \
-		seldonio/seldon-core-s2i-python37-ubi8:${S2I_VERSION} \
-		${IMAGE_BASE}_$*:${VERSION}
+.PHONY: get_local_repo
+get_local_repo:
+	mkdir -p _python
+	cp ../../../version.txt version.txt
+	cp -r $(SELDON_CORE_DIR)/python _python
 
-push_%:
-	docker push ${IMAGE_BASE}_$*:${VERSION}
+.PHONY: build
+build: get_local_repo
+	docker build -f Dockerfile.build  -t $(IMAGE_NAME_BUILD) .
+	docker build -f Dockerfile.runtime  -t $(IMAGE_NAME_RUNTIME) .
 
-kind_load_%:
-	kind load -v 3 docker-image ${IMAGE_BASE}_$*:${VERSION} --name ${KIND_NAME}
+push:
+	docker push $(IMAGE_NAME_BUILD)
+	docker push $(IMAGE_NAME_RUNTIME)
 
-.PHONY: push_all
-push_all: push_rest push_grpc
-
-.PHONY: build_all
-build_all: build_rest build_grpc
