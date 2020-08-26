@@ -187,7 +187,7 @@ testing/scripts/tensorflow
 testing/scripts/run.log
 testing/scripts/my-model/
 wrappers/s2i/python/_python/
-wrappers/s2i/python-conda/_python/
+incubating/wrappers/s2i/java-jni/_python/
 
 seldon-controller/go
 
