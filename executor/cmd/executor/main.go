@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"crypto/tls"
-	"encoding/base64"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
