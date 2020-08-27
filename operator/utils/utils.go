@@ -18,7 +18,7 @@ func AddEnvVarToDeploymentContainers(deploy *appsv1.Deployment, envVar *v1.EnvVa
 		// Before adding it ensures it doesn't exist as it will NOT override
 		for _, e := range deployContainer.Env {
 			if e.Name == envVar.Name {
-				break
+				return
 			}
 		}
 		deployContainer.Env = append(deployContainer.Env, *envVar)
@@ -26,7 +26,7 @@ func AddEnvVarToDeploymentContainers(deploy *appsv1.Deployment, envVar *v1.EnvVa
 }
 
 // Create a volume from the secret provided and mounts it to all the containers of deployment
-func MountSecretToDeploymentContainers(deploy *appsv1.Deployment, secretRefName, containerMountPath string) {
+func MountSecretToDeploymentContainers(deploy *appsv1.Deployment, secretRefName string, containerMountPath string) {
 	volumeName := "seldon-cert-volume"
 	volume := v1.Volume{
 		Name: volumeName,
