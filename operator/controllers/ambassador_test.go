@@ -20,7 +20,7 @@ func basicAmbassadorTests(t *testing.T, mlDep *machinelearningv1.SeldonDeploymen
 	s, err := getAmbassadorConfigs(mlDep, p, "myservice", 9000, 5000, isExplainer)
 	g.Expect(err).To(BeNil())
 	parts := strings.Split(s, "---\n")[1:]
-	g.Expect(len(parts)).To(Equal(2))
+	g.Expect(len(parts)).To(Equal(3))
 	c := AmbassadorConfig{}
 	err = yaml.Unmarshal([]byte(parts[0]), &c)
 	g.Expect(err).To(BeNil())
@@ -166,7 +166,7 @@ func circuitBreakerAmbassadorTests(t *testing.T,
 	s, err := getAmbassadorConfigs(mlDep, p, "myservice", 9000, 5000, false)
 	g.Expect(err).To(BeNil())
 	parts := strings.Split(s, "---\n")[1:]
-	g.Expect(len(parts)).To(Equal(2))
+	g.Expect(len(parts)).To(Equal(3))
 	c := AmbassadorConfig{}
 	err = yaml.Unmarshal([]byte(parts[0]), &c)
 	g.Expect(err).To(BeNil())
