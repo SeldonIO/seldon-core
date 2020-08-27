@@ -48,7 +48,7 @@ func basicAmbassadorTests(t *testing.T, mlDep *machinelearningv1.SeldonDeploymen
 func TestAmbassadorTLS(t *testing.T) {
 	p1 := machinelearningv1.PredictorSpec{
 		Name: "p1",
-		SSL: machinelearningv1.SSL{
+		SSL: &machinelearningv1.SSL{
 			CertSecretName: "model-secret-name",
 		},
 	}
