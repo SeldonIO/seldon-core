@@ -27,11 +27,18 @@ vet:
 
 
 # Build manager binary
-executor: fmt vet
+executor: copy_operator fmt vet
 	go build -o executor cmd/executor/main.go
 
-kafka-proxy: fmt vet
+
+kafka-proxy: copy_operator fmt vet
 	go build -o kafka-proxy cmd/proxy/main.go
+
+
+.PHONE: copy_operator
+copy_operator:
+	rm _operator -rf
+	cp -r ../operator _operator
 
 
 .PHONY: copy_protos
@@ -62,7 +69,7 @@ add_protos:
 	cd serving && find ./tensorflow_serving -name '*.proto' | cpio -pdm ../proto
 
 # Run tests
-test: fmt vet
+test: copy_operator fmt vet
 	go test ${EXECUTOR_FOLDERS} -coverprofile cover.out
 
 copy_openapi_resources:
@@ -72,11 +79,11 @@ copy_openapi_resources:
 
 # Build the docker image
 docker-build: test copy_openapi_resources
-	cd .. && docker build -f executor/Dockerfile.executor -t ${IMG} .
+	docker build -f Dockerfile.executor -t ${IMG} .
 
 # Build the docker image for Redhat
 docker-build-redhat: test copy_openapi_resources
-	cd .. && docker build -f executor/Dockerfile.executor.redhat -t ${IMG_REDHAT} .
+	docker build -f Dockerfile.executor.redhat -t ${IMG_REDHAT} .
 
 # Push the docker image
 docker-push:
