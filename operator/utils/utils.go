@@ -27,7 +27,7 @@ func AddEnvVarToDeploymentContainers(deploy *appsv1.Deployment, envVar *v1.EnvVa
 
 // Create a volume from the secret provided and mounts it to all the containers of deployment
 func MountSecretToDeploymentContainers(deploy *appsv1.Deployment, secretRefName, containerMountPath string) {
-	volumeName := "cert-volume"
+	volumeName := "seldon-cert-volume"
 	volume := v1.Volume{
 		Name: volumeName,
 		VolumeSource: v1.VolumeSource{
@@ -141,4 +141,8 @@ func GetEnvAsBool(key string, fallback bool) bool {
 	}
 
 	return fallback
+}
+
+func IsEmptyTLS(p *machinelearningv1.PredictorSpec) bool {
+	return p.SSL == nil || len(p.SSL.CertSecretName) == 0
 }
