@@ -129,7 +129,7 @@ func getAmbassadorCircuitBreakerConfig(
 // Return TLSContext configuration if SSL is enabled with Ambassador and returns empty string if SSL is not enabled
 func getAmbassadorTLSContextConfig(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, addNamespace bool) (string, error) {
 
-	if isEmptyTLS(p) {
+	if utils.IsEmptyTLS(p) {
 		return "", nil
 	}
 
@@ -255,7 +255,7 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
 		}
 	}
 
-	if !isEmptyTLS(p) {
+	if !utils.IsEmptyTLS(p) {
 		if addNamespace {
 			c.TLS = "seldon_" + namespace + "_" + mlDep.ObjectMeta.Name + "_" + name + "_tls_config"
 		} else {
@@ -372,7 +372,7 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 		}
 	}
 
-	if !isEmptyTLS(p) {
+	if !utils.IsEmptyTLS(p) {
 		if addNamespace {
 			c.TLS = "seldon_" + namespace + "_" + mlDep.ObjectMeta.Name + "_" + name + "_tls_config"
 		} else {
@@ -457,8 +457,4 @@ func getAmbassadorConfigs(mlDep *machinelearningv1.SeldonDeployment, p *machinel
 
 	}
 
-}
-
-func isEmptyTLS(p *machinelearningv1.PredictorSpec) bool {
-	return p.SSL == nil || len(p.SSL.CertSecretName) == 0
 }

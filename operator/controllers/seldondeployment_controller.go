@@ -60,8 +60,11 @@ const (
 	ENV_DEFAULT_ENGINE_SERVER_GRPC_PORT = "ENGINE_SERVER_GRPC_PORT"
 	ENV_CONTROLLER_ID                   = "CONTROLLER_ID"
 
+	// This env var in the operator allows you to change the default path
+	// 		to mount the cert in the containers
 	ENV_DEFAULT_CERT_MOUNT_PATH_NAME = "DEFAULT_CERT_MOUNT_PATH_NAME"
-	SELDON_MOUNT_PATH_ENV_NAME       = "SELDON_CERT_MOUNT_PATH"
+	// The ENV VAR NAME for containers to be able to find the path
+	SELDON_MOUNT_PATH_ENV_NAME = "SELDON_CERT_MOUNT_PATH"
 
 	DEFAULT_ENGINE_CONTAINER_PORT = 8000
 	DEFAULT_ENGINE_GRPC_PORT      = 5001
