@@ -95,7 +95,4 @@ class MicroserviceWrapper:
         if self.p:
             group_id = os.getpgid(self.p.pid)
             # Kill the entire process groups (including subprocesses of self.p)
-            os.killpg(group_id, signal.SIGTERM)
-
-            # once we gave subprocess a chance to SIGTERM gracefully we gonna SIGKILL it
             os.killpg(group_id, signal.SIGKILL)
