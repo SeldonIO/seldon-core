@@ -23,7 +23,6 @@ setup(
     license_files=["LICENSE"],
     packages=find_packages(),
     include_package_data=True,
-    setup_requires=["pytest-runner"],
     python_requires=">=3.6",
     install_requires=[
         "Flask<2.0.0",
@@ -44,9 +43,7 @@ setup(
         "setuptools >= 41.0.0",
         "prometheus_client >= 0.7.1, < 0.9.0",
     ],
-    tests_require=["pytest<6.0.0", "pytest-cov<3.0.0", "Pillow==7.2.0"],
     extras_require=extras,
-    test_suite="tests",
     entry_points={
         "console_scripts": [
             "seldon-core-microservice = seldon_core.microservice:main",
