@@ -1426,7 +1426,7 @@ asaskevich/govalidator  MIT License  https://github.com/asaskevich/govalidator/b
 --------------------------------------------------------------------------------
 The MIT License (MIT)
 
-Copyright (c) 2014 Alex Saskevich
+Copyright (c) 2014-2020 Alex Saskevich
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -3764,7 +3764,7 @@ modification, are permitted provided that the following conditions are met:
 
 * Redistributions of source code must retain the above copyright notice, this
   list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright notice
+* Redistributions in binary form must reproduce the above copyright notice,
   this list of conditions and the following disclaimer in the documentation
   and/or other materials provided with the distribution.
 * Neither the name of the Evan Phoenix nor the names of its contributors 
