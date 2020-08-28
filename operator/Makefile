@@ -23,6 +23,7 @@ show_image:
 
 all: manager
 
+.PHONY: lint
 lint: licenses/dep.txt
 	# Check if licenses have changed
 	git \
@@ -202,7 +203,8 @@ install-dev:
 	pip install \
 		'git+https://github.com/kubeflow/testing#egg=go-license-tools&subdirectory=py/kubeflow/testing/go-license-tools'
 
-licenses/dep.txt: go.mod
+.PHONY: licenses/dep.txt
+licenses/dep.txt:
 	go list -m all | cut -d ' ' -f 1 > licenses/dep.txt
 
 .PHONY: licenses

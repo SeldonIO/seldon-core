@@ -113,8 +113,10 @@ install-dev:
 		'git+https://github.com/kubeflow/testing#egg=go-license-tools&subdirectory=py/kubeflow/testing/go-license-tools'
 
 
-licenses/dep.txt: go.mod
+.PHONY: licenses/dep.txt
+licenses/dep.txt:
 	go list -m all | cut -d ' ' -f 1 > licenses/dep.txt
+
 
 .PHONY: licenses
 licenses: licenses/dep.txt
@@ -130,6 +132,7 @@ licenses: licenses/dep.txt
 	concatenate-license -o licenses/license.txt licenses/license_info.csv
 
 
+.PHONY: lint
 lint: licenses/dep.txt
 	# Check if licenses have changed
 	git \
