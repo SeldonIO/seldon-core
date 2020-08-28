@@ -10,22 +10,18 @@
 # Check environment vars
 if [[ -z "$JAVA_IMPORT_PATH" || -z "$API_TYPE" || -z "$SERVICE_TYPE" || -z "$PERSISTENCE" ]]; then
 
-    echo "Failed to find required env vars MODEL_NAME, API_TYPE, SERVICE_TYPE, PERSISTENCE"
+    echo "Failed to find required env vars JAVA_IMPORT_PATH, API_TYPE, SERVICE_TYPE, PERSISTENCE"
     exit 1
 fi
 
 PAYLOAD_PASSTHROUGH=${PAYLOAD_PASSTHROUGH:-true}
-MODEL_NAME=${MODEL_NAME:"JavaJNIServer"}
-JAVA_JAR_PATH=${MODEL_JAR_PATH:"/microservice/model.jar"}
+MODEL_NAME=${MODEL_NAME:-"JavaJNIServer"}
+JAVA_JAR_PATH=${JAVA_JAR_PATH:-"/microservice/model.jar"}
 
 cd /microservice
 
-
 echo "Starting microservice"
-exec JAVA_JAR_PATH=$JAVA_JAR_PATH \
-  JAVA_IMPORT_PATH=$JAVA_IMPORT_PATH \
-  PAYLOAD_PASSTHROUGH=$PAYLOAD_PASSTHROUGH \
-  seldon-core-microservice \
+exec seldon-core-microservice \
   $MODEL_NAME \
   $API_TYPE \
   --service-type $SERVICE_TYPE \
