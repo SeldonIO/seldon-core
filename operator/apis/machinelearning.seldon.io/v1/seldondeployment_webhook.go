@@ -393,6 +393,44 @@ func collectTransports(pu *PredictiveUnit, transportsFound map[EndpointType]bool
 	}
 }
 
+const (
+	ENV_KAFKA_BROKER       = "KAFKA_BROKER"
+	ENV_KAFKA_INPUT_TOPIC  = "KAFKA_INPUT_TOPIC"
+	ENV_KAFKA_OUTPUT_TOPIC = "KAFKA_OUTPUT_TOPIC"
+)
+
+func (r *SeldonDeploymentSpec) validateKafka(allErrs field.ErrorList) field.ErrorList {
+	if r.ServerType == ServerKafka {
+		for i, p := range r.Predictors {
+			if len(p.SvcOrchSpec.Env) == 0 {
+				fldPath := field.NewPath("spec").Child("predictors").Index(i)
+				allErrs = append(allErrs, field.Invalid(fldPath, p.Name, "For kafka please supply svcOrchSpec envs KAFKA_BROKER, KAFKA_INPUT_TOPIC, KAFKA_OUTPUT_TOPIC"))
+			} else {
+				found := 0
+				for _, env := range p.SvcOrchSpec.Env {
+					switch env.Name {
+					case ENV_KAFKA_BROKER, ENV_KAFKA_INPUT_TOPIC, ENV_KAFKA_OUTPUT_TOPIC:
+						found = found + 1
+					}
+				}
+				if found < 3 {
+					fldPath := field.NewPath("spec").Child("predictors").Index(i)
+					allErrs = append(allErrs, field.Invalid(fldPath, p.Name, "For kafka please supply svcOrchSpec envs KAFKA_BROKER, KAFKA_INPUT_TOPIC, KAFKA_OUTPUT_TOPIC"))
+				}
+			}
+		}
+	}
+	return allErrs
+}
+
+func (r *SeldonDeploymentSpec) validateShadow(allErrs field.ErrorList) field.ErrorList {
+	if len(r.Predictors) == 1 && r.Predictors[0].Shadow {
+		fldPath := field.NewPath("spec").Child("predictors").Index(0)
+		allErrs = append(allErrs, field.Invalid(fldPath, r.Predictors[0].Name, "Shadow can not exist as only predictor"))
+	}
+	return allErrs
+}
+
 func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 	var allErrs field.ErrorList
 
@@ -406,7 +444,20 @@ func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 		allErrs = append(allErrs, field.Invalid(fldPath, r.Transport, "Invalid transport"))
 	}
 
+	if r.ServerType != "" && !(r.ServerType == ServerRPC || r.ServerType == ServerKafka) {
+		fldPath := field.NewPath("spec")
+		allErrs = append(allErrs, field.Invalid(fldPath, r.ServerType, "Invalid serverType"))
+	}
+
+	allErrs = r.validateKafka(allErrs)
+	allErrs = r.validateShadow(allErrs)
+
 	transports := make(map[EndpointType]bool)
+
+	if len(r.Predictors) == 0 {
+		fldPath := field.NewPath("spec")
+		allErrs = append(allErrs, field.Invalid(fldPath, r.Transport, "Graph contains no predictors"))
+	}
 
 	predictorNames := make(map[string]bool)
 	for i, p := range r.Predictors {

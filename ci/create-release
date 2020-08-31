@@ -5,7 +5,6 @@
 set -o nounset
 set -o errexit
 set -o pipefail
-set -o noclobber
 set -o noglob
 set -o xtrace
 
@@ -29,7 +28,7 @@ git checkout master
 set +o errexit
     git checkout -b $BRANCH_NAME
     RETVAL=$?
-    if [[ ${RETVAL} -eq 0 ]]; then
+    if [[ ${RETVAL} -gt 0 ]]; then
         echo "Branch already exists"
         git checkout $BRANCH_NAME
         git rebase master
@@ -37,6 +36,7 @@ set +o errexit
 set -o errexit
 
 # Perform required actions for release
+echo "$VERSION" > ../version.txt
 (cd ../engine && mvn versions:set -DnewVersion=$(cat ../version.txt))
 (cd ../ && python release.py $(cat version.txt))
 

@@ -192,10 +192,25 @@ func getSvcOrchUser(mlDep *machinelearningv1.SeldonDeployment) (*int64, error) {
 }
 
 func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, predictorB64 string, port int, resources *corev1.ResourceRequirements) (*corev1.Container, error) {
+	transport := mlDep.Spec.Transport
+	//Backwards compatible with older resources
+	if transport == "" {
+		if p.Graph.Endpoint.Type == machinelearningv1.GRPC {
+			transport = machinelearningv1.TransportGrpc
+		} else {
+			transport = machinelearningv1.TransportRest
+		}
+	}
+
 	protocol := mlDep.Spec.Protocol
 	//Backwards compatibility for older resources
 	if protocol == "" {
 		protocol = machinelearningv1.ProtocolSeldon
+	}
+
+	serverType := mlDep.Spec.ServerType
+	if serverType == "" {
+		serverType = machinelearningv1.ServerRPC
 	}
 
 	// Get executor image from env vars in order of priority
@@ -214,8 +229,10 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 			"--namespace", mlDep.Namespace,
 			"--predictor", p.Name,
 			"--port", strconv.Itoa(port),
+			"--transport", string(transport),
 			"--protocol", string(protocol),
 			"--prometheus_path", getPrometheusPath(mlDep),
+			"--server_type", string(serverType),
 		},
 		ImagePullPolicy:          corev1.PullPolicy(utils.GetEnv("EXECUTOR_CONTAINER_IMAGE_PULL_POLICY", "IfNotPresent")),
 		TerminationMessagePath:   "/dev/termination-log",

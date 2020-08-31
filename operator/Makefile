@@ -23,6 +23,7 @@ show_image:
 
 all: manager
 
+.PHONY: lint
 lint: licenses/dep.txt
 	# Check if licenses have changed
 	git \
@@ -57,6 +58,15 @@ install: manifests
 # Install CRDs into a cluster
 uninstall: manifests
 	kustomize build config/crd | kubectl delete -f -
+
+# Install V1 CRDs into a cluster
+# Note use of create to stop too long annotation being created. See https://github.com/kubernetes-sigs/kubebuilder/issues/1140
+install_v1: manifests_v1
+	kustomize build config/crd_v1 | kubectl create -f -
+
+# Uninstall V1 CRDs into a cluster
+uninstall_v1: 
+	kustomize build config/crd_v1 | kubectl delete -f -
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
 deploy: manifests
@@ -111,6 +121,9 @@ deploy-lite: manifests
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: controller-gen
 	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+
+manifests_v1: controller-gen
+	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd_v1/bases crd:crdVersions=v1
 
 # Run go fmt against code
 fmt:
@@ -202,7 +215,8 @@ install-dev:
 	pip install \
 		'git+https://github.com/kubeflow/testing#egg=go-license-tools&subdirectory=py/kubeflow/testing/go-license-tools'
 
-licenses/dep.txt: go.mod
+.PHONY: licenses/dep.txt
+licenses/dep.txt:
 	go list -m all | cut -d ' ' -f 1 > licenses/dep.txt
 
 .PHONY: licenses
@@ -223,3 +237,6 @@ generate-resources:
 	mkdir generated
 	kustomize build config/default/ -o generated
 	cp generated/apiextensions.k8s.io_v1beta1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml testing/machinelearning.seldon.io_seldondeployments.yaml
+
+config/crd_v1/patches/graph_children.yaml:
+	python hack/create_graph_openapi_schema.py hack/graph_patch.tmpl.yaml config/crd_v1/patches/graph_children.yaml

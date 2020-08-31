@@ -102,7 +102,7 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | singleNamespace | bool | `false` |  |
 | storageInitializer.cpuLimit | string | `"1"` |  |
 | storageInitializer.cpuRequest | string | `"100m"` |  |
-| storageInitializer.image | string | `"gcr.io/kfserving/storage-initializer:0.2.2"` |  |
+| storageInitializer.image | string | `"gcr.io/kfserving/storage-initializer:v0.4.0"` |  |
 | storageInitializer.memoryLimit | string | `"1Gi"` |  |
 | storageInitializer.memoryRequest | string | `"100Mi"` |  |
 | usageMetrics.enabled | bool | `false` |  |

@@ -69,7 +69,7 @@ spec:
         implementation: MLFLOW_SERVER
         modelUri: gs://seldon-models/mlflow/elasticnet_wine
         name: classifier
-      parameters:
+        parameters:
         - name: xtype
           type: STRING
           value: DataFrame

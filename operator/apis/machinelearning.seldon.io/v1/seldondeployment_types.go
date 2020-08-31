@@ -210,6 +210,7 @@ type SeldonDeploymentSpec struct {
 	Protocol    Protocol          `json:"protocol,omitempty" protobuf:"bytes,6,opt,name=protocol"`
 	Transport   Transport         `json:"transport,omitempty" protobuf:"bytes,7,opt,name=transport"`
 	Replicas    *int32            `json:"replicas,omitempty" protobuf:"bytes,8,opt,name=replicas"`
+	ServerType  ServerType        `json:"serverType,omitempty" protobuf:"bytes,8,opt,name=serverType"`
 }
 
 type PredictorSpec struct {
@@ -240,6 +241,13 @@ const (
 	TransportGrpc Transport = "grpc"
 )
 
+type ServerType string
+
+const (
+	ServerRPC   ServerType = "rpc"
+	ServerKafka ServerType = "kafka"
+)
+
 type SvcOrchSpec struct {
 	Resources *v1.ResourceRequirements `json:"resources,omitempty" protobuf:"bytes,1,opt,name=resources"`
 	Env       []*v1.EnvVar             `json:"env,omitempty" protobuf:"bytes,2,opt,name=env"`
@@ -249,11 +257,14 @@ type SvcOrchSpec struct {
 type AlibiExplainerType string
 
 const (
-	AlibiAnchorsTabularExplainer  AlibiExplainerType = "AnchorTabular"
-	AlibiAnchorsImageExplainer    AlibiExplainerType = "AnchorImages"
-	AlibiAnchorsTextExplainer     AlibiExplainerType = "AnchorText"
-	AlibiCounterfactualsExplainer AlibiExplainerType = "Counterfactuals"
-	AlibiContrastiveExplainer     AlibiExplainerType = "Contrastive"
+	AlibiAnchorsTabularExplainer      AlibiExplainerType = "AnchorTabular"
+	AlibiAnchorsImageExplainer        AlibiExplainerType = "AnchorImages"
+	AlibiAnchorsTextExplainer         AlibiExplainerType = "AnchorText"
+	AlibiCounterfactualsExplainer     AlibiExplainerType = "Counterfactuals"
+	AlibiContrastiveExplainer         AlibiExplainerType = "Contrastive"
+	AlibiKernelShapExplainer          AlibiExplainerType = "KernelShap"
+	AlibiIntegratedGradientsExplainer AlibiExplainerType = "IntegratedGradients"
+	AlibiALEExplainer                 AlibiExplainerType = "ALE"
 )
 
 type Explainer struct {

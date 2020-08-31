@@ -49,6 +49,7 @@ Incubating Projects Examples
    Deploy your R models with the R <deep_mnist>
    Outlier Detection with Combiner <outlier_combiner>
    Stream Processing with KNative Eventing <knative_eventing_streaming>
+   Kafka CIFAR10 <cifar10_kafka>
 
 
 Cloud-Specific Examples
@@ -68,6 +69,7 @@ Advanced Machine Learning Insights
 .. toctree::
    :titlesonly:
 
+   Real time monitoring of statistical metrics <feedback_reward_custom_metrics>
    Tabular, Text and Image Model Explainers <explainer_examples>
    Outlier Detection on CIFAR10 <outlier_cifar10>
   
@@ -149,4 +151,5 @@ Benchmarking and Load Tests
   
    Service Orchestrator <bench_svcOrch>
    Tensorflow <bench_tensorflow>   
+   Argo Workflows Benchmarking <vegeta_bench_argo_workflows>   
    

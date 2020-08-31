@@ -7,7 +7,7 @@ IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | sed 's/\.//g'`
 DEFAULT_IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | cut -d. -f1`
 IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python${IMAGE_PYTHON_VERSION}
 DEFAULT_IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python${DEFAULT_IMAGE_PYTHON_VERSION}
-GPU_IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python3-tf-gpu
+GPU_IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python${IMAGE_PYTHON_VERSION}-gpu
 
 SELDON_CORE_DIR=../../..
 
@@ -27,7 +27,7 @@ build: get_local_repo
 
 .PHONY: build_gpu
 build_gpu: get_local_repo
-	docker build -f Dockerfile.gpu --build-arg CONDA_VERSION=${CONDA_VERSION} -t ${GPU_IMAGE_NAME}:${IMAGE_VERSION} .
+	docker build -f Dockerfile.gpu --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} -t ${GPU_IMAGE_NAME}:${IMAGE_VERSION} .
 
 .PHONY: build_local
 build_local: get_local_repo
