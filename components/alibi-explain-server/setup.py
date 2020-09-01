@@ -38,7 +38,9 @@ setup(
         "requests>=2.22.0",
         "joblib>=0.13.2",
         "dill>=0.3.0",
-        "grpcio>=1.22.0"
+        "grpcio>=1.22.0",
+        "xgboost==1.0.2",
+        "shap==0.35.0"
     ],
     tests_require=tests_require,
     extras_require={'test': tests_require}
