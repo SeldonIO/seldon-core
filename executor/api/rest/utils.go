@@ -68,7 +68,7 @@ func CombineSeldonMessagesToJson(msgs []payload.SeldonPayload) (payload.SeldonPa
 	// Create JSON list of messages
 	joined := strings.Join(strData, ",")
 	jStr := "[" + joined + "]"
-	return &payload.BytesPayload{Msg: []byte(jStr)}, nil
+	return &payload.BytesPayload{Msg: []byte(jStr), ContentType: msgs[0].GetContentType()}, nil
 }
 
 func ExtractSeldonMessagesFromJson(msg payload.SeldonPayload) ([]payload.SeldonPayload, error) {
