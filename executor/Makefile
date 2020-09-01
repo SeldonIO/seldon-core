@@ -140,7 +140,7 @@ licenses: licenses/dep.txt
 
 
 .PHONY: lint
-lint: licenses/dep.txt
+lint: copy_operator licenses/dep.txt
 	# Check if licenses have changed
 	git \
 		--no-pager diff \
