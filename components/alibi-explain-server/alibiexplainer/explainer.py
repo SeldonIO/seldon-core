@@ -26,6 +26,7 @@ from alibiexplainer.anchor_images import AnchorImages
 from alibiexplainer.anchor_tabular import AnchorTabular
 from alibiexplainer.anchor_text import AnchorText
 from alibiexplainer.kernel_shap import KernelShap
+from alibiexplainer.tree_shap import TreeShap
 from alibiexplainer.integrated_gradients import IntegratedGradients
 from alibiexplainer.explainer_wrapper import ExplainerWrapper
 from alibiexplainer.proto import prediction_pb2
@@ -59,6 +60,7 @@ class ExplainerMethod(Enum):
     anchor_text = "AnchorText"
     kernel_shap = "KernelShap"
     integrated_gradients = "IntegratedGradients"
+    tree_shap = "TreeShap"
 
     def __str__(self):
         return self.value
@@ -93,6 +95,8 @@ class AlibiExplainer(ExplainerModel):
             self.wrapper = KernelShap(self._predict_fn, explainer, **config)
         elif self.method is ExplainerMethod.integrated_gradients:
             self.wrapper = IntegratedGradients(keras_model, **config)
+        elif self.method is ExplainerMethod.tree_shap:
+            self.wrapper = TreeShap(explainer, **config)
         else:
             raise NotImplementedError
 
@@ -135,7 +139,7 @@ class AlibiExplainer(ExplainerModel):
     def explain(self, request: Dict) -> Any:
         if self.method is ExplainerMethod.anchor_tabular or self.method is ExplainerMethod.anchor_images or \
                 self.method is ExplainerMethod.anchor_text or self.method is ExplainerMethod.kernel_shap or \
-                self.method is ExplainerMethod.integrated_gradients:
+                self.method is ExplainerMethod.integrated_gradients or self.method is ExplainerMethod.tree_shap:
             if self.protocol == Protocol.tensorflow_http:
                 explanation: Explanation = self.wrapper.explain(request["instances"])
             else:
