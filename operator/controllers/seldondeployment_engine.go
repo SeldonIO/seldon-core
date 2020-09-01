@@ -222,7 +222,7 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 	}
 
 	probeScheme := corev1.URISchemeHTTP
-	if utils.IsEmptyTLS(p) {
+	if !utils.IsEmptyTLS(p) {
 		probeScheme = corev1.URISchemeHTTPS
 	}
 
