@@ -1,4 +1,4 @@
-ARG IMAGE_SOURCE=openjdk:8u131-jre-alpine
+ARG IMAGE_SOURCE=openjdk:13.0.1-jdk-buster
 FROM $IMAGE_SOURCE
 
 RUN apk update && apk add bash
