@@ -94,14 +94,14 @@ metadata:
   name: sklearn-default-cert
 spec:
   dnsNames:
-  - example.com
+  - "*"
   issuerRef:
     name: selfsigned-issuer
   secretName: sklearn-default-cert
 END
 ```
 
-    certificate.cert-manager.io/sklearn-default-cert created
+    certificate.cert-manager.io/sklearn-default-cert configured
 
 
 
@@ -269,7 +269,7 @@ Then we send an SSL request (which should be SUCCESSFUL)
 ```bash
 %%bash
 kubectl run --quiet=true -it --rm curl --image=radial/busyboxplus:curl --restart=Never -- \
-    curl -X POST -k -v "https://sklearn-ssl-default.default.svc.cluster.local:8000/api/v1.0/predictions" \
+    curl -X POST -k -v "https://sklearn-ssl-grpc-default.default.svc.cluster.local:8000/api/v1.0/predictions" \
         -H "Content-Type: application/json" -d '{"data": { "ndarray": [[1,2,3,4]]}, "meta": { "puid": "hello" }}' || echo "done"
 ```
 
@@ -299,8 +299,6 @@ kubectl run --quiet=true -it --rm curl --image=radial/busyboxplus:curl --restart
     
     
     
-    
-    {"data":{"names":["t:0","t:1","t:2"],"ndarray":[[0.0006985194531162841,0.003668039039435755,0.9956334415074478]]},"meta":{"puid":"hello"}}
 
 
 #### Test Ambassador Configured with SSL
@@ -374,15 +372,75 @@ Testing the SSL ENABLED Model
     
 
 
+### Creating a GRPC model
+
+
+```bash
+%%bash
+kubectl apply -f - << END
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: sklearn-ssl-grpc
+spec:
+  transport: grpc
+  predictors:
+  - graph:
+      children: []
+      implementation: SKLEARN_SERVER
+      modelUri: gs://seldon-models/sklearn/iris
+      name: classifier
+    name: default
+    replicas: 1
+    ssl:
+      certSecretName: sklearn-default-cert 
+END
+```
+
+    seldondeployment.machinelearning.seldon.io/sklearn-ssl-grpc created
+
+
+### Test the service directly
+We can send a request directly to the service by portforwarding the service with the following command:
+    
+```
+kubectl port-forward svc/sklearn-ssl-grpc-default 8000:8000
+```
+
+And then running the following request using the GRPCURL library (which you can download in their github page):
+
+And finally we can send a request via the ambassador port as above:
+
 
 ```bash
 %%bash
 cd ../../../executor/proto && \
 grpcurl \
          -rpc-header seldon:sklearn -rpc-header namespace:default \
-        -d '{"data": {"ndarray": []}}' \
-         -proto prediction.proto  127.0.0.1:443 seldon.protos.Seldon/Predict
+        -d '{"data": {"ndarray": [[1,2,3,4]]}}' \
+        -insecure -proto prediction.proto  localhost:8000 seldon.protos.Seldon/Predict
 ```
+
+    {
+      "meta": {
+        
+      },
+      "data": {
+        "names": [
+          "t:0",
+          "t:1",
+          "t:2"
+        ],
+        "ndarray": [
+            [
+                  0.0006985194531162841,
+                  0.003668039039435755,
+                  0.9956334415074478
+                ]
+          ]
+      }
+    }
+
 
 
 ```python
