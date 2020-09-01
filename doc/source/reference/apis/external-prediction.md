@@ -23,7 +23,7 @@ The Seldon Core exposes a generic external API to connect your ML runtime predic
 
 ### Metadata - Graph Level
 
-- endpoint : GET /api/v1.0/metadata/
+- endpoint : GET /api/v1.0/metadata
 - example response :
 
 ```json

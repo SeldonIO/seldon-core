@@ -41,8 +41,8 @@ client9/misspell,https://github.com/client9/misspell/blob/master/LICENSE,MIT Lic
 cloudevents/sdk-go,https://github.com/cloudevents/sdk-go/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/cloudevents/sdk-go/master/LICENSE
 cncf/udpa,https://github.com/cncf/udpa/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/cncf/udpa/master/LICENSE
 cockroachdb/datadriven,https://github.com/cockroachdb/datadriven/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/cockroachdb/datadriven/master/LICENSE
-confluentinc/confluent-kafka-go,https://github.com/confluentinc/confluent-kafka-go/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/confluentinc/confluent-kafka-go/master/LICENSE
 codahale/hdrhistogram,https://github.com/codahale/hdrhistogram/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/codahale/hdrhistogram/master/LICENSE
+confluentinc/confluent-kafka-go,https://github.com/confluentinc/confluent-kafka-go/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/confluentinc/confluent-kafka-go/master/LICENSE
 coreos/etcd,https://github.com/etcd-io/etcd/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/etcd-io/etcd/master/LICENSE
 coreos/go-etcd,https://github.com/coreos/go-etcd/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/coreos/go-etcd/master/LICENSE
 coreos/go-oidc,https://github.com/coreos/go-oidc/blob/v2/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/coreos/go-oidc/v2/LICENSE
@@ -108,7 +108,6 @@ google/uuid,https://github.com/google/uuid/blob/master/LICENSE,BSD 3-Clause "New
 googleapis/gax-go,https://github.com/googleapis/gax-go/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/googleapis/gax-go/master/LICENSE
 googleapis/gnostic,https://github.com/googleapis/gnostic/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/googleapis/gnostic/master/LICENSE
 gophercloud/gophercloud,https://github.com/gophercloud/gophercloud/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/gophercloud/gophercloud/master/LICENSE
-gordonklaus/ineffassign,https://github.com/gordonklaus/ineffassign/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/gordonklaus/ineffassign/master/LICENSE
 gopherjs/gopherjs,https://github.com/gopherjs/gopherjs/blob/master/LICENSE,BSD 2-Clause "Simplified" License,https://raw.githubusercontent.com/gopherjs/gopherjs/master/LICENSE
 gorilla/context,https://github.com/gorilla/context/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/gorilla/context/master/LICENSE
 gorilla/mux,https://github.com/gorilla/mux/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/gorilla/mux/master/LICENSE
@@ -180,7 +179,6 @@ nats-io/nats-server,https://github.com/nats-io/nats-server/blob/master/LICENSE,A
 nats-io/nats.go,https://github.com/nats-io/nats.go/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/nats-io/nats.go/master/LICENSE
 nats-io/nkeys,https://github.com/nats-io/nkeys/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/nats-io/nkeys/master/LICENSE
 nats-io/nuid,https://github.com/nats-io/nuid/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/nats-io/nuid/master/LICENSE
-nishanths/predeclared,https://github.com/nishanths/predeclared/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/nishanths/predeclared/master/LICENSE
 nxadm/tail,https://github.com/nxadm/tail/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/nxadm/tail/master/LICENSE
 oklog/oklog,https://github.com/oklog/oklog/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/oklog/oklog/master/LICENSE
 oklog/run,https://github.com/oklog/run/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/oklog/run/master/LICENSE
@@ -245,7 +243,6 @@ valyala/bytebufferpool,https://github.com/valyala/bytebufferpool/blob/master/LIC
 vektah/gqlparser,https://github.com/vektah/gqlparser/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/vektah/gqlparser/master/LICENSE
 xiang90/probing,https://github.com/xiang90/probing/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/xiang90/probing/master/LICENSE
 xordataexchange/crypt,https://github.com/xordataexchange/crypt/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/xordataexchange/crypt/master/LICENSE
-yuin/goldmark,https://github.com/yuin/goldmark/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/yuin/goldmark/master/LICENSE
 etcd-io/bbolt,https://github.com/etcd-io/bbolt/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/etcd-io/bbolt/master/LICENSE
 etcd-io/etcd,https://github.com/etcd-io/etcd/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/etcd-io/etcd/master/LICENSE
 mongodb/mongo-go-driver,https://github.com/mongodb/mongo-go-driver/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/mongodb/mongo-go-driver/master/LICENSE
