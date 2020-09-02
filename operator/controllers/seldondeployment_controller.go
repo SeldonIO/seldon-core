@@ -1565,9 +1565,18 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 }
 
 func (r *SeldonDeploymentReconciler) updateStatusForError(desired *machinelearningv1.SeldonDeployment, err error, log logr.Logger) {
+
+	//Ignore conflict errors
+	switch se := err.(type) {
+	case *errors.StatusError:
+		if se.Status().Reason == metav1.StatusReasonConflict {
+			return
+		}
+	}
+
 	desired.Status.State = machinelearningv1.StatusStateFailed
 	desired.Status.Description = err.Error()
-
+	
 	existing := &machinelearningv1.SeldonDeployment{}
 	namespacedName := types.NamespacedName{Name: desired.Name, Namespace: desired.Namespace}
 	if err := r.Get(context.TODO(), namespacedName, existing); err != nil {
