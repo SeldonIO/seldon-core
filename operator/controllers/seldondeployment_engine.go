@@ -134,6 +134,19 @@ func getExecutorHttpPort() (engine_http_port int, err error) {
 	return engine_http_port, nil
 }
 
+func getExecutorGrpcPort() (engine_grpc_port int, err error) {
+	// Get engine grpc port from environment or use default
+	engine_grpc_port = DEFAULT_EXECUTOR_GRPC_PORT
+	var env_engine_grpc_port = GetEnv(ENV_DEFAULT_EXECUTOR_SERVER_GRPC_PORT, "")
+	if env_engine_grpc_port != "" {
+		engine_grpc_port, err = strconv.Atoi(env_engine_grpc_port)
+		if err != nil {
+			return 0, err
+		}
+	}
+	return engine_grpc_port, nil
+}
+
 func isExecutorEnabled(mlDep *machinelearningv1.SeldonDeployment) bool {
 	// useExecutor flag comes from annotation and takes the priority (default: not set)
 	useExecutor := getAnnotation(mlDep, machinelearningv1.ANNOTATION_EXECUTOR, "")
@@ -363,7 +376,11 @@ func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machine
 		if err != nil {
 			return nil, err
 		}
-		c, err = createExecutorContainer(mlDep, p, predictorB64, executor_http_port, engineResources)
+		executor_grpc_port, err := getExecutorGrpcPort()
+		if err != nil {
+			return nil, err
+		}
+		c, err = createExecutorContainer(mlDep, p, predictorB64, executor_http_port, executor_grpc_port, engineResources)
 		if err != nil {
 			return nil, err
 		}
