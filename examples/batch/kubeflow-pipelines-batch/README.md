@@ -1,4 +1,4 @@
-## Batch processing with Kubeflow Pipelines
+# Batch processing with Kubeflow Pipelines
 In this notebook we will dive into how you can run batch processing with Kubeflow Pipelines and Seldon Core.
 
 Dependencies:
@@ -7,7 +7,7 @@ Dependencies:
 
 ![](assets/kubeflow-pipeline.jpg)
 
-## Kubeflow Pipelines Setup
+### Kubeflow Pipelines Setup
 
 Setup the pipeline in your current cluster:
 
@@ -27,13 +27,13 @@ We also install the Python Library so we can create our pipeline:
 pip install kfp==0.5.1
 ```
 
-## Add Batch Data
+### Add Batch Data
 
 In order to run our batch job we will need to create some batch data that can be used to process.
 
 This batch dataset will be pushed to a minio instance so it can be downloaded from Minio (which we need to install first)
 
-### Install Minio
+#### Install Minio
 
 
 ```bash
@@ -44,21 +44,21 @@ helm install minio stable/minio \
     --set image.tag=RELEASE.2020-04-15T19-42-18Z
 ```
 
-### Forward the Minio port so you can access it
+#### Forward the Minio port so you can access it
 
 You can do this by runnning the following command in your terminal:
 ```
 kubectl port-forward svc/minio 9000:9000
     ```
     
-### Configure local minio client
+#### Configure local minio client
 
 
 ```python
 !mc config host add minio-local http://localhost:9000 minioadmin minioadmin
 ```
 
-### Create some input for our model
+#### Create some input for our model
 
 We will create a file that will contain the inputs that will be sent to our model
 
@@ -90,7 +90,7 @@ Check the contents of the file
     [[1, 2, 3, 4]]
 
 
-### Upload the file to our minio
+#### Upload the file to our minio
 
 
 ```python
@@ -98,7 +98,7 @@ Check the contents of the file
 !mc cp assets/input-data.txt minio-local/data/
 ```
 
-## Create Kubeflow Pipeline
+### Create Kubeflow Pipeline
 
 We are now able to create a kubeflow pipeline that will allow us to enter the batch parameters through the UI.
 
@@ -188,8 +188,7 @@ spec:
 
     batch_process_step = dsl.ContainerOp(
         name='data_downloader',
-        image='seldonio/seldon-core-s2i-python37:1.1.1-rc',
-        command="seldon-batch-processor",
+        image='seldonio/seldon-core-s2i-python37:1.2.3-dev',        command="seldon-batch-processor",
         arguments=[
             "--deployment-name", "{{workflow.name}}",
             "--namespace", namespace,
@@ -232,7 +231,7 @@ if __name__ == '__main__':
     Overwriting assets/seldon-batch-pipeline.py
 
 
-## Trigger the creation 
+### Trigger the creation 
 We will run the python file which triggers the creation of the pipeline that we can the upload on the UI:
 
 
@@ -260,7 +259,7 @@ Check the pipeline has been created:
     seldon-batch-pipeline.py
 
 
-## Open the Kubeflow Pipelines UI
+### Open the Kubeflow Pipelines UI
 
 We can now open the UI by port forwarding the UI with the following command:
     
