@@ -191,7 +191,7 @@ func getSvcOrchUser(mlDep *machinelearningv1.SeldonDeployment) (*int64, error) {
 	return nil, nil
 }
 
-func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, predictorB64 string, port int, resources *corev1.ResourceRequirements) (*corev1.Container, error) {
+func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, predictorB64 string, http_port int, grpc_port int, resources *corev1.ResourceRequirements) (*corev1.Container, error) {
 	transport := mlDep.Spec.Transport
 	//Backwards compatible with older resources
 	if transport == "" {
@@ -228,7 +228,8 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 			"--sdep", mlDep.Name,
 			"--namespace", mlDep.Namespace,
 			"--predictor", p.Name,
-			"--port", strconv.Itoa(port),
+			"--http_port", strconv.Itoa(http_port),
+			"--grpc_port", strconv.Itoa(grpc_port),
 			"--transport", string(transport),
 			"--protocol", string(protocol),
 			"--prometheus_path", getPrometheusPath(mlDep),
@@ -248,16 +249,17 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 			{Name: "REQUEST_LOGGER_DEFAULT_ENDPOINT", Value: utils.GetEnv("EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT", "http://default-broker")},
 		},
 		Ports: []corev1.ContainerPort{
-			{ContainerPort: int32(port), Protocol: corev1.ProtocolTCP},
-			{ContainerPort: int32(port), Protocol: corev1.ProtocolTCP, Name: executorMetricsPortName},
+			{ContainerPort: int32(http_port), Protocol: corev1.ProtocolTCP, Name: constants.HttpPortName},
+			{ContainerPort: int32(http_port), Protocol: corev1.ProtocolTCP, Name: executorMetricsPortName},
+			{ContainerPort: int32(grpc_port), Protocol: corev1.ProtocolTCP, Name: constants.GrpcPortName},
 		},
-		ReadinessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(port), Path: "/ready", Scheme: corev1.URISchemeHTTP}},
+		ReadinessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(http_port), Path: "/ready", Scheme: corev1.URISchemeHTTP}},
 			InitialDelaySeconds: 20,
 			PeriodSeconds:       5,
 			FailureThreshold:    3,
 			SuccessThreshold:    1,
 			TimeoutSeconds:      60},
-		LivenessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(port), Path: "/live", Scheme: corev1.URISchemeHTTP}},
+		LivenessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(http_port), Path: "/live", Scheme: corev1.URISchemeHTTP}},
 			InitialDelaySeconds: 20,
 			PeriodSeconds:       5,
 			FailureThreshold:    3,
