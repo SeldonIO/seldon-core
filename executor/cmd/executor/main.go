@@ -250,7 +250,7 @@ func main() {
 			logger.Info("Hostname unset will use localhost")
 			*hostname = "localhost"
 		} else {
-			logger.Info("Hostname provided on command line", "hostname", *hostname)
+			logger.Info("Hostname found from env", "hostname", *hostname)
 		}
 	}
 
