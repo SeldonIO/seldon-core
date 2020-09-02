@@ -268,6 +268,51 @@ def parse_args(sys_args):
         dest="explainer.internal_batch_size",
         default=argparse.SUPPRESS,
     )
+
+    # TreeShap Arguments
+    parser_tree_shap = subparsers.add_parser(str(ExplainerMethod.tree_shap))
+    addCommonParserArgs(parser_tree_shap)
+
+    parser_tree_shap.add_argument(
+        "--interactions",
+        type=str2bool,
+        action=GroupedAction,
+        dest="explainer.interactions",
+        default=argparse.SUPPRESS,
+    )
+
+    parser_tree_shap.add_argument(
+        "--approximate",
+        type=str2bool,
+        action=GroupedAction,
+        dest="explainer.approximate",
+        default=argparse.SUPPRESS,
+    )
+
+    parser_tree_shap.add_argument(
+        "--check_additivity",
+        type=str2bool,
+        action=GroupedAction,
+        dest="explainer.check_additivity",
+        default=argparse.SUPPRESS,
+    )
+
+    parser_tree_shap.add_argument(
+        "--tree_limit",
+        type=int,
+        action=GroupedAction,
+        dest="explainer.tree_limit",
+        default=argparse.SUPPRESS,
+    )
+
+    parser_tree_shap.add_argument(
+        "--summarise_result",
+        type=str2bool,
+        action=GroupedAction,
+        dest="explainer.summarise_result",
+        default=argparse.SUPPRESS,
+    )
+
     args, _ = parser.parse_known_args(sys_args)
 
     argdDict = vars(args).copy()
