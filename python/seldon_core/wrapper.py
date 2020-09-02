@@ -16,12 +16,15 @@ from seldon_core.flask_utils import (
 )
 from seldon_core.proto import prediction_pb2_grpc
 from seldon_core.proto import prediction_pb2
+from seldon_core.utils import getenv_as_bool
 import os
 
 logger = logging.getLogger(__name__)
 
 PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID", "0")
-METRICS_ENDPOINT = os.environ.get("PREDICTIVE_UNIT_METRICS_ENDPOINT", "/metrics")
+METRICS_ENDPOINT = os.environ.get(
+    "PREDICTIVE_UNIT_METRICS_ENDPOINT", "/metrics"
+)
 
 
 def get_rest_microservice(user_model, seldon_metrics):
@@ -129,7 +132,9 @@ def get_rest_microservice(user_model, seldon_metrics):
     @app.route("/health/status", methods=["GET"])
     def HealthStatus():
         logger.debug("REST Health Status Request")
-        response = seldon_core.seldon_methods.health_status(user_model, seldon_metrics)
+        response = seldon_core.seldon_methods.health_status(
+            user_model, seldon_metrics
+        )
         logger.debug("REST Health Status Response: %s", response)
         return jsonify(response)
 
@@ -174,7 +179,7 @@ def _set_flask_app_configs(app):
     :return:
     """
     FLASK_CONFIG_IDENTIFIER = "FLASK_"
-    FLASK_CONFIGS_BOOL = [
+    FLASK_CONFIGS_ALLOWED = [
         "DEBUG",
         "EXPLAIN_TEMPLATE_LOADING",
         "JSONIFY_PRETTYPRINT_REGULAR",
@@ -191,17 +196,13 @@ def _set_flask_app_configs(app):
         "USE_X_SENDFILE",
     ]
 
-    for env_var, value in os.environ.items():
-        if not env_var.startswith(FLASK_CONFIG_IDENTIFIER):
+    for flask_config in FLASK_CONFIGS_ALLOWED:
+        flask_config_value = getenv_as_bool(
+            f"{FLASK_CONFIG_IDENTIFIER}{flask_config}", default=None
+        )
+        if flask_config_value is None:
             continue
-        flask_config = env_var.replace(FLASK_CONFIG_IDENTIFIER, "")
-        if flask_config not in FLASK_CONFIGS_BOOL:
-            logger.warning(
-                f"The Flask Configuration Parameter, {flask_config}, is not configured for use with Seldon"
-            )
-            continue
-        # Environment variables come as strings, convert them to boolean
-        app.config[flask_config] = value.lower() == "true"
+        app.config[flask_config] = flask_config_value
     logger.info(f"App Config:  {app.config}")
 
 
@@ -215,7 +216,9 @@ class SeldonModelGRPC(object):
         self.user_model = user_model
         self.seldon_metrics = seldon_metrics
 
-        self.metadata_data = seldon_core.seldon_methods.init_metadata(user_model)
+        self.metadata_data = seldon_core.seldon_methods.init_metadata(
+            user_model
+        )
 
     def Predict(self, request_grpc, context):
         return seldon_core.seldon_methods.predict(
@@ -257,20 +260,28 @@ class SeldonModelGRPC(object):
 
     def GraphMetadata(self, request_grpc, context):
         """GraphMetadata method of rpc Seldon service"""
-        raise NotImplementedError("GraphMetadata not available on the Model level.")
+        raise NotImplementedError(
+            "GraphMetadata not available on the Model level."
+        )
 
 
-def get_grpc_server(user_model, seldon_metrics, annotations={}, trace_interceptor=None):
+def get_grpc_server(
+    user_model, seldon_metrics, annotations={}, trace_interceptor=None
+):
     seldon_model = SeldonModelGRPC(user_model, seldon_metrics)
     options = []
     if ANNOTATION_GRPC_MAX_MSG_SIZE in annotations:
         max_msg = int(annotations[ANNOTATION_GRPC_MAX_MSG_SIZE])
-        logger.info("Setting grpc max message and receive length to %d", max_msg)
+        logger.info(
+            "Setting grpc max message and receive length to %d", max_msg
+        )
         options.append(("grpc.max_message_length", max_msg))
         options.append(("grpc.max_send_message_length", max_msg))
         options.append(("grpc.max_receive_message_length", max_msg))
 
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options=options)
+    server = grpc.server(
+        futures.ThreadPoolExecutor(max_workers=10), options=options
+    )
 
     if trace_interceptor:
         from grpc_opentracing.grpcext import intercept_server
@@ -280,7 +291,9 @@ def get_grpc_server(user_model, seldon_metrics, annotations={}, trace_intercepto
     prediction_pb2_grpc.add_GenericServicer_to_server(seldon_model, server)
     prediction_pb2_grpc.add_ModelServicer_to_server(seldon_model, server)
     prediction_pb2_grpc.add_TransformerServicer_to_server(seldon_model, server)
-    prediction_pb2_grpc.add_OutputTransformerServicer_to_server(seldon_model, server)
+    prediction_pb2_grpc.add_OutputTransformerServicer_to_server(
+        seldon_model, server
+    )
     prediction_pb2_grpc.add_CombinerServicer_to_server(seldon_model, server)
     prediction_pb2_grpc.add_RouterServicer_to_server(seldon_model, server)
     prediction_pb2_grpc.add_SeldonServicer_to_server(seldon_model, server)
