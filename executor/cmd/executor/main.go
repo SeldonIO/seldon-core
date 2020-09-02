@@ -9,21 +9,22 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
-	"io/ioutil"
 	"net"
 	"net/url"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
-	"github.com/ghodss/yaml"
-	"github.com/ghodss/yaml"
+	"net"
+	"net/url"
+	"os"
+	"os/signal"
+	"strconv"
+
 	"github.com/go-logr/logr"
 	"github.com/seldonio/seldon-core/executor/api"
 	seldonclient "github.com/seldonio/seldon-core/executor/api/client"
@@ -39,20 +40,10 @@ import (
 	loghandler "github.com/seldonio/seldon-core/executor/logger"
 	predictor2 "github.com/seldonio/seldon-core/executor/predictor"
 	"github.com/seldonio/seldon-core/executor/proto/tensorflow/serving"
-	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	"github.com/soheilhy/cmux"
+	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"go.uber.org/zap"
 	zapf "sigs.k8s.io/controller-runtime/pkg/log/zap"
-	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	"github.com/soheilhy/cmux"
-	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	"io/ioutil"
-	"net"
-	"net/url"
-	"os"
-	"os/signal"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
-	"strconv"
 )
 
 const (
@@ -62,11 +53,9 @@ const (
 )
 
 var (
-
-	serverType     = flag.String("server_type", "rpc", "Server type: rpc or kafka")
+	serverType = flag.String("server_type", "rpc", "Server type: rpc or kafka")
 
 	debugDefault = false
-
 
 	configPath     = flag.String("config", "", "Path to kubconfig")
 	sdepName       = flag.String("sdep", "", "Seldon deployment name")
@@ -76,12 +65,7 @@ var (
 	grpcPort       = flag.Int("grpc_port", 8000, "Executor port")
 	wait           = flag.Duration("graceful_timeout", time.Second*15, "Graceful shutdown secs")
 	protocol       = flag.String("protocol", "seldon", "The payload protocol")
-<<<<<<< HEAD:executor/cmd/executor/main.go
 	transport      = flag.String("transport", "rest", "The network transport mechanism rest, grpc")
-||||||| ad5b6a512... Add executor changes for HTTP/gRPC multiplexing (#1772)
-=======
-	transport      = flag.String("transport", "rest", "The network transport http or grpc")
->>>>>>> parent of ad5b6a512... Add executor changes for HTTP/gRPC multiplexing (#1772):executor/main.go
 	filename       = flag.String("file", "", "Load graph from file")
 	hostname       = flag.String("hostname", "", "The hostname of the running server")
 	logWorkers     = flag.Int("logger_workers", 5, "Number of workers handling payload logging")
@@ -256,6 +240,7 @@ func main() {
 				*kafkaWorkers = kafkaWorkersFromEnvInt
 			}
 		}
+	}
 
 	if !(*transport == "rest" || *transport == "grpc") {
 		log.Fatal("Only rest and grpc supported")
@@ -275,8 +260,9 @@ func main() {
 		if *hostname == "" {
 			logger.Info("Hostname unset will use localhost")
 			*hostname = "localhost"
-	} else {
-		logger.Info("Hostname provided on command line", "hostname", *hostname)
+		} else {
+			logger.Info("Hostname provided on command line", "hostname", *hostname)
+		}
 	}
 	serverUrl, err := getServerUrl(*hostname, *port)
 	if err != nil {
@@ -330,21 +316,19 @@ func main() {
 		}
 		runGrpcServer(logger, predictor, clientGrpc, *grpcPort, serverUrl, *namespace, *protocol, *sdepName, annotations)
 
-
-	if *serverType == "kafka" {
-		logger.Info("Starting kafka server")
-		kafkaServer, err := kafka.NewKafkaServer(*kafkaFullGraph, *kafkaWorkers, *sdepName, *namespace, *protocol, *transport, annotations, serverUrl, predictor, *kafkaBroker, *kafkaTopicIn, *kafkaTopicOut, logger)
-		if err != nil {
-			log.Fatalf("Failed to create kafka server: %v", err)
-		}
-		go func() {
-			err = kafkaServer.Serve()
+		if *serverType == "kafka" {
+			logger.Info("Starting kafka server")
+			kafkaServer, err := kafka.NewKafkaServer(*kafkaFullGraph, *kafkaWorkers, *sdepName, *namespace, *protocol, *transport, annotations, serverUrl, predictor, *kafkaBroker, *kafkaTopicIn, *kafkaTopicOut, logger)
 			if err != nil {
-				log.Fatal("Failed to serve kafka", err)
+				log.Fatalf("Failed to create kafka server: %v", err)
 			}
-		}()
-	}
+			go func() {
+				err = kafkaServer.Serve()
+				if err != nil {
+					log.Fatal("Failed to serve kafka", err)
+				}
+			}()
+		}
 
 	}
-
 }
