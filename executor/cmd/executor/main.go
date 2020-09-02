@@ -12,17 +12,6 @@ import (
 	"syscall"
 	"time"
 
-	"net"
-	"net/url"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
-
-	"net"
-	"net/url"
-	"os"
-	"os/signal"
 	"strconv"
 
 	"github.com/go-logr/logr"
@@ -263,10 +252,6 @@ func main() {
 		} else {
 			logger.Info("Hostname provided on command line", "hostname", *hostname)
 		}
-	}
-	serverUrl, err := getServerUrl(*hostname, *port)
-	if err != nil {
-		log.Fatal("Failed to create server url from", *hostname, *port)
 	}
 
 	predictor, err := predictor2.GetPredictor(*predictorName, *filename, *sdepName, *namespace, configPath)
