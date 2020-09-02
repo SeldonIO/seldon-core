@@ -282,6 +282,20 @@ func main() {
 	}
 	defer closer.Close()
 
+	if *serverType == "kafka" {
+		logger.Info("Starting kafka server")
+		kafkaServer, err := kafka.NewKafkaServer(*kafkaFullGraph, *kafkaWorkers, *sdepName, *namespace, *protocol, *transport, annotations, serverUrl, predictor, *kafkaBroker, *kafkaTopicIn, *kafkaTopicOut, logger)
+		if err != nil {
+			log.Fatalf("Failed to create kafka server: %v", err)
+		}
+		go func() {
+			err = kafkaServer.Serve()
+			if err != nil {
+				log.Fatal("Failed to serve kafka", err)
+			}
+		}()
+	}
+
 	if *transport == "rest" {
 		clientRest, err := rest.NewJSONRestClient(*protocol, *sdepName, predictor, annotations)
 		if err != nil {
@@ -300,20 +314,6 @@ func main() {
 			clientGrpc = tensorflow.NewTensorflowGrpcClient(predictor, *sdepName, annotations)
 		}
 		runGrpcServer(logger, predictor, clientGrpc, *grpcPort, serverUrl, *namespace, *protocol, *sdepName, annotations)
-
-		if *serverType == "kafka" {
-			logger.Info("Starting kafka server")
-			kafkaServer, err := kafka.NewKafkaServer(*kafkaFullGraph, *kafkaWorkers, *sdepName, *namespace, *protocol, *transport, annotations, serverUrl, predictor, *kafkaBroker, *kafkaTopicIn, *kafkaTopicOut, logger)
-			if err != nil {
-				log.Fatalf("Failed to create kafka server: %v", err)
-			}
-			go func() {
-				err = kafkaServer.Serve()
-				if err != nil {
-					log.Fatal("Failed to serve kafka", err)
-				}
-			}()
-		}
 
 	}
 }
