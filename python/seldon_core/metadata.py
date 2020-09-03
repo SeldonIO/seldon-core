@@ -176,6 +176,7 @@ def validate_model_metadata(data: Dict) -> Dict:
         "platform": "",
         "inputs": [],
         "outputs": [],
+        "tags": {},
     }
 
     data = {**default_meta, **data}
