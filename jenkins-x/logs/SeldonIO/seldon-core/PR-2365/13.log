@@ -1,0 +1,40 @@
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-23-7xwkr-13[0m stage [32mmeta-pipeline[0m and container [32mstep-credential-initializer-jtczr[0m
+{"level":"info","ts":1599122474.5741854,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1599122474.5747356,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-23-7xwkr-13[0m stage [32mmeta-pipeline[0m and container [32mstep-working-dir-initializer-scbbj[0m
+{"level":"info","ts":1599122475.9971855,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1599122475.9991176,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-23-7xwkr-13[0m stage [32mmeta-pipeline[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-23-7xwkr-13[0m stage [32mmeta-pipeline[0m and container [32mstep-git-source-meta-seldonio-seldon-core-pr-23-7xwkr-lcvrm[0m
+{"level":"info","ts":1599122481.4866579,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1599122486.4820924,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ 47e54e0f80f1b97d7bd8ba1cb06bf8f98fcdf4b1 in path /workspace/source"}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-23-7xwkr-13[0m stage [32mmeta-pipeline[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-23-7xwkr-13[0m stage [32mmeta-pipeline[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:47e54e0f80f1b97d7bd8ba1cb06bf8f98fcdf4b1,2365:ef174a005c4c56782d3fb76096154f6592246478
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch origin --unshallow ef174a005c4c56782d3fb76096154f6592246478: 47e54e0f80f1b97d7bd8ba1cb06bf8f98fcdf4b1:
+DEBUG: ran git fetch --unshallow origin ef174a005c4c56782d3fb76096154f6592246478: 47e54e0f80f1b97d7bd8ba1cb06bf8f98fcdf4b1: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard 47e54e0f80f1b97d7bd8ba1cb06bf8f98fcdf4b1
+DEBUG: ran git reset --hard 47e54e0f80f1b97d7bd8ba1cb06bf8f98fcdf4b1 in 
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git merge ef174a005c4c56782d3fb76096154f6592246478
+error: error during merge: merging ef174a005c4c56782d3fb76096154f6592246478 into master: git output: Auto-merging operator/controllers/seldondeployment_engine.go
+CONFLICT (content): Merge conflict in operator/controllers/seldondeployment_engine.go
+Auto-merging executor/cmd/executor/main.go
+CONFLICT (content): Merge conflict in executor/cmd/executor/main.go
+Automatic merge failed; fix conflicts and then commit the result.: failed to run 'git merge ef174a005c4c56782d3fb76096154f6592246478' command in directory '', output: 'Auto-merging operator/controllers/seldondeployment_engine.go
+CONFLICT (content): Merge conflict in operator/controllers/seldondeployment_engine.go
+Auto-merging executor/cmd/executor/main.go
+CONFLICT (content): Merge conflict in executor/cmd/executor/main.go
+Automatic merge failed; fix conflicts and then commit the result.'
+[31m
+Pipeline failed on stage 'meta-pipeline' : container 'step-git-merge'. The execution of the pipeline has stopped.[0m
