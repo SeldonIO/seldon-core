@@ -42,7 +42,7 @@ Documentation Index
    :caption: Seldon Core Deep Dive
 
    Detailed Installation Parameters <reference/helm.rst>
-   Pre-packaged Inreference Servers <servers/overview.md>
+   Pre-packaged Inference Servers <servers/overview.md>
    Language Wrappers for Custom Models <wrappers/language_wrappers.md>
    Create your Inference Graph <graph/inference-graph.md>
    Deploy your Model  <workflow/deploying.md>
