@@ -33,15 +33,17 @@ import (
 )
 
 const (
-	ENV_DEFAULT_EXECUTOR_SERVER_PORT = "EXECUTOR_SERVER_PORT"
-	ENV_EXECUTOR_METRICS_PORT_NAME   = "EXECUTOR_SERVER_METRICS_PORT_NAME"
-	ENV_EXECUTOR_PROMETHEUS_PATH     = "EXECUTOR_PROMETHEUS_PATH"
-	ENV_ENGINE_PROMETHEUS_PATH       = "ENGINE_PROMETHEUS_PATH"
-	ENV_EXECUTOR_USER                = "EXECUTOR_CONTAINER_USER"
-	ENV_ENGINE_USER                  = "ENGINE_CONTAINER_USER"
-	ENV_USE_EXECUTOR                 = "USE_EXECUTOR"
+	ENV_DEFAULT_EXECUTOR_SERVER_PORT      = "EXECUTOR_SERVER_PORT"
+	ENV_DEFAULT_EXECUTOR_SERVER_GRPC_PORT = "EXECUTOR_SERVER_GRPC_PORT"
+	ENV_EXECUTOR_METRICS_PORT_NAME        = "EXECUTOR_SERVER_METRICS_PORT_NAME"
+	ENV_EXECUTOR_PROMETHEUS_PATH          = "EXECUTOR_PROMETHEUS_PATH"
+	ENV_ENGINE_PROMETHEUS_PATH            = "ENGINE_PROMETHEUS_PATH"
+	ENV_EXECUTOR_USER                     = "EXECUTOR_CONTAINER_USER"
+	ENV_ENGINE_USER                       = "ENGINE_CONTAINER_USER"
+	ENV_USE_EXECUTOR                      = "USE_EXECUTOR"
 
 	DEFAULT_EXECUTOR_CONTAINER_PORT = 8000
+	DEFAULT_EXECUTOR_GRPC_PORT      = 5001
 
 	ENV_EXECUTOR_IMAGE         = "EXECUTOR_CONTAINER_IMAGE_AND_VERSION"
 	ENV_EXECUTOR_IMAGE_RELATED = "RELATED_IMAGE_EXECUTOR" //RedHat specific
@@ -137,7 +139,7 @@ func getExecutorHttpPort() (engine_http_port int, err error) {
 func getExecutorGrpcPort() (engine_grpc_port int, err error) {
 	// Get engine grpc port from environment or use default
 	engine_grpc_port = DEFAULT_EXECUTOR_GRPC_PORT
-	var env_engine_grpc_port = GetEnv(ENV_DEFAULT_EXECUTOR_SERVER_GRPC_PORT, "")
+	var env_engine_grpc_port = utils.GetEnv(ENV_DEFAULT_EXECUTOR_SERVER_GRPC_PORT, "")
 	if env_engine_grpc_port != "" {
 		engine_grpc_port, err = strconv.Atoi(env_engine_grpc_port)
 		if err != nil {
