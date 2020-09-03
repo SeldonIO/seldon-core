@@ -137,6 +137,7 @@ JSON_SCHEMA = {
         "platform": {"type": "string"},
         "inputs": INPUTS_OUTPUTS_SCHEMA,
         "outputs": INPUTS_OUTPUTS_SCHEMA,
+        "tags": {"type": "object", "additionalProperties": {"type": "string"}},
     },
     "additionalProperties": False,
 }
