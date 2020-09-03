@@ -213,6 +213,10 @@ type SeldonDeploymentSpec struct {
 	ServerType  ServerType        `json:"serverType,omitempty" protobuf:"bytes,8,opt,name=serverType"`
 }
 
+type SSL struct {
+	CertSecretName string `json:"certSecretName,omitempty" protobuf:"string,2,opt,name=certSecretName"`
+}
+
 type PredictorSpec struct {
 	Name            string                  `json:"name" protobuf:"string,1,opt,name=name"`
 	Graph           PredictiveUnit          `json:"graph" protobuf:"bytes,2,opt,name=predictiveUnit"`
@@ -225,6 +229,7 @@ type PredictorSpec struct {
 	Traffic         int32                   `json:"traffic,omitempty" protobuf:"bytes,9,opt,name=traffic"`
 	Explainer       *Explainer              `json:"explainer,omitempty" protobuf:"bytes,10,opt,name=explainer"`
 	Shadow          bool                    `json:"shadow,omitempty" protobuf:"bytes,11,opt,name=shadow"`
+	SSL             *SSL                    `json:"ssl,omitempty" protobuf:"bytes,11,opt,name=ssl"`
 }
 
 type Protocol string

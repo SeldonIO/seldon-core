@@ -60,11 +60,21 @@ const (
 	ENV_DEFAULT_ENGINE_SERVER_GRPC_PORT = "ENGINE_SERVER_GRPC_PORT"
 	ENV_CONTROLLER_ID                   = "CONTROLLER_ID"
 
+	// This env var in the operator allows you to change the default path
+	// 		to mount the cert in the containers
+	ENV_DEFAULT_CERT_MOUNT_PATH_NAME = "DEFAULT_CERT_MOUNT_PATH_NAME"
+	// The ENV VAR NAME for containers to be able to find the path
+	SELDON_MOUNT_PATH_ENV_NAME = "SELDON_CERT_MOUNT_PATH"
+
 	DEFAULT_ENGINE_CONTAINER_PORT = 8000
 	DEFAULT_ENGINE_GRPC_PORT      = 5001
 
 	AMBASSADOR_ANNOTATION = "getambassador.io/config"
 	LABEL_CONTROLLER_ID   = "seldon.io/controller-id"
+)
+
+var (
+	envDefaultCertMountPath = utils.GetEnv(ENV_DEFAULT_CERT_MOUNT_PATH_NAME, "/cert/")
 )
 
 // SeldonDeploymentReconciler reconciles a SeldonDeployment object
@@ -404,6 +414,13 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 		noEngine := strings.ToLower(p.Annotations[machinelearningv1.ANNOTATION_NO_ENGINE]) == "true"
 		pSvcName := machinelearningv1.GetPredictorKey(mlDep, &p)
 		log.Info("pSvcName", "val", pSvcName)
+
+		// SSL config is used to set ssl on each container
+		certSecretRefName := ""
+		predictorCertConfig := p.SSL
+		if predictorCertConfig != nil {
+			certSecretRefName = predictorCertConfig.CertSecretName
+		}
 		// Add engine deployment if separate
 		hasSeparateEnginePod := strings.ToLower(mlDep.Spec.Annotations[machinelearningv1.ANNOTATION_SEPARATE_ENGINE]) == "true"
 		if hasSeparateEnginePod && !noEngine {
@@ -413,6 +430,13 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 			}
 			if securityContext != nil {
 				deploy.Spec.Template.Spec.SecurityContext = securityContext
+			}
+
+			// Add secret ref name to the container of the separate svcorch if created
+			if len(certSecretRefName) > 0 {
+				utils.MountSecretToDeploymentContainers(deploy, certSecretRefName, envDefaultCertMountPath)
+				certEnvVar := &corev1.EnvVar{Name: SELDON_MOUNT_PATH_ENV_NAME, Value: envDefaultCertMountPath}
+				utils.AddEnvVarToDeploymentContainers(deploy, certEnvVar)
 			}
 			c.deployments = append(c.deployments, deploy)
 		}
@@ -552,6 +576,21 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 					return nil, err
 				}
 
+			}
+
+			// Find the current deployment and add the environment variables for the certificate
+			if len(certSecretRefName) > 0 {
+				sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(&p, p.Graph.Name)
+				currentDeployName := machinelearningv1.GetDeploymentName(mlDep, p, sPodSpec, idx)
+				for i := 0; i < len(c.deployments); i++ {
+					d := c.deployments[i]
+					if strings.Compare(d.Name, currentDeployName) == 0 {
+						utils.MountSecretToDeploymentContainers(d, certSecretRefName, envDefaultCertMountPath)
+						certEnvVar := &corev1.EnvVar{Name: SELDON_MOUNT_PATH_ENV_NAME, Value: envDefaultCertMountPath}
+						utils.AddEnvVarToDeploymentContainers(d, certEnvVar)
+						break
+					}
+				}
 			}
 
 			//Create Service for Predictor - exposed externally (ambassador or istio) and points at engine
