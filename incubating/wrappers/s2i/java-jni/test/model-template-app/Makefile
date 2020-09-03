@@ -11,6 +11,12 @@ build:
 		--runtime-image seldonio/java-jni-server-runtime:0.3.0 \
 		${IMAGE}
 
+run:
+	docker run \
+		--rm -it \
+		-p 5000:5000 \
+		${IMAGE}
+
 clean:
 	mvn clean
 
