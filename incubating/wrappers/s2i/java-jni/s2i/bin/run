@@ -21,9 +21,13 @@ JAVA_JAR_PATH=${JAVA_JAR_PATH:-"/microservice/model.jar"}
 cd /microservice
 
 echo "Starting microservice"
-exec seldon-core-microservice \
-  $MODEL_NAME \
-  $API_TYPE \
-  --service-type $SERVICE_TYPE \
-  --persistence $PERSISTENCE
+exec \
+  env PAYLOAD_PASSTHROUGH="$PAYLOAD_PASSTHROUGH" \
+  env JAVA_JAR_PATH="$JAVA_JAR_PATH" \
+  env JAVA_IMPORT_PATH="$JAVA_IMPORT_PATH" \
+  seldon-core-microservice \
+    $MODEL_NAME \
+    $API_TYPE \
+    --service-type $SERVICE_TYPE \
+    --persistence $PERSISTENCE
 
