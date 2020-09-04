@@ -1,5 +1,5 @@
 {{- if .Values.crd.create }}
-{{- if semverCompare "<1.18.0" .Capabilities.KubeVersion.GitVersion }}
+{{- if or (lt (int (regexFind "[0-9]+" .Capabilities.KubeVersion.Minor)) 18) (.Values.crd.forcev1beta1) }}
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -4022,6 +4022,11 @@ spec:
                     type: integer
                   shadow:
                     type: boolean
+                  ssl:
+                    properties:
+                      certSecretName:
+                        type: string
+                    type: object
                   svcOrchSpec:
                     properties:
                       env:

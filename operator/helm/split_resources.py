@@ -26,8 +26,8 @@ HELM_KUBEFLOW_IF_START = "{{- if .Values.kubeflow }}\n"
 HELM_KUBEFLOW_IF_NOT_START = "{{- if not .Values.kubeflow }}\n"
 HELM_CREATERESOURCES_IF_START = "{{- if not .Values.managerCreateResources }}\n"
 HELM_CREATERESOURCES_RBAC_IF_START = "{{- if .Values.managerCreateResources }}\n"
-HELM_K8S_V1_CRD_IF_START = '{{- if semverCompare ">=1.18.0" .Capabilities.KubeVersion.GitVersion }}\n'
-HELM_K8S_V1BETA1_CRD_IF_START = '{{- if semverCompare "<1.18.0" .Capabilities.KubeVersion.GitVersion }}\n'
+HELM_K8S_V1_CRD_IF_START = '{{- if or (ge (int (regexFind "[0-9]+" .Capabilities.KubeVersion.Minor)) 18) (.Values.crd.forcev1) }}\n'
+HELM_K8S_V1BETA1_CRD_IF_START = '{{- if or (lt (int (regexFind "[0-9]+" .Capabilities.KubeVersion.Minor)) 18) (.Values.crd.forcev1beta1) }}\n'
 HELM_IF_END = "{{- end }}\n"
 
 HELM_ENV_SUBST = {
