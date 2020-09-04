@@ -8159,6 +8159,11 @@ spec:
                       type: integer
                     shadow:
                       type: boolean
+                    ssl:
+                      properties:
+                        certSecretName:
+                          type: string
+                      type: object
                     svcOrchSpec:
                       properties:
                         env:
@@ -16522,6 +16527,11 @@ spec:
                       type: integer
                     shadow:
                       type: boolean
+                    ssl:
+                      properties:
+                        certSecretName:
+                          type: string
+                      type: object
                     svcOrchSpec:
                       properties:
                         env:
@@ -24885,6 +24895,11 @@ spec:
                       type: integer
                     shadow:
                       type: boolean
+                    ssl:
+                      properties:
+                        certSecretName:
+                          type: string
+                      type: object
                     svcOrchSpec:
                       properties:
                         env:
