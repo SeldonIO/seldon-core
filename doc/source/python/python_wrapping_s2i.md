@@ -139,20 +139,6 @@ Using s2i you can build directly from a git repo or from a local source folder. 
 s2i build <src-folder> seldonio/seldon-core-s2i-python3:1.2.3-dev <my-image-name>
 ```
 
-Additional Environment Flags:
-
-EXTRA_INDEX_URL
-
-For installing packages from  private/self-hosted PyPi registry
-
-PIP_TRUSTED_HOST
-
-For adding private/self-hosted unsecured PyPi registry by adding it to pip trusted-host
-
-```bash
-s2i build -e EXTRA_INDEX_URL=https://<pypi-user>:<pypi-auth>@mypypi.example.com/simple -e PIP_TRUSTED_HOST=mypypi.example.com <src-folder> seldonio/seldon-core-s2i-python3:1.2.3-dev <my-image-name>
-```
-
 Change to seldonio/seldon-core-s2i-python3 if using python 3.
 
 An example invocation using the test template model inside seldon-core:
@@ -212,7 +198,19 @@ The service type being created. Available options are:
 
 Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved periodically to redis and loaded from redis (if exists) or created fresh if not.
 
+### EXTRA_INDEX_URL
 
+For installing packages from private/self-hosted PyPi registry.
+
+#### NOTE: EXTRA_INDEX_URL is recommended to be passed as argument to `s2i` command rather than adding in `.s2i/environment` as a practice of avoiding checking in credentials in the code.
+
+### PIP_TRUSTED_HOST
+
+For adding private/self-hosted unsecured PyPi registry by adding it to pip trusted-host.
+
+```bash
+s2i build -e EXTRA_INDEX_URL=https://<pypi-user>:<pypi-auth>@mypypi.example.com/simple -e PIP_TRUSTED_HOST=mypypi.example.com <src-folder> seldonio/seldon-core-s2i-python3:1.2.3-dev <my-image-name>
+```
 ## Creating different service types
 
 ### MODEL
