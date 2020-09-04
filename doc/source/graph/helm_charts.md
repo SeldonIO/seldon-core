@@ -25,10 +25,13 @@ A set of charts to provide example templates for creating particular inference g
    seldon-abtest <../charts/seldon-abtest>
    seldon-mab <../charts/seldon-mab>
    seldon-od-model <../charts/seldon-od-model>
+   seldon-od-transformer <../charts/seldon-od-transformer>
 
 [A notebook with examples of using the above charts](https://github.com/SeldonIO/seldon-core/tree/master/notebooks/helm_examples.ipynb) is provided.
 
 ## Misc
 
- * [seldon-core-loadtesting](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core-loadtesting)
-   * Utility to load test
+.. toctree::
+   :maxdepth: 1
+
+   seldon-core-loadtesting <../charts/seldon-core-loadtesting>
