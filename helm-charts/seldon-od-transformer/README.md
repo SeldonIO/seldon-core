@@ -67,7 +67,7 @@ helm install $MY_MODEL_NAME seldonio/seldon-od-transformer --namespace $MODELS_N
 | outlierDetection.seq2seq.model_name | string | `"seq2seq"` |  |
 | outlierDetection.seq2seq.reservoir_size | int | `50000` |  |
 | outlierDetection.seq2seq.threshold | float | `0.003` |  |
-| outlierDetection.type | string | `"vae"` |  |
+| outlierDetection.type | string | `"vae"` | Type of outlier detector. Valid values are: `vae`, `mahalanobis`, `seq2seq` and `isolationforest`. |
 | outlierDetection.vae.image.name | string | `"seldonio/outlier-vae-tranformer:0.1"` |  |
 | outlierDetection.vae.load_path | string | `"./models/"` |  |
 | outlierDetection.vae.model_name | string | `"vae"` |  |
