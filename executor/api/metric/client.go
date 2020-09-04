@@ -43,7 +43,6 @@ func NewClientMetrics(spec *v1.PredictorSpec, deploymentName string, modelName s
 			}
 
 		}
-
 	}
 	container := v1.GetContainerForPredictiveUnit(spec, modelName)
 	imageName := ""

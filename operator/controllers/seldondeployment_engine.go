@@ -24,6 +24,7 @@ import (
 
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
+	"github.com/seldonio/seldon-core/operator/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -58,7 +59,7 @@ var (
 	envExecutorUser         = os.Getenv(ENV_EXECUTOR_USER)
 	envUseExecutor          = os.Getenv(ENV_USE_EXECUTOR)
 
-	executorMetricsPortName = GetEnv(ENV_EXECUTOR_METRICS_PORT_NAME, constants.DefaultMetricsPortName)
+	executorMetricsPortName = utils.GetEnv(ENV_EXECUTOR_METRICS_PORT_NAME, constants.DefaultMetricsPortName)
 )
 
 func addEngineToDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, engine_http_port int, engine_grpc_port int, pSvcName string, deploy *appsv1.Deployment) error {
@@ -104,7 +105,7 @@ func addEngineToDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machine
 
 	volFound := false
 	for _, vol := range deploy.Spec.Template.Spec.Volumes {
-		if vol.Name == machinelearningv1.PODINFO_VOLUME_NAME {
+		if vol.Name == machinelearningv1.PODINFO_VOLUME_NAME || vol.Name == machinelearningv1.OLD_PODINFO_VOLUME_NAME {
 			volFound = true
 		}
 	}
@@ -123,7 +124,7 @@ func addEngineToDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machine
 func getExecutorHttpPort() (engine_http_port int, err error) {
 	// Get engine http port from environment or use default
 	engine_http_port = DEFAULT_EXECUTOR_CONTAINER_PORT
-	var env_engine_http_port = GetEnv(ENV_DEFAULT_EXECUTOR_SERVER_PORT, "")
+	var env_engine_http_port = utils.GetEnv(ENV_DEFAULT_EXECUTOR_SERVER_PORT, "")
 	if env_engine_http_port != "" {
 		engine_http_port, err = strconv.Atoi(env_engine_http_port)
 		if err != nil {
@@ -142,9 +143,9 @@ func isExecutorEnabled(mlDep *machinelearningv1.SeldonDeployment) bool {
 func getPrometheusPath(mlDep *machinelearningv1.SeldonDeployment) string {
 	prometheusPath := "/prometheus"
 	if isExecutorEnabled(mlDep) {
-		prometheusPath = GetEnv(ENV_EXECUTOR_PROMETHEUS_PATH, prometheusPath)
+		prometheusPath = utils.GetEnv(ENV_EXECUTOR_PROMETHEUS_PATH, prometheusPath)
 	} else {
-		prometheusPath = GetEnv(ENV_ENGINE_PROMETHEUS_PATH, prometheusPath)
+		prometheusPath = utils.GetEnv(ENV_ENGINE_PROMETHEUS_PATH, prometheusPath)
 	}
 	return prometheusPath
 }
@@ -191,10 +192,25 @@ func getSvcOrchUser(mlDep *machinelearningv1.SeldonDeployment) (*int64, error) {
 }
 
 func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, predictorB64 string, port int, resources *corev1.ResourceRequirements) (*corev1.Container, error) {
+	transport := mlDep.Spec.Transport
+	//Backwards compatible with older resources
+	if transport == "" {
+		if p.Graph.Endpoint.Type == machinelearningv1.GRPC {
+			transport = machinelearningv1.TransportGrpc
+		} else {
+			transport = machinelearningv1.TransportRest
+		}
+	}
+
 	protocol := mlDep.Spec.Protocol
 	//Backwards compatibility for older resources
 	if protocol == "" {
 		protocol = machinelearningv1.ProtocolSeldon
+	}
+
+	serverType := mlDep.Spec.ServerType
+	if serverType == "" {
+		serverType = machinelearningv1.ServerRPC
 	}
 
 	// Get executor image from env vars in order of priority
@@ -205,6 +221,11 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 		}
 	}
 
+	probeScheme := corev1.URISchemeHTTP
+	if !utils.IsEmptyTLS(p) {
+		probeScheme = corev1.URISchemeHTTPS
+	}
+
 	return &corev1.Container{
 		Name:  EngineContainerName,
 		Image: executorImage,
@@ -213,10 +234,12 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 			"--namespace", mlDep.Namespace,
 			"--predictor", p.Name,
 			"--port", strconv.Itoa(port),
+			"--transport", string(transport),
 			"--protocol", string(protocol),
 			"--prometheus_path", getPrometheusPath(mlDep),
+			"--server_type", string(serverType),
 		},
-		ImagePullPolicy:          corev1.PullPolicy(GetEnv("EXECUTOR_CONTAINER_IMAGE_PULL_POLICY", "IfNotPresent")),
+		ImagePullPolicy:          corev1.PullPolicy(utils.GetEnv("EXECUTOR_CONTAINER_IMAGE_PULL_POLICY", "IfNotPresent")),
 		TerminationMessagePath:   "/dev/termination-log",
 		TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 		VolumeMounts: []corev1.VolumeMount{
@@ -227,19 +250,19 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 		},
 		Env: []corev1.EnvVar{
 			{Name: "ENGINE_PREDICTOR", Value: predictorB64},
-			{Name: "REQUEST_LOGGER_DEFAULT_ENDPOINT", Value: GetEnv("EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT", "http://default-broker")},
+			{Name: "REQUEST_LOGGER_DEFAULT_ENDPOINT", Value: utils.GetEnv("EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT", "http://default-broker")},
 		},
 		Ports: []corev1.ContainerPort{
 			{ContainerPort: int32(port), Protocol: corev1.ProtocolTCP},
 			{ContainerPort: int32(port), Protocol: corev1.ProtocolTCP, Name: executorMetricsPortName},
 		},
-		ReadinessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(port), Path: "/ready", Scheme: corev1.URISchemeHTTP}},
+		ReadinessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(port), Path: "/ready", Scheme: probeScheme}},
 			InitialDelaySeconds: 20,
 			PeriodSeconds:       5,
 			FailureThreshold:    3,
 			SuccessThreshold:    1,
 			TimeoutSeconds:      60},
-		LivenessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(port), Path: "/live", Scheme: corev1.URISchemeHTTP}},
+		LivenessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(port), Path: "/live", Scheme: probeScheme}},
 			InitialDelaySeconds: 20,
 			PeriodSeconds:       5,
 			FailureThreshold:    3,
@@ -262,7 +285,7 @@ func createEngineContainerSpec(mlDep *machinelearningv1.SeldonDeployment, p *mac
 	return &corev1.Container{
 		Name:                     EngineContainerName,
 		Image:                    engineImage,
-		ImagePullPolicy:          corev1.PullPolicy(GetEnv("ENGINE_CONTAINER_IMAGE_PULL_POLICY", "IfNotPresent")),
+		ImagePullPolicy:          corev1.PullPolicy(utils.GetEnv("ENGINE_CONTAINER_IMAGE_PULL_POLICY", "IfNotPresent")),
 		TerminationMessagePath:   "/dev/termination-log",
 		TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 		VolumeMounts: []corev1.VolumeMount{
@@ -286,13 +309,13 @@ func createEngineContainerSpec(mlDep *machinelearningv1.SeldonDeployment, p *mac
 			{ContainerPort: 8082, Name: "admin", Protocol: corev1.ProtocolTCP},
 			{ContainerPort: 9090, Name: "jmx", Protocol: corev1.ProtocolTCP},
 		},
-		ReadinessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromString("admin"), Path: "/ready", Scheme: corev1.URISchemeHTTP}},
+		ReadinessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromString("admin"), Path: "/ready", Scheme: corev1.URISchemeHTTPS}},
 			InitialDelaySeconds: 20,
 			PeriodSeconds:       5,
 			FailureThreshold:    3,
 			SuccessThreshold:    1,
 			TimeoutSeconds:      60},
-		LivenessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromString("admin"), Path: "/live", Scheme: corev1.URISchemeHTTP}},
+		LivenessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromString("admin"), Path: "/live", Scheme: corev1.URISchemeHTTPS}},
 			InitialDelaySeconds: 20,
 			PeriodSeconds:       5,
 			FailureThreshold:    3,
@@ -318,6 +341,9 @@ func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machine
 	pCopy := p.DeepCopy()
 	// Set traffic to zero to ensure this doesn't cause a diff in the resulting  deployment created
 	pCopy.Traffic = 0
+	// Set replicas to zero to ensure this doesn't cause a diff in the resulting deployment created
+	var replicasCopy int32 = 0
+	pCopy.Replicas = &replicasCopy
 	predictorB64, err := getEngineVarJson(pCopy)
 	if err != nil {
 		return nil, err
@@ -380,7 +406,7 @@ func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machine
 	if _, ok := svcOrchEnvMap["SELDON_LOG_MESSAGES_EXTERNALLY"]; ok {
 		//this env var is set already so no need to set a default
 	} else {
-		c.Env = append(c.Env, corev1.EnvVar{Name: "SELDON_LOG_MESSAGES_EXTERNALLY", Value: GetEnv("ENGINE_LOG_MESSAGES_EXTERNALLY", "false")})
+		c.Env = append(c.Env, corev1.EnvVar{Name: "SELDON_LOG_MESSAGES_EXTERNALLY", Value: utils.GetEnv("ENGINE_LOG_MESSAGES_EXTERNALLY", "false")})
 	}
 	return c, nil
 }
@@ -399,9 +425,16 @@ func createEngineDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machin
 	}
 	deploy := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        depName,
-			Namespace:   getNamespace(mlDep),
-			Labels:      map[string]string{machinelearningv1.Label_svc_orch: "true", machinelearningv1.Label_seldon_app: seldonId, machinelearningv1.Label_seldon_id: seldonId, "app": depName, "version": "v1", "fluentd": "true"},
+			Name:      depName,
+			Namespace: getNamespace(mlDep),
+			Labels: map[string]string{
+				machinelearningv1.Label_svc_orch:   "true",
+				machinelearningv1.Label_seldon_app: seldonId,
+				machinelearningv1.Label_seldon_id:  seldonId,
+				"app":                              depName,
+				"version":                          "v1",
+				"fluentd":                          "true",
+			},
 			Annotations: mlDep.Spec.Annotations,
 		},
 		Spec: appsv1.DeploymentSpec{
@@ -456,6 +489,5 @@ func createEngineDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machin
 		deploy.ObjectMeta.Labels[k] = v
 		deploy.Spec.Template.ObjectMeta.Labels[k] = v
 	}
-
 	return deploy, nil
 }

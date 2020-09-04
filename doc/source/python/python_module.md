@@ -44,6 +44,20 @@ libraries that `seldon-core` requires for a single multi-cloud one.
 This discussion is currently open on [issue #1028](https://github.com/SeldonIO/seldon-core/issues/1028).
 Feedback and suggestions are welcome!
 
+### Azure Blob Storage support
+
+As part of the options to store your trained model, Seldon Core adds optional
+support to fetch them from Azure Blob Storage.
+We are aware that users will usually only require one of the storage backends.
+Therefore, to avoid bloating the `seldon-core` package, the Azure Blob Storage
+dependencies are not installed by default.
+
+To include the optional Azure support, you can install `seldon-core` as:
+
+```bash
+$ pip install seldon-core[azure]
+```
+
 ### Install all extra dependencies
 
 If you want to install `seldon-core` with all its extra dependencies, you can

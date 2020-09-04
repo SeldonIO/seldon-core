@@ -52,6 +52,32 @@ spec:
       replicas: 1
 ```
 
+## MLFlow xtype
+
+By default the server will call your loaded model's predict function with a `numpy.ndarray`. If you wish for it to call it with `pandas.DataFrame` instead, you can pass a parameter `xtype` and set it to `DataFrame`. For example:   
+
+```yaml
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: mlflow
+spec:
+  name: wines
+  predictors:
+    - graph:
+        children: []
+        implementation: MLFLOW_SERVER
+        modelUri: gs://seldon-models/mlflow/elasticnet_wine
+        name: classifier
+        parameters:
+        - name: xtype
+          type: STRING
+          value: DataFrame
+      name: default
+      replicas: 1
+```
+
+```
 You can also try out a [worked
 notebook](../examples/server_examples.html#Serve-MLflow-Elasticnet-Wines-Model)
 or check our [talk at the Spark + AI Summit

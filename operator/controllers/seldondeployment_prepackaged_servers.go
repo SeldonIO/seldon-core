@@ -19,6 +19,9 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
+
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
 	"github.com/seldonio/seldon-core/operator/utils"
@@ -26,8 +29,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
-	"strconv"
-	"strings"
 )
 
 const (
@@ -35,7 +36,7 @@ const (
 )
 
 var (
-	PredictiveUnitDefaultEnvSecretRefName = GetEnv(ENV_PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME, "")
+	PredictiveUnitDefaultEnvSecretRefName = utils.GetEnv(ENV_PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME, "")
 )
 
 type PrePackedInitialiser struct {
@@ -372,6 +373,11 @@ func (pi *PrePackedInitialiser) createStandaloneModelServers(mlDep *machinelearn
 		if deploy == nil {
 			seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
 			deploy = createDeploymentWithoutEngine(depName, seldonId, sPodSpec, p, mlDep, podSecurityContext)
+		}
+
+		// apply serviceAccountName to pod to enable EKS fine-grained IAM roles
+		if pu.ServiceAccountName != "" {
+			deploy.Spec.Template.Spec.ServiceAccountName = pu.ServiceAccountName
 		}
 
 		serverConfig := machinelearningv1.GetPrepackServerConfig(string(*pu.Implementation))

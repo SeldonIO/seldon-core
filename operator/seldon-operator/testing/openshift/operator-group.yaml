@@ -2,7 +2,7 @@ apiVersion: operators.coreos.com/v1alpha2
 kind: OperatorGroup
 metadata:
   name: seldon-operatorgroup
-  namespace: istio-test
+  namespace: seldon-system
 spec:
   targetNamespaces:
-  - istio-test
+  - seldon-system

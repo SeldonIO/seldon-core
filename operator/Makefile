@@ -8,6 +8,8 @@ IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
 
+KIND_NAME ?= kind
+
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
 GOBIN=$(shell go env GOPATH)/bin
@@ -21,9 +23,17 @@ show_image:
 
 all: manager
 
+.PHONY: lint
+lint: licenses/dep.txt
+	# Check if licenses have changed
+	git \
+		--no-pager diff \
+		--exit-code \
+		./licenses
+
 # Run tests
 test: generate fmt vet manifests generate-resources
-	ginkgo -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis  
+	ginkgo -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis
 
 # Build manager binary
 manager: generate fmt vet
@@ -48,6 +58,15 @@ install: manifests
 # Install CRDs into a cluster
 uninstall: manifests
 	kustomize build config/crd | kubectl delete -f -
+
+# Install V1 CRDs into a cluster
+# Note use of create to stop too long annotation being created. See https://github.com/kubernetes-sigs/kubebuilder/issues/1140
+install_v1: manifests_v1
+	kustomize build config/crd_v1 | kubectl create -f -
+
+# Uninstall V1 CRDs into a cluster
+uninstall_v1: 
+	kustomize build config/crd_v1 | kubectl delete -f -
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
 deploy: manifests
@@ -103,6 +122,9 @@ deploy-lite: manifests
 manifests: controller-gen
 	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
+manifests_v1: controller-gen
+	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd_v1/bases crd:crdVersions=v1
+
 # Run go fmt against code
 fmt:
 	go fmt ./...
@@ -117,7 +139,7 @@ generate: controller-gen
 
 # Generate Clientset
 create-client: test
-	./hack/update-codegen.sh	
+	./hack/update-codegen.sh
 
 # Build the docker image
 docker-build: test generate-resources
@@ -146,11 +168,11 @@ redhat-image-scan:
 
 kind-image-install: docker-build
 	docker save ${IMG} > operator.tar
-	kind load image-archive operator.tar 
+	kind load image-archive operator.tar --name ${KIND_NAME}
 
 kind-image-install-redhat: docker-build-redhat
 	docker save ${IMG_REDHAT} > operator.tar
-	kind load image-archive operator.tar 
+	kind load image-archive operator.tar --name ${KIND_NAME}
 
 # find or download controller-gen
 # download controller-gen if necessary
@@ -188,12 +210,33 @@ self-signed-cert:
 clean-cert:
 	rm -r self-signed-cert
 
+install-dev:
+	# Tool to generate license info
+	pip install \
+		'git+https://github.com/kubeflow/testing#egg=go-license-tools&subdirectory=py/kubeflow/testing/go-license-tools'
 
+.PHONY: licenses/dep.txt
 licenses/dep.txt:
 	go list -m all | cut -d ' ' -f 1 > licenses/dep.txt
+
+.PHONY: licenses
+licenses: licenses/dep.txt
+	# NOTE: You need to create a file in ~/.github_api_token with a GitHub token.
+	get-github-repo \
+		-o licenses/repo.txt \
+		--manual-dep-repo-mapping licenses/dep_repo.manual.csv \
+		licenses/dep.txt
+	get-github-license-info -o licenses/license_info.csv licenses/repo.txt
+	python -m 'patch_additional_license_info' \
+		licenses/license_info.csv \
+		licenses/additional_license_info.csv
+	concatenate-license -o licenses/license.txt licenses/license_info.csv
 
 generate-resources:
 	rm -rf generated
 	mkdir generated
 	kustomize build config/default/ -o generated
 	cp generated/apiextensions.k8s.io_v1beta1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml testing/machinelearning.seldon.io_seldondeployments.yaml
+
+config/crd_v1/patches/graph_children.yaml:
+	python hack/create_graph_openapi_schema.py hack/graph_patch.tmpl.yaml config/crd_v1/patches/graph_children.yaml

@@ -16,7 +16,6 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
-	"github.com/seldonio/seldon-core/executor/api/util"
 	"github.com/seldonio/seldon-core/executor/k8s"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"io"
@@ -151,7 +150,7 @@ func (smc *JSONRestClient) addHeaders(req *http.Request, m map[string][]string) 
 }
 
 func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method string, url *url.URL, msg []byte, meta map[string][]string, contentType string) ([]byte, string, error) {
-	smc.Log.Info("Calling HTTP", "URL", url)
+	smc.Log.V(1).Info("Calling HTTP", "URL", url)
 
 	var req *http.Request
 	var err error
@@ -174,10 +173,14 @@ func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method 
 	if opentracing.IsGlobalTracerRegistered() {
 		tracer := opentracing.GlobalTracer()
 
+		startSpanOptions := make([]opentracing.StartSpanOption, 0)
 		parentSpan := opentracing.SpanFromContext(ctx)
+		if parentSpan != nil {
+			startSpanOptions = append(startSpanOptions, opentracing.ChildOf(parentSpan.Context()))
+		}
 		clientSpan := opentracing.StartSpan(
 			method,
-			opentracing.ChildOf(parentSpan.Context()))
+			startSpanOptions...)
 		defer clientSpan.Finish()
 		tracer.Inject(clientSpan.Context(), opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(req.Header))
 	}
@@ -266,8 +269,28 @@ func (smc *JSONRestClient) Status(ctx context.Context, modelName string, host st
 	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonStatusPath, modelName), host, port, msg, meta)
 }
 
+// Return model's metadata as payload.SeldonPaylaod (to expose as received on corresponding executor endpoint)
 func (smc *JSONRestClient) Metadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonMetadataPath, modelName), host, port, msg, meta)
+}
+
+// Return model's metadata decoded to payload.ModelMetadata (to build GraphMetadata)
+func (smc *JSONRestClient) ModelMetadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.ModelMetadata, error) {
+	resPayload, err := smc.Metadata(ctx, modelName, host, port, msg, meta)
+	if err != nil {
+		return payload.ModelMetadata{}, err
+	}
+
+	resString, err := resPayload.GetBytes()
+	if err != nil {
+		return payload.ModelMetadata{}, err
+	}
+	var modelMetadata payload.ModelMetadata
+	err = json.Unmarshal(resString, &modelMetadata)
+	if err != nil {
+		return payload.ModelMetadata{}, err
+	}
+	return modelMetadata, nil
 }
 
 func (smc *JSONRestClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
@@ -296,47 +319,16 @@ func (smc *JSONRestClient) Route(ctx context.Context, modelName string, host str
 	if err != nil {
 		return 0, err
 	} else {
-		var routes []int
-		msg := sp.GetPayload().([]byte)
-
-		var sm proto.SeldonMessage
-		value := string(msg)
-		err := jsonpb.UnmarshalString(value, &sm)
-		if err == nil {
-			//Remove in future
-			routes = util.ExtractRouteFromSeldonMessage(&sm)
-		} else {
-			routes, err = ExtractRouteAsJsonArray(msg)
-			if err != nil {
-				return 0, err
-			}
-		}
-
-		//Only returning first route. API could be extended to allow multiple routes
-		return routes[0], nil
+		return ExtractRouteFromJson(sp)
 	}
-}
-
-func isJSON(data []byte) bool {
-	var js json.RawMessage
-	return json.Unmarshal(data, &js) == nil
 }
 
 func (smc *JSONRestClient) Combine(ctx context.Context, modelName string, host string, port int32, msgs []payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
-	// Extract into string array checking the data is JSON
-	strData := make([]string, len(msgs))
-	for i, sm := range msgs {
-		if !isJSON(sm.GetPayload().([]byte)) {
-			return nil, invalidPayload("Data is not JSON")
-		} else {
-			strData[i] = string(sm.GetPayload().([]byte))
-		}
+	req, err := CombineSeldonMessagesToJson(msgs)
+	if err != nil {
+		return nil, err
 	}
-	// Create JSON list of messages
-	joined := strings.Join(strData, ",")
-	jStr := "[" + joined + "]"
-	req := payload.BytesPayload{Msg: []byte(jStr), ContentType: ContentTypeJSON}
-	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonCombinePath, modelName), host, port, &req, meta)
+	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonCombinePath, modelName), host, port, req, meta)
 }
 
 func (smc *JSONRestClient) TransformOutput(ctx context.Context, modelName string, host string, port int32, req payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {

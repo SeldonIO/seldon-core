@@ -45,7 +45,7 @@ func TestSimpleModel(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Type: &model,
 			Endpoint: &v1.Endpoint{
 				ServiceHost: "foo",
@@ -77,7 +77,7 @@ func TestCloudeventHeaderIsSet(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Type: &model,
 			Endpoint: &v1.Endpoint{
 				ServiceHost: "foo",
@@ -116,7 +116,7 @@ func TestCloudeventHeaderIsNotSet(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Type: &model,
 			Endpoint: &v1.Endpoint{
 				ServiceHost: "foo",
@@ -150,7 +150,7 @@ func TestReponsePuuidHeaderIsSet(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Type: &model,
 			Endpoint: &v1.Endpoint{
 				ServiceHost: "foo",
@@ -198,7 +198,7 @@ func TestRequestPuuidHeaderIsSet(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Type: &model,
 			Endpoint: &v1.Endpoint{
 				ServiceHost: urlParts[0],
@@ -229,7 +229,7 @@ func TestXSSHeaderIsSet(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Type: &model,
 			Endpoint: &v1.Endpoint{
 				ServiceHost: "foo",
@@ -278,7 +278,7 @@ func TestModelWithServer(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Type: &model,
 			Endpoint: &v1.Endpoint{
 				ServiceHost: urlParts[0],
@@ -309,7 +309,7 @@ func TestServerMetrics(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Type: &model,
 			Endpoint: &v1.Endpoint{
 				ServiceHost: "foo",
@@ -349,7 +349,7 @@ func TestTensorflowStatus(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: "mymodel",
 			Type: &model,
 			Endpoint: &v1.Endpoint{
@@ -378,7 +378,7 @@ func TestSeldonStatus(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: "mymodel",
 			Type: &model,
 			Endpoint: &v1.Endpoint{
@@ -407,7 +407,7 @@ func TestSeldonMetadata(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: "mymodel",
 			Type: &model,
 			Endpoint: &v1.Endpoint{
@@ -418,15 +418,18 @@ func TestSeldonMetadata(t *testing.T) {
 		},
 	}
 
+	data := `{"metadata":{"name":"mymodel"}}`
+	metadataResponse := payload.BytesPayload{Msg: []byte(data)}
+
 	url, _ := url.Parse("http://localhost")
-	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{MetadataResponse: &metadataResponse}, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
 	r.Initialise()
 
 	req, _ := http.NewRequest("GET", "/api/v1.0/metadata/mymodel", nil)
 	res := httptest.NewRecorder()
 	r.Router.ServeHTTP(res, req)
 	g.Expect(res.Code).To(Equal(200))
-	g.Expect(res.Body.String()).To(Equal(test.TestClientMetadataResponse))
+	g.Expect(res.Body.String()).To(Equal(data))
 }
 
 func TestSeldonFeedback(t *testing.T) {
@@ -436,7 +439,7 @@ func TestSeldonFeedback(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Type: &model,
 			Endpoint: &v1.Endpoint{
 				ServiceHost: "foo",
@@ -464,7 +467,7 @@ func TestSeldonGraphMetadata(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "predictor-name",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: "model-1",
 			Type: &model,
 			Endpoint: &v1.Endpoint{
@@ -486,8 +489,33 @@ func TestSeldonGraphMetadata(t *testing.T) {
 		},
 	}
 
+	metadataMap := map[string]payload.ModelMetadata{
+		"model-1": {
+			Name:     "model-1",
+			Platform: "platform-name",
+			Versions: []string{"model-version"},
+			Inputs: []map[string]interface{}{
+				{"name": "input", "datatype": "BYTES", "shape": []int{1, 5}},
+			},
+			Outputs: []map[string]interface{}{
+				{"name": "output", "datatype": "BYTES", "shape": []int{1, 3}},
+			},
+		},
+		"model-2": {
+			Name:     "model-2",
+			Platform: "platform-name",
+			Versions: []string{"model-version"},
+			Inputs: []map[string]interface{}{
+				{"name": "input", "datatype": "BYTES", "shape": []int{1, 3}},
+			},
+			Outputs: []map[string]interface{}{
+				{"name": "output", "datatype": "BYTES", "shape": []int{3}},
+			},
+		},
+	}
+
 	url, _ := url.Parse("http://localhost")
-	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{ModelMetadataMap: metadataMap}, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
 	r.Initialise()
 
 	req, _ := http.NewRequest("GET", "/api/v1.0/metadata", nil)
@@ -504,7 +532,7 @@ func TestTensorflowMetadata(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: "mymodel",
 			Type: &model,
 			Endpoint: &v1.Endpoint{
@@ -515,15 +543,18 @@ func TestTensorflowMetadata(t *testing.T) {
 		},
 	}
 
+	data := `{"metadata":{"name":"mymodel"}}`
+	metadataResponse := payload.BytesPayload{Msg: []byte(data)}
+
 	url, _ := url.Parse("http://localhost")
-	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{}, false, url, "default", api.ProtocolTensorflow, "test", "/metrics")
+	r := NewServerRestApi(&p, &test.SeldonMessageTestClient{MetadataResponse: &metadataResponse}, false, url, "default", api.ProtocolTensorflow, "test", "/metrics")
 	r.Initialise()
 
 	req, _ := http.NewRequest("GET", "/v1/models/mymodel/metadata", nil)
 	res := httptest.NewRecorder()
 	r.Router.ServeHTTP(res, req)
 	g.Expect(res.Code).To(Equal(200))
-	g.Expect(res.Body.String()).To(Equal(test.TestClientMetadataResponse))
+	g.Expect(res.Body.String()).To(Equal(data))
 }
 
 func TestPredictErrorWithServer(t *testing.T) {
@@ -551,7 +582,7 @@ func TestPredictErrorWithServer(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Type: &model,
 			Endpoint: &v1.Endpoint{
 				ServiceHost: urlParts[0],
@@ -585,7 +616,7 @@ func TestTensorflowModel(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: "mymodel",
 			Type: &model,
 			Endpoint: &v1.Endpoint{
@@ -615,7 +646,7 @@ func TestTensorflowModelBadModelName(t *testing.T) {
 	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
-		Graph: &v1.PredictiveUnit{
+		Graph: v1.PredictiveUnit{
 			Name: "mymodel",
 			Type: &model,
 			Endpoint: &v1.Endpoint{

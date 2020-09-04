@@ -3,14 +3,14 @@ BASE=../../..
 ## REST
 
 run_rest_executor:
-	JAEGER_SAMPLER_TYPE=const JAEGER_SAMPLER_PARAM=1 ${BASE}/executor --sdep seldon-model --namespace default --predictor example --file ./model_rest.yaml --http_port 8000 
+	JAEGER_SAMPLER_TYPE=const JAEGER_SAMPLER_PARAM=1 ${BASE}/executor --sdep seldon-model --namespace default --predictor example --file ./model_rest.yaml --port 8000 
 
 
 run_dummy_rest_model:
 	cd ${BASE}/../examples/models/mean_classifier && make run_rest_local 
 
 curl_rest:
-	curl -v localhost:8000/api/v0.1/predictions -d '{"data":{"ndarray":[[1.0,2.0]]}}' 
+	curl -v localhost:8000/api/v0.1/predictions -H "Accept: application/json" -H "Content-Type: application/json" -d '{"data":{"ndarray":[[1.0,2.0]]}}' 
 
 curl_status:
 	curl -v localhost:8000/api/v0.1/status/classifier
@@ -25,7 +25,7 @@ run_jaeger:
 ## GRPC
 
 run_grpc_executor:
-	JAEGER_SAMPLER_TYPE=const JAEGER_SAMPLER_PARAM=1 ${BASE}/executor --sdep seldon-model --namespace default --predictor example --file ./model_grpc.yaml --http_port 8000 --grpc_port 5000 --transport grpc
+	JAEGER_SAMPLER_TYPE=const JAEGER_SAMPLER_PARAM=1 ${BASE}/executor --sdep seldon-model --namespace default --predictor example --file ./model_grpc.yaml --port 5000
 
 run_dummy_grpc_model:
 	cd ${BASE}/../examples/models/mean_classifier && make run_grpc_local 

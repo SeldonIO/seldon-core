@@ -21,9 +21,9 @@ The Seldon Core exposes a generic external API to connect your ML runtime predic
  - endpoint : POST /api/v1.0/feedback
  - payload : JSON representation of `Feedback` - see [proto definition](./prediction.md#proto-buffer-and-grpc-definition)
 
-### Metadata - Graph Level (incubating)
+### Metadata - Graph Level
 
-- endpoint : GET /api/v1.0/metadata/
+- endpoint : GET /api/v1.0/metadata
 - example response :
 
 ```json
@@ -53,7 +53,7 @@ The Seldon Core exposes a generic external API to connect your ML runtime predic
 see metadata [documentation](./metadata.md) for more details.
 
 
-### Metadata - Model Level (incubating)
+### Metadata - Model Level
 
 - endpoint : GET /api/v1.0/metadata/{MODEL_NAME}
 - example response:
@@ -77,7 +77,9 @@ see metadata [documentation](./metadata.md) for more details.
 service Seldon {
   rpc Predict(SeldonMessage) returns (SeldonMessage) {};
   rpc SendFeedback(Feedback) returns (SeldonMessage) {};
- }
+  rpc ModelMetadata(SeldonModelMetadataRequest) returns (SeldonModelMetadata) {};
+  rpc GraphMetadata(google.protobuf.Empty) returns (SeldonGraphMetadata) {};
+}
 ```
 
 see full [proto definition](./prediction.md#proto-buffer-and-grpc-definition)

@@ -1,0 +1,19 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: mymodel-modelmetadata
+spec:
+  name: test-deployment
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - name: my-model
+          image: seldonio/test_metadata_modelmetadata_grpc:0.1
+          imagePullPolicy: Never
+    graph:
+      children: []
+      name: my-model
+      type: MODEL
+    name: example
+    replicas: 1

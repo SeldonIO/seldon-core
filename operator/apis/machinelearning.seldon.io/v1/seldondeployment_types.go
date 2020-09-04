@@ -34,20 +34,21 @@ const (
 	Label_svc_orch           = "seldon-deployment-contains-svcorch"
 	Label_app                = "app"
 	Label_fluentd            = "fluentd"
-	Label_router             = "router"
-	Label_combiner           = "combiner"
-	Label_model              = "model"
-	Label_transformer        = "transformer"
-	Label_output_transformer = "output-transformer"
-	Label_default            = "default"
-	Label_shadow             = "shadow"
-	Label_canary             = "canary"
-	Label_explainer          = "explainer"
+	Label_router             = "seldon.io/router"
+	Label_combiner           = "seldon.io/combiner"
+	Label_model              = "seldon.io/model"
+	Label_transformer        = "seldon.io/transformer"
+	Label_output_transformer = "seldon.io/output-transformer"
+	Label_default            = "seldon.io/default"
+	Label_shadow             = "seldon.io/shadow"
+	Label_canary             = "seldon.io/canary"
+	Label_explainer          = "seldon.io/explainer"
 	Label_managed_by         = "app.kubernetes.io/managed-by"
 	Label_value_seldon       = "seldon-core"
 
-	PODINFO_VOLUME_NAME = "seldon-podinfo"
-	PODINFO_VOLUME_PATH = "/etc/podinfo"
+	PODINFO_VOLUME_NAME     = "seldon-podinfo"
+	OLD_PODINFO_VOLUME_NAME = "podinfo"
+	PODINFO_VOLUME_PATH     = "/etc/podinfo"
 
 	ENV_PREDICTIVE_UNIT_SERVICE_PORT         = "PREDICTIVE_UNIT_SERVICE_PORT"
 	ENV_PREDICTIVE_UNIT_SERVICE_PORT_METRICS = "PREDICTIVE_UNIT_METRICS_SERVICE_PORT"
@@ -59,6 +60,7 @@ const (
 	ENV_PREDICTOR_ID                         = "PREDICTOR_ID"
 	ENV_PREDICTOR_LABELS                     = "PREDICTOR_LABELS"
 	ENV_SELDON_DEPLOYMENT_ID                 = "SELDON_DEPLOYMENT_ID"
+	ENV_SELDON_EXECUTOR_ENABLED              = "SELDON_EXECUTOR_ENABLED"
 
 	ANNOTATION_JAVA_OPTS       = "seldon.io/engine-java-opts"
 	ANNOTATION_SEPARATE_ENGINE = "seldon.io/engine-separate-pod"
@@ -208,6 +210,11 @@ type SeldonDeploymentSpec struct {
 	Protocol    Protocol          `json:"protocol,omitempty" protobuf:"bytes,6,opt,name=protocol"`
 	Transport   Transport         `json:"transport,omitempty" protobuf:"bytes,7,opt,name=transport"`
 	Replicas    *int32            `json:"replicas,omitempty" protobuf:"bytes,8,opt,name=replicas"`
+	ServerType  ServerType        `json:"serverType,omitempty" protobuf:"bytes,8,opt,name=serverType"`
+}
+
+type SSL struct {
+	CertSecretName string `json:"certSecretName,omitempty" protobuf:"string,2,opt,name=certSecretName"`
 }
 
 type PredictorSpec struct {
@@ -222,6 +229,7 @@ type PredictorSpec struct {
 	Traffic         int32                   `json:"traffic,omitempty" protobuf:"bytes,9,opt,name=traffic"`
 	Explainer       *Explainer              `json:"explainer,omitempty" protobuf:"bytes,10,opt,name=explainer"`
 	Shadow          bool                    `json:"shadow,omitempty" protobuf:"bytes,11,opt,name=shadow"`
+	SSL             *SSL                    `json:"ssl,omitempty" protobuf:"bytes,11,opt,name=ssl"`
 }
 
 type Protocol string
@@ -239,6 +247,13 @@ const (
 	TransportGrpc Transport = "grpc"
 )
 
+type ServerType string
+
+const (
+	ServerRPC   ServerType = "rpc"
+	ServerKafka ServerType = "kafka"
+)
+
 type SvcOrchSpec struct {
 	Resources *v1.ResourceRequirements `json:"resources,omitempty" protobuf:"bytes,1,opt,name=resources"`
 	Env       []*v1.EnvVar             `json:"env,omitempty" protobuf:"bytes,2,opt,name=env"`
@@ -248,11 +263,15 @@ type SvcOrchSpec struct {
 type AlibiExplainerType string
 
 const (
-	AlibiAnchorsTabularExplainer  AlibiExplainerType = "AnchorTabular"
-	AlibiAnchorsImageExplainer    AlibiExplainerType = "AnchorImages"
-	AlibiAnchorsTextExplainer     AlibiExplainerType = "AnchorText"
-	AlibiCounterfactualsExplainer AlibiExplainerType = "Counterfactuals"
-	AlibiContrastiveExplainer     AlibiExplainerType = "Contrastive"
+	AlibiAnchorsTabularExplainer      AlibiExplainerType = "AnchorTabular"
+	AlibiAnchorsImageExplainer        AlibiExplainerType = "AnchorImages"
+	AlibiAnchorsTextExplainer         AlibiExplainerType = "AnchorText"
+	AlibiCounterfactualsExplainer     AlibiExplainerType = "Counterfactuals"
+	AlibiContrastiveExplainer         AlibiExplainerType = "Contrastive"
+	AlibiKernelShapExplainer          AlibiExplainerType = "KernelShap"
+	AlibiIntegratedGradientsExplainer AlibiExplainerType = "IntegratedGradients"
+	AlibiALEExplainer                 AlibiExplainerType = "ALE"
+	AlibiTreeShap                     AlibiExplainerType = "TreeShap"
 )
 
 type Explainer struct {

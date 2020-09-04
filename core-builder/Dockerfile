@@ -92,8 +92,8 @@ RUN apt-get remove -y --auto-remove && apt-get clean -y && rm -rf /var/lib/apt/l
 
 # INSTALL GO
 ENV PATH /usr/local/go/bin:$PATH
-RUN wget https://dl.google.com/go/go1.13.8.linux-amd64.tar.gz && \
-        tar -zxvf go1.13.8.linux-amd64.tar.gz && \
+RUN wget https://dl.google.com/go/go1.14.7.linux-amd64.tar.gz && \
+        tar -zxvf go1.14.7.linux-amd64.tar.gz && \
         mv go/ /usr/local/go
 RUN curl -sL https://go.kubebuilder.io/dl/2.3.0/linux/amd64 | tar -xz -C /tmp/ && \
         mv /tmp/kubebuilder_2.3.0_linux_amd64 /usr/local/kubebuilder/
@@ -116,7 +116,7 @@ RUN \
 RUN pip install jupyter
 
 # Install grpcurl
-RUN go get github.com/fullstorydev/grpcurl && \
+RUN go get github.com/fullstorydev/grpcurl/... && \
     go install github.com/fullstorydev/grpcurl/cmd/grpcurl
 
 ENV PATH="${PATH}:/root/go/bin"

@@ -22,12 +22,14 @@ import (
 	"os"
 
 	"github.com/seldonio/seldon-core/operator/constants"
+	"github.com/seldonio/seldon-core/operator/utils"
 
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
 	machinelearningv1alpha3 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha3"
 	"github.com/seldonio/seldon-core/operator/controllers"
 	k8sutils "github.com/seldonio/seldon-core/operator/utils/k8s"
+	"go.uber.org/zap"
 	istio "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -36,11 +38,19 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	zapf "sigs.k8s.io/controller-runtime/pkg/log/zap"
 	// +kubebuilder:scaffold:imports
 )
 
+const (
+	logLevelEnvVar  = "SELDON_LOG_LEVEL"
+	logLevelDefault = "INFO"
+	debugEnvVar     = "SELDON_DEBUG"
+)
+
 var (
+	debugDefault = false
+
 	scheme   = runtime.NewScheme()
 	setupLog = ctrl.Log.WithName("setup")
 )
@@ -54,10 +64,36 @@ func init() {
 	_ = machinelearningv1alpha2.AddToScheme(scheme)
 	_ = machinelearningv1alpha3.AddToScheme(scheme)
 	_ = v1beta1.AddToScheme(scheme)
-	if controllers.GetEnv(controllers.ENV_ISTIO_ENABLED, "false") == "true" {
+	if utils.GetEnv(controllers.ENV_ISTIO_ENABLED, "false") == "true" {
 		_ = istio.AddToScheme(scheme)
 	}
 	// +kubebuilder:scaffold:scheme
+}
+
+func setupLogger(logLevel string, debug bool) {
+	level := zap.InfoLevel
+	switch logLevel {
+	case "DEBUG":
+		level = zap.DebugLevel
+	case "INFO":
+		level = zap.InfoLevel
+	case "WARN":
+	case "WARNING":
+		level = zap.WarnLevel
+	case "ERROR":
+		level = zap.ErrorLevel
+	case "FATAL":
+		level = zap.FatalLevel
+	}
+
+	atomicLevel := zap.NewAtomicLevelAt(level)
+
+	logger := zapf.New(
+		zapf.UseDevMode(debug),
+		zapf.Level(&atomicLevel),
+	)
+
+	ctrl.SetLogger(logger)
 }
 
 func main() {
@@ -67,6 +103,9 @@ func main() {
 	var namespace string
 	var operatorNamespace string
 	var createResources bool
+	var debug bool
+	var logLevel string
+
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
@@ -74,16 +113,22 @@ func main() {
 	flag.StringVar(&namespace, "namespace", "", "The namespace to restrict the operator.")
 	flag.StringVar(&operatorNamespace, "operator-namespace", "default", "The namespace of the running operator")
 	flag.BoolVar(&createResources, "create-resources", false, "Create resources such as webhooks and configmaps on startup")
+	flag.BoolVar(
+		&debug,
+		"debug", utils.GetEnvAsBool(debugEnvVar, debugDefault),
+		"Enable debug mode. Logs will be sampled and less structured.",
+	)
+	flag.StringVar(&logLevel, "log-level", utils.GetEnv(logLevelEnvVar, logLevelDefault), "Log level.")
 	flag.Parse()
 
-	ctrl.SetLogger(zap.Logger(true))
+	setupLogger(logLevel, debug)
 
 	config := ctrl.GetConfigOrDie()
 
 	//Override operator namespace from environment variable as the source of truth
-	operatorNamespace = controllers.GetEnv("POD_NAMESPACE", operatorNamespace)
+	operatorNamespace = utils.GetEnv("POD_NAMESPACE", operatorNamespace)
 
-	watchNamespace := controllers.GetEnv("WATCH_NAMESPACE", "")
+	watchNamespace := utils.GetEnv("WATCH_NAMESPACE", "")
 	if watchNamespace != "" {
 		setupLog.Info("Overriding namespace from WATCH_NAMESPACE", "watchNamespace", watchNamespace)
 		namespace = watchNamespace

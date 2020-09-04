@@ -15,14 +15,16 @@ The proto file can be found [here](https://github.com/SeldonIO/seldon-core/blob/
 ```proto
 syntax = "proto3";
 
+import "google/protobuf/any.proto";
 import "google/protobuf/struct.proto";
+import "google/protobuf/empty.proto";
 import "tensorflow/core/framework/tensor.proto";
 
 package seldon.protos;
 
 option java_package = "io.seldon.protos";
 option java_outer_classname = "PredictionProtos";
-option go_package = "github.com/seldonio/seldon-core/examples/wrappers/go/pkg/api";
+option go_package = "github.com/seldonio/seldon-core/incubating/wrappers/s2i/go/pkg/api";
 
 // [START Messages]
 
@@ -35,6 +37,7 @@ message SeldonMessage {
     bytes binData = 4;
     string strData = 5;
     google.protobuf.Value jsonData = 6;
+    google.protobuf.Any customData = 7;
   }
 }
 
@@ -53,7 +56,7 @@ message Tensor {
 }
 
 message Meta {
-  string puid = 1; 
+  string puid = 1;
   map<string,google.protobuf.Value> tags = 2;
   map<string,int32> routing = 3;
   map<string,string> requestPath = 4;
@@ -101,6 +104,45 @@ message RequestResponse {
   SeldonMessage response = 2;
 }
 
+
+message SeldonModelMetadataRequest
+{
+  string name = 1;
+}
+
+
+message SeldonMessageMetadata
+{
+  // SeldonMessage Metadata fields
+  string messagetype = 1;
+  google.protobuf.Value schema = 2;
+
+  // KFserving tesnor metadata fields
+  string name = 3;
+  string datatype = 4;
+  repeated int64 shape = 5;
+}
+
+
+message SeldonModelMetadata
+{
+  string name = 1;
+  repeated string versions = 2;
+  string platform = 3;
+  repeated SeldonMessageMetadata inputs = 4;
+  repeated SeldonMessageMetadata outputs = 5;
+}
+
+
+message SeldonGraphMetadata
+{
+  string name = 1;
+  map<string, SeldonModelMetadata> models = 2;
+
+  repeated SeldonMessageMetadata inputs = 3;
+  repeated SeldonMessageMetadata outputs = 4;
+}
+
 // [END Messages]
 
 
@@ -116,13 +158,14 @@ service Generic {
 
 service Model {
   rpc Predict(SeldonMessage) returns (SeldonMessage) {};
-  rpc SendFeedback(Feedback) returns (SeldonMessage) {};  
- }
+  rpc SendFeedback(Feedback) returns (SeldonMessage) {};
+  rpc Metadata(google.protobuf.Empty) returns (SeldonModelMetadata) {};
+}
 
 service Router {
   rpc Route(SeldonMessage) returns (SeldonMessage) {};
   rpc SendFeedback(Feedback) returns (SeldonMessage) {};
- }
+}
 
 service Transformer {
   rpc TransformInput(SeldonMessage) returns (SeldonMessage) {};
@@ -140,8 +183,9 @@ service Combiner {
 service Seldon {
   rpc Predict(SeldonMessage) returns (SeldonMessage) {};
   rpc SendFeedback(Feedback) returns (SeldonMessage) {};
- }
+  rpc ModelMetadata(SeldonModelMetadataRequest) returns (SeldonModelMetadata) {};
+  rpc GraphMetadata(google.protobuf.Empty) returns (SeldonGraphMetadata) {};
+}
 
 // [END Services]
 ```
-

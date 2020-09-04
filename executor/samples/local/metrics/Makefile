@@ -2,7 +2,7 @@ BASE=../../..
 
 ## REST
 
-run_rest_executor:
+run_executor:
 	${BASE}/executor --sdep seldon-model --namespace default --predictor example --file ./model_rest.yaml --port 8000 
 
 
@@ -12,11 +12,10 @@ run_dummy_rest_model:
 curl_rest:
 	curl -v localhost:8000/api/v0.1/predictions -d '{"data":{"ndarray":[[1.0,2.0]]}}' -H "Accept: application/json" -H "Content-Type: application/json"
 
+curl_metrics:
+	curl localhost:8000/metrics
 
 ## GRPC
-
-run_grpc_executor:
-	${BASE}/executor --sdep seldon-model --namespace default --predictor example --file ./model_grpc.yaml --port 8000
 
 run_dummy_grpc_model:
 	cd ${BASE}/../examples/models/mean_classifier && make run_grpc_local 

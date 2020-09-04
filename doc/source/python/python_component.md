@@ -154,12 +154,6 @@ class ModelWithTags(object):
     	return {"system":"production"}
 ```
 
-Prior to Seldon Core 1.1.0 not implementing custom tags logs a message at the info level at each predict call. Starting with Seldon Core 1.1.0 this is logged at the debug level. To supress this warning implement a tags function returning an empty dictionary:
-
-```python
-def tags(self):
-    return {}
-```
 
 ## REST Health Endpoint
 If you wish to add a REST health point, you can implement the `health_status` method with signature as shown below:
@@ -317,45 +311,33 @@ class UserCustomException(Exception):
 
 ```
 
-### Gunicorn (Alpha Feature)
+## Multi-value numpy arrays
 
-To run your class under gunicorn set the environment variable `GUNICORN_WORKERS` to an integer value > 1.
+By default, when using the data ndarray parameter, the conversion to ndarray (by default) converts all inner types into the same type. With models that may take as input arrays with different value types, you will be able to do so by overriding the `predict_raw` function yourself which gives you access to the raw request, and creating the numpy array as follows:
 
 ```
-apiVersion: machinelearning.seldon.io/v1alpha2
-kind: SeldonDeployment
-metadata:
-  name: gunicorn
-spec:
-  name: worker
-  predictors:
-  - componentSpecs:
-    - spec:
-        containers:
-        - image: seldonio/mock_classifier:1.0
-          name: classifier
-          env:
-          - name: GUNICORN_WORKERS
-            value: '4'
-        terminationGracePeriodSeconds: 1
-    graph:
-      children: []
-      endpoint:
-        type: REST
-      name: classifier
-      type: MODEL
-    labels:
-      version: v1
-    name: example
-    replicas: 1
+import numpy as np
 
+class Model:
+    def predict_raw(self, request):
+        data = request.get("data", {}).get("ndarray")
+        if data:
+            mult_types_array = np.array(data, dtype=object)
+
+        # Handle other data types as required + your logic
 ```
 
 ## Gunicorn and load
 
-If the wrapped python class is run under [gunicorn](https://gunicorn.org/) then as part of initialization of each gunicorn worker a `load` method will be called on your class if it has it. You should use this method to load and initialise your model. This is important for Tensorflow models which need their session created in each worker process. The [Tensorflow MNIST example](../examples/deep_mnist.html) does this.
+If the wrapped python class is [served under Gunicorn](./python_server) then as
+part of initialization of each gunicorn worker a `load` method will be called
+on your class if it has it.
+You should use this method to load and initialise your model.
+This is important for Tensorflow models which need their session created in
+each worker process.
+The [Tensorflow MNIST example](../examples/deep_mnist.html) does this.
 
-```
+```python
 import tensorflow as tf
 import numpy as np
 import os
@@ -381,56 +363,6 @@ class DeepMnist(object):
             self.load()
         predictions = self.sess.run(self.y,feed_dict={self.x:X})
         return predictions.astype(np.float64)
-```
-
-### Single-threaded Flask for REST (experimental)
-
-To run your class single-threaded with Flask set the environment variable `FLASK_SINGLE_THREADED` to 1. This will set the `threaded` parameter of the Flask app to `False`. It is not the optimal setup for most models, but can be useful when your model cannot be made thread-safe like many GPU-based models that deadlock when accessed from multiple threads.
-
-```
-apiVersion: machinelearning.seldon.io/v1alpha2
-kind: SeldonDeployment
-metadata:
-  name: flaskexample
-spec:
-  name: worker
-  predictors:
-  - componentSpecs:
-    - spec:
-        containers:
-        - image: seldonio/mock_classifier:1.0
-          name: classifier
-          env:
-          - name: FLASK_SINGLE_THREADED
-            value: '1'
-        terminationGracePeriodSeconds: 1
-    graph:
-      children: []
-      endpoint:
-        type: REST
-      name: classifier
-      type: MODEL
-    labels:
-      version: v1
-    name: example
-    replicas: 1
-
-```
-
-## Multi-value numpy arrays
-
-By default, when using the data ndarray parameter, the conversion to ndarray (by default) converts all inner types into the same type. With models that may take as input arrays with different value types, you will be able to do so by overriding the `predict_raw` function yourself which gives you access to the raw request, and creating the numpy array as follows:
-
-```
-import numpy as np
-
-class Model:
-    def predict_raw(self, request):
-        data = request.get("data", {}).get("ndarray")
-        if data:
-            mult_types_array = np.array(data, dtype=object)
-
-        # Handle other data types as required + your logic
 ```
 
 ## Integer numbers

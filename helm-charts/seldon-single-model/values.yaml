@@ -2,6 +2,10 @@
 apiVersion: machinelearning.seldon.io/v1
 
 model:
+  # model.implementation -- Implementation of Prepackaged Model Server
+  implementation: ""
+  # model.uri -- Model's URI for prepackaged model server
+  uri: ""
   # model.image -- Docker image used by the model
   image: ""
   # model.env -- Environment variables injected into the model's container

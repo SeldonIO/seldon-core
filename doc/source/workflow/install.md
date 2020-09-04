@@ -6,6 +6,9 @@
 * Installer method
     * Helm version equal or higher than 3.0
     * Kustomize version equal or higher than 0.1.0
+* Ingress
+    * Istio ( sample installation using Istio 1.5 can be found at https://github.com/SeldonIO/seldon-core/tree/master/examples/auth )
+    * Ambassador
 
 #### Running older versions of Seldon Core? 
 
@@ -38,6 +41,10 @@ helm install seldon-core seldon-core-operator \
 ```
 
 Make sure you install it with the relevant ingress (`ambassador.enabled` or `istio.enabled`) so you are able to send requests (instructions below).
+
+### Install a specific version
+
+In order to install a specific version you can do so by running the same command above with the `--version` flag, followed by the version you want to run.
 
 ### Install a SNAPSHOT version 
 
@@ -123,9 +130,13 @@ Now that you have Seldon Core installed, you can set it up with:
 
 If you have a Google Cloud Platform account you can install via the [GCP Marketplace](https://console.cloud.google.com/marketplace/details/seldon-portal/seldon-core).
 
-#### AWS MarketPlace
+#### OpenShift
 
-If you have a AWS account you can install via the [AWS Marketplace](https://aws.amazon.com/marketplace/pp/B07KCNBCHV). See our [AWS Install Documentation](../reference/aws-mp-install.md).
+You can install Seldon Core via OperatorHub on the OpenShift console UI.
+
+#### OperatorHub
+
+You can install Seldon Core from [Operator Hub](https://operatorhub.io/operator/seldon-operator).
 
 ## Upgrading from Previous Versions
 

@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 VERSION ?= $(shell cat ../../version.txt)
-PREV_VERSION=1.1.0
+PREV_VERSION=1.2.1
 COMMUNITY_OPERATORS_BASE=/home/clive/work/seldon-core/redhat/community-operators
 
 .PHONY: recreate-generated
@@ -30,12 +30,15 @@ update_csv: clean_csv_${VERSION} deploy/olm-catalog/seldon-operator/${VERSION}/s
 # TESTS
 #
 
+#
+# Tested with 0.18.2 (0.18.1 fails)
+#
+
 scorecard:
 	operator-sdk scorecard -o text --bundle deploy/olm-catalog/seldon-operator --kubeconfig ~/.kube/config
 
 #
 # REQUIRED operator-courier 2.1.7
-# master version of code is broken as of June 2020
 #
 
 operator-courier_ui_validate:
@@ -59,6 +62,22 @@ update_community:
 	cp deploy/olm-catalog/seldon-operator/seldon-operator.package.yaml ${COMMUNITY_OPERATORS_BASE}/community-operators/seldon-operator
 	cp -r deploy/olm-catalog/seldon-operator/${VERSION} ${COMMUNITY_OPERATORS_BASE}/community-operators/seldon-operator/${VERSION}
 
+# See https://github.com/operator-framework/community-operators/blob/master/docs/using-scripts.md
+# May need to fix Makefile to add SHELL=/bin/bash
+.PHONY: community_lint
+community_lint:
+	cd ${COMMUNITY_OPERATORS_BASE} && make operator.verify OP_PATH=community-operators/seldon-operator VERBOSE=1
+
+.PHONY: community_install
+community_install:
+	cd ${COMMUNITY_OPERATORS_BASE} && make operator.install OP_PATH=community-operators/seldon-operator
+
+# Seems not to work
+.PHONY: community_test
+community_test:
+	cd ${COMMUNITY_OPERATORS_BASE} && make operator.test OP_PATH=community-operators/seldon-operator
+
+
 .PHONY: update_upstream
 update_upstream:
 	cp deploy/olm-catalog/seldon-operator/seldon-operator.package.yaml ${COMMUNITY_OPERATORS_BASE}/upstream-community-operators/seldon-operator
@@ -81,6 +100,10 @@ upstream_test:
 
 #
 # Certified : https://redhat-connect.gitbook.io/certified-operator-guide/
+#
+
+#
+# Note: for testing you may need to remove old InstallPlans if you installed a previous version on openshift
 #
 
 certified_create_bundle:

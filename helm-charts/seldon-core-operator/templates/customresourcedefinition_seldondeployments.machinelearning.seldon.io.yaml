@@ -1,4 +1,5 @@
 {{- if .Values.crd.create }}
+{{- if semverCompare "<1.18.0" .Capabilities.KubeVersion.GitVersion }}
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -4141,6 +4142,8 @@ spec:
             replicas:
               format: int32
               type: integer
+            serverType:
+              type: string
             transport:
               type: string
           required:
@@ -4213,4 +4216,5 @@ status:
     plural: ''
   conditions: []
   storedVersions: []
+{{- end }}
 {{- end }}

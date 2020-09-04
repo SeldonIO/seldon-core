@@ -289,7 +289,7 @@ def client_transform_output(
 
 
 def client_custom_metrics(
-    user_model: SeldonComponent, seldon_metrics: SeldonMetrics
+    user_model: SeldonComponent, seldon_metrics: SeldonMetrics, method: str
 ) -> List[Dict]:
     """
     Get custom metrics for client and update SeldonMetrics.
@@ -320,7 +320,7 @@ def client_custom_metrics(
                     reason="MICROSERVICE_BAD_METRIC",
                 )
 
-            seldon_metrics.update(metrics)
+            seldon_metrics.update(metrics, method)
             if INCLUDE_METRICS_IN_CLIENT_RESPONSE:
                 return metrics
             else:

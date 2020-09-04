@@ -44,7 +44,7 @@ func (g GrpcKFServingServer) ModelReady(ctx context.Context, request *proto.Mode
 	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, md.Get(payload.SeldonPUIDHeader)[0])
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("infer"), g.ServerUrl, g.Namespace, md)
 	reqPayload := payload.ProtoPayload{Msg: request}
-	resPayload, err := seldonPredictorProcess.Status(g.predictor.Graph, request.Name, &reqPayload)
+	resPayload, err := seldonPredictorProcess.Status(&g.predictor.Graph, request.Name, &reqPayload)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func (g GrpcKFServingServer) ModelMetadata(ctx context.Context, request *proto.M
 	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, md.Get(payload.SeldonPUIDHeader)[0])
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("infer"), g.ServerUrl, g.Namespace, md)
 	reqPayload := payload.ProtoPayload{Msg: request}
-	resPayload, err := seldonPredictorProcess.Metadata(g.predictor.Graph, request.Name, &reqPayload)
+	resPayload, err := seldonPredictorProcess.Metadata(&g.predictor.Graph, request.Name, &reqPayload)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func (g GrpcKFServingServer) ModelInfer(ctx context.Context, request *proto.Mode
 	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, md.Get(payload.SeldonPUIDHeader)[0])
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("infer"), g.ServerUrl, g.Namespace, md)
 	reqPayload := payload.ProtoPayload{Msg: request}
-	resPayload, err := seldonPredictorProcess.Predict(g.predictor.Graph, &reqPayload)
+	resPayload, err := seldonPredictorProcess.Predict(&g.predictor.Graph, &reqPayload)
 	if err != nil {
 		return nil, err
 	}

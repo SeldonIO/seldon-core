@@ -24,7 +24,9 @@ using:
 
 ```shell
 helm install $MY_MODEL_NAME seldonio/seldon-single-model --namespace $MODELS_NAMESPACE
-```**Homepage:** <https://github.com/SeldonIO/seldon-core>
+```
+
+**Homepage:** <https://github.com/SeldonIO/seldon-core>
 
 ## Source Code
 
@@ -44,7 +46,9 @@ helm install $MY_MODEL_NAME seldonio/seldon-single-model --namespace $MODELS_NAM
 | labels | object | `{}` | Labels applied to the deployment |
 | model.env | object | `{"LOG_LEVEL":"INFO"}` | Environment variables injected into the model's container |
 | model.image | string | `""` | Docker image used by the model |
+| model.implementation | string | `""` | Implementation of Prepackaged Model Server |
 | model.logger.enabled | bool | `false` |  |
 | model.logger.url | string | `""` |  |
 | model.resources | object | `{"requests":{"memory":"1Mi"}}` | Resource requests and limits for the model's container |
+| model.uri | string | `""` | Model's URI for prepackaged model server |
 | replicas | int | `1` | Number of replicas for the predictor |

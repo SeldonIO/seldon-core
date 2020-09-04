@@ -6,6 +6,8 @@ IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
 IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${VERSION}
 IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
 
+EXECUTOR_FOLDERS ?= ./api/... ./predictor/... ./k8s/... ./logger/...
+
 KIND_NAME ?= kind
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -17,16 +19,26 @@ endif
 
 # Run go fmt against code
 fmt:
-	go fmt ./api ./k8s ./logger ./predictor 
+	go fmt ${EXECUTOR_FOLDERS}
 
 # Run go vet against code
 vet:
-	go vet ./api ./k8s ./logger ./predictor
+	go vet ${EXECUTOR_FOLDERS}
 
 
 # Build manager binary
-executor: fmt vet
-	go build -o executor main.go
+executor: copy_operator fmt vet
+	go build -o executor cmd/executor/main.go
+
+
+kafka-proxy: copy_operator fmt vet
+	go build -o kafka-proxy cmd/proxy/main.go
+
+
+.PHONE: copy_operator
+copy_operator:
+	rm _operator -rf
+	cp -r ../operator _operator
 
 
 .PHONY: copy_protos
@@ -68,8 +80,8 @@ add_protos:
 	cd serving && find ./tensorflow_serving -name '*.proto' | cpio -pdm ../proto
 
 # Run tests
-test: fmt vet
-	go test ./api/... ./predictor/... ./k8s/...  -coverprofile cover.out
+test: copy_operator fmt vet
+	go test ${EXECUTOR_FOLDERS} -coverprofile cover.out
 
 copy_openapi_resources:
 	mkdir -p api/rest/openapi/
@@ -78,11 +90,11 @@ copy_openapi_resources:
 
 # Build the docker image
 docker-build: test copy_openapi_resources
-	docker build -f Dockerfile -t ${IMG} .
+	docker build -f Dockerfile.executor -t ${IMG} .
 
 # Build the docker image for Redhat
 docker-build-redhat: test copy_openapi_resources
-	docker build . -f Dockerfile.redhat -t ${IMG_REDHAT}
+	docker build -f Dockerfile.executor.redhat -t ${IMG_REDHAT} .
 
 # Push the docker image
 docker-push:
@@ -114,5 +126,35 @@ clean:
 	rm -rf serving
 	rm -rf triton-inference-server
 
+install-dev:
+	# Tool to generate license info
+	pip install \
+		'git+https://github.com/kubeflow/testing#egg=go-license-tools&subdirectory=py/kubeflow/testing/go-license-tools'
+
+
+.PHONY: licenses/dep.txt
 licenses/dep.txt:
 	go list -m all | cut -d ' ' -f 1 > licenses/dep.txt
+
+
+.PHONY: licenses
+licenses: licenses/dep.txt
+	# NOTE: You need to create a file in ~/.github_api_token with a GitHub token.
+	get-github-repo \
+		-o licenses/repo.txt \
+		--manual-dep-repo-mapping licenses/dep_repo.manual.csv \
+		licenses/dep.txt
+	get-github-license-info -o licenses/license_info.csv licenses/repo.txt
+	python -m 'patch_additional_license_info' \
+		licenses/license_info.csv \
+		licenses/additional_license_info.csv
+	concatenate-license -o licenses/license.txt licenses/license_info.csv
+
+
+.PHONY: lint
+lint: copy_operator licenses/dep.txt
+	# Check if licenses have changed
+	git \
+		--no-pager diff \
+		--exit-code \
+		./licenses

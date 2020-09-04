@@ -6,7 +6,7 @@ Run the following commands in different terminals.
 
 Start the executor locally.
 ```bash
-make run_rest_executor
+make run_executor
 ```
 
 Start a dummy REST model locally.
@@ -22,7 +22,7 @@ make curl_rest
 Check the metrics endpoint:
 
 ```
-curl localhost:8000/metrics
+make curl_metrics
 ```
 
 You should see metrics including:
@@ -68,7 +68,7 @@ Run the following commands in different terminals.
 
 Start the executor locally.
 ```bash
-make run_grpc_executor
+make run_executor
 ```
 
 Start a dummy REST model locally.
@@ -84,7 +84,7 @@ make grpc_test
 Check the metrics endpoint:
 
 ```
-curl localhost:8000/metrics
+make curl_metrics
 ```
 
 You should see metrics including:

@@ -65,6 +65,7 @@ google/go-cmp
 google/gofuzz
 google/martian
 google/pprof
+google/renameio
 google/uuid
 googleapis/gax-go
 googleapis/gnostic
@@ -103,6 +104,7 @@ modern-go/reflect2
 munnerz/goautoneg
 mwitkow/go-conntrack
 mxk/go-flowrate
+nxadm/tail
 olekukonko/tablewriter
 onsi/ginkgo
 onsi/gomega
@@ -118,6 +120,7 @@ prometheus/common
 prometheus/procfs
 remyoudompheng/bigfft
 rogpeppe/fastuuid
+rogpeppe/go-internal
 russross/blackfriday
 sergi/go-diff
 sirupsen/logrus
@@ -143,12 +146,14 @@ mongodb/mongo-go-driver
 census-instrumentation/opencensus-go
 uber-go/atomic
 uber-go/multierr
+uber-go/tools
 uber-go/zap
 golang/crypto
 golang/exp
 golang/image
 golang/lint
 golang/mobile
+golang/mod
 golang/net
 golang/oauth2
 golang/sync
@@ -164,9 +169,11 @@ googleapis/google-api-go-client
 golang/appengine
 googleapis/go-genproto
 grpc/grpc-go
+protocolbuffers/protobuf-go
 alecthomas/kingpin
 go-check/check
 cheggaaa/pb
+go-errgo/errgo
 go-inf/inf
 natefinch/lumberjack
 go-resty/resty

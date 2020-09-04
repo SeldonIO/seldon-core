@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"log"
 	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -149,6 +150,21 @@ func (r *SeldonDeploymentSpec) setContainerPredictiveUnitDefaults(compSpecIdx in
 			volFound = true
 		}
 	}
+	//SeldonDeployments first deployed before 1.2 have OLD_PODINFO_VOLUME_NAME
+	//they retain that name indefinitely
+	oldVolIndex := -1
+	for idx, vol := range con.VolumeMounts {
+		if vol.Name == OLD_PODINFO_VOLUME_NAME {
+			log.Println("found old vol of name " + OLD_PODINFO_VOLUME_NAME)
+			oldVolIndex = idx
+		}
+	}
+	if oldVolIndex > -1 {
+		con.VolumeMounts[oldVolIndex] = con.VolumeMounts[len(con.VolumeMounts)-1] // Copy last element to index i.
+		con.VolumeMounts[len(con.VolumeMounts)-1] = corev1.VolumeMount{}          // Erase last element (write zero value).
+		con.VolumeMounts = con.VolumeMounts[:len(con.VolumeMounts)-1]             // Truncate slice.
+	}
+
 	if !volFound {
 		con.VolumeMounts = append(con.VolumeMounts, corev1.VolumeMount{
 			Name:      PODINFO_VOLUME_NAME,
@@ -377,6 +393,44 @@ func collectTransports(pu *PredictiveUnit, transportsFound map[EndpointType]bool
 	}
 }
 
+const (
+	ENV_KAFKA_BROKER       = "KAFKA_BROKER"
+	ENV_KAFKA_INPUT_TOPIC  = "KAFKA_INPUT_TOPIC"
+	ENV_KAFKA_OUTPUT_TOPIC = "KAFKA_OUTPUT_TOPIC"
+)
+
+func (r *SeldonDeploymentSpec) validateKafka(allErrs field.ErrorList) field.ErrorList {
+	if r.ServerType == ServerKafka {
+		for i, p := range r.Predictors {
+			if len(p.SvcOrchSpec.Env) == 0 {
+				fldPath := field.NewPath("spec").Child("predictors").Index(i)
+				allErrs = append(allErrs, field.Invalid(fldPath, p.Name, "For kafka please supply svcOrchSpec envs KAFKA_BROKER, KAFKA_INPUT_TOPIC, KAFKA_OUTPUT_TOPIC"))
+			} else {
+				found := 0
+				for _, env := range p.SvcOrchSpec.Env {
+					switch env.Name {
+					case ENV_KAFKA_BROKER, ENV_KAFKA_INPUT_TOPIC, ENV_KAFKA_OUTPUT_TOPIC:
+						found = found + 1
+					}
+				}
+				if found < 3 {
+					fldPath := field.NewPath("spec").Child("predictors").Index(i)
+					allErrs = append(allErrs, field.Invalid(fldPath, p.Name, "For kafka please supply svcOrchSpec envs KAFKA_BROKER, KAFKA_INPUT_TOPIC, KAFKA_OUTPUT_TOPIC"))
+				}
+			}
+		}
+	}
+	return allErrs
+}
+
+func (r *SeldonDeploymentSpec) validateShadow(allErrs field.ErrorList) field.ErrorList {
+	if len(r.Predictors) == 1 && r.Predictors[0].Shadow {
+		fldPath := field.NewPath("spec").Child("predictors").Index(0)
+		allErrs = append(allErrs, field.Invalid(fldPath, r.Predictors[0].Name, "Shadow can not exist as only predictor"))
+	}
+	return allErrs
+}
+
 func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 	var allErrs field.ErrorList
 
@@ -390,7 +444,20 @@ func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 		allErrs = append(allErrs, field.Invalid(fldPath, r.Transport, "Invalid transport"))
 	}
 
+	if r.ServerType != "" && !(r.ServerType == ServerRPC || r.ServerType == ServerKafka) {
+		fldPath := field.NewPath("spec")
+		allErrs = append(allErrs, field.Invalid(fldPath, r.ServerType, "Invalid serverType"))
+	}
+
+	allErrs = r.validateKafka(allErrs)
+	allErrs = r.validateShadow(allErrs)
+
 	transports := make(map[EndpointType]bool)
+
+	if len(r.Predictors) == 0 {
+		fldPath := field.NewPath("spec")
+		allErrs = append(allErrs, field.Invalid(fldPath, r.Transport, "Graph contains no predictors"))
+	}
 
 	predictorNames := make(map[string]bool)
 	for i, p := range r.Predictors {

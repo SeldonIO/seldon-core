@@ -41,10 +41,18 @@
                 },
                 "name": "sk-mnist-predictor",
                 "replicas": 1,
-		"labels":{
-		    "version":"v1"
-		},
-		"traffic": 75
+               "svcOrchSpec": {
+                    "env": [
+                        {
+                            "name": "SELDON_LOG_LEVEL",
+                            "value": "DEBUG"
+                        }
+                    ]
+                },
+        "labels":{
+            "version":"v1"
+        },
+        "traffic": 75
             },
             {
                 "componentSpecs": [{
@@ -74,12 +82,19 @@
                 },
                 "name": "tf-mnist-predictor",
                 "replicas": 1,
-		"labels":{
-		    "version":"v2"
-		},
-		"traffic": 25
+               "svcOrchSpec": {
+                    "env": [
+                        {
+                            "name": "SELDON_LOG_LEVEL",
+                            "value": "DEBUG"
+                        }
+                    ]
+                },
+        "labels":{
+            "version":"v2"
+        },
+        "traffic": 25
             }
-	    
         ]
     }
 }

@@ -20,11 +20,12 @@ Python Language Wrapper Examples
 .. toctree::
    :titlesonly:
 
-   Scikit-learn Spacy Reddit Text Classification Tutorial <sklearn_spacy_text_classifier_example>
+   SKLearn Spacy NLP <sklearn_spacy_text_classifier_example>
    SKLearn Iris Classifier <iris>
    SKLearn MNIST <sklearn_mnist>
    Sagemaker SKLearn Example <sagemaker_sklearn>   
    TFserving MNIST <tfserving_mnist>
+   Statsmodels Holt-Winter's time-series model <statsmodels>
 
 Specialised Framework Examples
 -----
@@ -49,6 +50,7 @@ Incubating Projects Examples
    Deploy your R models with the R <deep_mnist>
    Outlier Detection with Combiner <outlier_combiner>
    Stream Processing with KNative Eventing <knative_eventing_streaming>
+   Kafka CIFAR10 <cifar10_kafka>
 
 
 Cloud-Specific Examples
@@ -68,6 +70,7 @@ Advanced Machine Learning Insights
 .. toctree::
    :titlesonly:
 
+   Real time monitoring of statistical metrics <feedback_reward_custom_metrics>
    Tabular, Text and Image Model Explainers <explainer_examples>
    Outlier Detection on CIFAR10 <outlier_cifar10>
   
@@ -118,8 +121,6 @@ Complex Graph Examples
   
    Combiner Example <combiner>
    Chainer MNIST <chainer_mnist>
-   Spam Classification TRANSFORMER <transformer_spam_model>
-   Spam Classification TRANSFORMER + COMBINER  <combiner_spam_model>
 
 Ingress
 -----
@@ -134,3 +135,22 @@ Ingress
    Istio Canary <istio_canary>
    Istio Examples <istio_examples>   
 
+Infrastructure
+-----
+
+.. toctree::
+   :titlesonly:
+  
+   Patch Volumes for Version 1.2.0 Upgrade <patch_1_2>
+   
+
+Benchmarking and Load Tests
+-----
+
+.. toctree::
+   :titlesonly:
+  
+   Service Orchestrator <bench_svcOrch>
+   Tensorflow <bench_tensorflow>   
+   Argo Workflows Benchmarking <vegeta_bench_argo_workflows>   
+   

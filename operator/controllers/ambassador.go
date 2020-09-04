@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/seldonio/seldon-core/operator/constants"
+	"github.com/seldonio/seldon-core/operator/utils"
 
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"gopkg.in/yaml.v2"
@@ -40,6 +41,15 @@ type AmbassadorCircuitBreakerConfig struct {
 }
 
 // Struct for Ambassador configuration
+type AmbassadorTLSContextConfig struct {
+	ApiVersion string   `yaml:"apiVersion"`
+	Kind       string   `yaml:"kind"`
+	Name       string   `yaml:"name"`
+	Hosts      []string `yaml:"hosts"`
+	Secret     string   `yaml:"secret"`
+}
+
+// Struct for Ambassador configuration
 type AmbassadorConfig struct {
 	ApiVersion      string                            `yaml:"apiVersion"`
 	Kind            string                            `yaml:"kind"`
@@ -58,6 +68,7 @@ type AmbassadorConfig struct {
 	RetryPolicy     *AmbassadorRetryPolicy            `yaml:"retry_policy,omitempty"`
 	InstanceId      string                            `yaml:"ambassador_id,omitempty"`
 	CircuitBreakers []*AmbassadorCircuitBreakerConfig `yaml:"circuit_breakers,omitempty"`
+	TLS             string                            `yaml:"tls,omitempty"`
 }
 
 type AmbassadorRetryPolicy struct {
@@ -113,6 +124,35 @@ func getAmbassadorCircuitBreakerConfig(
 		return &circuitBreaker, nil
 	}
 	return nil, nil
+}
+
+// Return TLSContext configuration if SSL is enabled with Ambassador and returns empty string if SSL is not enabled
+func getAmbassadorTLSContextConfig(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, addNamespace bool) (string, error) {
+
+	if utils.IsEmptyTLS(p) {
+		return "", nil
+	}
+
+	name := p.Name
+	namespace := getNamespace(mlDep)
+
+	c := AmbassadorTLSContextConfig{
+		ApiVersion: "ambassador/v1",
+		Kind:       "TLSContext",
+		Name:       "seldon_" + mlDep.ObjectMeta.Name + "_" + name + "_tls_config",
+		Hosts:      []string{},
+		Secret:     p.SSL.CertSecretName,
+	}
+
+	if addNamespace {
+		c.Name = "seldon_" + namespace + "_" + mlDep.ObjectMeta.Name + "_" + name + "_tls_config"
+	}
+
+	v, err := yaml.Marshal(c)
+	if err != nil {
+		return "", err
+	}
+	return string(v), nil
 }
 
 // Return a REST configuration for Ambassador with optional custom settings.
@@ -212,6 +252,14 @@ func getAmbassadorRestConfig(mlDep *machinelearningv1.SeldonDeployment,
 	if circuitBreakerConfig != nil {
 		c.CircuitBreakers = []*AmbassadorCircuitBreakerConfig{
 			circuitBreakerConfig,
+		}
+	}
+
+	if !utils.IsEmptyTLS(p) {
+		if addNamespace {
+			c.TLS = "seldon_" + namespace + "_" + mlDep.ObjectMeta.Name + "_" + name + "_tls_config"
+		} else {
+			c.TLS = "seldon_" + mlDep.ObjectMeta.Name + "_" + name + "_tls_config"
 		}
 	}
 
@@ -324,6 +372,14 @@ func getAmbassadorGrpcConfig(mlDep *machinelearningv1.SeldonDeployment,
 		}
 	}
 
+	if !utils.IsEmptyTLS(p) {
+		if addNamespace {
+			c.TLS = "seldon_" + namespace + "_" + mlDep.ObjectMeta.Name + "_" + name + "_tls_config"
+		} else {
+			c.TLS = "seldon_" + mlDep.ObjectMeta.Name + "_" + name + "_tls_config"
+		}
+	}
+
 	v, err := yaml.Marshal(c)
 	if err != nil {
 		return "", err
@@ -363,30 +419,37 @@ func getAmbassadorConfigs(mlDep *machinelearningv1.SeldonDeployment, p *machinel
 		if err != nil {
 			return "", err
 		}
-
 		cGrpcNamespaced, err := getAmbassadorGrpcConfig(mlDep, p, false, serviceName, serviceNameExternal, customHeader, customRegexHeader, weight, shadowing, engine_grpc_port, isExplainer, instance_id)
+		if err != nil {
+			return "", err
+		}
+		cTLSGlobal, err := getAmbassadorTLSContextConfig(mlDep, p, false)
+		if err != nil {
+			return "", err
+		}
+		cTLSNamespaced, err := getAmbassadorTLSContextConfig(mlDep, p, true)
 		if err != nil {
 			return "", err
 		}
 
 		// Return the appropriate set of config based on whether http and/or grpc is active
 		if engine_http_port > 0 && engine_grpc_port > 0 {
-			if GetEnv("AMBASSADOR_SINGLE_NAMESPACE", "false") == "true" {
-				return YAML_SEP + cRestGlobal + YAML_SEP + cGrpcGlobal + YAML_SEP + cRestNamespaced + YAML_SEP + cGrpcNamespaced, nil
+			if utils.GetEnv("AMBASSADOR_SINGLE_NAMESPACE", "false") == "true" {
+				return YAML_SEP + cRestGlobal + YAML_SEP + cGrpcGlobal + YAML_SEP + cTLSGlobal + YAML_SEP + cRestNamespaced + YAML_SEP + cGrpcNamespaced + YAML_SEP + cTLSNamespaced, nil
 			} else {
-				return YAML_SEP + cRestGlobal + YAML_SEP + cGrpcGlobal, nil
+				return YAML_SEP + cRestGlobal + YAML_SEP + cGrpcGlobal + YAML_SEP + cTLSGlobal, nil
 			}
 		} else if engine_http_port > 0 {
-			if GetEnv("AMBASSADOR_SINGLE_NAMESPACE", "false") == "true" {
-				return YAML_SEP + cRestGlobal + YAML_SEP + cRestNamespaced, nil
+			if utils.GetEnv("AMBASSADOR_SINGLE_NAMESPACE", "false") == "true" {
+				return YAML_SEP + cRestGlobal + YAML_SEP + cTLSGlobal + YAML_SEP + cRestNamespaced + YAML_SEP + cTLSNamespaced, nil
 			} else {
-				return YAML_SEP + cRestGlobal, nil
+				return YAML_SEP + YAML_SEP + cRestGlobal + YAML_SEP + cTLSGlobal, nil
 			}
 		} else if engine_grpc_port > 0 {
-			if GetEnv("AMBASSADOR_SINGLE_NAMESPACE", "false") == "true" {
-				return YAML_SEP + cGrpcGlobal + YAML_SEP + cGrpcNamespaced, nil
+			if utils.GetEnv("AMBASSADOR_SINGLE_NAMESPACE", "false") == "true" {
+				return YAML_SEP + YAML_SEP + cGrpcGlobal + cTLSGlobal + YAML_SEP + cGrpcNamespaced + YAML_SEP + cTLSNamespaced, nil
 			} else {
-				return YAML_SEP + cGrpcGlobal, nil
+				return YAML_SEP + cGrpcGlobal + YAML_SEP + cTLSGlobal, nil
 			}
 		} else {
 			return "", nil

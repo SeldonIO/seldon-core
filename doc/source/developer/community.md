@@ -5,7 +5,7 @@
 
 For any questions, as well as to keep up to date with any announcements please feel free to [join our Slack Channel through this link](https://join.slack.com/t/seldondev/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU).
 
-## Community calls
+## Working Group Calls
 
 The Seldon Core team organises fornightly calls with the community to provide updates on current development, best practices and key findings such as tips on upgrading, backwards compatibility, etc.
 
@@ -19,14 +19,12 @@ We always announce the community call in our Community Slack and social media (T
 
 **Joining the call**
 
-We use Zoom for the conference calls - you can join through the following link:
+We use Zoom for the conference calls. Details can found:
 
-* https://us02web.zoom.us/j/81583903861
-
-**Community Calls Masterdoc**
-
-Every community call we add the agenda as well as meeting notes in the Seldon Core Community Meetings masterdoc, which [you will find here](https://docs.google.com/document/d/1gAmiJoD-1NHSr0gvDQBhYGR5ryrgWVWRu3nOOxPdKJk/edit#heading=h.2aknuw5jyybd).
-
+ * [Working Group Agenda Document](https://docs.google.com/document/d/1gAmiJoD-1NHSr0gvDQBhYGR5ryrgWVWRu3nOOxPdKJk/edit?usp=sharing)
+ * [Google Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=MXBtNzI1cjk0dG9kczhsZTRkcWlmcm1kdjVfMjAyMDA3MDlUMTUwMDAwWiBzZWxkb24uaW9fbTRuMnZtcmZubDI3M3FsczVnYjlwNjVpMHNAZw&tmsrc=seldon.io_m4n2vmrfnl273qls5gb9p65i0s%40group.calendar.google.com&scp=ALL)
+ * [Calendar ics](../seldon_core_working_group.ics)
+ 
 If you have any topics you would like to add or discuss, please feel free to add to the agenda point for the next meeting, or alternatively you can add an in-line comment.
 
 

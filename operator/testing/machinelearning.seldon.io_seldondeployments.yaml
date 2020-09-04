@@ -6695,6 +6695,11 @@ spec:
                     type: integer
                   shadow:
                     type: boolean
+                  ssl:
+                    properties:
+                      certSecretName:
+                        type: string
+                    type: object
                   svcOrchSpec:
                     properties:
                       env:
@@ -6853,6 +6858,8 @@ spec:
             replicas:
               format: int32
               type: integer
+            serverType:
+              type: string
             transport:
               type: string
           required:
