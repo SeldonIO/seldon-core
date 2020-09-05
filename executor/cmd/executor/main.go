@@ -20,7 +20,7 @@ import (
 	seldonclient "github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/grpc"
 	"github.com/seldonio/seldon-core/executor/api/grpc/kfserving"
-	kfproto "github.com/seldonio/seldon-core/executor/api/grpc/kfserving/proto"
+	kfproto "github.com/seldonio/seldon-core/executor/api/grpc/kfserving/inference"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/grpc/tensorflow"

@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	grpc2 "github.com/seldonio/seldon-core/executor/api/grpc"
-	"github.com/seldonio/seldon-core/executor/api/grpc/kfserving/proto"
+	"github.com/seldonio/seldon-core/executor/api/grpc/kfserving/inference"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"google.golang.org/grpc"
@@ -68,11 +68,11 @@ func (s *KFServingGrpcClient) Predict(ctx context.Context, modelName string, hos
 	if err != nil {
 		return nil, err
 	}
-	grpcClient := proto.NewGRPCInferenceServiceClient(conn)
+	grpcClient := inference.NewGRPCInferenceServiceClient(conn)
 	ctx = grpc2.AddMetadataToOutgoingGrpcContext(ctx, meta)
-	var resp *proto.ModelInferResponse
+	var resp *inference.ModelInferResponse
 	switch v := msg.GetPayload().(type) {
-	case *proto.ModelInferRequest:
+	case *inference.ModelInferRequest:
 		resp, err = grpcClient.ModelInfer(ctx, v, s.callOptions...)
 	default:
 		return nil, errors.Errorf("Invalid type %v", v)
@@ -106,14 +106,14 @@ func (s *KFServingGrpcClient) Feedback(ctx context.Context, modelName string, ho
 
 func (s *KFServingGrpcClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	switch v := msg.GetPayload().(type) {
-	case *proto.ModelInferRequest:
+	case *inference.ModelInferRequest:
 		s.Log.Info("Identity chain")
 		return msg, nil
-	case *proto.ModelInferResponse:
+	case *inference.ModelInferResponse:
 		s.Log.Info("Chain!")
-		inputTensors := make([]*proto.ModelInferRequest_InferInputTensor, len(v.Outputs))
+		inputTensors := make([]*inference.ModelInferRequest_InferInputTensor, len(v.Outputs))
 		for _, oTensor := range v.Outputs {
-			inputTensor := &proto.ModelInferRequest_InferInputTensor{
+			inputTensor := &inference.ModelInferRequest_InferInputTensor{
 				Name:       oTensor.Name,
 				Datatype:   oTensor.Datatype,
 				Shape:      oTensor.Shape,
@@ -122,7 +122,7 @@ func (s *KFServingGrpcClient) Chain(ctx context.Context, modelName string, msg p
 			}
 			inputTensors = append(inputTensors, inputTensor)
 		}
-		pr := proto.ModelInferRequest{
+		pr := inference.ModelInferRequest{
 			Inputs: inputTensors,
 		}
 		msg2 := payload.ProtoPayload{Msg: &pr}
@@ -137,11 +137,11 @@ func (s *KFServingGrpcClient) Status(ctx context.Context, modelName string, host
 	if err != nil {
 		return nil, err
 	}
-	grpcClient := proto.NewGRPCInferenceServiceClient(conn)
+	grpcClient := inference.NewGRPCInferenceServiceClient(conn)
 	ctx = grpc2.AddMetadataToOutgoingGrpcContext(ctx, meta)
-	var resp *proto.ModelReadyResponse
+	var resp *inference.ModelReadyResponse
 	switch v := msg.GetPayload().(type) {
-	case *proto.ModelReadyRequest:
+	case *inference.ModelReadyRequest:
 		resp, err = grpcClient.ModelReady(ctx, v, s.callOptions...)
 	default:
 		return nil, errors.Errorf("Invalid type %v", v)
@@ -158,11 +158,11 @@ func (s *KFServingGrpcClient) Metadata(ctx context.Context, modelName string, ho
 	if err != nil {
 		return nil, err
 	}
-	grpcClient := proto.NewGRPCInferenceServiceClient(conn)
+	grpcClient := inference.NewGRPCInferenceServiceClient(conn)
 	ctx = grpc2.AddMetadataToOutgoingGrpcContext(ctx, meta)
-	var resp *proto.ModelMetadataResponse
+	var resp *inference.ModelMetadataResponse
 	switch v := msg.GetPayload().(type) {
-	case *proto.ModelMetadataRequest:
+	case *inference.ModelMetadataRequest:
 		resp, err = grpcClient.ModelMetadata(ctx, v, s.callOptions...)
 	default:
 		return nil, errors.Errorf("Invalid type %v", v)

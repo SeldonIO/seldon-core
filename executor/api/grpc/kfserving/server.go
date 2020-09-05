@@ -5,7 +5,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/grpc"
-	"github.com/seldonio/seldon-core/executor/api/grpc/kfserving/proto"
+	"github.com/seldonio/seldon-core/executor/api/grpc/kfserving/inference"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/predictor"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
@@ -31,15 +31,15 @@ func NewGrpcKFServingServer(predictor *v1.PredictorSpec, client client.SeldonApi
 	}
 }
 
-func (g GrpcKFServingServer) ServerLive(ctx context.Context, request *proto.ServerLiveRequest) (*proto.ServerLiveResponse, error) {
+func (g GrpcKFServingServer) ServerLive(ctx context.Context, request *inference.ServerLiveRequest) (*inference.ServerLiveResponse, error) {
 	panic("implement me")
 }
 
-func (g GrpcKFServingServer) ServerReady(ctx context.Context, request *proto.ServerReadyRequest) (*proto.ServerReadyResponse, error) {
+func (g GrpcKFServingServer) ServerReady(ctx context.Context, request *inference.ServerReadyRequest) (*inference.ServerReadyResponse, error) {
 	panic("implement me")
 }
 
-func (g GrpcKFServingServer) ModelReady(ctx context.Context, request *proto.ModelReadyRequest) (*proto.ModelReadyResponse, error) {
+func (g GrpcKFServingServer) ModelReady(ctx context.Context, request *inference.ModelReadyRequest) (*inference.ModelReadyResponse, error) {
 	md := grpc.CollectMetadata(ctx)
 	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, md.Get(payload.SeldonPUIDHeader)[0])
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("infer"), g.ServerUrl, g.Namespace, md)
@@ -48,14 +48,14 @@ func (g GrpcKFServingServer) ModelReady(ctx context.Context, request *proto.Mode
 	if err != nil {
 		return nil, err
 	}
-	return resPayload.GetPayload().(*proto.ModelReadyResponse), nil
+	return resPayload.GetPayload().(*inference.ModelReadyResponse), nil
 }
 
-func (g GrpcKFServingServer) ServerMetadata(ctx context.Context, request *proto.ServerMetadataRequest) (*proto.ServerMetadataResponse, error) {
+func (g GrpcKFServingServer) ServerMetadata(ctx context.Context, request *inference.ServerMetadataRequest) (*inference.ServerMetadataResponse, error) {
 	panic("implement me")
 }
 
-func (g GrpcKFServingServer) ModelMetadata(ctx context.Context, request *proto.ModelMetadataRequest) (*proto.ModelMetadataResponse, error) {
+func (g GrpcKFServingServer) ModelMetadata(ctx context.Context, request *inference.ModelMetadataRequest) (*inference.ModelMetadataResponse, error) {
 	md := grpc.CollectMetadata(ctx)
 	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, md.Get(payload.SeldonPUIDHeader)[0])
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("infer"), g.ServerUrl, g.Namespace, md)
@@ -64,10 +64,10 @@ func (g GrpcKFServingServer) ModelMetadata(ctx context.Context, request *proto.M
 	if err != nil {
 		return nil, err
 	}
-	return resPayload.GetPayload().(*proto.ModelMetadataResponse), nil
+	return resPayload.GetPayload().(*inference.ModelMetadataResponse), nil
 }
 
-func (g GrpcKFServingServer) ModelInfer(ctx context.Context, request *proto.ModelInferRequest) (*proto.ModelInferResponse, error) {
+func (g GrpcKFServingServer) ModelInfer(ctx context.Context, request *inference.ModelInferRequest) (*inference.ModelInferResponse, error) {
 	md := grpc.CollectMetadata(ctx)
 	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, md.Get(payload.SeldonPUIDHeader)[0])
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("infer"), g.ServerUrl, g.Namespace, md)
@@ -76,53 +76,53 @@ func (g GrpcKFServingServer) ModelInfer(ctx context.Context, request *proto.Mode
 	if err != nil {
 		return nil, err
 	}
-	return resPayload.GetPayload().(*proto.ModelInferResponse), nil
+	return resPayload.GetPayload().(*inference.ModelInferResponse), nil
 }
 
-func (g GrpcKFServingServer) ModelStreamInfer(server proto.GRPCInferenceService_ModelStreamInferServer) error {
+func (g GrpcKFServingServer) ModelStreamInfer(server inference.GRPCInferenceService_ModelStreamInferServer) error {
 	panic("implement me")
 }
 
-func (g GrpcKFServingServer) ModelConfig(ctx context.Context, request *proto.ModelConfigRequest) (*proto.ModelConfigResponse, error) {
+func (g GrpcKFServingServer) ModelConfig(ctx context.Context, request *inference.ModelConfigRequest) (*inference.ModelConfigResponse, error) {
 	panic("implement me")
 }
 
-func (g GrpcKFServingServer) ModelStatistics(ctx context.Context, request *proto.ModelStatisticsRequest) (*proto.ModelStatisticsResponse, error) {
+func (g GrpcKFServingServer) ModelStatistics(ctx context.Context, request *inference.ModelStatisticsRequest) (*inference.ModelStatisticsResponse, error) {
 	panic("implement me")
 }
 
-func (g GrpcKFServingServer) RepositoryIndex(ctx context.Context, request *proto.RepositoryIndexRequest) (*proto.RepositoryIndexResponse, error) {
+func (g GrpcKFServingServer) RepositoryIndex(ctx context.Context, request *inference.RepositoryIndexRequest) (*inference.RepositoryIndexResponse, error) {
 	panic("implement me")
 }
 
-func (g GrpcKFServingServer) RepositoryModelLoad(ctx context.Context, request *proto.RepositoryModelLoadRequest) (*proto.RepositoryModelLoadResponse, error) {
+func (g GrpcKFServingServer) RepositoryModelLoad(ctx context.Context, request *inference.RepositoryModelLoadRequest) (*inference.RepositoryModelLoadResponse, error) {
 	panic("implement me")
 }
 
-func (g GrpcKFServingServer) RepositoryModelUnload(ctx context.Context, request *proto.RepositoryModelUnloadRequest) (*proto.RepositoryModelUnloadResponse, error) {
+func (g GrpcKFServingServer) RepositoryModelUnload(ctx context.Context, request *inference.RepositoryModelUnloadRequest) (*inference.RepositoryModelUnloadResponse, error) {
 	panic("implement me")
 }
 
-func (g GrpcKFServingServer) SystemSharedMemoryStatus(ctx context.Context, request *proto.SystemSharedMemoryStatusRequest) (*proto.SystemSharedMemoryStatusResponse, error) {
+func (g GrpcKFServingServer) SystemSharedMemoryStatus(ctx context.Context, request *inference.SystemSharedMemoryStatusRequest) (*inference.SystemSharedMemoryStatusResponse, error) {
 	panic("implement me")
 }
 
-func (g GrpcKFServingServer) SystemSharedMemoryRegister(ctx context.Context, request *proto.SystemSharedMemoryRegisterRequest) (*proto.SystemSharedMemoryRegisterResponse, error) {
+func (g GrpcKFServingServer) SystemSharedMemoryRegister(ctx context.Context, request *inference.SystemSharedMemoryRegisterRequest) (*inference.SystemSharedMemoryRegisterResponse, error) {
 	panic("implement me")
 }
 
-func (g GrpcKFServingServer) SystemSharedMemoryUnregister(ctx context.Context, request *proto.SystemSharedMemoryUnregisterRequest) (*proto.SystemSharedMemoryUnregisterResponse, error) {
+func (g GrpcKFServingServer) SystemSharedMemoryUnregister(ctx context.Context, request *inference.SystemSharedMemoryUnregisterRequest) (*inference.SystemSharedMemoryUnregisterResponse, error) {
 	panic("implement me")
 }
 
-func (g GrpcKFServingServer) CudaSharedMemoryStatus(ctx context.Context, request *proto.CudaSharedMemoryStatusRequest) (*proto.CudaSharedMemoryStatusResponse, error) {
+func (g GrpcKFServingServer) CudaSharedMemoryStatus(ctx context.Context, request *inference.CudaSharedMemoryStatusRequest) (*inference.CudaSharedMemoryStatusResponse, error) {
 	panic("implement me")
 }
 
-func (g GrpcKFServingServer) CudaSharedMemoryRegister(ctx context.Context, request *proto.CudaSharedMemoryRegisterRequest) (*proto.CudaSharedMemoryRegisterResponse, error) {
+func (g GrpcKFServingServer) CudaSharedMemoryRegister(ctx context.Context, request *inference.CudaSharedMemoryRegisterRequest) (*inference.CudaSharedMemoryRegisterResponse, error) {
 	panic("implement me")
 }
 
-func (g GrpcKFServingServer) CudaSharedMemoryUnregister(ctx context.Context, request *proto.CudaSharedMemoryUnregisterRequest) (*proto.CudaSharedMemoryUnregisterResponse, error) {
+func (g GrpcKFServingServer) CudaSharedMemoryUnregister(ctx context.Context, request *inference.CudaSharedMemoryUnregisterRequest) (*inference.CudaSharedMemoryUnregisterResponse, error) {
 	panic("implement me")
 }

@@ -65,13 +65,13 @@ compile_tensorflow_proto:
 
 
 compile_kfserving_proto:
-	git clone https://github.com/NVIDIA/triton-inference-server
-	mkdir -p api/grpc/kfserving/proto
-	cp triton-inference-server/src/core/*.proto api/grpc/kfserving/proto
-	cd api/grpc/kfserving/proto && protoc -I. --go_out=paths=source_relative,plugins=grpc:. grpc_service.proto && protoc -I. --go_out=paths=source_relative,plugins=grpc:. model_config.proto && protoc -I. --go_out=paths=source_relative,plugins=grpc:. server_status.proto
-	sed -i "s/package nvidia_inferenceserver/package proto/" api/grpc/kfserving/proto/grpc_service.pb.go
-	sed -i "s/package nvidia_inferenceserver/package proto/" api/grpc/kfserving/proto/model_config.pb.go
-	sed -i "s/package nvidia_inferenceserver/package proto/" api/grpc/kfserving/proto/server_status.pb.go
+	#git clone https://github.com/NVIDIA/triton-inference-server
+	mkdir -p api/grpc/kfserving/inference
+	cp triton-inference-server/src/core/*.proto api/grpc/kfserving/inference
+	cd api/grpc/kfserving/inference && protoc -I. --go_out=paths=source_relative,plugins=grpc:. grpc_service.proto && protoc -I. --go_out=paths=source_relative,plugins=grpc:. model_config.proto && protoc -I. --go_out=paths=source_relative,plugins=grpc:. server_status.proto
+	#sed -i "s/package nvidia_inferenceserver/package proto/" api/grpc/kfserving/proto/grpc_service.pb.go
+	#sed -i "s/package nvidia_inferenceserver/package proto/" api/grpc/kfserving/proto/model_config.pb.go
+	#sed -i "s/package nvidia_inferenceserver/package proto/" api/grpc/kfserving/proto/server_status.pb.go
 
 
 .PHONY: add_protos
