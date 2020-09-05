@@ -126,10 +126,10 @@ predictor_servers:
       image: seldonio/xgboostserver_rest
   TRITON_SERVER:
     grpc:
-      defaultImageVersion: "20.03.1-py3"
+      defaultImageVersion: "20.08-py3"
       image: nvcr.io/nvidia/tritonserver
     rest:
-      defaultImageVersion: "20.03.1-py3"
+      defaultImageVersion: "20.08-py3"
       image: nvcr.io/nvidia/tritonserver
 
 # ## Other
