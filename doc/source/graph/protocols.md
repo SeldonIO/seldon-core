@@ -4,8 +4,9 @@ Tensorflow protocol is only available in version >=1.1.
 
 Seldon Core supports the following data planes:
 
- * REST and gRPC Seldon protocol
- * REST and gRPC Tensorflow Serving Protocol
+ * [REST and gRPC Seldon protocol](#rest-and-grpc-seldon-protocol)
+ * [REST and gRPC Tensorflow Serving Protocol](#rest-and-grpc-tensorflow-protocol)
+ * [REST and gRPC V2 KFServing Protocol](#v2-kfserving-protocol)
 
 ## REST and gRPC Seldon Protocol
 
@@ -39,3 +40,10 @@ General considerations:
   * The name of the model in the `graph` section of the SeldonDeployment spec must match the name of the model loaded onto the Tensorflow Server.
 
 
+## V2 KFServing Protocol 
+
+Seldon has collaborated with the [NVIDIA Triton Server Project](https://github.com/triton-inference-server/server) and the [KFServing Project](https://github.com/kubeflow/kfserving) to create a new ML inference protocol.
+
+This protocol can be used by specifing `protocol: kfserving`. At present we only support NVIDIA Triton prepackaged servers but will have support for custom and other server types in the near future.
+
+See [example notebook](../examples/protocol_examples.html). 

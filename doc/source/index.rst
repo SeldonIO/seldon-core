@@ -59,6 +59,7 @@ Documentation Index
 
    MLflow Server <servers/mlflow.md>
    SKLearn server <servers/sklearn.md>
+   Triton Inference Server <servers/triton.md>   
    Tensorflow Serving <servers/tensorflow.md>
    XGBoost server <servers/xgboost.md>
 
