@@ -14,6 +14,7 @@ limitations under the License.
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -51,10 +52,11 @@ var (
 
 type ModelInitialiser struct {
 	clientset kubernetes.Interface
+	ctx       context.Context
 }
 
-func NewModelInitializer(clientset kubernetes.Interface) *ModelInitialiser {
-	return &ModelInitialiser{clientset: clientset}
+func NewModelInitializer(ctx context.Context, clientset kubernetes.Interface) *ModelInitialiser {
+	return &ModelInitialiser{clientset: clientset, ctx: ctx}
 }
 
 type StorageInitializerConfig struct {
@@ -66,18 +68,18 @@ type StorageInitializerConfig struct {
 }
 
 func (mi *ModelInitialiser) credentialsBuilder() (credentialsBuilder *credentials.CredentialBuilder, err error) {
-	configMap, err := mi.clientset.CoreV1().ConfigMaps(ControllerNamespace).Get(ControllerConfigMapName, metav1.GetOptions{})
+	configMap, err := mi.clientset.CoreV1().ConfigMaps(ControllerNamespace).Get(mi.ctx, ControllerConfigMapName, metav1.GetOptions{})
 	if err != nil {
 		//log.Error(err, "Failed to find config map", "name", ControllerConfigMapName)
 		return nil, err
 	}
 
-	credentialBuilder := credentials.NewCredentialBulder(configMap, mi.clientset)
+	credentialBuilder := credentials.NewCredentialBulder(mi.ctx, configMap, mi.clientset)
 	return credentialBuilder, nil
 }
 
 func (mi *ModelInitialiser) getStorageInitializerConfigs() (*StorageInitializerConfig, error) {
-	configMap, err := mi.clientset.CoreV1().ConfigMaps(ControllerNamespace).Get(ControllerConfigMapName, metav1.GetOptions{})
+	configMap, err := mi.clientset.CoreV1().ConfigMaps(ControllerNamespace).Get(mi.ctx, ControllerConfigMapName, metav1.GetOptions{})
 	if err != nil {
 		//log.Error(err, "Failed to find config map", "name", ControllerConfigMapName)
 		return nil, err

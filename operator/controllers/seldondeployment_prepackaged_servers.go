@@ -17,6 +17,7 @@ limitations under the License.
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -40,10 +41,11 @@ var (
 
 type PrePackedInitialiser struct {
 	clientset kubernetes.Interface
+	ctx       context.Context
 }
 
-func NewPrePackedInitializer(clientset kubernetes.Interface) *PrePackedInitialiser {
-	return &PrePackedInitialiser{clientset: clientset}
+func NewPrePackedInitializer(ctx context.Context, clientset kubernetes.Interface) *PrePackedInitialiser {
+	return &PrePackedInitialiser{clientset: clientset, ctx: ctx}
 }
 
 func extractEnvSecretRefName(pu *machinelearningv1.PredictiveUnit) string {
@@ -133,7 +135,7 @@ func (pi *PrePackedInitialiser) addTFServerContainer(mlDep *machinelearningv1.Se
 
 	envSecretRefName := extractEnvSecretRefName(pu)
 
-	mi := NewModelInitializer(pi.clientset)
+	mi := NewModelInitializer(pi.ctx, pi.clientset)
 	_, err := mi.InjectModelInitializer(deploy, tfServingContainer.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName)
 	if err != nil {
 		return err
@@ -197,7 +199,7 @@ func (pi *PrePackedInitialiser) addModelDefaultServers(pu *machinelearningv1.Pre
 
 	envSecretRefName := extractEnvSecretRefName(pu)
 
-	mi := NewModelInitializer(pi.clientset)
+	mi := NewModelInitializer(pi.ctx, pi.clientset)
 	_, err = mi.InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName)
 	if err != nil {
 		return err

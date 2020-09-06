@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	. "github.com/onsi/gomega"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -26,7 +27,7 @@ func TestSecurityContextCreateComponents(t *testing.T) {
 	podSecurityContext := &corev1.PodSecurityContext{
 		RunAsUser: &user,
 	}
-	c, err := reconciler.createComponents(instance, podSecurityContext, reconciler.Log)
+	c, err := reconciler.createComponents(context.TODO(), instance, podSecurityContext, reconciler.Log)
 	g.Expect(err).To(BeNil())
 	g.Expect(len(c.deployments)).To(Equal(1))
 	g.Expect(*c.deployments[0].Spec.Template.Spec.SecurityContext.RunAsUser).To(Equal(user))
@@ -46,7 +47,7 @@ func TestNoSecurityContextCreateComponents(t *testing.T) {
 	}
 
 	var podSecurityContext *corev1.PodSecurityContext
-	c, err := reconciler.createComponents(instance, podSecurityContext, reconciler.Log)
+	c, err := reconciler.createComponents(context.TODO(), instance, podSecurityContext, reconciler.Log)
 	g.Expect(err).To(BeNil())
 	g.Expect(len(c.deployments)).To(Equal(1))
 	g.Expect(c.deployments[0].Spec.Template.Spec.SecurityContext).To(BeNil())

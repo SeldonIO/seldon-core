@@ -370,7 +370,7 @@ func getEngineGrpcPort() (engine_grpc_port int, err error) {
 }
 
 // Create all the components (Deployments, Services etc)
-func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.SeldonDeployment, securityContext *corev1.PodSecurityContext, log logr.Logger) (*components, error) {
+func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep *machinelearningv1.SeldonDeployment, securityContext *corev1.PodSecurityContext, log logr.Logger) (*components, error) {
 	c := components{}
 	c.serviceDetails = map[string]*machinelearningv1.ServiceStatus{}
 	seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
@@ -537,7 +537,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 			c.deployments = append(c.deployments, deploy)
 		}
 
-		pi := NewPrePackedInitializer(r.ClientSet)
+		pi := NewPrePackedInitializer(ctx, r.ClientSet)
 		err = pi.createStandaloneModelServers(mlDep, &p, &c, &p.Graph, securityContext)
 		if err != nil {
 			return nil, err
@@ -630,7 +630,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 			externalPorts[i] = httpGrpcPorts{httpPort: httpPort, grpcPort: grpcPort}
 		}
 
-		ei := NewExplainerInitializer(r.ClientSet)
+		ei := NewExplainerInitializer(ctx, r.ClientSet)
 		err = ei.createExplainer(mlDep, &p, &c, pSvcName, securityContext, log)
 		if err != nil {
 			return nil, err
@@ -1507,7 +1507,7 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		}
 	}
 
-	components, err := r.createComponents(instance, podSecurityContext, log)
+	components, err := r.createComponents(ctx, instance, podSecurityContext, log)
 	if err != nil {
 		r.Recorder.Eventf(instance, corev1.EventTypeWarning, constants.EventsInternalError, err.Error())
 		r.updateStatusForError(instance, err, log)
@@ -1572,7 +1572,7 @@ func (r *SeldonDeploymentReconciler) updateStatusForError(desired *machinelearni
 
 	desired.Status.State = machinelearningv1.StatusStateFailed
 	desired.Status.Description = err.Error()
-	
+
 	existing := &machinelearningv1.SeldonDeployment{}
 	namespacedName := types.NamespacedName{Name: desired.Name, Namespace: desired.Namespace}
 	if err := r.Get(context.TODO(), namespacedName, existing); err != nil {
@@ -1610,9 +1610,9 @@ var (
 	apiGVStr = machinelearningv1.GroupVersion.String()
 )
 
-func (r *SeldonDeploymentReconciler) SetupWithManager(mgr ctrl.Manager, name string) error {
+func (r *SeldonDeploymentReconciler) SetupWithManager(ctx context.Context, mgr ctrl.Manager, name string) error {
 
-	if err := mgr.GetFieldIndexer().IndexField(&appsv1.Deployment{}, ownerKey, func(rawObj runtime.Object) []string {
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &appsv1.Deployment{}, ownerKey, func(rawObj runtime.Object) []string {
 		// grab the deployment object, extract the owner...
 		dep := rawObj.(*appsv1.Deployment)
 		owner := metav1.GetControllerOf(dep)
@@ -1630,7 +1630,7 @@ func (r *SeldonDeploymentReconciler) SetupWithManager(mgr ctrl.Manager, name str
 		return err
 	}
 
-	if err := mgr.GetFieldIndexer().IndexField(&corev1.Service{}, ownerKey, func(rawObj runtime.Object) []string {
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &corev1.Service{}, ownerKey, func(rawObj runtime.Object) []string {
 		// grab the deployment object, extract the owner...
 		svc := rawObj.(*corev1.Service)
 		owner := metav1.GetControllerOf(svc)
@@ -1649,7 +1649,7 @@ func (r *SeldonDeploymentReconciler) SetupWithManager(mgr ctrl.Manager, name str
 	}
 
 	if utils.GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
-		if err := mgr.GetFieldIndexer().IndexField(&istio.VirtualService{}, ownerKey, func(rawObj runtime.Object) []string {
+		if err := mgr.GetFieldIndexer().IndexField(ctx, &istio.VirtualService{}, ownerKey, func(rawObj runtime.Object) []string {
 			// grab the deployment object, extract the owner...
 			vsvc := rawObj.(*istio.VirtualService)
 			owner := metav1.GetControllerOf(vsvc)

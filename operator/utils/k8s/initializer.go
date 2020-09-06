@@ -1,6 +1,7 @@
 package k8s
 
 import (
+	"context"
 	"fmt"
 	"github.com/go-logr/logr"
 	"io/ioutil"
@@ -36,19 +37,19 @@ func LoadBytesFromFile(path string, name string) ([]byte, error) {
 	return ioutil.ReadFile(fullpath)
 }
 
-func findMyDeployment(clientset kubernetes.Interface, namespace string) (*appsv1.Deployment, error) {
+func findMyDeployment(ctx context.Context, clientset kubernetes.Interface, namespace string) (*appsv1.Deployment, error) {
 	client := clientset.AppsV1().Deployments(namespace)
-	return client.Get(ManagerDeploymentName, v1.GetOptions{})
+	return client.Get(ctx, ManagerDeploymentName, v1.GetOptions{})
 }
 
-func InitializeOperator(config *rest.Config, namespace string, logger logr.Logger, scheme *runtime.Scheme, watchNamespace bool) error {
+func InitializeOperator(ctx context.Context, config *rest.Config, namespace string, logger logr.Logger, scheme *runtime.Scheme, watchNamespace bool) error {
 
 	apiExtensionClient, err := apiextensionsclient.NewForConfig(config)
 	if err != nil {
 		return err
 	}
 
-	crdCreator := NewCrdCreator(apiExtensionClient, logger)
+	crdCreator := NewCrdCreator(ctx, apiExtensionClient, logger)
 	bytes, err := LoadBytesFromFile(ResourceFolder, CRDFilename)
 	if err != nil {
 		return err
@@ -63,7 +64,7 @@ func InitializeOperator(config *rest.Config, namespace string, logger logr.Logge
 		return err
 	}
 
-	dep, err := findMyDeployment(clientset, namespace)
+	dep, err := findMyDeployment(ctx, clientset, namespace)
 	if err != nil {
 		return err
 	}
@@ -87,7 +88,7 @@ func InitializeOperator(config *rest.Config, namespace string, logger logr.Logge
 	if err != nil {
 		return err
 	}
-	err = wc.CreateMutatingWebhookConfigurationFromFile(bytes, namespace, crd, watchNamespace)
+	err = wc.CreateMutatingWebhookConfigurationFromFile(ctx, bytes, namespace, crd, watchNamespace)
 	if err != nil {
 		return err
 	}
@@ -97,7 +98,7 @@ func InitializeOperator(config *rest.Config, namespace string, logger logr.Logge
 	if err != nil {
 		return err
 	}
-	err = wc.CreateValidatingWebhookConfigurationFromFile(bytes, namespace, crd, watchNamespace)
+	err = wc.CreateValidatingWebhookConfigurationFromFile(ctx, bytes, namespace, crd, watchNamespace)
 	if err != nil {
 		return err
 	}
@@ -107,7 +108,7 @@ func InitializeOperator(config *rest.Config, namespace string, logger logr.Logge
 	if err != nil {
 		return err
 	}
-	err = wc.CreateWebhookServiceFromFile(bytes, namespace, dep)
+	err = wc.CreateWebhookServiceFromFile(ctx, bytes, namespace, dep)
 	if err != nil {
 		return err
 	}
@@ -118,7 +119,7 @@ func InitializeOperator(config *rest.Config, namespace string, logger logr.Logge
 	if err != nil {
 		return err
 	}
-	err = cc.CreateConfigmap(bytes, namespace, dep)
+	err = cc.CreateConfigmap(ctx, bytes, namespace, dep)
 	if err != nil {
 		return err
 	}
