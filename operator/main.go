@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"k8s.io/client-go/kubernetes"
 	"os"
@@ -121,6 +122,8 @@ func main() {
 	flag.StringVar(&logLevel, "log-level", utils.GetEnv(logLevelEnvVar, logLevelDefault), "Log level.")
 	flag.Parse()
 
+	ctx := context.Background()
+
 	setupLogger(logLevel, debug)
 
 	config := ctrl.GetConfigOrDie()
@@ -136,7 +139,7 @@ func main() {
 
 	if createResources {
 		setupLog.Info("Intializing operator")
-		err := k8sutils.InitializeOperator(config, operatorNamespace, setupLog, scheme, namespace != "")
+		err := k8sutils.InitializeOperator(ctx, config, operatorNamespace, setupLog, scheme, namespace != "")
 		if err != nil {
 			setupLog.Error(err, "unable to initialise operator")
 			os.Exit(1)
@@ -163,7 +166,7 @@ func main() {
 		Scheme:    mgr.GetScheme(),
 		Namespace: namespace,
 		Recorder:  mgr.GetEventRecorderFor(constants.ControllerName),
-	}).SetupWithManager(mgr, constants.ControllerName); err != nil {
+	}).SetupWithManager(ctx, mgr, constants.ControllerName); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "SeldonDeployment")
 		os.Exit(1)
 	}
