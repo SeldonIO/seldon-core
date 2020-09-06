@@ -82,8 +82,40 @@ spec:
 
 It's possible to define complex graphs with ROUTERS, COMBINERS, and other components. You can find more of these specialised examples in our [examples section](../examples/notebooks.rst).
 
-## Learn about all types through reference
+## Learn about all types through GoLang Reference
 
-You can learn more about the SeldonDeployment YAML definition by reading the the content on our [Kubernetes Seldon Deployment Types](../reference/seldon-deployment.rst).
+You can learn more about the SeldonDeployment YAML definition by reading the the content on our [Kubernetes Seldon Deployment GoLang Types file](../reference/seldon-deployment.rst).
+
+
+## Image UserIds
+
+We provide an environment variable DEFAULT_USER_ID (set in the helm chart install with `.Values.defaultUserID`) which allows you to set the default user id the images will run under. This defaults to 8888. If you wish to override this for your specific Pod/Container rather than globally you can change it as shown in the example below:
+
+```
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: seldon-model
+spec:
+  name: test-deployment
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/mock_classifier_rest:1.3
+          name: classifier
+          securityContext:
+            runAsUser: 1000
+    graph:
+      children: []
+      endpoint:
+        type: REST
+      name: classifier
+      type: MODEL
+    name: example
+    replicas: 1
+```
+
+The above example makes the classifier container run with userId 1000. We recommend that all containers run with a non-root userid. On Openshift clusters this is usually enforced automatically.
 
 
