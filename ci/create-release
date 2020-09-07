@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# add-pr-build-comment
+# create-release
 #
 set -o nounset
 set -o errexit
@@ -39,6 +39,7 @@ set -o errexit
 echo "$VERSION" > ../version.txt
 (cd ../engine && mvn versions:set -DnewVersion=$(cat ../version.txt))
 (cd ../ && python release.py $(cat version.txt))
+make -C ../helm-charts docs
 
 # Push updated changes for release
 git add ..
