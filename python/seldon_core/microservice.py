@@ -182,7 +182,7 @@ class MetricsEndpointFilter(logging.Filter):
         return seldon_microservice.METRICS_ENDPOINT not in record.getMessage()
 
 
-def setup_logger(log_level: str) -> logging.Logger:
+def setup_logger(log_level: str, debug_mode: bool) -> logging.Logger:
     # set up log level
     log_level_raw = os.environ.get(LOG_LEVEL_ENV, log_level.upper())
     log_level_num = getattr(logging, log_level_raw, None)
@@ -195,7 +195,7 @@ def setup_logger(log_level: str) -> logging.Logger:
     flask_logger = logging.getLogger("werkzeug")
     flask_logger.setLevel(log_level_num)
 
-    if getenv_as_bool(FILTER_METRICS_ACCESS_LOGS_ENV_NAME, default=False):
+    if getenv_as_bool(FILTER_METRICS_ACCESS_LOGS_ENV_NAME, default=not debug_mode):
         flask_logger.addFilter(MetricsEndpointFilter())
         gunicorn_logger = logging.getLogger("gunicorn.access")
         gunicorn_logger.addFilter(MetricsEndpointFilter())
@@ -310,7 +310,7 @@ def main():
     args = parser.parse_args()
     parameters = parse_parameters(json.loads(args.parameters))
 
-    setup_logger(args.log_level)
+    setup_logger(args.log_level, args.debug)
 
     # set flask trace jaeger extra tags
     jaeger_extra_tags = list(
