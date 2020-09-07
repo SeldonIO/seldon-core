@@ -1,13 +1,13 @@
 buildPack: none
 pipelineConfig:
   pipelines:
-    pullRequest:
-      pipeline:
-        agent:
-          image: seldonio/core-builder:0.16
-        stages:
-        - name: pr-build-comment
-          steps:
+  pullRequest:
+    pipeline:
+      agent:
+        image: seldonio/core-builder:0.17
+      stages:
+      - name: pr-build-comment
+        steps:
           - agent:
               image: gcr.io/jenkinsxio/builder-go:2.0.916-264
             dir: ci
@@ -23,22 +23,22 @@ pipelineConfig:
                 args:
                 - -C python
                 - install_dev
-                - lint 
-          - name: lint-operator
-            agent:
-              image: seldonio/core-builder:0.16
-            steps:
-              - name: lint-operator
-                command: make
+              - lint 
+        - name: lint-operator
+          agent:
+            image: seldonio/core-builder:0.17
+          steps:
+            - name: lint-operator
+              command: make
                 args:
                   - -C operator
-                  - lint
-          - name: lint-executor
-            agent:
-              image: seldonio/core-builder:0.16
-            steps:
-              - name: lint-executor
-                command: make
+                - lint
+        - name: lint-executor
+          agent:
+            image: seldonio/core-builder:0.17
+          steps:
+            - name: lint-executor
+              command: make
                 args:
                   - -C executor
                   - lint

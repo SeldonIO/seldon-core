@@ -1,13 +1,13 @@
 buildPack: none
 pipelineConfig:
   pipelines:
-    pullRequest:
-      pipeline:
-        agent:
-          image: seldonio/core-builder:0.16
-        stages:
-          - name: pr-build-comment
-            steps:
+  pullRequest:
+    pipeline:
+      agent:
+        image: seldonio/core-builder:0.17
+      stages:
+        - name: pr-build-comment
+          steps:
               - agent:
                   image: gcr.io/jenkinsxio/builder-go:2.0.916-264
                 dir: ci
