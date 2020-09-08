@@ -206,7 +206,7 @@ def update_versions_py(seldon_core_version, debug=False):
         's/version="\(.*\)"/version="{seldon_core_version}"/g'.format(
             **locals()
         ),
-        "operator/config/manager/manager.yaml",
+        "python/setup.py",
     ]
     err, out = run_command(args, debug)
     # Updating the version in module __version__.py
