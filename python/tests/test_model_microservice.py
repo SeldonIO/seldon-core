@@ -50,6 +50,7 @@ class UserObject(SeldonComponent):
         "platform": "model-platform",
         "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1]}],
         "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1]}],
+        "custom": {},
     }
 
     def __init__(self, metrics_ok=True, ret_nparray=False, ret_meta=False):
