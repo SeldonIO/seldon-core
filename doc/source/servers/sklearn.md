@@ -8,7 +8,7 @@ Pre-requisites:
   * Installed dependencies (may not work if versions don't match):
       + sklearn == 0.23.2
       + joblib == 0.16.0
-      + numpy == 1.13.3
+      + numpy >= 1.8.2
 
 An example for a saved Iris prediction model:
 
