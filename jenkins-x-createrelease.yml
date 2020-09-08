@@ -13,13 +13,13 @@ pipelineConfig:
         - name: create-version
           command: cat version.txt > VERSION
         - name: skip-tag
-        command: echo "skipping tag"
-    pipeline:
-      agent:
-        image: seldonio/core-builder:0.17
-      stages:
-        - name: create-release
-          steps:
+          command: echo "skipping tag"
+      pipeline:
+        agent:
+          image: seldonio/core-builder:0.17
+        stages:
+          - name: create-release
+            steps:
             - name: create-release-step
               dir: ci
               sh: "./create-release"
