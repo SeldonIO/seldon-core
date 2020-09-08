@@ -23,7 +23,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=b'\n\020io.seldon.protosB\020PredictionProtosZBgithub.com/seldonio/seldon-core/incubating/wrappers/s2i/go/pkg/api',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x16proto/prediction.proto\x12\rseldon.protos\x1a\x19google/protobuf/any.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a&tensorflow/core/framework/tensor.proto\"\x91\x02\n\rSeldonMessage\x12%\n\x06status\x18\x01 \x01(\x0b\x32\x15.seldon.protos.Status\x12!\n\x04meta\x18\x02 \x01(\x0b\x32\x13.seldon.protos.Meta\x12*\n\x04\x64\x61ta\x18\x03 \x01(\x0b\x32\x1a.seldon.protos.DefaultDataH\x00\x12\x11\n\x07\x62inData\x18\x04 \x01(\x0cH\x00\x12\x11\n\x07strData\x18\x05 \x01(\tH\x00\x12*\n\x08jsonData\x18\x06 \x01(\x0b\x32\x16.google.protobuf.ValueH\x00\x12*\n\ncustomData\x18\x07 \x01(\x0b\x32\x14.google.protobuf.AnyH\x00\x42\x0c\n\ndata_oneof\"\xaf\x01\n\x0b\x44\x65\x66\x61ultData\x12\r\n\x05names\x18\x01 \x03(\t\x12\'\n\x06tensor\x18\x02 \x01(\x0b\x32\x15.seldon.protos.TensorH\x00\x12-\n\x07ndarray\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.ListValueH\x00\x12+\n\x08tftensor\x18\x04 \x01(\x0b\x32\x17.tensorflow.TensorProtoH\x00\x42\x0c\n\ndata_oneof\"/\n\x06Tensor\x12\x11\n\x05shape\x18\x01 \x03(\x05\x42\x02\x10\x01\x12\x12\n\x06values\x18\x02 \x03(\x01\x42\x02\x10\x01\"\x80\x03\n\x04Meta\x12\x0c\n\x04puid\x18\x01 \x01(\t\x12+\n\x04tags\x18\x02 \x03(\x0b\x32\x1d.seldon.protos.Meta.TagsEntry\x12\x31\n\x07routing\x18\x03 \x03(\x0b\x32 .seldon.protos.Meta.RoutingEntry\x12\x39\n\x0brequestPath\x18\x04 \x03(\x0b\x32$.seldon.protos.Meta.RequestPathEntry\x12&\n\x07metrics\x18\x05 \x03(\x0b\x32\x15.seldon.protos.Metric\x1a\x43\n\tTagsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value:\x02\x38\x01\x1a.\n\x0cRoutingEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a\x32\n\x10RequestPathEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xe1\x01\n\x06Metric\x12\x0b\n\x03key\x18\x01 \x01(\t\x12.\n\x04type\x18\x02 \x01(\x0e\x32 .seldon.protos.Metric.MetricType\x12\r\n\x05value\x18\x03 \x01(\x02\x12-\n\x04tags\x18\x04 \x03(\x0b\x32\x1f.seldon.protos.Metric.TagsEntry\x1a+\n\tTagsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"/\n\nMetricType\x12\x0b\n\x07\x43OUNTER\x10\x00\x12\t\n\x05GAUGE\x10\x01\x12\t\n\x05TIMER\x10\x02\"I\n\x11SeldonMessageList\x12\x34\n\x0eseldonMessages\x18\x01 \x03(\x0b\x32\x1c.seldon.protos.SeldonMessage\"\x8e\x01\n\x06Status\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x05\x12\x0c\n\x04info\x18\x02 \x01(\t\x12\x0e\n\x06reason\x18\x03 \x01(\t\x12\x30\n\x06status\x18\x04 \x01(\x0e\x32 .seldon.protos.Status.StatusFlag\"&\n\nStatusFlag\x12\x0b\n\x07SUCCESS\x10\x00\x12\x0b\n\x07\x46\x41ILURE\x10\x01\"\xa6\x01\n\x08\x46\x65\x65\x64\x62\x61\x63k\x12-\n\x07request\x18\x01 \x01(\x0b\x32\x1c.seldon.protos.SeldonMessage\x12.\n\x08response\x18\x02 \x01(\x0b\x32\x1c.seldon.protos.SeldonMessage\x12\x0e\n\x06reward\x18\x03 \x01(\x02\x12+\n\x05truth\x18\x04 \x01(\x0b\x32\x1c.seldon.protos.SeldonMessage\"p\n\x0fRequestResponse\x12-\n\x07request\x18\x01 \x01(\x0b\x32\x1c.seldon.protos.SeldonMessage\x12.\n\x08response\x18\x02 \x01(\x0b\x32\x1c.seldon.protos.SeldonMessage\"*\n\x1aSeldonModelMetadataRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x83\x01\n\x15SeldonMessageMetadata\x12\x13\n\x0bmessagetype\x18\x01 \x01(\t\x12&\n\x06schema\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\x10\n\x08\x64\x61tatype\x18\x04 \x01(\t\x12\r\n\x05shape\x18\x05 \x03(\x03\"\x9d\x02\n\x13SeldonModelMetadata\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x10\n\x08versions\x18\x02 \x03(\t\x12\x10\n\x08platform\x18\x03 \x01(\t\x12\x34\n\x06inputs\x18\x04 \x03(\x0b\x32$.seldon.protos.SeldonMessageMetadata\x12\x35\n\x07outputs\x18\x05 \x03(\x0b\x32$.seldon.protos.SeldonMessageMetadata\x12:\n\x04tags\x18\x06 \x03(\x0b\x32,.seldon.protos.SeldonModelMetadata.TagsEntry\x1a+\n\tTagsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xa3\x02\n\x13SeldonGraphMetadata\x12\x0c\n\x04name\x18\x01 \x01(\t\x12>\n\x06models\x18\x02 \x03(\x0b\x32..seldon.protos.SeldonGraphMetadata.ModelsEntry\x12\x34\n\x06inputs\x18\x03 \x03(\x0b\x32$.seldon.protos.SeldonMessageMetadata\x12\x35\n\x07outputs\x18\x04 \x03(\x0b\x32$.seldon.protos.SeldonMessageMetadata\x1aQ\n\x0bModelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x31\n\x05value\x18\x02 \x01(\x0b\x32\".seldon.protos.SeldonModelMetadata:\x02\x38\x01\x32\x89\x03\n\x07Generic\x12N\n\x0eTransformInput\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12O\n\x0fTransformOutput\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12\x45\n\x05Route\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12M\n\tAggregate\x12 .seldon.protos.SeldonMessageList\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12G\n\x0cSendFeedback\x12\x17.seldon.protos.Feedback\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x32\xe3\x01\n\x05Model\x12G\n\x07Predict\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12G\n\x0cSendFeedback\x12\x17.seldon.protos.Feedback\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12H\n\x08Metadata\x12\x16.google.protobuf.Empty\x1a\".seldon.protos.SeldonModelMetadata\"\x00\x32\x98\x01\n\x06Router\x12\x45\n\x05Route\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12G\n\x0cSendFeedback\x12\x17.seldon.protos.Feedback\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x32]\n\x0bTransformer\x12N\n\x0eTransformInput\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x32\x64\n\x11OutputTransformer\x12O\n\x0fTransformOutput\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x32Y\n\x08\x43ombiner\x12M\n\tAggregate\x12 .seldon.protos.SeldonMessageList\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x32\xcb\x02\n\x06Seldon\x12G\n\x07Predict\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12G\n\x0cSendFeedback\x12\x17.seldon.protos.Feedback\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12`\n\rModelMetadata\x12).seldon.protos.SeldonModelMetadataRequest\x1a\".seldon.protos.SeldonModelMetadata\"\x00\x12M\n\rGraphMetadata\x12\x16.google.protobuf.Empty\x1a\".seldon.protos.SeldonGraphMetadata\"\x00\x42h\n\x10io.seldon.protosB\x10PredictionProtosZBgithub.com/seldonio/seldon-core/incubating/wrappers/s2i/go/pkg/apib\x06proto3'
+  serialized_pb=b'\n\x16proto/prediction.proto\x12\rseldon.protos\x1a\x19google/protobuf/any.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a&tensorflow/core/framework/tensor.proto\"\x91\x02\n\rSeldonMessage\x12%\n\x06status\x18\x01 \x01(\x0b\x32\x15.seldon.protos.Status\x12!\n\x04meta\x18\x02 \x01(\x0b\x32\x13.seldon.protos.Meta\x12*\n\x04\x64\x61ta\x18\x03 \x01(\x0b\x32\x1a.seldon.protos.DefaultDataH\x00\x12\x11\n\x07\x62inData\x18\x04 \x01(\x0cH\x00\x12\x11\n\x07strData\x18\x05 \x01(\tH\x00\x12*\n\x08jsonData\x18\x06 \x01(\x0b\x32\x16.google.protobuf.ValueH\x00\x12*\n\ncustomData\x18\x07 \x01(\x0b\x32\x14.google.protobuf.AnyH\x00\x42\x0c\n\ndata_oneof\"\xaf\x01\n\x0b\x44\x65\x66\x61ultData\x12\r\n\x05names\x18\x01 \x03(\t\x12\'\n\x06tensor\x18\x02 \x01(\x0b\x32\x15.seldon.protos.TensorH\x00\x12-\n\x07ndarray\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.ListValueH\x00\x12+\n\x08tftensor\x18\x04 \x01(\x0b\x32\x17.tensorflow.TensorProtoH\x00\x42\x0c\n\ndata_oneof\"/\n\x06Tensor\x12\x11\n\x05shape\x18\x01 \x03(\x05\x42\x02\x10\x01\x12\x12\n\x06values\x18\x02 \x03(\x01\x42\x02\x10\x01\"\x80\x03\n\x04Meta\x12\x0c\n\x04puid\x18\x01 \x01(\t\x12+\n\x04tags\x18\x02 \x03(\x0b\x32\x1d.seldon.protos.Meta.TagsEntry\x12\x31\n\x07routing\x18\x03 \x03(\x0b\x32 .seldon.protos.Meta.RoutingEntry\x12\x39\n\x0brequestPath\x18\x04 \x03(\x0b\x32$.seldon.protos.Meta.RequestPathEntry\x12&\n\x07metrics\x18\x05 \x03(\x0b\x32\x15.seldon.protos.Metric\x1a\x43\n\tTagsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value:\x02\x38\x01\x1a.\n\x0cRoutingEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a\x32\n\x10RequestPathEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xe1\x01\n\x06Metric\x12\x0b\n\x03key\x18\x01 \x01(\t\x12.\n\x04type\x18\x02 \x01(\x0e\x32 .seldon.protos.Metric.MetricType\x12\r\n\x05value\x18\x03 \x01(\x02\x12-\n\x04tags\x18\x04 \x03(\x0b\x32\x1f.seldon.protos.Metric.TagsEntry\x1a+\n\tTagsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"/\n\nMetricType\x12\x0b\n\x07\x43OUNTER\x10\x00\x12\t\n\x05GAUGE\x10\x01\x12\t\n\x05TIMER\x10\x02\"I\n\x11SeldonMessageList\x12\x34\n\x0eseldonMessages\x18\x01 \x03(\x0b\x32\x1c.seldon.protos.SeldonMessage\"\x8e\x01\n\x06Status\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x05\x12\x0c\n\x04info\x18\x02 \x01(\t\x12\x0e\n\x06reason\x18\x03 \x01(\t\x12\x30\n\x06status\x18\x04 \x01(\x0e\x32 .seldon.protos.Status.StatusFlag\"&\n\nStatusFlag\x12\x0b\n\x07SUCCESS\x10\x00\x12\x0b\n\x07\x46\x41ILURE\x10\x01\"\xa6\x01\n\x08\x46\x65\x65\x64\x62\x61\x63k\x12-\n\x07request\x18\x01 \x01(\x0b\x32\x1c.seldon.protos.SeldonMessage\x12.\n\x08response\x18\x02 \x01(\x0b\x32\x1c.seldon.protos.SeldonMessage\x12\x0e\n\x06reward\x18\x03 \x01(\x02\x12+\n\x05truth\x18\x04 \x01(\x0b\x32\x1c.seldon.protos.SeldonMessage\"p\n\x0fRequestResponse\x12-\n\x07request\x18\x01 \x01(\x0b\x32\x1c.seldon.protos.SeldonMessage\x12.\n\x08response\x18\x02 \x01(\x0b\x32\x1c.seldon.protos.SeldonMessage\"*\n\x1aSeldonModelMetadataRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x83\x01\n\x15SeldonMessageMetadata\x12\x13\n\x0bmessagetype\x18\x01 \x01(\t\x12&\n\x06schema\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\x10\n\x08\x64\x61tatype\x18\x04 \x01(\t\x12\r\n\x05shape\x18\x05 \x03(\x03\"\xa3\x02\n\x13SeldonModelMetadata\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x10\n\x08versions\x18\x02 \x03(\t\x12\x10\n\x08platform\x18\x03 \x01(\t\x12\x34\n\x06inputs\x18\x04 \x03(\x0b\x32$.seldon.protos.SeldonMessageMetadata\x12\x35\n\x07outputs\x18\x05 \x03(\x0b\x32$.seldon.protos.SeldonMessageMetadata\x12>\n\x06\x63ustom\x18\x06 \x03(\x0b\x32..seldon.protos.SeldonModelMetadata.CustomEntry\x1a-\n\x0b\x43ustomEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xa3\x02\n\x13SeldonGraphMetadata\x12\x0c\n\x04name\x18\x01 \x01(\t\x12>\n\x06models\x18\x02 \x03(\x0b\x32..seldon.protos.SeldonGraphMetadata.ModelsEntry\x12\x34\n\x06inputs\x18\x03 \x03(\x0b\x32$.seldon.protos.SeldonMessageMetadata\x12\x35\n\x07outputs\x18\x04 \x03(\x0b\x32$.seldon.protos.SeldonMessageMetadata\x1aQ\n\x0bModelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x31\n\x05value\x18\x02 \x01(\x0b\x32\".seldon.protos.SeldonModelMetadata:\x02\x38\x01\x32\x89\x03\n\x07Generic\x12N\n\x0eTransformInput\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12O\n\x0fTransformOutput\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12\x45\n\x05Route\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12M\n\tAggregate\x12 .seldon.protos.SeldonMessageList\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12G\n\x0cSendFeedback\x12\x17.seldon.protos.Feedback\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x32\xe3\x01\n\x05Model\x12G\n\x07Predict\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12G\n\x0cSendFeedback\x12\x17.seldon.protos.Feedback\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12H\n\x08Metadata\x12\x16.google.protobuf.Empty\x1a\".seldon.protos.SeldonModelMetadata\"\x00\x32\x98\x01\n\x06Router\x12\x45\n\x05Route\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12G\n\x0cSendFeedback\x12\x17.seldon.protos.Feedback\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x32]\n\x0bTransformer\x12N\n\x0eTransformInput\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x32\x64\n\x11OutputTransformer\x12O\n\x0fTransformOutput\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x32Y\n\x08\x43ombiner\x12M\n\tAggregate\x12 .seldon.protos.SeldonMessageList\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x32\xcb\x02\n\x06Seldon\x12G\n\x07Predict\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12G\n\x0cSendFeedback\x12\x17.seldon.protos.Feedback\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12`\n\rModelMetadata\x12).seldon.protos.SeldonModelMetadataRequest\x1a\".seldon.protos.SeldonModelMetadata\"\x00\x12M\n\rGraphMetadata\x12\x16.google.protobuf.Empty\x1a\".seldon.protos.SeldonGraphMetadata\"\x00\x42h\n\x10io.seldon.protosB\x10PredictionProtosZBgithub.com/seldonio/seldon-core/incubating/wrappers/s2i/go/pkg/apib\x06proto3'
   ,
   dependencies=[google_dot_protobuf_dot_any__pb2.DESCRIPTOR,google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,google_dot_protobuf_dot_empty__pb2.DESCRIPTOR,tensorflow_dot_core_dot_framework_dot_tensor__pb2.DESCRIPTOR,])
 
@@ -797,23 +797,23 @@ _SELDONMESSAGEMETADATA = _descriptor.Descriptor(
 )
 
 
-_SELDONMODELMETADATA_TAGSENTRY = _descriptor.Descriptor(
-  name='TagsEntry',
-  full_name='seldon.protos.SeldonModelMetadata.TagsEntry',
+_SELDONMODELMETADATA_CUSTOMENTRY = _descriptor.Descriptor(
+  name='CustomEntry',
+  full_name='seldon.protos.SeldonModelMetadata.CustomEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='seldon.protos.SeldonModelMetadata.TagsEntry.key', index=0,
+      name='key', full_name='seldon.protos.SeldonModelMetadata.CustomEntry.key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='value', full_name='seldon.protos.SeldonModelMetadata.TagsEntry.value', index=1,
+      name='value', full_name='seldon.protos.SeldonModelMetadata.CustomEntry.value', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -831,8 +831,8 @@ _SELDONMODELMETADATA_TAGSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1191,
-  serialized_end=1234,
+  serialized_start=2213,
+  serialized_end=2258,
 )
 
 _SELDONMODELMETADATA = _descriptor.Descriptor(
@@ -879,7 +879,7 @@ _SELDONMODELMETADATA = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='tags', full_name='seldon.protos.SeldonModelMetadata.tags', index=5,
+      name='custom', full_name='seldon.protos.SeldonModelMetadata.custom', index=5,
       number=6, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -888,7 +888,7 @@ _SELDONMODELMETADATA = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_SELDONMODELMETADATA_TAGSENTRY, ],
+  nested_types=[_SELDONMODELMETADATA_CUSTOMENTRY, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -898,7 +898,7 @@ _SELDONMODELMETADATA = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=1967,
-  serialized_end=2252,
+  serialized_end=2258,
 )
 
 
@@ -936,8 +936,8 @@ _SELDONGRAPHMETADATA_MODELSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2465,
-  serialized_end=2546,
+  serialized_start=2471,
+  serialized_end=2552,
 )
 
 _SELDONGRAPHMETADATA = _descriptor.Descriptor(
@@ -988,8 +988,8 @@ _SELDONGRAPHMETADATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2255,
-  serialized_end=2546,
+  serialized_start=2261,
+  serialized_end=2552,
 )
 
 _SELDONMESSAGE.fields_by_name['status'].message_type = _STATUS
@@ -1045,10 +1045,10 @@ _FEEDBACK.fields_by_name['truth'].message_type = _SELDONMESSAGE
 _REQUESTRESPONSE.fields_by_name['request'].message_type = _SELDONMESSAGE
 _REQUESTRESPONSE.fields_by_name['response'].message_type = _SELDONMESSAGE
 _SELDONMESSAGEMETADATA.fields_by_name['schema'].message_type = google_dot_protobuf_dot_struct__pb2._VALUE
-_SELDONMODELMETADATA_TAGSENTRY.containing_type = _SELDONMODELMETADATA
+_SELDONMODELMETADATA_CUSTOMENTRY.containing_type = _SELDONMODELMETADATA
 _SELDONMODELMETADATA.fields_by_name['inputs'].message_type = _SELDONMESSAGEMETADATA
 _SELDONMODELMETADATA.fields_by_name['outputs'].message_type = _SELDONMESSAGEMETADATA
-_SELDONMODELMETADATA.fields_by_name['tags'].message_type = _SELDONMODELMETADATA_TAGSENTRY
+_SELDONMODELMETADATA.fields_by_name['custom'].message_type = _SELDONMODELMETADATA_CUSTOMENTRY
 _SELDONGRAPHMETADATA_MODELSENTRY.fields_by_name['value'].message_type = _SELDONMODELMETADATA
 _SELDONGRAPHMETADATA_MODELSENTRY.containing_type = _SELDONGRAPHMETADATA
 _SELDONGRAPHMETADATA.fields_by_name['models'].message_type = _SELDONGRAPHMETADATA_MODELSENTRY
@@ -1180,10 +1180,10 @@ _sym_db.RegisterMessage(SeldonMessageMetadata)
 
 SeldonModelMetadata = _reflection.GeneratedProtocolMessageType('SeldonModelMetadata', (_message.Message,), {
 
-  'TagsEntry' : _reflection.GeneratedProtocolMessageType('TagsEntry', (_message.Message,), {
-    'DESCRIPTOR' : _SELDONMODELMETADATA_TAGSENTRY,
+  'CustomEntry' : _reflection.GeneratedProtocolMessageType('CustomEntry', (_message.Message,), {
+    'DESCRIPTOR' : _SELDONMODELMETADATA_CUSTOMENTRY,
     '__module__' : 'proto.prediction_pb2'
-    # @@protoc_insertion_point(class_scope:seldon.protos.SeldonModelMetadata.TagsEntry)
+    # @@protoc_insertion_point(class_scope:seldon.protos.SeldonModelMetadata.CustomEntry)
     })
   ,
   'DESCRIPTOR' : _SELDONMODELMETADATA,
@@ -1191,7 +1191,7 @@ SeldonModelMetadata = _reflection.GeneratedProtocolMessageType('SeldonModelMetad
   # @@protoc_insertion_point(class_scope:seldon.protos.SeldonModelMetadata)
   })
 _sym_db.RegisterMessage(SeldonModelMetadata)
-_sym_db.RegisterMessage(SeldonModelMetadata.TagsEntry)
+_sym_db.RegisterMessage(SeldonModelMetadata.CustomEntry)
 
 SeldonGraphMetadata = _reflection.GeneratedProtocolMessageType('SeldonGraphMetadata', (_message.Message,), {
 
@@ -1216,7 +1216,7 @@ _META_TAGSENTRY._options = None
 _META_ROUTINGENTRY._options = None
 _META_REQUESTPATHENTRY._options = None
 _METRIC_TAGSENTRY._options = None
-_SELDONMODELMETADATA_TAGSENTRY._options = None
+_SELDONMODELMETADATA_CUSTOMENTRY._options = None
 _SELDONGRAPHMETADATA_MODELSENTRY._options = None
 
 _GENERIC = _descriptor.ServiceDescriptor(
@@ -1226,8 +1226,8 @@ _GENERIC = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=2549,
-  serialized_end=2942,
+  serialized_start=2555,
+  serialized_end=2948,
   methods=[
   _descriptor.MethodDescriptor(
     name='TransformInput',
@@ -1292,8 +1292,8 @@ _MODEL = _descriptor.ServiceDescriptor(
   index=1,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=2945,
-  serialized_end=3172,
+  serialized_start=2951,
+  serialized_end=3178,
   methods=[
   _descriptor.MethodDescriptor(
     name='Predict',
@@ -1338,8 +1338,8 @@ _ROUTER = _descriptor.ServiceDescriptor(
   index=2,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=3175,
-  serialized_end=3327,
+  serialized_start=3181,
+  serialized_end=3333,
   methods=[
   _descriptor.MethodDescriptor(
     name='Route',
@@ -1374,8 +1374,8 @@ _TRANSFORMER = _descriptor.ServiceDescriptor(
   index=3,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=3329,
-  serialized_end=3422,
+  serialized_start=3335,
+  serialized_end=3428,
   methods=[
   _descriptor.MethodDescriptor(
     name='TransformInput',
@@ -1400,8 +1400,8 @@ _OUTPUTTRANSFORMER = _descriptor.ServiceDescriptor(
   index=4,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=3424,
-  serialized_end=3524,
+  serialized_start=3430,
+  serialized_end=3530,
   methods=[
   _descriptor.MethodDescriptor(
     name='TransformOutput',
@@ -1426,8 +1426,8 @@ _COMBINER = _descriptor.ServiceDescriptor(
   index=5,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=3526,
-  serialized_end=3615,
+  serialized_start=3532,
+  serialized_end=3621,
   methods=[
   _descriptor.MethodDescriptor(
     name='Aggregate',
@@ -1452,8 +1452,8 @@ _SELDON = _descriptor.ServiceDescriptor(
   index=6,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=3618,
-  serialized_end=3949,
+  serialized_start=3624,
+  serialized_end=3955,
   methods=[
   _descriptor.MethodDescriptor(
     name='Predict',

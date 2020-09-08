@@ -11,5 +11,5 @@ type ModelMetadata struct {
 	Versions []string          `json:"versions,omitempty"`
 	Inputs   interface{}       `json:"inputs,omitempty"`
 	Outputs  interface{}       `json:"outputs,omitempty"`
-	Tags     map[string]string `json:"tags,omitempty"`
+	Custom   map[string]string `json:"custom,omitempty"`
 }
