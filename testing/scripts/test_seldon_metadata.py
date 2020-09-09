@@ -91,6 +91,7 @@ model_metadata = {
         }
     ],
     "outputs": [{"messagetype": "tensor", "schema": {"shape": [1]}}],
+    "custom": {"tag-key": "tag-value"},
 }
 
 graph_metadata = {
@@ -105,6 +106,7 @@ graph_metadata_grpc = {
     "models": {"my-model": model_metadata},
     "inputs": model_metadata["inputs"],
     "outputs": model_metadata["outputs"],
+    "custom": {"tag-key": "tag-value"},
 }
 
 
