@@ -24,6 +24,7 @@ func (d *datadogTracer) Close() error {
 	return nil
 }
 
+// TODO: docs/comments
 // initDatadogTracer attempts to create a tracer for using DataDog and statsd if the
 // correct environment variables are present. See https://pkg.go.dev/gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer?tab=doc#StartOption
 // for all Environment variables. Here are the relevant ones:
