@@ -150,12 +150,12 @@ def setup_tracing(interface_name: str) -> object:
     if dd_enabled:
         logger.info("initializing Datadog tracer")
         from ddtrace.opentracer import Tracer, set_global_tracer
-        from ddtrace import settings
 
-        # Tracer will be created through env vars, see https://docs.datadoghq.com/tracing/setup/python/
-        tracer = Tracer(config=settings.config)
-        set_global_tracer(tracer)
-        return tracer
+        # Config will be created through env vars, see https://docs.datadoghq.com/tracing/setup/python/
+        t = Tracer()
+        set_global_tracer(t)
+        logger.info("done setting up datadog tracer")
+        return t
 
     from jaeger_client import Config
     logger.info("initializing Jaeger tracer")
