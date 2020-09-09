@@ -151,7 +151,20 @@ def load_annotations() -> Dict:
 
 def setup_tracing(interface_name: str) -> object:
     logger.info("Initializing tracing")
+
+    dd_enabled = os.environ.get("DD_ENABLED", False) # TODO: Make sure this matches up with executor
+    if dd_enabled:
+        logger.info("initializing Datadog tracer")
+        from ddtrace.opentracer import Tracer, set_global_tracer
+        from ddtrace import settings
+
+        # Tracer will be created through env vars, see https://docs.datadoghq.com/tracing/setup/python/
+        tracer = Tracer(config=settings.config)
+        set_global_tracer(tracer)
+        return tracer
+
     from jaeger_client import Config
+    logger.info("initializing Jaeger tracer")
 
     jaeger_serv = os.environ.get("JAEGER_AGENT_HOST", "0.0.0.0")
     jaeger_port = os.environ.get("JAEGER_AGENT_PORT", 5775)
