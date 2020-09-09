@@ -1,2 +1,2 @@
 kfserving==0.3.0.1
-alibi-detect==0.4.0
+alibi-detect==0.4.2
