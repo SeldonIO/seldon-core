@@ -32,7 +32,7 @@ setup(
         "Flask-OpenTracing >= 1.1.0, < 1.2.0",
         "opentracing >= 2.2.0, < 2.4.0",
         "jaeger-client >= 4.1.0, < 4.4.0",
-        "ddtrace >= 0.41.2"
+        "ddtrace <= 0.41.2"
         "grpcio-opentracing >= 1.1.4, < 1.2.0",
         "PyYAML<5.4",
         "gunicorn >= 19.9.0, < 20.1.0",
