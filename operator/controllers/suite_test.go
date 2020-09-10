@@ -83,6 +83,12 @@ var configs = map[string]string{
                  "grpc": {
                    "image": "seldonio/sklearnserver_grpc",
                    "defaultImageVersion": "0.2"
+                 },
+                 "protocols": {
+                   "kfserving": {
+                     "image": "seldonio/mlserver",
+                     "defaultImageVersion": "0.1.0"
+                   }
                  }
              },
              "XGBOOST_SERVER": {

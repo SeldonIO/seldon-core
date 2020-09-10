@@ -30,6 +30,23 @@ var _ = Describe("MLServer helpers", func() {
 		}
 	})
 
+	Describe("getMLServerImage", func() {
+		It("returns empty if no kfserving entry is set", func() {
+			invalidImplementation := machinelearningv1.PredictiveUnitImplementation(
+				machinelearningv1.PrepackTensorflowName,
+			)
+			pu.Implementation = &invalidImplementation
+
+			image := getMLServerImage(pu)
+			Expect(image).To(Equal(""))
+		})
+
+		It("returns image name for kfserving", func() {
+			image := getMLServerImage(pu)
+			Expect(image).To(Equal("seldonio/mlserver:0.1.0"))
+		})
+	})
+
 	Describe("getMLServerEnvVars", func() {
 		var envs []v1.EnvVar
 
