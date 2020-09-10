@@ -55,6 +55,10 @@ if [[ -f requirements.txt ]]; then
         echo "---> Adding extra index url to pip..."
         pip config set global.extra-index-url "${EXTRA_INDEX_URL}"
     fi
+    if [[ -n "$PIP_TRUSTED_HOST" ]]; then
+        echo "---> Adding trusted host to pip..."
+        pip config set global.trusted-host "${PIP_TRUSTED_HOST}"
+    fi
     echo "---> Installing dependencies ..."
     pip install --find-links /whl -r requirements.txt
 elif [[ -f setup.py ]]; then

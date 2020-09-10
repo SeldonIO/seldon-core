@@ -128,6 +128,9 @@ RUN pip install -r /tmp/requirements.txt
 # Ginkgo
 RUN go get -u github.com/onsi/ginkgo/ginkgo
 
+# Helm docs
+RUN GO111MODULE=on go get github.com/norwoodj/helm-docs/cmd/helm-docs@f66fdbd6fe
+
 WORKDIR /work
 
 # Define default command.

@@ -105,15 +105,23 @@ The service type being created. Available options are:
 
 Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved periodically to redis and loaded from redis (if exists) or created fresh if not.
 
-### FLASK_JSONIFY_PRETTYPRINT_REGULAR
+### Flask Settings
 
-Sets the flask application configuration `JSONIFY_PRETTYPRINT_REGULAR` for the REST API. Available options are `True`
-or `False`. If nothing is specified, flask's default value is used.
+See [Flask - Builtin Configuration Values](https://flask.palletsprojects.com/config/#builtin-configuration-values) for possible configurations; the following are configurable when prefixed with the `FLASK_` string (e.g. `FLASK_JSON_SORT_KEYS` translates to `JSON_SORT_KEYS` in Flask):
 
-### FLASK_JSON_SORT_KEYS
-
-Sets the flask application configuration `JSON_SORT_KEYS` for the REST API. Available options are `True` or `False`.
-If nothing is specified, flask's default value is used.
+ * DEBUG
+ * EXPLAIN_TEMPLATE_LOADING
+ * JSONIFY_PRETTYPRINT_REGULAR
+ * JSON_SORT_KEYS
+ * PROPAGATE_EXCEPTIONS
+ * PRESERVE_CONTEXT_ON_EXCEPTION
+ * SESSION_COOKIE_HTTPONLY
+ * SESSION_COOKIE_SECURE
+ * SESSION_REFRESH_EACH_REQUEST
+ * TEMPLATES_AUTO_RELOAD
+ * TESTING
+ * TRAP_HTTP_EXCEPTIONS
+ * TRAP_BAD_REQUEST_ERRORS
 
 ## Creating different service types
 

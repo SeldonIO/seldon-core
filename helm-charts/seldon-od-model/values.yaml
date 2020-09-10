@@ -1,6 +1,8 @@
 name: seldon-od-model
 model:
   name: outlier-detector
+  # model.type -- Type of outlier detector.
+  # Valid values are: `vae`, `mahalanobis`, `seq2seq` and `isolationforest`.
   type: vae
   vae:
     threshold: 10

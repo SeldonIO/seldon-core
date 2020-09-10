@@ -16,6 +16,7 @@ from seldon_core.flask_utils import (
 )
 from seldon_core.proto import prediction_pb2_grpc
 from seldon_core.proto import prediction_pb2
+from seldon_core.utils import getenv_as_bool
 import os
 
 logger = logging.getLogger(__name__)
@@ -169,19 +170,36 @@ def get_metrics_microservice(seldon_metrics):
 def _set_flask_app_configs(app):
     """
     Set the configs for the flask app based on environment variables
+    See https://flask.palletsprojects.com/config/#builtin-configuration-values
     :param app:
     :return:
     """
-    env_to_config_map = {
-        "FLASK_JSONIFY_PRETTYPRINT_REGULAR": "JSONIFY_PRETTYPRINT_REGULAR",
-        "FLASK_JSON_SORT_KEYS": "JSON_SORT_KEYS",
-    }
+    FLASK_CONFIG_IDENTIFIER = "FLASK_"
+    FLASK_CONFIGS_ALLOWED = [
+        "DEBUG",
+        "EXPLAIN_TEMPLATE_LOADING",
+        "JSONIFY_PRETTYPRINT_REGULAR",
+        "JSON_SORT_KEYS",
+        "PROPAGATE_EXCEPTIONS",
+        "PRESERVE_CONTEXT_ON_EXCEPTION",
+        "SESSION_COOKIE_HTTPONLY",
+        "SESSION_COOKIE_SECURE",
+        "SESSION_REFRESH_EACH_REQUEST",
+        "TEMPLATES_AUTO_RELOAD",
+        "TESTING",
+        "TRAP_HTTP_EXCEPTIONS",
+        "TRAP_BAD_REQUEST_ERRORS",
+        "USE_X_SENDFILE",
+    ]
 
-    for env_var, config_name in env_to_config_map.items():
-        if os.environ.get(env_var):
-            # Environment variables come as strings, convert them to boolean
-            bool_env_value = os.environ.get(env_var).lower() == "true"
-            app.config[config_name] = bool_env_value
+    for flask_config in FLASK_CONFIGS_ALLOWED:
+        flask_config_value = getenv_as_bool(
+            f"{FLASK_CONFIG_IDENTIFIER}{flask_config}", default=None
+        )
+        if flask_config_value is None:
+            continue
+        app.config[flask_config] = flask_config_value
+    logger.info(f"App Config:  {app.config}")
 
 
 # ----------------------------

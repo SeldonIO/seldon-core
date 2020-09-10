@@ -16,7 +16,7 @@ pipelineConfig:
           command: echo "skipping tag"
       pipeline:
         agent:
-          image: seldonio/core-builder:0.16
+          image: seldonio/core-builder:0.17
         stages:
           - name: create-release
             steps:
