@@ -10,7 +10,7 @@ Prequisites:
   * Dependencies (otherwise it may not work):
       + scikit-learn == 0.20.3
       + numpy == 1.15.4
-      + xgboost == 1.0.1
+      + xgboost == 1.2.0
 
 An example for a saved Iris prediction model:
 
