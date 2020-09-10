@@ -1,0 +1,121 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-rcfhm-11[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-krtfh[0m
+{"level":"info","ts":1599750399.8678343,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1599750399.8682802,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-rcfhm-11[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-pd28r[0m
+{"level":"info","ts":1599750401.1151023,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1599750401.1166584,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-rcfhm-11[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-rcfhm-11[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-rzkkc[0m
+{"level":"info","ts":1599750408.3997533,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1599750408.4023364,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-rcfhm-11[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-2404-in-rcfhm-m4rvn[0m
+{"level":"info","ts":1599750408.7914467,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1599750414.3207867,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-rcfhm-11[0m stage [32mpr-build-comment[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-rcfhm-11[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:4eda2e53b77a63c3c3ae8e9f96dbac491e0949ef,2404:dc66c7b5b81ae54401fde6ee0ac73c6f97b5b704
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch origin --unshallow dc66c7b5b81ae54401fde6ee0ac73c6f97b5b704: 4eda2e53b77a63c3c3ae8e9f96dbac491e0949ef:
+DEBUG: ran git fetch --unshallow origin dc66c7b5b81ae54401fde6ee0ac73c6f97b5b704: 4eda2e53b77a63c3c3ae8e9f96dbac491e0949ef: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard 4eda2e53b77a63c3c3ae8e9f96dbac491e0949ef
+DEBUG: ran git reset --hard 4eda2e53b77a63c3c3ae8e9f96dbac491e0949ef in 
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git merge dc66c7b5b81ae54401fde6ee0ac73c6f97b5b704
+DEBUG: ran git merge dc66c7b5b81ae54401fde6ee0ac73c6f97b5b704 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git log --format=%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%s%n%b%x1e 4eda2e53b77a63c3c3ae8e9f96dbac491e0949ef..HEAD
+Merged SHA dc66c7b5b81ae54401fde6ee0ac73c6f97b5b704 with commit message 'upgrade alibi-detect to 0.4.2' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-rcfhm-11[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=2404
++ BUILD_NUMBER=11
++ PIPELINE_CONTEXT=integration
+++ cat
++++ date
++ COMMENT_MSG='Thu Sep 10 15:07:03 UTC 2020
+The logs for [integration] [11] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2404/11.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2404 --build=11'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=2404 '--comment=Thu Sep 10 15:07:03 UTC 2020
+The logs for [integration] [11] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2404/11.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2404 --build=11'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-rcfhm-11[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-2404-in-rcfhm-tx9v2[0m
+{"level":"info","ts":1599750426.3078518,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1599750426.3117194,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-rcfhm-11[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-2404-in-rcfhm-gz8xr[0m
+{"level":"info","ts":1599750426.7658122,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1599750427.3370888,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-rcfhm-11[0m stage [32mend-to-end[0m and container [32mstep-credential-initializer-b5bj6[0m
+{"level":"info","ts":1599750445.506805,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1599750445.5073133,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-rcfhm-11[0m stage [32mend-to-end[0m and container [32mstep-working-dir-initializer-snt46[0m
+{"level":"info","ts":1599750446.9045978,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1599750446.906675,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-rcfhm-11[0m stage [32mend-to-end[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-rcfhm-11[0m stage [32mend-to-end[0m and container [32mstep-create-dir-workspace-qvxwz[0m
+{"level":"info","ts":1599750455.2004333,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1599750455.2043116,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-rcfhm-11[0m stage [32mend-to-end[0m and container [32mstep-source-copy-workspace-4rgqd[0m
+{"level":"info","ts":1599750455.5839424,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1599750460.8496842,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-rcfhm-11[0m stage [32mend-to-end[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-rcfhm-11[0m stage [32mend-to-end[0m and container [32mstep-test-end-to-end[0m
+Test run type is: [base]
+Starting Docker: docker.
+[SETUP] Waiting for Docker to be ready, sleeping for 1 seconds ...
+kind create cluster --config ../resources/kind_config.yaml
+Creating cluster "kind" ...
+ • Ensuring node image (kindest/node:v1.16.3) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.16.3) 🖼
+ • Preparing nodes 📦  ...
+ ✓ Preparing nodes 📦
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✗ Starting control-plane 🕹️
+ERROR: failed to create cluster: failed to init node with kubeadm: command "docker exec --privileged kind-control-plane kubeadm init --ignore-preflight-errors=all --config=/kind/kubeadm.conf --skip-token-print --v=6" failed with error: exit status 137
+make: *** [Makefile:8: kind_create_cluster] Error 1
+`kind get kubeconfig-path` is deprecated!
+
+KIND will export and merge kubeconfig like kops, minikube, etc.
+This command is now unnecessary and will be removed in a future release.
+
+For more info see: https://github.com/kubernetes-sigs/kind/issues/1060
+See also the output of `kind create cluster`
+
+Existing kind cluster or failure starting - 2
+kind delete cluster
+Deleting cluster "kind" ...
+Stopping Docker: dockerProgram process in pidfile '/var/run/docker-ssd.pid', 1 process(es), refused to die.
+kind_test_all.sh: line 212: RUN_EXIT_VALUE: unbound variable
+[31m
+Pipeline failed on stage 'end-to-end' : container 'step-test-end-to-end'. The execution of the pipeline has stopped.[0m
