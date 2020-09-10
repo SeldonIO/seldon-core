@@ -64,8 +64,8 @@ helm install seldon-core-analytics seldonio/seldon-core-analytics --namespace se
 | prometheus.server.extraConfigmapMounts[1].readOnly | bool | `true` |  |
 | prometheus.server.extraConfigmapMounts[1].subPath | string | `""` |  |
 | prometheus.server.name | string | `"seldon"` |  |
-| prometheus.server.persistentVolume.enabled | bool | `false` |  |
-| prometheus.server.persistentVolume.existingClaim | string | `"seldon-claim"` |  |
-| prometheus.server.persistentVolume.mountPath | string | `"/seldon-data"` |  |
+| prometheus.server.persistentVolume.enabled | bool | `true` |  |
+| prometheus.server.persistentVolume.existingClaim | string | `""` |  |
+| prometheus.server.persistentVolume.mountPath | string | `"/data"` |  |
 | prometheus.service_type | string | `"ClusterIP"` |  |
 | rbac.enabled | bool | `true` |  |

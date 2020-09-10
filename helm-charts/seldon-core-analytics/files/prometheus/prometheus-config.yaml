@@ -119,14 +119,14 @@ scrape_configs:
     - __meta_kubernetes_pod_name
     action: replace
     target_label: kubernetes_pod_name
-- job_name: seldon-slow-scrape
+- job_name: seldon-prometheus-exporter
   scrape_interval: 2m
   scrape_timeout: 20s
   kubernetes_sd_configs:
     - role: pod
   relabel_configs:
     - source_labels:
-        - __meta_kubernetes_pod_annotation_prometheus_io_scrape_slow
+        - __meta_kubernetes_pod_annotation_prometheus_io_scrape_seldon_exporter
       action: keep
       regex: true
     - source_labels: [__meta_kubernetes_pod_container_port_name]
@@ -152,8 +152,18 @@ scrape_configs:
       target_label: kubernetes_namespace
     - source_labels:
         - __meta_kubernetes_pod_name
-      action: replace
+      separator: ;
+      regex: (.*)
       target_label: kubernetes_pod_name
+      replacement: "seldon-prometheus-exporter"
+      action: replace
+    - source_labels:
+        - __meta_pod_template_hash
+      separator: ;
+      regex: (.*)
+      target_label: pod_template_hash
+      replacement: "not recorded"
+      action: replace
 # Scrape config for Kubelet cAdvisor.
 # This is required for Kubernetes 1.7.3 and later, where cAdvisor metrics
 # (those whose names begin with 'container_') have been removed from the

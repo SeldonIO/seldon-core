@@ -25,10 +25,11 @@ prometheus:
   server:
     name: seldon
     retention: "60d"
-    persistentVolume:
-      enabled: false
-      existingClaim: "seldon-claim"
-      mountPath: /seldon-data
+    #pvc created by default - can be overridden with below
+    #persistentVolume:
+    #  enabled: false
+    #  existingClaim: "seldon-claim"
+    #  mountPath: /seldon-data
     configPath: /etc/prometheus/conf/prometheus-config.yaml
     extraConfigmapMounts:
     - name: prometheus-config-volume
