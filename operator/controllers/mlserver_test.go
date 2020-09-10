@@ -1,10 +1,9 @@
 package controllers
 
 import (
-	"fmt"
-
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
+	v1 "k8s.io/api/core/v1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
@@ -29,6 +28,46 @@ var _ = Describe("MLServer helpers", func() {
 				ServicePort: int32(5001),
 			},
 		}
+	})
+
+	Describe("getMLServerEnvVars", func() {
+		var envs []v1.EnvVar
+
+		BeforeEach(func() {
+			envs = getMLServerEnvVars(pu)
+		})
+
+		It("adds the right ports", func() {
+			var httpPort string
+			var grpcPort string
+			for _, env := range envs {
+				switch env.Name {
+				case MLServerHTTPPortEnv:
+					httpPort = env.Value
+				case MLServerGRPCPortEnv:
+					grpcPort = env.Value
+				}
+			}
+
+			Expect(httpPort).To(Equal(string(pu.Endpoint.ServicePort)))
+			Expect(grpcPort).To(Equal(string(constants.MLServerDefaultGrpcPort)))
+		})
+
+		It("adds the right model implementation and uri", func() {
+			var modelImplementation string
+			var modelURI string
+			for _, env := range envs {
+				switch env.Name {
+				case MLServerModelImplementationEnv:
+					modelImplementation = env.Value
+				case MLServerModelURIEnv:
+					modelURI = env.Value
+				}
+			}
+
+			Expect(modelImplementation).To(Equal(MLServerSKLearnImplementation))
+			Expect(modelURI).To(Equal(DefaultModelLocalMountPath))
+		})
 	})
 
 	Describe("getMLServerPort", func() {
@@ -64,6 +103,23 @@ var _ = Describe("MLServer helpers", func() {
 				machinelearningv1.GRPC,
 				int32(5001),
 			),
+		)
+	})
+
+	Describe("getMLServerModelImplementation", func() {
+		DescribeTable(
+			"returns the right implementation",
+			func(implementation string, expected string) {
+				modelImp := machinelearningv1.PredictiveUnitImplementation(implementation)
+				pu.Implementation = &modelImp
+
+				mlServerImplementation := getMLServerModelImplementation(pu)
+
+				Expect(mlServerImplementation).To(Equal(expected))
+			},
+			Entry("sklearn", machinelearningv1.PrepackSklearnName, MLServerSKLearnImplementation),
+			Entry("xgboost", machinelearningv1.PrepackXgboostName, MLServerXGBoostImplementation),
+			Entry("unknown", "foo", ""),
 		)
 	})
 })

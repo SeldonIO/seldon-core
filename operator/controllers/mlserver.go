@@ -7,8 +7,13 @@ import (
 )
 
 const (
-	MLServerSklearnImplementation = "mlserver.models.SKLearnModel"
-	MLServerXgboostImplementation = "mlserver.models.XGBoostModel"
+	MLServerSKLearnImplementation = "mlserver.models.SKLearnModel"
+	MLServerXGBoostImplementation = "mlserver.models.XGBoostModel"
+
+	MLServerHTTPPortEnv            = "MLSERVER_HTTP_PORT"
+	MLServerGRPCPortEnv            = "MLSERVER_GRPC_PORT"
+	MLServerModelImplementationEnv = "MLSERVER_MODEL_IMPLEMENTATION"
+	MLServerModelURIEnv            = "MLSERVER_MODEL_URI"
 )
 
 func getMLServerEnvVars(pu *machinelearningv1.PredictiveUnit) []v1.EnvVar {
@@ -17,19 +22,19 @@ func getMLServerEnvVars(pu *machinelearningv1.PredictiveUnit) []v1.EnvVar {
 
 	return []v1.EnvVar{
 		{
-			Name:  "MLSERVER_HTTP_PORT",
+			Name:  MLServerHTTPPortEnv,
 			Value: string(httpPort),
 		},
 		{
-			Name:  "MLSERVER_GRPC_PORT",
+			Name:  MLServerGRPCPortEnv,
 			Value: string(grpcPort),
 		},
 		{
-			Name:  "MLSERVER_MODEL_IMPLEMENTATION",
+			Name:  MLServerModelImplementationEnv,
 			Value: getMLServerModelImplementation(pu),
 		},
 		{
-			Name:  "MLSERVER_MODEL_URI",
+			Name:  MLServerModelURIEnv,
 			Value: DefaultModelLocalMountPath,
 		},
 	}
@@ -54,9 +59,9 @@ func getMLServerPort(pu *machinelearningv1.PredictiveUnit, endpointType machinel
 func getMLServerModelImplementation(pu *machinelearningv1.PredictiveUnit) string {
 	switch *pu.Implementation {
 	case machinelearningv1.PrepackSklearnName:
-		return MLServerSklearnImplementation
+		return MLServerSKLearnImplementation
 	case machinelearningv1.PrepackXgboostName:
-		return MLServerXgboostImplementation
+		return MLServerXGBoostImplementation
 	}
 
 	// TODO: Error if something else
