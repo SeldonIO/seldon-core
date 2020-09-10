@@ -34,10 +34,17 @@ type PredictorImageConfig struct {
 }
 
 type PredictorServerConfig struct {
-	Tensorflow      bool                 `json:"tensorflow,omitempty"`
-	TensorflowImage string               `json:"tfImage,omitempty"`
-	RestConfig      PredictorImageConfig `json:"rest,omitempty"`
-	GrpcConfig      PredictorImageConfig `json:"grpc,omitempty"`
+	Tensorflow      bool                     `json:"tensorflow,omitempty"`
+	TensorflowImage string                   `json:"tfImage,omitempty"`
+	RestConfig      PredictorImageConfig     `json:"rest,omitempty"`
+	GrpcConfig      PredictorImageConfig     `json:"grpc,omitempty"`
+	Protocols       PredictorProtocolsConfig `json:"protocols,omitempty"`
+}
+
+type PredictorProtocolsConfig struct {
+	Seldon     *PredictorImageConfig `json:"seldon,omitempty"`
+	KFServing  *PredictorImageConfig `json:"kfserving,omitempty"`
+	Tensorflow *PredictorImageConfig `json:"tensorflow,omitempty"`
 }
 
 var (
