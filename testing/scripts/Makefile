@@ -48,7 +48,7 @@ helm_setup:
 	helm repo update
 
 install_ambassador:
-	helm install ambassador \
+	helm upgrade ambassador \
 		datawire/ambassador \
 		-f ../resources/ambassador_values.yaml \
 		--set image.repository=quay.io/datawire/ambassador \
@@ -56,14 +56,14 @@ install_ambassador:
 		--set enableAES=false \
 		--namespace seldon \
 		--set replicaCount=1 \
-		--wait
+		--wait --install
 
 install_jaeger:
-	helm install jaeger-operator \
+	helm upgrade jaeger-operator \
 		jaegertracing/jaeger-operator \
 		--set rbac.clusterRole=true \
 		--namespace seldon \
-		--wait
+		--wait --install
 	kubectl apply -f ../resources/jaeger.yaml --namespace seldon
 
 
@@ -74,14 +74,14 @@ install_cert_manager:
 install_seldon: install_cert_manager
 	kubectl create namespace seldon-system || echo "namespace seldon-system exists"
 	helm delete seldon --namespace seldon-system || echo "seldon-core not installed"
-	helm install seldon \
+	helm upgrade seldon \
 		../../helm-charts/seldon-core-operator \
 		--namespace seldon-system \
 		--set istio.enabled=true \
 		--set istio.gateway=istio-system/seldon-gateway \
 		--set certManager.enabled=false \
 		--set executor.enabled=$(SELDON_E2E_TESTS_USE_EXECUTOR) \
-		--wait
+		--wait --install
 
 install_istio:
 	kubectl apply -f istio-1.4.2.yaml
