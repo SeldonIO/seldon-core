@@ -19,7 +19,7 @@ const (
 	MLServerModelURIEnv            = "MLSERVER_MODEL_URI"
 )
 
-func getMLServerContainer(pu *machinelearningv1.PredictiveUnit, serverConfig *machinelearningv1.PredictorServerConfig) *v1.Container {
+func getMLServerContainer(pu *machinelearningv1.PredictiveUnit) *v1.Container {
 	image := getMLServerImage(pu)
 	httpPort := getMLServerPort(pu, machinelearningv1.REST)
 	grpcPort := getMLServerPort(pu, machinelearningv1.GRPC)
