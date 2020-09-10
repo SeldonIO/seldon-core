@@ -30,6 +30,18 @@ var _ = Describe("MLServer helpers", func() {
 		}
 	})
 
+	Describe("getMLServerContainer", func() {
+		var cServer *v1.Container
+
+		BeforeEach(func() {
+			cServer = getMLServerContainer(pu)
+		})
+
+		It("creates container with image", func() {
+			Expect(cServer.Image).To(Equal("seldonio/mlserver:0.1.0"))
+		})
+	})
+
 	Describe("getMLServerImage", func() {
 		It("returns empty if no kfserving entry is set", func() {
 			invalidImplementation := machinelearningv1.PredictiveUnitImplementation(
