@@ -24,8 +24,12 @@ const (
 
 	TritonDefaultGrpcPort = 2001
 	TritonDefaultHttpPort = 2000
-	TritonProbeLivePath   = "/v2/health/live"
-	TritonProbeReadyPath  = "/v2/health/ready"
+
+	KFServingProbeLivePath  = "/v2/health/live"
+	KFServingProbeReadyPath = "/v2/health/ready"
+
+	MLServerDefaultGrpcPort = int32(2001)
+	MLServerDefaultHttpPort = int32(2000)
 )
 
 // Metrics-related constants
