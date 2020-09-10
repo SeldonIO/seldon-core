@@ -228,6 +228,7 @@ def initial_rest_request(
     dtype="tensor",
     names=None,
     method="predict",
+    predictor_name="default",
 ):
     sleeping_times = [1, 5, 10]
     attempt = 0
@@ -244,6 +245,7 @@ def initial_rest_request(
             dtype=dtype,
             names=names,
             method=method,
+            predictor_name=predictor_name,
         )
 
         if r is None or r.status_code != 200:
