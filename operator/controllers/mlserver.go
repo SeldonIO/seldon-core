@@ -19,10 +19,26 @@ const (
 	MLServerModelURIEnv            = "MLSERVER_MODEL_URI"
 )
 
-func getMLServerContainer(pu *machinelearningv1.PredictiveUnit) *v1.Container {
-	image := getMLServerImage(pu)
-	httpPort := getMLServerPort(pu, machinelearningv1.REST)
-	grpcPort := getMLServerPort(pu, machinelearningv1.GRPC)
+func getMLServerContainer(pu *machinelearningv1.PredictiveUnit) (*v1.Container, error) {
+	image, err := getMLServerImage(pu)
+	if err != nil {
+		return nil, err
+	}
+
+	envVars, err := getMLServerEnvVars(pu)
+	if err != nil {
+		return nil, err
+	}
+
+	httpPort, err := getMLServerPort(pu, machinelearningv1.REST)
+	if err != nil {
+		return nil, err
+	}
+
+	grpcPort, err := getMLServerPort(pu, machinelearningv1.GRPC)
+	if err != nil {
+		return nil, err
+	}
 
 	cServer := &v1.Container{
 		Name:  pu.Name,
@@ -32,6 +48,7 @@ func getMLServerContainer(pu *machinelearningv1.PredictiveUnit) *v1.Container {
 			"start",
 			DefaultModelLocalMountPath,
 		},
+		Env: envVars,
 		Ports: []v1.ContainerPort{
 			{
 				Name:          "grpc",
@@ -74,16 +91,16 @@ func getMLServerContainer(pu *machinelearningv1.PredictiveUnit) *v1.Container {
 		},
 	}
 
-	return cServer
+	return cServer, nil
 }
 
-func getMLServerImage(pu *machinelearningv1.PredictiveUnit) string {
+func getMLServerImage(pu *machinelearningv1.PredictiveUnit) (string, error) {
 	prepackConfig := machinelearningv1.GetPrepackServerConfig(string(*pu.Implementation))
 	kfservingConfig := prepackConfig.Protocols.KFServing
 
 	if kfservingConfig == nil {
-		// TODO: Raise error if empty (i.e. pre-packaged server is incompatible with protocol)
-		return ""
+		err := fmt.Errorf("no image compatible with kfserving protocol for %s", *pu.Implementation)
+		return "", err
 	}
 
 	// Ignore version if empty
@@ -92,12 +109,24 @@ func getMLServerImage(pu *machinelearningv1.PredictiveUnit) string {
 		image = fmt.Sprintf("%s:%s", image, kfservingConfig.DefaultImageVersion)
 	}
 
-	return image
+	return image, nil
 }
 
-func getMLServerEnvVars(pu *machinelearningv1.PredictiveUnit) []v1.EnvVar {
-	httpPort := getMLServerPort(pu, machinelearningv1.REST)
-	grpcPort := getMLServerPort(pu, machinelearningv1.GRPC)
+func getMLServerEnvVars(pu *machinelearningv1.PredictiveUnit) ([]v1.EnvVar, error) {
+	httpPort, err := getMLServerPort(pu, machinelearningv1.REST)
+	if err != nil {
+		return nil, err
+	}
+
+	grpcPort, err := getMLServerPort(pu, machinelearningv1.GRPC)
+	if err != nil {
+		return nil, err
+	}
+
+	mlServerModelImplementation, err := getMLServerModelImplementation(pu)
+	if err != nil {
+		return nil, err
+	}
 
 	return []v1.EnvVar{
 		{
@@ -110,39 +139,39 @@ func getMLServerEnvVars(pu *machinelearningv1.PredictiveUnit) []v1.EnvVar {
 		},
 		{
 			Name:  MLServerModelImplementationEnv,
-			Value: getMLServerModelImplementation(pu),
+			Value: mlServerModelImplementation,
 		},
 		{
 			Name:  MLServerModelURIEnv,
 			Value: DefaultModelLocalMountPath,
 		},
-	}
+	}, nil
 }
 
-func getMLServerPort(pu *machinelearningv1.PredictiveUnit, endpointType machinelearningv1.EndpointType) int32 {
+func getMLServerPort(pu *machinelearningv1.PredictiveUnit, endpointType machinelearningv1.EndpointType) (int32, error) {
 	if pu.Endpoint.Type == endpointType {
-		return pu.Endpoint.ServicePort
+		return pu.Endpoint.ServicePort, nil
 	}
 
-	// TODO: Error if something else
 	switch endpointType {
 	case machinelearningv1.REST:
-		return constants.MLServerDefaultHttpPort
+		return constants.MLServerDefaultHttpPort, nil
 	case machinelearningv1.GRPC:
-		return constants.MLServerDefaultGrpcPort
+		return constants.MLServerDefaultGrpcPort, nil
 	}
 
-	return 0
+	err := fmt.Errorf("invalid endpoint type: %s", endpointType)
+	return 0, err
 }
 
-func getMLServerModelImplementation(pu *machinelearningv1.PredictiveUnit) string {
+func getMLServerModelImplementation(pu *machinelearningv1.PredictiveUnit) (string, error) {
 	switch *pu.Implementation {
 	case machinelearningv1.PrepackSklearnName:
-		return MLServerSKLearnImplementation
+		return MLServerSKLearnImplementation, nil
 	case machinelearningv1.PrepackXgboostName:
-		return MLServerXGBoostImplementation
+		return MLServerXGBoostImplementation, nil
 	}
 
-	// TODO: Error if something else
-	return ""
+	err := fmt.Errorf("invalid implementation: %s", *pu.Implementation)
+	return "", err
 }

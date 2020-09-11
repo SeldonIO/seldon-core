@@ -249,6 +249,36 @@ func (pi *PrePackedInitialiser) addTritonServer(pu *machinelearningv1.Predictive
 	return nil
 }
 
+func (pi *PrePackedInitialiser) addMLServerDefault(pu *machinelearningv1.PredictiveUnit, deploy *appsv1.Deployment) error {
+	c, err := getMLServerContainer(pu)
+	if err != nil {
+		return err
+	}
+
+	existingContainer := utils.GetContainerForDeployment(deploy, pu.Name)
+	if existingContainer != nil {
+		c.DeepCopyInto(existingContainer)
+		c = existingContainer
+	} else {
+		templateSpec := deploy.Spec.Template.Spec
+		if len(templateSpec.Containers) == 0 {
+			templateSpec.Containers = []v1.Container{}
+		}
+
+		templateSpec.Containers = append(templateSpec.Containers, *c)
+	}
+
+	envSecretRefName := extractEnvSecretRefName(pu)
+	mi := NewModelInitializer(pi.clientset)
+
+	_, err = mi.InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (pi *PrePackedInitialiser) addModelDefaultServers(pu *machinelearningv1.PredictiveUnit, deploy *appsv1.Deployment, serverConfig *machinelearningv1.PredictorServerConfig) error {
 	ty := machinelearningv1.MODEL
 	pu.Type = &ty
