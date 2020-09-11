@@ -6,7 +6,7 @@ Pre-requisites:
 
   * The model pickle must be saved using joblib and presently be named `model.joblib`
   * Installed dependencies (may not work if versions don't match):
-      + sklearn == 0.23.2
+      + scikit-learn == 0.23.2
       + joblib == 0.16.0
       + numpy >= 1.8.2
 
