@@ -159,7 +159,7 @@ def setup_tracing(interface_name: str) -> object:
         # sampler = sampler.RateSampler(int(os.environ.get("DD_SAMPLE_RATE", 1)))
         # config["sampler"] = sampler
 
-        tracer.configure(hostname="localhost", port=8126)
+        tracer.configure(hostname="dd-agent.monitoring.svc.cluster.local", port=8126)
 
 
 
