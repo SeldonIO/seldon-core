@@ -1,6 +1,7 @@
 package tracing
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"strconv"
@@ -33,20 +34,28 @@ func (d *datadogTracer) Close() error {
 // DD_ENABLED --> 0,1
 func initDatadogTracer() (io.Closer, error) {
 
+	// TODO: remove me
+	fmt.Println("dd tracing start")
+
 	serviceName := os.Getenv("DD_SERVICE")
 	if serviceName == "" {
 		serviceName = "executor"
 	}
+
+	fmt.Println("svc name: ", serviceName)
 
 	samplingRate, err := strconv.ParseFloat(os.Getenv(datadogSamplingRate), 64)
 	if err != nil {
 		samplingRate = 1.0
 	}
 
-	opentracing.SetGlobalTracer(
-		opentracer.New(
-			tracer.WithSampler(tracer.NewRateSampler(samplingRate)),
-		))
+	fmt.Println("sample rate: ", samplingRate)
+
+	t := opentracer.New(
+		tracer.WithSampler(tracer.NewRateSampler(samplingRate)),
+	)
+
+	opentracing.SetGlobalTracer(t)
 
 	return new(datadogTracer), nil
 }
