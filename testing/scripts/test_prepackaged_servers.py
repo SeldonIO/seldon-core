@@ -130,12 +130,13 @@ class TestPrepack(object):
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
 
     # Test prepackaged Text SKLearn Alibi Explainer
+    @pytest.mark.flaky(max_runs=5)
     def test_text_alibi_explainer(self, namespace):
         spec = "../resources/movies-text-explainer.yaml"
         retry_run(f"kubectl apply -f {spec} -n {namespace}")
         wait_for_status("movie", namespace)
         wait_for_rollout("movie", namespace, expected_deployments=2)
-        time.sleep(5)
+        time.sleep(15)
         logging.warning("Initial request")
         r = initial_rest_request(
             "movie", namespace, data=["This is test data"], dtype="ndarray"
