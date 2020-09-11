@@ -46,6 +46,7 @@ func initDatadogTracer() (io.Closer, error) {
 	opentracing.SetGlobalTracer(
 		opentracer.New(
 			tracer.WithSampler(tracer.NewRateSampler(samplingRate)),
+			tracer.WithAgentAddr("dd-agent.monitoring.svc.cluster.local:8126"),
 		))
 
 	return new(datadogTracer), nil
