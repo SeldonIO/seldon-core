@@ -247,7 +247,6 @@ github.com/streadway/amqp
 github.com/streadway/handy
 github.com/stretchr/objx
 github.com/stretchr/testify
-github.com/tensorflow/tensorflow
 github.com/tensorflow/tensorflow/tensorflow/go/core
 github.com/tidwall/pretty
 github.com/tmc/grpc-websocket-proxy
