@@ -149,17 +149,20 @@ def setup_tracing(interface_name: str) -> object:
     dd_enabled = os.environ.get("DD_ENABLED", False)
     if dd_enabled:
         logger.info("initializing Datadog tracer")
-        from ddtrace import opentracer, sampler, settings
+        # from ddtrace import opentracer, sampler, settings
+        from ddtrace import Tracer
         import opentracing
 
-        config = settings.Config()
+        # config = settings.Config()
 
-        sampler = sampler.RateSampler(int(os.environ.get("DD_SAMPLE_RATE", 1)))
-        config["sampler"] = sampler
+        t = Tracer()
+
+        # sampler = sampler.RateSampler(int(os.environ.get("DD_SAMPLE_RATE", 1)))
+        # config["sampler"] = sampler
 
         # Config will be created through env vars, see https://docs.datadoghq.com/tracing/setup/python/
         # TODO: Will this be overridden by the environment variable
-        t = opentracer.Tracer(config=config, service_name=interface_name)
+        # t = opentracer.Tracer(config=config, service_name=interface_name)
         opentracing.set_global_tracer(t)
         logger.info("done setting up datadog tracer")
         logger.info("dd tracer config %s", opentracing.global_tracer().__dict__)
