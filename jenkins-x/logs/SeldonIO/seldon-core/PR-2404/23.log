@@ -1,0 +1,2019 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-fhp5j-23[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-brlcn[0m
+{"level":"info","ts":1599831877.7149708,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1599831877.7156086,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-fhp5j-23[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-w6f4t[0m
+{"level":"info","ts":1599831878.7139518,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1599831878.7171826,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-fhp5j-23[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-fhp5j-23[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-mfdfq[0m
+{"level":"info","ts":1599831893.920165,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1599831893.9229453,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-fhp5j-23[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-2404-in-fhp5j-f6nl8[0m
+{"level":"info","ts":1599831894.3789015,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1599831899.8723407,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-fhp5j-23[0m stage [32mpr-build-comment[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-fhp5j-23[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:722b5679e60f5ff77ee472574941cb4e9dffd928,2404:3f21d7d8552c19b16844f8a18ffec33cc6835f7a
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch origin --unshallow 3f21d7d8552c19b16844f8a18ffec33cc6835f7a: 722b5679e60f5ff77ee472574941cb4e9dffd928:
+DEBUG: ran git fetch --unshallow origin 3f21d7d8552c19b16844f8a18ffec33cc6835f7a: 722b5679e60f5ff77ee472574941cb4e9dffd928: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard 722b5679e60f5ff77ee472574941cb4e9dffd928
+DEBUG: ran git reset --hard 722b5679e60f5ff77ee472574941cb4e9dffd928 in 
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git merge 3f21d7d8552c19b16844f8a18ffec33cc6835f7a
+DEBUG: ran git merge 3f21d7d8552c19b16844f8a18ffec33cc6835f7a in 
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git log --format=%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%s%n%b%x1e 722b5679e60f5ff77ee472574941cb4e9dffd928..HEAD
+Merged SHA 3cdc079ccaa83717744b7ec582ffda385f33ad7c with commit message 'Merge commit '3f21d7d8552c19b16844f8a18ffec33cc6835f7a'' into base branch master
+Merged SHA 3f21d7d8552c19b16844f8a18ffec33cc6835f7a with commit message 'adjust alibi-explain-server to new alibi' into base branch master
+Merged SHA e637a7e35100ee601c257c492d69a10df56cafb5 with commit message 'upgrade alibi to 0.5.4' into base branch master
+Merged SHA 08eedf13aef26aaf5ed888cb251d945746f2fdf3 with commit message 'pin fbprophet and holidays in alibi-detect-server requirements' into base branch master
+Merged SHA dc66c7b5b81ae54401fde6ee0ac73c6f97b5b704 with commit message 'upgrade alibi-detect to 0.4.2' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-fhp5j-23[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=2404
++ BUILD_NUMBER=23
++ PIPELINE_CONTEXT=integration
+++ cat
++++ date
++ COMMENT_MSG='Fri Sep 11 13:45:14 UTC 2020
+The logs for [integration] [23] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2404/23.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2404 --build=23'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=2404 '--comment=Fri Sep 11 13:45:14 UTC 2020
+The logs for [integration] [23] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2404/23.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2404 --build=23'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-fhp5j-23[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-2404-in-fhp5j-lmlrs[0m
+{"level":"info","ts":1599831924.1612213,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1599831924.1656196,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-fhp5j-23[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-2404-in-fhp5j-cdk5z[0m
+{"level":"info","ts":1599831924.3783312,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1599831925.0031493,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-fhp5j-23[0m stage [32mend-to-end[0m and container [32mstep-credential-initializer-s89xk[0m
+{"level":"info","ts":1599831954.0318131,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1599831954.0336785,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-fhp5j-23[0m stage [32mend-to-end[0m and container [32mstep-working-dir-initializer-gnzsv[0m
+{"level":"info","ts":1599831956.2465193,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1599831956.2492375,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-fhp5j-23[0m stage [32mend-to-end[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-fhp5j-23[0m stage [32mend-to-end[0m and container [32mstep-create-dir-workspace-9mt2w[0m
+{"level":"info","ts":1599832022.0898228,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1599832022.0957038,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-fhp5j-23[0m stage [32mend-to-end[0m and container [32mstep-source-copy-workspace-b6hlq[0m
+{"level":"info","ts":1599832022.708825,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1599832050.3943594,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-fhp5j-23[0m stage [32mend-to-end[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2404-in-fhp5j-23[0m stage [32mend-to-end[0m and container [32mstep-test-end-to-end[0m
+Test run type is: [base]
+Starting Docker: docker.
+[SETUP] Waiting for Docker to be ready, sleeping for 1 seconds ...
+kind create cluster --config ../resources/kind_config.yaml
+Creating cluster "kind" ...
+ • Ensuring node image (kindest/node:v1.16.3) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.16.3) 🖼
+ • Preparing nodes 📦  ...
+ ✓ Preparing nodes 📦
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+ • Joining worker nodes 🚜  ...
+ ✓ Joining worker nodes 🚜
+Set kubectl context to "kind-kind"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-kind
+
+Not sure what to do next? 😅 Check out https://kind.sigs.k8s.io/docs/user/quick-start/
+`kind get kubeconfig-path` is deprecated!
+
+KIND will export and merge kubeconfig like kops, minikube, etc.
+This command is now unnecessary and will be removed in a future release.
+
+For more info see: https://github.com/kubernetes-sigs/kind/issues/1060
+See also the output of `kind create cluster`
+
+Files changed in python folder:
+SKIPPING PYTHON IMAGE BUILD...
+Files changed in operator folder:
+SKIPPING OPERATOR IMAGE BUILD...
+Files changed in engine folder:
+SKIPPING ENGINE IMAGE BUILD...
+Files changed in executor folder:
+SKIPPING EXECUTOR IMAGE BUILD...
+Build test models
+make -C ../docker/fixed-model kind_load_images
+make[1]: Entering directory '/workspace/source/testing/docker/fixed-model'
+s2i build -E environment_rest_v1 . seldonio/seldon-core-s2i-python3:0.15 seldonio/fixed-model:0.1
+---> Installing application source...
+Build completed successfully
+s2i build -E environment_rest_v2 . seldonio/seldon-core-s2i-python3:0.15 seldonio/fixed-model:0.2
+---> Installing application source...
+Build completed successfully
+kind load -v 3 docker-image seldonio/fixed-model:0.1
+Image: "seldonio/fixed-model:0.1" with ID "sha256:152248095e0c75c3d6583e9fd8515fee97cac3115c83be8e8784612df9b40a6a" not present on node "kind-control-plane"
+Image: "seldonio/fixed-model:0.1" with ID "sha256:152248095e0c75c3d6583e9fd8515fee97cac3115c83be8e8784612df9b40a6a" not present on node "kind-worker"
+kind load -v 3 docker-image seldonio/fixed-model:0.2
+Image: "seldonio/fixed-model:0.2" with ID "sha256:9105a72ada1359687060567d2c12bf7728412d56111a75ed45c76e2a20cf1d42" not present on node "kind-control-plane"
+Image: "seldonio/fixed-model:0.2" with ID "sha256:9105a72ada1359687060567d2c12bf7728412d56111a75ed45c76e2a20cf1d42" not present on node "kind-worker"
+make[1]: Leaving directory '/workspace/source/testing/docker/fixed-model'
+make -C ../docker/echo-model kind_load_image
+make[1]: Entering directory '/workspace/source/testing/docker/echo-model'
+s2i build \
+	-E environment_rest \
+	.\
+	seldonio/seldon-core-s2i-python3:1.1.1-SNAPSHOT\
+	seldonio/echo-model:0.1
+---> Installing application source...
+Build completed successfully
+kind load -v 3 docker-image seldonio/echo-model:0.1
+Image: "seldonio/echo-model:0.1" with ID "sha256:cce494e9a8e372d77fea51fa0ac908c39bb7e58a6f96b0fcc2a3bcbf43ae113e" not present on node "kind-control-plane"
+Image: "seldonio/echo-model:0.1" with ID "sha256:cce494e9a8e372d77fea51fa0ac908c39bb7e58a6f96b0fcc2a3bcbf43ae113e" not present on node "kind-worker"
+make[1]: Leaving directory '/workspace/source/testing/docker/echo-model'
+Files changed in prepackaged folder:
+SKIPPING PREPACKAGED IMAGE BUILD...
+Files changed in alibi folder:
+components/alibi-detect-server/requirements_server.txt
+components/alibi-explain-server/alibiexplainer/kernel_shap.py
+components/alibi-explain-server/setup.py
+cd ../../components/alibi-detect-server && make kind_load
+make[1]: Entering directory '/workspace/source/components/alibi-detect-server'
+docker build -f Dockerfile -t seldonio/alibi-detect-server:1.2.3-dev .
+Sending build context to Docker daemon  130.6kB
+Step 1/15 : FROM registry.access.redhat.com/ubi8/python-36
+latest: Pulling from ubi8/python-36
+ec1681b6a383: Pulling fs layer
+c4d668e229cd: Pulling fs layer
+da1cc572023a: Pulling fs layer
+35ad9b4fba1f: Pulling fs layer
+4783191e6645: Pulling fs layer
+35ad9b4fba1f: Waiting
+4783191e6645: Waiting
+da1cc572023a: Verifying Checksum
+da1cc572023a: Download complete
+c4d668e229cd: Verifying Checksum
+c4d668e229cd: Download complete
+ec1681b6a383: Verifying Checksum
+ec1681b6a383: Download complete
+4783191e6645: Verifying Checksum
+4783191e6645: Download complete
+35ad9b4fba1f: Verifying Checksum
+35ad9b4fba1f: Download complete
+ec1681b6a383: Pull complete
+c4d668e229cd: Pull complete
+da1cc572023a: Pull complete
+35ad9b4fba1f: Pull complete
+4783191e6645: Pull complete
+Digest: sha256:eeba6a5fd0decaa43fc49dcb6a7ffd115931a7bfaa8b1b650f852ddb782c6705
+Status: Downloaded newer image for registry.access.redhat.com/ubi8/python-36:latest
+ ---> b6155b8cda24
+Step 2/15 : LABEL name="Seldon Alibi Detect Server"       vendor="Seldon Technologies"       version="1.2.3-dev"       release="1"       summary="Alibi Detect Server for Seldon Core"       description="The Alibi Detect Server provides outlier, drift and adversarial detection services for Seldon Core"
+ ---> Running in 70406cd283ee
+Removing intermediate container 70406cd283ee
+ ---> 7f93273b0023
+Step 3/15 : ADD requirements_server.txt .
+ ---> 7c2c843cfc52
+Step 4/15 : RUN pip install pip -U
+ ---> Running in 779bdcb6f1e8
+Collecting pip
+  Downloading https://files.pythonhosted.org/packages/4e/5f/528232275f6509b1fff703c9280e58951a81abe24640905de621c9f81839/pip-20.2.3-py2.py3-none-any.whl (1.5MB)
+Installing collected packages: pip
+  Found existing installation: pip 9.0.3
+    Uninstalling pip-9.0.3:
+      Successfully uninstalled pip-9.0.3
+Successfully installed pip-20.2.3
+Removing intermediate container 779bdcb6f1e8
+ ---> e8b0a8d44057
+Step 5/15 : RUN pip install -r requirements_server.txt
+ ---> Running in ec56f4d54002
+Collecting kfserving==0.3.0.1
+  Downloading kfserving-0.3.0.1-py3-none-any.whl (83 kB)
+Collecting alibi-detect==0.4.2
+  Downloading alibi_detect-0.4.2-py3-none-any.whl (142 kB)
+Collecting fbprophet==0.6
+  Downloading fbprophet-0.6.tar.gz (54 kB)
+Collecting holidays==0.9.11
+  Downloading holidays-0.9.11.tar.gz (81 kB)
+Collecting tornado>=1.4.1
+  Downloading tornado-6.0.4.tar.gz (496 kB)
+Collecting google-cloud-storage>=1.16.0
+  Downloading google_cloud_storage-1.31.0-py2.py3-none-any.whl (88 kB)
+Collecting certifi>=14.05.14
+  Downloading certifi-2020.6.20-py2.py3-none-any.whl (156 kB)
+Collecting numpy>=1.17.3
+  Downloading numpy-1.19.2-cp36-cp36m-manylinux2010_x86_64.whl (14.5 MB)
+Requirement already satisfied: setuptools>=21.0.0 in /opt/app-root/lib/python3.6/site-packages (from kfserving==0.3.0.1->-r requirements_server.txt (line 1)) (39.2.0)
+Collecting table-logger>=0.3.5
+  Downloading table_logger-0.3.6-py3-none-any.whl (14 kB)
+Collecting kubernetes==10.0.1
+  Downloading kubernetes-10.0.1-py2.py3-none-any.whl (1.5 MB)
+Collecting python-dateutil>=2.5.3
+  Downloading python_dateutil-2.8.1-py2.py3-none-any.whl (227 kB)
+Collecting six>=1.10
+  Downloading six-1.15.0-py2.py3-none-any.whl (10 kB)
+Collecting azure-storage-blob<=2.1.0,>=1.3.0
+  Downloading azure_storage_blob-2.1.0-py2.py3-none-any.whl (88 kB)
+Collecting adal>=1.2.2
+  Downloading adal-1.2.4-py2.py3-none-any.whl (55 kB)
+Collecting argparse>=1.4.0
+  Downloading argparse-1.4.0-py2.py3-none-any.whl (23 kB)
+Collecting urllib3>=1.15.1
+  Downloading urllib3-1.25.10-py2.py3-none-any.whl (127 kB)
+Collecting minio>=4.0.9
+  Downloading minio-6.0.0-py2.py3-none-any.whl (72 kB)
+Collecting matplotlib
+  Downloading matplotlib-3.3.1-cp36-cp36m-manylinux1_x86_64.whl (11.6 MB)
+Collecting scikit-learn
+  Downloading scikit_learn-0.23.2-cp36-cp36m-manylinux1_x86_64.whl (6.8 MB)
+Collecting scipy
+  Downloading scipy-1.5.2-cp36-cp36m-manylinux1_x86_64.whl (25.9 MB)
+Collecting transformers>=2.10.0
+  Downloading transformers-3.1.0-py3-none-any.whl (884 kB)
+Collecting dask[array]
+  Downloading dask-2.25.0-py3-none-any.whl (834 kB)
+Collecting creme
+  Downloading creme-0.6.1-cp36-cp36m-manylinux2010_x86_64.whl (1.1 MB)
+Collecting opencv-python
+  Downloading opencv_python-4.4.0.42-cp36-cp36m-manylinux2014_x86_64.whl (49.4 MB)
+Collecting tensorflow>=2
+  Downloading tensorflow-2.3.0-cp36-cp36m-manylinux2010_x86_64.whl (320.4 MB)
+Collecting tensorflow-probability>=0.8
+  Downloading tensorflow_probability-0.11.0-py2.py3-none-any.whl (4.3 MB)
+Collecting scikit-image
+  Downloading scikit_image-0.17.2-cp36-cp36m-manylinux1_x86_64.whl (12.4 MB)
+Collecting Pillow
+  Downloading Pillow-7.2.0-cp36-cp36m-manylinux1_x86_64.whl (2.2 MB)
+Collecting pandas
+  Downloading pandas-1.1.2-cp36-cp36m-manylinux1_x86_64.whl (10.5 MB)
+Collecting Cython>=0.22
+  Downloading Cython-0.29.21-cp36-cp36m-manylinux1_x86_64.whl (2.0 MB)
+Collecting cmdstanpy==0.4
+  Downloading cmdstanpy-0.4.0-py3-none-any.whl (22 kB)
+Collecting pystan>=2.14
+  Downloading pystan-2.19.1.1-cp36-cp36m-manylinux1_x86_64.whl (67.3 MB)
+Collecting LunarCalendar>=0.0.9
+  Downloading LunarCalendar-0.0.9-py2.py3-none-any.whl (18 kB)
+Collecting convertdate>=2.1.2
+  Downloading convertdate-2.2.2-py2.py3-none-any.whl (40 kB)
+Collecting setuptools-git>=1.2
+  Downloading setuptools_git-1.2-py2.py3-none-any.whl (10 kB)
+Collecting google-auth<2.0dev,>=1.11.0
+  Downloading google_auth-1.21.1-py2.py3-none-any.whl (93 kB)
+Collecting google-cloud-core<2.0dev,>=1.4.1
+  Downloading google_cloud_core-1.4.1-py2.py3-none-any.whl (26 kB)
+Collecting google-resumable-media<2.0dev,>=1.0.0
+  Downloading google_resumable_media-1.0.0-py2.py3-none-any.whl (42 kB)
+Collecting requests
+  Downloading requests-2.24.0-py2.py3-none-any.whl (61 kB)
+Collecting requests-oauthlib
+  Downloading requests_oauthlib-1.3.0-py2.py3-none-any.whl (23 kB)
+Collecting websocket-client!=0.40.0,!=0.41.*,!=0.42.*,>=0.32.0
+  Downloading websocket_client-0.57.0-py2.py3-none-any.whl (200 kB)
+Collecting pyyaml>=3.12
+  Downloading PyYAML-5.3.1.tar.gz (269 kB)
+Collecting azure-common>=1.1.5
+  Downloading azure_common-1.1.25-py2.py3-none-any.whl (12 kB)
+Collecting azure-storage-common~=2.1
+  Downloading azure_storage_common-2.1.0-py2.py3-none-any.whl (47 kB)
+Collecting cryptography>=1.1.0
+  Downloading cryptography-3.1-cp35-abi3-manylinux2010_x86_64.whl (2.6 MB)
+Collecting PyJWT>=1.0.0
+  Downloading PyJWT-1.7.1-py2.py3-none-any.whl (18 kB)
+Collecting configparser
+  Downloading configparser-5.0.0-py3-none-any.whl (22 kB)
+Collecting pytz
+  Downloading pytz-2020.1-py2.py3-none-any.whl (510 kB)
+Collecting pyparsing!=2.0.4,!=2.1.2,!=2.1.6,>=2.0.3
+  Downloading pyparsing-2.4.7-py2.py3-none-any.whl (67 kB)
+Collecting cycler>=0.10
+  Downloading cycler-0.10.0-py2.py3-none-any.whl (6.5 kB)
+Collecting kiwisolver>=1.0.1
+  Downloading kiwisolver-1.2.0-cp36-cp36m-manylinux1_x86_64.whl (88 kB)
+Collecting threadpoolctl>=2.0.0
+  Downloading threadpoolctl-2.1.0-py3-none-any.whl (12 kB)
+Collecting joblib>=0.11
+  Downloading joblib-0.16.0-py3-none-any.whl (300 kB)
+Collecting regex!=2019.12.17
+  Downloading regex-2020.7.14-cp36-cp36m-manylinux2010_x86_64.whl (660 kB)
+Collecting sacremoses
+  Downloading sacremoses-0.0.43.tar.gz (883 kB)
+Collecting packaging
+  Downloading packaging-20.4-py2.py3-none-any.whl (37 kB)
+Collecting sentencepiece!=0.1.92
+  Downloading sentencepiece-0.1.91-cp36-cp36m-manylinux1_x86_64.whl (1.1 MB)
+Collecting filelock
+  Downloading filelock-3.0.12-py3-none-any.whl (7.6 kB)
+Collecting dataclasses; python_version < "3.7"
+  Downloading dataclasses-0.7-py3-none-any.whl (18 kB)
+Collecting tokenizers==0.8.1.rc2
+  Downloading tokenizers-0.8.1rc2-cp36-cp36m-manylinux1_x86_64.whl (3.0 MB)
+Collecting tqdm>=4.27
+  Downloading tqdm-4.48.2-py2.py3-none-any.whl (68 kB)
+Collecting toolz>=0.8.2; extra == "array"
+  Downloading toolz-0.10.0.tar.gz (49 kB)
+Collecting mmh3==2.5.1
+  Downloading mmh3-2.5.1.tar.gz (9.8 kB)
+Collecting wrapt>=1.11.1
+  Downloading wrapt-1.12.1.tar.gz (27 kB)
+Collecting keras-preprocessing<1.2,>=1.1.1
+  Downloading Keras_Preprocessing-1.1.2-py2.py3-none-any.whl (42 kB)
+Collecting termcolor>=1.1.0
+  Downloading termcolor-1.1.0.tar.gz (3.9 kB)
+Collecting tensorboard<3,>=2.3.0
+  Downloading tensorboard-2.3.0-py3-none-any.whl (6.8 MB)
+Collecting absl-py>=0.7.0
+  Downloading absl_py-0.10.0-py3-none-any.whl (127 kB)
+Collecting protobuf>=3.9.2
+  Downloading protobuf-3.13.0-cp36-cp36m-manylinux1_x86_64.whl (1.3 MB)
+Requirement already satisfied: wheel>=0.26 in /opt/app-root/lib/python3.6/site-packages (from tensorflow>=2->alibi-detect==0.4.2->-r requirements_server.txt (line 2)) (0.31.1)
+Collecting gast==0.3.3
+  Downloading gast-0.3.3-py2.py3-none-any.whl (9.7 kB)
+Collecting h5py<2.11.0,>=2.10.0
+  Downloading h5py-2.10.0-cp36-cp36m-manylinux1_x86_64.whl (2.9 MB)
+Collecting google-pasta>=0.1.8
+  Downloading google_pasta-0.2.0-py3-none-any.whl (57 kB)
+Collecting tensorflow-estimator<2.4.0,>=2.3.0
+  Downloading tensorflow_estimator-2.3.0-py2.py3-none-any.whl (459 kB)
+Collecting opt-einsum>=2.3.2
+  Downloading opt_einsum-3.3.0-py3-none-any.whl (65 kB)
+Collecting astunparse==1.6.3
+  Downloading astunparse-1.6.3-py2.py3-none-any.whl (12 kB)
+Collecting grpcio>=1.8.6
+  Downloading grpcio-1.32.0-cp36-cp36m-manylinux2014_x86_64.whl (3.8 MB)
+Collecting cloudpickle==1.3
+  Downloading cloudpickle-1.3.0-py2.py3-none-any.whl (26 kB)
+Collecting dm-tree
+  Downloading dm_tree-0.1.5-cp36-cp36m-manylinux1_x86_64.whl (294 kB)
+Collecting decorator
+  Downloading decorator-4.4.2-py2.py3-none-any.whl (9.2 kB)
+Collecting PyWavelets>=1.1.1
+  Downloading PyWavelets-1.1.1-cp36-cp36m-manylinux1_x86_64.whl (4.4 MB)
+Collecting imageio>=2.3.0
+  Downloading imageio-2.9.0-py3-none-any.whl (3.3 MB)
+Collecting tifffile>=2019.7.26
+  Downloading tifffile-2020.9.3-py3-none-any.whl (148 kB)
+Collecting networkx>=2.0
+  Downloading networkx-2.5-py3-none-any.whl (1.6 MB)
+Collecting ephem>=3.7.5.3
+  Downloading ephem-3.7.7.1-cp36-cp36m-manylinux2010_x86_64.whl (1.2 MB)
+Collecting pymeeus<=1,>=0.3.6
+  Downloading PyMeeus-0.3.7.tar.gz (732 kB)
+Collecting rsa<5,>=3.1.4; python_version >= "3.5"
+  Downloading rsa-4.6-py3-none-any.whl (47 kB)
+Collecting cachetools<5.0,>=2.0.0
+  Downloading cachetools-4.1.1-py3-none-any.whl (10 kB)
+Collecting pyasn1-modules>=0.2.1
+  Downloading pyasn1_modules-0.2.8-py2.py3-none-any.whl (155 kB)
+Collecting google-api-core<2.0.0dev,>=1.19.0
+  Downloading google_api_core-1.22.2-py2.py3-none-any.whl (91 kB)
+Collecting google-crc32c<2.0dev,>=1.0; python_version >= "3.5"
+  Downloading google_crc32c-1.0.0-cp36-cp36m-manylinux2010_x86_64.whl (39 kB)
+Collecting chardet<4,>=3.0.2
+  Downloading chardet-3.0.4-py2.py3-none-any.whl (133 kB)
+Collecting idna<3,>=2.5
+  Downloading idna-2.10-py2.py3-none-any.whl (58 kB)
+Collecting oauthlib>=3.0.0
+  Downloading oauthlib-3.1.0-py2.py3-none-any.whl (147 kB)
+Collecting cffi!=1.11.3,>=1.8
+  Downloading cffi-1.14.2-cp36-cp36m-manylinux1_x86_64.whl (400 kB)
+Collecting click
+  Downloading click-7.1.2-py2.py3-none-any.whl (82 kB)
+Collecting google-auth-oauthlib<0.5,>=0.4.1
+  Downloading google_auth_oauthlib-0.4.1-py2.py3-none-any.whl (18 kB)
+Collecting markdown>=2.6.8
+  Downloading Markdown-3.2.2-py3-none-any.whl (88 kB)
+Collecting werkzeug>=0.11.15
+  Downloading Werkzeug-1.0.1-py2.py3-none-any.whl (298 kB)
+Collecting tensorboard-plugin-wit>=1.6.0
+  Downloading tensorboard_plugin_wit-1.7.0-py3-none-any.whl (779 kB)
+Collecting pyasn1>=0.1.3
+  Downloading pyasn1-0.4.8-py2.py3-none-any.whl (77 kB)
+Collecting googleapis-common-protos<2.0dev,>=1.6.0
+  Downloading googleapis_common_protos-1.52.0-py2.py3-none-any.whl (100 kB)
+Collecting pycparser
+  Downloading pycparser-2.20-py2.py3-none-any.whl (112 kB)
+Collecting importlib-metadata; python_version < "3.8"
+  Downloading importlib_metadata-1.7.0-py2.py3-none-any.whl (31 kB)
+Collecting zipp>=0.5
+  Downloading zipp-3.1.0-py3-none-any.whl (4.9 kB)
+Building wheels for collected packages: fbprophet, holidays, tornado, pyyaml, sacremoses, toolz, mmh3, wrapt, termcolor, pymeeus
+  Building wheel for fbprophet (setup.py): started
+  Building wheel for fbprophet (setup.py): finished with status 'error'
+[91m  ERROR: Command errored out with exit status 1:
+   command: /opt/app-root/bin/python3.6 -u -c 'import sys, setuptools, tokenize; sys.argv[0] = '"'"'/tmp/pip-install-q7ur84bw/fbprophet/setup.py'"'"'; __file__='"'"'/tmp/pip-install-q7ur84bw/fbprophet/setup.py'"'"';f=getattr(tokenize, '"'"'open'"'"', open)(__file__);code=f.read().replace('"'"'\r\n'"'"', '"'"'\n'"'"');f.close();exec(compile(code, __file__, '"'"'exec'"'"'))' bdist_wheel -d /tmp/pip-wheel-84lwj63l
+       cwd: /tmp/pip-install-q7ur84bw/fbprophet/
+  Complete output (40 lines):
+  running bdist_wheel
+  running build
+  running build_py
+  creating build
+  creating build/lib
+  creating build/lib/fbprophet
+  creating build/lib/fbprophet/stan_model
+  Traceback (most recent call last):
+    File "<string>", line 1, in <module>
+    File "/tmp/pip-install-q7ur84bw/fbprophet/setup.py", line 148, in <module>
+      """
+    File "/opt/app-root/lib/python3.6/site-packages/setuptools/__init__.py", line 129, in setup
+      return distutils.core.setup(**attrs)
+    File "/usr/lib64/python3.6/distutils/core.py", line 148, in setup
+      dist.run_commands()
+    File "/usr/lib64/python3.6/distutils/dist.py", line 955, in run_commands
+      self.run_command(cmd)
+    File "/usr/lib64/python3.6/distutils/dist.py", line 974, in run_command
+      cmd_obj.run()
+    File "/opt/app-root/lib/python3.6/site-packages/wheel/bdist_wheel.py", line 201, in run
+      self.run_command('build')
+    File "/usr/lib64/python3.6/distutils/cmd.py", line 313, in run_command
+      self.distribution.run_command(command)
+    File "/usr/lib64/python3.6/distutils/dist.py", line 974, in run_command
+      cmd_obj.run()
+    File "/usr/lib64/python3.6/distutils/command/build.py", line 135, in run
+      self.run_command(cmd_name)
+    File "/usr/lib64/python3.6/distutils/cmd.py", line 313, in run_command
+      self.distribution.run_command(command)
+    File "/usr/lib64/python3.6/distutils/dist.py", line 974, in run_command
+      cmd_obj.run()
+    File "/tmp/pip-install-q7ur84bw/fbprophet/setup.py", line 48, in run
+      build_models(target_dir)
+    File "/tmp/pip-install-q7ur84bw/fbprophet/setup.py", line 36, in build_models
+      from fbprophet.models import StanBackendEnum
+    File "/tmp/pip-install-q7ur84bw/fbprophet/fbprophet/__init__.py", line 8, in <module>
+      from fbprophet.forecaster import Prophet
+    File "/tmp/pip-install-q7ur84bw/fbprophet/fbprophet/forecaster.py", line 14, in <module>
+      import numpy as np
+  ModuleNotFoundError: No module named 'numpy'
+  ----------------------------------------
+  ERROR: Failed building wheel for fbprophet
+[0m  Running setup.py clean for fbprophet
+  Building wheel for holidays (setup.py): started
+  Building wheel for holidays (setup.py): finished with status 'done'
+  Created wheel for holidays: filename=holidays-0.9.11-py3-none-any.whl size=43936 sha256=14ad87d14cd298805e2453ff2150367817e87d46731c95de184d9ab5842efc4a
+  Stored in directory: /tmp/pip-ephem-wheel-cache-or1baia0/wheels/8b/05/14/02819ebeabc15200adf7087844165616193c4d48c35442f38c
+  Building wheel for tornado (setup.py): started
+  Building wheel for tornado (setup.py): finished with status 'done'
+  Created wheel for tornado: filename=tornado-6.0.4-cp36-cp36m-linux_x86_64.whl size=428283 sha256=19a43b0913e3bd2346c90b7fb1111c2149711870459c6f53ab845f8178fb9788
+  Stored in directory: /tmp/pip-ephem-wheel-cache-or1baia0/wheels/37/a7/db/2d592e44029ef817f3ef63ea991db34191cebaef087a96f505
+  Building wheel for pyyaml (setup.py): started
+  Building wheel for pyyaml (setup.py): finished with status 'done'
+  Created wheel for pyyaml: filename=PyYAML-5.3.1-cp36-cp36m-linux_x86_64.whl size=44632 sha256=f92369de469d68438bc29e07e86bc1b0e1d9e8a271e85a838e0e148e00eb1a89
+  Stored in directory: /tmp/pip-ephem-wheel-cache-or1baia0/wheels/e5/9d/ad/2ee53cf262cba1ffd8afe1487eef788ea3f260b7e6232a80fc
+  Building wheel for sacremoses (setup.py): started
+  Building wheel for sacremoses (setup.py): finished with status 'done'
+  Created wheel for sacremoses: filename=sacremoses-0.0.43-py3-none-any.whl size=893264 sha256=0d975841e2988c6f3cd410a957a5aef3c2cdd24a30737cb5a1de3c5e3939ef7b
+  Stored in directory: /tmp/pip-ephem-wheel-cache-or1baia0/wheels/49/25/98/cdea9c79b2d9a22ccc59540b1784b67f06b633378e97f58da2
+  Building wheel for toolz (setup.py): started
+  Building wheel for toolz (setup.py): finished with status 'done'
+  Created wheel for toolz: filename=toolz-0.10.0-py3-none-any.whl size=54600 sha256=59ae42c7ae6b40d6c36bfdd38b71e5d68d7eaa4b9d5ecf7984f99161b1ccd623
+  Stored in directory: /tmp/pip-ephem-wheel-cache-or1baia0/wheels/fc/da/2e/27e381e9cfc922d078a0a750c7ec72e76df66100e81722516d
+  Building wheel for mmh3 (setup.py): started
+  Building wheel for mmh3 (setup.py): finished with status 'done'
+  Created wheel for mmh3: filename=mmh3-2.5.1-cp36-cp36m-linux_x86_64.whl size=47769 sha256=0634327ce5a1763f82ebc8c76ca5d2c49657a2aabf0b42646c9b88b500d7b4b4
+  Stored in directory: /tmp/pip-ephem-wheel-cache-or1baia0/wheels/cc/3a/98/fc5e7f8e1840cf6dcf2435260b29661db90a0b22dbd2739df6
+  Building wheel for wrapt (setup.py): started
+  Building wheel for wrapt (setup.py): finished with status 'done'
+  Created wheel for wrapt: filename=wrapt-1.12.1-cp36-cp36m-linux_x86_64.whl size=72134 sha256=a99d37b9352105ba80ea3fdf6976017bf35da24131a0ac86e2fb34c0cf1b3ef4
+  Stored in directory: /tmp/pip-ephem-wheel-cache-or1baia0/wheels/32/42/7f/23cae9ff6ef66798d00dc5d659088e57dbba01566f6c60db63
+  Building wheel for termcolor (setup.py): started
+  Building wheel for termcolor (setup.py): finished with status 'done'
+  Created wheel for termcolor: filename=termcolor-1.1.0-py3-none-any.whl size=4001 sha256=fbfd8dd73150641a697093f4cecb61b26f7997fa7d759b56cb139326ed49236b
+  Stored in directory: /tmp/pip-ephem-wheel-cache-or1baia0/wheels/93/2a/eb/e58dbcbc963549ee4f065ff80a59f274cc7210b6eab962acdc
+  Building wheel for pymeeus (setup.py): started
+  Building wheel for pymeeus (setup.py): finished with status 'done'
+  Created wheel for pymeeus: filename=PyMeeus-0.3.7-py3-none-any.whl size=687743 sha256=fe1f76435b1209ca48cfa5cd5e4f70d1b38e6b64ee18e96e41db6ce69bd00003
+  Stored in directory: /tmp/pip-ephem-wheel-cache-or1baia0/wheels/e9/c3/07/d32faf16682e2cd245be46e4c54053c8c82fa9762f4a4bcc63
+Successfully built holidays tornado pyyaml sacremoses toolz mmh3 wrapt termcolor pymeeus
+Failed to build fbprophet
+Installing collected packages: tornado, six, pyasn1, rsa, cachetools, pyasn1-modules, google-auth, urllib3, chardet, certifi, idna, requests, pytz, protobuf, googleapis-common-protos, google-api-core, google-cloud-core, pycparser, cffi, google-crc32c, google-resumable-media, google-cloud-storage, numpy, table-logger, oauthlib, requests-oauthlib, websocket-client, python-dateutil, pyyaml, kubernetes, azure-common, cryptography, azure-storage-common, azure-storage-blob, PyJWT, adal, argparse, configparser, minio, kfserving, pyparsing, cycler, kiwisolver, Pillow, matplotlib, threadpoolctl, joblib, scipy, scikit-learn, regex, click, tqdm, sacremoses, packaging, sentencepiece, filelock, dataclasses, tokenizers, transformers, toolz, dask, mmh3, pandas, creme, opencv-python, Cython, cmdstanpy, pystan, ephem, LunarCalendar, pymeeus, convertdate, holidays, setuptools-git, fbprophet, wrapt, keras-preprocessing, termcolor, grpcio, google-auth-oauthlib, zipp, importlib-metadata, markdown, werkzeug, absl-py, tensorboard-plugin-wit, tensorboard, gast, h5py, google-pasta, tensorflow-estimator, opt-einsum, astunparse, tensorflow, cloudpickle, dm-tree, decorator, tensorflow-probability, PyWavelets, imageio, tifffile, networkx, scikit-image, alibi-detect
+    Running setup.py install for fbprophet: started
+    Running setup.py install for fbprophet: still running...
+    Running setup.py install for fbprophet: finished with status 'done'
+[91m  DEPRECATION: fbprophet was installed using the legacy 'setup.py install' method, because a wheel could not be built for it. pip 21.0 will remove support for this functionality. A possible replacement is to fix the wheel build issue reported above. You can find discussion regarding this at https://github.com/pypa/pip/issues/8368.
+[0m[91mERROR: After October 2020 you may experience errors when installing or updating packages. This is because pip will change the way that it resolves dependency conflicts.
+
+We recommend you use --use-feature=2020-resolver to test your packages with the new resolver before it becomes the default.
+
+google-auth 1.21.1 requires setuptools>=40.3.0, but you'll have setuptools 39.2.0 which is incompatible.
+tensorboard 2.3.0 requires setuptools>=41.0.0, but you'll have setuptools 39.2.0 which is incompatible.
+tensorflow 2.3.0 requires numpy<1.19.0,>=1.16.0, but you'll have numpy 1.19.2 which is incompatible.
+tensorflow 2.3.0 requires scipy==1.4.1, but you'll have scipy 1.5.2 which is incompatible.
+[0mSuccessfully installed Cython-0.29.21 LunarCalendar-0.0.9 Pillow-7.2.0 PyJWT-1.7.1 PyWavelets-1.1.1 absl-py-0.10.0 adal-1.2.4 alibi-detect-0.4.2 argparse-1.4.0 astunparse-1.6.3 azure-common-1.1.25 azure-storage-blob-2.1.0 azure-storage-common-2.1.0 cachetools-4.1.1 certifi-2020.6.20 cffi-1.14.2 chardet-3.0.4 click-7.1.2 cloudpickle-1.3.0 cmdstanpy-0.4.0 configparser-5.0.0 convertdate-2.2.2 creme-0.6.1 cryptography-3.1 cycler-0.10.0 dask-2.25.0 dataclasses-0.7 decorator-4.4.2 dm-tree-0.1.5 ephem-3.7.7.1 fbprophet-0.6 filelock-3.0.12 gast-0.3.3 google-api-core-1.22.2 google-auth-1.21.1 google-auth-oauthlib-0.4.1 google-cloud-core-1.4.1 google-cloud-storage-1.31.0 google-crc32c-1.0.0 google-pasta-0.2.0 google-resumable-media-1.0.0 googleapis-common-protos-1.52.0 grpcio-1.32.0 h5py-2.10.0 holidays-0.9.11 idna-2.10 imageio-2.9.0 importlib-metadata-1.7.0 joblib-0.16.0 keras-preprocessing-1.1.2 kfserving-0.3.0.1 kiwisolver-1.2.0 kubernetes-10.0.1 markdown-3.2.2 matplotlib-3.3.1 minio-6.0.0 mmh3-2.5.1 networkx-2.5 numpy-1.19.2 oauthlib-3.1.0 opencv-python-4.4.0.42 opt-einsum-3.3.0 packaging-20.4 pandas-1.1.2 protobuf-3.13.0 pyasn1-0.4.8 pyasn1-modules-0.2.8 pycparser-2.20 pymeeus-0.3.7 pyparsing-2.4.7 pystan-2.19.1.1 python-dateutil-2.8.1 pytz-2020.1 pyyaml-5.3.1 regex-2020.7.14 requests-2.24.0 requests-oauthlib-1.3.0 rsa-4.6 sacremoses-0.0.43 scikit-image-0.17.2 scikit-learn-0.23.2 scipy-1.5.2 sentencepiece-0.1.91 setuptools-git-1.2 six-1.15.0 table-logger-0.3.6 tensorboard-2.3.0 tensorboard-plugin-wit-1.7.0 tensorflow-2.3.0 tensorflow-estimator-2.3.0 tensorflow-probability-0.11.0 termcolor-1.1.0 threadpoolctl-2.1.0 tifffile-2020.9.3 tokenizers-0.8.1rc2 toolz-0.10.0 tornado-6.0.4 tqdm-4.48.2 transformers-3.1.0 urllib3-1.25.10 websocket-client-0.57.0 werkzeug-1.0.1 wrapt-1.12.1 zipp-3.1.0
+Removing intermediate container ec56f4d54002
+ ---> 28ae2a129cd9
+Step 6/15 : RUN git clone --branch 24-extensions https://github.com/ryandawsonuk/sdk-python.git &&     cd sdk-python &&     pip install -e .
+ ---> Running in 590d43d4d3b9
+[91mCloning into 'sdk-python'...
+[0mObtaining file:///opt/app-root/src/sdk-python
+Installing collected packages: cloudevents
+  Running setup.py develop for cloudevents
+Successfully installed cloudevents
+Removing intermediate container 590d43d4d3b9
+ ---> 681fc34e8000
+Step 7/15 : COPY adserver adserver
+ ---> 05be1a7206fa
+Step 8/15 : COPY setup.py .
+ ---> d155e3e62a22
+Step 9/15 : RUN pip install -e .
+ ---> Running in 6be109bb0d17
+Obtaining file:///opt/app-root/src
+Requirement already satisfied: alibi-detect in /opt/app-root/lib/python3.6/site-packages (from adserver==0.1.0) (0.4.2)
+Requirement already satisfied: kfserving>=0.2.0 in /opt/app-root/lib/python3.6/site-packages (from adserver==0.1.0) (0.3.0.1)
+Requirement already satisfied: argparse>=1.4.0 in /opt/app-root/lib/python3.6/site-packages (from adserver==0.1.0) (1.4.0)
+Requirement already satisfied: numpy>=1.8.2 in /opt/app-root/lib/python3.6/site-packages (from adserver==0.1.0) (1.19.2)
+Requirement already satisfied: cloudevents in ./sdk-python (from adserver==0.1.0) (0.0.1.dev32)
+Requirement already satisfied: scikit-learn in /opt/app-root/lib/python3.6/site-packages (from alibi-detect->adserver==0.1.0) (0.23.2)
+Requirement already satisfied: matplotlib in /opt/app-root/lib/python3.6/site-packages (from alibi-detect->adserver==0.1.0) (3.3.1)
+Requirement already satisfied: tensorflow>=2 in /opt/app-root/lib/python3.6/site-packages (from alibi-detect->adserver==0.1.0) (2.3.0)
+Requirement already satisfied: dask[array] in /opt/app-root/lib/python3.6/site-packages (from alibi-detect->adserver==0.1.0) (2.25.0)
+Requirement already satisfied: scipy in /opt/app-root/lib/python3.6/site-packages (from alibi-detect->adserver==0.1.0) (1.5.2)
+Requirement already satisfied: scikit-image in /opt/app-root/lib/python3.6/site-packages (from alibi-detect->adserver==0.1.0) (0.17.2)
+Requirement already satisfied: tensorflow-probability>=0.8 in /opt/app-root/lib/python3.6/site-packages (from alibi-detect->adserver==0.1.0) (0.11.0)
+Requirement already satisfied: fbprophet<0.7,>=0.5 in /opt/app-root/lib/python3.6/site-packages (from alibi-detect->adserver==0.1.0) (0.6)
+Requirement already satisfied: pandas in /opt/app-root/lib/python3.6/site-packages (from alibi-detect->adserver==0.1.0) (1.1.2)
+Requirement already satisfied: creme in /opt/app-root/lib/python3.6/site-packages (from alibi-detect->adserver==0.1.0) (0.6.1)
+Requirement already satisfied: opencv-python in /opt/app-root/lib/python3.6/site-packages (from alibi-detect->adserver==0.1.0) (4.4.0.42)
+Requirement already satisfied: transformers>=2.10.0 in /opt/app-root/lib/python3.6/site-packages (from alibi-detect->adserver==0.1.0) (3.1.0)
+Requirement already satisfied: Pillow in /opt/app-root/lib/python3.6/site-packages (from alibi-detect->adserver==0.1.0) (7.2.0)
+Requirement already satisfied: holidays==0.9.11 in /opt/app-root/lib/python3.6/site-packages (from alibi-detect->adserver==0.1.0) (0.9.11)
+Requirement already satisfied: certifi>=14.05.14 in /opt/app-root/lib/python3.6/site-packages (from kfserving>=0.2.0->adserver==0.1.0) (2020.6.20)
+Requirement already satisfied: table-logger>=0.3.5 in /opt/app-root/lib/python3.6/site-packages (from kfserving>=0.2.0->adserver==0.1.0) (0.3.6)
+Requirement already satisfied: python-dateutil>=2.5.3 in /opt/app-root/lib/python3.6/site-packages (from kfserving>=0.2.0->adserver==0.1.0) (2.8.1)
+Requirement already satisfied: google-cloud-storage>=1.16.0 in /opt/app-root/lib/python3.6/site-packages (from kfserving>=0.2.0->adserver==0.1.0) (1.31.0)
+Requirement already satisfied: six>=1.10 in /opt/app-root/lib/python3.6/site-packages (from kfserving>=0.2.0->adserver==0.1.0) (1.15.0)
+Requirement already satisfied: adal>=1.2.2 in /opt/app-root/lib/python3.6/site-packages (from kfserving>=0.2.0->adserver==0.1.0) (1.2.4)
+Requirement already satisfied: azure-storage-blob<=2.1.0,>=1.3.0 in /opt/app-root/lib/python3.6/site-packages (from kfserving>=0.2.0->adserver==0.1.0) (2.1.0)
+Requirement already satisfied: kubernetes==10.0.1 in /opt/app-root/lib/python3.6/site-packages (from kfserving>=0.2.0->adserver==0.1.0) (10.0.1)
+Requirement already satisfied: minio>=4.0.9 in /opt/app-root/lib/python3.6/site-packages (from kfserving>=0.2.0->adserver==0.1.0) (6.0.0)
+Requirement already satisfied: urllib3>=1.15.1 in /opt/app-root/lib/python3.6/site-packages (from kfserving>=0.2.0->adserver==0.1.0) (1.25.10)
+Requirement already satisfied: setuptools>=21.0.0 in /opt/app-root/lib/python3.6/site-packages (from kfserving>=0.2.0->adserver==0.1.0) (39.2.0)
+Requirement already satisfied: tornado>=1.4.1 in /opt/app-root/lib/python3.6/site-packages (from kfserving>=0.2.0->adserver==0.1.0) (6.0.4)
+Requirement already satisfied: joblib>=0.11 in /opt/app-root/lib/python3.6/site-packages (from scikit-learn->alibi-detect->adserver==0.1.0) (0.16.0)
+Requirement already satisfied: threadpoolctl>=2.0.0 in /opt/app-root/lib/python3.6/site-packages (from scikit-learn->alibi-detect->adserver==0.1.0) (2.1.0)
+Requirement already satisfied: cycler>=0.10 in /opt/app-root/lib/python3.6/site-packages (from matplotlib->alibi-detect->adserver==0.1.0) (0.10.0)
+Requirement already satisfied: pyparsing!=2.0.4,!=2.1.2,!=2.1.6,>=2.0.3 in /opt/app-root/lib/python3.6/site-packages (from matplotlib->alibi-detect->adserver==0.1.0) (2.4.7)
+Requirement already satisfied: kiwisolver>=1.0.1 in /opt/app-root/lib/python3.6/site-packages (from matplotlib->alibi-detect->adserver==0.1.0) (1.2.0)
+Requirement already satisfied: astunparse==1.6.3 in /opt/app-root/lib/python3.6/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (1.6.3)
+Requirement already satisfied: termcolor>=1.1.0 in /opt/app-root/lib/python3.6/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (1.1.0)
+Requirement already satisfied: protobuf>=3.9.2 in /opt/app-root/lib/python3.6/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (3.13.0)
+Requirement already satisfied: wheel>=0.26 in /opt/app-root/lib/python3.6/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (0.31.1)
+Requirement already satisfied: keras-preprocessing<1.2,>=1.1.1 in /opt/app-root/lib/python3.6/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (1.1.2)
+Requirement already satisfied: tensorboard<3,>=2.3.0 in /opt/app-root/lib/python3.6/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (2.3.0)
+Requirement already satisfied: opt-einsum>=2.3.2 in /opt/app-root/lib/python3.6/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (3.3.0)
+Requirement already satisfied: wrapt>=1.11.1 in /opt/app-root/lib/python3.6/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (1.12.1)
+Requirement already satisfied: gast==0.3.3 in /opt/app-root/lib/python3.6/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (0.3.3)
+Requirement already satisfied: h5py<2.11.0,>=2.10.0 in /opt/app-root/lib/python3.6/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (2.10.0)
+Requirement already satisfied: tensorflow-estimator<2.4.0,>=2.3.0 in /opt/app-root/lib/python3.6/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (2.3.0)
+Requirement already satisfied: grpcio>=1.8.6 in /opt/app-root/lib/python3.6/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (1.32.0)
+Requirement already satisfied: google-pasta>=0.1.8 in /opt/app-root/lib/python3.6/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (0.2.0)
+Requirement already satisfied: absl-py>=0.7.0 in /opt/app-root/lib/python3.6/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (0.10.0)
+Requirement already satisfied: pyyaml in /opt/app-root/lib/python3.6/site-packages (from dask[array]->alibi-detect->adserver==0.1.0) (5.3.1)
+Requirement already satisfied: toolz>=0.8.2; extra == "array" in /opt/app-root/lib/python3.6/site-packages (from dask[array]->alibi-detect->adserver==0.1.0) (0.10.0)
+Requirement already satisfied: PyWavelets>=1.1.1 in /opt/app-root/lib/python3.6/site-packages (from scikit-image->alibi-detect->adserver==0.1.0) (1.1.1)
+Requirement already satisfied: imageio>=2.3.0 in /opt/app-root/lib/python3.6/site-packages (from scikit-image->alibi-detect->adserver==0.1.0) (2.9.0)
+Requirement already satisfied: tifffile>=2019.7.26 in /opt/app-root/lib/python3.6/site-packages (from scikit-image->alibi-detect->adserver==0.1.0) (2020.9.3)
+Requirement already satisfied: networkx>=2.0 in /opt/app-root/lib/python3.6/site-packages (from scikit-image->alibi-detect->adserver==0.1.0) (2.5)
+Requirement already satisfied: dm-tree in /opt/app-root/lib/python3.6/site-packages (from tensorflow-probability>=0.8->alibi-detect->adserver==0.1.0) (0.1.5)
+Requirement already satisfied: decorator in /opt/app-root/lib/python3.6/site-packages (from tensorflow-probability>=0.8->alibi-detect->adserver==0.1.0) (4.4.2)
+Requirement already satisfied: cloudpickle==1.3 in /opt/app-root/lib/python3.6/site-packages (from tensorflow-probability>=0.8->alibi-detect->adserver==0.1.0) (1.3.0)
+Requirement already satisfied: Cython>=0.22 in /opt/app-root/lib/python3.6/site-packages (from fbprophet<0.7,>=0.5->alibi-detect->adserver==0.1.0) (0.29.21)
+Requirement already satisfied: cmdstanpy==0.4 in /opt/app-root/lib/python3.6/site-packages (from fbprophet<0.7,>=0.5->alibi-detect->adserver==0.1.0) (0.4.0)
+Requirement already satisfied: pystan>=2.14 in /opt/app-root/lib/python3.6/site-packages (from fbprophet<0.7,>=0.5->alibi-detect->adserver==0.1.0) (2.19.1.1)
+Requirement already satisfied: LunarCalendar>=0.0.9 in /opt/app-root/lib/python3.6/site-packages (from fbprophet<0.7,>=0.5->alibi-detect->adserver==0.1.0) (0.0.9)
+Requirement already satisfied: convertdate>=2.1.2 in /opt/app-root/lib/python3.6/site-packages (from fbprophet<0.7,>=0.5->alibi-detect->adserver==0.1.0) (2.2.2)
+Requirement already satisfied: setuptools-git>=1.2 in /opt/app-root/lib/python3.6/site-packages (from fbprophet<0.7,>=0.5->alibi-detect->adserver==0.1.0) (1.2)
+Requirement already satisfied: pytz>=2017.2 in /opt/app-root/lib/python3.6/site-packages (from pandas->alibi-detect->adserver==0.1.0) (2020.1)
+Requirement already satisfied: mmh3==2.5.1 in /opt/app-root/lib/python3.6/site-packages (from creme->alibi-detect->adserver==0.1.0) (2.5.1)
+Requirement already satisfied: requests in /opt/app-root/lib/python3.6/site-packages (from transformers>=2.10.0->alibi-detect->adserver==0.1.0) (2.24.0)
+Requirement already satisfied: sacremoses in /opt/app-root/lib/python3.6/site-packages (from transformers>=2.10.0->alibi-detect->adserver==0.1.0) (0.0.43)
+Requirement already satisfied: tqdm>=4.27 in /opt/app-root/lib/python3.6/site-packages (from transformers>=2.10.0->alibi-detect->adserver==0.1.0) (4.48.2)
+Requirement already satisfied: regex!=2019.12.17 in /opt/app-root/lib/python3.6/site-packages (from transformers>=2.10.0->alibi-detect->adserver==0.1.0) (2020.7.14)
+Requirement already satisfied: tokenizers==0.8.1.rc2 in /opt/app-root/lib/python3.6/site-packages (from transformers>=2.10.0->alibi-detect->adserver==0.1.0) (0.8.1rc2)
+Requirement already satisfied: dataclasses; python_version < "3.7" in /opt/app-root/lib/python3.6/site-packages (from transformers>=2.10.0->alibi-detect->adserver==0.1.0) (0.7)
+Requirement already satisfied: sentencepiece!=0.1.92 in /opt/app-root/lib/python3.6/site-packages (from transformers>=2.10.0->alibi-detect->adserver==0.1.0) (0.1.91)
+Requirement already satisfied: filelock in /opt/app-root/lib/python3.6/site-packages (from transformers>=2.10.0->alibi-detect->adserver==0.1.0) (3.0.12)
+Requirement already satisfied: packaging in /opt/app-root/lib/python3.6/site-packages (from transformers>=2.10.0->alibi-detect->adserver==0.1.0) (20.4)
+Requirement already satisfied: google-auth<2.0dev,>=1.11.0 in /opt/app-root/lib/python3.6/site-packages (from google-cloud-storage>=1.16.0->kfserving>=0.2.0->adserver==0.1.0) (1.21.1)
+Requirement already satisfied: google-cloud-core<2.0dev,>=1.4.1 in /opt/app-root/lib/python3.6/site-packages (from google-cloud-storage>=1.16.0->kfserving>=0.2.0->adserver==0.1.0) (1.4.1)
+Requirement already satisfied: google-resumable-media<2.0dev,>=1.0.0 in /opt/app-root/lib/python3.6/site-packages (from google-cloud-storage>=1.16.0->kfserving>=0.2.0->adserver==0.1.0) (1.0.0)
+Requirement already satisfied: PyJWT>=1.0.0 in /opt/app-root/lib/python3.6/site-packages (from adal>=1.2.2->kfserving>=0.2.0->adserver==0.1.0) (1.7.1)
+Requirement already satisfied: cryptography>=1.1.0 in /opt/app-root/lib/python3.6/site-packages (from adal>=1.2.2->kfserving>=0.2.0->adserver==0.1.0) (3.1)
+Requirement already satisfied: azure-common>=1.1.5 in /opt/app-root/lib/python3.6/site-packages (from azure-storage-blob<=2.1.0,>=1.3.0->kfserving>=0.2.0->adserver==0.1.0) (1.1.25)
+Requirement already satisfied: azure-storage-common~=2.1 in /opt/app-root/lib/python3.6/site-packages (from azure-storage-blob<=2.1.0,>=1.3.0->kfserving>=0.2.0->adserver==0.1.0) (2.1.0)
+Requirement already satisfied: websocket-client!=0.40.0,!=0.41.*,!=0.42.*,>=0.32.0 in /opt/app-root/lib/python3.6/site-packages (from kubernetes==10.0.1->kfserving>=0.2.0->adserver==0.1.0) (0.57.0)
+Requirement already satisfied: requests-oauthlib in /opt/app-root/lib/python3.6/site-packages (from kubernetes==10.0.1->kfserving>=0.2.0->adserver==0.1.0) (1.3.0)
+Requirement already satisfied: configparser in /opt/app-root/lib/python3.6/site-packages (from minio>=4.0.9->kfserving>=0.2.0->adserver==0.1.0) (5.0.0)
+Requirement already satisfied: markdown>=2.6.8 in /opt/app-root/lib/python3.6/site-packages (from tensorboard<3,>=2.3.0->tensorflow>=2->alibi-detect->adserver==0.1.0) (3.2.2)
+Requirement already satisfied: tensorboard-plugin-wit>=1.6.0 in /opt/app-root/lib/python3.6/site-packages (from tensorboard<3,>=2.3.0->tensorflow>=2->alibi-detect->adserver==0.1.0) (1.7.0)
+Requirement already satisfied: google-auth-oauthlib<0.5,>=0.4.1 in /opt/app-root/lib/python3.6/site-packages (from tensorboard<3,>=2.3.0->tensorflow>=2->alibi-detect->adserver==0.1.0) (0.4.1)
+Requirement already satisfied: werkzeug>=0.11.15 in /opt/app-root/lib/python3.6/site-packages (from tensorboard<3,>=2.3.0->tensorflow>=2->alibi-detect->adserver==0.1.0) (1.0.1)
+Requirement already satisfied: ephem>=3.7.5.3 in /opt/app-root/lib/python3.6/site-packages (from LunarCalendar>=0.0.9->fbprophet<0.7,>=0.5->alibi-detect->adserver==0.1.0) (3.7.7.1)
+Requirement already satisfied: pymeeus<=1,>=0.3.6 in /opt/app-root/lib/python3.6/site-packages (from convertdate>=2.1.2->fbprophet<0.7,>=0.5->alibi-detect->adserver==0.1.0) (0.3.7)
+Requirement already satisfied: idna<3,>=2.5 in /opt/app-root/lib/python3.6/site-packages (from requests->transformers>=2.10.0->alibi-detect->adserver==0.1.0) (2.10)
+Requirement already satisfied: chardet<4,>=3.0.2 in /opt/app-root/lib/python3.6/site-packages (from requests->transformers>=2.10.0->alibi-detect->adserver==0.1.0) (3.0.4)
+Requirement already satisfied: click in /opt/app-root/lib/python3.6/site-packages (from sacremoses->transformers>=2.10.0->alibi-detect->adserver==0.1.0) (7.1.2)
+Requirement already satisfied: cachetools<5.0,>=2.0.0 in /opt/app-root/lib/python3.6/site-packages (from google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->kfserving>=0.2.0->adserver==0.1.0) (4.1.1)
+Requirement already satisfied: rsa<5,>=3.1.4; python_version >= "3.5" in /opt/app-root/lib/python3.6/site-packages (from google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->kfserving>=0.2.0->adserver==0.1.0) (4.6)
+Requirement already satisfied: pyasn1-modules>=0.2.1 in /opt/app-root/lib/python3.6/site-packages (from google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->kfserving>=0.2.0->adserver==0.1.0) (0.2.8)
+Requirement already satisfied: google-api-core<2.0.0dev,>=1.19.0 in /opt/app-root/lib/python3.6/site-packages (from google-cloud-core<2.0dev,>=1.4.1->google-cloud-storage>=1.16.0->kfserving>=0.2.0->adserver==0.1.0) (1.22.2)
+Requirement already satisfied: google-crc32c<2.0dev,>=1.0; python_version >= "3.5" in /opt/app-root/lib/python3.6/site-packages (from google-resumable-media<2.0dev,>=1.0.0->google-cloud-storage>=1.16.0->kfserving>=0.2.0->adserver==0.1.0) (1.0.0)
+Requirement already satisfied: cffi!=1.11.3,>=1.8 in /opt/app-root/lib/python3.6/site-packages (from cryptography>=1.1.0->adal>=1.2.2->kfserving>=0.2.0->adserver==0.1.0) (1.14.2)
+Requirement already satisfied: oauthlib>=3.0.0 in /opt/app-root/lib/python3.6/site-packages (from requests-oauthlib->kubernetes==10.0.1->kfserving>=0.2.0->adserver==0.1.0) (3.1.0)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /opt/app-root/lib/python3.6/site-packages (from markdown>=2.6.8->tensorboard<3,>=2.3.0->tensorflow>=2->alibi-detect->adserver==0.1.0) (1.7.0)
+Requirement already satisfied: pyasn1>=0.1.3 in /opt/app-root/lib/python3.6/site-packages (from rsa<5,>=3.1.4; python_version >= "3.5"->google-auth<2.0dev,>=1.11.0->google-cloud-storage>=1.16.0->kfserving>=0.2.0->adserver==0.1.0) (0.4.8)
+Requirement already satisfied: googleapis-common-protos<2.0dev,>=1.6.0 in /opt/app-root/lib/python3.6/site-packages (from google-api-core<2.0.0dev,>=1.19.0->google-cloud-core<2.0dev,>=1.4.1->google-cloud-storage>=1.16.0->kfserving>=0.2.0->adserver==0.1.0) (1.52.0)
+Requirement already satisfied: pycparser in /opt/app-root/lib/python3.6/site-packages (from cffi!=1.11.3,>=1.8->cryptography>=1.1.0->adal>=1.2.2->kfserving>=0.2.0->adserver==0.1.0) (2.20)
+Requirement already satisfied: zipp>=0.5 in /opt/app-root/lib/python3.6/site-packages (from importlib-metadata; python_version < "3.8"->markdown>=2.6.8->tensorboard<3,>=2.3.0->tensorflow>=2->alibi-detect->adserver==0.1.0) (3.1.0)
+Installing collected packages: adserver
+  Running setup.py develop for adserver
+Successfully installed adserver
+Removing intermediate container 6be109bb0d17
+ ---> 4db1591a23e2
+Step 10/15 : RUN pip install pip-licenses
+ ---> Running in a58d90372d34
+Collecting pip-licenses
+  Downloading pip_licenses-2.3.0-py3-none-any.whl (14 kB)
+Collecting PTable
+  Downloading PTable-0.9.2.tar.gz (31 kB)
+Building wheels for collected packages: PTable
+  Building wheel for PTable (setup.py): started
+  Building wheel for PTable (setup.py): finished with status 'done'
+  Created wheel for PTable: filename=PTable-0.9.2-py3-none-any.whl size=21893 sha256=3a9c368cc9af6935afb846ccba7e900d7719f830111189a7569e63aee23f2f72
+  Stored in directory: /tmp/pip-ephem-wheel-cache-a1g1cava/wheels/f3/65/67/71f473ec87ea4554d1bdfb1b5128cfe1414c2b113b72a1ee8e
+Successfully built PTable
+Installing collected packages: PTable, pip-licenses
+Successfully installed PTable-0.9.2 pip-licenses-2.3.0
+Removing intermediate container a58d90372d34
+ ---> 3fb141c7a1aa
+Step 11/15 : RUN mkdir ./licenses && pip-licenses --from=mixed --format=csv --output-file=./licenses/license_info.csv &&     pip-licenses --from=mixed --format=plain-vertical --with-license-file --no-license-path --output-file=./licenses/license.txt
+ ---> Running in 788e3678377c
+created path: ./licenses/license_info.csv
+created path: ./licenses/license.txt
+Removing intermediate container 788e3678377c
+ ---> e5e827d0c9b3
+Step 12/15 : USER root
+ ---> Running in 6a0350558bec
+Removing intermediate container 6a0350558bec
+ ---> 0e58996c2302
+Step 13/15 : RUN mv ./licenses /licenses
+ ---> Running in e125b18517fd
+Removing intermediate container e125b18517fd
+ ---> 7d05f41ea539
+Step 14/15 : USER default
+ ---> Running in f2a064cd5c05
+Removing intermediate container f2a064cd5c05
+ ---> 270f6864ace0
+Step 15/15 : ENTRYPOINT ["python", "-m", "adserver"]
+ ---> Running in 7d37f01ee089
+Removing intermediate container 7d37f01ee089
+ ---> e9883759c20c
+Successfully built e9883759c20c
+Successfully tagged seldonio/alibi-detect-server:1.2.3-dev
+kind load docker-image seldonio/alibi-detect-server:1.2.3-dev
+Image: "seldonio/alibi-detect-server:1.2.3-dev" with ID "sha256:e9883759c20cd526282a35dc93687f4010056ae86ad6e71105c733660dd47d98" not present on node "kind-control-plane"
+Image: "seldonio/alibi-detect-server:1.2.3-dev" with ID "sha256:e9883759c20cd526282a35dc93687f4010056ae86ad6e71105c733660dd47d98" not present on node "kind-worker"
+make[1]: Leaving directory '/workspace/source/components/alibi-detect-server'
+cd ../../components/alibi-explain-server && make kind_load
+make[1]: Entering directory '/workspace/source/components/alibi-explain-server'
+# Protobuf
+cp ../../proto/prediction.proto alibiexplainer/proto/
+make -C ../../proto/tensorflow/ create_protos
+make[2]: Entering directory '/workspace/source/proto/tensorflow'
+./create-protos.sh
+Downloading proto files for master
+make[2]: Leaving directory '/workspace/source/proto/tensorflow'
+cp -r ../../proto/tensorflow/tensorflow \
+	alibiexplainer/proto/
+make -C ../../proto/tensorflow clean
+make[2]: Entering directory '/workspace/source/proto/tensorflow'
+removed 'tensorflow/core/framework/resource_handle.proto'
+removed 'tensorflow/core/framework/tensor_shape.proto'
+removed 'tensorflow/core/framework/tensor.proto'
+removed 'tensorflow/core/framework/types.proto'
+removed directory 'tensorflow/core/framework'
+removed directory 'tensorflow/core'
+removed directory 'tensorflow'
+make[2]: Leaving directory '/workspace/source/proto/tensorflow'
+pip install -r requirements-dev.txt
+Requirement already satisfied: grpcio-tools==1.31.0 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 1)) (1.31.0)
+Collecting mypy-protobuf==1.22
+  Downloading mypy_protobuf-1.22-py3-none-any.whl (7.5 kB)
+Requirement already satisfied: grpcio>=1.31.0 in /usr/local/lib/python3.6/site-packages (from grpcio-tools==1.31.0->-r requirements-dev.txt (line 1)) (1.31.0)
+Requirement already satisfied: protobuf<4.0dev,>=3.5.0.post1 in /usr/local/lib/python3.6/site-packages (from grpcio-tools==1.31.0->-r requirements-dev.txt (line 1)) (3.13.0)
+Requirement already satisfied: six>=1.5.2 in /usr/local/lib/python3.6/site-packages (from grpcio>=1.31.0->grpcio-tools==1.31.0->-r requirements-dev.txt (line 1)) (1.15.0)
+Requirement already satisfied: setuptools in /usr/local/lib/python3.6/site-packages (from protobuf<4.0dev,>=3.5.0.post1->grpcio-tools==1.31.0->-r requirements-dev.txt (line 1)) (50.3.0)
+Installing collected packages: mypy-protobuf
+Successfully installed mypy-protobuf-1.22
+WARNING: You are using pip version 20.2.2; however, version 20.2.3 is available.
+You should consider upgrading via the '/usr/local/bin/python -m pip install --upgrade pip' command.
+# Protobuf
+cd alibiexplainer && python \
+	-m grpc.tools.protoc \
+	-I./ \
+	-I./proto/ \
+	--python_out=./ \
+	--grpc_python_out=./ \
+	--mypy_out=./ \
+	./proto/prediction.proto
+Writing mypy to proto/prediction_pb2.pyi
+## We build TF's protobufs as well in case the tensorflow package
+## is not found
+cd alibiexplainer/proto && python \
+	-m grpc.tools.protoc \
+	-I./ \
+	-I../ \
+	--python_out=./ \
+	./tensorflow/core/framework/*.proto
+sed -i "s/from tensorflow/from alibiexplainer.proto.tensorflow/" alibiexplainer/proto/*.py
+sed -i "s/from tensorflow.core.framework/from ./" \
+	alibiexplainer/proto/tensorflow/core/framework/resource_handle_pb2.py alibiexplainer/proto/tensorflow/core/framework/tensor_pb2.py alibiexplainer/proto/tensorflow/core/framework/tensor_shape_pb2.py alibiexplainer/proto/tensorflow/core/framework/types_pb2.py
+sed -i "s/from proto/from alibiexplainer.proto/g" alibiexplainer/proto/prediction_pb2_grpc.py
+docker build --file=Dockerfile --force-rm=true -t seldonio/alibiexplainer:1.2.3-dev .
+Sending build context to Docker daemon    340kB
+Step 1/14 : FROM registry.access.redhat.com/ubi8/python-36
+ ---> b6155b8cda24
+Step 2/14 : LABEL name="Seldon Alibi Wrapper"       vendor="Seldon Technologies"       version="1.2.3-dev"       release="1"       summary="Alibi Explainer Wrapper for Seldon Core"       description="Allows Seldon Core inference models to run with a black box model explanation model from the Alibi:Explain project"
+ ---> Running in b1578b188bd8
+Removing intermediate container b1578b188bd8
+ ---> 9970ff1157d0
+Step 3/14 : USER root
+ ---> Running in df9d85420f94
+Removing intermediate container df9d85420f94
+ ---> 52f571338eeb
+Step 4/14 : RUN pip install --upgrade pip
+ ---> Running in 9753a6a8b597
+Collecting pip
+  Downloading https://files.pythonhosted.org/packages/4e/5f/528232275f6509b1fff703c9280e58951a81abe24640905de621c9f81839/pip-20.2.3-py2.py3-none-any.whl (1.5MB)
+Installing collected packages: pip
+  Found existing installation: pip 9.0.3
+    Uninstalling pip-9.0.3:
+      Successfully uninstalled pip-9.0.3
+Successfully installed pip-20.2.3
+Removing intermediate container 9753a6a8b597
+ ---> 497836f8cb54
+Step 5/14 : COPY setup.py setup.py
+ ---> 8bc558c9b82c
+Step 6/14 : COPY alibiexplainer alibiexplainer
+ ---> 73d0c726c7a7
+Step 7/14 : COPY README.md README.md
+ ---> 97ca5ab24b57
+Step 8/14 : RUN pip install .
+ ---> Running in 1da938bfe52e
+Processing /opt/app-root/src
+Collecting kfserving>=0.3.0
+  Downloading kfserving-0.4.0-py3-none-any.whl (85 kB)
+Collecting alibi==0.5.4
+  Downloading alibi-0.5.4-py3-none-any.whl (215 kB)
+Collecting scikit-learn>=0.23.0
+  Downloading scikit_learn-0.23.2-cp36-cp36m-manylinux1_x86_64.whl (6.8 MB)
+Collecting argparse>=1.4.0
+  Downloading argparse-1.4.0-py2.py3-none-any.whl (23 kB)
+Collecting requests>=2.22.0
+  Downloading requests-2.24.0-py2.py3-none-any.whl (61 kB)
+Collecting joblib>=0.13.2
+  Downloading joblib-0.16.0-py3-none-any.whl (300 kB)
+Collecting dill>=0.3.0
+  Downloading dill-0.3.2.zip (177 kB)
+Collecting grpcio>=1.22.0
+  Downloading grpcio-1.32.0-cp36-cp36m-manylinux2014_x86_64.whl (3.8 MB)
+Collecting xgboost==1.2.0
+  Downloading xgboost-1.2.0-py3-none-manylinux2010_x86_64.whl (148.9 MB)
+Collecting shap==0.36.0
+  Downloading shap-0.36.0.tar.gz (319 kB)
+Requirement already satisfied: setuptools>=21.0.0 in /opt/app-root/lib/python3.6/site-packages (from kfserving>=0.3.0->alibiexplainer==0.3.0) (39.2.0)
+Collecting table-logger>=0.3.5
+  Downloading table_logger-0.3.6-py3-none-any.whl (14 kB)
+Collecting python-dateutil>=2.5.3
+  Downloading python_dateutil-2.8.1-py2.py3-none-any.whl (227 kB)
+Collecting minio>=4.0.9
+  Downloading minio-6.0.0-py2.py3-none-any.whl (72 kB)
+Collecting kubernetes==10.0.1
+  Downloading kubernetes-10.0.1-py2.py3-none-any.whl (1.5 MB)
+Collecting adal>=1.2.2
+  Downloading adal-1.2.4-py2.py3-none-any.whl (55 kB)
+Collecting numpy>=1.17.3
+  Downloading numpy-1.19.2-cp36-cp36m-manylinux2010_x86_64.whl (14.5 MB)
+Collecting certifi>=14.05.14
+  Downloading certifi-2020.6.20-py2.py3-none-any.whl (156 kB)
+Collecting tornado>=1.4.1
+  Downloading tornado-6.0.4.tar.gz (496 kB)
+Collecting six>=1.10
+  Downloading six-1.15.0-py2.py3-none-any.whl (10 kB)
+Collecting urllib3>=1.15.1
+  Downloading urllib3-1.25.10-py2.py3-none-any.whl (127 kB)
+Collecting google-cloud-storage>=1.16.0
+  Downloading google_cloud_storage-1.31.0-py2.py3-none-any.whl (88 kB)
+Collecting azure-storage-blob<=2.1.0,>=1.3.0
+  Downloading azure_storage_blob-2.1.0-py2.py3-none-any.whl (88 kB)
+Collecting attrs
+  Downloading attrs-20.2.0-py2.py3-none-any.whl (48 kB)
+Collecting scipy
+  Downloading scipy-1.5.2-cp36-cp36m-manylinux1_x86_64.whl (25.9 MB)
+Collecting tensorflow>=2.0
+  Downloading tensorflow-2.3.0-cp36-cp36m-manylinux2010_x86_64.whl (320.4 MB)
+Collecting matplotlib
+  Downloading matplotlib-3.3.1-cp36-cp36m-manylinux1_x86_64.whl (11.6 MB)
+Collecting prettyprinter
+  Downloading prettyprinter-0.18.0-py2.py3-none-any.whl (48 kB)
+Collecting Pillow
+  Downloading Pillow-7.2.0-cp36-cp36m-manylinux1_x86_64.whl (2.2 MB)
+Collecting spacy[lookups]
+  Downloading spacy-2.3.2-cp36-cp36m-manylinux1_x86_64.whl (9.9 MB)
+Collecting scikit-image!=0.17.1
+  Downloading scikit_image-0.17.2-cp36-cp36m-manylinux1_x86_64.whl (12.4 MB)
+Collecting typing-extensions>=3.7.2
+  Downloading typing_extensions-3.7.4.3-py3-none-any.whl (22 kB)
+Collecting pandas
+  Downloading pandas-1.1.2-cp36-cp36m-manylinux1_x86_64.whl (10.5 MB)
+Collecting beautifulsoup4
+  Downloading beautifulsoup4-4.9.1-py3-none-any.whl (115 kB)
+Collecting threadpoolctl>=2.0.0
+  Downloading threadpoolctl-2.1.0-py3-none-any.whl (12 kB)
+Collecting chardet<4,>=3.0.2
+  Downloading chardet-3.0.4-py2.py3-none-any.whl (133 kB)
+Collecting idna<3,>=2.5
+  Downloading idna-2.10-py2.py3-none-any.whl (58 kB)
+Collecting tqdm>4.25.0
+  Downloading tqdm-4.48.2-py2.py3-none-any.whl (68 kB)
+Collecting slicer
+  Downloading slicer-0.0.3-py3-none-any.whl (11 kB)
+Collecting numba
+  Downloading numba-0.51.2-cp36-cp36m-manylinux2014_x86_64.whl (3.1 MB)
+Collecting pytz
+  Downloading pytz-2020.1-py2.py3-none-any.whl (510 kB)
+Collecting configparser
+  Downloading configparser-5.0.0-py3-none-any.whl (22 kB)
+Collecting google-auth>=1.0.1
+  Downloading google_auth-1.21.1-py2.py3-none-any.whl (93 kB)
+Collecting pyyaml>=3.12
+  Downloading PyYAML-5.3.1.tar.gz (269 kB)
+Collecting requests-oauthlib
+  Downloading requests_oauthlib-1.3.0-py2.py3-none-any.whl (23 kB)
+Collecting websocket-client!=0.40.0,!=0.41.*,!=0.42.*,>=0.32.0
+  Downloading websocket_client-0.57.0-py2.py3-none-any.whl (200 kB)
+Collecting cryptography>=1.1.0
+  Downloading cryptography-3.1-cp35-abi3-manylinux2010_x86_64.whl (2.6 MB)
+Collecting PyJWT>=1.0.0
+  Downloading PyJWT-1.7.1-py2.py3-none-any.whl (18 kB)
+Collecting google-resumable-media<2.0dev,>=1.0.0
+  Downloading google_resumable_media-1.0.0-py2.py3-none-any.whl (42 kB)
+Collecting google-cloud-core<2.0dev,>=1.4.1
+  Downloading google_cloud_core-1.4.1-py2.py3-none-any.whl (26 kB)
+Collecting azure-storage-common~=2.1
+  Downloading azure_storage_common-2.1.0-py2.py3-none-any.whl (47 kB)
+Collecting azure-common>=1.1.5
+  Downloading azure_common-1.1.25-py2.py3-none-any.whl (12 kB)
+Collecting tensorboard<3,>=2.3.0
+  Downloading tensorboard-2.3.0-py3-none-any.whl (6.8 MB)
+Collecting tensorflow-estimator<2.4.0,>=2.3.0
+  Downloading tensorflow_estimator-2.3.0-py2.py3-none-any.whl (459 kB)
+Requirement already satisfied: wheel>=0.26 in /opt/app-root/lib/python3.6/site-packages (from tensorflow>=2.0->alibi==0.5.4->alibiexplainer==0.3.0) (0.31.1)
+Collecting absl-py>=0.7.0
+  Downloading absl_py-0.10.0-py3-none-any.whl (127 kB)
+Collecting gast==0.3.3
+  Downloading gast-0.3.3-py2.py3-none-any.whl (9.7 kB)
+Collecting astunparse==1.6.3
+  Downloading astunparse-1.6.3-py2.py3-none-any.whl (12 kB)
+Collecting keras-preprocessing<1.2,>=1.1.1
+  Downloading Keras_Preprocessing-1.1.2-py2.py3-none-any.whl (42 kB)
+Collecting termcolor>=1.1.0
+  Downloading termcolor-1.1.0.tar.gz (3.9 kB)
+Collecting h5py<2.11.0,>=2.10.0
+  Downloading h5py-2.10.0-cp36-cp36m-manylinux1_x86_64.whl (2.9 MB)
+Collecting wrapt>=1.11.1
+  Downloading wrapt-1.12.1.tar.gz (27 kB)
+Collecting opt-einsum>=2.3.2
+  Downloading opt_einsum-3.3.0-py3-none-any.whl (65 kB)
+Collecting protobuf>=3.9.2
+  Downloading protobuf-3.13.0-cp36-cp36m-manylinux1_x86_64.whl (1.3 MB)
+Collecting google-pasta>=0.1.8
+  Downloading google_pasta-0.2.0-py3-none-any.whl (57 kB)
+Collecting pyparsing!=2.0.4,!=2.1.2,!=2.1.6,>=2.0.3
+  Downloading pyparsing-2.4.7-py2.py3-none-any.whl (67 kB)
+Collecting cycler>=0.10
+  Downloading cycler-0.10.0-py2.py3-none-any.whl (6.5 kB)
+Collecting kiwisolver>=1.0.1
+  Downloading kiwisolver-1.2.0-cp36-cp36m-manylinux1_x86_64.whl (88 kB)
+Collecting Pygments>=2.2.0
+  Downloading Pygments-2.6.1-py3-none-any.whl (914 kB)
+Collecting colorful>=0.4.0
+  Downloading colorful-0.5.4-py2.py3-none-any.whl (201 kB)
+Collecting cymem<2.1.0,>=2.0.2
+  Downloading cymem-2.0.3-cp36-cp36m-manylinux1_x86_64.whl (32 kB)
+Collecting catalogue<1.1.0,>=0.0.7
+  Downloading catalogue-1.0.0-py2.py3-none-any.whl (7.7 kB)
+Collecting blis<0.5.0,>=0.4.0
+  Downloading blis-0.4.1-cp36-cp36m-manylinux1_x86_64.whl (3.7 MB)
+Collecting wasabi<1.1.0,>=0.4.0
+  Downloading wasabi-0.8.0-py3-none-any.whl (23 kB)
+Collecting srsly<1.1.0,>=1.0.2
+  Downloading srsly-1.0.2-cp36-cp36m-manylinux1_x86_64.whl (185 kB)
+Collecting thinc==7.4.1
+  Downloading thinc-7.4.1-cp36-cp36m-manylinux1_x86_64.whl (2.1 MB)
+Collecting murmurhash<1.1.0,>=0.28.0
+  Downloading murmurhash-1.0.2-cp36-cp36m-manylinux1_x86_64.whl (19 kB)
+Collecting preshed<3.1.0,>=3.0.2
+  Downloading preshed-3.0.2-cp36-cp36m-manylinux1_x86_64.whl (119 kB)
+Collecting plac<1.2.0,>=0.9.6
+  Downloading plac-1.1.3-py2.py3-none-any.whl (20 kB)
+Collecting spacy-lookups-data<0.4.0,>=0.3.2; extra == "lookups"
+  Downloading spacy_lookups_data-0.3.2.tar.gz (93.8 MB)
+Collecting PyWavelets>=1.1.1
+  Downloading PyWavelets-1.1.1-cp36-cp36m-manylinux1_x86_64.whl (4.4 MB)
+Collecting tifffile>=2019.7.26
+  Downloading tifffile-2020.9.3-py3-none-any.whl (148 kB)
+Collecting networkx>=2.0
+  Downloading networkx-2.5-py3-none-any.whl (1.6 MB)
+Collecting imageio>=2.3.0
+  Downloading imageio-2.9.0-py3-none-any.whl (3.3 MB)
+Collecting soupsieve>1.2
+  Downloading soupsieve-2.0.1-py3-none-any.whl (32 kB)
+Collecting llvmlite<0.35,>=0.34.0.dev0
+  Downloading llvmlite-0.34.0-cp36-cp36m-manylinux2010_x86_64.whl (24.6 MB)
+Collecting rsa<5,>=3.1.4; python_version >= "3.5"
+  Downloading rsa-4.6-py3-none-any.whl (47 kB)
+Collecting pyasn1-modules>=0.2.1
+  Downloading pyasn1_modules-0.2.8-py2.py3-none-any.whl (155 kB)
+Collecting cachetools<5.0,>=2.0.0
+  Downloading cachetools-4.1.1-py3-none-any.whl (10 kB)
+Collecting oauthlib>=3.0.0
+  Downloading oauthlib-3.1.0-py2.py3-none-any.whl (147 kB)
+Collecting cffi!=1.11.3,>=1.8
+  Downloading cffi-1.14.2-cp36-cp36m-manylinux1_x86_64.whl (400 kB)
+Collecting google-crc32c<2.0dev,>=1.0; python_version >= "3.5"
+  Downloading google_crc32c-1.0.0-cp36-cp36m-manylinux2010_x86_64.whl (39 kB)
+Collecting google-api-core<2.0.0dev,>=1.19.0
+  Downloading google_api_core-1.22.2-py2.py3-none-any.whl (91 kB)
+Collecting markdown>=2.6.8
+  Downloading Markdown-3.2.2-py3-none-any.whl (88 kB)
+Collecting werkzeug>=0.11.15
+  Downloading Werkzeug-1.0.1-py2.py3-none-any.whl (298 kB)
+Collecting google-auth-oauthlib<0.5,>=0.4.1
+  Downloading google_auth_oauthlib-0.4.1-py2.py3-none-any.whl (18 kB)
+Collecting tensorboard-plugin-wit>=1.6.0
+  Downloading tensorboard_plugin_wit-1.7.0-py3-none-any.whl (779 kB)
+Collecting importlib-metadata>=0.20; python_version < "3.8"
+  Downloading importlib_metadata-1.7.0-py2.py3-none-any.whl (31 kB)
+Collecting decorator>=4.3.0
+  Downloading decorator-4.4.2-py2.py3-none-any.whl (9.2 kB)
+Collecting pyasn1>=0.1.3
+  Downloading pyasn1-0.4.8-py2.py3-none-any.whl (77 kB)
+Collecting pycparser
+  Downloading pycparser-2.20-py2.py3-none-any.whl (112 kB)
+Collecting googleapis-common-protos<2.0dev,>=1.6.0
+  Downloading googleapis_common_protos-1.52.0-py2.py3-none-any.whl (100 kB)
+Collecting zipp>=0.5
+  Downloading zipp-3.1.0-py3-none-any.whl (4.9 kB)
+Building wheels for collected packages: alibiexplainer, dill, shap, tornado, pyyaml, termcolor, wrapt, spacy-lookups-data
+  Building wheel for alibiexplainer (setup.py): started
+  Building wheel for alibiexplainer (setup.py): finished with status 'done'
+  Created wheel for alibiexplainer: filename=alibiexplainer-0.3.0-py3-none-any.whl size=1715 sha256=83da5cefb1431389d53ef0557268ff2f993cda4d394a08dfb6cdf92f76355953
+  Stored in directory: /tmp/pip-ephem-wheel-cache-1pquiort/wheels/3a/7e/97/8e807946820407225d42c8f04583946801d265a80f73301883
+  Building wheel for dill (setup.py): started
+  Building wheel for dill (setup.py): finished with status 'done'
+  Created wheel for dill: filename=dill-0.3.2-py3-none-any.whl size=77840 sha256=df8cf2a86ac8e2ca0c9bc2420bbd387a9da526de3e86782b71139028070d98eb
+  Stored in directory: /tmp/pip-ephem-wheel-cache-1pquiort/wheels/02/49/cf/660924cd9bc5fcddc3a0246fe39800c83028d3ccea244de352
+  Building wheel for shap (setup.py): started
+  Building wheel for shap (setup.py): finished with status 'done'
+  Created wheel for shap: filename=shap-0.36.0-cp36-cp36m-linux_x86_64.whl size=503805 sha256=0a0dfa207b85310cac13c4b91072a9f87367c4a0a7cbadab310f5bc471ad4687
+  Stored in directory: /tmp/pip-ephem-wheel-cache-1pquiort/wheels/13/25/e6/7510ba3a400c62b74e62118de280be871af157dac83efc71c8
+  Building wheel for tornado (setup.py): started
+  Building wheel for tornado (setup.py): finished with status 'done'
+  Created wheel for tornado: filename=tornado-6.0.4-cp36-cp36m-linux_x86_64.whl size=428274 sha256=48d51d2a222daa34a02bae2554a407dc00e1d8538bc560796383912fdad4f649
+  Stored in directory: /tmp/pip-ephem-wheel-cache-1pquiort/wheels/37/a7/db/2d592e44029ef817f3ef63ea991db34191cebaef087a96f505
+  Building wheel for pyyaml (setup.py): started
+  Building wheel for pyyaml (setup.py): finished with status 'done'
+  Created wheel for pyyaml: filename=PyYAML-5.3.1-cp36-cp36m-linux_x86_64.whl size=44632 sha256=602c09aee0c04a27ce94f32c14b19123bfe90c30b44a2e4cd1df4a1fc0a00280
+  Stored in directory: /tmp/pip-ephem-wheel-cache-1pquiort/wheels/e5/9d/ad/2ee53cf262cba1ffd8afe1487eef788ea3f260b7e6232a80fc
+  Building wheel for termcolor (setup.py): started
+  Building wheel for termcolor (setup.py): finished with status 'done'
+  Created wheel for termcolor: filename=termcolor-1.1.0-py3-none-any.whl size=4001 sha256=34672c5588d8ee5bdf4ad85b5ba1d1c0439ad3854367adb36839f11def607996
+  Stored in directory: /tmp/pip-ephem-wheel-cache-1pquiort/wheels/93/2a/eb/e58dbcbc963549ee4f065ff80a59f274cc7210b6eab962acdc
+  Building wheel for wrapt (setup.py): started
+  Building wheel for wrapt (setup.py): finished with status 'done'
+  Created wheel for wrapt: filename=wrapt-1.12.1-cp36-cp36m-linux_x86_64.whl size=72129 sha256=6346355eb909d27d3b986a4ff13357693913b87939684437567ed77286f66ba2
+  Stored in directory: /tmp/pip-ephem-wheel-cache-1pquiort/wheels/32/42/7f/23cae9ff6ef66798d00dc5d659088e57dbba01566f6c60db63
+  Building wheel for spacy-lookups-data (setup.py): started
+  Building wheel for spacy-lookups-data (setup.py): finished with status 'done'
+  Created wheel for spacy-lookups-data: filename=spacy_lookups_data-0.3.2-py2.py3-none-any.whl size=93806736 sha256=d1418b243b10fd7e6f4049b165c76ae285ff303847e74e311977be64ffaa2213
+  Stored in directory: /tmp/pip-ephem-wheel-cache-1pquiort/wheels/4b/4e/9d/d04994a2ff89a3f994cf9a08171bbb0b2c4aa6bd9a4f7adcbb
+Successfully built alibiexplainer dill shap tornado pyyaml termcolor wrapt spacy-lookups-data
+Installing collected packages: numpy, table-logger, six, python-dateutil, urllib3, pytz, certifi, configparser, minio, pyasn1, rsa, pyasn1-modules, cachetools, google-auth, pyyaml, oauthlib, chardet, idna, requests, requests-oauthlib, websocket-client, kubernetes, argparse, pycparser, cffi, cryptography, PyJWT, adal, tornado, google-crc32c, google-resumable-media, protobuf, googleapis-common-protos, google-api-core, google-cloud-core, google-cloud-storage, azure-common, azure-storage-common, azure-storage-blob, kfserving, attrs, joblib, threadpoolctl, scipy, scikit-learn, pandas, tqdm, slicer, llvmlite, numba, shap, grpcio, zipp, importlib-metadata, markdown, werkzeug, absl-py, google-auth-oauthlib, tensorboard-plugin-wit, tensorboard, tensorflow-estimator, gast, astunparse, keras-preprocessing, termcolor, h5py, wrapt, opt-einsum, google-pasta, tensorflow, pyparsing, Pillow, cycler, kiwisolver, matplotlib, Pygments, colorful, prettyprinter, cymem, catalogue, blis, wasabi, srsly, murmurhash, preshed, plac, thinc, spacy-lookups-data, spacy, PyWavelets, tifffile, decorator, networkx, imageio, scikit-image, typing-extensions, soupsieve, beautifulsoup4, alibi, dill, xgboost, alibiexplainer
+[91mERROR: After October 2020 you may experience errors when installing or updating packages. This is because pip will change the way that it resolves dependency conflicts.
+
+We recommend you use --use-feature=2020-resolver to test your packages with the new resolver before it becomes the default.
+
+google-auth 1.21.1 requires setuptools>=40.3.0, but you'll have setuptools 39.2.0 which is incompatible.
+tensorboard 2.3.0 requires setuptools>=41.0.0, but you'll have setuptools 39.2.0 which is incompatible.
+tensorflow 2.3.0 requires numpy<1.19.0,>=1.16.0, but you'll have numpy 1.19.2 which is incompatible.
+tensorflow 2.3.0 requires scipy==1.4.1, but you'll have scipy 1.5.2 which is incompatible.
+[0mSuccessfully installed Pillow-7.2.0 PyJWT-1.7.1 PyWavelets-1.1.1 Pygments-2.6.1 absl-py-0.10.0 adal-1.2.4 alibi-0.5.4 alibiexplainer-0.3.0 argparse-1.4.0 astunparse-1.6.3 attrs-20.2.0 azure-common-1.1.25 azure-storage-blob-2.1.0 azure-storage-common-2.1.0 beautifulsoup4-4.9.1 blis-0.4.1 cachetools-4.1.1 catalogue-1.0.0 certifi-2020.6.20 cffi-1.14.2 chardet-3.0.4 colorful-0.5.4 configparser-5.0.0 cryptography-3.1 cycler-0.10.0 cymem-2.0.3 decorator-4.4.2 dill-0.3.2 gast-0.3.3 google-api-core-1.22.2 google-auth-1.21.1 google-auth-oauthlib-0.4.1 google-cloud-core-1.4.1 google-cloud-storage-1.31.0 google-crc32c-1.0.0 google-pasta-0.2.0 google-resumable-media-1.0.0 googleapis-common-protos-1.52.0 grpcio-1.32.0 h5py-2.10.0 idna-2.10 imageio-2.9.0 importlib-metadata-1.7.0 joblib-0.16.0 keras-preprocessing-1.1.2 kfserving-0.4.0 kiwisolver-1.2.0 kubernetes-10.0.1 llvmlite-0.34.0 markdown-3.2.2 matplotlib-3.3.1 minio-6.0.0 murmurhash-1.0.2 networkx-2.5 numba-0.51.2 numpy-1.19.2 oauthlib-3.1.0 opt-einsum-3.3.0 pandas-1.1.2 plac-1.1.3 preshed-3.0.2 prettyprinter-0.18.0 protobuf-3.13.0 pyasn1-0.4.8 pyasn1-modules-0.2.8 pycparser-2.20 pyparsing-2.4.7 python-dateutil-2.8.1 pytz-2020.1 pyyaml-5.3.1 requests-2.24.0 requests-oauthlib-1.3.0 rsa-4.6 scikit-image-0.17.2 scikit-learn-0.23.2 scipy-1.5.2 shap-0.36.0 six-1.15.0 slicer-0.0.3 soupsieve-2.0.1 spacy-2.3.2 spacy-lookups-data-0.3.2 srsly-1.0.2 table-logger-0.3.6 tensorboard-2.3.0 tensorboard-plugin-wit-1.7.0 tensorflow-2.3.0 tensorflow-estimator-2.3.0 termcolor-1.1.0 thinc-7.4.1 threadpoolctl-2.1.0 tifffile-2020.9.3 tornado-6.0.4 tqdm-4.48.2 typing-extensions-3.7.4.3 urllib3-1.25.10 wasabi-0.8.0 websocket-client-0.57.0 werkzeug-1.0.1 wrapt-1.12.1 xgboost-1.2.0 zipp-3.1.0
+Removing intermediate container 1da938bfe52e
+ ---> 48441f7ba8d9
+Step 9/14 : RUN chmod -R a+rwx /opt/app-root/lib/python3.6
+ ---> Running in 7d4d72113cbd
+Removing intermediate container 7d4d72113cbd
+ ---> debe58946269
+Step 10/14 : RUN pip install pip-licenses
+ ---> Running in 480634a1a1e4
+Collecting pip-licenses
+  Downloading pip_licenses-2.3.0-py3-none-any.whl (14 kB)
+Collecting PTable
+  Downloading PTable-0.9.2.tar.gz (31 kB)
+Building wheels for collected packages: PTable
+  Building wheel for PTable (setup.py): started
+  Building wheel for PTable (setup.py): finished with status 'done'
+  Created wheel for PTable: filename=PTable-0.9.2-py3-none-any.whl size=21893 sha256=2388d4c4772a54afc8d79ad8d4efb56c18075eec01e94ab6d5714409fddcefbf
+  Stored in directory: /tmp/pip-ephem-wheel-cache-alu0xmc4/wheels/f3/65/67/71f473ec87ea4554d1bdfb1b5128cfe1414c2b113b72a1ee8e
+Successfully built PTable
+Installing collected packages: PTable, pip-licenses
+Successfully installed PTable-0.9.2 pip-licenses-2.3.0
+Removing intermediate container 480634a1a1e4
+ ---> a580e4c84313
+Step 11/14 : RUN mkdir ./licenses && pip-licenses --from=mixed --format=csv --output-file=./licenses/license_info.csv &&     pip-licenses --from=mixed --format=plain-vertical --with-license-file --no-license-path --output-file=./licenses/license.txt
+ ---> Running in 9528f00a20cd
+created path: ./licenses/license_info.csv
+created path: ./licenses/license.txt
+Removing intermediate container 9528f00a20cd
+ ---> 756c82a4d4e2
+Step 12/14 : RUN mv ./licenses /licenses
+ ---> Running in 81e742a632f2
+Removing intermediate container 81e742a632f2
+ ---> 289143e275b6
+Step 13/14 : USER default
+ ---> Running in 58151b1b0e3f
+Removing intermediate container 58151b1b0e3f
+ ---> 51641b57f61f
+Step 14/14 : ENTRYPOINT ["python", "-m", "alibiexplainer"]
+ ---> Running in 3f2e3fbb95f7
+Removing intermediate container 3f2e3fbb95f7
+ ---> daaaab1f49f8
+Successfully built daaaab1f49f8
+Successfully tagged seldonio/alibiexplainer:1.2.3-dev
+kind load docker-image seldonio/alibiexplainer:1.2.3-dev
+Image: "seldonio/alibiexplainer:1.2.3-dev" with ID "sha256:daaaab1f49f87c3876ac9feaf42ada617ff73d78422b63078f9c5a22d5bb28ad" not present on node "kind-control-plane"
+Image: "seldonio/alibiexplainer:1.2.3-dev" with ID "sha256:daaaab1f49f87c3876ac9feaf42ada617ff73d78422b63078f9c5a22d5bb28ad" not present on node "kind-worker"
+make[1]: Leaving directory '/workspace/source/components/alibi-explain-server'
+Files changed in misc folders:
+SKIPPING MISC IMAGE BUILD...
+kubectl create namespace seldon || echo "Namespace seldon already exists"
+namespace/seldon created
+kubectl create namespace test1 || echo "Namespace test1 already exists"
+namespace/test1 created
+helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+"stable" has been added to your repositories
+helm repo add seldonio https://storage.googleapis.com/seldon-charts
+"seldonio" has been added to your repositories
+helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
+"jaegertracing" has been added to your repositories
+helm repo add datawire https://www.getambassador.io
+"datawire" has been added to your repositories
+helm repo update
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "jaegertracing" chart repository
+...Successfully got an update from the "datawire" chart repository
+...Successfully got an update from the "seldonio" chart repository
+...Successfully got an update from the "stable" chart repository
+Update Complete. ⎈ Happy Helming!⎈ 
+helm upgrade ambassador \
+	datawire/ambassador \
+	-f ../resources/ambassador_values.yaml \
+	--set image.repository=quay.io/datawire/ambassador \
+	--set crds.keep=false \
+	--set enableAES=false \
+	--namespace seldon \
+	--set replicaCount=1 \
+	--wait --install
+Release "ambassador" does not exist. Installing it now.
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+NAME: ambassador
+LAST DEPLOYED: Fri Sep 11 14:30:20 2020
+NAMESPACE: seldon
+STATUS: deployed
+REVISION: 1
+NOTES:
+-------------------------------------------------------------------------------
+  Congratulations! You've successfully installed Ambassador!
+
+-------------------------------------------------------------------------------
+To get the IP address of Ambassador, run the following commands:
+  export NODE_PORT=$(kubectl get --namespace seldon -o jsonpath="{.spec.ports[0].nodePort}" services ambassador)
+  export NODE_IP=$(kubectl get nodes --namespace seldon -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+
+For help, visit our Slack at https://d6e.co/slack or view the documentation online at https://www.getambassador.io.
+kubectl apply -f istio-1.4.2.yaml
+clusterrole.rbac.authorization.k8s.io/istio-reader-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-reader-istio-system created
+customresourcedefinition.apiextensions.k8s.io/attributemanifests.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/clusterrbacconfigs.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/destinationrules.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/envoyfilters.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/gateways.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/httpapispecbindings.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/httpapispecs.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/meshpolicies.authentication.istio.io created
+customresourcedefinition.apiextensions.k8s.io/policies.authentication.istio.io created
+customresourcedefinition.apiextensions.k8s.io/quotaspecbindings.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/quotaspecs.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/rbacconfigs.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/rules.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/serviceentries.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/servicerolebindings.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/serviceroles.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/virtualservices.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/adapters.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/instances.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/templates.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/handlers.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/sidecars.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/authorizationpolicies.security.istio.io created
+namespace/istio-system created
+serviceaccount/istio-reader-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-citadel-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-citadel-istio-system created
+deployment.apps/istio-citadel created
+poddisruptionbudget.policy/istio-citadel created
+service/istio-citadel created
+serviceaccount/istio-citadel-service-account created
+deployment.apps/istio-egressgateway created
+poddisruptionbudget.policy/istio-egressgateway created
+gateway.networking.istio.io/istio-multicluster-egressgateway created
+virtualservice.networking.istio.io/istio-multicluster-egressgateway created
+envoyfilter.networking.istio.io/istio-multicluster-egressgateway created
+destinationrule.networking.istio.io/istio-multicluster-destinationrule created
+service/istio-egressgateway created
+role.rbac.authorization.k8s.io/istio-egressgateway-sds created
+rolebinding.rbac.authorization.k8s.io/istio-egressgateway-sds created
+serviceaccount/istio-egressgateway-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-galley-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-galley-*****-role-binding-istio-system created
+configmap/istio-mesh-galley created
+configmap/istio-galley-configuration created
+deployment.apps/istio-galley created
+poddisruptionbudget.policy/istio-galley created
+service/istio-galley created
+serviceaccount/istio-galley-service-account created
+configmap/istio-grafana-configuration-dashboards-citadel-dashboard created
+configmap/istio-grafana-configuration-dashboards-galley-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-mesh-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-performance-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-service-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-workload-dashboard created
+configmap/istio-grafana-configuration-dashboards-mixer-dashboard created
+configmap/istio-grafana-configuration-dashboards-pilot-dashboard created
+configmap/istio-grafana created
+deployment.apps/grafana created
+policy.authentication.istio.io/grafana-ports-mtls-disabled created
+service/grafana created
+deployment.apps/istio-ingressgateway created
+gateway.networking.istio.io/ingressgateway created
+poddisruptionbudget.policy/ingressgateway created
+service/istio-ingressgateway created
+serviceaccount/istio-ingressgateway-service-account created
+sidecar.networking.istio.io/default created
+clusterrole.rbac.authorization.k8s.io/istio-sidecar-injector-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-sidecar-injector-*****-role-binding-istio-system created
+configmap/injector-mesh created
+deployment.apps/istio-sidecar-injector created
+mutatingwebhookconfiguration.admissionregistration.k8s.io/istio-sidecar-injector created
+poddisruptionbudget.policy/istio-sidecar-injector created
+service/istio-sidecar-injector created
+serviceaccount/istio-sidecar-injector-service-account created
+configmap/istio-sidecar-injector created
+clusterrole.rbac.authorization.k8s.io/kiali created
+clusterrole.rbac.authorization.k8s.io/kiali-viewer created
+clusterrolebinding.rbac.authorization.k8s.io/kiali created
+configmap/kiali created
+secret/kiali created
+deployment.apps/kiali created
+service/kiali created
+serviceaccount/kiali-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-pilot-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-pilot-istio-system created
+configmap/pilot-envoy-config created
+configmap/istio created
+deployment.apps/istio-pilot created
+meshpolicy.authentication.istio.io/default created
+poddisruptionbudget.policy/istio-pilot created
+service/istio-pilot created
+serviceaccount/istio-pilot-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-policy created
+clusterrolebinding.rbac.authorization.k8s.io/istio-policy-*****-role-binding-istio-system created
+destinationrule.networking.istio.io/istio-policy created
+deployment.apps/istio-policy created
+poddisruptionbudget.policy/istio-policy created
+service/istio-policy created
+serviceaccount/istio-policy-service-account created
+clusterrole.rbac.authorization.k8s.io/prometheus-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/prometheus-istio-system created
+configmap/prometheus created
+deployment.apps/prometheus created
+service/prometheus created
+serviceaccount/prometheus created
+horizontalpodautoscaler.autoscaling/istio-telemetry created
+clusterrole.rbac.authorization.k8s.io/istio-mixer-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-mixer-*****-role-binding-istio-system created
+attributemanifest.config.istio.io/istioproxy created
+attributemanifest.config.istio.io/kubernetes created
+handler.config.istio.io/stdio created
+instance.config.istio.io/accesslog created
+instance.config.istio.io/tcpaccesslog created
+rule.config.istio.io/stdio created
+rule.config.istio.io/stdiotcp created
+instance.config.istio.io/requestcount created
+instance.config.istio.io/requestduration created
+instance.config.istio.io/requestsize created
+instance.config.istio.io/responsesize created
+instance.config.istio.io/tcpbytesent created
+instance.config.istio.io/tcpbytereceived created
+instance.config.istio.io/tcpconnectionsopened created
+instance.config.istio.io/tcpconnectionsclosed created
+handler.config.istio.io/prometheus created
+rule.config.istio.io/promhttp created
+rule.config.istio.io/promtcp created
+rule.config.istio.io/promtcpconnectionopen created
+rule.config.istio.io/promtcpconnectionclosed created
+handler.config.istio.io/kubernetesenv created
+rule.config.istio.io/kubeattrgenrulerule created
+rule.config.istio.io/tcpkubeattrgenrulerule created
+instance.config.istio.io/attributes created
+destinationrule.networking.istio.io/istio-telemetry created
+configmap/telemetry-envoy-config created
+deployment.apps/istio-telemetry created
+poddisruptionbudget.policy/istio-telemetry created
+service/istio-telemetry created
+serviceaccount/istio-mixer-service-account created
+deployment.apps/istio-tracing created
+service/jaeger-query created
+service/jaeger-collector created
+service/jaeger-agent created
+service/zipkin created
+service/tracing created
+kubectl rollout status deployment.apps/istio-ingressgateway -n istio-system
+Waiting for deployment "istio-ingressgateway" rollout to finish: 0 of 1 updated replicas are available...
+deployment "istio-ingressgateway" successfully rolled out
+kubectl rollout status deployment.apps/istio-pilot -n istio-system
+deployment "istio-pilot" successfully rolled out
+kubectl rollout status deployment.apps/istio-citadel -n istio-system
+deployment "istio-citadel" successfully rolled out
+kubectl create -f ../resources/seldon-gateway.yaml -n istio-system
+gateway.networking.istio.io/seldon-gateway created
+helm upgrade jaeger-operator \
+	jaegertracing/jaeger-operator \
+	--set rbac.clusterRole=true \
+	--namespace seldon \
+	--wait --install
+Release "jaeger-operator" does not exist. Installing it now.
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+NAME: jaeger-operator
+LAST DEPLOYED: Fri Sep 11 14:34:11 2020
+NAMESPACE: seldon
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+jaeger-operator is installed.
+
+
+Check the jaeger-operator logs
+  export POD=$(kubectl get pods-l app.kubernetes.io/instance=jaeger-operator -lapp.kubernetes.io/name=jaeger-operator --namespace seldon --output name)
+  kubectl logs $POD --namespace=seldon
+kubectl apply -f ../resources/jaeger.yaml --namespace seldon
+jaeger.jaegertracing.io/jaeger created
+mapping.getambassador.io/jaeger created
+cd ../../operator && make install-cert-manager
+make[1]: Entering directory '/workspace/source/operator'
+kubectl create namespace cert-manager || echo "Namespace cert-manager-exists"
+namespace/cert-manager created
+kubectl label namespace cert-manager cert-manager.io/disable-validation=true || echo "namespace cert-manager-already labelled"
+namespace/cert-manager labeled
+kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml
+customresourcedefinition.apiextensions.k8s.io/certificaterequests.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/certificates.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/challenges.acme.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/clusterissuers.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/issuers.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/orders.acme.cert-manager.io created
+Warning: kubectl apply should be used on resource created by either kubectl create --save-config or kubectl apply
+namespace/cert-manager configured
+serviceaccount/cert-manager-cainjector created
+serviceaccount/cert-manager created
+serviceaccount/cert-manager-webhook created
+clusterrole.rbac.authorization.k8s.io/cert-manager-cainjector created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-cainjector created
+role.rbac.authorization.k8s.io/cert-manager-cainjector:leaderelection created
+rolebinding.rbac.authorization.k8s.io/cert-manager-cainjector:leaderelection created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-webhook:auth-delegator created
+rolebinding.rbac.authorization.k8s.io/cert-manager-webhook:webhook-authentication-reader created
+clusterrole.rbac.authorization.k8s.io/cert-manager-webhook:webhook-requester created
+role.rbac.authorization.k8s.io/cert-manager:leaderelection created
+rolebinding.rbac.authorization.k8s.io/cert-manager:leaderelection created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-issuers created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-clusterissuers created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-certificates created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-orders created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-challenges created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-ingress-shim created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-issuers created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-clusterissuers created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-certificates created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-orders created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-challenges created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-ingress-shim created
+clusterrole.rbac.authorization.k8s.io/cert-manager-view created
+clusterrole.rbac.authorization.k8s.io/cert-manager-edit created
+service/cert-manager created
+service/cert-manager-webhook created
+deployment.apps/cert-manager-cainjector created
+deployment.apps/cert-manager created
+deployment.apps/cert-manager-webhook created
+mutatingwebhookconfiguration.admissionregistration.k8s.io/cert-manager-webhook created
+validatingwebhookconfiguration.admissionregistration.k8s.io/cert-manager-webhook created
+kubectl rollout status deployment.apps/cert-manager -n cert-manager
+Waiting for deployment "cert-manager" rollout to finish: 0 of 1 updated replicas are available...
+deployment "cert-manager" successfully rolled out
+kubectl rollout status deployment.apps/cert-manager-cainjector -n cert-manager
+Waiting for deployment "cert-manager-cainjector" rollout to finish: 0 of 1 updated replicas are available...
+deployment "cert-manager-cainjector" successfully rolled out
+kubectl rollout status deployment.apps/cert-manager-webhook -n cert-manager
+Waiting for deployment "cert-manager-webhook" rollout to finish: 0 of 1 updated replicas are available...
+deployment "cert-manager-webhook" successfully rolled out
+make[1]: Leaving directory '/workspace/source/operator'
+sleep 5 #https://github.com/jetstack/cert-manager/issues/2273
+kubectl create namespace seldon-system || echo "namespace seldon-system exists"
+namespace/seldon-system created
+helm delete seldon --namespace seldon-system || echo "seldon-core not installed"
+Error: uninstall: Release not loaded: seldon: release: not found
+seldon-core not installed
+helm upgrade seldon \
+	../../helm-charts/seldon-core-operator \
+	--namespace seldon-system \
+	--set istio.enabled=true \
+	--set istio.gateway=istio-system/seldon-gateway \
+	--set certManager.enabled=false \
+	--set executor.enabled="true" \
+	--wait --install
+Release "seldon" does not exist. Installing it now.
+NAME: seldon
+LAST DEPLOYED: Fri Sep 11 14:35:05 2020
+NAMESPACE: seldon-system
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+kubectl config set-context $(kubectl config current-context) --namespace=seldon
+Context "kind-kind" modified.
+kubectl apply -f metrics.yaml
+clusterrole.rbac.authorization.k8s.io/system:aggregated-metrics-reader created
+clusterrolebinding.rbac.authorization.k8s.io/metrics-server:system:auth-delegator created
+rolebinding.rbac.authorization.k8s.io/metrics-server-auth-reader created
+apiservice.apiregistration.k8s.io/v1beta1.metrics.k8s.io created
+serviceaccount/metrics-server created
+deployment.apps/metrics-server created
+service/metrics-server created
+clusterrole.rbac.authorization.k8s.io/system:metrics-server created
+clusterrolebinding.rbac.authorization.k8s.io/system:metrics-server created
+make: Entering directory '/workspace/source/python'
+pip install -e . -r requirements-dev.txt
+Obtaining file:///workspace/source/python
+Collecting black==19.10b0
+  Downloading black-19.10b0-py36-none-any.whl (97 kB)
+Collecting flake8==3.8.1
+  Downloading flake8-3.8.1-py2.py3-none-any.whl (72 kB)
+Collecting mypy<0.783
+  Downloading mypy-0.782-cp36-cp36m-manylinux1_x86_64.whl (20.8 MB)
+Requirement already satisfied: Pillow==7.2.0 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 5)) (7.2.0)
+Collecting pytest==5.4.2
+  Downloading pytest-5.4.2-py3-none-any.whl (247 kB)
+Collecting pytest-cov==2.10.1
+  Downloading pytest_cov-2.10.1-py2.py3-none-any.whl (19 kB)
+Collecting tox<4.0.0
+  Downloading tox-3.20.0-py2.py3-none-any.whl (83 kB)
+Requirement already satisfied: grpcio-tools==1.31.0 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 9)) (1.31.0)
+Requirement already satisfied: mypy-protobuf==1.22 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 10)) (1.22)
+Collecting tenacity==6.2.0
+  Downloading tenacity-6.2.0-py2.py3-none-any.whl (24 kB)
+Collecting coverage==5.2
+  Downloading coverage-5.2-cp36-cp36m-manylinux1_x86_64.whl (229 kB)
+Collecting pandas==1.1.0
+  Downloading pandas-1.1.0-cp36-cp36m-manylinux1_x86_64.whl (10.5 MB)
+Collecting pip-licenses==2.3.0
+  Downloading pip_licenses-2.3.0-py3-none-any.whl (14 kB)
+Collecting Flask<2.0.0
+  Downloading Flask-1.1.2-py2.py3-none-any.whl (94 kB)
+Requirement already satisfied: jsonschema<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.3.dev0) (3.2.0)
+Collecting Flask-cors<4.0.0
+  Downloading Flask_Cors-3.0.9-py2.py3-none-any.whl (14 kB)
+Collecting redis<4.0.0
+  Downloading redis-3.5.3-py2.py3-none-any.whl (72 kB)
+Requirement already satisfied: requests<3.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.3.dev0) (2.24.0)
+Requirement already satisfied: numpy<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.3.dev0) (1.19.1)
+Collecting flatbuffers<2.0.0
+  Downloading flatbuffers-1.12-py2.py3-none-any.whl (15 kB)
+Requirement already satisfied: protobuf<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.3.dev0) (3.13.0)
+Requirement already satisfied: grpcio<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.3.dev0) (1.31.0)
+Collecting Flask-OpenTracing<1.2.0,>=1.1.0
+  Downloading Flask-OpenTracing-1.1.0.tar.gz (8.2 kB)
+Collecting opentracing<2.4.0,>=2.2.0
+  Downloading opentracing-2.3.0.tar.gz (48 kB)
+Collecting jaeger-client<4.4.0,>=4.1.0
+  Downloading jaeger-client-4.3.0.tar.gz (81 kB)
+Collecting grpcio-opentracing<1.2.0,>=1.1.4
+  Downloading grpcio_opentracing-1.1.4-py3-none-any.whl (14 kB)
+Requirement already satisfied: PyYAML<5.4 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.3.dev0) (5.3.1)
+Collecting gunicorn<20.1.0,>=19.9.0
+  Downloading gunicorn-20.0.4-py2.py3-none-any.whl (77 kB)
+Requirement already satisfied: setuptools>=41.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.3.dev0) (50.3.0)
+Requirement already satisfied: prometheus_client<0.9.0,>=0.7.1 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.3.dev0) (0.8.0)
+Collecting appdirs
+  Downloading appdirs-1.4.4-py2.py3-none-any.whl (9.6 kB)
+Collecting typed-ast>=1.4.0
+  Downloading typed_ast-1.4.1-cp36-cp36m-manylinux1_x86_64.whl (737 kB)
+Collecting pathspec<1,>=0.6
+  Downloading pathspec-0.8.0-py2.py3-none-any.whl (28 kB)
+Collecting toml>=0.9.4
+  Downloading toml-0.10.1-py2.py3-none-any.whl (19 kB)
+Collecting regex
+  Downloading regex-2020.7.14-cp36-cp36m-manylinux2010_x86_64.whl (660 kB)
+Requirement already satisfied: attrs>=18.1.0 in /usr/local/lib/python3.6/site-packages (from black==19.10b0->-r requirements-dev.txt (line 2)) (20.2.0)
+Collecting click>=6.5
+  Downloading click-7.1.2-py2.py3-none-any.whl (82 kB)
+Collecting pyflakes<2.3.0,>=2.2.0
+  Downloading pyflakes-2.2.0-py2.py3-none-any.whl (66 kB)
+Collecting pycodestyle<2.7.0,>=2.6.0a1
+  Downloading pycodestyle-2.6.0-py2.py3-none-any.whl (41 kB)
+Collecting mccabe<0.7.0,>=0.6.0
+  Downloading mccabe-0.6.1-py2.py3-none-any.whl (8.6 kB)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /usr/local/lib/python3.6/site-packages (from flake8==3.8.1->-r requirements-dev.txt (line 3)) (1.7.0)
+Collecting mypy-extensions<0.5.0,>=0.4.3
+  Downloading mypy_extensions-0.4.3-py2.py3-none-any.whl (4.5 kB)
+Requirement already satisfied: typing-extensions>=3.7.4 in /usr/local/lib/python3.6/site-packages (from mypy<0.783->-r requirements-dev.txt (line 4)) (3.7.4.3)
+Requirement already satisfied: more-itertools>=4.0.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (8.5.0)
+Requirement already satisfied: py>=1.5.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (1.9.0)
+Requirement already satisfied: pluggy<1.0,>=0.12 in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (0.13.1)
+Requirement already satisfied: packaging in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (20.4)
+Requirement already satisfied: wcwidth in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (0.2.5)
+Collecting filelock>=3.0.0
+  Downloading filelock-3.0.12-py3-none-any.whl (7.6 kB)
+Collecting virtualenv!=20.0.0,!=20.0.1,!=20.0.2,!=20.0.3,!=20.0.4,!=20.0.5,!=20.0.6,!=20.0.7,>=16.0.0
+  Downloading virtualenv-20.0.31-py2.py3-none-any.whl (4.9 MB)
+Requirement already satisfied: six>=1.14.0 in /usr/local/lib/python3.6/site-packages (from tox<4.0.0->-r requirements-dev.txt (line 8)) (1.15.0)
+Requirement already satisfied: python-dateutil>=2.7.3 in /usr/local/lib/python3.6/site-packages (from pandas==1.1.0->-r requirements-dev.txt (line 19)) (2.8.1)
+Requirement already satisfied: pytz>=2017.2 in /usr/local/lib/python3.6/site-packages (from pandas==1.1.0->-r requirements-dev.txt (line 19)) (2020.1)
+Collecting PTable
+  Downloading PTable-0.9.2.tar.gz (31 kB)
+Requirement already satisfied: Jinja2>=2.10.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.2.3.dev0) (2.11.2)
+Collecting itsdangerous>=0.24
+  Downloading itsdangerous-1.1.0-py2.py3-none-any.whl (16 kB)
+Requirement already satisfied: Werkzeug>=0.15 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.2.3.dev0) (1.0.1)
+Requirement already satisfied: pyrsistent>=0.14.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->seldon-core==1.2.3.dev0) (0.16.0)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.2.3.dev0) (3.0.4)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.2.3.dev0) (2.10)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.2.3.dev0) (2020.6.20)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.2.3.dev0) (1.25.10)
+Collecting threadloop<2,>=1
+  Downloading threadloop-1.0.2.tar.gz (4.9 kB)
+Collecting thrift
+  Downloading thrift-0.13.0.tar.gz (59 kB)
+Requirement already satisfied: tornado>=4.3 in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core==1.2.3.dev0) (6.0.4)
+Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.6/site-packages (from importlib-metadata; python_version < "3.8"->flake8==3.8.1->-r requirements-dev.txt (line 3)) (3.1.0)
+Requirement already satisfied: pyparsing>=2.0.2 in /usr/local/lib/python3.6/site-packages (from packaging->pytest==5.4.2->-r requirements-dev.txt (line 6)) (2.4.7)
+Collecting importlib-resources>=1.0; python_version < "3.7"
+  Downloading importlib_resources-3.0.0-py2.py3-none-any.whl (23 kB)
+Collecting distlib<1,>=0.3.1
+  Downloading distlib-0.3.1-py2.py3-none-any.whl (335 kB)
+Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from Jinja2>=2.10.1->Flask<2.0.0->seldon-core==1.2.3.dev0) (1.1.1)
+Building wheels for collected packages: Flask-OpenTracing, opentracing, jaeger-client, PTable, threadloop, thrift
+  Building wheel for Flask-OpenTracing (setup.py): started
+  Building wheel for Flask-OpenTracing (setup.py): finished with status 'done'
+  Created wheel for Flask-OpenTracing: filename=Flask_OpenTracing-1.1.0-py3-none-any.whl size=9071 sha256=05bb643cdd0db752e73a6b233ec303a89de2777798e4e2ccfd43dd9572036af0
+  Stored in directory: /builder/home/.cache/pip/wheels/ad/4b/2d/24ff0da0a0b53c7c77ce59b843bcceaf644c88703241e59615
+  Building wheel for opentracing (setup.py): started
+  Building wheel for opentracing (setup.py): finished with status 'done'
+  Created wheel for opentracing: filename=opentracing-2.3.0-py3-none-any.whl size=51346 sha256=4f02dcecd5f0f422cb919b9927fb265ba7756ea9e36749ce89e85c1bbcaba072
+  Stored in directory: /builder/home/.cache/pip/wheels/d4/53/31/bfca74f038fa9f83eb7de2131555b75ffa9bcbca18d23e5edf
+  Building wheel for jaeger-client (setup.py): started
+  Building wheel for jaeger-client (setup.py): finished with status 'done'
+  Created wheel for jaeger-client: filename=jaeger_client-4.3.0-py3-none-any.whl size=64290 sha256=94c357ad71f1680e71e875a9da4cbff6eb31c7acaad3d222032b7aaba3fe5a44
+  Stored in directory: /builder/home/.cache/pip/wheels/a8/37/30/d86c970966efbf6da89e8085db50f2be4cf36ca68513eff785
+  Building wheel for PTable (setup.py): started
+  Building wheel for PTable (setup.py): finished with status 'done'
+  Created wheel for PTable: filename=PTable-0.9.2-py3-none-any.whl size=22907 sha256=d8463a42cd93faac9151711de02ca8a26fc9abc77e9361e66ad7e6669fd644c3
+  Stored in directory: /builder/home/.cache/pip/wheels/f3/65/67/71f473ec87ea4554d1bdfb1b5128cfe1414c2b113b72a1ee8e
+  Building wheel for threadloop (setup.py): started
+  Building wheel for threadloop (setup.py): finished with status 'done'
+  Created wheel for threadloop: filename=threadloop-1.0.2-py3-none-any.whl size=3425 sha256=87ee2a8820cc9e497072ee0d8b01da9d79ef24009e42e838b56e760acb36f740
+  Stored in directory: /builder/home/.cache/pip/wheels/02/54/65/9f87de48fe8fcaaee30f279973d946ad55f9df56b93b3e78da
+  Building wheel for thrift (setup.py): started
+  Building wheel for thrift (setup.py): finished with status 'done'
+  Created wheel for thrift: filename=thrift-0.13.0-cp36-cp36m-linux_x86_64.whl size=483912 sha256=91644ef22094f3ee2fe9d8df53133a775b58ca5bb3a1659ca3b29bce17c98823
+  Stored in directory: /builder/home/.cache/pip/wheels/e0/38/fc/472fe18756b177b42096961f8bd3ff2dc5c5620ac399fce52d
+Successfully built Flask-OpenTracing opentracing jaeger-client PTable threadloop thrift
+Installing collected packages: appdirs, typed-ast, pathspec, toml, regex, click, black, pyflakes, pycodestyle, mccabe, flake8, mypy-extensions, mypy, pytest, coverage, pytest-cov, filelock, importlib-resources, distlib, virtualenv, tox, tenacity, pandas, PTable, pip-licenses, itsdangerous, Flask, Flask-cors, redis, flatbuffers, opentracing, Flask-OpenTracing, threadloop, thrift, jaeger-client, grpcio-opentracing, gunicorn, seldon-core
+  Attempting uninstall: pytest
+    Found existing installation: pytest 5.3.1
+    Uninstalling pytest-5.3.1:
+      Successfully uninstalled pytest-5.3.1
+  Attempting uninstall: coverage
+    Found existing installation: coverage 4.5.4
+    Uninstalling coverage-4.5.4:
+      Successfully uninstalled coverage-4.5.4
+  Attempting uninstall: pytest-cov
+    Found existing installation: pytest-cov 2.8.1
+    Uninstalling pytest-cov-2.8.1:
+      Successfully uninstalled pytest-cov-2.8.1
+  Attempting uninstall: tenacity
+    Found existing installation: tenacity 6.0.0
+    Uninstalling tenacity-6.0.0:
+      Successfully uninstalled tenacity-6.0.0
+  Attempting uninstall: pandas
+    Found existing installation: pandas 1.1.1
+    Uninstalling pandas-1.1.1:
+      Successfully uninstalled pandas-1.1.1
+  Running setup.py develop for seldon-core
+ERROR: After October 2020 you may experience errors when installing or updating packages. This is because pip will change the way that it resolves dependency conflicts.
+
+We recommend you use --use-feature=2020-resolver to test your packages with the new resolver before it becomes the default.
+
+alibi 0.5.2 requires tensorflow>=2.0, but you'll have tensorflow 1.15.2 which is incompatible.
+Successfully installed Flask-1.1.2 Flask-OpenTracing-1.1.0 Flask-cors-3.0.9 PTable-0.9.2 appdirs-1.4.4 black-19.10b0 click-7.1.2 coverage-5.2 distlib-0.3.1 filelock-3.0.12 flake8-3.8.1 flatbuffers-1.12 grpcio-opentracing-1.1.4 gunicorn-20.0.4 importlib-resources-3.0.0 itsdangerous-1.1.0 jaeger-client-4.3.0 mccabe-0.6.1 mypy-0.782 mypy-extensions-0.4.3 opentracing-2.3.0 pandas-1.1.0 pathspec-0.8.0 pip-licenses-2.3.0 pycodestyle-2.6.0 pyflakes-2.2.0 pytest-5.4.2 pytest-cov-2.10.1 redis-3.5.3 regex-2020.7.14 seldon-core tenacity-6.2.0 threadloop-1.0.2 thrift-0.13.0 toml-0.10.1 tox-3.20.0 typed-ast-1.4.1 virtualenv-20.0.31
+WARNING: You are using pip version 20.2.2; however, version 20.2.3 is available.
+You should consider upgrading via the '/usr/local/bin/python -m pip install --upgrade pip' command.
+make: Leaving directory '/workspace/source/python'
+cp ../../proto/prediction.proto ./proto
+cd ../../proto/tensorflow && make create_protos
+make[1]: Entering directory '/workspace/source/proto/tensorflow'
+./create-protos.sh
+Downloading proto files for master
+make[1]: Leaving directory '/workspace/source/proto/tensorflow'
+cp -vr ../../proto/tensorflow/tensorflow .
+'../../proto/tensorflow/tensorflow' -> './tensorflow'
+'../../proto/tensorflow/tensorflow/core' -> './tensorflow/core'
+'../../proto/tensorflow/tensorflow/core/framework' -> './tensorflow/core/framework'
+'../../proto/tensorflow/tensorflow/core/framework/types.proto' -> './tensorflow/core/framework/types.proto'
+'../../proto/tensorflow/tensorflow/core/framework/resource_handle.proto' -> './tensorflow/core/framework/resource_handle.proto'
+'../../proto/tensorflow/tensorflow/core/framework/tensor_shape.proto' -> './tensorflow/core/framework/tensor_shape.proto'
+'../../proto/tensorflow/tensorflow/core/framework/tensor.proto' -> './tensorflow/core/framework/tensor.proto'
+python -m grpc.tools.protoc -I. --python_out=. --grpc_python_out=. ./proto/prediction.proto
+cd ../../notebooks && make build_protos
+make[1]: Entering directory '/workspace/source/notebooks'
+cd ../proto/tensorflow && make create_protos
+make[2]: Entering directory '/workspace/source/proto/tensorflow'
+make[2]: Nothing to be done for 'create_protos'.
+make[2]: Leaving directory '/workspace/source/proto/tensorflow'
+cp -vr ../proto/tensorflow/tensorflow .
+'../proto/tensorflow/tensorflow' -> './tensorflow'
+'../proto/tensorflow/tensorflow/core' -> './tensorflow/core'
+'../proto/tensorflow/tensorflow/core/framework' -> './tensorflow/core/framework'
+'../proto/tensorflow/tensorflow/core/framework/types.proto' -> './tensorflow/core/framework/types.proto'
+'../proto/tensorflow/tensorflow/core/framework/resource_handle.proto' -> './tensorflow/core/framework/resource_handle.proto'
+'../proto/tensorflow/tensorflow/core/framework/tensor_shape.proto' -> './tensorflow/core/framework/tensor_shape.proto'
+'../proto/tensorflow/tensorflow/core/framework/tensor.proto' -> './tensorflow/core/framework/tensor.proto'
+cp ../proto/prediction.proto ./proto
+python -m grpc.tools.protoc -I. --python_out=. --grpc_python_out=. ./proto/prediction.proto
+make[1]: Leaving directory '/workspace/source/notebooks'
+cd ../../proto/k8s && make create_protos
+make[1]: Entering directory '/workspace/source/proto/k8s'
+./create-k8s-protos.sh
+Downloading proto files for master
+Munging proto file packages
+sed -i.bak 's|import "k8s.io/apiextensions-apiserver/|//import "k8s.io/apiextensions-apiserver/|' k8s.io/api/core/v1/generated.proto
+rm k8s.io/api/core/v1/generated.proto.bak
+make[1]: Leaving directory '/workspace/source/proto/k8s'
+pip install -r dev_requirements.txt
+Collecting pytest==5.3.1
+  Downloading pytest-5.3.1-py3-none-any.whl (233 kB)
+Requirement already satisfied: pytest-xdist==1.30.0 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 2)) (1.30.0)
+Collecting pytest-cov==2.8.1
+  Downloading pytest_cov-2.8.1-py2.py3-none-any.whl (18 kB)
+Requirement already satisfied: flaky==3.6.1 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 4)) (3.6.1)
+Collecting tenacity==6.0.0
+  Downloading tenacity-6.0.0-py2.py3-none-any.whl (24 kB)
+Requirement already satisfied: sh==1.13.1 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 6)) (1.13.1)
+Requirement already satisfied: ipython==7.13.0 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 9)) (7.13.0)
+Requirement already satisfied: nbconvert==5.6.1 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 10)) (5.6.1)
+Collecting alibi==0.5.4
+  Downloading alibi-0.5.4-py3-none-any.whl (215 kB)
+Requirement already satisfied: matplotlib==3.1.3 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 12)) (3.1.3)
+Requirement already satisfied: tensorflow==1.15.2 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 13)) (1.15.2)
+Collecting coverage==4.5.4
+  Downloading coverage-4.5.4-cp36-cp36m-manylinux1_x86_64.whl (205 kB)
+Requirement already satisfied: packaging in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (20.4)
+Requirement already satisfied: attrs>=17.4.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (20.2.0)
+Requirement already satisfied: pluggy<1.0,>=0.12 in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (0.13.1)
+Requirement already satisfied: more-itertools>=4.0.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (8.5.0)
+Requirement already satisfied: wcwidth in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (0.2.5)
+Requirement already satisfied: py>=1.5.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (1.9.0)
+Requirement already satisfied: importlib-metadata>=0.12; python_version < "3.8" in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (1.7.0)
+Requirement already satisfied: execnet>=1.1 in /usr/local/lib/python3.6/site-packages (from pytest-xdist==1.30.0->-r dev_requirements.txt (line 2)) (1.7.1)
+Requirement already satisfied: six in /usr/local/lib/python3.6/site-packages (from pytest-xdist==1.30.0->-r dev_requirements.txt (line 2)) (1.15.0)
+Requirement already satisfied: pytest-forked in /usr/local/lib/python3.6/site-packages (from pytest-xdist==1.30.0->-r dev_requirements.txt (line 2)) (1.3.0)
+Requirement already satisfied: pickleshare in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.7.5)
+Requirement already satisfied: prompt-toolkit!=3.0.0,!=3.0.1,<3.1.0,>=2.0.0 in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (3.0.7)
+Requirement already satisfied: traitlets>=4.2 in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (4.3.3)
+Requirement already satisfied: pexpect; sys_platform != "win32" in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (4.8.0)
+Requirement already satisfied: pygments in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (2.6.1)
+Requirement already satisfied: jedi>=0.10 in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.17.2)
+Requirement already satisfied: backcall in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.2.0)
+Requirement already satisfied: setuptools>=18.5 in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (50.3.0)
+Requirement already satisfied: decorator in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (4.4.2)
+Requirement already satisfied: mistune<2,>=0.8.1 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.8.4)
+Requirement already satisfied: jinja2>=2.4 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (2.11.2)
+Requirement already satisfied: pandocfilters>=1.4.1 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (1.4.2)
+Requirement already satisfied: testpath in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.4.4)
+Requirement already satisfied: nbformat>=4.4 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (5.0.7)
+Requirement already satisfied: bleach in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (3.1.5)
+Requirement already satisfied: defusedxml in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.6.0)
+Requirement already satisfied: entrypoints>=0.2.2 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.3)
+Requirement already satisfied: jupyter-core in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (4.6.3)
+Requirement already satisfied: shap>=0.36 in /usr/local/lib/python3.6/site-packages (from alibi==0.5.4->-r dev_requirements.txt (line 11)) (0.36.0)
+Requirement already satisfied: prettyprinter in /usr/local/lib/python3.6/site-packages (from alibi==0.5.4->-r dev_requirements.txt (line 11)) (0.18.0)
+Requirement already satisfied: scikit-image!=0.17.1 in /usr/local/lib/python3.6/site-packages (from alibi==0.5.4->-r dev_requirements.txt (line 11)) (0.17.2)
+Requirement already satisfied: scipy in /usr/local/lib/python3.6/site-packages (from alibi==0.5.4->-r dev_requirements.txt (line 11)) (1.5.2)
+Requirement already satisfied: beautifulsoup4 in /usr/local/lib/python3.6/site-packages (from alibi==0.5.4->-r dev_requirements.txt (line 11)) (4.9.1)
+Requirement already satisfied: Pillow in /usr/local/lib/python3.6/site-packages (from alibi==0.5.4->-r dev_requirements.txt (line 11)) (7.2.0)
+Requirement already satisfied: spacy[lookups] in /usr/local/lib/python3.6/site-packages (from alibi==0.5.4->-r dev_requirements.txt (line 11)) (2.3.2)
+Requirement already satisfied: typing-extensions>=3.7.2 in /usr/local/lib/python3.6/site-packages (from alibi==0.5.4->-r dev_requirements.txt (line 11)) (3.7.4.3)
+Requirement already satisfied: numpy in /usr/local/lib/python3.6/site-packages (from alibi==0.5.4->-r dev_requirements.txt (line 11)) (1.19.1)
+Requirement already satisfied: requests in /usr/local/lib/python3.6/site-packages (from alibi==0.5.4->-r dev_requirements.txt (line 11)) (2.24.0)
+Requirement already satisfied: pandas in /usr/local/lib/python3.6/site-packages (from alibi==0.5.4->-r dev_requirements.txt (line 11)) (1.1.0)
+Requirement already satisfied: scikit-learn in /usr/local/lib/python3.6/site-packages (from alibi==0.5.4->-r dev_requirements.txt (line 11)) (0.23.2)
+Requirement already satisfied: kiwisolver>=1.0.1 in /usr/local/lib/python3.6/site-packages (from matplotlib==3.1.3->-r dev_requirements.txt (line 12)) (1.2.0)
+Requirement already satisfied: cycler>=0.10 in /usr/local/lib/python3.6/site-packages (from matplotlib==3.1.3->-r dev_requirements.txt (line 12)) (0.10.0)
+Requirement already satisfied: pyparsing!=2.0.4,!=2.1.2,!=2.1.6,>=2.0.1 in /usr/local/lib/python3.6/site-packages (from matplotlib==3.1.3->-r dev_requirements.txt (line 12)) (2.4.7)
+Requirement already satisfied: python-dateutil>=2.1 in /usr/local/lib/python3.6/site-packages (from matplotlib==3.1.3->-r dev_requirements.txt (line 12)) (2.8.1)
+Requirement already satisfied: wrapt>=1.11.1 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (1.12.1)
+Requirement already satisfied: tensorboard<1.16.0,>=1.15.0 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (1.15.0)
+Requirement already satisfied: keras-applications>=1.0.8 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (1.0.8)
+Requirement already satisfied: gast==0.2.2 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (0.2.2)
+Requirement already satisfied: termcolor>=1.1.0 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (1.1.0)
+Requirement already satisfied: absl-py>=0.7.0 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (0.10.0)
+Requirement already satisfied: tensorflow-estimator==1.15.1 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (1.15.1)
+Requirement already satisfied: grpcio>=1.8.6 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (1.31.0)
+Requirement already satisfied: google-pasta>=0.1.6 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (0.2.0)
+Requirement already satisfied: protobuf>=3.6.1 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (3.13.0)
+Requirement already satisfied: keras-preprocessing>=1.0.5 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (1.1.2)
+Requirement already satisfied: astor>=0.6.0 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (0.8.1)
+Requirement already satisfied: opt-einsum>=2.3.2 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (3.3.0)
+Requirement already satisfied: wheel>=0.26; python_version >= "3" in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (0.35.1)
+Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.6/site-packages (from importlib-metadata>=0.12; python_version < "3.8"->pytest==5.3.1->-r dev_requirements.txt (line 1)) (3.1.0)
+Requirement already satisfied: apipkg>=1.4 in /usr/local/lib/python3.6/site-packages (from execnet>=1.1->pytest-xdist==1.30.0->-r dev_requirements.txt (line 2)) (1.5)
+Requirement already satisfied: ipython-genutils in /usr/local/lib/python3.6/site-packages (from traitlets>=4.2->ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.2.0)
+Requirement already satisfied: ptyprocess>=0.5 in /usr/local/lib/python3.6/site-packages (from pexpect; sys_platform != "win32"->ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.6.0)
+Requirement already satisfied: parso<0.8.0,>=0.7.0 in /usr/local/lib/python3.6/site-packages (from jedi>=0.10->ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.7.1)
+Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from jinja2>=2.4->nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (1.1.1)
+Requirement already satisfied: jsonschema!=2.5.0,>=2.4 in /usr/local/lib/python3.6/site-packages (from nbformat>=4.4->nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (3.2.0)
+Requirement already satisfied: webencodings in /usr/local/lib/python3.6/site-packages (from bleach->nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.5.1)
+Requirement already satisfied: slicer in /usr/local/lib/python3.6/site-packages (from shap>=0.36->alibi==0.5.4->-r dev_requirements.txt (line 11)) (0.0.3)
+Requirement already satisfied: numba in /usr/local/lib/python3.6/site-packages (from shap>=0.36->alibi==0.5.4->-r dev_requirements.txt (line 11)) (0.51.2)
+Requirement already satisfied: tqdm>4.25.0 in /usr/local/lib/python3.6/site-packages (from shap>=0.36->alibi==0.5.4->-r dev_requirements.txt (line 11)) (4.48.2)
+Requirement already satisfied: colorful>=0.4.0 in /usr/local/lib/python3.6/site-packages (from prettyprinter->alibi==0.5.4->-r dev_requirements.txt (line 11)) (0.5.4)
+Requirement already satisfied: PyWavelets>=1.1.1 in /usr/local/lib/python3.6/site-packages (from scikit-image!=0.17.1->alibi==0.5.4->-r dev_requirements.txt (line 11)) (1.1.1)
+Requirement already satisfied: tifffile>=2019.7.26 in /usr/local/lib/python3.6/site-packages (from scikit-image!=0.17.1->alibi==0.5.4->-r dev_requirements.txt (line 11)) (2020.9.3)
+Requirement already satisfied: networkx>=2.0 in /usr/local/lib/python3.6/site-packages (from scikit-image!=0.17.1->alibi==0.5.4->-r dev_requirements.txt (line 11)) (2.5)
+Requirement already satisfied: imageio>=2.3.0 in /usr/local/lib/python3.6/site-packages (from scikit-image!=0.17.1->alibi==0.5.4->-r dev_requirements.txt (line 11)) (2.9.0)
+Requirement already satisfied: soupsieve>1.2 in /usr/local/lib/python3.6/site-packages (from beautifulsoup4->alibi==0.5.4->-r dev_requirements.txt (line 11)) (2.0.1)
+Requirement already satisfied: cymem<2.1.0,>=2.0.2 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.4->-r dev_requirements.txt (line 11)) (2.0.3)
+Requirement already satisfied: srsly<1.1.0,>=1.0.2 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.4->-r dev_requirements.txt (line 11)) (1.0.2)
+Requirement already satisfied: murmurhash<1.1.0,>=0.28.0 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.4->-r dev_requirements.txt (line 11)) (1.0.2)
+Requirement already satisfied: wasabi<1.1.0,>=0.4.0 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.4->-r dev_requirements.txt (line 11)) (0.8.0)
+Requirement already satisfied: catalogue<1.1.0,>=0.0.7 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.4->-r dev_requirements.txt (line 11)) (1.0.0)
+Requirement already satisfied: plac<1.2.0,>=0.9.6 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.4->-r dev_requirements.txt (line 11)) (1.1.3)
+Requirement already satisfied: preshed<3.1.0,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.4->-r dev_requirements.txt (line 11)) (3.0.2)
+Requirement already satisfied: thinc==7.4.1 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.4->-r dev_requirements.txt (line 11)) (7.4.1)
+Requirement already satisfied: blis<0.5.0,>=0.4.0 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.4->-r dev_requirements.txt (line 11)) (0.4.1)
+Requirement already satisfied: spacy-lookups-data<0.4.0,>=0.3.2; extra == "lookups" in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.4->-r dev_requirements.txt (line 11)) (0.3.2)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.5.4->-r dev_requirements.txt (line 11)) (1.25.10)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.5.4->-r dev_requirements.txt (line 11)) (3.0.4)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.5.4->-r dev_requirements.txt (line 11)) (2.10)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.5.4->-r dev_requirements.txt (line 11)) (2020.6.20)
+Requirement already satisfied: pytz>=2017.2 in /usr/local/lib/python3.6/site-packages (from pandas->alibi==0.5.4->-r dev_requirements.txt (line 11)) (2020.1)
+Requirement already satisfied: joblib>=0.11 in /usr/local/lib/python3.6/site-packages (from scikit-learn->alibi==0.5.4->-r dev_requirements.txt (line 11)) (0.16.0)
+Requirement already satisfied: threadpoolctl>=2.0.0 in /usr/local/lib/python3.6/site-packages (from scikit-learn->alibi==0.5.4->-r dev_requirements.txt (line 11)) (2.1.0)
+Requirement already satisfied: markdown>=2.6.8 in /usr/local/lib/python3.6/site-packages (from tensorboard<1.16.0,>=1.15.0->tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (3.2.2)
+Requirement already satisfied: werkzeug>=0.11.15 in /usr/local/lib/python3.6/site-packages (from tensorboard<1.16.0,>=1.15.0->tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (1.0.1)
+Requirement already satisfied: h5py in /usr/local/lib/python3.6/site-packages (from keras-applications>=1.0.8->tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (2.10.0)
+Requirement already satisfied: pyrsistent>=0.14.0 in /usr/local/lib/python3.6/site-packages (from jsonschema!=2.5.0,>=2.4->nbformat>=4.4->nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.16.0)
+Requirement already satisfied: llvmlite<0.35,>=0.34.0.dev0 in /usr/local/lib/python3.6/site-packages (from numba->shap>=0.36->alibi==0.5.4->-r dev_requirements.txt (line 11)) (0.34.0)
+Installing collected packages: pytest, coverage, pytest-cov, tenacity, alibi
+  Attempting uninstall: pytest
+    Found existing installation: pytest 5.4.2
+    Uninstalling pytest-5.4.2:
+      Successfully uninstalled pytest-5.4.2
+  Attempting uninstall: coverage
+    Found existing installation: coverage 5.2
+    Uninstalling coverage-5.2:
+      Successfully uninstalled coverage-5.2
+  Attempting uninstall: pytest-cov
+    Found existing installation: pytest-cov 2.10.1
+    Uninstalling pytest-cov-2.10.1:
+      Successfully uninstalled pytest-cov-2.10.1
+  Attempting uninstall: tenacity
+    Found existing installation: tenacity 6.2.0
+    Uninstalling tenacity-6.2.0:
+      Successfully uninstalled tenacity-6.2.0
+  Attempting uninstall: alibi
+    Found existing installation: alibi 0.5.2
+    Uninstalling alibi-0.5.2:
+      Successfully uninstalled alibi-0.5.2
+ERROR: After October 2020 you may experience errors when installing or updating packages. This is because pip will change the way that it resolves dependency conflicts.
+
+We recommend you use --use-feature=2020-resolver to test your packages with the new resolver before it becomes the default.
+
+alibi 0.5.4 requires tensorflow>=2.0, but you'll have tensorflow 1.15.2 which is incompatible.
+Successfully installed alibi-0.5.4 coverage-4.5.4 pytest-5.3.1 pytest-cov-2.8.1 tenacity-6.0.0
+WARNING: You are using pip version 20.2.2; however, version 20.2.3 is available.
+You should consider upgrading via the '/usr/local/bin/python -m pip install --upgrade pip' command.
+pip install -e ../../python
+Obtaining file:///workspace/source/python
+Requirement already satisfied: Flask<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.3.dev0) (1.1.2)
+Requirement already satisfied: jsonschema<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.3.dev0) (3.2.0)
+Requirement already satisfied: Flask-cors<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.3.dev0) (3.0.9)
+Requirement already satisfied: redis<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.3.dev0) (3.5.3)
+Requirement already satisfied: requests<3.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.3.dev0) (2.24.0)
+Requirement already satisfied: numpy<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.3.dev0) (1.19.1)
+Requirement already satisfied: flatbuffers<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.3.dev0) (1.12)
+Requirement already satisfied: protobuf<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.3.dev0) (3.13.0)
+Requirement already satisfied: grpcio<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.3.dev0) (1.31.0)
+Requirement already satisfied: Flask-OpenTracing<1.2.0,>=1.1.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.3.dev0) (1.1.0)
+Requirement already satisfied: opentracing<2.4.0,>=2.2.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.3.dev0) (2.3.0)
+Requirement already satisfied: jaeger-client<4.4.0,>=4.1.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.3.dev0) (4.3.0)
+Requirement already satisfied: grpcio-opentracing<1.2.0,>=1.1.4 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.3.dev0) (1.1.4)
+Requirement already satisfied: PyYAML<5.4 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.3.dev0) (5.3.1)
+Requirement already satisfied: gunicorn<20.1.0,>=19.9.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.3.dev0) (20.0.4)
+Requirement already satisfied: setuptools>=41.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.3.dev0) (50.3.0)
+Requirement already satisfied: prometheus_client<0.9.0,>=0.7.1 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.3.dev0) (0.8.0)
+Requirement already satisfied: itsdangerous>=0.24 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.2.3.dev0) (1.1.0)
+Requirement already satisfied: Werkzeug>=0.15 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.2.3.dev0) (1.0.1)
+Requirement already satisfied: click>=5.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.2.3.dev0) (7.1.2)
+Requirement already satisfied: Jinja2>=2.10.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.2.3.dev0) (2.11.2)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->seldon-core==1.2.3.dev0) (1.7.0)
+Requirement already satisfied: six>=1.11.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->seldon-core==1.2.3.dev0) (1.15.0)
+Requirement already satisfied: pyrsistent>=0.14.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->seldon-core==1.2.3.dev0) (0.16.0)
+Requirement already satisfied: attrs>=17.4.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->seldon-core==1.2.3.dev0) (20.2.0)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.2.3.dev0) (2.10)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.2.3.dev0) (1.25.10)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.2.3.dev0) (2020.6.20)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.2.3.dev0) (3.0.4)
+Requirement already satisfied: tornado>=4.3 in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core==1.2.3.dev0) (6.0.4)
+Requirement already satisfied: threadloop<2,>=1 in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core==1.2.3.dev0) (1.0.2)
+Requirement already satisfied: thrift in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core==1.2.3.dev0) (0.13.0)
+Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from Jinja2>=2.10.1->Flask<2.0.0->seldon-core==1.2.3.dev0) (1.1.1)
+Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.6/site-packages (from importlib-metadata; python_version < "3.8"->jsonschema<4.0.0->seldon-core==1.2.3.dev0) (3.1.0)
+Installing collected packages: seldon-core
+  Attempting uninstall: seldon-core
+    Found existing installation: seldon-core 1.2.3.dev0
+    Uninstalling seldon-core-1.2.3.dev0:
+      Successfully uninstalled seldon-core-1.2.3.dev0
+  Running setup.py develop for seldon-core
+Successfully installed seldon-core
+WARNING: You are using pip version 20.2.2; however, version 20.2.3 is available.
+You should consider upgrading via the '/usr/local/bin/python -m pip install --upgrade pip' command.
+# Run the core tests in parallel
+pytest \
+	--verbose \
+	-s \
+	-W ignore \
+	-n "4" \
+	-m "not sequential and not notebooks" 2>&1
+============================= test session starts ==============================
+platform linux -- Python 3.6.10, pytest-5.3.1, py-1.9.0, pluggy-0.13.1 -- /usr/local/bin/python
+cachedir: .pytest_cache
+rootdir: /workspace/source/testing/scripts, inifile: setup.cfg
+plugins: cov-2.8.1, xdist-1.30.0, flaky-3.6.1, forked-1.3.0
+gw0 I / gw1 I / gw2 I / gw3 I
+[gw0] linux Python 3.6.10 cwd: /workspace/source/testing/scripts
+[gw1] linux Python 3.6.10 cwd: /workspace/source/testing/scripts
+[gw2] linux Python 3.6.10 cwd: /workspace/source/testing/scripts
+[gw3] linux Python 3.6.10 cwd: /workspace/source/testing/scripts
+[gw0] Python 3.6.10 (default, Sep  7 2020, 08:27:30)  -- [GCC 8.3.0]
+[gw1] Python 3.6.10 (default, Sep  7 2020, 08:27:30)  -- [GCC 8.3.0]
+[gw3] Python 3.6.10 (default, Sep  7 2020, 08:27:30)  -- [GCC 8.3.0]
+[gw2] Python 3.6.10 (default, Sep  7 2020, 08:27:30)  -- [GCC 8.3.0]
+gw0 [33] / gw1 [33] / gw2 [33] / gw3 [33]
+
+scheduling tests via LoadScheduling
+
+test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha2] 
+test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha3] 
+test_api_version.py::test_api_version[machinelearning.seldon.io/v1] 
+test_bad_graphs.py::TestBadGraphs::test_duplicate_predictor_name Error from server (SeldonDeployment.machinelearing.seldon.io "dupname" is invalid: [spec.predictors[1]: Invalid value: "mymodel": Duplicate predictor name, spec: Invalid value: "mymodel": Traffic must sum to 100 for multiple predictors]): error when creating "../resources/bad_duplicate_predictor_name.json": admission webhook "v1alpha2.vseldondeployment.kb.io" denied the request: SeldonDeployment.machinelearing.seldon.io "dupname" is invalid: [spec.predictors[1]: Invalid value: "mymodel": Duplicate predictor name, spec: Invalid value: "mymodel": Traffic must sum to 100 for multiple predictors]
+
+[gw2] PASSED test_bad_graphs.py::TestBadGraphs::test_duplicate_predictor_name 
+test_helm_charts_clusterwide.py::TestClusterWide::test_single_model Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw1] PASSED test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha3] Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw2] PASSED test_helm_charts_clusterwide.py::TestClusterWide::test_single_model Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw3] PASSED test_api_version.py::test_api_version[machinelearning.seldon.io/v1] Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw0] PASSED test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha2] 
+test_bad_graphs.py::TestBadGraphs::test_model_no_graph Error from server (SeldonDeployment.machinelearing.seldon.io "test-deployment" is invalid: spec.predictors[0].graph: Invalid value: "": Can't find container for Predictive Unit): error when creating "../resources/bad_no_graph.yaml": admission webhook "v1.vseldondeployment.kb.io" denied the request: SeldonDeployment.machinelearing.seldon.io "test-deployment" is invalid: spec.predictors[0].graph: Invalid value: "": Can't find container for Predictive Unit
+
+[gw1] PASSED test_bad_graphs.py::TestBadGraphs::test_model_no_graph 
+test_local_operators.py::TestLocalOperators::test_namespace_operator 
+test_helm_charts_clusterwide.py::TestClusterWide::test_abtest_model 
+test_batch_processor.py::TestBatchWorker::test_batch_worker 
+test_bad_graphs.py::TestBadGraphs::test_model_name_mismatch Error from server (SeldonDeployment.machinelearing.seldon.io "namemismatch" is invalid: spec.predictors[0].graph: Invalid value: "complex-model_bad_name": Can't find container for Predictive Unit): error when creating "../resources/bad_name_mismatch.json": admission webhook "v1alpha2.vseldondeployment.kb.io" denied the request: SeldonDeployment.machinelearing.seldon.io "namemismatch" is invalid: spec.predictors[0].graph: Invalid value: "complex-model_bad_name": Can't find container for Predictive Unit
+
+[gw0] PASSED test_bad_graphs.py::TestBadGraphs::test_model_name_mismatch 
+test_prepackaged_servers.py::TestPrepack::test_tfserving 
+[gw1] PASSED test_local_operators.py::TestLocalOperators::test_namespace_operator 
+test_local_operators.py::TestLocalOperators::test_labelled_operator Error from server (InternalError): error when creating "../resources/model_controller_id.yaml": Internal error occurred: failed calling webhook "v1alpha2.mseldondeployment.kb.io": Post https://seldon-webhook-service.test-labelled-operator.svc:443/mutate-machinelearning-seldon-io-v1alpha2-seldondeployment?timeout=30s: dial tcp 10.100.9.210:443: connect: connection refused
+Error: uninstall: Release not loaded: myabtest: release: not found
+
+[gw2] PASSED test_helm_charts_clusterwide.py::TestClusterWide::test_abtest_model 
+[gw1] PASSED test_local_operators.py::TestLocalOperators::test_labelled_operator 
+test_prepackaged_servers.py::TestPrepack::test_mlflow 
+test_helm_charts_clusterwide.py::TestClusterWide::test_mab_model 
+[gw3] PASSED test_batch_processor.py::TestBatchWorker::test_batch_worker 
+test_prepackaged_servers.py::TestPrepack::test_sklearn Error: uninstall: Release not loaded: mymab: release: not found
+
+[gw2] PASSED test_helm_charts_clusterwide.py::TestClusterWide::test_mab_model 
+[gw0] PASSED test_prepackaged_servers.py::TestPrepack::test_tfserving 
+[gw3] PASSED test_prepackaged_servers.py::TestPrepack::test_sklearn 
+test_prepackaged_servers.py::TestPrepack::test_openapi_sklearn 
+test_prepackaged_servers.py::TestPrepack::test_xgboost 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph2.json-True-ambas] 
+[gw2] PASSED test_prepackaged_servers.py::TestPrepack::test_openapi_sklearn 
+[gw1] PASSED test_prepackaged_servers.py::TestPrepack::test_mlflow 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph2.json-True-istio] 
+test_prepackaged_servers.py::TestPrepack::test_text_alibi_explainer 
+[gw0] PASSED test_prepackaged_servers.py::TestPrepack::test_xgboost 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph3.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph2.json-True-ambas] 
+[gw2] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph2.json-True-istio] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph4.json-True-ambas] 
+[gw1] FAILED test_prepackaged_servers.py::TestPrepack::test_text_alibi_explainer 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph4.json-True-istio] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph3.json-True-ambas] 
+[gw3] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph2.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph3.json-True-istio] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph4.json-True-ambas] 
+[gw1] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph4.json-True-istio] 
+[gw0] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph3.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph5.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph8.json-True-ambas] 
+[gw3] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph3.json-True-istio] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph8.json-True-istio] 
+[gw2] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph4.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph5.json-True-istio] 
+[gw0] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph5.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph7.json-graph8.json-False-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph8.json-True-ambas] 
+[gw3] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph8.json-True-istio] 
+[gw0] PASSED test_rolling_updates.py::test_rolling_deployment[graph7.json-graph8.json-False-ambas] 
+[gw2] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph5.json-True-istio] 
+test_security.py::test_xss_escaping 
+[gw3] PASSED test_security.py::test_xss_escaping 
+test_security.py::test_xss_header 
+test_tracing.py::test_tracing_rest 
+[gw1] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph8.json-True-ambas] 
+[gw2] PASSED test_security.py::test_xss_header 
+[gw0] PASSED test_tracing.py::test_tracing_rest 
+test_rolling_updates.py::test_rolling_deployment[graph7.json-graph8.json-False-istio] 
+[gw1] PASSED test_rolling_updates.py::test_rolling_deployment[graph7.json-graph8.json-False-istio] 
+
+=================================== FAILURES ===================================
+____________________ TestPrepack.test_text_alibi_explainer _____________________
+[gw1] linux -- Python 3.6.10 /usr/local/bin/python
+
+self = <test_prepackaged_servers.TestPrepack object at 0x7f870cad88d0>
+namespace = 'test-text-alibi-explainer'
+
+    def test_text_alibi_explainer(self, namespace):
+        spec = "../resources/movies-text-explainer.yaml"
+        retry_run(f"kubectl apply -f {spec} -n {namespace}")
+        wait_for_status("movie", namespace)
+        wait_for_rollout("movie", namespace, expected_deployments=2)
+        time.sleep(5)
+        logging.warning("Initial request")
+        r = initial_rest_request(
+            "movie", namespace, data=["This is test data"], dtype="ndarray"
+        )
+        assert r.status_code == 200
+        e = initial_rest_request(
+            "movie",
+            namespace,
+            data=["This is test data"],
+            dtype="ndarray",
+            method="explain",
+            predictor_name="movies-predictor",
+        )
+>       assert e.status_code == 200
+E       AttributeError: 'NoneType' object has no attribute 'status_code'
+
+test_prepackaged_servers.py:152: AttributeError
+------------------------------ Captured log call -------------------------------
+WARNING  root:seldon_e2e_utils.py:168 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:168 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:168 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:168 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:168 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:168 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:168 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:168 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:168 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:168 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:168 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:168 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:168 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:168 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:168 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:168 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:168 Failed to find status - sleeping
+WARNING  root:test_prepackaged_servers.py:139 Initial request
+WARNING  root:seldon_e2e_utils.py:212 Bad status:504
+WARNING  root:seldon_e2e_utils.py:212 Bad status:504
+WARNING  root:seldon_e2e_utils.py:212 Bad status:503
+WARNING  root:seldon_e2e_utils.py:212 Bad status:503
+===Flaky Test Report===
+
+test_rolling_deployment[graph1.json-graph2.json-True-ambas] failed (2 runs remaining out of 3).
+	<class 'AssertionError'>
+	
+	[<TracebackEntry /workspace/source/testing/scripts/test_rolling_updates.py:238>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:583>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:575>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:593>]
+test_rolling_deployment[graph1.json-graph2.json-True-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph3.json-True-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph8.json-True-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph3.json-True-ambas] failed (2 runs remaining out of 3).
+	<class 'AssertionError'>
+	
+	[<TracebackEntry /workspace/source/testing/scripts/test_rolling_updates.py:238>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:583>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:575>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:593>]
+test_rolling_deployment[graph1.json-graph3.json-True-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph5.json-True-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph7.json-graph8.json-False-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph2.json-True-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph4.json-True-ambas] failed (2 runs remaining out of 3).
+	<class 'AssertionError'>
+	
+	[<TracebackEntry /workspace/source/testing/scripts/test_rolling_updates.py:238>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:583>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:575>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:593>]
+test_rolling_deployment[graph1.json-graph4.json-True-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph5.json-True-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph4.json-True-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph8.json-True-ambas] failed (2 runs remaining out of 3).
+	<class 'AssertionError'>
+	
+	[<TracebackEntry /workspace/source/testing/scripts/test_rolling_updates.py:238>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:583>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:575>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:593>]
+test_rolling_deployment[graph1.json-graph8.json-True-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph7.json-graph8.json-False-istio] passed 1 out of the required 1 times. Success!
+
+===End Flaky Test Report===
+================== 1 failed, 32 passed in 1164.59s (0:19:24) ===================
+make: *** [Makefile:130: test_parallel] Error 1
+Test returned errors
+kind delete cluster
+Deleting cluster "kind" ...
+Stopping Docker: dockerProgram process in pidfile '/var/run/docker-ssd.pid', 1 process(es), refused to die.
+[31m
+Pipeline failed on stage 'end-to-end' : container 'step-test-end-to-end'. The execution of the pipeline has stopped.[0m
