@@ -150,6 +150,7 @@ def setup_tracing(interface_name: str) -> object:
     if dd_enabled:
         logger.info("initializing Datadog tracer")
         from ddtrace import opentracer, sampler
+        import opentracing
 
         sampler = sampler.RateSampler(int(os.environ.get("DD_SAMPLE_RATE", 1)))
         config = {"sampler": sampler}
@@ -157,8 +158,11 @@ def setup_tracing(interface_name: str) -> object:
         # Config will be created through env vars, see https://docs.datadoghq.com/tracing/setup/python/
         # TODO: Will this be overridden by the environment variable
         t = opentracer.Tracer(config=config, service_name=interface_name)
-        opentracer.set_global_tracer(t)
+        opentracing.set_global_tracer(t)
         logger.info("done setting up datadog tracer")
+        logger.info("dd tracer config %s", opentracing.global_tracer().__dict__)
+        logger.info("open tracer registered? ", opentracing.is_global_tracer_registered())
+
         return t
 
     from jaeger_client import Config
