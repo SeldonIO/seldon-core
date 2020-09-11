@@ -1267,3 +1267,45 @@ func TestNoPredictors(t *testing.T) {
 	err := spec.ValidateSeldonDeployment()
 	g.Expect(err).ToNot(BeNil())
 }
+
+func TestValidateTwoShadows(t *testing.T) {
+	g := NewGomegaWithT(t)
+	err := setupTestConfigMap()
+	g.Expect(err).To(BeNil())
+	impl := PredictiveUnitImplementation(constants.PrePackedServerTensorflow)
+	spec := &SeldonDeploymentSpec{
+		Protocol: ProtocolTensorflow,
+		Predictors: []PredictorSpec{
+			{
+				Name: "p1",
+				Graph: PredictiveUnit{
+					Name:           "classifier",
+					Implementation: &impl,
+					ModelURI:       "s3://mybucket/model",
+				},
+			},
+			{
+				Name: "p1",
+				Graph: PredictiveUnit{
+					Name:           "classifier",
+					Implementation: &impl,
+					ModelURI:       "s3://mybucket/model",
+				},
+				Shadow: true,
+			},
+			{
+				Name: "p1",
+				Graph: PredictiveUnit{
+					Name:           "classifier",
+					Implementation: &impl,
+					ModelURI:       "s3://mybucket/model",
+				},
+				Shadow: true,
+			},
+		},
+	}
+
+	spec.DefaultSeldonDeployment("mydep", "default")
+	err = spec.ValidateSeldonDeployment()
+	g.Expect(err).ToNot(BeNil())
+}
