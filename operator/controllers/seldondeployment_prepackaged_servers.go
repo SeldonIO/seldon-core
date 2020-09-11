@@ -440,8 +440,16 @@ func (pi *PrePackedInitialiser) createStandaloneModelServers(mlDep *machinelearn
 					return err
 				}
 			default:
-				if err := pi.addModelDefaultServers(pu, deploy, serverConfig); err != nil {
-					return err
+				// If protocol is KFServing, try to add container with MLServer
+				if mlDep.Spec.Protocol == machinelearningv1.ProtocolKfserving {
+					err := pi.addMLServerDefault(pu, deploy)
+					if err != nil {
+						return err
+					}
+				} else {
+					if err := pi.addModelDefaultServers(pu, deploy, serverConfig); err != nil {
+						return err
+					}
 				}
 			}
 		} else {
