@@ -130,7 +130,6 @@ class TestPrepack(object):
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
 
     # Test prepackaged Text SKLearn Alibi Explainer
-    @pytest.mark.flaky(max_runs=5)
     def test_text_alibi_explainer(self, namespace):
         spec = "../resources/movies-text-explainer.yaml"
         retry_run(f"kubectl apply -f {spec} -n {namespace}")
