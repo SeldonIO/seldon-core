@@ -505,14 +505,15 @@ var _ = Describe("Create a prepacked sklearn server", func() {
 		timeout         = time.Second * 30
 		interval        = time.Second * 1
 		name            = "pp1"
-		sdepName        = "prepack5"
 		envExecutorUser = "2"
 	)
 
+	var sdepName string
 	var instance *machinelearningv1.SeldonDeployment
 	var key types.NamespacedName
 
 	BeforeEach(func() {
+		sdepName = "prepack5"
 		modelType := machinelearningv1.MODEL
 		impl := machinelearningv1.PredictiveUnitImplementation(constants.PrePackedServerSklearn)
 
@@ -590,7 +591,10 @@ var _ = Describe("Create a prepacked sklearn server", func() {
 	})
 
 	It("should use MLServer when choosing the KFServing protocol", func() {
+		sdepName = "prepack6"
+		instance.Name = sdepName
 		instance.Spec.Protocol = machinelearningv1.ProtocolKfserving
+		key.Name = sdepName
 
 		instance.Default()
 		Expect(k8sClient.Create(context.Background(), instance)).Should(Succeed())
