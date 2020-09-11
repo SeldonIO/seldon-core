@@ -39,7 +39,7 @@ setup(
         "joblib>=0.13.2",
         "dill>=0.3.0",
         "grpcio>=1.22.0",
-        "xgboost==1.0.2",
+        "xgboost==1.2.0",
         "shap==0.36.0"
     ],
     tests_require=tests_require,
