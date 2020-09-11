@@ -4,7 +4,7 @@ You can use Open Tracing to trace your API calls to Seldon Core. By default we s
 
 ## Install Jaeger
 
-You will need to install Jaeger on your Kubernetes cluster. Follow their [documentation](https://www.jaegertracing.io/docs/1.16/operator/)
+You will need to install Jaeger on your Kubernetes cluster. Follow their [documentation](https://www.jaegertracing.io/docs/1.18/operator/)
 
 ## Configuration
 
