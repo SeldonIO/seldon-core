@@ -157,7 +157,7 @@ def setup_tracing(interface_name: str) -> object:
         logger.info("initializing Datadog tracer")
         from ddtrace import opentracer, sampler
 
-        sampler = sampler.RateSampler(os.environ.get("DD_SAMPLE_RATE", 1))
+        sampler = sampler.RateSampler(int(os.environ.get("DD_SAMPLE_RATE", 1)))
         config = {"sampler": sampler}
 
         # Config will be created through env vars, see https://docs.datadoghq.com/tracing/setup/python/
