@@ -2,6 +2,8 @@
 
 You can use Open Tracing to trace your API calls to Seldon Core. By default we support Jaeger for Distributed Tracing, which will allow you to obtain insights on latency and performance across each microservice-hop in your Seldon deployment.
 
+Datadog tracing is also supported, see [Distributed Tracing with Datadog](distributed-tracing-dd.md)
+
 ## Install Jaeger
 
 You will need to install Jaeger on your Kubernetes cluster. Follow their [documentation](https://www.jaegertracing.io/docs/1.18/operator/)

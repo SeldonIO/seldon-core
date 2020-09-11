@@ -152,14 +152,18 @@ def load_annotations() -> Dict:
 def setup_tracing(interface_name: str) -> object:
     logger.info("Initializing tracing")
 
-    dd_enabled = os.environ.get("DD_ENABLED", False) # TODO: Make sure this matches up with executor
+    dd_enabled = os.environ.get("DD_ENABLED", False)
     if dd_enabled:
         logger.info("initializing Datadog tracer")
-        from ddtrace.opentracer import Tracer, set_global_tracer
+        from ddtrace import opentracer, sampler
+
+        sampler = sampler.RateSampler(os.environ.get("DD_SAMPLE_RATE", 1))
+        config = {"sampler": sampler}
 
         # Config will be created through env vars, see https://docs.datadoghq.com/tracing/setup/python/
-        t = Tracer()
-        set_global_tracer(t)
+        # TODO: Will this be overridden by the environment variable
+        t = opentracer.Tracer(config=config, service_name=interface_name)
+        opentracer.set_global_tracer(t)
         logger.info("done setting up datadog tracer")
         return t
 
