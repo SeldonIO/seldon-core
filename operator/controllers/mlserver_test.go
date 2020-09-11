@@ -34,7 +34,7 @@ var _ = Describe("MLServer helpers", func() {
 		var cServer *v1.Container
 
 		BeforeEach(func() {
-			cServer = getMLServerContainer(pu)
+			cServer, _ = getMLServerContainer(pu)
 		})
 
 		It("creates container with image", func() {
@@ -43,18 +43,22 @@ var _ = Describe("MLServer helpers", func() {
 	})
 
 	Describe("getMLServerImage", func() {
-		It("returns empty if no kfserving entry is set", func() {
+		It("returns error if no kfserving entry is set", func() {
 			invalidImplementation := machinelearningv1.PredictiveUnitImplementation(
 				machinelearningv1.PrepackTensorflowName,
 			)
 			pu.Implementation = &invalidImplementation
 
-			image := getMLServerImage(pu)
+			image, err := getMLServerImage(pu)
+
+			Expect(err).To(HaveOccurred())
 			Expect(image).To(Equal(""))
 		})
 
 		It("returns image name for kfserving", func() {
-			image := getMLServerImage(pu)
+			image, err := getMLServerImage(pu)
+
+			Expect(err).To(Not(HaveOccurred()))
 			Expect(image).To(Equal("seldonio/mlserver:0.1.0"))
 		})
 	})
@@ -63,7 +67,7 @@ var _ = Describe("MLServer helpers", func() {
 		var envs []v1.EnvVar
 
 		BeforeEach(func() {
-			envs = getMLServerEnvVars(pu)
+			envs, _ = getMLServerEnvVars(pu)
 		})
 
 		It("adds the right ports", func() {
@@ -105,7 +109,9 @@ var _ = Describe("MLServer helpers", func() {
 			func(endpointType machinelearningv1.EndpointType, serviceEndpointType machinelearningv1.EndpointType, expected int32) {
 				pu.Endpoint.Type = serviceEndpointType
 
-				port := getMLServerPort(pu, endpointType)
+				port, err := getMLServerPort(pu, endpointType)
+
+				Expect(err).NotTo(HaveOccurred())
 				Expect(port).To(Equal(expected))
 			},
 			Entry(
@@ -142,9 +148,15 @@ var _ = Describe("MLServer helpers", func() {
 				modelImp := machinelearningv1.PredictiveUnitImplementation(implementation)
 				pu.Implementation = &modelImp
 
-				mlServerImplementation := getMLServerModelImplementation(pu)
+				mlServerImplementation, err := getMLServerModelImplementation(pu)
 
-				Expect(mlServerImplementation).To(Equal(expected))
+				if expected == "" {
+					Expect(err).To(HaveOccurred())
+					Expect(mlServerImplementation).To(Equal(expected))
+				} else {
+					Expect(err).To(Not(HaveOccurred()))
+					Expect(mlServerImplementation).To(Equal(expected))
+				}
 			},
 			Entry("sklearn", machinelearningv1.PrepackSklearnName, MLServerSKLearnImplementation),
 			Entry("xgboost", machinelearningv1.PrepackXgboostName, MLServerXGBoostImplementation),
