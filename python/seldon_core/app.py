@@ -1,10 +1,18 @@
 import os
 import logging
+import atexit
 
+from multiprocessing.util import _exit_function
 from typing import Dict, Union
 from gunicorn.app.base import BaseApplication
 
 logger = logging.getLogger(__name__)
+
+
+def post_worker_init(worker):
+    # Remove the atexit handler set up by the parent process
+    # https://github.com/benoitc/gunicorn/issues/1391#issuecomment-467010209
+    atexit.unregister(_exit_function)
 
 
 def accesslog(log_level: str) -> Union[str, None]:
