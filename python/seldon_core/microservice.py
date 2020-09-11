@@ -149,19 +149,13 @@ def setup_tracing(interface_name: str) -> object:
     dd_enabled = os.environ.get("DD_ENABLED", False)
     if dd_enabled:
         # from ddtrace import opentracer, sampler, settings
-        from ddtrace import tracer
+        from ddtrace import tracer, sampler
         import opentracing
         logger.info("initializing Datadog tracer")
 
+        sampler = sampler.RateSampler(int(os.environ.get("DD_SAMPLE_RATE", 1)))
 
-        # config = settings.Config()
-
-        # sampler = sampler.RateSampler(int(os.environ.get("DD_SAMPLE_RATE", 1)))
-        # config["sampler"] = sampler
-
-        tracer.configure(hostname="dd-agent.monitoring.svc.cluster.local", port=8126)
-
-
+        tracer.configure(enabled=True, hostname="dd-agent.monitoring.svc.cluster.local", port=8126, sampler=sampler)
 
         # Config will be created through env vars, see https://docs.datadoghq.com/tracing/setup/python/
         # TODO: Will this be overridden by the environment variable
