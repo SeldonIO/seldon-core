@@ -16,7 +16,7 @@ spec:
         name: explainer
         resources:
           requests:
-            cpu: 200m
+            cpu: 1
             memory: 50Mi
     name: movies-predictor
     replicas: 1
