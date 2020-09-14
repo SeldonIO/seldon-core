@@ -152,10 +152,9 @@ def load_annotations() -> Dict:
 def setup_tracing(interface_name: str) -> object:
     logger.info("Initializing tracing")
 
-    dd_enabled = os.environ.get("DD_ENABLED", False)
-    if dd_enabled:
+    dd_enabled = os.environ.get("DD_ENABLED", "false")
+    if dd_enabled.lower() in ("yes", "true", "t", "1"):
         from ddtrace import sampler, opentracer, settings
-        import opentracing  # TODO: delete me and logs
         logger.info("initializing Datadog tracer")
 
         # Config will be created through env vars, see https://docs.datadoghq.com/tracing/setup/python/
