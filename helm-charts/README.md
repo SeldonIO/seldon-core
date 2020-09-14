@@ -8,7 +8,7 @@ The core charts for installing Seldon Core are shown below.
 
  * [seldon-core-operator](https://docs.seldon.io/projects/seldon-core/en/latest/charts/seldon-core-operator.html)
    * Main helm chart for installing Seldon Core CRD and Controller
- * [seldon-core-analytics](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core-analytics)
+ * [seldon-core-analytics](https://docs.seldon.io/projects/seldon-core/en/latest/charts/seldon-core-analytics.html)
    * Example Prometheus and Grafana setup with demonstration Grafana dashboard for Seldon Core
 
 
@@ -18,11 +18,11 @@ A set of charts to provide example templates for creating particular inference g
 
  * [seldon-single-model](https://docs.seldon.io/projects/seldon-core/en/latest/charts/seldon-single-model.html)
    * Serve a single model with attached Persistent Volume.
- * [seldon-abtest](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-abtest)
+ * [seldon-abtest](https://docs.seldon.io/projects/seldon-core/en/latest/charts/seldon-abtest.html)
    * Serve an AB test between two models.
- * [seldon-mab](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-mab)
+ * [seldon-mab](https://docs.seldon.io/projects/seldon-core/en/latest/charts/seldon-mab.html)
    * Serve a multi-armed bandit between two models.
- * [seldon-od-model](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-od-model) and [seldon-od-transformer](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-od-transformer)
+ * [seldon-od-model](https://docs.seldon.io/projects/seldon-core/en/latest/charts/seldon-od-model.html) and [seldon-od-transformer](https://docs.seldon.io/projects/seldon-core/en/latest/charts/seldon-od-transformer.html)
    * Serve one of the following Outlier Detector components as either models or transformers:
      * [Isolation Forest](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/isolation-forest)
      * [Variational Auto-Encoder](https://github.com/SeldonIO/seldon-core/tree/master/components/outlier-detection/vae)
@@ -33,7 +33,7 @@ For examples of using some of the above charts see [here](https://github.com/Sel
 
 ## Misc
 
- * [seldon-core-loadtesting](https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core-loadtesting)
+ * [seldon-core-loadtesting](https://docs.seldon.io/projects/seldon-core/en/latest/charts/seldon-core-loadtesting.html)
    * Utility to load test
 
 ## Documentation

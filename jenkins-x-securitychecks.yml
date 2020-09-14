@@ -43,5 +43,5 @@ pipelineConfig:
             - agent:
                 image: snyk/snyk:python-3.7
               dir: python
-              sh: "pip install -r requirements.txt && snyk test"
+              sh: "make install && snyk test --file=setup.py"
 

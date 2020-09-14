@@ -28,6 +28,8 @@ PARAMETERS_ENV_NAME = "PREDICTIVE_UNIT_PARAMETERS"
 SERVICE_PORT_ENV_NAME = "PREDICTIVE_UNIT_SERVICE_PORT"
 METRICS_SERVICE_PORT_ENV_NAME = "PREDICTIVE_UNIT_METRICS_SERVICE_PORT"
 
+FILTER_METRICS_ACCESS_LOGS_ENV_NAME = "FILTER_METRICS_ACCESS_LOGS"
+
 LOG_LEVEL_ENV = "SELDON_LOG_LEVEL"
 DEFAULT_LOG_LEVEL = "INFO"
 
@@ -175,7 +177,12 @@ def setup_tracing(interface_name: str) -> object:
     return config.initialize_tracer()
 
 
-def setup_logger(log_level: str) -> logging.Logger:
+class MetricsEndpointFilter(logging.Filter):
+    def filter(self, record):
+        return seldon_microservice.METRICS_ENDPOINT not in record.getMessage()
+
+
+def setup_logger(log_level: str, debug_mode: bool) -> logging.Logger:
     # set up log level
     log_level_raw = os.environ.get(LOG_LEVEL_ENV, log_level.upper())
     log_level_num = getattr(logging, log_level_raw, None)
@@ -187,6 +194,11 @@ def setup_logger(log_level: str) -> logging.Logger:
     # Set right level on access logs
     flask_logger = logging.getLogger("werkzeug")
     flask_logger.setLevel(log_level_num)
+
+    if getenv_as_bool(FILTER_METRICS_ACCESS_LOGS_ENV_NAME, default=not debug_mode):
+        flask_logger.addFilter(MetricsEndpointFilter())
+        gunicorn_logger = logging.getLogger("gunicorn.access")
+        gunicorn_logger.addFilter(MetricsEndpointFilter())
 
     logger.debug("Log level set to %s:%s", log_level, log_level_num)
 
@@ -298,7 +310,7 @@ def main():
     args = parser.parse_args()
     parameters = parse_parameters(json.loads(args.parameters))
 
-    setup_logger(args.log_level)
+    setup_logger(args.log_level, args.debug)
 
     # set flask trace jaeger extra tags
     jaeger_extra_tags = list(

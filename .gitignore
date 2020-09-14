@@ -100,6 +100,7 @@ examples/models/r_mnist/t10k-labels-idx1-ubyte
 examples/models/r_mnist/train-images-idx3-ubyte
 examples/models/r_mnist/train-labels-idx1-ubyte
 examples/models/sklearn_iris_fbs/IrisClassifier.sav
+examples/models/mlflow_server_ab_test_ambassador/mlruns
 
 # Pickle files
 *.pickle
@@ -217,3 +218,6 @@ examples/models/autoscaling/autoscaling_example.py
 # testing
 *.coverprofile
 *.log
+
+# vscode local history
+.history/

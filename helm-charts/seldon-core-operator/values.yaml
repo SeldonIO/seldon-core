@@ -138,6 +138,9 @@ predictor_servers:
 # it will try to create the CRD but only if it does not exist
 crd:
   create: true
+  # Whether to force the use of the v1beta1 or v1 CRD.
+  forceV1: false
+  forceV1beta1: false
 
 # Warning: credentials will be depricated soon, please use defaultEnvSecretRefName above
 # For more info please check the documentation
@@ -173,3 +176,4 @@ engine:
 # Explainer image
 explainer:
   image: seldonio/alibiexplainer:1.2.3-dev
+

@@ -13,7 +13,7 @@ helm repo add seldonio https://storage.googleapis.com/seldon-charts
 helm repo update
 ```
 
-Once that's done, you should be able to use the inference graph template as:
+Once that's done, you should then be able to use the inference graph template as:
 
 ```shell
 helm template $MY_MODEL_NAME seldonio/seldon-single-model --namespace $MODELS_NAMESPACE
