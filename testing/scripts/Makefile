@@ -30,15 +30,17 @@ kind_build_prepackaged:
 	cd ../../servers/mlflowserver && make kind_load
 	cd ../../integrations/tfserving && make kind_load
 
-kind_build_alibi:
-	cd ../../components/alibi-detect-server && make kind_load
+kind_build_alibi_explain:
 	cd ../../components/alibi-explain-server && make kind_load
+
+kind_build_alibi_detect:
+	cd ../../components/alibi-detect-server && make kind_load
 
 kind_build_misc:
 	cd ../../components/seldon-request-logger && make kind_load
 	cd ../../components/storage-initializer && make kind_load
 
-kind_build_images: build_protos kind_build_engine kind_build_operator kind_build_executor kind_build_test_models kind_build_prepackaged kind_build_alibi kind_build_misc
+kind_build_images: build_protos kind_build_engine kind_build_operator kind_build_executor kind_build_test_models kind_build_prepackaged kind_build_alibi_explain kind_build_alibi_detect kind_build_misc
 
 helm_setup:
 	helm repo add stable https://kubernetes-charts.storage.googleapis.com/
