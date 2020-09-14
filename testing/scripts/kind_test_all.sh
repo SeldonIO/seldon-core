@@ -127,11 +127,11 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
 
         echo "Files changed in alibi explain folder:"
         git --no-pager diff --exit-code --name-only origin/master ../../components/alibi-explain-server/
-        ALIBI_MODIFIED=$?
-        if [[ $ALIBI_MODIFIED -gt 0 ]]; then
+        ALIBI_EXPLAIN_MODIFIED=$?
+        if [[ $ALIBI_EXPLAIN_MODIFIED -gt 0 ]]; then
             make kind_build_alibi_explain
-            ALIBI_EXIT_VALUE=$?
-            if [[ $ALIBI_EXIT_VALUE -gt 0 ]]; then
+            ALIBI_EXPLAIN_EXIT_VALUE=$?
+            if [[ $ALIBI_EXPLAIN_EXIT_VALUE -gt 0 ]]; then
                 echo "Alibi Explain server build returned errors"
                 return 1
             fi
@@ -139,13 +139,13 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
             echo "SKIPPING ALIBI EXPLAIN IMAGE BUILD..."
         fi
 
-        echo "Files changed in alibi folder:"
+        echo "Files changed in alibi detect folder:"
         git --no-pager diff --exit-code --name-only origin/master ../../components/alibi-detect-server
-        ALIBI_MODIFIED=$?
-        if [[ $ALIBI_MODIFIED -gt 0 ]]; then
+        ALIBI_DETECT_MODIFIED=$?
+        if [[ $ALIBI_DETECT_MODIFIED -gt 0 ]]; then
             make kind_build_alibi_detect
-            ALIBI_EXIT_VALUE=$?
-            if [[ $ALIBI_EXIT_VALUE -gt 0 ]]; then
+            ALIBI_DETECT_EXIT_VALUE=$?
+            if [[ $ALIBI_DETECT_EXIT_VALUE -gt 0 ]]; then
                 echo "Alibi Detect server build returned errors"
                 return 1
             fi
