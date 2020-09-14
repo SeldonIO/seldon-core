@@ -25,6 +25,8 @@ model:
     enabled: false
     # logger.url -- Remote URL for logger
     url: ""
+  mlflow:
+    xtype: ""
 
 # replicas -- Number of replicas for the predictor
 replicas: 1

@@ -33,6 +33,15 @@
           {{- if .Values.model.uri }}
           "modelUri": "{{ .Values.model.uri }}",
           {{- end}}
+          {{- if .Values.model.mlflow.xtype }}
+          "parameters": [
+		{
+		    "name": "xtype",
+		    "type": "STRING",
+		    "value": "{{ .Values.model.mlflow.xtype }}" 
+		}
+	  ],
+          {{- end}}
           "type": "MODEL",
           {{- if .Values.model.logger.enabled }}
           "logger": {
