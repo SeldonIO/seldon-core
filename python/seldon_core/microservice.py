@@ -41,7 +41,7 @@ DEBUG_ENV = "SELDON_DEBUG"
 
 
 def start_servers(
-    target1: Callable, target2: Callable, metrics_target: Callable
+        target1: Callable, target2: Callable, metrics_target: Callable
 ) -> None:
     """
     Start servers
@@ -156,25 +156,26 @@ def setup_tracing(interface_name: str) -> object:
     if dd_enabled:
 
         # from ddtrace import opentracer, sampler, settings
-        from ddtrace import tracer, sampler, opentracer
-        import opentracing #TODO: delete me and logs
+        from ddtrace import sampler, opentracer, settings
+        import opentracing  # TODO: delete me and logs
         logger.info("initializing Datadog tracer")
 
-        sampler = sampler.RateSampler(int(os.environ.get("DD_SAMPLE_RATE", 1)))
-
         # Config will be created through env vars, see https://docs.datadoghq.com/tracing/setup/python/
-        tracer.configure(enabled=True, sampler=sampler)
-        tr = opentracer.Tracer(service_name=interface_name, dd_tracer=tracer, config=tracer.__dict__)
-        # config = {
-        #     "agent_hostname": os.environ.get("DD_AGENT_HOST", "localhost"),
-        #     "agent_port": os.environ.get("DATADOG_TRACE_AGENT_PORT", "8126"),
-        #     "sampler": sampler,
-        #     "tags": os.environ.get("DD_TAGS", ""),
-        # }
-        #
-        # t = opentracer.Tracer(service_name=interface_name, config=config)
+        # These settings are overwritten when creating a DD OpenTracer
+        config = {
+            "agent_hostname": os.environ.get("DD_AGENT_HOST", "localhost"),
+            "agent_port": os.environ.get("DATADOG_TRACE_AGENT_PORT", "8126"),
+            "sampler": sampler.RateSampler(int(os.environ.get("DD_SAMPLE_RATE", 1))),
+            "global_tags": dict(item.split(":") for item in os.getenv("DD_TAGS", "").split(",")),
+        }
+        svc_name = os.environ.get("DD_SERVICE", "")
+        if svc_name == "":
+            svc_name = interface_name
+
+        tr = opentracer.Tracer(service_name=svc_name, config=config)
+
         opentracer.set_global_tracer(tr)
-        opentracing.set_global_tracer(tr)
+        # opentracing.set_global_tracer(tr)
 
         # opentracing.set_global_tracer(t)
         print("Is global tracer set? %s", opentracing.is_global_tracer_registered())
@@ -502,7 +503,7 @@ def main():
     metrics_server_func = rest_metrics_server
 
     if hasattr(user_object, "custom_service") and callable(
-        getattr(user_object, "custom_service")
+            getattr(user_object, "custom_service")
     ):
         server2_func = user_object.custom_service
     else:
