@@ -41,7 +41,7 @@ DEBUG_ENV = "SELDON_DEBUG"
 
 
 def start_servers(
-        target1: Callable, target2: Callable, metrics_target: Callable
+    target1: Callable, target2: Callable, metrics_target: Callable
 ) -> None:
     """
     Start servers
@@ -496,7 +496,7 @@ def main():
     metrics_server_func = rest_metrics_server
 
     if hasattr(user_object, "custom_service") and callable(
-            getattr(user_object, "custom_service")
+        getattr(user_object, "custom_service")
     ):
         server2_func = user_object.custom_service
     else:
