@@ -37,7 +37,7 @@ kafka-proxy: copy_operator fmt vet
 
 .PHONE: copy_operator
 copy_operator:
-	rm -rf _operator
+	rm _operator -rf
 	cp -r ../operator _operator
 
 
