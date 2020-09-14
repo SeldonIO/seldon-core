@@ -161,12 +161,17 @@ def setup_tracing(interface_name: str) -> object:
         logger.info("initializing Datadog tracer")
 
         # Config will be created through env vars, see https://docs.datadoghq.com/tracing/setup/python/
-        # These settings are overwritten when creating a DD OpenTracer
+        # These settings are overwritten when creating a DD OpenTracer, so they have to be set here
+        raw_tags = os.environ.get("DD_TAGS", "")
+        tags = {}
+        if raw_tags != "":
+            tags = dict(map(lambda x: x.split(':'), raw_tags.split(',')))
+
         config = {
             "agent_hostname": os.environ.get("DD_AGENT_HOST", "localhost"),
             "agent_port": os.environ.get("DATADOG_TRACE_AGENT_PORT", "8126"),
             "sampler": sampler.RateSampler(int(os.environ.get("DD_SAMPLE_RATE", 1))),
-            "global_tags": dict(item.split(":") for item in os.getenv("DD_TAGS", "").split(",")),
+            "global_tags": tags,
         }
         svc_name = os.environ.get("DD_SERVICE", "")
         if svc_name == "":
