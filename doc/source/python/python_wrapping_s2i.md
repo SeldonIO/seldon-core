@@ -178,6 +178,7 @@ The required environment variables understood by the builder image are explained
 
 
 ### MODEL_NAME
+
 The name of the class containing the model. Also the name of the python file which will be imported.
 
 ### API_TYPE
@@ -200,17 +201,36 @@ Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved pe
 
 ### EXTRA_INDEX_URL
 
-For installing packages from private/self-hosted PyPi registry.
+.. Warning:: 
+   ``EXTRA_INDEX_URL`` is recommended to be passed as argument to ``s2i``
+   command rather than adding in ``.s2i/environment`` as a practice of avoiding
+   checking in credentials in the code.
 
-#### NOTE: EXTRA_INDEX_URL is recommended to be passed as argument to `s2i` command rather than adding in `.s2i/environment` as a practice of avoiding checking in credentials in the code.
+For installing packages from private/self-hosted PyPi registry.
 
 ### PIP_TRUSTED_HOST
 
 For adding private/self-hosted unsecured PyPi registry by adding it to pip trusted-host.
 
 ```bash
-s2i build -e EXTRA_INDEX_URL=https://<pypi-user>:<pypi-auth>@mypypi.example.com/simple -e PIP_TRUSTED_HOST=mypypi.example.com <src-folder> seldonio/seldon-core-s2i-python3:1.2.3-dev <my-image-name>
+s2i build \
+   -e EXTRA_INDEX_URL=https://<pypi-user>:<pypi-auth>@mypypi.example.com/simple \
+   -e PIP_TRUSTED_HOST=mypypi.example.com \
+   <src-folder> \
+   seldonio/seldon-core-s2i-python3:1.2.3-dev \
+   <my-image-name>
 ```
+
+### PAYLOAD_PASSTHROUGH
+
+If enabled, the Python server won't try to decode the request payload nor
+encode the response back.
+That means that the `predict()` method of your `SeldonComponent` model will
+receive the payload as-is and it will be responsible to decode it.
+Likewise, the return value of `predict()` must be a serialised response.
+
+By default, this option will be disabled.
+
 ## Creating different service types
 
 ### MODEL
