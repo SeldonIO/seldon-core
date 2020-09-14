@@ -148,8 +148,6 @@ def setup_tracing(interface_name: str) -> object:
 
     dd_enabled = os.environ.get("DD_ENABLED", False)
     if dd_enabled:
-
-        # from ddtrace import opentracer, sampler, settings
         from ddtrace import sampler, opentracer, settings
         import opentracing  # TODO: delete me and logs
         logger.info("initializing Datadog tracer")
@@ -172,17 +170,7 @@ def setup_tracing(interface_name: str) -> object:
             svc_name = interface_name
 
         tr = opentracer.Tracer(service_name=svc_name, config=config)
-
         opentracer.set_global_tracer(tr)
-        # opentracing.set_global_tracer(tr)
-
-        # opentracing.set_global_tracer(t)
-        print("Is global tracer set? %s", opentracing.is_global_tracer_registered())
-
-        s = opentracing.global_tracer().start_span("test span")
-        time.sleep(5)
-        s.finish()
-
         return tr
 
     from jaeger_client import Config
