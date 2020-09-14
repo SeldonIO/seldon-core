@@ -138,6 +138,7 @@ hpcloud/tail,https://github.com/hpcloud/tail/blob/master/LICENSE.txt,MIT License
 imdario/mergo,https://github.com/imdario/mergo/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/imdario/mergo/master/LICENSE
 inconshreveable/mousetrap,https://github.com/inconshreveable/mousetrap/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/inconshreveable/mousetrap/master/LICENSE
 influxdata/influxdb1-client,https://github.com/influxdata/influxdb1-client/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/influxdata/influxdb1-client/master/LICENSE
+jessevdk/go-flags,https://github.com/jessevdk/go-flags/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/jessevdk/go-flags/master/LICENSE
 jmespath/go-jmespath,https://github.com/jmespath/go-jmespath/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/jmespath/go-jmespath/master/LICENSE
 jonboulle/clockwork,https://github.com/jonboulle/clockwork/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/jonboulle/clockwork/master/LICENSE
 jpillora/backoff,https://github.com/jpillora/backoff/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/jpillora/backoff/master/LICENSE
