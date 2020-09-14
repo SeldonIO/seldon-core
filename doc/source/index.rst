@@ -156,6 +156,7 @@ Documentation Index
    Seldon Deployment CRD <reference/seldon-deployment.md>
    Service Orchestrator <graph/svcorch.md>
    Kubeflow <analytics/kubeflow.md>
+   Concepts <reference/concepts.md>
 
 .. toctree::
    :maxdepth: 1
