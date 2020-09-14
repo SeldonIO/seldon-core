@@ -2,11 +2,6 @@ import os
 from itertools import chain
 from setuptools import find_packages, setup
 
-version = {}
-dir_path = os.path.dirname(os.path.realpath(__file__))
-with open(os.path.join(dir_path, "seldon_core/version.py")) as fp:
-    exec(fp.read(), version)
-
 # Extra dependencies, with special 'all' key
 extras = {"tensorflow": ["tensorflow"]}
 all_extra_deps = chain.from_iterable(extras.values())
@@ -16,7 +11,7 @@ setup(
     name="seldon-core",
     author="Seldon Technologies Ltd.",
     author_email="hello@seldon.io",
-    version=version["__version__"],
+    version="1.2.3-dev",
     description="Seldon Core client and microservice wrapper",
     url="https://github.com/SeldonIO/seldon-core",
     license="Apache 2.0",

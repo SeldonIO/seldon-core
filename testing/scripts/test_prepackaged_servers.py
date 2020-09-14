@@ -141,7 +141,7 @@ class TestPrepack(object):
             "movie", namespace, data=["This is test data"], dtype="ndarray"
         )
         assert r.status_code == 200
-        e = rest_request(
+        e = initial_rest_request(
             "movie",
             namespace,
             data=["This is test data"],
