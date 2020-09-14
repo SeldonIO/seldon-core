@@ -168,6 +168,7 @@ def setup_tracing(interface_name: str) -> object:
         #
         # t = opentracer.Tracer(service_name=interface_name, config=config)
         opentracer.set_global_tracer(t)
+        opentracing.set_global_tracer(t)
 
         # opentracing.set_global_tracer(t)
         print("Is global tracer set? %s", opentracing.is_global_tracer_registered())
