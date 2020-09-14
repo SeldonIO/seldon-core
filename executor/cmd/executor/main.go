@@ -142,7 +142,7 @@ func runGrpcServer(lis net.Listener, logger logr.Logger, predictor *v1.Predictor
 		tensorflowGrpcServer := tensorflow.NewGrpcTensorflowServer(predictor, client, serverUrl, namespace)
 		serving.RegisterPredictionServiceServer(grpcServer, tensorflowGrpcServer)
 		serving.RegisterModelServiceServer(grpcServer, tensorflowGrpcServer)
-	case api.ProtocolKfserving:
+	case api.ProtocolKFserving:
 		kfservingGrpcServer := kfserving.NewGrpcKFServingServer(predictor, client, serverUrl, namespace)
 		kfproto.RegisterGRPCInferenceServiceServer(grpcServer, kfservingGrpcServer)
 	}
@@ -193,7 +193,7 @@ func main() {
 		log.Fatal("Required argument predictor missing")
 	}
 
-	if !(*protocol == api.ProtocolSeldon || *protocol == api.ProtocolTensorflow || *protocol == api.ProtocolKfserving) {
+	if !(*protocol == api.ProtocolSeldon || *protocol == api.ProtocolTensorflow || *protocol == api.ProtocolKFserving) {
 		log.Fatal("Protocol must be seldon, tensorflow or kfserving")
 	}
 
@@ -328,7 +328,7 @@ func main() {
 		clientGrpc = seldon.NewSeldonGrpcClient(predictor, *sdepName, annotations)
 	case api.ProtocolTensorflow:
 		clientGrpc = tensorflow.NewTensorflowGrpcClient(predictor, *sdepName, annotations)
-	case api.ProtocolKfserving:
+	case api.ProtocolKFserving:
 		clientGrpc = kfserving.NewKFServingGrpcClient(predictor, *sdepName, annotations)
 	default:
 		log.Fatalf("Failed to create grpc client. Unknown protocol %s: %v", *protocol, err)
