@@ -158,7 +158,7 @@ def setup_tracing(interface_name: str) -> object:
 
         # Config will be created through env vars, see https://docs.datadoghq.com/tracing/setup/python/
         tracer.configure(enabled=True, sampler=sampler)
-        tr = opentracer.Tracer(service_name=interface_name, dd_tracer=tracer)
+        tr = opentracer.Tracer(service_name=interface_name, dd_tracer=tracer, config=tracer.__dict__)
         # config = {
         #     "agent_hostname": os.environ.get("DD_AGENT_HOST", "localhost"),
         #     "agent_port": os.environ.get("DATADOG_TRACE_AGENT_PORT", "8126"),
