@@ -159,8 +159,9 @@ def setup_tracing(interface_name: str) -> object:
         # Config will be created through env vars, see https://docs.datadoghq.com/tracing/setup/python/
         t = tracer.configure(enabled=True, sampler=sampler)
         t = opentracer.Tracer(service_name=interface_name, dd_tracer=t)
-        opentracer.set_global_tracer(t)
 
+        opentracing.set_global_tracer(t)
+        print("Is global tracer set? %s", opentracing.is_global_tracer_registered())
 
         s = opentracing.global_tracer().start_span("test span")
         time.sleep(5)
