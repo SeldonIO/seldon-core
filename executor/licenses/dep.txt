@@ -150,6 +150,7 @@ github.com/hudl/fargo
 github.com/imdario/mergo
 github.com/inconshreveable/mousetrap
 github.com/influxdata/influxdb1-client
+github.com/jessevdk/go-flags
 github.com/jmespath/go-jmespath
 github.com/jonboulle/clockwork
 github.com/jpillora/backoff
@@ -326,8 +327,10 @@ modernc.org/strutil
 modernc.org/xc
 pack.ag/amqp
 rsc.io/binaryregexp
+sigs.k8s.io/apiserver-network-proxy/konnectivity-client
 sigs.k8s.io/controller-runtime
 sigs.k8s.io/structured-merge-diff
 sigs.k8s.io/structured-merge-diff/v2
+sigs.k8s.io/structured-merge-diff/v3
 sigs.k8s.io/yaml
 sourcegraph.com/sourcegraph/appdash

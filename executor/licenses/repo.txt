@@ -139,6 +139,7 @@ hudl/fargo
 imdario/mergo
 inconshreveable/mousetrap
 influxdata/influxdb1-client
+jessevdk/go-flags
 jmespath/go-jmespath
 jonboulle/clockwork
 jpillora/backoff
