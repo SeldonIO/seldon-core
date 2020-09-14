@@ -1,7 +1,6 @@
 package tracing
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"strconv"
@@ -25,31 +24,22 @@ func (d *datadogTracer) Close() error {
 	return nil
 }
 
-// TODO: docs/comments
 // initDatadogTracer attempts to create a tracer for using DataDog and statsd if the
 // correct environment variables are present. See https://docs.datadoghq.com/tracing/setup/go/
 // for all Environment variables.
-// Additional ones sepcific to Seldon:
+// Additional ones specific to Seldon:
 // DD_SAMPLE_RATE --> 0-1, rate of sampling
 // DD_ENABLED --> 0,1
 func initDatadogTracer() (io.Closer, error) {
-
-	// TODO: remove me
-	fmt.Println("dd tracing start")
-
 	serviceName := os.Getenv("DD_SERVICE")
 	if serviceName == "" {
 		serviceName = "executor"
 	}
 
-	fmt.Println("svc name: ", serviceName)
-
 	samplingRate, err := strconv.ParseFloat(os.Getenv(datadogSamplingRate), 64)
 	if err != nil {
 		samplingRate = 1.0
 	}
-
-	fmt.Println("sample rate: ", samplingRate)
 
 	t := opentracer.New(
 		tracer.WithSampler(tracer.NewRateSampler(samplingRate)),
