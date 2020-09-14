@@ -157,26 +157,26 @@ def setup_tracing(interface_name: str) -> object:
         sampler = sampler.RateSampler(int(os.environ.get("DD_SAMPLE_RATE", 1)))
 
         # Config will be created through env vars, see https://docs.datadoghq.com/tracing/setup/python/
-        # t = tracer.configure(enabled=True, sampler=sampler)
-        # t = opentracer.Tracer(service_name=interface_name, dd_tracer=t)
-        config = {
-            "agent_hostname": os.environ.get("DD_AGENT_HOST", "localhost"),
-            "agent_port": os.environ.get("DATADOG_TRACE_AGENT_PORT", "8126"),
-            "sampler": sampler,
-            "tags": os.environ.get("DD_TAGS", ""),
-        }
-
-        t = opentracer.Tracer(service_name=interface_name, config=config)
+        t = tracer.configure(enabled=True, sampler=sampler)
+        t = opentracer.Tracer(service_name=interface_name, dd_tracer=t)
+        # config = {
+        #     "agent_hostname": os.environ.get("DD_AGENT_HOST", "localhost"),
+        #     "agent_port": os.environ.get("DATADOG_TRACE_AGENT_PORT", "8126"),
+        #     "sampler": sampler,
+        #     "tags": os.environ.get("DD_TAGS", ""),
+        # }
+        #
+        # t = opentracer.Tracer(service_name=interface_name, config=config)
         opentracer.set_global_tracer(t)
 
-        opentracing.set_global_tracer(t)
+        # opentracing.set_global_tracer(t)
         print("Is global tracer set? %s", opentracing.is_global_tracer_registered())
 
         s = opentracing.global_tracer().start_span("test span")
         time.sleep(5)
         s.finish()
 
-        return tracer
+        return t
 
     from jaeger_client import Config
     logger.info("initializing Jaeger tracer")
