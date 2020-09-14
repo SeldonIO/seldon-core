@@ -8,7 +8,6 @@ IMAGE_NAME_RUNTIME = ${IMAGE_REGISTRY}/s2i-java-jni-runtime:${VERSION}
 .PHONY: get_local_repo
 get_local_repo:
 	mkdir -p _python
-	cp ${SELDON_CORE_DIR}/version.txt version.txt
 	cp -r $(SELDON_CORE_DIR)/python _python
 
 .PHONY: build
