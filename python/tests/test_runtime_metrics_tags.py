@@ -36,27 +36,33 @@ RUNTIME_METRICS = [
     {"type": "GAUGE", "key": "runtime_gauge", "value": 42},
 ]
 
+RUNTIME_TAGS = {"runtime": "tag", "shared": "right one"}
+EXPECTED_TAGS = {"static": "tag", **RUNTIME_TAGS}
+
 
 class UserObject:
     def predict(self, X, features_names):
         logging.info("Predict called")
-        return SeldonPrediction(data=X, metrics=RUNTIME_METRICS)
+        return SeldonPrediction(data=X, metrics=RUNTIME_METRICS, tags=RUNTIME_TAGS)
 
     def aggregate(self, X, features_names):
         logging.info("Aggregate called")
-        return SeldonPrediction(data=X[0], metrics=RUNTIME_METRICS)
+        return SeldonPrediction(data=X[0], metrics=RUNTIME_METRICS, tags=RUNTIME_TAGS)
 
     def transform_input(self, X, feature_names):
         logging.info("Transform input called")
-        return SeldonPrediction(data=X, metrics=RUNTIME_METRICS)
+        return SeldonPrediction(data=X, metrics=RUNTIME_METRICS, tags=RUNTIME_TAGS)
 
     def transform_output(self, X, feature_names):
         logging.info("Transform output called")
-        return SeldonPrediction(data=X, metrics=RUNTIME_METRICS)
+        return SeldonPrediction(data=X, metrics=RUNTIME_METRICS, tags=RUNTIME_TAGS)
 
     def route(self, X, feature_names):
         logging.info("Route called")
-        return SeldonPrediction(data=22, metrics=RUNTIME_METRICS)
+        return SeldonPrediction(data=22, metrics=RUNTIME_METRICS, tags=RUNTIME_TAGS)
+
+    def send_feedback(self, X, feature_names, reward, truth, routing):
+        return SeldonPrediction(data=X, metrics=RUNTIME_METRICS, tags=RUNTIME_TAGS)
 
     def metrics(self):
         logging.info("Metrics called")
@@ -71,6 +77,9 @@ class UserObject:
                 "tags": {"mytag": "mytagvalue"},
             },
         ]
+
+    def tags(self):
+        return {"static": "tag", "shared": "not right one"}
 
 
 def verify_seldon_metrics(data, mycounter_value, histogram_entries, method):
@@ -89,7 +98,7 @@ def verify_seldon_metrics(data, mycounter_value, histogram_entries, method):
 
 
 @pytest.mark.parametrize("cls", [UserObject])
-def test_seldon_metrics_predict(cls, client_gets_metrics):
+def test_seldon_runtime_data_predict(cls, client_gets_metrics):
     user_object = cls()
     seldon_metrics = SeldonMetrics()
 
@@ -98,21 +107,27 @@ def test_seldon_metrics_predict(cls, client_gets_metrics):
 
     rv = client.get('/predict?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
     assert rv.status_code == 200
-    assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
+    j = json.loads(rv.data)
+    assert j["data"]["ndarray"] == ["data"]
+    assert j["meta"]["tags"] == EXPECTED_TAGS
+    assert ("metrics" in j["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 1, [0.0202], PREDICT_METRIC_METHOD_TAG)
 
     rv = client.get('/predict?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
     assert rv.status_code == 200
-    assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
+    j = json.loads(rv.data)
+    assert j["data"]["ndarray"] == ["data"]
+    assert j["meta"]["tags"] == EXPECTED_TAGS
+    assert ("metrics" in j["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 2, [0.0202, 0.0202], PREDICT_METRIC_METHOD_TAG)
 
 
 @pytest.mark.parametrize("cls", [UserObject])
-def test_seldon_metrics_send_feedback(cls):
+def test_seldon_runtime_data_send_feedback(cls):
     user_object = cls()
     seldon_metrics = SeldonMetrics()
 
@@ -121,8 +136,11 @@ def test_seldon_metrics_send_feedback(cls):
 
     rv = client.get('/send-feedback?json={"reward": 42}')
     assert rv.status_code == 200
+    j = json.loads(rv.data)
+    assert j["meta"]["tags"] == EXPECTED_TAGS
 
     data = seldon_metrics.data[os.getpid()]
+    verify_seldon_metrics(data, 1, [0.0202], FEEDBACK_METRIC_METHOD_TAG)
 
     assert data["COUNTER", "seldon_api_model_feedback_reward"] == {
         "value": 42.0,
@@ -133,6 +151,7 @@ def test_seldon_metrics_send_feedback(cls):
     assert rv.status_code == 200
 
     data = seldon_metrics.data[os.getpid()]
+    verify_seldon_metrics(data, 2, [0.0202, 0.0202], FEEDBACK_METRIC_METHOD_TAG)
 
     assert data["COUNTER", "seldon_api_model_feedback_reward"] == {
         "value": 84.0,
@@ -141,7 +160,7 @@ def test_seldon_metrics_send_feedback(cls):
 
 
 @pytest.mark.parametrize("cls", [UserObject])
-def test_seldon_metrics_aggregate(cls, client_gets_metrics):
+def test_seldon_runtime_data_aggregate(cls, client_gets_metrics):
     user_object = cls()
     seldon_metrics = SeldonMetrics()
 
@@ -152,7 +171,10 @@ def test_seldon_metrics_aggregate(cls, client_gets_metrics):
         '/aggregate?json={"seldonMessages": [{"data": {"names": ["input"], "ndarray": ["data"]}}]}'
     )
     assert rv.status_code == 200
-    assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
+    j = json.loads(rv.data)
+    assert j["data"]["ndarray"] == ["data"]
+    assert j["meta"]["tags"] == EXPECTED_TAGS
+    assert ("metrics" in j["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 1, [0.0202], AGGREGATE_METRIC_METHOD_TAG)
@@ -161,14 +183,17 @@ def test_seldon_metrics_aggregate(cls, client_gets_metrics):
         '/aggregate?json={"seldonMessages": [{"data": {"names": ["input"], "ndarray": ["data"]}}]}'
     )
     assert rv.status_code == 200
-    assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
+    j = json.loads(rv.data)
+    assert j["data"]["ndarray"] == ["data"]
+    assert j["meta"]["tags"] == EXPECTED_TAGS
+    assert ("metrics" in j["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 2, [0.0202, 0.0202], AGGREGATE_METRIC_METHOD_TAG)
 
 
 @pytest.mark.parametrize("cls", [UserObject])
-def test_seldon_metrics_transform_input(cls, client_gets_metrics):
+def test_seldon_runtime_data_transform_input(cls, client_gets_metrics):
     user_object = cls()
     seldon_metrics = SeldonMetrics()
 
@@ -179,7 +204,10 @@ def test_seldon_metrics_transform_input(cls, client_gets_metrics):
         '/transform-input?json={"data": {"names": ["input"], "ndarray": ["data"]}}'
     )
     assert rv.status_code == 200
-    assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
+    j = json.loads(rv.data)
+    assert j["data"]["ndarray"] == ["data"]
+    assert j["meta"]["tags"] == EXPECTED_TAGS
+    assert ("metrics" in j["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 1, [0.0202], INPUT_TRANSFORM_METRIC_METHOD_TAG)
@@ -188,14 +216,17 @@ def test_seldon_metrics_transform_input(cls, client_gets_metrics):
         '/transform-input?json={"data": {"names": ["input"], "ndarray": ["data"]}}'
     )
     assert rv.status_code == 200
-    assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
+    j = json.loads(rv.data)
+    assert j["data"]["ndarray"] == ["data"]
+    assert j["meta"]["tags"] == EXPECTED_TAGS
+    assert ("metrics" in j["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 2, [0.0202, 0.0202], INPUT_TRANSFORM_METRIC_METHOD_TAG)
 
 
 @pytest.mark.parametrize("cls", [UserObject])
-def test_seldon_metrics_transform_output(cls, client_gets_metrics):
+def test_seldon_runtime_data_transform_output(cls, client_gets_metrics):
     user_object = cls()
     seldon_metrics = SeldonMetrics()
 
@@ -206,7 +237,10 @@ def test_seldon_metrics_transform_output(cls, client_gets_metrics):
         '/transform-output?json={"data": {"names": ["input"], "ndarray": ["data"]}}'
     )
     assert rv.status_code == 200
-    assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
+    j = json.loads(rv.data)
+    assert j["data"]["ndarray"] == ["data"]
+    assert j["meta"]["tags"] == EXPECTED_TAGS
+    assert ("metrics" in j["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 1, [0.0202], OUTPUT_TRANSFORM_METRIC_METHOD_TAG)
@@ -215,14 +249,17 @@ def test_seldon_metrics_transform_output(cls, client_gets_metrics):
         '/transform-output?json={"data": {"names": ["input"], "ndarray": ["data"]}}'
     )
     assert rv.status_code == 200
-    assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
+    j = json.loads(rv.data)
+    assert j["data"]["ndarray"] == ["data"]
+    assert j["meta"]["tags"] == EXPECTED_TAGS
+    assert ("metrics" in j["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 2, [0.0202, 0.0202], OUTPUT_TRANSFORM_METRIC_METHOD_TAG)
 
 
 @pytest.mark.parametrize("cls", [UserObject])
-def test_seldon_metrics_route(cls, client_gets_metrics):
+def test_seldon_runtime_data_route(cls, client_gets_metrics):
     user_object = cls()
     seldon_metrics = SeldonMetrics()
 
@@ -231,21 +268,27 @@ def test_seldon_metrics_route(cls, client_gets_metrics):
 
     rv = client.get('/route?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
     assert rv.status_code == 200
-    assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
+    j = json.loads(rv.data)
+    assert j["data"]["ndarray"] == [[22]]
+    assert j["meta"]["tags"] == EXPECTED_TAGS
+    assert ("metrics" in j["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 1, [0.0202], ROUTER_METRIC_METHOD_TAG)
 
     rv = client.get('/route?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
     assert rv.status_code == 200
-    assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
+    j = json.loads(rv.data)
+    assert j["data"]["ndarray"] == [[22]]
+    assert j["meta"]["tags"] == EXPECTED_TAGS
+    assert ("metrics" in j["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 2, [0.0202, 0.0202], ROUTER_METRIC_METHOD_TAG)
 
 
 @pytest.mark.parametrize("cls", [UserObject])
-def test_proto_seldon_metrics_predict(cls, client_gets_metrics):
+def test_proto_seldon_runtime_data_predict(cls, client_gets_metrics):
     user_object = cls()
     seldon_metrics = SeldonMetrics()
 
@@ -257,22 +300,31 @@ def test_proto_seldon_metrics_predict(cls, client_gets_metrics):
     request = prediction_pb2.SeldonMessage(data=datadef)
 
     resp = app.Predict(request, None)
-    assert (
-        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
-    ) == client_gets_metrics
+
+    j = json.loads(json_format.MessageToJson(resp))
+    assert j["data"] == {
+        "names": ["t:0"],
+        "tensor": {"shape": [2, 1], "values": [1.0, 2.0]},
+    }
+    assert j["meta"]["tags"] == EXPECTED_TAGS
+    assert ("metrics" in j["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 1, [0.0202], PREDICT_METRIC_METHOD_TAG)
     resp = app.Predict(request, None)
-    assert (
-        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
-    ) == client_gets_metrics
+    j = json.loads(json_format.MessageToJson(resp))
+    assert j["data"] == {
+        "names": ["t:0"],
+        "tensor": {"shape": [2, 1], "values": [1.0, 2.0]},
+    }
+    assert j["meta"]["tags"] == EXPECTED_TAGS
+    assert ("metrics" in j["meta"]) == client_gets_metrics
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 2, [0.0202, 0.0202], PREDICT_METRIC_METHOD_TAG)
 
 
 @pytest.mark.parametrize("cls", [UserObject])
-def test_proto_seldon_metrics_aggregate(cls, client_gets_metrics):
+def test_proto_seldon_runtime_data_aggregate(cls, client_gets_metrics):
     user_object = cls()
     seldon_metrics = SeldonMetrics()
 
@@ -292,22 +344,30 @@ def test_proto_seldon_metrics_aggregate(cls, client_gets_metrics):
     request = prediction_pb2.SeldonMessageList(seldonMessages=[msg1, msg2])
 
     resp = app.Aggregate(request, None)
-    assert (
-        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
-    ) == client_gets_metrics
+    j = json.loads(json_format.MessageToJson(resp))
+    assert j["data"] == {
+        "names": ["t:0"],
+        "tensor": {"shape": [2, 1], "values": [1.0, 2.0]},
+    }
+    assert j["meta"]["tags"] == EXPECTED_TAGS
+    assert ("metrics" in j["meta"]) == client_gets_metrics
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 1, [0.0202], AGGREGATE_METRIC_METHOD_TAG)
 
     resp = app.Aggregate(request, None)
-    assert (
-        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
-    ) == client_gets_metrics
+    j = json.loads(json_format.MessageToJson(resp))
+    assert j["data"] == {
+        "names": ["t:0"],
+        "tensor": {"shape": [2, 1], "values": [1.0, 2.0]},
+    }
+    assert j["meta"]["tags"] == EXPECTED_TAGS
+    assert ("metrics" in j["meta"]) == client_gets_metrics
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 2, [0.0202, 0.0202], AGGREGATE_METRIC_METHOD_TAG)
 
 
 @pytest.mark.parametrize("cls", [UserObject])
-def test_proto_seldon_metrics_transform_input(cls, client_gets_metrics):
+def test_proto_seldon_runtime_data_transform_input(cls, client_gets_metrics):
     user_object = cls()
     seldon_metrics = SeldonMetrics()
 
@@ -319,22 +379,30 @@ def test_proto_seldon_metrics_transform_input(cls, client_gets_metrics):
     request = prediction_pb2.SeldonMessage(data=datadef)
 
     resp = app.TransformInput(request, None)
-    assert (
-        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
-    ) == client_gets_metrics
+    j = json.loads(json_format.MessageToJson(resp))
+    assert j["data"] == {
+        "names": ["t:0"],
+        "tensor": {"shape": [2, 1], "values": [1.0, 2.0]},
+    }
+    assert j["meta"]["tags"] == EXPECTED_TAGS
+    assert ("metrics" in j["meta"]) == client_gets_metrics
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 1, [0.0202], INPUT_TRANSFORM_METRIC_METHOD_TAG)
 
     resp = app.TransformInput(request, None)
-    assert (
-        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
-    ) == client_gets_metrics
+    j = json.loads(json_format.MessageToJson(resp))
+    assert j["data"] == {
+        "names": ["t:0"],
+        "tensor": {"shape": [2, 1], "values": [1.0, 2.0]},
+    }
+    assert j["meta"]["tags"] == EXPECTED_TAGS
+    assert ("metrics" in j["meta"]) == client_gets_metrics
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 2, [0.0202, 0.0202], INPUT_TRANSFORM_METRIC_METHOD_TAG)
 
 
 @pytest.mark.parametrize("cls", [UserObject])
-def test_proto_seldon_metrics_transform_output(cls, client_gets_metrics):
+def test_proto_seldon_runtime_data_transform_output(cls, client_gets_metrics):
     user_object = cls()
     seldon_metrics = SeldonMetrics()
 
@@ -346,22 +414,30 @@ def test_proto_seldon_metrics_transform_output(cls, client_gets_metrics):
     request = prediction_pb2.SeldonMessage(data=datadef)
 
     resp = app.TransformOutput(request, None)
-    assert (
-        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
-    ) == client_gets_metrics
+    j = json.loads(json_format.MessageToJson(resp))
+    assert j["data"] == {
+        "names": ["t:0"],
+        "tensor": {"shape": [2, 1], "values": [1.0, 2.0]},
+    }
+    assert j["meta"]["tags"] == EXPECTED_TAGS
+    assert ("metrics" in j["meta"]) == client_gets_metrics
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 1, [0.0202], OUTPUT_TRANSFORM_METRIC_METHOD_TAG)
 
     resp = app.TransformOutput(request, None)
-    assert (
-        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
-    ) == client_gets_metrics
+    j = json.loads(json_format.MessageToJson(resp))
+    assert j["data"] == {
+        "names": ["t:0"],
+        "tensor": {"shape": [2, 1], "values": [1.0, 2.0]},
+    }
+    assert j["meta"]["tags"] == EXPECTED_TAGS
+    assert ("metrics" in j["meta"]) == client_gets_metrics
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 2, [0.0202, 0.0202], OUTPUT_TRANSFORM_METRIC_METHOD_TAG)
 
 
 @pytest.mark.parametrize("cls", [UserObject])
-def test_proto_seldon_metrics_route(cls, client_gets_metrics):
+def test_proto_seldon_runtime_data_route(cls, client_gets_metrics):
     user_object = cls()
     seldon_metrics = SeldonMetrics()
 
@@ -372,16 +448,24 @@ def test_proto_seldon_metrics_route(cls, client_gets_metrics):
 
     request = prediction_pb2.SeldonMessage(data=datadef)
     resp = app.Route(request, None)
-    assert (
-        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
-    ) == client_gets_metrics
+    j = json.loads(json_format.MessageToJson(resp))
+    assert j["data"] == {
+        "names": ["t:0"],
+        "tensor": {"shape": [1, 1], "values": [22.0]},
+    }
+    assert j["meta"]["tags"] == EXPECTED_TAGS
+    assert ("metrics" in j["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 1, [0.0202], ROUTER_METRIC_METHOD_TAG)
     resp = app.Route(request, None)
-    assert (
-        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
-    ) == client_gets_metrics
+    j = json.loads(json_format.MessageToJson(resp))
+    assert j["data"] == {
+        "names": ["t:0"],
+        "tensor": {"shape": [1, 1], "values": [22.0]},
+    }
+    assert j["meta"]["tags"] == EXPECTED_TAGS
+    assert ("metrics" in j["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
     verify_seldon_metrics(data, 2, [0.0202, 0.0202], ROUTER_METRIC_METHOD_TAG)
@@ -473,9 +557,13 @@ def test_proto_seldon_metrics_endpoint(cls, client_gets_metrics):
     assert rv.data.decode() == ""
 
     resp = app.Predict(request, None)
-    assert (
-        "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
-    ) == client_gets_metrics
+    j = json.loads(json_format.MessageToJson(resp))
+    assert j["data"] == {
+        "names": ["t:0"],
+        "tensor": {"shape": [2, 1], "values": [1.0, 2.0]},
+    }
+    assert j["meta"]["tags"] == EXPECTED_TAGS
+    assert ("metrics" in j["meta"]) == client_gets_metrics
     rv = metrics_client.get("/metrics")
     text = rv.data.decode()
 
