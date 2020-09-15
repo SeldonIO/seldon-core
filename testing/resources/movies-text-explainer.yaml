@@ -12,5 +12,11 @@ spec:
       name: classifier
     explainer:
       type: AnchorText
+      containerSpec:
+        name: explainer
+        resources:
+          requests:
+            cpu: 2
+            memory: 1Gi
     name: movies-predictor
     replicas: 1
