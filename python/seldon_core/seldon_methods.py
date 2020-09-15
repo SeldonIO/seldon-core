@@ -213,7 +213,13 @@ def send_feedback(
             client_response = np.array(client_response)
 
         return construct_response(
-            user_model, False, request.request, client_response, runtime_tags
+            user_model,
+            False,
+            request.request,
+            client_response,
+            None,
+            metrics,
+            runtime_tags,
         )
 
 

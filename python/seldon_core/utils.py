@@ -448,6 +448,8 @@ def construct_response_json(
     custom_tags = client_custom_tags(user_model)
     if custom_tags:
         tags.update(custom_tags)
+    if runtime_tags:
+        tags.update(runtime_tags)
     if custom_metrics:
         metrics.extend(custom_metrics)
     if tags:
@@ -503,6 +505,8 @@ def construct_response(
     custom_tags = client_custom_tags(user_model)
     if custom_tags:
         tags.update(custom_tags)
+    if runtime_tags:
+        tags.update(runtime_tags)
     if custom_metrics:
         metrics.extend(custom_metrics)
     if tags:
