@@ -15,6 +15,7 @@ from seldon_core.user_model import (
     client_custom_tags,
     client_feature_names,
     SeldonComponent,
+    SeldonPrediction,
 )
 from seldon_core.imports_helper import _TF_PRESENT
 from typing import Tuple, Dict, Union, List, Optional, Iterable
@@ -346,9 +347,10 @@ def construct_response_json(
     user_model: SeldonComponent,
     is_request: bool,
     client_request_raw: Union[List, Dict],
-    client_raw_response: Union[np.ndarray, str, bytes, dict],
+    client_raw_response: Union[np.ndarray, str, bytes, dict, SeldonPrediction],
     meta: dict = None,
     custom_metrics: List[Dict] = None,
+    runtime_tags: Dict = None,
 ) -> Union[List, Dict]:
     """
     This class converts a raw REST response into a JSON object that has the same structure as
@@ -463,9 +465,12 @@ def construct_response(
     user_model: SeldonComponent,
     is_request: bool,
     client_request: prediction_pb2.SeldonMessage,
-    client_raw_response: Union[np.ndarray, str, bytes, dict, any_pb2.Any],
+    client_raw_response: Union[
+        np.ndarray, str, bytes, dict, any_pb2.Any, SeldonPrediction
+    ],
     meta: dict = None,
     custom_metrics: List[Dict] = None,
+    runtime_tags: Dict = None,
 ) -> prediction_pb2.SeldonMessage:
     """
 
