@@ -123,6 +123,18 @@ class SeldonComponent(object):
         raise SeldonNotImplementedError("init_metadata is not implemented")
 
 
+class SeldonPrediction:
+    """Seldon Prediction
+
+    Simple class to store prediction output with corresponding metrics nad tags.
+    """
+
+    def __init__(self, data, tags: Dict = None, metrics: List[Dict] = None):
+        self.data = data
+        self.tags = tags
+        self.metrics = metrics
+
+
 def client_custom_tags(user_model: SeldonComponent) -> Dict:
     """
     Get tags from user model
@@ -185,7 +197,7 @@ def client_predict(
     features: Union[np.ndarray, str, bytes],
     feature_names: Iterable[str],
     **kwargs: Dict
-) -> Union[np.ndarray, List, str, bytes]:
+) -> Union[np.ndarray, List, str, bytes, SeldonPrediction]:
     """
     Get prediction from user model
 
@@ -289,7 +301,10 @@ def client_transform_output(
 
 
 def client_custom_metrics(
-    user_model: SeldonComponent, seldon_metrics: SeldonMetrics, method: str
+    user_model: SeldonComponent,
+    seldon_metrics: SeldonMetrics,
+    method: str,
+    runtime_metrics: List[Dict] = [],
 ) -> List[Dict]:
     """
     Get custom metrics for client and update SeldonMetrics.
@@ -303,12 +318,16 @@ def client_custom_metrics(
        A Seldon user model
     seldon_metrics
         A SeldonMetrics instance
-
+    method:
+        tag of a method that collected the metrics
+    runtime_metrics:
+        metrics that were defined on runtime
     Returns
     -------
        A list of custom metrics
 
     """
+    seldon_metrics.update(runtime_metrics, method)
     if hasattr(user_model, "metrics"):
         try:
             metrics = user_model.metrics()
