@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
 	v1 "k8s.io/api/core/v1"
@@ -82,8 +83,8 @@ var _ = Describe("MLServer helpers", func() {
 				}
 			}
 
-			Expect(httpPort).To(Equal(string(pu.Endpoint.ServicePort)))
-			Expect(grpcPort).To(Equal(string(constants.MLServerDefaultGrpcPort)))
+			Expect(httpPort).To(Equal(fmt.Sprint(pu.Endpoint.ServicePort)))
+			Expect(grpcPort).To(Equal(fmt.Sprint(constants.MLServerDefaultGrpcPort)))
 		})
 
 		It("adds the right model implementation and uri", func() {

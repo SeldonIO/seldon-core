@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"strconv"
 
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
@@ -131,11 +132,11 @@ func getMLServerEnvVars(pu *machinelearningv1.PredictiveUnit) ([]v1.EnvVar, erro
 	return []v1.EnvVar{
 		{
 			Name:  MLServerHTTPPortEnv,
-			Value: string(httpPort),
+			Value: strconv.Itoa(int(httpPort)),
 		},
 		{
 			Name:  MLServerGRPCPortEnv,
-			Value: string(grpcPort),
+			Value: strconv.Itoa(int(grpcPort)),
 		},
 		{
 			Name:  MLServerModelImplementationEnv,
