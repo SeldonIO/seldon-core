@@ -1,0 +1,18 @@
+
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: seldon-model-runtime-data
+spec:
+  name: test-deployment
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: runtime-metrics-tags:0.1
+          name: my-model
+    graph:
+      name: my-model
+      type: MODEL
+    name: example
+    replicas: 1
