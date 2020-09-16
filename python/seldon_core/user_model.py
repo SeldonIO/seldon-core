@@ -1,7 +1,7 @@
 from seldon_core.metrics import validate_metrics
 from seldon_core.flask_utils import SeldonMicroserviceException
 import json
-from typing import Dict, List, Union, Iterable
+from typing import Dict, List, Union, Iterable, Tuple
 import numpy as np
 from seldon_core.proto import prediction_pb2
 from seldon_core.metrics import SeldonMetrics
@@ -24,6 +24,23 @@ class SeldonNotImplementedError(SeldonMicroserviceException):
         SeldonMicroserviceException.__init__(self, message)
 
 
+class ClientResponse:
+    """Seldon Prediction
+
+    Simple class to store prediction output with corresponding metrics nad tags.
+    """
+
+    def __init__(
+        self,
+        data: Union[np.ndarray, List, str, bytes],
+        tags: Dict = None,
+        metrics: List[Dict] = None,
+    ):
+        self.data = data
+        self.tags = tags
+        self.metrics = metrics
+
+
 class SeldonComponent(object):
     def __init__(self, **kwargs):
         pass
@@ -39,7 +56,7 @@ class SeldonComponent(object):
 
     def predict(
         self, X: np.ndarray, names: Iterable[str], meta: Dict = None
-    ) -> Union[np.ndarray, List, Dict, str, bytes]:
+    ) -> Union[np.ndarray, List, Dict, str, bytes, ClientResponse]:
         raise SeldonNotImplementedError("predict is not implemented")
 
     def predict_raw(
@@ -54,7 +71,7 @@ class SeldonComponent(object):
 
     def transform_input(
         self, X: np.ndarray, names: Iterable[str], meta: Dict = None
-    ) -> Union[np.ndarray, List, Dict, str, bytes]:
+    ) -> Union[np.ndarray, List, Dict, str, bytes, ClientResponse]:
         raise SeldonNotImplementedError("transform_input is not implemented")
 
     def transform_input_raw(
@@ -64,7 +81,7 @@ class SeldonComponent(object):
 
     def transform_output(
         self, X: np.ndarray, names: Iterable[str], meta: Dict = None
-    ) -> Union[np.ndarray, List, Dict, str, bytes]:
+    ) -> Union[np.ndarray, List, Dict, str, bytes, ClientResponse]:
         raise SeldonNotImplementedError("transform_output is not implemented")
 
     def transform_output_raw(
@@ -85,7 +102,7 @@ class SeldonComponent(object):
         reward: float,
         truth: Union[np.ndarray, str, bytes],
         routing: Union[int, None],
-    ) -> Union[np.ndarray, List, Dict, str, bytes, None]:
+    ) -> Union[np.ndarray, List, Dict, str, bytes, None, ClientResponse]:
         raise SeldonNotImplementedError("send_feedback is not implemented")
 
     def route(
@@ -102,7 +119,7 @@ class SeldonComponent(object):
         self,
         features_list: List[Union[np.ndarray, str, bytes]],
         feature_names_list: List,
-    ) -> Union[np.ndarray, List, Dict, str, bytes]:
+    ) -> Union[np.ndarray, List, Dict, str, bytes, ClientResponse]:
         raise SeldonNotImplementedError("aggregate is not implemented")
 
     def aggregate_raw(
@@ -123,16 +140,17 @@ class SeldonComponent(object):
         raise SeldonNotImplementedError("init_metadata is not implemented")
 
 
-class SeldonPrediction:
-    """Seldon Prediction
+def extract_runtime_data(
+    client_response: Union[np.ndarray, List, str, bytes, ClientResponse]
+) -> Tuple[Union[np.ndarray, List, str, bytes], List[Dict], Dict]:
+    """Extracts runtime data from client response."""
+    if not isinstance(client_response, ClientResponse):
+        return client_response, [], {}
 
-    Simple class to store prediction output with corresponding metrics nad tags.
-    """
+    metrics = client_response.metrics if client_response.metrics is not None else []
+    tags = client_response.tags if client_response.tags is not None else {}
 
-    def __init__(self, data, tags: Dict = None, metrics: List[Dict] = None):
-        self.data = data
-        self.tags = tags
-        self.metrics = metrics
+    return client_response.data, metrics, tags
 
 
 def client_custom_tags(user_model: SeldonComponent) -> Dict:
@@ -197,7 +215,7 @@ def client_predict(
     features: Union[np.ndarray, str, bytes],
     feature_names: Iterable[str],
     **kwargs: Dict
-) -> Union[np.ndarray, List, str, bytes, SeldonPrediction]:
+) -> Tuple[Union[np.ndarray, List, str, bytes], List[Dict], Dict]:
     """
     Get prediction from user model
 
@@ -218,13 +236,14 @@ def client_predict(
     if hasattr(user_model, "predict"):
         try:
             try:
-                return user_model.predict(features, feature_names, **kwargs)
+                client_response = user_model.predict(features, feature_names, **kwargs)
             except TypeError:
-                return user_model.predict(features, feature_names)
+                client_response = user_model.predict(features, feature_names)
+            return extract_runtime_data(client_response)
         except SeldonNotImplementedError:
             pass
     logger.debug("predict is not implemented")
-    return []
+    return extract_runtime_data([])
 
 
 def client_transform_input(
@@ -255,13 +274,16 @@ def client_transform_input(
     if hasattr(user_model, "transform_input"):
         try:
             try:
-                return user_model.transform_input(features, feature_names, **kwargs)
+                client_response = user_model.transform_input(
+                    features, feature_names, **kwargs
+                )
             except TypeError:
-                return user_model.transform_input(features, feature_names)
+                client_response = user_model.transform_input(features, feature_names)
+            return extract_runtime_data(client_response)
         except SeldonNotImplementedError:
             pass
     logger.debug("transform_input is not implemented")
-    return features
+    return extract_runtime_data(features)
 
 
 def client_transform_output(
@@ -291,13 +313,16 @@ def client_transform_output(
     if hasattr(user_model, "transform_output"):
         try:
             try:
-                return user_model.transform_output(features, feature_names, **kwargs)
+                client_response = user_model.transform_output(
+                    features, feature_names, **kwargs
+                )
             except TypeError:
-                return user_model.transform_output(features, feature_names)
+                client_response = user_model.transform_output(features, feature_names)
+            return extract_runtime_data(client_response)
         except SeldonNotImplementedError:
             pass
     logger.debug("transform_output is not implemented")
-    return features
+    return extract_runtime_data(features)
 
 
 def client_custom_metrics(
@@ -408,13 +433,14 @@ def client_send_feedback(
     """
     if hasattr(user_model, "send_feedback"):
         try:
-            return user_model.send_feedback(
+            client_response = user_model.send_feedback(
                 features, feature_names, reward, truth, routing=routing
             )
+            return extract_runtime_data(client_response)
         except SeldonNotImplementedError:
             pass
     logger.debug("send_feedback is not implemented")
-    return None
+    return extract_runtime_data(None)
 
 
 def client_route(
@@ -469,7 +495,8 @@ def client_aggregate(
        An aggregated payload
     """
     if hasattr(user_model, "aggregate"):
-        return user_model.aggregate(features_list, feature_names_list)
+        client_response = user_model.aggregate(features_list, feature_names_list)
+        return extract_runtime_data(client_response)
     else:
         raise SeldonNotImplementedError("Aggregate not defined")
 

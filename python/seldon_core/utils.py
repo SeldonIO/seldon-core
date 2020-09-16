@@ -15,7 +15,6 @@ from seldon_core.user_model import (
     client_custom_tags,
     client_feature_names,
     SeldonComponent,
-    SeldonPrediction,
 )
 from seldon_core.imports_helper import _TF_PRESENT
 from typing import Tuple, Dict, Union, List, Optional, Iterable
@@ -347,7 +346,7 @@ def construct_response_json(
     user_model: SeldonComponent,
     is_request: bool,
     client_request_raw: Union[List, Dict],
-    client_raw_response: Union[np.ndarray, str, bytes, dict, SeldonPrediction],
+    client_raw_response: Union[np.ndarray, str, bytes, dict],
     meta: dict = None,
     custom_metrics: List[Dict] = None,
     runtime_tags: Dict = None,
@@ -467,9 +466,7 @@ def construct_response(
     user_model: SeldonComponent,
     is_request: bool,
     client_request: prediction_pb2.SeldonMessage,
-    client_raw_response: Union[
-        np.ndarray, str, bytes, dict, any_pb2.Any, SeldonPrediction
-    ],
+    client_raw_response: Union[np.ndarray, str, bytes, dict, any_pb2.Any],
     meta: dict = None,
     custom_metrics: List[Dict] = None,
     runtime_tags: Dict = None,
