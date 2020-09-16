@@ -108,6 +108,10 @@ predictor_servers:
     rest:
       defaultImageVersion: "1.3.0-dev"
       image: seldonio/sklearnserver_rest
+    protocols:
+      kfserving:
+        defaultImageVersion: "0.1.0"
+        image: seldonio/mlserver
   TENSORFLOW_SERVER:
     grpc:
       defaultImageVersion: "1.3.0-dev"
