@@ -102,6 +102,18 @@ var _ = Describe("MLServer helpers", func() {
 			Expect(modelImplementation).To(Equal(MLServerSKLearnImplementation))
 			Expect(modelURI).To(Equal(DefaultModelLocalMountPath))
 		})
+
+		It("adds the right model name", func() {
+			var modelName string
+			for _, env := range envs {
+				switch env.Name {
+				case MLServerModelNameEnv:
+					modelName = env.Value
+				}
+			}
+
+			Expect(modelName).To(Equal(pu.Name))
+		})
 	})
 
 	Describe("getMLServerPort", func() {
