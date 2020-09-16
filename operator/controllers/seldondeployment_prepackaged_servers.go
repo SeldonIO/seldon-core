@@ -212,12 +212,22 @@ func (pi *PrePackedInitialiser) addTritonServer(pu *machinelearningv1.Predictive
 	machinelearningv1.SetImageNameForPrepackContainer(pu, cServer, serverConfig)
 
 	if existing {
-		cServer.DeepCopyInto(c)
+		// Overwrite core items if not existing or required
+		if c.Image == "" {
+			c.Image = cServer.Image
+		}
+		if c.Args == nil {
+			c.Args = cServer.Args
+		}
+		c.Ports = cServer.Ports
+		c.ReadinessProbe = cServer.ReadinessProbe
+		c.LivenessProbe = cServer.LivenessProbe
+		c.SecurityContext = cServer.SecurityContext
 	} else {
 		if len(deploy.Spec.Template.Spec.Containers) > 0 {
-			deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, *c)
+			deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, *cServer)
 		} else {
-			deploy.Spec.Template.Spec.Containers = []v1.Container{*c}
+			deploy.Spec.Template.Spec.Containers = []v1.Container{*cServer}
 		}
 	}
 

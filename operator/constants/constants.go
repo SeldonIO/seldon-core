@@ -9,6 +9,7 @@ const (
 
 	PrePackedServerTensorflow = "TENSORFLOW_SERVER"
 	PrePackedServerSklearn    = "SKLEARN_SERVER"
+	PrePackedServerTriton     = "TRITON_SERVER"
 
 	TfServingGrpcPort    = 2000
 	TfServingRestPort    = 2001

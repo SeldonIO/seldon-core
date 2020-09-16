@@ -104,6 +104,16 @@ var configs = map[string]string{
                    "image": "seldonio/mlflowserver_grpc",
                    "defaultImageVersion": "0.2"
                  }
+             },
+             "TRITON_SERVER": {
+                 "rest": {
+                   "image": "nvcr.io/nvidia/tritonserver",
+                   "defaultImageVersion": "20.08-py3"
+                 },
+                 "grpc": {
+                   "image": "nvcr.io/nvidia/tritonserver",
+                   "defaultImageVersion": "20.08-py3"
+                 }
              }
          }`,
 	"storageInitializer": `
