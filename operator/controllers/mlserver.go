@@ -16,6 +16,7 @@ const (
 
 	MLServerHTTPPortEnv            = "MLSERVER_HTTP_PORT"
 	MLServerGRPCPortEnv            = "MLSERVER_GRPC_PORT"
+	MLServerModelNameEnv           = "MLSERVER_MODEL_NAME"
 	MLServerModelImplementationEnv = "MLSERVER_MODEL_IMPLEMENTATION"
 	MLServerModelURIEnv            = "MLSERVER_MODEL_URI"
 )
@@ -141,6 +142,15 @@ func getMLServerEnvVars(pu *machinelearningv1.PredictiveUnit) ([]v1.EnvVar, erro
 		{
 			Name:  MLServerModelImplementationEnv,
 			Value: mlServerModelImplementation,
+		},
+		{
+			Name:  MLServerModelNameEnv,
+			Value: pu.Name,
+		},
+		{
+			// TODO: Make version optional in MLServer
+			Name:  "MLSERVER_MODEL_VERSION",
+			Value: "v1.2.3",
 		},
 		{
 			Name:  MLServerModelURIEnv,
