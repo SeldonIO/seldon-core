@@ -106,31 +106,49 @@ def predict(
         if is_proto:
             (features, meta, datadef, data_type) = extract_request_parts(request)
 
-            client_response, runtime_metrics, runtime_tags = client_predict(
+            client_response = client_predict(
                 user_model, features, datadef.names, meta=meta
             )
 
             metrics = client_custom_metrics(
-                user_model, seldon_metrics, PREDICT_METRIC_METHOD_TAG, runtime_metrics,
+                user_model,
+                seldon_metrics,
+                PREDICT_METRIC_METHOD_TAG,
+                client_response.metrics,
             )
 
             return construct_response(
-                user_model, False, request, client_response, meta, metrics, runtime_tags
+                user_model,
+                False,
+                request,
+                client_response.data,
+                meta,
+                metrics,
+                client_response.tags,
             )
         else:
             (features, meta, datadef, data_type) = extract_request_parts_json(request)
             class_names = datadef["names"] if datadef and "names" in datadef else []
 
-            client_response, runtime_metrics, runtime_tags = client_predict(
+            client_response = client_predict(
                 user_model, features, class_names, meta=meta
             )
 
             metrics = client_custom_metrics(
-                user_model, seldon_metrics, PREDICT_METRIC_METHOD_TAG, runtime_metrics,
+                user_model,
+                seldon_metrics,
+                PREDICT_METRIC_METHOD_TAG,
+                client_response.metrics,
             )
 
             return construct_response_json(
-                user_model, False, request, client_response, meta, metrics, runtime_tags
+                user_model,
+                False,
+                request,
+                client_response.data,
+                meta,
+                metrics,
+                client_response.tags,
             )
 
 
@@ -183,27 +201,30 @@ def send_feedback(
         )
         routing = request.response.meta.routing.get(predictive_unit_id)
 
-        client_response, runtime_metrics, runtime_tags = client_send_feedback(
+        client_response = client_send_feedback(
             user_model, features, datadef_request.names, reward, truth, routing
         )
 
         metrics = client_custom_metrics(
-            user_model, seldon_metrics, FEEDBACK_METRIC_METHOD_TAG, runtime_metrics,
+            user_model,
+            seldon_metrics,
+            FEEDBACK_METRIC_METHOD_TAG,
+            client_response.metrics,
         )
 
-        if client_response is None:
-            client_response = np.array([])
+        if client_response.data is None:
+            client_response.data = np.array([])
         else:
-            client_response = np.array(client_response)
+            client_response.data = np.array(client_response.data)
 
         return construct_response(
             user_model,
             False,
             request.request,
-            client_response,
+            client_response.data,
             None,
             metrics,
-            runtime_tags,
+            client_response.tags,
         )
 
 
@@ -255,7 +276,7 @@ def transform_input(
         if is_proto:
             (features, meta, datadef, data_type) = extract_request_parts(request)
 
-            client_response, runtime_metrics, runtime_tags = client_transform_input(
+            client_response = client_transform_input(
                 user_model, features, datadef.names, meta=meta
             )
 
@@ -263,17 +284,23 @@ def transform_input(
                 user_model,
                 seldon_metrics,
                 INPUT_TRANSFORM_METRIC_METHOD_TAG,
-                runtime_metrics,
+                client_response.metrics,
             )
 
             return construct_response(
-                user_model, False, request, client_response, meta, metrics, runtime_tags
+                user_model,
+                False,
+                request,
+                client_response.data,
+                meta,
+                metrics,
+                client_response.tags,
             )
         else:
             (features, meta, datadef, data_type) = extract_request_parts_json(request)
             class_names = datadef["names"] if datadef and "names" in datadef else []
 
-            client_response, runtime_metrics, runtime_tags = client_transform_input(
+            client_response = client_transform_input(
                 user_model, features, class_names, meta=meta
             )
 
@@ -281,11 +308,17 @@ def transform_input(
                 user_model,
                 seldon_metrics,
                 INPUT_TRANSFORM_METRIC_METHOD_TAG,
-                runtime_metrics,
+                client_response.metrics,
             )
 
             return construct_response_json(
-                user_model, False, request, client_response, meta, metrics, runtime_tags
+                user_model,
+                False,
+                request,
+                client_response.data,
+                meta,
+                metrics,
+                client_response.tags,
             )
 
 
@@ -337,7 +370,7 @@ def transform_output(
         if is_proto:
             (features, meta, datadef, data_type) = extract_request_parts(request)
 
-            client_response, runtime_metrics, runtime_tags = client_transform_output(
+            client_response = client_transform_output(
                 user_model, features, datadef.names, meta=meta
             )
 
@@ -345,23 +378,23 @@ def transform_output(
                 user_model,
                 seldon_metrics,
                 OUTPUT_TRANSFORM_METRIC_METHOD_TAG,
-                runtime_metrics,
+                client_response.metrics,
             )
 
             return construct_response(
                 user_model,
                 False,
                 request,
-                client_response,
+                client_response.data,
                 meta,
                 metrics,
-                runtime_tags,
+                client_response.tags,
             )
         else:
             (features, meta, datadef, data_type) = extract_request_parts_json(request)
             class_names = datadef["names"] if datadef and "names" in datadef else []
 
-            client_response, runtime_metrics, runtime_tags = client_transform_output(
+            client_response = client_transform_output(
                 user_model, features, class_names, meta=meta
             )
 
@@ -369,11 +402,17 @@ def transform_output(
                 user_model,
                 seldon_metrics,
                 OUTPUT_TRANSFORM_METRIC_METHOD_TAG,
-                runtime_metrics,
+                client_response.metrics,
             )
 
             return construct_response_json(
-                user_model, False, request, client_response, meta, metrics, runtime_tags
+                user_model,
+                False,
+                request,
+                client_response.data,
+                meta,
+                metrics,
+                client_response.tags,
             )
 
 
@@ -418,35 +457,53 @@ def route(
             client_response = client_route(
                 user_model, features, datadef.names, meta=meta
             )
-            if not isinstance(client_response, int):
+            if not isinstance(client_response.data, int):
                 raise SeldonMicroserviceException(
-                    "Routing response must be int but got " + str(client_response)
+                    "Routing response must be int but got " + str(client_response.data)
                 )
-            client_response_arr = np.array([[client_response]])
+            client_response_arr = np.array([[client_response.data]])
 
             metrics = client_custom_metrics(
-                user_model, seldon_metrics, ROUTER_METRIC_METHOD_TAG
+                user_model,
+                seldon_metrics,
+                ROUTER_METRIC_METHOD_TAG,
+                client_response.metrics,
             )
 
             return construct_response(
-                user_model, False, request, client_response_arr, None, metrics
+                user_model,
+                False,
+                request,
+                client_response_arr,
+                None,
+                metrics,
+                client_response.tags,
             )
         else:
             (features, meta, datadef, data_type) = extract_request_parts_json(request)
             class_names = datadef["names"] if datadef and "names" in datadef else []
             client_response = client_route(user_model, features, class_names, meta=meta)
-            if not isinstance(client_response, int):
+            if not isinstance(client_response.data, int):
                 raise SeldonMicroserviceException(
-                    "Routing response must be int but got " + str(client_response)
+                    "Routing response must be int but got " + str(client_response.data)
                 )
-            client_response_arr = np.array([[client_response]])
+            client_response_arr = np.array([[client_response.data]])
 
             metrics = client_custom_metrics(
-                user_model, seldon_metrics, ROUTER_METRIC_METHOD_TAG
+                user_model,
+                seldon_metrics,
+                ROUTER_METRIC_METHOD_TAG,
+                client_response.metrics,
             )
 
             return construct_response_json(
-                user_model, False, request, client_response_arr, None, metrics
+                user_model,
+                False,
+                request,
+                client_response_arr,
+                None,
+                metrics,
+                client_response.tags,
             )
 
 
@@ -518,25 +575,23 @@ def aggregate(
                 names_list.append(datadef.names)
                 meta_list.append(meta)
 
-            client_response, runtime_metrics, runtime_tags = client_aggregate(
-                user_model, features_list, names_list
-            )
+            client_response = client_aggregate(user_model, features_list, names_list)
 
             metrics = client_custom_metrics(
                 user_model,
                 seldon_metrics,
                 AGGREGATE_METRIC_METHOD_TAG,
-                runtime_metrics,
+                client_response.metrics,
             )
 
             return construct_response(
                 user_model,
                 False,
                 request.seldonMessages[0],
-                client_response,
+                client_response.data,
                 merge_meta(meta_list),
                 merge_metrics(meta_list, metrics),
-                runtime_tags,
+                client_response.tags,
             )
         else:
             features_list = []
@@ -561,25 +616,23 @@ def aggregate(
                 names_list.append(class_names)
                 meta_list.append(meta)
 
-            client_response, runtime_metrics, runtime_tags = client_aggregate(
-                user_model, features_list, names_list
-            )
+            client_response = client_aggregate(user_model, features_list, names_list)
 
             metrics = client_custom_metrics(
                 user_model,
                 seldon_metrics,
                 AGGREGATE_METRIC_METHOD_TAG,
-                runtime_metrics,
+                client_response.metrics,
             )
 
             return construct_response_json(
                 user_model,
                 False,
                 msgs[0],
-                client_response,
+                client_response.data,
                 merge_meta(meta_list),
                 merge_metrics(meta_list, metrics),
-                runtime_tags,
+                client_response.tags,
             )
 
 
