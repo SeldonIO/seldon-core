@@ -219,10 +219,18 @@ func (pi *PrePackedInitialiser) addTritonServer(pu *machinelearningv1.Predictive
 		if c.Args == nil {
 			c.Args = cServer.Args
 		}
+		if c.ReadinessProbe == nil {
+			c.ReadinessProbe = cServer.ReadinessProbe
+		}
+		if c.LivenessProbe == nil {
+			c.LivenessProbe = cServer.LivenessProbe
+		}
+		if c.SecurityContext == nil {
+			c.SecurityContext = cServer.SecurityContext
+		}
+		// Ports always overwritten
+		// Need to look as we seem to add metrics ports automatically which mean this needs to be done
 		c.Ports = cServer.Ports
-		c.ReadinessProbe = cServer.ReadinessProbe
-		c.LivenessProbe = cServer.LivenessProbe
-		c.SecurityContext = cServer.SecurityContext
 	} else {
 		if len(deploy.Spec.Template.Spec.Containers) > 0 {
 			deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, *cServer)
