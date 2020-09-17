@@ -41,6 +41,48 @@ type PredictorServerConfig struct {
 	Protocols       PredictorProtocolsConfig `json:"protocols,omitempty"`
 }
 
+func (p *PredictorServerConfig) PrepackImageName(mlDep *SeldonDeploymentSpec, pu *PredictiveUnit) string {
+	imageConfig := p.PrepackImageConfig(mlDep, pu)
+
+	if imageConfig == nil {
+		return ""
+	}
+
+	if imageConfig.DefaultImageVersion != "" {
+		return fmt.Sprintf("%s:%s", imageConfig.ContainerImage, imageConfig.DefaultImageVersion)
+	}
+
+	return imageConfig.ContainerImage
+}
+
+func (p *PredictorServerConfig) PrepackImageConfig(mlDep *SeldonDeploymentSpec, pu *PredictiveUnit) *PredictorImageConfig {
+	// Check if protocol images are defined
+	switch mlDep.Protocol {
+	case ProtocolSeldon:
+		if p.Protocols.Seldon != nil {
+			return p.Protocols.Seldon
+		}
+	case ProtocolTensorflow:
+		if p.Protocols.Tensorflow != nil {
+			return p.Protocols.Tensorflow
+		}
+	case ProtocolKfserving:
+		if p.Protocols.KFServing != nil {
+			return p.Protocols.KFServing
+		}
+	}
+
+	// Otherwise fallback to legacy config
+	switch pu.Endpoint.Type {
+	case REST:
+		return &p.RestConfig
+	case GRPC:
+		return &p.GrpcConfig
+	}
+
+	return nil
+}
+
 type PredictorProtocolsConfig struct {
 	Seldon     *PredictorImageConfig `json:"seldon,omitempty"`
 	KFServing  *PredictorImageConfig `json:"kfserving,omitempty"`
