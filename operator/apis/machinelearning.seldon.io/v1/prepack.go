@@ -201,6 +201,7 @@ func GetPrepackServerConfig(serverName string) *PredictorServerConfig {
 	return getPrepackServerConfigWithRelated(serverName, relatedImageConfig)
 }
 
+// SetImageNameForPrepackContainer: DEPRECATED. Use serverConfig.PrepackImageName() instead
 func SetImageNameForPrepackContainer(pu *PredictiveUnit, c *corev1.Container, serverConfig *PredictorServerConfig) {
 	// Add image: ignore version if empty
 	if c.Image == "" {

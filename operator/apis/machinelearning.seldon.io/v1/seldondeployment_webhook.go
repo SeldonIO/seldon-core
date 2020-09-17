@@ -274,7 +274,9 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 				if r.Protocol != ProtocolTensorflow {
 					serverConfig := GetPrepackServerConfig(string(*pu.Implementation))
 					if serverConfig != nil {
-						SetImageNameForPrepackContainer(pu, con, serverConfig)
+						if con.Image == "" {
+							con.Image = serverConfig.PrepackImageName(r, pu)
+						}
 					}
 				}
 
