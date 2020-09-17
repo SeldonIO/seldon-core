@@ -7,6 +7,7 @@ Azure/go-ansiterm
 Azure/go-autorest
 BurntSushi/toml
 BurntSushi/xgb
+DataDog/datadog-go
 Knetic/govaluate
 NYTimes/gziphandler
 PuerkitoBio/purell
@@ -200,6 +201,7 @@ pborman/uuid
 pelletier/go-toml
 performancecopilot/speed
 peterbourgon/diskv
+philhofer/fwd
 pierrec/lz4
 pkg/errors
 pkg/profile
@@ -236,6 +238,7 @@ stretchr/objx
 stretchr/testify
 tensorflow/tensorflow
 tidwall/pretty
+tinylib/msgp
 tmc/grpc-websocket-proxy
 uber/jaeger-client-go
 uber/jaeger-lib
@@ -273,6 +276,7 @@ golang/appengine
 googleapis/go-genproto
 grpc/grpc-go
 protocolbuffers/protobuf-go
+DataDog/dd-trace-go
 alecthomas/kingpin
 go-check/check
 cheggaaa/pb

@@ -16,6 +16,7 @@ github.com/Azure/go-autorest/logger
 github.com/Azure/go-autorest/tracing
 github.com/BurntSushi/toml
 github.com/BurntSushi/xgb
+github.com/DataDog/datadog-go
 github.com/Knetic/govaluate
 github.com/NYTimes/gziphandler
 github.com/PuerkitoBio/purell
@@ -211,6 +212,7 @@ github.com/pborman/uuid
 github.com/pelletier/go-toml
 github.com/performancecopilot/speed
 github.com/peterbourgon/diskv
+github.com/philhofer/fwd
 github.com/pierrec/lz4
 github.com/pkg/errors
 github.com/pkg/profile
@@ -249,6 +251,7 @@ github.com/stretchr/objx
 github.com/stretchr/testify
 github.com/tensorflow/tensorflow/tensorflow/go/core
 github.com/tidwall/pretty
+github.com/tinylib/msgp
 github.com/tmc/grpc-websocket-proxy
 github.com/uber/jaeger-client-go
 github.com/uber/jaeger-lib
@@ -286,6 +289,7 @@ google.golang.org/appengine
 google.golang.org/genproto
 google.golang.org/grpc
 google.golang.org/protobuf
+gopkg.in/DataDog/dd-trace-go.v1
 gopkg.in/alecthomas/kingpin.v2
 gopkg.in/check.v1
 gopkg.in/cheggaaa/pb.v1
