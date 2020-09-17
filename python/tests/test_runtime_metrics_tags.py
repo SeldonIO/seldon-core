@@ -29,7 +29,7 @@ from seldon_core.metrics import (
     AGGREGATE_METRIC_METHOD_TAG,
     HEALTH_METRIC_METHOD_TAG,
 )
-from seldon_core.user_model import client_custom_metrics, ClientResponse
+from seldon_core.user_model import client_custom_metrics, SeldonResponse
 
 
 RUNTIME_METRICS = [
@@ -43,26 +43,26 @@ EXPECTED_TAGS = {"static": "tag", **RUNTIME_TAGS}
 class UserObject:
     def predict(self, X, features_names):
         logging.info("Predict called")
-        return ClientResponse(data=X, metrics=RUNTIME_METRICS, tags=RUNTIME_TAGS)
+        return SeldonResponse(data=X, metrics=RUNTIME_METRICS, tags=RUNTIME_TAGS)
 
     def aggregate(self, X, features_names):
         logging.info("Aggregate called")
-        return ClientResponse(data=X[0], metrics=RUNTIME_METRICS, tags=RUNTIME_TAGS)
+        return SeldonResponse(data=X[0], metrics=RUNTIME_METRICS, tags=RUNTIME_TAGS)
 
     def transform_input(self, X, feature_names):
         logging.info("Transform input called")
-        return ClientResponse(data=X, metrics=RUNTIME_METRICS, tags=RUNTIME_TAGS)
+        return SeldonResponse(data=X, metrics=RUNTIME_METRICS, tags=RUNTIME_TAGS)
 
     def transform_output(self, X, feature_names):
         logging.info("Transform output called")
-        return ClientResponse(data=X, metrics=RUNTIME_METRICS, tags=RUNTIME_TAGS)
+        return SeldonResponse(data=X, metrics=RUNTIME_METRICS, tags=RUNTIME_TAGS)
 
     def route(self, X, feature_names):
         logging.info("Route called")
-        return ClientResponse(data=22, metrics=RUNTIME_METRICS, tags=RUNTIME_TAGS)
+        return SeldonResponse(data=22, metrics=RUNTIME_METRICS, tags=RUNTIME_TAGS)
 
     def send_feedback(self, X, feature_names, reward, truth, routing):
-        return ClientResponse(data=X, metrics=RUNTIME_METRICS, tags=RUNTIME_TAGS)
+        return SeldonResponse(data=X, metrics=RUNTIME_METRICS, tags=RUNTIME_TAGS)
 
     def metrics(self):
         logging.info("Metrics called")

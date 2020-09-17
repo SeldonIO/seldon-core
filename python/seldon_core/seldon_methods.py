@@ -12,7 +12,7 @@ from seldon_core.utils import (
 )
 from seldon_core.user_model import (
     INCLUDE_METRICS_IN_CLIENT_RESPONSE,
-    ClientResponse,
+    SeldonResponse,
     client_predict,
     client_aggregate,
     client_route,
