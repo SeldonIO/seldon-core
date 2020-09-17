@@ -13,6 +13,7 @@ from seldon_e2e_utils import (
     rest_request,
     log_sdep_logs,
 )
+from e2e_utils.v2_protocol import inference_request
 from conftest import SELDON_E2E_TESTS_USE_EXECUTOR
 
 skipif_engine = pytest.mark.skipif(
@@ -45,6 +46,32 @@ class TestPrepack(object):
         assert res["versions"] == ["iris/v1"]
 
         logging.warning("Success for test_prepack_sklearn")
+        run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
+
+    @skipif_engine
+    def test_sklearn_v2(self, namespace):
+        spec = "../resources/iris-sklearn-v2.yaml"
+        retry_run(f"kubectl apply -f {spec} -n {namespace}")
+        wait_for_status("sklearn", namespace)
+        wait_for_rollout("sklearn", namespace)
+        time.sleep(1)
+
+        logging.warning("Initial request")
+        r = inference_request(
+            model_name="sklearn",
+            namespace=namespace,
+            payload={
+                "inputs": [
+                    {
+                        "name": "input-0",
+                        "shape": [4],
+                        "datatype": "FP32",
+                        "data": [[0.1, 0.2, 0.3, 0.4]],
+                    }
+                ],
+            },
+        )
+        assert r.status_code == 200
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
 
     # Test prepackaged server for tfserving
