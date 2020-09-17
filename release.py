@@ -199,6 +199,17 @@ def update_versions_txt(seldon_core_version, debug=False):
 
 
 def update_versions_py(seldon_core_version, debug=False):
+    # Updating the version in setup.py
+    args = [
+        "sed",
+        "-i",
+        's/version="\(.*\)"/version="{seldon_core_version}"/g'.format(
+            **locals()
+        ),
+        "python/setup.py",
+    ]
+    err, out = run_command(args, debug)
+    # Updating the version in module __version__.py
     with open("python/seldon_core/version.py", "w") as f:
         f.write('__version__ = "{seldon_core_version}"\n'.format(**locals()))
     print("Updated python/seldon_core/version.py")

@@ -11,6 +11,7 @@ from seldon_e2e_utils import (
     create_random_data,
     wait_for_status,
     rest_request,
+    log_sdep_logs,
 )
 from conftest import SELDON_E2E_TESTS_USE_EXECUTOR
 
@@ -140,8 +141,14 @@ class TestPrepack(object):
         r = initial_rest_request(
             "movie", namespace, data=["This is test data"], dtype="ndarray"
         )
+        log_sdep_logs("movie", namespace)
         assert r.status_code == 200
-        e = rest_request(
+
+        # First request most likely will fail because AnchorText explainer
+        # is creating the explainer on first request - we skip checking output
+        # of it, sleep for some time and then do the actual explanation request
+        # we use in the test
+        e = initial_rest_request(
             "movie",
             namespace,
             data=["This is test data"],
@@ -149,6 +156,19 @@ class TestPrepack(object):
             method="explain",
             predictor_name="movies-predictor",
         )
+        log_sdep_logs("movie", namespace)
+
+        time.sleep(30)
+
+        e = initial_rest_request(
+            "movie",
+            namespace,
+            data=["This is test data"],
+            dtype="ndarray",
+            method="explain",
+            predictor_name="movies-predictor",
+        )
+        log_sdep_logs("movie", namespace)
         assert e.status_code == 200
         logging.warning("Success for test_prepack_sklearn")
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)

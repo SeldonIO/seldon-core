@@ -15,10 +15,10 @@ helm repo update
 ```
 
 {{- /* We need to differentiate between "app charts" and "inference graph charts" */ -}}
-{{- $appCharts := list "seldon-core-operator" "seldon-core-analytics" -}}
+{{- $appCharts := list "seldon-core-operator" "seldon-core-analytics" "seldon-core-loadtesting" -}}
 {{ if has .Name $appCharts }}
 
-You can now deploy the chart as:
+Onca that's done, you should then be able to deploy the chart as:
 
 ```shell
 kubectl create namespace seldon-system
@@ -27,7 +27,7 @@ helm install {{ .Name }} seldonio/{{ .Name }} --namespace seldon-system
 
 {{ else }}
 
-Once that's done, you should be able to use the inference graph template as:
+Once that's done, you should then be able to use the inference graph template as:
 
 ```shell
 helm template $MY_MODEL_NAME seldonio/{{ .Name }} --namespace $MODELS_NAMESPACE

@@ -287,7 +287,7 @@ Below are some of the core components together with link to the logs that provid
 ### Seldon Core Deep Dive
 
 * [Detailed Installation Parameters ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/helm.html)
-* [Pre-packaged Inreference Servers ](https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html)
+* [Pre-packaged Inference Servers ](https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html)
 * [Language Wrappers for Custom Models ](https://docs.seldon.io/projects/seldon-core/en/latest/wrappers/language_wrappers.html)
 * [Create your Inference Graph ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/inference-graph.html)
 * [Deploy your Model  ](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/deploying.html)

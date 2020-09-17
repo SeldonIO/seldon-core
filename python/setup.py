@@ -2,11 +2,6 @@ import os
 from itertools import chain
 from setuptools import find_packages, setup
 
-version = {}
-dir_path = os.path.dirname(os.path.realpath(__file__))
-with open(os.path.join(dir_path, "seldon_core/version.py")) as fp:
-    exec(fp.read(), version)
-
 # Extra dependencies, with special 'all' key
 extras = {"tensorflow": ["tensorflow"]}
 all_extra_deps = chain.from_iterable(extras.values())
@@ -16,14 +11,13 @@ setup(
     name="seldon-core",
     author="Seldon Technologies Ltd.",
     author_email="hello@seldon.io",
-    version=version["__version__"],
+    version="1.2.3-dev",
     description="Seldon Core client and microservice wrapper",
     url="https://github.com/SeldonIO/seldon-core",
     license="Apache 2.0",
     license_files=["LICENSE"],
     packages=find_packages(),
     include_package_data=True,
-    setup_requires=["pytest-runner"],
     python_requires=">=3.6",
     install_requires=[
         "Flask<2.0.0",
@@ -44,9 +38,7 @@ setup(
         "setuptools >= 41.0.0",
         "prometheus_client >= 0.7.1, < 0.9.0",
     ],
-    tests_require=["pytest<6.0.0", "pytest-cov<3.0.0", "Pillow==7.2.0"],
     extras_require=extras,
-    test_suite="tests",
     entry_points={
         "console_scripts": [
             "seldon-core-microservice = seldon_core.microservice:main",

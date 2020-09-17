@@ -1,4 +1,4 @@
-## Batch processing with Argo Worfklows
+# Batch processing with Argo Worfklows
 
 In this notebook we will dive into how you can run batch processing with Argo Workflows and Seldon Core.
 
@@ -9,17 +9,17 @@ Dependencies:
 * Argo Workfklows installed in cluster (and argo CLI for commands)
 
 
-## Setup
+### Setup
 
-### Install Seldon Core
+#### Install Seldon Core
 Use the notebook to [set-up Seldon Core with Ambassador or Istio Ingress](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html).
 
 Note: If running with KIND you need to make sure do follow [these steps](https://github.com/argoproj/argo/issues/2376#issuecomment-595593237) as workaround to the `/.../docker.sock` known issue.
 
-### Set up Minio in your cluster
+#### Set up Minio in your cluster
 Use the notebook to [set-up Minio in your cluster](https://docs.seldon.io/projects/seldon-core/en/latest/examples/minio_setup.html).
 
-### Copy the Minio Secret to namespace
+#### Copy the Minio Secret to namespace
 
 We need to re-use the minio secret for the batch job, so this can be done by just copying the minio secret created in the `minio-system`
 
@@ -33,7 +33,7 @@ The command below just copies the secred with the name "minio" from the minio-sy
     secret/minio created
 
 
-### Install Argo Workflows
+#### Install Argo Workflows
 You can follow the instructions from the official [Argo Workflows Documentation](https://github.com/argoproj/argo#quickstart).
 
 You also need to make sure that argo has permissions to create seldon deployments - for this you can just create a default-admin rolebinding as follows:
@@ -46,7 +46,7 @@ You also need to make sure that argo has permissions to create seldon deployment
     rolebinding.rbac.authorization.k8s.io/default-admin created
 
 
-## Create some input for our model
+### Create some input for our model
 
 We will create a file that will contain the inputs that will be sent to our model
 
@@ -62,7 +62,7 @@ with open("assets/input-data.txt", "w") as f:
         f.write('[[1, 2, 3, 4]]\n')
 ```
 
-### Check the contents of the file
+#### Check the contents of the file
 
 
 ```python
@@ -83,7 +83,7 @@ with open("assets/input-data.txt", "w") as f:
     [[1, 2, 3, 4]]
 
 
-### Upload the file to our minio
+#### Upload the file to our minio
 
 
 ```python
@@ -94,7 +94,7 @@ with open("assets/input-data.txt", "w") as f:
     [m[32;1mBucket created successfully `minio-seldon/data`.[0m
     ...-data.txt:  146.48 KiB / 146.48 KiB ┃▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓┃ 2.14 MiB/s 0s[0m[0m[m[32;1m
 
-### Create Argo Workflow
+#### Create Argo Workflow
 
 In order to create our argo workflow we have made it simple so you can leverage the power of the helm charts.
 
@@ -187,7 +187,7 @@ We will run a batch job that will set up a Seldon Deployment with 10 replicas an
     [31mupload-object-store[0m:	Total: 0 B, Transferred: 2.75 MiB, Speed: 105.34 MiB/s
 
 
-## Check output in object store
+### Check output in object store
 
 We can now visualise the output that we obtained in the object store.
 

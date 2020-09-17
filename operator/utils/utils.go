@@ -11,6 +11,44 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
+// Attempts to add environment variable but does NOT override if already existing
+func AddEnvVarToDeploymentContainers(deploy *appsv1.Deployment, envVar *v1.EnvVar) {
+	for containerIdx := 0; containerIdx < len(deploy.Spec.Template.Spec.Containers); containerIdx++ {
+		deployContainer := &deploy.Spec.Template.Spec.Containers[containerIdx]
+		// Before adding it ensures it doesn't exist as it will NOT override
+		for _, e := range deployContainer.Env {
+			if e.Name == envVar.Name {
+				return
+			}
+		}
+		deployContainer.Env = append(deployContainer.Env, *envVar)
+	}
+}
+
+// Create a volume from the secret provided and mounts it to all the containers of deployment
+func MountSecretToDeploymentContainers(deploy *appsv1.Deployment, secretRefName string, containerMountPath string) {
+	volumeName := "seldon-cert-volume"
+	volume := v1.Volume{
+		Name: volumeName,
+		VolumeSource: v1.VolumeSource{
+			Secret: &v1.SecretVolumeSource{
+				SecretName: secretRefName,
+			},
+		},
+	}
+	deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, volume)
+	// Mount the volume secret to all the containers in deployment
+	for containerIdx := 0; containerIdx < len(deploy.Spec.Template.Spec.Containers); containerIdx++ {
+		deployContainer := &deploy.Spec.Template.Spec.Containers[containerIdx]
+		volumeMount := v1.VolumeMount{
+			Name:      volumeName,
+			MountPath: containerMountPath,
+			ReadOnly:  true,
+		}
+		deployContainer.VolumeMounts = append(deployContainer.VolumeMounts, volumeMount)
+	}
+}
+
 func GetPredictionPath(mlDep *machinelearningv1.SeldonDeployment) string {
 	protocol := mlDep.Spec.Protocol
 
@@ -103,4 +141,8 @@ func GetEnvAsBool(key string, fallback bool) bool {
 	}
 
 	return fallback
+}
+
+func IsEmptyTLS(p *machinelearningv1.PredictorSpec) bool {
+	return p.SSL == nil || len(p.SSL.CertSecretName) == 0
 }
