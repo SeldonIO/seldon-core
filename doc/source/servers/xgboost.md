@@ -8,7 +8,6 @@ Prequisites:
   * You must save your model using `bst.save_model(file_path)`
   * The model is loaded with `xgb.Booster(model_file=model_file)`
   * Dependencies (otherwise it may not work):
-      + scikit-learn == 0.20.3
       + numpy == 1.15.4
       + xgboost == 1.2.0
 
