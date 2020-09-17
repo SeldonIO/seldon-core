@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"flag"
 	"fmt"
 	"log"
@@ -9,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"path"
 	"syscall"
 	"time"
 
@@ -87,8 +89,9 @@ func getServerUrl(hostname string, port int) (*url.URL, error) {
 	return url.Parse(fmt.Sprintf("http://%s:%d/", hostname, port))
 }
 
-func runHttpServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int,
+func runHttpServer(lis net.Listener, logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int,
 	probesOnly bool, serverUrl *url.URL, namespace string, protocol string, deploymentName string, prometheusPath string) {
+	defer lis.Close()
 
 	// Create REST API
 	seldonRest := rest.NewServerRestApi(predictor, client, probesOnly, serverUrl, namespace, protocol, deploymentName, prometheusPath)
@@ -96,7 +99,7 @@ func runHttpServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldo
 	srv := seldonRest.CreateHttpServer(port)
 
 	go func() {
-		if err := srv.ListenAndServe(); err != nil {
+		if err := srv.Serve(lis); err != nil {
 			logger.Error(err, "Server error")
 		}
 		logger.Info("server started")
@@ -125,11 +128,8 @@ func runHttpServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldo
 
 }
 
-func runGrpcServer(logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int, serverUrl *url.URL, namespace string, protocol string, deploymentName string, annotations map[string]string) {
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
+func runGrpcServer(lis net.Listener, logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, serverUrl *url.URL, namespace string, protocol string, deploymentName string, annotations map[string]string) {
+	defer lis.Close()
 	grpcServer, err := grpc.CreateGrpcServer(predictor, deploymentName, annotations, logger)
 	if err != nil {
 		log.Fatalf("Failed to create gRPC server: %v", err)
@@ -309,10 +309,10 @@ func main() {
 			log.Fatalf("Failed to create http client: %v", err)
 		}
 		logger.Info("Running http server ", "port", *httpPort)
-		runHttpServer(logger, predictor, clientRest, *httpPort, false, serverUrl, *namespace, *protocol, *sdepName, *prometheusPath)
+		runHttpServer(createListener(*httpPort, logger), logger, predictor, clientRest, *httpPort, false, serverUrl, *namespace, *protocol, *sdepName, *prometheusPath)
 	} else {
 		logger.Info("Running http probes only server ", "port", *httpPort)
-		go runHttpServer(logger, predictor, nil, *httpPort, true, serverUrl, *namespace, *protocol, *sdepName, *prometheusPath)
+		go runHttpServer(createListener(*httpPort, logger), logger, predictor, nil, *httpPort, true, serverUrl, *namespace, *protocol, *sdepName, *prometheusPath)
 		logger.Info("Running grpc server ", "port", *grpcPort)
 		var clientGrpc seldonclient.SeldonApiClient
 		if *protocol == "seldon" {
@@ -320,7 +320,32 @@ func main() {
 		} else {
 			clientGrpc = tensorflow.NewTensorflowGrpcClient(predictor, *sdepName, annotations)
 		}
-		runGrpcServer(logger, predictor, clientGrpc, *grpcPort, serverUrl, *namespace, *protocol, *sdepName, annotations)
-
+		runGrpcServer(createListener(*grpcPort, logger), logger, predictor, clientGrpc, serverUrl, *namespace, *protocol, *sdepName, annotations)
 	}
+}
+
+func createListener(port int, logger logr.Logger) net.Listener {
+	// Create a listener at the desired port.
+	var lis net.Listener
+	var err error
+	if len(certMountPath) > 0 {
+		logger.Info("Creating TLS listener", "port", port)
+		certPath := path.Join(certMountPath, certFileName)
+		keyPath := path.Join(certMountPath, certKeyFileName)
+		cert, err := tls.LoadX509KeyPair(certPath, keyPath)
+		if err != nil {
+			log.Fatalf("Error certificate could not be found: %v", err)
+		}
+		lis, err = tls.Listen("tcp", fmt.Sprintf(":%d", port), &tls.Config{Certificates: []tls.Certificate{cert}})
+		if err != nil {
+			log.Fatalf("failed to create listener: %v", err)
+		}
+	} else {
+		logger.Info("Creating non-TLS listener", "port", port)
+		lis, err = net.Listen("tcp", fmt.Sprintf(":%d", port))
+		if err != nil {
+			log.Fatalf("failed to create listener: %v", err)
+		}
+	}
+	return lis
 }
