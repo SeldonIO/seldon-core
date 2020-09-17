@@ -2,8 +2,8 @@ BASE=../../..
 
 ## REST
 
-run_rest_executor:
-	${BASE}/executor --sdep seldon-model --namespace default --predictor example --file ./model_rest.yaml --http_port 8000 
+run_executor:
+	${BASE}/executor --sdep seldon-model --namespace default --predictor example --file ./model_rest.yaml --port 8000 
 
 
 run_dummy_rest_model:
@@ -16,9 +16,6 @@ curl_metrics:
 	curl localhost:8000/metrics
 
 ## GRPC
-
-run_grpc_executor:
-	${BASE}/executor --sdep seldon-model --namespace default --predictor example --file ./model_grpc.yaml --http_port 8000 --grpc_port 5000 --transport grpc
 
 run_dummy_grpc_model:
 	cd ${BASE}/../examples/models/mean_classifier && make run_grpc_local 

@@ -4,7 +4,6 @@ metadata:
   name: mymodel-modelmetadata
 spec:
   name: test-deployment
-  transport: grpc
   predictors:
   - componentSpecs:
     - spec:
