@@ -24,10 +24,11 @@ class SeldonNotImplementedError(SeldonMicroserviceException):
         SeldonMicroserviceException.__init__(self, message)
 
 
-class ClientResponse:
-    """Seldon Prediction
+class SeldonResponse:
+    """SeldonResponse
 
-    Simple class to store prediction output with corresponding metrics nad tags.
+    Simple class to store data returned by SeldonComponent methods together
+    with relevant runtime metrics and runtime request tags.
     """
 
     def __init__(
@@ -42,8 +43,8 @@ class ClientResponse:
 
     @classmethod
     def create(
-        cls, data: Union[np.ndarray, List, Dict, str, bytes, "ClientResponse"]
-    ) -> "ClientResponse":
+        cls, data: Union[np.ndarray, List, Dict, str, bytes, "SeldonResponse"]
+    ) -> "SeldonResponse":
         if isinstance(data, cls):
             return data
         else:
@@ -65,7 +66,7 @@ class SeldonComponent(object):
 
     def predict(
         self, X: np.ndarray, names: Iterable[str], meta: Dict = None
-    ) -> Union[np.ndarray, List, Dict, str, bytes, ClientResponse]:
+    ) -> Union[np.ndarray, List, Dict, str, bytes, SeldonResponse]:
         raise SeldonNotImplementedError("predict is not implemented")
 
     def predict_raw(
@@ -80,7 +81,7 @@ class SeldonComponent(object):
 
     def transform_input(
         self, X: np.ndarray, names: Iterable[str], meta: Dict = None
-    ) -> Union[np.ndarray, List, Dict, str, bytes, ClientResponse]:
+    ) -> Union[np.ndarray, List, Dict, str, bytes, SeldonResponse]:
         raise SeldonNotImplementedError("transform_input is not implemented")
 
     def transform_input_raw(
@@ -90,7 +91,7 @@ class SeldonComponent(object):
 
     def transform_output(
         self, X: np.ndarray, names: Iterable[str], meta: Dict = None
-    ) -> Union[np.ndarray, List, Dict, str, bytes, ClientResponse]:
+    ) -> Union[np.ndarray, List, Dict, str, bytes, SeldonResponse]:
         raise SeldonNotImplementedError("transform_output is not implemented")
 
     def transform_output_raw(
@@ -111,12 +112,12 @@ class SeldonComponent(object):
         reward: float,
         truth: Union[np.ndarray, str, bytes],
         routing: Union[int, None],
-    ) -> Union[np.ndarray, List, Dict, str, bytes, None, ClientResponse]:
+    ) -> Union[np.ndarray, List, Dict, str, bytes, None, SeldonResponse]:
         raise SeldonNotImplementedError("send_feedback is not implemented")
 
     def route(
         self, features: Union[np.ndarray, str, bytes], feature_names: Iterable[str]
-    ) -> Union[int, ClientResponse]:
+    ) -> Union[int, SeldonResponse]:
         raise SeldonNotImplementedError("route is not implemented")
 
     def route_raw(
@@ -128,7 +129,7 @@ class SeldonComponent(object):
         self,
         features_list: List[Union[np.ndarray, str, bytes]],
         feature_names_list: List,
-    ) -> Union[np.ndarray, List, Dict, str, bytes, ClientResponse]:
+    ) -> Union[np.ndarray, List, Dict, str, bytes, SeldonResponse]:
         raise SeldonNotImplementedError("aggregate is not implemented")
 
     def aggregate_raw(
@@ -211,7 +212,7 @@ def client_predict(
     features: Union[np.ndarray, str, bytes],
     feature_names: Iterable[str],
     **kwargs: Dict
-) -> ClientResponse:
+) -> SeldonResponse:
     """
     Get prediction from user model
 
@@ -235,11 +236,11 @@ def client_predict(
                 client_response = user_model.predict(features, feature_names, **kwargs)
             except TypeError:
                 client_response = user_model.predict(features, feature_names)
-            return ClientResponse.create(client_response)
+            return SeldonResponse.create(client_response)
         except SeldonNotImplementedError:
             pass
     logger.debug("predict is not implemented")
-    return ClientResponse.create([])
+    return SeldonResponse.create([])
 
 
 def client_transform_input(
@@ -247,7 +248,7 @@ def client_transform_input(
     features: Union[np.ndarray, str, bytes],
     feature_names: Iterable[str],
     **kwargs: Dict
-) -> ClientResponse:
+) -> SeldonResponse:
     """
     Transform data with user model
 
@@ -275,11 +276,11 @@ def client_transform_input(
                 )
             except TypeError:
                 client_response = user_model.transform_input(features, feature_names)
-            return ClientResponse.create(client_response)
+            return SeldonResponse.create(client_response)
         except SeldonNotImplementedError:
             pass
     logger.debug("transform_input is not implemented")
-    return ClientResponse.create(features)
+    return SeldonResponse.create(features)
 
 
 def client_transform_output(
@@ -287,7 +288,7 @@ def client_transform_output(
     features: Union[np.ndarray, str, bytes],
     feature_names: Iterable[str],
     **kwargs: Dict
-) -> ClientResponse:
+) -> SeldonResponse:
     """
     Transform output
 
@@ -314,11 +315,11 @@ def client_transform_output(
                 )
             except TypeError:
                 client_response = user_model.transform_output(features, feature_names)
-            return ClientResponse.create(client_response)
+            return SeldonResponse.create(client_response)
         except SeldonNotImplementedError:
             pass
     logger.debug("transform_output is not implemented")
-    return ClientResponse.create(features)
+    return SeldonResponse.create(features)
 
 
 def client_custom_metrics(
@@ -403,7 +404,7 @@ def client_send_feedback(
     reward: float,
     truth: Union[np.ndarray, str, bytes],
     routing: Union[int, None],
-) -> ClientResponse:
+) -> SeldonResponse:
     """
     Feedback to user model
 
@@ -432,11 +433,11 @@ def client_send_feedback(
             client_response = user_model.send_feedback(
                 features, feature_names, reward, truth, routing=routing
             )
-            return ClientResponse.create(client_response)
+            return SeldonResponse.create(client_response)
         except SeldonNotImplementedError:
             pass
     logger.debug("send_feedback is not implemented")
-    return ClientResponse.create(None)
+    return SeldonResponse.create(None)
 
 
 def client_route(
@@ -444,7 +445,7 @@ def client_route(
     features: Union[np.ndarray, str, bytes],
     feature_names: Iterable[str],
     **kwargs: Dict
-) -> ClientResponse:
+) -> SeldonResponse:
     """
     Get routing from user model
 
@@ -466,7 +467,7 @@ def client_route(
             client_response = user_model.route(features, feature_names, **kwargs)
         except TypeError:
             client_response = user_model.route(features, feature_names)
-        return ClientResponse.create(client_response)
+        return SeldonResponse.create(client_response)
     else:
         raise SeldonNotImplementedError("Route not defined")
 
@@ -475,7 +476,7 @@ def client_aggregate(
     user_model: SeldonComponent,
     features_list: List[Union[np.ndarray, str, bytes]],
     feature_names_list: List,
-) -> ClientResponse:
+) -> SeldonResponse:
     """
     Aggregate payloads
 
@@ -493,7 +494,7 @@ def client_aggregate(
     """
     if hasattr(user_model, "aggregate"):
         client_response = user_model.aggregate(features_list, feature_names_list)
-        return ClientResponse.create(client_response)
+        return SeldonResponse.create(client_response)
     else:
         raise SeldonNotImplementedError("Aggregate not defined")
 
