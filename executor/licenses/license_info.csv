@@ -7,6 +7,7 @@ Azure/go-ansiterm,https://github.com/Azure/go-ansiterm/blob/master/LICENSE,MIT L
 Azure/go-autorest,https://github.com/Azure/go-autorest/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/Azure/go-autorest/master/LICENSE
 BurntSushi/toml,https://github.com/BurntSushi/toml/blob/master/COPYING,MIT License,https://raw.githubusercontent.com/BurntSushi/toml/master/COPYING
 BurntSushi/xgb,https://github.com/BurntSushi/xgb/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/BurntSushi/xgb/master/LICENSE
+DataDog/datadog-go,https://github.com/DataDog/datadog-go/blob/master/LICENSE.txt,MIT License,https://raw.githubusercontent.com/DataDog/datadog-go/master/LICENSE.txt
 Knetic/govaluate,https://github.com/Knetic/govaluate/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/Knetic/govaluate/master/LICENSE
 NYTimes/gziphandler,https://github.com/nytimes/gziphandler/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/nytimes/gziphandler/master/LICENSE
 PuerkitoBio/purell,https://github.com/PuerkitoBio/purell/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/PuerkitoBio/purell/master/LICENSE
@@ -197,6 +198,7 @@ pborman/uuid,https://github.com/pborman/uuid/blob/master/LICENSE,BSD 3-Clause "N
 pelletier/go-toml,https://github.com/pelletier/go-toml/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/pelletier/go-toml/master/LICENSE
 performancecopilot/speed,https://github.com/performancecopilot/speed/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/performancecopilot/speed/master/LICENSE
 peterbourgon/diskv,https://github.com/peterbourgon/diskv/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/peterbourgon/diskv/master/LICENSE
+philhofer/fwd,https://github.com/philhofer/fwd/blob/master/LICENSE.md,MIT License,https://raw.githubusercontent.com/philhofer/fwd/master/LICENSE.md
 pierrec/lz4,https://github.com/pierrec/lz4/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/pierrec/lz4/master/LICENSE
 pkg/errors,https://github.com/pkg/errors/blob/master/LICENSE,BSD 2-Clause "Simplified" License,https://raw.githubusercontent.com/pkg/errors/master/LICENSE
 pkg/profile,https://github.com/pkg/profile/blob/master/LICENSE,BSD 2-Clause "Simplified" License,https://raw.githubusercontent.com/pkg/profile/master/LICENSE
@@ -234,6 +236,7 @@ stretchr/objx,https://github.com/stretchr/objx/blob/master/LICENSE,MIT License,h
 stretchr/testify,https://github.com/stretchr/testify/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/stretchr/testify/master/LICENSE
 tensorflow/tensorflow,https://github.com/tensorflow/tensorflow/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/tensorflow/tensorflow/master/LICENSE
 tidwall/pretty,https://github.com/tidwall/pretty/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/tidwall/pretty/master/LICENSE
+tinylib/msgp,https://github.com/tinylib/msgp/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/tinylib/msgp/master/LICENSE
 tmc/grpc-websocket-proxy,https://github.com/tmc/grpc-websocket-proxy/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/tmc/grpc-websocket-proxy/master/LICENSE
 uber/jaeger-client-go,https://github.com/jaegertracing/jaeger-client-go/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/jaegertracing/jaeger-client-go/master/LICENSE
 uber/jaeger-lib,https://github.com/jaegertracing/jaeger-lib/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/jaegertracing/jaeger-lib/master/LICENSE
@@ -273,6 +276,7 @@ golang/appengine,https://github.com/golang/appengine/blob/master/LICENSE,Apache 
 googleapis/go-genproto,https://github.com/googleapis/go-genproto/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/googleapis/go-genproto/master/LICENSE
 grpc/grpc-go,https://github.com/grpc/grpc-go/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/grpc/grpc-go/master/LICENSE
 protocolbuffers/protobuf-go,https://github.com/protocolbuffers/protobuf-go/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/protocolbuffers/protobuf-go/master/LICENSE
+DataDog/dd-trace-go,https://github.com/DataDog/dd-trace-go/blob/v1/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/DataDog/dd-trace-go/v1/LICENSE
 alecthomas/kingpin,https://github.com/alecthomas/kingpin/blob/master/COPYING,MIT License,https://raw.githubusercontent.com/alecthomas/kingpin/master/COPYING
 go-check/check,https://github.com/go-check/check/blob/v1/LICENSE,BSD 2-Clause "Simplified" License,https://raw.githubusercontent.com/go-check/check/v1/LICENSE
 cheggaaa/pb,https://github.com/cheggaaa/pb/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/cheggaaa/pb/master/LICENSE
