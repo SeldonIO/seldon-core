@@ -79,6 +79,24 @@ def get_pod_name_for_sdep(sdep_name, namespace, attempts=20, sleep=5):
     return pod_names
 
 
+def log_sdep_logs(sdep_name, namespace, attempts=20, sleep=5):
+    pod_names = get_pod_name_for_sdep(sdep_name, namespace, attempts, sleep)
+    for pod_name in pod_names:
+        for _ in range(attempts):
+            ret = run(
+                f"kubectl logs -n {namespace} {pod_name} --all-containers=true",
+                shell=True,
+                stdout=subprocess.PIPE,
+            )
+            if ret.returncode == 0:
+                logging.info(f"Successfully got logs for {pod_name}")
+                break
+            logging.warning(f"Unsuccessful kubectl logs for {pod_name} but retrying")
+            time.sleep(sleep)
+        assert ret.returncode == 0, f"Failed to get logs for {pod_name}"
+        logging.warning(ret.stdout.decode())
+
+
 def get_deployment_names(sdep_name, namespace, attempts=20, sleep=5):
     for _ in range(attempts):
         ret = run(
