@@ -349,27 +349,36 @@ def client_custom_metrics(
        A list of custom metrics
 
     """
+    if not validate_metrics(runtime_metrics):
+        raise SeldonMicroserviceException(
+            f"Bad metric created during request: {json.dumps(runtime_metrics)}",
+            status_code=500,
+            reason="MICROSERVICE_BAD_METRIC",
+        )
     seldon_metrics.update(runtime_metrics, method)
+
     if hasattr(user_model, "metrics"):
         try:
             metrics = user_model.metrics()
             if not validate_metrics(metrics):
-                j_str = json.dumps(metrics)
                 raise SeldonMicroserviceException(
-                    "Bad metric created during request: " + j_str,
+                    f"Bad metric created during request: {json.dumps(metrics)}",
                     status_code=500,
                     reason="MICROSERVICE_BAD_METRIC",
                 )
 
             seldon_metrics.update(metrics, method)
             if INCLUDE_METRICS_IN_CLIENT_RESPONSE:
-                return metrics
+                return metrics + runtime_metrics
             else:
                 return []
         except SeldonNotImplementedError:
             pass
     logger.debug("custom_metrics is not implemented")
-    return []
+    if INCLUDE_METRICS_IN_CLIENT_RESPONSE:
+        return runtime_metrics
+    else:
+        return []
 
 
 def client_feature_names(

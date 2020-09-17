@@ -1,6 +1,6 @@
 import logging
 
-from seldon_core.user_model import ClientResponse
+from seldon_core.user_model import SeldonResponse
 
 
 def reshape(x):
@@ -20,12 +20,12 @@ class Model:
 
         logging.info(f"model X: {X}")
 
-        runtime_metrics = {"type": "COUNTER", "key": "instance_counter", "value": len(X)},
+        runtime_metrics = [{"type": "COUNTER", "key": "instance_counter", "value": len(X)}]
         runtime_tags = {"runtime": "tag", "shared": "right one"}
-        return ClientResponse(data=X, metrics=runtime_metrics, tags=runtime_tags)
+        return SeldonResponse(data=X, metrics=runtime_metrics, tags=runtime_tags)
 
     def metrics(self):
         return [{"type": "COUNTER", "key": "requests_counter", "value": 1}]
 
     def tags(self):
-        return {"static": "tag", "shared": "not right one"}
+        return {"static": "tag", "shared": "not right one"}      
