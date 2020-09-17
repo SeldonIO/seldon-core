@@ -148,9 +148,9 @@ func getMLServerEnvVars(pu *machinelearningv1.PredictiveUnit) ([]v1.EnvVar, erro
 			Value: pu.Name,
 		},
 		{
-			// TODO: Make version optional in MLServer
+			// TODO: Should we make version optional in MLServer?
 			Name:  "MLSERVER_MODEL_VERSION",
-			Value: "v1.2.3",
+			Value: "v1",
 		},
 		{
 			Name:  MLServerModelURIEnv,
