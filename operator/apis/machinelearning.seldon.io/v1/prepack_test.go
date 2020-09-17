@@ -83,3 +83,109 @@ func TestGetPredictorConfig(t *testing.T) {
 		g.Expect(*config).To(Equal(scenario.desiredConfig))
 	}
 }
+
+func TestPredictorServerConfigPrepackImageConfig(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	tests := []struct {
+		config       *PredictorServerConfig
+		protocol     Protocol
+		endpointType EndpointType
+		expected     *PredictorImageConfig
+	}{
+		{
+			config: &PredictorServerConfig{
+				RestConfig: PredictorImageConfig{ContainerImage: "rest"},
+				GrpcConfig: PredictorImageConfig{ContainerImage: "grpc"},
+			},
+			protocol:     ProtocolSeldon,
+			endpointType: REST,
+			expected:     &PredictorImageConfig{ContainerImage: "rest"},
+		},
+		{
+			config: &PredictorServerConfig{
+				RestConfig: PredictorImageConfig{ContainerImage: "rest"},
+				GrpcConfig: PredictorImageConfig{ContainerImage: "grpc"},
+			},
+			protocol:     ProtocolSeldon,
+			endpointType: GRPC,
+			expected:     &PredictorImageConfig{ContainerImage: "grpc"},
+		},
+		{
+			config: &PredictorServerConfig{
+				RestConfig: PredictorImageConfig{ContainerImage: "rest"},
+				GrpcConfig: PredictorImageConfig{ContainerImage: "grpc"},
+			},
+			protocol:     ProtocolKfserving,
+			endpointType: GRPC,
+			expected:     &PredictorImageConfig{ContainerImage: "grpc"},
+		},
+		{
+			config: &PredictorServerConfig{
+				RestConfig: PredictorImageConfig{ContainerImage: "rest"},
+				GrpcConfig: PredictorImageConfig{ContainerImage: "grpc"},
+				Protocols: PredictorProtocolsConfig{
+					KFServing: &PredictorImageConfig{ContainerImage: "kfserving"},
+				},
+			},
+			protocol:     ProtocolKfserving,
+			endpointType: GRPC,
+			expected:     &PredictorImageConfig{ContainerImage: "kfserving"},
+		},
+	}
+
+	for _, test := range tests {
+		mlDep := &SeldonDeploymentSpec{Protocol: test.protocol}
+		pu := &PredictiveUnit{Endpoint: &Endpoint{Type: test.endpointType}}
+
+		imageConfig := test.config.PrepackImageConfig(mlDep, pu)
+
+		g.Expect(imageConfig).To(Equal(test.expected))
+	}
+}
+
+func TestPredictorServerConfigPrepackImageName(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	tests := []struct {
+		imageConfig *PredictorImageConfig
+		expected    string
+	}{
+		{
+			imageConfig: &PredictorImageConfig{
+				ContainerImage:      "my-image",
+				DefaultImageVersion: "v0.1.0",
+			},
+			expected: "my-image:v0.1.0",
+		},
+		{
+			imageConfig: &PredictorImageConfig{
+				ContainerImage: "my-image",
+			},
+			expected: "my-image",
+		},
+		{
+			imageConfig: &PredictorImageConfig{
+				ContainerImage: "my-image:0.2.0",
+			},
+			expected: "my-image:0.2.0",
+		},
+		{
+			imageConfig: nil,
+			expected:    "",
+		},
+	}
+
+	for _, test := range tests {
+		p := &PredictorServerConfig{}
+		if test.imageConfig != nil {
+			p.RestConfig = *test.imageConfig
+		}
+		mlDep := &SeldonDeploymentSpec{}
+		pu := &PredictiveUnit{Endpoint: &Endpoint{Type: REST}}
+
+		image := p.PrepackImageName(mlDep, pu)
+
+		g.Expect(image).To(Equal(test.expected))
+	}
+}
