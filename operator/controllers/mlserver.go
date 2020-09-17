@@ -21,6 +21,39 @@ const (
 	MLServerModelURIEnv            = "MLSERVER_MODEL_URI"
 )
 
+func mergeMLServerContainer(existing *v1.Container, mlServer *v1.Container) *v1.Container {
+	// Overwrite core items if not existing or required
+	if existing.Image == "" {
+		existing.Image = mlServer.Image
+	}
+
+	if existing.Args == nil {
+		existing.Args = mlServer.Args
+	}
+
+	if existing.Env == nil {
+		existing.Env = mlServer.Env
+	}
+
+	if existing.ReadinessProbe == nil {
+		existing.ReadinessProbe = mlServer.ReadinessProbe
+	}
+
+	if existing.LivenessProbe == nil {
+		existing.LivenessProbe = mlServer.LivenessProbe
+	}
+
+	if existing.SecurityContext == nil {
+		existing.SecurityContext = mlServer.SecurityContext
+	}
+
+	// Ports always overwritten
+	// Need to look as we seem to add metrics ports automatically which mean this needs to be done
+	existing.Ports = mlServer.Ports
+
+	return existing
+}
+
 func getMLServerContainer(pu *machinelearningv1.PredictiveUnit) (*v1.Container, error) {
 	image, err := getMLServerImage(pu)
 	if err != nil {

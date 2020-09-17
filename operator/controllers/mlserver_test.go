@@ -31,6 +31,26 @@ var _ = Describe("MLServer helpers", func() {
 		}
 	})
 
+	Describe("mergeMLServerContainer", func() {
+		var existing *v1.Container
+		var mlServer *v1.Container
+
+		BeforeEach(func() {
+			existing = &v1.Container{
+				Env: []v1.EnvVar{},
+			}
+
+			mlServer, _ = getMLServerContainer(pu)
+		})
+
+		It("should merge containers withot overriding env", func() {
+			merged := mergeMLServerContainer(existing, mlServer)
+
+			Expect(merged.Env).To(Equal([]v1.EnvVar{}))
+			Expect(merged.Image).To(Equal(mlServer.Image))
+		})
+	})
+
 	Describe("getMLServerContainer", func() {
 		var cServer *v1.Container
 
