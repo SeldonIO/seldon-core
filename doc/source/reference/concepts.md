@@ -4,13 +4,13 @@ This page is a work in progress to provide concepts related to Seldon Core.
 
 This work is ongoing and we welcome feedback
 
-## Workflow
-#### Conceptual overview of workflows
-A workflow groups the components of a machine learning system into a logical pipeline. Sets of related components are grouped into graphs. The workflow contains the configuration of the components and the definitions of the inputs and outputs of the system, and of each component.
+## Machine Learning Deployment / Inference Graph
+#### Conceptual overview of machine learning deployments / inference graphs
+A machine learning deployment (or inference graph) refers to a group of components in the Seldon ecosystem of a type associated with Seldon (Seldon Deployments). It represents a workflow, grouping the components of a machine learning system into a logical pipeline. The ML Deployment contains the configuration of the components and the definitions of the inputs and outputs of the system, and of each component.
 
-## Component
-#### Conceptual overview of components
-A component is one of:
+## Component / Inference server
+#### Conceptual overview of components / inference servers
+A component (or inference server) is one of:
 -   Model
     
 -   Router
@@ -23,17 +23,13 @@ A component is one of:
 
 A program that performs one step in the workflow.
 
-## Machine Learning Deployment
-#### Conceptual overview of machine learning deployments
-A machine learning deployment refers to a predictive model in the Seldon ecosystem of a type associated with Seldon (Seldon Deployments) or Kubeflow (Inference Services).
-
 ## Model
 #### Conceptual overview of models
 A component within a machine learning deployment which holds the representation of learned information from the training data.
 
 ## Language Wrapper
 #### Conceptual overview of language wrappers
-Enables cross language and/or runtime interoperability of a model with a particular programming language.
+A language wrapper is a model which enables cross language and/or runtime interoperability with a particular programming language.
 
 ## Pre-packaged Inference Server
 #### Conceptual overview of pre-packaged inference servers
@@ -49,13 +45,17 @@ A pre-packaged inference server is one of:
     
 Servers which can be used to deploy a trained model.
 
+Pre-packaged inference servers come built into Seldon Core, to allow users to go easily from artifact (i.e. serialised model) to ML deployment regardless of toolkit. Please see the following docs pages for users looking for instructions on how to create their own "pre-packaged" inference servers:
+- [https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html](https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html)
+- [https://docs.seldon.io/projects/seldon-core/en/latest/servers/custom.html](https://docs.seldon.io/projects/seldon-core/en/latest/servers/custom.html)
+
 ## Graph
 #### Conceptual overview of graphs
 A graph represents machine learning components as nodes with edges representing the inputs and outputs of an operation being passed from one component to the next.
 
 ## Request
 #### Conceptual overview of requests
-A request represents a single call to a model for a prediction. The request will be a payload which holds prediction data (often in the form of an array) passed over a particular protocol.
+A request represents a single call to a model for a prediction. The request will be a payload which holds prediction data (often in the form of an array) passed over a particular protocol. It is expected to follow a particular format.
 
 ## Request Logging
 #### Conceptual overview of request logging
