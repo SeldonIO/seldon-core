@@ -257,8 +257,7 @@ func (pi *PrePackedInitialiser) addMLServerDefault(pu *machinelearningv1.Predict
 
 	existingContainer := utils.GetContainerForDeployment(deploy, pu.Name)
 	if existingContainer != nil {
-		c.DeepCopyInto(existingContainer)
-		c = existingContainer
+		c = mergeMLServerContainer(existingContainer, c)
 	} else {
 		templateSpec := deploy.Spec.Template.Spec
 		if len(templateSpec.Containers) == 0 {
