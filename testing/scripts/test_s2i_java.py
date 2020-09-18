@@ -19,9 +19,9 @@ S2I_JNI_PARAMETERS = {
 
 S2I_JAVA_PARAMETERS = {
     "s2i_folder": JAVA_S2I_FOLDER,
-    "s2i_image": "seldonio/seldon-core-s2i-java-build:0.2",
+    "s2i_image": "seldonio/seldon-core-s2i-java-build:0.3.0",
     "image_name": "seldonio/test-s2i-java:0.1.0",
-    "s2i_runtime_image": "seldonio/seldon-core-s2i-java-runtime:0.2",
+    "s2i_runtime_image": "seldonio/seldon-core-s2i-java-runtime:0.3.0",
 }
 
 
