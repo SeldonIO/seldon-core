@@ -8,44 +8,31 @@ from seldon_e2e_utils import initial_rest_request, wait_for_status, wait_for_rol
 from e2e_utils.common import SC_ROOT_PATH
 from e2e_utils.models import deploy_model
 
+JAVA_S2I_FOLDER = os.path.join(SC_ROOT_PATH, "testing", "s2i", "java-jni")
 
-S2I_IMAGE_BUILD = "seldonio/s2i-java-jni-build"
-S2I_IMAGE_RUNTIME = "seldonio/s2i-java-jni-runtime"
+S2I_JNI_PARAMETERS = {
+    "s2i_folder": JAVA_S2I_FOLDER,
+    "s2i_image": "seldonio/s2i-java-jni-build:0.3.0",
+    "image_name": "seldonio/test-s2i-java-jni:0.1.0",
+    "s2i_runtime_image": "seldonio/s2i-java-jni-runtime:0.3.0",
+}
 
-S2I_JAVA_VERSION = "0.3.0"
-
-DEFAULT_JAVA_IMAGE = "seldonio/test-s2i-java:0.1.0"
-DEFAULT_S2I_FOLDER = os.path.join(SC_ROOT_PATH, "testing", "s2i", "java-jni")
-
-
-def create_s2i_image(
-    s2i_folder=DEFAULT_S2I_FOLDER,
-    s2i_version=S2I_JAVA_VERSION,
-    image_name=DEFAULT_JAVA_IMAGE,
-) -> str:
-    cmd = (
-        f"s2i build {s2i_folder} "
-        f"{S2I_IMAGE_BUILD}:{s2i_version} "
-        f"--runtime-image {S2I_IMAGE_RUNTIME}:{s2i_version} "
-        f"{image_name}"
-    )
-    run(cmd, shell=True, check=True)
-
-    return image_name
-
-
-def kind_load_image(image_name: str):
-    cmd = f"kind load docker-image {image_name}"
-    run(cmd, shell=True, check=True)
+S2I_JAVA_PARAMETERS = {
+    "s2i_folder": JAVA_S2I_FOLDER,
+    "s2i_image": "seldonio/seldon-core-s2i-java-build:0.2",
+    "image_name": "seldonio/test-s2i-java:0.1.0",
+    "s2i_runtime_image": "seldonio/seldon-core-s2i-java-runtime:0.2",
+}
 
 
 @pytest.mark.sequential
-def test_build_s2i_image():
-    image_name = create_s2i_image()
-
+@pytest.mark.parametrize(
+    "s2i_image", [S2I_JAVA_PARAMETERS, S2I_JNI_PARAMETERS], indirect=True,
+)
+def test_build_s2i_image(s2i_image):
     container_name = "jni-model"
     run(
-        f"docker run -d --rm --name {container_name} {image_name}",
+        f"docker run -d --rm --name {container_name} {s2i_image}",
         shell=True,
         check=True,
     )
@@ -54,11 +41,11 @@ def test_build_s2i_image():
 
 
 @pytest.mark.sequential
-def test_model_rest(namespace):
-    image_name = create_s2i_image()
-    kind_load_image(image_name)
-
-    deploy_model("mymodel", namespace=namespace, model_image=image_name)
+@pytest.mark.parametrize(
+    "s2i_image", [S2I_JAVA_PARAMETERS, S2I_JNI_PARAMETERS], indirect=True,
+)
+def test_model_rest(s2i_image, namespace):
+    deploy_model("mymodel", namespace=namespace, model_image=s2i_image)
     wait_for_status("mymodel", namespace)
     wait_for_rollout("mymodel", namespace)
 
