@@ -9,4 +9,4 @@ repos:
     rev: stable
     hooks:
       - id: black
-        args: ['python/', 'testing/', 'operator/helm', 'operator/seldon-operator/hack', '--exclude', '(testing/scripts/proto|seldon_core/proto/|.eggs)']
+        args: ['python/', 'testing/', '--exclude', '(testing/scripts/proto|seldon_core/proto/|.eggs)']
