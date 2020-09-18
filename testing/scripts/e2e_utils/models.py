@@ -6,7 +6,7 @@ from .common import HELM_CHARTS_PATH, to_helm_values_list
 
 
 def deploy_model(model_name: str, namespace: str, **kwargs):
-    chart_path = os.path.join(HELM_CHARTS_PATH, "seldon-core-operator")
+    chart_path = os.path.join(HELM_CHARTS_PATH, "seldon-single-model")
 
     # Convert "_" to "." on kwargs
     values = {key.replace("_", "."): val for key, val in kwargs.items()}
