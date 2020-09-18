@@ -2,11 +2,8 @@ import os
 
 from sh import helm, kubectl
 
-SC_ROOT_PATH = os.path.abspath(
-    os.path.join(
-        __file__, os.path.pardir, os.path.pardir, os.path.pardir, os.path.pardir
-    )
-)
+from .common import SC_ROOT_PATH
+
 HELM_CHARTS_PATH = os.path.join(SC_ROOT_PATH, "helm-charts")
 
 SC_NAME = "seldon"
