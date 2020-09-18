@@ -40,6 +40,7 @@ RUN wget https://storage.googleapis.com/kubernetes-release/release/v1.16.2/bin/l
 RUN \
     apt-get update -y && \
     apt-get install -y vim && \
+    apt-get install -y jq && \
     apt-get install -y build-essential && \
     apt-get remove -y --auto-remove && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
