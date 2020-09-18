@@ -211,7 +211,7 @@ def client_predict(
     user_model: SeldonComponent,
     features: Union[np.ndarray, str, bytes],
     feature_names: Iterable[str],
-    **kwargs: Dict
+    **kwargs: Dict,
 ) -> SeldonResponse:
     """
     Get prediction from user model
@@ -247,7 +247,7 @@ def client_transform_input(
     user_model: SeldonComponent,
     features: Union[np.ndarray, str, bytes],
     feature_names: Iterable[str],
-    **kwargs: Dict
+    **kwargs: Dict,
 ) -> SeldonResponse:
     """
     Transform data with user model
@@ -287,7 +287,7 @@ def client_transform_output(
     user_model: SeldonComponent,
     features: Union[np.ndarray, str, bytes],
     feature_names: Iterable[str],
-    **kwargs: Dict
+    **kwargs: Dict,
 ) -> SeldonResponse:
     """
     Transform output
@@ -453,7 +453,7 @@ def client_route(
     user_model: SeldonComponent,
     features: Union[np.ndarray, str, bytes],
     feature_names: Iterable[str],
-    **kwargs: Dict
+    **kwargs: Dict,
 ) -> SeldonResponse:
     """
     Get routing from user model
