@@ -3,7 +3,6 @@ googleapis/google-cloud-go
 Azure/go-ansiterm
 Azure/go-autorest
 BurntSushi/toml
-BurntSushi/xgb
 NYTimes/gziphandler
 PuerkitoBio/purell
 PuerkitoBio/urlesc
@@ -16,6 +15,7 @@ asaskevich/govalidator
 beorn7/perks
 bgentry/speakeasy
 blang/semver
+census-instrumentation/opencensus-proto
 client9/misspell
 cockroachdb/datadriven
 coreos/etcd
@@ -35,6 +35,8 @@ docopt/docopt-go
 dustin/go-humanize
 elazarl/goproxy
 emicklei/go-restful
+envoyproxy/go-control-plane
+envoyproxy/protoc-gen-validate
 evanphx/json-patch
 fatih/color
 fsnotify/fsnotify
@@ -80,6 +82,7 @@ hashicorp/hcl
 hpcloud/tail
 imdario/mergo
 inconshreveable/mousetrap
+jessevdk/go-flags
 jonboulle/clockwork
 json-iterator/go
 jstemmer/go-junit-report
@@ -118,7 +121,6 @@ prometheus/client_golang
 prometheus/client_model
 prometheus/common
 prometheus/procfs
-remyoudompheng/bigfft
 rogpeppe/fastuuid
 rogpeppe/go-internal
 russross/blackfriday
@@ -150,9 +152,7 @@ uber-go/tools
 uber-go/zap
 golang/crypto
 golang/exp
-golang/image
 golang/lint
-golang/mobile
 golang/mod
 golang/net
 golang/oauth2
@@ -163,8 +163,6 @@ golang/time
 golang/tools
 golang/xerrors
 gomodules/jsonpatch
-gonum/gonum
-gonum/netlib
 googleapis/google-api-go-client
 golang/appengine
 googleapis/go-genproto
@@ -197,11 +195,6 @@ kubernetes/klog
 kubernetes/kube-openapi
 kubernetes/utils
 knative/pkg
-cznic/cc
-cznic/golex
-cznic/mathutil
-cznic/strutil
-cznic/xc
 kubernetes-sigs/controller-runtime
 kubernetes-sigs/structured-merge-diff
 kubernetes-sigs/yaml
