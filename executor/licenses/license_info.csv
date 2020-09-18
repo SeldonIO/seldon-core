@@ -41,7 +41,7 @@ client9/misspell,https://github.com/client9/misspell/blob/master/LICENSE,MIT Lic
 cloudevents/sdk-go,https://github.com/cloudevents/sdk-go/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/cloudevents/sdk-go/master/LICENSE
 cncf/udpa,https://github.com/cncf/udpa/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/cncf/udpa/master/LICENSE
 cockroachdb/datadriven,https://github.com/cockroachdb/datadriven/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/cockroachdb/datadriven/master/LICENSE
-codahale/hdrhistogram,https://github.com/codahale/hdrhistogram/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/codahale/hdrhistogram/master/LICENSE
+codahale/hdrhistogram,https://github.com/HdrHistogram/hdrhistogram-go/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/HdrHistogram/hdrhistogram-go/master/LICENSE
 confluentinc/confluent-kafka-go,https://github.com/confluentinc/confluent-kafka-go/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/confluentinc/confluent-kafka-go/master/LICENSE
 coreos/etcd,https://github.com/etcd-io/etcd/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/etcd-io/etcd/master/LICENSE
 coreos/go-etcd,https://github.com/coreos/go-etcd/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/coreos/go-etcd/master/LICENSE
