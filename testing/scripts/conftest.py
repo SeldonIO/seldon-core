@@ -90,7 +90,7 @@ def seldon_version(request):
     install_seldon(executor=SELDON_E2E_TESTS_USE_EXECUTOR)
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def s2i_image(request):
     """
     Creates an S2I image.
