@@ -919,8 +919,13 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 	if deploy.Spec.Template.Spec.SchedulerName == "" {
 		deploy.Spec.Template.Spec.SchedulerName = "default-scheduler"
 	}
+
+	// Set TerminationGracePeriodSeconds
 	var terminationGracePeriod int64 = 20
 	deploy.Spec.Template.Spec.TerminationGracePeriodSeconds = &terminationGracePeriod
+	if seldonPodSpec != nil && seldonPodSpec.Spec.TerminationGracePeriodSeconds != nil {
+		deploy.Spec.Template.Spec.TerminationGracePeriodSeconds = seldonPodSpec.Spec.TerminationGracePeriodSeconds
+	}
 
 	volFound := false
 	for _, vol := range deploy.Spec.Template.Spec.Volumes {

@@ -1,11 +1,16 @@
 # apiVersion -- Version of the SeldonDeployment CRD
 apiVersion: machinelearning.seldon.io/v1
 
+protocol: seldon
+transport: rest
+
 model:
   # model.implementation -- Implementation of Prepackaged Model Server
   implementation: ""
   # model.uri -- Model's URI for prepackaged model server
   uri: ""
+  # model.envSecretRefName -- The model secret name for enviroment variables
+  envSecretRefName: ""
   # model.image -- Docker image used by the model
   image: ""
   # model.env -- Environment variables injected into the model's container
@@ -20,6 +25,8 @@ model:
     enabled: false
     # logger.url -- Remote URL for logger
     url: ""
+  mlflow:
+    xtype: ""
 
 # replicas -- Number of replicas for the predictor
 replicas: 1
