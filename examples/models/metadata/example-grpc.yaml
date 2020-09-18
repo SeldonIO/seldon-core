@@ -5,6 +5,7 @@ metadata:
   name: graph-metadata-grpc
 spec:
   name: test-deployment
+  transport: grpc
   predictors:
   - componentSpecs:
     - spec:

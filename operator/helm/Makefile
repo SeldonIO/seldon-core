@@ -7,7 +7,7 @@ create:
 	docker run --rm -it \
 		--user=$$(id -u):$$(id -g) \
 		-v "$(SELDON_CORE_DIR)":/work \
-		seldonio/core-builder:0.17 bash -c 'cd /work/operator/helm && make create_helper'
+		seldonio/core-builder:0.18 bash -c 'cd /work/operator/helm && make create_helper'
 
 .PHONY: create_helper
 create_helper:
