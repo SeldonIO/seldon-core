@@ -80,7 +80,6 @@ func createTensorflowServingContainer(pu *machinelearningv1.PredictiveUnit, tens
 		Name:  name,
 		Image: tfImage,
 		Args: []string{
-			"/usr/bin/tensorflow_model_server",
 			constants.TfServingArgPort + strconv.Itoa(int(grpcPort)),
 			constants.TfServingArgRestPort + strconv.Itoa(int(restPort)),
 			"--model_name=" + pu.Name,
