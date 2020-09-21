@@ -1,0 +1,6 @@
+Flask==1.1.1
+numpy==1.14.5
+elasticsearch==7.5.1
+prometheus_client >= 0.7.1, < 0.9.0
+
+seldon_core
