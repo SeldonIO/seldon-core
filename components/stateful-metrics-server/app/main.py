@@ -61,13 +61,13 @@ def index():
 
 
 @app.route(METRICS_ENDPOINT, methods=["GET"])
-def Metrics():
+def metrics():
     logger.debug("REST Metrics Request")
     metrics, mimetype = seldon_metrics.generate_metrics()
     return Response(metrics, mimetype=mimetype)
-
 
 if __name__ == "__main__":
     (total, correct) = _calculate_initial_metrics()
     _add_counter(total, correct)
     app.run(host="0.0.0.0", port=8080)
+
