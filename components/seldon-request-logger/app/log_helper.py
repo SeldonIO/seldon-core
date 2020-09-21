@@ -85,6 +85,11 @@ def parse_message_type(type_header):
         or type_header == "org.kubeflow.serving.inference.response"
     ):
         return "response"
+    if (
+        type_header == "io.seldon.serving.feedback"
+        or type_header == "org.kubeflow.serving.feedback"
+    ):
+        return "feedback"
     # FIXME: upstream needs to actually send in this format
     if (
         type_header == "io.seldon.serving.inference.outlier"
