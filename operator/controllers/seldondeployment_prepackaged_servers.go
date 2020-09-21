@@ -241,7 +241,7 @@ func (pi *PrePackedInitialiser) addTritonServer(pu *machinelearningv1.Predictive
 	}
 
 	envSecretRefName := extractEnvSecretRefName(pu)
-	mi := NewModelInitializer(pi.clientset)
+	mi := NewModelInitializer(pi.ctx, pi.clientset)
 	_, err := mi.InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName)
 	if err != nil {
 		return err
