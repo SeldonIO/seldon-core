@@ -1,0 +1,63 @@
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Trigger
+metadata:
+  name: seldon-stateful-metrics-sklearn-trigger
+spec:
+  subscriber:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: seldon-stateful-metrics-sklearn-svc
+  filter:
+    attributes:
+      type: io.seldon.serving.feedback
+      inferenceservicename: sklearn
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: seldon-stateful-metrics-sklearn-deployment
+ labels:
+   app: seldon-stateful-metrics-sklearn
+spec:
+ replicas: 1
+ selector:
+   matchLabels:
+     app: seldon-stateful-metrics-sklearn
+ template:
+   metadata:
+     annotations:
+       prometheus.io/path: /metrics
+       prometheus.io/scrape: "true"
+     labels:
+       app: seldon-stateful-metrics-sklearn
+   spec:
+     containers:
+       - name: user-container
+         image: docker.io/seldonio/stateful-metrics-server:1.2.2-dev
+         imagePullPolicy: IfNotPresent
+         ports:
+         - containerPort: 8080
+           name: metrics
+           protocol: TCP
+         - containerPort: 8080
+           name: http
+           protocol: TCP
+         env:
+           - name: ELASTICSEARCH_HOST
+             value: "elasticsearch-master.seldon-logs.svc.cluster.local"
+           - name: ELASTICSEARCH_PORT
+             value: "9200"
+---
+apiVersion: v1
+kind: Service
+metadata:
+ name: seldon-stateful-metrics-sklearn-svc
+spec:
+ selector:
+   app: seldon-stateful-metrics-sklearn
+ ports:
+   - protocol: TCP
+     port: 80
+     targetPort: 8080
+
