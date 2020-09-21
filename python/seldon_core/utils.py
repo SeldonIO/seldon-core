@@ -349,6 +349,7 @@ def construct_response_json(
     client_raw_response: Union[np.ndarray, str, bytes, dict],
     meta: dict = None,
     custom_metrics: List[Dict] = None,
+    runtime_tags: Dict = None,
 ) -> Union[List, Dict]:
     """
     This class converts a raw REST response into a JSON object that has the same structure as
@@ -446,6 +447,8 @@ def construct_response_json(
     custom_tags = client_custom_tags(user_model)
     if custom_tags:
         tags.update(custom_tags)
+    if runtime_tags:
+        tags.update(runtime_tags)
     if custom_metrics:
         metrics.extend(custom_metrics)
     if tags:
@@ -466,6 +469,7 @@ def construct_response(
     client_raw_response: Union[np.ndarray, str, bytes, dict, any_pb2.Any],
     meta: dict = None,
     custom_metrics: List[Dict] = None,
+    runtime_tags: Dict = None,
 ) -> prediction_pb2.SeldonMessage:
     """
 
@@ -498,6 +502,8 @@ def construct_response(
     custom_tags = client_custom_tags(user_model)
     if custom_tags:
         tags.update(custom_tags)
+    if runtime_tags:
+        tags.update(runtime_tags)
     if custom_metrics:
         metrics.extend(custom_metrics)
     if tags:

@@ -1,0 +1,57 @@
+FROM openjdk:13.0.1-jdk-buster
+
+ENV PYTHON_VERSION "3.6.10"
+
+# Compression and SSL libs required for installing Python
+RUN apt-get upgrade && \
+        apt-get update && \
+        apt-get install build-essential -y && \
+        apt-get install zlib1g -y && \
+        apt-get install zlib1g-dev -y && \
+        apt-get install libssl-dev -y && \
+        apt-get install libbz2-dev -y && \
+        apt-get install liblzma-dev -y
+
+# Build and install Python
+RUN curl -SLO https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz \
+    && tar xvf Python-${PYTHON_VERSION}.tgz \
+    && cd Python-${PYTHON_VERSION} \
+    && ./configure --prefix=/usr/local --with-openssl \
+    && make \
+    && make altinstall \
+    && cd / \
+    && rm -rf Python-${PYTHON_VERSION}* \
+    && (cd /usr/local/bin && ln -svn python3.6 python)
+
+# Ensure python3 and pip3 are default
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py >>setup.py && \
+        python setup.py
+RUN update-alternatives --install /usr/bin/python python /usr/local/bin/python3.6 1
+RUN rm -rf /usr/local/bin/pip && \
+        ln -s /usr/local/bin/pip3.6 /usr/local/bin/pip
+
+RUN pip install --upgrade pip setuptools wheel
+
+RUN mkdir /build
+
+LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
+LABEL io.openshift.s2i.assemble-input-files="/build"
+
+COPY ./s2i/bin/ /s2i/bin
+
+WORKDIR /microservice
+
+# Install Seldon Core
+COPY _python /microservice
+RUN cd /microservice/python && make install
+COPY _python/python/licenses/license.txt .
+
+# Install extra requirements for the JNI server
+COPY ./java-jni/requirements.txt ./requirements.txt
+RUN pip install -r requirements.txt
+
+# Copy JNI server
+COPY ./java-jni ./
+
+EXPOSE 5000
+

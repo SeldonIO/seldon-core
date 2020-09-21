@@ -1,0 +1,13 @@
+#!/bin/bash -e
+#
+# S2I run script for the 'seldon-core-s2i-java-jni' image.
+# The run script executes the server that runs your application.
+#
+# For more information see the documentation:
+#	https://github.com/openshift/source-to-image/blob/master/docs/builder_image.md
+#
+
+# Move jar binary with inference runtime implementation
+mv /microservice/build/target/*.jar /microservice/model.jar
+
+

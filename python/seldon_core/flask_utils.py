@@ -1,7 +1,9 @@
-from flask import request
 import json
-from typing import Dict
 import base64
+
+from http import HTTPStatus
+from flask import request, current_app, jsonify as flask_jsonify
+from typing import Dict, Union
 
 
 def get_multi_form_data_request() -> Dict:
@@ -37,7 +39,7 @@ def get_multi_form_data_request() -> Dict:
     return req_dict
 
 
-def get_request() -> Dict:
+def get_request(skip_decoding=False) -> Union[Dict, bytes]:
     """
     Parse a request to get JSON dict
 
@@ -54,19 +56,36 @@ def get_request() -> Dict:
         return get_multi_form_data_request()
 
     j_str = request.form.get("json")
-    if j_str:
-        message = json.loads(j_str)
-    else:
+    if not j_str:
         j_str = request.args.get("json")
-        if j_str:
-            message = json.loads(j_str)
-        else:
-            message = request.get_json()
-            if message is None:
-                raise SeldonMicroserviceException("Can't find JSON in data")
+
+    if j_str:
+        if skip_decoding:
+            return j_str
+
+        return json.loads(j_str)
+
+    if skip_decoding:
+        data = request.get_data()
+        if data is None:
+            raise SeldonMicroserviceException("Can't find data")
+
+        return data
+
+    message = request.get_json()
     if message is None:
-        raise SeldonMicroserviceException("Invalid Data Format - empty JSON")
+        raise SeldonMicroserviceException("Can't find JSON in data")
+
     return message
+
+
+def jsonify(response, skip_encoding=False):
+    if skip_encoding:
+        return current_app.response_class(
+            response=response, status=HTTPStatus.OK, mimetype="application/json"
+        )
+
+    return flask_jsonify(response)
 
 
 class SeldonMicroserviceException(Exception):
