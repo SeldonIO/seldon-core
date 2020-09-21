@@ -1,0 +1,2222 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-2023-no-dvlmp-27[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-h5mks[0m
+{"level":"info","ts":1600709878.9009814,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1600709878.9017367,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2023-no-dvlmp-27[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-wjzsq[0m
+{"level":"info","ts":1600709879.8920813,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1600709879.8951955,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2023-no-dvlmp-27[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2023-no-dvlmp-27[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-fmlwn[0m
+{"level":"info","ts":1600709886.3908792,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1600709886.394092,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2023-no-dvlmp-27[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-2023-no-dvlmp-6hqzj[0m
+{"level":"info","ts":1600709886.709731,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1600709891.8017216,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2023-no-dvlmp-27[0m stage [32mpr-build-comment[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2023-no-dvlmp-27[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:5bb8e8febe87244e73433bad4b488be75d5e62d9,2023:f52d71e66c14c22536a2e0624c1ade600660d6ad
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git fetch origin --unshallow f52d71e66c14c22536a2e0624c1ade600660d6ad: 5bb8e8febe87244e73433bad4b488be75d5e62d9:
+DEBUG: ran git fetch --unshallow origin f52d71e66c14c22536a2e0624c1ade600660d6ad: 5bb8e8febe87244e73433bad4b488be75d5e62d9: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard 5bb8e8febe87244e73433bad4b488be75d5e62d9
+DEBUG: ran git reset --hard 5bb8e8febe87244e73433bad4b488be75d5e62d9 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git merge f52d71e66c14c22536a2e0624c1ade600660d6ad
+DEBUG: ran git merge f52d71e66c14c22536a2e0624c1ade600660d6ad in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git log --format=%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%s%n%b%x1e 5bb8e8febe87244e73433bad4b488be75d5e62d9..HEAD
+Merged SHA f52d71e66c14c22536a2e0624c1ade600660d6ad with commit message 'Fix ctx arg missing' into base branch master
+Merged SHA e0d07aee123da1d82f482f0d022906f71866d3fb with commit message 'rebase' into base branch master
+Merged SHA f3bf6449f4ad3e228201d48eb3c1224aea04650e with commit message 'update triton settings in container' into base branch master
+Merged SHA 2ee0ecf537e4a2ecd2bb4bf3c8fc2f2d4b885059 with commit message 'add updated triton server fixes and example for tensorrt' into base branch master
+Merged SHA f773e81daf07eeb8bbfff5922ff0961b48c4f2c7 with commit message 'address review comments' into base branch master
+Merged SHA fe0853c0d8561a0a1b4c1aab1b358c9bc580534a with commit message 'Merge branch 'master' into 1648_v2_dataplane' into base branch master
+Merged SHA f161cdb74f9fbcb558767c03a5641ca6212a2894 with commit message 'Update docs' into base branch master
+Merged SHA f59936cb0a7892ab4fccc8e6ef74cea75f18a243 with commit message 'Update protocol example' into base branch master
+Merged SHA 7564b69c50f5700a2a15832068edbd7053ec02d5 with commit message 'Update to triton 20-08 triton' into base branch master
+Merged SHA 943a7cd84c5b01f659406e26422b9d69af589f74 with commit message 'rebase' into base branch master
+Merged SHA c284bdfd446a85e03f897dd365f4106982f9536c with commit message 'Add examples to protocol notebook' into base branch master
+Merged SHA dd9d16f364e9eceb71586b1a2e44a7225aca988d with commit message 'Update protos and local examples' into base branch master
+Merged SHA 3a3a2b6ec3a5f787e61aca0711ea0035630444a6 with commit message 'update due to executor interface change and go.sum additions' into base branch master
+Merged SHA 1b45df883e01bba4b5392921e1ab01b3ed3af1b4 with commit message 'rebase' into base branch master
+Merged SHA 822b19acc0f961aba9643897e4319c5638a22425 with commit message 'Add v2 grpc implementation and local sample' into base branch master
+Merged SHA 8f418297bc51a2f734c41953a5228de9043a625d with commit message 'Add kfserving API initial integration to executor for REST' into base branch master
+Merged SHA 21d975f646ca5c8e13a1341950618eac82125e99 with commit message 'Merge branch 'master' into 1648_v2_dataplane' into base branch master
+Merged SHA 6f21e36d858807a5cae36f7775f10104328f479f with commit message 'initial additions for triton server' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-2023-no-dvlmp-27[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=2023
++ BUILD_NUMBER=27
++ PIPELINE_CONTEXT=notebooks
+++ cat
++++ date
++ COMMENT_MSG='Mon Sep 21 17:38:20 UTC 2020
+The logs for [notebooks] [27] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2023/27.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2023 --build=27'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=2023 '--comment=Mon Sep 21 17:38:20 UTC 2020
+The logs for [notebooks] [27] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2023/27.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2023 --build=27'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2023-no-dvlmp-27[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-2023-no-dvlmp-2d9sd[0m
+{"level":"info","ts":1600709903.0415776,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1600709903.045037,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2023-no-dvlmp-27[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-2023-no-dvlmp-62s7w[0m
+{"level":"info","ts":1600709903.3766072,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1600709903.9026432,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2023-no-dvlmp-27[0m stage [32mend-to-end[0m and container [32mstep-credential-initializer-d2ftq[0m
+{"level":"info","ts":1600709911.697398,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1600709911.6981921,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2023-no-dvlmp-27[0m stage [32mend-to-end[0m and container [32mstep-working-dir-initializer-8qm96[0m
+{"level":"info","ts":1600709912.778548,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1600709912.782069,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2023-no-dvlmp-27[0m stage [32mend-to-end[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2023-no-dvlmp-27[0m stage [32mend-to-end[0m and container [32mstep-create-dir-workspace-klcdc[0m
+{"level":"info","ts":1600709921.1504376,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1600709921.1522262,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2023-no-dvlmp-27[0m stage [32mend-to-end[0m and container [32mstep-source-copy-workspace-fhx6x[0m
+{"level":"info","ts":1600709921.477914,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1600709926.0687454,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2023-no-dvlmp-27[0m stage [32mend-to-end[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2023-no-dvlmp-27[0m stage [32mend-to-end[0m and container [32mstep-test-end-to-end[0m
+Test run type is: [notebooks]
+Starting Docker: docker.
+[SETUP] Waiting for Docker to be ready, sleeping for 1 seconds ...
+kind create cluster --config ../resources/kind_config.yaml
+Creating cluster "kind" ...
+ • Ensuring node image (kindest/node:v1.16.3) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.16.3) 🖼
+ • Preparing nodes 📦  ...
+ ✓ Preparing nodes 📦
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+ • Joining worker nodes 🚜  ...
+ ✓ Joining worker nodes 🚜
+Set kubectl context to "kind-kind"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-kind
+
+Have a question, bug, or feature request? Let us know! https://kind.sigs.k8s.io/#community 🙂
+`kind get kubeconfig-path` is deprecated!
+
+KIND will export and merge kubeconfig like kops, minikube, etc.
+This command is now unnecessary and will be removed in a future release.
+
+For more info see: https://github.com/kubernetes-sigs/kind/issues/1060
+See also the output of `kind create cluster`
+
+Files changed in python folder:
+SKIPPING PYTHON IMAGE BUILD...
+Files changed in operator folder:
+operator/apis/machinelearning.seldon.io/v1/prepack.go
+operator/apis/machinelearning.seldon.io/v1/seldondeployment_types.go
+operator/apis/machinelearning.seldon.io/v1/seldondeployment_webhook.go
+operator/apis/machinelearning.seldon.io/v1/seldondeployment_webhook_test.go
+operator/config/manager/configmap.yaml
+operator/constants/constants.go
+operator/controllers/seldondeployment_prepackaged_servers.go
+operator/controllers/seldondeployment_prepackaged_servers_test.go
+operator/controllers/suite_test.go
+cd ../../operator && make kind-image-install
+make[1]: Entering directory '/workspace/source/operator'
+go: creating new go.mod: module tmp
+go: downloading sigs.k8s.io/controller-tools v0.2.5
+go: found sigs.k8s.io/controller-tools/cmd/controller-gen in sigs.k8s.io/controller-tools v0.2.5
+go: downloading github.com/spf13/cobra v0.0.5
+go: downloading k8s.io/api v0.17.0
+go: downloading sigs.k8s.io/yaml v1.1.0
+go: downloading k8s.io/apimachinery v0.17.0
+go: downloading github.com/fatih/color v1.7.0
+go: downloading k8s.io/apiextensions-apiserver v0.17.0
+go: downloading github.com/gobuffalo/flect v0.2.0
+go: downloading github.com/mattn/go-colorable v0.1.2
+go: downloading github.com/inconshreveable/mousetrap v1.0.0
+go: downloading golang.org/x/tools v0.0.0-20190920225731-5eefd052ad72
+go: downloading github.com/spf13/pflag v1.0.5
+go: downloading gopkg.in/yaml.v3 v3.0.0-20190905181640-827449938966
+go: downloading github.com/mattn/go-isatty v0.0.8
+go: downloading golang.org/x/sys v0.0.0-20190826190057-c7b8b68b1456
+go: downloading github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
+go: downloading gopkg.in/yaml.v2 v2.2.4
+go: downloading github.com/google/gofuzz v1.0.0
+go: downloading k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
+go: downloading k8s.io/klog v1.0.0
+go: downloading gopkg.in/inf.v0 v0.9.1
+go: downloading golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
+go: downloading golang.org/x/text v0.3.2
+/builder/home/go/bin/controller-gen object:headerFile=./hack/boilerplate.go.txt paths="./..."
+go fmt ./...
+go vet ./...
+go: downloading github.com/onsi/gomega v1.10.1
+go: downloading github.com/onsi/ginkgo v1.14.0
+go: downloading golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+go: downloading github.com/nxadm/tail v1.4.4
+go: downloading gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
+/builder/home/go/bin/controller-gen "crd:trivialVersions=true" rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+rm -rf generated
+mkdir generated
+kustomize build config/default/ -o generated
+cp generated/apiextensions.k8s.io_v1beta1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml testing/machinelearning.seldon.io_seldondeployments.yaml
+ginkgo -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis
+[1600710144] [1mController Suite[0m - 50/50 specs test k8s client
+&{Reader:0xc000f9e7e0 Writer:0xc0006d4cf0 StatusClient:0xc0006d4cf0}
+[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0mE0921 17:43:53.246313   27162 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1.ConfigMap: Get "http://127.0.0.1:42109/api/v1/configmaps?allowWatchBookmarks=true&resourceVersion=118&timeoutSeconds=395&watch=true": dial tcp 127.0.0.1:42109: connect: connection refused
+E0921 17:43:53.247115   27162 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v2beta1.HorizontalPodAutoscaler: Get "http://127.0.0.1:42109/apis/autoscaling/v2beta1/horizontalpodautoscalers?allowWatchBookmarks=true&resourceVersion=349&timeoutSeconds=440&watch=true": dial tcp 127.0.0.1:42109: connect: connection refused
+E0921 17:43:53.247988   27162 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1.Deployment: Get "http://127.0.0.1:42109/apis/apps/v1/deployments?allowWatchBookmarks=true&resourceVersion=375&timeoutSeconds=503&watch=true": dial tcp 127.0.0.1:42109: connect: connection refused
+E0921 17:43:53.248018   27162 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1.Namespace: Get "http://127.0.0.1:42109/api/v1/namespaces?allowWatchBookmarks=true&resourceVersion=341&timeoutSeconds=365&watch=true": dial tcp 127.0.0.1:42109: connect: connection refused
+E0921 17:43:53.248069   27162 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1alpha3.VirtualService: Get "http://127.0.0.1:42109/apis/networking.istio.io/v1alpha3/virtualservices?allowWatchBookmarks=true&resourceVersion=118&timeoutSeconds=384&watch=true": dial tcp 127.0.0.1:42109: connect: connection refused
+E0921 17:43:53.248076   27162 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1.Service: Get "http://127.0.0.1:42109/api/v1/services?allowWatchBookmarks=true&resourceVersion=364&timeoutSeconds=387&watch=true": dial tcp 127.0.0.1:42109: connect: connection refused
+E0921 17:43:53.248102   27162 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1.SeldonDeployment: Get "http://127.0.0.1:42109/apis/machinelearning.seldon.io/v1/seldondeployments?allowWatchBookmarks=true&resourceVersion=381&timeoutSeconds=360&watch=true": dial tcp 127.0.0.1:42109: connect: connection refused
+
+ [32mSUCCESS![0m 29.090673339s PASS
+coverage: 66.4% of statements
+=== RUN   TestGcsSecret
+--- PASS: TestGcsSecret (0.00s)
+PASS
+coverage: 100.0% of statements
+=== RUN   TestS3Secret
+--- PASS: TestS3Secret (0.00s)
+PASS
+coverage: 94.6% of statements
+=== RUN   TestGetEnvAsBool
+--- PASS: TestGetEnvAsBool (0.00s)
+=== RUN   TestAddEnvVarToDeploymentContainers
+--- PASS: TestAddEnvVarToDeploymentContainers (0.00s)
+=== RUN   TestMountSecretToDeploymentContainers
+--- PASS: TestMountSecretToDeploymentContainers (0.00s)
+PASS
+coverage: 30.0% of statements
+=== RUN   TestGenerateCerts
+--- PASS: TestGenerateCerts (5.44s)
+=== RUN   TestConfigmapCreate
+--- PASS: TestConfigmapCreate (0.11s)
+=== RUN   TestCRDCreate
+--- PASS: TestCRDCreate (0.09s)
+=== RUN   TestMutatingWebhookCreate
+--- PASS: TestMutatingWebhookCreate (1.56s)
+=== RUN   TestMutatingWebhookCreateNamespaced
+--- PASS: TestMutatingWebhookCreateNamespaced (4.44s)
+=== RUN   TestValidatingWebhookCreate
+--- PASS: TestValidatingWebhookCreate (3.61s)
+=== RUN   TestValidatingWebhookCreateNamespaced
+--- PASS: TestValidatingWebhookCreateNamespaced (3.65s)
+=== RUN   TestWebHookSvcCreate
+--- PASS: TestWebHookSvcCreate (5.46s)
+PASS
+coverage: 52.1% of statements
+=== RUN   TestImageSetNormal
+    prepack_test.go:50: Scenario: GRPC image with version
+    prepack_test.go:50: Scenario: GRPC image with no version
+    prepack_test.go:50: Scenario: REST image with version
+    prepack_test.go:50: Scenario: REST image with no version
+--- PASS: TestImageSetNormal (0.01s)
+=== RUN   TestGetPredictorConfig
+    prepack_test.go:81: Scenario: related image sklearn
+    prepack_test.go:81: Scenario: default image sklearn
+--- PASS: TestGetPredictorConfig (0.01s)
+=== RUN   TestGetDeploymentNameOneModel
+--- PASS: TestGetDeploymentNameOneModel (0.00s)
+=== RUN   TestGetDeploymentNameLong
+--- PASS: TestGetDeploymentNameLong (0.00s)
+=== RUN   TestValidProtocolTransportServerType
+--- PASS: TestValidProtocolTransportServerType (0.00s)
+=== RUN   TestValidateBadProtocol
+--- PASS: TestValidateBadProtocol (0.00s)
+=== RUN   TestValidateBadTransport
+--- PASS: TestValidateBadTransport (0.00s)
+=== RUN   TestValidateBadServerType
+--- PASS: TestValidateBadServerType (0.00s)
+=== RUN   TestValidateMixedTransport
+--- PASS: TestValidateMixedTransport (0.00s)
+=== RUN   TestValidateMixedMultipleTransport
+--- PASS: TestValidateMixedMultipleTransport (0.00s)
+=== RUN   TestDefaultSingleContainer
+--- PASS: TestDefaultSingleContainer (0.00s)
+=== RUN   TestMetricsPortAddedTwoContainers
+--- PASS: TestMetricsPortAddedTwoContainers (0.00s)
+=== RUN   TestMetricsPortAddedTwoComponentSpecsTwoContainers
+--- PASS: TestMetricsPortAddedTwoComponentSpecsTwoContainers (0.00s)
+=== RUN   TestOverrideMetricsPortName
+Failed to find config map seldon-config
+no kind is registered for the type v1.ConfigMap in scheme "pkg/runtime/scheme.go:101"
+--- PASS: TestOverrideMetricsPortName (0.00s)
+=== RUN   TestPortUseExisting
+--- PASS: TestPortUseExisting (0.00s)
+=== RUN   TestMetricsPortAddedToPrepacked
+--- PASS: TestMetricsPortAddedToPrepacked (0.00s)
+=== RUN   TestPredictorProtocolGrpc
+--- PASS: TestPredictorProtocolGrpc (0.00s)
+=== RUN   TestPrepackedWithExistingContainer
+--- PASS: TestPrepackedWithExistingContainer (0.01s)
+=== RUN   TestPrepackedWithCustom
+--- PASS: TestPrepackedWithCustom (0.00s)
+=== RUN   TestPrepackedWithExistingContainerAndImage
+--- PASS: TestPrepackedWithExistingContainerAndImage (0.00s)
+=== RUN   TestMetricsPortAddedToTwoPrepacked
+--- PASS: TestMetricsPortAddedToTwoPrepacked (0.00s)
+=== RUN   TestDefaultPrepackagedServerType
+--- PASS: TestDefaultPrepackagedServerType (0.00s)
+=== RUN   TestValidateSingleModel
+--- PASS: TestValidateSingleModel (0.00s)
+=== RUN   TestValidateSingleModelNoName
+--- PASS: TestValidateSingleModelNoName (0.00s)
+=== RUN   TestValidateNoEngineMultiGraph
+--- PASS: TestValidateNoEngineMultiGraph (0.00s)
+=== RUN   TestValidateDuplPredictorName
+--- PASS: TestValidateDuplPredictorName (0.00s)
+=== RUN   TestValidateTrafficSum
+--- PASS: TestValidateTrafficSum (0.00s)
+=== RUN   TestDefaultABTest
+--- PASS: TestDefaultABTest (0.00s)
+=== RUN   TestValidateTensorflowProtocolNormalPrepackaged
+--- PASS: TestValidateTensorflowProtocolNormalPrepackaged (0.00s)
+=== RUN   TestValidateTensorflowProtocolNormal
+--- PASS: TestValidateTensorflowProtocolNormal (0.00s)
+=== RUN   TestValidateV2ProtocolNormal
+--- PASS: TestValidateV2ProtocolNormal (0.00s)
+=== RUN   TestPredictorNoGraph
+--- PASS: TestPredictorNoGraph (0.00s)
+=== RUN   TestShadowPredictor
+--- PASS: TestShadowPredictor (0.00s)
+=== RUN   TestNoPredictors
+--- PASS: TestNoPredictors (0.00s)
+=== RUN   TestValidateTwoShadows
+--- PASS: TestValidateTwoShadows (0.01s)
+PASS
+coverage: 41.8% of statements
+path is /workspace/source/operator
+All profiles combined
+
+Ginkgo ran 6 suites in 1m53.142286405s
+Test Suite Passed
+docker build . -t seldonio/seldon-core-operator:1.2.3-dev
+Sending build context to Docker daemon  10.31MB
+Step 1/28 : FROM golang:1.13.2 as builder
+1.13.2: Pulling from library/golang
+c7b7d16361e0: Pulling fs layer
+b7a128769df1: Pulling fs layer
+1128949d0793: Pulling fs layer
+667692510b70: Pulling fs layer
+c70d80036479: Pulling fs layer
+a8669f8c1a42: Pulling fs layer
+433331673060: Pulling fs layer
+c70d80036479: Waiting
+a8669f8c1a42: Waiting
+433331673060: Waiting
+667692510b70: Waiting
+b7a128769df1: Verifying Checksum
+b7a128769df1: Download complete
+1128949d0793: Download complete
+c7b7d16361e0: Verifying Checksum
+c7b7d16361e0: Download complete
+667692510b70: Verifying Checksum
+667692510b70: Download complete
+c70d80036479: Download complete
+433331673060: Verifying Checksum
+433331673060: Download complete
+a8669f8c1a42: Verifying Checksum
+a8669f8c1a42: Download complete
+c7b7d16361e0: Pull complete
+b7a128769df1: Pull complete
+1128949d0793: Pull complete
+667692510b70: Pull complete
+c70d80036479: Pull complete
+a8669f8c1a42: Pull complete
+433331673060: Pull complete
+Digest: sha256:b3086f21bfbe896973dd6147b46f2736a7deb2c04ed76219835befa0244a9562
+Status: Downloaded newer image for golang:1.13.2
+ ---> e37698ff7351
+Step 2/28 : WORKDIR /workspace
+ ---> Running in 048a6ec36b26
+Removing intermediate container 048a6ec36b26
+ ---> e9ae2975f43c
+Step 3/28 : COPY go.mod go.mod
+ ---> d55bb72a6257
+Step 4/28 : COPY go.sum go.sum
+ ---> 7ff5e754fd6c
+Step 5/28 : RUN go mod download
+ ---> Running in 59d47c3ba719
+[91mgo: finding cloud.google.com/go v0.38.0
+[0m[91mgo: finding github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78
+[0m[91mgo: finding github.com/Azure/go-autorest v14.2.0+incompatible
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest v0.9.0
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/adal v0.9.0
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/date v0.3.0
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/mocks v0.4.0
+[0m[91mgo: finding github.com/Azure/go-autorest/logger v0.1.0
+[0m[91mgo: finding github.com/Azure/go-autorest/tracing v0.6.0
+[0m[91mgo: finding github.com/BurntSushi/toml v0.3.1
+[0m[91mgo: finding github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
+[0m[91mgo: finding github.com/PuerkitoBio/purell v1.1.1
+[0m[91mgo: finding github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
+[0m[91mgo: finding github.com/agnivade/levenshtein v1.0.1
+[0m[91mgo: finding github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc
+[0m[91mgo: finding github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf
+[0m[91mgo: finding github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
+[0m[91mgo: finding github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6
+[0m[91mgo: finding github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
+[0m[91mgo: finding github.com/beorn7/perks v1.0.1
+[0m[91mgo: finding github.com/bgentry/speakeasy v0.1.0
+[0m[91mgo: finding github.com/blang/semver v3.5.0+incompatible
+[0m[91mgo: finding github.com/census-instrumentation/opencensus-proto v0.2.1
+[0m[91mgo: finding github.com/client9/misspell v0.3.4
+[0m[91mgo: finding github.com/cockroachdb/datadriven v0.0.0-20190809214429-80d97fb3cbaa
+[0m[91mgo: finding github.com/coreos/etcd v3.3.10+incompatible
+[0m[91mgo: finding github.com/coreos/go-etcd v2.0.0+incompatible
+[0m[91mgo: finding github.com/coreos/go-oidc v2.1.0+incompatible
+[0m[91mgo: finding github.com/coreos/go-semver v0.3.0
+[0m[91mgo: finding github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e
+[0m[91mgo: finding github.com/coreos/pkg v0.0.0-20180108230652-97fdf19511ea
+[0m[91mgo: finding github.com/cpuguy83/go-md2man v1.0.10
+[0m[91mgo: finding github.com/creack/pty v1.1.7
+[0m[91mgo: finding github.com/davecgh/go-spew v1.1.1
+[0m[91mgo: finding github.com/dgrijalva/jwt-go v3.2.0+incompatible
+[0m[91mgo: finding github.com/docker/docker v0.7.3-0.20190327010347-be7ac8be2ae0
+[0m[91mgo: finding github.com/docker/go-units v0.4.0
+[0m[91mgo: finding github.com/docker/spdystream v0.0.0-20160310174837-449fdfce4d96
+[0m[91mgo: finding github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
+[0m[91mgo: finding github.com/dustin/go-humanize v1.0.0
+[0m[91mgo: finding github.com/elazarl/goproxy v0.0.0-20180725130230-947c36da3153
+[0m[91mgo: finding github.com/emicklei/go-restful v2.9.5+incompatible
+[0m[91mgo: finding github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473
+[0m[91mgo: finding github.com/envoyproxy/protoc-gen-validate v0.1.0
+[0m[91mgo: finding github.com/evanphx/json-patch v4.5.0+incompatible
+[0m[91mgo: finding github.com/fatih/color v1.7.0
+[0m[91mgo: finding github.com/fsnotify/fsnotify v1.4.9
+[0m[91mgo: finding github.com/ghodss/yaml v1.0.0
+[0m[91mgo: finding github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
+[0m[91mgo: finding github.com/go-kit/kit v0.8.0
+[0m[91mgo: finding github.com/go-logfmt/logfmt v0.3.0
+[0m[91mgo: finding github.com/go-logr/logr v0.1.0
+[0m[91mgo: finding github.com/go-logr/zapr v0.1.0
+[0m[91mgo: finding github.com/go-openapi/analysis v0.19.5
+[0m[91mgo: finding github.com/go-openapi/errors v0.19.2
+[0m[91mgo: finding github.com/go-openapi/jsonpointer v0.19.3
+[0m[91mgo: finding github.com/go-openapi/jsonreference v0.19.3
+[0m[91mgo: finding github.com/go-openapi/loads v0.19.4
+[0m[91mgo: finding github.com/go-openapi/runtime v0.19.4
+[0m[91mgo: finding github.com/go-openapi/spec v0.19.3
+[0m[91mgo: finding github.com/go-openapi/strfmt v0.19.3
+[0m[91mgo: finding github.com/go-openapi/swag v0.19.5
+[0m[91mgo: finding github.com/go-openapi/validate v0.19.5
+[0m[91mgo: finding github.com/go-stack/stack v1.8.0
+[0m[91mgo: finding github.com/gogo/protobuf v1.3.1
+[0m[91mgo: finding github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
+[0m[91mgo: finding github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6
+[0m[91mgo: finding github.com/golang/mock v1.2.0
+[0m[91mgo: finding github.com/golang/protobuf v1.4.2
+[0m[91mgo: finding github.com/google/btree v1.0.0
+[0m[91mgo: finding github.com/google/go-cmp v0.5.0
+[0m[91mgo: finding github.com/google/gofuzz v1.1.0
+[0m[91mgo: finding github.com/google/martian v2.1.0+incompatible
+[0m[91mgo: finding github.com/google/pprof v0.0.0-20181206194817-3ea8567a2e57
+[0m[91mgo: finding github.com/google/renameio v0.1.0
+[0m[91mgo: finding github.com/google/uuid v1.1.1
+[0m[91mgo: finding github.com/googleapis/gax-go/v2 v2.0.4
+[0m[91mgo: finding github.com/googleapis/gnostic v0.3.1
+[0m[91mgo: finding github.com/gophercloud/gophercloud v0.1.0
+[0m[91mgo: finding github.com/gorilla/websocket v1.4.0
+[0m[91mgo: finding github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7
+[0m[91mgo: finding github.com/grpc-ecosystem/go-grpc-middleware v1.0.1-0.20190118093823-f849b5445de4
+[0m[91mgo: finding github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
+[0m[91mgo: finding github.com/grpc-ecosystem/grpc-gateway v1.9.5
+[0m[91mgo: finding github.com/hashicorp/golang-lru v0.5.4
+[0m[91mgo: finding github.com/hashicorp/hcl v1.0.0
+[0m[91mgo: finding github.com/hpcloud/tail v1.0.0
+[0m[91mgo: finding github.com/imdario/mergo v0.3.9
+[0m[91mgo: finding github.com/inconshreveable/mousetrap v1.0.0
+[0m[91mgo: finding github.com/jessevdk/go-flags v1.4.0
+[0m[91mgo: finding github.com/jonboulle/clockwork v0.1.0
+[0m[91mgo: finding github.com/json-iterator/go v1.1.10
+[0m[91mgo: finding github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024
+[0m[91mgo: finding github.com/julienschmidt/httprouter v1.2.0
+[0m[91mgo: finding github.com/kisielk/errcheck v1.2.0
+[0m[91mgo: finding github.com/kisielk/gotool v1.0.0
+[0m[91mgo: finding github.com/konsorten/go-windows-terminal-sequences v1.0.1
+[0m[91mgo: finding github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515
+[0m[91mgo: finding github.com/kr/pretty v0.1.0
+[0m[91mgo: finding github.com/kr/pty v1.1.5
+[0m[91mgo: finding github.com/kr/text v0.1.0
+[0m[91mgo: finding github.com/magiconair/properties v1.8.0
+[0m[91mgo: finding github.com/mailru/easyjson v0.7.0
+[0m[91mgo: finding github.com/mattn/go-colorable v0.0.9
+[0m[91mgo: finding github.com/mattn/go-isatty v0.0.4
+[0m[91mgo: finding github.com/mattn/go-runewidth v0.0.2
+[0m[91mgo: finding github.com/matttproud/golang_protobuf_extensions v1.0.1
+[0m[91mgo: finding github.com/mitchellh/go-homedir v1.1.0
+[0m[91mgo: finding github.com/mitchellh/mapstructure v1.1.2
+[0m[91mgo: finding github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+[0m[91mgo: finding github.com/modern-go/reflect2 v1.0.1
+[0m[91mgo: finding github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822
+[0m[91mgo: finding github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223
+[0m[91mgo: finding github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f
+[0m[91mgo: finding github.com/nxadm/tail v1.4.4
+[0m[91mgo: finding github.com/olekukonko/tablewriter v0.0.0-20170122224234-a0225b3f23b5
+[0m[91mgo: finding github.com/onsi/ginkgo v1.14.0
+[0m[91mgo: finding github.com/onsi/gomega v1.10.1
+[0m[91mgo: finding github.com/pborman/uuid v1.2.0
+[0m[91mgo: finding github.com/pelletier/go-toml v1.2.0
+[0m[91mgo: finding github.com/peterbourgon/diskv v2.0.1+incompatible
+[0m[91mgo: finding github.com/pkg/errors v0.8.1
+[0m[91mgo: finding github.com/pmezard/go-difflib v1.0.0
+[0m[91mgo: finding github.com/pquerna/cachecontrol v0.0.0-20171018203845-0dec1b30a021
+[0m[91mgo: finding github.com/prometheus/client_golang v1.0.0
+[0m[91mgo: finding github.com/prometheus/client_model v0.2.0
+[0m[91mgo: finding github.com/prometheus/common v0.4.1
+[0m[91mgo: finding github.com/prometheus/procfs v0.0.11
+[0m[91mgo: finding github.com/rogpeppe/fastuuid v0.0.0-20150106093220-6724a57986af
+[0m[91mgo: finding github.com/rogpeppe/go-internal v1.3.0
+[0m[91mgo: finding github.com/russross/blackfriday v1.5.2
+[0m[91mgo: finding github.com/sergi/go-diff v1.0.0
+[0m[91mgo: finding github.com/sirupsen/logrus v1.4.2
+[0m[91mgo: finding github.com/soheilhy/cmux v0.1.4
+[0m[91mgo: finding github.com/spf13/afero v1.2.2
+[0m[91mgo: finding github.com/spf13/cast v1.3.0
+[0m[91mgo: finding github.com/spf13/cobra v0.0.5
+[0m[91mgo: finding github.com/spf13/jwalterweatherman v1.0.0
+[0m[91mgo: finding github.com/spf13/pflag v1.0.5
+[0m[91mgo: finding github.com/spf13/viper v1.3.2
+[0m[91mgo: finding github.com/stretchr/ob** v0.2.0
+[0m[91mgo: finding github.com/stretchr/testify v1.4.0
+[0m[91mgo: finding github.com/tidwall/pretty v1.0.0
+[0m[91mgo: finding github.com/tmc/grpc-websocket-proxy v0.0.0-20170815181823-89b8d40f7ca8
+[0m[91mgo: finding github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8
+[0m[91mgo: finding github.com/urfave/cli v1.20.0
+[0m[91mgo: finding github.com/vektah/gqlparser v1.1.2
+[0m[91mgo: finding github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2
+[0m[91mgo: finding github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77
+[0m[91mgo: finding go.etcd.io/bbolt v1.3.3
+[0m[91mgo: finding go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
+[0m[91mgo: finding go.mongodb.org/mongo-driver v1.1.2
+[0m[91mgo: finding go.opencensus.io v0.21.0
+[0m[91mgo: finding go.uber.org/atomic v1.6.0
+[0m[91mgo: finding go.uber.org/multierr v1.5.0
+[0m[91mgo: finding go.uber.org/tools v0.0.0-20190618225709-2cfd321de3ee
+[0m[91mgo: finding go.uber.org/zap v1.15.0
+[0m[91mgo: finding golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+[0m[91mgo: finding golang.org/x/exp v0.0.0-20190121172915-509febef88a4
+[0m[91mgo: finding golang.org/x/lint v0.0.0-20190930215403-16217165b5de
+[0m[91mgo: finding golang.org/x/mod v0.0.0-20190513183733-4bf6d317e70e
+[0m[91mgo: finding golang.org/x/net v0.0.0-20200520004742-59133d7f0dd7
+[0m[91mgo: finding golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+[0m[91mgo: finding golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
+[0m[91mgo: finding golang.org/x/sys v0.0.0-20200519105757-fe76b779f299
+[0m[91mgo: finding golang.org/x/text v0.3.3
+[0m[91mgo: finding golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0
+[0m[91mgo: finding golang.org/x/tools v0.0.0-20191029190741-b9c20aec41a5
+[0m[91mgo: finding golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+[0m[91mgo: finding gomodules.xyz/jsonpatch/v2 v2.0.1
+[0m[91mgo: finding google.golang.org/api v0.4.0
+[0m[91mgo: finding google.golang.org/appengine v1.6.5
+[0m[91mgo: finding google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
+[0m[91mgo: finding google.golang.org/grpc v1.26.0
+[0m[91mgo: finding google.golang.org/protobuf v1.23.0
+[0m[91mgo: finding gopkg.in/alecthomas/kingpin.v2 v2.2.6
+[0m[91mgo: finding gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
+[0m[91mgo: finding gopkg.in/cheggaaa/pb.v1 v1.0.25
+[0m[91mgo: finding gopkg.in/errgo.v2 v2.1.0
+[0m[91mgo: finding gopkg.in/fsnotify.v1 v1.4.7
+[0m[91mgo: finding gopkg.in/inf.v0 v0.9.1
+[0m[91mgo: finding gopkg.in/natefinch/lumberjack.v2 v2.0.0
+[0m[91mgo: finding gopkg.in/resty.v1 v1.12.0
+[0m[91mgo: finding gopkg.in/square/go-jose.v2 v2.2.2
+[0m[91mgo: finding gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
+[0m[91mgo: finding gopkg.in/yaml.v2 v2.3.0
+[0m[91mgo: finding gotest.tools v2.2.0+incompatible
+[0m[91mgo: finding honnef.co/go/tools v0.0.1-2019.2.3
+[0m[91mgo: finding istio.io/api v0.0.0-20200513175333-ae3da0d240e3
+[0m[91mgo: finding istio.io/client-go v0.0.0-20200513180646-f8d9d8ff84e6
+[0m[91mgo: finding istio.io/gogo-genproto v0.0.0-20190930162913-45029607206a
+[0m[91mgo: finding k8s.io/api v0.18.8
+[0m[91mgo: finding k8s.io/apiextensions-apiserver v0.18.8
+[0m[91mgo: finding k8s.io/apimachinery v0.18.8
+[0m[91mgo: finding k8s.io/apiserver v0.18.8
+[0m[91mgo: finding k8s.io/client-go v0.18.8
+[0m[91mgo: finding k8s.io/code-generator v0.18.8
+[0m[91mgo: finding k8s.io/component-base v0.18.8
+[0m[91mgo: finding k8s.io/gengo v0.0.0-20200114144118-36b2048a9120
+[0m[91mgo: finding k8s.io/klog v1.0.0
+[0m[91mgo: finding k8s.io/klog/v2 v2.0.0
+[0m[91mgo: finding k8s.io/kube-openapi v0.0.0-20200410145947-61e04a5be9a6
+[0m[91mgo: finding k8s.io/utils v0.0.0-20200603063816-c1c6865ac451
+[0m[91mgo: finding knative.dev/pkg v0.0.0-20200513151758-7b6bb61326ae
+[0m[91mgo: finding sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.7
+[0m[91mgo: finding sigs.k8s.io/controller-runtime v0.6.2
+[0m[91mgo: finding sigs.k8s.io/structured-merge-diff v0.0.0-20190525122527-15d366b2352e
+[0m[91mgo: finding sigs.k8s.io/structured-merge-diff/v3 v3.0.0
+[0m[91mgo: finding sigs.k8s.io/yaml v1.2.0
+[0mRemoving intermediate container 59d47c3ba719
+ ---> b2a0f5cf8f94
+Step 6/28 : COPY main.go main.go
+ ---> b1fad8aa74ab
+Step 7/28 : COPY apis/ apis/
+ ---> c4f3a414d446
+Step 8/28 : COPY controllers/ controllers/
+ ---> 22d6db1c5a3e
+Step 9/28 : COPY utils/ utils/
+ ---> 3341f82c289c
+Step 10/28 : COPY constants/ constants/
+ ---> 793722dc979b
+Step 11/28 : COPY client/ client/
+ ---> 6a71e5ad2251
+Step 12/28 : RUN go build -a -o manager main.go
+ ---> Running in 19d830396591
+Removing intermediate container 19d830396591
+ ---> c731b6dddb97
+Step 13/28 : RUN wget -O hashicorp-golang-lru.tar.gz https://github.com/hashicorp/golang-lru/archive/master.tar.gz
+ ---> Running in dedd9ec87a24
+[91m--2020-09-21 17:47:06--  https://github.com/hashicorp/golang-lru/archive/master.tar.gz
+[0m[91mResolving github.com (github.com)... [0m[91m140.82.121.3
+Connecting to github.com (github.com)|140.82.121.3|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m302 Found
+Location: https://codeload.github.com/hashicorp/golang-lru/tar.gz/master [following]
+[0m[91m--2020-09-21 17:47:06--  https://codeload.github.com/hashicorp/golang-lru/tar.gz/master
+Resolving codeload.github.com (codeload.github.com)... [0m[91m140.82.121.9
+Connecting to codeload.github.com (codeload.github.com)|140.82.121.9|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m200 OK
+[0m[91mLength: unspecified [application/x-gzip]
+Saving to: 'hashicorp-golang-lru.tar.gz'
+[0m[91m
+     0K ..[0m[91m.[0m[91m.[0m[91m...[0m[91m... [0m[91m.[0m[91m..                                         1.08M=0.01s
+
+2020-09-21 17:47:07 (1.08 MB/s) - 'hashicorp-golang-lru.tar.gz' saved [13973]
+
+[0mRemoving intermediate container dedd9ec87a24
+ ---> 3d15fc485aa5
+Step 14/28 : RUN wget -O armon-consul-api.tar.gz https://github.com/armon/consul-api/archive/master.tar.gz
+ ---> Running in ca9fdfcc93b6
+[91m--2020-09-21 17:47:08--  https://github.com/armon/consul-api/archive/master.tar.gz
+[0m[91mResolving github.com (github.com)... [0m[91m140.82.121.3
+Connecting to github.com (github.com)|140.82.121.3|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m302 Found
+Location: https://codeload.github.com/armon/consul-api/tar.gz/master [following]
+[0m[91m--2020-09-21 17:47:08--  https://codeload.github.com/armon/consul-api/tar.gz/master
+Resolving codeload.github.com (codeload.github.com)... [0m[91m140.82.121.9
+Connecting to codeload.github.com (codeload.github.com)|140.82.121.9|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m200 OK
+Length: unspecified [application/x-gzip]
+Saving to: 'armon-consul-api.tar.gz'
+
+     0K [0m[91m.......[0m[91m.[0m[91m.[0m[91m.[0m[91m [0m[91m.[0m[91m.[0m[91m.[0m[91m.[0m[91m.[0m[91m.[0m[91m.[0m[91m [0m[91m [0m[91m [0m[91m [0m[91m [0m[91m [0m[91m [0m[91m [0m[91m [0m[91m [0m[91m [0m[91m                          1.22M=0.01s
+
+2020-09-21 17:47:08 (1.22 MB/s) - 'armon-consul-api.tar.gz' saved [17977]
+
+[0mRemoving intermediate container ca9fdfcc93b6
+ ---> 56497bcfa6c4
+Step 15/28 : RUN wget -O hasicorp-hcl.tar.gz https://github.com/hashicorp/hcl/archive/master.tar.gz
+ ---> Running in 103f503a5873
+[91m--2020-09-21 17:47:10--  https://github.com/hashicorp/hcl/archive/master.tar.gz
+[0m[91mResolving github.com (github.com)... [0m[91m140.82.121.3
+Connecting to github.com (github.com)|140.82.121.3|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m302 Found
+[0m[91mLocation: https://codeload.github.com/hashicorp/hcl/tar.gz/master [following]
+[0m[91m--2020-09-21 17:47:10--  https://codeload.github.com/hashicorp/hcl/tar.gz/master
+Resolving codeload.github.com (codeload.github.com)... [0m[91m140.82.121.10
+Connecting to codeload.github.com (codeload.github.com)|140.82.121.10|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m200 OK
+Length: unspecified [application/x-gzip]
+Saving to: 'hasicorp-hcl.tar.gz'
+
+     0K[0m[91m .[0m[91m......... .[0m[91m.....[0m[91m.... .......... .......[0m[91m... .......... 1.87M
+    50K .......... ..........[0m[91m .                                55.6M=0.03s
+
+2020-09-21 17:47:10 (2.62 MB/s) - 'hasicorp-hcl.tar.gz' saved [72956]
+
+[0mRemoving intermediate container 103f503a5873
+ ---> 83261493af74
+Step 16/28 : FROM gcr.io/distroless/base:latest
+latest: Pulling from distroless/base
+4000adbbc3eb: Pulling fs layer
+69e2f037cdb3: Pulling fs layer
+4000adbbc3eb: Verifying Checksum
+4000adbbc3eb: Download complete
+69e2f037cdb3: Verifying Checksum
+69e2f037cdb3: Download complete
+4000adbbc3eb: Pull complete
+69e2f037cdb3: Pull complete
+Digest: sha256:be73c7e6bb15793be42cdba97ca55d731558d8a625acdc13f9b8d49e3ef7de02
+Status: Downloaded newer image for gcr.io/distroless/base:latest
+ ---> ae9876e34217
+Step 17/28 : WORKDIR /
+ ---> Running in 84914ddecc93
+Removing intermediate container 84914ddecc93
+ ---> 5b63cb429e4b
+Step 18/28 : COPY --from=builder /workspace/manager .
+ ---> f22075e5044f
+Step 19/28 : COPY licenses/license.txt licenses/license.txt
+ ---> 59551e18490f
+Step 20/28 : COPY --from=builder /workspace/hashicorp-golang-lru.tar.gz licenses/mpl_source/hashicorp-golang-lru.tar.gz
+ ---> df97bd7f9137
+Step 21/28 : COPY --from=builder /workspace/armon-consul-api.tar.gz licenses/mpl_source/armon-consul-api.tar.gz
+ ---> ac115dc90747
+Step 22/28 : COPY --from=builder /workspace/hasicorp-hcl.tar.gz licenses/mpl_source/hasicorp-hcl.tar.gz
+ ---> 33b716d13aa7
+Step 23/28 : COPY generated/admissionregistration.k8s.io_v1beta1_mutatingwebhookconfiguration_seldon-mutating-webhook-configuration.yaml /tmp/operator-resources/mutate.yaml
+ ---> 1879cce61cdf
+Step 24/28 : COPY generated/admissionregistration.k8s.io_v1beta1_validatingwebhookconfiguration_seldon-validating-webhook-configuration.yaml /tmp/operator-resources/validate.yaml
+ ---> a200f62ca1ca
+Step 25/28 : COPY generated/~g_v1_service_seldon-webhook-service.yaml /tmp/operator-resources/service.yaml
+ ---> d50cbbed7e2f
+Step 26/28 : COPY generated/~g_v1_configmap_seldon-config.yaml /tmp/operator-resources/configmap.yaml
+ ---> 3b5169a7c6f8
+Step 27/28 : COPY generated/apiextensions.k8s.io_v1beta1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml /tmp/operator-resources/crd.yaml
+ ---> 85de68b6f4a5
+Step 28/28 : ENTRYPOINT ["/manager"]
+ ---> Running in aadd14571030
+Removing intermediate container aadd14571030
+ ---> e3d979b69817
+Successfully built e3d979b69817
+Successfully tagged seldonio/seldon-core-operator:1.2.3-dev
+docker save seldonio/seldon-core-operator:1.2.3-dev > operator.tar
+kind load image-archive operator.tar --name kind
+make[1]: Leaving directory '/workspace/source/operator'
+Files changed in engine folder:
+SKIPPING ENGINE IMAGE BUILD...
+Files changed in executor folder:
+executor/.gitignore
+executor/Makefile
+executor/api/constants.go
+executor/api/grpc/kfserving/client.go
+executor/api/grpc/kfserving/inference/grpc_service.pb.go
+executor/api/grpc/kfserving/inference/grpc_service.proto
+executor/api/grpc/kfserving/inference/model_config.pb.go
+executor/api/grpc/kfserving/inference/model_config.proto
+executor/api/grpc/kfserving/server.go
+executor/api/grpc/tensorflow/client.go
+executor/api/rest/client.go
+executor/api/rest/kfserving.go
+executor/api/rest/server.go
+executor/cmd/executor/main.go
+executor/go.sum
+executor/samples/local/kfserving/.gitignore
+executor/samples/local/kfserving/Makefile
+executor/samples/local/kfserving/model_rest.yaml
+cd ../../executor && make kind-image-install
+make[1]: Entering directory '/workspace/source/executor'
+rm _operator -rf
+cp -r ../operator _operator
+go fmt ./api/... ./predictor/... ./k8s/... ./logger/...
+go: downloading google.golang.org/grpc v1.32.0
+go: downloading github.com/pkg/errors v0.9.1
+go: downloading github.com/grpc-ecosystem/go-grpc-middleware v1.2.1
+go: downloading github.com/opentracing/opentracing-go v1.2.0
+go: downloading github.com/google/uuid v1.1.2
+go: downloading github.com/prometheus/client_golang v1.7.1
+go: downloading github.com/prometheus/procfs v0.1.3
+go: downloading golang.org/x/net v0.0.0-20200625001655-4c5254603344
+go: downloading github.com/prometheus/common v0.13.0
+go: downloading github.com/cloudevents/sdk-go v1.2.0
+go: downloading google.golang.org/genproto v0.0.0-20200423170343-7949de9c1215
+go: downloading golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae
+go: downloading golang.org/x/time v0.0.0-20191024005414-555d28b269f0
+go: downloading github.com/gorilla/mux v1.8.0
+go: downloading github.com/uber/jaeger-client-go v2.25.0+incompatible
+go: downloading go.opencensus.io v0.22.2
+go: downloading github.com/uber/jaeger-lib v2.2.0+incompatible
+go: downloading github.com/cespare/xxhash/v2 v2.1.1
+go: downloading github.com/confluentinc/confluent-kafka-go v1.4.2
+go: downloading github.com/lightstep/tracecontext.go v0.0.0-20181129014701-1757c391b1ac
+go vet ./api/... ./predictor/... ./k8s/... ./logger/...
+go: downloading gotest.tools v2.2.0+incompatible
+go test ./api/... ./predictor/... ./k8s/... ./logger/... -coverprofile cover.out
+?   	github.com/seldonio/seldon-core/executor/api	[no test files]
+?   	github.com/seldonio/seldon-core/executor/api/client	[no test files]
+ok  	github.com/seldonio/seldon-core/executor/api/grpc	0.215s	coverage: 18.0% of statements
+?   	github.com/seldonio/seldon-core/executor/api/grpc/kfserving	[no test files]
+?   	github.com/seldonio/seldon-core/executor/api/grpc/kfserving/inference	[no test files]
+ok  	github.com/seldonio/seldon-core/executor/api/grpc/seldon	1.233s	coverage: 48.5% of statements
+?   	github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto	[no test files]
+?   	github.com/seldonio/seldon-core/executor/api/grpc/seldon/test	[no test files]
+ok  	github.com/seldonio/seldon-core/executor/api/grpc/tensorflow	0.119s	coverage: 19.2% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/kafka	0.084s	coverage: 1.2% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/metric	0.151s	coverage: 31.6% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/payload	0.100s	coverage: 64.3% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/rest	1.114s	coverage: 63.1% of statements
+?   	github.com/seldonio/seldon-core/executor/api/test	[no test files]
+ok  	github.com/seldonio/seldon-core/executor/api/tracing	0.017s	coverage: 72.2% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/util	0.098s	coverage: 48.1% of statements
+ok  	github.com/seldonio/seldon-core/executor/predictor	0.104s	coverage: 69.4% of statements
+ok  	github.com/seldonio/seldon-core/executor/k8s	0.028s	coverage: 72.7% of statements
+?   	github.com/seldonio/seldon-core/executor/logger	[no test files]
+mkdir -p api/rest/openapi/
+cp ../openapi/swagger-ui/* api/rest/openapi/
+cp ../openapi/engine.oas3.json api/rest/openapi/seldon.json
+docker build -f Dockerfile.executor -t seldonio/seldon-core-executor:1.2.3-dev .
+Sending build context to Docker daemon  88.78MB
+Step 1/27 : FROM golang:1.13 as builder
+1.13: Pulling from library/golang
+d6ff36c9ec48: Pulling fs layer
+c958d65b3090: Pulling fs layer
+edaf0a6b092f: Pulling fs layer
+80931cf68816: Pulling fs layer
+813643441356: Pulling fs layer
+799f41bb59c9: Pulling fs layer
+16b5038bccc8: Pulling fs layer
+80931cf68816: Waiting
+813643441356: Waiting
+799f41bb59c9: Waiting
+16b5038bccc8: Waiting
+c958d65b3090: Download complete
+edaf0a6b092f: Verifying Checksum
+edaf0a6b092f: Download complete
+d6ff36c9ec48: Verifying Checksum
+d6ff36c9ec48: Download complete
+80931cf68816: Verifying Checksum
+80931cf68816: Download complete
+813643441356: Verifying Checksum
+813643441356: Download complete
+16b5038bccc8: Verifying Checksum
+16b5038bccc8: Download complete
+799f41bb59c9: Verifying Checksum
+799f41bb59c9: Download complete
+d6ff36c9ec48: Pull complete
+c958d65b3090: Pull complete
+edaf0a6b092f: Pull complete
+80931cf68816: Pull complete
+813643441356: Pull complete
+799f41bb59c9: Pull complete
+16b5038bccc8: Pull complete
+Digest: sha256:8ebb6d5a48deef738381b56b1d4cd33d99a5d608e0d03c5fe8dfa3f68d41a1f8
+Status: Downloaded newer image for golang:1.13
+ ---> d6f3656320fe
+Step 2/27 : WORKDIR /workspace
+ ---> Running in 7b47f18aa7b9
+Removing intermediate container 7b47f18aa7b9
+ ---> 058b5dfef1f4
+Step 3/27 : COPY go.mod go.mod
+ ---> a39328f721b8
+Step 4/27 : COPY go.sum go.sum
+ ---> 6378cce55599
+Step 5/27 : COPY proto/ proto/
+ ---> e3ca4f3db6e7
+Step 6/27 : COPY _operator/ _operator/
+ ---> c6d62ac3a859
+Step 7/27 : RUN go mod download
+ ---> Running in 9d69d742f59a
+[91mgo: finding cloud.google.com/go v0.40.0
+[0m[91mgo: finding contrib.go.opencensus.io/exporter/ocagent v0.4.12
+[0m[91mgo: finding contrib.go.opencensus.io/exporter/prometheus v0.1.0
+[0m[91mgo: finding dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9
+[0m[91mgo: finding github.com/Azure/azure-sdk-for-go v30.1.0+incompatible
+[0m[91mgo: finding github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78
+[0m[91mgo: finding github.com/Azure/go-autorest v14.2.0+incompatible
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest v0.9.0
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/adal v0.9.0
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/date v0.3.0
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/mocks v0.4.0
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/to v0.2.0
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/validation v0.1.0
+[0m[91mgo: finding github.com/Azure/go-autorest/logger v0.1.0
+[0m[91mgo: finding github.com/Azure/go-autorest/tracing v0.6.0
+[0m[91mgo: finding github.com/BurntSushi/toml v0.3.1
+[0m[91mgo: finding github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802
+[0m[91mgo: finding github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible
+[0m[91mgo: finding github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
+[0m[91mgo: finding github.com/PuerkitoBio/purell v1.1.1
+[0m[91mgo: finding github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
+[0m[91mgo: finding github.com/Shopify/sarama v1.19.0
+[0m[91mgo: finding github.com/Shopify/toxiproxy v2.1.4+incompatible
+[0m[91mgo: finding github.com/VividCortex/gohistogram v1.0.0
+[0m[91mgo: finding github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
+[0m[91mgo: finding github.com/agnivade/levenshtein v1.0.1
+[0m[91mgo: finding github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
+[0m[91mgo: finding github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d
+[0m[91mgo: finding github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
+[0m[91mgo: finding github.com/apache/thrift v0.13.0
+[0m[91mgo: finding github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e
+[0m[91mgo: finding github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6
+[0m[91mgo: finding github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da
+[0m[91mgo: finding github.com/armon/go-radix v0.0.0-20180808171621-7fddfc383310
+[0m[91mgo: finding github.com/aryann/difflib v0.0.0-20170710044230-e206f873d14a
+[0m[91mgo: finding github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
+[0m[91mgo: finding github.com/aws/aws-lambda-go v1.13.3
+[0m[91mgo: finding github.com/aws/aws-sdk-go v1.27.0
+[0m[91mgo: finding github.com/aws/aws-sdk-go-v2 v0.18.0
+[0m[91mgo: finding github.com/beorn7/perks v1.0.1
+[0m[91mgo: finding github.com/bgentry/speakeasy v0.1.0
+[0m[91mgo: finding github.com/blang/semver v3.5.0+incompatible
+[0m[91mgo: finding github.com/casbin/casbin/v2 v2.1.2
+[0m[91mgo: finding github.com/cenkalti/backoff v2.2.1+incompatible
+[0m[91mgo: finding github.com/census-instrumentation/opencensus-proto v0.2.1
+[0m[91mgo: finding github.com/cespare/xxhash/v2 v2.1.1
+[0m[91mgo: finding github.com/clbanning/x2j v0.0.0-20191024224557-825249438eec
+[0m[91mgo: finding github.com/client9/misspell v0.3.4
+[0m[91mgo: finding github.com/cloudevents/sdk-go v1.2.0
+[0m[91mgo: finding github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f
+[0m[91mgo: finding github.com/cockroachdb/datadriven v0.0.0-20190809214429-80d97fb3cbaa
+[0m[91mgo: finding github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd
+[0m[91mgo: finding github.com/confluentinc/confluent-kafka-go v1.4.2
+[0m[91mgo: finding github.com/coreos/etcd v3.3.10+incompatible
+[0m[91mgo: finding github.com/coreos/go-etcd v2.0.0+incompatible
+[0m[91mgo: finding github.com/coreos/go-oidc v2.1.0+incompatible
+[0m[91mgo: finding github.com/coreos/go-semver v0.3.0
+[0m[91mgo: finding github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e
+[0m[91mgo: finding github.com/coreos/pkg v0.0.0-20180108230652-97fdf19511ea
+[0m[91mgo: finding github.com/cpuguy83/go-md2man v1.0.10
+[0m[91mgo: finding github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d
+[0m[91mgo: finding github.com/creack/pty v1.1.7
+[0m[91mgo: finding github.com/davecgh/go-spew v1.1.1
+[0m[91mgo: finding github.com/dgrijalva/jwt-go v3.2.0+incompatible
+[0m[91mgo: finding github.com/docker/docker v0.7.3-0.20190327010347-be7ac8be2ae0
+[0m[91mgo: finding github.com/docker/go-units v0.4.0
+[0m[91mgo: finding github.com/docker/spdystream v0.0.0-20160310174837-449fdfce4d96
+[0m[91mgo: finding github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
+[0m[91mgo: finding github.com/dustin/go-humanize v1.0.0
+[0m[91mgo: finding github.com/eapache/go-resiliency v1.1.0
+[0m[91mgo: finding github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21
+[0m[91mgo: finding github.com/eapache/queue v1.1.0
+[0m[91mgo: finding github.com/edsrzf/mmap-go v1.0.0
+[0m[91mgo: finding github.com/elazarl/goproxy v0.0.0-20180725130230-947c36da3153
+[0m[91mgo: finding github.com/emicklei/go-restful v2.9.5+incompatible
+[0m[91mgo: finding github.com/envoyproxy/go-control-plane v0.9.4
+[0m[91mgo: finding github.com/envoyproxy/protoc-gen-validate v0.1.0
+[0m[91mgo: finding github.com/evanphx/json-patch v4.5.0+incompatible
+[0m[91mgo: finding github.com/fatih/color v1.7.0
+[0m[91mgo: finding github.com/fortytw2/leaktest v1.3.0
+[0m[91mgo: finding github.com/franela/goblin v0.0.0-20200105215937-c9ffbefa60db
+[0m[91mgo: finding github.com/franela/goreq v0.0.0-20171204163338-bcd34c9993f8
+[0m[91mgo: finding github.com/fsnotify/fsnotify v1.4.9
+[0m[91mgo: finding github.com/ghodss/yaml v1.0.0
+[0m[91mgo: finding github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
+[0m[91mgo: finding github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200222043503-6f7a984d4dc4
+[0m[91mgo: finding github.com/go-kit/kit v0.10.0
+[0m[91mgo: finding github.com/go-logfmt/logfmt v0.5.0
+[0m[91mgo: finding github.com/go-logr/logr v0.1.0
+[0m[91mgo: finding github.com/go-logr/zapr v0.1.0
+[0m[91mgo: finding github.com/go-openapi/analysis v0.19.5
+[0m[91mgo: finding github.com/go-openapi/errors v0.19.2
+[0m[91mgo: finding github.com/go-openapi/jsonpointer v0.19.3
+[0m[91mgo: finding github.com/go-openapi/jsonreference v0.19.3
+[0m[91mgo: finding github.com/go-openapi/loads v0.19.4
+[0m[91mgo: finding github.com/go-openapi/runtime v0.19.4
+[0m[91mgo: finding github.com/go-openapi/spec v0.19.3
+[0m[91mgo: finding github.com/go-openapi/strfmt v0.19.3
+[0m[91mgo: finding github.com/go-openapi/swag v0.19.5
+[0m[91mgo: finding github.com/go-openapi/validate v0.19.5
+[0m[91mgo: finding github.com/go-sql-driver/mysql v1.4.0
+[0m[91mgo: finding github.com/go-stack/stack v1.8.0
+[0m[91mgo: finding github.com/gogo/googleapis v1.1.0
+[0m[91mgo: finding github.com/gogo/protobuf v1.3.1
+[0m[91mgo: finding github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
+[0m[91mgo: finding github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6
+[0m[91mgo: finding github.com/golang/mock v1.2.0
+[0m[91mgo: finding github.com/golang/protobuf v1.4.2
+[0m[91mgo: finding github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db
+[0m[91mgo: finding github.com/google/btree v1.0.0
+[0m[91mgo: finding github.com/google/go-cmp v0.5.0
+[0m[91mgo: finding github.com/google/gofuzz v1.1.0
+[0m[91mgo: finding github.com/google/martian v2.1.0+incompatible
+[0m[91mgo: finding github.com/google/pprof v0.0.0-20181206194817-3ea8567a2e57
+[0m[91mgo: finding github.com/google/renameio v0.1.0
+[0m[91mgo: finding github.com/google/uuid v1.1.2
+[0m[91mgo: finding github.com/googleapis/gax-go/v2 v2.0.5
+[0m[91mgo: finding github.com/googleapis/gnostic v0.3.1
+[0m[91mgo: finding github.com/gophercloud/gophercloud v0.1.0
+[0m[91mgo: finding github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1
+[0m[91mgo: finding github.com/gorilla/context v1.1.1
+[0m[91mgo: finding github.com/gorilla/mux v1.8.0
+[0m[91mgo: finding github.com/gorilla/websocket v1.4.0
+[0m[91mgo: finding github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7
+[0m[91mgo: finding github.com/grpc-ecosystem/go-grpc-middleware v1.2.1
+[0m[91mgo: finding github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
+[0m[91mgo: finding github.com/grpc-ecosystem/grpc-gateway v1.9.5
+[0m[91mgo: finding github.com/hashicorp/consul/api v1.3.0
+[0m[91mgo: finding github.com/hashicorp/consul/sdk v0.3.0
+[0m[91mgo: finding github.com/hashicorp/errwrap v1.0.0
+[0m[91mgo: finding github.com/hashicorp/go-cleanhttp v0.5.1
+[0m[91mgo: finding github.com/hashicorp/go-immutable-radix v1.0.0
+[0m[91mgo: finding github.com/hashicorp/go-msgpack v0.5.3
+[0m[91mgo: finding github.com/hashicorp/go-multierror v1.0.0
+[0m[91mgo: finding github.com/hashicorp/go-rootcerts v1.0.0
+[0m[91mgo: finding github.com/hashicorp/go-sockaddr v1.0.0
+[0m[91mgo: finding github.com/hashicorp/go-syslog v1.0.0
+[0m[91mgo: finding github.com/hashicorp/go-uuid v1.0.1
+[0m[91mgo: finding github.com/hashicorp/go-version v1.2.0
+[0m[91mgo: finding github.com/hashicorp/go.net v0.0.1
+[0m[91mgo: finding github.com/hashicorp/golang-lru v0.5.4
+[0m[91mgo: finding github.com/hashicorp/hcl v1.0.0
+[0m[91mgo: finding github.com/hashicorp/logutils v1.0.0
+[0m[91mgo: finding github.com/hashicorp/mdns v1.0.0
+[0m[91mgo: finding github.com/hashicorp/memberlist v0.1.3
+[0m[91mgo: finding github.com/hashicorp/serf v0.8.2
+[0m[91mgo: finding github.com/hpcloud/tail v1.0.0
+[0m[91mgo: finding github.com/hudl/fargo v1.3.0
+[0m[91mgo: finding github.com/imdario/mergo v0.3.9
+[0m[91mgo: finding github.com/inconshreveable/mousetrap v1.0.0
+[0m[91mgo: finding github.com/influxdata/influxdb1-client v0.0.0-20191209144304-8bf82d3c094d
+[0m[91mgo: finding github.com/jessevdk/go-flags v1.4.0
+[0m[91mgo: finding github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
+[0m[91mgo: finding github.com/jonboulle/clockwork v0.1.0
+[0m[91mgo: finding github.com/jpillora/backoff v1.0.0
+[0m[91mgo: finding github.com/json-iterator/go v1.1.10
+[0m[91mgo: finding github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024
+[0m[91mgo: finding github.com/jtolds/gls v4.20.0+incompatible
+[0m[91mgo: finding github.com/julienschmidt/httprouter v1.3.0
+[0m[91mgo: finding github.com/kelseyhightower/envconfig v1.4.0
+[0m[91mgo: finding github.com/kisielk/errcheck v1.2.0
+[0m[91mgo: finding github.com/kisielk/gotool v1.0.0
+[0m[91mgo: finding github.com/konsorten/go-windows-terminal-sequences v1.0.3
+[0m[91mgo: finding github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515
+[0m[91mgo: finding github.com/kr/pretty v0.2.0
+[0m[91mgo: finding github.com/kr/pty v1.1.5
+[0m[91mgo: finding github.com/kr/text v0.1.0
+[0m[91mgo: finding github.com/lightstep/lightstep-tracer-common/golang/gogo v0.0.0-20190605223551-bc2310a04743
+[0m[91mgo: finding github.com/lightstep/lightstep-tracer-go v0.18.1
+[0m[91mgo: finding github.com/lightstep/tracecontext.go v0.0.0-20181129014701-1757c391b1ac
+[0m[91mgo: finding github.com/lyft/protoc-gen-validate v0.0.13
+[0m[91mgo: finding github.com/magiconair/properties v1.8.0
+[0m[91mgo: finding github.com/mailru/easyjson v0.7.0
+[0m[91mgo: finding github.com/mattn/go-colorable v0.0.9
+[0m[91mgo: finding github.com/mattn/go-isatty v0.0.4
+[0m[91mgo: finding github.com/mattn/go-runewidth v0.0.2
+[0m[91mgo: finding github.com/matttproud/golang_protobuf_extensions v1.0.1
+[0m[91mgo: finding github.com/miekg/dns v1.0.14
+[0m[91mgo: finding github.com/mitchellh/cli v1.0.0
+[0m[91mgo: finding github.com/mitchellh/go-homedir v1.1.0
+[0m[91mgo: finding github.com/mitchellh/go-testing-interface v1.0.0
+[0m[91mgo: finding github.com/mitchellh/gox v0.4.0
+[0m[91mgo: finding github.com/mitchellh/iochan v1.0.0
+[0m[91mgo: finding github.com/mitchellh/mapstructure v1.1.2
+[0m[91mgo: finding github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+[0m[91mgo: finding github.com/modern-go/reflect2 v1.0.1
+[0m[91mgo: finding github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822
+[0m[91mgo: finding github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f
+[0m[91mgo: finding github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f
+[0m[91mgo: finding github.com/nats-io/jwt v0.3.2
+[0m[91mgo: finding github.com/nats-io/nats-server/v2 v2.1.2
+[0m[91mgo: finding github.com/nats-io/nats.go v1.9.1
+[0m[91mgo: finding github.com/nats-io/nkeys v0.1.3
+[0m[91mgo: finding github.com/nats-io/nuid v1.0.1
+[0m[91mgo: finding github.com/nxadm/tail v1.4.4
+[0m[91mgo: finding github.com/oklog/oklog v0.3.2
+[0m[91mgo: finding github.com/oklog/run v1.0.0
+[0m[91mgo: finding github.com/olekukonko/tablewriter v0.0.0-20170122224234-a0225b3f23b5
+[0m[91mgo: finding github.com/onsi/ginkgo v1.14.0
+[0m[91mgo: finding github.com/onsi/gomega v1.10.1
+[0m[91mgo: finding github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
+[0m[91mgo: finding github.com/opentracing-contrib/go-observer v0.0.0-20170622124052-a52f23424492
+[0m[91mgo: finding github.com/opentracing/basictracer-go v1.0.0
+[0m[91mgo: finding github.com/opentracing/opentracing-go v1.2.0
+[0m[91mgo: finding github.com/openzipkin-contrib/zipkin-go-opentracing v0.4.5
+[0m[91mgo: finding github.com/openzipkin/zipkin-go v0.2.2
+[0m[91mgo: finding github.com/pact-foundation/pact-go v1.0.4
+[0m[91mgo: finding github.com/pascaldekloe/goe v0.0.0-20180627143212-57f6aae5913c
+[0m[91mgo: finding github.com/pborman/uuid v1.2.0
+[0m[91mgo: finding github.com/pelletier/go-toml v1.2.0
+[0m[91mgo: finding github.com/performancecopilot/speed v3.0.0+incompatible
+[0m[91mgo: finding github.com/peterbourgon/diskv v2.0.1+incompatible
+[0m[91mgo: finding github.com/pierrec/lz4 v2.0.5+incompatible
+[0m[91mgo: finding github.com/pkg/errors v0.9.1
+[0m[91mgo: finding github.com/pkg/profile v1.2.1
+[0m[91mgo: finding github.com/pmezard/go-difflib v1.0.0
+[0m[91mgo: finding github.com/posener/complete v1.1.1
+[0m[91mgo: finding github.com/pquerna/cachecontrol v0.0.0-20171018203845-0dec1b30a021
+[0m[91mgo: finding github.com/prometheus/client_golang v1.7.1
+[0m[91mgo: finding github.com/prometheus/client_model v0.2.0
+[0m[91mgo: finding github.com/prometheus/common v0.13.0
+[0m[91mgo: finding github.com/prometheus/procfs v0.1.3
+[0m[91mgo: finding github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a
+[0m[91mgo: finding github.com/rogpeppe/fastuuid v0.0.0-20150106093220-6724a57986af
+[0m[91mgo: finding github.com/rogpeppe/go-internal v1.3.0
+[0m[91mgo: finding github.com/russross/blackfriday v1.5.2
+[0m[91mgo: finding github.com/russross/blackfriday/v2 v2.0.1
+[0m[91mgo: finding github.com/ryanuber/columnize v0.0.0-20160712163229-9b3edd62028f
+[0m[91mgo: finding github.com/samuel/go-zookeeper v0.0.0-20190923202752-2cc03de413da
+[0m[91mgo: finding github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529
+[0m[91mgo: finding github.com/sergi/go-diff v1.0.0
+[0m[91mgo: finding github.com/shurcooL/sanitized_anchor_name v1.0.0
+[0m[91mgo: finding github.com/sirupsen/logrus v1.6.0
+[0m[91mgo: finding github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d
+[0m[91mgo: finding github.com/smartystreets/goconvey v1.6.4
+[0m[91mgo: finding github.com/soheilhy/cmux v0.1.4
+[0m[91mgo: finding github.com/sony/gobreaker v0.4.1
+[0m[91mgo: finding github.com/spf13/afero v1.2.2
+[0m[91mgo: finding github.com/spf13/cast v1.3.0
+[0m[91mgo: finding github.com/spf13/cobra v0.0.5
+[0m[91mgo: finding github.com/spf13/jwalterweatherman v1.0.0
+[0m[91mgo: finding github.com/spf13/pflag v1.0.5
+[0m[91mgo: finding github.com/spf13/viper v1.3.2
+[0m[91mgo: finding github.com/streadway/amqp v0.0.0-20190827072141-edfb9018d271
+[0m[91mgo: finding github.com/streadway/handy v0.0.0-20190108123426-d5acb3125c2a
+[0m[91mgo: finding github.com/stretchr/ob** v0.2.0
+[0m[91mgo: finding github.com/stretchr/testify v1.4.0
+[0m[91mgo: finding github.com/tidwall/pretty v1.0.0
+[0m[91mgo: finding github.com/tmc/grpc-websocket-proxy v0.0.0-20170815181823-89b8d40f7ca8
+[0m[91mgo: finding github.com/uber/jaeger-client-go v2.25.0+incompatible
+[0m[91mgo: finding github.com/uber/jaeger-lib v2.2.0+incompatible
+[0m[91mgo: finding github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8
+[0m[91mgo: finding github.com/urfave/cli v1.22.1
+[0m[91mgo: finding github.com/valyala/bytebufferpool v1.0.0
+[0m[91mgo: finding github.com/vektah/gqlparser v1.1.2
+[0m[91mgo: finding github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2
+[0m[91mgo: finding github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77
+[0m[91mgo: finding go.etcd.io/bbolt v1.3.3
+[0m[91mgo: finding go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
+[0m[91mgo: finding go.mongodb.org/mongo-driver v1.1.2
+[0m[91mgo: finding go.opencensus.io v0.22.2
+[0m[91mgo: finding go.uber.org/atomic v1.6.0
+[0m[91mgo: finding go.uber.org/multierr v1.5.0
+[0m[91mgo: finding go.uber.org/tools v0.0.0-20190618225709-2cfd321de3ee
+[0m[91mgo: finding go.uber.org/zap v1.15.0
+[0m[91mgo: finding golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+[0m[91mgo: finding golang.org/x/exp v0.0.0-20200331195152-e8c3332aa8e5
+[0m[91mgo: finding golang.org/x/image v0.0.0-20190802002840-cff245a6509b
+[0m[91mgo: finding golang.org/x/lint v0.0.0-20190930215403-16217165b5de
+[0m[91mgo: finding golang.org/x/mobile v0.0.0-20190719004257-d2bd2a29d028
+[0m[91mgo: finding golang.org/x/mod v0.1.1-0.20191107180719-034126e5016b
+[0m[91mgo: finding golang.org/x/net v0.0.0-20200625001655-4c5254603344
+[0m[91mgo: finding golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+[0m[91mgo: finding golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
+[0m[91mgo: finding golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae
+[0m[91mgo: finding golang.org/x/text v0.3.3
+[0m[91mgo: finding golang.org/x/time v0.0.0-20191024005414-555d28b269f0
+[0m[91mgo: finding golang.org/x/tools v0.0.0-20200207183749-b753a1ba74fa
+[0m[91mgo: finding golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+[0m[91mgo: finding gomodules.xyz/jsonpatch/v2 v2.0.1
+[0m[91mgo: finding google.golang.org/api v0.15.0
+[0m[91mgo: finding google.golang.org/appengine v1.6.5
+[0m[91mgo: finding google.golang.org/genproto v0.0.0-20200423170343-7949de9c1215
+[0m[91mgo: finding google.golang.org/grpc v1.32.0
+[0m[91mgo: finding google.golang.org/protobuf v1.23.0
+[0m[91mgo: finding gopkg.in/alecthomas/kingpin.v2 v2.2.6
+[0m[91mgo: finding gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
+[0m[91mgo: finding gopkg.in/cheggaaa/pb.v1 v1.0.25
+[0m[91mgo: finding gopkg.in/errgo.v2 v2.1.0
+[0m[91mgo: finding gopkg.in/fsnotify.v1 v1.4.7
+[0m[91mgo: finding gopkg.in/gcfg.v1 v1.2.3
+[0m[91mgo: finding gopkg.in/inf.v0 v0.9.1
+[0m[91mgo: finding gopkg.in/natefinch/lumberjack.v2 v2.0.0
+[0m[91mgo: finding gopkg.in/resty.v1 v1.12.0
+[0m[91mgo: finding gopkg.in/square/go-jose.v2 v2.2.2
+[0m[91mgo: finding gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
+[0m[91mgo: finding gopkg.in/warnings.v0 v0.1.2
+[0m[91mgo: finding gopkg.in/yaml.v2 v2.3.0
+[0m[91mgo: finding gotest.tools v2.2.0+incompatible
+[0m[91mgo: finding honnef.co/go/tools v0.0.1-2019.2.3
+[0m[91mgo: finding istio.io/api v0.0.0-20200513175333-ae3da0d240e3
+[0m[91mgo: finding istio.io/client-go v0.0.0-20200513180646-f8d9d8ff84e6
+[0m[91mgo: finding istio.io/gogo-genproto v0.0.0-20190930162913-45029607206a
+[0m[91mgo: finding k8s.io/api v0.18.8
+[0m[91mgo: finding k8s.io/apiextensions-apiserver v0.18.8
+[0m[91mgo: finding k8s.io/apimachinery v0.18.8
+[0m[91mgo: finding k8s.io/apiserver v0.18.8
+[0m[91mgo: finding k8s.io/client-go v0.18.8
+[0m[91mgo: finding k8s.io/code-generator v0.18.8
+[0m[91mgo: finding k8s.io/component-base v0.18.8
+[0m[91mgo: finding k8s.io/gengo v0.0.0-20200114144118-36b2048a9120
+[0m[91mgo: finding k8s.io/klog v1.0.0
+[0m[91mgo: finding k8s.io/klog/v2 v2.0.0
+[0m[91mgo: finding k8s.io/kube-openapi v0.0.0-20200410145947-61e04a5be9a6
+[0m[91mgo: finding k8s.io/utils v0.0.0-20200603063816-c1c6865ac451
+[0m[91mgo: finding knative.dev/pkg v0.0.0-20200513151758-7b6bb61326ae
+[0m[91mgo: finding pack.ag/amqp v0.11.0
+[0m[91mgo: finding rsc.io/binaryregexp v0.2.0
+[0m[91mgo: finding sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.7
+[0m[91mgo: finding sigs.k8s.io/controller-runtime v0.6.2
+[0m[91mgo: finding sigs.k8s.io/structured-merge-diff v0.0.0-20190525122527-15d366b2352e
+[0m[91mgo: finding sigs.k8s.io/structured-merge-diff/v3 v3.0.0
+[0m[91mgo: finding sigs.k8s.io/yaml v1.2.0
+[0m[91mgo: finding sourcegraph.com/sourcegraph/appdash v0.0.0-20190731080439-ebfcffb1b5c0
+[0mRemoving intermediate container 9d69d742f59a
+ ---> 99c52d8c66c5
+Step 8/27 : COPY cmd/ cmd/
+ ---> c98a158aff9e
+Step 9/27 : COPY api/ api/
+ ---> b2b4b1f27471
+Step 10/27 : COPY predictor/ predictor/
+ ---> 32943f9938d8
+Step 11/27 : COPY logger/ logger/
+ ---> 4f7f3c1a0f86
+Step 12/27 : COPY k8s/ k8s/
+ ---> ae2c69fc009d
+Step 13/27 : RUN go build -a -o executor cmd/executor/main.go
+ ---> Running in 4fa6be2aa07a
+Removing intermediate container 4fa6be2aa07a
+ ---> 396be029a66d
+Step 14/27 : RUN wget -O hashicorp-golang-lru.tar.gz https://github.com/hashicorp/golang-lru/archive/master.tar.gz
+ ---> Running in 868a9c039071
+[91m--2020-09-21 17:52:25--  https://github.com/hashicorp/golang-lru/archive/master.tar.gz
+[0m[91mResolving github.com (github.com)... [0m[91m140.82.121.3
+Connecting to github.com (github.com)|140.82.121.3|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m302 Found
+Location: https://codeload.github.com/hashicorp/golang-lru/tar.gz/master [following]
+--2020-09-21 17:52:25--  https://codeload.github.com/hashicorp/golang-lru/tar.gz/master
+Resolving codeload.github.com (codeload.github.com)... [0m[91m140.82.121.9
+Connecting to codeload.github.com (codeload.github.com)|140.82.121.9|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m200 OK
+Length: unspecified [application/x-gzip]
+Saving to: 'hashicorp-golang-lru.tar.gz'
+[0m[91m
+     0K .......... .[0m[91m..                                         1.03M=0.01s
+
+2020-09-21 17:52:25 (1.03 MB/s) - 'hashicorp-golang-lru.tar.gz' saved [13973]
+
+[0mRemoving intermediate container 868a9c039071
+ ---> 021118accef5
+Step 15/27 : RUN wget -O armon-consul-api.tar.gz https://github.com/armon/consul-api/archive/master.tar.gz
+ ---> Running in 0c7924b24aa6
+[91m--2020-09-21 17:52:26--  https://github.com/armon/consul-api/archive/master.tar.gz
+[0m[91mResolving github.com (github.com)... [0m[91m140.82.121.3
+Connecting to github.com (github.com)|140.82.121.3|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m302 Found
+Location: https://codeload.github.com/armon/consul-api/tar.gz/master [following]
+[0m[91m--2020-09-21 17:52:27--  https://codeload.github.com/armon/consul-api/tar.gz/master
+Resolving codeload.github.com (codeload.github.com)... [0m[91m140.82.121.10
+Connecting to codeload.github.com (codeload.github.com)|140.82.121.10|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m200 OK
+[0m[91mLength: unspecified [application/x-gzip]
+Saving to: 'armon-consul-api.tar.gz'
+
+     0K .......... ..[0m[91m....[0m[91m.                                     1.33M=0.01s
+
+2020-09-21 17:52:27 (1.33 MB/s) - 'armon-consul-api.tar.gz' saved [17977]
+
+[0mRemoving intermediate container 0c7924b24aa6
+ ---> 3845399e397e
+Step 16/27 : RUN wget -O hasicorp-hcl.tar.gz https://github.com/hashicorp/hcl/archive/master.tar.gz
+ ---> Running in 895048d62ce0
+[91m--2020-09-21 17:52:28--  https://github.com/hashicorp/hcl/archive/master.tar.gz
+[0m[91mResolving github.com (github.com)... [0m[91m140.82.121.3
+Connecting to github.com (github.com)|140.82.121.3|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m302 Found
+Location: https://codeload.github.com/hashicorp/hcl/tar.gz/master [following]
+[0m[91m--2020-09-21 17:52:29--  https://codeload.github.com/hashicorp/hcl/tar.gz/master
+Resolving codeload.github.com (codeload.github.com)... [0m[91m140.82.121.9
+Connecting to codeload.github.com (codeload.github.com)|140.82.121.9|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m200 OK
+Length: 72956 (71K) [application/x-gzip]
+Saving to: 'hasicorp-hcl.tar.gz'
+
+     0K .......... ..[0m[91m........ .......... .[0m[91m..[0m[91m..[0m[91m.[0m[91m.... ...[0m[91m..[0m[91m..... 70%  611K 0s
+    50K .......... .......... .                               100% 87.2M=0.08s
+
+2020-09-21 17:52:29 (868 KB/s) - 'hasicorp-hcl.tar.gz' saved [72956/72956]
+
+[0mRemoving intermediate container 895048d62ce0
+ ---> 3cb382ef1133
+Step 17/27 : COPY api/rest/openapi/ /openapi/
+ ---> 4e51fc2f3fab
+Step 18/27 : RUN chmod -R 660 /openapi/
+ ---> Running in b1557e8a346e
+Removing intermediate container b1557e8a346e
+ ---> 6c7741f03de2
+Step 19/27 : FROM gcr.io/distroless/base:latest
+ ---> ae9876e34217
+Step 20/27 : WORKDIR /
+ ---> Using cache
+ ---> 5b63cb429e4b
+Step 21/27 : COPY --from=builder /workspace/executor .
+ ---> 27dd8ecbd27d
+Step 22/27 : COPY licenses/license.txt licenses/license.txt
+ ---> 40baa93071b8
+Step 23/27 : COPY --from=builder /workspace/hashicorp-golang-lru.tar.gz licenses/mpl_source/hashicorp-golang-lru.tar.gz
+ ---> 39eadeeb346a
+Step 24/27 : COPY --from=builder /workspace/armon-consul-api.tar.gz licenses/mpl_source/armon-consul-api.tar.gz
+ ---> 6030629abaf5
+Step 25/27 : COPY --from=builder /workspace/hasicorp-hcl.tar.gz licenses/mpl_source/hasicorp-hcl.tar.gz
+ ---> 29c7c8695cb9
+Step 26/27 : COPY --from=builder /openapi/ /openapi/
+ ---> 92a3922d43e6
+Step 27/27 : ENTRYPOINT ["/executor"]
+ ---> Running in 50b41cb1c882
+Removing intermediate container 50b41cb1c882
+ ---> 00e94ef42a05
+Successfully built 00e94ef42a05
+Successfully tagged seldonio/seldon-core-executor:1.2.3-dev
+kind load -v 3 docker-image seldonio/seldon-core-executor:1.2.3-dev --name kind
+Image: "seldonio/seldon-core-executor:1.2.3-dev" with ID "sha256:00e94ef42a057de8f4abb87c59bc5f1a806e9359cfec4e761f61efd1a21d3fe0" not present on node "kind-worker"
+Image: "seldonio/seldon-core-executor:1.2.3-dev" with ID "sha256:00e94ef42a057de8f4abb87c59bc5f1a806e9359cfec4e761f61efd1a21d3fe0" not present on node "kind-control-plane"
+make[1]: Leaving directory '/workspace/source/executor'
+Build test models
+make -C ../docker/fixed-model kind_load_images
+make[1]: Entering directory '/workspace/source/testing/docker/fixed-model'
+s2i build -E environment_rest_v1 . seldonio/seldon-core-s2i-python3:0.15 seldonio/fixed-model:0.1
+---> Installing application source...
+Build completed successfully
+s2i build -E environment_rest_v2 . seldonio/seldon-core-s2i-python3:0.15 seldonio/fixed-model:0.2
+---> Installing application source...
+Build completed successfully
+kind load -v 3 docker-image seldonio/fixed-model:0.1
+Image: "seldonio/fixed-model:0.1" with ID "sha256:6853bab267ffefb82deff1f519abd1a2474ba81752280c4ac8923e7d55b4d9c4" not present on node "kind-worker"
+Image: "seldonio/fixed-model:0.1" with ID "sha256:6853bab267ffefb82deff1f519abd1a2474ba81752280c4ac8923e7d55b4d9c4" not present on node "kind-control-plane"
+kind load -v 3 docker-image seldonio/fixed-model:0.2
+Image: "seldonio/fixed-model:0.2" with ID "sha256:f877e5d83013a93116ca3644505a2701deff077881ac5fe7db77cbb6e8c687fe" not present on node "kind-worker"
+Image: "seldonio/fixed-model:0.2" with ID "sha256:f877e5d83013a93116ca3644505a2701deff077881ac5fe7db77cbb6e8c687fe" not present on node "kind-control-plane"
+make[1]: Leaving directory '/workspace/source/testing/docker/fixed-model'
+make -C ../docker/echo-model kind_load_image
+make[1]: Entering directory '/workspace/source/testing/docker/echo-model'
+s2i build \
+	-E environment_rest \
+	.\
+	seldonio/seldon-core-s2i-python3:1.1.1-SNAPSHOT\
+	seldonio/echo-model:0.1
+---> Installing application source...
+Build completed successfully
+kind load -v 3 docker-image seldonio/echo-model:0.1
+Image: "seldonio/echo-model:0.1" with ID "sha256:71de7e4f674c6ae1d807c11f8ebb6d86ab94c22f967e7ce7f58ef43b6e72b1ef" not present on node "kind-worker"
+Image: "seldonio/echo-model:0.1" with ID "sha256:71de7e4f674c6ae1d807c11f8ebb6d86ab94c22f967e7ce7f58ef43b6e72b1ef" not present on node "kind-control-plane"
+make[1]: Leaving directory '/workspace/source/testing/docker/echo-model'
+Files changed in prepackaged folder:
+servers/triton/samples/README.md
+servers/triton/samples/simple.yaml
+cd ../../servers/sklearnserver && make kind_load
+make[1]: Entering directory '/workspace/source/servers/sklearnserver'
+s2i build \
+	-E environment_rest \
+	./sklearnserver \
+	seldonio/seldon-core-s2i-python37-ubi8:1.2.3-dev \
+	seldonio/sklearnserver_rest:1.2.3-dev
+Before assembling
+---> Installing application source...
+---> Installing dependencies ...
+Looking in links: /whl
+Requirement already satisfied: seldon_core in ./python (from -r requirements.txt (line 1)) (1.2.3.dev0)
+Collecting scikit-learn==0.23.2 (from -r requirements.txt (line 2))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/f4/cb/64623369f348e9bfb29ff898a57ac7c91ed4921f228e9726546614d63ccb/scikit_learn-0.23.2-cp37-cp37m-manylinux1_x86_64.whl (6.8MB)
+Requirement already satisfied: numpy>=1.8.2 in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 3)) (1.19.2)
+Collecting joblib==0.16.0 (from -r requirements.txt (line 4))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/51/dd/0e015051b4a27ec5a58b02ab774059f3289a94b0906f880a3f9507e74f38/joblib-0.16.0-py3-none-any.whl (300kB)
+Requirement already satisfied: Flask<2.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (1.1.2)
+Requirement already satisfied: jsonschema<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (3.2.0)
+Requirement already satisfied: Flask-cors<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (3.0.9)
+Requirement already satisfied: redis<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (3.5.3)
+Requirement already satisfied: requests<3.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (2.22.0)
+Requirement already satisfied: flatbuffers<2.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (1.12)
+Requirement already satisfied: protobuf<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (3.13.0)
+Requirement already satisfied: grpcio<2.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (1.32.0)
+Requirement already satisfied: Flask-OpenTracing<1.2.0,>=1.1.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (1.1.0)
+Requirement already satisfied: opentracing<2.4.0,>=2.2.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (2.3.0)
+Requirement already satisfied: jaeger-client<4.4.0,>=4.1.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (4.3.0)
+Requirement already satisfied: grpcio-opentracing<1.2.0,>=1.1.4 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (1.1.4)
+Requirement already satisfied: PyYAML<5.4 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (5.3.1)
+Requirement already satisfied: gunicorn<20.1.0,>=19.9.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (20.0.4)
+Requirement already satisfied: setuptools>=41.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (41.4.0)
+Requirement already satisfied: prometheus_client<0.9.0,>=0.7.1 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (0.8.0)
+Collecting threadpoolctl>=2.0.0 (from scikit-learn==0.23.2->-r requirements.txt (line 2))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/f7/12/ec3f2e203afa394a149911729357aa48affc59c20e2c1c8297a60f33f133/threadpoolctl-2.1.0-py3-none-any.whl
+Collecting scipy>=0.19.1 (from scikit-learn==0.23.2->-r requirements.txt (line 2))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/65/f9/f7a7e5009711579c72da2725174825e5056741bf4001815d097eef1b2e17/scipy-1.5.2-cp37-cp37m-manylinux1_x86_64.whl (25.9MB)
+Requirement already satisfied: click>=5.1 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon_core->-r requirements.txt (line 1)) (7.1.2)
+Requirement already satisfied: Werkzeug>=0.15 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon_core->-r requirements.txt (line 1)) (1.0.1)
+Requirement already satisfied: itsdangerous>=0.24 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon_core->-r requirements.txt (line 1)) (1.1.0)
+Requirement already satisfied: Jinja2>=2.10.1 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon_core->-r requirements.txt (line 1)) (2.11.2)
+Requirement already satisfied: six>=1.11.0 in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->seldon_core->-r requirements.txt (line 1)) (1.12.0)
+Requirement already satisfied: attrs>=17.4.0 in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->seldon_core->-r requirements.txt (line 1)) (20.2.0)
+Requirement already satisfied: pyrsistent>=0.14.0 in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->seldon_core->-r requirements.txt (line 1)) (0.17.3)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->seldon_core->-r requirements.txt (line 1)) (1.7.0)
+Requirement already satisfied: certifi>=2017.4.17 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon_core->-r requirements.txt (line 1)) (2020.6.20)
+Requirement already satisfied: chardet<3.1.0,>=3.0.2 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon_core->-r requirements.txt (line 1)) (3.0.4)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon_core->-r requirements.txt (line 1)) (1.24.2)
+Requirement already satisfied: idna<2.9,>=2.5 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon_core->-r requirements.txt (line 1)) (2.8)
+Requirement already satisfied: threadloop<2,>=1 in /opt/conda/lib/python3.7/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon_core->-r requirements.txt (line 1)) (1.0.2)
+Requirement already satisfied: tornado>=4.3 in /opt/conda/lib/python3.7/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon_core->-r requirements.txt (line 1)) (6.0.4)
+Requirement already satisfied: thrift in /opt/conda/lib/python3.7/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon_core->-r requirements.txt (line 1)) (0.13.0)
+Requirement already satisfied: MarkupSafe>=0.23 in /opt/conda/lib/python3.7/site-packages (from Jinja2>=2.10.1->Flask<2.0.0->seldon_core->-r requirements.txt (line 1)) (1.1.1)
+Requirement already satisfied: zipp>=0.5 in /opt/conda/lib/python3.7/site-packages (from importlib-metadata; python_version < "3.8"->jsonschema<4.0.0->seldon_core->-r requirements.txt (line 1)) (3.1.0)
+Installing collected packages: threadpoolctl, scipy, joblib, scikit-learn
+Successfully installed joblib-0.16.0 scikit-learn-0.23.2 scipy-1.5.2 threadpoolctl-2.1.0
+Collecting pip-licenses
+Downloading https://files.pythonhosted.org/packages/c5/50/6c4b4e69a0c43bd9f03a30579695093062ba72da4e3e4026cd2144dbcc71/pip_licenses-2.3.0-py3-none-any.whl
+Collecting PTable (from pip-licenses)
+Downloading https://files.pythonhosted.org/packages/ab/b3/b54301811173ca94119eb474634f120a49cd370f257d1aae5a4abaf12729/PTable-0.9.2.tar.gz
+Building wheels for collected packages: PTable
+Building wheel for PTable (setup.py): started
+Building wheel for PTable (setup.py): finished with status 'done'
+Created wheel for PTable: filename=PTable-0.9.2-cp37-none-any.whl size=22906 sha256=65db90ed3b76bcc7d4b5635af9edea26115f107052f923f7e3066c5931cc082f
+Stored in directory: /root/.cache/pip/wheels/22/cc/2e/55980bfe86393df3e9896146a01f6802978d09d7ebcba5ea56
+Successfully built PTable
+Installing collected packages: PTable, pip-licenses
+Successfully installed PTable-0.9.2 pip-licenses-2.3.0
+created path: ./licenses/license_info.csv
+created path: ./licenses/license.txt
+After successful assembling
+Build completed successfully
+s2i build \
+	-E environment_grpc \
+	./sklearnserver \
+	seldonio/seldon-core-s2i-python37-ubi8:1.2.3-dev \
+	seldonio/sklearnserver_grpc:1.2.3-dev
+Before assembling
+---> Installing application source...
+---> Installing dependencies ...
+Looking in links: /whl
+Requirement already satisfied: seldon_core in ./python (from -r requirements.txt (line 1)) (1.2.3.dev0)
+Collecting scikit-learn==0.23.2 (from -r requirements.txt (line 2))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/f4/cb/64623369f348e9bfb29ff898a57ac7c91ed4921f228e9726546614d63ccb/scikit_learn-0.23.2-cp37-cp37m-manylinux1_x86_64.whl (6.8MB)
+Requirement already satisfied: numpy>=1.8.2 in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 3)) (1.19.2)
+Collecting joblib==0.16.0 (from -r requirements.txt (line 4))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/51/dd/0e015051b4a27ec5a58b02ab774059f3289a94b0906f880a3f9507e74f38/joblib-0.16.0-py3-none-any.whl (300kB)
+Requirement already satisfied: Flask<2.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (1.1.2)
+Requirement already satisfied: jsonschema<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (3.2.0)
+Requirement already satisfied: Flask-cors<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (3.0.9)
+Requirement already satisfied: redis<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (3.5.3)
+Requirement already satisfied: requests<3.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (2.22.0)
+Requirement already satisfied: flatbuffers<2.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (1.12)
+Requirement already satisfied: protobuf<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (3.13.0)
+Requirement already satisfied: grpcio<2.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (1.32.0)
+Requirement already satisfied: Flask-OpenTracing<1.2.0,>=1.1.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (1.1.0)
+Requirement already satisfied: opentracing<2.4.0,>=2.2.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (2.3.0)
+Requirement already satisfied: jaeger-client<4.4.0,>=4.1.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (4.3.0)
+Requirement already satisfied: grpcio-opentracing<1.2.0,>=1.1.4 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (1.1.4)
+Requirement already satisfied: PyYAML<5.4 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (5.3.1)
+Requirement already satisfied: gunicorn<20.1.0,>=19.9.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (20.0.4)
+Requirement already satisfied: setuptools>=41.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (41.4.0)
+Requirement already satisfied: prometheus_client<0.9.0,>=0.7.1 in /opt/conda/lib/python3.7/site-packages (from seldon_core->-r requirements.txt (line 1)) (0.8.0)
+Collecting threadpoolctl>=2.0.0 (from scikit-learn==0.23.2->-r requirements.txt (line 2))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/f7/12/ec3f2e203afa394a149911729357aa48affc59c20e2c1c8297a60f33f133/threadpoolctl-2.1.0-py3-none-any.whl
+Collecting scipy>=0.19.1 (from scikit-learn==0.23.2->-r requirements.txt (line 2))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/65/f9/f7a7e5009711579c72da2725174825e5056741bf4001815d097eef1b2e17/scipy-1.5.2-cp37-cp37m-manylinux1_x86_64.whl (25.9MB)
+Requirement already satisfied: Jinja2>=2.10.1 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon_core->-r requirements.txt (line 1)) (2.11.2)
+Requirement already satisfied: itsdangerous>=0.24 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon_core->-r requirements.txt (line 1)) (1.1.0)
+Requirement already satisfied: Werkzeug>=0.15 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon_core->-r requirements.txt (line 1)) (1.0.1)
+Requirement already satisfied: click>=5.1 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon_core->-r requirements.txt (line 1)) (7.1.2)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->seldon_core->-r requirements.txt (line 1)) (1.7.0)
+Requirement already satisfied: attrs>=17.4.0 in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->seldon_core->-r requirements.txt (line 1)) (20.2.0)
+Requirement already satisfied: pyrsistent>=0.14.0 in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->seldon_core->-r requirements.txt (line 1)) (0.17.3)
+Requirement already satisfied: six>=1.11.0 in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->seldon_core->-r requirements.txt (line 1)) (1.12.0)
+Requirement already satisfied: certifi>=2017.4.17 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon_core->-r requirements.txt (line 1)) (2020.6.20)
+Requirement already satisfied: idna<2.9,>=2.5 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon_core->-r requirements.txt (line 1)) (2.8)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon_core->-r requirements.txt (line 1)) (1.24.2)
+Requirement already satisfied: chardet<3.1.0,>=3.0.2 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon_core->-r requirements.txt (line 1)) (3.0.4)
+Requirement already satisfied: thrift in /opt/conda/lib/python3.7/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon_core->-r requirements.txt (line 1)) (0.13.0)
+Requirement already satisfied: tornado>=4.3 in /opt/conda/lib/python3.7/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon_core->-r requirements.txt (line 1)) (6.0.4)
+Requirement already satisfied: threadloop<2,>=1 in /opt/conda/lib/python3.7/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon_core->-r requirements.txt (line 1)) (1.0.2)
+Requirement already satisfied: MarkupSafe>=0.23 in /opt/conda/lib/python3.7/site-packages (from Jinja2>=2.10.1->Flask<2.0.0->seldon_core->-r requirements.txt (line 1)) (1.1.1)
+Requirement already satisfied: zipp>=0.5 in /opt/conda/lib/python3.7/site-packages (from importlib-metadata; python_version < "3.8"->jsonschema<4.0.0->seldon_core->-r requirements.txt (line 1)) (3.1.0)
+Installing collected packages: threadpoolctl, scipy, joblib, scikit-learn
+Successfully installed joblib-0.16.0 scikit-learn-0.23.2 scipy-1.5.2 threadpoolctl-2.1.0
+Collecting pip-licenses
+Downloading https://files.pythonhosted.org/packages/c5/50/6c4b4e69a0c43bd9f03a30579695093062ba72da4e3e4026cd2144dbcc71/pip_licenses-2.3.0-py3-none-any.whl
+Collecting PTable (from pip-licenses)
+Downloading https://files.pythonhosted.org/packages/ab/b3/b54301811173ca94119eb474634f120a49cd370f257d1aae5a4abaf12729/PTable-0.9.2.tar.gz
+Building wheels for collected packages: PTable
+Building wheel for PTable (setup.py): started
+Building wheel for PTable (setup.py): finished with status 'done'
+Created wheel for PTable: filename=PTable-0.9.2-cp37-none-any.whl size=22906 sha256=b0947add24049ff5656f9ac006b3389c197851452d28f6286a4ca9d042bdf3d6
+Stored in directory: /root/.cache/pip/wheels/22/cc/2e/55980bfe86393df3e9896146a01f6802978d09d7ebcba5ea56
+Successfully built PTable
+Installing collected packages: PTable, pip-licenses
+Successfully installed PTable-0.9.2 pip-licenses-2.3.0
+created path: ./licenses/license_info.csv
+created path: ./licenses/license.txt
+After successful assembling
+Build completed successfully
+kind load -v 3 docker-image seldonio/sklearnserver_rest:1.2.3-dev --name kind
+Image: "seldonio/sklearnserver_rest:1.2.3-dev" with ID "sha256:8ae7446ecfffe93edabe72fd9386b5be5bd365890f5e7a62652e19a790c0b979" not present on node "kind-worker"
+Image: "seldonio/sklearnserver_rest:1.2.3-dev" with ID "sha256:8ae7446ecfffe93edabe72fd9386b5be5bd365890f5e7a62652e19a790c0b979" not present on node "kind-control-plane"
+kind load -v 3 docker-image seldonio/sklearnserver_grpc:1.2.3-dev --name kind
+Image: "seldonio/sklearnserver_grpc:1.2.3-dev" with ID "sha256:fb6f8a87676a4f83c725a596923b0e2633e1c35ad48986004eafb08933547e3f" not present on node "kind-worker"
+Image: "seldonio/sklearnserver_grpc:1.2.3-dev" with ID "sha256:fb6f8a87676a4f83c725a596923b0e2633e1c35ad48986004eafb08933547e3f" not present on node "kind-control-plane"
+make[1]: Leaving directory '/workspace/source/servers/sklearnserver'
+cd ../../servers/xgboostserver && make kind_load
+make[1]: Entering directory '/workspace/source/servers/xgboostserver'
+s2i build \
+	-E environment_rest \
+	./xgboostserver \
+	seldonio/seldon-core-s2i-python37-ubi8:1.2.3-dev \
+	seldonio/xgboostserver_rest:1.2.3-dev
+Before assembling
+---> Installing application source...
+---> Installing dependencies ...
+Looking in links: /whl
+Collecting scikit-learn==0.20.3 (from -r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/aa/cc/a84e1748a2a70d0f3e081f56cefc634f3b57013b16faa6926d3a6f0598df/scikit_learn-0.20.3-cp37-cp37m-manylinux1_x86_64.whl (5.4MB)
+Requirement already satisfied: numpy>=1.8.2 in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 2)) (1.19.2)
+Collecting xgboost==1.0.1 (from -r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/5c/b0/c4e5aa6d754bb19131a5990784a06c4c73d390446caf1d55f0a480dcf311/xgboost-1.0.1-py3-none-manylinux1_x86_64.whl (109.7MB)
+Collecting scipy>=0.13.3 (from scikit-learn==0.20.3->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/65/f9/f7a7e5009711579c72da2725174825e5056741bf4001815d097eef1b2e17/scipy-1.5.2-cp37-cp37m-manylinux1_x86_64.whl (25.9MB)
+Installing collected packages: scipy, scikit-learn, xgboost
+Successfully installed scikit-learn-0.20.3 scipy-1.5.2 xgboost-1.0.1
+Collecting pip-licenses
+Downloading https://files.pythonhosted.org/packages/c5/50/6c4b4e69a0c43bd9f03a30579695093062ba72da4e3e4026cd2144dbcc71/pip_licenses-2.3.0-py3-none-any.whl
+Collecting PTable (from pip-licenses)
+Downloading https://files.pythonhosted.org/packages/ab/b3/b54301811173ca94119eb474634f120a49cd370f257d1aae5a4abaf12729/PTable-0.9.2.tar.gz
+Building wheels for collected packages: PTable
+Building wheel for PTable (setup.py): started
+Building wheel for PTable (setup.py): finished with status 'done'
+Created wheel for PTable: filename=PTable-0.9.2-cp37-none-any.whl size=22906 sha256=3e2fdee9d7c6d4af52bad02e72fdaa154756fcf9b98d04cf9901b404a5a0fec6
+Stored in directory: /root/.cache/pip/wheels/22/cc/2e/55980bfe86393df3e9896146a01f6802978d09d7ebcba5ea56
+Successfully built PTable
+Installing collected packages: PTable, pip-licenses
+Successfully installed PTable-0.9.2 pip-licenses-2.3.0
+created path: ./licenses/license_info.csv
+created path: ./licenses/license.txt
+After successful assembling
+Build completed successfully
+s2i build \
+	-E environment_grpc \
+	./xgboostserver \
+	seldonio/seldon-core-s2i-python37-ubi8:1.2.3-dev \
+	seldonio/xgboostserver_grpc:1.2.3-dev
+Before assembling
+---> Installing application source...
+---> Installing dependencies ...
+Looking in links: /whl
+Collecting scikit-learn==0.20.3 (from -r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/aa/cc/a84e1748a2a70d0f3e081f56cefc634f3b57013b16faa6926d3a6f0598df/scikit_learn-0.20.3-cp37-cp37m-manylinux1_x86_64.whl (5.4MB)
+Requirement already satisfied: numpy>=1.8.2 in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 2)) (1.19.2)
+Collecting xgboost==1.0.1 (from -r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/5c/b0/c4e5aa6d754bb19131a5990784a06c4c73d390446caf1d55f0a480dcf311/xgboost-1.0.1-py3-none-manylinux1_x86_64.whl (109.7MB)
+Collecting scipy>=0.13.3 (from scikit-learn==0.20.3->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/65/f9/f7a7e5009711579c72da2725174825e5056741bf4001815d097eef1b2e17/scipy-1.5.2-cp37-cp37m-manylinux1_x86_64.whl (25.9MB)
+Installing collected packages: scipy, scikit-learn, xgboost
+Successfully installed scikit-learn-0.20.3 scipy-1.5.2 xgboost-1.0.1
+Collecting pip-licenses
+Downloading https://files.pythonhosted.org/packages/c5/50/6c4b4e69a0c43bd9f03a30579695093062ba72da4e3e4026cd2144dbcc71/pip_licenses-2.3.0-py3-none-any.whl
+Collecting PTable (from pip-licenses)
+Downloading https://files.pythonhosted.org/packages/ab/b3/b54301811173ca94119eb474634f120a49cd370f257d1aae5a4abaf12729/PTable-0.9.2.tar.gz
+Building wheels for collected packages: PTable
+Building wheel for PTable (setup.py): started
+Building wheel for PTable (setup.py): finished with status 'done'
+Created wheel for PTable: filename=PTable-0.9.2-cp37-none-any.whl size=22906 sha256=f2b92edc0c6a0ac1ef00820a78237bdc1370e35a113496861f0d1b11713c6db3
+Stored in directory: /root/.cache/pip/wheels/22/cc/2e/55980bfe86393df3e9896146a01f6802978d09d7ebcba5ea56
+Successfully built PTable
+Installing collected packages: PTable, pip-licenses
+Successfully installed PTable-0.9.2 pip-licenses-2.3.0
+created path: ./licenses/license_info.csv
+created path: ./licenses/license.txt
+After successful assembling
+Build completed successfully
+kind load -v 3 docker-image seldonio/xgboostserver_rest:1.2.3-dev --name kind
+Image: "seldonio/xgboostserver_rest:1.2.3-dev" with ID "sha256:40df53c5768165d72e96de19f3ebe9840d1eb3ff23ba4108e80ca2bca8213afb" not present on node "kind-worker"
+Image: "seldonio/xgboostserver_rest:1.2.3-dev" with ID "sha256:40df53c5768165d72e96de19f3ebe9840d1eb3ff23ba4108e80ca2bca8213afb" not present on node "kind-control-plane"
+kind load -v 3 docker-image seldonio/xgboostserver_grpc:1.2.3-dev --name kind
+Image: "seldonio/xgboostserver_grpc:1.2.3-dev" with ID "sha256:4b280d7c1d91e3e7262fc60145c365647f95cedab44058aab63393fb9f07209d" not present on node "kind-worker"
+Image: "seldonio/xgboostserver_grpc:1.2.3-dev" with ID "sha256:4b280d7c1d91e3e7262fc60145c365647f95cedab44058aab63393fb9f07209d" not present on node "kind-control-plane"
+make[1]: Leaving directory '/workspace/source/servers/xgboostserver'
+cd ../../servers/mlflowserver && make kind_load
+make[1]: Entering directory '/workspace/source/servers/mlflowserver'
+s2i build \
+	-E environment_rest \
+	./mlflowserver \
+	seldonio/seldon-core-s2i-python37-ubi8:1.2.3-dev \
+	seldonio/mlflowserver_rest:1.2.3-dev
+Before assembling
+---> Installing application source...
+---> Installing dependencies ...
+Looking in links: /whl
+Processing ./python
+Requirement already satisfied: pyyaml<5.4.0 in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 1)) (5.3.1)
+Requirement already satisfied: requests<2.25.0 in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 2)) (2.22.0)
+Collecting mlflow<1.12.0 (from -r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/aa/2d/7fa1f6e310ded489d943ea20cd7977a9867cb8d81b526d9c9460ce4a5b39/mlflow-1.11.0-py3-none-any.whl (13.9MB)
+Collecting pandas<1.2.0 (from -r requirements.txt (line 4))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/74/69/18b96b520519818e00b04dd08d7cbc5e764f1465f5a280cf96173f34c54e/pandas-1.1.2-cp37-cp37m-manylinux1_x86_64.whl (10.5MB)
+Requirement already satisfied: Flask<2.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (1.1.2)
+Requirement already satisfied: jsonschema<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (3.2.0)
+Requirement already satisfied: Flask-cors<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (3.0.9)
+Requirement already satisfied: redis<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (3.5.3)
+Requirement already satisfied: numpy<2.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (1.19.2)
+Requirement already satisfied: flatbuffers<2.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (1.12)
+Requirement already satisfied: protobuf<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (3.13.0)
+Requirement already satisfied: grpcio<2.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (1.32.0)
+Requirement already satisfied: Flask-OpenTracing<1.2.0,>=1.1.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (1.1.0)
+Requirement already satisfied: opentracing<2.4.0,>=2.2.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (2.3.0)
+Requirement already satisfied: jaeger-client<4.4.0,>=4.1.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (4.3.0)
+Requirement already satisfied: grpcio-opentracing<1.2.0,>=1.1.4 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (1.1.4)
+Requirement already satisfied: gunicorn<20.1.0,>=19.9.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (20.0.4)
+Requirement already satisfied: setuptools>=41.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (41.4.0)
+Requirement already satisfied: prometheus_client<0.9.0,>=0.7.1 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (0.8.0)
+Requirement already satisfied: chardet<3.1.0,>=3.0.2 in /opt/conda/lib/python3.7/site-packages (from requests<2.25.0->-r requirements.txt (line 2)) (3.0.4)
+Requirement already satisfied: idna<2.9,>=2.5 in /opt/conda/lib/python3.7/site-packages (from requests<2.25.0->-r requirements.txt (line 2)) (2.8)
+Requirement already satisfied: certifi>=2017.4.17 in /opt/conda/lib/python3.7/site-packages (from requests<2.25.0->-r requirements.txt (line 2)) (2020.6.20)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /opt/conda/lib/python3.7/site-packages (from requests<2.25.0->-r requirements.txt (line 2)) (1.24.2)
+Collecting sqlalchemy<=1.3.13 (from mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/af/47/35edeb0f86c0b44934c05d961c893e223ef27e79e1f53b5e6f14820ff553/SQLAlchemy-1.3.13.tar.gz (6.0MB)
+Collecting databricks-cli>=0.8.7 (from mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/1e/57/5c2d6b83cb8753d12f548e89f91037632baa8289677c1b2ab2adf14bf6b2/databricks-cli-0.11.0.tar.gz (49kB)
+Collecting docker>=4.0.0 (from mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/9e/8c/8d42dbd83679483db207535f4fb02dc84325fa78b290f057694b057fcd21/docker-4.3.1-py2.py3-none-any.whl (145kB)
+Collecting gitpython>=2.1.0 (from mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/09/bc/ae32e07e89cc25b9e5c793d19a1e5454d30a8e37d95040991160f942519e/GitPython-3.1.8-py3-none-any.whl (159kB)
+Collecting azure-storage-blob>=12.0 (from mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/b8/84/7e51b3e1156bcb89a20b9ec641d4fced4800aa79daac3a403898c32046be/azure_storage_blob-12.5.0-py2.py3-none-any.whl (326kB)
+Requirement already satisfied: six>=1.10.0 in /opt/conda/lib/python3.7/site-packages (from mlflow<1.12.0->-r requirements.txt (line 3)) (1.12.0)
+Collecting entrypoints (from mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/ac/c6/44694103f8c221443ee6b0041f69e2740d89a25641e62fb4f2ee568f2f9c/entrypoints-0.3-py2.py3-none-any.whl
+Collecting python-dateutil (from mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/d4/70/d60450c3dd48ef87586924207ae8907090de0b306af2bce5d134d78615cb/python_dateutil-2.8.1-py2.py3-none-any.whl (227kB)
+Collecting sqlparse (from mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/85/ee/6e821932f413a5c4b76be9c5936e313e4fc626b33f16e027866e1d60f588/sqlparse-0.3.1-py2.py3-none-any.whl (40kB)
+Collecting cloudpickle (from mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/e7/e3/898487e5dbeb612054cf2e0c188463acb358167fef749c53c8bb8918cea1/cloudpickle-1.6.0-py3-none-any.whl
+Collecting alembic<=1.4.1 (from mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/e0/e9/359dbb77c35c419df0aedeb1d53e71e7e3f438ff64a8fdb048c907404de3/alembic-1.4.1.tar.gz (1.1MB)
+Requirement already satisfied: click>=7.0 in /opt/conda/lib/python3.7/site-packages (from mlflow<1.12.0->-r requirements.txt (line 3)) (7.1.2)
+Collecting querystring-parser (from mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/4a/fa/f54f5662e0eababf0c49e92fd94bf178888562c0e7b677c8941bbbcd1bd6/querystring_parser-1.2.4.tar.gz
+Collecting prometheus-flask-exporter (from mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/37/45/dde8cc3aace904ae4e7963e7a17e3a21472460a8712b61dc2ddc1f69a55d/prometheus_flask_exporter-0.18.0.tar.gz
+Collecting gorilla (from mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/e3/56/5a683944cbfc77e429c6f03c636ca50504a785f60ffae91ddd7f5f7bb520/gorilla-0.3.0-py2.py3-none-any.whl
+Collecting pytz>=2017.2 (from pandas<1.2.0->-r requirements.txt (line 4))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/4f/a4/879454d49688e2fad93e59d7d4efda580b783c745fd2ec2a3adf87b0808d/pytz-2020.1-py2.py3-none-any.whl (510kB)
+Requirement already satisfied: itsdangerous>=0.24 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (1.1.0)
+Requirement already satisfied: Werkzeug>=0.15 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (1.0.1)
+Requirement already satisfied: Jinja2>=2.10.1 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (2.11.2)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (1.7.0)
+Requirement already satisfied: attrs>=17.4.0 in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (20.2.0)
+Requirement already satisfied: pyrsistent>=0.14.0 in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (0.17.3)
+Requirement already satisfied: tornado>=4.3 in /opt/conda/lib/python3.7/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (6.0.4)
+Requirement already satisfied: thrift in /opt/conda/lib/python3.7/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (0.13.0)
+Requirement already satisfied: threadloop<2,>=1 in /opt/conda/lib/python3.7/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (1.0.2)
+Collecting tabulate>=0.7.7 (from databricks-cli>=0.8.7->mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/c4/f4/770ae9385990f5a19a91431163d262182d3203662ea2b5739d0fcfc080f1/tabulate-0.8.7-py3-none-any.whl
+Collecting websocket-client>=0.32.0 (from docker>=4.0.0->mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/4c/5f/f61b420143ed1c8dc69f9eaec5ff1ac36109d52c80de49d66e0c36c3dfdf/websocket_client-0.57.0-py2.py3-none-any.whl (200kB)
+Collecting gitdb<5,>=4.0.1 (from gitpython>=2.1.0->mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/48/11/d1800bca0a3bae820b84b7d813ad1eff15a48a64caea9c823fc8c1b119e8/gitdb-4.0.5-py3-none-any.whl (63kB)
+Requirement already satisfied: cryptography>=2.1.4 in /opt/conda/lib/python3.7/site-packages (from azure-storage-blob>=12.0->mlflow<1.12.0->-r requirements.txt (line 3)) (2.7)
+Collecting azure-core<2.0.0,>=1.6.0 (from azure-storage-blob>=12.0->mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/9c/8c/6463dc620629d71c02f3f1a7dc30aab8e4f1a08ef64726cc3dd4f7949096/azure_core-1.8.1-py2.py3-none-any.whl (121kB)
+Collecting msrest>=0.6.10 (from azure-storage-blob>=12.0->mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/fa/f5/9e315fe8cb985b0ce052b34bcb767883dc739f46fadb62f05a7e6d6eedbe/msrest-0.6.19-py2.py3-none-any.whl (84kB)
+Collecting Mako (from alembic<=1.4.1->mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/a6/37/0e706200d22172eb8fa17d68a7ae22dec7631a0a92266634fb518a88a5b2/Mako-1.1.3-py2.py3-none-any.whl (75kB)
+Collecting python-editor>=0.3 (from alembic<=1.4.1->mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/c6/d3/201fc3abe391bbae6606e6f1d598c15d367033332bd54352b12f35513717/python_editor-1.0.4-py3-none-any.whl
+Requirement already satisfied: MarkupSafe>=0.23 in /opt/conda/lib/python3.7/site-packages (from Jinja2>=2.10.1->Flask<2.0.0->seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (1.1.1)
+Requirement already satisfied: zipp>=0.5 in /opt/conda/lib/python3.7/site-packages (from importlib-metadata; python_version < "3.8"->jsonschema<4.0.0->seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (3.1.0)
+Collecting smmap<4,>=3.0.1 (from gitdb<5,>=4.0.1->gitpython>=2.1.0->mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/b0/9a/4d409a6234eb940e6a78dfdfc66156e7522262f5f2fecca07dc55915952d/smmap-3.0.4-py2.py3-none-any.whl
+Requirement already satisfied: asn1crypto>=0.21.0 in /opt/conda/lib/python3.7/site-packages (from cryptography>=2.1.4->azure-storage-blob>=12.0->mlflow<1.12.0->-r requirements.txt (line 3)) (1.0.1)
+Requirement already satisfied: cffi!=1.11.3,>=1.8 in /opt/conda/lib/python3.7/site-packages (from cryptography>=2.1.4->azure-storage-blob>=12.0->mlflow<1.12.0->-r requirements.txt (line 3)) (1.12.3)
+Collecting isodate>=0.6.0 (from msrest>=0.6.10->azure-storage-blob>=12.0->mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/9b/9f/b36f7774ff5ea8e428fdcfc4bb332c39ee5b9362ddd3d40d9516a55221b2/isodate-0.6.0-py2.py3-none-any.whl (45kB)
+Collecting requests-oauthlib>=0.5.0 (from msrest>=0.6.10->azure-storage-blob>=12.0->mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/a3/12/b92740d845ab62ea4edf04d2f4164d82532b5a0b03836d4d4e71c6f3d379/requests_oauthlib-1.3.0-py2.py3-none-any.whl
+Requirement already satisfied: pycparser in /opt/conda/lib/python3.7/site-packages (from cffi!=1.11.3,>=1.8->cryptography>=2.1.4->azure-storage-blob>=12.0->mlflow<1.12.0->-r requirements.txt (line 3)) (2.19)
+Collecting oauthlib>=3.0.0 (from requests-oauthlib>=0.5.0->msrest>=0.6.10->azure-storage-blob>=12.0->mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/05/57/ce2e7a8fa7c0afb54a0581b14a65b56e62b5759dbc98e80627142b8a3704/oauthlib-3.1.0-py2.py3-none-any.whl (147kB)
+Building wheels for collected packages: seldon-core, sqlalchemy, databricks-cli, alembic, querystring-parser, prometheus-flask-exporter
+Building wheel for seldon-core (setup.py): started
+Building wheel for seldon-core (setup.py): finished with status 'done'
+Created wheel for seldon-core: filename=seldon_core-1.2.3.dev0-cp37-none-any.whl size=107554 sha256=c640ce7051fa22467959b9311241bf564680ef938499868266f96008ea5159b7
+Stored in directory: /tmp/pip-ephem-wheel-cache-omv0zhw4/wheels/a9/90/3f/f23037410d33e3a8e88ef02b095497c44983a6bd1787519d77
+Building wheel for sqlalchemy (setup.py): started
+Building wheel for sqlalchemy (setup.py): finished with status 'done'
+Created wheel for sqlalchemy: filename=SQLAlchemy-1.3.13-cp37-cp37m-linux_x86_64.whl size=1224257 sha256=0c3ec1b24690ed57fda9bae12c934f843cc80a97b265f5d59e7c248dcf6d7b61
+Stored in directory: /root/.cache/pip/wheels/b3/35/98/4c9cb3fd63d21d5606b972dd70643769745adf60e622467b71
+Building wheel for databricks-cli (setup.py): started
+Building wheel for databricks-cli (setup.py): finished with status 'done'
+Created wheel for databricks-cli: filename=databricks_cli-0.11.0-cp37-none-any.whl size=90300 sha256=b9995c9d572f64a83751dea84195e7f266151e0a6eea1aa5038e9f85ea6a6130
+Stored in directory: /root/.cache/pip/wheels/63/d0/4f/3deeca1f4c47a6aca7c2c6a6e2bf272391565dc86a7718a59b
+Building wheel for alembic (setup.py): started
+Building wheel for alembic (setup.py): finished with status 'done'
+Created wheel for alembic: filename=alembic-1.4.1-py2.py3-none-any.whl size=158155 sha256=79289179f9f7859d662a7c528f0ccd435872327d619ef99b63b15fd14f1916ce
+Stored in directory: /root/.cache/pip/wheels/84/07/f7/12f7370ca47a66030c2edeedcc23dec26ea0ac22dcb4c4a0f3
+Building wheel for querystring-parser (setup.py): started
+Building wheel for querystring-parser (setup.py): finished with status 'done'
+Created wheel for querystring-parser: filename=querystring_parser-1.2.4-cp37-none-any.whl size=7079 sha256=7fc4211dd553f2d34d3e5c4bf3f6aaab8e215b1459593ae5ce6b5c65b6d26a1b
+Stored in directory: /root/.cache/pip/wheels/1e/41/34/23ebf5d1089a9aed847951e0ee375426eb4ad0a7079d88d41e
+Building wheel for prometheus-flask-exporter (setup.py): started
+Building wheel for prometheus-flask-exporter (setup.py): finished with status 'done'
+Created wheel for prometheus-flask-exporter: filename=prometheus_flask_exporter-0.18.0-cp37-none-any.whl size=17156 sha256=38f292502fbfcd94979e04750d53b3d443beac10a54c4fbb9e2b1edd2b64bf2c
+Stored in directory: /root/.cache/pip/wheels/52/36/b1/dc7f24d2b5847a17b66ee4a598bab4a18947f614050b0c333f
+Successfully built seldon-core sqlalchemy databricks-cli alembic querystring-parser prometheus-flask-exporter
+Installing collected packages: sqlalchemy, tabulate, databricks-cli, websocket-client, docker, smmap, gitdb, gitpython, azure-core, isodate, oauthlib, requests-oauthlib, msrest, azure-storage-blob, python-dateutil, pytz, pandas, entrypoints, sqlparse, cloudpickle, Mako, python-editor, alembic, querystring-parser, prometheus-flask-exporter, gorilla, mlflow, seldon-core
+Found existing installation: seldon-core 1.2.3.dev0
+Uninstalling seldon-core-1.2.3.dev0:
+Successfully uninstalled seldon-core-1.2.3.dev0
+Successfully installed Mako-1.1.3 alembic-1.4.1 azure-core-1.8.1 azure-storage-blob-12.5.0 cloudpickle-1.6.0 databricks-cli-0.11.0 docker-4.3.1 entrypoints-0.3 gitdb-4.0.5 gitpython-3.1.8 gorilla-0.3.0 isodate-0.6.0 mlflow-1.11.0 msrest-0.6.19 oauthlib-3.1.0 pandas-1.1.2 prometheus-flask-exporter-0.18.0 python-dateutil-2.8.1 python-editor-1.0.4 pytz-2020.1 querystring-parser-1.2.4 requests-oauthlib-1.3.0 seldon-core-1.2.3.dev0 smmap-3.0.4 sqlalchemy-1.3.13 sqlparse-0.3.1 tabulate-0.8.7 websocket-client-0.57.0
+Collecting pip-licenses
+Downloading https://files.pythonhosted.org/packages/c5/50/6c4b4e69a0c43bd9f03a30579695093062ba72da4e3e4026cd2144dbcc71/pip_licenses-2.3.0-py3-none-any.whl
+Collecting PTable (from pip-licenses)
+Downloading https://files.pythonhosted.org/packages/ab/b3/b54301811173ca94119eb474634f120a49cd370f257d1aae5a4abaf12729/PTable-0.9.2.tar.gz
+Building wheels for collected packages: PTable
+Building wheel for PTable (setup.py): started
+Building wheel for PTable (setup.py): finished with status 'done'
+Created wheel for PTable: filename=PTable-0.9.2-cp37-none-any.whl size=22906 sha256=0722c78b8f5124581ef5ad6ebbbf89924dc0e511e0c810e8b1a29b0cf9f0459f
+Stored in directory: /root/.cache/pip/wheels/22/cc/2e/55980bfe86393df3e9896146a01f6802978d09d7ebcba5ea56
+Successfully built PTable
+Installing collected packages: PTable, pip-licenses
+Successfully installed PTable-0.9.2 pip-licenses-2.3.0
+created path: ./licenses/license_info.csv
+created path: ./licenses/license.txt
+After successful assembling
+Build completed successfully
+s2i build \
+	-E environment_grpc \
+	./mlflowserver \
+	seldonio/seldon-core-s2i-python37-ubi8:1.2.3-dev \
+	seldonio/mlflowserver_grpc:1.2.3-dev
+Before assembling
+---> Installing application source...
+---> Installing dependencies ...
+Looking in links: /whl
+Processing ./python
+Requirement already satisfied: pyyaml<5.4.0 in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 1)) (5.3.1)
+Requirement already satisfied: requests<2.25.0 in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 2)) (2.22.0)
+Collecting mlflow<1.12.0 (from -r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/aa/2d/7fa1f6e310ded489d943ea20cd7977a9867cb8d81b526d9c9460ce4a5b39/mlflow-1.11.0-py3-none-any.whl (13.9MB)
+Collecting pandas<1.2.0 (from -r requirements.txt (line 4))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/74/69/18b96b520519818e00b04dd08d7cbc5e764f1465f5a280cf96173f34c54e/pandas-1.1.2-cp37-cp37m-manylinux1_x86_64.whl (10.5MB)
+Requirement already satisfied: Flask<2.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (1.1.2)
+Requirement already satisfied: jsonschema<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (3.2.0)
+Requirement already satisfied: Flask-cors<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (3.0.9)
+Requirement already satisfied: redis<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (3.5.3)
+Requirement already satisfied: numpy<2.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (1.19.2)
+Requirement already satisfied: flatbuffers<2.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (1.12)
+Requirement already satisfied: protobuf<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (3.13.0)
+Requirement already satisfied: grpcio<2.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (1.32.0)
+Requirement already satisfied: Flask-OpenTracing<1.2.0,>=1.1.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (1.1.0)
+Requirement already satisfied: opentracing<2.4.0,>=2.2.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (2.3.0)
+Requirement already satisfied: jaeger-client<4.4.0,>=4.1.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (4.3.0)
+Requirement already satisfied: grpcio-opentracing<1.2.0,>=1.1.4 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (1.1.4)
+Requirement already satisfied: gunicorn<20.1.0,>=19.9.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (20.0.4)
+Requirement already satisfied: setuptools>=41.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (41.4.0)
+Requirement already satisfied: prometheus_client<0.9.0,>=0.7.1 in /opt/conda/lib/python3.7/site-packages (from seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (0.8.0)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /opt/conda/lib/python3.7/site-packages (from requests<2.25.0->-r requirements.txt (line 2)) (1.24.2)
+Requirement already satisfied: certifi>=2017.4.17 in /opt/conda/lib/python3.7/site-packages (from requests<2.25.0->-r requirements.txt (line 2)) (2020.6.20)
+Requirement already satisfied: idna<2.9,>=2.5 in /opt/conda/lib/python3.7/site-packages (from requests<2.25.0->-r requirements.txt (line 2)) (2.8)
+Requirement already satisfied: chardet<3.1.0,>=3.0.2 in /opt/conda/lib/python3.7/site-packages (from requests<2.25.0->-r requirements.txt (line 2)) (3.0.4)
+Collecting databricks-cli>=0.8.7 (from mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/1e/57/5c2d6b83cb8753d12f548e89f91037632baa8289677c1b2ab2adf14bf6b2/databricks-cli-0.11.0.tar.gz (49kB)
+Collecting docker>=4.0.0 (from mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/9e/8c/8d42dbd83679483db207535f4fb02dc84325fa78b290f057694b057fcd21/docker-4.3.1-py2.py3-none-any.whl (145kB)
+Collecting sqlparse (from mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/85/ee/6e821932f413a5c4b76be9c5936e313e4fc626b33f16e027866e1d60f588/sqlparse-0.3.1-py2.py3-none-any.whl (40kB)
+Collecting sqlalchemy<=1.3.13 (from mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/af/47/35edeb0f86c0b44934c05d961c893e223ef27e79e1f53b5e6f14820ff553/SQLAlchemy-1.3.13.tar.gz (6.0MB)
+Collecting azure-storage-blob>=12.0 (from mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/b8/84/7e51b3e1156bcb89a20b9ec641d4fced4800aa79daac3a403898c32046be/azure_storage_blob-12.5.0-py2.py3-none-any.whl (326kB)
+Collecting alembic<=1.4.1 (from mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/e0/e9/359dbb77c35c419df0aedeb1d53e71e7e3f438ff64a8fdb048c907404de3/alembic-1.4.1.tar.gz (1.1MB)
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Collecting entrypoints (from mlflow<1.12.0->-r requirements.txt (line 3))
+Downloading https://files.pythonhosted.org/packages/ac/c6/44694103f8c221443ee6b0041f69e2740d89a25641e62fb4f2ee568f2f9c/entrypoints-0.3-py2.py3-none-any.whl
+Requirement already satisfied: six>=1.10.0 in /opt/conda/lib/python3.7/site-packages (from mlflow<1.12.0->-r requirements.txt (line 3)) (1.12.0)
+Collecting querystring-parser (from mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/4a/fa/f54f5662e0eababf0c49e92fd94bf178888562c0e7b677c8941bbbcd1bd6/querystring_parser-1.2.4.tar.gz
+Collecting gitpython>=2.1.0 (from mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/09/bc/ae32e07e89cc25b9e5c793d19a1e5454d30a8e37d95040991160f942519e/GitPython-3.1.8-py3-none-any.whl (159kB)
+Collecting gorilla (from mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/e3/56/5a683944cbfc77e429c6f03c636ca50504a785f60ffae91ddd7f5f7bb520/gorilla-0.3.0-py2.py3-none-any.whl
+Collecting python-dateutil (from mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/d4/70/d60450c3dd48ef87586924207ae8907090de0b306af2bce5d134d78615cb/python_dateutil-2.8.1-py2.py3-none-any.whl (227kB)
+Collecting cloudpickle (from mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/e7/e3/898487e5dbeb612054cf2e0c188463acb358167fef749c53c8bb8918cea1/cloudpickle-1.6.0-py3-none-any.whl
+Requirement already satisfied: click>=7.0 in /opt/conda/lib/python3.7/site-packages (from mlflow<1.12.0->-r requirements.txt (line 3)) (7.1.2)
+Collecting prometheus-flask-exporter (from mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/37/45/dde8cc3aace904ae4e7963e7a17e3a21472460a8712b61dc2ddc1f69a55d/prometheus_flask_exporter-0.18.0.tar.gz
+Collecting pytz>=2017.2 (from pandas<1.2.0->-r requirements.txt (line 4))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/4f/a4/879454d49688e2fad93e59d7d4efda580b783c745fd2ec2a3adf87b0808d/pytz-2020.1-py2.py3-none-any.whl (510kB)
+Requirement already satisfied: itsdangerous>=0.24 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (1.1.0)
+Requirement already satisfied: Werkzeug>=0.15 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (1.0.1)
+Requirement already satisfied: Jinja2>=2.10.1 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (2.11.2)
+Requirement already satisfied: pyrsistent>=0.14.0 in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (0.17.3)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (1.7.0)
+Requirement already satisfied: attrs>=17.4.0 in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (20.2.0)
+Requirement already satisfied: threadloop<2,>=1 in /opt/conda/lib/python3.7/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (1.0.2)
+Requirement already satisfied: thrift in /opt/conda/lib/python3.7/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (0.13.0)
+Requirement already satisfied: tornado>=4.3 in /opt/conda/lib/python3.7/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (6.0.4)
+Collecting tabulate>=0.7.7 (from databricks-cli>=0.8.7->mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/c4/f4/770ae9385990f5a19a91431163d262182d3203662ea2b5739d0fcfc080f1/tabulate-0.8.7-py3-none-any.whl
+Collecting websocket-client>=0.32.0 (from docker>=4.0.0->mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/4c/5f/f61b420143ed1c8dc69f9eaec5ff1ac36109d52c80de49d66e0c36c3dfdf/websocket_client-0.57.0-py2.py3-none-any.whl (200kB)
+Collecting azure-core<2.0.0,>=1.6.0 (from azure-storage-blob>=12.0->mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/9c/8c/6463dc620629d71c02f3f1a7dc30aab8e4f1a08ef64726cc3dd4f7949096/azure_core-1.8.1-py2.py3-none-any.whl (121kB)
+Requirement already satisfied: cryptography>=2.1.4 in /opt/conda/lib/python3.7/site-packages (from azure-storage-blob>=12.0->mlflow<1.12.0->-r requirements.txt (line 3)) (2.7)
+Collecting msrest>=0.6.10 (from azure-storage-blob>=12.0->mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/fa/f5/9e315fe8cb985b0ce052b34bcb767883dc739f46fadb62f05a7e6d6eedbe/msrest-0.6.19-py2.py3-none-any.whl (84kB)
+Collecting Mako (from alembic<=1.4.1->mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/a6/37/0e706200d22172eb8fa17d68a7ae22dec7631a0a92266634fb518a88a5b2/Mako-1.1.3-py2.py3-none-any.whl (75kB)
+Collecting python-editor>=0.3 (from alembic<=1.4.1->mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/c6/d3/201fc3abe391bbae6606e6f1d598c15d367033332bd54352b12f35513717/python_editor-1.0.4-py3-none-any.whl
+Collecting gitdb<5,>=4.0.1 (from gitpython>=2.1.0->mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/48/11/d1800bca0a3bae820b84b7d813ad1eff15a48a64caea9c823fc8c1b119e8/gitdb-4.0.5-py3-none-any.whl (63kB)
+Requirement already satisfied: MarkupSafe>=0.23 in /opt/conda/lib/python3.7/site-packages (from Jinja2>=2.10.1->Flask<2.0.0->seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (1.1.1)
+Requirement already satisfied: zipp>=0.5 in /opt/conda/lib/python3.7/site-packages (from importlib-metadata; python_version < "3.8"->jsonschema<4.0.0->seldon-core==1.2.3.dev0->-r requirements.txt (line 7)) (3.1.0)
+Requirement already satisfied: asn1crypto>=0.21.0 in /opt/conda/lib/python3.7/site-packages (from cryptography>=2.1.4->azure-storage-blob>=12.0->mlflow<1.12.0->-r requirements.txt (line 3)) (1.0.1)
+Requirement already satisfied: cffi!=1.11.3,>=1.8 in /opt/conda/lib/python3.7/site-packages (from cryptography>=2.1.4->azure-storage-blob>=12.0->mlflow<1.12.0->-r requirements.txt (line 3)) (1.12.3)
+Collecting requests-oauthlib>=0.5.0 (from msrest>=0.6.10->azure-storage-blob>=12.0->mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/a3/12/b92740d845ab62ea4edf04d2f4164d82532b5a0b03836d4d4e71c6f3d379/requests_oauthlib-1.3.0-py2.py3-none-any.whl
+Collecting isodate>=0.6.0 (from msrest>=0.6.10->azure-storage-blob>=12.0->mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/9b/9f/b36f7774ff5ea8e428fdcfc4bb332c39ee5b9362ddd3d40d9516a55221b2/isodate-0.6.0-py2.py3-none-any.whl (45kB)
+Collecting smmap<4,>=3.0.1 (from gitdb<5,>=4.0.1->gitpython>=2.1.0->mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/b0/9a/4d409a6234eb940e6a78dfdfc66156e7522262f5f2fecca07dc55915952d/smmap-3.0.4-py2.py3-none-any.whl
+Requirement already satisfied: pycparser in /opt/conda/lib/python3.7/site-packages (from cffi!=1.11.3,>=1.8->cryptography>=2.1.4->azure-storage-blob>=12.0->mlflow<1.12.0->-r requirements.txt (line 3)) (2.19)
+Collecting oauthlib>=3.0.0 (from requests-oauthlib>=0.5.0->msrest>=0.6.10->azure-storage-blob>=12.0->mlflow<1.12.0->-r requirements.txt (line 3))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/05/57/ce2e7a8fa7c0afb54a0581b14a65b56e62b5759dbc98e80627142b8a3704/oauthlib-3.1.0-py2.py3-none-any.whl (147kB)
+Building wheels for collected packages: seldon-core, databricks-cli, sqlalchemy, alembic, querystring-parser, prometheus-flask-exporter
+Building wheel for seldon-core (setup.py): started
+Building wheel for seldon-core (setup.py): finished with status 'done'
+Created wheel for seldon-core: filename=seldon_core-1.2.3.dev0-cp37-none-any.whl size=107554 sha256=f68c403e9cd1d57194457544c37b05ea1358b848c1cbfecaab6ddf1984c0d2b4
+Stored in directory: /tmp/pip-ephem-wheel-cache-b1m3ulcz/wheels/a9/90/3f/f23037410d33e3a8e88ef02b095497c44983a6bd1787519d77
+Building wheel for databricks-cli (setup.py): started
+Building wheel for databricks-cli (setup.py): finished with status 'done'
+Created wheel for databricks-cli: filename=databricks_cli-0.11.0-cp37-none-any.whl size=90300 sha256=80d0ea5fd71f7c6fe69bb3d5f0816e95a88439600b1ed18b6cdf8ab362b55753
+Stored in directory: /root/.cache/pip/wheels/63/d0/4f/3deeca1f4c47a6aca7c2c6a6e2bf272391565dc86a7718a59b
+Building wheel for sqlalchemy (setup.py): started
+Building wheel for sqlalchemy (setup.py): finished with status 'done'
+Created wheel for sqlalchemy: filename=SQLAlchemy-1.3.13-cp37-cp37m-linux_x86_64.whl size=1224249 sha256=98fe3ab2b7879302e18500a37c447fc7dae6d67b7d60300d50f56e3a78822bf4
+Stored in directory: /root/.cache/pip/wheels/b3/35/98/4c9cb3fd63d21d5606b972dd70643769745adf60e622467b71
+Building wheel for alembic (setup.py): started
+Building wheel for alembic (setup.py): finished with status 'done'
+Created wheel for alembic: filename=alembic-1.4.1-py2.py3-none-any.whl size=158155 sha256=228b7d9bf457f45b74b554dc9340c97d85ce18785a16e614db3902903ba81d2c
+Stored in directory: /root/.cache/pip/wheels/84/07/f7/12f7370ca47a66030c2edeedcc23dec26ea0ac22dcb4c4a0f3
+Building wheel for querystring-parser (setup.py): started
+Building wheel for querystring-parser (setup.py): finished with status 'done'
+Created wheel for querystring-parser: filename=querystring_parser-1.2.4-cp37-none-any.whl size=7079 sha256=5d4e7c1a0769974812da289e58960c17ef826aed77c1035f3e35dede04b1d75a
+Stored in directory: /root/.cache/pip/wheels/1e/41/34/23ebf5d1089a9aed847951e0ee375426eb4ad0a7079d88d41e
+Building wheel for prometheus-flask-exporter (setup.py): started
+Building wheel for prometheus-flask-exporter (setup.py): finished with status 'done'
+Created wheel for prometheus-flask-exporter: filename=prometheus_flask_exporter-0.18.0-cp37-none-any.whl size=17156 sha256=e439ec4f3774a99b76df1a907cd4ab43033f8feb660ddbbaceab39f7e7610fda
+Stored in directory: /root/.cache/pip/wheels/52/36/b1/dc7f24d2b5847a17b66ee4a598bab4a18947f614050b0c333f
+Successfully built seldon-core databricks-cli sqlalchemy alembic querystring-parser prometheus-flask-exporter
+Installing collected packages: python-dateutil, pytz, pandas, tabulate, databricks-cli, websocket-client, docker, sqlparse, sqlalchemy, azure-core, oauthlib, requests-oauthlib, isodate, msrest, azure-storage-blob, Mako, python-editor, alembic, entrypoints, querystring-parser, smmap, gitdb, gitpython, gorilla, cloudpickle, prometheus-flask-exporter, mlflow, seldon-core
+Found existing installation: seldon-core 1.2.3.dev0
+Uninstalling seldon-core-1.2.3.dev0:
+Successfully uninstalled seldon-core-1.2.3.dev0
+Successfully installed Mako-1.1.3 alembic-1.4.1 azure-core-1.8.1 azure-storage-blob-12.5.0 cloudpickle-1.6.0 databricks-cli-0.11.0 docker-4.3.1 entrypoints-0.3 gitdb-4.0.5 gitpython-3.1.8 gorilla-0.3.0 isodate-0.6.0 mlflow-1.11.0 msrest-0.6.19 oauthlib-3.1.0 pandas-1.1.2 prometheus-flask-exporter-0.18.0 python-dateutil-2.8.1 python-editor-1.0.4 pytz-2020.1 querystring-parser-1.2.4 requests-oauthlib-1.3.0 seldon-core-1.2.3.dev0 smmap-3.0.4 sqlalchemy-1.3.13 sqlparse-0.3.1 tabulate-0.8.7 websocket-client-0.57.0
+Collecting pip-licenses
+Downloading https://files.pythonhosted.org/packages/c5/50/6c4b4e69a0c43bd9f03a30579695093062ba72da4e3e4026cd2144dbcc71/pip_licenses-2.3.0-py3-none-any.whl
+Collecting PTable (from pip-licenses)
+Downloading https://files.pythonhosted.org/packages/ab/b3/b54301811173ca94119eb474634f120a49cd370f257d1aae5a4abaf12729/PTable-0.9.2.tar.gz
+Building wheels for collected packages: PTable
+Building wheel for PTable (setup.py): started
+Building wheel for PTable (setup.py): finished with status 'done'
+Created wheel for PTable: filename=PTable-0.9.2-cp37-none-any.whl size=22906 sha256=0c143fe7ba6534cdc50b769231db77af02ce477f7da722ddb6838279a8ea1060
+Stored in directory: /root/.cache/pip/wheels/22/cc/2e/55980bfe86393df3e9896146a01f6802978d09d7ebcba5ea56
+Successfully built PTable
+Installing collected packages: PTable, pip-licenses
+Successfully installed PTable-0.9.2 pip-licenses-2.3.0
+created path: ./licenses/license_info.csv
+created path: ./licenses/license.txt
+After successful assembling
+Build completed successfully
+kind load -v 3 docker-image seldonio/mlflowserver_rest:1.2.3-dev --name kind
+Image: "seldonio/mlflowserver_rest:1.2.3-dev" with ID "sha256:d1310d2ff617ddd2031a314080903f5e19ecea1fd331001eeade4d22f7fa47bc" not present on node "kind-worker"
+Image: "seldonio/mlflowserver_rest:1.2.3-dev" with ID "sha256:d1310d2ff617ddd2031a314080903f5e19ecea1fd331001eeade4d22f7fa47bc" not present on node "kind-control-plane"
+kind load -v 3 docker-image seldonio/mlflowserver_grpc:1.2.3-dev --name kind
+Image: "seldonio/mlflowserver_grpc:1.2.3-dev" with ID "sha256:b1959b9af927f9cb137e0886746bdf4029a60211cfeccc47e9095e3d02aae3ab" not present on node "kind-worker"
+Image: "seldonio/mlflowserver_grpc:1.2.3-dev" with ID "sha256:b1959b9af927f9cb137e0886746bdf4029a60211cfeccc47e9095e3d02aae3ab" not present on node "kind-control-plane"
+make[1]: Leaving directory '/workspace/source/servers/mlflowserver'
+cd ../../integrations/tfserving && make kind_load
+make[1]: Entering directory '/workspace/source/integrations/tfserving'
+s2i build \
+	-E environment_rest \
+	. \
+	seldonio/seldon-core-s2i-python37-ubi8:1.2.3-dev \
+	seldonio/tfserving-proxy_rest:1.2.3-dev
+Before assembling
+---> Installing application source...
+---> Installing dependencies ...
+Looking in links: /whl
+Collecting tensorflow>=1.12.0 (from -r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/16/89/f2d29c2eafc2eeafb17d5634340e06366af904d332341200a49d954bce85/tensorflow-2.3.0-cp37-cp37m-manylinux2010_x86_64.whl (320.4MB)
+Collecting tensorflow-serving-api>=1.10.1 (from -r requirements.txt (line 2))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/72/0d/0f0822b418fd51795a4768f35bb17619af51312ca9f5762c80bea34bd7ae/tensorflow_serving_api-2.3.0-py2.py3-none-any.whl
+Requirement already satisfied: requests in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 3)) (2.22.0)
+Collecting absl-py>=0.7.0 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/b9/07/f69dd3367368ad69f174bfe426a973651412ec11d48ec05c000f19fe0561/absl_py-0.10.0-py3-none-any.whl (127kB)
+Requirement already satisfied: wheel>=0.26 in /opt/conda/lib/python3.7/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (0.33.6)
+Collecting keras-preprocessing<1.2,>=1.1.1 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/79/4c/7c3275a01e12ef9368a892926ab932b33bb13d55794881e3573482b378a7/Keras_Preprocessing-1.1.2-py2.py3-none-any.whl (42kB)
+Requirement already satisfied: protobuf>=3.9.2 in /opt/conda/lib/python3.7/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (3.13.0)
+Collecting google-pasta>=0.1.8 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/a3/de/c648ef6835192e6e2cc03f40b19eeda4382c49b5bafb43d88b931c4c74ac/google_pasta-0.2.0-py3-none-any.whl (57kB)
+Collecting termcolor>=1.1.0 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/8a/48/a76be51647d0eb9f10e2a4511bf3ffb8cc1e6b14e9e4fab46173aa79f981/termcolor-1.1.0.tar.gz
+Collecting tensorflow-estimator<2.4.0,>=2.3.0 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/e9/ed/5853ec0ae380cba4588eab1524e18ece1583b65f7ae0e97321f5ff9dfd60/tensorflow_estimator-2.3.0-py2.py3-none-any.whl (459kB)
+Collecting gast==0.3.3 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/d6/84/759f5dd23fec8ba71952d97bcc7e2c9d7d63bdc582421f3cd4be845f0c98/gast-0.3.3-py2.py3-none-any.whl
+Collecting tensorboard<3,>=2.3.0 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/e9/1b/6a420d7e6ba431cf3d51b2a5bfa06a958c4141e3189385963dc7f6fbffb6/tensorboard-2.3.0-py3-none-any.whl (6.8MB)
+Collecting wrapt>=1.11.1 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/82/f7/e43cefbe88c5fd371f4cf0cf5eb3feccd07515af9fd6cf7dbf1d1793a797/wrapt-1.12.1.tar.gz
+Collecting h5py<2.11.0,>=2.10.0 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/3f/c0/abde58b837e066bca19a3f7332d9d0493521d7dd6b48248451a9e3fe2214/h5py-2.10.0-cp37-cp37m-manylinux1_x86_64.whl (2.9MB)
+Collecting scipy==1.4.1 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/dd/82/c1fe128f3526b128cfd185580ba40d01371c5d299fcf7f77968e22dfcc2e/scipy-1.4.1-cp37-cp37m-manylinux1_x86_64.whl (26.1MB)
+Requirement already satisfied: six>=1.12.0 in /opt/conda/lib/python3.7/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (1.12.0)
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Collecting numpy<1.19.0,>=1.16.0 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+Downloading https://files.pythonhosted.org/packages/d6/c6/58e517e8b1fb192725cfa23c01c2e60e4e6699314ee9684a1c5f5c9b27e1/numpy-1.18.5-cp37-cp37m-manylinux1_x86_64.whl (20.1MB)
+Requirement already satisfied: grpcio>=1.8.6 in /opt/conda/lib/python3.7/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (1.32.0)
+Collecting astunparse==1.6.3 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/2b/03/13dde6512ad7b4557eb792fbcf0c653af6076b81e5941d36ec61f7ce6028/astunparse-1.6.3-py2.py3-none-any.whl
+Collecting opt-einsum>=2.3.2 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/bc/19/404708a7e54ad2798907210462fd950c3442ea51acc8790f3da48d2bee8b/opt_einsum-3.3.0-py3-none-any.whl (65kB)
+Requirement already satisfied: idna<2.9,>=2.5 in /opt/conda/lib/python3.7/site-packages (from requests->-r requirements.txt (line 3)) (2.8)
+Requirement already satisfied: certifi>=2017.4.17 in /opt/conda/lib/python3.7/site-packages (from requests->-r requirements.txt (line 3)) (2020.6.20)
+Requirement already satisfied: chardet<3.1.0,>=3.0.2 in /opt/conda/lib/python3.7/site-packages (from requests->-r requirements.txt (line 3)) (3.0.4)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /opt/conda/lib/python3.7/site-packages (from requests->-r requirements.txt (line 3)) (1.24.2)
+Requirement already satisfied: setuptools in /opt/conda/lib/python3.7/site-packages (from protobuf>=3.9.2->tensorflow>=1.12.0->-r requirements.txt (line 1)) (41.4.0)
+Collecting google-auth<2,>=1.6.3 (from tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/6b/22/f241c17eeafb8b8fcb75a13e3e438a78a0c14768936fe81800d477514afe/google_auth-1.21.2-py2.py3-none-any.whl (93kB)
+Collecting markdown>=2.6.8 (from tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/a4/63/eaec2bd025ab48c754b55e8819af0f6a69e2b1e187611dd40cbbe101ee7f/Markdown-3.2.2-py3-none-any.whl (88kB)
+Requirement already satisfied: werkzeug>=0.11.15 in /opt/conda/lib/python3.7/site-packages (from tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1)) (1.0.1)
+Collecting google-auth-oauthlib<0.5,>=0.4.1 (from tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/7b/b8/88def36e74bee9fce511c9519571f4e485e890093ab7442284f4ffaef60b/google_auth_oauthlib-0.4.1-py2.py3-none-any.whl
+Collecting tensorboard-plugin-wit>=1.6.0 (from tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/b6/85/5c5ac0a8c5efdfab916e9c6bc18963f6a6996a8a1e19ec4ad8c9ac9c623c/tensorboard_plugin_wit-1.7.0-py3-none-any.whl (779kB)
+Collecting cachetools<5.0,>=2.0.0 (from google-auth<2,>=1.6.3->tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/cd/5c/f3aa86b6d5482f3051b433c7616668a9b96fbe49a622210e2c9781938a5c/cachetools-4.1.1-py3-none-any.whl
+Collecting pyasn1-modules>=0.2.1 (from google-auth<2,>=1.6.3->tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/95/de/214830a981892a3e286c3794f41ae67a4495df1108c3da8a9f62159b9a9d/pyasn1_modules-0.2.8-py2.py3-none-any.whl (155kB)
+Collecting rsa<5,>=3.1.4; python_version >= "3.5" (from google-auth<2,>=1.6.3->tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/1c/df/c3587a667d6b308fadc90b99e8bc8774788d033efcc70f4ecaae7fad144b/rsa-4.6-py3-none-any.whl (47kB)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /opt/conda/lib/python3.7/site-packages (from markdown>=2.6.8->tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1)) (1.7.0)
+Collecting requests-oauthlib>=0.7.0 (from google-auth-oauthlib<0.5,>=0.4.1->tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/a3/12/b92740d845ab62ea4edf04d2f4164d82532b5a0b03836d4d4e71c6f3d379/requests_oauthlib-1.3.0-py2.py3-none-any.whl
+Collecting pyasn1<0.5.0,>=0.4.6 (from pyasn1-modules>=0.2.1->google-auth<2,>=1.6.3->tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/62/1e/a94a8d635fa3ce4cfc7f506003548d0a2447ae76fd5ca53932970fe3053f/pyasn1-0.4.8-py2.py3-none-any.whl (77kB)
+Requirement already satisfied: zipp>=0.5 in /opt/conda/lib/python3.7/site-packages (from importlib-metadata; python_version < "3.8"->markdown>=2.6.8->tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1)) (3.1.0)
+Collecting oauthlib>=3.0.0 (from requests-oauthlib>=0.7.0->google-auth-oauthlib<0.5,>=0.4.1->tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/05/57/ce2e7a8fa7c0afb54a0581b14a65b56e62b5759dbc98e80627142b8a3704/oauthlib-3.1.0-py2.py3-none-any.whl (147kB)
+Building wheels for collected packages: termcolor, wrapt
+Building wheel for termcolor (setup.py): started
+Building wheel for termcolor (setup.py): finished with status 'done'
+Created wheel for termcolor: filename=termcolor-1.1.0-cp37-none-any.whl size=4832 sha256=41e1da7ed9d490d3c0bc4a8e06822473572aa1718ab890386bf2fd2a88bc3d36
+Stored in directory: /root/.cache/pip/wheels/7c/06/54/bc84598ba1daf8f970247f550b175aaaee85f68b4b0c5ab2c6
+Building wheel for wrapt (setup.py): started
+Building wheel for wrapt (setup.py): finished with status 'done'
+Created wheel for wrapt: filename=wrapt-1.12.1-cp37-cp37m-linux_x86_64.whl size=76654 sha256=bab533b985d7390d509988c075e778a7cee0d7efbd0a1fa757f460facf93e37b
+Stored in directory: /root/.cache/pip/wheels/b1/c2/ed/d62208260edbd3fa7156545c00ef966f45f2063d0a84f8208a
+Successfully built termcolor wrapt
+Installing collected packages: absl-py, numpy, keras-preprocessing, google-pasta, termcolor, tensorflow-estimator, gast, cachetools, pyasn1, pyasn1-modules, rsa, google-auth, markdown, oauthlib, requests-oauthlib, google-auth-oauthlib, tensorboard-plugin-wit, tensorboard, wrapt, h5py, scipy, astunparse, opt-einsum, tensorflow, tensorflow-serving-api
+Found existing installation: numpy 1.19.2
+Uninstalling numpy-1.19.2:
+Successfully uninstalled numpy-1.19.2
+Successfully installed absl-py-0.10.0 astunparse-1.6.3 cachetools-4.1.1 gast-0.3.3 google-auth-1.21.2 google-auth-oauthlib-0.4.1 google-pasta-0.2.0 h5py-2.10.0 keras-preprocessing-1.1.2 markdown-3.2.2 numpy-1.18.5 oauthlib-3.1.0 opt-einsum-3.3.0 pyasn1-0.4.8 pyasn1-modules-0.2.8 requests-oauthlib-1.3.0 rsa-4.6 scipy-1.4.1 tensorboard-2.3.0 tensorboard-plugin-wit-1.7.0 tensorflow-2.3.0 tensorflow-estimator-2.3.0 tensorflow-serving-api-2.3.0 termcolor-1.1.0 wrapt-1.12.1
+Collecting pip-licenses
+Downloading https://files.pythonhosted.org/packages/c5/50/6c4b4e69a0c43bd9f03a30579695093062ba72da4e3e4026cd2144dbcc71/pip_licenses-2.3.0-py3-none-any.whl
+Collecting PTable (from pip-licenses)
+Downloading https://files.pythonhosted.org/packages/ab/b3/b54301811173ca94119eb474634f120a49cd370f257d1aae5a4abaf12729/PTable-0.9.2.tar.gz
+Building wheels for collected packages: PTable
+Building wheel for PTable (setup.py): started
+Building wheel for PTable (setup.py): finished with status 'done'
+Created wheel for PTable: filename=PTable-0.9.2-cp37-none-any.whl size=22906 sha256=6089d700c4558dbc31e761b5c4a1dfe174d26cb4a14233b1c686ed377f325157
+Stored in directory: /root/.cache/pip/wheels/22/cc/2e/55980bfe86393df3e9896146a01f6802978d09d7ebcba5ea56
+Successfully built PTable
+Installing collected packages: PTable, pip-licenses
+Successfully installed PTable-0.9.2 pip-licenses-2.3.0
+created path: ./licenses/license_info.csv
+created path: ./licenses/license.txt
+After successful assembling
+Build completed successfully
+s2i build \
+	-E environment_grpc \
+	. \
+	seldonio/seldon-core-s2i-python37-ubi8:1.2.3-dev \
+	seldonio/tfserving-proxy_grpc:1.2.3-dev
+Before assembling
+---> Installing application source...
+---> Installing dependencies ...
+Looking in links: /whl
+Collecting tensorflow>=1.12.0 (from -r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/16/89/f2d29c2eafc2eeafb17d5634340e06366af904d332341200a49d954bce85/tensorflow-2.3.0-cp37-cp37m-manylinux2010_x86_64.whl (320.4MB)
+Collecting tensorflow-serving-api>=1.10.1 (from -r requirements.txt (line 2))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/72/0d/0f0822b418fd51795a4768f35bb17619af51312ca9f5762c80bea34bd7ae/tensorflow_serving_api-2.3.0-py2.py3-none-any.whl
+Requirement already satisfied: requests in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 3)) (2.22.0)
+Requirement already satisfied: wheel>=0.26 in /opt/conda/lib/python3.7/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (0.33.6)
+Requirement already satisfied: six>=1.12.0 in /opt/conda/lib/python3.7/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (1.12.0)
+Requirement already satisfied: grpcio>=1.8.6 in /opt/conda/lib/python3.7/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (1.32.0)
+Collecting termcolor>=1.1.0 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/8a/48/a76be51647d0eb9f10e2a4511bf3ffb8cc1e6b14e9e4fab46173aa79f981/termcolor-1.1.0.tar.gz
+Collecting wrapt>=1.11.1 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/82/f7/e43cefbe88c5fd371f4cf0cf5eb3feccd07515af9fd6cf7dbf1d1793a797/wrapt-1.12.1.tar.gz
+Collecting tensorflow-estimator<2.4.0,>=2.3.0 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/e9/ed/5853ec0ae380cba4588eab1524e18ece1583b65f7ae0e97321f5ff9dfd60/tensorflow_estimator-2.3.0-py2.py3-none-any.whl (459kB)
+Collecting opt-einsum>=2.3.2 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/bc/19/404708a7e54ad2798907210462fd950c3442ea51acc8790f3da48d2bee8b/opt_einsum-3.3.0-py3-none-any.whl (65kB)
+Collecting h5py<2.11.0,>=2.10.0 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/3f/c0/abde58b837e066bca19a3f7332d9d0493521d7dd6b48248451a9e3fe2214/h5py-2.10.0-cp37-cp37m-manylinux1_x86_64.whl (2.9MB)
+Collecting absl-py>=0.7.0 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/b9/07/f69dd3367368ad69f174bfe426a973651412ec11d48ec05c000f19fe0561/absl_py-0.10.0-py3-none-any.whl (127kB)
+Collecting keras-preprocessing<1.2,>=1.1.1 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/79/4c/7c3275a01e12ef9368a892926ab932b33bb13d55794881e3573482b378a7/Keras_Preprocessing-1.1.2-py2.py3-none-any.whl (42kB)
+Collecting tensorboard<3,>=2.3.0 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/e9/1b/6a420d7e6ba431cf3d51b2a5bfa06a958c4141e3189385963dc7f6fbffb6/tensorboard-2.3.0-py3-none-any.whl (6.8MB)
+Requirement already satisfied: protobuf>=3.9.2 in /opt/conda/lib/python3.7/site-packages (from tensorflow>=1.12.0->-r requirements.txt (line 1)) (3.13.0)
+Collecting google-pasta>=0.1.8 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/a3/de/c648ef6835192e6e2cc03f40b19eeda4382c49b5bafb43d88b931c4c74ac/google_pasta-0.2.0-py3-none-any.whl (57kB)
+Collecting gast==0.3.3 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/d6/84/759f5dd23fec8ba71952d97bcc7e2c9d7d63bdc582421f3cd4be845f0c98/gast-0.3.3-py2.py3-none-any.whl
+Collecting astunparse==1.6.3 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/2b/03/13dde6512ad7b4557eb792fbcf0c653af6076b81e5941d36ec61f7ce6028/astunparse-1.6.3-py2.py3-none-any.whl
+Collecting numpy<1.19.0,>=1.16.0 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/d6/c6/58e517e8b1fb192725cfa23c01c2e60e4e6699314ee9684a1c5f5c9b27e1/numpy-1.18.5-cp37-cp37m-manylinux1_x86_64.whl (20.1MB)
+Collecting scipy==1.4.1 (from tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/dd/82/c1fe128f3526b128cfd185580ba40d01371c5d299fcf7f77968e22dfcc2e/scipy-1.4.1-cp37-cp37m-manylinux1_x86_64.whl (26.1MB)
+Requirement already satisfied: chardet<3.1.0,>=3.0.2 in /opt/conda/lib/python3.7/site-packages (from requests->-r requirements.txt (line 3)) (3.0.4)
+Requirement already satisfied: certifi>=2017.4.17 in /opt/conda/lib/python3.7/site-packages (from requests->-r requirements.txt (line 3)) (2020.6.20)
+Requirement already satisfied: idna<2.9,>=2.5 in /opt/conda/lib/python3.7/site-packages (from requests->-r requirements.txt (line 3)) (2.8)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /opt/conda/lib/python3.7/site-packages (from requests->-r requirements.txt (line 3)) (1.24.2)
+Collecting google-auth<2,>=1.6.3 (from tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/6b/22/f241c17eeafb8b8fcb75a13e3e438a78a0c14768936fe81800d477514afe/google_auth-1.21.2-py2.py3-none-any.whl (93kB)
+Requirement already satisfied: setuptools>=41.0.0 in /opt/conda/lib/python3.7/site-packages (from tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1)) (41.4.0)
+Collecting tensorboard-plugin-wit>=1.6.0 (from tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/b6/85/5c5ac0a8c5efdfab916e9c6bc18963f6a6996a8a1e19ec4ad8c9ac9c623c/tensorboard_plugin_wit-1.7.0-py3-none-any.whl (779kB)
+Collecting google-auth-oauthlib<0.5,>=0.4.1 (from tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/7b/b8/88def36e74bee9fce511c9519571f4e485e890093ab7442284f4ffaef60b/google_auth_oauthlib-0.4.1-py2.py3-none-any.whl
+Requirement already satisfied: werkzeug>=0.11.15 in /opt/conda/lib/python3.7/site-packages (from tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1)) (1.0.1)
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Collecting markdown>=2.6.8 (from tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1))
+Downloading https://files.pythonhosted.org/packages/a4/63/eaec2bd025ab48c754b55e8819af0f6a69e2b1e187611dd40cbbe101ee7f/Markdown-3.2.2-py3-none-any.whl (88kB)
+Collecting rsa<5,>=3.1.4; python_version >= "3.5" (from google-auth<2,>=1.6.3->tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/1c/df/c3587a667d6b308fadc90b99e8bc8774788d033efcc70f4ecaae7fad144b/rsa-4.6-py3-none-any.whl (47kB)
+Collecting cachetools<5.0,>=2.0.0 (from google-auth<2,>=1.6.3->tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/cd/5c/f3aa86b6d5482f3051b433c7616668a9b96fbe49a622210e2c9781938a5c/cachetools-4.1.1-py3-none-any.whl
+Collecting pyasn1-modules>=0.2.1 (from google-auth<2,>=1.6.3->tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/95/de/214830a981892a3e286c3794f41ae67a4495df1108c3da8a9f62159b9a9d/pyasn1_modules-0.2.8-py2.py3-none-any.whl (155kB)
+Collecting requests-oauthlib>=0.7.0 (from google-auth-oauthlib<0.5,>=0.4.1->tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/a3/12/b92740d845ab62ea4edf04d2f4164d82532b5a0b03836d4d4e71c6f3d379/requests_oauthlib-1.3.0-py2.py3-none-any.whl
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /opt/conda/lib/python3.7/site-packages (from markdown>=2.6.8->tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1)) (1.7.0)
+Collecting pyasn1>=0.1.3 (from rsa<5,>=3.1.4; python_version >= "3.5"->google-auth<2,>=1.6.3->tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1))
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Downloading https://files.pythonhosted.org/packages/62/1e/a94a8d635fa3ce4cfc7f506003548d0a2447ae76fd5ca53932970fe3053f/pyasn1-0.4.8-py2.py3-none-any.whl (77kB)
+  WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Collecting oauthlib>=3.0.0 (from requests-oauthlib>=0.7.0->google-auth-oauthlib<0.5,>=0.4.1->tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1))
+Downloading https://files.pythonhosted.org/packages/05/57/ce2e7a8fa7c0afb54a0581b14a65b56e62b5759dbc98e80627142b8a3704/oauthlib-3.1.0-py2.py3-none-any.whl (147kB)
+Requirement already satisfied: zipp>=0.5 in /opt/conda/lib/python3.7/site-packages (from importlib-metadata; python_version < "3.8"->markdown>=2.6.8->tensorboard<3,>=2.3.0->tensorflow>=1.12.0->-r requirements.txt (line 1)) (3.1.0)
+Building wheels for collected packages: termcolor, wrapt
+Building wheel for termcolor (setup.py): started
+Building wheel for termcolor (setup.py): finished with status 'done'
+Created wheel for termcolor: filename=termcolor-1.1.0-cp37-none-any.whl size=4832 sha256=61f87b356adbeabd136fa3cf3e62f0af3d04f6cef121e9adeabdb2e634f040ec
+Stored in directory: /root/.cache/pip/wheels/7c/06/54/bc84598ba1daf8f970247f550b175aaaee85f68b4b0c5ab2c6
+Building wheel for wrapt (setup.py): started
+Building wheel for wrapt (setup.py): finished with status 'done'
+Created wheel for wrapt: filename=wrapt-1.12.1-cp37-cp37m-linux_x86_64.whl size=76660 sha256=b5a932ca191d14da4498d9b48d1f077908cd768ec5be20f683fb54ad99a53d0d
+Stored in directory: /root/.cache/pip/wheels/b1/c2/ed/d62208260edbd3fa7156545c00ef966f45f2063d0a84f8208a
+Successfully built termcolor wrapt
+Installing collected packages: termcolor, wrapt, tensorflow-estimator, numpy, opt-einsum, h5py, absl-py, keras-preprocessing, pyasn1, rsa, cachetools, pyasn1-modules, google-auth, tensorboard-plugin-wit, oauthlib, requests-oauthlib, google-auth-oauthlib, markdown, tensorboard, google-pasta, gast, astunparse, scipy, tensorflow, tensorflow-serving-api
+Found existing installation: numpy 1.19.2
+Uninstalling numpy-1.19.2:
+Successfully uninstalled numpy-1.19.2
+Successfully installed absl-py-0.10.0 astunparse-1.6.3 cachetools-4.1.1 gast-0.3.3 google-auth-1.21.2 google-auth-oauthlib-0.4.1 google-pasta-0.2.0 h5py-2.10.0 keras-preprocessing-1.1.2 markdown-3.2.2 numpy-1.18.5 oauthlib-3.1.0 opt-einsum-3.3.0 pyasn1-0.4.8 pyasn1-modules-0.2.8 requests-oauthlib-1.3.0 rsa-4.6 scipy-1.4.1 tensorboard-2.3.0 tensorboard-plugin-wit-1.7.0 tensorflow-2.3.0 tensorflow-estimator-2.3.0 tensorflow-serving-api-2.3.0 termcolor-1.1.0 wrapt-1.12.1
+Collecting pip-licenses
+Downloading https://files.pythonhosted.org/packages/c5/50/6c4b4e69a0c43bd9f03a30579695093062ba72da4e3e4026cd2144dbcc71/pip_licenses-2.3.0-py3-none-any.whl
+Collecting PTable (from pip-licenses)
+Downloading https://files.pythonhosted.org/packages/ab/b3/b54301811173ca94119eb474634f120a49cd370f257d1aae5a4abaf12729/PTable-0.9.2.tar.gz
+Building wheels for collected packages: PTable
+Building wheel for PTable (setup.py): started
+Building wheel for PTable (setup.py): finished with status 'done'
+Created wheel for PTable: filename=PTable-0.9.2-cp37-none-any.whl size=22906 sha256=e36f4e0ae3aa50ca48dce26d4c430ef7a37abc2cdb61b76ca941558dd64d86e4
+Stored in directory: /root/.cache/pip/wheels/22/cc/2e/55980bfe86393df3e9896146a01f6802978d09d7ebcba5ea56
+Successfully built PTable
+Installing collected packages: PTable, pip-licenses
+Successfully installed PTable-0.9.2 pip-licenses-2.3.0
+created path: ./licenses/license_info.csv
+created path: ./licenses/license.txt
+After successful assembling
+Build completed successfully
+kind load -v 3 docker-image seldonio/tfserving-proxy_rest:1.2.3-dev --name kind
+Image: "seldonio/tfserving-proxy_rest:1.2.3-dev" with ID "sha256:0c43aee0b675440eb959aec88680e39d06e9662e844ba95d00a101b00eb5b5a6" not present on node "kind-worker"
+Image: "seldonio/tfserving-proxy_rest:1.2.3-dev" with ID "sha256:0c43aee0b675440eb959aec88680e39d06e9662e844ba95d00a101b00eb5b5a6" not present on node "kind-control-plane"
+kind load -v 3 docker-image seldonio/tfserving-proxy_grpc:1.2.3-dev --name kind
+Image: "seldonio/tfserving-proxy_grpc:1.2.3-dev" with ID "sha256:32146389efb17c23ec4e700b29a236757f8388a7cbb0d01c028f49281f14f9e7" not present on node "kind-worker"
+Image: "seldonio/tfserving-proxy_grpc:1.2.3-dev" with ID "sha256:32146389efb17c23ec4e700b29a236757f8388a7cbb0d01c028f49281f14f9e7" not present on node "kind-control-plane"
+make[1]: Leaving directory '/workspace/source/integrations/tfserving'
+Files changed in alibi explain folder:
+SKIPPING ALIBI EXPLAIN IMAGE BUILD...
+Files changed in alibi detect folder:
+SKIPPING ALIBI DETECT IMAGE BUILD...
+Files changed in misc folders:
+SKIPPING MISC IMAGE BUILD...
+kubectl create namespace seldon || echo "Namespace seldon already exists"
+namespace/seldon created
+kubectl create namespace test1 || echo "Namespace test1 already exists"
+namespace/test1 created
+helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+"stable" has been added to your repositories
+helm repo add seldonio https://storage.googleapis.com/seldon-charts
+"seldonio" has been added to your repositories
+helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
+"jaegertracing" has been added to your repositories
+helm repo add datawire https://www.getambassador.io
+"datawire" has been added to your repositories
+helm repo update
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "seldonio" chart repository
+...Successfully got an update from the "datawire" chart repository
+...Successfully got an update from the "jaegertracing" chart repository
+...Successfully got an update from the "stable" chart repository
+Update Complete. ⎈ Happy Helming!⎈ 
+helm upgrade ambassador \
+	datawire/ambassador \
+	-f ../resources/ambassador_values.yaml \
+	--set image.repository=quay.io/datawire/ambassador \
+	--set crds.keep=false \
+	--set enableAES=false \
+	--namespace seldon \
+	--set replicaCount=1 \
+	--wait --install
+Release "ambassador" does not exist. Installing it now.
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+Error: timed out waiting for the condition
+make: *** [Makefile:53: install_ambassador] Error 1
+Kind setup returned errors
+kind delete cluster
+Deleting cluster "kind" ...
+Stopping Docker: dockerProgram process in pidfile '/var/run/docker-ssd.pid', 1 process(es), refused to die.
+[31m
+Pipeline failed on stage 'end-to-end' : container 'step-test-end-to-end'. The execution of the pipeline has stopped.[0m
