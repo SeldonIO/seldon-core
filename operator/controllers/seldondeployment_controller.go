@@ -1572,7 +1572,7 @@ func (r *SeldonDeploymentReconciler) updateStatusForError(desired *machinelearni
 
 	desired.Status.State = machinelearningv1.StatusStateFailed
 	desired.Status.Description = err.Error()
-	
+
 	existing := &machinelearningv1.SeldonDeployment{}
 	namespacedName := types.NamespacedName{Name: desired.Name, Namespace: desired.Namespace}
 	if err := r.Get(context.TODO(), namespacedName, existing); err != nil {
