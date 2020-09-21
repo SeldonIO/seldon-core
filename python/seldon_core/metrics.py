@@ -115,7 +115,7 @@ class SeldonMetrics:
             FEEDBACK_METRIC_METHOD_TAG,
         )
 
-    def update(self, custom_metrics, method):
+    def update(self, custom_metrics: List[Dict], method: str):
         # Read a corresponding worker's metric data with lock as Proxy objects
         # are not thread-safe, see "Thread safety of proxies" here
         # https://docs.python.org/3.7/library/multiprocessing.html#programming-guidelines

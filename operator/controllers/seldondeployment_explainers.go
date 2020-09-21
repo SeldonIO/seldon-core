@@ -17,6 +17,7 @@ limitations under the License.
 package controllers
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"strconv"
@@ -49,10 +50,11 @@ var (
 
 type ExplainerInitialiser struct {
 	clientset kubernetes.Interface
+	ctx       context.Context
 }
 
-func NewExplainerInitializer(clientset kubernetes.Interface) *ExplainerInitialiser {
-	return &ExplainerInitialiser{clientset: clientset}
+func NewExplainerInitializer(ctx context.Context, clientset kubernetes.Interface) *ExplainerInitialiser {
+	return &ExplainerInitialiser{clientset: clientset, ctx: ctx}
 }
 
 type ExplainerConfig struct {
@@ -60,7 +62,7 @@ type ExplainerConfig struct {
 }
 
 func (ei *ExplainerInitialiser) getExplainerConfigs() (*ExplainerConfig, error) {
-	configMap, err := ei.clientset.CoreV1().ConfigMaps(ControllerNamespace).Get(ControllerConfigMapName, metav1.GetOptions{})
+	configMap, err := ei.clientset.CoreV1().ConfigMaps(ControllerNamespace).Get(ei.ctx, ControllerConfigMapName, metav1.GetOptions{})
 	if err != nil {
 		//log.Error(err, "Failed to find config map", "name", ControllerConfigMapName)
 		return nil, err
@@ -213,7 +215,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		if p.Explainer.ModelUri != "" {
 			var err error
 
-			mi := NewModelInitializer(ei.clientset)
+			mi := NewModelInitializer(ei.ctx, ei.clientset)
 			deploy, err = mi.InjectModelInitializer(deploy, explainerContainer.Name, p.Explainer.ModelUri, p.Explainer.ServiceAccountName, p.Explainer.EnvSecretRefName)
 			if err != nil {
 				return err

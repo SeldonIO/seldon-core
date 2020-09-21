@@ -10,7 +10,7 @@ pipelineConfig:
     pullRequest:
       pipeline:
         agent:
-          image: seldonio/core-builder:0.17
+          image: seldonio/core-builder:0.18
         stages:
         - name: pr-build-comment
           steps:
@@ -51,16 +51,16 @@ pipelineConfig:
         - name: create-version
           command: cat version.txt > VERSION
         - name: delete-existing-branch
-          command: git branch -D nightly-\$(cat version.txt) || echo "No branch exists"
+          command: git branch -D v\$(cat version.txt) || echo "No branch exists"
         - name: create-new-branch
-          command: git checkout -b nightly-\$(cat version.txt)
+          command: git checkout -b v\$(cat version.txt)
         - name: commit-new-branch
-          command: git push origin nightly-\$(cat version.txt) -f
+          command: git push origin v\$(cat version.txt) -f
         - name: skip-tag
           command: echo "skipping tag"
       pipeline:
         agent:
-          image: seldonio/core-builder:0.17
+          image: seldonio/core-builder:0.18
         stages:
           - name: build-and-push
             steps:
@@ -71,7 +71,7 @@ pipelineConfig:
             - name: create-dated-version
               command: echo $(cat version.txt)_$(date +"%Y%m%d%H%M%S") > version.txt
             - name: create-new-branch
-              command: git checkout -b nightly-$(cat version.txt)
+              command: git checkout -b v$(cat version.txt)
             # This is necessary as the python release.py has a known bug which hangs if the JARs are not downloaded first
             - name: update-release-tags
               command: (cd engine && mvn versions:set -DnewVersion=$(cat ../version.txt)) && python release.py $(cat version.txt)
@@ -84,7 +84,7 @@ pipelineConfig:
               args:
               - ./ci_build_and_push_images.sh
             - name: push-new-branch
-              command: git push origin nightly-$(cat version.txt)
+              command: git push origin v$(cat version.txt)
             options:
               containerOptions:
                 volumeMounts:

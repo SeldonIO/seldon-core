@@ -18,6 +18,7 @@ limitations under the License.
 package v1alpha2
 
 import (
+	"context"
 	"time"
 
 	v1alpha2 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
@@ -36,14 +37,14 @@ type SeldonDeploymentsGetter interface {
 
 // SeldonDeploymentInterface has methods to work with SeldonDeployment resources.
 type SeldonDeploymentInterface interface {
-	Create(*v1alpha2.SeldonDeployment) (*v1alpha2.SeldonDeployment, error)
-	Update(*v1alpha2.SeldonDeployment) (*v1alpha2.SeldonDeployment, error)
-	Delete(name string, options *v1.DeleteOptions) error
-	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string, options v1.GetOptions) (*v1alpha2.SeldonDeployment, error)
-	List(opts v1.ListOptions) (*v1alpha2.SeldonDeploymentList, error)
-	Watch(opts v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha2.SeldonDeployment, err error)
+	Create(ctx context.Context, seldonDeployment *v1alpha2.SeldonDeployment, opts v1.CreateOptions) (*v1alpha2.SeldonDeployment, error)
+	Update(ctx context.Context, seldonDeployment *v1alpha2.SeldonDeployment, opts v1.UpdateOptions) (*v1alpha2.SeldonDeployment, error)
+	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha2.SeldonDeployment, error)
+	List(ctx context.Context, opts v1.ListOptions) (*v1alpha2.SeldonDeploymentList, error)
+	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha2.SeldonDeployment, err error)
 	SeldonDeploymentExpansion
 }
 
@@ -62,20 +63,20 @@ func newSeldonDeployments(c *MachinelearningV1alpha2Client, namespace string) *s
 }
 
 // Get takes name of the seldonDeployment, and returns the corresponding seldonDeployment object, and an error if there is any.
-func (c *seldonDeployments) Get(name string, options v1.GetOptions) (result *v1alpha2.SeldonDeployment, err error) {
+func (c *seldonDeployments) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha2.SeldonDeployment, err error) {
 	result = &v1alpha2.SeldonDeployment{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("seldondeployments").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // List takes label and field selectors, and returns the list of SeldonDeployments that match those selectors.
-func (c *seldonDeployments) List(opts v1.ListOptions) (result *v1alpha2.SeldonDeploymentList, err error) {
+func (c *seldonDeployments) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha2.SeldonDeploymentList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -86,13 +87,13 @@ func (c *seldonDeployments) List(opts v1.ListOptions) (result *v1alpha2.SeldonDe
 		Resource("seldondeployments").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Watch returns a watch.Interface that watches the requested seldonDeployments.
-func (c *seldonDeployments) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *seldonDeployments) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -103,71 +104,74 @@ func (c *seldonDeployments) Watch(opts v1.ListOptions) (watch.Interface, error) 
 		Resource("seldondeployments").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Watch()
+		Watch(ctx)
 }
 
 // Create takes the representation of a seldonDeployment and creates it.  Returns the server's representation of the seldonDeployment, and an error, if there is any.
-func (c *seldonDeployments) Create(seldonDeployment *v1alpha2.SeldonDeployment) (result *v1alpha2.SeldonDeployment, err error) {
+func (c *seldonDeployments) Create(ctx context.Context, seldonDeployment *v1alpha2.SeldonDeployment, opts v1.CreateOptions) (result *v1alpha2.SeldonDeployment, err error) {
 	result = &v1alpha2.SeldonDeployment{}
 	err = c.client.Post().
 		Namespace(c.ns).
 		Resource("seldondeployments").
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(seldonDeployment).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Update takes the representation of a seldonDeployment and updates it. Returns the server's representation of the seldonDeployment, and an error, if there is any.
-func (c *seldonDeployments) Update(seldonDeployment *v1alpha2.SeldonDeployment) (result *v1alpha2.SeldonDeployment, err error) {
+func (c *seldonDeployments) Update(ctx context.Context, seldonDeployment *v1alpha2.SeldonDeployment, opts v1.UpdateOptions) (result *v1alpha2.SeldonDeployment, err error) {
 	result = &v1alpha2.SeldonDeployment{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("seldondeployments").
 		Name(seldonDeployment.Name).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(seldonDeployment).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Delete takes name of the seldonDeployment and deletes it. Returns an error if one occurs.
-func (c *seldonDeployments) Delete(name string, options *v1.DeleteOptions) error {
+func (c *seldonDeployments) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("seldondeployments").
 		Name(name).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *seldonDeployments) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+func (c *seldonDeployments) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	var timeout time.Duration
-	if listOptions.TimeoutSeconds != nil {
-		timeout = time.Duration(*listOptions.TimeoutSeconds) * time.Second
+	if listOpts.TimeoutSeconds != nil {
+		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("seldondeployments").
-		VersionedParams(&listOptions, scheme.ParameterCodec).
+		VersionedParams(&listOpts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
 
 // Patch applies the patch and returns the patched seldonDeployment.
-func (c *seldonDeployments) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha2.SeldonDeployment, err error) {
+func (c *seldonDeployments) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha2.SeldonDeployment, err error) {
 	result = &v1alpha2.SeldonDeployment{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).
 		Resource("seldondeployments").
-		SubResource(subresources...).
 		Name(name).
+		SubResource(subresources...).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(data).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package credentials
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -40,11 +41,12 @@ type CredentialConfig struct {
 type CredentialBuilder struct {
 	clientset kubernetes.Interface
 	config    CredentialConfig
+	ctx       context.Context
 }
 
 var log = logf.Log.WithName("CredentialBulder")
 
-func NewCredentialBulder(config *v1.ConfigMap, clientset kubernetes.Interface) *CredentialBuilder {
+func NewCredentialBulder(ctx context.Context, config *v1.ConfigMap, clientset kubernetes.Interface) *CredentialBuilder {
 	credentialConfig := CredentialConfig{}
 	if credential, ok := config.Data[CredentialConfigKeyName]; ok {
 		err := json.Unmarshal([]byte(credential), &credentialConfig)
@@ -55,6 +57,7 @@ func NewCredentialBulder(config *v1.ConfigMap, clientset kubernetes.Interface) *
 	return &CredentialBuilder{
 		clientset: clientset,
 		config:    credentialConfig,
+		ctx:       ctx,
 	}
 }
 
@@ -75,13 +78,13 @@ func (c *CredentialBuilder) CreateSecretVolumeAndEnv(namespace string, serviceAc
 		gcsCredentialFileName = c.config.GCS.GCSCredentialFileName
 	}
 
-	serviceAccount, err := c.clientset.CoreV1().ServiceAccounts(namespace).Get(serviceAccountName, metav1.GetOptions{})
+	serviceAccount, err := c.clientset.CoreV1().ServiceAccounts(namespace).Get(c.ctx, serviceAccountName, metav1.GetOptions{})
 	if err != nil {
 		log.Error(err, "Failed to find service account", "ServiceAccountName", serviceAccountName)
 		return nil
 	}
 	for _, secretRef := range serviceAccount.Secrets {
-		secret, err := c.clientset.CoreV1().Secrets(namespace).Get(secretRef.Name, metav1.GetOptions{})
+		secret, err := c.clientset.CoreV1().Secrets(namespace).Get(c.ctx, secretRef.Name, metav1.GetOptions{})
 		if err != nil {
 			log.Error(err, "Failed to find secret", "SecretName", secretRef.Name)
 			continue

@@ -195,6 +195,9 @@ func (p *PredictorProcess) predictChildren(node *v1.PredictiveUnit, msg payload.
 					return cmsgs[i], err
 				}
 			}
+		} else if route == -2 {
+			//Abort and return request
+			return msg, nil
 		} else {
 			cmsgs = make([]payload.SeldonPayload, 1)
 			cmsgs[0], err = p.Predict(&node.Children[route], msg)

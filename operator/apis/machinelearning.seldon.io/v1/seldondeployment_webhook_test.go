@@ -63,7 +63,14 @@ func createScheme() *runtime.Scheme {
 func setupTestConfigMap() error {
 	scheme := createScheme()
 	C = fake.NewFakeClientWithScheme(scheme)
-	return C.Create(context.Background(), testConfigMap)
+	testConfigMap1 := &v1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      ControllerConfigMapName,
+			Namespace: ControllerNamespace,
+		},
+		Data: configs,
+	}
+	return C.Create(context.TODO(), testConfigMap1)
 }
 
 var configs = map[string]string{
@@ -121,15 +128,6 @@ var configs = map[string]string{
                  }
              }
          }`,
-}
-
-// Create configmap
-var testConfigMap = &v1.ConfigMap{
-	ObjectMeta: metav1.ObjectMeta{
-		Name:      ControllerConfigMapName,
-		Namespace: ControllerNamespace,
-	},
-	Data: configs,
 }
 
 func TestValidateBadProtocol(t *testing.T) {
@@ -1289,5 +1287,47 @@ func TestNoPredictors(t *testing.T) {
 
 	spec.DefaultSeldonDeployment("mydep", "default")
 	err := spec.ValidateSeldonDeployment()
+	g.Expect(err).ToNot(BeNil())
+}
+
+func TestValidateTwoShadows(t *testing.T) {
+	g := NewGomegaWithT(t)
+	err := setupTestConfigMap()
+	g.Expect(err).To(BeNil())
+	impl := PredictiveUnitImplementation(constants.PrePackedServerTensorflow)
+	spec := &SeldonDeploymentSpec{
+		Protocol: ProtocolTensorflow,
+		Predictors: []PredictorSpec{
+			{
+				Name: "p1",
+				Graph: PredictiveUnit{
+					Name:           "classifier",
+					Implementation: &impl,
+					ModelURI:       "s3://mybucket/model",
+				},
+			},
+			{
+				Name: "p1",
+				Graph: PredictiveUnit{
+					Name:           "classifier",
+					Implementation: &impl,
+					ModelURI:       "s3://mybucket/model",
+				},
+				Shadow: true,
+			},
+			{
+				Name: "p1",
+				Graph: PredictiveUnit{
+					Name:           "classifier",
+					Implementation: &impl,
+					ModelURI:       "s3://mybucket/model",
+				},
+				Shadow: true,
+			},
+		},
+	}
+
+	spec.DefaultSeldonDeployment("mydep", "default")
+	err = spec.ValidateSeldonDeployment()
 	g.Expect(err).ToNot(BeNil())
 }

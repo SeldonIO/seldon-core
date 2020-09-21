@@ -130,11 +130,13 @@ var configs = map[string]string{
 	}`,
 }
 
+const DefaultManagerNamespace = "seldon-system"
+
 // Create configmap
 var configMap = &corev1.ConfigMap{
 	ObjectMeta: metav1.ObjectMeta{
 		Name:      machinelearningv1.ControllerConfigMapName,
-		Namespace: "seldon-system",
+		Namespace: DefaultManagerNamespace,
 	},
 	Data: configs,
 }
@@ -206,12 +208,18 @@ var _ = BeforeSuite(func(done Done) {
 		Log:       ctrl.Log.WithName("controllers").WithName("SeldonDeployment"),
 		Scheme:    k8sManager.GetScheme(),
 		Recorder:  k8sManager.GetEventRecorderFor(constants.ControllerName),
-	}).SetupWithManager(k8sManager, constants.ControllerName)
+	}).SetupWithManager(context.TODO(), k8sManager, constants.ControllerName)
 	Expect(err).ToNot(HaveOccurred())
 
 	//k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
 	k8sClient = k8sManager.GetClient()
 	Expect(k8sClient).ToNot(BeNil())
+
+	Expect(k8sClient.Create(context.TODO(), &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: DefaultManagerNamespace,
+		},
+	})).NotTo(HaveOccurred())
 
 	Expect(k8sClient.Create(context.TODO(), configMap)).NotTo(HaveOccurred())
 	//	defer k8sClient.Delete(context.TODO(), configMap)

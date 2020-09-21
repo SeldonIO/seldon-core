@@ -35,7 +35,7 @@ To use our s2i builder image to package your python model you will need:
 We will go into detail for each of these steps:
 
 ### Python file
-Your source code should contain a python file which defines a class of the same name as the file. For example, looking at our skeleton python model file at ```wrappers/s2i/python/test/model-template-app/MyModel.py```:
+Your source code should contain a python file which defines a class of the same name as the file. For example, looking at our skeleton python model file at `wrappers/s2i/python/test/model-template-app/MyModel.py`:
 
 ```python
 class MyModel(object):
@@ -127,7 +127,7 @@ PERSISTENCE=0
 These values can also be provided or overridden on the command line when building the image.
 
 ## Step 3 - Build your image
-Use ```s2i build``` to create your Docker image from source code. You will need Docker installed on the machine and optionally git if your source code is in a public git repo. You can choose from three python builder images
+Use `s2i build` to create your Docker image from source code. You will need Docker installed on the machine and optionally git if your source code is in a public git repo. You can choose from three python builder images
 
  * Python 3.6 : seldonio/seldon-core-s2i-python36:1.2.3-dev seldonio/seldon-core-s2i-python3:1.2.3-dev
    * Note there are [issues running TensorFlow under Python 3.7](https://github.com/tensorflow/tensorflow/issues/20444) (Nov 2018) and Python 3.7 is not officially supported by TensorFlow (Dec 2018).
@@ -149,9 +149,9 @@ s2i build https://github.com/seldonio/seldon-core.git --context-dir=wrappers/s2i
 
 The above s2i build invocation:
 
- * uses the GitHub repo: https://github.com/seldonio/seldon-core.git and the directory ```wrappers/s2i/python/test/model-template-app``` inside that repo.
- * uses the builder image ```seldonio/seldon-core-s2i-python3```
- * creates a docker image ```seldon-core-template-model```
+ * uses the GitHub repo: https://github.com/seldonio/seldon-core.git and the directory `wrappers/s2i/python/test/model-template-app` inside that repo.
+ * uses the builder image `seldonio/seldon-core-s2i-python3`
+ * creates a docker image `seldon-core-template-model`
 
 
 For building from a local source folder, an example where we clone the seldon-core repo:
@@ -174,10 +174,11 @@ s2i build --help
 To ensure Keras models with the Tensorflow backend work correctly you may need to call `_make_predict_function()` on your model after it is loaded. This is because Flask may call the prediction request in a separate thread from the one that initialised your model. See the [keras issue](https://github.com/keras-team/keras/issues/6462) for further discussion.
 
 ## Environment Variables
-The required environment variables understood by the builder image are explained below. You can provide them in the ```.s2i/environment``` file or on the ```s2i build``` command line.
+The required environment variables understood by the builder image are explained below. You can provide them in the `.s2i/environment` file or on the `s2i build` command line.
 
 
 ### MODEL_NAME
+
 The name of the class containing the model. Also the name of the python file which will be imported.
 
 ### API_TYPE
@@ -200,17 +201,36 @@ Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved pe
 
 ### EXTRA_INDEX_URL
 
-For installing packages from private/self-hosted PyPi registry.
+.. Warning:: 
+   ``EXTRA_INDEX_URL`` is recommended to be passed as argument to ``s2i``
+   command rather than adding in ``.s2i/environment`` as a practice of avoiding
+   checking in credentials in the code.
 
-#### NOTE: EXTRA_INDEX_URL is recommended to be passed as argument to `s2i` command rather than adding in `.s2i/environment` as a practice of avoiding checking in credentials in the code.
+For installing packages from private/self-hosted PyPi registry.
 
 ### PIP_TRUSTED_HOST
 
 For adding private/self-hosted unsecured PyPi registry by adding it to pip trusted-host.
 
 ```bash
-s2i build -e EXTRA_INDEX_URL=https://<pypi-user>:<pypi-auth>@mypypi.example.com/simple -e PIP_TRUSTED_HOST=mypypi.example.com <src-folder> seldonio/seldon-core-s2i-python3:1.2.3-dev <my-image-name>
+s2i build \
+   -e EXTRA_INDEX_URL=https://<pypi-user>:<pypi-auth>@mypypi.example.com/simple \
+   -e PIP_TRUSTED_HOST=mypypi.example.com \
+   <src-folder> \
+   seldonio/seldon-core-s2i-python3:1.2.3-dev \
+   <my-image-name>
 ```
+
+### PAYLOAD_PASSTHROUGH
+
+If enabled, the Python server won't try to decode the request payload nor
+encode the response back.
+That means that the `predict()` method of your `SeldonComponent` model will
+receive the payload as-is and it will be responsible to decode it.
+Likewise, the return value of `predict()` must be a serialised response.
+
+By default, this option will be disabled.
+
 ## Creating different service types
 
 ### MODEL
@@ -231,7 +251,7 @@ s2i build -e EXTRA_INDEX_URL=https://<pypi-user>:<pypi-auth>@mypypi.example.com/
 ## Advanced Usage
 
 ### Model Class Arguments
-You can add arguments to your component which will be populated from the ```parameters``` defined in the SeldonDeloyment when you deploy your image on Kubernetes. For example, our [Python TFServing proxy](https://github.com/SeldonIO/seldon-core/tree/master/integrations/tfserving) has the class init method signature defined as below:
+You can add arguments to your component which will be populated from the `parameters` defined in the SeldonDeloyment when you deploy your image on Kubernetes. For example, our [Python TFServing proxy](https://github.com/SeldonIO/seldon-core/tree/master/integrations/tfserving) has the class init method signature defined as below:
 
 ```python
 class TfServingProxy(object):
@@ -278,11 +298,11 @@ These arguments can be set when deploying in a Seldon Deployment. An example can
 ```
 
 
-The allowable ```type``` values for the parameters are defined in the [proto buffer definition](https://github.com/SeldonIO/seldon-core/blob/44f7048efd0f6be80a857875058d23efc4221205/proto/seldon_deployment.proto#L117-L131).
+The allowable `type` values for the parameters are defined in the [proto buffer definition](https://github.com/SeldonIO/seldon-core/blob/44f7048efd0f6be80a857875058d23efc4221205/proto/seldon_deployment.proto#L117-L131).
 
 
 ### Local Python Dependencies
-```from version 0.5-SNAPSHOT```
+`from version 0.5-SNAPSHOT`
 
 To use a private repository for installing Python dependencies use the following build command:
 
@@ -290,12 +310,12 @@ To use a private repository for installing Python dependencies use the following
 s2i build -i <python-wheel-folder>:/whl <src-folder> seldonio/seldon-core-s2i-python3:1.2.3-dev <my-image-name>
 ```
 
-This command will look for local Python wheels in the ```<python-wheel-folder>``` and use these before searching PyPI.
+This command will look for local Python wheels in the `<python-wheel-folder>` and use these before searching PyPI.
 
 ### Custom Metrics
-```from version 0.3```
+`from version 0.3`
 
-To add custom metrics to your response you can define an optional method ```metrics``` in your class that returns a list of metric dicts. An example is shown below:
+To add custom metrics to your response you can define an optional method `metrics` in your class that returns a list of metric dicts. An example is shown below:
 
 ```python
 class MyModel(object):
@@ -312,9 +332,9 @@ For more details on custom metrics and the format of the metric dict see [here](
 There is an [example notebook illustrating a model with custom metrics in python](../examples/custom_metrics.html).
 
 ### Custom Request Tags
-```from version 0.3```
+`from version 0.3`
 
-To add custom request tags data you can add an optional method ```tags``` which can return a dict of custom meta tags as shown in the example below:
+To add custom request tags data you can add an optional method `tags` which can return a dict of custom meta tags as shown in the example below:
 
 ```python
 class MyModel(object):

@@ -33,6 +33,7 @@ logging.basicConfig(level=SELDON_LOGLEVEL)
 EXPLAINER_FILENAME = "explainer.dill"
 KERAS_MODEL = "model.h5"
 
+
 def main():
     args, extra = parse_args(sys.argv[1:])
     # Pretrained Alibi explainer
@@ -60,12 +61,11 @@ def main():
         alibi_model,
         Protocol(args.protocol),
         args.tf_data_type,
-        keras_model
+        keras_model,
     )
     explainer.load()
     ExplainerServer(args.http_port).start(explainer)
 
+
 if __name__ == "__main__":
     main()
-
-

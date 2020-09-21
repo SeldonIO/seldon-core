@@ -1,9 +1,8 @@
 ARG IMAGE_SOURCE=openjdk:13.0.1-jdk-buster
 FROM $IMAGE_SOURCE
 
-RUN apk update && apk add bash
-
-#RUN apk add --no-cache bash
+RUN apt-get upgrade && \
+        apt-get update
 
 RUN mkdir /build
 

@@ -87,6 +87,7 @@ Documentation Index
    :caption: Incubating Projects
 
    Java Language Wrapper <java/README.md>
+   Java (JNI) Language Wrapper [ALPHA] <java-jni/README.md>
    R Language Wrapper [ALPHA] <R/README.md>
    NodeJS Language Wrapper [ALPHA] <nodejs/README.md>
    Go Language Wrapper [ALPHA] <go/go_wrapper_link.rst>
@@ -157,6 +158,7 @@ Documentation Index
    Seldon Deployment CRD <reference/seldon-deployment.md>
    Service Orchestrator <graph/svcorch.md>
    Kubeflow <analytics/kubeflow.md>
+   Concepts <reference/concepts.md>
 
 .. toctree::
    :maxdepth: 1

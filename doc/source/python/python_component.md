@@ -155,6 +155,37 @@ class ModelWithTags(object):
 ```
 
 
+## Runtime Metrics and Tags
+
+Starting from SC 1.3 `metrics` and `tags` can also be defined on the output of `predict`, `transform_input`, `transform_output`, `send_feedback`, `route` and `aggregate`.
+
+This is thread-safe.
+
+```python
+from seldon_core.user_model import SeldonResponse
+
+
+class Model:
+    def predict(self, features, names=[], meta={}):
+        runtime_metrics = {"type": "COUNTER", "key": "instance_counter", "value": len(X)},
+        runtime_tags = {"runtime": "tag", "shared": "right one"}
+        return SeldonResponse(data=X, metrics=runtime_metrics, tags=runtime_tags)
+
+    def metrics(self):
+        return [{"type": "COUNTER", "key": "requests_counter", "value": 1}]
+
+    def tags(self):
+        return {"static": "tag", "shared": "not right one"}
+```
+
+Note that `tags` and `metrics` defined through `SeldonResponse` take priority.
+In above examples returned tags will be:
+```json
+{"runtime":"tag", "shared":"right one", "static":"tag"}
+```
+
+
+
 ## REST Health Endpoint
 If you wish to add a REST health point, you can implement the `health_status` method with signature as shown below:
 ```python

@@ -36,6 +36,7 @@ Python Language Wrapper Examples
    Sagemaker SKLearn Example <sagemaker_sklearn>   
    TFserving MNIST <tfserving_mnist>
    Statsmodels Holt-Winter's time-series model <statsmodels>
+   Runtime Metrics & Tags <runtime_metrics_tags>
 
 Specialised Framework Examples
 -----

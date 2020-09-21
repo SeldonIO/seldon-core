@@ -1,9 +1,11 @@
 package controllers
 
 import (
+	"context"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
+	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 	"testing"
 )
@@ -12,9 +14,9 @@ func TestStorageInitalizerInjector(t *testing.T) {
 	g := NewGomegaWithT(t)
 	scheme = createScheme()
 	client := fake.NewSimpleClientset()
-	_, err := client.CoreV1().ConfigMaps(ControllerNamespace).Create(configMap)
+	_, err := client.CoreV1().ConfigMaps(ControllerNamespace).Create(context.TODO(), configMap, v1meta.CreateOptions{})
 	g.Expect(err).To(BeNil())
-	mi := NewModelInitializer(client)
+	mi := NewModelInitializer(context.TODO(), client)
 	containerName := "classifier"
 	d := appsv1.Deployment{
 		Spec: appsv1.DeploymentSpec{
@@ -39,9 +41,9 @@ func TestStorageInitalizerInjectorWithRelatedImage(t *testing.T) {
 	g := NewGomegaWithT(t)
 	scheme = createScheme()
 	client := fake.NewSimpleClientset()
-	_, err := client.CoreV1().ConfigMaps(ControllerNamespace).Create(configMap)
+	_, err := client.CoreV1().ConfigMaps(ControllerNamespace).Create(context.TODO(), configMap, v1meta.CreateOptions{})
 	g.Expect(err).To(BeNil())
-	mi := NewModelInitializer(client)
+	mi := NewModelInitializer(context.TODO(), client)
 	containerName := "classifier"
 	d := appsv1.Deployment{
 		Spec: appsv1.DeploymentSpec{
