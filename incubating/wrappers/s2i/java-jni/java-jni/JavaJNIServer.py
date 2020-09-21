@@ -25,7 +25,6 @@ class JavaJNIServer(SeldonComponent):
         # interop calls when working with the returned Java strings
         jpype.startJVM(classpath=[model_jar_path], convertStrings=True)
 
-        # TODO: Make class name configurable
         model_import_path = os.getenv("JAVA_IMPORT_PATH")
         logger.debug(f"Instantiating {model_import_path} object")
         java__SeldonComponent = self._import_model(model_import_path)
