@@ -213,6 +213,7 @@ prometheus/client_model
 prometheus/common
 prometheus/procfs
 rcrowley/go-metrics
+remyoudompheng/bigfft
 rogpeppe/fastuuid
 rogpeppe/go-internal
 russross/blackfriday
@@ -271,6 +272,8 @@ golang/time
 golang/tools
 golang/xerrors
 gomodules/jsonpatch
+gonum/gonum
+gonum/netlib
 googleapis/google-api-go-client
 golang/appengine
 googleapis/go-genproto
@@ -306,6 +309,11 @@ kubernetes/klog
 kubernetes/kube-openapi
 kubernetes/utils
 knative/pkg
+cznic/cc
+cznic/golex
+cznic/mathutil
+cznic/strutil
+cznic/xc
 vcabbage/amqp
 rsc/binaryregexp
 kubernetes-sigs/controller-runtime

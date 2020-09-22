@@ -224,6 +224,7 @@ github.com/prometheus/client_model
 github.com/prometheus/common
 github.com/prometheus/procfs
 github.com/rcrowley/go-metrics
+github.com/remyoudompheng/bigfft
 github.com/rogpeppe/fastuuid
 github.com/rogpeppe/go-internal
 github.com/russross/blackfriday
@@ -284,6 +285,8 @@ golang.org/x/time
 golang.org/x/tools
 golang.org/x/xerrors
 gomodules.xyz/jsonpatch/v2
+gonum.org/v1/gonum
+gonum.org/v1/netlib
 google.golang.org/api
 google.golang.org/appengine
 google.golang.org/genproto
@@ -321,11 +324,17 @@ k8s.io/klog/v2
 k8s.io/kube-openapi
 k8s.io/utils
 knative.dev/pkg
+modernc.org/cc
+modernc.org/golex
+modernc.org/mathutil
+modernc.org/strutil
+modernc.org/xc
 pack.ag/amqp
 rsc.io/binaryregexp
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client
 sigs.k8s.io/controller-runtime
 sigs.k8s.io/structured-merge-diff
+sigs.k8s.io/structured-merge-diff/v2
 sigs.k8s.io/structured-merge-diff/v3
 sigs.k8s.io/yaml
 sourcegraph.com/sourcegraph/appdash
