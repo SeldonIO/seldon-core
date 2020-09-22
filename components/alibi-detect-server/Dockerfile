@@ -6,11 +6,7 @@ LABEL name="Seldon Alibi Detect Server" \
       summary="Alibi Detect Server for Seldon Core" \
       description="The Alibi Detect Server provides outlier, drift and adversarial detection services for Seldon Core"
 
-ADD requirements_server.txt .
-
 RUN pip install pip -U
-
-RUN pip install -r requirements_server.txt
 
 # Fix cloudevents bug: https://github.com/cloudevents/sdk-python/issues/24
 RUN git clone --branch 24-extensions https://github.com/ryandawsonuk/sdk-python.git && \
