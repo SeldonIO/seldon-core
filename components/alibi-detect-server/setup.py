@@ -11,10 +11,11 @@ setup(
     python_requires=">3.4",
     packages=find_packages(),
     install_requires=[
+        "seldon-core>=1.2.3"
         "alibi-detect==0.4.2",
-        "kfserving>=0.2.0",
+        "kfserving==0.4.0",
         "argparse >= 1.4.0",
-        "numpy >= 1.8.2",
+        "numpy >= 1.18.5",
         "cloudevents==0.3.0",
     ],
     tests_require=tests_require,
