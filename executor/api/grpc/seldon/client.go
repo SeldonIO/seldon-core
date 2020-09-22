@@ -208,6 +208,7 @@ func (s *SeldonMessageGrpcClient) ModelMetadata(ctx context.Context, modelName s
 		Versions: protoPayload.GetVersions(),
 		Inputs:   protoPayload.GetInputs(),
 		Outputs:  protoPayload.GetOutputs(),
+		Custom:   protoPayload.GetCustom(),
 	}
 	return output, nil
 }

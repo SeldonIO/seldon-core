@@ -1,6 +1,6 @@
-VERSION=0.3
+VERSION=0.4
 IMAGE_BASE=seldonio/metadata-generic-node
-S2I_IMAGE_VERSION=1.2.1-dev
+S2I_IMAGE_VERSION=1.2.3-dev
 
 KIND_NAME ?= kind
 
