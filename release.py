@@ -293,7 +293,8 @@ def update_dockerfile_label_version(seldon_core_version, debug=False):
     paths = [
                 "operator/Dockerfile.redhat",
                 "engine/Dockerfile.redhat",
-                "executor/Dockerfile.redhat",
+                "executor/Dockerfile.executor",
+                "executor/Dockerfile.executor.redhat",
                 "servers/tfserving/Dockerfile.redhat",
                 "components/alibi-detect-server/Dockerfile",
                 "components/storage-initializer/Dockerfile",
