@@ -3,7 +3,7 @@ BASE=../../..
 ## REST
 
 run_rest_executor:
-	${BASE}/executor --sdep seldon-model --namespace default --predictor example --file ./model_rest.yaml --port 8000 
+	${BASE}/executor --sdep seldon-model --namespace default --predictor example --file ./model_rest.yaml --http_port 8000 
 
 
 run_model:

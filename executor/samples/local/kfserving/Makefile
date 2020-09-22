@@ -9,7 +9,7 @@ triton-inference-server/docs/examples/model_repository/simple: triton-inference-
 ## REST
 
 run_rest_executor:
-	${BASE}/executor --sdep triton --namespace default --predictor simple --file ./model_rest.yaml --port 8000 --protocol kfserving
+	${BASE}/executor --sdep triton --namespace default --predictor simple --file ./model_rest.yaml --http_port 8000 --protocol kfserving
 
 
 run_triton_simple_rest:
@@ -32,7 +32,7 @@ curl_metadata:
 ## GRPC
 
 run_grpc_executor:
-	${BASE}/executor --sdep triton --namespace default --predictor simple --file ./model_rest.yaml --port 8000 --protocol kfserving
+	${BASE}/executor --sdep triton --namespace default --predictor simple --file ./model_rest.yaml --grpc_port 8000 --protocol kfserving --transport grpc
 
 run_triton_simple_grpc:
 	docker run --rm --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 -p9000:9000 -p8001:8001 -p8002:8002 -v ${PWD}/triton-inference-server/docs/examples/model_repository:/models nvcr.io/nvidia/tritonserver:20.08-py3 /opt/tritonserver/bin/tritonserver --model-repository=/models --grpc-port=9000
