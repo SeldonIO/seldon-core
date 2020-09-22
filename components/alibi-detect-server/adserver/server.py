@@ -20,6 +20,7 @@ from adserver.protocols import Protocol
 from seldon_core.flask_utils import SeldonMicroserviceException
 from seldon_core.user_model import SeldonResponse
 from seldon_core.metrics import SeldonMetrics, validate_metrics
+import uuid
 
 DEFAULT_HTTP_PORT = 8080
 CESERVER_LOGLEVEL = os.environ.get("CESERVER_LOGLEVEL", "INFO").upper()
@@ -56,7 +57,7 @@ class CEServer(object):
         self._http_server: Optional[tornado.httpserver.HTTPServer] = None
         self.event_type = event_type
         self.event_source = event_source
-        self.seldon_metrics = SeldonMetrics(worker_id_func=lambda: tornado.ioloop.IOLoop.current().name)
+        self.seldon_metrics = SeldonMetrics(worker_id_func=lambda: str(uuid.uuid1()))
 
     def create_application(self):
         return tornado.web.Application(
@@ -227,7 +228,7 @@ class EventHandler(tornado.web.RequestHandler):
         seldon_response = SeldonResponse.create(response)
 
         if seldon_response.data is not None:
-            responseStr = json.dumps(response.data)
+            responseStr = json.dumps(seldon_response.data)
 
             # Create event from response if reply_url is active
             if not self.reply_url == "":
@@ -246,7 +247,7 @@ class EventHandler(tornado.web.RequestHandler):
                 )
                 logging.debug(json.dumps(revent.Properties()))
                 sendCloudEvent(revent, self.reply_url)
-            self.write(json.dumps(response.data))
+            self.write(json.dumps(seldon_response.data))
 
         runtime_metrics = seldon_response.metrics
         if runtime_metrics is not None:
