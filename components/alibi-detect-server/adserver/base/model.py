@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union
 
 DEFAULT_EVENT_PREFIX = "seldon.ceserver."
 
@@ -23,7 +23,7 @@ class CEModel(object):
         """
         raise NotImplementedError
 
-    def process_event(self, inputs: List, headers: Dict) -> Optional[Dict]:
+    def process_event(self, inputs: Union[List, Dict], headers: Dict) -> Optional[Dict]:
         """
         Process the event data and return a response
 
