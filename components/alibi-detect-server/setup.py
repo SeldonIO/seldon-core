@@ -11,11 +11,11 @@ setup(
     python_requires=">3.4",
     packages=find_packages(),
     install_requires=[
-        "alibi-detect",
+        "alibi-detect==0.4.2",
         "kfserving>=0.2.0",
         "argparse >= 1.4.0",
         "numpy >= 1.8.2",
-        "cloudevents",
+        "cloudevents==0.3.0",
     ],
     tests_require=tests_require,
     extras_require={"test": tests_require},

@@ -1,5 +1,5 @@
 import json
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union
 import logging
 import kfserving
 import numpy as np
@@ -40,7 +40,7 @@ class AlibiDetectOutlierModel(CEModel):  # pylint:disable=c-extension-no-member
         self.model: Data = load_detector(model_folder)
         self.ready = True
 
-    def process_event(self, inputs: List, headers: Dict) -> Dict:
+    def process_event(self, inputs: Union[List, Dict], headers: Dict) -> Dict:
         """
         Process the event and return Alibi Detect score
 

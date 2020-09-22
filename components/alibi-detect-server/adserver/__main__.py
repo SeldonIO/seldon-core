@@ -6,6 +6,7 @@ import os
 
 tf.keras.backend.clear_session()
 import logging
+from adserver.cm_model import CustomMetricsModel
 from adserver.od_model import AlibiDetectOutlierModel
 from adserver.ad_model import AlibiDetectAdversarialDetectionModel
 from adserver.cd_model import AlibiDetectConceptDriftModel
@@ -19,6 +20,7 @@ class AlibiDetectMethod(Enum):
     adversarial_detector = "AdversarialDetector"
     outlier_detector = "OutlierDetector"
     drift_detector = "DriftDetector"
+    metrics_server = "MetricsServer"
 
     def __str__(self):
         return self.value
@@ -111,6 +113,8 @@ if __name__ == "__main__":
         model = AlibiDetectAdversarialDetectionModel(args.model_name, args.storage_uri)
     elif method == AlibiDetectMethod.drift_detector:
         model = AlibiDetectConceptDriftModel(args.model_name, args.storage_uri, **extra)
+    elif method == AlibiDetectMethod.metrics_server:
+        model = CustomMetricsModel(args.model_name, args.storage_uri, **extra)
     else:
         logging.error("Unknown method %s", args.command)
         os._exit(-1)
@@ -121,3 +125,4 @@ if __name__ == "__main__":
         http_port=args.http_port,
         reply_url=args.reply_url,
     ).start(model)
+
