@@ -25,6 +25,9 @@ lint:
 run-outlier-detector:
 	python -m adserver --model_name cifar10od --http_port 8080 --protocol tensorflow.http --event_type org.kubeflow.serving.inference.outlier --storage_uri gs://seldon-models/alibi-detect/od/OutlierVAE/cifar10 --event_source http://localhost:8080 OutlierDetector
 
+run-metrics-server:
+	python -m adserver --model_name BINARY_CLASSIFICATION --http_port 8080 --protocol seldon.http --event_type io.seldon.serving.feedback --storage_uri none --event_source http://localhost:8080 MetricsServer
+
 #
 # Docker Run
 #
