@@ -94,6 +94,7 @@ parser_drift.add_argument(
 
 parser_adversarial = subparsers.add_parser(str(AlibiDetectMethod.adversarial_detector))
 parser_outlier = subparsers.add_parser(str(AlibiDetectMethod.outlier_detector))
+parser_metrics = subparsers.add_parser(str(AlibiDetectMethod.metrics_server))
 
 args, _ = parser.parse_known_args()
 

@@ -12,6 +12,7 @@ import tornado.web
 from adserver.base import CEModel
 from adserver.protocols.request_handler import RequestHandler
 from adserver.protocols.seldon_http import SeldonRequestHandler
+from adserver.protocols.seldonfeedback_http import SeldonFeedbackRequestHandler
 from adserver.protocols.tensorflow_http import TensorflowRequestHandler
 from cloudevents.sdk import converters
 from cloudevents.sdk import marshaller
@@ -126,8 +127,10 @@ def get_request_handler(protocol, request: Dict) -> RequestHandler:
     """
     if protocol == Protocol.tensorflow_http:
         return TensorflowRequestHandler(request)
-    else:
+    elif protocol == Protocol.seldon_http:
         return SeldonRequestHandler(request)
+    elif protocol == Protocol.seldonfeedback_http:
+        return SeldonFeedbackRequestHandler(request)
 
 
 def sendCloudEvent(event: v02.Event, url: str):

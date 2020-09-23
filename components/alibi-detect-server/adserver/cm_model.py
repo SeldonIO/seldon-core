@@ -65,9 +65,8 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
                     reason="NO_TRUTH_VALUE")
 
         # We automatically add any metrics provided in the truth
-        if "meta" in inputs["truth"]:
-            if "metrics" in inputs["truth"]["meta"]:
-                metrics = inputs["truth"]["meta"]["metrics"]
+        if "metrics" in inputs:
+            metrics = inputs["metrics"]
 
         # If response is provided then we can perform a comparison
         # TODO: If Header UUID provided we could fetch from ELK to do the evaluation
