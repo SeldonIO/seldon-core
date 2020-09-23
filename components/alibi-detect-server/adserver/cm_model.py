@@ -2,12 +2,21 @@ import json
 from typing import List, Dict, Optional, Union
 import logging
 import numpy as np
+from enum import Enum
 from adserver.constants import HEADER_RETURN_INSTANCE_SCORE
 from .numpy_encoder import NumpyEncoder
 from alibi_detect.utils.saving import load_detector, Data
 from adserver.base import CEModel
 from seldon_core.user_model import SeldonResponse
 from seldon_core.flask_utils import SeldonMicroserviceException
+
+class MetricsServerMethod(Enum):
+    binary_classification = "BINARY_CLASSIFICATION"
+    multiclass_classification_one_hot = "MULTICLASS_CLASSIFICATION_ONE_HOT"
+    multiclass_classification_numeric = "MULTICLASS_CLASSIFICATION_NUMERIC"
+
+    def __str__(self):
+        return self.value
 
 
 class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
@@ -75,7 +84,8 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
             response = inputs["response"]
             truth = inputs["truth"]
 
-            if self.name == "BINARY_CLASSIFICATION":
+            method = MetricsServerMethod(self.name)
+            if method == MetricsServerMethod.binary_classification:
                 response_class = int(response) if isinstance(response, list) else int(response[0])
                 truth_class = int(truth) if isinstance(truth, list) else int(truth[0])
 
@@ -95,14 +105,14 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
                 metrics.append({"key":key, "type": "COUNTER", "value": 1})
 
             else:
-                if self.name == "MULTICLASS_CLASSIFICATION_ONE_HOT":
+                if method == MetricsServerMethod.multiclass_classification_one_hot:
                     # TODO: Perform check that input is list
                     response = response if isinstance(response[0], list) else response[0]
                     truth = truth if isinstance(truth[0], list) else truth[0]
                     response_class = max(enumerate(response),key=lambda x: x[1])[0]
                     truth_class = max(enumerate(truth),key=lambda x: x[1])[0]
 
-                elif self.name == "MULTICLASS_CLASSIFICATION_NUMERIC":
+                elif method == MetricsServerMethod.multiclass_classification_numeric:
                     response_class = response if isinstance(response, list) else response[0]
                     truth_class = truth if isinstance(truth, list) else truth[0]
 
