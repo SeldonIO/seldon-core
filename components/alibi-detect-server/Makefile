@@ -26,7 +26,8 @@ run-outlier-detector:
 	python -m adserver --model_name cifar10od --http_port 8080 --protocol tensorflow.http --event_type org.kubeflow.serving.inference.outlier --storage_uri gs://seldon-models/alibi-detect/od/OutlierVAE/cifar10 --event_source http://localhost:8080 OutlierDetector
 
 run-metrics-server:
-	python -m adserver --model_name BINARY_CLASSIFICATION --http_port 8080 --protocol seldon.http --event_type io.seldon.serving.feedback --storage_uri none --event_source http://localhost:8080 MetricsServer
+	SELDON_DEPLOYMENT_ID="sdepname" PREDICTIVE_UNIT_ID="modelname" PREDICTIVE_UNIT_IMAGE="adserver:0.1" PREDICTOR_ID="pred" \
+		 python -m adserver --model_name BINARY_CLASSIFICATION --http_port 8080 --protocol seldonfeedback.http --event_type io.seldon.serving.feedback --storage_uri none --event_source http://localhost:8080 MetricsServer
 
 #
 # Docker Run
@@ -49,6 +50,13 @@ curl-detector:
 curl-outlier-detector-scores:
 	curl -v localhost:8080/ -d @./input.json -H "Alibi-Detect-Return-Feature-Score: true" -H "Alibi-Detect-Return-Instance-Score: true"
 
+curl-metrics-server:
+	curl -v -X POST -H 'Content-Type: application/json' \
+	   -d '{"truth": {"data": {"ndarray": [0]}}, "response": {"data": {"ndarray": [1]}}}' \
+		http://localhost:8080/
+
+curl-metrics-server-metrics:
+	curl http://localhost:8080/v1/metrics
 
 docker-build: 
 	docker build -f Dockerfile -t seldonio/${IMAGE}:${VERSION} .
