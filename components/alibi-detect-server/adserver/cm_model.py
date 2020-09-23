@@ -3,9 +3,9 @@ from typing import List, Dict, Optional, Union
 import logging
 import numpy as np
 from enum import Enum
+import kfserving
 from adserver.constants import HEADER_RETURN_INSTANCE_SCORE
 from .numpy_encoder import NumpyEncoder
-from alibi_detect.utils.saving import load_detector, Data
 from adserver.base import CEModel
 from seldon_core.user_model import SeldonResponse
 from seldon_core.flask_utils import SeldonMicroserviceException
@@ -18,9 +18,90 @@ class MetricsServerMethod(Enum):
     def __str__(self):
         return self.value
 
+class BinaryMetrics:
+    def __init__(self):
+        pass
+    def transform(self, truth, response, request = None):
+
+        response_class = int(response) if isinstance(response, list) else int(response[0])
+        truth_class = int(truth) if isinstance(truth, list) else int(truth[0])
+
+        correct = response_class == truth_class
+
+        if truth_class:
+            if correct:
+                key = "seldon_metric_true_positive"
+            else:
+                key = "seldon_metric_false_negative"
+        else:
+            if correct:
+                key = "seldon_metric_true_negative"
+            else:
+                key = "seldon_metric_false_positive"
+
+        metrics = [{"key":key, "type": "COUNTER", "value": 1}]
+
+        return SeldonResponse(None, None, metrics)
+
+class MultiClassOneHot:
+    def __init__(self):
+        pass
+
+    def transform(self, truth, response, request = None):
+
+        metrics = []
+        response = response if isinstance(response[0], list) else response[0]
+        truth = truth if isinstance(truth[0], list) else truth[0]
+        response_class = max(enumerate(response),key=lambda x: x[1])[0]
+        truth_class = max(enumerate(truth),key=lambda x: x[1])[0]
+
+        correct = response_class == truth_class
+
+        if correct:
+            metrics.append({"key":"seldon_metric_true_positive",
+                             "type": "COUNTER", "value": 1,
+                             "tags": { "class": f"CLASS_{truth_class}" }})
+        else:
+            metrics.append({"key":"seldon_metric_false_negative",
+                             "type": "COUNTER", "value": 1,
+                             "tags": { "class": f"CLASS_{truth_class}" }})
+            metrics.append({"key":"seldon_metric_false_positive",
+                             "type": "COUNTER", "value": 1,
+                             "tags": { "class": f"CLASS_{response_class}" }})
+
+            return SeldonResponse(None, None, metrics)
+
+class MultiClassNumeric:
+
+    def __init__(self):
+        pass
+
+    def transform(self, truth, response, request = None):
+
+        metrics = []
+
+        response_class = response if isinstance(response, list) else response[0]
+        truth_class = truth if isinstance(truth, list) else truth[0]
+
+        correct = response_class == truth_class
+
+        if correct:
+            metrics.append({"key":"seldon_metric_true_positive",
+                             "type": "COUNTER", "value": 1,
+                             "tags": { "class": f"CLASS_{truth_class}" }})
+        else:
+            metrics.append({"key":"seldon_metric_false_negative",
+                             "type": "COUNTER", "value": 1,
+                             "tags": { "class": f"CLASS_{truth_class}" }})
+            metrics.append({"key":"seldon_metric_false_positive",
+                             "type": "COUNTER", "value": 1,
+                             "tags": { "class": f"CLASS_{response_class}" }})
+
+            return SeldonResponse(None, None, metrics)
+
 
 class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
-    def __init__(self, name: str, storage_uri: str, model: Optional[Data] = None):
+    def __init__(self, name: str, storage_uri: str, model = None):
         """
         Outlier Detection / Concept Drift Model
 
@@ -35,13 +116,21 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
         self.name = name
         self.storage_uri = storage_uri
         self.ready = False
-        self.model: Data = model
 
     def load(self):
         """
         Load the model from storage
 
         """
+        method = MetricsServerMethod(self.name)
+        if method == MetricsServerMethod.binary_classification:
+            b = BinaryMetrics()
+        elif method == MetricsServerMethod.multiclass_classification_one_hot:
+            b = MultiClassOneHot()
+        elif method == MetricsServerMethod.multiclass_classification_numeric:
+            b = MultiClassNumeric()
+        #model_folder = kfserving.Storage.download(self.storage_uri)
+        self.model = b
         self.ready = True
 
     def process_event(self, inputs: Union[List, Dict], headers: Dict) -> Dict:
@@ -83,53 +172,8 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
             # TODO: Add the extensions for the comparisons here
             response = inputs["response"]
             truth = inputs["truth"]
-
-            method = MetricsServerMethod(self.name)
-            if method == MetricsServerMethod.binary_classification:
-                response_class = int(response) if isinstance(response, list) else int(response[0])
-                truth_class = int(truth) if isinstance(truth, list) else int(truth[0])
-
-                correct = response_class == truth_class
-
-                if truth_class:
-                    if correct:
-                        key = "seldon_metric_true_positive"
-                    else:
-                        key = "seldon_metric_false_negative"
-                else:
-                    if correct:
-                        key = "seldon_metric_true_negative"
-                    else:
-                        key = "seldon_metric_false_positive"
-
-                metrics.append({"key":key, "type": "COUNTER", "value": 1})
-
-            else:
-                if method == MetricsServerMethod.multiclass_classification_one_hot:
-                    # TODO: Perform check that input is list
-                    response = response if isinstance(response[0], list) else response[0]
-                    truth = truth if isinstance(truth[0], list) else truth[0]
-                    response_class = max(enumerate(response),key=lambda x: x[1])[0]
-                    truth_class = max(enumerate(truth),key=lambda x: x[1])[0]
-
-                elif method == MetricsServerMethod.multiclass_classification_numeric:
-                    response_class = response if isinstance(response, list) else response[0]
-                    truth_class = truth if isinstance(truth, list) else truth[0]
-
-                correct = response_class == truth_class
-
-                if correct:
-                    metrics.append({"key":"seldon_metric_true_positive",
-                                     "type": "COUNTER", "value": 1,
-                                     "tags": { "class": f"CLASS_{truth_class}" }})
-                else:
-                    metrics.append({"key":"seldon_metric_false_negative",
-                                     "type": "COUNTER", "value": 1,
-                                     "tags": { "class": f"CLASS_{truth_class}" }})
-                    metrics.append({"key":"seldon_metric_false_positive",
-                                     "type": "COUNTER", "value": 1,
-                                     "tags": { "class": f"CLASS_{response_class}" }})
-
+            r = self.model.transform(truth, response)
+            metrics.extend(r.metrics)
 
         # TODO: Allow for scores to be used to calculate metrics as well
         seldon_response = SeldonResponse(output or None, None, metrics)
