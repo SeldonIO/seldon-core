@@ -170,6 +170,7 @@ echo "Executor exit value: $EXECUTOR_EXIT_VALUE"
 echo "Mock model exit value: $MOCK_MODEL_EXIT_VALUE"
 echo "Alibi Detect exit value: $ALIBI_DETECT_EXIT_VALUE"
 echo "Request Logger exit value: $LOGGER_EXIT_VALUE"
+echo "Tensorflow Proxy exit value: $TFPROXY_EXIT_VALUE"
 
 exit $((${PYTHON_EXIT_VALUE} \
     + ${OPERATOR_EXIT_VALUE} \
