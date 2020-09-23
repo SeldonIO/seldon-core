@@ -85,7 +85,7 @@ func (s *TensorflowGrpcClient) Chain(ctx context.Context, modelName string, msg 
 func (s *TensorflowGrpcClient) Predict(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
-		return s.CreateErrorPayload(err), err
+		return nil, err
 	}
 	grpcClient := serving.NewPredictionServiceClient(conn)
 	ctx = grpc2.AddMetadataToOutgoingGrpcContext(ctx, meta)

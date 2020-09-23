@@ -2,6 +2,16 @@
 Notebooks
 =========
 
+Seldon Core Setup
+----
+
+.. toctree::
+   :titlesonly:
+
+   Install Seldon Core <seldon_core_setup>
+
+
+
 Prepackaged Inference Server Examples
 -----
 
@@ -34,7 +44,7 @@ Specialised Framework Examples
 .. toctree::
    :titlesonly:
 
-   NVIDIA TensorRT MNIST <nvidia_mnist>
+   NVIDIA TensorRT MNIST <tensorrt>
    OpenVINO ImageNet <openvino>
    OpenVINO ImageNet Ensemble <openvino_ensemble>
    ONNX ResNet with Intel nGraph<onnx_resnet>

@@ -211,7 +211,8 @@ func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method 
 }
 
 func (smc *JSONRestClient) modifyMethod(method string, modelName string) string {
-	if smc.Protocol == api.ProtocolTensorflow {
+	switch smc.Protocol {
+	case api.ProtocolTensorflow:
 		switch method {
 		case client.SeldonPredictPath, client.SeldonTransformInputPath, client.SeldonTransformOutputPath:
 			return "/v1/models/" + modelName + ":predict"
@@ -226,6 +227,23 @@ func (smc *JSONRestClient) modifyMethod(method string, modelName string) string 
 		case client.SeldonMetadataPath:
 			return "/v1/models/" + modelName + "/metadata"
 		}
+	case api.ProtocolKFServing:
+		switch method {
+		case client.SeldonPredictPath, client.SeldonTransformInputPath, client.SeldonTransformOutputPath:
+			return "/v2/models/" + modelName + "/infer"
+		case client.SeldonCombinePath:
+			return "/v2/models/" + modelName + "/aggregate"
+		case client.SeldonRoutePath:
+			return "/v2/models/" + modelName + "/route"
+		case client.SeldonFeedbackPath:
+			return "/v2/models/" + modelName + "/feedback"
+		case client.SeldonStatusPath:
+			return "/v2/models/" + modelName + "/ready"
+		case client.SeldonMetadataPath:
+			return "/v2/models/" + modelName
+		}
+	default:
+		return method
 	}
 	return method
 }
@@ -281,6 +299,8 @@ func (smc *JSONRestClient) Chain(ctx context.Context, modelName string, msg payl
 		return msg, nil
 	case api.ProtocolTensorflow: // Attempt to chain tensorflow payload
 		return ChainTensorflow(msg)
+	case api.ProtocolKFServing:
+		return ChainKFserving(msg)
 	}
 	return nil, errors.Errorf("Unknown protocol %s", smc.Protocol)
 }

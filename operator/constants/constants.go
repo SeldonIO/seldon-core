@@ -4,11 +4,12 @@ const (
 	PU_PARAMETER_ENVVAR    = "PREDICTIVE_UNIT_PARAMETERS"
 	TFServingContainerName = "tfserving"
 
-	GRPCRegExMatchAmbassador = "/(seldon.protos.*|tensorflow.serving.*)/.*"
+	GRPCRegExMatchAmbassador = "/(seldon.protos.*|tensorflow.serving.*|inference.*)/.*"
 	GRPCRegExMatchIstio      = ".*tensorflow.*|.*seldon.protos.*"
 
 	PrePackedServerTensorflow = "TENSORFLOW_SERVER"
 	PrePackedServerSklearn    = "SKLEARN_SERVER"
+	PrePackedServerTriton     = "TRITON_SERVER"
 
 	TfServingGrpcPort    = 2000
 	TfServingRestPort    = 2001
@@ -20,6 +21,11 @@ const (
 	DNSClusterLocalSuffix = ".svc.cluster.local."
 	GrpcPortName          = "grpc"
 	HttpPortName          = "http"
+
+	TritonDefaultGrpcPort = 2001
+	TritonDefaultHttpPort = 2000
+	TritonProbeLivePath   = "/v2/health/live"
+	TritonProbeReadyPath  = "/v2/health/ready"
 )
 
 // Metrics-related constants

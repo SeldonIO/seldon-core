@@ -6,7 +6,7 @@ IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
 IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${VERSION}
 IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
 
-EXECUTOR_FOLDERS ?= ./api/... ./predictor/... ./k8s/...
+EXECUTOR_FOLDERS ?= ./api/... ./predictor/... ./k8s/... ./logger/...
 
 KIND_NAME ?= kind
 
@@ -63,6 +63,17 @@ compile_tensorflow_proto:
 	cd proto/tensorflow/core && go mod init github.com/tensorflow/tensorflow/tensorflow/go/core && cd -
 	go build ./proto/tensorflow/serving
 
+
+compile_kfserving_proto:
+	#git clone https://github.com/NVIDIA/triton-inference-server
+	mkdir -p api/grpc/kfserving/inference
+	cp triton-inference-server/src/core/*.proto api/grpc/kfserving/inference
+	cd api/grpc/kfserving/inference && protoc -I. --go_out=paths=source_relative,plugins=grpc:. grpc_service.proto && protoc -I. --go_out=paths=source_relative,plugins=grpc:. model_config.proto && protoc -I. --go_out=paths=source_relative,plugins=grpc:. server_status.proto
+	#sed -i "s/package nvidia_inferenceserver/package proto/" api/grpc/kfserving/proto/grpc_service.pb.go
+	#sed -i "s/package nvidia_inferenceserver/package proto/" api/grpc/kfserving/proto/model_config.pb.go
+	#sed -i "s/package nvidia_inferenceserver/package proto/" api/grpc/kfserving/proto/server_status.pb.go
+
+
 .PHONY: add_protos
 add_protos:
 	cd tensorflow && find ./tensorflow -name '*.proto' | cpio -pdm ../proto
@@ -113,6 +124,7 @@ clean:
 	rm -rf vendor
 	rm -rf tensorflow
 	rm -rf serving
+	rm -rf triton-inference-server
 
 install-dev:
 	# Tool to generate license info

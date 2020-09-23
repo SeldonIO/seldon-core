@@ -7,16 +7,16 @@ GRAPH ?= deploy.yaml
 
 
 run_executor:
-	go run ${BASE}/main.go --sdep seldon-model --namespace default --predictor example --file ./${GRAPH} --port 8000
+	go run ${BASE}/cmd/executor/main.go --sdep seldon-model --namespace default --predictor example --file ./${GRAPH} --http_port 8000
 
 run_executor_chain:
-	go run ${BASE}/main.go --sdep seldon-model --namespace default --predictor example --file ./chain.yaml --port 8000
+	go run ${BASE}/cmd/executor/main.go --sdep seldon-model --namespace default --predictor example --file ./chain.yaml --http_port 8000
 
 run_executor_broken_chain:
-	go run ${BASE}/main.go --sdep seldon-model --namespace default --predictor example --file ./broken_chain.yaml --port 8000
+	go run ${BASE}/cmd/executor/main.go --sdep seldon-model --namespace default --predictor example --file ./broken_chain.yaml --http_port 8000
 
 run_executor_combiner:
-	go run ${BASE}/main.go --sdep seldon-model --namespace default --predictor example --file ./combiner.yaml --port 8000
+	go run ${BASE}/cmd/executor/main.go --sdep seldon-model --namespace default --predictor example --file ./combiner.yaml --http_port 8000
 
 
 

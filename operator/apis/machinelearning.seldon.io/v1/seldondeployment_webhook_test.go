@@ -1207,6 +1207,30 @@ func TestValidateTensorflowProtocolNormal(t *testing.T) {
 	g.Expect(err).To(BeNil())
 }
 
+func TestValidateV2ProtocolNormal(t *testing.T) {
+	g := NewGomegaWithT(t)
+	err := setupTestConfigMap()
+	g.Expect(err).To(BeNil())
+	impl := PredictiveUnitImplementation(constants.PrePackedServerTensorflow)
+	spec := &SeldonDeploymentSpec{
+		Protocol: ProtocolKfserving,
+		Predictors: []PredictorSpec{
+			{
+				Name: "p1",
+				Graph: PredictiveUnit{
+					Name:           "classifier",
+					Implementation: &impl,
+					ModelURI:       "s3://mybucket/model",
+				},
+			},
+		},
+	}
+
+	spec.DefaultSeldonDeployment("mydep", "default")
+	err = spec.ValidateSeldonDeployment()
+	g.Expect(err).To(BeNil())
+}
+
 func TestPredictorNoGraph(t *testing.T) {
 	g := NewGomegaWithT(t)
 	scheme := runtime.NewScheme()
