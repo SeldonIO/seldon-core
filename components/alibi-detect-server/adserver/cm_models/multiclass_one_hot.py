@@ -7,8 +7,8 @@ class MulticlassOneHot:
     def transform(self, truth, response, request = None):
 
         metrics = []
-        response = response if isinstance(response[0], list) else response[0]
-        truth = truth if isinstance(truth[0], list) else truth[0]
+        response = response[0] if isinstance(response[0], list) else response
+        truth = truth[0] if isinstance(truth[0], list) else truth
         response_class = max(enumerate(response),key=lambda x: x[1])[0]
         truth_class = max(enumerate(truth),key=lambda x: x[1])[0]
 
@@ -26,5 +26,5 @@ class MulticlassOneHot:
                              "type": "COUNTER", "value": 1,
                              "tags": { "class": f"CLASS_{response_class}" }})
 
-            return SeldonResponse(None, None, metrics)
+        return SeldonResponse(None, None, metrics)
 

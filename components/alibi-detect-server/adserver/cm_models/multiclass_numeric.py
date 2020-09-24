@@ -9,8 +9,8 @@ class MultiClassNumeric:
 
         metrics = []
 
-        response_class = response if isinstance(response, list) else response[0]
-        truth_class = truth if isinstance(truth, list) else truth[0]
+        response_class = response[0] if isinstance(response, list) else response
+        truth_class = truth[0] if isinstance(truth, list) else truth
 
         correct = response_class == truth_class
 
@@ -26,5 +26,5 @@ class MultiClassNumeric:
                              "type": "COUNTER", "value": 1,
                              "tags": { "class": f"CLASS_{response_class}" }})
 
-            return SeldonResponse(None, None, metrics)
+        return SeldonResponse(None, None, metrics)
 

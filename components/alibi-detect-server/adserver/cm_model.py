@@ -13,6 +13,15 @@ from adserver.base import CEModel
 from seldon_core.user_model import SeldonResponse
 from seldon_core.flask_utils import SeldonMicroserviceException
 
+def _load_class_module(module_path: str) -> str:
+    components = module_path.split(".")
+    mod = __import__(".".join(components[:-1]))
+    for comp in components[1:]:
+        print(mod, comp)
+        mod = getattr(mod, comp)
+    return mod
+
+
 class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
     def __init__(self, name: str, storage_uri: str, model = None):
         """
@@ -28,6 +37,7 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
         super().__init__(name)
         self.name = name
         self.storage_uri = storage_uri
+        self.model = model
         self.ready = False
 
     def load(self):
@@ -35,16 +45,13 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
         Load the model from storage
 
         """
-        try:
-            components = self.storage_uri.split(".")
-            mod = __import__(".".join(components[:-1]))
-            for comp in components[1:]:
-                print(mod, comp)
-                mod = getattr(mod, comp)
-            self.model = mod()
-        except Exception as e:
+        if "/" in self.storage_uri:
             model_folder = kfserving.Storage.download(self.storage_uri)
             self.model = pickle.load(open(os.path.join(model_folder, 'meta.pickle'), 'rb'))
+        else:
+            # Load from locally available models
+            MetricsClass = _load_class_module(self.storage_uri)
+            self.model = MetricsClass()
 
         self.ready = True
 
