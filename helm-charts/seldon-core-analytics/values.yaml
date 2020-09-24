@@ -24,7 +24,6 @@ prometheus:
   service_type: ClusterIP
   server:
     name: seldon
-    retention: "60d"
     persistentVolume:
       enabled: false
       existingClaim: "seldon-claim"
