@@ -17,6 +17,8 @@ setup(
         "argparse >= 1.4.0",
         "numpy >= 1.18.5",
         "cloudevents==0.3.0",
+        "fbprophet==0.6",
+        "holidays==0.9.11",
     ],
     tests_require=tests_require,
     extras_require={"test": tests_require},
