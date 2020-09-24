@@ -6,6 +6,11 @@ LABEL name="Seldon Alibi Detect Server" \
       summary="Alibi Detect Server for Seldon Core" \
       description="The Alibi Detect Server provides outlier, drift and adversarial detection services for Seldon Core"
 
+USER root
+RUN yum install -y mesa-libGL
+RUN yum install -y libX11.so.6 libGL.so.1 libXext.so.6 zlib
+USER default
+
 RUN pip install pip -U
 
 # Fix cloudevents bug: https://github.com/cloudevents/sdk-python/issues/24
@@ -25,6 +30,14 @@ RUN mkdir ./licenses && pip-licenses --from=mixed --format=csv --output-file=./l
 USER root
 RUN yum install -y mesa-libGL
 RUN mv ./licenses /licenses
+RUN yum update -y
+RUN yum install -y mesa-libGL
+RUN pip install alibi-detect
+USER default
+RUN pip install alibi-detect
+USER root
+RUN pip uninstall -y opencv-python
+RUN pip uninstall opencv-contrib-python
 USER default
 
 ENTRYPOINT ["python", "-m", "adserver"]
