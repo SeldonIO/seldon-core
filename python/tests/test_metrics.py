@@ -204,6 +204,18 @@ class UserObject:
                 "value": 200,
                 "tags": {"mytag": "mytagvalue"},
             },
+            {
+                "type": "GAUGE",
+                "key": "distincttag",
+                "value": 200,
+                "tags": {"mytag": "mytagvalue-1"},
+            },
+            {
+                "type": "GAUGE",
+                "key": "distincttag",
+                "value": 200,
+                "tags": {"mytag": "mytagvalue-2"},
+            },
         ]
 
 
@@ -217,6 +229,18 @@ class UserObjectLowLevel:
             "key": "customtag",
             "value": 200,
             "tags": {"mytag": "mytagvalue"},
+        },
+        {
+            "type": "GAUGE",
+            "key": "distincttag",
+            "value": 200,
+            "tags": {"mytag": "mytagvalue-1"},
+        },
+        {
+            "type": "GAUGE",
+            "key": "distincttag",
+            "value": 200,
+            "tags": {"mytag": "mytagvalue-2"},
         },
     ]
 
@@ -266,6 +290,18 @@ class UserObjectLowLevelGrpc:
             "key": "customtag",
             "value": 200,
             "tags": {"mytag": "mytagvalue"},
+        },
+        {
+            "type": "GAUGE",
+            "key": "distincttag",
+            "value": 200,
+            "tags": {"mytag": "mytagvalue-1"},
+        },
+        {
+            "type": "GAUGE",
+            "key": "distincttag",
+            "value": 200,
+            "tags": {"mytag": "mytagvalue-2"},
         },
     ]
 
@@ -336,18 +372,28 @@ class UserObjectLowLevelGrpc:
 
 
 def verify_seldon_metrics(data, mycounter_value, histogram_entries, method):
-    assert data["GAUGE", "mygauge"]["value"] == 100
-    assert data["GAUGE", "customtag"]["value"] == 200
-    assert data["GAUGE", "customtag"]["tags"] == {
-        "mytag": "mytagvalue",
-        "method": method,
-    }
-    assert data["COUNTER", "mycounter"]["value"] == mycounter_value
+    print(data)
+    expected_base_tags = {"method": method}
+    base_tags_key = SeldonMetrics._generate_tags_key(expected_base_tags)
+    expected_custom_tags = {"mytag": "mytagvalue","method": method}
+    custom_tags_key = SeldonMetrics._generate_tags_key(expected_custom_tags)
+    assert data["GAUGE", "mygauge", base_tags_key]["value"] == 100
+    assert data["GAUGE", "customtag", custom_tags_key]["value"] == 200
+    assert data["GAUGE", "customtag", custom_tags_key]["tags"] == expected_custom_tags
+    assert data["COUNTER", "mycounter", base_tags_key]["value"] == mycounter_value
     assert np.allclose(
-        np.histogram(histogram_entries, BINS)[0], data["TIMER", "mytimer"]["value"][0]
+        np.histogram(histogram_entries, BINS)[0], data["TIMER", "mytimer", base_tags_key]["value"][0]
     )
-    assert np.allclose(data["TIMER", "mytimer"]["value"][1], np.sum(histogram_entries))
+    assert np.allclose(data["TIMER", "mytimer", base_tags_key]["value"][1], np.sum(histogram_entries))
+    expected_distinct_tags_one = {"mytag": "mytagvalue-1","method": method}
+    distinct_tags_one_key = SeldonMetrics._generate_tags_key(expected_distinct_tags_one)
+    assert data["GAUGE", "distincttag", distinct_tags_one_key]["value"] == 200
+    assert data["GAUGE", "distincttag", distinct_tags_one_key]["tags"] == expected_distinct_tags_one
 
+    expected_distinct_tags_two = {"mytag": "mytagvalue-2","method": method}
+    distinct_tags_two_key = SeldonMetrics._generate_tags_key(expected_distinct_tags_two)
+    assert data["GAUGE", "distincttag", distinct_tags_two_key]["value"] == 200
+    assert data["GAUGE", "distincttag", distinct_tags_two_key]["tags"] == expected_distinct_tags_two
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
 def test_seldon_metrics_predict(cls, client_gets_metrics):
@@ -385,9 +431,11 @@ def test_seldon_metrics_send_feedback(cls):
 
     data = seldon_metrics.data[os.getpid()]
 
-    assert data["COUNTER", "seldon_api_model_feedback_reward"] == {
+    expected_tags = {"method": FEEDBACK_METRIC_METHOD_TAG}
+    tags_key = SeldonMetrics._generate_tags_key(expected_tags)
+    assert data["COUNTER", "seldon_api_model_feedback_reward", tags_key] == {
         "value": 42.0,
-        "tags": {"method": FEEDBACK_METRIC_METHOD_TAG},
+        "tags": expected_tags,
     }
 
     rv = client.get('/send-feedback?json={"reward": 42}')
@@ -395,9 +443,11 @@ def test_seldon_metrics_send_feedback(cls):
 
     data = seldon_metrics.data[os.getpid()]
 
-    assert data["COUNTER", "seldon_api_model_feedback_reward"] == {
+    expected_tags = {"method": FEEDBACK_METRIC_METHOD_TAG}
+    tags_key = SeldonMetrics._generate_tags_key(expected_tags)
+    assert data["COUNTER", "seldon_api_model_feedback_reward", tags_key] == {
         "value": 84.0,
-        "tags": {"method": FEEDBACK_METRIC_METHOD_TAG},
+        "tags": expected_tags,
     }
 
 
