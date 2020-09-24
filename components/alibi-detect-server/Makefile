@@ -27,7 +27,7 @@ run-outlier-detector:
 
 run-metrics-server:
 	SELDON_DEPLOYMENT_ID="sdepname" PREDICTIVE_UNIT_ID="modelname" PREDICTIVE_UNIT_IMAGE="adserver:0.1" PREDICTOR_ID="pred" \
-		 python -m adserver --model_name BINARY_CLASSIFICATION --http_port 8080 --protocol seldonfeedback.http --event_type io.seldon.serving.feedback --storage_uri none --event_source http://localhost:8080 MetricsServer
+		 python -m adserver --model_name model --http_port 8080 --protocol seldonfeedback.http --event_type io.seldon.serving.feedback --storage_uri "adserver.cm_models.binary_metrics.BinaryMetrics" --event_source http://localhost:8080 MetricsServer
 
 #
 # Docker Run
