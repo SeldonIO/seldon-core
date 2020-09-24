@@ -372,7 +372,6 @@ class UserObjectLowLevelGrpc:
 
 
 def verify_seldon_metrics(data, mycounter_value, histogram_entries, method):
-    print(data)
     expected_base_tags = {"method": method}
     base_tags_key = SeldonMetrics._generate_tags_key(expected_base_tags)
     expected_custom_tags = {"mytag": "mytagvalue","method": method}

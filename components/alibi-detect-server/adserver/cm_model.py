@@ -91,13 +91,11 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
         # If response is provided then we can perform a comparison
         # TODO: If Header UUID provided we could fetch from ELK to do the evaluation
         if "response" in inputs:
-            # TODO: Add the extensions for the comparisons here
             response = inputs["response"]
             truth = inputs["truth"]
             r = self.model.transform(truth, response)
             metrics.extend(r.metrics)
 
-        # TODO: Allow for scores to be used to calculate metrics as well
         seldon_response = SeldonResponse(output or None, None, metrics)
 
         return seldon_response
