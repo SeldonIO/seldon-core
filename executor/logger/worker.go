@@ -83,7 +83,7 @@ func (W *Worker) sendCloudEvent(logReq LogRequest) error {
 	} else if logReq.ReqType == InferenceFeedback {
 		event.SetType(CEFeedback)
 	} else {
-		return fmt.Errorf("Incorrect log request type", errors.New("Incorrect log request type"))
+		return fmt.Errorf("Incorrect log request type: %s", errors.New("Incorrect log request type"))
 	}
 
 	event.SetExtension(ModelIdAttr, logReq.ModelId)
