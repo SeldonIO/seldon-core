@@ -25,7 +25,7 @@ def _load_class_module(module_path: str) -> str:
 class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
     def __init__(self, name: str, storage_uri: str, model = None):
         """
-        Outlier Detection / Concept Drift Model
+        Custom Metrics Model
 
         Parameters
         ----------
@@ -68,7 +68,7 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
 
         Returns
         -------
-             Alibi Detect response
+             SeldonResponse response
 
         """
         logging.info("PROCESSING Feedback Event.")
