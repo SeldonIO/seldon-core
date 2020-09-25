@@ -30,3 +30,34 @@ groups:
         expr: label_replace(sort_desc(sum by (label_seldon_deployment_id,namespace) ((sum_over_time(kube_pod_labels{label_app_kubernetes_io_managed_by=~"seldon-core"}[2m] ) / scalar(max(sum_over_time(kube_pod_labels[2m] )))) * on(pod,namespace) group_right(label_seldon_deployment_id) sum by (namespace,pod,container) (kube_pod_container_resource_limits_memory_bytes ))), "name","$1","label_seldon_deployment_id", "(.+)")
         labels:
           type: "SeldonDeployment"
+  - name: model-usage-kfserving.rules
+    interval: 2m
+    rules:
+      - record: model_containers_average
+        expr: label_replace(sum by (label_serving_kubeflow_org_inferenceservice,namespace) ((sum_over_time(kube_pod_labels{label_serving_kubeflow_org_inferenceservice!=""}[2m] ) / scalar(max(sum_over_time(kube_pod_labels[2m] )))) * on(pod,namespace) group_right(label_serving_kubeflow_org_inferenceservice) max by (namespace,pod,container,namespace) (avg_over_time(kube_pod_container_info[2m] ))), "name","$1","label_serving_kubeflow_org_inferenceservice", "(.+)")
+        labels:
+          type: "InferenceService"
+      - record: model_memory_usage_bytes
+        expr: label_replace(sort_desc(sum by (label_serving_kubeflow_org_inferenceservice,namespace) ((sum_over_time(kube_pod_labels{label_serving_kubeflow_org_inferenceservice!=""}[2m] ) / scalar(max(sum_over_time(kube_pod_labels[2m] )))) * on(pod,namespace) group_right(label_serving_kubeflow_org_inferenceservice) sum by (namespace,pod,container) (rate(container_memory_usage_bytes[2m] )))), "name","$1","label_serving_kubeflow_org_inferenceservice", "(.+)")
+        labels:
+          type: "InferenceService"
+      - record: model_cpu_usage_seconds_total
+        expr: label_replace(sort_desc(sum by (label_serving_kubeflow_org_inferenceservice,namespace) ((sum_over_time(kube_pod_labels{label_serving_kubeflow_org_inferenceservice!=""}[2m] ) / scalar(max(sum_over_time(kube_pod_labels[2m] )))) * on(pod,namespace) group_right(label_serving_kubeflow_org_inferenceservice) sum by (namespace,pod,container) (rate(container_cpu_usage_seconds_total[2m] )))), "name","$1","label_serving_kubeflow_org_inferenceservice", "(.+)")
+        labels:
+          type: "InferenceService"
+      - record: model_cpu_requests
+        expr: label_replace(sort_desc(sum by (label_serving_kubeflow_org_inferenceservice,namespace) ((sum_over_time(kube_pod_labels{label_serving_kubeflow_org_inferenceservice!=""}[2m] ) / scalar(max(sum_over_time(kube_pod_labels[2m] )))) * on(pod,namespace) group_right(label_serving_kubeflow_org_inferenceservice) sum by (namespace,pod,container) (kube_pod_container_resource_requests_cpu_cores ))), "name","$1","label_serving_kubeflow_org_inferenceservice", "(.+)")
+        labels:
+          type: "InferenceService"
+      - record: model_cpu_limits
+        expr: label_replace(sort_desc(sum by (label_serving_kubeflow_org_inferenceservice,namespace) ((sum_over_time(kube_pod_labels{label_serving_kubeflow_org_inferenceservice!=""}[2m] ) / scalar(max(sum_over_time(kube_pod_labels[2m] )))) * on(pod,namespace) group_right(label_serving_kubeflow_org_inferenceservice) sum by (namespace,pod,container) (kube_pod_container_resource_limits_cpu_cores ))), "name","$1","label_serving_kubeflow_org_inferenceservice", "(.+)")
+        labels:
+          type: "InferenceService"
+      - record: model_memory_requests_bytes
+        expr: label_replace(sort_desc(sum by (label_serving_kubeflow_org_inferenceservice,namespace) ((sum_over_time(kube_pod_labels{label_serving_kubeflow_org_inferenceservice!=""}[2m] ) / scalar(max(sum_over_time(kube_pod_labels[2m] )))) * on(pod,namespace) group_right(label_serving_kubeflow_org_inferenceservice) sum by (namespace,pod,container) (kube_pod_container_resource_requests_memory_bytes ))), "name","$1","label_serving_kubeflow_org_inferenceservice", "(.+)")
+        labels:
+          type: "InferenceService"
+      - record: model_memory_limits_bytes
+        expr: label_replace(sort_desc(sum by (label_serving_kubeflow_org_inferenceservice,namespace) ((sum_over_time(kube_pod_labels{label_serving_kubeflow_org_inferenceservice!=""}[2m] ) / scalar(max(sum_over_time(kube_pod_labels[2m] )))) * on(pod,namespace) group_right(label_serving_kubeflow_org_inferenceservice) sum by (namespace,pod,container) (kube_pod_container_resource_limits_memory_bytes ))), "name","$1","label_serving_kubeflow_org_inferenceservice", "(.+)")
+        labels:
+          type: "InferenceService"
