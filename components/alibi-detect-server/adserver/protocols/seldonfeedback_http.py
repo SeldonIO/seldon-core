@@ -20,14 +20,19 @@ def _extract_feedback_request(body: Dict) -> List:
     res = {}
 
     if "truth" in body:
-        res["truth"] = extract_request_parts_json(body["truth"])
-        if "meta" in body["truth"]:
-            if "metrics" in body["truth"]["meta"]:
-                res["metrics"] = body["truth"]["meta"]["metrics"]
+        truth_parts = extract_request_parts_json(body["truth"])
+        res["truth"] = truth_parts[0]
+
+        if truth_parts[1]:
+            if "metrics" in truth_parts[1]:
+                res["metrics"] = truth_parts[1]["metrics"]
+
     if "request" in body:
-        res["request"] = extract_request_parts_json(body["request"])
+        request_parts = extract_request_parts_json(body["request"])
+        res["request"] = request_parts[0]
     if "response" in body:
-        res["response"] = extract_request_parts_json(body["response"])
+        response_parts = extract_request_parts_json(body["response"])
+        res["response"] = response_parts[0]
 
     return res
 
