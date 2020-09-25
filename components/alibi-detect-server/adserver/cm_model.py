@@ -74,7 +74,6 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
         logging.info("PROCESSING Feedback Event.")
         logging.info(str(headers))
         logging.info("----")
-        logging.info(inputs)
 
         metrics = []
         output = {}
