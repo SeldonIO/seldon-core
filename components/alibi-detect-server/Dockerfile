@@ -1,4 +1,5 @@
-FROM registry.access.redhat.com/ubi8/python-36
+# TODO: Add to release script 
+FROM docker.io/seldonio/seldon-core-s2i-python37-ubi8:1.3.0-dev
 LABEL name="Seldon Alibi Detect Server" \
       vendor="Seldon Technologies" \
       version="1.3.0-dev" \
@@ -6,12 +7,11 @@ LABEL name="Seldon Alibi Detect Server" \
       summary="Alibi Detect Server for Seldon Core" \
       description="The Alibi Detect Server provides outlier, drift and adversarial detection services for Seldon Core"
 
-USER root
-RUN yum install -y mesa-libGL
-RUN yum install -y libX11.so.6 libGL.so.1 libXext.so.6 zlib
-USER default
+ADD requirements_server.txt .
 
 RUN pip install pip -U
+
+RUN pip install -r requirements_server.txt
 
 # Fix cloudevents bug: https://github.com/cloudevents/sdk-python/issues/24
 RUN git clone --branch 24-extensions https://github.com/ryandawsonuk/sdk-python.git && \
@@ -30,14 +30,6 @@ RUN mkdir ./licenses && pip-licenses --from=mixed --format=csv --output-file=./l
 USER root
 RUN yum install -y mesa-libGL
 RUN mv ./licenses /licenses
-RUN yum update -y
-RUN yum install -y mesa-libGL
-RUN pip install alibi-detect
-USER default
-RUN pip install alibi-detect
-USER root
-RUN pip uninstall -y opencv-python
-RUN pip uninstall opencv-contrib-python
 USER default
 
 ENTRYPOINT ["python", "-m", "adserver"]
