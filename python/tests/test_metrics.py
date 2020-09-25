@@ -374,25 +374,35 @@ class UserObjectLowLevelGrpc:
 def verify_seldon_metrics(data, mycounter_value, histogram_entries, method):
     expected_base_tags = {"method": method}
     base_tags_key = SeldonMetrics._generate_tags_key(expected_base_tags)
-    expected_custom_tags = {"mytag": "mytagvalue","method": method}
+    expected_custom_tags = {"mytag": "mytagvalue", "method": method}
     custom_tags_key = SeldonMetrics._generate_tags_key(expected_custom_tags)
     assert data["GAUGE", "mygauge", base_tags_key]["value"] == 100
     assert data["GAUGE", "customtag", custom_tags_key]["value"] == 200
     assert data["GAUGE", "customtag", custom_tags_key]["tags"] == expected_custom_tags
     assert data["COUNTER", "mycounter", base_tags_key]["value"] == mycounter_value
     assert np.allclose(
-        np.histogram(histogram_entries, BINS)[0], data["TIMER", "mytimer", base_tags_key]["value"][0]
+        np.histogram(histogram_entries, BINS)[0],
+        data["TIMER", "mytimer", base_tags_key]["value"][0],
     )
-    assert np.allclose(data["TIMER", "mytimer", base_tags_key]["value"][1], np.sum(histogram_entries))
-    expected_distinct_tags_one = {"mytag": "mytagvalue-1","method": method}
+    assert np.allclose(
+        data["TIMER", "mytimer", base_tags_key]["value"][1], np.sum(histogram_entries)
+    )
+    expected_distinct_tags_one = {"mytag": "mytagvalue-1", "method": method}
     distinct_tags_one_key = SeldonMetrics._generate_tags_key(expected_distinct_tags_one)
     assert data["GAUGE", "distincttag", distinct_tags_one_key]["value"] == 200
-    assert data["GAUGE", "distincttag", distinct_tags_one_key]["tags"] == expected_distinct_tags_one
+    assert (
+        data["GAUGE", "distincttag", distinct_tags_one_key]["tags"]
+        == expected_distinct_tags_one
+    )
 
-    expected_distinct_tags_two = {"mytag": "mytagvalue-2","method": method}
+    expected_distinct_tags_two = {"mytag": "mytagvalue-2", "method": method}
     distinct_tags_two_key = SeldonMetrics._generate_tags_key(expected_distinct_tags_two)
     assert data["GAUGE", "distincttag", distinct_tags_two_key]["value"] == 200
-    assert data["GAUGE", "distincttag", distinct_tags_two_key]["tags"] == expected_distinct_tags_two
+    assert (
+        data["GAUGE", "distincttag", distinct_tags_two_key]["tags"]
+        == expected_distinct_tags_two
+    )
+
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
 def test_seldon_metrics_predict(cls, client_gets_metrics):
