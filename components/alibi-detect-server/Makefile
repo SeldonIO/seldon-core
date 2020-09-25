@@ -59,7 +59,7 @@ curl-metrics-server-metrics:
 	curl http://localhost:8080/v1/metrics
 
 docker-build: 
-	docker build -f Dockerfile -t seldonio/${IMAGE}:${VERSION} .
+	docker build -f Dockerfile -t seldonio/${IMAGE}:1.3.0-dev-test .
 
 docker-push:
 	docker push seldonio/${IMAGE}:${VERSION} 
