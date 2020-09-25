@@ -1,15 +1,24 @@
-apiVersion: serving.knative.dev/v1alpha1
-kind: Service
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: seldon-multiclass-model-metrics
+  labels:
+    app: seldon-multiclass-model-metrics
 spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: seldon-multiclass-model-metrics
   template:
     metadata:
-      annotations:
-        autoscaling.knative.dev/minScale: "1"
+      labels:
+        app: seldon-multiclass-model-metrics
     spec:
+      securityContext:
+          runAsUser: 8888
       containers:
-      - image: "seldonio/alibi-detect-server:1.3.0-dev"
+      - name: user-container
+        image: seldonio/alibi-detect-server:1.3.0-dev
         imagePullPolicy: Never
         args:
         - --model_name
@@ -36,5 +45,17 @@ spec:
           value: "alibi-detect-server:1.3.0-dev"
         - name: "PREDICTOR_ID"
           value: "default"
-        securityContext:
-            runAsUser: 8888
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: seldon-multiclass-model-metrics
+  labels:
+    app: seldon-multiclass-model-metrics
+spec:
+  selector:
+    app: seldon-multiclass-model-metrics
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080

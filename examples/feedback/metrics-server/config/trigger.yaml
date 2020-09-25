@@ -9,6 +9,6 @@ spec:
       type: io.seldon.serving.feedback
   subscriber:
     ref:
-      apiVersion: serving.knative.dev/v1alpha1
+      apiVersion: v1
       kind: Service
-      name: multiclass-model-metrics
+      name: seldon-multiclass-model-metrics
