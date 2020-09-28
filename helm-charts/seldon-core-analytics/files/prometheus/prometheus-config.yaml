@@ -5,6 +5,8 @@ global:
   evaluation_interval: 1s
 rule_files:
   - /etc/prometheus-rules/*.rules.yml
+  - /etc/prometheus-rules/model-usage/*.rules.yml
+  - /etc/prometheus-rules/extra-rules/*.rules.yml
 alerting:
   alertmanagers:
   - static_configs:
