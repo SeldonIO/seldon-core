@@ -32,8 +32,11 @@ func mergeMLServerContainer(existing *v1.Container, mlServer *v1.Container) *v1.
 	}
 
 	if existing.Env == nil {
-		existing.Env = mlServer.Env
+		existing.Env = []v1.EnvVar{}
 	}
+
+	// TODO: Allow overriding some of the env vars
+	existing.Env = append(existing.Env, mlServer.Env...)
 
 	if existing.ReadinessProbe == nil {
 		existing.ReadinessProbe = mlServer.ReadinessProbe
