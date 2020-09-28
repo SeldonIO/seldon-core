@@ -88,7 +88,7 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
                 reason="NO_TRUTH_VALUE",
             )
 
-        # We automatically add any metrics provided in the truth
+        # We automatically add any metrics provided in the incoming request
         if "metrics" in inputs:
             metrics.extend(inputs["metrics"])
 
