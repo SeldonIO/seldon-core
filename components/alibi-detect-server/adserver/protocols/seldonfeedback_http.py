@@ -36,8 +36,9 @@ def _extract_feedback_request(body: Dict) -> List:
 
     return res
 
+
 def _get_request_ty(
-    request: Dict
+    request: Dict,
 ) -> SeldonPayload:  # pylint: disable=inconsistent-return-statements
     data_def = request["data"]
     if "tensor" in data_def:
@@ -85,4 +86,3 @@ class SeldonFeedbackRequestHandler(RequestHandler):
 
     def extract_request(self) -> Union[List, Dict]:
         return _extract_feedback_request(self.request)
-

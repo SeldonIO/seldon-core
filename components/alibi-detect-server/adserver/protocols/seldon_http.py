@@ -49,7 +49,7 @@ def _create_seldon_data_def(array: np.array, ty: SeldonPayload):
 
 
 def _get_request_ty(
-    request: Dict
+    request: Dict,
 ) -> SeldonPayload:  # pylint: disable=inconsistent-return-statements
     data_def = request["data"]
     if "tensor" in data_def:

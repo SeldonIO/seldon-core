@@ -13,6 +13,7 @@ from adserver.base import CEModel
 from seldon_core.user_model import SeldonResponse
 from seldon_core.flask_utils import SeldonMicroserviceException
 
+
 def _load_class_module(module_path: str) -> str:
     components = module_path.split(".")
     mod = __import__(".".join(components[:-1]))
@@ -23,7 +24,7 @@ def _load_class_module(module_path: str) -> str:
 
 
 class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
-    def __init__(self, name: str, storage_uri: str, model = None):
+    def __init__(self, name: str, storage_uri: str, model=None):
         """
         Custom Metrics Model
 
@@ -47,7 +48,9 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
         """
         if "/" in self.storage_uri:
             model_folder = kfserving.Storage.download(self.storage_uri)
-            self.model = pickle.load(open(os.path.join(model_folder, 'meta.pickle'), 'rb'))
+            self.model = pickle.load(
+                open(os.path.join(model_folder, "meta.pickle"), "rb")
+            )
         else:
             # Load from locally available models
             MetricsClass = _load_class_module(self.storage_uri)
@@ -80,9 +83,10 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
 
         if "truth" not in inputs:
             raise SeldonMicroserviceException(
-                    f"No truth value provided in: {json.dumps(inputs)}",
-                    status_code=400,
-                    reason="NO_TRUTH_VALUE")
+                f"No truth value provided in: {json.dumps(inputs)}",
+                status_code=400,
+                reason="NO_TRUTH_VALUE",
+            )
 
         # We automatically add any metrics provided in the truth
         if "metrics" in inputs:
@@ -99,4 +103,3 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
         seldon_response = SeldonResponse(output or None, None, metrics)
 
         return seldon_response
-

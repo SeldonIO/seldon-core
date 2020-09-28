@@ -79,8 +79,11 @@ class CEServer(object):
                 # Protocol Discovery API that returns the serving protocol supported by this server.
                 (r"/protocol", ProtocolHandler, dict(protocol=self.protocol)),
                 # Prometheus Metrics API that returns metrics for model servers
-                (r"/v1/metrics", MetricsHandler, dict(
-                    seldon_metrics=self.seldon_metrics)),
+                (
+                    r"/v1/metrics",
+                    MetricsHandler,
+                    dict(seldon_metrics=self.seldon_metrics),
+                ),
             ]
         )
 
