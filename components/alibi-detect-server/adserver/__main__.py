@@ -126,4 +126,3 @@ if __name__ == "__main__":
         http_port=args.http_port,
         reply_url=args.reply_url,
     ).start(model)
-

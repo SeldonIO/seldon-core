@@ -9,4 +9,4 @@ repos:
     rev: stable
     hooks:
       - id: black
-        args: ['python/', 'testing/', '--exclude', '(testing/scripts/proto|seldon_core/proto/|.eggs)']
+        args: ['python/', 'testing/', 'components/alibi-detect-server', '--exclude', '(testing/scripts/proto|seldon_core/proto/|.eggs)']

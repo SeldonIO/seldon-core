@@ -1,11 +1,30 @@
 from seldon_core.user_model import SeldonResponse
 
+
 class MultiClassNumeric:
+    """
+    MultiClassNumeric Model
+
+    Parameters
+    -----------
+    """
 
     def __init__(self):
         pass
 
-    def transform(self, truth, response, request = None):
+    def transform(self, truth, response, request=None):
+        """
+        Perform a multiclass numeric comparison between truth and response.
+
+        Parameters
+        -----------
+        truth
+            Actual data value as format of <number> or [<number>]
+        response
+            Prediction data value as format of <number> or [<number>]
+        request
+            Input data value as format of <number> or [<number>]
+        """
 
         metrics = []
 
@@ -15,16 +34,30 @@ class MultiClassNumeric:
         correct = response_class == truth_class
 
         if correct:
-            metrics.append({"key":"seldon_metric_true_positive",
-                             "type": "COUNTER", "value": 1,
-                             "tags": { "class": f"CLASS_{truth_class}" }})
+            metrics.append(
+                {
+                    "key": "seldon_metric_true_positive",
+                    "type": "COUNTER",
+                    "value": 1,
+                    "tags": {"class": f"CLASS_{truth_class}"},
+                }
+            )
         else:
-            metrics.append({"key":"seldon_metric_false_negative",
-                             "type": "COUNTER", "value": 1,
-                             "tags": { "class": f"CLASS_{truth_class}" }})
-            metrics.append({"key":"seldon_metric_false_positive",
-                             "type": "COUNTER", "value": 1,
-                             "tags": { "class": f"CLASS_{response_class}" }})
+            metrics.append(
+                {
+                    "key": "seldon_metric_false_negative",
+                    "type": "COUNTER",
+                    "value": 1,
+                    "tags": {"class": f"CLASS_{truth_class}"},
+                }
+            )
+            metrics.append(
+                {
+                    "key": "seldon_metric_false_positive",
+                    "type": "COUNTER",
+                    "value": 1,
+                    "tags": {"class": f"CLASS_{response_class}"},
+                }
+            )
 
         return SeldonResponse(None, None, metrics)
-
