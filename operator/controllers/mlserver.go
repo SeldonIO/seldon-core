@@ -134,6 +134,10 @@ func getMLServerContainer(pu *machinelearningv1.PredictiveUnit) (*v1.Container, 
 
 func getMLServerImage(pu *machinelearningv1.PredictiveUnit) (string, error) {
 	prepackConfig := machinelearningv1.GetPrepackServerConfig(string(*pu.Implementation))
+	if prepackConfig == nil {
+		return "", fmt.Errorf("failed to get server config for %s", *pu.Implementation)
+	}
+
 	kfservingConfig := prepackConfig.Protocols.KFServing
 
 	if kfservingConfig == nil {
