@@ -6,7 +6,7 @@ require (
 	github.com/cloudevents/sdk-go v1.2.0
 	github.com/confluentinc/confluent-kafka-go v1.4.2
 	github.com/ghodss/yaml v1.0.0
-	github.com/go-logr/logr v0.1.0
+	github.com/go-logr/logr v0.2.0
 	github.com/golang/protobuf v1.4.2
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/mux v1.8.0
@@ -25,7 +25,7 @@ require (
 	google.golang.org/grpc v1.32.0
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.18.8
-	k8s.io/apimachinery v0.18.8
+	k8s.io/apimachinery v0.19.2
 	sigs.k8s.io/controller-runtime v0.6.2
 )
 
