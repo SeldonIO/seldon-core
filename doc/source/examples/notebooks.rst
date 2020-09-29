@@ -62,6 +62,7 @@ Incubating Projects Examples
    Outlier Detection with Combiner <outlier_combiner>
    Stream Processing with KNative Eventing <knative_eventing_streaming>
    Kafka CIFAR10 <cifar10_kafka>
+   Kafka SpaCy SKlearn NLP <kafka_spacy_sklearn>
 
 
 Cloud-Specific Examples
