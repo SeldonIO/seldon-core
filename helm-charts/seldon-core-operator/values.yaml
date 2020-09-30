@@ -14,7 +14,9 @@ istio:
   enabled: false
   gateway: istio-system/seldon-gateway
   tlsMode: ""
-
+# If you have KEDA installed you can use it for autoscaling
+keda:
+  enabled: false
 # ## Install with Cert Manager
 # See installation page in documentation for more information
 certManager:

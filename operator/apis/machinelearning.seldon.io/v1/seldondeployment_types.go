@@ -21,6 +21,7 @@ import (
 	"encoding/hex"
 	"strconv"
 
+	kedav1alpha1 "github.com/kedacore/keda/api/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/constants"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta1"
 	v1 "k8s.io/api/core/v1"
@@ -285,10 +286,26 @@ type Explainer struct {
 }
 
 type SeldonPodSpec struct {
-	Metadata metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-	Spec     v1.PodSpec        `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
-	HpaSpec  *SeldonHpaSpec    `json:"hpaSpec,omitempty" protobuf:"bytes,3,opt,name=hpaSpec"`
-	Replicas *int32            `json:"replicas,omitempty" protobuf:"bytes,4,opt,name=replicas"`
+	Metadata metav1.ObjectMeta       `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+	Spec     v1.PodSpec              `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+	HpaSpec  *SeldonHpaSpec          `json:"hpaSpec,omitempty" protobuf:"bytes,3,opt,name=hpaSpec"`
+	Replicas *int32                  `json:"replicas,omitempty" protobuf:"bytes,4,opt,name=replicas"`
+	KedaSpec *SeldonScaledObjectSpec `json:"kedaSpec,omitempty" protobuf:"bytes,5,opt,name=kedaSpec"`
+}
+
+// SeldonScaledObjectSpec is the spec for a KEDA ScaledObject resource
+type SeldonScaledObjectSpec struct {
+	// +optional
+	PollingInterval *int32 `json:"pollingInterval,omitempty" protobuf:"int,1,opt,name=pollingInterval"`
+	// +optional
+	CooldownPeriod *int32 `json:"cooldownPeriod,omitempty" protobuf:"int,2,opt,name=cooldownPeriod"`
+	// +optional
+	MinReplicaCount *int32 `json:"minReplicaCount,omitempty" protobuf:"int,3,opt,name=minReplicaCount"`
+	// +optional
+	MaxReplicaCount *int32 `json:"maxReplicaCount,omitempty" protobuf:"int,4,opt,name=maxReplicaCount"`
+	// +optional
+	Advanced *kedav1alpha1.AdvancedConfig `json:"advanced,omitempty" protobuf:"bytes,5,opt,name=advanced"`
+	Triggers []kedav1alpha1.ScaleTriggers `json:"triggers" protobuf:"bytes,6,opt,name=triggers"`
 }
 
 type SeldonHpaSpec struct {

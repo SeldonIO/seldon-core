@@ -129,6 +129,8 @@ spec:
           value: '{{ .Values.executor.requestLogger.defaultEndpoint }}'
         - name: DEFAULT_USER_ID
           value: '{{ .Values.defaultUserID }}'
+        - name: KEDA_ENABLED
+          value: '{{ .Values.keda.enabled }}'          
         image: '{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}'
         imagePullPolicy: '{{ .Values.image.pullPolicy }}'
         name: manager
