@@ -483,10 +483,10 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 				c.defaultDeploymentName = depName
 			}
 			deploy := createDeploymentWithoutEngine(depName, seldonId, cSpec, &p, mlDep, securityContext)
-			// Add HPA if needed
-			if cSpec.KedaSpec != nil {
+
+			if cSpec.KedaSpec != nil { // Add KEDA if needed
 				c.kedaScaledObjects = append(c.kedaScaledObjects, createKeda(cSpec, depName, seldonId, namespace))
-			} else if cSpec.HpaSpec != nil {
+			} else if cSpec.HpaSpec != nil { // Add HPA if needed
 				c.hpas = append(c.hpas, createHpa(cSpec, depName, seldonId, namespace))
 			} else { //set replicas from more specifc to more general replicas settings in spec
 				if cSpec.Replicas != nil {
