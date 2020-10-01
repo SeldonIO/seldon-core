@@ -42,7 +42,7 @@ Deploying your models using Seldon Core is simplified through our pre-packaged i
 
 Quick install using Helm 3 (you can also use Kustomize):
 
-```
+```bash
 kubectl create namespace seldon-system
 
 helm install seldon-core seldon-core-operator \
@@ -65,7 +65,7 @@ gs://seldon-models/sklearn/iris/model.pickle
 
 Create a namespace to run your model in:
 
-```
+```bash
 kubectl create namespace seldon
 ```
 

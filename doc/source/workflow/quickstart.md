@@ -28,7 +28,7 @@ To run your machine learning graph on Kubernetes you need to define how the comp
 
 ### 3. Deploy and Serve Predictions
 
-You can use ```kubectl``` to deploy your ML service like any other Kubernetes resource. This is discussed [here](deploying.md). Once deployed you can get predictions by [calling the exposed API](serving.md).
+You can use `kubectl` to deploy your ML service like any other Kubernetes resource. This is discussed [here](deploying.md). Once deployed you can get predictions by [calling the exposed API](serving.md).
 
 
 ## Hands on Example of Seldon Core Workflow
@@ -38,7 +38,7 @@ You can use ```kubectl``` to deploy your ML service like any other Kubernetes re
 
 **Install using Helm 3 (you can also use Kustomize)**
 
-```
+```bash
 kubectl create namespace seldon-system
 
 helm install seldon-core seldon-core-operator \

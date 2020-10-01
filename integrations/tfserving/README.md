@@ -18,7 +18,7 @@ The tensorflow proxy takes several parameters:
 An example resource with the proxy and a Tensorflow Serving server is shown below.
 
 
-```
+```json
 {
     "apiVersion": "machinelearning.seldon.io/v1alpha2",
     "kind": "SeldonDeployment",
@@ -113,8 +113,6 @@ An example resource with the proxy and a Tensorflow Serving server is shown belo
         ]
     }
 }
-
-
 ```
 
 Examples:

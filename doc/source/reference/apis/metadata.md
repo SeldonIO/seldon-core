@@ -139,7 +139,7 @@ Example response:
             "outputs": [
                 {"messagetype": "tensor", "schema": {"names": ["one-output"]}}
             ],
-            "custom": {"author": "seldon-dev", "extra": "information"},
+            "custom": {"author": "seldon-dev", "extra": "information"}
         },
         "node-two": {
             "name": "node-two",
@@ -151,7 +151,7 @@ Example response:
             "outputs": [
                 {"messagetype": "tensor", "schema": {"names": ["two-output"]}}
             ],
-            "custom": {"author": "seldon-dev", "extra": "information"},
+            "custom": {"author": "seldon-dev", "extra": "information"}
         }
     },
     "graphinputs": [
@@ -177,8 +177,8 @@ Example response:
   "versions": ["my-model/v1"],
   "platform": "platform-name",
   "inputs": [{"messagetype": "tensor", "schema": {"shape": [1, 5]}}],
-  "outputs": [{"messagetype": "tensor", "schema": {"shape": [1, 3]}}]
-  "custom": {"author": "seldon-dev", "extra": "information"},
+  "outputs": [{"messagetype": "tensor", "schema": {"shape": [1, 3]}}],
+  "custom": {"author": "seldon-dev", "extra": "information"}
 }
 ```
 
@@ -303,7 +303,7 @@ custom:
 ### kfserving TensorMetadata
 
 You can easily define metadata for your models that is compatible with [kfserving dataplane proposal](https://github.com/kubeflow/kfserving/blob/master/docs/predict-api/v2/required_api.md#model-metadata) specification.
-```
+```javascript
 $metadata_model_response =
 {
   "name" : $string,
@@ -314,7 +314,7 @@ $metadata_model_response =
 }
 ```
 with
-```
+```javascript
 $metadata_tensor =
 {
   "name" : $string,

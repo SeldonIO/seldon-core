@@ -5,7 +5,7 @@ We provide initial [OpenAPI](https://www.openapis.org/) 3.0 specifications for o
  * [Seldon Core External via Ambassador](https://github.com/SeldonIO/seldon-core/blob/master/openapi/engine.oas3.json)
  * [Seldon Core Internal microservice API](https://github.com/SeldonIO/seldon-core/blob/master/openapi/wrapper.oas3.json)
 
-You will find the API Specs at runtime at the ```/seldon.json``` path of your API endpoint.
+You will find the API Specs at runtime at the `/seldon.json` path of your API endpoint.
 
 You will need to be running 0.2.4-SNAPSHOT or later for this endpoint to be active.
 
@@ -15,7 +15,7 @@ You can view the APIs using the [Swagger UI tool](https://swagger.io/tools/swagg
 
 You can run this via Docker with:
 
-```
+```bash
 docker run --network host --rm  swaggerapi/swagger-editor
 ```
 

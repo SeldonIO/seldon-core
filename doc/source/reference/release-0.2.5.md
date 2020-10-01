@@ -6,15 +6,15 @@ A summary of the main contributions to the [Seldon Core release 0.2.5](https://g
 
 When packaging components to run under Seldon Core we provide easy integration via [S2I](https://github.com/openshift/source-to-image) builder images. The core functionality for our Python S2I image has now been packaged as a Python module which can be easily installed via pip with:
 
-```
+```bash
 pip install seldon-core
 ```
 
 The module contains:
 
- * The top level REST and gRPC wrapper code which can be tested with your component via the executable ```seldon-core-microservice```.
- * An internal tester for the Seldon microservice REST and gRPC API accessible via the executable ```seldon-core-tester```. See the [Microservice Tester documentation](https://github.com/SeldonIO/seldon-core/blob/master/docs/api-testing.md#microservice-api-tester) for further information.
- * An external tester for the external Seldon REST and gRPC API  accessible via the executable ```seldon-core-api-tester```. See the [API Tester documentation](https://github.com/SeldonIO/seldon-core/blob/master/docs/api-testing.md#seldon-core-api-tester) for further information.
+ * The top level REST and gRPC wrapper code which can be tested with your component via the executable `seldon-core-microservice`.
+ * An internal tester for the Seldon microservice REST and gRPC API accessible via the executable `seldon-core-tester`. See the [Microservice Tester documentation](https://github.com/SeldonIO/seldon-core/blob/master/docs/api-testing.md#microservice-api-tester) for further information.
+ * An external tester for the external Seldon REST and gRPC API  accessible via the executable `seldon-core-api-tester`. See the [API Tester documentation](https://github.com/SeldonIO/seldon-core/blob/master/docs/api-testing.md#seldon-core-api-tester) for further information.
 
 ## Inference Graph Components
 One of the aims of Seldon Core is to allow machine learning models to be deployed in production with the appropriate metrics and optimisation to give the required compliance and observability guarantees needed. We have recently extended Seldon Core with Outlier Detection and Multi-Armed Bandit components as discussed below.
@@ -42,11 +42,11 @@ Cluster-wide operations have the advantage that only a single Seldon Core Operat
 
 We have extended the Seldon Core API payload to include Tensorflow's [TensorProto](https://github.com/SeldonIO/seldon-core/blob/4149c6aeb11be518ec8589fd91599242c907e681/proto/prediction.proto#L29). This will allow utilisation of the fine grained type information available to most compactly send tensor based payloads as well as allow the use of [Tensorflow's library](https://www.tensorflow.org/api_docs/python/tf/make_tensor_proto) to construct the payload needed.
 
-We have ensured its now possible to use the ```binData``` and ```strData``` payload types to send arbitrary binary or string payloads via the Python wrapper. The python wrappers also allow more easy access to the low level payloads by allowing users to provide a ```predict_rest``` or ```predict_grpc``` methods to gain access directly to the underlying ```SeldonMessage```.
+We have ensured its now possible to use the `binData` and `strData` payload types to send arbitrary binary or string payloads via the Python wrapper. The python wrappers also allow more easy access to the low level payloads by allowing users to provide a `predict_rest` or `predict_grpc` methods to gain access directly to the underlying `SeldonMessage`.
 
 ## Custom Metrics
 
-The Seldon Core Service Orchestrator component that manages the request/response flow through a user's deployment graph already exposes Prometheus metrics for each of the API calls to the underling components in the graph (e.g. Models, Transformers etc). However, users can now pass back their own custom metrics in the returned ```SeldonMessage``` response from their components. Presently available are Counters, Gauges and Timers. Full documentation can be found [here](https://github.com/SeldonIO/seldon-core/blob/master/docs/custom_metrics.md).
+The Seldon Core Service Orchestrator component that manages the request/response flow through a user's deployment graph already exposes Prometheus metrics for each of the API calls to the underling components in the graph (e.g. Models, Transformers etc). However, users can now pass back their own custom metrics in the returned `SeldonMessage` response from their components. Presently available are Counters, Gauges and Timers. Full documentation can be found [here](https://github.com/SeldonIO/seldon-core/blob/master/docs/custom_metrics.md).
 
 ## Distributed Tracing
 We have integrated distributed tracing via [Jaeger](https://www.jaegertracing.io/) into the Service Orchestrator and Python wrappers. This will allow you to get tracing information as shown below for REST and gRPC requests through your Seldon Deployment. For more details see the [full documentation](../distributed-tracing.md).

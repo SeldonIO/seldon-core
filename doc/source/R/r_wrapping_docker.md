@@ -50,7 +50,7 @@ How you install your dependencies in your docker image depends on the [base imag
 
 An example docker file can be seen in the [seldon kubeflow example](https://github.com/kubeflow/example-seldon/blob/master/models/r_mnist/runtime/Dockerfile):
 
-```
+```dockerfile
 FROM rocker/r-apt:bionic
 
 RUN apt-get update && \
@@ -86,7 +86,7 @@ Then environment variables are set which will be passed as parameters into the R
 
 A directory is created and the local source code is coped into the directory, which is then set as the working directory. The seldon microservice wrapper file is then copied into this directory. This wraps the model to run as a seldon microservice. The expose command sets 5000 as the port for the service.
 
-The image can then be built with ```docker build . -t $ORG/$MODEL_NAME:$TAG``` to create your Docker image from source code. A simple name can be used but convention is to use the ORG/IMAGE:TAG format.
+The image can then be built with `docker build . -t $ORG/$MODEL_NAME:$TAG` to create your Docker image from source code. A simple name can be used but convention is to use the ORG/IMAGE:TAG format.
 
 ## Reference
 

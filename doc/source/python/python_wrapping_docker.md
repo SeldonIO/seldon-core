@@ -13,7 +13,7 @@ You will need:
 We will go into detail for each of these steps:
 
 ### Python file
-Your source code should contain a python file which defines a class of the same name as the file. For example, looking at our skeleton python model file at ```wrappers/s2i/python/test/model-template-app/MyModel.py```:
+Your source code should contain a python file which defines a class of the same name as the file. For example, looking at our skeleton python model file at `wrappers/s2i/python/test/model-template-app/MyModel.py`:
 
 ```python
 class MyModel(object):
@@ -48,7 +48,7 @@ class MyModel(object):
 ### requirements.txt
 Populate a requirements.txt with any software dependencies your code requires. At a minimum the file should contain:
 
-```
+```text
 seldon-core
 ```
 
@@ -56,7 +56,7 @@ seldon-core
 
 Define a Dockerfile in the same directory as your source code and requirements.txt. It will define the core parameters needed by our python builder image to wrap your model as env vars. An example is:
 
-```
+```dockerfile
 FROM python:3.7-slim
 COPY . /app
 WORKDIR /app
@@ -74,7 +74,7 @@ CMD exec seldon-core-microservice $MODEL_NAME $API_TYPE --service-type $SERVICE_
 
 
 ## Step 3 - Build your image
-Use ```docker build . -t $ORG/$MODEL_NAME:$TAG``` to create your Docker image from source code. A simple name can be used but convention is to use the ORG/IMAGE:TAG format.
+Use `docker build . -t $ORG/$MODEL_NAME:$TAG` to create your Docker image from source code. A simple name can be used but convention is to use the ORG/IMAGE:TAG format.
 
 ## Using with Keras/Tensorflow Models
 
@@ -143,7 +143,7 @@ See [Flask - Builtin Configuration Values](https://flask.palletsprojects.com/con
 ## Advanced Usage
 
 ### Model Class Arguments
-You can add arguments to your component which will be populated from the ```parameters``` defined in the SeldonDeloyment when you deploy your image on Kubernetes. For example, our [Python TFServing proxy](https://github.com/SeldonIO/seldon-core/tree/master/integrations/tfserving) has the class init method signature defined as below:
+You can add arguments to your component which will be populated from the `parameters` defined in the SeldonDeloyment when you deploy your image on Kubernetes. For example, our [Python TFServing proxy](https://github.com/SeldonIO/seldon-core/tree/master/integrations/tfserving) has the class init method signature defined as below:
 
 ```python
 class TfServingProxy(object):
@@ -153,7 +153,7 @@ class TfServingProxy(object):
 
 These arguments can be set when deploying in a Seldon Deployment. An example can be found in the [MNIST TFServing example](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/tfserving-mnist/tfserving-mnist.ipynb) where the arguments are defined in the [SeldonDeployment](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/tfserving-mnist/mnist_tfserving_deployment.json.template)  which is partly show below:
 
-```
+```json
  "graph": {
     "name": "tfserving-proxy",
     "endpoint": {"type" : "REST"},
@@ -190,13 +190,13 @@ These arguments can be set when deploying in a Seldon Deployment. An example can
 ```
 
 
-The allowable ```type``` values for the parameters are defined in the [proto buffer definition](https://github.com/SeldonIO/seldon-core/blob/44f7048efd0f6be80a857875058d23efc4221205/proto/seldon_deployment.proto#L117-L131).
+The allowable `type` values for the parameters are defined in the [proto buffer definition](https://github.com/SeldonIO/seldon-core/blob/44f7048efd0f6be80a857875058d23efc4221205/proto/seldon_deployment.proto#L117-L131).
 
 
 ### Custom Metrics
-```from version 0.3```
+`from version 0.3`
 
-To add custom metrics to your response you can define an optional method ```metrics``` in your class that returns a list of metric dicts. An example is shown below:
+To add custom metrics to your response you can define an optional method `metrics` in your class that returns a list of metric dicts. An example is shown below:
 
 ```python
 class MyModel(object):
@@ -213,9 +213,9 @@ For more details on custom metrics and the format of the metric dict see [here](
 There is an [example notebook illustrating a model with custom metrics in python](../examples/custom_metrics.html).
 
 ### Custom Request Tags
-```from version 0.3```
+`from version 0.3`
 
-To add custom request tags data you can add an optional method ```tags``` which can return a dict of custom meta tags as shown in the example below:
+To add custom request tags data you can add an optional method `tags` which can return a dict of custom meta tags as shown in the example below:
 
 ```python
 class MyModel(object):

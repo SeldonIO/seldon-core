@@ -14,7 +14,7 @@ The general work flow is:
 
  1. Create a source code repo in the form acceptable for the builder image and build your docker container from it. Below we show an example using our seldon-core git repo which has some template examples for python models.
 
-    ```
+    ```bash
     s2i build https://github.com/seldonio/seldon-core.git \
         --context-dir=wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python3 \
         seldon-core-template-model

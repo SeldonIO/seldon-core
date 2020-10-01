@@ -56,7 +56,7 @@ For this you would be able to clone the repository, and then checkout the releva
 
 Once you have done that you can install seldon-core using the following command:
 
-```
+```bash
 helm install helm-charts/seldon-core-operator seldon-core-operator
 ```
 
@@ -99,19 +99,19 @@ For kubernetes clusters of version higher than 1.15, make sure you comment the p
 
 Install cert-manager
 
-```
+```bash
 make install-cert-manager
 ```
 
 Install Seldon using cert-manager to provide certificates.
 
-```
+```bash
 make deploy
 ```
 
 Install Seldon with provided certificates in `config/cert/`
 
-```
+```bash
 make deploy-cert
 ```
 
@@ -177,7 +177,7 @@ We set `crd.create=true` to create the CRD. If you are installing a Seldon Core 
 
 An example install is provided in the Makefile in the Operator folder:
 
-```
+```bash
 make deploy-namespaced1
 ```
 
@@ -216,7 +216,7 @@ For kustomize you will need to uncomment the patch_object_selector [here](https:
 
 An example install is provided in the Makefile in the Operator folder:
 
-```
+```bash
 make deploy-controllerid
 ```
 

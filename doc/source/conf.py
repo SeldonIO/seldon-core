@@ -52,9 +52,14 @@ extensions = [
     "m2r",
     "sphinx.ext.napoleon",
     "sphinx_autodoc_typehints",
-    "sphinxcontrib.apidoc",  # automatically generate API docs, see https://github.com/rtfd/readthedocs.org/issues/1139
+    # Automatically generate API docs,
+    # see https://github.com/rtfd/readthedocs.org/issues/1139
+    "sphinxcontrib.apidoc",
     "nbsphinx",
     "nbsphinx_link",  # for linking notebooks from outside sphinx source root
+    # To fix `ipython3` issue
+    # https://github.com/spatialaudio/nbsphinx/issues/24
+    "IPython.sphinxext.ipython_console_highlighting",
 ]
 
 
@@ -275,10 +280,10 @@ nbsphinx_prolog = (
 
     .. role:: raw-html(raw)
         :format: html
-    
+
     .. nbinfo::
         This page was generated from `{{ docpath }}`__.
-    
+
     __ https://github.com/SeldonIO/seldon-core/blob/
         """
     + git_rev
