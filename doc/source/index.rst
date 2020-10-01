@@ -58,10 +58,10 @@ Documentation Index
    :caption: Pre-Packaged Inference Servers
 
    MLflow Server <servers/mlflow.md>
-   SKLearn server <servers/sklearn.md>
+   SKLearn Server <servers/sklearn.md>
    Triton Inference Server <servers/triton.md>   
    Tensorflow Serving <servers/tensorflow.md>
-   XGBoost server <servers/xgboost.md>
+   XGBoost Server <servers/xgboost.md>
 
 .. toctree::
    :maxdepth: 1
