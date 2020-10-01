@@ -47,6 +47,11 @@ executor:
     registry: docker.io
     repository: seldonio/seldon-core-executor
     tag: 1.3.0-dev
+  resources:
+    cpuLimit: 500m
+    cpuRequest: 500m
+    memoryLimit: 512Mi
+    memoryRequest: 512Mi
   prometheus:
     path: /prometheus
   serviceAccount:
@@ -174,6 +179,11 @@ engine:
     registry: docker.io
     repository: seldonio/engine
     tag: 1.3.0-dev
+  resources:
+    cpuLimit: 500m
+    cpuRequest: 500m
+    memoryLimit: 512Mi
+    memoryRequest: 512Mi
   logMessagesExternally: false
   port: 8000
   prometheus:

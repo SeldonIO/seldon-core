@@ -125,6 +125,22 @@ spec:
           value: "http://default-broker"
         - name: DEFAULT_USER_ID
           value: ''
+        - name: EXECUTOR_DEFAULT_CPU_REQUEST
+          value: "0.5"
+        - name: EXECUTOR_DEFAULT_MEMORY_REQUEST
+          value: "512Mi"
+        - name: EXECUTOR_DEFAULT_CPU_LIMIT
+          value: "0.5"
+        - name: EXECUTOR_DEFAULT_MEMORY_LIMIT
+          value: "512Mi"
+        - name: ENGINE_DEFAULT_CPU_REQUEST
+          value: "0.5"
+        - name: ENGINE_DEFAULT_MEMORY_REQUEST
+          value: "512Mi"
+        - name: ENGINE_DEFAULT_CPU_LIMIT
+          value: "0.5"
+        - name: ENGINE_DEFAULT_MEMORY_LIMIT
+          value: "512Mi"
         image: controller:latest
         name: manager
         resources:

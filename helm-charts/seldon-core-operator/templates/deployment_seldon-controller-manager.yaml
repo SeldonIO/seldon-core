@@ -131,6 +131,22 @@ spec:
           value: '{{ .Values.executor.requestLogger.defaultEndpoint }}'
         - name: DEFAULT_USER_ID
           value: '{{ .Values.defaultUserID }}'
+        - name: EXECUTOR_DEFAULT_CPU_REQUEST
+          value: '{{ .Values.executor.resources.cpuRequest }}'
+        - name: EXECUTOR_DEFAULT_MEMORY_REQUEST
+          value: '{{ .Values.executor.resources.memoryRequest }}'
+        - name: EXECUTOR_DEFAULT_CPU_LIMIT
+          value: '{{ .Values.executor.resources.cpuLimit }}'
+        - name: EXECUTOR_DEFAULT_MEMORY_LIMIT
+          value: '{{ .Values.executor.resources.memoryLimit }}'
+        - name: ENGINE_DEFAULT_CPU_REQUEST
+          value: '{{ .Values.engine.resources.cpuRequest }}'
+        - name: ENGINE_DEFAULT_MEMORY_REQUEST
+          value: '{{ .Values.engine.resources.memoryRequest }}'
+        - name: ENGINE_DEFAULT_CPU_LIMIT
+          value: '{{ .Values.engine.resources.cpuLimit }}'
+        - name: ENGINE_DEFAULT_MEMORY_LIMIT
+          value: '{{ .Values.engine.resources.memoryLimit }}'
         image: '{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}'
         imagePullPolicy: '{{ .Values.image.pullPolicy }}'
         name: manager
