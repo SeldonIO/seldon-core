@@ -3,10 +3,14 @@
 If you have a trained SKLearn model saved as a pickle you can deploy it simply
 using Seldon's prepackaged SKLearn server.
 
-## Pre-requisites
+## Prerequisites
 
 Seldon expects that your model has been saved using `joblib`, and it named as
 `model.joblib`. 
+Note that this is the [recommended approach to serialise
+models](https://scikit-learn.org/stable/modules/model_persistence.html) by the
+SKLearn project.
+
 Note that, since we are using `joblib`, it's important that your trained model
 matches the framework version expected in the inference server.
 
@@ -90,7 +94,7 @@ Acceptable values for the `method` parameter are `predict`, `predict_proba`,
 
 The SKLearn server can also be used to expose an API compatible with the [V2
 KFServing Protocol](../graph/protocols.md#v2-kfserving-protocol).
-Underneath, it will use the [Seldon
+Note that, under the hood, it will use the [Seldon
 MLServer](https://github.com/SeldonIO/MLServer) runtime.
 
 In order to enable support for the V2 KFServing protocol, it's enough to
@@ -104,7 +108,7 @@ metadata:
   name: sklearn
 spec:
   name: iris-predict
-  protocol: kfserving
+  protocol: kfserving # Activate the V2 protocol
   predictors:
   - graph:
       children: []
