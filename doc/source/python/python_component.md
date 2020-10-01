@@ -151,7 +151,7 @@ class ModelWithTags(object):
         return X
 
     def tags(self,X):
-    	return {"system":"production"}
+        return {"system":"production"}
 ```
 
 
@@ -218,7 +218,7 @@ $ curl localhost:5000/health/status
 Additionally, you can also use the `/health/ping` endpoint if you want a lightweight call that just checks that 
 the HTTP server is up:
 
-```0
+```console
 $ curl localhost:5000/health/ping
 pong%
 ```
@@ -346,7 +346,7 @@ class UserCustomException(Exception):
 
 By default, when using the data ndarray parameter, the conversion to ndarray (by default) converts all inner types into the same type. With models that may take as input arrays with different value types, you will be able to do so by overriding the `predict_raw` function yourself which gives you access to the raw request, and creating the numpy array as follows:
 
-```
+```python
 import numpy as np
 
 class Model:
@@ -465,7 +465,7 @@ class Model:
 
 #### Validation
 Output of developer-defined `metadata` method will be validated to follow the [kfserving dataplane proposal](https://github.com/kubeflow/kfserving/blob/master/docs/predict-api/v2/required_api.md#model-metadata) protocol, see [this](https://github.com/SeldonIO/seldon-core/issues/1638) GitHub issue for details:
-```
+```javascript
 $metadata_model_response =
 {
   "name" : $string,
@@ -476,7 +476,7 @@ $metadata_model_response =
 }
 ```
 with
-```
+```javascript
 $metadata_tensor =
 {
   "name" : $string,

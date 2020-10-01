@@ -29,7 +29,7 @@ All seldon-managed pods will be subject to a rolling update as part of this upgr
 
 The values.yaml for the seldon-core-operator helm chart has changed. The field `defaultRequestLoggerEndpointPrefix` is replaced by:
 
-```
+```yaml
   requestLogger:
     defaultEndpoint: 'http://default-broker'
 ```
@@ -46,13 +46,13 @@ As we moved to 1.x+ there are several breaking changes that need to be considere
 
 The deployments created by Seldon Core have been changed to follow a fixed scheme. It will now be:
 
-```
+```text
 <seldondeployment name>-<predictor name>-<podspec idx>-<container names>
 ```
 
 So for example:
 
-```
+```yaml
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
@@ -76,7 +76,7 @@ spec:
 
 For the above resource, one Deployment will be created with name:
 
-```
+```text
 rest-seldon-model-0-classifier
 ```
 

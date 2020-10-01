@@ -66,7 +66,7 @@ We now provide the ability to autoscale your Seldon deployments using Kubernetes
 
 In the above we can see, we added resource requests for the cpu:
 
-```
+```json
 "resources": {
     "requests": {
 	"cpu": "0.5"
@@ -76,7 +76,7 @@ In the above we can see, we added resource requests for the cpu:
 
 We added an HPA spec referring to the PodTemplateSpec:
 
-```
+```json
 "hpaSpecs":[
     {
 	"minReplicas": 1,

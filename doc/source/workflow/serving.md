@@ -19,7 +19,7 @@ There are several options for testing your model before deploying it.
 
 When you create your Python model, such as a file called `MyModel.py` with the contents:
 
-```
+```python
 class MyModel:
     def __init__(self):
         pass
@@ -52,7 +52,7 @@ hello world
 
 Now that our model microservice is running, we can send a request using curl:
 
-```
+```console
 > curl -X POST \
 >     -H 'Content-Type: application/json' \
 >     -d '{"data": { "ndarray": [[1,2,3,4]]}}' \
@@ -71,13 +71,13 @@ If you are building language models with other wrappers, you are able to run the
 
 For this you just have to run the docker client with the following command:
 
-```
+```console
 docker run --rm --name mymodel -p 5000:5000 mymodel:0.1
 ```
 
 This will run the model and export it on port 5000, so we can now send a request using CURL:
 
-```
+```console
 > curl -X POST \
 >     -H 'Content-Type: application/json' \
 >     -d '{"data": { "ndarray": [[1,2,3,4]]}}' \
@@ -111,34 +111,34 @@ This can be accessed through the endpoint `http://<ingress_url>/seldon/<namespac
 
 #### Ambassador REST
 
-Assuming Ambassador is exposed at ```<ambassadorEndpoint>``` and with a Seldon deployment name ```<deploymentName>```  in namespace ```<namespace>```::
+Assuming Ambassador is exposed at `<ambassadorEndpoint>` and with a Seldon deployment name `<deploymentName>`  in namespace `<namespace>`::
 
- * A REST endpoint will be exposed at : ```http://<ambassadorEndpoint>/seldon/<namespace>/<deploymentName>/api/v1.0/predictions```
+ * A REST endpoint will be exposed at : `http://<ambassadorEndpoint>/seldon/<namespace>/<deploymentName>/api/v1.0/predictions`
 
 #### Ambassador gRPC
 
-Assuming Ambassador is exposed at ```<ambassadorEndpoint>``` and with a Seldon deployment name ```<deploymentName>```:
+Assuming Ambassador is exposed at `<ambassadorEndpoint>` and with a Seldon deployment name `<deploymentName>`:
 
-  * A gRPC endpoint will be exposed at ```<ambassadorEndpoint>``` and you should send header metadata in your request with:
-    * key ```seldon``` and value ```<deploymentName>```.
-    * key ```namespace``` and value ```<namespace>```.
+  * A gRPC endpoint will be exposed at `<ambassadorEndpoint>` and you should send header metadata in your request with:
+    * key `seldon` and value `<deploymentName>`.
+    * key `namespace` and value `<namespace>`.
 
 ### Istio
 
 #### Istio REST
 
-Assuming the istio gateway is at ```<istioGateway>``` and with a Seldon deployment name ```<deploymentName>``` in namespace ```<namespace>```:
+Assuming the istio gateway is at `<istioGateway>` and with a Seldon deployment name `<deploymentName>` in namespace `<namespace>`:
 
- * A REST endpoint will be exposed at : ```http://<istioGateway>/seldon/<namespace>/<deploymentName>/api/v1.0/predictions```
+ * A REST endpoint will be exposed at : `http://<istioGateway>/seldon/<namespace>/<deploymentName>/api/v1.0/predictions`
 
 
 #### Istio gRPC
 
-Assuming the istio gateway is at ```<istioGateway>``` and with a Seldon deployment name ```<deploymentName>``` in namespace ```<namespace>```:
+Assuming the istio gateway is at `<istioGateway>` and with a Seldon deployment name `<deploymentName>` in namespace `<namespace>`:
 
-  * A gRPC endpoint will be exposed at ```<istioGateway>``` and you should send header metadata in your request with:
-    * key ```seldon``` and value ```<deploymentName>```.
-    * key ```namespace``` and value ```<namespace>```.
+  * A gRPC endpoint will be exposed at `<istioGateway>` and you should send header metadata in your request with:
+    * key `seldon` and value `<deploymentName>`.
+    * key `namespace` and value `<namespace>`.
 
 
 ### Client Implementations
@@ -147,7 +147,7 @@ Assuming the istio gateway is at ```<istioGateway>``` and with a Seldon deployme
 
 ##### Ambassador REST
 
-Assuming a SeldonDeployment ```mymodel``` with Ambassador exposed on 0.0.0.0:8003:
+Assuming a SeldonDeployment `mymodel` with Ambassador exposed on 0.0.0.0:8003:
 
 ```bash
 curl -v 0.0.0.0:8003/seldon/mymodel/api/v1.0/predictions -d '{"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[0,0,1,1]}}}' -H "Content-Type: application/json"

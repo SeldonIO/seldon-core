@@ -261,7 +261,7 @@ class TfServingProxy(object):
 
 These arguments can be set when deploying in a Seldon Deployment. An example can be found in the [MNIST TFServing example](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/tfserving-mnist/tfserving-mnist.ipynb) where the arguments are defined in the [SeldonDeployment](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/tfserving-mnist/mnist_tfserving_deployment.json.template)  which is partly show below:
 
-```
+```json
  "graph": {
     "name": "tfserving-proxy",
     "endpoint": {"type" : "REST"},

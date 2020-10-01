@@ -17,13 +17,13 @@ You need to ensure the namespace where your models will be served has:
 
 The following example applies the label `my-namespace` to the namespace for serving:
 
-```
+```console
 kubectl label namespace my-namespace serving.kubeflow.org/inferenceservice=enabled
 ```
 
 Create a gateway called `kubeflow-gateway` in namespace `my-namespace`:
 
-```
+```yaml
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:

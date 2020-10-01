@@ -124,7 +124,7 @@ Each data point that is sent to the Seldon Core model contains the following ide
 
 These identifiers are added on each request as follows:
 
-```
+```javascript
 seldon_request = {
     <data>: <current_batch_instance>,
     "meta": {

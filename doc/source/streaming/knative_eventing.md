@@ -14,7 +14,7 @@ Seldon Core implements the KNative Eventing Duck Typing requirements which allow
 
 An example of a trigger for a SeldonDeployment named "iris-deployment" can be created with the following format:
 
-```
+```yaml
 apiVersion: eventing.knative.dev/v1beta1
 kind: Trigger
 metadata:
@@ -42,7 +42,7 @@ In the case of every Seldon Deployment, the `status.addressable.url` is always t
 
 In the case of multiple predictors, or in the case that you want to send the Cloudevent through your ingress, you can actually create a trigger that overrides the URI. An example of this would be the following:
 
-```
+```yaml
 apiVersion: eventing.knative.dev/v1beta1
 kind: Trigger
 metadata:
@@ -63,7 +63,7 @@ Which would then create a trigger that would forward the messages of that type i
 
 In production you would have multiple services creating cloudevents from various different sources. However for testing, it's possible to send requests directly from your terminal to the KNative Eventing broker, by using the following `curl` docker image locally:
 
-```
+```bash
 kubectl run --quiet=true -it --rm curl --image=radial/busyboxplus:curl --restart=Never -- \
     curl -v "default-broker.default.svc.cluster.local" \
         -H "Ce-Id: 536808d3-88be-4077-9d7a-a3f162705f79" \
@@ -84,7 +84,7 @@ What this means is that you can create further triggers that could perform other
 
 THe triggers will have to match the cloudevent headers, which are standardised by the SeldonDEployment, and are of the following format:
 
-```
+```text
 Ce-Id: SeldonDeployment unique request ID
 Ce-Specversion: Version of the specversion used (default: 0.3)
 Ce-Type: seldon.<sdep_name>.<namespace>.response
@@ -93,7 +93,7 @@ Ce-Source: seldon.<sdep_name>.<namespace>
 
 This means that you could create a trigger for a seldon deployment of name `iris-deployment` in namespace `default`, such as the following example which woudl create an `event-display` pod that will print out the contents of that cloudevent:
 
-```
+```yaml
 ---
 # Trigger to send events to service above
 apiVersion: eventing.knative.dev/v1alpha1
