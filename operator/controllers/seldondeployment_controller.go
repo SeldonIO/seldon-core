@@ -53,6 +53,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscaling "k8s.io/api/autoscaling/v2beta1"
 	corev1 "k8s.io/api/core/v1"
+	policy "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -98,6 +99,7 @@ type components struct {
 	services              []*corev1.Service
 	hpas                  []*autoscaling.HorizontalPodAutoscaler
 	kedaScaledObjects     []*kedav1alpha1.ScaledObject
+	pdbs                  []*policy.PodDisruptionBudget
 	virtualServices       []*istio.VirtualService
 	destinationRules      []*istio.DestinationRule
 	defaultDeploymentName string
@@ -178,6 +180,24 @@ func createHpa(podSpec *machinelearningv1.SeldonPodSpec, deploymentName string, 
 	}
 
 	return &hpa
+}
+
+func createPdb(podSpec *machinelearningv1.SeldonPodSpec, deploymentName string, seldonId string, namespace string) *policy.PodDisruptionBudget {
+	pdb := policy.PodDisruptionBudget{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      deploymentName,
+			Namespace: namespace,
+			Labels:    map[string]string{machinelearningv1.Label_seldon_id: seldonId},
+		},
+		Spec: policy.PodDisruptionBudgetSpec{
+			MinAvailable:   podSpec.PdbSpec.MinAvailable,
+			MaxUnavailable: podSpec.PdbSpec.MaxUnavailable,
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{machinelearningv1.Label_seldon_id: seldonId},
+			},
+		},
+	}
+	return &pdb
 }
 
 // Create istio virtual service and destination rule.
@@ -496,6 +516,11 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 				} else {
 					deploy.Spec.Replicas = mlDep.Spec.Replicas
 				}
+			}
+
+			// Add PDB if needed
+			if cSpec.PdbSpec != nil {
+				c.pdbs = append(c.pdbs, createPdb(cSpec, depName, seldonId, namespace))
 			}
 
 			// create services for each container
@@ -1330,6 +1355,86 @@ func (r *SeldonDeploymentReconciler) createHpas(components *components, instance
 	return ready, nil
 }
 
+// Create Services specified in components.
+func (r *SeldonDeploymentReconciler) createPdbs(components *components, instance *machinelearningv1.SeldonDeployment, log logr.Logger) (bool, error) {
+	ready := true
+	pdbSet := make(map[string]bool)
+	for _, pdb := range components.pdbs {
+		if err := ctrl.SetControllerReference(instance, pdb, r.Scheme); err != nil {
+			return ready, err
+		}
+		pdbSet[pdb.Name] = true
+		found := &policy.PodDisruptionBudget{}
+		err := r.Get(context.TODO(), types.NamespacedName{Name: pdb.Name, Namespace: pdb.Namespace}, found)
+		if err != nil && errors.IsNotFound(err) {
+			ready = false
+			log.Info("Creating PDB", "namespace", pdb.Namespace, "name", pdb.Name)
+			err = r.Create(context.TODO(), pdb)
+			if err != nil {
+				return ready, err
+			}
+			r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsCreatePDB, "Created PodDisruptionBudget %q", pdb.GetName())
+		} else if err != nil {
+			return ready, err
+		} else {
+			// Update the found object and write the result back if there are any changes
+			if !equality.Semantic.DeepEqual(pdb.Spec, found.Spec) {
+
+				desiredPdb := found.DeepCopy()
+				found.Spec = pdb.Spec
+
+				log.Info("Updating PDB", "namespace", pdb.Namespace, "name", pdb.Name)
+				err = r.Update(context.TODO(), found)
+				if err != nil {
+					return ready, err
+				}
+
+				// Check if what came back from server modulo the defaults applied by k8s is the same or not
+				if !equality.Semantic.DeepEqual(desiredPdb.Spec, found.Spec) {
+					ready = false
+					r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsUpdatePDB, "Updated HorizontalPodAutoscaler %q", pdb.GetName())
+					//For debugging we will show the difference
+					diff, err := kmp.SafeDiff(desiredPdb.Spec, found.Spec)
+					if err != nil {
+						log.Error(err, "Failed to diff")
+					} else {
+						log.Info(fmt.Sprintf("Difference in PDBs: %v", diff))
+					}
+				} else {
+					log.Info("The PDBs are the same - api server defaults ignored")
+				}
+
+			} else {
+				log.Info("Found identical PDB", "namespace", found.Namespace, "name", found.Name, "status", found.Status)
+			}
+		}
+
+	}
+
+	// For all Deployments check if any PDBs exist and they are not required
+	for _, deploy := range components.deployments {
+		if _, ok := pdbSet[deploy.Name]; !ok {
+			found := &policy.PodDisruptionBudget{}
+			err := r.Get(context.TODO(), types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
+			if err != nil {
+				if !errors.IsNotFound(err) {
+					return false, err
+				}
+				// Do nothing
+			} else {
+				// Delete PDB
+				log.Info("Deleting pdb", "name", deploy.Name)
+				err := r.Delete(context.TODO(), found, client.PropagationPolicy(metav1.DeletePropagationForeground))
+				if err != nil {
+					return ready, err
+				}
+			}
+		}
+	}
+
+	return ready, nil
+}
+
 func jsonEquals(a, b interface{}) (bool, error) {
 	b1, err := json.Marshal(a)
 	if err != nil {
@@ -1513,6 +1618,24 @@ func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinele
 				}
 				r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsDeleteHPA, "Deleted HorizontalPodAutoscaler %q", foundHpa.GetName())
 			}
+
+			// Delete any dangling PDBs
+			foundPdb := &policy.PodDisruptionBudget{}
+			err = r.Get(context.TODO(), types.NamespacedName{Name: found.Name, Namespace: found.Namespace}, foundPdb)
+			if err != nil {
+				if !errors.IsNotFound(err) {
+					return err
+				}
+				// Do nothing
+			} else {
+				// Delete PDB that should not exist
+				log.Info("Deleting pdb for removed predictor", "name", foundPdb.Name)
+				err := r.Delete(context.TODO(), foundPdb, client.PropagationPolicy(metav1.DeletePropagationForeground))
+				if err != nil {
+					return err
+				}
+				r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsDeletePDB, "Deleted PodDisruptionBudget %q", foundPdb.GetName())
+			}
 		}
 	}
 	if remaining == 0 {
@@ -1554,6 +1677,8 @@ func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinele
 // +kubebuilder:rbac:groups=autoscaling,resources=horizontalpodautoscalers/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=keda.sh/v1alpha1,resources=ScaledObject,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=keda.sh/v1alpha1,resources=ScaledObject/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=policy,resources=poddisruptionbudgets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=policy,resources=poddisruptionbudgets/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=machinelearning.seldon.io,resources=seldondeployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=machinelearning.seldon.io,resources=seldondeployments/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=machinelearning.seldon.io,resources=seldondeployments/finalizers,verbs=get;update;patch
@@ -1650,6 +1775,13 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		}
 	}
 
+	pdbsReady, err := r.createPdbs(components, instance, log)
+	if err != nil {
+		r.Recorder.Eventf(instance, corev1.EventTypeWarning, constants.EventsInternalError, err.Error())
+		r.updateStatusForError(instance, err, log)
+		return ctrl.Result{}, err
+	}
+
 	deploymentsReady, err := r.createDeployments(components, instance, log)
 	if err != nil {
 		r.Recorder.Eventf(instance, corev1.EventTypeWarning, constants.EventsInternalError, err.Error())
@@ -1666,7 +1798,7 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		}
 	}
 
-	if deploymentsReady && servicesReady && hpasReady && (!withKedaSupport || kedaScaledObjectsReady) {
+	if deploymentsReady && servicesReady && hpasReady && pdbsReady && (!withKedaSupport || kedaScaledObjectsReady) {
 		instance.Status.State = machinelearningv1.StatusStateAvailable
 		instance.Status.Description = ""
 	} else {

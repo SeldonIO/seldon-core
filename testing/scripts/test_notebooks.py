@@ -188,3 +188,8 @@ class TestNotebooks(object):
         except:
             run("make install_seldon", shell=True, check=False)
             raise
+
+    def test_disruption_budgets(self):
+        create_and_run_script(
+            "../../examples/models/disruption_budgets", "pdbs_example"
+        )

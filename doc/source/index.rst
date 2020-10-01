@@ -110,6 +110,7 @@ Documentation Index
    Payload Logging with ELK <analytics/logging.md>
    Distributed Tracing with Jaeger <graph/distributed-tracing.md>
    Replica Scaling  <graph/scaling.md>
+   Budgeting Disruptions <graph/disruption-budgets.md>
    Custom Inference Servers <servers/custom.md>
 
 .. toctree::
@@ -136,18 +137,6 @@ Documentation Index
    Ambassador Ingress <ingress/ambassador.md>
    Istio Ingress <ingress/istio.md>
    OpenShift <ingress/openshift.md>
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Production
-
-   Supported API Protocols <graph/protocols.md>
-   CI/CD MLOps at Scale <analytics/cicd-mlops.md>
-   Metrics with Prometheus <analytics/analytics.md>
-   Payload Logging with ELK <analytics/logging.md>
-   Distributed Tracing with Jaeger <graph/distributed-tracing.md>
-   Replica Scaling  <graph/scaling.md>
-   Custom Inference Servers <servers/custom.md>
 
 .. toctree::
    :maxdepth: 1
