@@ -157,7 +157,7 @@ def validate_model_metadata(data: Dict) -> Dict:
 
     Raises
     ------
-    SeldonInvalidMetadataError if data cannot be properly validated
+    SeldonInvalidMetadataError: if data cannot be properly validated
 
     Notes
     -----

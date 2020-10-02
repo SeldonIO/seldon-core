@@ -210,7 +210,7 @@ class ModelWithHealthEndpoint(object):
 
 When you use `seldon-core-microservice` to start the HTTP server, you can verify that the model is up and running by 
 checking the `/health/status` endpoint:
-```
+```console
 $ curl localhost:5000/health/status
 {"data":{"names":[],"tensor":{"shape":[2],"values":[1,2]}},"meta":{}}
 ```
@@ -404,7 +404,7 @@ parsed as an integer tensor.
 
 To illustrate the above, we can consider the following example:
 
-```JSON
+```json
 {
   "data": {
     "ndarray": [0, 1, 2, 3]
@@ -469,7 +469,7 @@ Output of developer-defined `metadata` method will be validated to follow the [k
 $metadata_model_response =
 {
   "name" : $string,
-  "versions" : [ $string, ... ] #optional,
+  "versions" : [ $string, ... ], // optional
   "platform" : $string,
   "inputs" : [ $metadata_tensor, ... ],
   "outputs" : [ $metadata_tensor, ... ]

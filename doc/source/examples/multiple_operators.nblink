@@ -1,3 +1,4 @@
 {
-  "path": "../../../notebooks/multiple_operators.ipynb"
+  "path": "../../../notebooks/multiple_operators.ipynb",
+  "extra-media": ["../../../notebooks/seldon_core_setup.ipynb"]
 }
