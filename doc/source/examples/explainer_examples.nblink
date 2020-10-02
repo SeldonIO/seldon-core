@@ -1,3 +1,4 @@
 {
-  "path": "../../../notebooks/explainer_examples.ipynb"
+  "path": "../../../notebooks/explainer_examples.ipynb",
+  "extra-media": ["../../../notebooks/seldon_core_setup.ipynb"]
 }

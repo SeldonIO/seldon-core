@@ -307,7 +307,7 @@ You can easily define metadata for your models that is compatible with [kfservin
 $metadata_model_response =
 {
   "name" : $string,
-  "versions" : [ $string, ... ] #optional,
+  "versions" : [ $string, ... ], // optional
   "platform" : $string,
   "inputs" : [ $metadata_tensor, ... ],
   "outputs" : [ $metadata_tensor, ... ]

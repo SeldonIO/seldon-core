@@ -57,11 +57,27 @@ extensions = [
     "sphinxcontrib.apidoc",
     "nbsphinx",
     "nbsphinx_link",  # for linking notebooks from outside sphinx source root
-    # To fix `ipython3` issue
+    # Fix `ipython3` warning
     # https://github.com/spatialaudio/nbsphinx/issues/24
     "IPython.sphinxext.ipython_console_highlighting",
 ]
 
+# Ignore py:class warnings about 3rd party deps or ignored packages (e.g.
+# generated proto)
+# https://stackoverflow.com/a/30624034/5015573
+nitpick_ignore = [
+    ("py:class", "google.protobuf.any_pb2.Any"),
+    ("py:class", "google.protobuf.struct_pb2.ListValue"),
+    ("py:class", "gunicorn.app.base.BaseApplication"),
+    ("py:class", "numpy.ndarray"),
+    ("py:class", "pandas.core.frame.DataFrame"),
+    ("py:class", "proto.prediction_pb2.DefaultData"),
+    ("py:class", "proto.prediction_pb2.Feedback"),
+    ("py:class", "proto.prediction_pb2.SeldonMessage"),
+    ("py:class", "proto.prediction_pb2.SeldonMessageList"),
+    ("py:class", "proto.prediction_pb2.SeldonModelMetadata"),
+    ("py:data", "google.protobuf.any_pb2.Any"),
+]
 
 # nbsphinx settings
 # nbsphinx_execute = 'auto'

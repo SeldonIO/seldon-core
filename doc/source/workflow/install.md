@@ -95,7 +95,7 @@ The [Kustomize](https://github.com/kubernetes-sigs/kustomize) installation can b
 
 To use the template directly, there is a Makefile which has a set of useful commands:
 
-For kubernetes clusters of version higher than 1.15, make sure you comment the patch_object_selector [here](https://github.com/SeldonIO/seldon-core/blob/master/operator/config/webhook/kustomization.yaml#L8).
+For kubernetes clusters of version higher than 1.15, make sure you [comment the patch_object_selector here](https://github.com/SeldonIO/seldon-core/blob/master/operator/config/webhook/kustomization.yaml#L8).
 
 Install cert-manager
 
@@ -210,7 +210,7 @@ helm install seldon-controllerid seldon-core-operator  --repo https://storage.go
 
 We set `crd.create=true` to create the CRD. If you are installing a Seldon Core Operator after you have installed a previous Seldon Core Operator on the same cluster you will need to set `crd.create=false`.
 
-For kustomize you will need to uncomment the patch_object_selector [here](https://github.com/SeldonIO/seldon-core/blob/master/operator/config/webhook/kustomization.yaml)
+For kustomize you will need to [uncomment the patch_object_selector here](https://github.com/SeldonIO/seldon-core/blob/master/operator/config/webhook/kustomization.yaml)
 
 #### Kustomize
 

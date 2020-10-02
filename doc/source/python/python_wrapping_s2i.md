@@ -262,39 +262,41 @@ class TfServingProxy(object):
 These arguments can be set when deploying in a Seldon Deployment. An example can be found in the [MNIST TFServing example](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/tfserving-mnist/tfserving-mnist.ipynb) where the arguments are defined in the [SeldonDeployment](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/tfserving-mnist/mnist_tfserving_deployment.json.template)  which is partly show below:
 
 ```json
- "graph": {
+{
+  "graph": {
     "name": "tfserving-proxy",
-    "endpoint": {"type" : "REST"},
+    "endpoint": { "type": "REST" },
     "type": "MODEL",
     "children": [],
     "parameters": [
-        {
-            "name":"grpc_endpoint",
-            "type":"STRING",
-            "value":"localhost:8000"
-        },
-        {
-            "name":"model_name",
-            "type":"STRING",
-            "value":"mnist-model"
-        },
-        {
-            "name":"model_output",
-            "type":"STRING",
-            "value":"scores"
-        },
-        {
-            "name":"model_input",
-            "type":"STRING",
-            "value":"images"
-        },
-        {
-            "name":"signature_name",
-            "type":"STRING",
-            "value":"predict_images"
-        }
+      {
+        "name": "grpc_endpoint",
+        "type": "STRING",
+        "value": "localhost:8000"
+      },
+      {
+        "name": "model_name",
+        "type": "STRING",
+        "value": "mnist-model"
+      },
+      {
+        "name": "model_output",
+        "type": "STRING",
+        "value": "scores"
+      },
+      {
+        "name": "model_input",
+        "type": "STRING",
+        "value": "images"
+      },
+      {
+        "name": "signature_name",
+        "type": "STRING",
+        "value": "predict_images"
+      }
     ]
-},
+  }
+}
 ```
 
 
