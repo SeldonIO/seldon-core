@@ -1,0 +1,81 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: seldon-model-ray-proxy
+  namespace: distributed-roberta
+spec:
+  name: mock-deployment
+  predictors:
+  - componentSpecs:
+    - spec:
+        volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+        containers:
+        - name: model
+          image: seldonio/distributed-roberta:0.1
+          imagePullPolicy: Always
+          securityContext:
+            runAsUser: 0
+          command: [ "/bin/bash", "-c", "--" ]
+          args:
+            - "ray start --node-ip-address=$MY_POD_IP --num-cpus=0 --address=$RAY_HEAD_SERVICE_HOST:$RAY_HEAD_SERVICE_PORT_REDIS_PRIMARY --object-manager-port=12345 --node-manager-port=12346 &&
+              seldon-core-microservice $MODEL_NAME $API_TYPE"
+          ports:
+            - containerPort: 12345 # Ray internal communication.
+            - containerPort: 12346 # Ray internal communication.
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: dshm
+          env:
+          - name: MY_POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: SELDON_LOG_LEVEL
+            value: DEBUG
+          - name: GUNICORN_THREADS
+            value: "1"
+          - name: RAY_PROXY
+            value: "true"
+          - name: BATCH_SIZE
+            value: "50"
+          - name: NUM_ACTORS
+            value: "10"
+    graph:
+      name: model
+      type: MODEL
+    name: default
+    replicas: 1
+
+---
+
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: seldon-model
+  namespace: distributed-roberta
+spec:
+  name: mock-deployment
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - name: model
+          image: seldonio/distributed-roberta:0.1
+          imagePullPolicy: Always
+          securityContext:
+            runAsUser: 0
+          env:
+          - name: SELDON_LOG_LEVEL
+            value: DEBUG
+          - name: GUNICORN_THREADS
+            value: "1"
+          - name: RAY_PROXY
+            value: "false"
+    graph:
+      name: model
+      type: MODEL
+    name: default
+    replicas: 1
