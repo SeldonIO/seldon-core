@@ -1,8 +1,8 @@
 ---
 global:
-  scrape_interval: 1s
-  scrape_timeout: 1s
-  evaluation_interval: 1s
+  scrape_interval: 6s
+  scrape_timeout: 5s
+  evaluation_interval: 1m
 rule_files:
   - /etc/prometheus-rules/*.rules.yml
   - /etc/prometheus-rules/model-usage/*.rules.yml
