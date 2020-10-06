@@ -58,7 +58,7 @@ data:
               "image": "seldonio/mlflowserver_grpc",
               "defaultImageVersion": "1.3.0-dev"
             }
-        }
+        },
         "TRITON_SERVER": {
             "rest": {
               "image": "nvcr.io/nvidia/tritonserver",
