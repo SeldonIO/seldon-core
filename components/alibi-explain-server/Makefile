@@ -42,7 +42,7 @@ build_apis: get_apis install_requirements
 	sed -i "s/from proto/from alibiexplainer.proto/g" alibiexplainer/proto/prediction_pb2_grpc.py
 
 dev_install:
-	pip install -e .[test]
+	pip install -e .[test] --no-binary protobuf
 
 test: type_check
 	pytest -W ignore
