@@ -1,3 +1,4 @@
 {
-  "path": "../../../examples/models/alibaba_ack_deep_mnist/alibaba_cloud_ack_deep_mnist.ipynb"
+  "path": "../../../examples/models/alibaba_ack_deep_mnist/alibaba_cloud_ack_deep_mnist.ipynb",
+  "extra-media": ["../../../examples/models/alibaba_ack_deep_mnist/images"]
 }

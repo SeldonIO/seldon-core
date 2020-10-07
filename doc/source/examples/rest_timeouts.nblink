@@ -1,4 +1,3 @@
 {
-  "path": "../../../notebooks/timeouts.ipynb",
-  "extra-media": ["../../../notebooks/seldon_core_setup.ipynb"]
+  "path": "../../../notebooks/timeouts.ipynb"
 }

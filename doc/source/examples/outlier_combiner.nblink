@@ -1,3 +1,4 @@
 {
- "path": "../../../examples/outliers/alibi-detect-combiner/notebook.ipynb"
+ "path": "../../../examples/outliers/alibi-detect-combiner/notebook.ipynb",
+  "extra-media": ["../../../examples/outliers/alibi-detect-combiner/img"]
 }

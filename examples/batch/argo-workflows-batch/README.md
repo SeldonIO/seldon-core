@@ -14,12 +14,12 @@ Dependencies:
 #### Install Seldon Core
 Use the notebook to [set-up Seldon Core with Ambassador or Istio Ingress](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html).
 
-Note: If running with KIND you need to make sure do follow [these steps](https://github.com/argoproj/argo/issues/2376#issuecomment-595593237) as workaround to the `/.../docker.sock` known issue.
+ote: If running with KIND you need to make sure do follow [these steps](https://github.com/argoproj/argo/issues/2376#issuecomment-595593237) as workaround to the `/.../docker.sock` known issue.
 
-#### Set up Minio in your cluster
-Use the notebook to [set-up Minio in your cluster](https://docs.seldon.io/projects/seldon-core/en/latest/examples/minio_setup.html).
+### Set up Minio in your cluster
+se the notebook to [set-up Minio in your cluster](https://docs.seldon.io/projects/seldon-core/en/latest/examples/minio_setup.html).
 
-#### Copy the Minio Secret to namespace
+### Copy the Minio Secret to namespace
 
 We need to re-use the minio secret for the batch job, so this can be done by just copying the minio secret created in the `minio-system`
 
