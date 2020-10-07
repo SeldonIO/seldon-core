@@ -1,4 +1,3 @@
 {
-  "path": "../../../notebooks/max_grpc_msg_size.ipynb",
-  "extra-media": ["../../../notebooks/seldon_core_setup.ipynb"]
+  "path": "../../../notebooks/max_grpc_msg_size.ipynb"
 }

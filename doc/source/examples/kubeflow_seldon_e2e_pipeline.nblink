@@ -1,3 +1,4 @@
 {
-  "path": "../../../examples/kubeflow/kubeflow_seldon_e2e_pipeline.ipynb"
+  "path": "../../../examples/kubeflow/kubeflow_seldon_e2e_pipeline.ipynb",
+  "extra-media": ["../../../examples/kubeflow/img"]
 }

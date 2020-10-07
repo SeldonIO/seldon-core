@@ -1,3 +1,4 @@
 {
-  "path": "../../../examples/models/sagemaker/sagemaker_seldon_scikit_iris_example.ipynb"
+  "path": "../../../examples/models/sagemaker/sagemaker_seldon_scikit_iris_example.ipynb",
+  "extra-media": ["../../../examples/models/sagemaker/sagemaker-scikit-iris-train.png"]
 }

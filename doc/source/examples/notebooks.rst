@@ -3,17 +3,18 @@ Notebooks
 =========
 
 Seldon Core Setup
-----
+-----------------
 
 .. toctree::
    :titlesonly:
 
    Install Seldon Core <seldon_core_setup>
+   Install MinIO <minio_setup>
 
 
 
 Prepackaged Inference Server Examples
------
+-------------------------------------
 
 .. toctree::
    :titlesonly:
@@ -25,21 +26,20 @@ Prepackaged Inference Server Examples
    Deploy Pre-packaged Model Server with Cluster's MinIO <minio-sklearn>
 
 Python Language Wrapper Examples
------
+--------------------------------
 
 .. toctree::
    :titlesonly:
 
    SKLearn Spacy NLP <sklearn_spacy_text_classifier_example>
    SKLearn Iris Classifier <iris>
-   SKLearn MNIST <sklearn_mnist>
    Sagemaker SKLearn Example <sagemaker_sklearn>   
    TFserving MNIST <tfserving_mnist>
    Statsmodels Holt-Winter's time-series model <statsmodels>
    Runtime Metrics & Tags <runtime_metrics_tags>
 
 Specialised Framework Examples
------
+------------------------------
 
 .. toctree::
    :titlesonly:
@@ -47,18 +47,16 @@ Specialised Framework Examples
    NVIDIA TensorRT MNIST <tensorrt>
    OpenVINO ImageNet <openvino>
    OpenVINO ImageNet Ensemble <openvino_ensemble>
-   ONNX ResNet with Intel nGraph<onnx_resnet>
 
 
 Incubating Projects Examples
------
+----------------------------
 
 .. toctree::
    :titlesonly:
 
    Kubeflow Seldon E2E Pipeline <kubeflow_seldon_e2e_pipeline>
    H2O Java MoJo <h2o_mojo>
-   Deploy your R models with the R <deep_mnist>
    Outlier Detection with Combiner <outlier_combiner>
    Stream Processing with KNative Eventing <knative_eventing_streaming>
    Kafka CIFAR10 <cifar10_kafka>
@@ -66,7 +64,7 @@ Incubating Projects Examples
 
 
 Cloud-Specific Examples
------
+-----------------------
 
 .. toctree::
    :titlesonly:
@@ -77,7 +75,7 @@ Cloud-Specific Examples
    Alibaba Cloud Tensorflow Deep MNIST <alibaba_ack_deep_mnist>
 
 Advanced Machine Learning Insights
------
+----------------------------------
 
 .. toctree::
    :titlesonly:
@@ -87,7 +85,7 @@ Advanced Machine Learning Insights
    Outlier Detection on CIFAR10 <outlier_cifar10>
   
 Batch Processing with Seldon Core
------
+---------------------------------
 
 .. toctree::
    :titlesonly:
@@ -97,7 +95,7 @@ Batch Processing with Seldon Core
 
 
 MLOps: Scaling and Monitoring and Observability
------
+-----------------------------------------------
 
 .. toctree::
    :titlesonly:
@@ -112,12 +110,11 @@ MLOps: Scaling and Monitoring and Observability
    
 
 Production Configurations and Integrations
------
+------------------------------------------
 
 .. toctree::
    :titlesonly:
   
-   Custom Endpoints <custom_endpoints>
    Example Helm Deployments <helm_examples>
    Max gRPC Message Size <max_grpc_msg_size>
    REST timeouts <rest_timeouts>
@@ -126,16 +123,15 @@ Production Configurations and Integrations
    Custom Protobuf Data Example <customdata_example>
 
 Complex Graph Examples
------
+----------------------
 
 .. toctree::
    :titlesonly:
   
-   Combiner Example <combiner>
    Chainer MNIST <chainer_mnist>
 
 Ingress
------
+-------
 
 .. toctree::
    :titlesonly:
@@ -148,7 +144,7 @@ Ingress
    Istio Examples <istio_examples>   
 
 Infrastructure
------
+--------------
 
 .. toctree::
    :titlesonly:
@@ -157,7 +153,7 @@ Infrastructure
    
 
 Benchmarking and Load Tests
------
+---------------------------
 
 .. toctree::
    :titlesonly:

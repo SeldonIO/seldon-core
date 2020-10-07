@@ -1,3 +1,4 @@
 {
-  "path": "../../../components/outlier-detection/cifar10/cifar10_outlier.ipynb"
+  "path": "../../../components/outlier-detection/cifar10/cifar10_outlier.ipynb",
+  "extra-media": ["../../../components/outlier-detection/cifar10/demo.png"]
 }

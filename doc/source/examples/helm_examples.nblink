@@ -1,4 +1,4 @@
 {
   "path": "../../../notebooks/helm_examples.ipynb",
-  "extra-media": ["../../../notebooks/seldon_core_setup.ipynb"]
+  "extra-media": ["../../../notebooks/images"]
 }

@@ -1,4 +1,3 @@
 {
-  "path": "../../../notebooks/seldon_client.ipynb",
-  "extra-media": ["../../../notebooks/seldon_core_setup.ipynb"]
+  "path": "../../../notebooks/seldon_client.ipynb"
 }

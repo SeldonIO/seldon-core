@@ -5,13 +5,13 @@ Seldon Core
 An open source platform to deploy your machine learning models on Kubernetes at massive scale.
 
 Overview
------
+--------
 Seldon core converts your ML models (Tensorflow, Pytorch, H2o, etc.) or language wrappers (Python, Java, etc.) into production REST/GRPC microservices.
 
 Seldon handles scaling to thousands of production machine learning models and provides advanced machine learning capabilities out of the box including Advanced Metrics, Request Logging, Explainers, Outlier Detectors, A/B Tests, Canaries and more.
 
 Quick Links
------
+-----------
 
 * Read the `Seldon Core Documentation <./>`_
 * Join our `community Slack <https://join.slack.com/t/seldondev/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU>`_ to ask any questions
@@ -26,7 +26,7 @@ Quick Links
    :align: center
 
 Documentation Index
-----
+-------------------
 
 .. toctree::
    :maxdepth: 1
