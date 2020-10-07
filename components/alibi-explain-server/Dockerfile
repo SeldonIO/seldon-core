@@ -12,7 +12,7 @@ COPY setup.py setup.py
 COPY alibiexplainer alibiexplainer
 COPY README.md README.md
 
-RUN pip install .
+RUN pip install . --no-binary protobuf
 
 RUN chmod -R a+rwx /opt/app-root/lib/python3.6
 
