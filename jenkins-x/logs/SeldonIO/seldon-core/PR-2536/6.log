@@ -1,0 +1,878 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-2536-no-4gwrh-6[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-mwnwb[0m
+{"level":"info","ts":1602181430.7570055,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1602181430.757711,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2536-no-4gwrh-6[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-zh5mv[0m
+{"level":"info","ts":1602181431.8063612,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1602181431.809294,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2536-no-4gwrh-6[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2536-no-4gwrh-6[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-t7xz4[0m
+{"level":"info","ts":1602181438.1468906,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1602181438.1503987,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2536-no-4gwrh-6[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-2536-no-4gwrh-fwtxq[0m
+{"level":"info","ts":1602181438.48997,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1602181443.9812405,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2536-no-4gwrh-6[0m stage [32mpr-build-comment[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2536-no-4gwrh-6[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:2305d73927b135af1627f6e921cfb51a65fec374,2536:4f3c2ddc8fbed71bfde01d209c43fd0aaf934b7a
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch origin --unshallow 4f3c2ddc8fbed71bfde01d209c43fd0aaf934b7a: 2305d73927b135af1627f6e921cfb51a65fec374:
+DEBUG: ran git fetch --unshallow origin 4f3c2ddc8fbed71bfde01d209c43fd0aaf934b7a: 2305d73927b135af1627f6e921cfb51a65fec374: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard 2305d73927b135af1627f6e921cfb51a65fec374
+DEBUG: ran git reset --hard 2305d73927b135af1627f6e921cfb51a65fec374 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git merge 4f3c2ddc8fbed71bfde01d209c43fd0aaf934b7a
+DEBUG: ran git merge 4f3c2ddc8fbed71bfde01d209c43fd0aaf934b7a in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git log --format=%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%s%n%b%x1e 2305d73927b135af1627f6e921cfb51a65fec374..HEAD
+Merged SHA 8e97393941783e6367a28259ffb31a52569c5fcd with commit message 'Merge commit '4f3c2ddc8fbed71bfde01d209c43fd0aaf934b7a'' into base branch master
+Merged SHA 4f3c2ddc8fbed71bfde01d209c43fd0aaf934b7a with commit message 'Updated to have readme nb' into base branch master
+Merged SHA f04bbf00fbb0230f032c5d65bce832e9a5dcc175 with commit message 'Updated to have readme nb' into base branch master
+Merged SHA 4c8ef2bc34ec8eb44d259c5970f135c279b72c3c with commit message 'Updated nblink' into base branch master
+Merged SHA fda3a968e19f83a57a3f459758e2a1be204756aa with commit message 'Updated feedback metrics server for the tests' into base branch master
+Merged SHA ef5d34dc784a40d0cc1db51e5ef4005046ae2ddc with commit message 'Added test for ad server' into base branch master
+Merged SHA 0de1c30b706629bf93a9877ee1d2aa9cb3061ef0 with commit message 'Updated setup.pyto include dependency guards' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-2536-no-4gwrh-6[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=2536
++ BUILD_NUMBER=6
++ PIPELINE_CONTEXT=notebooks
+++ cat
++++ date
++ COMMENT_MSG='Thu Oct  8 18:24:13 UTC 2020
+The logs for [notebooks] [6] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2536/6.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2536 --build=6'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=2536 '--comment=Thu Oct  8 18:24:13 UTC 2020
+The logs for [notebooks] [6] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2536/6.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2536 --build=6'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2536-no-4gwrh-6[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-2536-no-4gwrh-g8s9s[0m
+{"level":"info","ts":1602181455.9272218,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1602181455.9317966,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2536-no-4gwrh-6[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-2536-no-4gwrh-74b4s[0m
+{"level":"info","ts":1602181456.294932,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1602181456.812172,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2536-no-4gwrh-6[0m stage [32mend-to-end[0m and container [32mstep-credential-initializer-4dwrd[0m
+{"level":"info","ts":1602181462.01891,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1602181462.0195615,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2536-no-4gwrh-6[0m stage [32mend-to-end[0m and container [32mstep-working-dir-initializer-zmjrp[0m
+{"level":"info","ts":1602181463.5481358,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1602181463.5497947,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2536-no-4gwrh-6[0m stage [32mend-to-end[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2536-no-4gwrh-6[0m stage [32mend-to-end[0m and container [32mstep-create-dir-workspace-zlxdg[0m
+{"level":"info","ts":1602181470.9486322,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1602181470.9511883,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2536-no-4gwrh-6[0m stage [32mend-to-end[0m and container [32mstep-source-copy-workspace-z6tzr[0m
+{"level":"info","ts":1602181471.3306394,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1602181474.9607692,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2536-no-4gwrh-6[0m stage [32mend-to-end[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2536-no-4gwrh-6[0m stage [32mend-to-end[0m and container [32mstep-test-end-to-end[0m
+Test run type is: [notebooks]
+Starting Docker: docker.
+[SETUP] Waiting for Docker to be ready, sleeping for 1 seconds ...
+kind create cluster --config ../resources/kind_config.yaml
+Creating cluster "kind" ...
+ • Ensuring node image (kindest/node:v1.16.3) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.16.3) 🖼
+ • Preparing nodes 📦  ...
+ ✓ Preparing nodes 📦
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+ • Joining worker nodes 🚜  ...
+ ✓ Joining worker nodes 🚜
+Set kubectl context to "kind-kind"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-kind
+
+Thanks for using kind! 😊
+`kind get kubeconfig-path` is deprecated!
+
+KIND will export and merge kubeconfig like kops, minikube, etc.
+This command is now unnecessary and will be removed in a future release.
+
+For more info see: https://github.com/kubernetes-sigs/kind/issues/1060
+See also the output of `kind create cluster`
+
+Files changed in python folder:
+SKIPPING PYTHON IMAGE BUILD...
+Files changed in operator folder:
+SKIPPING OPERATOR IMAGE BUILD...
+Files changed in engine folder:
+SKIPPING ENGINE IMAGE BUILD...
+Files changed in executor folder:
+SKIPPING EXECUTOR IMAGE BUILD...
+Build test models
+make -C ../docker/fixed-model kind_load_images
+make[1]: Entering directory '/workspace/source/testing/docker/fixed-model'
+s2i build -E environment_rest_v1 . seldonio/seldon-core-s2i-python3:0.15 seldonio/fixed-model:0.1
+---> Installing application source...
+Build completed successfully
+s2i build -E environment_rest_v2 . seldonio/seldon-core-s2i-python3:0.15 seldonio/fixed-model:0.2
+---> Installing application source...
+Build completed successfully
+kind load -v 3 docker-image seldonio/fixed-model:0.1
+Image: "seldonio/fixed-model:0.1" with ID "sha256:39e51e0ec384e05df8aab7edb9fe78a8d45ec587fee6092b8e0c8d638639df10" not present on node "kind-control-plane"
+Image: "seldonio/fixed-model:0.1" with ID "sha256:39e51e0ec384e05df8aab7edb9fe78a8d45ec587fee6092b8e0c8d638639df10" not present on node "kind-worker"
+kind load -v 3 docker-image seldonio/fixed-model:0.2
+Image: "seldonio/fixed-model:0.2" with ID "sha256:19b8591499250cda29bc80cd34ffd4e3ed5d00d15f98d3785574f6bc681c6f54" not present on node "kind-control-plane"
+Image: "seldonio/fixed-model:0.2" with ID "sha256:19b8591499250cda29bc80cd34ffd4e3ed5d00d15f98d3785574f6bc681c6f54" not present on node "kind-worker"
+make[1]: Leaving directory '/workspace/source/testing/docker/fixed-model'
+make -C ../docker/echo-model kind_load_image
+make[1]: Entering directory '/workspace/source/testing/docker/echo-model'
+s2i build \
+	-E environment_rest \
+	.\
+	seldonio/seldon-core-s2i-python3:1.1.1-SNAPSHOT\
+	seldonio/echo-model:0.1
+---> Installing application source...
+Build completed successfully
+kind load -v 3 docker-image seldonio/echo-model:0.1
+Image: "seldonio/echo-model:0.1" with ID "sha256:4f307405b72b139aeeb230486d75d9cf3ba7028937b2b5048f8aec9aa5ebc7ba" not present on node "kind-control-plane"
+Image: "seldonio/echo-model:0.1" with ID "sha256:4f307405b72b139aeeb230486d75d9cf3ba7028937b2b5048f8aec9aa5ebc7ba" not present on node "kind-worker"
+make[1]: Leaving directory '/workspace/source/testing/docker/echo-model'
+Files changed in prepackaged folder:
+SKIPPING PREPACKAGED IMAGE BUILD...
+Files changed in alibi explain folder:
+SKIPPING ALIBI EXPLAIN IMAGE BUILD...
+Files changed in alibi detect folder:
+components/alibi-detect-server/setup.py
+cd ../../components/alibi-detect-server && make kind_load
+make[1]: Entering directory '/workspace/source/components/alibi-detect-server'
+docker build -f Dockerfile -t seldonio/alibi-detect-server:1.3.0-dev .
+Sending build context to Docker daemon  151.6kB
+Step 1/16 : FROM docker.io/seldonio/seldon-core-s2i-python37-ubi8:1.3.0-dev
+1.3.0-dev: Pulling from seldonio/seldon-core-s2i-python37-ubi8
+ec1681b6a383: Pulling fs layer
+c4d668e229cd: Pulling fs layer
+c856b7fcf4b1: Pulling fs layer
+94e85bf3d8ba: Pulling fs layer
+2094ca6c2e36: Pulling fs layer
+baec0300664e: Pulling fs layer
+5537d5e74503: Pulling fs layer
+d770d1b8799b: Pulling fs layer
+ff991074dd32: Pulling fs layer
+a1de3266da77: Pulling fs layer
+b4f58703841c: Pulling fs layer
+67473512365b: Pulling fs layer
+d9b13e16bbfd: Pulling fs layer
+be12372be3d6: Pulling fs layer
+d770d1b8799b: Waiting
+67473512365b: Waiting
+d9b13e16bbfd: Waiting
+be12372be3d6: Waiting
+2094ca6c2e36: Waiting
+baec0300664e: Waiting
+5537d5e74503: Waiting
+ff991074dd32: Waiting
+a1de3266da77: Waiting
+94e85bf3d8ba: Waiting
+b4f58703841c: Waiting
+c4d668e229cd: Download complete
+c856b7fcf4b1: Verifying Checksum
+c856b7fcf4b1: Download complete
+ec1681b6a383: Verifying Checksum
+ec1681b6a383: Download complete
+2094ca6c2e36: Verifying Checksum
+2094ca6c2e36: Download complete
+baec0300664e: Verifying Checksum
+baec0300664e: Download complete
+94e85bf3d8ba: Verifying Checksum
+94e85bf3d8ba: Download complete
+5537d5e74503: Verifying Checksum
+5537d5e74503: Download complete
+ff991074dd32: Verifying Checksum
+ff991074dd32: Download complete
+a1de3266da77: Download complete
+b4f58703841c: Verifying Checksum
+b4f58703841c: Download complete
+d9b13e16bbfd: Verifying Checksum
+d9b13e16bbfd: Download complete
+d770d1b8799b: Verifying Checksum
+d770d1b8799b: Download complete
+be12372be3d6: Verifying Checksum
+be12372be3d6: Download complete
+67473512365b: Verifying Checksum
+67473512365b: Download complete
+ec1681b6a383: Pull complete
+c4d668e229cd: Pull complete
+c856b7fcf4b1: Pull complete
+94e85bf3d8ba: Pull complete
+2094ca6c2e36: Pull complete
+baec0300664e: Pull complete
+5537d5e74503: Pull complete
+d770d1b8799b: Pull complete
+ff991074dd32: Pull complete
+a1de3266da77: Pull complete
+b4f58703841c: Pull complete
+67473512365b: Pull complete
+d9b13e16bbfd: Pull complete
+be12372be3d6: Pull complete
+Digest: sha256:459e9643297fdf3e75538af1f9bb2facc99f88f53393eaf6c4652ff0c482254b
+Status: Downloaded newer image for seldonio/seldon-core-s2i-python37-ubi8:1.3.0-dev
+ ---> 525612ca4b9c
+Step 2/16 : LABEL name="Seldon Alibi Detect Server"       vendor="Seldon Technologies"       version="1.3.0-dev"       release="1"       summary="Alibi Detect Server for Seldon Core"       description="The Alibi Detect Server provides outlier, drift and adversarial detection services for Seldon Core"
+ ---> Running in 7d5509b6e34d
+Removing intermediate container 7d5509b6e34d
+ ---> 61705d136f50
+Step 3/16 : ADD requirements_server.txt .
+ ---> 107f98dbceb6
+Step 4/16 : RUN pip install pip -U
+ ---> Running in 99ed64d89638
+Collecting pip
+  Downloading https://files.pythonhosted.org/packages/4e/5f/528232275f6509b1fff703c9280e58951a81abe24640905de621c9f81839/pip-20.2.3-py2.py3-none-any.whl (1.5MB)
+Installing collected packages: pip
+  Found existing installation: pip 19.2.3
+    Uninstalling pip-19.2.3:
+      Successfully uninstalled pip-19.2.3
+Successfully installed pip-20.2.3
+Removing intermediate container 99ed64d89638
+ ---> 8a70ee566379
+Step 5/16 : RUN pip install -r requirements_server.txt
+ ---> Running in 82a7bc679483
+Requirement already satisfied: seldon-core in ./python (from -r requirements_server.txt (line 1)) (1.3.0.dev0)
+Collecting kfserving==0.3.0.1
+  Downloading kfserving-0.3.0.1-py3-none-any.whl (83 kB)
+Collecting alibi-detect==0.4.2
+  Downloading alibi_detect-0.4.2-py3-none-any.whl (142 kB)
+Collecting fbprophet==0.6
+  Downloading fbprophet-0.6.tar.gz (54 kB)
+Collecting holidays==0.9.11
+  Downloading holidays-0.9.11.tar.gz (81 kB)
+Requirement already satisfied: Flask<2.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements_server.txt (line 1)) (1.1.2)
+Requirement already satisfied: jsonschema<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements_server.txt (line 1)) (3.2.0)
+Requirement already satisfied: Flask-cors<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements_server.txt (line 1)) (3.0.9)
+Requirement already satisfied: redis<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements_server.txt (line 1)) (3.5.3)
+Requirement already satisfied: requests<3.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements_server.txt (line 1)) (2.22.0)
+Requirement already satisfied: numpy<2.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements_server.txt (line 1)) (1.19.2)
+Requirement already satisfied: flatbuffers<2.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements_server.txt (line 1)) (1.12)
+Requirement already satisfied: protobuf<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements_server.txt (line 1)) (3.13.0)
+Requirement already satisfied: grpcio<2.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements_server.txt (line 1)) (1.32.0)
+Requirement already satisfied: Flask-OpenTracing<1.2.0,>=1.1.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements_server.txt (line 1)) (1.1.0)
+Requirement already satisfied: opentracing<2.4.0,>=2.2.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements_server.txt (line 1)) (2.3.0)
+Requirement already satisfied: jaeger-client<4.4.0,>=4.1.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements_server.txt (line 1)) (4.3.0)
+Requirement already satisfied: grpcio-opentracing<1.2.0,>=1.1.4 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements_server.txt (line 1)) (1.1.4)
+Requirement already satisfied: PyYAML<5.4 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements_server.txt (line 1)) (5.3.1)
+Requirement already satisfied: gunicorn<20.1.0,>=19.9.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements_server.txt (line 1)) (20.0.4)
+Requirement already satisfied: setuptools>=41.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements_server.txt (line 1)) (41.4.0)
+Requirement already satisfied: prometheus_client<0.9.0,>=0.7.1 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements_server.txt (line 1)) (0.8.0)
+Requirement already satisfied: certifi>=14.05.14 in /opt/conda/lib/python3.7/site-packages (from kfserving==0.3.0.1->-r requirements_server.txt (line 2)) (2020.6.20)
+Collecting python-dateutil>=2.5.3
+  Downloading python_dateutil-2.8.1-py2.py3-none-any.whl (227 kB)
+Requirement already satisfied: tornado>=1.4.1 in /opt/conda/lib/python3.7/site-packages (from kfserving==0.3.0.1->-r requirements_server.txt (line 2)) (6.0.4)
+Collecting argparse>=1.4.0
+  Downloading argparse-1.4.0-py2.py3-none-any.whl (23 kB)
+Requirement already satisfied: urllib3>=1.15.1 in /opt/conda/lib/python3.7/site-packages (from kfserving==0.3.0.1->-r requirements_server.txt (line 2)) (1.24.2)
+Requirement already satisfied: six>=1.10 in /opt/conda/lib/python3.7/site-packages (from kfserving==0.3.0.1->-r requirements_server.txt (line 2)) (1.12.0)
+Collecting google-cloud-storage>=1.16.0
+  Downloading google_cloud_storage-1.31.2-py2.py3-none-any.whl (88 kB)
+Collecting adal>=1.2.2
+  Downloading adal-1.2.4-py2.py3-none-any.whl (55 kB)
+Collecting table-logger>=0.3.5
+  Downloading table_logger-0.3.6-py3-none-any.whl (14 kB)
+Collecting minio>=4.0.9
+  Downloading minio-6.0.0-py2.py3-none-any.whl (72 kB)
+Collecting azure-storage-blob<=2.1.0,>=1.3.0
+  Downloading azure_storage_blob-2.1.0-py2.py3-none-any.whl (88 kB)
+Collecting kubernetes==10.0.1
+  Downloading kubernetes-10.0.1-py2.py3-none-any.whl (1.5 MB)
+Collecting scipy
+  Downloading scipy-1.5.2-cp37-cp37m-manylinux1_x86_64.whl (25.9 MB)
+Collecting scikit-image
+  Downloading scikit_image-0.17.2-cp37-cp37m-manylinux1_x86_64.whl (12.5 MB)
+Collecting scikit-learn
+  Downloading scikit_learn-0.23.2-cp37-cp37m-manylinux1_x86_64.whl (6.8 MB)
+Collecting tensorflow-probability>=0.8
+  Downloading tensorflow_probability-0.11.1-py2.py3-none-any.whl (4.3 MB)
+Collecting dask[array]
+  Downloading dask-2.30.0-py3-none-any.whl (848 kB)
+Collecting tensorflow>=2
+  Downloading tensorflow-2.3.1-cp37-cp37m-manylinux2010_x86_64.whl (320.4 MB)
+Collecting transformers>=2.10.0
+  Downloading transformers-3.3.1-py3-none-any.whl (1.1 MB)
+Collecting Pillow
+  Downloading Pillow-7.2.0-cp37-cp37m-manylinux1_x86_64.whl (2.2 MB)
+Collecting creme
+  Downloading creme-0.6.1-cp37-cp37m-manylinux2010_x86_64.whl (1.1 MB)
+Collecting opencv-python
+  Downloading opencv_python-4.4.0.44-cp37-cp37m-manylinux2014_x86_64.whl (49.5 MB)
+Collecting matplotlib
+  Downloading matplotlib-3.3.2-cp37-cp37m-manylinux1_x86_64.whl (11.6 MB)
+Collecting pandas
+  Downloading pandas-1.1.3-cp37-cp37m-manylinux1_x86_64.whl (9.5 MB)
+Collecting Cython>=0.22
+  Downloading Cython-0.29.21-cp37-cp37m-manylinux1_x86_64.whl (2.0 MB)
+Collecting cmdstanpy==0.4
+  Downloading cmdstanpy-0.4.0-py3-none-any.whl (22 kB)
+Collecting pystan>=2.14
+  Downloading pystan-2.19.1.1-cp37-cp37m-manylinux1_x86_64.whl (67.3 MB)
+Collecting LunarCalendar>=0.0.9
+  Downloading LunarCalendar-0.0.9-py2.py3-none-any.whl (18 kB)
+Collecting convertdate>=2.1.2
+  Downloading convertdate-2.2.2-py2.py3-none-any.whl (40 kB)
+Collecting setuptools-git>=1.2
+  Downloading setuptools_git-1.2-py2.py3-none-any.whl (10 kB)
+Requirement already satisfied: Jinja2>=2.10.1 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon-core->-r requirements_server.txt (line 1)) (2.11.2)
+Requirement already satisfied: Werkzeug>=0.15 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon-core->-r requirements_server.txt (line 1)) (1.0.1)
+Requirement already satisfied: itsdangerous>=0.24 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon-core->-r requirements_server.txt (line 1)) (1.1.0)
+Requirement already satisfied: click>=5.1 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon-core->-r requirements_server.txt (line 1)) (7.1.2)
+Requirement already satisfied: attrs>=17.4.0 in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->seldon-core->-r requirements_server.txt (line 1)) (20.2.0)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->seldon-core->-r requirements_server.txt (line 1)) (2.0.0)
+Requirement already satisfied: pyrsistent>=0.14.0 in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->seldon-core->-r requirements_server.txt (line 1)) (0.17.3)
+Requirement already satisfied: chardet<3.1.0,>=3.0.2 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon-core->-r requirements_server.txt (line 1)) (3.0.4)
+Requirement already satisfied: idna<2.9,>=2.5 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon-core->-r requirements_server.txt (line 1)) (2.8)
+Requirement already satisfied: threadloop<2,>=1 in /opt/conda/lib/python3.7/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core->-r requirements_server.txt (line 1)) (1.0.2)
+Requirement already satisfied: thrift in /opt/conda/lib/python3.7/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core->-r requirements_server.txt (line 1)) (0.13.0)
+Collecting google-cloud-core<2.0dev,>=1.4.1
+  Downloading google_cloud_core-1.4.3-py2.py3-none-any.whl (27 kB)
+Collecting google-auth<2.0dev,>=1.11.0
+  Downloading google_auth-1.22.1-py2.py3-none-any.whl (114 kB)
+Collecting google-resumable-media<2.0dev,>=1.0.0
+  Downloading google_resumable_media-1.1.0-py2.py3-none-any.whl (75 kB)
+Requirement already satisfied: cryptography>=1.1.0 in /opt/conda/lib/python3.7/site-packages (from adal>=1.2.2->kfserving==0.3.0.1->-r requirements_server.txt (line 2)) (2.7)
+Collecting PyJWT>=1.0.0
+  Downloading PyJWT-1.7.1-py2.py3-none-any.whl (18 kB)
+Collecting pytz
+  Downloading pytz-2020.1-py2.py3-none-any.whl (510 kB)
+Collecting configparser
+  Downloading configparser-5.0.0-py3-none-any.whl (22 kB)
+Collecting azure-storage-common~=2.1
+  Downloading azure_storage_common-2.1.0-py2.py3-none-any.whl (47 kB)
+Collecting azure-common>=1.1.5
+  Downloading azure_common-1.1.25-py2.py3-none-any.whl (12 kB)
+Collecting websocket-client!=0.40.0,!=0.41.*,!=0.42.*,>=0.32.0
+  Downloading websocket_client-0.57.0-py2.py3-none-any.whl (200 kB)
+Collecting requests-oauthlib
+  Downloading requests_oauthlib-1.3.0-py2.py3-none-any.whl (23 kB)
+Collecting PyWavelets>=1.1.1
+  Downloading PyWavelets-1.1.1-cp37-cp37m-manylinux1_x86_64.whl (4.4 MB)
+Collecting tifffile>=2019.7.26
+  Downloading tifffile-2020.10.1-py3-none-any.whl (152 kB)
+Collecting networkx>=2.0
+  Downloading networkx-2.5-py3-none-any.whl (1.6 MB)
+Collecting imageio>=2.3.0
+  Downloading imageio-2.9.0-py3-none-any.whl (3.3 MB)
+Collecting joblib>=0.11
+  Downloading joblib-0.17.0-py3-none-any.whl (301 kB)
+Collecting threadpoolctl>=2.0.0
+  Downloading threadpoolctl-2.1.0-py3-none-any.whl (12 kB)
+Collecting gast>=0.3.2
+  Downloading gast-0.4.0-py3-none-any.whl (9.8 kB)
+Collecting decorator
+  Downloading decorator-4.4.2-py2.py3-none-any.whl (9.2 kB)
+Collecting cloudpickle>=1.3
+  Downloading cloudpickle-1.6.0-py3-none-any.whl (23 kB)
+Collecting dm-tree
+  Downloading dm_tree-0.1.5-cp37-cp37m-manylinux1_x86_64.whl (294 kB)
+Collecting toolz>=0.8.2; extra == "array"
+  Downloading toolz-0.11.1-py3-none-any.whl (55 kB)
+Collecting astunparse==1.6.3
+  Downloading astunparse-1.6.3-py2.py3-none-any.whl (12 kB)
+Collecting tensorboard<3,>=2.3.0
+  Downloading tensorboard-2.3.0-py3-none-any.whl (6.8 MB)
+Collecting wrapt>=1.11.1
+  Downloading wrapt-1.12.1.tar.gz (27 kB)
+Collecting termcolor>=1.1.0
+  Downloading termcolor-1.1.0.tar.gz (3.9 kB)
+Collecting h5py<2.11.0,>=2.10.0
+  Downloading h5py-2.10.0-cp37-cp37m-manylinux1_x86_64.whl (2.9 MB)
+Collecting tensorflow-estimator<2.4.0,>=2.3.0
+  Downloading tensorflow_estimator-2.3.0-py2.py3-none-any.whl (459 kB)
+Collecting keras-preprocessing<1.2,>=1.1.1
+  Downloading Keras_Preprocessing-1.1.2-py2.py3-none-any.whl (42 kB)
+Collecting google-pasta>=0.1.8
+  Downloading google_pasta-0.2.0-py3-none-any.whl (57 kB)
+Requirement already satisfied: wheel>=0.26 in /opt/conda/lib/python3.7/site-packages (from tensorflow>=2->alibi-detect==0.4.2->-r requirements_server.txt (line 3)) (0.33.6)
+Collecting absl-py>=0.7.0
+  Downloading absl_py-0.10.0-py3-none-any.whl (127 kB)
+Collecting opt-einsum>=2.3.2
+  Downloading opt_einsum-3.3.0-py3-none-any.whl (65 kB)
+Collecting packaging
+  Downloading packaging-20.4-py2.py3-none-any.whl (37 kB)
+Collecting filelock
+  Downloading filelock-3.0.12-py3-none-any.whl (7.6 kB)
+Collecting sentencepiece!=0.1.92
+  Downloading sentencepiece-0.1.91-cp37-cp37m-manylinux1_x86_64.whl (1.1 MB)
+Requirement already satisfied: tqdm>=4.27 in /opt/conda/lib/python3.7/site-packages (from transformers>=2.10.0->alibi-detect==0.4.2->-r requirements_server.txt (line 3)) (4.36.1)
+Collecting sacremoses
+  Downloading sacremoses-0.0.43.tar.gz (883 kB)
+Collecting regex!=2019.12.17
+  Downloading regex-2020.9.27-cp37-cp37m-manylinux2010_x86_64.whl (662 kB)
+Collecting tokenizers==0.8.1.rc2
+  Downloading tokenizers-0.8.1rc2-cp37-cp37m-manylinux1_x86_64.whl (3.0 MB)
+Collecting mmh3==2.5.1
+  Downloading mmh3-2.5.1.tar.gz (9.8 kB)
+Collecting kiwisolver>=1.0.1
+  Downloading kiwisolver-1.2.0-cp37-cp37m-manylinux1_x86_64.whl (88 kB)
+Collecting cycler>=0.10
+  Downloading cycler-0.10.0-py2.py3-none-any.whl (6.5 kB)
+Collecting pyparsing!=2.0.4,!=2.1.2,!=2.1.6,>=2.0.3
+  Downloading pyparsing-2.4.7-py2.py3-none-any.whl (67 kB)
+Collecting ephem>=3.7.5.3
+  Downloading ephem-3.7.7.1-cp37-cp37m-manylinux2010_x86_64.whl (1.2 MB)
+Collecting pymeeus<=1,>=0.3.6
+  Downloading PyMeeus-0.3.7.tar.gz (732 kB)
+Requirement already satisfied: MarkupSafe>=0.23 in /opt/conda/lib/python3.7/site-packages (from Jinja2>=2.10.1->Flask<2.0.0->seldon-core->-r requirements_server.txt (line 1)) (1.1.1)
+Requirement already satisfied: zipp>=0.5 in /opt/conda/lib/python3.7/site-packages (from importlib-metadata; python_version < "3.8"->jsonschema<4.0.0->seldon-core->-r requirements_server.txt (line 1)) (3.3.0)
+Collecting google-api-core<2.0.0dev,>=1.19.0
+  Downloading google_api_core-1.22.4-py2.py3-none-any.whl (91 kB)
+Collecting rsa<5,>=3.1.4; python_version >= "3.5"
+  Downloading rsa-4.6-py3-none-any.whl (47 kB)
+Collecting pyasn1-modules>=0.2.1
+  Downloading pyasn1_modules-0.2.8-py2.py3-none-any.whl (155 kB)
+Collecting cachetools<5.0,>=2.0.0
+  Downloading cachetools-4.1.1-py3-none-any.whl (10 kB)
+Collecting google-crc32c<2.0dev,>=1.0; python_version >= "3.5"
+  Downloading google_crc32c-1.0.0-cp37-cp37m-manylinux2010_x86_64.whl (39 kB)
+Requirement already satisfied: cffi!=1.11.3,>=1.8 in /opt/conda/lib/python3.7/site-packages (from cryptography>=1.1.0->adal>=1.2.2->kfserving==0.3.0.1->-r requirements_server.txt (line 2)) (1.12.3)
+Requirement already satisfied: asn1crypto>=0.21.0 in /opt/conda/lib/python3.7/site-packages (from cryptography>=1.1.0->adal>=1.2.2->kfserving==0.3.0.1->-r requirements_server.txt (line 2)) (1.0.1)
+Collecting oauthlib>=3.0.0
+  Downloading oauthlib-3.1.0-py2.py3-none-any.whl (147 kB)
+Collecting google-auth-oauthlib<0.5,>=0.4.1
+  Downloading google_auth_oauthlib-0.4.1-py2.py3-none-any.whl (18 kB)
+Collecting tensorboard-plugin-wit>=1.6.0
+  Downloading tensorboard_plugin_wit-1.7.0-py3-none-any.whl (779 kB)
+Collecting markdown>=2.6.8
+  Downloading Markdown-3.3-py3-none-any.whl (94 kB)
+Collecting googleapis-common-protos<2.0dev,>=1.6.0
+  Downloading googleapis_common_protos-1.52.0-py2.py3-none-any.whl (100 kB)
+Collecting pyasn1>=0.1.3
+  Downloading pyasn1-0.4.8-py2.py3-none-any.whl (77 kB)
+Requirement already satisfied: pycparser in /opt/conda/lib/python3.7/site-packages (from cffi!=1.11.3,>=1.8->cryptography>=1.1.0->adal>=1.2.2->kfserving==0.3.0.1->-r requirements_server.txt (line 2)) (2.19)
+Building wheels for collected packages: fbprophet, holidays, wrapt, termcolor, sacremoses, mmh3, pymeeus
+  Building wheel for fbprophet (setup.py): started
+  Building wheel for fbprophet (setup.py): finished with status 'error'
+[91m  ERROR: Command errored out with exit status 1:
+   command: /opt/conda/bin/python -u -c 'import sys, setuptools, tokenize; sys.argv[0] = '"'"'/tmp/pip-install-c70gswi_/fbprophet/setup.py'"'"'; __file__='"'"'/tmp/pip-install-c70gswi_/fbprophet/setup.py'"'"';f=getattr(tokenize, '"'"'open'"'"', open)(__file__);code=f.read().replace('"'"'\r\n'"'"', '"'"'\n'"'"');f.close();exec(compile(code, __file__, '"'"'exec'"'"'))' bdist_wheel -d /tmp/pip-wheel-g6k2aibf
+       cwd: /tmp/pip-install-c70gswi_/fbprophet/
+  Complete output (40 lines):
+  running bdist_wheel
+  running build
+  running build_py
+  creating build
+  creating build/lib
+  creating build/lib/fbprophet
+  creating build/lib/fbprophet/stan_model
+  Traceback (most recent call last):
+    File "<string>", line 1, in <module>
+    File "/tmp/pip-install-c70gswi_/fbprophet/setup.py", line 148, in <module>
+      """
+    File "/opt/conda/lib/python3.7/site-packages/setuptools/__init__.py", line 145, in setup
+      return distutils.core.setup(**attrs)
+    File "/opt/conda/lib/python3.7/distutils/core.py", line 148, in setup
+      dist.run_commands()
+    File "/opt/conda/lib/python3.7/distutils/dist.py", line 966, in run_commands
+      self.run_command(cmd)
+    File "/opt/conda/lib/python3.7/distutils/dist.py", line 985, in run_command
+      cmd_obj.run()
+    File "/opt/conda/lib/python3.7/site-packages/wheel/bdist_wheel.py", line 192, in run
+      self.run_command('build')
+    File "/opt/conda/lib/python3.7/distutils/cmd.py", line 313, in run_command
+      self.distribution.run_command(command)
+    File "/opt/conda/lib/python3.7/distutils/dist.py", line 985, in run_command
+      cmd_obj.run()
+    File "/opt/conda/lib/python3.7/distutils/command/build.py", line 135, in run
+      self.run_command(cmd_name)
+    File "/opt/conda/lib/python3.7/distutils/cmd.py", line 313, in run_command
+      self.distribution.run_command(command)
+    File "/opt/conda/lib/python3.7/distutils/dist.py", line 985, in run_command
+      cmd_obj.run()
+    File "/tmp/pip-install-c70gswi_/fbprophet/setup.py", line 48, in run
+      build_models(target_dir)
+    File "/tmp/pip-install-c70gswi_/fbprophet/setup.py", line 36, in build_models
+      from fbprophet.models import StanBackendEnum
+    File "/tmp/pip-install-c70gswi_/fbprophet/fbprophet/__init__.py", line 8, in <module>
+      from fbprophet.forecaster import Prophet
+    File "/tmp/pip-install-c70gswi_/fbprophet/fbprophet/forecaster.py", line 15, in <module>
+      import pandas as pd
+  ModuleNotFoundError: No module named 'pandas'
+  ----------------------------------------
+[0m[91m  ERROR: Failed building wheel for fbprophet
+[0m  Running setup.py clean for fbprophet
+  Building wheel for holidays (setup.py): started
+  Building wheel for holidays (setup.py): finished with status 'done'
+  Created wheel for holidays: filename=holidays-0.9.11-py3-none-any.whl size=44781 sha256=5ff85e5ccbf6fea3819b4f895cf0135ddcf43ee8cd7eb3048caec6300391c0a5
+  Stored in directory: /root/.cache/pip/wheels/c7/2d/f0/1324bcf0e577829a77f2ac0f1b812e538b8349ca36b1049106
+  Building wheel for wrapt (setup.py): started
+  Building wheel for wrapt (setup.py): finished with status 'done'
+  Created wheel for wrapt: filename=wrapt-1.12.1-cp37-cp37m-linux_x86_64.whl size=76655 sha256=37b314f81b043f25f7a2cff75e9c9fc456697f61518570aafc8d495e15e7fa3c
+  Stored in directory: /root/.cache/pip/wheels/62/76/4c/aa25851149f3f6d9785f6c869387ad82b3fd37582fa8147ac6
+  Building wheel for termcolor (setup.py): started
+  Building wheel for termcolor (setup.py): finished with status 'done'
+  Created wheel for termcolor: filename=termcolor-1.1.0-py3-none-any.whl size=4830 sha256=001ec29857ab1425313761b06cf02fcd227037b76e5f02bee8e3ddad87f056b8
+  Stored in directory: /root/.cache/pip/wheels/3f/e3/ec/8a8336ff196023622fbcb36de0c5a5c218cbb24111d1d4c7f2
+  Building wheel for sacremoses (setup.py): started
+  Building wheel for sacremoses (setup.py): finished with status 'done'
+  Created wheel for sacremoses: filename=sacremoses-0.0.43-py3-none-any.whl size=893258 sha256=df45ba3b90b53523f9740ad27ffd8a3f8b561f8c75e4406123e9a803d80e29a2
+  Stored in directory: /root/.cache/pip/wheels/69/09/d1/bf058f7d6fa0ecba2ce7c66be3b8d012beb4bf61a6e0c101c0
+  Building wheel for mmh3 (setup.py): started
+  Building wheel for mmh3 (setup.py): finished with status 'done'
+  Created wheel for mmh3: filename=mmh3-2.5.1-cp37-cp37m-linux_x86_64.whl size=48427 sha256=ca1699b7c87fd809c0d7e95425e706648810f8b96ac11c2e89e0509d00e362c3
+  Stored in directory: /root/.cache/pip/wheels/ae/45/25/90e097a519143b2dca74cd93a056894a965f27908103e01799
+  Building wheel for pymeeus (setup.py): started
+  Building wheel for pymeeus (setup.py): finished with status 'done'
+  Created wheel for pymeeus: filename=PyMeeus-0.3.7-py3-none-any.whl size=702877 sha256=060a324117735e0e0e87d3f4859e3dad5063bd7e4ce0fdb1cb16248c451153b3
+  Stored in directory: /root/.cache/pip/wheels/80/32/5f/2a67880d4ce584b9cf99146f9945e46942dfb010a9382c6ff5
+Successfully built holidays wrapt termcolor sacremoses mmh3 pymeeus
+Failed to build fbprophet
+Installing collected packages: python-dateutil, argparse, pytz, googleapis-common-protos, pyasn1, rsa, pyasn1-modules, cachetools, google-auth, google-api-core, google-cloud-core, google-crc32c, google-resumable-media, google-cloud-storage, PyJWT, adal, table-logger, configparser, minio, azure-common, azure-storage-common, azure-storage-blob, websocket-client, oauthlib, requests-oauthlib, kubernetes, kfserving, scipy, PyWavelets, tifffile, Pillow, decorator, networkx, kiwisolver, cycler, pyparsing, matplotlib, imageio, scikit-image, joblib, threadpoolctl, scikit-learn, gast, cloudpickle, dm-tree, tensorflow-probability, Cython, pandas, cmdstanpy, pystan, ephem, LunarCalendar, pymeeus, convertdate, holidays, setuptools-git, fbprophet, toolz, dask, astunparse, google-auth-oauthlib, tensorboard-plugin-wit, markdown, absl-py, tensorboard, wrapt, termcolor, h5py, tensorflow-estimator, keras-preprocessing, google-pasta, opt-einsum, tensorflow, packaging, filelock, sentencepiece, regex, sacremoses, tokenizers, transformers, mmh3, creme, opencv-python, alibi-detect
+    Running setup.py install for fbprophet: started
+    Running setup.py install for fbprophet: still running...
+    Running setup.py install for fbprophet: finished with status 'done'
+[91m  DEPRECATION: fbprophet was installed using the legacy 'setup.py install' method, because a wheel could not be built for it. pip 21.0 will remove support for this functionality. A possible replacement is to fix the wheel build issue reported above. You can find discussion regarding this at https://github.com/pypa/pip/issues/8368.
+[0mSuccessfully installed Cython-0.29.21 LunarCalendar-0.0.9 Pillow-7.2.0 PyJWT-1.7.1 PyWavelets-1.1.1 absl-py-0.10.0 adal-1.2.4 alibi-detect-0.4.2 argparse-1.4.0 astunparse-1.6.3 azure-common-1.1.25 azure-storage-blob-2.1.0 azure-storage-common-2.1.0 cachetools-4.1.1 cloudpickle-1.6.0 cmdstanpy-0.4.0 configparser-5.0.0 convertdate-2.2.2 creme-0.6.1 cycler-0.10.0 dask-2.30.0 decorator-4.4.2 dm-tree-0.1.5 ephem-3.7.7.1 fbprophet-0.6 filelock-3.0.12 gast-0.4.0 google-api-core-1.22.4 google-auth-1.22.1 google-auth-oauthlib-0.4.1 google-cloud-core-1.4.3 google-cloud-storage-1.31.2 google-crc32c-1.0.0 google-pasta-0.2.0 google-resumable-media-1.1.0 googleapis-common-protos-1.52.0 h5py-2.10.0 holidays-0.9.11 imageio-2.9.0 joblib-0.17.0 keras-preprocessing-1.1.2 kfserving-0.3.0.1 kiwisolver-1.2.0 kubernetes-10.0.1 markdown-3.3 matplotlib-3.3.2 minio-6.0.0 mmh3-2.5.1 networkx-2.5 oauthlib-3.1.0 opencv-python-4.4.0.44 opt-einsum-3.3.0 packaging-20.4 pandas-1.1.3 pyasn1-0.4.8 pyasn1-modules-0.2.8 pymeeus-0.3.7 pyparsing-2.4.7 pystan-2.19.1.1 python-dateutil-2.8.1 pytz-2020.1 regex-2020.9.27 requests-oauthlib-1.3.0 rsa-4.6 sacremoses-0.0.43 scikit-image-0.17.2 scikit-learn-0.23.2 scipy-1.5.2 sentencepiece-0.1.91 setuptools-git-1.2 table-logger-0.3.6 tensorboard-2.3.0 tensorboard-plugin-wit-1.7.0 tensorflow-2.3.1 tensorflow-estimator-2.3.0 tensorflow-probability-0.11.1 termcolor-1.1.0 threadpoolctl-2.1.0 tifffile-2020.10.1 tokenizers-0.8.1rc2 toolz-0.11.1 transformers-3.3.1 websocket-client-0.57.0 wrapt-1.12.1
+[91mERROR: After October 2020 you may experience errors when installing or updating packages. This is because pip will change the way that it resolves dependency conflicts.
+
+We recommend you use --use-feature=2020-resolver to test your packages with the new resolver before it becomes the default.
+
+google-api-core 1.22.4 requires six>=1.13.0, but you'll have six 1.12.0 which is incompatible.
+tensorflow 2.3.1 requires gast==0.3.3, but you'll have gast 0.4.0 which is incompatible.
+tensorflow 2.3.1 requires numpy<1.19.0,>=1.16.0, but you'll have numpy 1.19.2 which is incompatible.
+[0mRemoving intermediate container 82a7bc679483
+ ---> 7178a2cf44d0
+Step 6/16 : RUN git clone --branch 24-extensions https://github.com/ryandawsonuk/sdk-python.git &&     cd sdk-python &&     pip install -e .
+ ---> Running in 9d0a9de656d4
+[91mCloning into 'sdk-python'...
+[0mObtaining file:///microservice/sdk-python
+Installing collected packages: cloudevents
+  Running setup.py develop for cloudevents
+Successfully installed cloudevents
+Removing intermediate container 9d0a9de656d4
+ ---> 75e5dbd314b3
+Step 7/16 : COPY adserver adserver
+ ---> f01bb838ee75
+Step 8/16 : COPY setup.py .
+ ---> fd6094b03b27
+Step 9/16 : RUN pip install -e .
+ ---> Running in 9e6ad0c369f5
+Obtaining file:///microservice
+Requirement already satisfied: alibi-detect in /opt/conda/lib/python3.7/site-packages (from adserver==0.1.0) (0.4.2)
+Requirement already satisfied: kfserving>=0.2.0 in /opt/conda/lib/python3.7/site-packages (from adserver==0.1.0) (0.3.0.1)
+Requirement already satisfied: argparse>=1.4.0 in /opt/conda/lib/python3.7/site-packages (from adserver==0.1.0) (1.4.0)
+Requirement already satisfied: numpy>=1.8.2 in /opt/conda/lib/python3.7/site-packages (from adserver==0.1.0) (1.19.2)
+Requirement already satisfied: cloudevents in ./sdk-python (from adserver==0.1.0) (0.0.1.dev32)
+Collecting google-cloud-core==1.4.1
+  Downloading google_cloud_core-1.4.1-py2.py3-none-any.whl (26 kB)
+Requirement already satisfied: google-cloud-storage==1.31.2 in /opt/conda/lib/python3.7/site-packages (from adserver==0.1.0) (1.31.2)
+Requirement already satisfied: Pillow in /opt/conda/lib/python3.7/site-packages (from alibi-detect->adserver==0.1.0) (7.2.0)
+Requirement already satisfied: tensorflow-probability>=0.8 in /opt/conda/lib/python3.7/site-packages (from alibi-detect->adserver==0.1.0) (0.11.1)
+Requirement already satisfied: fbprophet<0.7,>=0.5 in /opt/conda/lib/python3.7/site-packages (from alibi-detect->adserver==0.1.0) (0.6)
+Requirement already satisfied: scipy in /opt/conda/lib/python3.7/site-packages (from alibi-detect->adserver==0.1.0) (1.5.2)
+Requirement already satisfied: scikit-learn in /opt/conda/lib/python3.7/site-packages (from alibi-detect->adserver==0.1.0) (0.23.2)
+Requirement already satisfied: scikit-image in /opt/conda/lib/python3.7/site-packages (from alibi-detect->adserver==0.1.0) (0.17.2)
+Requirement already satisfied: opencv-python in /opt/conda/lib/python3.7/site-packages (from alibi-detect->adserver==0.1.0) (4.4.0.44)
+Requirement already satisfied: creme in /opt/conda/lib/python3.7/site-packages (from alibi-detect->adserver==0.1.0) (0.6.1)
+Requirement already satisfied: dask[array] in /opt/conda/lib/python3.7/site-packages (from alibi-detect->adserver==0.1.0) (2.30.0)
+Requirement already satisfied: holidays==0.9.11 in /opt/conda/lib/python3.7/site-packages (from alibi-detect->adserver==0.1.0) (0.9.11)
+Requirement already satisfied: matplotlib in /opt/conda/lib/python3.7/site-packages (from alibi-detect->adserver==0.1.0) (3.3.2)
+Requirement already satisfied: tensorflow>=2 in /opt/conda/lib/python3.7/site-packages (from alibi-detect->adserver==0.1.0) (2.3.1)
+Requirement already satisfied: transformers>=2.10.0 in /opt/conda/lib/python3.7/site-packages (from alibi-detect->adserver==0.1.0) (3.3.1)
+Requirement already satisfied: pandas in /opt/conda/lib/python3.7/site-packages (from alibi-detect->adserver==0.1.0) (1.1.3)
+Requirement already satisfied: setuptools>=21.0.0 in /opt/conda/lib/python3.7/site-packages (from kfserving>=0.2.0->adserver==0.1.0) (41.4.0)
+Requirement already satisfied: table-logger>=0.3.5 in /opt/conda/lib/python3.7/site-packages (from kfserving>=0.2.0->adserver==0.1.0) (0.3.6)
+Requirement already satisfied: minio>=4.0.9 in /opt/conda/lib/python3.7/site-packages (from kfserving>=0.2.0->adserver==0.1.0) (6.0.0)
+Requirement already satisfied: azure-storage-blob<=2.1.0,>=1.3.0 in /opt/conda/lib/python3.7/site-packages (from kfserving>=0.2.0->adserver==0.1.0) (2.1.0)
+Requirement already satisfied: urllib3>=1.15.1 in /opt/conda/lib/python3.7/site-packages (from kfserving>=0.2.0->adserver==0.1.0) (1.24.2)
+Requirement already satisfied: kubernetes==10.0.1 in /opt/conda/lib/python3.7/site-packages (from kfserving>=0.2.0->adserver==0.1.0) (10.0.1)
+Requirement already satisfied: tornado>=1.4.1 in /opt/conda/lib/python3.7/site-packages (from kfserving>=0.2.0->adserver==0.1.0) (6.0.4)
+Requirement already satisfied: certifi>=14.05.14 in /opt/conda/lib/python3.7/site-packages (from kfserving>=0.2.0->adserver==0.1.0) (2020.6.20)
+Requirement already satisfied: adal>=1.2.2 in /opt/conda/lib/python3.7/site-packages (from kfserving>=0.2.0->adserver==0.1.0) (1.2.4)
+Requirement already satisfied: python-dateutil>=2.5.3 in /opt/conda/lib/python3.7/site-packages (from kfserving>=0.2.0->adserver==0.1.0) (2.8.1)
+Requirement already satisfied: six>=1.10 in /opt/conda/lib/python3.7/site-packages (from kfserving>=0.2.0->adserver==0.1.0) (1.12.0)
+Requirement already satisfied: google-api-core<2.0.0dev,>=1.19.0 in /opt/conda/lib/python3.7/site-packages (from google-cloud-core==1.4.1->adserver==0.1.0) (1.22.4)
+Requirement already satisfied: google-auth<2.0dev,>=1.11.0 in /opt/conda/lib/python3.7/site-packages (from google-cloud-storage==1.31.2->adserver==0.1.0) (1.22.1)
+Requirement already satisfied: requests<3.0.0dev,>=2.18.0 in /opt/conda/lib/python3.7/site-packages (from google-cloud-storage==1.31.2->adserver==0.1.0) (2.22.0)
+Requirement already satisfied: google-resumable-media<2.0dev,>=1.0.0 in /opt/conda/lib/python3.7/site-packages (from google-cloud-storage==1.31.2->adserver==0.1.0) (1.1.0)
+Requirement already satisfied: dm-tree in /opt/conda/lib/python3.7/site-packages (from tensorflow-probability>=0.8->alibi-detect->adserver==0.1.0) (0.1.5)
+Requirement already satisfied: gast>=0.3.2 in /opt/conda/lib/python3.7/site-packages (from tensorflow-probability>=0.8->alibi-detect->adserver==0.1.0) (0.4.0)
+Requirement already satisfied: cloudpickle>=1.3 in /opt/conda/lib/python3.7/site-packages (from tensorflow-probability>=0.8->alibi-detect->adserver==0.1.0) (1.6.0)
+Requirement already satisfied: decorator in /opt/conda/lib/python3.7/site-packages (from tensorflow-probability>=0.8->alibi-detect->adserver==0.1.0) (4.4.2)
+Requirement already satisfied: Cython>=0.22 in /opt/conda/lib/python3.7/site-packages (from fbprophet<0.7,>=0.5->alibi-detect->adserver==0.1.0) (0.29.21)
+Requirement already satisfied: cmdstanpy==0.4 in /opt/conda/lib/python3.7/site-packages (from fbprophet<0.7,>=0.5->alibi-detect->adserver==0.1.0) (0.4.0)
+Requirement already satisfied: pystan>=2.14 in /opt/conda/lib/python3.7/site-packages (from fbprophet<0.7,>=0.5->alibi-detect->adserver==0.1.0) (2.19.1.1)
+Requirement already satisfied: LunarCalendar>=0.0.9 in /opt/conda/lib/python3.7/site-packages (from fbprophet<0.7,>=0.5->alibi-detect->adserver==0.1.0) (0.0.9)
+Requirement already satisfied: convertdate>=2.1.2 in /opt/conda/lib/python3.7/site-packages (from fbprophet<0.7,>=0.5->alibi-detect->adserver==0.1.0) (2.2.2)
+Requirement already satisfied: setuptools-git>=1.2 in /opt/conda/lib/python3.7/site-packages (from fbprophet<0.7,>=0.5->alibi-detect->adserver==0.1.0) (1.2)
+Requirement already satisfied: joblib>=0.11 in /opt/conda/lib/python3.7/site-packages (from scikit-learn->alibi-detect->adserver==0.1.0) (0.17.0)
+Requirement already satisfied: threadpoolctl>=2.0.0 in /opt/conda/lib/python3.7/site-packages (from scikit-learn->alibi-detect->adserver==0.1.0) (2.1.0)
+Requirement already satisfied: PyWavelets>=1.1.1 in /opt/conda/lib/python3.7/site-packages (from scikit-image->alibi-detect->adserver==0.1.0) (1.1.1)
+Requirement already satisfied: networkx>=2.0 in /opt/conda/lib/python3.7/site-packages (from scikit-image->alibi-detect->adserver==0.1.0) (2.5)
+Requirement already satisfied: imageio>=2.3.0 in /opt/conda/lib/python3.7/site-packages (from scikit-image->alibi-detect->adserver==0.1.0) (2.9.0)
+Requirement already satisfied: tifffile>=2019.7.26 in /opt/conda/lib/python3.7/site-packages (from scikit-image->alibi-detect->adserver==0.1.0) (2020.10.1)
+Requirement already satisfied: mmh3==2.5.1 in /opt/conda/lib/python3.7/site-packages (from creme->alibi-detect->adserver==0.1.0) (2.5.1)
+Requirement already satisfied: pyyaml in /opt/conda/lib/python3.7/site-packages (from dask[array]->alibi-detect->adserver==0.1.0) (5.3.1)
+Requirement already satisfied: toolz>=0.8.2; extra == "array" in /opt/conda/lib/python3.7/site-packages (from dask[array]->alibi-detect->adserver==0.1.0) (0.11.1)
+Requirement already satisfied: cycler>=0.10 in /opt/conda/lib/python3.7/site-packages (from matplotlib->alibi-detect->adserver==0.1.0) (0.10.0)
+Requirement already satisfied: pyparsing!=2.0.4,!=2.1.2,!=2.1.6,>=2.0.3 in /opt/conda/lib/python3.7/site-packages (from matplotlib->alibi-detect->adserver==0.1.0) (2.4.7)
+Requirement already satisfied: kiwisolver>=1.0.1 in /opt/conda/lib/python3.7/site-packages (from matplotlib->alibi-detect->adserver==0.1.0) (1.2.0)
+Requirement already satisfied: tensorboard<3,>=2.3.0 in /opt/conda/lib/python3.7/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (2.3.0)
+Requirement already satisfied: google-pasta>=0.1.8 in /opt/conda/lib/python3.7/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (0.2.0)
+Requirement already satisfied: opt-einsum>=2.3.2 in /opt/conda/lib/python3.7/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (3.3.0)
+Requirement already satisfied: keras-preprocessing<1.2,>=1.1.1 in /opt/conda/lib/python3.7/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (1.1.2)
+Requirement already satisfied: tensorflow-estimator<2.4.0,>=2.3.0 in /opt/conda/lib/python3.7/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (2.3.0)
+Requirement already satisfied: wheel>=0.26 in /opt/conda/lib/python3.7/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (0.33.6)
+Requirement already satisfied: termcolor>=1.1.0 in /opt/conda/lib/python3.7/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (1.1.0)
+Requirement already satisfied: absl-py>=0.7.0 in /opt/conda/lib/python3.7/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (0.10.0)
+Requirement already satisfied: protobuf>=3.9.2 in /opt/conda/lib/python3.7/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (3.13.0)
+Requirement already satisfied: grpcio>=1.8.6 in /opt/conda/lib/python3.7/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (1.32.0)
+Requirement already satisfied: h5py<2.11.0,>=2.10.0 in /opt/conda/lib/python3.7/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (2.10.0)
+Requirement already satisfied: astunparse==1.6.3 in /opt/conda/lib/python3.7/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (1.6.3)
+Requirement already satisfied: wrapt>=1.11.1 in /opt/conda/lib/python3.7/site-packages (from tensorflow>=2->alibi-detect->adserver==0.1.0) (1.12.1)
+Requirement already satisfied: tokenizers==0.8.1.rc2 in /opt/conda/lib/python3.7/site-packages (from transformers>=2.10.0->alibi-detect->adserver==0.1.0) (0.8.1rc2)
+Requirement already satisfied: filelock in /opt/conda/lib/python3.7/site-packages (from transformers>=2.10.0->alibi-detect->adserver==0.1.0) (3.0.12)
+Requirement already satisfied: sacremoses in /opt/conda/lib/python3.7/site-packages (from transformers>=2.10.0->alibi-detect->adserver==0.1.0) (0.0.43)
+Requirement already satisfied: tqdm>=4.27 in /opt/conda/lib/python3.7/site-packages (from transformers>=2.10.0->alibi-detect->adserver==0.1.0) (4.36.1)
+Requirement already satisfied: sentencepiece!=0.1.92 in /opt/conda/lib/python3.7/site-packages (from transformers>=2.10.0->alibi-detect->adserver==0.1.0) (0.1.91)
+Requirement already satisfied: packaging in /opt/conda/lib/python3.7/site-packages (from transformers>=2.10.0->alibi-detect->adserver==0.1.0) (20.4)
+Requirement already satisfied: regex!=2019.12.17 in /opt/conda/lib/python3.7/site-packages (from transformers>=2.10.0->alibi-detect->adserver==0.1.0) (2020.9.27)
+Requirement already satisfied: pytz>=2017.2 in /opt/conda/lib/python3.7/site-packages (from pandas->alibi-detect->adserver==0.1.0) (2020.1)
+Requirement already satisfied: configparser in /opt/conda/lib/python3.7/site-packages (from minio>=4.0.9->kfserving>=0.2.0->adserver==0.1.0) (5.0.0)
+Requirement already satisfied: azure-common>=1.1.5 in /opt/conda/lib/python3.7/site-packages (from azure-storage-blob<=2.1.0,>=1.3.0->kfserving>=0.2.0->adserver==0.1.0) (1.1.25)
+Requirement already satisfied: azure-storage-common~=2.1 in /opt/conda/lib/python3.7/site-packages (from azure-storage-blob<=2.1.0,>=1.3.0->kfserving>=0.2.0->adserver==0.1.0) (2.1.0)
+Requirement already satisfied: websocket-client!=0.40.0,!=0.41.*,!=0.42.*,>=0.32.0 in /opt/conda/lib/python3.7/site-packages (from kubernetes==10.0.1->kfserving>=0.2.0->adserver==0.1.0) (0.57.0)
+Requirement already satisfied: requests-oauthlib in /opt/conda/lib/python3.7/site-packages (from kubernetes==10.0.1->kfserving>=0.2.0->adserver==0.1.0) (1.3.0)
+Requirement already satisfied: cryptography>=1.1.0 in /opt/conda/lib/python3.7/site-packages (from adal>=1.2.2->kfserving>=0.2.0->adserver==0.1.0) (2.7)
+Requirement already satisfied: PyJWT>=1.0.0 in /opt/conda/lib/python3.7/site-packages (from adal>=1.2.2->kfserving>=0.2.0->adserver==0.1.0) (1.7.1)
+Requirement already satisfied: googleapis-common-protos<2.0dev,>=1.6.0 in /opt/conda/lib/python3.7/site-packages (from google-api-core<2.0.0dev,>=1.19.0->google-cloud-core==1.4.1->adserver==0.1.0) (1.52.0)
+Requirement already satisfied: rsa<5,>=3.1.4; python_version >= "3.5" in /opt/conda/lib/python3.7/site-packages (from google-auth<2.0dev,>=1.11.0->google-cloud-storage==1.31.2->adserver==0.1.0) (4.6)
+Requirement already satisfied: pyasn1-modules>=0.2.1 in /opt/conda/lib/python3.7/site-packages (from google-auth<2.0dev,>=1.11.0->google-cloud-storage==1.31.2->adserver==0.1.0) (0.2.8)
+Requirement already satisfied: cachetools<5.0,>=2.0.0 in /opt/conda/lib/python3.7/site-packages (from google-auth<2.0dev,>=1.11.0->google-cloud-storage==1.31.2->adserver==0.1.0) (4.1.1)
+Requirement already satisfied: idna<2.9,>=2.5 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0dev,>=2.18.0->google-cloud-storage==1.31.2->adserver==0.1.0) (2.8)
+Requirement already satisfied: chardet<3.1.0,>=3.0.2 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0dev,>=2.18.0->google-cloud-storage==1.31.2->adserver==0.1.0) (3.0.4)
+Requirement already satisfied: google-crc32c<2.0dev,>=1.0; python_version >= "3.5" in /opt/conda/lib/python3.7/site-packages (from google-resumable-media<2.0dev,>=1.0.0->google-cloud-storage==1.31.2->adserver==0.1.0) (1.0.0)
+Requirement already satisfied: ephem>=3.7.5.3 in /opt/conda/lib/python3.7/site-packages (from LunarCalendar>=0.0.9->fbprophet<0.7,>=0.5->alibi-detect->adserver==0.1.0) (3.7.7.1)
+Requirement already satisfied: pymeeus<=1,>=0.3.6 in /opt/conda/lib/python3.7/site-packages (from convertdate>=2.1.2->fbprophet<0.7,>=0.5->alibi-detect->adserver==0.1.0) (0.3.7)
+Requirement already satisfied: markdown>=2.6.8 in /opt/conda/lib/python3.7/site-packages (from tensorboard<3,>=2.3.0->tensorflow>=2->alibi-detect->adserver==0.1.0) (3.3)
+Requirement already satisfied: google-auth-oauthlib<0.5,>=0.4.1 in /opt/conda/lib/python3.7/site-packages (from tensorboard<3,>=2.3.0->tensorflow>=2->alibi-detect->adserver==0.1.0) (0.4.1)
+Requirement already satisfied: werkzeug>=0.11.15 in /opt/conda/lib/python3.7/site-packages (from tensorboard<3,>=2.3.0->tensorflow>=2->alibi-detect->adserver==0.1.0) (1.0.1)
+Requirement already satisfied: tensorboard-plugin-wit>=1.6.0 in /opt/conda/lib/python3.7/site-packages (from tensorboard<3,>=2.3.0->tensorflow>=2->alibi-detect->adserver==0.1.0) (1.7.0)
+Requirement already satisfied: click in /opt/conda/lib/python3.7/site-packages (from sacremoses->transformers>=2.10.0->alibi-detect->adserver==0.1.0) (7.1.2)
+Requirement already satisfied: oauthlib>=3.0.0 in /opt/conda/lib/python3.7/site-packages (from requests-oauthlib->kubernetes==10.0.1->kfserving>=0.2.0->adserver==0.1.0) (3.1.0)
+Requirement already satisfied: asn1crypto>=0.21.0 in /opt/conda/lib/python3.7/site-packages (from cryptography>=1.1.0->adal>=1.2.2->kfserving>=0.2.0->adserver==0.1.0) (1.0.1)
+Requirement already satisfied: cffi!=1.11.3,>=1.8 in /opt/conda/lib/python3.7/site-packages (from cryptography>=1.1.0->adal>=1.2.2->kfserving>=0.2.0->adserver==0.1.0) (1.12.3)
+Requirement already satisfied: pyasn1>=0.1.3 in /opt/conda/lib/python3.7/site-packages (from rsa<5,>=3.1.4; python_version >= "3.5"->google-auth<2.0dev,>=1.11.0->google-cloud-storage==1.31.2->adserver==0.1.0) (0.4.8)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /opt/conda/lib/python3.7/site-packages (from markdown>=2.6.8->tensorboard<3,>=2.3.0->tensorflow>=2->alibi-detect->adserver==0.1.0) (2.0.0)
+Requirement already satisfied: pycparser in /opt/conda/lib/python3.7/site-packages (from cffi!=1.11.3,>=1.8->cryptography>=1.1.0->adal>=1.2.2->kfserving>=0.2.0->adserver==0.1.0) (2.19)
+Requirement already satisfied: zipp>=0.5 in /opt/conda/lib/python3.7/site-packages (from importlib-metadata; python_version < "3.8"->markdown>=2.6.8->tensorboard<3,>=2.3.0->tensorflow>=2->alibi-detect->adserver==0.1.0) (3.3.0)
+Installing collected packages: google-cloud-core, adserver
+  Attempting uninstall: google-cloud-core
+    Found existing installation: google-cloud-core 1.4.3
+    Uninstalling google-cloud-core-1.4.3:
+      Successfully uninstalled google-cloud-core-1.4.3
+  Running setup.py develop for adserver
+Successfully installed adserver google-cloud-core-1.4.1
+Removing intermediate container 9e6ad0c369f5
+ ---> 287d2dc0baf4
+Step 10/16 : RUN pip install pip-licenses
+ ---> Running in 3a3c3a51a6ce
+Collecting pip-licenses
+  Downloading pip_licenses-2.3.0-py3-none-any.whl (14 kB)
+Collecting PTable
+  Downloading PTable-0.9.2.tar.gz (31 kB)
+Building wheels for collected packages: PTable
+  Building wheel for PTable (setup.py): started
+  Building wheel for PTable (setup.py): finished with status 'done'
+  Created wheel for PTable: filename=PTable-0.9.2-py3-none-any.whl size=22907 sha256=b7c1977306e1ad61de68aa66473545db800c6774bff235d868396727b8cbaffb
+  Stored in directory: /root/.cache/pip/wheels/33/df/2f/674985b3f8a2de3f96357d1eadef5110f74fa91b3785e52a54
+Successfully built PTable
+Installing collected packages: PTable, pip-licenses
+Successfully installed PTable-0.9.2 pip-licenses-2.3.0
+Removing intermediate container 3a3c3a51a6ce
+ ---> 73b9c53df107
+Step 11/16 : RUN mkdir ./licenses && pip-licenses --from=mixed --format=csv --output-file=./licenses/license_info.csv &&     pip-licenses --from=mixed --format=plain-vertical --with-license-file --no-license-path --output-file=./licenses/license.txt
+ ---> Running in f8b296fa62dc
+created path: ./licenses/license_info.csv
+created path: ./licenses/license.txt
+Removing intermediate container f8b296fa62dc
+ ---> d92fe0bdf969
+Step 12/16 : USER root
+ ---> Running in d95ed713c59b
+Removing intermediate container d95ed713c59b
+ ---> 094dd035d6c0
+Step 13/16 : RUN yum install -y mesa-libGL
+ ---> Running in aab22c303aa8
+Updating Subscription Management repositories.
+Unable to read consumer identity
+This system is not registered to Red Hat Subscription Management. You can use subscription-manager to register.
+Last metadata expiration check: 4:58:59 ago on Thu Oct  8 13:40:06 2020.
+Dependencies resolved.
+================================================================================
+ Package            Arch        Version              Repository            Size
+================================================================================
+Installing:
+ mesa-libGL         x86_64      19.3.4-2.el8         ubi-8-appstream      184 k
+Installing dependencies:
+ hwdata             noarch      0.314-8.4.el8        ubi-8-baseos         1.6 M
+ libX11             x86_64      1.6.8-3.el8          ubi-8-appstream      611 k
+ libX11-common      noarch      1.6.8-3.el8          ubi-8-appstream      158 k
+ libX11-xcb         x86_64      1.6.8-3.el8          ubi-8-appstream       14 k
+ libXau             x86_64      1.0.8-13.el8         ubi-8-appstream       36 k
+ libXdamage         x86_64      1.1.4-14.el8         ubi-8-appstream       27 k
+ libXext            x86_64      1.3.3-9.el8          ubi-8-appstream       45 k
+ libXfixes          x86_64      5.0.3-7.el8          ubi-8-appstream       25 k
+ libXxf86vm         x86_64      1.1.4-9.el8          ubi-8-appstream       19 k
+ libdrm             x86_64      2.4.100-1.el8        ubi-8-appstream      164 k
+ libglvnd           x86_64      1:1.2.0-6.el8        ubi-8-appstream       98 k
+ libglvnd-glx       x86_64      1:1.2.0-6.el8        ubi-8-appstream      136 k
+ libpciaccess       x86_64      0.14-1.el8           ubi-8-baseos          32 k
+ libxcb             x86_64      1.13.1-1.el8         ubi-8-appstream      229 k
+ libxshmfence       x86_64      1.3-2.el8            ubi-8-appstream       13 k
+ mesa-libglapi      x86_64      19.3.4-2.el8         ubi-8-appstream       63 k
+
+Transaction Summary
+================================================================================
+Install  17 Packages
+
+Total download size: 3.4 M
+Installed size: 14 M
+Downloading Packages:
+(1/17): libpciaccess-0.14-1.el8.x86_64.rpm      398 kB/s |  32 kB     00:00    
+(2/17): libXext-1.3.3-9.el8.x86_64.rpm          539 kB/s |  45 kB     00:00    
+(3/17): libXfixes-5.0.3-7.el8.x86_64.rpm        7.6 MB/s |  25 kB     00:00    
+(4/17): libXau-1.0.8-13.el8.x86_64.rpm          8.4 MB/s |  36 kB     00:00    
+(5/17): libxshmfence-1.3-2.el8.x86_64.rpm       3.3 MB/s |  13 kB     00:00    
+(6/17): libXxf86vm-1.1.4-9.el8.x86_64.rpm       5.7 MB/s |  19 kB     00:00    
+(7/17): libXdamage-1.1.4-14.el8.x86_64.rpm      7.9 MB/s |  27 kB     00:00    
+(8/17): libX11-common-1.6.8-3.el8.noarch.rpm     20 MB/s | 158 kB     00:00    
+(9/17): libglvnd-1.2.0-6.el8.x86_64.rpm          11 MB/s |  98 kB     00:00    
+(10/17): libX11-xcb-1.6.8-3.el8.x86_64.rpm      4.6 MB/s |  14 kB     00:00    
+(11/17): mesa-libglapi-19.3.4-2.el8.x86_64.rpm   13 MB/s |  63 kB     00:00    
+(12/17): libX11-1.6.8-3.el8.x86_64.rpm           32 MB/s | 611 kB     00:00    
+(13/17): libglvnd-glx-1.2.0-6.el8.x86_64.rpm     15 MB/s | 136 kB     00:00    
+(14/17): hwdata-0.314-8.4.el8.noarch.rpm         12 MB/s | 1.6 MB     00:00    
+(15/17): libdrm-2.4.100-1.el8.x86_64.rpm         13 MB/s | 164 kB     00:00    
+(16/17): mesa-libGL-19.3.4-2.el8.x86_64.rpm      11 MB/s | 184 kB     00:00    
+(17/17): libxcb-1.13.1-1.el8.x86_64.rpm          29 MB/s | 229 kB     00:00    
+--------------------------------------------------------------------------------
+Total                                            23 MB/s | 3.4 MB     00:00     
+Running transaction check
+Transaction check succeeded.
+Running transaction test
+Transaction test succeeded.
+Running transaction
+  Preparing        :                                                        1/1 
+  Installing       : mesa-libglapi-19.3.4-2.el8.x86_64                     1/17 
+  Running scriptlet: mesa-libglapi-19.3.4-2.el8.x86_64                     1/17 
+  Installing       : libX11-xcb-1.6.8-3.el8.x86_64                         2/17 
+  Installing       : libglvnd-1:1.2.0-6.el8.x86_64                         3/17 
+  Installing       : libX11-common-1.6.8-3.el8.noarch                      4/17 
+  Installing       : libxshmfence-1.3-2.el8.x86_64                         5/17 
+  Installing       : libXau-1.0.8-13.el8.x86_64                            6/17 
+  Installing       : libxcb-1.13.1-1.el8.x86_64                            7/17 
+  Installing       : libX11-1.6.8-3.el8.x86_64                             8/17 
+  Installing       : libXext-1.3.3-9.el8.x86_64                            9/17 
+  Installing       : libXfixes-5.0.3-7.el8.x86_64                         10/17 
+  Installing       : libXdamage-1.1.4-14.el8.x86_64                       11/17 
+  Installing       : libXxf86vm-1.1.4-9.el8.x86_64                        12/17 
+  Installing       : hwdata-0.314-8.4.el8.noarch                          13/17 
+  Installing       : libpciaccess-0.14-1.el8.x86_64                       14/17 
+  Installing       : libdrm-2.4.100-1.el8.x86_64                          15/17 
+  Installing       : libglvnd-glx-1:1.2.0-6.el8.x86_64                    16/17 
+  Installing       : mesa-libGL-19.3.4-2.el8.x86_64                       17/17 
+  Running scriptlet: mesa-libGL-19.3.4-2.el8.x86_64                       17/17 
+  Verifying        : hwdata-0.314-8.4.el8.noarch                           1/17 
+  Verifying        : libpciaccess-0.14-1.el8.x86_64                        2/17 
+  Verifying        : libXext-1.3.3-9.el8.x86_64                            3/17 
+  Verifying        : libXfixes-5.0.3-7.el8.x86_64                          4/17 
+  Verifying        : libXau-1.0.8-13.el8.x86_64                            5/17 
+  Verifying        : libxshmfence-1.3-2.el8.x86_64                         6/17 
+  Verifying        : libXxf86vm-1.1.4-9.el8.x86_64                         7/17 
+  Verifying        : libXdamage-1.1.4-14.el8.x86_64                        8/17 
+  Verifying        : libX11-common-1.6.8-3.el8.noarch                      9/17 
+  Verifying        : libglvnd-1:1.2.0-6.el8.x86_64                        10/17 
+  Verifying        : libX11-1.6.8-3.el8.x86_64                            11/17 
+  Verifying        : libX11-xcb-1.6.8-3.el8.x86_64                        12/17 
+  Verifying        : mesa-libglapi-19.3.4-2.el8.x86_64                    13/17 
+  Verifying        : libglvnd-glx-1:1.2.0-6.el8.x86_64                    14/17 
+  Verifying        : mesa-libGL-19.3.4-2.el8.x86_64                       15/17 
+  Verifying        : libdrm-2.4.100-1.el8.x86_64                          16/17 
+  Verifying        : libxcb-1.13.1-1.el8.x86_64                           17/17 
+Installed products updated.
+
+Installed:
+  hwdata-0.314-8.4.el8.noarch            libX11-1.6.8-3.el8.x86_64             
+  libX11-common-1.6.8-3.el8.noarch       libX11-xcb-1.6.8-3.el8.x86_64         
+  libXau-1.0.8-13.el8.x86_64             libXdamage-1.1.4-14.el8.x86_64        
+  libXext-1.3.3-9.el8.x86_64             libXfixes-5.0.3-7.el8.x86_64          
+  libXxf86vm-1.1.4-9.el8.x86_64          libdrm-2.4.100-1.el8.x86_64           
+  libglvnd-1:1.2.0-6.el8.x86_64          libglvnd-glx-1:1.2.0-6.el8.x86_64     
+  libpciaccess-0.14-1.el8.x86_64         libxcb-1.13.1-1.el8.x86_64            
+  libxshmfence-1.3-2.el8.x86_64          mesa-libGL-19.3.4-2.el8.x86_64        
+  mesa-libglapi-19.3.4-2.el8.x86_64     
+
+Complete!
+Removing intermediate container aab22c303aa8
+ ---> fc8a3e5becdc
+Step 14/16 : RUN mv ./licenses /licenses
+ ---> Running in c3e532cbc835
+Removing intermediate container c3e532cbc835
+ ---> 36f6f348f5af
+Step 15/16 : USER default
+ ---> Running in dc5e8d432a71
+Removing intermediate container dc5e8d432a71
+ ---> ad92a1648e87
+Step 16/16 : ENTRYPOINT ["python", "-m", "adserver"]
+ ---> Running in e33e1233adaa
+Removing intermediate container e33e1233adaa
+ ---> 71854f70a40e
+Successfully built 71854f70a40e
+Successfully tagged seldonio/alibi-detect-server:1.3.0-dev
+kind load docker-image seldonio/alibi-detect-server:1.3.0-dev
+Image: "seldonio/alibi-detect-server:1.3.0-dev" with ID "sha256:71854f70a40e6ff600b455d774fcb6b37ff40923b1218404393a7f6dafc72524" not present on node "kind-control-plane"
+Image: "seldonio/alibi-detect-server:1.3.0-dev" with ID "sha256:71854f70a40e6ff600b455d774fcb6b37ff40923b1218404393a7f6dafc72524" not present on node "kind-worker"
+make[1]: Leaving directory '/workspace/source/components/alibi-detect-server'
+Files changed in misc folders:
+SKIPPING MISC IMAGE BUILD...
+kubectl create namespace seldon || echo "Namespace seldon already exists"
+namespace/seldon created
+kubectl create namespace test1 || echo "Namespace test1 already exists"
+namespace/test1 created
+helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+"stable" has been added to your repositories
+helm repo add seldonio https://storage.googleapis.com/seldon-charts
+"seldonio" has been added to your repositories
+helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
+"jaegertracing" has been added to your repositories
+helm repo add datawire https://www.getambassador.io
+Error: looks like "https://www.getambassador.io" is not a valid chart repository or cannot be reached: failed to fetch https://www.getambassador.io/index.yaml : 503 Service Unavailable
+make: *** [Makefile:49: helm_setup] Error 1
+Kind setup returned errors
+kind delete cluster
+Deleting cluster "kind" ...
+Stopping Docker: dockerProgram process in pidfile '/var/run/docker-ssd.pid', 1 process(es), refused to die.
+[31m
+Pipeline failed on stage 'end-to-end' : container 'step-test-end-to-end'. The execution of the pipeline has stopped.[0m
