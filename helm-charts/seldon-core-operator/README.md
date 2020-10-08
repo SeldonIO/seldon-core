@@ -1,6 +1,6 @@
 # seldon-core-operator
 
-![Version: 1.2.3-dev](https://img.shields.io/badge/Version-1.2.3-dev-informational?style=flat-square)
+![Version: 1.3.0-dev](https://img.shields.io/badge/Version-1.3.0-dev-informational?style=flat-square)
 
 Seldon Core CRD and controller helm chart for Kubernetes.
 
@@ -8,14 +8,14 @@ Seldon Core CRD and controller helm chart for Kubernetes.
 
 To use this chart, you will first need to add the `seldonio` Helm repo:
 
-```shell
+```bash
 helm repo add seldonio https://storage.googleapis.com/seldon-charts
 helm repo update
 ```
 
 Onca that's done, you should then be able to deploy the chart as:
 
-```shell
+```bash
 kubectl create namespace seldon-system
 helm install seldon-core-operator seldonio/seldon-core-operator --namespace seldon-system
 ```
@@ -45,7 +45,7 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | engine.image.pullPolicy | string | `"IfNotPresent"` |  |
 | engine.image.registry | string | `"docker.io"` |  |
 | engine.image.repository | string | `"seldonio/engine"` |  |
-| engine.image.tag | string | `"1.2.3-dev"` |  |
+| engine.image.tag | string | `"1.3.0-dev"` |  |
 | engine.logMessagesExternally | bool | `false` |  |
 | engine.port | int | `8000` |  |
 | engine.prometheus.path | string | `"/prometheus"` |  |
@@ -55,18 +55,18 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | executor.image.pullPolicy | string | `"IfNotPresent"` |  |
 | executor.image.registry | string | `"docker.io"` |  |
 | executor.image.repository | string | `"seldonio/seldon-core-executor"` |  |
-| executor.image.tag | string | `"1.2.3-dev"` |  |
+| executor.image.tag | string | `"1.3.0-dev"` |  |
 | executor.metricsPortName | string | `"metrics"` |  |
 | executor.port | int | `8000` |  |
 | executor.prometheus.path | string | `"/prometheus"` |  |
 | executor.requestLogger.defaultEndpoint | string | `"http://default-broker"` |  |
 | executor.serviceAccount.name | string | `"default"` |  |
 | executor.user | int | `8888` |  |
-| explainer.image | string | `"seldonio/alibiexplainer:1.2.3-dev"` |  |
+| explainer.image | string | `"seldonio/alibiexplainer:1.3.0-dev"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.registry | string | `"docker.io"` |  |
 | image.repository | string | `"seldonio/seldon-core-operator"` |  |
-| image.tag | string | `"1.2.3-dev"` |  |
+| image.tag | string | `"1.3.0-dev"` |  |
 | istio.enabled | bool | `false` |  |
 | istio.gateway | string | `"istio-system/seldon-gateway"` |  |
 | istio.tlsMode | string | `""` |  |
@@ -79,23 +79,31 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | predictiveUnit.defaultEnvSecretRefName | string | `""` |  |
 | predictiveUnit.metricsPortName | string | `"metrics"` |  |
 | predictiveUnit.port | int | `9000` |  |
-| predictor_servers.MLFLOW_SERVER.grpc.defaultImageVersion | string | `"1.2.3-dev"` |  |
+| predictor_servers.MLFLOW_SERVER.grpc.defaultImageVersion | string | `"1.3.0-dev"` |  |
 | predictor_servers.MLFLOW_SERVER.grpc.image | string | `"seldonio/mlflowserver_grpc"` |  |
-| predictor_servers.MLFLOW_SERVER.rest.defaultImageVersion | string | `"1.2.3-dev"` |  |
+| predictor_servers.MLFLOW_SERVER.rest.defaultImageVersion | string | `"1.3.0-dev"` |  |
 | predictor_servers.MLFLOW_SERVER.rest.image | string | `"seldonio/mlflowserver_rest"` |  |
-| predictor_servers.SKLEARN_SERVER.grpc.defaultImageVersion | string | `"1.2.3-dev"` |  |
+| predictor_servers.SKLEARN_SERVER.grpc.defaultImageVersion | string | `"1.3.0-dev"` |  |
 | predictor_servers.SKLEARN_SERVER.grpc.image | string | `"seldonio/sklearnserver_grpc"` |  |
-| predictor_servers.SKLEARN_SERVER.rest.defaultImageVersion | string | `"1.2.3-dev"` |  |
+| predictor_servers.SKLEARN_SERVER.protocols.kfserving.defaultImageVersion | string | `"0.1.0"` |  |
+| predictor_servers.SKLEARN_SERVER.protocols.kfserving.image | string | `"seldonio/mlserver"` |  |
+| predictor_servers.SKLEARN_SERVER.rest.defaultImageVersion | string | `"1.3.0-dev"` |  |
 | predictor_servers.SKLEARN_SERVER.rest.image | string | `"seldonio/sklearnserver_rest"` |  |
-| predictor_servers.TENSORFLOW_SERVER.grpc.defaultImageVersion | string | `"1.2.3-dev"` |  |
+| predictor_servers.TENSORFLOW_SERVER.grpc.defaultImageVersion | string | `"1.3.0-dev"` |  |
 | predictor_servers.TENSORFLOW_SERVER.grpc.image | string | `"seldonio/tfserving-proxy_grpc"` |  |
-| predictor_servers.TENSORFLOW_SERVER.rest.defaultImageVersion | string | `"1.2.3-dev"` |  |
+| predictor_servers.TENSORFLOW_SERVER.rest.defaultImageVersion | string | `"1.3.0-dev"` |  |
 | predictor_servers.TENSORFLOW_SERVER.rest.image | string | `"seldonio/tfserving-proxy_rest"` |  |
 | predictor_servers.TENSORFLOW_SERVER.tensorflow | bool | `true` |  |
 | predictor_servers.TENSORFLOW_SERVER.tfImage | string | `"tensorflow/serving:2.1.0"` |  |
-| predictor_servers.XGBOOST_SERVER.grpc.defaultImageVersion | string | `"1.2.3-dev"` |  |
+| predictor_servers.TRITON_SERVER.grpc.defaultImageVersion | string | `"20.08-py3"` |  |
+| predictor_servers.TRITON_SERVER.grpc.image | string | `"nvcr.io/nvidia/tritonserver"` |  |
+| predictor_servers.TRITON_SERVER.rest.defaultImageVersion | string | `"20.08-py3"` |  |
+| predictor_servers.TRITON_SERVER.rest.image | string | `"nvcr.io/nvidia/tritonserver"` |  |
+| predictor_servers.XGBOOST_SERVER.grpc.defaultImageVersion | string | `"1.3.0-dev"` |  |
 | predictor_servers.XGBOOST_SERVER.grpc.image | string | `"seldonio/xgboostserver_grpc"` |  |
-| predictor_servers.XGBOOST_SERVER.rest.defaultImageVersion | string | `"1.2.3-dev"` |  |
+| predictor_servers.XGBOOST_SERVER.protocols.kfserving.defaultImageVersion | string | `"0.1.0"` |  |
+| predictor_servers.XGBOOST_SERVER.protocols.kfserving.image | string | `"seldonio/mlserver"` |  |
+| predictor_servers.XGBOOST_SERVER.rest.defaultImageVersion | string | `"1.3.0-dev"` |  |
 | predictor_servers.XGBOOST_SERVER.rest.image | string | `"seldonio/xgboostserver_rest"` |  |
 | rbac.configmap.create | bool | `true` |  |
 | rbac.create | bool | `true` |  |

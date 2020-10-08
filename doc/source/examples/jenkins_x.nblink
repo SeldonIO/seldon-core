@@ -1,3 +1,4 @@
 {
-  "path": "../../../examples/cicd/sig-mlops-seldon-jenkins-x/README.ipynb"
+  "path": "../../../examples/cicd/sig-mlops-seldon-jenkins-x/README.ipynb",
+  "extra-media": ["../../../examples/cicd/sig-mlops-seldon-jenkins-x/images"]
 }

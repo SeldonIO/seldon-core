@@ -4,7 +4,7 @@
 
 Use the `Makefile` in the parent `operator` folder:
 
-```shell
+```bash
 make install-dev
 make licenses
 ```

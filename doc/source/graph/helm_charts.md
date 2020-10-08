@@ -35,4 +35,3 @@ A set of charts to provide example templates for creating particular inference g
    :maxdepth: 1
 
     seldon-core-loadtesting <../charts/seldon-core-loadtesting>
-

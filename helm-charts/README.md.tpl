@@ -9,7 +9,7 @@
 
 To use this chart, you will first need to add the `seldonio` Helm repo:
 
-```shell
+```bash
 helm repo add seldonio https://storage.googleapis.com/seldon-charts
 helm repo update
 ```
@@ -20,7 +20,7 @@ helm repo update
 
 Onca that's done, you should then be able to deploy the chart as:
 
-```shell
+```bash
 kubectl create namespace seldon-system
 helm install {{ .Name }} seldonio/{{ .Name }} --namespace seldon-system
 ```
@@ -29,14 +29,14 @@ helm install {{ .Name }} seldonio/{{ .Name }} --namespace seldon-system
 
 Once that's done, you should then be able to use the inference graph template as:
 
-```shell
+```bash
 helm template $MY_MODEL_NAME seldonio/{{ .Name }} --namespace $MODELS_NAMESPACE
 ```
 
 Note that you can also deploy the inference graph directly to your cluster
 using:
 
-```shell
+```bash
 helm install $MY_MODEL_NAME seldonio/{{ .Name }} --namespace $MODELS_NAMESPACE
 ```
 
