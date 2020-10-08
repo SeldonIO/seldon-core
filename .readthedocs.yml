@@ -5,5 +5,5 @@ python:
   install:
     - method: pip
       path: python
-    - requirements: doc/requirements_docs.txt
+    - requirements: doc/requirements.txt
 
