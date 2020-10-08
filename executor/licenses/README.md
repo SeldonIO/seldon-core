@@ -4,7 +4,7 @@
 
 Use the `Makefile` in the parent `executor` folder:
 
-```shell
+```bash
 make install-dev
 make licenses
 ```

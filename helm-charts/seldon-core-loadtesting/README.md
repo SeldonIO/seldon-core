@@ -8,14 +8,14 @@ Loadtesting for seldon core
 
 To use this chart, you will first need to add the `seldonio` Helm repo:
 
-```shell
+```bash
 helm repo add seldonio https://storage.googleapis.com/seldon-charts
 helm repo update
 ```
 
 Onca that's done, you should then be able to deploy the chart as:
 
-```shell
+```bash
 kubectl create namespace seldon-system
 helm install seldon-core-loadtesting seldonio/seldon-core-loadtesting --namespace seldon-system
 ```
