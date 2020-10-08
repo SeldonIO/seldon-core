@@ -77,7 +77,6 @@ spec:
       replicas: 1
 ```
 
-```
 You can also try out a [worked
 notebook](../examples/server_examples.html#Serve-MLflow-Elasticnet-Wines-Model)
 or check our [talk at the Spark + AI Summit

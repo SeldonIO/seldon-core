@@ -34,13 +34,14 @@ class SeldonClientException(Exception):
 
 class SeldonChannelCredentials(object):
     """
-    Channel credentials
+    Channel credentials.
+
     Presently just denotes an SSL connection.
     For GRPC in order to be properly implemented, you need to provide *either*
-        the root_certificate_files, *or* all the file paths.
+    the root_certificate_files, *or* all the file paths.
     The verify attribute currently is used to avoid SSL verification in REST
-        however for GRPC it is recommended that you provide a path at least
-        for the root_certificates_file otherwise it may not work as expected.
+    however for GRPC it is recommended that you provide a path at least for the
+    root_certificates_file otherwise it may not work as expected.
     """
 
     def __init__(
