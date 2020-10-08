@@ -15,20 +15,11 @@ help:
 
 TAG=master
 
-cluster-manager-dependencies: 
-	cd ../cluster-manager && mvn clean project-info-reports:dependencies
-	cd ../cluster-manager/target/site && \
-		aws s3 cp dependencies.html s3://seldon-core-docs/${TAG}/cluster-manager/dependencies/dependencies.html --acl public-read && \
-		aws s3 cp css s3://seldon-core-docs/${TAG}/cluster-manager/dependencies/css/ --acl public-read --recursive && \
-		aws s3 cp images s3://seldon-core-docs/${TAG}/cluster-manager/dependencies/images/ --acl public-read --recursive
+install-dev:
+	pip install -r requirements.txt
 
-.PHONY: cluster-manager-jacoco
-cluster-manager-jacoco: 
-	cd ../cluster-manager && mvn clean verify
-	cd ../cluster-manager/target/site && \
-		aws s3 cp jacoco  s3://seldon-core-docs/${TAG}/cluster-manager/jacoco/ --acl public-read --recursive
-
-#html:: source/_static/cluster-manager/dependencies source/_static/cluster-manager/jacoco
+html: 
+	sphinx-build -b html -n source _build/html
 
 .PHONY: clean
 clean:
