@@ -1,6 +1,6 @@
-======
+==========================
 Python Seldon Core Module
-======
+==========================
 
 The Python seldon-core module provides two core pieces of functionality:
 

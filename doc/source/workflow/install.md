@@ -10,7 +10,7 @@
     * Istio ( sample installation using Istio 1.5 can be found at https://github.com/SeldonIO/seldon-core/tree/master/examples/auth )
     * Ambassador
 
-#### Running older versions of Seldon Core? 
+### Running older versions of Seldon Core? 
 
 Make sure you read the ["Upgrading Seldon Core Guide"](../reference/upgrading.md)
 

@@ -79,6 +79,9 @@ nitpick_ignore = [
     ("py:data", "google.protobuf.any_pb2.Any"),
 ]
 
+# Avvoid "Duplicate explicit target name" warnings
+m2r_anonymous_references = True
+
 # nbsphinx settings
 # nbsphinx_execute = 'auto'
 nbsphinx_execute = "never"

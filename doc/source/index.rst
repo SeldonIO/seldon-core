@@ -2,6 +2,29 @@
 Seldon Core
 ===========
 
+.. These are hidden links, which are not linked anywhere but may still be
+   exposed through an URL in readthedocs
+.. TODO Filter through these to remove or ignore old ones
+.. toctree::
+   :hidden:
+
+    R Wrapping Docker <R/r_wrapping_docker>
+    Seldon OpenVINO <charts/seldon-openvino>
+    Custom svc Name <graph/custom_svc_name>
+    gRPC Load Balancing Ambassador <graph/grpc_load_balancing_ambassador>
+    Model Engine Java Opts <graph/model_engine_java_opts>
+    Model REST gRPC Settings <graph/model_rest_grpc_settings>
+    Model svcOrch Sep <graph/model_svcorch_sep>
+    Seldon <ingress/seldon>
+    APIs Reference <reference/apis/readme>
+    Engine Reference <reference/engine>
+    Integration NVIDIA Link <reference/integration_nvidia_link>
+    Integration Sagemaker Link <reference/integration_sagemaker_link>
+    Integration TFServing Link <reference/integration_tfserving_link>
+    Quickstart <workflow/quickstart>
+    S2I <wrappers/s2i>
+
+
 An open source platform to deploy your machine learning models on Kubernetes at massive scale.
 
 Overview
