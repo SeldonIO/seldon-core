@@ -8,21 +8,34 @@ Seldon Core
 .. toctree::
    :hidden:
 
-    R Wrapping Docker <R/r_wrapping_docker>
-    Seldon OpenVINO <charts/seldon-openvino>
-    Custom svc Name <graph/custom_svc_name>
-    gRPC Load Balancing Ambassador <graph/grpc_load_balancing_ambassador>
-    Model Engine Java Opts <graph/model_engine_java_opts>
-    Model REST gRPC Settings <graph/model_rest_grpc_settings>
-    Model svcOrch Sep <graph/model_svcorch_sep>
-    Seldon <ingress/seldon>
-    APIs Reference <reference/apis/readme>
-    Engine Reference <reference/engine>
-    Integration NVIDIA Link <reference/integration_nvidia_link>
-    Integration Sagemaker Link <reference/integration_sagemaker_link>
-    Integration TFServing Link <reference/integration_tfserving_link>
-    Quickstart <workflow/quickstart>
-    S2I <wrappers/s2i>
+   R Wrapping Docker <R/r_wrapping_docker>
+   Seldon OpenVINO <charts/seldon-openvino>
+   Custom svc Name <graph/custom_svc_name>
+   gRPC Load Balancing Ambassador <graph/grpc_load_balancing_ambassador>
+   Model Engine Java Opts <graph/model_engine_java_opts>
+   Model REST gRPC Settings <graph/model_rest_grpc_settings>
+   Model svcOrch Sep <graph/model_svcorch_sep>
+   Seldon <ingress/seldon>
+   APIs Reference <reference/apis/readme>
+   Engine Reference <reference/engine>
+   Integration NVIDIA Link <reference/integration_nvidia_link>
+   Integration Sagemaker Link <reference/integration_sagemaker_link>
+   Integration TFServing Link <reference/integration_tfserving_link>
+   Quickstart <workflow/quickstart>
+   S2I <wrappers/s2i>
+   Ambassador Circuit Breakers <examples/ambassador_circuit_breakers>
+   Istio <examples/istio>
+   Custom Metrics <examples/custom_metrics>
+   Drift CIFAR10 <examples/drift_cifar10>
+   Pachyderm <examples/pachyderm>
+   DVC <examples/dvc>
+   Graph Metadata <examples/graph-metadata>
+   Metadata <examples/metadata>
+   Metadata gRPC <examples/metadata_grpc>
+   Metadata Schema <examples/metadata_schema>
+   PVC TFJob <examples/pvc-tfjob>
+   Seldon Client <examples/seldon_client>
+   Server Examples <examples/server_examples>
 
 
 An open source platform to deploy your machine learning models on Kubernetes at massive scale.
