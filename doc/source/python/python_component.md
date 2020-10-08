@@ -53,7 +53,7 @@ You can also provide a method to return the column names for your prediction wit
 
 ### Examples
 
-You can follow [various notebook examples](../examples/notebooks.html).
+You can follow [various notebook examples](../examples/notebooks).
 
 ## Transformers
 

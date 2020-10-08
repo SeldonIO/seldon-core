@@ -110,7 +110,7 @@ print(r)
 
 Examples of using the `seldon_client` module can be found in the [example notebook](../examples/helm_examples.html).
 
-The API docs can be found [here](api/seldon_core.html#module-seldon_core.seldon_client).
+The API docs can be found [here](./api/seldon_core#module-seldon_core.seldon_client).
 
 ## Troubleshooting
 

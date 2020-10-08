@@ -1,7 +1,7 @@
 {{ template "chart.header" . }}
 {{ template "chart.deprecationWarning" . }}
 
-{{ template "chart.versionBadge" . }}{{ template "chart.typeBadge" . }}{{ template "chart.appVersionBadge" . }}
+![Version: {{ .Version }}](https://img.shields.io/static/v1?label=Version&message={{ .Version | replace "-" "--" }}&color=informational&style=flat-square) 
 
 {{ template "chart.description" . }}
 

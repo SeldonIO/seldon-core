@@ -64,6 +64,3 @@ If running inside an IDE and you are using Kind then make sure you set the KUBEC
 
 - [Build using private repository](build-using-private-repo.md)
 
-## Seldon Prow
-
-- [prow status](https://prow.seldon.io)

@@ -17,7 +17,7 @@ We use:
 [Pytest](https://docs.pytest.org/en/latest/getting-started.html#install-pytest)
 `pip install -U pytest`
 
-[gRPC.io Tools](https://grpc.io/docs/quickstart/python/#grpc-tools)
+[gRPC.io Tools](https://grpc.io/docs/languages/python/quickstart/#grpc-tools)
 `python -m pip install grpcio-tools`
 
 ### Setup
