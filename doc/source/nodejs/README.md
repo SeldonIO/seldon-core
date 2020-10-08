@@ -153,4 +153,4 @@ Can only by 0 at present.
 
 ### MODEL
 
-- [Example model](../examples/notebooks.html)
+- [Example model](../examples/notebooks)

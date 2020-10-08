@@ -129,9 +129,37 @@ language = None
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
-is_fast_build = os.environ.get("FAST_BUILD", False)
-if is_fast_build and is_fast_build.lower() == "true":
+is_fast_build = os.environ.get("FAST_BUILD", "False")
+if is_fast_build.lower() == "true":
     exclude_patterns = ["examples", "python/api"]
+
+is_linkcheck = os.environ.get("LINKCHECK", "False")
+if is_linkcheck.lower() == "true":
+    exclude_patterns = [
+        # Ignore all PR and issues links
+        "reference/changelog.rst",
+        # Ignore old releases
+        "reference/release-0.2.3.md",
+        "reference/release-0.2.5.md",
+        "reference/release-0.2.6.md",
+        "reference/release-0.2.7.md",
+        "reference/release-0.3.0.md",
+        "reference/release-0.4.0.md",
+        "python/api",
+    ]
+
+linkcheck_ignore = [
+    # Ignore localhost links
+    "http://0.0.0.0",
+    "http://localhost",
+    # Ignore relative links (i.e. starting with `../` or `./`)
+    r"^\.{1,2}/",
+    # Ignore image links, which are not getting replaced with the correct link
+    # More info in this issue: https://github.com/miyakogi/m2r/issues/49
+    r"^(?!http).*\.png$",
+]
+# Ignore anchors, as they doesn't seem to work very well
+linkcheck_anchors_ignore = [".*"]
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = None

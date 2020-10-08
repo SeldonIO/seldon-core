@@ -11,19 +11,30 @@ BUILDDIR      = _build
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-.PHONY: help Makefile
+.PHONY: clean livehtml livehtml-fast help Makefile
 
 TAG=master
 
 install-dev:
 	pip install -r requirements.txt
 
-.PHONY: clean
 clean:
 	rm -rf source/_static/cluster-manager/dependencies
 	rm -rf source/_static/cluster-manager/jacoco
 	rm -rf source/python/api
 	rm -rf _build
+
+lint: html linkcheck
+
+linkcheck:
+	# Check for links reported as broken, ignoring 429 (too many requests)
+	- LINKCHECK=true $(SPHINXBUILD) \
+		-b linkcheck \
+		 $(SPHINXOPTS) \
+		"$(SOURCEDIR)" \
+		"$(BUILDDIR)"
+	! grep -v '429' _build/output.txt | grep 'broken'
+
 
 livehtml:
 	sphinx-autobuild \

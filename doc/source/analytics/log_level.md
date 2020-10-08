@@ -29,7 +29,7 @@ less verbose):
    wrapper will disable the server's access logs, which are considered
    ``INFO``-level logs.
 
-When using the [Python wrapper](../python) (including the
+When using the [Python wrapper](../python/index) (including the
 [MLflow](../servers/mlflow), [SKLearn](../servers/sklearn) and
 [XGBoost](../servers/xgboost) pre-package servers), you can control the log
 level using the `SELDON_LOG_LEVEL` environment variable.

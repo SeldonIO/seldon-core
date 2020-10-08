@@ -8,7 +8,7 @@ Seldon aims to help organisations put their data science projects into productio
 
 Seldon-core provides scalable machine learning deployments running on Kubernetes. To deploy their models data scientists follow the steps as shown below:
 
-![API](deploy.png)
+![API](./deploy.png)
 
 1.  Package their runtime model as a Docker-formatted image
 1.  Describe their runtime graph as a Kubernetes resource
@@ -18,7 +18,7 @@ Once running their deployment can be updated as new image releases are created f
 
 The components of the runtime graph can be of various types. The most typical is a model which will provide predictions given some input features. Typically, the data scientist will have trained a model and saved the model parameters for use by a runtime component that will be provide new predictions at runtime. However, Seldon-Core allows a range of components to be created that can be joined together as building blocks to create more complex runtime graphs as show below:
 
-![graphs](graphs.png)
+![graphs](./graphs.png)
 
 The types of component you can create can include:
 
@@ -36,7 +36,7 @@ To integrate a component into seldon-core the data scientist needs to accomplish
 1.  Create a Docker-formatted image from your source code
 1.  Wrap your component as a service that exposes REST or gRPC endpoints that follow the seldon-core miroserice API.
 
-![wrap](wrap.png)
+![wrap](./wrap.png)
 
 To accomplish this we use Openshift's [source-to-image (s2i)](https://github.com/openshift/source-to-image) open source tool. S2i allows data scientists to wrap their code using a single command line call that can easily be embedded into a continuous integration pipeline. Seldon provides s2i builder images that contain middleware code to wrap the data scientist's component within a REST or gRPC server that respects the seldon-core microservice API. All that is needed is for the data scientist to follow a few conventions when creating their component in various languages as will be illustrated below. The growing set of source-to-image builder images can be found [here](https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i).
 

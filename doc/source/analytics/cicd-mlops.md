@@ -14,8 +14,8 @@ This page contains a high level overview on the the concepts that Seldon Core us
 
 We have put together a set of examples that showcase how to integrate Seldon Core with Jenkins Classic, ArgoCD and/or Jenkins X:
 
-* [CI / CD with Jenkins Classic](../examples/jenkins_classic.html)
-* [CI / CD with Jenkins X](../examples/jenkins_x.html)
+* [CI / CD with Jenkins Classic](../examples/jenkins_classic)
+* [CI / CD with Jenkins X](../examples/jenkins_x)
 
 
 

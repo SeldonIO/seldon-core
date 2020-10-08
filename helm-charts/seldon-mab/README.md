@@ -1,6 +1,6 @@
 # seldon-mab
 
-![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square)
+![Version: 0.2.0](https://img.shields.io/static/v1?label=Version&message=0.2.0&color=informational&style=flat-square)
 
 Chart to deploy a multi-armed bandits router over two Seldon deployments, so
 that traffic is sent to the best performing model.

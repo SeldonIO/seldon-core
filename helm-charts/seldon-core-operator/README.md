@@ -1,6 +1,6 @@
 # seldon-core-operator
 
-![Version: 1.3.0-dev](https://img.shields.io/badge/Version-1.3.0-dev-informational?style=flat-square)
+![Version: 1.3.0-dev](https://img.shields.io/static/v1?label=Version&message=1.3.0--dev&color=informational&style=flat-square)
 
 Seldon Core CRD and controller helm chart for Kubernetes.
 
