@@ -9,8 +9,8 @@ The core charts for installing Seldon Core are shown below.
 .. toctree::
    :maxdepth: 1
 
-    seldon-core-operator <../charts/seldon-core-operator>
-    seldon-core-analytics <../charts/seldon-core-analytics>
+   seldon-core-operator <../charts/seldon-core-operator>
+   seldon-core-analytics <../charts/seldon-core-analytics>
 
 For further details see [here](../workflow/install.md).
 
@@ -21,11 +21,11 @@ A set of charts to provide example templates for creating particular inference g
 .. toctree::
    :maxdepth: 1
 
-    seldon-single-model <../charts/seldon-single-model>
-    seldon-abtest <../charts/seldon-abtest>
-    seldon-mab <../charts/seldon-mab>
-    seldon-od-model <../charts/seldon-od-model>
-    seldon-od-transformer <../charts/seldon-od-transformer>
+   seldon-single-model <../charts/seldon-single-model>
+   seldon-abtest <../charts/seldon-abtest>
+   seldon-mab <../charts/seldon-mab>
+   seldon-od-model <../charts/seldon-od-model>
+   seldon-od-transformer <../charts/seldon-od-transformer>
 
 [A notebook with examples of using the above charts](https://docs.seldon.io/projects/seldon-core/en/latest/examples/helm_examples.html) is provided.
 
@@ -34,4 +34,5 @@ A set of charts to provide example templates for creating particular inference g
 .. toctree::
    :maxdepth: 1
 
-    seldon-core-loadtesting <../charts/seldon-core-loadtesting>
+   seldon-core-loadtesting <../charts/seldon-core-loadtesting>
+
