@@ -14,4 +14,3 @@ python:
     - method: pip
       path: python
     - requirements: doc/requirements.txt
-
