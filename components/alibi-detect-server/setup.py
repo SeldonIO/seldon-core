@@ -16,6 +16,9 @@ setup(
         "argparse >= 1.4.0",
         "numpy >= 1.8.2",
         "cloudevents",
+        # Fixes #2533
+        "google-cloud-core==1.4.1",
+        "google-cloud-storage==1.31.2",
     ],
     tests_require=tests_require,
     extras_require={"test": tests_require},
