@@ -1,6 +1,9 @@
 on: 
   issue_comment:
     types: [created]
+  push:
+    paths-ignore:
+      - .github/workflows/rebase.yml
 name: Automatic Rebase
 jobs:
   rebase:
