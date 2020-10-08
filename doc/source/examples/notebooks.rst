@@ -2,27 +2,6 @@
 Notebooks
 =========
 
-.. These are hidden links, which are not linked anywhere but may still be
-   exposed through an URL in readthedocs
-.. TODO Filter through these to remove or ignore old ones
-.. toctree::
-   :hidden:
-
-    Ambassador Circuit Breakers <ambassador_circuit_breakers>
-    Istio <istio>
-    Custom Metrics <custom_metrics>
-    Drift CIFAR10 <drift_cifar10>
-    Pachyderm <pachyderm>
-    DVC <dvc>
-    Graph Metadata <graph-metadata>
-    Metadata <metadata>
-    Metadata gRPC <metadata_grpc>
-    Metadata Schema <metadata_schema>
-    PVC TFJob <pvc-tfjob>
-    Seldon Client <seldon_client>
-    Server Examples <server_examples>
-
-
 Seldon Core Setup
 -----------------
 

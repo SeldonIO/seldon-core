@@ -10,6 +10,7 @@ Subpackages
 -----------
 
 .. toctree::
+   :maxdepth: 4
 
    seldon_core.proto
 
@@ -159,4 +160,3 @@ seldon\_core.wrapper module
    :members:
    :undoc-members:
    :show-inheritance:
-

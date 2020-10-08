@@ -49,7 +49,7 @@ extensions = [
     "sphinx.ext.ifconfig",
     "sphinx.ext.viewcode",
     #    'recommonmark',
-    "m2r",
+    "m2r2",
     "sphinx.ext.napoleon",
     "sphinx_autodoc_typehints",
     # Automatically generate API docs,
@@ -79,7 +79,7 @@ nitpick_ignore = [
     ("py:data", "google.protobuf.any_pb2.Any"),
 ]
 
-# Avvoid "Duplicate explicit target name" warnings
+# Avoid "Duplicate explicit target name" warnings
 m2r_anonymous_references = True
 
 # nbsphinx settings

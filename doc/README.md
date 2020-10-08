@@ -45,7 +45,7 @@ make livehtml-fast
 
 We use various Sphinx extensions and plugins to build the documentation:
 
- * [m2r](https://github.com/miyakogi/m2r) - to handle both `.rst` and `.md`
+ * [m2r2](https://github.com/crossnox/m2r2) - to handle both `.rst` and `.md`
  * [sphinx.ext.napoleon](https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html) - support extracting Numpy style doctrings for API doc generation
  * [sphinx_autodoc_typehints](https://github.com/agronholm/sphinx-autodoc-typehints) - support parsing of typehints for API doc generation
  * [sphinxcontrib.apidoc](https://github.com/sphinx-contrib/apidoc) - automatic running of [sphinx-apidoc](https://www.sphinx-doc.org/en/master/man/sphinx-apidoc.html) during the build to document API
