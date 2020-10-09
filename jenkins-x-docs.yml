@@ -4,7 +4,7 @@ pipelineConfig:
     pullRequest:
       pipeline:
         agent:
-          image: seldonio/core-builder:0.18
+          image: seldonio/core-builder:0.19
         stages:
         - name: pr-build-comment
           steps:
@@ -16,14 +16,24 @@ pipelineConfig:
           parallel:
           - name: linkcheck
             steps:
+              - name: install-seldon-core
+                command: make
+                args:
+                - -C python
+                - install_dev
               - name: make-linkcheck
                 command: make
                 args:
                 - -C doc
-                - install_dev
+                - install-dev
                 - linkcheck 
           - name: html
             steps:
+              - name: install-seldon-core
+                command: make
+                args:
+                - -C python
+                - install_dev
               - name: make-html
                 command: make
                 args:
