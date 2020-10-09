@@ -1,0 +1,316 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-2506-in-fkbrb-33[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-vphqm[0m
+{"level":"info","ts":1602257729.5295856,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1602257729.5302424,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2506-in-fkbrb-33[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-dmh7c[0m
+{"level":"info","ts":1602257730.5630572,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1602257730.5663655,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2506-in-fkbrb-33[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2506-in-fkbrb-33[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-5n5ks[0m
+{"level":"info","ts":1602257736.6687095,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1602257736.6703153,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2506-in-fkbrb-33[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-2506-in-fkbrb-56vt8[0m
+{"level":"info","ts":1602257737.0965102,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1602257742.818239,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2506-in-fkbrb-33[0m stage [32mpr-build-comment[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2506-in-fkbrb-33[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:f2df77572ab5b070a1d81d28584df255ea4a6bb3,2506:d8cfd50cb65f5002efea8bce138056fa3e410430
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch origin --unshallow d8cfd50cb65f5002efea8bce138056fa3e410430: f2df77572ab5b070a1d81d28584df255ea4a6bb3:
+DEBUG: ran git fetch --unshallow origin d8cfd50cb65f5002efea8bce138056fa3e410430: f2df77572ab5b070a1d81d28584df255ea4a6bb3: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard f2df77572ab5b070a1d81d28584df255ea4a6bb3
+DEBUG: ran git reset --hard f2df77572ab5b070a1d81d28584df255ea4a6bb3 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git merge d8cfd50cb65f5002efea8bce138056fa3e410430
+DEBUG: ran git merge d8cfd50cb65f5002efea8bce138056fa3e410430 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git log --format=%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%s%n%b%x1e f2df77572ab5b070a1d81d28584df255ea4a6bb3..HEAD
+Merged SHA 1983e32dfdbc7ea3f579d88514ca1a970f9a6be7 with commit message 'Merge commit 'd8cfd50cb65f5002efea8bce138056fa3e410430'' into base branch master
+Merged SHA d8cfd50cb65f5002efea8bce138056fa3e410430 with commit message 'add keda example to notebook end-to-end tests' into base branch master
+Merged SHA 7ac5b9233ea88611cd11f195500efbad5d860b1f with commit message 'add keda example' into base branch master
+Merged SHA 8165829d8c518f6b3354a37a947716f27624ad1b with commit message 'fix lint' into base branch master
+Merged SHA 185c631567a992a580603b024433aeaeff774925 with commit message 'fix build' into base branch master
+Merged SHA c662fd61c788a9a5391807b6e3b77b5023548713 with commit message 'fix comment' into base branch master
+Merged SHA 35d93fe93cdda413e105268407abcabce6bac2f5 with commit message 'Add KEDA support for seldon-core' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-2506-in-fkbrb-33[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=2506
++ BUILD_NUMBER=33
++ PIPELINE_CONTEXT=integration
+++ cat
++++ date
++ COMMENT_MSG='Fri Oct  9 15:35:52 UTC 2020
+The logs for [integration] [33] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2506/33.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2506 --build=33'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=2506 '--comment=Fri Oct  9 15:35:52 UTC 2020
+The logs for [integration] [33] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2506/33.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2506 --build=33'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2506-in-fkbrb-33[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-2506-in-fkbrb-r7ttl[0m
+{"level":"info","ts":1602257759.5895827,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1602257759.5932698,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2506-in-fkbrb-33[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-2506-in-fkbrb-q9wj6[0m
+{"level":"info","ts":1602257759.9536426,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1602257760.5718732,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2506-in-fkbrb-33[0m stage [32mend-to-end[0m and container [32mstep-credential-initializer-fnj9q[0m
+{"level":"info","ts":1602257763.585794,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1602257763.5864267,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2506-in-fkbrb-33[0m stage [32mend-to-end[0m and container [32mstep-working-dir-initializer-2jb2b[0m
+{"level":"info","ts":1602257764.6996155,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1602257764.7018106,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2506-in-fkbrb-33[0m stage [32mend-to-end[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2506-in-fkbrb-33[0m stage [32mend-to-end[0m and container [32mstep-create-dir-workspace-xr8wp[0m
+{"level":"info","ts":1602257772.8323102,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1602257772.8341808,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2506-in-fkbrb-33[0m stage [32mend-to-end[0m and container [32mstep-source-copy-workspace-blnpc[0m
+{"level":"info","ts":1602257773.2112997,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1602257773.7703671,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2506-in-fkbrb-33[0m stage [32mend-to-end[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2506-in-fkbrb-33[0m stage [32mend-to-end[0m and container [32mstep-test-end-to-end[0m
+Test run type is: [base]
+Starting Docker: docker.
+[SETUP] Waiting for Docker to be ready, sleeping for 1 seconds ...
+kind create cluster --config ../resources/kind_config.yaml
+Creating cluster "kind" ...
+ • Ensuring node image (kindest/node:v1.16.3) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.16.3) 🖼
+ • Preparing nodes 📦  ...
+ ✓ Preparing nodes 📦
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+ • Joining worker nodes 🚜  ...
+ ✓ Joining worker nodes 🚜
+Set kubectl context to "kind-kind"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-kind
+
+Have a nice day! 👋
+`kind get kubeconfig-path` is deprecated!
+
+KIND will export and merge kubeconfig like kops, minikube, etc.
+This command is now unnecessary and will be removed in a future release.
+
+For more info see: https://github.com/kubernetes-sigs/kind/issues/1060
+See also the output of `kind create cluster`
+
+Files changed in python folder:
+SKIPPING PYTHON IMAGE BUILD...
+Files changed in operator folder:
+operator/Dockerfile
+operator/Dockerfile.redhat
+operator/apis/machinelearning.seldon.io/v1/seldondeployment_types.go
+operator/apis/machinelearning.seldon.io/v1/zz_generated.deepcopy.go
+operator/config/crd/bases/machinelearning.seldon.io_seldondeployments.yaml
+operator/config/crd_v1/bases/machinelearning.seldon.io_seldondeployments.yaml
+operator/config/machinelearning.seldon.io_seldondeployments.yaml
+operator/config/rbac/role.yaml
+operator/constants/constants.go
+operator/controllers/cleaners_test.go
+operator/controllers/seldondeployment_controller.go
+operator/controllers/seldondeployment_controller_test.go
+operator/controllers/seldondeployment_explainers_test.go
+operator/controllers/suite_test.go
+operator/go.mod
+operator/go.sum
+operator/licenses/dep.txt
+operator/main.go
+operator/testing/keda.sh_scaledobjects.yaml
+operator/testing/machinelearning.seldon.io_seldondeployments.yaml
+cd ../../operator && make kind-image-install
+make[1]: Entering directory '/workspace/source/operator'
+go: creating new go.mod: module tmp
+go: downloading sigs.k8s.io/controller-tools v0.2.5
+go: found sigs.k8s.io/controller-tools/cmd/controller-gen in sigs.k8s.io/controller-tools v0.2.5
+go: downloading github.com/spf13/cobra v0.0.5
+go: downloading k8s.io/api v0.17.0
+go: downloading k8s.io/apimachinery v0.17.0
+go: downloading sigs.k8s.io/yaml v1.1.0
+go: downloading github.com/fatih/color v1.7.0
+go: downloading k8s.io/apiextensions-apiserver v0.17.0
+go: downloading golang.org/x/tools v0.0.0-20190920225731-5eefd052ad72
+go: downloading github.com/mattn/go-isatty v0.0.8
+go: downloading github.com/gobuffalo/flect v0.2.0
+go: downloading github.com/mattn/go-colorable v0.1.2
+go: downloading gopkg.in/yaml.v2 v2.2.4
+go: downloading gopkg.in/yaml.v3 v3.0.0-20190905181640-827449938966
+go: downloading github.com/spf13/pflag v1.0.5
+go: downloading k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
+go: downloading golang.org/x/sys v0.0.0-20190826190057-c7b8b68b1456
+go: downloading github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
+go: downloading gopkg.in/inf.v0 v0.9.1
+go: downloading k8s.io/klog v1.0.0
+go: downloading github.com/inconshreveable/mousetrap v1.0.0
+go: downloading github.com/google/gofuzz v1.0.0
+go: downloading golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
+go: downloading golang.org/x/text v0.3.2
+/builder/home/go/bin/controller-gen object:headerFile=./hack/boilerplate.go.txt paths="./..."
+go fmt ./...
+go vet ./...
+go: downloading github.com/onsi/gomega v1.10.2
+go: downloading github.com/onsi/ginkgo v1.14.1
+go: downloading golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
+go: downloading github.com/nxadm/tail v1.4.4
+go: downloading gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
+/builder/home/go/bin/controller-gen "crd:trivialVersions=true" rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+rm -rf generated
+mkdir generated
+kustomize build config/default/ -o generated
+cp generated/apiextensions.k8s.io_v1beta1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml testing/machinelearning.seldon.io_seldondeployments.yaml
+ginkgo -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis
+[1602257947] [1mController Suite[0m - 66/66 specs test k8s client
+&{Reader:0xc000c585a0 Writer:0xc00026dc80 StatusClient:0xc00026dc80}
+[32m•[0m[32m•[0m[32m•[0m[32m•[0mFailed to find config map seldon-config
+the cache is not started, can not read objects
+
+[90m------------------------------[0m
+[91m[1m•! Panic [0.001 seconds][0m
+[90mMLServer helpers [0m[0mmergeMLServerContainer [0m[91m[1m[It] should merge containers adding extra env [0m
+[37m/workspace/source/operator/controllers/mlserver_test.go:48[0m
+
+  [91m[1mTest Panicked[0m
+  [91mruntime error: invalid memory address or nil pointer dereference[0m
+  /usr/local/go/src/runtime/panic.go:212
+
+  [91mFull Stack Trace[0m
+  github.com/seldonio/seldon-core/operator/controllers.mergeMLServerContainer(0xc000362160, 0x0, 0x34)
+  	/workspace/source/operator/controllers/mlserver.go:27 +0x5c
+  github.com/seldonio/seldon-core/operator/controllers.glob..func4.2.2()
+  	/workspace/source/operator/controllers/mlserver_test.go:49 +0x53
+  github.com/onsi/ginkgo/internal/leafnodes.(*runner).runSync(0xc0004f0420, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, ...)
+  	/builder/home/go/pkg/mod/github.com/onsi/ginkgo@v1.14.1/internal/leafnodes/runner.go:113 +0xa3
+  github.com/onsi/ginkgo/internal/leafnodes.(*runner).run(0xc0004f0420, 0x3, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, ...)
+  	/builder/home/go/pkg/mod/github.com/onsi/ginkgo@v1.14.1/internal/leafnodes/runner.go:64 +0xcf
+  github.com/onsi/ginkgo/internal/leafnodes.(*ItNode).Run(0xc0004c74c0, 0x1db6800, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, ...)
+  	/builder/home/go/pkg/mod/github.com/onsi/ginkgo@v1.14.1/internal/leafnodes/it_node.go:26 +0x64
+  github.com/onsi/ginkgo/internal/spec.(*Spec).runSample(0xc000160a50, 0x0, 0x1db6800, 0xc00057a000)
+  	/builder/home/go/pkg/mod/github.com/onsi/ginkgo@v1.14.1/internal/spec/spec.go:215 +0x638
+  github.com/onsi/ginkgo/internal/spec.(*Spec).Run(0xc000160a50, 0x1db6800, 0xc00057a000)
+  	/builder/home/go/pkg/mod/github.com/onsi/ginkgo@v1.14.1/internal/spec/spec.go:138 +0xf2
+  github.com/onsi/ginkgo/internal/specrunner.(*SpecRunner).runSpec(0xc00078c140, 0xc000160a50, 0x4)
+  	/builder/home/go/pkg/mod/github.com/onsi/ginkgo@v1.14.1/internal/specrunner/spec_runner.go:200 +0x10f
+  github.com/onsi/ginkgo/internal/specrunner.(*SpecRunner).runSpecs(0xc00078c140, 0x1)
+  	/builder/home/go/pkg/mod/github.com/onsi/ginkgo@v1.14.1/internal/specrunner/spec_runner.go:170 +0x120
+  github.com/onsi/ginkgo/internal/specrunner.(*SpecRunner).Run(0xc00078c140, 0xc000671730)
+  	/builder/home/go/pkg/mod/github.com/onsi/ginkgo@v1.14.1/internal/specrunner/spec_runner.go:66 +0x117
+  github.com/onsi/ginkgo/internal/suite.(*Suite).Run(0xc000578070, 0x7f64008738d0, 0xc0000e2b40, 0x1b35b21, 0x10, 0xc00063d420, 0x2, 0x2, 0x1e08400, 0xc00057a000, ...)
+  	/builder/home/go/pkg/mod/github.com/onsi/ginkgo@v1.14.1/internal/suite/suite.go:79 +0x586
+  github.com/onsi/ginkgo.RunSpecsWithCustomReporters(0x1db7e00, 0xc0000e2b40, 0x1b35b21, 0x10, 0xc00063d400, 0x2, 0x2, 0x2)
+  	/builder/home/go/pkg/mod/github.com/onsi/ginkgo@v1.14.1/ginkgo_dsl.go:219 +0x217
+  github.com/onsi/ginkgo.RunSpecsWithDefaultAndCustomReporters(0x1db7e00, 0xc0000e2b40, 0x1b35b21, 0x10, 0xc0000be760, 0x1, 0x1, 0x5f808442)
+  	/builder/home/go/pkg/mod/github.com/onsi/ginkgo@v1.14.1/ginkgo_dsl.go:207 +0xad
+  github.com/seldonio/seldon-core/operator/controllers.TestAPIs(0xc0000e2b40)
+  	/workspace/source/operator/controllers/suite_test.go:61 +0xcb
+  testing.tRunner(0xc0000e2b40, 0x1beaf18)
+  	/usr/local/go/src/testing/testing.go:1039 +0xdc
+  created by testing.(*T).Run
+  	/usr/local/go/src/testing/testing.go:1090 +0x372
+[90m------------------------------[0m
+2020-10-09T15:39:54.053Z	ERROR	seldondeployment	Failed to read prepacked model servers from configmap	{"error": "the cache is not started, can not read objects"}
+github.com/go-logr/zapr.(*zapLogger).Error
+	/builder/home/go/pkg/mod/github.com/go-logr/zapr@v0.1.1/zapr.go:128
+github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1.getPrepackServerConfigWithRelated
+	/workspace/source/operator/apis/machinelearning.seldon.io/v1/prepack.go:189
+github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1.GetPrepackServerConfig
+	/workspace/source/operator/apis/machinelearning.seldon.io/v1/prepack.go:201
+github.com/seldonio/seldon-core/operator/controllers.getMLServerImage
+	/workspace/source/operator/controllers/mlserver.go:136
+github.com/seldonio/seldon-core/operator/controllers.getMLServerContainer
+	/workspace/source/operator/controllers/mlserver.go:61
+github.com/seldonio/seldon-core/operator/controllers.glob..func4.2.1
+	/workspace/source/operator/controllers/mlserver_test.go:45
+github.com/onsi/ginkgo/internal/leafnodes.(*runner).runSync
+	/builder/home/go/pkg/mod/github.com/onsi/ginkgo@v1.14.1/internal/leafnodes/runner.go:113
+github.com/onsi/ginkgo/internal/leafnodes.(*runner).run
+	/builder/home/go/pkg/mod/github.com/onsi/ginkgo@v1.14.1/internal/leafnodes/runner.go:64
+github.com/onsi/ginkgo/internal/leafnodes.(*SetupNode).Run
+	/builder/home/go/pkg/mod/github.com/onsi/ginkgo@v1.14.1/internal/leafnodes/setup_nodes.go:15
+github.com/onsi/ginkgo/internal/spec.(*Spec).runSample
+	/builder/home/go/pkg/mod/github.com/onsi/ginkgo@v1.14.1/internal/spec/spec.go:193
+github.com/onsi/ginkgo/internal/spec.(*Spec).Run
+	/builder/home/go/pkg/mod/github.com/onsi/ginkgo@v1.14.1/internal/spec/spec.go:138
+github.com/onsi/ginkgo/internal/specrunner.(*SpecRunner).runSpec
+	/builder/home/go/pkg/mod/github.com/onsi/ginkgo@v1.14.1/internal/specrunner/spec_runner.go:200
+github.com/onsi/ginkgo/internal/specrunner.(*SpecRunner).runSpecs
+	/builder/home/go/pkg/mod/github.com/onsi/ginkgo@v1.14.1/internal/specrunner/spec_runner.go:170
+github.com/onsi/ginkgo/internal/specrunner.(*SpecRunner).Run
+	/builder/home/go/pkg/mod/github.com/onsi/ginkgo@v1.14.1/internal/specrunner/spec_runner.go:66
+github.com/onsi/ginkgo/internal/suite.(*Suite).Run
+	/builder/home/go/pkg/mod/github.com/onsi/ginkgo@v1.14.1/internal/suite/suite.go:79
+github.com/onsi/ginkgo.RunSpecsWithCustomReporters
+	/builder/home/go/pkg/mod/github.com/onsi/ginkgo@v1.14.1/ginkgo_dsl.go:219
+github.com/onsi/ginkgo.RunSpecsWithDefaultAndCustomReporters
+	/builder/home/go/pkg/mod/github.com/onsi/ginkgo@v1.14.1/ginkgo_dsl.go:207
+github.com/seldonio/seldon-core/operator/controllers.TestAPIs
+	/workspace/source/operator/controllers/suite_test.go:61
+testing.tRunner
+	/usr/local/go/src/testing/testing.go:1039
+[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0mE1009 15:40:15.090734   27882 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1.Deployment: Get "http://127.0.0.1:34913/apis/apps/v1/deployments?allowWatchBookmarks=true&resourceVersion=407&timeoutSeconds=384&watch=true": dial tcp 127.0.0.1:34913: connect: connection refused
+E1009 15:40:15.091738   27882 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1alpha3.VirtualService: Get "http://127.0.0.1:34913/apis/networking.istio.io/v1alpha3/virtualservices?allowWatchBookmarks=true&resourceVersion=122&timeoutSeconds=387&watch=true": dial tcp 127.0.0.1:34913: connect: connection refused
+E1009 15:40:15.092559   27882 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1alpha1.ScaledObject: Get "http://127.0.0.1:34913/apis/keda.sh/v1alpha1/scaledobjects?allowWatchBookmarks=true&resourceVersion=341&timeoutSeconds=503&watch=true": dial tcp 127.0.0.1:34913: connect: connection refused
+E1009 15:40:15.093115   27882 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1.Namespace: Get "http://127.0.0.1:34913/api/v1/namespaces?allowWatchBookmarks=true&resourceVersion=365&timeoutSeconds=360&watch=true": dial tcp 127.0.0.1:34913: connect: connection refused
+E1009 15:40:15.093317   27882 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1.SeldonDeployment: Get "http://127.0.0.1:34913/apis/machinelearning.seldon.io/v1/seldondeployments?allowWatchBookmarks=true&resourceVersion=414&timeoutSeconds=408&watch=true": dial tcp 127.0.0.1:34913: connect: connection refused
+E1009 15:40:15.093948   27882 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1.ConfigMap: Get "http://127.0.0.1:34913/api/v1/configmaps?allowWatchBookmarks=true&resourceVersion=122&timeoutSeconds=471&watch=true": dial tcp 127.0.0.1:34913: connect: connection refused
+E1009 15:40:15.094153   27882 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1.Service: Get "http://127.0.0.1:34913/api/v1/services?allowWatchBookmarks=true&resourceVersion=405&timeoutSeconds=558&watch=true": dial tcp 127.0.0.1:34913: connect: connection refused
+E1009 15:40:15.094233   27882 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v2beta1.HorizontalPodAutoscaler: Get "http://127.0.0.1:34913/apis/autoscaling/v2beta1/horizontalpodautoscalers?allowWatchBookmarks=true&resourceVersion=219&timeoutSeconds=365&watch=true": dial tcp 127.0.0.1:34913: connect: connection refused
+
+
+
+[91m[1mSummarizing 1 Failure:[0m
+
+[91m[1m[Panic!] [0m[90mMLServer helpers [0m[0mmergeMLServerContainer [0m[91m[1m[It] should merge containers adding extra env [0m
+[37m/usr/local/go/src/runtime/panic.go:212[0m
+
+[1m[91mRan 66 of 66 Specs in 28.950 seconds[0m
+[1m[91mFAIL![0m -- [32m[1m65 Passed[0m | [91m[1m1 Failed[0m | [33m[1m0 Pending[0m | [36m[1m0 Skipped[0m
+--- FAIL: TestAPIs (28.96s)
+FAIL
+coverage: 66.6% of statements
+path is /workspace/source/operator
+Unable to read coverage file  to combine, open : no such file or directory
+
+Ginkgo ran 1 suite in 1m7.561011626s
+Test Suite Failed
+make[1]: Leaving directory '/workspace/source/operator'
+make[1]: *** [Makefile:36: test] Error 1
+make: *** [Makefile:18: kind_build_operator] Error 2
+Operator build returned errors
+kind delete cluster
+Deleting cluster "kind" ...
+Stopping Docker: dockerProgram process in pidfile '/var/run/docker-ssd.pid', 1 process(es), refused to die.
+[31m
+Pipeline failed on stage 'end-to-end' : container 'step-test-end-to-end'. The execution of the pipeline has stopped.[0m
