@@ -168,6 +168,9 @@ class TestNotebooks(object):
     #        "openvino_imagenet_ensemble",
     #    )
 
+    def test_custom_metrics_server(self):
+        create_and_run_script("../../examples/feedback/metrics-server", "README")
+
     #
     # Upgrade
     #
