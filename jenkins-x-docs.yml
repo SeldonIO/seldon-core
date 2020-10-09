@@ -16,11 +16,6 @@ pipelineConfig:
           parallel:
           - name: linkcheck
             steps:
-              - name: install-seldon-core
-                command: make
-                args:
-                - -C python
-                - install_dev
               - name: make-linkcheck
                 command: make
                 args:
@@ -29,11 +24,6 @@ pipelineConfig:
                 - linkcheck 
           - name: html
             steps:
-              - name: install-seldon-core
-                command: make
-                args:
-                - -C python
-                - install_dev
               - name: make-html
                 command: make
                 args:
