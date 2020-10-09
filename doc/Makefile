@@ -17,6 +17,8 @@ TAG=master
 
 install-dev:
 	pip install -r requirements.txt
+	# Install local version of seldon_core as well
+	make -C ../python install_dev
 
 clean:
 	rm -rf source/_static/cluster-manager/dependencies
