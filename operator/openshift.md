@@ -36,7 +36,7 @@ make scorecard
 
 ## Tests
 
-Run on a kind cluster tests [./openshift/tests/README]. k8s >= 1.16.
+Run [kind cluster tests](./openshift/tests/README.md). k8s >= 1.16.
 
 Run on an openshift cluster. Openshift >= 4.3.
 
