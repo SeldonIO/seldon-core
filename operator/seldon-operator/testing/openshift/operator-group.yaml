@@ -1,8 +1,0 @@
-apiVersion: operators.coreos.com/v1alpha2
-kind: OperatorGroup
-metadata:
-  name: seldon-operatorgroup
-  namespace: seldon-system
-spec:
-  targetNamespaces:
-  - seldon-system
