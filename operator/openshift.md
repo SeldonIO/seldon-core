@@ -1,5 +1,15 @@
 # RedHat Operator Release Steps
 
+## Summary
+
+We presently still use the v1beta1 CRD. At some point we need to convert to the v1 CRD. However thsi CRD is too large for operator-registry (it converts CRD to configmap and it hits configmap limit it seems). We therefore might need to move forward with just v1 version for the v1 CRD and remove v1alpha2 and v1alpha3 versions of the SeldonDeployment CRD. See https://github.com/operator-framework/operator-registry/issues/385
+
+There are also fixes in crd and crd_v1 configs for https://github.com/kubernetes/kubernetes/issues/91395 under a patch called protocol.yaml
+
+We also remove the `owned` versions for v1alpha2 and v1alpha3 using `hack/create_graph_openapi_schema.py` to fix community test lint failures. This maybe actually be an issue in `operator-courier verify`.
+
+## Update
+
 Login to quay.io/seldon/seldon-operator
 
 ```bash

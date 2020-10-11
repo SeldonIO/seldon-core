@@ -86,3 +86,7 @@ You should delete the Operator running in the cluster at this point.
 
 Use the Makefile in the `./helm` directory. Ensure you have `pyyaml` in your python environment.
 
+
+# Openshift
+
+see [here](openshift.md)
