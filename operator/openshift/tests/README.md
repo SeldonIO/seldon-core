@@ -57,6 +57,9 @@ kubectl create -f operator-group.yaml
 
 Create Subscription
 
+Note a subscription that starts with csv <= 1.2.2 will fail on k8s>=1.18 as these earlier versions will not run on k8s 1.18.
+
+
 ```bash
 kubectl create -f operator-subscription.yaml
 ```
