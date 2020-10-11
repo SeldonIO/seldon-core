@@ -7,6 +7,7 @@ IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${VERSION}
 IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
+#CRD_OPTIONS ?= ""
 
 KIND_NAME ?= kind
 
@@ -122,8 +123,13 @@ deploy-lite: manifests
 manifests: controller-gen
 	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
+# Commented out alternative is looking ahead to issue that on Openshift our v1 CRD is too large
+# to be installed. This may also affect operator-sdk community operators.
+# See https://github.com/operator-framework/operator-registry/issues/385
+# Solution may be to drop v1alpha2 and v1alpha3 versions to decrease size by 2/3
 manifests_v1: controller-gen
-	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd_v1/bases crd:crdVersions=v1
+	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd_v1/bases crd:crdVersions=v1
+	#$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./apis/machinelearning.seldon.io/v1" output:crd:artifacts:config=config/crd_v1/bases crd:crdVersions=v1
 
 # Run go fmt against code
 fmt:
@@ -240,3 +246,94 @@ generate-resources:
 
 config/crd_v1/patches/graph_children.yaml:
 	python hack/create_graph_openapi_schema.py hack/graph_patch.tmpl.yaml config/crd_v1/patches/graph_children.yaml
+
+
+###################################
+#
+# Openshift / OperatorHub addtions
+#
+###################################
+
+#
+# Testing with operstor-sdk 1.0.1
+#
+
+.PHONY: bundle
+recreate_bundle:
+	rm -r bundle
+	kustomize build config/manifests | operator-sdk --verbose generate bundle --version ${VERSION}
+	python hack/csv_hack.py bundle/manifests/seldon-operator.clusterserviceversion.yaml
+
+.PHONY: update_packagemanifests
+update_packagemanifests:
+	kustomize build config/manifests | operator-sdk --verbose generate packagemanifests --version ${VERSION}
+	python hack/csv_hack.py packagemanifests/${VERSION}/seldon-operator.clusterserviceversion.yaml
+	mv packagemanifests/${VERSION}/seldon-operator.clusterserviceversion.yaml packagemanifests/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
+
+#
+# Tested with operator-courier 2.1.10
+#
+.PHONY: verify_package
+verify_package:
+	operator-courier verify packagemanifests/
+
+# Commented out as bundle/opm_index seems the way to test on latest Openshift
+#.PHONY: push_package
+#push_package:
+#	operator-courier push packagemanifests/ seldon seldon-operator ${VERSION} "$QUAY_TOKEN"
+
+.PHONY: create_bundle_image
+create_bundle_image:
+	docker build . -f bundle.Dockerfile -t quay.io/seldon/seldon-operator:v${VERSION}
+
+.PHONY: push_bundle_image
+push_bundle_image:
+	docker push quay.io/seldon/seldon-operator:v${VERSION}
+
+.PHONY: validate_bundle_image
+validate_bundle_image:
+	operator-sdk bundle validate quay.io/seldon/seldon-operator:v${VERSION}
+
+# PREV_VERSION needs manual update for now
+PREV_VERSION=1.2.2
+opm_index:
+	opm index add -c docker --bundles quay.io/seldon/seldon-operator:v${VERSION},quay.io/seldon/seldon-operator:v${PREV_VERSION} --tag quay.io/seldon/test-catalog:latest
+
+
+opm_push:
+	docker push quay.io/seldon/test-catalog:latest
+
+#
+# Scorecard
+#
+
+scorecard:
+	operator-sdk scorecard --kubeconfig ~/.kube/config quay.io/seldon/seldon-operator:v${VERSION}
+
+
+#
+# Certified Openshift Operator
+#
+# https://redhat-connect.gitbook.io/certified-operator-guide/appendix/bundle-maintenance-after-migration
+
+PKG_CERT=packagemanifests-certified
+create_certified_bundle: 
+	rm -rf ${PKG_CERT}/${VERSION}
+	mkdir -p ${PKG_CERT}/${VERSION}
+	cp bundle/manifests/* ${PKG_CERT}/${VERSION}
+	./hack/update-openshift-certified.sh ${VERSION}
+	cd ${PKG_CERT} && opm alpha bundle generate -c alpha -p seldon-operator -d ./${VERSION}/ -u ./${VERSION}/
+	mv ${PKG_CERT}/bundle.Dockerfile ${PKG_CERT}/bundle-${VERSION}.Dockerfile
+	mv ${PKG_CERT}/${VERSION}/seldon-operator.clusterserviceversion.yaml ${PKG_CERT}/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
+	mv ${PKG_CERT}/${VERSION}/manifests/seldon-operator.clusterserviceversion.yaml ${PKG_CERT}/${VERSION}/manifests/seldon-operator.v${VERSION}.clusterserviceversion.yaml
+	cd ${PKG_CERT} && sed -i 's#seldon-operator.v.*#seldon-operator.v${VERSION}#' seldon-operator.package.yaml
+
+build_certified_bundle:
+	opm alpha bundle build -d packagemanifests-certified/${VERSION}/ --tag quay.io/seldon/seldon-operator-certified:v${VERSION} --package seldon-operator --channels alpha --overwrite -b docker
+
+
+bundle_certified_push:
+	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
+		echo $${rh_password_operator_bundle} | docker login -u unused scan.connect.redhat.com --password-stdin
+	docker tag quay.io/seldon/seldon-operator-certified:v${VERSION} scan.connect.redhat.com/ospid-78efc0cc-a4a5-4244-a31d-6820eae1ccb1/seldon-operator-certified:${VERSION}
+	docker push scan.connect.redhat.com/ospid-78efc0cc-a4a5-4244-a31d-6820eae1ccb1/seldon-operator-certified:${VERSION}

@@ -1,0 +1,14 @@
+bases:
+- ../crd
+- ../rbac
+- ../manager
+
+resources:
+- role_webhook.yaml
+- role_binding_webhook.yaml
+
+patchesStrategicMerge:
+- patch_configmap.yaml
+- patch_manager_env.yaml
+- manager_webhook_patch.yaml
+
