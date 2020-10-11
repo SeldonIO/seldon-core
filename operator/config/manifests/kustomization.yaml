@@ -1,0 +1,31 @@
+# Adds namespace to all resources.
+namespace: seldon-system
+
+# Value of this field is prepended to the
+# names of all resources, e.g. a deployment named
+# "wordpress" becomes "alices-wordpress".
+# Note that it should also match with the prefix (text before '-') of the namespace
+# field above.
+namePrefix: seldon-
+
+# Labels to add to all resources and selectors.
+commonLabels:
+  app: seldon
+  app.kubernetes.io/name: seldon
+  app.kubernetes.io/version: v0.5
+  app.kubernetes.io/instance: seldon1
+
+resources:
+- ../openshift
+- ../samples
+- ../scorecard
+
+
+patchesJson6902:
+- target:
+    group: machinelearning.seldon.io
+    version: v1
+    kind: SeldonDeployment
+    name: model
+  path: remove_namespace.yaml
+                    
