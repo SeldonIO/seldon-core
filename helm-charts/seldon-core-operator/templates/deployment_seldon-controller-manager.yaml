@@ -105,6 +105,8 @@ spec:
           value: '{{ .Values.engine.prometheus.path }}'
         - name: ISTIO_ENABLED
           value: '{{ .Values.istio.enabled }}'
+        - name: KEDA_ENABLED
+          value: '{{ .Values.keda.enabled }}'
         - name: ISTIO_GATEWAY
           value: '{{ .Values.istio.gateway }}'
         - name: ISTIO_TLS_MODE
@@ -129,8 +131,6 @@ spec:
           value: '{{ .Values.executor.requestLogger.defaultEndpoint }}'
         - name: DEFAULT_USER_ID
           value: '{{ .Values.defaultUserID }}'
-        - name: KEDA_ENABLED
-          value: '{{ .Values.keda.enabled }}'          
         image: '{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}'
         imagePullPolicy: '{{ .Values.image.pullPolicy }}'
         name: manager
