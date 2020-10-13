@@ -1,7 +1,7 @@
 # Test and linters
 black==19.10b0
 flake8==3.8.1
-mypy<0.783
+mypy<0.791
 Pillow==7.2.0
 pytest==6.1.0
 pytest-cov==2.10.1
