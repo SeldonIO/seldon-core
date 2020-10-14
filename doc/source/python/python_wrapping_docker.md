@@ -128,7 +128,7 @@ See [Flask - Builtin Configuration Values](https://flask.palletsprojects.com/con
 ### MODEL
 
  * [A minimal skeleton for model source code](https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i/python/test/model-template-app)
- * [Example model notebooks](../examples/notebooks)
+ * [Example model notebooks](../examples/notebooks.html)
 
 ### ROUTER
  * [Description of routers in Seldon Core](../analytics/routers.html)

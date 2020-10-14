@@ -201,7 +201,7 @@ Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved pe
 
 ### EXTRA_INDEX_URL
 
-.. Warning:: 
+.. Warning::
    ``EXTRA_INDEX_URL`` is recommended to be passed as argument to ``s2i``
    command rather than adding in ``.s2i/environment`` as a practice of avoiding
    checking in credentials in the code.
@@ -236,7 +236,7 @@ By default, this option will be disabled.
 ### MODEL
 
  * [A minimal skeleton for model source code](https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i/python/test/model-template-app)
- * [Example model notebooks](../examples/notebooks)
+ * [Example model notebooks](../examples/notebooks.html)
 
 ### ROUTER
  * [Description of routers in Seldon Core](../analytics/routers.html)

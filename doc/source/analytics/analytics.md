@@ -161,7 +161,7 @@ Before Seldon Core 1.1 orchestrator enforced presence of same set of labels usin
 
 At present the following Seldon Core wrappers provide integrations with custom metrics:
 
- * [Python Wrapper](../python/index)
+ * [Python Wrapper](../python/index.html)
 
 
 ### Example
