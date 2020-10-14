@@ -313,6 +313,13 @@ def main():
         help="Set metrics port of seldon service",
     )
 
+    parser.add_argument(
+        "--pidfile",
+        type=str,
+        default=None,
+        help="A filepath to use for the PID file",
+    )
+
     args = parser.parse_args()
     parameters = parse_parameters(json.loads(args.parameters))
 
@@ -399,6 +406,8 @@ def main():
                     "max_requests_jitter": args.max_requests_jitter,
                     "post_worker_init": post_worker_init,
                 }
+                if args.pidfile is not None:
+                    options["pidfile"] = args.pidfile
                 app = seldon_microservice.get_rest_microservice(
                     user_object, seldon_metrics
                 )
@@ -461,6 +470,8 @@ def main():
                 "max_requests_jitter": args.max_requests_jitter,
                 "post_worker_init": post_worker_init,
             }
+            if args.pidfile is not None:
+                options["pidfile"] = args.pidfile
             StandaloneApplication(app, options=options).run()
 
     logger.info("REST metrics microservice running on port %i", metrics_port)
