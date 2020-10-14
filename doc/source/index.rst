@@ -51,7 +51,7 @@ Quick Links
 
 * Read the `Seldon Core Documentation <./>`_
 * Join our `community Slack <https://join.slack.com/t/seldondev/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU>`_ to ask any questions
-* Get started with `Seldon Core Notebook Examples <./examples/notebooks>`_
+* Get started with `Seldon Core Notebook Examples <./examples/notebooks.html>`_
 * Join our fortnightly `online community calls <./developer/community.html#community-calls>`_ : `Google Calendar <https://calendar.google.com/event?action=TEMPLATE&tmeid=MXBtNzI1cjk0dG9kczhsZTRkcWlmcm1kdjVfMjAyMDA3MDlUMTUwMDAwWiBzZWxkb24uaW9fbTRuMnZtcmZubDI3M3FsczVnYjlwNjVpMHNAZw&tmsrc=seldon.io_m4n2vmrfnl273qls5gb9p65i0s%40group.calendar.google.com&scp=ALL>`_
 * Learn how you can `start contributing <./developer/contributing.html>`_
 * Check out `Blogs <./tutorials/blogs.html>`_ that dive into Seldon Core components
@@ -95,7 +95,7 @@ Documentation Index
 
    MLflow Server <servers/mlflow.md>
    SKLearn Server <servers/sklearn.md>
-   Triton Inference Server <servers/triton.md>   
+   Triton Inference Server <servers/triton.md>
    Tensorflow Serving <servers/tensorflow.md>
    XGBoost Server <servers/xgboost.md>
 
@@ -136,7 +136,7 @@ Documentation Index
    Ambassador Ingress <ingress/ambassador.md>
    Istio Ingress <ingress/istio.md>
    OpenShift <ingress/openshift.md>
-   
+
 .. toctree::
    :maxdepth: 1
    :caption: Production
@@ -153,10 +153,10 @@ Documentation Index
    :maxdepth: 1
    :caption: Streaming and Batch Processing
 
-   Overview of Batch Processing <servers/batch.md>	     
+   Overview of Batch Processing <servers/batch.md>
    Stream Processing with KNative <streaming/knative_eventing.md>
    Native Kafka Integration <streaming/kafka.md>
-   
+
 .. toctree::
    :maxdepth: 1
    :caption: Advanced Inference

@@ -53,7 +53,7 @@ You can also provide a method to return the column names for your prediction wit
 
 ### Examples
 
-You can follow [various notebook examples](../examples/notebooks).
+You can follow [various notebook examples](../examples/notebooks.html).
 
 ## Transformers
 
@@ -192,7 +192,7 @@ If you wish to add a REST health point, you can implement the `health_status` me
     def health_status(self) -> Union[np.ndarray, List, str, bytes]:
 ```
 
-You can use this to verify that your service can respond to HTTP calls after you have built your docker image and also 
+You can use this to verify that your service can respond to HTTP calls after you have built your docker image and also
 as kubernetes liveness and readiness probes to verify that your model is healthy.
 
 A simple example is shown below:
@@ -208,14 +208,14 @@ class ModelWithHealthEndpoint(object):
         return response
 ```
 
-When you use `seldon-core-microservice` to start the HTTP server, you can verify that the model is up and running by 
+When you use `seldon-core-microservice` to start the HTTP server, you can verify that the model is up and running by
 checking the `/health/status` endpoint:
 ```console
 $ curl localhost:5000/health/status
 {"data":{"names":[],"tensor":{"shape":[2],"values":[1,2]}},"meta":{}}
 ```
 
-Additionally, you can also use the `/health/ping` endpoint if you want a lightweight call that just checks that 
+Additionally, you can also use the `/health/ping` endpoint if you want a lightweight call that just checks that
 the HTTP server is up:
 
 ```console
