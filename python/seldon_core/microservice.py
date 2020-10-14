@@ -317,7 +317,7 @@ def main():
         "--pidfile",
         type=str,
         default=None,
-        help="A filepath to use for the PID file",
+        help="A file path to use for the PID file",
     )
 
     args = parser.parse_args()
