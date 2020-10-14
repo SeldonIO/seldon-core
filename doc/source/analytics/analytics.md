@@ -51,7 +51,7 @@ and then access it at http://localhost:3001/
 
 ## Example
 
-There is [an example notebook you can use to test the metrics](../examples/metrics).
+There is [an example notebook you can use to test the metrics](../examples/metrics.html).
 
 
 ## Custom Metrics
@@ -166,4 +166,4 @@ At present the following Seldon Core wrappers provide integrations with custom m
 
 ### Example
 
-There is an [example notebook illustrating a model with custom metrics in python](../examples/custom_metrics).
+There is an [example notebook illustrating a model with custom metrics in python](../examples/custom_metrics.html).
