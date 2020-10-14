@@ -314,10 +314,7 @@ def main():
     )
 
     parser.add_argument(
-        "--pidfile",
-        type=str,
-        default=None,
-        help="A file path to use for the PID file",
+        "--pidfile", type=str, default=None, help="A file path to use for the PID file",
     )
 
     args = parser.parse_args()

@@ -99,7 +99,7 @@ setup_linter:
 
 fmt:
 	black \
-		./ ../testing ../operator/helm ../operator/seldon-operator/hack \
+		./ ../testing ../operator/helm ../operator/hack \
 		--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs|.tox)"
 
 lint: licenses
