@@ -2,7 +2,7 @@ IMAGE_NAME=seldonio/tf-example-mnist
 IMAGE_VERSION=0.2
 
 build_image:
-	s2i build . seldonio/seldon-core-s2i-python3:1.3.0-dev ${IMAGE_NAME}:${IMAGE_VERSION}
+	s2i build . seldonio/seldon-core-s2i-python3:1.3.0-dev_20201015083621 ${IMAGE_NAME}:${IMAGE_VERSION}
 
 push_image:
 	docker push $(IMAGE_NAME):$(IMAGE_VERSION)
