@@ -79,6 +79,26 @@ rules:
   - patch
   - update
 - apiGroups:
+  - keda.sh/v1alpha1
+  resources:
+  - ScaledObject
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - keda.sh/v1alpha1
+  resources:
+  - ScaledObject/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
   - machinelearning.seldon.io
   resources:
   - seldondeployments

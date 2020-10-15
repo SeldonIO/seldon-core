@@ -99,6 +99,8 @@ spec:
           value: "/prometheus"
         - name: ISTIO_ENABLED
           value: "false"
+        - name: KEDA_ENABLED
+          value: "false"
         - name: ISTIO_GATEWAY
           value: istio-system/seldon-gateway
         - name: ISTIO_TLS_MODE

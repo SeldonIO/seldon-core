@@ -41,6 +41,7 @@ HELM_ENV_SUBST = {
     "ENGINE_CONTAINER_USER": "engine.user",
     "ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME": "engine.serviceAccount.name",
     "ISTIO_ENABLED": "istio.enabled",
+    "KEDA_ENABLED": "keda.enabled",
     "ISTIO_GATEWAY": "istio.gateway",
     "ISTIO_TLS_MODE": "istio.tlsMode",
     "PREDICTIVE_UNIT_SERVICE_PORT": "predictiveUnit.port",

@@ -83,6 +83,13 @@ class TestNotebooks(object):
         create_and_run_script("../../examples/istio/canary_update", "canary")
 
     #
+    # KEDA Examples
+    #
+
+    def test_keda_prom_auto_scale(self):
+        create_and_run_script("../../examples/keda", "keda_prom_auto_scale")
+
+    #
     # Misc
     #
 

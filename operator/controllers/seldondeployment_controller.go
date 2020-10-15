@@ -43,9 +43,10 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-
 	"encoding/json"
+
+	kedav1alpha1 "github.com/kedacore/keda/api/v1alpha1"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 
 	istio_networking "istio.io/api/networking/v1alpha3"
 	istio "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -71,6 +72,8 @@ const (
 
 	AMBASSADOR_ANNOTATION = "getambassador.io/config"
 	LABEL_CONTROLLER_ID   = "seldon.io/controller-id"
+
+	ENV_KEDA_ENABLED = "KEDA_ENABLED"
 )
 
 var (
@@ -94,6 +97,7 @@ type components struct {
 	deployments           []*appsv1.Deployment
 	services              []*corev1.Service
 	hpas                  []*autoscaling.HorizontalPodAutoscaler
+	kedaScaledObjects     []*kedav1alpha1.ScaledObject
 	virtualServices       []*istio.VirtualService
 	destinationRules      []*istio.DestinationRule
 	defaultDeploymentName string
@@ -126,6 +130,30 @@ func createAddressableResource(mlDep *machinelearningv1.SeldonDeployment, namesp
 	addressableUrl := url.URL{Scheme: "http", Host: addressableHost, Path: addressablePath}
 
 	return &machinelearningv1.SeldonAddressable{URL: addressableUrl.String()}, nil
+}
+
+func createKeda(podSpec *machinelearningv1.SeldonPodSpec, deploymentName string, seldonId string, namespace string) *kedav1alpha1.ScaledObject {
+	kedaScaledObj := &kedav1alpha1.ScaledObject{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      deploymentName,
+			Namespace: namespace,
+			Labels:    map[string]string{machinelearningv1.Label_seldon_id: seldonId},
+		},
+		Spec: kedav1alpha1.ScaledObjectSpec{
+			PollingInterval: podSpec.KedaSpec.PollingInterval,
+			CooldownPeriod:  podSpec.KedaSpec.CooldownPeriod,
+			MaxReplicaCount: podSpec.KedaSpec.MaxReplicaCount,
+			MinReplicaCount: podSpec.KedaSpec.MinReplicaCount,
+			Advanced:        podSpec.KedaSpec.Advanced,
+			Triggers:        podSpec.KedaSpec.Triggers,
+			ScaleTargetRef: &kedav1alpha1.ScaleTarget{
+				APIVersion: "apps/v1",
+				Kind:       "Deployment",
+				Name:       deploymentName,
+			},
+		},
+	}
+	return kedaScaledObj
 }
 
 func createHpa(podSpec *machinelearningv1.SeldonPodSpec, deploymentName string, seldonId string, namespace string) *autoscaling.HorizontalPodAutoscaler {
@@ -455,8 +483,10 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 				c.defaultDeploymentName = depName
 			}
 			deploy := createDeploymentWithoutEngine(depName, seldonId, cSpec, &p, mlDep, securityContext)
-			// Add HPA if needed
-			if cSpec.HpaSpec != nil {
+
+			if cSpec.KedaSpec != nil { // Add KEDA if needed
+				c.kedaScaledObjects = append(c.kedaScaledObjects, createKeda(cSpec, depName, seldonId, namespace))
+			} else if cSpec.HpaSpec != nil { // Add HPA if needed
 				c.hpas = append(c.hpas, createHpa(cSpec, depName, seldonId, namespace))
 			} else { //set replicas from more specifc to more general replicas settings in spec
 				if cSpec.Replicas != nil {
@@ -1141,6 +1171,85 @@ func (r *SeldonDeploymentReconciler) createServices(components *components, inst
 	return ready, nil
 }
 
+func (r *SeldonDeploymentReconciler) createKedaScaledObjects(components *components, instance *machinelearningv1.SeldonDeployment, log logr.Logger) (bool, error) {
+	ready := true
+	scaledObjSet := make(map[string]bool)
+	for _, scaledObj := range components.kedaScaledObjects {
+		if err := ctrl.SetControllerReference(instance, scaledObj, r.Scheme); err != nil {
+			return ready, err
+		}
+		scaledObjSet[scaledObj.Name] = true
+		found := &kedav1alpha1.ScaledObject{}
+		err := r.Get(context.TODO(), types.NamespacedName{Name: scaledObj.Name, Namespace: scaledObj.Namespace}, found)
+		if err != nil && errors.IsNotFound(err) {
+			ready = false
+			log.Info("Creating KEDA ScaledObject", "namespace", scaledObj.Namespace, "name", scaledObj.Name)
+			err = r.Create(context.TODO(), scaledObj)
+			if err != nil {
+				return ready, err
+			}
+			r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsCreateScaledObject, "Created KEDA ScaledObject %q", scaledObj.GetName())
+		} else if err != nil {
+			return ready, err
+		} else {
+			// Update the found object and write the result back if there are any changes
+			if !equality.Semantic.DeepEqual(scaledObj.Spec, found.Spec) {
+
+				desiredScaledObj := found.DeepCopy()
+				found.Spec = scaledObj.Spec
+
+				log.Info("Updating KEDA ScaledObject", "namespace", scaledObj.Namespace, "name", scaledObj.Name)
+				err = r.Update(context.TODO(), found)
+				if err != nil {
+					return ready, err
+				}
+
+				// Check if what came back from server modulo the defaults applied by k8s is the same or not
+				if !equality.Semantic.DeepEqual(desiredScaledObj.Spec, found.Spec) {
+					ready = false
+					r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsUpdateHPA, "Updated KEDA ScaledObject %q", scaledObj.GetName())
+					//For debugging we will show the difference
+					diff, err := kmp.SafeDiff(desiredScaledObj.Spec, found.Spec)
+					if err != nil {
+						log.Error(err, "Failed to diff")
+					} else {
+						log.Info(fmt.Sprintf("Difference in KEDA ScaledObjects: %v", diff))
+					}
+				} else {
+					log.Info("The KEDA ScaledObjects are the same - api server defaults ignored")
+				}
+
+			} else {
+				log.Info("Found identical KEDA ScaledObject", "namespace", found.Namespace, "name", found.Name, "status", found.Status)
+			}
+		}
+
+	}
+
+	// For all Deployments check if any ScaledObjects exist and they are not required
+	for _, deploy := range components.deployments {
+		if _, ok := scaledObjSet[deploy.Name]; !ok {
+			found := &kedav1alpha1.ScaledObject{}
+			err := r.Get(context.TODO(), types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
+			if err != nil {
+				if !errors.IsNotFound(err) {
+					return false, err
+				}
+				// Do nothing
+			} else {
+				// Delete ScaledObject
+				log.Info("Deleting KEDA ScaledObject", "name", deploy.Name)
+				err := r.Delete(context.TODO(), found, client.PropagationPolicy(metav1.DeletePropagationForeground))
+				if err != nil {
+					return ready, err
+				}
+			}
+		}
+	}
+
+	return ready, nil
+}
+
 // Create Services specified in components.
 func (r *SeldonDeploymentReconciler) createHpas(components *components, instance *machinelearningv1.SeldonDeployment, log logr.Logger) (bool, error) {
 	ready := true
@@ -1443,6 +1552,8 @@ func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinele
 // +kubebuilder:rbac:groups=networking.istio.io,resources=destinationrules/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=autoscaling,resources=horizontalpodautoscalers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=autoscaling,resources=horizontalpodautoscalers/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=keda.sh/v1alpha1,resources=ScaledObject,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=keda.sh/v1alpha1,resources=ScaledObject/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=machinelearning.seldon.io,resources=seldondeployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=machinelearning.seldon.io,resources=seldondeployments/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=machinelearning.seldon.io,resources=seldondeployments/finalizers,verbs=get;update;patch
@@ -1528,6 +1639,17 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		return ctrl.Result{}, err
 	}
 
+	kedaScaledObjectsReady := false
+	withKedaSupport := utils.GetEnv(ENV_KEDA_ENABLED, "false") == "true"
+	if withKedaSupport {
+		kedaScaledObjectsReady, err = r.createKedaScaledObjects(components, instance, log)
+		if err != nil {
+			r.Recorder.Eventf(instance, corev1.EventTypeWarning, constants.EventsInternalError, err.Error())
+			r.updateStatusForError(instance, err, log)
+			return ctrl.Result{}, err
+		}
+	}
+
 	deploymentsReady, err := r.createDeployments(components, instance, log)
 	if err != nil {
 		r.Recorder.Eventf(instance, corev1.EventTypeWarning, constants.EventsInternalError, err.Error())
@@ -1544,7 +1666,7 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		}
 	}
 
-	if deploymentsReady && servicesReady && hpasReady {
+	if deploymentsReady && servicesReady && hpasReady && (!withKedaSupport || kedaScaledObjectsReady) {
 		instance.Status.State = machinelearningv1.StatusStateAvailable
 		instance.Status.Description = ""
 	} else {
