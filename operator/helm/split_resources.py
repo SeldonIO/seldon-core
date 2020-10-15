@@ -57,6 +57,14 @@ HELM_ENV_SUBST = {
     "MANAGER_CREATE_RESOURCES": "managerCreateResources",
     "EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT": "executor.requestLogger.defaultEndpoint",
     "DEFAULT_USER_ID": "defaultUserID",
+    "EXECUTOR_DEFAULT_CPU_LIMIT": "executor.resources.cpuLimit",
+    "EXECUTOR_DEFAULT_CPU_REQUEST": "executor.resources.cpuRequest",
+    "EXECUTOR_DEFAULT_MEMORY_LIMIT": "executor.resources.memoryLimit",
+    "EXECUTOR_DEFAULT_MEMORY_REQUEST": "executor.resources.memoryRequest",
+    "ENGINE_DEFAULT_CPU_LIMIT": "engine.resources.cpuLimit",
+    "ENGINE_DEFAULT_CPU_REQUEST": "engine.resources.cpuRequest",
+    "ENGINE_DEFAULT_MEMORY_LIMIT": "engine.resources.memoryLimit",
+    "ENGINE_DEFAULT_MEMORY_REQUEST": "engine.resources.memoryRequest",
 }
 HELM_VALUES_IMAGE_PULL_POLICY = "{{ .Values.image.pullPolicy }}"
 
