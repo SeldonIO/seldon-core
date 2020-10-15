@@ -3,13 +3,13 @@ FOLDER=torchserver
 IMAGE_BASE=seldonio/${FOLDER}
 
 build_rest:
-	s2i build -E environment_rest ./${FOLDER} seldonio/seldon-core-s2i-python37:1.3.0-dev ${IMAGE_BASE}_rest:${VERSION}
+	s2i build -E environment_rest ./${FOLDER} seldonio/seldon-core-s2i-python37:1.3.0-dev_20201015134839 ${IMAGE_BASE}_rest:${VERSION}
 
 push_rest:
 	docker push ${IMAGE_BASE}_rest:${VERSION}
 
 build_grpc:
-	s2i build -E environment_grpc ./${FOLDER} seldonio/seldon-core-s2i-python37:1.3.0-dev ${IMAGE_BASE}_grpc:${VERSION}
+	s2i build -E environment_grpc ./${FOLDER} seldonio/seldon-core-s2i-python37:1.3.0-dev_20201015134839 ${IMAGE_BASE}_grpc:${VERSION}
 
 push_grpc:
 	docker push ${IMAGE_BASE}_grpc:${VERSION}

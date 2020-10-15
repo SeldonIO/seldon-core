@@ -46,7 +46,7 @@ executor:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-core-executor
-    tag: 1.3.0-dev
+    tag: 1.3.0-dev_20201015134839
   prometheus:
     path: /prometheus
   serviceAccount:
@@ -62,7 +62,7 @@ image:
   pullPolicy: IfNotPresent
   registry: docker.io
   repository: seldonio/seldon-core-operator
-  tag: 1.3.0-dev
+  tag: 1.3.0-dev_20201015134839
 manager:
   cpuLimit: 500m
   cpuRequest: 100m
@@ -173,7 +173,7 @@ engine:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/engine
-    tag: 1.3.0-dev
+    tag: 1.3.0-dev_20201015134839
   logMessagesExternally: false
   port: 8000
   prometheus:
@@ -185,5 +185,5 @@ engine:
 
 # Explainer image
 explainer:
-  image: seldonio/alibiexplainer:1.3.0-dev
+  image: seldonio/alibiexplainer:1.3.0-dev_20201015134839
 
