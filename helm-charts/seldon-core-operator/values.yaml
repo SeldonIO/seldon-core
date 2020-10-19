@@ -117,7 +117,7 @@ predictor_servers:
       image: seldonio/sklearnserver_rest
     protocols:
       kfserving:
-        defaultImageVersion: "0.1.0"
+        defaultImageVersion: "0.1.1"
         image: seldonio/mlserver
   TENSORFLOW_SERVER:
     grpc:
@@ -137,7 +137,7 @@ predictor_servers:
       image: seldonio/xgboostserver_rest
     protocols:
       kfserving:
-        defaultImageVersion: "0.1.0"
+        defaultImageVersion: "0.1.1"
         image: seldonio/mlserver
   TRITON_SERVER:
     grpc:
