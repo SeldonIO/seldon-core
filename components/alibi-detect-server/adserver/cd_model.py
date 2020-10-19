@@ -5,6 +5,55 @@ import numpy as np
 from .numpy_encoder import NumpyEncoder
 from alibi_detect.utils.saving import load_detector, Data
 from adserver.base import AlibiDetectModel
+from seldon_core.user_model import SeldonResponse
+
+
+def _drift_to_metrics(drift):
+    metrics = []
+
+    batch_score = drift.get("batch_score")
+    if batch_score:
+        metrics.append(
+            {
+                "key": "seldon_metric_drift_batch_score",
+                "value": batch_score,
+                "type": "GAUGE",
+            }
+        )
+
+    feature_score = drift.get("feature_score")
+    if feature_score:
+        metrics.append(
+            {
+                "key": "seldon_metric_drift_feature_score",
+                "value": feature_score,
+                "type": "GAUGE",
+            }
+        )
+
+    is_drift = drift.get("is_drift")
+    if is_drift:
+        metrics.append(
+            {
+                "key": "seldon_metric_drift_is_drift",
+                "value": is_drift,
+                "type": "COUNTER",
+            }
+        )
+
+    p_val = drift.get("p_val")
+    if p_val and isinstance(p_val, list):
+        for i, p in enumerate(p_val):
+            metrics.append(
+                {
+                    "key": "seldon_metric_drift_p_val",
+                    "value": p,
+                    "type": "COUNTER",
+                    "tags": {"p_val_index": str(i)},
+                }
+            )
+
+    return metrics
 
 
 class AlibiDetectConceptDriftModel(
@@ -75,7 +124,17 @@ class AlibiDetectConceptDriftModel(
             )
             cd_preds = self.model.predict(self.batch)
             self.batch = None
-            return json.loads(json.dumps(cd_preds, cls=NumpyEncoder))
+
+            output = json.loads(json.dumps(cd_preds, cls=NumpyEncoder))
+            logging.info(output.get("data", {}))
+
+            metrics = _drift_to_metrics(output.get("data", {}))
+            logging.info("metrics:")
+            logging.info(metrics)
+
+            seldon_response = SeldonResponse(output, None, metrics)
+
+            return seldon_response
         else:
             logging.info(
                 "Not running drift detection. Batch size is %d. Need %d",

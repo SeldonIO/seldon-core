@@ -233,6 +233,13 @@ class EventHandler(tornado.web.RequestHandler):
         response = self.model.process_event(request, headers)
         seldon_response = SeldonResponse.create(response)
 
+        runtime_metrics = seldon_response.metrics
+        if runtime_metrics is not None:
+            if validate_metrics(runtime_metrics):
+                self.seldon_metrics.update(runtime_metrics, "ce_server")
+            else:
+                logging.error("Metrics returned are invalid: " + str(runtime_metrics))
+
         if seldon_response.data is not None:
             responseStr = json.dumps(seldon_response.data)
 
@@ -254,16 +261,6 @@ class EventHandler(tornado.web.RequestHandler):
                 logging.debug(json.dumps(revent.Properties()))
                 sendCloudEvent(revent, self.reply_url)
             self.write(json.dumps(seldon_response.data))
-
-        runtime_metrics = seldon_response.metrics
-        if runtime_metrics is not None:
-            if not validate_metrics(runtime_metrics):
-                raise SeldonMicroserviceException(
-                    f"Bad metric created during request: {json.dumps(runtime_metrics)}",
-                    status_code=500,
-                    reason="MICROSERVICE_BAD_METRIC",
-                )
-            self.seldon_metrics.update(runtime_metrics, "ce_server")
 
 
 class LivenessHandler(tornado.web.RequestHandler):
