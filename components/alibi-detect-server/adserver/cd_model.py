@@ -126,11 +126,8 @@ class AlibiDetectConceptDriftModel(
             self.batch = None
 
             output = json.loads(json.dumps(cd_preds, cls=NumpyEncoder))
-            logging.info(output.get("data", {}))
 
             metrics = _drift_to_metrics(output.get("data", {}))
-            logging.info("metrics:")
-            logging.info(metrics)
 
             seldon_response = SeldonResponse(output, None, metrics)
 
