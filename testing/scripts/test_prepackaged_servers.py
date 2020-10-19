@@ -64,7 +64,7 @@ class TestPrepack(object):
                 "inputs": [
                     {
                         "name": "input-0",
-                        "shape": [4],
+                        "shape": [1, 4],
                         "datatype": "FP32",
                         "data": [[0.1, 0.2, 0.3, 0.4]],
                     }
@@ -133,7 +133,7 @@ class TestPrepack(object):
                 "inputs": [
                     {
                         "name": "input-0",
-                        "shape": [4],
+                        "shape": [1, 4],
                         "datatype": "FP32",
                         "data": [[0.1, 0.2, 0.3, 0.4]],
                     }
