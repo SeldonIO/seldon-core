@@ -18,7 +18,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
     <project.build.sourceEncoding>
     UTF-8</project.build.sourceEncoding>
     <java.version>1.8</java.version>
-    <grpc.version>1.25.0</grpc.version>
+    <grpc.version>1.32.2</grpc.version>
     <pb.version>3.13.0</pb.version>
     <micrometer.version>1.5.2</micrometer.version>
     <start-class>io.seldon.engine.App</start-class>
