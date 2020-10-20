@@ -26,4 +26,4 @@ name: seldon-core-analytics
 sources:
 - https://github.com/SeldonIO/seldon-core
 - https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core-analytics
-version: 1.4.0-dev
+version: 1.4.0-dev_20201020152352
