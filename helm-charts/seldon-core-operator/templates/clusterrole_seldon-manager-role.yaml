@@ -79,9 +79,9 @@ rules:
   - patch
   - update
 - apiGroups:
-  - keda.sh/v1alpha1
+  - keda.sh
   resources:
-  - ScaledObject
+  - scaledobjects
   verbs:
   - create
   - delete
@@ -91,9 +91,21 @@ rules:
   - update
   - watch
 - apiGroups:
-  - keda.sh/v1alpha1
+  - keda.sh
   resources:
-  - ScaledObject/status
+  - scaledobjects/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - keda.sh
+  resources:
+  - scaledobjects/status
   verbs:
   - get
   - patch

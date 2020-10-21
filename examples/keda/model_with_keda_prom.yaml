@@ -26,8 +26,7 @@ spec:
             serverAddress: http://seldon-core-analytics-prometheus-seldon.seldon-system.svc.cluster.local
             metricName: access_frequency
             threshold: '10'
-            query: rate(seldon_api_executor_client_requests_seconds_count{seldon_app=~"seldon-model-example"}[10s])
-        terminationGracePeriodSeconds: 1
+            query: rate(seldon_api_executor_client_requests_seconds_count{seldon_app=~"seldon-model-example"}[1m])
     graph:
       children: []
       endpoint:

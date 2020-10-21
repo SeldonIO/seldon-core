@@ -80,6 +80,7 @@ install_seldon: install_cert_manager
 		../../helm-charts/seldon-core-operator \
 		--namespace seldon-system \
 		--set istio.enabled=true \
+		--set keda.enabled=true \
 		--set istio.gateway=istio-system/seldon-gateway \
 		--set certManager.enabled=false \
 		--set executor.enabled=$(SELDON_E2E_TESTS_USE_EXECUTOR) \
