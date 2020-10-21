@@ -63,65 +63,63 @@ func TestAPIs(t *testing.T) {
 
 var configs = map[string]string{
 	"predictor_servers": `{
-             "TENSORFLOW_SERVER": {
-                 "tensorflow": true,
-                 "tfImage": "tensorflow/serving:2.1",
-                 "rest": {
-                   "image": "seldonio/tfserving-proxy_rest",
-                   "defaultImageVersion": "0.7"
-                 },
-                 "grpc": {
-                   "image": "seldonio/tfserving-proxy_grpc",
-                   "defaultImageVersion": "0.7"
-                 }
-             },
-             "SKLEARN_SERVER": {
-                 "rest": {
-                   "image": "seldonio/sklearnserver_rest",
-                   "defaultImageVersion": "0.2"
-                 },
-                 "grpc": {
-                   "image": "seldonio/sklearnserver_grpc",
-                   "defaultImageVersion": "0.2"
-                 },
-                 "protocols": {
-                   "kfserving": {
-                     "image": "seldonio/mlserver",
-                     "defaultImageVersion": "0.1.0"
-                   }
-                 }
-             },
-             "XGBOOST_SERVER": {
-                 "rest": {
-                   "image": "seldonio/xgboostserver_rest",
-                   "defaultImageVersion": "0.2"
-                 },
-                 "grpc": {
-                   "image": "seldonio/xgboostserver_grpc",
-                   "defaultImageVersion": "0.2"
-                 }
-             },
-             "MLFLOW_SERVER": {
-                 "rest": {
-                   "image": "seldonio/mlflowserver_rest",
-                   "defaultImageVersion": "0.2"
-                 },
-                 "grpc": {
-                   "image": "seldonio/mlflowserver_grpc",
-                   "defaultImageVersion": "0.2"
-                 }
-             },
-             "TRITON_SERVER": {
-                 "rest": {
-                   "image": "nvcr.io/nvidia/tritonserver",
-                   "defaultImageVersion": "20.08-py3"
-                 },
-                 "grpc": {
-                   "image": "nvcr.io/nvidia/tritonserver",
-                   "defaultImageVersion": "20.08-py3"
-                 }
-             }
-         }`,
+              "TENSORFLOW_SERVER": {
+          "protocols" : {
+            "tensorflow": {
+              "image": "tensorflow/serving",
+              "defaultImageVersion": "2.1.0"
+              },
+            "seldon": {
+              "image": "seldonio/tfserving-proxy",
+              "defaultImageVersion": "1.3.0-dev"
+              }
+            }
+        },
+        "SKLEARN_SERVER": {
+          "protocols" : {
+            "seldon": {
+              "image": "seldonio/sklearnserver",
+              "defaultImageVersion": "1.3.0-dev"
+              },
+            "kfserving": {
+              "image": "seldonio/mlserver",
+              "defaultImageVersion": "0.1.0"
+              }
+            }
+        },
+        "XGBOOST_SERVER": {
+          "protocols" : {
+            "seldon": {
+              "image": "seldonio/xgboostserver",
+              "defaultImageVersion": "1.3.0-dev"
+              },
+            "kfserving": {
+              "image": "seldonio/mlserver",
+              "defaultImageVersion": "0.1.0"
+              }
+            }
+        },
+        "MLFLOW_SERVER": {
+          "protocols" : {
+            "seldon": {
+              "image": "seldonio/mlflowserver",
+              "defaultImageVersion": "1.3.0-dev"
+              },
+            "kfserving": {
+              "image": "seldonio/mlserver",
+              "defaultImageVersion": "0.1.0"
+              }
+            }
+        },
+        "TRITON_SERVER": {
+          "protocols" : {
+            "kfserving": {
+              "image": "nvcr.io/nvidia/tritonserver",
+              "defaultImageVersion": "20.08-py3"
+              }
+            }
+        }
+     }`,
 	"storageInitializer": `
 	{
 	"image" : "gcr.io/kfserving/storage-initializer:v0.4.0",

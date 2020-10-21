@@ -21,6 +21,8 @@ spec:
         type: REST
         service_host: 0.0.0.0
         service_port: 9000
+        http_port: 9000
+        grpc_port: 9500
       name: transformer
       type: TRANSFORMER
       children:
@@ -28,7 +30,9 @@ spec:
           type: REST
           service_host: 0.0.0.0
           service_port: 9001
-        name: classifier
+          name: classifier
+          http_port: 9001
+          grpc_port: 9501          
         type: MODEL
     labels:
       version: v1

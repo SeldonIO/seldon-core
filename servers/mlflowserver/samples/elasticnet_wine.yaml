@@ -12,8 +12,8 @@ spec:
         containers:
         - name: classifier
           livenessProbe:
-            initialDelaySeconds: 60
-            failureThreshold: 100
+            initialDelaySeconds: 80
+            failureThreshold: 200
             periodSeconds: 5
             successThreshold: 1
             httpGet:
@@ -21,8 +21,8 @@ spec:
               port: http
               scheme: HTTP
           readinessProbe:
-            initialDelaySeconds: 60
-            failureThreshold: 100
+            initialDelaySeconds: 80
+            failureThreshold: 200
             periodSeconds: 5
             successThreshold: 1
             httpGet:

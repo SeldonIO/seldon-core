@@ -51,6 +51,8 @@ const (
 	PODINFO_VOLUME_PATH     = "/etc/podinfo"
 
 	ENV_PREDICTIVE_UNIT_SERVICE_PORT         = "PREDICTIVE_UNIT_SERVICE_PORT"
+	ENV_PREDICTIVE_UNIT_HTTP_SERVICE_PORT    = "PREDICTIVE_UNIT_HTTP_SERVICE_PORT"
+	ENV_PREDICTIVE_UNIT_GRPC_SERVICE_PORT    = "PREDICTIVE_UNIT_GRPC_SERVICE_PORT"
 	ENV_PREDICTIVE_UNIT_SERVICE_PORT_METRICS = "PREDICTIVE_UNIT_METRICS_SERVICE_PORT"
 	ENV_PREDICTIVE_UNIT_METRICS_ENDPOINT     = "PREDICTIVE_UNIT_METRICS_ENDPOINT"
 	ENV_PREDICTIVE_UNIT_METRICS_PORT_NAME    = "PREDICTIVE_UNIT_METRICS_PORT_NAME"
@@ -339,6 +341,8 @@ type Endpoint struct {
 	ServiceHost string       `json:"service_host,omitempty" protobuf:"string,1,opt,name=service_host"`
 	ServicePort int32        `json:"service_port,omitempty" protobuf:"int32,2,opt,name=service_port"`
 	Type        EndpointType `json:"type,omitempty" protobuf:"int,3,opt,name=type"`
+	HttpPort    int32        `json:"http_port,omitempty" protobuf:"int32,4,opt,name=http_port"`
+	GrpcPort    int32        `json:"grpc_port,omitempty" protobuf:"int32,5,opt,name=grpc_port"`
 }
 
 type ParmeterType string

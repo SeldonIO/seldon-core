@@ -44,6 +44,10 @@ type JSONRestClient struct {
 	metrics        *metric.ClientMetrics
 }
 
+func (smc *JSONRestClient) IsGrpc() bool {
+	return false
+}
+
 func (smc *JSONRestClient) CreateErrorPayload(err error) payload.SeldonPayload {
 	respFailed := proto.SeldonMessage{Status: &proto.Status{Code: http.StatusInternalServerError, Info: err.Error()}}
 	m := jsonpb.Marshaler{}

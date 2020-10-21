@@ -35,6 +35,7 @@ type SeldonApiClient interface {
 	Unmarshall(msg []byte, contentType string) (payload.SeldonPayload, error)
 	Marshall(out io.Writer, msg payload.SeldonPayload) error
 	CreateErrorPayload(err error) payload.SeldonPayload
+	IsGrpc() bool
 }
 
 type SeldonApiError struct {

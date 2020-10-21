@@ -10,13 +10,15 @@ const (
 	PrePackedServerTensorflow = "TENSORFLOW_SERVER"
 	PrePackedServerSklearn    = "SKLEARN_SERVER"
 	PrePackedServerTriton     = "TRITON_SERVER"
+	PrePackedMlflow           = "MLFLOW_SERVER"
 
 	TfServingGrpcPort    = 2000
 	TfServingRestPort    = 2001
 	TfServingArgPort     = "--port="
 	TfServingArgRestPort = "--rest_api_port="
 
-	FirstPortNumber       = int32(9000)
+	FirstHttpPortNumber   = int32(9000)
+	FirstGrpcPortNumber   = int32(9500)
 	DNSLocalHost          = "localhost"
 	DNSClusterLocalSuffix = ".svc.cluster.local."
 	GrpcPortName          = "grpc"

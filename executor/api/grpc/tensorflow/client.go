@@ -28,6 +28,10 @@ type TensorflowGrpcClient struct {
 	annotations    map[string]string
 }
 
+func (s *TensorflowGrpcClient) IsGrpc() bool {
+	return true
+}
+
 func NewTensorflowGrpcClient(predictor *v1.PredictorSpec, deploymentName string, annotations map[string]string) client.SeldonApiClient {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),

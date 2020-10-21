@@ -39,6 +39,8 @@ var (
 	ControllerNamespace                 = GetEnv("POD_NAMESPACE", "seldon-system")
 	C                                   client.Client
 	envPredictiveUnitServicePort        = os.Getenv(ENV_PREDICTIVE_UNIT_SERVICE_PORT)
+	envPredictiveUnitHttpServicePort    = os.Getenv(ENV_PREDICTIVE_UNIT_HTTP_SERVICE_PORT)
+	envPredictiveUnitGrpcServicePort    = os.Getenv(ENV_PREDICTIVE_UNIT_GRPC_SERVICE_PORT)
 	envPredictiveUnitServicePortMetrics = os.Getenv(ENV_PREDICTIVE_UNIT_SERVICE_PORT_METRICS)
 	envPredictiveUnitMetricsPortName    = GetEnv(ENV_PREDICTIVE_UNIT_METRICS_PORT_NAME, constants.DefaultMetricsPortName)
 )
@@ -122,7 +124,7 @@ func addMetricsPortAndIncrement(nextMetricsPortNum *int32, con *corev1.Container
 }
 
 func (r *SeldonDeploymentSpec) setContainerPredictiveUnitDefaults(compSpecIdx int,
-	portNum int32, nextMetricsPortNum *int32, mldepName string, namespace string,
+	portNumHttp int32, portNumGrpc int32, nextMetricsPortNum *int32, mldepName string, namespace string,
 	p *PredictorSpec, pu *PredictiveUnit, con *corev1.Container) {
 
 	if pu.Endpoint == nil {
@@ -141,7 +143,7 @@ func (r *SeldonDeploymentSpec) setContainerPredictiveUnitDefaults(compSpecIdx in
 
 	existingPort := GetPort(portType, con.Ports)
 	if existingPort != nil {
-		portNum = existingPort.ContainerPort
+		portNumHttp = existingPort.ContainerPort
 	}
 
 	volFound := false
@@ -183,22 +185,37 @@ func (r *SeldonDeploymentSpec) setContainerPredictiveUnitDefaults(compSpecIdx in
 		containerServiceValue := GetContainerServiceName(mldepName, *p, con)
 		pu.Endpoint.ServiceHost = containerServiceValue + "." + namespace + constants.DNSClusterLocalSuffix
 	}
-	pu.Endpoint.ServicePort = portNum
+	// deprecated
+	pu.Endpoint.ServicePort = portNumHttp
+
+	pu.Endpoint.HttpPort = portNumHttp
+	pu.Endpoint.GrpcPort = portNumGrpc
 
 }
 
 func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespace string) {
 
-	var firstPuPortNum int32 = constants.FirstPortNumber
-	if envPredictiveUnitServicePort != "" {
-		portNum, err := strconv.Atoi(envPredictiveUnitServicePort)
+	var firstHttpPuPortNum int32 = constants.FirstHttpPortNumber
+	if envPredictiveUnitHttpServicePort != "" {
+		portNum, err := strconv.Atoi(envPredictiveUnitHttpServicePort)
 		if err != nil {
 			seldondeploymentlog.Error(err, "Failed to decode predictive unit service port will use default", "envar", ENV_PREDICTIVE_UNIT_SERVICE_PORT, "value", envPredictiveUnitServicePort)
 		} else {
-			firstPuPortNum = int32(portNum)
+			firstHttpPuPortNum = int32(portNum)
 		}
 	}
-	nextPortNum := firstPuPortNum
+	nextHttpPortNum := firstHttpPuPortNum
+
+	var firstGrpcPuPortNum int32 = constants.FirstGrpcPortNumber
+	if envPredictiveUnitGrpcServicePort != "" {
+		portNum, err := strconv.Atoi(envPredictiveUnitGrpcServicePort)
+		if err != nil {
+			seldondeploymentlog.Error(err, "Failed to decode grpc predictive unit service port will use default", "envar", ENV_PREDICTIVE_UNIT_GRPC_SERVICE_PORT, "value", envPredictiveUnitServicePort)
+		} else {
+			firstGrpcPuPortNum = int32(portNum)
+		}
+	}
+	nextGrpcPortNum := firstGrpcPuPortNum
 
 	var firstMetricsPuPortNum int32 = constants.FirstMetricsPortNumber
 	if envPredictiveUnitServicePortMetrics != "" {
@@ -210,7 +227,8 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 		}
 	}
 	nextMetricsPortNum := firstMetricsPuPortNum
-	portMap := map[string]int32{}
+	portMapHttp := map[string]int32{}
+	portMapGrpc := map[string]int32{}
 
 	for i := 0; i < len(r.Predictors); i++ {
 		p := r.Predictors[i]
@@ -232,13 +250,16 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 			for k := 0; k < len(cSpec.Spec.Containers); k++ {
 				con := &cSpec.Spec.Containers[k]
 
-				getUpdatePortNumMap(con.Name, &nextPortNum, portMap)
-				portNum := portMap[con.Name]
+				getUpdatePortNumMap(con.Name, &nextHttpPortNum, portMapHttp)
+				httpPortNum := portMapHttp[con.Name]
+
+				getUpdatePortNumMap(con.Name, &nextGrpcPortNum, portMapGrpc)
+				grpcPortNum := portMapGrpc[con.Name]
 
 				pu := GetPredictiveUnit(&p.Graph, con.Name)
 
 				if pu != nil {
-					r.setContainerPredictiveUnitDefaults(j, portNum, &nextMetricsPortNum, mldepName, namespace, &p, pu, con)
+					r.setContainerPredictiveUnitDefaults(j, httpPortNum, grpcPortNum, &nextMetricsPortNum, mldepName, namespace, &p, pu, con)
 				}
 			}
 		}
@@ -266,16 +287,19 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 					}
 				}
 
-				getUpdatePortNumMap(pu.Name, &nextPortNum, portMap)
-				portNum := portMap[pu.Name]
+				getUpdatePortNumMap(pu.Name, &nextHttpPortNum, portMapHttp)
+				httpPortNum := portMapHttp[pu.Name]
 
-				r.setContainerPredictiveUnitDefaults(0, portNum, &nextMetricsPortNum, mldepName, namespace, &p, pu, con)
+				getUpdatePortNumMap(con.Name, &nextGrpcPortNum, portMapGrpc)
+				grpcPortNum := portMapGrpc[con.Name]
+
+				r.setContainerPredictiveUnitDefaults(0, httpPortNum, grpcPortNum, &nextMetricsPortNum, mldepName, namespace, &p, pu, con)
 				//Only set image default for non tensorflow graphs
 				if r.Protocol != ProtocolTensorflow {
 					serverConfig := GetPrepackServerConfig(string(*pu.Implementation))
 					if serverConfig != nil {
 						if con.Image == "" {
-							con.Image = serverConfig.PrepackImageName(r, pu)
+							con.Image = serverConfig.PrepackImageName(r.Protocol, pu)
 						}
 					}
 				}

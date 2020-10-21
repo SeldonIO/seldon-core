@@ -720,38 +720,10 @@ func createContainerService(deploy *appsv1.Deployment,
 		return nil
 	}
 	namespace := getNamespace(mlDep)
-	portType := "http"
-	if pu.Endpoint.Type == machinelearningv1.GRPC {
-		portType = "grpc"
-	}
-	var portNum int32
-	portNum = 0
-	existingPort := machinelearningv1.GetPort(portType, con.Ports)
-	if existingPort != nil {
-		portNum = existingPort.ContainerPort
-	}
 
-	// pu should have a port set by seldondeployment_create_update_handler.go (if not by user)
-	// that mutator modifies SeldonDeployment and fires before this controller
-	if pu.Endpoint.ServicePort != 0 {
-		portNum = pu.Endpoint.ServicePort
-	}
-
-	if portNum == 0 {
-		// should have port by now
-		// if we don't know what it would respond to so can't create a service for it
-		return nil
-	}
-
-	if portType == "grpc" {
-		c.serviceDetails[containerServiceValue] = &machinelearningv1.ServiceStatus{
-			SvcName:      containerServiceValue,
-			GrpcEndpoint: containerServiceValue + "." + namespace + ":" + strconv.Itoa(int(portNum))}
-	} else {
-		c.serviceDetails[containerServiceValue] = &machinelearningv1.ServiceStatus{
-			SvcName:      containerServiceValue,
-			HttpEndpoint: containerServiceValue + "." + namespace + ":" + strconv.Itoa(int(portNum))}
-	}
+	c.serviceDetails[containerServiceValue] = &machinelearningv1.ServiceStatus{
+		SvcName:      containerServiceValue,
+		GrpcEndpoint: containerServiceValue + "." + namespace + ":" + strconv.Itoa(int(pu.Endpoint.HttpPort))}
 
 	svc := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -763,9 +735,15 @@ func createContainerService(deploy *appsv1.Deployment,
 			Ports: []corev1.ServicePort{
 				{
 					Protocol:   corev1.ProtocolTCP,
-					Port:       portNum,
-					TargetPort: intstr.FromInt(int(portNum)),
-					Name:       portType,
+					Port:       pu.Endpoint.HttpPort,
+					TargetPort: intstr.FromInt(int(pu.Endpoint.HttpPort)),
+					Name:       "http",
+				},
+				{
+					Protocol:   corev1.ProtocolTCP,
+					Port:       pu.Endpoint.GrpcPort,
+					TargetPort: intstr.FromInt(int(pu.Endpoint.GrpcPort)),
+					Name:       "grpc",
 				},
 			},
 			Type:            corev1.ServiceTypeClusterIP,
@@ -777,15 +755,20 @@ func createContainerService(deploy *appsv1.Deployment,
 	deploy.Spec.Selector.MatchLabels[containerServiceKey] = containerServiceValue
 	deploy.Spec.Template.ObjectMeta.Labels[containerServiceKey] = containerServiceValue
 
-	if existingPort == nil || con.Ports == nil {
-		con.Ports = append(con.Ports, corev1.ContainerPort{Name: portType, ContainerPort: portNum, Protocol: corev1.ProtocolTCP})
+	existingHttpPort := machinelearningv1.GetPort("http", con.Ports)
+	if existingHttpPort == nil || con.Ports == nil {
+		con.Ports = append(con.Ports, corev1.ContainerPort{Name: "http", ContainerPort: pu.Endpoint.HttpPort, Protocol: corev1.ProtocolTCP})
+	}
+	existingGrpcPort := machinelearningv1.GetPort("grpc", con.Ports)
+	if existingGrpcPort == nil || con.Ports == nil {
+		con.Ports = append(con.Ports, corev1.ContainerPort{Name: "grpc", ContainerPort: pu.Endpoint.GrpcPort, Protocol: corev1.ProtocolTCP})
 	}
 
 	if con.LivenessProbe == nil {
-		con.LivenessProbe = &corev1.Probe{Handler: corev1.Handler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromString(portType)}}, InitialDelaySeconds: 60, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 3, TimeoutSeconds: 1}
+		con.LivenessProbe = &corev1.Probe{Handler: corev1.Handler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromInt(int(pu.Endpoint.HttpPort))}}, InitialDelaySeconds: 60, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 3, TimeoutSeconds: 1}
 	}
 	if con.ReadinessProbe == nil {
-		con.ReadinessProbe = &corev1.Probe{Handler: corev1.Handler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromString(portType)}}, InitialDelaySeconds: 20, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 3, TimeoutSeconds: 1}
+		con.ReadinessProbe = &corev1.Probe{Handler: corev1.Handler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromInt(int(pu.Endpoint.HttpPort))}}, InitialDelaySeconds: 20, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 3, TimeoutSeconds: 1}
 	}
 
 	// Add livecycle probe
@@ -793,9 +776,11 @@ func createContainerService(deploy *appsv1.Deployment,
 		con.Lifecycle = &corev1.Lifecycle{PreStop: &corev1.Handler{Exec: &corev1.ExecAction{Command: []string{"/bin/sh", "-c", "/bin/sleep 10"}}}}
 	}
 
-	// Add Environment Variables
-	if !utils.HasEnvVar(con.Env, machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT) {
-		con.Env = append(con.Env, corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT, Value: strconv.Itoa(int(portNum))})
+	if !utils.HasEnvVar(con.Env, machinelearningv1.ENV_PREDICTIVE_UNIT_HTTP_SERVICE_PORT) {
+		con.Env = append(con.Env, corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_HTTP_SERVICE_PORT, Value: strconv.Itoa(int(pu.Endpoint.HttpPort))})
+	}
+	if !utils.HasEnvVar(con.Env, machinelearningv1.ENV_PREDICTIVE_UNIT_GRPC_SERVICE_PORT) {
+		con.Env = append(con.Env, corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_GRPC_SERVICE_PORT, Value: strconv.Itoa(int(pu.Endpoint.GrpcPort))})
 	}
 
 	if pu != nil && len(pu.Parameters) > 0 {

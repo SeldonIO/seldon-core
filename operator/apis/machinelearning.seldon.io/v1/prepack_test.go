@@ -19,37 +19,45 @@ func TestImageSetNormal(t *testing.T) {
 		"GRPC image with version": {
 			pu: &PredictiveUnit{Endpoint: &Endpoint{Type: GRPC}},
 			config: &PredictorServerConfig{
-				GrpcConfig: PredictorImageConfig{ContainerImage: "a", DefaultImageVersion: "1"},
+				Protocols: map[Protocol]PredictorImageConfig{
+					ProtocolSeldon: PredictorImageConfig{ContainerImage: "a", DefaultImageVersion: "1"},
+				},
 			},
 			desiredImageName: "a:1",
 		},
 		"GRPC image with no version": {
 			pu: &PredictiveUnit{Endpoint: &Endpoint{Type: GRPC}},
 			config: &PredictorServerConfig{
-				GrpcConfig: PredictorImageConfig{ContainerImage: "a"},
+				Protocols: map[Protocol]PredictorImageConfig{
+					ProtocolSeldon: PredictorImageConfig{ContainerImage: "a", DefaultImageVersion: "1"},
+				},
 			},
-			desiredImageName: "a",
+			desiredImageName: "a:1",
 		},
 		"REST image with version": {
 			pu: &PredictiveUnit{Endpoint: &Endpoint{Type: REST}},
 			config: &PredictorServerConfig{
-				RestConfig: PredictorImageConfig{ContainerImage: "a", DefaultImageVersion: "1"},
+				Protocols: map[Protocol]PredictorImageConfig{
+					ProtocolSeldon: PredictorImageConfig{ContainerImage: "a", DefaultImageVersion: "1"},
+				},
 			},
 			desiredImageName: "a:1",
 		},
 		"REST image with no version": {
 			pu: &PredictiveUnit{Endpoint: &Endpoint{Type: REST}},
 			config: &PredictorServerConfig{
-				RestConfig: PredictorImageConfig{ContainerImage: "a"},
+				Protocols: map[Protocol]PredictorImageConfig{
+					ProtocolSeldon: PredictorImageConfig{ContainerImage: "a", DefaultImageVersion: "1"},
+				},
 			},
-			desiredImageName: "a",
+			desiredImageName: "a:1",
 		},
 	}
 
 	for name, scenario := range scenarios {
 		t.Logf("Scenario: %s", name)
 		con := &corev1.Container{}
-		SetImageNameForPrepackContainer(scenario.pu, con, scenario.config)
+		con.Image = scenario.config.PrepackImageName(ProtocolSeldon, scenario.pu)
 		g.Expect(con.Image).To(Equal(scenario.desiredImageName))
 	}
 }
@@ -67,9 +75,11 @@ func TestGetPredictorConfig(t *testing.T) {
 	}{
 
 		"related image sklearn": {
-			serverName:      PrepackSklearnName,
-			relatedImageMap: map[string]PredictorServerConfig{PrepackSklearnName: {RestConfig: PredictorImageConfig{ContainerImage: "a"}}},
-			desiredConfig:   PredictorServerConfig{RestConfig: PredictorImageConfig{ContainerImage: "a"}},
+			serverName: PrepackSklearnName,
+			relatedImageMap: map[string]PredictorServerConfig{PrepackSklearnName: {Protocols: map[Protocol]PredictorImageConfig{
+				ProtocolSeldon: {ContainerImage: "a"}}},
+			},
+			desiredConfig: PredictorServerConfig{Protocols: map[Protocol]PredictorImageConfig{ProtocolSeldon: {ContainerImage: "a"}}},
 		},
 		"default image sklearn": {
 			serverName:      PrepackSklearnName,
@@ -81,66 +91,6 @@ func TestGetPredictorConfig(t *testing.T) {
 		t.Logf("Scenario: %s", name)
 		config := getPrepackServerConfigWithRelated(scenario.serverName, scenario.relatedImageMap)
 		g.Expect(*config).To(Equal(scenario.desiredConfig))
-	}
-}
-
-func TestPredictorServerConfigPrepackImageConfig(t *testing.T) {
-	g := NewGomegaWithT(t)
-
-	tests := []struct {
-		config       *PredictorServerConfig
-		protocol     Protocol
-		endpointType EndpointType
-		expected     *PredictorImageConfig
-	}{
-		{
-			config: &PredictorServerConfig{
-				RestConfig: PredictorImageConfig{ContainerImage: "rest"},
-				GrpcConfig: PredictorImageConfig{ContainerImage: "grpc"},
-			},
-			protocol:     ProtocolSeldon,
-			endpointType: REST,
-			expected:     &PredictorImageConfig{ContainerImage: "rest"},
-		},
-		{
-			config: &PredictorServerConfig{
-				RestConfig: PredictorImageConfig{ContainerImage: "rest"},
-				GrpcConfig: PredictorImageConfig{ContainerImage: "grpc"},
-			},
-			protocol:     ProtocolSeldon,
-			endpointType: GRPC,
-			expected:     &PredictorImageConfig{ContainerImage: "grpc"},
-		},
-		{
-			config: &PredictorServerConfig{
-				RestConfig: PredictorImageConfig{ContainerImage: "rest"},
-				GrpcConfig: PredictorImageConfig{ContainerImage: "grpc"},
-			},
-			protocol:     ProtocolKfserving,
-			endpointType: GRPC,
-			expected:     &PredictorImageConfig{ContainerImage: "grpc"},
-		},
-		{
-			config: &PredictorServerConfig{
-				RestConfig: PredictorImageConfig{ContainerImage: "rest"},
-				GrpcConfig: PredictorImageConfig{ContainerImage: "grpc"},
-				Protocols: PredictorProtocolsConfig{
-					KFServing: &PredictorImageConfig{ContainerImage: "kfserving"},
-				},
-			},
-			protocol:     ProtocolKfserving,
-			endpointType: GRPC,
-			expected:     &PredictorImageConfig{ContainerImage: "kfserving"},
-		},
-	}
-
-	for _, test := range tests {
-		mlDep := &SeldonDeploymentSpec{Protocol: test.protocol}
-		pu := &PredictiveUnit{Endpoint: &Endpoint{Type: test.endpointType}}
-
-		imageConfig := test.config.PrepackImageConfig(mlDep, pu)
-
-		g.Expect(imageConfig).To(Equal(test.expected))
 	}
 }
 
@@ -179,12 +129,11 @@ func TestPredictorServerConfigPrepackImageName(t *testing.T) {
 	for _, test := range tests {
 		p := &PredictorServerConfig{}
 		if test.imageConfig != nil {
-			p.RestConfig = *test.imageConfig
+			p.Protocols = map[Protocol]PredictorImageConfig{ProtocolSeldon: *test.imageConfig}
 		}
-		mlDep := &SeldonDeploymentSpec{}
 		pu := &PredictiveUnit{Endpoint: &Endpoint{Type: REST}}
 
-		image := p.PrepackImageName(mlDep, pu)
+		image := p.PrepackImageName(ProtocolSeldon, pu)
 
 		g.Expect(image).To(Equal(test.expected))
 	}

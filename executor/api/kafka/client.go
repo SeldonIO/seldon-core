@@ -25,6 +25,10 @@ type KafkaClient struct {
 	topicHandlers  map[string]*KafkaRPC
 }
 
+func (kc *KafkaClient) IsGrpc() bool {
+	return false
+}
+
 func NewKafkaClient(hostname, deploymentName, namespace, protocol, transport string, predictor *v1.PredictorSpec, broker string, log logr.Logger) client.SeldonApiClient {
 	skc := &KafkaClient{
 		Hostname:       hostname,

@@ -94,32 +94,32 @@ function build_push_request_logger {
 function build_push_sklearnserver {
     make \
 	-C servers/sklearnserver \
-        build_all \
-	push_all 
+        build \
+	push 
     SKLEARN_EXIT_VALUE=$?
 }
 
 function build_push_mlflowserver {
     make \
 	-C servers/mlflowserver \
-        build_all \
-	push_all 
+        build \
+	push 
     MLFLOW_EXIT_VALUE=$?
 }
 
 function build_push_xgboostserver {
     make \
 	-C servers/xgboostserver \
-        build_all \
-	push_all 
+        build \
+	push 
     XGBOOST_EXIT_VALUE=$?
 }
 
 function build_push_tfproxy {
     make \
-	-C integrations/tfserving \
-        build_all \
-	push_all 
+	-C integrations/tfserving_proxy \
+        build \
+	push 
     TFPROXY_EXIT_VALUE=$?
 }
 

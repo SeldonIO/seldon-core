@@ -32,17 +32,17 @@ class TfServingProxy(object):
             model_output=None):
         log.debug("rest_endpoint:",rest_endpoint)
         log.debug("grpc_endpoint:",grpc_endpoint)
-        if not grpc_endpoint is None:
-            self.grpc = True
-            max_msg = 1000000000
-            options = [('grpc.max_message_length', max_msg),
-                       ('grpc.max_send_message_length', max_msg),
-                       ('grpc.max_receive_message_length', max_msg)]
-            channel = grpc.insecure_channel(grpc_endpoint,options)
-            self.stub = prediction_service_pb2_grpc.PredictionServiceStub(channel)
-        else:
-            self.grpc = False
-            self.rest_endpoint = rest_endpoint+"/v1/models/"+model_name+":predict"
+
+        # grpc
+        max_msg = 1000000000
+        options = [('grpc.max_message_length', max_msg),
+                   ('grpc.max_send_message_length', max_msg),
+                   ('grpc.max_receive_message_length', max_msg)]
+        channel = grpc.insecure_channel(grpc_endpoint,options)
+        self.stub = prediction_service_pb2_grpc.PredictionServiceStub(channel)
+
+        # rest
+        self.rest_endpoint = rest_endpoint+"/v1/models/"+model_name+":predict"
         self.model_name = model_name
         if signature_name is None:
             self.signature_name = signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY
@@ -80,7 +80,7 @@ class TfServingProxy(object):
         else:
             data_arr = grpc_datadef_to_array(request.data)
             tfrequest.inputs[self.model_input].CopyFrom(
-                tf.contrib.util.make_tensor_proto(
+                tf.make_tensor_proto(
                     data_arr.tolist(),
                     shape=data_arr.shape))
             result = self.stub.Predict(tfrequest)
