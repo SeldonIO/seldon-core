@@ -27,7 +27,7 @@ def _drift_to_metrics(drift):
             {
                 "key": "seldon_metric_drift_feature_score",
                 "value": feature_score,
-                "type": "GAUGE",
+                "type": "COUNTER",
             }
         )
 

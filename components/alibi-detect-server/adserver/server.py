@@ -236,7 +236,7 @@ class EventHandler(tornado.web.RequestHandler):
         runtime_metrics = seldon_response.metrics
         if runtime_metrics is not None:
             if validate_metrics(runtime_metrics):
-                self.seldon_metrics.update(runtime_metrics, "ce_server")
+                self.seldon_metrics.update(runtime_metrics, self.event_type)
             else:
                 logging.error("Metrics returned are invalid: " + str(runtime_metrics))
 
