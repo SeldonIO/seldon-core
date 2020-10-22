@@ -1,0 +1,1941 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-2571-in-flpww-4[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-zm8vc[0m
+{"level":"info","ts":1603384402.240764,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1603384402.2412198,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2571-in-flpww-4[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-6m98m[0m
+{"level":"info","ts":1603384402.7630765,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1603384402.7643673,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2571-in-flpww-4[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2571-in-flpww-4[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-bkdqz[0m
+{"level":"info","ts":1603384408.952701,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1603384408.9539945,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2571-in-flpww-4[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-2571-in-flpww-d2xkr[0m
+{"level":"info","ts":1603384409.1246722,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1603384415.482046,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2571-in-flpww-4[0m stage [32mpr-build-comment[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2571-in-flpww-4[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:7abd510800c17fe4ad569d5060b4bdc4112866ea,2571:69941165990dbb318e6936af91d62d9a9ef9e4f8
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch origin --unshallow 69941165990dbb318e6936af91d62d9a9ef9e4f8: 7abd510800c17fe4ad569d5060b4bdc4112866ea:
+DEBUG: ran git fetch --unshallow origin 69941165990dbb318e6936af91d62d9a9ef9e4f8: 7abd510800c17fe4ad569d5060b4bdc4112866ea: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard 7abd510800c17fe4ad569d5060b4bdc4112866ea
+DEBUG: ran git reset --hard 7abd510800c17fe4ad569d5060b4bdc4112866ea in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git merge 69941165990dbb318e6936af91d62d9a9ef9e4f8
+DEBUG: ran git merge 69941165990dbb318e6936af91d62d9a9ef9e4f8 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git log --format=%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%s%n%b%x1e 7abd510800c17fe4ad569d5060b4bdc4112866ea..HEAD
+Merged SHA c3ea694d0496c7fc6353e63d4560b37824c7b537 with commit message 'Merge commit '69941165990dbb318e6936af91d62d9a9ef9e4f8'' into base branch master
+Merged SHA 69941165990dbb318e6936af91d62d9a9ef9e4f8 with commit message 'Update to Alibi 0.5.5' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-2571-in-flpww-4[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=2571
++ BUILD_NUMBER=4
++ PIPELINE_CONTEXT=integration
+++ cat
++++ date
++ COMMENT_MSG='Thu Oct 22 16:33:43 UTC 2020
+The logs for [integration] [4] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2571/4.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2571 --build=4'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=2571 '--comment=Thu Oct 22 16:33:43 UTC 2020
+The logs for [integration] [4] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2571/4.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2571 --build=4'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2571-in-flpww-4[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-2571-in-flpww-ljmzx[0m
+{"level":"info","ts":1603384428.8030007,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1603384428.8054988,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2571-in-flpww-4[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-2571-in-flpww-llv6f[0m
+{"level":"info","ts":1603384428.9783099,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1603384429.4022849,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2571-in-flpww-4[0m stage [32mend-to-end[0m and container [32mstep-credential-initializer-qs6nf[0m
+{"level":"info","ts":1603384432.4808052,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1603384432.4813516,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2571-in-flpww-4[0m stage [32mend-to-end[0m and container [32mstep-working-dir-initializer-99lw6[0m
+{"level":"info","ts":1603384433.2408152,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1603384433.2448506,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2571-in-flpww-4[0m stage [32mend-to-end[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2571-in-flpww-4[0m stage [32mend-to-end[0m and container [32mstep-create-dir-workspace-dx88g[0m
+{"level":"info","ts":1603384439.2603235,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1603384439.261796,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2571-in-flpww-4[0m stage [32mend-to-end[0m and container [32mstep-source-copy-workspace-vkgch[0m
+{"level":"info","ts":1603384439.4112527,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1603384439.750102,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2571-in-flpww-4[0m stage [32mend-to-end[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2571-in-flpww-4[0m stage [32mend-to-end[0m and container [32mstep-test-end-to-end[0m
+Test run type is: [base]
+Starting Docker: docker.
+[SETUP] Waiting for Docker to be ready, sleeping for 1 seconds ...
+kind create cluster --config ../resources/kind_config.yaml
+Creating cluster "kind" ...
+ • Ensuring node image (kindest/node:v1.16.3) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.16.3) 🖼
+ • Preparing nodes 📦  ...
+ ✓ Preparing nodes 📦
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+ • Joining worker nodes 🚜  ...
+ ✓ Joining worker nodes 🚜
+Set kubectl context to "kind-kind"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-kind
+
+Not sure what to do next? 😅 Check out https://kind.sigs.k8s.io/docs/user/quick-start/
+`kind get kubeconfig-path` is deprecated!
+
+KIND will export and merge kubeconfig like kops, minikube, etc.
+This command is now unnecessary and will be removed in a future release.
+
+For more info see: https://github.com/kubernetes-sigs/kind/issues/1060
+See also the output of `kind create cluster`
+
+Files changed in python folder:
+SKIPPING PYTHON IMAGE BUILD...
+Files changed in operator folder:
+SKIPPING OPERATOR IMAGE BUILD...
+Files changed in engine folder:
+SKIPPING ENGINE IMAGE BUILD...
+Files changed in executor folder:
+SKIPPING EXECUTOR IMAGE BUILD...
+Build test models
+make -C ../docker/fixed-model kind_load_images
+make[1]: Entering directory '/workspace/source/testing/docker/fixed-model'
+s2i build -E environment_rest_v1 . seldonio/seldon-core-s2i-python3:0.15 seldonio/fixed-model:0.1
+---> Installing application source...
+Build completed successfully
+s2i build -E environment_rest_v2 . seldonio/seldon-core-s2i-python3:0.15 seldonio/fixed-model:0.2
+---> Installing application source...
+Build completed successfully
+kind load -v 3 docker-image seldonio/fixed-model:0.1
+Image: "seldonio/fixed-model:0.1" with ID "sha256:a31762d00747a873898906b156459a81249217072fb00d06986d1182306e4d5b" not present on node "kind-control-plane"
+Image: "seldonio/fixed-model:0.1" with ID "sha256:a31762d00747a873898906b156459a81249217072fb00d06986d1182306e4d5b" not present on node "kind-worker"
+kind load -v 3 docker-image seldonio/fixed-model:0.2
+Image: "seldonio/fixed-model:0.2" with ID "sha256:19d9befe9fd27dd7e027be798c8f5acc05e4bb8c5f5374a2152bceedacdba466" not present on node "kind-control-plane"
+Image: "seldonio/fixed-model:0.2" with ID "sha256:19d9befe9fd27dd7e027be798c8f5acc05e4bb8c5f5374a2152bceedacdba466" not present on node "kind-worker"
+make[1]: Leaving directory '/workspace/source/testing/docker/fixed-model'
+make -C ../docker/echo-model kind_load_image
+make[1]: Entering directory '/workspace/source/testing/docker/echo-model'
+s2i build \
+	-E environment_rest \
+	.\
+	seldonio/seldon-core-s2i-python3:1.1.1-SNAPSHOT\
+	seldonio/echo-model:0.1
+---> Installing application source...
+Build completed successfully
+kind load -v 3 docker-image seldonio/echo-model:0.1
+Image: "seldonio/echo-model:0.1" with ID "sha256:3b31be2a50bdac2871a4ac65baca0e0f5f3336c30d6198af2c1b42ccb9b70a2c" not present on node "kind-control-plane"
+Image: "seldonio/echo-model:0.1" with ID "sha256:3b31be2a50bdac2871a4ac65baca0e0f5f3336c30d6198af2c1b42ccb9b70a2c" not present on node "kind-worker"
+make[1]: Leaving directory '/workspace/source/testing/docker/echo-model'
+Files changed in prepackaged folder:
+SKIPPING PREPACKAGED IMAGE BUILD...
+Files changed in alibi explain folder:
+components/alibi-explain-server/.gitignore
+components/alibi-explain-server/Makefile
+components/alibi-explain-server/alibiexplainer/kernel_shap.py
+components/alibi-explain-server/setup.py
+components/alibi-explain-server/tests/test_anchor_images.py
+components/alibi-explain-server/tests/test_kernel_shap.py
+components/alibi-explain-server/tests/test_tree_shap.py
+cd ../../components/alibi-explain-server && make kind_load
+make[1]: Entering directory '/workspace/source/components/alibi-explain-server'
+cp ../../proto/prediction.proto alibiexplainer/proto/
+make -C ../../proto/tensorflow/ create_protos
+make[2]: Entering directory '/workspace/source/proto/tensorflow'
+./create-protos.sh
+Downloading proto files for master
+make[2]: Leaving directory '/workspace/source/proto/tensorflow'
+cp -r ../../proto/tensorflow/tensorflow \
+	alibiexplainer/proto/
+make -C ../../proto/tensorflow clean
+make[2]: Entering directory '/workspace/source/proto/tensorflow'
+removed 'tensorflow/core/framework/tensor.proto'
+removed 'tensorflow/core/framework/tensor_shape.proto'
+removed 'tensorflow/core/framework/types.proto'
+removed 'tensorflow/core/framework/resource_handle.proto'
+removed directory 'tensorflow/core/framework'
+removed directory 'tensorflow/core'
+removed directory 'tensorflow'
+make[2]: Leaving directory '/workspace/source/proto/tensorflow'
+pip install -r requirements-dev.txt
+Collecting grpcio-tools==1.31.0
+  Downloading grpcio_tools-1.31.0-cp36-cp36m-manylinux2014_x86_64.whl (2.5 MB)
+Collecting mypy-protobuf==1.22
+  Downloading mypy_protobuf-1.22-py3-none-any.whl (7.5 kB)
+Requirement already satisfied: protobuf<4.0dev,>=3.5.0.post1 in /usr/local/lib/python3.6/site-packages (from grpcio-tools==1.31.0->-r requirements-dev.txt (line 1)) (3.13.0)
+Requirement already satisfied: grpcio>=1.31.0 in /usr/local/lib/python3.6/site-packages (from grpcio-tools==1.31.0->-r requirements-dev.txt (line 1)) (1.32.0)
+Requirement already satisfied: six>=1.9 in /usr/local/lib/python3.6/site-packages (from protobuf<4.0dev,>=3.5.0.post1->grpcio-tools==1.31.0->-r requirements-dev.txt (line 1)) (1.15.0)
+Requirement already satisfied: setuptools in /usr/local/lib/python3.6/site-packages (from protobuf<4.0dev,>=3.5.0.post1->grpcio-tools==1.31.0->-r requirements-dev.txt (line 1)) (50.3.0)
+Installing collected packages: grpcio-tools, mypy-protobuf
+  Attempting uninstall: grpcio-tools
+    Found existing installation: grpcio-tools 1.32.0
+    Uninstalling grpcio-tools-1.32.0:
+      Successfully uninstalled grpcio-tools-1.32.0
+Successfully installed grpcio-tools-1.31.0 mypy-protobuf-1.22
+WARNING: You are using pip version 20.2.3; however, version 20.2.4 is available.
+You should consider upgrading via the '/usr/local/bin/python -m pip install --upgrade pip' command.
+cd alibiexplainer && python \
+	-m grpc.tools.protoc \
+	-I./ \
+	-I./proto/ \
+	--python_out=./ \
+	--grpc_python_out=./ \
+	--mypy_out=./ \
+	./proto/prediction.proto
+Writing mypy to proto/prediction_pb2.pyi
+sed -i "s/from proto/from alibiexplainer.proto/g" alibiexplainer/proto/prediction_pb2_grpc.py
+docker build --file=Dockerfile --force-rm=true -t seldonio/alibiexplainer:1.4.0-dev .
+Sending build context to Docker daemon  303.1kB
+Step 1/14 : FROM registry.access.redhat.com/ubi8/python-36
+latest: Pulling from ubi8/python-36
+ec1681b6a383: Pulling fs layer
+c4d668e229cd: Pulling fs layer
+da1cc572023a: Pulling fs layer
+35ad9b4fba1f: Pulling fs layer
+7ddaa2f37c8c: Pulling fs layer
+35ad9b4fba1f: Waiting
+7ddaa2f37c8c: Waiting
+c4d668e229cd: Download complete
+da1cc572023a: Verifying Checksum
+da1cc572023a: Download complete
+ec1681b6a383: Verifying Checksum
+ec1681b6a383: Download complete
+7ddaa2f37c8c: Verifying Checksum
+7ddaa2f37c8c: Download complete
+35ad9b4fba1f: Verifying Checksum
+35ad9b4fba1f: Download complete
+ec1681b6a383: Pull complete
+c4d668e229cd: Pull complete
+da1cc572023a: Pull complete
+35ad9b4fba1f: Pull complete
+7ddaa2f37c8c: Pull complete
+Digest: sha256:5b8d3d382f1dcdd49140f53cc6f0068dcdce1f1d8ee711b3525ac71c08f11c88
+Status: Downloaded newer image for registry.access.redhat.com/ubi8/python-36:latest
+ ---> 5fc096a06a2d
+Step 2/14 : LABEL name="Seldon Alibi Wrapper"       vendor="Seldon Technologies"       version="1.4.0-dev"       release="1"       summary="Alibi Explainer Wrapper for Seldon Core"       description="Allows Seldon Core inference models to run with a black box model explanation model from the Alibi:Explain project"
+ ---> Running in 6ac3a6c2f741
+Removing intermediate container 6ac3a6c2f741
+ ---> 3b72e161106d
+Step 3/14 : USER root
+ ---> Running in d49c47d844d8
+Removing intermediate container d49c47d844d8
+ ---> 5d1819e4f1c4
+Step 4/14 : RUN pip install --upgrade pip
+ ---> Running in 7c70e0256683
+Collecting pip
+  Downloading https://files.pythonhosted.org/packages/cb/28/91f26bd088ce8e22169032100d4260614fc3da435025ff389ef1d396a433/pip-20.2.4-py2.py3-none-any.whl (1.5MB)
+Installing collected packages: pip
+  Found existing installation: pip 9.0.3
+    Uninstalling pip-9.0.3:
+      Successfully uninstalled pip-9.0.3
+Successfully installed pip-20.2.4
+Removing intermediate container 7c70e0256683
+ ---> 85ed5083b246
+Step 5/14 : COPY setup.py setup.py
+ ---> d0e568d921e6
+Step 6/14 : COPY alibiexplainer alibiexplainer
+ ---> 3e2662421c4f
+Step 7/14 : COPY README.md README.md
+ ---> 598a8b972fcd
+Step 8/14 : RUN pip install . --no-binary protobuf
+ ---> Running in 4506bb62c7b6
+Processing /opt/app-root/src
+Collecting kfserving>=0.3.0
+  Downloading kfserving-0.4.1-py3-none-any.whl (85 kB)
+Collecting alibi==0.5.5
+  Downloading alibi-0.5.5-py3-none-any.whl (228 kB)
+Collecting scikit-learn>=0.23.0
+  Downloading scikit_learn-0.23.2-cp36-cp36m-manylinux1_x86_64.whl (6.8 MB)
+Collecting argparse>=1.4.0
+  Downloading argparse-1.4.0-py2.py3-none-any.whl (23 kB)
+Collecting requests>=2.22.0
+  Downloading requests-2.24.0-py2.py3-none-any.whl (61 kB)
+Collecting joblib>=0.13.2
+  Downloading joblib-0.17.0-py3-none-any.whl (301 kB)
+Collecting dill>=0.3.0
+  Downloading dill-0.3.2.zip (177 kB)
+Collecting grpcio>=1.22.0
+  Downloading grpcio-1.33.1-cp36-cp36m-manylinux2014_x86_64.whl (3.8 MB)
+Collecting xgboost==1.0.2
+  Downloading xgboost-1.0.2-py3-none-manylinux1_x86_64.whl (109.7 MB)
+Collecting shap==0.36.0
+  Downloading shap-0.36.0.tar.gz (319 kB)
+Collecting six==1.15
+  Downloading six-1.15.0-py2.py3-none-any.whl (10 kB)
+Requirement already satisfied: setuptools>=21.0.0 in /opt/app-root/lib/python3.6/site-packages (from kfserving>=0.3.0->alibiexplainer==0.3.0) (39.2.0)
+Collecting python-dateutil>=2.5.3
+  Downloading python_dateutil-2.8.1-py2.py3-none-any.whl (227 kB)
+Collecting tornado>=6.0.0
+  Downloading tornado-6.0.4.tar.gz (496 kB)
+Collecting urllib3>=1.15.1
+  Downloading urllib3-1.25.11-py2.py3-none-any.whl (127 kB)
+Collecting google-cloud-storage>=1.31.0
+  Downloading google_cloud_storage-1.32.0-py2.py3-none-any.whl (92 kB)
+Collecting adal>=1.2.2
+  Downloading adal-1.2.5-py2.py3-none-any.whl (55 kB)
+Collecting kubernetes==10.0.1
+  Downloading kubernetes-10.0.1-py2.py3-none-any.whl (1.5 MB)
+Collecting minio>=4.0.9
+  Downloading minio-6.0.0-py2.py3-none-any.whl (72 kB)
+Collecting table-logger>=0.3.5
+  Downloading table_logger-0.3.6-py3-none-any.whl (14 kB)
+Collecting certifi>=14.05.14
+  Downloading certifi-2020.6.20-py2.py3-none-any.whl (156 kB)
+Collecting azure-storage-blob<=2.1.0,>=1.3.0
+  Downloading azure_storage_blob-2.1.0-py2.py3-none-any.whl (88 kB)
+Collecting numpy>=1.17.3
+  Downloading numpy-1.19.2-cp36-cp36m-manylinux2010_x86_64.whl (14.5 MB)
+Collecting spacy[lookups]
+  Downloading spacy-2.3.2-cp36-cp36m-manylinux1_x86_64.whl (9.9 MB)
+Collecting Pillow
+  Downloading Pillow-8.0.0-cp36-cp36m-manylinux1_x86_64.whl (2.2 MB)
+Collecting beautifulsoup4
+  Downloading beautifulsoup4-4.9.3-py3-none-any.whl (115 kB)
+Collecting pandas
+  Downloading pandas-1.1.3-cp36-cp36m-manylinux1_x86_64.whl (9.5 MB)
+Collecting attrs
+  Downloading attrs-20.2.0-py2.py3-none-any.whl (48 kB)
+Collecting scikit-image!=0.17.1
+  Downloading scikit_image-0.17.2-cp36-cp36m-manylinux1_x86_64.whl (12.4 MB)
+Collecting tensorflow>=2.0
+  Downloading tensorflow-2.3.1-cp36-cp36m-manylinux2010_x86_64.whl (320.4 MB)
+Collecting scipy
+  Downloading scipy-1.5.3-cp36-cp36m-manylinux1_x86_64.whl (25.9 MB)
+Collecting typing-extensions>=3.7.2
+  Downloading typing_extensions-3.7.4.3-py3-none-any.whl (22 kB)
+Collecting matplotlib
+  Downloading matplotlib-3.3.2-cp36-cp36m-manylinux1_x86_64.whl (11.6 MB)
+Collecting threadpoolctl>=2.0.0
+  Downloading threadpoolctl-2.1.0-py3-none-any.whl (12 kB)
+Collecting chardet<4,>=3.0.2
+  Downloading chardet-3.0.4-py2.py3-none-any.whl (133 kB)
+Collecting idna<3,>=2.5
+  Downloading idna-2.10-py2.py3-none-any.whl (58 kB)
+Collecting tqdm>4.25.0
+  Downloading tqdm-4.50.2-py2.py3-none-any.whl (70 kB)
+Collecting slicer
+  Downloading slicer-0.0.4-py3-none-any.whl (13 kB)
+Collecting numba
+  Downloading numba-0.51.2-cp36-cp36m-manylinux2014_x86_64.whl (3.1 MB)
+Collecting google-cloud-core<2.0dev,>=1.4.1
+  Downloading google_cloud_core-1.4.3-py2.py3-none-any.whl (27 kB)
+Collecting google-resumable-media<2.0dev,>=1.0.0
+  Downloading google_resumable_media-1.1.0-py2.py3-none-any.whl (75 kB)
+Collecting google-auth<2.0dev,>=1.11.0
+  Downloading google_auth-1.22.1-py2.py3-none-any.whl (114 kB)
+Collecting PyJWT>=1.0.0
+  Downloading PyJWT-1.7.1-py2.py3-none-any.whl (18 kB)
+Collecting cryptography>=1.1.0
+  Downloading cryptography-3.1.1-cp35-abi3-manylinux2010_x86_64.whl (2.6 MB)
+Collecting websocket-client!=0.40.0,!=0.41.*,!=0.42.*,>=0.32.0
+  Downloading websocket_client-0.57.0-py2.py3-none-any.whl (200 kB)
+Collecting pyyaml>=3.12
+  Downloading PyYAML-5.3.1.tar.gz (269 kB)
+Collecting requests-oauthlib
+  Downloading requests_oauthlib-1.3.0-py2.py3-none-any.whl (23 kB)
+Collecting configparser
+  Downloading configparser-5.0.1-py3-none-any.whl (22 kB)
+Collecting pytz
+  Downloading pytz-2020.1-py2.py3-none-any.whl (510 kB)
+Collecting azure-common>=1.1.5
+  Downloading azure_common-1.1.25-py2.py3-none-any.whl (12 kB)
+Collecting azure-storage-common~=2.1
+  Downloading azure_storage_common-2.1.0-py2.py3-none-any.whl (47 kB)
+Collecting catalogue<1.1.0,>=0.0.7
+  Downloading catalogue-1.0.0-py2.py3-none-any.whl (7.7 kB)
+Collecting preshed<3.1.0,>=3.0.2
+  Downloading preshed-3.0.2-cp36-cp36m-manylinux1_x86_64.whl (119 kB)
+Collecting murmurhash<1.1.0,>=0.28.0
+  Downloading murmurhash-1.0.2-cp36-cp36m-manylinux1_x86_64.whl (19 kB)
+Collecting thinc==7.4.1
+  Downloading thinc-7.4.1-cp36-cp36m-manylinux1_x86_64.whl (2.1 MB)
+Collecting plac<1.2.0,>=0.9.6
+  Downloading plac-1.1.3-py2.py3-none-any.whl (20 kB)
+Collecting srsly<1.1.0,>=1.0.2
+  Downloading srsly-1.0.2-cp36-cp36m-manylinux1_x86_64.whl (185 kB)
+Collecting cymem<2.1.0,>=2.0.2
+  Downloading cymem-2.0.3-cp36-cp36m-manylinux1_x86_64.whl (32 kB)
+Collecting blis<0.5.0,>=0.4.0
+  Downloading blis-0.4.1-cp36-cp36m-manylinux1_x86_64.whl (3.7 MB)
+Collecting wasabi<1.1.0,>=0.4.0
+  Downloading wasabi-0.8.0-py3-none-any.whl (23 kB)
+Collecting spacy-lookups-data<0.4.0,>=0.3.2; extra == "lookups"
+  Downloading spacy_lookups_data-0.3.2.tar.gz (93.8 MB)
+Collecting soupsieve>1.2; python_version >= "3.0"
+  Downloading soupsieve-2.0.1-py3-none-any.whl (32 kB)
+Collecting imageio>=2.3.0
+  Downloading imageio-2.9.0-py3-none-any.whl (3.3 MB)
+Collecting tifffile>=2019.7.26
+  Downloading tifffile-2020.9.3-py3-none-any.whl (148 kB)
+Collecting networkx>=2.0
+  Downloading networkx-2.5-py3-none-any.whl (1.6 MB)
+Collecting PyWavelets>=1.1.1
+  Downloading PyWavelets-1.1.1-cp36-cp36m-manylinux1_x86_64.whl (4.4 MB)
+Collecting google-pasta>=0.1.8
+  Downloading google_pasta-0.2.0-py3-none-any.whl (57 kB)
+Collecting tensorflow-estimator<2.4.0,>=2.3.0
+  Downloading tensorflow_estimator-2.3.0-py2.py3-none-any.whl (459 kB)
+Collecting opt-einsum>=2.3.2
+  Downloading opt_einsum-3.3.0-py3-none-any.whl (65 kB)
+Collecting absl-py>=0.7.0
+  Downloading absl_py-0.10.0-py3-none-any.whl (127 kB)
+Collecting tensorboard<3,>=2.3.0
+  Downloading tensorboard-2.3.0-py3-none-any.whl (6.8 MB)
+Collecting gast==0.3.3
+  Downloading gast-0.3.3-py2.py3-none-any.whl (9.7 kB)
+Collecting protobuf>=3.9.2
+  Downloading protobuf-3.13.0.tar.gz (267 kB)
+Collecting h5py<2.11.0,>=2.10.0
+  Downloading h5py-2.10.0-cp36-cp36m-manylinux1_x86_64.whl (2.9 MB)
+Collecting keras-preprocessing<1.2,>=1.1.1
+  Downloading Keras_Preprocessing-1.1.2-py2.py3-none-any.whl (42 kB)
+Collecting termcolor>=1.1.0
+  Downloading termcolor-1.1.0.tar.gz (3.9 kB)
+Collecting wrapt>=1.11.1
+  Downloading wrapt-1.12.1.tar.gz (27 kB)
+Collecting astunparse==1.6.3
+  Downloading astunparse-1.6.3-py2.py3-none-any.whl (12 kB)
+Requirement already satisfied: wheel>=0.26 in /opt/app-root/lib/python3.6/site-packages (from tensorflow>=2.0->alibi==0.5.5->alibiexplainer==0.3.0) (0.31.1)
+Collecting pyparsing!=2.0.4,!=2.1.2,!=2.1.6,>=2.0.3
+  Downloading pyparsing-2.4.7-py2.py3-none-any.whl (67 kB)
+Collecting cycler>=0.10
+  Downloading cycler-0.10.0-py2.py3-none-any.whl (6.5 kB)
+Collecting kiwisolver>=1.0.1
+  Downloading kiwisolver-1.2.0-cp36-cp36m-manylinux1_x86_64.whl (88 kB)
+Collecting llvmlite<0.35,>=0.34.0.dev0
+  Downloading llvmlite-0.34.0-cp36-cp36m-manylinux2010_x86_64.whl (24.6 MB)
+Collecting google-api-core<2.0.0dev,>=1.19.0
+  Downloading google_api_core-1.23.0-py2.py3-none-any.whl (91 kB)
+Collecting google-crc32c<2.0dev,>=1.0; python_version >= "3.5"
+  Downloading google_crc32c-1.0.0-cp36-cp36m-manylinux2010_x86_64.whl (39 kB)
+Collecting pyasn1-modules>=0.2.1
+  Downloading pyasn1_modules-0.2.8-py2.py3-none-any.whl (155 kB)
+Collecting rsa<5,>=3.1.4; python_version >= "3.5"
+  Downloading rsa-4.6-py3-none-any.whl (47 kB)
+Collecting cachetools<5.0,>=2.0.0
+  Downloading cachetools-4.1.1-py3-none-any.whl (10 kB)
+Collecting cffi!=1.11.3,>=1.8
+  Downloading cffi-1.14.3-cp36-cp36m-manylinux1_x86_64.whl (400 kB)
+Collecting oauthlib>=3.0.0
+  Downloading oauthlib-3.1.0-py2.py3-none-any.whl (147 kB)
+Collecting importlib-metadata>=0.20; python_version < "3.8"
+  Downloading importlib_metadata-2.0.0-py2.py3-none-any.whl (31 kB)
+Collecting decorator>=4.3.0
+  Downloading decorator-4.4.2-py2.py3-none-any.whl (9.2 kB)
+Collecting tensorboard-plugin-wit>=1.6.0
+  Downloading tensorboard_plugin_wit-1.7.0-py3-none-any.whl (779 kB)
+Collecting google-auth-oauthlib<0.5,>=0.4.1
+  Downloading google_auth_oauthlib-0.4.1-py2.py3-none-any.whl (18 kB)
+Collecting markdown>=2.6.8
+  Downloading Markdown-3.3.2-py3-none-any.whl (95 kB)
+Collecting werkzeug>=0.11.15
+  Downloading Werkzeug-1.0.1-py2.py3-none-any.whl (298 kB)
+Collecting googleapis-common-protos<2.0dev,>=1.6.0
+  Downloading googleapis_common_protos-1.52.0-py2.py3-none-any.whl (100 kB)
+Collecting pyasn1<0.5.0,>=0.4.6
+  Downloading pyasn1-0.4.8-py2.py3-none-any.whl (77 kB)
+Collecting pycparser
+  Downloading pycparser-2.20-py2.py3-none-any.whl (112 kB)
+Collecting zipp>=0.5
+  Downloading zipp-3.3.1-py3-none-any.whl (5.3 kB)
+Skipping wheel build for protobuf, due to binaries being disabled for it.
+Building wheels for collected packages: alibiexplainer, dill, shap, tornado, pyyaml, spacy-lookups-data, termcolor, wrapt
+  Building wheel for alibiexplainer (setup.py): started
+  Building wheel for alibiexplainer (setup.py): finished with status 'done'
+  Created wheel for alibiexplainer: filename=alibiexplainer-0.3.0-py3-none-any.whl size=1716 sha256=4790b55b3f14ad2c0781d705f65c34f349bc27feb193710fc6a52983862a605e
+  Stored in directory: /tmp/pip-ephem-wheel-cache-c8j0yfil/wheels/3a/7e/97/8e807946820407225d42c8f04583946801d265a80f73301883
+  Building wheel for dill (setup.py): started
+  Building wheel for dill (setup.py): finished with status 'done'
+  Created wheel for dill: filename=dill-0.3.2-py3-none-any.whl size=77841 sha256=db27481341ea1f6c1fe9170d9786d1c675f8195156bde91bfcf44564b849d69a
+  Stored in directory: /tmp/pip-ephem-wheel-cache-c8j0yfil/wheels/02/49/cf/660924cd9bc5fcddc3a0246fe39800c83028d3ccea244de352
+  Building wheel for shap (setup.py): started
+  Building wheel for shap (setup.py): finished with status 'done'
+  Created wheel for shap: filename=shap-0.36.0-cp36-cp36m-linux_x86_64.whl size=503826 sha256=b442a5f143b333ba70fc64cd556326a69e641718b6411f201ea4d4b501f7514d
+  Stored in directory: /tmp/pip-ephem-wheel-cache-c8j0yfil/wheels/13/25/e6/7510ba3a400c62b74e62118de280be871af157dac83efc71c8
+  Building wheel for tornado (setup.py): started
+  Building wheel for tornado (setup.py): finished with status 'done'
+  Created wheel for tornado: filename=tornado-6.0.4-cp36-cp36m-linux_x86_64.whl size=428281 sha256=e5da14fab873a407e5b8af7f9df19f1c60364d41842251dda7d5e24d599b8ba6
+  Stored in directory: /tmp/pip-ephem-wheel-cache-c8j0yfil/wheels/37/a7/db/2d592e44029ef817f3ef63ea991db34191cebaef087a96f505
+  Building wheel for pyyaml (setup.py): started
+  Building wheel for pyyaml (setup.py): finished with status 'done'
+  Created wheel for pyyaml: filename=PyYAML-5.3.1-cp36-cp36m-linux_x86_64.whl size=44632 sha256=947af23195656a0ae021382067970f47644f417c87a628065bf5dbd430f88fe1
+  Stored in directory: /tmp/pip-ephem-wheel-cache-c8j0yfil/wheels/e5/9d/ad/2ee53cf262cba1ffd8afe1487eef788ea3f260b7e6232a80fc
+  Building wheel for spacy-lookups-data (setup.py): started
+  Building wheel for spacy-lookups-data (setup.py): finished with status 'done'
+  Created wheel for spacy-lookups-data: filename=spacy_lookups_data-0.3.2-py2.py3-none-any.whl size=93806736 sha256=467431cde0fd10b2f2c67c61f71b2590e4fc5132222c79d317b90238e41f4203
+  Stored in directory: /tmp/pip-ephem-wheel-cache-c8j0yfil/wheels/4b/4e/9d/d04994a2ff89a3f994cf9a08171bbb0b2c4aa6bd9a4f7adcbb
+  Building wheel for termcolor (setup.py): started
+  Building wheel for termcolor (setup.py): finished with status 'done'
+  Created wheel for termcolor: filename=termcolor-1.1.0-py3-none-any.whl size=4001 sha256=90392a6abd950c2d9969534e5375ed2c272a7812a98b2e287bb4a0ee7c81c2ab
+  Stored in directory: /tmp/pip-ephem-wheel-cache-c8j0yfil/wheels/93/2a/eb/e58dbcbc963549ee4f065ff80a59f274cc7210b6eab962acdc
+  Building wheel for wrapt (setup.py): started
+  Building wheel for wrapt (setup.py): finished with status 'done'
+  Created wheel for wrapt: filename=wrapt-1.12.1-cp36-cp36m-linux_x86_64.whl size=72125 sha256=1c278d3769e0fe9d6727416b1bd670e520f50ded3cb56255a70b72056d5f5846
+  Stored in directory: /tmp/pip-ephem-wheel-cache-c8j0yfil/wheels/32/42/7f/23cae9ff6ef66798d00dc5d659088e57dbba01566f6c60db63
+Successfully built alibiexplainer dill shap tornado pyyaml spacy-lookups-data termcolor wrapt
+Installing collected packages: six, python-dateutil, tornado, urllib3, argparse, chardet, certifi, idna, requests, pyasn1, pyasn1-modules, rsa, cachetools, google-auth, pytz, protobuf, googleapis-common-protos, google-api-core, google-cloud-core, pycparser, cffi, google-crc32c, google-resumable-media, google-cloud-storage, PyJWT, cryptography, adal, websocket-client, pyyaml, oauthlib, requests-oauthlib, kubernetes, configparser, minio, numpy, table-logger, azure-common, azure-storage-common, azure-storage-blob, kfserving, zipp, importlib-metadata, catalogue, cymem, murmurhash, preshed, tqdm, plac, wasabi, blis, srsly, thinc, spacy-lookups-data, spacy, scipy, joblib, threadpoolctl, scikit-learn, pandas, slicer, llvmlite, numba, shap, Pillow, soupsieve, beautifulsoup4, attrs, imageio, tifffile, pyparsing, cycler, kiwisolver, matplotlib, decorator, networkx, PyWavelets, scikit-image, google-pasta, tensorflow-estimator, opt-einsum, absl-py, tensorboard-plugin-wit, google-auth-oauthlib, markdown, grpcio, werkzeug, tensorboard, gast, h5py, keras-preprocessing, termcolor, wrapt, astunparse, tensorflow, typing-extensions, alibi, dill, xgboost, alibiexplainer
+    Running setup.py install for protobuf: started
+    Running setup.py install for protobuf: finished with status 'done'
+[91mERROR: After October 2020 you may experience errors when installing or updating packages. This is because pip will change the way that it resolves dependency conflicts.
+
+We recommend you use --use-feature=2020-resolver to test your packages with the new resolver before it becomes the default.
+
+google-auth 1.22.1 requires setuptools>=40.3.0, but you'll have setuptools 39.2.0 which is incompatible.
+tensorboard 2.3.0 requires setuptools>=41.0.0, but you'll have setuptools 39.2.0 which is incompatible.
+tensorflow 2.3.1 requires numpy<1.19.0,>=1.16.0, but you'll have numpy 1.19.2 which is incompatible.
+[0mSuccessfully installed Pillow-8.0.0 PyJWT-1.7.1 PyWavelets-1.1.1 absl-py-0.10.0 adal-1.2.5 alibi-0.5.5 alibiexplainer-0.3.0 argparse-1.4.0 astunparse-1.6.3 attrs-20.2.0 azure-common-1.1.25 azure-storage-blob-2.1.0 azure-storage-common-2.1.0 beautifulsoup4-4.9.3 blis-0.4.1 cachetools-4.1.1 catalogue-1.0.0 certifi-2020.6.20 cffi-1.14.3 chardet-3.0.4 configparser-5.0.1 cryptography-3.1.1 cycler-0.10.0 cymem-2.0.3 decorator-4.4.2 dill-0.3.2 gast-0.3.3 google-api-core-1.23.0 google-auth-1.22.1 google-auth-oauthlib-0.4.1 google-cloud-core-1.4.3 google-cloud-storage-1.32.0 google-crc32c-1.0.0 google-pasta-0.2.0 google-resumable-media-1.1.0 googleapis-common-protos-1.52.0 grpcio-1.33.1 h5py-2.10.0 idna-2.10 imageio-2.9.0 importlib-metadata-2.0.0 joblib-0.17.0 keras-preprocessing-1.1.2 kfserving-0.4.1 kiwisolver-1.2.0 kubernetes-10.0.1 llvmlite-0.34.0 markdown-3.3.2 matplotlib-3.3.2 minio-6.0.0 murmurhash-1.0.2 networkx-2.5 numba-0.51.2 numpy-1.19.2 oauthlib-3.1.0 opt-einsum-3.3.0 pandas-1.1.3 plac-1.1.3 preshed-3.0.2 protobuf-3.13.0 pyasn1-0.4.8 pyasn1-modules-0.2.8 pycparser-2.20 pyparsing-2.4.7 python-dateutil-2.8.1 pytz-2020.1 pyyaml-5.3.1 requests-2.24.0 requests-oauthlib-1.3.0 rsa-4.6 scikit-image-0.17.2 scikit-learn-0.23.2 scipy-1.5.3 shap-0.36.0 six-1.15.0 slicer-0.0.4 soupsieve-2.0.1 spacy-2.3.2 spacy-lookups-data-0.3.2 srsly-1.0.2 table-logger-0.3.6 tensorboard-2.3.0 tensorboard-plugin-wit-1.7.0 tensorflow-2.3.1 tensorflow-estimator-2.3.0 termcolor-1.1.0 thinc-7.4.1 threadpoolctl-2.1.0 tifffile-2020.9.3 tornado-6.0.4 tqdm-4.50.2 typing-extensions-3.7.4.3 urllib3-1.25.11 wasabi-0.8.0 websocket-client-0.57.0 werkzeug-1.0.1 wrapt-1.12.1 xgboost-1.0.2 zipp-3.3.1
+Removing intermediate container 4506bb62c7b6
+ ---> 36a083f215c1
+Step 9/14 : RUN chmod -R a+rwx /opt/app-root/lib/python3.6
+ ---> Running in 7bdc7ccca9d4
+Removing intermediate container 7bdc7ccca9d4
+ ---> 8387695bd051
+Step 10/14 : RUN pip install pip-licenses
+ ---> Running in cda4e16cbdb4
+Collecting pip-licenses
+  Downloading pip_licenses-2.3.0-py3-none-any.whl (14 kB)
+Collecting PTable
+  Downloading PTable-0.9.2.tar.gz (31 kB)
+Building wheels for collected packages: PTable
+  Building wheel for PTable (setup.py): started
+  Building wheel for PTable (setup.py): finished with status 'done'
+  Created wheel for PTable: filename=PTable-0.9.2-py3-none-any.whl size=21893 sha256=78bbdaeb2ebfdcedf7e015fa1030b2e53f2aa98e3a4ad1fa5eed938fb5177ffd
+  Stored in directory: /tmp/pip-ephem-wheel-cache-920bpcvb/wheels/f3/65/67/71f473ec87ea4554d1bdfb1b5128cfe1414c2b113b72a1ee8e
+Successfully built PTable
+Installing collected packages: PTable, pip-licenses
+Successfully installed PTable-0.9.2 pip-licenses-2.3.0
+Removing intermediate container cda4e16cbdb4
+ ---> 9679e0933168
+Step 11/14 : RUN mkdir ./licenses && pip-licenses --from=mixed --format=csv --output-file=./licenses/license_info.csv &&     pip-licenses --from=mixed --format=plain-vertical --with-license-file --no-license-path --output-file=./licenses/license.txt
+ ---> Running in 627d816543d9
+created path: ./licenses/license_info.csv
+created path: ./licenses/license.txt
+Removing intermediate container 627d816543d9
+ ---> 934068d95343
+Step 12/14 : RUN mv ./licenses /licenses
+ ---> Running in 41a508cf3906
+Removing intermediate container 41a508cf3906
+ ---> 5cc682d11cd8
+Step 13/14 : USER default
+ ---> Running in 273cbf278b5a
+Removing intermediate container 273cbf278b5a
+ ---> 00cd5592cec0
+Step 14/14 : ENTRYPOINT ["python", "-m", "alibiexplainer"]
+ ---> Running in 5b3fd5bf8e5d
+Removing intermediate container 5b3fd5bf8e5d
+ ---> e9f456f91359
+Successfully built e9f456f91359
+Successfully tagged seldonio/alibiexplainer:1.4.0-dev
+kind load docker-image seldonio/alibiexplainer:1.4.0-dev
+Image: "seldonio/alibiexplainer:1.4.0-dev" with ID "sha256:e9f456f913596561570c18fb09a113d80d291264d0718a01e01a48445c14cfb7" not present on node "kind-control-plane"
+Image: "seldonio/alibiexplainer:1.4.0-dev" with ID "sha256:e9f456f913596561570c18fb09a113d80d291264d0718a01e01a48445c14cfb7" not present on node "kind-worker"
+make[1]: Leaving directory '/workspace/source/components/alibi-explain-server'
+Files changed in alibi detect folder:
+SKIPPING ALIBI DETECT IMAGE BUILD...
+Files changed in misc folders:
+SKIPPING MISC IMAGE BUILD...
+kubectl create namespace seldon || echo "Namespace seldon already exists"
+namespace/seldon created
+kubectl create namespace test1 || echo "Namespace test1 already exists"
+namespace/test1 created
+helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+"stable" has been added to your repositories
+helm repo add seldonio https://storage.googleapis.com/seldon-charts
+"seldonio" has been added to your repositories
+helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
+"jaegertracing" has been added to your repositories
+helm repo add datawire https://www.getambassador.io
+"datawire" has been added to your repositories
+helm repo update
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "jaegertracing" chart repository
+...Successfully got an update from the "seldonio" chart repository
+...Successfully got an update from the "datawire" chart repository
+...Successfully got an update from the "stable" chart repository
+Update Complete. ⎈ Happy Helming!⎈ 
+helm upgrade ambassador \
+	datawire/ambassador \
+	-f ../resources/ambassador_values.yaml \
+	--set image.repository=quay.io/datawire/ambassador \
+	--set crds.keep=false \
+	--set enableAES=false \
+	--namespace seldon \
+	--set replicaCount=1 \
+	--wait --install
+Release "ambassador" does not exist. Installing it now.
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+NAME: ambassador
+LAST DEPLOYED: Thu Oct 22 16:54:44 2020
+NAMESPACE: seldon
+STATUS: deployed
+REVISION: 1
+NOTES:
+-------------------------------------------------------------------------------
+  Congratulations! You've successfully installed Ambassador!
+
+-------------------------------------------------------------------------------
+To get the IP address of Ambassador, run the following commands:
+  export NODE_PORT=$(kubectl get --namespace seldon -o jsonpath="{.spec.ports[0].nodePort}" services ambassador)
+  export NODE_IP=$(kubectl get nodes --namespace seldon -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+
+For help, visit our Slack at https://d6e.co/slack or view the documentation online at https://www.getambassador.io.
+kubectl apply -f istio-1.4.2.yaml
+clusterrole.rbac.authorization.k8s.io/istio-reader-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-reader-istio-system created
+customresourcedefinition.apiextensions.k8s.io/attributemanifests.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/clusterrbacconfigs.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/destinationrules.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/envoyfilters.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/gateways.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/httpapispecbindings.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/httpapispecs.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/meshpolicies.authentication.istio.io created
+customresourcedefinition.apiextensions.k8s.io/policies.authentication.istio.io created
+customresourcedefinition.apiextensions.k8s.io/quotaspecbindings.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/quotaspecs.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/rbacconfigs.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/rules.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/serviceentries.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/servicerolebindings.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/serviceroles.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/virtualservices.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/adapters.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/instances.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/templates.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/handlers.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/sidecars.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/authorizationpolicies.security.istio.io created
+namespace/istio-system created
+serviceaccount/istio-reader-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-citadel-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-citadel-istio-system created
+deployment.apps/istio-citadel created
+poddisruptionbudget.policy/istio-citadel created
+service/istio-citadel created
+serviceaccount/istio-citadel-service-account created
+deployment.apps/istio-egressgateway created
+poddisruptionbudget.policy/istio-egressgateway created
+gateway.networking.istio.io/istio-multicluster-egressgateway created
+virtualservice.networking.istio.io/istio-multicluster-egressgateway created
+envoyfilter.networking.istio.io/istio-multicluster-egressgateway created
+destinationrule.networking.istio.io/istio-multicluster-destinationrule created
+service/istio-egressgateway created
+role.rbac.authorization.k8s.io/istio-egressgateway-sds created
+rolebinding.rbac.authorization.k8s.io/istio-egressgateway-sds created
+serviceaccount/istio-egressgateway-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-galley-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-galley-*****-role-binding-istio-system created
+configmap/istio-mesh-galley created
+configmap/istio-galley-configuration created
+deployment.apps/istio-galley created
+poddisruptionbudget.policy/istio-galley created
+service/istio-galley created
+serviceaccount/istio-galley-service-account created
+configmap/istio-grafana-configuration-dashboards-citadel-dashboard created
+configmap/istio-grafana-configuration-dashboards-galley-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-mesh-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-performance-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-service-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-workload-dashboard created
+configmap/istio-grafana-configuration-dashboards-mixer-dashboard created
+configmap/istio-grafana-configuration-dashboards-pilot-dashboard created
+configmap/istio-grafana created
+deployment.apps/grafana created
+policy.authentication.istio.io/grafana-ports-mtls-disabled created
+service/grafana created
+deployment.apps/istio-ingressgateway created
+gateway.networking.istio.io/ingressgateway created
+poddisruptionbudget.policy/ingressgateway created
+service/istio-ingressgateway created
+serviceaccount/istio-ingressgateway-service-account created
+sidecar.networking.istio.io/default created
+clusterrole.rbac.authorization.k8s.io/istio-sidecar-injector-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-sidecar-injector-*****-role-binding-istio-system created
+configmap/injector-mesh created
+deployment.apps/istio-sidecar-injector created
+mutatingwebhookconfiguration.admissionregistration.k8s.io/istio-sidecar-injector created
+poddisruptionbudget.policy/istio-sidecar-injector created
+service/istio-sidecar-injector created
+serviceaccount/istio-sidecar-injector-service-account created
+configmap/istio-sidecar-injector created
+clusterrole.rbac.authorization.k8s.io/kiali created
+clusterrole.rbac.authorization.k8s.io/kiali-viewer created
+clusterrolebinding.rbac.authorization.k8s.io/kiali created
+configmap/kiali created
+secret/kiali created
+deployment.apps/kiali created
+service/kiali created
+serviceaccount/kiali-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-pilot-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-pilot-istio-system created
+configmap/pilot-envoy-config created
+configmap/istio created
+deployment.apps/istio-pilot created
+meshpolicy.authentication.istio.io/default created
+poddisruptionbudget.policy/istio-pilot created
+service/istio-pilot created
+serviceaccount/istio-pilot-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-policy created
+clusterrolebinding.rbac.authorization.k8s.io/istio-policy-*****-role-binding-istio-system created
+destinationrule.networking.istio.io/istio-policy created
+deployment.apps/istio-policy created
+poddisruptionbudget.policy/istio-policy created
+service/istio-policy created
+serviceaccount/istio-policy-service-account created
+clusterrole.rbac.authorization.k8s.io/prometheus-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/prometheus-istio-system created
+configmap/prometheus created
+deployment.apps/prometheus created
+service/prometheus created
+serviceaccount/prometheus created
+horizontalpodautoscaler.autoscaling/istio-telemetry created
+clusterrole.rbac.authorization.k8s.io/istio-mixer-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-mixer-*****-role-binding-istio-system created
+attributemanifest.config.istio.io/istioproxy created
+attributemanifest.config.istio.io/kubernetes created
+handler.config.istio.io/stdio created
+instance.config.istio.io/accesslog created
+instance.config.istio.io/tcpaccesslog created
+rule.config.istio.io/stdio created
+rule.config.istio.io/stdiotcp created
+instance.config.istio.io/requestcount created
+instance.config.istio.io/requestduration created
+instance.config.istio.io/requestsize created
+instance.config.istio.io/responsesize created
+instance.config.istio.io/tcpbytesent created
+instance.config.istio.io/tcpbytereceived created
+instance.config.istio.io/tcpconnectionsopened created
+instance.config.istio.io/tcpconnectionsclosed created
+handler.config.istio.io/prometheus created
+rule.config.istio.io/promhttp created
+rule.config.istio.io/promtcp created
+rule.config.istio.io/promtcpconnectionopen created
+rule.config.istio.io/promtcpconnectionclosed created
+handler.config.istio.io/kubernetesenv created
+rule.config.istio.io/kubeattrgenrulerule created
+rule.config.istio.io/tcpkubeattrgenrulerule created
+instance.config.istio.io/attributes created
+destinationrule.networking.istio.io/istio-telemetry created
+configmap/telemetry-envoy-config created
+deployment.apps/istio-telemetry created
+poddisruptionbudget.policy/istio-telemetry created
+service/istio-telemetry created
+serviceaccount/istio-mixer-service-account created
+deployment.apps/istio-tracing created
+service/jaeger-query created
+service/jaeger-collector created
+service/jaeger-agent created
+service/zipkin created
+service/tracing created
+kubectl rollout status deployment.apps/istio-ingressgateway -n istio-system
+Waiting for deployment "istio-ingressgateway" rollout to finish: 0 out of 1 new replicas have been updated...
+Waiting for deployment "istio-ingressgateway" rollout to finish: 0 out of 1 new replicas have been updated...
+Waiting for deployment "istio-ingressgateway" rollout to finish: 0 of 1 updated replicas are available...
+deployment "istio-ingressgateway" successfully rolled out
+kubectl rollout status deployment.apps/istio-pilot -n istio-system
+deployment "istio-pilot" successfully rolled out
+kubectl rollout status deployment.apps/istio-citadel -n istio-system
+deployment "istio-citadel" successfully rolled out
+kubectl create -f ../resources/seldon-gateway.yaml -n istio-system
+gateway.networking.istio.io/seldon-gateway created
+helm upgrade jaeger-operator \
+	jaegertracing/jaeger-operator \
+	--set rbac.clusterRole=true \
+	--namespace seldon \
+	--wait --install
+Release "jaeger-operator" does not exist. Installing it now.
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+NAME: jaeger-operator
+LAST DEPLOYED: Thu Oct 22 16:57:28 2020
+NAMESPACE: seldon
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+jaeger-operator is installed.
+
+
+Check the jaeger-operator logs
+  export POD=$(kubectl get pods-l app.kubernetes.io/instance=jaeger-operator -lapp.kubernetes.io/name=jaeger-operator --namespace seldon --output name)
+  kubectl logs $POD --namespace=seldon
+kubectl apply -f ../resources/jaeger.yaml --namespace seldon
+jaeger.jaegertracing.io/jaeger created
+mapping.getambassador.io/jaeger created
+cd ../../operator && make install-cert-manager
+make[1]: Entering directory '/workspace/source/operator'
+kubectl create namespace cert-manager || echo "Namespace cert-manager-exists"
+namespace/cert-manager created
+kubectl label namespace cert-manager cert-manager.io/disable-validation=true || echo "namespace cert-manager-already labelled"
+namespace/cert-manager labeled
+kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml
+customresourcedefinition.apiextensions.k8s.io/certificaterequests.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/certificates.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/challenges.acme.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/clusterissuers.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/issuers.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/orders.acme.cert-manager.io created
+Warning: kubectl apply should be used on resource created by either kubectl create --save-config or kubectl apply
+namespace/cert-manager configured
+serviceaccount/cert-manager-cainjector created
+serviceaccount/cert-manager created
+serviceaccount/cert-manager-webhook created
+clusterrole.rbac.authorization.k8s.io/cert-manager-cainjector created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-cainjector created
+role.rbac.authorization.k8s.io/cert-manager-cainjector:leaderelection created
+rolebinding.rbac.authorization.k8s.io/cert-manager-cainjector:leaderelection created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-webhook:auth-delegator created
+rolebinding.rbac.authorization.k8s.io/cert-manager-webhook:webhook-authentication-reader created
+clusterrole.rbac.authorization.k8s.io/cert-manager-webhook:webhook-requester created
+role.rbac.authorization.k8s.io/cert-manager:leaderelection created
+rolebinding.rbac.authorization.k8s.io/cert-manager:leaderelection created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-issuers created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-clusterissuers created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-certificates created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-orders created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-challenges created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-ingress-shim created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-issuers created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-clusterissuers created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-certificates created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-orders created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-challenges created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-ingress-shim created
+clusterrole.rbac.authorization.k8s.io/cert-manager-view created
+clusterrole.rbac.authorization.k8s.io/cert-manager-edit created
+service/cert-manager created
+service/cert-manager-webhook created
+deployment.apps/cert-manager-cainjector created
+deployment.apps/cert-manager created
+deployment.apps/cert-manager-webhook created
+mutatingwebhookconfiguration.admissionregistration.k8s.io/cert-manager-webhook created
+validatingwebhookconfiguration.admissionregistration.k8s.io/cert-manager-webhook created
+kubectl rollout status deployment.apps/cert-manager -n cert-manager
+Waiting for deployment "cert-manager" rollout to finish: 0 of 1 updated replicas are available...
+deployment "cert-manager" successfully rolled out
+kubectl rollout status deployment.apps/cert-manager-cainjector -n cert-manager
+deployment "cert-manager-cainjector" successfully rolled out
+kubectl rollout status deployment.apps/cert-manager-webhook -n cert-manager
+Waiting for deployment "cert-manager-webhook" rollout to finish: 0 of 1 updated replicas are available...
+deployment "cert-manager-webhook" successfully rolled out
+make[1]: Leaving directory '/workspace/source/operator'
+sleep 5 #https://github.com/jetstack/cert-manager/issues/2273
+kubectl create namespace seldon-system || echo "namespace seldon-system exists"
+namespace/seldon-system created
+helm delete seldon --namespace seldon-system || echo "seldon-core not installed"
+Error: uninstall: Release not loaded: seldon: release: not found
+seldon-core not installed
+helm upgrade seldon \
+	../../helm-charts/seldon-core-operator \
+	--namespace seldon-system \
+	--set istio.enabled=true \
+	--set istio.gateway=istio-system/seldon-gateway \
+	--set certManager.enabled=false \
+	--set executor.enabled="true" \
+	--wait --install
+Release "seldon" does not exist. Installing it now.
+NAME: seldon
+LAST DEPLOYED: Thu Oct 22 16:58:49 2020
+NAMESPACE: seldon-system
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+kubectl config set-context $(kubectl config current-context) --namespace=seldon
+Context "kind-kind" modified.
+kubectl apply -f metrics.yaml
+clusterrole.rbac.authorization.k8s.io/system:aggregated-metrics-reader created
+clusterrolebinding.rbac.authorization.k8s.io/metrics-server:system:auth-delegator created
+rolebinding.rbac.authorization.k8s.io/metrics-server-auth-reader created
+apiservice.apiregistration.k8s.io/v1beta1.metrics.k8s.io created
+serviceaccount/metrics-server created
+deployment.apps/metrics-server created
+service/metrics-server created
+clusterrole.rbac.authorization.k8s.io/system:metrics-server created
+clusterrolebinding.rbac.authorization.k8s.io/system:metrics-server created
+make: Entering directory '/workspace/source/python'
+pip install -e . -r requirements-dev.txt
+Obtaining file:///workspace/source/python
+Collecting black==19.10b0
+  Downloading black-19.10b0-py36-none-any.whl (97 kB)
+Collecting flake8==3.8.1
+  Downloading flake8-3.8.1-py2.py3-none-any.whl (72 kB)
+Collecting mypy<0.791
+  Downloading mypy-0.790-cp36-cp36m-manylinux1_x86_64.whl (21.0 MB)
+Collecting Pillow==8.0.0
+  Downloading Pillow-8.0.0-cp36-cp36m-manylinux1_x86_64.whl (2.2 MB)
+Collecting pytest==6.1.0
+  Downloading pytest-6.1.0-py3-none-any.whl (272 kB)
+Collecting pytest-cov==2.10.1
+  Downloading pytest_cov-2.10.1-py2.py3-none-any.whl (19 kB)
+Collecting tox<4.0.0
+  Downloading tox-3.20.1-py2.py3-none-any.whl (83 kB)
+Collecting grpcio-tools==1.32.0
+  Downloading grpcio_tools-1.32.0-cp36-cp36m-manylinux2014_x86_64.whl (2.5 MB)
+Requirement already satisfied: mypy-protobuf==1.22 in /usr/local/lib/python3.6/site-packages (from -r requirements-dev.txt (line 10)) (1.22)
+Collecting tenacity==6.2.0
+  Downloading tenacity-6.2.0-py2.py3-none-any.whl (24 kB)
+Collecting coverage==5.3
+  Downloading coverage-5.3-cp36-cp36m-manylinux1_x86_64.whl (229 kB)
+Collecting pandas==1.1.0
+  Downloading pandas-1.1.0-cp36-cp36m-manylinux1_x86_64.whl (10.5 MB)
+Collecting pip-licenses==2.3.0
+  Downloading pip_licenses-2.3.0-py3-none-any.whl (14 kB)
+Collecting Flask<2.0.0
+  Downloading Flask-1.1.2-py2.py3-none-any.whl (94 kB)
+Requirement already satisfied: jsonschema<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.4.0.dev0) (3.2.0)
+Collecting Flask-cors<4.0.0
+  Downloading Flask_Cors-3.0.9-py2.py3-none-any.whl (14 kB)
+Collecting redis<4.0.0
+  Downloading redis-3.5.3-py2.py3-none-any.whl (72 kB)
+Requirement already satisfied: requests<3.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.4.0.dev0) (2.24.0)
+Requirement already satisfied: numpy<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.4.0.dev0) (1.19.2)
+Collecting flatbuffers<2.0.0
+  Downloading flatbuffers-1.12-py2.py3-none-any.whl (15 kB)
+Requirement already satisfied: protobuf<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.4.0.dev0) (3.13.0)
+Requirement already satisfied: grpcio<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.4.0.dev0) (1.32.0)
+Collecting Flask-OpenTracing<1.2.0,>=1.1.0
+  Downloading Flask-OpenTracing-1.1.0.tar.gz (8.2 kB)
+Collecting opentracing<2.4.0,>=2.2.0
+  Downloading opentracing-2.3.0.tar.gz (48 kB)
+Collecting jaeger-client<4.4.0,>=4.1.0
+  Downloading jaeger-client-4.3.0.tar.gz (81 kB)
+Collecting grpcio-opentracing<1.2.0,>=1.1.4
+  Downloading grpcio_opentracing-1.1.4-py3-none-any.whl (14 kB)
+Requirement already satisfied: PyYAML<5.4 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.4.0.dev0) (5.3.1)
+Collecting gunicorn<20.1.0,>=19.9.0
+  Downloading gunicorn-20.0.4-py2.py3-none-any.whl (77 kB)
+Requirement already satisfied: setuptools>=41.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.4.0.dev0) (50.3.0)
+Requirement already satisfied: prometheus_client<0.9.0,>=0.7.1 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.4.0.dev0) (0.8.0)
+Collecting appdirs
+  Downloading appdirs-1.4.4-py2.py3-none-any.whl (9.6 kB)
+Collecting click>=6.5
+  Downloading click-7.1.2-py2.py3-none-any.whl (82 kB)
+Collecting toml>=0.9.4
+  Downloading toml-0.10.1-py2.py3-none-any.whl (19 kB)
+Collecting typed-ast>=1.4.0
+  Downloading typed_ast-1.4.1-cp36-cp36m-manylinux1_x86_64.whl (737 kB)
+Collecting regex
+  Downloading regex-2020.10.15-cp36-cp36m-manylinux2010_x86_64.whl (662 kB)
+Collecting pathspec<1,>=0.6
+  Downloading pathspec-0.8.0-py2.py3-none-any.whl (28 kB)
+Requirement already satisfied: attrs>=18.1.0 in /usr/local/lib/python3.6/site-packages (from black==19.10b0->-r requirements-dev.txt (line 2)) (20.2.0)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /usr/local/lib/python3.6/site-packages (from flake8==3.8.1->-r requirements-dev.txt (line 3)) (2.0.0)
+Collecting pyflakes<2.3.0,>=2.2.0
+  Downloading pyflakes-2.2.0-py2.py3-none-any.whl (66 kB)
+Collecting pycodestyle<2.7.0,>=2.6.0a1
+  Downloading pycodestyle-2.6.0-py2.py3-none-any.whl (41 kB)
+Collecting mccabe<0.7.0,>=0.6.0
+  Downloading mccabe-0.6.1-py2.py3-none-any.whl (8.6 kB)
+Requirement already satisfied: typing-extensions>=3.7.4 in /usr/local/lib/python3.6/site-packages (from mypy<0.791->-r requirements-dev.txt (line 4)) (3.7.4.3)
+Collecting mypy-extensions<0.5.0,>=0.4.3
+  Downloading mypy_extensions-0.4.3-py2.py3-none-any.whl (4.5 kB)
+Requirement already satisfied: packaging in /usr/local/lib/python3.6/site-packages (from pytest==6.1.0->-r requirements-dev.txt (line 6)) (20.4)
+Requirement already satisfied: py>=1.8.2 in /usr/local/lib/python3.6/site-packages (from pytest==6.1.0->-r requirements-dev.txt (line 6)) (1.9.0)
+Requirement already satisfied: pluggy<1.0,>=0.12 in /usr/local/lib/python3.6/site-packages (from pytest==6.1.0->-r requirements-dev.txt (line 6)) (0.13.1)
+Collecting iniconfig
+  Downloading iniconfig-1.1.1-py2.py3-none-any.whl (5.0 kB)
+Requirement already satisfied: six>=1.14.0 in /usr/local/lib/python3.6/site-packages (from tox<4.0.0->-r requirements-dev.txt (line 8)) (1.15.0)
+Collecting virtualenv!=20.0.0,!=20.0.1,!=20.0.2,!=20.0.3,!=20.0.4,!=20.0.5,!=20.0.6,!=20.0.7,>=16.0.0
+  Downloading virtualenv-20.0.35-py2.py3-none-any.whl (4.9 MB)
+Collecting filelock>=3.0.0
+  Downloading filelock-3.0.12-py3-none-any.whl (7.6 kB)
+Requirement already satisfied: pytz>=2017.2 in /usr/local/lib/python3.6/site-packages (from pandas==1.1.0->-r requirements-dev.txt (line 19)) (2020.1)
+Requirement already satisfied: python-dateutil>=2.7.3 in /usr/local/lib/python3.6/site-packages (from pandas==1.1.0->-r requirements-dev.txt (line 19)) (2.8.1)
+Collecting PTable
+  Downloading PTable-0.9.2.tar.gz (31 kB)
+Requirement already satisfied: Jinja2>=2.10.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.4.0.dev0) (2.11.2)
+Collecting itsdangerous>=0.24
+  Downloading itsdangerous-1.1.0-py2.py3-none-any.whl (16 kB)
+Requirement already satisfied: Werkzeug>=0.15 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.4.0.dev0) (1.0.1)
+Requirement already satisfied: pyrsistent>=0.14.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->seldon-core==1.4.0.dev0) (0.17.3)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.4.0.dev0) (1.25.10)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.4.0.dev0) (2.10)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.4.0.dev0) (2020.6.20)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.4.0.dev0) (3.0.4)
+Collecting threadloop<2,>=1
+  Downloading threadloop-1.0.2.tar.gz (4.9 kB)
+Collecting thrift
+  Downloading thrift-0.13.0.tar.gz (59 kB)
+Requirement already satisfied: tornado>=4.3 in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core==1.4.0.dev0) (6.0.4)
+Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.6/site-packages (from importlib-metadata; python_version < "3.8"->flake8==3.8.1->-r requirements-dev.txt (line 3)) (3.3.0)
+Requirement already satisfied: pyparsing>=2.0.2 in /usr/local/lib/python3.6/site-packages (from packaging->pytest==6.1.0->-r requirements-dev.txt (line 6)) (2.4.7)
+Collecting distlib<1,>=0.3.1
+  Downloading distlib-0.3.1-py2.py3-none-any.whl (335 kB)
+Collecting importlib-resources>=1.0; python_version < "3.7"
+  Downloading importlib_resources-3.0.0-py2.py3-none-any.whl (23 kB)
+Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from Jinja2>=2.10.1->Flask<2.0.0->seldon-core==1.4.0.dev0) (1.1.1)
+Building wheels for collected packages: Flask-OpenTracing, opentracing, jaeger-client, PTable, threadloop, thrift
+  Building wheel for Flask-OpenTracing (setup.py): started
+  Building wheel for Flask-OpenTracing (setup.py): finished with status 'done'
+  Created wheel for Flask-OpenTracing: filename=Flask_OpenTracing-1.1.0-py3-none-any.whl size=9071 sha256=32b3104ca13219fffb09135d0879833baf92ee91167f7dfdf2a857e17aed729d
+  Stored in directory: /builder/home/.cache/pip/wheels/ad/4b/2d/24ff0da0a0b53c7c77ce59b843bcceaf644c88703241e59615
+  Building wheel for opentracing (setup.py): started
+  Building wheel for opentracing (setup.py): finished with status 'done'
+  Created wheel for opentracing: filename=opentracing-2.3.0-py3-none-any.whl size=51346 sha256=6a0870d851221eba73528a3e123f9252a4b0bcd6eb3676591e03958174e50174
+  Stored in directory: /builder/home/.cache/pip/wheels/d4/53/31/bfca74f038fa9f83eb7de2131555b75ffa9bcbca18d23e5edf
+  Building wheel for jaeger-client (setup.py): started
+  Building wheel for jaeger-client (setup.py): finished with status 'done'
+  Created wheel for jaeger-client: filename=jaeger_client-4.3.0-py3-none-any.whl size=64290 sha256=b2bbda63fa30a6e13b5d474bddb1e94a0199c2f5f5666e6b0cd7b5379fde5238
+  Stored in directory: /builder/home/.cache/pip/wheels/a8/37/30/d86c970966efbf6da89e8085db50f2be4cf36ca68513eff785
+  Building wheel for PTable (setup.py): started
+  Building wheel for PTable (setup.py): finished with status 'done'
+  Created wheel for PTable: filename=PTable-0.9.2-py3-none-any.whl size=22907 sha256=98c644b5385d1f573bacb1a767b8e13532a9d188395c89342678fd5a50a3925f
+  Stored in directory: /builder/home/.cache/pip/wheels/f3/65/67/71f473ec87ea4554d1bdfb1b5128cfe1414c2b113b72a1ee8e
+  Building wheel for threadloop (setup.py): started
+  Building wheel for threadloop (setup.py): finished with status 'done'
+  Created wheel for threadloop: filename=threadloop-1.0.2-py3-none-any.whl size=3425 sha256=641b5c49a9eca241a91fab77fe11aa3e60c280d241aae68b48280df4e041a9d1
+  Stored in directory: /builder/home/.cache/pip/wheels/02/54/65/9f87de48fe8fcaaee30f279973d946ad55f9df56b93b3e78da
+  Building wheel for thrift (setup.py): started
+  Building wheel for thrift (setup.py): finished with status 'done'
+  Created wheel for thrift: filename=thrift-0.13.0-cp36-cp36m-linux_x86_64.whl size=483903 sha256=1a49aca733620ec8f776681b8ec6fc9bbec7fc551815070046c31bf8365fabe8
+  Stored in directory: /builder/home/.cache/pip/wheels/e0/38/fc/472fe18756b177b42096961f8bd3ff2dc5c5620ac399fce52d
+Successfully built Flask-OpenTracing opentracing jaeger-client PTable threadloop thrift
+Installing collected packages: appdirs, click, toml, typed-ast, regex, pathspec, black, pyflakes, pycodestyle, mccabe, flake8, mypy-extensions, mypy, Pillow, iniconfig, pytest, coverage, pytest-cov, filelock, distlib, importlib-resources, virtualenv, tox, grpcio-tools, tenacity, pandas, PTable, pip-licenses, itsdangerous, Flask, Flask-cors, redis, flatbuffers, opentracing, Flask-OpenTracing, threadloop, thrift, jaeger-client, grpcio-opentracing, gunicorn, seldon-core
+  Attempting uninstall: Pillow
+    Found existing installation: Pillow 7.2.0
+    Uninstalling Pillow-7.2.0:
+      Successfully uninstalled Pillow-7.2.0
+  Attempting uninstall: pytest
+    Found existing installation: pytest 5.3.1
+    Uninstalling pytest-5.3.1:
+      Successfully uninstalled pytest-5.3.1
+  Attempting uninstall: coverage
+    Found existing installation: coverage 4.5.4
+    Uninstalling coverage-4.5.4:
+      Successfully uninstalled coverage-4.5.4
+  Attempting uninstall: pytest-cov
+    Found existing installation: pytest-cov 2.8.1
+    Uninstalling pytest-cov-2.8.1:
+      Successfully uninstalled pytest-cov-2.8.1
+  Attempting uninstall: grpcio-tools
+    Found existing installation: grpcio-tools 1.31.0
+    Uninstalling grpcio-tools-1.31.0:
+      Successfully uninstalled grpcio-tools-1.31.0
+  Attempting uninstall: tenacity
+    Found existing installation: tenacity 6.0.0
+    Uninstalling tenacity-6.0.0:
+      Successfully uninstalled tenacity-6.0.0
+  Attempting uninstall: pandas
+    Found existing installation: pandas 1.1.3
+    Uninstalling pandas-1.1.3:
+      Successfully uninstalled pandas-1.1.3
+  Running setup.py develop for seldon-core
+ERROR: After October 2020 you may experience errors when installing or updating packages. This is because pip will change the way that it resolves dependency conflicts.
+
+We recommend you use --use-feature=2020-resolver to test your packages with the new resolver before it becomes the default.
+
+alibi 0.5.2 requires tensorflow>=2.0, but you'll have tensorflow 1.15.4 which is incompatible.
+Successfully installed Flask-1.1.2 Flask-OpenTracing-1.1.0 Flask-cors-3.0.9 PTable-0.9.2 Pillow-8.0.0 appdirs-1.4.4 black-19.10b0 click-7.1.2 coverage-5.3 distlib-0.3.1 filelock-3.0.12 flake8-3.8.1 flatbuffers-1.12 grpcio-opentracing-1.1.4 grpcio-tools-1.32.0 gunicorn-20.0.4 importlib-resources-3.0.0 iniconfig-1.1.1 itsdangerous-1.1.0 jaeger-client-4.3.0 mccabe-0.6.1 mypy-0.790 mypy-extensions-0.4.3 opentracing-2.3.0 pandas-1.1.0 pathspec-0.8.0 pip-licenses-2.3.0 pycodestyle-2.6.0 pyflakes-2.2.0 pytest-6.1.0 pytest-cov-2.10.1 redis-3.5.3 regex-2020.10.15 seldon-core tenacity-6.2.0 threadloop-1.0.2 thrift-0.13.0 toml-0.10.1 tox-3.20.1 typed-ast-1.4.1 virtualenv-20.0.35
+WARNING: You are using pip version 20.2.3; however, version 20.2.4 is available.
+You should consider upgrading via the '/usr/local/bin/python -m pip install --upgrade pip' command.
+make: Leaving directory '/workspace/source/python'
+cp ../../proto/prediction.proto ./proto
+cd ../../proto/tensorflow && make create_protos
+make[1]: Entering directory '/workspace/source/proto/tensorflow'
+./create-protos.sh
+Downloading proto files for master
+make[1]: Leaving directory '/workspace/source/proto/tensorflow'
+cp -vr ../../proto/tensorflow/tensorflow .
+'../../proto/tensorflow/tensorflow' -> './tensorflow'
+'../../proto/tensorflow/tensorflow/core' -> './tensorflow/core'
+'../../proto/tensorflow/tensorflow/core/framework' -> './tensorflow/core/framework'
+'../../proto/tensorflow/tensorflow/core/framework/types.proto' -> './tensorflow/core/framework/types.proto'
+'../../proto/tensorflow/tensorflow/core/framework/resource_handle.proto' -> './tensorflow/core/framework/resource_handle.proto'
+'../../proto/tensorflow/tensorflow/core/framework/tensor_shape.proto' -> './tensorflow/core/framework/tensor_shape.proto'
+'../../proto/tensorflow/tensorflow/core/framework/tensor.proto' -> './tensorflow/core/framework/tensor.proto'
+python -m grpc.tools.protoc -I. --python_out=. --grpc_python_out=. ./proto/prediction.proto
+cd ../../notebooks && make build_protos
+make[1]: Entering directory '/workspace/source/notebooks'
+cd ../proto/tensorflow && make create_protos
+make[2]: Entering directory '/workspace/source/proto/tensorflow'
+make[2]: Nothing to be done for 'create_protos'.
+make[2]: Leaving directory '/workspace/source/proto/tensorflow'
+cp -vr ../proto/tensorflow/tensorflow .
+'../proto/tensorflow/tensorflow' -> './tensorflow'
+'../proto/tensorflow/tensorflow/core' -> './tensorflow/core'
+'../proto/tensorflow/tensorflow/core/framework' -> './tensorflow/core/framework'
+'../proto/tensorflow/tensorflow/core/framework/types.proto' -> './tensorflow/core/framework/types.proto'
+'../proto/tensorflow/tensorflow/core/framework/resource_handle.proto' -> './tensorflow/core/framework/resource_handle.proto'
+'../proto/tensorflow/tensorflow/core/framework/tensor_shape.proto' -> './tensorflow/core/framework/tensor_shape.proto'
+'../proto/tensorflow/tensorflow/core/framework/tensor.proto' -> './tensorflow/core/framework/tensor.proto'
+cp ../proto/prediction.proto ./proto
+python -m grpc.tools.protoc -I. --python_out=. --grpc_python_out=. ./proto/prediction.proto
+make[1]: Leaving directory '/workspace/source/notebooks'
+cd ../../proto/k8s && make create_protos
+make[1]: Entering directory '/workspace/source/proto/k8s'
+./create-k8s-protos.sh
+Downloading proto files for master
+Munging proto file packages
+sed -i.bak 's|import "k8s.io/apiextensions-apiserver/|//import "k8s.io/apiextensions-apiserver/|' k8s.io/api/core/v1/generated.proto
+rm k8s.io/api/core/v1/generated.proto.bak
+make[1]: Leaving directory '/workspace/source/proto/k8s'
+pip install -r dev_requirements.txt
+Collecting pytest==5.3.1
+  Downloading pytest-5.3.1-py3-none-any.whl (233 kB)
+Requirement already satisfied: pytest-xdist==1.30.0 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 2)) (1.30.0)
+Collecting pytest-cov==2.8.1
+  Downloading pytest_cov-2.8.1-py2.py3-none-any.whl (18 kB)
+Requirement already satisfied: flaky==3.6.1 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 4)) (3.6.1)
+Collecting tenacity==6.0.0
+  Downloading tenacity-6.0.0-py2.py3-none-any.whl (24 kB)
+Requirement already satisfied: sh==1.13.1 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 6)) (1.13.1)
+Requirement already satisfied: ipython==7.13.0 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 9)) (7.13.0)
+Requirement already satisfied: nbconvert==5.6.1 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 10)) (5.6.1)
+Requirement already satisfied: alibi==0.5.2 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 11)) (0.5.2)
+Requirement already satisfied: shap==0.35.0 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 12)) (0.35.0)
+Requirement already satisfied: matplotlib==3.1.3 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 13)) (3.1.3)
+Requirement already satisfied: tensorflow==1.15.4 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 14)) (1.15.4)
+Collecting coverage==4.5.4
+  Downloading coverage-4.5.4-cp36-cp36m-manylinux1_x86_64.whl (205 kB)
+Requirement already satisfied: pluggy<1.0,>=0.12 in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (0.13.1)
+Requirement already satisfied: wcwidth in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (0.2.5)
+Requirement already satisfied: importlib-metadata>=0.12; python_version < "3.8" in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (2.0.0)
+Requirement already satisfied: more-itertools>=4.0.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (8.5.0)
+Requirement already satisfied: attrs>=17.4.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (20.2.0)
+Requirement already satisfied: py>=1.5.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (1.9.0)
+Requirement already satisfied: packaging in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (20.4)
+Requirement already satisfied: six in /usr/local/lib/python3.6/site-packages (from pytest-xdist==1.30.0->-r dev_requirements.txt (line 2)) (1.15.0)
+Requirement already satisfied: execnet>=1.1 in /usr/local/lib/python3.6/site-packages (from pytest-xdist==1.30.0->-r dev_requirements.txt (line 2)) (1.7.1)
+Requirement already satisfied: pytest-forked in /usr/local/lib/python3.6/site-packages (from pytest-xdist==1.30.0->-r dev_requirements.txt (line 2)) (1.3.0)
+Requirement already satisfied: prompt-toolkit!=3.0.0,!=3.0.1,<3.1.0,>=2.0.0 in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (3.0.7)
+Requirement already satisfied: pexpect; sys_platform != "win32" in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (4.8.0)
+Requirement already satisfied: jedi>=0.10 in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.17.2)
+Requirement already satisfied: pygments in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (2.7.1)
+Requirement already satisfied: pickleshare in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.7.5)
+Requirement already satisfied: setuptools>=18.5 in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (50.3.0)
+Requirement already satisfied: backcall in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.2.0)
+Requirement already satisfied: traitlets>=4.2 in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (4.3.3)
+Requirement already satisfied: decorator in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (4.4.2)
+Requirement already satisfied: bleach in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (3.2.1)
+Requirement already satisfied: jupyter-core in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (4.6.3)
+Requirement already satisfied: entrypoints>=0.2.2 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.3)
+Requirement already satisfied: testpath in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.4.4)
+Requirement already satisfied: nbformat>=4.4 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (5.0.7)
+Requirement already satisfied: mistune<2,>=0.8.1 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.8.4)
+Requirement already satisfied: defusedxml in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.6.0)
+Requirement already satisfied: pandocfilters>=1.4.1 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (1.4.2)
+Requirement already satisfied: jinja2>=2.4 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (2.11.2)
+Requirement already satisfied: beautifulsoup4 in /usr/local/lib/python3.6/site-packages (from alibi==0.5.2->-r dev_requirements.txt (line 11)) (4.9.3)
+Requirement already satisfied: scikit-image!=0.17.1 in /usr/local/lib/python3.6/site-packages (from alibi==0.5.2->-r dev_requirements.txt (line 11)) (0.17.2)
+Requirement already satisfied: numpy in /usr/local/lib/python3.6/site-packages (from alibi==0.5.2->-r dev_requirements.txt (line 11)) (1.19.2)
+Requirement already satisfied: scikit-learn in /usr/local/lib/python3.6/site-packages (from alibi==0.5.2->-r dev_requirements.txt (line 11)) (0.23.2)
+Requirement already satisfied: prettyprinter in /usr/local/lib/python3.6/site-packages (from alibi==0.5.2->-r dev_requirements.txt (line 11)) (0.18.0)
+Requirement already satisfied: requests in /usr/local/lib/python3.6/site-packages (from alibi==0.5.2->-r dev_requirements.txt (line 11)) (2.24.0)
+Requirement already satisfied: scipy in /usr/local/lib/python3.6/site-packages (from alibi==0.5.2->-r dev_requirements.txt (line 11)) (1.5.2)
+Requirement already satisfied: spacy[lookups] in /usr/local/lib/python3.6/site-packages (from alibi==0.5.2->-r dev_requirements.txt (line 11)) (2.3.2)
+Requirement already satisfied: Pillow in /usr/local/lib/python3.6/site-packages (from alibi==0.5.2->-r dev_requirements.txt (line 11)) (8.0.0)
+Requirement already satisfied: pandas in /usr/local/lib/python3.6/site-packages (from alibi==0.5.2->-r dev_requirements.txt (line 11)) (1.1.0)
+Requirement already satisfied: typing-extensions>=3.7.2 in /usr/local/lib/python3.6/site-packages (from alibi==0.5.2->-r dev_requirements.txt (line 11)) (3.7.4.3)
+Requirement already satisfied: tqdm>4.25.0 in /usr/local/lib/python3.6/site-packages (from shap==0.35.0->-r dev_requirements.txt (line 12)) (4.50.2)
+Requirement already satisfied: kiwisolver>=1.0.1 in /usr/local/lib/python3.6/site-packages (from matplotlib==3.1.3->-r dev_requirements.txt (line 13)) (1.2.0)
+Requirement already satisfied: pyparsing!=2.0.4,!=2.1.2,!=2.1.6,>=2.0.1 in /usr/local/lib/python3.6/site-packages (from matplotlib==3.1.3->-r dev_requirements.txt (line 13)) (2.4.7)
+Requirement already satisfied: cycler>=0.10 in /usr/local/lib/python3.6/site-packages (from matplotlib==3.1.3->-r dev_requirements.txt (line 13)) (0.10.0)
+Requirement already satisfied: python-dateutil>=2.1 in /usr/local/lib/python3.6/site-packages (from matplotlib==3.1.3->-r dev_requirements.txt (line 13)) (2.8.1)
+Requirement already satisfied: grpcio>=1.8.6 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (1.32.0)
+Requirement already satisfied: wheel>=0.26; python_version >= "3" in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (0.35.1)
+Requirement already satisfied: protobuf>=3.6.1 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (3.13.0)
+Requirement already satisfied: tensorboard<1.16.0,>=1.15.0 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (1.15.0)
+Requirement already satisfied: wrapt>=1.11.1 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (1.12.1)
+Requirement already satisfied: opt-einsum>=2.3.2 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (3.3.0)
+Requirement already satisfied: tensorflow-estimator==1.15.1 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (1.15.1)
+Requirement already satisfied: termcolor>=1.1.0 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (1.1.0)
+Requirement already satisfied: absl-py>=0.7.0 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (0.10.0)
+Requirement already satisfied: keras-preprocessing>=1.0.5 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (1.1.2)
+Requirement already satisfied: keras-applications>=1.0.8 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (1.0.8)
+Requirement already satisfied: google-pasta>=0.1.6 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (0.2.0)
+Requirement already satisfied: gast==0.2.2 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (0.2.2)
+Requirement already satisfied: astor>=0.6.0 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (0.8.1)
+Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.6/site-packages (from importlib-metadata>=0.12; python_version < "3.8"->pytest==5.3.1->-r dev_requirements.txt (line 1)) (3.3.0)
+Requirement already satisfied: apipkg>=1.4 in /usr/local/lib/python3.6/site-packages (from execnet>=1.1->pytest-xdist==1.30.0->-r dev_requirements.txt (line 2)) (1.5)
+Requirement already satisfied: ptyprocess>=0.5 in /usr/local/lib/python3.6/site-packages (from pexpect; sys_platform != "win32"->ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.6.0)
+Requirement already satisfied: parso<0.8.0,>=0.7.0 in /usr/local/lib/python3.6/site-packages (from jedi>=0.10->ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.7.1)
+Requirement already satisfied: ipython-genutils in /usr/local/lib/python3.6/site-packages (from traitlets>=4.2->ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.2.0)
+Requirement already satisfied: webencodings in /usr/local/lib/python3.6/site-packages (from bleach->nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.5.1)
+Requirement already satisfied: jsonschema!=2.5.0,>=2.4 in /usr/local/lib/python3.6/site-packages (from nbformat>=4.4->nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (3.2.0)
+Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from jinja2>=2.4->nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (1.1.1)
+Requirement already satisfied: soupsieve>1.2; python_version >= "3.0" in /usr/local/lib/python3.6/site-packages (from beautifulsoup4->alibi==0.5.2->-r dev_requirements.txt (line 11)) (2.0.1)
+Requirement already satisfied: imageio>=2.3.0 in /usr/local/lib/python3.6/site-packages (from scikit-image!=0.17.1->alibi==0.5.2->-r dev_requirements.txt (line 11)) (2.9.0)
+Requirement already satisfied: PyWavelets>=1.1.1 in /usr/local/lib/python3.6/site-packages (from scikit-image!=0.17.1->alibi==0.5.2->-r dev_requirements.txt (line 11)) (1.1.1)
+Requirement already satisfied: tifffile>=2019.7.26 in /usr/local/lib/python3.6/site-packages (from scikit-image!=0.17.1->alibi==0.5.2->-r dev_requirements.txt (line 11)) (2020.9.3)
+Requirement already satisfied: networkx>=2.0 in /usr/local/lib/python3.6/site-packages (from scikit-image!=0.17.1->alibi==0.5.2->-r dev_requirements.txt (line 11)) (2.5)
+Requirement already satisfied: joblib>=0.11 in /usr/local/lib/python3.6/site-packages (from scikit-learn->alibi==0.5.2->-r dev_requirements.txt (line 11)) (0.17.0)
+Requirement already satisfied: threadpoolctl>=2.0.0 in /usr/local/lib/python3.6/site-packages (from scikit-learn->alibi==0.5.2->-r dev_requirements.txt (line 11)) (2.1.0)
+Requirement already satisfied: colorful>=0.4.0 in /usr/local/lib/python3.6/site-packages (from prettyprinter->alibi==0.5.2->-r dev_requirements.txt (line 11)) (0.5.4)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.5.2->-r dev_requirements.txt (line 11)) (1.25.10)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.5.2->-r dev_requirements.txt (line 11)) (3.0.4)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.5.2->-r dev_requirements.txt (line 11)) (2020.6.20)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.5.2->-r dev_requirements.txt (line 11)) (2.10)
+Requirement already satisfied: plac<1.2.0,>=0.9.6 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.2->-r dev_requirements.txt (line 11)) (1.1.3)
+Requirement already satisfied: blis<0.5.0,>=0.4.0 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.2->-r dev_requirements.txt (line 11)) (0.4.1)
+Requirement already satisfied: catalogue<1.1.0,>=0.0.7 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.2->-r dev_requirements.txt (line 11)) (1.0.0)
+Requirement already satisfied: murmurhash<1.1.0,>=0.28.0 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.2->-r dev_requirements.txt (line 11)) (1.0.2)
+Requirement already satisfied: wasabi<1.1.0,>=0.4.0 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.2->-r dev_requirements.txt (line 11)) (0.8.0)
+Requirement already satisfied: thinc==7.4.1 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.2->-r dev_requirements.txt (line 11)) (7.4.1)
+Requirement already satisfied: srsly<1.1.0,>=1.0.2 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.2->-r dev_requirements.txt (line 11)) (1.0.2)
+Requirement already satisfied: cymem<2.1.0,>=2.0.2 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.2->-r dev_requirements.txt (line 11)) (2.0.3)
+Requirement already satisfied: preshed<3.1.0,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.2->-r dev_requirements.txt (line 11)) (3.0.2)
+Requirement already satisfied: spacy-lookups-data<0.4.0,>=0.3.2; extra == "lookups" in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.2->-r dev_requirements.txt (line 11)) (0.3.2)
+Requirement already satisfied: pytz>=2017.2 in /usr/local/lib/python3.6/site-packages (from pandas->alibi==0.5.2->-r dev_requirements.txt (line 11)) (2020.1)
+Requirement already satisfied: werkzeug>=0.11.15 in /usr/local/lib/python3.6/site-packages (from tensorboard<1.16.0,>=1.15.0->tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (1.0.1)
+Requirement already satisfied: markdown>=2.6.8 in /usr/local/lib/python3.6/site-packages (from tensorboard<1.16.0,>=1.15.0->tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (3.3)
+Requirement already satisfied: h5py in /usr/local/lib/python3.6/site-packages (from keras-applications>=1.0.8->tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (2.10.0)
+Requirement already satisfied: pyrsistent>=0.14.0 in /usr/local/lib/python3.6/site-packages (from jsonschema!=2.5.0,>=2.4->nbformat>=4.4->nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.17.3)
+Installing collected packages: pytest, coverage, pytest-cov, tenacity
+  Attempting uninstall: pytest
+    Found existing installation: pytest 6.1.0
+    Uninstalling pytest-6.1.0:
+      Successfully uninstalled pytest-6.1.0
+  Attempting uninstall: coverage
+    Found existing installation: coverage 5.3
+    Uninstalling coverage-5.3:
+      Successfully uninstalled coverage-5.3
+  Attempting uninstall: pytest-cov
+    Found existing installation: pytest-cov 2.10.1
+    Uninstalling pytest-cov-2.10.1:
+      Successfully uninstalled pytest-cov-2.10.1
+  Attempting uninstall: tenacity
+    Found existing installation: tenacity 6.2.0
+    Uninstalling tenacity-6.2.0:
+      Successfully uninstalled tenacity-6.2.0
+Successfully installed coverage-4.5.4 pytest-5.3.1 pytest-cov-2.8.1 tenacity-6.0.0
+WARNING: You are using pip version 20.2.3; however, version 20.2.4 is available.
+You should consider upgrading via the '/usr/local/bin/python -m pip install --upgrade pip' command.
+pip install -e ../../python
+Obtaining file:///workspace/source/python
+Requirement already satisfied: Flask<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.4.0.dev0) (1.1.2)
+Requirement already satisfied: jsonschema<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.4.0.dev0) (3.2.0)
+Requirement already satisfied: Flask-cors<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.4.0.dev0) (3.0.9)
+Requirement already satisfied: redis<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.4.0.dev0) (3.5.3)
+Requirement already satisfied: requests<3.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.4.0.dev0) (2.24.0)
+Requirement already satisfied: numpy<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.4.0.dev0) (1.19.2)
+Requirement already satisfied: flatbuffers<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.4.0.dev0) (1.12)
+Requirement already satisfied: protobuf<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.4.0.dev0) (3.13.0)
+Requirement already satisfied: grpcio<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.4.0.dev0) (1.32.0)
+Requirement already satisfied: Flask-OpenTracing<1.2.0,>=1.1.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.4.0.dev0) (1.1.0)
+Requirement already satisfied: opentracing<2.4.0,>=2.2.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.4.0.dev0) (2.3.0)
+Requirement already satisfied: jaeger-client<4.4.0,>=4.1.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.4.0.dev0) (4.3.0)
+Requirement already satisfied: grpcio-opentracing<1.2.0,>=1.1.4 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.4.0.dev0) (1.1.4)
+Requirement already satisfied: PyYAML<5.4 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.4.0.dev0) (5.3.1)
+Requirement already satisfied: gunicorn<20.1.0,>=19.9.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.4.0.dev0) (20.0.4)
+Requirement already satisfied: setuptools>=41.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.4.0.dev0) (50.3.0)
+Requirement already satisfied: prometheus_client<0.9.0,>=0.7.1 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.4.0.dev0) (0.8.0)
+Requirement already satisfied: itsdangerous>=0.24 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.4.0.dev0) (1.1.0)
+Requirement already satisfied: click>=5.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.4.0.dev0) (7.1.2)
+Requirement already satisfied: Jinja2>=2.10.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.4.0.dev0) (2.11.2)
+Requirement already satisfied: Werkzeug>=0.15 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.4.0.dev0) (1.0.1)
+Requirement already satisfied: six>=1.11.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->seldon-core==1.4.0.dev0) (1.15.0)
+Requirement already satisfied: attrs>=17.4.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->seldon-core==1.4.0.dev0) (20.2.0)
+Requirement already satisfied: pyrsistent>=0.14.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->seldon-core==1.4.0.dev0) (0.17.3)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->seldon-core==1.4.0.dev0) (2.0.0)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.4.0.dev0) (3.0.4)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.4.0.dev0) (2.10)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.4.0.dev0) (2020.6.20)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.4.0.dev0) (1.25.10)
+Requirement already satisfied: tornado>=4.3 in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core==1.4.0.dev0) (6.0.4)
+Requirement already satisfied: threadloop<2,>=1 in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core==1.4.0.dev0) (1.0.2)
+Requirement already satisfied: thrift in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core==1.4.0.dev0) (0.13.0)
+Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from Jinja2>=2.10.1->Flask<2.0.0->seldon-core==1.4.0.dev0) (1.1.1)
+Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.6/site-packages (from importlib-metadata; python_version < "3.8"->jsonschema<4.0.0->seldon-core==1.4.0.dev0) (3.3.0)
+Installing collected packages: seldon-core
+  Attempting uninstall: seldon-core
+    Found existing installation: seldon-core 1.4.0.dev0
+    Uninstalling seldon-core-1.4.0.dev0:
+      Successfully uninstalled seldon-core-1.4.0.dev0
+  Running setup.py develop for seldon-core
+Successfully installed seldon-core
+WARNING: You are using pip version 20.2.3; however, version 20.2.4 is available.
+You should consider upgrading via the '/usr/local/bin/python -m pip install --upgrade pip' command.
+# Run the core tests in parallel
+pytest \
+	--verbose \
+	-s \
+	-W ignore \
+	-n "4" \
+	-m "not sequential and not notebooks" 2>&1
+============================= test session starts ==============================
+platform linux -- Python 3.6.10, pytest-5.3.1, py-1.9.0, pluggy-0.13.1 -- /usr/local/bin/python
+cachedir: .pytest_cache
+rootdir: /workspace/source/testing/scripts, inifile: setup.cfg
+plugins: cov-2.8.1, flaky-3.6.1, xdist-1.30.0, forked-1.3.0
+gw0 I / gw1 I / gw2 I / gw3 I
+[gw0] linux Python 3.6.10 cwd: /workspace/source/testing/scripts
+[gw1] linux Python 3.6.10 cwd: /workspace/source/testing/scripts
+[gw2] linux Python 3.6.10 cwd: /workspace/source/testing/scripts
+[gw3] linux Python 3.6.10 cwd: /workspace/source/testing/scripts
+[gw1] Python 3.6.10 (default, Oct  9 2020, 10:16:39)  -- [GCC 8.3.0]
+[gw2] Python 3.6.10 (default, Oct  9 2020, 10:16:39)  -- [GCC 8.3.0]
+[gw3] Python 3.6.10 (default, Oct  9 2020, 10:16:39)  -- [GCC 8.3.0]
+[gw0] Python 3.6.10 (default, Oct  9 2020, 10:16:39)  -- [GCC 8.3.0]
+gw0 [35] / gw1 [35] / gw2 [35] / gw3 [35]
+
+scheduling tests via LoadScheduling
+
+test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha3] 
+test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha2] 
+test_bad_graphs.py::TestBadGraphs::test_duplicate_predictor_name 
+test_api_version.py::test_api_version[machinelearning.seldon.io/v1] Error from server (SeldonDeployment.machinelearing.seldon.io "dupname" is invalid: [spec.predictors[1]: Invalid value: "mymodel": Duplicate predictor name, spec: Invalid value: "mymodel": Traffic must sum to 100 for multiple predictors]): error when creating "../resources/bad_duplicate_predictor_name.json": admission webhook "v1alpha2.vseldondeployment.kb.io" denied the request: SeldonDeployment.machinelearing.seldon.io "dupname" is invalid: [spec.predictors[1]: Invalid value: "mymodel": Duplicate predictor name, spec: Invalid value: "mymodel": Traffic must sum to 100 for multiple predictors]
+
+[gw0] PASSED test_bad_graphs.py::TestBadGraphs::test_duplicate_predictor_name 
+test_helm_charts_clusterwide.py::TestClusterWide::test_single_model Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw1] PASSED test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha2] Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw0] PASSED test_helm_charts_clusterwide.py::TestClusterWide::test_single_model Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw2] PASSED test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha3] Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw3] PASSED test_api_version.py::test_api_version[machinelearning.seldon.io/v1] 
+test_bad_graphs.py::TestBadGraphs::test_model_name_mismatch Error from server (SeldonDeployment.machinelearing.seldon.io "namemismatch" is invalid: spec.predictors[0].graph: Invalid value: "complex-model_bad_name": Can't find container for Predictive Unit): error when creating "../resources/bad_name_mismatch.json": admission webhook "v1alpha2.vseldondeployment.kb.io" denied the request: SeldonDeployment.machinelearing.seldon.io "namemismatch" is invalid: spec.predictors[0].graph: Invalid value: "complex-model_bad_name": Can't find container for Predictive Unit
+
+[gw1] PASSED test_bad_graphs.py::TestBadGraphs::test_model_name_mismatch 
+test_local_operators.py::TestLocalOperators::test_namespace_operator 
+test_helm_charts_clusterwide.py::TestClusterWide::test_abtest_model 
+test_bad_graphs.py::TestBadGraphs::test_model_no_graph 
+test_batch_processor.py::TestBatchWorker::test_batch_worker Error from server (SeldonDeployment.machinelearing.seldon.io "test-deployment" is invalid: spec.predictors[0].graph: Invalid value: "": Can't find container for Predictive Unit): error when creating "../resources/bad_no_graph.yaml": admission webhook "v1.vseldondeployment.kb.io" denied the request: SeldonDeployment.machinelearing.seldon.io "test-deployment" is invalid: spec.predictors[0].graph: Invalid value: "": Can't find container for Predictive Unit
+
+[gw2] PASSED test_bad_graphs.py::TestBadGraphs::test_model_no_graph 
+test_prepackaged_servers.py::TestPrepack::test_sklearn 
+[gw1] PASSED test_local_operators.py::TestLocalOperators::test_namespace_operator 
+test_local_operators.py::TestLocalOperators::test_labelled_operator Error from server (InternalError): error when creating "../resources/model_controller_id.yaml": Internal error occurred: failed calling webhook "v1alpha2.mseldondeployment.kb.io": Post https://seldon-webhook-service.test-labelled-operator.svc:443/mutate-machinelearning-seldon-io-v1alpha2-seldondeployment?timeout=30s: dial tcp 10.100.209.117:443: connect: connection refused
+
+[gw1] PASSED test_local_operators.py::TestLocalOperators::test_labelled_operator 
+test_prepackaged_servers.py::TestPrepack::test_xgboost Error: uninstall: Release not loaded: myabtest: release: not found
+
+[gw0] PASSED test_helm_charts_clusterwide.py::TestClusterWide::test_abtest_model 
+[gw2] PASSED test_prepackaged_servers.py::TestPrepack::test_sklearn 
+[gw3] PASSED test_batch_processor.py::TestBatchWorker::test_batch_worker 
+test_helm_charts_clusterwide.py::TestClusterWide::test_mab_model 
+[gw1] PASSED test_prepackaged_servers.py::TestPrepack::test_xgboost 
+test_prepackaged_servers.py::TestPrepack::test_tfserving 
+test_prepackaged_servers.py::TestPrepack::test_sklearn_v2 
+test_prepackaged_servers.py::TestPrepack::test_xgboost_v2 Error: uninstall: Release not loaded: mymab: release: not found
+
+[gw0] PASSED test_helm_charts_clusterwide.py::TestClusterWide::test_mab_model 
+test_prepackaged_servers.py::TestPrepack::test_mlflow 
+[gw2] PASSED test_prepackaged_servers.py::TestPrepack::test_tfserving 
+[gw3] FAILED test_prepackaged_servers.py::TestPrepack::test_sklearn_v2 
+[gw1] FAILED test_prepackaged_servers.py::TestPrepack::test_xgboost_v2 
+test_prepackaged_servers.py::TestPrepack::test_openapi_sklearn 
+test_prepackaged_servers.py::TestPrepack::test_text_alibi_explainer 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph2.json-True-ambas] 
+[gw0] PASSED test_prepackaged_servers.py::TestPrepack::test_mlflow 
+[gw3] PASSED test_prepackaged_servers.py::TestPrepack::test_openapi_sklearn 
+[gw1] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph2.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph4.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph3.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph2.json-True-istio] 
+[gw2] FAILED test_prepackaged_servers.py::TestPrepack::test_text_alibi_explainer 
+[gw0] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph2.json-True-istio] 
+[gw1] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph4.json-True-ambas] 
+[gw3] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph3.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph4.json-True-istio] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph3.json-True-istio] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph5.json-True-istio] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph5.json-True-ambas] 
+[gw1] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph4.json-True-istio] 
+[gw0] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph5.json-True-istio] 
+[gw2] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph3.json-True-istio] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph8.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph8.json-True-istio] 
+test_rolling_updates.py::test_rolling_deployment[graph7.json-graph8.json-False-ambas] 
+[gw0] PASSED test_rolling_updates.py::test_rolling_deployment[graph7.json-graph8.json-False-ambas] 
+[gw3] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph5.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph8.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph8.json-True-istio] 
+test_tracing.py::test_tracing_rest 
+test_rolling_updates.py::test_rolling_deployment[graph7.json-graph8.json-False-istio] 
+[gw0] PASSED test_tracing.py::test_tracing_rest 
+[gw3] PASSED test_rolling_updates.py::test_rolling_deployment[graph7.json-graph8.json-False-istio] 
+[gw1] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph8.json-True-ambas] 
+[gw2] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph8.json-True-istio] 
+test_security.py::test_xss_escaping 
+test_security.py::test_xss_header 
+[gw2] PASSED test_security.py::test_xss_header 
+[gw1] PASSED test_security.py::test_xss_escaping 
+
+=================================== FAILURES ===================================
+_________________________ TestPrepack.test_sklearn_v2 __________________________
+[gw3] linux -- Python 3.6.10 /usr/local/bin/python
+
+self = <test_prepackaged_servers.TestPrepack object at 0x7f90e13bdf28>
+namespace = 'test-sklearn-v2'
+
+    @skipif_engine
+    def test_sklearn_v2(self, namespace):
+        spec = "../resources/iris-sklearn-v2.yaml"
+        retry_run(f"kubectl apply -f {spec} -n {namespace}")
+        wait_for_status("sklearn", namespace)
+        wait_for_rollout("sklearn", namespace)
+        time.sleep(1)
+    
+        logging.warning("Initial request")
+        r = v2_protocol.inference_request(
+            model_name="sklearn",
+            namespace=namespace,
+            payload={
+                "inputs": [
+                    {
+                        "name": "input-0",
+                        "shape": [4],
+                        "datatype": "FP32",
+                        "data": [[0.1, 0.2, 0.3, 0.4]],
+                    }
+                ],
+            },
+        )
+>       assert r.status_code == 200
+E       assert 404 == 200
+E         -404
+E         +200
+
+test_prepackaged_servers.py:74: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:test_prepackaged_servers.py:59 Initial request
+_________________________ TestPrepack.test_xgboost_v2 __________________________
+[gw1] linux -- Python 3.6.10 /usr/local/bin/python
+
+self = <test_prepackaged_servers.TestPrepack object at 0x7f571aaa40f0>
+namespace = 'test-xgboost-v2'
+
+    @skipif_engine
+    def test_xgboost_v2(self, namespace):
+        spec = "../resources/iris-xgboost-v2.yaml"
+        retry_run(f"kubectl apply -f {spec} -n {namespace}")
+        wait_for_status("xgboost", namespace)
+        wait_for_rollout("xgboost", namespace)
+        time.sleep(1)
+    
+        logging.warning("Initial request")
+        r = v2_protocol.inference_request(
+            model_name="xgboost",
+            namespace=namespace,
+            payload={
+                "inputs": [
+                    {
+                        "name": "input-0",
+                        "shape": [4],
+                        "datatype": "FP32",
+                        "data": [[0.1, 0.2, 0.3, 0.4]],
+                    }
+                ],
+            },
+        )
+>       assert r.status_code == 200
+E       assert 404 == 200
+E         -404
+E         +200
+
+test_prepackaged_servers.py:143: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:test_prepackaged_servers.py:128 Initial request
+____________________ TestPrepack.test_text_alibi_explainer _____________________
+[gw2] linux -- Python 3.6.10 /usr/local/bin/python
+
+self = <test_prepackaged_servers.TestPrepack object at 0x7fc5730bbb38>
+namespace = 'test-text-alibi-explainer'
+
+    def test_text_alibi_explainer(self, namespace):
+        spec = "../resources/movies-text-explainer.yaml"
+        retry_run(f"kubectl apply -f {spec} -n {namespace}")
+        wait_for_status("movie", namespace)
+        wait_for_rollout("movie", namespace, expected_deployments=2)
+        time.sleep(5)
+        logging.warning("Initial request")
+        r = initial_rest_request(
+            "movie", namespace, data=["This is test data"], dtype="ndarray"
+        )
+        log_sdep_logs("movie", namespace)
+        assert r.status_code == 200
+    
+        # First request most likely will fail because AnchorText explainer
+        # is creating the explainer on first request - we skip checking output
+        # of it, sleep for some time and then do the actual explanation request
+        # we use in the test
+        e = initial_rest_request(
+            "movie",
+            namespace,
+            data=["This is test data"],
+            dtype="ndarray",
+            method="explain",
+            predictor_name="movies-predictor",
+        )
+        log_sdep_logs("movie", namespace)
+    
+        time.sleep(30)
+    
+        e = initial_rest_request(
+            "movie",
+            namespace,
+            data=["This is test data"],
+            dtype="ndarray",
+            method="explain",
+            predictor_name="movies-predictor",
+        )
+        log_sdep_logs("movie", namespace)
+>       assert e.status_code == 200
+E       AttributeError: 'NoneType' object has no attribute 'status_code'
+
+test_prepackaged_servers.py:225: AttributeError
+------------------------------ Captured log call -------------------------------
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:test_prepackaged_servers.py:193 Initial request
+WARNING  root:seldon_e2e_utils.py:230 Bad status:404
+WARNING  root:seldon_e2e_utils.py:230 Bad status:404
+WARNING  root:seldon_e2e_utils.py:230 Bad status:404
+WARNING  root:seldon_e2e_utils.py:97 [I 201022 17:15:11 initializer-entrypoint:13] Initializing, args: src_uri [gs://seldon-models/sklearn/moviesentiment] dest_path[ [/mnt/models]
+[I 201022 17:15:11 storage:35] Copying contents of gs://seldon-models/sklearn/moviesentiment to local
+[I 201022 17:15:12 storage:111] Downloading: /mnt/models/model.joblib
+[I 201022 17:15:12 storage:60] Successfully copied gs://seldon-models/sklearn/moviesentiment to /mnt/models
+starting microservice
+2020-10-22 17:15:19,874 - seldon_core.microservice:main:225 - INFO:  Starting microservice.py:main
+2020-10-22 17:15:19,874 - seldon_core.microservice:main:226 - INFO:  Seldon Core version: 1.3.0-dev
+2020-10-22 17:15:19,876 - seldon_core.microservice:main:332 - INFO:  Parse JAEGER_EXTRA_TAGS []
+2020-10-22 17:15:19,877 - seldon_core.microservice:load_annotations:143 - INFO:  Found annotation kubernetes.io/config.seen:2020-10-22T17:14:07.32720857Z 
+2020-10-22 17:15:19,877 - seldon_core.microservice:load_annotations:143 - INFO:  Found annotation kubernetes.io/config.source:api 
+2020-10-22 17:15:19,877 - seldon_core.microservice:load_annotations:143 - INFO:  Found annotation prometheus.io/path:/prometheus 
+2020-10-22 17:15:19,877 - seldon_core.microservice:load_annotations:143 - INFO:  Found annotation prometheus.io/scrape:true 
+2020-10-22 17:15:19,877 - seldon_core.microservice:main:335 - INFO:  Annotations: {'kubernetes.io/config.seen': '2020-10-22T17:14:07.32720857Z', 'kubernetes.io/config.source': 'api', 'prometheus.io/path': '/prometheus', 'prometheus.io/scrape': 'true'}
+2020-10-22 17:15:19,877 - seldon_core.microservice:main:339 - INFO:  Importing SKLearnServer
+2020-10-22 17:15:19,907 - SKLearnServer:__init__:21 - INFO:  Model uri: /mnt/models
+2020-10-22 17:15:19,907 - SKLearnServer:__init__:22 - INFO:  method: predict_proba
+2020-10-22 17:15:19,907 - SKLearnServer:load:26 - INFO:  load
+2020-10-22 17:15:19,907 - root:download:31 - INFO:  Copying contents of /mnt/models to local
+2020-10-22 17:15:19,907 - SKLearnServer:load:30 - INFO:  model file: /mnt/models/model.joblib
+/opt/conda/lib/python3.7/site-packages/sklearn/base.py:334: UserWarning: Trying to unpickle estimator CountVectorizer from version 0.20.3 when using version 0.23.2. This might lead to breaking code or invalid results. Use at your own risk.
+  UserWarning)
+/opt/conda/lib/python3.7/site-packages/sklearn/utils/deprecation.py:143: FutureWarning: The sklearn.linear_model.logistic module is  deprecated in version 0.22 and will be removed in version 0.24. The corresponding classes / functions should instead be imported from sklearn.linear_model. Anything that cannot be imported from sklearn.linear_model is now part of the private API.
+  warnings.warn(message, FutureWarning)
+/opt/conda/lib/python3.7/site-packages/sklearn/base.py:334: UserWarning: Trying to unpickle estimator LogisticRegression from version 0.20.3 when using version 0.23.2. This might lead to breaking code or invalid results. Use at your own risk.
+  UserWarning)
+/opt/conda/lib/python3.7/site-packages/sklearn/base.py:334: UserWarning: Trying to unpickle estimator Pipeline from version 0.20.3 when using version 0.23.2. This might lead to breaking code or invalid results. Use at your own risk.
+  UserWarning)
+2020-10-22 17:15:20,538 - seldon_core.microservice:main:413 - INFO:  REST gunicorn microservice running on port 9000
+2020-10-22 17:15:20,540 - seldon_core.microservice:main:474 - INFO:  REST metrics microservice running on port 6000
+2020-10-22 17:15:20,540 - seldon_core.microservice:main:484 - INFO:  Starting servers
+2020-10-22 17:15:20,553 - seldon_core.wrapper:_set_flask_app_configs:204 - INFO:  App Config:  <Config {'ENV': 'production', 'DEBUG': False, 'TESTING': False, 'PROPAGATE_EXCEPTIONS': None, 'PRESERVE_CONTEXT_ON_EXCEPTION': None, 'SECRET_KEY': None, 'PERMANENT_SESSION_LIFETIME': datetime.timedelta(days=31), 'USE_X_SENDFILE': False, 'SERVER_NAME': None, 'APPLICATION_ROOT': '/', 'SESSION_COOKIE_NAME': 'session', 'SESSION_COOKIE_DOMAIN': None, 'SESSION_COOKIE_PATH': None, 'SESSION_COOKIE_HTTPONLY': True, 'SESSION_COOKIE_SECURE': False, 'SESSION_COOKIE_SAMESITE': None, 'SESSION_REFRESH_EACH_REQUEST': True, 'MAX_CONTENT_LENGTH': None, 'SEND_FILE_MAX_AGE_DEFAULT': datetime.timedelta(seconds=43200), 'TRAP_BAD_REQUEST_ERRORS': None, 'TRAP_HTTP_EXCEPTIONS': False, 'EXPLAIN_TEMPLATE_LOADING': False, 'PREFERRED_URL_SCHEME': 'http', 'JSON_AS_ASCII': True, 'JSON_SORT_KEYS': True, 'JSONIFY_PRETTYPRINT_REGULAR': False, 'JSONIFY_MIMETYPE': 'application/json', 'TEMPLATES_AUTO_RELOAD': None, 'MAX_COOKIE_SIZE': 4093}>
+2020-10-22 17:15:20,560 - seldon_core.wrapper:_set_flask_app_configs:204 - INFO:  App Config:  <Config {'ENV': 'production', 'DEBUG': False, 'TESTING': False, 'PROPAGATE_EXCEPTIONS': None, 'PRESERVE_CONTEXT_ON_EXCEPTION': None, 'SECRET_KEY': None, 'PERMANENT_SESSION_LIFETIME': datetime.timedelta(days=31), 'USE_X_SENDFILE': False, 'SERVER_NAME': None, 'APPLICATION_ROOT': '/', 'SESSION_COOKIE_NAME': 'session', 'SESSION_COOKIE_DOMAIN': None, 'SESSION_COOKIE_PATH': None, 'SESSION_COOKIE_HTTPONLY': True, 'SESSION_COOKIE_SECURE': False, 'SESSION_COOKIE_SAMESITE': None, 'SESSION_REFRESH_EACH_REQUEST': True, 'MAX_CONTENT_LENGTH': None, 'SEND_FILE_MAX_AGE_DEFAULT': datetime.timedelta(seconds=43200), 'TRAP_BAD_REQUEST_ERRORS': None, 'TRAP_HTTP_EXCEPTIONS': False, 'EXPLAIN_TEMPLATE_LOADING': False, 'PREFERRED_URL_SCHEME': 'http', 'JSON_AS_ASCII': True, 'JSON_SORT_KEYS': True, 'JSONIFY_PRETTYPRINT_REGULAR': False, 'JSONIFY_MIMETYPE': 'application/json', 'TEMPLATES_AUTO_RELOAD': None, 'MAX_COOKIE_SIZE': 4093}>
+[2020-10-22 17:15:20 +0000] [58] [INFO] Starting gunicorn 20.0.4
+[2020-10-22 17:15:20 +0000] [58] [INFO] Listening at: http://0.0.0.0:6000 (58)
+[2020-10-22 17:15:20 +0000] [58] [INFO] Using worker: sync
+[2020-10-22 17:15:20 +0000] [6] [INFO] Starting gunicorn 20.0.4
+[2020-10-22 17:15:20 +0000] [6] [INFO] Listening at: http://0.0.0.0:9000 (6)
+[2020-10-22 17:15:20 +0000] [6] [INFO] Using worker: threads
+[2020-10-22 17:15:20 +0000] [61] [INFO] Booting worker with pid: 61
+[2020-10-22 17:15:20 +0000] [62] [INFO] Booting worker with pid: 62
+2020-10-22 17:15:20,606 - SKLearnServer:load:26 - INFO:  load
+2020-10-22 17:15:20,607 - root:download:31 - INFO:  Copying contents of /mnt/models to local
+2020-10-22 17:15:20,607 - SKLearnServer:load:30 - INFO:  model file: /mnt/models/model.joblib
+2020-10-22 17:22:20,560 - SKLearnServer:predict:41 - INFO:  Calling predict_proba
+127.0.0.1 - - [22/Oct/2020:17:22:20 +0000] "POST /predict HTTP/1.1" 200 95 "-" "python-requests/2.24.0"
+{"level":"info","ts":1603386920.8912108,"logger":"entrypoint","msg":"Hostname unset will use localhost"}
+{"level":"info","ts":1603386920.9105847,"logger":"entrypoint","msg":"Starting","worker":1}
+{"level":"info","ts":1603386920.9106727,"logger":"entrypoint","msg":"Starting","worker":2}
+{"level":"info","ts":1603386920.9106808,"logger":"entrypoint","msg":"Starting","worker":3}
+{"level":"info","ts":1603386920.9106858,"logger":"entrypoint","msg":"Starting","worker":4}
+{"level":"info","ts":1603386920.9106917,"logger":"entrypoint","msg":"Starting","worker":5}
+{"level":"info","ts":1603386920.911656,"logger":"entrypoint","msg":"Running http server ","port":8000}
+{"level":"info","ts":1603386920.911695,"logger":"entrypoint","msg":"Creating non-TLS listener","port":8000}
+{"level":"info","ts":1603386920.9125705,"logger":"SeldonRestApi","msg":"Listening","Address":"0.0.0.0:8000"}
+
+WARNING  root:seldon_e2e_utils.py:97 2020-10-22 17:20:24.250692: W tensorflow/stream_executor/platform/default/dso_loader.cc:59] Could not load dynamic library 'libcudart.so.10.1'; dlerror: libcudart.so.10.1: cannot open shared object file: No such file or directory
+2020-10-22 17:20:24.250747: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
+INFO:root:Extra args: {}
+INFO:root:Predict URL set to movie-movies-predictor.test-text-alibi-explainer:8000
+INFO:root:Protocol is seldon.http
+INFO:root:Anchor Text args {}
+INFO:root:Loading Spacy Language model for en_core_web_md
+Collecting en_core_web_md==2.3.1
+  Downloading https://github.com/explosion/spacy-models/releases/download/en_core_web_md-2.3.1/en_core_web_md-2.3.1.tar.gz (50.8 MB)
+Requirement already satisfied: spacy<2.4.0,>=2.3.0 in /opt/app-root/lib/python3.6/site-packages (from en_core_web_md==2.3.1) (2.3.2)
+Requirement already satisfied: srsly<1.1.0,>=1.0.2 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (1.0.2)
+Requirement already satisfied: thinc==7.4.1 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (7.4.1)
+Requirement already satisfied: requests<3.0.0,>=2.13.0 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (2.24.0)
+Requirement already satisfied: cymem<2.1.0,>=2.0.2 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (2.0.3)
+Requirement already satisfied: murmurhash<1.1.0,>=0.28.0 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (1.0.2)
+Requirement already satisfied: setuptools in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (39.2.0)
+Requirement already satisfied: blis<0.5.0,>=0.4.0 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (0.4.1)
+Requirement already satisfied: numpy>=1.15.0 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (1.19.2)
+Requirement already satisfied: catalogue<1.1.0,>=0.0.7 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (1.0.0)
+Requirement already satisfied: plac<1.2.0,>=0.9.6 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (1.1.3)
+Requirement already satisfied: wasabi<1.1.0,>=0.4.0 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (0.8.0)
+Requirement already satisfied: tqdm<5.0.0,>=4.38.0 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (4.50.2)
+Requirement already satisfied: preshed<3.1.0,>=3.0.2 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (3.0.2)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /opt/app-root/lib/python3.6/site-packages (from requests<3.0.0,>=2.13.0->spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (1.25.11)
+Requirement already satisfied: chardet<4,>=3.0.2 in /opt/app-root/lib/python3.6/site-packages (from requests<3.0.0,>=2.13.0->spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (3.0.4)
+Requirement already satisfied: idna<3,>=2.5 in /opt/app-root/lib/python3.6/site-packages (from requests<3.0.0,>=2.13.0->spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (2.10)
+Requirement already satisfied: certifi>=2017.4.17 in /opt/app-root/lib/python3.6/site-packages (from requests<3.0.0,>=2.13.0->spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (2020.6.20)
+Requirement already satisfied: importlib-metadata>=0.20; python_version < "3.8" in /opt/app-root/lib/python3.6/site-packages (from catalogue<1.1.0,>=0.0.7->spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (2.0.0)
+Requirement already satisfied: zipp>=0.5 in /opt/app-root/lib/python3.6/site-packages (from importlib-metadata>=0.20; python_version < "3.8"->catalogue<1.1.0,>=0.0.7->spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (3.3.1)
+Building wheels for collected packages: en-core-web-md
+  Building wheel for en-core-web-md (setup.py): started
+  Building wheel for en-core-web-md (setup.py): finished with status 'done'
+  Created wheel for en-core-web-md: filename=en_core_web_md-2.3.1-py3-none-any.whl size=50916647 sha256=e3e3f4533ae416269506d74bcd242418e738e039475a4d317bf8330ae175ffd0
+  Stored in directory: /tmp/pip-ephem-wheel-cache-c1puk_d2/wheels/52/35/5a/21d21ba55fc116713b5b84c0620e3ebdccb752021aefbeb90f
+Successfully built en-core-web-md
+Installing collected packages: en-core-web-md
+Successfully installed en-core-web-md-2.3.1
+[38;5;2m✔ Download and installation successful[0m
+You can now load the model via spacy.load('en_core_web_md')
+[38;5;2m✔ Linking successful[0m
+/opt/app-root/lib/python3.6/site-packages/en_core_web_md -->
+/opt/app-root/lib/python3.6/site-packages/spacy/data/en_core_web_md
+You can now load the model via spacy.load('en_core_web_md')
+INFO:root:Language model loaded
+INFO:root:Registering model:movie
+INFO:root:Listening on port 9000
+WARNING:tornado.access:404 GET /prometheus (10.244.1.14) 0.84ms
+
+WARNING  root:seldon_e2e_utils.py:230 Bad status:503
+WARNING  root:seldon_e2e_utils.py:230 Bad status:503
+WARNING  root:seldon_e2e_utils.py:230 Bad status:503
+WARNING  root:seldon_e2e_utils.py:230 Bad status:503
+WARNING  root:seldon_e2e_utils.py:97 [I 201022 17:15:11 initializer-entrypoint:13] Initializing, args: src_uri [gs://seldon-models/sklearn/moviesentiment] dest_path[ [/mnt/models]
+[I 201022 17:15:11 storage:35] Copying contents of gs://seldon-models/sklearn/moviesentiment to local
+[I 201022 17:15:12 storage:111] Downloading: /mnt/models/model.joblib
+[I 201022 17:15:12 storage:60] Successfully copied gs://seldon-models/sklearn/moviesentiment to /mnt/models
+starting microservice
+2020-10-22 17:15:19,874 - seldon_core.microservice:main:225 - INFO:  Starting microservice.py:main
+2020-10-22 17:15:19,874 - seldon_core.microservice:main:226 - INFO:  Seldon Core version: 1.3.0-dev
+2020-10-22 17:15:19,876 - seldon_core.microservice:main:332 - INFO:  Parse JAEGER_EXTRA_TAGS []
+2020-10-22 17:15:19,877 - seldon_core.microservice:load_annotations:143 - INFO:  Found annotation kubernetes.io/config.seen:2020-10-22T17:14:07.32720857Z 
+2020-10-22 17:15:19,877 - seldon_core.microservice:load_annotations:143 - INFO:  Found annotation kubernetes.io/config.source:api 
+2020-10-22 17:15:19,877 - seldon_core.microservice:load_annotations:143 - INFO:  Found annotation prometheus.io/path:/prometheus 
+2020-10-22 17:15:19,877 - seldon_core.microservice:load_annotations:143 - INFO:  Found annotation prometheus.io/scrape:true 
+2020-10-22 17:15:19,877 - seldon_core.microservice:main:335 - INFO:  Annotations: {'kubernetes.io/config.seen': '2020-10-22T17:14:07.32720857Z', 'kubernetes.io/config.source': 'api', 'prometheus.io/path': '/prometheus', 'prometheus.io/scrape': 'true'}
+2020-10-22 17:15:19,877 - seldon_core.microservice:main:339 - INFO:  Importing SKLearnServer
+2020-10-22 17:15:19,907 - SKLearnServer:__init__:21 - INFO:  Model uri: /mnt/models
+2020-10-22 17:15:19,907 - SKLearnServer:__init__:22 - INFO:  method: predict_proba
+2020-10-22 17:15:19,907 - SKLearnServer:load:26 - INFO:  load
+2020-10-22 17:15:19,907 - root:download:31 - INFO:  Copying contents of /mnt/models to local
+2020-10-22 17:15:19,907 - SKLearnServer:load:30 - INFO:  model file: /mnt/models/model.joblib
+/opt/conda/lib/python3.7/site-packages/sklearn/base.py:334: UserWarning: Trying to unpickle estimator CountVectorizer from version 0.20.3 when using version 0.23.2. This might lead to breaking code or invalid results. Use at your own risk.
+  UserWarning)
+/opt/conda/lib/python3.7/site-packages/sklearn/utils/deprecation.py:143: FutureWarning: The sklearn.linear_model.logistic module is  deprecated in version 0.22 and will be removed in version 0.24. The corresponding classes / functions should instead be imported from sklearn.linear_model. Anything that cannot be imported from sklearn.linear_model is now part of the private API.
+  warnings.warn(message, FutureWarning)
+/opt/conda/lib/python3.7/site-packages/sklearn/base.py:334: UserWarning: Trying to unpickle estimator LogisticRegression from version 0.20.3 when using version 0.23.2. This might lead to breaking code or invalid results. Use at your own risk.
+  UserWarning)
+/opt/conda/lib/python3.7/site-packages/sklearn/base.py:334: UserWarning: Trying to unpickle estimator Pipeline from version 0.20.3 when using version 0.23.2. This might lead to breaking code or invalid results. Use at your own risk.
+  UserWarning)
+2020-10-22 17:15:20,538 - seldon_core.microservice:main:413 - INFO:  REST gunicorn microservice running on port 9000
+2020-10-22 17:15:20,540 - seldon_core.microservice:main:474 - INFO:  REST metrics microservice running on port 6000
+2020-10-22 17:15:20,540 - seldon_core.microservice:main:484 - INFO:  Starting servers
+2020-10-22 17:15:20,553 - seldon_core.wrapper:_set_flask_app_configs:204 - INFO:  App Config:  <Config {'ENV': 'production', 'DEBUG': False, 'TESTING': False, 'PROPAGATE_EXCEPTIONS': None, 'PRESERVE_CONTEXT_ON_EXCEPTION': None, 'SECRET_KEY': None, 'PERMANENT_SESSION_LIFETIME': datetime.timedelta(days=31), 'USE_X_SENDFILE': False, 'SERVER_NAME': None, 'APPLICATION_ROOT': '/', 'SESSION_COOKIE_NAME': 'session', 'SESSION_COOKIE_DOMAIN': None, 'SESSION_COOKIE_PATH': None, 'SESSION_COOKIE_HTTPONLY': True, 'SESSION_COOKIE_SECURE': False, 'SESSION_COOKIE_SAMESITE': None, 'SESSION_REFRESH_EACH_REQUEST': True, 'MAX_CONTENT_LENGTH': None, 'SEND_FILE_MAX_AGE_DEFAULT': datetime.timedelta(seconds=43200), 'TRAP_BAD_REQUEST_ERRORS': None, 'TRAP_HTTP_EXCEPTIONS': False, 'EXPLAIN_TEMPLATE_LOADING': False, 'PREFERRED_URL_SCHEME': 'http', 'JSON_AS_ASCII': True, 'JSON_SORT_KEYS': True, 'JSONIFY_PRETTYPRINT_REGULAR': False, 'JSONIFY_MIMETYPE': 'application/json', 'TEMPLATES_AUTO_RELOAD': None, 'MAX_COOKIE_SIZE': 4093}>
+2020-10-22 17:15:20,560 - seldon_core.wrapper:_set_flask_app_configs:204 - INFO:  App Config:  <Config {'ENV': 'production', 'DEBUG': False, 'TESTING': False, 'PROPAGATE_EXCEPTIONS': None, 'PRESERVE_CONTEXT_ON_EXCEPTION': None, 'SECRET_KEY': None, 'PERMANENT_SESSION_LIFETIME': datetime.timedelta(days=31), 'USE_X_SENDFILE': False, 'SERVER_NAME': None, 'APPLICATION_ROOT': '/', 'SESSION_COOKIE_NAME': 'session', 'SESSION_COOKIE_DOMAIN': None, 'SESSION_COOKIE_PATH': None, 'SESSION_COOKIE_HTTPONLY': True, 'SESSION_COOKIE_SECURE': False, 'SESSION_COOKIE_SAMESITE': None, 'SESSION_REFRESH_EACH_REQUEST': True, 'MAX_CONTENT_LENGTH': None, 'SEND_FILE_MAX_AGE_DEFAULT': datetime.timedelta(seconds=43200), 'TRAP_BAD_REQUEST_ERRORS': None, 'TRAP_HTTP_EXCEPTIONS': False, 'EXPLAIN_TEMPLATE_LOADING': False, 'PREFERRED_URL_SCHEME': 'http', 'JSON_AS_ASCII': True, 'JSON_SORT_KEYS': True, 'JSONIFY_PRETTYPRINT_REGULAR': False, 'JSONIFY_MIMETYPE': 'application/json', 'TEMPLATES_AUTO_RELOAD': None, 'MAX_COOKIE_SIZE': 4093}>
+[2020-10-22 17:15:20 +0000] [58] [INFO] Starting gunicorn 20.0.4
+[2020-10-22 17:15:20 +0000] [58] [INFO] Listening at: http://0.0.0.0:6000 (58)
+[2020-10-22 17:15:20 +0000] [58] [INFO] Using worker: sync
+[2020-10-22 17:15:20 +0000] [6] [INFO] Starting gunicorn 20.0.4
+[2020-10-22 17:15:20 +0000] [6] [INFO] Listening at: http://0.0.0.0:9000 (6)
+[2020-10-22 17:15:20 +0000] [6] [INFO] Using worker: threads
+[2020-10-22 17:15:20 +0000] [61] [INFO] Booting worker with pid: 61
+[2020-10-22 17:15:20 +0000] [62] [INFO] Booting worker with pid: 62
+2020-10-22 17:15:20,606 - SKLearnServer:load:26 - INFO:  load
+2020-10-22 17:15:20,607 - root:download:31 - INFO:  Copying contents of /mnt/models to local
+2020-10-22 17:15:20,607 - SKLearnServer:load:30 - INFO:  model file: /mnt/models/model.joblib
+2020-10-22 17:22:20,560 - SKLearnServer:predict:41 - INFO:  Calling predict_proba
+127.0.0.1 - - [22/Oct/2020:17:22:20 +0000] "POST /predict HTTP/1.1" 200 95 "-" "python-requests/2.24.0"
+{"level":"info","ts":1603386920.8912108,"logger":"entrypoint","msg":"Hostname unset will use localhost"}
+{"level":"info","ts":1603386920.9105847,"logger":"entrypoint","msg":"Starting","worker":1}
+{"level":"info","ts":1603386920.9106727,"logger":"entrypoint","msg":"Starting","worker":2}
+{"level":"info","ts":1603386920.9106808,"logger":"entrypoint","msg":"Starting","worker":3}
+{"level":"info","ts":1603386920.9106858,"logger":"entrypoint","msg":"Starting","worker":4}
+{"level":"info","ts":1603386920.9106917,"logger":"entrypoint","msg":"Starting","worker":5}
+{"level":"info","ts":1603386920.911656,"logger":"entrypoint","msg":"Running http server ","port":8000}
+{"level":"info","ts":1603386920.911695,"logger":"entrypoint","msg":"Creating non-TLS listener","port":8000}
+{"level":"info","ts":1603386920.9125705,"logger":"SeldonRestApi","msg":"Listening","Address":"0.0.0.0:8000"}
+
+WARNING  root:seldon_e2e_utils.py:97 2020-10-22 17:20:24.250692: W tensorflow/stream_executor/platform/default/dso_loader.cc:59] Could not load dynamic library 'libcudart.so.10.1'; dlerror: libcudart.so.10.1: cannot open shared object file: No such file or directory
+2020-10-22 17:20:24.250747: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
+INFO:root:Extra args: {}
+INFO:root:Predict URL set to movie-movies-predictor.test-text-alibi-explainer:8000
+INFO:root:Protocol is seldon.http
+INFO:root:Anchor Text args {}
+INFO:root:Loading Spacy Language model for en_core_web_md
+Collecting en_core_web_md==2.3.1
+  Downloading https://github.com/explosion/spacy-models/releases/download/en_core_web_md-2.3.1/en_core_web_md-2.3.1.tar.gz (50.8 MB)
+Requirement already satisfied: spacy<2.4.0,>=2.3.0 in /opt/app-root/lib/python3.6/site-packages (from en_core_web_md==2.3.1) (2.3.2)
+Requirement already satisfied: srsly<1.1.0,>=1.0.2 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (1.0.2)
+Requirement already satisfied: thinc==7.4.1 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (7.4.1)
+Requirement already satisfied: requests<3.0.0,>=2.13.0 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (2.24.0)
+Requirement already satisfied: cymem<2.1.0,>=2.0.2 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (2.0.3)
+Requirement already satisfied: murmurhash<1.1.0,>=0.28.0 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (1.0.2)
+Requirement already satisfied: setuptools in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (39.2.0)
+Requirement already satisfied: blis<0.5.0,>=0.4.0 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (0.4.1)
+Requirement already satisfied: numpy>=1.15.0 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (1.19.2)
+Requirement already satisfied: catalogue<1.1.0,>=0.0.7 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (1.0.0)
+Requirement already satisfied: plac<1.2.0,>=0.9.6 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (1.1.3)
+Requirement already satisfied: wasabi<1.1.0,>=0.4.0 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (0.8.0)
+Requirement already satisfied: tqdm<5.0.0,>=4.38.0 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (4.50.2)
+Requirement already satisfied: preshed<3.1.0,>=3.0.2 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (3.0.2)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /opt/app-root/lib/python3.6/site-packages (from requests<3.0.0,>=2.13.0->spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (1.25.11)
+Requirement already satisfied: chardet<4,>=3.0.2 in /opt/app-root/lib/python3.6/site-packages (from requests<3.0.0,>=2.13.0->spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (3.0.4)
+Requirement already satisfied: idna<3,>=2.5 in /opt/app-root/lib/python3.6/site-packages (from requests<3.0.0,>=2.13.0->spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (2.10)
+Requirement already satisfied: certifi>=2017.4.17 in /opt/app-root/lib/python3.6/site-packages (from requests<3.0.0,>=2.13.0->spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (2020.6.20)
+Requirement already satisfied: importlib-metadata>=0.20; python_version < "3.8" in /opt/app-root/lib/python3.6/site-packages (from catalogue<1.1.0,>=0.0.7->spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (2.0.0)
+Requirement already satisfied: zipp>=0.5 in /opt/app-root/lib/python3.6/site-packages (from importlib-metadata>=0.20; python_version < "3.8"->catalogue<1.1.0,>=0.0.7->spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (3.3.1)
+Building wheels for collected packages: en-core-web-md
+  Building wheel for en-core-web-md (setup.py): started
+  Building wheel for en-core-web-md (setup.py): finished with status 'done'
+  Created wheel for en-core-web-md: filename=en_core_web_md-2.3.1-py3-none-any.whl size=50916647 sha256=e3e3f4533ae416269506d74bcd242418e738e039475a4d317bf8330ae175ffd0
+  Stored in directory: /tmp/pip-ephem-wheel-cache-c1puk_d2/wheels/52/35/5a/21d21ba55fc116713b5b84c0620e3ebdccb752021aefbeb90f
+Successfully built en-core-web-md
+Installing collected packages: en-core-web-md
+Successfully installed en-core-web-md-2.3.1
+[38;5;2m✔ Download and installation successful[0m
+You can now load the model via spacy.load('en_core_web_md')
+[38;5;2m✔ Linking successful[0m
+/opt/app-root/lib/python3.6/site-packages/en_core_web_md -->
+/opt/app-root/lib/python3.6/site-packages/spacy/data/en_core_web_md
+You can now load the model via spacy.load('en_core_web_md')
+INFO:root:Language model loaded
+INFO:root:Registering model:movie
+INFO:root:Listening on port 9000
+WARNING:tornado.access:404 GET /prometheus (10.244.1.14) 0.84ms
+
+WARNING  root:seldon_e2e_utils.py:230 Bad status:503
+WARNING  root:seldon_e2e_utils.py:230 Bad status:503
+WARNING  root:seldon_e2e_utils.py:230 Bad status:503
+WARNING  root:seldon_e2e_utils.py:230 Bad status:503
+WARNING  root:seldon_e2e_utils.py:97 [I 201022 17:15:11 initializer-entrypoint:13] Initializing, args: src_uri [gs://seldon-models/sklearn/moviesentiment] dest_path[ [/mnt/models]
+[I 201022 17:15:11 storage:35] Copying contents of gs://seldon-models/sklearn/moviesentiment to local
+[I 201022 17:15:12 storage:111] Downloading: /mnt/models/model.joblib
+[I 201022 17:15:12 storage:60] Successfully copied gs://seldon-models/sklearn/moviesentiment to /mnt/models
+starting microservice
+2020-10-22 17:15:19,874 - seldon_core.microservice:main:225 - INFO:  Starting microservice.py:main
+2020-10-22 17:15:19,874 - seldon_core.microservice:main:226 - INFO:  Seldon Core version: 1.3.0-dev
+2020-10-22 17:15:19,876 - seldon_core.microservice:main:332 - INFO:  Parse JAEGER_EXTRA_TAGS []
+2020-10-22 17:15:19,877 - seldon_core.microservice:load_annotations:143 - INFO:  Found annotation kubernetes.io/config.seen:2020-10-22T17:14:07.32720857Z 
+2020-10-22 17:15:19,877 - seldon_core.microservice:load_annotations:143 - INFO:  Found annotation kubernetes.io/config.source:api 
+2020-10-22 17:15:19,877 - seldon_core.microservice:load_annotations:143 - INFO:  Found annotation prometheus.io/path:/prometheus 
+2020-10-22 17:15:19,877 - seldon_core.microservice:load_annotations:143 - INFO:  Found annotation prometheus.io/scrape:true 
+2020-10-22 17:15:19,877 - seldon_core.microservice:main:335 - INFO:  Annotations: {'kubernetes.io/config.seen': '2020-10-22T17:14:07.32720857Z', 'kubernetes.io/config.source': 'api', 'prometheus.io/path': '/prometheus', 'prometheus.io/scrape': 'true'}
+2020-10-22 17:15:19,877 - seldon_core.microservice:main:339 - INFO:  Importing SKLearnServer
+2020-10-22 17:15:19,907 - SKLearnServer:__init__:21 - INFO:  Model uri: /mnt/models
+2020-10-22 17:15:19,907 - SKLearnServer:__init__:22 - INFO:  method: predict_proba
+2020-10-22 17:15:19,907 - SKLearnServer:load:26 - INFO:  load
+2020-10-22 17:15:19,907 - root:download:31 - INFO:  Copying contents of /mnt/models to local
+2020-10-22 17:15:19,907 - SKLearnServer:load:30 - INFO:  model file: /mnt/models/model.joblib
+/opt/conda/lib/python3.7/site-packages/sklearn/base.py:334: UserWarning: Trying to unpickle estimator CountVectorizer from version 0.20.3 when using version 0.23.2. This might lead to breaking code or invalid results. Use at your own risk.
+  UserWarning)
+/opt/conda/lib/python3.7/site-packages/sklearn/utils/deprecation.py:143: FutureWarning: The sklearn.linear_model.logistic module is  deprecated in version 0.22 and will be removed in version 0.24. The corresponding classes / functions should instead be imported from sklearn.linear_model. Anything that cannot be imported from sklearn.linear_model is now part of the private API.
+  warnings.warn(message, FutureWarning)
+/opt/conda/lib/python3.7/site-packages/sklearn/base.py:334: UserWarning: Trying to unpickle estimator LogisticRegression from version 0.20.3 when using version 0.23.2. This might lead to breaking code or invalid results. Use at your own risk.
+  UserWarning)
+/opt/conda/lib/python3.7/site-packages/sklearn/base.py:334: UserWarning: Trying to unpickle estimator Pipeline from version 0.20.3 when using version 0.23.2. This might lead to breaking code or invalid results. Use at your own risk.
+  UserWarning)
+2020-10-22 17:15:20,538 - seldon_core.microservice:main:413 - INFO:  REST gunicorn microservice running on port 9000
+2020-10-22 17:15:20,540 - seldon_core.microservice:main:474 - INFO:  REST metrics microservice running on port 6000
+2020-10-22 17:15:20,540 - seldon_core.microservice:main:484 - INFO:  Starting servers
+2020-10-22 17:15:20,553 - seldon_core.wrapper:_set_flask_app_configs:204 - INFO:  App Config:  <Config {'ENV': 'production', 'DEBUG': False, 'TESTING': False, 'PROPAGATE_EXCEPTIONS': None, 'PRESERVE_CONTEXT_ON_EXCEPTION': None, 'SECRET_KEY': None, 'PERMANENT_SESSION_LIFETIME': datetime.timedelta(days=31), 'USE_X_SENDFILE': False, 'SERVER_NAME': None, 'APPLICATION_ROOT': '/', 'SESSION_COOKIE_NAME': 'session', 'SESSION_COOKIE_DOMAIN': None, 'SESSION_COOKIE_PATH': None, 'SESSION_COOKIE_HTTPONLY': True, 'SESSION_COOKIE_SECURE': False, 'SESSION_COOKIE_SAMESITE': None, 'SESSION_REFRESH_EACH_REQUEST': True, 'MAX_CONTENT_LENGTH': None, 'SEND_FILE_MAX_AGE_DEFAULT': datetime.timedelta(seconds=43200), 'TRAP_BAD_REQUEST_ERRORS': None, 'TRAP_HTTP_EXCEPTIONS': False, 'EXPLAIN_TEMPLATE_LOADING': False, 'PREFERRED_URL_SCHEME': 'http', 'JSON_AS_ASCII': True, 'JSON_SORT_KEYS': True, 'JSONIFY_PRETTYPRINT_REGULAR': False, 'JSONIFY_MIMETYPE': 'application/json', 'TEMPLATES_AUTO_RELOAD': None, 'MAX_COOKIE_SIZE': 4093}>
+2020-10-22 17:15:20,560 - seldon_core.wrapper:_set_flask_app_configs:204 - INFO:  App Config:  <Config {'ENV': 'production', 'DEBUG': False, 'TESTING': False, 'PROPAGATE_EXCEPTIONS': None, 'PRESERVE_CONTEXT_ON_EXCEPTION': None, 'SECRET_KEY': None, 'PERMANENT_SESSION_LIFETIME': datetime.timedelta(days=31), 'USE_X_SENDFILE': False, 'SERVER_NAME': None, 'APPLICATION_ROOT': '/', 'SESSION_COOKIE_NAME': 'session', 'SESSION_COOKIE_DOMAIN': None, 'SESSION_COOKIE_PATH': None, 'SESSION_COOKIE_HTTPONLY': True, 'SESSION_COOKIE_SECURE': False, 'SESSION_COOKIE_SAMESITE': None, 'SESSION_REFRESH_EACH_REQUEST': True, 'MAX_CONTENT_LENGTH': None, 'SEND_FILE_MAX_AGE_DEFAULT': datetime.timedelta(seconds=43200), 'TRAP_BAD_REQUEST_ERRORS': None, 'TRAP_HTTP_EXCEPTIONS': False, 'EXPLAIN_TEMPLATE_LOADING': False, 'PREFERRED_URL_SCHEME': 'http', 'JSON_AS_ASCII': True, 'JSON_SORT_KEYS': True, 'JSONIFY_PRETTYPRINT_REGULAR': False, 'JSONIFY_MIMETYPE': 'application/json', 'TEMPLATES_AUTO_RELOAD': None, 'MAX_COOKIE_SIZE': 4093}>
+[2020-10-22 17:15:20 +0000] [58] [INFO] Starting gunicorn 20.0.4
+[2020-10-22 17:15:20 +0000] [58] [INFO] Listening at: http://0.0.0.0:6000 (58)
+[2020-10-22 17:15:20 +0000] [58] [INFO] Using worker: sync
+[2020-10-22 17:15:20 +0000] [6] [INFO] Starting gunicorn 20.0.4
+[2020-10-22 17:15:20 +0000] [6] [INFO] Listening at: http://0.0.0.0:9000 (6)
+[2020-10-22 17:15:20 +0000] [6] [INFO] Using worker: threads
+[2020-10-22 17:15:20 +0000] [61] [INFO] Booting worker with pid: 61
+[2020-10-22 17:15:20 +0000] [62] [INFO] Booting worker with pid: 62
+2020-10-22 17:15:20,606 - SKLearnServer:load:26 - INFO:  load
+2020-10-22 17:15:20,607 - root:download:31 - INFO:  Copying contents of /mnt/models to local
+2020-10-22 17:15:20,607 - SKLearnServer:load:30 - INFO:  model file: /mnt/models/model.joblib
+2020-10-22 17:22:20,560 - SKLearnServer:predict:41 - INFO:  Calling predict_proba
+127.0.0.1 - - [22/Oct/2020:17:22:20 +0000] "POST /predict HTTP/1.1" 200 95 "-" "python-requests/2.24.0"
+{"level":"info","ts":1603386920.8912108,"logger":"entrypoint","msg":"Hostname unset will use localhost"}
+{"level":"info","ts":1603386920.9105847,"logger":"entrypoint","msg":"Starting","worker":1}
+{"level":"info","ts":1603386920.9106727,"logger":"entrypoint","msg":"Starting","worker":2}
+{"level":"info","ts":1603386920.9106808,"logger":"entrypoint","msg":"Starting","worker":3}
+{"level":"info","ts":1603386920.9106858,"logger":"entrypoint","msg":"Starting","worker":4}
+{"level":"info","ts":1603386920.9106917,"logger":"entrypoint","msg":"Starting","worker":5}
+{"level":"info","ts":1603386920.911656,"logger":"entrypoint","msg":"Running http server ","port":8000}
+{"level":"info","ts":1603386920.911695,"logger":"entrypoint","msg":"Creating non-TLS listener","port":8000}
+{"level":"info","ts":1603386920.9125705,"logger":"SeldonRestApi","msg":"Listening","Address":"0.0.0.0:8000"}
+
+WARNING  root:seldon_e2e_utils.py:97 2020-10-22 17:20:24.250692: W tensorflow/stream_executor/platform/default/dso_loader.cc:59] Could not load dynamic library 'libcudart.so.10.1'; dlerror: libcudart.so.10.1: cannot open shared object file: No such file or directory
+2020-10-22 17:20:24.250747: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
+INFO:root:Extra args: {}
+INFO:root:Predict URL set to movie-movies-predictor.test-text-alibi-explainer:8000
+INFO:root:Protocol is seldon.http
+INFO:root:Anchor Text args {}
+INFO:root:Loading Spacy Language model for en_core_web_md
+Collecting en_core_web_md==2.3.1
+  Downloading https://github.com/explosion/spacy-models/releases/download/en_core_web_md-2.3.1/en_core_web_md-2.3.1.tar.gz (50.8 MB)
+Requirement already satisfied: spacy<2.4.0,>=2.3.0 in /opt/app-root/lib/python3.6/site-packages (from en_core_web_md==2.3.1) (2.3.2)
+Requirement already satisfied: srsly<1.1.0,>=1.0.2 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (1.0.2)
+Requirement already satisfied: thinc==7.4.1 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (7.4.1)
+Requirement already satisfied: requests<3.0.0,>=2.13.0 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (2.24.0)
+Requirement already satisfied: cymem<2.1.0,>=2.0.2 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (2.0.3)
+Requirement already satisfied: murmurhash<1.1.0,>=0.28.0 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (1.0.2)
+Requirement already satisfied: setuptools in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (39.2.0)
+Requirement already satisfied: blis<0.5.0,>=0.4.0 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (0.4.1)
+Requirement already satisfied: numpy>=1.15.0 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (1.19.2)
+Requirement already satisfied: catalogue<1.1.0,>=0.0.7 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (1.0.0)
+Requirement already satisfied: plac<1.2.0,>=0.9.6 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (1.1.3)
+Requirement already satisfied: wasabi<1.1.0,>=0.4.0 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (0.8.0)
+Requirement already satisfied: tqdm<5.0.0,>=4.38.0 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (4.50.2)
+Requirement already satisfied: preshed<3.1.0,>=3.0.2 in /opt/app-root/lib/python3.6/site-packages (from spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (3.0.2)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /opt/app-root/lib/python3.6/site-packages (from requests<3.0.0,>=2.13.0->spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (1.25.11)
+Requirement already satisfied: chardet<4,>=3.0.2 in /opt/app-root/lib/python3.6/site-packages (from requests<3.0.0,>=2.13.0->spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (3.0.4)
+Requirement already satisfied: idna<3,>=2.5 in /opt/app-root/lib/python3.6/site-packages (from requests<3.0.0,>=2.13.0->spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (2.10)
+Requirement already satisfied: certifi>=2017.4.17 in /opt/app-root/lib/python3.6/site-packages (from requests<3.0.0,>=2.13.0->spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (2020.6.20)
+Requirement already satisfied: importlib-metadata>=0.20; python_version < "3.8" in /opt/app-root/lib/python3.6/site-packages (from catalogue<1.1.0,>=0.0.7->spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (2.0.0)
+Requirement already satisfied: zipp>=0.5 in /opt/app-root/lib/python3.6/site-packages (from importlib-metadata>=0.20; python_version < "3.8"->catalogue<1.1.0,>=0.0.7->spacy<2.4.0,>=2.3.0->en_core_web_md==2.3.1) (3.3.1)
+Building wheels for collected packages: en-core-web-md
+  Building wheel for en-core-web-md (setup.py): started
+  Building wheel for en-core-web-md (setup.py): finished with status 'done'
+  Created wheel for en-core-web-md: filename=en_core_web_md-2.3.1-py3-none-any.whl size=50916647 sha256=e3e3f4533ae416269506d74bcd242418e738e039475a4d317bf8330ae175ffd0
+  Stored in directory: /tmp/pip-ephem-wheel-cache-c1puk_d2/wheels/52/35/5a/21d21ba55fc116713b5b84c0620e3ebdccb752021aefbeb90f
+Successfully built en-core-web-md
+Installing collected packages: en-core-web-md
+Successfully installed en-core-web-md-2.3.1
+[38;5;2m✔ Download and installation successful[0m
+You can now load the model via spacy.load('en_core_web_md')
+[38;5;2m✔ Linking successful[0m
+/opt/app-root/lib/python3.6/site-packages/en_core_web_md -->
+/opt/app-root/lib/python3.6/site-packages/spacy/data/en_core_web_md
+You can now load the model via spacy.load('en_core_web_md')
+INFO:root:Language model loaded
+INFO:root:Registering model:movie
+INFO:root:Listening on port 9000
+WARNING:tornado.access:404 GET /prometheus (10.244.1.14) 0.84ms
+===Flaky Test Report===
+
+test_rolling_deployment[graph1.json-graph2.json-True-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph5.json-True-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph7.json-graph8.json-False-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph3.json-True-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph5.json-True-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph7.json-graph8.json-False-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph3.json-True-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph8.json-True-istio] failed (2 runs remaining out of 3).
+	<class 'AssertionError'>
+	
+	[<TracebackEntry /workspace/source/testing/scripts/test_rolling_updates.py:226>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:611>]
+test_rolling_deployment[graph1.json-graph8.json-True-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph2.json-True-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph4.json-True-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph4.json-True-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph8.json-True-ambas] failed (2 runs remaining out of 3).
+	<class 'AssertionError'>
+	
+	[<TracebackEntry /workspace/source/testing/scripts/test_rolling_updates.py:226>, <TracebackEntry /workspace/source/testing/scripts/seldon_e2e_utils.py:611>]
+test_rolling_deployment[graph1.json-graph8.json-True-ambas] passed 1 out of the required 1 times. Success!
+
+===End Flaky Test Report===
+================== 3 failed, 32 passed in 3027.29s (0:50:27) ===================
+make: *** [Makefile:132: test_parallel] Error 1
+Test returned errors
+kind delete cluster
+Deleting cluster "kind" ...
+Stopping Docker: dockerProgram process in pidfile '/var/run/docker-ssd.pid', 1 process(es), refused to die.
+[31m
+Pipeline failed on stage 'end-to-end' : container 'step-test-end-to-end'. The execution of the pipeline has stopped.[0m
