@@ -11,7 +11,7 @@ setup(
     name="seldon-core",
     author="Seldon Technologies Ltd.",
     author_email="hello@seldon.io",
-    version="1.4.0-dev",
+    version="1.4.0-dev_20201022145329",
     description="Seldon Core client and microservice wrapper",
     url="https://github.com/SeldonIO/seldon-core",
     license="Apache 2.0",
