@@ -93,6 +93,8 @@ install_istio:
 	kubectl rollout status deployment.apps/istio-citadel -n istio-system
 	kubectl create -f ../resources/seldon-gateway.yaml -n istio-system
 
+install_keda:
+    kubectl apply -f https://github.com/kedacore/keda/releases/download/v2.0.0-beta/keda-2.0.0-beta.yaml
 
 create_namespaces:
 	kubectl create namespace seldon || echo "Namespace seldon already exists"
@@ -105,7 +107,7 @@ set_namespace:
 install_metrics:
 	kubectl apply -f metrics.yaml
 
-kind_setup: create_namespaces helm_setup install_ambassador install_istio install_jaeger install_seldon set_namespace install_metrics
+kind_setup: create_namespaces helm_setup install_ambassador install_istio install_keda install_jaeger install_seldon set_namespace install_metrics
 port-forward-ambassador:
 	kubectl port-forward $$(kubectl get pods -n seldon -l app.kubernetes.io/name=ambassador -o jsonpath='{.items[0].metadata.name}') -n seldon 8003:8080
 
