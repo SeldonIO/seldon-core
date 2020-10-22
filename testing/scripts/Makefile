@@ -94,7 +94,7 @@ install_istio:
 	kubectl create -f ../resources/seldon-gateway.yaml -n istio-system
 
 install_keda:
-    kubectl apply -f https://github.com/kedacore/keda/releases/download/v2.0.0-beta/keda-2.0.0-beta.yaml
+	kubectl apply -f https://github.com/kedacore/keda/releases/download/v2.0.0-beta/keda-2.0.0-beta.yaml
 
 create_namespaces:
 	kubectl create namespace seldon || echo "Namespace seldon already exists"
