@@ -87,7 +87,15 @@ class TestNotebooks(object):
     #
 
     def test_keda_prom_auto_scale(self):
-        create_and_run_script("../../examples/keda", "keda_prom_auto_scale")
+        try:
+            create_and_run_script("../../examples/keda", "keda_prom_auto_scale")
+        except CalledProcessError as e:
+            run(
+                f"helm delete seldon-core-analytics --namespace seldon-system",
+                shell=True,
+                check=False,
+            )
+            raise e
 
     #
     # Misc

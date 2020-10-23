@@ -1675,8 +1675,9 @@ func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinele
 // +kubebuilder:rbac:groups=networking.istio.io,resources=destinationrules/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=autoscaling,resources=horizontalpodautoscalers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=autoscaling,resources=horizontalpodautoscalers/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=keda.sh/v1alpha1,resources=ScaledObject,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=keda.sh/v1alpha1,resources=ScaledObject/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=keda.sh,resources=scaledobjects,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=keda.sh,resources=scaledobjects/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=keda.sh,resources=scaledobjects/finalizers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=policy,resources=poddisruptionbudgets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=policy,resources=poddisruptionbudgets/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=machinelearning.seldon.io,resources=seldondeployments,verbs=get;list;watch;create;update;patch;delete
