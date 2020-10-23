@@ -14,7 +14,7 @@ RUN yum install -y java-11-openjdk.x86_64
 
 LABEL name="Seldon Engine" \
       vendor="Seldon Technologies" \
-      version="1.4.0-dev" \
+      version="1.4.0-dev_20201023153109" \
       release="1" \
       summary="The Seldon Engine that is deployed for each model to handle the data flow of each ML computational graph." \
       description="The Seldon Engine that is deployed for each model to handle the data flow of each ML computational graph."
