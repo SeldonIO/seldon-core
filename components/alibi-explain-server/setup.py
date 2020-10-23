@@ -32,7 +32,7 @@ setup(
     packages=find_packages("alibiexplainer"),
     install_requires=[
         "kfserving>=0.3.0",
-        "alibi==0.5.2",
+        "alibi==0.5.5",
         "scikit-learn>= 0.23.0",
         "argparse>=1.4.0",
         "requests>=2.22.0",
@@ -40,7 +40,7 @@ setup(
         "dill>=0.3.0",
         "grpcio>=1.22.0",
         "xgboost==1.0.2",
-        "shap==0.35.0"
+        "shap==0.36.0"
     ],
     tests_require=tests_require,
     extras_require={'test': tests_require}

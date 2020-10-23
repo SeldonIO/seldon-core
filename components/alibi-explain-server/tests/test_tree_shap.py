@@ -5,11 +5,11 @@ import dill
 from alibi.datasets import fetch_adult
 import numpy as np
 import json
-ADULT_EXPLAINER_URI = "gs://seldon-models/xgboost/adult/tree_shap_py36_0.5.2"
+ADULT_EXPLAINER_URI = "gs://seldon-models/xgboost/adult/tree_shap_py368_alibi_0.5.5"
 EXPLAINER_FILENAME = "explainer.dill"
 
 
-def test_kernel_shap():
+def test_tree_shap():
     os.environ.clear()
     alibi_model = os.path.join(
         kfserving.Storage.download(ADULT_EXPLAINER_URI), EXPLAINER_FILENAME

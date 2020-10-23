@@ -4,7 +4,6 @@ import alibi
 from alibi.api.interfaces import Explanation
 from alibiexplainer.explainer_wrapper import ExplainerWrapper
 from alibiexplainer.constants import SELDON_LOGLEVEL
-from shap.common import Model
 from typing import Callable, List, Optional
 
 logging.basicConfig(level=SELDON_LOGLEVEL)
@@ -26,7 +25,6 @@ class KernelShap(ExplainerWrapper):
     def explain(self, inputs: List) -> Explanation:
         arr = np.array(inputs)
         self.kernel_shap.predictor = self.predict_fn
-        self.kernel_shap._explainer.model = Model(self.predict_fn,None)
         logging.info("kernel Shap call with %s", self.kwargs)
         logging.info("kernel shap data shape %s",arr.shape)
         shap_exp = self.kernel_shap.explain(arr, l1_reg=False, **self.kwargs)
