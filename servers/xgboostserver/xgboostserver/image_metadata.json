@@ -1,1 +1,1 @@
-{"labels": [{"name": "Seldon XGBoost Server"}, {"vendor": "Seldon Technologies"}, {"version": "1.4.0-dev"}, {"release": "1"}, {"summary": "A XGBoost Model Server for Seldon Core"}, {"description": "The model server for XGBoost models"}]}
+{"labels": [{"name": "Seldon XGBoost Server"}, {"vendor": "Seldon Technologies"}, {"version": "1.4.0-dev_20201023092145"}, {"release": "1"}, {"summary": "A XGBoost Model Server for Seldon Core"}, {"description": "The model server for XGBoost models"}]}

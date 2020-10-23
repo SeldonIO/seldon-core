@@ -5,7 +5,7 @@ train:
 	python train.py
 
 build_image:
-	s2i build -E environment_rest . seldonio/seldon-core-s2i-python3:1.4.0-dev ${IMAGE_NAME}:${IMAGE_VERSION}
+	s2i build -E environment_rest . seldonio/seldon-core-s2i-python3:1.4.0-dev_20201023092145 ${IMAGE_NAME}:${IMAGE_VERSION}
 
 push_image:
 	docker push $(IMAGE_NAME):$(IMAGE_VERSION)
