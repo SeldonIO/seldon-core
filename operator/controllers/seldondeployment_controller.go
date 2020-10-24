@@ -157,9 +157,7 @@ func createHpa(podSpec *machinelearningv1.SeldonPodSpec, deploymentName string, 
 func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 	seldonId string,
 	namespace string,
-	ports []httpGrpcPorts,
-	httpAllowed bool,
-	grpcAllowed bool) ([]*istio.VirtualService, []*istio.DestinationRule, error) {
+	ports []httpGrpcPorts) ([]*istio.VirtualService, []*istio.DestinationRule, error) {
 
 	istio_gateway := utils.GetEnv(ENV_ISTIO_GATEWAY, "seldon-gateway")
 	istioTLSMode := utils.GetEnv(ENV_ISTIO_TLS_MODE, "")
@@ -327,20 +325,11 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 	httpVsvc.Spec.Http[0].Route = routesHttp
 	grpcVsvc.Spec.Http[0].Route = routesGrpc
 
-	if httpAllowed && grpcAllowed {
-		vscs := make([]*istio.VirtualService, 2)
-		vscs[0] = httpVsvc
-		vscs[1] = grpcVsvc
-		return vscs, drules, nil
-	} else if httpAllowed {
-		vscs := make([]*istio.VirtualService, 1)
-		vscs[0] = httpVsvc
-		return vscs, drules, nil
-	} else {
-		vscs := make([]*istio.VirtualService, 1)
-		vscs[0] = grpcVsvc
-		return vscs, drules, nil
-	}
+	vscs := make([]*istio.VirtualService, 2)
+	vscs[0] = httpVsvc
+	vscs[1] = grpcVsvc
+	return vscs, drules, nil
+
 }
 
 func getEngineHttpPort() (engine_http_port int, err error) {
@@ -390,24 +379,6 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 	// If one of the predictors has noEngine then only one of http or grpc should be allowed dependent on
 	// the type of the noEngine model: whether it is http or grpc
 	externalPorts := make([]httpGrpcPorts, len(mlDep.Spec.Predictors))
-	grpcAllowed := true
-	httpAllowed := true
-	// Attempt to set httpAllowed and grpcAllowed to false if we have an noEngine predictor
-	for i := 0; i < len(mlDep.Spec.Predictors); i++ {
-		p := mlDep.Spec.Predictors[i]
-		noEngine := strings.ToLower(p.Annotations[machinelearningv1.ANNOTATION_NO_ENGINE]) == "true"
-		if noEngine && len(p.ComponentSpecs) > 0 && len(p.ComponentSpecs[0].Spec.Containers) > 0 {
-			pu := machinelearningv1.GetPredictiveUnit(&p.Graph, p.ComponentSpecs[0].Spec.Containers[0].Name)
-			if pu != nil {
-				if pu.Endpoint != nil && pu.Endpoint.Type == machinelearningv1.GRPC {
-					httpAllowed = false
-				}
-				if pu.Endpoint == nil || pu.Endpoint.Type == machinelearningv1.REST {
-					grpcAllowed = false
-				}
-			}
-		}
-	}
 
 	for i := 0; i < len(mlDep.Spec.Predictors); i++ {
 		p := mlDep.Spec.Predictors[i]
@@ -497,40 +468,23 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 						deploy.Spec.Selector.MatchLabels[machinelearningv1.Label_seldon_app] = pSvcName
 						deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_seldon_app] = pSvcName
 
-						port := int(svc.Spec.Ports[0].Port)
+						httpPort := int(svc.Spec.Ports[0].Port)
+						grpcPort := int(svc.Spec.Ports[1].Port)
 
-						if svc.Spec.Ports[0].Name == "grpc" {
-							httpAllowed = false
-							externalPorts[i] = httpGrpcPorts{httpPort: 0, grpcPort: port}
-							psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, 0, port, false, log)
-							if err != nil {
-								return nil, err
-							}
-							psvc = addLabelsToService(psvc, pu, &p)
-
-							c.services = append(c.services, psvc)
-
-							c.serviceDetails[pSvcName] = &machinelearningv1.ServiceStatus{
-								SvcName:      pSvcName,
-								GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(port),
-							}
-						} else {
-							externalPorts[i] = httpGrpcPorts{httpPort: port, grpcPort: 0}
-							grpcAllowed = false
-							psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, port, 0, false, log)
-							if err != nil {
-								return nil, err
-							}
-							psvc = addLabelsToService(psvc, pu, &p)
-
-							c.services = append(c.services, psvc)
-
-							c.serviceDetails[pSvcName] = &machinelearningv1.ServiceStatus{
-								SvcName:      pSvcName,
-								HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(port),
-							}
+						externalPorts[i] = httpGrpcPorts{httpPort: httpPort, grpcPort: grpcPort}
+						psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, httpPort, grpcPort, false, log)
+						if err != nil {
+							return nil, err
 						}
+						psvc = addLabelsToService(psvc, pu, &p)
 
+						c.services = append(c.services, psvc)
+
+						c.serviceDetails[pSvcName] = &machinelearningv1.ServiceStatus{
+							SvcName:      pSvcName,
+							HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(httpPort),
+							GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(grpcPort),
+						}
 					}
 				}
 			}
@@ -593,41 +547,20 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 				}
 			}
 
-			//Create Service for Predictor - exposed externally (ambassador or istio) and points at engine
-			httpPort := engine_http_port
-			if httpAllowed == false {
-				httpPort = 0
-			}
-			grpcPort := engine_grpc_port
-			if grpcAllowed == false {
-				grpcPort = 0
-			}
-			psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, httpPort, grpcPort, false, log)
+			psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, engine_http_port, engine_grpc_port, false, log)
 			if err != nil {
 
 				return nil, err
 			}
 
 			c.services = append(c.services, psvc)
-			if httpAllowed && grpcAllowed {
-				c.serviceDetails[pSvcName] = &machinelearningv1.ServiceStatus{
-					SvcName:      pSvcName,
-					HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_http_port),
-					GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_grpc_port),
-				}
-			} else if httpAllowed {
-				c.serviceDetails[pSvcName] = &machinelearningv1.ServiceStatus{
-					SvcName:      pSvcName,
-					HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_http_port),
-				}
-			} else if grpcAllowed {
-				c.serviceDetails[pSvcName] = &machinelearningv1.ServiceStatus{
-					SvcName:      pSvcName,
-					GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_grpc_port),
-				}
+			c.serviceDetails[pSvcName] = &machinelearningv1.ServiceStatus{
+				SvcName:      pSvcName,
+				HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_http_port),
+				GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_grpc_port),
 			}
 
-			externalPorts[i] = httpGrpcPorts{httpPort: httpPort, grpcPort: grpcPort}
+			externalPorts[i] = httpGrpcPorts{httpPort: engine_http_port, grpcPort: engine_grpc_port}
 		}
 
 		ei := NewExplainerInitializer(ctx, r.ClientSet)
@@ -645,7 +578,7 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 
 	//TODO Fixme - not changed to handle per predictor scenario
 	if utils.GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
-		vsvcs, dstRule, err := createIstioResources(mlDep, seldonId, namespace, externalPorts, httpAllowed, grpcAllowed)
+		vsvcs, dstRule, err := createIstioResources(mlDep, seldonId, namespace, externalPorts)
 		if err != nil {
 			return nil, err
 		}

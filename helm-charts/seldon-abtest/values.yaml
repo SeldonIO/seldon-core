@@ -1,21 +1,16 @@
-protocol: REST
 separate_pods: true
 modela:
   image:
     name: seldonio/mock_classifier
-    version: 1.3
+    version: 1.3.0-dev
   name: classifier-1
 #  resources: { "requests": { "memory": "1Mi" }}
 modelb:
   image:
     name: seldonio/mock_classifier
-    version: 1.3
+    version: 1.3.0-dev
   name: classifier-2
 traffic_modela_percentage: 0.5
 replicas: 1
-# Add oauth key and secret if using the default API Oauth Gateway for ingress
-oauth:
-  key: 
-  secret:
 predictor:
   name: default

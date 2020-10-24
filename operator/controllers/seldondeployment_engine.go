@@ -207,16 +207,6 @@ func getSvcOrchUser(mlDep *machinelearningv1.SeldonDeployment) (*int64, error) {
 }
 
 func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, predictorB64 string, http_port int, grpc_port int, resources *corev1.ResourceRequirements) (*corev1.Container, error) {
-	transport := mlDep.Spec.Transport
-	//Backwards compatible with older resources
-	if transport == "" {
-		if p.Graph.Endpoint.Type == machinelearningv1.GRPC {
-			transport = machinelearningv1.TransportGrpc
-		} else {
-			transport = machinelearningv1.TransportRest
-		}
-	}
-
 	protocol := mlDep.Spec.Protocol
 	//Backwards compatibility for older resources
 	if protocol == "" {
@@ -250,7 +240,6 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 			"--predictor", p.Name,
 			"--http_port", strconv.Itoa(http_port),
 			"--grpc_port", strconv.Itoa(grpc_port),
-			"--transport", string(transport),
 			"--protocol", string(protocol),
 			"--prometheus_path", getPrometheusPath(mlDep),
 			"--server_type", string(serverType),

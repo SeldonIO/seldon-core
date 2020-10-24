@@ -68,10 +68,8 @@ function build_push_engine {
 function build_push_mock {
     make \
 	-C examples/models/mean_classifier \
-	build_rest \
-	build_grpc \
-	push_rest \
-	push_grpc
+	build \
+	push
     MOCK_MODEL_EXIT_VALUE=$?
 }
 
@@ -139,6 +137,14 @@ function build_push_storage_initializer {
     STORAGE_INITIALIZER_EXIT_VALUE=$?
 }
 
+function build_push_mab {
+    make \
+	-C components/routers/epsilon-greedy \
+        build \
+	push 
+    MAB_EXIT_VALUE=$?
+}
+
 
 build_push_python
 build_push_operator
@@ -153,6 +159,7 @@ build_push_xgboostserver
 build_push_tfproxy
 build_push_alibi_explainer
 build_push_storage_initializer
+build_push_mab
 
 #######################################
 # EXIT STOPS COMMANDS FROM HERE ONWARDS
@@ -171,6 +178,7 @@ echo "Mock model exit value: $MOCK_MODEL_EXIT_VALUE"
 echo "Alibi Detect exit value: $ALIBI_DETECT_EXIT_VALUE"
 echo "Request Logger exit value: $LOGGER_EXIT_VALUE"
 echo "Tensorflow Proxy exit value: $TFPROXY_EXIT_VALUE"
+echo "MAB exit value: $MAB_EXIT_VALUE"
 
 exit $((${PYTHON_EXIT_VALUE} \
     + ${OPERATOR_EXIT_VALUE} \
@@ -184,6 +192,7 @@ exit $((${PYTHON_EXIT_VALUE} \
     + ${XGBOOST_EXIT_VALUE} \
     + ${TFPROXY_EXIT_VALUE} \
     + ${STORAGE_INITIALIZER_EXIT_VALUE} \
+    + ${MAB_EXIT_VALUE} \    
     + ${EXPLAIN_EXIT_VALUE}))
 
 

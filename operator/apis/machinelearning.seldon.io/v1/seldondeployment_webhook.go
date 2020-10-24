@@ -128,22 +128,17 @@ func (r *SeldonDeploymentSpec) setContainerPredictiveUnitDefaults(compSpecIdx in
 	p *PredictorSpec, pu *PredictiveUnit, con *corev1.Container) {
 
 	if pu.Endpoint == nil {
-		if r.Transport == TransportGrpc {
-			pu.Endpoint = &Endpoint{Type: GRPC}
-		} else {
-			pu.Endpoint = &Endpoint{Type: REST}
-		}
-	}
-	var portType string
-	if pu.Endpoint.Type == GRPC {
-		portType = constants.GrpcPortName
-	} else {
-		portType = constants.HttpPortName
+		pu.Endpoint = &Endpoint{}
 	}
 
-	existingPort := GetPort(portType, con.Ports)
-	if existingPort != nil {
-		portNumHttp = existingPort.ContainerPort
+	existingHttpPort := GetPort(constants.HttpPortName, con.Ports)
+	if existingHttpPort != nil {
+		portNumHttp = existingHttpPort.ContainerPort
+	}
+
+	existingGrpcPort := GetPort(constants.GrpcPortName, con.Ports)
+	if existingGrpcPort != nil {
+		portNumGrpc = existingGrpcPort.ContainerPort
 	}
 
 	volFound := false

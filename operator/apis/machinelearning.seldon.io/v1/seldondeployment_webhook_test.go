@@ -211,7 +211,7 @@ func TestValidateBadTransport(t *testing.T) {
 	g.Expect(err).ToNot(BeNil())
 	serr := err.(*errors.StatusError)
 	g.Expect(serr.Status().Code).To(Equal(int32(422)))
-	g.Expect(len(serr.Status().Details.Causes)).To(Equal(2))
+	g.Expect(len(serr.Status().Details.Causes)).To(Equal(1))
 	g.Expect(serr.Status().Details.Causes[0].Type).To(Equal(v12.CauseTypeFieldValueInvalid))
 	g.Expect(serr.Status().Details.Causes[0].Field).To(Equal("spec"))
 }
@@ -384,7 +384,6 @@ func TestDefaultSingleContainer(t *testing.T) {
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstHttpPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
-	g.Expect(pu.Endpoint.Type).To(Equal(REST))
 
 	// Volumes
 	volFound := false
@@ -445,13 +444,11 @@ func TestMetricsPortAddedTwoContainers(t *testing.T) {
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstHttpPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
-	g.Expect(pu.Endpoint.Type).To(Equal(REST))
 
 	pu = GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier2")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstHttpPortNumber + 1))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
-	g.Expect(pu.Endpoint.Type).To(Equal(REST))
 
 	// Volumes
 	volFound := false
@@ -528,7 +525,6 @@ func TestMetricsPortAddedTwoComponentSpecsTwoContainers(t *testing.T) {
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstHttpPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
-	g.Expect(pu.Endpoint.Type).To(Equal(REST))
 
 	pu = GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier2")
 	g.Expect(pu).ToNot(BeNil())
@@ -536,7 +532,6 @@ func TestMetricsPortAddedTwoComponentSpecsTwoContainers(t *testing.T) {
 	containerServiceValue := GetContainerServiceName(name, spec.Predictors[0], &spec.Predictors[0].ComponentSpecs[1].Spec.Containers[0])
 	dnsName := containerServiceValue + "." + namespace + constants.DNSClusterLocalSuffix
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(dnsName))
-	g.Expect(pu.Endpoint.Type).To(Equal(REST))
 
 	// Volumes
 	volFound := false
@@ -586,7 +581,6 @@ func TestOverrideMetricsPortName(t *testing.T) {
 	// Graph
 	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
-	g.Expect(pu.Endpoint.Type).To(Equal(REST))
 	g.Expect(*pu.Type).To(Equal(MODEL))
 }
 
@@ -629,7 +623,6 @@ func TestPortUseExisting(t *testing.T) {
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(containerPortAPI))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
-	g.Expect(pu.Endpoint.Type).To(Equal(REST))
 }
 
 func TestMetricsPortAddedToPrepacked(t *testing.T) {
@@ -693,7 +686,6 @@ func TestPredictorProtocolGrpc(t *testing.T) {
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstHttpPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
-	g.Expect(pu.Endpoint.Type).To(Equal(GRPC))
 }
 
 func TestPrepackedWithExistingContainer(t *testing.T) {
@@ -738,7 +730,6 @@ func TestPrepackedWithExistingContainer(t *testing.T) {
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstHttpPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
-	g.Expect(pu.Endpoint.Type).To(Equal(GRPC))
 }
 
 func TestPrepackedWithCustom(t *testing.T) {
@@ -773,7 +764,6 @@ func TestPrepackedWithCustom(t *testing.T) {
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstHttpPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
-	g.Expect(pu.Endpoint.Type).To(Equal(GRPC))
 }
 
 func TestPrepackedWithExistingContainerAndImage(t *testing.T) {
@@ -821,7 +811,6 @@ func TestPrepackedWithExistingContainerAndImage(t *testing.T) {
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstHttpPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
-	g.Expect(pu.Endpoint.Type).To(Equal(GRPC))
 }
 
 func TestMetricsPortAddedToTwoPrepacked(t *testing.T) {
@@ -861,13 +850,11 @@ func TestMetricsPortAddedToTwoPrepacked(t *testing.T) {
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstHttpPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
-	g.Expect(pu.Endpoint.Type).To(Equal(REST))
 
 	pu = GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier2")
 	g.Expect(pu).ToNot(BeNil())
 	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstHttpPortNumber + 1))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
-	g.Expect(pu.Endpoint.Type).To(Equal(REST))
 }
 
 func TestDefaultPrepackagedServerType(t *testing.T) {
@@ -892,7 +879,6 @@ func TestDefaultPrepackagedServerType(t *testing.T) {
 	// Graph
 	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
-	g.Expect(pu.Endpoint.Type).To(Equal(REST))
 	g.Expect(*pu.Type).To(Equal(MODEL))
 }
 

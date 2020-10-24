@@ -432,29 +432,11 @@ func getAmbassadorConfigs(mlDep *machinelearningv1.SeldonDeployment, p *machinel
 			return "", err
 		}
 
-		// Return the appropriate set of config based on whether http and/or grpc is active
-		if engine_http_port > 0 && engine_grpc_port > 0 {
-			if utils.GetEnv("AMBASSADOR_SINGLE_NAMESPACE", "false") == "true" {
-				return YAML_SEP + cRestGlobal + YAML_SEP + cGrpcGlobal + YAML_SEP + cTLSGlobal + YAML_SEP + cRestNamespaced + YAML_SEP + cGrpcNamespaced + YAML_SEP + cTLSNamespaced, nil
-			} else {
-				return YAML_SEP + cRestGlobal + YAML_SEP + cGrpcGlobal + YAML_SEP + cTLSGlobal, nil
-			}
-		} else if engine_http_port > 0 {
-			if utils.GetEnv("AMBASSADOR_SINGLE_NAMESPACE", "false") == "true" {
-				return YAML_SEP + cRestGlobal + YAML_SEP + cTLSGlobal + YAML_SEP + cRestNamespaced + YAML_SEP + cTLSNamespaced, nil
-			} else {
-				return YAML_SEP + YAML_SEP + cRestGlobal + YAML_SEP + cTLSGlobal, nil
-			}
-		} else if engine_grpc_port > 0 {
-			if utils.GetEnv("AMBASSADOR_SINGLE_NAMESPACE", "false") == "true" {
-				return YAML_SEP + YAML_SEP + cGrpcGlobal + cTLSGlobal + YAML_SEP + cGrpcNamespaced + YAML_SEP + cTLSNamespaced, nil
-			} else {
-				return YAML_SEP + cGrpcGlobal + YAML_SEP + cTLSGlobal, nil
-			}
+		if utils.GetEnv("AMBASSADOR_SINGLE_NAMESPACE", "false") == "true" {
+			return YAML_SEP + cRestGlobal + YAML_SEP + cGrpcGlobal + YAML_SEP + cTLSGlobal + YAML_SEP + cRestNamespaced + YAML_SEP + cGrpcNamespaced + YAML_SEP + cTLSNamespaced, nil
 		} else {
-			return "", nil
+			return YAML_SEP + cRestGlobal + YAML_SEP + cGrpcGlobal + YAML_SEP + cTLSGlobal, nil
 		}
-
 	}
 
 }

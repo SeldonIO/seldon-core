@@ -13,3 +13,12 @@ income_explainer.yaml
 wine_explainer.yaml
 imagenet_explainer_grpc.yaml
 mnist_rest_explainer.yaml
+model2.yaml
+model_seldon.yaml
+model_structural_test.yaml
+model_tfserving.yaml
+model_tracing.yaml
+model_v2.yaml
+model_v2_mnist.yaml
+tracing_config.yaml
+							

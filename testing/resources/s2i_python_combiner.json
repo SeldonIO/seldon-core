@@ -6,20 +6,18 @@
     },
     "spec": {
         "name": "mycombiner",
-        "oauth_key": "oauth-key",
-        "oauth_secret": "oauth-secret",
         "predictors": [
             {
                 "componentSpecs": [{
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/testmodel_rest:0.1",
+                                "image": "seldonio/testmodel:0.1",
                                 "imagePullPolicy": "Never",
                                 "name": "model"
                             },
                             {
-                                "image": "seldonio/testcombiner_rest:0.1",
+                                "image": "seldonio/testcombiner:0.1",
                                 "imagePullPolicy": "Never",
                                 "name": "combiner"
                             }
@@ -29,18 +27,12 @@
                 }],
                 "graph": {
                     "children": [{
-			"children": [],
-			"name": "model",
-			"endpoint": {
-                            "type" : "REST"
-			},
-			"type": "MODEL"
+                        "children": [],
+                        "name": "model",
+                        "type": "MODEL"
                     }],
                     "name": "combiner",
-                    "endpoint": {
-                        "type" : "REST"
-                    },
-		    "type": "COMBINER"
+                    "type": "COMBINER"
                 },
                 "name": "mycombiner",
                 "replicas": 1
