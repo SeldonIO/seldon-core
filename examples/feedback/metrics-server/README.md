@@ -118,6 +118,9 @@ spec:
       app: seldon-multiclass-model-metrics
   template:
     metadata:
+      annotations:
+        prometheus.io/path: "/v1/metrics"
+        prometheus.io/scrape: "true"
       labels:
         app: seldon-multiclass-model-metrics
     spec:
@@ -152,6 +155,10 @@ spec:
           value: "alibi-detect-server:1.3.0-dev"
         - name: "PREDICTOR_ID"
           value: "default"
+        ports:
+        - containerPort: 8080
+          name: metrics
+          protocol: TCP
 ---
 apiVersion: v1
 kind: Service
@@ -209,6 +216,8 @@ spec:
     metadata:
       annotations:
         autoscaling.knative.dev/minScale: "1"
+        prometheus.io/path: "/v1/metrics"
+        prometheus.io/scrape: "true"
     spec:
       containers:
       - image: "seldonio/alibi-detect-server:1.3.0-dev"
@@ -237,6 +246,10 @@ spec:
           value: "alibi-detect-server:1.3.0-dev"
         - name: "PREDICTOR_ID"
           value: "default"
+        ports:
+        - containerPort: 8080
+          name: metrics
+          protocol: TCP
         securityContext:
             runAsUser: 8888
 ```

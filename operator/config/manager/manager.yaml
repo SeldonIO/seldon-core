@@ -76,7 +76,7 @@ spec:
         - name: AMBASSADOR_SINGLE_NAMESPACE
           value: "false"
         - name: ENGINE_CONTAINER_IMAGE_AND_VERSION
-          value: docker.io/seldonio/engine:1.3.0-dev
+          value: docker.io/seldonio/engine:1.4.0-dev
         - name: ENGINE_CONTAINER_IMAGE_PULL_POLICY
           value: IfNotPresent
         - name: ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME
@@ -99,6 +99,8 @@ spec:
           value: "/prometheus"
         - name: ISTIO_ENABLED
           value: "false"
+        - name: KEDA_ENABLED
+          value: "false"
         - name: ISTIO_GATEWAY
           value: istio-system/seldon-gateway
         - name: ISTIO_TLS_MODE
@@ -106,7 +108,7 @@ spec:
         - name: USE_EXECUTOR
           value: "true"
         - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
-          value: seldonio/seldon-core-executor:1.3.0-dev
+          value: seldonio/seldon-core-executor:1.4.0-dev
         - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
           value: IfNotPresent
         - name: EXECUTOR_PROMETHEUS_PATH
@@ -123,6 +125,22 @@ spec:
           value: "http://default-broker"
         - name: DEFAULT_USER_ID
           value: ''
+        - name: EXECUTOR_DEFAULT_CPU_REQUEST
+          value: "0.5"
+        - name: EXECUTOR_DEFAULT_MEMORY_REQUEST
+          value: "512Mi"
+        - name: EXECUTOR_DEFAULT_CPU_LIMIT
+          value: "0.5"
+        - name: EXECUTOR_DEFAULT_MEMORY_LIMIT
+          value: "512Mi"
+        - name: ENGINE_DEFAULT_CPU_REQUEST
+          value: "0.5"
+        - name: ENGINE_DEFAULT_MEMORY_REQUEST
+          value: "512Mi"
+        - name: ENGINE_DEFAULT_CPU_LIMIT
+          value: "0.5"
+        - name: ENGINE_DEFAULT_MEMORY_LIMIT
+          value: "512Mi"
         image: controller:latest
         name: manager
         resources:

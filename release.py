@@ -126,14 +126,14 @@ def update_operator_values_yaml_file_core_images(fpath, seldon_core_version, deb
         print(err)
 
 
-def update_operator_values_yaml_file_prepackaged_images(fpath, seldon_core_version, debug=False):
+def update_operator_values_yaml_file_prepackaged_images(current_seldon_core_version, fpath, seldon_core_version, debug=False):
     fpath = os.path.realpath(fpath)
     if debug:
         print("processing [{}]".format(fpath))
     args = [
         "sed",
         "-i",
-        "s/defaultImageVersion: \(.*\)/defaultImageVersion: \"{seldon_core_version}\"/".format(
+        "s/defaultImageVersion: \"{current_seldon_core_version}\"/defaultImageVersion: \"{seldon_core_version}\"/".format(
             **locals()
         ),
         fpath,
@@ -170,14 +170,14 @@ def update_operator_values_yaml_file_explainer_image(fpath, seldon_core_version,
 
 
 
-def update_operator_kustomize_prepackaged_images(fpath, seldon_core_version, debug=False):
+def update_operator_kustomize_prepackaged_images(current_seldon_core_version, fpath, seldon_core_version, debug=False):
     fpath = os.path.realpath(fpath)
     if debug:
         print("processing [{}]".format(fpath))
     args = [
         "sed",
         "-i",
-        "s/\"defaultImageVersion\": \(.*\)/\"defaultImageVersion\": \"{seldon_core_version}\"/".format(
+        "s/\"defaultImageVersion\": \"{current_seldon_core_version}\"/\"defaultImageVersion\": \"{seldon_core_version}\"/".format(
             **locals()
         ),
         fpath,
@@ -197,6 +197,11 @@ def update_versions_txt(seldon_core_version, debug=False):
         f.write("{seldon_core_version}\n".format(**locals()))
     print("Updated version.txt")
 
+def get_current_version():
+    with open("version.txt", "r") as f:
+        version = f.read()
+        print("Current version fron version.txt", version)
+        return version.strip()
 
 def update_versions_py(seldon_core_version, debug=False):
     # Updating the version in setup.py
@@ -333,6 +338,7 @@ def update_python_wrapper_fixed_versions(seldon_core_version, debug=False):
         print(err)
 
 def set_version(
+    current_seldon_core_version,
     seldon_core_version,
     pom_files,
     chart_yaml_files,
@@ -385,7 +391,7 @@ def set_version(
 
     if operator_values_yaml_file != None:
         update_operator_values_yaml_file_prepackaged_images(
-           operator_values_yaml_file_realpath, seldon_core_version, debug
+           current_seldon_core_version, operator_values_yaml_file_realpath, seldon_core_version, debug
         )
         update_operator_values_yaml_file_explainer_image(
            operator_values_yaml_file_realpath, seldon_core_version, debug
@@ -394,7 +400,7 @@ def set_version(
 
     if operator_kustomize_yaml_file != None:
         update_operator_kustomize_prepackaged_images(
-           operator_kustomize_yaml_file_realpath, seldon_core_version, debug
+           current_seldon_core_version, operator_kustomize_yaml_file_realpath, seldon_core_version, debug
         )
 
     # Update image version labels
@@ -413,9 +419,11 @@ def main(argv):
     OPERATOR_KUSTOMIZE_CONFIGMAP = "operator/config/manager/configmap.yaml"
 
     opts = getOpts(argv[1:])
+    current_version = get_current_version()
     if opts.debug:
         pp(opts)
     set_version(
+        current_version,
         opts.seldon_core_version,
         POM_FILES,
         CHART_YAML_FILES,
@@ -423,8 +431,8 @@ def main(argv):
         OPERATOR_KUSTOMIZE_CONFIGMAP,
         opts.debug,
     )
-    print("done")
 
+    print("done")
 
 if __name__ == "__main__":
     main(sys.argv)

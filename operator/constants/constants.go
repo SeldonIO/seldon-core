@@ -57,6 +57,12 @@ const (
 	EventsCreateHPA             = "CreateHPA"
 	EventsUpdateHPA             = "UpdateHPA"
 	EventsDeleteHPA             = "DeleteHPA"
+	EventsCreateScaledObject    = "CreateScaledObject"
+	EventsUpdateScaledObject    = "UpdateScaledObject"
+	EventsDeleteScaledObject    = "DeleteScaledObject"
+	EventsCreatePDB             = "CreatePDB"
+	EventsUpdatePDB             = "UpdatePDB"
+	EventsDeletePDB             = "DeletePDB"
 	EventsCreateDeployment      = "CreateDeployment"
 	EventsUpdateDeployment      = "UpdateDeployment"
 	EventsDeleteDeployment      = "DeleteDeployment"
@@ -69,4 +75,16 @@ const (
 const (
 	ExplainerPathSuffix = "-explainer"
 	ExplainerNameSuffix = "-explainer"
+)
+
+// Default resources
+const (
+	DefaultExecutorCpuRequest    = "0.5"
+	DefaultExecutorCpuLimit      = "0.5"
+	DefaultExecutorMemoryRequest = "512Mi"
+	DefaultExecutorMemoryLimit   = "512Mi"
+	DefaultEngineCpuRequest      = "0.5"
+	DefaultEngineCpuLimit        = "0.5"
+	DefaultEngineMemoryRequest   = "512Mi"
+	DefaultEngineMemoryLimit     = "512Mi"
 )

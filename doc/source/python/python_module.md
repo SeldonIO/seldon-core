@@ -110,7 +110,7 @@ print(r)
 
 Examples of using the `seldon_client` module can be found in the [example notebook](../examples/helm_examples.html).
 
-The API docs can be found [here](./api/seldon_core#module-seldon_core.seldon_client).
+The API docs can be found [here](./api/seldon_core.html#module-seldon_core.seldon_client).
 
 ## Troubleshooting
 
@@ -144,5 +144,5 @@ Alternatively, if you can't upgrade to a more recent version, the following
 also works:
 
 ```bash
-$ pip install azure-storage-blob==2.1.0 seldon-core 
+$ pip install azure-storage-blob==2.1.0 seldon-core
 ```

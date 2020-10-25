@@ -5,13 +5,13 @@
 
 Seldon provides model explanations using its [Alibi](https://github.com/SeldonIO/alibi)  Open Source library.
 
-We provide [an example notebook](../examples/explainer_examples) showing how to deploy an explainer for Tabular, Text and Image models.
+We provide [an example notebook](../examples/explainer_examples.html) showing how to deploy an explainer for Tabular, Text and Image models.
 
 ## Creating your explainer
 
 For Alibi explainers that need to be trained you should
 
- 1. Use python 3.6 as the Seldon python wrapper also runs in python 3.6 when it loads your explainer.
+ 1. Use python 3.6.8 as the Seldon python Alibi explainer wrapper also runs in python 3.6.8 when it loads your explainer.
  1. Follow the [Alibi docs](https://docs.seldon.io/projects/alibi/en/latest/index.html) for your particular desired explainer. The Seldon Wrapper presently supports: Anchors (Tabular, Text and Image), KernelShap and Integrated Gradients.
  1. Save your explainer to a file called `explainer.dill` using the [dill](https://pypi.org/project/dill/) python package and store on a bucket store or PVC in your cluster. We support gcs, s3 (including Minio) or Azure blob.
 

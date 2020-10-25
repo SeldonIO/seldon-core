@@ -119,7 +119,7 @@ Can only by 0 at present. In future, will allow the state of the component to be
 #### MODEL
 
 - [A minimal skeleton for model source code](https://github.com/SeldonIO/seldon-core/tree/master/incubating/wrappers/s2i/R/test/model-template-app)
-- [Example models](../examples/notebooks)
+- [Example models](../examples/notebooks.html)
 
 #### ROUTER
 - [A minimal skeleton for router source code](https://github.com/seldonio/seldon-core/tree/master/incubating/wrappers/s2i/R/test/router-template-app)

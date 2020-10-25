@@ -260,6 +260,8 @@ def extract_data_part(content):
         # tabular should be iterable and get inferred through later block
         if req_datatype == "strData":
             copy["dataType"] = "text"
+        if req_datatype == "jsonData":
+            copy["dataType"] = "json"
         if req_datatype == "binData":
             copy["dataType"] = "image"
 

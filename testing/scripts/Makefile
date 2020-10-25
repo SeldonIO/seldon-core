@@ -90,13 +90,14 @@ install_jaeger:
 #	sleep 5 #https://github.com/jetstack/cert-manager/issues/2273
 
 .PHONY: install_seldon
-install_seldon: 
+install_seldon:
 	kubectl create namespace seldon-system || echo "namespace seldon-system exists"
 	helm delete seldon --namespace seldon-system || echo "seldon-core not installed"
 	helm upgrade seldon \
 		../../helm-charts/seldon-core-operator \
 		--namespace seldon-system \
 		--set istio.enabled=true \
+		--set keda.enabled=true \
 		--set istio.gateway=istio-system/seldon-gateway \
 		--set certManager.enabled=false \
 		--set executor.enabled=$(SELDON_E2E_TESTS_USE_EXECUTOR) \
@@ -108,6 +109,9 @@ install_istio:
 	istio-1.6.8/bin/istioctl install --set profile=demo
 	kubectl create -f ../resources/seldon-gateway.yaml -n istio-system
 
+.PHONY: install_keda
+install_keda:
+	kubectl apply -f https://github.com/kedacore/keda/releases/download/v2.0.0-beta/keda-2.0.0-beta.yaml
 
 .PHONY: create_namespaces
 create_namespaces:
@@ -124,7 +128,7 @@ install_metrics:
 	kubectl apply -f metrics.yaml
 
 .PHONY: kind_setup
-kind_setup: create_namespaces helm_setup install_ambassador install_istio install_jaeger install_seldon set_namespace install_metrics
+kind_setup: create_namespaces helm_setup install_ambassador install_istio install_keda install_jaeger install_seldon set_namespace install_metrics
 
 port-forward-ambassador:
 	kubectl port-forward $$(kubectl get pods -n seldon -l app.kubernetes.io/name=ambassador -o jsonpath='{.items[0].metadata.name}') -n seldon 8003:8080

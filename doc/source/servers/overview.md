@@ -2,11 +2,11 @@
 
 Seldon provides several prepacked servers you can use to deploy trained models:
 
-- [SKLearn Server](./sklearn)
-- [XGBoost Server](./xgboost)
-- [Tensorflow Serving](./tensorflow)
-- [MLflow Server](./mlflow)
-- [Custom Servers](./custom)
+- [SKLearn Server](./sklearn.html)
+- [XGBoost Server](./xgboost.html)
+- [Tensorflow Serving](./tensorflow.html)
+- [MLflow Server](./mlflow.html)
+- [Custom Servers](./custom.html)
 
 For these servers you only need the location of the saved model in a local filestore, Google bucket, S3 bucket, azure or minio. An example manifest with an sklearn server is shown below:
 
@@ -74,10 +74,10 @@ A Kubernetes PersistentVolume [can be used](../examples/pvc-tfjob.html) instead 
 Next steps:
 
 - [Worked notebook](../examples/server_examples.html)
-- [SKLearn Server](./sklearn)
-- [XGBoost Server](./xgboost)
-- [Tensorflow Serving](./tensorflow)
-- [MLflow Server](./mlflow)
+- [SKLearn Server](./sklearn.html)
+- [XGBoost Server](./xgboost.html)
+- [Tensorflow Serving](./tensorflow.html)
+- [MLflow Server](./mlflow.html)
 - [SKLearn Server with MinIO](../examples/minio-sklearn.html)
 
 You can also build and add your own [custom inference servers](./custom.md),

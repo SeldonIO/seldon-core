@@ -6,7 +6,7 @@ Seldon Core comes installed with Kubeflow. The [Seldon Core documentation site](
 
 If you have a saved model in a PersistentVolume (PV), Google Cloud Storage bucket or Amazon S3 Storage you can use one of the [prepackaged model servers provided by Seldon Core](https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html).
 
-Seldon Core also provides [language specific model wrappers](../wrappers/language_wrappers) to wrap your inference code for it to run in Seldon Core.
+Seldon Core also provides [language specific model wrappers](../wrappers/language_wrappers.html) to wrap your inference code for it to run in Seldon Core.
 
 ## Kubeflow specifics
 
@@ -42,4 +42,3 @@ spec:
 ```
 
 Save the above resource and apply it with `kubectl`.
-

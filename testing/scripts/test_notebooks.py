@@ -83,6 +83,21 @@ class TestNotebooks(object):
         create_and_run_script("../../examples/istio/canary_update", "canary")
 
     #
+    # KEDA Examples
+    #
+
+    def test_keda_prom_auto_scale(self):
+        try:
+            create_and_run_script("../../examples/keda", "keda_prom_auto_scale")
+        except CalledProcessError as e:
+            run(
+                f"helm delete seldon-core-analytics --namespace seldon-system",
+                shell=True,
+                check=False,
+            )
+            raise e
+
+    #
     # Misc
     #
 
@@ -181,3 +196,8 @@ class TestNotebooks(object):
         except:
             run("make install_seldon", shell=True, check=False)
             raise
+
+    def test_disruption_budgets(self):
+        create_and_run_script(
+            "../../examples/models/disruption_budgets", "pdbs_example"
+        )

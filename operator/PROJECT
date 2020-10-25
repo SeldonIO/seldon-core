@@ -1,14 +1,7 @@
-version: "2"
 domain: seldon.io
-repo: github.com/seldonio/seldon-core/operator
-multigroup: true
-resources:
-- group: machinelearning
-  version: v1alpha2
-  kind: SeldonDeployment
-- group: machinelearning
-  version: v1alpha3
-  kind: SeldonDeployment
-- group: machinelearning
-  version: v1
-  kind: SeldonDeployment
+layout: go.kubebuilder.io/v2
+projectName: seldon-operator
+repo: github.com/seldonio/seldon-core
+version: 3-alpha
+plugins:
+  go.sdk.operatorframework.io/v2-alpha: {}

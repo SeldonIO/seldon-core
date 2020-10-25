@@ -31,7 +31,7 @@ class TestAEModel(TestCase):
         req = [[1, 2]]
         headers = {}
         res = ad_model.process_event(req, headers)
-        self.assertEqual(res["data"]["is_drift"], 0)
+        self.assertEqual(res.data["data"]["is_drift"], 0)
 
     def test_batch(self):
         model = DummyCDModel()
@@ -44,7 +44,7 @@ class TestAEModel(TestCase):
         self.assertEqual(res, None)
 
         res = ad_model.process_event(req, headers)
-        self.assertEqual(res["data"]["is_drift"], 0)
+        self.assertEqual(res.data["data"]["is_drift"], 0)
 
         res = ad_model.process_event(req, headers)
         self.assertEqual(res, None)

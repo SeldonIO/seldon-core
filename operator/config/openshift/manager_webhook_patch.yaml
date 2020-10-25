@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: controller-manager
+  namespace: system
+spec:
+  template:
+    spec:
+      containers:
+      - name: manager
+        args:
+        - --enable-leader-election
+        - --webhook-port=8443
+        - --create-resources=$(MANAGER_CREATE_RESOURCES)        
+        ports:
+        - containerPort: 8443
+          name: webhook-server
+          protocol: TCP

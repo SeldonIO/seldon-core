@@ -107,7 +107,6 @@ MLOps: Scaling and Monitoring and Observability
    CI / CD with Jenkins Classic <jenkins_classic>
    CI / CD with Jenkins X <jenkins_x>
    Replica control <scale>
-   
 
 Production Configurations and Integrations
 ------------------------------------------
@@ -121,6 +120,7 @@ Production Configurations and Integrations
    Deploy Multiple Seldon Core Operators <multiple_operators>
    Protocol Examples <protocol_examples>
    Custom Protobuf Data Example <customdata_example>
+   Disruption Budgets Example <disruption_budgets_example>
 
 Complex Graph Examples
 ----------------------
