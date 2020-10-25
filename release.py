@@ -277,7 +277,7 @@ def update_operator_version(seldon_core_version, debug=False):
 def update_image_metadata_json(seldon_core_version, debug=False):
     paths = [
         "examples/models/mean_classifier/image_metadata.json",
-        "integrations/tfserving/image_metadata.json",
+        "servers/tfserving_proxy/image_metadata.json",
         "servers/sklearnserver/sklearnserver/image_metadata.json",
         "servers/mlflowserver/mlflowserver/image_metadata.json",
         "servers/xgboostserver/xgboostserver/image_metadata.json"
