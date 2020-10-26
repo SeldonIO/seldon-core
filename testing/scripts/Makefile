@@ -108,7 +108,7 @@ install_seldon:
 install_istio:
 	curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.6.8 TARGET_ARCH=x86_64 sh -
 	istio-1.6.8/bin/istioctl install --set profile=demo
-	kubectl patch svc istio-ingressgateway -n istio-system --patch "$(cat ../resources/istio-ingressgateway-patch.yaml)"
+	kubectl patch svc istio-ingressgateway -n istio-system --patch "$$(cat ../resources/istio-ingressgateway-patch.yaml)"
 	kubectl create -f ../resources/seldon-gateway.yaml -n istio-system
 
 .PHONY: install_keda
