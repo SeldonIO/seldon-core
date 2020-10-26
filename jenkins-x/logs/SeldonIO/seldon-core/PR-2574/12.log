@@ -1,0 +1,64 @@
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-25-gzr7v-12[0m stage [32mmeta-pipeline[0m and container [32mstep-credential-initializer-pgjbx[0m
+{"level":"info","ts":1603708793.2640822,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1603708793.2644606,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-25-gzr7v-12[0m stage [32mmeta-pipeline[0m and container [32mstep-working-dir-initializer-rcq7h[0m
+{"level":"info","ts":1603708793.6007633,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1603708793.6023245,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-25-gzr7v-12[0m stage [32mmeta-pipeline[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-25-gzr7v-12[0m stage [32mmeta-pipeline[0m and container [32mstep-git-source-meta-seldonio-seldon-core-pr-25-gzr7v-cnlzb[0m
+{"level":"info","ts":1603708799.803118,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1603708805.3475676,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ cb3b0c80572792ad6a42e4b42e0d09c8fe317b40 in path /workspace/source"}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-25-gzr7v-12[0m stage [32mmeta-pipeline[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-25-gzr7v-12[0m stage [32mmeta-pipeline[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:cb3b0c80572792ad6a42e4b42e0d09c8fe317b40,2574:3c0867088935cad68d88e023431179bd6e5067bd
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch origin --unshallow 3c0867088935cad68d88e023431179bd6e5067bd: cb3b0c80572792ad6a42e4b42e0d09c8fe317b40:
+DEBUG: ran git fetch --unshallow origin 3c0867088935cad68d88e023431179bd6e5067bd: cb3b0c80572792ad6a42e4b42e0d09c8fe317b40: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard cb3b0c80572792ad6a42e4b42e0d09c8fe317b40
+DEBUG: ran git reset --hard cb3b0c80572792ad6a42e4b42e0d09c8fe317b40 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git merge 3c0867088935cad68d88e023431179bd6e5067bd
+error: error during merge: merging 3c0867088935cad68d88e023431179bd6e5067bd into master: git output: Removing testing/scripts/istio-1.4.2.yaml
+Removing testing/s2i/python/transformer/environment_rest
+Removing testing/s2i/python/router/environment_rest
+Removing testing/s2i/python/model/environment_grpc
+Removing testing/s2i/python/combiner/environment_rest
+Removing servers/xgboostserver/environment_rest
+Removing servers/sklearnserver/samples/iris_grpc.yaml
+Removing servers/sklearnserver/environment_rest
+Removing servers/mlflowserver/environment_rest
+Auto-merging operator/config/manager/configmap.yaml
+CONFLICT (content): Merge conflict in operator/config/manager/configmap.yaml
+Removing integrations/tfserving/Makefile
+Auto-merging helm-charts/seldon-core-operator/values.yaml
+CONFLICT (content): Merge conflict in helm-charts/seldon-core-operator/values.yaml
+Removing examples/models/mean_classifier/environment_rest
+Removing components/routers/epsilon-greedy/environment_rest
+Automatic merge failed; fix conflicts and then commit the result.: failed to run 'git merge 3c0867088935cad68d88e023431179bd6e5067bd' command in directory '', output: 'Removing testing/scripts/istio-1.4.2.yaml
+Removing testing/s2i/python/transformer/environment_rest
+Removing testing/s2i/python/router/environment_rest
+Removing testing/s2i/python/model/environment_grpc
+Removing testing/s2i/python/combiner/environment_rest
+Removing servers/xgboostserver/environment_rest
+Removing servers/sklearnserver/samples/iris_grpc.yaml
+Removing servers/sklearnserver/environment_rest
+Removing servers/mlflowserver/environment_rest
+Auto-merging operator/config/manager/configmap.yaml
+CONFLICT (content): Merge conflict in operator/config/manager/configmap.yaml
+Removing integrations/tfserving/Makefile
+Auto-merging helm-charts/seldon-core-operator/values.yaml
+CONFLICT (content): Merge conflict in helm-charts/seldon-core-operator/values.yaml
+Removing examples/models/mean_classifier/environment_rest
+Removing components/routers/epsilon-greedy/environment_rest
+Automatic merge failed; fix conflicts and then commit the result.'
+[31m
+Pipeline failed on stage 'meta-pipeline' : container 'step-git-merge'. The execution of the pipeline has stopped.[0m
