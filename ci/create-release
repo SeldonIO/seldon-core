@@ -8,17 +8,17 @@ set -o pipefail
 set -o noglob
 set -o xtrace
 
-VERSION=$(cat ../version.txt)
+CURR_VERSION=$(cat ../version.txt)
 
 # Check if version has trailing -dev otherwise exit
-if [ ${VERSION##*-dev} ]; then
+if [ ${CURR_VERSION##*-dev} ]; then
     echo "Version does not end with -dev"
     exit 1
 fi
 
 # Remove trailing dev as that will be our release version
-VERSION=${VERSION%"-dev"}
-BRANCH_NAME="release-$VERSION"
+CURR_VERSION=${CURR_VERSION%"-dev"}
+BRANCH_NAME="release-$CURR_VERSION"
 
 # Check out master branch to use as base
 git fetch origin master
@@ -36,7 +36,7 @@ set +o errexit
 set -o errexit
 
 # Perform required actions for release
-echo "$VERSION" > ../version.txt
+echo "$CURR_VERSION" > ../version.txt
 (cd ../engine && mvn versions:set -DnewVersion=$(cat ../version.txt))
 (cd ../ && python release.py $(cat version.txt))
 make -C ../helm-charts docs
