@@ -46,7 +46,7 @@ executor:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-core-executor
-    tag: 1.4.0-dev
+    tag: 1.4.0
   resources:
     cpuLimit: 500m
     cpuRequest: 500m
@@ -67,7 +67,7 @@ image:
   pullPolicy: IfNotPresent
   registry: docker.io
   repository: seldonio/seldon-core-operator
-  tag: 1.4.0-dev
+  tag: 1.4.0
 manager:
   cpuLimit: 500m
   cpuRequest: 100m
@@ -103,17 +103,17 @@ predictiveUnit:
 predictor_servers:
   MLFLOW_SERVER:
     grpc:
-      defaultImageVersion: "1.4.0-dev"
+      defaultImageVersion: "1.4.0"
       image: seldonio/mlflowserver_grpc
     rest:
-      defaultImageVersion: "1.4.0-dev"
+      defaultImageVersion: "1.4.0"
       image: seldonio/mlflowserver_rest
   SKLEARN_SERVER:
     grpc:
-      defaultImageVersion: "1.4.0-dev"
+      defaultImageVersion: "1.4.0"
       image: seldonio/sklearnserver_grpc
     rest:
-      defaultImageVersion: "1.4.0-dev"
+      defaultImageVersion: "1.4.0"
       image: seldonio/sklearnserver_rest
     protocols:
       kfserving:
@@ -121,19 +121,19 @@ predictor_servers:
         image: seldonio/mlserver
   TENSORFLOW_SERVER:
     grpc:
-      defaultImageVersion: "1.4.0-dev"
+      defaultImageVersion: "1.4.0"
       image: seldonio/tfserving-proxy_grpc
     rest:
-      defaultImageVersion: "1.4.0-dev"
+      defaultImageVersion: "1.4.0"
       image: seldonio/tfserving-proxy_rest
     tensorflow: true
     tfImage: tensorflow/serving:2.1.0
   XGBOOST_SERVER:
     grpc:
-      defaultImageVersion: "1.4.0-dev"
+      defaultImageVersion: "1.4.0"
       image: seldonio/xgboostserver_grpc
     rest:
-      defaultImageVersion: "1.4.0-dev"
+      defaultImageVersion: "1.4.0"
       image: seldonio/xgboostserver_rest
     protocols:
       kfserving:
@@ -178,7 +178,7 @@ engine:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/engine
-    tag: 1.4.0-dev
+    tag: 1.4.0
   resources:
     cpuLimit: 500m
     cpuRequest: 500m
@@ -195,5 +195,5 @@ engine:
 
 # Explainer image
 explainer:
-  image: seldonio/alibiexplainer:1.4.0-dev
+  image: seldonio/alibiexplainer:1.4.0
 

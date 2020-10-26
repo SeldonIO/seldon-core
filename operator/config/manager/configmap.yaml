@@ -22,41 +22,41 @@ data:
             "tfImage": "tensorflow/serving:2.1.0",
             "rest": {
               "image": "seldonio/tfserving-proxy_rest",
-              "defaultImageVersion": "1.4.0-dev"
+              "defaultImageVersion": "1.4.0"
             },
             "grpc": {
               "image": "seldonio/tfserving-proxy_grpc",
-              "defaultImageVersion": "1.4.0-dev"
+              "defaultImageVersion": "1.4.0"
             }
         },
         "SKLEARN_SERVER": {
             "rest": {
               "image": "seldonio/sklearnserver_rest",
-              "defaultImageVersion": "1.4.0-dev"
+              "defaultImageVersion": "1.4.0"
             },
             "grpc": {
               "image": "seldonio/sklearnserver_grpc",
-              "defaultImageVersion": "1.4.0-dev"
+              "defaultImageVersion": "1.4.0"
             }
         },
         "XGBOOST_SERVER": {
             "rest": {
               "image": "seldonio/xgboostserver_rest",
-              "defaultImageVersion": "1.4.0-dev"
+              "defaultImageVersion": "1.4.0"
             },
             "grpc": {
               "image": "seldonio/xgboostserver_grpc",
-              "defaultImageVersion": "1.4.0-dev"
+              "defaultImageVersion": "1.4.0"
             }
         },
         "MLFLOW_SERVER": {
             "rest": {
               "image": "seldonio/mlflowserver_rest",
-              "defaultImageVersion": "1.4.0-dev"
+              "defaultImageVersion": "1.4.0"
             },
             "grpc": {
               "image": "seldonio/mlflowserver_grpc",
-              "defaultImageVersion": "1.4.0-dev"
+              "defaultImageVersion": "1.4.0"
             }
         },
         "TRITON_SERVER": {
