@@ -18,7 +18,7 @@ fi
 
 # Remove trailing dev as that will be our release version
 CURR_VERSION=${CURR_VERSION%"-dev"}
-BRANCH_NAME="release-$CURR_VERSION"
+BRANCH_NAME="v$CURR_VERSION-release"
 
 # Check out master branch to use as base
 git fetch origin master

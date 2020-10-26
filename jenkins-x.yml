@@ -49,13 +49,13 @@ pipelineConfig:
       setVersion:
         steps:
         - name: create-version
-          command: echo release-\$(cat version.txt) > VERSION
+          command: echo \$(cat version.txt)-release > VERSION
         - name: delete-existing-branch
-          command: git branch -D release-\$(cat version.txt) || echo "No branch exists"
+          command: git branch -D v\$(cat version.txt)-release || echo "No branch exists"
         - name: create-new-branch
-          command: git checkout -b release-\$(cat version.txt)
+          command: git checkout -b v\$(cat version.txt)-release
         - name: commit-new-branch
-          command: git push origin release-\$(cat version.txt) -f
+          command: git push origin v\$(cat version.txt)-release -f
         - name: skip-tag
           command: echo "skipping tag"
       pipeline:
