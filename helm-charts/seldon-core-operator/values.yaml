@@ -46,7 +46,7 @@ executor:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-core-executor
-    tag: 1.4.0
+    tag: 1.4.0_20201026140020
   resources:
     cpuLimit: 500m
     cpuRequest: 500m
@@ -67,7 +67,7 @@ image:
   pullPolicy: IfNotPresent
   registry: docker.io
   repository: seldonio/seldon-core-operator
-  tag: 1.4.0
+  tag: 1.4.0_20201026140020
 manager:
   cpuLimit: 500m
   cpuRequest: 100m
@@ -178,7 +178,7 @@ engine:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/engine
-    tag: 1.4.0
+    tag: 1.4.0_20201026140020
   resources:
     cpuLimit: 500m
     cpuRequest: 500m
@@ -195,5 +195,5 @@ engine:
 
 # Explainer image
 explainer:
-  image: seldonio/alibiexplainer:1.4.0
+  image: seldonio/alibiexplainer:1.4.0_20201026140020
 
