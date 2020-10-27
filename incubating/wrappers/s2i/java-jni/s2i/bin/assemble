@@ -12,13 +12,6 @@ if [[ "$1" == "-h" ]]; then
 	exec /usr/libexec/s2i/usage
 fi
 
-
-if [[ -z "$API_TYPE" ]]; then
-
-    echo "Failed to find required env var API_TYPE, should be either REST or GRPC."
-    exit 1
-fi
-
 if [[ -z "$SERVICE_TYPE" ]]; then
 
     echo "Failed to find required env var SERVICE_TYPE, should be one of MODEL, ROUTER, TRANSFORMER, COMBINER."

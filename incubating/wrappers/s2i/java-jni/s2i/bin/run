@@ -8,9 +8,9 @@
 #
 
 # Check environment vars
-if [[ -z "$JAVA_IMPORT_PATH" || -z "$API_TYPE" || -z "$SERVICE_TYPE" || -z "$PERSISTENCE" ]]; then
+if [[ -z "$JAVA_IMPORT_PATH" || -z "$SERVICE_TYPE" || -z "$PERSISTENCE" ]]; then
 
-    echo "Failed to find required env vars JAVA_IMPORT_PATH, API_TYPE, SERVICE_TYPE, PERSISTENCE"
+    echo "Failed to find required env vars JAVA_IMPORT_PATH, SERVICE_TYPE, PERSISTENCE"
     exit 1
 fi
 
@@ -27,7 +27,6 @@ exec \
   env JAVA_IMPORT_PATH="$JAVA_IMPORT_PATH" \
   seldon-core-microservice \
     $MODEL_NAME \
-    $API_TYPE \
     --service-type $SERVICE_TYPE \
     --persistence $PERSISTENCE
 
