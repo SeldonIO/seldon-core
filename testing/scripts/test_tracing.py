@@ -54,6 +54,8 @@ def test_tracing_rest(namespace):
     pod_names = get_pod_names(deployment_name, namespace)
     pod_name = pod_names[0]
 
+    print("deployment name",deployment_name,"pod name",pod_name)
+
     # The engine and the executor identify as different services and different
     # operations against Jaeger. We need to consider both.
     service = "executor"

@@ -14,7 +14,7 @@ from distutils.util import strtobool
 from seldon_core import persistence, __version__, wrapper as seldon_microservice
 from seldon_core.metrics import SeldonMetrics
 from seldon_core.flask_utils import ANNOTATIONS_FILE, SeldonMicroserviceException
-from seldon_core.utils import getenv_as_bool
+from seldon_core.utils import getenv_as_bool, setup_tracing
 from seldon_core.app import (
     StandaloneApplication,
     UserModelApplication,
@@ -158,39 +158,6 @@ def load_annotations() -> Dict:
         logger.error("Failed to open annotations file %s", ANNOTATIONS_FILE)
     return annotations
 
-
-def setup_tracing(interface_name: str) -> object:
-    logger.info("Initializing tracing")
-    from jaeger_client import Config
-
-    jaeger_serv = os.environ.get("JAEGER_AGENT_HOST", "0.0.0.0")
-    jaeger_port = os.environ.get("JAEGER_AGENT_PORT", 5775)
-    jaeger_config = os.environ.get("JAEGER_CONFIG_PATH", None)
-    if jaeger_config is None:
-        logger.info("Using default tracing config")
-        config = Config(
-            config={  # usually read from some yaml config
-                "sampler": {"type": "const", "param": 1},
-                "local_agent": {
-                    "reporting_host": jaeger_serv,
-                    "reporting_port": jaeger_port,
-                },
-                "logging": True,
-            },
-            service_name=interface_name,
-            validate=True,
-        )
-    else:
-        logger.info("Loading tracing config from %s", jaeger_config)
-        import yaml
-
-        with open(jaeger_config, "r") as stream:
-            config_dict = yaml.load(stream)
-            config = Config(
-                config=config_dict, service_name=interface_name, validate=True
-            )
-    # this call also sets opentracing.tracer
-    return config.initialize_tracer()
 
 
 class MetricsEndpointFilter(logging.Filter):
@@ -371,8 +338,8 @@ def main():
     grpc_port = args.grpc_port
     metrics_port = args.metrics_port
 
-    if args.tracing:
-        tracer = setup_tracing(args.interface_name)
+    #if args.tracing:
+    #    tracer = setup_tracing(args.interface_name)
 
     seldon_metrics = SeldonMetrics(worker_id_func=os.getpid)
     #TODO why 2 ways to create metrics server
@@ -392,6 +359,8 @@ def main():
             if args.tracing:
                 logger.info("Tracing branch is active")
                 from flask_opentracing import FlaskTracing
+
+                tracer = setup_tracing(args.interface_name)
 
                 logger.info("Set JAEGER_EXTRA_TAGS %s", jaeger_extra_tags)
                 FlaskTracing(tracer, True, app, jaeger_extra_tags)
@@ -425,7 +394,8 @@ def main():
             if args.pidfile is not None:
                 options["pidfile"] = args.pidfile
             app = seldon_microservice.get_rest_microservice(user_object, seldon_metrics)
-            UserModelApplication(app, user_object, options=options).run()
+
+            UserModelApplication(app, user_object, jaeger_extra_tags, args.interface_name, options=options).run()
 
         logger.info("REST gunicorn microservice running on port %i", http_port)
         server1_func = rest_prediction_server
@@ -438,6 +408,7 @@ def main():
             from grpc_opentracing import open_tracing_server_interceptor
 
             logger.info("Adding tracer")
+            tracer = setup_tracing(args.interface_name)
             interceptor = open_tracing_server_interceptor(tracer)
         else:
             interceptor = None

@@ -11,7 +11,7 @@ push:
 	docker push ${IMAGE_BASE}:${VERSION}
 
 run_local:
-	export PREDICTIVE_UNIT_HTTP_SERVICE_PORT=9000 && export PREDICTIVE_UNIT_GRPC_SERVICE_PORT=5000 && TRACING=1 JAEGER_AGENT_HOST=localhost JAEGER_AGENT_PORT=6831 JAEGER_SAMPLER_TYPE=const JAEGER_SAMPLER_PARAM=1 seldon-core-microservice --service-type MODEL MeanClassifier
+	export PREDICTIVE_UNIT_HTTP_SERVICE_PORT=9001 && export PREDICTIVE_UNIT_GRPC_SERVICE_PORT=5001 && export TRACING=1 && export JAEGER_AGENT_HOST=localhost && export JAEGER_AGENT_PORT=6831 && export JAEGER_SAMPLER_TYPE=const && export JAEGER_SAMPLER_PARAM=1 && export SELDON_DEBUG=0 && seldon-core-microservice --service-type MODEL MeanClassifier
 
 kind_load: build
 	kind load -v 3 docker-image ${IMAGE_BASE}:${VERSION}
