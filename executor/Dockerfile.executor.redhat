@@ -33,7 +33,7 @@ RUN chmod -R 660 /openapi/
 FROM registry.access.redhat.com/ubi7/ubi
 LABEL name="Seldon Executor" \
       vendor="Seldon Technologies" \
-      version="1.4.0-dev" \
+      version="1.5.0-dev" \
       release="1" \
       summary="The service orchestrator for Seldon Core" \
       description="The service orchestrator for Seldon Core which manages the request/response flow through the Seldon Core inference graphs deployed via the Seldon Core Operator as SeldonDeployments custom resources"
