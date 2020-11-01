@@ -8,12 +8,10 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/model-with-metrics_rest:0.1
+        - image: seldonio/model-with-metrics:0.1
           name: classifier
     graph:
       children: []
-      endpoint:
-        type: REST
       name: classifier
       type: MODEL
     name: example

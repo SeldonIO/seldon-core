@@ -764,6 +764,17 @@ func createContainerService(deploy *appsv1.Deployment,
 		con.Lifecycle = &corev1.Lifecycle{PreStop: &corev1.Handler{Exec: &corev1.ExecAction{Command: []string{"/bin/sh", "-c", "/bin/sleep 10"}}}}
 	}
 
+	//
+	// Backwards compatability - set to either Http or Grpc
+	//
+	if !utils.HasEnvVar(con.Env, machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT) {
+		if pu.Endpoint.Type == machinelearningv1.REST || mlDep.Spec.Transport == machinelearningv1.TransportRest {
+			con.Env = append(con.Env, corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT, Value: strconv.Itoa(int(pu.Endpoint.HttpPort))})
+		} else {
+			con.Env = append(con.Env, corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT, Value: strconv.Itoa(int(pu.Endpoint.GrpcPort))})
+		}
+	}
+
 	if !utils.HasEnvVar(con.Env, machinelearningv1.ENV_PREDICTIVE_UNIT_HTTP_SERVICE_PORT) {
 		con.Env = append(con.Env, corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_HTTP_SERVICE_PORT, Value: strconv.Itoa(int(pu.Endpoint.HttpPort))})
 	}

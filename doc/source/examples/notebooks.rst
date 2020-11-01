@@ -140,7 +140,6 @@ Ingress
    Ambassador Shadow <ambassador_shadow>
    Ambassador Headers <ambassador_headers>
    Ambassador Custom Config <ambassador_custom>
-   Istio Canary <istio_canary>
    Istio Examples <istio_examples>   
 
 Infrastructure

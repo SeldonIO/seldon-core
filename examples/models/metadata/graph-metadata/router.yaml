@@ -9,16 +9,16 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/metadata-generic-node_rest:0.3
+        - image: seldonio/metadata-generic-node:0.4
           name: node-router
-        - image: seldonio/metadata-generic-node_rest:0.3
+        - image: seldonio/metadata-generic-node:0.4
           name: node-one
           env:
           - name: MODEL_METADATA
             value: |
               ---
               name: node-one
-              versions: [ generic-node/v0.3 ]
+              versions: [ generic-node/v0.4 ]
               platform: seldon
               inputs:
               - messagetype: tensor
@@ -30,14 +30,14 @@ spec:
                 schema:
                   names: [ node-output ]       
                   shape: [ 1 ]
-        - image: seldonio/metadata-generic-node_rest:0.3
+        - image: seldonio/metadata-generic-node:0.4
           name: node-two
           env:
           - name: MODEL_METADATA
             value: |
               ---
               name: node-two
-              versions: [ generic-node/v0.3 ]
+              versions: [ generic-node/v0.4 ]
               platform: seldon
               inputs:
               - messagetype: tensor

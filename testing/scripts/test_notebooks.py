@@ -75,12 +75,6 @@ class TestNotebooks(object):
     def test_ambassador_custom(self):
         create_and_run_script("../../examples/ambassador/custom", "ambassador_custom")
 
-    #
-    # Istio Examples
-    #
-
-    def test_istio_canary(self):
-        create_and_run_script("../../examples/istio/canary_update", "canary")
 
     #
     # KEDA Examples

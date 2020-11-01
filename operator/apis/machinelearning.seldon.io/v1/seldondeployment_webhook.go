@@ -38,7 +38,6 @@ var (
 	seldondeploymentlog                 = logf.Log.WithName("seldondeployment")
 	ControllerNamespace                 = GetEnv("POD_NAMESPACE", "seldon-system")
 	C                                   client.Client
-	envPredictiveUnitServicePort        = os.Getenv(ENV_PREDICTIVE_UNIT_SERVICE_PORT)
 	envPredictiveUnitHttpServicePort    = os.Getenv(ENV_PREDICTIVE_UNIT_HTTP_SERVICE_PORT)
 	envPredictiveUnitGrpcServicePort    = os.Getenv(ENV_PREDICTIVE_UNIT_GRPC_SERVICE_PORT)
 	envPredictiveUnitServicePortMetrics = os.Getenv(ENV_PREDICTIVE_UNIT_SERVICE_PORT_METRICS)
@@ -191,10 +190,11 @@ func (r *SeldonDeploymentSpec) setContainerPredictiveUnitDefaults(compSpecIdx in
 func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespace string) {
 
 	var firstHttpPuPortNum int32 = constants.FirstHttpPortNumber
+
 	if envPredictiveUnitHttpServicePort != "" {
 		portNum, err := strconv.Atoi(envPredictiveUnitHttpServicePort)
 		if err != nil {
-			seldondeploymentlog.Error(err, "Failed to decode predictive unit service port will use default", "envar", ENV_PREDICTIVE_UNIT_SERVICE_PORT, "value", envPredictiveUnitServicePort)
+			seldondeploymentlog.Error(err, "Failed to decode predictive unit service port will use default", "envar", ENV_PREDICTIVE_UNIT_HTTP_SERVICE_PORT, "value", envPredictiveUnitHttpServicePort)
 		} else {
 			firstHttpPuPortNum = int32(portNum)
 		}
@@ -205,7 +205,7 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 	if envPredictiveUnitGrpcServicePort != "" {
 		portNum, err := strconv.Atoi(envPredictiveUnitGrpcServicePort)
 		if err != nil {
-			seldondeploymentlog.Error(err, "Failed to decode grpc predictive unit service port will use default", "envar", ENV_PREDICTIVE_UNIT_GRPC_SERVICE_PORT, "value", envPredictiveUnitServicePort)
+			seldondeploymentlog.Error(err, "Failed to decode grpc predictive unit service port will use default", "envar", ENV_PREDICTIVE_UNIT_GRPC_SERVICE_PORT, "value", envPredictiveUnitGrpcServicePort)
 		} else {
 			firstGrpcPuPortNum = int32(portNum)
 		}

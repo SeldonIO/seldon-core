@@ -8,7 +8,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/sklearn-iris:0.1
+        - image: seldonio/sklearn-iris:0.2
           imagePullPolicy: IfNotPresent
           name: sklearn-iris-classifier
     graph:

@@ -9,14 +9,14 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/metadata-generic-node_rest:0.3
+        - image: seldonio/metadata-generic-node:0.4
           name: node-input-transformer
           env:
           - name: MODEL_METADATA
             value: |
               ---
               name: node-input-transformer
-              versions: [ generic-node/v0.3 ]
+              versions: [ generic-node/v0.4 ]
               platform: seldon
               inputs:
               - messagetype: tensor
@@ -28,14 +28,14 @@ spec:
                 schema:
                   names: [transformer-output]                          
                   shape: [ 1 ]  
-        - image: seldonio/metadata-generic-node_rest:0.3
+        - image: seldonio/metadata-generic-node:0.4
           name: node
           env:
           - name: MODEL_METADATA
             value: |
               ---
               name: node
-              versions: [ generic-node/v0.3 ]
+              versions: [ generic-node/v0.4 ]
               platform: seldon
               inputs:
               - messagetype: tensor
