@@ -79,6 +79,11 @@ parser.add_argument(
     help="The name that the model is served under.",
 )
 parser.add_argument("--storage_uri", required=True, help="A URI pointer to the model")
+parser.add_argument(
+    "--elasticsearch_uri",
+    type=str,
+    help="A URI pointer to the elasticsearch database if relevant",
+)
 
 subparsers = parser.add_subparsers(help="sub-command help", dest="command")
 
@@ -115,7 +120,12 @@ if __name__ == "__main__":
     elif method == AlibiDetectMethod.drift_detector:
         model = AlibiDetectConceptDriftModel(args.model_name, args.storage_uri, **extra)
     elif method == AlibiDetectMethod.metrics_server:
-        model = CustomMetricsModel(args.model_name, args.storage_uri, **extra)
+        model = CustomMetricsModel(
+            args.model_name,
+            args.storage_uri,
+            elasticsearch_uri=args.elasticsearch_uri,
+            **extra
+        )
     else:
         logging.error("Unknown method %s", args.command)
         os._exit(-1)
