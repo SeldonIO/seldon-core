@@ -132,7 +132,6 @@ Define the core parameters needed by our Java S2I images to wrap your model.
 An example is:
 
 ```bash
-API_TYPE=REST
 SERVICE_TYPE=MODEL
 JAVA_IMPORT_PATH=io.seldon.example.model.ExampleModelHandler
 ```
@@ -213,10 +212,6 @@ Import path for your Java model implementation.
 For instance, in the example above, this would be
 `io.seldon.example.model.ExampleModelHandler`.
 
-### API_TYPE
-
-API type to create.
-Can be REST or GRPC.
 
 ### SERVICE_TYPE
 

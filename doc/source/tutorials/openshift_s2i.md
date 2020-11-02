@@ -85,7 +85,6 @@ To allow the s2i builder image to correctly package the component the data scien
 
 ```bash
 MODEL_NAME=MyModel
-API_TYPE=REST
 SERVICE_TYPE=MODEL
 ```
 
@@ -95,82 +94,6 @@ Finally we Use `s2i build` to create the Docker-formatted image from source code
 s2i build <git-repo> seldonio/seldon-core-s2i-python3 <my-image-name>
 s2i build <src-folder> seldonio/seldon-core-s2i-python3 <my-image-name>
 ```
-
-## R
-
-R is a popular statistical language which provides many machine learning related packages.
-
-To use the seldon s2i builder image to package an R model the requirements are:
-
-- An R file which provides an S3 class for your model via an `initialise_seldon` function and that has appropriate generics for the component, e.g. predict for a model.
-- An optional install.R to be run to install any libraries needed
-- .s2i/environment - model definitions used by the s2i builder to correctly wrap your model
-
-The data scientist's source code should contain an R file which defines an S3 class for their model. For example,
-
-```R
-library(methods)
-
-predict.mymodel <- function(mymodel,newdata=list()) {
-  write("MyModel predict called", stdout())
-  newdata
-}
-
-new_mymodel <- function() {
-  structure(list(), class = "mymodel")
-}
-
-initialise_seldon <- function(params) {
-  new_mymodel()
-}
-```
-
-The above contains:
-
-- A `seldon_initialise` function that creates an S3 class for the model via a constructor `new_mymodel`. This will be called on startup and you can run any configuration the model needs.
-- A generic `predict` function is created for my model class. This will be called with a `newdata` field with the `data.frame` to be predicted.
-
-An `install.R` with any software dependencies required. For example:
-
-```R
-install.packages('rpart')
-```
-
-Finally, as with all cases the builder image needs a few environment variables to be set to correctly package the R model. An example is:
-
-```bash
-MODEL_NAME=MyModel
-API_TYPE=REST
-SERVICE_TYPE=MODEL
-```
-
-These values can also be provided in an .s2i/environment file with the source code or overridden on the command line when building the image.
-
-Once these steps are done we can use `s2i build` to create the Docker-formatted image from the source code.
-
-```bash
-s2i build <git-repo> seldonio/seldon-core-s2i-r <my-image-name>
-s2i build <src-folder> seldonio/seldon-core-s2i-r <my-image-name>
-```
-
-An example invocation using the test template model inside seldon-core:
-
-```bash
-s2i build https://github.com/seldonio/seldon-core.git --context-dir=incubating/wrappers/s2i/R/test/model-template-app seldonio/seldon-core-s2i-r seldon-core-template-model
-```
-
-### Java
-
-There are several popular machine learning libraries in Java including Spark, H2O and DL4J. Seldon-core also provides builder images for Java. To accomplish this we provide a Java library seldon-core-wrappers that can be included in a Maven Spring project to allow a Java component to be easily wrapped.
-
-To use the Seldon-Core s2i builder image to package a Java model the data scientist will need:
-
-- A Maven project that depends on the `io.seldon.wrapper` library
-- A Spring Boot configuration class
-- A class that implements `io.seldon.wrapper.SeldonPredictionService` for the type of component you are creating
-- An optional .s2i/environment - model definitions used by the s2i builder to correctly wrap your model
-
-More details can be found in the seldon-core docs.
 
 ## Summary
 

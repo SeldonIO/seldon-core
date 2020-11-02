@@ -119,7 +119,6 @@ Define the core parameters needed by our python builder image to wrap your model
 
 ```bash
 MODEL_NAME=MyModel
-API_TYPE=REST
 SERVICE_TYPE=MODEL
 PERSISTENCE=0
 ```
@@ -180,10 +179,6 @@ The required environment variables understood by the builder image are explained
 ### MODEL_NAME
 
 The name of the class containing the model. Also the name of the python file which will be imported.
-
-### API_TYPE
-
-API type to create. Can be REST or GRPC
 
 ### SERVICE_TYPE
 
