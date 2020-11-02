@@ -1,5 +1,5 @@
 # TODO: Add to release script 
-FROM docker.io/seldonio/seldon-core-s2i-python37-ubi8:1.3.0-dev
+FROM docker.io/seldonio/seldon-core-s2i-python37-ubi8:1.4.0-dev
 LABEL name="Seldon Alibi Detect Server" \
       vendor="Seldon Technologies" \
       version="1.5.0-dev" \
