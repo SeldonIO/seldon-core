@@ -1,0 +1,14 @@
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Trigger
+metadata:
+  name: multiclass-model-metrics-trigger
+  namespace: default
+spec:
+  filter:
+    sourceAndType:
+      type: io.seldon.serving.feedback
+  subscriber:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: seldon-multiclass-model-metrics
