@@ -9,7 +9,7 @@ require (
 	github.com/google/go-cmp v0.5.1
 	github.com/kedacore/keda v0.0.0-20200911122749-717aab81817f
 	github.com/onsi/ginkgo v1.14.1
-	github.com/onsi/gomega v1.10.2
+	github.com/onsi/gomega v1.10.3
 	go.uber.org/zap v1.15.0
 	gopkg.in/yaml.v2 v2.3.0
 	istio.io/api v0.0.0-20200513175333-ae3da0d240e3
