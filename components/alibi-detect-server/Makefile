@@ -55,6 +55,14 @@ curl-metrics-server:
 	   -d '{"truth": {"data": {"ndarray": [0]}}, "response": {"data": {"ndarray": [1]}}}' \
 		http://localhost:8080/
 
+curl-metrics-server-elasticsearch:
+	curl -v -X POST -H 'Content-Type: application/json' \
+		-H 'Ce-Requestid: 7983e38c-29dc-45ff-8ffb-77252e7ac86d' \
+		-H 'Ce-Namespace: seldon' \
+		-H 'Ce-Inferenceservicename: seldon' \
+		-d '{"truth": {"data": {"ndarray": [0]}}}' \
+		http://localhost:8080/
+
 curl-metrics-server-metrics:
 	curl http://localhost:8080/v1/metrics
 
