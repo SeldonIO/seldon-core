@@ -6,6 +6,8 @@ import base64
 from PIL import Image
 import io
 
+from unittest import mock
+
 from seldon_core.wrapper import get_rest_microservice, SeldonModelGRPC, get_grpc_server
 from seldon_core.metrics import SeldonMetrics
 from seldon_core.proto import prediction_pb2
@@ -307,6 +309,84 @@ def test_model_puid_ok():
     assert j["data"]["names"] == ["t:0", "t:1"]
     assert j["data"]["ndarray"] == [[1.0, 2.0]]
     assert j["meta"]["puid"] == "123"
+
+
+@mock.patch("seldon_core.utils.model_name", "my-test-model")
+@mock.patch("seldon_core.utils.image_name", "my-test-model-image")
+def test_requestPath_ok():
+    user_object = UserObject()
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
+    client = app.test_client()
+    rv = client.get(
+        '/predict?json={"meta":{"puid":"123"},"data":{"names":["a","b"],"ndarray":[[1,2]]}}'
+    )
+    j = json.loads(rv.data)
+    logging.info(j)
+    assert rv.status_code == 200
+    assert j["meta"]["requestPath"] == {"my-test-model": "my-test-model-image"}
+
+
+@mock.patch("seldon_core.utils.model_name", "my-test-model")
+@mock.patch("seldon_core.utils.image_name", "my-test-model-image")
+def test_requestPath_2nd_node_ok():
+    user_object = UserObject()
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
+    client = app.test_client()
+    rv = client.get(
+        '/predict?json={"meta":{"requestPath":{"earlier-node": "earlier-image"}},"data":{"names":["a","b"],"ndarray":[[1,2]]}}'
+    )
+    j = json.loads(rv.data)
+    logging.info(j)
+    assert rv.status_code == 200
+    assert j["meta"]["requestPath"] == {
+        "my-test-model": "my-test-model-image",
+        "earlier-node": "earlier-image",
+    }
+
+
+@mock.patch("seldon_core.utils.model_name", "my-test-model")
+@mock.patch("seldon_core.utils.image_name", "my-test-model-image")
+def test_proto_requestPath_ok():
+    user_object = UserObject()
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
+    arr = np.array([1, 2])
+    datadef = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
+    )
+    meta = prediction_pb2.Meta()
+    json_format.ParseDict({"tags": {"foo": "bar"}}, meta)
+    request = prediction_pb2.SeldonMessage(data=datadef, meta=meta)
+    resp = app.Predict(request, None)
+    jStr = json_format.MessageToJson(resp)
+    j = json.loads(jStr)
+    logging.info(j)
+    assert j["meta"]["requestPath"] == {"my-test-model": "my-test-model-image"}
+
+
+@mock.patch("seldon_core.utils.model_name", "my-test-model")
+@mock.patch("seldon_core.utils.image_name", "my-test-model-image")
+def test_proto_requestPath_2nd_node_ok():
+    user_object = UserObject()
+    seldon_metrics = SeldonMetrics()
+    app = SeldonModelGRPC(user_object, seldon_metrics)
+    arr = np.array([1, 2])
+    datadef = prediction_pb2.DefaultData(
+        tensor=prediction_pb2.Tensor(shape=(2, 1), values=arr)
+    )
+    meta = prediction_pb2.Meta()
+    json_format.ParseDict({"requestPath": {"earlier-node": "earlier-image"}}, meta)
+    request = prediction_pb2.SeldonMessage(data=datadef, meta=meta)
+    resp = app.Predict(request, None)
+    jStr = json_format.MessageToJson(resp)
+    j = json.loads(jStr)
+    logging.info(j)
+    assert j["meta"]["requestPath"] == {
+        "my-test-model": "my-test-model-image",
+        "earlier-node": "earlier-image",
+    }
 
 
 def test_model_lowlevel_ok():
