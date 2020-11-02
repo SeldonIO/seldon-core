@@ -1,4 +1,5 @@
 from seldon_core.user_model import SeldonResponse
+import numpy as np
 
 
 class BinaryMetrics:
@@ -27,9 +28,13 @@ class BinaryMetrics:
         """
 
         response_class = (
-            int(response[0]) if isinstance(response, list) else int(response)
+            int(response[0])
+            if isinstance(response, (list, np.ndarray))
+            else int(response)
         )
-        truth_class = int(truth[0]) if isinstance(truth, list) else int(truth)
+        truth_class = (
+            int(truth[0]) if isinstance(truth, (list, np.ndarray)) else int(truth)
+        )
 
         correct = response_class == truth_class
 
