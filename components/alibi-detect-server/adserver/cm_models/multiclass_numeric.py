@@ -1,4 +1,5 @@
 from seldon_core.user_model import SeldonResponse
+import numpy as np
 
 
 class MultiClassNumeric:
@@ -28,8 +29,10 @@ class MultiClassNumeric:
 
         metrics = []
 
-        response_class = response[0] if isinstance(response, list) else response
-        truth_class = truth[0] if isinstance(truth, list) else truth
+        response_class = (
+            response[0] if isinstance(response, (list, np.ndarray)) else response
+        )
+        truth_class = truth[0] if isinstance(truth, (list, np.ndarray)) else truth
 
         correct = response_class == truth_class
 
