@@ -37,9 +37,7 @@ def microservice(request):
     envs = opts.get("envs", {})
     tracing = opts.get("tracing", False)
 
-    wrapper = MicroserviceWrapper(
-        app_location=app_location, envs=envs, tracing=tracing
-    )
+    wrapper = MicroserviceWrapper(app_location=app_location, envs=envs, tracing=tracing)
 
     with wrapper:
         yield wrapper

@@ -26,6 +26,7 @@ if _TF_PRESENT:
 
 logger = logging.getLogger(__name__)
 
+
 def json_to_seldon_message(
     message_json: Union[List, Dict]
 ) -> prediction_pb2.SeldonMessage:

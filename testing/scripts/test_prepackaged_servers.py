@@ -49,13 +49,14 @@ class TestPrepack(object):
         assert res["name"] == "iris"
         assert res["versions"] == ["iris/v1"]
 
-        r = grpc_request_ambassador("sklearn", namespace, data=np.array([[0.1, 0.2, 0.3, 0.4]]))
+        r = grpc_request_ambassador(
+            "sklearn", namespace, data=np.array([[0.1, 0.2, 0.3, 0.4]])
+        )
         res = json.loads(json_format.MessageToJson(r))
         logging.info(res)
 
         logging.warning("Success for test_prepack_sklearn")
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
-
 
     @skipif_engine
     def test_sklearn_v2(self, namespace):
@@ -123,7 +124,9 @@ class TestPrepack(object):
         assert res["name"] == "xgboost-iris"
         assert res["versions"] == ["xgboost-iris/v1"]
 
-        r = grpc_request_ambassador("xgboost", namespace, data=np.array([[0.1, 0.2, 0.3, 0.4]]))
+        r = grpc_request_ambassador(
+            "xgboost", namespace, data=np.array([[0.1, 0.2, 0.3, 0.4]])
+        )
         res = json.loads(json_format.MessageToJson(r))
         logging.info(res)
 

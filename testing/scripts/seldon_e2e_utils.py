@@ -492,12 +492,7 @@ def rest_request_ambassador_auth(
 
 
 def grpc_request_ambassador(
-    deployment_name,
-    namespace,
-    endpoint=API_AMBASSADOR,
-    data_size=5,
-    rows=1,
-    data=None,
+    deployment_name, namespace, endpoint=API_AMBASSADOR, data_size=5, rows=1, data=None,
 ):
     if data is None:
         shape, arr = create_random_data(data_size, rows)

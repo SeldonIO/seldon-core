@@ -21,7 +21,6 @@ class MicroserviceWrapper:
         self.env_vars = self._env_vars(envs)
         self.cmd = self._get_cmd(tracing)
 
-
     def _env_vars(self, envs):
         env_vars = dict(os.environ)
         env_vars.update(envs)

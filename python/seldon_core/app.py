@@ -69,7 +69,9 @@ class UserModelApplication(StandaloneApplication):
     user's model.
     """
 
-    def __init__(self, app, user_object, jaeger_extra_tags, interface_name, options: Dict = None):
+    def __init__(
+        self, app, user_object, jaeger_extra_tags, interface_name, options: Dict = None
+    ):
         self.user_object = user_object
         self.jaeger_extra_tags = jaeger_extra_tags
         self.interface_name = interface_name

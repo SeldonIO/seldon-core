@@ -159,7 +159,6 @@ def load_annotations() -> Dict:
     return annotations
 
 
-
 class MetricsEndpointFilter(logging.Filter):
     def filter(self, record):
         return seldon_microservice.METRICS_ENDPOINT not in record.getMessage()
@@ -338,20 +337,18 @@ def main():
     grpc_port = args.grpc_port
     metrics_port = args.metrics_port
 
-    #if args.tracing:
+    # if args.tracing:
     #    tracer = setup_tracing(args.interface_name)
 
     seldon_metrics = SeldonMetrics(worker_id_func=os.getpid)
-    #TODO why 2 ways to create metrics server
-    #seldon_metrics = SeldonMetrics(
+    # TODO why 2 ways to create metrics server
+    # seldon_metrics = SeldonMetrics(
     #    worker_id_func=lambda: threading.current_thread().name
-    #)
+    # )
     if args.debug:
         # Start Flask debug server
         def rest_prediction_server():
-            app = seldon_microservice.get_rest_microservice(
-            user_object, seldon_metrics
-            )
+            app = seldon_microservice.get_rest_microservice(user_object, seldon_metrics)
             try:
                 user_object.load()
             except (NotImplementedError, AttributeError):
@@ -366,41 +363,45 @@ def main():
                 FlaskTracing(tracer, True, app, jaeger_extra_tags)
 
             app.run(
-            host="0.0.0.0",
-            port=http_port,
-            threaded=False if args.single_threaded else True,
+                host="0.0.0.0",
+                port=http_port,
+                threaded=False if args.single_threaded else True,
             )
 
         logger.info(
-        "REST microservice running on port %i single-threaded=%s",
-        http_port,
-        args.single_threaded,
+            "REST microservice running on port %i single-threaded=%s",
+            http_port,
+            args.single_threaded,
         )
         server1_func = rest_prediction_server
     else:
         # Start production server
         def rest_prediction_server():
             options = {
-            "bind": "%s:%s" % ("0.0.0.0", http_port),
-            "accesslog": accesslog(args.log_level),
-            "loglevel": args.log_level.lower(),
-            "timeout": 5000,
-            "threads": threads(args.threads, args.single_threaded),
-            "workers": args.workers,
-            "max_requests": args.max_requests,
-            "max_requests_jitter": args.max_requests_jitter,
-            "post_worker_init": post_worker_init,
+                "bind": "%s:%s" % ("0.0.0.0", http_port),
+                "accesslog": accesslog(args.log_level),
+                "loglevel": args.log_level.lower(),
+                "timeout": 5000,
+                "threads": threads(args.threads, args.single_threaded),
+                "workers": args.workers,
+                "max_requests": args.max_requests,
+                "max_requests_jitter": args.max_requests_jitter,
+                "post_worker_init": post_worker_init,
             }
             if args.pidfile is not None:
                 options["pidfile"] = args.pidfile
             app = seldon_microservice.get_rest_microservice(user_object, seldon_metrics)
 
-            UserModelApplication(app, user_object, jaeger_extra_tags, args.interface_name, options=options).run()
+            UserModelApplication(
+                app,
+                user_object,
+                jaeger_extra_tags,
+                args.interface_name,
+                options=options,
+            ).run()
 
         logger.info("REST gunicorn microservice running on port %i", http_port)
         server1_func = rest_prediction_server
-
-
 
     def grpc_prediction_server():
 
@@ -414,10 +415,10 @@ def main():
             interceptor = None
 
         server = seldon_microservice.get_grpc_server(
-          user_object,
-          seldon_metrics,
-          annotations=annotations,
-          trace_interceptor=interceptor,
+            user_object,
+            seldon_metrics,
+            annotations=annotations,
+            trace_interceptor=interceptor,
         )
 
         try:
