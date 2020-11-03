@@ -14,6 +14,7 @@ from seldon_e2e_utils import (
     log_sdep_logs,
 )
 from e2e_utils import v2_protocol
+from e2e_utils.models import deploy_model
 from conftest import SELDON_E2E_TESTS_USE_EXECUTOR
 
 skipif_engine = pytest.mark.skipif(
@@ -50,8 +51,13 @@ class TestPrepack(object):
 
     @skipif_engine
     def test_sklearn_v2(self, namespace):
-        spec = "../resources/iris-sklearn-v2.yaml"
-        retry_run(f"kubectl apply -f {spec} -n {namespace}")
+        deploy_model(
+            "sklearn",
+            namespace=namespace,
+            protocol="kfserving",
+            model_implementation="SKLEARN_SERVER",
+            model_uri="gs://seldon-models/sklearn/iris",
+        )
         wait_for_status("sklearn", namespace)
         wait_for_rollout("sklearn", namespace)
         time.sleep(1)
@@ -64,7 +70,7 @@ class TestPrepack(object):
                 "inputs": [
                     {
                         "name": "input-0",
-                        "shape": [4],
+                        "shape": [1, 4],
                         "datatype": "FP32",
                         "data": [[0.1, 0.2, 0.3, 0.4]],
                     }
@@ -72,7 +78,6 @@ class TestPrepack(object):
             },
         )
         assert r.status_code == 200
-        run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
 
     # Test prepackaged server for tfserving
     def test_tfserving(self, namespace):
@@ -119,8 +124,13 @@ class TestPrepack(object):
 
     @skipif_engine
     def test_xgboost_v2(self, namespace):
-        spec = "../resources/iris-xgboost-v2.yaml"
-        retry_run(f"kubectl apply -f {spec} -n {namespace}")
+        deploy_model(
+            "xgboost",
+            namespace=namespace,
+            protocol="kfserving",
+            model_implementation="XGBOOST_SERVER",
+            model_uri="gs://seldon-models/xgboost/iris",
+        )
         wait_for_status("xgboost", namespace)
         wait_for_rollout("xgboost", namespace)
         time.sleep(1)
@@ -133,7 +143,7 @@ class TestPrepack(object):
                 "inputs": [
                     {
                         "name": "input-0",
-                        "shape": [4],
+                        "shape": [1, 4],
                         "datatype": "FP32",
                         "data": [[0.1, 0.2, 0.3, 0.4]],
                     }
@@ -141,7 +151,6 @@ class TestPrepack(object):
             },
         )
         assert r.status_code == 200
-        run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
 
     # Test prepackaged server for MLflow
     @skipif_engine
