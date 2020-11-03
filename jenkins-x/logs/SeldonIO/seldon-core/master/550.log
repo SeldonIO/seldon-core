@@ -1,0 +1,88 @@
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-tll9x-550[0m stage [32mmeta-pipeline[0m and container [32mstep-credential-initializer-46v4l[0m
+{"level":"info","ts":1604414703.4683585,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1604414703.4688795,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-tll9x-550[0m stage [32mmeta-pipeline[0m and container [32mstep-working-dir-initializer-b6hlg[0m
+{"level":"info","ts":1604414703.9514434,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1604414703.9533157,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-tll9x-550[0m stage [32mmeta-pipeline[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-tll9x-550[0m stage [32mmeta-pipeline[0m and container [32mstep-git-source-meta-seldonio-seldon-core-maste-tll9x-wc8km[0m
+{"level":"info","ts":1604414709.1440058,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1604414714.3908615,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ c576ee7fc02a5e451d8cc617e7d5bb8610680336 in path /workspace/source"}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-tll9x-550[0m stage [32mmeta-pipeline[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-tll9x-550[0m stage [32mmeta-pipeline[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:c576ee7fc02a5e451d8cc617e7d5bb8610680336
+WARNING: no SHAs to merge, falling back to initial cloned commit
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-tll9x-550[0m stage [32mmeta-pipeline[0m and container [32mstep-merge-pull-refs[0m
+SKIP merge-pull-refs: Nothing to merge
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-tll9x-550[0m stage [32mmeta-pipeline[0m and container [32mstep-create-effective-pipeline[0m
+Effective pipeline written to jenkins-x-release-effective.yml
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-tll9x-550[0m stage [32mmeta-pipeline[0m and container [32mstep-create-tekton-crds[0m
+running command: echo \$(cat version.txt)-release > VERSION
+
+running command: git branch -D v\$(cat version.txt)-release || echo "No branch exists"
+error: branch 'v1.5.0-dev-release' not found.
+No branch exists
+
+running command: git checkout -b v\$(cat version.txt)-release
+Switched to a new branch 'v1.5.0-dev-release'
+
+running command: git push origin v\$(cat version.txt)-release -f
+To https://github.com/SeldonIO/seldon-core.git
+ ! [remote rejected] v1.5.0-dev-release -> v1.5.0-dev-release (cannot lock ref 'refs/heads/v1.5.0-dev-release': is at 5c2c89aeeb9454c521a8ee2fee83b43425aaa57f but expected 3a936bdb8320dd7d804955dfcb8cbf1b957d2941)
+error: failed to push some refs to 'https://github.com/SeldonIO/seldon-core.git'
+error: failed to set the version on release pipelines: failed to run '/bin/sh -c git push origin v$(cat version.txt)-release -f' command in directory '/workspace/source', output: ''
+[31m
+Pipeline failed on stage 'meta-pipeline' : container 'step-create-tekton-crds'. The execution of the pipeline has stopped.[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-tll9x-550[0m stage [32mmeta-pipeline[0m and container [32mstep-credential-initializer-46v4l[0m
+{"level":"info","ts":1604414703.4683585,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1604414703.4688795,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-tll9x-550[0m stage [32mmeta-pipeline[0m and container [32mstep-working-dir-initializer-b6hlg[0m
+{"level":"info","ts":1604414703.9514434,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1604414703.9533157,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-tll9x-550[0m stage [32mmeta-pipeline[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-tll9x-550[0m stage [32mmeta-pipeline[0m and container [32mstep-git-source-meta-seldonio-seldon-core-maste-tll9x-wc8km[0m
+{"level":"info","ts":1604414709.1440058,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1604414714.3908615,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ c576ee7fc02a5e451d8cc617e7d5bb8610680336 in path /workspace/source"}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-tll9x-550[0m stage [32mmeta-pipeline[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-tll9x-550[0m stage [32mmeta-pipeline[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:c576ee7fc02a5e451d8cc617e7d5bb8610680336
+WARNING: no SHAs to merge, falling back to initial cloned commit
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-tll9x-550[0m stage [32mmeta-pipeline[0m and container [32mstep-merge-pull-refs[0m
+SKIP merge-pull-refs: Nothing to merge
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-tll9x-550[0m stage [32mmeta-pipeline[0m and container [32mstep-create-effective-pipeline[0m
+Effective pipeline written to jenkins-x-release-effective.yml
+
+Showing logs for build [32mmeta-seldonio-seldon-core-maste-tll9x-550[0m stage [32mmeta-pipeline[0m and container [32mstep-create-tekton-crds[0m
+running command: echo \$(cat version.txt)-release > VERSION
+
+running command: git branch -D v\$(cat version.txt)-release || echo "No branch exists"
+error: branch 'v1.5.0-dev-release' not found.
+No branch exists
+
+running command: git checkout -b v\$(cat version.txt)-release
+Switched to a new branch 'v1.5.0-dev-release'
+
+running command: git push origin v\$(cat version.txt)-release -f
+To https://github.com/SeldonIO/seldon-core.git
+ ! [remote rejected] v1.5.0-dev-release -> v1.5.0-dev-release (cannot lock ref 'refs/heads/v1.5.0-dev-release': is at 5c2c89aeeb9454c521a8ee2fee83b43425aaa57f but expected 3a936bdb8320dd7d804955dfcb8cbf1b957d2941)
+error: failed to push some refs to 'https://github.com/SeldonIO/seldon-core.git'
+error: failed to set the version on release pipelines: failed to run '/bin/sh -c git push origin v$(cat version.txt)-release -f' command in directory '/workspace/source', output: ''
+[31m
+Pipeline failed on stage 'meta-pipeline' : container 'step-create-tekton-crds'. The execution of the pipeline has stopped.[0m
