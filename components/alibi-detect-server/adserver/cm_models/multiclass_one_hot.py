@@ -46,6 +46,14 @@ class MulticlassOneHot:
                     "tags": {"class": f"CLASS_{truth_class}"},
                 }
             )
+            metrics.append(
+                {
+                    "key": "seldon_metric_true_negative",
+                    "type": "COUNTER",
+                    "value": 1,
+                    "tags": {"class": f"CLASS_{response_class}"},
+                }
+            )
         else:
             metrics.append(
                 {
