@@ -1,4 +1,10 @@
-# Seldon Python Server
+# Seldon Python Server Configuration
+
+ * [Workers](#workers)
+ * [Threads](#threads)
+ * [Flask Development Server](#development-server)
+ * [Server Configuration](#configuration)
+
 
 To serve your component, Seldon's Python wrapper will use
 [Gunicorn](https://gunicorn.org/) under the hood by default.

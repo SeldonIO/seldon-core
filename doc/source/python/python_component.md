@@ -264,7 +264,7 @@ spec:
 
 ## Low level Methods
 
-If you want more control you can provide a low-level methods that will provide as input the raw proto buffer payloads. The signatures for these are shown below for release `sedon_core>=0.2.6.1`:
+If you want more control you can provide a low-level methods that will provide as input the raw proto buffer payloads. The signatures for these are shown below for release `seldon_core>=0.2.6.1`:
 
 ```python
     def predict_raw(self, msg: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
