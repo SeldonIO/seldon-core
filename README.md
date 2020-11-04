@@ -23,7 +23,7 @@ Seldon handles scaling to thousands of production machine learning models and pr
 
 With over 2M installs, Seldon Core is used across organisations to manage large scale deployment of machine learning models, and key benefits include:
 
- * Easy way to containerise ML models using our [pre-packaged inference servers](https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html), [custom serviers](https://docs.seldon.io/projects/seldon-core/en/latest/servers/custom.html), or [language wrappers](https://docs.seldon.io/projects/seldon-core/en/latest/wrappers/language_wrappers.html).
+ * Easy way to containerise ML models using our [pre-packaged inference servers](https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html), [custom servers](https://docs.seldon.io/projects/seldon-core/en/latest/servers/custom.html), or [language wrappers](https://docs.seldon.io/projects/seldon-core/en/latest/wrappers/language_wrappers.html).
  * Out of the box endpoints which can be tested through [Swagger UI](https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/openapi.html?highlight=swagger), [Seldon Python Client or Curl / GRPCurl](https://docs.seldon.io/projects/seldon-core/en/latest/python/python_module.html#seldon-core-python-api-client).
  * Cloud agnostic and tested on [AWS EKS, Azure AKS, Google GKE, Alicloud, Digital Ocean and Openshift](https://docs.seldon.io/projects/seldon-core/en/latest/examples/notebooks.html#cloud-specific-examples).
  * Powerful and rich inference graphs made out of [predictors, transformers, routers, combiners, and more](https://docs.seldon.io/projects/seldon-core/en/latest/examples/graph-metadata.html).
