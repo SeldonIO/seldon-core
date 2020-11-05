@@ -128,7 +128,6 @@ Documentation Index
    R Language Wrapper [ALPHA] <R/README.md>
    NodeJS Language Wrapper [ALPHA] <nodejs/README.md>
    Go Language Wrapper [ALPHA] <go/go_wrapper_link.rst>
-   Metadata [Incubating] <reference/apis/metadata.md>
 
 .. toctree::
    :maxdepth: 1
