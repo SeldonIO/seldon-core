@@ -2,11 +2,11 @@
 black==19.10b0
 flake8==3.8.1
 mypy<0.791
-Pillow==8.0.0
-pytest==6.1.0
+Pillow==8.0.1
+pytest==6.1.2
 pytest-cov==2.10.1
 tox<4.0.0
-grpcio-tools==1.32.0
+grpcio-tools==1.33.2
 mypy-protobuf==1.22
 
 # tenacity - used for smart retrying
@@ -19,4 +19,4 @@ coverage==5.3
 pandas==1.1.0
 
 # Fetch licenses
-pip-licenses==2.3.0
+pip-licenses==3.0.0
