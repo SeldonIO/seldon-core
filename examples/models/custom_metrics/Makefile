@@ -1,4 +1,4 @@
-VERSION=0.1
+VERSION=0.2
 IMAGE_BASE=seldonio/model-with-metrics
 PYTHON_WRAPPER:= $(shell cat ../../../version.txt)
 

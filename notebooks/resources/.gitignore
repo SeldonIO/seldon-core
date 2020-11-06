@@ -23,3 +23,5 @@ model_v2_mnist.yaml
 tracing_config.yaml
 model_grpc_size.yaml
 model_long_timeouts.yaml
+iris-sklearn-v2.yaml
+moviesentiment_explainer.yaml

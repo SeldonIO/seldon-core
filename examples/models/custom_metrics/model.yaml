@@ -8,7 +8,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/model-with-metrics:0.1
+        - image: seldonio/model-with-metrics:0.2
           name: classifier
     graph:
       children: []
