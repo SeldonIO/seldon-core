@@ -660,6 +660,7 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 				machinelearningv1.Label_seldon_id:  seldonId,
 				machinelearningv1.Label_managed_by: machinelearningv1.Label_value_seldon,
 			},
+			Annotations: map[string]string{},
 		},
 		Spec: corev1.ServiceSpec{
 			Selector:        map[string]string{machinelearningv1.Label_seldon_app: pSvcName},
@@ -677,7 +678,6 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 	}
 
 	if utils.GetEnv("AMBASSADOR_ENABLED", "false") == "true" {
-		psvc.Annotations = make(map[string]string)
 		//Create top level Service
 		ambassadorConfig, err := getAmbassadorConfigs(mlDep, p, pSvcName, engine_http_port, engine_grpc_port, isExplainer)
 		if err != nil {
@@ -688,6 +688,10 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 	if getAnnotation(mlDep, machinelearningv1.ANNOTATION_HEADLESS_SVC, "false") != "false" {
 		log.Info("Creating Headless SVC")
 		psvc.Spec.ClusterIP = "None"
+	}
+	// Add annotations from predictorspec
+	for k, v := range p.Annotations {
+		psvc.Annotations[k] = v
 	}
 	return psvc, err
 }
@@ -716,9 +720,10 @@ func createContainerService(deploy *appsv1.Deployment,
 
 	svc := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      containerServiceValue,
-			Namespace: namespace,
-			Labels:    map[string]string{containerServiceKey: containerServiceValue, machinelearningv1.Label_seldon_id: seldonId},
+			Name:        containerServiceValue,
+			Namespace:   namespace,
+			Labels:      map[string]string{containerServiceKey: containerServiceValue, machinelearningv1.Label_seldon_id: seldonId},
+			Annotations: map[string]string{},
 		},
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
@@ -751,6 +756,11 @@ func createContainerService(deploy *appsv1.Deployment,
 	existingGrpcPort := machinelearningv1.GetPort("grpc", con.Ports)
 	if existingGrpcPort == nil || con.Ports == nil {
 		con.Ports = append(con.Ports, corev1.ContainerPort{Name: "grpc", ContainerPort: pu.Endpoint.GrpcPort, Protocol: corev1.ProtocolTCP})
+	}
+
+	// Add annotations from predictorspec
+	for k, v := range p.Annotations {
+		svc.Annotations[k] = v
 	}
 
 	// Backwards compatible additions. From 1.5.0 onwards could always call httpPort as both should be available but for
