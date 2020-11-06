@@ -110,7 +110,7 @@ spec:
         mountPath: /assets
       command: [sh]
       source: |
-        mc config host add minio-local $MINIO_SERVER_HOST $MINIO_SERVER_ACCESS_KEY $MINIO_SERVER_ACCESS_KEY
+        mc config host add minio-local $MINIO_SERVER_HOST $MINIO_SERVER_ACCESS_KEY $MINIO_SERVER_ACCESS_KEY --api S3v4
         mc cp minio-local/{{ .Values.minio.inputDataPath }} /assets/input-data.txt
             
   - name: process-batch-inputs-template
