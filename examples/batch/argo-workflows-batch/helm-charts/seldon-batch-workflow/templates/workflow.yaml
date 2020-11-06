@@ -91,7 +91,7 @@ spec:
                      
   - name: download-object-store-template
     script:
-      image: minio/mc:RELEASE.2020-04-17T08-55-48Z
+      image: minio/{{ .Values.minio.minioclient.image }}
       env:
       - name: MINIO_SERVER_ACCESS_KEY
         valueFrom: 
@@ -137,7 +137,7 @@ spec:
       
   - name: upload-object-store-template
     script:
-      image: minio/mc:RELEASE.2020-04-17T08-55-48Z
+      image: minio/{{ .Values.minio.minioclient.image }}
       volumeMounts:
       - name: "{{ .Values.pvc.name }}"
         mountPath: /assets
