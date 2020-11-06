@@ -91,7 +91,7 @@ spec:
                      
   - name: download-object-store-template
     script:
-      image: minio/mc:RELEASE.2020-04-17T08-55-48Z
+      image: minio/{{ .Values.minio.minioclient.image }}
       env:
       - name: MINIO_SERVER_ACCESS_KEY
         valueFrom: 
@@ -110,7 +110,7 @@ spec:
         mountPath: /assets
       command: [sh]
       source: |
-        mc config host add minio-local $MINIO_SERVER_HOST $MINIO_SERVER_ACCESS_KEY $MINIO_SERVER_ACCESS_KEY
+        mc config host add minio-local $MINIO_SERVER_HOST $MINIO_SERVER_ACCESS_KEY $MINIO_SERVER_ACCESS_SECRET --api S3v4
         mc cp minio-local/{{ .Values.minio.inputDataPath }} /assets/input-data.txt
             
   - name: process-batch-inputs-template
@@ -137,7 +137,7 @@ spec:
       
   - name: upload-object-store-template
     script:
-      image: minio/mc:RELEASE.2020-04-17T08-55-48Z
+      image: minio/{{ .Values.minio.minioclient.image }}
       volumeMounts:
       - name: "{{ .Values.pvc.name }}"
         mountPath: /assets
@@ -156,6 +156,6 @@ spec:
       - name: MINIO_SERVER_HOST
         value: {{ .Values.minio.endpoint }}
       source: |
-        mc config host add minio-local $MINIO_SERVER_HOST $MINIO_SERVER_ACCESS_KEY $MINIO_SERVER_ACCESS_KEY
+        mc config host add minio-local $MINIO_SERVER_HOST $MINIO_SERVER_ACCESS_KEY $MINIO_SERVER_ACCESS_SECRET --api S3v4
         mc cp /assets/output-data.txt minio-local/{{ .Values.minio.outputDataPath }}
         
