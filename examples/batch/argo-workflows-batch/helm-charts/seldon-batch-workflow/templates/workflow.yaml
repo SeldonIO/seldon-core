@@ -156,6 +156,6 @@ spec:
       - name: MINIO_SERVER_HOST
         value: {{ .Values.minio.endpoint }}
       source: |
-        mc config host add minio-local $MINIO_SERVER_HOST $MINIO_SERVER_ACCESS_KEY $MINIO_SERVER_ACCESS_KEY
+        mc config host add minio-local $MINIO_SERVER_HOST $MINIO_SERVER_ACCESS_KEY $MINIO_SERVER_ACCESS_SECRET --api S3v4
         mc cp /assets/output-data.txt minio-local/{{ .Values.minio.outputDataPath }}
         
