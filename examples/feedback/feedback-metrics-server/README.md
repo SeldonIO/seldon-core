@@ -377,7 +377,7 @@ spec:
         - name: "PREDICTIVE_UNIT_ID"
           value: "classifier"
         - name: "PREDICTIVE_UNIT_IMAGE"
-          value: "alibi-detect-server:1.3.0-dev"
+          value: "alibi-detect-server:1.5.0-dev"
         - name: "PREDICTOR_ID"
           value: "default"
 ---
@@ -488,7 +488,7 @@ spec:
         - name: "PREDICTIVE_UNIT_ID"
           value: "classifier"
         - name: "PREDICTIVE_UNIT_IMAGE"
-          value: "alibi-detect-server:1.3.0-dev"
+          value: "alibi-detect-server:1.5.0-dev"
         - name: "PREDICTOR_ID"
           value: "default"
         securityContext:
