@@ -117,7 +117,7 @@ spec:
    spec:
      containers:
        - name: user-container
-         image: docker.io/seldonio/seldon-request-logger:1.4.0-dev
+         image: docker.io/seldonio/seldon-request-logger:1.5.0-dev
          imagePullPolicy: IfNotPresent
          env:
            - name: ELASTICSEARCH_HOST
@@ -351,7 +351,7 @@ spec:
           runAsUser: 8888
       containers:
       - name: user-container
-        image: seldonio/alibi-detect-server:1.4.0-dev
+        image: seldonio/alibi-detect-server:1.5.0-dev
         imagePullPolicy: IfNotPresent
         args:
         - --model_name
@@ -465,7 +465,7 @@ spec:
         autoscaling.knative.dev/minScale: "1"
     spec:
       containers:
-      - image: "seldonio/alibi-detect-server:1.4.0-dev"
+      - image: "seldonio/alibi-detect-server:1.5.0-dev"
         args:
         - --model_name
         - multiclassserver
