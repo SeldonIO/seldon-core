@@ -55,6 +55,9 @@ batchWorker:
   # Whether to enable benchmarking on the batch processor worker
   enableBenchmark: true
 minio:
+  # Minio Client (mc) Image name
+  minioclient:
+    image: mc:RELEASE.2020-10-03T02-54-56Z
   # The location of the minio endpoint 
   endpoint: http://minio.minio-system.svc.cluster.local:9000
   # This is the secret that should contain the values to access minio
