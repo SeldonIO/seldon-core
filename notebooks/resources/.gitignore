@@ -25,3 +25,7 @@ model_grpc_size.yaml
 model_long_timeouts.yaml
 iris-sklearn-v2.yaml
 moviesentiment_explainer.yaml
+iris.yaml
+elasticnet_wine.yaml
+halfplustwo_rest.yaml
+mnist_rest.yaml
