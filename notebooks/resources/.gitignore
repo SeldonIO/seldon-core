@@ -29,3 +29,4 @@ iris.yaml
 elasticnet_wine.yaml
 halfplustwo_rest.yaml
 mnist_rest.yaml
+iris-xgboost-v2.yaml
