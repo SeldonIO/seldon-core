@@ -1,5 +1,4 @@
-
-FROM seldonio/seldon-core-s2i-python37:1.3.0-dev
+FROM seldonio/seldon-core-s2i-python37:1.5.0-dev
 
 # Add Model
 COPY training/outputs/pytorch_model.bin /microservice/pytorch_model.bin
