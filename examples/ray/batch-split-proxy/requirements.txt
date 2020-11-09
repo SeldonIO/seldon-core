@@ -1,9 +1,10 @@
-ray==0.8.7
-jupyterlab==2.2.8
-
+ray==1.0.0
 
 simpletransformers==0.48.5
 tensorboardX==1.9
+
+# newer version seems to be missing wheels
+sentencepiece==0.1.91
 
 transformers==3.2.0
 torch==1.6.0
