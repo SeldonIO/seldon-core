@@ -4,6 +4,11 @@ IMAGE_VERSION ?= 0.1
 
 KIND_NAME ?= kind
 
+download:
+	mkdir -p training/outputs
+	curl -X GET -o training/outputs/pytorch_model.bin "https://storage.googleapis.com/seldon-models/pytorch/moviesentiment_roberta/pytorch_model_v2.bin"
+
+
 # Image build and push
 build-image:
 	docker build . -t ${DOCKER_REPOSITORY}/${IMAGE_NAME}:${IMAGE_VERSION}
