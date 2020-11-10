@@ -28,6 +28,19 @@
                 "name": "mytrans",
                 "replicas": 1
             }
-        ]
-    }
+          }
+        ],
+        "graph": {
+          "children": [],
+          "name": "trans",
+          "endpoint": {
+            "type": "REST"
+          },
+          "type": "TRANSFORMER"
+        },
+        "name": "mytrans",
+        "replicas": 1
+      }
+    ]
+  }
 }

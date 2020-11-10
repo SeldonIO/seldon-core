@@ -40,8 +40,6 @@ helm install $MY_MODEL_NAME seldonio/seldon-od-transformer --namespace $MODELS_N
 | model.image.name | string | `"seldonio/mock_classifier:1.0"` |  |
 | model.name | string | `"classifier"` |  |
 | name | string | `"seldon-od-transformer"` |  |
-| oauth.key | string | `nil` |  |
-| oauth.secret | string | `nil` |  |
 | outlierDetection.enabled | bool | `true` |  |
 | outlierDetection.isolationforest.image.name | string | `"seldonio/outlier-if-tranformer:0.1"` |  |
 | outlierDetection.isolationforest.load_path | string | `"./models/"` |  |

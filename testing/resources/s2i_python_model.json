@@ -28,6 +28,19 @@
                 "name": "mymodel",
                 "replicas": 1
             }
-        ]
-    }
+          }
+        ],
+        "graph": {
+          "children": [],
+          "name": "model",
+          "endpoint": {
+            "type": "REST"
+          },
+          "type": "MODEL"
+        },
+        "name": "mymodel",
+        "replicas": 1
+      }
+    ]
+  }
 }

@@ -1,53 +1,53 @@
 {
-    "apiVersion": "machinelearning.seldon.io/v1alpha2",
-    "kind": "SeldonDeployment",
-    "metadata": {
-        "labels": {
-            "app": "seldon"
-        },
-        "name": "seldon-deployment-example"
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": {
+    "labels": {
+      "app": "seldon"
     },
-    "spec": {
-        "annotations": {
-            "project_name": "H2O Example",
-            "deployment_version": "0.1"
-        },
-        "name": "h2o-deployment",
-        "oauth_key": "oauth-key",
-        "oauth_secret": "oauth-secret",
-        "predictors": [
-            {
-                "componentSpecs": [{
-                    "spec": {
-                        "containers": [
-                            {
-                                "image": "h2o-test:0.1",
-                                "imagePullPolicy": "IfNotPresent",
-                                "name": "prostate-classifier",
-                                "resources": {
-                                    "requests": {
-                                        "memory": "1Mi"
-                                    }
-                                }
-                            }
-                        ],
-                        "terminationGracePeriodSeconds": 20
+    "name": "seldon-deployment-example"
+  },
+  "spec": {
+    "annotations": {
+      "project_name": "H2O Example",
+      "deployment_version": "0.1"
+    },
+    "name": "h2o-deployment",
+    "predictors": [
+      {
+        "componentSpecs": [
+          {
+            "spec": {
+              "containers": [
+                {
+                  "image": "h2o-test:0.1",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "prostate-classifier",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi"
                     }
-                }],
-                "graph": {
-                    "children": [],
-                    "name": "prostate-classifier",
-                    "endpoint": {
-                        "type" : "REST"
-                    },
-                    "type": "MODEL"
-                },
-                "name": "h2o-predictor",
-                "replicas": 1,
-                "annotations": {
-                "predictor_version" : "0.1"
+                  }
                 }
+              ],
+              "terminationGracePeriodSeconds": 20
             }
-        ]
-    }
+          }
+        ],
+        "graph": {
+          "children": [],
+          "name": "prostate-classifier",
+          "endpoint": {
+            "type": "REST"
+          },
+          "type": "MODEL"
+        },
+        "name": "h2o-predictor",
+        "replicas": 1,
+        "annotations": {
+          "predictor_version": "0.1"
+        }
+      }
+    ]
+  }
 }

@@ -445,8 +445,6 @@ We can now deploy our model by using the Seldon graph definition:
             "deployment_version": "v1"
         },
         "name": "reddit-classifier",
-        "oauth_key": "oauth-key",
-        "oauth_secret": "oauth-secret",
         "predictors": [
             {
                 "componentSpecs": [{

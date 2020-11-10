@@ -1,53 +1,53 @@
 {
-    "apiVersion": "machinelearning.seldon.io/v1alpha2",
-    "kind": "SeldonDeployment",
-    "metadata": {
-        "labels": {
-            "app": "seldon"
-        },
-        "name": "seldon-deployment-example"
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": {
+    "labels": {
+      "app": "seldon"
     },
-    "spec": {
-        "annotations": {
-            "project_name": "Bad loans prediction",
-            "deployment_version": "0.1"
-        },
-        "name": "h2o-bad-loans-deployment",
-        "oauth_key": "oauth-key",
-        "oauth_secret": "oauth-secret",
-        "predictors": [
-            {
-                "componentSpecs": [{
-                    "spec": {
-                        "containers": [
-                            {
-                                "image": "seldonio/h2omodel:0.1",
-                                "imagePullPolicy": "IfNotPresent",
-                                "name": "h2o-bad-loans-classifier",
-                                "resources": {
-                                    "requests": {
-                                        "memory": "1Mi"
-                                    }
-                                }
-                            }
-                        ],
-                        "terminationGracePeriodSeconds": 20
+    "name": "seldon-deployment-example"
+  },
+  "spec": {
+    "annotations": {
+      "project_name": "Bad loans prediction",
+      "deployment_version": "0.1"
+    },
+    "name": "h2o-bad-loans-deployment",
+    "predictors": [
+      {
+        "componentSpecs": [
+          {
+            "spec": {
+              "containers": [
+                {
+                  "image": "seldonio/h2omodel:0.1",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "h2o-bad-loans-classifier",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi"
                     }
-                }],
-                "graph": {
-                    "children": [],
-                    "name": "h2o-bad-loans-classifier",
-                    "endpoint": {
-                        "type" : "REST"
-                    },
-                    "type": "MODEL"
-                },
-                "name": "h2o-bad-loans-predictor",
-                "replicas": 1,
-                "annotations": {
-                "predictor_version" : "0.1"
+                  }
                 }
+              ],
+              "terminationGracePeriodSeconds": 20
             }
-        ]
-    }
+          }
+        ],
+        "graph": {
+          "children": [],
+          "name": "h2o-bad-loans-classifier",
+          "endpoint": {
+            "type": "REST"
+          },
+          "type": "MODEL"
+        },
+        "name": "h2o-bad-loans-predictor",
+        "replicas": 1,
+        "annotations": {
+          "predictor_version": "0.1"
+        }
+      }
+    ]
+  }
 }

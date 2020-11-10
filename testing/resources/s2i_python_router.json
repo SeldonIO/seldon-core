@@ -34,9 +34,36 @@
                     "name": "router",
 		    "type": "ROUTER"
                 },
-                "name": "myrouter",
-                "replicas": 1
+                {
+                  "image": "seldonio/testrouter_rest:0.1",
+                  "imagePullPolicy": "Never",
+                  "name": "router"
+                }
+              ],
+              "terminationGracePeriodSeconds": 1
             }
-        ]
-    }
+          }
+        ],
+        "graph": {
+          "children": [
+            {
+              "children": [],
+              "name": "model",
+              "endpoint": {
+                "type": "REST"
+              },
+              "type": "MODEL"
+            }
+          ],
+          "name": "router",
+          "endpoint": {
+            "type": "REST"
+          },
+          "type": "ROUTER"
+        },
+        "name": "myrouter",
+        "replicas": 1
+      }
+    ]
+  }
 }

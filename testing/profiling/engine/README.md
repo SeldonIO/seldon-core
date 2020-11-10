@@ -43,8 +43,6 @@ Example deployment:
     },
     "spec": {
         "name": "test-deployment",
-        "oauth_key": "oauth-key",
-        "oauth_secret": "oauth-secret",
         "predictors": [
             {
                 "componentSpecs": [{

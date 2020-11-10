@@ -9,39 +9,39 @@
   },
   "spec": {
     "name": "longname30longname30longname3012",
-    "oauth_key": "oauth-key",
-    "oauth_secret": "oauth-secret",
     "predictors": [
       {
-        "componentSpecs": [{
-          "spec": {
-            "containers": [
-              {
-                "image": "seldonio/mock_classifier:1.0",
-                "imagePullPolicy": "IfNotPresent",
-                "name": "longname30longname30longname3012",
-                "resources": {
-                  "requests": {
-                    "memory": "1Mi"
+        "componentSpecs": [
+          {
+            "spec": {
+              "containers": [
+                {
+                  "image": "seldonio/mock_classifier:1.0",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "longname30longname30longname3012",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi"
+                    }
                   }
                 }
-              }
-            ],
-            "terminationGracePeriodSeconds": 1
+              ],
+              "terminationGracePeriodSeconds": 1
+            }
           }
-        }],
+        ],
         "graph": {
           "children": [],
           "name": "longname30longname30longname3012",
           "endpoint": {
-            "type" : "REST"
+            "type": "REST"
           },
           "type": "MODEL"
         },
         "name": "example",
         "replicas": 1,
         "labels": {
-          "version" : "v1"
+          "version": "v1"
         }
       }
     ]
