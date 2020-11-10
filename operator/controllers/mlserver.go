@@ -38,14 +38,6 @@ func mergeMLServerContainer(existing *v1.Container, mlServer *v1.Container) *v1.
 	// TODO: Allow overriding some of the env vars
 	existing.Env = append(existing.Env, mlServer.Env...)
 
-	if existing.ReadinessProbe == nil {
-		existing.ReadinessProbe = mlServer.ReadinessProbe
-	}
-
-	if existing.LivenessProbe == nil {
-		existing.LivenessProbe = mlServer.LivenessProbe
-	}
-
 	if existing.SecurityContext == nil {
 		existing.SecurityContext = mlServer.SecurityContext
 	}
@@ -53,6 +45,10 @@ func mergeMLServerContainer(existing *v1.Container, mlServer *v1.Container) *v1.
 	// Ports always overwritten
 	// Need to look as we seem to add metrics ports automatically which mean this needs to be done
 	existing.Ports = mlServer.Ports
+
+	// Override probes specific to MLServer and the V2 dataplane
+	existing.LivenessProbe = mlServer.LivenessProbe
+	existing.ReadinessProbe = mlServer.ReadinessProbe
 
 	return existing
 }

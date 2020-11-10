@@ -34,23 +34,31 @@ var _ = Describe("MLServer helpers", func() {
 	Describe("mergeMLServerContainer", func() {
 		var existing *v1.Container
 		var mlServer *v1.Container
+		var merged *v1.Container
 
 		BeforeEach(func() {
 			existing = &v1.Container{
 				Env: []v1.EnvVar{
 					{Name: "FOO", Value: "BAR"},
 				},
+				LivenessProbe:  &v1.Probe{},
+				ReadinessProbe: &v1.Probe{},
 			}
 
 			mlServer, _ = getMLServerContainer(pu)
+
+			merged = mergeMLServerContainer(existing, mlServer)
 		})
 
 		It("should merge containers adding extra env", func() {
-			merged := mergeMLServerContainer(existing, mlServer)
-
 			Expect(merged.Env).To(ContainElement(v1.EnvVar{Name: "FOO", Value: "BAR"}))
 			Expect(merged.Env).To(ContainElements(mlServer.Env))
 			Expect(merged.Image).To(Equal(mlServer.Image))
+		})
+
+		It("should override liveness and readiness probes", func() {
+			Expect(merged.LivenessProbe.Handler.HTTPGet.Path).To(Equal(constants.KFServingProbeLivePath))
+			Expect(merged.ReadinessProbe.Handler.HTTPGet.Path).To(Equal(constants.KFServingProbeReadyPath))
 		})
 	})
 
