@@ -10,7 +10,6 @@ from seldon_core.utils import (
 import numpy as np
 import grpc
 import requests
-from requests.auth import HTTPBasicAuth
 from typing import Tuple, Dict, Union, List, Optional, Iterable
 import json
 import logging
@@ -158,8 +157,6 @@ class SeldonClient(object):
         namespace: str = None,
         deployment_name: str = None,
         payload_type: str = "tensor",
-        oauth_key: str = None,
-        oauth_secret: str = None,
         seldon_rest_endpoint: str = "localhost:8002",
         seldon_grpc_endpoint: str = "localhost:8004",
         gateway_endpoint: str = "localhost:8003",
@@ -185,10 +182,6 @@ class SeldonClient(object):
            name of seldon deployment
         payload_type
            type of payload - tensor, ndarray or tftensor
-        oauth_key
-           OAUTH key (if using seldon api server)
-        oauth_secret
-           OAUTH secret (if using seldon api server)
         seldon_rest_endpoint
            REST endpoint to seldon api server
         seldon_grpc_endpoint
@@ -277,8 +270,6 @@ class SeldonClient(object):
         transport: str = None,
         deployment_name: str = None,
         payload_type: str = None,
-        oauth_key: str = None,
-        oauth_secret: str = None,
         seldon_rest_endpoint: str = None,
         seldon_grpc_endpoint: str = None,
         gateway_endpoint: str = None,
@@ -312,10 +303,6 @@ class SeldonClient(object):
            name of seldon deployment
         payload_type
            type of payload - tensor, ndarray or tftensor
-        oauth_key
-           OAUTH key (if using seldon api server)
-        oauth_secret
-           OAUTH secret (if using seldon api server)
         seldon_rest_endpoint
            REST endpoint to seldon api server
         seldon_grpc_endpoint
@@ -360,8 +347,6 @@ class SeldonClient(object):
             transport=transport,
             deployment_name=deployment_name,
             payload_type=payload_type,
-            oauth_key=oauth_key,
-            oauth_secret=oauth_secret,
             seldon_rest_endpoint=seldon_rest_endpoint,
             seldon_grpc_endpoint=seldon_grpc_endpoint,
             gateway_endpoint=gateway_endpoint,
@@ -389,13 +374,6 @@ class SeldonClient(object):
                 return grpc_predict_gateway(**k)
             else:
                 raise SeldonClientException("Unknown transport " + k["transport"])
-        elif k["gateway"] == "seldon":
-            if k["transport"] == "rest":
-                return rest_predict_seldon_oauth(**k)
-            elif k["transport"] == "grpc":
-                return grpc_predict_seldon_oauth(**k)
-            else:
-                raise SeldonClientException("Unknown transport " + k["transport"])
         else:
             raise SeldonClientException("Unknown gateway " + k["gateway"])
 
@@ -408,8 +386,6 @@ class SeldonClient(object):
         transport: str = None,
         deployment_name: str = None,
         payload_type: str = None,
-        oauth_key: str = None,
-        oauth_secret: str = None,
         seldon_rest_endpoint: str = None,
         seldon_grpc_endpoint: str = None,
         gateway_endpoint: str = None,
@@ -438,10 +414,6 @@ class SeldonClient(object):
            name of seldon deployment
         payload_type
            payload - tensor, ndarray or tftensor
-        oauth_key
-           OAUTH key (if using seldon api server)
-        oauth_secret
-           OAUTH secret (if using seldon api server)
         seldon_rest_endpoint
            REST endpoint to seldon api server
         seldon_grpc_endpoint
@@ -472,8 +444,6 @@ class SeldonClient(object):
             transport=transport,
             deployment_name=deployment_name,
             payload_type=payload_type,
-            oauth_key=oauth_key,
-            oauth_secret=oauth_secret,
             seldon_rest_endpoint=seldon_rest_endpoint,
             seldon_grpc_endpoint=seldon_grpc_endpoint,
             gateway_endpoint=gateway_endpoint,
@@ -492,17 +462,6 @@ class SeldonClient(object):
                 )
             elif k["transport"] == "grpc":
                 return grpc_feedback_gateway(
-                    prediction_request, prediction_response, reward, **k
-                )
-            else:
-                raise SeldonClientException("Unknown transport " + k["transport"])
-        elif k["gateway"] == "seldon":
-            if k["transport"] == "rest":
-                return rest_feedback_seldon_oauth(
-                    prediction_request, prediction_response, reward, **k
-                )
-            elif k["transport"] == "grpc":
-                return grpc_feedback_seldon_oauth(
                     prediction_request, prediction_response, reward, **k
                 )
             else:
@@ -617,8 +576,6 @@ class SeldonClient(object):
         transport: str = None,
         deployment_name: str = None,
         payload_type: str = None,
-        oauth_key: str = None,
-        oauth_secret: str = None,
         seldon_rest_endpoint: str = None,
         seldon_grpc_endpoint: str = None,
         gateway_endpoint: str = None,
@@ -647,10 +604,6 @@ class SeldonClient(object):
            name of seldon deployment
         payload_type
            payload - tensor, ndarray or tftensor
-        oauth_key
-           OAUTH key (if using seldon api server)
-        oauth_secret
-           OAUTH secret (if using seldon api server)
         seldon_rest_endpoint
            REST endpoint to seldon api server
         seldon_grpc_endpoint
@@ -698,8 +651,6 @@ class SeldonClient(object):
             transport=transport,
             deployment_name=deployment_name,
             payload_type=payload_type,
-            oauth_key=oauth_key,
-            oauth_secret=oauth_secret,
             seldon_rest_endpoint=seldon_rest_endpoint,
             seldon_grpc_endpoint=seldon_grpc_endpoint,
             gateway_endpoint=gateway_endpoint,
@@ -753,8 +704,6 @@ class SeldonClient(object):
         transport: str = None,
         deployment_name: str = None,
         payload_type: str = None,
-        oauth_key: str = None,
-        oauth_secret: str = None,
         seldon_rest_endpoint: str = None,
         seldon_grpc_endpoint: str = None,
         gateway_endpoint: str = None,
@@ -781,10 +730,6 @@ class SeldonClient(object):
            name of seldon deployment
         payload_type
            payload - tensor, ndarray or tftensor
-        oauth_key
-           OAUTH key (if using seldon api server)
-        oauth_secret
-           OAUTH secret (if using seldon api server)
         seldon_rest_endpoint
            REST endpoint to seldon api server
         seldon_grpc_endpoint
@@ -814,8 +759,6 @@ class SeldonClient(object):
             transport=transport,
             deployment_name=deployment_name,
             payload_type=payload_type,
-            oauth_key=oauth_key,
-            oauth_secret=oauth_secret,
             seldon_rest_endpoint=seldon_rest_endpoint,
             seldon_grpc_endpoint=seldon_grpc_endpoint,
             gateway_endpoint=gateway_endpoint,
@@ -1243,242 +1186,6 @@ def microservice_api_grpc_feedback(
 #
 # External API
 #
-
-
-def get_token(
-    oauth_key: str = "",
-    oauth_secret: str = "",
-    namespace: str = None,
-    endpoint: str = "localhost:8002",
-) -> str:
-    """
-    Get an OAUTH key from the Seldon Gateway
-
-    Parameters
-    ----------
-    oauth_key
-       OAUTH key
-    oauth_secret
-       OAUTH secret
-    namespace
-       k8s namespace of running deployment
-    endpoint
-       The host:port of the endpoint for the OAUTH API server
-    Returns
-    -------
-       The OAUTH token
-
-    """
-    payload = {"grant_type": "client_credentials"}
-    if namespace is None:
-        key = oauth_key
-    else:
-        key = oauth_key + namespace
-    response = requests.post(
-        "http://" + endpoint + "/oauth/token",
-        auth=HTTPBasicAuth(key, oauth_secret),
-        data=payload,
-    )
-    if response.status_code == 200:
-        token = response.json()["access_token"]
-        return token
-    else:
-        logger.debug("Failed to get token:" + response.text)
-        raise SeldonClientException(response.text)
-
-
-def rest_predict_seldon_oauth(
-    oauth_key: str,
-    oauth_secret: str,
-    namespace: str = None,
-    seldon_rest_endpoint: str = "localhost:8002",
-    shape: Tuple = (1, 1),
-    data: object = None,
-    payload_type: str = "tensor",
-    bin_data: Union[bytes, bytearray] = None,
-    str_data: str = None,
-    json_data: Union[str, List, Dict] = None,
-    names: Iterable[str] = None,
-    client_return_type: str = "proto",
-    **kwargs,
-) -> SeldonClientPrediction:
-    """
-    Call Seldon API Gateway using REST
-
-    Parameters
-    ----------
-    oauth_key
-       OAUTH key
-    oauth_secret
-       OAUTH secret
-    namespace
-       k8s namespace of running deployment
-    seldon_rest_endpoint
-       Endpoint of REST endpoint
-    shape
-       Shape of endpoint
-    data
-       Data to send
-    payload_type
-       payload - tensor, ndarray or tftensor
-    bin_data
-       Binary data to send
-    str_data
-       String data to send
-    json_data
-        JSON data to send
-    names
-       column names
-    client_return_type
-        the return type of all functions can be either dict or proto
-    kwargs
-
-    Returns
-    -------
-       Seldon Client Prediction
-
-    """
-    token = get_token(oauth_key, oauth_secret, namespace, seldon_rest_endpoint)
-    if bin_data is not None:
-        request = prediction_pb2.SeldonMessage(binData=bin_data)
-    elif str_data is not None:
-        request = prediction_pb2.SeldonMessage(strData=str_data)
-    elif json_data is not None:
-        request = json_to_seldon_message({"jsonData": json_data})
-    else:
-        if data is None:
-            data = np.random.rand(*shape)
-        datadef = array_to_grpc_datadef(payload_type, data, names=names)
-        request = prediction_pb2.SeldonMessage(data=datadef)
-    headers = {"Authorization": "Bearer " + token}
-    payload = seldon_message_to_json(request)
-    response_raw = requests.post(
-        "http://" + seldon_rest_endpoint + "/api/v0.1/predictions",
-        headers=headers,
-        json=payload,
-    )
-    if response_raw.status_code == 200:
-        success = True
-        msg = ""
-    else:
-        success = False
-        msg = str(response_raw.status_code) + ":" + response_raw.reason
-    try:
-        if len(response_raw.text) > 0:
-            try:
-                if client_return_type == "proto":
-                    response = json_to_seldon_message(response_raw.json())
-                elif client_return_type == "dict":
-                    response = response_raw.json()
-                else:
-                    SeldonClientException("Invalid client_return_type")
-            except:
-                response = None
-        else:
-            response = None
-        return SeldonClientPrediction(request, response, success, msg)
-    except Exception as e:
-        return SeldonClientPrediction(request, None, False, str(e))
-
-
-def grpc_predict_seldon_oauth(
-    oauth_key: str,
-    oauth_secret: str,
-    namespace: str = None,
-    seldon_rest_endpoint: str = "localhost:8002",
-    seldon_grpc_endpoint: str = "localhost:8004",
-    shape: Tuple[int, int] = (1, 1),
-    data: np.ndarray = None,
-    payload_type: str = "tensor",
-    bin_data: Union[bytes, bytearray] = None,
-    str_data: str = None,
-    json_data: Union[str, List, Dict] = None,
-    custom_data: any_pb2.Any = None,
-    grpc_max_send_message_length: int = 4 * 1024 * 1024,
-    grpc_max_receive_message_length: int = 4 * 1024 * 1024,
-    names: Iterable[str] = None,
-    client_return_type: str = "proto",
-    **kwargs,
-) -> SeldonClientPrediction:
-    """
-    Call Seldon gRPC API Gateway endpoint
-
-    Parameters
-    ----------
-    oauth_key
-       OAUTH key
-    oauth_secret
-       OAUTH secret
-    namespace
-       k8s namespace of running deployment
-    seldon_rest_endpoint
-       Endpoint of REST endpoint
-    shape
-       Shape of endpoint
-    data
-       Data to send
-    payload_type
-       payload - tensor, ndarray or tftensor
-    bin_data
-       Binary data to send
-    str_data
-       String data to send
-    json_data
-       JSON data to send
-    custom_data
-       Custom data to send
-    grpc_max_send_message_length
-       Max grpc send message size in bytes
-    grpc_max_receive_message_length
-       Max grpc receive message size in bytes
-    names
-       Column names
-    client_return_type
-        the return type of all functions can be either dict or proto
-    kwargs
-
-    Returns
-    -------
-       A SeldonMessage proto
-
-    """
-    token = get_token(oauth_key, oauth_secret, namespace, seldon_rest_endpoint)
-    if bin_data is not None:
-        request = prediction_pb2.SeldonMessage(binData=bin_data)
-    elif str_data is not None:
-        request = prediction_pb2.SeldonMessage(strData=str_data)
-    elif json_data is not None:
-        request = json_to_seldon_message({"jsonData": json_data})
-    elif custom_data is not None:
-        request = prediction_pb2.SeldonMessage(customData=custom_data)
-    else:
-        if data is None:
-            data = np.random.rand(*shape)
-        datadef = array_to_grpc_datadef(payload_type, data, names=names)
-        request = prediction_pb2.SeldonMessage(data=datadef)
-    channel = grpc.insecure_channel(
-        seldon_grpc_endpoint,
-        options=[
-            ("grpc.max_send_message_length", grpc_max_send_message_length),
-            ("grpc.max_receive_message_length", grpc_max_receive_message_length),
-        ],
-    )
-    stub = prediction_pb2_grpc.SeldonStub(channel)
-    metadata = [("oauth_token", token)]
-    try:
-        response = stub.Predict(request=request, metadata=metadata)
-        channel.close()
-        if client_return_type == "dict":
-            request = seldon_message_to_json(request)
-            response = seldon_message_to_json(response)
-        elif client_return_type != "proto":
-            raise SeldonClientException("Invalid client_return_type")
-        return SeldonClientPrediction(request, response, True, "")
-    except Exception as e:
-        channel.close()
-        return SeldonClientPrediction(request, None, False, str(e))
-
-
 def rest_predict_gateway(
     deployment_name: str,
     namespace: str = None,
@@ -1996,153 +1703,6 @@ def grpc_predict_gateway(
     except Exception as e:
         channel.close()
         return SeldonClientPrediction(request, None, False, str(e))
-
-
-def rest_feedback_seldon_oauth(
-    prediction_request: prediction_pb2.SeldonMessage = None,
-    prediction_response: prediction_pb2.SeldonMessage = None,
-    reward: float = 0,
-    oauth_key: str = "",
-    oauth_secret: str = "",
-    namespace: str = None,
-    seldon_rest_endpoint: str = "localhost:8002",
-    client_return_type: str = "proto",
-    **kwargs,
-) -> SeldonClientFeedback:
-    """
-    Send Feedback to Seldon API Gateway using REST
-
-    Parameters
-    ----------
-    prediction_request
-       Previous prediction request
-    prediction_response
-       Previous prediction response
-    reward
-       A reward to send in feedback
-    oauth_key
-       OAUTH key
-    oauth_secret
-       OAUTH secret
-    namespace
-       k8s namespace of running deployment
-    seldon_rest_endpoint
-       Endpoint of REST endpoint
-    client_return_type
-        the return type of all functions can be either dict or proto
-    kwargs
-
-    Returns
-    -------
-
-    """
-    token = get_token(oauth_key, oauth_secret, namespace, seldon_rest_endpoint)
-    headers = {"Authorization": "Bearer " + token}
-    request = prediction_pb2.Feedback(
-        request=prediction_request, response=prediction_response, reward=reward
-    )
-    payload = feedback_to_json(request)
-    response_raw = requests.post(
-        "http://" + seldon_rest_endpoint + "/api/v1.0/feedback",
-        headers=headers,
-        json=payload,
-    )
-    if response_raw.status_code == 200:
-        success = True
-        msg = ""
-    else:
-        success = False
-        msg = str(response_raw.status_code) + ":" + response_raw.reason
-    try:
-        if len(response_raw.text) > 0:
-            try:
-                if client_return_type == "proto":
-                    response = json_to_seldon_message(response_raw.json())
-                elif client_return_type == "dict":
-                    response = response_raw.json()
-                else:
-                    raise SeldonClientException("Invalid client_return_type")
-            except:
-                response = None
-        else:
-            response = None
-        return SeldonClientFeedback(request, response, success, msg)
-    except Exception as e:
-        return SeldonClientFeedback(request, None, False, str(e))
-
-
-def grpc_feedback_seldon_oauth(
-    prediction_request: prediction_pb2.SeldonMessage = None,
-    prediction_response: prediction_pb2.SeldonMessage = None,
-    reward: float = 0,
-    oauth_key: str = "",
-    oauth_secret: str = "",
-    namespace: str = None,
-    seldon_rest_endpoint: str = "localhost:8002",
-    seldon_grpc_endpoint: str = "localhost:8004",
-    grpc_max_send_message_length: int = 4 * 1024 * 1024,
-    grpc_max_receive_message_length: int = 4 * 1024 * 1024,
-    client_return_type: str = "proto",
-    **kwargs,
-) -> SeldonClientFeedback:
-    """
-    Send feedback to Seldon API gateway via gRPC
-
-    Parameters
-    ----------
-    prediction_request
-       Previous prediction request
-    prediction_response
-       Previous prediction response
-    reward
-       A reward to send in feedback
-    oauth_key
-       OAUTH key
-    oauth_secret
-       OAUTH secret
-    namespace
-       k8s namespace of running deployment
-    seldon_rest_endpoint
-       Endpoint of REST endpoint
-    seldon_grpc_endpoint
-       Endpoint for Seldon grpc
-    grpc_max_send_message_length
-       Max grpc send message size in bytes
-    grpc_max_receive_message_length
-       Max grpc receive message size in bytes
-    client_return_type
-        the return type of all functions can be either dict or proto
-    kwargs
-
-    Returns
-    -------
-
-    """
-    token = get_token(oauth_key, oauth_secret, namespace, seldon_rest_endpoint)
-    request = prediction_pb2.Feedback(
-        request=prediction_request, response=prediction_response, reward=reward
-    )
-    channel = grpc.insecure_channel(
-        seldon_grpc_endpoint,
-        options=[
-            ("grpc.max_send_message_length", grpc_max_send_message_length),
-            ("grpc.max_receive_message_length", grpc_max_receive_message_length),
-        ],
-    )
-    stub = prediction_pb2_grpc.SeldonStub(channel)
-    metadata = [("oauth_token", token)]
-    try:
-        response = stub.SendFeedback(request=request, metadata=metadata)
-        channel.close()
-        if client_return_type == "dict":
-            request = seldon_message_to_json(request)
-            response = seldon_message_to_json(response)
-        elif client_return_type != "proto":
-            raise SeldonClientException("Invalid client_return_type")
-        return SeldonClientFeedback(request, response, True, "")
-    except Exception as e:
-        channel.close()
-        return SeldonClientFeedback(request, None, False, str(e))
 
 
 def rest_feedback_gateway(
