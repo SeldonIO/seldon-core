@@ -1,44 +1,43 @@
 {
-    "apiVersion": "machinelearning.seldon.io/v1alpha2",
-    "kind": "SeldonDeployment",
-    "metadata": {
-        "labels": {
-            "app": "seldon"
-        },
-        "name": "seldon-core-loadtest"
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": {
+    "labels": {
+      "app": "seldon"
     },
-    "spec": {
-        "annotations": {
-            "project_name": "loadtest",
-            "deployment_version": "v1"
+    "name": "seldon-core-loadtest"
+  },
+  "spec": {
+    "annotations": {
+      "project_name": "loadtest",
+      "deployment_version": "v1"
+    },
+    "name": "loadtest",
+    "predictors": [
+      {
+        "componentSpecs": [
+          {
+            "spec": {
+              "containers": [],
+              "terminationGracePeriodSeconds": 20
+            }
+          }
+        ],
+        "graph": {
+          "children": [],
+          "name": "stub",
+          "endpoint": {
+            "type": "REST"
+          },
+          "type": "MODEL",
+          "implementation": "SIMPLE_MODEL"
         },
         "name": "loadtest",
-        "oauth_key": "oauth-key",
-        "oauth_secret": "oauth-secret",
-        "predictors": [
-            {
-                "componentSpecs": [{
-                    "spec": {
-                        "containers": [
-                        ],
-                        "terminationGracePeriodSeconds": 20
-                    }
-                }],
-                "graph": {
-                    "children": [],
-                    "name": "stub",
-                    "endpoint": {
-			"type" : "REST"
-		    },
-                    "type": "MODEL",
-		    "implementation": "SIMPLE_MODEL"
-                },
-                "name": "loadtest",
-                "replicas": 1,
-		"annotations": {
-		    "predictor_version" : "v1"
-		}
-            }
-        ]
-    }
+        "replicas": 1,
+        "annotations": {
+          "predictor_version": "v1"
+        }
+      }
+    ]
+  }
 }

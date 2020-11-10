@@ -1,88 +1,88 @@
 {
-    "apiVersion": "machinelearning.seldon.io/v1alpha2",
-    "kind": "SeldonDeployment",
-    "metadata": {
-	"labels": {
-	    "app": "seldon"
-	},
-	"name": "seldon-deployment"
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": {
+    "labels": {
+      "app": "seldon"
     },
-    "spec": {
-	"name": "test-deployment-ensembles",
-	"oauth_key": "oauth-key",
-	"oauth_secret": "oauth-secret",
-	"predictors": [
-	    {
-		"componentSpecs": [{
-		    "spec": {
-			"containers": [
-			    {
-				"image": "seldonio/mock_classifier:1.0",
-				"imagePullPolicy": "IfNotPresent",
-				"name": "classifier-1",
-				"resources": {
-				    "requests": {
-					"memory": "1Mi"
-				    }
-				}
-			    },
-			    {
-				"image": "seldonio/mock_classifier:1.0",
-				"imagePullPolicy": "IfNotPresent",
-				"name": "classifier-2",
-				"resources": {
-				    "requests": {
-					"memory": "1Mi"
-				    }
-				}
-			    },
-			    {
-				"image": "seldonio/mock_classifier:1.0",
-				"imagePullPolicy": "IfNotPresent",
-				"name": "classifier-3",
-				"resources": {
-				    "requests": {
-					"memory": "1Mi"
-				    }
-				}
-			    }
-			],
-			"terminationGracePeriodSeconds": 20
-		    }
-		}],
-		"name": "ensemble",
-		"replicas": 1,
-		"annotations": {
-		    "predictor_version": "v1"
-		},
-		"graph": {
-		    "name":"ensemble",
-		    "implementation": "AVERAGE_COMBINER",
-		    "children": [
-			{
-			    "name": "classifier-1",
-			    "endpoint": {
-				"type": "REST"
-			    },
-			    "type": "MODEL"
-			},
-			{
-			    "name": "classifier-2",
-			    "endpoint": {
-				"type": "REST"
-			    },
-			    "type": "MODEL"
-			},
-			{
-			    "name": "classifier-3",
-			    "endpoint": {
-				"type": "REST"
-			    },
-			    "type": "MODEL"
-			}
-		    ]
-		}
-	    }
-	]
-    }
+    "name": "seldon-deployment"
+  },
+  "spec": {
+    "name": "test-deployment-ensembles",
+    "predictors": [
+      {
+        "componentSpecs": [
+          {
+            "spec": {
+              "containers": [
+                {
+                  "image": "seldonio/mock_classifier:1.0",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "classifier-1",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi"
+                    }
+                  }
+                },
+                {
+                  "image": "seldonio/mock_classifier:1.0",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "classifier-2",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi"
+                    }
+                  }
+                },
+                {
+                  "image": "seldonio/mock_classifier:1.0",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "classifier-3",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi"
+                    }
+                  }
+                }
+              ],
+              "terminationGracePeriodSeconds": 20
+            }
+          }
+        ],
+        "name": "ensemble",
+        "replicas": 1,
+        "annotations": {
+          "predictor_version": "v1"
+        },
+        "graph": {
+          "name": "ensemble",
+          "implementation": "AVERAGE_COMBINER",
+          "children": [
+            {
+              "name": "classifier-1",
+              "endpoint": {
+                "type": "REST"
+              },
+              "type": "MODEL"
+            },
+            {
+              "name": "classifier-2",
+              "endpoint": {
+                "type": "REST"
+              },
+              "type": "MODEL"
+            },
+            {
+              "name": "classifier-3",
+              "endpoint": {
+                "type": "REST"
+              },
+              "type": "MODEL"
+            }
+          ]
+        }
+      }
+    ]
+  }
 }

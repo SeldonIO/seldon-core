@@ -9,55 +9,60 @@
   },
   "spec": {
     "name": "test-output-transformer",
-    "oauth_key": "oauth-key",
-    "oauth_secret": "oauth-secret",
-    "predictors": [{
-      "componentSpecs": [{
-        "spec": {
-          "containers": [{
-              "image": "seldonio/mock_classifier:1.0",
-              "imagePullPolicy": "IfNotPresent",
-              "name": "classifier",
-              "resources": {
-                "requests": {
-                  "memory": "1Mi"
+    "predictors": [
+      {
+        "componentSpecs": [
+          {
+            "spec": {
+              "containers": [
+                {
+                  "image": "seldonio/mock_classifier:1.0",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "classifier",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi"
+                    }
+                  }
+                },
+                {
+                  "image": "seldonio/output_transformer:0.1",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "output-transformer",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi"
+                    }
+                  }
                 }
-              }
-            },
-            {
-              "image": "seldonio/output_transformer:0.1",
-              "imagePullPolicy": "IfNotPresent",
-              "name": "output-transformer",
-              "resources": {
-                "requests": {
-                  "memory": "1Mi"
-                }
-              }
+              ],
+              "terminationGracePeriodSeconds": 20
             }
-          ],
-          "terminationGracePeriodSeconds": 20
-        }
-      }],
-      "graph": {
+          }
+        ],
+        "graph": {
           "name": "output-transformer",
           "endpoint": {
             "type": "REST"
           },
           "type": "OUTPUT_TRANSFORMER",
 
-        "children": [{
-        "name": "classifier",
-        "endpoint": {
-          "type": "REST"
+          "children": [
+            {
+              "name": "classifier",
+              "endpoint": {
+                "type": "REST"
+              },
+              "type": "MODEL"
+            }
+          ]
         },
-        "type": "MODEL"
-        }]
-      },
-      "name": "output-transformer",
-      "replicas": 1,
-      "labels": {
-        "version": "v1"
+        "name": "output-transformer",
+        "replicas": 1,
+        "labels": {
+          "version": "v1"
+        }
       }
-    }]
+    ]
   }
 }

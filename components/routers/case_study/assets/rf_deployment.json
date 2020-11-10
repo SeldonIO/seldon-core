@@ -1,45 +1,44 @@
 {
-    "apiVersion": "machinelearning.seldon.io/v1alpha2",
-    "kind": "SeldonDeployment",
-    "metadata": {
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": {
     "labels": {
-        "app": "seldon"
+      "app": "seldon"
     },
     "name": "rf-deployment"
-    },
-    "spec": {
+  },
+  "spec": {
     "annotations": {
-        "project_name": "Random Forest Model",
-        "deployment_version": "v1"
+      "project_name": "Random Forest Model",
+      "deployment_version": "v1"
     },
     "name": "rf-model",
-    "oauth_key": "oauth-key",
-    "oauth_secret": "oauth-secret",
     "predictors": [
-        {
-        "componentSpecs": [{
+      {
+        "componentSpecs": [
+          {
             "spec": {
-            "containers": [
+              "containers": [
                 {
-                "image": "seldonio/credit_default_rf_model:0.1",
-                "name": "rf-model"
+                  "image": "seldonio/credit_default_rf_model:0.1",
+                  "name": "rf-model"
                 }
-            ],
-            "terminationGracePeriodSeconds": 20
+              ],
+              "terminationGracePeriodSeconds": 20
             }
-        }],
+          }
+        ],
         "name": "rf-model",
         "replicas": 1,
         "annotations": {
-            "predictor_version": "v1"
+          "predictor_version": "v1"
         },
         "graph": {
-            "name": "rf-model",
-            "type":"MODEL",
-            "children": []
+          "name": "rf-model",
+          "type": "MODEL",
+          "children": []
         }
-        }
+      }
     ]
-    }
+  }
 }
-

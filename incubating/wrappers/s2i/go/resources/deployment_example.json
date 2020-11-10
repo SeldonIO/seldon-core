@@ -1,47 +1,47 @@
 {
-    "apiVersion": "machinelearning.seldon.io/v1alpha2",
-    "kind": "SeldonDeployment",
-    "metadata": {
-        "labels": {
-            "app": "seldon"
-        },
-        "name": "example-go"
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": {
+    "labels": {
+      "app": "seldon"
     },
-    "spec": {
-        "name": "go-deployment",
-        "oauth_key": "oauth-key",
-        "oauth_secret": "oauth-secret",
-        "predictors": [
-            {
-                "componentSpecs": [{
-                    "spec": {
-                        "containers": [
-                            {
-                                "image": "seldonio/gomodel:0.1",
-                                "imagePullPolicy": "IfNotPresent",
-                                "name": "gomodel",
-				"env": [
-				    {
-					"name": "SERVER_TYPE",
-					"value": "rest"
-				    }
-				]
-                            }
-                        ],
-                        "terminationGracePeriodSeconds": 1
+    "name": "example-go"
+  },
+  "spec": {
+    "name": "go-deployment",
+    "predictors": [
+      {
+        "componentSpecs": [
+          {
+            "spec": {
+              "containers": [
+                {
+                  "image": "seldonio/gomodel:0.1",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "gomodel",
+                  "env": [
+                    {
+                      "name": "SERVER_TYPE",
+                      "value": "rest"
                     }
-                }],
-                "graph": {
-                    "children": [],
-                    "name": "gomodel",
-                    "endpoint": {
-                        "type" : "REST"
-                    },
-                    "type": "MODEL"
-                },
-                "name": "go-predictor",
-                "replicas": 1
+                  ]
+                }
+              ],
+              "terminationGracePeriodSeconds": 1
             }
-        ]
-    }
+          }
+        ],
+        "graph": {
+          "children": [],
+          "name": "gomodel",
+          "endpoint": {
+            "type": "REST"
+          },
+          "type": "MODEL"
+        },
+        "name": "go-predictor",
+        "replicas": 1
+      }
+    ]
+  }
 }

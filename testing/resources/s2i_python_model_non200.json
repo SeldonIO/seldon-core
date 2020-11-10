@@ -19,7 +19,7 @@
             ],
             "terminationGracePeriodSeconds": 1
           }
-        }],
+        ],
         "graph": {
           "children": [],
           "name": "model",

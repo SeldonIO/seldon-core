@@ -73,8 +73,6 @@ helm install $MY_MODEL_NAME seldonio/seldon-od-model --namespace $MODELS_NAMESPA
 | model.vae.reservoir_size | int | `50000` |  |
 | model.vae.threshold | int | `10` |  |
 | name | string | `"seldon-od-model"` |  |
-| oauth.key | string | `nil` |  |
-| oauth.secret | string | `nil` |  |
 | predictorLabels.fluentd | string | `"true"` |  |
 | predictorLabels.version | string | `"v1"` |  |
 | replicas | int | `1` |  |

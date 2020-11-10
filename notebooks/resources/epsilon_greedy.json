@@ -1,89 +1,86 @@
 {
-    "apiVersion": "machinelearning.seldon.io/v1alpha2",
-    "kind": "SeldonDeployment",
-    "metadata": {
-	"labels": {
-	    "app": "seldon"
-	},
-	"name": "seldon-deployment-example"
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": {
+    "labels": {
+      "app": "seldon"
     },
-    "spec": {
-	"annotations": {
-	    "project_name": "Epsilon Greedy Routing",
-	    "deployment_version": "v1"
-	},
-	"name": "test-deployment-epsilon-greedy",
-	"oauth_key": "oauth-key",
-	"oauth_secret": "oauth-secret",
-	"predictors": [
-	    {
-		"componentSpecs": [{
-		    "spec": {
-			"containers": [
-			    {
-				"image": "seldonio/mock_classifier:1.0",
-				"name": "classifier-1"
-			    },
-			    {
-				"image": "seldonio/mock_classifier:1.0",
-				"name": "classifier-2"
-			    },
-			    {
-				"image": "seldonio/mock_classifier:1.0",
-				"name": "classifier-3"
-			    },
-			    {
-				"image": "seldonio/mab_epsilon_greedy:1.1",
-				"name": "eg-router"
-			    }
-			],
-			"terminationGracePeriodSeconds": 20
-		    }
-		}],
-		"name": "multi-models-predictor",
-		"replicas": 1,
-		"annotations": {
-		    "predictor_version": "v1"
-		},
-		"graph": {
-		    "name": "eg-router",
-		    "type":"ROUTER",
-		    "parameters": [
-			{
-			    "name": "n_branches",
-			    "value": "3",
-			    "type": "INT"
-			},
-			{
-			    "name": "epsilon",
-			    "value": "0.3",
-			    "type": "FLOAT"
-			},
-			{
-			    "name": "verbose",
-			    "value": "1",
-			    "type": "BOOL"
-			}
-		    ],
-		    "children": [
-			{
-			    "name": "classifier-1",
-			    "type": "MODEL"
-			},
-			{
-			    "name": "classifier-2",
-			    "type": "MODEL"
-			},
-			{
-			    "name": "classifier-3",
-			    "type": "MODEL"
-			}
-		    ]
-		}
-	    }
-	]
-    }
+    "name": "seldon-deployment-example"
+  },
+  "spec": {
+    "annotations": {
+      "project_name": "Epsilon Greedy Routing",
+      "deployment_version": "v1"
+    },
+    "name": "test-deployment-epsilon-greedy",
+    "predictors": [
+      {
+        "componentSpecs": [
+          {
+            "spec": {
+              "containers": [
+                {
+                  "image": "seldonio/mock_classifier:1.0",
+                  "name": "classifier-1"
+                },
+                {
+                  "image": "seldonio/mock_classifier:1.0",
+                  "name": "classifier-2"
+                },
+                {
+                  "image": "seldonio/mock_classifier:1.0",
+                  "name": "classifier-3"
+                },
+                {
+                  "image": "seldonio/mab_epsilon_greedy:1.1",
+                  "name": "eg-router"
+                }
+              ],
+              "terminationGracePeriodSeconds": 20
+            }
+          }
+        ],
+        "name": "multi-models-predictor",
+        "replicas": 1,
+        "annotations": {
+          "predictor_version": "v1"
+        },
+        "graph": {
+          "name": "eg-router",
+          "type": "ROUTER",
+          "parameters": [
+            {
+              "name": "n_branches",
+              "value": "3",
+              "type": "INT"
+            },
+            {
+              "name": "epsilon",
+              "value": "0.3",
+              "type": "FLOAT"
+            },
+            {
+              "name": "verbose",
+              "value": "1",
+              "type": "BOOL"
+            }
+          ],
+          "children": [
+            {
+              "name": "classifier-1",
+              "type": "MODEL"
+            },
+            {
+              "name": "classifier-2",
+              "type": "MODEL"
+            },
+            {
+              "name": "classifier-3",
+              "type": "MODEL"
+            }
+          ]
+        }
+      }
+    ]
+  }
 }
-			    
-			
-			

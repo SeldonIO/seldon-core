@@ -13,8 +13,6 @@
       "deployment_version": "0.1"
     },
     "name": "nodejs-mnist-deployment",
-    "oauth_key": "oauth-key",
-    "oauth_secret": "oauth-secret",
     "predictors": [
       {
         "componentSpecs": [

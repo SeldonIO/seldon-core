@@ -13,8 +13,6 @@
             "deployment_version": "<your-deployment-version>"
         },
         "name": "<your-deployment-name>",
-        "oauth_key": "<oauth-key>",
-        "oauth_secret": "<oauth-secret>",
         "predictors": [
             {
                 "componentSpecs": [{

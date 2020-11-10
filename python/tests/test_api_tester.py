@@ -47,8 +47,6 @@ def test_predict_rest(mock_post):
         "prnt": True,
         "grpc": False,
         "tensor": True,
-        "oauth_key": None,
-        "oauth_secret": None,
         "deployment": "abc",
         "namespace": None,
     }
@@ -76,8 +74,6 @@ def test_feedback_rest(mock_post):
         "prnt": True,
         "grpc": False,
         "tensor": True,
-        "oauth_key": None,
-        "oauth_secret": None,
         "deployment": "abc",
         "namespace": None,
     }

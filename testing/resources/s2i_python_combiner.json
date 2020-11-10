@@ -34,9 +34,36 @@
                     "name": "combiner",
                     "type": "COMBINER"
                 },
-                "name": "mycombiner",
-                "replicas": 1
+                {
+                  "image": "seldonio/testcombiner_rest:0.1",
+                  "imagePullPolicy": "Never",
+                  "name": "combiner"
+                }
+              ],
+              "terminationGracePeriodSeconds": 1
             }
-        ]
-    }
+          }
+        ],
+        "graph": {
+          "children": [
+            {
+              "children": [],
+              "name": "model",
+              "endpoint": {
+                "type": "REST"
+              },
+              "type": "MODEL"
+            }
+          ],
+          "name": "combiner",
+          "endpoint": {
+            "type": "REST"
+          },
+          "type": "COMBINER"
+        },
+        "name": "mycombiner",
+        "replicas": 1
+      }
+    ]
+  }
 }

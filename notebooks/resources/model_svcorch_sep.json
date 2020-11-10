@@ -1,59 +1,59 @@
 {
-    "apiVersion": "machinelearning.seldon.io/v1alpha2",
-    "kind": "SeldonDeployment",
-    "metadata": {
-        "labels": {
-            "app": "seldon"
-        },
-        "name": "seldon-model"
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": {
+    "labels": {
+      "app": "seldon"
     },
-    "spec": {
-        "annotations": {
-	    "seldon.io/engine-separate-pod": "true"
-        },
-        "name": "test-deployment",
-        "oauth_key": "oauth-key",
-        "oauth_secret": "oauth-secret",
-        "predictors": [
-            {
-                "componentSpecs": [{
-                    "spec": {
-                        "containers": [
-                            {
-                                "image": "seldonio/mock_classifier:1.0",
-                                "imagePullPolicy": "IfNotPresent",
-                                "name": "classifier",
-                                "resources": {
-                                    "requests": {
-                                        "memory": "1Mi"
-                                    }
-                                }
-                            }
-                        ],
-                        "terminationGracePeriodSeconds": 1
+    "name": "seldon-model"
+  },
+  "spec": {
+    "annotations": {
+      "seldon.io/engine-separate-pod": "true"
+    },
+    "name": "test-deployment",
+    "predictors": [
+      {
+        "componentSpecs": [
+          {
+            "spec": {
+              "containers": [
+                {
+                  "image": "seldonio/mock_classifier:1.0",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "classifier",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi"
                     }
-                }],
-                "graph": {
-                    "children": [],
-                    "name": "classifier",
-                    "endpoint": {
-			"type" : "REST"
-		    },
-                    "type": "MODEL"
-                },
-                "name": "example",
-		"svcOrchSpec" : {
-		    "resources": {
-			"requests": {
-			    "memory": "8Mi"
-			}
-		    }
-		},
-                "replicas": 1,
-		"labels": {
-		    "version" : "v1"
-		}
+                  }
+                }
+              ],
+              "terminationGracePeriodSeconds": 1
             }
-        ]
-    }
+          }
+        ],
+        "graph": {
+          "children": [],
+          "name": "classifier",
+          "endpoint": {
+            "type": "REST"
+          },
+          "type": "MODEL"
+        },
+        "name": "example",
+        "svcOrchSpec": {
+          "resources": {
+            "requests": {
+              "memory": "8Mi"
+            }
+          }
+        },
+        "replicas": 1,
+        "labels": {
+          "version": "v1"
+        }
+      }
+    ]
+  }
 }
