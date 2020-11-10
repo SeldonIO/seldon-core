@@ -120,7 +120,7 @@ Production Configurations and Integrations
    Deploy Multiple Seldon Core Operators <multiple_operators>
    Protocol Examples <protocol_examples>
    Custom Protobuf Data Example <customdata_example>
-   Disruption Budgets Example <disruption_budgets_example>
+   Disruption Budgets Example <pdbs_example>
 
 Complex Graph Examples
 ----------------------
