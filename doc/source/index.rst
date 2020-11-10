@@ -15,7 +15,6 @@ Seldon Core
    Model Engine Java Opts <graph/model_engine_java_opts>
    Model REST gRPC Settings <graph/model_rest_grpc_settings>
    Model svcOrch Sep <graph/model_svcorch_sep>
-   Seldon <ingress/seldon>
    APIs Reference <reference/apis/readme>
    Engine Reference <reference/engine>
    Integration NVIDIA Link <reference/integration_nvidia_link>
