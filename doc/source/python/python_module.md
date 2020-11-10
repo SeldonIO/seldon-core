@@ -71,7 +71,6 @@ Keep in mind that this will include some dependencies which may not be used.
 Therefore, unless necessary, we recommend most users to install the default
 distribution of `seldon-core` as [documented above](#install).
 
-
 ## Troubleshooting
 
 If you experience problems after installing `seldon-core`, here are some tips
