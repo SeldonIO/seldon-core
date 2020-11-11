@@ -81,8 +81,8 @@ In particular,
 
 | Pre-packaged server | Supported | Underlying runtime |
 | -- | -- | -- |
-| [TRITON_SERVER](../servers/triton.md) | :heavy_check_mark: | [NVIDIA Triton](https://github.com/triton-inference-server/server) |
-| [SKLEARN_SERVER](../servers/sklearn.md) | :heavy_check_mark: | [Seldon MLServer](https://github.com/seldonio/mlserver) |
-| [XGBOOST_SERVER](../servers/xgboost.md) | :heavy_check_mark: | [Seldon MLServer](https://github.com/seldonio/mlserver) |
+| [TRITON_SERVER](../servers/triton.md) | ✅ | [NVIDIA Triton](https://github.com/triton-inference-server/server) |
+| [SKLEARN_SERVER](../servers/sklearn.md) | ✅  | [Seldon MLServer](https://github.com/seldonio/mlserver) |
+| [XGBOOST_SERVER](../servers/xgboost.md) | ✅  | [Seldon MLServer](https://github.com/seldonio/mlserver) |
 
 You can try out the `kfserving` in [this example notebook](../examples/protocol_examples.html). 
