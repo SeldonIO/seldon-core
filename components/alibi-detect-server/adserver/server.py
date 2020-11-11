@@ -16,7 +16,7 @@ from adserver.protocols.seldonfeedback_http import SeldonFeedbackRequestHandler
 from adserver.protocols.tensorflow_http import TensorflowRequestHandler
 from cloudevents.sdk import converters
 from cloudevents.sdk import marshaller
-from cloudevents.sdk.event import v02
+from cloudevents.sdk.event import v1
 from adserver.protocols import Protocol
 from seldon_core.flask_utils import SeldonMicroserviceException
 from seldon_core.user_model import SeldonResponse
@@ -136,7 +136,7 @@ def get_request_handler(protocol, request: Dict) -> RequestHandler:
         return SeldonFeedbackRequestHandler(request)
 
 
-def sendCloudEvent(event: v02.Event, url: str):
+def sendCloudEvent(event: v1.Event, url: str):
     """
     Send CloudEvent
 
@@ -153,10 +153,10 @@ def sendCloudEvent(event: v02.Event, url: str):
         event, converters.TypeBinary, json.dumps
     )
 
-    print("binary CloudEvent")
+    logging.info("binary CloudEvent")
     for k, v in binary_headers.items():
-        print("{0}: {1}\r\n".format(k, v))
-    print(binary_data)
+        logging.info("{0}: {1}\r\n".format(k, v))
+    logging.info(binary_data)
 
     response = requests.post(url, headers=binary_headers, data=binary_data)
     response.raise_for_status()
@@ -217,7 +217,7 @@ class EventHandler(tornado.web.RequestHandler):
         request = request_handler.extract_request()
 
         # Create event from request body
-        event = v02.Event()
+        event = v1.Event()
         http_marshaller = marshaller.NewDefaultHTTPMarshaller()
         event = http_marshaller.FromRequest(
             event, self.request.headers, self.request.body, json.loads
@@ -250,7 +250,7 @@ class EventHandler(tornado.web.RequestHandler):
                 else:
                     resp_event_id = event.EventID()
                 revent = (
-                    v02.Event()
+                    v1.Event()
                     .SetContentType("application/json")
                     .SetData(responseStr)
                     .SetEventID(resp_event_id)

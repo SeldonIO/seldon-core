@@ -15,7 +15,7 @@ setup(
         "kfserving>=0.2.0",
         "argparse >= 1.4.0",
         "numpy >= 1.8.2",
-        "cloudevents",
+        "cloudevents == 1.2.0",
         # Fixes #2533
         "google-cloud-core==1.4.1",
         "google-cloud-storage==1.31.2",
