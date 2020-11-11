@@ -1,15 +1,17 @@
-apiVersion: eventing.knative.dev/v1alpha1
+apiVersion: eventing.knative.dev/v1
 kind: Trigger
 metadata:
   name: vaeoutlier-trigger
-  namespace: default
+  namespace: seldon-logs
 spec:
+  broker: default
   filter:
-    sourceAndType:
+    attributes:
+      inferenceservicename: tfserving-cifar10
       type: io.seldon.serving.inference.request
   subscriber:
     ref:
-      apiVersion: serving.knative.dev/v1alpha1
+      apiVersion: serving.knative.dev/v1
       kind: Service
-      name: vae-outlier
+      name: message-dumper
       

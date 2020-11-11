@@ -1,9 +1,10 @@
-apiVersion: eventing.knative.dev/v1alpha1
+apiVersion: eventing.knative.dev/v1
 kind: Trigger
 metadata:
   name: seldon-request-logger-trigger
   namespace: seldon-logs
 spec:
+  broker: default
   subscriber:
     ref:
       apiVersion: serving.knative.dev/v1
