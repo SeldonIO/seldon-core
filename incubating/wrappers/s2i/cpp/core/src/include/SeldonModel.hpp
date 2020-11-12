@@ -2,11 +2,13 @@
 
 #include <pybind11/pybind11.h>
 
+#include "SeldonProto.hpp"
+
 namespace py = pybind11;
 
 namespace sc {
 
-template<typename ProtoClass>
+template<typename ProtoClass = seldon::protos::SeldonMessage>
 class SeldonModel 
 {
 public:
