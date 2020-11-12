@@ -2,7 +2,7 @@ import click
 import json
 import requests
 from queue import Queue, Empty
-from threading import Thread, Lock, Event
+from threading import Thread, Event
 from seldon_core.seldon_client import SeldonClient
 import numpy as np
 import os
@@ -18,26 +18,6 @@ CHOICES_LOG_LEVEL = ["debug", "info", "warning", "error"]
 
 
 out_queue_empty_event = Event()
-
-counter_lock = Lock()
-read_counter = 0
-write_counter = 0
-
-
-def increment_read():
-    global read_counter
-    with counter_lock:
-        read_counter += 1
-
-
-def increment_write():
-    global write_counter
-    with counter_lock:
-        write_counter += 1
-
-
-def print_counters():
-    print(f"read: {read_counter}, write: {write_counter}")
 
 
 def start_multithreaded_batch_worker(
@@ -110,7 +90,6 @@ def start_multithreaded_batch_worker(
     # Wait for output worker to join main thread
     t_out.join()
 
-    print_counters()
     if benchmark:
         print(f"Elapsed time: {time.time() - start_time}")
 
@@ -132,7 +111,6 @@ def _start_input_file_worker(q_in: Queue, input_data_path: str) -> None:
     for line in input_data_file:
         unique_id = str(uuid.uuid1())
         q_in.put((enum_idx, unique_id, line))
-        increment_read()
         enum_idx += 1
 
 
@@ -149,6 +127,8 @@ def _start_output_file_worker(q_out: Queue, output_data_path: str) -> None:
     output_data_path
         The local file to write the results into
     """
+
+    counter = 0
     with open(output_data_path, "w") as output_data_file:
         while not out_queue_empty_event.is_set():
             try:
@@ -156,9 +136,12 @@ def _start_output_file_worker(q_out: Queue, output_data_path: str) -> None:
             except Empty:
                 continue
             output_data_file.write(f"{line}\n")
-            increment_write()
             q_out.task_done()
 
+            counter += 1
+            if counter % 100 == 0:
+                print(f"Processed instances: {counter}")
+    print(f"Total processed instances: {counter}")
 
 def _start_request_worker(
     q_in: Queue,
