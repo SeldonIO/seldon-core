@@ -475,7 +475,7 @@ void protobuf_AddDesc_prediction_2eproto() {
   ::google::protobuf::protobuf_AddDesc_google_2fprotobuf_2fany_2eproto();
   ::google::protobuf::protobuf_AddDesc_google_2fprotobuf_2fstruct_2eproto();
   ::google::protobuf::protobuf_AddDesc_google_2fprotobuf_2fempty_2eproto();
-  ::tensorflow::protobuf_AddDesc_tensorflow_2fcore_2fframework_2ftensor_2eproto();
+  ::tensorflow::protobuf_AddDesc_tensorflow_2ftensorflow_2fcore_2fframework_2ftensor_2eproto();
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\020prediction.proto\022\rseldon.protos\032\031googl"
     "e/protobuf/any.proto\032\034google/protobuf/st"
