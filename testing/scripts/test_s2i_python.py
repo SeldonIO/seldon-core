@@ -62,9 +62,7 @@ class TestPythonS2i(object):
     def test_build_transformer(self, s2i_python_version):
         create_s2I_image(s2i_python_version, "transformer", "")
         img = get_image_name("transformer", "")
-        run(
-            "docker run -d --rm --name 'transformer' " + img, shell=True, check=True,
-        )
+        run("docker run -d --rm --name 'transformer' " + img, shell=True, check=True)
         time.sleep(2)
         run("docker rm -f transformer", shell=True, check=True)
 

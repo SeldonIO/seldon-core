@@ -84,7 +84,7 @@ class TestPrepack(object):
                         "datatype": "FP32",
                         "data": [[0.1, 0.2, 0.3, 0.4]],
                     }
-                ],
+                ]
             },
         )
         assert r.status_code == 200
@@ -163,7 +163,7 @@ class TestPrepack(object):
                         "datatype": "FP32",
                         "data": [[0.1, 0.2, 0.3, 0.4]],
                     }
-                ],
+                ]
             },
         )
         assert r.status_code == 200
