@@ -27,8 +27,8 @@ logger = logging.getLogger(__name__)
 
 def setup_logging(log_level: str):
     LOG_FORMAT = (
-    "%(asctime)s - batch_processor.py:%(lineno)s - %(levelname)s:  %(message)s"
-)
+        "%(asctime)s - batch_processor.py:%(lineno)s - %(levelname)s:  %(message)s"
+    )
     logging.basicConfig(level=CHOICES_LOG_LEVEL[log_level], format=LOG_FORMAT)
 
 
