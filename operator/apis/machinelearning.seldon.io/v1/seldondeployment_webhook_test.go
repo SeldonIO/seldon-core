@@ -684,7 +684,7 @@ func TestPredictorProtocolGrpc(t *testing.T) {
 	//Graph
 	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
-	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstHttpPortNumber))
+	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstGrpcPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
 }
 
@@ -728,7 +728,7 @@ func TestPrepackedWithExistingContainer(t *testing.T) {
 	//Graph
 	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
-	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstHttpPortNumber))
+	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstGrpcPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
 }
 
@@ -762,7 +762,7 @@ func TestPrepackedWithCustom(t *testing.T) {
 	//Graph
 	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
-	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstHttpPortNumber))
+	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstGrpcPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
 }
 
@@ -809,7 +809,7 @@ func TestPrepackedWithExistingContainerAndImage(t *testing.T) {
 	//Graph
 	pu := GetPredictiveUnit(&spec.Predictors[0].Graph, "classifier")
 	g.Expect(pu).ToNot(BeNil())
-	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstHttpPortNumber))
+	g.Expect(pu.Endpoint.ServicePort).To(Equal(constants.FirstGrpcPortNumber))
 	g.Expect(pu.Endpoint.ServiceHost).To(Equal(constants.DNSLocalHost))
 }
 

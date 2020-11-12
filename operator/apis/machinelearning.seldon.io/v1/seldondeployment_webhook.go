@@ -179,8 +179,16 @@ func (r *SeldonDeploymentSpec) setContainerPredictiveUnitDefaults(compSpecIdx in
 		containerServiceValue := GetContainerServiceName(mldepName, *p, con)
 		pu.Endpoint.ServiceHost = containerServiceValue + "." + namespace + constants.DNSClusterLocalSuffix
 	}
-	// deprecated
-	pu.Endpoint.ServicePort = portNumHttp
+
+	// Backwards compatability.. We set this to grpc port if that is specified otherwise go with http port
+	// The executor still uses this port to check for readiness and its needed for backwards compatability
+	// for old images that only have 1 port for http or grpc open
+	// TODO: deprecate and remove and fix executor
+	if pu.Endpoint.Type == GRPC || r.Transport == TransportGrpc {
+		pu.Endpoint.ServicePort = portNumGrpc
+	} else {
+		pu.Endpoint.ServicePort = portNumHttp
+	}
 
 	pu.Endpoint.HttpPort = portNumHttp
 	pu.Endpoint.GrpcPort = portNumGrpc
