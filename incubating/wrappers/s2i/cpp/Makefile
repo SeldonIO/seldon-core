@@ -10,8 +10,14 @@ proto-build:
 	protoc -I=${SELDON_CORE_DIR}/proto -I=${SELDON_CORE_DIR}/proto/tensorflow \
 		--cpp_out=core/ \
 		${SELDON_CORE_DIR}/proto/prediction.proto
-	mv core/prediction.pb.h core/src/include/SeldonProto.hpp
-	mv core/prediction.pb.cc core/src/SeldonProto.cpp
+	mv core/prediction.pb.h core/src/include/prediction.pb.h
+	mv core/prediction.pb.cc core/src/prediction.pb.cc
+	protoc -I=${SELDON_CORE_DIR}/proto -I=${SELDON_CORE_DIR}/proto/tensorflow \
+		--cpp_out=core/ \
+		${SELDON_CORE_DIR}/proto/tensorflow/tensorflow/core/framework/tensor.proto
+	mkdir -p core/src/include/tensorflow/core/framework
+	mv core/tensorflow/tensorflow/core/framework/tensor.pb.h core/src/include/tensorflow/core/framework
+	mv core/tensorflow/tensorflow/core/framework/tensor.pb.cc core/src/
 
 
 docker-build:
