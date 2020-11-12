@@ -377,8 +377,8 @@ type Endpoint struct {
 	ServiceHost string       `json:"service_host,omitempty" protobuf:"string,1,opt,name=service_host"`
 	ServicePort int32        `json:"service_port,omitempty" protobuf:"int32,2,opt,name=service_port"`
 	Type        EndpointType `json:"type,omitempty" protobuf:"int,3,opt,name=type"`
-	HttpPort    int32        `json:"http_port,omitempty" protobuf:"int32,4,opt,name=http_port"`
-	GrpcPort    int32        `json:"grpc_port,omitempty" protobuf:"int32,5,opt,name=grpc_port"`
+	HttpPort    int32        `json:"httpPort,omitempty" protobuf:"int32,4,opt,name=httpPort"`
+	GrpcPort    int32        `json:"grpcPort,omitempty" protobuf:"int32,5,opt,name=grpcPort"`
 }
 
 type ParmeterType string

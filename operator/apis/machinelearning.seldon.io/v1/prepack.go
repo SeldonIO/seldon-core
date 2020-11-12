@@ -37,7 +37,7 @@ func (p *PredictorServerConfig) PrepackImageName(protocol Protocol, pu *Predicti
 	if string(protocol) == "" {
 		protocol = ProtocolSeldon
 	}
-	imageConfig := p.PrepackImageConfig(protocol, pu)
+	imageConfig := p.PrepackImageConfig(protocol)
 
 	if imageConfig == nil {
 		return ""
@@ -50,7 +50,7 @@ func (p *PredictorServerConfig) PrepackImageName(protocol Protocol, pu *Predicti
 	return imageConfig.ContainerImage
 }
 
-func (p *PredictorServerConfig) PrepackImageConfig(protocol Protocol, pu *PredictiveUnit) *PredictorImageConfig {
+func (p *PredictorServerConfig) PrepackImageConfig(protocol Protocol) *PredictorImageConfig {
 	if im, ok := p.Protocols[protocol]; ok {
 		return &im //do something here
 	} else {

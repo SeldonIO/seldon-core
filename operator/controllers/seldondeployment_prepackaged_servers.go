@@ -286,7 +286,9 @@ func (pi *PrePackedInitialiser) addModelDefaultServers(mlDepSepc *machinelearnin
 		}
 	}
 
-	c.Image = serverConfig.PrepackImageName(mlDepSepc.Protocol, pu)
+	if c.Image == "" {
+		c.Image = serverConfig.PrepackImageName(mlDepSepc.Protocol, pu)
+	}
 
 	// Add parameters envvar - point at mount path because initContainer will download
 	params := pu.Parameters

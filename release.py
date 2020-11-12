@@ -77,8 +77,7 @@ def update_pom_file(fpath, seldon_core_version, debug=False):
         ]
 
     err, out = run_command(args, debug)
-    ##pp(out)
-    ##pp(err)
+
     if err == None:
         print("updated {fpath}".format(**locals()))
     else:
@@ -117,8 +116,7 @@ def update_helm_values_yaml_file_default_images(fpath, seldon_core_version, debu
         fpath,
     ]
     err, out = run_command(args, debug)
-    # pp(out)
-    # pp(err)
+
     if err == None:
         print("updated helm values yaml for default images".format(**locals()))
     else:
@@ -138,8 +136,7 @@ def update_operator_values_yaml_file_core_images(fpath, seldon_core_version, deb
         fpath,
     ]
     err, out = run_command(args, debug)
-    # pp(out)
-    # pp(err)
+
     if err == None:
         print("updated operator values yaml for core images".format(**locals()))
     else:
@@ -160,8 +157,7 @@ def update_operator_values_yaml_file_prepackaged_images(current_seldon_core_vers
         fpath,
     ]
     err, out = run_command(args, debug)
-    # pp(out)
-    # pp(err)
+
     if err == None:
         print("updated operator values yaml for prepackaged server images".format(**locals()))
     else:
@@ -181,8 +177,7 @@ def update_operator_values_yaml_file_explainer_image(fpath, seldon_core_version,
         fpath,
     ]
     err, out = run_command(args, debug)
-    # pp(out)
-    # pp(err)
+
     if err == None:
         print("updated operator values yaml for prepackaged server images".format(**locals()))
     else:
@@ -204,8 +199,7 @@ def update_operator_kustomize_prepackaged_images(current_seldon_core_version, fp
         fpath,
     ]
     err, out = run_command(args, debug)
-    # pp(out)
-    # pp(err)
+
     if err == None:
         print("updated operator kustomize yaml for prepackaged server images".format(**locals()))
     else:
@@ -251,8 +245,7 @@ def update_kustomize_engine_version(seldon_core_version, debug=False):
         "operator/config/manager/manager.yaml",
     ]
     err, out = run_command(args, debug)
-    # pp(out)
-    # pp(err)
+
     if err == None:
         print("updated kustomize".format(**locals()))
     else:
@@ -269,8 +262,7 @@ def update_kustomize_executor_version(seldon_core_version, debug=False):
         "operator/config/manager/manager.yaml",
     ]
     err, out = run_command(args, debug)
-    # pp(out)
-    # pp(err)
+
     if err == None:
         print("updated kustomize".format(**locals()))
     else:
@@ -350,8 +342,7 @@ def update_python_wrapper_fixed_versions(seldon_core_version, debug=False):
         "{seldon_core_version}".format(**locals()),
     ]
     err, out = run_command(args, debug)
-    # pp(out)
-    # pp(err)
+
     if err == None:
         print("Updated python wrapper in matching files".format(**locals()))
     else:

@@ -711,7 +711,8 @@ func createContainerService(deploy *appsv1.Deployment,
 
 	c.serviceDetails[containerServiceValue] = &machinelearningv1.ServiceStatus{
 		SvcName:      containerServiceValue,
-		GrpcEndpoint: containerServiceValue + "." + namespace + ":" + strconv.Itoa(int(pu.Endpoint.HttpPort))}
+		HttpEndpoint: containerServiceValue + "." + namespace + ":" + strconv.Itoa(int(pu.Endpoint.HttpPort)),
+		GrpcEndpoint: containerServiceValue + "." + namespace + ":" + strconv.Itoa(int(pu.Endpoint.GrpcPort))}
 
 	svc := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -752,7 +753,7 @@ func createContainerService(deploy *appsv1.Deployment,
 		con.Ports = append(con.Ports, corev1.ContainerPort{Name: "grpc", ContainerPort: pu.Endpoint.GrpcPort, Protocol: corev1.ProtocolTCP})
 	}
 
-	// Backwards compataible additions. From 1.5.0 onwards could always call httpPort as both should be available but for
+	// Backwards compatible additions. From 1.5.0 onwards could always call httpPort as both should be available but for
 	// previously wrapped components need to look at transport.
 	// TODO: deprecate and just call httpPort
 	if con.LivenessProbe == nil {
@@ -776,7 +777,7 @@ func createContainerService(deploy *appsv1.Deployment,
 	}
 
 	//
-	// Backwards compatability - set to either Http or Grpc
+	// Backwards compatibility - set to either Http or Grpc
 	//
 	// TODO: deprecate and remove
 	if !utils.HasEnvVar(con.Env, machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT) {
