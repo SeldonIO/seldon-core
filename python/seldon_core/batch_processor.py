@@ -17,9 +17,6 @@ CHOICES_METHOD = ["predict"]
 CHOICES_LOG_LEVEL = ["debug", "info", "warning", "error"]
 
 
-out_queue_empty_event = Event()
-
-
 def start_multithreaded_batch_worker(
     deployment_name: str,
     gateway_type: str,
@@ -48,6 +45,7 @@ def start_multithreaded_batch_worker(
     All parameters are defined and explained in detail in the run_cli function.
     """
     start_time = time.time()
+    out_queue_empty_event = Event()
 
     q_in = Queue(workers * 2)
     q_out = Queue(workers * 2)
@@ -74,7 +72,10 @@ def start_multithreaded_batch_worker(
             daemon=True,
         ).start()
 
-    t_out = Thread(target=_start_output_file_worker, args=(q_out, output_data_path))
+    t_out = Thread(
+        target=_start_output_file_worker,
+        args=(q_out, output_data_path, out_queue_empty_event),
+    )
     t_out.start()
 
     # Make sure all data was loaded
@@ -114,7 +115,9 @@ def _start_input_file_worker(q_in: Queue, input_data_path: str) -> None:
         enum_idx += 1
 
 
-def _start_output_file_worker(q_out: Queue, output_data_path: str) -> None:
+def _start_output_file_worker(
+    q_out: Queue, output_data_path: str, stop_event: Event
+) -> None:
     """
     Runs logic for the output file worker which receives all the processed output
     fro the request worker through the queue and adds it into the output file in a
@@ -130,7 +133,7 @@ def _start_output_file_worker(q_out: Queue, output_data_path: str) -> None:
 
     counter = 0
     with open(output_data_path, "w") as output_data_file:
-        while not out_queue_empty_event.is_set():
+        while not stop_event.is_set():
             try:
                 line = q_out.get(timeout=0.1)
             except Empty:
@@ -142,6 +145,7 @@ def _start_output_file_worker(q_out: Queue, output_data_path: str) -> None:
             if counter % 100 == 0:
                 print(f"Processed instances: {counter}")
     print(f"Total processed instances: {counter}")
+
 
 def _start_request_worker(
     q_in: Queue,
