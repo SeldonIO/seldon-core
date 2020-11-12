@@ -5,7 +5,7 @@ from queue import Queue, Empty
 from threading import Thread, Event
 from seldon_core.seldon_client import SeldonClient
 import numpy as np
-import os
+import logging
 import uuid
 import time
 
@@ -14,7 +14,22 @@ CHOICES_TRANSPORT = ["rest", "grpc"]
 CHOICES_PAYLOAD_TYPE = ["ndarray", "tensor", "tftensor"]
 CHOICES_DATA_TYPE = ["data", "json", "str"]
 CHOICES_METHOD = ["predict"]
-CHOICES_LOG_LEVEL = ["debug", "info", "warning", "error"]
+CHOICES_LOG_LEVEL = {
+    "debug": logging.DEBUG,
+    "info": logging.INFO,
+    "warning": logging.WARNING,
+    "error": logging.ERROR,
+}
+
+
+logger = logging.getLogger(__name__)
+
+
+def setup_logging(log_level: str):
+    LOG_FORMAT = (
+    "%(asctime)s - batch_processor.py:%(lineno)s - %(levelname)s:  %(message)s"
+)
+    logging.basicConfig(level=CHOICES_LOG_LEVEL[log_level], format=LOG_FORMAT)
 
 
 def start_multithreaded_batch_worker(
@@ -44,6 +59,7 @@ def start_multithreaded_batch_worker(
 
     All parameters are defined and explained in detail in the run_cli function.
     """
+    setup_logging(log_level)
     start_time = time.time()
     out_queue_empty_event = Event()
 
@@ -92,7 +108,7 @@ def start_multithreaded_batch_worker(
     t_out.join()
 
     if benchmark:
-        print(f"Elapsed time: {time.time() - start_time}")
+        logging.info(f"Elapsed time: {time.time() - start_time}")
 
 
 def _start_input_file_worker(q_in: Queue, input_data_path: str) -> None:
@@ -143,8 +159,8 @@ def _start_output_file_worker(
 
             counter += 1
             if counter % 100 == 0:
-                print(f"Processed instances: {counter}")
-    print(f"Total processed instances: {counter}")
+                logging.info(f"Processed instances: {counter}")
+    logging.info(f"Total processed instances: {counter}")
 
 
 def _start_request_worker(
@@ -369,7 +385,7 @@ def _send_batch_predict(
     "--log-level",
     "-l",
     envvar="SELDON_BATCH_LOG_LEVEL",
-    type=click.Choice(CHOICES_LOG_LEVEL),
+    type=click.Choice(list(CHOICES_LOG_LEVEL)),
     default="info",
     help="The log level for the batch processor",
 )
