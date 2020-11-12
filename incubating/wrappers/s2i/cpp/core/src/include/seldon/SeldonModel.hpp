@@ -2,13 +2,12 @@
 
 #include <pybind11/pybind11.h>
 
-#include "seldon/proto/prediction.pb.h"
+#include "prediction.pb.h"
 
 namespace py = pybind11;
 
 namespace seldon {
 
-template<typename ProtoClass = seldon::protos::SeldonMessage>
 class SeldonModel 
 {
 public:
@@ -18,7 +17,7 @@ public:
 
     py::bytes& predictRaw(py::bytes &data);
 
-    virtual ProtoClass& predict(ProtoClass &data) = 0;
+    virtual seldon::protos::SeldonMessage& predict(seldon::protos::SeldonMessage &data) = 0;
 
 private:
 
@@ -26,16 +25,3 @@ private:
 
 }
 
-namespace seldon {
-
-template<typename ProtoClass>
-SeldonModel<ProtoClass>::SeldonModel() {
-
-}
-
-template<typename ProtoClass>
-py::bytes& SeldonModel<ProtoClass>::predictRaw(py::bytes &data) {
-
-}
-
-}
