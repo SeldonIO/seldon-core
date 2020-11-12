@@ -6,19 +6,36 @@ VERSION := 0.0.1
 IMAGE_REGISTRY = docker.io/seldonio
 IMAGE_NAME = ${IMAGE_REGISTRY}/s2i-cpp-build:${VERSION}
 
+cmake:
+	cmake core/ -Bbuild
+
+cmake-build:
+	make -C build/
+
 proto-build:
 	protoc -I=${SELDON_CORE_DIR}/proto -I=${SELDON_CORE_DIR}/proto/tensorflow \
 		--cpp_out=core/ \
 		${SELDON_CORE_DIR}/proto/prediction.proto
 	mv core/prediction.pb.h core/src/include/prediction.pb.h
-	mv core/prediction.pb.cc core/src/prediction.pb.cc
-	protoc -I=${SELDON_CORE_DIR}/proto -I=${SELDON_CORE_DIR}/proto/tensorflow \
+	mv core/prediction.pb.cc core/src/proto/prediction.pb.cc
+	protoc -I=${SELDON_CORE_DIR}/proto/tensorflow \
 		--cpp_out=core/ \
 		${SELDON_CORE_DIR}/proto/tensorflow/tensorflow/core/framework/tensor.proto
+	protoc -I=${SELDON_CORE_DIR}/proto/tensorflow \
+		--cpp_out=core/ \
+		${SELDON_CORE_DIR}/proto/tensorflow/tensorflow/core/framework/types.proto
+	protoc -I=${SELDON_CORE_DIR}/proto/tensorflow \
+		--cpp_out=core/ \
+		${SELDON_CORE_DIR}/proto/tensorflow/tensorflow/core/framework/tensor_shape.proto
+	protoc -I=${SELDON_CORE_DIR}/proto/tensorflow \
+		--cpp_out=core/ \
+		${SELDON_CORE_DIR}/proto/tensorflow/tensorflow/core/framework/resource_handle.proto
 	mkdir -p core/src/include/tensorflow/core/framework
-	mv core/tensorflow/tensorflow/core/framework/tensor.pb.h core/src/include/tensorflow/core/framework
-	mv core/tensorflow/tensorflow/core/framework/tensor.pb.cc core/src/
+	mv core/tensorflow/core/framework/*.h core/src/include/tensorflow/core/framework
+	mv core/tensorflow/core/framework/*.cc core/src/proto/
 
+clone-pybind:
+	git clone --depth 1 --branch v2.6.1 https://github.com/pybind/pybind11
 
 docker-build:
 	docker build -f Dockerfile \
