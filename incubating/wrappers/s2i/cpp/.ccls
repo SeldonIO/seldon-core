@@ -7,10 +7,9 @@
 -std=c++14
 
 %h -x
-%h c++-header
+%h %hpp c++-header
 
 -DDEBUG=1
 
--I./core/src/include/
--I./core/src/
+-I/home/alejandro/Programming/kubernetes/seldon/seldon-core/incubating/wrappers/s2i/cpp/core/src/include/
 
