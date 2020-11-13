@@ -1,4 +1,5 @@
 from seldon_core.user_model import SeldonResponse
+import numpy as np
 
 
 class MulticlassOneHot:
@@ -27,8 +28,10 @@ class MulticlassOneHot:
         """
 
         metrics = []
-        response = response[0] if isinstance(response[0], list) else response
-        truth = truth[0] if isinstance(truth[0], list) else truth
+        response = (
+            response[0] if isinstance(response[0], (list, np.ndarray)) else response
+        )
+        truth = truth[0] if isinstance(truth[0], (list, np.ndarray)) else truth
         response_class = max(enumerate(response), key=lambda x: x[1])[0]
         truth_class = max(enumerate(truth), key=lambda x: x[1])[0]
 
@@ -41,6 +44,14 @@ class MulticlassOneHot:
                     "type": "COUNTER",
                     "value": 1,
                     "tags": {"class": f"CLASS_{truth_class}"},
+                }
+            )
+            metrics.append(
+                {
+                    "key": "seldon_metric_true_negative",
+                    "type": "COUNTER",
+                    "value": 1,
+                    "tags": {"class": f"CLASS_{response_class}"},
                 }
             )
         else:

@@ -2,7 +2,7 @@
 #KIND SETUP
 kind delete cluster || true
 #had a problem with 1.15.6 image https://github.com/SeldonIO/seldon-core/pull/1861#issuecomment-632587125
-kind create cluster --config kind_config.yaml --image kindest/node:v1.14.2
+kind create cluster --config kind_config.yaml --image kindest/node:v1.17.5@sha256:ab3f9e6ec5ad8840eeb1f76c89bb7948c77bbf76bcebe1a8b59790b8ae9a283a
 
 #ISTIO
 ./install_istio.sh
@@ -22,12 +22,29 @@ kubectl rollout status -n knative-eventing deployments/imc-dispatcher
 
 #REQUEST LOGGER
 kubectl create namespace seldon-logs
-kubectl label namespace seldon-logs knative-eventing-injection=enabled
-sleep 3
-kubectl -n seldon-logs get broker
-kubectl apply -f ./trigger.yaml
+
+kubectl create -f - <<EOF
+apiVersion: eventing.knative.dev/v1
+kind: Broker
+metadata:
+  name: default
+  namespace: seldon-logs
+EOF
+
+sleep 6
+broker=$(kubectl -n seldon-logs get broker default -o jsonpath='{.metadata.name}')
+if [ $broker == 'default' ]; then
+  echo "knative broker created"
+else
+  echo "knative broker not created"
+  exit 1
+fi
+
 
 kubectl apply -f seldon-request-logger.yaml
+
+kubectl apply -f ./trigger.yaml
+
 
 #EFK
 kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
@@ -46,7 +63,7 @@ kubectl create namespace seldon-system
 # istio gateway not strictly necessary and example works without - just adding in case we want to call service via ingress
 # (loadtest uses internal service endpoint so doesn't need istio gateway)
 kubectl apply -f ../../notebooks/resources/seldon-gateway.yaml
-helm install seldon-core ../../helm-charts/seldon-core-operator/ --namespace seldon-system --set istio.enabled="true" --set istio.gateway="seldon-gateway.istio-system.svc.cluster.local" --set executor.requestLogger.defaultEndpoint="http://default-broker.seldon-logs"
+helm upgrade --install seldon-core ../../helm-charts/seldon-core-operator/ --namespace seldon-system --set istio.enabled="true" --set istio.gateway="seldon-gateway.istio-system.svc.cluster.local" --set executor.requestLogger.defaultEndpoint="http://broker-ingress.knative-eventing.svc.cluster.local/seldon-logs/default"
 #if this were with kubeflow above would use kubeflow-gateway.kubeflow.svc.cluster.local and certManager.enabled="true"
 
 kubectl rollout status -n seldon-system deployment/seldon-controller-manager
