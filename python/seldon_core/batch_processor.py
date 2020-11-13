@@ -1,11 +1,11 @@
 import click
 import json
 import requests
-from queue import Queue
-from threading import Thread
+from queue import Queue, Empty
+from threading import Thread, Event
 from seldon_core.seldon_client import SeldonClient
 import numpy as np
-import os
+import logging
 import uuid
 import time
 
@@ -14,7 +14,22 @@ CHOICES_TRANSPORT = ["rest", "grpc"]
 CHOICES_PAYLOAD_TYPE = ["ndarray", "tensor", "tftensor"]
 CHOICES_DATA_TYPE = ["data", "json", "str"]
 CHOICES_METHOD = ["predict"]
-CHOICES_LOG_LEVEL = ["debug", "info", "warning", "error"]
+CHOICES_LOG_LEVEL = {
+    "debug": logging.DEBUG,
+    "info": logging.INFO,
+    "warning": logging.WARNING,
+    "error": logging.ERROR,
+}
+
+
+logger = logging.getLogger(__name__)
+
+
+def setup_logging(log_level: str):
+    LOG_FORMAT = (
+        "%(asctime)s - batch_processor.py:%(lineno)s - %(levelname)s:  %(message)s"
+    )
+    logging.basicConfig(level=CHOICES_LOG_LEVEL[log_level], format=LOG_FORMAT)
 
 
 def start_multithreaded_batch_worker(
@@ -44,7 +59,9 @@ def start_multithreaded_batch_worker(
 
     All parameters are defined and explained in detail in the run_cli function.
     """
+    setup_logging(log_level)
     start_time = time.time()
+    out_queue_empty_event = Event()
 
     q_in = Queue(workers * 2)
     q_out = Queue(workers * 2)
@@ -59,9 +76,10 @@ def start_multithreaded_batch_worker(
         client_return_type="dict",
     )
 
-    Thread(
+    t_in = Thread(
         target=_start_input_file_worker, args=(q_in, input_data_path), daemon=True
-    ).start()
+    )
+    t_in.start()
 
     for _ in range(workers):
         Thread(
@@ -70,15 +88,27 @@ def start_multithreaded_batch_worker(
             daemon=True,
         ).start()
 
-    Thread(
-        target=_start_output_file_worker, args=(q_out, output_data_path), daemon=True
-    ).start()
+    t_out = Thread(
+        target=_start_output_file_worker,
+        args=(q_out, output_data_path, out_queue_empty_event),
+    )
+    t_out.start()
 
+    # Make sure all data was loaded
+    t_in.join()
+
+    # Make sure all data was passed through both queues
     q_in.join()
     q_out.join()
 
+    # Set event so output worker can close file once it's done with q_out queue
+    out_queue_empty_event.set()
+
+    # Wait for output worker to join main thread
+    t_out.join()
+
     if benchmark:
-        print(f"Elapsed time: {time.time() - start_time}")
+        logging.info(f"Elapsed time: {time.time() - start_time}")
 
 
 def _start_input_file_worker(q_in: Queue, input_data_path: str) -> None:
@@ -101,10 +131,12 @@ def _start_input_file_worker(q_in: Queue, input_data_path: str) -> None:
         enum_idx += 1
 
 
-def _start_output_file_worker(q_out: Queue, output_data_path: str) -> None:
+def _start_output_file_worker(
+    q_out: Queue, output_data_path: str, stop_event: Event
+) -> None:
     """
     Runs logic for the output file worker which receives all the processed output
-    fro the request worker through the queue and adds it into the output file in a 
+    fro the request worker through the queue and adds it into the output file in a
     thread safe manner.
 
     Parameters
@@ -114,11 +146,21 @@ def _start_output_file_worker(q_out: Queue, output_data_path: str) -> None:
     output_data_path
         The local file to write the results into
     """
-    output_data_file = open(output_data_path, "w")
-    while True:
-        line = q_out.get()
-        output_data_file.write(f"{line}\n")
-        q_out.task_done()
+
+    counter = 0
+    with open(output_data_path, "w") as output_data_file:
+        while not stop_event.is_set():
+            try:
+                line = q_out.get(timeout=0.1)
+            except Empty:
+                continue
+            output_data_file.write(f"{line}\n")
+            q_out.task_done()
+
+            counter += 1
+            if counter % 100 == 0:
+                logging.info(f"Processed instances: {counter}")
+    logging.info(f"Total processed instances: {counter}")
 
 
 def _start_request_worker(
@@ -173,7 +215,7 @@ def _send_batch_predict(
     unique ID of the batch and the Batch enumerated index as metadata. This
     function also uses the unique batch ID as request ID so the request can be
     traced back individually in the Seldon Request Logger context. Each request
-    will be attempted for the number of retries, and will return the string 
+    will be attempted for the number of retries, and will return the string
     serialised result.
 
     Paramters
@@ -210,7 +252,6 @@ def _send_batch_predict(
     predict_kwargs["headers"] = {"Seldon-Puid": batch_instance_id}
     try:
         data = json.loads(input_raw)
-
         # TODO: Add functionality to send "raw" payload
         if data_type == "data":
             # TODO: Update client to avoid requiring a numpy array
@@ -231,7 +272,8 @@ def _send_batch_predict(
                 assert seldon_payload.success
                 str_output = json.dumps(seldon_payload.response)
                 break
-            except requests.exceptions.RequestException:
+            except (requests.exceptions.RequestException, AssertionError) as e:
+                print("Exception:", e, "retries:", retries)
                 if i == (retries - 1):
                     raise
 
@@ -343,7 +385,7 @@ def _send_batch_predict(
     "--log-level",
     "-l",
     envvar="SELDON_BATCH_LOG_LEVEL",
-    type=click.Choice(CHOICES_LOG_LEVEL),
+    type=click.Choice(list(CHOICES_LOG_LEVEL)),
     default="info",
     help="The log level for the batch processor",
 )
