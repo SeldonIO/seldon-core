@@ -39,6 +39,9 @@ spec:
         template: upload-object-store-template
             
   - name: create-seldon-resource-template
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
     resource:
       action: create
       manifest: |
@@ -81,6 +84,9 @@ spec:
               replicas: {{ .Values.seldonDeployment.replicas }}
                 
   - name: wait-seldon-resource-template
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
     script:
       image: bitnami/kubectl:1.17
       command: [bash]
@@ -90,6 +96,9 @@ spec:
             deploy/$(kubectl get deploy -l seldon-deployment-id="{{ .Values.seldonDeployment.name }}" -o jsonpath='{.items[0].metadata.name}')
                      
   - name: download-object-store-template
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
     script:
       image: minio/{{ .Values.minio.minioclient.image }}
       env:
@@ -114,6 +123,9 @@ spec:
         mc cp minio-local/{{ .Values.minio.inputDataPath }} /assets/input-data.txt
             
   - name: process-batch-inputs-template
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
     script:
       image: {{ .Values.seldonDeployment.image }}
       volumeMounts:
@@ -136,6 +148,9 @@ spec:
             --output-data-path "/assets/output-data.txt"
       
   - name: upload-object-store-template
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
     script:
       image: minio/{{ .Values.minio.minioclient.image }}
       volumeMounts:
