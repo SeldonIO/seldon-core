@@ -27,9 +27,9 @@ RUN pip install -e .
 RUN pip install pip-licenses
 RUN mkdir ./licenses && pip-licenses --from=mixed --format=csv --output-file=./licenses/license_info.csv && \
     pip-licenses --from=mixed --format=plain-vertical --with-license-file --no-license-path --output-file=./licenses/license.txt
-USER root
+
+
 RUN yum install -y mesa-libGL
 RUN mv ./licenses /licenses
-USER default
 
 ENTRYPOINT ["python", "-m", "adserver"]

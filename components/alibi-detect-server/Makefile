@@ -45,7 +45,7 @@ docker-run-drift-detector:
 #
 
 curl-detector:
-	curl -v localhost:8080/ -d @./input.json -H "ce-namespace: default" -H "ce-modelid: cifar10"
+	curl -v localhost:8080/ -d @./input.json -H "ce-namespace: default" -H "ce-modelid: cifar10" -H "ce-type: io.seldon.serving.inference.request" -H "ce-id: 1234" -H "ce-source: localhost" -H "ce-specversion: 1.0"
 
 curl-outlier-detector-scores:
 	curl -v localhost:8080/ -d @./input.json -H "Alibi-Detect-Return-Feature-Score: true" -H "Alibi-Detect-Return-Instance-Score: true"
@@ -67,7 +67,7 @@ curl-metrics-server-metrics:
 	curl http://localhost:8080/v1/metrics
 
 docker-build: 
-	docker build -f Dockerfile -t seldonio/${IMAGE}:${VERSION} .
+	docker build --pull -f Dockerfile -t seldonio/${IMAGE}:${VERSION} .
 
 docker-push:
 	docker push seldonio/${IMAGE}:${VERSION} 
