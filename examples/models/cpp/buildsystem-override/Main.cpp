@@ -4,16 +4,16 @@
 
 namespace py = pybind11;
 
-class ModelClass : public seldon::SeldonModelBase {
+class MyModelClass : public seldon::SeldonModelBase {
 
     seldon::protos::SeldonMessage predict(seldon::protos::SeldonMessage &data) override {
         return data;
     }
 };
 
-PYBIND11_MODULE(SeldonPackage, m) {
-    py::class_<ModelClass>(m, "ModelClass")
+PYBIND11_MODULE(CustomSeldonPackage, m) {
+    py::class_<MyModelClass>(m, "MyModelClass")
         .def(py::init())
-        .def("predict_raw", &ModelClass::predictRaw);
+        .def("predict_raw", &MyModelClass::predictRaw);
 }
 

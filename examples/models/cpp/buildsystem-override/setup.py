@@ -75,9 +75,9 @@ class CMakeBuild(build_ext):
 
 
 setup(
-    name="SeldonPackage",
+    name="CustomSeldonPackage",
     version="0.0.1",
-    ext_modules=[CMakeExtension("SeldonPackage")],
+    ext_modules=[CMakeExtension("CustomSeldonPackage")],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
     include_package_data=True,
