@@ -7,7 +7,7 @@
 
 #include "seldon/SeldonModel.hpp"
 
-class TestModel : public seldon::SeldonModel {
+class TestModel : public seldon::SeldonModelBase {
 
     seldon::protos::SeldonMessage predict(seldon::protos::SeldonMessage &data) override {
         return data;
