@@ -13,27 +13,17 @@ if(SELDON_OPT_CLONE_PYBIND11)
  clone-pybind)
 endif()
 
-file(GLOB SELDON_SRC
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
-
 file(GLOB SELDON_PROTO_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/proto/*.cc")
-
-message(STATUS "printing")
-message(STATUS ${SELDON_SRC})
-message(STATUS ${SELDON_PROTO_SRC})
-message(STATUS "printed")
 
 if(SELDON_OPT_BUILD_STATIC)
     add_library(
         seldon STATIC
-        ${SELDON_PROTO_SRC}
-        ${SELDON_SRC})
+        ${SELDON_PROTO_SRC})
 else()
     add_library(
         seldon SHARED
-        ${SELDON_PROTO_SRC}
-        ${SELDON_SRC})
+        ${SELDON_PROTO_SRC})
 endif()
 
 target_include_directories(

@@ -1,4 +1,4 @@
-BASE_IMAGE_TAG := $(shell cat ../../../../version.txt)
+BASE_IMAGE_TAG := 1.5.0-dev
 BASE_IMAGE_NAME := docker.io/seldonio/seldon-core-s2i-python37-ubi8
 SHELL := /bin/bash
 SELDON_CORE_DIR = ../../../../
