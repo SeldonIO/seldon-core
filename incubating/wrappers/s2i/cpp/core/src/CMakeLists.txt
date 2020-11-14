@@ -25,6 +25,11 @@ else()
         ${SELDON_SRC} ${SELDON_PROTO_SRC})
 endif()
 
+if(SELDON_OPT_BUILD_PROTO)
+    add_dependencies(seldon
+        proto-build)
+endif()
+
 target_include_directories(
     seldon PUBLIC
     $<INSTALL_INTERFACE:include>
