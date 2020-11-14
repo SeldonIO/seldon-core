@@ -60,4 +60,21 @@ endif()
 
 add_library(seldon::seldon ALIAS seldon)
 
+if(SELDON_OPT_INSTALL)
+    install(TARGETS seldon EXPORT SeldonTargets
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        INCLUDES DESTINATION include)
+
+    install(DIRECTORY include/ DESTINATION include)
+
+    install(DIRECTORY ${PROJECT_SOURCE_DIR}/src/include
+        DESTINATION include)
+
+    install(EXPORT SeldonTargets
+        FILE seldon-config.cmake
+        NAMESPACE seldon::
+        DESTINATION lib/cmake/seldon)
+endif()
+
 
