@@ -31,7 +31,7 @@ target_include_directories(
 
 target_link_libraries(
     seldon PRIVATE
-    ${PROTOBUF_LIBRARY})
+    ${PROTOBUF_LIBRARIES})
 
 #include_directories(${PYTHON_INCLUDE_DIRS})
 
