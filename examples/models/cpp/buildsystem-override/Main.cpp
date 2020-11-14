@@ -1,5 +1,3 @@
-#include <pybind11/pybind11.h>
-
 #include "seldon/SeldonModel.hpp"
 
 class MyModelClass : public seldon::SeldonModelBase {
@@ -9,9 +7,4 @@ class MyModelClass : public seldon::SeldonModelBase {
     }
 };
 
-PYBIND11_MODULE(CustomSeldonPackage, m) {
-    py::class_<MyModelClass>(m, "MyModelClass")
-        .def(py::init())
-        .def("predict_raw", &MyModelClass::predictRaw);
-}
-
+SELDON_BIND_MODULE(CustomSeldonPackage, MyModelClass)

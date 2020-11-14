@@ -13,5 +13,3 @@ pybind11_add_module(
 target_link_libraries(
     CustomSeldonPackage PRIVATE
     seldon::seldon)
-
-
