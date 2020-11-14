@@ -1,20 +1,9 @@
-include(FindProtobuf)
-find_package(Protobuf REQUIRED)
 
-#file(GLOB SELDON_SRC
-#    "${PROJECT_SOURCE_DIR}/src/*.cpp")
-#
-#file(GLOB SELDON_PROTO_SRC
-#    "${PROJECT_SOURCE_DIR}/src/proto/*.cc")
+find_package(Protobuf REQUIRED)
+find_package(PythonLibs REQUIRED)
 
 add_executable(seldon-test
     Main.cpp catch_amalgamated.cpp)
-
-#pybind11_add_module(
-#    seldon-test
-#    Main.cpp catch_amalgamated.cpp)
-
-#set_property(TARGET seldon-test PROPERTY ENABLE_EXPORTS 1)
 
 target_include_directories(
     seldon-test PUBLIC
