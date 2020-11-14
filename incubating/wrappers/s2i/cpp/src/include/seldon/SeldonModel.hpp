@@ -49,13 +49,17 @@ public:
 
 using SeldonModelBase = SeldonModel<protos::SeldonMessage>;
 
-#define SELDON_DEFAULT_PYBIND_MODULE(CLASS)           \
-    PYBIND11_MODULE(SeldonPackage, m)                 \
+#define SELDON_BIND_MODULE(PACKAGE, CLASS)  \
+    PYBIND11_MODULE(PACKAGE, m)                       \
     {                                                 \
     py::class_<CLASS>(m, #CLASS)                      \
         .def(py::init())                              \
-        .def("predict_raw", &ModelClass::predictRaw); \
+        .def("predict_raw", &CLASS::predictRaw); \
     }
+
+#define SELDON_DEFAULT_BIND_MODULE()           \
+    SELDON_BIND_MODULE(SeldonPackage, ModelClass)
+
 
 }
 
