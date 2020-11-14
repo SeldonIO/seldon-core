@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD 14)
 # Allow scripts to call main kompute Makefile
 function(seldon_make SELDON_MAKE_TARGET)
     add_custom_target(${SELDON_MAKE_TARGET}
-        COMMAND make -C ${PROJECT_SOURCE_DIR}../ ${SELDON_MAKE_TARGET})
+        COMMAND make -C ${PROJECT_SOURCE_DIR}/../ ${SELDON_MAKE_TARGET})
 endfunction()
 
 add_subdirectory(src)
