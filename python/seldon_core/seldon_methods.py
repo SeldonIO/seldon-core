@@ -55,11 +55,12 @@ def handle_raw_custom_metrics(
     If INCLUDE_METRICS_IN_CLIENT_RESPONSE environmental variable is set to "true"
     metrics will be dropped from msg.
     """
+    metrics = []
     if is_proto:
         metrics = seldon_message_to_json(msg.meta).get("metrics", [])
         if metrics and not INCLUDE_METRICS_IN_CLIENT_RESPONSE:
             del msg.meta.metrics[:]
-    else:
+    elif isinstance(msg, dict):
         metrics = msg.get("meta", {}).get("metrics", [])
         if metrics and not INCLUDE_METRICS_IN_CLIENT_RESPONSE:
             del msg["meta"]["metrics"]
