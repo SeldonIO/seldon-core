@@ -1,2 +1,0 @@
-# Seldon Custom Model
-
