@@ -32,6 +32,16 @@ RUN cmake _cpp/. -B_cpp/build/ -DSELDON_OPT_BUILD_STATIC=0
 RUN make -C _cpp/build/ -j16
 RUN make -C _cpp/build/ install
 
+# Base default config that can be overriden
+ENV MODEL_NAME SeldonPackage.ModelClass
+ENV API_TYPE REST
+ENV SERVICE_TYPE MODEL
+ENV PERSISTENCE 0
+ENV PAYLOAD_PASSTHROUGH true
+# Default files
+COPY base/CMakeLists.txt .
+COPY base/setup.py .
+
 WORKDIR /microservice
 
 EXPOSE 5000
