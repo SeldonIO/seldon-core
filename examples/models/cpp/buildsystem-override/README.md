@@ -89,6 +89,29 @@ target_link_libraries(
     Overwriting CMakeLists.txt
 
 
+# Environment Variables
+The final component is to specify the environment variables. 
+
+FOr this we can either pass the env variable as a parameter to the `s2i` command below, or in this example we'll approach it by the other option which is creating an environment file in the `.s2i/environment` file.
+
+The environment variable is `MODEL_NAME`, which should contain the name of your package and model. 
+
+In our case it is `CustomSeldonPackage.MyModelClass` as follows:
+
+
+```python
+!mkdir -p .s2i/
+```
+
+
+```python
+%writefile .s2i/environment
+MODEL_NAME=CustomSeldonPackage.MyModelClass
+```
+
+    UsageError: Line magic function `%writefile` not found (But cell magic `%%writefile` exists, did you mean that instead?).
+
+
 ## (Optional) Extend CMake Config via Setup.py
 
 In our case we won't have to pass any custom CMAKE parameters as we can configure everything through the `CMakeLists.txt`, but if you wish to modify how your C++ wrapper is packaged you can extend the setup.py file by following the details in the [CPP Wrapper documentation page]().
@@ -116,7 +139,7 @@ We can now build our seldon microservice using `s2i`:
     Building wheels for collected packages: PTable
     Building wheel for PTable (setup.py): started
     Building wheel for PTable (setup.py): finished with status 'done'
-    Created wheel for PTable: filename=PTable-0.9.2-cp37-none-any.whl size=22906 sha256=f7255e89684e583ca21360b83827e9ce27587265e7183eb26d1193c6454680d2
+    Created wheel for PTable: filename=PTable-0.9.2-cp37-none-any.whl size=22906 sha256=98facc4ac39cd0e7c89a7c87587cf9941e9aa75817f105b8e5e01b499d1efb2a
     Stored in directory: /root/.cache/pip/wheels/22/cc/2e/55980bfe86393df3e9896146a01f6802978d09d7ebcba5ea56
     Successfully built PTable
     Installing collected packages: PTable, pip-licenses
@@ -133,7 +156,7 @@ We can now build our seldon microservice using `s2i`:
 !docker run --name "advanced_cpp" -d --rm -p 5000:5000 seldonio/advanced-cpp:0.1
 ```
 
-    98c1434d9b030fe2d2c63b621851ffb82267b0f5411332405de68a8c75270d69
+    aaa5795779f2e605f7ead2772e912c8dd7de04002457eb4b3966b2b2182c63f4
 
 
 ### Send request (which should return the same value)
