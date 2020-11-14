@@ -7,7 +7,7 @@ IMAGE_REGISTRY = docker.io/seldonio
 IMAGE_NAME = ${IMAGE_REGISTRY}/s2i-cpp-build:${VERSION}
 
 cmake:
-	cmake core/ -Bbuild \
+	cmake ./ -Bbuild \
 		-DSELDON_OPT_BUILD_TESTS=1 \
 		-DSELDON_OPT_MAKE_SHARED=0 \
 		-DSELDON_OPT_BUILD_PROTO=1 \
@@ -24,11 +24,12 @@ cmake-clean:
 	rm -rf build/
 
 proto-build:
+	mkdir -p core/
 	protoc -I=${SELDON_CORE_DIR}/proto -I=${SELDON_CORE_DIR}/proto/tensorflow \
 		--cpp_out=core/ \
 		${SELDON_CORE_DIR}/proto/prediction.proto
-	mv core/prediction.pb.h core/src/include/prediction.pb.h
-	mv core/prediction.pb.cc core/src/proto/prediction.pb.cc
+	mv core/prediction.pb.h src/include/prediction.pb.h
+	mv core/prediction.pb.cc src/proto/prediction.pb.cc
 	protoc -I=${SELDON_CORE_DIR}/proto/tensorflow \
 		--cpp_out=core/ \
 		${SELDON_CORE_DIR}/proto/tensorflow/tensorflow/core/framework/tensor.proto
@@ -42,8 +43,9 @@ proto-build:
 		--cpp_out=core/ \
 		${SELDON_CORE_DIR}/proto/tensorflow/tensorflow/core/framework/resource_handle.proto
 	mkdir -p core/src/include/tensorflow/core/framework
-	mv core/tensorflow/core/framework/*.h core/src/include/tensorflow/core/framework
-	mv core/tensorflow/core/framework/*.cc core/src/proto/
+	mv core/tensorflow/core/framework/*.h src/include/tensorflow/core/framework
+	mv core/tensorflow/core/framework/*.cc src/proto/
+	rm -rf core/
 
 clone-pybind:
 	git clone --depth 1 --branch v2.6.1 https://github.com/pybind/pybind11 || echo "Pybind not cloned"

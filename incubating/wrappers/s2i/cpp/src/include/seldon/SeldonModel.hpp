@@ -44,7 +44,7 @@ public:
         return outString;
     }
 
-
+    // TODO: Return without copy
     virtual seldon::protos::SeldonMessage predict(seldon::protos::SeldonMessage &data) = 0;
 
 };

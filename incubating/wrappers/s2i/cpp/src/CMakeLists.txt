@@ -2,7 +2,7 @@
 find_package(Protobuf REQUIRED)
 find_package(PythonLibs REQUIRED)
 
-add_subdirectory(../../pybind11 ${CMAKE_CURRENT_BINARY_DIR}/pybind_build})
+add_subdirectory(../pybind11 ${CMAKE_CURRENT_BINARY_DIR}/pybind_build})
 
 if(SELDON_OPT_BUILD_PROTO)
     execute_process(COMMAND make -C ${PROJECT_SOURCE_DIR}/../
