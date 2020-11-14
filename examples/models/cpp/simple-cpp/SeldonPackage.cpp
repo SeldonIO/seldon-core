@@ -2,8 +2,6 @@
 
 #include "seldon/SeldonModel.hpp"
 
-namespace py = pybind11;
-
 class ModelClass : public seldon::SeldonModelBase {
 
     seldon::protos::SeldonMessage predict(seldon::protos::SeldonMessage &data) override {
@@ -11,9 +9,5 @@ class ModelClass : public seldon::SeldonModelBase {
     }
 };
 
-PYBIND11_MODULE(SeldonPackage, m) {
-    py::class_<ModelClass>(m, "ModelClass")
-        .def(py::init())
-        .def("predict_raw", &ModelClass::predictRaw);
-}
+SELDON_DEFAULT_PYBIND_MODULE(ModelClass)
 
