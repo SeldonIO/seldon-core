@@ -7,10 +7,21 @@ IMAGE_REGISTRY = docker.io/seldonio
 IMAGE_NAME = ${IMAGE_REGISTRY}/s2i-cpp-build:${VERSION}
 
 cmake:
-	cmake core/ -Bbuild
+	cmake core/ -Bbuild \
+		-DSELDON_OPT_BUILD_TESTS=1 \
+		-DSELDON_OPT_MAKE_SHARED=0 \
+		-DSELDON_OPT_BUILD_PROTO=1 \
+		-DSELDON_OPT_INSTALL=1 \
+		-DSELDON_OPT_CLONE_PYBIND11=1 
 
 cmake-build:
 	make -C build/
+
+cmake-test: cmake-build
+	./build/test/seldon-test
+
+cmake-clean:
+	rm -rf build/
 
 proto-build:
 	protoc -I=${SELDON_CORE_DIR}/proto -I=${SELDON_CORE_DIR}/proto/tensorflow \
@@ -35,7 +46,7 @@ proto-build:
 	mv core/tensorflow/core/framework/*.cc core/src/proto/
 
 clone-pybind:
-	git clone --depth 1 --branch v2.6.1 https://github.com/pybind/pybind11
+	git clone --depth 1 --branch v2.6.1 https://github.com/pybind/pybind11 || echo "Pybind not cloned"
 
 docker-build:
 	docker build -f Dockerfile \

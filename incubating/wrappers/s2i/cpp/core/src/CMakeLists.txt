@@ -5,8 +5,12 @@ find_package(PythonLibs REQUIRED)
 add_subdirectory(../../pybind11 ${CMAKE_CURRENT_BINARY_DIR}/pybind_build})
 
 if(SELDON_OPT_BUILD_PROTO)
-    seldon_make(proto-build
-        OUTPUT ${PROJECT_SOURCE_DIR}/src/proto/)
+    execute_process(COMMAND make -C ${PROJECT_SOURCE_DIR}/../
+ proto-build)
+endif()
+if(SELDON_OPT_CLONE_PYBIND11)
+    execute_process(COMMAND make -C ${PROJECT_SOURCE_DIR}/../
+ clone-pybind)
 endif()
 
 file(GLOB SELDON_SRC
@@ -23,11 +27,6 @@ else()
     add_library(
         seldon STATIC
         ${SELDON_SRC} ${SELDON_PROTO_SRC})
-endif()
-
-if(SELDON_OPT_BUILD_PROTO)
-    add_dependencies(seldon
-        proto-build)
 endif()
 
 target_include_directories(
