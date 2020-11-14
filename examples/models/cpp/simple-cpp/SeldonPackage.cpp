@@ -7,4 +7,4 @@ class ModelClass : public seldon::SeldonModelBase {
     }
 };
 
-SELDON_DEFAULT_PYBIND_MODULE(ModelClass)
+SELDON_DEFAULT_BIND_MODULE()
