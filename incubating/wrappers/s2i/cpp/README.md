@@ -4,9 +4,9 @@ This module conatains the base libraries and dependencies required for wrapping 
 
 The dependencies for building are:
 
-* protoc (with libprotoc) 3.0.0+
+* protoc (with libprotoc) v3.14.0-rc2
+* pybind11 (provided in this repo via makefile) v2.6.1
 * Python (with dev libraries) 3.6+
-* pybind11 (provided in this repo via makefile)
 
 # To build and run tests
 
