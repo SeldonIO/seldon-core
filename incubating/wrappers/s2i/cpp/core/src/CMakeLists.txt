@@ -13,15 +13,14 @@ file(GLOB SELDON_SRC
 file(GLOB SELDON_PROTO_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/proto/*.cc")
 
+#pybind11_add_module(
+#    seldon
+#    SHARED ${SELDON_SRC} ${SELDON_PROTO_SRC})
 
-pybind11_add_module(
-    seldon
-    SHARED ${SELDON_SRC} ${SELDON_PROTO_SRC})
-
-## Build static library as well
-#add_library(
-#    seldon::seldon ALIAS seldon SHARED
-#    ${SELDON_SRC} ${SELDON_PROTO_SRC})
+# Build static library as well
+add_library(
+    seldon SHARED
+    ${SELDON_SRC} ${SELDON_PROTO_SRC})
 
 target_include_directories(
     seldon PUBLIC
@@ -29,32 +28,24 @@ target_include_directories(
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
+target_include_directories(
+    seldon PUBLIC 
+    ${PYTHON_INCLUDE_DIRS})
+
 target_link_libraries(
     seldon PRIVATE
+    pybind11::module
+    pybind11::lto
     ${PROTOBUF_LIBRARIES})
 
-#include_directories(${PYTHON_INCLUDE_DIRS})
+pybind11_extension(seldon)
+pybind11_strip(seldon)
 
-#target_link_libraries(
-#    seldon PRIVATE 
-#    pybind11::module)
-#
-#pybind11_extension(seldon)
-#
-#target_link_libraries(
-#    seldon PRIVATE 
-#    pybind11::lto)
-#
-#pybind11_strip(seldon)
-#
-#if(MSVC)
-#    target_link_libraries(
-#        seldon PRIVATE 
-#        pybind11::windows_extras)
-#endif()
-
-#set_target_properties(seldon PROPERTIES CXX_VISIBILITY_PRESET "hidden"
-#                                        CUDA_VISIBILITY_PRESET "hidden")
+if(MSVC)
+    target_link_libraries(
+        seldon PRIVATE 
+        pybind11::windows_extras)
+endif()
 
 add_library(seldon::seldon ALIAS seldon)
 

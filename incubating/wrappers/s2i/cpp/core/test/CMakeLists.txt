@@ -1,18 +1,14 @@
 include(FindProtobuf)
 find_package(Protobuf REQUIRED)
 
-file(GLOB SELDON_SRC
-    "${PROJECT_SOURCE_DIR}/src/*.cpp")
-
-file(GLOB SELDON_PROTO_SRC
-    "${PROJECT_SOURCE_DIR}/src/proto/*.cc")
+#file(GLOB SELDON_SRC
+#    "${PROJECT_SOURCE_DIR}/src/*.cpp")
+#
+#file(GLOB SELDON_PROTO_SRC
+#    "${PROJECT_SOURCE_DIR}/src/proto/*.cc")
 
 add_executable(seldon-test
-    Main.cpp catch_amalgamated.cpp
-    ${SELDON_SRC} ${SELDON_PROTO_SRC}
-    )
-
-message(STATUS ${PROTOBUF_LIBRARY})
+    Main.cpp catch_amalgamated.cpp)
 
 #pybind11_add_module(
 #    seldon-test
@@ -33,20 +29,14 @@ message(STATUS ${PROJECT_SOURCE_DIR}/src/include)
 
 include_directories(${PYTHON_INCLUDE_DIRS})
 
+message(STATUS ${seldon_LIBRARIES})
+
 target_link_libraries(
-    seldon-test PRIVATE
-    pybind11::module
-    pybind11::lto
+    seldon-test
+    seldon::seldon
     ${PROTOBUF_LIBRARIES}
     ${PYTHON_LIBRARIES})
 
-    #pybind11_extension(seldon-test)
-    #pybind11_strip(seldon-test)
-    #
-    #set_target_properties(
-    #    seldon-test PROPERTIES 
-    #        CXX_VISIBILITY_PRESET "hidden"
-    #        CUDA_VISIBILITY_PRESET "hidden")
 
 
 
