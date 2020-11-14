@@ -1,4 +1,4 @@
-MODEL_NAME=SeldonPackage.ModelClass
+MODEL_NAME=CustomSeldonPackage.MyModelClass
 API_TYPE=REST
 SERVICE_TYPE=MODEL
 PERSISTENCE=0

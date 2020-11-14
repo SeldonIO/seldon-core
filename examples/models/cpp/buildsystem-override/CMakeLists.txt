@@ -7,11 +7,11 @@ find_package(seldon REQUIRED)
 find_package(pybind11 REQUIRED)
 
 pybind11_add_module(
-    SeldonPackage
-    SeldonPackage.cpp)
+    CustomSeldonPackage
+    Main.cpp)
 
 target_link_libraries(
-    SeldonPackage PRIVATE
+    CustomSeldonPackage PRIVATE
     seldon::seldon)
 
 
