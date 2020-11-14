@@ -4,8 +4,12 @@ project(seldon_custom_model VERSION 0.0.1)
 set(CMAKE_CXX_STANDARD 14)
 
 add_subdirectory(
-    ../../../../incubating/wrappers/s2i/cpp/core/
+    _cpp/
     ${CMAKE_CURRENT_BINARY_DIR}/seldon_build})
+
+#add_subdirectory(
+#    ../../../../incubating/wrappers/s2i/cpp/core/
+#    ${CMAKE_CURRENT_BINARY_DIR}/seldon_build})
 
 #get_target_property(seldon_INCLUDE_DIRS seldon INCLUDE_DIRECTORIES)
 #message(STATUS "TESTING THIS")
