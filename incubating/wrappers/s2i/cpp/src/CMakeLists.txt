@@ -19,13 +19,13 @@ file(GLOB SELDON_SRC
 file(GLOB SELDON_PROTO_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/proto/*.cc")
 
-if(SELDON_OPT_MAKE_SHARED)
+if(SELDON_OPT_BUILD_STATIC)
     add_library(
-        seldon SHARED
+        seldon STATIC
         ${SELDON_SRC} ${SELDON_PROTO_SRC})
 else()
     add_library(
-        seldon STATIC
+        seldon SHARED
         ${SELDON_SRC} ${SELDON_PROTO_SRC})
 endif()
 
