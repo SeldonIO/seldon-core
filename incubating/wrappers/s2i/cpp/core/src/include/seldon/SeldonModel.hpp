@@ -4,6 +4,7 @@
 #include <google/protobuf/util/json_util.h>
 
 #include <iostream>
+#include <memory>
 
 #include "prediction.pb.h"
 
@@ -32,7 +33,7 @@ public:
         google::protobuf::util::JsonStringToMessage(strData, &input);
         std::cout << "Converted to jsonmessage" << std::endl;
 
-        seldon::protos::SeldonMessage output = this->predict(output);
+        seldon::protos::SeldonMessage output = this->predict(input);
 
         std::cout << "Converting output" << std::endl;
 

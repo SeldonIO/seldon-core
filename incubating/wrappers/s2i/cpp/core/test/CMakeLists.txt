@@ -37,7 +37,7 @@ target_link_libraries(
     seldon-test PRIVATE
     pybind11::module
     pybind11::lto
-    ${PROTOBUF_LIBRARY}
+    ${PROTOBUF_LIBRARIES}
     ${PYTHON_LIBRARIES})
 
     #pybind11_extension(seldon-test)
