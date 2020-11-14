@@ -125,6 +125,7 @@ Documentation Index
 
    Java Language Wrapper <java/README.md>
    Java (JNI) Language Wrapper [ALPHA] <java-jni/README.md>
+   C++ Language Wrapper [ALPHA] <cpp/README.md>
    R Language Wrapper [ALPHA] <R/README.md>
    NodeJS Language Wrapper [ALPHA] <nodejs/README.md>
    Go Language Wrapper [ALPHA] <go/go_wrapper_link.rst>
