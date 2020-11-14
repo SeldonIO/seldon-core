@@ -4,7 +4,7 @@
 
 namespace py = pybind11;
 
-class ModelClass : public seldon::SeldonModel {
+class ModelClass : public seldon::SeldonModelBase {
 
     seldon::protos::SeldonMessage predict(seldon::protos::SeldonMessage &data) override {
         return data;
