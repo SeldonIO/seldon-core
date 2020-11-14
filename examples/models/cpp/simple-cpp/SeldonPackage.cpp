@@ -1,5 +1,3 @@
-#include <pybind11/pybind11.h>
-
 #include "seldon/SeldonModel.hpp"
 
 class ModelClass : public seldon::SeldonModelBase {
@@ -10,4 +8,3 @@ class ModelClass : public seldon::SeldonModelBase {
 };
 
 SELDON_DEFAULT_PYBIND_MODULE(ModelClass)
-
