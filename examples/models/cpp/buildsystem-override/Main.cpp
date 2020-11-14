@@ -2,8 +2,6 @@
 
 #include "seldon/SeldonModel.hpp"
 
-namespace py = pybind11;
-
 class MyModelClass : public seldon::SeldonModelBase {
 
     seldon::protos::SeldonMessage predict(seldon::protos::SeldonMessage &data) override {
