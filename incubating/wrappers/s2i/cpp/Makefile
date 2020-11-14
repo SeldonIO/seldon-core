@@ -9,13 +9,13 @@ IMAGE_NAME = ${IMAGE_REGISTRY}/s2i-cpp-build:${VERSION}
 cmake:
 	cmake ./ -Bbuild \
 		-DSELDON_OPT_BUILD_TESTS=1 \
-		-DSELDON_OPT_MAKE_SHARED=0 \
+		-DSELDON_OPT_BUILD_STATIC=0 \
 		-DSELDON_OPT_BUILD_PROTO=1 \
 		-DSELDON_OPT_INSTALL=1 \
 		-DSELDON_OPT_CLONE_PYBIND11=1 
 
 cmake-build:
-	make -C build/
+	make -C build/ -j$(shell nproc)
 
 cmake-test: cmake-build
 	./build/test/seldon-test
@@ -48,7 +48,7 @@ proto-build:
 	rm -rf core/
 
 clone-pybind:
-	git clone --depth 1 --branch v2.6.1 https://github.com/pybind/pybind11 || echo "Pybind not cloned"
+	git clone --depth 1 --branch ${PYBIND11_VERSION} https://github.com/pybind/pybind11 || echo "Pybind not cloned"
 
 docker-build:
 	docker build -f Dockerfile \
