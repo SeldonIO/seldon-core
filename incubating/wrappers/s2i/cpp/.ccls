@@ -11,5 +11,6 @@
 
 -DDEBUG=1
 
--I/home/alejandro/Programming/kubernetes/seldon/seldon-core/incubating/wrappers/s2i/cpp/core/src/include/
+-I./src/include/
+-I/usr/include/python3.6/
 
