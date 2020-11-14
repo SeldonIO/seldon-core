@@ -1,8 +1,13 @@
 
-include(FindProtobuf)
 find_package(Protobuf REQUIRED)
+find_package(PythonLibs REQUIRED)
 
 add_subdirectory(../../pybind11 ${CMAKE_CURRENT_BINARY_DIR}/pybind_build})
+
+if(SELDON_OPT_BUILD_PROTO)
+    seldon_make(proto-build
+        OUTPUT ${PROJECT_SOURCE_DIR}/src/proto/)
+endif()
 
 file(GLOB SELDON_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
@@ -10,14 +15,15 @@ file(GLOB SELDON_SRC
 file(GLOB SELDON_PROTO_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/proto/*.cc")
 
-#pybind11_add_module(
-#    seldon
-#    SHARED ${SELDON_SRC} ${SELDON_PROTO_SRC})
-
-# Build static library as well
-add_library(
-    seldon SHARED
-    ${SELDON_SRC} ${SELDON_PROTO_SRC})
+if(SELDON_OPT_MAKE_SHARED)
+    add_library(
+        seldon SHARED
+        ${SELDON_SRC} ${SELDON_PROTO_SRC})
+else()
+    add_library(
+        seldon STATIC
+        ${SELDON_SRC} ${SELDON_PROTO_SRC})
+endif()
 
 target_include_directories(
     seldon PUBLIC
@@ -34,9 +40,6 @@ target_link_libraries(
     pybind11::module
     pybind11::lto
     ${PROTOBUF_LIBRARIES})
-
-pybind11_extension(seldon)
-pybind11_strip(seldon)
 
 if(MSVC)
     target_link_libraries(
