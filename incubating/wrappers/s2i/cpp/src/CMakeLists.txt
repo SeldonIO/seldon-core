@@ -19,14 +19,21 @@ file(GLOB SELDON_SRC
 file(GLOB SELDON_PROTO_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/proto/*.cc")
 
+message(STATUS "printing")
+message(STATUS ${SELDON_SRC})
+message(STATUS ${SELDON_PROTO_SRC})
+message(STATUS "printed")
+
 if(SELDON_OPT_BUILD_STATIC)
     add_library(
         seldon STATIC
-        ${SELDON_SRC} ${SELDON_PROTO_SRC})
+        ${SELDON_PROTO_SRC}
+        ${SELDON_SRC})
 else()
     add_library(
         seldon SHARED
-        ${SELDON_SRC} ${SELDON_PROTO_SRC})
+        ${SELDON_PROTO_SRC}
+        ${SELDON_SRC})
 endif()
 
 target_include_directories(

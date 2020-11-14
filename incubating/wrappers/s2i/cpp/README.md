@@ -17,5 +17,9 @@ make cmake
 make cmake-test
 ```
 
-You are also able to just build all the relevant files using cmake - we advise using out of source builds (ie passing -bBUILDDIR) as otherwise the top level makefile may get overriden. 
+You will notice that when running the tests we build with static library.
+
+# Build Seldon Containers
+
+In order to build for your deployments, you will want to make sure the library is installed as shared library, so it can be referenced in the build. You can see the examples in the examples folder.
 
