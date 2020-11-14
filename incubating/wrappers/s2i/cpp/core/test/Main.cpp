@@ -10,8 +10,6 @@
 class TestModel : public seldon::SeldonModel {
 
     seldon::protos::SeldonMessage predict(seldon::protos::SeldonMessage &data) override {
-        std::cout << "DATA IS: " << data.strdata() << "." << std::endl;
-        std::cout << "done fund." << std::endl;
         return data;
     }
 };
