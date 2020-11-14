@@ -2,9 +2,6 @@
 include(FindProtobuf)
 find_package(Protobuf REQUIRED)
 
-find_package(PythonLibs REQUIRED)
-#find_package(Python COMPONENTS Interpreter Development REQUIRED)
-
 add_subdirectory(../../pybind11 ${CMAKE_CURRENT_BINARY_DIR}/pybind_build})
 
 file(GLOB SELDON_SRC
