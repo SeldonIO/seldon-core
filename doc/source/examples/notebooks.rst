@@ -61,6 +61,8 @@ Incubating Projects Examples
    Stream Processing with KNative Eventing <knative_eventing_streaming>
    Kafka CIFAR10 <cifar10_kafka>
    Kafka SpaCy SKlearn NLP <kafka_spacy_sklearn>
+   CPP Wrapper Simple Single File <cpp_simple>
+   CPP Wrapper Advanced Custom Build System <cpp_advanced>
 
 
 Cloud-Specific Examples
