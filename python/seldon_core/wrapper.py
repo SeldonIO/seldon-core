@@ -63,7 +63,7 @@ def get_rest_microservice(user_model, seldon_metrics):
 
         json_response = jsonify(response, skip_encoding=PAYLOAD_PASSTHROUGH)
         if (
-            isinstance(json_response, dict)
+            isinstance(response, dict)
             and "status" in response
             and "code" in response["status"]
         ):
