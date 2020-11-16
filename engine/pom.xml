@@ -22,7 +22,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
     <pb.version>3.13.0</pb.version>
     <micrometer.version>1.5.2</micrometer.version>
     <start-class>io.seldon.engine.App</start-class>
-    <jaeger.version>1.4.0</jaeger.version>
+    <jaeger.version>1.5.0</jaeger.version>
     <opentracing.version>0.33.0</opentracing.version>
     <curator.version>4.2.0</curator.version>
     <jackson.version>2.11.1</jackson.version>
