@@ -24,6 +24,22 @@ if _TF_PRESENT:
     from tensorflow.core.framework.tensor_pb2 import TensorProto
 
 
+ENV_MODEL_NAME = "PREDICTIVE_UNIT_ID"
+ENV_MODEL_IMAGE = "PREDICTIVE_UNIT_IMAGE"
+NONIMPLEMENTED_MSG = "NOT_IMPLEMENTED"
+
+model_name = os.environ.get(ENV_MODEL_NAME, f"{NONIMPLEMENTED_MSG}")
+image_name = os.environ.get(
+    ENV_MODEL_IMAGE, f"{NONIMPLEMENTED_MSG}:{NONIMPLEMENTED_MSG}"
+)
+
+
+def get_request_path():
+    if model_name == NONIMPLEMENTED_MSG:
+        return {}
+    return {model_name: image_name}
+
+
 def json_to_seldon_message(
     message_json: Union[List, Dict]
 ) -> prediction_pb2.SeldonMessage:
@@ -459,6 +475,11 @@ def construct_response_json(
     if puid:
         response["meta"]["puid"] = puid
 
+    request_path = client_request_raw.get("meta", {}).get("requestPath", {})
+    request_path = {**get_request_path(), **request_path}
+    if request_path:
+        response["meta"]["requestPath"] = request_path
+
     return response
 
 
@@ -496,9 +517,14 @@ def construct_response(
     if meta:
         tags = meta.get("tags", {})
         metrics = meta.get("metrics", [])
+        request_path = meta.get("requestPath", {})
     else:
         tags = {}
         metrics = []
+        request_path = {}
+    request_path = {**get_request_path(), **request_path}
+    if request_path:
+        meta_json["requestPath"] = request_path
     custom_tags = client_custom_tags(user_model)
     if custom_tags:
         tags.update(custom_tags)
@@ -513,6 +539,7 @@ def construct_response(
     if client_request.meta:
         if client_request.meta.puid:
             meta_json["puid"] = client_request.meta.puid
+
     json_format.ParseDict(meta_json, meta_pb)
     if isinstance(client_raw_response, np.ndarray) or isinstance(
         client_raw_response, list
