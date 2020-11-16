@@ -106,9 +106,17 @@ class AlibiDetectOutlierModel(CEModel):  # pylint:disable=c-extension-no-member
                 return_instance_score=ret_instance_score,
             )
         # clean result
-        if "data" in od_preds and "instance_score" in od_preds["data"] and od_preds["data"]["instance_score"] is None:
+        if (
+            "data" in od_preds
+            and "instance_score" in od_preds["data"]
+            and od_preds["data"]["instance_score"] is None
+        ):
             del od_preds["data"]["instance_score"]
-        if "data" in od_preds and "feature_score" in od_preds["data"] and od_preds["data"]["feature_score"] is None:
+        if (
+            "data" in od_preds
+            and "feature_score" in od_preds["data"]
+            and od_preds["data"]["feature_score"] is None
+        ):
             del od_preds["data"]["feature_score"]
 
         return json.loads(json.dumps(od_preds, cls=NumpyEncoder))
