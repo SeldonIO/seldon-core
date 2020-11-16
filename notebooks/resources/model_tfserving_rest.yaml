@@ -1,11 +1,9 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: rest-tfserving
+  name: example-tfserving
 spec:
-  name: resttfserving
   protocol: tensorflow
-  transport: rest
   predictors:
   - componentSpecs:
     - spec:
@@ -20,10 +18,15 @@ spec:
           ports:
           - containerPort: 8501
             name: http
+            protocol: TCP
+          - containerPort: 8500
+            name: grpc
+            protocol: TCP
     graph:
       name: halfplustwo
       type: MODEL
       endpoint:
-        service_port: 8501
+        http_port: 8501
+        grpc_port: 8500
     name: model
     replicas: 1

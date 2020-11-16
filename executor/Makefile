@@ -35,7 +35,7 @@ kafka-proxy: copy_operator fmt vet
 	go build -o kafka-proxy cmd/proxy/main.go
 
 
-.PHONE: copy_operator
+.PHONY: copy_operator
 copy_operator:
 	rm _operator -rf
 	cp -r ../operator _operator

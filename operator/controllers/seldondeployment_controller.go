@@ -205,9 +205,7 @@ func createPdb(podSpec *machinelearningv1.SeldonPodSpec, deploymentName string, 
 func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 	seldonId string,
 	namespace string,
-	ports []httpGrpcPorts,
-	httpAllowed bool,
-	grpcAllowed bool) ([]*istio.VirtualService, []*istio.DestinationRule, error) {
+	ports []httpGrpcPorts) ([]*istio.VirtualService, []*istio.DestinationRule, error) {
 
 	istio_gateway := utils.GetEnv(ENV_ISTIO_GATEWAY, "seldon-gateway")
 	istioTLSMode := utils.GetEnv(ENV_ISTIO_TLS_MODE, "")
@@ -375,20 +373,11 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 	httpVsvc.Spec.Http[0].Route = routesHttp
 	grpcVsvc.Spec.Http[0].Route = routesGrpc
 
-	if httpAllowed && grpcAllowed {
-		vscs := make([]*istio.VirtualService, 2)
-		vscs[0] = httpVsvc
-		vscs[1] = grpcVsvc
-		return vscs, drules, nil
-	} else if httpAllowed {
-		vscs := make([]*istio.VirtualService, 1)
-		vscs[0] = httpVsvc
-		return vscs, drules, nil
-	} else {
-		vscs := make([]*istio.VirtualService, 1)
-		vscs[0] = grpcVsvc
-		return vscs, drules, nil
-	}
+	vscs := make([]*istio.VirtualService, 2)
+	vscs[0] = httpVsvc
+	vscs[1] = grpcVsvc
+	return vscs, drules, nil
+
 }
 
 func getEngineHttpPort() (engine_http_port int, err error) {
@@ -438,24 +427,6 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 	// If one of the predictors has noEngine then only one of http or grpc should be allowed dependent on
 	// the type of the noEngine model: whether it is http or grpc
 	externalPorts := make([]httpGrpcPorts, len(mlDep.Spec.Predictors))
-	grpcAllowed := true
-	httpAllowed := true
-	// Attempt to set httpAllowed and grpcAllowed to false if we have an noEngine predictor
-	for i := 0; i < len(mlDep.Spec.Predictors); i++ {
-		p := mlDep.Spec.Predictors[i]
-		noEngine := strings.ToLower(p.Annotations[machinelearningv1.ANNOTATION_NO_ENGINE]) == "true"
-		if noEngine && len(p.ComponentSpecs) > 0 && len(p.ComponentSpecs[0].Spec.Containers) > 0 {
-			pu := machinelearningv1.GetPredictiveUnit(&p.Graph, p.ComponentSpecs[0].Spec.Containers[0].Name)
-			if pu != nil {
-				if pu.Endpoint != nil && pu.Endpoint.Type == machinelearningv1.GRPC {
-					httpAllowed = false
-				}
-				if pu.Endpoint == nil || pu.Endpoint.Type == machinelearningv1.REST {
-					grpcAllowed = false
-				}
-			}
-		}
-	}
 
 	for i := 0; i < len(mlDep.Spec.Predictors); i++ {
 		p := mlDep.Spec.Predictors[i]
@@ -552,40 +523,23 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 						deploy.Spec.Selector.MatchLabels[machinelearningv1.Label_seldon_app] = pSvcName
 						deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_seldon_app] = pSvcName
 
-						port := int(svc.Spec.Ports[0].Port)
+						httpPort := int(svc.Spec.Ports[0].Port)
+						grpcPort := int(svc.Spec.Ports[1].Port)
 
-						if svc.Spec.Ports[0].Name == "grpc" {
-							httpAllowed = false
-							externalPorts[i] = httpGrpcPorts{httpPort: 0, grpcPort: port}
-							psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, 0, port, false, log)
-							if err != nil {
-								return nil, err
-							}
-							psvc = addLabelsToService(psvc, pu, &p)
-
-							c.services = append(c.services, psvc)
-
-							c.serviceDetails[pSvcName] = &machinelearningv1.ServiceStatus{
-								SvcName:      pSvcName,
-								GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(port),
-							}
-						} else {
-							externalPorts[i] = httpGrpcPorts{httpPort: port, grpcPort: 0}
-							grpcAllowed = false
-							psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, port, 0, false, log)
-							if err != nil {
-								return nil, err
-							}
-							psvc = addLabelsToService(psvc, pu, &p)
-
-							c.services = append(c.services, psvc)
-
-							c.serviceDetails[pSvcName] = &machinelearningv1.ServiceStatus{
-								SvcName:      pSvcName,
-								HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(port),
-							}
+						externalPorts[i] = httpGrpcPorts{httpPort: httpPort, grpcPort: grpcPort}
+						psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, httpPort, grpcPort, false, log)
+						if err != nil {
+							return nil, err
 						}
+						psvc = addLabelsToService(psvc, pu, &p)
 
+						c.services = append(c.services, psvc)
+
+						c.serviceDetails[pSvcName] = &machinelearningv1.ServiceStatus{
+							SvcName:      pSvcName,
+							HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(httpPort),
+							GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(grpcPort),
+						}
 					}
 				}
 			}
@@ -648,41 +602,20 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 				}
 			}
 
-			//Create Service for Predictor - exposed externally (ambassador or istio) and points at engine
-			httpPort := engine_http_port
-			if httpAllowed == false {
-				httpPort = 0
-			}
-			grpcPort := engine_grpc_port
-			if grpcAllowed == false {
-				grpcPort = 0
-			}
-			psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, httpPort, grpcPort, false, log)
+			psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, engine_http_port, engine_grpc_port, false, log)
 			if err != nil {
 
 				return nil, err
 			}
 
 			c.services = append(c.services, psvc)
-			if httpAllowed && grpcAllowed {
-				c.serviceDetails[pSvcName] = &machinelearningv1.ServiceStatus{
-					SvcName:      pSvcName,
-					HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_http_port),
-					GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_grpc_port),
-				}
-			} else if httpAllowed {
-				c.serviceDetails[pSvcName] = &machinelearningv1.ServiceStatus{
-					SvcName:      pSvcName,
-					HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_http_port),
-				}
-			} else if grpcAllowed {
-				c.serviceDetails[pSvcName] = &machinelearningv1.ServiceStatus{
-					SvcName:      pSvcName,
-					GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_grpc_port),
-				}
+			c.serviceDetails[pSvcName] = &machinelearningv1.ServiceStatus{
+				SvcName:      pSvcName,
+				HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_http_port),
+				GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_grpc_port),
 			}
 
-			externalPorts[i] = httpGrpcPorts{httpPort: httpPort, grpcPort: grpcPort}
+			externalPorts[i] = httpGrpcPorts{httpPort: engine_http_port, grpcPort: engine_grpc_port}
 		}
 
 		ei := NewExplainerInitializer(ctx, r.ClientSet)
@@ -700,7 +633,7 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 
 	//TODO Fixme - not changed to handle per predictor scenario
 	if utils.GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
-		vsvcs, dstRule, err := createIstioResources(mlDep, seldonId, namespace, externalPorts, httpAllowed, grpcAllowed)
+		vsvcs, dstRule, err := createIstioResources(mlDep, seldonId, namespace, externalPorts)
 		if err != nil {
 			return nil, err
 		}
@@ -775,38 +708,11 @@ func createContainerService(deploy *appsv1.Deployment,
 		return nil
 	}
 	namespace := getNamespace(mlDep)
-	portType := "http"
-	if pu.Endpoint.Type == machinelearningv1.GRPC {
-		portType = "grpc"
-	}
-	var portNum int32
-	portNum = 0
-	existingPort := machinelearningv1.GetPort(portType, con.Ports)
-	if existingPort != nil {
-		portNum = existingPort.ContainerPort
-	}
 
-	// pu should have a port set by seldondeployment_create_update_handler.go (if not by user)
-	// that mutator modifies SeldonDeployment and fires before this controller
-	if pu.Endpoint.ServicePort != 0 {
-		portNum = pu.Endpoint.ServicePort
-	}
-
-	if portNum == 0 {
-		// should have port by now
-		// if we don't know what it would respond to so can't create a service for it
-		return nil
-	}
-
-	if portType == "grpc" {
-		c.serviceDetails[containerServiceValue] = &machinelearningv1.ServiceStatus{
-			SvcName:      containerServiceValue,
-			GrpcEndpoint: containerServiceValue + "." + namespace + ":" + strconv.Itoa(int(portNum))}
-	} else {
-		c.serviceDetails[containerServiceValue] = &machinelearningv1.ServiceStatus{
-			SvcName:      containerServiceValue,
-			HttpEndpoint: containerServiceValue + "." + namespace + ":" + strconv.Itoa(int(portNum))}
-	}
+	c.serviceDetails[containerServiceValue] = &machinelearningv1.ServiceStatus{
+		SvcName:      containerServiceValue,
+		HttpEndpoint: containerServiceValue + "." + namespace + ":" + strconv.Itoa(int(pu.Endpoint.HttpPort)),
+		GrpcEndpoint: containerServiceValue + "." + namespace + ":" + strconv.Itoa(int(pu.Endpoint.GrpcPort))}
 
 	svc := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -818,9 +724,15 @@ func createContainerService(deploy *appsv1.Deployment,
 			Ports: []corev1.ServicePort{
 				{
 					Protocol:   corev1.ProtocolTCP,
-					Port:       portNum,
-					TargetPort: intstr.FromInt(int(portNum)),
-					Name:       portType,
+					Port:       pu.Endpoint.HttpPort,
+					TargetPort: intstr.FromInt(int(pu.Endpoint.HttpPort)),
+					Name:       "http",
+				},
+				{
+					Protocol:   corev1.ProtocolTCP,
+					Port:       pu.Endpoint.GrpcPort,
+					TargetPort: intstr.FromInt(int(pu.Endpoint.GrpcPort)),
+					Name:       "grpc",
 				},
 			},
 			Type:            corev1.ServiceTypeClusterIP,
@@ -832,15 +744,31 @@ func createContainerService(deploy *appsv1.Deployment,
 	deploy.Spec.Selector.MatchLabels[containerServiceKey] = containerServiceValue
 	deploy.Spec.Template.ObjectMeta.Labels[containerServiceKey] = containerServiceValue
 
-	if existingPort == nil || con.Ports == nil {
-		con.Ports = append(con.Ports, corev1.ContainerPort{Name: portType, ContainerPort: portNum, Protocol: corev1.ProtocolTCP})
+	existingHttpPort := machinelearningv1.GetPort("http", con.Ports)
+	if existingHttpPort == nil || con.Ports == nil {
+		con.Ports = append(con.Ports, corev1.ContainerPort{Name: "http", ContainerPort: pu.Endpoint.HttpPort, Protocol: corev1.ProtocolTCP})
+	}
+	existingGrpcPort := machinelearningv1.GetPort("grpc", con.Ports)
+	if existingGrpcPort == nil || con.Ports == nil {
+		con.Ports = append(con.Ports, corev1.ContainerPort{Name: "grpc", ContainerPort: pu.Endpoint.GrpcPort, Protocol: corev1.ProtocolTCP})
 	}
 
+	// Backwards compatible additions. From 1.5.0 onwards could always call httpPort as both should be available but for
+	// previously wrapped components need to look at transport.
+	// TODO: deprecate and just call httpPort
 	if con.LivenessProbe == nil {
-		con.LivenessProbe = &corev1.Probe{Handler: corev1.Handler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromString(portType)}}, InitialDelaySeconds: 60, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 3, TimeoutSeconds: 1}
+		if mlDep.Spec.Transport == machinelearningv1.TransportGrpc || pu.Endpoint.Type == machinelearningv1.GRPC {
+			con.LivenessProbe = &corev1.Probe{Handler: corev1.Handler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromInt(int(pu.Endpoint.GrpcPort))}}, InitialDelaySeconds: 60, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 3, TimeoutSeconds: 1}
+		} else {
+			con.LivenessProbe = &corev1.Probe{Handler: corev1.Handler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromInt(int(pu.Endpoint.HttpPort))}}, InitialDelaySeconds: 60, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 3, TimeoutSeconds: 1}
+		}
 	}
 	if con.ReadinessProbe == nil {
-		con.ReadinessProbe = &corev1.Probe{Handler: corev1.Handler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromString(portType)}}, InitialDelaySeconds: 20, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 3, TimeoutSeconds: 1}
+		if mlDep.Spec.Transport == machinelearningv1.TransportGrpc || pu.Endpoint.Type == machinelearningv1.GRPC {
+			con.ReadinessProbe = &corev1.Probe{Handler: corev1.Handler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromInt(int(pu.Endpoint.GrpcPort))}}, InitialDelaySeconds: 20, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 3, TimeoutSeconds: 1}
+		} else {
+			con.ReadinessProbe = &corev1.Probe{Handler: corev1.Handler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromInt(int(pu.Endpoint.HttpPort))}}, InitialDelaySeconds: 20, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 3, TimeoutSeconds: 1}
+		}
 	}
 
 	// Add livecycle probe
@@ -848,9 +776,23 @@ func createContainerService(deploy *appsv1.Deployment,
 		con.Lifecycle = &corev1.Lifecycle{PreStop: &corev1.Handler{Exec: &corev1.ExecAction{Command: []string{"/bin/sh", "-c", "/bin/sleep 10"}}}}
 	}
 
-	// Add Environment Variables
+	//
+	// Backwards compatibility - set to either Http or Grpc
+	//
+	// TODO: deprecate and remove
 	if !utils.HasEnvVar(con.Env, machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT) {
-		con.Env = append(con.Env, corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT, Value: strconv.Itoa(int(portNum))})
+		if pu.Endpoint.Type == machinelearningv1.GRPC || mlDep.Spec.Transport == machinelearningv1.TransportGrpc {
+			con.Env = append(con.Env, corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT, Value: strconv.Itoa(int(pu.Endpoint.GrpcPort))})
+		} else {
+			con.Env = append(con.Env, corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT, Value: strconv.Itoa(int(pu.Endpoint.HttpPort))})
+		}
+	}
+
+	if !utils.HasEnvVar(con.Env, machinelearningv1.ENV_PREDICTIVE_UNIT_HTTP_SERVICE_PORT) {
+		con.Env = append(con.Env, corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_HTTP_SERVICE_PORT, Value: strconv.Itoa(int(pu.Endpoint.HttpPort))})
+	}
+	if !utils.HasEnvVar(con.Env, machinelearningv1.ENV_PREDICTIVE_UNIT_GRPC_SERVICE_PORT) {
+		con.Env = append(con.Env, corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_GRPC_SERVICE_PORT, Value: strconv.Itoa(int(pu.Endpoint.GrpcPort))})
 	}
 
 	if pu != nil && len(pu.Parameters) > 0 {

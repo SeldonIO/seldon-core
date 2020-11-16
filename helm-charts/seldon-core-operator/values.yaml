@@ -102,50 +102,39 @@ predictiveUnit:
   defaultEnvSecretRefName: ""
 predictor_servers:
   MLFLOW_SERVER:
-    grpc:
-      defaultImageVersion: "1.5.0-dev"
-      image: seldonio/mlflowserver_grpc
-    rest:
-      defaultImageVersion: "1.5.0-dev"
-      image: seldonio/mlflowserver_rest
-  SKLEARN_SERVER:
-    grpc:
-      defaultImageVersion: "1.5.0-dev"
-      image: seldonio/sklearnserver_grpc
-    rest:
-      defaultImageVersion: "1.5.0-dev"
-      image: seldonio/sklearnserver_rest
     protocols:
+      seldon:
+        defaultImageVersion: "1.5.0-dev"
+        image: seldonio/mlflowserver
+  SKLEARN_SERVER:
+    protocols:
+      seldon:
+        defaultImageVersion: "1.5.0-dev"
+        image: seldonio/sklearnserver
       kfserving:
         defaultImageVersion: "0.1.1"
         image: seldonio/mlserver
   TENSORFLOW_SERVER:
-    grpc:
-      defaultImageVersion: "1.5.0-dev"
-      image: seldonio/tfserving-proxy_grpc
-    rest:
-      defaultImageVersion: "1.5.0-dev"
-      image: seldonio/tfserving-proxy_rest
-    tensorflow: true
-    tfImage: tensorflow/serving:2.1.0
-  XGBOOST_SERVER:
-    grpc:
-      defaultImageVersion: "1.5.0-dev"
-      image: seldonio/xgboostserver_grpc
-    rest:
-      defaultImageVersion: "1.5.0-dev"
-      image: seldonio/xgboostserver_rest
     protocols:
+      seldon:
+        defaultImageVersion: "1.5.0-dev"
+        image: seldonio/tfserving-proxy
+      tensorflow: 
+        defaultImageVersion: 2.1.0
+        image:  tensorflow/serving
+  XGBOOST_SERVER:
+    protocols:
+      seldon:
+        defaultImageVersion: "1.5.0-dev"
+        image: seldonio/xgboostserver
       kfserving:
         defaultImageVersion: "0.1.1"
         image: seldonio/mlserver
   TRITON_SERVER:
-    grpc:
-      defaultImageVersion: "20.08-py3"
-      image: nvcr.io/nvidia/tritonserver
-    rest:
-      defaultImageVersion: "20.08-py3"
-      image: nvcr.io/nvidia/tritonserver
+    protocols:
+      kfserving:
+        defaultImageVersion: "20.08-py3"
+        image: nvcr.io/nvidia/tritonserver
 
 # ## Other
 # You can choose the crds to not be installed if you already installed them

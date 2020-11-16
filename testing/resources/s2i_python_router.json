@@ -6,20 +6,18 @@
     },
     "spec": {
         "name": "myrouter",
-        "oauth_key": "oauth-key",
-        "oauth_secret": "oauth-secret",
         "predictors": [
             {
                 "componentSpecs": [{
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/testmodel_rest:0.1",
+                                "image": "seldonio/testmodel:0.1",
                                 "imagePullPolicy": "Never",
                                 "name": "model"
                             },
                             {
-                                "image": "seldonio/testrouter_rest:0.1",
+                                "image": "seldonio/testrouter:0.1",
                                 "imagePullPolicy": "Never",
                                 "name": "router"
                             }
@@ -31,15 +29,9 @@
                     "children": [{
 			"children": [],
 			"name": "model",
-			"endpoint": {
-                            "type" : "REST"
-			},
 			"type": "MODEL"
                     }],
                     "name": "router",
-                    "endpoint": {
-                        "type" : "REST"
-                    },
 		    "type": "ROUTER"
                 },
                 "name": "myrouter",

@@ -6,15 +6,13 @@
     },
     "spec": {
         "name": "mytrans",
-        "oauth_key": "oauth-key",
-        "oauth_secret": "oauth-secret",
         "predictors": [
             {
                 "componentSpecs": [{
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/testtransformer_rest:0.1",
+                                "image": "seldonio/testtransformer:0.1",
                                 "imagePullPolicy": "Never",
                                 "name": "trans"
                             }
@@ -25,9 +23,6 @@
                 "graph": {
                     "children": [],
                     "name": "trans",
-                    "endpoint": {
-                        "type" : "REST"
-                    },
 		    "type": "TRANSFORMER"
                 },
                 "name": "mytrans",

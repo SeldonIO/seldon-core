@@ -1,0 +1,5 @@
+spec:
+  ports:
+  - name: http2
+    nodePort: 31280
+    port: 80

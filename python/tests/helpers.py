@@ -16,12 +16,12 @@ class UserObject:
 
 
 class MicroserviceWrapper:
-    def __init__(self, app_location, envs={}, grpc=False, tracing=False):
+    def __init__(self, app_location, envs={}, tracing=False):
         self.app_location = app_location
-        self.env_vars = self._env_vars(envs, grpc)
+        self.env_vars = self._env_vars(envs)
         self.cmd = self._get_cmd(tracing)
 
-    def _env_vars(self, envs, grpc):
+    def _env_vars(self, envs):
         env_vars = dict(os.environ)
         env_vars.update(envs)
         env_vars.update(
@@ -29,7 +29,8 @@ class MicroserviceWrapper:
                 "PYTHONUNBUFFERED": "x",
                 "PYTHONPATH": self.app_location,
                 "APP_HOST": "127.0.0.1",
-                "PREDICTIVE_UNIT_SERVICE_PORT": "5000",
+                "PREDICTIVE_UNIT_HTTP_SERVICE_PORT": "9000",
+                "PREDICTIVE_UNIT_GRPC_SERVICE_PORT": "5000",
                 "PREDICTIVE_UNIT_METRICS_SERVICE_PORT": "6005",
                 "PREDICTIVE_UNIT_METRICS_ENDPOINT": "/metrics-endpoint",
             }
@@ -45,16 +46,12 @@ class MicroserviceWrapper:
                     if key and value:
                         env_vars[key] = value
 
-        if grpc:
-            env_vars["API_TYPE"] = "GRPC"
-
         return env_vars
 
     def _get_cmd(self, tracing):
         cmd = (
             "seldon-core-microservice",
             self.env_vars["MODEL_NAME"],
-            self.env_vars["API_TYPE"],
             "--service-type",
             self.env_vars["SERVICE_TYPE"],
             "--persistence",
@@ -85,10 +82,13 @@ class MicroserviceWrapper:
     def _wait_until_ready(self):
         logging.debug("=== trying again")
         s1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        r1 = s1.connect_ex(("127.0.0.1", 5000))
+        r1 = s1.connect_ex(("127.0.0.1", 9000))
         s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         r2 = s2.connect_ex(("127.0.0.1", 6005))
-        if r1 != 0 or r2 != 0:
+        s3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        r3 = s3.connect_ex(("127.0.0.1", 5000))
+
+        if r1 != 0 or r2 != 0 or r3 != 0:
             raise EOFError("Server not ready yet")
 
         logging.info("microservice ready")

@@ -22,9 +22,9 @@ function _is_env_present() {
 }
 
 #check environment vars
-if [[ -z "$MODEL_NAME" || -z "$API_TYPE" || -z "$SERVICE_TYPE" || -z "$PERSISTENCE" ]]; then
+if [[ -z "$MODEL_NAME" || -z "$SERVICE_TYPE" || -z "$PERSISTENCE" ]]; then
 
-    echo "Failed to find required env vars MODEL_NAME, API_TYPE, SERVICE_TYPE, PERSISTENCE"
+    echo "Failed to find required env vars MODEL_NAME, SERVICE_TYPE, PERSISTENCE"
     exit 1
 
 else
@@ -44,6 +44,6 @@ else
     fi
 
     echo "starting microservice"
-    exec seldon-core-microservice $MODEL_NAME $API_TYPE --service-type $SERVICE_TYPE --persistence $PERSISTENCE
+    exec seldon-core-microservice $MODEL_NAME --service-type $SERVICE_TYPE --persistence $PERSISTENCE
 
 fi

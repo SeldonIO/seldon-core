@@ -77,8 +77,7 @@ def update_pom_file(fpath, seldon_core_version, debug=False):
         ]
 
     err, out = run_command(args, debug)
-    ##pp(out)
-    ##pp(err)
+
     if err == None:
         print("updated {fpath}".format(**locals()))
     else:
@@ -104,6 +103,26 @@ def update_chart_yaml_file(fpath, seldon_core_version, debug=False):
     print("updated {fpath}".format(**locals()))
 
 
+def update_helm_values_yaml_file_default_images(fpath, seldon_core_version, debug=False):
+    fpath = os.path.realpath(fpath)
+    if debug:
+        print("processing [{}]".format(fpath))
+    args = [
+        "sed",
+        "-i",
+        "s/version: \(.*\)/version: {seldon_core_version}/".format(
+            **locals()
+        ),
+        fpath,
+    ]
+    err, out = run_command(args, debug)
+
+    if err == None:
+        print("updated helm values yaml for default images".format(**locals()))
+    else:
+        print("error updating helm values yaml for default images".format(**locals()))
+        print(err)
+
 def update_operator_values_yaml_file_core_images(fpath, seldon_core_version, debug=False):
     fpath = os.path.realpath(fpath)
     if debug:
@@ -117,8 +136,7 @@ def update_operator_values_yaml_file_core_images(fpath, seldon_core_version, deb
         fpath,
     ]
     err, out = run_command(args, debug)
-    # pp(out)
-    # pp(err)
+
     if err == None:
         print("updated operator values yaml for core images".format(**locals()))
     else:
@@ -139,8 +157,7 @@ def update_operator_values_yaml_file_prepackaged_images(current_seldon_core_vers
         fpath,
     ]
     err, out = run_command(args, debug)
-    # pp(out)
-    # pp(err)
+
     if err == None:
         print("updated operator values yaml for prepackaged server images".format(**locals()))
     else:
@@ -160,8 +177,7 @@ def update_operator_values_yaml_file_explainer_image(fpath, seldon_core_version,
         fpath,
     ]
     err, out = run_command(args, debug)
-    # pp(out)
-    # pp(err)
+
     if err == None:
         print("updated operator values yaml for prepackaged server images".format(**locals()))
     else:
@@ -183,8 +199,7 @@ def update_operator_kustomize_prepackaged_images(current_seldon_core_version, fp
         fpath,
     ]
     err, out = run_command(args, debug)
-    # pp(out)
-    # pp(err)
+
     if err == None:
         print("updated operator kustomize yaml for prepackaged server images".format(**locals()))
     else:
@@ -230,8 +245,7 @@ def update_kustomize_engine_version(seldon_core_version, debug=False):
         "operator/config/manager/manager.yaml",
     ]
     err, out = run_command(args, debug)
-    # pp(out)
-    # pp(err)
+
     if err == None:
         print("updated kustomize".format(**locals()))
     else:
@@ -248,8 +262,7 @@ def update_kustomize_executor_version(seldon_core_version, debug=False):
         "operator/config/manager/manager.yaml",
     ]
     err, out = run_command(args, debug)
-    # pp(out)
-    # pp(err)
+
     if err == None:
         print("updated kustomize".format(**locals()))
     else:
@@ -277,7 +290,7 @@ def update_operator_version(seldon_core_version, debug=False):
 def update_image_metadata_json(seldon_core_version, debug=False):
     paths = [
         "examples/models/mean_classifier/image_metadata.json",
-        "integrations/tfserving/image_metadata.json",
+        "servers/tfserving_proxy/image_metadata.json",
         "servers/sklearnserver/sklearnserver/image_metadata.json",
         "servers/mlflowserver/mlflowserver/image_metadata.json",
         "servers/xgboostserver/xgboostserver/image_metadata.json"
@@ -329,8 +342,7 @@ def update_python_wrapper_fixed_versions(seldon_core_version, debug=False):
         "{seldon_core_version}".format(**locals()),
     ]
     err, out = run_command(args, debug)
-    # pp(out)
-    # pp(err)
+
     if err == None:
         print("Updated python wrapper in matching files".format(**locals()))
     else:
@@ -344,7 +356,9 @@ def set_version(
     chart_yaml_files,
     operator_values_yaml_file,
     operator_kustomize_yaml_file,
-    debug=False,
+    abtest_yaml_file,
+    mab_yaml_file,
+    debug=False
 ):
     update_python_wrapper_fixed_versions(seldon_core_version, debug)
 
@@ -359,6 +373,16 @@ def set_version(
     operator_kustomize_yaml_file_realpath = (
         os.path.realpath(operator_kustomize_yaml_file)
         if operator_kustomize_yaml_file != None
+        else None
+    )
+    abtest_yaml_file_realpath = (
+        os.path.realpath(abtest_yaml_file)
+        if abtest_yaml_file != None
+        else None
+    )
+    mab_values_yaml_file_realpath = (
+        os.path.realpath(mab_yaml_file)
+        if mab_yaml_file != None
         else None
     )
 
@@ -389,6 +413,16 @@ def set_version(
              operator_values_yaml_file_realpath, seldon_core_version, debug
         )
 
+    # update the operator helm values files
+    if mab_yaml_file != None:
+        update_helm_values_yaml_file_default_images(
+            mab_values_yaml_file_realpath, seldon_core_version, debug
+        )
+    if abtest_yaml_file != None:
+        update_helm_values_yaml_file_default_images(
+            abtest_yaml_file_realpath, seldon_core_version, debug
+        )
+
     if operator_values_yaml_file != None:
         update_operator_values_yaml_file_prepackaged_images(
            current_seldon_core_version, operator_values_yaml_file_realpath, seldon_core_version, debug
@@ -417,6 +451,8 @@ def main(argv):
     ]
     OPERATOR_VALUES_YAML_FILE = "helm-charts/seldon-core-operator/values.yaml"
     OPERATOR_KUSTOMIZE_CONFIGMAP = "operator/config/manager/configmap.yaml"
+    AB_VALUES_YAML_FILE = "helm-charts/seldon-abtest/values.yaml"
+    MAB_VALUES_YAML_FILE = "helm-charts/seldon-mab/values.yaml"
 
     opts = getOpts(argv[1:])
     current_version = get_current_version()
@@ -429,7 +465,9 @@ def main(argv):
         CHART_YAML_FILES,
         OPERATOR_VALUES_YAML_FILE,
         OPERATOR_KUSTOMIZE_CONFIGMAP,
-        opts.debug,
+        AB_VALUES_YAML_FILE,
+        MAB_VALUES_YAML_FILE,
+        opts.debug
     )
 
     print("done")

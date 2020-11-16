@@ -13,7 +13,6 @@
   "spec": {
       "name": "{{ .Release.Name }}",
       "protocol": "{{ .Values.protocol }}",
-      "transport": "{{ .Values.transport }}",      
     "annotations": {
       {{- range $name, $val := .Values.annotations }}
         "{{ $name }}": "{{ $val }}",

@@ -204,6 +204,7 @@ func TestRequestPuuidHeaderIsSet(t *testing.T) {
 				ServiceHost: urlParts[0],
 				ServicePort: int32(port),
 				Type:        v1.REST,
+				HttpPort:    int32(port),
 			},
 		},
 	}
@@ -284,6 +285,7 @@ func TestModelWithServer(t *testing.T) {
 				ServiceHost: urlParts[0],
 				ServicePort: int32(port),
 				Type:        v1.REST,
+				HttpPort:    int32(port),
 			},
 		},
 	}
@@ -588,6 +590,7 @@ func TestPredictErrorWithServer(t *testing.T) {
 				ServiceHost: urlParts[0],
 				ServicePort: int32(port),
 				Type:        v1.REST,
+				HttpPort:    int32(port),
 			},
 		},
 	}

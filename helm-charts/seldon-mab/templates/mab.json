@@ -7,10 +7,6 @@
     },
     "spec": {
 	"name": "{{ .Release.Name }}",
-{{- if .Values.oauth.key }}        
-        "oauth_key": "{{ .Values.oauth.key }}",
-        "oauth_secret": "{{ .Values.oauth.secret }}",
-{{- end }}
 	"predictors": [
 	    {
 		"name": "{{ .Values.predictor.name }}",
@@ -19,7 +15,7 @@
 		    "spec": {
 			"containers": [
 			    {
-                                "image": "{{ .Values.modela.image.name }}_{{ lower .Values.protocol  }}:{{ .Values.modela.image.version }}",				
+                                "image": "{{ .Values.modela.image.name }}:{{ .Values.modela.image.version }}",				
 				"imagePullPolicy": "IfNotPresent",
 				"name": "{{ .Values.modela.name }}",
 				"resources": {
@@ -34,7 +30,7 @@
 			"spec":{
 			    "containers":[
 				{
-                                "image": "{{ .Values.modelb.image.name }}_{{ lower .Values.protocol  }}:{{ .Values.modelb.image.version }}",								    
+                                "image": "{{ .Values.modelb.image.name }}:{{ .Values.modelb.image.version }}",								    
 				"imagePullPolicy": "IfNotPresent",
 				"name": "{{ .Values.modelb.name }}",
 				"resources": {
@@ -50,7 +46,7 @@
 	        {
 		    "spec":{
 			"containers": [{
-                            "image": "{{ .Values.mab.image.name }}_{{ lower .Values.protocol  }}:{{ .Values.mab.image.version }}",								    			    
+                            "image": "{{ .Values.mab.image.name }}:{{ .Values.mab.image.version }}",								    			    
 			    "name": "{{ .Values.mab.name }}"
 			}],
 			"terminationGracePeriodSeconds": 20
@@ -58,9 +54,6 @@
 	        ],
 		"graph": {
 		    "name": "{{ .Values.mab.name }}",
-		    "endpoint": {
-			"type": "{{ .Values.protocol }}"
-		    },
 		    "type":"ROUTER",
 		    "parameters": [
 			{
@@ -82,17 +75,11 @@
 		    "children": [
 			{
 			    "name": "{{ .Values.modela.name }}",
-			    "endpoint":{
-				"type": "{{ .Values.protocol }}"				
-			    },
 			    "type":"MODEL",
 			    "children":[]
 			},
 			{
 			    "name": "{{ .Values.modelb.name }}",
-			    "endpoint":{
-				"type": "{{ .Values.protocol }}"				
-			    },
 			    "type":"MODEL",
 			    "children":[]
 			}   

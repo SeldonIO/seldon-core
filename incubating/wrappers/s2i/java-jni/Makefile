@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 SELDON_CORE_DIR = ../../../..
-VERSION := 0.3.0
+VERSION := 0.4.0
 IMAGE_REGISTRY = docker.io/seldonio
 IMAGE_NAME_BUILD = ${IMAGE_REGISTRY}/s2i-java-jni-build:${VERSION}
 IMAGE_NAME_RUNTIME = ${IMAGE_REGISTRY}/s2i-java-jni-runtime:${VERSION}

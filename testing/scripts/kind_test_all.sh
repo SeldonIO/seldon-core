@@ -154,7 +154,7 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
         fi
 
         echo "Files changed in misc folders:"
-        git --no-pager diff --exit-code --name-only origin/master ../../components/seldon-request-logger ../../components/storage-initializer
+        git --no-pager diff --exit-code --name-only origin/master ../../components/seldon-request-logger ../../components/storage-initializer ../../components/routers/epsilon-greedy
         MISC_MODIFIED=$?
         if [[ $MISC_MODIFIED -gt 0 ]]; then
             make kind_build_misc

@@ -65,11 +65,10 @@ EXPOSE 5000
 
 # Define environment variable
 ENV MODEL_NAME MyModel
-ENV API_TYPE REST
 ENV SERVICE_TYPE MODEL
 ENV PERSISTENCE 0
 
-CMD exec seldon-core-microservice $MODEL_NAME $API_TYPE --service-type $SERVICE_TYPE --persistence $PERSISTENCE
+CMD exec seldon-core-microservice $MODEL_NAME --service-type $SERVICE_TYPE --persistence $PERSISTENCE
 ```
 
 
@@ -86,10 +85,6 @@ The required environment variables understood by the builder image are explained
 
 ### MODEL_NAME
 The name of the class containing the model. Also the name of the python file which will be imported.
-
-### API_TYPE
-
-API type to create. Can be REST or GRPC
 
 ### SERVICE_TYPE
 
@@ -157,7 +152,6 @@ These arguments can be set when deploying in a Seldon Deployment. An example can
 {
   "graph": {
     "name": "tfserving-proxy",
-    "endpoint": { "type": "REST" },
     "type": "MODEL",
     "children": [],
     "parameters": [
