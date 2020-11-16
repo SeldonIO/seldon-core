@@ -55,6 +55,14 @@ func hasMethod(method v1.PredictiveUnitMethod, methods *[]v1.PredictiveUnitMetho
 	return false
 }
 
+func (p *PredictorProcess) getPort(node *v1.PredictiveUnit) int32 {
+	if p.Client.IsGrpc() {
+		return node.Endpoint.GrpcPort
+	} else {
+		return node.Endpoint.HttpPort
+	}
+}
+
 func (p *PredictorProcess) transformInput(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	callModel := false
 	callTransformInput := false
@@ -74,13 +82,13 @@ func (p *PredictorProcess) transformInput(node *v1.PredictiveUnit, msg payload.S
 		if err != nil {
 			return nil, err
 		}
-		return p.Client.Predict(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg, p.Meta.Meta)
+		return p.Client.Predict(p.Ctx, node.Name, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	} else if callTransformInput {
 		msg, err := p.Client.Chain(p.Ctx, node.Name, msg)
 		if err != nil {
 			return nil, err
 		}
-		return p.Client.TransformInput(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg, p.Meta.Meta)
+		return p.Client.TransformInput(p.Ctx, node.Name, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	} else {
 		return msg, nil
 	}
@@ -104,7 +112,7 @@ func (p *PredictorProcess) transformOutput(node *v1.PredictiveUnit, msg payload.
 		if err != nil {
 			return nil, err
 		}
-		return p.Client.TransformOutput(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg, p.Meta.Meta)
+		return p.Client.TransformOutput(p.Ctx, node.Name, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	} else {
 		return msg, nil
 	}
@@ -124,7 +132,7 @@ func (p *PredictorProcess) feedback(node *v1.PredictiveUnit, msg payload.SeldonP
 	}
 
 	if callClient {
-		return p.Client.Feedback(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg, p.Meta.Meta)
+		return p.Client.Feedback(p.Ctx, node.Name, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	} else {
 		return msg, nil
 	}
@@ -143,7 +151,7 @@ func (p *PredictorProcess) route(node *v1.PredictiveUnit, msg payload.SeldonPayl
 		callClient = true
 	}
 	if callClient {
-		return p.Client.Route(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg, p.Meta.Meta)
+		return p.Client.Route(p.Ctx, node.Name, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	} else if node.Implementation != nil && *node.Implementation == v1.RANDOM_ABTEST {
 		return p.abTestRouter(node)
 	} else {
@@ -164,7 +172,7 @@ func (p *PredictorProcess) aggregate(node *v1.PredictiveUnit, msg []payload.Seld
 	}
 
 	if callClient {
-		return p.Client.Combine(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg, p.Meta.Meta)
+		return p.Client.Combine(p.Ctx, node.Name, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	} else {
 		return msg[0], nil
 	}
@@ -321,7 +329,7 @@ func (p *PredictorProcess) Status(node *v1.PredictiveUnit, modelName string, msg
 	if nodeModel := v1.GetPredictiveUnit(node, modelName); nodeModel == nil {
 		return nil, fmt.Errorf("Failed to find model %s", modelName)
 	} else {
-		return p.Client.Status(p.Ctx, modelName, nodeModel.Endpoint.ServiceHost, nodeModel.Endpoint.ServicePort, msg, p.Meta.Meta)
+		return p.Client.Status(p.Ctx, modelName, nodeModel.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	}
 }
 
@@ -329,7 +337,7 @@ func (p *PredictorProcess) Metadata(node *v1.PredictiveUnit, modelName string, m
 	if nodeModel := v1.GetPredictiveUnit(node, modelName); nodeModel == nil {
 		return nil, fmt.Errorf("Failed to find model %s", modelName)
 	} else {
-		return p.Client.Metadata(p.Ctx, modelName, nodeModel.Endpoint.ServiceHost, nodeModel.Endpoint.ServicePort, msg, p.Meta.Meta)
+		return p.Client.Metadata(p.Ctx, modelName, nodeModel.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	}
 }
 
@@ -373,7 +381,7 @@ func (p *PredictorProcess) Feedback(node *v1.PredictiveUnit, msg payload.SeldonP
 }
 
 func (p *PredictorProcess) ModelMetadataMap(node *v1.PredictiveUnit) (map[string]payload.ModelMetadata, error) {
-	resPayload, err := p.Client.ModelMetadata(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, nil, p.Meta.Meta)
+	resPayload, err := p.Client.ModelMetadata(p.Ctx, node.Name, node.Endpoint.ServiceHost, p.getPort(node), nil, p.Meta.Meta)
 	if err != nil {
 		return nil, err
 	}

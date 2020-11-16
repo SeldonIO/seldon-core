@@ -8105,6 +8105,12 @@ spec:
                         type: object
                       endpoint:
                         properties:
+                          grpcPort:
+                            format: int32
+                            type: integer
+                          httpPort:
+                            format: int32
+                            type: integer
                           service_host:
                             type: string
                           service_port:
@@ -8129,6 +8135,12 @@ spec:
                         type: array
                       endpoint:
                         properties:
+                          grpcPort:
+                            format: int32
+                            type: integer
+                          httpPort:
+                            format: int32
+                            type: integer
                           service_host:
                             type: string
                           service_port:

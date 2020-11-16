@@ -1,0 +1,29 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  labels:
+    app: seldon
+  name: seldon-model
+spec:
+  annotations:
+    seldon.io/executor: "true"
+  name: test-deployment
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: tensorflow/serving:latest
+          name: half_plus_two
+    graph:
+      children: []
+      endpoint:
+        type: REST
+        service_host: 0.0.0.0
+        http_port: 8501        
+        grpc_port: 8500
+      name: half_plus_two
+      type: MODEL
+    labels:
+      version: v1
+    name: example
+    replicas: 1

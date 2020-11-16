@@ -7,6 +7,7 @@ from seldon_e2e_utils import (
     wait_for_rollout,
     initial_rest_request,
     rest_request_ambassador,
+    grpc_request_ambassador,
     retry_run,
     create_random_data,
     wait_for_status,
@@ -16,6 +17,9 @@ from seldon_e2e_utils import (
 from e2e_utils import v2_protocol
 from e2e_utils.models import deploy_model
 from conftest import SELDON_E2E_TESTS_USE_EXECUTOR
+import numpy as np
+import json
+from google.protobuf import json_format
 
 skipif_engine = pytest.mark.skipif(
     not SELDON_E2E_TESTS_USE_EXECUTOR, reason="Not supported by the Java engine"
@@ -46,6 +50,12 @@ class TestPrepack(object):
         assert res["name"] == "iris"
         assert res["versions"] == ["iris/v1"]
 
+        r = grpc_request_ambassador(
+            "sklearn", namespace, data=np.array([[0.1, 0.2, 0.3, 0.4]])
+        )
+        res = json.loads(json_format.MessageToJson(r))
+        logging.info(res)
+
         logging.warning("Success for test_prepack_sklearn")
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
 
@@ -74,7 +84,7 @@ class TestPrepack(object):
                         "datatype": "FP32",
                         "data": [[0.1, 0.2, 0.3, 0.4]],
                     }
-                ],
+                ]
             },
         )
         assert r.status_code == 200
@@ -119,6 +129,12 @@ class TestPrepack(object):
         assert res["name"] == "xgboost-iris"
         assert res["versions"] == ["xgboost-iris/v1"]
 
+        r = grpc_request_ambassador(
+            "xgboost", namespace, data=np.array([[0.1, 0.2, 0.3, 0.4]])
+        )
+        res = json.loads(json_format.MessageToJson(r))
+        logging.info(res)
+
         logging.warning("Success for test_prepack_xgboost")
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
 
@@ -147,7 +163,7 @@ class TestPrepack(object):
                         "datatype": "FP32",
                         "data": [[0.1, 0.2, 0.3, 0.4]],
                     }
-                ],
+                ]
             },
         )
         assert r.status_code == 200

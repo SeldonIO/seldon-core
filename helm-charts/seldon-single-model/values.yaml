@@ -2,7 +2,6 @@
 apiVersion: machinelearning.seldon.io/v1
 
 protocol: seldon
-transport: rest
 
 model:
   # model.implementation -- Implementation of Prepackaged Model Server

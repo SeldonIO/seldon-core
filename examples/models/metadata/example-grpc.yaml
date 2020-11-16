@@ -10,7 +10,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/metadata-generic-node_grpc:0.4
+        - image: seldonio/metadata-generic-node:0.4
           name: node-one
           env:           
           - name: MODEL_METADATA
@@ -29,7 +29,7 @@ spec:
                   names: [one-output]
               custom:
                 author: seldon-dev
-        - image: seldonio/metadata-generic-node_grpc:0.4
+        - image: seldonio/metadata-generic-node:0.4
           name: node-two
           env:
          

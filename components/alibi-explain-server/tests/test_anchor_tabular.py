@@ -26,7 +26,7 @@ import numpy as np
 import json
 from .utils import SKLearnServer
 ADULT_EXPLAINER_URI = "gs://seldon-models/sklearn/income/alibi/0.4.0"
-ADULT_MODEL_URI = "gs://seldon-models/sklearn/income/model-0.23.2"
+ADULT_MODEL_URI = "gs://seldon-models/sklearn/income/model"
 EXPLAINER_FILENAME = "explainer.dill"
 
 

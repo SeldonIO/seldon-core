@@ -1,6 +1,6 @@
-VERSION=0.4
+VERSION=0.5
 IMAGE_BASE=seldonio/model-with-metadata
-S2I_IMAGE_VERSION=1.2.3-dev
+S2I_IMAGE_VERSION:= $(shell cat ../../../../../version.txt)
 
 KIND_NAME ?= kind
 

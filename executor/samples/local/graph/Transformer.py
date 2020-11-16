@@ -2,6 +2,6 @@ import json
 
 class Transformer(object):
 
-    def transform_input_raw(self, X):
+    def transform_input(self, X, meta):
         print(X)
-        return json.loads(X["jsonData"])
+        return X+1

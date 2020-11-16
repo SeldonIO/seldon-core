@@ -28,6 +28,10 @@ type TestTensorflowClient struct {
 	t *testing.T
 }
 
+func (s TestTensorflowClient) IsGrpc() bool {
+	return true
+}
+
 func NewTestTensorflowClient(t *testing.T) client.SeldonApiClient {
 	client := TestTensorflowClient{
 		t: t,

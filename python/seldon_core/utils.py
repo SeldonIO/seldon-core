@@ -3,6 +3,7 @@ import json
 import sys
 import base64
 import numpy as np
+import logging
 
 from google.protobuf import json_format, any_pb2
 from google.protobuf.json_format import MessageToDict, ParseDict
@@ -22,6 +23,8 @@ from typing import Tuple, Dict, Union, List, Optional, Iterable
 if _TF_PRESENT:
     import tensorflow as tf
     from tensorflow.core.framework.tensor_pb2 import TensorProto
+
+logger = logging.getLogger(__name__)
 
 
 ENV_MODEL_NAME = "PREDICTIVE_UNIT_ID"
@@ -715,3 +718,37 @@ def getenv_as_bool(*env_vars, default=False):
         return default
 
     return val.lower() in ["1", "true", "t"]
+
+
+def setup_tracing(interface_name: str) -> object:
+    logger.info("Initializing tracing")
+    from jaeger_client import Config
+
+    jaeger_serv = os.environ.get("JAEGER_AGENT_HOST", "0.0.0.0")
+    jaeger_port = os.environ.get("JAEGER_AGENT_PORT", 5775)
+    jaeger_config = os.environ.get("JAEGER_CONFIG_PATH", None)
+    if jaeger_config is None:
+        logger.info("Using default tracing config")
+        config = Config(
+            config={  # usually read from some yaml config
+                "sampler": {"type": "const", "param": 1},
+                "local_agent": {
+                    "reporting_host": jaeger_serv,
+                    "reporting_port": jaeger_port,
+                },
+                "logging": True,
+            },
+            service_name=interface_name,
+            validate=True,
+        )
+    else:
+        logger.info("Loading tracing config from %s", jaeger_config)
+        import yaml
+
+        with open(jaeger_config, "r") as stream:
+            config_dict = yaml.load(stream)
+            config = Config(
+                config=config_dict, service_name=interface_name, validate=True
+            )
+    # this call also sets opentracing.tracer
+    return config.initialize_tracer()

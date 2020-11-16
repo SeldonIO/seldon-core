@@ -173,8 +173,7 @@ redhat-image-scan:
 	docker push scan.connect.redhat.com/ospid-7f50cebe-122b-495a-a143-41426dfcb6c9/${IMG_VERSION_REDHAT}
 
 kind-image-install: docker-build
-	docker save ${IMG} > operator.tar
-	kind load image-archive operator.tar --name ${KIND_NAME}
+	kind load -v 3 docker-image ${IMG} --name ${KIND_NAME}
 
 kind-image-install-redhat: docker-build-redhat
 	docker save ${IMG_REDHAT} > operator.tar

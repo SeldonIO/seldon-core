@@ -10,10 +10,6 @@
     },
     "spec": {
 	"name": "{{ .Release.Name }}",
-{{- if .Values.oauth.key }}        
-        "oauth_key": "{{ .Values.oauth.key }}",
-        "oauth_secret": "{{ .Values.oauth.secret }}",
-{{- end }}
 	"predictors": [
 	    {
 		"name": "{{ .Values.predictor.name }}",
@@ -22,7 +18,7 @@
 		    "spec": {
 			"containers": [
 			    {
-                                "image": "{{ .Values.modela.image.name }}_{{ lower .Values.protocol  }}:{{ .Values.modela.image.version }}",				
+                                "image": "{{ .Values.modela.image.name }}:{{ .Values.modela.image.version }}",				
 				"imagePullPolicy": "IfNotPresent",
 				"name": "{{ .Values.modela.name }}",
 				"resources": {
@@ -32,7 +28,7 @@
 				}
 			    },
 			    {
-                                "image": "{{ .Values.modelb.image.name }}_{{ lower .Values.protocol  }}:{{ .Values.modelb.image.version }}",				
+                                "image": "{{ .Values.modelb.image.name }}:{{ .Values.modelb.image.version }}",				
 				"imagePullPolicy": "IfNotPresent",
 				"name": "{{ .Values.modelb.name }}",
 				"resources": {
@@ -47,9 +43,6 @@
 				   }],
 		"graph": {
 		    "name": "{{ .Release.Name }}",
-		    "endpoint":{
-			"type":"{{ .Values.protocol }}"
-		    },
 		    "implementation":"RANDOM_ABTEST",
 		    "parameters": [
 			{
@@ -61,17 +54,11 @@
 		    "children": [
 			{
 			    "name": "{{ .Values.modela.name }}",			    
-			    "endpoint":{
-				"type":"{{ .Values.protocol }}"
-			    },
 			    "type":"MODEL",
 			    "children":[]
 			},
 			{
 			    "name": "{{ .Values.modelb.name }}",			    
-			    "endpoint":{
-				"type":"{{ .Values.protocol }}"
-			    },
 			    "type":"MODEL",
 			    "children":[]
 			}   

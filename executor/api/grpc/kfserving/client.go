@@ -25,6 +25,10 @@ type KFServingGrpcClient struct {
 	annotations    map[string]string
 }
 
+func (s *KFServingGrpcClient) IsGrpc() bool {
+	return true
+}
+
 func (s *KFServingGrpcClient) ModelMetadata(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.ModelMetadata, error) {
 	panic("implement me")
 }

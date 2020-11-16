@@ -35,39 +35,8 @@ To use our s2i builder image to package your python model you will need:
 We will go into detail for each of these steps:
 
 ### Python file
-Your source code should contain a python file which defines a class of the same name as the file. For example, looking at our skeleton python model file at `wrappers/s2i/python/test/model-template-app/MyModel.py`:
 
-```python
-class MyModel(object):
-    """
-    Model template.
-    You can load your model parameters in __init__ from a location accessible at runtime.
-    """
-
-    def __init__(self):
-        """
-        Add any initialization parameters.
-        These will be passed at runtime from the graph definition parameters defined in your seldondeployment kubernetes resource manifest.
-        """
-        print("Initializing")
-
-    def predict(self,X,features_names):
-        """
-        Return a prediction.
-
-        Parameters
-        ----------
-        X : array-like
-        feature_names : array of feature names (optional)
-        """
-        print("Predict called - will run identity function")
-        return X
-```
-
- * The file is called MyModel.py and it defines a class MyModel
- * The class contains a predict method that takes an array (numpy) X and feature_names and returns an array of predictions.
- * You can add any required initialization inside the class init method.
- * Your return array should be at least 2-dimensional.
+Your source code should contain a python file which defines a class of the same name as the file. For further details see [details on creating your python class](python_component.md)
 
 ### Dependencies
 
@@ -119,12 +88,13 @@ Define the core parameters needed by our python builder image to wrap your model
 
 ```bash
 MODEL_NAME=MyModel
-API_TYPE=REST
 SERVICE_TYPE=MODEL
 PERSISTENCE=0
 ```
 
 These values can also be provided or overridden on the command line when building the image.
+
+See below for the possible keys and values for this file.
 
 ## Step 3 - Build your image
 Use `s2i build` to create your Docker image from source code. You will need Docker installed on the machine and optionally git if your source code is in a public git repo. You can choose from three python builder images
@@ -180,10 +150,6 @@ The required environment variables understood by the builder image are explained
 ### MODEL_NAME
 
 The name of the class containing the model. Also the name of the python file which will be imported.
-
-### API_TYPE
-
-API type to create. Can be REST or GRPC
 
 ### SERVICE_TYPE
 
@@ -304,7 +270,7 @@ The allowable `type` values for the parameters are defined in the [proto buffer 
 
 
 ### Local Python Dependencies
-`from version 0.5-SNAPSHOT`
+`from version 0.5`
 
 To use a private repository for installing Python dependencies use the following build command:
 

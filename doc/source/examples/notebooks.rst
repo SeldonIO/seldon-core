@@ -140,7 +140,6 @@ Ingress
    Ambassador Shadow <ambassador_shadow>
    Ambassador Headers <ambassador_headers>
    Ambassador Custom Config <ambassador_custom>
-   Istio Canary <istio_canary>
    Istio Examples <istio_examples>   
 
 Infrastructure
@@ -161,4 +160,4 @@ Benchmarking and Load Tests
    Service Orchestrator <bench_svcOrch>
    Tensorflow <bench_tensorflow>   
    Argo Workflows Benchmarking <vegeta_bench_argo_workflows>   
-
+   Backwards Compatability Tests <backwards_compatibility>

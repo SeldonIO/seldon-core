@@ -57,8 +57,8 @@ var (
 	sdepName       = flag.String("sdep", "", "Seldon deployment name")
 	namespace      = flag.String("namespace", "", "Namespace")
 	predictorName  = flag.String("predictor", "", "Name of the predictor inside the SeldonDeployment")
-	httpPort       = flag.Int("http_port", 8080, "Executor port")
-	grpcPort       = flag.Int("grpc_port", 8000, "Executor port")
+	httpPort       = flag.Int("http_port", 8080, "Executor http port")
+	grpcPort       = flag.Int("grpc_port", 5000, "Executor grpc port")
 	wait           = flag.Duration("graceful_timeout", time.Second*15, "Graceful shutdown secs")
 	protocol       = flag.String("protocol", "seldon", "The payload protocol")
 	transport      = flag.String("transport", "rest", "The network transport mechanism rest, grpc")
@@ -309,31 +309,28 @@ func main() {
 		}()
 	}
 
-	if *transport == "rest" {
-		clientRest, err := rest.NewJSONRestClient(*protocol, *sdepName, predictor, annotations)
-		if err != nil {
-			log.Fatalf("Failed to create http client: %v", err)
-		}
-		logger.Info("Running http server ", "port", *httpPort)
-		runHttpServer(createListener(*httpPort, logger), logger, predictor, clientRest, *httpPort, false, serverUrl, *namespace, *protocol, *sdepName, *prometheusPath)
-	} else {
-		logger.Info("Running http probes only server ", "port", *httpPort)
-		go runHttpServer(createListener(*httpPort, logger), logger, predictor, nil, *httpPort, true, serverUrl, *namespace, *protocol, *sdepName, *prometheusPath)
-		logger.Info("Running grpc server ", "port", *grpcPort)
-		var clientGrpc seldonclient.SeldonApiClient
-
-		switch *protocol {
-		case api.ProtocolSeldon:
-			clientGrpc = seldon.NewSeldonGrpcClient(predictor, *sdepName, annotations)
-		case api.ProtocolTensorflow:
-			clientGrpc = tensorflow.NewTensorflowGrpcClient(predictor, *sdepName, annotations)
-		case api.ProtocolKFServing:
-			clientGrpc = kfserving.NewKFServingGrpcClient(predictor, *sdepName, annotations)
-		default:
-			log.Fatalf("Failed to create grpc client. Unknown protocol %s: %v", *protocol, err)
-		}
-		runGrpcServer(createListener(*grpcPort, logger), logger, predictor, clientGrpc, serverUrl, *namespace, *protocol, *sdepName, annotations)
+	clientRest, err := rest.NewJSONRestClient(*protocol, *sdepName, predictor, annotations)
+	if err != nil {
+		log.Fatalf("Failed to create http client: %v", err)
 	}
+
+	var clientGrpc seldonclient.SeldonApiClient
+	switch *protocol {
+	case api.ProtocolSeldon:
+		clientGrpc = seldon.NewSeldonGrpcClient(predictor, *sdepName, annotations)
+	case api.ProtocolTensorflow:
+		clientGrpc = tensorflow.NewTensorflowGrpcClient(predictor, *sdepName, annotations)
+	case api.ProtocolKFServing:
+		clientGrpc = kfserving.NewKFServingGrpcClient(predictor, *sdepName, annotations)
+	default:
+		log.Fatalf("Failed to create grpc client. Unknown protocol %s: %v", *protocol, err)
+	}
+
+	logger.Info("Running http server ", "port", *httpPort)
+	go runHttpServer(createListener(*httpPort, logger), logger, predictor, clientRest, *httpPort, false, serverUrl, *namespace, *protocol, *sdepName, *prometheusPath)
+
+	logger.Info("Running grpc server ", "port", *grpcPort)
+	runGrpcServer(createListener(*grpcPort, logger), logger, predictor, clientGrpc, serverUrl, *namespace, *protocol, *sdepName, annotations)
 }
 
 func createListener(port int, logger logr.Logger) net.Listener {
