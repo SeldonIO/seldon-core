@@ -19,7 +19,6 @@ Seldon Core
    Engine Reference <reference/engine>
    Integration NVIDIA Link <reference/integration_nvidia_link>
    Integration Sagemaker Link <reference/integration_sagemaker_link>
-   Integration TFServing Link <reference/integration_tfserving_link>
    Quickstart <workflow/quickstart>
    S2I <wrappers/s2i>
    Ambassador Circuit Breakers <examples/ambassador_circuit_breakers>
