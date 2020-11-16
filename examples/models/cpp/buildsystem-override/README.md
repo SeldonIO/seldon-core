@@ -2,9 +2,9 @@
 
 In this example we will show how we can wrap a complex CPP project by extending the buildsystem defaults provided, which will give us flexibility to configure the required bindings.
 
-If you are looking for a basic implementation of the C++ wrapper, you can get started with the ["Single file C++ Example"]().
+If you are looking for a basic implementation of the C++ wrapper, you can get started with the ["Single file C++ Example"](../simple-cpp/README.ipynb).
 
-You can read about how to configure your environment in the [CPP Wrapper documentation page]().
+You can read about how to configure your environment in the [CPP Wrapper documentation page](https://docs.seldon.io/projects/seldon-core/en/latest/cpp/README.html).
 
 ## Naming Conventions
 
@@ -114,7 +114,7 @@ MODEL_NAME=CustomSeldonPackage.MyModelClass
 
 ## (Optional) Extend CMake Config via Setup.py
 
-In our case we won't have to pass any custom CMAKE parameters as we can configure everything through the `CMakeLists.txt`, but if you wish to modify how your C++ wrapper is packaged you can extend the setup.py file by following the details in the [CPP Wrapper documentation page]().
+In our case we won't have to pass any custom CMAKE parameters as we can configure everything through the `CMakeLists.txt`, but if you wish to modify how your C++ wrapper is packaged you can extend the setup.py file by following the details in the CPP Wrapper documentation page.
 
 ## Build Seldon Microservice
 

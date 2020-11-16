@@ -2,9 +2,9 @@
 
 In this example we will show how we can wrap a simple CPP project with the default parameters, which will enable us to just provide a single CPP file.
 
-If you want to wrap an existing library, or you have more complex requirements please refer to the ["Build system override CPP Wrapper example"]().
+If you want to wrap an existing library, or you have more complex requirements please refer to the ["Build system override CPP Wrapper example"](../buildsystem-override/README.ipynb).
 
-You can read about how to configure your environment in the [CPP Wrapper page]().
+You can read about how to configure your environment in the [CPP Wrapper page](https://docs.seldon.io/projects/seldon-core/en/latest/cpp/README.html).
 
 ## CPP Wrapper
 
