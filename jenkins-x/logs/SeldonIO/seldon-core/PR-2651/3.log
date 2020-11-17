@@ -1,0 +1,1810 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-2651-in-bs22j-3[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-vpmcf[0m
+{"level":"info","ts":1605602160.269182,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1605602160.270928,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2651-in-bs22j-3[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-nfsq2[0m
+{"level":"info","ts":1605602161.6741757,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1605602161.6774943,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2651-in-bs22j-3[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2651-in-bs22j-3[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-np8k7[0m
+{"level":"info","ts":1605602168.8841994,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1605602168.8855896,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2651-in-bs22j-3[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-2651-in-bs22j-nnw47[0m
+{"level":"info","ts":1605602169.50889,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1605602175.3466506,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2651-in-bs22j-3[0m stage [32mpr-build-comment[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2651-in-bs22j-3[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:b5e64adc78c3dd83207b57cd7c86285a01e66cf0,2651:77d319d465496efae3300daf45901e9b710576e2
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch origin --unshallow 77d319d465496efae3300daf45901e9b710576e2: b5e64adc78c3dd83207b57cd7c86285a01e66cf0:
+DEBUG: ran git fetch --unshallow origin 77d319d465496efae3300daf45901e9b710576e2: b5e64adc78c3dd83207b57cd7c86285a01e66cf0: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard b5e64adc78c3dd83207b57cd7c86285a01e66cf0
+DEBUG: ran git reset --hard b5e64adc78c3dd83207b57cd7c86285a01e66cf0 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git merge 77d319d465496efae3300daf45901e9b710576e2
+DEBUG: ran git merge 77d319d465496efae3300daf45901e9b710576e2 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git log --format=%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%s%n%b%x1e b5e64adc78c3dd83207b57cd7c86285a01e66cf0..HEAD
+Merged SHA 77d319d465496efae3300daf45901e9b710576e2 with commit message 'rebase' into base branch master
+Merged SHA c85121372498ef0739edb4f47a93bfced1886a9a with commit message 'Add sideEffects=None to webhooks' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-2651-in-bs22j-3[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=2651
++ BUILD_NUMBER=3
++ PIPELINE_CONTEXT=integration
+++ cat
++++ date
++ COMMENT_MSG='Tue Nov 17 08:36:24 UTC 2020
+The logs for [integration] [3] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2651/3.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2651 --build=3'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=2651 '--comment=Tue Nov 17 08:36:24 UTC 2020
+The logs for [integration] [3] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2651/3.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2651 --build=3'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2651-in-bs22j-3[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-2651-in-bs22j-lr2bt[0m
+{"level":"info","ts":1605602186.4196646,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1605602186.4229028,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2651-in-bs22j-3[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-2651-in-bs22j-rxhnj[0m
+{"level":"info","ts":1605602186.6510632,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1605602187.0528169,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2651-in-bs22j-3[0m stage [32mend-to-end[0m and container [32mstep-credential-initializer-pkjvk[0m
+{"level":"info","ts":1605602189.4192011,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1605602189.4218276,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2651-in-bs22j-3[0m stage [32mend-to-end[0m and container [32mstep-working-dir-initializer-8trsl[0m
+{"level":"info","ts":1605602190.7150404,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1605602190.7165637,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2651-in-bs22j-3[0m stage [32mend-to-end[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2651-in-bs22j-3[0m stage [32mend-to-end[0m and container [32mstep-create-dir-workspace-4vzfw[0m
+{"level":"info","ts":1605602196.839745,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1605602196.8408608,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2651-in-bs22j-3[0m stage [32mend-to-end[0m and container [32mstep-source-copy-workspace-btvhb[0m
+{"level":"info","ts":1605602197.0461576,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1605602197.411538,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2651-in-bs22j-3[0m stage [32mend-to-end[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2651-in-bs22j-3[0m stage [32mend-to-end[0m and container [32mstep-test-end-to-end[0m
+Test run type is: [base]
+Starting Docker: docker.
+[SETUP] Waiting for Docker to be ready, sleeping for 1 seconds ...
+kind create cluster --config ../resources/kind_config.yaml
+Creating cluster "kind" ...
+ • Ensuring node image (kindest/node:v1.16.3) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.16.3) 🖼
+ • Preparing nodes 📦  ...
+ ✓ Preparing nodes 📦
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+ • Joining worker nodes 🚜  ...
+ ✓ Joining worker nodes 🚜
+Set kubectl context to "kind-kind"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-kind
+
+Thanks for using kind! 😊
+`kind get kubeconfig-path` is deprecated!
+
+KIND will export and merge kubeconfig like kops, minikube, etc.
+This command is now unnecessary and will be removed in a future release.
+
+For more info see: https://github.com/kubernetes-sigs/kind/issues/1060
+See also the output of `kind create cluster`
+
+Files changed in python folder:
+SKIPPING PYTHON IMAGE BUILD...
+Files changed in operator folder:
+operator/Makefile
+operator/apis/machinelearning.seldon.io/v1/seldondeployment_webhook.go
+operator/apis/machinelearning.seldon.io/v1alpha2/seldondeployment_webhook.go
+operator/apis/machinelearning.seldon.io/v1alpha3/seldondeployment_webhook.go
+operator/config/crd/bases/machinelearning.seldon.io_seldondeployments.yaml
+operator/config/webhook/manifests.yaml
+operator/testing/machinelearning.seldon.io_seldondeployments.yaml
+cd ../../operator && make kind-image-install
+make[1]: Entering directory '/workspace/source/operator'
+go: creating new go.mod: module tmp
+go: downloading sigs.k8s.io/controller-tools v0.2.9
+go: found sigs.k8s.io/controller-tools/cmd/controller-gen in sigs.k8s.io/controller-tools v0.2.9
+go: downloading github.com/spf13/cobra v0.0.5
+go: downloading k8s.io/api v0.17.0
+go: downloading sigs.k8s.io/yaml v1.1.0
+go: downloading golang.org/x/tools v0.0.0-20190920225731-5eefd052ad72
+go: downloading github.com/gobuffalo/flect v0.2.0
+go: downloading k8s.io/apimachinery v0.17.0
+go: downloading k8s.io/apiextensions-apiserver v0.17.0
+go: downloading github.com/fatih/color v1.7.0
+go: downloading github.com/spf13/pflag v1.0.5
+go: downloading github.com/mattn/go-colorable v0.1.2
+go: downloading gopkg.in/yaml.v3 v3.0.0-20190905181640-827449938966
+go: downloading github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
+go: downloading k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
+go: downloading github.com/inconshreveable/mousetrap v1.0.0
+go: downloading gopkg.in/yaml.v2 v2.2.4
+go: downloading github.com/google/gofuzz v1.0.0
+go: downloading github.com/mattn/go-isatty v0.0.8
+go: downloading gopkg.in/inf.v0 v0.9.1
+go: downloading k8s.io/klog v1.0.0
+go: downloading golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
+go: downloading golang.org/x/sys v0.0.0-20190826190057-c7b8b68b1456
+go: downloading golang.org/x/text v0.3.2
+/builder/home/go/bin/controller-gen object:headerFile=./hack/boilerplate.go.txt paths="./..."
+go fmt ./...
+go vet ./...
+go: downloading github.com/onsi/ginkgo v1.14.1
+go: downloading github.com/onsi/gomega v1.10.2
+go: downloading golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
+go: downloading github.com/nxadm/tail v1.4.4
+go: downloading gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
+/builder/home/go/bin/controller-gen "crd:trivialVersions=true" rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+rm -rf generated
+mkdir generated
+kustomize build config/default/ -o generated
+cp generated/apiextensions.k8s.io_v1beta1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml testing/machinelearning.seldon.io_seldondeployments.yaml
+ginkgo -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis
+[1605602330] [1mController Suite[0m - 64/64 specs test k8s client
+&{Reader:0xc000d8c840 Writer:0xc0000f4ed0 StatusClient:0xc0000f4ed0}
+[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0mE1117 08:39:38.545074   30406 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1.ConfigMap: Get "http://127.0.0.1:36171/api/v1/configmaps?allowWatchBookmarks=true&resourceVersion=122&timeoutSeconds=471&watch=true": dial tcp 127.0.0.1:36171: connect: connection refused
+E1117 08:39:38.545074   30406 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1.Service: Get "http://127.0.0.1:36171/api/v1/services?allowWatchBookmarks=true&resourceVersion=434&timeoutSeconds=387&watch=true": dial tcp 127.0.0.1:36171: connect: connection refused
+E1117 08:39:38.545116   30406 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1.Deployment: Get "http://127.0.0.1:36171/apis/apps/v1/deployments?allowWatchBookmarks=true&resourceVersion=438&timeoutSeconds=525&watch=true": dial tcp 127.0.0.1:36171: connect: connection refused
+E1117 08:39:38.545128   30406 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v2beta1.HorizontalPodAutoscaler: Get "http://127.0.0.1:36171/apis/autoscaling/v2beta1/horizontalpodautoscalers?allowWatchBookmarks=true&resourceVersion=436&timeoutSeconds=558&watch=true": dial tcp 127.0.0.1:36171: connect: connection refused
+E1117 08:39:38.545152   30406 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1alpha3.VirtualService: Get "http://127.0.0.1:36171/apis/networking.istio.io/v1alpha3/virtualservices?allowWatchBookmarks=true&resourceVersion=123&timeoutSeconds=503&watch=true": dial tcp 127.0.0.1:36171: connect: connection refused
+E1117 08:39:38.545164   30406 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1.Namespace: Get "http://127.0.0.1:36171/api/v1/namespaces?allowWatchBookmarks=true&resourceVersion=428&timeoutSeconds=408&watch=true": dial tcp 127.0.0.1:36171: connect: connection refused
+E1117 08:39:38.545179   30406 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1.SeldonDeployment: Get "http://127.0.0.1:36171/apis/machinelearning.seldon.io/v1/seldondeployments?allowWatchBookmarks=true&resourceVersion=445&timeoutSeconds=389&watch=true": dial tcp 127.0.0.1:36171: connect: connection refused
+E1117 08:39:38.545203   30406 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1beta1.PodDisruptionBudget: Get "http://127.0.0.1:36171/apis/policy/v1beta1/poddisruptionbudgets?allowWatchBookmarks=true&resourceVersion=355&timeoutSeconds=365&watch=true": dial tcp 127.0.0.1:36171: connect: connection refused
+E1117 08:39:38.545200   30406 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1alpha1.ScaledObject: Get "http://127.0.0.1:36171/apis/keda.sh/v1alpha1/scaledobjects?allowWatchBookmarks=true&resourceVersion=241&timeoutSeconds=360&watch=true": dial tcp 127.0.0.1:36171: connect: connection refused
+
+ [32mSUCCESS![0m 28.137477953s PASS
+coverage: 66.6% of statements
+=== RUN   TestGcsSecret
+--- PASS: TestGcsSecret (0.00s)
+PASS
+coverage: 100.0% of statements
+=== RUN   TestS3Secret
+--- PASS: TestS3Secret (0.00s)
+PASS
+coverage: 94.6% of statements
+=== RUN   TestGetEnvAsBool
+--- PASS: TestGetEnvAsBool (0.00s)
+=== RUN   TestAddEnvVarToDeploymentContainers
+--- PASS: TestAddEnvVarToDeploymentContainers (0.00s)
+=== RUN   TestMountSecretToDeploymentContainers
+--- PASS: TestMountSecretToDeploymentContainers (0.00s)
+PASS
+coverage: 30.0% of statements
+=== RUN   TestGenerateCerts
+--- PASS: TestGenerateCerts (1.67s)
+=== RUN   TestConfigmapCreate
+--- PASS: TestConfigmapCreate (0.00s)
+=== RUN   TestCRDCreate
+--- PASS: TestCRDCreate (0.05s)
+=== RUN   TestMutatingWebhookCreate
+--- PASS: TestMutatingWebhookCreate (3.04s)
+=== RUN   TestMutatingWebhookCreateNamespaced
+--- PASS: TestMutatingWebhookCreateNamespaced (1.42s)
+=== RUN   TestValidatingWebhookCreate
+--- PASS: TestValidatingWebhookCreate (3.86s)
+=== RUN   TestValidatingWebhookCreateNamespaced
+--- PASS: TestValidatingWebhookCreateNamespaced (2.75s)
+=== RUN   TestWebHookSvcCreate
+--- PASS: TestWebHookSvcCreate (2.80s)
+PASS
+coverage: 52.1% of statements
+=== RUN   TestImageSetNormal
+    prepack_test.go:58: Scenario: GRPC image with version
+    prepack_test.go:58: Scenario: GRPC image with no version
+    prepack_test.go:58: Scenario: REST image with version
+    prepack_test.go:58: Scenario: REST image with no version
+--- PASS: TestImageSetNormal (0.00s)
+=== RUN   TestGetPredictorConfig
+    prepack_test.go:91: Scenario: related image sklearn
+    prepack_test.go:91: Scenario: default image sklearn
+--- PASS: TestGetPredictorConfig (0.00s)
+=== RUN   TestPredictorServerConfigPrepackImageName
+--- PASS: TestPredictorServerConfigPrepackImageName (0.00s)
+=== RUN   TestGetDeploymentNameOneModel
+--- PASS: TestGetDeploymentNameOneModel (0.00s)
+=== RUN   TestGetDeploymentNameLong
+--- PASS: TestGetDeploymentNameLong (0.00s)
+=== RUN   TestValidProtocolTransportServerType
+--- PASS: TestValidProtocolTransportServerType (0.00s)
+=== RUN   TestValidateBadProtocol
+--- PASS: TestValidateBadProtocol (0.00s)
+=== RUN   TestValidateBadTransport
+--- PASS: TestValidateBadTransport (0.00s)
+=== RUN   TestValidateBadServerType
+--- PASS: TestValidateBadServerType (0.00s)
+=== RUN   TestValidateMixedTransport
+--- PASS: TestValidateMixedTransport (0.00s)
+=== RUN   TestValidateMixedMultipleTransport
+--- PASS: TestValidateMixedMultipleTransport (0.00s)
+=== RUN   TestDefaultSingleContainer
+--- PASS: TestDefaultSingleContainer (0.00s)
+=== RUN   TestMetricsPortAddedTwoContainers
+--- PASS: TestMetricsPortAddedTwoContainers (0.00s)
+=== RUN   TestMetricsPortAddedTwoComponentSpecsTwoContainers
+--- PASS: TestMetricsPortAddedTwoComponentSpecsTwoContainers (0.00s)
+=== RUN   TestOverrideMetricsPortName
+Failed to find config map seldon-config
+no kind is registered for the type v1.ConfigMap in scheme "pkg/runtime/scheme.go:101"
+--- PASS: TestOverrideMetricsPortName (0.00s)
+=== RUN   TestPortUseExisting
+--- PASS: TestPortUseExisting (0.00s)
+=== RUN   TestMetricsPortAddedToPrepacked
+--- PASS: TestMetricsPortAddedToPrepacked (0.00s)
+=== RUN   TestPredictorProtocolGrpc
+--- PASS: TestPredictorProtocolGrpc (0.00s)
+=== RUN   TestPrepackedWithExistingContainer
+--- PASS: TestPrepackedWithExistingContainer (0.00s)
+=== RUN   TestPrepackedWithCustom
+--- PASS: TestPrepackedWithCustom (0.00s)
+=== RUN   TestPrepackedWithExistingContainerAndImage
+--- PASS: TestPrepackedWithExistingContainerAndImage (0.00s)
+=== RUN   TestMetricsPortAddedToTwoPrepacked
+--- PASS: TestMetricsPortAddedToTwoPrepacked (0.00s)
+=== RUN   TestDefaultPrepackagedServerType
+--- PASS: TestDefaultPrepackagedServerType (0.00s)
+=== RUN   TestValidateSingleModel
+--- PASS: TestValidateSingleModel (0.00s)
+=== RUN   TestValidateSingleModelNoName
+--- PASS: TestValidateSingleModelNoName (0.00s)
+=== RUN   TestValidateNoEngineMultiGraph
+--- PASS: TestValidateNoEngineMultiGraph (0.00s)
+=== RUN   TestValidateDuplPredictorName
+--- PASS: TestValidateDuplPredictorName (0.00s)
+=== RUN   TestValidateTrafficSum
+--- PASS: TestValidateTrafficSum (0.00s)
+=== RUN   TestDefaultABTest
+--- PASS: TestDefaultABTest (0.00s)
+=== RUN   TestValidateTensorflowProtocolNormalPrepackaged
+--- PASS: TestValidateTensorflowProtocolNormalPrepackaged (0.00s)
+=== RUN   TestValidateTensorflowProtocolNormal
+--- PASS: TestValidateTensorflowProtocolNormal (0.00s)
+=== RUN   TestValidateV2ProtocolNormal
+--- PASS: TestValidateV2ProtocolNormal (0.00s)
+=== RUN   TestPredictorNoGraph
+--- PASS: TestPredictorNoGraph (0.00s)
+=== RUN   TestShadowPredictor
+--- PASS: TestShadowPredictor (0.00s)
+=== RUN   TestNoPredictors
+--- PASS: TestNoPredictors (0.00s)
+=== RUN   TestValidateTwoShadows
+--- PASS: TestValidateTwoShadows (0.00s)
+PASS
+coverage: 38.1% of statements
+path is /workspace/source/operator
+All profiles combined
+
+Ginkgo ran 6 suites in 1m3.797797441s
+Test Suite Passed
+docker build . -t seldonio/seldon-core-operator:1.5.0-dev
+Sending build context to Docker daemon  12.43MB
+Step 1/28 : FROM golang:1.14.9 as builder
+1.14.9: Pulling from library/golang
+e4c3d3e4f7b0: Pulling fs layer
+101c41d0463b: Pulling fs layer
+8275efcd805f: Pulling fs layer
+751620502a7a: Pulling fs layer
+aaabf962c4fc: Pulling fs layer
+5610ac35c8d2: Pulling fs layer
+324c78229f75: Pulling fs layer
+aaabf962c4fc: Waiting
+5610ac35c8d2: Waiting
+324c78229f75: Waiting
+751620502a7a: Waiting
+101c41d0463b: Verifying Checksum
+101c41d0463b: Download complete
+8275efcd805f: Verifying Checksum
+8275efcd805f: Download complete
+e4c3d3e4f7b0: Verifying Checksum
+e4c3d3e4f7b0: Download complete
+aaabf962c4fc: Verifying Checksum
+aaabf962c4fc: Download complete
+324c78229f75: Download complete
+751620502a7a: Verifying Checksum
+751620502a7a: Download complete
+5610ac35c8d2: Download complete
+e4c3d3e4f7b0: Pull complete
+101c41d0463b: Pull complete
+8275efcd805f: Pull complete
+751620502a7a: Pull complete
+aaabf962c4fc: Pull complete
+5610ac35c8d2: Pull complete
+324c78229f75: Pull complete
+Digest: sha256:b840a07bab2739c266c8728246fc243444f192b44933f4b8beb8ce9f806fae46
+Status: Downloaded newer image for golang:1.14.9
+ ---> 39111ae98c91
+Step 2/28 : WORKDIR /workspace
+ ---> Running in d188d4fd434f
+Removing intermediate container d188d4fd434f
+ ---> 6b7f18e19543
+Step 3/28 : COPY go.mod go.mod
+ ---> 7f14dd2a7628
+Step 4/28 : COPY go.sum go.sum
+ ---> 6371fd068a2c
+Step 5/28 : RUN go mod download
+ ---> Running in 4cb25a7e365d
+Removing intermediate container 4cb25a7e365d
+ ---> 0d416cc33d1b
+Step 6/28 : COPY main.go main.go
+ ---> bd894c0e9d7f
+Step 7/28 : COPY apis/ apis/
+ ---> 157a6c44bff8
+Step 8/28 : COPY controllers/ controllers/
+ ---> 639082e1a311
+Step 9/28 : COPY utils/ utils/
+ ---> 5c9549fa8ed9
+Step 10/28 : COPY constants/ constants/
+ ---> b20f9bae95d7
+Step 11/28 : COPY client/ client/
+ ---> 143c71695a4f
+Step 12/28 : RUN go build -a -o manager main.go
+ ---> Running in 2f6bddec0c58
+Removing intermediate container 2f6bddec0c58
+ ---> 3013af82aa8c
+Step 13/28 : RUN wget -O hashicorp-golang-lru.tar.gz https://github.com/hashicorp/golang-lru/archive/master.tar.gz
+ ---> Running in 174fda95f481
+[91m--2020-11-17 08:42:36--  https://github.com/hashicorp/golang-lru/archive/master.tar.gz
+[0m[91mResolving github.com (github.com)... [0m[91m140.82.121.3
+Connecting to github.com (github.com)|140.82.121.3|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m302 Found
+Location: https://codeload.github.com/hashicorp/golang-lru/tar.gz/master [following]
+[0m[91m--2020-11-17 08:42:37--  https://codeload.github.com/hashicorp/golang-lru/tar.gz/master
+Resolving codeload.github.com (codeload.github.com)... [0m[91m140.82.121.10
+Connecting to codeload.github.com (codeload.github.com)|140.82.121.10|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m200 OK
+Length: unspecified [application/x-gzip]
+Saving to: 'hashicorp-golang-lru.tar.gz'
+[0m[91m
+     0K .......[0m[91m... .[0m[91m..                                         1.09M=0.01s
+
+[0m[91m2020-11-17 08:42:37 (1.09 MB/s) - 'hashicorp-golang-lru.tar.gz' saved [13973]
+
+[0mRemoving intermediate container 174fda95f481
+ ---> 06defb4307d2
+Step 14/28 : RUN wget -O armon-consul-api.tar.gz https://github.com/armon/consul-api/archive/master.tar.gz
+ ---> Running in 028f3398b1d1
+[91m--2020-11-17 08:42:38--  https://github.com/armon/consul-api/archive/master.tar.gz
+[0m[91mResolving github.com (github.com)... [0m[91m140.82.121.3
+Connecting to github.com (github.com)|140.82.121.3|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m302 Found
+Location: https://codeload.github.com/armon/consul-api/tar.gz/master [following]
+--2020-11-17 08:42:38--  https://codeload.github.com/armon/consul-api/tar.gz/master
+Resolving codeload.github.com (codeload.github.com)... [0m[91m140.82.121.10
+Connecting to codeload.github.com (codeload.github.com)|140.82.121.10|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m200 OK
+Length: unspecified [application/x-gzip]
+Saving to: 'armon-consul-api.tar.gz'
+[0m[91m
+     0K ....[0m[91m...... .[0m[91m.[0m[91m.....                           [0m[91m          1.37M=0.01s
+
+[0m[91m2020-11-17 08:42:38 (1.37 MB/s) - 'armon-consul-api.tar.gz' saved [17977]
+
+[0mRemoving intermediate container 028f3398b1d1
+ ---> c8739cb1274c
+Step 15/28 : RUN wget -O hasicorp-hcl.tar.gz https://github.com/hashicorp/hcl/archive/master.tar.gz
+ ---> Running in a977e8d32c54
+[91m--2020-11-17 08:42:39--  https://github.com/hashicorp/hcl/archive/master.tar.gz
+[0m[91mResolving github.com (github.com)... [0m[91m140.82.121.4
+Connecting to github.com (github.com)|140.82.121.4|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m302 Found
+Location: https://codeload.github.com/hashicorp/hcl/tar.gz/master [following]
+--2020-11-17 08:42:39--  https://codeload.github.com/hashicorp/hcl/tar.gz/master
+Resolving codeload.github.com (codeload.github.com)... [0m[91m140.82.121.10
+Connecting to codeload.github.com (codeload.github.com)|140.82.121.10|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m200 OK
+Length: unspecified [application/x-gzip]
+Saving to: 'hasicorp-hcl.tar.gz'
+[0m[91m
+     0K ...[0m[91m....[0m[91m..[0m[91m. .[0m[91m.........[0m[91m ....[0m[91m.....[0m[91m.[0m[91m ...[0m[91m.....[0m[91m.. ......[0m[91m.... 1.82M
+    50K .[0m[91m.......[0m[91m.. ..[0m[91m..[0m[91m......[0m[91m .                                1.60M=0.04s
+
+[0m[91m2020-11-17 08:42:40 (1.75 MB/s) - 'hasicorp-hcl.tar.gz' saved [72944]
+
+[0mRemoving intermediate container a977e8d32c54
+ ---> 5e90cd5ece48
+Step 16/28 : FROM gcr.io/distroless/base:latest
+latest: Pulling from distroless/base
+e59bd8947ac7: Pulling fs layer
+31eb28996804: Pulling fs layer
+e59bd8947ac7: Download complete
+31eb28996804: Verifying Checksum
+31eb28996804: Download complete
+e59bd8947ac7: Pull complete
+31eb28996804: Pull complete
+Digest: sha256:54ec1c780633580e1a0cf3c4a645643971cfc6e418b1d3e4c4df06b7fbc95f88
+Status: Downloaded newer image for gcr.io/distroless/base:latest
+ ---> 972b93457774
+Step 17/28 : WORKDIR /
+ ---> Running in e0a809bd1d2e
+Removing intermediate container e0a809bd1d2e
+ ---> f1d6c9c7493b
+Step 18/28 : COPY --from=builder /workspace/manager .
+ ---> 4a04df9002a2
+Step 19/28 : COPY licenses/license.txt licenses/license.txt
+ ---> c61fd8f67278
+Step 20/28 : COPY --from=builder /workspace/hashicorp-golang-lru.tar.gz licenses/mpl_source/hashicorp-golang-lru.tar.gz
+ ---> 53d9d8f3bf9a
+Step 21/28 : COPY --from=builder /workspace/armon-consul-api.tar.gz licenses/mpl_source/armon-consul-api.tar.gz
+ ---> a4e2b30d0fb6
+Step 22/28 : COPY --from=builder /workspace/hasicorp-hcl.tar.gz licenses/mpl_source/hasicorp-hcl.tar.gz
+ ---> 3f5428d1fe27
+Step 23/28 : COPY generated/admissionregistration.k8s.io_v1beta1_mutatingwebhookconfiguration_seldon-mutating-webhook-configuration.yaml /tmp/operator-resources/mutate.yaml
+ ---> a0e28d214768
+Step 24/28 : COPY generated/admissionregistration.k8s.io_v1beta1_validatingwebhookconfiguration_seldon-validating-webhook-configuration.yaml /tmp/operator-resources/validate.yaml
+ ---> 16f201ba1f25
+Step 25/28 : COPY generated/~g_v1_service_seldon-webhook-service.yaml /tmp/operator-resources/service.yaml
+ ---> 9e33791df55e
+Step 26/28 : COPY generated/~g_v1_configmap_seldon-config.yaml /tmp/operator-resources/configmap.yaml
+ ---> 63352b4423bd
+Step 27/28 : COPY generated/apiextensions.k8s.io_v1beta1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml /tmp/operator-resources/crd.yaml
+ ---> 79a21cc2400f
+Step 28/28 : ENTRYPOINT ["/manager"]
+ ---> Running in 721d0e5f3d52
+Removing intermediate container 721d0e5f3d52
+ ---> b1f6de78f8e3
+Successfully built b1f6de78f8e3
+Successfully tagged seldonio/seldon-core-operator:1.5.0-dev
+kind load -v 3 docker-image seldonio/seldon-core-operator:1.5.0-dev --name kind
+Image: "seldonio/seldon-core-operator:1.5.0-dev" with ID "sha256:b1f6de78f8e394fd52c262ecc8f8032c72dc134c3520c186bfa7adab4ea4cf7c" not present on node "kind-control-plane"
+Image: "seldonio/seldon-core-operator:1.5.0-dev" with ID "sha256:b1f6de78f8e394fd52c262ecc8f8032c72dc134c3520c186bfa7adab4ea4cf7c" not present on node "kind-worker"
+make[1]: Leaving directory '/workspace/source/operator'
+Files changed in engine folder:
+SKIPPING ENGINE IMAGE BUILD...
+Files changed in executor folder:
+SKIPPING EXECUTOR IMAGE BUILD...
+Build test models
+make -C ../../examples/models/mean_classifier kind_load
+make[1]: Entering directory '/workspace/source/examples/models/mean_classifier'
+s2i build -E environment . seldonio/seldon-core-s2i-python37-ubi8:1.5.0-dev seldonio/mock_classifier:1.5.0-dev
+Before assembling
+---> Installing application source...
+---> Installing dependencies ...
+Looking in links: /whl
+Requirement already satisfied: seldon-core in ./python (from -r requirements.txt (line 1)) (1.5.0.dev0)
+Requirement already satisfied: numpy in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 2)) (1.19.4)
+Requirement already satisfied: Flask<2.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (1.1.2)
+Requirement already satisfied: jsonschema<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (3.2.0)
+Requirement already satisfied: Flask-cors<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (3.0.9)
+Requirement already satisfied: redis<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (3.5.3)
+Requirement already satisfied: requests<3.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (2.22.0)
+Requirement already satisfied: flatbuffers<2.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (1.12)
+Requirement already satisfied: protobuf<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (3.14.0)
+Requirement already satisfied: grpcio<2.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (1.33.2)
+Requirement already satisfied: Flask-OpenTracing<1.2.0,>=1.1.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (1.1.0)
+Requirement already satisfied: opentracing<2.4.0,>=2.2.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (2.3.0)
+Requirement already satisfied: jaeger-client<4.4.0,>=4.1.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (4.3.0)
+Requirement already satisfied: grpcio-opentracing<1.2.0,>=1.1.4 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (1.1.4)
+Requirement already satisfied: PyYAML<5.4 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (5.3.1)
+Requirement already satisfied: gunicorn<20.1.0,>=19.9.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (20.0.4)
+Requirement already satisfied: setuptools>=41.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (41.4.0)
+Requirement already satisfied: prometheus_client<0.9.0,>=0.7.1 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (0.8.0)
+Requirement already satisfied: Jinja2>=2.10.1 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon-core->-r requirements.txt (line 1)) (2.11.2)
+Requirement already satisfied: itsdangerous>=0.24 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon-core->-r requirements.txt (line 1)) (1.1.0)
+Requirement already satisfied: Werkzeug>=0.15 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon-core->-r requirements.txt (line 1)) (1.0.1)
+Requirement already satisfied: click>=5.1 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon-core->-r requirements.txt (line 1)) (7.1.2)
+Requirement already satisfied: pyrsistent>=0.14.0 in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->seldon-core->-r requirements.txt (line 1)) (0.17.3)
+Requirement already satisfied: attrs>=17.4.0 in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->seldon-core->-r requirements.txt (line 1)) (20.3.0)
+Requirement already satisfied: six>=1.11.0 in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->seldon-core->-r requirements.txt (line 1)) (1.12.0)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->seldon-core->-r requirements.txt (line 1)) (2.0.0)
+Requirement already satisfied: chardet<3.1.0,>=3.0.2 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon-core->-r requirements.txt (line 1)) (3.0.4)
+Requirement already satisfied: certifi>=2017.4.17 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon-core->-r requirements.txt (line 1)) (2020.6.20)
+Requirement already satisfied: idna<2.9,>=2.5 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon-core->-r requirements.txt (line 1)) (2.8)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon-core->-r requirements.txt (line 1)) (1.24.2)
+Requirement already satisfied: threadloop<2,>=1 in /opt/conda/lib/python3.7/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core->-r requirements.txt (line 1)) (1.0.2)
+Requirement already satisfied: thrift in /opt/conda/lib/python3.7/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core->-r requirements.txt (line 1)) (0.13.0)
+Requirement already satisfied: tornado>=4.3 in /opt/conda/lib/python3.7/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core->-r requirements.txt (line 1)) (6.1)
+Requirement already satisfied: MarkupSafe>=0.23 in /opt/conda/lib/python3.7/site-packages (from Jinja2>=2.10.1->Flask<2.0.0->seldon-core->-r requirements.txt (line 1)) (1.1.1)
+Requirement already satisfied: zipp>=0.5 in /opt/conda/lib/python3.7/site-packages (from importlib-metadata; python_version < "3.8"->jsonschema<4.0.0->seldon-core->-r requirements.txt (line 1)) (3.4.0)
+Collecting pip-licenses
+Downloading https://files.pythonhosted.org/packages/08/b4/6e53ab4e82e2b9f8356dd17d7b9e30cba57ba0460186c92cc05e8a1a7f97/pip_licenses-3.0.0-py3-none-any.whl
+Collecting PTable (from pip-licenses)
+Downloading https://files.pythonhosted.org/packages/ab/b3/b54301811173ca94119eb474634f120a49cd370f257d1aae5a4abaf12729/PTable-0.9.2.tar.gz
+Building wheels for collected packages: PTable
+Building wheel for PTable (setup.py): started
+Building wheel for PTable (setup.py): finished with status 'done'
+Created wheel for PTable: filename=PTable-0.9.2-cp37-none-any.whl size=22906 sha256=8f22e162cfb367a1875d5eb7dda2947329395c04bc8930aa698cb673d12a0ca6
+Stored in directory: /root/.cache/pip/wheels/22/cc/2e/55980bfe86393df3e9896146a01f6802978d09d7ebcba5ea56
+Successfully built PTable
+Installing collected packages: PTable, pip-licenses
+Successfully installed PTable-0.9.2 pip-licenses-3.0.0
+created path: ./licenses/license_info.csv
+created path: ./licenses/license.txt
+After successful assembling
+Build completed successfully
+kind load -v 3 docker-image seldonio/mock_classifier:1.5.0-dev
+Image: "seldonio/mock_classifier:1.5.0-dev" with ID "sha256:183f3f04b23ea1a3c60611e1d6213267dd79c2233652c62f28cc231c00ed0a2d" not present on node "kind-control-plane"
+Image: "seldonio/mock_classifier:1.5.0-dev" with ID "sha256:183f3f04b23ea1a3c60611e1d6213267dd79c2233652c62f28cc231c00ed0a2d" not present on node "kind-worker"
+make[1]: Leaving directory '/workspace/source/examples/models/mean_classifier'
+make -C ../docker/fixed-model kind_load_images
+make[1]: Entering directory '/workspace/source/testing/docker/fixed-model'
+s2i build -E environment_v1 . seldonio/seldon-core-s2i-python3:1.5.0-dev seldonio/fixed-model:0.1
+---> Installing application source...
+Collecting pip-licenses
+Downloading https://files.pythonhosted.org/packages/08/b4/6e53ab4e82e2b9f8356dd17d7b9e30cba57ba0460186c92cc05e8a1a7f97/pip_licenses-3.0.0-py3-none-any.whl
+Collecting PTable (from pip-licenses)
+Downloading https://files.pythonhosted.org/packages/ab/b3/b54301811173ca94119eb474634f120a49cd370f257d1aae5a4abaf12729/PTable-0.9.2.tar.gz
+Building wheels for collected packages: PTable
+Building wheel for PTable (setup.py): started
+Building wheel for PTable (setup.py): finished with status 'done'
+Created wheel for PTable: filename=PTable-0.9.2-cp37-none-any.whl size=22906 sha256=02c2e46c96e6c38d4fb18e46a84411c960d0c987a3e1093a7582dab0ef60d147
+Stored in directory: /root/.cache/pip/wheels/22/cc/2e/55980bfe86393df3e9896146a01f6802978d09d7ebcba5ea56
+Successfully built PTable
+Installing collected packages: PTable, pip-licenses
+Successfully installed PTable-0.9.2 pip-licenses-3.0.0
+created path: ./licenses/license_info.csv
+created path: ./licenses/license.txt
+Build completed successfully
+s2i build -E environment_v2 . seldonio/seldon-core-s2i-python3:1.5.0-dev  seldonio/fixed-model:0.2
+---> Installing application source...
+Collecting pip-licenses
+Downloading https://files.pythonhosted.org/packages/08/b4/6e53ab4e82e2b9f8356dd17d7b9e30cba57ba0460186c92cc05e8a1a7f97/pip_licenses-3.0.0-py3-none-any.whl
+Collecting PTable (from pip-licenses)
+Downloading https://files.pythonhosted.org/packages/ab/b3/b54301811173ca94119eb474634f120a49cd370f257d1aae5a4abaf12729/PTable-0.9.2.tar.gz
+Building wheels for collected packages: PTable
+Building wheel for PTable (setup.py): started
+Building wheel for PTable (setup.py): finished with status 'done'
+Created wheel for PTable: filename=PTable-0.9.2-cp37-none-any.whl size=22906 sha256=9c6546cdfceaab021e401be9704e0d2fb643e7a68b7875875029ea5987ba5e63
+Stored in directory: /root/.cache/pip/wheels/22/cc/2e/55980bfe86393df3e9896146a01f6802978d09d7ebcba5ea56
+Successfully built PTable
+Installing collected packages: PTable, pip-licenses
+Successfully installed PTable-0.9.2 pip-licenses-3.0.0
+created path: ./licenses/license_info.csv
+created path: ./licenses/license.txt
+Build completed successfully
+kind load -v 3 docker-image seldonio/fixed-model:0.1
+Image: "seldonio/fixed-model:0.1" with ID "sha256:401362d4b4d6eb785db88176c6998ad2d83193290ebcfb8d6b2c01c1518157a4" not present on node "kind-control-plane"
+Image: "seldonio/fixed-model:0.1" with ID "sha256:401362d4b4d6eb785db88176c6998ad2d83193290ebcfb8d6b2c01c1518157a4" not present on node "kind-worker"
+kind load -v 3 docker-image seldonio/fixed-model:0.2
+Image: "seldonio/fixed-model:0.2" with ID "sha256:1f6726d4ed063fd90381fc01bed51ba249c13fd19ba7d851ce82c766d82bc0a9" not present on node "kind-control-plane"
+Image: "seldonio/fixed-model:0.2" with ID "sha256:1f6726d4ed063fd90381fc01bed51ba249c13fd19ba7d851ce82c766d82bc0a9" not present on node "kind-worker"
+make[1]: Leaving directory '/workspace/source/testing/docker/fixed-model'
+make -C ../docker/echo-model kind_load_image
+make[1]: Entering directory '/workspace/source/testing/docker/echo-model'
+s2i build \
+	-E environment_rest \
+	.\
+	seldonio/seldon-core-s2i-python3:1.5.0-dev\
+	seldonio/echo-model:0.1
+---> Installing application source...
+Collecting pip-licenses
+Downloading https://files.pythonhosted.org/packages/08/b4/6e53ab4e82e2b9f8356dd17d7b9e30cba57ba0460186c92cc05e8a1a7f97/pip_licenses-3.0.0-py3-none-any.whl
+Collecting PTable (from pip-licenses)
+Downloading https://files.pythonhosted.org/packages/ab/b3/b54301811173ca94119eb474634f120a49cd370f257d1aae5a4abaf12729/PTable-0.9.2.tar.gz
+Building wheels for collected packages: PTable
+Building wheel for PTable (setup.py): started
+Building wheel for PTable (setup.py): finished with status 'done'
+Created wheel for PTable: filename=PTable-0.9.2-cp37-none-any.whl size=22906 sha256=9c2241601b7c0217441b636e9342c091d28feb39f20c72ddfd7ae6e96d953a4d
+Stored in directory: /root/.cache/pip/wheels/22/cc/2e/55980bfe86393df3e9896146a01f6802978d09d7ebcba5ea56
+Successfully built PTable
+Installing collected packages: PTable, pip-licenses
+Successfully installed PTable-0.9.2 pip-licenses-3.0.0
+created path: ./licenses/license_info.csv
+created path: ./licenses/license.txt
+Build completed successfully
+kind load -v 3 docker-image seldonio/echo-model:0.1
+Image: "seldonio/echo-model:0.1" with ID "sha256:68619fbc4ad9d486140ddd428ffbf073bdd6fad33c05272ad5259d1e9b013037" not present on node "kind-control-plane"
+Image: "seldonio/echo-model:0.1" with ID "sha256:68619fbc4ad9d486140ddd428ffbf073bdd6fad33c05272ad5259d1e9b013037" not present on node "kind-worker"
+make[1]: Leaving directory '/workspace/source/testing/docker/echo-model'
+Files changed in prepackaged folder:
+SKIPPING PREPACKAGED IMAGE BUILD...
+Files changed in alibi explain folder:
+SKIPPING ALIBI EXPLAIN IMAGE BUILD...
+Files changed in alibi detect folder:
+SKIPPING ALIBI DETECT IMAGE BUILD...
+Files changed in misc folders:
+SKIPPING MISC IMAGE BUILD...
+kubectl create namespace seldon || echo "Namespace seldon already exists"
+namespace/seldon created
+kubectl create namespace test1 || echo "Namespace test1 already exists"
+namespace/test1 created
+helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+"stable" has been added to your repositories
+helm repo add seldonio https://storage.googleapis.com/seldon-charts
+"seldonio" has been added to your repositories
+helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
+"jaegertracing" has been added to your repositories
+helm repo add datawire https://www.getambassador.io
+"datawire" has been added to your repositories
+helm repo update
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "jaegertracing" chart repository
+...Successfully got an update from the "seldonio" chart repository
+...Successfully got an update from the "datawire" chart repository
+...Successfully got an update from the "stable" chart repository
+Update Complete. ⎈ Happy Helming!⎈ 
+helm upgrade ambassador \
+	datawire/ambassador \
+	-f ../resources/ambassador_values.yaml \
+	--set image.repository=quay.io/datawire/ambassador \
+	--set crds.keep=false \
+	--set enableAES=false \
+	--namespace seldon \
+	--set replicaCount=1 \
+	--wait --install
+Release "ambassador" does not exist. Installing it now.
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+NAME: ambassador
+LAST DEPLOYED: Tue Nov 17 08:48:21 2020
+NAMESPACE: seldon
+STATUS: deployed
+REVISION: 1
+NOTES:
+-------------------------------------------------------------------------------
+  Congratulations! You've successfully installed Ambassador!
+
+-------------------------------------------------------------------------------
+To get the IP address of Ambassador, run the following commands:
+  export NODE_PORT=$(kubectl get --namespace seldon -o jsonpath="{.spec.ports[0].nodePort}" services ambassador)
+  export NODE_IP=$(kubectl get nodes --namespace seldon -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+
+For help, visit our Slack at https://d6e.co/slack or view the documentation online at https://www.getambassador.io.
+curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.6.8 TARGET_ARCH=x86_64 sh -
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   102  100   102    0     0    231      0 --:--:-- --:--:-- --:--:--   231
+  0  4579    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100  4579  100  4579    0     0   6834      0 --:--:-- --:--:-- --:--:-- 4471k
+
+Downloading istio-1.6.8 from https://github.com/istio/istio/releases/download/1.6.8/istio-1.6.8-linux-amd64.tar.gz ...
+
+Istio 1.6.8 Download Complete!
+
+Istio has been successfully downloaded into the istio-1.6.8 folder on your system.
+
+Next Steps:
+See https://istio.io/latest/docs/setup/install/ to add Istio to your Kubernetes cluster.
+
+To configure the istioctl client tool for your workstation,
+add the /workspace/source/testing/scripts/istio-1.6.8/bin directory to your environment path variable with:
+	 export PATH="$PATH:/workspace/source/testing/scripts/istio-1.6.8/bin"
+
+Begin the Istio pre-installation check by running:
+	 istioctl x precheck 
+
+Need more information? Visit https://istio.io/latest/docs/setup/install/ 
+istio-1.6.8/bin/istioctl install --set profile=demo
+Detected that your cluster does not support third party JWT authentication. Falling back to less secure first party JWT. See https://istio.io/docs/ops/best-practices/security/#configure-third-party-service-account-tokens for details.
+
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+✔ Istio core installed
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod. Waiting for Deployment/istio-system/istiod
+- Processing resources for Istiod. Waiting for Deployment/istio-system/istiod
+- Processing resources for Istiod. Waiting for Deployment/istio-system/istiod
+- Processing resources for Istiod. Waiting for Deployment/istio-system/istiod
+- Processing resources for Istiod. Waiting for Deployment/istio-system/istiod
+- Processing resources for Istiod. Waiting for Deployment/istio-system/istiod
+- Processing resources for Istiod. Waiting for Deployment/istio-system/istiod
+✔ Istiod installed
+- Processing resources for Egress gateways, Ingress gateways.
+- Processing resources for Egress gateways, Ingress gateways.
+- Processing resources for Egress gateways, Ingress gateways.
+- Processing resources for Egress gateways, Ingress gateways.
+- Processing resources for Egress gateways, Ingress gateways.
+- Processing resources for Egress gateways, Ingress gateways.
+- Processing resources for Egress gateways, Ingress gateways.
+- Processing resources for Egress gateways, Ingress gateways.
+- Processing resources for Egress gateways, Ingress gateways.
+- Processing resources for Egress gateways, Ingress gateways. Waiting for Deployment/istio-system...
+- Processing resources for Egress gateways, Ingress gateways. Waiting for Deployment/istio-system...
+- Processing resources for Egress gateways, Ingress gateways. Waiting for Deployment/istio-system...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+✔ Egress gateways installed
+- Processing resources for Addons, Ingress gateways. Waiting for Deployment/istio-system/grafana,...
+- Processing resources for Addons, Ingress gateways. Waiting for Deployment/istio-system/grafana,...
+✔ Ingress gateways installed
+- Processing resources for Addons. Waiting for Deployment/istio-system/grafana, Deployment/istio-...
+- Processing resources for Addons. Waiting for Deployment/istio-system/grafana, Deployment/istio-...
+- Processing resources for Addons. Waiting for Deployment/istio-system/grafana, Deployment/istio-...
+- Processing resources for Addons. Waiting for Deployment/istio-system/grafana, Deployment/istio-...
+- Processing resources for Addons. Waiting for Deployment/istio-system/grafana, Deployment/istio-...
+- Processing resources for Addons. Waiting for Deployment/istio-system/grafana, Deployment/istio-...
+- Processing resources for Addons. Waiting for Deployment/istio-system/grafana, Deployment/istio-...
+- Processing resources for Addons. Waiting for Deployment/istio-system/grafana, Deployment/istio-...
+- Processing resources for Addons. Waiting for Deployment/istio-system/grafana, Deployment/istio-...
+- Processing resources for Addons. Waiting for Deployment/istio-system/grafana, Deployment/istio-...
+- Processing resources for Addons. Waiting for Deployment/istio-system/kiali, Deployment/istio-sy...
+- Processing resources for Addons. Waiting for Deployment/istio-system/kiali, Deployment/istio-sy...
+- Processing resources for Addons. Waiting for Deployment/istio-system/kiali, Deployment/istio-sy...
+- Processing resources for Addons. Waiting for Deployment/istio-system/kiali, Deployment/istio-sy...
+- Processing resources for Addons. Waiting for Deployment/istio-system/kiali
+- Processing resources for Addons. Waiting for Deployment/istio-system/kiali
+- Processing resources for Addons. Waiting for Deployment/istio-system/kiali
+- Processing resources for Addons. Waiting for Deployment/istio-system/kiali
+- Processing resources for Addons. Waiting for Deployment/istio-system/kiali
+✔ Addons installed
+- Pruning removed resources
+kubectl patch svc istio-ingressgateway -n istio-system --patch "$(cat ../resources/istio-ingressgateway-patch.yaml)"
+service/istio-ingressgateway patched
+kubectl create -f ../resources/seldon-gateway.yaml -n istio-system
+gateway.networking.istio.io/seldon-gateway created
+kubectl apply -f https://github.com/kedacore/keda/releases/download/v2.0.0-beta/keda-2.0.0-beta.yaml
+namespace/keda created
+customresourcedefinition.apiextensions.k8s.io/scaledjobs.keda.sh created
+customresourcedefinition.apiextensions.k8s.io/scaledobjects.keda.sh created
+customresourcedefinition.apiextensions.k8s.io/triggerauthentications.keda.sh created
+serviceaccount/keda-operator created
+clusterrole.rbac.authorization.k8s.io/keda-external-metrics-reader created
+clusterrole.rbac.authorization.k8s.io/keda-operator created
+rolebinding.rbac.authorization.k8s.io/keda-auth-reader created
+clusterrolebinding.rbac.authorization.k8s.io/keda-hpa-controller-external-metrics created
+clusterrolebinding.rbac.authorization.k8s.io/keda-operator created
+clusterrolebinding.rbac.authorization.k8s.io/keda:system:auth-delegator created
+service/keda-metrics-apiserver created
+deployment.apps/keda-metrics-apiserver created
+deployment.apps/keda-operator created
+apiservice.apiregistration.k8s.io/v1beta1.external.metrics.k8s.io created
+helm upgrade jaeger-operator \
+	jaegertracing/jaeger-operator \
+	--set rbac.clusterRole=true \
+	--namespace seldon \
+	--wait --install
+Release "jaeger-operator" does not exist. Installing it now.
+✔ Installation completemanifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+NAME: jaeger-operator
+LAST DEPLOYED: Tue Nov 17 08:50:25 2020
+NAMESPACE: seldon
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+jaeger-operator is installed.
+
+
+Check the jaeger-operator logs
+  export POD=$(kubectl get pods-l app.kubernetes.io/instance=jaeger-operator -lapp.kubernetes.io/name=jaeger-operator --namespace seldon --output name)
+  kubectl logs $POD --namespace=seldon
+kubectl apply -f ../resources/jaeger.yaml --namespace seldon
+jaeger.jaegertracing.io/jaeger created
+mapping.getambassador.io/jaeger created
+kubectl create namespace seldon-system || echo "namespace seldon-system exists"
+namespace/seldon-system created
+helm delete seldon --namespace seldon-system || echo "seldon-core not installed"
+Error: uninstall: Release not loaded: seldon: release: not found
+seldon-core not installed
+helm upgrade seldon \
+	../../helm-charts/seldon-core-operator \
+	--namespace seldon-system \
+	--set istio.enabled=true \
+	--set keda.enabled=true \
+	--set istio.gateway=istio-system/seldon-gateway \
+	--set certManager.enabled=false \
+	--set executor.enabled="true" \
+	--wait --install
+Release "seldon" does not exist. Installing it now.
+NAME: seldon
+LAST DEPLOYED: Tue Nov 17 08:50:45 2020
+NAMESPACE: seldon-system
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+kubectl config set-context $(kubectl config current-context) --namespace=seldon
+Context "kind-kind" modified.
+kubectl apply -f metrics.yaml
+clusterrole.rbac.authorization.k8s.io/system:aggregated-metrics-reader created
+clusterrolebinding.rbac.authorization.k8s.io/metrics-server:system:auth-delegator created
+rolebinding.rbac.authorization.k8s.io/metrics-server-auth-reader created
+apiservice.apiregistration.k8s.io/v1beta1.metrics.k8s.io created
+serviceaccount/metrics-server created
+deployment.apps/metrics-server created
+service/metrics-server created
+clusterrole.rbac.authorization.k8s.io/system:metrics-server created
+clusterrolebinding.rbac.authorization.k8s.io/system:metrics-server created
+make: Entering directory '/workspace/source/python'
+pip install -e . -r requirements-dev.txt
+Obtaining file:///workspace/source/python
+Collecting black==19.10b0
+  Downloading black-19.10b0-py36-none-any.whl (97 kB)
+Collecting flake8==3.8.1
+  Downloading flake8-3.8.1-py2.py3-none-any.whl (72 kB)
+Collecting mypy<0.791
+  Downloading mypy-0.790-cp36-cp36m-manylinux1_x86_64.whl (21.0 MB)
+Collecting Pillow==8.0.1
+  Downloading Pillow-8.0.1-cp36-cp36m-manylinux1_x86_64.whl (2.2 MB)
+Collecting pytest==6.1.2
+  Downloading pytest-6.1.2-py3-none-any.whl (272 kB)
+Collecting pytest-cov==2.10.1
+  Downloading pytest_cov-2.10.1-py2.py3-none-any.whl (19 kB)
+Collecting tox<4.0.0
+  Downloading tox-3.20.1-py2.py3-none-any.whl (83 kB)
+Collecting grpcio-tools==1.33.2
+  Downloading grpcio_tools-1.33.2-cp36-cp36m-manylinux2014_x86_64.whl (2.5 MB)
+Collecting mypy-protobuf==1.22
+  Downloading mypy_protobuf-1.22-py3-none-any.whl (7.5 kB)
+Collecting tenacity==6.2.0
+  Downloading tenacity-6.2.0-py2.py3-none-any.whl (24 kB)
+Collecting coverage==5.3
+  Downloading coverage-5.3-cp36-cp36m-manylinux1_x86_64.whl (229 kB)
+Collecting pandas==1.1.0
+  Downloading pandas-1.1.0-cp36-cp36m-manylinux1_x86_64.whl (10.5 MB)
+Collecting pip-licenses==3.0.0
+  Downloading pip_licenses-3.0.0-py3-none-any.whl (14 kB)
+Collecting Flask<2.0.0
+  Downloading Flask-1.1.2-py2.py3-none-any.whl (94 kB)
+Requirement already satisfied: jsonschema<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.5.0.dev0) (3.2.0)
+Collecting Flask-cors<4.0.0
+  Downloading Flask_Cors-3.0.9-py2.py3-none-any.whl (14 kB)
+Collecting redis<4.0.0
+  Downloading redis-3.5.3-py2.py3-none-any.whl (72 kB)
+Requirement already satisfied: requests<3.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.5.0.dev0) (2.24.0)
+Requirement already satisfied: numpy<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.5.0.dev0) (1.19.2)
+Collecting flatbuffers<2.0.0
+  Downloading flatbuffers-1.12-py2.py3-none-any.whl (15 kB)
+Requirement already satisfied: protobuf<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.5.0.dev0) (3.13.0)
+Requirement already satisfied: grpcio<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.5.0.dev0) (1.32.0)
+Collecting Flask-OpenTracing<1.2.0,>=1.1.0
+  Downloading Flask-OpenTracing-1.1.0.tar.gz (8.2 kB)
+Collecting opentracing<2.4.0,>=2.2.0
+  Downloading opentracing-2.3.0.tar.gz (48 kB)
+Collecting jaeger-client<4.4.0,>=4.1.0
+  Downloading jaeger-client-4.3.0.tar.gz (81 kB)
+Collecting grpcio-opentracing<1.2.0,>=1.1.4
+  Downloading grpcio_opentracing-1.1.4-py3-none-any.whl (14 kB)
+Requirement already satisfied: PyYAML<5.4 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.5.0.dev0) (5.3.1)
+Collecting gunicorn<20.1.0,>=19.9.0
+  Downloading gunicorn-20.0.4-py2.py3-none-any.whl (77 kB)
+Requirement already satisfied: setuptools>=41.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.5.0.dev0) (50.3.0)
+Requirement already satisfied: prometheus_client<0.9.0,>=0.7.1 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.5.0.dev0) (0.8.0)
+Collecting appdirs
+  Downloading appdirs-1.4.4-py2.py3-none-any.whl (9.6 kB)
+Collecting click>=6.5
+  Downloading click-7.1.2-py2.py3-none-any.whl (82 kB)
+Collecting toml>=0.9.4
+  Downloading toml-0.10.2-py2.py3-none-any.whl (16 kB)
+Requirement already satisfied: attrs>=18.1.0 in /usr/local/lib/python3.6/site-packages (from black==19.10b0->-r requirements-dev.txt (line 2)) (20.2.0)
+Collecting typed-ast>=1.4.0
+  Downloading typed_ast-1.4.1-cp36-cp36m-manylinux1_x86_64.whl (737 kB)
+Collecting pathspec<1,>=0.6
+  Downloading pathspec-0.8.1-py2.py3-none-any.whl (28 kB)
+Collecting regex
+  Downloading regex-2020.11.13-cp36-cp36m-manylinux2014_x86_64.whl (723 kB)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /usr/local/lib/python3.6/site-packages (from flake8==3.8.1->-r requirements-dev.txt (line 3)) (2.0.0)
+Collecting pyflakes<2.3.0,>=2.2.0
+  Downloading pyflakes-2.2.0-py2.py3-none-any.whl (66 kB)
+Collecting mccabe<0.7.0,>=0.6.0
+  Downloading mccabe-0.6.1-py2.py3-none-any.whl (8.6 kB)
+Collecting pycodestyle<2.7.0,>=2.6.0a1
+  Downloading pycodestyle-2.6.0-py2.py3-none-any.whl (41 kB)
+Requirement already satisfied: typing-extensions>=3.7.4 in /usr/local/lib/python3.6/site-packages (from mypy<0.791->-r requirements-dev.txt (line 4)) (3.7.4.3)
+Collecting mypy-extensions<0.5.0,>=0.4.3
+  Downloading mypy_extensions-0.4.3-py2.py3-none-any.whl (4.5 kB)
+Requirement already satisfied: pluggy<1.0,>=0.12 in /usr/local/lib/python3.6/site-packages (from pytest==6.1.2->-r requirements-dev.txt (line 6)) (0.13.1)
+Collecting iniconfig
+  Downloading iniconfig-1.1.1-py2.py3-none-any.whl (5.0 kB)
+Requirement already satisfied: packaging in /usr/local/lib/python3.6/site-packages (from pytest==6.1.2->-r requirements-dev.txt (line 6)) (20.4)
+Requirement already satisfied: py>=1.8.2 in /usr/local/lib/python3.6/site-packages (from pytest==6.1.2->-r requirements-dev.txt (line 6)) (1.9.0)
+Collecting filelock>=3.0.0
+  Downloading filelock-3.0.12-py3-none-any.whl (7.6 kB)
+Collecting virtualenv!=20.0.0,!=20.0.1,!=20.0.2,!=20.0.3,!=20.0.4,!=20.0.5,!=20.0.6,!=20.0.7,>=16.0.0
+  Downloading virtualenv-20.1.0-py2.py3-none-any.whl (4.9 MB)
+Requirement already satisfied: six>=1.14.0 in /usr/local/lib/python3.6/site-packages (from tox<4.0.0->-r requirements-dev.txt (line 8)) (1.15.0)
+Requirement already satisfied: pytz>=2017.2 in /usr/local/lib/python3.6/site-packages (from pandas==1.1.0->-r requirements-dev.txt (line 19)) (2020.1)
+Requirement already satisfied: python-dateutil>=2.7.3 in /usr/local/lib/python3.6/site-packages (from pandas==1.1.0->-r requirements-dev.txt (line 19)) (2.8.1)
+Collecting PTable
+  Downloading PTable-0.9.2.tar.gz (31 kB)
+Collecting itsdangerous>=0.24
+  Downloading itsdangerous-1.1.0-py2.py3-none-any.whl (16 kB)
+Requirement already satisfied: Werkzeug>=0.15 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.5.0.dev0) (1.0.1)
+Requirement already satisfied: Jinja2>=2.10.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.5.0.dev0) (2.11.2)
+Requirement already satisfied: pyrsistent>=0.14.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->seldon-core==1.5.0.dev0) (0.17.3)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.5.0.dev0) (3.0.4)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.5.0.dev0) (2020.6.20)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.5.0.dev0) (2.10)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.5.0.dev0) (1.25.10)
+Collecting threadloop<2,>=1
+  Downloading threadloop-1.0.2.tar.gz (4.9 kB)
+Collecting thrift
+  Downloading thrift-0.13.0.tar.gz (59 kB)
+Requirement already satisfied: tornado>=4.3 in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core==1.5.0.dev0) (6.0.4)
+Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.6/site-packages (from importlib-metadata; python_version < "3.8"->flake8==3.8.1->-r requirements-dev.txt (line 3)) (3.3.0)
+Requirement already satisfied: pyparsing>=2.0.2 in /usr/local/lib/python3.6/site-packages (from packaging->pytest==6.1.2->-r requirements-dev.txt (line 6)) (2.4.7)
+Collecting importlib-resources>=1.0; python_version < "3.7"
+  Downloading importlib_resources-3.3.0-py2.py3-none-any.whl (26 kB)
+Collecting distlib<1,>=0.3.1
+  Downloading distlib-0.3.1-py2.py3-none-any.whl (335 kB)
+Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from Jinja2>=2.10.1->Flask<2.0.0->seldon-core==1.5.0.dev0) (1.1.1)
+Building wheels for collected packages: Flask-OpenTracing, opentracing, jaeger-client, PTable, threadloop, thrift
+  Building wheel for Flask-OpenTracing (setup.py): started
+  Building wheel for Flask-OpenTracing (setup.py): finished with status 'done'
+  Created wheel for Flask-OpenTracing: filename=Flask_OpenTracing-1.1.0-py3-none-any.whl size=9071 sha256=6a86e12ee8385470b6f97899fef5b75a0bb5ab2208476c8d897aae663694cf12
+  Stored in directory: /builder/home/.cache/pip/wheels/ad/4b/2d/24ff0da0a0b53c7c77ce59b843bcceaf644c88703241e59615
+  Building wheel for opentracing (setup.py): started
+  Building wheel for opentracing (setup.py): finished with status 'done'
+  Created wheel for opentracing: filename=opentracing-2.3.0-py3-none-any.whl size=51346 sha256=5227ace2971c109585ded9aa9349d0b155595c98d4e007a013b165b3b6b6ea54
+  Stored in directory: /builder/home/.cache/pip/wheels/d4/53/31/bfca74f038fa9f83eb7de2131555b75ffa9bcbca18d23e5edf
+  Building wheel for jaeger-client (setup.py): started
+  Building wheel for jaeger-client (setup.py): finished with status 'done'
+  Created wheel for jaeger-client: filename=jaeger_client-4.3.0-py3-none-any.whl size=64290 sha256=b6deda7c8ff4b0f12c69a50ba70879b27525b925ea1804d8d86a483493644c48
+  Stored in directory: /builder/home/.cache/pip/wheels/a8/37/30/d86c970966efbf6da89e8085db50f2be4cf36ca68513eff785
+  Building wheel for PTable (setup.py): started
+  Building wheel for PTable (setup.py): finished with status 'done'
+  Created wheel for PTable: filename=PTable-0.9.2-py3-none-any.whl size=22907 sha256=9f111d5663085fd35be5c7f1a25e3ea1063e2163627d18233b1c593458494855
+  Stored in directory: /builder/home/.cache/pip/wheels/f3/65/67/71f473ec87ea4554d1bdfb1b5128cfe1414c2b113b72a1ee8e
+  Building wheel for threadloop (setup.py): started
+  Building wheel for threadloop (setup.py): finished with status 'done'
+  Created wheel for threadloop: filename=threadloop-1.0.2-py3-none-any.whl size=3425 sha256=ffac0dd709ce793e36446c70482c4b296edf32413c220392d56b90222d008232
+  Stored in directory: /builder/home/.cache/pip/wheels/02/54/65/9f87de48fe8fcaaee30f279973d946ad55f9df56b93b3e78da
+  Building wheel for thrift (setup.py): started
+  Building wheel for thrift (setup.py): finished with status 'done'
+  Created wheel for thrift: filename=thrift-0.13.0-cp36-cp36m-linux_x86_64.whl size=483910 sha256=69a3c1d8da0abf6928480ca5bee0a7d0b99789032336a20886d2e091a9657880
+  Stored in directory: /builder/home/.cache/pip/wheels/e0/38/fc/472fe18756b177b42096961f8bd3ff2dc5c5620ac399fce52d
+Successfully built Flask-OpenTracing opentracing jaeger-client PTable threadloop thrift
+Installing collected packages: appdirs, click, toml, typed-ast, pathspec, regex, black, pyflakes, mccabe, pycodestyle, flake8, mypy-extensions, mypy, Pillow, iniconfig, pytest, coverage, pytest-cov, filelock, importlib-resources, distlib, virtualenv, tox, grpcio-tools, mypy-protobuf, tenacity, pandas, PTable, pip-licenses, itsdangerous, Flask, Flask-cors, redis, flatbuffers, opentracing, Flask-OpenTracing, threadloop, thrift, jaeger-client, grpcio-opentracing, gunicorn, seldon-core
+  Attempting uninstall: Pillow
+    Found existing installation: Pillow 7.2.0
+    Uninstalling Pillow-7.2.0:
+      Successfully uninstalled Pillow-7.2.0
+  Attempting uninstall: pytest
+    Found existing installation: pytest 5.3.1
+    Uninstalling pytest-5.3.1:
+      Successfully uninstalled pytest-5.3.1
+  Attempting uninstall: coverage
+    Found existing installation: coverage 4.5.4
+    Uninstalling coverage-4.5.4:
+      Successfully uninstalled coverage-4.5.4
+  Attempting uninstall: pytest-cov
+    Found existing installation: pytest-cov 2.8.1
+    Uninstalling pytest-cov-2.8.1:
+      Successfully uninstalled pytest-cov-2.8.1
+  Attempting uninstall: grpcio-tools
+    Found existing installation: grpcio-tools 1.32.0
+    Uninstalling grpcio-tools-1.32.0:
+      Successfully uninstalled grpcio-tools-1.32.0
+  Attempting uninstall: tenacity
+    Found existing installation: tenacity 6.0.0
+    Uninstalling tenacity-6.0.0:
+      Successfully uninstalled tenacity-6.0.0
+  Attempting uninstall: pandas
+    Found existing installation: pandas 1.1.3
+    Uninstalling pandas-1.1.3:
+      Successfully uninstalled pandas-1.1.3
+  Running setup.py develop for seldon-core
+ERROR: After October 2020 you may experience errors when installing or updating packages. This is because pip will change the way that it resolves dependency conflicts.
+
+We recommend you use --use-feature=2020-resolver to test your packages with the new resolver before it becomes the default.
+
+grpcio-tools 1.33.2 requires grpcio>=1.33.2, but you'll have grpcio 1.32.0 which is incompatible.
+alibi 0.5.2 requires tensorflow>=2.0, but you'll have tensorflow 1.15.4 which is incompatible.
+Successfully installed Flask-1.1.2 Flask-OpenTracing-1.1.0 Flask-cors-3.0.9 PTable-0.9.2 Pillow-8.0.1 appdirs-1.4.4 black-19.10b0 click-7.1.2 coverage-5.3 distlib-0.3.1 filelock-3.0.12 flake8-3.8.1 flatbuffers-1.12 grpcio-opentracing-1.1.4 grpcio-tools-1.33.2 gunicorn-20.0.4 importlib-resources-3.3.0 iniconfig-1.1.1 itsdangerous-1.1.0 jaeger-client-4.3.0 mccabe-0.6.1 mypy-0.790 mypy-extensions-0.4.3 mypy-protobuf-1.22 opentracing-2.3.0 pandas-1.1.0 pathspec-0.8.1 pip-licenses-3.0.0 pycodestyle-2.6.0 pyflakes-2.2.0 pytest-6.1.2 pytest-cov-2.10.1 redis-3.5.3 regex-2020.11.13 seldon-core tenacity-6.2.0 threadloop-1.0.2 thrift-0.13.0 toml-0.10.2 tox-3.20.1 typed-ast-1.4.1 virtualenv-20.1.0
+WARNING: You are using pip version 20.2.3; however, version 20.2.4 is available.
+You should consider upgrading via the '/usr/local/bin/python -m pip install --upgrade pip' command.
+make: Leaving directory '/workspace/source/python'
+cp ../../proto/prediction.proto ./proto
+cd ../../proto/tensorflow && make create_protos
+make[1]: Entering directory '/workspace/source/proto/tensorflow'
+./create-protos.sh
+Downloading proto files for master
+make[1]: Leaving directory '/workspace/source/proto/tensorflow'
+cp -vr ../../proto/tensorflow/tensorflow .
+'../../proto/tensorflow/tensorflow' -> './tensorflow'
+'../../proto/tensorflow/tensorflow/core' -> './tensorflow/core'
+'../../proto/tensorflow/tensorflow/core/framework' -> './tensorflow/core/framework'
+'../../proto/tensorflow/tensorflow/core/framework/types.proto' -> './tensorflow/core/framework/types.proto'
+'../../proto/tensorflow/tensorflow/core/framework/resource_handle.proto' -> './tensorflow/core/framework/resource_handle.proto'
+'../../proto/tensorflow/tensorflow/core/framework/tensor_shape.proto' -> './tensorflow/core/framework/tensor_shape.proto'
+'../../proto/tensorflow/tensorflow/core/framework/tensor.proto' -> './tensorflow/core/framework/tensor.proto'
+python -m grpc.tools.protoc -I. --python_out=. --grpc_python_out=. ./proto/prediction.proto
+cd ../../notebooks && make build_protos
+make[1]: Entering directory '/workspace/source/notebooks'
+cd ../proto/tensorflow && make create_protos
+make[2]: Entering directory '/workspace/source/proto/tensorflow'
+make[2]: Nothing to be done for 'create_protos'.
+make[2]: Leaving directory '/workspace/source/proto/tensorflow'
+cp -vr ../proto/tensorflow/tensorflow .
+'../proto/tensorflow/tensorflow' -> './tensorflow'
+'../proto/tensorflow/tensorflow/core' -> './tensorflow/core'
+'../proto/tensorflow/tensorflow/core/framework' -> './tensorflow/core/framework'
+'../proto/tensorflow/tensorflow/core/framework/types.proto' -> './tensorflow/core/framework/types.proto'
+'../proto/tensorflow/tensorflow/core/framework/resource_handle.proto' -> './tensorflow/core/framework/resource_handle.proto'
+'../proto/tensorflow/tensorflow/core/framework/tensor_shape.proto' -> './tensorflow/core/framework/tensor_shape.proto'
+'../proto/tensorflow/tensorflow/core/framework/tensor.proto' -> './tensorflow/core/framework/tensor.proto'
+cp ../proto/prediction.proto ./proto
+python -m grpc.tools.protoc -I. --python_out=. --grpc_python_out=. ./proto/prediction.proto
+make[1]: Leaving directory '/workspace/source/notebooks'
+cd ../../proto/k8s && make create_protos
+make[1]: Entering directory '/workspace/source/proto/k8s'
+./create-k8s-protos.sh
+Downloading proto files for master
+Munging proto file packages
+sed -i.bak 's|import "k8s.io/apiextensions-apiserver/|//import "k8s.io/apiextensions-apiserver/|' k8s.io/api/core/v1/generated.proto
+rm k8s.io/api/core/v1/generated.proto.bak
+make[1]: Leaving directory '/workspace/source/proto/k8s'
+pip install -r dev_requirements.txt
+Collecting pytest==5.3.1
+  Downloading pytest-5.3.1-py3-none-any.whl (233 kB)
+Requirement already satisfied: pytest-xdist==1.30.0 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 2)) (1.30.0)
+Collecting pytest-cov==2.8.1
+  Downloading pytest_cov-2.8.1-py2.py3-none-any.whl (18 kB)
+Requirement already satisfied: flaky==3.6.1 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 4)) (3.6.1)
+Collecting tenacity==6.0.0
+  Downloading tenacity-6.0.0-py2.py3-none-any.whl (24 kB)
+Requirement already satisfied: sh==1.13.1 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 6)) (1.13.1)
+Requirement already satisfied: ipython==7.13.0 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 9)) (7.13.0)
+Requirement already satisfied: nbconvert==5.6.1 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 10)) (5.6.1)
+Requirement already satisfied: alibi==0.5.2 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 11)) (0.5.2)
+Requirement already satisfied: shap==0.35.0 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 12)) (0.35.0)
+Requirement already satisfied: matplotlib==3.1.3 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 13)) (3.1.3)
+Requirement already satisfied: tensorflow==1.15.4 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 14)) (1.15.4)
+Collecting coverage==4.5.4
+  Downloading coverage-4.5.4-cp36-cp36m-manylinux1_x86_64.whl (205 kB)
+Requirement already satisfied: pluggy<1.0,>=0.12 in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (0.13.1)
+Requirement already satisfied: packaging in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (20.4)
+Requirement already satisfied: attrs>=17.4.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (20.2.0)
+Requirement already satisfied: more-itertools>=4.0.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (8.5.0)
+Requirement already satisfied: wcwidth in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (0.2.5)
+Requirement already satisfied: py>=1.5.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (1.9.0)
+Requirement already satisfied: importlib-metadata>=0.12; python_version < "3.8" in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (2.0.0)
+Requirement already satisfied: six in /usr/local/lib/python3.6/site-packages (from pytest-xdist==1.30.0->-r dev_requirements.txt (line 2)) (1.15.0)
+Requirement already satisfied: execnet>=1.1 in /usr/local/lib/python3.6/site-packages (from pytest-xdist==1.30.0->-r dev_requirements.txt (line 2)) (1.7.1)
+Requirement already satisfied: pytest-forked in /usr/local/lib/python3.6/site-packages (from pytest-xdist==1.30.0->-r dev_requirements.txt (line 2)) (1.3.0)
+Requirement already satisfied: pygments in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (2.7.1)
+Requirement already satisfied: setuptools>=18.5 in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (50.3.0)
+Requirement already satisfied: backcall in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.2.0)
+Requirement already satisfied: decorator in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (4.4.2)
+Requirement already satisfied: prompt-toolkit!=3.0.0,!=3.0.1,<3.1.0,>=2.0.0 in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (3.0.7)
+Requirement already satisfied: traitlets>=4.2 in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (4.3.3)
+Requirement already satisfied: jedi>=0.10 in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.17.2)
+Requirement already satisfied: pexpect; sys_platform != "win32" in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (4.8.0)
+Requirement already satisfied: pickleshare in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.7.5)
+Requirement already satisfied: bleach in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (3.2.1)
+Requirement already satisfied: pandocfilters>=1.4.1 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (1.4.2)
+Requirement already satisfied: mistune<2,>=0.8.1 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.8.4)
+Requirement already satisfied: testpath in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.4.4)
+Requirement already satisfied: nbformat>=4.4 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (5.0.7)
+Requirement already satisfied: entrypoints>=0.2.2 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.3)
+Requirement already satisfied: defusedxml in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.6.0)
+Requirement already satisfied: jinja2>=2.4 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (2.11.2)
+Requirement already satisfied: jupyter-core in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (4.6.3)
+Requirement already satisfied: requests in /usr/local/lib/python3.6/site-packages (from alibi==0.5.2->-r dev_requirements.txt (line 11)) (2.24.0)
+Requirement already satisfied: spacy[lookups] in /usr/local/lib/python3.6/site-packages (from alibi==0.5.2->-r dev_requirements.txt (line 11)) (2.3.2)
+Requirement already satisfied: scipy in /usr/local/lib/python3.6/site-packages (from alibi==0.5.2->-r dev_requirements.txt (line 11)) (1.5.2)
+Requirement already satisfied: prettyprinter in /usr/local/lib/python3.6/site-packages (from alibi==0.5.2->-r dev_requirements.txt (line 11)) (0.18.0)
+Requirement already satisfied: scikit-image!=0.17.1 in /usr/local/lib/python3.6/site-packages (from alibi==0.5.2->-r dev_requirements.txt (line 11)) (0.17.2)
+Requirement already satisfied: numpy in /usr/local/lib/python3.6/site-packages (from alibi==0.5.2->-r dev_requirements.txt (line 11)) (1.19.2)
+Requirement already satisfied: pandas in /usr/local/lib/python3.6/site-packages (from alibi==0.5.2->-r dev_requirements.txt (line 11)) (1.1.0)
+Requirement already satisfied: beautifulsoup4 in /usr/local/lib/python3.6/site-packages (from alibi==0.5.2->-r dev_requirements.txt (line 11)) (4.9.3)
+Requirement already satisfied: typing-extensions>=3.7.2 in /usr/local/lib/python3.6/site-packages (from alibi==0.5.2->-r dev_requirements.txt (line 11)) (3.7.4.3)
+Requirement already satisfied: Pillow in /usr/local/lib/python3.6/site-packages (from alibi==0.5.2->-r dev_requirements.txt (line 11)) (8.0.1)
+Requirement already satisfied: scikit-learn in /usr/local/lib/python3.6/site-packages (from alibi==0.5.2->-r dev_requirements.txt (line 11)) (0.23.2)
+Requirement already satisfied: tqdm>4.25.0 in /usr/local/lib/python3.6/site-packages (from shap==0.35.0->-r dev_requirements.txt (line 12)) (4.50.2)
+Requirement already satisfied: python-dateutil>=2.1 in /usr/local/lib/python3.6/site-packages (from matplotlib==3.1.3->-r dev_requirements.txt (line 13)) (2.8.1)
+Requirement already satisfied: pyparsing!=2.0.4,!=2.1.2,!=2.1.6,>=2.0.1 in /usr/local/lib/python3.6/site-packages (from matplotlib==3.1.3->-r dev_requirements.txt (line 13)) (2.4.7)
+Requirement already satisfied: cycler>=0.10 in /usr/local/lib/python3.6/site-packages (from matplotlib==3.1.3->-r dev_requirements.txt (line 13)) (0.10.0)
+Requirement already satisfied: kiwisolver>=1.0.1 in /usr/local/lib/python3.6/site-packages (from matplotlib==3.1.3->-r dev_requirements.txt (line 13)) (1.2.0)
+Requirement already satisfied: protobuf>=3.6.1 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (3.13.0)
+Requirement already satisfied: keras-applications>=1.0.8 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (1.0.8)
+Requirement already satisfied: tensorboard<1.16.0,>=1.15.0 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (1.15.0)
+Requirement already satisfied: gast==0.2.2 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (0.2.2)
+Requirement already satisfied: wheel>=0.26; python_version >= "3" in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (0.35.1)
+Requirement already satisfied: tensorflow-estimator==1.15.1 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (1.15.1)
+Requirement already satisfied: opt-einsum>=2.3.2 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (3.3.0)
+Requirement already satisfied: termcolor>=1.1.0 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (1.1.0)
+Requirement already satisfied: grpcio>=1.8.6 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (1.32.0)
+Requirement already satisfied: astor>=0.6.0 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (0.8.1)
+Requirement already satisfied: absl-py>=0.7.0 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (0.10.0)
+Requirement already satisfied: wrapt>=1.11.1 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (1.12.1)
+Requirement already satisfied: keras-preprocessing>=1.0.5 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (1.1.2)
+Requirement already satisfied: google-pasta>=0.1.6 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (0.2.0)
+Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.6/site-packages (from importlib-metadata>=0.12; python_version < "3.8"->pytest==5.3.1->-r dev_requirements.txt (line 1)) (3.3.0)
+Requirement already satisfied: apipkg>=1.4 in /usr/local/lib/python3.6/site-packages (from execnet>=1.1->pytest-xdist==1.30.0->-r dev_requirements.txt (line 2)) (1.5)
+Requirement already satisfied: ipython-genutils in /usr/local/lib/python3.6/site-packages (from traitlets>=4.2->ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.2.0)
+Requirement already satisfied: parso<0.8.0,>=0.7.0 in /usr/local/lib/python3.6/site-packages (from jedi>=0.10->ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.7.1)
+Requirement already satisfied: ptyprocess>=0.5 in /usr/local/lib/python3.6/site-packages (from pexpect; sys_platform != "win32"->ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.6.0)
+Requirement already satisfied: webencodings in /usr/local/lib/python3.6/site-packages (from bleach->nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.5.1)
+Requirement already satisfied: jsonschema!=2.5.0,>=2.4 in /usr/local/lib/python3.6/site-packages (from nbformat>=4.4->nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (3.2.0)
+Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from jinja2>=2.4->nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (1.1.1)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.5.2->-r dev_requirements.txt (line 11)) (1.25.10)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.5.2->-r dev_requirements.txt (line 11)) (2020.6.20)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.5.2->-r dev_requirements.txt (line 11)) (3.0.4)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.5.2->-r dev_requirements.txt (line 11)) (2.10)
+Requirement already satisfied: blis<0.5.0,>=0.4.0 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.2->-r dev_requirements.txt (line 11)) (0.4.1)
+Requirement already satisfied: plac<1.2.0,>=0.9.6 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.2->-r dev_requirements.txt (line 11)) (1.1.3)
+Requirement already satisfied: cymem<2.1.0,>=2.0.2 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.2->-r dev_requirements.txt (line 11)) (2.0.3)
+Requirement already satisfied: catalogue<1.1.0,>=0.0.7 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.2->-r dev_requirements.txt (line 11)) (1.0.0)
+Requirement already satisfied: preshed<3.1.0,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.2->-r dev_requirements.txt (line 11)) (3.0.2)
+Requirement already satisfied: thinc==7.4.1 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.2->-r dev_requirements.txt (line 11)) (7.4.1)
+Requirement already satisfied: wasabi<1.1.0,>=0.4.0 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.2->-r dev_requirements.txt (line 11)) (0.8.0)
+Requirement already satisfied: murmurhash<1.1.0,>=0.28.0 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.2->-r dev_requirements.txt (line 11)) (1.0.2)
+Requirement already satisfied: srsly<1.1.0,>=1.0.2 in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.2->-r dev_requirements.txt (line 11)) (1.0.2)
+Requirement already satisfied: spacy-lookups-data<0.4.0,>=0.3.2; extra == "lookups" in /usr/local/lib/python3.6/site-packages (from spacy[lookups]->alibi==0.5.2->-r dev_requirements.txt (line 11)) (0.3.2)
+Requirement already satisfied: colorful>=0.4.0 in /usr/local/lib/python3.6/site-packages (from prettyprinter->alibi==0.5.2->-r dev_requirements.txt (line 11)) (0.5.4)
+Requirement already satisfied: networkx>=2.0 in /usr/local/lib/python3.6/site-packages (from scikit-image!=0.17.1->alibi==0.5.2->-r dev_requirements.txt (line 11)) (2.5)
+Requirement already satisfied: PyWavelets>=1.1.1 in /usr/local/lib/python3.6/site-packages (from scikit-image!=0.17.1->alibi==0.5.2->-r dev_requirements.txt (line 11)) (1.1.1)
+Requirement already satisfied: tifffile>=2019.7.26 in /usr/local/lib/python3.6/site-packages (from scikit-image!=0.17.1->alibi==0.5.2->-r dev_requirements.txt (line 11)) (2020.9.3)
+Requirement already satisfied: imageio>=2.3.0 in /usr/local/lib/python3.6/site-packages (from scikit-image!=0.17.1->alibi==0.5.2->-r dev_requirements.txt (line 11)) (2.9.0)
+Requirement already satisfied: pytz>=2017.2 in /usr/local/lib/python3.6/site-packages (from pandas->alibi==0.5.2->-r dev_requirements.txt (line 11)) (2020.1)
+Requirement already satisfied: soupsieve>1.2; python_version >= "3.0" in /usr/local/lib/python3.6/site-packages (from beautifulsoup4->alibi==0.5.2->-r dev_requirements.txt (line 11)) (2.0.1)
+Requirement already satisfied: threadpoolctl>=2.0.0 in /usr/local/lib/python3.6/site-packages (from scikit-learn->alibi==0.5.2->-r dev_requirements.txt (line 11)) (2.1.0)
+Requirement already satisfied: joblib>=0.11 in /usr/local/lib/python3.6/site-packages (from scikit-learn->alibi==0.5.2->-r dev_requirements.txt (line 11)) (0.17.0)
+Requirement already satisfied: h5py in /usr/local/lib/python3.6/site-packages (from keras-applications>=1.0.8->tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (2.10.0)
+Requirement already satisfied: werkzeug>=0.11.15 in /usr/local/lib/python3.6/site-packages (from tensorboard<1.16.0,>=1.15.0->tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (1.0.1)
+Requirement already satisfied: markdown>=2.6.8 in /usr/local/lib/python3.6/site-packages (from tensorboard<1.16.0,>=1.15.0->tensorflow==1.15.4->-r dev_requirements.txt (line 14)) (3.3)
+Requirement already satisfied: pyrsistent>=0.14.0 in /usr/local/lib/python3.6/site-packages (from jsonschema!=2.5.0,>=2.4->nbformat>=4.4->nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.17.3)
+Installing collected packages: pytest, coverage, pytest-cov, tenacity
+  Attempting uninstall: pytest
+    Found existing installation: pytest 6.1.2
+    Uninstalling pytest-6.1.2:
+      Successfully uninstalled pytest-6.1.2
+  Attempting uninstall: coverage
+    Found existing installation: coverage 5.3
+    Uninstalling coverage-5.3:
+      Successfully uninstalled coverage-5.3
+  Attempting uninstall: pytest-cov
+    Found existing installation: pytest-cov 2.10.1
+    Uninstalling pytest-cov-2.10.1:
+      Successfully uninstalled pytest-cov-2.10.1
+  Attempting uninstall: tenacity
+    Found existing installation: tenacity 6.2.0
+    Uninstalling tenacity-6.2.0:
+      Successfully uninstalled tenacity-6.2.0
+Successfully installed coverage-4.5.4 pytest-5.3.1 pytest-cov-2.8.1 tenacity-6.0.0
+WARNING: You are using pip version 20.2.3; however, version 20.2.4 is available.
+You should consider upgrading via the '/usr/local/bin/python -m pip install --upgrade pip' command.
+pip install -e ../../python
+Obtaining file:///workspace/source/python
+Requirement already satisfied: Flask<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.5.0.dev0) (1.1.2)
+Requirement already satisfied: jsonschema<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.5.0.dev0) (3.2.0)
+Requirement already satisfied: Flask-cors<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.5.0.dev0) (3.0.9)
+Requirement already satisfied: redis<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.5.0.dev0) (3.5.3)
+Requirement already satisfied: requests<3.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.5.0.dev0) (2.24.0)
+Requirement already satisfied: numpy<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.5.0.dev0) (1.19.2)
+Requirement already satisfied: flatbuffers<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.5.0.dev0) (1.12)
+Requirement already satisfied: protobuf<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.5.0.dev0) (3.13.0)
+Requirement already satisfied: grpcio<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.5.0.dev0) (1.32.0)
+Requirement already satisfied: Flask-OpenTracing<1.2.0,>=1.1.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.5.0.dev0) (1.1.0)
+Requirement already satisfied: opentracing<2.4.0,>=2.2.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.5.0.dev0) (2.3.0)
+Requirement already satisfied: jaeger-client<4.4.0,>=4.1.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.5.0.dev0) (4.3.0)
+Requirement already satisfied: grpcio-opentracing<1.2.0,>=1.1.4 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.5.0.dev0) (1.1.4)
+Requirement already satisfied: PyYAML<5.4 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.5.0.dev0) (5.3.1)
+Requirement already satisfied: gunicorn<20.1.0,>=19.9.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.5.0.dev0) (20.0.4)
+Requirement already satisfied: setuptools>=41.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.5.0.dev0) (50.3.0)
+Requirement already satisfied: prometheus_client<0.9.0,>=0.7.1 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.5.0.dev0) (0.8.0)
+Requirement already satisfied: click>=5.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.5.0.dev0) (7.1.2)
+Requirement already satisfied: Jinja2>=2.10.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.5.0.dev0) (2.11.2)
+Requirement already satisfied: Werkzeug>=0.15 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.5.0.dev0) (1.0.1)
+Requirement already satisfied: itsdangerous>=0.24 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.5.0.dev0) (1.1.0)
+Requirement already satisfied: pyrsistent>=0.14.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->seldon-core==1.5.0.dev0) (0.17.3)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->seldon-core==1.5.0.dev0) (2.0.0)
+Requirement already satisfied: six>=1.11.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->seldon-core==1.5.0.dev0) (1.15.0)
+Requirement already satisfied: attrs>=17.4.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->seldon-core==1.5.0.dev0) (20.2.0)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.5.0.dev0) (3.0.4)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.5.0.dev0) (2020.6.20)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.5.0.dev0) (1.25.10)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.5.0.dev0) (2.10)
+Requirement already satisfied: thrift in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core==1.5.0.dev0) (0.13.0)
+Requirement already satisfied: threadloop<2,>=1 in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core==1.5.0.dev0) (1.0.2)
+Requirement already satisfied: tornado>=4.3 in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core==1.5.0.dev0) (6.0.4)
+Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from Jinja2>=2.10.1->Flask<2.0.0->seldon-core==1.5.0.dev0) (1.1.1)
+Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.6/site-packages (from importlib-metadata; python_version < "3.8"->jsonschema<4.0.0->seldon-core==1.5.0.dev0) (3.3.0)
+Installing collected packages: seldon-core
+  Attempting uninstall: seldon-core
+    Found existing installation: seldon-core 1.5.0.dev0
+    Uninstalling seldon-core-1.5.0.dev0:
+      Successfully uninstalled seldon-core-1.5.0.dev0
+  Running setup.py develop for seldon-core
+Successfully installed seldon-core
+WARNING: You are using pip version 20.2.3; however, version 20.2.4 is available.
+You should consider upgrading via the '/usr/local/bin/python -m pip install --upgrade pip' command.
+pytest \
+	--verbose \
+	-s \
+	-W ignore \
+	-n "4" \
+	-m "not sequential and not notebooks" 2>&1
+============================= test session starts ==============================
+platform linux -- Python 3.6.10, pytest-5.3.1, py-1.9.0, pluggy-0.13.1 -- /usr/local/bin/python
+cachedir: .pytest_cache
+rootdir: /workspace/source/testing/scripts, inifile: setup.cfg
+plugins: cov-2.8.1, xdist-1.30.0, forked-1.3.0, flaky-3.6.1
+gw0 I / gw1 I / gw2 I / gw3 I
+[gw0] linux Python 3.6.10 cwd: /workspace/source/testing/scripts
+[gw1] linux Python 3.6.10 cwd: /workspace/source/testing/scripts
+[gw2] linux Python 3.6.10 cwd: /workspace/source/testing/scripts
+[gw3] linux Python 3.6.10 cwd: /workspace/source/testing/scripts
+[gw0] Python 3.6.10 (default, Oct  9 2020, 10:16:39)  -- [GCC 8.3.0]
+[gw2] Python 3.6.10 (default, Oct  9 2020, 10:16:39)  -- [GCC 8.3.0]
+[gw3] Python 3.6.10 (default, Oct  9 2020, 10:16:39)  -- [GCC 8.3.0]
+[gw1] Python 3.6.10 (default, Oct  9 2020, 10:16:39)  -- [GCC 8.3.0]
+gw0 [35] / gw1 [35] / gw2 [35] / gw3 [35]
+
+scheduling tests via LoadScheduling
+
+test_bad_graphs.py::TestBadGraphs::test_duplicate_predictor_name 
+test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha2] 
+test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha3] 
+test_api_version.py::test_api_version[machinelearning.seldon.io/v1] Error from server (SeldonDeployment.machinelearing.seldon.io "dupname" is invalid: [spec.predictors[1]: Invalid value: "mymodel": Duplicate predictor name, spec: Invalid value: "mymodel": Traffic must sum to 100 for multiple predictors]): error when creating "../resources/bad_duplicate_predictor_name.json": admission webhook "v1alpha2.vseldondeployment.kb.io" denied the request: SeldonDeployment.machinelearing.seldon.io "dupname" is invalid: [spec.predictors[1]: Invalid value: "mymodel": Duplicate predictor name, spec: Invalid value: "mymodel": Traffic must sum to 100 for multiple predictors]
+
+[gw1] PASSED test_bad_graphs.py::TestBadGraphs::test_duplicate_predictor_name 
+test_helm_charts_clusterwide.py::TestClusterWide::test_single_model Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw0] PASSED test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha2] Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw2] PASSED test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha3] Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw1] PASSED test_helm_charts_clusterwide.py::TestClusterWide::test_single_model Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw3] PASSED test_api_version.py::test_api_version[machinelearning.seldon.io/v1] 
+test_bad_graphs.py::TestBadGraphs::test_model_name_mismatch Error from server (SeldonDeployment.machinelearing.seldon.io "namemismatch" is invalid: spec.predictors[0].graph: Invalid value: "complex-model_bad_name": Can't find container for Predictive Unit): error when creating "../resources/bad_name_mismatch.json": admission webhook "v1alpha2.vseldondeployment.kb.io" denied the request: SeldonDeployment.machinelearing.seldon.io "namemismatch" is invalid: spec.predictors[0].graph: Invalid value: "complex-model_bad_name": Can't find container for Predictive Unit
+
+[gw0] PASSED test_bad_graphs.py::TestBadGraphs::test_model_name_mismatch 
+test_local_operators.py::TestLocalOperators::test_namespace_operator 
+test_helm_charts_clusterwide.py::TestClusterWide::test_abtest_model 
+test_batch_processor.py::TestBatchWorker::test_batch_worker 
+test_bad_graphs.py::TestBadGraphs::test_model_no_graph Error from server (SeldonDeployment.machinelearing.seldon.io "test-deployment" is invalid: spec.predictors[0].graph: Invalid value: "": Can't find container for Predictive Unit): error when creating "../resources/bad_no_graph.yaml": admission webhook "v1.vseldondeployment.kb.io" denied the request: SeldonDeployment.machinelearing.seldon.io "test-deployment" is invalid: spec.predictors[0].graph: Invalid value: "": Can't find container for Predictive Unit
+
+[gw2] PASSED test_bad_graphs.py::TestBadGraphs::test_model_no_graph 
+test_prepackaged_servers.py::TestPrepack::test_sklearn_v2 
+[gw0] PASSED test_local_operators.py::TestLocalOperators::test_namespace_operator 
+test_local_operators.py::TestLocalOperators::test_labelled_operator Error: uninstall: Release not loaded: myabtest: release: not found
+
+[gw1] PASSED test_helm_charts_clusterwide.py::TestClusterWide::test_abtest_model Error from server (InternalError): error when creating "../resources/model_controller_id.yaml": Internal error occurred: failed calling webhook "v1alpha2.mseldondeployment.kb.io": Post https://seldon-webhook-service.test-labelled-operator.svc:443/mutate-machinelearning-seldon-io-v1alpha2-seldondeployment?timeout=30s: dial tcp 10.101.27.231:443: connect: connection refused
+
+test_helm_charts_clusterwide.py::TestClusterWide::test_mab_model 
+[gw2] PASSED test_prepackaged_servers.py::TestPrepack::test_sklearn_v2 
+[gw0] PASSED test_local_operators.py::TestLocalOperators::test_labelled_operator 
+test_prepackaged_servers.py::TestPrepack::test_tfserving 
+test_prepackaged_servers.py::TestPrepack::test_xgboost 
+[gw3] PASSED test_batch_processor.py::TestBatchWorker::test_batch_worker Error: uninstall: Release not loaded: mymab: release: not found
+
+[gw1] PASSED test_helm_charts_clusterwide.py::TestClusterWide::test_mab_model 
+test_prepackaged_servers.py::TestPrepack::test_sklearn 
+test_prepackaged_servers.py::TestPrepack::test_xgboost_v2 
+[gw0] PASSED test_prepackaged_servers.py::TestPrepack::test_xgboost 
+[gw3] PASSED test_prepackaged_servers.py::TestPrepack::test_sklearn 
+[gw1] PASSED test_prepackaged_servers.py::TestPrepack::test_xgboost_v2 
+test_prepackaged_servers.py::TestPrepack::test_text_alibi_explainer 
+test_prepackaged_servers.py::TestPrepack::test_openapi_sklearn 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph2.json-True-ambas] 
+[gw3] PASSED test_prepackaged_servers.py::TestPrepack::test_openapi_sklearn 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph3.json-True-ambas] 
+[gw1] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph2.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph3.json-True-istio] 
+[gw3] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph3.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph4.json-True-ambas] 
+[gw1] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph3.json-True-istio] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph4.json-True-istio] 
+[gw0] PASSED test_prepackaged_servers.py::TestPrepack::test_text_alibi_explainer 
+[gw3] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph4.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph5.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph2.json-True-istio] 
+[gw1] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph4.json-True-istio] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph5.json-True-istio] 
+[gw0] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph2.json-True-istio] 
+[gw3] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph5.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph8.json-True-istio] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph8.json-True-ambas] 
+[gw1] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph5.json-True-istio] 
+test_rolling_updates.py::test_rolling_deployment[graph7.json-graph8.json-False-ambas] 
+[gw0] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph8.json-True-istio] 
+[gw1] PASSED test_rolling_updates.py::test_rolling_deployment[graph7.json-graph8.json-False-ambas] 
+test_security.py::test_xss_header 
+test_rolling_updates.py::test_rolling_deployment[graph7.json-graph8.json-False-istio] 
+[gw3] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph8.json-True-ambas] 
+test_security.py::test_xss_escaping 
+[gw1] PASSED test_security.py::test_xss_header 
+[gw0] PASSED test_rolling_updates.py::test_rolling_deployment[graph7.json-graph8.json-False-istio] 
+test_tracing.py::test_tracing_rest 
+[gw3] PASSED test_security.py::test_xss_escaping 
+[gw1] PASSED test_tracing.py::test_tracing_rest error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+error: deployment "tfserving-default-0-mnist-model" exceeded its progress deadline
+
+[gw2] FAILED test_prepackaged_servers.py::TestPrepack::test_tfserving 
+test_prepackaged_servers.py::TestPrepack::test_mlflow error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+error: deployment "mlflow-default-0-classifier" exceeded its progress deadline
+
+[gw2] FAILED test_prepackaged_servers.py::TestPrepack::test_mlflow 
+
+=================================== FAILURES ===================================
+__________________________ TestPrepack.test_tfserving __________________________
+[gw2] linux -- Python 3.6.10 /usr/local/bin/python
+
+self = <test_prepackaged_servers.TestPrepack object at 0x7fe801877ef0>
+namespace = 'test-tfserving'
+
+    def test_tfserving(self, namespace):
+        spec = "../../servers/tfserving/samples/mnist_rest.yaml"
+        retry_run(f"kubectl apply -f {spec}  -n {namespace}")
+        wait_for_status("tfserving", namespace)
+>       wait_for_rollout("tfserving", namespace)
+
+test_prepackaged_servers.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+sdep_name = 'tfserving', namespace = 'test-tfserving', attempts = 50, sleep = 5
+expected_deployments = 1
+
+    def wait_for_rollout(
+        sdep_name, namespace, attempts=50, sleep=5, expected_deployments=1
+    ):
+        deployment_names = []
+        for _ in range(attempts):
+            deployment_names = get_deployment_names(sdep_name, namespace)
+            deployments = len(deployment_names)
+    
+            if deployments == expected_deployments:
+                break
+            time.sleep(sleep)
+    
+        error_msg = (
+            f"Expected {expected_deployments} deployment(s) but got {len(deployment_names)}"
+        )
+        assert len(deployment_names) == expected_deployments, error_msg
+    
+        for deployment_name in deployment_names:
+            logging.info(f"Waiting for deployment {deployment_name}")
+            for _ in range(attempts):
+                ret = run(
+                    f"kubectl rollout status -n {namespace} deploy/{deployment_name}",
+                    shell=True,
+                )
+                if ret.returncode == 0:
+                    logging.info(f"Successfully waited for deployment {deployment_name}")
+                    break
+                logging.warning(
+                    f"Unsuccessful wait command but retrying for {deployment_name}"
+                )
+                time.sleep(sleep)
+            assert (
+                ret.returncode == 0
+>           ), f"Wait for rollout of {deployment_name} failed: non-zero return code"
+E           AssertionError: Wait for rollout of tfserving-default-0-mnist-model failed: non-zero return code
+
+seldon_e2e_utils.py:158: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for tfserving-default-0-mnist-model
+___________________________ TestPrepack.test_mlflow ____________________________
+[gw2] linux -- Python 3.6.10 /usr/local/bin/python
+
+self = <test_prepackaged_servers.TestPrepack object at 0x7fe84fdd6630>
+namespace = 'test-mlflow'
+
+    @skipif_engine
+    def test_mlflow(self, namespace):
+        spec = "../../servers/mlflowserver/samples/elasticnet_wine.yaml"
+        retry_run(f"kubectl apply -f {spec} -n {namespace}")
+        wait_for_status("mlflow", namespace)
+>       wait_for_rollout("mlflow", namespace)
+
+test_prepackaged_servers.py:177: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+sdep_name = 'mlflow', namespace = 'test-mlflow', attempts = 50, sleep = 5
+expected_deployments = 1
+
+    def wait_for_rollout(
+        sdep_name, namespace, attempts=50, sleep=5, expected_deployments=1
+    ):
+        deployment_names = []
+        for _ in range(attempts):
+            deployment_names = get_deployment_names(sdep_name, namespace)
+            deployments = len(deployment_names)
+    
+            if deployments == expected_deployments:
+                break
+            time.sleep(sleep)
+    
+        error_msg = (
+            f"Expected {expected_deployments} deployment(s) but got {len(deployment_names)}"
+        )
+        assert len(deployment_names) == expected_deployments, error_msg
+    
+        for deployment_name in deployment_names:
+            logging.info(f"Waiting for deployment {deployment_name}")
+            for _ in range(attempts):
+                ret = run(
+                    f"kubectl rollout status -n {namespace} deploy/{deployment_name}",
+                    shell=True,
+                )
+                if ret.returncode == 0:
+                    logging.info(f"Successfully waited for deployment {deployment_name}")
+                    break
+                logging.warning(
+                    f"Unsuccessful wait command but retrying for {deployment_name}"
+                )
+                time.sleep(sleep)
+            assert (
+                ret.returncode == 0
+>           ), f"Wait for rollout of {deployment_name} failed: non-zero return code"
+E           AssertionError: Wait for rollout of mlflow-default-0-classifier failed: non-zero return code
+
+seldon_e2e_utils.py:158: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:186 Failed to find status - sleeping
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+WARNING  root:seldon_e2e_utils.py:153 Unsuccessful wait command but retrying for mlflow-default-0-classifier
+===Flaky Test Report===
+
+test_rolling_deployment[graph1.json-graph2.json-True-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph8.json-True-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph7.json-graph8.json-False-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph3.json-True-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph4.json-True-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph5.json-True-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph8.json-True-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph2.json-True-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph3.json-True-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph4.json-True-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph5.json-True-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph7.json-graph8.json-False-ambas] passed 1 out of the required 1 times. Success!
+
+===End Flaky Test Report===
+================== 2 failed, 33 passed in 1951.41s (0:32:31) ===================
+make: *** [Makefile:160: test_parallel] Error 1
+Test returned errors
+kind delete cluster
+Deleting cluster "kind" ...
+Stopping Docker: dockerProgram process in pidfile '/var/run/docker-ssd.pid', 1 process(es), refused to die.
+[31m
+Pipeline failed on stage 'end-to-end' : container 'step-test-end-to-end'. The execution of the pipeline has stopped.[0m
