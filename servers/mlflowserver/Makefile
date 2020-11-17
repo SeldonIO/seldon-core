@@ -12,7 +12,7 @@ build:
 		${IMAGE_NAME}:${VERSION}
 
 push:
-	docker push ${IMAGE_NAME}_$*:${VERSION}
+	docker push ${IMAGE_NAME}:${VERSION}
 
 kind_load: build
 	kind load -v 3 docker-image ${IMAGE_NAME}:${VERSION} --name ${KIND_NAME}
