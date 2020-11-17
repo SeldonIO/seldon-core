@@ -17,10 +17,8 @@ public:
 
     virtual ~SeldonModel() { }
 
-    // TODO: Return without copy
     virtual ProtoMessage predict(ProtoMessage &data) = 0;
 
-    // TODO: Return without copy
     virtual py::bytes predictRaw(py::bytes &data) {
 
         py::buffer_info info(py::buffer(data).request());
