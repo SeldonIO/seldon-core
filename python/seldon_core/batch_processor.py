@@ -359,10 +359,11 @@ def _send_batch_feedback(
                 assert seldon_payload.success
 
                 # Update Tags so we can track feedback intances in output file
-                tags = seldon_payload.response["meta"].get("tags", {})
+                tags = seldon_payload.response.get("meta", {}).get("tags", {})
                 tags.update(meta["tags"])
+                if "meta" not in seldon_payload.response:
+                    seldon_payload.response["meta"] = {}
                 seldon_payload.response["meta"]["tags"] = tags
-
                 str_output = json.dumps(seldon_payload.response)
                 break
             except (requests.exceptions.RequestException, AssertionError) as e:
