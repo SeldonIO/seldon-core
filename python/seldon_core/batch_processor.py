@@ -275,9 +275,7 @@ def _send_batch_predict(
     predict_kwargs["headers"] = {"Seldon-Puid": batch_instance_id}
     try:
         data = json.loads(input_raw)
-        # TODO: Add functionality to send "raw" payload
         if data_type == "data":
-            # TODO: Update client to avoid requiring a numpy array
             data_np = np.array(data)
             predict_kwargs["data"] = data_np
         elif data_type == "str":
@@ -288,9 +286,6 @@ def _send_batch_predict(
         str_output = None
         for i in range(retries):
             try:
-                # TODO: Add functionality for explainer
-                #   as explainer currently doesn't support meta
-                # TODO: Optimize client to share session for requests
                 seldon_payload = sc.predict(**predict_kwargs)
                 assert seldon_payload.success
                 str_output = json.dumps(seldon_payload.response)
@@ -352,9 +347,7 @@ def _send_batch_feedback(
             "batch_index": batch_idx,
         }
     }
-    # Feedback Protos does not support meta and SeldonClient.feedback does not support headers
-    # feedback_kwargs["meta"] = meta
-    # feedback_kwargs["headers"] = {"Seldon-Puid": batch_instance_id}
+    # Feedback Protos does not support meta - defined to include in file output only.
     try:
         data = json.loads(input_raw)
         feedback_kwargs["raw_request"] = data
@@ -362,9 +355,6 @@ def _send_batch_feedback(
         str_output = None
         for i in range(retries):
             try:
-                # TODO: Add functionality for explainer
-                #   as explainer currently doesn't support meta
-                # TODO: Optimize client to share session for requests
                 seldon_payload = sc.feedback(**feedback_kwargs)
                 assert seldon_payload.success
 
