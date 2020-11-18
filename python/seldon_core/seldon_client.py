@@ -3,6 +3,7 @@ from seldon_core.proto import prediction_pb2_grpc
 from seldon_core.utils import (
     array_to_grpc_datadef,
     seldon_message_to_json,
+    json_to_feedback,
     json_to_seldon_message,
     feedback_to_json,
     seldon_messages_to_json,
@@ -403,6 +404,7 @@ class SeldonClient(object):
         self,
         prediction_request: prediction_pb2.SeldonMessage = None,
         prediction_response: prediction_pb2.SeldonMessage = None,
+        prediction_truth: prediction_pb2.SeldonMessage = None,
         reward: float = 0,
         gateway: str = None,
         transport: str = None,
@@ -419,6 +421,7 @@ class SeldonClient(object):
         namespace: str = None,
         gateway_prefix: str = None,
         client_return_type: str = None,
+        raw_request: dict = None,
     ) -> SeldonClientFeedback:
         """
 
@@ -483,16 +486,25 @@ class SeldonClient(object):
             namespace=namespace,
             gateway_prefix=gateway_prefix,
             client_return_type=client_return_type,
+            raw_request=raw_request,
         )
         self._validate_args(**k)
         if k["gateway"] == "ambassador" or k["gateway"] == "istio":
             if k["transport"] == "rest":
                 return rest_feedback_gateway(
-                    prediction_request, prediction_response, reward, **k
+                    prediction_request,
+                    prediction_response,
+                    prediction_truth,
+                    reward,
+                    **k,
                 )
             elif k["transport"] == "grpc":
                 return grpc_feedback_gateway(
-                    prediction_request, prediction_response, reward, **k
+                    prediction_request,
+                    prediction_response,
+                    prediction_truth,
+                    reward,
+                    **k,
                 )
             else:
                 raise SeldonClientException("Unknown transport " + k["transport"])
@@ -2148,6 +2160,7 @@ def grpc_feedback_seldon_oauth(
 def rest_feedback_gateway(
     prediction_request: prediction_pb2.SeldonMessage = None,
     prediction_response: prediction_pb2.SeldonMessage = None,
+    prediction_truth: prediction_pb2.SeldonMessage = None,
     reward: float = 0,
     deployment_name: str = "",
     namespace: str = None,
@@ -2155,6 +2168,7 @@ def rest_feedback_gateway(
     headers: Dict = None,
     gateway_prefix: str = None,
     client_return_type: str = "proto",
+    raw_request: dict = None,
     **kwargs,
 ) -> SeldonClientFeedback:
     """
@@ -2187,10 +2201,17 @@ def rest_feedback_gateway(
       A Seldon Feedback Response
 
     """
-    request = prediction_pb2.Feedback(
-        request=prediction_request, response=prediction_response, reward=reward
-    )
-    payload = feedback_to_json(request)
+    if raw_request:
+        request = json_to_feedback(raw_request)
+        payload = raw_request
+    else:
+        request = prediction_pb2.Feedback(
+            request=prediction_request,
+            response=prediction_response,
+            reward=reward,
+            truth=prediction_truth,
+        )
+        payload = feedback_to_json(request)
     if gateway_prefix is None:
         if namespace is None:
             response_raw = requests.post(
@@ -2248,6 +2269,7 @@ def rest_feedback_gateway(
 def grpc_feedback_gateway(
     prediction_request: prediction_pb2.SeldonMessage = None,
     prediction_response: prediction_pb2.SeldonMessage = None,
+    prediction_truth: prediction_pb2.SeldonMessage = None,
     reward: float = 0,
     deployment_name: str = "",
     namespace: str = None,
@@ -2256,6 +2278,7 @@ def grpc_feedback_gateway(
     grpc_max_send_message_length: int = 4 * 1024 * 1024,
     grpc_max_receive_message_length: int = 4 * 1024 * 1024,
     client_return_type: str = "proto",
+    raw_request: dict = None,
     **kwargs,
 ) -> SeldonClientFeedback:
     """
@@ -2288,9 +2311,17 @@ def grpc_feedback_gateway(
     -------
 
     """
-    request = prediction_pb2.Feedback(
-        request=prediction_request, response=prediction_response, reward=reward
-    )
+    if isinstance(raw_request, prediction_pb2.Feedback):
+        request = raw_request
+    elif raw_request:
+        request = json_to_feedback(raw_request)
+    else:
+        request = prediction_pb2.Feedback(
+            request=prediction_request,
+            response=prediction_response,
+            reward=reward,
+            truth=prediction_truth,
+        )
     channel = grpc.insecure_channel(
         gateway_endpoint,
         options=[
