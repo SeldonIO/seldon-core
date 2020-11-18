@@ -113,7 +113,7 @@ def start_multithreaded_batch_worker(
     t_out.join()
 
     if benchmark:
-        logging.info(f"Elapsed time: {time.time() - start_time}")
+        logger.info(f"Elapsed time: {time.time() - start_time}")
 
 
 def _start_input_file_worker(q_in: Queue, input_data_path: str) -> None:
@@ -164,8 +164,8 @@ def _start_output_file_worker(
 
             counter += 1
             if counter % 100 == 0:
-                logging.info(f"Processed instances: {counter}")
-    logging.info(f"Total processed instances: {counter}")
+                logger.info(f"Processed instances: {counter}")
+    logger.info(f"Total processed instances: {counter}")
 
 
 def _start_request_worker(
@@ -291,7 +291,7 @@ def _send_batch_predict(
                 str_output = json.dumps(seldon_payload.response)
                 break
             except (requests.exceptions.RequestException, AssertionError) as e:
-                # print("Exception:", e, "retries:", retries)
+                logger.error("Exception:", e, "retries:", retries)
                 if i == (retries - 1):
                     raise
 
@@ -366,7 +366,7 @@ def _send_batch_feedback(
                 str_output = json.dumps(seldon_payload.response)
                 break
             except (requests.exceptions.RequestException, AssertionError) as e:
-                print("Exception:", e, "retries:", retries)
+                logger.error("Exception:", e, "retries:", retries)
                 if i == (retries - 1):
                     raise
 
