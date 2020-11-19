@@ -187,12 +187,7 @@ class SeldonMetrics:
             exposition.CONTENT_TYPE_LATEST,
         )
 
-    @staticmethod
-    def _generate_tags_key(tags):
-        return "_".join(["-".join(i) for i in tags.items()])
-
-    @staticmethod
-    def _merge_labels(worker, tags):
+    def _merge_labels(self, worker, tags):
         labels = {
             **tags,
             **DEFAULT_LABELS,
@@ -200,6 +195,10 @@ class SeldonMetrics:
             "worker_id": str(worker),
         }
         return list(labels.keys()), list(labels.values())
+
+    @staticmethod
+    def _generate_tags_key(tags):
+        return "_".join(["-".join(i) for i in tags.items()])
 
     @staticmethod
     def _update_hist(x, vals, sumv):
