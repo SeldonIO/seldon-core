@@ -115,7 +115,7 @@ function build_push_xgboostserver {
 
 function build_push_tfproxy {
     make \
-	-C integrations/tfserving_proxy \
+	-C servers/tfserving_proxy \
         build \
 	push 
     TFPROXY_EXIT_VALUE=$?

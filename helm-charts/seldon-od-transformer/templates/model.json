@@ -17,10 +17,6 @@
     },
     "spec": {
         "name": "{{ .Release.Name }}",
-{{- if .Values.oauth.key }}        
-        "oauth_key": "{{ .Values.oauth.key }}",
-        "oauth_secret": "{{ .Values.oauth.secret }}",
-{{- end }}
         "predictors": [
             {
                 "componentSpecs": [{

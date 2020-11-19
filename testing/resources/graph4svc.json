@@ -1,49 +1,49 @@
 {
-    "apiVersion": "machinelearning.seldon.io/v1alpha2",
-    "kind": "SeldonDeployment",
-    "metadata": {
-        "labels": {
-            "app": "seldon"
-        },
-        "name": "mymodel"
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": {
+    "labels": {
+      "app": "seldon"
     },
-    "spec": {
-        "annotations": {
-	    "seldon.io/engine-separate-pod": "true"
-        },	
-        "name": "mymodel",
-        "oauth_key": "oauth-key",
-        "oauth_secret": "oauth-secret",
-        "predictors": [
-            {
-                "componentSpecs": [{
-                    "spec": {
-                        "containers": [
-                            {
-                                "image": "seldonio/fixed-model:0.1",
-                                "imagePullPolicy": "IfNotPresent",
-                                "name": "complex-model",
-                                "resources": {
-                                    "requests": {
-                                        "memory": "2Mi"
-                                    }
-                                }
-                            }
-                        ],
-                        "terminationGracePeriodSeconds": 1
+    "name": "mymodel"
+  },
+  "spec": {
+    "annotations": {
+      "seldon.io/engine-separate-pod": "true"
+    },
+    "name": "mymodel",
+    "predictors": [
+      {
+        "componentSpecs": [
+          {
+            "spec": {
+              "containers": [
+                {
+                  "image": "seldonio/fixed-model:0.1",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "complex-model",
+                  "resources": {
+                    "requests": {
+                      "memory": "2Mi"
                     }
-                }],
-                "graph": {
-                    "children": [],
-                    "name": "complex-model",
-                    "endpoint": {
-                        "type" : "REST"
-                    },
-		    "type": "MODEL"
-                },
-                "name": "mymodel",
-                "replicas": 1
+                  }
+                }
+              ],
+              "terminationGracePeriodSeconds": 1
             }
-        ]
-    }
+          }
+        ],
+        "graph": {
+          "children": [],
+          "name": "complex-model",
+          "endpoint": {
+            "type": "REST"
+          },
+          "type": "MODEL"
+        },
+        "name": "mymodel",
+        "replicas": 1
+      }
+    ]
+  }
 }

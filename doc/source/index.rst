@@ -15,12 +15,10 @@ Seldon Core
    Model Engine Java Opts <graph/model_engine_java_opts>
    Model REST gRPC Settings <graph/model_rest_grpc_settings>
    Model svcOrch Sep <graph/model_svcorch_sep>
-   Seldon <ingress/seldon>
    APIs Reference <reference/apis/readme>
    Engine Reference <reference/engine>
    Integration NVIDIA Link <reference/integration_nvidia_link>
    Integration Sagemaker Link <reference/integration_sagemaker_link>
-   Integration TFServing Link <reference/integration_tfserving_link>
    Quickstart <workflow/quickstart>
    S2I <wrappers/s2i>
    Ambassador Circuit Breakers <examples/ambassador_circuit_breakers>
@@ -125,6 +123,7 @@ Documentation Index
 
    Java Language Wrapper <java/README.md>
    Java (JNI) Language Wrapper [ALPHA] <java-jni/README.md>
+   C++ Language Wrapper [ALPHA] <cpp/README.md>
    R Language Wrapper [ALPHA] <R/README.md>
    NodeJS Language Wrapper [ALPHA] <nodejs/README.md>
    Go Language Wrapper [ALPHA] <go/go_wrapper_link.rst>

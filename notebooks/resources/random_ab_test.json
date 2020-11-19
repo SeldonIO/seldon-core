@@ -1,95 +1,93 @@
 {
-    "apiVersion": "machinelearning.seldon.io/v1alpha2",
-    "kind": "SeldonDeployment",
-    "metadata": {
-	"labels": {
-	    "app": "seldon"
-	},
-	"name": "seldon-deployment"
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": {
+    "labels": {
+      "app": "seldon"
     },
-    "spec": {
-	"name": "test-deployment-abtest",
-	"oauth_key": "oauth-key",
-	"oauth_secret": "oauth-secret",
-	"predictors": [
-	    {
-		"componentSpecs": [{
-		    "spec": {
-			"containers": [
-			    {
-				"image": "seldonio/mock_classifier:1.0",
-				"imagePullPolicy": "IfNotPresent",
-				"name": "classifier-1",
-				"resources": {
-				    "requests": {
-					"memory": "1Mi"
-				    }
-				}
-			    }],
-			"terminationGracePeriodSeconds": 20
-		    }},
-	        {
-		    "metadata":{
-			"labels":{
-			    "version":"v2"
-			}
-		    },    
-			"spec":{
-			    "containers":[
-			    {
-				"image": "seldonio/mock_classifier:1.0",
-				"imagePullPolicy": "IfNotPresent",
-				"name": "classifier-2",
-				"resources": {
-				    "requests": {
-					"memory": "1Mi"
-				    }
-				}
-			    }
-			],
-			"terminationGracePeriodSeconds": 20
-				   }
-				   }],
-		"name": "abtest",
-		"replicas": 1,
-		"annotations": {
-		    "predictor_version": "v1"
-		},
-		"graph": {
-		    "name": "random-ab-test",
-		    "endpoint":{},
-		    "implementation":"RANDOM_ABTEST",
-		    "parameters": [
-			{
-			    "name":"ratioA",
-			    "value":"0.5",
-			    "type":"FLOAT"
-			}
-		    ],
-		    "children": [
-			{
-			    "name": "classifier-1",
-			    "endpoint":{
-				"type":"REST"
-			    },
-			    "type":"MODEL",
-			    "children":[]
-			},
-			{
-			    "name": "classifier-2",
-			    "endpoint":{
-				"type":"REST"
-			    },
-			    "type":"MODEL",
-			    "children":[]
-			}   
-		    ]
-		}
-	    }
-	]
-    }
+    "name": "seldon-deployment"
+  },
+  "spec": {
+    "name": "test-deployment-abtest",
+    "predictors": [
+      {
+        "componentSpecs": [
+          {
+            "spec": {
+              "containers": [
+                {
+                  "image": "seldonio/mock_classifier:1.0",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "classifier-1",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi"
+                    }
+                  }
+                }
+              ],
+              "terminationGracePeriodSeconds": 20
+            }
+          },
+          {
+            "metadata": {
+              "labels": {
+                "version": "v2"
+              }
+            },
+            "spec": {
+              "containers": [
+                {
+                  "image": "seldonio/mock_classifier:1.0",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "classifier-2",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi"
+                    }
+                  }
+                }
+              ],
+              "terminationGracePeriodSeconds": 20
+            }
+          }
+        ],
+        "name": "abtest",
+        "replicas": 1,
+        "annotations": {
+          "predictor_version": "v1"
+        },
+        "graph": {
+          "name": "random-ab-test",
+          "endpoint": {},
+          "implementation": "RANDOM_ABTEST",
+          "parameters": [
+            {
+              "name": "ratioA",
+              "value": "0.5",
+              "type": "FLOAT"
+            }
+          ],
+          "children": [
+            {
+              "name": "classifier-1",
+              "endpoint": {
+                "type": "REST"
+              },
+              "type": "MODEL",
+              "children": []
+            },
+            {
+              "name": "classifier-2",
+              "endpoint": {
+                "type": "REST"
+              },
+              "type": "MODEL",
+              "children": []
+            }
+          ]
+        }
+      }
+    ]
+  }
 }
-		
-		
-
- 

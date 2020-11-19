@@ -1,53 +1,53 @@
 {
-    "apiVersion": "machinelearning.seldon.io/v1alpha2",
-    "kind": "SeldonDeployment",
-    "metadata": {
-        "labels": {
-            "app": "seldon"
-        },
-        "name": "deep-mnist-gpu"
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": {
+    "labels": {
+      "app": "seldon"
     },
-    "spec": {
-        "annotations": {
-            "project_name": "Tensorflow MNIST",
-            "deployment_version": "v1"
-        },
-        "name": "deep-mnist-gpu",
-        "oauth_key": "oauth-key",
-        "oauth_secret": "oauth-secret",
-        "predictors": [
-            {
-                "componentSpecs": [{
-                    "spec": {
-                        "containers": [
-                            {
-                                "image": "gcr.io/<YOUR_PROJECT_ID>/deep-mnist-gpu:0.1",
-                                "imagePullPolicy": "IfNotPresent",
-                                "name": "classifier",
-                                "resources": {
-				    "limits": {
-					"nvidia.com/gpu": 1
-                                    }
-				}
-                            }
-                        ],
-                        "terminationGracePeriodSeconds": 20
+    "name": "deep-mnist-gpu"
+  },
+  "spec": {
+    "annotations": {
+      "project_name": "Tensorflow MNIST",
+      "deployment_version": "v1"
+    },
+    "name": "deep-mnist-gpu",
+    "predictors": [
+      {
+        "componentSpecs": [
+          {
+            "spec": {
+              "containers": [
+                {
+                  "image": "gcr.io/<YOUR_PROJECT_ID>/deep-mnist-gpu:0.1",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "classifier",
+                  "resources": {
+                    "limits": {
+                      "nvidia.com/gpu": 1
                     }
-                }],
-                "graph": {
-                    "children": [],
-                    "name": "classifier",
-                    "endpoint": {
-			"type" : "REST"
-		    },
-                    "type": "MODEL"
-                },
-                "name": "single-model",
-                "replicas": 1,
-		"annotations": {
-		    "predictor_version" : "v1"
-		}
+                  }
+                }
+              ],
+              "terminationGracePeriodSeconds": 20
             }
-        ]
-    }
+          }
+        ],
+        "graph": {
+          "children": [],
+          "name": "classifier",
+          "endpoint": {
+            "type": "REST"
+          },
+          "type": "MODEL"
+        },
+        "name": "single-model",
+        "replicas": 1,
+        "annotations": {
+          "predictor_version": "v1"
+        }
+      }
+    ]
+  }
 }

@@ -1,106 +1,108 @@
 {
-    "apiVersion": "machinelearning.seldon.io/v1alpha2",
-    "kind": "SeldonDeployment",
-    "metadata": {
-	"labels": {
-	    "app": "seldon"
-	},
-	"name": "seldon-deployment"
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": {
+    "labels": {
+      "app": "seldon"
     },
-    "spec": {
-	"name": "test-deployment-complex",
-	"oauth_key": "oauth-key",
-	"oauth_secret": "oauth-secret",
-	"predictors": [
-	    {
-		"componentSpecs": [{
-		    "spec": {
-			"containers": [
-			    {
-				"image": "seldonio/mock_classifier:1.0",
-				"imagePullPolicy": "IfNotPresent",
-				"name": "classifier-1",
-				"resources": {
-				    "requests": {
-					"memory": "1Mi",
-					"cpu": "0.1"
-				    }
-				}
-			    },
-			    {
-				"image": "seldonio/mock_classifier:1.0",
-				"imagePullPolicy": "IfNotPresent",
-				"name": "classifier-2",
-				"resources": {
-				    "requests": {
-					"memory": "1Mi",
-					"cpu": "0.1"
-				    }
-				}
-			    }],
-			"terminationGracePeriodSeconds": 20
-		    }},
-		    {
-		    "spec": {
-			"containers": [
-			    {
-				"image": "seldonio/outlier_mahalanobis:0.2",
-				"imagePullPolicy": "IfNotPresent",
-				"name": "outlier-detector",
-				"resources": {
-				    "requests": {
-					"memory": "1Mi",
-					"cpu": "0.1"
-				    }
-				}
-			    }
-			],
-			"terminationGracePeriodSeconds": 20
-		    }
-		    }],
-		"name": "outlier",
-		"replicas": 1,
-		"labels": {
-		    "version" : "v1"
-		},
-		"graph": {
-		    "name": "outlier-detector",
-		    "type": "TRANSFORMER",
-		    "endpoint": {
-			"type": "REST"
-		    },
-		    "children": [
-			{
-			    "name": "random-abtest",
-			    "implementation": "RANDOM_ABTEST",
-			    "type": "UNKNOWN_TYPE",
-			    "parameters": [
-				{
-				    "name":"ratioA",
-				    "value":"0.5",
-				    "type":"FLOAT"
-				}
-			    ],
-			    "children": [
-				{
-				    "name": "classifier-1",
-				    "type": "MODEL",
-				    "endpoint": {
-					"type": "REST"
-				    }
-				},
-				{
-				    "name": "classifier-2",
-				    "type": "MODEL",
-				    "endpoint": {
-					"type": "REST"
-				    }
-				}
-			    ]
-			}
-		    ]
-		}
-	    }
-	]
-    }
+    "name": "seldon-deployment"
+  },
+  "spec": {
+    "name": "test-deployment-complex",
+    "predictors": [
+      {
+        "componentSpecs": [
+          {
+            "spec": {
+              "containers": [
+                {
+                  "image": "seldonio/mock_classifier:1.0",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "classifier-1",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi",
+                      "cpu": "0.1"
+                    }
+                  }
+                },
+                {
+                  "image": "seldonio/mock_classifier:1.0",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "classifier-2",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi",
+                      "cpu": "0.1"
+                    }
+                  }
+                }
+              ],
+              "terminationGracePeriodSeconds": 20
+            }
+          },
+          {
+            "spec": {
+              "containers": [
+                {
+                  "image": "seldonio/outlier_mahalanobis:0.2",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "outlier-detector",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi",
+                      "cpu": "0.1"
+                    }
+                  }
+                }
+              ],
+              "terminationGracePeriodSeconds": 20
+            }
+          }
+        ],
+        "name": "outlier",
+        "replicas": 1,
+        "labels": {
+          "version": "v1"
+        },
+        "graph": {
+          "name": "outlier-detector",
+          "type": "TRANSFORMER",
+          "endpoint": {
+            "type": "REST"
+          },
+          "children": [
+            {
+              "name": "random-abtest",
+              "implementation": "RANDOM_ABTEST",
+              "type": "UNKNOWN_TYPE",
+              "parameters": [
+                {
+                  "name": "ratioA",
+                  "value": "0.5",
+                  "type": "FLOAT"
+                }
+              ],
+              "children": [
+                {
+                  "name": "classifier-1",
+                  "type": "MODEL",
+                  "endpoint": {
+                    "type": "REST"
+                  }
+                },
+                {
+                  "name": "classifier-2",
+                  "type": "MODEL",
+                  "endpoint": {
+                    "type": "REST"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
 }
