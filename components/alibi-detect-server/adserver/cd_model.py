@@ -41,7 +41,7 @@ def _drift_to_metrics(drift):
     if threshold is not None:
         metrics.append(
             {
-                "key": "seldon_metric_drift_thresold",
+                "key": "seldon_metric_drift_threshold",
                 "value": threshold,
                 "type": "GAUGE",
             }
