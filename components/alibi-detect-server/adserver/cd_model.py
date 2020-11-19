@@ -37,17 +37,15 @@ def _drift_to_metrics(drift):
             {"key": "seldon_metric_drift_is_drift", "value": is_drift, "type": "GAUGE",}
         )
 
-    p_val = drift.get("p_val")
-    if p_val is not None and isinstance(p_val, list):
-        for i, p in enumerate(p_val):
-            metrics.append(
-                {
-                    "key": "seldon_metric_drift_p_val",
-                    "value": p,
-                    "type": "COUNTER",
-                    "tags": {"p_val_index": str(i)},
-                }
-            )
+    threshold = drift.get("threshold")
+    if threshold is not None:
+        metrics.append(
+            {
+                "key": "seldon_metric_drift_thresold",
+                "value": threshold,
+                "type": "GAUGE",
+            }
+        )
 
     return metrics
 
