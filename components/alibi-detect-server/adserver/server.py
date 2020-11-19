@@ -29,7 +29,7 @@ logging.basicConfig(level=CESERVER_LOGLEVEL)
 
 DEFAULT_LABELS = {
     "seldon_deployment_namespace": os.environ.get(
-        "SELDON_DEPLYOMENT_NAMESPACE", "NOT_IMPLEMENTED"
+        "SELDON_DEPLOYMENT_NAMESPACE", "NOT_IMPLEMENTED"
     )
 }
 
