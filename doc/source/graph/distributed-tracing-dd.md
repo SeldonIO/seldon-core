@@ -47,6 +47,8 @@ spec:
         containers:
         - env:
           - name: TRACING
+            value: '1'          
+          - name: DD_ENABLED
             value: '1'
           - name: DD_AGENT_HOST
             valueFrom:
@@ -70,6 +72,8 @@ spec:
     svcOrchSpec:
       env:
       - name: TRACING
+        value: '1'
+      - name: DD_ENABLED
         value: '1'
       - name: DD_AGENT_HOST
         valueFrom:
