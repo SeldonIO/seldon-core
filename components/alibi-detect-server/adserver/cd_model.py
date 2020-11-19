@@ -11,9 +11,6 @@ from seldon_core.user_model import SeldonResponse
 def _drift_to_metrics(drift):
     metrics = []
 
-    # TODO: Check whether version of alibi detect is updated
-    # TODO: Add threshold
-
     batch_score = drift.get("batch_score")
     if batch_score is not None:
         metrics.append(
