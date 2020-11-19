@@ -36,15 +36,52 @@ The command below just copies the secred with the name "minio" from the minio-sy
 #### Install Argo Workflows
 You can follow the instructions from the official [Argo Workflows Documentation](https://github.com/argoproj/argo#quickstart).
 
-You also need to make sure that argo has permissions to create seldon deployments - for this you can just create a default-admin rolebinding as follows:
+You also need to make sure that argo has permissions to create seldon deployments - for this you can a role:
 
 
 ```python
-!kubectl create rolebinding default-admin --clusterrole=admin --serviceaccount=default:default
+!kubectl create -f - <<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: workflow
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - "*"
+- apiGroups:
+  - "apps"
+  resources:
+  - deployments
+  verbs:
+  - "*"
+- apiGroups:
+  - ""
+  resources:
+  - pods/log
+  verbs:
+  - "*"
+- apiGroups:
+  - machinelearning.seldon.io
+  resources:
+  - "*"
+  verbs:
+  - "*"
+EOF
 ```
 
-    rolebinding.rbac.authorization.k8s.io/default-admin created
+A service account:
+```python
+!kubectl create serviceaccount workflow
+```
 
+And a binding:
+```python
+!kubectl create rolebinding workflow --role=workflow --serviceaccount=default:workflow
+```
 
 ### Create some input for our model
 
@@ -113,7 +150,7 @@ We will run a batch job that will set up a Seldon Deployment with 10 replicas an
     --set batchWorker.workers=100 \
     --set batchWorker.payloadType=ndarray \
     --set batchWorker.dataType=data \
-    | argo submit -
+    | argo submit --serviceaccount workflow -
 ```
 
     Name:                seldon-batch-process
