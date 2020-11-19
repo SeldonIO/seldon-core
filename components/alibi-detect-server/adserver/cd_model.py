@@ -11,8 +11,11 @@ from seldon_core.user_model import SeldonResponse
 def _drift_to_metrics(drift):
     metrics = []
 
+    # TODO: Check whether version of alibi detect is updated
+    # TODO: Add threshold
+
     batch_score = drift.get("batch_score")
-    if batch_score:
+    if batch_score is not None:
         metrics.append(
             {
                 "key": "seldon_metric_drift_batch_score",
@@ -22,7 +25,7 @@ def _drift_to_metrics(drift):
         )
 
     feature_score = drift.get("feature_score")
-    if feature_score:
+    if feature_score is not None:
         metrics.append(
             {
                 "key": "seldon_metric_drift_feature_score",
@@ -32,17 +35,13 @@ def _drift_to_metrics(drift):
         )
 
     is_drift = drift.get("is_drift")
-    if is_drift:
+    if is_drift is not None:
         metrics.append(
-            {
-                "key": "seldon_metric_drift_is_drift",
-                "value": is_drift,
-                "type": "COUNTER",
-            }
+            {"key": "seldon_metric_drift_is_drift", "value": is_drift, "type": "GAUGE",}
         )
 
     p_val = drift.get("p_val")
-    if p_val and isinstance(p_val, list):
+    if p_val is not None and isinstance(p_val, list):
         for i, p in enumerate(p_val):
             metrics.append(
                 {
