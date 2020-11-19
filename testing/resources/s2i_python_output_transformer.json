@@ -34,36 +34,9 @@
                     "name": "transformer",
                     "type": "OUTPUT_TRANSFORMER"
                 },
-                {
-                  "image": "seldonio/testtransformer_rest:0.1",
-                  "imagePullPolicy": "Never",
-                  "name": "transformer"
-                }
-              ],
-              "terminationGracePeriodSeconds": 1
+                "name": "mytrans",
+                "replicas": 1
             }
-          }
-        ],
-        "graph": {
-          "children": [
-            {
-              "children": [],
-              "name": "model",
-              "endpoint": {
-                "type": "REST"
-              },
-              "type": "MODEL"
-            }
-          ],
-          "name": "transformer",
-          "endpoint": {
-            "type": "REST"
-          },
-          "type": "OUTPUT_TRANSFORMER"
-        },
-        "name": "mytrans",
-        "replicas": 1
-      }
-    ]
-  }
+        ]
+    }
 }
