@@ -92,12 +92,13 @@ HEALTH_METRIC_METHOD_TAG = "health"
 class SeldonMetrics:
     """Class to manage custom metrics stored in shared memory."""
 
-    def __init__(self, worker_id_func=os.getpid):
+    def __init__(self, worker_id_func=os.getpid, extra_default_labels={}):
         # We keep reference to Manager so it does not get garbage collected
         self._manager = Manager()
         self._lock = self._manager.Lock()
         self.data = self._manager.dict()
         self.worker_id_func = worker_id_func
+        self._extra_default_labels = extra_default_labels
 
     def __del__(self):
         self._manager.shutdown()
@@ -186,14 +187,18 @@ class SeldonMetrics:
             exposition.CONTENT_TYPE_LATEST,
         )
 
+    def _merge_labels(self, worker, tags):
+        labels = {
+            **tags,
+            **DEFAULT_LABELS,
+            **self._extra_default_labels,
+            "worker_id": str(worker),
+        }
+        return list(labels.keys()), list(labels.values())
+
     @staticmethod
     def _generate_tags_key(tags):
         return "_".join(["-".join(i) for i in tags.items()])
-
-    @staticmethod
-    def _merge_labels(worker, tags):
-        labels = {**tags, **DEFAULT_LABELS, "worker_id": str(worker)}
-        return list(labels.keys()), list(labels.values())
 
     @staticmethod
     def _update_hist(x, vals, sumv):

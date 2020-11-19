@@ -27,6 +27,12 @@ DEFAULT_HTTP_PORT = 8080
 CESERVER_LOGLEVEL = os.environ.get("CESERVER_LOGLEVEL", "INFO").upper()
 logging.basicConfig(level=CESERVER_LOGLEVEL)
 
+DEFAULT_LABELS = {
+    "seldon_deployment_namespace": os.environ.get(
+        "SELDON_DEPLYOMENT_NAMESPACE", "NOT_IMPLEMENTED"
+    )
+}
+
 
 class CEServer(object):
     def __init__(
@@ -58,7 +64,10 @@ class CEServer(object):
         self._http_server: Optional[tornado.httpserver.HTTPServer] = None
         self.event_type = event_type
         self.event_source = event_source
-        self.seldon_metrics = SeldonMetrics(worker_id_func=lambda: str(uuid.uuid1()))
+        self.seldon_metrics = SeldonMetrics(
+            worker_id_func=lambda: str(uuid.uuid1()),
+            extra_default_labels=DEFAULT_LABELS,
+        )
 
     def create_application(self):
         return tornado.web.Application(
