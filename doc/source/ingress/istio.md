@@ -100,4 +100,12 @@ updates](../examples/istio_canary.html) and [other examples, including shadow
 updates](../examples/istio_examples.html).
 
 
+## Troubleshoot
+If you saw errors like `Failed to generate bootstrap config: mkdir ./etc/istio/proxy: permission denied`, it's probably because you are running istio version <= 1.6.
+Istio proxy sidecar by default needs to run as root (This changed in version >= 1.7, non-root is the default)
+You can fix this by changing `defaultUserID=0` in your helm chart, or add the following `securityContext` to your istio proxy sidecar.
 
+```
+securityContext:
+  runAsUser: 0
+```
