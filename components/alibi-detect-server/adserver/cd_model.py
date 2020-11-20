@@ -11,21 +11,20 @@ from seldon_core.user_model import SeldonResponse
 def _append_drift_metrcs(metrics, drift, name):
     metric_found = drift.get(name)
 
-    # Assumes metric_found is always float or list/np.array
+    # Assumes metric_found is always float/int or list/np.array when not none
     if metric_found is not None:
         if not isinstance(metric_found, (list, np.ndarray)):
             metric_found = [metric_found]
 
-        if isinstance(metric_found, list):
-            for i, instance in enumerate(metric_found):
-                metrics.append(
-                    {
-                        "key": f"seldon_metric_drift_{name}",
-                        "value": instance,
-                        "type": "GAUGE",
-                        "tags": {"index": str(i)},
-                    }
-                )
+        for i, instance in enumerate(metric_found):
+            metrics.append(
+                {
+                    "key": f"seldon_metric_drift_{name}",
+                    "value": instance,
+                    "type": "GAUGE",
+                    "tags": {"index": str(i)},
+                }
+            )
 
 
 class AlibiDetectConceptDriftModel(
