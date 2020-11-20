@@ -27,7 +27,7 @@ def _drift_to_metrics(drift):
             {
                 "key": "seldon_metric_drift_feature_score",
                 "value": feature_score,
-                "type": "COUNTER",
+                "type": "GAUGE",
             }
         )
 
@@ -44,7 +44,7 @@ def _drift_to_metrics(drift):
                 {
                     "key": "seldon_metric_drift_distance",
                     "value": d,
-                    "type": "COUNTER",
+                    "type": "GAUGE",
                     "tags": {"index": str(i)},
                 }
             )
@@ -56,7 +56,7 @@ def _drift_to_metrics(drift):
                 {
                     "key": "seldon_metric_drift_p_val",
                     "value": p,
-                    "type": "COUNTER",
+                    "type": "GAUGE",
                     "tags": {"index": str(i)},
                 }
             )
