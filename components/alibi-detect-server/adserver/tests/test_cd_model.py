@@ -19,6 +19,9 @@ class DummyCDModel(BaseDetector):
     ) -> Dict[Dict[str, str], Dict[str, np.ndarray]]:
         cd = concept_drift_dict()
         cd["data"]["is_drift"] = self.expect_return_is_drift
+        cd["data"]["distance"] = [0.1, 0.2, 0.3]
+        cd["data"]["p_val"] = [0.1, 0.2, 0.3]
+        cd["data"]["threshold"] = 0.1
         return cd
 
 
@@ -32,6 +35,8 @@ class TestAEModel(TestCase):
         headers = {}
         res = ad_model.process_event(req, headers)
         self.assertEqual(res.data["data"]["is_drift"], 0)
+        print(res.metrics)
+        self.assertEqual(len(res.metrics), 8)
 
     def test_batch(self):
         model = DummyCDModel()
@@ -45,6 +50,7 @@ class TestAEModel(TestCase):
 
         res = ad_model.process_event(req, headers)
         self.assertEqual(res.data["data"]["is_drift"], 0)
+        self.assertEqual(len(res.metrics), 8)
 
         res = ad_model.process_event(req, headers)
         self.assertEqual(res, None)
