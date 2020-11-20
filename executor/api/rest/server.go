@@ -159,6 +159,8 @@ func (r *SeldonRestApi) Initialise() {
 			r.Router.NewRoute().Path("/v1/models:predict").Methods("OPTIONS", "POST").HandlerFunc(r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions))  // Nonstandard path - Seldon extension
 			r.Router.NewRoute().Path("/v1/models/{"+ModelHttpPathVariable+"}").Methods("GET", "OPTIONS").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
 			r.Router.NewRoute().Path("/v1/models/{"+ModelHttpPathVariable+"}/metadata").Methods("GET", "OPTIONS").HandlerFunc(r.wrapMetrics(metric.MetadataHttpServiceName, r.metadata))
+			// Enabling for standard seldon core feedback API endpoint with standard schema
+			r.Router.NewRoute().Path("/api/v1.0/feedback").Methods("OPTIONS", "POST").HandlerFunc(r.wrapMetrics(metric.FeedbackHttpServiceName, r.feedback))
 		case api.ProtocolKFServing:
 			r.Router.NewRoute().Path("/v2/models/{"+ModelHttpPathVariable+"}/infer").Methods("OPTIONS", "POST").HandlerFunc(r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions))
 			r.Router.NewRoute().Path("/v2/models/infer").Methods("OPTIONS", "POST").HandlerFunc(r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions)) // Nonstandard path - Seldon extension
