@@ -8,70 +8,24 @@ from adserver.base import AlibiDetectModel
 from seldon_core.user_model import SeldonResponse
 
 
-def _drift_to_metrics(drift):
-    metrics = []
+def _append_drift_metrcs(metrics, drift, name):
+    metric_found = drift.get(name)
 
-    batch_score = drift.get("batch_score")
-    if batch_score is not None:
-        metrics.append(
-            {
-                "key": "seldon_metric_drift_batch_score",
-                "value": batch_score,
-                "type": "GAUGE",
-            }
-        )
+    # Assumes metric_found is always float or list/np.array
+    if metric_found is not None:
+        if not isinstance(metric_found, (list, np.ndarray)):
+            metric_found = [metric_found]
 
-    feature_score = drift.get("feature_score")
-    if feature_score is not None:
-        metrics.append(
-            {
-                "key": "seldon_metric_drift_feature_score",
-                "value": feature_score,
-                "type": "GAUGE",
-            }
-        )
-
-    is_drift = drift.get("is_drift")
-    if is_drift is not None:
-        metrics.append(
-            {"key": "seldon_metric_drift_is_drift", "value": is_drift, "type": "GAUGE",}
-        )
-
-    distance = drift.get("distance")
-    if distance is not None and isinstance(distance, list):
-        for i, d in enumerate(distance):
-            metrics.append(
-                {
-                    "key": "seldon_metric_drift_distance",
-                    "value": d,
-                    "type": "GAUGE",
-                    "tags": {"index": str(i)},
-                }
-            )
-
-    p_val = drift.get("p_val")
-    if p_val is not None and isinstance(p_val, list):
-        for i, p in enumerate(p_val):
-            metrics.append(
-                {
-                    "key": "seldon_metric_drift_p_val",
-                    "value": p,
-                    "type": "GAUGE",
-                    "tags": {"index": str(i)},
-                }
-            )
-
-    threshold = drift.get("threshold")
-    if threshold is not None:
-        metrics.append(
-            {
-                "key": "seldon_metric_drift_threshold",
-                "value": threshold,
-                "type": "GAUGE",
-            }
-        )
-
-    return metrics
+        if isinstance(metric_found, list):
+            for i, instance in enumerate(metric_found):
+                metrics.append(
+                    {
+                        "key": f"seldon_metric_drift_{name}",
+                        "value": instance,
+                        "type": "GAUGE",
+                        "tags": {"index": str(i)},
+                    }
+                )
 
 
 class AlibiDetectConceptDriftModel(
@@ -145,7 +99,14 @@ class AlibiDetectConceptDriftModel(
 
             output = json.loads(json.dumps(cd_preds, cls=NumpyEncoder))
 
-            metrics = _drift_to_metrics(output.get("data", {}))
+            metrics = []
+            drift = output.get("data")
+
+            if drift:
+                _append_drift_metrcs(metrics, drift, "is_drift")
+                _append_drift_metrcs(metrics, drift, "distance")
+                _append_drift_metrcs(metrics, drift, "p_val")
+                _append_drift_metrcs(metrics, drift, "threshold")
 
             seldon_response = SeldonResponse(output, None, metrics)
 
