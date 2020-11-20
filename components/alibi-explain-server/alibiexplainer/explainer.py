@@ -43,7 +43,7 @@ from tensorflow import keras
 SELDON_LOGLEVEL = os.environ.get('SELDON_LOGLEVEL', 'INFO').upper()
 logging.basicConfig(level=SELDON_LOGLEVEL)
 GRPC_MAX_MSG_LEN = 1000000000
-KFSERVING_PREDICTOR_URL_FORMAT = "http://{0}/v1/models/{1}:predict"
+TENSORFLOW_PREDICTOR_URL_FORMAT = "http://{0}/v1/models/:predict"
 SELDON_PREDICTOR_URL_FORMAT = "http://{0}/api/v0.1/predictions"
 
 class Protocol(Enum):
@@ -128,7 +128,7 @@ class AlibiExplainer(ExplainerModel):
                     instances.append(req_data)
             request = {"instances": instances}
             response = requests.post(
-                KFSERVING_PREDICTOR_URL_FORMAT.format(self.predictor_host, self.name),
+                TENSORFLOW_PREDICTOR_URL_FORMAT.format(self.predictor_host),
                 json.dumps(request)
             )
             if response.status_code != 200:
