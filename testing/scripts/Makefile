@@ -113,7 +113,7 @@ install_istio:
 
 .PHONY: install_keda
 install_keda:
-	kubectl apply -f https://github.com/kedacore/keda/releases/download/v2.0.0-beta/keda-2.0.0-beta.yaml
+	kubectl apply -f https://github.com/kedacore/keda/releases/download/v2.0.0/keda-2.0.0.yaml
 
 .PHONY: create_namespaces
 create_namespaces:
