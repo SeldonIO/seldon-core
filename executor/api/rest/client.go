@@ -340,5 +340,9 @@ func (smc *JSONRestClient) TransformOutput(ctx context.Context, modelName string
 }
 
 func (smc *JSONRestClient) Feedback(ctx context.Context, modelName string, host string, port int32, req payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+	// Currently feedback is enabled across all protocols but client only works on seldon protocol
+	if smc.Protocol != api.ProtocolSeldon {
+		return req, nil
+	}
 	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonFeedbackPath, modelName), host, port, req, meta)
 }
