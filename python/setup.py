@@ -36,7 +36,7 @@ setup(
         "PyYAML<5.4",
         "gunicorn >= 19.9.0, < 20.1.0",
         "setuptools >= 41.0.0",
-        "prometheus_client >= 0.7.1, < 0.9.0",
+        "prometheus_client >= 0.7.1, < 0.10.0",
     ],
     extras_require=extras,
     entry_points={
