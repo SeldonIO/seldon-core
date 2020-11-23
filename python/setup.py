@@ -30,7 +30,7 @@ setup(
         "protobuf<4.0.0",
         "grpcio<2.0.0",
         "Flask-OpenTracing >= 1.1.0, < 1.2.0",
-        "opentracing >= 2.2.0, < 2.4.0",
+        "opentracing >= 2.2.0, < 2.5.0",
         "jaeger-client >= 4.1.0, < 4.4.0",
         "grpcio-opentracing >= 1.1.4, < 1.2.0",
         "PyYAML<5.4",
