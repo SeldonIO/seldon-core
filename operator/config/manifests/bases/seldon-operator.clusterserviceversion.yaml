@@ -19,7 +19,7 @@ metadata:
                     "spec": {
                       "containers": [
                         {
-                          "image": "seldonio/mock_classifier_rest:1.3",
+                          "image": "seldonio/mock_classifier:1.5.0-dev",
                           "name": "classifier"
                         }
                       ]
@@ -28,9 +28,6 @@ metadata:
                 ],
                 "graph": {
                   "children": [],
-                  "endpoint": {
-                    "type": "REST"
-                  },
                   "name": "classifier",
                   "type": "MODEL"
                 },
@@ -783,7 +780,7 @@ spec:
   maintainers:
   - email: hello@seldon.io
     name: Seldon Technologies
-  maturity: alpha
+  maturity: stable
   minKubeVersion: 1.16.0
   provider:
     name: Seldon Technologies

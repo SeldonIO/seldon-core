@@ -17,13 +17,7 @@ push:
 kind_load: build
 	kind load -v 3 docker-image ${IMAGE_NAME}:${VERSION} --name ${KIND_NAME}
 
-# https://connect.redhat.com/project/4060551/view
-scan_rest=ospid-5c2f945c-69fa-4de4-8574-e9a61f69d69a
-# https://connect.redhat.com/project/4061631/view
-scan_grpc=ospid-d75d8767-c689-4368-9859-4ec4f0062a3a
-
-# NEED NEW PROJECT
-scan=
+scan=ospid-c4b2c502-2c85-4de6-8869-28ccc4a111d6
 redhat-image-scan:
 	docker pull ${IMAGE_NAME}:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \

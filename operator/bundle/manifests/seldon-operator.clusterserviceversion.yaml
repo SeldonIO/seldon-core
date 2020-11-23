@@ -25,7 +25,7 @@ metadata:
                     "spec": {
                       "containers": [
                         {
-                          "image": "seldonio/mock_classifier_rest:1.3",
+                          "image": "seldonio/mock_classifier:1.5.0-dev",
                           "name": "classifier"
                         }
                       ]
@@ -34,9 +34,6 @@ metadata:
                 ],
                 "graph": {
                   "children": [],
-                  "endpoint": {
-                    "type": "REST"
-                  },
                   "name": "classifier",
                   "type": "MODEL"
                 },
@@ -51,14 +48,14 @@ metadata:
     capabilities: Seamless Upgrades
     categories: AI/Machine Learning
     certified: 'false'
-    containerImage: seldonio/seldon-core-operator:1.3.0
+    containerImage: 1.5.0-dev
     createdAt: '2019-05-21 15:00:00'
     description: The Seldon operator for management, monitoring and operations of machine learning systems through the Seldon Engine. Once installed, the Seldon Operator provides multiple functions which facilitate the productisation, monitoring and maintenance of machine learning systems at scale.
-    operators.operatorframework.io/builder: operator-sdk-v1.0.1
+    operators.operatorframework.io/builder: operator-sdk-v1.2.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v2
     repository: https://github.com/SeldonIO/seldon-core
     support: Clive Cox
-  name: seldon-operator.v1.3.0
+  name: seldon-operator.v1.5.0-dev
   namespace: seldon-operator-system
 spec:
   apiservicedefinitions: {}
@@ -203,6 +200,38 @@ spec:
           - patch
           - update
         - apiGroups:
+          - keda.sh
+          resources:
+          - scaledobjects
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - keda.sh
+          resources:
+          - scaledobjects/finalizers
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - keda.sh
+          resources:
+          - scaledobjects/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
           - machinelearning.seldon.io
           resources:
           - seldondeployments
@@ -266,6 +295,26 @@ spec:
           - networking.istio.io
           resources:
           - virtualservices/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - policy
+          resources:
+          - poddisruptionbudgets
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - policy
+          resources:
+          - poddisruptionbudgets/status
           verbs:
           - get
           - patch
@@ -396,14 +445,10 @@ spec:
                 - name: RELATED_IMAGE_EXECUTOR
                 - name: RELATED_IMAGE_ENGINE
                 - name: RELATED_IMAGE_STORAGE_INITIALIZER
-                - name: RELATED_IMAGE_SKLEARNSERVER_REST
-                - name: RELATED_IMAGE_SKLEARNSERVER_GRPC
-                - name: RELATED_IMAGE_XGBOOSTSERVER_REST
-                - name: RELATED_IMAGE_XGBOOSTSERVER_GRPC
-                - name: RELATED_IMAGE_MLFLOWSERVER_REST
-                - name: RELATED_IMAGE_MLFLOWSERVER_GRPC
-                - name: RELATED_IMAGE_TFPROXY_REST
-                - name: RELATED_IMAGE_TFPROXY_GRPC
+                - name: RELATED_IMAGE_SKLEARNSERVER
+                - name: RELATED_IMAGE_XGBOOSTSERVER
+                - name: RELATED_IMAGE_MLFLOWSERVER
+                - name: RELATED_IMAGE_TFPROXY
                 - name: RELATED_IMAGE_TENSORFLOW
                 - name: RELATED_IMAGE_EXPLAINER
                 - name: RELATED_IMAGE_MOCK_CLASSIFIER
@@ -419,7 +464,7 @@ spec:
                 - name: AMBASSADOR_SINGLE_NAMESPACE
                   value: 'false'
                 - name: ENGINE_CONTAINER_IMAGE_AND_VERSION
-                  value: docker.io/seldonio/engine:1.3.0-dev
+                  value: docker.io/seldonio/engine:1.5.0-dev
                 - name: ENGINE_CONTAINER_IMAGE_PULL_POLICY
                   value: IfNotPresent
                 - name: ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME
@@ -440,13 +485,15 @@ spec:
                   value: /prometheus
                 - name: ISTIO_ENABLED
                   value: 'false'
+                - name: KEDA_ENABLED
+                  value: 'false'
                 - name: ISTIO_GATEWAY
                   value: istio-system/seldon-gateway
                 - name: ISTIO_TLS_MODE
                 - name: USE_EXECUTOR
                   value: 'true'
                 - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
-                  value: seldonio/seldon-core-executor:1.3.0-dev
+                  value: seldonio/seldon-core-executor:1.5.0-dev
                 - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
                   value: IfNotPresent
                 - name: EXECUTOR_PROMETHEUS_PATH
@@ -461,7 +508,23 @@ spec:
                 - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT
                   value: http://default-broker
                 - name: DEFAULT_USER_ID
-                image: seldonio/seldon-core-operator:1.3.0-dev
+                - name: EXECUTOR_DEFAULT_CPU_REQUEST
+                  value: '0.5'
+                - name: EXECUTOR_DEFAULT_MEMORY_REQUEST
+                  value: 512Mi
+                - name: EXECUTOR_DEFAULT_CPU_LIMIT
+                  value: '0.5'
+                - name: EXECUTOR_DEFAULT_MEMORY_LIMIT
+                  value: 512Mi
+                - name: ENGINE_DEFAULT_CPU_REQUEST
+                  value: '0.5'
+                - name: ENGINE_DEFAULT_MEMORY_REQUEST
+                  value: 512Mi
+                - name: ENGINE_DEFAULT_CPU_LIMIT
+                  value: '0.5'
+                - name: ENGINE_DEFAULT_MEMORY_LIMIT
+                  value: 512Mi
+                image: seldonio/seldon-core-operator:1.5.0-dev
                 name: manager
                 ports:
                 - containerPort: 8443
@@ -530,7 +593,7 @@ spec:
   maintainers:
   - email: hello@seldon.io
     name: Seldon Technologies
-  maturity: alpha
+  maturity: stable
   minKubeVersion: 1.16.0
   provider:
     name: Seldon Technologies
@@ -538,4 +601,4 @@ spec:
   selector:
     matchLabels:
       name: seldon-operator
-  version: 1.3.0
+  version: 1.5.0-dev

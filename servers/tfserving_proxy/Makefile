@@ -17,16 +17,11 @@ push:
 kind_load: build
 	kind load -v 3 docker-image ${IMAGE_NAME}:${VERSION} --name ${KIND_NAME}
 
-# https://connect.redhat.com/project/4098981/view
-scan_rest=ospid-2cbfde5f-10d2-4cc1-9b1d-0dff7f6d1021
-# https://connect.redhat.com/project/4100321/view
-scan_grpc=ospid-da09f299-64d1-4e19-86c9-af60a0ddb851
-#
-scan=
+scan=ospid-f0a0cf75-6cb0-4f80-a9d8-a7205770e265
 redhat-image-scan:
 	docker pull ${IMAGE_NAME}:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		echo $${rh_password_tfproxy} | docker login -u unused scan.connect.redhat.com --password-stdin
-	docker tag ${IMAGE_NAME}:${VERSION} scan.connect.redhat.com/${scan}/${IMAGE_NAME_BASE}_$*:${VERSION}
+	docker tag ${IMAGE_NAME}:${VERSION} scan.connect.redhat.com/${scan}/${IMAGE_NAME_BASE}:${VERSION}
 	docker push scan.connect.redhat.com/${scan}/${IMAGE_NAME_BASE}:${VERSION}
 

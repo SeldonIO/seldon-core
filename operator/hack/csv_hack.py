@@ -4,18 +4,24 @@ import sys
 
 
 def getOpts(cmd_line_args):
-    parser = argparse.ArgumentParser(description="remove csv CRD versions")
+    parser = argparse.ArgumentParser(
+        description="remove csv CRD versions and update version"
+    )
     parser.add_argument("path", help="the output path to save result")
+    parser.add_argument("version", help="the release version")
     opts = parser.parse_args(cmd_line_args)
     return opts
 
 
-def remove_versions(filename):
-    with open(filename, "r") as stream:
-        y = yaml.safe_load(stream)
-        del y["spec"]["customresourcedefinitions"]["owned"][2]
-        del y["spec"]["customresourcedefinitions"]["owned"][1]
-        return y
+def remove_versions(csv):
+    del csv["spec"]["customresourcedefinitions"]["owned"][2]
+    del csv["spec"]["customresourcedefinitions"]["owned"][1]
+    return csv
+
+
+def update_container_image(csv, version):
+    csv["metadata"]["annotations"]["containerImage"] = version
+    return csv
 
 
 def str_presenter(dumper, data):
@@ -27,10 +33,13 @@ def str_presenter(dumper, data):
 def main(argv):
     opts = getOpts(argv[1:])
     print(opts)
-    y = remove_versions(opts.path)
-    fdata = yaml.dump(y, width=1000, default_flow_style=False, sort_keys=False)
-    with open(opts.path, "w") as outfile:
-        outfile.write(fdata)
+    with open(opts.path, "r") as stream:
+        csv = yaml.safe_load(stream)
+        csv = remove_versions(csv)
+        csv = update_container_image(csv, opts.version)
+        fdata = yaml.dump(csv, width=1000, default_flow_style=False, sort_keys=False)
+        with open(opts.path, "w") as outfile:
+            outfile.write(fdata)
 
 
 if __name__ == "__main__":

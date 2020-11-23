@@ -24,17 +24,11 @@ git clone git@github.com:cliveseldon/operator-marketplace.git fork-operator-mark
 kubectl create -f fork-operator-marketplace/deploy/upstream/
 ```
 
-Create the bundle image, check and push. Create opm_index, and push.
+Create the bundle image, check and push. Create opm_index, and push if not done so already.
 
 ```bash
 cd ../..
-make recreate_bundle
-make update_packagemanifests
-make create_bundle_image
-make push_bundle_image
-make validate_bundle_image
-make opm_index
-make opm_push
+make update_openshift
 ```
 
 Create a catalog_source
@@ -81,6 +75,12 @@ Check
 kubectl get catalogsource seldon-core-catalog -n openshift-marketplace -o yaml
 ```
 
+At present need to create operator from Openshift UI.
+
+
+
+The below does not seem to work.
+
 Create operator group
 
 ```bash
@@ -90,7 +90,7 @@ kubectl create -f operator-group-openshift.yaml
 Create Subscription
 
 ```bash
-kubectl create -f operator-subscription.yaml
+kubectl create -f operator-subscription-openshift.yaml
 ```
 
 This should create the seldon-controller manager. Once running you can test. It will be namespace only so will only manage sdeps in marketplace namespace.
