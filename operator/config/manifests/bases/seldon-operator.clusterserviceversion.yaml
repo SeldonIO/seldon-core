@@ -19,7 +19,7 @@ metadata:
                     "spec": {
                       "containers": [
                         {
-                          "image": "seldonio/mock_classifier_rest:1.3",
+                          "image": "seldonio/mock_classifier:1.5.0-dev",
                           "name": "classifier"
                         }
                       ]
@@ -28,9 +28,6 @@ metadata:
                 ],
                 "graph": {
                   "children": [],
-                  "endpoint": {
-                    "type": "REST"
-                  },
                   "name": "classifier",
                   "type": "MODEL"
                 },
@@ -44,7 +41,7 @@ metadata:
     capabilities: Seamless Upgrades
     categories: AI/Machine Learning
     certified: "false"
-    containerImage: seldonio/seldon-core-operator:1.3.0
+    containerImage: seldonio/seldon-core-operator:1.2.2
     createdAt: "2019-05-21 15:00:00"
     description: The Seldon operator for management, monitoring and operations of
       machine learning systems through the Seldon Engine. Once installed, the Seldon
@@ -52,7 +49,7 @@ metadata:
       and maintenance of machine learning systems at scale.
     repository: https://github.com/SeldonIO/seldon-core
     support: Clive Cox
-  name: seldon-operator.v1.3.0
+  name: seldon-operator.v1.2.2
   namespace: seldon-operator-system
 spec:
   apiservicedefinitions: {}
@@ -672,7 +669,7 @@ spec:
                 - name: AMBASSADOR_SINGLE_NAMESPACE
                   value: "false"
                 - name: ENGINE_CONTAINER_IMAGE_AND_VERSION
-                  value: docker.io/seldonio/engine:1.3.0
+                  value: docker.io/seldonio/engine:1.2.2
                 - name: ENGINE_CONTAINER_IMAGE_PULL_POLICY
                   value: IfNotPresent
                 - name: ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME
@@ -699,7 +696,7 @@ spec:
                 - name: USE_EXECUTOR
                   value: "true"
                 - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
-                  value: seldonio/seldon-core-executor:1.3.0
+                  value: seldonio/seldon-core-executor:1.2.2
                 - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
                   value: IfNotPresent
                 - name: EXECUTOR_PROMETHEUS_PATH
@@ -714,7 +711,7 @@ spec:
                 - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT
                   value: http://default-broker
                 - name: DEFAULT_USER_ID
-                image: seldonio/seldon-core-operator:1.3.0
+                image: seldonio/seldon-core-operator:1.2.2
                 name: manager
                 ports:
                 - containerPort: 8443
@@ -783,12 +780,12 @@ spec:
   maintainers:
   - email: hello@seldon.io
     name: Seldon Technologies
-  maturity: alpha
+  maturity: stable
   minKubeVersion: 1.16.0
   provider:
     name: Seldon Technologies
-  replaces: seldon-operator.v1.2.2
+  replaces: seldon-operator.v1.2.1
   selector:
     matchLabels:
       name: seldon-operator
-  version: 1.3.0
+  version: 1.2.2

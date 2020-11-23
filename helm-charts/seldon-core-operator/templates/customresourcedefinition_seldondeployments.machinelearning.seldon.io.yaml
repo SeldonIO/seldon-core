@@ -3913,6 +3913,12 @@ spec:
                         type: object
                       endpoint:
                         properties:
+                          grpc_port:
+                            format: int32
+                            type: integer
+                          http_port:
+                            format: int32
+                            type: integer
                           service_host:
                             type: string
                           service_port:
@@ -4142,6 +4148,12 @@ spec:
                         type: array
                       endpoint:
                         properties:
+                          grpc_port:
+                            format: int32
+                            type: integer
+                          http_port:
+                            format: int32
+                            type: integer
                           service_host:
                             type: string
                           service_port:

@@ -21,10 +21,7 @@ kind_load: build
 #
 
 # https://connect.redhat.com/project/4035711/view
-scan_rest=ospid-c90fdfe6-d054-4598-baa8-7f7aac3ed63a
-# no groc at present
-scan_grpc=
-scan=
+scan=ospid-c90fdfe6-d054-4598-baa8-7f7aac3ed63a
 redhat-image-scan:
 	docker pull ${IMAGE_BASE}:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \

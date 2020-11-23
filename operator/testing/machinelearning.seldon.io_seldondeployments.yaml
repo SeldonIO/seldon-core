@@ -3,7 +3,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: seldon-system/seldon-serving-cert
-    controller-gen.kubebuilder.io/version: v0.2.5
+    controller-gen.kubebuilder.io/version: v0.2.9
   creationTimestamp: null
   labels:
     app: seldon
@@ -6655,10 +6655,10 @@ spec:
                         type: object
                       endpoint:
                         properties:
-                          grpc_port:
+                          grpcPort:
                             format: int32
                             type: integer
-                          http_port:
+                          httpPort:
                             format: int32
                             type: integer
                           service_host:
@@ -6903,10 +6903,10 @@ spec:
                         type: array
                       endpoint:
                         properties:
-                          grpc_port:
+                          grpcPort:
                             format: int32
                             type: integer
-                          http_port:
+                          httpPort:
                             format: int32
                             type: integer
                           service_host:

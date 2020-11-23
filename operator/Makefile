@@ -260,13 +260,13 @@ config/crd_v1/patches/graph_children.yaml:
 .PHONY: bundle
 recreate_bundle:
 	rm -r bundle
-	kustomize build config/manifests | operator-sdk --verbose generate bundle --version ${VERSION}
-	python hack/csv_hack.py bundle/manifests/seldon-operator.clusterserviceversion.yaml
+	kustomize build config/manifests | operator-sdk --verbose generate bundle --default-channel stable --version ${VERSION}
+	python hack/csv_hack.py bundle/manifests/seldon-operator.clusterserviceversion.yaml ${VERSION}
 
 .PHONY: update_packagemanifests
 update_packagemanifests:
-	kustomize build config/manifests | operator-sdk --verbose generate packagemanifests --version ${VERSION}
-	python hack/csv_hack.py packagemanifests/${VERSION}/seldon-operator.clusterserviceversion.yaml
+	kustomize build config/manifests | operator-sdk --verbose generate packagemanifests --default-channel --channel stable --version ${VERSION}
+	python hack/csv_hack.py packagemanifests/${VERSION}/seldon-operator.clusterserviceversion.yaml ${VERSION}
 	mv packagemanifests/${VERSION}/seldon-operator.clusterserviceversion.yaml packagemanifests/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
 
 #
@@ -302,6 +302,13 @@ opm_index:
 opm_push:
 	docker push quay.io/seldon/test-catalog:latest
 
+# Run last to prepare for future release
+update_config:
+	sed -i s#${PREV_VERSION}#${VERSION}# config/manifests/bases/seldon-operator.clusterserviceversion.yaml
+
+.PHONY: update_openshift
+update_openshift: recreate_bundle update_packagemanifests create_bundle_image push_bundle_image validate_bundle_image opm_index opm_push
+
 #
 # Scorecard
 #
@@ -321,18 +328,40 @@ create_certified_bundle:
 	mkdir -p ${PKG_CERT}/${VERSION}
 	cp bundle/manifests/* ${PKG_CERT}/${VERSION}
 	./hack/update-openshift-certified.sh ${VERSION}
-	cd ${PKG_CERT} && opm alpha bundle generate -c alpha -p seldon-operator -d ./${VERSION}/ -u ./${VERSION}/
+	cd ${PKG_CERT} && opm alpha bundle generate -c stable -e stable -p seldon-operator -d ./${VERSION}/ -u ./${VERSION}/
 	mv ${PKG_CERT}/bundle.Dockerfile ${PKG_CERT}/bundle-${VERSION}.Dockerfile
 	mv ${PKG_CERT}/${VERSION}/seldon-operator.clusterserviceversion.yaml ${PKG_CERT}/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
 	mv ${PKG_CERT}/${VERSION}/manifests/seldon-operator.clusterserviceversion.yaml ${PKG_CERT}/${VERSION}/manifests/seldon-operator.v${VERSION}.clusterserviceversion.yaml
 	cd ${PKG_CERT} && sed -i 's#seldon-operator.v.*#seldon-operator.v${VERSION}#' seldon-operator.package.yaml
 
-build_certified_bundle:
-	opm alpha bundle build -d packagemanifests-certified/${VERSION}/ --tag quay.io/seldon/seldon-operator-certified:v${VERSION} --package seldon-operator --channels alpha --overwrite -b docker
 
+.PHONY: create_bundle_image_certified
+create_bundle_image_certified:
+	cd ${PKG_CERT} && docker build . -f bundle-${VERSION}.Dockerfile -t quay.io/seldon/seldon-operator-certified:v${VERSION}
+
+.PHONY: push_bundle_image_certified
+push_bundle_image_certified:
+	docker push quay.io/seldon/seldon-operator-certified:v${VERSION}
+
+.PHONY: validate_bundle_image
+validate_bundle_image_certified:
+	operator-sdk bundle validate quay.io/seldon/seldon-operator-certified:v${VERSION}
+
+
+#build_certified_bundle:
+#	opm alpha bundle build -d packagemanifests-certified/${VERSION}/ --tag quay.io/seldon/seldon-operator-certified:v${VERSION} --package seldon-operator --default stable --channels stable --overwrite -b docker
+
+opm_index_certified:
+	opm index add -c docker --bundles quay.io/seldon/seldon-operator-certified:v${VERSION},quay.io/seldon/seldon-operator-certified:v${PREV_VERSION} --tag quay.io/seldon/test-catalog-certified:latest
+
+
+opm_push_certified:
+	docker push quay.io/seldon/test-catalog-certified:latest
 
 bundle_certified_push:
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		echo $${rh_password_operator_bundle} | docker login -u unused scan.connect.redhat.com --password-stdin
 	docker tag quay.io/seldon/seldon-operator-certified:v${VERSION} scan.connect.redhat.com/ospid-78efc0cc-a4a5-4244-a31d-6820eae1ccb1/seldon-operator-certified:${VERSION}
 	docker push scan.connect.redhat.com/ospid-78efc0cc-a4a5-4244-a31d-6820eae1ccb1/seldon-operator-certified:${VERSION}
+
+update_openshift_certified: create_certified_bundle create_bundle_image_certified push_bundle_image_certified validate_bundle_image_certified opm_index_certified opm_push_certified 

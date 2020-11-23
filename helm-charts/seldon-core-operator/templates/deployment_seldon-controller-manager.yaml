@@ -47,21 +47,13 @@ spec:
           value: ''
         - name: RELATED_IMAGE_STORAGE_INITIALIZER
           value: ''
-        - name: RELATED_IMAGE_SKLEARNSERVER_REST
+        - name: RELATED_IMAGE_SKLEARNSERVER
           value: ''
-        - name: RELATED_IMAGE_SKLEARNSERVER_GRPC
+        - name: RELATED_IMAGE_XGBOOSTSERVER
           value: ''
-        - name: RELATED_IMAGE_XGBOOSTSERVER_REST
+        - name: RELATED_IMAGE_MLFLOWSERVER
           value: ''
-        - name: RELATED_IMAGE_XGBOOSTSERVER_GRPC
-          value: ''
-        - name: RELATED_IMAGE_MLFLOWSERVER_REST
-          value: ''
-        - name: RELATED_IMAGE_MLFLOWSERVER_GRPC
-          value: ''
-        - name: RELATED_IMAGE_TFPROXY_REST
-          value: ''
-        - name: RELATED_IMAGE_TFPROXY_GRPC
+        - name: RELATED_IMAGE_TFPROXY
           value: ''
         - name: RELATED_IMAGE_TENSORFLOW
           value: ''
