@@ -291,7 +291,7 @@ def _send_batch_predict(
                 str_output = json.dumps(seldon_payload.response)
                 break
             except (requests.exceptions.RequestException, AssertionError) as e:
-                logger.error("Exception:", e, "retries:", retries)
+                logger.error(f"Exception: {e}, retries {retries}")
                 if i == (retries - 1):
                     raise
 
@@ -367,7 +367,7 @@ def _send_batch_feedback(
                 str_output = json.dumps(seldon_payload.response)
                 break
             except (requests.exceptions.RequestException, AssertionError) as e:
-                logger.error("Exception:", e, "retries:", retries)
+                logger.error(f"Exception: {e}, retries {retries}")
                 if i == (retries - 1):
                     raise
 
