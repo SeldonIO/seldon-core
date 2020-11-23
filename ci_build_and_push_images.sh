@@ -192,7 +192,7 @@ exit $((${PYTHON_EXIT_VALUE} \
     + ${XGBOOST_EXIT_VALUE} \
     + ${TFPROXY_EXIT_VALUE} \
     + ${STORAGE_INITIALIZER_EXIT_VALUE} \
-    + ${MAB_EXIT_VALUE} \    
+    + ${MAB_EXIT_VALUE} \
     + ${EXPLAIN_EXIT_VALUE}))
 
 
