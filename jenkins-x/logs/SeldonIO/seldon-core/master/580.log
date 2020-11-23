@@ -1,0 +1,24 @@
+
+Showing logs for build [32mseldonio-seldon-core-master-rel-wh29h-580[0m stage [32mbuild-and-push[0m and container [32mstep-credential-initializer-9n2gq[0m
+{"level":"info","ts":1606149518.0628433,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1606149518.0636444,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-master-rel-wh29h-580[0m stage [32mbuild-and-push[0m and container [32mstep-working-dir-initializer-cwjs2[0m
+{"level":"info","ts":1606149519.2977512,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1606149519.299296,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-master-rel-wh29h-580[0m stage [32mbuild-and-push[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-master-rel-wh29h-580[0m stage [32mbuild-and-push[0m and container [32mstep-git-source-seldonio-seldon-core-master-rel-wh29h-2766l[0m
+Unable to retrieve container logs for docker://a7c4a60648e002429e719cf4a137dd33e41b6b7143e4dd84ab05ad8156151fa2
+
+Showing logs for build [32mseldonio-seldon-core-master-rel-wh29h-580[0m stage [32mbuild-and-push[0m and container [32mstep-setup-builder-home[0m
+Unable to retrieve container logs for docker://2f5309e72e2a95568dbac7050d75b11b9a9d851b37bbdeab9b9cd56b1cf6f8e1
+
+Showing logs for build [32mseldonio-seldon-core-master-rel-wh29h-580[0m stage [32mbuild-and-push[0m and container [32mstep-git-merge[0m
+Unable to retrieve container logs for docker://2f64489968bdb188fa984e9460a63c707cb6c6d1cc5a905834f2c0dcf057b56a
+
+Showing logs for build [32mseldonio-seldon-core-master-rel-wh29h-580[0m stage [32mbuild-and-push[0m and container [32mstep-build-and-push-images[0m
+Unable to retrieve container logs for docker://05f1e90d09a9802e9955267326ee75aea9c84b4f658ab5147d37c6855b0a3ff6
+[31m
+Pipeline failed on stage 'build-and-push' : container 'step-build-and-push-images'. The execution of the pipeline has stopped.[0m
