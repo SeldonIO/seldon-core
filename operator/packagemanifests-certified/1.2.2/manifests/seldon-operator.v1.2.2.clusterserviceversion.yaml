@@ -797,11 +797,11 @@ spec:
   maintainers:
   - email: hello@seldon.io
     name: Seldon Technologies
-  replaces: seldon-operator.v1.2.1        
   maturity: alpha
   minKubeVersion: 1.13.0
   provider:
     name: Seldon Technologies
+  replaces: seldon-operator.v1.2.1    
   selector:
     matchLabels:
       name: seldon-operator
