@@ -488,11 +488,19 @@ class SeldonClient(object):
         elif k["gateway"] == "seldon":
             if k["transport"] == "rest":
                 return rest_feedback_seldon(
-                    prediction_request, prediction_response, reward, **k
+                    prediction_request,
+                    prediction_response,
+                    prediction_truth,
+                    reward,
+                    **k,
                 )
             elif k["transport"] == "grpc":
                 return grpc_feedback_seldon(
-                    prediction_request, prediction_response, reward, **k
+                    prediction_request,
+                    prediction_response,
+                    prediction_truth,
+                    reward,
+                    **k,
                 )
             else:
                 raise SeldonClientException("Unknown transport " + k["transport"])
@@ -1914,10 +1922,12 @@ def grpc_predict_gateway(
 def rest_feedback_seldon(
     prediction_request: prediction_pb2.SeldonMessage = None,
     prediction_response: prediction_pb2.SeldonMessage = None,
+    prediction_truth: prediction_pb2.SeldonMessage = None,
     reward: float = 0,
     namespace: str = None,
     seldon_rest_endpoint: str = "localhost:8002",
     client_return_type: str = "proto",
+    raw_request: dict = None,
     **kwargs,
 ) -> SeldonClientFeedback:
     """
@@ -1943,10 +1953,18 @@ def rest_feedback_seldon(
     -------
 
     """
-    request = prediction_pb2.Feedback(
-        request=prediction_request, response=prediction_response, reward=reward
-    )
-    payload = feedback_to_json(request)
+
+    if raw_request:
+        request = json_to_feedback(raw_request)
+        payload = raw_request
+    else:
+        request = prediction_pb2.Feedback(
+            request=prediction_request,
+            response=prediction_response,
+            reward=reward,
+            truth=prediction_truth,
+        )
+        payload = feedback_to_json(request)
     response_raw = requests.post(
         "http://" + seldon_rest_endpoint + "/api/v1.0/feedback", json=payload,
     )
@@ -1977,6 +1995,7 @@ def rest_feedback_seldon(
 def grpc_feedback_seldon(
     prediction_request: prediction_pb2.SeldonMessage = None,
     prediction_response: prediction_pb2.SeldonMessage = None,
+    prediction_truth: prediction_pb2.SeldonMessage = None,
     reward: float = 0,
     namespace: str = None,
     seldon_rest_endpoint: str = "localhost:8002",
@@ -1984,6 +2003,7 @@ def grpc_feedback_seldon(
     grpc_max_send_message_length: int = 4 * 1024 * 1024,
     grpc_max_receive_message_length: int = 4 * 1024 * 1024,
     client_return_type: str = "proto",
+    raw_request: dict = None,
     **kwargs,
 ) -> SeldonClientFeedback:
     """
@@ -2015,9 +2035,18 @@ def grpc_feedback_seldon(
     -------
 
     """
-    request = prediction_pb2.Feedback(
-        request=prediction_request, response=prediction_response, reward=reward
-    )
+
+    if isinstance(raw_request, prediction_pb2.Feedback):
+        request = raw_request
+    elif raw_request:
+        request = json_to_feedback(raw_request)
+    else:
+        request = prediction_pb2.Feedback(
+            request=prediction_request,
+            response=prediction_response,
+            reward=reward,
+            truth=prediction_truth,
+        )
     channel = grpc.insecure_channel(
         seldon_grpc_endpoint,
         options=[
