@@ -158,8 +158,6 @@ class SeldonClient(object):
         namespace: str = None,
         deployment_name: str = None,
         payload_type: str = "tensor",
-        seldon_rest_endpoint: str = "localhost:8002",
-        seldon_grpc_endpoint: str = "localhost:8004",
         gateway_endpoint: str = "localhost:8003",
         microservice_endpoint: str = "localhost:5000",
         grpc_max_send_message_length: int = 4 * 1024 * 1024,
@@ -183,10 +181,6 @@ class SeldonClient(object):
            name of seldon deployment
         payload_type
            type of payload - tensor, ndarray or tftensor
-        seldon_rest_endpoint
-           REST endpoint to seldon api server
-        seldon_grpc_endpoint
-           gRPC endpoint to seldon api server
         gateway_endpoint
            Gateway endpoint
         microservice_endpoint
@@ -271,8 +265,6 @@ class SeldonClient(object):
         transport: str = None,
         deployment_name: str = None,
         payload_type: str = None,
-        seldon_rest_endpoint: str = None,
-        seldon_grpc_endpoint: str = None,
         gateway_endpoint: str = None,
         microservice_endpoint: str = None,
         method: str = None,
@@ -304,10 +296,6 @@ class SeldonClient(object):
            name of seldon deployment
         payload_type
            type of payload - tensor, ndarray or tftensor
-        seldon_rest_endpoint
-           REST endpoint to seldon api server
-        seldon_grpc_endpoint
-           gRPC endpoint to seldon api server
         gateway_endpoint
            Gateway endpoint
         microservice_endpoint
@@ -348,8 +336,6 @@ class SeldonClient(object):
             transport=transport,
             deployment_name=deployment_name,
             payload_type=payload_type,
-            seldon_rest_endpoint=seldon_rest_endpoint,
-            seldon_grpc_endpoint=seldon_grpc_endpoint,
             gateway_endpoint=gateway_endpoint,
             microservice_endpoint=microservice_endpoint,
             method=method,
@@ -395,8 +381,6 @@ class SeldonClient(object):
         transport: str = None,
         deployment_name: str = None,
         payload_type: str = None,
-        seldon_rest_endpoint: str = None,
-        seldon_grpc_endpoint: str = None,
         gateway_endpoint: str = None,
         microservice_endpoint: str = None,
         method: str = None,
@@ -424,10 +408,6 @@ class SeldonClient(object):
            name of seldon deployment
         payload_type
            payload - tensor, ndarray or tftensor
-        seldon_rest_endpoint
-           REST endpoint to seldon api server
-        seldon_grpc_endpoint
-           gRPC endpoint to seldon api server
         gateway_endpoint
            Gateway endpoint
         microservice_endpoint
@@ -454,8 +434,6 @@ class SeldonClient(object):
             transport=transport,
             deployment_name=deployment_name,
             payload_type=payload_type,
-            seldon_rest_endpoint=seldon_rest_endpoint,
-            seldon_grpc_endpoint=seldon_grpc_endpoint,
             gateway_endpoint=gateway_endpoint,
             microservice_endpoint=microservice_endpoint,
             method=method,
@@ -541,10 +519,6 @@ class SeldonClient(object):
            name of seldon deployment
         payload_type
            type of payload - tensor, ndarray or tftensor
-        seldon_rest_endpoint
-           REST endpoint to seldon api server
-        seldon_grpc_endpoint
-           gRPC endpoint to seldon api server
         gateway_endpoint
            Gateway endpoint
         microservice_endpoint
@@ -614,8 +588,6 @@ class SeldonClient(object):
         transport: str = None,
         deployment_name: str = None,
         payload_type: str = None,
-        seldon_rest_endpoint: str = None,
-        seldon_grpc_endpoint: str = None,
         gateway_endpoint: str = None,
         microservice_endpoint: str = None,
         method: str = None,
@@ -642,10 +614,6 @@ class SeldonClient(object):
            name of seldon deployment
         payload_type
            payload - tensor, ndarray or tftensor
-        seldon_rest_endpoint
-           REST endpoint to seldon api server
-        seldon_grpc_endpoint
-           gRPC endpoint to seldon api server
         gateway_endpoint
            Gateway endpoint
         microservice_endpoint
@@ -689,8 +657,6 @@ class SeldonClient(object):
             transport=transport,
             deployment_name=deployment_name,
             payload_type=payload_type,
-            seldon_rest_endpoint=seldon_rest_endpoint,
-            seldon_grpc_endpoint=seldon_grpc_endpoint,
             gateway_endpoint=gateway_endpoint,
             microservice_endpoint=microservice_endpoint,
             method=method,
@@ -742,8 +708,6 @@ class SeldonClient(object):
         transport: str = None,
         deployment_name: str = None,
         payload_type: str = None,
-        seldon_rest_endpoint: str = None,
-        seldon_grpc_endpoint: str = None,
         gateway_endpoint: str = None,
         microservice_endpoint: str = None,
         method: str = None,
@@ -768,10 +732,6 @@ class SeldonClient(object):
            name of seldon deployment
         payload_type
            payload - tensor, ndarray or tftensor
-        seldon_rest_endpoint
-           REST endpoint to seldon api server
-        seldon_grpc_endpoint
-           gRPC endpoint to seldon api server
         gateway_endpoint
            Gateway endpoint
         microservice_endpoint
@@ -797,8 +757,6 @@ class SeldonClient(object):
             transport=transport,
             deployment_name=deployment_name,
             payload_type=payload_type,
-            seldon_rest_endpoint=seldon_rest_endpoint,
-            seldon_grpc_endpoint=seldon_grpc_endpoint,
             gateway_endpoint=gateway_endpoint,
             microservice_endpoint=microservice_endpoint,
             method=method,
@@ -1229,7 +1187,6 @@ def microservice_api_grpc_feedback(
 def rest_predict_seldon(
     namespace: str = None,
     gateway_endpoint: str = "localhost:8002",
-    seldon_rest_endpoint: str = "localhost:8002",
     shape: Tuple = (1, 1),
     data: object = None,
     payload_type: str = "tensor",
@@ -1247,8 +1204,6 @@ def rest_predict_seldon(
     ----------
     namespace
        k8s namespace of running deployment
-    seldon_rest_endpoint
-       Endpoint of REST endpoint
     shape
        Shape of endpoint
     data
@@ -1285,9 +1240,8 @@ def rest_predict_seldon(
         request = prediction_pb2.SeldonMessage(data=datadef)
     payload = seldon_message_to_json(request)
 
-    rest_endpoint = gateway_endpoint or seldon_rest_endpoint
     response_raw = requests.post(
-        "http://" + rest_endpoint + "/api/v0.1/predictions", json=payload,
+        "http://" + gateway_endpoint + "/api/v0.1/predictions", json=payload,
     )
     if response_raw.status_code == 200:
         success = True
@@ -1316,7 +1270,6 @@ def rest_predict_seldon(
 def grpc_predict_seldon(
     namespace: str = None,
     gateway_endpoint: str = "localhost:8004",
-    seldon_grpc_endpoint: str = "localhost:8004",
     shape: Tuple[int, int] = (1, 1),
     data: np.ndarray = None,
     payload_type: str = "tensor",
@@ -1380,9 +1333,8 @@ def grpc_predict_seldon(
         datadef = array_to_grpc_datadef(payload_type, data, names=names)
         request = prediction_pb2.SeldonMessage(data=datadef)
 
-    grpc_endpoint = gateway_endpoint or seldon_grpc_endpoint
     channel = grpc.insecure_channel(
-        grpc_endpoint,
+        gateway_endpoint,
         options=[
             ("grpc.max_send_message_length", grpc_max_send_message_length),
             ("grpc.max_receive_message_length", grpc_max_receive_message_length),
@@ -1929,7 +1881,6 @@ def rest_feedback_seldon(
     reward: float = 0,
     namespace: str = None,
     gateway_endpoint: str = "localhost:8002",
-    seldon_rest_endpoint: str = "localhost:8002",
     client_return_type: str = "proto",
     raw_request: dict = None,
     **kwargs,
@@ -1947,8 +1898,6 @@ def rest_feedback_seldon(
        A reward to send in feedback
     namespace
        k8s namespace of running deployment
-    seldon_rest_endpoint
-       Endpoint of REST endpoint
     client_return_type
         the return type of all functions can be either dict or proto
     kwargs
@@ -1970,9 +1919,8 @@ def rest_feedback_seldon(
         )
         payload = feedback_to_json(request)
 
-    rest_endpoint = gateway_endpoint or seldon_rest_endpoint
     response_raw = requests.post(
-        "http://" + rest_endpoint + "/api/v1.0/feedback", json=payload,
+        "http://" + gateway_endpoint + "/api/v1.0/feedback", json=payload,
     )
     if response_raw.status_code == 200:
         success = True
@@ -2005,7 +1953,6 @@ def grpc_feedback_seldon(
     reward: float = 0,
     namespace: str = None,
     gateway_endpoint: str = "localhost:8004",
-    seldon_grpc_endpoint: str = "localhost:8004",
     grpc_max_send_message_length: int = 4 * 1024 * 1024,
     grpc_max_receive_message_length: int = 4 * 1024 * 1024,
     client_return_type: str = "proto",
@@ -2025,8 +1972,6 @@ def grpc_feedback_seldon(
        A reward to send in feedback
     namespace
        k8s namespace of running deployment
-    seldon_grpc_endpoint
-       Endpoint for Seldon grpc
     grpc_max_send_message_length
        Max grpc send message size in bytes
     grpc_max_receive_message_length
@@ -2052,9 +1997,8 @@ def grpc_feedback_seldon(
             truth=prediction_truth,
         )
 
-    grpc_endpoint = gateway_endpoint or seldon_grpc_endpoint
     channel = grpc.insecure_channel(
-        grpc_endpoint,
+        gateway_endpoint,
         options=[
             ("grpc.max_send_message_length", grpc_max_send_message_length),
             ("grpc.max_receive_message_length", grpc_max_receive_message_length),

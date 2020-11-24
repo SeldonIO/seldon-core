@@ -9,7 +9,7 @@ from seldon_core.utils import (
     seldon_message_to_json,
     json_to_seldon_message,
 )
-from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
+from seldon_core.proto import prediction_pb2
 from google.protobuf import any_pb2
 import numpy as np
 import json
