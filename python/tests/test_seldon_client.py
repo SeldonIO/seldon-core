@@ -103,7 +103,7 @@ def test_predict_rest_json_data_ambassador_dict_response(mock_post):
 
 
 @mock.patch("requests.post", side_effect=mocked_requests_post_success_json_data)
-def test_predict_rest_json_data_seldon(mock_post, mock_token):
+def test_predict_rest_json_data_seldon(mock_post):
     sc = SeldonClient(
         deployment_name="mymodel", gateway="seldon", client_return_type="proto"
     )
@@ -117,7 +117,7 @@ def test_predict_rest_json_data_seldon(mock_post, mock_token):
 
 
 @mock.patch("requests.post", side_effect=mocked_requests_post_success_json_data)
-def test_predict_rest_json_data_seldon_return_type(mock_post, mock_token):
+def test_predict_rest_json_data_seldon_return_type(mock_post):
     sc = SeldonClient(
         deployment_name="mymodel", gateway="seldon", client_return_type="dict"
     )
