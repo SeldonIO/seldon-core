@@ -35,6 +35,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/proto/tensorflow/serving"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/reflection"
 	zapf "sigs.k8s.io/controller-runtime/pkg/log/zap"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
@@ -140,6 +141,8 @@ func runGrpcServer(lis net.Listener, logger logr.Logger, predictor *v1.Predictor
 	case api.ProtocolSeldon:
 		seldonGrpcServer := seldon.NewGrpcSeldonServer(predictor, client, serverUrl, namespace)
 		proto.RegisterSeldonServer(grpcServer, seldonGrpcServer)
+		// Register reflection service on gRPC server.
+		reflection.Register(grpcServer)
 	case api.ProtocolTensorflow:
 		tensorflowGrpcServer := tensorflow.NewGrpcTensorflowServer(predictor, client, serverUrl, namespace)
 		serving.RegisterPredictionServiceServer(grpcServer, tensorflowGrpcServer)
