@@ -486,10 +486,8 @@ def construct_response_json(
         response["meta"]["puid"] = puid
 
     routing = {model_name: -1}
-
     if model_routing_name:
         routing[model_routing_name] = model_routing_index
-
     response["meta"]["routing"] = routing
 
     request_path = client_request_raw.get("meta", {}).get("requestPath", {})
@@ -535,10 +533,13 @@ def construct_response(
         tags = meta.get("tags", {})
         metrics = meta.get("metrics", [])
         request_path = meta.get("requestPath", {})
+        routing = meta.get("routing", {})
     else:
         tags = {}
         metrics = []
         request_path = {}
+        routing = {}
+
     request_path = {**get_request_path(), **request_path}
     if request_path:
         meta_json["requestPath"] = request_path
@@ -556,6 +557,11 @@ def construct_response(
     if client_request.meta:
         if client_request.meta.puid:
             meta_json["puid"] = client_request.meta.puid
+
+    routing = {model_name: -1}
+    if model_routing_name:
+        routing[model_routing_name] = model_routing_index
+    meta_json["routing"] = routing
 
     json_format.ParseDict(meta_json, meta_pb)
     if isinstance(client_raw_response, np.ndarray) or isinstance(
