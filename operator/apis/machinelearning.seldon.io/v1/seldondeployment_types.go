@@ -75,8 +75,6 @@ const (
 	ANNOTATION_CUSTOM_SVC_NAME = "seldon.io/svc-name"
 	ANNOTATION_EXECUTOR        = "seldon.io/executor"
 
-	ROUTER_NAME_NOT_IMPLEMENTED = "NOT_IMPLEMENTED"
-
 	DeploymentNamePrefix = "seldon"
 )
 
@@ -178,7 +176,7 @@ func GetPredictiveUnitRoutingInfo(pu *PredictiveUnit, name string) (int, string)
 		}
 		return GetPredictiveUnitRoutingInfo(&pu.Children[i], name)
 	}
-	return -1, ROUTER_NAME_NOT_IMPLEMENTED
+	return -1, ""
 }
 
 // if engine is not separated then this tells us which pu it should go on, as the mutating webhook handler has set host as localhost on the pu
