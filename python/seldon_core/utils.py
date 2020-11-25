@@ -485,10 +485,12 @@ def construct_response_json(
     if puid:
         response["meta"]["puid"] = puid
 
-    response["meta"]["routing"] = {
-        **routing,
-        **{model_routing_name: model_routing_index},
-    }
+    routing = {model_name: -1}
+
+    if model_routing_name:
+        routing[model_routing_name] = model_routing_index
+
+    response["meta"]["routing"] = routing
 
     request_path = client_request_raw.get("meta", {}).get("requestPath", {})
     request_path = {**get_request_path(), **request_path}
