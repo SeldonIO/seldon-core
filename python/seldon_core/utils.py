@@ -29,9 +29,13 @@ logger = logging.getLogger(__name__)
 
 ENV_MODEL_NAME = "PREDICTIVE_UNIT_ID"
 ENV_MODEL_IMAGE = "PREDICTIVE_UNIT_IMAGE"
+ENV_ROUTING_INDEX = "SELDON_ROUTING_INDEX"
+ENV_ROUTING_NAME = "SELDON_ROUTING_NAME"
 NONIMPLEMENTED_MSG = "NOT_IMPLEMENTED"
 
 model_name = os.environ.get(ENV_MODEL_NAME, f"{NONIMPLEMENTED_MSG}")
+model_routing_name = os.environ.get(ENV_ROUTING_NAME, f"{NONIMPLEMENTED_MSG}")
+model_routing_index = os.environ.get(ENV_ROUTING_INDEX, f"{NONIMPLEMENTED_MSG}")
 image_name = os.environ.get(
     ENV_MODEL_IMAGE, f"{NONIMPLEMENTED_MSG}:{NONIMPLEMENTED_MSG}"
 )
@@ -460,9 +464,12 @@ def construct_response_json(
     if meta:
         tags = meta.get("tags", {})
         metrics = meta.get("metrics", [])
+        routing = meta.get("routing", {})
     else:
         tags = {}
         metrics = []
+        routing = {}
+
     custom_tags = client_custom_tags(user_model)
     if custom_tags:
         tags.update(custom_tags)
@@ -477,6 +484,11 @@ def construct_response_json(
     puid = client_request_raw.get("meta", {}).get("puid", None)
     if puid:
         response["meta"]["puid"] = puid
+
+    response["meta"]["routing"] = {
+        **routing,
+        **{model_routing_name: model_routing_index},
+    }
 
     request_path = client_request_raw.get("meta", {}).get("requestPath", {})
     request_path = {**get_request_path(), **request_path}
