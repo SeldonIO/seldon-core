@@ -702,6 +702,7 @@ func createContainerService(deploy *appsv1.Deployment,
 	containerServiceKey := machinelearningv1.Label_seldon_app_svc
 	containerServiceValue := machinelearningv1.GetContainerServiceName(mlDep.Name, p, con)
 	pu := machinelearningv1.GetPredictiveUnit(&p.Graph, con.Name)
+	routerIndex, routerName := machinelearningv1.GetPredictiveUnitRoutingInfo(&p.Graph, con.Name)
 
 	// only create services for containers defined as pus in the graph
 	if pu == nil {
@@ -812,6 +813,8 @@ func createContainerService(deploy *appsv1.Deployment,
 		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_ID, Value: con.Name},
 		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_IMAGE, Value: con.Image},
 		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTOR_ID, Value: p.Name},
+		corev1.EnvVar{Name: machinelearningv1.ENV_SELDON_ROUTING_INDEX, Value: strconv.Itoa(routerIndex)},
+		corev1.EnvVar{Name: machinelearningv1.ENV_SELDON_ROUTING_NAME, Value: routerName},
 		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTOR_LABELS, Value: string(labels)},
 		corev1.EnvVar{Name: machinelearningv1.ENV_SELDON_DEPLOYMENT_ID, Value: mlDep.ObjectMeta.Name},
 		corev1.EnvVar{Name: machinelearningv1.ENV_SELDON_EXECUTOR_ENABLED, Value: strconv.FormatBool(isExecutorEnabled(mlDep))},
