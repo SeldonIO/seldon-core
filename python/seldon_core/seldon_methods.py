@@ -548,7 +548,7 @@ def aggregate(
                     if route in routing:
                         routing[route] = -1
                     else:
-                        routing[route] = val
+                        routing[route] = int(val)
         return {"tags": tags}
 
     def merge_metrics(meta_list, custom_metrics):
