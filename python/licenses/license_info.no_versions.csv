@@ -22,6 +22,7 @@
 "google-pasta","Apache Software License"
 "grpcio","Apache Software License"
 "grpcio-opentracing","Apache Software License"
+"grpcio-reflection","Apache Software License"
 "gunicorn","MIT License"
 "h5py","BSD License"
 "idna","BSD License"
