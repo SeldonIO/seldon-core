@@ -34,8 +34,8 @@ ENV_ROUTING_NAME = "SELDON_ROUTING_NAME"
 NONIMPLEMENTED_MSG = "NOT_IMPLEMENTED"
 
 model_name = os.environ.get(ENV_MODEL_NAME, f"{NONIMPLEMENTED_MSG}")
-model_routing_name = os.environ.get(ENV_ROUTING_NAME, f"{NONIMPLEMENTED_MSG}")
-model_routing_index = os.environ.get(ENV_ROUTING_INDEX, f"{NONIMPLEMENTED_MSG}")
+model_routing_name = os.environ.get(ENV_ROUTING_NAME, "")
+model_routing_index = os.environ.get(ENV_ROUTING_INDEX, "")
 image_name = os.environ.get(
     ENV_MODEL_IMAGE, f"{NONIMPLEMENTED_MSG}:{NONIMPLEMENTED_MSG}"
 )
@@ -560,7 +560,7 @@ def construct_response(
 
     routing = {model_name: -1}
     if model_routing_name:
-        routing[model_routing_name] = model_routing_index
+        routing[model_routing_name] = int(model_routing_index)
     meta_json["routing"] = routing
 
     json_format.ParseDict(meta_json, meta_pb)
