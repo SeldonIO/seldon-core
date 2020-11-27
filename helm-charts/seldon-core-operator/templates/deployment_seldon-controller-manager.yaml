@@ -162,6 +162,8 @@ spec:
           name: cert
           readOnly: true
 {{- end }}
+      securityContext:
+        runAsUser: '{{ .Values.defaultUserID }}'
       serviceAccountName: '{{ .Values.serviceAccount.name }}'
       terminationGracePeriodSeconds: 10
 {{- if not .Values.managerCreateResources }}

@@ -25,6 +25,8 @@ spec:
         control-plane: seldon-controller-manager
     spec:
       serviceAccountName: manager
+      securityContext:
+        runAsUser: 8888
       containers:
       - command:
         - /manager

@@ -154,6 +154,11 @@ if __name__ == "__main__":
                 res["spec"]["template"]["spec"]["serviceAccountName"] = helm_value(
                     "serviceAccount.name"
                 )
+                
+                # SecurityContext
+                res["spec"]["template"]["spec"]["securityContext"]["runAsUser"] = helm_value(
+                    "defaultUserID"
+                )
 
                 # Resource requests
                 res["spec"]["template"]["spec"]["containers"][0]["resources"][
