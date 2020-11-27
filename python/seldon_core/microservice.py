@@ -40,6 +40,7 @@ DEFAULT_HTTP_PORT = 9000
 DEFAULT_METRICS_PORT = 6000
 
 DEBUG_ENV = "SELDON_DEBUG"
+GUNICORN_ACCESS_LOG_ENV = "SELDON_GUNICORN_ACCESS_LOG"
 
 
 def start_servers(
@@ -299,6 +300,15 @@ def main():
         "--pidfile", type=str, default=None, help="A file path to use for the PID file"
     )
 
+    parser.add_argument(
+        "--accesslog",
+        nargs="?",
+        type=bool,
+        default=getenv_as_bool(GUNICORN_ACCESS_LOG_ENV, default=False),
+        const=True,
+        help="Enable gunicorn access log.",
+    )
+
     args = parser.parse_args()
     parameters = parse_parameters(json.loads(args.parameters))
 
@@ -379,7 +389,7 @@ def main():
         def rest_prediction_server():
             options = {
                 "bind": "%s:%s" % ("0.0.0.0", http_port),
-                "accesslog": accesslog(args.log_level),
+                "accesslog": accesslog(args.accesslog),
                 "loglevel": args.log_level.lower(),
                 "timeout": 5000,
                 "threads": threads(args.threads, args.single_threaded),
@@ -443,7 +453,7 @@ def main():
         else:
             options = {
                 "bind": "%s:%s" % ("0.0.0.0", metrics_port),
-                "accesslog": accesslog(args.log_level),
+                "accesslog": accesslog(args.accesslog),
                 "loglevel": args.log_level.lower(),
                 "timeout": 5000,
                 "max_requests": args.max_requests,

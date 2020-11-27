@@ -16,15 +16,14 @@ def post_worker_init(worker):
     atexit.unregister(_exit_function)
 
 
-def accesslog(log_level: str) -> Union[str, None]:
+def accesslog(flag: bool) -> Union[str, None]:
     """
-    Enable / disable access log in Gunicorn depending on the log level.
+    Enable / disable access log in Gunicorn depending on the flag.
     """
 
-    if log_level in ["WARNING", "ERROR", "CRITICAL"]:
-        return None
-
-    return "-"
+    if flag:
+        return "-"
+    return None
 
 
 def threads(threads: int, single_threaded: bool) -> int:
