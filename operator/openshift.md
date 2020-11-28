@@ -62,18 +62,22 @@ Create a fork of https://github.com/operator-framework/community-operators
 
 Create a PR for community operator
 
+Update the Makefile locally for 
+
 ```
 COMMUNITY_OPERATORS_FOLDER=~/work/seldon-core/redhat/community-operators
-
-cp -r packagemanifests/1.3.0 ${COMMUNITY_OPERATORS_FOLDER}/community-operators/seldon-operator
-cp packagemanifests/seldon-operator.package.yaml ${COMMUNITY_OPERATORS_FOLDER}/community-operators/seldon-operator
 ```
 
-Run tests
+### Community Operator
 
 ```
-cd ${COMMUNITY_OPERATORS_FOLDER}
-make operator.test KUBE_VER=""  OP_PATH=community-operators/seldon-operator
+make update_community
+```
+
+Verify in community operator updated folder:
+
+```
+make operator.verify OP_PATH=community-operators/seldon-operator
 ```
 
 Add new folder and changed package yaml to a PR. Ensure you sign the commit.
@@ -84,7 +88,7 @@ git commit -s -m "Update Seldon Community Operator to 1.2.2"
 
 Push and create PR.
 
-Do the same for the upstream community operators
+### Upstream Operator
 
 ```
 COMMUNITY_OPERATORS_FOLDER=~/work/seldon-core/redhat/community-operators
