@@ -1,5 +1,6 @@
 import os
 import logging
+import flask.wrappers
 import pytest
 import numpy as np
 from google.protobuf import json_format
@@ -817,3 +818,206 @@ def test_proto_seldon_metrics_endpoint(cls, client_gets_metrics):
             assert labels["mytag"] == "mytagvalue"
 
     assert timer_present
+
+
+def test_seldon_metrics_predict_update_timer_with_custom_bins():
+    class Predictor:
+        fake_response = {
+            "data": {
+                "names": ["input-foo"],
+                "data": ["output-bar"],
+            },
+            "meta": {
+                "metrics": [
+                    {
+                        "type": "TIMER",
+                        "key": "mytimer_with_custom_bins",
+                        "value": 20.2,
+                        "tags": {
+                            "__SELDON_TIMER_BINS__": json.dumps(
+                                # / 1000: milliseconds => seconds
+                                (np.array([10, 20, 30]) / 1000).tolist()
+                            )
+                        },
+                    },
+                ]
+            },
+        }
+
+        def predict_raw(self, msg):
+            return self.fake_response
+
+    seldon_metrics = SeldonMetrics()
+
+    app = get_rest_microservice(Predictor(), seldon_metrics)
+    client = app.test_client()
+
+    seldon_metrics_history = []
+    for _ in range(2):
+        response = client.get("/predict?json={}")
+
+        assert isinstance(response, flask.wrappers.Response)
+        assert response.status_code == 200
+        assert response.json == Predictor.fake_response
+
+        assert len(seldon_metrics.data) == 1
+        seldon_metrics_history.append(seldon_metrics.data[os.getpid()])
+
+    key = (
+        "TIMER",
+        "mytimer_with_custom_bins",
+        "__SELDON_TIMER_BINS__-[0.01, 0.02, 0.03]_method-predict",
+    )
+
+    assert seldon_metrics_history == [
+        {
+            key: {
+                "value": (
+                    [0.0, 1.0],  # count per bin
+                    20.2 / 1000,  # sum of values
+                ),
+                "tags": {"method": "predict"},
+            }
+        },
+        {
+            key: {
+                "value": ([0.0, 2.0], 40.4 / 1000),
+                "tags": {"method": "predict"},
+            }
+        },
+    ]
+
+
+@pytest.mark.parametrize(
+    "invalid_bins_value",
+    [
+        ["a", 1, 2],
+        "abc",
+        ["x"],
+        7,
+        21.3,
+        {},
+    ],
+)
+def test_seldon_metrics_predict_update_timer_with_custom_bins_fallback_to_default_BINS_when_custom_bins_are_not_valid(
+    invalid_bins_value,
+):
+    class Predictor:
+        fake_response = {
+            "data": {
+                "names": ["input-foo"],
+                "data": ["output-bar"],
+            },
+            "meta": {
+                "metrics": [
+                    {
+                        "type": "TIMER",
+                        "key": "mytimer_with_custom_bins",
+                        "value": 1e-3,
+                        "tags": {
+                            "__SELDON_TIMER_BINS__": json.dumps(invalid_bins_value)
+                        },
+                    },
+                ]
+            },
+        }
+
+        def predict_raw(self, msg):
+            return self.fake_response
+
+    seldon_metrics = SeldonMetrics()
+
+    app = get_rest_microservice(Predictor(), seldon_metrics)
+    client = app.test_client()
+
+    response = client.get("/predict?json={}")
+    assert response.status_code == 200
+    assert response.json == Predictor.fake_response
+    key = (
+        "TIMER",
+        "mytimer_with_custom_bins",
+        f"__SELDON_TIMER_BINS__-{json.dumps(invalid_bins_value)}_method-predict",
+    )
+    assert seldon_metrics.data[os.getpid()] == {
+        key: {
+            "value": (
+                [1] + [0.0] * 50,
+                1e-6,
+            ),
+            "tags": {"method": "predict"},
+        }
+    }
+    assert len(seldon_metrics.data[os.getpid()][key]["value"][0]) == len(BINS) - 1
+
+
+def test_proto_seldon_metrics_predict_update_timer_with_custom_bins():
+    class Predictor:
+        fake_response = prediction_pb2.SeldonMessage(
+            data=prediction_pb2.DefaultData(
+                tensor=prediction_pb2.Tensor(
+                    shape=(1, 2),
+                    values=np.array([3, 5]),
+                )
+            ),
+            meta=prediction_pb2.Meta(
+                metrics=[
+                    prediction_pb2.Metric(
+                        type="TIMER",
+                        key="mytimer_with_custom_bins",
+                        value=30,
+                        tags={
+                            "__SELDON_TIMER_BINS__": json.dumps(
+                                # scaled down by a thousand for milliseconds => seconds
+                                (np.array([10, 20, 30, 40]) / 1000).tolist()
+                            )
+                        },
+                    )
+                ],
+            ),
+        )
+
+        def predict_raw(self, msg):
+            return self.fake_response
+
+    seldon_metrics = SeldonMetrics()
+
+    app = SeldonModelGRPC(Predictor(), seldon_metrics)
+
+    seldon_metrics_history = []
+    for _ in range(2):
+        response = app.Predict(
+            request_grpc=prediction_pb2.SeldonMessage(),
+            context=None,
+        )
+        assert isinstance(response, prediction_pb2.SeldonMessage)
+        assert response == Predictor.fake_response
+
+        assert len(seldon_metrics.data) == 1
+        seldon_metrics_history.append(seldon_metrics.data[os.getpid()])
+
+    key = (
+        "TIMER",
+        "mytimer_with_custom_bins",
+        "__SELDON_TIMER_BINS__-[0.01, 0.02, 0.03, 0.04]_method-predict",
+    )
+
+    assert seldon_metrics_history == [
+        {
+            key: {
+                "value": (
+                    [0.0, 0.0, 1.0],  # count per bin
+                    30 / 1000,  # sum of values
+                ),
+                "tags": {"method": "predict"},
+            }
+        },
+        {
+            key: {
+                "value": (
+                    [0.0, 0.0, 2.0],
+                    60 / 1000,
+                ),
+                "tags": {"method": "predict"},
+            }
+        },
+    ]

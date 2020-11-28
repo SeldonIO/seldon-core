@@ -135,13 +135,35 @@ class SeldonMetrics:
                 value = worker_data.get(key, {}).get("value", 0)
                 worker_data[key] = {"value": value + metrics["value"], "tags": tags}
             elif metrics_type == "TIMER":
+                try:
+                    bins = json.loads(
+                        tags.get("__SELDON_TIMER_BINS__", json.dumps(BINS))
+                    )
+                    assert isinstance(bins, list)
+                    # ensure the elements are all numerical
+                    bins = np.array(bins).astype(float).tolist()
+                except (
+                    json.decoder.JSONDecodeError,
+                    AssertionError,
+                    ValueError,
+                ) as err:
+                    logger.exception(err)
+                    bins = BINS
+
+                tags_clean = {
+                    k: v for k, v in tags.items() if k != "__SELDON_TIMER_BINS__"
+                }
+
                 vals, sumv = worker_data.get(key, {}).get(
-                    "value", (list(np.zeros(len(BINS) - 1)), 0)
+                    "value", (list(np.zeros(len(bins) - 1)), 0)
                 )
+
                 # Dividing by 1000 because unit is milliseconds
                 worker_data[key] = {
-                    "value": self._update_hist(metrics["value"] / 1000, vals, sumv),
-                    "tags": tags,
+                    "value": self._update_hist(
+                        metrics["value"] / 1000, vals, sumv, bins
+                    ),
+                    "tags": tags_clean,
                 }
             elif metrics_type == "GAUGE":
                 worker_data[key] = {"value": metrics["value"], "tags": tags}
@@ -201,8 +223,8 @@ class SeldonMetrics:
         return "_".join(["-".join(i) for i in tags.items()])
 
     @staticmethod
-    def _update_hist(x, vals, sumv):
-        hist = np.histogram([x], BINS)[0]
+    def _update_hist(x, vals, sumv, bins):
+        hist = np.histogram([x], bins)[0]
         vals = list(np.array(vals) + hist)
         return vals, sumv + x
 
