@@ -98,3 +98,22 @@ This should create the seldon-controller manager. Once running you can test. It 
 
 
 
+## Openshift Cluster Certified
+
+Create catalog source
+
+```bash
+kubectl create -f catalog-source-openshift-certified.yaml
+```
+
+Check
+
+```
+kubectl get catalogsource seldon-core-catalog-certified -n openshift-marketplace -o yaml
+```
+
+At present need to create operator from Openshift UI.
+
+
+
+

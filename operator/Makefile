@@ -300,9 +300,6 @@ opm_index:
 opm_push:
 	docker push quay.io/seldon/test-catalog:latest
 
-# Run last to prepare for future release
-update_config:
-	sed -i s#${PREV_VERSION}#${VERSION}# config/manifests/bases/seldon-operator.clusterserviceversion.yaml
 
 .PHONY: update_openshift
 update_openshift: recreate_bundle  update_packagemanifests clear_replaces create_push_bundle_image validate_bundle_image opm_index opm_push
@@ -344,6 +341,10 @@ create_certified_bundle:
 	./hack/update-openshift-certified.sh ${VERSION}
 	cd ${PKG_CERT} && opm alpha bundle generate -c stable -e stable -p seldon-operator -d ./${VERSION}/ -u ./${VERSION}/
 	mv ${PKG_CERT}/bundle.Dockerfile ${PKG_CERT}/bundle-${VERSION}.Dockerfile
+	echo '' >> ${PKG_CERT}/bundle-${VERSION}.Dockerfile
+	echo 'LABEL com.redhat.openshift.versions="v4.5,v4.6"' >> ${PKG_CERT}/bundle-${VERSION}.Dockerfile
+	echo 'LABEL com.redhat.delivery.backport=true' >> ${PKG_CERT}/bundle-${VERSION}.Dockerfile
+	echo 'LABEL com.redhat.delivery.operator.bundle=true' >> ${PKG_CERT}/bundle-${VERSION}.Dockerfile
 	mv ${PKG_CERT}/${VERSION}/seldon-operator.clusterserviceversion.yaml ${PKG_CERT}/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
 	mv ${PKG_CERT}/${VERSION}/manifests/seldon-operator.clusterserviceversion.yaml ${PKG_CERT}/${VERSION}/manifests/seldon-operator.v${VERSION}.clusterserviceversion.yaml
 	cd ${PKG_CERT} && sed -i 's#seldon-operator.v.*#seldon-operator.v${VERSION}#' seldon-operator.package.yaml
@@ -362,11 +363,8 @@ validate_bundle_image_certified:
 	operator-sdk bundle validate quay.io/seldon/seldon-operator-certified:v${VERSION}
 
 
-#build_certified_bundle:
-#	opm alpha bundle build -d packagemanifests-certified/${VERSION}/ --tag quay.io/seldon/seldon-operator-certified:v${VERSION} --package seldon-operator --default stable --channels stable --overwrite -b docker
-
 opm_index_certified:
-	opm index add -c docker --bundles quay.io/seldon/seldon-operator-certified:v${VERSION},quay.io/seldon/seldon-operator-certified:v${PREV_VERSION} --tag quay.io/seldon/test-catalog-certified:latest
+	opm index add -c docker --bundles quay.io/seldon/seldon-operator-certified:v${VERSION},quay.io/seldon/seldon-operator-certified:v1.2.2,quay.io/seldon/seldon-operator-certified:v1.2.1,quay.io/seldon/seldon-operator-certified:v1.2.0,quay.io/seldon/seldon-operator-certified:v1.1.0,quay.io/seldon/seldon-operator-certified:v0.1.5 --mode semver --tag quay.io/seldon/test-catalog-certified:latest
 
 
 opm_push_certified:
@@ -378,4 +376,12 @@ bundle_certified_push:
 	docker tag quay.io/seldon/seldon-operator-certified:v${VERSION} scan.connect.redhat.com/ospid-78efc0cc-a4a5-4244-a31d-6820eae1ccb1/seldon-operator-certified:${VERSION}
 	docker push scan.connect.redhat.com/ospid-78efc0cc-a4a5-4244-a31d-6820eae1ccb1/seldon-operator-certified:${VERSION}
 
-update_openshift_certified: create_certified_bundle create_bundle_image_certified push_bundle_image_certified validate_bundle_image_certified opm_index_certified opm_push_certified 
+update_old_certified_packages:
+	cd packagemanifests-certified && make build_push
+
+update_openshift_certified: update_old_certified_packages create_certified_bundle create_bundle_image_certified push_bundle_image_certified validate_bundle_image_certified opm_index_certified opm_push_certified 
+
+# Run last to prepare for future release
+PREV_VERSION=1.2.2
+update_config:
+	sed -i s#${PREV_VERSION}#${VERSION}# config/manifests/bases/seldon-operator.clusterserviceversion.yaml

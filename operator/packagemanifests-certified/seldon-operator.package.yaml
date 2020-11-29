@@ -1,5 +1,5 @@
 channels:
-- currentCSV: seldon-operator.v1.5.0-dev
+- currentCSV: seldon-operator.v1.5.0
   name: stable
 defaultChannel: stable
 packageName: seldon-operator-certified

@@ -115,16 +115,11 @@ Version: version.Version{OpmVersion:"1.12.3", GitCommit:"", BuildDate:"2020-09-1
 
 Will need to be run in release branch.
 
-Create new package
+Create new package and push to quay for testing
 
 ```
-make create_certified_bundle
+make update_openshift_certified
 ```
-
-```
-make build_certified_bundle
-```
-
 
 Push all images to redhat. requires download of passwords from 1password to `~/.config/seldon/seldon-core/redhat-image-passwords.sh`
 
@@ -135,12 +130,20 @@ python scan-images.py
 
 After these are finished (approx 1.5 hours) you will need to manually publish images on https://connect.redhat.com/project/5892531/images
 
+publish
 
-Create a new catalog for certified on quay for testing.
+ * https://connect.redhat.com/project/5912261/view
+ * https://connect.redhat.com/project/5912271/view
+ * https://connect.redhat.com/project/5912311/view
+ * https://connect.redhat.com/project/5912301/view
+ * https://connect.redhat.com/project/1366481/view
+ * https://connect.redhat.com/project/1366491/view
+ * https://connect.redhat.com/project/3977851/view
+ * https://connect.redhat.com/project/3986991/view
+ * https://connect.redhat.com/project/3987291/view
+ * https://connect.redhat.com/project/3993461/view
+ * https://connect.redhat.com/project/4035711/view
 
-```
-update_openshift_certified
-```
 
 Test as above for openshift but using the new catalog source for certified. 
 
@@ -151,9 +154,7 @@ Push bundle image to scanning and tests. Also needs passwords.
 make bundle_certified_push
 ```
 
-TODO: seems to be differences in `replaces` in csv which says `seldon-operastor` but the package is called `seldon-operator-certified`
-
-Publish image for final step to release new version of operator.
+This will start a test of the package in RedHat. Log on to check its success.
 
 ## Prepare for next release
 
