@@ -1,11 +1,67 @@
 package util
 
 import (
+	"encoding/json"
 	"os"
 	"strconv"
 
+	"github.com/golang/protobuf/jsonpb"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
+	"github.com/seldonio/seldon-core/executor/api/payload"
 )
+
+// Assumes the byte array is a json list of ints
+func ExtractRouteAsJsonArray(msg []byte) ([]int, error) {
+	var routes []int
+	err := json.Unmarshal(msg, &routes)
+	if err == nil {
+		return routes, err
+	} else {
+		return nil, err
+	}
+}
+
+func ExtractRouteFromSeldonJson(sp payload.SeldonPayload) (int, error) {
+	var routes []int
+	msg := sp.GetPayload().([]byte)
+
+	var sm proto.SeldonMessage
+	value := string(msg)
+	err := jsonpb.UnmarshalString(value, &sm)
+	if err == nil {
+		//Remove in future
+		routes = ExtractRouteFromSeldonMessage(&sm)
+	} else {
+		routes, err = ExtractRouteAsJsonArray(msg)
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	//Only returning first route. API could be extended to allow multiple routes
+	return routes[0], nil
+}
+
+func RouteFromFeedbackJsonMeta(sp payload.SeldonPayload, predictorName string) int {
+	msg := sp.GetPayload().([]byte)
+
+	var fm proto.Feedback
+	value := string(msg)
+	err := jsonpb.UnmarshalString(value, &fm)
+	if err != nil {
+		return -1
+	}
+
+	return RouteFromFeedbackMessageMeta(&fm, predictorName)
+}
+
+func RouteFromFeedbackMessageMeta(msg *proto.Feedback, predictorName string) int {
+	routing := msg.GetResponse().GetMeta().GetRouting()
+	if route, ok := routing[predictorName]; ok {
+		return int(route)
+	}
+	return -1
+}
 
 func ExtractRouteFromSeldonMessage(msg *proto.SeldonMessage) []int {
 	switch msg.GetData().DataOneof.(type) {

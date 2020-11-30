@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	. "github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/executor/api/payload"
+	"github.com/seldonio/seldon-core/executor/api/util"
 	"testing"
 )
 
@@ -23,7 +24,7 @@ func TestCombineExtractMessages(t *testing.T) {
 func TestConversions(t *testing.T) {
 	g := NewGomegaWithT(t)
 	val := "[1,2]"
-	arr, err := ExtractRouteAsJsonArray([]byte(val))
+	arr, err := util.ExtractRouteAsJsonArray([]byte(val))
 	g.Expect(err).Should(BeNil())
 	g.Expect(arr[0]).Should(Equal(1))
 	g.Expect(arr[1]).Should(Equal(2))
