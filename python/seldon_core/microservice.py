@@ -301,7 +301,7 @@ def main():
     )
 
     parser.add_argument(
-        "--accesslog",
+        "--access-log",
         nargs="?",
         type=bool,
         default=getenv_as_bool(GUNICORN_ACCESS_LOG_ENV, default=False),
@@ -389,7 +389,7 @@ def main():
         def rest_prediction_server():
             options = {
                 "bind": "%s:%s" % ("0.0.0.0", http_port),
-                "accesslog": accesslog(args.accesslog),
+                "accesslog": accesslog(args.access_log),
                 "loglevel": args.log_level.lower(),
                 "timeout": 5000,
                 "threads": threads(args.threads, args.single_threaded),
@@ -453,7 +453,7 @@ def main():
         else:
             options = {
                 "bind": "%s:%s" % ("0.0.0.0", metrics_port),
-                "accesslog": accesslog(args.accesslog),
+                "accesslog": accesslog(args.access_log),
                 "loglevel": args.log_level.lower(),
                 "timeout": 5000,
                 "max_requests": args.max_requests,
