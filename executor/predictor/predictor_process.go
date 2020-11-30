@@ -10,7 +10,10 @@ import (
 	"github.com/go-logr/logr"
 	guuid "github.com/google/uuid"
 	"github.com/seldonio/seldon-core/executor/api/client"
+	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
+	"github.com/seldonio/seldon-core/executor/api/util"
+
 	payloadLogger "github.com/seldonio/seldon-core/executor/logger"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 )
@@ -139,6 +142,14 @@ func (p *PredictorProcess) feedback(node *v1.PredictiveUnit, msg payload.SeldonP
 
 }
 
+func (p *PredictorProcess) routeFeedback(node *v1.PredictiveUnit, msg payload.SeldonPayload) (int, error) {
+	if msg.GetContentType() == payload.APPLICATION_TYPE_PROTOBUF {
+		return util.RouteFromFeedbackMessageMeta(msg.GetPayload().(*proto.Feedback), node.Name), nil
+	} else {
+		return util.RouteFromFeedbackJsonMeta(msg, node.Name), nil
+	}
+}
+
 func (p *PredictorProcess) route(node *v1.PredictiveUnit, msg payload.SeldonPayload) (int, error) {
 	callClient := false
 	if (*node).Type != nil {
@@ -221,7 +232,8 @@ func (p *PredictorProcess) predictChildren(node *v1.PredictiveUnit, msg payload.
 
 func (p *PredictorProcess) feedbackChildren(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	if node.Children != nil && len(node.Children) > 0 {
-		route, err := p.route(node, msg)
+
+		route, err := p.routeFeedback(node, msg)
 		if err != nil {
 			return nil, err
 		}

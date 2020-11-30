@@ -4,10 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/golang/protobuf/jsonpb"
-	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
-	"github.com/seldonio/seldon-core/executor/api/util"
 	"io/ioutil"
 	"strings"
 )
@@ -18,38 +15,6 @@ const (
 	openapiPredPath     = "/seldon/{namespace}/{deployment}/api/v1.0/predictions"
 	openapiFeedbackPath = "/seldon/{namespace}/{deployment}/api/v1.0/feedback"
 )
-
-// Assumes the byte array is a json list of ints
-func ExtractRouteAsJsonArray(msg []byte) ([]int, error) {
-	var routes []int
-	err := json.Unmarshal(msg, &routes)
-	if err == nil {
-		return routes, err
-	} else {
-		return nil, err
-	}
-}
-
-func ExtractRouteFromJson(sp payload.SeldonPayload) (int, error) {
-	var routes []int
-	msg := sp.GetPayload().([]byte)
-
-	var sm proto.SeldonMessage
-	value := string(msg)
-	err := jsonpb.UnmarshalString(value, &sm)
-	if err == nil {
-		//Remove in future
-		routes = util.ExtractRouteFromSeldonMessage(&sm)
-	} else {
-		routes, err = ExtractRouteAsJsonArray(msg)
-		if err != nil {
-			return 0, err
-		}
-	}
-
-	//Only returning first route. API could be extended to allow multiple routes
-	return routes[0], nil
-}
 
 func CombineSeldonMessagesToJson(msgs []payload.SeldonPayload) (payload.SeldonPayload, error) {
 	// Extract into string array checking the data is JSON
