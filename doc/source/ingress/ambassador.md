@@ -75,7 +75,6 @@ curl -v https://random-hostname-1234.edgestack.me/seldon/mymodel/api/v1.0/predic
 |`seldon.io/ambassador-regex-header:<regex>`| The regular expression header to use for routing via headers|
 |`seldon.io/ambassador-retries:<number of retries>` | The number of times ambassador will retry request on connect-failure. Default 0. Use custom configuration if more control needed.|
 |`seldon.io/ambassador-service-name:<existing_deployment_name>`| The name of the existing Seldon Deployment for shadow or header based routing |
-|`seldon.io/ambassador-shadow:true` | Activate shadowing for this deployment |
 |`seldon.io/grpc-timeout: <gRPC read timeout (msecs)>` | gRPC read timeout |
 |`seldon.io/rest-timeout:<REST read timeout (msecs)>` | REST read timeout |
 |`seldon.io/ambassador-circuit-breakers-max-connections:<maximum number of connections>` | The maximum number of connections will make to the Seldon Deployment |
