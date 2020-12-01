@@ -44,7 +44,7 @@ def test_model_template_app_rest(microservice):
     response.raise_for_status()
     assert response.json() == {
         "data": {"names": ["t:0", "t:1"], "ndarray": [[1.0, 2.0]]},
-        "meta": {},
+        "meta": {**DEFAULT_ROUTING},
     }
 
     data = (
@@ -56,7 +56,7 @@ def test_model_template_app_rest(microservice):
         "http://127.0.0.1:9000/send-feedback", params="json=%s" % data
     )
     response.raise_for_status()
-    assert response.json() == {"data": {"ndarray": []}, "meta": {}}
+    assert response.json() == {"data": {"ndarray": []}, "meta": {**DEFAULT_ROUTING}}
 
 
 def test_model_template_app_rest_tags(microservice):
@@ -97,7 +97,7 @@ def test_model_template_app_rest_submodule(microservice):
     response.raise_for_status()
     assert response.json() == {
         "data": {"names": ["t:0", "t:1"], "ndarray": [[1.0, 2.0]]},
-        "meta": {},
+        "meta": {**DEFAULT_ROUTING},
     }
 
     data = (
@@ -109,7 +109,7 @@ def test_model_template_app_rest_submodule(microservice):
         "http://127.0.0.1:9000/send-feedback", params="json=%s" % data
     )
     response.raise_for_status()
-    assert response.json() == {"data": {"ndarray": []}, "meta": {}}
+    assert response.json() == {"data": {"ndarray": []}, "meta": {**DEFAULT_ROUTING}}
 
 
 def test_model_template_app_grpc(microservice):
@@ -212,7 +212,7 @@ def test_model_template_app_tracing_config(microservice):
         "http://127.0.0.1:9000/send-feedback", params="json=%s" % data
     )
     response.raise_for_status()
-    assert response.json() == {"data": {"ndarray": []}, "meta": {}}
+    assert response.json() == {"data": {"ndarray": []}, "meta": {**DEFAULT_ROUTING}}
 
 
 def test_model_template_bad_params():
