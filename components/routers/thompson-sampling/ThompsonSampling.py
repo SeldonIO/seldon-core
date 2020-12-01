@@ -92,7 +92,7 @@ class ThompsonSampling(object):
             self.value_history.append(self.branch_values)
 
         logger.info("Routing to branch %s", selected_branch)
-        return selected_branch
+        return int(selected_branch)
 
     def send_feedback(self, features, feature_names, reward, truth, routing=None):
         logger.debug("Sending feedback with reward %s and truth %s", reward, truth)
