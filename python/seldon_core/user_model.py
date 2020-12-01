@@ -51,7 +51,7 @@ class SeldonResponse:
             return cls(data=data)
 
 
-class SeldonComponent(object):
+class SeldonComponent:
     def __init__(self, **kwargs):
         pass
 

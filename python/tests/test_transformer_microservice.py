@@ -14,7 +14,7 @@ from seldon_core.utils import seldon_message_to_json
 from typing import Dict, List, Union
 
 
-class UserObject(object):
+class UserObject:
     def __init__(self, metrics_ok=True, ret_nparray=False, ret_meta=False):
         self.metrics_ok = metrics_ok
         self.ret_nparray = ret_nparray
@@ -54,7 +54,7 @@ class UserObject(object):
             return [{"type": "BAD", "key": "mycounter", "value": 1}]
 
 
-class UserObjectLowLevel(object):
+class UserObjectLowLevel:
     def __init__(self, metrics_ok=True, ret_nparray=False):
         self.metrics_ok = metrics_ok
         self.ret_nparray = ret_nparray
@@ -83,7 +83,7 @@ class UserObjectLowLevel(object):
         return request
 
 
-class UserObjectLowLevelGrpc(object):
+class UserObjectLowLevelGrpc:
     def __init__(self, metrics_ok=True, ret_nparray=False):
         self.metrics_ok = metrics_ok
         self.ret_nparray = ret_nparray
@@ -106,7 +106,7 @@ class UserObjectLowLevelGrpc(object):
         return request
 
 
-class UserObjectLowLevelRaw(object):
+class UserObjectLowLevelRaw:
     def __init__(self, metrics_ok=True, ret_nparray=False):
         self.metrics_ok = metrics_ok
         self.ret_nparray = ret_nparray
@@ -802,7 +802,7 @@ def test_unimplemented_transform_input_raw_on_seldon_component():
 
 
 def test_unimplemented_transform_input_raw():
-    class CustomObject(object):
+    class CustomObject:
         def transform_input(self, X, features_names, **kwargs):
             return X * 2
 
@@ -836,7 +836,7 @@ def test_unimplemented_transform_output_raw_on_seldon_component():
 
 
 def test_unimplemented_transform_output_raw():
-    class CustomObject(object):
+    class CustomObject:
         def transform_output(self, X, features_names, **kwargs):
             return X * 2
 

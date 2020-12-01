@@ -15,7 +15,7 @@ if _TF_PRESENT:
     import tensorflow as tf
 
 
-class UserObject(object):
+class UserObject:
     def __init__(
         self, metrics_ok=True, ret_nparray=False, ret_meta=False, ret_dict=False
     ):

@@ -236,7 +236,7 @@ def test_feedback_microservice_rest(mock_post):
     assert mock_post.call_count == 1
 
 
-class MyStub(object):
+class MyStub:
     def __init__(self, channel):
         self.channel = channel
 

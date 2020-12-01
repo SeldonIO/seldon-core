@@ -215,7 +215,7 @@ def _set_flask_app_configs(app):
 # ----------------------------
 
 
-class SeldonModelGRPC(object):
+class SeldonModelGRPC:
     def __init__(self, user_model, seldon_metrics):
         self.user_model = user_model
         self.seldon_metrics = seldon_metrics

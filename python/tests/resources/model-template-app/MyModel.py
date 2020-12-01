@@ -3,7 +3,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class MyModel(object):
+class MyModel:
     """
     Model template. You can load your model parameters in __init__ from a location accessible at runtime
     """
