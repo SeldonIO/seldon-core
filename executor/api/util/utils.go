@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"strconv"
+    "fmt"
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
@@ -92,6 +93,34 @@ func ExtractRouteFromSeldonMessage(msg *proto.SeldonMessage) []int {
 		return routeArr
 	}
 	return []int{-1}
+}
+
+func InsertRouteToSeldonPredictPayload(msg payload.SeldonPayload, routing *map[string]int32) (payload.SeldonPayload, error) {
+
+	if msg.GetContentType() == payload.APPLICATION_TYPE_PROTOBUF {
+        sm := msg.GetPayload().(*proto.SeldonMessage)
+        sm.Meta.Routing = *routing
+        return &payload.ProtoPayload{Msg:sm}, nil
+	} else {
+        var smInterface interface{}
+        smBytes, err := msg.GetBytes()
+        if err != nil {
+            return nil, err
+        }
+        if err := json.Unmarshal(smBytes, &smInterface); err != nil {
+            return nil, err
+        }
+        if smJson, ok := (smInterface).(map[string]interface{}); ok {
+            if metaJson, ok := smJson["meta"].(map[string]interface{}); ok {
+                metaJson["routing"] = *routing
+            }
+        }
+        smOutputBytes, err := json.Marshal(smInterface)
+        if err != nil {
+            return nil, err
+        }
+        return &payload.BytesPayload{Msg: smOutputBytes, ContentType: msg.GetContentType()}, nil
+	}
 }
 
 // Get an environment variable given by key or return the fallback.
