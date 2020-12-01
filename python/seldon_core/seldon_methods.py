@@ -539,16 +539,6 @@ def aggregate(
         for meta in meta_list:
             if meta:
                 tags.update(meta.get("tags", {}))
-        routing = {}
-        # Join all routes but if any repeated save as -1
-        for meta in meta_list:
-            if meta:
-                all_routes = meta.get("routing", {})
-                for route, val in all_routes.items():
-                    if route in routing:
-                        routing[route] = -1
-                    else:
-                        routing[route] = int(val)
         return {"tags": tags}
 
     def merge_metrics(meta_list, custom_metrics):

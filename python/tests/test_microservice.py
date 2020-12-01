@@ -10,14 +10,11 @@ from tenacity import Retrying, stop_after_attempt, wait_exponential
 from seldon_core import __version__
 from seldon_core.proto import prediction_pb2
 from seldon_core.proto import prediction_pb2_grpc
-from seldon_core.utils import NONIMPLEMENTED_MSG
 from seldon_core import microservice
 from seldon_core.flask_utils import SeldonMicroserviceException
 from google.protobuf import json_format
 
 from .conftest import RESOURCES_PATH
-
-DEFAULT_ROUTING = {"routing": {NONIMPLEMENTED_MSG: -1}}
 
 
 def retry_method(method, args=(), kwargs={}, stop_after=5, max_sleep=10):
@@ -44,7 +41,7 @@ def test_model_template_app_rest(microservice):
     response.raise_for_status()
     assert response.json() == {
         "data": {"names": ["t:0", "t:1"], "ndarray": [[1.0, 2.0]]},
-        "meta": {**DEFAULT_ROUTING},
+        "meta": {},
     }
 
     data = (
@@ -56,7 +53,7 @@ def test_model_template_app_rest(microservice):
         "http://127.0.0.1:9000/send-feedback", params="json=%s" % data
     )
     response.raise_for_status()
-    assert response.json() == {"data": {"ndarray": []}, "meta": {**DEFAULT_ROUTING}}
+    assert response.json() == {"data": {"ndarray": []}, "meta": {}}
 
 
 def test_model_template_app_rest_tags(microservice):
@@ -65,7 +62,7 @@ def test_model_template_app_rest_tags(microservice):
     response.raise_for_status()
     assert response.json() == {
         "data": {"names": ["t:0", "t:1"], "ndarray": [[1.0, 2.0]]},
-        "meta": {"tags": {"foo": "bar"}, **DEFAULT_ROUTING},
+        "meta": {"tags": {"foo": "bar"}},
     }
 
 
@@ -75,10 +72,7 @@ def test_model_template_app_rest_metrics(microservice):
     response.raise_for_status()
     assert response.json() == {
         "data": {"names": ["t:0", "t:1"], "ndarray": [[1.0, 2.0]]},
-        "meta": {
-            "metrics": [{"key": "mygauge", "type": "GAUGE", "value": 100}],
-            **DEFAULT_ROUTING,
-        },
+        "meta": {"metrics": [{"key": "mygauge", "type": "GAUGE", "value": 100}]},
     }
 
 
@@ -97,7 +91,7 @@ def test_model_template_app_rest_submodule(microservice):
     response.raise_for_status()
     assert response.json() == {
         "data": {"names": ["t:0", "t:1"], "ndarray": [[1.0, 2.0]]},
-        "meta": {**DEFAULT_ROUTING},
+        "meta": {},
     }
 
     data = (
@@ -109,7 +103,7 @@ def test_model_template_app_rest_submodule(microservice):
         "http://127.0.0.1:9000/send-feedback", params="json=%s" % data
     )
     response.raise_for_status()
-    assert response.json() == {"data": {"ndarray": []}, "meta": {**DEFAULT_ROUTING}}
+    assert response.json() == {"data": {"ndarray": []}, "meta": {}}
 
 
 def test_model_template_app_grpc(microservice):
@@ -200,7 +194,7 @@ def test_model_template_app_tracing_config(microservice):
     response.raise_for_status()
     assert response.json() == {
         "data": {"names": ["t:0", "t:1"], "ndarray": [[1.0, 2.0]]},
-        "meta": {**DEFAULT_ROUTING},
+        "meta": {},
     }
 
     data = (
@@ -212,7 +206,7 @@ def test_model_template_app_tracing_config(microservice):
         "http://127.0.0.1:9000/send-feedback", params="json=%s" % data
     )
     response.raise_for_status()
-    assert response.json() == {"data": {"ndarray": []}, "meta": {**DEFAULT_ROUTING}}
+    assert response.json() == {"data": {"ndarray": []}, "meta": {}}
 
 
 def test_model_template_bad_params():
