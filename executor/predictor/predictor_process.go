@@ -21,10 +21,12 @@ import (
 const (
 	NilPUIDError                        = "context value for Seldon PUID Header is nil"
 	ENV_REQUEST_LOGGER_DEFAULT_ENDPOINT = "REQUEST_LOGGER_DEFAULT_ENDPOINT"
+	ENV_ENABLE_ROUTING_INJECTION = "SELDON_ENABLE_ROUTING_INJECTION"
 )
 
 var (
 	envRequestLoggerDefaultEndpoint = os.Getenv(ENV_REQUEST_LOGGER_DEFAULT_ENDPOINT)
+	envEnableRoutingInjection = len(os.Getenv(ENV_ENABLE_ROUTING_INJECTION)) != 0
 )
 
 type PredictorProcess struct {
@@ -34,6 +36,7 @@ type PredictorProcess struct {
 	ServerUrl *url.URL
 	Namespace string
 	Meta      *payload.MetaData
+    Routing   map[string]int32
 }
 
 func NewPredictorProcess(context context.Context, client client.SeldonApiClient, log logr.Logger, serverUrl *url.URL, namespace string, meta map[string][]string) PredictorProcess {
@@ -44,6 +47,7 @@ func NewPredictorProcess(context context.Context, client client.SeldonApiClient,
 		ServerUrl: serverUrl,
 		Namespace: namespace,
 		Meta:      payload.NewFromMap(meta),
+        Routing:   make(map[string]int32),
 	}
 }
 
@@ -85,12 +89,14 @@ func (p *PredictorProcess) transformInput(node *v1.PredictiveUnit, msg payload.S
 		if err != nil {
 			return nil, err
 		}
+        p.Routing[node.Name] = -1
 		return p.Client.Predict(p.Ctx, node.Name, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	} else if callTransformInput {
 		msg, err := p.Client.Chain(p.Ctx, node.Name, msg)
 		if err != nil {
 			return nil, err
 		}
+        p.Routing[node.Name] = -1
 		return p.Client.TransformInput(p.Ctx, node.Name, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	} else {
 		return msg, nil
@@ -183,6 +189,7 @@ func (p *PredictorProcess) aggregate(node *v1.PredictiveUnit, msg []payload.Seld
 	}
 
 	if callClient {
+        p.Routing[node.Name] = -1
 		return p.Client.Combine(p.Ctx, node.Name, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	} else {
 		return msg[0], nil
@@ -209,6 +216,7 @@ func (p *PredictorProcess) predictChildren(node *v1.PredictiveUnit, msg payload.
 				}(i, nodeChild, msg)
 			}
 			wg.Wait()
+            p.Routing[node.Name] = -1
 			for i, err := range errs {
 				if err != nil {
 					return cmsgs[i], err
@@ -216,16 +224,19 @@ func (p *PredictorProcess) predictChildren(node *v1.PredictiveUnit, msg payload.
 			}
 		} else if route == -2 {
 			//Abort and return request
+            p.Routing[node.Name] = -2
 			return msg, nil
 		} else {
 			cmsgs = make([]payload.SeldonPayload, 1)
 			cmsgs[0], err = p.Predict(&node.Children[route], msg)
+            p.Routing[node.Name] = int32(route)
 			if err != nil {
 				return cmsgs[0], err
 			}
 		}
 		return p.aggregate(node, cmsgs)
 	} else {
+        p.Routing[node.Name] = -2
 		return msg, nil
 	}
 }
@@ -334,6 +345,11 @@ func (p *PredictorProcess) Predict(node *v1.PredictiveUnit, msg payload.SeldonPa
 			return nil, err
 		}
 	}
+    if (envEnableRoutingInjection) {
+        if routeResponse, err := util.InsertRouteToSeldonPredictPayload(response, &p.Routing); err == nil {
+            return routeResponse, err
+        }
+    }
 	return response, err
 }
 
