@@ -106,18 +106,18 @@ func TestInjectRouteSeldonProto(t *testing.T) {
 
 	testRouting := map[string]int32{"test_route": 22}
 
-	var smIn proto.SeldonMessage
+    var smIn proto.SeldonMessage
     jsonBytes := []byte(`{"data":{"ndarray":[0]},"meta":{"routing":{"test_route":22}}}`)
-	jsonpb.UnmarshalString(string(jsonBytes), &smIn)
-	msg := payload.ProtoPayload{Msg: &smIn}
+    jsonpb.UnmarshalString(string(jsonBytes), &smIn)
+    msg := payload.ProtoPayload{Msg: &smIn}
 
-	outMsg, err := InsertRouteToSeldonPredictPayload(&msg, &testRouting)
-	g.Expect(err).To(BeNil())
+    outMsg, err := InsertRouteToSeldonPredictPayload(&msg, &testRouting)
+    g.Expect(err).To(BeNil())
 
     sm := outMsg.GetPayload().(*proto.SeldonMessage)
-	routes := sm.GetMeta().GetRouting()
+    routes := sm.GetMeta().GetRouting()
 
-	g.Expect(routes).To(Equal(testRouting))
+    g.Expect(routes).To(Equal(testRouting))
 }
 
 func TestInjectRouteSeldonJson(t *testing.T) {
