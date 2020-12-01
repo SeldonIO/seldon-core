@@ -2,7 +2,6 @@ package predictor
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 	"os"
 	"sync"
