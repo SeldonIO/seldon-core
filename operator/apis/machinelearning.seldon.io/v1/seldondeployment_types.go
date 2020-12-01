@@ -65,8 +65,6 @@ const (
 	ENV_PREDICTOR_LABELS                     = "PREDICTOR_LABELS"
 	ENV_SELDON_DEPLOYMENT_ID                 = "SELDON_DEPLOYMENT_ID"
 	ENV_SELDON_EXECUTOR_ENABLED              = "SELDON_EXECUTOR_ENABLED"
-	ENV_SELDON_ROUTING_INDEX                 = "SELDON_ROUTING_INDEX"
-	ENV_SELDON_ROUTING_NAME                  = "SELDON_ROUTING_NAME"
 
 	ANNOTATION_JAVA_OPTS       = "seldon.io/engine-java-opts"
 	ANNOTATION_SEPARATE_ENGINE = "seldon.io/engine-separate-pod"
@@ -166,17 +164,6 @@ func GetPredictiveUnit(pu *PredictiveUnit, name string) *PredictiveUnit {
 		}
 		return nil
 	}
-}
-
-// Returns the index of the unit relative to the router and the parent router name
-func GetPredictiveUnitRoutingInfo(pu *PredictiveUnit, name string) (int, string) {
-	for i := 0; i < len(pu.Children); i++ {
-		if name == pu.Children[i].Name {
-			return i, pu.Name
-		}
-		return GetPredictiveUnitRoutingInfo(&pu.Children[i], name)
-	}
-	return -1, ""
 }
 
 // if engine is not separated then this tells us which pu it should go on, as the mutating webhook handler has set host as localhost on the pu
