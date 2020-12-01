@@ -6,7 +6,7 @@ from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 from seldon_core.proto import prediction_pb2 as proto_dot_prediction__pb2
 
 
-class GenericStub:
+class GenericStub(object):
     """[END Messages]
 
     [START Services]
@@ -46,7 +46,7 @@ class GenericStub:
                 )
 
 
-class GenericServicer:
+class GenericServicer(object):
     """[END Messages]
 
     [START Services]
@@ -118,7 +118,7 @@ def add_GenericServicer_to_server(servicer, server):
 
 
  # This class is part of an EXPERIMENTAL API.
-class Generic:
+class Generic(object):
     """[END Messages]
 
     [START Services]
@@ -211,7 +211,7 @@ class Generic:
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
 
-class ModelStub:
+class ModelStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -237,7 +237,7 @@ class ModelStub:
                 )
 
 
-class ModelServicer:
+class ModelServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def Predict(self, request, context):
@@ -283,7 +283,7 @@ def add_ModelServicer_to_server(servicer, server):
 
 
  # This class is part of an EXPERIMENTAL API.
-class Model:
+class Model(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
@@ -338,7 +338,7 @@ class Model:
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
 
-class RouterStub:
+class RouterStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -359,7 +359,7 @@ class RouterStub:
                 )
 
 
-class RouterServicer:
+class RouterServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def Route(self, request, context):
@@ -394,7 +394,7 @@ def add_RouterServicer_to_server(servicer, server):
 
 
  # This class is part of an EXPERIMENTAL API.
-class Router:
+class Router(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
@@ -432,7 +432,7 @@ class Router:
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
 
-class TransformerStub:
+class TransformerStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -448,7 +448,7 @@ class TransformerStub:
                 )
 
 
-class TransformerServicer:
+class TransformerServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def TransformInput(self, request, context):
@@ -472,7 +472,7 @@ def add_TransformerServicer_to_server(servicer, server):
 
 
  # This class is part of an EXPERIMENTAL API.
-class Transformer:
+class Transformer(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
@@ -493,7 +493,7 @@ class Transformer:
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
 
-class OutputTransformerStub:
+class OutputTransformerStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -509,7 +509,7 @@ class OutputTransformerStub:
                 )
 
 
-class OutputTransformerServicer:
+class OutputTransformerServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def TransformOutput(self, request, context):
@@ -533,7 +533,7 @@ def add_OutputTransformerServicer_to_server(servicer, server):
 
 
  # This class is part of an EXPERIMENTAL API.
-class OutputTransformer:
+class OutputTransformer(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
@@ -554,7 +554,7 @@ class OutputTransformer:
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
 
-class CombinerStub:
+class CombinerStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -570,7 +570,7 @@ class CombinerStub:
                 )
 
 
-class CombinerServicer:
+class CombinerServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def Aggregate(self, request, context):
@@ -594,7 +594,7 @@ def add_CombinerServicer_to_server(servicer, server):
 
 
  # This class is part of an EXPERIMENTAL API.
-class Combiner:
+class Combiner(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
@@ -615,7 +615,7 @@ class Combiner:
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
 
-class SeldonStub:
+class SeldonStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -646,7 +646,7 @@ class SeldonStub:
                 )
 
 
-class SeldonServicer:
+class SeldonServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def Predict(self, request, context):
@@ -703,7 +703,7 @@ def add_SeldonServicer_to_server(servicer, server):
 
 
  # This class is part of an EXPERIMENTAL API.
-class Seldon:
+class Seldon(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
