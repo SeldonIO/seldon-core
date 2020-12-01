@@ -7,6 +7,7 @@ import (
 	"github.com/golang/protobuf/jsonpb"
 	. "github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
+	"github.com/seldonio/seldon-core/executor/api/payload"
 )
 
 func TestExtractRouteFromSeldonMessage(t *testing.T) {
@@ -98,4 +99,45 @@ func TestGetEnvAsBool(t *testing.T) {
 
 		g.Expect(val).To(Equal(test.expected))
 	}
+}
+
+func TestInjectRouteSeldonProto(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	testRouting := map[string]int32{"test_route": 22}
+
+	var smIn proto.SeldonMessage
+    jsonBytes := []byte(`{"data":{"ndarray":[0]},"meta":{"routing":{"test_route":22}}}`)
+	jsonpb.UnmarshalString(string(jsonBytes), &smIn)
+	msg := payload.ProtoPayload{Msg: &smIn}
+
+	outMsg, err := InsertRouteToSeldonPredictPayload(&msg, &testRouting)
+	g.Expect(err).To(BeNil())
+
+    sm := outMsg.GetPayload().(*proto.SeldonMessage)
+	routes := sm.GetMeta().GetRouting()
+
+	g.Expect(routes).To(Equal(testRouting))
+}
+
+func TestInjectRouteSeldonJson(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	testRouting := map[string]int32{"test_route": 22}
+
+	jsonBytes := []byte(`{"meta":{"routing":{"test_route":22}}}`)
+	msg := payload.BytesPayload{Msg: jsonBytes, ContentType: "application/json"}
+
+	outMsg, err := InsertRouteToSeldonPredictPayload(&msg, &testRouting)
+	g.Expect(err).To(BeNil())
+
+	outBytes, err := outMsg.GetBytes()
+	g.Expect(err).To(BeNil())
+
+	var sm proto.SeldonMessage
+	jsonpb.UnmarshalString(string(outBytes), &sm)
+	t.Log(string(outBytes))
+	routes := sm.GetMeta().GetRouting()
+
+	g.Expect(routes).To(Equal(testRouting))
 }
