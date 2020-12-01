@@ -28,7 +28,7 @@
                   "name": "xgb-model"
                 },
                 {
-                  "image": "seldonio/mab_thompson_sampling:1.5.0-dev",
+                  "image": "seldonio/mab_thompson_sampling:1.6.0-dev",
                   "name": "ts-router"
                 }
               ],
