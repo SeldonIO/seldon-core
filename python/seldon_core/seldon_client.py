@@ -32,7 +32,7 @@ class SeldonClientException(Exception):
         self.message = message
 
 
-class SeldonChannelCredentials(object):
+class SeldonChannelCredentials:
     """
     Channel credentials.
 
@@ -57,7 +57,7 @@ class SeldonChannelCredentials(object):
         self.certificate_chain_file = certificate_chain_file
 
 
-class SeldonCallCredentials(object):
+class SeldonCallCredentials:
     """
     Credentials for each call, currently implements the ability to provide
         an OAuth token which is currently made available through REST via
@@ -68,7 +68,7 @@ class SeldonCallCredentials(object):
         self.token = token
 
 
-class SeldonClientPrediction(object):
+class SeldonClientPrediction:
     """
     Data class to return from Seldon Client
     """
@@ -94,7 +94,7 @@ class SeldonClientPrediction(object):
         )
 
 
-class SeldonClientFeedback(object):
+class SeldonClientFeedback:
     """
     Data class to return from Seldon Client for feedback calls
     """
@@ -120,7 +120,7 @@ class SeldonClientFeedback(object):
         )
 
 
-class SeldonClientCombine(object):
+class SeldonClientCombine:
     """
     Data class to return from Seldon Client for aggregate calls
     """
@@ -146,7 +146,7 @@ class SeldonClientCombine(object):
         )
 
 
-class SeldonClient(object):
+class SeldonClient:
     """
     A reference Seldon API Client
     """

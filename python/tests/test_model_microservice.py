@@ -1024,7 +1024,7 @@ def test_unimplemented_predict_raw_on_seldon_component():
 
 
 def test_unimplemented_predict_raw():
-    class CustomObject(object):
+    class CustomObject:
         def predict(self, X, features_names, **kwargs):
             return X * 2
 
@@ -1059,7 +1059,7 @@ def test_unimplemented_feedback_raw_on_seldon_component():
 
 
 def test_unimplemented_feedback_raw():
-    class CustomObject(object):
+    class CustomObject:
         def feedback(self, features, feature_names, reward, truth):
             logging.info("Feedback called")
 

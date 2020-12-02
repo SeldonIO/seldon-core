@@ -36,7 +36,7 @@ def mocked_requests_post_success(url, *args, **kwargs):
     return MockResponse(json, 200, text="{}")
 
 
-class Bunch(object):
+class Bunch:
     def __init__(self, adict):
         self.__dict__.update(adict)
 
