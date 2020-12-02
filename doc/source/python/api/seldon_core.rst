@@ -89,6 +89,14 @@ seldon\_core.microservice\_tester module
    :undoc-members:
    :show-inheritance:
 
+seldon\_core.mlmd\_utils module
+-------------------------------
+
+.. automodule:: seldon_core.mlmd_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 seldon\_core.persistence module
 -------------------------------
 
