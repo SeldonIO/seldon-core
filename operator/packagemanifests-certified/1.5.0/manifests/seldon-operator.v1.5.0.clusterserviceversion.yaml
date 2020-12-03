@@ -48,7 +48,7 @@ metadata:
     capabilities: Seamless Upgrades
     categories: AI/Machine Learning
     certified: 'false'
-    containerImage: seldonio/seldon-core-operator:1.5.0
+    containerImage: registry.connect.redhat.com/seldonio/seldon-core-operator:1.5.0
     createdAt: '2019-05-21 15:00:00'
     description: The Seldon operator for management, monitoring and operations of machine learning systems through the Seldon Engine. Once installed, the Seldon Operator provides multiple functions which facilitate the productisation, monitoring and maintenance of machine learning systems at scale.
     operators.operatorframework.io/builder: operator-sdk-v1.2.0
@@ -443,15 +443,25 @@ spec:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
                 - name: RELATED_IMAGE_EXECUTOR
+                  value: registry.connect.redhat.com/seldonio/seldon-core-executor:1.5.0
                 - name: RELATED_IMAGE_ENGINE
+                  value: registry.connect.redhat.com/seldonio/seldon-engine:1.5.0
                 - name: RELATED_IMAGE_STORAGE_INITIALIZER
+                  value: registry.connect.redhat.com/seldonio/storage-initializer:1.5.0
                 - name: RELATED_IMAGE_SKLEARNSERVER
+                  value: registry.connect.redhat.com/seldonio/sklearnserver:1.5.0
                 - name: RELATED_IMAGE_XGBOOSTSERVER
+                  value: registry.connect.redhat.com/seldonio/xgboostserver:1.5.0
                 - name: RELATED_IMAGE_MLFLOWSERVER
+                  value: registry.connect.redhat.com/seldonio/mlflowserver:1.5.0
                 - name: RELATED_IMAGE_TFPROXY
+                  value: registry.connect.redhat.com/seldonio/tfproxy:1.5.0
                 - name: RELATED_IMAGE_TENSORFLOW
+                  value: registry.connect.redhat.com/seldonio/tensorflow-serving:2.1.0
                 - name: RELATED_IMAGE_EXPLAINER
+                  value: registry.connect.redhat.com/seldonio/alibiexplainer:1.5.0
                 - name: RELATED_IMAGE_MOCK_CLASSIFIER
+                  value: registry.connect.redhat.com/seldonio/mock-classifier:1.5.0
                 - name: MANAGER_CREATE_RESOURCES
                   value: 'true'
                 - name: POD_NAMESPACE
@@ -524,7 +534,7 @@ spec:
                   value: '0.5'
                 - name: ENGINE_DEFAULT_MEMORY_LIMIT
                   value: 512Mi
-                image: seldonio/seldon-core-operator:1.5.0
+                image: registry.connect.redhat.com/seldonio/seldon-core-operator:1.5.0
                 name: manager
                 ports:
                 - containerPort: 8443

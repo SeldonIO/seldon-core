@@ -4,8 +4,8 @@ metadata:
   name: seldon-operator-subsription
   namespace: marketplace
 spec:
-  channel: alpha
+  channel: stable
   name: seldon-operator
   source: seldon-core-catalog
   sourceNamespace: marketplace
-  startingCSV: seldon-operator.v1.2.2
+

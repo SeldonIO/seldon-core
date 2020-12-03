@@ -20,7 +20,7 @@ def remove_versions(csv):
 
 
 def update_container_image(csv, version):
-    csv["metadata"]["annotations"]["containerImage"] = version
+    csv["metadata"]["annotations"]["containerImage"] = "seldonio/seldon-core-operator:"+version
     return csv
 
 

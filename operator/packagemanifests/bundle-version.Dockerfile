@@ -7,5 +7,7 @@ LABEL operators.operatorframework.io.bundle.package.v1=seldon-operator
 LABEL operators.operatorframework.io.bundle.channels.v1=stable
 LABEL operators.operatorframework.io.bundle.channel.default.v1=stable
 
-COPY 1.2.2 /manifests/
+ARG VERSION=1.5.0
+COPY ${VERSION} /manifests/
 COPY metadata /metadata/
+COPY scorecard /tests/scorecard

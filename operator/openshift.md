@@ -10,9 +10,10 @@ We also remove the `owned` versions for v1alpha2 and v1alpha3 using `hack/csv_ha
 
 ## Prerequisites
 
+### Operastor-SDK
+
 Install [operator-sdk](https://sdk.operatorframework.io/).
 
-Tested on
 
 ```
 operator-sdk version
@@ -20,9 +21,27 @@ operator-sdk version: "v1.2.0", commit: "215fc50b2d4acc7d92b36828f42d7d1ae212015
 ```
 
 
+### OPM
+
+Install [opm](https://docs.openshift.com/container-platform/4.6/cli_reference/opm-cli.html#opm-cli). I used docker instead of podman to install.
+
+```
+opm version
+Version: version.Version{OpmVersion:"1.12.3", GitCommit:"", BuildDate:"2020-09-18T09:16:12Z", GoOs:"linux", GoArch:"amd64"}
+```
+
+### Operator-Courier
+
+See [https://github.com/operator-framework/operator-courier](here).
+
+```
+operator-courier -v
+2.1.10
+```
+
 ## Version Update
 
-Update Makefile and change PREV_VERSION to previous version
+Update Makefile and change PREV_VERSION.
 
 Login to quay.io as seldon. Password in 1password. 
 
@@ -34,7 +53,6 @@ Updated image should be available in quay.io (https://quay.io/signin)
 
 ![quay-seldon](quay-seldon.png)
 
-If quay does not contain the previous version specified in the CSV these steps will fail. You will need add and push to quay all previous bundles or craft the previous bundle by hand and remove its previous to stop the chain of references.
 
 ## Scorecard
 
@@ -62,18 +80,22 @@ Create a fork of https://github.com/operator-framework/community-operators
 
 Create a PR for community operator
 
+Update the Makefile locally for 
+
 ```
 COMMUNITY_OPERATORS_FOLDER=~/work/seldon-core/redhat/community-operators
-
-cp -r packagemanifests/1.3.0 ${COMMUNITY_OPERATORS_FOLDER}/community-operators/seldon-operator
-cp packagemanifests/seldon-operator.package.yaml ${COMMUNITY_OPERATORS_FOLDER}/community-operators/seldon-operator
 ```
 
-Run tests
+### Community Operator
 
 ```
-cd ${COMMUNITY_OPERATORS_FOLDER}
-make operator.test KUBE_VER=""  OP_PATH=community-operators/seldon-operator
+make update_community
+```
+
+Verify in community operator updated folder:
+
+```
+make operator.verify OP_PATH=community-operators/seldon-operator
 ```
 
 Add new folder and changed package yaml to a PR. Ensure you sign the commit.
@@ -84,7 +106,7 @@ git commit -s -m "Update Seldon Community Operator to 1.2.2"
 
 Push and create PR.
 
-Do the same for the upstream community operators
+### Upstream Operator
 
 ```
 COMMUNITY_OPERATORS_FOLDER=~/work/seldon-core/redhat/community-operators
@@ -102,25 +124,12 @@ make operator.test KUBE_VER=""  OP_PATH=upstream-community-operators/seldon-oper
 
 ## Certified Operators
 
-Install [opm](https://docs.openshift.com/container-platform/4.6/cli_reference/opm-cli.html#opm-cli). I used docker instead of podman to install.
+
+Create new package and push to quay for testing
 
 ```
-opm version
-Version: version.Version{OpmVersion:"1.12.3", GitCommit:"", BuildDate:"2020-09-18T09:16:12Z", GoOs:"linux", GoArch:"amd64"}
+make update_openshift_certified
 ```
-
-Will need to be run in release branch.
-
-Create new package
-
-```
-make create_certified_bundle
-```
-
-```
-make build_certified_bundle
-```
-
 
 Push all images to redhat. requires download of passwords from 1password to `~/.config/seldon/seldon-core/redhat-image-passwords.sh`
 
@@ -131,12 +140,20 @@ python scan-images.py
 
 After these are finished (approx 1.5 hours) you will need to manually publish images on https://connect.redhat.com/project/5892531/images
 
+publish
 
-Create a new catalog for certified on quay for testing.
+ * https://connect.redhat.com/project/5912261/view
+ * https://connect.redhat.com/project/5912271/view
+ * https://connect.redhat.com/project/5912311/view
+ * https://connect.redhat.com/project/5912301/view
+ * https://connect.redhat.com/project/1366481/view
+ * https://connect.redhat.com/project/1366491/view
+ * https://connect.redhat.com/project/3977851/view
+ * https://connect.redhat.com/project/3986991/view
+ * https://connect.redhat.com/project/3987291/view
+ * https://connect.redhat.com/project/3993461/view
+ * https://connect.redhat.com/project/4035711/view
 
-```
-update_openshift_certified
-```
 
 Test as above for openshift but using the new catalog source for certified. 
 
@@ -147,9 +164,7 @@ Push bundle image to scanning and tests. Also needs passwords.
 make bundle_certified_push
 ```
 
-TODO: seems to be differences in `replaces` in csv which says `seldon-operastor` but the package is called `seldon-operator-certified`
-
-Publish image for final step to release new version of operator.
+This will start a test of the package in RedHat. Log on to check its success. If it fails you will need to manually delete in UI and build, tag and push a new version manually as you can't delete existing images. So a new tag will be needed which can be anything, e.g. 1.5.0-2, 1.5.0-3 etc.
 
 ## Prepare for next release
 
