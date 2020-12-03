@@ -2,7 +2,7 @@
 FROM docker.io/seldonio/seldon-core-s2i-python37-ubi8:1.5.0-dev
 LABEL name="Seldon Alibi Detect Server" \
       vendor="Seldon Technologies" \
-      version="1.5.0" \
+      version="1.6.0-dev" \
       release="1" \
       summary="Alibi Detect Server for Seldon Core" \
       description="The Alibi Detect Server provides outlier, drift and adversarial detection services for Seldon Core"
