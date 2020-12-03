@@ -339,7 +339,7 @@ create_certified_bundle:
 	mkdir -p ${PKG_CERT}/${VERSION}
 	cp bundle/manifests/* ${PKG_CERT}/${VERSION}
 	./hack/update-openshift-certified.sh ${VERSION}
-	cd ${PKG_CERT} && opm alpha bundle generate -c stable -e stable -p seldon-operator -d ./${VERSION}/ -u ./${VERSION}/
+	cd ${PKG_CERT} && opm alpha bundle generate -c stable -e stable -p seldon-operator-certified -d ./${VERSION}/ -u ./${VERSION}/
 	mv ${PKG_CERT}/bundle.Dockerfile ${PKG_CERT}/bundle-${VERSION}.Dockerfile
 	echo '' >> ${PKG_CERT}/bundle-${VERSION}.Dockerfile
 	echo 'LABEL com.redhat.openshift.versions="v4.5,v4.6"' >> ${PKG_CERT}/bundle-${VERSION}.Dockerfile
