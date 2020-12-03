@@ -26,7 +26,7 @@
             }
         },
         {
-            "url": "http://localhost:8002",
+            "url": "https://localhost:8002",
             "description": "fixed host as swagger UI has bug with variables for auth"
         }
     ],
