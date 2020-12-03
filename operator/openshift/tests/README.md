@@ -79,25 +79,6 @@ At present need to create operator from Openshift UI.
 
 
 
-The below does not seem to work.
-
-Create operator group
-
-```bash
-kubectl create -f operator-group-openshift.yaml
-```
-
-Create Subscription
-
-```bash
-kubectl create -f operator-subscription-openshift.yaml
-```
-
-This should create the seldon-controller manager. Once running you can test. It will be namespace only so will only manage sdeps in marketplace namespace.
-
-
-
-
 ## Openshift Cluster Certified
 
 Create catalog source

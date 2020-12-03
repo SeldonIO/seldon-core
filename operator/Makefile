@@ -280,11 +280,6 @@ clear_replaces:
 verify_package:
 	operator-courier verify packagemanifests/
 
-# Commented out as bundle/opm_index seems the way to test on latest Openshift
-#.PHONY: push_package
-#push_package:
-#	operator-courier push packagemanifests/ seldon seldon-operator ${VERSION} "$QUAY_TOKEN"
-
 .PHONY: create_bundle_image
 create_push_bundle_image:
 	cd packagemanifests && make create_bundle_image_${VERSION} && make push_bundle_image_${VERSION}

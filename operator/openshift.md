@@ -10,9 +10,10 @@ We also remove the `owned` versions for v1alpha2 and v1alpha3 using `hack/csv_ha
 
 ## Prerequisites
 
+### Operastor-SDK
+
 Install [operator-sdk](https://sdk.operatorframework.io/).
 
-Tested on
 
 ```
 operator-sdk version
@@ -20,9 +21,27 @@ operator-sdk version: "v1.2.0", commit: "215fc50b2d4acc7d92b36828f42d7d1ae212015
 ```
 
 
+### OPM
+
+Install [opm](https://docs.openshift.com/container-platform/4.6/cli_reference/opm-cli.html#opm-cli). I used docker instead of podman to install.
+
+```
+opm version
+Version: version.Version{OpmVersion:"1.12.3", GitCommit:"", BuildDate:"2020-09-18T09:16:12Z", GoOs:"linux", GoArch:"amd64"}
+```
+
+### Operator-Courier
+
+See [https://github.com/operator-framework/operator-courier](here).
+
+```
+operator-courier -v
+2.1.10
+```
+
 ## Version Update
 
-Update Makefile and change PREV_VERSION to previous version
+Update Makefile and change PREV_VERSION.
 
 Login to quay.io as seldon. Password in 1password. 
 
@@ -34,7 +53,6 @@ Updated image should be available in quay.io (https://quay.io/signin)
 
 ![quay-seldon](quay-seldon.png)
 
-If quay does not contain the previous version specified in the CSV these steps will fail. You will need add and push to quay all previous bundles or craft the previous bundle by hand and remove its previous to stop the chain of references.
 
 ## Scorecard
 
@@ -106,14 +124,6 @@ make operator.test KUBE_VER=""  OP_PATH=upstream-community-operators/seldon-oper
 
 ## Certified Operators
 
-Install [opm](https://docs.openshift.com/container-platform/4.6/cli_reference/opm-cli.html#opm-cli). I used docker instead of podman to install.
-
-```
-opm version
-Version: version.Version{OpmVersion:"1.12.3", GitCommit:"", BuildDate:"2020-09-18T09:16:12Z", GoOs:"linux", GoArch:"amd64"}
-```
-
-Will need to be run in release branch.
 
 Create new package and push to quay for testing
 
@@ -154,7 +164,7 @@ Push bundle image to scanning and tests. Also needs passwords.
 make bundle_certified_push
 ```
 
-This will start a test of the package in RedHat. Log on to check its success.
+This will start a test of the package in RedHat. Log on to check its success. If it fails you will need to manually delete in UI and build, tag and push a new version manually as you can't delete existing images. So a new tag will be needed which can be anything, e.g. 1.5.0-2, 1.5.0-3 etc.
 
 ## Prepare for next release
 
