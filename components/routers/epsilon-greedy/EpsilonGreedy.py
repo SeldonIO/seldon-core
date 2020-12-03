@@ -32,15 +32,22 @@ class EpsilonGreedy(object):
 
     """
 
-    def __init__(self, n_branches=None, epsilon=0.1, best_branch=None, verbose=False,
-                 seed=None, history=False, branch_names=None):
+    def __init__(
+        self,
+        n_branches=None,
+        epsilon=0.1,
+        best_branch=None,
+        verbose=False,
+        seed=None,
+        history=False,
+        branch_names=None,
+    ):
 
         if verbose:
             logger.setLevel(10)
             logger.info("Enabling debug mode")
 
-        logger.info(
-            "Starting %s Microservice, version %s", __name__, __version__)
+        logger.info("Starting %s Microservice, version %s", __name__, __version__)
 
         # for reproducibility
         if seed:
@@ -81,33 +88,42 @@ class EpsilonGreedy(object):
             self.branch_names = branch_names.split(":")
             logger.info("Branch names: %s", self.branch_names)
 
-        logger.info("Router initialised, n_branches: %s, epsilon: %s",
-                    self.n_branches, self.epsilon)
+        logger.info(
+            "Router initialised, n_branches: %s, epsilon: %s",
+            self.n_branches,
+            self.epsilon,
+        )
 
     def route(self, features, feature_names):
         logger.debug("Routing features %s", features)
 
         x = random.random()
-        other_branches = [i for i in range(
-            self.n_branches) if i != self.best_branch]
-        selected_branch = self.best_branch if x > self.epsilon else random.choice(
-            other_branches)
+        other_branches = [i for i in range(self.n_branches) if i != self.best_branch]
+        selected_branch = (
+            self.best_branch if x > self.epsilon else random.choice(other_branches)
+        )
 
         if self.history:
             self.branch_history.append(selected_branch)
             self.value_history.append(self.branch_values.copy())
 
         logger.info("Routing to branch %s", selected_branch)
-        logger.debug("Current best branch %s has value %s",
-                     self.best_branch, self.branch_values[self.best_branch])
-        logger.debug("Selected branch %s has value %s",
-                     selected_branch, self.branch_values[selected_branch])
+        logger.debug(
+            "Current best branch %s has value %s",
+            self.best_branch,
+            self.branch_values[self.best_branch],
+        )
+        logger.debug(
+            "Selected branch %s has value %s",
+            selected_branch,
+            self.branch_values[selected_branch],
+        )
 
-        return selected_branch
+        logger.info(f"routing type: {type(selected_branch)}")
+        return int(selected_branch)
 
-    def send_feedback(self, features, feature_names, routing, reward, truth):
-        logger.debug("Sending feedback with reward %s and truth %s",
-                     reward, truth)
+    def send_feedback(self, features, feature_names, reward, truth, routing=None):
+        logger.debug("Sending feedback with reward %s and truth %s", reward, truth)
         logger.debug("Prev success # %s", self.branch_success)
         logger.debug("Prev tries # %s", self.branch_tries)
         logger.debug("Prev best branch: %s", self.best_branch)
@@ -117,12 +133,14 @@ class EpsilonGreedy(object):
 
         self.branch_success[routing] += n_success
         self.branch_tries[routing] += n_success + n_failures
-        self.branch_values[routing] = self.branch_success[routing] / \
-            self.branch_tries[routing]
+        self.branch_values[routing] = (
+            self.branch_success[routing] / self.branch_tries[routing]
+        )
 
         # break ties randomly
         self.best_branch = np.random.choice(
-            np.where(np.array(self.branch_values) == max(self.branch_values))[0])
+            np.where(np.array(self.branch_values) == max(self.branch_values))[0]
+        )
 
         logger.debug("New success # %s", self.branch_success)
         logger.debug("New tries # %s", self.branch_tries)

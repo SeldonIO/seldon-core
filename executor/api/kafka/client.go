@@ -9,6 +9,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/api/rest"
+	"github.com/seldonio/seldon-core/executor/api/util"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"io"
 )
@@ -103,7 +104,7 @@ func (kc *KafkaClient) Route(ctx context.Context, modelName string, host string,
 	if err != nil {
 		return 0, err
 	} else {
-		return rest.ExtractRouteFromJson(res)
+		return util.ExtractRouteFromSeldonJson(res)
 	}
 }
 

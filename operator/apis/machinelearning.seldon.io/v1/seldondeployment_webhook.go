@@ -540,7 +540,7 @@ func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 
-// +kubebuilder:webhook:path=/mutate-machinelearning-seldon-io-v1-seldondeployment,mutating=true,failurePolicy=fail,groups=machinelearning.seldon.io,resources=seldondeployments,verbs=create;update,versions=v1,name=v1.mseldondeployment.kb.io
+// +kubebuilder:webhook:path=/mutate-machinelearning-seldon-io-v1-seldondeployment,mutating=true,failurePolicy=fail,sideEffects=None,groups=machinelearning.seldon.io,resources=seldondeployments,verbs=create;update,versions=v1,name=v1.mseldondeployment.kb.io
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *SeldonDeployment) Default() {
@@ -553,7 +553,7 @@ func (r *SeldonDeployment) Default() {
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
-// +kubebuilder:webhook:verbs=create;update,path=/validate-machinelearning-seldon-io-v1-seldondeployment,mutating=false,failurePolicy=fail,groups=machinelearning.seldon.io,resources=seldondeployments,versions=v1,name=v1.vseldondeployment.kb.io
+// +kubebuilder:webhook:verbs=create;update,path=/validate-machinelearning-seldon-io-v1-seldondeployment,mutating=false,failurePolicy=fail,sideEffects=None,groups=machinelearning.seldon.io,resources=seldondeployments,versions=v1,name=v1.vseldondeployment.kb.io
 
 var _ webhook.Validator = &SeldonDeployment{}
 

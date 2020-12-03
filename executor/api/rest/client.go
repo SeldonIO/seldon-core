@@ -16,6 +16,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/metric"
 	"github.com/seldonio/seldon-core/executor/api/payload"
+	"github.com/seldonio/seldon-core/executor/api/util"
 	"github.com/seldonio/seldon-core/executor/k8s"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"io"
@@ -323,7 +324,7 @@ func (smc *JSONRestClient) Route(ctx context.Context, modelName string, host str
 	if err != nil {
 		return 0, err
 	} else {
-		return ExtractRouteFromJson(sp)
+		return util.ExtractRouteFromSeldonJson(sp)
 	}
 }
 

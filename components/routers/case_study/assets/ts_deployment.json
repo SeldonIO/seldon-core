@@ -1,5 +1,5 @@
 {
-  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "apiVersion": "machinelearning.seldon.io/v1",
   "kind": "SeldonDeployment",
   "metadata": {
     "labels": {
@@ -20,15 +20,15 @@
             "spec": {
               "containers": [
                 {
-                  "image": "seldonio/credit_default_rf_model:0.1",
+                  "image": "seldonio/credit_default_rf_model:0.2",
                   "name": "rf-model"
                 },
                 {
-                  "image": "seldonio/credit_default_xgb_model:0.1",
+                  "image": "seldonio/credit_default_xgb_model:0.2",
                   "name": "xgb-model"
                 },
                 {
-                  "image": "seldonio/mab_thompson_sampling:0.1",
+                  "image": "seldonio/mab_thompson_sampling:1.6.0-dev",
                   "name": "ts-router"
                 }
               ],
@@ -76,6 +76,14 @@
               "type": "MODEL"
             }
           ]
+        },
+        "svcOrchSpec": {
+            "env": [
+                {
+                    "name": "SELDON_ENABLE_ROUTING_INJECTION",
+                    "value": "true"
+                }
+            ]
         }
       }
     ]

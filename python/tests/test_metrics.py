@@ -115,7 +115,7 @@ EXPECTED_COUNTER_METRIC = {"type": COUNTER, "key": "a", "value": 1}
 RAW_BAD_COUNTER_METRIC = {"type": "bad", "key": "a", "value": 1}
 
 
-class Component(object):
+class Component:
     def __init__(self, ok=True):
         self.ok = ok
 

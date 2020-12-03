@@ -37,7 +37,7 @@ kafka-proxy: copy_operator fmt vet
 
 .PHONY: copy_operator
 copy_operator:
-	rm _operator -rf
+	rm -rf _operator
 	cp -r ../operator _operator
 
 

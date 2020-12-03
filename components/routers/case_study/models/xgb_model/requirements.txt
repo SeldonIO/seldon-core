@@ -1,2 +1,5 @@
-numpy >= 1.8.2
+scikit-learn==0.23.2
+numpy==1.19.4
+scipy==1.5.4
 xgboost==1.2.0
+joblib==0.16.0

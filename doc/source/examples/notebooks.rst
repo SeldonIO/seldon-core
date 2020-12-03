@@ -102,7 +102,8 @@ MLOps: Scaling and Monitoring and Observability
 .. toctree::
    :titlesonly:
 
-   Autoscaling Example <autoscaling_example>    
+   Autoscaling Example <autoscaling_example>
+   KEDA Autoscaling example <keda>
    Request Payload Logging with ELK <payload_logging>
    Custom Metrics with Grafana & Prometheus <metrics>
    Distributed Tracing with Jaeger <tracing>

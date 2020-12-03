@@ -1,5 +1,5 @@
 {
-  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "apiVersion": "machinelearning.seldon.io/v1",
   "kind": "SeldonDeployment",
   "metadata": {
     "labels": {
@@ -20,7 +20,7 @@
             "spec": {
               "containers": [
                 {
-                  "image": "seldonio/credit_default_rf_model:0.1",
+                  "image": "seldonio/credit_default_rf_model:0.2",
                   "name": "rf-model"
                 }
               ],

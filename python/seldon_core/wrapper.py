@@ -1,4 +1,5 @@
 import grpc
+from grpc_reflection.v1alpha import reflection
 import os
 import logging
 import seldon_core.seldon_methods
@@ -18,6 +19,7 @@ from seldon_core.flask_utils import (
     ANNOTATION_GRPC_MAX_MSG_SIZE,
 )
 from seldon_core.proto import prediction_pb2_grpc
+from seldon_core.proto import prediction_pb2
 
 logger = logging.getLogger(__name__)
 
@@ -213,7 +215,7 @@ def _set_flask_app_configs(app):
 # ----------------------------
 
 
-class SeldonModelGRPC(object):
+class SeldonModelGRPC:
     def __init__(self, user_model, seldon_metrics):
         self.user_model = user_model
         self.seldon_metrics = seldon_metrics
@@ -287,5 +289,17 @@ def get_grpc_server(user_model, seldon_metrics, annotations={}, trace_intercepto
     prediction_pb2_grpc.add_CombinerServicer_to_server(seldon_model, server)
     prediction_pb2_grpc.add_RouterServicer_to_server(seldon_model, server)
     prediction_pb2_grpc.add_SeldonServicer_to_server(seldon_model, server)
+
+    SERVICE_NAMES = (
+        prediction_pb2.DESCRIPTOR.services_by_name["Generic"].full_name,
+        prediction_pb2.DESCRIPTOR.services_by_name["Model"].full_name,
+        prediction_pb2.DESCRIPTOR.services_by_name["Router"].full_name,
+        prediction_pb2.DESCRIPTOR.services_by_name["Transformer"].full_name,
+        prediction_pb2.DESCRIPTOR.services_by_name["OutputTransformer"].full_name,
+        prediction_pb2.DESCRIPTOR.services_by_name["Combiner"].full_name,
+        prediction_pb2.DESCRIPTOR.services_by_name["Seldon"].full_name,
+        reflection.SERVICE_NAME,
+    )
+    reflection.enable_server_reflection(SERVICE_NAMES, server)
 
     return server

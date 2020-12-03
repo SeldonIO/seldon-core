@@ -10,12 +10,12 @@ from seldon_core.user_model import SeldonComponent
 from typing import Dict, List, Union
 
 
-class MinimalUserObject(object):
+class MinimalUserObject:
     def route(self, X, features_names):
         return 22
 
 
-class UserObject(object):
+class UserObject:
     def __init__(self, metrics_ok=True, ret_meta=False):
         self.metrics_ok = metrics_ok
         self.ret_meta = ret_meta
@@ -42,7 +42,7 @@ class UserObject(object):
             return [{"type": "BAD", "key": "mycounter", "value": 1}]
 
 
-class UserObjectLowLevel(object):
+class UserObjectLowLevel:
     def __init__(self, metrics_ok=True, ret_nparray=False):
         self.metrics_ok = metrics_ok
         self.ret_nparray = ret_nparray
@@ -66,7 +66,7 @@ class UserObjectLowLevel(object):
         logging.info("Feedback called")
 
 
-class UserObjectLowLevelGrpc(object):
+class UserObjectLowLevelGrpc:
     def __init__(self, metrics_ok=True, ret_nparray=False):
         self.metrics_ok = metrics_ok
         self.ret_nparray = ret_nparray
@@ -84,7 +84,7 @@ class UserObjectLowLevelGrpc(object):
         logging.info("Feedback called")
 
 
-class UserObjectLowLevelRaw(object):
+class UserObjectLowLevelRaw:
     def __init__(self, metrics_ok=True, ret_nparray=False):
         self.metrics_ok = metrics_ok
         self.ret_nparray = ret_nparray
@@ -110,7 +110,7 @@ class UserObjectLowLevelRaw(object):
         logging.info("Feedback called")
 
 
-class UserObjectBad(object):
+class UserObjectBad:
     pass
 
 
@@ -339,7 +339,7 @@ def test_unimplemented_route_raw_on_seldon_component():
 
 
 def test_unimplemented_route_raw():
-    class CustomObject(object):
+    class CustomObject:
         def route(self, X, features_names):
             return 53
 

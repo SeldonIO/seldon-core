@@ -3,7 +3,7 @@ IMAGE_NAME=seldonio/mab_epsilon_greedy
 KIND_NAME ?= kind
 
 build:
-	s2i build . -E environment seldonio/seldon-core-s2i-python3:${VERSION} $(IMAGE_NAME):$(VERSION)
+	s2i build . -E environment seldonio/seldon-core-s2i-python37-ubi8:$(VERSION) $(IMAGE_NAME):$(VERSION)
 
 push:
 	docker push $(IMAGE_NAME):$(VERSION)

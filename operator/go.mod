@@ -6,12 +6,12 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v0.1.0
 	github.com/gogo/protobuf v1.3.1
-	github.com/google/go-cmp v0.5.1
+	github.com/google/go-cmp v0.5.4
 	github.com/kedacore/keda v0.0.0-20200911122749-717aab81817f
 	github.com/onsi/ginkgo v1.14.1
 	github.com/onsi/gomega v1.10.2
 	go.uber.org/zap v1.15.0
-	gopkg.in/yaml.v2 v2.3.0
+	gopkg.in/yaml.v2 v2.4.0
 	istio.io/api v0.0.0-20200513175333-ae3da0d240e3
 	istio.io/client-go v0.0.0-20200513180646-f8d9d8ff84e6
 	k8s.io/api v0.18.8
