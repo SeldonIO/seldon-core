@@ -14,7 +14,7 @@
     },
     "servers": [
         {
-            "url": "http://{host}:{port}",
+            "url": "https://{host}:{port}",
             "variables": {
                 "host": {
                     "default": "localhost",
