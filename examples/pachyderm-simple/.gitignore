@@ -1,0 +1,4 @@
+.ipynb_checkpoints/
+*.yaml
+*.conf
+*.json

@@ -1,4 +1,4 @@
-VERSION=0.1
+VERSION=1.0.0
 IMAGE_BASE=seldonio/pachyderm-iris-trainer
 
 KIND_NAME ?= kind
