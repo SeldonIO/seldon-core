@@ -125,7 +125,7 @@ creack/pty,https://github.com/creack/pty/blob/master/LICENSE,MIT License,https:/
 cyphar/filepath-securejoin,https://github.com/cyphar/filepath-securejoin/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/cyphar/filepath-securejoin/master/LICENSE
 davecgh/go-spew,https://github.com/davecgh/go-spew/blob/master/LICENSE,ISC License,https://raw.githubusercontent.com/davecgh/go-spew/master/LICENSE
 daviddengcn/go-colortext,https://github.com/daviddengcn/go-colortext/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/daviddengcn/go-colortext/master/LICENSE
-deislabs/oras,https://github.com/deislabs/oras/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/deislabs/oras/master/LICENSE
+deislabs/oras,https://github.com/deislabs/oras/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/deislabs/oras/main/LICENSE
 denisenkom/go-mssqldb,https://github.com/denisenkom/go-mssqldb/blob/master/LICENSE.txt,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/denisenkom/go-mssqldb/master/LICENSE.txt
 denverdino/aliyungo,https://github.com/denverdino/aliyungo/blob/master/LICENSE.txt,Apache License 2.0,https://raw.githubusercontent.com/denverdino/aliyungo/master/LICENSE.txt
 devigned/tab,https://github.com/devigned/tab/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/devigned/tab/master/LICENSE
@@ -251,7 +251,7 @@ google/go-licenses,https://github.com/google/go-licenses/blob/master/LICENSE,Apa
 google/go-querystring,https://github.com/google/go-querystring/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/google/go-querystring/master/LICENSE
 google/go-replayers,https://github.com/google/go-replayers/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/google/go-replayers/master/LICENSE
 google/gofuzz,https://github.com/google/gofuzz/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/google/gofuzz/master/LICENSE
-google/licenseclassifier,https://github.com/google/licenseclassifier/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/google/licenseclassifier/master/LICENSE
+google/licenseclassifier,https://github.com/google/licenseclassifier/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/google/licenseclassifier/main/LICENSE
 google/mako,https://github.com/google/mako/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/google/mako/master/LICENSE
 google/martian,https://github.com/google/martian/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/google/martian/master/LICENSE
 google/pprof,https://github.com/google/pprof/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/google/pprof/master/LICENSE
@@ -261,7 +261,7 @@ google/subcommands,https://github.com/google/subcommands/blob/master/LICENSE,Apa
 google/uuid,https://github.com/google/uuid/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/google/uuid/master/LICENSE
 google/wire,https://github.com/google/wire/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/google/wire/master/LICENSE
 googleapis/gax-go,https://github.com/googleapis/gax-go/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/googleapis/gax-go/master/LICENSE
-googleapis/gnostic,https://github.com/googleapis/gnostic/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/googleapis/gnostic/master/LICENSE
+googleapis/gnostic,https://github.com/google/gnostic/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/google/gnostic/master/LICENSE
 gookit/color,https://github.com/gookit/color/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/gookit/color/master/LICENSE
 gophercloud/gophercloud,https://github.com/gophercloud/gophercloud/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/gophercloud/gophercloud/master/LICENSE
 gopherjs/gopherjs,https://github.com/gopherjs/gopherjs/blob/master/LICENSE,BSD 2-Clause "Simplified" License,https://raw.githubusercontent.com/gopherjs/gopherjs/master/LICENSE
@@ -274,7 +274,7 @@ gorilla/mux,https://github.com/gorilla/mux/blob/master/LICENSE,BSD 3-Clause "New
 gorilla/securecookie,https://github.com/gorilla/securecookie/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/gorilla/securecookie/master/LICENSE
 gorilla/sessions,https://github.com/gorilla/sessions/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/gorilla/sessions/master/LICENSE
 gorilla/websocket,https://github.com/gorilla/websocket/blob/master/LICENSE,BSD 2-Clause "Simplified" License,https://raw.githubusercontent.com/gorilla/websocket/master/LICENSE
-gostaticanalysis/analysisutil,https://github.com/gostaticanalysis/analysisutil/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/gostaticanalysis/analysisutil/master/LICENSE
+gostaticanalysis/analysisutil,https://github.com/gostaticanalysis/analysisutil/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/gostaticanalysis/analysisutil/main/LICENSE
 gosuri/uitable,https://github.com/gosuri/uitable/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/gosuri/uitable/master/LICENSE
 gotestyourself/gotestyourself,https://github.com/gotestyourself/gotest.tools/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/gotestyourself/gotest.tools/main/LICENSE
 gregjones/httpcache,https://github.com/gregjones/httpcache/blob/master/LICENSE.txt,MIT License,https://raw.githubusercontent.com/gregjones/httpcache/master/LICENSE.txt
@@ -360,7 +360,7 @@ magiconair/properties,https://github.com/magiconair/properties/blob/master/LICEN
 mailru/easyjson,https://github.com/mailru/easyjson/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/mailru/easyjson/master/LICENSE
 maratori/testpackage,https://github.com/maratori/testpackage/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/maratori/testpackage/master/LICENSE
 markbates/inflect,https://github.com/markbates/inflect/blob/master/LICENCE,MIT License,https://raw.githubusercontent.com/markbates/inflect/master/LICENCE
-marstr/guid,https://github.com/marstr/guid/blob/master/LICENSE.txt,MIT License,https://raw.githubusercontent.com/marstr/guid/master/LICENSE.txt
+marstr/guid,https://github.com/marstr/guid/blob/main/LICENSE.txt,MIT License,https://raw.githubusercontent.com/marstr/guid/main/LICENSE.txt
 matoous/godox,https://github.com/matoous/godox/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/matoous/godox/master/LICENSE
 mattbaird/jsonpatch,https://github.com/mattbaird/jsonpatch/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/mattbaird/jsonpatch/master/LICENSE
 mattn/go-colorable,https://github.com/mattn/go-colorable/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/mattn/go-colorable/master/LICENSE
@@ -429,7 +429,7 @@ opentracing/basictracer-go,https://github.com/opentracing/basictracer-go/blob/ma
 opentracing/opentracing-go,https://github.com/opentracing/opentracing-go/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/opentracing/opentracing-go/master/LICENSE
 openzipkin-contrib/zipkin-go-opentracing,https://github.com/openzipkin-contrib/zipkin-go-opentracing/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/openzipkin-contrib/zipkin-go-opentracing/master/LICENSE
 openzipkin/zipkin-go,https://github.com/openzipkin/zipkin-go/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/openzipkin/zipkin-go/master/LICENSE
-otiai10/copy,https://github.com/otiai10/copy/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/otiai10/copy/master/LICENSE
+otiai10/copy,https://github.com/otiai10/copy/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/otiai10/copy/main/LICENSE
 otiai10/curr,https://github.com/otiai10/curr/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/otiai10/curr/master/LICENSE
 otiai10/mint,https://github.com/otiai10/mint/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/otiai10/mint/master/LICENSE
 pact-foundation/pact-go,https://github.com/pact-foundation/pact-go/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/pact-foundation/pact-go/master/LICENSE
@@ -538,7 +538,7 @@ xdg/stringprep,https://github.com/xdg-go/stringprep/blob/master/LICENSE,Apache L
 xeipuuv/gojsonpointer,https://github.com/xeipuuv/gojsonpointer/blob/master/LICENSE-APACHE-2.0.txt,Apache License 2.0,https://raw.githubusercontent.com/xeipuuv/gojsonpointer/master/LICENSE-APACHE-2.0.txt
 xeipuuv/gojsonreference,https://github.com/xeipuuv/gojsonreference/blob/master/LICENSE-APACHE-2.0.txt,Apache License 2.0,https://raw.githubusercontent.com/xeipuuv/gojsonreference/master/LICENSE-APACHE-2.0.txt
 xeipuuv/gojsonschema,https://github.com/xeipuuv/gojsonschema/blob/master/LICENSE-APACHE-2.0.txt,Apache License 2.0,https://raw.githubusercontent.com/xeipuuv/gojsonschema/master/LICENSE-APACHE-2.0.txt
-xi2/xz,https://github.com/xi2/xz/blob/master/LICENSE,Open License,https://raw.githubusercontent.com/xi2/xz/master/LICENSE
+xi2/xz,https://github.com/xi2/xz/blob/master/LICENSE,Public Domain License,https://raw.githubusercontent.com/xi2/xz/master/LICENSE
 xiang90/probing,https://github.com/xiang90/probing/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/xiang90/probing/master/LICENSE
 xlab/handysort,https://github.com/xlab/handysort/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/xlab/handysort/master/LICENSE
 xordataexchange/crypt,https://github.com/xordataexchange/crypt/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/xordataexchange/crypt/master/LICENSE
