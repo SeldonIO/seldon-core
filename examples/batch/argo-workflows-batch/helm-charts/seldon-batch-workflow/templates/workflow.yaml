@@ -29,6 +29,8 @@ spec:
     steps:
     - - name: create-seldon-resource            
         template: create-seldon-resource-template
+    - - name: wait-seldon-resource
+        template: wait-seldon-resource-template    
     - - name: download-object-store
         template: download-object-store-template
     - - name: process-batch-inputs
