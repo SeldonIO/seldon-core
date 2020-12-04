@@ -182,6 +182,6 @@ spec:
       image: bitnami/kubectl:1.17
       command: [bash]
       source: |
-        sleep 5
+        sleep {{ .Values.seldonDeployment.waitTime }}
         kubectl delete seldondeployments -n {{ .Values.workflow.namespace }}  {{ .Values.seldonDeployment.name }}
         
