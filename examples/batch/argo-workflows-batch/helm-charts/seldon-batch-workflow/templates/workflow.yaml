@@ -29,14 +29,14 @@ spec:
     steps:
     - - name: create-seldon-resource            
         template: create-seldon-resource-template
-    - - name: wait-seldon-resource
-        template: wait-seldon-resource-template
     - - name: download-object-store
         template: download-object-store-template
     - - name: process-batch-inputs
         template: process-batch-inputs-template
     - - name: upload-object-store
         template: upload-object-store-template
+    - - name: delete-seldon-resource
+        template: delete-seldon-resource-template
             
   - name: create-seldon-resource-template
     metadata:
@@ -173,4 +173,15 @@ spec:
       source: |
         mc --insecure config host add minio-local $MINIO_SERVER_HOST $MINIO_SERVER_ACCESS_KEY $MINIO_SERVER_ACCESS_SECRET --api S3v4
         mc --insecure cp /assets/output-data.txt minio-local/{{ .Values.minio.outputDataPath }}
+   
+  - name: delete-seldon-resource-template
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+    script:
+      image: bitnami/kubectl:1.17
+      command: [bash]
+      source: |
+        sleep 5
+        kubectl delete seldondeployments -n {{ .Values.workflow.namespace }}  {{ .Values.seldonDeployment.name }}
         
