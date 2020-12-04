@@ -12571,7 +12571,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 --------------------------------------------------------------------------------
-deislabs/oras  MIT License  https://github.com/deislabs/oras/blob/master/LICENSE
+deislabs/oras  MIT License  https://github.com/deislabs/oras/blob/main/LICENSE
 --------------------------------------------------------------------------------
     MIT License
 
@@ -13099,7 +13099,7 @@ dimchansky/utfbom  Apache License 2.0  https://github.com/dimchansky/utfbom/blob
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright {yyyy} {name of copyright owner}
+   Copyright (c) 2018-2020, Dmitrij Koniajev (dimchansky@gmail.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24641,7 +24641,7 @@ google/gofuzz  Apache License 2.0  https://github.com/google/gofuzz/blob/master/
    limitations under the License.
 
 --------------------------------------------------------------------------------
-google/licenseclassifier  Apache License 2.0  https://github.com/google/licenseclassifier/blob/master/LICENSE
+google/licenseclassifier  Apache License 2.0  https://github.com/google/licenseclassifier/blob/main/LICENSE
 --------------------------------------------------------------------------------
 
                                  Apache License
@@ -26352,7 +26352,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
-googleapis/gnostic  Apache License 2.0  https://github.com/googleapis/gnostic/blob/master/LICENSE
+googleapis/gnostic  Apache License 2.0  https://github.com/google/gnostic/blob/master/LICENSE
 --------------------------------------------------------------------------------
 
                                  Apache License
@@ -27061,7 +27061,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
-gostaticanalysis/analysisutil  MIT License  https://github.com/gostaticanalysis/analysisutil/blob/master/LICENSE
+gostaticanalysis/analysisutil  MIT License  https://github.com/gostaticanalysis/analysisutil/blob/main/LICENSE
 --------------------------------------------------------------------------------
 MIT License
 
@@ -36911,7 +36911,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
-marstr/guid  MIT License  https://github.com/marstr/guid/blob/master/LICENSE.txt
+marstr/guid  MIT License  https://github.com/marstr/guid/blob/main/LICENSE.txt
 --------------------------------------------------------------------------------
 MIT License
 
@@ -44308,7 +44308,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 --------------------------------------------------------------------------------
-otiai10/copy  MIT License  https://github.com/otiai10/copy/blob/master/LICENSE
+otiai10/copy  MIT License  https://github.com/otiai10/copy/blob/main/LICENSE
 --------------------------------------------------------------------------------
 The MIT License (MIT)
 
@@ -51855,7 +51855,7 @@ xeipuuv/gojsonschema  Apache License 2.0  https://github.com/xeipuuv/gojsonschem
    limitations under the License.
 
 --------------------------------------------------------------------------------
-xi2/xz  Open License  https://github.com/xi2/xz/blob/master/LICENSE
+xi2/xz  Public Domain License  https://github.com/xi2/xz/blob/master/LICENSE
 --------------------------------------------------------------------------------
 Licensing of github.com/xi2/xz
 ==============================
