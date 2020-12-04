@@ -15,7 +15,7 @@ seldonDeployment:
   # Name to use for the seldon deployment which by default appends generated workflow ID
   name: seldon-{{workflow.uid}}
   # Image to use for the batch client
-  image: seldonio/seldon-core-s2i-python37:1.3.0-dev
+  image: seldonio/seldon-core-s2i-python37:1.5.0
   # Prepackaged model server to use [see https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html]
   server: SKLEARN_SERVER
   # The URL for the model that is to be used
