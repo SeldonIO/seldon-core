@@ -197,6 +197,26 @@ func getSvcOrchSvcAccountName(mlDep *machinelearningv1.SeldonDeployment) string 
 	return svcAccount
 }
 
+// getEnginePodAnnotations merges the default annotations for the engine pod with
+// any user-specified annotations that were passed in using the SvcOrchSpec
+// struct.
+// It returns a map of merged annotations.
+func getEnginePodAnnotations(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec) map[string]string {
+	annotations := map[string]string{
+		"prometheus.io/path": getPrometheusPath(mlDep),
+		// "prometheus.io/port":   strconv.Itoa(engine_http_port),
+		"prometheus.io/scrape": "true",
+	}
+
+	if p.SvcOrchSpec.Annotations != nil {
+		for k, v := range p.SvcOrchSpec.Annotations {
+			annotations[k] = v
+		}
+	}
+
+	return annotations
+}
+
 func getSvcOrchUser(mlDep *machinelearningv1.SeldonDeployment) (*int64, error) {
 
 	if isExecutorEnabled(mlDep) {
@@ -224,7 +244,9 @@ func getSvcOrchUser(mlDep *machinelearningv1.SeldonDeployment) (*int64, error) {
 	return nil, nil
 }
 
-func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, predictorB64 string, http_port int, grpc_port int, resources *corev1.ResourceRequirements) (*corev1.Container, error) {
+// createExecutorContainerSpec creates a container spec for the "executor", which
+// is the Go verion of the service orchestrator.
+func createExecutorContainerSpec(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, predictorB64 string, http_port int, grpc_port int, resources *corev1.ResourceRequirements) (*corev1.Container, error) {
 	protocol := mlDep.Spec.Protocol
 	//Backwards compatibility for older resources
 	if protocol == "" {
@@ -296,6 +318,8 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 	}, nil
 }
 
+// createEngineContainerSpec creates a container spec for the "engine", which is
+// Java version of the service orchestrator.
 func createEngineContainerSpec(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, predictorB64 string,
 	engine_http_port int, engine_grpc_port int, engineResources *corev1.ResourceRequirements) (*corev1.Container, error) {
 
@@ -374,7 +398,7 @@ func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machine
 	}
 
 	//Engine resources
-	var engineResources *corev1.ResourceRequirements = p.SvcOrchSpec.Resources
+	engineResources := p.SvcOrchSpec.Resources
 	if engineResources == nil {
 		var cpu_request resource.Quantity
 		var cpu_limit resource.Quantity
@@ -413,7 +437,7 @@ func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machine
 		if err != nil {
 			return nil, err
 		}
-		c, err = createExecutorContainer(mlDep, p, predictorB64, executor_http_port, executor_grpc_port, engineResources)
+		c, err = createExecutorContainerSpec(mlDep, p, predictorB64, executor_http_port, executor_grpc_port, engineResources)
 		if err != nil {
 			return nil, err
 		}
@@ -491,11 +515,7 @@ func createEngineDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machin
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{machinelearningv1.Label_seldon_app: seldonId, machinelearningv1.Label_seldon_id: seldonId, "app": depName},
-					Annotations: map[string]string{
-						"prometheus.io/path": getPrometheusPath(mlDep),
-						// "prometheus.io/port":   strconv.Itoa(engine_http_port),
-						"prometheus.io/scrape": "true",
-					},
+					Annotations: getEnginePodAnnotations(mlDep, p),
 				},
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
@@ -511,6 +531,7 @@ func createEngineDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machin
 						}, DefaultMode: &defaultMode}}},
 					},
 					RestartPolicy: corev1.RestartPolicyAlways,
+					Tolerations:   p.SvcOrchSpec.Tolerations,
 				},
 			},
 			Strategy: appsv1.DeploymentStrategy{RollingUpdate: &appsv1.RollingUpdateDeployment{MaxUnavailable: &intstr.IntOrString{StrVal: "10%"}}},

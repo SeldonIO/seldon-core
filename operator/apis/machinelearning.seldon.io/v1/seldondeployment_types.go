@@ -261,9 +261,11 @@ const (
 )
 
 type SvcOrchSpec struct {
-	Resources *v1.ResourceRequirements `json:"resources,omitempty" protobuf:"bytes,1,opt,name=resources"`
-	Env       []*v1.EnvVar             `json:"env,omitempty" protobuf:"bytes,2,opt,name=env"`
-	Replicas  *int32                   `json:"replicas,omitempty" protobuf:"bytes,3,opt,name=replicas"`
+	Resources   *v1.ResourceRequirements `json:"resources,omitempty" protobuf:"bytes,1,opt,name=resources"`
+	Env         []*v1.EnvVar             `json:"env,omitempty" protobuf:"bytes,2,opt,name=env"`
+	Replicas    *int32                   `json:"replicas,omitempty" protobuf:"bytes,3,opt,name=replicas"`
+	Annotations map[string]string        `json:"annotations,omitempty" protobuf:"bytes,4,opt,name=annotations"`
+	Tolerations []v1.Toleration          `json:"tolerations,omitempty" protobuf:"bytes,5,opt,name=tolerations"`
 }
 
 type AlibiExplainerType string

@@ -10,7 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-func createTestSeldonDeployment() *machinelearningv1.SeldonDeployment {
+func createTestSeldonDeployment(svcOrchSpec machinelearningv1.SvcOrchSpec) *machinelearningv1.SeldonDeployment {
 	var modelType = machinelearningv1.MODEL
 	key := types.NamespacedName{
 		Name:      "dep",
@@ -46,6 +46,7 @@ func createTestSeldonDeployment() *machinelearningv1.SeldonDeployment {
 							Type: machinelearningv1.GRPC,
 						},
 					},
+					SvcOrchSpec: svcOrchSpec,
 				},
 			},
 		},
@@ -67,7 +68,7 @@ func setUseExecutorAnnotation(mlDep *machinelearningv1.SeldonDeployment, useExec
 func conductExecutorUsageTest(t *testing.T, testEnvUseExecutor, testAnnotationUseExecutor string, expectedExecutorEnabled bool) {
 	g := NewGomegaWithT(t)
 	cleanEnvImages()
-	mlDep := createTestSeldonDeployment()
+	mlDep := createTestSeldonDeployment(machinelearningv1.SvcOrchSpec{})
 	if testAnnotationUseExecutor != "" {
 		setUseExecutorAnnotation(mlDep, testAnnotationUseExecutor)
 	}
@@ -98,8 +99,8 @@ func TestExecutorCreateNoEnv(t *testing.T) {
 	cleanEnvImages()
 	envExecutorImage = ""
 	envExecutorImageRelated = ""
-	mlDep := createTestSeldonDeployment()
-	_, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
+	mlDep := createTestSeldonDeployment(machinelearningv1.SvcOrchSpec{})
+	_, err := createExecutorContainerSpec(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
 	g.Expect(err).ToNot(BeNil())
 	cleanEnvImages()
 }
@@ -110,8 +111,8 @@ func TestExecutorCreateEnv(t *testing.T) {
 	imageName := "myimage"
 	envExecutorImage = imageName
 	envExecutorImageRelated = ""
-	mlDep := createTestSeldonDeployment()
-	con, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
+	mlDep := createTestSeldonDeployment(machinelearningv1.SvcOrchSpec{})
+	con, err := createExecutorContainerSpec(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
 	g.Expect(err).To(BeNil())
 	g.Expect(con.Image).To(Equal(imageName))
 	cleanEnvImages()
@@ -124,10 +125,71 @@ func TestExecutorCreateEnvRelated(t *testing.T) {
 	imageNameRelated := "myimage2"
 	envExecutorImage = imageName
 	envExecutorImageRelated = imageNameRelated
-	mlDep := createTestSeldonDeployment()
-	con, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
+	mlDep := createTestSeldonDeployment(machinelearningv1.SvcOrchSpec{})
+	con, err := createExecutorContainerSpec(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
 	g.Expect(err).To(BeNil())
 	g.Expect(con.Image).To(Equal(imageNameRelated))
+	cleanEnvImages()
+}
+
+func TestExecutorWithoutSvcOrchSpec(t *testing.T) {
+	g := NewGomegaWithT(t)
+	cleanEnvImages()
+	imageName := "myimage"
+	envExecutorImage = imageName
+	envExecutorImageRelated = "x"
+	mlDep := createTestSeldonDeployment(machinelearningv1.SvcOrchSpec{})
+	setUseExecutorAnnotation(mlDep, "true")
+	engineDep, err := createEngineDeployment(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2)
+	g.Expect(err).To(BeNil())
+	// Default annotations for executor
+	g.Expect(engineDep.Spec.Template.ObjectMeta.Annotations).To(Equal(map[string]string{
+		"prometheus.io/path":   getPrometheusPath(mlDep),
+		"prometheus.io/scrape": "true",
+	}))
+
+	cleanEnvImages()
+}
+
+func TestExecutorWithSvcOrchSpec(t *testing.T) {
+	g := NewGomegaWithT(t)
+	cleanEnvImages()
+	imageName := "myimage"
+	envExecutorImage = imageName
+	envExecutorImageRelated = "x"
+	svcOrchSpec := machinelearningv1.SvcOrchSpec{
+		Annotations: map[string]string{
+			"prometheus.io/scrape": "false",
+			"custom/annotation1":   "value1",
+			"custom/annotation2":   "value2",
+		},
+		Tolerations: []v1.Toleration{
+			{
+				Key:      "spotInstance",
+				Operator: "Exists",
+				Effect:   "PreferNoSchedule",
+			},
+		},
+	}
+	mlDep := createTestSeldonDeployment(svcOrchSpec)
+	setUseExecutorAnnotation(mlDep, "true")
+	engineDep, err := createEngineDeployment(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2)
+	g.Expect(err).To(BeNil())
+	// fmt.Printf("%+v", engineDep.Spec.Template.ObjectMeta)
+	g.Expect(engineDep.Spec.Template.ObjectMeta.Annotations).To(Equal(map[string]string{
+		"prometheus.io/path":   getPrometheusPath(mlDep),
+		"prometheus.io/scrape": "false",
+		"custom/annotation1":   "value1",
+		"custom/annotation2":   "value2",
+	}))
+	g.Expect(engineDep.Spec.Template.Spec.Tolerations).To(Equal([]v1.Toleration{
+		{
+			Key:      "spotInstance",
+			Operator: "Exists",
+			Effect:   "PreferNoSchedule",
+		},
+	}))
+
 	cleanEnvImages()
 }
 
@@ -136,7 +198,7 @@ func TestEngineCreateNoEnv(t *testing.T) {
 	cleanEnvImages()
 	envEngineImage = ""
 	envEngineImageRelated = ""
-	mlDep := createTestSeldonDeployment()
+	mlDep := createTestSeldonDeployment(machinelearningv1.SvcOrchSpec{})
 	_, err := createEngineContainerSpec(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
 	g.Expect(err).ToNot(BeNil())
 	cleanEnvImages()
@@ -148,7 +210,7 @@ func TestEngineCreateEnv(t *testing.T) {
 	imageName := "myimage"
 	envEngineImage = imageName
 	envEngineImageRelated = ""
-	mlDep := createTestSeldonDeployment()
+	mlDep := createTestSeldonDeployment(machinelearningv1.SvcOrchSpec{})
 	con, err := createEngineContainerSpec(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
 	g.Expect(err).To(BeNil())
 	g.Expect(con.Image).To(Equal(imageName))
@@ -162,7 +224,7 @@ func TestEngineCreateEnvRelated(t *testing.T) {
 	imageNameRelated := "myimage2"
 	envEngineImage = imageName
 	envEngineImageRelated = imageNameRelated
-	mlDep := createTestSeldonDeployment()
+	mlDep := createTestSeldonDeployment(machinelearningv1.SvcOrchSpec{})
 	con, err := createEngineContainerSpec(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
 	g.Expect(err).To(BeNil())
 	g.Expect(con.Image).To(Equal(imageNameRelated))
@@ -172,9 +234,9 @@ func TestEngineCreateEnvRelated(t *testing.T) {
 func TestExecutorCreateKafka(t *testing.T) {
 	g := NewGomegaWithT(t)
 	cleanEnvImages()
-	mlDep := createTestSeldonDeployment()
+	mlDep := createTestSeldonDeployment(machinelearningv1.SvcOrchSpec{})
 	mlDep.Spec.ServerType = machinelearningv1.ServerKafka
-	_, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
+	_, err := createExecutorContainerSpec(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
 	g.Expect(err).ToNot(BeNil())
 	cleanEnvImages()
 }
