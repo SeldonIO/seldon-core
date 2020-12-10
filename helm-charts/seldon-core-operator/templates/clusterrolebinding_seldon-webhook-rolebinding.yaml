@@ -8,14 +8,14 @@ metadata:
     app.kubernetes.io/instance: '{{ .Release.Name }}'
     app.kubernetes.io/name: '{{ include "seldon.name" . }}'
     app.kubernetes.io/version: '{{ .Chart.Version }}'
-  name: seldon-webhook-rolebinding-{{ .Release.Namespace }}
+  name: seldon-webhook-rolebinding-{{ include "seldon.namespace" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: seldon-webhook-role-{{ .Release.Namespace }}
+  name: seldon-webhook-role-{{ include "seldon.namespace" . }}
 subjects:
 - kind: ServiceAccount
   name: seldon-manager
-  namespace: '{{ .Release.Namespace }}'
+  namespace: '{{ include "seldon.namespace" . }}'
 {{- end }}
 {{- end }}

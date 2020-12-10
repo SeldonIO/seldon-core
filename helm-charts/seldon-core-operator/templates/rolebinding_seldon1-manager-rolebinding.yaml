@@ -4,7 +4,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: seldon1-manager-rolebinding
-  namespace: '{{ .Release.Namespace }}'
+  namespace: '{{ include "seldon.namespace" . }}'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -12,6 +12,6 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: '{{ .Values.serviceAccount.name }}'
-  namespace: '{{ .Release.Namespace }}'
+  namespace: '{{ include "seldon.namespace" . }}'
 {{- end }}
 {{- end }}

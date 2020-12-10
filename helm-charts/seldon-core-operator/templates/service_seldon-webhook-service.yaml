@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/name: '{{ include "seldon.name" . }}'
     app.kubernetes.io/version: '{{ .Chart.Version }}'
   name: seldon-webhook-service
-  namespace: '{{ .Release.Namespace }}'
+  namespace: '{{ include "seldon.namespace" . }}'
 spec:
   ports:
   - port: 443
