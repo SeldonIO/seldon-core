@@ -6,8 +6,6 @@ logger = logging.getLogger(__name__)
 # Variables to check if certain extra dependencies are included or
 # not
 _TF_PRESENT = False
-_GCS_PRESENT = False
-_AZURE_PRESENT = False
 
 try:
     #  Fix for https://github.com/SeldonIO/seldon-core/issues/1076
@@ -32,49 +30,6 @@ except ImportError:
         install `tensorflow` or install `seldon_core` as
 
             $ pip install seldon_core[tensorflow]
-
-        or
-
-            $ pip install seldon_core[all]
-        """
-    )
-    logger.info(notice)
-
-
-try:
-    from google.cloud import storage  # noqa: F401
-
-    _GCS_PRESENT = True
-except ImportError:
-    _GCS_PRESENT = False
-    notice = textwrap.dedent(
-        """
-        Support for Google Cloud Storage is not installed.
-        If you want to download resources from Google Cloud Storage
-        install `google-cloud-storage` or install `seldon_core` as
-
-            $ pip install seldon_core[gcs]
-
-        or
-
-            $ pip install seldon_core[all]
-        """
-    )
-    logger.info(notice)
-
-try:
-    from azure.storage.blob import BlockBlobService  # noqa: F401
-
-    _AZURE_PRESENT = True
-except ImportError:
-    _AZURE_PRESENT = False
-    notice = textwrap.dedent(
-        """
-        Support for Azure Blob Storage is not installed.
-        If you want to download resources from Azure Blob Storage
-        install `azure-storage-blob` or install `seldon_core` as
-
-            $ pip install seldon_core[azure]
 
         or
 

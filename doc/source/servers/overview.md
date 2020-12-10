@@ -3,10 +3,10 @@
 Seldon provides several prepacked servers you can use to deploy trained models:
 
 - [SKLearn Server](./sklearn.html)
-- [XGBoost Server](xgboost.html)
-- [Tensorflow Serving](tensorflow.html)
-- [MLflow Server](mlflow.html)
-- [Custom Servers](custom.md)
+- [XGBoost Server](./xgboost.html)
+- [Tensorflow Serving](./tensorflow.html)
+- [MLflow Server](./mlflow.html)
+- [Custom Servers](./custom.html)
 
 For these servers you only need the location of the saved model in a local filestore, Google bucket, S3 bucket, azure or minio. An example manifest with an sklearn server is shown below:
 
@@ -42,7 +42,7 @@ The download is handled by an initContainer that runs before your predictor load
 
 If you want to customize the resources for the server you can add a skeleton `Container` with the same name to your podSpecs, e.g.
 
-```
+```yaml
 apiVersion: machinelearning.seldon.io/v1alpha2
 kind: SeldonDeployment
 metadata:
@@ -75,9 +75,9 @@ Next steps:
 
 - [Worked notebook](../examples/server_examples.html)
 - [SKLearn Server](./sklearn.html)
-- [XGBoost Server](xgboost.html)
-- [Tensorflow Serving](tensorflow.html)
-- [MLflow Server](mlflow.html)
+- [XGBoost Server](./xgboost.html)
+- [Tensorflow Serving](./tensorflow.html)
+- [MLflow Server](./mlflow.html)
 - [SKLearn Server with MinIO](../examples/minio-sklearn.html)
 
 You can also build and add your own [custom inference servers](./custom.md),
@@ -143,7 +143,7 @@ data:
 
 It is also possible to create a `Secret` object from the command line:
 
-```
+```bash
 kubectl create secret generic seldon-init-container-secret \
     --from-literal=AWS_ENDPOINT_URL='XXXX' \
     --from-literal=AWS_ACCESS_KEY_ID='XXXX' \
@@ -194,7 +194,7 @@ spec:
 
 #### MinIO running inside same Kubernetes cluster
 Assuming that you have MinIO instance running on port `9000` avaible at `minio.minio-system.svc.cluster.local` and you want to reference bucket `mymodel` you would set
-```
+```bash
 AWS_ENDPOINT_URL=http://minio.minio-system.svc.cluster.local:9000
 ```
 with `modelUri` being set as `s3://mymodel`.
@@ -209,7 +209,7 @@ You can also create a `ServiceAccount` and attach a differently formatted `Secre
 
 For GCP/GKE, go to gcloud console and create a key as json and export as a file. Then create a secret from the file using:
 
-```
+```bash
 kubectl create secret generic user-gcp-sa --from-file=gcloud-application-credentials.json=<LOCALFILE>
 ```
 
@@ -217,7 +217,7 @@ The file in the secret needs to be called `gcloud-application-credentials.json` 
 
 Then create a service account to reference the secret:
 
-```
+```yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -228,7 +228,7 @@ secrets:
 
 This can then be referenced in the SeldonDeployment manifest by setting `serviceAccountName: user-gcp-sa` at the same level as `m̀odelUri` e.g.
 
-```
+```yaml
 apiVersion: machinelearning.seldon.io/v1alpha2
 kind: SeldonDeployment
 metadata:

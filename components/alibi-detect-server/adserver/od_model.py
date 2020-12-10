@@ -1,5 +1,5 @@
 import json
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union
 import logging
 import kfserving
 import numpy as np
@@ -40,7 +40,7 @@ class AlibiDetectOutlierModel(CEModel):  # pylint:disable=c-extension-no-member
         self.model: Data = load_detector(model_folder)
         self.ready = True
 
-    def process_event(self, inputs: List, headers: Dict) -> Dict:
+    def process_event(self, inputs: Union[List, Dict], headers: Dict) -> Dict:
         """
         Process the event and return Alibi Detect score
 
@@ -82,13 +82,41 @@ class AlibiDetectOutlierModel(CEModel):  # pylint:disable=c-extension-no-member
             and headers[HEADER_RETURN_FEATURE_SCORE] == "true"
         ):
             ret_feature_score = True
-        od_preds = self.model.predict(
-            X,
-            outlier_type=outlier_type,
-            # use 'feature' or 'instance' level
-            return_feature_score=ret_feature_score,
-            # scores used to determine outliers
-            return_instance_score=ret_instance_score,
-        )
+        od_preds = {}
+        name = self.model.meta["name"]
+        if (
+            name == "IForest"
+            or name == "OutlierAEGMM"
+            or name == "Mahalanobis"
+            or name == "SpectralResidual"
+            or name == "OutlierVAEGMM"
+        ):
+            od_preds = self.model.predict(
+                X,
+                # scores used to determine outliers
+                return_instance_score=ret_instance_score,
+            )
+        else:
+            od_preds = self.model.predict(
+                X,
+                outlier_type=outlier_type,
+                # use 'feature' or 'instance' level
+                return_feature_score=ret_feature_score,
+                # scores used to determine outliers
+                return_instance_score=ret_instance_score,
+            )
+        # clean result
+        if (
+            "data" in od_preds
+            and "instance_score" in od_preds["data"]
+            and od_preds["data"]["instance_score"] is None
+        ):
+            del od_preds["data"]["instance_score"]
+        if (
+            "data" in od_preds
+            and "feature_score" in od_preds["data"]
+            and od_preds["data"]["feature_score"] is None
+        ):
+            del od_preds["data"]["feature_score"]
 
         return json.loads(json.dumps(od_preds, cls=NumpyEncoder))

@@ -46,11 +46,11 @@ These same dependencies will need to be installed in the docker image, as explai
 
 ## Step 2 - Build your image
 
-How you install your dependencies in your docker image depends on the [base image that you choose](https://datawookie.netlify.com/blog/2019/01/docker-images-for-r-r-base-versus-r-apt/) and whether binary versions of the dependencies are available. Using `rocker/r-apt:bionic` as a base image and install dependencies as binaries, if possible, results in a faster and smaller build.
+How you install your dependencies in your docker image depends on the [base image that you choose](https://datawookie.netlify.app/blog/2019/01/docker-images-for-r-r-base-versus-r-apt/) and whether binary versions of the dependencies are available. Using `rocker/r-apt:bionic` as a base image and install dependencies as binaries, if possible, results in a faster and smaller build.
 
 An example docker file can be seen in the [seldon kubeflow example](https://github.com/kubeflow/example-seldon/blob/master/models/r_mnist/runtime/Dockerfile):
 
-```
+```dockerfile
 FROM rocker/r-apt:bionic
 
 RUN apt-get update && \
@@ -86,7 +86,7 @@ Then environment variables are set which will be passed as parameters into the R
 
 A directory is created and the local source code is coped into the directory, which is then set as the working directory. The seldon microservice wrapper file is then copied into this directory. This wraps the model to run as a seldon microservice. The expose command sets 5000 as the port for the service.
 
-The image can then be built with ```docker build . -t $ORG/$MODEL_NAME:$TAG``` to create your Docker image from source code. A simple name can be used but convention is to use the ORG/IMAGE:TAG format.
+The image can then be built with `docker build . -t $ORG/$MODEL_NAME:$TAG` to create your Docker image from source code. A simple name can be used but convention is to use the ORG/IMAGE:TAG format.
 
 ## Reference
 
@@ -118,12 +118,12 @@ Can only by 0 at present. In future, will allow the state of the component to be
 
 #### MODEL
 
-- [A minimal skeleton for model source code](https://github.com/seldonio/seldon-core/tree/incubating/wrappers/s2i/R/test/model-template-app)
+- [A minimal skeleton for model source code](https://github.com/SeldonIO/seldon-core/tree/master/incubating/wrappers/s2i/R/test/model-template-app)
 - [Example models](../examples/notebooks.html)
 
 #### ROUTER
-- [A minimal skeleton for router source code](https://github.com/seldonio/seldon-core/tree/incubating/wrappers/s2i/R/test/router-template-app)
+- [A minimal skeleton for router source code](https://github.com/seldonio/seldon-core/tree/master/incubating/wrappers/s2i/R/test/router-template-app)
 
 #### TRANSFORMER
 
-- [A minimal skeleton for transformer source code](https://github.com/seldonio/seldon-core/tree/incubating/wrappers/s2i/R/test/transformer-template-app)
+- [A minimal skeleton for transformer source code](https://github.com/seldonio/seldon-core/tree/master/incubating/wrappers/s2i/R/test/transformer-template-app)

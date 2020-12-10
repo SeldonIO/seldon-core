@@ -1,0 +1,3 @@
+tensorflow>=2.2.0
+tensorflow-datasets>=3.2.1
+numpy>=1.17.2

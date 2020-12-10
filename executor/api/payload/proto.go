@@ -2,6 +2,10 @@ package payload
 
 import "github.com/golang/protobuf/proto"
 
+const (
+	APPLICATION_TYPE_PROTOBUF = "application/protobuf"
+)
+
 type ProtoPayload struct {
 	Msg proto.Message
 }
@@ -11,7 +15,7 @@ func (s *ProtoPayload) GetPayload() interface{} {
 }
 
 func (s *ProtoPayload) GetContentType() string {
-	return "application/protobuf"
+	return APPLICATION_TYPE_PROTOBUF
 }
 
 func (s *ProtoPayload) GetBytes() ([]byte, error) {

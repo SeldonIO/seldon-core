@@ -1,52 +1,24 @@
-{
-    "apiVersion": "machinelearning.seldon.io/v1alpha2",
-    "kind": "SeldonDeployment",
-    "metadata": {
-        "labels": {
-            "app": "seldon"
-        },
-        "name": "model-long-timeout"
-    },
-    "spec": {
-        "annotations": {
-            "deployment_version": "v1",
-	    "seldon.io/rest-timeout":"100000",
-	    "seldon.io/grpc-timeout":"100000"
-        },
-        "name": "long-to",
-        "predictors": [
-            {
-                "componentSpecs": [{
-                    "spec": {
-                        "containers": [
-                            {
-                                "image": "seldonio/mock_classifier_grpc:1.5",
-                                "imagePullPolicy": "IfNotPresent",
-                                "name": "classifier",
-                                "resources": {
-                                    "requests": {
-                                        "memory": "1Mi"
-                                    }
-                                }
-                            }
-                        ],
-                        "terminationGracePeriodSeconds": 20
-                    }
-                }],
-                "graph": {
-                    "children": [],
-                    "name": "classifier",
-                    "endpoint": {
-			"type" : "GRPC"
-		    },
-                    "type": "MODEL"
-                },
-                "name": "test",
-                "replicas": 1,
-		"annotations": {
-		    "predictor_version" : "v1"
-		}
-            }
-        ]
-    }
-}
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: seldon-model
+spec:
+  annotations:
+    seldon.io/rest-timeout: "5000"
+    seldon.io/grpc-timeout: "5000"
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/mock_classifier:1.6.0-dev
+          name: classifier
+    graph:
+      children: []
+      name: classifier
+      type: MODEL
+      parameters:
+      - name: delaySecs
+        type: INT
+        value: "2"       
+    name: example
+    replicas: 1

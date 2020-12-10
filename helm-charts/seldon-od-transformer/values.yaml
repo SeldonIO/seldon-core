@@ -6,6 +6,8 @@ model:
 outlierDetection:
   enabled: true
   name: outlier-detector
+  # outlierDetection.type -- Type of outlier detector.
+  # Valid values are: `vae`, `mahalanobis`, `seq2seq` and `isolationforest`.
   type: vae
   vae:
     threshold: 10
@@ -45,10 +47,6 @@ outlierDetection:
     start_clip: INT
     max_n: INT
 replicas: 1
-# Add oauth key and secret if using the default API Oauth Gateway for ingress
-oauth:
-  key: 
-  secret: 
 
 sdepLabels:
   app: "seldon"

@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, Response
 from seldon_core.utils import (
     json_to_seldon_message,
     extract_request_parts,
@@ -65,15 +65,15 @@ def index():
     try:
 
         # now process and update the doc
-        doc = process_and_update_elastic_doc(
+        process_and_update_elastic_doc(
             es, message_type, body, request_id, request.headers, index_name
         )
 
-        return str(doc)
+        return ""
     except Exception as ex:
         print(ex)
     sys.stdout.flush()
-    return "problem logging request"
+    return Response("problem logging request", 500)
 
 
 def process_and_update_elastic_doc(
@@ -125,6 +125,9 @@ def process_and_update_elastic_doc(
             upsert_doc_to_elastic(
                 elastic_object, message_type, doc_body, item_request_id, index_name
             )
+    elif message_type == "feedback":
+        item_request_id = build_request_id_batched(request_id, 1, 0)
+        upsert_doc_to_elastic(elastic_object, message_type, doc_body, item_request_id, index_name)
     elif "data" in new_content_part and message_type == "outlier":
         no_items_in_batch = len(doc_body[message_type]["data"]["is_outlier"])
         index = 0
@@ -257,6 +260,8 @@ def extract_data_part(content):
         # tabular should be iterable and get inferred through later block
         if req_datatype == "strData":
             copy["dataType"] = "text"
+        if req_datatype == "jsonData":
+            copy["dataType"] = "json"
         if req_datatype == "binData":
             copy["dataType"] = "image"
 

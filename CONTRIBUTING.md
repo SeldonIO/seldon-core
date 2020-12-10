@@ -26,7 +26,7 @@ When a PR is created, a [Prow / Lighthouse
 plugin](https://prow.k8s.io/command-help#release_note_none) will check if there
 is a populated `release-note` block in the PR body such as:
 
-````
+````md
 ```release-note
 Some public-facing release note.
 ```
@@ -52,7 +52,7 @@ will get displayed.
   describe the contents of the PR.
   For example:
   
-  ````
+  ````md
   ```release-note
   Added metadata support to Python wrapper
   ```
@@ -61,7 +61,7 @@ will get displayed.
 - Use the expression `Action required` to describe breaking changes.
   For example:
 
-  ````
+  ````md
   ```release-note
   Action required: The helm value `createResources` has been renamed
   `managerCreateResources`.

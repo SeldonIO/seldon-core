@@ -1,0 +1,4 @@
+API_TYPE=REST
+SERVICE_TYPE=MODEL
+PERSISTENCE=0
+JAVA_IMPORT_PATH=io.seldon.example.model.ExampleModelHandler

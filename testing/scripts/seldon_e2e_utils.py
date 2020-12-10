@@ -79,6 +79,24 @@ def get_pod_name_for_sdep(sdep_name, namespace, attempts=20, sleep=5):
     return pod_names
 
 
+def log_sdep_logs(sdep_name, namespace, attempts=20, sleep=5):
+    pod_names = get_pod_name_for_sdep(sdep_name, namespace, attempts, sleep)
+    for pod_name in pod_names:
+        for _ in range(attempts):
+            ret = run(
+                f"kubectl logs -n {namespace} {pod_name} --all-containers=true",
+                shell=True,
+                stdout=subprocess.PIPE,
+            )
+            if ret.returncode == 0:
+                logging.info(f"Successfully got logs for {pod_name}")
+                break
+            logging.warning(f"Unsuccessful kubectl logs for {pod_name} but retrying")
+            time.sleep(sleep)
+        assert ret.returncode == 0, f"Failed to get logs for {pod_name}"
+        logging.warning(ret.stdout.decode())
+
+
 def get_deployment_names(sdep_name, namespace, attempts=20, sleep=5):
     for _ in range(attempts):
         ret = run(
@@ -228,6 +246,7 @@ def initial_rest_request(
     dtype="tensor",
     names=None,
     method="predict",
+    predictor_name="default",
 ):
     sleeping_times = [1, 5, 10]
     attempt = 0
@@ -244,6 +263,7 @@ def initial_rest_request(
             dtype=dtype,
             names=names,
             method=method,
+            predictor_name=predictor_name,
         )
 
         if r is None or r.status_code != 200:
@@ -472,12 +492,7 @@ def rest_request_ambassador_auth(
 
 
 def grpc_request_ambassador(
-    deployment_name,
-    namespace,
-    endpoint="localhost:8004",
-    data_size=5,
-    rows=1,
-    data=None,
+    deployment_name, namespace, endpoint=API_AMBASSADOR, data_size=5, rows=1, data=None
 ):
     if data is None:
         shape, arr = create_random_data(data_size, rows)
@@ -504,7 +519,7 @@ def grpc_request_ambassador(
 
 
 def grpc_request_ambassador_metadata(
-    deployment_name, namespace, endpoint="localhost:8004", model_name=None
+    deployment_name, namespace, endpoint=API_AMBASSADOR, model_name=None
 ):
     if model_name is None:
         request = empty_pb2.Empty()

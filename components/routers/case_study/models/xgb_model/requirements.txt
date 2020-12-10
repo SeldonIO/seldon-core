@@ -1,4 +1,5 @@
-scikit-learn==0.20.1
-numpy==1.15.1
-scipy==1.1.0
-xgboost==0.81
+scikit-learn==0.23.2
+numpy==1.19.4
+scipy==1.5.4
+xgboost==1.2.0
+joblib==0.16.0

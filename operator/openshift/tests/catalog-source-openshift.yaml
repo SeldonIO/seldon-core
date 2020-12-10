@@ -1,0 +1,12 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: seldon-core-catalog
+  namespace: openshift-marketplace
+spec:
+  sourceType: grpc
+  image: quay.io/seldon/test-catalog:latest
+  displayName: Seldon Core Catalog
+  updateStrategy:
+    registryPoll: 
+      interval: 30m

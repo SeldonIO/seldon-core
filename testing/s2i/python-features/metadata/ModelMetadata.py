@@ -22,6 +22,7 @@ class ModelMetadata:
                 }
             ],
             "outputs": [{"messagetype": "tensor", "schema": {"shape": [1]}}],
+            "custom": {"tag-key": "tag-value"},
         }
 
         return meta

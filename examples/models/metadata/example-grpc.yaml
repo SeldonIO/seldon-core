@@ -5,18 +5,19 @@ metadata:
   name: graph-metadata-grpc
 spec:
   name: test-deployment
+  transport: grpc
   predictors:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/metadata-generic-node_grpc:0.3
+        - image: seldonio/metadata-generic-node:0.4
           name: node-one
           env:           
           - name: MODEL_METADATA
             value: |
               ---
               name: node-one
-              versions: [ generic-node/v0.3 ]
+              versions: [ generic-node/v0.4 ]
               platform: seldon
               inputs:
               - messagetype: tensor
@@ -26,7 +27,9 @@ spec:
               - messagetype: tensor
                 schema:
                   names: [one-output]
-        - image: seldonio/metadata-generic-node_grpc:0.3
+              custom:
+                author: seldon-dev
+        - image: seldonio/metadata-generic-node:0.4
           name: node-two
           env:
          
@@ -34,7 +37,7 @@ spec:
             value: |
               ---
               name: node-two
-              versions: [ generic-node/v0.3 ]
+              versions: [ generic-node/v0.4 ]
               platform: seldon
               inputs:
               - messagetype: tensor
@@ -44,6 +47,8 @@ spec:
               - messagetype: tensor
                 schema:
                   names: [two-output]
+              custom:
+                author: seldon-dev
     graph:
       name: node-one
       type: MODEL

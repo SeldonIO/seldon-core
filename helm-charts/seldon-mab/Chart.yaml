@@ -1,9 +1,14 @@
-apiVersion: v1
-description: Seldon Core Multi-Armed Bandit Solver template. Uses a multi-armed bandit solver to send traffic to the best performing model. You will need to utilize both the predict and send_feedback API methods.
+apiVersion: v2
+name: seldon-mab
+description: |
+  Chart to deploy a multi-armed bandits router over two Seldon deployments, so
+  that traffic is sent to the best performing model.
+  You will need to utilize both the `predict` and `send_feedback` API methods.
+version: 0.2.0
+home: https://github.com/SeldonIO/seldon-core
+sources:
+  - https://github.com/SeldonIO/seldon-core
+  - https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-mab
 keywords:
 - kubernetes
 - machine-learning
-name: seldon-mab
-sources:
-- https://github.com/SeldonIO/seldon-core
-version: 0.1

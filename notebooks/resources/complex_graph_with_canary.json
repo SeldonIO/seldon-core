@@ -1,200 +1,202 @@
 {
-    "apiVersion": "machinelearning.seldon.io/v1alpha2",
-    "kind": "SeldonDeployment",
-    "metadata": {
-	"labels": {
-	    "app": "seldon"
-	},
-	"name": "seldon-deployment-example"
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": {
+    "labels": {
+      "app": "seldon"
     },
-    "spec": {
-	"annotations": {
-	    "project-name":"FX Market Prediction",
-	    "deployment_version": "v1"
-	},
-	"name": "test-deployment-complex",
-	"oauth_key": "oauth-key",
-	"oauth_secret": "oauth-secret",
-	"predictors": [
-	    {
-		"componentSpecs": [{
-		    "spec": {
-			"containers": [
-			    {
-				"image": "seldonio/mock_classifier:1.0",
-				"imagePullPolicy": "IfNotPresent",
-				"name": "classifier-1",
-				"resources": {
-				    "requests": {
-					"memory": "1Mi",
-					"cpu": "0.1"
-				    }
-				}
-			    },
-			    {
-				"image": "seldonio/mock_classifier:1.0",
-				"imagePullPolicy": "IfNotPresent",
-				"name": "classifier-2",
-				"resources": {
-				    "requests": {
-					"memory": "1Mi",
-					"cpu": "0.1"
-				    }
-				}
-			    },
-			    {
-				"image": "seldonio/mock_classifier:1.0",
-				"imagePullPolicy": "IfNotPresent",
-				"name": "classifier-3",
-				"resources": {
-				    "requests": {
-					"memory": "1Mi",
-					"cpu": "0.1"
-				    }
-				}
-			    },
-			    {
-				"image": "seldonio/mock_outlier_detector:1.0",
-				"imagePullPolicy": "IfNotPresent",
-				"name": "outlier-detector",
-				"resources": {
-				    "requests": {
-					"memory": "1Mi",
-					"cpu": "0.1"
-				    }
-				}
-			    },
-			    {
-				"image": "seldonio/mock_transformer:1.0",
-				"imagePullPolicy": "IfNotPresent",
-				"name": "transformer",
-				"resources": {
-				    "requests": {
-					"memory": "1Mi",
-					"cpu": "0.1"
-				    }
-				}
-			    }
-			],
-			"terminationGracePeriodSeconds": 20
-		    }
-		}],
-		"name": "fx-market-predictor",
-		"replicas": 1,
-		"annotations": {
-		    "predictor_version": "v1"
-		},
-		"graph": {
-		    "name": "outlier-detector",
-		    "type": "TRANSFORMER",
-		    "endpoint": {
-			"type": "REST"
-		    },
-		    "children": [
-			{
-			    "name": "random-abtest",
-			    "implementation": "RANDOM_ABTEST",
-			    "parameters":[
-				{
-				    "name":"ratioA",
-				    "value":"0.5",
-				    "type":"FLOAT"
-				}
-			    ],
-			    "children": [
-				{
-				    "name": "transformer",
-				    "type": "TRANSFORMER",
-				    "endpoint": {
-					"type": "REST"
-				    },
-				    "children": [
-					{
-					    "name": "classifier-1",
-					    "type": "MODEL",
-					    "endpoint": {
-						"type": "REST"
-					    }
-					}
-				    ]
-				},
-				{
-				    "name": "ensemble",
-				    "implementation": "AVERAGE_COMBINER",
-				    "children": [
-					{
-					    "name": "classifier-2",
-					    "type": "MODEL",
-					    "endpoint": {
-						"type": "REST"
-					    }
-					},
-					{
-					    "name": "classifier-3",
-					    "type": "MODEL",
-					    "endpoint": {
-						"type": "REST"
-					    }
-					}
-				    ]
-				}
-			    ]
-			}
-		    ]
-		}
-	    },
-	    {
-		"componentSpecs": [{
-		    "spec": {
-			"containers": [
-			    {
-				"image": "seldonio/mock_classifier:1.0",
-				"imagePullPolicy": "IfNotPresent",
-				"name": "classifier",
-				"resources": {
-				    "requests": {
-					"memory": "1Mi",
-					"cpu": "0.1"
-				    }
-				}
-			    },
-			    {
-				"image": "seldonio/mock_transformer:1.0",
-				"imagePullPolicy": "IfNotPresent",
-				"name": "transformer",
-				"resources": {
-				    "requests": {
-					"memory": "1Mi",
-					"cpu": "0.1"
-				    }
-				}
-			    }
-			],
-			"terminationGracePeriodSeconds": 20
-		    }
-		}],
-		"name": "fx-market-predictor-canary",
-		"replicas": 1,
-		"annotations": {
-		    "predictor_version": "v1"
-		},
-		"graph": {
-		    "name": "transformer",
-		    "type": "TRANSFORMER",
-		    "endpoint": {
-			"type": "REST"
-		    },
-		    "children": [
-			{
-			    "name": "classifier",
-			    "endpoint": {
-				"type": "REST"
-			    },
-			    "type": "MODEL"
-			}
-		    ]
-		}
-	    }	    
-	]
-    }
+    "name": "seldon-deployment-example"
+  },
+  "spec": {
+    "annotations": {
+      "project-name": "FX Market Prediction",
+      "deployment_version": "v1"
+    },
+    "name": "test-deployment-complex",
+    "predictors": [
+      {
+        "componentSpecs": [
+          {
+            "spec": {
+              "containers": [
+                {
+                  "image": "seldonio/mock_classifier:1.0",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "classifier-1",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi",
+                      "cpu": "0.1"
+                    }
+                  }
+                },
+                {
+                  "image": "seldonio/mock_classifier:1.0",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "classifier-2",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi",
+                      "cpu": "0.1"
+                    }
+                  }
+                },
+                {
+                  "image": "seldonio/mock_classifier:1.0",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "classifier-3",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi",
+                      "cpu": "0.1"
+                    }
+                  }
+                },
+                {
+                  "image": "seldonio/mock_outlier_detector:1.0",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "outlier-detector",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi",
+                      "cpu": "0.1"
+                    }
+                  }
+                },
+                {
+                  "image": "seldonio/mock_transformer:1.0",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "transformer",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi",
+                      "cpu": "0.1"
+                    }
+                  }
+                }
+              ],
+              "terminationGracePeriodSeconds": 20
+            }
+          }
+        ],
+        "name": "fx-market-predictor",
+        "replicas": 1,
+        "annotations": {
+          "predictor_version": "v1"
+        },
+        "graph": {
+          "name": "outlier-detector",
+          "type": "TRANSFORMER",
+          "endpoint": {
+            "type": "REST"
+          },
+          "children": [
+            {
+              "name": "random-abtest",
+              "implementation": "RANDOM_ABTEST",
+              "parameters": [
+                {
+                  "name": "ratioA",
+                  "value": "0.5",
+                  "type": "FLOAT"
+                }
+              ],
+              "children": [
+                {
+                  "name": "transformer",
+                  "type": "TRANSFORMER",
+                  "endpoint": {
+                    "type": "REST"
+                  },
+                  "children": [
+                    {
+                      "name": "classifier-1",
+                      "type": "MODEL",
+                      "endpoint": {
+                        "type": "REST"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "name": "ensemble",
+                  "implementation": "AVERAGE_COMBINER",
+                  "children": [
+                    {
+                      "name": "classifier-2",
+                      "type": "MODEL",
+                      "endpoint": {
+                        "type": "REST"
+                      }
+                    },
+                    {
+                      "name": "classifier-3",
+                      "type": "MODEL",
+                      "endpoint": {
+                        "type": "REST"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "componentSpecs": [
+          {
+            "spec": {
+              "containers": [
+                {
+                  "image": "seldonio/mock_classifier:1.0",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "classifier",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi",
+                      "cpu": "0.1"
+                    }
+                  }
+                },
+                {
+                  "image": "seldonio/mock_transformer:1.0",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "transformer",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi",
+                      "cpu": "0.1"
+                    }
+                  }
+                }
+              ],
+              "terminationGracePeriodSeconds": 20
+            }
+          }
+        ],
+        "name": "fx-market-predictor-canary",
+        "replicas": 1,
+        "annotations": {
+          "predictor_version": "v1"
+        },
+        "graph": {
+          "name": "transformer",
+          "type": "TRANSFORMER",
+          "endpoint": {
+            "type": "REST"
+          },
+          "children": [
+            {
+              "name": "classifier",
+              "endpoint": {
+                "type": "REST"
+              },
+              "type": "MODEL"
+            }
+          ]
+        }
+      }
+    ]
+  }
 }

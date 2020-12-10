@@ -19,12 +19,6 @@ if [[ -z "$MODEL_NAME" ]]; then
     exit 1
 fi
 
-if [[ -z "$API_TYPE" ]]; then
-
-    echo "Failed to find required env var API_TYPE, should be either REST or GRPC."
-    exit 1
-fi
-
 if [[ -z "$SERVICE_TYPE" ]]; then
 
     echo "Failed to find required env var SERVICE_TYPE, should be one of MODEL, ROUTER, TRANSFORMER, COMBINER."
@@ -55,11 +49,15 @@ if [[ -f requirements.txt ]]; then
         echo "---> Adding extra index url to pip..."
         pip config set global.extra-index-url "${EXTRA_INDEX_URL}"
     fi
+    if [[ -n "$PIP_TRUSTED_HOST" ]]; then
+        echo "---> Adding trusted host to pip..."
+        pip config set global.trusted-host "${PIP_TRUSTED_HOST}"
+    fi
     echo "---> Installing dependencies ..."
-    pip install --find-links /whl -r requirements.txt
+    pip install --no-cache-dir --find-links /whl -r requirements.txt
 elif [[ -f setup.py ]]; then
     echo "---> Installing application ..."
-    pip install --find-links /whl -e .
+    pip install --no-cache-dir --find-links /whl -e .
 elif [[ -f environment.yml ]]; then
     echo "---> Creating environment with Conda..."
     if [[ -z "$CONDA_ENV_NAME" ]]; then

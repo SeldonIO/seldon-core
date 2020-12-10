@@ -1,20 +1,35 @@
 import click
 import json
 import requests
-from queue import Queue
-from threading import Thread
+from queue import Queue, Empty
+from threading import Thread, Event
 from seldon_core.seldon_client import SeldonClient
 import numpy as np
-import os
+import logging
 import uuid
 import time
 
 CHOICES_GATEWAY_TYPE = ["ambassador", "istio", "seldon"]
 CHOICES_TRANSPORT = ["rest", "grpc"]
 CHOICES_PAYLOAD_TYPE = ["ndarray", "tensor", "tftensor"]
-CHOICES_DATA_TYPE = ["data", "json", "str"]
-CHOICES_METHOD = ["predict"]
-CHOICES_LOG_LEVEL = ["debug", "info", "warning", "error"]
+CHOICES_DATA_TYPE = ["data", "json", "str", "raw"]
+CHOICES_METHOD = ["predict", "feedback"]
+CHOICES_LOG_LEVEL = {
+    "debug": logging.DEBUG,
+    "info": logging.INFO,
+    "warning": logging.WARNING,
+    "error": logging.ERROR,
+}
+
+
+logger = logging.getLogger(__name__)
+
+
+def setup_logging(log_level: str):
+    LOG_FORMAT = (
+        "%(asctime)s - batch_processor.py:%(lineno)s - %(levelname)s:  %(message)s"
+    )
+    logging.basicConfig(level=CHOICES_LOG_LEVEL[log_level], format=LOG_FORMAT)
 
 
 def start_multithreaded_batch_worker(
@@ -44,10 +59,17 @@ def start_multithreaded_batch_worker(
 
     All parameters are defined and explained in detail in the run_cli function.
     """
+    setup_logging(log_level)
     start_time = time.time()
+    out_queue_empty_event = Event()
 
     q_in = Queue(workers * 2)
     q_out = Queue(workers * 2)
+
+    if method == "feedback" and data_type != "raw":
+        raise RuntimeError("Feedback method is supported only with raw data type.")
+    elif data_type == "raw" and method != "feedback":
+        raise RuntimeError("Raw input is currently only support for feedback method.")
 
     sc = SeldonClient(
         gateway=gateway_type,
@@ -59,26 +81,39 @@ def start_multithreaded_batch_worker(
         client_return_type="dict",
     )
 
-    Thread(
+    t_in = Thread(
         target=_start_input_file_worker, args=(q_in, input_data_path), daemon=True
-    ).start()
+    )
+    t_in.start()
 
     for _ in range(workers):
         Thread(
             target=_start_request_worker,
-            args=(q_in, q_out, data_type, sc, retries, batch_id),
+            args=(q_in, q_out, data_type, sc, method, retries, batch_id),
             daemon=True,
         ).start()
 
-    Thread(
-        target=_start_output_file_worker, args=(q_out, output_data_path), daemon=True
-    ).start()
+    t_out = Thread(
+        target=_start_output_file_worker,
+        args=(q_out, output_data_path, out_queue_empty_event),
+    )
+    t_out.start()
 
+    # Make sure all data was loaded
+    t_in.join()
+
+    # Make sure all data was passed through both queues
     q_in.join()
     q_out.join()
 
+    # Set event so output worker can close file once it's done with q_out queue
+    out_queue_empty_event.set()
+
+    # Wait for output worker to join main thread
+    t_out.join()
+
     if benchmark:
-        print(f"Elapsed time: {time.time() - start_time}")
+        logger.info(f"Elapsed time: {time.time() - start_time}")
 
 
 def _start_input_file_worker(q_in: Queue, input_data_path: str) -> None:
@@ -101,10 +136,12 @@ def _start_input_file_worker(q_in: Queue, input_data_path: str) -> None:
         enum_idx += 1
 
 
-def _start_output_file_worker(q_out: Queue, output_data_path: str) -> None:
+def _start_output_file_worker(
+    q_out: Queue, output_data_path: str, stop_event: Event
+) -> None:
     """
     Runs logic for the output file worker which receives all the processed output
-    fro the request worker through the queue and adds it into the output file in a 
+    fro the request worker through the queue and adds it into the output file in a
     thread safe manner.
 
     Parameters
@@ -114,11 +151,21 @@ def _start_output_file_worker(q_out: Queue, output_data_path: str) -> None:
     output_data_path
         The local file to write the results into
     """
-    output_data_file = open(output_data_path, "w")
-    while True:
-        line = q_out.get()
-        output_data_file.write(f"{line}\n")
-        q_out.task_done()
+
+    counter = 0
+    with open(output_data_path, "w") as output_data_file:
+        while not stop_event.is_set():
+            try:
+                line = q_out.get(timeout=0.1)
+            except Empty:
+                continue
+            output_data_file.write(f"{line}\n")
+            q_out.task_done()
+
+            counter += 1
+            if counter % 100 == 0:
+                logger.info(f"Processed instances: {counter}")
+    logger.info(f"Total processed instances: {counter}")
 
 
 def _start_request_worker(
@@ -126,6 +173,7 @@ def _start_request_worker(
     q_out: Queue,
     data_type: str,
     sc: SeldonClient,
+    method: str,
     retries: int,
     batch_id: str,
 ) -> None:
@@ -144,6 +192,8 @@ def _start_request_worker(
         The json/str/data type to send the requests as
     sc
         An initialised Seldon Client configured to send the requests to
+    method:
+        Method to call: predict or feedback
     retries
         The number of attempts to try for each request
     batch_id
@@ -151,10 +201,27 @@ def _start_request_worker(
     """
     while True:
         batch_idx, batch_instance_id, input_raw = q_in.get()
-        str_output = _send_batch_predict(
-            batch_idx, batch_instance_id, input_raw, data_type, sc, retries, batch_id
-        )
-        # Mark task as done in the queue to add space for new tasks
+        if method == "predict":
+            str_output = _send_batch_predict(
+                batch_idx,
+                batch_instance_id,
+                input_raw,
+                data_type,
+                sc,
+                retries,
+                batch_id,
+            )
+            # Mark task as done in the queue to add space for new tasks
+        elif method == "feedback":
+            str_output = _send_batch_feedback(
+                batch_idx,
+                batch_instance_id,
+                input_raw,
+                data_type,
+                sc,
+                retries,
+                batch_id,
+            )
         q_out.put(str_output)
         q_in.task_done()
 
@@ -173,8 +240,82 @@ def _send_batch_predict(
     unique ID of the batch and the Batch enumerated index as metadata. This
     function also uses the unique batch ID as request ID so the request can be
     traced back individually in the Seldon Request Logger context. Each request
-    will be attempted for the number of retries, and will return the string 
+    will be attempted for the number of retries, and will return the string
     serialised result.
+    Paramters
+    ---
+    batch_idx
+        The enumerated index given to the batch datapoint in order of local dataset
+    batch_instance_id
+        The unique ID of the batch datapoint created with the python uuid function
+    input_raw
+        The raw input in string format to be loaded to the respective format
+    data_type
+        The data type to send which can be str, json and data
+    sc
+        The instance of SeldonClient to use to send the requests to the seldon model
+    retries
+        The number of times to retry the request
+    batch_id
+        The unique identifier for the batch which is passed to all requests
+    Returns
+    ---
+        A string serialised result of the response (or equivallent data with error info)
+    """
+
+    predict_kwargs = {}
+    meta = {
+        "tags": {
+            "batch_id": batch_id,
+            "batch_instance_id": batch_instance_id,
+            "batch_index": batch_idx,
+        }
+    }
+    predict_kwargs["meta"] = meta
+    predict_kwargs["headers"] = {"Seldon-Puid": batch_instance_id}
+    try:
+        data = json.loads(input_raw)
+        if data_type == "data":
+            data_np = np.array(data)
+            predict_kwargs["data"] = data_np
+        elif data_type == "str":
+            predict_kwargs["str_data"] = data
+        elif data_type == "json":
+            predict_kwargs["json_data"] = data
+
+        str_output = None
+        for i in range(retries):
+            try:
+                seldon_payload = sc.predict(**predict_kwargs)
+                assert seldon_payload.success
+                str_output = json.dumps(seldon_payload.response)
+                break
+            except (requests.exceptions.RequestException, AssertionError) as e:
+                logger.error(f"Exception: {e}, retries {retries}")
+                if i == (retries - 1):
+                    raise
+
+    except Exception as e:
+        error_resp = {
+            "status": {"info": "FAILURE", "reason": str(e), "status": 1},
+            "meta": meta,
+        }
+        str_output = json.dumps(error_resp)
+
+    return str_output
+
+
+def _send_batch_feedback(
+    batch_idx: int,
+    batch_instance_id: int,
+    input_raw: str,
+    data_type: str,
+    sc: SeldonClient,
+    retries: int,
+    batch_id: str,
+) -> str:
+    """
+    Send an request using the Seldon Client with feedback
 
     Paramters
     ---
@@ -198,7 +339,7 @@ def _send_batch_predict(
         A string serialised result of the response (or equivallent data with error info)
     """
 
-    predict_kwargs = {}
+    feedback_kwargs = {}
     meta = {
         "tags": {
             "batch_id": batch_id,
@@ -206,32 +347,27 @@ def _send_batch_predict(
             "batch_index": batch_idx,
         }
     }
-    predict_kwargs["meta"] = meta
-    predict_kwargs["headers"] = {"Seldon-Puid": batch_instance_id}
+    # Feedback Protos does not support meta - defined to include in file output only.
     try:
         data = json.loads(input_raw)
-
-        # TODO: Add functionality to send "raw" payload
-        if data_type == "data":
-            # TODO: Update client to avoid requiring a numpy array
-            data_np = np.array(data)
-            predict_kwargs["data"] = data_np
-        elif data_type == "str":
-            predict_kwargs["str_data"] = data
-        elif data_type == "json":
-            predict_kwargs["json_data"] = data
+        feedback_kwargs["raw_request"] = data
 
         str_output = None
         for i in range(retries):
             try:
-                # TODO: Add functionality for explainer
-                #   as explainer currently doesn't support meta
-                # TODO: Optimize client to share session for requests
-                seldon_payload = sc.predict(**predict_kwargs)
+                seldon_payload = sc.feedback(**feedback_kwargs)
                 assert seldon_payload.success
+
+                # Update Tags so we can track feedback intances in output file
+                tags = seldon_payload.response.get("meta", {}).get("tags", {})
+                tags.update(meta["tags"])
+                if "meta" not in seldon_payload.response:
+                    seldon_payload.response["meta"] = {}
+                seldon_payload.response["meta"]["tags"] = tags
                 str_output = json.dumps(seldon_payload.response)
                 break
-            except requests.exceptions.RequestException:
+            except (requests.exceptions.RequestException, AssertionError) as e:
+                logger.error(f"Exception: {e}, retries {retries}")
                 if i == (retries - 1):
                     raise
 
@@ -343,7 +479,7 @@ def _send_batch_predict(
     "--log-level",
     "-l",
     envvar="SELDON_BATCH_LOG_LEVEL",
-    type=click.Choice(CHOICES_LOG_LEVEL),
+    type=click.Choice(list(CHOICES_LOG_LEVEL)),
     default="info",
     help="The log level for the batch processor",
 )

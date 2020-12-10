@@ -1,0 +1,14 @@
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: triton
+spec:
+  protocol: kfserving
+  predictors:
+  - graph:
+      children: []
+      implementation: TRITON_SERVER
+      modelUri: gs://seldon-models/trtis/simple-model
+      name: simple
+    name: simple
+    replicas: 1

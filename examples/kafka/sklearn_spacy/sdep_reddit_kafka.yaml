@@ -1,0 +1,25 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: reddit-kafka
+spec:
+  serverType: kafka
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/reddit-classifier:0.1
+          name: classifier
+    svcOrchSpec:
+      env:
+      - name: KAFKA_BROKER
+        value: my-cluster-kafka-brokers.default.svc.cluster.local:9092
+      - name: KAFKA_INPUT_TOPIC
+        value: reddit-classifier-input
+      - name: KAFKA_OUTPUT_TOPIC
+        value: reddit-classifier-output
+    graph:
+      name: classifier
+      type: MODEL
+    name: default
+    replicas: 1

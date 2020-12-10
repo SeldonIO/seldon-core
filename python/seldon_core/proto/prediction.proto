@@ -116,6 +116,7 @@ message SeldonModelMetadata
   string platform = 3;
   repeated SeldonMessageMetadata inputs = 4;
   repeated SeldonMessageMetadata outputs = 5;
+  map<string, string> custom = 6;
 }
 
 

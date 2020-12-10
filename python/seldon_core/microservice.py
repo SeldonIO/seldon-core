@@ -14,31 +14,37 @@ from distutils.util import strtobool
 from seldon_core import persistence, __version__, wrapper as seldon_microservice
 from seldon_core.metrics import SeldonMetrics
 from seldon_core.flask_utils import ANNOTATIONS_FILE, SeldonMicroserviceException
-from seldon_core.utils import getenv_as_bool
+from seldon_core.utils import getenv_as_bool, setup_tracing
 from seldon_core.app import (
     StandaloneApplication,
     UserModelApplication,
     accesslog,
     threads,
+    post_worker_init,
 )
 
 logger = logging.getLogger(__name__)
 
 PARAMETERS_ENV_NAME = "PREDICTIVE_UNIT_PARAMETERS"
-SERVICE_PORT_ENV_NAME = "PREDICTIVE_UNIT_SERVICE_PORT"
+HTTP_SERVICE_PORT_ENV_NAME = "PREDICTIVE_UNIT_HTTP_SERVICE_PORT"
+GRPC_SERVICE_PORT_ENV_NAME = "PREDICTIVE_UNIT_GRPC_SERVICE_PORT"
 METRICS_SERVICE_PORT_ENV_NAME = "PREDICTIVE_UNIT_METRICS_SERVICE_PORT"
+
+FILTER_METRICS_ACCESS_LOGS_ENV_NAME = "FILTER_METRICS_ACCESS_LOGS"
 
 LOG_LEVEL_ENV = "SELDON_LOG_LEVEL"
 DEFAULT_LOG_LEVEL = "INFO"
 
-DEFAULT_PORT = 5000
+DEFAULT_GRPC_PORT = 5000
+DEFAULT_HTTP_PORT = 9000
 DEFAULT_METRICS_PORT = 6000
 
 DEBUG_ENV = "SELDON_DEBUG"
+GUNICORN_ACCESS_LOG_ENV = "GUNICORN_ACCESS_LOG"
 
 
 def start_servers(
-    target1: Callable, target2: Callable, metrics_target: Callable
+    target1: Callable, target2: Callable, target3: Callable, metrics_target: Callable
 ) -> None:
     """
     Start servers
@@ -51,18 +57,31 @@ def start_servers(
        Auxilary flask process
 
     """
-    p2 = mp.Process(target=target2)
-    p2.daemon = True
-    p2.start()
+    p2 = None
+    if target2:
+        p2 = mp.Process(target=target2, daemon=True)
+        p2.start()
 
-    p3 = mp.Process(target=metrics_target)
-    p3.daemon = True
-    p3.start()
+    p3 = None
+    if target3:
+        p3 = mp.Process(target=target3, daemon=True)
+        p3.start()
+
+    p4 = None
+    if metrics_target:
+        p4 = mp.Process(target=metrics_target, daemon=True)
+        p4.start()
 
     target1()
 
-    p2.join()
-    p3.join()
+    if p2:
+        p2.join()
+
+    if p3:
+        p3.join()
+
+    if p4:
+        p4.join()
 
 
 def parse_parameters(parameters: Dict) -> Dict:
@@ -141,41 +160,12 @@ def load_annotations() -> Dict:
     return annotations
 
 
-def setup_tracing(interface_name: str) -> object:
-    logger.info("Initializing tracing")
-    from jaeger_client import Config
-
-    jaeger_serv = os.environ.get("JAEGER_AGENT_HOST", "0.0.0.0")
-    jaeger_port = os.environ.get("JAEGER_AGENT_PORT", 5775)
-    jaeger_config = os.environ.get("JAEGER_CONFIG_PATH", None)
-    if jaeger_config is None:
-        logger.info("Using default tracing config")
-        config = Config(
-            config={  # usually read from some yaml config
-                "sampler": {"type": "const", "param": 1},
-                "local_agent": {
-                    "reporting_host": jaeger_serv,
-                    "reporting_port": jaeger_port,
-                },
-                "logging": True,
-            },
-            service_name=interface_name,
-            validate=True,
-        )
-    else:
-        logger.info("Loading tracing config from %s", jaeger_config)
-        import yaml
-
-        with open(jaeger_config, "r") as stream:
-            config_dict = yaml.load(stream)
-            config = Config(
-                config=config_dict, service_name=interface_name, validate=True
-            )
-    # this call also sets opentracing.tracer
-    return config.initialize_tracer()
+class MetricsEndpointFilter(logging.Filter):
+    def filter(self, record):
+        return seldon_microservice.METRICS_ENDPOINT not in record.getMessage()
 
 
-def setup_logger(log_level: str) -> logging.Logger:
+def setup_logger(log_level: str, debug_mode: bool) -> logging.Logger:
     # set up log level
     log_level_raw = os.environ.get(LOG_LEVEL_ENV, log_level.upper())
     log_level_num = getattr(logging, log_level_raw, None)
@@ -187,6 +177,11 @@ def setup_logger(log_level: str) -> logging.Logger:
     # Set right level on access logs
     flask_logger = logging.getLogger("werkzeug")
     flask_logger.setLevel(log_level_num)
+
+    if getenv_as_bool(FILTER_METRICS_ACCESS_LOGS_ENV_NAME, default=not debug_mode):
+        flask_logger.addFilter(MetricsEndpointFilter())
+        gunicorn_logger = logging.getLogger("gunicorn.access")
+        gunicorn_logger.addFilter(MetricsEndpointFilter())
 
     logger.debug("Log level set to %s:%s", log_level, log_level_num)
 
@@ -210,7 +205,6 @@ def main():
     sys.path.append(os.getcwd())
     parser = argparse.ArgumentParser()
     parser.add_argument("interface_name", type=str, help="Name of the user interface.")
-    parser.add_argument("api_type", type=str, choices=["REST", "GRPC", "FBS"])
 
     parser.add_argument(
         "--service-type",
@@ -280,10 +274,17 @@ def main():
     )
 
     parser.add_argument(
-        "--port",
+        "--http-port",
         type=int,
-        default=int(os.environ.get(SERVICE_PORT_ENV_NAME, DEFAULT_PORT)),
-        help="Set port of seldon service",
+        default=int(os.environ.get(HTTP_SERVICE_PORT_ENV_NAME, DEFAULT_HTTP_PORT)),
+        help="Set http port of seldon service",
+    )
+
+    parser.add_argument(
+        "--grpc-port",
+        type=int,
+        default=int(os.environ.get(GRPC_SERVICE_PORT_ENV_NAME, DEFAULT_GRPC_PORT)),
+        help="Set grpc port of seldon service",
     )
 
     parser.add_argument(
@@ -295,10 +296,23 @@ def main():
         help="Set metrics port of seldon service",
     )
 
+    parser.add_argument(
+        "--pidfile", type=str, default=None, help="A file path to use for the PID file"
+    )
+
+    parser.add_argument(
+        "--access-log",
+        nargs="?",
+        type=bool,
+        default=getenv_as_bool(GUNICORN_ACCESS_LOG_ENV, default=False),
+        const=True,
+        help="Enable gunicorn access log.",
+    )
+
     args = parser.parse_args()
     parameters = parse_parameters(json.loads(args.parameters))
 
-    setup_logger(args.log_level)
+    setup_logger(args.log_level, args.debug)
 
     # set flask trace jaeger extra tags
     jaeger_extra_tags = list(
@@ -329,104 +343,108 @@ def main():
     else:
         user_object = user_class(**parameters)
 
-    port = args.port
+    http_port = args.http_port
+    grpc_port = args.grpc_port
     metrics_port = args.metrics_port
 
-    if args.tracing:
-        tracer = setup_tracing(args.interface_name)
+    # if args.tracing:
+    #    tracer = setup_tracing(args.interface_name)
 
-    if args.api_type == "REST":
-        seldon_metrics = SeldonMetrics(worker_id_func=os.getpid)
-
-        if args.debug:
-            # Start Flask debug server
-            def rest_prediction_server():
-                app = seldon_microservice.get_rest_microservice(
-                    user_object, seldon_metrics
-                )
-                try:
-                    user_object.load()
-                except (NotImplementedError, AttributeError):
-                    pass
-                if args.tracing:
-                    logger.info("Tracing branch is active")
-                    from flask_opentracing import FlaskTracing
-
-                    logger.info("Set JAEGER_EXTRA_TAGS %s", jaeger_extra_tags)
-                    FlaskTracing(tracer, True, app, jaeger_extra_tags)
-
-                app.run(
-                    host="0.0.0.0",
-                    port=port,
-                    threaded=False if args.single_threaded else True,
-                )
-
-            logger.info(
-                "REST microservice running on port %i single-threaded=%s",
-                port,
-                args.single_threaded,
-            )
-            server1_func = rest_prediction_server
-        else:
-            # Start production server
-            def rest_prediction_server():
-                options = {
-                    "bind": "%s:%s" % ("0.0.0.0", port),
-                    "accesslog": accesslog(args.log_level),
-                    "loglevel": args.log_level.lower(),
-                    "timeout": 5000,
-                    "threads": threads(args.threads, args.single_threaded),
-                    "workers": args.workers,
-                    "max_requests": args.max_requests,
-                    "max_requests_jitter": args.max_requests_jitter,
-                }
-                app = seldon_microservice.get_rest_microservice(
-                    user_object, seldon_metrics
-                )
-                UserModelApplication(app, user_object, options=options).run()
-
-            logger.info("REST gunicorn microservice running on port %i", port)
-            server1_func = rest_prediction_server
-
-    elif args.api_type == "GRPC":
-        seldon_metrics = SeldonMetrics(
-            worker_id_func=lambda: threading.current_thread().name
-        )
-
-        def grpc_prediction_server():
-
-            if args.tracing:
-                from grpc_opentracing import open_tracing_server_interceptor
-
-                logger.info("Adding tracer")
-                interceptor = open_tracing_server_interceptor(tracer)
-            else:
-                interceptor = None
-
-            server = seldon_microservice.get_grpc_server(
-                user_object,
-                seldon_metrics,
-                annotations=annotations,
-                trace_interceptor=interceptor,
-            )
-
+    seldon_metrics = SeldonMetrics(worker_id_func=os.getpid)
+    # TODO why 2 ways to create metrics server
+    # seldon_metrics = SeldonMetrics(
+    #    worker_id_func=lambda: threading.current_thread().name
+    # )
+    if args.debug:
+        # Start Flask debug server
+        def rest_prediction_server():
+            app = seldon_microservice.get_rest_microservice(user_object, seldon_metrics)
             try:
                 user_object.load()
             except (NotImplementedError, AttributeError):
                 pass
+            if args.tracing:
+                logger.info("Tracing branch is active")
+                from flask_opentracing import FlaskTracing
 
-            server.add_insecure_port(f"0.0.0.0:{port}")
+                tracer = setup_tracing(args.interface_name)
 
-            server.start()
+                logger.info("Set JAEGER_EXTRA_TAGS %s", jaeger_extra_tags)
+                FlaskTracing(tracer, True, app, jaeger_extra_tags)
 
-            logger.info("GRPC microservice Running on port %i", port)
-            while True:
-                time.sleep(1000)
+            app.run(
+                host="0.0.0.0",
+                port=http_port,
+                threaded=False if args.single_threaded else True,
+            )
 
-        server1_func = grpc_prediction_server
-
+        logger.info(
+            "REST microservice running on port %i single-threaded=%s",
+            http_port,
+            args.single_threaded,
+        )
+        server1_func = rest_prediction_server
     else:
-        server1_func = None
+        # Start production server
+        def rest_prediction_server():
+            options = {
+                "bind": "%s:%s" % ("0.0.0.0", http_port),
+                "accesslog": accesslog(args.access_log),
+                "loglevel": args.log_level.lower(),
+                "timeout": 5000,
+                "threads": threads(args.threads, args.single_threaded),
+                "workers": args.workers,
+                "max_requests": args.max_requests,
+                "max_requests_jitter": args.max_requests_jitter,
+                "post_worker_init": post_worker_init,
+            }
+            if args.pidfile is not None:
+                options["pidfile"] = args.pidfile
+            app = seldon_microservice.get_rest_microservice(user_object, seldon_metrics)
+
+            UserModelApplication(
+                app,
+                user_object,
+                jaeger_extra_tags,
+                args.interface_name,
+                options=options,
+            ).run()
+
+        logger.info("REST gunicorn microservice running on port %i", http_port)
+        server1_func = rest_prediction_server
+
+    def grpc_prediction_server():
+
+        if args.tracing:
+            from grpc_opentracing import open_tracing_server_interceptor
+
+            logger.info("Adding tracer")
+            tracer = setup_tracing(args.interface_name)
+            interceptor = open_tracing_server_interceptor(tracer)
+        else:
+            interceptor = None
+
+        server = seldon_microservice.get_grpc_server(
+            user_object,
+            seldon_metrics,
+            annotations=annotations,
+            trace_interceptor=interceptor,
+        )
+
+        try:
+            user_object.load()
+        except (NotImplementedError, AttributeError):
+            pass
+
+        server.add_insecure_port(f"0.0.0.0:{grpc_port}")
+
+        server.start()
+
+        logger.info("GRPC microservice Running on port %i", grpc_port)
+        while True:
+            time.sleep(1000)
+
+    server2_func = grpc_prediction_server
 
     def rest_metrics_server():
         app = seldon_microservice.get_metrics_microservice(seldon_metrics)
@@ -435,12 +453,15 @@ def main():
         else:
             options = {
                 "bind": "%s:%s" % ("0.0.0.0", metrics_port),
-                "accesslog": accesslog(args.log_level),
+                "accesslog": accesslog(args.access_log),
                 "loglevel": args.log_level.lower(),
                 "timeout": 5000,
                 "max_requests": args.max_requests,
                 "max_requests_jitter": args.max_requests_jitter,
+                "post_worker_init": post_worker_init,
             }
+            if args.pidfile is not None:
+                options["pidfile"] = args.pidfile
             StandaloneApplication(app, options=options).run()
 
     logger.info("REST metrics microservice running on port %i", metrics_port)
@@ -449,12 +470,12 @@ def main():
     if hasattr(user_object, "custom_service") and callable(
         getattr(user_object, "custom_service")
     ):
-        server2_func = user_object.custom_service
+        server3_func = user_object.custom_service
     else:
-        server2_func = None
+        server3_func = None
 
-        logger.info("Starting servers")
-    start_servers(server1_func, server2_func, metrics_server_func)
+    logger.info("Starting servers")
+    start_servers(server1_func, server2_func, server3_func, metrics_server_func)
 
 
 if __name__ == "__main__":

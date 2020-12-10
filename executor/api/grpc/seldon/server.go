@@ -87,6 +87,7 @@ func (g GrpcSeldonServer) GraphMetadata(ctx context.Context, req *empty.Empty) (
 			Platform: modelMetadata.Platform,
 			Inputs:   modelMetadata.Inputs.([]*proto.SeldonMessageMetadata),
 			Outputs:  modelMetadata.Outputs.([]*proto.SeldonMessageMetadata),
+			Custom:   modelMetadata.Custom,
 		}
 	}
 

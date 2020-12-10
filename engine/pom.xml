@@ -10,7 +10,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
   </parent>
   <groupId>io.seldon.engine</groupId>
   <artifactId>seldon-engine</artifactId>
-  <version>1.2.2-dev</version>
+  <version>1.6.0-dev</version>
   <packaging>jar</packaging>
   <name>engine</name>
   <url>http://maven.apache.org</url>
@@ -19,14 +19,14 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
     UTF-8</project.build.sourceEncoding>
     <java.version>1.8</java.version>
     <grpc.version>1.25.0</grpc.version>
-    <pb.version>3.11.3</pb.version>
+    <pb.version>3.13.0</pb.version>
     <micrometer.version>1.5.2</micrometer.version>
     <start-class>io.seldon.engine.App</start-class>
-    <jaeger.version>1.3.1</jaeger.version>
+    <jaeger.version>1.4.0</jaeger.version>
     <opentracing.version>0.33.0</opentracing.version>
     <curator.version>4.2.0</curator.version>
     <jackson.version>2.11.1</jackson.version>
-    <kubernetes.version>7.0.0</kubernetes.version>
+    <kubernetes.version>9.0.1</kubernetes.version>
   </properties>
   <build>
     <finalName>${project.artifactId}-${project.version}</finalName>
@@ -242,7 +242,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
     <dependency>
       <groupId>org.ojalgo</groupId>
       <artifactId>ojalgo</artifactId>
-      <version>48.2.0</version>
+      <version>48.3.0</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -418,7 +418,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
       <!-- Waiting on https://github.com/jaegertracing/jaeger-client-java/issues/666 -->
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>okhttp</artifactId>
-      <version>4.8.0</version>
+      <version>4.9.0</version>
     </dependency>
     <dependency>
       <groupId>io.opentracing.contrib</groupId>

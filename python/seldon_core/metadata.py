@@ -137,6 +137,7 @@ JSON_SCHEMA = {
         "platform": {"type": "string"},
         "inputs": INPUTS_OUTPUTS_SCHEMA,
         "outputs": INPUTS_OUTPUTS_SCHEMA,
+        "custom": {"type": "object", "additionalProperties": {"type": "string"}},
     },
     "additionalProperties": False,
 }
@@ -156,7 +157,7 @@ def validate_model_metadata(data: Dict) -> Dict:
 
     Raises
     ------
-    SeldonInvalidMetadataError if data cannot be properly validated
+    SeldonInvalidMetadataError: if data cannot be properly validated
 
     Notes
     -----
@@ -175,6 +176,7 @@ def validate_model_metadata(data: Dict) -> Dict:
         "platform": "",
         "inputs": [],
         "outputs": [],
+        "custom": {},
     }
 
     data = {**default_meta, **data}

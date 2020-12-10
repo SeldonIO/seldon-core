@@ -18,6 +18,7 @@ limitations under the License.
 package v1alpha3
 
 import (
+	"context"
 	time "time"
 
 	machinelearningseldoniov1alpha3 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha3"
@@ -60,13 +61,13 @@ func NewFilteredSeldonDeploymentInformer(client versioned.Interface, namespace s
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.MachinelearningV1alpha3().SeldonDeployments(namespace).List(options)
+				return client.MachinelearningV1alpha3().SeldonDeployments(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.MachinelearningV1alpha3().SeldonDeployments(namespace).Watch(options)
+				return client.MachinelearningV1alpha3().SeldonDeployments(namespace).Watch(context.TODO(), options)
 			},
 		},
 		&machinelearningseldoniov1alpha3.SeldonDeployment{},

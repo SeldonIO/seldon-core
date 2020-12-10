@@ -24,4 +24,3 @@ seldon\_core.proto.prediction\_pb2\_grpc module
    :members:
    :undoc-members:
    :show-inheritance:
-

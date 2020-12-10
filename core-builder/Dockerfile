@@ -39,9 +39,10 @@ RUN wget https://storage.googleapis.com/kubernetes-release/release/v1.16.2/bin/l
 
 RUN \
     apt-get update -y && \
-    apt-get install -y vim && \
-    apt-get install -y build-essential && \
-    apt-get remove -y --auto-remove && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    apt-get install -y vim jq build-essential pandoc && \
+    apt-get remove -y --auto-remove && \
+    apt-get clean -y && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install maven
 ENV MAVEN_VERSION=3.6.3
@@ -83,17 +84,17 @@ RUN update-alternatives --install /usr/bin/python python /usr/local/bin/python3.
 RUN rm -rf /usr/local/bin/pip && \
         ln -s /usr/local/bin/pip3.6 /usr/local/bin/pip
 
-RUN pip install --upgrade pip
-RUN pip install --upgrade setuptools
-RUN pip install pyyaml
-RUN pip install grpcio
-RUN pip install grpcio-tools
-RUN apt-get remove -y --auto-remove && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# Upgrade and install some Python packages
+RUN pip install --upgrade pip setuptools wheel
+RUN pip install pyyaml grpcio grpcio-tools
+RUN apt-get remove -y --auto-remove \
+    && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # INSTALL GO
 ENV PATH /usr/local/go/bin:$PATH
-RUN wget https://dl.google.com/go/go1.13.8.linux-amd64.tar.gz && \
-        tar -zxvf go1.13.8.linux-amd64.tar.gz && \
+RUN wget https://dl.google.com/go/go1.14.7.linux-amd64.tar.gz && \
+        tar -zxvf go1.14.7.linux-amd64.tar.gz && \
         mv go/ /usr/local/go
 RUN curl -sL https://go.kubebuilder.io/dl/2.3.0/linux/amd64 | tar -xz -C /tmp/ && \
         mv /tmp/kubebuilder_2.3.0_linux_amd64 /usr/local/kubebuilder/
@@ -116,7 +117,7 @@ RUN \
 RUN pip install jupyter
 
 # Install grpcurl
-RUN go get github.com/fullstorydev/grpcurl && \
+RUN go get github.com/fullstorydev/grpcurl/... && \
     go install github.com/fullstorydev/grpcurl/cmd/grpcurl
 
 ENV PATH="${PATH}:/root/go/bin"
@@ -127,6 +128,9 @@ RUN pip install -r /tmp/requirements.txt
 
 # Ginkgo
 RUN go get -u github.com/onsi/ginkgo/ginkgo
+
+# Helm docs
+RUN GO111MODULE=on go get github.com/norwoodj/helm-docs/cmd/helm-docs@f66fdbd6fe
 
 WORKDIR /work
 

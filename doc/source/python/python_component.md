@@ -151,8 +151,39 @@ class ModelWithTags(object):
         return X
 
     def tags(self,X):
-    	return {"system":"production"}
+        return {"system":"production"}
 ```
+
+
+## Runtime Metrics and Tags
+
+Starting from SC 1.3 `metrics` and `tags` can also be defined on the output of `predict`, `transform_input`, `transform_output`, `send_feedback`, `route` and `aggregate`.
+
+This is thread-safe.
+
+```python
+from seldon_core.user_model import SeldonResponse
+
+
+class Model:
+    def predict(self, features, names=[], meta={}):
+        runtime_metrics = {"type": "COUNTER", "key": "instance_counter", "value": len(X)},
+        runtime_tags = {"runtime": "tag", "shared": "right one"}
+        return SeldonResponse(data=X, metrics=runtime_metrics, tags=runtime_tags)
+
+    def metrics(self):
+        return [{"type": "COUNTER", "key": "requests_counter", "value": 1}]
+
+    def tags(self):
+        return {"static": "tag", "shared": "not right one"}
+```
+
+Note that `tags` and `metrics` defined through `SeldonResponse` take priority.
+In above examples returned tags will be:
+```json
+{"runtime":"tag", "shared":"right one", "static":"tag"}
+```
+
 
 
 ## REST Health Endpoint
@@ -161,7 +192,7 @@ If you wish to add a REST health point, you can implement the `health_status` me
     def health_status(self) -> Union[np.ndarray, List, str, bytes]:
 ```
 
-You can use this to verify that your service can respond to HTTP calls after you have built your docker image and also 
+You can use this to verify that your service can respond to HTTP calls after you have built your docker image and also
 as kubernetes liveness and readiness probes to verify that your model is healthy.
 
 A simple example is shown below:
@@ -177,17 +208,17 @@ class ModelWithHealthEndpoint(object):
         return response
 ```
 
-When you use `seldon-core-microservice` to start the HTTP server, you can verify that the model is up and running by 
+When you use `seldon-core-microservice` to start the HTTP server, you can verify that the model is up and running by
 checking the `/health/status` endpoint:
-```
+```console
 $ curl localhost:5000/health/status
 {"data":{"names":[],"tensor":{"shape":[2],"values":[1,2]}},"meta":{}}
 ```
 
-Additionally, you can also use the `/health/ping` endpoint if you want a lightweight call that just checks that 
+Additionally, you can also use the `/health/ping` endpoint if you want a lightweight call that just checks that
 the HTTP server is up:
 
-```0
+```console
 $ curl localhost:5000/health/ping
 pong%
 ```
@@ -233,7 +264,7 @@ spec:
 
 ## Low level Methods
 
-If you want more control you can provide a low-level methods that will provide as input the raw proto buffer payloads. The signatures for these are shown below for release `sedon_core>=0.2.6.1`:
+If you want more control you can provide a low-level methods that will provide as input the raw proto buffer payloads. The signatures for these are shown below for release `seldon_core>=0.2.6.1`:
 
 ```python
     def predict_raw(self, msg: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
@@ -315,7 +346,7 @@ class UserCustomException(Exception):
 
 By default, when using the data ndarray parameter, the conversion to ndarray (by default) converts all inner types into the same type. With models that may take as input arrays with different value types, you will be able to do so by overriding the `predict_raw` function yourself which gives you access to the raw request, and creating the numpy array as follows:
 
-```
+```python
 import numpy as np
 
 class Model:
@@ -373,7 +404,7 @@ parsed as an integer tensor.
 
 To illustrate the above, we can consider the following example:
 
-```JSON
+```json
 {
   "data": {
     "ndarray": [0, 1, 2, 3]
@@ -434,18 +465,18 @@ class Model:
 
 #### Validation
 Output of developer-defined `metadata` method will be validated to follow the [kfserving dataplane proposal](https://github.com/kubeflow/kfserving/blob/master/docs/predict-api/v2/required_api.md#model-metadata) protocol, see [this](https://github.com/SeldonIO/seldon-core/issues/1638) GitHub issue for details:
-```
+```javascript
 $metadata_model_response =
 {
   "name" : $string,
-  "versions" : [ $string, ... ] #optional,
+  "versions" : [ $string, ... ], // optional
   "platform" : $string,
   "inputs" : [ $metadata_tensor, ... ],
   "outputs" : [ $metadata_tensor, ... ]
 }
 ```
 with
-```
+```javascript
 $metadata_tensor =
 {
   "name" : $string,

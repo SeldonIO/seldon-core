@@ -328,6 +328,12 @@ func TestRouter(t *testing.T) {
 	smRes = pResp.GetPayload().(*proto.SeldonMessage)
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(Equal(1.1))
 	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(Equal(2.0))
+
+	pResp, err = createPredictorProcessWithRoute(t, -2).Predict(graph, createPredictPayload(g))
+	g.Expect(err).Should(BeNil())
+	smRes = pResp.GetPayload().(*proto.SeldonMessage)
+	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(Equal(1.1))
+	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(Equal(2.0))
 }
 
 func TestModelError(t *testing.T) {

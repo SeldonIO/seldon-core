@@ -15,15 +15,31 @@ seldonDeployment:
   # Name to use for the seldon deployment which by default appends generated workflow ID
   name: seldon-{{workflow.uid}}
   # Image to use for the batch client
-  image: seldonio/seldon-core-s2i-python37:1.1.1-rc
+  image: seldonio/seldon-core-s2i-python37:1.5.0
   # Prepackaged model server to use [see https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html]
   server: SKLEARN_SERVER
   # The URL for the model that is to be used
   modelUri: gs://seldon-models/sklearn/iris
   # The number of seldon deployment replicas to launch
-  replicas: 10
+  replicas: 2
   # Waiting time before checks for deployment to ensure kubernetes cluster registers create
   waitTime: 5
+  # The number of threads spawned by Python Gunicorn Flask server
+  serverThreads: 10
+  # The number of workers spawned by Python Gunicorn Flask server
+  serverWorkers: 1
+  # Whether to enable resources
+  enableResources: false
+  requests:
+    # Requests for CPU (only added if enableResources is enabled)
+    cpu: 50m
+    # Requests for memory (only added if enableResources is enabled)
+    memory: 100Mi
+  limits:
+    # Limits for CPU (only added if enableResources is enabled)
+    cpu: 50m
+    # Limits for memory (only added if enableResources is enabled)
+    memory: 1000Mi
 # The batch worker is the component that will send the requests from the files
 batchWorker:
   # Endpoint of for the batch client to contact the seldon deployment
@@ -39,6 +55,9 @@ batchWorker:
   # Whether to enable benchmarking on the batch processor worker
   enableBenchmark: true
 minio:
+  # Minio Client (mc) Image name
+  minioclient:
+    image: mc:RELEASE.2020-10-03T02-54-56Z
   # The location of the minio endpoint 
   endpoint: http://minio.minio-system.svc.cluster.local:9000
   # This is the secret that should contain the values to access minio

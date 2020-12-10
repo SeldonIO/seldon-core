@@ -1,0 +1,19 @@
+{{- $ReleaseRevision := .ReleaseRevision -}}
+{{- $PreviousRevision := .PreviousRevision -}}
+# Release notes for {{$ReleaseRevision}}
+
+{{with .NotesWithActionRequired -}}
+## Urgent Upgrade Notes 
+
+### (No, really, you MUST read this before you upgrade)
+
+{{range .}}{{println "-" .}} {{end}}
+{{end}}
+
+{{- if .Notes -}}
+## Changes
+{{ range .Notes}}
+
+{{range $note := .NoteEntries }}{{println "-" $note}}{{end}}
+{{- end -}}
+{{- end -}}

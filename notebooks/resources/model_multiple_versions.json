@@ -1,79 +1,80 @@
 {
-    "apiVersion": "machinelearning.seldon.io/v1alpha2",
-    "kind": "SeldonDeployment",
-    "metadata": {
-        "labels": {
-            "app": "seldon"
-        },
-        "name": "seldon-deployment-example"
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": {
+    "labels": {
+      "app": "seldon"
     },
-    "spec": {
-        "annotations": {
-            "project_name": "FX Market Prediction",
-            "deployment_version": "v1"
-        },
-        "name": "test-deployment",
-        "oauth_key": "oauth-key",
-        "oauth_secret": "oauth-secret",
-        "predictors": [
-            {
-                "componentSpecs": [{
-		    "metadata":{
-			"labels":{
-			    "version":"v1"
-			}
-		    },
-                    "spec": {
-                        "containers": [
-                            {
-                                "image": "seldonio/mock_classifier:1.0",
-                                "imagePullPolicy": "IfNotPresent",
-                                "name": "classifier",
-                                "resources": {
-                                    "requests": {
-                                        "memory": "1Mi"
-                                    }
-                                }
-                            }
-                        ],
-                        "terminationGracePeriodSeconds": 20
+    "name": "seldon-deployment-example"
+  },
+  "spec": {
+    "annotations": {
+      "project_name": "FX Market Prediction",
+      "deployment_version": "v1"
+    },
+    "name": "test-deployment",
+    "predictors": [
+      {
+        "componentSpecs": [
+          {
+            "metadata": {
+              "labels": {
+                "version": "v1"
+              }
+            },
+            "spec": {
+              "containers": [
+                {
+                  "image": "seldonio/mock_classifier:1.0",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "classifier",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi"
                     }
-                },{
-		    "metadata":{
-			"labels":{
-			    "version":"v2"
-			}
-		    },
-                    "spec": {
-                        "containers": [
-                            {
-                                "image": "seldonio/mock_classifier:0.6",
-                                "imagePullPolicy": "IfNotPresent",
-                                "name": "classifier",
-                                "resources": {
-                                    "requests": {
-                                        "memory": "1Mi"
-                                    }
-                                }
-                            }
-                        ],
-                        "terminationGracePeriodSeconds": 20
-                    }
-                }],
-                "graph": {
-                    "children": [],
-                    "name": "classifier",
-                    "endpoint": {
-			"type" : "REST"
-		    },
-                    "type": "MODEL"
-                },
-                "name": "fx-market-predictor",
-                "replicas": 1,
-		"annotations": {
-		    "predictor_version" : "v1"
-		}
+                  }
+                }
+              ],
+              "terminationGracePeriodSeconds": 20
             }
-        ]
-    }
+          },
+          {
+            "metadata": {
+              "labels": {
+                "version": "v2"
+              }
+            },
+            "spec": {
+              "containers": [
+                {
+                  "image": "seldonio/mock_classifier:0.6",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "classifier",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi"
+                    }
+                  }
+                }
+              ],
+              "terminationGracePeriodSeconds": 20
+            }
+          }
+        ],
+        "graph": {
+          "children": [],
+          "name": "classifier",
+          "endpoint": {
+            "type": "REST"
+          },
+          "type": "MODEL"
+        },
+        "name": "fx-market-predictor",
+        "replicas": 1,
+        "annotations": {
+          "predictor_version": "v1"
+        }
+      }
+    ]
+  }
 }

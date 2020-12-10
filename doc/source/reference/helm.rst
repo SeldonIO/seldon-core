@@ -1,10 +1,10 @@
 
-============
+=================================
 Advanced Helm Chart Configuration
-============
+=================================
 
 Seldon Core Operator Chart Configuration
------
+----------------------------------------
 
 This page provides a detailed overview of the installation parameters available for the Seldon Core installation when using Helm 3.x. The high level workflows to install Seldon Core can be found in the `Installation Page <../workflow/install.md>`_.
 

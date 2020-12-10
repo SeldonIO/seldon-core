@@ -1,6 +1,7 @@
 package k8s
 
 import (
+	"context"
 	. "github.com/onsi/gomega"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
@@ -11,6 +12,7 @@ import (
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	apiextensionsfake "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/fake"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/kubernetes"
@@ -62,7 +64,7 @@ func createManagerDeployment(client kubernetes.Interface, namespace string) (*ap
 			},
 		},
 	}
-	return client.AppsV1().Deployments(namespace).Create(deployment)
+	return client.AppsV1().Deployments(namespace).Create(context.TODO(), deployment, v1meta.CreateOptions{})
 }
 
 func createTestCRD(client apiextensionsclient.Interface) (*v1beta1.CustomResourceDefinition, error) {
@@ -80,7 +82,7 @@ func createTestCRD(client apiextensionsclient.Interface) (*v1beta1.CustomResourc
 			Version: "v1",
 		},
 	}
-	return client.ApiextensionsV1beta1().CustomResourceDefinitions().Create(crd)
+	return client.ApiextensionsV1beta1().CustomResourceDefinitions().Create(context.TODO(), crd, v1meta.CreateOptions{})
 }
 
 func createScheme() *runtime.Scheme {
@@ -110,9 +112,9 @@ func TestMutatingWebhookCreate(t *testing.T) {
 	g.Expect(err).To(BeNil())
 	wc, err := NewWebhookCreator(client, certs, ctrl.Log, scheme)
 	g.Expect(err).To(BeNil())
-	err = wc.CreateMutatingWebhookConfigurationFromFile(bytes, TestNamespace, crd, false)
+	err = wc.CreateMutatingWebhookConfigurationFromFile(context.TODO(), bytes, TestNamespace, crd, false)
 	g.Expect(err).To(BeNil())
-	_, err = client.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Get("seldon-mutating-webhook", metav1.GetOptions{})
+	_, err = client.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Get(context.TODO(), "seldon-mutating-webhook", metav1.GetOptions{})
 	g.Expect(err).To(BeNil())
 }
 
@@ -130,9 +132,9 @@ func TestMutatingWebhookCreateNamespaced(t *testing.T) {
 	g.Expect(err).To(BeNil())
 	wc, err := NewWebhookCreator(client, certs, ctrl.Log, scheme)
 	g.Expect(err).To(BeNil())
-	err = wc.CreateMutatingWebhookConfigurationFromFile(bytes, TestNamespace, crd, true)
+	err = wc.CreateMutatingWebhookConfigurationFromFile(context.TODO(), bytes, TestNamespace, crd, true)
 	g.Expect(err).To(BeNil())
-	_, err = client.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Get("seldon-mutating-webhook-"+TestNamespace, metav1.GetOptions{})
+	_, err = client.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Get(context.TODO(), "seldon-mutating-webhook-"+TestNamespace, metav1.GetOptions{})
 	g.Expect(err).To(BeNil())
 }
 
@@ -150,9 +152,9 @@ func TestValidatingWebhookCreate(t *testing.T) {
 	g.Expect(err).To(BeNil())
 	wc, err := NewWebhookCreator(client, certs, ctrl.Log, scheme)
 	g.Expect(err).To(BeNil())
-	err = wc.CreateValidatingWebhookConfigurationFromFile(bytes, TestNamespace, crd, false)
+	err = wc.CreateValidatingWebhookConfigurationFromFile(context.TODO(), bytes, TestNamespace, crd, false)
 	g.Expect(err).To(BeNil())
-	_, err = client.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().Get("seldon-validating-webhook", metav1.GetOptions{})
+	_, err = client.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().Get(context.TODO(), "seldon-validating-webhook", metav1.GetOptions{})
 	g.Expect(err).To(BeNil())
 }
 
@@ -170,9 +172,9 @@ func TestValidatingWebhookCreateNamespaced(t *testing.T) {
 	g.Expect(err).To(BeNil())
 	wc, err := NewWebhookCreator(client, certs, ctrl.Log, scheme)
 	g.Expect(err).To(BeNil())
-	err = wc.CreateValidatingWebhookConfigurationFromFile(bytes, TestNamespace, crd, true)
+	err = wc.CreateValidatingWebhookConfigurationFromFile(context.TODO(), bytes, TestNamespace, crd, true)
 	g.Expect(err).To(BeNil())
-	_, err = client.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().Get("seldon-validating-webhook-"+TestNamespace, metav1.GetOptions{})
+	_, err = client.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().Get(context.TODO(), "seldon-validating-webhook-"+TestNamespace, metav1.GetOptions{})
 	g.Expect(err).To(BeNil())
 }
 
@@ -189,6 +191,6 @@ func TestWebHookSvcCreate(t *testing.T) {
 	g.Expect(err).To(BeNil())
 	wc, err := NewWebhookCreator(client, certs, ctrl.Log, scheme)
 	g.Expect(err).To(BeNil())
-	err = wc.CreateWebhookServiceFromFile(bytes, TestNamespace, dep)
+	err = wc.CreateWebhookServiceFromFile(context.TODO(), bytes, TestNamespace, dep)
 	g.Expect(err).To(BeNil())
 }

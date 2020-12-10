@@ -29,6 +29,10 @@ type SeldonMessageGrpcClient struct {
 	annotations    map[string]string
 }
 
+func (s *SeldonMessageGrpcClient) IsGrpc() bool {
+	return true
+}
+
 func NewSeldonGrpcClient(spec *v1.PredictorSpec, deploymentName string, annotations map[string]string) client.SeldonApiClient {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
@@ -208,6 +212,7 @@ func (s *SeldonMessageGrpcClient) ModelMetadata(ctx context.Context, modelName s
 		Versions: protoPayload.GetVersions(),
 		Inputs:   protoPayload.GetInputs(),
 		Outputs:  protoPayload.GetOutputs(),
+		Custom:   protoPayload.GetCustom(),
 	}
 	return output, nil
 }

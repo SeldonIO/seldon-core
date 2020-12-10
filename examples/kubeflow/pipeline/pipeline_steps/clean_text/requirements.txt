@@ -1,3 +1,4 @@
-dill==0.2.9
-click
-numpy
+dill==0.3.2
+click==7.1.2
+numpy==1.19.1
+

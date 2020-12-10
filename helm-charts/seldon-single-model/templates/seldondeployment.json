@@ -11,7 +11,8 @@
     }
   },
   "spec": {
-    "name": "{{ .Release.Name }}",
+      "name": "{{ .Release.Name }}",
+      "protocol": "{{ .Values.protocol }}",
     "annotations": {
       {{- range $name, $val := .Values.annotations }}
         "{{ $name }}": "{{ $val }}",
@@ -25,8 +26,20 @@
           {{- if .Values.model.implementation }}
           "implementation": "{{ .Values.model.implementation }}",
           {{- end}}
+          {{- if .Values.model.envSecretRefName }}
+          "envSecretRefName": "{{ .Values.model.envSecretRefName }}",
+          {{- end}}
           {{- if .Values.model.uri }}
           "modelUri": "{{ .Values.model.uri }}",
+          {{- end}}
+          {{- if .Values.model.mlflow.xtype }}
+          "parameters": [
+		{
+		    "name": "xtype",
+		    "type": "STRING",
+		    "value": "{{ .Values.model.mlflow.xtype }}" 
+		}
+	  ],
           {{- end}}
           "type": "MODEL",
           {{- if .Values.model.logger.enabled }}

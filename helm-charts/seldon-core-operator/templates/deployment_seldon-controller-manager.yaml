@@ -47,25 +47,19 @@ spec:
           value: ''
         - name: RELATED_IMAGE_STORAGE_INITIALIZER
           value: ''
-        - name: RELATED_IMAGE_SKLEARNSERVER_REST
+        - name: RELATED_IMAGE_SKLEARNSERVER
           value: ''
-        - name: RELATED_IMAGE_SKLEARNSERVER_GRPC
+        - name: RELATED_IMAGE_XGBOOSTSERVER
           value: ''
-        - name: RELATED_IMAGE_XGBOOSTSERVER_REST
+        - name: RELATED_IMAGE_MLFLOWSERVER
           value: ''
-        - name: RELATED_IMAGE_XGBOOSTSERVER_GRPC
-          value: ''
-        - name: RELATED_IMAGE_MLFLOWSERVER_REST
-          value: ''
-        - name: RELATED_IMAGE_MLFLOWSERVER_GRPC
-          value: ''
-        - name: RELATED_IMAGE_TFPROXY_REST
-          value: ''
-        - name: RELATED_IMAGE_TFPROXY_GRPC
+        - name: RELATED_IMAGE_TFPROXY
           value: ''
         - name: RELATED_IMAGE_TENSORFLOW
           value: ''
         - name: RELATED_IMAGE_EXPLAINER
+          value: ''
+        - name: RELATED_IMAGE_MOCK_CLASSIFIER
           value: ''
         - name: MANAGER_CREATE_RESOURCES
           value: '{{ .Values.managerCreateResources }}'
@@ -103,6 +97,8 @@ spec:
           value: '{{ .Values.engine.prometheus.path }}'
         - name: ISTIO_ENABLED
           value: '{{ .Values.istio.enabled }}'
+        - name: KEDA_ENABLED
+          value: '{{ .Values.keda.enabled }}'
         - name: ISTIO_GATEWAY
           value: '{{ .Values.istio.gateway }}'
         - name: ISTIO_TLS_MODE
@@ -127,6 +123,22 @@ spec:
           value: '{{ .Values.executor.requestLogger.defaultEndpoint }}'
         - name: DEFAULT_USER_ID
           value: '{{ .Values.defaultUserID }}'
+        - name: EXECUTOR_DEFAULT_CPU_REQUEST
+          value: '{{ .Values.executor.resources.cpuRequest }}'
+        - name: EXECUTOR_DEFAULT_MEMORY_REQUEST
+          value: '{{ .Values.executor.resources.memoryRequest }}'
+        - name: EXECUTOR_DEFAULT_CPU_LIMIT
+          value: '{{ .Values.executor.resources.cpuLimit }}'
+        - name: EXECUTOR_DEFAULT_MEMORY_LIMIT
+          value: '{{ .Values.executor.resources.memoryLimit }}'
+        - name: ENGINE_DEFAULT_CPU_REQUEST
+          value: '{{ .Values.engine.resources.cpuRequest }}'
+        - name: ENGINE_DEFAULT_MEMORY_REQUEST
+          value: '{{ .Values.engine.resources.memoryRequest }}'
+        - name: ENGINE_DEFAULT_CPU_LIMIT
+          value: '{{ .Values.engine.resources.cpuLimit }}'
+        - name: ENGINE_DEFAULT_MEMORY_LIMIT
+          value: '{{ .Values.engine.resources.memoryLimit }}'
         image: '{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}'
         imagePullPolicy: '{{ .Values.image.pullPolicy }}'
         name: manager

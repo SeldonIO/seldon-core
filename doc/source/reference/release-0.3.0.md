@@ -21,13 +21,13 @@ One core part of the Seldon platform is the Operator which consists of the Custo
 
 Installation of Seldon Core is now accomplished with the single Helm install:
 
-```
+```bash
 helm install seldon-core-operator --name seldon-core --repo https://storage.googleapis.com/seldon-charts
 ```
 
 One consequence of the release is that volume mounts inside user Pods can be written in the usual manner now in our SeldonDeployment CRD. Whereas before you needed to use a more verbose representation due to the Java operator using the official Kubernetes proto buffer definitions:
 
-```
+```yaml
 volumes:
 - name: data
   volumeSource:
@@ -38,7 +38,7 @@ volumes:
 
 You can now use the standard way if you use volumes inside your PodSpec in a SeldonDeployment.
 
-```
+```yaml
 volumes:
 - name: data
     hostPath:

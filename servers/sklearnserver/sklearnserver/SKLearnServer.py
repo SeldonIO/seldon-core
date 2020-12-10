@@ -40,6 +40,9 @@ class SKLearnServer(SeldonComponent):
             if self.method == "predict_proba":
                 logger.info("Calling predict_proba")
                 result = self._joblib.predict_proba(X)
+            elif self.method == "decision_function":
+                logger.info("Calling decision_function")
+                result = self._joblib.decision_function(X)
             else:
                 logger.info("Calling predict")
                 result = self._joblib.predict(X)

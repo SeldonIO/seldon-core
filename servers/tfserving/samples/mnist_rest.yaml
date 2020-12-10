@@ -17,5 +17,11 @@ spec:
         - name: model_name
           type: STRING
           value: mnist-model
+        - name: model_input
+          type: STRING
+          value: images
+        - name: model_output
+          type: STRING
+          value: scores     
     name: default
     replicas: 1

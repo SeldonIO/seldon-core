@@ -14,7 +14,9 @@ istio:
   enabled: false
   gateway: istio-system/seldon-gateway
   tlsMode: ""
-
+# If you have KEDA installed you can use it for autoscaling
+keda:
+  enabled: false
 # ## Install with Cert Manager
 # See installation page in documentation for more information
 certManager:
@@ -44,7 +46,12 @@ executor:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-core-executor
-    tag: 1.2.2-dev
+    tag: 1.6.0-dev
+  resources:
+    cpuLimit: 500m
+    cpuRequest: 500m
+    memoryLimit: 512Mi
+    memoryRequest: 512Mi
   prometheus:
     path: /prometheus
   serviceAccount:
@@ -60,7 +67,7 @@ image:
   pullPolicy: IfNotPresent
   registry: docker.io
   repository: seldonio/seldon-core-operator
-  tag: 1.2.2-dev
+  tag: 1.6.0-dev
 manager:
   cpuLimit: 500m
   cpuRequest: 100m
@@ -77,7 +84,7 @@ singleNamespace: false
 storageInitializer:
   cpuLimit: "1"
   cpuRequest: 100m
-  image: gcr.io/kfserving/storage-initializer:0.2.2
+  image: gcr.io/kfserving/storage-initializer:v0.4.0
   memoryLimit: 1Gi
   memoryRequest: 100Mi
 usageMetrics:
@@ -95,35 +102,39 @@ predictiveUnit:
   defaultEnvSecretRefName: ""
 predictor_servers:
   MLFLOW_SERVER:
-    grpc:
-      defaultImageVersion: "1.2.2-dev"
-      image: seldonio/mlflowserver_grpc
-    rest:
-      defaultImageVersion: "1.2.2-dev"
-      image: seldonio/mlflowserver_rest
+    protocols:
+      seldon:
+        defaultImageVersion: "1.6.0-dev"
+        image: seldonio/mlflowserver
   SKLEARN_SERVER:
-    grpc:
-      defaultImageVersion: "1.2.2-dev"
-      image: seldonio/sklearnserver_grpc
-    rest:
-      defaultImageVersion: "1.2.2-dev"
-      image: seldonio/sklearnserver_rest
+    protocols:
+      seldon:
+        defaultImageVersion: "1.6.0-dev"
+        image: seldonio/sklearnserver
+      kfserving:
+        defaultImageVersion: "0.1.1"
+        image: seldonio/mlserver
   TENSORFLOW_SERVER:
-    grpc:
-      defaultImageVersion: "1.2.2-dev"
-      image: seldonio/tfserving-proxy_grpc
-    rest:
-      defaultImageVersion: "1.2.2-dev"
-      image: seldonio/tfserving-proxy_rest
-    tensorflow: true
-    tfImage: tensorflow/serving:2.1.0
+    protocols:
+      seldon:
+        defaultImageVersion: "1.6.0-dev"
+        image: seldonio/tfserving-proxy
+      tensorflow: 
+        defaultImageVersion: 2.1.0
+        image:  tensorflow/serving
   XGBOOST_SERVER:
-    grpc:
-      defaultImageVersion: "1.2.2-dev"
-      image: seldonio/xgboostserver_grpc
-    rest:
-      defaultImageVersion: "1.2.2-dev"
-      image: seldonio/xgboostserver_rest
+    protocols:
+      seldon:
+        defaultImageVersion: "1.6.0-dev"
+        image: seldonio/xgboostserver
+      kfserving:
+        defaultImageVersion: "0.1.1"
+        image: seldonio/mlserver
+  TRITON_SERVER:
+    protocols:
+      kfserving:
+        defaultImageVersion: "20.08-py3"
+        image: nvcr.io/nvidia/tritonserver
 
 # ## Other
 # You can choose the crds to not be installed if you already installed them
@@ -131,6 +142,9 @@ predictor_servers:
 # it will try to create the CRD but only if it does not exist
 crd:
   create: true
+  # Whether to force the use of the v1beta1 or v1 CRD.
+  forceV1: false
+  forceV1beta1: false
 
 # Warning: credentials will be depricated soon, please use defaultEnvSecretRefName above
 # For more info please check the documentation
@@ -153,7 +167,12 @@ engine:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/engine
-    tag: 1.2.2-dev
+    tag: 1.6.0-dev
+  resources:
+    cpuLimit: 500m
+    cpuRequest: 500m
+    memoryLimit: 512Mi
+    memoryRequest: 512Mi
   logMessagesExternally: false
   port: 8000
   prometheus:
@@ -165,4 +184,5 @@ engine:
 
 # Explainer image
 explainer:
-  image: seldonio/alibiexplainer:1.2.2-dev
+  image: seldonio/alibiexplainer:1.6.0-dev
+

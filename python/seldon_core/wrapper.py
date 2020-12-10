@@ -1,27 +1,31 @@
 import grpc
-from concurrent import futures
-from flask import jsonify, Flask, send_from_directory, request, Response
-from flask_cors import CORS
+from grpc_reflection.v1alpha import reflection
+import os
 import logging
+import seldon_core.seldon_methods
+
+from concurrent import futures
+from flask import Flask, send_from_directory, request, Response
+from flask_cors import CORS
 from seldon_core.utils import (
     seldon_message_to_json,
     json_to_seldon_model_metadata,
     json_to_feedback,
+    getenv_as_bool,
 )
-from seldon_core.flask_utils import get_request
-import seldon_core.seldon_methods
+from seldon_core.flask_utils import get_request, jsonify
 from seldon_core.flask_utils import (
     SeldonMicroserviceException,
     ANNOTATION_GRPC_MAX_MSG_SIZE,
 )
 from seldon_core.proto import prediction_pb2_grpc
 from seldon_core.proto import prediction_pb2
-import os
 
 logger = logging.getLogger(__name__)
 
 PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID", "0")
 METRICS_ENDPOINT = os.environ.get("PREDICTIVE_UNIT_METRICS_ENDPOINT", "/metrics")
+PAYLOAD_PASSTHROUGH = getenv_as_bool("PAYLOAD_PASSTHROUGH", default=False)
 
 
 def get_rest_microservice(user_model, seldon_metrics):
@@ -53,13 +57,18 @@ def get_rest_microservice(user_model, seldon_metrics):
     @app.route("/api/v1.0/predictions", methods=["POST"])
     @app.route("/api/v0.1/predictions", methods=["POST"])
     def Predict():
-        requestJson = get_request()
+        requestJson = get_request(skip_decoding=PAYLOAD_PASSTHROUGH)
         logger.debug("REST Request: %s", request)
         response = seldon_core.seldon_methods.predict(
             user_model, requestJson, seldon_metrics
         )
-        json_response = jsonify(response)
-        if "status" in response and "code" in response["status"]:
+
+        json_response = jsonify(response, skip_encoding=PAYLOAD_PASSTHROUGH)
+        if (
+            isinstance(response, dict)
+            and "status" in response
+            and "code" in response["status"]
+        ):
             json_response.status_code = response["status"]["code"]
 
         logger.debug("REST Response: %s", response)
@@ -169,19 +178,36 @@ def get_metrics_microservice(seldon_metrics):
 def _set_flask_app_configs(app):
     """
     Set the configs for the flask app based on environment variables
+    See https://flask.palletsprojects.com/config/#builtin-configuration-values
     :param app:
     :return:
     """
-    env_to_config_map = {
-        "FLASK_JSONIFY_PRETTYPRINT_REGULAR": "JSONIFY_PRETTYPRINT_REGULAR",
-        "FLASK_JSON_SORT_KEYS": "JSON_SORT_KEYS",
-    }
+    FLASK_CONFIG_IDENTIFIER = "FLASK_"
+    FLASK_CONFIGS_ALLOWED = [
+        "DEBUG",
+        "EXPLAIN_TEMPLATE_LOADING",
+        "JSONIFY_PRETTYPRINT_REGULAR",
+        "JSON_SORT_KEYS",
+        "PROPAGATE_EXCEPTIONS",
+        "PRESERVE_CONTEXT_ON_EXCEPTION",
+        "SESSION_COOKIE_HTTPONLY",
+        "SESSION_COOKIE_SECURE",
+        "SESSION_REFRESH_EACH_REQUEST",
+        "TEMPLATES_AUTO_RELOAD",
+        "TESTING",
+        "TRAP_HTTP_EXCEPTIONS",
+        "TRAP_BAD_REQUEST_ERRORS",
+        "USE_X_SENDFILE",
+    ]
 
-    for env_var, config_name in env_to_config_map.items():
-        if os.environ.get(env_var):
-            # Environment variables come as strings, convert them to boolean
-            bool_env_value = os.environ.get(env_var).lower() == "true"
-            app.config[config_name] = bool_env_value
+    for flask_config in FLASK_CONFIGS_ALLOWED:
+        flask_config_value = getenv_as_bool(
+            f"{FLASK_CONFIG_IDENTIFIER}{flask_config}", default=None
+        )
+        if flask_config_value is None:
+            continue
+        app.config[flask_config] = flask_config_value
+    logger.info(f"App Config:  {app.config}")
 
 
 # ----------------------------
@@ -189,7 +215,7 @@ def _set_flask_app_configs(app):
 # ----------------------------
 
 
-class SeldonModelGRPC(object):
+class SeldonModelGRPC:
     def __init__(self, user_model, seldon_metrics):
         self.user_model = user_model
         self.seldon_metrics = seldon_metrics
@@ -263,5 +289,17 @@ def get_grpc_server(user_model, seldon_metrics, annotations={}, trace_intercepto
     prediction_pb2_grpc.add_CombinerServicer_to_server(seldon_model, server)
     prediction_pb2_grpc.add_RouterServicer_to_server(seldon_model, server)
     prediction_pb2_grpc.add_SeldonServicer_to_server(seldon_model, server)
+
+    SERVICE_NAMES = (
+        prediction_pb2.DESCRIPTOR.services_by_name["Generic"].full_name,
+        prediction_pb2.DESCRIPTOR.services_by_name["Model"].full_name,
+        prediction_pb2.DESCRIPTOR.services_by_name["Router"].full_name,
+        prediction_pb2.DESCRIPTOR.services_by_name["Transformer"].full_name,
+        prediction_pb2.DESCRIPTOR.services_by_name["OutputTransformer"].full_name,
+        prediction_pb2.DESCRIPTOR.services_by_name["Combiner"].full_name,
+        prediction_pb2.DESCRIPTOR.services_by_name["Seldon"].full_name,
+        reflection.SERVICE_NAME,
+    )
+    reflection.enable_server_reflection(SERVICE_NAMES, server)
 
     return server

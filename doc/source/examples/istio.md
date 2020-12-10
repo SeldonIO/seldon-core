@@ -12,7 +12,3 @@ The addition of Istio is complementary to Seldon and is illustrated below where 
 
 ![svc-graph-istio](./svc-graph-istio.png)
 
-## Worked Examples
-
-[An example step-by-step guide to canary deployments using Istio and Seldon is provided](istio_canary.html)
-

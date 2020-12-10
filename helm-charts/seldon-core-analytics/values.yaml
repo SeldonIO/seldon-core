@@ -1,4 +1,5 @@
 grafana:
+  enabled: true
   adminUser: admin
   adminPassword: password
   sidecar:
@@ -19,6 +20,7 @@ alertmanager:
 rbac:
   enabled: true
 prometheus:
+  enabled: true
   service_type: ClusterIP
   server:
     name: seldon

@@ -2,7 +2,7 @@
 
 In this example we define our own service name for the predictor.
 
-```json
+```yaml
 apiVersion: machinelearning.seldon.io/v1alpha2
 kind: SeldonDeployment
 metadata:

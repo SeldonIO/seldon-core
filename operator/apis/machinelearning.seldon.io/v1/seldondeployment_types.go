@@ -21,10 +21,12 @@ import (
 	"encoding/hex"
 	"strconv"
 
+	kedav1alpha1 "github.com/kedacore/keda/api/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/constants"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 const (
@@ -34,15 +36,15 @@ const (
 	Label_svc_orch           = "seldon-deployment-contains-svcorch"
 	Label_app                = "app"
 	Label_fluentd            = "fluentd"
-	Label_router             = "router"
-	Label_combiner           = "combiner"
-	Label_model              = "model"
-	Label_transformer        = "transformer"
-	Label_output_transformer = "output-transformer"
-	Label_default            = "default"
-	Label_shadow             = "shadow"
-	Label_canary             = "canary"
-	Label_explainer          = "explainer"
+	Label_router             = "seldon.io/router"
+	Label_combiner           = "seldon.io/combiner"
+	Label_model              = "seldon.io/model"
+	Label_transformer        = "seldon.io/transformer"
+	Label_output_transformer = "seldon.io/output-transformer"
+	Label_default            = "seldon.io/default"
+	Label_shadow             = "seldon.io/shadow"
+	Label_canary             = "seldon.io/canary"
+	Label_explainer          = "seldon.io/explainer"
 	Label_managed_by         = "app.kubernetes.io/managed-by"
 	Label_value_seldon       = "seldon-core"
 
@@ -51,6 +53,8 @@ const (
 	PODINFO_VOLUME_PATH     = "/etc/podinfo"
 
 	ENV_PREDICTIVE_UNIT_SERVICE_PORT         = "PREDICTIVE_UNIT_SERVICE_PORT"
+	ENV_PREDICTIVE_UNIT_HTTP_SERVICE_PORT    = "PREDICTIVE_UNIT_HTTP_SERVICE_PORT"
+	ENV_PREDICTIVE_UNIT_GRPC_SERVICE_PORT    = "PREDICTIVE_UNIT_GRPC_SERVICE_PORT"
 	ENV_PREDICTIVE_UNIT_SERVICE_PORT_METRICS = "PREDICTIVE_UNIT_METRICS_SERVICE_PORT"
 	ENV_PREDICTIVE_UNIT_METRICS_ENDPOINT     = "PREDICTIVE_UNIT_METRICS_ENDPOINT"
 	ENV_PREDICTIVE_UNIT_METRICS_PORT_NAME    = "PREDICTIVE_UNIT_METRICS_PORT_NAME"
@@ -210,6 +214,11 @@ type SeldonDeploymentSpec struct {
 	Protocol    Protocol          `json:"protocol,omitempty" protobuf:"bytes,6,opt,name=protocol"`
 	Transport   Transport         `json:"transport,omitempty" protobuf:"bytes,7,opt,name=transport"`
 	Replicas    *int32            `json:"replicas,omitempty" protobuf:"bytes,8,opt,name=replicas"`
+	ServerType  ServerType        `json:"serverType,omitempty" protobuf:"bytes,8,opt,name=serverType"`
+}
+
+type SSL struct {
+	CertSecretName string `json:"certSecretName,omitempty" protobuf:"string,2,opt,name=certSecretName"`
 }
 
 type PredictorSpec struct {
@@ -224,6 +233,7 @@ type PredictorSpec struct {
 	Traffic         int32                   `json:"traffic,omitempty" protobuf:"bytes,9,opt,name=traffic"`
 	Explainer       *Explainer              `json:"explainer,omitempty" protobuf:"bytes,10,opt,name=explainer"`
 	Shadow          bool                    `json:"shadow,omitempty" protobuf:"bytes,11,opt,name=shadow"`
+	SSL             *SSL                    `json:"ssl,omitempty" protobuf:"bytes,11,opt,name=ssl"`
 }
 
 type Protocol string
@@ -231,6 +241,7 @@ type Protocol string
 const (
 	ProtocolSeldon     Protocol = "seldon"
 	ProtocolTensorflow Protocol = "tensorflow"
+	ProtocolKfserving  Protocol = "kfserving"
 )
 
 type Transport string
@@ -238,6 +249,13 @@ type Transport string
 const (
 	TransportRest Transport = "rest"
 	TransportGrpc Transport = "grpc"
+)
+
+type ServerType string
+
+const (
+	ServerRPC   ServerType = "rpc"
+	ServerKafka ServerType = "kafka"
 )
 
 type SvcOrchSpec struct {
@@ -249,11 +267,15 @@ type SvcOrchSpec struct {
 type AlibiExplainerType string
 
 const (
-	AlibiAnchorsTabularExplainer  AlibiExplainerType = "AnchorTabular"
-	AlibiAnchorsImageExplainer    AlibiExplainerType = "AnchorImages"
-	AlibiAnchorsTextExplainer     AlibiExplainerType = "AnchorText"
-	AlibiCounterfactualsExplainer AlibiExplainerType = "Counterfactuals"
-	AlibiContrastiveExplainer     AlibiExplainerType = "Contrastive"
+	AlibiAnchorsTabularExplainer      AlibiExplainerType = "AnchorTabular"
+	AlibiAnchorsImageExplainer        AlibiExplainerType = "AnchorImages"
+	AlibiAnchorsTextExplainer         AlibiExplainerType = "AnchorText"
+	AlibiCounterfactualsExplainer     AlibiExplainerType = "Counterfactuals"
+	AlibiContrastiveExplainer         AlibiExplainerType = "Contrastive"
+	AlibiKernelShapExplainer          AlibiExplainerType = "KernelShap"
+	AlibiIntegratedGradientsExplainer AlibiExplainerType = "IntegratedGradients"
+	AlibiALEExplainer                 AlibiExplainerType = "ALE"
+	AlibiTreeShap                     AlibiExplainerType = "TreeShap"
 )
 
 type Explainer struct {
@@ -267,16 +289,50 @@ type Explainer struct {
 }
 
 type SeldonPodSpec struct {
-	Metadata metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-	Spec     v1.PodSpec        `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
-	HpaSpec  *SeldonHpaSpec    `json:"hpaSpec,omitempty" protobuf:"bytes,3,opt,name=hpaSpec"`
-	Replicas *int32            `json:"replicas,omitempty" protobuf:"bytes,4,opt,name=replicas"`
+	Metadata metav1.ObjectMeta       `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+	Spec     v1.PodSpec              `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+	HpaSpec  *SeldonHpaSpec          `json:"hpaSpec,omitempty" protobuf:"bytes,3,opt,name=hpaSpec"`
+	Replicas *int32                  `json:"replicas,omitempty" protobuf:"bytes,4,opt,name=replicas"`
+	KedaSpec *SeldonScaledObjectSpec `json:"kedaSpec,omitempty" protobuf:"bytes,5,opt,name=kedaSpec"`
+	PdbSpec  *SeldonPdbSpec          `json:"pdbSpec,omitempty" protobuf:"bytes,6,opt,name=pdbSpec"`
+}
+
+// SeldonScaledObjectSpec is the spec for a KEDA ScaledObject resource
+type SeldonScaledObjectSpec struct {
+	// +optional
+	PollingInterval *int32 `json:"pollingInterval,omitempty" protobuf:"int,1,opt,name=pollingInterval"`
+	// +optional
+	CooldownPeriod *int32 `json:"cooldownPeriod,omitempty" protobuf:"int,2,opt,name=cooldownPeriod"`
+	// +optional
+	MinReplicaCount *int32 `json:"minReplicaCount,omitempty" protobuf:"int,3,opt,name=minReplicaCount"`
+	// +optional
+	MaxReplicaCount *int32 `json:"maxReplicaCount,omitempty" protobuf:"int,4,opt,name=maxReplicaCount"`
+	// +optional
+	Advanced *kedav1alpha1.AdvancedConfig `json:"advanced,omitempty" protobuf:"bytes,5,opt,name=advanced"`
+	Triggers []kedav1alpha1.ScaleTriggers `json:"triggers" protobuf:"bytes,6,opt,name=triggers"`
 }
 
 type SeldonHpaSpec struct {
 	MinReplicas *int32                          `json:"minReplicas,omitempty" protobuf:"int,1,opt,name=minReplicas"`
 	MaxReplicas int32                           `json:"maxReplicas" protobuf:"int,2,opt,name=maxReplicas"`
 	Metrics     []autoscalingv2beta2.MetricSpec `json:"metrics,omitempty" protobuf:"bytes,3,opt,name=metrics"`
+}
+
+type SeldonPdbSpec struct {
+	// An eviction is allowed if at least "minAvailable" pods in the deployment
+	// corresponding to a componentSpec will still be available after the eviction, i.e. even in the
+	// absence of the evicted pod.  So for example you can prevent all voluntary
+	// evictions by specifying "100%".
+	// +optional
+	MinAvailable *intstr.IntOrString `json:"minAvailable,omitempty" protobuf:"bytes,1,opt,name=minAvailable"`
+
+	// An eviction is allowed if at most "maxUnavailable" pods in the deployment
+	// corresponding to a componentSpec are unavailable after the eviction, i.e. even in absence of
+	// the evicted pod. For example, one can prevent all voluntary evictions
+	// by specifying 0.
+	// MaxUnavailable and MinAvailable are mutually exclusive.
+	// +optional
+	MaxUnavailable *intstr.IntOrString `json:"maxUnavailable,omitempty" protobuf:"bytes,2,opt,name=maxUnavailable"`
 }
 
 type PredictiveUnitType string
@@ -321,6 +377,8 @@ type Endpoint struct {
 	ServiceHost string       `json:"service_host,omitempty" protobuf:"string,1,opt,name=service_host"`
 	ServicePort int32        `json:"service_port,omitempty" protobuf:"int32,2,opt,name=service_port"`
 	Type        EndpointType `json:"type,omitempty" protobuf:"int,3,opt,name=type"`
+	HttpPort    int32        `json:"httpPort,omitempty" protobuf:"int32,4,opt,name=httpPort"`
+	GrpcPort    int32        `json:"grpcPort,omitempty" protobuf:"int32,5,opt,name=grpcPort"`
 }
 
 type ParmeterType string

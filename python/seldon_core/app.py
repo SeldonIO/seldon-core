@@ -1,21 +1,29 @@
 import os
 import logging
+import atexit
 
+from multiprocessing.util import _exit_function
 from typing import Dict, Union
 from gunicorn.app.base import BaseApplication
+from seldon_core.utils import setup_tracing
 
 logger = logging.getLogger(__name__)
 
 
-def accesslog(log_level: str) -> Union[str, None]:
+def post_worker_init(worker):
+    # Remove the atexit handler set up by the parent process
+    # https://github.com/benoitc/gunicorn/issues/1391#issuecomment-467010209
+    atexit.unregister(_exit_function)
+
+
+def accesslog(flag: bool) -> Union[str, None]:
     """
-    Enable / disable access log in Gunicorn depending on the log level.
+    Enable / disable access log in Gunicorn depending on the flag.
     """
 
-    if log_level in ["WARNING", "ERROR", "CRITICAL"]:
-        return None
-
-    return "-"
+    if flag:
+        return "-"
+    return None
 
 
 def threads(threads: int, single_threaded: bool) -> int:
@@ -60,11 +68,23 @@ class UserModelApplication(StandaloneApplication):
     user's model.
     """
 
-    def __init__(self, app, user_object, options: Dict = None):
+    def __init__(
+        self, app, user_object, jaeger_extra_tags, interface_name, options: Dict = None
+    ):
         self.user_object = user_object
+        self.jaeger_extra_tags = jaeger_extra_tags
+        self.interface_name = interface_name
         super().__init__(app, options)
 
     def load(self):
+        if self.jaeger_extra_tags is not None:
+            logger.info("Tracing branch is active")
+            from flask_opentracing import FlaskTracing
+
+            tracer = setup_tracing(self.interface_name)
+
+            logger.info("Set JAEGER_EXTRA_TAGS %s", self.jaeger_extra_tags)
+            FlaskTracing(tracer, True, self.application, self.jaeger_extra_tags)
         logger.debug("LOADING APP %d", os.getpid())
         try:
             logger.debug("Calling user load method")

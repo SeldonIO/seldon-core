@@ -1,3 +1,4 @@
 {
-  "path": "../../../examples/models/metadata/graph_metadata.ipynb"
+  "path": "../../../examples/models/metadata/graph_metadata.ipynb",
+  "extra-media": ["../../../examples/models/metadata/images"]
 }

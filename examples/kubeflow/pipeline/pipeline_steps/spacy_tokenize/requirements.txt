@@ -1,4 +1,6 @@
-dill==0.2.9
-click
-numpy
-spacy
+dill==0.3.2
+click==7.1.2
+numpy==1.19.1
+spacy==2.3.2
+en-core-web-sm==2.3.1
+

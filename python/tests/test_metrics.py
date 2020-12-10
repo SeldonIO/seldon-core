@@ -21,8 +21,17 @@ from seldon_core.metrics import (
     validate_metrics,
     COUNTER,
     BINS,
+    FEEDBACK_METRIC_METHOD_TAG,
+    PREDICT_METRIC_METHOD_TAG,
+    INPUT_TRANSFORM_METRIC_METHOD_TAG,
+    OUTPUT_TRANSFORM_METRIC_METHOD_TAG,
+    ROUTER_METRIC_METHOD_TAG,
+    AGGREGATE_METRIC_METHOD_TAG,
+    HEALTH_METRIC_METHOD_TAG,
 )
 from seldon_core.user_model import client_custom_metrics
+
+TEST_METRIC_METHOD_TAG = "testmethod"
 
 
 def test_split_image_tag():
@@ -101,26 +110,34 @@ def test_validate_no_list():
     assert validate_metrics({"type": COUNTER, "key": "a", "value": 1}) == False
 
 
-class Component(object):
+RAW_COUNTER_METRIC = {"type": COUNTER, "key": "a", "value": 1}
+EXPECTED_COUNTER_METRIC = {"type": COUNTER, "key": "a", "value": 1}
+RAW_BAD_COUNTER_METRIC = {"type": "bad", "key": "a", "value": 1}
+
+
+class Component:
     def __init__(self, ok=True):
         self.ok = ok
 
     def metrics(self):
         if self.ok:
-            return [{"type": COUNTER, "key": "a", "value": 1}]
+            return [RAW_COUNTER_METRIC]
         else:
-            return [{"type": "bad", "key": "a", "value": 1}]
+            return [RAW_BAD_COUNTER_METRIC]
 
 
 def test_component_ok():
     c = Component(True)
-    assert client_custom_metrics(c, SeldonMetrics()) == c.metrics()
+    print(client_custom_metrics(c, SeldonMetrics(), TEST_METRIC_METHOD_TAG))
+    assert client_custom_metrics(c, SeldonMetrics(), TEST_METRIC_METHOD_TAG) == [
+        EXPECTED_COUNTER_METRIC
+    ]
 
 
 def test_component_bad():
     with pytest.raises(SeldonMicroserviceException):
         c = Component(False)
-        client_custom_metrics(c, SeldonMetrics())
+        client_custom_metrics(c, SeldonMetrics(), TEST_METRIC_METHOD_TAG)
 
 
 def test_proto_metrics():
@@ -187,6 +204,18 @@ class UserObject:
                 "value": 200,
                 "tags": {"mytag": "mytagvalue"},
             },
+            {
+                "type": "GAUGE",
+                "key": "distincttag",
+                "value": 200,
+                "tags": {"mytag": "mytagvalue-1"},
+            },
+            {
+                "type": "GAUGE",
+                "key": "distincttag",
+                "value": 200,
+                "tags": {"mytag": "mytagvalue-2"},
+            },
         ]
 
 
@@ -200,6 +229,18 @@ class UserObjectLowLevel:
             "key": "customtag",
             "value": 200,
             "tags": {"mytag": "mytagvalue"},
+        },
+        {
+            "type": "GAUGE",
+            "key": "distincttag",
+            "value": 200,
+            "tags": {"mytag": "mytagvalue-1"},
+        },
+        {
+            "type": "GAUGE",
+            "key": "distincttag",
+            "value": 200,
+            "tags": {"mytag": "mytagvalue-2"},
         },
     ]
 
@@ -249,6 +290,18 @@ class UserObjectLowLevelGrpc:
             "key": "customtag",
             "value": 200,
             "tags": {"mytag": "mytagvalue"},
+        },
+        {
+            "type": "GAUGE",
+            "key": "distincttag",
+            "value": 200,
+            "tags": {"mytag": "mytagvalue-1"},
+        },
+        {
+            "type": "GAUGE",
+            "key": "distincttag",
+            "value": 200,
+            "tags": {"mytag": "mytagvalue-2"},
         },
     ]
 
@@ -318,15 +371,37 @@ class UserObjectLowLevelGrpc:
         return request
 
 
-def verify_seldon_metrics(data, mycounter_value, histogram_entries):
-    assert data["GAUGE", "mygauge"]["value"] == 100
-    assert data["GAUGE", "customtag"]["value"] == 200
-    assert data["GAUGE", "customtag"]["tags"] == {"mytag": "mytagvalue"}
-    assert data["COUNTER", "mycounter"]["value"] == mycounter_value
+def verify_seldon_metrics(data, mycounter_value, histogram_entries, method):
+    expected_base_tags = {"method": method}
+    base_tags_key = SeldonMetrics._generate_tags_key(expected_base_tags)
+    expected_custom_tags = {"mytag": "mytagvalue", "method": method}
+    custom_tags_key = SeldonMetrics._generate_tags_key(expected_custom_tags)
+    assert data["GAUGE", "mygauge", base_tags_key]["value"] == 100
+    assert data["GAUGE", "customtag", custom_tags_key]["value"] == 200
+    assert data["GAUGE", "customtag", custom_tags_key]["tags"] == expected_custom_tags
+    assert data["COUNTER", "mycounter", base_tags_key]["value"] == mycounter_value
     assert np.allclose(
-        np.histogram(histogram_entries, BINS)[0], data["TIMER", "mytimer"]["value"][0]
+        np.histogram(histogram_entries, BINS)[0],
+        data["TIMER", "mytimer", base_tags_key]["value"][0],
     )
-    assert np.allclose(data["TIMER", "mytimer"]["value"][1], np.sum(histogram_entries))
+    assert np.allclose(
+        data["TIMER", "mytimer", base_tags_key]["value"][1], np.sum(histogram_entries)
+    )
+    expected_distinct_tags_one = {"mytag": "mytagvalue-1", "method": method}
+    distinct_tags_one_key = SeldonMetrics._generate_tags_key(expected_distinct_tags_one)
+    assert data["GAUGE", "distincttag", distinct_tags_one_key]["value"] == 200
+    assert (
+        data["GAUGE", "distincttag", distinct_tags_one_key]["tags"]
+        == expected_distinct_tags_one
+    )
+
+    expected_distinct_tags_two = {"mytag": "mytagvalue-2", "method": method}
+    distinct_tags_two_key = SeldonMetrics._generate_tags_key(expected_distinct_tags_two)
+    assert data["GAUGE", "distincttag", distinct_tags_two_key]["value"] == 200
+    assert (
+        data["GAUGE", "distincttag", distinct_tags_two_key]["tags"]
+        == expected_distinct_tags_two
+    )
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
@@ -342,14 +417,14 @@ def test_seldon_metrics_predict(cls, client_gets_metrics):
     assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
-    verify_seldon_metrics(data, 1, [0.0202])
+    verify_seldon_metrics(data, 1, [0.0202], PREDICT_METRIC_METHOD_TAG)
 
     rv = client.get('/predict?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
     assert rv.status_code == 200
     assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
-    verify_seldon_metrics(data, 2, [0.0202, 0.0202])
+    verify_seldon_metrics(data, 2, [0.0202, 0.0202], PREDICT_METRIC_METHOD_TAG)
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
@@ -365,9 +440,11 @@ def test_seldon_metrics_send_feedback(cls):
 
     data = seldon_metrics.data[os.getpid()]
 
-    assert data["COUNTER", "seldon_api_model_feedback_reward"] == {
+    expected_tags = {"method": FEEDBACK_METRIC_METHOD_TAG}
+    tags_key = SeldonMetrics._generate_tags_key(expected_tags)
+    assert data["COUNTER", "seldon_api_model_feedback_reward", tags_key] == {
         "value": 42.0,
-        "tags": {},
+        "tags": expected_tags,
     }
 
     rv = client.get('/send-feedback?json={"reward": 42}')
@@ -375,9 +452,11 @@ def test_seldon_metrics_send_feedback(cls):
 
     data = seldon_metrics.data[os.getpid()]
 
-    assert data["COUNTER", "seldon_api_model_feedback_reward"] == {
+    expected_tags = {"method": FEEDBACK_METRIC_METHOD_TAG}
+    tags_key = SeldonMetrics._generate_tags_key(expected_tags)
+    assert data["COUNTER", "seldon_api_model_feedback_reward", tags_key] == {
         "value": 84.0,
-        "tags": {},
+        "tags": expected_tags,
     }
 
 
@@ -396,7 +475,7 @@ def test_seldon_metrics_aggregate(cls, client_gets_metrics):
     assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
-    verify_seldon_metrics(data, 1, [0.0202])
+    verify_seldon_metrics(data, 1, [0.0202], AGGREGATE_METRIC_METHOD_TAG)
 
     rv = client.get(
         '/aggregate?json={"seldonMessages": [{"data": {"names": ["input"], "ndarray": ["data"]}}]}'
@@ -405,7 +484,7 @@ def test_seldon_metrics_aggregate(cls, client_gets_metrics):
     assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
-    verify_seldon_metrics(data, 2, [0.0202, 0.0202])
+    verify_seldon_metrics(data, 2, [0.0202, 0.0202], AGGREGATE_METRIC_METHOD_TAG)
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
@@ -423,7 +502,7 @@ def test_seldon_metrics_transform_input(cls, client_gets_metrics):
     assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
-    verify_seldon_metrics(data, 1, [0.0202])
+    verify_seldon_metrics(data, 1, [0.0202], INPUT_TRANSFORM_METRIC_METHOD_TAG)
 
     rv = client.get(
         '/transform-input?json={"data": {"names": ["input"], "ndarray": ["data"]}}'
@@ -432,7 +511,7 @@ def test_seldon_metrics_transform_input(cls, client_gets_metrics):
     assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
-    verify_seldon_metrics(data, 2, [0.0202, 0.0202])
+    verify_seldon_metrics(data, 2, [0.0202, 0.0202], INPUT_TRANSFORM_METRIC_METHOD_TAG)
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
@@ -450,7 +529,7 @@ def test_seldon_metrics_transform_output(cls, client_gets_metrics):
     assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
-    verify_seldon_metrics(data, 1, [0.0202])
+    verify_seldon_metrics(data, 1, [0.0202], OUTPUT_TRANSFORM_METRIC_METHOD_TAG)
 
     rv = client.get(
         '/transform-output?json={"data": {"names": ["input"], "ndarray": ["data"]}}'
@@ -459,7 +538,7 @@ def test_seldon_metrics_transform_output(cls, client_gets_metrics):
     assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
-    verify_seldon_metrics(data, 2, [0.0202, 0.0202])
+    verify_seldon_metrics(data, 2, [0.0202, 0.0202], OUTPUT_TRANSFORM_METRIC_METHOD_TAG)
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])
@@ -475,14 +554,14 @@ def test_seldon_metrics_route(cls, client_gets_metrics):
     assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
-    verify_seldon_metrics(data, 1, [0.0202])
+    verify_seldon_metrics(data, 1, [0.0202], ROUTER_METRIC_METHOD_TAG)
 
     rv = client.get('/route?json={"data": {"names": ["input"], "ndarray": ["data"]}}')
     assert rv.status_code == 200
     assert ("metrics" in json.loads(rv.data)["meta"]) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
-    verify_seldon_metrics(data, 2, [0.0202, 0.0202])
+    verify_seldon_metrics(data, 2, [0.0202, 0.0202], ROUTER_METRIC_METHOD_TAG)
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
@@ -503,13 +582,13 @@ def test_proto_seldon_metrics_predict(cls, client_gets_metrics):
     ) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
-    verify_seldon_metrics(data, 1, [0.0202])
+    verify_seldon_metrics(data, 1, [0.0202], PREDICT_METRIC_METHOD_TAG)
     resp = app.Predict(request, None)
     assert (
         "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
     ) == client_gets_metrics
     data = seldon_metrics.data[os.getpid()]
-    verify_seldon_metrics(data, 2, [0.0202, 0.0202])
+    verify_seldon_metrics(data, 2, [0.0202, 0.0202], PREDICT_METRIC_METHOD_TAG)
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
@@ -537,14 +616,14 @@ def test_proto_seldon_metrics_aggregate(cls, client_gets_metrics):
         "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
     ) == client_gets_metrics
     data = seldon_metrics.data[os.getpid()]
-    verify_seldon_metrics(data, 1, [0.0202])
+    verify_seldon_metrics(data, 1, [0.0202], AGGREGATE_METRIC_METHOD_TAG)
 
     resp = app.Aggregate(request, None)
     assert (
         "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
     ) == client_gets_metrics
     data = seldon_metrics.data[os.getpid()]
-    verify_seldon_metrics(data, 2, [0.0202, 0.0202])
+    verify_seldon_metrics(data, 2, [0.0202, 0.0202], AGGREGATE_METRIC_METHOD_TAG)
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
@@ -564,14 +643,14 @@ def test_proto_seldon_metrics_transform_input(cls, client_gets_metrics):
         "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
     ) == client_gets_metrics
     data = seldon_metrics.data[os.getpid()]
-    verify_seldon_metrics(data, 1, [0.0202])
+    verify_seldon_metrics(data, 1, [0.0202], INPUT_TRANSFORM_METRIC_METHOD_TAG)
 
     resp = app.TransformInput(request, None)
     assert (
         "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
     ) == client_gets_metrics
     data = seldon_metrics.data[os.getpid()]
-    verify_seldon_metrics(data, 2, [0.0202, 0.0202])
+    verify_seldon_metrics(data, 2, [0.0202, 0.0202], INPUT_TRANSFORM_METRIC_METHOD_TAG)
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
@@ -591,14 +670,14 @@ def test_proto_seldon_metrics_transform_output(cls, client_gets_metrics):
         "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
     ) == client_gets_metrics
     data = seldon_metrics.data[os.getpid()]
-    verify_seldon_metrics(data, 1, [0.0202])
+    verify_seldon_metrics(data, 1, [0.0202], OUTPUT_TRANSFORM_METRIC_METHOD_TAG)
 
     resp = app.TransformOutput(request, None)
     assert (
         "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
     ) == client_gets_metrics
     data = seldon_metrics.data[os.getpid()]
-    verify_seldon_metrics(data, 2, [0.0202, 0.0202])
+    verify_seldon_metrics(data, 2, [0.0202, 0.0202], OUTPUT_TRANSFORM_METRIC_METHOD_TAG)
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevelGrpc])
@@ -618,14 +697,14 @@ def test_proto_seldon_metrics_route(cls, client_gets_metrics):
     ) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
-    verify_seldon_metrics(data, 1, [0.0202])
+    verify_seldon_metrics(data, 1, [0.0202], ROUTER_METRIC_METHOD_TAG)
     resp = app.Route(request, None)
     assert (
         "metrics" in json.loads(json_format.MessageToJson(resp))["meta"]
     ) == client_gets_metrics
 
     data = seldon_metrics.data[os.getpid()]
-    verify_seldon_metrics(data, 2, [0.0202, 0.0202])
+    verify_seldon_metrics(data, 2, [0.0202, 0.0202], ROUTER_METRIC_METHOD_TAG)
 
 
 @pytest.mark.parametrize("cls", [UserObject, UserObjectLowLevel])

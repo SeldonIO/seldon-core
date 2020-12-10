@@ -6,7 +6,7 @@ Seldon Core comes installed with Kubeflow. The [Seldon Core documentation site](
 
 If you have a saved model in a PersistentVolume (PV), Google Cloud Storage bucket or Amazon S3 Storage you can use one of the [prepackaged model servers provided by Seldon Core](https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html).
 
-Seldon Core also provides [language specific model wrappers](https://docs.seldon.io/projects/seldon-core/en/latest/wrappers/README.html) to wrap your inference code for it to run in Seldon Core.
+Seldon Core also provides [language specific model wrappers](../wrappers/language_wrappers.html) to wrap your inference code for it to run in Seldon Core.
 
 ## Kubeflow specifics
 
@@ -17,13 +17,13 @@ You need to ensure the namespace where your models will be served has:
 
 The following example applies the label `my-namespace` to the namespace for serving:
 
-```
+```console
 kubectl label namespace my-namespace serving.kubeflow.org/inferenceservice=enabled
 ```
 
 Create a gateway called `kubeflow-gateway` in namespace `my-namespace`:
 
-```
+```yaml
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
@@ -42,4 +42,3 @@ spec:
 ```
 
 Save the above resource and apply it with `kubectl`.
-

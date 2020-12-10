@@ -1,12 +1,11 @@
 FROM registry.access.redhat.com/ubi8/python-36
 LABEL name="Seldon Request Logger" \
       vendor="Seldon Technologies" \
-      version="1.2.2-dev" \
+      version="1.6.0-dev" \
       release="1" \
       summary="The payload logger for Seldon Core" \
       description="The Seldon Payload Logger allows request and response payloads from a Seldon Core inference graph to be processed and sent to an ELK endpoint"
 
-COPY app app
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 RUN pip install gunicorn
@@ -18,6 +17,8 @@ RUN mkdir ./licenses && pip-licenses --from=mixed --format=csv --output-file=./l
 USER root
 RUN mv ./licenses /licenses
 USER default
+
+COPY app app
 
 EXPOSE 8080
 ENTRYPOINT ["python"]

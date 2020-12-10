@@ -111,11 +111,11 @@ To complete containerisation process you need two more components:
 
 Once these are in place you can use a simple s2i command
 ```bash
-s2i build . seldonio/seldon-core-s2i-python3:1.1.0 model:0.1
+s2i build . seldonio/seldon-core-s2i-python3:1.6.0-dev model:0.1
 ```
 to create ready to use Docker image.
 
-Read more about Python `Language Wrapper` on its dedicated documentation [page](../python/index.html).
+Read more about Python [Language Wrapper on its dedicated documentation page](../python/index.html).
 
 
 ## Seldon Deployment CRD
@@ -135,7 +135,7 @@ You can easily define what models do you want in your deployment and how they ar
 You can think about the CRD as an abstraction around the actual deployment and services that are created in the cluster.
 Once the manifest is applied to the cluster, Seldon Core `Operator` creates all Kubernetes objects required to serve the inference requests.
 
-Read more about Seldon Deployment CRD on its dedicated documentation [page](../reference/seldon-deployment.html).
+Read more about [Seldon Deployment CRD on its dedicated documentation page](../reference/seldon-deployment.html).
 
 
 ## Seldon Core Operator
@@ -168,7 +168,7 @@ It is because of the presence of `Service Orchestrator` that complex graph compo
 
 to just name a few.
 
-Read more about `Service Orchestrator` on its dedicated documentation [page](../graph/svcorch.html).
+Read more about [Service Orchestrator on its dedicated documentation page](../graph/svcorch.html).
 
 
 ## Metadata Provenance
@@ -181,7 +181,7 @@ and know what inputs / outputs you can expect from your inference graph.
 
 ![](../images/metadata.svg)
 
-Read more about metadata provenance on its dedicated documentation [page](../reference/apis/metadata.html).
+Read more about [metadata provenance on its dedicated documentation page](../reference/apis/metadata.html).
 
 
 ## Metrics with Prometheus
@@ -210,7 +210,7 @@ class Model:
         ]
 ```
 
-Read more about metrics on its dedicated documentation [page](../analytics/analytics.html).
+Read more about [metrics on its dedicated documentation page](../analytics/analytics.html).
 
 
 ## Distributed Tracing with Jaeger
@@ -219,7 +219,7 @@ You can use Open Tracing to trace your API calls to Seldon Core. By default we s
 
 ![](../images/tracing.svg)
 
-Read more about tracing on its dedicated documentation [page](../graph/distributed-tracing.html).
+Read more about [tracing on its dedicated documentation page](../graph/distributed-tracing.html).
 
 
 ## So.... Why just not wrap my model with Flask?

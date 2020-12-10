@@ -76,18 +76,27 @@ class TestNotebooks(object):
         create_and_run_script("../../examples/ambassador/custom", "ambassador_custom")
 
     #
-    # Istio Examples
+    # KEDA Examples
     #
 
-    def test_istio_canary(self):
-        create_and_run_script("../../examples/istio/canary_update", "canary")
+    def test_keda_prom_auto_scale(self):
+        try:
+            create_and_run_script("../../examples/keda", "keda_prom_auto_scale")
+        except CalledProcessError as e:
+            run(
+                f"helm delete seldon-core-analytics --namespace seldon-system",
+                shell=True,
+                check=False,
+            )
+            raise e
 
     #
     # Misc
     #
 
-    def test_tracing(self):
-        create_and_run_script("../../examples/models/tracing", "tracing")
+    # Commenting out as seems to be flaky and blocks forever sometimes
+    # def test_tracing(self):
+    #    create_and_run_script("../../examples/models/tracing", "tracing")
 
     def test_metrics(self):
         try:
@@ -168,6 +177,9 @@ class TestNotebooks(object):
     #        "openvino_imagenet_ensemble",
     #    )
 
+    def test_custom_metrics_server(self):
+        create_and_run_script("../../examples/feedback/metrics-server", "README")
+
     #
     # Upgrade
     #
@@ -178,3 +190,8 @@ class TestNotebooks(object):
         except:
             run("make install_seldon", shell=True, check=False)
             raise
+
+    def test_disruption_budgets(self):
+        create_and_run_script(
+            "../../examples/models/disruption_budgets", "pdbs_example"
+        )

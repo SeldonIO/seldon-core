@@ -3,7 +3,9 @@ import pytest
 import logging
 import seldon_core
 
-from .helpers import MicroserviceWrapper
+from seldon_core.wrapper import get_rest_microservice
+from seldon_core.metrics import SeldonMetrics
+from .helpers import UserObject, MicroserviceWrapper
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -33,12 +35,16 @@ def microservice(request):
     app_name = opts.get("app_name", "model-template-app")
     app_location = opts.get("app_location", os.path.join(RESOURCES_PATH, app_name))
     envs = opts.get("envs", {})
-    grpc = opts.get("grpc", False)
     tracing = opts.get("tracing", False)
 
-    wrapper = MicroserviceWrapper(
-        app_location=app_location, envs=envs, grpc=grpc, tracing=tracing
-    )
+    wrapper = MicroserviceWrapper(app_location=app_location, envs=envs, tracing=tracing)
 
     with wrapper:
         yield wrapper
+
+
+@pytest.fixture
+def app():
+    user_object = UserObject()
+    seldon_metrics = SeldonMetrics()
+    return get_rest_microservice(user_object, seldon_metrics)

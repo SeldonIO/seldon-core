@@ -38,7 +38,6 @@ func NewServerMetrics(spec *v1.PredictorSpec, deploymentName string) *ServerMetr
 			}
 
 		}
-
 	}
 	return &ServerMetrics{
 		ServerHandledHistogram: histogram,

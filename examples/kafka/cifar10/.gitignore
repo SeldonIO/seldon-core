@@ -1,0 +1,5 @@
+cifar10_tensorflow.json
+cifar10_tensorflow.proto
+topics.yaml
+cifar10_grpc.yaml
+cifar10_rest.yaml

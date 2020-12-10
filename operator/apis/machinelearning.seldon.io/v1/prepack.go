@@ -10,19 +10,16 @@ import (
 )
 
 const (
-	EnvSklearnServerImageRestRelated = "RELATED_IMAGE_SKLEARNSERVER_REST"
-	EnvSklearnserverImageGrpcRelated = "RELATED_IMAGE_SKLEARNSERVER_GRPC"
-	EnvXgboostserverImageRestRelated = "RELATED_IMAGE_XGBOOSTSERVER_REST"
-	EnvXgboostserverImageGrpcRelated = "RELATED_IMAGE_XGBOOSTSERVER_GRPC"
-	EnvMlflowserverImageRestRelated  = "RELATED_IMAGE_MLFLOWSERVER_REST"
-	EnvMlflowserverImageGrpcRelated  = "RELATED_IMAGE_MLFLOWSERVER_GRPC"
-	EnvTensorflowImageRelated        = "RELATED_IMAGE_TENSORFLOW"
-	EnvTfproxyImageRestRelated       = "RELATED_IMAGE_TFPROXY_REST"
-	EnvTfproxyImageGrpcRelated       = "RELATED_IMAGE_TFPROXY_GRPC"
-	PrepackTensorflowName            = "TENSORFLOW_SERVER"
-	PrepackSklearnName               = "SKLEARN_SERVER"
-	PrepackXgboostName               = "XGBOOST_SERVER"
-	PrepackMlflowName                = "MLFLOW_SERVER"
+	EnvSklearnServerImageRelated = "RELATED_IMAGE_SKLEARNSERVER"
+	EnvXgboostserverImageRelated = "RELATED_IMAGE_XGBOOSTSERVER"
+	EnvMlflowserverImageRelated  = "RELATED_IMAGE_MLFLOWSERVER"
+	EnvTensorflowImageRelated    = "RELATED_IMAGE_TENSORFLOW"
+	EnvTfproxyImageRelated       = "RELATED_IMAGE_TFPROXY"
+	PrepackTensorflowName        = "TENSORFLOW_SERVER"
+	PrepackSklearnName           = "SKLEARN_SERVER"
+	PrepackXgboostName           = "XGBOOST_SERVER"
+	PrepackMlflowName            = "MLFLOW_SERVER"
+	PrepackTritonName            = "TRITON_SERVER"
 )
 
 const PredictorServerConfigMapKeyName = "predictor_servers"
@@ -33,66 +30,87 @@ type PredictorImageConfig struct {
 }
 
 type PredictorServerConfig struct {
-	Tensorflow      bool                 `json:"tensorflow,omitempty"`
-	TensorflowImage string               `json:"tfImage,omitempty"`
-	RestConfig      PredictorImageConfig `json:"rest,omitempty"`
-	GrpcConfig      PredictorImageConfig `json:"grpc,omitempty"`
+	Protocols map[Protocol]PredictorImageConfig `json:"protocols"`
+}
+
+func (p *PredictorServerConfig) PrepackImageName(protocol Protocol, pu *PredictiveUnit) string {
+	if string(protocol) == "" {
+		protocol = ProtocolSeldon
+	}
+	imageConfig := p.PrepackImageConfig(protocol)
+
+	if imageConfig == nil {
+		return ""
+	}
+
+	if imageConfig.DefaultImageVersion != "" {
+		return fmt.Sprintf("%s:%s", imageConfig.ContainerImage, imageConfig.DefaultImageVersion)
+	}
+
+	return imageConfig.ContainerImage
+}
+
+func (p *PredictorServerConfig) PrepackImageConfig(protocol Protocol) *PredictorImageConfig {
+	if im, ok := p.Protocols[protocol]; ok {
+		return &im //do something here
+	} else {
+		return nil
+	}
+}
+
+type PredictorProtocolsConfig struct {
+	Seldon     *PredictorImageConfig `json:"seldon,omitempty"`
+	KFServing  *PredictorImageConfig `json:"kfserving,omitempty"`
+	Tensorflow *PredictorImageConfig `json:"tensorflow,omitempty"`
 }
 
 var (
-	ControllerConfigMapName          = "seldon-config"
-	envSklearnServerRestImageRelated = os.Getenv(EnvSklearnServerImageRestRelated)
-	envSklearnServerGrpcImageRelated = os.Getenv(EnvSklearnserverImageGrpcRelated)
-	envXgboostServerRestImageRelated = os.Getenv(EnvXgboostserverImageRestRelated)
-	envXgboostServerGrpcImageRelated = os.Getenv(EnvXgboostserverImageGrpcRelated)
-	envMlflowServerRestImageRelated  = os.Getenv(EnvMlflowserverImageRestRelated)
-	envMlflowServerGrpcImageRelated  = os.Getenv(EnvMlflowserverImageGrpcRelated)
-	envTfserverServerImageRelated    = os.Getenv(EnvTensorflowImageRelated)
-	envTfproxyServerRestImageRelated = os.Getenv(EnvTfproxyImageRestRelated)
-	envTfproxyServerGrpcImageRelated = os.Getenv(EnvTfproxyImageGrpcRelated)
-	relatedImageConfig               = map[string]PredictorServerConfig{}
+	ControllerConfigMapName       = "seldon-config"
+	envSklearnServerImageRelated  = os.Getenv(EnvSklearnServerImageRelated)
+	envXgboostServerImageRelated  = os.Getenv(EnvXgboostserverImageRelated)
+	envMlflowServerImageRelated   = os.Getenv(EnvMlflowserverImageRelated)
+	envTfserverServerImageRelated = os.Getenv(EnvTensorflowImageRelated)
+	envTfproxyServerImageRelated  = os.Getenv(EnvTfproxyImageRelated)
+	relatedImageConfig            = map[string]PredictorServerConfig{}
 )
 
 func init() {
-	if envSklearnServerRestImageRelated != "" {
+	if envSklearnServerImageRelated != "" {
 		relatedImageConfig[PrepackSklearnName] = PredictorServerConfig{
-			RestConfig: PredictorImageConfig{
-				ContainerImage: envSklearnServerRestImageRelated,
-			},
-			GrpcConfig: PredictorImageConfig{
-				ContainerImage: envSklearnServerGrpcImageRelated,
+			Protocols: map[Protocol]PredictorImageConfig{
+				ProtocolSeldon: {
+					ContainerImage: envSklearnServerImageRelated,
+				},
 			},
 		}
 	}
-	if envXgboostServerRestImageRelated != "" {
+	if envXgboostServerImageRelated != "" {
 		relatedImageConfig[PrepackXgboostName] = PredictorServerConfig{
-			RestConfig: PredictorImageConfig{
-				ContainerImage: envXgboostServerRestImageRelated,
-			},
-			GrpcConfig: PredictorImageConfig{
-				ContainerImage: envXgboostServerGrpcImageRelated,
+			Protocols: map[Protocol]PredictorImageConfig{
+				ProtocolSeldon: {
+					ContainerImage: envXgboostServerImageRelated,
+				},
 			},
 		}
 	}
-	if envMlflowServerRestImageRelated != "" {
+	if envMlflowServerImageRelated != "" {
 		relatedImageConfig[PrepackMlflowName] = PredictorServerConfig{
-			RestConfig: PredictorImageConfig{
-				ContainerImage: envMlflowServerRestImageRelated,
-			},
-			GrpcConfig: PredictorImageConfig{
-				ContainerImage: envMlflowServerGrpcImageRelated,
+			Protocols: map[Protocol]PredictorImageConfig{
+				ProtocolSeldon: {
+					ContainerImage: envMlflowServerImageRelated,
+				},
 			},
 		}
 	}
 	if envTfserverServerImageRelated != "" {
 		relatedImageConfig[PrepackTensorflowName] = PredictorServerConfig{
-			Tensorflow:      true,
-			TensorflowImage: envTfserverServerImageRelated,
-			RestConfig: PredictorImageConfig{
-				ContainerImage: envTfproxyServerRestImageRelated,
-			},
-			GrpcConfig: PredictorImageConfig{
-				ContainerImage: envTfproxyServerGrpcImageRelated,
+			Protocols: map[Protocol]PredictorImageConfig{
+				ProtocolTensorflow: {
+					ContainerImage: envTfserverServerImageRelated,
+				},
+				ProtocolSeldon: {
+					ContainerImage: envTfproxyServerImageRelated,
+				},
 			},
 		}
 	}
@@ -149,21 +167,4 @@ func getPrepackServerConfigWithRelated(serverName string, relatedImages map[stri
 
 func GetPrepackServerConfig(serverName string) *PredictorServerConfig {
 	return getPrepackServerConfigWithRelated(serverName, relatedImageConfig)
-}
-
-func SetImageNameForPrepackContainer(pu *PredictiveUnit, c *corev1.Container, serverConfig *PredictorServerConfig) {
-	// Add image: ignore version if empty
-	if c.Image == "" {
-		if pu.Endpoint.Type == REST {
-			c.Image = serverConfig.RestConfig.ContainerImage
-			if serverConfig.RestConfig.DefaultImageVersion != "" {
-				c.Image = c.Image + ":" + serverConfig.RestConfig.DefaultImageVersion
-			}
-		} else {
-			c.Image = serverConfig.GrpcConfig.ContainerImage
-			if serverConfig.GrpcConfig.DefaultImageVersion != "" {
-				c.Image = c.Image + ":" + serverConfig.GrpcConfig.DefaultImageVersion
-			}
-		}
-	}
 }

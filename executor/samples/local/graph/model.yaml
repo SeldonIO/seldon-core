@@ -1,0 +1,40 @@
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  labels:
+    app: seldon
+  name: seldon-model
+spec:
+  annotations:
+    seldon.io/executor: "true"
+  name: test-deployment
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: dummy1
+          name: transformer
+        - image: dummy2
+          name: classifier
+    graph:
+      endpoint:
+        type: REST
+        service_host: 0.0.0.0
+        service_port: 9000
+        http_port: 9000
+        grpc_port: 9500
+      name: transformer
+      type: TRANSFORMER
+      children:
+      - endpoint:
+          type: REST
+          service_host: 0.0.0.0
+          service_port: 9001
+          name: classifier
+          http_port: 9001
+          grpc_port: 9501          
+        type: MODEL
+    labels:
+      version: v1
+    name: example
+    replicas: 1

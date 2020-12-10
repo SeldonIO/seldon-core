@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	logrtesting "github.com/go-logr/logr/testing"
+	kedav1alpha1 "github.com/kedacore/keda/api/v1alpha1"
 	. "github.com/onsi/gomega"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
@@ -33,6 +34,7 @@ func createScheme() *runtime.Scheme {
 	_ = machinelearningv1alpha3.AddToScheme(scheme)
 	_ = v1beta1.AddToScheme(scheme)
 	_ = istio.AddToScheme(scheme)
+	_ = kedav1alpha1.AddToScheme(scheme)
 	_ = serializer.NewCodecFactory(scheme).UniversalDeserializer().Decode
 	return scheme
 }

@@ -13,7 +13,7 @@ This work is ongoing and we welcome feedback
 
 These benchmark tests are to evaluate the extra latency added by including the service orchestrator.
 
- * [Notebook](../examples/bench_svcOrch.html)
+ * [Service orchestrator benchmark](../examples/bench_svcOrch.html)
 
 ### Results
 
@@ -33,7 +33,7 @@ Further work:
 
 Test the max throughput and HPA usage.
 
- * [Notebook](../examples/bench_tensorflow.html)
+ * [Tensorflow benchmark](../examples/bench_tensorflow.html)
 
 ### Results
 
@@ -51,3 +51,10 @@ mean: 259.990239 ms
 Throughput: 23.997572337989126/s
 Errors: False
 ```
+
+## Flexible Benchmarking with Argo Workflows
+
+We have also an example that shows how to leverage the batch processing workflow that we showcase in the examples, but to perform benchmarking with Seldon Core models.
+
+ * [Seldon deployment benchmark](../examples/vegeta_bench_argo_workflows.html)
+

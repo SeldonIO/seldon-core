@@ -1,4 +1,0 @@
-nvidia:
-  model_store: gs://seldon-inference-server-model-store
-  port: 8000
-  

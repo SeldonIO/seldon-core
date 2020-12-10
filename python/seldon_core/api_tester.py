@@ -21,34 +21,19 @@ def get_seldon_client(args) -> SeldonClient:
 
     """
     endpoint = args.host + ":" + str(args.port)
-    if args.oauth_key:
-        if args.grpc:
-            seldon_grpc_endpoint = endpoint
-            seldon_rest_endpoint = args.host + ":" + str(args.oauth_port)
-        else:
-            seldon_grpc_endpoint = None
-            seldon_rest_endpoint = endpoint
-        sc = SeldonClient(
-            gateway="seldon",
-            seldon_rest_endpoint=seldon_rest_endpoint,
-            seldon_grpc_endpoint=seldon_grpc_endpoint,
-            oauth_key=args.oauth_key,
-            oauth_secret=args.oauth_secret,
-        )
+    gateway_endpoint = endpoint
+    if args.grpc:
+        transport = "grpc"
     else:
-        gateway_endpoint = endpoint
-        if args.grpc:
-            transport = "grpc"
-        else:
-            transport = "rest"
-        sc = SeldonClient(
-            gateway="ambassador",
-            gateway_endpoint=gateway_endpoint,
-            transport=transport,
-            deployment_name=args.deployment,
-            namespace=args.namespace,
-        )
-    return sc
+        transport = "rest"
+
+    return SeldonClient(
+        gateway="ambassador",
+        gateway_endpoint=gateway_endpoint,
+        transport=transport,
+        deployment_name=args.deployment,
+        namespace=args.namespace,
+    )
 
 
 def run_send_feedback(args):
@@ -141,9 +126,6 @@ def main():
         "--log-level", type=str, choices=["DEBUG", "INFO", "ERROR"], default="ERROR"
     )
     parser.add_argument("--namespace", type=str)
-    parser.add_argument("--oauth-port", type=int)
-    parser.add_argument("--oauth-key")
-    parser.add_argument("--oauth-secret")
 
     args = parser.parse_args()
     LOG_FORMAT = (

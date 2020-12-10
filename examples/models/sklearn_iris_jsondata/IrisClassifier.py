@@ -16,3 +16,4 @@ class IrisClassifier(object):
         eprint(X)
         eprint("--------------------")
         ndarray = X["some_data"]["some_ndarray"]
+        return self.model.predict_proba(ndarray)

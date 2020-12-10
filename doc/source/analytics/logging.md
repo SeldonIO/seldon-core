@@ -2,7 +2,7 @@
 
 Logging of request and response payloads from your Seldon Deployment can be accomplished by adding a logging section to any part of the Seldon deployment graph. An example is shown below:
 
-```
+```yaml
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
@@ -31,7 +31,7 @@ spec:
 
 The logging for the top level requets response is provided by:
 
-```
+```yaml
       logger:
         url: http://mylogging-endpoint
         mode: all

@@ -17,16 +17,19 @@ limitations under the License.
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
+
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
 	"github.com/seldonio/seldon-core/operator/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
-	"strconv"
-	"strings"
 )
 
 const (
@@ -39,10 +42,11 @@ var (
 
 type PrePackedInitialiser struct {
 	clientset kubernetes.Interface
+	ctx       context.Context
 }
 
-func NewPrePackedInitializer(clientset kubernetes.Interface) *PrePackedInitialiser {
-	return &PrePackedInitialiser{clientset: clientset}
+func NewPrePackedInitializer(ctx context.Context, clientset kubernetes.Interface) *PrePackedInitialiser {
+	return &PrePackedInitialiser{clientset: clientset, ctx: ctx}
 }
 
 func extractEnvSecretRefName(pu *machinelearningv1.PredictiveUnit) string {
@@ -55,23 +59,17 @@ func extractEnvSecretRefName(pu *machinelearningv1.PredictiveUnit) string {
 	return envSecretRefName
 }
 
-func createTensorflowServingContainer(pu *machinelearningv1.PredictiveUnit, tensorflowProtocol bool) *v1.Container {
+func createTensorflowServingContainer(mlDepSepc *machinelearningv1.SeldonDeploymentSpec, pu *machinelearningv1.PredictiveUnit, tensorflowProtocol bool) *v1.Container {
 	ServerConfig := machinelearningv1.GetPrepackServerConfig(string(*pu.Implementation))
 
-	tfImage := "tensorflow/serving:latest"
-	if ServerConfig.TensorflowImage != "" {
-		tfImage = ServerConfig.TensorflowImage
-	}
+	tfImage := ServerConfig.PrepackImageName(machinelearningv1.ProtocolTensorflow, pu)
 
 	grpcPort := int32(constants.TfServingGrpcPort)
 	restPort := int32(constants.TfServingRestPort)
 	name := constants.TFServingContainerName
 	if tensorflowProtocol {
-		if pu.Endpoint.Type == machinelearningv1.GRPC {
-			grpcPort = pu.Endpoint.ServicePort
-		} else {
-			restPort = pu.Endpoint.ServicePort
-		}
+		grpcPort = pu.Endpoint.GrpcPort
+		restPort = pu.Endpoint.HttpPort
 		name = pu.Name
 	}
 
@@ -79,7 +77,6 @@ func createTensorflowServingContainer(pu *machinelearningv1.PredictiveUnit, tens
 		Name:  name,
 		Image: tfImage,
 		Args: []string{
-			"/usr/bin/tensorflow_model_server",
 			constants.TfServingArgPort + strconv.Itoa(int(grpcPort)),
 			constants.TfServingArgRestPort + strconv.Itoa(int(restPort)),
 			"--model_name=" + pu.Name,
@@ -98,28 +95,28 @@ func createTensorflowServingContainer(pu *machinelearningv1.PredictiveUnit, tens
 	}
 }
 
-func (pi *PrePackedInitialiser) addTFServerContainer(mlDep *machinelearningv1.SeldonDeployment, pu *machinelearningv1.PredictiveUnit, deploy *appsv1.Deployment, serverConfig *machinelearningv1.PredictorServerConfig) error {
+func (pi *PrePackedInitialiser) addTFServerContainer(mlDepSpec *machinelearningv1.SeldonDeploymentSpec, pu *machinelearningv1.PredictiveUnit, deploy *appsv1.Deployment, serverConfig *machinelearningv1.PredictorServerConfig) error {
 	ty := machinelearningv1.MODEL
 	pu.Type = &ty
 
 	c := utils.GetContainerForDeployment(deploy, pu.Name)
 
 	var tfServingContainer *v1.Container
-	if mlDep.Spec.Protocol == machinelearningv1.ProtocolTensorflow {
+	if mlDepSpec.Protocol == machinelearningv1.ProtocolTensorflow {
 		tfServingContainer = c
 	} else {
-		machinelearningv1.SetImageNameForPrepackContainer(pu, c, serverConfig)
+		c.Image = serverConfig.PrepackImageName(mlDepSpec.Protocol, pu)
 		SetUriParamsForTFServingProxyContainer(pu, c)
 		tfServingContainer = utils.GetContainerForDeployment(deploy, constants.TFServingContainerName)
 	}
 
 	existing := tfServingContainer != nil
 	if !existing {
-		tfServingContainer = createTensorflowServingContainer(pu, mlDep.Spec.Protocol == machinelearningv1.ProtocolTensorflow)
+		tfServingContainer = createTensorflowServingContainer(mlDepSpec, pu, mlDepSpec.Protocol == machinelearningv1.ProtocolTensorflow)
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, *tfServingContainer)
 	} else {
 		// Update any missing fields
-		protoType := createTensorflowServingContainer(pu, mlDep.Spec.Protocol == machinelearningv1.ProtocolTensorflow)
+		protoType := createTensorflowServingContainer(mlDepSpec, pu, mlDepSpec.Protocol == machinelearningv1.ProtocolTensorflow)
 		if tfServingContainer.Image == "" {
 			tfServingContainer.Image = protoType.Image
 		}
@@ -133,7 +130,7 @@ func (pi *PrePackedInitialiser) addTFServerContainer(mlDep *machinelearningv1.Se
 
 	envSecretRefName := extractEnvSecretRefName(pu)
 
-	mi := NewModelInitializer(pi.clientset)
+	mi := NewModelInitializer(pi.ctx, pi.clientset)
 	_, err := mi.InjectModelInitializer(deploy, tfServingContainer.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName)
 	if err != nil {
 		return err
@@ -141,7 +138,134 @@ func (pi *PrePackedInitialiser) addTFServerContainer(mlDep *machinelearningv1.Se
 	return nil
 }
 
-func (pi *PrePackedInitialiser) addModelDefaultServers(pu *machinelearningv1.PredictiveUnit, deploy *appsv1.Deployment, serverConfig *machinelearningv1.PredictorServerConfig) error {
+func (pi *PrePackedInitialiser) addTritonServer(mlDepSpec *machinelearningv1.SeldonDeploymentSpec, pu *machinelearningv1.PredictiveUnit, deploy *appsv1.Deployment, serverConfig *machinelearningv1.PredictorServerConfig) error {
+
+	c := utils.GetContainerForDeployment(deploy, pu.Name)
+	existing := c != nil
+
+	tritonUser := int64(1000)
+
+	cServer := &v1.Container{
+		Name: pu.Name,
+		Args: []string{
+			"/opt/tritonserver/bin/tritonserver",
+			"--grpc-port=" + strconv.Itoa(int(pu.Endpoint.GrpcPort)),
+			"--http-port=" + strconv.Itoa(int(pu.Endpoint.HttpPort)),
+			"--model-repository=" + DefaultModelLocalMountPath,
+		},
+		Ports: []v1.ContainerPort{
+			{
+				Name:          "grpc",
+				ContainerPort: pu.Endpoint.GrpcPort,
+				Protocol:      v1.ProtocolTCP,
+			},
+			{
+				Name:          "http",
+				ContainerPort: pu.Endpoint.HttpPort,
+				Protocol:      v1.ProtocolTCP,
+			},
+		},
+		ReadinessProbe: &v1.Probe{
+			Handler: v1.Handler{HTTPGet: &v1.HTTPGetAction{
+				Path: constants.KFServingProbeReadyPath,
+				Port: intstr.FromString("http"),
+			}},
+			InitialDelaySeconds: 20,
+			TimeoutSeconds:      1,
+			PeriodSeconds:       10,
+			SuccessThreshold:    1,
+			FailureThreshold:    3,
+		},
+		LivenessProbe: &v1.Probe{
+			Handler: v1.Handler{HTTPGet: &v1.HTTPGetAction{
+				Path: constants.KFServingProbeLivePath,
+				Port: intstr.FromString("http"),
+			}},
+			InitialDelaySeconds: 60,
+			TimeoutSeconds:      1,
+			PeriodSeconds:       10,
+			SuccessThreshold:    1,
+			FailureThreshold:    3,
+		},
+		SecurityContext: &v1.SecurityContext{
+			RunAsUser: &tritonUser,
+		},
+		VolumeMounts: []v1.VolumeMount{
+			{
+				Name:      machinelearningv1.PODINFO_VOLUME_NAME,
+				MountPath: machinelearningv1.PODINFO_VOLUME_PATH,
+			},
+		},
+	}
+	cServer.Image = serverConfig.PrepackImageName(mlDepSpec.Protocol, pu)
+
+	if existing {
+		// Overwrite core items if not existing or required
+		if c.Image == "" {
+			c.Image = cServer.Image
+		}
+		if c.Args == nil {
+			c.Args = cServer.Args
+		}
+		if c.ReadinessProbe == nil {
+			c.ReadinessProbe = cServer.ReadinessProbe
+		}
+		if c.LivenessProbe == nil {
+			c.LivenessProbe = cServer.LivenessProbe
+		}
+		if c.SecurityContext == nil {
+			c.SecurityContext = cServer.SecurityContext
+		}
+		// Ports always overwritten
+		// Need to look as we seem to add metrics ports automatically which mean this needs to be done
+		c.Ports = cServer.Ports
+	} else {
+		if len(deploy.Spec.Template.Spec.Containers) > 0 {
+			deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, *cServer)
+		} else {
+			deploy.Spec.Template.Spec.Containers = []v1.Container{*cServer}
+		}
+	}
+
+	envSecretRefName := extractEnvSecretRefName(pu)
+	mi := NewModelInitializer(pi.ctx, pi.clientset)
+	_, err := mi.InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (pi *PrePackedInitialiser) addMLServerDefault(pu *machinelearningv1.PredictiveUnit, deploy *appsv1.Deployment) error {
+	c, err := getMLServerContainer(pu)
+	if err != nil {
+		return err
+	}
+
+	existingContainer := utils.GetContainerForDeployment(deploy, pu.Name)
+	if existingContainer != nil {
+		c = mergeMLServerContainer(existingContainer, c)
+	} else {
+		templateSpec := deploy.Spec.Template.Spec
+		if len(templateSpec.Containers) == 0 {
+			templateSpec.Containers = []v1.Container{}
+		}
+
+		templateSpec.Containers = append(templateSpec.Containers, *c)
+	}
+
+	envSecretRefName := extractEnvSecretRefName(pu)
+	mi := NewModelInitializer(pi.ctx, pi.clientset)
+
+	_, err = mi.InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (pi *PrePackedInitialiser) addModelDefaultServers(mlDepSepc *machinelearningv1.SeldonDeploymentSpec, pu *machinelearningv1.PredictiveUnit, deploy *appsv1.Deployment, serverConfig *machinelearningv1.PredictorServerConfig) error {
 	ty := machinelearningv1.MODEL
 	pu.Type = &ty
 
@@ -162,7 +286,9 @@ func (pi *PrePackedInitialiser) addModelDefaultServers(pu *machinelearningv1.Pre
 		}
 	}
 
-	machinelearningv1.SetImageNameForPrepackContainer(pu, c, serverConfig)
+	if c.Image == "" {
+		c.Image = serverConfig.PrepackImageName(mlDepSepc.Protocol, pu)
+	}
 
 	// Add parameters envvar - point at mount path because initContainer will download
 	params := pu.Parameters
@@ -197,7 +323,7 @@ func (pi *PrePackedInitialiser) addModelDefaultServers(pu *machinelearningv1.Pre
 
 	envSecretRefName := extractEnvSecretRefName(pu)
 
-	mi := NewModelInitializer(pi.clientset)
+	mi := NewModelInitializer(pi.ctx, pi.clientset)
 	_, err = mi.InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName)
 	if err != nil {
 		return err
@@ -213,40 +339,32 @@ func SetUriParamsForTFServingProxyContainer(pu *machinelearningv1.PredictiveUnit
 	if len(pu.Parameters) > 0 {
 		for _, paramElement := range pu.Parameters {
 			if paramElement.Name == "rest_endpoint" || paramElement.Name == "grpc_endpoint" {
-
 				hasUriParams = true
 			}
 		}
 	}
 	if !hasUriParams {
-		var uriParam machinelearningv1.Parameter
-
-		if pu.Endpoint.Type == machinelearningv1.REST {
-			uriParam = machinelearningv1.Parameter{
-				Name:  "rest_endpoint",
-				Type:  "STRING",
-				Value: "http://0.0.0.0:2001",
-			}
-		} else {
-			uriParam = machinelearningv1.Parameter{
-				Name:  "grpc_endpoint",
-				Type:  "STRING",
-				Value: "0.0.0.0:2000",
-			}
-
-		}
-
-		parameters = append(pu.Parameters, uriParam)
-
-		modelNameParam := machinelearningv1.Parameter{
-			Name:  "model_name",
+		uriParam := machinelearningv1.Parameter{
+			Name:  "rest_endpoint",
 			Type:  "STRING",
-			Value: pu.Name,
+			Value: "http://0.0.0.0:2001",
 		}
-
-		parameters = append(parameters, modelNameParam)
-
+		parameters = append(parameters, uriParam)
+		uriParam = machinelearningv1.Parameter{
+			Name:  "grpc_endpoint",
+			Type:  "STRING",
+			Value: "0.0.0.0:2000",
+		}
+		parameters = append(parameters, uriParam)
 	}
+
+	modelNameParam := machinelearningv1.Parameter{
+		Name:  "model_name",
+		Type:  "STRING",
+		Value: pu.Name,
+	}
+
+	parameters = append(parameters, modelNameParam)
 
 	if len(parameters) > 0 {
 		if !utils.HasEnvVar(c.Env, machinelearningv1.ENV_PREDICTIVE_UNIT_PARAMETERS) {
@@ -292,15 +410,30 @@ func (pi *PrePackedInitialiser) createStandaloneModelServers(mlDep *machinelearn
 
 		serverConfig := machinelearningv1.GetPrepackServerConfig(string(*pu.Implementation))
 		if serverConfig != nil {
-			if *pu.Implementation != machinelearningv1.PrepackTensorflowName {
-				if err := pi.addModelDefaultServers(pu, deploy, serverConfig); err != nil {
+			switch *pu.Implementation {
+			case machinelearningv1.PrepackTensorflowName:
+				if err := pi.addTFServerContainer(&mlDep.Spec, pu, deploy, serverConfig); err != nil {
 					return err
 				}
-			} else {
-				if err := pi.addTFServerContainer(mlDep, pu, deploy, serverConfig); err != nil {
+			case machinelearningv1.PrepackTritonName:
+				if err := pi.addTritonServer(&mlDep.Spec, pu, deploy, serverConfig); err != nil {
 					return err
+				}
+			default:
+				// If protocol is KFServing, try to add container with MLServer
+				if mlDep.Spec.Protocol == machinelearningv1.ProtocolKfserving {
+					err := pi.addMLServerDefault(pu, deploy)
+					if err != nil {
+						return err
+					}
+				} else {
+					if err := pi.addModelDefaultServers(&mlDep.Spec, pu, deploy, serverConfig); err != nil {
+						return err
+					}
 				}
 			}
+		} else {
+			return fmt.Errorf("Failed to get server config for %s", *pu.Implementation)
 		}
 
 		if !existing {

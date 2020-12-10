@@ -1,6 +1,0 @@
-apiVersion: v1
-description: Seldon MNIST Nvidia Inference Server Example
-name: nvidia-mnist
-sources:
-- https://github.com/SeldonIO/seldon-core
-version: 0.1

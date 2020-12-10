@@ -2,8 +2,19 @@
 Notebooks
 =========
 
+Seldon Core Setup
+-----------------
+
+.. toctree::
+   :titlesonly:
+
+   Install Seldon Core <seldon_core_setup>
+   Install MinIO <minio_setup>
+
+
+
 Prepackaged Inference Server Examples
------
+-------------------------------------
 
 .. toctree::
    :titlesonly:
@@ -15,44 +26,47 @@ Prepackaged Inference Server Examples
    Deploy Pre-packaged Model Server with Cluster's MinIO <minio-sklearn>
 
 Python Language Wrapper Examples
------
+--------------------------------
 
 .. toctree::
    :titlesonly:
 
    SKLearn Spacy NLP <sklearn_spacy_text_classifier_example>
    SKLearn Iris Classifier <iris>
-   SKLearn MNIST <sklearn_mnist>
    Sagemaker SKLearn Example <sagemaker_sklearn>   
    TFserving MNIST <tfserving_mnist>
+   Statsmodels Holt-Winter's time-series model <statsmodels>
+   Runtime Metrics & Tags <runtime_metrics_tags>
 
 Specialised Framework Examples
------
+------------------------------
 
 .. toctree::
    :titlesonly:
 
-   NVIDIA TensorRT MNIST <nvidia_mnist>
+   NVIDIA TensorRT MNIST <tensorrt>
    OpenVINO ImageNet <openvino>
    OpenVINO ImageNet Ensemble <openvino_ensemble>
-   ONNX ResNet with Intel nGraph<onnx_resnet>
 
 
 Incubating Projects Examples
------
+----------------------------
 
 .. toctree::
    :titlesonly:
 
    Kubeflow Seldon E2E Pipeline <kubeflow_seldon_e2e_pipeline>
    H2O Java MoJo <h2o_mojo>
-   Deploy your R models with the R <deep_mnist>
    Outlier Detection with Combiner <outlier_combiner>
    Stream Processing with KNative Eventing <knative_eventing_streaming>
+   Kafka CIFAR10 <cifar10_kafka>
+   Kafka SpaCy SKlearn NLP <kafka_spacy_sklearn>
+   CPP Wrapper Simple Single File <cpp_simple>
+   CPP Wrapper Advanced Custom Build System <cpp_advanced>
 
 
 Cloud-Specific Examples
------
+-----------------------
 
 .. toctree::
    :titlesonly:
@@ -63,16 +77,17 @@ Cloud-Specific Examples
    Alibaba Cloud Tensorflow Deep MNIST <alibaba_ack_deep_mnist>
 
 Advanced Machine Learning Insights
------
+----------------------------------
 
 .. toctree::
    :titlesonly:
 
+   Real time monitoring of statistical metrics <feedback_reward_custom_metrics>
    Tabular, Text and Image Model Explainers <explainer_examples>
    Outlier Detection on CIFAR10 <outlier_cifar10>
   
 Batch Processing with Seldon Core
------
+---------------------------------
 
 .. toctree::
    :titlesonly:
@@ -82,45 +97,44 @@ Batch Processing with Seldon Core
 
 
 MLOps: Scaling and Monitoring and Observability
------
+-----------------------------------------------
 
 .. toctree::
    :titlesonly:
 
-   Autoscaling Example <autoscaling_example>    
+   Autoscaling Example <autoscaling_example>
+   KEDA Autoscaling example <keda>
    Request Payload Logging with ELK <payload_logging>
    Custom Metrics with Grafana & Prometheus <metrics>
    Distributed Tracing with Jaeger <tracing>
    CI / CD with Jenkins Classic <jenkins_classic>
    CI / CD with Jenkins X <jenkins_x>
    Replica control <scale>
-   
 
 Production Configurations and Integrations
------
+------------------------------------------
 
 .. toctree::
    :titlesonly:
   
-   Custom Endpoints <custom_endpoints>
    Example Helm Deployments <helm_examples>
    Max gRPC Message Size <max_grpc_msg_size>
-   REST timeouts <rest_timeouts>
+   Configurable timeouts <timeouts>
    Deploy Multiple Seldon Core Operators <multiple_operators>
    Protocol Examples <protocol_examples>
    Custom Protobuf Data Example <customdata_example>
+   Disruption Budgets Example <pdbs_example>
 
 Complex Graph Examples
------
+----------------------
 
 .. toctree::
    :titlesonly:
   
-   Combiner Example <combiner>
    Chainer MNIST <chainer_mnist>
 
 Ingress
------
+-------
 
 .. toctree::
    :titlesonly:
@@ -129,11 +143,10 @@ Ingress
    Ambassador Shadow <ambassador_shadow>
    Ambassador Headers <ambassador_headers>
    Ambassador Custom Config <ambassador_custom>
-   Istio Canary <istio_canary>
    Istio Examples <istio_examples>   
 
 Infrastructure
------
+--------------
 
 .. toctree::
    :titlesonly:
@@ -142,11 +155,12 @@ Infrastructure
    
 
 Benchmarking and Load Tests
------
+---------------------------
 
 .. toctree::
    :titlesonly:
   
    Service Orchestrator <bench_svcOrch>
    Tensorflow <bench_tensorflow>   
-   
+   Argo Workflows Benchmarking <vegeta_bench_argo_workflows>   
+   Backwards Compatability Tests <backwards_compatibility>

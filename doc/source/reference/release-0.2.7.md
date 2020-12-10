@@ -7,89 +7,97 @@ We now provide the ability to autoscale your Seldon deployments using Kubernetes
 
 ```json
 {
-    "apiVersion": "machinelearning.seldon.io/v1alpha2",
-    "kind": "SeldonDeployment",
-    "metadata": {
-        "name": "seldon-model"
-    },
-    "spec": {
-        "name": "test-deployment",
-        "oauth_key": "oauth-key",
-        "oauth_secret": "oauth-secret",
-        "predictors": [
-            {
-                "componentSpecs": [{
-                    "spec": {
-                        "containers": [
-                            {
-                                "image": "seldonio/mock_classifier:1.0",
-                                "imagePullPolicy": "IfNotPresent",
-                                "name": "classifier",
-                                "resources": {
-                                    "requests": {
-                                        "cpu": "0.5"
-                                    }
-                                }
-                            }
-                        ],
-                        "terminationGracePeriodSeconds": 1
-                    },
-		    "hpaSpec":
-		    {
-			"minReplicas": 1,
-			"maxReplicas": 4,
-			"metrics": 
-			    [ {
-				"type": "Resource",
-				"resource": {
-				    "name": "cpu",
-				    "targetAverageUtilization": 10
-				}
-			    }]
-		    }
-                }],
-                "graph": {
-                    "children": [],
-                    "name": "classifier",
-                    "endpoint": {
-			"type" : "REST"
-		    },
-                    "type": "MODEL"
-                },
-                "name": "example",
-                "replicas": 1
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": {
+    "name": "seldon-model"
+  },
+  "spec": {
+    "name": "test-deployment",
+    "oauth_key": "oauth-key",
+    "oauth_secret": "oauth-secret",
+    "predictors": [
+      {
+        "componentSpecs": [
+          {
+            "spec": {
+              "containers": [
+                {
+                  "image": "seldonio/mock_classifier:1.0",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "classifier",
+                  "resources": {
+                    "requests": {
+                      "cpu": "0.5"
+                    }
+                  }
+                }
+              ],
+              "terminationGracePeriodSeconds": 1
+            },
+            "hpaSpec": {
+              "minReplicas": 1,
+              "maxReplicas": 4,
+              "metrics": [
+                {
+                  "type": "Resource",
+                  "resource": {
+                    "name": "cpu",
+                    "targetAverageUtilization": 10
+                  }
+                }
+              ]
             }
-        ]
-    }
+          }
+        ],
+        "graph": {
+          "children": [],
+          "name": "classifier",
+          "endpoint": {
+            "type": "REST"
+          },
+          "type": "MODEL"
+        },
+        "name": "example",
+        "replicas": 1
+      }
+    ]
+  }
 }
 ```
 
 In the above we can see, we added resource requests for the cpu:
 
-```
-"resources": {
+```json
+{
+  "resources": {
     "requests": {
-	"cpu": "0.5"
+      "cpu": "0.5"
     }
+  }
 }
 ```
 
 We added an HPA spec referring to the PodTemplateSpec:
 
-```
-"hpaSpecs":[
+```json
+{
+  "hpaSpecs": [
     {
-	"minReplicas": 1,
-	"maxReplicas": 4,
-	"metrics": 
-	[ {
-	    "type": "Resource",
-	    "resource": {
-		"name": "cpu",
-		"targetAverageUtilization": 10
-	    }
-	}]
-    }], 
+      "minReplicas": 1,
+      "maxReplicas": 4,
+      "metrics": [
+        {
+          "type": "Resource",
+          "resource": {
+            "name": "cpu",
+            "targetAverageUtilization": 10
+          }
+        }
+      ]
+    }
+  ]
+}
 ```
 
 For full documentation see [here](../graph/scaling.html)

@@ -5,6 +5,26 @@ import numpy as np
 from .numpy_encoder import NumpyEncoder
 from alibi_detect.utils.saving import load_detector, Data
 from adserver.base import AlibiDetectModel
+from seldon_core.user_model import SeldonResponse
+
+
+def _append_drift_metrcs(metrics, drift, name):
+    metric_found = drift.get(name)
+
+    # Assumes metric_found is always float/int or list/np.array when not none
+    if metric_found is not None:
+        if not isinstance(metric_found, (list, np.ndarray)):
+            metric_found = [metric_found]
+
+        for i, instance in enumerate(metric_found):
+            metrics.append(
+                {
+                    "key": f"seldon_metric_drift_{name}",
+                    "value": instance,
+                    "type": "GAUGE",
+                    "tags": {"index": str(i)},
+                }
+            )
 
 
 class AlibiDetectConceptDriftModel(
@@ -73,9 +93,23 @@ class AlibiDetectConceptDriftModel(
                 self.batch.shape[0],
                 self.drift_batch_size,
             )
-            cd_preds = self.model.predict(X)
+            cd_preds = self.model.predict(self.batch)
             self.batch = None
-            return json.loads(json.dumps(cd_preds, cls=NumpyEncoder))
+
+            output = json.loads(json.dumps(cd_preds, cls=NumpyEncoder))
+
+            metrics = []
+            drift = output.get("data")
+
+            if drift:
+                _append_drift_metrcs(metrics, drift, "is_drift")
+                _append_drift_metrcs(metrics, drift, "distance")
+                _append_drift_metrcs(metrics, drift, "p_val")
+                _append_drift_metrcs(metrics, drift, "threshold")
+
+            seldon_response = SeldonResponse(output, None, metrics)
+
+            return seldon_response
         else:
             logging.info(
                 "Not running drift detection. Batch size is %d. Need %d",

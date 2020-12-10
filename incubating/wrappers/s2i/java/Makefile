@@ -1,4 +1,4 @@
-VERSION=0.2
+VERSION=0.3.0
 IMAGE_NAME_BUILD = docker.io/seldonio/seldon-core-s2i-java-build:${VERSION}
 IMAGE_NAME_RUNTIME = docker.io/seldonio/seldon-core-s2i-java-runtime:${VERSION}
 

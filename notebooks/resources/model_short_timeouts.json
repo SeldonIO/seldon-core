@@ -1,54 +1,24 @@
-{
-    "apiVersion": "machinelearning.seldon.io/v1alpha2",
-    "kind": "SeldonDeployment",
-    "metadata": {
-        "labels": {
-            "app": "seldon"
-        },
-        "name": "seldon-deployment-example"
-    },
-    "spec": {
-        "annotations": {
-            "project_name": "FX Market Prediction",
-            "deployment_version": "v1",
-	    "seldon.io/rest-read-timeout":"1"
-        },
-        "name": "test-deployment",
-        "oauth_key": "oauth-key",
-        "oauth_secret": "oauth-secret",
-        "predictors": [
-            {
-                "componentSpecs": [{
-                    "spec": {
-                        "containers": [
-                            {
-                                "image": "seldonio/mock_classifier:1.0",
-                                "imagePullPolicy": "IfNotPresent",
-                                "name": "classifier",
-                                "resources": {
-                                    "requests": {
-                                        "memory": "1Mi"
-                                    }
-                                }
-                            }
-                        ],
-                        "terminationGracePeriodSeconds": 20
-                    }
-                }],
-                "graph": {
-                    "children": [],
-                    "name": "classifier",
-                    "endpoint": {
-			"type" : "REST"
-		    },
-                    "type": "MODEL"
-                },
-                "name": "fx-market-predictor",
-                "replicas": 1,
-		"annotations": {
-		    "predictor_version" : "v1"
-		}
-            }
-        ]
-    }
-}
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: seldon-model
+spec:
+  annotations:
+    seldon.io/rest-timeout: "1000"
+    seldon.io/grpc-timeout: "1000"
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/mock_classifier:1.6.0-dev
+          name: classifier
+    graph:
+      children: []
+      name: classifier
+      type: MODEL
+      parameters:
+      - name: delaySecs
+        type: INT
+        value: "2"       
+    name: example
+    replicas: 1

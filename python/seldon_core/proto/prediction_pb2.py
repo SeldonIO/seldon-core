@@ -22,7 +22,8 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='seldon.protos',
   syntax='proto3',
   serialized_options=b'\n\020io.seldon.protosB\020PredictionProtosZBgithub.com/seldonio/seldon-core/incubating/wrappers/s2i/go/pkg/api',
-  serialized_pb=b'\n\x16proto/prediction.proto\x12\rseldon.protos\x1a\x19google/protobuf/any.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a&tensorflow/core/framework/tensor.proto\"\x91\x02\n\rSeldonMessage\x12%\n\x06status\x18\x01 \x01(\x0b\x32\x15.seldon.protos.Status\x12!\n\x04meta\x18\x02 \x01(\x0b\x32\x13.seldon.protos.Meta\x12*\n\x04\x64\x61ta\x18\x03 \x01(\x0b\x32\x1a.seldon.protos.DefaultDataH\x00\x12\x11\n\x07\x62inData\x18\x04 \x01(\x0cH\x00\x12\x11\n\x07strData\x18\x05 \x01(\tH\x00\x12*\n\x08jsonData\x18\x06 \x01(\x0b\x32\x16.google.protobuf.ValueH\x00\x12*\n\ncustomData\x18\x07 \x01(\x0b\x32\x14.google.protobuf.AnyH\x00\x42\x0c\n\ndata_oneof\"\xaf\x01\n\x0b\x44\x65\x66\x61ultData\x12\r\n\x05names\x18\x01 \x03(\t\x12\'\n\x06tensor\x18\x02 \x01(\x0b\x32\x15.seldon.protos.TensorH\x00\x12-\n\x07ndarray\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.ListValueH\x00\x12+\n\x08tftensor\x18\x04 \x01(\x0b\x32\x17.tensorflow.TensorProtoH\x00\x42\x0c\n\ndata_oneof\"/\n\x06Tensor\x12\x11\n\x05shape\x18\x01 \x03(\x05\x42\x02\x10\x01\x12\x12\n\x06values\x18\x02 \x03(\x01\x42\x02\x10\x01\"\x80\x03\n\x04Meta\x12\x0c\n\x04puid\x18\x01 \x01(\t\x12+\n\x04tags\x18\x02 \x03(\x0b\x32\x1d.seldon.protos.Meta.TagsEntry\x12\x31\n\x07routing\x18\x03 \x03(\x0b\x32 .seldon.protos.Meta.RoutingEntry\x12\x39\n\x0brequestPath\x18\x04 \x03(\x0b\x32$.seldon.protos.Meta.RequestPathEntry\x12&\n\x07metrics\x18\x05 \x03(\x0b\x32\x15.seldon.protos.Metric\x1a\x43\n\tTagsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value:\x02\x38\x01\x1a.\n\x0cRoutingEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a\x32\n\x10RequestPathEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xe1\x01\n\x06Metric\x12\x0b\n\x03key\x18\x01 \x01(\t\x12.\n\x04type\x18\x02 \x01(\x0e\x32 .seldon.protos.Metric.MetricType\x12\r\n\x05value\x18\x03 \x01(\x02\x12-\n\x04tags\x18\x04 \x03(\x0b\x32\x1f.seldon.protos.Metric.TagsEntry\x1a+\n\tTagsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"/\n\nMetricType\x12\x0b\n\x07\x43OUNTER\x10\x00\x12\t\n\x05GAUGE\x10\x01\x12\t\n\x05TIMER\x10\x02\"I\n\x11SeldonMessageList\x12\x34\n\x0eseldonMessages\x18\x01 \x03(\x0b\x32\x1c.seldon.protos.SeldonMessage\"\x8e\x01\n\x06Status\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x05\x12\x0c\n\x04info\x18\x02 \x01(\t\x12\x0e\n\x06reason\x18\x03 \x01(\t\x12\x30\n\x06status\x18\x04 \x01(\x0e\x32 .seldon.protos.Status.StatusFlag\"&\n\nStatusFlag\x12\x0b\n\x07SUCCESS\x10\x00\x12\x0b\n\x07\x46\x41ILURE\x10\x01\"\xa6\x01\n\x08\x46\x65\x65\x64\x62\x61\x63k\x12-\n\x07request\x18\x01 \x01(\x0b\x32\x1c.seldon.protos.SeldonMessage\x12.\n\x08response\x18\x02 \x01(\x0b\x32\x1c.seldon.protos.SeldonMessage\x12\x0e\n\x06reward\x18\x03 \x01(\x02\x12+\n\x05truth\x18\x04 \x01(\x0b\x32\x1c.seldon.protos.SeldonMessage\"p\n\x0fRequestResponse\x12-\n\x07request\x18\x01 \x01(\x0b\x32\x1c.seldon.protos.SeldonMessage\x12.\n\x08response\x18\x02 \x01(\x0b\x32\x1c.seldon.protos.SeldonMessage\"*\n\x1aSeldonModelMetadataRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x83\x01\n\x15SeldonMessageMetadata\x12\x13\n\x0bmessagetype\x18\x01 \x01(\t\x12&\n\x06schema\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\x10\n\x08\x64\x61tatype\x18\x04 \x01(\t\x12\r\n\x05shape\x18\x05 \x03(\x03\"\xb4\x01\n\x13SeldonModelMetadata\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x10\n\x08versions\x18\x02 \x03(\t\x12\x10\n\x08platform\x18\x03 \x01(\t\x12\x34\n\x06inputs\x18\x04 \x03(\x0b\x32$.seldon.protos.SeldonMessageMetadata\x12\x35\n\x07outputs\x18\x05 \x03(\x0b\x32$.seldon.protos.SeldonMessageMetadata\"\xa3\x02\n\x13SeldonGraphMetadata\x12\x0c\n\x04name\x18\x01 \x01(\t\x12>\n\x06models\x18\x02 \x03(\x0b\x32..seldon.protos.SeldonGraphMetadata.ModelsEntry\x12\x34\n\x06inputs\x18\x03 \x03(\x0b\x32$.seldon.protos.SeldonMessageMetadata\x12\x35\n\x07outputs\x18\x04 \x03(\x0b\x32$.seldon.protos.SeldonMessageMetadata\x1aQ\n\x0bModelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x31\n\x05value\x18\x02 \x01(\x0b\x32\".seldon.protos.SeldonModelMetadata:\x02\x38\x01\x32\x89\x03\n\x07Generic\x12N\n\x0eTransformInput\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12O\n\x0fTransformOutput\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12\x45\n\x05Route\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12M\n\tAggregate\x12 .seldon.protos.SeldonMessageList\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12G\n\x0cSendFeedback\x12\x17.seldon.protos.Feedback\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x32\xe3\x01\n\x05Model\x12G\n\x07Predict\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12G\n\x0cSendFeedback\x12\x17.seldon.protos.Feedback\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12H\n\x08Metadata\x12\x16.google.protobuf.Empty\x1a\".seldon.protos.SeldonModelMetadata\"\x00\x32\x98\x01\n\x06Router\x12\x45\n\x05Route\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12G\n\x0cSendFeedback\x12\x17.seldon.protos.Feedback\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x32]\n\x0bTransformer\x12N\n\x0eTransformInput\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x32\x64\n\x11OutputTransformer\x12O\n\x0fTransformOutput\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x32Y\n\x08\x43ombiner\x12M\n\tAggregate\x12 .seldon.protos.SeldonMessageList\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x32\xcb\x02\n\x06Seldon\x12G\n\x07Predict\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12G\n\x0cSendFeedback\x12\x17.seldon.protos.Feedback\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12`\n\rModelMetadata\x12).seldon.protos.SeldonModelMetadataRequest\x1a\".seldon.protos.SeldonModelMetadata\"\x00\x12M\n\rGraphMetadata\x12\x16.google.protobuf.Empty\x1a\".seldon.protos.SeldonGraphMetadata\"\x00\x42h\n\x10io.seldon.protosB\x10PredictionProtosZBgithub.com/seldonio/seldon-core/incubating/wrappers/s2i/go/pkg/apib\x06proto3'
+  create_key=_descriptor._internal_create_key,
+  serialized_pb=b'\n\x16proto/prediction.proto\x12\rseldon.protos\x1a\x19google/protobuf/any.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a&tensorflow/core/framework/tensor.proto\"\x91\x02\n\rSeldonMessage\x12%\n\x06status\x18\x01 \x01(\x0b\x32\x15.seldon.protos.Status\x12!\n\x04meta\x18\x02 \x01(\x0b\x32\x13.seldon.protos.Meta\x12*\n\x04\x64\x61ta\x18\x03 \x01(\x0b\x32\x1a.seldon.protos.DefaultDataH\x00\x12\x11\n\x07\x62inData\x18\x04 \x01(\x0cH\x00\x12\x11\n\x07strData\x18\x05 \x01(\tH\x00\x12*\n\x08jsonData\x18\x06 \x01(\x0b\x32\x16.google.protobuf.ValueH\x00\x12*\n\ncustomData\x18\x07 \x01(\x0b\x32\x14.google.protobuf.AnyH\x00\x42\x0c\n\ndata_oneof\"\xaf\x01\n\x0b\x44\x65\x66\x61ultData\x12\r\n\x05names\x18\x01 \x03(\t\x12\'\n\x06tensor\x18\x02 \x01(\x0b\x32\x15.seldon.protos.TensorH\x00\x12-\n\x07ndarray\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.ListValueH\x00\x12+\n\x08tftensor\x18\x04 \x01(\x0b\x32\x17.tensorflow.TensorProtoH\x00\x42\x0c\n\ndata_oneof\"/\n\x06Tensor\x12\x11\n\x05shape\x18\x01 \x03(\x05\x42\x02\x10\x01\x12\x12\n\x06values\x18\x02 \x03(\x01\x42\x02\x10\x01\"\x80\x03\n\x04Meta\x12\x0c\n\x04puid\x18\x01 \x01(\t\x12+\n\x04tags\x18\x02 \x03(\x0b\x32\x1d.seldon.protos.Meta.TagsEntry\x12\x31\n\x07routing\x18\x03 \x03(\x0b\x32 .seldon.protos.Meta.RoutingEntry\x12\x39\n\x0brequestPath\x18\x04 \x03(\x0b\x32$.seldon.protos.Meta.RequestPathEntry\x12&\n\x07metrics\x18\x05 \x03(\x0b\x32\x15.seldon.protos.Metric\x1a\x43\n\tTagsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value:\x02\x38\x01\x1a.\n\x0cRoutingEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a\x32\n\x10RequestPathEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xe1\x01\n\x06Metric\x12\x0b\n\x03key\x18\x01 \x01(\t\x12.\n\x04type\x18\x02 \x01(\x0e\x32 .seldon.protos.Metric.MetricType\x12\r\n\x05value\x18\x03 \x01(\x02\x12-\n\x04tags\x18\x04 \x03(\x0b\x32\x1f.seldon.protos.Metric.TagsEntry\x1a+\n\tTagsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"/\n\nMetricType\x12\x0b\n\x07\x43OUNTER\x10\x00\x12\t\n\x05GAUGE\x10\x01\x12\t\n\x05TIMER\x10\x02\"I\n\x11SeldonMessageList\x12\x34\n\x0eseldonMessages\x18\x01 \x03(\x0b\x32\x1c.seldon.protos.SeldonMessage\"\x8e\x01\n\x06Status\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x05\x12\x0c\n\x04info\x18\x02 \x01(\t\x12\x0e\n\x06reason\x18\x03 \x01(\t\x12\x30\n\x06status\x18\x04 \x01(\x0e\x32 .seldon.protos.Status.StatusFlag\"&\n\nStatusFlag\x12\x0b\n\x07SUCCESS\x10\x00\x12\x0b\n\x07\x46\x41ILURE\x10\x01\"\xa6\x01\n\x08\x46\x65\x65\x64\x62\x61\x63k\x12-\n\x07request\x18\x01 \x01(\x0b\x32\x1c.seldon.protos.SeldonMessage\x12.\n\x08response\x18\x02 \x01(\x0b\x32\x1c.seldon.protos.SeldonMessage\x12\x0e\n\x06reward\x18\x03 \x01(\x02\x12+\n\x05truth\x18\x04 \x01(\x0b\x32\x1c.seldon.protos.SeldonMessage\"p\n\x0fRequestResponse\x12-\n\x07request\x18\x01 \x01(\x0b\x32\x1c.seldon.protos.SeldonMessage\x12.\n\x08response\x18\x02 \x01(\x0b\x32\x1c.seldon.protos.SeldonMessage\"*\n\x1aSeldonModelMetadataRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x83\x01\n\x15SeldonMessageMetadata\x12\x13\n\x0bmessagetype\x18\x01 \x01(\t\x12&\n\x06schema\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\x10\n\x08\x64\x61tatype\x18\x04 \x01(\t\x12\r\n\x05shape\x18\x05 \x03(\x03\"\xa3\x02\n\x13SeldonModelMetadata\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x10\n\x08versions\x18\x02 \x03(\t\x12\x10\n\x08platform\x18\x03 \x01(\t\x12\x34\n\x06inputs\x18\x04 \x03(\x0b\x32$.seldon.protos.SeldonMessageMetadata\x12\x35\n\x07outputs\x18\x05 \x03(\x0b\x32$.seldon.protos.SeldonMessageMetadata\x12>\n\x06\x63ustom\x18\x06 \x03(\x0b\x32..seldon.protos.SeldonModelMetadata.CustomEntry\x1a-\n\x0b\x43ustomEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xa3\x02\n\x13SeldonGraphMetadata\x12\x0c\n\x04name\x18\x01 \x01(\t\x12>\n\x06models\x18\x02 \x03(\x0b\x32..seldon.protos.SeldonGraphMetadata.ModelsEntry\x12\x34\n\x06inputs\x18\x03 \x03(\x0b\x32$.seldon.protos.SeldonMessageMetadata\x12\x35\n\x07outputs\x18\x04 \x03(\x0b\x32$.seldon.protos.SeldonMessageMetadata\x1aQ\n\x0bModelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x31\n\x05value\x18\x02 \x01(\x0b\x32\".seldon.protos.SeldonModelMetadata:\x02\x38\x01\x32\x89\x03\n\x07Generic\x12N\n\x0eTransformInput\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12O\n\x0fTransformOutput\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12\x45\n\x05Route\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12M\n\tAggregate\x12 .seldon.protos.SeldonMessageList\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12G\n\x0cSendFeedback\x12\x17.seldon.protos.Feedback\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x32\xe3\x01\n\x05Model\x12G\n\x07Predict\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12G\n\x0cSendFeedback\x12\x17.seldon.protos.Feedback\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12H\n\x08Metadata\x12\x16.google.protobuf.Empty\x1a\".seldon.protos.SeldonModelMetadata\"\x00\x32\x98\x01\n\x06Router\x12\x45\n\x05Route\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12G\n\x0cSendFeedback\x12\x17.seldon.protos.Feedback\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x32]\n\x0bTransformer\x12N\n\x0eTransformInput\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x32\x64\n\x11OutputTransformer\x12O\n\x0fTransformOutput\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x32Y\n\x08\x43ombiner\x12M\n\tAggregate\x12 .seldon.protos.SeldonMessageList\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x32\xcb\x02\n\x06Seldon\x12G\n\x07Predict\x12\x1c.seldon.protos.SeldonMessage\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12G\n\x0cSendFeedback\x12\x17.seldon.protos.Feedback\x1a\x1c.seldon.protos.SeldonMessage\"\x00\x12`\n\rModelMetadata\x12).seldon.protos.SeldonModelMetadataRequest\x1a\".seldon.protos.SeldonModelMetadata\"\x00\x12M\n\rGraphMetadata\x12\x16.google.protobuf.Empty\x1a\".seldon.protos.SeldonGraphMetadata\"\x00\x42h\n\x10io.seldon.protosB\x10PredictionProtosZBgithub.com/seldonio/seldon-core/incubating/wrappers/s2i/go/pkg/apib\x06proto3'
   ,
   dependencies=[google_dot_protobuf_dot_any__pb2.DESCRIPTOR,google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,google_dot_protobuf_dot_empty__pb2.DESCRIPTOR,tensorflow_dot_core_dot_framework_dot_tensor__pb2.DESCRIPTOR,])
 
@@ -33,19 +34,23 @@ _METRIC_METRICTYPE = _descriptor.EnumDescriptor(
   full_name='seldon.protos.Metric.MetricType',
   filename=None,
   file=DESCRIPTOR,
+  create_key=_descriptor._internal_create_key,
   values=[
     _descriptor.EnumValueDescriptor(
       name='COUNTER', index=0, number=0,
       serialized_options=None,
-      type=None),
+      type=None,
+      create_key=_descriptor._internal_create_key),
     _descriptor.EnumValueDescriptor(
       name='GAUGE', index=1, number=1,
       serialized_options=None,
-      type=None),
+      type=None,
+      create_key=_descriptor._internal_create_key),
     _descriptor.EnumValueDescriptor(
       name='TIMER', index=2, number=2,
       serialized_options=None,
-      type=None),
+      type=None,
+      create_key=_descriptor._internal_create_key),
   ],
   containing_type=None,
   serialized_options=None,
@@ -59,15 +64,18 @@ _STATUS_STATUSFLAG = _descriptor.EnumDescriptor(
   full_name='seldon.protos.Status.StatusFlag',
   filename=None,
   file=DESCRIPTOR,
+  create_key=_descriptor._internal_create_key,
   values=[
     _descriptor.EnumValueDescriptor(
       name='SUCCESS', index=0, number=0,
       serialized_options=None,
-      type=None),
+      type=None,
+      create_key=_descriptor._internal_create_key),
     _descriptor.EnumValueDescriptor(
       name='FAILURE', index=1, number=1,
       serialized_options=None,
-      type=None),
+      type=None,
+      create_key=_descriptor._internal_create_key),
   ],
   containing_type=None,
   serialized_options=None,
@@ -83,6 +91,7 @@ _SELDONMESSAGE = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='status', full_name='seldon.protos.SeldonMessage.status', index=0,
@@ -90,49 +99,49 @@ _SELDONMESSAGE = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='meta', full_name='seldon.protos.SeldonMessage.meta', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='data', full_name='seldon.protos.SeldonMessage.data', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='binData', full_name='seldon.protos.SeldonMessage.binData', index=3,
       number=4, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=b"",
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='strData', full_name='seldon.protos.SeldonMessage.strData', index=4,
       number=5, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='jsonData', full_name='seldon.protos.SeldonMessage.jsonData', index=5,
       number=6, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='customData', full_name='seldon.protos.SeldonMessage.customData', index=6,
       number=7, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -146,7 +155,9 @@ _SELDONMESSAGE = _descriptor.Descriptor(
   oneofs=[
     _descriptor.OneofDescriptor(
       name='data_oneof', full_name='seldon.protos.SeldonMessage.data_oneof',
-      index=0, containing_type=None, fields=[]),
+      index=0, containing_type=None,
+      create_key=_descriptor._internal_create_key,
+    fields=[]),
   ],
   serialized_start=168,
   serialized_end=441,
@@ -159,6 +170,7 @@ _DEFAULTDATA = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='names', full_name='seldon.protos.DefaultData.names', index=0,
@@ -166,28 +178,28 @@ _DEFAULTDATA = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='tensor', full_name='seldon.protos.DefaultData.tensor', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='ndarray', full_name='seldon.protos.DefaultData.ndarray', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='tftensor', full_name='seldon.protos.DefaultData.tftensor', index=3,
       number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -201,7 +213,9 @@ _DEFAULTDATA = _descriptor.Descriptor(
   oneofs=[
     _descriptor.OneofDescriptor(
       name='data_oneof', full_name='seldon.protos.DefaultData.data_oneof',
-      index=0, containing_type=None, fields=[]),
+      index=0, containing_type=None,
+      create_key=_descriptor._internal_create_key,
+    fields=[]),
   ],
   serialized_start=444,
   serialized_end=619,
@@ -214,6 +228,7 @@ _TENSOR = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='shape', full_name='seldon.protos.Tensor.shape', index=0,
@@ -221,14 +236,14 @@ _TENSOR = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='values', full_name='seldon.protos.Tensor.values', index=1,
       number=2, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -252,6 +267,7 @@ _META_TAGSENTRY = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='key', full_name='seldon.protos.Meta.TagsEntry.key', index=0,
@@ -259,14 +275,14 @@ _META_TAGSENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='value', full_name='seldon.protos.Meta.TagsEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -289,6 +305,7 @@ _META_ROUTINGENTRY = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='key', full_name='seldon.protos.Meta.RoutingEntry.key', index=0,
@@ -296,14 +313,14 @@ _META_ROUTINGENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='value', full_name='seldon.protos.Meta.RoutingEntry.value', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -326,6 +343,7 @@ _META_REQUESTPATHENTRY = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='key', full_name='seldon.protos.Meta.RequestPathEntry.key', index=0,
@@ -333,14 +351,14 @@ _META_REQUESTPATHENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='value', full_name='seldon.protos.Meta.RequestPathEntry.value', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -363,6 +381,7 @@ _META = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='puid', full_name='seldon.protos.Meta.puid', index=0,
@@ -370,35 +389,35 @@ _META = _descriptor.Descriptor(
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='tags', full_name='seldon.protos.Meta.tags', index=1,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='routing', full_name='seldon.protos.Meta.routing', index=2,
       number=3, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='requestPath', full_name='seldon.protos.Meta.requestPath', index=3,
       number=4, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='metrics', full_name='seldon.protos.Meta.metrics', index=4,
       number=5, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -422,6 +441,7 @@ _METRIC_TAGSENTRY = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='key', full_name='seldon.protos.Metric.TagsEntry.key', index=0,
@@ -429,14 +449,14 @@ _METRIC_TAGSENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='value', full_name='seldon.protos.Metric.TagsEntry.value', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -459,6 +479,7 @@ _METRIC = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='key', full_name='seldon.protos.Metric.key', index=0,
@@ -466,28 +487,28 @@ _METRIC = _descriptor.Descriptor(
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='type', full_name='seldon.protos.Metric.type', index=1,
       number=2, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='value', full_name='seldon.protos.Metric.value', index=2,
       number=3, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='tags', full_name='seldon.protos.Metric.tags', index=3,
       number=4, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -512,6 +533,7 @@ _SELDONMESSAGELIST = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='seldonMessages', full_name='seldon.protos.SeldonMessageList.seldonMessages', index=0,
@@ -519,7 +541,7 @@ _SELDONMESSAGELIST = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -543,6 +565,7 @@ _STATUS = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='code', full_name='seldon.protos.Status.code', index=0,
@@ -550,28 +573,28 @@ _STATUS = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='info', full_name='seldon.protos.Status.info', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='reason', full_name='seldon.protos.Status.reason', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='status', full_name='seldon.protos.Status.status', index=3,
       number=4, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -596,6 +619,7 @@ _FEEDBACK = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='request', full_name='seldon.protos.Feedback.request', index=0,
@@ -603,28 +627,28 @@ _FEEDBACK = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='response', full_name='seldon.protos.Feedback.response', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='reward', full_name='seldon.protos.Feedback.reward', index=2,
       number=3, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='truth', full_name='seldon.protos.Feedback.truth', index=3,
       number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -648,6 +672,7 @@ _REQUESTRESPONSE = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='request', full_name='seldon.protos.RequestResponse.request', index=0,
@@ -655,14 +680,14 @@ _REQUESTRESPONSE = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='response', full_name='seldon.protos.RequestResponse.response', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -686,6 +711,7 @@ _SELDONMODELMETADATAREQUEST = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='name', full_name='seldon.protos.SeldonModelMetadataRequest.name', index=0,
@@ -693,7 +719,7 @@ _SELDONMODELMETADATAREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -717,6 +743,7 @@ _SELDONMESSAGEMETADATA = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='messagetype', full_name='seldon.protos.SeldonMessageMetadata.messagetype', index=0,
@@ -724,35 +751,35 @@ _SELDONMESSAGEMETADATA = _descriptor.Descriptor(
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='schema', full_name='seldon.protos.SeldonMessageMetadata.schema', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='name', full_name='seldon.protos.SeldonMessageMetadata.name', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='datatype', full_name='seldon.protos.SeldonMessageMetadata.datatype', index=3,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='shape', full_name='seldon.protos.SeldonMessageMetadata.shape', index=4,
       number=5, type=3, cpp_type=2, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -770,86 +797,28 @@ _SELDONMESSAGEMETADATA = _descriptor.Descriptor(
 )
 
 
-_SELDONMODELMETADATA = _descriptor.Descriptor(
-  name='SeldonModelMetadata',
-  full_name='seldon.protos.SeldonModelMetadata',
+_SELDONMODELMETADATA_CUSTOMENTRY = _descriptor.Descriptor(
+  name='CustomEntry',
+  full_name='seldon.protos.SeldonModelMetadata.CustomEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='name', full_name='seldon.protos.SeldonModelMetadata.name', index=0,
+      name='key', full_name='seldon.protos.SeldonModelMetadata.CustomEntry.key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='versions', full_name='seldon.protos.SeldonModelMetadata.versions', index=1,
-      number=2, type=9, cpp_type=9, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='platform', full_name='seldon.protos.SeldonModelMetadata.platform', index=2,
-      number=3, type=9, cpp_type=9, label=1,
+      name='value', full_name='seldon.protos.SeldonModelMetadata.CustomEntry.value', index=1,
+      number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='inputs', full_name='seldon.protos.SeldonModelMetadata.inputs', index=3,
-      number=4, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='outputs', full_name='seldon.protos.SeldonModelMetadata.outputs', index=4,
-      number=5, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1967,
-  serialized_end=2147,
-)
-
-
-_SELDONGRAPHMETADATA_MODELSENTRY = _descriptor.Descriptor(
-  name='ModelsEntry',
-  full_name='seldon.protos.SeldonGraphMetadata.ModelsEntry',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='key', full_name='seldon.protos.SeldonGraphMetadata.ModelsEntry.key', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='value', full_name='seldon.protos.SeldonGraphMetadata.ModelsEntry.value', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -862,8 +831,113 @@ _SELDONGRAPHMETADATA_MODELSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2360,
-  serialized_end=2441,
+  serialized_start=2213,
+  serialized_end=2258,
+)
+
+_SELDONMODELMETADATA = _descriptor.Descriptor(
+  name='SeldonModelMetadata',
+  full_name='seldon.protos.SeldonModelMetadata',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='seldon.protos.SeldonModelMetadata.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='versions', full_name='seldon.protos.SeldonModelMetadata.versions', index=1,
+      number=2, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='platform', full_name='seldon.protos.SeldonModelMetadata.platform', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='inputs', full_name='seldon.protos.SeldonModelMetadata.inputs', index=3,
+      number=4, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='outputs', full_name='seldon.protos.SeldonModelMetadata.outputs', index=4,
+      number=5, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='custom', full_name='seldon.protos.SeldonModelMetadata.custom', index=5,
+      number=6, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[_SELDONMODELMETADATA_CUSTOMENTRY, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1967,
+  serialized_end=2258,
+)
+
+
+_SELDONGRAPHMETADATA_MODELSENTRY = _descriptor.Descriptor(
+  name='ModelsEntry',
+  full_name='seldon.protos.SeldonGraphMetadata.ModelsEntry',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='seldon.protos.SeldonGraphMetadata.ModelsEntry.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='seldon.protos.SeldonGraphMetadata.ModelsEntry.value', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=b'8\001',
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2471,
+  serialized_end=2552,
 )
 
 _SELDONGRAPHMETADATA = _descriptor.Descriptor(
@@ -872,6 +946,7 @@ _SELDONGRAPHMETADATA = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='name', full_name='seldon.protos.SeldonGraphMetadata.name', index=0,
@@ -879,28 +954,28 @@ _SELDONGRAPHMETADATA = _descriptor.Descriptor(
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='models', full_name='seldon.protos.SeldonGraphMetadata.models', index=1,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='inputs', full_name='seldon.protos.SeldonGraphMetadata.inputs', index=2,
       number=3, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='outputs', full_name='seldon.protos.SeldonGraphMetadata.outputs', index=3,
       number=4, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -913,8 +988,8 @@ _SELDONGRAPHMETADATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2150,
-  serialized_end=2441,
+  serialized_start=2261,
+  serialized_end=2552,
 )
 
 _SELDONMESSAGE.fields_by_name['status'].message_type = _STATUS
@@ -970,8 +1045,10 @@ _FEEDBACK.fields_by_name['truth'].message_type = _SELDONMESSAGE
 _REQUESTRESPONSE.fields_by_name['request'].message_type = _SELDONMESSAGE
 _REQUESTRESPONSE.fields_by_name['response'].message_type = _SELDONMESSAGE
 _SELDONMESSAGEMETADATA.fields_by_name['schema'].message_type = google_dot_protobuf_dot_struct__pb2._VALUE
+_SELDONMODELMETADATA_CUSTOMENTRY.containing_type = _SELDONMODELMETADATA
 _SELDONMODELMETADATA.fields_by_name['inputs'].message_type = _SELDONMESSAGEMETADATA
 _SELDONMODELMETADATA.fields_by_name['outputs'].message_type = _SELDONMESSAGEMETADATA
+_SELDONMODELMETADATA.fields_by_name['custom'].message_type = _SELDONMODELMETADATA_CUSTOMENTRY
 _SELDONGRAPHMETADATA_MODELSENTRY.fields_by_name['value'].message_type = _SELDONMODELMETADATA
 _SELDONGRAPHMETADATA_MODELSENTRY.containing_type = _SELDONGRAPHMETADATA
 _SELDONGRAPHMETADATA.fields_by_name['models'].message_type = _SELDONGRAPHMETADATA_MODELSENTRY
@@ -1102,11 +1179,19 @@ SeldonMessageMetadata = _reflection.GeneratedProtocolMessageType('SeldonMessageM
 _sym_db.RegisterMessage(SeldonMessageMetadata)
 
 SeldonModelMetadata = _reflection.GeneratedProtocolMessageType('SeldonModelMetadata', (_message.Message,), {
+
+  'CustomEntry' : _reflection.GeneratedProtocolMessageType('CustomEntry', (_message.Message,), {
+    'DESCRIPTOR' : _SELDONMODELMETADATA_CUSTOMENTRY,
+    '__module__' : 'proto.prediction_pb2'
+    # @@protoc_insertion_point(class_scope:seldon.protos.SeldonModelMetadata.CustomEntry)
+    })
+  ,
   'DESCRIPTOR' : _SELDONMODELMETADATA,
   '__module__' : 'proto.prediction_pb2'
   # @@protoc_insertion_point(class_scope:seldon.protos.SeldonModelMetadata)
   })
 _sym_db.RegisterMessage(SeldonModelMetadata)
+_sym_db.RegisterMessage(SeldonModelMetadata.CustomEntry)
 
 SeldonGraphMetadata = _reflection.GeneratedProtocolMessageType('SeldonGraphMetadata', (_message.Message,), {
 
@@ -1131,6 +1216,7 @@ _META_TAGSENTRY._options = None
 _META_ROUTINGENTRY._options = None
 _META_REQUESTPATHENTRY._options = None
 _METRIC_TAGSENTRY._options = None
+_SELDONMODELMETADATA_CUSTOMENTRY._options = None
 _SELDONGRAPHMETADATA_MODELSENTRY._options = None
 
 _GENERIC = _descriptor.ServiceDescriptor(
@@ -1139,8 +1225,9 @@ _GENERIC = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=2444,
-  serialized_end=2837,
+  create_key=_descriptor._internal_create_key,
+  serialized_start=2555,
+  serialized_end=2948,
   methods=[
   _descriptor.MethodDescriptor(
     name='TransformInput',
@@ -1150,6 +1237,7 @@ _GENERIC = _descriptor.ServiceDescriptor(
     input_type=_SELDONMESSAGE,
     output_type=_SELDONMESSAGE,
     serialized_options=None,
+    create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
     name='TransformOutput',
@@ -1159,6 +1247,7 @@ _GENERIC = _descriptor.ServiceDescriptor(
     input_type=_SELDONMESSAGE,
     output_type=_SELDONMESSAGE,
     serialized_options=None,
+    create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
     name='Route',
@@ -1168,6 +1257,7 @@ _GENERIC = _descriptor.ServiceDescriptor(
     input_type=_SELDONMESSAGE,
     output_type=_SELDONMESSAGE,
     serialized_options=None,
+    create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
     name='Aggregate',
@@ -1177,6 +1267,7 @@ _GENERIC = _descriptor.ServiceDescriptor(
     input_type=_SELDONMESSAGELIST,
     output_type=_SELDONMESSAGE,
     serialized_options=None,
+    create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
     name='SendFeedback',
@@ -1186,6 +1277,7 @@ _GENERIC = _descriptor.ServiceDescriptor(
     input_type=_FEEDBACK,
     output_type=_SELDONMESSAGE,
     serialized_options=None,
+    create_key=_descriptor._internal_create_key,
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_GENERIC)
@@ -1199,8 +1291,9 @@ _MODEL = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=1,
   serialized_options=None,
-  serialized_start=2840,
-  serialized_end=3067,
+  create_key=_descriptor._internal_create_key,
+  serialized_start=2951,
+  serialized_end=3178,
   methods=[
   _descriptor.MethodDescriptor(
     name='Predict',
@@ -1210,6 +1303,7 @@ _MODEL = _descriptor.ServiceDescriptor(
     input_type=_SELDONMESSAGE,
     output_type=_SELDONMESSAGE,
     serialized_options=None,
+    create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
     name='SendFeedback',
@@ -1219,6 +1313,7 @@ _MODEL = _descriptor.ServiceDescriptor(
     input_type=_FEEDBACK,
     output_type=_SELDONMESSAGE,
     serialized_options=None,
+    create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
     name='Metadata',
@@ -1228,6 +1323,7 @@ _MODEL = _descriptor.ServiceDescriptor(
     input_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
     output_type=_SELDONMODELMETADATA,
     serialized_options=None,
+    create_key=_descriptor._internal_create_key,
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_MODEL)
@@ -1241,8 +1337,9 @@ _ROUTER = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=2,
   serialized_options=None,
-  serialized_start=3070,
-  serialized_end=3222,
+  create_key=_descriptor._internal_create_key,
+  serialized_start=3181,
+  serialized_end=3333,
   methods=[
   _descriptor.MethodDescriptor(
     name='Route',
@@ -1252,6 +1349,7 @@ _ROUTER = _descriptor.ServiceDescriptor(
     input_type=_SELDONMESSAGE,
     output_type=_SELDONMESSAGE,
     serialized_options=None,
+    create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
     name='SendFeedback',
@@ -1261,6 +1359,7 @@ _ROUTER = _descriptor.ServiceDescriptor(
     input_type=_FEEDBACK,
     output_type=_SELDONMESSAGE,
     serialized_options=None,
+    create_key=_descriptor._internal_create_key,
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_ROUTER)
@@ -1274,8 +1373,9 @@ _TRANSFORMER = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=3,
   serialized_options=None,
-  serialized_start=3224,
-  serialized_end=3317,
+  create_key=_descriptor._internal_create_key,
+  serialized_start=3335,
+  serialized_end=3428,
   methods=[
   _descriptor.MethodDescriptor(
     name='TransformInput',
@@ -1285,6 +1385,7 @@ _TRANSFORMER = _descriptor.ServiceDescriptor(
     input_type=_SELDONMESSAGE,
     output_type=_SELDONMESSAGE,
     serialized_options=None,
+    create_key=_descriptor._internal_create_key,
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_TRANSFORMER)
@@ -1298,8 +1399,9 @@ _OUTPUTTRANSFORMER = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=4,
   serialized_options=None,
-  serialized_start=3319,
-  serialized_end=3419,
+  create_key=_descriptor._internal_create_key,
+  serialized_start=3430,
+  serialized_end=3530,
   methods=[
   _descriptor.MethodDescriptor(
     name='TransformOutput',
@@ -1309,6 +1411,7 @@ _OUTPUTTRANSFORMER = _descriptor.ServiceDescriptor(
     input_type=_SELDONMESSAGE,
     output_type=_SELDONMESSAGE,
     serialized_options=None,
+    create_key=_descriptor._internal_create_key,
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_OUTPUTTRANSFORMER)
@@ -1322,8 +1425,9 @@ _COMBINER = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=5,
   serialized_options=None,
-  serialized_start=3421,
-  serialized_end=3510,
+  create_key=_descriptor._internal_create_key,
+  serialized_start=3532,
+  serialized_end=3621,
   methods=[
   _descriptor.MethodDescriptor(
     name='Aggregate',
@@ -1333,6 +1437,7 @@ _COMBINER = _descriptor.ServiceDescriptor(
     input_type=_SELDONMESSAGELIST,
     output_type=_SELDONMESSAGE,
     serialized_options=None,
+    create_key=_descriptor._internal_create_key,
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_COMBINER)
@@ -1346,8 +1451,9 @@ _SELDON = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=6,
   serialized_options=None,
-  serialized_start=3513,
-  serialized_end=3844,
+  create_key=_descriptor._internal_create_key,
+  serialized_start=3624,
+  serialized_end=3955,
   methods=[
   _descriptor.MethodDescriptor(
     name='Predict',
@@ -1357,6 +1463,7 @@ _SELDON = _descriptor.ServiceDescriptor(
     input_type=_SELDONMESSAGE,
     output_type=_SELDONMESSAGE,
     serialized_options=None,
+    create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
     name='SendFeedback',
@@ -1366,6 +1473,7 @@ _SELDON = _descriptor.ServiceDescriptor(
     input_type=_FEEDBACK,
     output_type=_SELDONMESSAGE,
     serialized_options=None,
+    create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
     name='ModelMetadata',
@@ -1375,6 +1483,7 @@ _SELDON = _descriptor.ServiceDescriptor(
     input_type=_SELDONMODELMETADATAREQUEST,
     output_type=_SELDONMODELMETADATA,
     serialized_options=None,
+    create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
     name='GraphMetadata',
@@ -1384,6 +1493,7 @@ _SELDON = _descriptor.ServiceDescriptor(
     input_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
     output_type=_SELDONGRAPHMETADATA,
     serialized_options=None,
+    create_key=_descriptor._internal_create_key,
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_SELDON)

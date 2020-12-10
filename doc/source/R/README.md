@@ -91,19 +91,19 @@ s2i build <src-folder> seldonio/seldon-core-s2i-r:0.1 <my-image-name>
 An example invocation using the test template model inside seldon-core:
 
 ```bash
-s2i build https://github.com/seldonio/seldon-core.git --context-dir=incubating/wrappers/s2i/R/test/model-template-app seldonio/seldon-core-s2i-r:0.1 seldon-core-template-model
+s2i build https://github.com/seldonio/seldon-core --context-dir=incubating/wrappers/s2i/R/test/model-template-app seldonio/seldon-core-s2i-r:0.1 seldon-core-template-model
 ```
 
 The above s2i build invocation:
 
-- uses the GitHub repo: https://github.com/seldonio/seldon-core.git and the directory `incubating/wrappers/s2i/R/test/model-template-app` inside that repo.
+- uses the GitHub repo: https://github.com/seldonio/seldon-core and the directory `incubating/wrappers/s2i/R/test/model-template-app` inside that repo.
 - uses the builder image `seldonio/seldon-core-s2i-r`
 - creates a docker image `seldon-core-template-model`
 
 For building from a local source folder, an example where we clone the seldon-core repo:
 
 ```bash
-git clone https://github.com/seldonio/seldon-core.git
+git clone https://github.com/seldonio/seldon-core
 cd seldon-core
 s2i build incubating/wrappers/s2i/R/test/model-template-app seldonio/seldon-core-s2i-r:0.1 seldon-core-template-model
 ```

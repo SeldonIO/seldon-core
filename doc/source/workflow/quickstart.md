@@ -28,7 +28,7 @@ To run your machine learning graph on Kubernetes you need to define how the comp
 
 ### 3. Deploy and Serve Predictions
 
-You can use ```kubectl``` to deploy your ML service like any other Kubernetes resource. This is discussed [here](deploying.md). Once deployed you can get predictions by [calling the exposed API](serving.md).
+You can use `kubectl` to deploy your ML service like any other Kubernetes resource. This is discussed [here](deploying.md). Once deployed you can get predictions by [calling the exposed API](serving.md).
 
 
 ## Hands on Example of Seldon Core Workflow
@@ -38,7 +38,7 @@ You can use ```kubectl``` to deploy your ML service like any other Kubernetes re
 
 **Install using Helm 3 (you can also use Kustomize)**
 
-```
+```bash
 kubectl create namespace seldon-system
 
 helm install seldon-core seldon-core-operator \
@@ -217,7 +217,7 @@ Now we can use the Seldon Core utilities to convert our python class into a full
 The result below is a container with the name `sklearn_iris` and the tag `0.1` which we will be able to deploy using Seldon Core.
 
 ```console
-s2i build . seldonio/seldon-core-s2i-python3:1.2.2-dev sklearn_iris:0.1
+s2i build . seldonio/seldon-core-s2i-python3:1.6.0-dev sklearn_iris:0.1
 ```
 
 **5. Deploy to Kubernetes**
@@ -284,7 +284,7 @@ $ curl -X POST http://<ingress>/seldon/model-namespace/iris-model/api/v1.0/predi
 
 Below are a set of Jupyter notebooks that you can try out yourself for deploying Seldon Core as well as using some of the more advanced features.
 
-#### Prepacked Model Servers
+### Prepacked Model Servers
 
  * [Deploy a Scikit-learn Model Binary](../servers/sklearn.html)
  * [Deploy a Tensorflow Exported Model](../servers/tensorflow.html)
@@ -292,25 +292,25 @@ Below are a set of Jupyter notebooks that you can try out yourself for deploying
  * [Deploy an XGBoost Model Binary](../servers/xgboost.html)
  * [Deploy Pre-packaged Model Server with Cluster's MinIO](../examples/minio-sklearn.html)
 
-#### Recommended starter tutorials for custom inference code
+### Recommended starter tutorials for custom inference code
 
 * [Tensorflow Deep MNIST Tutorial](../examples/tfserving_mnist.html) (Try it also in [AWS](../examples/aws_eks_deep_mnist.html), [Azure](../examples/azure_aks_deep_mnist.html), [GKE with GPU](../examples/gpu_tensorflow_deep_mnist.html) and [Alibaba Cloud](../examples/alibaba_ack_deep_mnist.html))
 * [SKlearn SpaCy Reddit Text Classification Tutorial](../examples/sklearn_spacy_text_classifier_example.html)
 * [Deploy your Java models with the H2O example](../examples/h2o_mojo.html)
 
-#### More complex deployments
+### More complex deployments
 
 * [Example Seldon Core Deployments using Helm](../examples/helm_examples.html)
 * [Canary deployment with Seldon and Istio](../examples/istio_canary.html)
 * [Autoscaling Seldon Example](../examples/autoscaling_example.html)
 * [Seldon Model with Custom Metrics](../examples/custom_metrics.html)
 
-#### End-to-end / use-case tutorials
+### End-to-end / use-case tutorials
 
 * [End-to-end Reusable ML Pipeline with Seldon and Kubeflow](../examples/kubeflow_seldon_e2e_pipeline.html)
 * [Seldon Deployment of Income Classifier and Alibi Anchor Explainer](../examples/explainer_examples.html)
 
-#### Integration with other platforms
+### Integration with other platforms
 
 * [Sagemaker (Seldon SKLearn integration example)](../examples/sagemaker_sklearn.html)
 * [Tensorflow Serving (TFServing) integration example](../examples/tfserving_mnist.html)

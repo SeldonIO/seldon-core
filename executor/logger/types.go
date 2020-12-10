@@ -9,6 +9,7 @@ type LogRequestType string
 const (
 	InferenceRequest  LogRequestType = "Request"
 	InferenceResponse LogRequestType = "Response"
+	InferenceFeedback LogRequestType = "Feedback"
 )
 
 type LogRequest struct {

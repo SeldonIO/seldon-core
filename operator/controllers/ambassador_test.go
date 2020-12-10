@@ -15,12 +15,12 @@ const (
 	TEST_DEFAULT_EXPECTED_RETRIES = 0
 )
 
-func basicAbassadorTests(t *testing.T, mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, expectedWeight int32, expectedInstanceId string, expectedRetries int, isExplainer bool) {
+func basicAmbassadorTests(t *testing.T, mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, expectedWeight int32, expectedInstanceId string, expectedRetries int, isExplainer bool, isTLS bool) {
 	g := NewGomegaWithT(t)
 	s, err := getAmbassadorConfigs(mlDep, p, "myservice", 9000, 5000, isExplainer)
 	g.Expect(err).To(BeNil())
 	parts := strings.Split(s, "---\n")[1:]
-	g.Expect(len(parts)).To(Equal(2))
+	g.Expect(len(parts)).To(Equal(3))
 	c := AmbassadorConfig{}
 	err = yaml.Unmarshal([]byte(parts[0]), &c)
 	g.Expect(err).To(BeNil())
@@ -38,6 +38,29 @@ func basicAbassadorTests(t *testing.T, mlDep *machinelearningv1.SeldonDeployment
 		g.Expect(c.RetryPolicy).To(BeNil())
 	}
 
+	if isTLS {
+		g.Expect(len(c.TLS)).ToNot(Equal(0))
+	} else {
+		g.Expect(len(c.TLS)).To(Equal(0))
+	}
+}
+
+func TestAmbassadorTLS(t *testing.T) {
+	p1 := machinelearningv1.PredictorSpec{
+		Name: "p1",
+		SSL: &machinelearningv1.SSL{
+			CertSecretName: "model-secret-name",
+		},
+	}
+	mlDep := machinelearningv1.SeldonDeployment{ObjectMeta: metav1.ObjectMeta{Name: "mymodel"},
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Predictors: []machinelearningv1.PredictorSpec{
+				p1,
+			},
+		},
+	}
+
+	basicAmbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, false, true)
 }
 
 func TestAmbassadorSingle(t *testing.T) {
@@ -50,8 +73,8 @@ func TestAmbassadorSingle(t *testing.T) {
 		},
 	}
 
-	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
-	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, true)
+	basicAmbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, false, false)
+	basicAmbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, true, false)
 }
 
 func TestAmbassadorCanary(t *testing.T) {
@@ -66,10 +89,10 @@ func TestAmbassadorCanary(t *testing.T) {
 		},
 	}
 
-	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
-	basicAbassadorTests(t, &mlDep, &p2, 80, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
-	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, true)
-	basicAbassadorTests(t, &mlDep, &p2, 80, "", TEST_DEFAULT_EXPECTED_RETRIES, true)
+	basicAmbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, false, false)
+	basicAmbassadorTests(t, &mlDep, &p2, 80, "", TEST_DEFAULT_EXPECTED_RETRIES, false, false)
+	basicAmbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, true, false)
+	basicAmbassadorTests(t, &mlDep, &p2, 80, "", TEST_DEFAULT_EXPECTED_RETRIES, true, false)
 }
 
 func TestAmbassadorCanaryEqual(t *testing.T) {
@@ -84,8 +107,8 @@ func TestAmbassadorCanaryEqual(t *testing.T) {
 		},
 	}
 
-	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
-	basicAbassadorTests(t, &mlDep, &p2, 50, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
+	basicAmbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, false, false)
+	basicAmbassadorTests(t, &mlDep, &p2, 50, "", TEST_DEFAULT_EXPECTED_RETRIES, false, false)
 }
 
 func TestAmbassadorCanaryThree(t *testing.T) {
@@ -102,9 +125,9 @@ func TestAmbassadorCanaryThree(t *testing.T) {
 		},
 	}
 
-	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
-	basicAbassadorTests(t, &mlDep, &p2, 20, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
-	basicAbassadorTests(t, &mlDep, &p3, 20, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
+	basicAmbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, false, false)
+	basicAmbassadorTests(t, &mlDep, &p2, 20, "", TEST_DEFAULT_EXPECTED_RETRIES, false, false)
+	basicAmbassadorTests(t, &mlDep, &p3, 20, "", TEST_DEFAULT_EXPECTED_RETRIES, false, false)
 }
 
 func TestAmbassadorCanaryThreeEqual(t *testing.T) {
@@ -121,9 +144,9 @@ func TestAmbassadorCanaryThreeEqual(t *testing.T) {
 		},
 	}
 
-	basicAbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
-	basicAbassadorTests(t, &mlDep, &p2, 33, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
-	basicAbassadorTests(t, &mlDep, &p3, 33, "", TEST_DEFAULT_EXPECTED_RETRIES, false)
+	basicAmbassadorTests(t, &mlDep, &p1, 0, "", TEST_DEFAULT_EXPECTED_RETRIES, false, false)
+	basicAmbassadorTests(t, &mlDep, &p2, 33, "", TEST_DEFAULT_EXPECTED_RETRIES, false, false)
+	basicAmbassadorTests(t, &mlDep, &p3, 33, "", TEST_DEFAULT_EXPECTED_RETRIES, false, false)
 }
 
 func TestAmbassadorID(t *testing.T) {
@@ -137,7 +160,7 @@ func TestAmbassadorID(t *testing.T) {
 			},
 		},
 	}
-	basicAbassadorTests(t, &mlDep, &p1, 0, instanceId, TEST_DEFAULT_EXPECTED_RETRIES, false)
+	basicAmbassadorTests(t, &mlDep, &p1, 0, instanceId, TEST_DEFAULT_EXPECTED_RETRIES, false, false)
 }
 
 func TestAmbassadorRetriesAnnotation(t *testing.T) {
@@ -150,10 +173,10 @@ func TestAmbassadorRetriesAnnotation(t *testing.T) {
 			},
 		},
 	}
-	basicAbassadorTests(t, &mlDep, &p, 0, "", 2, false)
+	basicAmbassadorTests(t, &mlDep, &p, 0, "", 2, false, false)
 }
 
-func circuitBreakerAbassadorTests(t *testing.T,
+func circuitBreakerAmbassadorTests(t *testing.T,
 	mlDep *machinelearningv1.SeldonDeployment,
 	p *machinelearningv1.PredictorSpec,
 	expectedNumCircuitBreaker int,
@@ -166,7 +189,7 @@ func circuitBreakerAbassadorTests(t *testing.T,
 	s, err := getAmbassadorConfigs(mlDep, p, "myservice", 9000, 5000, false)
 	g.Expect(err).To(BeNil())
 	parts := strings.Split(s, "---\n")[1:]
-	g.Expect(len(parts)).To(Equal(2))
+	g.Expect(len(parts)).To(Equal(3))
 	c := AmbassadorConfig{}
 	err = yaml.Unmarshal([]byte(parts[0]), &c)
 	g.Expect(err).To(BeNil())
@@ -190,7 +213,7 @@ func TestAmbassadorNoCircuitBreakerAnnotation(t *testing.T) {
 			},
 		},
 	}
-	circuitBreakerAbassadorTests(t, &mlDep, &p, 0, 0, 0, 0, 0)
+	circuitBreakerAmbassadorTests(t, &mlDep, &p, 0, 0, 0, 0, 0)
 }
 
 func TestAmbassadorCircuitBreakerAnnotation(t *testing.T) {
@@ -208,5 +231,5 @@ func TestAmbassadorCircuitBreakerAnnotation(t *testing.T) {
 			},
 		},
 	}
-	circuitBreakerAbassadorTests(t, &mlDep, &p, 1, 10, 15, 20, 5)
+	circuitBreakerAmbassadorTests(t, &mlDep, &p, 1, 10, 15, 20, 5)
 }

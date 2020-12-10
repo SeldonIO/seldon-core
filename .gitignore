@@ -100,6 +100,7 @@ examples/models/r_mnist/t10k-labels-idx1-ubyte
 examples/models/r_mnist/train-images-idx3-ubyte
 examples/models/r_mnist/train-labels-idx1-ubyte
 examples/models/sklearn_iris_fbs/IrisClassifier.sav
+examples/models/mlflow_server_ab_test_ambassador/mlruns
 
 # Pickle files
 *.pickle
@@ -176,6 +177,10 @@ examples/models/onnx_resnet50/resnet50/
 
 doc/_build
 doc/source/_static/cluster-manager
+doc/source/examples/images
+doc/source/examples/img
+doc/source/examples/assets
+doc/source/examples/*.png
 
 python/build/
 python/dist/
@@ -187,7 +192,7 @@ testing/scripts/tensorflow
 testing/scripts/run.log
 testing/scripts/my-model/
 wrappers/s2i/python/_python/
-wrappers/s2i/python-conda/_python/
+incubating/wrappers/s2i/java-jni/_python/
 
 seldon-controller/go
 
@@ -217,3 +222,6 @@ examples/models/autoscaling/autoscaling_example.py
 # testing
 *.coverprofile
 *.log
+
+# vscode local history
+.history/

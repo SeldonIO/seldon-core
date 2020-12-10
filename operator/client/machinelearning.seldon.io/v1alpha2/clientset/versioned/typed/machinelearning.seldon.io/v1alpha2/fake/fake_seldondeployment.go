@@ -18,6 +18,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	v1alpha2 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
@@ -38,7 +40,7 @@ var seldondeploymentsResource = schema.GroupVersionResource{Group: "machinelearn
 var seldondeploymentsKind = schema.GroupVersionKind{Group: "machinelearning.seldon.io", Version: "v1alpha2", Kind: "SeldonDeployment"}
 
 // Get takes name of the seldonDeployment, and returns the corresponding seldonDeployment object, and an error if there is any.
-func (c *FakeSeldonDeployments) Get(name string, options v1.GetOptions) (result *v1alpha2.SeldonDeployment, err error) {
+func (c *FakeSeldonDeployments) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha2.SeldonDeployment, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewGetAction(seldondeploymentsResource, c.ns, name), &v1alpha2.SeldonDeployment{})
 
@@ -49,7 +51,7 @@ func (c *FakeSeldonDeployments) Get(name string, options v1.GetOptions) (result 
 }
 
 // List takes label and field selectors, and returns the list of SeldonDeployments that match those selectors.
-func (c *FakeSeldonDeployments) List(opts v1.ListOptions) (result *v1alpha2.SeldonDeploymentList, err error) {
+func (c *FakeSeldonDeployments) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha2.SeldonDeploymentList, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewListAction(seldondeploymentsResource, seldondeploymentsKind, c.ns, opts), &v1alpha2.SeldonDeploymentList{})
 
@@ -71,14 +73,14 @@ func (c *FakeSeldonDeployments) List(opts v1.ListOptions) (result *v1alpha2.Seld
 }
 
 // Watch returns a watch.Interface that watches the requested seldonDeployments.
-func (c *FakeSeldonDeployments) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *FakeSeldonDeployments) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
 		InvokesWatch(testing.NewWatchAction(seldondeploymentsResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a seldonDeployment and creates it.  Returns the server's representation of the seldonDeployment, and an error, if there is any.
-func (c *FakeSeldonDeployments) Create(seldonDeployment *v1alpha2.SeldonDeployment) (result *v1alpha2.SeldonDeployment, err error) {
+func (c *FakeSeldonDeployments) Create(ctx context.Context, seldonDeployment *v1alpha2.SeldonDeployment, opts v1.CreateOptions) (result *v1alpha2.SeldonDeployment, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewCreateAction(seldondeploymentsResource, c.ns, seldonDeployment), &v1alpha2.SeldonDeployment{})
 
@@ -89,7 +91,7 @@ func (c *FakeSeldonDeployments) Create(seldonDeployment *v1alpha2.SeldonDeployme
 }
 
 // Update takes the representation of a seldonDeployment and updates it. Returns the server's representation of the seldonDeployment, and an error, if there is any.
-func (c *FakeSeldonDeployments) Update(seldonDeployment *v1alpha2.SeldonDeployment) (result *v1alpha2.SeldonDeployment, err error) {
+func (c *FakeSeldonDeployments) Update(ctx context.Context, seldonDeployment *v1alpha2.SeldonDeployment, opts v1.UpdateOptions) (result *v1alpha2.SeldonDeployment, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateAction(seldondeploymentsResource, c.ns, seldonDeployment), &v1alpha2.SeldonDeployment{})
 
@@ -100,7 +102,7 @@ func (c *FakeSeldonDeployments) Update(seldonDeployment *v1alpha2.SeldonDeployme
 }
 
 // Delete takes name of the seldonDeployment and deletes it. Returns an error if one occurs.
-func (c *FakeSeldonDeployments) Delete(name string, options *v1.DeleteOptions) error {
+func (c *FakeSeldonDeployments) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
 		Invokes(testing.NewDeleteAction(seldondeploymentsResource, c.ns, name), &v1alpha2.SeldonDeployment{})
 
@@ -108,15 +110,15 @@ func (c *FakeSeldonDeployments) Delete(name string, options *v1.DeleteOptions) e
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *FakeSeldonDeployments) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(seldondeploymentsResource, c.ns, listOptions)
+func (c *FakeSeldonDeployments) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+	action := testing.NewDeleteCollectionAction(seldondeploymentsResource, c.ns, listOpts)
 
 	_, err := c.Fake.Invokes(action, &v1alpha2.SeldonDeploymentList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched seldonDeployment.
-func (c *FakeSeldonDeployments) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha2.SeldonDeployment, err error) {
+func (c *FakeSeldonDeployments) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha2.SeldonDeployment, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewPatchSubresourceAction(seldondeploymentsResource, c.ns, name, pt, data, subresources...), &v1alpha2.SeldonDeployment{})
 

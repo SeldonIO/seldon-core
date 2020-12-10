@@ -25,6 +25,7 @@ def test_default_values():
         "platform": "",
         "inputs": [],
         "outputs": [],
+        "custom": {},
     }
 
 
@@ -37,6 +38,7 @@ def test_default_values_with_env():
         "platform": "",
         "inputs": [],
         "outputs": [],
+        "custom": {},
     }
 
 
@@ -49,6 +51,7 @@ def test_default_values_with_colon_in_env():
         "platform": "",
         "inputs": [],
         "outputs": [],
+        "custom": {},
     }
 
 
@@ -68,6 +71,8 @@ def test_v1_only_messagetype(messagetype):
         - messagetype: {messagetype}
         outputs:
         - messagetype: {messagetype}
+        custom:
+          tag-key: tag-value
     """
     meta_json = validate_model_metadata(yaml.safe_load(data))
     meta_proto = json_to_seldon_model_metadata(meta_json)
@@ -77,6 +82,7 @@ def test_v1_only_messagetype(messagetype):
         "platform": "seldon",
         "inputs": [{"messagetype": f"{messagetype}"}],
         "outputs": [{"messagetype": f"{messagetype}"}],
+        "custom": {"tag-key": "tag-value"},
     }
     assert json.loads(json_format.MessageToJson(meta_proto)) == {
         "name": "my-model-name",
@@ -84,6 +90,7 @@ def test_v1_only_messagetype(messagetype):
         "platform": "seldon",
         "inputs": [{"messagetype": f"{messagetype}"}],
         "outputs": [{"messagetype": f"{messagetype}"}],
+        "custom": {"tag-key": "tag-value"},
     }
 
 
@@ -100,6 +107,8 @@ def test_v1_mixed_multiple_inputs():
         - messagetype: jsonData
         outputs:
         - messagetype: "binData"
+        custom:
+          tag-key: tag-value
     """
     meta_json = validate_model_metadata(yaml.safe_load(data))
     meta_proto = json_to_seldon_model_metadata(meta_json)
@@ -115,6 +124,7 @@ def test_v1_mixed_multiple_inputs():
             {"messagetype": "jsonData"},
         ],
         "outputs": [{"messagetype": "binData"}],
+        "custom": {"tag-key": "tag-value"},
     }
     assert json.loads(json_format.MessageToJson(meta_proto)) == {
         "name": "my-model-name",
@@ -128,6 +138,7 @@ def test_v1_mixed_multiple_inputs():
             {"messagetype": "jsonData"},
         ],
         "outputs": [{"messagetype": "binData"}],
+        "custom": {"tag-key": "tag-value"},
     }
 
 
@@ -148,6 +159,8 @@ def test_v1_array(messagetype):
         - messagetype: {messagetype}
           schema:
             shape: [ 1 ]
+        custom:
+          tag-key: tag-value
     """
     meta_json = validate_model_metadata(yaml.safe_load(data))
     meta_proto = json_to_seldon_model_metadata(meta_json)
@@ -162,6 +175,7 @@ def test_v1_array(messagetype):
             }
         ],
         "outputs": [{"messagetype": f"{messagetype}", "schema": {"shape": [1]}}],
+        "custom": {"tag-key": "tag-value"},
     }
     assert json.loads(json_format.MessageToJson(meta_proto)) == {
         "name": "my-model-name",
@@ -174,6 +188,7 @@ def test_v1_array(messagetype):
             }
         ],
         "outputs": [{"messagetype": f"{messagetype}", "schema": {"shape": [1.0]}}],
+        "custom": {"tag-key": "tag-value"},
     }
 
 
@@ -198,6 +213,8 @@ def test_v1_json_with_schema():
                         format: double
         outputs:
         - messagetype: jsonData
+        custom:
+          tag-key: tag-value
     """
     meta_json = validate_model_metadata(yaml.safe_load(data))
     meta_proto = json_to_seldon_model_metadata(meta_json)
@@ -221,6 +238,7 @@ def test_v1_json_with_schema():
             }
         ],
         "outputs": [{"messagetype": "jsonData"}],
+        "custom": {"tag-key": "tag-value"},
     }
     assert json.loads(json_format.MessageToJson(meta_proto)) == {
         "name": "my-model-name",
@@ -242,6 +260,7 @@ def test_v1_json_with_schema():
             }
         ],
         "outputs": [{"messagetype": "jsonData"}],
+        "custom": {"tag-key": "tag-value"},
     }
 
 
@@ -312,6 +331,8 @@ def test_v2():
         - datatype: BYTES
           name: output
           shape: [ 3 ]
+        custom:
+          tag-key: tag-value
     """
     meta_json = validate_model_metadata(yaml.safe_load(data))
     meta_proto = json_to_seldon_model_metadata(meta_json)
@@ -321,6 +342,7 @@ def test_v2():
         "platform": "seldon",
         "inputs": [{"datatype": "BYTES", "name": "input", "shape": [1, 4]}],
         "outputs": [{"datatype": "BYTES", "name": "output", "shape": [3]}],
+        "custom": {"tag-key": "tag-value"},
     }
     assert json.loads(json_format.MessageToJson(meta_proto)) == {
         "name": "my-model-name",
@@ -328,6 +350,7 @@ def test_v2():
         "platform": "seldon",
         "inputs": [{"name": "input", "datatype": "BYTES", "shape": ["1", "4"]}],
         "outputs": [{"name": "output", "datatype": "BYTES", "shape": ["3"]}],
+        "custom": {"tag-key": "tag-value"},
     }
 
 
@@ -348,6 +371,8 @@ def test_v1_v2_mix():
         - datatype: BYTES
           name: output
           shape: [ 3 ]
+        custom:
+          tag-key: tag-value
     """
     meta_json = validate_model_metadata(yaml.safe_load(data))
     meta_proto = json_to_seldon_model_metadata(meta_json)
@@ -360,6 +385,7 @@ def test_v1_v2_mix():
             {"messagetype": "jsonData"},
         ],
         "outputs": [{"datatype": "BYTES", "name": "output", "shape": [3]}],
+        "custom": {"tag-key": "tag-value"},
     }
     assert json.loads(json_format.MessageToJson(meta_proto)) == {
         "name": "my-model-name",
@@ -370,6 +396,7 @@ def test_v1_v2_mix():
             {"messagetype": "jsonData"},
         ],
         "outputs": [{"name": "output", "datatype": "BYTES", "shape": ["3"]}],
+        "custom": {"tag-key": "tag-value"},
     }
 
 
@@ -383,6 +410,7 @@ def test_validate_model_metadata():
         "platform": "model-platform",
         "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1]}],
         "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1]}],
+        "custom": {"tag-key": "tag-value"},
     }
     with patch("seldon_core.metadata.MODEL_IMAGE", None):
         assert meta == validate_model_metadata(meta)
@@ -395,6 +423,7 @@ def test_validate_model_metadata_with_env():
         "platform": "model-platform",
         "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1]}],
         "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1]}],
+        "custom": {"tag-key": "tag-value"},
     }
     with patch("seldon_core.metadata.MODEL_IMAGE", "seldonio/sklearn-iris:0.1"):
         assert meta == validate_model_metadata(meta)
@@ -407,6 +436,7 @@ def test_validate_model_metadata_with_colon_in_env():
         "platform": "model-platform",
         "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1]}],
         "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1]}],
+        "custom": {"tag-key": "tag-value"},
     }
     with patch("seldon_core.metadata.MODEL_IMAGE", "localhost:32000/sklearn-iris:0.1"):
         assert meta == validate_model_metadata(meta)
@@ -450,6 +480,8 @@ outputs:
 - datatype: BYTES
   name: output
   shape: [ 1, 2, 3 ]
+custom:
+  tag-key: tag-value
 """
 
 
@@ -460,6 +492,7 @@ json_meta = """
     "platform": "seldon",
     "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1, 2]}],
     "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1, 2, 3]}],
+    "custom": {"tag-key": "tag-value"},
 }
 """
 
@@ -471,6 +504,7 @@ class UserObject:
         "platform": "model-platform",
         "inputs": [{"name": "input", "datatype": "BYTES", "shape": [1]}],
         "outputs": [{"name": "output", "datatype": "BYTES", "shape": [1]}],
+        "custom": {"tag-key": "tag-value"},
     }
 
     def predict(self, X, features_names):
@@ -509,6 +543,7 @@ def test_model_metadata_ok_grpc():
         "platform": "model-platform",
         "inputs": [{"name": "input", "datatype": "BYTES", "shape": ["1"]}],
         "outputs": [{"name": "output", "datatype": "BYTES", "shape": ["1"]}],
+        "custom": {"tag-key": "tag-value"},
     }
 
 

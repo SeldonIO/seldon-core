@@ -18,6 +18,9 @@ package controllers
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
@@ -30,8 +33,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/rand"
 	"k8s.io/client-go/kubernetes/fake"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"testing"
-	"time"
 )
 
 func createTestSDepWithExplainer() *machinelearningv1.SeldonDeployment {
@@ -79,9 +80,9 @@ func TestExplainerImageRelated(t *testing.T) {
 	g := NewGomegaWithT(t)
 	scheme = createScheme()
 	client := fake.NewSimpleClientset()
-	_, err := client.CoreV1().ConfigMaps(ControllerNamespace).Create(configMap)
+	_, err := client.CoreV1().ConfigMaps(ControllerNamespace).Create(context.TODO(), configMap, metav1.CreateOptions{})
 	g.Expect(err).To(BeNil())
-	ei := NewExplainerInitializer(client)
+	ei := NewExplainerInitializer(context.TODO(), client)
 	sdep := createTestSDepWithExplainer()
 	svcName := "s"
 	c := components{
@@ -137,10 +138,10 @@ var _ = Describe("createExplainer", func() {
 		func(explainer *machinelearningv1.Explainer) {
 			scheme = createScheme()
 			client := fake.NewSimpleClientset()
-			_, err := client.CoreV1().ConfigMaps(ControllerNamespace).Create(configMap)
+			_, err := client.CoreV1().ConfigMaps(ControllerNamespace).Create(context.TODO(), configMap, metav1.CreateOptions{})
 			Expect(err).To(BeNil())
 			p.Explainer = explainer
-			ei := NewExplainerInitializer(client)
+			ei := NewExplainerInitializer(context.TODO(), client)
 			err = ei.createExplainer(mlDep, p, c, pSvcName, nil, r.Log)
 
 			Expect(err).ToNot(HaveOccurred())

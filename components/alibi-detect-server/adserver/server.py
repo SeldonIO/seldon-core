@@ -12,15 +12,26 @@ import tornado.web
 from adserver.base import CEModel
 from adserver.protocols.request_handler import RequestHandler
 from adserver.protocols.seldon_http import SeldonRequestHandler
+from adserver.protocols.seldonfeedback_http import SeldonFeedbackRequestHandler
 from adserver.protocols.tensorflow_http import TensorflowRequestHandler
 from cloudevents.sdk import converters
 from cloudevents.sdk import marshaller
-from cloudevents.sdk.event import v02
+from cloudevents.sdk.event import v1
 from adserver.protocols import Protocol
+from seldon_core.flask_utils import SeldonMicroserviceException
+from seldon_core.user_model import SeldonResponse
+from seldon_core.metrics import SeldonMetrics, validate_metrics
+import uuid
 
 DEFAULT_HTTP_PORT = 8080
 CESERVER_LOGLEVEL = os.environ.get("CESERVER_LOGLEVEL", "INFO").upper()
 logging.basicConfig(level=CESERVER_LOGLEVEL)
+
+DEFAULT_LABELS = {
+    "seldon_deployment_namespace": os.environ.get(
+        "SELDON_DEPLOYMENT_NAMESPACE", "NOT_IMPLEMENTED"
+    )
+}
 
 
 class CEServer(object):
@@ -53,6 +64,10 @@ class CEServer(object):
         self._http_server: Optional[tornado.httpserver.HTTPServer] = None
         self.event_type = event_type
         self.event_source = event_source
+        self.seldon_metrics = SeldonMetrics(
+            worker_id_func=lambda: str(uuid.uuid1()),
+            extra_default_labels=DEFAULT_LABELS,
+        )
 
     def create_application(self):
         return tornado.web.Application(
@@ -67,12 +82,17 @@ class CEServer(object):
                         reply_url=self.reply_url,
                         event_type=self.event_type,
                         event_source=self.event_source,
+                        seldon_metrics=self.seldon_metrics,
                     ),
                 ),
                 # Protocol Discovery API that returns the serving protocol supported by this server.
                 (r"/protocol", ProtocolHandler, dict(protocol=self.protocol)),
                 # Prometheus Metrics API that returns metrics for model servers
-                (r"/v1/metrics", MetricsHandler, dict(model=self.registered_model)),
+                (
+                    r"/v1/metrics",
+                    MetricsHandler,
+                    dict(seldon_metrics=self.seldon_metrics),
+                ),
             ]
         )
 
@@ -119,11 +139,13 @@ def get_request_handler(protocol, request: Dict) -> RequestHandler:
     """
     if protocol == Protocol.tensorflow_http:
         return TensorflowRequestHandler(request)
-    else:
+    elif protocol == Protocol.seldon_http:
         return SeldonRequestHandler(request)
+    elif protocol == Protocol.seldonfeedback_http:
+        return SeldonFeedbackRequestHandler(request)
 
 
-def sendCloudEvent(event: v02.Event, url: str):
+def sendCloudEvent(event: v1.Event, url: str):
     """
     Send CloudEvent
 
@@ -140,10 +162,10 @@ def sendCloudEvent(event: v02.Event, url: str):
         event, converters.TypeBinary, json.dumps
     )
 
-    print("binary CloudEvent")
+    logging.info("binary CloudEvent")
     for k, v in binary_headers.items():
-        print("{0}: {1}\r\n".format(k, v))
-    print(binary_data)
+        logging.info("{0}: {1}\r\n".format(k, v))
+    logging.info(binary_data)
 
     response = requests.post(url, headers=binary_headers, data=binary_data)
     response.raise_for_status()
@@ -157,6 +179,7 @@ class EventHandler(tornado.web.RequestHandler):
         reply_url: str,
         event_type: str,
         event_source: str,
+        seldon_metrics: SeldonMetrics,
     ):
         """
         Event Handler
@@ -179,6 +202,7 @@ class EventHandler(tornado.web.RequestHandler):
         self.reply_url = reply_url
         self.event_type = event_type
         self.event_source = event_source
+        self.seldon_metrics = seldon_metrics
 
     def post(self):
         """
@@ -202,7 +226,7 @@ class EventHandler(tornado.web.RequestHandler):
         request = request_handler.extract_request()
 
         # Create event from request body
-        event = v02.Event()
+        event = v1.Event()
         http_marshaller = marshaller.NewDefaultHTTPMarshaller()
         event = http_marshaller.FromRequest(
             event, self.request.headers, self.request.body, json.loads
@@ -216,9 +240,17 @@ class EventHandler(tornado.web.RequestHandler):
             headers[key] = val
 
         response = self.model.process_event(request, headers)
+        seldon_response = SeldonResponse.create(response)
 
-        if response is not None:
-            responseStr = json.dumps(response)
+        runtime_metrics = seldon_response.metrics
+        if runtime_metrics is not None:
+            if validate_metrics(runtime_metrics):
+                self.seldon_metrics.update(runtime_metrics, self.event_type)
+            else:
+                logging.error("Metrics returned are invalid: " + str(runtime_metrics))
+
+        if seldon_response.data is not None:
+            responseStr = json.dumps(seldon_response.data)
 
             # Create event from response if reply_url is active
             if not self.reply_url == "":
@@ -227,7 +259,7 @@ class EventHandler(tornado.web.RequestHandler):
                 else:
                     resp_event_id = event.EventID()
                 revent = (
-                    v02.Event()
+                    v1.Event()
                     .SetContentType("application/json")
                     .SetData(responseStr)
                     .SetEventID(resp_event_id)
@@ -237,8 +269,7 @@ class EventHandler(tornado.web.RequestHandler):
                 )
                 logging.debug(json.dumps(revent.Properties()))
                 sendCloudEvent(revent, self.reply_url)
-
-            self.write(json.dumps(response))
+            self.write(json.dumps(seldon_response.data))
 
 
 class LivenessHandler(tornado.web.RequestHandler):
@@ -255,8 +286,10 @@ class ProtocolHandler(tornado.web.RequestHandler):
 
 
 class MetricsHandler(tornado.web.RequestHandler):
-    def initialize(self, model: CEModel):
-        self.model = model
+    def initialize(self, seldon_metrics: SeldonMetrics):
+        self.seldon_metrics = seldon_metrics
 
     def get(self):
-        self.write("Not Implemented")
+        metrics, mimetype = self.seldon_metrics.generate_metrics()
+        self.set_header("Content-Type", mimetype)
+        self.write(metrics)

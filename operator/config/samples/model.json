@@ -1,0 +1,34 @@
+{
+  "apiVersion": "machinelearning.seldon.io/v1",
+  "kind": "SeldonDeployment",
+  "metadata": {
+    "name": "model"
+  },
+  "spec": {
+    "name": "test-deployment",
+    "predictors": [
+      {
+	"componentSpecs": [
+	  {
+	    "spec": {
+	      "containers": [
+		{
+		  "image": "seldonio/mock_classifier:1.5.0",
+		  "name": "classifier"
+		}
+	      ]
+	    }
+	  }
+	],
+	"graph": {
+	  "children": [],
+	  "name": "classifier",
+	  "type": "MODEL"
+	},
+	"name": "example",
+	"replicas": 1
+      }
+    ]
+  },
+    "status":{}
+}

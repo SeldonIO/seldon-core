@@ -95,7 +95,7 @@ spec:
 
 One can scale this Seldon Deployment up using the command:
 
-```
+```console
 kubectl scale --replicas=2 sdep/seldon-scale
 ```
 

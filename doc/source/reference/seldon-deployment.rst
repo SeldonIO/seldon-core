@@ -1,6 +1,6 @@
-========
+==================================
 Seldon Deployment Reference Types
-========
+==================================
 
 A SeldonDeployment is defined as a custom resource definition within Kubernetes.
 

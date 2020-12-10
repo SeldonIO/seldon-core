@@ -10,7 +10,10 @@ import (
 	"github.com/go-logr/logr"
 	guuid "github.com/google/uuid"
 	"github.com/seldonio/seldon-core/executor/api/client"
+	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
+	"github.com/seldonio/seldon-core/executor/api/util"
+
 	payloadLogger "github.com/seldonio/seldon-core/executor/logger"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 )
@@ -18,10 +21,12 @@ import (
 const (
 	NilPUIDError                        = "context value for Seldon PUID Header is nil"
 	ENV_REQUEST_LOGGER_DEFAULT_ENDPOINT = "REQUEST_LOGGER_DEFAULT_ENDPOINT"
+	ENV_ENABLE_ROUTING_INJECTION        = "SELDON_ENABLE_ROUTING_INJECTION"
 )
 
 var (
 	envRequestLoggerDefaultEndpoint = os.Getenv(ENV_REQUEST_LOGGER_DEFAULT_ENDPOINT)
+	envEnableRoutingInjection       = len(os.Getenv(ENV_ENABLE_ROUTING_INJECTION)) != 0
 )
 
 type PredictorProcess struct {
@@ -31,6 +36,7 @@ type PredictorProcess struct {
 	ServerUrl *url.URL
 	Namespace string
 	Meta      *payload.MetaData
+	Routing   map[string]int32
 }
 
 func NewPredictorProcess(context context.Context, client client.SeldonApiClient, log logr.Logger, serverUrl *url.URL, namespace string, meta map[string][]string) PredictorProcess {
@@ -41,6 +47,7 @@ func NewPredictorProcess(context context.Context, client client.SeldonApiClient,
 		ServerUrl: serverUrl,
 		Namespace: namespace,
 		Meta:      payload.NewFromMap(meta),
+		Routing:   make(map[string]int32),
 	}
 }
 
@@ -53,6 +60,14 @@ func hasMethod(method v1.PredictiveUnitMethod, methods *[]v1.PredictiveUnitMetho
 		}
 	}
 	return false
+}
+
+func (p *PredictorProcess) getPort(node *v1.PredictiveUnit) int32 {
+	if p.Client.IsGrpc() {
+		return node.Endpoint.GrpcPort
+	} else {
+		return node.Endpoint.HttpPort
+	}
 }
 
 func (p *PredictorProcess) transformInput(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
@@ -74,13 +89,15 @@ func (p *PredictorProcess) transformInput(node *v1.PredictiveUnit, msg payload.S
 		if err != nil {
 			return nil, err
 		}
-		return p.Client.Predict(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg, p.Meta.Meta)
+		p.Routing[node.Name] = -1
+		return p.Client.Predict(p.Ctx, node.Name, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	} else if callTransformInput {
 		msg, err := p.Client.Chain(p.Ctx, node.Name, msg)
 		if err != nil {
 			return nil, err
 		}
-		return p.Client.TransformInput(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg, p.Meta.Meta)
+		p.Routing[node.Name] = -1
+		return p.Client.TransformInput(p.Ctx, node.Name, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	} else {
 		return msg, nil
 	}
@@ -104,7 +121,7 @@ func (p *PredictorProcess) transformOutput(node *v1.PredictiveUnit, msg payload.
 		if err != nil {
 			return nil, err
 		}
-		return p.Client.TransformOutput(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg, p.Meta.Meta)
+		return p.Client.TransformOutput(p.Ctx, node.Name, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	} else {
 		return msg, nil
 	}
@@ -124,11 +141,19 @@ func (p *PredictorProcess) feedback(node *v1.PredictiveUnit, msg payload.SeldonP
 	}
 
 	if callClient {
-		return p.Client.Feedback(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg, p.Meta.Meta)
+		return p.Client.Feedback(p.Ctx, node.Name, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	} else {
 		return msg, nil
 	}
 
+}
+
+func (p *PredictorProcess) routeFeedback(node *v1.PredictiveUnit, msg payload.SeldonPayload) (int, error) {
+	if msg.GetContentType() == payload.APPLICATION_TYPE_PROTOBUF {
+		return util.RouteFromFeedbackMessageMeta(msg.GetPayload().(*proto.Feedback), node.Name), nil
+	} else {
+		return util.RouteFromFeedbackJsonMeta(msg, node.Name), nil
+	}
 }
 
 func (p *PredictorProcess) route(node *v1.PredictiveUnit, msg payload.SeldonPayload) (int, error) {
@@ -143,7 +168,7 @@ func (p *PredictorProcess) route(node *v1.PredictiveUnit, msg payload.SeldonPayl
 		callClient = true
 	}
 	if callClient {
-		return p.Client.Route(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg, p.Meta.Meta)
+		return p.Client.Route(p.Ctx, node.Name, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	} else if node.Implementation != nil && *node.Implementation == v1.RANDOM_ABTEST {
 		return p.abTestRouter(node)
 	} else {
@@ -164,7 +189,8 @@ func (p *PredictorProcess) aggregate(node *v1.PredictiveUnit, msg []payload.Seld
 	}
 
 	if callClient {
-		return p.Client.Combine(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, msg, p.Meta.Meta)
+		p.Routing[node.Name] = -1
+		return p.Client.Combine(p.Ctx, node.Name, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	} else {
 		return msg[0], nil
 	}
@@ -190,27 +216,35 @@ func (p *PredictorProcess) predictChildren(node *v1.PredictiveUnit, msg payload.
 				}(i, nodeChild, msg)
 			}
 			wg.Wait()
+			p.Routing[node.Name] = -1
 			for i, err := range errs {
 				if err != nil {
 					return cmsgs[i], err
 				}
 			}
+		} else if route == -2 {
+			//Abort and return request
+			p.Routing[node.Name] = -2
+			return msg, nil
 		} else {
 			cmsgs = make([]payload.SeldonPayload, 1)
 			cmsgs[0], err = p.Predict(&node.Children[route], msg)
+			p.Routing[node.Name] = int32(route)
 			if err != nil {
 				return cmsgs[0], err
 			}
 		}
 		return p.aggregate(node, cmsgs)
 	} else {
+		p.Routing[node.Name] = -2
 		return msg, nil
 	}
 }
 
 func (p *PredictorProcess) feedbackChildren(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	if node.Children != nil && len(node.Children) > 0 {
-		route, err := p.route(node, msg)
+
+		route, err := p.routeFeedback(node, msg)
 		if err != nil {
 			return nil, err
 		}
@@ -311,6 +345,11 @@ func (p *PredictorProcess) Predict(node *v1.PredictiveUnit, msg payload.SeldonPa
 			return nil, err
 		}
 	}
+	if envEnableRoutingInjection {
+		if routeResponse, err := util.InsertRouteToSeldonPredictPayload(response, &p.Routing); err == nil {
+			return routeResponse, err
+		}
+	}
 	return response, err
 }
 
@@ -318,7 +357,7 @@ func (p *PredictorProcess) Status(node *v1.PredictiveUnit, modelName string, msg
 	if nodeModel := v1.GetPredictiveUnit(node, modelName); nodeModel == nil {
 		return nil, fmt.Errorf("Failed to find model %s", modelName)
 	} else {
-		return p.Client.Status(p.Ctx, modelName, nodeModel.Endpoint.ServiceHost, nodeModel.Endpoint.ServicePort, msg, p.Meta.Meta)
+		return p.Client.Status(p.Ctx, modelName, nodeModel.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	}
 }
 
@@ -326,7 +365,7 @@ func (p *PredictorProcess) Metadata(node *v1.PredictiveUnit, modelName string, m
 	if nodeModel := v1.GetPredictiveUnit(node, modelName); nodeModel == nil {
 		return nil, fmt.Errorf("Failed to find model %s", modelName)
 	} else {
-		return p.Client.Metadata(p.Ctx, modelName, nodeModel.Endpoint.ServiceHost, nodeModel.Endpoint.ServicePort, msg, p.Meta.Meta)
+		return p.Client.Metadata(p.Ctx, modelName, nodeModel.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	}
 }
 
@@ -349,6 +388,19 @@ func (p *PredictorProcess) GraphMetadata(spec *v1.PredictorSpec) (*GraphMetadata
 }
 
 func (p *PredictorProcess) Feedback(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+
+	if node.Logger != nil && (node.Logger.Mode == v1.LogResponse || node.Logger.Mode == v1.LogAll) {
+		puid, puiderr := p.getPUIDHeader()
+		if puiderr != nil {
+			p.Log.Error(puiderr, "Error retrieving uuid for feedback and could not send feedback")
+		} else {
+			err := p.logPayload(node.Name, node.Logger, payloadLogger.InferenceFeedback, msg, puid)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	tmsg, err := p.feedbackChildren(node, msg)
 	if err != nil {
 		return tmsg, err
@@ -357,7 +409,7 @@ func (p *PredictorProcess) Feedback(node *v1.PredictiveUnit, msg payload.SeldonP
 }
 
 func (p *PredictorProcess) ModelMetadataMap(node *v1.PredictiveUnit) (map[string]payload.ModelMetadata, error) {
-	resPayload, err := p.Client.ModelMetadata(p.Ctx, node.Name, node.Endpoint.ServiceHost, node.Endpoint.ServicePort, nil, p.Meta.Meta)
+	resPayload, err := p.Client.ModelMetadata(p.Ctx, node.Name, node.Endpoint.ServiceHost, p.getPort(node), nil, p.Meta.Meta)
 	if err != nil {
 		return nil, err
 	}

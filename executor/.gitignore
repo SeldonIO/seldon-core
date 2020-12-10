@@ -1,4 +1,5 @@
-executor
+/executor
+/kafka-proxy
 ./vendor/
 ./tensorflow/
 ./serving/
@@ -7,3 +8,5 @@ cover.out
 executor.tar
 openapi/
 executor/api/rest/openapi/
+triton-inference-server/	
+_operator

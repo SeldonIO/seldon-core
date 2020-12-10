@@ -28,13 +28,17 @@ type TensorflowGrpcClient struct {
 	annotations    map[string]string
 }
 
+func (s *TensorflowGrpcClient) IsGrpc() bool {
+	return true
+}
+
 func NewTensorflowGrpcClient(predictor *v1.PredictorSpec, deploymentName string, annotations map[string]string) client.SeldonApiClient {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
 	}
 	smgc := TensorflowGrpcClient{
-		Log:            logf.Log.WithName("SeldonGrpcClient"),
+		Log:            logf.Log.WithName("TensorflowGrpcClient"),
 		callOptions:    opts,
 		conns:          make(map[string]*grpc.ClientConn),
 		Predictor:      predictor,
@@ -66,7 +70,6 @@ func (s *TensorflowGrpcClient) getConnection(host string, port int32, modelName 
 func (s *TensorflowGrpcClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	switch v := msg.GetPayload().(type) {
 	case *serving.PredictRequest, *serving.ClassificationRequest, *serving.MultiInferenceRequest:
-		s.Log.V(1).Info("Identity chain")
 		return msg, nil
 	case *serving.PredictResponse:
 		s.Log.V(1).Info("Chain!")
@@ -86,7 +89,7 @@ func (s *TensorflowGrpcClient) Chain(ctx context.Context, modelName string, msg 
 func (s *TensorflowGrpcClient) Predict(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	conn, err := s.getConnection(host, port, modelName)
 	if err != nil {
-		return s.CreateErrorPayload(err), err
+		return nil, err
 	}
 	grpcClient := serving.NewPredictionServiceClient(conn)
 	ctx = grpc2.AddMetadataToOutgoingGrpcContext(ctx, meta)

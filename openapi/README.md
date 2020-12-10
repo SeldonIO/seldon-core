@@ -5,7 +5,7 @@ We provide initial [OpenAPI](https://www.openapis.org/) 3.0 specifications for o
  * [Seldon Core External via Ambassador](https://github.com/SeldonIO/seldon-core/blob/master/openapi/engine.oas3.json)
  * [Seldon Core Internal microservice API](https://github.com/SeldonIO/seldon-core/blob/master/openapi/wrapper.oas3.json)
 
-You will find the API Specs at runtime at the ```/seldon.json``` path of your API endpoint.
+You will find the API Specs at runtime at the `/seldon.json` path of your API endpoint.
 
 You will need to be running 0.2.4-SNAPSHOT or later for this endpoint to be active.
 
@@ -15,7 +15,7 @@ You can view the APIs using the [Swagger UI tool](https://swagger.io/tools/swagg
 
 You can run this via Docker with:
 
-```
+```bash
 docker run --network host --rm  swaggerapi/swagger-editor
 ```
 
@@ -27,7 +27,7 @@ Open one of the two API specificatons referenced above.
 
 For using the Swagger "try it out" feature there are some caveats due to Swagger UI bugs:
 
- * For the [Seldon Core External via API Gateway](https://github.com/SeldonIO/seldon-core/blob/master/openapi/apife.oas3.json)
+ * For the [Seldon Core External via API Gateway](https://github.com/SeldonIO/seldon-core/blob/master/openapi/engine.oas3.json)
      * You will need to use a hardwired host, localhost:8002 is provided for Authorization as currently the Swagger UI can't handle variables in Authorization calls.
      * You will need to use the browser network console to get the bearer token from the returned json as this is not displayed by the Swagger UI.
  * For the [Seldon Internal API](https://github.com/SeldonIO/seldon-core/blob/master/openapi/wrapper.oas3.json)

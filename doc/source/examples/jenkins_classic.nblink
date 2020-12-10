@@ -1,3 +1,4 @@
 {
-  "path": "../../../examples/cicd/sig-mlops-jenkins-classic/jenkins_classic.ipynb"
+  "path": "../../../examples/cicd/sig-mlops-jenkins-classic/jenkins_classic.ipynb",
+  "extra-media": ["../../../examples/cicd/sig-mlops-jenkins-classic/images"]
 }

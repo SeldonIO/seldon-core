@@ -6,6 +6,20 @@ If you were running our Openshift 0.4.2 certified operator and are looking to up
 
 Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed features and bug-fixes in each version.
 
+## Upgrading to 1.5
+
+### REST and gRPC
+
+To take advantage of the ability to handle both REST and gRPC on any deployed model python model images will need to be recreated using the 1.5 python wrapper. If they are not updated they will only expose the protocol they were orginally wrapped for.
+
+You can use and extend the [backwards compatibility notebook](../examples/backwards_compatibility.html) to check your deployments will work if you do not intend to upgrade them.
+
+## Upgrading to 1.3
+
+### Breaking Changes
+
+The version of sklearn used by the default sklearn server will be 0.23.2. To use a different version you will need to follow the steps described in the [sklearn server documentation](../servers/sklearn.html).
+
 ## Upgrading to 1.2.1
 
 *[NOTE]* 1.2.0 has issue where all Seldon Deployments are marked as "NotReady" as there is a [bug caused by a volumeName update](https://github.com/SeldonIO/seldon-core/issues/2017). This can be resolved by following the 1.2.0 volume patch [as outlined by this example](../examples/patch_1_2.html). It is recommended to upgrade to version 1.2.1 directly instead.
@@ -23,7 +37,7 @@ All seldon-managed pods will be subject to a rolling update as part of this upgr
 
 The values.yaml for the seldon-core-operator helm chart has changed. The field `defaultRequestLoggerEndpointPrefix` is replaced by:
 
-```
+```yaml
   requestLogger:
     defaultEndpoint: 'http://default-broker'
 ```
@@ -40,13 +54,13 @@ As we moved to 1.x+ there are several breaking changes that need to be considere
 
 The deployments created by Seldon Core have been changed to follow a fixed scheme. It will now be:
 
-```
+```text
 <seldondeployment name>-<predictor name>-<podspec idx>-<container names>
 ```
 
 So for example:
 
-```
+```yaml
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
@@ -70,7 +84,7 @@ spec:
 
 For the above resource, one Deployment will be created with name:
 
-```
+```text
 rest-seldon-model-0-classifier
 ```
 

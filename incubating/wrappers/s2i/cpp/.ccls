@@ -1,0 +1,16 @@
+%clang
+
+-fdeclspec
+-fms-extensions
+-Wall
+-Wextra
+-std=c++14
+
+%h -x
+%h %hpp c++-header
+
+-DDEBUG=1
+
+-I./src/include/
+-I/usr/include/python3.6/
+

@@ -1,2 +1,6 @@
+seldon-core
 kfserving==0.3.0.1
-alibi-detect==0.4.0
+alibi-detect==0.4.2
+
+fbprophet==0.6
+holidays==0.9.11

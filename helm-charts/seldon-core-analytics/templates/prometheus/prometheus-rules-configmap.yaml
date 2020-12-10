@@ -1,8 +1,10 @@
+{{- if .Values.prometheus.enabled }}
 apiVersion: v1
 data:
-{{ (.Files.Glob "files/prometheus/rules/*.rules").AsConfig | indent 2 }}
+{{ (.Files.Glob "files/prometheus/rules/*.rules.yml").AsConfig | indent 2 }}
 kind: ConfigMap
 metadata:
   creationTimestamp: null
   name: prometheus-rules
   namespace: {{ .Release.Namespace }}
+{{- end }}

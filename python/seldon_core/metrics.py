@@ -80,16 +80,25 @@ DEFAULT_LABELS["seldon_deployment_name"] = DEFAULT_LABELS["deployment_name"]
 DEFAULT_LABELS["image_name"] = DEFAULT_LABELS["model_image"]
 DEFAULT_LABELS["image_version"] = DEFAULT_LABELS["model_version"]
 
+FEEDBACK_METRIC_METHOD_TAG = "feedback"
+PREDICT_METRIC_METHOD_TAG = "predict"
+INPUT_TRANSFORM_METRIC_METHOD_TAG = "inputtransform"
+OUTPUT_TRANSFORM_METRIC_METHOD_TAG = "outputtransform"
+ROUTER_METRIC_METHOD_TAG = "router"
+AGGREGATE_METRIC_METHOD_TAG = "aggregate"
+HEALTH_METRIC_METHOD_TAG = "health"
+
 
 class SeldonMetrics:
     """Class to manage custom metrics stored in shared memory."""
 
-    def __init__(self, worker_id_func=os.getpid):
+    def __init__(self, worker_id_func=os.getpid, extra_default_labels={}):
         # We keep reference to Manager so it does not get garbage collected
         self._manager = Manager()
         self._lock = self._manager.Lock()
         self.data = self._manager.dict()
         self.worker_id_func = worker_id_func
+        self._extra_default_labels = extra_default_labels
 
     def __del__(self):
         self._manager.shutdown()
@@ -98,42 +107,50 @@ class SeldonMetrics:
         """"Update metrics key corresponding to feedback reward counter."""
         if not reward or legacy_mode:
             return
-        self.update([{"type": "COUNTER", "key": FEEDBACK_KEY, "value": 1}])
-        self.update([{"type": "COUNTER", "key": FEEDBACK_REWARD_KEY, "value": reward}])
+        self.update(
+            [{"type": "COUNTER", "key": FEEDBACK_KEY, "value": 1}],
+            FEEDBACK_METRIC_METHOD_TAG,
+        )
+        self.update(
+            [{"type": "COUNTER", "key": FEEDBACK_REWARD_KEY, "value": reward}],
+            FEEDBACK_METRIC_METHOD_TAG,
+        )
 
-    def update(self, custom_metrics):
+    def update(self, custom_metrics: List[Dict], method: str):
         # Read a corresponding worker's metric data with lock as Proxy objects
         # are not thread-safe, see "Thread safety of proxies" here
         # https://docs.python.org/3.7/library/multiprocessing.html#programming-guidelines
         logger.debug("Updating metrics: {}".format(custom_metrics))
         with self._lock:
-            data = self.data.get(self.worker_id_func(), {})
+            worker_data = self.data.get(self.worker_id_func(), {})
         logger.debug("Read current metrics data from shared memory")
 
         for metrics in custom_metrics:
             metrics_type = metrics.get("type", "COUNTER")
-            key = metrics_type, metrics["key"]
             tags = metrics.get("tags", {})
+            tags["method"] = method
+            key = (metrics_type, metrics["key"], SeldonMetrics._generate_tags_key(tags))
+            # Add tag that specifies which method added the metrics
             if metrics_type == "COUNTER":
-                value = data.get(key, {}).get("value", 0)
-                data[key] = {"value": value + metrics["value"], "tags": tags}
+                value = worker_data.get(key, {}).get("value", 0)
+                worker_data[key] = {"value": value + metrics["value"], "tags": tags}
             elif metrics_type == "TIMER":
-                vals, sumv = data.get(key, {}).get(
+                vals, sumv = worker_data.get(key, {}).get(
                     "value", (list(np.zeros(len(BINS) - 1)), 0)
                 )
                 # Dividing by 1000 because unit is milliseconds
-                data[key] = {
+                worker_data[key] = {
                     "value": self._update_hist(metrics["value"] / 1000, vals, sumv),
                     "tags": tags,
                 }
             elif metrics_type == "GAUGE":
-                data[key] = {"value": metrics["value"], "tags": tags}
+                worker_data[key] = {"value": metrics["value"], "tags": tags}
             else:
                 logger.error(f"Unkown metrics type: {metrics_type}")
 
         # Write worker's data with lock (again - Proxy objects are not thread-safe)
         with self._lock:
-            self.data[self.worker_id_func()] = data
+            self.data[self.worker_id_func()] = worker_data
         logger.debug("Updated metrics in the shared memory.")
 
     def collect(self):
@@ -144,10 +161,10 @@ class SeldonMetrics:
             data = dict(self.data)
         logger.debug("Read current metrics data from shared memory")
 
-        for worker, metrics in data.items():
-            for (item_type, item_name), item in metrics.items():
+        for worker_id, worker_data in data.items():
+            for (item_type, item_name, item_tags), item in worker_data.items():
                 labels_keys, labels_values = self._merge_labels(
-                    str(worker), item["tags"]
+                    str(worker_id), item["tags"]
                 )
                 if item_type == "GAUGE":
                     yield self._expose_gauge(
@@ -170,10 +187,18 @@ class SeldonMetrics:
             exposition.CONTENT_TYPE_LATEST,
         )
 
-    @staticmethod
-    def _merge_labels(worker, tags):
-        labels = {**tags, **DEFAULT_LABELS, "worker_id": str(worker)}
+    def _merge_labels(self, worker, tags):
+        labels = {
+            **tags,
+            **DEFAULT_LABELS,
+            **self._extra_default_labels,
+            "worker_id": str(worker),
+        }
         return list(labels.keys()), list(labels.values())
+
+    @staticmethod
+    def _generate_tags_key(tags):
+        return "_".join(["-".join(i) for i in tags.items()])
 
     @staticmethod
     def _update_hist(x, vals, sumv):

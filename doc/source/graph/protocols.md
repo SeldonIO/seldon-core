@@ -4,8 +4,9 @@ Tensorflow protocol is only available in version >=1.1.
 
 Seldon Core supports the following data planes:
 
- * REST and gRPC Seldon protocol
- * REST and gRPC Tensorflow Serving Protocol
+ * [REST and gRPC Seldon protocol](#rest-and-grpc-seldon-protocol)
+ * [REST and gRPC Tensorflow Serving Protocol](#rest-and-grpc-tensorflow-protocol)
+ * [REST and gRPC V2 KFServing Protocol](#v2-kfserving-protocol)
 
 ## REST and gRPC Seldon Protocol
 
@@ -39,3 +40,49 @@ General considerations:
   * The name of the model in the `graph` section of the SeldonDeployment spec must match the name of the model loaded onto the Tensorflow Server.
 
 
+## V2 KFServing Protocol 
+
+Seldon has collaborated with the [NVIDIA Triton Server
+Project](https://github.com/triton-inference-server/server) and the [KFServing
+Project](https://github.com/kubeflow/kfserving) to create a new ML inference
+protocol.
+The core idea behind this joint effort is that this new protocol will become
+the standard inference protocol and will be used across multiple inference
+services.
+
+In Seldon Core, this protocol can be used by specifing `protocol: kfserving` on
+your `SeldonDeployment`. 
+For example, 
+
+```yaml
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: sklearn
+spec:
+  name: iris-predict
+  protocol: kfserving
+  predictors:
+  - graph:
+      children: []
+      implementation: SKLEARN_SERVER
+      modelUri: gs://seldon-models/sklearn/iris
+      name: classifier
+      parameters:
+        - name: method
+          type: STRING
+          value: predict
+    name: default
+```
+
+At present, the `kfserving` protocol is only supported in a subset of
+pre-packaged inference servers.
+In particular,
+
+| Pre-packaged server | Supported | Underlying runtime |
+| -- | -- | -- |
+| [TRITON_SERVER](../servers/triton.md) | ✅ | [NVIDIA Triton](https://github.com/triton-inference-server/server) |
+| [SKLEARN_SERVER](../servers/sklearn.md) | ✅  | [Seldon MLServer](https://github.com/seldonio/mlserver) |
+| [XGBOOST_SERVER](../servers/xgboost.md) | ✅  | [Seldon MLServer](https://github.com/seldonio/mlserver) |
+
+You can try out the `kfserving` in [this example notebook](../examples/protocol_examples.html). 

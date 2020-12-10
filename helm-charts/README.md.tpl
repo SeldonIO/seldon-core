@@ -1,7 +1,7 @@
 {{ template "chart.header" . }}
 {{ template "chart.deprecationWarning" . }}
 
-{{ template "chart.versionBadge" . }}{{ template "chart.typeBadge" . }}{{ template "chart.appVersionBadge" . }}
+![Version: {{ .Version }}](https://img.shields.io/static/v1?label=Version&message={{ .Version | replace "-" "--" }}&color=informational&style=flat-square) 
 
 {{ template "chart.description" . }}
 
@@ -9,38 +9,38 @@
 
 To use this chart, you will first need to add the `seldonio` Helm repo:
 
-```shell
+```bash
 helm repo add seldonio https://storage.googleapis.com/seldon-charts
 helm repo update
 ```
 
 {{- /* We need to differentiate between "app charts" and "inference graph charts" */ -}}
-{{- $appCharts := list "seldon-core-operator" "seldon-core-analytics" -}}
+{{- $appCharts := list "seldon-core-operator" "seldon-core-analytics" "seldon-core-loadtesting" -}}
 {{ if has .Name $appCharts }}
 
-You can now deploy the chart as:
+Onca that's done, you should then be able to deploy the chart as:
 
-```shell
+```bash
 kubectl create namespace seldon-system
 helm install {{ .Name }} seldonio/{{ .Name }} --namespace seldon-system
 ```
 
 {{ else }}
 
-Once that's done, you should be able to use the inference graph template as:
+Once that's done, you should then be able to use the inference graph template as:
 
-```shell
+```bash
 helm template $MY_MODEL_NAME seldonio/{{ .Name }} --namespace $MODELS_NAMESPACE
 ```
 
 Note that you can also deploy the inference graph directly to your cluster
 using:
 
-```shell
+```bash
 helm install $MY_MODEL_NAME seldonio/{{ .Name }} --namespace $MODELS_NAMESPACE
 ```
 
-{{- end -}}
+{{ end -}}
 
 {{ template "chart.homepageLine" . }}
 

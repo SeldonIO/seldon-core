@@ -49,14 +49,38 @@ extensions = [
     "sphinx.ext.ifconfig",
     "sphinx.ext.viewcode",
     #    'recommonmark',
-    "m2r",
+    "m2r2",
     "sphinx.ext.napoleon",
     "sphinx_autodoc_typehints",
-    "sphinxcontrib.apidoc",  # automatically generate API docs, see https://github.com/rtfd/readthedocs.org/issues/1139
+    # Automatically generate API docs,
+    # see https://github.com/rtfd/readthedocs.org/issues/1139
+    "sphinxcontrib.apidoc",
     "nbsphinx",
     "nbsphinx_link",  # for linking notebooks from outside sphinx source root
+    # Fix `ipython3` warning
+    # https://github.com/spatialaudio/nbsphinx/issues/24
+    "IPython.sphinxext.ipython_console_highlighting",
 ]
 
+# Ignore py:class warnings about 3rd party deps or ignored packages (e.g.
+# generated proto)
+# https://stackoverflow.com/a/30624034/5015573
+nitpick_ignore = [
+    ("py:class", "google.protobuf.any_pb2.Any"),
+    ("py:class", "google.protobuf.struct_pb2.ListValue"),
+    ("py:class", "gunicorn.app.base.BaseApplication"),
+    ("py:class", "numpy.ndarray"),
+    ("py:class", "pandas.core.frame.DataFrame"),
+    ("py:class", "proto.prediction_pb2.DefaultData"),
+    ("py:class", "proto.prediction_pb2.Feedback"),
+    ("py:class", "proto.prediction_pb2.SeldonMessage"),
+    ("py:class", "proto.prediction_pb2.SeldonMessageList"),
+    ("py:class", "proto.prediction_pb2.SeldonModelMetadata"),
+    ("py:data", "google.protobuf.any_pb2.Any"),
+]
+
+# Avoid "Duplicate explicit target name" warnings
+m2r_anonymous_references = True
 
 # nbsphinx settings
 # nbsphinx_execute = 'auto'
@@ -105,9 +129,37 @@ language = None
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
-is_fast_build = os.environ.get("FAST_BUILD", False)
-if is_fast_build and is_fast_build.lower() == "true":
+is_fast_build = os.environ.get("FAST_BUILD", "False")
+if is_fast_build.lower() == "true":
     exclude_patterns = ["examples", "python/api"]
+
+is_linkcheck = os.environ.get("LINKCHECK", "False")
+if is_linkcheck.lower() == "true":
+    exclude_patterns = [
+        # Ignore all PR and issues links
+        "reference/changelog.rst",
+        # Ignore old releases
+        "reference/release-0.2.3.md",
+        "reference/release-0.2.5.md",
+        "reference/release-0.2.6.md",
+        "reference/release-0.2.7.md",
+        "reference/release-0.3.0.md",
+        "reference/release-0.4.0.md",
+        "python/api",
+    ]
+
+linkcheck_ignore = [
+    # Ignore localhost links
+    "http://0.0.0.0",
+    "http://localhost",
+    # Ignore relative links (i.e. starting with `../` or `./`)
+    r"^\.{1,2}/",
+    # Ignore image links, which are not getting replaced with the correct link
+    # More info in this issue: https://github.com/miyakogi/m2r/issues/49
+    r"^(?!http).*\.png$",
+]
+# Ignore anchors, as they doesn't seem to work very well
+linkcheck_anchors_ignore = [".*"]
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = None
@@ -126,7 +178,7 @@ html_logo = "Seldon_White.png"
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-html_theme_options = {"sticky_navigation": False}
+html_theme_options = {"sticky_navigation": False, "includehidden": False}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -275,10 +327,10 @@ nbsphinx_prolog = (
 
     .. role:: raw-html(raw)
         :format: html
-    
+
     .. nbinfo::
         This page was generated from `{{ docpath }}`__.
-    
+
     __ https://github.com/SeldonIO/seldon-core/blob/
         """
     + git_rev

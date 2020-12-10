@@ -27,6 +27,8 @@ spec:
               - messagetype: tensor
                 schema:
                   shape: [ 1 ]
+              custom:
+                tag-key: tag-value
     graph:
       children: []
       name: my-model

@@ -1,6 +1,7 @@
 package k8s
 
 import (
+	"context"
 	. "github.com/onsi/gomega"
 	"k8s.io/client-go/kubernetes/fake"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -16,6 +17,6 @@ func TestConfigmapCreate(t *testing.T) {
 	dep, err := createManagerDeployment(client, TestNamespace)
 	g.Expect(err).To(BeNil())
 	cc := NewConfigmapCreator(client, ctrl.Log, scheme)
-	err = cc.CreateConfigmap(bytes, TestNamespace, dep)
+	err = cc.CreateConfigmap(context.TODO(), bytes, TestNamespace, dep)
 	g.Expect(err).To(BeNil())
 }

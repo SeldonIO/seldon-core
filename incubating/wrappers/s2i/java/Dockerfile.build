@@ -1,4 +1,5 @@
-FROM seldonio/core-builder:0.3
+ARG IMAGE_SOURCE=seldonio/core-builder:0.19
+FROM $IMAGE_SOURCE
 
 LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
 

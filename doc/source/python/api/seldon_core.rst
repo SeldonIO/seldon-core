@@ -10,6 +10,7 @@ Subpackages
 -----------
 
 .. toctree::
+   :maxdepth: 4
 
    seldon_core.proto
 
@@ -88,6 +89,14 @@ seldon\_core.microservice\_tester module
    :undoc-members:
    :show-inheritance:
 
+seldon\_core.mlmd\_utils module
+-------------------------------
+
+.. automodule:: seldon_core.mlmd_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 seldon\_core.persistence module
 -------------------------------
 
@@ -159,4 +168,3 @@ seldon\_core.wrapper module
    :members:
    :undoc-members:
    :show-inheritance:
-

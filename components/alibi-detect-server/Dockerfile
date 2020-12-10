@@ -1,7 +1,8 @@
-FROM registry.access.redhat.com/ubi8/python-36
+# TODO: Add to release script 
+FROM docker.io/seldonio/seldon-core-s2i-python37-ubi8:1.6.0-dev
 LABEL name="Seldon Alibi Detect Server" \
       vendor="Seldon Technologies" \
-      version="1.2.2-dev" \
+      version="1.6.0-dev" \
       release="1" \
       summary="Alibi Detect Server for Seldon Core" \
       description="The Alibi Detect Server provides outlier, drift and adversarial detection services for Seldon Core"
@@ -26,8 +27,9 @@ RUN pip install -e .
 RUN pip install pip-licenses
 RUN mkdir ./licenses && pip-licenses --from=mixed --format=csv --output-file=./licenses/license_info.csv && \
     pip-licenses --from=mixed --format=plain-vertical --with-license-file --no-license-path --output-file=./licenses/license.txt
-USER root
+
+
+RUN yum install -y mesa-libGL
 RUN mv ./licenses /licenses
-USER default
 
 ENTRYPOINT ["python", "-m", "adserver"]

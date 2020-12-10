@@ -1,22 +1,18 @@
 FROM registry.access.redhat.com/ubi8/python-36
 LABEL name="Seldon Alibi Wrapper" \
       vendor="Seldon Technologies" \
-      version="1.2.2-dev" \
+      version="1.6.0-dev" \
       release="1" \
       summary="Alibi Explainer Wrapper for Seldon Core" \
       description="Allows Seldon Core inference models to run with a black box model explanation model from the Alibi:Explain project"
 
-
-COPY kfserving/python/alibiexplainer alibiexplainer
-COPY kfserving/python/kfserving kfserving
-COPY kfserving/python/third_party third_party
-
 USER root
-RUN pip install --upgrade pip && pip install -e ./kfserving
-RUN git clone https://github.com/SeldonIO/alibi.git && \
-    cd alibi && \
-    pip install .
-RUN pip install -e ./alibiexplainer
+RUN pip install --upgrade pip
+COPY setup.py setup.py
+COPY alibiexplainer alibiexplainer
+COPY README.md README.md
+
+RUN pip install . --no-binary protobuf
 
 RUN chmod -R a+rwx /opt/app-root/lib/python3.6
 

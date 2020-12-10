@@ -44,14 +44,16 @@ parseQS <- function(qs){
 v <- function(...) cat(sprintf(...), sep='', file=stdout())
 
 validate_json <- function(jdf) {
-  if (!"data" %in% names(jdf)) {
-    return("data field is missing")
-  }
-  else if (!("ndarray" %in% names(jdf$data) || "tensor" %in% names(jdf$data)) ) {
-    return("data field must contain ndarray or tensor field")
-  }
-  else{
+  if ("data" %in% names(jdf)){
+    if (!("ndarray" %in% names(jdf$data) || "tensor" %in% names(jdf$data)) ){
+      return("data field must contain 'ndarray' or 'tensor' field")
+    } else {
+      return("OK")
+    }
+  } else if ("jsonData" %in% names(jdf)){
     return("OK")
+  } else {
+    return("input must contain 'data' or 'jsonData' field")
   }
 }
 
@@ -64,14 +66,16 @@ validate_feedback <- function(jdf) {
   {
     return("reward field is missing")
   }
-  else if (!"data" %in% names(jdf$request)) {
-    return("data request field is missing")
-  }
-  else if (!("ndarray" %in% names(jdf$request$data) || "tensor" %in% names(jdf$request$data)) ) {
-    return("data field must contain ndarray or tensor field")
-  }
-  else{
+  else if ("data" %in% names(jdf)){
+    if (!("ndarray" %in% names(jdf$data) || "tensor" %in% names(jdf$data)) ){
+      return("data field must contain 'ndarray' or 'tensor' field")
+    } else {
+      return("OK")
+    }
+  } else if ("jsonData" %in% names(jdf)){
     return("OK")
+  } else {
+    return("input must contain 'data' or 'jsonData' field")
   }
 }
 
@@ -94,25 +98,40 @@ extract_names <- function(jdf) {
 }
 
 create_response <- function(req_df,res_df){
-  if ("ndarray" %in% names(req_df$data)){
-    templ <- '{"data":{"names":%s,"ndarray":%s}}'
-    names <- toJSON(colnames(res_df))
-    values <- toJSON(as.matrix(res_df))
-    sprintf(templ,names,values)
-  } else {
-    templ <- '{"data":{"names":%s,"tensor":{"shape":%s,"values":%s}}}'
-    names <- toJSON(colnames(res_df))
-    values <- toJSON(c(res_df))
-    dims <- toJSON(dim(res_df))
-    sprintf(templ,names,dims,values)
+  if ("data" %in% names(req_df)){
+    if ("ndarray" %in% names(req_df$data)){
+      templ <- '{"data":{"names":%s,"ndarray":%s}}'
+      names <- toJSON(colnames(res_df))
+      values <- toJSON(res_df, dataframe = "values", na = "null") #  The "dataframe" argument is for data type persistence and "na" argument is for null value persistence
+      sprintf(templ,names,values)
+    } else {
+      templ <- '{"data":{"names":%s,"tensor":{"shape":%s,"values":%s}}}'
+      names <- toJSON(colnames(res_df))
+      values <- toJSON(c(res_df))
+      dims <- toJSON(dim(res_df))
+      sprintf(templ,names,dims,values)
+    }
+  } else if ("jsonData" %in% names(req_df)){
+    templ <- '{"jsonData":{%s}}'
+    jdata <- toJSON(res_df, na = "null") #  The "na" argument is for null value persistence
+    jdata <- substr(jdata, 3, nchar(jdata) - 2) #  Remove {} and [] for jsonData format like {"jsonData":{"key1":value1, "key2":value2}}
+    sprintf(templ, jdata)
   }
 }
 
 create_dataframe <- function(jdf) {
-  data = extract_data(jdf)
-  names = extract_names(jdf)
-  df <- data.frame(data)
-  colnames(df) <- names
+  if("data" %in% names(jdf)){
+    data = extract_data(jdf)
+    names = extract_names(jdf)
+    df <- data.frame(do.call(rbind, lapply(data, rbind)))  # The step is to  binding the output from fromJSON(json, simplifyVector = F) in endpoints
+    df[df == "NULL"] <- NA # Replace NULL value by  NA if input value contain null
+    df <- data.frame(lapply(df, unlist), stringsAsFactors = F) # unlist all columns because columns are list structure
+    colnames(df) <- names
+  }else if("jsonData" %in% names(jdf)){
+    ls <- jdf$jsonData
+    ls[names(ls)[unlist(lapply(ls, is.null))]] <- NA # Replace NULL value by  NA if input value contain null
+    df <- data.frame(ls, stringsAsFactors = F)
+  }
   df
 }
 
@@ -131,7 +150,7 @@ predict_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
   #  print(c(obj,get(obj,envir = req)))
   #}
   json <- parse_data(req) # Hack as Plumber using URLDecode which doesn't decode +
-  jdf <- fromJSON(json)
+  jdf <- fromJSON(json, simplifyVector = F) # The simplifyVector argument is for data type persistence, avoid to convert numeric value to character
   valid_input <- validate_json(jdf)
   if (valid_input[1] == "OK") {
     df <- create_dataframe(jdf)
@@ -147,7 +166,7 @@ predict_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
 
 send_feedback_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
   json <- parse_data(req)
-  jdf <- fromJSON(json)
+  jdf <- fromJSON(json, simplifyVector = F) # The simplifyVector argument is for data type persistence, avoid to convert numeric value to character
   valid_input <- validate_feedback(jdf)
   if (valid_input[1] == "OK") {
     request <- create_dataframe(jdf$request)
@@ -169,7 +188,7 @@ send_feedback_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
 
 transform_input_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
   json <- parse_data(req)
-  jdf <- fromJSON(json)
+  jdf <- fromJSON(json, simplifyVector = F) # The simplifyVector argument is for data type persistence, avoid to convert numeric value to character
   valid_input <- validate_json(jdf)
   if (valid_input[1] == "OK") {
     df <- create_dataframe(jdf)
@@ -185,7 +204,7 @@ transform_input_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
 
 transform_output_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
   json <- parse_data(req)
-  jdf <- fromJSON(json)
+  jdf <- fromJSON(json, simplifyVector = F) # The simplifyVector argument is for data type persistence, avoid to convert numeric value to character
   valid_input <- validate_json(jdf)
   if (valid_input[1] == "OK") {
     df <- create_dataframe(jdf)
@@ -201,7 +220,7 @@ transform_output_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
 
 route_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
   json <- parse_data(req)
-  jdf <- fromJSON(json)
+  jdf <- fromJSON(json, simplifyVector = F) # The simplifyVector argument is for data type persistence, avoid to convert numeric value to character
   valid_input <- validate_json(jdf)
   if (valid_input[1] == "OK") {
     df <- create_dataframe(jdf)

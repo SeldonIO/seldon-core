@@ -1,42 +1,28 @@
 SHELL := /bin/bash
 VERSION := $(shell cat ../../version.txt)
 IMAGE_NAME_BASE=xgboostserver
-IMAGE_BASE=seldonio/${IMAGE_NAME_BASE}
+IMAGE_NAME=seldonio/${IMAGE_NAME_BASE}
 KIND_NAME ?= kind
 
-build_%:
+build:
 	s2i build \
-		-E environment_$* \
+		-E environment \
 		./xgboostserver \
 		seldonio/seldon-core-s2i-python37-ubi8:${VERSION} \
-		${IMAGE_BASE}_$*:${VERSION}
+		${IMAGE_NAME}:${VERSION}
 
-push_%:
-	docker push ${IMAGE_BASE}_$*:${VERSION}
+push:
+	docker push ${IMAGE_NAME}:${VERSION}
 
-kind_load_%:
-	kind load -v 3 docker-image ${IMAGE_BASE}_$*:${VERSION} --name ${KIND_NAME}
-
-.PHONY: push_all
-push_all: push_rest push_grpc
-
-.PHONY: build_all
-build_all: build_rest build_grpc
-
-.PHONY: kind_load_all
-kind_load: build_all kind_load_rest kind_load_grpc
+kind_load: build
+	kind load -v 3 docker-image ${IMAGE_NAME}:${VERSION} --name ${KIND_NAME}
 
 
-# https://connect.redhat.com/project/4127491/view
-scan_rest=ospid-096b89ca-b4a6-4cff-8c13-d65945a5adb9
-# 
-scan_grpc=ospid-ba6387aa-1144-4764-8b04-80e3d34fbcc4
-redhat-image-scan-%:
-	docker pull ${IMAGE_BASE}_$*:${VERSION}
+scan=ospid-14bf7fc8-e25e-458a-8bd0-60509132158d
+redhat-image-scan:
+	docker pull ${IMAGE_NAME}:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
-		echo $${rh_password_xgboostserver_$*} | docker login -u unused scan.connect.redhat.com --password-stdin
-	docker tag ${IMAGE_BASE}_$*:${VERSION} scan.connect.redhat.com/${scan_$*}/${IMAGE_NAME_BASE}_$*:${VERSION}
-	docker push scan.connect.redhat.com/${scan_$*}/${IMAGE_NAME_BASE}_$*:${VERSION}
+		echo $${rh_password_xgboostserver} | docker login -u unused scan.connect.redhat.com --password-stdin
+	docker tag ${IMAGE_NAME}:${VERSION} scan.connect.redhat.com/${scan}/${IMAGE_NAME_BASE}:${VERSION}
+	docker push scan.connect.redhat.com/${scan}/${IMAGE_NAME_BASE}:${VERSION}
 
-.PHONY: redhat-image-scan
-redhat-image-scan: redhat-image-scan-rest redhat-image-scan-grpc

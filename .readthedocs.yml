@@ -1,9 +1,16 @@
 version: 2
 
+sphinx:
+  builder: html
+  configuration: doc/source/conf.py
+
+formats:
+  - pdf
+  - epub
+
 python:
   version: 3.6
   install:
     - method: pip
       path: python
-    - requirements: doc/requirements_docs.txt
-
+    - requirements: doc/requirements.txt

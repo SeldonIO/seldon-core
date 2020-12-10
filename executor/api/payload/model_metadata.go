@@ -6,9 +6,10 @@ package payload
 // and ModelMetadata is returned by a corresponding method. It is therefore defined
 // here and not in `predictor_process/metadata.go` in order to avoid circular dependency.
 type ModelMetadata struct {
-	Name     string      `json:"name,omitempty"`
-	Platform string      `json:"platform,omitempty"`
-	Versions []string    `json:"versions,omitempty"`
-	Inputs   interface{} `json:"inputs,omitempty"`
-	Outputs  interface{} `json:"outputs,omitempty"`
+	Name     string            `json:"name,omitempty"`
+	Platform string            `json:"platform,omitempty"`
+	Versions []string          `json:"versions,omitempty"`
+	Inputs   interface{}       `json:"inputs,omitempty"`
+	Outputs  interface{}       `json:"outputs,omitempty"`
+	Custom   map[string]string `json:"custom,omitempty"`
 }

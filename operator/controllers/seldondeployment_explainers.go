@@ -17,13 +17,17 @@ limitations under the License.
 package controllers
 
 import (
+	"context"
 	"fmt"
-	"k8s.io/client-go/kubernetes"
 	"sort"
 	"strconv"
 	"strings"
 
+	"k8s.io/client-go/kubernetes"
+
 	"encoding/json"
+	"os"
+
 	"github.com/go-logr/logr"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
@@ -33,7 +37,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"os"
 )
 
 const (
@@ -47,10 +50,11 @@ var (
 
 type ExplainerInitialiser struct {
 	clientset kubernetes.Interface
+	ctx       context.Context
 }
 
-func NewExplainerInitializer(clientset kubernetes.Interface) *ExplainerInitialiser {
-	return &ExplainerInitialiser{clientset: clientset}
+func NewExplainerInitializer(ctx context.Context, clientset kubernetes.Interface) *ExplainerInitialiser {
+	return &ExplainerInitialiser{clientset: clientset, ctx: ctx}
 }
 
 type ExplainerConfig struct {
@@ -58,7 +62,7 @@ type ExplainerConfig struct {
 }
 
 func (ei *ExplainerInitialiser) getExplainerConfigs() (*ExplainerConfig, error) {
-	configMap, err := ei.clientset.CoreV1().ConfigMaps(ControllerNamespace).Get(ControllerConfigMapName, metav1.GetOptions{})
+	configMap, err := ei.clientset.CoreV1().ConfigMaps(ControllerNamespace).Get(ei.ctx, ControllerConfigMapName, metav1.GetOptions{})
 	if err != nil {
 		//log.Error(err, "Failed to find config map", "name", ControllerConfigMapName)
 		return nil, err
@@ -211,7 +215,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		if p.Explainer.ModelUri != "" {
 			var err error
 
-			mi := NewModelInitializer(ei.clientset)
+			mi := NewModelInitializer(ei.ctx, ei.clientset)
 			deploy, err = mi.InjectModelInitializer(deploy, explainerContainer.Name, p.Explainer.ModelUri, p.Explainer.ServiceAccountName, p.Explainer.EnvSecretRefName)
 			if err != nil {
 				return err
@@ -221,6 +225,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		// for explainer use same service name as its Deployment
 		eSvcName := machinelearningv1.GetExplainerDeploymentName(mlDep.GetName(), p)
 
+		deploy = addLabelsToDeployment(deploy, nil, p)
 		deploy.ObjectMeta.Labels[machinelearningv1.Label_seldon_app] = eSvcName
 		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_seldon_app] = eSvcName
 
@@ -231,6 +236,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		if err != nil {
 			return err
 		}
+		eSvc = addLabelsToService(eSvc, nil, p)
 		c.services = append(c.services, eSvc)
 		c.serviceDetails[eSvcName] = &machinelearningv1.ServiceStatus{
 			SvcName:      eSvcName,

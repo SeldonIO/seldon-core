@@ -9,5 +9,4 @@ repos:
     rev: stable
     hooks:
       - id: black
-        args: ['python/', 'testing/', 'operator/helm', 'operator/seldon-operator/hack', '--exclude', '(testing/scripts/proto|seldon_core/proto/|.eggs)']
-        language_version: python3.6
+        args: ['python/', 'testing/', 'components/alibi-detect-server', '--exclude', '(testing/scripts/proto|seldon_core/proto/|.eggs)']

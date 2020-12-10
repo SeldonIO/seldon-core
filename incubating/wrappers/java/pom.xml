@@ -1,18 +1,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.seldon.wrapper</groupId>
   <artifactId>seldon-core-wrapper</artifactId>
   <packaging>jar</packaging>
-  <version>0.2.0</version>
+  <version>0.3.0</version>
   <name>Seldon Core Java Wrapper</name>
   <url>http://maven.apache.org</url>
   <description>Wrapper for seldon-core Java prediction models.
-    Allows easy creation of a Spring Boot app with Tomcat and gRPC
-    servers for handling the microservice APIs for
-    seldon-core.</description>
+  Allows easy creation of a Spring Boot app with Tomcat and gRPC
+  servers for handling the microservice APIs for
+  seldon-core.</description>
   <organization>
     <name>Seldon</name>
     <url>https://www.seldon.io/</url>
@@ -23,7 +23,6 @@
       <url>http://www.apache.org/licenses/LICENSE-2.0</url>
     </license>
   </licenses>
-
   <developers>
     <developer>
       <id>cc</id>
@@ -36,45 +35,42 @@
       </roles>
     </developer>
   </developers>
-
   <scm>
     <connection>
-      scm:git:git://github.com/SeldonIO/seldon-core.git</connection>
+    scm:git:git://github.com/SeldonIO/seldon-core.git</connection>
     <url>https://github.com/SeldonIO/seldon-core/tree/master</url>
     <developerConnection>
-      scm:git:git@github.com:SeldonIO/seldon-core.git</developerConnection>
+    scm:git:git@github.com:SeldonIO/seldon-core.git</developerConnection>
   </scm>
-
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>2.2.4.RELEASE</version>
   </parent>
-
   <properties>
     <java.version>13</java.version>
     <maven.compiler.source>13</maven.compiler.source>
     <maven.compiler.target>13</maven.compiler.target>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <project.build.sourceEncoding>
+    UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>
+    UTF-8</project.reporting.outputEncoding>
     <grpc.version>1.25.0</grpc.version>
     <pb.version>3.11.1</pb.version>
     <start-class>io.seldon.wrapper.App</start-class>
   </properties>
-
   <distributionManagement>
     <snapshotRepository>
       <id>ossrh</id>
       <url>
-        https://oss.sonatype.org/content/repositories/snapshots</url>
+      https://oss.sonatype.org/content/repositories/snapshots</url>
     </snapshotRepository>
     <repository>
       <id>ossrh</id>
       <url>
-        https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+      https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
   </distributionManagement>
-
   <build>
     <finalName>${project.artifactId}-${project.version}</finalName>
     <extensions>
@@ -89,7 +85,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <executions>
-          <execution >
+          <execution>
             <id>repackage</id>
             <goals>
               <goal>repackage</goal>
@@ -119,10 +115,10 @@
         <version>0.6.1</version>
         <configuration>
           <protocArtifact>
-            com.google.protobuf:protoc:${pb.version}:exe:${os.detected.classifier}</protocArtifact>
+          com.google.protobuf:protoc:${pb.version}:exe:${os.detected.classifier}</protocArtifact>
           <pluginId>grpc-java</pluginId>
           <pluginArtifact>
-            io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
+          io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
           <clearOutputDirectory>false</clearOutputDirectory>
           <checkStaleness>true</checkStaleness>
         </configuration>
@@ -199,7 +195,6 @@
       </plugin>
     </plugins>
   </build>
-
   <dependencies>
     <dependency>
       <groupId>org.springframework.boot</groupId>

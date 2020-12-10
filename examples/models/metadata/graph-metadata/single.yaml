@@ -9,14 +9,14 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/metadata-generic-node_rest:0.3
+        - image: seldonio/metadata-generic-node:0.4
           name: model
           env:
           - name: MODEL_METADATA
             value: |
               ---
               name: single-node
-              versions: [ generic-node/v0.3 ]
+              versions: [ generic-node/v0.4 ]
               platform: seldon
               inputs:
               - messagetype: tensor

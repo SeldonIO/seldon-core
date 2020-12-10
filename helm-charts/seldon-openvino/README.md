@@ -2,7 +2,7 @@
 
 > **:exclamation: This Helm Chart is deprecated!**
 
-![Version: 0.1](https://img.shields.io/badge/Version-0.1-informational?style=flat-square)
+![Version: 0.1](https://img.shields.io/static/v1?label=Version&message=0.1&color=informational&style=flat-square)
 
 Proxy integration to deploy models optimized for Intel OpenVINO in Seldon Core
 
@@ -10,21 +10,21 @@ Proxy integration to deploy models optimized for Intel OpenVINO in Seldon Core
 
 To use this chart, you will first need to add the `seldonio` Helm repo:
 
-```shell
+```bash
 helm repo add seldonio https://storage.googleapis.com/seldon-charts
 helm repo update
 ```
 
-Once that's done, you should be able to use the inference graph template as:
+Once that's done, you should then be able to use the inference graph template as:
 
-```shell
+```bash
 helm template $MY_MODEL_NAME seldonio/seldon-openvino --namespace $MODELS_NAMESPACE
 ```
 
 Note that you can also deploy the inference graph directly to your cluster
 using:
 
-```shell
+```bash
 helm install $MY_MODEL_NAME seldonio/seldon-openvino --namespace $MODELS_NAMESPACE
 ```
 

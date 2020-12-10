@@ -39,6 +39,9 @@ outputs:
 - messagetype: tensor
   schema:
     shape: [ 1 ]
+custom:
+  author: seldon-dev
+  extra: information
 ```
 
 See [SKLearn Server example with MinIO](../../examples/minio-sklearn.html) for more details.
@@ -62,6 +65,7 @@ class Model:
                 }
             ],
             "outputs": [{"messagetype": "tensor", "schema": {"shape": [1]}}],
+            "custom": {"author": "seldon-dev", "extra": "information"},
         }
         return meta
 ```
@@ -102,6 +106,9 @@ spec:
               - messagetype: tensor
                 schema:
                   shape: [ 1 ]
+              custom:
+                author: seldon-dev
+                extra: information
     graph:
       name: my-model
       ...
@@ -132,6 +139,7 @@ Example response:
             "outputs": [
                 {"messagetype": "tensor", "schema": {"names": ["one-output"]}}
             ],
+            "custom": {"author": "seldon-dev", "extra": "information"}
         },
         "node-two": {
             "name": "node-two",
@@ -143,6 +151,7 @@ Example response:
             "outputs": [
                 {"messagetype": "tensor", "schema": {"names": ["two-output"]}}
             ],
+            "custom": {"author": "seldon-dev", "extra": "information"}
         }
     },
     "graphinputs": [
@@ -168,7 +177,8 @@ Example response:
   "versions": ["my-model/v1"],
   "platform": "platform-name",
   "inputs": [{"messagetype": "tensor", "schema": {"shape": [1, 5]}}],
-  "outputs": [{"messagetype": "tensor", "schema": {"shape": [1, 3]}}]
+  "outputs": [{"messagetype": "tensor", "schema": {"shape": [1, 3]}}],
+  "custom": {"author": "seldon-dev", "extra": "information"}
 }
 ```
 
@@ -177,7 +187,9 @@ Example response:
 
 You can define inputs/outputs of your model metadata using one of two formats:
 - `v1` format that closely correlates to the current structure of `SeldonMessage`
-- `v2` format that is future-proof and fully compatible with [kfserving dataplane proposal](https://github.com/kubeflow/kfserving/blob/master/docs/predict-api/v2/required_api.md#model-metadata) dataplane proposal
+- `v2` format that is future-proof and fully compatible with [kfserving dataplane proposal](https://github.com/kubeflow/kfserving/blob/master/docs/predict-api/v2/required_api.md#model-metadata).
+
+Though most fields that you can specify on model metadata follows [kfserving dataplane proposal](https://github.com/kubeflow/kfserving/blob/master/docs/predict-api/v2/required_api.md#model-metadata) you can also specify extra one called `custom` that allows you define any custom metadata you may find useful. The `custom` field is meant to hold dict-like structure with both keys and values being `string`.
 
 See also: [Metadata Schema and Validation](../../examples/metadata_schema.html) notebook.
 
@@ -197,6 +209,9 @@ outputs:
 - messagetype: ndarray
   schema:
     shape: [ 1 ]
+custom:
+  author: seldon-dev
+  extra: information
 ```
 
 This metadata would mean that following two input is valid for this model:
@@ -229,6 +244,9 @@ outputs:
 - messagetype: ndarray
   schema:
     shape: [ 1 ]
+custom:
+  author: seldon-dev
+  extra: information
 ```
 
 Example model input:
@@ -249,6 +267,9 @@ inputs:
 - messagetype: strData
 outputs:
 - messagetype: strData
+custom:
+  author: seldon-dev
+  extra: information
 ```
 
 Example model input:
@@ -273,24 +294,27 @@ outputs:
 - messagetype: tensor
   schema:
     shape: [ 1 ]
+custom:
+  author: seldon-dev
+  extra: information
 ```
 
 
 ### kfserving TensorMetadata
 
 You can easily define metadata for your models that is compatible with [kfserving dataplane proposal](https://github.com/kubeflow/kfserving/blob/master/docs/predict-api/v2/required_api.md#model-metadata) specification.
-```
+```javascript
 $metadata_model_response =
 {
   "name" : $string,
-  "versions" : [ $string, ... ] #optional,
+  "versions" : [ $string, ... ], // optional
   "platform" : $string,
   "inputs" : [ $metadata_tensor, ... ],
   "outputs" : [ $metadata_tensor, ... ]
 }
 ```
 with
-```
+```javascript
 $metadata_tensor =
 {
   "name" : $string,

@@ -1,13 +1,14 @@
-import numpy as np
+import yaml
+import os
 import logging
 import requests
+import numpy as np
 import pandas as pd
+
 from mlflow import pyfunc
 from seldon_core import Storage
 from seldon_core.user_model import SeldonComponent
-from typing import Dict, List, Union, Iterable
-import yaml
-import os
+from typing import Dict, List, Union
 
 logger = logging.getLogger()
 
@@ -15,7 +16,7 @@ MLFLOW_SERVER = "model"
 
 
 class MLFlowServer(SeldonComponent):
-    def __init__(self, model_uri: str, xtype: str = 'ndarray'):
+    def __init__(self, model_uri: str, xtype: str = "ndarray"):
         super().__init__()
         logger.info(f"Creating MLFLow server with URI {model_uri}")
         logger.info(f"xtype: {xtype}")
@@ -30,9 +31,9 @@ class MLFlowServer(SeldonComponent):
         self.ready = True
 
     def predict(
-        self, X: np.ndarray, feature_names: Iterable[str] = [], meta: Dict = None
+        self, X: np.ndarray, feature_names: List[str] = [], meta: Dict = None
     ) -> Union[np.ndarray, List, Dict, str, bytes]:
-        logger.info(f"Requesting prediction with: {X}")
+        logger.debug(f"Requesting prediction with: {X}")
 
         if not self.ready:
             raise requests.HTTPError("Model not loaded yet")
@@ -45,7 +46,8 @@ class MLFlowServer(SeldonComponent):
             else:
                 df = pd.DataFrame(data=X)
             result = self._model.predict(df)
-        logger.info(f"Prediction result: {result}")
+
+        logger.debug(f"Prediction result: {result}")
         return result
 
     def init_metadata(self):

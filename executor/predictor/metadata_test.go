@@ -19,6 +19,9 @@ var metadataMap = map[string]payload.ModelMetadata{
 		Outputs: []MetadataTensor{
 			{Name: "output", DataType: "BYTES", Shape: []int{1, 3}},
 		},
+		Custom: map[string]string{
+			"author": "seldon-dev",
+		},
 	},
 	"model-2": {
 		Name:     "model-2",
@@ -29,6 +32,9 @@ var metadataMap = map[string]payload.ModelMetadata{
 		},
 		Outputs: []MetadataTensor{
 			{Name: "output", DataType: "BYTES", Shape: []int{3}},
+		},
+		Custom: map[string]string{
+			"author": "seldon-dev",
 		},
 	},
 	"model-combiner": {
@@ -42,6 +48,9 @@ var metadataMap = map[string]payload.ModelMetadata{
 		Outputs: []MetadataTensor{
 			{Name: "combined output", DataType: "BYTES", Shape: []int{3}},
 		},
+		Custom: map[string]string{
+			"author": "seldon-dev",
+		},
 	},
 	"model-a1": {
 		Name:     "model-a1",
@@ -52,6 +61,9 @@ var metadataMap = map[string]payload.ModelMetadata{
 		},
 		Outputs: []MetadataTensor{
 			{Name: "output", DataType: "BYTES", Shape: []int{1, 10}},
+		},
+		Custom: map[string]string{
+			"author": "seldon-dev",
 		},
 	},
 	"model-a2": {
@@ -64,6 +76,9 @@ var metadataMap = map[string]payload.ModelMetadata{
 		Outputs: []MetadataTensor{
 			{Name: "output", DataType: "BYTES", Shape: []int{1, 20}},
 		},
+		Custom: map[string]string{
+			"author": "seldon-dev",
+		},
 	},
 	"model-b1": {
 		Name:     "model-b1",
@@ -75,6 +90,9 @@ var metadataMap = map[string]payload.ModelMetadata{
 		Outputs: []MetadataTensor{
 			{Name: "output", DataType: "BYTES", Shape: []int{1, 10}},
 		},
+		Custom: map[string]string{
+			"author": "seldon-dev",
+		},
 	},
 	"model-router": {
 		Name:     "model-router",
@@ -82,6 +100,9 @@ var metadataMap = map[string]payload.ModelMetadata{
 		Versions: []string{"model-version"},
 		Inputs:   nil,
 		Outputs:  nil,
+		Custom: map[string]string{
+			"author": "seldon-dev",
+		},
 	},
 	"model-v1-array": {
 		Name:     "model-v1-array",
@@ -94,6 +115,9 @@ var metadataMap = map[string]payload.ModelMetadata{
 		Outputs: map[string]interface{}{
 			"datatype": "array",
 			"shape":    []int{1},
+		},
+		Custom: map[string]string{
+			"author": "seldon-dev",
 		},
 	},
 	"model-v1-jsondata": {
@@ -109,6 +133,9 @@ var metadataMap = map[string]payload.ModelMetadata{
 				"custom": "definition",
 			},
 		},
+		Custom: map[string]string{
+			"author": "seldon-dev",
+		},
 	},
 	"model-v1-array-string-mix": {
 		Name:     "model-v1-array-string-mix",
@@ -120,6 +147,9 @@ var metadataMap = map[string]payload.ModelMetadata{
 		},
 		Outputs: map[string]interface{}{
 			"datatype": "strData",
+		},
+		Custom: map[string]string{
+			"author": "seldon-dev",
 		},
 	},
 }

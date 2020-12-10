@@ -2,6 +2,7 @@ package logger
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/cloudevents/sdk-go"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/transport"
@@ -13,6 +14,7 @@ import (
 const (
 	CEInferenceRequest  = "io.seldon.serving.inference.request"
 	CEInferenceResponse = "io.seldon.serving.inference.response"
+	CEFeedback          = "io.seldon.serving.feedback"
 	// cloud events extension attributes have to be lowercase alphanumeric
 	RequestIdAttr            = "requestid"
 	ModelIdAttr              = "modelid"
@@ -76,8 +78,12 @@ func (W *Worker) sendCloudEvent(logReq LogRequest) error {
 	event.SetID(logReq.Id)
 	if logReq.ReqType == InferenceRequest {
 		event.SetType(CEInferenceRequest)
-	} else {
+	} else if logReq.ReqType == InferenceResponse {
 		event.SetType(CEInferenceResponse)
+	} else if logReq.ReqType == InferenceFeedback {
+		event.SetType(CEFeedback)
+	} else {
+		return fmt.Errorf("Incorrect log request type: %s", errors.New("Incorrect log request type"))
 	}
 
 	event.SetExtension(ModelIdAttr, logReq.ModelId)

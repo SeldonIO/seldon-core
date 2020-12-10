@@ -31,7 +31,7 @@ def scan_images(debug=False):
     "servers/sklearnserver",
     "servers/mlflowserver",
     "servers/xgboostserver",
-    "integrations/tfserving",
+    "servers/tfserving_proxy",
     "components/alibi-explain-server",
     "components/storage-initializer",
     "servers/tfserving",

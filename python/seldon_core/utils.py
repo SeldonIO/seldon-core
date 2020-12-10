@@ -3,6 +3,7 @@ import json
 import sys
 import base64
 import numpy as np
+import logging
 
 from google.protobuf import json_format, any_pb2
 from google.protobuf.json_format import MessageToDict, ParseDict
@@ -22,6 +23,24 @@ from typing import Tuple, Dict, Union, List, Optional, Iterable
 if _TF_PRESENT:
     import tensorflow as tf
     from tensorflow.core.framework.tensor_pb2 import TensorProto
+
+logger = logging.getLogger(__name__)
+
+
+ENV_MODEL_NAME = "PREDICTIVE_UNIT_ID"
+ENV_MODEL_IMAGE = "PREDICTIVE_UNIT_IMAGE"
+NONIMPLEMENTED_MSG = "NOT_IMPLEMENTED"
+
+model_name = os.environ.get(ENV_MODEL_NAME, f"{NONIMPLEMENTED_MSG}")
+image_name = os.environ.get(
+    ENV_MODEL_IMAGE, f"{NONIMPLEMENTED_MSG}:{NONIMPLEMENTED_MSG}"
+)
+
+
+def get_request_path():
+    if model_name == NONIMPLEMENTED_MSG:
+        return {}
+    return {model_name: image_name}
 
 
 def json_to_seldon_message(
@@ -349,6 +368,7 @@ def construct_response_json(
     client_raw_response: Union[np.ndarray, str, bytes, dict],
     meta: dict = None,
     custom_metrics: List[Dict] = None,
+    runtime_tags: Dict = None,
 ) -> Union[List, Dict]:
     """
     This class converts a raw REST response into a JSON object that has the same structure as
@@ -446,6 +466,8 @@ def construct_response_json(
     custom_tags = client_custom_tags(user_model)
     if custom_tags:
         tags.update(custom_tags)
+    if runtime_tags:
+        tags.update(runtime_tags)
     if custom_metrics:
         metrics.extend(custom_metrics)
     if tags:
@@ -455,6 +477,11 @@ def construct_response_json(
     puid = client_request_raw.get("meta", {}).get("puid", None)
     if puid:
         response["meta"]["puid"] = puid
+
+    request_path = client_request_raw.get("meta", {}).get("requestPath", {})
+    request_path = {**get_request_path(), **request_path}
+    if request_path:
+        response["meta"]["requestPath"] = request_path
 
     return response
 
@@ -466,6 +493,7 @@ def construct_response(
     client_raw_response: Union[np.ndarray, str, bytes, dict, any_pb2.Any],
     meta: dict = None,
     custom_metrics: List[Dict] = None,
+    runtime_tags: Dict = None,
 ) -> prediction_pb2.SeldonMessage:
     """
 
@@ -492,12 +520,19 @@ def construct_response(
     if meta:
         tags = meta.get("tags", {})
         metrics = meta.get("metrics", [])
+        request_path = meta.get("requestPath", {})
     else:
         tags = {}
         metrics = []
+        request_path = {}
+    request_path = {**get_request_path(), **request_path}
+    if request_path:
+        meta_json["requestPath"] = request_path
     custom_tags = client_custom_tags(user_model)
     if custom_tags:
         tags.update(custom_tags)
+    if runtime_tags:
+        tags.update(runtime_tags)
     if custom_metrics:
         metrics.extend(custom_metrics)
     if tags:
@@ -507,6 +542,7 @@ def construct_response(
     if client_request.meta:
         if client_request.meta.puid:
             meta_json["puid"] = client_request.meta.puid
+
     json_format.ParseDict(meta_json, meta_pb)
     if isinstance(client_raw_response, np.ndarray) or isinstance(
         client_raw_response, list
@@ -682,3 +718,37 @@ def getenv_as_bool(*env_vars, default=False):
         return default
 
     return val.lower() in ["1", "true", "t"]
+
+
+def setup_tracing(interface_name: str) -> object:
+    logger.info("Initializing tracing")
+    from jaeger_client import Config
+
+    jaeger_serv = os.environ.get("JAEGER_AGENT_HOST", "0.0.0.0")
+    jaeger_port = os.environ.get("JAEGER_AGENT_PORT", 5775)
+    jaeger_config = os.environ.get("JAEGER_CONFIG_PATH", None)
+    if jaeger_config is None:
+        logger.info("Using default tracing config")
+        config = Config(
+            config={  # usually read from some yaml config
+                "sampler": {"type": "const", "param": 1},
+                "local_agent": {
+                    "reporting_host": jaeger_serv,
+                    "reporting_port": jaeger_port,
+                },
+                "logging": True,
+            },
+            service_name=interface_name,
+            validate=True,
+        )
+    else:
+        logger.info("Loading tracing config from %s", jaeger_config)
+        import yaml
+
+        with open(jaeger_config, "r") as stream:
+            config_dict = yaml.load(stream)
+            config = Config(
+                config=config_dict, service_name=interface_name, validate=True
+            )
+    # this call also sets opentracing.tracer
+    return config.initialize_tracer()

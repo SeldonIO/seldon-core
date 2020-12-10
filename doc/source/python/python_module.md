@@ -71,47 +71,6 @@ Keep in mind that this will include some dependencies which may not be used.
 Therefore, unless necessary, we recommend most users to install the default
 distribution of `seldon-core` as [documented above](#install).
 
-## Seldon Core Microservices
-
-Seldon allows you to easily take your runtime inference code and create a Docker container that can be managed by Seldon Core. Follow the [S2I instructions](../wrappers/python.md) to wrap your code.
-
-You can also create your own image and utilise the `seldon-core-microservice` executable to run your model code.
-
-
-## Seldon Core Python API Client
-
-The python package contains a module that provides a reference python client for the internal Seldon Core microservice API and the external APIs. More specifically it provides:
-
- * Internal microservice API
-    * Make REST or gRPC calls
-    * Test all methods: `predict`, `transform-input`, `transform-output`, `route`, `aggregate`
-    * Provide a numpy array, binary data or string data as payload or get random data generated as payload for given shape
-    * Send data as tensor, TFTensor or ndarray
- * External API
-    * Make REST or gRPC calls
-    * Call the API via Ambassador, Istio or Seldon's OAUTH API gateway.
-    * Test `predict` or `feedback` endpoints
-    * Provide a numpy array, binary data or string data as payload or get random data generated as payload for given shape
-    * Send data as tensor, TFTensor or ndarray
-
-Basic usage of the client is to create a `SeldonClient` object first. For example for a Seldon Deployment called "mymodel" running in the namespace `seldon` with Ambassador endpoint at "localhost:8003" (i.e., via port-forwarding):
-
-```python
-from seldon_core.seldon_client import SeldonClient
-sc = SeldonClient(deployment_name="mymodel",namespace="seldon", gateway_endpoint="localhost:8003")
-```
-
-Then make calls of various types. For example, to make a random prediction  via the Ambassador gateway using REST:
-
-```python
-r = sc.predict(gateway="ambassador",transport="rest")
-print(r)
-```
-
-Examples of using the `seldon_client` module can be found in the [example notebook](../examples/helm_examples.html).
-
-The API docs can be found [here](api/seldon_core.html#module-seldon_core.seldon_client).
-
 ## Troubleshooting
 
 If you experience problems after installing `seldon-core`, here are some tips
@@ -144,5 +103,11 @@ Alternatively, if you can't upgrade to a more recent version, the following
 also works:
 
 ```bash
-$ pip install azure-storage-blob==2.1.0 seldon-core 
+$ pip install azure-storage-blob==2.1.0 seldon-core
 ```
+
+## Next Steps
+
+[Create your python inference class](python_component.md)
+
+

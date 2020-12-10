@@ -1,3 +1,4 @@
 {
-  "path": "../../../notebooks/helm_examples.ipynb"
+  "path": "../../../notebooks/helm_examples.ipynb",
+  "extra-media": ["../../../notebooks/images"]
 }

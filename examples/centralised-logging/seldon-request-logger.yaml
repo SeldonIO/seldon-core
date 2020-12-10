@@ -13,7 +13,7 @@ spec:
         autoscaling.knative.dev/minScale: "1"
     spec:
       containers:
-        - image: docker.io/seldonio/seldon-request-logger:0.3.2
+        - image: docker.io/seldonio/seldon-request-logger:1.4.0
           imagePullPolicy: Always
           env:
            - name: ELASTICSEARCH_HOST

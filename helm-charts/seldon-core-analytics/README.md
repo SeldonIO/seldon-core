@@ -1,23 +1,71 @@
-# Seldon Core Analytics
+# seldon-core-analytics
 
-This is a Prometheus and Grafana installation with a basic Grafana dashboard showing the default Prometheus metrics exposed by Seldon's Service Orchestrator for each Seldon Deployment graph that is run.
+![Version: 1.5.0-dev](https://img.shields.io/static/v1?label=Version&message=1.5.0--dev&color=informational&style=flat-square)
 
-## Installation
+Prometheus and Grafana installation with a basic Grafana dashboard showing
+the default Prometheus metrics exposed by Seldon for each inference graph
+deployed.
 
-The Helm chart parameters for Prometheus and Grafana can be found and edited in values.yaml, examples of which can be seen for Prometheus [here](https://github.com/helm/charts/blob/master/stable/prometheus/values.yaml) and for Grafana [here](https://github.com/helm/charts/blob/master/stable/grafana/values.yaml).
+## Usage
 
-An example install is shown below:
+To use this chart, you will first need to add the `seldonio` Helm repo:
 
-```
-helm install seldon-core-analytics . -n seldon-system
-```
-
-To access the Grafana dashboard port-forward to the Grafana pod:
-
-```
-kubectl port-forward $(kubectl get pods -l app=grafana -n seldon-system -o jsonpath='{.items[0].metadata.name}') -n seldon-system 3000:3000
+```bash
+helm repo add seldonio https://storage.googleapis.com/seldon-charts
+helm repo update
 ```
 
-You can then open http://localhost:3000 to log into Grafana using your set password from values.yaml.
+Onca that's done, you should then be able to deploy the chart as:
 
+```bash
+kubectl create namespace seldon-system
+helm install seldon-core-analytics seldonio/seldon-core-analytics --namespace seldon-system
+```
 
+**Homepage:** <https://github.com/SeldonIO/seldon-core>
+
+## Source Code
+
+* <https://github.com/SeldonIO/seldon-core>
+* <https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core-analytics>
+
+## Requirements
+
+| Repository | Name | Version |
+|------------|------|---------|
+| https://kubernetes-charts.storage.googleapis.com | grafana | ~5.1.4 |
+| https://kubernetes-charts.storage.googleapis.com | prometheus | ~11.4.0 |
+
+## Values
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| alertmanager.config.enabled | bool | `false` |  |
+| grafana.adminPassword | string | `"password"` |  |
+| grafana.adminUser | string | `"admin"` |  |
+| grafana.datasources."datasources.yaml".apiVersion | int | `1` |  |
+| grafana.datasources."datasources.yaml".datasources[0].access | string | `"proxy"` |  |
+| grafana.datasources."datasources.yaml".datasources[0].name | string | `"prometheus"` |  |
+| grafana.datasources."datasources.yaml".datasources[0].type | string | `"prometheus"` |  |
+| grafana.datasources."datasources.yaml".datasources[0].url | string | `"http://seldon-core-analytics-prometheus-seldon"` |  |
+| grafana.enabled | bool | `true` |  |
+| grafana.sidecar.dashboards.enabled | bool | `true` |  |
+| grafana.sidecar.dashboards.label | string | `"seldon_dashboard"` |  |
+| prometheus.enabled | bool | `true` |  |
+| prometheus.server.configPath | string | `"/etc/prometheus/conf/prometheus-config.yaml"` |  |
+| prometheus.server.extraConfigmapMounts[0].configMap | string | `"prometheus-server-conf"` |  |
+| prometheus.server.extraConfigmapMounts[0].mountPath | string | `"/etc/prometheus/conf/"` |  |
+| prometheus.server.extraConfigmapMounts[0].name | string | `"prometheus-config-volume"` |  |
+| prometheus.server.extraConfigmapMounts[0].readOnly | bool | `true` |  |
+| prometheus.server.extraConfigmapMounts[0].subPath | string | `""` |  |
+| prometheus.server.extraConfigmapMounts[1].configMap | string | `"prometheus-rules"` |  |
+| prometheus.server.extraConfigmapMounts[1].mountPath | string | `"/etc/prometheus-rules"` |  |
+| prometheus.server.extraConfigmapMounts[1].name | string | `"prometheus-rules-volume"` |  |
+| prometheus.server.extraConfigmapMounts[1].readOnly | bool | `true` |  |
+| prometheus.server.extraConfigmapMounts[1].subPath | string | `""` |  |
+| prometheus.server.name | string | `"seldon"` |  |
+| prometheus.server.persistentVolume.enabled | bool | `false` |  |
+| prometheus.server.persistentVolume.existingClaim | string | `"seldon-claim"` |  |
+| prometheus.server.persistentVolume.mountPath | string | `"/seldon-data"` |  |
+| prometheus.service_type | string | `"ClusterIP"` |  |
+| rbac.enabled | bool | `true` |  |

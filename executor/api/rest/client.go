@@ -45,6 +45,10 @@ type JSONRestClient struct {
 	metrics        *metric.ClientMetrics
 }
 
+func (smc *JSONRestClient) IsGrpc() bool {
+	return false
+}
+
 func (smc *JSONRestClient) CreateErrorPayload(err error) payload.SeldonPayload {
 	respFailed := proto.SeldonMessage{Status: &proto.Status{Code: http.StatusInternalServerError, Info: err.Error()}}
 	m := jsonpb.Marshaler{}
@@ -174,10 +178,14 @@ func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method 
 	if opentracing.IsGlobalTracerRegistered() {
 		tracer := opentracing.GlobalTracer()
 
+		startSpanOptions := make([]opentracing.StartSpanOption, 0)
 		parentSpan := opentracing.SpanFromContext(ctx)
+		if parentSpan != nil {
+			startSpanOptions = append(startSpanOptions, opentracing.ChildOf(parentSpan.Context()))
+		}
 		clientSpan := opentracing.StartSpan(
 			method,
-			opentracing.ChildOf(parentSpan.Context()))
+			startSpanOptions...)
 		defer clientSpan.Finish()
 		tracer.Inject(clientSpan.Context(), opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(req.Header))
 	}
@@ -208,7 +216,8 @@ func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method 
 }
 
 func (smc *JSONRestClient) modifyMethod(method string, modelName string) string {
-	if smc.Protocol == api.ProtocolTensorflow {
+	switch smc.Protocol {
+	case api.ProtocolTensorflow:
 		switch method {
 		case client.SeldonPredictPath, client.SeldonTransformInputPath, client.SeldonTransformOutputPath:
 			return "/v1/models/" + modelName + ":predict"
@@ -223,6 +232,23 @@ func (smc *JSONRestClient) modifyMethod(method string, modelName string) string 
 		case client.SeldonMetadataPath:
 			return "/v1/models/" + modelName + "/metadata"
 		}
+	case api.ProtocolKFServing:
+		switch method {
+		case client.SeldonPredictPath, client.SeldonTransformInputPath, client.SeldonTransformOutputPath:
+			return "/v2/models/" + modelName + "/infer"
+		case client.SeldonCombinePath:
+			return "/v2/models/" + modelName + "/aggregate"
+		case client.SeldonRoutePath:
+			return "/v2/models/" + modelName + "/route"
+		case client.SeldonFeedbackPath:
+			return "/v2/models/" + modelName + "/feedback"
+		case client.SeldonStatusPath:
+			return "/v2/models/" + modelName + "/ready"
+		case client.SeldonMetadataPath:
+			return "/v2/models/" + modelName
+		}
+	default:
+		return method
 	}
 	return method
 }
@@ -278,6 +304,8 @@ func (smc *JSONRestClient) Chain(ctx context.Context, modelName string, msg payl
 		return msg, nil
 	case api.ProtocolTensorflow: // Attempt to chain tensorflow payload
 		return ChainTensorflow(msg)
+	case api.ProtocolKFServing:
+		return ChainKFserving(msg)
 	}
 	return nil, errors.Errorf("Unknown protocol %s", smc.Protocol)
 }
@@ -296,47 +324,16 @@ func (smc *JSONRestClient) Route(ctx context.Context, modelName string, host str
 	if err != nil {
 		return 0, err
 	} else {
-		var routes []int
-		msg := sp.GetPayload().([]byte)
-
-		var sm proto.SeldonMessage
-		value := string(msg)
-		err := jsonpb.UnmarshalString(value, &sm)
-		if err == nil {
-			//Remove in future
-			routes = util.ExtractRouteFromSeldonMessage(&sm)
-		} else {
-			routes, err = ExtractRouteAsJsonArray(msg)
-			if err != nil {
-				return 0, err
-			}
-		}
-
-		//Only returning first route. API could be extended to allow multiple routes
-		return routes[0], nil
+		return util.ExtractRouteFromSeldonJson(sp)
 	}
-}
-
-func isJSON(data []byte) bool {
-	var js json.RawMessage
-	return json.Unmarshal(data, &js) == nil
 }
 
 func (smc *JSONRestClient) Combine(ctx context.Context, modelName string, host string, port int32, msgs []payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
-	// Extract into string array checking the data is JSON
-	strData := make([]string, len(msgs))
-	for i, sm := range msgs {
-		if !isJSON(sm.GetPayload().([]byte)) {
-			return nil, invalidPayload("Data is not JSON")
-		} else {
-			strData[i] = string(sm.GetPayload().([]byte))
-		}
+	req, err := CombineSeldonMessagesToJson(msgs)
+	if err != nil {
+		return nil, err
 	}
-	// Create JSON list of messages
-	joined := strings.Join(strData, ",")
-	jStr := "[" + joined + "]"
-	req := payload.BytesPayload{Msg: []byte(jStr), ContentType: ContentTypeJSON}
-	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonCombinePath, modelName), host, port, &req, meta)
+	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonCombinePath, modelName), host, port, req, meta)
 }
 
 func (smc *JSONRestClient) TransformOutput(ctx context.Context, modelName string, host string, port int32, req payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
@@ -344,5 +341,9 @@ func (smc *JSONRestClient) TransformOutput(ctx context.Context, modelName string
 }
 
 func (smc *JSONRestClient) Feedback(ctx context.Context, modelName string, host string, port int32, req payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+	// Currently feedback is enabled across all protocols but client only works on seldon protocol
+	if smc.Protocol != api.ProtocolSeldon {
+		return req, nil
+	}
 	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonFeedbackPath, modelName), host, port, req, meta)
 }

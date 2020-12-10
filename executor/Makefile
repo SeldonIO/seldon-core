@@ -6,7 +6,7 @@ IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
 IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${VERSION}
 IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
 
-EXECUTOR_FOLDERS ?= ./api/... ./predictor/... ./k8s/...
+EXECUTOR_FOLDERS ?= ./api/... ./predictor/... ./k8s/... ./logger/...
 
 KIND_NAME ?= kind
 
@@ -27,8 +27,18 @@ vet:
 
 
 # Build manager binary
-executor: fmt vet
-	go build -o executor main.go
+executor: copy_operator fmt vet
+	go build -o executor cmd/executor/main.go
+
+
+kafka-proxy: copy_operator fmt vet
+	go build -o kafka-proxy cmd/proxy/main.go
+
+
+.PHONY: copy_operator
+copy_operator:
+	rm -rf _operator
+	cp -r ../operator _operator
 
 
 .PHONY: copy_protos
@@ -39,7 +49,7 @@ copy_protos:
 .PHONY: compile_seldon_proto
 compile_seldon_proto:
 	cp ../proto/prediction.proto api/grpc/seldon/proto
-	cd api/grpc/seldon/proto && protoc -I. -I${GOPATH}/src/github.com/tensorflow/tensorflow --go_out=paths=source_relative,plugins=grpc:. prediction.proto
+	cd api/grpc/seldon/proto && protoc -I. -I../../../../proto/ --go_out=paths=source_relative,plugins=grpc:. prediction.proto
 	sed -i "s/package api/package proto/" api/grpc/seldon/proto/prediction.pb.go
 	rm api/grpc/seldon/proto/prediction.proto
 
@@ -53,13 +63,24 @@ compile_tensorflow_proto:
 	cd proto/tensorflow/core && go mod init github.com/tensorflow/tensorflow/tensorflow/go/core && cd -
 	go build ./proto/tensorflow/serving
 
+
+compile_kfserving_proto:
+	#git clone https://github.com/NVIDIA/triton-inference-server
+	mkdir -p api/grpc/kfserving/inference
+	cp triton-inference-server/src/core/*.proto api/grpc/kfserving/inference
+	cd api/grpc/kfserving/inference && protoc -I. --go_out=paths=source_relative,plugins=grpc:. grpc_service.proto && protoc -I. --go_out=paths=source_relative,plugins=grpc:. model_config.proto && protoc -I. --go_out=paths=source_relative,plugins=grpc:. server_status.proto
+	#sed -i "s/package nvidia_inferenceserver/package proto/" api/grpc/kfserving/proto/grpc_service.pb.go
+	#sed -i "s/package nvidia_inferenceserver/package proto/" api/grpc/kfserving/proto/model_config.pb.go
+	#sed -i "s/package nvidia_inferenceserver/package proto/" api/grpc/kfserving/proto/server_status.pb.go
+
+
 .PHONY: add_protos
 add_protos:
 	cd tensorflow && find ./tensorflow -name '*.proto' | cpio -pdm ../proto
 	cd serving && find ./tensorflow_serving -name '*.proto' | cpio -pdm ../proto
 
 # Run tests
-test: fmt vet
+test: copy_operator fmt vet
 	go test ${EXECUTOR_FOLDERS} -coverprofile cover.out
 
 copy_openapi_resources:
@@ -69,11 +90,11 @@ copy_openapi_resources:
 
 # Build the docker image
 docker-build: test copy_openapi_resources
-	cd .. && docker build -f executor/Dockerfile -t ${IMG} .
+	docker build -f Dockerfile.executor -t ${IMG} .
 
 # Build the docker image for Redhat
 docker-build-redhat: test copy_openapi_resources
-	cd .. && docker build -f executor/Dockerfile.redhat -t ${IMG_REDHAT} .
+	docker build -f Dockerfile.executor.redhat -t ${IMG_REDHAT} .
 
 # Push the docker image
 docker-push:
@@ -103,6 +124,7 @@ clean:
 	rm -rf vendor
 	rm -rf tensorflow
 	rm -rf serving
+	rm -rf triton-inference-server
 
 install-dev:
 	# Tool to generate license info
@@ -110,8 +132,10 @@ install-dev:
 		'git+https://github.com/kubeflow/testing#egg=go-license-tools&subdirectory=py/kubeflow/testing/go-license-tools'
 
 
-licenses/dep.txt: go.mod
+.PHONY: licenses/dep.txt
+licenses/dep.txt:
 	go list -m all | cut -d ' ' -f 1 > licenses/dep.txt
+
 
 .PHONY: licenses
 licenses: licenses/dep.txt
@@ -127,7 +151,8 @@ licenses: licenses/dep.txt
 	concatenate-license -o licenses/license.txt licenses/license_info.csv
 
 
-lint: licenses/dep.txt
+.PHONY: lint
+lint: copy_operator licenses/dep.txt
 	# Check if licenses have changed
 	git \
 		--no-pager diff \

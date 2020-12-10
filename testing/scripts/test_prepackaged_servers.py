@@ -7,12 +7,19 @@ from seldon_e2e_utils import (
     wait_for_rollout,
     initial_rest_request,
     rest_request_ambassador,
+    grpc_request_ambassador,
     retry_run,
     create_random_data,
     wait_for_status,
     rest_request,
+    log_sdep_logs,
 )
+from e2e_utils import v2_protocol
+from e2e_utils.models import deploy_model
 from conftest import SELDON_E2E_TESTS_USE_EXECUTOR
+import numpy as np
+import json
+from google.protobuf import json_format
 
 skipif_engine = pytest.mark.skipif(
     not SELDON_E2E_TESTS_USE_EXECUTOR, reason="Not supported by the Java engine"
@@ -43,8 +50,44 @@ class TestPrepack(object):
         assert res["name"] == "iris"
         assert res["versions"] == ["iris/v1"]
 
+        r = grpc_request_ambassador(
+            "sklearn", namespace, data=np.array([[0.1, 0.2, 0.3, 0.4]])
+        )
+        res = json.loads(json_format.MessageToJson(r))
+        logging.info(res)
+
         logging.warning("Success for test_prepack_sklearn")
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
+
+    @skipif_engine
+    def test_sklearn_v2(self, namespace):
+        deploy_model(
+            "sklearn",
+            namespace=namespace,
+            protocol="kfserving",
+            model_implementation="SKLEARN_SERVER",
+            model_uri="gs://seldon-models/sklearn/iris",
+        )
+        wait_for_status("sklearn", namespace)
+        wait_for_rollout("sklearn", namespace)
+        time.sleep(1)
+
+        logging.warning("Initial request")
+        r = v2_protocol.inference_request(
+            model_name="sklearn",
+            namespace=namespace,
+            payload={
+                "inputs": [
+                    {
+                        "name": "input-0",
+                        "shape": [1, 4],
+                        "datatype": "FP32",
+                        "data": [[0.1, 0.2, 0.3, 0.4]],
+                    }
+                ]
+            },
+        )
+        assert r.status_code == 200
 
     # Test prepackaged server for tfserving
     def test_tfserving(self, namespace):
@@ -86,8 +129,44 @@ class TestPrepack(object):
         assert res["name"] == "xgboost-iris"
         assert res["versions"] == ["xgboost-iris/v1"]
 
+        r = grpc_request_ambassador(
+            "xgboost", namespace, data=np.array([[0.1, 0.2, 0.3, 0.4]])
+        )
+        res = json.loads(json_format.MessageToJson(r))
+        logging.info(res)
+
         logging.warning("Success for test_prepack_xgboost")
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
+
+    @skipif_engine
+    def test_xgboost_v2(self, namespace):
+        deploy_model(
+            "xgboost",
+            namespace=namespace,
+            protocol="kfserving",
+            model_implementation="XGBOOST_SERVER",
+            model_uri="gs://seldon-models/xgboost/iris",
+        )
+        wait_for_status("xgboost", namespace)
+        wait_for_rollout("xgboost", namespace)
+        time.sleep(1)
+
+        logging.warning("Initial request")
+        r = v2_protocol.inference_request(
+            model_name="xgboost",
+            namespace=namespace,
+            payload={
+                "inputs": [
+                    {
+                        "name": "input-0",
+                        "shape": [1, 4],
+                        "datatype": "FP32",
+                        "data": [[0.1, 0.2, 0.3, 0.4]],
+                    }
+                ]
+            },
+        )
+        assert r.status_code == 200
 
     # Test prepackaged server for MLflow
     @skipif_engine
@@ -140,8 +219,14 @@ class TestPrepack(object):
         r = initial_rest_request(
             "movie", namespace, data=["This is test data"], dtype="ndarray"
         )
+        log_sdep_logs("movie", namespace)
         assert r.status_code == 200
-        e = rest_request(
+
+        # First request most likely will fail because AnchorText explainer
+        # is creating the explainer on first request - we skip checking output
+        # of it, sleep for some time and then do the actual explanation request
+        # we use in the test
+        e = initial_rest_request(
             "movie",
             namespace,
             data=["This is test data"],
@@ -149,6 +234,19 @@ class TestPrepack(object):
             method="explain",
             predictor_name="movies-predictor",
         )
+        log_sdep_logs("movie", namespace)
+
+        time.sleep(30)
+
+        e = initial_rest_request(
+            "movie",
+            namespace,
+            data=["This is test data"],
+            dtype="ndarray",
+            method="explain",
+            predictor_name="movies-predictor",
+        )
+        log_sdep_logs("movie", namespace)
         assert e.status_code == 200
         logging.warning("Success for test_prepack_sklearn")
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)

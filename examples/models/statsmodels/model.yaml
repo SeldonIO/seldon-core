@@ -1,0 +1,21 @@
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: holt-predictor
+spec:
+  name: holt-predictor
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/statsmodel-holts:0.1
+          imagePullPolicy: IfNotPresent
+          name: holt-predictor
+    graph:
+      children: []
+      endpoint:
+        type: REST
+      name: holt-predictor
+      type: MODEL
+    name: holt-predictor
+    replicas: 1

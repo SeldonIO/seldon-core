@@ -1,9 +1,11 @@
-apiVersion: v1
-description: Seldon Core AB test template. Allows you to split traffic between two models.
-keywords:
-- kubernetes
-- machine-learning
+apiVersion: v2
 name: seldon-abtest
+description: Chart to deploy an AB test in Seldon Core. Allows you to split traffic between two models.
+version: 0.2.0
+home: https://github.com/SeldonIO/seldon-core
 sources:
-- https://github.com/SeldonIO/seldon-core
-version: 0.1
+  - https://github.com/SeldonIO/seldon-core
+  - https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-abtest
+keywords:
+  - kubernetes
+  - machine-learning

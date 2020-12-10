@@ -1,4 +1,4 @@
-apiVersion: v1
+apiVersion: v2
 dependencies:
 - condition: grafana.enabled
   name: grafana
@@ -8,7 +8,14 @@ dependencies:
   name: prometheus
   repository: https://kubernetes-charts.storage.googleapis.com
   version: ~11.4.0
-description: Seldon Core Analytics
+description: 'Prometheus and Grafana installation with a basic Grafana dashboard showing
+
+  the default Prometheus metrics exposed by Seldon for each inference graph
+
+  deployed.
+
+  '
+home: https://github.com/SeldonIO/seldon-core
 keywords:
 - seldon-core
 - kubernetes
@@ -18,4 +25,5 @@ keywords:
 name: seldon-core-analytics
 sources:
 - https://github.com/SeldonIO/seldon-core
-version: 1.2.2-dev
+- https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core-analytics
+version: 1.6.0-dev

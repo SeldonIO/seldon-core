@@ -1,0 +1,28 @@
+#!/bin/bash -e
+#
+# S2I assemble script for the 'seldon-core-s2i-java-build' image.
+# The 'assemble' script builds your application source so that it is ready to run.
+#
+# For more information refer to the documentation:
+#	https://github.com/openshift/source-to-image/blob/master/docs/builder_image.md
+#
+
+# If the 'seldon-core-s2i-java-build' assemble script is executed with the '-h' flag, print the usage.
+if [[ "$1" == "-h" ]]; then
+	exec /usr/libexec/s2i/usage
+fi
+
+if [[ -z "$SERVICE_TYPE" ]]; then
+
+    echo "Failed to find required env var SERVICE_TYPE, should be one of MODEL, ROUTER, TRANSFORMER, COMBINER."
+    exit 1
+fi
+
+
+
+cd /build
+
+echo "---> Installing application source..."
+cp -Rf /tmp/src/. ./
+
+mvn package -DskipTests -Dmaven.javadoc.skip=true -Dmaven.site.skip=true -Dmaven.source.skip=true

@@ -1,13 +1,13 @@
 # Metrics
 
-Seldon Core exposes metrics that can be scraped by Prometheus. The core metrics are exposed by the service orchestrator (```executor```).
+Seldon Core exposes metrics that can be scraped by Prometheus. The core metrics are exposed by the service orchestrator (`executor`).
 
 The metrics are:
 
 **Prediction Requests**
 
- * ```seldon_api_executor_server_requests_seconds_(bucket,count,sum) ``` : Requests to the service orchestrator from an ingress, e.g. API gateway or Ambassador
- * ```seldon_api_executor_client_requests_seconds_(bucket,count,sum) ``` : Requests from the service orchestrator to a component, e.g., a model
+ * `seldon_api_executor_server_requests_seconds_(bucket,count,sum) ` : Requests to the service orchestrator from an ingress, e.g. API gateway or Ambassador
+ * `seldon_api_executor_client_requests_seconds_(bucket,count,sum) ` : Requests from the service orchestrator to a component, e.g., a model
 
 Each metric has the following key value pairs for further filtering which will be taken from the SeldonDeployment custom resource that is running:
 
@@ -127,13 +127,13 @@ ports:
 ```
 
 This require us to use a following entry
-```
+```yaml
   - source_labels: [__meta_kubernetes_pod_container_port_name]
     action: keep
     regex: metrics(-.*)?
 ```
 in the Prometheus [config](https://github.com/SeldonIO/seldon-core/blob/master/helm-charts/seldon-core-analytics/files/prometheus/prometheus-config.yaml) together with following two annotations:
-```
+```yaml
 prometheus.io/scrape: "true"
 prometheus.io/path: "/prometheus"
 ```
@@ -152,7 +152,7 @@ prometheus.io/port: "8000"
 
 ### Labels
 
-As we expose the metrics via `Prometheus`, if ```tags``` are added they must appear in every metric response otherwise `Prometheus` will consider such metrics as a new time series, see official [documentation](https://prometheus.io/docs/practices/naming/).
+As we expose the metrics via `Prometheus`, if `tags` are added they must appear in every metric response otherwise `Prometheus` will consider such metrics as a new time series, see official [documentation](https://prometheus.io/docs/practices/naming/).
 
 Before Seldon Core 1.1 orchestrator enforced presence of same set of labels using the [micrometer](https://micrometer.io/) library to expose metrics. Exceptions would happen if this condition have been violated.
 

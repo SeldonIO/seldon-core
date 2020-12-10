@@ -43,15 +43,17 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-
 	"encoding/json"
+
+	kedav1alpha1 "github.com/kedacore/keda/api/v1alpha1"
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 
 	istio_networking "istio.io/api/networking/v1alpha3"
 	istio "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscaling "k8s.io/api/autoscaling/v2beta1"
 	corev1 "k8s.io/api/core/v1"
+	policy "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -60,11 +62,23 @@ const (
 	ENV_DEFAULT_ENGINE_SERVER_GRPC_PORT = "ENGINE_SERVER_GRPC_PORT"
 	ENV_CONTROLLER_ID                   = "CONTROLLER_ID"
 
+	// This env var in the operator allows you to change the default path
+	// 		to mount the cert in the containers
+	ENV_DEFAULT_CERT_MOUNT_PATH_NAME = "DEFAULT_CERT_MOUNT_PATH_NAME"
+	// The ENV VAR NAME for containers to be able to find the path
+	SELDON_MOUNT_PATH_ENV_NAME = "SELDON_CERT_MOUNT_PATH"
+
 	DEFAULT_ENGINE_CONTAINER_PORT = 8000
 	DEFAULT_ENGINE_GRPC_PORT      = 5001
 
 	AMBASSADOR_ANNOTATION = "getambassador.io/config"
 	LABEL_CONTROLLER_ID   = "seldon.io/controller-id"
+
+	ENV_KEDA_ENABLED = "KEDA_ENABLED"
+)
+
+var (
+	envDefaultCertMountPath = utils.GetEnv(ENV_DEFAULT_CERT_MOUNT_PATH_NAME, "/cert/")
 )
 
 // SeldonDeploymentReconciler reconciles a SeldonDeployment object
@@ -84,6 +98,8 @@ type components struct {
 	deployments           []*appsv1.Deployment
 	services              []*corev1.Service
 	hpas                  []*autoscaling.HorizontalPodAutoscaler
+	kedaScaledObjects     []*kedav1alpha1.ScaledObject
+	pdbs                  []*policy.PodDisruptionBudget
 	virtualServices       []*istio.VirtualService
 	destinationRules      []*istio.DestinationRule
 	defaultDeploymentName string
@@ -93,6 +109,13 @@ type components struct {
 type httpGrpcPorts struct {
 	httpPort int
 	grpcPort int
+}
+
+func init() {
+	// Allow unknown fields in Istio API client.  This is so that we are more resilience
+	// in cases user clusers have malformed resources.
+	istio_networking.VirtualServiceUnmarshaler.AllowUnknownFields = true
+	istio_networking.GatewayUnmarshaler.AllowUnknownFields = true
 }
 
 func createAddressableResource(mlDep *machinelearningv1.SeldonDeployment, namespace string) (*machinelearningv1.SeldonAddressable, error) {
@@ -109,6 +132,30 @@ func createAddressableResource(mlDep *machinelearningv1.SeldonDeployment, namesp
 	addressableUrl := url.URL{Scheme: "http", Host: addressableHost, Path: addressablePath}
 
 	return &machinelearningv1.SeldonAddressable{URL: addressableUrl.String()}, nil
+}
+
+func createKeda(podSpec *machinelearningv1.SeldonPodSpec, deploymentName string, seldonId string, namespace string) *kedav1alpha1.ScaledObject {
+	kedaScaledObj := &kedav1alpha1.ScaledObject{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      deploymentName,
+			Namespace: namespace,
+			Labels:    map[string]string{machinelearningv1.Label_seldon_id: seldonId},
+		},
+		Spec: kedav1alpha1.ScaledObjectSpec{
+			PollingInterval: podSpec.KedaSpec.PollingInterval,
+			CooldownPeriod:  podSpec.KedaSpec.CooldownPeriod,
+			MaxReplicaCount: podSpec.KedaSpec.MaxReplicaCount,
+			MinReplicaCount: podSpec.KedaSpec.MinReplicaCount,
+			Advanced:        podSpec.KedaSpec.Advanced,
+			Triggers:        podSpec.KedaSpec.Triggers,
+			ScaleTargetRef: &kedav1alpha1.ScaleTarget{
+				APIVersion: "apps/v1",
+				Kind:       "Deployment",
+				Name:       deploymentName,
+			},
+		},
+	}
+	return kedaScaledObj
 }
 
 func createHpa(podSpec *machinelearningv1.SeldonPodSpec, deploymentName string, seldonId string, namespace string) *autoscaling.HorizontalPodAutoscaler {
@@ -135,14 +182,30 @@ func createHpa(podSpec *machinelearningv1.SeldonPodSpec, deploymentName string, 
 	return &hpa
 }
 
+func createPdb(podSpec *machinelearningv1.SeldonPodSpec, deploymentName string, seldonId string, namespace string) *policy.PodDisruptionBudget {
+	pdb := policy.PodDisruptionBudget{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      deploymentName,
+			Namespace: namespace,
+			Labels:    map[string]string{machinelearningv1.Label_seldon_id: seldonId},
+		},
+		Spec: policy.PodDisruptionBudgetSpec{
+			MinAvailable:   podSpec.PdbSpec.MinAvailable,
+			MaxUnavailable: podSpec.PdbSpec.MaxUnavailable,
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{machinelearningv1.Label_seldon_id: seldonId},
+			},
+		},
+	}
+	return &pdb
+}
+
 // Create istio virtual service and destination rule.
 // Creates routes for each predictor with traffic weight split
 func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 	seldonId string,
 	namespace string,
-	ports []httpGrpcPorts,
-	httpAllowed bool,
-	grpcAllowed bool) ([]*istio.VirtualService, []*istio.DestinationRule, error) {
+	ports []httpGrpcPorts) ([]*istio.VirtualService, []*istio.DestinationRule, error) {
 
 	istio_gateway := utils.GetEnv(ENV_ISTIO_GATEWAY, "seldon-gateway")
 	istioTLSMode := utils.GetEnv(ENV_ISTIO_TLS_MODE, "")
@@ -310,20 +373,11 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 	httpVsvc.Spec.Http[0].Route = routesHttp
 	grpcVsvc.Spec.Http[0].Route = routesGrpc
 
-	if httpAllowed && grpcAllowed {
-		vscs := make([]*istio.VirtualService, 2)
-		vscs[0] = httpVsvc
-		vscs[1] = grpcVsvc
-		return vscs, drules, nil
-	} else if httpAllowed {
-		vscs := make([]*istio.VirtualService, 1)
-		vscs[0] = httpVsvc
-		return vscs, drules, nil
-	} else {
-		vscs := make([]*istio.VirtualService, 1)
-		vscs[0] = grpcVsvc
-		return vscs, drules, nil
-	}
+	vscs := make([]*istio.VirtualService, 2)
+	vscs[0] = httpVsvc
+	vscs[1] = grpcVsvc
+	return vscs, drules, nil
+
 }
 
 func getEngineHttpPort() (engine_http_port int, err error) {
@@ -353,7 +407,7 @@ func getEngineGrpcPort() (engine_grpc_port int, err error) {
 }
 
 // Create all the components (Deployments, Services etc)
-func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.SeldonDeployment, securityContext *corev1.PodSecurityContext, log logr.Logger) (*components, error) {
+func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep *machinelearningv1.SeldonDeployment, securityContext *corev1.PodSecurityContext, log logr.Logger) (*components, error) {
 	c := components{}
 	c.serviceDetails = map[string]*machinelearningv1.ServiceStatus{}
 	seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
@@ -373,30 +427,19 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 	// If one of the predictors has noEngine then only one of http or grpc should be allowed dependent on
 	// the type of the noEngine model: whether it is http or grpc
 	externalPorts := make([]httpGrpcPorts, len(mlDep.Spec.Predictors))
-	grpcAllowed := true
-	httpAllowed := true
-	// Attempt to set httpAllowed and grpcAllowed to false if we have an noEngine predictor
-	for i := 0; i < len(mlDep.Spec.Predictors); i++ {
-		p := mlDep.Spec.Predictors[i]
-		noEngine := strings.ToLower(p.Annotations[machinelearningv1.ANNOTATION_NO_ENGINE]) == "true"
-		if noEngine && len(p.ComponentSpecs) > 0 && len(p.ComponentSpecs[0].Spec.Containers) > 0 {
-			pu := machinelearningv1.GetPredictiveUnit(&p.Graph, p.ComponentSpecs[0].Spec.Containers[0].Name)
-			if pu != nil {
-				if pu.Endpoint != nil && pu.Endpoint.Type == machinelearningv1.GRPC {
-					httpAllowed = false
-				}
-				if pu.Endpoint == nil || pu.Endpoint.Type == machinelearningv1.REST {
-					grpcAllowed = false
-				}
-			}
-		}
-	}
 
 	for i := 0; i < len(mlDep.Spec.Predictors); i++ {
 		p := mlDep.Spec.Predictors[i]
 		noEngine := strings.ToLower(p.Annotations[machinelearningv1.ANNOTATION_NO_ENGINE]) == "true"
 		pSvcName := machinelearningv1.GetPredictorKey(mlDep, &p)
 		log.Info("pSvcName", "val", pSvcName)
+
+		// SSL config is used to set ssl on each container
+		certSecretRefName := ""
+		predictorCertConfig := p.SSL
+		if predictorCertConfig != nil {
+			certSecretRefName = predictorCertConfig.CertSecretName
+		}
 		// Add engine deployment if separate
 		hasSeparateEnginePod := strings.ToLower(mlDep.Spec.Annotations[machinelearningv1.ANNOTATION_SEPARATE_ENGINE]) == "true"
 		if hasSeparateEnginePod && !noEngine {
@@ -406,6 +449,13 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 			}
 			if securityContext != nil {
 				deploy.Spec.Template.Spec.SecurityContext = securityContext
+			}
+
+			// Add secret ref name to the container of the separate svcorch if created
+			if len(certSecretRefName) > 0 {
+				utils.MountSecretToDeploymentContainers(deploy, certSecretRefName, envDefaultCertMountPath)
+				certEnvVar := &corev1.EnvVar{Name: SELDON_MOUNT_PATH_ENV_NAME, Value: envDefaultCertMountPath}
+				utils.AddEnvVarToDeploymentContainers(deploy, certEnvVar)
 			}
 			c.deployments = append(c.deployments, deploy)
 		}
@@ -424,8 +474,10 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 				c.defaultDeploymentName = depName
 			}
 			deploy := createDeploymentWithoutEngine(depName, seldonId, cSpec, &p, mlDep, securityContext)
-			// Add HPA if needed
-			if cSpec.HpaSpec != nil {
+
+			if cSpec.KedaSpec != nil { // Add KEDA if needed
+				c.kedaScaledObjects = append(c.kedaScaledObjects, createKeda(cSpec, depName, seldonId, namespace))
+			} else if cSpec.HpaSpec != nil { // Add HPA if needed
 				c.hpas = append(c.hpas, createHpa(cSpec, depName, seldonId, namespace))
 			} else { //set replicas from more specifc to more general replicas settings in spec
 				if cSpec.Replicas != nil {
@@ -437,12 +489,19 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 				}
 			}
 
+			// Add PDB if needed
+			if cSpec.PdbSpec != nil {
+				c.pdbs = append(c.pdbs, createPdb(cSpec, depName, seldonId, namespace))
+			}
+
 			// create services for each container
 			for k := 0; k < len(cSpec.Spec.Containers); k++ {
 				var con *corev1.Container
 				// get the container on the created deployment, as createDeploymentWithoutEngine will have created as a copy of the spec in the manifest and added defaults to it
 				// we need the reference as we may have to modify the container when creating the Service (e.g. to add probes)
 				con = utils.GetContainerForDeployment(deploy, cSpec.Spec.Containers[k].Name)
+				pu := machinelearningv1.GetPredictiveUnit(&p.Graph, con.Name)
+				deploy = addLabelsToDeployment(deploy, pu, &p)
 
 				// engine will later get a special predictor service as it is entrypoint for graph
 				// and no need to expose tfserving container as it's accessed via proxy
@@ -451,6 +510,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 					// service for hitting a model directly, not via engine - also adds ports to container if needed
 					svc := createContainerService(deploy, p, mlDep, con, c, seldonId)
 					if svc != nil {
+						svc = addLabelsToService(svc, pu, &p)
 						c.services = append(c.services, svc)
 					} else {
 						// a user-supplied container may not be a pu so we may not create service for that
@@ -463,45 +523,30 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 						deploy.Spec.Selector.MatchLabels[machinelearningv1.Label_seldon_app] = pSvcName
 						deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_seldon_app] = pSvcName
 
-						port := int(svc.Spec.Ports[0].Port)
+						httpPort := int(svc.Spec.Ports[0].Port)
+						grpcPort := int(svc.Spec.Ports[1].Port)
 
-						if svc.Spec.Ports[0].Name == "grpc" {
-							httpAllowed = false
-							externalPorts[i] = httpGrpcPorts{httpPort: 0, grpcPort: port}
-							psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, 0, port, false, log)
-							if err != nil {
-								return nil, err
-							}
-
-							c.services = append(c.services, psvc)
-
-							c.serviceDetails[pSvcName] = &machinelearningv1.ServiceStatus{
-								SvcName:      pSvcName,
-								GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(port),
-							}
-						} else {
-							externalPorts[i] = httpGrpcPorts{httpPort: port, grpcPort: 0}
-							grpcAllowed = false
-							psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, port, 0, false, log)
-							if err != nil {
-								return nil, err
-							}
-
-							c.services = append(c.services, psvc)
-
-							c.serviceDetails[pSvcName] = &machinelearningv1.ServiceStatus{
-								SvcName:      pSvcName,
-								HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(port),
-							}
+						externalPorts[i] = httpGrpcPorts{httpPort: httpPort, grpcPort: grpcPort}
+						psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, httpPort, grpcPort, false, log)
+						if err != nil {
+							return nil, err
 						}
+						psvc = addLabelsToService(psvc, pu, &p)
 
+						c.services = append(c.services, psvc)
+
+						c.serviceDetails[pSvcName] = &machinelearningv1.ServiceStatus{
+							SvcName:      pSvcName,
+							HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(httpPort),
+							GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(grpcPort),
+						}
 					}
 				}
 			}
 			c.deployments = append(c.deployments, deploy)
 		}
 
-		pi := NewPrePackedInitializer(r.ClientSet)
+		pi := NewPrePackedInitializer(ctx, r.ClientSet)
 		err = pi.createStandaloneModelServers(mlDep, &p, &c, &p.Graph, securityContext)
 		if err != nil {
 			return nil, err
@@ -542,44 +587,38 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 
 			}
 
-			//Create Service for Predictor - exposed externally (ambassador or istio) and points at engine
-			httpPort := engine_http_port
-			if httpAllowed == false {
-				httpPort = 0
+			// Find the current deployment and add the environment variables for the certificate
+			if len(certSecretRefName) > 0 {
+				sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(&p, p.Graph.Name)
+				currentDeployName := machinelearningv1.GetDeploymentName(mlDep, p, sPodSpec, idx)
+				for i := 0; i < len(c.deployments); i++ {
+					d := c.deployments[i]
+					if strings.Compare(d.Name, currentDeployName) == 0 {
+						utils.MountSecretToDeploymentContainers(d, certSecretRefName, envDefaultCertMountPath)
+						certEnvVar := &corev1.EnvVar{Name: SELDON_MOUNT_PATH_ENV_NAME, Value: envDefaultCertMountPath}
+						utils.AddEnvVarToDeploymentContainers(d, certEnvVar)
+						break
+					}
+				}
 			}
-			grpcPort := engine_grpc_port
-			if grpcAllowed == false {
-				grpcPort = 0
-			}
-			psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, httpPort, grpcPort, false, log)
+
+			psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, engine_http_port, engine_grpc_port, false, log)
 			if err != nil {
 
 				return nil, err
 			}
 
 			c.services = append(c.services, psvc)
-			if httpAllowed && grpcAllowed {
-				c.serviceDetails[pSvcName] = &machinelearningv1.ServiceStatus{
-					SvcName:      pSvcName,
-					HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_http_port),
-					GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_grpc_port),
-				}
-			} else if httpAllowed {
-				c.serviceDetails[pSvcName] = &machinelearningv1.ServiceStatus{
-					SvcName:      pSvcName,
-					HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_http_port),
-				}
-			} else if grpcAllowed {
-				c.serviceDetails[pSvcName] = &machinelearningv1.ServiceStatus{
-					SvcName:      pSvcName,
-					GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_grpc_port),
-				}
+			c.serviceDetails[pSvcName] = &machinelearningv1.ServiceStatus{
+				SvcName:      pSvcName,
+				HttpEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_http_port),
+				GrpcEndpoint: pSvcName + "." + namespace + ":" + strconv.Itoa(engine_grpc_port),
 			}
 
-			externalPorts[i] = httpGrpcPorts{httpPort: httpPort, grpcPort: grpcPort}
+			externalPorts[i] = httpGrpcPorts{httpPort: engine_http_port, grpcPort: engine_grpc_port}
 		}
 
-		ei := NewExplainerInitializer(r.ClientSet)
+		ei := NewExplainerInitializer(ctx, r.ClientSet)
 		err = ei.createExplainer(mlDep, &p, &c, pSvcName, securityContext, log)
 		if err != nil {
 			return nil, err
@@ -594,7 +633,7 @@ func (r *SeldonDeploymentReconciler) createComponents(mlDep *machinelearningv1.S
 
 	//TODO Fixme - not changed to handle per predictor scenario
 	if utils.GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
-		vsvcs, dstRule, err := createIstioResources(mlDep, seldonId, namespace, externalPorts, httpAllowed, grpcAllowed)
+		vsvcs, dstRule, err := createIstioResources(mlDep, seldonId, namespace, externalPorts)
 		if err != nil {
 			return nil, err
 		}
@@ -612,13 +651,15 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 	isExplainer bool,
 	log logr.Logger) (pSvc *corev1.Service, err error) {
 	namespace := getNamespace(mlDep)
-
 	psvc := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      pSvcName,
 			Namespace: namespace,
-			Labels: map[string]string{machinelearningv1.Label_seldon_app: pSvcName,
-				machinelearningv1.Label_seldon_id: seldonId, machinelearningv1.Label_managed_by: machinelearningv1.Label_value_seldon},
+			Labels: map[string]string{
+				machinelearningv1.Label_seldon_app: pSvcName,
+				machinelearningv1.Label_seldon_id:  seldonId,
+				machinelearningv1.Label_managed_by: machinelearningv1.Label_value_seldon,
+			},
 		},
 		Spec: corev1.ServiceSpec{
 			Selector:        map[string]string{machinelearningv1.Label_seldon_app: pSvcName},
@@ -627,22 +668,12 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 		},
 	}
 
-	if isExecutorEnabled(mlDep) {
-		if engine_http_port != 0 && len(psvc.Spec.Ports) == 0 {
-			psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_http_port), TargetPort: intstr.FromInt(engine_http_port), Name: "http"})
-		}
+	if engine_http_port != 0 && len(psvc.Spec.Ports) == 0 {
+		psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_http_port), TargetPort: intstr.FromInt(engine_http_port), Name: "http"})
+	}
 
-		if engine_grpc_port != 0 && len(psvc.Spec.Ports) < 2 {
-			psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_grpc_port), TargetPort: intstr.FromInt(engine_http_port), Name: "http2"})
-		}
-	} else {
-		if engine_http_port != 0 && len(psvc.Spec.Ports) == 0 {
-			psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_http_port), TargetPort: intstr.FromInt(engine_http_port), Name: "http"})
-		}
-
-		if engine_grpc_port != 0 && len(psvc.Spec.Ports) < 2 {
-			psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_grpc_port), TargetPort: intstr.FromInt(engine_grpc_port), Name: "http2"})
-		}
+	if engine_grpc_port != 0 && len(psvc.Spec.Ports) < 2 {
+		psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_grpc_port), TargetPort: intstr.FromInt(engine_grpc_port), Name: "grpc"})
 	}
 
 	if utils.GetEnv("AMBASSADOR_ENABLED", "false") == "true" {
@@ -654,12 +685,10 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 		}
 		psvc.Annotations[AMBASSADOR_ANNOTATION] = ambassadorConfig
 	}
-
 	if getAnnotation(mlDep, machinelearningv1.ANNOTATION_HEADLESS_SVC, "false") != "false" {
 		log.Info("Creating Headless SVC")
 		psvc.Spec.ClusterIP = "None"
 	}
-
 	return psvc, err
 }
 
@@ -670,7 +699,6 @@ func createContainerService(deploy *appsv1.Deployment,
 	con *corev1.Container,
 	c components,
 	seldonId string) *corev1.Service {
-	//containerServiceKey := machinelearningv1.GetPredictorServiceNameKey(con)
 	containerServiceKey := machinelearningv1.Label_seldon_app_svc
 	containerServiceValue := machinelearningv1.GetContainerServiceName(mlDep.Name, p, con)
 	pu := machinelearningv1.GetPredictiveUnit(&p.Graph, con.Name)
@@ -680,38 +708,11 @@ func createContainerService(deploy *appsv1.Deployment,
 		return nil
 	}
 	namespace := getNamespace(mlDep)
-	portType := "http"
-	if pu.Endpoint.Type == machinelearningv1.GRPC {
-		portType = "grpc"
-	}
-	var portNum int32
-	portNum = 0
-	existingPort := machinelearningv1.GetPort(portType, con.Ports)
-	if existingPort != nil {
-		portNum = existingPort.ContainerPort
-	}
 
-	// pu should have a port set by seldondeployment_create_update_handler.go (if not by user)
-	// that mutator modifies SeldonDeployment and fires before this controller
-	if pu.Endpoint.ServicePort != 0 {
-		portNum = pu.Endpoint.ServicePort
-	}
-
-	if portNum == 0 {
-		// should have port by now
-		// if we don't know what it would respond to so can't create a service for it
-		return nil
-	}
-
-	if portType == "grpc" {
-		c.serviceDetails[containerServiceValue] = &machinelearningv1.ServiceStatus{
-			SvcName:      containerServiceValue,
-			GrpcEndpoint: containerServiceValue + "." + namespace + ":" + strconv.Itoa(int(portNum))}
-	} else {
-		c.serviceDetails[containerServiceValue] = &machinelearningv1.ServiceStatus{
-			SvcName:      containerServiceValue,
-			HttpEndpoint: containerServiceValue + "." + namespace + ":" + strconv.Itoa(int(portNum))}
-	}
+	c.serviceDetails[containerServiceValue] = &machinelearningv1.ServiceStatus{
+		SvcName:      containerServiceValue,
+		HttpEndpoint: containerServiceValue + "." + namespace + ":" + strconv.Itoa(int(pu.Endpoint.HttpPort)),
+		GrpcEndpoint: containerServiceValue + "." + namespace + ":" + strconv.Itoa(int(pu.Endpoint.GrpcPort))}
 
 	svc := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -723,9 +724,15 @@ func createContainerService(deploy *appsv1.Deployment,
 			Ports: []corev1.ServicePort{
 				{
 					Protocol:   corev1.ProtocolTCP,
-					Port:       portNum,
-					TargetPort: intstr.FromInt(int(portNum)),
-					Name:       portType,
+					Port:       pu.Endpoint.HttpPort,
+					TargetPort: intstr.FromInt(int(pu.Endpoint.HttpPort)),
+					Name:       "http",
+				},
+				{
+					Protocol:   corev1.ProtocolTCP,
+					Port:       pu.Endpoint.GrpcPort,
+					TargetPort: intstr.FromInt(int(pu.Endpoint.GrpcPort)),
+					Name:       "grpc",
 				},
 			},
 			Type:            corev1.ServiceTypeClusterIP,
@@ -733,18 +740,35 @@ func createContainerService(deploy *appsv1.Deployment,
 			SessionAffinity: corev1.ServiceAffinityNone,
 		},
 	}
-	addLabelsToService(svc, pu, p)
-	addLabelsToDeployment(deploy, containerServiceKey, containerServiceValue)
+	deploy.ObjectMeta.Labels[containerServiceKey] = containerServiceValue
+	deploy.Spec.Selector.MatchLabels[containerServiceKey] = containerServiceValue
+	deploy.Spec.Template.ObjectMeta.Labels[containerServiceKey] = containerServiceValue
 
-	if existingPort == nil || con.Ports == nil {
-		con.Ports = append(con.Ports, corev1.ContainerPort{Name: portType, ContainerPort: portNum, Protocol: corev1.ProtocolTCP})
+	existingHttpPort := machinelearningv1.GetPort("http", con.Ports)
+	if existingHttpPort == nil || con.Ports == nil {
+		con.Ports = append(con.Ports, corev1.ContainerPort{Name: "http", ContainerPort: pu.Endpoint.HttpPort, Protocol: corev1.ProtocolTCP})
+	}
+	existingGrpcPort := machinelearningv1.GetPort("grpc", con.Ports)
+	if existingGrpcPort == nil || con.Ports == nil {
+		con.Ports = append(con.Ports, corev1.ContainerPort{Name: "grpc", ContainerPort: pu.Endpoint.GrpcPort, Protocol: corev1.ProtocolTCP})
 	}
 
+	// Backwards compatible additions. From 1.5.0 onwards could always call httpPort as both should be available but for
+	// previously wrapped components need to look at transport.
+	// TODO: deprecate and just call httpPort
 	if con.LivenessProbe == nil {
-		con.LivenessProbe = &corev1.Probe{Handler: corev1.Handler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromString(portType)}}, InitialDelaySeconds: 60, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 3, TimeoutSeconds: 1}
+		if mlDep.Spec.Transport == machinelearningv1.TransportGrpc || pu.Endpoint.Type == machinelearningv1.GRPC {
+			con.LivenessProbe = &corev1.Probe{Handler: corev1.Handler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromInt(int(pu.Endpoint.GrpcPort))}}, InitialDelaySeconds: 60, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 3, TimeoutSeconds: 1}
+		} else {
+			con.LivenessProbe = &corev1.Probe{Handler: corev1.Handler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromInt(int(pu.Endpoint.HttpPort))}}, InitialDelaySeconds: 60, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 3, TimeoutSeconds: 1}
+		}
 	}
 	if con.ReadinessProbe == nil {
-		con.ReadinessProbe = &corev1.Probe{Handler: corev1.Handler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromString(portType)}}, InitialDelaySeconds: 20, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 3, TimeoutSeconds: 1}
+		if mlDep.Spec.Transport == machinelearningv1.TransportGrpc || pu.Endpoint.Type == machinelearningv1.GRPC {
+			con.ReadinessProbe = &corev1.Probe{Handler: corev1.Handler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromInt(int(pu.Endpoint.GrpcPort))}}, InitialDelaySeconds: 20, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 3, TimeoutSeconds: 1}
+		} else {
+			con.ReadinessProbe = &corev1.Probe{Handler: corev1.Handler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromInt(int(pu.Endpoint.HttpPort))}}, InitialDelaySeconds: 20, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 3, TimeoutSeconds: 1}
+		}
 	}
 
 	// Add livecycle probe
@@ -752,9 +776,23 @@ func createContainerService(deploy *appsv1.Deployment,
 		con.Lifecycle = &corev1.Lifecycle{PreStop: &corev1.Handler{Exec: &corev1.ExecAction{Command: []string{"/bin/sh", "-c", "/bin/sleep 10"}}}}
 	}
 
-	// Add Environment Variables
+	//
+	// Backwards compatibility - set to either Http or Grpc
+	//
+	// TODO: deprecate and remove
 	if !utils.HasEnvVar(con.Env, machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT) {
-		con.Env = append(con.Env, corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT, Value: strconv.Itoa(int(portNum))})
+		if pu.Endpoint.Type == machinelearningv1.GRPC || mlDep.Spec.Transport == machinelearningv1.TransportGrpc {
+			con.Env = append(con.Env, corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT, Value: strconv.Itoa(int(pu.Endpoint.GrpcPort))})
+		} else {
+			con.Env = append(con.Env, corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT, Value: strconv.Itoa(int(pu.Endpoint.HttpPort))})
+		}
+	}
+
+	if !utils.HasEnvVar(con.Env, machinelearningv1.ENV_PREDICTIVE_UNIT_HTTP_SERVICE_PORT) {
+		con.Env = append(con.Env, corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_HTTP_SERVICE_PORT, Value: strconv.Itoa(int(pu.Endpoint.HttpPort))})
+	}
+	if !utils.HasEnvVar(con.Env, machinelearningv1.ENV_PREDICTIVE_UNIT_GRPC_SERVICE_PORT) {
+		con.Env = append(con.Env, corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_GRPC_SERVICE_PORT, Value: strconv.Itoa(int(pu.Endpoint.GrpcPort))})
 	}
 
 	if pu != nil && len(pu.Parameters) > 0 {
@@ -795,9 +833,13 @@ func createContainerService(deploy *appsv1.Deployment,
 func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpec *machinelearningv1.SeldonPodSpec, p *machinelearningv1.PredictorSpec, mlDep *machinelearningv1.SeldonDeployment, podSecurityContext *corev1.PodSecurityContext) *appsv1.Deployment {
 	deploy := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        depName,
-			Namespace:   getNamespace(mlDep),
-			Labels:      map[string]string{machinelearningv1.Label_seldon_id: seldonId, "app": depName, "fluentd": "true"},
+			Name:      depName,
+			Namespace: getNamespace(mlDep),
+			Labels: map[string]string{
+				machinelearningv1.Label_seldon_id: seldonId,
+				"app":                             depName,
+				"fluentd":                         "true",
+			},
 			Annotations: map[string]string{},
 		},
 		Spec: appsv1.DeploymentSpec{
@@ -874,8 +916,13 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 	if deploy.Spec.Template.Spec.SchedulerName == "" {
 		deploy.Spec.Template.Spec.SchedulerName = "default-scheduler"
 	}
+
+	// Set TerminationGracePeriodSeconds
 	var terminationGracePeriod int64 = 20
 	deploy.Spec.Template.Spec.TerminationGracePeriodSeconds = &terminationGracePeriod
+	if seldonPodSpec != nil && seldonPodSpec.Spec.TerminationGracePeriodSeconds != nil {
+		deploy.Spec.Template.Spec.TerminationGracePeriodSeconds = seldonPodSpec.Spec.TerminationGracePeriodSeconds
+	}
 
 	volFound := false
 	for _, vol := range deploy.Spec.Template.Spec.Volumes {
@@ -891,7 +938,6 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 			DownwardAPI: &corev1.DownwardAPIVolumeSource{Items: []corev1.DownwardAPIVolumeFile{
 				{Path: "annotations", FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.annotations", APIVersion: "v1"}}}, DefaultMode: &defaultMode}}})
 	}
-
 	return deploy
 }
 
@@ -1092,6 +1138,85 @@ func (r *SeldonDeploymentReconciler) createServices(components *components, inst
 	return ready, nil
 }
 
+func (r *SeldonDeploymentReconciler) createKedaScaledObjects(components *components, instance *machinelearningv1.SeldonDeployment, log logr.Logger) (bool, error) {
+	ready := true
+	scaledObjSet := make(map[string]bool)
+	for _, scaledObj := range components.kedaScaledObjects {
+		if err := ctrl.SetControllerReference(instance, scaledObj, r.Scheme); err != nil {
+			return ready, err
+		}
+		scaledObjSet[scaledObj.Name] = true
+		found := &kedav1alpha1.ScaledObject{}
+		err := r.Get(context.TODO(), types.NamespacedName{Name: scaledObj.Name, Namespace: scaledObj.Namespace}, found)
+		if err != nil && errors.IsNotFound(err) {
+			ready = false
+			log.Info("Creating KEDA ScaledObject", "namespace", scaledObj.Namespace, "name", scaledObj.Name)
+			err = r.Create(context.TODO(), scaledObj)
+			if err != nil {
+				return ready, err
+			}
+			r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsCreateScaledObject, "Created KEDA ScaledObject %q", scaledObj.GetName())
+		} else if err != nil {
+			return ready, err
+		} else {
+			// Update the found object and write the result back if there are any changes
+			if !equality.Semantic.DeepEqual(scaledObj.Spec, found.Spec) {
+
+				desiredScaledObj := found.DeepCopy()
+				found.Spec = scaledObj.Spec
+
+				log.Info("Updating KEDA ScaledObject", "namespace", scaledObj.Namespace, "name", scaledObj.Name)
+				err = r.Update(context.TODO(), found)
+				if err != nil {
+					return ready, err
+				}
+
+				// Check if what came back from server modulo the defaults applied by k8s is the same or not
+				if !equality.Semantic.DeepEqual(desiredScaledObj.Spec, found.Spec) {
+					ready = false
+					r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsUpdateHPA, "Updated KEDA ScaledObject %q", scaledObj.GetName())
+					//For debugging we will show the difference
+					diff, err := kmp.SafeDiff(desiredScaledObj.Spec, found.Spec)
+					if err != nil {
+						log.Error(err, "Failed to diff")
+					} else {
+						log.Info(fmt.Sprintf("Difference in KEDA ScaledObjects: %v", diff))
+					}
+				} else {
+					log.Info("The KEDA ScaledObjects are the same - api server defaults ignored")
+				}
+
+			} else {
+				log.Info("Found identical KEDA ScaledObject", "namespace", found.Namespace, "name", found.Name, "status", found.Status)
+			}
+		}
+
+	}
+
+	// For all Deployments check if any ScaledObjects exist and they are not required
+	for _, deploy := range components.deployments {
+		if _, ok := scaledObjSet[deploy.Name]; !ok {
+			found := &kedav1alpha1.ScaledObject{}
+			err := r.Get(context.TODO(), types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
+			if err != nil {
+				if !errors.IsNotFound(err) {
+					return false, err
+				}
+				// Do nothing
+			} else {
+				// Delete ScaledObject
+				log.Info("Deleting KEDA ScaledObject", "name", deploy.Name)
+				err := r.Delete(context.TODO(), found, client.PropagationPolicy(metav1.DeletePropagationForeground))
+				if err != nil {
+					return ready, err
+				}
+			}
+		}
+	}
+
+	return ready, nil
+}
+
 // Create Services specified in components.
 func (r *SeldonDeploymentReconciler) createHpas(components *components, instance *machinelearningv1.SeldonDeployment, log logr.Logger) (bool, error) {
 	ready := true
@@ -1161,6 +1286,86 @@ func (r *SeldonDeploymentReconciler) createHpas(components *components, instance
 			} else {
 				// Delete HPA
 				log.Info("Deleting hpa", "name", deploy.Name)
+				err := r.Delete(context.TODO(), found, client.PropagationPolicy(metav1.DeletePropagationForeground))
+				if err != nil {
+					return ready, err
+				}
+			}
+		}
+	}
+
+	return ready, nil
+}
+
+// Create Services specified in components.
+func (r *SeldonDeploymentReconciler) createPdbs(components *components, instance *machinelearningv1.SeldonDeployment, log logr.Logger) (bool, error) {
+	ready := true
+	pdbSet := make(map[string]bool)
+	for _, pdb := range components.pdbs {
+		if err := ctrl.SetControllerReference(instance, pdb, r.Scheme); err != nil {
+			return ready, err
+		}
+		pdbSet[pdb.Name] = true
+		found := &policy.PodDisruptionBudget{}
+		err := r.Get(context.TODO(), types.NamespacedName{Name: pdb.Name, Namespace: pdb.Namespace}, found)
+		if err != nil && errors.IsNotFound(err) {
+			ready = false
+			log.Info("Creating PDB", "namespace", pdb.Namespace, "name", pdb.Name)
+			err = r.Create(context.TODO(), pdb)
+			if err != nil {
+				return ready, err
+			}
+			r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsCreatePDB, "Created PodDisruptionBudget %q", pdb.GetName())
+		} else if err != nil {
+			return ready, err
+		} else {
+			// Update the found object and write the result back if there are any changes
+			if !equality.Semantic.DeepEqual(pdb.Spec, found.Spec) {
+
+				desiredPdb := found.DeepCopy()
+				found.Spec = pdb.Spec
+
+				log.Info("Updating PDB", "namespace", pdb.Namespace, "name", pdb.Name)
+				err = r.Update(context.TODO(), found)
+				if err != nil {
+					return ready, err
+				}
+
+				// Check if what came back from server modulo the defaults applied by k8s is the same or not
+				if !equality.Semantic.DeepEqual(desiredPdb.Spec, found.Spec) {
+					ready = false
+					r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsUpdatePDB, "Updated HorizontalPodAutoscaler %q", pdb.GetName())
+					//For debugging we will show the difference
+					diff, err := kmp.SafeDiff(desiredPdb.Spec, found.Spec)
+					if err != nil {
+						log.Error(err, "Failed to diff")
+					} else {
+						log.Info(fmt.Sprintf("Difference in PDBs: %v", diff))
+					}
+				} else {
+					log.Info("The PDBs are the same - api server defaults ignored")
+				}
+
+			} else {
+				log.Info("Found identical PDB", "namespace", found.Namespace, "name", found.Name, "status", found.Status)
+			}
+		}
+
+	}
+
+	// For all Deployments check if any PDBs exist and they are not required
+	for _, deploy := range components.deployments {
+		if _, ok := pdbSet[deploy.Name]; !ok {
+			found := &policy.PodDisruptionBudget{}
+			err := r.Get(context.TODO(), types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
+			if err != nil {
+				if !errors.IsNotFound(err) {
+					return false, err
+				}
+				// Do nothing
+			} else {
+				// Delete PDB
+				log.Info("Deleting pdb", "name", deploy.Name)
 				err := r.Delete(context.TODO(), found, client.PropagationPolicy(metav1.DeletePropagationForeground))
 				if err != nil {
 					return ready, err
@@ -1355,6 +1560,24 @@ func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinele
 				}
 				r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsDeleteHPA, "Deleted HorizontalPodAutoscaler %q", foundHpa.GetName())
 			}
+
+			// Delete any dangling PDBs
+			foundPdb := &policy.PodDisruptionBudget{}
+			err = r.Get(context.TODO(), types.NamespacedName{Name: found.Name, Namespace: found.Namespace}, foundPdb)
+			if err != nil {
+				if !errors.IsNotFound(err) {
+					return err
+				}
+				// Do nothing
+			} else {
+				// Delete PDB that should not exist
+				log.Info("Deleting pdb for removed predictor", "name", foundPdb.Name)
+				err := r.Delete(context.TODO(), foundPdb, client.PropagationPolicy(metav1.DeletePropagationForeground))
+				if err != nil {
+					return err
+				}
+				r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsDeletePDB, "Deleted PodDisruptionBudget %q", foundPdb.GetName())
+			}
 		}
 	}
 	if remaining == 0 {
@@ -1394,6 +1617,11 @@ func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinele
 // +kubebuilder:rbac:groups=networking.istio.io,resources=destinationrules/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=autoscaling,resources=horizontalpodautoscalers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=autoscaling,resources=horizontalpodautoscalers/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=keda.sh,resources=scaledobjects,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=keda.sh,resources=scaledobjects/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=keda.sh,resources=scaledobjects/finalizers,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=policy,resources=poddisruptionbudgets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=policy,resources=poddisruptionbudgets/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=machinelearning.seldon.io,resources=seldondeployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=machinelearning.seldon.io,resources=seldondeployments/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=machinelearning.seldon.io,resources=seldondeployments/finalizers,verbs=get;update;patch
@@ -1458,7 +1686,7 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		}
 	}
 
-	components, err := r.createComponents(instance, podSecurityContext, log)
+	components, err := r.createComponents(ctx, instance, podSecurityContext, log)
 	if err != nil {
 		r.Recorder.Eventf(instance, corev1.EventTypeWarning, constants.EventsInternalError, err.Error())
 		r.updateStatusForError(instance, err, log)
@@ -1473,6 +1701,24 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 	}
 
 	hpasReady, err := r.createHpas(components, instance, log)
+	if err != nil {
+		r.Recorder.Eventf(instance, corev1.EventTypeWarning, constants.EventsInternalError, err.Error())
+		r.updateStatusForError(instance, err, log)
+		return ctrl.Result{}, err
+	}
+
+	kedaScaledObjectsReady := false
+	withKedaSupport := utils.GetEnv(ENV_KEDA_ENABLED, "false") == "true"
+	if withKedaSupport {
+		kedaScaledObjectsReady, err = r.createKedaScaledObjects(components, instance, log)
+		if err != nil {
+			r.Recorder.Eventf(instance, corev1.EventTypeWarning, constants.EventsInternalError, err.Error())
+			r.updateStatusForError(instance, err, log)
+			return ctrl.Result{}, err
+		}
+	}
+
+	pdbsReady, err := r.createPdbs(components, instance, log)
 	if err != nil {
 		r.Recorder.Eventf(instance, corev1.EventTypeWarning, constants.EventsInternalError, err.Error())
 		r.updateStatusForError(instance, err, log)
@@ -1495,7 +1741,7 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		}
 	}
 
-	if deploymentsReady && servicesReady && hpasReady {
+	if deploymentsReady && servicesReady && hpasReady && pdbsReady && (!withKedaSupport || kedaScaledObjectsReady) {
 		instance.Status.State = machinelearningv1.StatusStateAvailable
 		instance.Status.Description = ""
 	} else {
@@ -1512,6 +1758,15 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 }
 
 func (r *SeldonDeploymentReconciler) updateStatusForError(desired *machinelearningv1.SeldonDeployment, err error, log logr.Logger) {
+
+	//Ignore conflict errors
+	switch se := err.(type) {
+	case *errors.StatusError:
+		if se.Status().Reason == metav1.StatusReasonConflict {
+			return
+		}
+	}
+
 	desired.Status.State = machinelearningv1.StatusStateFailed
 	desired.Status.Description = err.Error()
 
@@ -1552,9 +1807,9 @@ var (
 	apiGVStr = machinelearningv1.GroupVersion.String()
 )
 
-func (r *SeldonDeploymentReconciler) SetupWithManager(mgr ctrl.Manager, name string) error {
+func (r *SeldonDeploymentReconciler) SetupWithManager(ctx context.Context, mgr ctrl.Manager, name string) error {
 
-	if err := mgr.GetFieldIndexer().IndexField(&appsv1.Deployment{}, ownerKey, func(rawObj runtime.Object) []string {
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &appsv1.Deployment{}, ownerKey, func(rawObj runtime.Object) []string {
 		// grab the deployment object, extract the owner...
 		dep := rawObj.(*appsv1.Deployment)
 		owner := metav1.GetControllerOf(dep)
@@ -1572,7 +1827,7 @@ func (r *SeldonDeploymentReconciler) SetupWithManager(mgr ctrl.Manager, name str
 		return err
 	}
 
-	if err := mgr.GetFieldIndexer().IndexField(&corev1.Service{}, ownerKey, func(rawObj runtime.Object) []string {
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &corev1.Service{}, ownerKey, func(rawObj runtime.Object) []string {
 		// grab the deployment object, extract the owner...
 		svc := rawObj.(*corev1.Service)
 		owner := metav1.GetControllerOf(svc)
@@ -1591,7 +1846,7 @@ func (r *SeldonDeploymentReconciler) SetupWithManager(mgr ctrl.Manager, name str
 	}
 
 	if utils.GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
-		if err := mgr.GetFieldIndexer().IndexField(&istio.VirtualService{}, ownerKey, func(rawObj runtime.Object) []string {
+		if err := mgr.GetFieldIndexer().IndexField(ctx, &istio.VirtualService{}, ownerKey, func(rawObj runtime.Object) []string {
 			// grab the deployment object, extract the owner...
 			vsvc := rawObj.(*istio.VirtualService)
 			owner := metav1.GetControllerOf(vsvc)

@@ -1,4 +1,4 @@
-CHARTS=seldon-core-analytics seldon-core-kafka seldon-core-loadtesting seldon-single-model seldon-abtest seldon-mab seldon-od-model seldon-od-transformer seldon-core-operator
+CHARTS=seldon-core-analytics seldon-core-loadtesting seldon-single-model seldon-abtest seldon-mab seldon-od-model seldon-od-transformer seldon-core-operator
 
 
 build_all:

@@ -30,15 +30,20 @@ spec:
     - - name: create-seldon-resource            
         template: create-seldon-resource-template
     - - name: wait-seldon-resource
-        template: wait-seldon-resource-template
+        template: wait-seldon-resource-template    
     - - name: download-object-store
         template: download-object-store-template
     - - name: process-batch-inputs
         template: process-batch-inputs-template
     - - name: upload-object-store
         template: upload-object-store-template
+    - - name: delete-seldon-resource
+        template: delete-seldon-resource-template
             
   - name: create-seldon-resource-template
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
     resource:
       action: create
       manifest: |
@@ -56,7 +61,23 @@ spec:
         spec:
           name: "{{ .Values.seldonDeployment.name }}"
           predictors:
-            - graph:
+            - componentSpecs:
+              - spec:
+                containers:
+                - name: classifier
+                  env:
+                  - name: GUNICORN_THREADS
+                    value: {{ .Values.seldonDeployment.serverThreads }}
+                  - name: GUNICORN_WORKERS
+                    value: {{ .Values.seldonDeployment.serverWorkers }}
+                  resources:
+                    requests:
+                      cpu: {{ .Values.seldonDeployment.requests.cpu }}
+                      memory: {{ .Values.seldonDeployment.requests.memory }}
+                    limits:
+                      cpu: {{ .Values.seldonDeployment.limits.cpu }}
+                      memory: {{ .Values.seldonDeployment.limits.memory }}
+              graph:
                 children: []
                 implementation: {{ .Values.seldonDeployment.server }}
                 modelUri: {{ .Values.seldonDeployment.modelUri }}
@@ -65,6 +86,9 @@ spec:
               replicas: {{ .Values.seldonDeployment.replicas }}
                 
   - name: wait-seldon-resource-template
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
     script:
       image: bitnami/kubectl:1.17
       command: [bash]
@@ -74,8 +98,11 @@ spec:
             deploy/$(kubectl get deploy -l seldon-deployment-id="{{ .Values.seldonDeployment.name }}" -o jsonpath='{.items[0].metadata.name}')
                      
   - name: download-object-store-template
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
     script:
-      image: minio/mc:RELEASE.2020-04-17T08-55-48Z
+      image: minio/{{ .Values.minio.minioclient.image }}
       env:
       - name: MINIO_SERVER_ACCESS_KEY
         valueFrom: 
@@ -94,10 +121,13 @@ spec:
         mountPath: /assets
       command: [sh]
       source: |
-        mc config host add minio-local $MINIO_SERVER_HOST $MINIO_SERVER_ACCESS_KEY $MINIO_SERVER_ACCESS_KEY
-        mc cp minio-local/{{ .Values.minio.inputDataPath }} /assets/input-data.txt
+        mc --insecure config host add minio-local $MINIO_SERVER_HOST $MINIO_SERVER_ACCESS_KEY $MINIO_SERVER_ACCESS_SECRET --api S3v4
+        mc --insecure cp minio-local/{{ .Values.minio.inputDataPath }} /assets/input-data.txt
             
   - name: process-batch-inputs-template
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
     script:
       image: {{ .Values.seldonDeployment.image }}
       volumeMounts:
@@ -120,8 +150,11 @@ spec:
             --output-data-path "/assets/output-data.txt"
       
   - name: upload-object-store-template
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
     script:
-      image: minio/mc:RELEASE.2020-04-17T08-55-48Z
+      image: minio/{{ .Values.minio.minioclient.image }}
       volumeMounts:
       - name: "{{ .Values.pvc.name }}"
         mountPath: /assets
@@ -140,6 +173,17 @@ spec:
       - name: MINIO_SERVER_HOST
         value: {{ .Values.minio.endpoint }}
       source: |
-        mc config host add minio-local $MINIO_SERVER_HOST $MINIO_SERVER_ACCESS_KEY $MINIO_SERVER_ACCESS_KEY
-        mc cp /assets/output-data.txt minio-local/{{ .Values.minio.outputDataPath }}
+        mc --insecure config host add minio-local $MINIO_SERVER_HOST $MINIO_SERVER_ACCESS_KEY $MINIO_SERVER_ACCESS_SECRET --api S3v4
+        mc --insecure cp /assets/output-data.txt minio-local/{{ .Values.minio.outputDataPath }}
+   
+  - name: delete-seldon-resource-template
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+    script:
+      image: bitnami/kubectl:1.17
+      command: [bash]
+      source: |
+        sleep {{ .Values.seldonDeployment.waitTime }}
+        kubectl delete seldondeployments -n {{ .Values.workflow.namespace }}  {{ .Values.seldonDeployment.name }}
         

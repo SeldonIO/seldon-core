@@ -1,6 +1,0 @@
-kafka_core:
-  image:
-    tag: '0.1'
-zookeeper:
-  image:
-    tag: '1.0'

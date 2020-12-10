@@ -99,7 +99,7 @@ func TestExecutorCreateNoEnv(t *testing.T) {
 	envExecutorImage = ""
 	envExecutorImageRelated = ""
 	mlDep := createTestSeldonDeployment()
-	_, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, &v1.ResourceRequirements{})
+	_, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
 	g.Expect(err).ToNot(BeNil())
 	cleanEnvImages()
 }
@@ -111,7 +111,7 @@ func TestExecutorCreateEnv(t *testing.T) {
 	envExecutorImage = imageName
 	envExecutorImageRelated = ""
 	mlDep := createTestSeldonDeployment()
-	con, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, &v1.ResourceRequirements{})
+	con, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
 	g.Expect(err).To(BeNil())
 	g.Expect(con.Image).To(Equal(imageName))
 	cleanEnvImages()
@@ -125,7 +125,7 @@ func TestExecutorCreateEnvRelated(t *testing.T) {
 	envExecutorImage = imageName
 	envExecutorImageRelated = imageNameRelated
 	mlDep := createTestSeldonDeployment()
-	con, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, &v1.ResourceRequirements{})
+	con, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
 	g.Expect(err).To(BeNil())
 	g.Expect(con.Image).To(Equal(imageNameRelated))
 	cleanEnvImages()
@@ -166,5 +166,15 @@ func TestEngineCreateEnvRelated(t *testing.T) {
 	con, err := createEngineContainerSpec(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
 	g.Expect(err).To(BeNil())
 	g.Expect(con.Image).To(Equal(imageNameRelated))
+	cleanEnvImages()
+}
+
+func TestExecutorCreateKafka(t *testing.T) {
+	g := NewGomegaWithT(t)
+	cleanEnvImages()
+	mlDep := createTestSeldonDeployment()
+	mlDep.Spec.ServerType = machinelearningv1.ServerKafka
+	_, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
+	g.Expect(err).ToNot(BeNil())
 	cleanEnvImages()
 }

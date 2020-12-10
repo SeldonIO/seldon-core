@@ -32,15 +32,20 @@ class ThompsonSampling(object):
 
     """
 
-    def __init__(self, n_branches=None, verbose=False, seed=None, history=False,
-                 branch_names=None):
+    def __init__(
+        self,
+        n_branches=None,
+        verbose=False,
+        seed=None,
+        history=False,
+        branch_names=None,
+    ):
 
         if verbose:
             logger.setLevel(10)
             logger.info("Enabling debug mode")
 
-        logger.info(
-            "Starting %s Microservice, version %s", __name__, __version__)
+        logger.info("Starting %s Microservice, version %s", __name__, __version__)
 
         # for reproducibility
         if seed:
@@ -78,8 +83,7 @@ class ThompsonSampling(object):
     def route(self, features, feature_names):
         logger.debug("Routing features %s", features)
 
-        self.branch_values = [np.random.beta(
-            a, b) for a, b in self.models_beta_params]
+        self.branch_values = [np.random.beta(a, b) for a, b in self.models_beta_params]
         selected_branch = np.argmax(self.branch_values)
         logger.debug("Sampled branch values: %s", self.branch_values)
 
@@ -88,11 +92,10 @@ class ThompsonSampling(object):
             self.value_history.append(self.branch_values)
 
         logger.info("Routing to branch %s", selected_branch)
-        return selected_branch
+        return int(selected_branch)
 
-    def send_feedback(self, features, feature_names, routing, reward, truth):
-        logger.debug("Sending feedback with reward %s and truth %s",
-                     reward, truth)
+    def send_feedback(self, features, feature_names, reward, truth, routing=None):
+        logger.debug("Sending feedback with reward %s and truth %s", reward, truth)
         logger.debug("Prev success # %s", self.branch_success)
         logger.debug("Prev tries # %s", self.branch_tries)
 

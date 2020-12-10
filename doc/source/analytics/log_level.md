@@ -29,7 +29,7 @@ less verbose):
    wrapper will disable the server's access logs, which are considered
    ``INFO``-level logs.
 
-When using the [Python wrapper](../python) (including the
+When using the [Python wrapper](../python/index) (including the
 [MLflow](../servers/mlflow), [SKLearn](../servers/sklearn) and
 [XGBoost](../servers/xgboost) pre-package servers), you can control the log
 level using the `SELDON_LOG_LEVEL` environment variable.
@@ -40,7 +40,7 @@ For example, to set it in each container running with the python wrapper, you
 would do it as follows by adding the environment variable `SELDON_LOG_LEVEL` to
 the containers running images wrapped by the python wrapper:
 
-```jsonc
+```javascript
 "spec": {
   // ...
   "predictors": [
@@ -84,7 +84,7 @@ To change the log level in the service orchestrator, you can set the
 `SELDON_LOG_LEVEL`  environment variable on the `svcOrchSpec` section of the
 `SeldonDeployment` CRD:
 
-```jsonc
+```javascript
 "spec": {
   // ...
   "predictors": [
@@ -114,7 +114,7 @@ effects.
 
 For example, to change this on the service orchestrator, you would do:
 
-```jsonc
+```javascript
 "spec": {
   // ...
   "predictors": [

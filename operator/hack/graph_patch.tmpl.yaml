@@ -1,0 +1,64 @@
+- op: replace
+  path: /spec/versions/0/schema/openAPIV3Schema/properties/spec/properties/predictors/items/properties/graph
+  value: 
+    properties:
+      children:
+        items: {}
+        type: array
+      endpoint:
+        properties:
+          service_host:
+            type: string
+          service_port:
+            format: int32
+            type: integer
+          type:
+            type: string
+        type: object
+      envSecretRefName:
+        type: string
+      implementation:
+        type: string
+      logger:
+        description: Request/response  payload logging. v2alpha1
+          feature that is added to v1 for backwards compatibility
+          while v1 is the storage version.
+        properties:
+          mode:
+            description: What payloads to log
+            type: string
+          url:
+            description: URL to send request logging CloudEvents
+            type: string
+        type: object
+      methods:
+        items:
+          type: string
+        type: array
+      modelUri:
+        type: string
+      name:
+        type: string
+      parameters:
+        items:
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+            value:
+              type: string
+          required:
+          - name
+          - type
+          - value
+          type: object
+        type: array
+      serviceAccountName:
+        type: string
+      type:
+        type: string
+    required:
+    - name
+    type: object
+  

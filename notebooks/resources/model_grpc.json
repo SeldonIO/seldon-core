@@ -1,53 +1,53 @@
 {
-    "apiVersion": "machinelearning.seldon.io/v1alpha2",
-    "kind": "SeldonDeployment",
-    "metadata": {
-        "labels": {
-            "app": "seldon"
-        },
-        "name": "seldon-deployment-example"
+  "apiVersion": "machinelearning.seldon.io/v1alpha2",
+  "kind": "SeldonDeployment",
+  "metadata": {
+    "labels": {
+      "app": "seldon"
     },
-    "spec": {
-        "annotations": {
-            "project_name": "FX Market Prediction",
-            "deployment_version": "v1"
-        },
-        "name": "test-deployment",
-        "oauth_key": "oauth-key",
-        "oauth_secret": "oauth-secret",
-        "predictors": [
-            {
-                "componentSpecs": [{
-                    "spec": {
-                        "containers": [
-                            {
-                                "image": "seldonio/meanclassifier:0.1_grpc",
-                                "imagePullPolicy": "IfNotPresent",
-                                "name": "mean-classifier",
-                                "resources": {
-                                    "requests": {
-                                        "memory": "1Mi"
-                                    }
-                                }
-                            }
-                        ],
-                        "terminationGracePeriodSeconds": 20
+    "name": "seldon-deployment-example"
+  },
+  "spec": {
+    "annotations": {
+      "project_name": "FX Market Prediction",
+      "deployment_version": "v1"
+    },
+    "name": "test-deployment",
+    "predictors": [
+      {
+        "componentSpecs": [
+          {
+            "spec": {
+              "containers": [
+                {
+                  "image": "seldonio/meanclassifier:0.1_grpc",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "mean-classifier",
+                  "resources": {
+                    "requests": {
+                      "memory": "1Mi"
                     }
-                }],
-                "graph": {
-                    "children": [],
-                    "name": "mean-classifier",
-                    "endpoint": {
-			"type" : "GRPC"
-		    },
-                    "type": "MODEL"
-                },
-                "name": "fx-market-predictor",
-                "replicas": 1,
-		"annotations": {
-		    "predictor_version" : "v1"
-		}
+                  }
+                }
+              ],
+              "terminationGracePeriodSeconds": 20
             }
-        ]
-    }
+          }
+        ],
+        "graph": {
+          "children": [],
+          "name": "mean-classifier",
+          "endpoint": {
+            "type": "GRPC"
+          },
+          "type": "MODEL"
+        },
+        "name": "fx-market-predictor",
+        "replicas": 1,
+        "annotations": {
+          "predictor_version": "v1"
+        }
+      }
+    ]
+  }
 }

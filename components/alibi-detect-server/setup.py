@@ -11,11 +11,15 @@ setup(
     python_requires=">3.4",
     packages=find_packages(),
     install_requires=[
-        "alibi-detect",
+        "alibi-detect==0.4.3",
         "kfserving>=0.2.0",
         "argparse >= 1.4.0",
         "numpy >= 1.8.2",
-        "cloudevents",
+        "cloudevents == 1.2.0",
+        "elasticsearch==7.9.1",
+        # Fixes #2533
+        "google-cloud-core==1.4.1",
+        "google-cloud-storage==1.31.2",
     ],
     tests_require=tests_require,
     extras_require={"test": tests_require},

@@ -1,4 +1,4 @@
-dill==0.2.9
-click
-numpy==1.16.3
-scikit-learn==0.20.3
+dill==0.3.2
+click==7.1.2
+numpy==1.19.1
+scikit-learn==0.23.2

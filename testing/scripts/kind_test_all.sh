@@ -30,7 +30,7 @@ done
 # AVOID EXIT ON ERROR FOR FOLLOWING CMDS
 set +o errexit
 
-# START CLUSTER 
+# START CLUSTER
 make kind_create_cluster
 KIND_EXIT_VALUE=$?
 
@@ -45,7 +45,7 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
         echo "Files changed in python folder:"
         git --no-pager diff --exit-code --name-only origin/master ../../python
         PYTHON_MODIFIED=$?
-        if [[ $PYTHON_MODIFIED -gt 0 ]]; then 
+        if [[ $PYTHON_MODIFIED -gt 0 ]]; then
             make s2i_build_base_images
             PYTHON_EXIT_VALUE=$?
             if [[ $PYTHON_EXIT_VALUE -gt 0 ]]; then
@@ -125,22 +125,36 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
             echo "SKIPPING PREPACKAGED IMAGE BUILD..."
         fi
 
-        echo "Files changed in alibi folder:"
-        git --no-pager diff --exit-code --name-only origin/master ../../components/alibi-detect-server ../../components/alibi-explain-server/
-        ALIBI_MODIFIED=$?
-        if [[ $ALIBI_MODIFIED -gt 0 ]]; then
-            make kind_build_alibi
-            ALIBI_EXIT_VALUE=$?
-            if [[ $ALIBI_EXIT_VALUE -gt 0 ]]; then
-                echo "Alibi server build returned errors"
+        echo "Files changed in alibi explain folder:"
+        git --no-pager diff --exit-code --name-only origin/master ../../components/alibi-explain-server/
+        ALIBI_EXPLAIN_MODIFIED=$?
+        if [[ $ALIBI_EXPLAIN_MODIFIED -gt 0 ]]; then
+            make kind_build_alibi_explain
+            ALIBI_EXPLAIN_EXIT_VALUE=$?
+            if [[ $ALIBI_EXPLAIN_EXIT_VALUE -gt 0 ]]; then
+                echo "Alibi Explain server build returned errors"
                 return 1
             fi
         else
-            echo "SKIPPING ALIBI IMAGE BUILD..."
+            echo "SKIPPING ALIBI EXPLAIN IMAGE BUILD..."
+        fi
+
+        echo "Files changed in alibi detect folder:"
+        git --no-pager diff --exit-code --name-only origin/master ../../components/alibi-detect-server
+        ALIBI_DETECT_MODIFIED=$?
+        if [[ $ALIBI_DETECT_MODIFIED -gt 0 ]]; then
+            make kind_build_alibi_detect
+            ALIBI_DETECT_EXIT_VALUE=$?
+            if [[ $ALIBI_DETECT_EXIT_VALUE -gt 0 ]]; then
+                echo "Alibi Detect server build returned errors"
+                return 1
+            fi
+        else
+            echo "SKIPPING ALIBI DETECT IMAGE BUILD..."
         fi
 
         echo "Files changed in misc folders:"
-        git --no-pager diff --exit-code --name-only origin/master ../../components/seldon-request-logger ../../components/storage-initializer
+        git --no-pager diff --exit-code --name-only origin/master ../../components/seldon-request-logger ../../components/storage-initializer ../../components/routers/epsilon-greedy
         MISC_MODIFIED=$?
         if [[ $MISC_MODIFIED -gt 0 ]]; then
             make kind_build_misc
@@ -191,7 +205,7 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
     # We run the piece above
     run_end_to_end_tests
     RUN_EXIT_VALUE=$?
-    
+
 else
     echo "Existing kind cluster or failure starting - ${KIND_EXIT_VALUE}"
 fi
@@ -210,4 +224,3 @@ service docker stop || true
 
 # NOW THAT WE'VE CLEANED WE CAN EXIT ON RUN EXIT VALUE
 exit ${RUN_EXIT_VALUE}
-

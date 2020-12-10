@@ -9,7 +9,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/model-with-metadata:0.3
+        - image: seldonio/model-with-metadata:0.5
           name: my-model
           env:
           - name: SELDON_LOG_LEVEL
@@ -24,6 +24,9 @@ spec:
                 schema:
                   names: [alpha, beta, gamma, delta]
                   shape: [4]
+              custom:
+                author: seldon-dev
+                purpose: tutorial
     graph:
       children: []
       name: my-model

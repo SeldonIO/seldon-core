@@ -11,31 +11,31 @@ The Operator which manages the SeldonDeployment CRD is contained within the `/op
 
 For local development we use [kind](https://kind.sigs.k8s.io/), create a kind cluster
 
-```
+```console
 kind create cluster
 ```
 
 Install cert-manager
 
-```
+```console
 make install-cert-manager
 ```
 
 To build and load the current controller image into the Kind cluster:
 
-```
+```console
 make kind-image-install
 ```
 
 To install the Operator run:
 
-```
+```console
 make deploy
 ```
 
 If you wish to install the Operator and prepare the controller to be run outside the cluster, for example inside an IDE (we use GoLand) then run the following. This has only been tested on a local Kind cluster:
 
-```
+```console
 make deploy-local
 ```
 
@@ -43,13 +43,13 @@ When the everything is running delete the seldon-controller-manager deployment f
 
 Next, download the webhook certificate (created by cert-manager) locally:
 
-```
+```console
 make tls-extract
 ```
 
 You can now run the manager locally. You will need to set the webhook-port on startup e.g.,
 
-```
+```console
 go run ./main.go --webhook-port=9000
 ```
 
@@ -64,6 +64,3 @@ If running inside an IDE and you are using Kind then make sure you set the KUBEC
 
 - [Build using private repository](build-using-private-repo.md)
 
-## Seldon Prow
-
-- [prow status](https://prow.seldon.io)

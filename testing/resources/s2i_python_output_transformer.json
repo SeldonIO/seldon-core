@@ -6,20 +6,18 @@
     },
     "spec": {
         "name": "mytrans",
-        "oauth_key": "oauth-key",
-        "oauth_secret": "oauth-secret",
         "predictors": [
             {
                 "componentSpecs": [{
                     "spec": {
                         "containers": [
                             {
-                                "image": "seldonio/testmodel_rest:0.1",
+                                "image": "seldonio/testmodel:0.1",
                                 "imagePullPolicy": "Never",
                                 "name": "model"
                             },
                             {
-                                "image": "seldonio/testtransformer_rest:0.1",
+                                "image": "seldonio/testtransformer:0.1",
                                 "imagePullPolicy": "Never",
                                 "name": "transformer"
                             }
@@ -31,16 +29,10 @@
                     "children": [{
 			"children": [],
 			"name": "model",
-			"endpoint": {
-                            "type" : "REST"
-			},
 			"type": "MODEL"
                     }],
                     "name": "transformer",
-                    "endpoint": {
-                        "type" : "REST"
-                    },
-		    "type": "OUTPUT_TRANSFORMER"
+                    "type": "OUTPUT_TRANSFORMER"
                 },
                 "name": "mytrans",
                 "replicas": 1

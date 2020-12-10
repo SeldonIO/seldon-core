@@ -6,8 +6,11 @@
 * Installer method
     * Helm version equal or higher than 3.0
     * Kustomize version equal or higher than 0.1.0
+* Ingress
+    * Istio ( sample installation using Istio 1.5 can be found at https://github.com/SeldonIO/seldon-core/tree/master/examples/auth )
+    * Ambassador
 
-#### Running older versions of Seldon Core? 
+### Running older versions of Seldon Core? 
 
 Make sure you read the ["Upgrading Seldon Core Guide"](../reference/upgrading.md)
 
@@ -53,7 +56,7 @@ For this you would be able to clone the repository, and then checkout the releva
 
 Once you have done that you can install seldon-core using the following command:
 
-```
+```bash
 helm install helm-charts/seldon-core-operator seldon-core-operator
 ```
 
@@ -92,23 +95,23 @@ The [Kustomize](https://github.com/kubernetes-sigs/kustomize) installation can b
 
 To use the template directly, there is a Makefile which has a set of useful commands:
 
-For kubernetes clusters of version higher than 1.15, make sure you comment the patch_object_selector [here](https://github.com/SeldonIO/seldon-core/blob/master/operator/config/webhook/kustomization.yaml#L8).
+For kubernetes clusters of version higher than 1.15, make sure you [comment the patch_object_selector here](https://github.com/SeldonIO/seldon-core/blob/master/operator/config/webhook/kustomization.yaml#L8).
 
 Install cert-manager
 
-```
+```bash
 make install-cert-manager
 ```
 
 Install Seldon using cert-manager to provide certificates.
 
-```
+```bash
 make deploy
 ```
 
 Install Seldon with provided certificates in `config/cert/`
 
-```
+```bash
 make deploy-cert
 ```
 
@@ -127,9 +130,13 @@ Now that you have Seldon Core installed, you can set it up with:
 
 If you have a Google Cloud Platform account you can install via the [GCP Marketplace](https://console.cloud.google.com/marketplace/details/seldon-portal/seldon-core).
 
-#### AWS MarketPlace
+#### OpenShift
 
-If you have a AWS account you can install via the [AWS Marketplace](https://aws.amazon.com/marketplace/pp/B07KCNBCHV). See our [AWS Install Documentation](../reference/aws-mp-install.md).
+You can install Seldon Core via OperatorHub on the OpenShift console UI.
+
+#### OperatorHub
+
+You can install Seldon Core from [Operator Hub](https://operatorhub.io/operator/seldon-operator).
 
 ## Upgrading from Previous Versions
 
@@ -170,7 +177,7 @@ We set `crd.create=true` to create the CRD. If you are installing a Seldon Core 
 
 An example install is provided in the Makefile in the Operator folder:
 
-```
+```bash
 make deploy-namespaced1
 ```
 
@@ -203,13 +210,13 @@ helm install seldon-controllerid seldon-core-operator  --repo https://storage.go
 
 We set `crd.create=true` to create the CRD. If you are installing a Seldon Core Operator after you have installed a previous Seldon Core Operator on the same cluster you will need to set `crd.create=false`.
 
-For kustomize you will need to uncomment the patch_object_selector [here](https://github.com/SeldonIO/seldon-core/blob/master/operator/config/webhook/kustomization.yaml)
+For kustomize you will need to [uncomment the patch_object_selector here](https://github.com/SeldonIO/seldon-core/blob/master/operator/config/webhook/kustomization.yaml)
 
 #### Kustomize
 
 An example install is provided in the Makefile in the Operator folder:
 
-```
+```bash
 make deploy-controllerid
 ```
 

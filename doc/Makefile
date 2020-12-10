@@ -2,7 +2,7 @@
 #
 
 # You can set these variables from the command line.
-SPHINXOPTS    =
+SPHINXOPTS    = -j auto -n
 SPHINXBUILD   = sphinx-build
 SOURCEDIR     = source
 BUILDDIR      = _build
@@ -11,39 +11,51 @@ BUILDDIR      = _build
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-.PHONY: help Makefile
+.PHONY: clean livehtml livehtml-fast help Makefile
 
 TAG=master
 
-cluster-manager-dependencies: 
-	cd ../cluster-manager && mvn clean project-info-reports:dependencies
-	cd ../cluster-manager/target/site && \
-		aws s3 cp dependencies.html s3://seldon-core-docs/${TAG}/cluster-manager/dependencies/dependencies.html --acl public-read && \
-		aws s3 cp css s3://seldon-core-docs/${TAG}/cluster-manager/dependencies/css/ --acl public-read --recursive && \
-		aws s3 cp images s3://seldon-core-docs/${TAG}/cluster-manager/dependencies/images/ --acl public-read --recursive
+install-dev:
+	pip install -r requirements.txt
+	# Install local version of seldon_core as well
+	make -C ../python install_dev
 
-.PHONY: cluster-manager-jacoco
-cluster-manager-jacoco: 
-	cd ../cluster-manager && mvn clean verify
-	cd ../cluster-manager/target/site && \
-		aws s3 cp jacoco  s3://seldon-core-docs/${TAG}/cluster-manager/jacoco/ --acl public-read --recursive
-
-#html:: source/_static/cluster-manager/dependencies source/_static/cluster-manager/jacoco
-
-.PHONY: clean
 clean:
 	rm -rf source/_static/cluster-manager/dependencies
 	rm -rf source/_static/cluster-manager/jacoco
 	rm -rf source/python/api
 	rm -rf _build
 
+lint: html linkcheck
+
+linkcheck:
+	# Check for links reported as broken, ignoring 429 (too many requests)
+	- LINKCHECK=true $(SPHINXBUILD) \
+		-b linkcheck \
+		 $(SPHINXOPTS) \
+		"$(SOURCEDIR)" \
+		"$(BUILDDIR)"
+	! grep -v '429' _build/output.txt | grep 'broken'
+
+
 livehtml:
-	sphinx-autobuild -b html --ignore "*~" $(ALLSPHINXOPTS) $(SOURCEDIR) $(BUILDDIR)/html
+	sphinx-autobuild \
+		-b html \
+		--ignore "*~" $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)"
 
 livehtml-fast:
-	FAST_BUILD=true sphinx-autobuild -b html --ignore "*~" $(ALLSPHINXOPTS) $(SOURCEDIR) $(BUILDDIR)/html
+	FAST_BUILD=true sphinx-autobuild \
+		 -b html \
+		 --ignore "*~" \
+		 $(SPHINXOPTS) \
+		 "$(SOURCEDIR)" \
+		 "$(BUILDDIR)"
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
-	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	@$(SPHINXBUILD) \
+		-M $@ \
+		"$(SOURCEDIR)" \
+		"$(BUILDDIR)" \
+		$(SPHINXOPTS) -W --keep-going

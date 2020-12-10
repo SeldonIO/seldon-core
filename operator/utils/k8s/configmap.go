@@ -1,6 +1,7 @@
 package k8s
 
 import (
+	"context"
 	"github.com/ghodss/yaml"
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
@@ -26,7 +27,7 @@ func NewConfigmapCreator(client kubernetes.Interface, logger logr.Logger, scheme
 	}
 }
 
-func (cc *ConfigmapCreator) CreateConfigmap(rawYaml []byte, namespace string, owner *appsv1.Deployment) error {
+func (cc *ConfigmapCreator) CreateConfigmap(ctx context.Context, rawYaml []byte, namespace string, owner *appsv1.Deployment) error {
 	cc.logger.Info("Initialise ConfigMap")
 	cm := corev1.ConfigMap{}
 
@@ -46,10 +47,10 @@ func (cc *ConfigmapCreator) CreateConfigmap(rawYaml []byte, namespace string, ow
 	}
 
 	client := cc.clientset.CoreV1().ConfigMaps(namespace)
-	_, err = client.Get(cm.Name, v1.GetOptions{})
+	_, err = client.Get(ctx, cm.Name, v1.GetOptions{})
 	if err != nil && errors.IsNotFound(err) {
 		cc.logger.Info("Creating configmap")
-		_, err = client.Create(&cm)
+		_, err = client.Create(ctx, &cm, v1.CreateOptions{})
 	} else if err == nil {
 		cc.logger.Info("Configmap exists will not overwrite")
 	} else {

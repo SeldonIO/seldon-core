@@ -1,3 +1,4 @@
 {
-  "path": "../../../notebooks/istio_example.ipynb"
+  "path": "../../../notebooks/istio_example.ipynb",
+  "extra-media": ["../../../notebooks/images"]
 }

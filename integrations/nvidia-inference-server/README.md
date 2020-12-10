@@ -22,7 +22,7 @@ An example SeldonDeployment Kubernetes resource taken from the MNIST demo is sho
 ![MNIST Example](./mnist-graph.png)
 
 
-```
+```json
 {
     "apiVersion": "machinelearning.seldon.io/v1alpha2",
     "kind": "SeldonDeployment",
@@ -158,10 +158,5 @@ An example SeldonDeployment Kubernetes resource taken from the MNIST demo is sho
         ]
     }
 }
-
-
 ```
 
-Examples: 
-
- * [MNIST with Nvidia Inference Server](https://github.com/SeldonIO/seldon-core/blob/master/examples/models/nvidia-mnist/nvidia_mnist.ipynb).

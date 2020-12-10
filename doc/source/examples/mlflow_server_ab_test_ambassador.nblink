@@ -1,3 +1,4 @@
 {
-  "path": "../../../examples/models/mlflow_server_ab_test_ambassador/mlflow_server_ab_test_ambassador.ipynb"
+  "path": "../../../examples/models/mlflow_server_ab_test_ambassador/mlflow_server_ab_test_ambassador.ipynb",
+  "extra-media": ["../../../examples/models/mlflow_server_ab_test_ambassador/images"]
 }

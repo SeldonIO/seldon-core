@@ -4,7 +4,7 @@ pipelineConfig:
     pullRequest:
       pipeline:
         agent:
-          image: seldonio/core-builder:0.15
+          image: seldonio/core-builder:0.19
         stages:
           - name: pr-build-comment
             steps:

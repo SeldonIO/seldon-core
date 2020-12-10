@@ -30,6 +30,43 @@ spec:
     - "*"
 ```
 
+If you want to want to create SSL based gateway, create your signed certificate or actual signed certificate (for example named fullchain.pem), key (privkey.pem) and then run follwing commands to get SSL gateway. Assuming we're not using [cert-manager](https://istio.io/latest/docs/ops/integrations/certmanager/) then create self-signed certificate with
+
+
+```bash
+openssl req -nodes -x509 -newkey rsa:4096 -keyout privkey.pem -out fullchain.pem -days 365 -subj "/C=GB/ST=GreaterLondon/L=London/O=SeldonSerra/OU=MLOps/CN=localhost"
+```
+
+Import certificate and key as a secret into istio-system namespace
+
+```bash
+kubectl create -n istio-system secret tls seldon-ssl-cert --key=privkey.pem --cert=fullchain.pem
+```
+
+and create SSL Istio Gateway using following YAML file
+
+```
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: seldon-gateway
+  namespace: istio-system
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+  - hosts:
+    - '*'
+    port:
+      name: https
+      number: 443
+      protocol: HTTPS
+    tls:
+      credentialName: seldon-ssl-cert
+      mode: SIMPLE
+```
+
+
 If you have your own gateway you will use then you can provide the name when installing the seldon operator. For example if your gateway is called `mygateway` you can install the operator with:
 
 ```bash 
@@ -58,8 +95,17 @@ Istio has the capability for fine grained traffic routing to your deployments. T
  * A/B testing
  * shadow deployments
 
-An example showing canary updates can be found [here](../examples/istio_canary.html)
-Other examples including shadow can be found [here](../examples/istio_examples.html)
+More information on these can be found in our [example showing canary
+updates](../examples/istio_canary.html) and [other examples, including shadow
+updates](../examples/istio_examples.html).
 
 
+## Troubleshoot
+If you saw errors like `Failed to generate bootstrap config: mkdir ./etc/istio/proxy: permission denied`, it's probably because you are running istio version <= 1.6.
+Istio proxy sidecar by default needs to run as root (This changed in version >= 1.7, non-root is the default)
+You can fix this by changing `defaultUserID=0` in your helm chart, or add the following `securityContext` to your istio proxy sidecar.
 
+```
+securityContext:
+  runAsUser: 0
+```

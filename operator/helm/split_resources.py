@@ -26,7 +26,8 @@ HELM_KUBEFLOW_IF_START = "{{- if .Values.kubeflow }}\n"
 HELM_KUBEFLOW_IF_NOT_START = "{{- if not .Values.kubeflow }}\n"
 HELM_CREATERESOURCES_IF_START = "{{- if not .Values.managerCreateResources }}\n"
 HELM_CREATERESOURCES_RBAC_IF_START = "{{- if .Values.managerCreateResources }}\n"
-# HELM_SECRET_IF_START = '{{- if .Values.webhook.secretProvided -}}\n'
+HELM_K8S_V1_CRD_IF_START = '{{- if or (ge (int (regexFind "[0-9]+" .Capabilities.KubeVersion.Minor)) 18) (.Values.crd.forcev1) }}\n'
+HELM_K8S_V1BETA1_CRD_IF_START = '{{- if or (lt (int (regexFind "[0-9]+" .Capabilities.KubeVersion.Minor)) 18) (.Values.crd.forcev1beta1) }}\n'
 HELM_IF_END = "{{- end }}\n"
 
 HELM_ENV_SUBST = {
@@ -40,6 +41,7 @@ HELM_ENV_SUBST = {
     "ENGINE_CONTAINER_USER": "engine.user",
     "ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME": "engine.serviceAccount.name",
     "ISTIO_ENABLED": "istio.enabled",
+    "KEDA_ENABLED": "keda.enabled",
     "ISTIO_GATEWAY": "istio.gateway",
     "ISTIO_TLS_MODE": "istio.tlsMode",
     "PREDICTIVE_UNIT_SERVICE_PORT": "predictiveUnit.port",
@@ -55,6 +57,14 @@ HELM_ENV_SUBST = {
     "MANAGER_CREATE_RESOURCES": "managerCreateResources",
     "EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT": "executor.requestLogger.defaultEndpoint",
     "DEFAULT_USER_ID": "defaultUserID",
+    "EXECUTOR_DEFAULT_CPU_LIMIT": "executor.resources.cpuLimit",
+    "EXECUTOR_DEFAULT_CPU_REQUEST": "executor.resources.cpuRequest",
+    "EXECUTOR_DEFAULT_MEMORY_LIMIT": "executor.resources.memoryLimit",
+    "EXECUTOR_DEFAULT_MEMORY_REQUEST": "executor.resources.memoryRequest",
+    "ENGINE_DEFAULT_CPU_LIMIT": "engine.resources.cpuLimit",
+    "ENGINE_DEFAULT_CPU_REQUEST": "engine.resources.cpuRequest",
+    "ENGINE_DEFAULT_MEMORY_LIMIT": "engine.resources.memoryLimit",
+    "ENGINE_DEFAULT_MEMORY_REQUEST": "engine.resources.memoryRequest",
 }
 HELM_VALUES_IMAGE_PULL_POLICY = "{{ .Values.image.pullPolicy }}"
 
@@ -90,7 +100,25 @@ if __name__ == "__main__":
             res = yaml.safe_load(stream)
             kind = res["kind"].lower()
             name = res["metadata"]["name"].lower()
+            version = res["apiVersion"]
             filename = args.folder + "/" + (kind + "_" + name).lower() + ".yaml"
+            print(filename)
+            print(version)
+            if (
+                filename
+                == (
+                    args.folder
+                    + "/"
+                    + "customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml"
+                )
+                and version == "apiextensions.k8s.io/v1"
+            ):
+                print("MATCH")
+                filename = (
+                    args.folder
+                    + "/"
+                    + "customresourcedefinition_v1_seldondeployments.machinelearning.seldon.io.yaml"
+                )
 
             print("Processing ", file)
             # Update common labels
@@ -360,8 +388,28 @@ if __name__ == "__main__":
                 fdata = HELM_CERTMANAGER_IF_START + fdata + HELM_IF_END
             elif name == "seldon-webhook-server-cert" and kind == "secret":
                 fdata = HELM_NOT_CERTMANAGER_IF_START + fdata + HELM_IF_END
-            elif name == "seldondeployments.machinelearning.seldon.io":
-                fdata = HELM_CRD_IF_START + fdata + HELM_IF_END
+            elif (
+                name == "seldondeployments.machinelearning.seldon.io"
+                and version == "apiextensions.k8s.io/v1beta1"
+            ):
+                fdata = (
+                    HELM_CRD_IF_START
+                    + HELM_K8S_V1BETA1_CRD_IF_START
+                    + fdata
+                    + HELM_IF_END
+                    + HELM_IF_END
+                )
+            elif (
+                name == "seldondeployments.machinelearning.seldon.io"
+                and version == "apiextensions.k8s.io/v1"
+            ):
+                fdata = (
+                    HELM_CRD_IF_START
+                    + HELM_K8S_V1_CRD_IF_START
+                    + fdata
+                    + HELM_IF_END
+                    + HELM_IF_END
+                )
             elif kind == "service" and name == "seldon-webhook-service":
                 fdata = HELM_CREATERESOURCES_IF_START + fdata + HELM_IF_END
             elif kind == "configmap" and name == "seldon-config":
@@ -451,6 +499,8 @@ if __name__ == "__main__":
         re.M,
     )
     webhookData = webhookData + "\n" + HELM_IF_END
+
+    print("Webhook data len", len(webhookData))
 
     filename = args.folder + "/" + "webhook.yaml"
     with open(filename, "w") as outfile:

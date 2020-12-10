@@ -2,16 +2,50 @@
 Seldon Core
 ===========
 
+.. These are hidden links, which are not linked anywhere but may still be
+   exposed through an URL in readthedocs
+.. TODO Filter through these to remove or ignore old ones
+.. toctree::
+   :hidden:
+
+   R Wrapping Docker <R/r_wrapping_docker>
+   Seldon OpenVINO <charts/seldon-openvino>
+   Custom svc Name <graph/custom_svc_name>
+   gRPC Load Balancing Ambassador <graph/grpc_load_balancing_ambassador>
+   Model Engine Java Opts <graph/model_engine_java_opts>
+   Model REST gRPC Settings <graph/model_rest_grpc_settings>
+   Model svcOrch Sep <graph/model_svcorch_sep>
+   APIs Reference <reference/apis/readme>
+   Engine Reference <reference/engine>
+   Integration NVIDIA Link <reference/integration_nvidia_link>
+   Integration Sagemaker Link <reference/integration_sagemaker_link>
+   Quickstart <workflow/quickstart>
+   S2I <wrappers/s2i>
+   Ambassador Circuit Breakers <examples/ambassador_circuit_breakers>
+   Istio <examples/istio>
+   Custom Metrics <examples/custom_metrics>
+   Drift CIFAR10 <examples/drift_cifar10>
+   Pachyderm <examples/pachyderm>
+   DVC <examples/dvc>
+   Graph Metadata <examples/graph-metadata>
+   Metadata <examples/metadata>
+   Metadata gRPC <examples/metadata_grpc>
+   Metadata Schema <examples/metadata_schema>
+   PVC TFJob <examples/pvc-tfjob>
+   Seldon Client <examples/seldon_client>
+   Server Examples <examples/server_examples>
+
+
 An open source platform to deploy your machine learning models on Kubernetes at massive scale.
 
 Overview
------
+--------
 Seldon core converts your ML models (Tensorflow, Pytorch, H2o, etc.) or language wrappers (Python, Java, etc.) into production REST/GRPC microservices.
 
 Seldon handles scaling to thousands of production machine learning models and provides advanced machine learning capabilities out of the box including Advanced Metrics, Request Logging, Explainers, Outlier Detectors, A/B Tests, Canaries and more.
 
 Quick Links
------
+-----------
 
 * Read the `Seldon Core Documentation <./>`_
 * Join our `community Slack <https://join.slack.com/t/seldondev/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU>`_ to ask any questions
@@ -26,7 +60,7 @@ Quick Links
    :align: center
 
 Documentation Index
-----
+-------------------
 
 .. toctree::
    :maxdepth: 1
@@ -42,7 +76,7 @@ Documentation Index
    :caption: Seldon Core Deep Dive
 
    Detailed Installation Parameters <reference/helm.rst>
-   Pre-packaged Inreference Servers <servers/overview.md>
+   Pre-packaged Inference Servers <servers/overview.md>
    Language Wrappers for Custom Models <wrappers/language_wrappers.md>
    Create your Inference Graph <graph/inference-graph.md>
    Deploy your Model  <workflow/deploying.md>
@@ -58,9 +92,10 @@ Documentation Index
    :caption: Pre-Packaged Inference Servers
 
    MLflow Server <servers/mlflow.md>
-   SKLearn server <servers/sklearn.md>
+   SKLearn Server <servers/sklearn.md>
+   Triton Inference Server <servers/triton.md>
    Tensorflow Serving <servers/tensorflow.md>
-   XGBoost server <servers/xgboost.md>
+   XGBoost Server <servers/xgboost.md>
 
 .. toctree::
    :maxdepth: 1
@@ -73,13 +108,8 @@ Documentation Index
    Payload Logging with ELK <analytics/logging.md>
    Distributed Tracing with Jaeger <graph/distributed-tracing.md>
    Replica Scaling  <graph/scaling.md>
+   Budgeting Disruptions <graph/disruption-budgets.md>
    Custom Inference Servers <servers/custom.md>
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Batch Processing with Seldon
-
-   Overview of Batch Processing <servers/batch.md>
 
 .. toctree::
    :maxdepth: 1
@@ -92,10 +122,11 @@ Documentation Index
    :caption: Incubating Projects
 
    Java Language Wrapper <java/README.md>
+   Java (JNI) Language Wrapper [ALPHA] <java-jni/README.md>
+   C++ Language Wrapper [ALPHA] <cpp/README.md>
    R Language Wrapper [ALPHA] <R/README.md>
    NodeJS Language Wrapper [ALPHA] <nodejs/README.md>
    Go Language Wrapper [ALPHA] <go/go_wrapper_link.rst>
-   Stream Processing with KNative <streaming/knative_eventing.md>
 
 .. toctree::
    :maxdepth: 1
@@ -103,6 +134,15 @@ Documentation Index
 
    Ambassador Ingress <ingress/ambassador.md>
    Istio Ingress <ingress/istio.md>
+   OpenShift <ingress/openshift.md>
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Streaming and Batch Processing
+
+   Overview of Batch Processing <servers/batch.md>
+   Stream Processing with KNative <streaming/knative_eventing.md>
+   Native Kafka Integration <streaming/kafka.md>
 
 .. toctree::
    :maxdepth: 1
@@ -121,6 +161,7 @@ Documentation Index
    Articles/Blogs <tutorials/blogs>
    Videos <tutorials/videos>
    Podcasts <tutorials/podcasts>
+   Kubeflow Pipelines <https://github.com/kubeflow/pipelines/blob/master/samples/contrib/e2e-outlier-drift-explainer/seldon/README.md>
 
 .. toctree::
    :maxdepth: 1
@@ -140,6 +181,7 @@ Documentation Index
    Seldon Deployment CRD <reference/seldon-deployment.md>
    Service Orchestrator <graph/svcorch.md>
    Kubeflow <analytics/kubeflow.md>
+   Concepts <reference/concepts.md>
 
 .. toctree::
    :maxdepth: 1

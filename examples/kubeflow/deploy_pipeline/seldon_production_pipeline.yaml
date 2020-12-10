@@ -11,8 +11,6 @@ spec:
     project_name: NLP Pipeline
     deployment_version: v1
   name: "seldon-deployment-{{workflow.name}}"
-  oauth_key: oauth-key
-  oauth_secret: oauth-secret
   predictors:
   - componentSpecs:
     - spec:

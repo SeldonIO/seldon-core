@@ -17,20 +17,20 @@ We use:
 [Pytest](https://docs.pytest.org/en/latest/getting-started.html#install-pytest)
 `pip install -U pytest`
 
-[gRPC.io Tools](https://grpc.io/docs/quickstart/python/#grpc-tools)
+[gRPC.io Tools](https://grpc.io/docs/languages/python/quickstart/#grpc-tools)
 `python -m pip install grpcio-tools`
 
 ### Setup
 
 To get everything setup run:
 
-```
+```console
 kind_test_setup.sh
 ```
 
 Activate kind kubernetes config:
 
-```
+```console
 export KUBECONFIG="$(kind get kubeconfig-path)"
 ```
 
@@ -38,18 +38,18 @@ export KUBECONFIG="$(kind get kubeconfig-path)"
 
 Then to run the tests and log output to a file:
 
-```
+```console
 make test_sequential > test_sequential.log
 ```
-```
+```console
 make test_parallel > test_parallel.log
 ```
-```
+```console
 make test_notebooks > test_notebooks.log
 ```
 
 To run a single test:
-```
+```console
 pytest -sv test_tags.py::TestTagsPythonS2iK8s::test_model_single_grpc > test_model_single_grpc.log
 ```
 
@@ -57,13 +57,13 @@ pytest -sv test_tags.py::TestTagsPythonS2iK8s::test_model_single_grpc > test_mod
 
 To view test logs in a separate terminal:
 
-```
+```console
 tail -f test_sequential.log
 ```
 
 To also follow controller logs in a separate terminal:
 
-```
+```console
 export KUBECONFIG="$(kind get kubeconfig-path)"
 kubectl logs -f -n seldon-system $(kubectl get pods -n seldon-system -l app=seldon -o jsonpath='{.items[0].metadata.name}')
 ```

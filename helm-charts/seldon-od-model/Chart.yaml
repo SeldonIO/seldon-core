@@ -1,9 +1,11 @@
-apiVersion: v1
-description: Seldon Core outlier detection model template
-keywords:
-- kubernetes
-- machine-learning
+apiVersion: v2
 name: seldon-od-model
+description: Chart to deploy an outlier detector as a single Seldon model. 
+version: 0.2.0
+home: https://github.com/SeldonIO/seldon-core
 sources:
-- https://github.com/SeldonIO/seldon-core
-version: 0.1
+  - https://github.com/SeldonIO/seldon-core
+  - https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-od-model
+keywords:
+  - kubernetes
+  - machine-learning

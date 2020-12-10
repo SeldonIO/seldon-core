@@ -3,6 +3,7 @@ import pytest
 from seldon_e2e_utils import clean_string, retry_run, get_seldon_version
 
 from e2e_utils.install import install_seldon, delete_seldon
+from e2e_utils.s2i import create_s2i_image, kind_load_image
 from subprocess import run
 
 
@@ -87,6 +88,36 @@ def seldon_version(request):
     # Re-install source code version cluster-wide
     delete_seldon()
     install_seldon(executor=SELDON_E2E_TESTS_USE_EXECUTOR)
+
+
+@pytest.fixture(scope="module")
+def s2i_image(request):
+    """
+    Creates an S2I image.
+    Note that this is an indirect fixture, therefore it will read some
+    parameters.
+
+    Parameters
+    ---
+    s2i_folder : str
+        Path to folder with image's content
+    s2i_image : str
+        Image to use as S2I template
+    image_name : str
+        Name of the final image
+    s2i_runtime_image : str = None
+        Optional runtime image
+    """
+
+    s2i_folder = request.param["s2i_folder"]
+    s2i_image = request.param["s2i_image"]
+    image_name = request.param["image_name"]
+    s2i_runtime_image = request.param.get("s2i_runtime_image", None)
+
+    image_name = create_s2i_image(s2i_folder, s2i_image, image_name, s2i_runtime_image)
+    kind_load_image(image_name)
+
+    return image_name
 
 
 def do_s2i_python_version():
