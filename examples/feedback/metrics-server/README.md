@@ -128,7 +128,7 @@ spec:
           runAsUser: 8888
       containers:
       - name: user-container
-        image: seldonio/alibi-detect-server:1.5.0-dev
+        image: seldonio/alibi-detect-server:1.6.0-dev
         imagePullPolicy: Never
         args:
         - --model_name
@@ -152,7 +152,7 @@ spec:
         - name: "PREDICTIVE_UNIT_ID"
           value: "classifier"
         - name: "PREDICTIVE_UNIT_IMAGE"
-          value: "alibi-detect-server:1.5.0-dev"
+          value: "alibi-detect-server:1.6.0-dev"
         - name: "PREDICTOR_ID"
           value: "default"
         ports:
@@ -220,7 +220,7 @@ spec:
         prometheus.io/scrape: "true"
     spec:
       containers:
-      - image: "seldonio/alibi-detect-server:1.5.0-dev"
+      - image: "seldonio/alibi-detect-server:1.6.0-dev"
         args:
         - --model_name
         - multiclassserver
@@ -243,7 +243,7 @@ spec:
         - name: "PREDICTIVE_UNIT_ID"
           value: "classifier"
         - name: "PREDICTIVE_UNIT_IMAGE"
-          value: "alibi-detect-server:1.5.0-dev"
+          value: "alibi-detect-server:1.6.0-dev"
         - name: "PREDICTOR_ID"
           value: "default"
         ports:
