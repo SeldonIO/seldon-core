@@ -12,6 +12,9 @@ COPY setup.py setup.py
 COPY alibiexplainer alibiexplainer
 COPY README.md README.md
 
+# Required for https://github.com/slundberg/shap/issues/1633
+RUN pip install numpy==1.19.04 
+
 RUN pip install . --no-binary protobuf
 
 RUN chmod -R a+rwx /opt/app-root/lib/python3.6
