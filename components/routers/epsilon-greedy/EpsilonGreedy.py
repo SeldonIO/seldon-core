@@ -47,7 +47,7 @@ class EpsilonGreedy(object):
             logger.setLevel(10)
             logger.info("Enabling debug mode")
 
-        logger.info("Starting %s Microservice, version %s", __name__, __version__)
+        logger.info(f"Starting { __name__} Microservice, version {__version__}")
 
         # for reproducibility
         if seed:
@@ -89,9 +89,7 @@ class EpsilonGreedy(object):
             logger.info("Branch names: %s", self.branch_names)
 
         logger.info(
-            "Router initialised, n_branches: %s, epsilon: %s",
-            self.n_branches,
-            self.epsilon,
+            f"Router initialised, n_branches: {self.n_branches}, epsilon: {self.epsilon}"
         )
 
     def route(self, features, feature_names):
@@ -109,27 +107,23 @@ class EpsilonGreedy(object):
 
         logger.info("Routing to branch %s", selected_branch)
         logger.debug(
-            "Current best branch %s has value %s",
-            self.best_branch,
-            self.branch_values[self.best_branch],
+            f"Current best branch {self.best_branch} has value {self.branch_values[self.best_branch]}"
         )
         logger.debug(
-            "Selected branch %s has value %s",
-            selected_branch,
-            self.branch_values[selected_branch],
+            f"Selected branch {selected_branch} has value {self.branch_values[selected_branch]}"
         )
 
         logger.info(f"routing type: {type(selected_branch)}")
         return int(selected_branch)
 
     def send_feedback(self, features, feature_names, reward, truth, routing=None):
-        logger.debug("Sending feedback with reward %s and truth %s", reward, truth)
+        logger.debug(f"Sending feedback with reward {reward} and truth {truth}")
         logger.debug("Prev success # %s", self.branch_success)
         logger.debug("Prev tries # %s", self.branch_tries)
         logger.debug("Prev best branch: %s", self.best_branch)
 
         n_success, n_failures = self.n_success_failures(features, reward)
-        logger.debug("n_success: %s, n_failures: %s", n_success, n_failures)
+        logger.debug(f"n_success: {n_success}, n_failures: {n_failures}")
 
         self.branch_success[routing] += n_success
         self.branch_tries[routing] += n_success + n_failures
