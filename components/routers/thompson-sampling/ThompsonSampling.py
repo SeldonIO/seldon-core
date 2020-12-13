@@ -45,7 +45,7 @@ class ThompsonSampling(object):
             logger.setLevel(10)
             logger.info("Enabling debug mode")
 
-        logger.info("Starting %s Microservice, version %s", __name__, __version__)
+        logger.info(f"Starting {__name__} Microservice, version {__version__}")
 
         # for reproducibility
         if seed:
@@ -95,12 +95,12 @@ class ThompsonSampling(object):
         return int(selected_branch)
 
     def send_feedback(self, features, feature_names, reward, truth, routing=None):
-        logger.debug("Sending feedback with reward %s and truth %s", reward, truth)
+        logger.debug(f"Sending feedback with reward {reward} and truth {truth}")
         logger.debug("Prev success # %s", self.branch_success)
         logger.debug("Prev tries # %s", self.branch_tries)
 
         n_success, n_failures = self.n_success_failures(features, reward)
-        logger.debug("n_success: %s, n_failures: %s", n_success, n_failures)
+        logger.debug(f"n_success: {n_success}, n_failures: {n_failures}")
 
         self.models_beta_params[routing][0] += n_success
         self.models_beta_params[routing][1] += n_failures
