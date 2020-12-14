@@ -20,7 +20,7 @@ RETURN_INSTANCE_SCORE = os.environ.get(ENV_RETURN_INSTANCE_SCORE, "").upper() ==
 RETURN_FEATURE_SCORE = os.environ.get(ENV_RETURN_FEATURE_SCORE, "").upper() == "TRUE"
 
 
-def _append_outlier_metrcs(metrics, outlier, name):
+def _append_outlier_metrcs(metrics, outlier, name, is_count=True):
     metric_found = outlier.get("data", {}).get(name)
 
     # Assumes metric_found is always float/int or list/np.array when not none
@@ -33,7 +33,7 @@ def _append_outlier_metrcs(metrics, outlier, name):
                 {
                     "key": f"seldon_metric_outlier_{name}",
                     "value": instance,
-                    "type": "GAUGE",
+                    "type": "COUNTER" if is_count else "GAUGE",
                     "tags": {"index": str(i)},
                 }
             )
@@ -135,7 +135,7 @@ class AlibiDetectOutlierModel(CEModel):  # pylint:disable=c-extension-no-member
         # Register metrics
         metrics = []
         _append_outlier_metrcs(metrics, od_preds, "is_outlier")
-        _append_outlier_metrcs(metrics, od_preds, "instance_score")
+        _append_outlier_metrcs(metrics, od_preds, "instance_score", is_count=False)
 
         # clean result
         if (
