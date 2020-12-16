@@ -119,7 +119,7 @@ Production Configurations and Integrations
   
    Example Helm Deployments <helm_examples>
    Max gRPC Message Size <max_grpc_msg_size>
-   REST timeouts <rest_timeouts>
+   Configurable timeouts <timeouts>
    Deploy Multiple Seldon Core Operators <multiple_operators>
    Protocol Examples <protocol_examples>
    Custom Protobuf Data Example <customdata_example>

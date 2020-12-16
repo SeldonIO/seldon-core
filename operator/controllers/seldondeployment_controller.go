@@ -1648,6 +1648,14 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		return ctrl.Result{}, err
 	}
 
+	// Required for foreground deletion (e.g. ArgoCD does it)
+	if !instance.ObjectMeta.DeletionTimestamp.IsZero() {
+		// If Deletion Tiemstamp is set it means object is being deleted.
+		// We should take no action in this situation.
+		log.Info("Deletion timestamp is set. Doing nothing.")
+		return ctrl.Result{}, nil
+	}
+
 	// Check if we are not namespaced and should ignore this as its in a namespace managed by another operator
 	if r.Namespace == "" {
 		ns := &corev1.Namespace{}

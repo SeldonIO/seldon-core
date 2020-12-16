@@ -17,6 +17,6 @@ You can use the following links to navigate the Python seldon-core module:
    Create image with S2I <python_wrapping_s2i.md>
    Create image with a Dockerfile <python_wrapping_docker.md>
    Seldon Python server configuration <python_server.md>
-   Calling the Seldon API with the Seldon Python client <seldon_client.md>   
-   Python API reference <api/modules>   	      
-
+   Calling the Seldon API with the Seldon Python client <seldon_client.md>
+   Python API reference <api/modules>
+   Development Tips <developer_notes>
