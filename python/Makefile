@@ -95,7 +95,7 @@ push_conda:
 	@echo "Alternatively use anaconda upload to publish on own channel"
 
 setup_linter:
-	pip install black==black 20.8b1
+	pip install black==20.8b1
 
 fmt:
 	black \
