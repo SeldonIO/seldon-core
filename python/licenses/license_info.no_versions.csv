@@ -53,6 +53,7 @@
 "threadloop","MIT License"
 "thrift","Apache Software License"
 "tornado","Apache Software License"
+"typing-extensions","Python Software Foundation License"
 "urllib3","MIT License"
 "wrapt","BSD License"
 "zipp","MIT License"
