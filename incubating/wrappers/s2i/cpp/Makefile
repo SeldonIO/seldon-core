@@ -1,4 +1,4 @@
-BASE_IMAGE_TAG := 1.6.0-dev
+BASE_IMAGE_TAG := 1.5.1
 BASE_IMAGE_NAME := docker.io/seldonio/seldon-core-s2i-python37-ubi8
 SHELL := /bin/bash
 SELDON_CORE_DIR = ../../../../
