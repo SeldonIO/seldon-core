@@ -12,7 +12,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: docker.io/seldonio/imagenet-transformer:0.2
+        - image: docker.io/seldonio/imagenet-transformer:0.3
           name: transformer
     graph:
       name: transformer
