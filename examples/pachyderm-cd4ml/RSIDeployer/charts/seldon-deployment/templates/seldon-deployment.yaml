@@ -1,0 +1,40 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: rsi-predictor
+spec:
+  annotations:
+    seldon.io/executor: "true"
+  name: rsi-predictor
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/pachyderm-rsi-server:0.1.0
+          imagePullPolicy: IfNotPresent
+          name: rsi-predictor
+          env:
+          - name: MODEL_URI
+            value: {{ .Values.model.uri }}
+          - name: MODEL_COMMIT_HASH
+            value: {{ .Values.model.version }}
+          - name: TEMP_DIR
+            value: /mnt/models
+          envFrom:
+          - secretRef:
+              name: minio-credentials
+          volumeMounts:
+          - name: model-storage
+            mountPath: /mnt/models
+        volumes:
+        - name: model-storage
+          emptyDir: {}
+        serviceAccountName: rsi-deployment-sa
+    graph:
+      children: []
+      endpoint:
+        type: REST
+      name: rsi-predictor
+      type: MODEL
+    name: default
+    replicas: 1

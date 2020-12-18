@@ -1,0 +1,6 @@
+apiVersion: v2
+name: seldon-deployment
+description: A custom helm chart for this seldon deployment
+type: application
+version: 0.1.0
+appVersion: 0.1.0

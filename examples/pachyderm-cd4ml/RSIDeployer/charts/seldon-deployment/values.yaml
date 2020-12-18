@@ -1,0 +1,3 @@
+model:
+  uri: "uri_to_model"
+  version: "commit_hash"
