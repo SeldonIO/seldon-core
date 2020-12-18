@@ -1,4 +1,4 @@
-IMAGE_VERSION=0.2
+IMAGE_VERSION=0.3
 IMAGE_NAME=docker.io/seldonio/imagenet-transformer
 
 build:
