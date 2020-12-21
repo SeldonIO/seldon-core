@@ -26,7 +26,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
     <opentracing.version>0.33.0</opentracing.version>
     <curator.version>4.2.0</curator.version>
     <jackson.version>2.11.1</jackson.version>
-    <kubernetes.version>9.0.1</kubernetes.version>
+    <kubernetes.version>11.0.0</kubernetes.version>
   </properties>
   <build>
     <finalName>${project.artifactId}-${project.version}</finalName>
