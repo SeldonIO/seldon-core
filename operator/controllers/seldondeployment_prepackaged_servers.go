@@ -152,6 +152,7 @@ func (pi *PrePackedInitialiser) addTritonServer(mlDepSpec *machinelearningv1.Sel
 			"--grpc-port=" + strconv.Itoa(int(pu.Endpoint.GrpcPort)),
 			"--http-port=" + strconv.Itoa(int(pu.Endpoint.HttpPort)),
 			"--model-repository=" + DefaultModelLocalMountPath,
+			"--strict-model-config=false",
 		},
 		Ports: []v1.ContainerPort{
 			{

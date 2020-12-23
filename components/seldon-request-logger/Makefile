@@ -1,5 +1,6 @@
 SHELL := /bin/bash
 VERSION := $(shell cat ../../version.txt)
+REPO := seldonio
 
 run_container:
 	docker run -p 2222:8080 seldonio/seldon-request-logger:latest
@@ -38,13 +39,13 @@ test_single_dim:
 IMAGE=seldon-request-logger
 
 build_image:
-	docker build . -t seldonio/${IMAGE}:${VERSION}
+	docker build . -t ${REPO}/${IMAGE}:${VERSION}
 
 push_image:
-	docker push seldonio/${IMAGE}:${VERSION}
+	docker push ${REPO}/${IMAGE}:${VERSION}
 
 kind_load: build_image
-	kind load docker-image seldonio/${IMAGE}:${VERSION}
+	kind load docker-image ${REPO}/${IMAGE}:${VERSION}
 
 
 #
@@ -53,8 +54,8 @@ kind_load: build_image
 
 # password can be found at: https://connect.redhat.com/project/3993051/view
 redhat-image-scan:
-	docker pull seldonio/${IMAGE}:${VERSION}
+	docker pull ${REPO}/${IMAGE}:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		echo $${rh_password_request_logger} | docker login -u unused scan.connect.redhat.com --password-stdin
-	docker tag seldonio/${IMAGE}:${VERSION} scan.connect.redhat.com/ospid-62dca88a-015b-4d08-8c52-b709e55a7790/${IMAGE}:${VERSION}
+	docker tag ${REPO}/${IMAGE}:${VERSION} scan.connect.redhat.com/ospid-62dca88a-015b-4d08-8c52-b709e55a7790/${IMAGE}:${VERSION}
 	docker push scan.connect.redhat.com/ospid-62dca88a-015b-4d08-8c52-b709e55a7790/${IMAGE}:${VERSION}

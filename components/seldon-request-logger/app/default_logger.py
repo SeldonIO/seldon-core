@@ -224,7 +224,6 @@ def process_content(message_type, content):
 
     return requestCopy
 
-
 def extract_data_part(content):
     copy = content.copy()
 
@@ -232,7 +231,52 @@ def extract_data_part(content):
     # if 'predictions' then tensorflow response
     # otherwise can use seldon logic for parsing and inferring type (won't be in here if outlier)
 
-    if "instances" in copy:
+    # V2 Data Plane Response
+    if "model_name" in copy and "outputs" in copy:
+        # assumes single output
+        output = copy["outputs"][0]
+        data_type = output["datatype"]
+        shape = output["shape"]
+        data = output["data"]
+
+        arr = np.array(data)
+        arr.shape = tuple(shape)
+
+        if data_type == "BYTES":
+            copy["dataType"] = "text"
+        elif len(shape) == 1 and shape[0] == 1:
+            copy["dataType"] = "number"
+        elif len(shape) < 3:
+            copy["dataType"] = "tabular"
+        else:
+            copy["dataType"] = "image"
+
+        copy["instance"] = arr.tolist()
+        del copy["outputs"]
+        del copy["model_name"]
+        del copy["model_version"]
+    elif "inputs" in copy:
+        # assumes single input
+        inputs = copy["inputs"][0]
+        data_type = inputs["datatype"]
+        shape = inputs["shape"]
+        data = inputs["data"]
+
+        arr = np.array(data)
+        arr.shape = tuple(shape)
+
+        if data_type == "BYTES":
+            copy["dataType"] = "text"
+        elif len(shape) == 1 and shape[0] == 1:
+            copy["dataType"] = "number"
+        elif len(shape) < 3:
+            copy["dataType"] = "tabular"
+        else:
+            copy["dataType"] = "image"
+
+        copy["instance"] = arr.tolist()
+        del copy["inputs"]
+    elif "instances" in copy:
 
         copy["instance"] = copy["instances"]
         content_np = np.array(copy["instance"])
