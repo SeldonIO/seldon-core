@@ -57,7 +57,6 @@ kind_build_images: build_protos kind_build_engine kind_build_operator kind_build
 
 .PHONY: helm_setup
 helm_setup:
-	helm repo add stable https://kubernetes-charts.storage.googleapis.com/
 	helm repo add seldonio https://storage.googleapis.com/seldon-charts
 	helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
 	helm repo add datawire https://www.getambassador.io
