@@ -218,8 +218,6 @@ def send_feedback(
 
         if client_response.data is None:
             client_response.data = np.array([])
-        else:
-            client_response.data = np.array(client_response.data)
 
         return construct_response(
             user_model,
