@@ -13,7 +13,7 @@ mypy-protobuf==1.22
 tenacity==6.2.0
 
 # 2nd lvl dep on cov required to avoid sqllite dep
-coverage==5.3
+coverage==5.3.1
 
 # Used in serving_test_gen
 pandas==1.2.0
