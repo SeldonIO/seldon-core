@@ -2,7 +2,7 @@
 black==20.8b1
 flake8==3.8.1
 mypy<0.791
-Pillow==8.0.1
+Pillow==8.1.0
 pytest==6.2.0
 pytest-cov==2.10.1
 tox<4.0.0
