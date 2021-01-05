@@ -14,7 +14,7 @@
 ### Metadata integrations with Frameworks
 
 - [SKLearn Server example with MinIO](../../examples/minio-sklearn.html)
-- [Deploying models trained with Pachyderm](../../examples/pachyderm.html)
+- [Deploying models trained with Pachyderm](../../examples/pachyderm-simple.html)
 - [Deploying models trained with DVC](../../examples/dvc.html)
 
 

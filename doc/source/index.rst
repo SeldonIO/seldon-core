@@ -25,7 +25,7 @@ Seldon Core
    Istio <examples/istio>
    Custom Metrics <examples/custom_metrics>
    Drift CIFAR10 <examples/drift_cifar10>
-   Pachyderm <examples/pachyderm>
+   Pachyderm <examples/pachyderm-simple>
    DVC <examples/dvc>
    Graph Metadata <examples/graph-metadata>
    Metadata <examples/metadata>
