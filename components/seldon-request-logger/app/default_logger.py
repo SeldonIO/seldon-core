@@ -12,6 +12,7 @@ import logging
 import sys
 import log_helper
 from collections.abc import Iterable
+import array
 
 MAX_PAYLOAD_BYTES = 300000
 app = Flask(__name__)
@@ -224,15 +225,88 @@ def process_content(message_type, content):
 
     return requestCopy
 
+def create_np_from_v2(data: list,ty: str, shape: list) -> np.array:
+    npty = np.float
+    if ty == "BOOL":
+        npty = np.bool
+    elif ty ==  "UINT8":
+        npty = np.uint8
+    elif ty == "UINT16":
+        npty = np.uint16
+    elif ty == "UINT32":
+        npty = np.uint32
+    elif ty == "UINT64":
+        npty = np.uint64
+    elif ty == "INT8":
+        npty = np.int8
+    elif ty == "INT16":
+        npty = np.int16
+    elif ty == "INT32":
+        npty = np.int32
+    elif ty == "INT64":
+        npty = np.int64
+    elif ty == "FP16":
+        npty = np.float32
+    elif ty == "FP32":
+        npty = np.float32
+    elif ty == "FP64":
+        npty = np.float64
+    else:
+        raise ValueError(f"V2 unknown type or type that can't be coerced {ty}")
+
+    arr = np.array(data, dtype=npty)
+    arr.shape = tuple(shape)
+    return arr
 
 def extract_data_part(content):
     copy = content.copy()
 
     # if 'instances' in body then tensorflow request protocol
     # if 'predictions' then tensorflow response
+    # if 'model_name' and 'outputs' then v2 dataplane response
+    # if 'inputs' then v2 data plane request
     # otherwise can use seldon logic for parsing and inferring type (won't be in here if outlier)
 
-    if "instances" in copy:
+    # V2 Data Plane Response
+    if "model_name" in copy and "outputs" in copy:
+        # assumes single output
+        output = copy["outputs"][0]
+        data_type = output["datatype"]
+        shape = output["shape"]
+        data = output["data"]
+
+        if data_type == "BYTES":
+            copy["dataType"] = "text"
+            copy["instance"] = array.array('B', data).tostring()
+        else:
+            arr = create_np_from_v2(data, data_type, shape)
+            copy["dataType"] = "tabular"
+            first_element = arr.item(0)
+            set_datatype_from_numpy(arr, copy, first_element)
+            copy["instance"] = arr.tolist()
+
+        del copy["outputs"]
+        del copy["model_name"]
+        del copy["model_version"]
+    elif "inputs" in copy:
+        # assumes single input
+        inputs = copy["inputs"][0]
+        data_type = inputs["datatype"]
+        shape = inputs["shape"]
+        data = inputs["data"]
+
+        if data_type == "BYTES":
+            copy["dataType"] = "text"
+            copy["instance"] = array.array('B', data).tostring()
+        else:
+            arr = create_np_from_v2(data, data_type, shape)
+            copy["dataType"] = "tabular"
+            first_element = arr.item(0)
+            set_datatype_from_numpy(arr, copy, first_element)
+            copy["instance"] = arr.tolist()
+
+        del copy["inputs"]
+    elif "instances" in copy:
 
         copy["instance"] = copy["instances"]
         content_np = np.array(copy["instance"])
@@ -248,8 +322,8 @@ def extract_data_part(content):
 
         copy["dataType"] = "tabular"
         first_element = content_np.item(0)
-
         set_datatype_from_numpy(content_np, copy, first_element)
+
         del copy["predictions"]
     else:
         requestMsg = json_to_seldon_message(copy)

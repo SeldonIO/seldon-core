@@ -43,3 +43,19 @@ curl 0.0.0.0:2222 -d '{"data": {"names": ["dummy feature"],"ndarray": [1.0]}}' -
 #jsonData example
 curl 0.0.0.0:2222 -d "{\"jsonData\": {\"input\": \"{'input': '[[53  4  0  2  8  4  2  0  0  0 60  9]]'}\"},\"meta\": {}}" -H "Ce-Inferenceservicename: jsonexample" -H "Content-Type: application/json" -H "Ce-Type: io.seldon.serving.inference.request" -H "Ce-Requestid: 11k"
 curl 0.0.0.0:2222 -d "{\"jsonData\": {\"input\": \"{'input': '[[53  4  0  2  8  4  2  0  0  0 60  9]]'}\"},\"meta\": {}}" -H "Ce-Inferenceservicename: jsonexample" -H "Content-Type: application/json" -H "Ce-Type: io.seldon.serving.inference.response" -H "Ce-Requestid: 11k"
+
+# tabular input
+curl 0.0.0.0:2222 -d  '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' -H "Content-Type: application/json" -H "Ce-Inferenceservicename: tensor" -H "Ce-Type: io.seldon.serving.inference.request" -H "Ce-Requestid: 2z1"
+
+# multi-output (only first output handled for now)
+curl 0.0.0.0:2222 -d '{"model_name": "simple", "model_version": "1", "outputs": [{"name": "OUTPUT0", "datatype": "INT32", "shape": [1, 16], "data": [2, 4, 6, 8, 10, 12, 14, 16, 8, 20, 22, 24, 26, 28, 30, 32]}, {"name": "OUTPUT1", "datatype": "INT32", "shape": [1, 16], "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}]}' -H "Content-Type: application/json" -H "Ce-Inferenceservicename: tensor" -H "Ce-Type: io.seldon.serving.inference.response" -H "Ce-Requestid: 2z1"
+
+
+# image input
+curl 0.0.0.0:2222 -d  '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,1,2,8]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' -H "Content-Type: application/json" -H "Ce-Inferenceservicename: tensor" -H "Ce-Type: io.seldon.serving.inference.request" -H "Ce-Requestid: 2z2"
+
+# bytes input - doesn't presently work
+#curl 0.0.0.0:2222 -d  '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"BYTES","shape":[16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' -H "Content-Type: application/json" -H "Ce-Inferenceservicename: tensor" -H "Ce-Type: io.seldon.serving.inference.request" -H "Ce-Requestid: 2z3"
+
+
+
