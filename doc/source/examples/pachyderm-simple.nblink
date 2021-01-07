@@ -1,3 +1,4 @@
 {
-  "path": "../../../examples/pachyderm-simple/index.ipynb"
+  "path": "../../../examples/pachyderm-simple/index.ipynb",
+  "extra-media": ["../../../examples/pachyderm-simple/images/pachyderm-simple-demo.png"]
 }
