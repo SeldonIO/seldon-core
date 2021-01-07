@@ -76,6 +76,7 @@ spec:
           - mountPath: /mnt/models
             name: classifier-provision-location
             readOnly: true
+
         initContainers:
         - name: classifier-model-initializer
           image: gcr.io/kfserving/storage-initializer:v0.4.0
@@ -83,14 +84,18 @@ spec:
           args:
           - s3://sklearn/iris
           - /mnt/models
+
           envFrom:
           - secretRef:
               name: seldon-init-container-secret
+
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
+
           volumeMounts:
           - mountPath: /mnt/models
             name: classifier-provision-location
+
         volumes:
         - emptyDir: {}
           name: classifier-provision-location
@@ -108,6 +113,8 @@ Key observations:
 
 Currently image used for `initContainers` can only be specified globally via helm values.
 The per deployment customisation is explored in this [GitHub issue #2611](https://github.com/SeldonIO/seldon-core/issues/2611).
+
+See our [example](../examples/custom_init_container.html) to learn how to write a custom container that uses [rclone](https://rclone.org/) for cloud storage operations.
 
 ## Further Customisation for Prepackaged Model Servers
 

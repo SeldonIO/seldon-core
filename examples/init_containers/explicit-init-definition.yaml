@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysecret
+type: Opaque
+stringData:
+  rclone.conf: |
+    [cluster-minio]
+    type = s3
+    provider = minio
+    env_auth = false
+    access_key_id = minioadmin
+    secret_access_key = minioadmin
+    endpoint = http://minio.minio-system.svc.cluster.local:9000
+
+
+---
+
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: explicit-init-definition
+spec:
+  name: iris
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - name: classifier
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+            readOnly: true
+
+        initContainers:
+        - name: classifier-model-initializer
+          image: rclone/rclone:latest
+          imagePullPolicy: IfNotPresent
+
+          args:
+            - "copy"
+            - "cluster-minio:sklearn/iris"
+            - "/mnt/models"
+
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+
+          - name: config
+            mountPath: "/config/rclone"
+            readOnly: true
+
+        volumes:
+        - name: classifier-provision-location
+          emptyDir: {}
+
+        - name: config
+          secret:
+            secretName: mysecret
+
+    graph:
+      implementation: SKLEARN_SERVER
+      modelUri: "dummy value"
+      name: classifier
+    name: default
+    replicas: 1
