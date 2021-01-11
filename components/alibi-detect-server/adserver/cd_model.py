@@ -6,6 +6,9 @@ from .numpy_encoder import NumpyEncoder
 from alibi_detect.utils.saving import load_detector, Data
 from adserver.base import AlibiDetectModel
 from seldon_core.user_model import SeldonResponse
+import kfserving
+import tensorflow as tf
+from transformers import AutoTokenizer
 
 
 def _append_drift_metrcs(metrics, drift, name):
@@ -35,7 +38,7 @@ class AlibiDetectConceptDriftModel(
         name: str,
         storage_uri: str,
         model: Optional[Data] = None,
-        drift_batch_size: int = 1000,
+        drift_batch_size: int = 1000
     ):
         """
         Outlier Detection / Concept Drift Model
@@ -85,7 +88,7 @@ class AlibiDetectConceptDriftModel(
         if self.batch is None:
             self.batch = X
         else:
-            self.batch = np.vstack((self.batch, X))
+            self.batch = np.concatenate((self.batch, X))
 
         if self.batch.shape[0] >= self.drift_batch_size:
             logging.info(
@@ -93,6 +96,7 @@ class AlibiDetectConceptDriftModel(
                 self.batch.shape[0],
                 self.drift_batch_size,
             )
+
             cd_preds = self.model.predict(self.batch)
             self.batch = None
 

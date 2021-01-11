@@ -63,7 +63,7 @@ class TestModel(AsyncHTTPTestCase):
                 "/",
                 method="POST",
                 body=dataStr,
-                headers={customHeaderKey: customHeaderVal},
+                headers={customHeaderKey: customHeaderVal, "ce-source":"a.b.c","ce-type":"d.e.f","ce-id":"1234","ce-specversion":"1.0"},
             )
             self.assertEqual(response.code, 200)
             expectedResponse = json.dumps(DummyModel.getResponse())
@@ -100,7 +100,7 @@ class TestModelNoResponse(AsyncHTTPTestCase):
                 "/",
                 method="POST",
                 body=dataStr,
-                headers={customHeaderKey: customHeaderVal},
+                headers={customHeaderKey: customHeaderVal, "ce-source":"a.b.c","ce-type":"d.e.f","ce-id":"1234","ce-specversion":"1.0"},
             )
             self.assertEqual(response.code, 200)
             self.assertEqual(response.body, b"")

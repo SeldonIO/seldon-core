@@ -30,3 +30,4 @@ class AlibiDetectModel(CEModel):  # pylint:disable=c-extension-no-member
         model_folder = kfserving.Storage.download(self.storage_uri)
         self.model: Data = load_detector(model_folder)
         self.ready = True
+
