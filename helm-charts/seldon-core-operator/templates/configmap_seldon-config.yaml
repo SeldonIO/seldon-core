@@ -14,5 +14,5 @@ metadata:
     app.kubernetes.io/version: '{{ .Chart.Version }}'
     control-plane: seldon-controller-manager
   name: seldon-config
-  namespace: '{{ .Release.Namespace }}'
+  namespace: '{{ include "seldon.namespace" . }}'
 {{- end }}
