@@ -1,0 +1,15 @@
+
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: rclone-as-default-init-container
+spec:
+  name: iris
+  predictors:
+  - graph:
+      children: []
+      implementation: SKLEARN_SERVER
+      modelUri: mys3:sklearn/iris
+      name: classifier
+    name: default
+    replicas: 1
