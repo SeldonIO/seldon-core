@@ -16,7 +16,7 @@ tenacity==6.3.1
 coverage==5.3.1
 
 # Used in serving_test_gen
-pandas==1.2.0
+pandas==1.1.0
 
 # Fetch licenses
 pip-licenses==3.1.0
