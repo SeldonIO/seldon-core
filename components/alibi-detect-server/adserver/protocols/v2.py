@@ -41,7 +41,7 @@ def _create_np_from_v2(data: list,ty: str, shape: list) -> np.array:
     return arr
 
 
-class V2RequestHandler(RequestHandler):
+class KFservingV2RequestHandler(RequestHandler):
     def __init__(self, request: Dict):  # pylint: disable=useless-super-delegation
         super().__init__(request)
 
@@ -58,7 +58,7 @@ class V2RequestHandler(RequestHandler):
         if data_type == "BYTES":
             raise tornado.web.HTTPError(
                 status_code=HTTPStatus.BAD_REQUEST,
-                reason='v2 protocol BYTES data can not be presently handled"',
+                reason='KFServing protocol BYTES data can not be presently handled"',
             )
 
     def extract_request(self) -> List:

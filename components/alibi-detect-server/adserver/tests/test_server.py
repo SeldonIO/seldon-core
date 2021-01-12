@@ -76,7 +76,7 @@ class TestSeldonHttpModel(AsyncHTTPTestCase):
             self.assertEqual(headers["ce-type"], self.eventType)
 
 
-class TestV2HttpModel(AsyncHTTPTestCase):
+class TestKFservingV2HttpModel(AsyncHTTPTestCase):
     def setupEnv(self):
         self.replyUrl = "http://reply-location"
         self.eventSource = "x.y.z"
@@ -85,7 +85,7 @@ class TestV2HttpModel(AsyncHTTPTestCase):
     def get_app(self):
         self.setupEnv()
         server = CEServer(
-            Protocol.v2_http, self.eventType, self.eventSource, 9000, self.replyUrl
+            Protocol.kfserving_http, self.eventType, self.eventSource, 9000, self.replyUrl
         )
         model = DummyModel("name")
         server.register_model(model)
