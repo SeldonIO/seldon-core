@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/version: '{{ .Chart.Version }}'
     control-plane: seldon-controller-manager
   name: seldon-controller-manager
-  namespace: '{{ .Release.Namespace }}'
+  namespace: '{{ include "seldon.namespace" . }}'
 spec:
   replicas: 1
   selector:
@@ -35,7 +35,7 @@ spec:
         - --enable-leader-election
         - --webhook-port={{ .Values.webhook.port }}
         - --create-resources=$(MANAGER_CREATE_RESOURCES)
-        - '{{- if .Values.singleNamespace }}--namespace={{ .Release.Namespace }}{{- end }}'
+        - '{{- if .Values.singleNamespace }}--namespace={{ include "seldon.namespace" . }}{{- end }}'
         command:
         - /manager
         env:

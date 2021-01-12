@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/instance: '{{ .Release.Name }}'
     app.kubernetes.io/name: '{{ include "seldon.name" . }}'
     app.kubernetes.io/version: '{{ .Chart.Version }}'
-  name: seldon-webhook-role-{{ .Release.Namespace }}
+  name: seldon-webhook-role-{{ include "seldon.namespace" . }}
 rules:
 - apiGroups:
   - admissionregistration.k8s.io

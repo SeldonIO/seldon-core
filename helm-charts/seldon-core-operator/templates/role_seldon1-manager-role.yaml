@@ -5,7 +5,7 @@ kind: Role
 metadata:
   creationTimestamp: null
   name: seldon1-manager-role
-  namespace: '{{ .Release.Namespace }}'
+  namespace: '{{ include "seldon.namespace" . }}'
 rules:
 - apiGroups:
   - ''

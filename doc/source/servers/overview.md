@@ -36,9 +36,87 @@ The `modelUri` specifies the bucket containing the saved model, in this case `gs
 - Minio-compatible (using `s3://`)
 - Azure Blob storage (using `https://(.+?).blob.core.windows.net/(.+)`)
 
-The download is handled by an initContainer that runs before your predictor loads. This initContainer image uses our [Storage.py library](https://github.com/SeldonIO/seldon-core/blob/master/python/seldon_core/storage.py) to download the files. However it is also possible for you to override the initContainer with your own custom container to download any files from custom resources.
 
-## Further Customisation for Pre-packaged Model Servers
+## Init Containers
+
+Seldon Core uses [Init Containers](https://kubernetes.io/docs/concepts/workloads/pods/init-containers/) to download model binaries for the prepackaged model servers. We use [kfserving's storage.py library](https://github.com/kubeflow/kfserving/blob/master/python/kfserving/kfserving/storage.py
+) for our `Init Containers` by defining
+```yaml
+storageInitializer:
+  image: gcr.io/kfserving/storage-initializer:v0.4.0
+```
+in our default [helm values](../charts/seldon-core-operator.html#values).
+See the [Dockerfile](https://github.com/kubeflow/kfserving/blob/master/python/storage-initializer.Dockerfile
+) and its [entrypoint](https://github.com/kubeflow/kfserving/blob/master/python/storage-initializer/scripts/initializer-entrypoint
+) for a detailed reference.
+
+
+### Customizing Init Containers
+
+One can specify a custom `Init Container` globally by overwriting the `storageInitializer.image` helm value as metnioned above.
+The `entrypoint` of the `container` must take two arguments:
+- first representing the models URI
+- second the desired path where binary should be downloaded to
+
+To illustrate how `initContainers` are used by the prepackaged model servers, following effective `SeldonDeployment` with defualt `initContainer` details updated by the mutating webhook is provided:
+
+```yaml
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: example
+spec:
+  name: iris
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - name: classifier
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+            readOnly: true
+
+        initContainers:
+        - name: classifier-model-initializer
+          image: gcr.io/kfserving/storage-initializer:v0.4.0
+          imagePullPolicy: IfNotPresent
+          args:
+          - s3://sklearn/iris
+          - /mnt/models
+
+          envFrom:
+          - secretRef:
+              name: seldon-init-container-secret
+
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+
+          volumeMounts:
+          - mountPath: /mnt/models
+            name: classifier-provision-location
+
+        volumes:
+        - emptyDir: {}
+          name: classifier-provision-location
+    graph:
+      children: []
+      implementation: SKLEARN_SERVER
+      modelUri: s3://sklearn/iris
+      name: classifier
+    name: defaul
+```
+
+Key observations:
+- our prepackaged model will expect model binaries to be saved into `/mnt/models` path
+- default `initContainers` name is constructed from `{predictiveUnitName}-model-initializer`
+
+Currently image used for `initContainers` can only be specified globally via helm values.
+The per deployment customisation is explored in this [GitHub issue #2611](https://github.com/SeldonIO/seldon-core/issues/2611).
+
+See our [example](../examples/custom_init_container.html) to learn how to write a custom container that uses [rclone](https://rclone.org/) for cloud storage operations.
+
+## Further Customisation for Prepackaged Model Servers
 
 If you want to customize the resources for the server you can add a skeleton `Container` with the same name to your podSpecs, e.g.
 
@@ -81,13 +159,13 @@ Next steps:
 - [SKLearn Server with MinIO](../examples/minio-sklearn.html)
 
 You can also build and add your own [custom inference servers](./custom.md),
-which can then be used in a similar way as the pre-packaged ones.
+which can then be used in a similar way as the prepackaged ones.
 
 If your use case does not fit for a reusable standard server then you can create your own component using our wrappers.
 
 ## Handling Credentials
 
-In order to handle credentials you must make available a secret with the environment variables that will be added into the initContainer. For this you need to perform the following actions:
+In order to handle credentials you must make available a secret with the environment variables that will be added into the `Init Containers`. For this you need to perform the following actions:
 
 1. Understand which environment variables you need to set
 2. Create a secret containing the environment variables
@@ -95,7 +173,7 @@ In order to handle credentials you must make available a secret with the environ
 
 ### 1. Understand which Environment Variables you need to set
 
-In order to understand what are the environment variables required, you can have a look directly into our [Storage.py library](https://github.com/SeldonIO/seldon-core/blob/master/python/seldon_core/storage.py) that we use in our initContainer.
+In order to understand what are the environment variables required, you can have a look directly into our [Storage.py library](https://github.com/SeldonIO/seldon-core/blob/master/python/seldon_core/storage.py) that we use in our `Init Containers`.
 
 #### AWS Required Variables
 

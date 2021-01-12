@@ -1,6 +1,9 @@
 # # Seldon Core Operator
 # Below are the default values when installing Seldon Core
 
+# Defaults to .Release.Namespace
+namespaceOverride: "" 
+
 # ## Ingress Options
 # You are able to choose between Istio and Ambassador
 

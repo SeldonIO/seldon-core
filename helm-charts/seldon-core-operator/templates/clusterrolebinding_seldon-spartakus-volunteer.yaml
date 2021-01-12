@@ -2,11 +2,11 @@
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
-  name: seldon-spartakus-volunteer-{{ .Release.Namespace }}
+  name: seldon-spartakus-volunteer-{{ include "seldon.namespace" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: seldon-spartakus-volunteer-{{ .Release.Namespace }}
+  name: seldon-spartakus-volunteer-{{ include "seldon.namespace" . }}
 subjects:
 - kind: ServiceAccount
   name: seldon-spartakus-volunteer

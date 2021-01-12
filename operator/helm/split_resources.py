@@ -81,13 +81,17 @@ def helm_release(value: str):
     return "{{ .Release." + value + " }}"
 
 
+def helm_namespace_override():
+    return '{{ include "seldon.namespace" . }}'
+
+
 if __name__ == "__main__":
     exp = args.prefix + "*"
     files = glob.glob(exp)
     webhookData = HELM_CREATERESOURCES_IF_START
     webhookData = (
         webhookData
-        + '{{- $altNames := list ( printf "seldon-webhook-service.%s" .Release.Namespace ) ( printf "seldon-webhook-service.%s.svc" .Release.Namespace ) -}}\n'
+        + '{{- $altNames := list ( printf "seldon-webhook-service.%s" (include "seldon.namespace" .) ) ( printf "seldon-webhook-service.%s.svc" (include "seldon.namespace" .) ) -}}\n'
     )
     webhookData = webhookData + '{{- $ca := genCA "custom-metrics-ca" 365 -}}\n'
     webhookData = (
@@ -139,7 +143,7 @@ if __name__ == "__main__":
                     res["metadata"]["namespace"] == "seldon-system"
                     or res["metadata"]["namespace"] == "seldon1-system"
                 ):
-                    res["metadata"]["namespace"] = "{{ .Release.Namespace }}"
+                    res["metadata"]["namespace"] = helm_namespace_override()
 
             # controller manager
             if kind == "deployment" and name == "seldon-controller-manager":
@@ -200,7 +204,7 @@ if __name__ == "__main__":
                             argIdx
                         ] = "--webhook-port=" + helm_value("webhook.port")
                 res["spec"]["template"]["spec"]["containers"][0]["args"].append(
-                    "{{- if .Values.singleNamespace }}--namespace={{ .Release.Namespace }}{{- end }}"
+                    '{{- if .Values.singleNamespace }}--namespace={{ include "seldon.namespace" . }}{{- end }}'
                 )
 
             if kind == "configmap" and name == "seldon-config":
@@ -216,32 +220,32 @@ if __name__ == "__main__":
 
             if kind == "clusterrole":
                 res["metadata"]["name"] = (
-                    res["metadata"]["name"] + "-" + helm_release("Namespace")
+                    res["metadata"]["name"] + "-" + helm_namespace_override()
                 )
 
             # Update cluster role bindings
             if kind == "clusterrolebinding":
                 res["metadata"]["name"] = (
-                    res["metadata"]["name"] + "-" + helm_release("Namespace")
+                    res["metadata"]["name"] + "-" + helm_namespace_override()
                 )
                 res["roleRef"]["name"] = (
-                    res["roleRef"]["name"] + "-" + helm_release("Namespace")
+                    res["roleRef"]["name"] + "-" + helm_namespace_override()
                 )
                 if name == "seldon-manager-rolebinding":
                     res["subjects"][0]["name"] = helm_value("serviceAccount.name")
-                    res["subjects"][0]["namespace"] = helm_release("Namespace")
+                    res["subjects"][0]["namespace"] = helm_namespace_override()
                 elif name != "seldon-spartakus-volunteer":
-                    res["subjects"][0]["namespace"] = helm_release("Namespace")
+                    res["subjects"][0]["namespace"] = helm_namespace_override()
 
             # Update role bindings
             if kind == "rolebinding":
-                res["subjects"][0]["namespace"] = helm_release("Namespace")
+                res["subjects"][0]["namespace"] = helm_namespace_override()
                 if (
                     name == "seldon1-manager-rolebinding"
                     or name == "seldon1-manager-sas-rolebinding"
                 ):
                     res["subjects"][0]["name"] = helm_value("serviceAccount.name")
-                    res["subjects"][0]["namespace"] = helm_release("Namespace")
+                    res["subjects"][0]["namespace"] = helm_namespace_override()
 
             # Update webhook certificates
             if name == "seldon-webhook-server-cert" and kind == "secret":
@@ -254,41 +258,41 @@ if __name__ == "__main__":
                 or kind == "validatingwebhookconfiguration"
             ):
                 res["metadata"]["name"] = (
-                    res["metadata"]["name"] + "-" + helm_release("Namespace")
+                    res["metadata"]["name"] + "-" + helm_namespace_override()
                 )
                 res["webhooks"][0]["clientConfig"][
                     "caBundle"
                 ] = "{{ $ca.Cert | b64enc }}"
                 res["webhooks"][0]["clientConfig"]["service"][
                     "namespace"
-                ] = helm_release("Namespace")
+                ] = helm_namespace_override()
                 res["webhooks"][1]["clientConfig"][
                     "caBundle"
                 ] = "{{ $ca.Cert | b64enc }}"
                 res["webhooks"][1]["clientConfig"]["service"][
                     "namespace"
-                ] = helm_release("Namespace")
+                ] = helm_namespace_override()
                 res["webhooks"][2]["clientConfig"][
                     "caBundle"
                 ] = "{{ $ca.Cert | b64enc }}"
                 res["webhooks"][2]["clientConfig"]["service"][
                     "namespace"
-                ] = helm_release("Namespace")
+                ] = helm_namespace_override()
                 if "cert-manager.io/inject-ca-from" in res["metadata"]["annotations"]:
                     res["metadata"]["annotations"]["cert-manager.io/inject-ca-from"] = (
-                        helm_release("Namespace") + "/seldon-serving-cert"
+                        helm_namespace_override() + "/seldon-serving-cert"
                     )
 
             if kind == "certificate":
                 res["spec"][
                     "commonName"
-                ] = '{{- printf "seldon-webhook-service.%s.svc" .Release.Namespace -}}'
+                ] = '{{- printf "seldon-webhook-service.%s.svc" (include "seldon.namespace" .) -}}'
                 res["spec"]["dnsNames"][
                     0
-                ] = '{{- printf "seldon-webhook-service.%s.svc.cluster.local" .Release.Namespace -}}'
+                ] = '{{- printf "seldon-webhook-service.%s.svc.cluster.local" (include "seldon.namespace" .) -}}'
                 res["spec"]["dnsNames"][
                     1
-                ] = '{{- printf "seldon-webhook-service.%s.svc" .Release.Namespace -}}'
+                ] = '{{- printf "seldon-webhook-service.%s.svc" (include "seldon.namespace" .) -}}'
 
             if (
                 kind == "customresourcedefinition"
@@ -299,7 +303,7 @@ if __name__ == "__main__":
                     res["spec"]["conversion"]["webhookClientConfig"]["caBundle"] = "=="
                 if "cert-manager.io/inject-ca-from" in res["metadata"]["annotations"]:
                     res["metadata"]["annotations"]["cert-manager.io/inject-ca-from"] = (
-                        helm_release("Namespace") + "/seldon-serving-cert"
+                        helm_namespace_override() + "/seldon-serving-cert"
                     )
 
             # Update webhook service port
@@ -456,7 +460,7 @@ if __name__ == "__main__":
     # Write webhook related data in 1 file
     namespaceSelector = (
         "  namespaceSelector:\n    matchLabels:\n      seldon.io/controller-id: "
-        + helm_release("Namespace")
+        + helm_namespace_override()
         + "\n"
     )
     objectSelector = (
