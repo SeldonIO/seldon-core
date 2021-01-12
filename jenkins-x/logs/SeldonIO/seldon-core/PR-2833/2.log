@@ -1,0 +1,173 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-v8fvv[0m
+{"level":"info","ts":1610466145.213432,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1610466145.2156398,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-knkpj[0m
+{"level":"info","ts":1610466146.5234933,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1610466146.5246701,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-fjt2r[0m
+{"level":"info","ts":1610466151.5799341,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1610466151.5810955,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-2833-li-85hg8-8kbcb[0m
+{"level":"info","ts":1610466151.8056498,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1610466170.2483008,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mpr-build-comment[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:97ca4a3fc624debad5baefb9d20ea0237f9f2216,2833:2ba4a8c1849d112818f9868d1452a1b1d8aa8dd0
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git fetch origin --unshallow 2ba4a8c1849d112818f9868d1452a1b1d8aa8dd0: 97ca4a3fc624debad5baefb9d20ea0237f9f2216:
+DEBUG: ran git fetch --unshallow origin 2ba4a8c1849d112818f9868d1452a1b1d8aa8dd0: 97ca4a3fc624debad5baefb9d20ea0237f9f2216: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard 97ca4a3fc624debad5baefb9d20ea0237f9f2216
+DEBUG: ran git reset --hard 97ca4a3fc624debad5baefb9d20ea0237f9f2216 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git merge 2ba4a8c1849d112818f9868d1452a1b1d8aa8dd0
+DEBUG: ran git merge 2ba4a8c1849d112818f9868d1452a1b1d8aa8dd0 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git log --format=%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%s%n%b%x1e 97ca4a3fc624debad5baefb9d20ea0237f9f2216..HEAD
+Merged SHA 2ba4a8c1849d112818f9868d1452a1b1d8aa8dd0 with commit message 'feat(examples/pachyderm-cd4ml): New e2e CD demo using Pachyderm' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=2833
++ BUILD_NUMBER=2
++ PIPELINE_CONTEXT=lint
+++ cat
++++ date
++ COMMENT_MSG='Tue Jan 12 15:42:59 UTC 2021
+The logs for [lint] [2] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2833/2.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2833 --build=2'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=2833 '--comment=Tue Jan 12 15:42:59 UTC 2021
+The logs for [lint] [2] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2833/2.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2833 --build=2'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-2833-li-85hg8-5cqrc[0m
+{"level":"info","ts":1610466181.6321802,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1610466181.6376836,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-2833-li-85hg8-bxrfb[0m
+{"level":"info","ts":1610466181.8319123,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1610466182.5809243,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mlint-operator[0m and container [32mstep-credential-initializer-gxnqd[0m
+{"level":"info","ts":1610466187.463923,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1610466187.4643571,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mlint-operator[0m and container [32mstep-working-dir-initializer-7d486[0m
+{"level":"info","ts":1610466189.5157757,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1610466189.518686,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mlint-operator[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mlint-operator[0m and container [32mstep-create-dir-workspace-brb8q[0m
+{"level":"info","ts":1610466199.0875447,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1610466199.0892677,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mlint-operator[0m and container [32mstep-source-copy-workspace-fzz6j[0m
+{"level":"info","ts":1610466199.344726,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1610466199.7883413,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mlint-operator[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mlint-operator[0m and container [32mstep-lint-operator[0m
+make: Entering directory '/workspace/source/operator'
+go list -m all | cut -d ' ' -f 1 > licenses/dep.txt
+# Check if licenses have changed
+git \
+	--no-pager diff \
+	--exit-code \
+	./licenses
+make: Leaving directory '/workspace/source/operator'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mlint-python[0m and container [32mstep-credential-initializer-vvpxh[0m
+{"level":"info","ts":1610466186.3524158,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1610466186.3538654,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mlint-python[0m and container [32mstep-working-dir-initializer-q765w[0m
+{"level":"info","ts":1610466187.4388785,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1610466187.4405484,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mlint-python[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mlint-python[0m and container [32mstep-create-dir-workspace-krcjm[0m
+{"level":"info","ts":1610466270.9583678,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1610466270.9647007,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mlint-python[0m and container [32mstep-source-copy-workspace-cqnhg[0m
+{"level":"info","ts":1610466271.147441,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1610466272.0257432,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mlint-python[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mlint-python[0m and container [32mstep-lint-python[0m
+make: Entering directory '/workspace/source/python'
+pip install -e . -r requirements-dev.txt
+Obtaining file:///workspace/source/python
+Collecting black==20.8b1 (from -r requirements-dev.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/dc/7b/5a6bbe89de849f28d7c109f5ea87b65afa5124ad615f3419e71beb29dc96/black-20.8b1.tar.gz (1.1MB)
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'error'
+  Complete output from command /opt/conda/bin/python -m pip install --ignore-installed --no-user --prefix /tmp/pip-build-env-v1goqyml --no-warn-script-location --no-binary :none: --only-binary :none: -i https://pypi.org/simple -- setuptools>=41.0 setuptools-scm wheel:
+  Collecting setuptools>=41.0
+    HTTP error 502 while getting https://files.pythonhosted.org/packages/aa/d4/0089d680a610c7b5afda26c1ae588eb363b9050ccf5f33a8c2d1164210f3/setuptools-51.1.2-py3-none-any.whl#sha256=67d8af2fc9f33e48f8f4387321700a79b27090a5cff154e5ce1a8c72c2eea54f (from https://pypi.org/simple/setuptools/) (requires-python:>=3.6)
+    Could not install requirement setuptools>=41.0 from https://files.pythonhosted.org/packages/aa/d4/0089d680a610c7b5afda26c1ae588eb363b9050ccf5f33a8c2d1164210f3/setuptools-51.1.2-py3-none-any.whl#sha256=67d8af2fc9f33e48f8f4387321700a79b27090a5cff154e5ce1a8c72c2eea54f because of error 502 Server Error: Gateway Error for url: https://files.pythonhosted.org/packages/aa/d4/0089d680a610c7b5afda26c1ae588eb363b9050ccf5f33a8c2d1164210f3/setuptools-51.1.2-py3-none-any.whl
+  Could not install requirement setuptools>=41.0 from https://files.pythonhosted.org/packages/aa/d4/0089d680a610c7b5afda26c1ae588eb363b9050ccf5f33a8c2d1164210f3/setuptools-51.1.2-py3-none-any.whl#sha256=67d8af2fc9f33e48f8f4387321700a79b27090a5cff154e5ce1a8c72c2eea54f because of HTTP error 502 Server Error: Gateway Error for url: https://files.pythonhosted.org/packages/aa/d4/0089d680a610c7b5afda26c1ae588eb363b9050ccf5f33a8c2d1164210f3/setuptools-51.1.2-py3-none-any.whl for URL https://files.pythonhosted.org/packages/aa/d4/0089d680a610c7b5afda26c1ae588eb363b9050ccf5f33a8c2d1164210f3/setuptools-51.1.2-py3-none-any.whl#sha256=67d8af2fc9f33e48f8f4387321700a79b27090a5cff154e5ce1a8c72c2eea54f (from https://pypi.org/simple/setuptools/) (requires-python:>=3.6)
+  
+  ----------------------------------------
+Command "/opt/conda/bin/python -m pip install --ignore-installed --no-user --prefix /tmp/pip-build-env-v1goqyml --no-warn-script-location --no-binary :none: --only-binary :none: -i https://pypi.org/simple -- setuptools>=41.0 setuptools-scm wheel" failed with error code 1 in None
+make: *** [install_dev] Error 1
+Makefile:54: recipe for target 'install_dev' failed
+make: Leaving directory '/workspace/source/python'
+[31m
+Pipeline failed on stage 'lint-python' : container 'step-lint-python'. The execution of the pipeline has stopped.[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mlint-executor[0m and container [32mstep-credential-initializer-qwb9c[0m
+{"level":"info","ts":1610466189.965032,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1610466189.9895644,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mlint-executor[0m and container [32mstep-working-dir-initializer-zr4rf[0m
+{"level":"info","ts":1610466190.990533,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1610466190.991959,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mlint-executor[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mlint-executor[0m and container [32mstep-create-dir-workspace-h9jsq[0m
+{"level":"info","ts":1610466199.8190463,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1610466199.8207986,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mlint-executor[0m and container [32mstep-source-copy-workspace-h5p9z[0m
+{"level":"info","ts":1610466200.0418422,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1610466200.5834382,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mlint-executor[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2833-li-85hg8-2[0m stage [32mlint-executor[0m and container [32mstep-lint-executor[0m
+make: Entering directory '/workspace/source/executor'
+rm -rf _operator
+cp -r ../operator _operator
+go list -m all | cut -d ' ' -f 1 > licenses/dep.txt
+# Check if licenses have changed
+git \
+	--no-pager diff \
+	--exit-code \
+	./licenses
+make: Leaving directory '/workspace/source/executor'
