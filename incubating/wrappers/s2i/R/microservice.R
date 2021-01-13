@@ -149,7 +149,11 @@ predict_endpoint <- function(req,res,json=NULL,isDefault=NULL) {
   #for ( obj in ls(req) ) {
   #  print(c(obj,get(obj,envir = req)))
   #}
-  json <- parse_data(req) # Hack as Plumber using URLDecode which doesn't decode +
+  if (tolower(req$HTTP_CONTENT_TYPE) == "application/json") {
+    json <- req$postBody
+  } else {
+    json <- parse_data(req) # Hack as Plumber using URLDecode which doesn't decode +
+  }
   jdf <- fromJSON(json, simplifyVector = F) # The simplifyVector argument is for data type persistence, avoid to convert numeric value to character
   valid_input <- validate_json(jdf)
   if (valid_input[1] == "OK") {
