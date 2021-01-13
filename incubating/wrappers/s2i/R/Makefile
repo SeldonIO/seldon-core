@@ -1,4 +1,4 @@
-VERSION=0.2
+VERSION=0.3
 IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-r:${VERSION}
 
 SELDON_CORE_DIR=../../..
