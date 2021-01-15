@@ -6,4 +6,4 @@ keywords:
 name: seldon-batch-workflow
 sources:
 - https://github.com/SeldonIO/seldon-core
-version: 0.1
+version: 0.2

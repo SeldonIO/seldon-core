@@ -8,7 +8,7 @@ workflow:
 pvc:
   # Name of the persistent volume claim to be created
   name: seldon-pvc
-  # Size of the storage volume to be created for the batch job 
+  # Size of the storage volume to be created for the batch job
   storage: 2Mi
 # Seldon deployment to be created for batch processing
 seldonDeployment:
@@ -54,22 +54,12 @@ batchWorker:
   dataType: "data"
   # Whether to enable benchmarking on the batch processor worker
   enableBenchmark: true
-minio:
-  # Minio Client (mc) Image name
-  minioclient:
-    image: mc:RELEASE.2020-10-03T02-54-56Z
-  # The location of the minio endpoint 
-  endpoint: http://minio.minio-system.svc.cluster.local:9000
-  # This is the secret that should contain the values to access minio
-  secret:
-    # The name of the secret which by default is "minio" but you can create a different one
-    name: minio
-    keyName:
-      # The key name inside that secret to find the access key to authenticate minio
-      accesskey: accesskey
-      # The key name inside that secret to find the secret key to authenticate minio
-      secretkey: secretkey
-  # The name of the file inside of minio that will contain the batch data to process
-  inputDataPath: data/input-data.txt
-  # The name of the file inside of minio that will contain the batch data to process
-  outputDataPath: data/output-data-{{workflow.uid}}.txt
+rclone:
+  # Rclone Image Name
+  image: rclone/rclone:1.53
+  # Name of secret containing rclone.conf file
+  configSecretName: rclone-config-secret
+  # The source:sourcepath of file for rclone to pull that will contain the batch data to process
+  inputDataPath: cluster-minio:data/input-data.txt
+  # The dest:destpath for rclone to know where to push results of batch processing
+  outputDataPath: cluster-minio:data/output-data-{{workflow.uid}}.txt
