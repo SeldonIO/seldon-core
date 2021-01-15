@@ -24,13 +24,17 @@ spec:
       resources:
         requests:
           storage: "{{ .Values.pvc.storage }}"
+  volumes:
+  - name: rclone-config
+    secret:
+      secretName: "{{ .Values.rclone.configSecretName }}"
   templates:
   - name: seldon-batch-process
     steps:
-    - - name: create-seldon-resource            
+    - - name: create-seldon-resource
         template: create-seldon-resource-template
     - - name: wait-seldon-resource
-        template: wait-seldon-resource-template    
+        template: wait-seldon-resource-template
     - - name: download-object-store
         template: download-object-store-template
     - - name: process-batch-inputs
@@ -39,7 +43,7 @@ spec:
         template: upload-object-store-template
     - - name: delete-seldon-resource
         template: delete-seldon-resource-template
-            
+
   - name: create-seldon-resource-template
     metadata:
       annotations:
@@ -84,7 +88,7 @@ spec:
                 name: classifier
               name: default
               replicas: {{ .Values.seldonDeployment.replicas }}
-                
+
   - name: wait-seldon-resource-template
     metadata:
       annotations:
@@ -96,34 +100,23 @@ spec:
         sleep {{ .Values.seldonDeployment.waitTime }}
         kubectl rollout status \
             deploy/$(kubectl get deploy -l seldon-deployment-id="{{ .Values.seldonDeployment.name }}" -o jsonpath='{.items[0].metadata.name}')
-                     
+
   - name: download-object-store-template
     metadata:
       annotations:
         sidecar.istio.io/inject: "false"
     script:
-      image: minio/{{ .Values.minio.minioclient.image }}
-      env:
-      - name: MINIO_SERVER_ACCESS_KEY
-        valueFrom: 
-          secretKeyRef:
-            name: {{ .Values.minio.secret.name }}
-            key: {{ .Values.minio.secret.keyName.accesskey }}
-      - name: MINIO_SERVER_ACCESS_SECRET
-        valueFrom:
-          secretKeyRef:
-            name: {{ .Values.minio.secret.name }}
-            key: {{ .Values.minio.secret.keyName.secretkey }}
-      - name: MINIO_SERVER_HOST
-        value: {{ .Values.minio.endpoint }}
+      image: {{ .Values.rclone.image }}
       volumeMounts:
       - name: "{{ .Values.pvc.name }}"
         mountPath: /assets
+      - name: rclone-config
+        mountPath: /config/rclone
+        readOnly: true
       command: [sh]
       source: |
-        mc --insecure config host add minio-local $MINIO_SERVER_HOST $MINIO_SERVER_ACCESS_KEY $MINIO_SERVER_ACCESS_SECRET --api S3v4
-        mc --insecure cp minio-local/{{ .Values.minio.inputDataPath }} /assets/input-data.txt
-            
+        rclone copyto {{ .Values.rclone.inputDataPath }} /assets/input-data.txt
+
   - name: process-batch-inputs-template
     metadata:
       annotations:
@@ -148,34 +141,24 @@ spec:
             --retries "{{ .Values.batchWorker.retries }}" \
             --input-data-path "/assets/input-data.txt" \
             --output-data-path "/assets/output-data.txt"
-      
+
   - name: upload-object-store-template
     metadata:
       annotations:
         sidecar.istio.io/inject: "false"
     script:
-      image: minio/{{ .Values.minio.minioclient.image }}
+      image: {{ .Values.rclone.image }}
       volumeMounts:
       - name: "{{ .Values.pvc.name }}"
         mountPath: /assets
+      - name: rclone-config
+        mountPath: /config/rclone
+        readOnly: true
       command: [sh]
-      env:
-      - name: MINIO_SERVER_ACCESS_KEY
-        valueFrom: 
-          secretKeyRef:
-            name: {{ .Values.minio.secret.name }}
-            key: {{ .Values.minio.secret.keyName.accesskey }}
-      - name: MINIO_SERVER_ACCESS_SECRET
-        valueFrom:
-          secretKeyRef:
-            name: {{ .Values.minio.secret.name }}
-            key: {{ .Values.minio.secret.keyName.secretkey }}
-      - name: MINIO_SERVER_HOST
-        value: {{ .Values.minio.endpoint }}
       source: |
-        mc --insecure config host add minio-local $MINIO_SERVER_HOST $MINIO_SERVER_ACCESS_KEY $MINIO_SERVER_ACCESS_SECRET --api S3v4
-        mc --insecure cp /assets/output-data.txt minio-local/{{ .Values.minio.outputDataPath }}
-   
+        rclone copyto /assets/output-data.txt {{ .Values.rclone.outputDataPath }}
+
+
   - name: delete-seldon-resource-template
     metadata:
       annotations:
@@ -186,4 +169,3 @@ spec:
       source: |
         sleep {{ .Values.seldonDeployment.waitTime }}
         kubectl delete seldondeployments -n {{ .Values.workflow.namespace }}  {{ .Values.seldonDeployment.name }}
-        

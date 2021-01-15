@@ -26,7 +26,8 @@ This allows you to leverage Seldon on a large number of batch applications, incl
 
 We have provided a set of examples that show you how you can use the Seldon batch processing component:
 
-* [Batch Processing with Argo Workflows](../examples/argo_workflows_batch.html)
+* [Batch Processing with Argo Workflows and S3 / Minio](../examples/argo_workflows_batch.html)
+* [Batch processing with Argo Workflows and HDFS](../examples/argo_workflows_hdfs_batch.html)
 * [Batch Processing with Kubeflow Pipelines Example](../examples/kubeflow_pipelines_batch.html)
 
 ## High Level Implementation Details

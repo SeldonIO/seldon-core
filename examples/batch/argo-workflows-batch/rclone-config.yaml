@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rclone-config-secret
+type: Opaque
+stringData:
+  rclone.conf: |
+    [cluster-minio]
+    type = s3
+    provider = minio
+    env_auth = false
+    access_key_id = minioadmin
+    secret_access_key = minioadmin
+    endpoint = http://minio.minio-system.svc.cluster.local:9000
