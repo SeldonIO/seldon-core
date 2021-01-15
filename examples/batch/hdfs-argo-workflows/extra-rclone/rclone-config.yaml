@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: seldon-rclone-secret-env
+type: Opaque
+stringData:
+  RCLONE_CONFIG_HDFS_TYPE: hdfs
+  RCLONE_CONFIG_HDFS_NAMENODE: hdfs.hdfs-system.svc.cluster.local:8020
+  RCLONE_CONFIG_HDFS_USERNAME: hdfs
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: seldon-rclone-secret-file
+type: Opaque
+stringData:
+  rclone.conf: |
+    [hdfs]
+    type = hdfs
+    namenode = hdfs.hdfs-system.svc.cluster.local:8020
+    username = hdfs

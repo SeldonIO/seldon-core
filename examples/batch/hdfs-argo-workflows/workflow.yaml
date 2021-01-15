@@ -1,0 +1,154 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: sklearn-batch-job
+  namespace: seldon
+
+  labels:
+    deployment-name: sklearn
+    deployment-kind: SeldonDeployment
+
+spec:
+  volumeClaimTemplates:
+  - metadata:
+      name: seldon-job-pvc
+      namespace: seldon
+      ownerReferences:
+      - apiVersion: argoproj.io/v1alpha1
+        blockOwnerDeletion: true
+        kind: Workflow
+        name: '{{workflow.name}}'
+        uid: '{{workflow.uid}}'
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
+
+  volumes:
+  - name: config
+    secret:
+      secretName: seldon-hdfscli-secret-file
+
+  arguments:
+    parameters:
+    - name: batch_deployment_name
+      value: sklearn
+    - name: batch_namespace
+      value: seldon
+
+    - name: input_path
+      value: /batch-data/input-data.txt
+    - name: output_path
+      value: /batch-data/output-data-{{workflow.name}}.txt
+
+    - name: batch_gateway_type
+      value: istio
+    - name: batch_gateway_endpoint
+      value: istio-ingressgateway.istio-system.svc.cluster.local
+    - name: batch_transport_protocol
+      value: rest
+    - name: workers
+      value: "10"
+    - name: retries
+      value: "3"
+    - name: data_type
+      value: data
+    - name: payload_type
+      value: ndarray
+
+  entrypoint: seldon-batch-process
+
+  templates:
+  - name: seldon-batch-process
+    steps:
+    - - arguments: {}
+        name: download-input-data
+        template: download-input-data
+    - - arguments: {}
+        name: process-batch-inputs
+        template: process-batch-inputs
+    - - arguments: {}
+        name: upload-output-data
+        template: upload-output-data
+
+  - name: download-input-data
+    script:
+      image: seldonio/hdfscli:1.6.0-dev
+      volumeMounts:
+      - mountPath: /assets
+        name: seldon-job-pvc
+
+      - mountPath: /etc/hdfs
+        name: config
+        readOnly: true
+
+      env:
+      - name: INPUT_DATA_PATH
+        value: '{{workflow.parameters.input_path}}'
+
+      - name: HDFSCLI_CONFIG
+        value: /etc/hdfs/hdfscli.cfg
+
+      command: [sh]
+      source: |
+        hdfscli download ${INPUT_DATA_PATH} /assets/input-data.txt
+
+  - name: process-batch-inputs
+    container:
+      image: seldonio/seldon-core-s2i-python37:1.5.0
+
+      volumeMounts:
+      - mountPath: /assets
+        name: seldon-job-pvc
+
+      env:
+      - name: SELDON_BATCH_DEPLOYMENT_NAME
+        value: '{{workflow.parameters.batch_deployment_name}}'
+      - name: SELDON_BATCH_NAMESPACE
+        value: '{{workflow.parameters.batch_namespace}}'
+      - name: SELDON_BATCH_GATEWAY_TYPE
+        value: '{{workflow.parameters.batch_gateway_type}}'
+      - name: SELDON_BATCH_HOST
+        value: '{{workflow.parameters.batch_gateway_endpoint}}'
+      - name: SELDON_BATCH_TRANSPORT
+        value: '{{workflow.parameters.batch_transport_protocol}}'
+      - name: SELDON_BATCH_DATA_TYPE
+        value: '{{workflow.parameters.data_type}}'
+      - name: SELDON_BATCH_PAYLOAD_TYPE
+        value: '{{workflow.parameters.payload_type}}'
+      - name: SELDON_BATCH_WORKERS
+        value: '{{workflow.parameters.workers}}'
+      - name: SELDON_BATCH_RETRIES
+        value: '{{workflow.parameters.retries}}'
+      - name: SELDON_BATCH_INPUT_DATA_PATH
+        value: /assets/input-data.txt
+      - name: SELDON_BATCH_OUTPUT_DATA_PATH
+        value: /assets/output-data.txt
+
+      command: [seldon-batch-processor]
+      args: [--benchmark]
+
+
+  - name: upload-output-data
+    script:
+      image: seldonio/hdfscli:1.6.0-dev
+      volumeMounts:
+      - mountPath: /assets
+        name: seldon-job-pvc
+
+      - mountPath: /etc/hdfs
+        name: config
+        readOnly: true
+
+      env:
+      - name: OUTPUT_DATA_PATH
+        value: '{{workflow.parameters.output_path}}'
+
+      - name: HDFSCLI_CONFIG
+        value: /etc/hdfs/hdfscli.cfg
+
+      command: [sh]
+      source: |
+        hdfscli upload /assets/output-data.txt ${OUTPUT_DATA_PATH}

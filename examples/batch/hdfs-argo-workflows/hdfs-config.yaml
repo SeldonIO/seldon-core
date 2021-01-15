@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: seldon-hdfscli-secret-file
+type: Opaque
+stringData:
+  hdfscli.cfg: |
+    [global]
+    default.alias = batch
+
+    [batch.alias]
+    url = http://hdfs-httpfs.hdfs-system.svc.cluster.local:14000
+    user = hdfs

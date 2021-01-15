@@ -1,0 +1,95 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: create-batch-data
+  namespace: seldon
+
+spec:
+  volumeClaimTemplates:
+  - metadata:
+      name: seldon-job-pvc
+      namespace: seldon
+      ownerReferences:
+      - apiVersion: argoproj.io/v1alpha1
+        blockOwnerDeletion: true
+        kind: Workflow
+        name: '{{workflow.name}}'
+        uid: '{{workflow.uid}}'
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
+
+  volumes:
+  - name: config
+    secret:
+      secretName: seldon-rclone-secret-file
+
+  entrypoint: create-batch-input-data
+  templates:
+  - name: create-batch-input-data
+    steps:
+    - - name: generate-input-data
+        template: generate-input-data-template
+
+    - - name: push-input-data
+        template: push-input-data-template
+
+    - - name: verify-input-data
+        template: verify-input-data-template
+
+  - name: generate-input-data-template
+    script:
+      image: python:3.7
+      volumeMounts:
+      - mountPath: /assets
+        name: seldon-job-pvc
+      env:
+      - name: DATA_PATH
+        value: /assets/data.txt
+      command: [python3]
+      source: |
+        import random
+        import os
+        random.seed(0)
+        with open(os.environ.get("DATA_PATH"), "w") as f:
+            for _ in range(10000):
+                data = [random.random() for _ in range(4)]
+                data = "[[" + ", ".join(str(x) for x in data) + "]]\n"
+                f.write(data)
+
+
+  - name: push-input-data-template
+    script:
+      image: rclone/rclone:beta
+      volumeMounts:
+      - mountPath: /assets
+        name: seldon-job-pvc
+
+      env:
+      - name: DATA_PATH
+        value: /assets/data.txt
+
+      envFrom:
+      - secretRef:
+          name: seldon-rclone-secret-env
+
+      command: [sh]
+      source: |
+        rclone copy ${DATA_PATH} hdfs:/workflow-data/
+
+
+  - name: verify-input-data-template
+    script:
+      image: rclone/rclone:beta
+
+      volumeMounts:
+      - name: config
+        mountPath: "/config/rclone"
+        readOnly: true
+
+      command: [sh]
+      source: |
+        rclone ls hdfs:workflow-data/

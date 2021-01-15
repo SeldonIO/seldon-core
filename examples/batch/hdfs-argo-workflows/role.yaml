@@ -1,0 +1,29 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: workflow
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - "*"
+- apiGroups:
+  - "apps"
+  resources:
+  - deployments
+  verbs:
+  - "*"
+- apiGroups:
+  - ""
+  resources:
+  - pods/log
+  verbs:
+  - "*"
+- apiGroups:
+  - machinelearning.seldon.io
+  resources:
+  - "*"
+  verbs:
+  - "*"

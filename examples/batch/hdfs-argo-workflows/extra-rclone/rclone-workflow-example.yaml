@@ -1,0 +1,149 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: sklearn-
+  namespace: seldon
+
+  labels:
+    deployment-name: sklearn
+    deployment-kind: SeldonDeployment
+
+spec:
+  volumeClaimTemplates:
+  - metadata:
+      name: seldon-job-pvc
+      namespace: seldon
+      ownerReferences:
+      - apiVersion: argoproj.io/v1alpha1
+        blockOwnerDeletion: true
+        kind: Workflow
+        name: '{{workflow.name}}'
+        uid: '{{workflow.uid}}'
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
+
+  arguments:
+    parameters:
+    - name: batch_gateway_type
+      value: istio
+    - name: batch_gateway_endpoint
+      value: istio-ingressgateway.istio-system.svc.cluster.local
+    - name: batch_transport_protocol
+      value: rest
+    - name: workers
+      value: "10"
+    - name: retries
+      value: "3"
+    - name: data_type
+      value: data
+    - name: payload_type
+      value: ndarray
+
+    - name: input_path
+      value: hdfs:workflow-data
+    - name: input_file
+      value: data.txt
+
+    - name: output_path
+      value: hdfs:workflow-data
+    - name: output_file
+      value: output-data-{{workflow.name}}.txt
+
+    - name: object_store_secret_name
+      value: seldon-rclone-secret-env
+
+  entrypoint: seldon-batch-process
+
+  templates:
+  - name: seldon-batch-process
+    steps:
+    - - arguments: {}
+        name: download-input-data
+        template: download-input-data
+    - - arguments: {}
+        name: process-batch-inputs
+        template: process-batch-inputs
+    - - arguments: {}
+        name: upload-output-data
+        template: upload-output-data
+
+  - name: download-input-data
+    script:
+      image: rclone/rclone:beta
+      volumeMounts:
+      - mountPath: /assets
+        name: seldon-job-pvc
+
+      env:
+      - name: INPUT_DATA_URI
+        value: '{{workflow.parameters.input_path}}/{{workflow.parameters.input_file}}'
+
+      envFrom:
+      - secretRef:
+          name: seldon-rclone-secret-env
+
+      command: [sh]
+      source: |
+        rclone copy ${INPUT_DATA_URI} /assets/
+
+  - name: process-batch-inputs
+    container:
+      image: seldonio/seldon-core-s2i-python37:1.5.0
+
+      volumeMounts:
+      - mountPath: /assets
+        name: seldon-job-pvc
+
+      env:
+      - name: SELDON_BATCH_DEPLOYMENT_NAME
+        value: sklearn
+      - name: SELDON_BATCH_NAMESPACE
+        value: seldon
+      - name: SELDON_BATCH_GATEWAY_TYPE
+        value: '{{workflow.parameters.batch_gateway_type}}'
+      - name: SELDON_BATCH_HOST
+        value: '{{workflow.parameters.batch_gateway_endpoint}}'
+      - name: SELDON_BATCH_TRANSPORT
+        value: '{{workflow.parameters.batch_transport_protocol}}'
+      - name: SELDON_BATCH_DATA_TYPE
+        value: '{{workflow.parameters.data_type}}'
+      - name: SELDON_BATCH_PAYLOAD_TYPE
+        value: '{{workflow.parameters.payload_type}}'
+      - name: SELDON_BATCH_WORKERS
+        value: '{{workflow.parameters.workers}}'
+      - name: SELDON_BATCH_RETRIES
+        value: '{{workflow.parameters.retries}}'
+      - name: SELDON_BATCH_INPUT_DATA_PATH
+        value: '/assets/{{workflow.parameters.input_file}}'
+      - name: SELDON_BATCH_OUTPUT_DATA_PATH
+        value: '/assets/{{workflow.parameters.output_file}}'
+
+      command: [seldon-batch-processor]
+      args: [--benchmark]
+
+
+  - name: upload-output-data
+    script:
+      image: rclone/rclone:beta
+      volumeMounts:
+      - mountPath: /assets
+        name: seldon-job-pvc
+
+      env:
+      - name: OUTPUT_DATA_PATH
+        value: '{{workflow.parameters.output_path}}'
+
+      - name: SELDON_BATCH_OUTPUT_DATA_PATH
+        value: '/assets/{{workflow.parameters.output_file}}'
+
+      envFrom:
+      - secretRef:
+          name: seldon-rclone-secret-env
+
+      command: [sh]
+      source: |
+        rclone copy ${SELDON_BATCH_OUTPUT_DATA_PATH} ${OUTPUT_DATA_PATH}
