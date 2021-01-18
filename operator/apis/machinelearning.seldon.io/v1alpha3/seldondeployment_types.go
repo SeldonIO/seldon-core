@@ -51,3 +51,14 @@ type SeldonDeploymentList struct {
 func init() {
 	SchemeBuilder.Register(&SeldonDeployment{}, &SeldonDeploymentList{})
 }
+
+// defaulting codes
+
+func (r *SeldonDeployment) Default() {
+	seldondeploymentlog.Info("Defaulting Seldon Deployment called", "name", r.Name)
+
+	if r.ObjectMeta.Namespace == "" {
+		r.ObjectMeta.Namespace = "default"
+	}
+	r.Spec.DefaultSeldonDeployment(r.Name, r.ObjectMeta.Namespace)
+}

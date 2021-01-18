@@ -87,9 +87,6 @@ spec:
       - kind: HorizontalPodAutoscaler
         name: ''
         version: v2beta1
-      - kind: MutatingWebhookConfiguration
-        name: ''
-        version: v1beta1
       - kind: ValidatingWebhookConfiguration
         name: ''
         version: v1beta1
@@ -374,7 +371,6 @@ spec:
         - apiGroups:
           - admissionregistration.k8s.io
           resources:
-          - mutatingwebhookconfigurations
           - validatingwebhookconfigurations
           verbs:
           - get

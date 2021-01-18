@@ -60,68 +60,6 @@ func NewWebhookCreator(client kubernetes.Interface, certs *Cert, logger logr.Log
 	}, nil
 }
 
-func (wc *WebhookCreator) CreateMutatingWebhookConfigurationFromFile(ctx context.Context, rawYaml []byte, namespace string, owner *apiextensionsv1beta1.CustomResourceDefinition, watchNamespace bool) error {
-	mwc := v1beta1.MutatingWebhookConfiguration{}
-	err := yaml.Unmarshal(rawYaml, &mwc)
-	if err != nil {
-		return err
-	}
-
-	// create or update via client
-	client := wc.clientset.AdmissionregistrationV1beta1().MutatingWebhookConfigurations()
-
-	if watchNamespace {
-		// Try to delete clusterwide webhook config if available
-		_, err := client.Get(ctx, mwc.Name, v1.GetOptions{})
-		if err != nil && errors.IsNotFound(err) {
-			wc.logger.Info("existing clusterwide mwc not found", "name", mwc.Name)
-		} else {
-			client.Delete(ctx, mwc.Name, v1.DeleteOptions{})
-			if err != nil {
-				return err
-			}
-			wc.logger.Info("Deleted clusterwide mwc", "name", mwc.Name)
-		}
-		mwc.Name = mwc.Name + "-" + namespace
-	}
-
-	for idx, _ := range mwc.Webhooks {
-		// add caBundle
-		mwc.Webhooks[idx].ClientConfig.CABundle = []byte(wc.certs.caPEM)
-		// set namespace
-		mwc.Webhooks[idx].ClientConfig.Service.Namespace = namespace
-		//Remove selector if version too low
-		if wc.majorVersion == 1 && wc.minorVersion < 15 {
-			//mwc.Webhooks[idx].ObjectSelector = nil
-		}
-
-		//Remove namespace exclusion if watchNamespace
-		//TODO change to add a namespace selector if the initalizer adds a label to namespace
-		if watchNamespace {
-			mwc.Webhooks[idx].NamespaceSelector = nil
-		}
-
-	}
-
-	// add ownership
-	err = ctrl.SetControllerReference(owner, &mwc, wc.scheme)
-	if err != nil {
-		return err
-	}
-
-	found, err := client.Get(ctx, mwc.Name, v1.GetOptions{})
-	if err != nil && errors.IsNotFound(err) {
-		wc.logger.Info("Creating mutating webhook")
-		_, err = client.Create(ctx, &mwc, v1.CreateOptions{})
-	} else if err == nil {
-		wc.logger.Info("Updating mutating webhook")
-		found.Webhooks = mwc.Webhooks
-		_, err = client.Update(ctx, found, v1.UpdateOptions{})
-		return err
-	}
-	return err
-}
-
 func (wc *WebhookCreator) CreateValidatingWebhookConfigurationFromFile(ctx context.Context, rawYaml []byte, namespace string, owner *apiextensionsv1beta1.CustomResourceDefinition, watchNamespace bool) error {
 	vwc := v1beta1.ValidatingWebhookConfiguration{}
 	err := yaml.Unmarshal(rawYaml, &vwc)

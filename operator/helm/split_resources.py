@@ -256,10 +256,7 @@ if __name__ == "__main__":
                 res["data"]["tls.crt"] = "{{ $cert.Cert | b64enc }}"
                 res["data"]["tls.key"] = "{{ $cert.Key | b64enc }}"
 
-            if (
-                kind == "mutatingwebhookconfiguration"
-                or kind == "validatingwebhookconfiguration"
-            ):
+            if kind == "validatingwebhookconfiguration":
                 res["metadata"]["name"] = (
                     res["metadata"]["name"] + "-" + helm_namespace_override()
                 )
@@ -457,7 +454,6 @@ if __name__ == "__main__":
                 elif (
                     name == "seldon-webhook-server-cert"
                     and kind == "secret"
-                    or kind == "mutatingwebhookconfiguration"
                     or kind == "validatingwebhookconfiguration"
                 ):
                     webhookData = webhookData + "---\n\n" + fdata

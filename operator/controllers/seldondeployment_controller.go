@@ -1682,17 +1682,8 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 	//Get Security Context
 	podSecurityContext, err := createSecurityContext(instance)
 
-	//rerun defaulting
-	before := instance.DeepCopy()
+	//run defaulting
 	instance.Default()
-	if !equality.Semantic.DeepEqual(instance.Spec, before.Spec) {
-		diff, err := kmp.SafeDiff(instance.Spec, before.Spec)
-		if err != nil {
-			log.Error(err, "Failed to diff")
-		} else {
-			log.Info(fmt.Sprintf("Difference in seldon deployments: %v", diff))
-		}
-	}
 
 	components, err := r.createComponents(ctx, instance, podSecurityContext, log)
 	if err != nil {
