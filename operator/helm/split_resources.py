@@ -154,6 +154,8 @@ if __name__ == "__main__":
                 res["spec"]["template"]["spec"]["serviceAccountName"] = helm_value(
                     "serviceAccount.name"
                 )
+                # Security Context
+                res["spec"]["template"]["spec"]["securityContext"]["runAsUser"] = helm_value("managerUserID")
 
                 # Resource requests
                 res["spec"]["template"]["spec"]["containers"][0]["resources"][
@@ -194,7 +196,7 @@ if __name__ == "__main__":
                 ):
                     if (
                         res["spec"]["template"]["spec"]["containers"][0]["args"][argIdx]
-                        == "--webhook-port=443"
+                        == "--webhook-port=4443"
                     ):
                         res["spec"]["template"]["spec"]["containers"][0]["args"][
                             argIdx
@@ -431,6 +433,10 @@ if __name__ == "__main__":
             # make sure webhook is not quoted as its an int
             fdata = fdata.replace(
                 "'{{ .Values.webhook.port }}'", "{{ .Values.webhook.port }}"
+            )
+            # make sure managerUserID is not quoted as its an int
+            fdata = fdata.replace(
+                "'{{ .Values.managerUserID }}'", "{{ .Values.managerUserID }}"
             )
 
             if not kind == "namespace":

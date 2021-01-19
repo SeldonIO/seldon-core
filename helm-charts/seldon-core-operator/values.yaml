@@ -36,6 +36,9 @@ managerCreateResources: false
 # to all pods.
 defaultUserID: "8888"
 
+# runtime user to use for manager
+managerUserID: 8888
+
 # ## Service Orchestrator (Executor)
 # The executor is the default service orchestrator which has superceeded the "Java Engine"
 executor:
@@ -90,7 +93,7 @@ storageInitializer:
 usageMetrics:
   enabled: false
 webhook:
-  port: 443
+  port: 4443
 
 # ## Predictive Unit Values
 predictiveUnit:
