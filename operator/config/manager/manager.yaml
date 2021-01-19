@@ -25,12 +25,14 @@ spec:
         control-plane: seldon-controller-manager
     spec:
       serviceAccountName: manager
+      securityContext:
+        runAsUser: 8888
       containers:
       - command:
         - /manager
         args:
         - --enable-leader-election
-        - --webhook-port=443
+        - --webhook-port=4443
         - --create-resources=$(MANAGER_CREATE_RESOURCES)
         env:
         - name: WATCH_NAMESPACE
