@@ -294,7 +294,7 @@ func main() {
 	//Init Tracing
 	closer, err := tracing.InitTracing()
 	if err != nil {
-		log.Fatal("Could not initialize jaeger tracer", err.Error())
+		log.Fatal("Could not initialize tracer", err.Error())
 	}
 	defer closer.Close()
 
