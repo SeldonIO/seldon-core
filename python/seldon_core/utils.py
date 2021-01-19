@@ -26,7 +26,6 @@ if _TF_PRESENT:
 
 logger = logging.getLogger(__name__)
 
-
 ENV_MODEL_NAME = "PREDICTIVE_UNIT_ID"
 ENV_MODEL_IMAGE = "PREDICTIVE_UNIT_IMAGE"
 NONIMPLEMENTED_MSG = "NOT_IMPLEMENTED"
@@ -722,6 +721,34 @@ def getenv_as_bool(*env_vars, default=False):
 
 def setup_tracing(interface_name: str) -> object:
     logger.info("Initializing tracing")
+
+    dd_enabled = os.environ.get("DD_ENABLED", "false")
+    if dd_enabled.lower() in ("yes", "true", "t", "1"):
+        from ddtrace import sampler, opentracer, settings
+
+        logger.info("initializing Datadog tracer")
+
+        # Config will be created through env vars, see https://docs.datadoghq.com/tracing/setup/python/
+        # These settings are overwritten when creating a DD OpenTracer, so they have to be set here
+        raw_tags = os.environ.get("DD_TAGS", "")
+        tags = {}
+        if raw_tags != "":
+            tags = dict(map(lambda x: x.split(":"), raw_tags.split(",")))
+
+        config = {
+            "agent_hostname": os.environ.get("DD_AGENT_HOST", "localhost"),
+            "agent_port": os.environ.get("DATADOG_TRACE_AGENT_PORT", "8126"),
+            "sampler": sampler.RateSampler(int(os.environ.get("DD_SAMPLE_RATE", 1))),
+            "global_tags": tags,
+        }
+        svc_name = os.environ.get("DD_SERVICE", "")
+        if svc_name == "":
+            svc_name = interface_name
+
+        tr = opentracer.Tracer(service_name=svc_name, config=config)
+        opentracer.set_global_tracer(tr)
+        return tr
+
     from jaeger_client import Config
 
     jaeger_serv = os.environ.get("JAEGER_AGENT_HOST", "0.0.0.0")
