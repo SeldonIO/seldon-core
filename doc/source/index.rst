@@ -12,7 +12,6 @@ Seldon Core
    Seldon OpenVINO <charts/seldon-openvino>
    Custom svc Name <graph/custom_svc_name>
    gRPC Load Balancing Ambassador <graph/grpc_load_balancing_ambassador>
-   Model Engine Java Opts <graph/model_engine_java_opts>
    Model REST gRPC Settings <graph/model_rest_grpc_settings>
    Model svcOrch Sep <graph/model_svcorch_sep>
    APIs Reference <reference/apis/readme>
