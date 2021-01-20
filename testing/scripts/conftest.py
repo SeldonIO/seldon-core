@@ -13,9 +13,6 @@ def _to_python_bool(val):
     return val.lower() in {"1", "t", "true"}
 
 
-SELDON_E2E_TESTS_USE_EXECUTOR = _to_python_bool(
-    os.getenv("SELDON_E2E_TESTS_USE_EXECUTOR", default="true")
-)
 SELDON_E2E_TESTS_POD_INFORMATION = _to_python_bool(
     os.getenv("SELDON_E2E_TESTS_POD_INFORMATION", default="false")
 )
@@ -81,13 +78,13 @@ def seldon_version(request):
 
     # Delete source version cluster-wide and install new one
     delete_seldon()
-    install_seldon(version=seldon_version, executor=SELDON_E2E_TESTS_USE_EXECUTOR)
+    install_seldon(version=seldon_version)
 
     yield seldon_version
 
     # Re-install source code version cluster-wide
     delete_seldon()
-    install_seldon(executor=SELDON_E2E_TESTS_USE_EXECUTOR)
+    install_seldon()
 
 
 @pytest.fixture(scope="module")

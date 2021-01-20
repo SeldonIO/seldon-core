@@ -2,7 +2,6 @@ VERSION := $(shell cat ../../version.txt)
 
 # This can be "Auto" or a Number
 PYTEST_WORKERS ?= "4"
-SELDON_E2E_TESTS_USE_EXECUTOR ?= "true"
 
 .PHONY: kind_create_cluster
 kind_create_cluster:
@@ -99,7 +98,6 @@ install_seldon:
 		--set keda.enabled=true \
 		--set istio.gateway=istio-system/seldon-gateway \
 		--set certManager.enabled=false \
-		--set executor.enabled=$(SELDON_E2E_TESTS_USE_EXECUTOR) \
 		--wait --install
 
 # Install istio and patch nodePort to allow 8004 to point to ingress gateway

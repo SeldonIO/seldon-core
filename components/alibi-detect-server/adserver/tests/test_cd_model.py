@@ -23,6 +23,7 @@ class DummyCDModel(BaseDetector):
         cd["data"]["threshold"] = 0.1
         return cd
 
+
 class TestDummyCDModel(TestCase):
     def test_basic(self):
         model = DummyCDModel()
@@ -53,14 +54,18 @@ class TestDummyCDModel(TestCase):
         res = ad_model.process_event(req, headers)
         self.assertEqual(res, None)
 
-class TestTextDriftModel(TestCase):
 
+class TestTextDriftModel(TestCase):
     def test_basic(self):
         model = DummyCDModel()
         ad_model = AlibiDetectConceptDriftModel(
-            "imdb_text_drift", "gs://seldon-models/alibi-detect/cd/ks/imdb-0_4_4", drift_batch_size=2
+            "imdb_text_drift",
+            "gs://seldon-models/alibi-detect/cd/ks/imdb-0_4_4",
+            drift_batch_size=2,
         )
-        req = ["This movie is NOT the same as the 1954 version with Judy Garland and James Mason, and that is a shame because the 1954 version is, in my opinion, much better. I am not denying Barbra Streisand's talent at all. She is a good actress and brilliant singer. I am not acquainted with Kris Kristofferson's other work and therefore I can't pass judgment on it. However, this movie leaves much to be desired. It is paced slowly, it has gratuitous nudity and foul language, and can be very difficult to sit through.<br /><br />However, I am not a big fan of rock music, so it's only natural that I would like the Judy Garland version better. See the 1976 film with Barbra and Kris, and judge for yourself."]
+        req = [
+            "This movie is NOT the same as the 1954 version with Judy Garland and James Mason, and that is a shame because the 1954 version is, in my opinion, much better. I am not denying Barbra Streisand's talent at all. She is a good actress and brilliant singer. I am not acquainted with Kris Kristofferson's other work and therefore I can't pass judgment on it. However, this movie leaves much to be desired. It is paced slowly, it has gratuitous nudity and foul language, and can be very difficult to sit through.<br /><br />However, I am not a big fan of rock music, so it's only natural that I would like the Judy Garland version better. See the 1976 film with Barbra and Kris, and judge for yourself."
+        ]
         headers = {}
         ad_model.load()
         res = ad_model.process_event(req, headers)

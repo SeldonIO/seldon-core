@@ -21,7 +21,7 @@ setup(
         "google-cloud-core==1.4.1",
         "google-cloud-storage==1.31.2",
         "seldon_core",
-        "transformers==3.5.1"
+        "transformers==3.5.1",
     ],
     tests_require=tests_require,
     extras_require={"test": tests_require},
