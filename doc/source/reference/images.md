@@ -7,7 +7,6 @@
 |-------------|-----------|----------------|-------------|
 | [Seldon Operator](../workflow/install.md) | [seldonio/seldon-core-operator](https://hub.docker.com/r/seldonio/seldon-core-operator/tags/) | 1.5.0 | 1.5.0-dev |
 | [Seldon Service Orchestrator (Go)](../graph/svcorch.md)| [seldonio/seldon-core-executor](https://hub.docker.com/r/seldonio/executor/tags/) | 1.5.0 | 1.5.0-dev |
-| [Seldon Service Orchestrator (Java)](../graph/svcorch.html#using-the-java-engine) | [seldonio/engine](https://hub.docker.com/r/seldonio/engine/tags/) | 1.5.0 | 1.5.0-dev |
 
 ## Pre-packaged servers
 
@@ -78,4 +77,3 @@
 | Description | Image URL | Stable Version | Development |
 |-------------|-----------|----------------|-------------|
 | [Seldon Python 2 Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python2](https://hub.docker.com/r/seldonio/seldon-core-s2i-python2/tags/) | 0.5.1 | deprecated |
-| [seldon-core-s2i-python3-tf-gpu](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python36](https://hub.docker.com/repository/docker/seldonio/seldon-core-s2i-python3-tf-gpu) | 1.2.2 | deprecated |
