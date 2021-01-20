@@ -45,7 +45,6 @@ managerUserID: 8888
 # ## Service Orchestrator (Executor)
 # The executor is the default service orchestrator which has superceeded the "Java Engine"
 executor:
-  enabled: true
   port: 8000
   metricsPortName: metrics
   image:
