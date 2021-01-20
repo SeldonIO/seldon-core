@@ -47,7 +47,6 @@ HELM_ENV_SUBST = {
     "PREDICTIVE_UNIT_SERVICE_PORT": "predictiveUnit.port",
     "PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME": "predictiveUnit.defaultEnvSecretRefName",
     "PREDICTIVE_UNIT_METRICS_PORT_NAME": "predictiveUnit.metricsPortName",
-    "USE_EXECUTOR": "executor.enabled",
     "EXECUTOR_CONTAINER_IMAGE_PULL_POLICY": "executor.image.pullPolicy",
     "EXECUTOR_SERVER_PORT": "executor.port",
     "EXECUTOR_SERVER_METRICS_PORT_NAME": "executor.metricsPortName",
@@ -159,7 +158,9 @@ if __name__ == "__main__":
                     "serviceAccount.name"
                 )
                 # Security Context
-                res["spec"]["template"]["spec"]["securityContext"]["runAsUser"] = helm_value("managerUserID")
+                res["spec"]["template"]["spec"]["securityContext"][
+                    "runAsUser"
+                ] = helm_value("managerUserID")
 
                 # Resource requests
                 res["spec"]["template"]["spec"]["containers"][0]["resources"][

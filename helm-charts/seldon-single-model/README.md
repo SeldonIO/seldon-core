@@ -55,4 +55,3 @@ helm install $MY_MODEL_NAME seldonio/seldon-single-model --namespace $MODELS_NAM
 | model.uri | string | `""` | Model's URI for prepackaged model server |
 | protocol | string | `"seldon"` |  |
 | replicas | int | `1` | Number of replicas for the predictor |
-| transport | string | `"rest"` |  |
