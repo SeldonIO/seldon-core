@@ -15,7 +15,6 @@ Seldon Core
    Model REST gRPC Settings <graph/model_rest_grpc_settings>
    Model svcOrch Sep <graph/model_svcorch_sep>
    APIs Reference <reference/apis/readme>
-   Engine Reference <reference/engine>
    Integration NVIDIA Link <reference/integration_nvidia_link>
    Integration Sagemaker Link <reference/integration_sagemaker_link>
    Quickstart <workflow/quickstart>
