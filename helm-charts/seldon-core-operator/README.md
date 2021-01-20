@@ -55,7 +55,6 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | engine.resources.memoryRequest | string | `"512Mi"` |  |
 | engine.serviceAccount.name | string | `"default"` |  |
 | engine.user | int | `8888` |  |
-| executor.enabled | bool | `true` |  |
 | executor.image.pullPolicy | string | `"IfNotPresent"` |  |
 | executor.image.registry | string | `"docker.io"` |  |
 | executor.image.repository | string | `"seldonio/seldon-core-executor"` |  |
