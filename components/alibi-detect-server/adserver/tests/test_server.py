@@ -63,7 +63,13 @@ class TestSeldonHttpModel(AsyncHTTPTestCase):
                 "/",
                 method="POST",
                 body=dataStr,
-                headers={customHeaderKey: customHeaderVal, "ce-source":"a.b.c","ce-type":"d.e.f","ce-id":"1234","ce-specversion":"1.0"},
+                headers={
+                    customHeaderKey: customHeaderVal,
+                    "ce-source": "a.b.c",
+                    "ce-type": "d.e.f",
+                    "ce-id": "1234",
+                    "ce-specversion": "1.0",
+                },
             )
             self.assertEqual(response.code, 200)
             expectedResponse = json.dumps(DummyModel.getResponse())
@@ -85,17 +91,27 @@ class TestKFservingV2HttpModel(AsyncHTTPTestCase):
     def get_app(self):
         self.setupEnv()
         server = CEServer(
-            Protocol.kfserving_http, self.eventType, self.eventSource, 9000, self.replyUrl
+            Protocol.kfserving_http,
+            self.eventType,
+            self.eventSource,
+            9000,
+            self.replyUrl,
         )
         model = DummyModel("name")
         server.register_model(model)
         return server.create_application()
 
     def test_basic(self):
-        data = {"inputs": [{"name":"input_1",
-                            "datatype": "FP32",
-                            "shape": [1, 3],
-                            "data": [1, 2, 3]}]}
+        data = {
+            "inputs": [
+                {
+                    "name": "input_1",
+                    "datatype": "FP32",
+                    "shape": [1, 3],
+                    "data": [1, 2, 3],
+                }
+            ]
+        }
         dataStr = json.dumps(data)
         with requests_mock.Mocker() as m:
             m.post(self.replyUrl, text="resp")
@@ -104,7 +120,13 @@ class TestKFservingV2HttpModel(AsyncHTTPTestCase):
                 "/",
                 method="POST",
                 body=dataStr,
-                headers={customHeaderKey: customHeaderVal, "ce-source":"a.b.c","ce-type":"d.e.f","ce-id":"1234","ce-specversion":"1.0"},
+                headers={
+                    customHeaderKey: customHeaderVal,
+                    "ce-source": "a.b.c",
+                    "ce-type": "d.e.f",
+                    "ce-id": "1234",
+                    "ce-specversion": "1.0",
+                },
             )
             self.assertEqual(response.code, 200)
             expectedResponse = json.dumps(DummyModel.getResponse())
@@ -141,7 +163,13 @@ class TestModelNoResponse(AsyncHTTPTestCase):
                 "/",
                 method="POST",
                 body=dataStr,
-                headers={customHeaderKey: customHeaderVal, "ce-source":"a.b.c","ce-type":"d.e.f","ce-id":"1234","ce-specversion":"1.0"},
+                headers={
+                    customHeaderKey: customHeaderVal,
+                    "ce-source": "a.b.c",
+                    "ce-type": "d.e.f",
+                    "ce-id": "1234",
+                    "ce-specversion": "1.0",
+                },
             )
             self.assertEqual(response.code, 200)
             self.assertEqual(response.body, b"")

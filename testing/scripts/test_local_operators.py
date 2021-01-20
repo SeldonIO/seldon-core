@@ -13,7 +13,7 @@ from seldon_e2e_utils import (
 class TestLocalOperators(object):
     def test_namespace_operator(self, namespace):
         retry_run(
-            f"helm install seldon ../../helm-charts/seldon-core-operator --namespace {namespace} --set executor.enabled=true --set istio.enabled=true --set istio.gateway=istio-system/seldon-gateway --set certManager.enabled=false --set crd.create=false --set singleNamespace=true"
+            f"helm install seldon ../../helm-charts/seldon-core-operator --namespace {namespace} --set istio.enabled=true --set istio.gateway=istio-system/seldon-gateway --set certManager.enabled=false --set crd.create=false --set singleNamespace=true"
         )
         retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
         wait_for_status("mymodel", namespace)
@@ -28,7 +28,7 @@ class TestLocalOperators(object):
 
     def test_labelled_operator(self, namespace):
         retry_run(
-            f"helm install seldon ../../helm-charts/seldon-core-operator --namespace {namespace} --set executor.enabled=true --set istio.enabled=true --set istio.gateway=istio-system/seldon-gateway --set certManager.enabled=false --set crd.create=false --set controllerId=seldon-id1"
+            f"helm install seldon ../../helm-charts/seldon-core-operator --namespace {namespace} --set istio.enabled=true --set istio.gateway=istio-system/seldon-gateway --set certManager.enabled=false --set crd.create=false --set controllerId=seldon-id1"
         )
         retry_run(
             f"kubectl apply -f ../resources/model_controller_id.yaml -n {namespace}"

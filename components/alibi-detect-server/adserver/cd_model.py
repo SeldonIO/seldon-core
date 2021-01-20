@@ -38,7 +38,7 @@ class AlibiDetectConceptDriftModel(
         name: str,
         storage_uri: str,
         model: Optional[Data] = None,
-        drift_batch_size: int = 1000
+        drift_batch_size: int = 1000,
     ):
         """
         Outlier Detection / Concept Drift Model
