@@ -55,28 +55,6 @@ The initial request (1) reaches the service orchestrator which forwards it to th
 For more complex inference graphs the service orchestrator will handle routing components which may decide which of a subset of child components to send the request or aggregation components to combine responses from multiple components.
 
 
-## Using the Java engine
-
-You can continue to use the Java engine Service Orchestrator but this may get deprecated in future release.
-
-  * For Helm installs `--set executor.enabled=false`
-  * For Kustomize - update [manager.yaml](https://github.com/SeldonIO/seldon-core/blob/master/operator/config/manager/manager.yaml) env with `USE_EXECUTOR: "false"`
-
-You can also overwrite this for a given deployment by setting value of annotation `seldon.io/executor`:
-```YAML
-apiVersion: machinelearning.seldon.io/v1
-kind: SeldonDeployment
-metadata:
-  name: ...
-spec:
-  annotations:
-    seldon.io/executor: "false"
-  name: ...
-  ...
-```
-
-For further details on the Java engine see previous versions of this page in the docs.
-
 ## Resource Requests/Limits for Service Orchestrator
 
 You can set custom resource request and limits for this component by specifying them in a `svcOrchSpec` section in your Seldon Deployment. An example is shown below to set the engine cpu and memory requests:
@@ -167,3 +145,17 @@ Note no metrics or extra data will be added to the request so this would need to
 ## Routing in Metadata
 
 The current default orchestrator in Go the "executor" does not return routing meta data in request calls. This is a [known issue](https://github.com/SeldonIO/seldon-core/issues/1823). 
+
+
+## Java Engine [DEPRECATED]
+
+.. Attention:: 
+   The Java version of the service orchestrator has now been deprecated and
+   will be completely removed in future versions of Seldon Core.
+   We strongly suggest **migrating to the new version of the service
+   orchestrator** (implemented in Go) before upgrading.
+   Note that the new version of the service orchestator is enabled by default
+   since Seldon Core `1.1`.
+
+For further details on the Java engine see previous versions of this page in the docs.
+
