@@ -1,24 +1,38 @@
 # Service Orchestrator
 
-The service orchestrator is a component that is added to your inference graph to:
+The service orchestrator is a component that is added to your inference graph,
+as a sidecar container.
+Its main responsibilities are:
 
-- Correctly manage the request/response paths described by your inference graph
-- Expose Prometheus metrics
-- Provide Tracing via Open Tracing
-- Add CloudEvent based payload logging
+- Correctly manage the request / response paths described by your inference graph.
+- Expose Prometheus metrics.
+- Provide Tracing via Open Tracing.
+- Add CloudEvent-based payload logging.
 
-The current service orchestrator is a GoLang implementation. There is a previous Java implementation which will be deprecated in 1.2 release of Seldon Core.
+From Seldon Core `>=1.1`, the service orchestrator allows you to specify the
+protocol for the data plane of your inference graph.
+At present, we support the following protocols:
 
-In 1.1+ of Seldon Core you can specify the protocol and transport for the data plane of your inference graph. At present we allow the following combinations:
+| Protocol | `SeldonDeployment` Key | Reference | 
+| --- | --- | --- | --- |
+| Seldon | `seldon` | [OpenAPI spec for Seldon](https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/openapi.html) |
+| Tensorflow | `tensorflow` | [REST API](https://www.tensorflow.org/tfx/serving/api_rest) and [gRPC API](https://github.com/tensorflow/serving/blob/master/tensorflow_serving/apis/prediction_service.proto) reference |
+| KFServing | `kfserving` | [KFServing Dataplane reference](https://github.com/kubeflow/kfserving/tree/master/docs/predict-api/v2) |
 
- * Protocol: Seldon, Tensorflow
- * Transport: REST, gRPC
+These protocols are supported by some of our pre-packaged servers out of the
+box.
+You can check their
+[documentation](https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html)
+for more details.
 
-You can see basic examples for all options in the [protocol examples notebook](../examples/protocol_examples.html).
+Additionally, you can see basic examples for all options in the [protocol
+examples notebook](../examples/protocol_examples.html).
 
 ## Design
 
-The service orchestrator's core concern is to manage the request/response flow of calls through the defined inference graph. Given a graph shown below:
+The service orchestrator's core concern is to manage the request/response flow of calls through the defined inference graph.
+Given a graph shown below:
+
 ```YAML
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
