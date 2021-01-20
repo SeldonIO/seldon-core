@@ -172,6 +172,20 @@ webhooks:
   sideEffects: None
 ---
 
+{{- if not .Values.certManager.enabled -}}
+apiVersion: v1
+data:
+  ca.crt: '{{ $ca.Cert | b64enc }}'
+  tls.crt: '{{ $cert.Cert | b64enc }}'
+  tls.key: '{{ $cert.Key | b64enc }}'
+kind: Secret
+metadata:
+  name: seldon-webhook-server-cert
+  namespace: '{{ include "seldon.namespace" . }}'
+type: kubernetes.io/tls
+{{- end }}
+---
+
 apiVersion: admissionregistration.k8s.io/v1beta1
 kind: ValidatingWebhookConfiguration
 metadata:

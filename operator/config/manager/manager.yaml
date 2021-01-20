@@ -99,8 +99,6 @@ spec:
           value: istio-system/seldon-gateway
         - name: ISTIO_TLS_MODE
           value: ""
-        - name: USE_EXECUTOR
-          value: "true"
         - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
           value: seldonio/seldon-core-executor:1.6.0-dev
         - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
