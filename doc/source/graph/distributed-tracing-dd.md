@@ -27,7 +27,7 @@ For a complete list of available environment variables, see the [Datadogs python
 * `DD_SERVICE=<svc>` (will default to either `executor`, or the name of your Python class)
 * `DD_TAGS=<key:value,key2:value2`
 * `DD_SAMPLE_RATE:1` (defaults to 1, keeping all traces)
-    * _NOTE: This is a non-standard environment variable, meaning its sepcific to Seldon._
+    * _NOTE: This is a non-standard environment variable, meaning its specific to Seldon._
 
 
 
