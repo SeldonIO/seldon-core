@@ -347,10 +347,17 @@ def main():
     grpc_port = args.grpc_port
     metrics_port = args.metrics_port
 
-    # if args.tracing:
-    #    tracer = setup_tracing(args.interface_name)
-
     seldon_metrics = SeldonMetrics(worker_id_func=os.getpid)
+    app = seldon_microservice.get_rest_microservice(user_object, seldon_metrics)
+    if args.tracing:
+        logger.info("Tracing branch is active")
+        from flask_opentracing import FlaskTracing
+
+        tracer = setup_tracing(args.interface_name)
+
+        logger.info("Set JAEGER_EXTRA_TAGS %s", jaeger_extra_tags)
+        FlaskTracing(tracer, True, app, jaeger_extra_tags)
+
     # TODO why 2 ways to create metrics server
     # seldon_metrics = SeldonMetrics(
     #    worker_id_func=lambda: threading.current_thread().name
@@ -358,19 +365,10 @@ def main():
     if args.debug:
         # Start Flask debug server
         def rest_prediction_server():
-            app = seldon_microservice.get_rest_microservice(user_object, seldon_metrics)
             try:
                 user_object.load()
             except (NotImplementedError, AttributeError):
                 pass
-            if args.tracing:
-                logger.info("Tracing branch is active")
-                from flask_opentracing import FlaskTracing
-
-                tracer = setup_tracing(args.interface_name)
-
-                logger.info("Set JAEGER_EXTRA_TAGS %s", jaeger_extra_tags)
-                FlaskTracing(tracer, True, app, jaeger_extra_tags)
 
             app.run(
                 host="0.0.0.0",

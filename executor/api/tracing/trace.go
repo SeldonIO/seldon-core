@@ -3,6 +3,7 @@ package tracing
 import (
 	"io"
 	"os"
+	"strconv"
 
 	"github.com/opentracing/opentracing-go"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
@@ -11,6 +12,15 @@ import (
 
 func InitTracing() (io.Closer, error) {
 	//Initialise tracing
+
+	if ddEnabled, _ := strconv.ParseBool(os.Getenv(datadogEnabled)); ddEnabled {
+		tracer, err := initDatadogTracer()
+		if err != nil {
+			return nil, err
+		}
+		return tracer, nil
+	}
+
 	cfg, err := jaegercfg.FromEnv()
 	if err != nil {
 		// parsing errors might happen here, such as when we get a string where we expect a number
