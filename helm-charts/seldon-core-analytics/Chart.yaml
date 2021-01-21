@@ -2,11 +2,11 @@ apiVersion: v2
 dependencies:
 - condition: grafana.enabled
   name: grafana
-  repository: https://kubernetes-charts.storage.googleapis.com
+  repository: https://charts.helm.sh/stable
   version: ~5.1.4
 - condition: prometheus.enabled
   name: prometheus
-  repository: https://kubernetes-charts.storage.googleapis.com
+  repository: https://charts.helm.sh/stable
   version: ~11.4.0
 description: 'Prometheus and Grafana installation with a basic Grafana dashboard showing
 

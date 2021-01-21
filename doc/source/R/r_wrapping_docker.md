@@ -46,7 +46,7 @@ These same dependencies will need to be installed in the docker image, as explai
 
 ## Step 2 - Build your image
 
-How you install your dependencies in your docker image depends on the [base image that you choose](https://datawookie.netlify.app/blog/2019/01/docker-images-for-r-r-base-versus-r-apt/) and whether binary versions of the dependencies are available. Using `rocker/r-apt:bionic` as a base image and install dependencies as binaries, if possible, results in a faster and smaller build.
+How you install your dependencies in your docker image depends on the [base image that you choose](https://www.r-bloggers.com/2019/01/docker-images-for-r-r-base-versus-r-apt/) and whether binary versions of the dependencies are available. Using `rocker/r-apt:bionic` as a base image and install dependencies as binaries, if possible, results in a faster and smaller build.
 
 An example docker file can be seen in the [seldon kubeflow example](https://github.com/kubeflow/example-seldon/blob/master/models/r_mnist/runtime/Dockerfile):
 
