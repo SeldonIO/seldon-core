@@ -138,7 +138,7 @@ See [Flask - Builtin Configuration Values](https://flask.palletsprojects.com/con
 ## Advanced Usage
 
 ### Model Class Arguments
-You can add arguments to your component which will be populated from the `parameters` defined in the SeldonDeloyment when you deploy your image on Kubernetes. For example, our [Python TFServing proxy](https://github.com/SeldonIO/seldon-core/tree/master/integrations/tfserving) has the class init method signature defined as below:
+You can add arguments to your component which will be populated from the `parameters` defined in the SeldonDeloyment when you deploy your image on Kubernetes. For example, our [Python TFServing proxy](https://github.com/SeldonIO/seldon-core/tree/master/servers/tfserving) has the class init method signature defined as below:
 
 ```python
 class TfServingProxy(object):
