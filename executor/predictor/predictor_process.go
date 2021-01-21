@@ -132,7 +132,7 @@ func (p *PredictorProcess) feedback(node *v1.PredictiveUnit, msg payload.SeldonP
 	callClient := false
 	if (*node).Type != nil {
 		switch *node.Type {
-		case v1.MODEL:
+		case v1.MODEL, v1.ROUTER:
 			callClient = true
 		}
 	}
@@ -236,7 +236,7 @@ func (p *PredictorProcess) predictChildren(node *v1.PredictiveUnit, msg payload.
 		}
 		return p.aggregate(node, cmsgs)
 	} else {
-		p.Routing[node.Name] = -2
+		// Don't add routing for leaf nodes
 		return msg, nil
 	}
 }

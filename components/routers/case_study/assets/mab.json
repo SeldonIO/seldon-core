@@ -1,4 +1,46 @@
 {
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "prometheus",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "7.0.3"
+    },
+    {
+      "type": "panel",
+      "id": "graph",
+      "name": "Graph",
+      "version": ""
+    },
+    {
+      "type": "datasource",
+      "id": "prometheus",
+      "name": "Prometheus",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "singlestat",
+      "name": "Singlestat",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "text",
+      "name": "Text",
+      "version": ""
+    }
+  ],
   "annotations": {
     "list": [
       {
@@ -15,12 +57,19 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 11,
-  "iteration": 1544459170899,
+  "id": null,
+  "iteration": 1611253048044,
   "links": [],
   "panels": [
     {
       "content": "# Multi-armed bandit monitoring",
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "gridPos": {
         "h": 2,
         "w": 23,
@@ -35,6 +84,7 @@
     },
     {
       "collapsed": false,
+      "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -44,13 +94,6 @@
       "id": 6,
       "panels": [],
       "repeat": "deployment",
-      "scopedVars": {
-        "deployment": {
-          "selected": false,
-          "text": "rf-model",
-          "value": "rf-model"
-        }
-      },
       "title": "MAB stats ($deployment)",
       "type": "row"
     },
@@ -63,7 +106,13 @@
         "rgba(237, 129, 40, 0.89)",
         "#d44a3a"
       ],
-      "datasource": "prometheus",
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -74,7 +123,7 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 24,
+        "w": 12,
         "x": 0,
         "y": 3
       },
@@ -108,18 +157,6 @@
       ],
       "repeat": "branch_name",
       "repeatDirection": "h",
-      "scopedVars": {
-        "branch_name": {
-          "selected": false,
-          "text": "rf",
-          "value": "rf"
-        },
-        "deployment": {
-          "selected": false,
-          "text": "rf-model",
-          "value": "rf-model"
-        }
-      },
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -138,7 +175,6 @@
       ],
       "thresholds": "",
       "title": "Tries $deployment $branch_name",
-      "transparent": false,
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [
@@ -155,14 +191,22 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "prometheus",
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 0,
+      "fillGradient": 0,
       "gridPos": {
         "h": 8,
         "w": 8,
         "x": 0,
         "y": 10
       },
+      "hiddenSeries": false,
       "id": 18,
       "legend": {
         "avg": false,
@@ -177,18 +221,14 @@
       "linewidth": 2,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
       "repeatDirection": "h",
-      "scopedVars": {
-        "deployment": {
-          "selected": false,
-          "text": "rf-model",
-          "value": "rf-model"
-        }
-      },
       "seriesOverrides": [],
       "spaceLength": 10,
       "stack": false,
@@ -205,6 +245,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Model routing proportion ($deployment)",
       "tooltip": {
@@ -249,14 +290,22 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "prometheus",
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 0,
+      "fillGradient": 0,
       "gridPos": {
         "h": 8,
         "w": 8,
         "x": 8,
         "y": 10
       },
+      "hiddenSeries": false,
       "id": 12,
       "legend": {
         "avg": false,
@@ -271,19 +320,15 @@
       "linewidth": 2,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
       "repeat": null,
       "repeatDirection": "h",
-      "scopedVars": {
-        "deployment": {
-          "selected": false,
-          "text": "rf-model",
-          "value": "rf-model"
-        }
-      },
       "seriesOverrides": [],
       "spaceLength": 10,
       "stack": false,
@@ -307,6 +352,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Model accuracy ($deployment)",
       "tooltip": {
@@ -351,14 +397,22 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "prometheus",
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 0,
+      "fillGradient": 0,
       "gridPos": {
         "h": 8,
         "w": 8,
         "x": 16,
         "y": 10
       },
+      "hiddenSeries": false,
       "id": 49,
       "legend": {
         "avg": false,
@@ -373,18 +427,14 @@
       "linewidth": 2,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
       "repeatDirection": "h",
-      "scopedVars": {
-        "deployment": {
-          "selected": false,
-          "text": "rf-model",
-          "value": "rf-model"
-        }
-      },
       "seriesOverrides": [],
       "spaceLength": 10,
       "stack": false,
@@ -407,6 +457,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "F1 score ($deployment)",
       "tooltip": {
@@ -455,7 +506,13 @@
         "rgba(237, 129, 40, 0.89)",
         "#d44a3a"
       ],
-      "datasource": "prometheus",
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -500,13 +557,6 @@
       ],
       "repeat": null,
       "repeatDirection": "h",
-      "scopedVars": {
-        "deployment": {
-          "selected": false,
-          "text": "rf-model",
-          "value": "rf-model"
-        }
-      },
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -544,7 +594,13 @@
         "rgba(237, 129, 40, 0.89)",
         "#d44a3a"
       ],
-      "datasource": "prometheus",
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -588,13 +644,6 @@
         }
       ],
       "repeatDirection": "h",
-      "scopedVars": {
-        "deployment": {
-          "selected": false,
-          "text": "rf-model",
-          "value": "rf-model"
-        }
-      },
       "sparkline": {
         "fillColor": "rgba(189, 50, 31, 0.18)",
         "full": false,
@@ -632,7 +681,13 @@
         "rgba(237, 129, 40, 0.89)",
         "#d44a3a"
       ],
-      "datasource": "prometheus",
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -677,13 +732,6 @@
       ],
       "repeat": null,
       "repeatDirection": "h",
-      "scopedVars": {
-        "deployment": {
-          "selected": false,
-          "text": "rf-model",
-          "value": "rf-model"
-        }
-      },
       "sparkline": {
         "fillColor": "rgba(189, 50, 31, 0.18)",
         "full": false,
@@ -721,7 +769,13 @@
         "rgba(237, 129, 40, 0.89)",
         "#d44a3a"
       ],
-      "datasource": "prometheus",
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -765,13 +819,6 @@
         }
       ],
       "repeatDirection": "h",
-      "scopedVars": {
-        "deployment": {
-          "selected": false,
-          "text": "rf-model",
-          "value": "rf-model"
-        }
-      },
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -801,26 +848,24 @@
       "valueName": "current"
     }
   ],
-  "refresh": "1s",
-  "schemaVersion": 16,
+  "refresh": "5s",
+  "schemaVersion": 25,
   "style": "dark",
   "tags": [],
   "templating": {
     "list": [
       {
         "allValue": ".*",
-        "current": {
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": "prometheus",
+        "current": {},
+        "datasource": "${DS_PROMETHEUS}",
+        "definition": "label_values(seldon_api_executor_client_requests_seconds_count,deployment_name)",
         "hide": 0,
         "includeAll": true,
         "label": null,
         "multi": true,
         "name": "deployment",
         "options": [],
-        "query": "label_values(seldon_api_engine_client_requests_seconds_count,deployment_name)",
+        "query": "label_values(seldon_api_executor_client_requests_seconds_count,deployment_name)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -833,11 +878,9 @@
       },
       {
         "allValue": ".*",
-        "current": {
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": "prometheus",
+        "current": {},
+        "datasource": "${DS_PROMETHEUS}",
+        "definition": "",
         "hide": 0,
         "includeAll": true,
         "label": null,
@@ -857,11 +900,9 @@
       },
       {
         "allValue": ".*",
-        "current": {
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": "prometheus",
+        "current": {},
+        "datasource": "${DS_PROMETHEUS}",
+        "definition": "",
         "hide": 0,
         "includeAll": true,
         "label": null,
@@ -881,11 +922,9 @@
       },
       {
         "allValue": ".*",
-        "current": {
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": "prometheus",
+        "current": {},
+        "datasource": "${DS_PROMETHEUS}",
+        "definition": "",
         "hide": 0,
         "includeAll": true,
         "label": null,
@@ -906,12 +945,11 @@
     ]
   },
   "time": {
-    "from": "now-2m",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {
     "refresh_intervals": [
-      "5s",
       "10s",
       "30s",
       "1m",
@@ -937,5 +975,5 @@
   "timezone": "",
   "title": "mab",
   "uid": "rs_zGKYiz",
-  "version": 1
+  "version": 3
 }
