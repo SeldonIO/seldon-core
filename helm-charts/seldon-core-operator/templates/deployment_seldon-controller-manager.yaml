@@ -103,6 +103,8 @@ spec:
           value: '{{ .Values.istio.gateway }}'
         - name: ISTIO_TLS_MODE
           value: '{{ .Values.istio.tlsMode }}'
+        - name: USE_EXECUTOR
+          value: 'true'
         - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
           value: '{{ .Values.executor.image.registry }}/{{ .Values.executor.image.repository }}:{{ .Values.executor.image.tag }}'
         - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
