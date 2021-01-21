@@ -4,7 +4,7 @@ Seldon provides a native kafka integration from version 1.2. when you specify `s
 
 When `serverType: kafka` is specified you need to also specify environment variables in `svcOrchSpec` for KAFKA_BROKER, KAFKA_INPUT_TOPIC, KAFKA_OUTPUT_TOPIC. An example is shown below for a Tensorflow CIFAR10  model:
 
-```
+```yaml
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
