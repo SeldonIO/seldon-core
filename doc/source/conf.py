@@ -157,6 +157,8 @@ linkcheck_ignore = [
     # Ignore image links, which are not getting replaced with the correct link
     # More info in this issue: https://github.com/miyakogi/m2r/issues/49
     r"^(?!http).*\.png$",
+    # Ignore Google Calendar links which seem to require auth
+    "https://calendar.google.com",
 ]
 # Ignore anchors, as they doesn't seem to work very well
 linkcheck_anchors_ignore = [".*"]
