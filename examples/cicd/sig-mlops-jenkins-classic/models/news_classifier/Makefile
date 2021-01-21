@@ -30,7 +30,7 @@ delete_model:
 	kubectl delete sdep ${SDEP_NAME}
 
 helm_setup:
-	helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+	helm repo add stable https://charts.helm.sh/stable
 	helm repo add seldonio https://storage.googleapis.com/seldon-charts/
 	helm repo update
 

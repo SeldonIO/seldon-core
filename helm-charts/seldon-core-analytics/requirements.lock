@@ -1,9 +1,9 @@
 dependencies:
 - name: grafana
-  repository: https://kubernetes-charts.storage.googleapis.com
+  repository: https://charts.helm.sh/stable
   version: 5.1.4
 - name: prometheus
-  repository: https://kubernetes-charts.storage.googleapis.com
+  repository: https://charts.helm.sh/stable
   version: 11.4.0
 digest: sha256:a7a446abe923d6952a090bfbb6a2f269582ac6e2821fb55ad084595bed855d12
 generated: "2020-06-05T11:01:22.157525043+01:00"

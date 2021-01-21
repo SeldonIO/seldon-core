@@ -33,8 +33,8 @@ helm install seldon-core-analytics seldonio/seldon-core-analytics --namespace se
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://kubernetes-charts.storage.googleapis.com | grafana | ~5.1.4 |
-| https://kubernetes-charts.storage.googleapis.com | prometheus | ~11.4.0 |
+| https://charts.helm.sh/stable | grafana | ~5.1.4 |
+| https://charts.helm.sh/stable | prometheus | ~11.4.0 |
 
 ## Values
 
