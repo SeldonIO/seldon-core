@@ -26,6 +26,7 @@ ENV_MODEL_NAME = "PREDICTIVE_UNIT_ID"
 ENV_MODEL_IMAGE = "PREDICTIVE_UNIT_IMAGE"
 ENV_PREDICTOR_NAME = "PREDICTOR_ID"
 ENV_PREDICTOR_LABELS = "PREDICTOR_LABELS"
+ENV_BIN_SIZE = "METRIC_BIN_SIZE"
 
 FEEDBACK_KEY = "seldon_api_model_feedback"
 FEEDBACK_REWARD_KEY = "seldon_api_model_feedback_reward"
@@ -34,8 +35,9 @@ COUNTER = "COUNTER"
 GAUGE = "GAUGE"
 TIMER = "TIMER"
 
+BIN_SIZE = os.environ.get(METRIC_BIN_SIZE, 50)
 # This sets the bins spread logarithmically between 0.001 and 30
-BINS = [0] + list(np.logspace(-3, np.log10(30), 50)) + [np.inf]
+BINS = [0] + list(np.logspace(-3, np.log10(30), BIN_SIZE)) + [np.inf]
 
 
 def split_image_tag(tag: str) -> Tuple[str]:
