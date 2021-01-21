@@ -39,28 +39,6 @@ make build
 
 ## Test the wrapped image
 
-To test the generated docker image using the Seldon Core [internal API](../../../docs/reference/internal-api.md), run it under docker:
+See the [example notebook](egreedy.ipynb)
 
-```bash
-docker run --rm -p 5000:5000 -e PREDICTIVE_UNIT_PARAMETERS='[{"name": "n_branches","value": "3","type": "INT"},{"name": "epsilon","value": "0.3","type": "FLOAT"},{"name": "verbose","value": "1","type": "BOOL"}]' -e PREDICTIVE_UNIT_ID='eg' seldonio/mab_epsilon_greedy:1.3
-```
-Note that to expose both the ```/route``` and ```/send-feedback``` endpoints we need to provide both ```PREDICTIVE_UNIT_PARAMETERS``` and ```PREDICTIVE_UNIT_ID``` environment variables.
 
-Send a data request:
-
-```bash
-data='{"data":{"names":["a","b"],"ndarray":[[1.0,2.0]]}}'
-curl -d "json=${data}" http://0.0.0.0:5000/route
-```
-
-Send a feedback request:
-```bash
-data='{"request":{"data":{"names":["a","b"],"ndarray":[[1.0,2.0]]}},"response":{"meta":{"routing":{"eg":2}},"data":{"names":["a","b"],"ndarray":[[1.0,2.0]]}},"reward":1}'
-curl -d "json=${data}" http://0.0.0.0:5000/send-feedback
-```
-
-For more comprehensive testing refer to the [API testers](../../../docs/api-testing.md).
-
-## Running on Seldon
-An end-to-end example running an epsilon-greedy router on GCP to route traffic to 3 models in parallel is available [here](
-../../../notebooks/epsilon_greedy_gcp.ipynb) and a Kubeflow integrated example available [here](https://github.com/kubeflow/example-seldon).

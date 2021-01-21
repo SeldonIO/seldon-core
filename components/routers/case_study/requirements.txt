@@ -1,10 +1,8 @@
-pandas==1.1.1
-matplotlib==3.2.1
-graphviz==0.15
-kaggle==1.5.9
-scikit-learn==0.23.2
-numpy==1.19.4
-scipy==1.5.4
-xgboost==1.2.0
-joblib==0.16.0
+pandas
+matplotlib
+kaggle
+scikit-learn
+numpy<1.19.0
+xgboost
+joblib
 

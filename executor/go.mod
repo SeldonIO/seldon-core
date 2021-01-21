@@ -12,7 +12,7 @@ require (
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.1
-	github.com/onsi/gomega v1.10.2
+	github.com/onsi/gomega v1.10.4
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.7.1
