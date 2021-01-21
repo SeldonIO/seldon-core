@@ -25,6 +25,7 @@ Seldon Core
    Drift CIFAR10 <examples/drift_cifar10>
    Pachyderm <examples/pachyderm-simple>
    DVC <examples/dvc>
+   Custom Init Container <examples/custom_init_container>
    Graph Metadata <examples/graph-metadata>
    Metadata <examples/metadata>
    Metadata gRPC <examples/metadata_grpc>
