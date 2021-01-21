@@ -283,7 +283,7 @@ For full example please see this [notebook](../examples/minio-sklearn.html).
 
 Currently the Google Credentials require a file to be set up so the process required involves creation of a service account as outlined below.
 
-You can also create a `ServiceAccount` and attach a differently formatted `Secret` to it similar to how kfserving does it. See kfserving documentation [on this topic](https://github.com/kubeflow/kfserving/tree/master/docs/samples/s3). Supported annotation prefix includes `serving.kubeflow.org` and `machinelearning.seldon.io`.
+You can also create a `ServiceAccount` and attach a differently formatted `Secret` to it similar to how kfserving does it. See kfserving documentation [on this topic](https://github.com/kubeflow/kfserving/blob/master/docs/samples/storage/s3/README.md). Supported annotation prefix includes `serving.kubeflow.org` and `machinelearning.seldon.io`.
 
 For GCP/GKE, go to gcloud console and create a key as json and export as a file. Then create a secret from the file using:
 
