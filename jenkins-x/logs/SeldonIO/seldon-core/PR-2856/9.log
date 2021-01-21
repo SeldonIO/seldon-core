@@ -1,0 +1,2084 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-2856-do-p2rzj-9[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-lsxtc[0m
+{"level":"info","ts":1611244967.748081,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1611244967.7487063,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2856-do-p2rzj-9[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-s8w9l[0m
+{"level":"info","ts":1611244968.1172776,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1611244968.124212,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2856-do-p2rzj-9[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2856-do-p2rzj-9[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-dxlsp[0m
+{"level":"info","ts":1611244973.372887,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1611244973.3743036,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2856-do-p2rzj-9[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-2856-do-p2rzj-6b6sl[0m
+{"level":"info","ts":1611244973.6319642,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1611244978.7475288,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2856-do-p2rzj-9[0m stage [32mpr-build-comment[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2856-do-p2rzj-9[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:f0b880e84dd47601d0d20939df572b220f456ed4,2856:61dac6400025a385e9008479cf0cf3c25cc7e0ed
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch origin --unshallow 61dac6400025a385e9008479cf0cf3c25cc7e0ed: f0b880e84dd47601d0d20939df572b220f456ed4:
+DEBUG: ran git fetch --unshallow origin 61dac6400025a385e9008479cf0cf3c25cc7e0ed: f0b880e84dd47601d0d20939df572b220f456ed4: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard f0b880e84dd47601d0d20939df572b220f456ed4
+DEBUG: ran git reset --hard f0b880e84dd47601d0d20939df572b220f456ed4 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git merge 61dac6400025a385e9008479cf0cf3c25cc7e0ed
+DEBUG: ran git merge 61dac6400025a385e9008479cf0cf3c25cc7e0ed in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git log --format=%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%s%n%b%x1e f0b880e84dd47601d0d20939df572b220f456ed4..HEAD
+Merged SHA a6caa75935458c4564f32de54725c28dd5862f6a with commit message 'Merge commit '61dac6400025a385e9008479cf0cf3c25cc7e0ed'' into base branch master
+Merged SHA 61dac6400025a385e9008479cf0cf3c25cc7e0ed with commit message 'Ignore Google cal links' into base branch master
+Merged SHA 75a959fa968c6830af4a6762b0f979c5c0b5651d with commit message 'Update broken links' into base branch master
+Merged SHA 2730d694de7406093a9b0a9b86b4c65b530c1d7f with commit message 'Update deprecated charts URL' into base branch master
+Merged SHA c98918dd1122dc0a50469d1016d6f8988a23c341 with commit message 'Update links to fix docs linter' into base branch master
+Merged SHA 53437d23a9c02d45337970e877018bded38e5854 with commit message 'Add note on service orchestrator' into base branch master
+Merged SHA d23f87a002bf58f39e138681b1861941aa2a5c28 with commit message 'Remove references to engine' into base branch master
+Merged SHA 6dec8463e8d458aa426df9b576251061af7e1350 with commit message 'Remove old java engine page' into base branch master
+Merged SHA da9d739fb9107dfa1bc7971a18dffe86d8f941a6 with commit message 'Add notes on protocols' into base branch master
+Merged SHA bbc8c0de0bdc2a3c5a64fd069ed5509dd01fea54 with commit message 'Remove section on engine and add deprecation note' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-2856-do-p2rzj-9[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=2856
++ BUILD_NUMBER=9
++ PIPELINE_CONTEXT=docs
+++ cat
++++ date
++ COMMENT_MSG='Thu Jan 21 16:03:09 UTC 2021
+The logs for [docs] [9] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2856/9.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2856 --build=9'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=2856 '--comment=Thu Jan 21 16:03:09 UTC 2021
+The logs for [docs] [9] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2856/9.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2856 --build=9'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2856-do-p2rzj-9[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-2856-do-p2rzj-vdsd8[0m
+{"level":"info","ts":1611244991.5397854,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1611244991.6170068,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2856-do-p2rzj-9[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-2856-do-p2rzj-zcdvn[0m
+{"level":"info","ts":1611244991.7936668,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1611244992.3267944,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2856-do-p2rzj-9[0m stage [32mlinkcheck[0m and container [32mstep-credential-initializer-xgwj2[0m
+{"level":"info","ts":1611245014.1555047,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1611245014.157996,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2856-do-p2rzj-9[0m stage [32mlinkcheck[0m and container [32mstep-working-dir-initializer-26bb4[0m
+{"level":"info","ts":1611245015.478854,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1611245015.4799337,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2856-do-p2rzj-9[0m stage [32mlinkcheck[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2856-do-p2rzj-9[0m stage [32mlinkcheck[0m and container [32mstep-create-dir-workspace-xx2v7[0m
+{"level":"info","ts":1611245029.1333473,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1611245029.1347556,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2856-do-p2rzj-9[0m stage [32mlinkcheck[0m and container [32mstep-source-copy-workspace-7rckv[0m
+{"level":"info","ts":1611245030.0689979,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1611245051.7318091,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2856-do-p2rzj-9[0m stage [32mlinkcheck[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2856-do-p2rzj-9[0m stage [32mlinkcheck[0m and container [32mstep-make-linkcheck[0m
+make: Entering directory '/workspace/source/doc'
+pip install -r requirements.txt
+Collecting sphinx==3.2.1
+  Downloading Sphinx-3.2.1-py3-none-any.whl (2.9 MB)
+Collecting sphinx-autobuild>=0.7.1
+  Downloading sphinx_autobuild-2020.9.1-py3-none-any.whl (9.8 kB)
+Collecting sphinx-autodoc-typehints>=1.6.0
+  Downloading sphinx_autodoc_typehints-1.11.1-py3-none-any.whl (8.7 kB)
+Collecting sphinx-rtd-theme>=0.4.3
+  Downloading sphinx_rtd_theme-0.5.1-py2.py3-none-any.whl (2.8 MB)
+Collecting m2r2>=0.2.5
+  Downloading m2r2-0.2.7-py3-none-any.whl (10 kB)
+Collecting sphinxcontrib-apidoc>=0.3.0
+  Downloading sphinxcontrib_apidoc-0.3.0-py2.py3-none-any.whl (8.5 kB)
+Collecting nbsphinx>=0.4.2
+  Downloading nbsphinx-0.8.1-py3-none-any.whl (24 kB)
+Collecting nbsphinx-link>=1.2.0
+  Downloading nbsphinx_link-1.3.0-py2.py3-none-any.whl (5.2 kB)
+Requirement already satisfied: ipykernel>=5.1.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 9)) (5.3.4)
+Requirement already satisfied: ipython>=7.2.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 10)) (7.13.0)
+Requirement already satisfied: Pygments<3,>=2.4.1 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 11)) (2.7.1)
+Collecting babel>=1.3
+  Downloading Babel-2.9.0-py2.py3-none-any.whl (8.8 MB)
+Collecting sphinxcontrib-serializinghtml
+  Downloading sphinxcontrib_serializinghtml-1.1.4-py2.py3-none-any.whl (89 kB)
+Collecting sphinxcontrib-devhelp
+  Downloading sphinxcontrib_devhelp-1.0.2-py2.py3-none-any.whl (84 kB)
+Collecting sphinxcontrib-htmlhelp
+  Downloading sphinxcontrib_htmlhelp-1.0.3-py2.py3-none-any.whl (96 kB)
+Requirement already satisfied: packaging in /usr/local/lib/python3.6/site-packages (from sphinx==3.2.1->-r requirements.txt (line 1)) (20.4)
+Collecting imagesize
+  Downloading imagesize-1.2.0-py2.py3-none-any.whl (4.8 kB)
+Collecting sphinxcontrib-jsmath
+  Downloading sphinxcontrib_jsmath-1.0.1-py2.py3-none-any.whl (5.1 kB)
+Requirement already satisfied: setuptools in /usr/local/lib/python3.6/site-packages (from sphinx==3.2.1->-r requirements.txt (line 1)) (50.3.0)
+Collecting sphinxcontrib-applehelp
+  Downloading sphinxcontrib_applehelp-1.0.2-py2.py3-none-any.whl (121 kB)
+Collecting alabaster<0.8,>=0.7
+  Downloading alabaster-0.7.12-py2.py3-none-any.whl (14 kB)
+Collecting snowballstemmer>=1.1
+  Downloading snowballstemmer-2.1.0-py2.py3-none-any.whl (93 kB)
+Requirement already satisfied: requests>=2.5.0 in /usr/local/lib/python3.6/site-packages (from sphinx==3.2.1->-r requirements.txt (line 1)) (2.24.0)
+Collecting sphinxcontrib-qthelp
+  Downloading sphinxcontrib_qthelp-1.0.3-py2.py3-none-any.whl (90 kB)
+Collecting docutils>=0.12
+  Downloading docutils-0.16-py2.py3-none-any.whl (548 kB)
+Requirement already satisfied: Jinja2>=2.3 in /usr/local/lib/python3.6/site-packages (from sphinx==3.2.1->-r requirements.txt (line 1)) (2.11.2)
+Collecting livereload
+  Downloading livereload-2.6.3.tar.gz (25 kB)
+Requirement already satisfied: mistune in /usr/local/lib/python3.6/site-packages (from m2r2>=0.2.5->-r requirements.txt (line 5)) (0.8.4)
+Collecting pbr
+  Downloading pbr-5.5.1-py2.py3-none-any.whl (106 kB)
+Requirement already satisfied: nbconvert!=5.4 in /usr/local/lib/python3.6/site-packages (from nbsphinx>=0.4.2->-r requirements.txt (line 7)) (5.6.1)
+Requirement already satisfied: nbformat in /usr/local/lib/python3.6/site-packages (from nbsphinx>=0.4.2->-r requirements.txt (line 7)) (5.0.7)
+Requirement already satisfied: traitlets in /usr/local/lib/python3.6/site-packages (from nbsphinx>=0.4.2->-r requirements.txt (line 7)) (4.3.3)
+Requirement already satisfied: tornado>=4.2 in /usr/local/lib/python3.6/site-packages (from ipykernel>=5.1.0->-r requirements.txt (line 9)) (6.0.4)
+Requirement already satisfied: jupyter-client in /usr/local/lib/python3.6/site-packages (from ipykernel>=5.1.0->-r requirements.txt (line 9)) (6.1.7)
+Requirement already satisfied: prompt-toolkit!=3.0.0,!=3.0.1,<3.1.0,>=2.0.0 in /usr/local/lib/python3.6/site-packages (from ipython>=7.2.0->-r requirements.txt (line 10)) (3.0.7)
+Requirement already satisfied: pexpect; sys_platform != "win32" in /usr/local/lib/python3.6/site-packages (from ipython>=7.2.0->-r requirements.txt (line 10)) (4.8.0)
+Requirement already satisfied: pickleshare in /usr/local/lib/python3.6/site-packages (from ipython>=7.2.0->-r requirements.txt (line 10)) (0.7.5)
+Requirement already satisfied: decorator in /usr/local/lib/python3.6/site-packages (from ipython>=7.2.0->-r requirements.txt (line 10)) (4.4.2)
+Requirement already satisfied: jedi>=0.10 in /usr/local/lib/python3.6/site-packages (from ipython>=7.2.0->-r requirements.txt (line 10)) (0.17.2)
+Requirement already satisfied: backcall in /usr/local/lib/python3.6/site-packages (from ipython>=7.2.0->-r requirements.txt (line 10)) (0.2.0)
+Requirement already satisfied: pytz>=2015.7 in /usr/local/lib/python3.6/site-packages (from babel>=1.3->sphinx==3.2.1->-r requirements.txt (line 1)) (2020.1)
+Requirement already satisfied: pyparsing>=2.0.2 in /usr/local/lib/python3.6/site-packages (from packaging->sphinx==3.2.1->-r requirements.txt (line 1)) (2.4.7)
+Requirement already satisfied: six in /usr/local/lib/python3.6/site-packages (from packaging->sphinx==3.2.1->-r requirements.txt (line 1)) (1.15.0)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests>=2.5.0->sphinx==3.2.1->-r requirements.txt (line 1)) (3.0.4)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests>=2.5.0->sphinx==3.2.1->-r requirements.txt (line 1)) (2.10)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests>=2.5.0->sphinx==3.2.1->-r requirements.txt (line 1)) (2020.6.20)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests>=2.5.0->sphinx==3.2.1->-r requirements.txt (line 1)) (1.25.10)
+Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from Jinja2>=2.3->sphinx==3.2.1->-r requirements.txt (line 1)) (1.1.1)
+Requirement already satisfied: entrypoints>=0.2.2 in /usr/local/lib/python3.6/site-packages (from nbconvert!=5.4->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (0.3)
+Requirement already satisfied: jupyter-core in /usr/local/lib/python3.6/site-packages (from nbconvert!=5.4->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (4.6.3)
+Requirement already satisfied: pandocfilters>=1.4.1 in /usr/local/lib/python3.6/site-packages (from nbconvert!=5.4->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (1.4.2)
+Requirement already satisfied: bleach in /usr/local/lib/python3.6/site-packages (from nbconvert!=5.4->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (3.2.1)
+Requirement already satisfied: defusedxml in /usr/local/lib/python3.6/site-packages (from nbconvert!=5.4->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (0.6.0)
+Requirement already satisfied: testpath in /usr/local/lib/python3.6/site-packages (from nbconvert!=5.4->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (0.4.4)
+Requirement already satisfied: jsonschema!=2.5.0,>=2.4 in /usr/local/lib/python3.6/site-packages (from nbformat->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (3.2.0)
+Requirement already satisfied: ipython-genutils in /usr/local/lib/python3.6/site-packages (from nbformat->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (0.2.0)
+Requirement already satisfied: pyzmq>=13 in /usr/local/lib/python3.6/site-packages (from jupyter-client->ipykernel>=5.1.0->-r requirements.txt (line 9)) (19.0.2)
+Requirement already satisfied: python-dateutil>=2.1 in /usr/local/lib/python3.6/site-packages (from jupyter-client->ipykernel>=5.1.0->-r requirements.txt (line 9)) (2.8.1)
+Requirement already satisfied: wcwidth in /usr/local/lib/python3.6/site-packages (from prompt-toolkit!=3.0.0,!=3.0.1,<3.1.0,>=2.0.0->ipython>=7.2.0->-r requirements.txt (line 10)) (0.2.5)
+Requirement already satisfied: ptyprocess>=0.5 in /usr/local/lib/python3.6/site-packages (from pexpect; sys_platform != "win32"->ipython>=7.2.0->-r requirements.txt (line 10)) (0.6.0)
+Requirement already satisfied: parso<0.8.0,>=0.7.0 in /usr/local/lib/python3.6/site-packages (from jedi>=0.10->ipython>=7.2.0->-r requirements.txt (line 10)) (0.7.1)
+Requirement already satisfied: webencodings in /usr/local/lib/python3.6/site-packages (from bleach->nbconvert!=5.4->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (0.5.1)
+Requirement already satisfied: pyrsistent>=0.14.0 in /usr/local/lib/python3.6/site-packages (from jsonschema!=2.5.0,>=2.4->nbformat->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (0.17.3)
+Requirement already satisfied: attrs>=17.4.0 in /usr/local/lib/python3.6/site-packages (from jsonschema!=2.5.0,>=2.4->nbformat->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (20.2.0)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /usr/local/lib/python3.6/site-packages (from jsonschema!=2.5.0,>=2.4->nbformat->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (2.0.0)
+Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.6/site-packages (from importlib-metadata; python_version < "3.8"->jsonschema!=2.5.0,>=2.4->nbformat->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (3.3.0)
+Building wheels for collected packages: livereload
+  Building wheel for livereload (setup.py): started
+  Building wheel for livereload (setup.py): finished with status 'done'
+  Created wheel for livereload: filename=livereload-2.6.3-py2.py3-none-any.whl size=24713 sha256=8826a80d2d48436dd39311647090997b754aac2cb1445ce4b7dcfef2bb2474bf
+  Stored in directory: /builder/home/.cache/pip/wheels/2e/bd/a8/d11e2300992209f109960d20facdd55076682bf3a192bc10ba
+Successfully built livereload
+Installing collected packages: babel, sphinxcontrib-serializinghtml, sphinxcontrib-devhelp, sphinxcontrib-htmlhelp, imagesize, sphinxcontrib-jsmath, sphinxcontrib-applehelp, alabaster, snowballstemmer, sphinxcontrib-qthelp, docutils, sphinx, livereload, sphinx-autobuild, sphinx-autodoc-typehints, sphinx-rtd-theme, m2r2, pbr, sphinxcontrib-apidoc, nbsphinx, nbsphinx-link
+Successfully installed alabaster-0.7.12 babel-2.9.0 docutils-0.16 imagesize-1.2.0 livereload-2.6.3 m2r2-0.2.7 nbsphinx-0.8.1 nbsphinx-link-1.3.0 pbr-5.5.1 snowballstemmer-2.1.0 sphinx-3.2.1 sphinx-autobuild-2020.9.1 sphinx-autodoc-typehints-1.11.1 sphinx-rtd-theme-0.5.1 sphinxcontrib-apidoc-0.3.0 sphinxcontrib-applehelp-1.0.2 sphinxcontrib-devhelp-1.0.2 sphinxcontrib-htmlhelp-1.0.3 sphinxcontrib-jsmath-1.0.1 sphinxcontrib-qthelp-1.0.3 sphinxcontrib-serializinghtml-1.1.4
+WARNING: You are using pip version 20.2.3; however, version 20.3.3 is available.
+You should consider upgrading via the '/usr/local/bin/python -m pip install --upgrade pip' command.
+# Install local version of seldon_core as well
+make -C ../python install_dev
+make[1]: Entering directory '/workspace/source/python'
+pip install -e . -r requirements-dev.txt
+Obtaining file:///workspace/source/python
+Collecting black==20.8b1
+  Downloading black-20.8b1.tar.gz (1.1 MB)
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+    Preparing wheel metadata: started
+    Preparing wheel metadata: finished with status 'done'
+Collecting flake8==3.8.1
+  Downloading flake8-3.8.1-py2.py3-none-any.whl (72 kB)
+Collecting mypy<0.791
+  Downloading mypy-0.790-cp36-cp36m-manylinux1_x86_64.whl (21.0 MB)
+Collecting Pillow==8.1.0
+  Downloading Pillow-8.1.0-cp36-cp36m-manylinux1_x86_64.whl (2.2 MB)
+Collecting pytest==6.2.1
+  Downloading pytest-6.2.1-py3-none-any.whl (279 kB)
+Collecting pytest-cov==2.10.1
+  Downloading pytest_cov-2.10.1-py2.py3-none-any.whl (19 kB)
+Collecting tox<4.0.0
+  Downloading tox-3.21.2-py2.py3-none-any.whl (84 kB)
+Collecting grpcio-tools==1.33.2
+  Downloading grpcio_tools-1.33.2-cp36-cp36m-manylinux2014_x86_64.whl (2.5 MB)
+Collecting mypy-protobuf==1.22
+  Downloading mypy_protobuf-1.22-py3-none-any.whl (7.5 kB)
+Collecting tenacity==6.3.1
+  Downloading tenacity-6.3.1-py2.py3-none-any.whl (36 kB)
+Collecting coverage==5.3.1
+  Downloading coverage-5.3.1-cp36-cp36m-manylinux2010_x86_64.whl (241 kB)
+Collecting pandas==1.1.0
+  Downloading pandas-1.1.0-cp36-cp36m-manylinux1_x86_64.whl (10.5 MB)
+Collecting pip-licenses==3.1.0
+  Downloading pip_licenses-3.1.0-py3-none-any.whl (15 kB)
+Collecting Flask<2.0.0
+  Downloading Flask-1.1.2-py2.py3-none-any.whl (94 kB)
+Requirement already satisfied: jsonschema<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.6.0.dev0) (3.2.0)
+Collecting Flask-cors<4.0.0
+  Downloading Flask_Cors-3.0.10-py2.py3-none-any.whl (14 kB)
+Collecting redis<4.0.0
+  Downloading redis-3.5.3-py2.py3-none-any.whl (72 kB)
+Requirement already satisfied: requests<3.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.6.0.dev0) (2.24.0)
+Requirement already satisfied: numpy<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.6.0.dev0) (1.19.2)
+Collecting flatbuffers<2.0.0
+  Downloading flatbuffers-1.12-py2.py3-none-any.whl (15 kB)
+Requirement already satisfied: protobuf<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.6.0.dev0) (3.13.0)
+Requirement already satisfied: grpcio<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.6.0.dev0) (1.32.0)
+Collecting Flask-OpenTracing<1.2.0,>=1.1.0
+  Downloading Flask-OpenTracing-1.1.0.tar.gz (8.2 kB)
+Collecting opentracing<2.5.0,>=2.2.0
+  Downloading opentracing-2.4.0.tar.gz (46 kB)
+Collecting jaeger-client<4.5.0,>=4.1.0
+  Downloading jaeger-client-4.4.0.tar.gz (83 kB)
+Collecting grpcio-opentracing<1.2.0,>=1.1.4
+  Downloading grpcio_opentracing-1.1.4-py3-none-any.whl (14 kB)
+Collecting grpcio-reflection<1.35.0
+  Downloading grpcio-reflection-1.34.1.tar.gz (11 kB)
+Requirement already satisfied: PyYAML<5.4 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.6.0.dev0) (5.3.1)
+Collecting gunicorn<20.1.0,>=19.9.0
+  Downloading gunicorn-20.0.4-py2.py3-none-any.whl (77 kB)
+Requirement already satisfied: setuptools>=41.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.6.0.dev0) (50.3.0)
+Requirement already satisfied: prometheus_client<0.9.0,>=0.7.1 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.6.0.dev0) (0.8.0)
+Collecting toml>=0.10.1
+  Downloading toml-0.10.2-py2.py3-none-any.whl (16 kB)
+Collecting click>=7.1.2
+  Downloading click-7.1.2-py2.py3-none-any.whl (82 kB)
+Requirement already satisfied: typing-extensions>=3.7.4 in /usr/local/lib/python3.6/site-packages (from black==20.8b1->-r requirements-dev.txt (line 2)) (3.7.4.3)
+Collecting mypy-extensions>=0.4.3
+  Downloading mypy_extensions-0.4.3-py2.py3-none-any.whl (4.5 kB)
+Collecting regex>=2020.1.8
+  Downloading regex-2020.11.13-cp36-cp36m-manylinux2014_x86_64.whl (723 kB)
+Collecting appdirs
+  Downloading appdirs-1.4.4-py2.py3-none-any.whl (9.6 kB)
+Collecting dataclasses>=0.6; python_version < "3.7"
+  Downloading dataclasses-0.8-py3-none-any.whl (19 kB)
+Collecting typed-ast>=1.4.0
+  Downloading typed_ast-1.4.2-cp36-cp36m-manylinux1_x86_64.whl (743 kB)
+Collecting pathspec<1,>=0.6
+  Downloading pathspec-0.8.1-py2.py3-none-any.whl (28 kB)
+Collecting pyflakes<2.3.0,>=2.2.0
+  Downloading pyflakes-2.2.0-py2.py3-none-any.whl (66 kB)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /usr/local/lib/python3.6/site-packages (from flake8==3.8.1->-r requirements-dev.txt (line 3)) (2.0.0)
+Collecting mccabe<0.7.0,>=0.6.0
+  Downloading mccabe-0.6.1-py2.py3-none-any.whl (8.6 kB)
+Collecting pycodestyle<2.7.0,>=2.6.0a1
+  Downloading pycodestyle-2.6.0-py2.py3-none-any.whl (41 kB)
+Requirement already satisfied: packaging in /usr/local/lib/python3.6/site-packages (from pytest==6.2.1->-r requirements-dev.txt (line 6)) (20.4)
+Requirement already satisfied: attrs>=19.2.0 in /usr/local/lib/python3.6/site-packages (from pytest==6.2.1->-r requirements-dev.txt (line 6)) (20.2.0)
+Requirement already satisfied: pluggy<1.0.0a1,>=0.12 in /usr/local/lib/python3.6/site-packages (from pytest==6.2.1->-r requirements-dev.txt (line 6)) (0.13.1)
+Requirement already satisfied: py>=1.8.2 in /usr/local/lib/python3.6/site-packages (from pytest==6.2.1->-r requirements-dev.txt (line 6)) (1.9.0)
+Collecting iniconfig
+  Downloading iniconfig-1.1.1-py2.py3-none-any.whl (5.0 kB)
+Collecting filelock>=3.0.0
+  Downloading filelock-3.0.12-py3-none-any.whl (7.6 kB)
+Collecting virtualenv!=20.0.0,!=20.0.1,!=20.0.2,!=20.0.3,!=20.0.4,!=20.0.5,!=20.0.6,!=20.0.7,>=16.0.0
+  Downloading virtualenv-20.4.0-py2.py3-none-any.whl (5.7 MB)
+Requirement already satisfied: six>=1.14.0 in /usr/local/lib/python3.6/site-packages (from tox<4.0.0->-r requirements-dev.txt (line 8)) (1.15.0)
+Requirement already satisfied: python-dateutil>=2.7.3 in /usr/local/lib/python3.6/site-packages (from pandas==1.1.0->-r requirements-dev.txt (line 19)) (2.8.1)
+Requirement already satisfied: pytz>=2017.2 in /usr/local/lib/python3.6/site-packages (from pandas==1.1.0->-r requirements-dev.txt (line 19)) (2020.1)
+Collecting PTable
+  Downloading PTable-0.9.2.tar.gz (31 kB)
+Collecting itsdangerous>=0.24
+  Downloading itsdangerous-1.1.0-py2.py3-none-any.whl (16 kB)
+Requirement already satisfied: Werkzeug>=0.15 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.6.0.dev0) (1.0.1)
+Requirement already satisfied: Jinja2>=2.10.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.6.0.dev0) (2.11.2)
+Requirement already satisfied: pyrsistent>=0.14.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->seldon-core==1.6.0.dev0) (0.17.3)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.6.0.dev0) (3.0.4)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.6.0.dev0) (2.10)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.6.0.dev0) (1.25.10)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.6.0.dev0) (2020.6.20)
+Collecting threadloop<2,>=1
+  Downloading threadloop-1.0.2.tar.gz (4.9 kB)
+Collecting thrift
+  Downloading thrift-0.13.0.tar.gz (59 kB)
+Requirement already satisfied: tornado>=4.3 in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.5.0,>=4.1.0->seldon-core==1.6.0.dev0) (6.0.4)
+Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.6/site-packages (from importlib-metadata; python_version < "3.8"->flake8==3.8.1->-r requirements-dev.txt (line 3)) (3.3.0)
+Requirement already satisfied: pyparsing>=2.0.2 in /usr/local/lib/python3.6/site-packages (from packaging->pytest==6.2.1->-r requirements-dev.txt (line 6)) (2.4.7)
+Collecting importlib-resources>=1.0; python_version < "3.7"
+  Downloading importlib_resources-5.1.0-py3-none-any.whl (24 kB)
+Collecting distlib<1,>=0.3.1
+  Downloading distlib-0.3.1-py2.py3-none-any.whl (335 kB)
+Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from Jinja2>=2.10.1->Flask<2.0.0->seldon-core==1.6.0.dev0) (1.1.1)
+Building wheels for collected packages: black, Flask-OpenTracing, opentracing, jaeger-client, grpcio-reflection, PTable, threadloop, thrift
+  Building wheel for black (PEP 517): started
+  Building wheel for black (PEP 517): finished with status 'done'
+  Created wheel for black: filename=black-20.8b1-py3-none-any.whl size=124184 sha256=9c9cf8918647c932a74f110e1e9609bcd34b3f7e41881e3e6879bf4adbf76e55
+  Stored in directory: /builder/home/.cache/pip/wheels/dd/c8/94/e774504958e4667180d81202d1d45cdc35d6222ae39229871b
+  Building wheel for Flask-OpenTracing (setup.py): started
+  Building wheel for Flask-OpenTracing (setup.py): finished with status 'done'
+  Created wheel for Flask-OpenTracing: filename=Flask_OpenTracing-1.1.0-py3-none-any.whl size=9071 sha256=3ed4a6a7d072c9677c0efc5820e3ad86a0f6a8147f06896bb097bd02c25929c7
+  Stored in directory: /builder/home/.cache/pip/wheels/ad/4b/2d/24ff0da0a0b53c7c77ce59b843bcceaf644c88703241e59615
+  Building wheel for opentracing (setup.py): started
+  Building wheel for opentracing (setup.py): finished with status 'done'
+  Created wheel for opentracing: filename=opentracing-2.4.0-py3-none-any.whl size=51400 sha256=cdd966d787a70ae331a620d8d8f5b4f354d03b33ef529b91256b066ce67e7e51
+  Stored in directory: /builder/home/.cache/pip/wheels/83/73/4c/0e331f57d4702becb1fca9d9148277aca96d127bd838faf85e
+  Building wheel for jaeger-client (setup.py): started
+  Building wheel for jaeger-client (setup.py): finished with status 'done'
+  Created wheel for jaeger-client: filename=jaeger_client-4.4.0-py3-none-any.whl size=64325 sha256=d60e0a0180d0d29e43e232e1b1f2c266d6bb11d0a19e750d3e95f3c365fd0288
+  Stored in directory: /builder/home/.cache/pip/wheels/6e/ea/ec/560f1cffece42c70b9c68b1dc3519c769883650396adcb90b7
+  Building wheel for grpcio-reflection (setup.py): started
+  Building wheel for grpcio-reflection (setup.py): finished with status 'done'
+  Created wheel for grpcio-reflection: filename=grpcio_reflection-1.34.1-py3-none-any.whl size=14415 sha256=79fb39d1bb87e53e613f9963501130a4301eb080b423c26da1e875c9985c1578
+  Stored in directory: /builder/home/.cache/pip/wheels/9b/84/80/81f4dc4afff82cce892567df37472395abf1a1bb675caec1ec
+  Building wheel for PTable (setup.py): started
+  Building wheel for PTable (setup.py): finished with status 'done'
+  Created wheel for PTable: filename=PTable-0.9.2-py3-none-any.whl size=22907 sha256=fb9ca88b9af31a4c4560a94f0545298265d68112d6ac37dd356d19160c636ec0
+  Stored in directory: /builder/home/.cache/pip/wheels/f3/65/67/71f473ec87ea4554d1bdfb1b5128cfe1414c2b113b72a1ee8e
+  Building wheel for threadloop (setup.py): started
+  Building wheel for threadloop (setup.py): finished with status 'done'
+  Created wheel for threadloop: filename=threadloop-1.0.2-py3-none-any.whl size=3425 sha256=5950b6029b8c8315c3809bbc8df14c86cbab69f83c68ff2ff49e2be2b0acf07f
+  Stored in directory: /builder/home/.cache/pip/wheels/02/54/65/9f87de48fe8fcaaee30f279973d946ad55f9df56b93b3e78da
+  Building wheel for thrift (setup.py): started
+  Building wheel for thrift (setup.py): finished with status 'done'
+  Created wheel for thrift: filename=thrift-0.13.0-cp36-cp36m-linux_x86_64.whl size=483919 sha256=5aa12d1cb2a7d5675942d18d31ee1210346aae30cc5f06a4e6cf92ab0fb25ee8
+  Stored in directory: /builder/home/.cache/pip/wheels/e0/38/fc/472fe18756b177b42096961f8bd3ff2dc5c5620ac399fce52d
+Successfully built black Flask-OpenTracing opentracing jaeger-client grpcio-reflection PTable threadloop thrift
+Installing collected packages: toml, click, mypy-extensions, regex, appdirs, dataclasses, typed-ast, pathspec, black, pyflakes, mccabe, pycodestyle, flake8, mypy, Pillow, iniconfig, pytest, coverage, pytest-cov, filelock, importlib-resources, distlib, virtualenv, tox, grpcio-tools, mypy-protobuf, tenacity, pandas, PTable, pip-licenses, itsdangerous, Flask, Flask-cors, redis, flatbuffers, opentracing, Flask-OpenTracing, threadloop, thrift, jaeger-client, grpcio-opentracing, grpcio-reflection, gunicorn, seldon-core
+  Attempting uninstall: Pillow
+    Found existing installation: Pillow 7.2.0
+    Uninstalling Pillow-7.2.0:
+      Successfully uninstalled Pillow-7.2.0
+  Attempting uninstall: pytest
+    Found existing installation: pytest 5.3.1
+    Uninstalling pytest-5.3.1:
+      Successfully uninstalled pytest-5.3.1
+  Attempting uninstall: coverage
+    Found existing installation: coverage 4.5.4
+    Uninstalling coverage-4.5.4:
+      Successfully uninstalled coverage-4.5.4
+  Attempting uninstall: pytest-cov
+    Found existing installation: pytest-cov 2.8.1
+    Uninstalling pytest-cov-2.8.1:
+      Successfully uninstalled pytest-cov-2.8.1
+  Attempting uninstall: grpcio-tools
+    Found existing installation: grpcio-tools 1.32.0
+    Uninstalling grpcio-tools-1.32.0:
+      Successfully uninstalled grpcio-tools-1.32.0
+  Attempting uninstall: tenacity
+    Found existing installation: tenacity 6.0.0
+    Uninstalling tenacity-6.0.0:
+      Successfully uninstalled tenacity-6.0.0
+  Attempting uninstall: pandas
+    Found existing installation: pandas 1.1.3
+    Uninstalling pandas-1.1.3:
+      Successfully uninstalled pandas-1.1.3
+  Running setup.py develop for seldon-core
+Successfully installed Flask-1.1.2 Flask-OpenTracing-1.1.0 Flask-cors-3.0.10 PTable-0.9.2 Pillow-8.1.0 appdirs-1.4.4 black-20.8b1 click-7.1.2 coverage-5.3.1 dataclasses-0.8 distlib-0.3.1 filelock-3.0.12 flake8-3.8.1 flatbuffers-1.12 grpcio-opentracing-1.1.4 grpcio-reflection-1.34.1 grpcio-tools-1.33.2 gunicorn-20.0.4 importlib-resources-5.1.0 iniconfig-1.1.1 itsdangerous-1.1.0 jaeger-client-4.4.0 mccabe-0.6.1 mypy-0.790 mypy-extensions-0.4.3 mypy-protobuf-1.22 opentracing-2.4.0 pandas-1.1.0 pathspec-0.8.1 pip-licenses-3.1.0 pycodestyle-2.6.0 pyflakes-2.2.0 pytest-6.2.1 pytest-cov-2.10.1 redis-3.5.3 regex-2020.11.13 seldon-core tenacity-6.3.1 threadloop-1.0.2 thrift-0.13.0 toml-0.10.2 tox-3.21.2 typed-ast-1.4.2 virtualenv-20.4.0
+ERROR: After October 2020 you may experience errors when installing or updating packages. This is because pip will change the way that it resolves dependency conflicts.
+
+We recommend you use --use-feature=2020-resolver to test your packages with the new resolver before it becomes the default.
+
+grpcio-tools 1.33.2 requires grpcio>=1.33.2, but you'll have grpcio 1.32.0 which is incompatible.
+alibi 0.5.2 requires tensorflow>=2.0, but you'll have tensorflow 1.15.4 which is incompatible.
+grpcio-reflection 1.34.1 requires grpcio>=1.34.1, but you'll have grpcio 1.32.0 which is incompatible.
+WARNING: You are using pip version 20.2.3; however, version 20.3.3 is available.
+You should consider upgrading via the '/usr/local/bin/python -m pip install --upgrade pip' command.
+make[1]: Leaving directory '/workspace/source/python'
+# Check for links reported as broken, ignoring 429 (too many requests)
+LINKCHECK=true sphinx-build \
+	-b linkcheck \
+	 -j auto -n \
+	"source" \
+	"_build"
+Running Sphinx v3.2.1
+fatal: No names found, cannot describe anything.
+making output directory... done
+loading intersphinx inventory from https://docs.python.org/objects.inv...
+intersphinx inventory has moved: https://docs.python.org/objects.inv -> https://docs.python.org/3/objects.inv
+Creating file /workspace/source/doc/source/python/api/seldon_core.rst.
+Creating file /workspace/source/doc/source/python/api/seldon_core.proto.rst.
+Creating file /workspace/source/doc/source/python/api/modules.rst.
+building [mo]: targets for 0 po files that are out of date
+building [linkcheck]: targets for 174 source files that are out of date
+updating environment: [new config] 174 added, 0 changed, 0 removed
+reading sources... [  5%] R/README .. analytics/outlier_detection
+reading sources... [ 11%] analytics/routers .. charts/seldon-single-model
+reading sources... [ 16%] cpp/README .. examples/ambassador_circuit_breakers
+reading sources... [ 22%] examples/ambassador_custom .. examples/bench_svcOrch
+reading sources... [ 27%] examples/bench_tensorflow .. examples/dvc
+reading sources... [ 33%] examples/explainer_examples .. examples/jenkins_classic
+reading sources... [ 38%] examples/jenkins_x .. examples/metadata_schema
+reading sources... [ 44%] examples/metrics .. examples/outlier_combiner
+reading sources... [ 50%] examples/pachyderm-simple .. examples/seldon_client
+reading sources... [ 55%] examples/seldon_core_setup .. go/go_wrapper_link
+reading sources... [ 61%] graph/annotations .. graph/private_registries
+reading sources... [ 66%] graph/protocols .. nodejs/README
+reading sources... [ 72%] python/developer_notes .. reference/apis/index
+reading sources... [ 77%] reference/apis/internal-api .. reference/helm
+reading sources... [ 83%] reference/images .. reference/upgrading
+reading sources... [ 88%] servers/batch .. streaming/knative_eventing
+reading sources... [ 94%] tutorials/blogs .. workflow/serving
+reading sources... [100%] workflow/troubleshooting .. wrappers/s2i
+
+waiting for workers...
+/workspace/source/doc/source/python/index.rst:12: WARNING: toctree contains reference to nonexisting document 'python/api/modules'
+/workspace/source/doc/source/reference/release-highlights.rst:5: WARNING: toctree contains reference to excluded document 'reference/release-0.4.0'
+/workspace/source/doc/source/reference/release-highlights.rst:5: WARNING: toctree contains reference to excluded document 'reference/release-0.3.0'
+/workspace/source/doc/source/reference/release-highlights.rst:5: WARNING: toctree contains reference to excluded document 'reference/release-0.2.7'
+/workspace/source/doc/source/reference/release-highlights.rst:5: WARNING: toctree contains reference to excluded document 'reference/release-0.2.6'
+/workspace/source/doc/source/reference/release-highlights.rst:5: WARNING: toctree contains reference to excluded document 'reference/release-0.2.5'
+/workspace/source/doc/source/reference/release-highlights.rst:5: WARNING: toctree contains reference to excluded document 'reference/release-0.2.3'
+/workspace/source/doc/source/index.rst:73: WARNING: toctree contains reference to excluded document 'reference/changelog'
+/workspace/source/doc/source/index.rst:165: WARNING: toctree contains reference to nonexisting document 'python/api/modules'
+looking for now-outdated files... none found
+pickling environment... done
+checking consistency... done
+preparing documents... done
+writing output... [  0%] R/README
+
+(line  171) ok        https://github.com/SeldonIO/seldon-core/tree/master/incubating/wrappers/s2i/R/test/model-template-app
+(line  172) -ignored- ../examples/notebooks.html
+(line   96) ok        https://github.com/openshift/source-to-image/blob/master/docs/cli.md#s2i-build
+(line  112) ok        https://github.com/seldonio/seldon-core
+(line    5) ok        https://github.com/openshift/source-to-image
+(line   12) ok        https://github.com/openshift/source-to-image#installation
+(line  178) ok        https://github.com/SeldonIO/seldon-core/tree/master/incubating/wrappers/s2i/R/test/router-template-app
+(line  184) ok        https://github.com/SeldonIO/seldon-core/tree/master/incubating/wrappers/s2i/R/test/transformer-template-app
+writing output... [  1%] R/r_wrapping_docker
+
+(line  139) -ignored- ../examples/notebooks.html
+(line  145) ok        https://github.com/seldonio/seldon-core/tree/master/incubating/wrappers/s2i/R/test/router-template-app
+(line  151) ok        https://github.com/seldonio/seldon-core/tree/master/incubating/wrappers/s2i/R/test/transformer-template-app
+(line   58) ok        https://github.com/kubeflow/example-seldon/blob/master/models/r_mnist/runtime/Dockerfile
+(line   56) ok        https://www.r-bloggers.com/2019/01/docker-images-for-r-r-base-versus-r-apt/
+writing output... [  1%] analytics/analytics
+
+(line   45) -ignored- http://localhost:3000/dashboard/db/prediction-analytics
+(line   59) -ignored- http://localhost:3001/
+(line   64) -ignored- ../examples/metrics.html
+(line   27) -ignored- ./dashboard.png
+(line  181) -ignored- ../python/index.html
+(line  186) -ignored- ../examples/custom_metrics.html
+(line  171) ok        https://prometheus.io/docs/practices/naming/
+(line  150) ok        https://github.com/SeldonIO/seldon-core/blob/master/helm-charts/seldon-core-analytics/files/prometheus/prometheus-config.yaml
+(line  173) ok        https://micrometer.io/
+writing output... [  2%] analytics/cicd-mlops
+
+(line    8) -ignored- ../images/cicd-seldon.jpg
+(line   26) -ignored- ../examples/jenkins_classic.html
+(line   27) -ignored- ../examples/jenkins_x.html
+writing output... [  2%] analytics/drift_detection
+
+(line    7) -ignored- ../examples/drift_cifar10.html
+(line    3) -ignored- analytics.png
+writing output... [  3%] analytics/explainers
+
+(line    3) -ignored- cat.png
+(line    3) -ignored- cat_explanation.png
+(line   18) -ignored- ../examples/explainer_examples.html
+(line   28) ok        https://pypi.org/project/dill/
+(line   27) ok        https://docs.seldon.io/projects/alibi/en/latest/index.html
+(line   16) ok        https://github.com/SeldonIO/alibi
+writing output... [  4%] analytics/kubeflow
+
+(line   11) -ignored- ../wrappers/language_wrappers.html
+(line    7) ok        https://docs.seldon.io/projects/seldon-core/en/latest/
+(line    9) ok        https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html
+writing output... [  4%] analytics/log_level
+
+(line   37) -ignored- ../python/index
+(line   37) -ignored- ../servers/sklearn
+(line   37) -ignored- ../servers/xgboost
+(line   37) -ignored- ../servers/mlflow
+writing output... [  5%] analytics/logging
+
+(line   75) -ignored- ../examples/payload_logging.html
+writing output... [  5%] analytics/outlier_detection
+
+(line    7) -ignored- ../examples/outlier_cifar10.html
+(line    3) -ignored- analytics.png
+writing output... [  6%] analytics/routers
+
+(line   20) ok        https://en.wikipedia.org/wiki/Multi-armed_bandit#Semi-uniform_strategies
+(line   23) ok        https://github.com/SeldonIO/seldon-core/tree/master/components/routers/epsilon-greedy
+(line   38) ok        https://github.com/SeldonIO/seldon-core/tree/master/components/routers/epsilon-greedy
+(line   24) ok        https://github.com/SeldonIO/seldon-core/tree/master/components/routers/thompson-sampling
+(line   60) ok        https://github.com/SeldonIO/seldon-core/issues/1823
+writing output... [  6%] charts/seldon-abtest
+
+(line   43) ok        https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-abtest
+(line    3) ok        https://img.shields.io/static/v1?label=Version&message=0.2.0&color=informational&style=flat-square
+(line   36) ok        https://github.com/SeldonIO/seldon-core
+(line   42) ok        https://github.com/SeldonIO/seldon-core
+(line    3) ok        https://img.shields.io/static/v1?label=Version&message=0.2.0&color=informational&style=flat-square
+writing output... [  7%] charts/seldon-core-analytics
+
+(line   50) ok        https://charts.helm.sh/stable
+(line   53) ok        https://charts.helm.sh/stable
+(line   39) ok        https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core-analytics
+(line    3) ok        https://img.shields.io/static/v1?label=Version&message=1.5.0--dev&color=informational&style=flat-square
+(line    3) ok        https://img.shields.io/static/v1?label=Version&message=1.5.0--dev&color=informational&style=flat-square
+writing output... [  8%] charts/seldon-core-loadtesting
+
+(line   37) ok        https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core-loadtesting
+writing output... [  8%] charts/seldon-core-operator
+
+(line   35) ok        https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core-operator
+(line   36) ok        https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html
+writing output... [  9%] charts/seldon-mab
+
+(line   45) ok        https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-mab
+writing output... [  9%] charts/seldon-od-model
+
+(line   43) ok        https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-od-model
+writing output... [ 10%] charts/seldon-od-transformer
+
+(line   43) ok        https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-od-transformer
+writing output... [ 10%] charts/seldon-openvino
+
+(line   46) ok        https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-openvino
+(line    3) ok        https://img.shields.io/static/v1?label=Version&message=0.1&color=informational&style=flat-square
+(line    3) ok        https://img.shields.io/static/v1?label=Version&message=0.1&color=informational&style=flat-square
+writing output... [ 11%] charts/seldon-single-model
+
+(line   43) ok        https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-single-model
+writing output... [ 12%] cpp/README
+
+(line   13) -ignored- ../examples/cpp_simple
+(line   14) -ignored- ../examples/cpp_advanced
+(line   16) -ignored- ../python
+writing output... [ 12%] developer/build-using-private-repo
+
+(line   13) ok        https://github.com/SeldonIO/k8s-local-docker-registry
+writing output... [ 13%] developer/community
+
+(line   29) -ignored- https://calendar.google.com/event?action=TEMPLATE&tmeid=MXBtNzI1cjk0dG9kczhsZTRkcWlmcm1kdjVfMjAyMDA3MDlUMTUwMDAwWiBzZWxkb24uaW9fbTRuMnZtcmZubDI3M3FsczVnYjlwNjVpMHNAZw&tmsrc=seldon.io_m4n2vmrfnl273qls5gb9p65i0s%40group.calendar.google.com&scp=ALL
+(line   30) -ignored- ../seldon_core_working_group.ics
+(line    8) redirect  https://join.slack.com/t/*********/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU - with Found to https://*********.slack.com/join/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU
+(line   28) ok        https://docs.google.com/document/d/1gAmiJoD-1NHSr0gvDQBhYGR5ryrgWVWRu3nOOxPdKJk/edit?usp=sharing
+writing output... [ 13%] developer/contributing
+
+(line   31) ok        https://prow.k8s.io/command-help#release_note_none
+(line  112) ok        https://google.github.io/styleguide/javaguide.html
+(line   99) ok        https://pre-commit.com/#install
+(line   93) ok        https://pre-commit.com/
+(line   84) ok        https://github.com/kubernetes/release/blob/master/cmd/release-notes/README.md
+(line  117) ok        https://checkstyle.org/beginning_development.html
+(line   41) ok        https://github.com/SeldonIO/seldon-core/blob/master/.github/PULL_REQUEST_TEMPLATE.md
+(line  145) ok        https://docs.pytest.org/en/latest/
+(line  112) ok        https://github.com/checkstyle/checkstyle
+(line  145) ok        https://tox.readthedocs.io/en/latest/
+(line  117) ok        https://github.com/google/google-java-format#using-the-formatter
+(line  155) ok        https://github.com/SeldonIO/seldon-core/blob/master/python/setup.cfg
+(line  125) ok        https://github.com/psf/black
+(line  128) ok        https://github.com/psf/black#editor-integration
+(line  181) ok        https://github.com/kubernetes-sigs/kind
+(line  186) ok        https://docs.seldon.io/projects/seldon-core/en/latest/developer/e2e.html
+writing output... [ 14%] developer/e2e
+
+(line   21) ok        https://docs.pytest.org/en/latest/getting-started.html#install-pytest
+(line   24) ok        https://grpc.io/docs/languages/python/quickstart/#grpc-tools
+(line   19) ok        https://kubernetes.io/docs/tasks/tools/install-kubectl/
+(line   17) ok        https://github.com/kubernetes-sigs/kustomize/blob/master/docs/INSTALL.md
+(line  116) redirect  http://doc.pytest.org/en/latest/example/markers.html - with Found to https://docs.pytest.org/en/latest/example/markers.html
+writing output... [ 14%] developer/readme
+
+(line   15) ok        https://kind.sigs.k8s.io/
+(line   13) ok        https://book.kubebuilder.io/
+(line    5) ok        https://github.com/SeldonIO/seldon-core/blob/master/CODE_OF_CONDUCT.md
+(line   66) ok        https://github.com/joeyespo/grip
+(line   65) redirect  https://github.com/skywinder/github-changelog-generator - permanently to https://github.com/skywinder/gitlab-changelog-generator
+writing output... [ 15%] developer/roadmap
+
+(line   11) ok        https://github.com/SeldonIO/seldon-core/projects/17
+(line   12) ok        https://github.com/SeldonIO/seldon-core/projects/20
+(line   10) ok        https://github.com/SeldonIO/seldon-core/projects/16
+(line    5) ok        https://github.com/SeldonIO/seldon-core/projects/19
+(line   13) ok        https://github.com/SeldonIO/seldon-core/projects/30
+writing output... [ 16%] examples/alibaba_ack_deep_mnist
+
+(line  723) ok        https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Install-Seldon-Core
+(line  723) ok        https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Ambassador
+(line  723) ok        https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html
+(line  723) ok        https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Setup-Cluster
+(line 1408) ok        https://docs.seldon.io/projects/seldon-core/en/latest/examples/notebooks.html
+(line  666) ok        https://www.alibabacloud.com/help/doc-detail/95108.htm
+(line  709) redirect  https://www.alibabacloud.com/blog/up-and-running-with-alibaba-cloud-container-registry_593765 - with Found to https://www.alibabacloud.com/notfound
+writing output... [ 16%] examples/ambassador_canary
+
+writing output... [ 17%] examples/ambassador_circuit_breakers
+
+writing output... [ 17%] examples/ambassador_custom
+
+writing output... [ 18%] examples/ambassador_headers
+
+writing output... [ 18%] examples/ambassador_shadow
+
+writing output... [ 19%] examples/argo_workflows_batch
+
+(line   41) ok        https://docs.seldon.io/projects/seldon-core/en/latest/examples/minio_setup.html
+(line  132) ok        https://github.com/argoproj/argo#quickstart
+(line   36) ok        https://github.com/argoproj/argo/issues/2376#issuecomment-595593237
+writing output... [ 20%] examples/argo_workflows_hdfs_batch
+
+(line   64) ok        https://pypi.org/project/hdfs/
+(line   47) ok        https://artifacthub.io/packages/helm/gradiant/hdfs
+writing output... [ 20%] examples/autoscaling_example
+
+(line   24) ok        https://github.com/kubernetes-sigs/kind/issues/398
+writing output... [ 21%] examples/aws_eks_deep_mnist
+
+(line  621) ok        https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html
+(line  847) ok        https://docs.aws.amazon.com/AmazonECR/latest/userguide/what-is-ecr.html
+(line  861) ok        https://us-west-2.console.aws.amazon.com/ecr/repositories
+writing output... [ 21%] examples/azure_aks_deep_mnist
+
+(line  679) redirect  https://portal.azure.com/#blade/HubsExtension/BrowseResourceBlade/resourceType/Microsoft.ContainerRegistry%2Fregistries - with Found to https://portal.azure.com/Error/UE_404?aspxerrorpath=/
+(line  560) ok        https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest
+(line  681) ok        https://docs.microsoft.com/en-us/azure/container-registry/container-registry-get-started-azure-cli
+writing output... [ 22%] examples/backwards_compatibility
+
+writing output... [ 22%] examples/bench_svcOrch
+
+(line   11) ok        https://www.tensorflow.org/datasets/catalog/tf_flowers
+writing output... [ 23%] examples/bench_tensorflow
+
+writing output... [ 24%] examples/chainer_mnist
+
+(line 1825) ok        https://github.com/openshift/source-to-image/releases/tag/v1.1.13
+(line   20) ok        https://github.com/kubernetes/minikube
+(line   19) redirect  https://github.com/kubernetes/helm - permanently to https://github.com/helm/helm
+(line 1825) ok        https://github.com/SeldonIO/seldon-core/issues/253
+writing output... [ 24%] examples/cifar10_kafka
+
+(line  212) ok        https://docs.seldon.io/projects/seldon-core/en/latest/analytics/analytics.html
+(line  383) ok        https://github.com/tensorflow/serving/blob/master/tensorflow_serving/apis/predict.proto
+(line   25) ok        https://cloud.google.com/storage/docs/gsutil_install
+writing output... [ 25%] examples/cpp_advanced
+
+(line   13) ok        https://docs.seldon.io/projects/seldon-core/en/latest/examples/cpp_simple.html
+(line   15) ok        https://docs.seldon.io/projects/seldon-core/en/latest/cpp/README.html
+writing output... [ 25%] examples/cpp_simple
+
+(line   13) ok        https://docs.seldon.io/projects/seldon-core/en/latest/examples/cpp_advanced.html
+writing output... [ 26%] examples/custom_init_container
+
+writing output... [ 27%] examples/custom_metrics
+
+writing output... [ 27%] examples/customdata_example
+
+(line  252) ok        https://github.com/SeldonIO/seldon-core/blob/master/notebooks/seldon_core_setup.ipynb
+writing output... [ 28%] examples/drift_cifar10
+
+(line   11) ok        https://docs.seldon.io/projects/alibi-detect/en/latest/
+(line   11) ok        https://docs.seldon.io/projects/alibi-detect/en/latest/examples/cd_ks_cifar10.html
+(line   11) ok        https://github.com/SeldonIO/alibi-detect
+(line   16) ok        https://knative.dev/docs/install/
+writing output... [ 28%] examples/dvc
+
+(line   46) ok        https://dvc.org/doc/install
+writing output... [ 29%] examples/explainer_examples
+
+(line   15) ok        https://docs.seldon.io/projects/alibi/en/latest/methods/Anchors.html
+(line   15) ok        https://docs.seldon.io/projects/alibi/en/latest/methods/Anchors.html
+(line   15) ok        https://docs.seldon.io/projects/alibi/en/latest/methods/Anchors.html
+(line   15) ok        https://docs.seldon.io/projects/alibi/en/latest/methods/Anchors.html
+(line   34) ok        https://pypi.org/project/alibi/
+(line   36) ok        https://pypi.org/project/Pillow/
+(line   36) ok        https://pypi.org/project/tensorflow/
+(line   36) ok        https://pypi.org/project/matplotlib/
+(line   15) ok        https://docs.seldon.io/projects/alibi/en/latest/methods/Anchors.html
+(line  871) ok        https://github.com/kubeflow/pipelines/blob/master/samples/contrib/e2e-outlier-drift-explainer/seldon/README.md#cifar10-image-classification-model
+(line  149) ok        https://docs.seldon.io/projects/alibi/en/latest/examples/anchor_tabular_adult.html
+(line  523) ok        https://docs.seldon.io/projects/alibi/en/latest/examples/anchor_text_movie.html
+(line 1265) ok        https://docs.seldon.io/projects/alibi/en/latest/examples/kernel_shap_wine_lr.html
+(line 2354) ok        https://docs.seldon.io/projects/alibi/en/latest/examples/integrated_gradients_mnist.html
+(line 2716) ok        https://docs.seldon.io/projects/alibi/en/latest/examples/interventional_tree_shap_adult_xgb.html
+writing output... [ 29%] examples/feedback_reward_custom_metrics
+
+writing output... [ 30%] examples/gpu_tensorflow_deep_mnist
+
+(line  470) redirect  https://github.com/kubernetes/helm - permanently to https://github.com/helm/helm
+writing output... [ 31%] examples/graph-metadata
+
+writing output... [ 31%] examples/h2o_mojo
+
+(line   19) ok        https://github.com/helm/helm
+(line   22) ok        https://www.h2o.ai/download/
+writing output... [ 32%] examples/helm_examples
+
+writing output... [ 32%] examples/iris
+
+writing output... [ 33%] examples/istio
+
+(line    3) -ignored- ./svc-graph-istio.png
+(line    3) -ignored- ./svc-graph.png
+(line    5) ok        https://istio.io/
+writing output... [ 33%] examples/istio_examples
+
+(line   27) ok        https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Istio
+(line   13) ok        https://istio.io/latest/docs/setup/getting-started/#download
+writing output... [ 34%] examples/jenkins_classic
+
+(line  106) ok        https://github.com/SeldonIO/seldon-gitops
+(line  174) redirect  https://jenkins.io/doc/book/pipeline/ - permanently to https://www.jenkins.io/doc/book/pipeline/
+(line  908) ok        https://argoproj.github.io/argo-cd/
+(line  922) ok        https://argoproj.github.io/argo-cd/getting_started/#1-install-argo-cd
+(line  759) ok        https://github.com/SeldonIO/sig-mlops-jenkins-classic/
+(line  983) ok        https://argoproj.github.io/argo-cd/user-guide/private-repositories/#tls-client-certificates-for-https-repositories
+(line  944) ok        https://argoproj.github.io/argo-cd/cli_installation/
+(line  983) ok        https://argoproj.github.io/argo-cd/user-guide/private-repositories/#https-username-and-password-credential
+(line  868) ok        https://support.cloudbees.com/hc/en-us/articles/115003015691-GitHub-Webhook-Non-Multibranch-Jobs
+(line  334) ok        https://github.com/jenkinsci/kubernetes-plugin
+(line  983) redirect  https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line - permanently to https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token
+writing output... [ 35%] examples/jenkins_x
+
+(line   54) ok        https://jenkins-x.io/docs/getting-started/setup/boot/
+(line 1222) ok        https://jenkins-x.io/docs/
+(line   53) ok        https://github.com/jenkins-x/**/
+writing output... [ 35%] examples/kafka_spacy_sklearn
+
+writing output... [ 36%] examples/keda
+
+(line   15) ok        https://keda.sh/docs/2.0/scalers/
+(line   13) ok        https://keda.sh/
+writing output... [ 36%] examples/knative_eventing_streaming
+
+(line   27) ok        https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html#ingress-support
+(line   27) ok        https://knative.dev/docs/install/any-kubernetes-cluster/
+(line   27) ok        https://istio.io/latest/docs/setup/install/
+writing output... [ 37%] examples/kubeflow_pipelines_batch
+
+(line  516) -ignored- http://localhost:8000
+(line   13) ok        https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html#install-seldon-core-with-helm
+writing output... [ 37%] examples/kubeflow_seldon_e2e_pipeline
+
+(line  940) -ignored- http://localhost/_/pipeline-dashboard
+(line 1024) -ignored- http://localhost/_/pipeline-dashboard
+(line 1677) -ignored- http://localhost:8000
+(line 2489) -ignored- http://localhost:32445/d/3swM2iGWz/prediction-analytics?refresh=5s&orgId=1
+(line   33) ok        https://www.kubeflow.org/docs/pipelines/installation/standalone-deployment/#deploying-kubeflow-pipelines
+writing output... [ 38%] examples/max_grpc_msg_size
+
+writing output... [ 39%] examples/metadata
+
+writing output... [ 39%] examples/metadata_grpc
+
+(line   96) ok        https://docs.seldon.io/projects/seldon-core/en/latest/examples/graph-metadata.html
+writing output... [ 40%] examples/metadata_schema
+
+writing output... [ 40%] examples/metrics
+
+writing output... [ 41%] examples/minio-sklearn
+
+writing output... [ 41%] examples/minio_setup
+
+(line  109) ok        https://docs.min.io/docs/minio-client-quickstart-guide.html
+writing output... [ 42%] examples/mlflow_server_ab_test_ambassador
+
+(line  639) ok        https://docs.seldon.io/projects/seldon-core/en/latest/analytics/analytics.html#helm-analytics-chart
+(line   59) ok        https://pygments.org/docs/cmdline/
+(line   60) ok        http://mama.indstate.edu/users/ice/tree/
+(line   98) ok        https://github.com/mlflow/mlflow/tree/master/examples/sklearn_elasticnet_wine
+(line   37) ok        https://www.youtube.com/watch?v=D6eSfd9w9eA
+(line  760) ok        https://docs.seldon.io/projects/seldon-core/en/latest/examples/mlflow_server_ab_test_ambassador.html
+writing output... [ 43%] examples/multiple_operators
+
+writing output... [ 43%] examples/notebooks
+
+writing output... [ 44%] examples/openvino
+
+(line   11) redirect  https://software.intel.com/en-us/openvino-toolkit - permanently to https://software.intel.com/content/www/us/en/develop/tools/openvino-toolkit.html
+writing output... [ 44%] examples/openvino_ensemble
+
+(line  201) redirect  https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/ - permanently to https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+(line   11) ok        https://github.com/SeldonIO/seldon-core/tree/master/examples/models/openvino_imagenet_ensemble/resources/model
+(line   11) redirect  https://www.intel.ai/introducing-int8-quantization-for-fast-cpu-inference-using-openvino/#gs.lUSgiWKa - permanently to https://www.intel.com/content/www/us/en/artificial-intelligence/posts/introducing-int8-quantization-for-fast-cpu-inference-using-openvino.html
+(line   11) redirect  https://www.intel.ai/intel-deep-learning-boost/#gs.sy7JEtwu - permanently to https://www.intel.com/content/www/us/en/artificial-intelligence/deep-learning-boost.html
+writing output... [ 45%] examples/outlier_cifar10
+
+(line   13) ok        https://docs.seldon.io/projects/alibi-detect/en/latest/examples/od_vae_cifar10.html
+writing output... [ 45%] examples/outlier_combiner
+
+(line  655) ok        https://github.com/SeldonIO/seldon-core/blob/master/examples/outliers/alibi-detect-combiner/train_detector.py
+(line  131) ok        https://github.com/SeldonIO/seldon-core/blob/master/examples/outliers/alibi-detect-combiner/train_classifier.py
+(line   61) ok        https://github.com/SeldonIO/seldon-core/blob/master/examples/outliers/alibi-detect-combiner/requirements-dev.txt
+(line 1152) ok        https://github.com/SeldonIO/seldon-core/blob/master/examples/outliers/alibi-detect-combiner/Makefile
+writing output... [ 46%] examples/pachyderm-simple
+
+(line   11) ok        https://www.seldon.io/tech/products/core/
+(line  330) ok        https://github.com/SeldonIO/seldon-core/tree/master/examples/pachyderm-simple/iris-train-python-svm
+(line  328) ok        https://github.com/pachyderm/pachyderm/tree/master/examples/ml/iris
+(line  330) ok        https://github.com/SeldonIO/seldon-core/blob/master/examples/pachyderm-simple/iris-train-python-svm/Makefile
+(line   30) ok        https://docs.pachyderm.com/latest/getting_started/local_installation/#install-pachctl
+(line   11) redirect  https://pachyderm.io/ - permanently to https://www.pachyderm.com/
+writing output... [ 47%] examples/patch_1_2
+
+writing output... [ 47%] examples/payload_logging
+
+writing output... [ 48%] examples/pdbs_example
+
+(line   71) ok        https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions
+writing output... [ 48%] examples/protocol_examples
+
+writing output... [ 49%] examples/pvc-tfjob
+
+(line   24) ok        https://www.kubeflow.org/docs/started/k8s/
+(line   22) ok        https://github.com/kubeflow/kfserving/tree/master/docs/samples/storage/pvc
+(line   24) ok        https://github.com/SeldonIO/seldon-core/issues/1191#issuecomment-562047298
+(line   22) ok        https://github.com/SeldonIO/seldon-core/issues/1106
+writing output... [ 50%] examples/runtime_metrics_tags
+
+writing output... [ 50%] examples/sagemaker_sklearn
+
+(line   35) ok        https://github.com/aws/amazon-sagemaker-examples/blob/master/sagemaker-python-sdk/scikit_learn_iris/scikit_learn_estimator_example_with_batch_transform.ipynb
+writing output... [ 51%] examples/scale
+
+writing output... [ 51%] examples/seldon_client
+
+(line  137) redirect  https://istio.io/docs/tasks/traffic-management/ingress/secure-ingress-sds/ - permanently to https://istio.io/latest/docs/tasks/traffic-management/ingress/secure-ingress/
+writing output... [ 52%] examples/seldon_core_setup
+
+(line   23) ok        https://pypi.org/project/seldon-core/
+(line  167) ok        https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html#install-ambassador
+(line   23) ok        https://helm.sh/
+(line  245) ok        https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html#install-istio-ingress-gateway
+(line   23) ok        https://kubernetes.io/docs/setup/
+(line  169) ok        https://github.com/SeldonIO/seldon-core/issues/473
+writing output... [ 52%] examples/server_examples
+
+(line  501) ok        https://docs.seldon.io/projects/seldon-core/en/latest/servers/sklearn.html##v2-kfserving-protocol-incubating
+(line   97) ok        https://docs.seldon.io/projects/seldon-core/en/latest/servers/sklearn.html
+(line  767) ok        https://docs.seldon.io/projects/seldon-core/en/latest/servers/xgboost.html##v2-kfserving-protocol-incubating
+(line  769) ok        https://docs.seldon.io/projects/seldon-core/en/latest/graph/protocols.html#v2-kfserving-protocol
+(line  102) ok        https://docs.seldon.io/projects/seldon-core/en/latest/graph/protocols.html#v2-kfserving-protocol
+(line  764) ok        https://docs.seldon.io/projects/seldon-core/en/latest/servers/xgboost.html
+(line  100) ok        https://docs.seldon.io/projects/seldon-core/en/latest/servers/sklearn.html##v2-kfserving-protocol-incubating
+writing output... [ 53%] examples/sklearn_spacy_text_classifier_example
+
+writing output... [ 54%] examples/statsmodels
+
+(line   32) ok        https://raw.githubusercontent.com/jbrownlee/Datasets/master/shampoo.csv
+(line   24) ok        https://docs.seldon.io/projects/seldon-core/en/v1.1.0/workflow/install.html
+(line  400) ok        https://docs.seldon.io/projects/seldon-core/en/v1.1.0/analytics/analytics.html
+(line   26) redirect  https://rb.gy/jgybo9 - permanently to https://computingforgeeks.com/install-source-to-image-toolkit-on-linux/#:~:text=Install%20Source-To-Image%20(,correct%20distribution%20for%20your%20machine.
+(line   28) ok        https://www.statsmodels.org/stable/index.html
+writing output... [ 54%] examples/tensorrt
+
+(line   27) ok        https://github.com/triton-inference-server/server/tree/master/docs/protocol
+(line   23) ok        https://cloud.google.com/kubernetes-engine/docs/how-to/gpus
+writing output... [ 55%] examples/tfserving_mnist
+
+(line 1176) -ignored- http://localhost:3000/dashboard/db/prediction-analytics?refresh=5s&orgId=1
+writing output... [ 55%] examples/timeouts
+
+writing output... [ 56%] examples/tracing
+
+(line   67) ok        https://www.jaegertracing.io/docs/1.18/operator/
+writing output... [ 56%] examples/vegeta_bench_argo_workflows
+
+writing output... [ 57%] go/go_wrapper_link
+
+(line    7) ok        https://github.com/SeldonIO/seldon-core/blob/master/incubating/wrappers/s2i/go/SeldonGoModel.ipynb
+writing output... [ 58%] graph/annotations
+
+writing output... [ 58%] graph/custom_svc_name
+
+writing output... [ 59%] graph/disruption-budgets
+
+writing output... [ 59%] graph/distributed-tracing
+
+(line   85) -ignored- ./jaeger-ui-rest-example.png
+(line   94) -ignored- ./jaeger-ui-grpc-example.png
+(line  107) -ignored- ../examples/tracing.html
+(line   28) ok        https://github.com/jaegertracing/jaeger-client-python
+(line   18) ok        https://github.com/jaegertracing/jaeger-client-java/tree/master/jaeger-core#configuration-via-environment
+writing output... [ 60%] graph/grpc_load_balancing_ambassador
+
+writing output... [ 60%] graph/helm_charts
+
+(line   34) ok        https://docs.seldon.io/projects/seldon-core/en/latest/examples/helm_examples.html
+writing output... [ 61%] graph/inference-graph
+
+(line    3) -ignored- ./inf-graph.png
+writing output... [ 62%] graph/model_rest_grpc_settings
+
+writing output... [ 62%] graph/model_svcorch_sep
+
+writing output... [ 63%] graph/private_registries
+
+(line   49) ok        https://kubernetes.io/docs/concepts/containers/images/#creating-a-secret-with-a-docker-config
+writing output... [ 63%] graph/protocols
+
+(line   22) -ignored- ../examples/protocol_examples.html
+(line   18) -ignored- ../reference/apis/index.html
+(line   31) -ignored- ../examples/protocol_examples.html
+(line   29) ok        https://github.com/tensorflow/serving/blob/master/tensorflow_serving/apis/prediction_service.proto
+(line   98) ok        https://github.com/triton-inference-server/server
+(line   53) ok        https://github.com/triton-inference-server/server
+(line  107) -ignored- ../examples/protocol_examples.html
+(line   28) ok        https://github.com/tensorflow/serving/blob/master/tensorflow_serving/g3doc/api_rest.md
+(line   53) ok        https://github.com/kubeflow/kfserving
+(line  101) ok        https://github.com/seldonio/mlserver
+(line  104) ok        https://github.com/seldonio/mlserver
+writing output... [ 64%] graph/scaling
+
+(line   73) -ignored- ../examples/scale.html
+(line  162) -ignored- ../examples/autoscaling_example.html
+(line  108) -ignored- ../examples/scale.html
+writing output... [ 64%] graph/svcorch
+
+(line   42) -ignored- ../examples/protocol_examples.html
+(line   46) -ignored- ./svcOrch1.png
+(line   30) ok        https://www.tensorflow.org/tfx/serving/api_rest
+(line   33) ok        https://github.com/kubeflow/kfserving/tree/master/docs/predict-api/v2
+(line   27) ok        https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/openapi.html
+writing output... [ 65%] index
+
+(line   49) ok        ./
+(line   50) redirect  https://join.slack.com/t/*********/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU - with Found to https://*********.slack.com/join/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU
+(line   51) -ignored- ./examples/notebooks.html
+(line   52) -ignored- ./developer/community.html#community-calls
+(line   52) -ignored- https://calendar.google.com/event?action=TEMPLATE&tmeid=MXBtNzI1cjk0dG9kczhsZTRkcWlmcm1kdjVfMjAyMDA3MDlUMTUwMDAwWiBzZWxkb24uaW9fbTRuMnZtcmZubDI3M3FsczVnYjlwNjVpMHNAZw&tmsrc=seldon.io_m4n2vmrfnl273qls5gb9p65i0s%40group.calendar.google.com&scp=ALL
+(line   53) -ignored- ./developer/contributing.html
+(line   54) -ignored- ./tutorials/blogs.html
+(line   55) -ignored- ./tutorials/videos.html
+(line   62) ok        https://github.com/kubeflow/pipelines/blob/master/samples/contrib/e2e-outlier-drift-explainer/seldon/README.md
+writing output... [ 66%] ingress/ambassador
+
+(line    5) ok        https://www.getambassador.io/
+(line    5) ok        https://kubernetes.io/blog/2018/06/07/dynamic-ingress-in-kubernetes/
+(line  162) -ignored- ../examples/ambassador_canary.html
+(line  171) -ignored- ../examples/ambassador_shadow.html
+(line   34) ok        https://www.getambassador.io/products/edge-stack/
+(line  195) -ignored- ../examples/ambassador_headers.html
+(line   15) ok        https://www.getambassador.io/docs/latest/topics/install/install-ambassador-oss/
+(line  223) -ignored- ../examples/ambassador_circuit_breakers.html
+(line   34) ok        https://www.getambassador.io/docs/latest/topics/install/
+(line   15) ok        https://www.getambassador.io/products/api-gateway/
+(line  262) -ignored- ../examples/ambassador_custom.html
+(line  225) ok        https://www.getambassador.io/docs/latest/topics/using/circuit-breakers/
+(line  250) ok        https://www.getambassador.io/docs/latest/topics/running/running/#ambassador_id
+(line  173) redirect  https://www.getambassador.io/reference/shadowing/ - permanently to https://www.getambassador.io/docs/latest/topics/using/shadowing/
+(line  197) redirect  https://www.getambassador.io/reference/headers - permanently to https://www.getambassador.io/docs/latest/topics/using/headers/headers/
+writing output... [ 66%] ingress/istio
+
+(line  112) -ignored- ../examples/istio_canary.html
+(line  112) -ignored- ../examples/istio_examples.html
+(line   36) ok        https://istio.io/latest/docs/ops/integrations/certmanager/
+(line    5) redirect  https://istio.io/docs/tasks/traffic-management/ingress/ - permanently to https://istio.io/latest/docs/tasks/traffic-management/ingress/
+writing output... [ 67%] ingress/openshift
+
+writing output... [ 67%] java-jni/README
+
+(line    9) -ignored- ../python
+(line  254) -ignored- ../examples/h2o_mojo.html
+(line  253) ok        https://github.com/SeldonIO/seldon-core/tree/master/incubating/wrappers/s2i/java/test/model-template-app
+writing output... [ 68%] java/README
+
+(line  234) -ignored- ../examples/h2o_mojo.html
+(line  182) redirect  https://github.com/seldonio/seldon-core.git - permanently to https://github.com/seldonio/seldon-core
+writing output... [ 68%] nodejs/README
+
+(line  121) redirect  https://github.com/seldonio/seldon-core.git - permanently to https://github.com/seldonio/seldon-core
+(line  179) -ignored- ../examples/notebooks.html
+writing output... [ 69%] python/developer_notes
+
+(line   54) -ignored- ./python_server.html#configuration
+(line   52) ok        https://github.com/fullstorydev/grpcurl
+(line   52) ok        https://github.com/asdf-vm/asdf-plugins
+writing output... [ 70%] python/index
+
+writing output... [ 70%] python/python_component
+
+(line   62) -ignored- ../examples/notebooks.html
+(line  380) -ignored- ./python_server
+(line  380) -ignored- ../examples/deep_mnist.html
+(line  519) -ignored- ../examples/metadata.html
+(line  520) -ignored- ../examples/minio-sklearn.html
+(line  240) ok        https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+(line  105) ok        https://github.com/SeldonIO/seldon-core/tree/master/components/routers
+(line  489) ok        https://github.com/kubeflow/kfserving/blob/master/docs/predict-api/v2/required_api.md#model-metadata
+(line  489) ok        https://github.com/SeldonIO/seldon-core/issues/1638
+writing output... [ 71%] python/python_module
+
+(line   91) ok        https://github.com/Azure/azure-storage-python/issues/640
+(line   48) ok        https://github.com/SeldonIO/seldon-core/issues/1028
+writing output... [ 71%] python/python_server
+
+(line   11) ok        https://gunicorn.org/
+writing output... [ 72%] python/python_wrapping_docker
+
+(line  148) -ignored- ../examples/notebooks.html
+(line  154) -ignored- ../analytics/routers.html
+(line  161) ok        https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i/python/test/transformer-template-app
+(line  147) ok        https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i/python/test/model-template-app
+(line  155) ok        https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i/python/test/router-template-app
+(line  123) redirect  https://flask.palletsprojects.com/config/#builtin-configuration-values - with Found to https://flask.palletsprojects.com/en/1.1.x/config/
+(line  162) ok        https://github.com/SeldonIO/seldon-core/tree/master/examples/transformers
+(line  170) ok        https://github.com/SeldonIO/seldon-core/tree/master/servers/tfserving
+(line  236) -ignored- ../analytics/analytics.html#custom-metrics
+(line  238) -ignored- ../examples/custom_metrics.html
+(line  178) ok        https://github.com/SeldonIO/seldon-core/blob/master/examples/models/tfserving-mnist/tfserving-mnist.ipynb
+(line  178) ok        https://github.com/SeldonIO/seldon-core/blob/master/examples/models/tfserving-mnist/mnist_tfserving_deployment.json.template
+(line  217) ok        https://github.com/SeldonIO/seldon-core/blob/44f7048efd0f6be80a857875058d23efc4221205/proto/seldon_deployment.proto#L117-L131
+(line   91) ok        https://github.com/keras-team/keras/issues/6462
+writing output... [ 72%] python/python_wrapping_s2i
+
+(line  140) redirect  https://github.com/seldonio/seldon-core.git - permanently to https://github.com/seldonio/seldon-core
+(line  234) -ignored- ../examples/notebooks.html
+(line  240) -ignored- ../analytics/routers.html
+(line  336) -ignored- ../analytics/analytics.html#custom-metrics
+(line  338) -ignored- ../examples/custom_metrics.html
+(line  121) broken    https://github.com/NervanaSystems/ngraph - 429 Client Error: too many requests for url: https://github.com/NervanaSystems/ngraph
+(line  256) broken    https://github.com/SeldonIO/seldon-core/tree/master/servers/tfserving_proxy - 429 Client Error: too many requests for url: https://github.com/SeldonIO/seldon-core/tree/master/servers/tfserving_proxy
+(line  119) broken    https://github.com/tensorflow/tensorflow/issues/20444 - 429 Client Error: too many requests for url: https://github.com/tensorflow/tensorflow/issues/20444
+writing output... [ 73%] python/seldon_client
+
+(line    7) -ignored- ../examples/notebooks.html
+(line   48) -ignored- ../examples/seldon_client.html
+(line   16) -ignored- ./api/seldon_core.html#seldon_core.seldon_client.SeldonClient
+writing output... [ 74%] reference/apis/external-prediction
+
+(line    3) -ignored- ./api.png
+writing output... [ 74%] reference/apis/index
+
+writing output... [ 75%] reference/apis/internal-api
+
+(line    3) -ignored- ./graph.png
+writing output... [ 75%] reference/apis/metadata
+
+(line    3) -ignored- ./metadata.svg
+(line   20) -ignored- ../../examples/metadata_grpc.html
+(line   21) -ignored- ../../examples/metadata_schema.html
+(line   27) -ignored- ../../examples/minio-sklearn.html
+(line   28) -ignored- ../../examples/pachyderm-simple.html
+(line   29) -ignored- ../../examples/dvc.html
+(line   18) -ignored- ../../examples/metadata.html
+(line   87) -ignored- ../../python/python_component.html#incubating-features
+(line  135) -ignored- ./graph-metadata.svg
+(line  187) -ignored- ../../examples/graph-metadata.html
+(line  218) -ignored- ../../examples/metadata_schema.html
+(line   19) -ignored- ../../examples/graph-metadata.html
+(line   87) -ignored- ../../examples/metadata.html
+(line   60) -ignored- ../../examples/minio-sklearn.html
+writing output... [ 76%] reference/apis/openapi
+
+(line   26) -ignored- http://localhost:8080/
+(line   16) -ignored- ./swagger-ui-ambassador.png
+(line    8) broken    https://github.com/SeldonIO/seldon-core/blob/master/openapi/engine.oas3.json - 429 Client Error: too many requests for url: https://github.com/SeldonIO/seldon-core/blob/master/openapi/engine.oas3.json
+(line   39) broken    https://github.com/SeldonIO/seldon-core/blob/master/openapi/engine.oas3.json - 429 Client Error: too many requests for url: https://github.com/SeldonIO/seldon-core/blob/master/openapi/engine.oas3.json
+(line    9) broken    https://github.com/SeldonIO/seldon-core/blob/master/openapi/wrapper.oas3.json - 429 Client Error: too many requests for url: https://github.com/SeldonIO/seldon-core/blob/master/openapi/wrapper.oas3.json
+(line    5) ok        https://www.openapis.org/
+(line   44) broken    https://github.com/SeldonIO/seldon-core/blob/master/openapi/wrapper.oas3.json - 429 Client Error: too many requests for url: https://github.com/SeldonIO/seldon-core/blob/master/openapi/wrapper.oas3.json
+(line   18) ok        https://swagger.io/tools/swagger-ui/
+writing output... [ 77%] reference/apis/prediction
+
+(line   19) broken    https://github.com/SeldonIO/seldon-core/blob/master/proto/prediction.proto - 429 Client Error: too many requests for url: https://github.com/SeldonIO/seldon-core/blob/master/proto/prediction.proto
+writing output... [ 77%] reference/apis/readme
+
+(line   11) -ignored- ./seldon-deployment.md
+writing output... [ 78%] reference/aws-mp-install
+
+(line   24) ok        https://docs.helm.sh/
+(line   16) ok        https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
+(line    7) ok        https://aws.amazon.com/marketplace/seller-profile?id=cec67450-7a7e-43d5-8e5f-61e94e7c9e03&ref=dtl_B07KCNBCHV
+writing output... [ 78%] reference/benchmarking
+
+(line   22) -ignored- ../examples/bench_svcOrch.html
+(line   51) -ignored- ../examples/bench_tensorflow.html
+(line   77) -ignored- ../examples/vegeta_bench_argo_workflows.html
+(line   13) broken    https://github.com/tsenart/vegeta - 429 Client Error: too many requests for url: https://github.com/tsenart/vegeta
+(line   14) ok        https://ghz.sh/
+writing output... [ 79%] reference/concepts
+
+(line   85) ok        https://docs.seldon.io/projects/seldon-core/en/latest/servers/custom.html
+(line  132) ok        https://helm.sh/docs/glossary/
+(line  117) ok        https://www.kubeflow.org/docs/pipelines/overview/concepts/
+(line  137) ok        https://www.jaegertracing.io/docs/1.18/architecture/#terminology
+(line  127) ok        https://kubernetes.io/docs/reference/glossary/?fundamental=true
+(line  122) ok        https://developers.google.com/machine-learning/glossary
+(line  142) ok        https://www.elastic.co/guide/en/elastic-stack-glossary/current/terms.html
+writing output... [ 79%] reference/ga
+
+(line   13) ok        https://www.seldon.io/
+writing output... [ 80%] reference/helm
+
+writing output... [ 81%] reference/images
+
+(line   20) ok        https://hub.docker.com/r/seldonio/executor/tags/
+(line   41) ok        https://hub.docker.com/r/seldonio/sklearnserver_rest/tags/
+(line   16) ok        https://hub.docker.com/r/seldonio/seldon-core-operator/tags/
+(line   38) ok        https://hub.docker.com/r/seldonio/mlflowserver_grpc/tags/
+(line   35) ok        https://hub.docker.com/r/seldonio/mlflowserver_rest/tags/
+(line   44) ok        https://hub.docker.com/r/seldonio/sklearnserver_grpc/tags/
+(line   69) ok        https://hub.docker.com/r/seldonio/seldon-core-s2i-python36/tags/
+(line   65) ok        https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/
+(line   50) ok        https://hub.docker.com/r/seldonio/xgboostserver_grpc/tags/
+(line   47) ok        https://hub.docker.com/r/seldonio/xgboostserver_rest/tags/
+(line   98) broken    https://github.com/SeldonIO/seldon-core/tree/master/integrations/sagemaker - 429 Client Error: too many requests for url: https://github.com/SeldonIO/seldon-core/tree/master/integrations/sagemaker
+(line   96) ok        https://hub.docker.com/r/seldonio/nvidia-inference-server-proxy/tags/
+(line   77) ok        https://hub.docker.com/r/seldonio/seldon-core-s2i-python36-gpu/tags/
+(line   81) ok        https://hub.docker.com/r/seldonio/seldon-core-s2i-python37-gpu/tags/
+(line   73) ok        https://hub.docker.com/r/seldonio/seldon-core-s2i-python37/tags/
+(line   99) ok        https://hub.docker.com/r/seldonio/sagemaker-proxy/tags/
+(line  102) ok        https://hub.docker.com/r/seldonio/tfserving-proxy_rest/tags/
+(line  144) ok        https://hub.docker.com/r/seldonio/seldon-core-s2i-java-build/tags/
+(line  140) ok        https://hub.docker.com/r/seldonio/seldon-core-s2i-python3-ngraph-onnx/tags/
+(line  105) ok        https://hub.docker.com/r/seldonio/tfserving-proxy_grpc/tags/
+(line  148) ok        https://hub.docker.com/r/seldonio/seldon-core-s2i-java-runtime/tags/
+(line  170) broken    https://github.com/SeldonIO/seldon-java-wrapper - 429 Client Error: too many requests for url: https://github.com/SeldonIO/seldon-java-wrapper
+(line  173) broken    https://github.com/SeldonIO/JPMML-utils - 429 Client Error: too many requests for url: https://github.com/SeldonIO/JPMML-utils
+(line  152) ok        https://hub.docker.com/r/seldonio/seldon-core-s2i-r/tags/
+(line  156) ok        https://hub.docker.com/r/seldonio/seldon-core-s2i-nodejs/tags/
+(line  171) ok        https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-wrapper
+(line  192) ok        https://hub.docker.com/r/seldonio/seldon-core-s2i-python2/tags/
+(line  174) ok        https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-jpmml
+writing output... [ 81%] reference/integration_nvidia_link
+
+(line    8) -ignored- ./mnist-graph.png
+(line    5) redirect  https://docs.nvidia.com/deeplearning/sdk/inference-user-guide/index.html - permanently to https://docs.nvidia.com/deeplearning/
+writing output... [ 82%] reference/integration_sagemaker_link
+
+writing output... [ 82%] reference/release-0.4.1
+
+(line    8) -ignored- ../analytics/cat.png
+(line    8) -ignored- ../analytics/cat_explanation.png
+(line   73) -ignored- ../examples/chainer_mnist.html
+(line   67) -ignored- ../examples/explainer_examples.html
+(line   77) redirect  https://join.slack.com/t/*********/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU - with Found to https://*********.slack.com/join/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU
+(line   75) ok        https://access.redhat.com/containers/?tab=overview#/registry.connect.redhat.com/seldonio/seldon-operator-0-4-0
+(line    5) ok        https://github.com/SeldonIO/seldon-core/releases/tag/v0.4.1
+(line   10) ok        https://homes.cs.washington.edu/~marcotcr/aaai18.pdf
+(line   74) redirect  https://jenkins.io/projects/jenkins-x/ - permanently to https://www.jenkins.io/projects/jenkins-x/
+writing output... [ 83%] reference/release-1.0.0
+
+(line    5) ok        https://github.com/SeldonIO/seldon-core/releases/tag/v1.0.0
+writing output... [ 83%] reference/release-1.1.0
+
+(line   10) -ignored- ../graph/protocols.html
+(line   25) -ignored- ../analytics/outlier_detection.html
+(line   26) -ignored- ../analytics/drift_detection.html
+(line   31) -ignored- ../graph/scaling.html
+(line   36) ok        https://operatorhub.io/operator/seldon-operator
+(line    5) ok        https://github.com/SeldonIO/seldon-core/releases/tag/v1.1.0
+writing output... [ 84%] reference/release-1.5.0
+
+(line   65) -ignored- ../examples/drift_cifar10.html
+(line   65) -ignored- ../examples/drift_cifar10.html
+(line   74) -ignored- ../examples/keda.html
+(line    5) ok        https://github.com/SeldonIO/seldon-core/releases/tag/v1.5.0
+writing output... [ 85%] reference/release-highlights
+
+writing output... [ 85%] reference/seldon-deployment
+
+(line    7) -ignored- ../graph/inference-grpah.md
+(line    9) ok        https://github.com/SeldonIO/seldon-core/blob/master/operator/apis/machinelearning.seldon.io/v1/seldondeployment_types.go
+writing output... [ 86%] reference/upgrading
+
+(line    9) -ignored- ./changelog.html
+(line   19) -ignored- ../examples/backwards_compatibility.html
+(line   27) -ignored- ../servers/sklearn.html
+(line   32) -ignored- ../examples/patch_1_2.html
+(line  114) -ignored- ../analytics/analytics.html
+(line  123) -ignored- ../ingress/ambassador.html
+(line   32) ok        https://github.com/SeldonIO/seldon-core/issues/2017
+(line   42) ok        https://github.com/SeldonIO/seldon-core/pull/1917
+writing output... [ 86%] servers/batch
+
+(line    3) -ignored- ../images/batch-processor.jpg
+(line   16) -ignored- ../images/batch-workflow-manager-integration.jpg
+(line   29) -ignored- ../images/batch-workflow-managers.jpg
+(line   47) -ignored- ../examples/argo_workflows_batch.html
+(line   48) -ignored- ../examples/argo_workflows_hdfs_batch.html
+(line   49) -ignored- ../examples/kubeflow_pipelines_batch.html
+writing output... [ 87%] servers/custom
+
+(line   42) ok        https://github.com/SeldonIO/seldon-core/blob/d84b97431c49602d25f6f5397ba540769ec695d9/servers/sklearnserver/sklearnserver/SKLearnServer.py#L16-L23
+writing output... [ 87%] servers/mlflow
+
+(line   87) -ignored- ../examples/server_examples.html#Serve-MLflow-Elasticnet-Wines-Model
+(line    5) ok        https://www.mlflow.org/docs/latest/projects.html#project-environments
+(line   20) ok        https://www.mlflow.org/docs/latest/models.html#python-function-python-function
+(line   17) ok        https://www.mlflow.org/docs/latest/models.html
+writing output... [ 88%] servers/overview
+
+(line   11) -ignored- ./mlflow.html
+(line   12) -ignored- ./custom.html
+(line    8) -ignored- ./sklearn.html
+(line    9) -ignored- ./xgboost.html
+(line   10) -ignored- ./tensorflow.html
+(line   53) -ignored- ../charts/seldon-core-operator.html#values
+(line   46) ok        https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
+(line  124) -ignored- ../examples/custom_init_container.html
+(line  124) ok        https://rclone.org/
+(line  157) -ignored- ../examples/pvc-tfjob.html
+(line  162) -ignored- ../examples/server_examples.html
+(line  163) -ignored- ./sklearn.html
+(line  164) -ignored- ./xgboost.html
+(line  165) -ignored- ./tensorflow.html
+(line  166) -ignored- ./mlflow.html
+(line  167) -ignored- ../examples/minio-sklearn.html
+(line   53) ok        https://github.com/kubeflow/kfserving/blob/master/python/storage-initializer/scripts/initializer-entrypoint
+(line   46) ok        https://github.com/kubeflow/kfserving/blob/master/python/kfserving/kfserving/storage.py
+(line  307) -ignored- ../examples/minio-sklearn.html
+(line  251) ok        https://kubernetes.io/docs/concepts/configuration/secret/
+(line   53) ok        https://github.com/kubeflow/kfserving/blob/master/python/storage-initializer.Dockerfile
+(line  187) ok        https://github.com/SeldonIO/seldon-core/blob/master/python/seldon_core/storage.py
+(line  314) ok        https://github.com/kubeflow/kfserving/blob/master/docs/samples/storage/s3/README.md
+(line  121) ok        https://github.com/SeldonIO/seldon-core/issues/2611
+writing output... [ 89%] servers/sklearn
+
+(line  136) -ignored- ../examples/server_examples.html
+(line   62) -ignored- ../examples/server_examples.html
+(line   11) ok        https://scikit-learn.org/stable/modules/model_persistence.html
+(line  106) ok        https://github.com/SeldonIO/MLServer
+(line  196) ok        https://github.com/SeldonIO/seldon-core/tree/master/servers/sklearnserver
+writing output... [ 89%] servers/tensorflow
+
+(line   86) -ignored- ../examples/server_examples.html
+writing output... [ 90%] servers/triton
+
+(line   28) -ignored- ../examples/protocol_examples.html
+(line    7) redirect  https://docs.nvidia.com/deeplearning/triton-inference-server/master-user-guide/docs/model_repository.html#section-framework-model-definition - permanently to https://docs.nvidia.com/deeplearning/triton-inference-server/master-user-guide/
+writing output... [ 90%] servers/xgboost
+
+(line   57) -ignored- ../examples/server_examples.html
+(line   96) -ignored- ../examples/server_examples.html
+(line   11) ok        https://xgboost.readthedocs.io/en/latest/tutorials/saving_model.html
+writing output... [ 91%] streaming/kafka
+
+(line   73) -ignored- ../examples/cifar10_kafka.html
+writing output... [ 91%] streaming/knative_eventing
+
+(line    3) -ignored- ../images/stream-processing-knative.jpg
+writing output... [ 92%] tutorials/blogs
+
+(line    3) ok        https://www.lightbend.com/blog/stream-based-model-serving-with-cloudflow-and-seldon
+(line    3) redirect  https://www.anaconda.com/blog/developer-blog/open-source-model-management-roundup-polyaxon-argo-and-seldon/ - permanently to https://www.anaconda.com/blog/open-source-model-management-roundup-polyaxon-argo-and-seldon
+(line    3) redirect  https://danielfrg.com/blog/2018/10/model-management-polyaxon-argo-seldon/ - permanently to https://extrapolations.dev/blog/2018/10/model-management-polyaxon-argo-seldon/
+(line    3) redirect  https://developer.ibm.com/blogs/2018/10/01/announcing-pytorch-1-support-in-fabric-for-deep-learning/ - permanently to https://developer.ibm.com/blogs/announcing-pytorch-1-support-in-fabric-for-deep-learning/
+(line    3) ok        https://axsaucedo.github.io/scalable-data-science/#/
+(line    3) redirect  https://medium.com/@shirish.ph/seldon-inference-graph-pipelined-model-serving-211c6b095f62 - permanently to https://becominghuman.ai/seldon-inference-graph-pipelined-model-serving-211c6b095f62
+(line    3) ok        https://github.com/dwhitena/oreilly-ai-k8s-tutorial
+(line    3) redirect  https://www.mosaicventures.com/mosaicblog/2020/2/20/mlops-the-end-of-end-to-end - permanently to https://www.mosaicventures.com/patterns/mlops-the-end-of-end-to-end
+(line    3) ok        https://medium.com/analytics-vidhya/manage-ml-deployments-like-a-boss-deploy-your-first-ab-test-with-sklearn-kubernetes-and-b10ae0819dfe
+(line    3) ok        https://docs.01.org/clearlinux/latest/guides/stacks/dlrs-inference.html
+(line    3) redirect  https://www.theregister.co.uk/2020/03/07/devops_machine_learning_mlops/ - permanently to https://www.theregister.com/2020/03/07/devops_machine_learning_mlops/
+(line    3) ok        https://github.com/hypnosapos/cartpole-rl-remote/
+(line    3) ok        https://zhuanlan.zhihu.com/p/145143582
+(line    3) ok        https://web.archive.org/web/20200212160350/https://hackernoon.com/move-fast-and-break-things-the-ai-governance-dilemma-dsq32ix
+writing output... [ 93%] tutorials/openshift_s2i
+
+(line   46) -ignored- ./wrap.png
+(line   10) -ignored- ./deploy.png
+(line   10) -ignored- ./graphs.png
+(line    7) ok        https://kubernetes.io/
+(line   60) ok        https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i
+(line  125) redirect  https://events.linuxfoundation.org/events/kubecon-cloudnativecon-europe-2018/ - permanently to https://events19.linuxfoundation.org/events/kubecon-cloudnativecon-europe-2018/
+writing output... [ 93%] tutorials/podcasts
+
+(line    3) ok        https://thedataexchange.media/the-responsible-development-deployment-and-operation-of-machine-learning-systems
+writing output... [ 94%] tutorials/videos
+
+(line    3) ok        https://www.youtube.com/watch?v=ydculT4e7FQ&feature=youtu.be&t=7m48s
+(line    3) ok        https://www.youtube.com/watch?v=pDlapGtecbY
+(line    3) redirect  https://youtu.be/064_cf5JlbM?t=13537 - with See Other to https://www.youtube.com/watch?t=13537&v=064_cf5JlbM&feature=youtu.be
+(line    3) ok        https://www.youtube.com/watch?v=BG3_bJr98BE
+(line    3) ok        https://www.youtube.com/watch?v=0ljaT1BNJgo
+(line    3) ok        https://www.youtube.com/watch?v=1uZPBcfYxlM
+(line    3) ok        https://www.youtube.com/watch?v=YaGASyU88dQ
+(line    3) ok        https://www.youtube.com/watch?v=TCeGARP_lAk
+writing output... [ 94%] workflow/deploying
+
+(line   14) -ignored- ../examples/helm_examples.html
+(line   23) -ignored- ../graph/ksonnet_templates.html
+(line   16) -ignored- ../graph/helm_charts.html
+(line   21) -ignored- ../notebooks/ksonnet_examples.ipynb
+writing output... [ 95%] workflow/github-readme
+
+(line   22) redirect  https://join.slack.com/t/*********/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU - with Found to https://*********.slack.com/join/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU
+(line   24) -ignored- https://calendar.google.com/event?action=TEMPLATE&tmeid=MXBtNzI1cjk0dG9kczhsZTRkcWlmcm1kdjVfMjAyMDA3MDlUMTUwMDAwWiBzZWxkb24uaW9fbTRuMnZtcmZubDI3M3FsczVnYjlwNjVpMHNAZw&tmsrc=seldon.io_m4n2vmrfnl273qls5gb9p65i0s%40group.calendar.google.com&scp=ALL
+(line   27) ok        https://docs.seldon.io/projects/seldon-core/en/latest/tutorials/videos.html
+(line    3) ok        https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/images/core-logo-small.png
+(line   14) ok        https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/images/seldon-core-high-level.jpg
+(line   42) ok        https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/openapi.html?highlight=swagger
+(line   42) ok        https://docs.seldon.io/projects/seldon-core/en/latest/python/python_module.html#seldon-core-python-api-client
+(line   25) ok        https://docs.seldon.io/projects/seldon-core/en/latest/developer/contributing.html
+(line   43) ok        https://docs.seldon.io/projects/seldon-core/en/latest/examples/notebooks.html#cloud-specific-examples
+(line   45) ok        https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/metadata.html
+(line   24) ok        https://docs.seldon.io/projects/seldon-core/en/latest/developer/community.html
+(line   26) ok        https://docs.seldon.io/projects/seldon-core/en/latest/tutorials/blogs.html
+(line   48) ok        https://docs.seldon.io/projects/seldon-core/en/latest/graph/distributed-tracing.html
+(line   41) ok        https://docs.seldon.io/projects/seldon-core/en/latest/wrappers/language_wrappers.html
+(line  111) ok        https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/images/rest-openapi.jpg
+(line   54) ok        https://docs.seldon.io/projects/seldon-core/en/latest/workflow/quickstart.html
+(line   47) ok        https://docs.seldon.io/projects/seldon-core/en/latest/analytics/log_level.html
+(line  210) ok        https://docs.seldon.io/projects/seldon-core/en/latest/python/seldon_client.html
+(line  317) ok        https://docs.seldon.io/projects/seldon-core/en/latest/workflow/github-readme.html
+(line  318) ok        https://docs.seldon.io/projects/seldon-core/en/latest/workflow/overview.html
+(line  123) ok        https://docs.seldon.io/projects/seldon-core/en/latest/python/seldon_client.html
+(line   49) ok        https://github.com/SeldonIO/seldon-core/blob/master/SECURITY.md
+(line  331) ok        https://docs.seldon.io/projects/seldon-core/en/latest/workflow/serving.html
+(line  167) ok        https://docs.seldon.io/projects/seldon-core/en/latest/wrappers/s2i.html
+(line  330) ok        https://docs.seldon.io/projects/seldon-core/en/latest/workflow/deploying.html
+(line  332) ok        https://docs.seldon.io/projects/seldon-core/en/latest/workflow/troubleshooting.html
+(line  326) ok        https://docs.seldon.io/projects/seldon-core/en/latest/reference/helm.html
+(line  329) ok        https://docs.seldon.io/projects/seldon-core/en/latest/graph/inference-graph.html
+(line  343) ok        https://docs.seldon.io/projects/seldon-core/en/latest/servers/tensorflow.html
+(line  350) ok        https://docs.seldon.io/projects/seldon-core/en/latest/python/index.html
+(line  356) ok        https://docs.seldon.io/projects/seldon-core/en/latest/java/README.html
+(line  334) ok        https://docs.seldon.io/projects/seldon-core/en/latest/reference/upgrading.html
+(line  335) ok        https://docs.seldon.io/projects/seldon-core/en/latest/reference/changelog.html
+(line  333) ok        https://docs.seldon.io/projects/seldon-core/en/latest/workflow/usage-reporting.html
+(line  341) ok        https://docs.seldon.io/projects/seldon-core/en/latest/servers/mlflow.html
+(line  357) ok        https://docs.seldon.io/projects/seldon-core/en/latest/R/README.html
+(line  372) ok        https://docs.seldon.io/projects/seldon-core/en/latest/graph/protocols.html
+(line  366) ok        https://docs.seldon.io/projects/seldon-core/en/latest/ingress/istio.html
+(line  358) ok        https://docs.seldon.io/projects/seldon-core/en/latest/nodejs/README.html
+(line  375) ok        https://docs.seldon.io/projects/seldon-core/en/latest/analytics/logging.html
+(line  377) ok        https://docs.seldon.io/projects/seldon-core/en/latest/graph/scaling.html
+(line  378) ok        https://docs.seldon.io/projects/seldon-core/en/latest/graph/disruption-budgets.html
+(line  386) ok        https://docs.seldon.io/projects/seldon-core/en/latest/analytics/outlier_detection.html
+(line  387) ok        https://docs.seldon.io/projects/seldon-core/en/latest/analytics/routers.html
+(line  365) ok        https://docs.seldon.io/projects/seldon-core/en/latest/ingress/ambassador.html
+(line  359) ok        https://docs.seldon.io/projects/seldon-core/en/latest/go/go_wrapper_link.html
+(line  373) ok        https://docs.seldon.io/projects/seldon-core/en/latest/analytics/cicd-mlops.html
+(line  385) ok        https://docs.seldon.io/projects/seldon-core/en/latest/analytics/explainers.html
+(line  401) ok        https://docs.seldon.io/projects/seldon-core/en/latest/graph/annotations.html
+(line  402) ok        https://docs.seldon.io/projects/seldon-core/en/latest/reference/aws-mp-install.html
+(line  403) ok        https://docs.seldon.io/projects/seldon-core/en/latest/reference/benchmarking.html
+(line  404) ok        https://docs.seldon.io/projects/seldon-core/en/latest/reference/ga.html
+(line  405) ok        https://docs.seldon.io/projects/seldon-core/en/latest/graph/helm_charts.html
+(line  411) ok        https://docs.seldon.io/projects/seldon-core/en/latest/reference/release-highlights.html
+(line  406) ok        https://docs.seldon.io/projects/seldon-core/en/latest/reference/images.html
+(line  408) ok        https://docs.seldon.io/projects/seldon-core/en/latest/graph/private_registries.html
+(line  409) ok        https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/index.html
+(line  410) ok        https://docs.seldon.io/projects/seldon-core/en/latest/python/api/modules.html
+(line  412) ok        https://docs.seldon.io/projects/seldon-core/en/latest/reference/seldon-deployment.html
+(line  413) ok        https://docs.seldon.io/projects/seldon-core/en/latest/graph/svcorch.html
+(line  429) ok        https://en.wikipedia.org/wiki/Foundation_series
+(line  414) ok        https://docs.seldon.io/projects/seldon-core/en/latest/analytics/kubeflow.html
+(line  423) ok        https://docs.seldon.io/projects/seldon-core/en/latest/developer/roadmap.html
+(line  432) ok        https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/images/deploy-logo.png
+(line  432) ok        https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/images/deploy-logo.png
+(line  420) ok        https://docs.seldon.io/projects/seldon-core/en/latest/developer/readme.html
+(line  424) ok        https://docs.seldon.io/projects/seldon-core/en/latest/developer/build-using-private-repo.html
+writing output... [ 95%] workflow/install
+
+(line   38) -ignored- ../reference/helm.html
+(line   36) ok        https://docs.helm.sh/docs/intro/install/
+(line   20) ok        https://github.com/SeldonIO/seldon-core/tree/master/examples/auth
+(line   31) ok        https://helm.sh/blog/migrate-from-helm-v2-to-helm-v3/
+(line   82) ok        https://cert-manager.io/docs/installation/kubernetes/
+(line  213) -ignored- ../examples/multiple_operators.html
+(line  113) ok        https://github.com/kubernetes-sigs/kustomize
+(line  254) -ignored- ../examples/multiple_operators.html
+(line  154) ok        https://console.cloud.google.com/marketplace/details/seldon-portal/seldon-core
+(line  117) ok        https://github.com/SeldonIO/seldon-core/blob/master/operator/config/webhook/kustomization.yaml#L8
+(line  243) ok        https://github.com/SeldonIO/seldon-core/blob/master/operator/config/webhook/kustomization.yaml
+(line  149) redirect  https://www.kubeflow.org/docs/guides/components/seldon/#seldon-serving - permanently to https://www.kubeflow.org/docs/components/serving/seldon/
+writing output... [ 96%] workflow/overview
+
+(line   12) -ignored- ./overview.html#seldondeployment-crd
+(line   12) -ignored- ./overview.html#seldon-core-operator
+(line   13) -ignored- ./overview.html#service-orchestrator
+(line   19) -ignored- ./overview.html#metrics-with-prometheus
+(line   10) -ignored- ./overview.html#model-servers
+(line   21) -ignored- ./overview.html#endpoint-documentation
+(line   11) -ignored- ./overview.html#language-wrappers
+(line   26) -ignored- ../images/e2e-model-serving.svg
+(line   51) -ignored- ../images/model-servers.svg
+(line   72) -ignored- ../servers/mlflow.html
+(line   73) -ignored- ../servers/sklearn.html
+(line   74) -ignored- ../servers/tensorflow.html
+(line   75) -ignored- ../servers/xgboost.html
+(line   77) -ignored- ../servers/custom.html
+(line   80) -ignored- ../images/language-wrappers-1.svg
+(line   80) -ignored- ../images/language-wrappers-2.svg
+(line  151) -ignored- ../python/index.html
+(line   20) -ignored- ./overview.html#distributed-tracing-with-jaeger
+(line  154) -ignored- ../images/seldondeployment-crd.svg
+(line  175) -ignored- ../reference/seldon-deployment.html
+(line   20) ok        https://www.jaegertracing.io/
+(line  178) -ignored- ../images/operator.svg
+(line  198) -ignored- ../images/orchestrator.svg
+(line  220) -ignored- ../graph/svcorch.html
+(line  223) -ignored- ../images/metadata.svg
+(line  237) -ignored- ../reference/apis/metadata.html
+(line   19) ok        https://prometheus.io/
+(line  240) -ignored- ../images/metrics.svg
+(line  271) -ignored- ../analytics/analytics.html
+(line  274) -ignored- ../images/tracing.svg
+(line  284) -ignored- ../graph/distributed-tracing.html
+(line  159) ok        https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/
+(line  242) ok        https://prometheus.io/
+(line   21) ok        https://swagger.io/docs/specification/about/
+(line  180) ok        https://github.com/kubernetes-sigs/kubebuilder
+(line  289) redirect  https://flask.palletsprojects.com/ - with Found to https://flask.palletsprojects.com/en/1.1.x/
+writing output... [ 97%] workflow/quickstart
+
+(line    9) -ignored- ../workflow/index.html
+(line   29) -ignored- ./graph.png
+(line   63) -ignored- ./install.html
+(line   83) -ignored- ../servers/overview.html
+(line  106) -ignored- ../graph/inference-graph.html
+(line   75) -ignored- ../images/rest-openapi.jpg
+(line  139) -ignored- ../python/seldon_client.html
+(line  170) -ignored- ../wrappers/language_wrappers.html
+(line  280) -ignored- ../python/seldon_client.html
+(line  315) -ignored- ../servers/sklearn.html
+(line  316) -ignored- ../servers/tensorflow.html
+(line  317) -ignored- ../examples/mlflow_server_ab_test_ambassador.html
+(line  318) -ignored- ../servers/xgboost.html
+(line  319) -ignored- ../examples/minio-sklearn.html
+(line  325) -ignored- ../examples/tfserving_mnist.html
+(line  325) -ignored- ../examples/aws_eks_deep_mnist.html
+(line  325) -ignored- ../examples/azure_aks_deep_mnist.html
+(line  325) -ignored- ../examples/alibaba_ack_deep_mnist.html
+(line  326) -ignored- ../examples/sklearn_spacy_text_classifier_example.html
+(line  327) -ignored- ../examples/h2o_mojo.html
+(line  333) -ignored- ../examples/helm_examples.html
+(line  334) -ignored- ../examples/istio_canary.html
+(line  335) -ignored- ../examples/autoscaling_example.html
+(line  336) -ignored- ../examples/custom_metrics.html
+(line  342) -ignored- ../examples/kubeflow_seldon_e2e_pipeline.html
+(line  343) -ignored- ../examples/explainer_examples.html
+(line  349) -ignored- ../examples/sagemaker_sklearn.html
+(line  350) -ignored- ../examples/tfserving_mnist.html
+(line  351) -ignored- ../examples/mlflow_server_ab_test_ambassador.html
+(line  325) -ignored- ../examples/gpu_tensorflow_deep_mnist.html
+writing output... [ 97%] workflow/serving
+
+(line  187) -ignored- ../reference/apis/openapi.html
+(line  192) ok        https://grpc.io/
+writing output... [ 98%] workflow/troubleshooting
+
+(line  128) redirect  https://join.slack.com/t/*********/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU - with Found to https://*********.slack.com/join/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU
+(line  129) ok        https://github.com/SeldonIO/seldon-core/issues
+(line   79) redirect  https://www.getambassador.io/reference/diagnostics/ - permanently to https://www.getambassador.io/docs/latest/topics/running/diagnostics/
+writing output... [ 98%] workflow/usage-reporting
+
+(line    7) redirect  https://github.com/kubernetes-incubator/spartakus - permanently to https://github.com/kubernetes-retired/spartakus
+writing output... [ 99%] wrappers/language_wrappers
+
+(line   26) ok        https://keras.io/
+(line   26) redirect  http://scikit-learn.org/stable/ - permanently to https://scikit-learn.org/stable/
+(line   26) redirect  http://pytorch.org/ - permanently to https://pytorch.org/
+(line   40) ok        https://www.h2o.ai/
+(line   40) ok        https://deeplearning4j.org/
+(line   26) redirect  http://www.statsmodels.org/stable/index.html - permanently to https://www.statsmodels.org/stable/index.html
+(line   40) ok        https://spark.apache.org/
+(line   26) ok        https://github.com/dmlc/xgboost
+(line   38) ok        https://github.com/SeldonIO/seldon-core/issues/1344
+writing output... [100%] wrappers/s2i
+
+(line   32) -ignored- ../python/README.md
+
+build finished with problems, 9 warnings.
+! grep -v '429' _build/output.txt | grep 'broken'
+make: [Makefile:33: linkcheck] Error 1 (ignored)
+make: Leaving directory '/workspace/source/doc'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2856-do-p2rzj-9[0m stage [32mhtml[0m and container [32mstep-credential-initializer-g2cj2[0m
+{"level":"info","ts":1611245014.1479805,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1611245014.1484864,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2856-do-p2rzj-9[0m stage [32mhtml[0m and container [32mstep-working-dir-initializer-wsqvh[0m
+{"level":"info","ts":1611245015.5553105,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1611245015.5569,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2856-do-p2rzj-9[0m stage [32mhtml[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2856-do-p2rzj-9[0m stage [32mhtml[0m and container [32mstep-create-dir-workspace-lltt2[0m
+{"level":"info","ts":1611245032.6173697,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1611245032.619563,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2856-do-p2rzj-9[0m stage [32mhtml[0m and container [32mstep-source-copy-workspace-rsfc6[0m
+{"level":"info","ts":1611245033.2230337,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1611245051.7318678,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2856-do-p2rzj-9[0m stage [32mhtml[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2856-do-p2rzj-9[0m stage [32mhtml[0m and container [32mstep-make-html[0m
+make: Entering directory '/workspace/source/doc'
+pip install -r requirements.txt
+Collecting sphinx==3.2.1
+  Downloading Sphinx-3.2.1-py3-none-any.whl (2.9 MB)
+Collecting sphinx-autobuild>=0.7.1
+  Downloading sphinx_autobuild-2020.9.1-py3-none-any.whl (9.8 kB)
+Collecting sphinx-autodoc-typehints>=1.6.0
+  Downloading sphinx_autodoc_typehints-1.11.1-py3-none-any.whl (8.7 kB)
+Collecting sphinx-rtd-theme>=0.4.3
+  Downloading sphinx_rtd_theme-0.5.1-py2.py3-none-any.whl (2.8 MB)
+Collecting m2r2>=0.2.5
+  Downloading m2r2-0.2.7-py3-none-any.whl (10 kB)
+Collecting sphinxcontrib-apidoc>=0.3.0
+  Downloading sphinxcontrib_apidoc-0.3.0-py2.py3-none-any.whl (8.5 kB)
+Collecting nbsphinx>=0.4.2
+  Downloading nbsphinx-0.8.1-py3-none-any.whl (24 kB)
+Collecting nbsphinx-link>=1.2.0
+  Downloading nbsphinx_link-1.3.0-py2.py3-none-any.whl (5.2 kB)
+Requirement already satisfied: ipykernel>=5.1.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 9)) (5.3.4)
+Requirement already satisfied: ipython>=7.2.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 10)) (7.13.0)
+Requirement already satisfied: Pygments<3,>=2.4.1 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 11)) (2.7.1)
+Collecting snowballstemmer>=1.1
+  Downloading snowballstemmer-2.1.0-py2.py3-none-any.whl (93 kB)
+Collecting alabaster<0.8,>=0.7
+  Downloading alabaster-0.7.12-py2.py3-none-any.whl (14 kB)
+Collecting sphinxcontrib-htmlhelp
+  Downloading sphinxcontrib_htmlhelp-1.0.3-py2.py3-none-any.whl (96 kB)
+Collecting sphinxcontrib-applehelp
+  Downloading sphinxcontrib_applehelp-1.0.2-py2.py3-none-any.whl (121 kB)
+Collecting docutils>=0.12
+  Downloading docutils-0.16-py2.py3-none-any.whl (548 kB)
+Requirement already satisfied: Jinja2>=2.3 in /usr/local/lib/python3.6/site-packages (from sphinx==3.2.1->-r requirements.txt (line 1)) (2.11.2)
+Requirement already satisfied: setuptools in /usr/local/lib/python3.6/site-packages (from sphinx==3.2.1->-r requirements.txt (line 1)) (50.3.0)
+Collecting babel>=1.3
+  Downloading Babel-2.9.0-py2.py3-none-any.whl (8.8 MB)
+Collecting imagesize
+  Downloading imagesize-1.2.0-py2.py3-none-any.whl (4.8 kB)
+Collecting sphinxcontrib-qthelp
+  Downloading sphinxcontrib_qthelp-1.0.3-py2.py3-none-any.whl (90 kB)
+Collecting sphinxcontrib-devhelp
+  Downloading sphinxcontrib_devhelp-1.0.2-py2.py3-none-any.whl (84 kB)
+Requirement already satisfied: packaging in /usr/local/lib/python3.6/site-packages (from sphinx==3.2.1->-r requirements.txt (line 1)) (20.4)
+Collecting sphinxcontrib-jsmath
+  Downloading sphinxcontrib_jsmath-1.0.1-py2.py3-none-any.whl (5.1 kB)
+Collecting sphinxcontrib-serializinghtml
+  Downloading sphinxcontrib_serializinghtml-1.1.4-py2.py3-none-any.whl (89 kB)
+Requirement already satisfied: requests>=2.5.0 in /usr/local/lib/python3.6/site-packages (from sphinx==3.2.1->-r requirements.txt (line 1)) (2.24.0)
+Collecting livereload
+  Downloading livereload-2.6.3.tar.gz (25 kB)
+Requirement already satisfied: mistune in /usr/local/lib/python3.6/site-packages (from m2r2>=0.2.5->-r requirements.txt (line 5)) (0.8.4)
+Collecting pbr
+  Downloading pbr-5.5.1-py2.py3-none-any.whl (106 kB)
+Requirement already satisfied: nbconvert!=5.4 in /usr/local/lib/python3.6/site-packages (from nbsphinx>=0.4.2->-r requirements.txt (line 7)) (5.6.1)
+Requirement already satisfied: nbformat in /usr/local/lib/python3.6/site-packages (from nbsphinx>=0.4.2->-r requirements.txt (line 7)) (5.0.7)
+Requirement already satisfied: traitlets in /usr/local/lib/python3.6/site-packages (from nbsphinx>=0.4.2->-r requirements.txt (line 7)) (4.3.3)
+Requirement already satisfied: jupyter-client in /usr/local/lib/python3.6/site-packages (from ipykernel>=5.1.0->-r requirements.txt (line 9)) (6.1.7)
+Requirement already satisfied: tornado>=4.2 in /usr/local/lib/python3.6/site-packages (from ipykernel>=5.1.0->-r requirements.txt (line 9)) (6.0.4)
+Requirement already satisfied: decorator in /usr/local/lib/python3.6/site-packages (from ipython>=7.2.0->-r requirements.txt (line 10)) (4.4.2)
+Requirement already satisfied: pexpect; sys_platform != "win32" in /usr/local/lib/python3.6/site-packages (from ipython>=7.2.0->-r requirements.txt (line 10)) (4.8.0)
+Requirement already satisfied: jedi>=0.10 in /usr/local/lib/python3.6/site-packages (from ipython>=7.2.0->-r requirements.txt (line 10)) (0.17.2)
+Requirement already satisfied: backcall in /usr/local/lib/python3.6/site-packages (from ipython>=7.2.0->-r requirements.txt (line 10)) (0.2.0)
+Requirement already satisfied: prompt-toolkit!=3.0.0,!=3.0.1,<3.1.0,>=2.0.0 in /usr/local/lib/python3.6/site-packages (from ipython>=7.2.0->-r requirements.txt (line 10)) (3.0.7)
+Requirement already satisfied: pickleshare in /usr/local/lib/python3.6/site-packages (from ipython>=7.2.0->-r requirements.txt (line 10)) (0.7.5)
+Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from Jinja2>=2.3->sphinx==3.2.1->-r requirements.txt (line 1)) (1.1.1)
+Requirement already satisfied: pytz>=2015.7 in /usr/local/lib/python3.6/site-packages (from babel>=1.3->sphinx==3.2.1->-r requirements.txt (line 1)) (2020.1)
+Requirement already satisfied: pyparsing>=2.0.2 in /usr/local/lib/python3.6/site-packages (from packaging->sphinx==3.2.1->-r requirements.txt (line 1)) (2.4.7)
+Requirement already satisfied: six in /usr/local/lib/python3.6/site-packages (from packaging->sphinx==3.2.1->-r requirements.txt (line 1)) (1.15.0)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests>=2.5.0->sphinx==3.2.1->-r requirements.txt (line 1)) (2.10)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests>=2.5.0->sphinx==3.2.1->-r requirements.txt (line 1)) (1.25.10)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests>=2.5.0->sphinx==3.2.1->-r requirements.txt (line 1)) (3.0.4)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests>=2.5.0->sphinx==3.2.1->-r requirements.txt (line 1)) (2020.6.20)
+Requirement already satisfied: entrypoints>=0.2.2 in /usr/local/lib/python3.6/site-packages (from nbconvert!=5.4->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (0.3)
+Requirement already satisfied: testpath in /usr/local/lib/python3.6/site-packages (from nbconvert!=5.4->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (0.4.4)
+Requirement already satisfied: defusedxml in /usr/local/lib/python3.6/site-packages (from nbconvert!=5.4->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (0.6.0)
+Requirement already satisfied: bleach in /usr/local/lib/python3.6/site-packages (from nbconvert!=5.4->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (3.2.1)
+Requirement already satisfied: jupyter-core in /usr/local/lib/python3.6/site-packages (from nbconvert!=5.4->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (4.6.3)
+Requirement already satisfied: pandocfilters>=1.4.1 in /usr/local/lib/python3.6/site-packages (from nbconvert!=5.4->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (1.4.2)
+Requirement already satisfied: jsonschema!=2.5.0,>=2.4 in /usr/local/lib/python3.6/site-packages (from nbformat->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (3.2.0)
+Requirement already satisfied: ipython-genutils in /usr/local/lib/python3.6/site-packages (from nbformat->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (0.2.0)
+Requirement already satisfied: pyzmq>=13 in /usr/local/lib/python3.6/site-packages (from jupyter-client->ipykernel>=5.1.0->-r requirements.txt (line 9)) (19.0.2)
+Requirement already satisfied: python-dateutil>=2.1 in /usr/local/lib/python3.6/site-packages (from jupyter-client->ipykernel>=5.1.0->-r requirements.txt (line 9)) (2.8.1)
+Requirement already satisfied: ptyprocess>=0.5 in /usr/local/lib/python3.6/site-packages (from pexpect; sys_platform != "win32"->ipython>=7.2.0->-r requirements.txt (line 10)) (0.6.0)
+Requirement already satisfied: parso<0.8.0,>=0.7.0 in /usr/local/lib/python3.6/site-packages (from jedi>=0.10->ipython>=7.2.0->-r requirements.txt (line 10)) (0.7.1)
+Requirement already satisfied: wcwidth in /usr/local/lib/python3.6/site-packages (from prompt-toolkit!=3.0.0,!=3.0.1,<3.1.0,>=2.0.0->ipython>=7.2.0->-r requirements.txt (line 10)) (0.2.5)
+Requirement already satisfied: webencodings in /usr/local/lib/python3.6/site-packages (from bleach->nbconvert!=5.4->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (0.5.1)
+Requirement already satisfied: attrs>=17.4.0 in /usr/local/lib/python3.6/site-packages (from jsonschema!=2.5.0,>=2.4->nbformat->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (20.2.0)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /usr/local/lib/python3.6/site-packages (from jsonschema!=2.5.0,>=2.4->nbformat->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (2.0.0)
+Requirement already satisfied: pyrsistent>=0.14.0 in /usr/local/lib/python3.6/site-packages (from jsonschema!=2.5.0,>=2.4->nbformat->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (0.17.3)
+Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.6/site-packages (from importlib-metadata; python_version < "3.8"->jsonschema!=2.5.0,>=2.4->nbformat->nbsphinx>=0.4.2->-r requirements.txt (line 7)) (3.3.0)
+Building wheels for collected packages: livereload
+  Building wheel for livereload (setup.py): started
+  Building wheel for livereload (setup.py): finished with status 'done'
+  Created wheel for livereload: filename=livereload-2.6.3-py2.py3-none-any.whl size=24713 sha256=8826a80d2d48436dd39311647090997b754aac2cb1445ce4b7dcfef2bb2474bf
+  Stored in directory: /builder/home/.cache/pip/wheels/2e/bd/a8/d11e2300992209f109960d20facdd55076682bf3a192bc10ba
+Successfully built livereload
+Installing collected packages: snowballstemmer, alabaster, sphinxcontrib-htmlhelp, sphinxcontrib-applehelp, docutils, babel, imagesize, sphinxcontrib-qthelp, sphinxcontrib-devhelp, sphinxcontrib-jsmath, sphinxcontrib-serializinghtml, sphinx, livereload, sphinx-autobuild, sphinx-autodoc-typehints, sphinx-rtd-theme, m2r2, pbr, sphinxcontrib-apidoc, nbsphinx, nbsphinx-link
+Successfully installed alabaster-0.7.12 babel-2.9.0 docutils-0.16 imagesize-1.2.0 livereload-2.6.3 m2r2-0.2.7 nbsphinx-0.8.1 nbsphinx-link-1.3.0 pbr-5.5.1 snowballstemmer-2.1.0 sphinx-3.2.1 sphinx-autobuild-2020.9.1 sphinx-autodoc-typehints-1.11.1 sphinx-rtd-theme-0.5.1 sphinxcontrib-apidoc-0.3.0 sphinxcontrib-applehelp-1.0.2 sphinxcontrib-devhelp-1.0.2 sphinxcontrib-htmlhelp-1.0.3 sphinxcontrib-jsmath-1.0.1 sphinxcontrib-qthelp-1.0.3 sphinxcontrib-serializinghtml-1.1.4
+WARNING: You are using pip version 20.2.3; however, version 20.3.3 is available.
+You should consider upgrading via the '/usr/local/bin/python -m pip install --upgrade pip' command.
+# Install local version of seldon_core as well
+make -C ../python install_dev
+make[1]: Entering directory '/workspace/source/python'
+pip install -e . -r requirements-dev.txt
+Obtaining file:///workspace/source/python
+Collecting black==20.8b1
+  Downloading black-20.8b1.tar.gz (1.1 MB)
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+    Preparing wheel metadata: started
+    Preparing wheel metadata: finished with status 'done'
+Collecting flake8==3.8.1
+  Downloading flake8-3.8.1-py2.py3-none-any.whl (72 kB)
+Collecting mypy<0.791
+  Downloading mypy-0.790-cp36-cp36m-manylinux1_x86_64.whl (21.0 MB)
+Collecting Pillow==8.1.0
+  Downloading Pillow-8.1.0-cp36-cp36m-manylinux1_x86_64.whl (2.2 MB)
+Collecting pytest==6.2.1
+  Downloading pytest-6.2.1-py3-none-any.whl (279 kB)
+Collecting pytest-cov==2.10.1
+  Downloading pytest_cov-2.10.1-py2.py3-none-any.whl (19 kB)
+Collecting tox<4.0.0
+  Downloading tox-3.21.2-py2.py3-none-any.whl (84 kB)
+Collecting grpcio-tools==1.33.2
+  Downloading grpcio_tools-1.33.2-cp36-cp36m-manylinux2014_x86_64.whl (2.5 MB)
+Collecting mypy-protobuf==1.22
+  Downloading mypy_protobuf-1.22-py3-none-any.whl (7.5 kB)
+Collecting tenacity==6.3.1
+  Downloading tenacity-6.3.1-py2.py3-none-any.whl (36 kB)
+Collecting coverage==5.3.1
+  Downloading coverage-5.3.1-cp36-cp36m-manylinux2010_x86_64.whl (241 kB)
+Collecting pandas==1.1.0
+  Downloading pandas-1.1.0-cp36-cp36m-manylinux1_x86_64.whl (10.5 MB)
+Collecting pip-licenses==3.1.0
+  Downloading pip_licenses-3.1.0-py3-none-any.whl (15 kB)
+Collecting Flask<2.0.0
+  Downloading Flask-1.1.2-py2.py3-none-any.whl (94 kB)
+Requirement already satisfied: jsonschema<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.6.0.dev0) (3.2.0)
+Collecting Flask-cors<4.0.0
+  Downloading Flask_Cors-3.0.10-py2.py3-none-any.whl (14 kB)
+Collecting redis<4.0.0
+  Downloading redis-3.5.3-py2.py3-none-any.whl (72 kB)
+Requirement already satisfied: requests<3.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.6.0.dev0) (2.24.0)
+Requirement already satisfied: numpy<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.6.0.dev0) (1.19.2)
+Collecting flatbuffers<2.0.0
+  Downloading flatbuffers-1.12-py2.py3-none-any.whl (15 kB)
+Requirement already satisfied: protobuf<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.6.0.dev0) (3.13.0)
+Requirement already satisfied: grpcio<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.6.0.dev0) (1.32.0)
+Collecting Flask-OpenTracing<1.2.0,>=1.1.0
+  Downloading Flask-OpenTracing-1.1.0.tar.gz (8.2 kB)
+Collecting opentracing<2.5.0,>=2.2.0
+  Downloading opentracing-2.4.0.tar.gz (46 kB)
+Collecting jaeger-client<4.5.0,>=4.1.0
+  Downloading jaeger-client-4.4.0.tar.gz (83 kB)
+Collecting grpcio-opentracing<1.2.0,>=1.1.4
+  Downloading grpcio_opentracing-1.1.4-py3-none-any.whl (14 kB)
+Collecting grpcio-reflection<1.35.0
+  Downloading grpcio-reflection-1.34.1.tar.gz (11 kB)
+Requirement already satisfied: PyYAML<5.4 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.6.0.dev0) (5.3.1)
+Collecting gunicorn<20.1.0,>=19.9.0
+  Downloading gunicorn-20.0.4-py2.py3-none-any.whl (77 kB)
+Requirement already satisfied: setuptools>=41.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.6.0.dev0) (50.3.0)
+Requirement already satisfied: prometheus_client<0.9.0,>=0.7.1 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.6.0.dev0) (0.8.0)
+Collecting appdirs
+  Downloading appdirs-1.4.4-py2.py3-none-any.whl (9.6 kB)
+Requirement already satisfied: typing-extensions>=3.7.4 in /usr/local/lib/python3.6/site-packages (from black==20.8b1->-r requirements-dev.txt (line 2)) (3.7.4.3)
+Collecting typed-ast>=1.4.0
+  Downloading typed_ast-1.4.2-cp36-cp36m-manylinux1_x86_64.whl (743 kB)
+Collecting dataclasses>=0.6; python_version < "3.7"
+  Downloading dataclasses-0.8-py3-none-any.whl (19 kB)
+Collecting mypy-extensions>=0.4.3
+  Downloading mypy_extensions-0.4.3-py2.py3-none-any.whl (4.5 kB)
+Collecting click>=7.1.2
+  Downloading click-7.1.2-py2.py3-none-any.whl (82 kB)
+Collecting pathspec<1,>=0.6
+  Downloading pathspec-0.8.1-py2.py3-none-any.whl (28 kB)
+Collecting toml>=0.10.1
+  Downloading toml-0.10.2-py2.py3-none-any.whl (16 kB)
+Collecting regex>=2020.1.8
+  Downloading regex-2020.11.13-cp36-cp36m-manylinux2014_x86_64.whl (723 kB)
+Collecting pyflakes<2.3.0,>=2.2.0
+  Downloading pyflakes-2.2.0-py2.py3-none-any.whl (66 kB)
+Collecting mccabe<0.7.0,>=0.6.0
+  Downloading mccabe-0.6.1-py2.py3-none-any.whl (8.6 kB)
+Collecting pycodestyle<2.7.0,>=2.6.0a1
+  Downloading pycodestyle-2.6.0-py2.py3-none-any.whl (41 kB)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /usr/local/lib/python3.6/site-packages (from flake8==3.8.1->-r requirements-dev.txt (line 3)) (2.0.0)
+Requirement already satisfied: py>=1.8.2 in /usr/local/lib/python3.6/site-packages (from pytest==6.2.1->-r requirements-dev.txt (line 6)) (1.9.0)
+Requirement already satisfied: attrs>=19.2.0 in /usr/local/lib/python3.6/site-packages (from pytest==6.2.1->-r requirements-dev.txt (line 6)) (20.2.0)
+Requirement already satisfied: pluggy<1.0.0a1,>=0.12 in /usr/local/lib/python3.6/site-packages (from pytest==6.2.1->-r requirements-dev.txt (line 6)) (0.13.1)
+Collecting iniconfig
+  Downloading iniconfig-1.1.1-py2.py3-none-any.whl (5.0 kB)
+Requirement already satisfied: packaging in /usr/local/lib/python3.6/site-packages (from pytest==6.2.1->-r requirements-dev.txt (line 6)) (20.4)
+Collecting virtualenv!=20.0.0,!=20.0.1,!=20.0.2,!=20.0.3,!=20.0.4,!=20.0.5,!=20.0.6,!=20.0.7,>=16.0.0
+  Downloading virtualenv-20.4.0-py2.py3-none-any.whl (5.7 MB)
+Requirement already satisfied: six>=1.14.0 in /usr/local/lib/python3.6/site-packages (from tox<4.0.0->-r requirements-dev.txt (line 8)) (1.15.0)
+Collecting filelock>=3.0.0
+  Downloading filelock-3.0.12-py3-none-any.whl (7.6 kB)
+Requirement already satisfied: pytz>=2017.2 in /usr/local/lib/python3.6/site-packages (from pandas==1.1.0->-r requirements-dev.txt (line 19)) (2020.1)
+Requirement already satisfied: python-dateutil>=2.7.3 in /usr/local/lib/python3.6/site-packages (from pandas==1.1.0->-r requirements-dev.txt (line 19)) (2.8.1)
+Collecting PTable
+  Downloading PTable-0.9.2.tar.gz (31 kB)
+Requirement already satisfied: Jinja2>=2.10.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.6.0.dev0) (2.11.2)
+Collecting itsdangerous>=0.24
+  Downloading itsdangerous-1.1.0-py2.py3-none-any.whl (16 kB)
+Requirement already satisfied: Werkzeug>=0.15 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.6.0.dev0) (1.0.1)
+Requirement already satisfied: pyrsistent>=0.14.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->seldon-core==1.6.0.dev0) (0.17.3)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.6.0.dev0) (2020.6.20)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.6.0.dev0) (3.0.4)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.6.0.dev0) (2.10)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.6.0.dev0) (1.25.10)
+Collecting threadloop<2,>=1
+  Downloading threadloop-1.0.2.tar.gz (4.9 kB)
+Collecting thrift
+  Downloading thrift-0.13.0.tar.gz (59 kB)
+Requirement already satisfied: tornado>=4.3 in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.5.0,>=4.1.0->seldon-core==1.6.0.dev0) (6.0.4)
+Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.6/site-packages (from importlib-metadata; python_version < "3.8"->flake8==3.8.1->-r requirements-dev.txt (line 3)) (3.3.0)
+Requirement already satisfied: pyparsing>=2.0.2 in /usr/local/lib/python3.6/site-packages (from packaging->pytest==6.2.1->-r requirements-dev.txt (line 6)) (2.4.7)
+Collecting distlib<1,>=0.3.1
+  Downloading distlib-0.3.1-py2.py3-none-any.whl (335 kB)
+Collecting importlib-resources>=1.0; python_version < "3.7"
+  Downloading importlib_resources-5.1.0-py3-none-any.whl (24 kB)
+Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from Jinja2>=2.10.1->Flask<2.0.0->seldon-core==1.6.0.dev0) (1.1.1)
+Building wheels for collected packages: black, Flask-OpenTracing, opentracing, jaeger-client, grpcio-reflection, PTable, threadloop, thrift
+  Building wheel for black (PEP 517): started
+  Building wheel for black (PEP 517): finished with status 'done'
+  Created wheel for black: filename=black-20.8b1-py3-none-any.whl size=124184 sha256=3deae46a42f7b858010526b9091e9fb084e569647cb5a4a1d5b156926b6c6f4e
+  Stored in directory: /builder/home/.cache/pip/wheels/dd/c8/94/e774504958e4667180d81202d1d45cdc35d6222ae39229871b
+  Building wheel for Flask-OpenTracing (setup.py): started
+  Building wheel for Flask-OpenTracing (setup.py): finished with status 'done'
+  Created wheel for Flask-OpenTracing: filename=Flask_OpenTracing-1.1.0-py3-none-any.whl size=9071 sha256=e90f09d07fc92eb66149a11f6ded996f12615eea7ff54d7c59eaa718c607c7a6
+  Stored in directory: /builder/home/.cache/pip/wheels/ad/4b/2d/24ff0da0a0b53c7c77ce59b843bcceaf644c88703241e59615
+  Building wheel for opentracing (setup.py): started
+  Building wheel for opentracing (setup.py): finished with status 'done'
+  Created wheel for opentracing: filename=opentracing-2.4.0-py3-none-any.whl size=51400 sha256=56d0a64e3c91a33579b8602ac195f9817f7ec270134216944d601777eb14706e
+  Stored in directory: /builder/home/.cache/pip/wheels/83/73/4c/0e331f57d4702becb1fca9d9148277aca96d127bd838faf85e
+  Building wheel for jaeger-client (setup.py): started
+  Building wheel for jaeger-client (setup.py): finished with status 'done'
+  Created wheel for jaeger-client: filename=jaeger_client-4.4.0-py3-none-any.whl size=64325 sha256=7f5e166aa4d2ff1e528aaf690cbbda076c839020ff5ca8a90adfc952ca5bd033
+  Stored in directory: /builder/home/.cache/pip/wheels/6e/ea/ec/560f1cffece42c70b9c68b1dc3519c769883650396adcb90b7
+  Building wheel for grpcio-reflection (setup.py): started
+  Building wheel for grpcio-reflection (setup.py): finished with status 'done'
+  Created wheel for grpcio-reflection: filename=grpcio_reflection-1.34.1-py3-none-any.whl size=14415 sha256=793d7a1b3c330a2a2944bebf8e5fc844fd5361ee42667d364d84f24990488d12
+  Stored in directory: /builder/home/.cache/pip/wheels/9b/84/80/81f4dc4afff82cce892567df37472395abf1a1bb675caec1ec
+  Building wheel for PTable (setup.py): started
+  Building wheel for PTable (setup.py): finished with status 'done'
+  Created wheel for PTable: filename=PTable-0.9.2-py3-none-any.whl size=22907 sha256=27a9b8d9fa69d7a839c379597f387f8ef8f8e43314883b6f9a0f7040d64497b5
+  Stored in directory: /builder/home/.cache/pip/wheels/f3/65/67/71f473ec87ea4554d1bdfb1b5128cfe1414c2b113b72a1ee8e
+  Building wheel for threadloop (setup.py): started
+  Building wheel for threadloop (setup.py): finished with status 'done'
+  Created wheel for threadloop: filename=threadloop-1.0.2-py3-none-any.whl size=3425 sha256=c510e07bfab86db21c82787c5710c7018ddb9ec6ffd0e8715571f800b9d3db01
+  Stored in directory: /builder/home/.cache/pip/wheels/02/54/65/9f87de48fe8fcaaee30f279973d946ad55f9df56b93b3e78da
+  Building wheel for thrift (setup.py): started
+  Building wheel for thrift (setup.py): finished with status 'done'
+  Created wheel for thrift: filename=thrift-0.13.0-cp36-cp36m-linux_x86_64.whl size=483911 sha256=ef03790a503f99a9e4edc6ac7d933740e3aaee0a82686381e35af1008bea047c
+  Stored in directory: /builder/home/.cache/pip/wheels/e0/38/fc/472fe18756b177b42096961f8bd3ff2dc5c5620ac399fce52d
+Successfully built black Flask-OpenTracing opentracing jaeger-client grpcio-reflection PTable threadloop thrift
+Installing collected packages: appdirs, typed-ast, dataclasses, mypy-extensions, click, pathspec, toml, regex, black, pyflakes, mccabe, pycodestyle, flake8, mypy, Pillow, iniconfig, pytest, coverage, pytest-cov, distlib, importlib-resources, filelock, virtualenv, tox, grpcio-tools, mypy-protobuf, tenacity, pandas, PTable, pip-licenses, itsdangerous, Flask, Flask-cors, redis, flatbuffers, opentracing, Flask-OpenTracing, threadloop, thrift, jaeger-client, grpcio-opentracing, grpcio-reflection, gunicorn, seldon-core
+  Attempting uninstall: Pillow
+    Found existing installation: Pillow 7.2.0
+    Uninstalling Pillow-7.2.0:
+      Successfully uninstalled Pillow-7.2.0
+  Attempting uninstall: pytest
+    Found existing installation: pytest 5.3.1
+    Uninstalling pytest-5.3.1:
+      Successfully uninstalled pytest-5.3.1
+  Attempting uninstall: coverage
+    Found existing installation: coverage 4.5.4
+    Uninstalling coverage-4.5.4:
+      Successfully uninstalled coverage-4.5.4
+  Attempting uninstall: pytest-cov
+    Found existing installation: pytest-cov 2.8.1
+    Uninstalling pytest-cov-2.8.1:
+      Successfully uninstalled pytest-cov-2.8.1
+  Attempting uninstall: grpcio-tools
+    Found existing installation: grpcio-tools 1.32.0
+    Uninstalling grpcio-tools-1.32.0:
+      Successfully uninstalled grpcio-tools-1.32.0
+  Attempting uninstall: tenacity
+    Found existing installation: tenacity 6.0.0
+    Uninstalling tenacity-6.0.0:
+      Successfully uninstalled tenacity-6.0.0
+  Attempting uninstall: pandas
+    Found existing installation: pandas 1.1.3
+    Uninstalling pandas-1.1.3:
+      Successfully uninstalled pandas-1.1.3
+  Running setup.py develop for seldon-core
+ERROR: After October 2020 you may experience errors when installing or updating packages. This is because pip will change the way that it resolves dependency conflicts.
+
+We recommend you use --use-feature=2020-resolver to test your packages with the new resolver before it becomes the default.
+
+grpcio-tools 1.33.2 requires grpcio>=1.33.2, but you'll have grpcio 1.32.0 which is incompatible.
+alibi 0.5.2 requires tensorflow>=2.0, but you'll have tensorflow 1.15.4 which is incompatible.
+grpcio-reflection 1.34.1 requires grpcio>=1.34.1, but you'll have grpcio 1.32.0 which is incompatible.
+Successfully installed Flask-1.1.2 Flask-OpenTracing-1.1.0 Flask-cors-3.0.10 PTable-0.9.2 Pillow-8.1.0 appdirs-1.4.4 black-20.8b1 click-7.1.2 coverage-5.3.1 dataclasses-0.8 distlib-0.3.1 filelock-3.0.12 flake8-3.8.1 flatbuffers-1.12 grpcio-opentracing-1.1.4 grpcio-reflection-1.34.1 grpcio-tools-1.33.2 gunicorn-20.0.4 importlib-resources-5.1.0 iniconfig-1.1.1 itsdangerous-1.1.0 jaeger-client-4.4.0 mccabe-0.6.1 mypy-0.790 mypy-extensions-0.4.3 mypy-protobuf-1.22 opentracing-2.4.0 pandas-1.1.0 pathspec-0.8.1 pip-licenses-3.1.0 pycodestyle-2.6.0 pyflakes-2.2.0 pytest-6.2.1 pytest-cov-2.10.1 redis-3.5.3 regex-2020.11.13 seldon-core tenacity-6.3.1 threadloop-1.0.2 thrift-0.13.0 toml-0.10.2 tox-3.21.2 typed-ast-1.4.2 virtualenv-20.4.0
+WARNING: You are using pip version 20.2.3; however, version 20.3.3 is available.
+You should consider upgrading via the '/usr/local/bin/python -m pip install --upgrade pip' command.
+make[1]: Leaving directory '/workspace/source/python'
+Running Sphinx v3.2.1
+fatal: No names found, cannot describe anything.
+making output directory... done
+loading intersphinx inventory from https://docs.python.org/objects.inv...
+intersphinx inventory has moved: https://docs.python.org/objects.inv -> https://docs.python.org/3/objects.inv
+Creating file /workspace/source/doc/source/python/api/seldon_core.rst.
+Creating file /workspace/source/doc/source/python/api/seldon_core.proto.rst.
+Creating file /workspace/source/doc/source/python/api/modules.rst.
+building [mo]: targets for 0 po files that are out of date
+building [html]: targets for 184 source files that are out of date
+updating environment: [new config] 184 added, 0 changed, 0 removed
+reading sources... [  5%] R/README .. analytics/outlier_detection
+reading sources... [ 10%] analytics/routers .. charts/seldon-single-model
+reading sources... [ 15%] cpp/README .. examples/ambassador_circuit_breakers
+reading sources... [ 21%] examples/ambassador_custom .. examples/bench_svcOrch
+reading sources... [ 26%] examples/bench_tensorflow .. examples/dvc
+reading sources... [ 31%] examples/explainer_examples .. examples/jenkins_classic
+reading sources... [ 36%] examples/jenkins_x .. examples/metadata_schema
+reading sources... [ 42%] examples/metrics .. examples/outlier_combiner
+reading sources... [ 47%] examples/pachyderm-simple .. examples/seldon_client
+reading sources... [ 52%] examples/seldon_core_setup .. go/go_wrapper_link
+reading sources... [ 57%] graph/annotations .. graph/private_registries
+reading sources... [ 63%] graph/protocols .. nodejs/README
+reading sources... [ 68%] python/api/modules .. python/python_wrapping_s2i
+reading sources... [ 73%] python/seldon_client .. reference/benchmarking
+reading sources... [ 78%] reference/changelog .. reference/release-0.2.6
+reading sources... [ 84%] reference/release-0.2.7 .. reference/upgrading
+reading sources... [ 89%] servers/batch .. streaming/knative_eventing
+reading sources... [ 94%] tutorials/blogs .. workflow/serving
+reading sources... [100%] workflow/troubleshooting .. wrappers/s2i
+
+waiting for workers...
+looking for now-outdated files... none found
+pickling environment... done
+checking consistency... done
+preparing documents... done
+writing output... [  5%] R/r_wrapping_docker .. charts/seldon-abtest
+writing output... [ 11%] charts/seldon-core-analytics .. developer/community
+writing output... [ 17%] developer/contributing .. examples/argo_workflows_batch
+writing output... [ 23%] examples/argo_workflows_hdfs_batch .. examples/cpp_simple
+writing output... [ 29%] examples/custom_init_container .. examples/helm_examples
+writing output... [ 35%] examples/iris .. examples/max_grpc_msg_size
+writing output... [ 41%] examples/metadata .. examples/openvino_ensemble
+writing output... [ 47%] examples/outlier_cifar10 .. examples/scale
+writing output... [ 52%] examples/seldon_client .. go/go_wrapper_link
+writing output... [ 58%] graph/annotations .. graph/protocols
+writing output... [ 64%] graph/scaling .. python/api/seldon_core
+writing output... [ 70%] python/api/seldon_core.proto .. reference/apis/index
+writing output... [ 76%] reference/apis/internal-api .. reference/helm
+writing output... [ 82%] reference/images .. reference/release-1.0.0
+writing output... [ 88%] reference/release-1.1.0 .. servers/tensorflow
+writing output... [ 94%] servers/triton .. workflow/install
+writing output... [100%] workflow/overview .. wrappers/s2i
+
+waiting for workers...
+generating indices...  genindex py-modindexdone
+copying notebooks ... [  1%] examples/alibaba_ack_deep_mnist.ipynb
+copying notebooks ... [  2%] examples/ambassador_canary.ipynb
+copying notebooks ... [  4%] examples/ambassador_circuit_breakers.ipynb
+copying notebooks ... [  5%] examples/pachyderm-simple.ipynb
+copying notebooks ... [  7%] examples/patch_1_2.ipynb
+copying notebooks ... [  8%] examples/payload_logging.ipynb
+copying notebooks ... [ 10%] examples/pdbs_example.ipynb
+copying notebooks ... [ 11%] examples/protocol_examples.ipynb
+copying notebooks ... [ 12%] examples/pvc-tfjob.ipynb
+copying notebooks ... [ 14%] examples/runtime_metrics_tags.ipynb
+copying notebooks ... [ 15%] examples/sagemaker_sklearn.ipynb
+copying notebooks ... [ 17%] examples/scale.ipynb
+copying notebooks ... [ 18%] examples/seldon_client.ipynb
+copying notebooks ... [ 20%] examples/bench_tensorflow.ipynb
+copying notebooks ... [ 21%] examples/chainer_mnist.ipynb
+copying notebooks ... [ 22%] examples/cifar10_kafka.ipynb
+copying notebooks ... [ 24%] examples/cpp_advanced.ipynb
+copying notebooks ... [ 25%] examples/cpp_simple.ipynb
+copying notebooks ... [ 27%] examples/custom_init_container.ipynb
+copying notebooks ... [ 28%] examples/custom_metrics.ipynb
+copying notebooks ... [ 30%] examples/customdata_example.ipynb
+copying notebooks ... [ 31%] examples/drift_cifar10.ipynb
+copying notebooks ... [ 32%] examples/dvc.ipynb
+copying notebooks ... [ 34%] examples/ambassador_custom.ipynb
+copying notebooks ... [ 35%] examples/ambassador_headers.ipynb
+copying notebooks ... [ 37%] examples/ambassador_shadow.ipynb
+copying notebooks ... [ 38%] examples/argo_workflows_batch.ipynb
+copying notebooks ... [ 40%] examples/argo_workflows_hdfs_batch.ipynb
+copying notebooks ... [ 41%] examples/autoscaling_example.ipynb
+copying notebooks ... [ 42%] examples/aws_eks_deep_mnist.ipynb
+copying notebooks ... [ 44%] examples/azure_aks_deep_mnist.ipynb
+copying notebooks ... [ 45%] examples/backwards_compatibility.ipynb
+copying notebooks ... [ 47%] examples/bench_svcOrch.ipynb
+copying notebooks ... [ 48%] examples/metrics.ipynb
+copying notebooks ... [ 50%] examples/minio-sklearn.ipynb
+copying notebooks ... [ 51%] examples/minio_setup.ipynb
+copying notebooks ... [ 52%] examples/mlflow_server_ab_test_ambassador.ipynb
+copying notebooks ... [ 54%] examples/multiple_operators.ipynb
+copying notebooks ... [ 55%] examples/openvino.ipynb
+copying notebooks ... [ 57%] examples/openvino_ensemble.ipynb
+copying notebooks ... [ 58%] examples/outlier_cifar10.ipynb
+copying notebooks ... [ 60%] examples/outlier_combiner.ipynb
+copying notebooks ... [ 61%] examples/seldon_core_setup.ipynb
+copying notebooks ... [ 62%] examples/server_examples.ipynb
+copying notebooks ... [ 64%] examples/sklearn_spacy_text_classifier_example.ipynb
+copying notebooks ... [ 65%] examples/statsmodels.ipynb
+copying notebooks ... [ 67%] examples/tensorrt.ipynb
+copying notebooks ... [ 68%] examples/tfserving_mnist.ipynb
+copying notebooks ... [ 70%] examples/timeouts.ipynb
+copying notebooks ... [ 71%] examples/tracing.ipynb
+copying notebooks ... [ 72%] examples/vegeta_bench_argo_workflows.ipynb
+copying notebooks ... [ 74%] examples/explainer_examples.ipynb
+copying notebooks ... [ 75%] examples/feedback_reward_custom_metrics.ipynb
+copying notebooks ... [ 77%] examples/gpu_tensorflow_deep_mnist.ipynb
+copying notebooks ... [ 78%] examples/graph-metadata.ipynb
+copying notebooks ... [ 80%] examples/h2o_mojo.ipynb
+copying notebooks ... [ 81%] examples/helm_examples.ipynb
+copying notebooks ... [ 82%] examples/iris.ipynb
+copying notebooks ... [ 84%] examples/istio_examples.ipynb
+copying notebooks ... [ 85%] examples/jenkins_classic.ipynb
+copying notebooks ... [ 87%] examples/jenkins_x.ipynb
+copying notebooks ... [ 88%] examples/kafka_spacy_sklearn.ipynb
+copying notebooks ... [ 90%] examples/keda.ipynb
+copying notebooks ... [ 91%] examples/knative_eventing_streaming.ipynb
+copying notebooks ... [ 92%] examples/kubeflow_pipelines_batch.ipynb
+copying notebooks ... [ 94%] examples/kubeflow_seldon_e2e_pipeline.ipynb
+copying notebooks ... [ 95%] examples/max_grpc_msg_size.ipynb
+copying notebooks ... [ 97%] examples/metadata.ipynb
+copying notebooks ... [ 98%] examples/metadata_grpc.ipynb
+copying notebooks ... [100%] examples/metadata_schema.ipynb
+
+highlighting module code... [  5%] seldon_core.api_tester
+highlighting module code... [ 11%] seldon_core.app
+highlighting module code... [ 17%] seldon_core.batch_processor
+highlighting module code... [ 23%] seldon_core.flask_utils
+highlighting module code... [ 29%] seldon_core.metadata
+highlighting module code... [ 35%] seldon_core.metrics
+highlighting module code... [ 41%] seldon_core.microservice
+highlighting module code... [ 47%] seldon_core.microservice_tester
+highlighting module code... [ 52%] seldon_core.persistence
+highlighting module code... [ 58%] seldon_core.proto.prediction_pb2_grpc
+highlighting module code... [ 64%] seldon_core.seldon_client
+highlighting module code... [ 70%] seldon_core.seldon_methods
+highlighting module code... [ 76%] seldon_core.serving_test_gen
+highlighting module code... [ 82%] seldon_core.storage
+highlighting module code... [ 88%] seldon_core.user_model
+highlighting module code... [ 94%] seldon_core.utils
+highlighting module code... [100%] seldon_core.wrapper
+
+writing additional pages...  searchdone
+copying images... [  0%] analytics/./dashboard.png
+copying images... [  1%] analytics/../images/cicd-seldon.jpg
+copying images... [  2%] analytics/analytics.png
+copying images... [  3%] analytics/cat.png
+copying images... [  4%] analytics/cat_explanation.png
+copying images... [  5%] examples/../../_build/doctrees/nbsphinx/examples_alibaba_ack_deep_mnist_16_0.png
+copying images... [  6%] examples/images/k8s-dashboard-2.jpg
+copying images... [  7%] examples/images/k8s-dashboard-1.jpg
+copying images... [  7%] examples/../../_build/doctrees/nbsphinx/examples_alibaba_ack_deep_mnist_40_0.png
+copying images... [  8%] examples/images/graf.jpg
+copying images... [  9%] examples/../../_build/doctrees/nbsphinx/examples_aws_eks_deep_mnist_11_0.png
+copying images... [ 10%] examples/../../_build/doctrees/nbsphinx/examples_aws_eks_deep_mnist_48_0.png
+copying images... [ 11%] examples/../../_build/doctrees/nbsphinx/examples_azure_aks_deep_mnist_11_0.png
+copying images... [ 12%] examples/../../_build/doctrees/nbsphinx/examples_azure_aks_deep_mnist_42_0.png
+copying images... [ 13%] examples/tensorflow-rest-kafka.png
+copying images... [ 14%] examples/tensorflow-grpc-kafka.png
+copying images... [ 14%] examples/../../_build/doctrees/nbsphinx/examples_drift_cifar10_26_0.png
+copying images... [ 15%] examples/../../_build/doctrees/nbsphinx/examples_drift_cifar10_36_0.png
+copying images... [ 16%] examples/../../_build/doctrees/nbsphinx/examples_drift_cifar10_36_1.png
+copying images... [ 17%] examples/../../_build/doctrees/nbsphinx/examples_drift_cifar10_36_2.png
+copying images... [ 18%] examples/../../_build/doctrees/nbsphinx/examples_explainer_examples_38_1.png
+copying images... [ 19%] examples/../../_build/doctrees/nbsphinx/examples_explainer_examples_39_1.png
+copying images... [ 20%] examples/../../_build/doctrees/nbsphinx/examples_explainer_examples_75_0.png
+copying images... [ 21%] examples/./images/single.png
+copying images... [ 21%] examples/./images/two-level.png
+copying images... [ 22%] examples/./images/combiner.png
+copying images... [ 23%] examples/./images/router.png
+copying images... [ 24%] examples/./images/input-transformer.png
+copying images... [ 25%] examples/./images/output-transformer.png
+copying images... [ 26%] examples/images/deploy-graph.png
+copying images... [ 27%] examples/./svc-graph.png
+copying images... [ 28%] examples/./svc-graph-istio.png
+copying images... [ 28%] examples/./images/pipeline-architecture.jpg
+copying images... [ 29%] examples/./images/new-item.png
+copying images... [ 30%] examples/./images/pipeline-config.png
+copying images... [ 31%] examples/./images/scm-config.png
+copying images... [ 32%] examples/./images/pipeline-stages.png
+copying images... [ 33%] examples/./images/git-user.png
+copying images... [ 34%] examples/images/jenkins-x-full-diagram.jpg
+copying images... [ 35%] examples/assets/kubeflow-pipeline.jpg
+copying images... [ 35%] examples/assets/seldon-kubeflow-batch.gif
+copying images... [ 36%] examples/img/completed-pipeline-deploy.jpg
+copying images... [ 37%] examples/img/kubeflow-seldon-nlp-full.jpg
+copying images... [ 38%] examples/img/kubeflow-seldon-nlp-reusable-components.jpg
+copying images... [ 39%] examples/img/k-pipeline-dashboard.jpg
+copying images... [ 40%] examples/img/kubeflow-seldon-nlp-ml-pipelines.jpg
+copying images... [ 41%] examples/img/kubeflow-seldon-nlp-ml-pipelines-deploy.jpg
+copying images... [ 42%] examples/img/running-pipeline.jpg
+copying images... [ 42%] examples/img/seldon-analytics.jpg
+copying images... [ 43%] examples/seldon-rest-dashboard.png
+copying images... [ 44%] examples/seldon-grpc-dashboard.png
+copying images... [ 45%] examples/tfserving-rest-dashboard.png
+copying images... [ 46%] examples/tfserving-grpc-dashboard.png
+copying images... [ 47%] examples/images/mlflow-dashboard.png
+copying images... [ 48%] examples/images/grafana-mlflow.jpg
+copying images... [ 49%] examples/car.png
+copying images... [ 50%] examples/pipeline1.png
+copying images... [ 50%] examples/./demo.png
+copying images... [ 51%] examples/../../_build/doctrees/nbsphinx/examples_outlier_cifar10_28_0.png
+copying images... [ 52%] examples/../../_build/doctrees/nbsphinx/examples_outlier_cifar10_33_0.png
+copying images... [ 53%] examples/../../_build/doctrees/nbsphinx/examples_outlier_cifar10_39_0.png
+copying images... [ 54%] examples/../../_build/doctrees/nbsphinx/examples_outlier_combiner_12_2.png
+copying images... [ 55%] examples/../../_build/doctrees/nbsphinx/examples_outlier_combiner_22_1.png
+copying images... [ 56%] examples/img/outliers-combiner-1.jpg
+copying images... [ 57%] examples/img/outliers-combiner-2.jpg
+copying images... [ 57%] examples/img/outliers-combiner-3.jpg
+copying images... [ 58%] examples/./images/pachyderm-simple-demo.png
+copying images... [ 59%] examples/sagemaker-scikit-iris-train.png
+copying images... [ 60%] examples/../../_build/doctrees/nbsphinx/examples_sklearn_spacy_text_classifier_example_5_1.png
+copying images... [ 61%] examples/dashboard_image.png
+copying images... [ 62%] examples/digit.png
+copying images... [ 63%] examples/../../_build/doctrees/nbsphinx/examples_tensorrt_11_1.png
+copying images... [ 64%] examples/../../_build/doctrees/nbsphinx/examples_tfserving_mnist_20_0.svg
+copying images... [ 64%] examples/../../_build/doctrees/nbsphinx/examples_tfserving_mnist_23_0.png
+copying images... [ 65%] examples/jaeger-ui-rest-example.png
+copying images... [ 66%] examples/jaeger-ui-grpc-example.png
+copying images... [ 67%] graph/./jaeger-ui-rest-example.png
+copying images... [ 68%] graph/./jaeger-ui-grpc-example.png
+copying images... [ 69%] graph/./inf-graph.png
+copying images... [ 70%] graph/./svcOrch1.png
+copying images... [ 71%] ./images/seldon-core-high-level.jpg
+copying images... [ 71%] reference/apis/./api.png
+copying images... [ 72%] reference/apis/./graph.png
+copying images... [ 73%] reference/apis/./metadata.svg
+copying images... [ 74%] reference/apis/./graph-metadata.svg
+copying images... [ 75%] reference/apis/./swagger-ui-ambassador.png
+copying images... [ 76%] reference/./mnist-graph.png
+copying images... [ 77%] reference/./resnet-test.png
+copying images... [ 78%] reference/./outlier-detection-dashboard.png
+copying images... [ 78%] reference/./mab-dashboard.png
+copying images... [ 79%] reference/./dist-tracing.png
+copying images... [ 80%] reference/./pipeline1.png
+copying images... [ 81%] reference/./cicd-demo.png
+copying images... [ 82%] reference/../analytics/cat.png
+copying images... [ 83%] reference/../analytics/cat_explanation.png
+copying images... [ 84%] servers/../images/batch-processor.jpg
+copying images... [ 85%] servers/../images/batch-workflow-manager-integration.jpg
+copying images... [ 85%] servers/../images/batch-workflow-managers.jpg
+copying images... [ 86%] streaming/../images/stream-processing-knative.jpg
+copying images... [ 87%] tutorials/./deploy.png
+copying images... [ 88%] tutorials/./graphs.png
+copying images... [ 89%] tutorials/./wrap.png
+copying images... [ 90%] workflow/../images/e2e-model-serving.svg
+copying images... [ 91%] workflow/../images/model-servers.svg
+copying images... [ 92%] workflow/../images/language-wrappers-1.svg
+copying images... [ 92%] workflow/../images/language-wrappers-2.svg
+copying images... [ 93%] workflow/../images/seldondeployment-crd.svg
+copying images... [ 94%] workflow/../images/operator.svg
+copying images... [ 95%] workflow/../images/orchestrator.svg
+copying images... [ 96%] workflow/../images/metadata.svg
+copying images... [ 97%] workflow/../images/metrics.svg
+copying images... [ 98%] workflow/../images/tracing.svg
+copying images... [ 99%] workflow/./graph.png
+copying images... [100%] workflow/../images/rest-openapi.jpg
+
+copying static files... ... done
+copying extra files... done
+dumping search index in English (code: en)... done
+dumping object inventory... done
+build succeeded.
+
+The HTML pages are in _build/html.
+make: Leaving directory '/workspace/source/doc'
