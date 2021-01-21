@@ -71,7 +71,9 @@ For more complex inference graphs the service orchestrator will handle routing c
 
 ## Resource Requests/Limits for Service Orchestrator
 
-You can set custom resource request and limits for this component by specifying them in a `svcOrchSpec` section in your Seldon Deployment. An example is shown below to set the engine cpu and memory requests:
+You can set custom resource request and limits for this component by specifying
+them in a `svcOrchSpec` section in your Seldon Deployment.
+An example is shown below to set the engine cpu and memory requests:
 
 ```JSON
 {
@@ -156,9 +158,47 @@ In these cases the external API requests will be sent directly to your model. At
 
 Note no metrics or extra data will be added to the request so this would need to be done by your model itself if needed.
 
-## Routing in Metadata
+## Routing Metadata Injection
 
-The current default orchestrator in Go the "executor" does not return routing meta data in request calls. This is a [known issue](https://github.com/SeldonIO/seldon-core/issues/1823). 
+For performance reasons, by default the service orchestrator will only forward
+the request payload, without trying to de-serialise it.
+This may be a blocker for some use cases, like injecting routing metadata when
+[placing routers in your inference graph](../analytics/routers.md).
+This metadata can be useful to indicate which routes were taken for each
+request.
+
+This behaviour can be changed through the `SELDON_ENABLE_ROUTING_INJECTION`
+environment variable of the orchestrator.
+When this variable is enabled (under `svcOrchSpec`), the orchestrator will
+interpret the request payload, and will inject this routing metadata for each
+request.
+
+You can see an example below on how this flag can be switched on:
+
+```yaml
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: my-graph-with-routers 
+spec:
+  predictors:
+  - svcOrchSpec:
+      env:
+      - name: SELDON_ENABLE_ROUTING_INJECTION
+        value: 'true'
+    graph:
+      name: router
+      type: ROUTER 
+      # ...
+      children: 
+        - name: model-a
+          type: MODEL
+          # ...
+        - name: model-b
+          type: MODEL
+          # ...
+    name: default
+```
 
 
 ## Java Engine [DEPRECATED]
