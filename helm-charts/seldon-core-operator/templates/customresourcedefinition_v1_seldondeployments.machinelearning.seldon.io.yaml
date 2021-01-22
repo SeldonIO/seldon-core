@@ -5,7 +5,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: '{{ include "seldon.namespace" . }}/seldon-serving-cert'
-    controller-gen.kubebuilder.io/version: v0.2.5
+    controller-gen.kubebuilder.io/version: v0.2.9
   creationTimestamp: null
   name: seldondeployments.machinelearning.seldon.io
 spec:
@@ -4775,6 +4775,12 @@ spec:
                           type: object
                         endpoint:
                           properties:
+                            grpcPort:
+                              format: int32
+                              type: integer
+                            httpPort:
+                              format: int32
+                              type: integer
                             service_host:
                               type: string
                             service_port:
@@ -4826,6 +4832,12 @@ spec:
                                                                                   properties:
                                                                                     endpoint:
                                                                                       properties:
+                                                                                        grpcPort:
+                                                                                          format: int32
+                                                                                          type: integer
+                                                                                        httpPort:
+                                                                                          format: int32
+                                                                                          type: integer
                                                                                         service_host:
                                                                                           type: string
                                                                                         service_port:
@@ -4881,6 +4893,12 @@ spec:
                                                                                 type: array
                                                                               endpoint:
                                                                                 properties:
+                                                                                  grpcPort:
+                                                                                    format: int32
+                                                                                    type: integer
+                                                                                  httpPort:
+                                                                                    format: int32
+                                                                                    type: integer
                                                                                   service_host:
                                                                                     type: string
                                                                                   service_port:
@@ -4936,6 +4954,12 @@ spec:
                                                                           type: array
                                                                         endpoint:
                                                                           properties:
+                                                                            grpcPort:
+                                                                              format: int32
+                                                                              type: integer
+                                                                            httpPort:
+                                                                              format: int32
+                                                                              type: integer
                                                                             service_host:
                                                                               type: string
                                                                             service_port:
@@ -4991,6 +5015,12 @@ spec:
                                                                     type: array
                                                                   endpoint:
                                                                     properties:
+                                                                      grpcPort:
+                                                                        format: int32
+                                                                        type: integer
+                                                                      httpPort:
+                                                                        format: int32
+                                                                        type: integer
                                                                       service_host:
                                                                         type: string
                                                                       service_port:
@@ -5046,6 +5076,12 @@ spec:
                                                               type: array
                                                             endpoint:
                                                               properties:
+                                                                grpcPort:
+                                                                  format: int32
+                                                                  type: integer
+                                                                httpPort:
+                                                                  format: int32
+                                                                  type: integer
                                                                 service_host:
                                                                   type: string
                                                                 service_port:
@@ -5101,6 +5137,12 @@ spec:
                                                         type: array
                                                       endpoint:
                                                         properties:
+                                                          grpcPort:
+                                                            format: int32
+                                                            type: integer
+                                                          httpPort:
+                                                            format: int32
+                                                            type: integer
                                                           service_host:
                                                             type: string
                                                           service_port:
@@ -5156,6 +5198,12 @@ spec:
                                                   type: array
                                                 endpoint:
                                                   properties:
+                                                    grpcPort:
+                                                      format: int32
+                                                      type: integer
+                                                    httpPort:
+                                                      format: int32
+                                                      type: integer
                                                     service_host:
                                                       type: string
                                                     service_port:
@@ -5211,6 +5259,12 @@ spec:
                                             type: array
                                           endpoint:
                                             properties:
+                                              grpcPort:
+                                                format: int32
+                                                type: integer
+                                              httpPort:
+                                                format: int32
+                                                type: integer
                                               service_host:
                                                 type: string
                                               service_port:
@@ -5266,6 +5320,12 @@ spec:
                                       type: array
                                     endpoint:
                                       properties:
+                                        grpcPort:
+                                          format: int32
+                                          type: integer
+                                        httpPort:
+                                          format: int32
+                                          type: integer
                                         service_host:
                                           type: string
                                         service_port:
@@ -5321,6 +5381,12 @@ spec:
                                 type: array
                               endpoint:
                                 properties:
+                                  grpcPort:
+                                    format: int32
+                                    type: integer
+                                  httpPort:
+                                    format: int32
+                                    type: integer
                                   service_host:
                                     type: string
                                   service_port:
@@ -5376,6 +5442,12 @@ spec:
                           type: array
                         endpoint:
                           properties:
+                            grpcPort:
+                              format: int32
+                              type: integer
+                            httpPort:
+                              format: int32
+                              type: integer
                             service_host:
                               type: string
                             service_port:
@@ -10384,6 +10456,12 @@ spec:
                           type: object
                         endpoint:
                           properties:
+                            grpcPort:
+                              format: int32
+                              type: integer
+                            httpPort:
+                              format: int32
+                              type: integer
                             service_host:
                               type: string
                             service_port:
@@ -10435,6 +10513,12 @@ spec:
                                                                                   properties:
                                                                                     endpoint:
                                                                                       properties:
+                                                                                        grpcPort:
+                                                                                          format: int32
+                                                                                          type: integer
+                                                                                        httpPort:
+                                                                                          format: int32
+                                                                                          type: integer
                                                                                         service_host:
                                                                                           type: string
                                                                                         service_port:
@@ -10490,6 +10574,12 @@ spec:
                                                                                 type: array
                                                                               endpoint:
                                                                                 properties:
+                                                                                  grpcPort:
+                                                                                    format: int32
+                                                                                    type: integer
+                                                                                  httpPort:
+                                                                                    format: int32
+                                                                                    type: integer
                                                                                   service_host:
                                                                                     type: string
                                                                                   service_port:
@@ -10545,6 +10635,12 @@ spec:
                                                                           type: array
                                                                         endpoint:
                                                                           properties:
+                                                                            grpcPort:
+                                                                              format: int32
+                                                                              type: integer
+                                                                            httpPort:
+                                                                              format: int32
+                                                                              type: integer
                                                                             service_host:
                                                                               type: string
                                                                             service_port:
@@ -10600,6 +10696,12 @@ spec:
                                                                     type: array
                                                                   endpoint:
                                                                     properties:
+                                                                      grpcPort:
+                                                                        format: int32
+                                                                        type: integer
+                                                                      httpPort:
+                                                                        format: int32
+                                                                        type: integer
                                                                       service_host:
                                                                         type: string
                                                                       service_port:
@@ -10655,6 +10757,12 @@ spec:
                                                               type: array
                                                             endpoint:
                                                               properties:
+                                                                grpcPort:
+                                                                  format: int32
+                                                                  type: integer
+                                                                httpPort:
+                                                                  format: int32
+                                                                  type: integer
                                                                 service_host:
                                                                   type: string
                                                                 service_port:
@@ -10710,6 +10818,12 @@ spec:
                                                         type: array
                                                       endpoint:
                                                         properties:
+                                                          grpcPort:
+                                                            format: int32
+                                                            type: integer
+                                                          httpPort:
+                                                            format: int32
+                                                            type: integer
                                                           service_host:
                                                             type: string
                                                           service_port:
@@ -10765,6 +10879,12 @@ spec:
                                                   type: array
                                                 endpoint:
                                                   properties:
+                                                    grpcPort:
+                                                      format: int32
+                                                      type: integer
+                                                    httpPort:
+                                                      format: int32
+                                                      type: integer
                                                     service_host:
                                                       type: string
                                                     service_port:
@@ -10820,6 +10940,12 @@ spec:
                                             type: array
                                           endpoint:
                                             properties:
+                                              grpcPort:
+                                                format: int32
+                                                type: integer
+                                              httpPort:
+                                                format: int32
+                                                type: integer
                                               service_host:
                                                 type: string
                                               service_port:
@@ -10875,6 +11001,12 @@ spec:
                                       type: array
                                     endpoint:
                                       properties:
+                                        grpcPort:
+                                          format: int32
+                                          type: integer
+                                        httpPort:
+                                          format: int32
+                                          type: integer
                                         service_host:
                                           type: string
                                         service_port:
@@ -10930,6 +11062,12 @@ spec:
                                 type: array
                               endpoint:
                                 properties:
+                                  grpcPort:
+                                    format: int32
+                                    type: integer
+                                  httpPort:
+                                    format: int32
+                                    type: integer
                                   service_host:
                                     type: string
                                   service_port:
@@ -10985,6 +11123,12 @@ spec:
                           type: array
                         endpoint:
                           properties:
+                            grpcPort:
+                              format: int32
+                              type: integer
+                            httpPort:
+                              format: int32
+                              type: integer
                             service_host:
                               type: string
                             service_port:
@@ -15993,6 +16137,12 @@ spec:
                           type: object
                         endpoint:
                           properties:
+                            grpcPort:
+                              format: int32
+                              type: integer
+                            httpPort:
+                              format: int32
+                              type: integer
                             service_host:
                               type: string
                             service_port:
@@ -16044,6 +16194,12 @@ spec:
                                                                                   properties:
                                                                                     endpoint:
                                                                                       properties:
+                                                                                        grpcPort:
+                                                                                          format: int32
+                                                                                          type: integer
+                                                                                        httpPort:
+                                                                                          format: int32
+                                                                                          type: integer
                                                                                         service_host:
                                                                                           type: string
                                                                                         service_port:
@@ -16099,6 +16255,12 @@ spec:
                                                                                 type: array
                                                                               endpoint:
                                                                                 properties:
+                                                                                  grpcPort:
+                                                                                    format: int32
+                                                                                    type: integer
+                                                                                  httpPort:
+                                                                                    format: int32
+                                                                                    type: integer
                                                                                   service_host:
                                                                                     type: string
                                                                                   service_port:
@@ -16154,6 +16316,12 @@ spec:
                                                                           type: array
                                                                         endpoint:
                                                                           properties:
+                                                                            grpcPort:
+                                                                              format: int32
+                                                                              type: integer
+                                                                            httpPort:
+                                                                              format: int32
+                                                                              type: integer
                                                                             service_host:
                                                                               type: string
                                                                             service_port:
@@ -16209,6 +16377,12 @@ spec:
                                                                     type: array
                                                                   endpoint:
                                                                     properties:
+                                                                      grpcPort:
+                                                                        format: int32
+                                                                        type: integer
+                                                                      httpPort:
+                                                                        format: int32
+                                                                        type: integer
                                                                       service_host:
                                                                         type: string
                                                                       service_port:
@@ -16264,6 +16438,12 @@ spec:
                                                               type: array
                                                             endpoint:
                                                               properties:
+                                                                grpcPort:
+                                                                  format: int32
+                                                                  type: integer
+                                                                httpPort:
+                                                                  format: int32
+                                                                  type: integer
                                                                 service_host:
                                                                   type: string
                                                                 service_port:
@@ -16319,6 +16499,12 @@ spec:
                                                         type: array
                                                       endpoint:
                                                         properties:
+                                                          grpcPort:
+                                                            format: int32
+                                                            type: integer
+                                                          httpPort:
+                                                            format: int32
+                                                            type: integer
                                                           service_host:
                                                             type: string
                                                           service_port:
@@ -16374,6 +16560,12 @@ spec:
                                                   type: array
                                                 endpoint:
                                                   properties:
+                                                    grpcPort:
+                                                      format: int32
+                                                      type: integer
+                                                    httpPort:
+                                                      format: int32
+                                                      type: integer
                                                     service_host:
                                                       type: string
                                                     service_port:
@@ -16429,6 +16621,12 @@ spec:
                                             type: array
                                           endpoint:
                                             properties:
+                                              grpcPort:
+                                                format: int32
+                                                type: integer
+                                              httpPort:
+                                                format: int32
+                                                type: integer
                                               service_host:
                                                 type: string
                                               service_port:
@@ -16484,6 +16682,12 @@ spec:
                                       type: array
                                     endpoint:
                                       properties:
+                                        grpcPort:
+                                          format: int32
+                                          type: integer
+                                        httpPort:
+                                          format: int32
+                                          type: integer
                                         service_host:
                                           type: string
                                         service_port:
@@ -16539,6 +16743,12 @@ spec:
                                 type: array
                               endpoint:
                                 properties:
+                                  grpcPort:
+                                    format: int32
+                                    type: integer
+                                  httpPort:
+                                    format: int32
+                                    type: integer
                                   service_host:
                                     type: string
                                   service_port:
@@ -16594,6 +16804,12 @@ spec:
                           type: array
                         endpoint:
                           properties:
+                            grpcPort:
+                              format: int32
+                              type: integer
+                            httpPort:
+                              format: int32
+                              type: integer
                             service_host:
                               type: string
                             service_port:
