@@ -17,6 +17,7 @@ LABEL maintainer="cc@seldon.io"
 LABEL tensorflow_serving_github_branchtag=${TF_SERVING_VERSION_GIT_BRANCH}
 LABEL tensorflow_serving_github_commit=${TF_SERVING_VERSION_GIT_COMMIT}
 
+RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical
 RUN microdnf install openssl ca-certificates wget \
     && microdnf update; microdnf clean all
 

@@ -24,6 +24,7 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-$CONDA_VERSION-L
 ENV TINI_VERSION v0.16.1
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /usr/bin/tini
 RUN chmod +x /usr/bin/tini
-
+COPY apache2license.txt licenses/license.txt
+RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical
 ENTRYPOINT [ "/usr/bin/tini", "--" ]
 CMD [ "/bin/bash" ]
