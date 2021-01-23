@@ -1,0 +1,944 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-2852-in-6k9l6-37[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-276r6[0m
+{"level":"info","ts":1611422023.81581,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1611422023.8162317,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2852-in-6k9l6-37[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-snbds[0m
+{"level":"info","ts":1611422024.7657752,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1611422024.766946,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2852-in-6k9l6-37[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2852-in-6k9l6-37[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-hdzcq[0m
+{"level":"info","ts":1611422029.8545306,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1611422029.8562698,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2852-in-6k9l6-37[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-2852-in-6k9l6-zs46p[0m
+{"level":"info","ts":1611422030.0667067,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1611422041.231019,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2852-in-6k9l6-37[0m stage [32mpr-build-comment[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2852-in-6k9l6-37[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:b881f99ebc1f73651a0c96164e84ea9f7b8c152e,2852:2888070e3caa728600883b655e3a326a0278fe7b
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git fetch origin --unshallow 2888070e3caa728600883b655e3a326a0278fe7b: b881f99ebc1f73651a0c96164e84ea9f7b8c152e:
+DEBUG: ran git fetch --unshallow origin 2888070e3caa728600883b655e3a326a0278fe7b: b881f99ebc1f73651a0c96164e84ea9f7b8c152e: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard b881f99ebc1f73651a0c96164e84ea9f7b8c152e
+DEBUG: ran git reset --hard b881f99ebc1f73651a0c96164e84ea9f7b8c152e in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git merge 2888070e3caa728600883b655e3a326a0278fe7b
+DEBUG: ran git merge 2888070e3caa728600883b655e3a326a0278fe7b in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git log --format=%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%s%n%b%x1e b881f99ebc1f73651a0c96164e84ea9f7b8c152e..HEAD
+Merged SHA 394522d7b0bd949c060e637e19a22939abcc5e32 with commit message 'Merge commit '2888070e3caa728600883b655e3a326a0278fe7b'' into base branch master
+Merged SHA 2888070e3caa728600883b655e3a326a0278fe7b with commit message 'update auto-generated file in operator tests' into base branch master
+Merged SHA cbed1629a41b21fe5569eee53961030aa1ba7d0e with commit message 'apply code review suggestions' into base branch master
+Merged SHA e331fa3682bf13c69ffb9dc6fd7351d0ce1e9de3 with commit message 'move defaulting code out of webhook file' into base branch master
+Merged SHA e9594e852861b38240379776cb9128b2ae292254 with commit message 'fix validating webhooks to act on raw resource from etcd' into base branch master
+Merged SHA e0dbdea7977b93d26a1104f08072ab310a626eff with commit message 'fix explainer notebook' into base branch master
+Merged SHA 5ec1a7cd0204535f2518dba00ad9acf8b9079824 with commit message 'adjust validating webhooks so they do not expect defaulted resource' into base branch master
+Merged SHA d697735ccb0f0d6b45340150a25abd4520b89c8b with commit message 'complete removal of mutatingwebhook' into base branch master
+Merged SHA 30f696018a6f7f8b305981a103fe1824a38997bf with commit message 'initial attempt to remove mutating webhook' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-2852-in-6k9l6-37[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=2852
++ BUILD_NUMBER=37
++ PIPELINE_CONTEXT=integration
+++ cat
++++ date
++ COMMENT_MSG='Sat Jan 23 17:14:22 UTC 2021
+The logs for [integration] [37] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2852/37.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2852 --build=37'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=2852 '--comment=Sat Jan 23 17:14:22 UTC 2021
+The logs for [integration] [37] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2852/37.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2852 --build=37'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2852-in-6k9l6-37[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-2852-in-6k9l6-wn5sm[0m
+{"level":"info","ts":1611422064.9096713,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1611422064.9265378,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2852-in-6k9l6-37[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-2852-in-6k9l6-nz9kp[0m
+{"level":"info","ts":1611422065.101019,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1611422065.7704158,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2852-in-6k9l6-37[0m stage [32mend-to-end[0m and container [32mstep-credential-initializer-z4pm4[0m
+{"level":"info","ts":1611422068.4464967,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1611422068.4471176,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2852-in-6k9l6-37[0m stage [32mend-to-end[0m and container [32mstep-working-dir-initializer-pgqzf[0m
+{"level":"info","ts":1611422068.7648783,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1611422068.7660027,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2852-in-6k9l6-37[0m stage [32mend-to-end[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2852-in-6k9l6-37[0m stage [32mend-to-end[0m and container [32mstep-create-dir-workspace-77l86[0m
+{"level":"info","ts":1611422074.835855,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1611422074.8370762,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2852-in-6k9l6-37[0m stage [32mend-to-end[0m and container [32mstep-source-copy-workspace-7fbsz[0m
+{"level":"info","ts":1611422075.0358453,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1611422075.4320517,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2852-in-6k9l6-37[0m stage [32mend-to-end[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2852-in-6k9l6-37[0m stage [32mend-to-end[0m and container [32mstep-test-end-to-end[0m
+Test run type is: [base]
+Starting Docker: docker.
+[SETUP] Waiting for Docker to be ready, sleeping for 1 seconds ...
+kind create cluster --config ../resources/kind_config.yaml
+Creating cluster "kind" ...
+ • Ensuring node image (kindest/node:v1.16.3) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.16.3) 🖼
+ • Preparing nodes 📦  ...
+ ✓ Preparing nodes 📦
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+ • Joining worker nodes 🚜  ...
+ ✓ Joining worker nodes 🚜
+Set kubectl context to "kind-kind"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-kind
+
+Have a question, bug, or feature request? Let us know! https://kind.sigs.k8s.io/#community 🙂
+`kind get kubeconfig-path` is deprecated!
+
+KIND will export and merge kubeconfig like kops, minikube, etc.
+This command is now unnecessary and will be removed in a future release.
+
+For more info see: https://github.com/kubernetes-sigs/kind/issues/1060
+See also the output of `kind create cluster`
+
+Files changed in python folder:
+SKIPPING PYTHON IMAGE BUILD...
+Files changed in operator folder:
+operator/Dockerfile
+operator/Dockerfile.redhat
+operator/apis/machinelearning.seldon.io/v1/defaults.go
+operator/apis/machinelearning.seldon.io/v1/seldondeployment_webhook.go
+operator/apis/machinelearning.seldon.io/v1alpha2/seldondeployment_types.go
+operator/apis/machinelearning.seldon.io/v1alpha2/seldondeployment_webhook.go
+operator/apis/machinelearning.seldon.io/v1alpha3/seldondeployment_types.go
+operator/apis/machinelearning.seldon.io/v1alpha3/seldondeployment_webhook.go
+operator/bundle/manifests/seldon-operator.clusterserviceversion.yaml
+operator/config/cert/kustomization.yaml
+operator/config/controllerid/kustomization.yaml
+operator/config/controllerid/webhook-config.yaml
+operator/config/default/webhookcainjection_patch.yaml
+operator/config/lite/role_webhook.yaml
+operator/config/manifests/bases/seldon-operator.clusterserviceversion.yaml
+operator/config/namespaced/kustomization.yaml
+operator/config/namespaced/webhook-config.yaml
+operator/config/openshift/role_webhook.yaml
+operator/config/webhook/kustomization.yaml
+operator/config/webhook/kustomizeconfig.yaml
+operator/config/webhook/manifests.yaml
+operator/controllers/seldondeployment_controller.go
+operator/helm/split_resources.py
+operator/testing/machinelearning.seldon.io_seldondeployments.yaml
+operator/utils/k8s/initializer.go
+operator/utils/k8s/webhook.go
+operator/utils/k8s/webhook_test.go
+cd ../../operator && make kind-image-install
+make[1]: Entering directory '/workspace/source/operator'
+go: creating new go.mod: module tmp
+go: downloading sigs.k8s.io/controller-tools v0.2.9
+go: found sigs.k8s.io/controller-tools/cmd/controller-gen in sigs.k8s.io/controller-tools v0.2.9
+go: downloading github.com/spf13/cobra v0.0.5
+go: downloading k8s.io/apimachinery v0.17.0
+go: downloading k8s.io/apiextensions-apiserver v0.17.0
+go: downloading golang.org/x/tools v0.0.0-20190920225731-5eefd052ad72
+go: downloading github.com/gobuffalo/flect v0.2.0
+go: downloading gopkg.in/yaml.v3 v3.0.0-20190905181640-827449938966
+go: downloading sigs.k8s.io/yaml v1.1.0
+go: downloading k8s.io/api v0.17.0
+go: downloading github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
+go: downloading k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
+go: downloading github.com/fatih/color v1.7.0
+go: downloading gopkg.in/yaml.v2 v2.2.4
+go: downloading github.com/mattn/go-colorable v0.1.2
+go: downloading github.com/spf13/pflag v1.0.5
+go: downloading k8s.io/klog v1.0.0
+go: downloading golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
+go: downloading github.com/mattn/go-isatty v0.0.8
+go: downloading github.com/inconshreveable/mousetrap v1.0.0
+go: downloading github.com/google/gofuzz v1.0.0
+go: downloading golang.org/x/sys v0.0.0-20190826190057-c7b8b68b1456
+go: downloading gopkg.in/inf.v0 v0.9.1
+go: downloading golang.org/x/text v0.3.2
+/builder/home/go/bin/controller-gen object:headerFile=./hack/boilerplate.go.txt paths="./..."
+go fmt ./...
+go vet ./...
+go: downloading github.com/onsi/gomega v1.10.4
+go: downloading github.com/onsi/ginkgo v1.14.1
+go: downloading golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
+go: downloading github.com/nxadm/tail v1.4.4
+go: downloading gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
+/builder/home/go/bin/controller-gen "crd:trivialVersions=true" rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+rm -rf generated
+mkdir generated
+kustomize build config/default/ -o generated
+cp generated/apiextensions.k8s.io_v1beta1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml testing/machinelearning.seldon.io_seldondeployments.yaml
+ginkgo -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis
+[1611422211] [1mController Suite[0m - 64/64 specs test k8s client
+&{Reader:0xc000138de0 Writer:0xc000ca6a50 StatusClient:0xc000ca6a50}
+[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0m[32m•[0mE0123 17:17:38.799662   30299 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1.ConfigMap: Get "http://127.0.0.1:41649/api/v1/configmaps?allowWatchBookmarks=true&resourceVersion=122&timeoutSeconds=360&watch=true": dial tcp 127.0.0.1:41649: connect: connection refused
+E0123 17:17:38.799658   30299 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1alpha1.ScaledObject: Get "http://127.0.0.1:41649/apis/keda.sh/v1alpha1/scaledobjects?allowWatchBookmarks=true&resourceVersion=357&timeoutSeconds=471&watch=true": dial tcp 127.0.0.1:41649: connect: connection refused
+E0123 17:17:38.799660   30299 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1.SeldonDeployment: Get "http://127.0.0.1:41649/apis/machinelearning.seldon.io/v1/seldondeployments?allowWatchBookmarks=true&resourceVersion=444&timeoutSeconds=365&watch=true": dial tcp 127.0.0.1:41649: connect: connection refused
+E0123 17:17:38.799695   30299 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v2beta1.HorizontalPodAutoscaler: Get "http://127.0.0.1:41649/apis/autoscaling/v2beta1/horizontalpodautoscalers?allowWatchBookmarks=true&resourceVersion=255&timeoutSeconds=408&watch=true": dial tcp 127.0.0.1:41649: connect: connection refused
+E0123 17:17:38.799696   30299 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1.Namespace: Get "http://127.0.0.1:41649/api/v1/namespaces?allowWatchBookmarks=true&resourceVersion=365&timeoutSeconds=389&watch=true": dial tcp 127.0.0.1:41649: connect: connection refused
+E0123 17:17:38.799775   30299 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1.Deployment: Get "http://127.0.0.1:41649/apis/apps/v1/deployments?allowWatchBookmarks=true&resourceVersion=436&timeoutSeconds=558&watch=true": dial tcp 127.0.0.1:41649: connect: connection refused
+E0123 17:17:38.799823   30299 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1.Service: Get "http://127.0.0.1:41649/api/v1/services?allowWatchBookmarks=true&resourceVersion=434&timeoutSeconds=387&watch=true": dial tcp 127.0.0.1:41649: connect: connection refused
+E0123 17:17:38.800179   30299 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1beta1.PodDisruptionBudget: Get "http://127.0.0.1:41649/apis/policy/v1beta1/poddisruptionbudgets?allowWatchBookmarks=true&resourceVersion=373&timeoutSeconds=503&watch=true": dial tcp 127.0.0.1:41649: connect: connection refused
+E0123 17:17:38.800234   30299 reflector.go:383] pkg/mod/k8s.io/client-go@v0.18.8/tools/cache/reflector.go:125: Failed to watch *v1alpha3.VirtualService: Get "http://127.0.0.1:41649/apis/networking.istio.io/v1alpha3/virtualservices?allowWatchBookmarks=true&resourceVersion=122&timeoutSeconds=525&watch=true": dial tcp 127.0.0.1:41649: connect: connection refused
+
+ [32mSUCCESS![0m 29.429003691s PASS
+coverage: 66.6% of statements
+=== RUN   TestGcsSecret
+--- PASS: TestGcsSecret (0.00s)
+PASS
+coverage: 100.0% of statements
+=== RUN   TestS3Secret
+--- PASS: TestS3Secret (0.00s)
+PASS
+coverage: 94.6% of statements
+=== RUN   TestGetEnvAsBool
+--- PASS: TestGetEnvAsBool (0.00s)
+=== RUN   TestAddEnvVarToDeploymentContainers
+--- PASS: TestAddEnvVarToDeploymentContainers (0.00s)
+=== RUN   TestMountSecretToDeploymentContainers
+--- PASS: TestMountSecretToDeploymentContainers (0.00s)
+PASS
+coverage: 30.0% of statements
+=== RUN   TestGenerateCerts
+--- PASS: TestGenerateCerts (1.64s)
+=== RUN   TestConfigmapCreate
+--- PASS: TestConfigmapCreate (0.00s)
+=== RUN   TestCRDCreate
+--- PASS: TestCRDCreate (0.05s)
+=== RUN   TestValidatingWebhookCreate
+--- PASS: TestValidatingWebhookCreate (1.82s)
+=== RUN   TestValidatingWebhookCreateNamespaced
+--- PASS: TestValidatingWebhookCreateNamespaced (1.78s)
+=== RUN   TestWebHookSvcCreate
+--- PASS: TestWebHookSvcCreate (2.66s)
+PASS
+coverage: 51.2% of statements
+=== RUN   TestImageSetNormal
+    prepack_test.go:58: Scenario: GRPC image with version
+    prepack_test.go:58: Scenario: GRPC image with no version
+    prepack_test.go:58: Scenario: REST image with version
+    prepack_test.go:58: Scenario: REST image with no version
+--- PASS: TestImageSetNormal (0.00s)
+=== RUN   TestGetPredictorConfig
+    prepack_test.go:91: Scenario: related image sklearn
+    prepack_test.go:91: Scenario: default image sklearn
+--- PASS: TestGetPredictorConfig (0.00s)
+=== RUN   TestPredictorServerConfigPrepackImageName
+--- PASS: TestPredictorServerConfigPrepackImageName (0.00s)
+=== RUN   TestGetDeploymentNameOneModel
+--- PASS: TestGetDeploymentNameOneModel (0.00s)
+=== RUN   TestGetDeploymentNameLong
+--- PASS: TestGetDeploymentNameLong (0.00s)
+=== RUN   TestValidProtocolTransportServerType
+--- PASS: TestValidProtocolTransportServerType (0.00s)
+=== RUN   TestValidateBadProtocol
+--- PASS: TestValidateBadProtocol (0.00s)
+=== RUN   TestValidateBadTransport
+--- PASS: TestValidateBadTransport (0.00s)
+=== RUN   TestValidateBadServerType
+--- PASS: TestValidateBadServerType (0.00s)
+=== RUN   TestValidateMixedTransport
+--- PASS: TestValidateMixedTransport (0.00s)
+=== RUN   TestValidateMixedMultipleTransport
+--- PASS: TestValidateMixedMultipleTransport (0.00s)
+=== RUN   TestDefaultSingleContainer
+--- PASS: TestDefaultSingleContainer (0.00s)
+=== RUN   TestMetricsPortAddedTwoContainers
+--- PASS: TestMetricsPortAddedTwoContainers (0.00s)
+=== RUN   TestMetricsPortAddedTwoComponentSpecsTwoContainers
+--- PASS: TestMetricsPortAddedTwoComponentSpecsTwoContainers (0.00s)
+=== RUN   TestOverrideMetricsPortName
+Failed to find config map seldon-config
+no kind is registered for the type v1.ConfigMap in scheme "pkg/runtime/scheme.go:101"
+--- PASS: TestOverrideMetricsPortName (0.00s)
+=== RUN   TestPortUseExisting
+--- PASS: TestPortUseExisting (0.00s)
+=== RUN   TestMetricsPortAddedToPrepacked
+--- PASS: TestMetricsPortAddedToPrepacked (0.00s)
+=== RUN   TestPredictorProtocolGrpc
+--- PASS: TestPredictorProtocolGrpc (0.00s)
+=== RUN   TestPrepackedWithExistingContainer
+--- PASS: TestPrepackedWithExistingContainer (0.00s)
+=== RUN   TestPrepackedWithCustom
+--- PASS: TestPrepackedWithCustom (0.00s)
+=== RUN   TestPrepackedWithExistingContainerAndImage
+--- PASS: TestPrepackedWithExistingContainerAndImage (0.00s)
+=== RUN   TestMetricsPortAddedToTwoPrepacked
+--- PASS: TestMetricsPortAddedToTwoPrepacked (0.00s)
+=== RUN   TestDefaultPrepackagedServerType
+--- PASS: TestDefaultPrepackagedServerType (0.00s)
+=== RUN   TestValidateSingleModel
+--- PASS: TestValidateSingleModel (0.00s)
+=== RUN   TestValidateSingleModelNoName
+--- PASS: TestValidateSingleModelNoName (0.00s)
+=== RUN   TestValidateNoEngineMultiGraph
+--- PASS: TestValidateNoEngineMultiGraph (0.00s)
+=== RUN   TestValidateDuplPredictorName
+--- PASS: TestValidateDuplPredictorName (0.00s)
+=== RUN   TestValidateTrafficSum
+--- PASS: TestValidateTrafficSum (0.00s)
+=== RUN   TestDefaultABTest
+--- PASS: TestDefaultABTest (0.00s)
+=== RUN   TestValidateTensorflowProtocolNormalPrepackaged
+--- PASS: TestValidateTensorflowProtocolNormalPrepackaged (0.00s)
+=== RUN   TestValidateTensorflowProtocolNormal
+--- PASS: TestValidateTensorflowProtocolNormal (0.00s)
+=== RUN   TestValidateV2ProtocolNormal
+--- PASS: TestValidateV2ProtocolNormal (0.00s)
+=== RUN   TestPredictorNoGraph
+--- PASS: TestPredictorNoGraph (0.00s)
+=== RUN   TestShadowPredictor
+--- PASS: TestShadowPredictor (0.00s)
+=== RUN   TestNoPredictors
+--- PASS: TestNoPredictors (0.00s)
+=== RUN   TestValidateTwoShadows
+--- PASS: TestValidateTwoShadows (0.00s)
+PASS
+coverage: 38.1% of statements
+path is /workspace/source/operator
+All profiles combined
+
+Ginkgo ran 6 suites in 55.973367858s
+Test Suite Passed
+docker build . -t seldonio/seldon-core-operator:1.6.0-dev
+Sending build context to Docker daemon  16.53MB
+Step 1/27 : FROM golang:1.14.9 as builder
+1.14.9: Pulling from library/golang
+e4c3d3e4f7b0: Pulling fs layer
+101c41d0463b: Pulling fs layer
+8275efcd805f: Pulling fs layer
+751620502a7a: Pulling fs layer
+aaabf962c4fc: Pulling fs layer
+5610ac35c8d2: Pulling fs layer
+324c78229f75: Pulling fs layer
+751620502a7a: Waiting
+5610ac35c8d2: Waiting
+aaabf962c4fc: Waiting
+324c78229f75: Waiting
+101c41d0463b: Verifying Checksum
+101c41d0463b: Download complete
+8275efcd805f: Download complete
+e4c3d3e4f7b0: Download complete
+aaabf962c4fc: Verifying Checksum
+aaabf962c4fc: Download complete
+324c78229f75: Verifying Checksum
+324c78229f75: Download complete
+751620502a7a: Verifying Checksum
+5610ac35c8d2: Verifying Checksum
+5610ac35c8d2: Download complete
+e4c3d3e4f7b0: Pull complete
+101c41d0463b: Pull complete
+8275efcd805f: Pull complete
+751620502a7a: Pull complete
+aaabf962c4fc: Pull complete
+5610ac35c8d2: Pull complete
+324c78229f75: Pull complete
+Digest: sha256:b840a07bab2739c266c8728246fc243444f192b44933f4b8beb8ce9f806fae46
+Status: Downloaded newer image for golang:1.14.9
+ ---> 39111ae98c91
+Step 2/27 : WORKDIR /workspace
+ ---> Running in 54112b97bf12
+Removing intermediate container 54112b97bf12
+ ---> 1885683d36b3
+Step 3/27 : COPY go.mod go.mod
+ ---> 8d0146de0f55
+Step 4/27 : COPY go.sum go.sum
+ ---> 43547c588d61
+Step 5/27 : RUN go mod download
+ ---> Running in 58c0d817b8d2
+Removing intermediate container 58c0d817b8d2
+ ---> 0fae2dc4a178
+Step 6/27 : COPY main.go main.go
+ ---> 4a6366d9cd21
+Step 7/27 : COPY apis/ apis/
+ ---> 59b892463ec0
+Step 8/27 : COPY controllers/ controllers/
+ ---> 575d1a14c1f9
+Step 9/27 : COPY utils/ utils/
+ ---> 87267cfa81ea
+Step 10/27 : COPY constants/ constants/
+ ---> 9a1fccbdffd8
+Step 11/27 : COPY client/ client/
+ ---> 29f93318d602
+Step 12/27 : RUN go build -a -o manager main.go
+ ---> Running in c0597e1c8d06
+Removing intermediate container c0597e1c8d06
+ ---> 42b5c0a30c38
+Step 13/27 : RUN wget -O hashicorp-golang-lru.tar.gz https://github.com/hashicorp/golang-lru/archive/master.tar.gz
+ ---> Running in cf107ad69368
+[91m--2021-01-23 17:20:38--  https://github.com/hashicorp/golang-lru/archive/master.tar.gz
+[0m[91mResolving github.com (github.com)... [0m[91m140.82.121.3
+Connecting to github.com (github.com)|140.82.121.3|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m302 Found
+Location: https://codeload.github.com/hashicorp/golang-lru/tar.gz/master [following]
+--2021-01-23 17:20:38--  https://codeload.github.com/hashicorp/golang-lru/tar.gz/master
+Resolving codeload.github.com (codeload.github.com)... [0m[91m140.82.121.9
+Connecting to codeload.github.com (codeload.github.com)|140.82.121.9|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m200 OK
+Length: unspecified [application/x-gzip]
+Saving to: 'hashicorp-golang-lru.tar.gz'
+[0m[91m
+     0K .......[0m[91m... .[0m[91m.[0m[91m..                                       [0m[91m 1.09M=0.01s
+
+[0m[91m2021-01-23 17:20:38 (1.09 MB/s) - 'hashicorp-golang-lru.tar.gz' saved [14371]
+
+[0mRemoving intermediate container cf107ad69368
+ ---> 243933e1da71
+Step 14/27 : RUN wget -O armon-consul-api.tar.gz https://github.com/armon/consul-api/archive/master.tar.gz
+ ---> Running in 369cc115e4f2
+[91m--2021-01-23 17:20:39--  https://github.com/armon/consul-api/archive/master.tar.gz
+[0m[91mResolving github.com (github.com)... [0m[91m140.82.121.3
+Connecting to github.com (github.com)|140.82.121.3|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m302 Found
+Location: https://codeload.github.com/armon/consul-api/tar.gz/master [following]
+--2021-01-23 17:20:39--  https://codeload.github.com/armon/consul-api/tar.gz/master
+Resolving codeload.github.com (codeload.github.com)... [0m[91m140.82.121.9
+Connecting to codeload.github.com (codeload.github.com)|140.82.121.9|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m200 OK
+Length: unspecified [application/x-gzip]
+Saving to: 'armon-consul-api.tar.gz'
+[0m[91m
+     0K .......... .[0m[91m.[0m[91m.....                          [0m[91m           1.39M=0.01s
+
+2021-01-23 17:20:40 (1.39 MB/s) - 'armon-consul-api.tar.gz' saved [17977]
+
+[0mRemoving intermediate container 369cc115e4f2
+ ---> 0502c81eea74
+Step 15/27 : RUN wget -O hasicorp-hcl.tar.gz https://github.com/hashicorp/hcl/archive/master.tar.gz
+ ---> Running in c93d22dca2bc
+[91m--2021-01-23 17:20:40--  https://github.com/hashicorp/hcl/archive/master.tar.gz
+[0m[91mResolving github.com (github.com)... [0m[91m140.82.121.3
+Connecting to github.com (github.com)|140.82.121.3|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m302 Found
+Location: https://codeload.github.com/hashicorp/hcl/tar.gz/master [following]
+--2021-01-23 17:20:41--  https://codeload.github.com/hashicorp/hcl/tar.gz/master
+Resolving codeload.github.com (codeload.github.com)... [0m[91m140.82.121.9
+Connecting to codeload.github.com (codeload.github.com)|140.82.121.9|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m200 OK
+Length: unspecified [application/x-gzip]
+Saving to: 'hasicorp-hcl.tar.gz'
+[0m[91m
+     0K ..[0m[91m..[0m[91m......[0m[91m .[0m[91m....[0m[91m..... ........[0m[91m.. .[0m[91m...[0m[91m...... ..[0m[91m....[0m[91m....[0m[91m  313K
+    50K .[0m[91m.[0m[91m...[0m[91m.[0m[91m...[0m[91m.[0m[91m ....[0m[91m...... .                          [0m[91m      1.63M=0.2s
+
+[0m[91m2021-01-23 17:20:41 (413 KB/s) - 'hasicorp-hcl.tar.gz' saved [72944]
+
+[0mRemoving intermediate container c93d22dca2bc
+ ---> a8cc1696dd8e
+Step 16/27 : FROM gcr.io/distroless/base:latest
+latest: Pulling from distroless/base
+5749e56bea71: Pulling fs layer
+a3e61620654b: Pulling fs layer
+5749e56bea71: Download complete
+5749e56bea71: Pull complete
+a3e61620654b: Verifying Checksum
+a3e61620654b: Download complete
+a3e61620654b: Pull complete
+Digest: sha256:5e0cc69445ed1d8a17198250a7249d56dd4b6966bb6b2118e60ae9194c310647
+Status: Downloaded newer image for gcr.io/distroless/base:latest
+ ---> 125289cb40fd
+Step 17/27 : WORKDIR /
+ ---> Running in 30cfa34271fc
+Removing intermediate container 30cfa34271fc
+ ---> adc8875a8b3b
+Step 18/27 : COPY --from=builder /workspace/manager .
+ ---> 9db8da86b01d
+Step 19/27 : COPY licenses/license.txt licenses/license.txt
+ ---> d2778dda9fda
+Step 20/27 : COPY --from=builder /workspace/hashicorp-golang-lru.tar.gz licenses/mpl_source/hashicorp-golang-lru.tar.gz
+ ---> e5d3d060e418
+Step 21/27 : COPY --from=builder /workspace/armon-consul-api.tar.gz licenses/mpl_source/armon-consul-api.tar.gz
+ ---> d4267d15a016
+Step 22/27 : COPY --from=builder /workspace/hasicorp-hcl.tar.gz licenses/mpl_source/hasicorp-hcl.tar.gz
+ ---> 75d3f127eb1d
+Step 23/27 : COPY generated/admissionregistration.k8s.io_v1beta1_validatingwebhookconfiguration_seldon-validating-webhook-configuration.yaml /tmp/operator-resources/validate.yaml
+ ---> 7f7bba184c0e
+Step 24/27 : COPY generated/~g_v1_service_seldon-webhook-service.yaml /tmp/operator-resources/service.yaml
+ ---> 82678135746d
+Step 25/27 : COPY generated/~g_v1_configmap_seldon-config.yaml /tmp/operator-resources/configmap.yaml
+ ---> 05b5769dbb21
+Step 26/27 : COPY generated/apiextensions.k8s.io_v1beta1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml /tmp/operator-resources/crd.yaml
+ ---> 5943843a8441
+Step 27/27 : ENTRYPOINT ["/manager"]
+ ---> Running in 74b01321d10e
+Removing intermediate container 74b01321d10e
+ ---> c0c986f90b7d
+Successfully built c0c986f90b7d
+Successfully tagged seldonio/seldon-core-operator:1.6.0-dev
+kind load -v 3 docker-image seldonio/seldon-core-operator:1.6.0-dev --name kind
+Image: "seldonio/seldon-core-operator:1.6.0-dev" with ID "sha256:c0c986f90b7d4ff44274b1a2ff1db04fbf8e8edeba050151a2f30915dbab75eb" not present on node "kind-control-plane"
+Image: "seldonio/seldon-core-operator:1.6.0-dev" with ID "sha256:c0c986f90b7d4ff44274b1a2ff1db04fbf8e8edeba050151a2f30915dbab75eb" not present on node "kind-worker"
+make[1]: Leaving directory '/workspace/source/operator'
+Files changed in engine folder:
+SKIPPING ENGINE IMAGE BUILD...
+Files changed in executor folder:
+SKIPPING EXECUTOR IMAGE BUILD...
+Build test models
+make -C ../../examples/models/mean_classifier kind_load
+make[1]: Entering directory '/workspace/source/examples/models/mean_classifier'
+s2i build -E environment . seldonio/seldon-core-s2i-python37-ubi8:1.6.0-dev seldonio/mock_classifier:1.6.0-dev
+Before assembling
+---> Installing application source...
+---> Installing dependencies ...
+Looking in links: /whl
+Requirement already satisfied: seldon-core in ./python (from -r requirements.txt (line 1)) (1.6.0.dev0)
+Requirement already satisfied: numpy in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 2)) (1.19.5)
+Requirement already satisfied: Flask<2.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (1.1.2)
+Requirement already satisfied: jsonschema<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (3.2.0)
+Requirement already satisfied: Flask-cors<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (3.0.10)
+Requirement already satisfied: redis<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (3.5.3)
+Requirement already satisfied: requests<3.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (2.22.0)
+Requirement already satisfied: flatbuffers<2.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (1.12)
+Requirement already satisfied: protobuf<4.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (3.14.0)
+Requirement already satisfied: grpcio<2.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (1.35.0)
+Requirement already satisfied: Flask-OpenTracing<1.2.0,>=1.1.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (1.1.0)
+Requirement already satisfied: opentracing<2.5.0,>=2.2.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (2.4.0)
+Requirement already satisfied: jaeger-client<4.5.0,>=4.1.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (4.4.0)
+Requirement already satisfied: grpcio-opentracing<1.2.0,>=1.1.4 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (1.1.4)
+Requirement already satisfied: grpcio-reflection<1.35.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (1.34.1)
+Requirement already satisfied: PyYAML<5.4 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (5.3.1)
+Requirement already satisfied: gunicorn<20.1.0,>=19.9.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (20.0.4)
+Requirement already satisfied: setuptools>=41.0.0 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (41.4.0)
+Requirement already satisfied: prometheus_client<0.9.0,>=0.7.1 in /opt/conda/lib/python3.7/site-packages (from seldon-core->-r requirements.txt (line 1)) (0.8.0)
+Requirement already satisfied: Jinja2>=2.10.1 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon-core->-r requirements.txt (line 1)) (2.11.2)
+Requirement already satisfied: click>=5.1 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon-core->-r requirements.txt (line 1)) (7.1.2)
+Requirement already satisfied: Werkzeug>=0.15 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon-core->-r requirements.txt (line 1)) (1.0.1)
+Requirement already satisfied: itsdangerous>=0.24 in /opt/conda/lib/python3.7/site-packages (from Flask<2.0.0->seldon-core->-r requirements.txt (line 1)) (1.1.0)
+Requirement already satisfied: six>=1.11.0 in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->seldon-core->-r requirements.txt (line 1)) (1.12.0)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->seldon-core->-r requirements.txt (line 1)) (3.4.0)
+Requirement already satisfied: pyrsistent>=0.14.0 in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->seldon-core->-r requirements.txt (line 1)) (0.17.3)
+Requirement already satisfied: attrs>=17.4.0 in /opt/conda/lib/python3.7/site-packages (from jsonschema<4.0.0->seldon-core->-r requirements.txt (line 1)) (20.3.0)
+Requirement already satisfied: certifi>=2017.4.17 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon-core->-r requirements.txt (line 1)) (2020.12.5)
+Requirement already satisfied: idna<2.9,>=2.5 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon-core->-r requirements.txt (line 1)) (2.8)
+Requirement already satisfied: chardet<3.1.0,>=3.0.2 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon-core->-r requirements.txt (line 1)) (3.0.4)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /opt/conda/lib/python3.7/site-packages (from requests<3.0.0->seldon-core->-r requirements.txt (line 1)) (1.24.2)
+Requirement already satisfied: tornado>=4.3 in /opt/conda/lib/python3.7/site-packages (from jaeger-client<4.5.0,>=4.1.0->seldon-core->-r requirements.txt (line 1)) (6.1)
+Requirement already satisfied: thrift in /opt/conda/lib/python3.7/site-packages (from jaeger-client<4.5.0,>=4.1.0->seldon-core->-r requirements.txt (line 1)) (0.13.0)
+Requirement already satisfied: threadloop<2,>=1 in /opt/conda/lib/python3.7/site-packages (from jaeger-client<4.5.0,>=4.1.0->seldon-core->-r requirements.txt (line 1)) (1.0.2)
+Requirement already satisfied: MarkupSafe>=0.23 in /opt/conda/lib/python3.7/site-packages (from Jinja2>=2.10.1->Flask<2.0.0->seldon-core->-r requirements.txt (line 1)) (1.1.1)
+Requirement already satisfied: zipp>=0.5 in /opt/conda/lib/python3.7/site-packages (from importlib-metadata; python_version < "3.8"->jsonschema<4.0.0->seldon-core->-r requirements.txt (line 1)) (3.4.0)
+Requirement already satisfied: typing-extensions>=3.6.4; python_version < "3.8" in /opt/conda/lib/python3.7/site-packages (from importlib-metadata; python_version < "3.8"->jsonschema<4.0.0->seldon-core->-r requirements.txt (line 1)) (3.7.4.3)
+WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+Collecting pip-licenses
+Downloading https://files.pythonhosted.org/packages/a6/da/0fe6dc2a8a784ce6eef32719f508397f8f554967e416a0a225c4684a6b93/pip_licenses-3.3.0-py3-none-any.whl
+Collecting PTable (from pip-licenses)
+Downloading https://files.pythonhosted.org/packages/ab/b3/b54301811173ca94119eb474634f120a49cd370f257d1aae5a4abaf12729/PTable-0.9.2.tar.gz
+Building wheels for collected packages: PTable
+Building wheel for PTable (setup.py): started
+Building wheel for PTable (setup.py): finished with status 'done'
+Created wheel for PTable: filename=PTable-0.9.2-cp37-none-any.whl size=22906 sha256=51a44be06670c848952aae1bc0ff61ebaa072b318bbd81b9a0e23bc9cf37f8f8
+Stored in directory: /root/.cache/pip/wheels/22/cc/2e/55980bfe86393df3e9896146a01f6802978d09d7ebcba5ea56
+Successfully built PTable
+Installing collected packages: PTable, pip-licenses
+Successfully installed PTable-0.9.2 pip-licenses-3.3.0
+created path: ./licenses/license_info.csv
+created path: ./licenses/license.txt
+After successful assembling
+Build completed successfully
+kind load -v 3 docker-image seldonio/mock_classifier:1.6.0-dev
+Image: "seldonio/mock_classifier:1.6.0-dev" with ID "sha256:93e86afe94f4552a7d627bdbe9dab8aaea9bb13a946bb1f41824c87a9441e288" not present on node "kind-control-plane"
+Image: "seldonio/mock_classifier:1.6.0-dev" with ID "sha256:93e86afe94f4552a7d627bdbe9dab8aaea9bb13a946bb1f41824c87a9441e288" not present on node "kind-worker"
+make[1]: Leaving directory '/workspace/source/examples/models/mean_classifier'
+make -C ../docker/fixed-model kind_load_images
+make[1]: Entering directory '/workspace/source/testing/docker/fixed-model'
+s2i build -E environment_v1 . seldonio/seldon-core-s2i-python3:1.6.0-dev seldonio/fixed-model:0.1
+---> Installing application source...
+Collecting pip-licenses
+Downloading https://files.pythonhosted.org/packages/a6/da/0fe6dc2a8a784ce6eef32719f508397f8f554967e416a0a225c4684a6b93/pip_licenses-3.3.0-py3-none-any.whl
+Collecting PTable (from pip-licenses)
+Downloading https://files.pythonhosted.org/packages/ab/b3/b54301811173ca94119eb474634f120a49cd370f257d1aae5a4abaf12729/PTable-0.9.2.tar.gz
+Building wheels for collected packages: PTable
+Building wheel for PTable (setup.py): started
+Building wheel for PTable (setup.py): finished with status 'done'
+Created wheel for PTable: filename=PTable-0.9.2-cp37-none-any.whl size=22906 sha256=ab3674b86b92b48e861634b7521dc8cf93e3e38a4ac98fd948a723a72c2012a2
+Stored in directory: /root/.cache/pip/wheels/22/cc/2e/55980bfe86393df3e9896146a01f6802978d09d7ebcba5ea56
+Successfully built PTable
+Installing collected packages: PTable, pip-licenses
+Successfully installed PTable-0.9.2 pip-licenses-3.3.0
+created path: ./licenses/license_info.csv
+created path: ./licenses/license.txt
+Build completed successfully
+s2i build -E environment_v2 . seldonio/seldon-core-s2i-python3:1.6.0-dev  seldonio/fixed-model:0.2
+---> Installing application source...
+Collecting pip-licenses
+Downloading https://files.pythonhosted.org/packages/a6/da/0fe6dc2a8a784ce6eef32719f508397f8f554967e416a0a225c4684a6b93/pip_licenses-3.3.0-py3-none-any.whl
+Collecting PTable (from pip-licenses)
+Downloading https://files.pythonhosted.org/packages/ab/b3/b54301811173ca94119eb474634f120a49cd370f257d1aae5a4abaf12729/PTable-0.9.2.tar.gz
+Building wheels for collected packages: PTable
+Building wheel for PTable (setup.py): started
+Building wheel for PTable (setup.py): finished with status 'done'
+Created wheel for PTable: filename=PTable-0.9.2-cp37-none-any.whl size=22906 sha256=7c3a175103c8aad2bb9bc4c3a3e54b7315d9f42b7b0a8546239c297d43f92c85
+Stored in directory: /root/.cache/pip/wheels/22/cc/2e/55980bfe86393df3e9896146a01f6802978d09d7ebcba5ea56
+Successfully built PTable
+Installing collected packages: PTable, pip-licenses
+Successfully installed PTable-0.9.2 pip-licenses-3.3.0
+created path: ./licenses/license_info.csv
+created path: ./licenses/license.txt
+Build completed successfully
+kind load -v 3 docker-image seldonio/fixed-model:0.1
+Image: "seldonio/fixed-model:0.1" with ID "sha256:ac448babbff5e8d2070183e2068e76ead74fed75190ffb833d6b36c47807ecce" not present on node "kind-control-plane"
+Image: "seldonio/fixed-model:0.1" with ID "sha256:ac448babbff5e8d2070183e2068e76ead74fed75190ffb833d6b36c47807ecce" not present on node "kind-worker"
+kind load -v 3 docker-image seldonio/fixed-model:0.2
+Image: "seldonio/fixed-model:0.2" with ID "sha256:b5cb2d45661eb9cff542524e1e2d9a0feb002221ed445d63b4538d29ba5932ab" not present on node "kind-control-plane"
+Image: "seldonio/fixed-model:0.2" with ID "sha256:b5cb2d45661eb9cff542524e1e2d9a0feb002221ed445d63b4538d29ba5932ab" not present on node "kind-worker"
+make[1]: Leaving directory '/workspace/source/testing/docker/fixed-model'
+make -C ../docker/echo-model kind_load_image
+make[1]: Entering directory '/workspace/source/testing/docker/echo-model'
+s2i build \
+	-E environment_rest \
+	.\
+	seldonio/seldon-core-s2i-python3:1.6.0-dev\
+	seldonio/echo-model:0.1
+---> Installing application source...
+Collecting pip-licenses
+Downloading https://files.pythonhosted.org/packages/a6/da/0fe6dc2a8a784ce6eef32719f508397f8f554967e416a0a225c4684a6b93/pip_licenses-3.3.0-py3-none-any.whl
+Collecting PTable (from pip-licenses)
+Downloading https://files.pythonhosted.org/packages/ab/b3/b54301811173ca94119eb474634f120a49cd370f257d1aae5a4abaf12729/PTable-0.9.2.tar.gz
+Building wheels for collected packages: PTable
+Building wheel for PTable (setup.py): started
+Building wheel for PTable (setup.py): finished with status 'done'
+Created wheel for PTable: filename=PTable-0.9.2-cp37-none-any.whl size=22906 sha256=d4fe6c84e1c343ec7ef9a4b3c710d068f06f5c6fb9e468bd32798603a7141187
+Stored in directory: /root/.cache/pip/wheels/22/cc/2e/55980bfe86393df3e9896146a01f6802978d09d7ebcba5ea56
+Successfully built PTable
+Installing collected packages: PTable, pip-licenses
+Successfully installed PTable-0.9.2 pip-licenses-3.3.0
+created path: ./licenses/license_info.csv
+created path: ./licenses/license.txt
+Build completed successfully
+kind load -v 3 docker-image seldonio/echo-model:0.1
+Image: "seldonio/echo-model:0.1" with ID "sha256:2746a5b2692e251d2a50f0b94c69082a0d709227439cdf9bb543ed04458c9f44" not present on node "kind-control-plane"
+Image: "seldonio/echo-model:0.1" with ID "sha256:2746a5b2692e251d2a50f0b94c69082a0d709227439cdf9bb543ed04458c9f44" not present on node "kind-worker"
+make[1]: Leaving directory '/workspace/source/testing/docker/echo-model'
+Files changed in prepackaged folder:
+SKIPPING PREPACKAGED IMAGE BUILD...
+Files changed in alibi explain folder:
+SKIPPING ALIBI EXPLAIN IMAGE BUILD...
+Files changed in alibi detect folder:
+SKIPPING ALIBI DETECT IMAGE BUILD...
+Files changed in misc folders:
+SKIPPING MISC IMAGE BUILD...
+kubectl create namespace seldon || echo "Namespace seldon already exists"
+namespace/seldon created
+kubectl create namespace test1 || echo "Namespace test1 already exists"
+namespace/test1 created
+helm repo add seldonio https://storage.googleapis.com/seldon-charts
+"seldonio" has been added to your repositories
+helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
+"jaegertracing" has been added to your repositories
+helm repo add datawire https://www.getambassador.io
+"datawire" has been added to your repositories
+helm repo update
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "seldonio" chart repository
+...Successfully got an update from the "jaegertracing" chart repository
+...Successfully got an update from the "datawire" chart repository
+Update Complete. ⎈ Happy Helming!⎈ 
+helm upgrade ambassador \
+	datawire/ambassador \
+	-f ../resources/ambassador_values.yaml \
+	--set image.repository=quay.io/datawire/ambassador \
+	--set crds.keep=false \
+	--set enableAES=false \
+	--namespace seldon \
+	--set replicaCount=1 \
+	--wait --install
+Release "ambassador" does not exist. Installing it now.
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+NAME: ambassador
+LAST DEPLOYED: Sat Jan 23 17:26:25 2021
+NAMESPACE: seldon
+STATUS: deployed
+REVISION: 1
+NOTES:
+-------------------------------------------------------------------------------
+  Congratulations! You've successfully installed Ambassador!
+
+-------------------------------------------------------------------------------
+To get the IP address of Ambassador, run the following commands:
+  export NODE_PORT=$(kubectl get --namespace seldon -o jsonpath="{.spec.ports[0].nodePort}" services ambassador)
+  export NODE_IP=$(kubectl get nodes --namespace seldon -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+
+For help, visit our Slack at https://d6e.co/slack or view the documentation online at https://www.getambassador.io.
+curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.6.8 TARGET_ARCH=x86_64 sh -
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   102  100   102    0     0    204      0 --:--:-- --:--:-- --:--:--   204
+100  4579  100  4579    0     0   6495      0 --:--:-- --:--:-- --:--:--  6495
+
+Downloading istio-1.6.8 from https://github.com/istio/istio/releases/download/1.6.8/istio-1.6.8-linux-amd64.tar.gz ...
+
+Istio 1.6.8 Download Complete!
+
+Istio has been successfully downloaded into the istio-1.6.8 folder on your system.
+
+Next Steps:
+See https://istio.io/latest/docs/setup/install/ to add Istio to your Kubernetes cluster.
+
+To configure the istioctl client tool for your workstation,
+add the /workspace/source/testing/scripts/istio-1.6.8/bin directory to your environment path variable with:
+	 export PATH="$PATH:/workspace/source/testing/scripts/istio-1.6.8/bin"
+
+Begin the Istio pre-installation check by running:
+	 istioctl x precheck 
+
+Need more information? Visit https://istio.io/latest/docs/setup/install/ 
+istio-1.6.8/bin/istioctl install --set profile=demo
+Detected that your cluster does not support third party JWT authentication. Falling back to less secure first party JWT. See https://istio.io/docs/ops/best-practices/security/#configure-third-party-service-account-tokens for details.
+
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+- Processing resources for Istio core.
+✔ Istio core installed
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod.
+- Processing resources for Istiod. Waiting for Deployment/istio-system/istiod
+- Processing resources for Istiod. Waiting for Deployment/istio-system/istiod
+- Processing resources for Istiod. Waiting for Deployment/istio-system/istiod
+- Processing resources for Istiod. Waiting for Deployment/istio-system/istiod
+- Processing resources for Istiod. Waiting for Deployment/istio-system/istiod
+- Processing resources for Istiod. Waiting for Deployment/istio-system/istiod
+- Processing resources for Istiod. Waiting for Deployment/istio-system/istiod
+- Processing resources for Istiod. Waiting for Deployment/istio-system/istiod
+✔ Istiod installed
+- Processing resources for Egress gateways, Ingress gateways.
+- Processing resources for Egress gateways, Ingress gateways.
+- Processing resources for Egress gateways, Ingress gateways.
+- Processing resources for Egress gateways, Ingress gateways.
+- Processing resources for Egress gateways, Ingress gateways.
+- Processing resources for Egress gateways, Ingress gateways.
+- Processing resources for Egress gateways, Ingress gateways.
+- Processing resources for Egress gateways, Ingress gateways.
+- Processing resources for Egress gateways, Ingress gateways. Waiting for Deployment/istio-system...
+- Processing resources for Egress gateways, Ingress gateways. Waiting for Deployment/istio-system...
+- Processing resources for Egress gateways, Ingress gateways. Waiting for Deployment/istio-system...
+- Processing resources for Egress gateways, Ingress gateways. Waiting for Deployment/istio-system...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+- Processing resources for Addons, Egress gateways, Ingress gateways. Waiting for Deployment/isti...
+✔ Egress gateways installed
+✔ Ingress gateways installed
+- Processing resources for Addons. Waiting for Deployment/istio-system/grafana, Deployment/istio-...
+- Processing resources for Addons. Waiting for Deployment/istio-system/grafana, Deployment/istio-...
+- Processing resources for Addons. Waiting for Deployment/istio-system/grafana, Deployment/istio-...
+- Processing resources for Addons. Waiting for Deployment/istio-system/grafana, Deployment/istio-...
+- Processing resources for Addons. Waiting for Deployment/istio-system/grafana, Deployment/istio-...
+- Processing resources for Addons. Waiting for Deployment/istio-system/grafana, Deployment/istio-...
+- Processing resources for Addons. Waiting for Deployment/istio-system/grafana, Deployment/istio-...
+- Processing resources for Addons. Waiting for Deployment/istio-system/kiali, Deployment/istio-sy...
+- Processing resources for Addons. Waiting for Deployment/istio-system/kiali, Deployment/istio-sy...
+- Processing resources for Addons. Waiting for Deployment/istio-system/kiali, Deployment/istio-sy...
+- Processing resources for Addons. Waiting for Deployment/istio-system/kiali, Deployment/istio-sy...
+- Processing resources for Addons. Waiting for Deployment/istio-system/kiali, Deployment/istio-sy...
+- Processing resources for Addons. Waiting for Deployment/istio-system/kiali, Deployment/istio-sy...
+- Processing resources for Addons. Waiting for Deployment/istio-system/kiali, Deployment/istio-sy...
+- Processing resources for Addons. Waiting for Deployment/istio-system/kiali, Deployment/istio-sy...
+- Processing resources for Addons. Waiting for Deployment/istio-system/kiali
+- Processing resources for Addons. Waiting for Deployment/istio-system/kiali
+- Processing resources for Addons. Waiting for Deployment/istio-system/kiali
+- Processing resources for Addons. Waiting for Deployment/istio-system/kiali
+- Processing resources for Addons. Waiting for Deployment/istio-system/kiali
+- Processing resources for Addons. Waiting for Deployment/istio-system/kiali
+- Processing resources for Addons. Waiting for Deployment/istio-system/kiali
+- Processing resources for Addons. Waiting for Deployment/istio-system/kiali
+✔ Addons installed
+- Pruning removed resources
+kubectl patch svc istio-ingressgateway -n istio-system --patch "$(cat ../resources/istio-ingressgateway-patch.yaml)"
+service/istio-ingressgateway patched
+kubectl create -f ../resources/seldon-gateway.yaml -n istio-system
+gateway.networking.istio.io/seldon-gateway created
+kubectl apply -f https://github.com/kedacore/keda/releases/download/v2.0.0/keda-2.0.0.yaml
+namespace/keda created
+customresourcedefinition.apiextensions.k8s.io/scaledjobs.keda.sh created
+customresourcedefinition.apiextensions.k8s.io/scaledobjects.keda.sh created
+customresourcedefinition.apiextensions.k8s.io/triggerauthentications.keda.sh created
+serviceaccount/keda-operator created
+clusterrole.rbac.authorization.k8s.io/keda-external-metrics-reader created
+clusterrole.rbac.authorization.k8s.io/keda-operator created
+rolebinding.rbac.authorization.k8s.io/keda-auth-reader created
+clusterrolebinding.rbac.authorization.k8s.io/keda-hpa-controller-external-metrics created
+clusterrolebinding.rbac.authorization.k8s.io/keda-operator created
+clusterrolebinding.rbac.authorization.k8s.io/keda:system:auth-delegator created
+service/keda-metrics-apiserver created
+deployment.apps/keda-metrics-apiserver created
+deployment.apps/keda-operator created
+apiservice.apiregistration.k8s.io/v1beta1.external.metrics.k8s.io created
+helm upgrade jaeger-operator \
+	jaegertracing/jaeger-operator \
+	--set rbac.clusterRole=true \
+	--namespace seldon \
+	--wait --install
+Release "jaeger-operator" does not exist. Installing it now.
+✔ Installation completemanifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+NAME: jaeger-operator
+LAST DEPLOYED: Sat Jan 23 17:28:39 2021
+NAMESPACE: seldon
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+jaeger-operator is installed.
+
+
+Check the jaeger-operator logs
+  export POD=$(kubectl get pods -l app.kubernetes.io/instance=jaeger-operator -lapp.kubernetes.io/name=jaeger-operator --namespace seldon --output name)
+  kubectl logs $POD --namespace=seldon
+kubectl apply -f ../resources/jaeger.yaml --namespace seldon
+jaeger.jaegertracing.io/jaeger created
+mapping.getambassador.io/jaeger created
+kubectl create namespace seldon-system || echo "namespace seldon-system exists"
+namespace/seldon-system created
+helm delete seldon --namespace seldon-system || echo "seldon-core not installed"
+Error: uninstall: Release not loaded: seldon: release: not found
+seldon-core not installed
+helm upgrade seldon \
+	../../helm-charts/seldon-core-operator \
+	--namespace seldon-system \
+	--set istio.enabled=true \
+	--set keda.enabled=true \
+	--set istio.gateway=istio-system/seldon-gateway \
+	--set certManager.enabled=false \
+	--wait --install
+Release "seldon" does not exist. Installing it now.
+Error: secrets "seldon-webhook-server-cert" already exists
+make: *** [Makefile:94: install_seldon] Error 1
+Kind setup returned errors
+kind delete cluster
+Deleting cluster "kind" ...
+Stopping Docker: dockerProgram process in pidfile '/var/run/docker-ssd.pid', 1 process(es), refused to die.
+[31m
+Pipeline failed on stage 'end-to-end' : container 'step-test-end-to-end'. The execution of the pipeline has stopped.[0m
