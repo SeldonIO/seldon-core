@@ -34,7 +34,7 @@ setup(
         "jaeger-client >= 4.1.0, < 4.5.0",
         "grpcio-opentracing >= 1.1.4, < 1.2.0",
         "grpcio-reflection < 1.35.0",
-        "PyYAML<5.4",
+        "PyYAML<5.5",
         "gunicorn >= 19.9.0, < 20.1.0",
         "setuptools >= 41.0.0",
         "prometheus_client >= 0.7.1, < 0.9.0",
