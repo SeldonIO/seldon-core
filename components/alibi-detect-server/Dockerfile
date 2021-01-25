@@ -31,5 +31,6 @@ RUN mkdir ./licenses && pip-licenses --from=mixed --format=csv --output-file=./l
 
 RUN yum install -y mesa-libGL
 RUN mv ./licenses /licenses
+RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical
 
 ENTRYPOINT ["python", "-m", "adserver"]

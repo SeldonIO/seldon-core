@@ -16,6 +16,7 @@ RUN mkdir ./licenses && pip-licenses --from=mixed --format=csv --output-file=./l
     pip-licenses --from=mixed --format=plain-vertical --with-license-file --no-license-path --output-file=./licenses/license.txt
 USER root
 RUN mv ./licenses /licenses
+RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical
 USER default
 
 COPY app app
