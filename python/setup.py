@@ -33,7 +33,7 @@ setup(
         "opentracing >= 2.2.0, < 2.5.0",
         "jaeger-client >= 4.1.0, < 4.5.0",
         "grpcio-opentracing >= 1.1.4, < 1.2.0",
-        "grpcio-reflection < 1.35.0",
+        "grpcio-reflection < 1.36.0",
         "PyYAML<5.4",
         "gunicorn >= 19.9.0, < 20.1.0",
         "setuptools >= 41.0.0",
