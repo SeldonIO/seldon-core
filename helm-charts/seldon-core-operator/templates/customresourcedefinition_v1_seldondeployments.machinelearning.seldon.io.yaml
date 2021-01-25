@@ -6,7 +6,6 @@ metadata:
   annotations:
     cert-manager.io/inject-ca-from: '{{ include "seldon.namespace" . }}/seldon-serving-cert'
     controller-gen.kubebuilder.io/version: v0.2.9
-  creationTimestamp: null
   name: seldondeployments.machinelearning.seldon.io
 spec:
   group: machinelearning.seldon.io
