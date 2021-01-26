@@ -14,7 +14,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: test-executor
+    - name: lint-python
       run: |
         make -C python install_dev lint
 
