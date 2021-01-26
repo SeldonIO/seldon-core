@@ -167,6 +167,10 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
         #    echo "SKIPPING MISC IMAGE BUILD..."
         #fi
 
+        kubectl config get-contexts
+        kubectl cluster-info
+        kubectl get storageclass standard
+
         # KIND CLUSTER SETUP
         make kind_setup
         SETUP_EXIT_VALUE=$?
