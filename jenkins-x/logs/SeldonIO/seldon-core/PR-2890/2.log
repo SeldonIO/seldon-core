@@ -1,0 +1,68 @@
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-28-jtglc-2[0m stage [32mmeta-pipeline[0m and container [32mstep-credential-initializer-pk8cr[0m
+{"level":"info","ts":1611685647.0378227,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1611685647.0381937,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-28-jtglc-2[0m stage [32mmeta-pipeline[0m and container [32mstep-working-dir-initializer-ksk4v[0m
+{"level":"info","ts":1611685647.6269872,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1611685647.628519,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-28-jtglc-2[0m stage [32mmeta-pipeline[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-28-jtglc-2[0m stage [32mmeta-pipeline[0m and container [32mstep-git-source-meta-seldonio-seldon-core-pr-28-jtglc-wg974[0m
+{"level":"info","ts":1611685654.1140022,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1611685663.9928057,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ 4606efb517efa242b2252d6ac0a49d5dac067555 in path /workspace/source"}
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-28-jtglc-2[0m stage [32mmeta-pipeline[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-28-jtglc-2[0m stage [32mmeta-pipeline[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:4606efb517efa242b2252d6ac0a49d5dac067555,2890:c58f15215001d4586afc374ff316adbcff8df463
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch origin --unshallow c58f15215001d4586afc374ff316adbcff8df463: 4606efb517efa242b2252d6ac0a49d5dac067555:
+DEBUG: ran git fetch --unshallow origin c58f15215001d4586afc374ff316adbcff8df463: 4606efb517efa242b2252d6ac0a49d5dac067555: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git reset --hard 4606efb517efa242b2252d6ac0a49d5dac067555
+DEBUG: ran git reset --hard 4606efb517efa242b2252d6ac0a49d5dac067555 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git merge c58f15215001d4586afc374ff316adbcff8df463
+DEBUG: ran git merge c58f15215001d4586afc374ff316adbcff8df463 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git log --format=%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%s%n%b%x1e 4606efb517efa242b2252d6ac0a49d5dac067555..HEAD
+Merged SHA c58f15215001d4586afc374ff316adbcff8df463 with commit message 'Removed jenkins base' into base branch master
+Merged SHA 8b58652502ca20ed3931eaf712dc21953fe7e824 with commit message 'Added docs workflow' into base branch master
+Merged SHA c78b49149af291055e57dfa8809edcf93d556fa6 with commit message 'Removed rebase action' into base branch master
+Merged SHA ef4186332be082ef1b39f2ba3341073c5098e73a with commit message 'Added lint actions' into base branch master
+Merged SHA eb36b37ab85bad9ee34e9e6cda76aa4189a28337 with commit message 'Added operator and executor tests' into base branch master
+Merged SHA 60fae384b13f456779eb0ed0d73d5e23f5073f4c with commit message 'Added gh action python tests' into base branch master
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-28-jtglc-2[0m stage [32mmeta-pipeline[0m and container [32mstep-merge-pull-refs[0m
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch origin --unshallow c58f15215001d4586afc374ff316adbcff8df463: 4606efb517efa242b2252d6ac0a49d5dac067555:
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch origin c58f15215001d4586afc374ff316adbcff8df463: 4606efb517efa242b2252d6ac0a49d5dac067555:
+DEBUG: ran git fetch origin c58f15215001d4586afc374ff316adbcff8df463: 4606efb517efa242b2252d6ac0a49d5dac067555: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git rev-parse --is-shallow-repository
+DEBUG: Unshallowed git repo in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard 4606efb517efa242b2252d6ac0a49d5dac067555
+DEBUG: ran git reset --hard 4606efb517efa242b2252d6ac0a49d5dac067555 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git merge c58f15215001d4586afc374ff316adbcff8df463
+DEBUG: ran git merge c58f15215001d4586afc374ff316adbcff8df463 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git log --format=%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%s%n%b%x1e 4606efb517efa242b2252d6ac0a49d5dac067555..HEAD
+Merged SHA c58f15215001d4586afc374ff316adbcff8df463 with commit message 'Removed jenkins base' into base branch master
+Merged SHA 8b58652502ca20ed3931eaf712dc21953fe7e824 with commit message 'Added docs workflow' into base branch master
+Merged SHA c78b49149af291055e57dfa8809edcf93d556fa6 with commit message 'Removed rebase action' into base branch master
+Merged SHA ef4186332be082ef1b39f2ba3341073c5098e73a with commit message 'Added lint actions' into base branch master
+Merged SHA eb36b37ab85bad9ee34e9e6cda76aa4189a28337 with commit message 'Added operator and executor tests' into base branch master
+Merged SHA 60fae384b13f456779eb0ed0d73d5e23f5073f4c with commit message 'Added gh action python tests' into base branch master
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-28-jtglc-2[0m stage [32mmeta-pipeline[0m and container [32mstep-create-effective-pipeline[0m
+Effective pipeline written to jenkins-x-lint-effective.yml
+
+Showing logs for build [32mmeta-seldonio-seldon-core-pr-28-jtglc-2[0m stage [32mmeta-pipeline[0m and container [32mstep-create-tekton-crds[0m
+error: failed to generate Tekton CRDs: unable to extract the requested pipeline: no pipeline defined for kind pullrequest
+[31m
+Pipeline failed on stage 'meta-pipeline' : container 'step-create-tekton-crds'. The execution of the pipeline has stopped.[0m
