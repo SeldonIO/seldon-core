@@ -9,6 +9,7 @@ on:
 jobs:
   python-lint:
 
+    runs-on: ubuntu-18.04
     container: seldonio/python-builder:0.2
 
     steps:

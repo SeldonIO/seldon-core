@@ -9,6 +9,7 @@ on:
 jobs:
   docs-lint:
 
+    runs-on: ubuntu-18.04
     container: seldonio/core-builder:0.19
 
     steps:
