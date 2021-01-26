@@ -1,0 +1,19 @@
+name: Operator Tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  operator-tests:
+
+    container: seldonio/core-builder:0.19
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: test-operator
+      run: |
+        make -C operator test
+

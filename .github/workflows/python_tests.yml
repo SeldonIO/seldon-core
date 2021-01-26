@@ -1,0 +1,19 @@
+name: Python Tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  python-tests:
+
+    container: seldonio/python-builder:0.2
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: test-python
+      run: |
+        make -C python update_package install_dev test
+

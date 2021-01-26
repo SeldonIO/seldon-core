@@ -7,44 +7,6 @@ pipelineConfig:
       stage: promote
       step:
         command: echo "skipping promote"
-    pullRequest:
-      pipeline:
-        agent:
-          image: seldonio/core-builder:0.19
-        stages:
-        - name: pr-build-comment
-          steps:
-          - agent:
-              image: gcr.io/jenkinsxio/builder-go:2.0.916-264
-            dir: ci
-            sh: "./add-pr-build-comment"
-        - name: build-and-test
-          parallel:
-          - name: test-python
-            agent:
-              image: seldonio/python-builder:0.2
-            steps:
-            - name: test-python
-              command: make
-              args:
-              - -C python
-              - update_package
-              - install_dev
-              - test
-          - name: seldon-operator
-            steps:
-            - name: test-operator
-              command: make
-              args:
-              - -C operator
-              - test
-          - name: seldon-executor
-            steps:
-            - name: test-executor
-              command: make
-              args:
-              - -C executor
-              - test
     release:
       setVersion:
         steps:
