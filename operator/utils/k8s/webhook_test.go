@@ -98,46 +98,6 @@ func createScheme() *runtime.Scheme {
 	return scheme
 }
 
-func TestMutatingWebhookCreate(t *testing.T) {
-	g := NewGomegaWithT(t)
-	scheme := createScheme()
-	bytes, err := LoadBytesFromFile("testdata", "mutate.yaml")
-	g.Expect(err).To(BeNil())
-	client := fake.NewSimpleClientset()
-	apiExtensionsFake := apiextensionsfake.NewSimpleClientset()
-	crd, err := createTestCRD(apiExtensionsFake)
-	g.Expect(err).To(BeNil())
-	hosts := []string{"seldon-webhook-service.seldon-system", "seldon-webhook-service.seldon-system.svc"}
-	certs, err := certSetup(hosts)
-	g.Expect(err).To(BeNil())
-	wc, err := NewWebhookCreator(client, certs, ctrl.Log, scheme)
-	g.Expect(err).To(BeNil())
-	err = wc.CreateMutatingWebhookConfigurationFromFile(context.TODO(), bytes, TestNamespace, crd, false)
-	g.Expect(err).To(BeNil())
-	_, err = client.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Get(context.TODO(), "seldon-mutating-webhook", metav1.GetOptions{})
-	g.Expect(err).To(BeNil())
-}
-
-func TestMutatingWebhookCreateNamespaced(t *testing.T) {
-	g := NewGomegaWithT(t)
-	scheme := createScheme()
-	bytes, err := LoadBytesFromFile("testdata", "mutate.yaml")
-	g.Expect(err).To(BeNil())
-	client := fake.NewSimpleClientset()
-	apiExtensionsFake := apiextensionsfake.NewSimpleClientset()
-	crd, err := createTestCRD(apiExtensionsFake)
-	g.Expect(err).To(BeNil())
-	hosts := []string{"seldon-webhook-service.seldon-system", "seldon-webhook-service.seldon-system.svc"}
-	certs, err := certSetup(hosts)
-	g.Expect(err).To(BeNil())
-	wc, err := NewWebhookCreator(client, certs, ctrl.Log, scheme)
-	g.Expect(err).To(BeNil())
-	err = wc.CreateMutatingWebhookConfigurationFromFile(context.TODO(), bytes, TestNamespace, crd, true)
-	g.Expect(err).To(BeNil())
-	_, err = client.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Get(context.TODO(), "seldon-mutating-webhook-"+TestNamespace, metav1.GetOptions{})
-	g.Expect(err).To(BeNil())
-}
-
 func TestValidatingWebhookCreate(t *testing.T) {
 	g := NewGomegaWithT(t)
 	scheme := createScheme()

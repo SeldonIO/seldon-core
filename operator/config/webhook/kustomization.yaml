@@ -10,12 +10,6 @@ patchesJson6902:
 - target:
     group: admissionregistration.k8s.io
     version: v1beta1
-    kind: MutatingWebhookConfiguration
-    name: mutating-webhook-configuration
-  path: patch_webhook.yaml
-- target:
-    group: admissionregistration.k8s.io
-    version: v1beta1
     kind: ValidatingWebhookConfiguration
     name: validating-webhook-configuration
   path: patch_webhook.yaml

@@ -83,16 +83,6 @@ func InitializeOperator(ctx context.Context, config *rest.Config, namespace stri
 		return err
 	}
 
-	//Create/Update Mutating Webhook
-	bytes, err = LoadBytesFromFile(ResourceFolder, MutatingWebhookFilename)
-	if err != nil {
-		return err
-	}
-	err = wc.CreateMutatingWebhookConfigurationFromFile(ctx, bytes, namespace, crd, watchNamespace)
-	if err != nil {
-		return err
-	}
-
 	//Create/Update Validating Webhook
 	bytes, err = LoadBytesFromFile(ResourceFolder, ValidatingWebhookFilename)
 	if err != nil {

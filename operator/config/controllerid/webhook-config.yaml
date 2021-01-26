@@ -1,5 +1,3 @@
 varReference:
 - path: webhooks/objectSelector/matchLabels/seldon.io\/controller-id
-  kind: MutatingWebhookConfiguration
-- path: webhooks/objectSelector/matchLabels/seldon.io\/controller-id
   kind: ValidatingWebhookConfiguration
