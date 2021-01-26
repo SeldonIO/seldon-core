@@ -1,0 +1,23 @@
+name: E2e integration
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  e2e-integration:
+
+    runs-on: ubuntu-18.04
+    container: seldonio/core-builder:0.19
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: e2e-integration-step
+      run: |
+        cd testing/scripts && bash kind_test_all.sh
+      env:
+        SELDON_E2E_TESTS_TO_RUN: base
+        SELDON_E2E_TESTS_POD_INFORMATION: true
+
