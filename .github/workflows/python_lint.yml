@@ -9,11 +9,12 @@ on:
 jobs:
   python-lint:
 
+    runs-on: ubuntu-18.04
     container: seldonio/python-builder:0.2
 
     steps:
     - uses: actions/checkout@v2
-    - name: test-executor
+    - name: lint-python
       run: |
         make -C python install_dev lint
 

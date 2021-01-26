@@ -9,16 +9,18 @@ on:
 jobs:
   docs-lint:
 
+    runs-on: ubuntu-18.04
     container: seldonio/core-builder:0.19
 
     steps:
     - uses: actions/checkout@v2
-    - name: docs-lint-step
+    - name: docs-link-step
       run: |
         make -C doc install-dev linkcheck
 
   docs-build:
 
+    runs-on: ubuntu-18.04
     container: seldonio/core-builder:0.19
 
     steps:
