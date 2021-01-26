@@ -42,130 +42,130 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
 
     run_end_to_end_tests() {
 
-        echo "Files changed in python folder:"
-        git --no-pager diff --exit-code --name-only origin/master ../../python
-        PYTHON_MODIFIED=$?
-        if [[ $PYTHON_MODIFIED -gt 0 ]]; then
-            make s2i_build_base_images
-            PYTHON_EXIT_VALUE=$?
-            if [[ $PYTHON_EXIT_VALUE -gt 0 ]]; then
-                echo "Python build returned errors"
-                return 1
-            fi
-        else
-            echo "SKIPPING PYTHON IMAGE BUILD..."
-        fi
+        #echo "Files changed in python folder:"
+        #git --no-pager diff --exit-code --name-only origin/master ../../python
+        #PYTHON_MODIFIED=$?
+        #if [[ $PYTHON_MODIFIED -gt 0 ]]; then
+        #    make s2i_build_base_images
+        #    PYTHON_EXIT_VALUE=$?
+        #    if [[ $PYTHON_EXIT_VALUE -gt 0 ]]; then
+        #        echo "Python build returned errors"
+        #        return 1
+        #    fi
+        #else
+        #    echo "SKIPPING PYTHON IMAGE BUILD..."
+        #fi
 
-        echo "Files changed in operator folder:"
-        git --no-pager diff --exit-code --name-only origin/master ../../operator
-        OPERATOR_MODIFIED=$?
-        if [[ $OPERATOR_MODIFIED -gt 0 ]]; then
-            make kind_build_operator
-            OPERATOR_EXIT_VALUE=$?
-            if [[ $OPERATOR_EXIT_VALUE -gt 0 ]]; then
-                echo "Operator build returned errors"
-                return 1
-            fi
-        else
-            echo "SKIPPING OPERATOR IMAGE BUILD..."
-        fi
+        #echo "Files changed in operator folder:"
+        #git --no-pager diff --exit-code --name-only origin/master ../../operator
+        #OPERATOR_MODIFIED=$?
+        #if [[ $OPERATOR_MODIFIED -gt 0 ]]; then
+        #    make kind_build_operator
+        #    OPERATOR_EXIT_VALUE=$?
+        #    if [[ $OPERATOR_EXIT_VALUE -gt 0 ]]; then
+        #        echo "Operator build returned errors"
+        #        return 1
+        #    fi
+        #else
+        #    echo "SKIPPING OPERATOR IMAGE BUILD..."
+        #fi
 
-        echo "Files changed in engine folder:"
-        git --no-pager diff --exit-code --name-only origin/master ../../engine
-        ENGINE_MODIFIED=$?
-        if [[ $ENGINE_MODIFIED -gt 0 ]]; then
-            make build_protos
-            PROTO_EXIT_VALUE=$?
-            if [[ $PROTO_EXIT_VALUE -gt 0 ]]; then
-                return 1
-            fi
-            make kind_build_engine
-            ENGINE_EXIT_VALUE=$?
-            if [[ $ENGINE_EXIT_VALUE -gt 0 ]]; then
-                echo "Engine build returned errors"
-                return 1
-            fi
-        else
-            echo "SKIPPING ENGINE IMAGE BUILD..."
-        fi
+        #echo "Files changed in engine folder:"
+        #git --no-pager diff --exit-code --name-only origin/master ../../engine
+        #ENGINE_MODIFIED=$?
+        #if [[ $ENGINE_MODIFIED -gt 0 ]]; then
+        #    make build_protos
+        #    PROTO_EXIT_VALUE=$?
+        #    if [[ $PROTO_EXIT_VALUE -gt 0 ]]; then
+        #        return 1
+        #    fi
+        #    make kind_build_engine
+        #    ENGINE_EXIT_VALUE=$?
+        #    if [[ $ENGINE_EXIT_VALUE -gt 0 ]]; then
+        #        echo "Engine build returned errors"
+        #        return 1
+        #    fi
+        #else
+        #    echo "SKIPPING ENGINE IMAGE BUILD..."
+        #fi
 
-        echo "Files changed in executor folder:"
-        git --no-pager diff --exit-code --name-only origin/master ../../executor
-        EXECUTOR_MODIFIED=$?
-        if [[ $EXECUTOR_MODIFIED -gt 0 ]]; then
-            make kind_build_executor
-            EXECUTOR_EXIT_VALUE=$?
-            if [[ $EXECUTOR_EXIT_VALUE -gt 0 ]]; then
-                echo "Executor build returned errors"
-                return 1
-            fi
-        else
-            echo "SKIPPING EXECUTOR IMAGE BUILD..."
-        fi
+        #echo "Files changed in executor folder:"
+        #git --no-pager diff --exit-code --name-only origin/master ../../executor
+        #EXECUTOR_MODIFIED=$?
+        #if [[ $EXECUTOR_MODIFIED -gt 0 ]]; then
+        #    make kind_build_executor
+        #    EXECUTOR_EXIT_VALUE=$?
+        #    if [[ $EXECUTOR_EXIT_VALUE -gt 0 ]]; then
+        #        echo "Executor build returned errors"
+        #        return 1
+        #    fi
+        #else
+        #    echo "SKIPPING EXECUTOR IMAGE BUILD..."
+        #fi
 
-        echo "Build test models"
-        make kind_build_test_models
-        KIND_BUILD_EXIT_VALUE=$?
-        if [[ $KIND_BUILD_EXIT_VALUE -gt 0 ]]; then
-            echo "Kind build has errors"
-            return 1
-        fi
+        #echo "Build test models"
+        #make kind_build_test_models
+        #KIND_BUILD_EXIT_VALUE=$?
+        #if [[ $KIND_BUILD_EXIT_VALUE -gt 0 ]]; then
+        #    echo "Kind build has errors"
+        #    return 1
+        #fi
 
-        echo "Files changed in prepackaged folder:"
-        git --no-pager diff --exit-code --name-only origin/master ../../servers ../../integrations
-        PREPACKAGED_MODIFIED=$?
-        if [[ $PREPACKAGED_MODIFIED -gt 0 ]]; then
-            make kind_build_prepackaged
-            PREPACKAGED_EXIT_VALUE=$?
-            if [[ $PREPACKAGED_EXIT_VALUE -gt 0 ]]; then
-                echo "Prepackaged server build returned errors"
-                return 1
-            fi
-        else
-            echo "SKIPPING PREPACKAGED IMAGE BUILD..."
-        fi
+        #echo "Files changed in prepackaged folder:"
+        #git --no-pager diff --exit-code --name-only origin/master ../../servers ../../integrations
+        #PREPACKAGED_MODIFIED=$?
+        #if [[ $PREPACKAGED_MODIFIED -gt 0 ]]; then
+        #    make kind_build_prepackaged
+        #    PREPACKAGED_EXIT_VALUE=$?
+        #    if [[ $PREPACKAGED_EXIT_VALUE -gt 0 ]]; then
+        #        echo "Prepackaged server build returned errors"
+        #        return 1
+        #    fi
+        #else
+        #    echo "SKIPPING PREPACKAGED IMAGE BUILD..."
+        #fi
 
-        echo "Files changed in alibi explain folder:"
-        git --no-pager diff --exit-code --name-only origin/master ../../components/alibi-explain-server/
-        ALIBI_EXPLAIN_MODIFIED=$?
-        if [[ $ALIBI_EXPLAIN_MODIFIED -gt 0 ]]; then
-            make kind_build_alibi_explain
-            ALIBI_EXPLAIN_EXIT_VALUE=$?
-            if [[ $ALIBI_EXPLAIN_EXIT_VALUE -gt 0 ]]; then
-                echo "Alibi Explain server build returned errors"
-                return 1
-            fi
-        else
-            echo "SKIPPING ALIBI EXPLAIN IMAGE BUILD..."
-        fi
+        #echo "Files changed in alibi explain folder:"
+        #git --no-pager diff --exit-code --name-only origin/master ../../components/alibi-explain-server/
+        #ALIBI_EXPLAIN_MODIFIED=$?
+        #if [[ $ALIBI_EXPLAIN_MODIFIED -gt 0 ]]; then
+        #    make kind_build_alibi_explain
+        #    ALIBI_EXPLAIN_EXIT_VALUE=$?
+        #    if [[ $ALIBI_EXPLAIN_EXIT_VALUE -gt 0 ]]; then
+        #        echo "Alibi Explain server build returned errors"
+        #        return 1
+        #    fi
+        #else
+        #    echo "SKIPPING ALIBI EXPLAIN IMAGE BUILD..."
+        #fi
 
-        echo "Files changed in alibi detect folder:"
-        git --no-pager diff --exit-code --name-only origin/master ../../components/alibi-detect-server
-        ALIBI_DETECT_MODIFIED=$?
-        if [[ $ALIBI_DETECT_MODIFIED -gt 0 ]]; then
-            make kind_build_alibi_detect
-            ALIBI_DETECT_EXIT_VALUE=$?
-            if [[ $ALIBI_DETECT_EXIT_VALUE -gt 0 ]]; then
-                echo "Alibi Detect server build returned errors"
-                return 1
-            fi
-        else
-            echo "SKIPPING ALIBI DETECT IMAGE BUILD..."
-        fi
+        #echo "Files changed in alibi detect folder:"
+        #git --no-pager diff --exit-code --name-only origin/master ../../components/alibi-detect-server
+        #ALIBI_DETECT_MODIFIED=$?
+        #if [[ $ALIBI_DETECT_MODIFIED -gt 0 ]]; then
+        #    make kind_build_alibi_detect
+        #    ALIBI_DETECT_EXIT_VALUE=$?
+        #    if [[ $ALIBI_DETECT_EXIT_VALUE -gt 0 ]]; then
+        #        echo "Alibi Detect server build returned errors"
+        #        return 1
+        #    fi
+        #else
+        #    echo "SKIPPING ALIBI DETECT IMAGE BUILD..."
+        #fi
 
-        echo "Files changed in misc folders:"
-        git --no-pager diff --exit-code --name-only origin/master ../../components/seldon-request-logger ../../components/storage-initializer ../../components/routers/epsilon-greedy
-        MISC_MODIFIED=$?
-        if [[ $MISC_MODIFIED -gt 0 ]]; then
-            make kind_build_misc
-            MISC_EXIT_VALUE=$?
-            if [[ $MISC_EXIT_VALUE -gt 0 ]]; then
-                echo "Misc server build returned errors"
-                return 1
-            fi
-        else
-            echo "SKIPPING MISC IMAGE BUILD..."
-        fi
+        #echo "Files changed in misc folders:"
+        #git --no-pager diff --exit-code --name-only origin/master ../../components/seldon-request-logger ../../components/storage-initializer ../../components/routers/epsilon-greedy
+        #MISC_MODIFIED=$?
+        #if [[ $MISC_MODIFIED -gt 0 ]]; then
+        #    make kind_build_misc
+        #    MISC_EXIT_VALUE=$?
+        #    if [[ $MISC_EXIT_VALUE -gt 0 ]]; then
+        #        echo "Misc server build returned errors"
+        #        return 1
+        #    fi
+        #else
+        #    echo "SKIPPING MISC IMAGE BUILD..."
+        #fi
 
         # KIND CLUSTER SETUP
         make kind_setup
