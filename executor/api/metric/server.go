@@ -11,21 +11,25 @@ import (
 )
 
 var RecreateServerHistogram = false
+var RecreateServerSummary = false
 
 type ServerMetrics struct {
 	ServerHandledHistogram *prometheus.HistogramVec
+	ServerHandledSummary   *prometheus.SummaryVec
 	Predictor              *v1.PredictorSpec
 	DeploymentName         string
 }
 
 func NewServerMetrics(spec *v1.PredictorSpec, deploymentName string) *ServerMetrics {
+	labelNames := []string{DeploymentNameMetric, PredictorNameMetric, PredictorVersionMetric, ServiceMetric, "method", "code"}
+
 	histogram := prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    ServerRequestsMetricName,
 			Help:    "A histogram of latencies for executor server",
 			Buckets: DefBuckets,
 		},
-		[]string{DeploymentNameMetric, PredictorNameMetric, PredictorVersionMetric, ServiceMetric, "method", "code"},
+		labelNames,
 	)
 	err := prometheus.Register(histogram)
 	if err != nil {
@@ -36,12 +40,31 @@ func NewServerMetrics(spec *v1.PredictorSpec, deploymentName string) *ServerMetr
 			} else {
 				histogram = e.ExistingCollector.(*prometheus.HistogramVec)
 			}
+		}
+	}
+	summary := prometheus.NewSummaryVec(
+		prometheus.SummaryOpts{
+			Name:       ServerRequestsMetricName + "_summary",
+			Help:       "A summary of latencies for client calls from executor",
+			Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
+		},
+		labelNames,
+	)
+	err = prometheus.Register(summary)
+	if err != nil {
+		if e, ok := err.(prometheus.AlreadyRegisteredError); ok {
+			if RecreateServerSummary {
+				prometheus.Unregister(e.ExistingCollector)
+				prometheus.Register(summary)
+			} else {
+				summary = e.ExistingCollector.(*prometheus.SummaryVec)
+			}
 
 		}
-
 	}
 	return &ServerMetrics{
 		ServerHandledHistogram: histogram,
+		ServerHandledSummary:   summary,
 		Predictor:              spec,
 		DeploymentName:         deploymentName,
 	}

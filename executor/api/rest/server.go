@@ -118,6 +118,16 @@ func (r *SeldonRestApi) wrapMetrics(service string, baseHandler http.HandlerFunc
 			metric.ServiceMetric:          service}),
 		baseHandler,
 	)
+
+	handler = promhttp.InstrumentHandlerDuration(
+		r.metrics.ServerHandledSummary.MustCurryWith(prometheus.Labels{
+			metric.DeploymentNameMetric:   r.DeploymentName,
+			metric.PredictorNameMetric:    r.predictor.Name,
+			metric.PredictorVersionMetric: r.predictor.Annotations["version"],
+			metric.ServiceMetric:          service}),
+		handler,
+	)
+
 	return handler
 }
 
