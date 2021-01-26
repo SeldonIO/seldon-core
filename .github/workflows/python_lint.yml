@@ -1,0 +1,19 @@
+name: Python Lint
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  python-lint:
+
+    container: seldonio/python-builder:0.2
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: test-executor
+      run: |
+        make -C python install_dev lint
+

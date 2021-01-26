@@ -1,0 +1,19 @@
+name: Operator Lint
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  operator-lint:
+
+    container: seldonio/core-builder:0.19
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: test-executor
+      run: |
+        make -C operator lint
+
