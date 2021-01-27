@@ -746,7 +746,7 @@ def setup_tracing(interface_name: str) -> object:
         import yaml
 
         with open(jaeger_config, "r") as stream:
-            config_dict = yaml.load(stream)
+            config_dict = yaml.safe_load(stream)
             config = Config(
                 config=config_dict, service_name=interface_name, validate=True
             )

@@ -39,7 +39,7 @@ class XGBoostServer(SeldonComponent):
 
         try:
             with open(file_path, "r") as f:
-                return yaml.load(f.read())
+                return yaml.safe_load(f.read())
         except FileNotFoundError:
             logger.debug(f"metadata file {file_path} does not exist")
             return {}
