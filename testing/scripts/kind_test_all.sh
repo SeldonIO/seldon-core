@@ -167,7 +167,9 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
         #    echo "SKIPPING MISC IMAGE BUILD..."
         #fi
 
+        kubectl cluster-info --context kind-kind
         kubectl config get-contexts
+        echo $KUBECONFIG
         kubectl cluster-info
         kubectl get storageclass standard
 
