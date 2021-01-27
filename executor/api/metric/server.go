@@ -46,7 +46,7 @@ func NewServerMetrics(spec *v1.PredictorSpec, deploymentName string) *ServerMetr
 		prometheus.SummaryOpts{
 			Name:       ServerRequestsMetricName + "_summary",
 			Help:       "A summary of latencies for client calls from executor",
-			Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
+			Objectives: DefObjectives,
 		},
 		labelNames,
 	)
