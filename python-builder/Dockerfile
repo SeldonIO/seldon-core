@@ -28,6 +28,16 @@ RUN pip install flatbuffers
 RUN pip install twine
 RUN pip install mypy-protobuf
 
+# Install latest git
+RUN apt-get upgrade -y
+RUN apt-get update -y
+RUN apt-get install -y make libssl-dev libghc-zlib-dev libcurl4-gnutls-dev libexpat1-dev gettext unzip
+RUN wget https://github.com/git/git/archive/v2.30.0.zip -O git.zip
+RUN unzip git.zip
+RUN apt-get remove git -y
+RUN make prefix=/usr/local -C git-2.30.0/ all install
+
+
 WORKDIR /work
 
 # Define default command.
