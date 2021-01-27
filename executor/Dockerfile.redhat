@@ -3,20 +3,20 @@ FROM golang:1.13 as builder
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
-COPY executor/go.mod go.mod
-COPY executor/go.sum go.sum
-COPY executor/proto/ proto/
+COPY go.mod go.mod
+COPY go.sum go.sum
+COPY proto/ proto/
 # cache deps before building and copying source so that we don't need to re-download as much
 # and so that source changes don't invalidate our downloaded layer
-COPY executor/operator/ operator/
+COPY _operator/ _operator/
 RUN go mod download
 
 # Copy the go source
-COPY executor/main.go main.go
-COPY executor/api/ api/
-COPY executor/predictor/ predictor/
-COPY executor/logger/ logger/
-COPY executor/k8s/ k8s/
+COPY main.go main.go
+COPY api/ api/
+COPY predictor/ predictor/
+COPY logger/ logger/
+COPY k8s/ k8s/
 
 # Build
 RUN go build -a -o executor main.go
@@ -27,7 +27,7 @@ RUN wget -O armon-consul-api.tar.gz https://github.com/armon/consul-api/archive/
 RUN wget -O hasicorp-hcl.tar.gz https://github.com/hashicorp/hcl/archive/master.tar.gz
 
 # Copy OpenAPI folder and change the permissions
-COPY executor/api/rest/openapi/ /openapi/
+COPY api/rest/openapi/ /openapi/
 RUN chmod -R 660 /openapi/
 
 FROM registry.access.redhat.com/ubi8/ubi-minimal
@@ -40,7 +40,7 @@ LABEL name="Seldon Executor" \
 
 WORKDIR /
 COPY --from=builder /workspace/executor .
-COPY executor/licenses/license.txt licenses/license.txt
+COPY licenses/license.txt licenses/license.txt
 COPY --from=builder /workspace/hashicorp-golang-lru.tar.gz licenses/mpl_source/hashicorp-golang-lru.tar.gz
 COPY --from=builder /workspace/armon-consul-api.tar.gz licenses/mpl_source/armon-consul-api.tar.gz
 COPY --from=builder /workspace/hasicorp-hcl.tar.gz licenses/mpl_source/hasicorp-hcl.tar.gz
