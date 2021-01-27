@@ -164,7 +164,7 @@ func (r *SeldonRestApi) Initialise() {
 		case api.ProtocolTensorflow:
 			r.Router.NewRoute().Path("/v1/models/{"+ModelHttpPathVariable+"}/:predict").Methods("OPTIONS", "POST").HandlerFunc(r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions))
 			r.Router.NewRoute().Path("/v1/models/{"+ModelHttpPathVariable+"}:predict").Methods("OPTIONS", "POST").HandlerFunc(r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions))
-			// Allow both :predict before and after final / in path. 
+			// Allow both :predict before and after final / in path.
 			r.Router.NewRoute().Path("/v1/models/:predict").Methods("OPTIONS", "POST").HandlerFunc(r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions)) // Nonstandard path - Seldon extension
 			r.Router.NewRoute().Path("/v1/models:predict").Methods("OPTIONS", "POST").HandlerFunc(r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions))  // Nonstandard path - Seldon extension
 			r.Router.NewRoute().Path("/v1/models/{"+ModelHttpPathVariable+"}").Methods("GET", "OPTIONS").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))

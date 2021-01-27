@@ -13,6 +13,7 @@ import (
 
 type ClientMetrics struct {
 	ClientHandledHistogram *prometheus.HistogramVec
+	ServerHandledSummary   *prometheus.SummaryVec
 	Predictor              *v1.PredictorSpec
 	DeploymentName         string
 	ModelName              string
@@ -23,13 +24,15 @@ type ClientMetrics struct {
 var RecreateClientHistogram = false
 
 func NewClientMetrics(spec *v1.PredictorSpec, deploymentName string, modelName string) *ClientMetrics {
+	labelNames := []string{DeploymentNameMetric, PredictorNameMetric, PredictorVersionMetric, ServiceMetric, ModelNameMetric, ModelImageMetric, ModelVersionMetric, "method", "code"}
+
 	histogram := prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    ClientRequestsMetricName,
 			Help:    "A histogram of latencies for client calls from executor",
 			Buckets: DefBuckets,
 		},
-		[]string{DeploymentNameMetric, PredictorNameMetric, PredictorVersionMetric, ServiceMetric, ModelNameMetric, ModelImageMetric, ModelVersionMetric, "method", "code"},
+		labelNames,
 	)
 
 	err := prometheus.Register(histogram)
@@ -45,6 +48,28 @@ func NewClientMetrics(spec *v1.PredictorSpec, deploymentName string, modelName s
 		}
 
 	}
+
+	summary := prometheus.NewSummaryVec(
+		prometheus.SummaryOpts{
+			Name:       ClientRequestsMetricName + "_summary",
+			Help:       "A summary of latencies for client calls from executor",
+			Objectives: DefObjectives,
+		},
+		labelNames,
+	)
+	err = prometheus.Register(summary)
+	if err != nil {
+		if e, ok := err.(prometheus.AlreadyRegisteredError); ok {
+			if RecreateServerSummary {
+				prometheus.Unregister(e.ExistingCollector)
+				prometheus.Register(summary)
+			} else {
+				summary = e.ExistingCollector.(*prometheus.SummaryVec)
+			}
+
+		}
+	}
+
 	container := v1.GetContainerForPredictiveUnit(spec, modelName)
 	imageName := ""
 	imageVersion := ""
@@ -58,6 +83,7 @@ func NewClientMetrics(spec *v1.PredictorSpec, deploymentName string, modelName s
 
 	return &ClientMetrics{
 		ClientHandledHistogram: histogram,
+		ServerHandledSummary:   summary,
 		Predictor:              spec,
 		DeploymentName:         deploymentName,
 		ModelName:              modelName,
