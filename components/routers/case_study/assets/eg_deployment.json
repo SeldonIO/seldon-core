@@ -21,15 +21,18 @@
               "containers": [
                 {
                   "image": "seldonio/credit_default_rf_model:0.2",
-                  "name": "rf-model"
+                  "name": "rf-model",
+                  "env": [{"name": "SELDON_LOG_LEVEL", "value": "DEBUG"}]
                 },
                 {
                   "image": "seldonio/credit_default_xgb_model:0.2",
-                  "name": "xgb-model"
+                  "name": "xgb-model",
+                  "env": [{"name": "SELDON_LOG_LEVEL", "value": "DEBUG"}]
                 },
                 {
                   "image": "seldonio/mab_epsilon_greedy:1.6.0-dev",
-                  "name": "eg-router"
+                  "name": "eg-router",
+                  "env": [{"name": "SELDON_LOG_LEVEL", "value": "DEBUG"}]
                 }
               ],
               "terminationGracePeriodSeconds": 20

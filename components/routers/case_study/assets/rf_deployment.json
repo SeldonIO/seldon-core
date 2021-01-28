@@ -21,7 +21,8 @@
               "containers": [
                 {
                   "image": "seldonio/credit_default_rf_model:0.2",
-                  "name": "rf-model"
+                  "name": "rf-model",
+                  "env": [{"name": "SELDON_LOG_LEVEL", "value": "DEBUG"}]
                 }
               ],
               "terminationGracePeriodSeconds": 20
