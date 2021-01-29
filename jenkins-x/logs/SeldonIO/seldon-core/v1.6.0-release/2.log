@@ -1,0 +1,25 @@
+
+Showing logs for build [32mseldonio-seldon-core-v1-6-0-rel-dxjlx-2[0m stage [32mbuild-and-push[0m and container [32mstep-credential-initializer-7lgp8[0m
+{"level":"info","ts":1611943541.110987,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1611943541.1127527,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-v1-6-0-rel-dxjlx-2[0m stage [32mbuild-and-push[0m and container [32mstep-working-dir-initializer-f757g[0m
+{"level":"info","ts":1611943542.1247568,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1611943542.126196,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-v1-6-0-rel-dxjlx-2[0m stage [32mbuild-and-push[0m and container [32mstep-place-tools[0m
+failed to try resolving symlinks in path "/var/log/pods/**_seldonio-seldon-core-v1-6-0-rel-dxjlx-2-build-and-push-b2dgp-pod-ee8f80_3d95f336-928d-48da-a9c6-481a81f72de2/step-place-tools/0.log": lstat /var/log/pods/**_seldonio-seldon-core-v1-6-0-rel-dxjlx-2-build-and-push-b2dgp-pod-ee8f80_3d95f336-928d-48da-a9c6-481a81f72de2/step-place-tools/0.log: no such file or directory
+
+Showing logs for build [32mseldonio-seldon-core-v1-6-0-rel-dxjlx-2[0m stage [32mbuild-and-push[0m and container [32mstep-git-source-seldonio-seldon-core-v1-6-0-rel-dxjlx-kvsfb[0m
+Unable to retrieve container logs for docker://2efff2a13587bdbad6e30e6d4a081d104918e05491e2885e98768eeff343c7b6
+
+Showing logs for build [32mseldonio-seldon-core-v1-6-0-rel-dxjlx-2[0m stage [32mbuild-and-push[0m and container [32mstep-setup-builder-home[0m
+Unable to retrieve container logs for docker://02d30ff3c24b760b6f33995dac6cb42251e2a556717ccd5f3a3d596394bec55f
+
+Showing logs for build [32mseldonio-seldon-core-v1-6-0-rel-dxjlx-2[0m stage [32mbuild-and-push[0m and container [32mstep-git-merge[0m
+Unable to retrieve container logs for docker://b69470b7fd0a836263d76271b25879b86e6ce8e14f7328daa8d1e965572b49ac
+
+Showing logs for build [32mseldonio-seldon-core-v1-6-0-rel-dxjlx-2[0m stage [32mbuild-and-push[0m and container [32mstep-build-and-push-images[0m
+Unable to retrieve container logs for docker://1d9f26bb6a13a83655581968f1a09aa01e522aeec292578b92d54de0c10066f0
+[31m
+Pipeline failed on stage 'build-and-push' : container 'step-build-and-push-images'. The execution of the pipeline has stopped.[0m
