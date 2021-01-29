@@ -11,7 +11,7 @@ RUN mvn clean verify -Dlicense.useMissingFile -B
 FROM registry.access.redhat.com/ubi8/ubi
 
 RUN yum install -y java-11-openjdk.x86_64
-
+RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical
 LABEL name="Seldon Engine" \
       vendor="Seldon Technologies" \
       version="1.6.0-dev" \

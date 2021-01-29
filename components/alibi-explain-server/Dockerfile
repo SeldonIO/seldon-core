@@ -24,6 +24,7 @@ RUN pip install pip-licenses
 RUN mkdir ./licenses && pip-licenses --from=mixed --format=csv --output-file=./licenses/license_info.csv && \
     pip-licenses --from=mixed --format=plain-vertical --with-license-file --no-license-path --output-file=./licenses/license.txt
 RUN mv ./licenses /licenses
+RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical
 USER default
 
 ENTRYPOINT ["python", "-m", "alibiexplainer"]
