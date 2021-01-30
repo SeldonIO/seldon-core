@@ -1,4 +1,4 @@
-FROM nvidia/cuda:10.0-cudnn7-runtime-ubuntu18.04
+FROM nvidia/cuda:10.2-cudnn8-runtime-ubuntu18.04
 
 LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
 
