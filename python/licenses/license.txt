@@ -75,7 +75,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 Jinja2
-2.11.2
+2.11.3
 BSD License
 Copyright 2007 Pallets
 
@@ -214,9 +214,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 PyYAML
-5.3.1
+5.4.1
 MIT License
-Copyright (c) 2017-2020 Ingy döt Net
+Copyright (c) 2017-2021 Ingy döt Net
 Copyright (c) 2006-2016 Kirill Simonov
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -574,7 +574,7 @@ SOFTWARE.
 
 
 cachetools
-4.2.0
+4.2.1
 MIT License
 The MIT License (MIT)
 
@@ -2615,9 +2615,9 @@ THE SOFTWARE.
 
 
 numpy
-1.18.5
+1.19.5
 BSD
-Copyright (c) 2005-2019, NumPy Developers.
+Copyright (c) 2005-2020, NumPy Developers.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -5359,7 +5359,7 @@ Apache 2.0
 UNKNOWN
 
 tensorflow
-2.3.2
+2.4.1
 Apache Software License
 Copyright 2019 The TensorFlow Authors.  All rights reserved.
 
@@ -5567,7 +5567,7 @@ Copyright 2019 The TensorFlow Authors.  All rights reserved.
 
 
 tensorflow-estimator
-2.3.0
+2.4.0
 Apache Software License
 UNKNOWN
 
@@ -6089,7 +6089,7 @@ OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
 urllib3
-1.26.2
+1.26.3
 MIT License
 MIT License
 
