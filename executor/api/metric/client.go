@@ -13,7 +13,7 @@ import (
 
 type ClientMetrics struct {
 	ClientHandledHistogram *prometheus.HistogramVec
-	ServerHandledSummary   *prometheus.SummaryVec
+	ClientHandledSummary   *prometheus.SummaryVec
 	Predictor              *v1.PredictorSpec
 	DeploymentName         string
 	ModelName              string
@@ -83,7 +83,7 @@ func NewClientMetrics(spec *v1.PredictorSpec, deploymentName string, modelName s
 
 	return &ClientMetrics{
 		ClientHandledHistogram: histogram,
-		ServerHandledSummary:   summary,
+		ClientHandledSummary:   summary,
 		Predictor:              spec,
 		DeploymentName:         deploymentName,
 		ModelName:              modelName,
@@ -97,7 +97,9 @@ func (m *ClientMetrics) UnaryClientInterceptor() func(ctx context.Context, metho
 		startTime := time.Now()
 		err := invoker(ctx, method, req, reply, cc, opts...)
 		st, _ := status.FromError(err)
-		m.ClientHandledHistogram.WithLabelValues(m.DeploymentName, m.Predictor.Name, m.Predictor.Annotations["version"], method, m.ModelName, m.ImageName, m.ImageVersion, "unary", st.Code().String()).Observe(time.Since(startTime).Seconds())
+		elapsedTime := time.Since(startTime).Seconds()
+		m.ClientHandledHistogram.WithLabelValues(m.DeploymentName, m.Predictor.Name, m.Predictor.Annotations["version"], method, m.ModelName, m.ImageName, m.ImageVersion, "unary", st.Code().String()).Observe(elapsedTime)
+		m.ClientHandledSummary.WithLabelValues(m.DeploymentName, m.Predictor.Name, m.Predictor.Annotations["version"], method, m.ModelName, m.ImageName, m.ImageVersion, "unary", st.Code().String()).Observe(elapsedTime)
 		return err
 	}
 }

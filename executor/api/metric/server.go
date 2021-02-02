@@ -76,7 +76,9 @@ func (m *ServerMetrics) UnaryServerInterceptor() func(ctx context.Context, req i
 		startTime := time.Now()
 		resp, err := handler(ctx, req)
 		st, _ := status.FromError(err)
-		m.ServerHandledHistogram.WithLabelValues(m.DeploymentName, m.Predictor.Name, m.Predictor.Annotations["version"], info.FullMethod, "unary", st.Code().String()).Observe(time.Since(startTime).Seconds())
+		elapsedTime := time.Since(startTime).Seconds()
+		m.ServerHandledHistogram.WithLabelValues(m.DeploymentName, m.Predictor.Name, m.Predictor.Annotations["version"], info.FullMethod, "unary", st.Code().String()).Observe(elapsedTime)
+		m.ServerHandledSummary.WithLabelValues(m.DeploymentName, m.Predictor.Name, m.Predictor.Annotations["version"], info.FullMethod, "unary", st.Code().String()).Observe(elapsedTime)
 		return resp, err
 	}
 }
