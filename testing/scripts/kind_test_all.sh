@@ -30,7 +30,7 @@ done
 # AVOID EXIT ON ERROR FOR FOLLOWING CMDS
 set +o errexit
 
-# START CLUSTER 
+# START CLUSTER
 make kind_create_cluster
 KIND_EXIT_VALUE=$?
 
@@ -43,9 +43,9 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
     run_end_to_end_tests() {
 
         echo "Files changed in python folder:"
-        git --no-pager diff --exit-code --name-only origin/master ../../python
+        git --no-pager diff --exit-code --name-only origin/release-1.2.4 ../../python
         PYTHON_MODIFIED=$?
-        if [[ $PYTHON_MODIFIED -gt 0 ]]; then 
+        if [[ $PYTHON_MODIFIED -gt 0 ]]; then
             make s2i_build_base_images
             PYTHON_EXIT_VALUE=$?
             if [[ $PYTHON_EXIT_VALUE -gt 0 ]]; then
@@ -57,7 +57,7 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
         fi
 
         echo "Files changed in operator folder:"
-        git --no-pager diff --exit-code --name-only origin/master ../../operator
+        git --no-pager diff --exit-code --name-only origin/release-1.2.4 ../../operator
         OPERATOR_MODIFIED=$?
         if [[ $OPERATOR_MODIFIED -gt 0 ]]; then
             make kind_build_operator
@@ -71,7 +71,7 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
         fi
 
         echo "Files changed in engine folder:"
-        git --no-pager diff --exit-code --name-only origin/master ../../engine
+        git --no-pager diff --exit-code --name-only origin/release-1.2.4 ../../engine
         ENGINE_MODIFIED=$?
         if [[ $ENGINE_MODIFIED -gt 0 ]]; then
             make build_protos
@@ -90,7 +90,7 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
         fi
 
         echo "Files changed in executor folder:"
-        git --no-pager diff --exit-code --name-only origin/master ../../executor
+        git --no-pager diff --exit-code --name-only origin/release-1.2.4 ../../executor
         EXECUTOR_MODIFIED=$?
         if [[ $EXECUTOR_MODIFIED -gt 0 ]]; then
             make kind_build_executor
@@ -112,7 +112,7 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
         fi
 
         echo "Files changed in prepackaged folder:"
-        git --no-pager diff --exit-code --name-only origin/master ../../servers ../../integrations
+        git --no-pager diff --exit-code --name-only origin/release-1.2.4 ../../servers ../../integrations
         PREPACKAGED_MODIFIED=$?
         if [[ $PREPACKAGED_MODIFIED -gt 0 ]]; then
             make kind_build_prepackaged
@@ -126,7 +126,7 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
         fi
 
         echo "Files changed in alibi folder:"
-        git --no-pager diff --exit-code --name-only origin/master ../../components/alibi-detect-server ../../components/alibi-explain-server/
+        git --no-pager diff --exit-code --name-only origin/release-1.2.4 ../../components/alibi-detect-server ../../components/alibi-explain-server/
         ALIBI_MODIFIED=$?
         if [[ $ALIBI_MODIFIED -gt 0 ]]; then
             make kind_build_alibi
@@ -140,7 +140,7 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
         fi
 
         echo "Files changed in misc folders:"
-        git --no-pager diff --exit-code --name-only origin/master ../../components/seldon-request-logger ../../components/storage-initializer
+        git --no-pager diff --exit-code --name-only origin/release-1.2.4 ../../components/seldon-request-logger ../../components/storage-initializer
         MISC_MODIFIED=$?
         if [[ $MISC_MODIFIED -gt 0 ]]; then
             make kind_build_misc
@@ -191,7 +191,7 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
     # We run the piece above
     run_end_to_end_tests
     RUN_EXIT_VALUE=$?
-    
+
 else
     echo "Existing kind cluster or failure starting - ${KIND_EXIT_VALUE}"
 fi
@@ -210,4 +210,3 @@ service docker stop || true
 
 # NOW THAT WE'VE CLEANED WE CAN EXIT ON RUN EXIT VALUE
 exit ${RUN_EXIT_VALUE}
-
