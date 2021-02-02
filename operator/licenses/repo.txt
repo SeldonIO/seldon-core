@@ -1,4 +1,5 @@
 seldonio/seldon-core
+bazil/fuse
 googleapis/google-cloud-go
 census-ecosystem/opencensus-go-exporter-aws
 census-ecosystem/opencensus-go-exporter-ocagent
@@ -7,6 +8,7 @@ census-ecosystem/opencensus-go-exporter-stackdriver
 census-ecosystem/opencensus-go-exporter-zipkin
 opencensus-integrations/ocsql
 census-ecosystem/opencensus-go-resource
+apache/thrift
 Azure/azure-amqp-common-go
 Azure/azure-event-hubs-go
 Azure/azure-pipeline-go
@@ -52,7 +54,6 @@ andybalholm/brotli
 andygrunwald/go-gerrit
 anmitsu/go-shlex
 antihax/optional
-apache/thrift
 apex/log
 apex/logs
 aphistic/golf
@@ -575,6 +576,7 @@ src-d/go-git
 go-tomb/tomb
 go-warnings/warnings
 gotestyourself/gotest.tools
+helm/helm
 dominikh/go-tools
 istio/api
 istio/client-go
@@ -610,13 +612,18 @@ cznic/xc
 mvdan/interfacer
 mvdan/lint
 mvdan/unparam
+mvdan/xurls
 vcabbage/amqp
 rsc/binaryregexp
 rsc/letsencrypt
+rsc/quote
 rsc/sampler
+kubernetes-sigs/apiserver-network-proxy
 kubernetes-sigs/boskos
 kubernetes-sigs/controller-runtime
 kubernetes-sigs/kustomize
 kubernetes-sigs/structured-merge-diff
 kubernetes-sigs/testing_frameworks
 kubernetes-sigs/yaml
+sqs/pbtypes
+fvbommel/util
