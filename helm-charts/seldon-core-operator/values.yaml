@@ -44,7 +44,7 @@ executor:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-core-executor
-    tag: 1.2.3
+    tag: 1.2.4
   prometheus:
     path: /prometheus
   serviceAccount:
@@ -60,7 +60,7 @@ image:
   pullPolicy: IfNotPresent
   registry: docker.io
   repository: seldonio/seldon-core-operator
-  tag: 1.2.3
+  tag: 1.2.4
 manager:
   cpuLimit: 500m
   cpuRequest: 100m
@@ -96,33 +96,33 @@ predictiveUnit:
 predictor_servers:
   MLFLOW_SERVER:
     grpc:
-      defaultImageVersion: "1.2.3"
+      defaultImageVersion: "1.2.4"
       image: seldonio/mlflowserver_grpc
     rest:
-      defaultImageVersion: "1.2.3"
+      defaultImageVersion: "1.2.4"
       image: seldonio/mlflowserver_rest
   SKLEARN_SERVER:
     grpc:
-      defaultImageVersion: "1.2.3"
+      defaultImageVersion: "1.2.4"
       image: seldonio/sklearnserver_grpc
     rest:
-      defaultImageVersion: "1.2.3"
+      defaultImageVersion: "1.2.4"
       image: seldonio/sklearnserver_rest
   TENSORFLOW_SERVER:
     grpc:
-      defaultImageVersion: "1.2.3"
+      defaultImageVersion: "1.2.4"
       image: seldonio/tfserving-proxy_grpc
     rest:
-      defaultImageVersion: "1.2.3"
+      defaultImageVersion: "1.2.4"
       image: seldonio/tfserving-proxy_rest
     tensorflow: true
     tfImage: tensorflow/serving:2.1.0
   XGBOOST_SERVER:
     grpc:
-      defaultImageVersion: "1.2.3"
+      defaultImageVersion: "1.2.4"
       image: seldonio/xgboostserver_grpc
     rest:
-      defaultImageVersion: "1.2.3"
+      defaultImageVersion: "1.2.4"
       image: seldonio/xgboostserver_rest
 
 # ## Other
@@ -153,7 +153,7 @@ engine:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/engine
-    tag: 1.2.3
+    tag: 1.2.4
   logMessagesExternally: false
   port: 8000
   prometheus:
@@ -165,4 +165,4 @@ engine:
 
 # Explainer image
 explainer:
-  image: seldonio/alibiexplainer:1.2.3
+  image: seldonio/alibiexplainer:1.2.4
