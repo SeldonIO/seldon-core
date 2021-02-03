@@ -45,7 +45,7 @@ func NewServerMetrics(spec *v1.PredictorSpec, deploymentName string) *ServerMetr
 	summary := prometheus.NewSummaryVec(
 		prometheus.SummaryOpts{
 			Name:       ServerRequestsMetricName + "_summary",
-			Help:       "A summary of latencies for client calls from executor",
+			Help:       "A summary of latencies for executor server",
 			Objectives: DefObjectives,
 		},
 		labelNames,
