@@ -1,0 +1,1771 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-in-phc67-11[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-79r4t[0m
+{"level":"info","ts":1612362240.4035208,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1612362240.4041266,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-in-phc67-11[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-k4x45[0m
+{"level":"info","ts":1612362241.3449473,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1612362241.3564267,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-in-phc67-11[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-in-phc67-11[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-cf7k7[0m
+{"level":"info","ts":1612362246.4217722,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1612362246.422902,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-in-phc67-11[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-2895-in-phc67-58vxv[0m
+{"level":"info","ts":1612362246.712426,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1612362252.471916,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-in-phc67-11[0m stage [32mpr-build-comment[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-in-phc67-11[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=release-1.2.4:a9e2d2d95066edffb43458941bface3d1d8a8d19,2895:f5f70b28c57ecaee069afed421766dcf115fc020
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch origin --unshallow f5f70b28c57ecaee069afed421766dcf115fc020: a9e2d2d95066edffb43458941bface3d1d8a8d19:
+DEBUG: ran git fetch --unshallow origin f5f70b28c57ecaee069afed421766dcf115fc020: a9e2d2d95066edffb43458941bface3d1d8a8d19: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch release-1.2.4
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git checkout release-1.2.4
+DEBUG: ran git checkout release-1.2.4 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard a9e2d2d95066edffb43458941bface3d1d8a8d19
+DEBUG: ran git reset --hard a9e2d2d95066edffb43458941bface3d1d8a8d19 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git merge f5f70b28c57ecaee069afed421766dcf115fc020
+DEBUG: ran git merge f5f70b28c57ecaee069afed421766dcf115fc020 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git log --format=%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%s%n%b%x1e a9e2d2d95066edffb43458941bface3d1d8a8d19..HEAD
+Merged SHA f5f70b28c57ecaee069afed421766dcf115fc020 with commit message 'extend metrics notebook tests' into base branch release-1.2.4
+Merged SHA 9a58de167782930cbc71e638511dd7cad469dbb1 with commit message 'add github actions for unit tesets and rename metrics notebook' into base branch release-1.2.4
+Merged SHA 2e8e566ef8a6cc5f03e25377e6d59ec552e59f1e with commit message 'remove deprecate helm charts repo' into base branch release-1.2.4
+Merged SHA 722979bae546a5f05e67de71190102884bc0ee0f with commit message 'make sure that release-1.2.4 branch is available for git diff' into base branch release-1.2.4
+Merged SHA 0ac102828742a6e42fe59ba25eded78c81029219 with commit message 'build images only if diffrence against release-1.2.4' into base branch release-1.2.4
+Merged SHA f0437ea45c44a3a48d1d3512aa43becb4f7f4980 with commit message 'add summary metrics to grpc' into base branch release-1.2.4
+Merged SHA db5729297aa382aed5e824832fd548bc9c1462d1 with commit message 'include quantile for objective=1, add summary to client metrics' into base branch release-1.2.4
+Merged SHA e19514565495a69fa8beba6e1a2884e99fb5c0cf with commit message 'use local copy of _operator instead of symlink (like in master)' into base branch release-1.2.4
+Merged SHA c9ac4c2eb268c6521d90d3bbd173a45ddee8d902 with commit message 'backport quantiles from PR on master' into base branch release-1.2.4
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-in-phc67-11[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=2895
++ BUILD_NUMBER=11
++ PIPELINE_CONTEXT=integration
+++ cat
++++ date
++ COMMENT_MSG='Wed Feb  3 14:24:22 UTC 2021
+The logs for [integration] [11] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2895/11.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2895 --build=11'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=2895 '--comment=Wed Feb  3 14:24:22 UTC 2021
+The logs for [integration] [11] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2895/11.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2895 --build=11'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-in-phc67-11[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-2895-in-phc67-wnfwn[0m
+{"level":"info","ts":1612362264.5763857,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1612362264.5796504,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-in-phc67-11[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-2895-in-phc67-hvjr5[0m
+{"level":"info","ts":1612362264.8019295,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1612362265.2309093,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-in-phc67-11[0m stage [32mend-to-end[0m and container [32mstep-credential-initializer-l2wgj[0m
+{"level":"info","ts":1612362269.132778,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1612362269.133208,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-in-phc67-11[0m stage [32mend-to-end[0m and container [32mstep-working-dir-initializer-vds82[0m
+{"level":"info","ts":1612362270.0991597,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1612362270.1003444,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-in-phc67-11[0m stage [32mend-to-end[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-in-phc67-11[0m stage [32mend-to-end[0m and container [32mstep-create-dir-workspace-snbls[0m
+{"level":"info","ts":1612362277.27275,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1612362277.274105,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-in-phc67-11[0m stage [32mend-to-end[0m and container [32mstep-source-copy-workspace-zwmbn[0m
+{"level":"info","ts":1612362277.4602284,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1612362280.3255515,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-in-phc67-11[0m stage [32mend-to-end[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-in-phc67-11[0m stage [32mend-to-end[0m and container [32mstep-test-end-to-end[0m
+Test run type is: [base]
+Starting Docker: docker.
+[SETUP] Waiting for Docker to be ready, sleeping for 1 seconds ...
+kind create cluster --config ../resources/kind_config.yaml
+Creating cluster "kind" ...
+ • Ensuring node image (kindest/node:v1.16.3) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.16.3) 🖼
+ • Preparing nodes 📦  ...
+ ✓ Preparing nodes 📦
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+ • Joining worker nodes 🚜  ...
+ ✓ Joining worker nodes 🚜
+Set kubectl context to "kind-kind"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-kind
+
+Have a nice day! 👋
+`kind get kubeconfig-path` is deprecated!
+
+KIND will export and merge kubeconfig like kops, minikube, etc.
+This command is now unnecessary and will be removed in a future release.
+
+For more info see: https://github.com/kubernetes-sigs/kind/issues/1060
+See also the output of `kind create cluster`
+
+From https://github.com/SeldonIO/seldon-core
+ * branch              release-1.2.4 -> FETCH_HEAD
+ * [new branch]        release-1.2.4 -> origin/release-1.2.4
+Files changed in python folder:
+warning: refname 'origin/release-1.2.4' is ambiguous.
+SKIPPING PYTHON IMAGE BUILD...
+Files changed in operator folder:
+warning: refname 'origin/release-1.2.4' is ambiguous.
+SKIPPING OPERATOR IMAGE BUILD...
+Files changed in engine folder:
+warning: refname 'origin/release-1.2.4' is ambiguous.
+SKIPPING ENGINE IMAGE BUILD...
+Files changed in executor folder:
+warning: refname 'origin/release-1.2.4' is ambiguous.
+executor/.gitignore
+executor/Dockerfile
+executor/Dockerfile.redhat
+executor/Makefile
+executor/api/metric/client.go
+executor/api/metric/constants.go
+executor/api/metric/server.go
+executor/api/rest/client.go
+executor/api/rest/server.go
+executor/go.mod
+executor/go.sum
+cd ../../executor && make kind-image-install
+make[1]: Entering directory '/workspace/source/executor'
+rm -rf _operator
+cp -r ../operator _operator
+go fmt ./api/... ./predictor/... ./k8s/...
+go: downloading github.com/go-logr/logr v0.1.0
+go: downloading github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
+go: downloading sigs.k8s.io/controller-runtime v0.5.8
+go: downloading github.com/prometheus/client_golang v1.7.1
+go: downloading github.com/opentracing/opentracing-go v1.2.0
+go: downloading golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+go: downloading github.com/pkg/errors v0.9.1
+go: downloading github.com/golang/protobuf v1.4.2
+go: extracting github.com/go-logr/logr v0.1.0
+go: extracting github.com/opentracing/opentracing-go v1.2.0
+go: extracting golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+go: extracting github.com/pkg/errors v0.9.1
+go: downloading github.com/gorilla/mux v1.7.4
+go: downloading k8s.io/apimachinery v0.17.9
+go: extracting github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
+go: extracting github.com/gorilla/mux v1.7.4
+go: extracting github.com/prometheus/client_golang v1.7.1
+go: extracting github.com/golang/protobuf v1.4.2
+go: downloading k8s.io/api v0.17.9
+go: extracting sigs.k8s.io/controller-runtime v0.5.8
+go: downloading google.golang.org/grpc v1.30.0
+go: downloading github.com/cespare/xxhash/v2 v2.1.1
+go: extracting github.com/cespare/xxhash/v2 v2.1.1
+go: extracting k8s.io/apimachinery v0.17.9
+go: downloading github.com/prometheus/client_model v0.2.0
+go: downloading google.golang.org/protobuf v1.23.0
+go: downloading github.com/uber/jaeger-client-go v2.25.0+incompatible
+go: extracting github.com/prometheus/client_model v0.2.0
+go: extracting github.com/uber/jaeger-client-go v2.25.0+incompatible
+go: extracting google.golang.org/grpc v1.30.0
+go: extracting google.golang.org/protobuf v1.23.0
+go: downloading k8s.io/client-go v0.17.9
+go: downloading github.com/cloudevents/sdk-go v1.2.0
+go: downloading k8s.io/klog v1.0.0
+go: downloading github.com/prometheus/common v0.10.0
+go: extracting k8s.io/klog v1.0.0
+go: extracting github.com/prometheus/common v0.10.0
+go: extracting github.com/cloudevents/sdk-go v1.2.0
+go: downloading go.uber.org/zap v1.15.0
+go: downloading github.com/uber/jaeger-lib v2.2.0+incompatible
+go: downloading github.com/gogo/protobuf v1.3.1
+go: downloading k8s.io/apiextensions-apiserver v0.17.9
+go: downloading github.com/beorn7/perks v1.0.1
+go: downloading go.opencensus.io v0.22.0
+go: extracting go.uber.org/zap v1.15.0
+go: extracting github.com/beorn7/perks v1.0.1
+go: extracting github.com/uber/jaeger-lib v2.2.0+incompatible
+go: downloading golang.org/x/net v0.0.0-20200520004742-59133d7f0dd7
+go: extracting k8s.io/api v0.17.9
+go: extracting go.opencensus.io v0.22.0
+go: downloading github.com/spf13/pflag v1.0.5
+go: extracting github.com/spf13/pflag v1.0.5
+go: extracting k8s.io/apiextensions-apiserver v0.17.9
+go: downloading github.com/evanphx/json-patch v4.5.0+incompatible
+go: extracting github.com/evanphx/json-patch v4.5.0+incompatible
+go: extracting k8s.io/client-go v0.17.9
+go: extracting golang.org/x/net v0.0.0-20200520004742-59133d7f0dd7
+go: downloading github.com/matttproud/golang_protobuf_extensions v1.0.1
+go: extracting github.com/matttproud/golang_protobuf_extensions v1.0.1
+go: downloading go.uber.org/atomic v1.6.0
+go: extracting go.uber.org/atomic v1.6.0
+go: downloading github.com/google/gofuzz v1.0.0
+go: extracting github.com/google/gofuzz v1.0.0
+go: downloading github.com/go-logr/zapr v0.1.0
+go: extracting github.com/go-logr/zapr v0.1.0
+go: extracting github.com/gogo/protobuf v1.3.1
+go: downloading google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
+go: downloading golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0
+go: extracting golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0
+go: downloading sigs.k8s.io/yaml v1.1.0
+go: extracting sigs.k8s.io/yaml v1.1.0
+go: downloading go.uber.org/multierr v1.5.0
+go: downloading k8s.io/utils v0.0.0-20200619165400-6e3d28b6ed19
+go: downloading github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6
+go: downloading github.com/google/uuid v1.1.1
+go: extracting go.uber.org/multierr v1.5.0
+go: downloading golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+go: downloading github.com/davecgh/go-spew v1.1.1
+go: extracting github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6
+go: extracting github.com/google/uuid v1.1.1
+go: extracting k8s.io/utils v0.0.0-20200619165400-6e3d28b6ed19
+go: extracting github.com/davecgh/go-spew v1.1.1
+go: downloading gopkg.in/inf.v0 v0.9.1
+go: downloading github.com/json-iterator/go v1.1.10
+go: downloading github.com/prometheus/procfs v0.1.3
+go: extracting gopkg.in/inf.v0 v0.9.1
+go: downloading gomodules.xyz/jsonpatch/v2 v2.0.1
+go: extracting gomodules.xyz/jsonpatch/v2 v2.0.1
+go: downloading github.com/lightstep/tracecontext.go v0.0.0-20181129014701-1757c391b1ac
+go: downloading github.com/google/go-cmp v0.5.0
+go: downloading github.com/hashicorp/golang-lru v0.5.4
+go: extracting github.com/json-iterator/go v1.1.10
+go: extracting github.com/lightstep/tracecontext.go v0.0.0-20181129014701-1757c391b1ac
+go: downloading github.com/googleapis/gnostic v0.3.1
+go: extracting github.com/prometheus/procfs v0.1.3
+go: extracting github.com/hashicorp/golang-lru v0.5.4
+go: downloading golang.org/x/sys v0.0.0-20200615200032-f1bc736245b1
+go: downloading golang.org/x/text v0.3.3
+go: extracting github.com/google/go-cmp v0.5.0
+go: downloading k8s.io/klog/v2 v2.0.0
+go: extracting k8s.io/klog/v2 v2.0.0
+go: downloading k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29
+go: extracting github.com/googleapis/gnostic v0.3.1
+go: extracting golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+go: downloading github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+go: downloading golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+go: extracting github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+go: downloading gopkg.in/yaml.v2 v2.3.0
+go: extracting golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+go: extracting gopkg.in/yaml.v2 v2.3.0
+go: downloading github.com/modern-go/reflect2 v1.0.1
+go: extracting k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29
+go: downloading gopkg.in/fsnotify.v1 v1.4.7
+go: downloading github.com/imdario/mergo v0.3.9
+go: extracting github.com/modern-go/reflect2 v1.0.1
+go: extracting golang.org/x/sys v0.0.0-20200615200032-f1bc736245b1
+go: extracting github.com/imdario/mergo v0.3.9
+go: extracting gopkg.in/fsnotify.v1 v1.4.7
+go: extracting google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
+go: extracting golang.org/x/text v0.3.3
+go: finding github.com/go-logr/logr v0.1.0
+go: finding golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+go: finding github.com/golang/protobuf v1.4.2
+go: finding github.com/opentracing/opentracing-go v1.2.0
+go: finding github.com/google/uuid v1.1.1
+go: finding github.com/uber/jaeger-client-go v2.25.0+incompatible
+go: finding github.com/prometheus/client_golang v1.7.1
+go: finding github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
+go: finding google.golang.org/grpc v1.30.0
+go: finding sigs.k8s.io/controller-runtime v0.5.8
+go: finding google.golang.org/protobuf v1.23.0
+go: finding github.com/pkg/errors v0.9.1
+go: finding github.com/cloudevents/sdk-go v1.2.0
+go: finding google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
+go: finding k8s.io/api v0.17.9
+go: finding k8s.io/apimachinery v0.17.9
+go: finding github.com/gorilla/mux v1.7.4
+go: finding github.com/beorn7/perks v1.0.1
+go: finding github.com/cespare/xxhash/v2 v2.1.1
+go: finding github.com/go-logr/zapr v0.1.0
+go: finding golang.org/x/net v0.0.0-20200520004742-59133d7f0dd7
+go: finding github.com/spf13/pflag v1.0.5
+go: finding github.com/prometheus/client_model v0.2.0
+go: finding go.uber.org/zap v1.15.0
+go: finding github.com/gogo/protobuf v1.3.1
+go: finding github.com/uber/jaeger-lib v2.2.0+incompatible
+go: finding go.opencensus.io v0.22.0
+go: finding github.com/prometheus/common v0.10.0
+go: finding github.com/google/gofuzz v1.0.0
+go: finding gopkg.in/inf.v0 v0.9.1
+go: finding github.com/lightstep/tracecontext.go v0.0.0-20181129014701-1757c391b1ac
+go: finding github.com/matttproud/golang_protobuf_extensions v1.0.1
+go: finding github.com/prometheus/procfs v0.1.3
+go: finding go.uber.org/atomic v1.6.0
+go: finding github.com/evanphx/json-patch v4.5.0+incompatible
+go: finding go.uber.org/multierr v1.5.0
+go: finding k8s.io/client-go v0.17.9
+go: finding gomodules.xyz/jsonpatch/v2 v2.0.1
+go: finding k8s.io/klog v1.0.0
+go: finding github.com/hashicorp/golang-lru v0.5.4
+go: finding golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0
+go: finding k8s.io/utils v0.0.0-20200619165400-6e3d28b6ed19
+go: finding github.com/imdario/mergo v0.3.9
+go: finding golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+go: finding gopkg.in/fsnotify.v1 v1.4.7
+go: finding github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6
+go: finding golang.org/x/sys v0.0.0-20200615200032-f1bc736245b1
+go: finding github.com/googleapis/gnostic v0.3.1
+go: finding k8s.io/apiextensions-apiserver v0.17.9
+go: finding github.com/modern-go/reflect2 v1.0.1
+go: finding sigs.k8s.io/yaml v1.1.0
+go: finding github.com/json-iterator/go v1.1.10
+go: finding k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29
+go: finding gopkg.in/yaml.v2 v2.3.0
+go: finding golang.org/x/text v0.3.3
+go: finding github.com/davecgh/go-spew v1.1.1
+go: finding github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+go: finding golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+go: finding github.com/google/go-cmp v0.5.0
+go: finding k8s.io/klog/v2 v2.0.0
+go vet ./api/... ./predictor/... ./k8s/...
+go: downloading github.com/onsi/gomega v1.10.1
+go: downloading gotest.tools v2.2.0+incompatible
+go: extracting gotest.tools v2.2.0+incompatible
+go: extracting github.com/onsi/gomega v1.10.1
+go: finding github.com/onsi/gomega v1.10.1
+go: finding gotest.tools v2.2.0+incompatible
+go test ./api/... ./predictor/... ./k8s/... -coverprofile cover.out
+?   	github.com/seldonio/seldon-core/executor/api	[no test files]
+?   	github.com/seldonio/seldon-core/executor/api/client	[no test files]
+ok  	github.com/seldonio/seldon-core/executor/api/grpc	0.035s	coverage: 18.0% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/grpc/seldon	1.152s	coverage: 48.5% of statements
+?   	github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto	[no test files]
+?   	github.com/seldonio/seldon-core/executor/api/grpc/seldon/test	[no test files]
+ok  	github.com/seldonio/seldon-core/executor/api/grpc/tensorflow	0.041s	coverage: 19.0% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/metric	0.024s	coverage: 26.7% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/payload	0.040s	coverage: 64.3% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/rest	1.076s	coverage: 67.7% of statements
+?   	github.com/seldonio/seldon-core/executor/api/test	[no test files]
+ok  	github.com/seldonio/seldon-core/executor/api/tracing	0.012s	coverage: 72.2% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/util	0.035s	coverage: 48.1% of statements
+ok  	github.com/seldonio/seldon-core/executor/predictor	0.070s	coverage: 78.5% of statements
+ok  	github.com/seldonio/seldon-core/executor/k8s	0.007s	coverage: 72.7% of statements
+mkdir -p api/rest/openapi/
+cp ../openapi/swagger-ui/* api/rest/openapi/
+cp ../openapi/engine.oas3.json api/rest/openapi/seldon.json
+docker build -f Dockerfile -t seldonio/seldon-core-executor:1.2.4 .
+Sending build context to Docker daemon  13.13MB
+Step 1/27 : FROM golang:1.13 as builder
+1.13: Pulling from library/golang
+d6ff36c9ec48: Pulling fs layer
+c958d65b3090: Pulling fs layer
+edaf0a6b092f: Pulling fs layer
+80931cf68816: Pulling fs layer
+813643441356: Pulling fs layer
+799f41bb59c9: Pulling fs layer
+16b5038bccc8: Pulling fs layer
+813643441356: Waiting
+16b5038bccc8: Waiting
+799f41bb59c9: Waiting
+80931cf68816: Waiting
+c958d65b3090: Verifying Checksum
+c958d65b3090: Download complete
+edaf0a6b092f: Verifying Checksum
+edaf0a6b092f: Download complete
+d6ff36c9ec48: Verifying Checksum
+d6ff36c9ec48: Download complete
+80931cf68816: Verifying Checksum
+80931cf68816: Download complete
+813643441356: Verifying Checksum
+813643441356: Download complete
+16b5038bccc8: Verifying Checksum
+16b5038bccc8: Download complete
+d6ff36c9ec48: Pull complete
+799f41bb59c9: Verifying Checksum
+799f41bb59c9: Download complete
+c958d65b3090: Pull complete
+edaf0a6b092f: Pull complete
+80931cf68816: Pull complete
+813643441356: Pull complete
+799f41bb59c9: Pull complete
+16b5038bccc8: Pull complete
+Digest: sha256:8ebb6d5a48deef738381b56b1d4cd33d99a5d608e0d03c5fe8dfa3f68d41a1f8
+Status: Downloaded newer image for golang:1.13
+ ---> d6f3656320fe
+Step 2/27 : WORKDIR /workspace
+ ---> Running in f7a4169e200a
+Removing intermediate container f7a4169e200a
+ ---> 24a874b55f04
+Step 3/27 : COPY go.mod go.mod
+ ---> 59cf9e889238
+Step 4/27 : COPY go.sum go.sum
+ ---> 36acc5b19d8b
+Step 5/27 : COPY proto/ proto/
+ ---> 9fd9c4a3758b
+Step 6/27 : COPY _operator/ _operator/
+ ---> 9703608fcf61
+Step 7/27 : RUN go mod download
+ ---> Running in 10377e2624d2
+[91mgo: finding cloud.google.com/go v0.40.0
+[0m[91mgo: finding contrib.go.opencensus.io/exporter/ocagent v0.4.12
+[0m[91mgo: finding contrib.go.opencensus.io/exporter/prometheus v0.1.0
+[0m[91mgo: finding github.com/Azure/azure-sdk-for-go v30.1.0+incompatible
+[0m[91mgo: finding github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78
+[0m[91mgo: finding github.com/Azure/go-autorest v14.2.0+incompatible
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest v0.9.0
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/adal v0.9.0
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/date v0.3.0
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/mocks v0.4.0
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/to v0.2.0
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/validation v0.1.0
+[0m[91mgo: finding github.com/Azure/go-autorest/logger v0.1.0
+[0m[91mgo: finding github.com/Azure/go-autorest/tracing v0.6.0
+[0m[91mgo: finding github.com/BurntSushi/toml v0.3.1
+[0m[91mgo: finding github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802
+[0m[91mgo: finding github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
+[0m[91mgo: finding github.com/PuerkitoBio/purell v1.1.1
+[0m[91mgo: finding github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
+[0m[91mgo: finding github.com/Shopify/sarama v1.19.0
+[0m[91mgo: finding github.com/Shopify/toxiproxy v2.1.4+incompatible
+[0m[91mgo: finding github.com/agnivade/levenshtein v1.0.1
+[0m[91mgo: finding github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
+[0m[91mgo: finding github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4
+[0m[91mgo: finding github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
+[0m[91mgo: finding github.com/apache/thrift v0.12.0
+[0m[91mgo: finding github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6
+[0m[91mgo: finding github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
+[0m[91mgo: finding github.com/beorn7/perks v1.0.1
+[0m[91mgo: finding github.com/bgentry/speakeasy v0.1.0
+[0m[91mgo: finding github.com/blang/semver v3.5.0+incompatible
+[0m[91mgo: finding github.com/census-instrumentation/opencensus-proto v0.2.1
+[0m[91mgo: finding github.com/cespare/xxhash/v2 v2.1.1
+[0m[91mgo: finding github.com/client9/misspell v0.3.4
+[0m[91mgo: finding github.com/cloudevents/sdk-go v1.2.0
+[0m[91mgo: finding github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f
+[0m[91mgo: finding github.com/cockroachdb/datadriven v0.0.0-20190809214429-80d97fb3cbaa
+[0m[91mgo: finding github.com/coreos/etcd v3.3.10+incompatible
+[0m[91mgo: finding github.com/coreos/go-etcd v2.0.0+incompatible
+[0m[91mgo: finding github.com/coreos/go-oidc v2.1.0+incompatible
+[0m[91mgo: finding github.com/coreos/go-semver v0.3.0
+[0m[91mgo: finding github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e
+[0m[91mgo: finding github.com/coreos/pkg v0.0.0-20180108230652-97fdf19511ea
+[0m[91mgo: finding github.com/cpuguy83/go-md2man v1.0.10
+[0m[91mgo: finding github.com/creack/pty v1.1.7
+[0m[91mgo: finding github.com/davecgh/go-spew v1.1.1
+[0m[91mgo: finding github.com/dgrijalva/jwt-go v3.2.0+incompatible
+[0m[91mgo: finding github.com/docker/docker v0.7.3-0.20190327010347-be7ac8be2ae0
+[0m[91mgo: finding github.com/docker/go-units v0.4.0
+[0m[91mgo: finding github.com/docker/spdystream v0.0.0-20160310174837-449fdfce4d96
+[0m[91mgo: finding github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
+[0m[91mgo: finding github.com/dustin/go-humanize v1.0.0
+[0m[91mgo: finding github.com/eapache/go-resiliency v1.1.0
+[0m[91mgo: finding github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21
+[0m[91mgo: finding github.com/eapache/queue v1.1.0
+[0m[91mgo: finding github.com/elazarl/goproxy v0.0.0-20170405201442-c4fc26588b6e
+[0m[91mgo: finding github.com/emicklei/go-restful v2.9.5+incompatible
+[0m[91mgo: finding github.com/envoyproxy/go-control-plane v0.9.4
+[0m[91mgo: finding github.com/envoyproxy/protoc-gen-validate v0.1.0
+[0m[91mgo: finding github.com/evanphx/json-patch v4.5.0+incompatible
+[0m[91mgo: finding github.com/fatih/color v1.7.0
+[0m[91mgo: finding github.com/fortytw2/leaktest v1.3.0
+[0m[91mgo: finding github.com/fsnotify/fsnotify v1.4.9
+[0m[91mgo: finding github.com/ghodss/yaml v1.0.0
+[0m[91mgo: finding github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
+[0m[91mgo: finding github.com/go-kit/kit v0.9.0
+[0m[91mgo: finding github.com/go-logfmt/logfmt v0.4.0
+[0m[91mgo: finding github.com/go-logr/logr v0.1.0
+[0m[91mgo: finding github.com/go-logr/zapr v0.1.0
+[0m[91mgo: finding github.com/go-openapi/analysis v0.19.5
+[0m[91mgo: finding github.com/go-openapi/errors v0.19.2
+[0m[91mgo: finding github.com/go-openapi/jsonpointer v0.19.3
+[0m[91mgo: finding github.com/go-openapi/jsonreference v0.19.3
+[0m[91mgo: finding github.com/go-openapi/loads v0.19.4
+[0m[91mgo: finding github.com/go-openapi/runtime v0.19.4
+[0m[91mgo: finding github.com/go-openapi/spec v0.19.3
+[0m[91mgo: finding github.com/go-openapi/strfmt v0.19.3
+[0m[91mgo: finding github.com/go-openapi/swag v0.19.5
+[0m[91mgo: finding github.com/go-openapi/validate v0.19.5
+[0m[91mgo: finding github.com/go-stack/stack v1.8.0
+[0m[91mgo: finding github.com/gogo/protobuf v1.3.1
+[0m[91mgo: finding github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
+[0m[91mgo: finding github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6
+[0m[91mgo: finding github.com/golang/mock v1.2.0
+[0m[91mgo: finding github.com/golang/protobuf v1.4.2
+[0m[91mgo: finding github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db
+[0m[91mgo: finding github.com/google/btree v1.0.0
+[0m[91mgo: finding github.com/google/go-cmp v0.5.0
+[0m[91mgo: finding github.com/google/gofuzz v1.0.0
+[0m[91mgo: finding github.com/google/martian v2.1.0+incompatible
+[0m[91mgo: finding github.com/google/pprof v0.0.0-20181206194817-3ea8567a2e57
+[0m[91mgo: finding github.com/google/renameio v0.1.0
+[0m[91mgo: finding github.com/google/uuid v1.1.1
+[0m[91mgo: finding github.com/googleapis/gax-go/v2 v2.0.5
+[0m[91mgo: finding github.com/googleapis/gnostic v0.3.1
+[0m[91mgo: finding github.com/gophercloud/gophercloud v0.1.0
+[0m[91mgo: finding github.com/gorilla/context v1.1.1
+[0m[91mgo: finding github.com/gorilla/mux v1.7.4
+[0m[91mgo: finding github.com/gorilla/websocket v1.4.0
+[0m[91mgo: finding github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7
+[0m[91mgo: finding github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
+[0m[91mgo: finding github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
+[0m[91mgo: finding github.com/grpc-ecosystem/grpc-gateway v1.9.5
+[0m[91mgo: finding github.com/hashicorp/golang-lru v0.5.4
+[0m[91mgo: finding github.com/hashicorp/hcl v1.0.0
+[0m[91mgo: finding github.com/hpcloud/tail v1.0.0
+[0m[91mgo: finding github.com/imdario/mergo v0.3.9
+[0m[91mgo: finding github.com/inconshreveable/mousetrap v1.0.0
+[0m[91mgo: finding github.com/jonboulle/clockwork v0.1.0
+[0m[91mgo: finding github.com/json-iterator/go v1.1.10
+[0m[91mgo: finding github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024
+[0m[91mgo: finding github.com/julienschmidt/httprouter v1.2.0
+[0m[91mgo: finding github.com/kelseyhightower/envconfig v1.4.0
+[0m[91mgo: finding github.com/kisielk/errcheck v1.2.0
+[0m[91mgo: finding github.com/kisielk/gotool v1.0.0
+[0m[91mgo: finding github.com/konsorten/go-windows-terminal-sequences v1.0.1
+[0m[91mgo: finding github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515
+[0m[91mgo: finding github.com/kr/pretty v0.2.0
+[0m[91mgo: finding github.com/kr/pty v1.1.5
+[0m[91mgo: finding github.com/kr/text v0.1.0
+[0m[91mgo: finding github.com/lightstep/tracecontext.go v0.0.0-20181129014701-1757c391b1ac
+[0m[91mgo: finding github.com/magiconair/properties v1.8.0
+[0m[91mgo: finding github.com/mailru/easyjson v0.7.0
+[0m[91mgo: finding github.com/mattn/go-colorable v0.0.9
+[0m[91mgo: finding github.com/mattn/go-isatty v0.0.4
+[0m[91mgo: finding github.com/mattn/go-runewidth v0.0.2
+[0m[91mgo: finding github.com/matttproud/golang_protobuf_extensions v1.0.1
+[0m[91mgo: finding github.com/mitchellh/go-homedir v1.1.0
+[0m[91mgo: finding github.com/mitchellh/mapstructure v1.1.2
+[0m[91mgo: finding github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+[0m[91mgo: finding github.com/modern-go/reflect2 v1.0.1
+[0m[91mgo: finding github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822
+[0m[91mgo: finding github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223
+[0m[91mgo: finding github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f
+[0m[91mgo: finding github.com/nats-io/jwt v0.3.2
+[0m[91mgo: finding github.com/nats-io/nats-server/v2 v2.1.2
+[0m[91mgo: finding github.com/nats-io/nats.go v1.9.1
+[0m[91mgo: finding github.com/nats-io/nkeys v0.1.3
+[0m[91mgo: finding github.com/nats-io/nuid v1.0.1
+[0m[91mgo: finding github.com/nxadm/tail v1.4.4
+[0m[91mgo: finding github.com/olekukonko/tablewriter v0.0.0-20170122224234-a0225b3f23b5
+[0m[91mgo: finding github.com/onsi/ginkgo v1.14.0
+[0m[91mgo: finding github.com/onsi/gomega v1.10.1
+[0m[91mgo: finding github.com/opentracing/opentracing-go v1.2.0
+[0m[91mgo: finding github.com/openzipkin/zipkin-go v0.1.6
+[0m[91mgo: finding github.com/pborman/uuid v1.2.0
+[0m[91mgo: finding github.com/pelletier/go-toml v1.2.0
+[0m[91mgo: finding github.com/peterbourgon/diskv v2.0.1+incompatible
+[0m[91mgo: finding github.com/pierrec/lz4 v2.0.5+incompatible
+[0m[91mgo: finding github.com/pkg/errors v0.9.1
+[0m[91mgo: finding github.com/pmezard/go-difflib v1.0.0
+[0m[91mgo: finding github.com/pquerna/cachecontrol v0.0.0-20171018203845-0dec1b30a021
+[0m[91mgo: finding github.com/prometheus/client_golang v1.7.1
+[0m[91mgo: finding github.com/prometheus/client_model v0.2.0
+[0m[91mgo: finding github.com/prometheus/common v0.10.0
+[0m[91mgo: finding github.com/prometheus/procfs v0.1.3
+[0m[91mgo: finding github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a
+[0m[91mgo: finding github.com/remyoudompheng/bigfft v0.0.0-20170806203942-52369c62f446
+[0m[91mgo: finding github.com/rogpeppe/fastuuid v0.0.0-20150106093220-6724a57986af
+[0m[91mgo: finding github.com/rogpeppe/go-internal v1.3.0
+[0m[91mgo: finding github.com/russross/blackfriday v1.5.2
+[0m[91mgo: finding github.com/sergi/go-diff v1.0.0
+[0m[91mgo: finding github.com/sirupsen/logrus v1.4.2
+[0m[91mgo: finding github.com/soheilhy/cmux v0.1.4
+[0m[91mgo: finding github.com/spf13/afero v1.2.2
+[0m[91mgo: finding github.com/spf13/cast v1.3.0
+[0m[91mgo: finding github.com/spf13/cobra v0.0.5
+[0m[91mgo: finding github.com/spf13/jwalterweatherman v1.0.0
+[0m[91mgo: finding github.com/spf13/pflag v1.0.5
+[0m[91mgo: finding github.com/spf13/viper v1.3.2
+[0m[91mgo: finding github.com/stretchr/ob** v0.2.0
+[0m[91mgo: finding github.com/stretchr/testify v1.4.0
+[0m[91mgo: finding github.com/tidwall/pretty v1.0.0
+[0m[91mgo: finding github.com/tmc/grpc-websocket-proxy v0.0.0-20170815181823-89b8d40f7ca8
+[0m[91mgo: finding github.com/uber/jaeger-client-go v2.25.0+incompatible
+[0m[91mgo: finding github.com/uber/jaeger-lib v2.2.0+incompatible
+[0m[91mgo: finding github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8
+[0m[91mgo: finding github.com/urfave/cli v1.20.0
+[0m[91mgo: finding github.com/valyala/bytebufferpool v1.0.0
+[0m[91mgo: finding github.com/vektah/gqlparser v1.1.2
+[0m[91mgo: finding github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2
+[0m[91mgo: finding github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77
+[0m[91mgo: finding go.etcd.io/bbolt v1.3.3
+[0m[91mgo: finding go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
+[0m[91mgo: finding go.mongodb.org/mongo-driver v1.1.2
+[0m[91mgo: finding go.opencensus.io v0.22.0
+[0m[91mgo: finding go.uber.org/atomic v1.6.0
+[0m[91mgo: finding go.uber.org/multierr v1.5.0
+[0m[91mgo: finding go.uber.org/tools v0.0.0-20190618225709-2cfd321de3ee
+[0m[91mgo: finding go.uber.org/zap v1.15.0
+[0m[91mgo: finding golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+[0m[91mgo: finding golang.org/x/exp v0.0.0-20190312203227-4b39c73a6495
+[0m[91mgo: finding golang.org/x/image v0.0.0-20190227222117-0694c2d4d067
+[0m[91mgo: finding golang.org/x/lint v0.0.0-20190930215403-16217165b5de
+[0m[91mgo: finding golang.org/x/mobile v0.0.0-20190312151609-d3739f865fa6
+[0m[91mgo: finding golang.org/x/mod v0.0.0-20190513183733-4bf6d317e70e
+[0m[91mgo: finding golang.org/x/net v0.0.0-20200520004742-59133d7f0dd7
+[0m[91mgo: finding golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+[0m[91mgo: finding golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
+[0m[91mgo: finding golang.org/x/sys v0.0.0-20200615200032-f1bc736245b1
+[0m[91mgo: finding golang.org/x/text v0.3.3
+[0m[91mgo: finding golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0
+[0m[91mgo: finding golang.org/x/tools v0.0.0-20191029190741-b9c20aec41a5
+[0m[91mgo: finding golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+[0m[91mgo: finding gomodules.xyz/jsonpatch/v2 v2.0.1
+[0m[91mgo: finding gonum.org/v1/gonum v0.0.0-20190331200053-3d26580ed485
+[0m[91mgo: finding gonum.org/v1/netlib v0.0.0-20190331212654-76723241ea4e
+[0m[91mgo: finding google.golang.org/api v0.15.0
+[0m[91mgo: finding google.golang.org/appengine v1.6.5
+[0m[91mgo: finding google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
+[0m[91mgo: finding google.golang.org/grpc v1.30.0
+[0m[91mgo: finding google.golang.org/protobuf v1.23.0
+[0m[91mgo: finding gopkg.in/alecthomas/kingpin.v2 v2.2.6
+[0m[91mgo: finding gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
+[0m[91mgo: finding gopkg.in/cheggaaa/pb.v1 v1.0.25
+[0m[91mgo: finding gopkg.in/errgo.v2 v2.1.0
+[0m[91mgo: finding gopkg.in/fsnotify.v1 v1.4.7
+[0m[91mgo: finding gopkg.in/inf.v0 v0.9.1
+[0m[91mgo: finding gopkg.in/natefinch/lumberjack.v2 v2.0.0
+[0m[91mgo: finding gopkg.in/resty.v1 v1.12.0
+[0m[91mgo: finding gopkg.in/square/go-jose.v2 v2.2.2
+[0m[91mgo: finding gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
+[0m[91mgo: finding gopkg.in/yaml.v2 v2.3.0
+[0m[91mgo: finding gotest.tools v2.2.0+incompatible
+[0m[91mgo: finding honnef.co/go/tools v0.0.1-2019.2.3
+[0m[91mgo: finding istio.io/api v0.0.0-20200513175333-ae3da0d240e3
+[0m[91mgo: finding istio.io/client-go v0.0.0-20200513180646-f8d9d8ff84e6
+[0m[91mgo: finding istio.io/gogo-genproto v0.0.0-20190930162913-45029607206a
+[0m[91mgo: finding k8s.io/api v0.17.9
+[0m[91mgo: finding k8s.io/apiextensions-apiserver v0.17.9
+[0m[91mgo: finding k8s.io/apimachinery v0.17.9
+[0m[91mgo: finding k8s.io/apiserver v0.17.9
+[0m[91mgo: finding k8s.io/client-go v0.17.9
+[0m[91mgo: finding k8s.io/code-generator v0.17.9
+[0m[91mgo: finding k8s.io/component-base v0.17.9
+[0m[91mgo: finding k8s.io/gengo v0.0.0-20190822140433-26a664648505
+[0m[91mgo: finding k8s.io/klog v1.0.0
+[0m[91mgo: finding k8s.io/klog/v2 v2.0.0
+[0m[91mgo: finding k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29
+[0m[91mgo: finding k8s.io/utils v0.0.0-20200619165400-6e3d28b6ed19
+[0m[91mgo: finding knative.dev/pkg v0.0.0-20200513151758-7b6bb61326ae
+[0m[91mgo: finding modernc.org/cc v1.0.0
+[0m[91mgo: finding modernc.org/golex v1.0.0
+[0m[91mgo: finding modernc.org/mathutil v1.0.0
+[0m[91mgo: finding modernc.org/strutil v1.0.0
+[0m[91mgo: finding modernc.org/xc v1.0.0
+[0m[91mgo: finding pack.ag/amqp v0.11.0
+[0m[91mgo: finding rsc.io/binaryregexp v0.2.0
+[0m[91mgo: finding sigs.k8s.io/controller-runtime v0.5.8
+[0m[91mgo: finding sigs.k8s.io/structured-merge-diff v0.0.0-20190525122527-15d366b2352e
+[0m[91mgo: finding sigs.k8s.io/structured-merge-diff/v2 v2.0.1
+[0m[91mgo: finding sigs.k8s.io/yaml v1.1.0
+[0mRemoving intermediate container 10377e2624d2
+ ---> d69e5d7abaaa
+Step 8/27 : COPY main.go main.go
+ ---> 3fe8ae7c1370
+Step 9/27 : COPY api/ api/
+ ---> 9a225f40b0a2
+Step 10/27 : COPY predictor/ predictor/
+ ---> 7801f5ebee45
+Step 11/27 : COPY logger/ logger/
+ ---> a7cbac06c8e8
+Step 12/27 : COPY k8s/ k8s/
+ ---> a4c246d5fa20
+Step 13/27 : RUN go build -a -o executor main.go
+ ---> Running in 1ba2f04bf075
+Removing intermediate container 1ba2f04bf075
+ ---> e253d6b5cf13
+Step 14/27 : RUN wget -O hashicorp-golang-lru.tar.gz https://github.com/hashicorp/golang-lru/archive/master.tar.gz
+ ---> Running in 734c8f84f6b1
+[91m--2021-02-03 14:30:09--  https://github.com/hashicorp/golang-lru/archive/master.tar.gz
+[0m[91mResolving github.com (github.com)... [0m[91m140.82.121.4
+Connecting to github.com (github.com)|140.82.121.4|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m302 Found
+Location: https://codeload.github.com/hashicorp/golang-lru/tar.gz/master [following]
+--2021-02-03 14:30:09--  https://codeload.github.com/hashicorp/golang-lru/tar.gz/master
+Resolving codeload.github.com (codeload.github.com)... [0m[91m140.82.121.9
+Connecting to codeload.github.com (codeload.github.com)|140.82.121.9|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m200 OK
+Length: unspecified [application/x-gzip]
+Saving to: 'hashicorp-golang-lru.tar.gz'
+[0m[91m
+     0K ....[0m[91m....[0m[91m.. .[0m[91m.[0m[91m..                                        1.07M=0.01s
+
+2021-02-03 14:30:10 (1.07 MB/s) - 'hashicorp-golang-lru.tar.gz' saved [14371]
+
+[0mRemoving intermediate container 734c8f84f6b1
+ ---> 9fef5e812209
+Step 15/27 : RUN wget -O armon-consul-api.tar.gz https://github.com/armon/consul-api/archive/master.tar.gz
+ ---> Running in 9ce8bd26634c
+[91m--2021-02-03 14:30:14--  https://github.com/armon/consul-api/archive/master.tar.gz
+[0m[91mResolving github.com (github.com)... [0m[91m140.82.121.4
+Connecting to github.com (github.com)|140.82.121.4|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m302 Found
+Location: https://codeload.github.com/armon/consul-api/tar.gz/master [following]
+--2021-02-03 14:30:14--  https://codeload.github.com/armon/consul-api/tar.gz/master
+Resolving codeload.github.com (codeload.github.com)... [0m[91m140.82.121.9
+Connecting to codeload.github.com (codeload.github.com)|140.82.121.9|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m200 OK
+Length: unspecified [application/x-gzip]
+Saving to: 'armon-consul-api.tar.gz'
+[0m[91m
+     0K .......... .[0m[91m.....[0m[91m.                                      154K=0.1s
+
+[0m[91m2021-02-03 14:30:14 (154 KB/s) - 'armon-consul-api.tar.gz' saved [17977]
+
+[0mRemoving intermediate container 9ce8bd26634c
+ ---> 041f573952d5
+Step 16/27 : RUN wget -O hasicorp-hcl.tar.gz https://github.com/hashicorp/hcl/archive/master.tar.gz
+ ---> Running in 3d93b81bf996
+[91m--2021-02-03 14:30:15--  https://github.com/hashicorp/hcl/archive/master.tar.gz
+[0m[91mResolving github.com (github.com)... [0m[91m140.82.121.3
+Connecting to github.com (github.com)|140.82.121.3|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m302 Found
+Location: https://codeload.github.com/hashicorp/hcl/tar.gz/master [following]
+--2021-02-03 14:30:16--  https://codeload.github.com/hashicorp/hcl/tar.gz/master
+Resolving codeload.github.com (codeload.github.com)... [0m[91m140.82.121.9
+Connecting to codeload.github.com (codeload.github.com)|140.82.121.9|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m200 OK
+Length: unspecified [application/x-gzip]
+Saving to: 'hasicorp-hcl.tar.gz'
+[0m[91m
+     0K ...[0m[91m...[0m[91m.[0m[91m.[0m[91m..[0m[91m ..[0m[91m........ .[0m[91m...[0m[91m...[0m[91m... .........[0m[91m. ..[0m[91m.....[0m[91m... 1.83M
+    50K ....[0m[91m.[0m[91m....[0m[91m. ...[0m[91m.[0m[91m...[0m[91m... .                               [0m[91m 1.87M=0.04s
+
+2021-02-03 14:30:16 (1.84 MB/s) - 'hasicorp-hcl.tar.gz' saved [72944]
+
+[0mRemoving intermediate container 3d93b81bf996
+ ---> 8cdf9411d0e9
+Step 17/27 : COPY api/rest/openapi/ /openapi/
+ ---> d11b7ba934cb
+Step 18/27 : RUN chmod -R 660 /openapi/
+ ---> Running in 657039db28b4
+Removing intermediate container 657039db28b4
+ ---> eb8bd94f5999
+Step 19/27 : FROM gcr.io/distroless/base:latest
+latest: Pulling from distroless/base
+5749e56bea71: Pulling fs layer
+a3e61620654b: Pulling fs layer
+a3e61620654b: Download complete
+5749e56bea71: Verifying Checksum
+5749e56bea71: Download complete
+5749e56bea71: Pull complete
+a3e61620654b: Pull complete
+Digest: sha256:5e0cc69445ed1d8a17198250a7249d56dd4b6966bb6b2118e60ae9194c310647
+Status: Downloaded newer image for gcr.io/distroless/base:latest
+ ---> 125289cb40fd
+Step 20/27 : WORKDIR /
+ ---> Running in 6920be271a8c
+Removing intermediate container 6920be271a8c
+ ---> d06e8ccaef00
+Step 21/27 : COPY --from=builder /workspace/executor .
+ ---> 5f1efa8fe9d4
+Step 22/27 : COPY licenses/license.txt licenses/license.txt
+ ---> 18b95f0d596d
+Step 23/27 : COPY --from=builder /workspace/hashicorp-golang-lru.tar.gz licenses/mpl_source/hashicorp-golang-lru.tar.gz
+ ---> 80e6ba226fc2
+Step 24/27 : COPY --from=builder /workspace/armon-consul-api.tar.gz licenses/mpl_source/armon-consul-api.tar.gz
+ ---> 0bbe9e527276
+Step 25/27 : COPY --from=builder /workspace/hasicorp-hcl.tar.gz licenses/mpl_source/hasicorp-hcl.tar.gz
+ ---> b897a43db712
+Step 26/27 : COPY --from=builder /openapi/ /openapi/
+ ---> fef57bf12bb9
+Step 27/27 : ENTRYPOINT ["/executor"]
+ ---> Running in b1c34266887d
+Removing intermediate container b1c34266887d
+ ---> 3ee091e2ae89
+Successfully built 3ee091e2ae89
+Successfully tagged seldonio/seldon-core-executor:1.2.4
+kind load -v 3 docker-image seldonio/seldon-core-executor:1.2.4 --name kind
+Image: "seldonio/seldon-core-executor:1.2.4" with ID "sha256:3ee091e2ae89213e451d5b82dd8752dde2ce805ce4c2256d25e189c588a4d15b" not present on node "kind-worker"
+Image: "seldonio/seldon-core-executor:1.2.4" with ID "sha256:3ee091e2ae89213e451d5b82dd8752dde2ce805ce4c2256d25e189c588a4d15b" not present on node "kind-control-plane"
+make[1]: Leaving directory '/workspace/source/executor'
+Build test models
+make -C ../docker/fixed-model kind_load_images
+make[1]: Entering directory '/workspace/source/testing/docker/fixed-model'
+s2i build -E environment_rest_v1 . seldonio/seldon-core-s2i-python3:0.15 seldonio/fixed-model:0.1
+---> Installing application source...
+Build completed successfully
+s2i build -E environment_rest_v2 . seldonio/seldon-core-s2i-python3:0.15 seldonio/fixed-model:0.2
+---> Installing application source...
+Build completed successfully
+kind load -v 3 docker-image seldonio/fixed-model:0.1
+Image: "seldonio/fixed-model:0.1" with ID "sha256:4443a359fdc8a18e3afe9cbf5ba5a48e7d7955a5afb7e36c47e145edfb8fcd90" not present on node "kind-worker"
+Image: "seldonio/fixed-model:0.1" with ID "sha256:4443a359fdc8a18e3afe9cbf5ba5a48e7d7955a5afb7e36c47e145edfb8fcd90" not present on node "kind-control-plane"
+kind load -v 3 docker-image seldonio/fixed-model:0.2
+Image: "seldonio/fixed-model:0.2" with ID "sha256:aca65e25e36629e71673d7f37eeb5a2821be59147507c85eb6beb1603fcfc306" not present on node "kind-worker"
+Image: "seldonio/fixed-model:0.2" with ID "sha256:aca65e25e36629e71673d7f37eeb5a2821be59147507c85eb6beb1603fcfc306" not present on node "kind-control-plane"
+make[1]: Leaving directory '/workspace/source/testing/docker/fixed-model'
+make -C ../docker/echo-model kind_load_image
+make[1]: Entering directory '/workspace/source/testing/docker/echo-model'
+s2i build \
+	-E environment_rest \
+	.\
+	seldonio/seldon-core-s2i-python3:1.1.1-SNAPSHOT\
+	seldonio/echo-model:0.1
+---> Installing application source...
+Build completed successfully
+kind load -v 3 docker-image seldonio/echo-model:0.1
+Image: "seldonio/echo-model:0.1" with ID "sha256:3e08926f9f40f9680e9ab095e9315a21ad22a61f13663b8b7ef36b2d4ed702c8" not present on node "kind-worker"
+Image: "seldonio/echo-model:0.1" with ID "sha256:3e08926f9f40f9680e9ab095e9315a21ad22a61f13663b8b7ef36b2d4ed702c8" not present on node "kind-control-plane"
+make[1]: Leaving directory '/workspace/source/testing/docker/echo-model'
+Files changed in prepackaged folder:
+warning: refname 'origin/release-1.2.4' is ambiguous.
+SKIPPING PREPACKAGED IMAGE BUILD...
+Files changed in alibi folder:
+warning: refname 'origin/release-1.2.4' is ambiguous.
+SKIPPING ALIBI IMAGE BUILD...
+Files changed in misc folders:
+warning: refname 'origin/release-1.2.4' is ambiguous.
+SKIPPING MISC IMAGE BUILD...
+kubectl create namespace seldon || echo "Namespace seldon already exists"
+namespace/seldon created
+kubectl create namespace test1 || echo "Namespace test1 already exists"
+namespace/test1 created
+helm repo add seldonio https://storage.googleapis.com/seldon-charts
+"seldonio" has been added to your repositories
+helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
+"jaegertracing" has been added to your repositories
+helm repo add datawire https://www.getambassador.io
+"datawire" has been added to your repositories
+helm repo update
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "seldonio" chart repository
+...Successfully got an update from the "jaegertracing" chart repository
+...Successfully got an update from the "datawire" chart repository
+Update Complete. ⎈ Happy Helming!⎈ 
+helm install ambassador \
+	datawire/ambassador \
+	-f ../resources/ambassador_values.yaml \
+	--set image.repository=quay.io/datawire/ambassador \
+	--set crds.keep=false \
+	--set enableAES=false \
+	--namespace seldon \
+	--set replicaCount=1 \
+	--wait
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+NAME: ambassador
+LAST DEPLOYED: Wed Feb  3 14:38:54 2021
+NAMESPACE: seldon
+STATUS: deployed
+REVISION: 1
+NOTES:
+-------------------------------------------------------------------------------
+  Congratulations! You've successfully installed Ambassador!
+
+-------------------------------------------------------------------------------
+To get the IP address of Ambassador, run the following commands:
+  export NODE_PORT=$(kubectl get --namespace seldon -o jsonpath="{.spec.ports[0].nodePort}" services ambassador)
+  export NODE_IP=$(kubectl get nodes --namespace seldon -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+
+For help, visit our Slack at https://d6e.co/slack or view the documentation online at https://www.getambassador.io.
+kubectl apply -f istio-1.4.2.yaml
+clusterrole.rbac.authorization.k8s.io/istio-reader-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-reader-istio-system created
+customresourcedefinition.apiextensions.k8s.io/attributemanifests.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/clusterrbacconfigs.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/destinationrules.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/envoyfilters.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/gateways.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/httpapispecbindings.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/httpapispecs.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/meshpolicies.authentication.istio.io created
+customresourcedefinition.apiextensions.k8s.io/policies.authentication.istio.io created
+customresourcedefinition.apiextensions.k8s.io/quotaspecbindings.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/quotaspecs.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/rbacconfigs.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/rules.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/serviceentries.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/servicerolebindings.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/serviceroles.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/virtualservices.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/adapters.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/instances.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/templates.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/handlers.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/sidecars.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/authorizationpolicies.security.istio.io created
+namespace/istio-system created
+serviceaccount/istio-reader-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-citadel-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-citadel-istio-system created
+deployment.apps/istio-citadel created
+poddisruptionbudget.policy/istio-citadel created
+service/istio-citadel created
+serviceaccount/istio-citadel-service-account created
+deployment.apps/istio-egressgateway created
+poddisruptionbudget.policy/istio-egressgateway created
+gateway.networking.istio.io/istio-multicluster-egressgateway created
+virtualservice.networking.istio.io/istio-multicluster-egressgateway created
+envoyfilter.networking.istio.io/istio-multicluster-egressgateway created
+destinationrule.networking.istio.io/istio-multicluster-destinationrule created
+service/istio-egressgateway created
+role.rbac.authorization.k8s.io/istio-egressgateway-sds created
+rolebinding.rbac.authorization.k8s.io/istio-egressgateway-sds created
+serviceaccount/istio-egressgateway-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-galley-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-galley-*****-role-binding-istio-system created
+configmap/istio-mesh-galley created
+configmap/istio-galley-configuration created
+deployment.apps/istio-galley created
+poddisruptionbudget.policy/istio-galley created
+service/istio-galley created
+serviceaccount/istio-galley-service-account created
+configmap/istio-grafana-configuration-dashboards-citadel-dashboard created
+configmap/istio-grafana-configuration-dashboards-galley-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-mesh-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-performance-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-service-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-workload-dashboard created
+configmap/istio-grafana-configuration-dashboards-mixer-dashboard created
+configmap/istio-grafana-configuration-dashboards-pilot-dashboard created
+configmap/istio-grafana created
+deployment.apps/grafana created
+policy.authentication.istio.io/grafana-ports-mtls-disabled created
+service/grafana created
+deployment.apps/istio-ingressgateway created
+gateway.networking.istio.io/ingressgateway created
+poddisruptionbudget.policy/ingressgateway created
+service/istio-ingressgateway created
+serviceaccount/istio-ingressgateway-service-account created
+sidecar.networking.istio.io/default created
+clusterrole.rbac.authorization.k8s.io/istio-sidecar-injector-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-sidecar-injector-*****-role-binding-istio-system created
+configmap/injector-mesh created
+deployment.apps/istio-sidecar-injector created
+mutatingwebhookconfiguration.admissionregistration.k8s.io/istio-sidecar-injector created
+poddisruptionbudget.policy/istio-sidecar-injector created
+service/istio-sidecar-injector created
+serviceaccount/istio-sidecar-injector-service-account created
+configmap/istio-sidecar-injector created
+clusterrole.rbac.authorization.k8s.io/kiali created
+clusterrole.rbac.authorization.k8s.io/kiali-viewer created
+clusterrolebinding.rbac.authorization.k8s.io/kiali created
+configmap/kiali created
+secret/kiali created
+deployment.apps/kiali created
+service/kiali created
+serviceaccount/kiali-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-pilot-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-pilot-istio-system created
+configmap/pilot-envoy-config created
+configmap/istio created
+deployment.apps/istio-pilot created
+meshpolicy.authentication.istio.io/default created
+poddisruptionbudget.policy/istio-pilot created
+service/istio-pilot created
+serviceaccount/istio-pilot-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-policy created
+clusterrolebinding.rbac.authorization.k8s.io/istio-policy-*****-role-binding-istio-system created
+destinationrule.networking.istio.io/istio-policy created
+deployment.apps/istio-policy created
+poddisruptionbudget.policy/istio-policy created
+service/istio-policy created
+serviceaccount/istio-policy-service-account created
+clusterrole.rbac.authorization.k8s.io/prometheus-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/prometheus-istio-system created
+configmap/prometheus created
+deployment.apps/prometheus created
+service/prometheus created
+serviceaccount/prometheus created
+horizontalpodautoscaler.autoscaling/istio-telemetry created
+clusterrole.rbac.authorization.k8s.io/istio-mixer-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-mixer-*****-role-binding-istio-system created
+attributemanifest.config.istio.io/istioproxy created
+attributemanifest.config.istio.io/kubernetes created
+handler.config.istio.io/stdio created
+instance.config.istio.io/accesslog created
+instance.config.istio.io/tcpaccesslog created
+rule.config.istio.io/stdio created
+rule.config.istio.io/stdiotcp created
+instance.config.istio.io/requestcount created
+instance.config.istio.io/requestduration created
+instance.config.istio.io/requestsize created
+instance.config.istio.io/responsesize created
+instance.config.istio.io/tcpbytesent created
+instance.config.istio.io/tcpbytereceived created
+instance.config.istio.io/tcpconnectionsopened created
+instance.config.istio.io/tcpconnectionsclosed created
+handler.config.istio.io/prometheus created
+rule.config.istio.io/promhttp created
+rule.config.istio.io/promtcp created
+rule.config.istio.io/promtcpconnectionopen created
+rule.config.istio.io/promtcpconnectionclosed created
+handler.config.istio.io/kubernetesenv created
+rule.config.istio.io/kubeattrgenrulerule created
+rule.config.istio.io/tcpkubeattrgenrulerule created
+instance.config.istio.io/attributes created
+destinationrule.networking.istio.io/istio-telemetry created
+configmap/telemetry-envoy-config created
+deployment.apps/istio-telemetry created
+poddisruptionbudget.policy/istio-telemetry created
+service/istio-telemetry created
+serviceaccount/istio-mixer-service-account created
+deployment.apps/istio-tracing created
+service/jaeger-query created
+service/jaeger-collector created
+service/jaeger-agent created
+service/zipkin created
+service/tracing created
+kubectl rollout status deployment.apps/istio-ingressgateway -n istio-system
+Waiting for deployment "istio-ingressgateway" rollout to finish: 0 of 1 updated replicas are available...
+deployment "istio-ingressgateway" successfully rolled out
+kubectl rollout status deployment.apps/istio-pilot -n istio-system
+deployment "istio-pilot" successfully rolled out
+kubectl rollout status deployment.apps/istio-citadel -n istio-system
+deployment "istio-citadel" successfully rolled out
+kubectl create -f ../resources/seldon-gateway.yaml -n istio-system
+gateway.networking.istio.io/seldon-gateway created
+helm install jaeger-operator \
+	jaegertracing/jaeger-operator \
+	--set rbac.clusterRole=true \
+	--namespace seldon \
+	--wait
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+NAME: jaeger-operator
+LAST DEPLOYED: Wed Feb  3 14:43:26 2021
+NAMESPACE: seldon
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+jaeger-operator is installed.
+
+
+Check the jaeger-operator logs
+  export POD=$(kubectl get pods -l app.kubernetes.io/instance=jaeger-operator -lapp.kubernetes.io/name=jaeger-operator --namespace seldon --output name)
+  kubectl logs $POD --namespace=seldon
+kubectl apply -f ../resources/jaeger.yaml --namespace seldon
+jaeger.jaegertracing.io/jaeger created
+mapping.getambassador.io/jaeger created
+cd ../../operator && make install-cert-manager
+make[1]: Entering directory '/workspace/source/operator'
+kubectl create namespace cert-manager || echo "Namespace cert-manager-exists"
+namespace/cert-manager created
+kubectl label namespace cert-manager cert-manager.io/disable-validation=true || echo "namespace cert-manager-already labelled"
+namespace/cert-manager labeled
+kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml
+customresourcedefinition.apiextensions.k8s.io/certificaterequests.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/certificates.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/challenges.acme.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/clusterissuers.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/issuers.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/orders.acme.cert-manager.io created
+Warning: kubectl apply should be used on resource created by either kubectl create --save-config or kubectl apply
+namespace/cert-manager configured
+serviceaccount/cert-manager-cainjector created
+serviceaccount/cert-manager created
+serviceaccount/cert-manager-webhook created
+clusterrole.rbac.authorization.k8s.io/cert-manager-cainjector created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-cainjector created
+role.rbac.authorization.k8s.io/cert-manager-cainjector:leaderelection created
+rolebinding.rbac.authorization.k8s.io/cert-manager-cainjector:leaderelection created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-webhook:auth-delegator created
+rolebinding.rbac.authorization.k8s.io/cert-manager-webhook:webhook-authentication-reader created
+clusterrole.rbac.authorization.k8s.io/cert-manager-webhook:webhook-requester created
+role.rbac.authorization.k8s.io/cert-manager:leaderelection created
+rolebinding.rbac.authorization.k8s.io/cert-manager:leaderelection created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-issuers created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-clusterissuers created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-certificates created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-orders created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-challenges created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-ingress-shim created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-issuers created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-clusterissuers created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-certificates created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-orders created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-challenges created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-ingress-shim created
+clusterrole.rbac.authorization.k8s.io/cert-manager-view created
+clusterrole.rbac.authorization.k8s.io/cert-manager-edit created
+service/cert-manager created
+service/cert-manager-webhook created
+deployment.apps/cert-manager-cainjector created
+deployment.apps/cert-manager created
+deployment.apps/cert-manager-webhook created
+mutatingwebhookconfiguration.admissionregistration.k8s.io/cert-manager-webhook created
+validatingwebhookconfiguration.admissionregistration.k8s.io/cert-manager-webhook created
+kubectl rollout status deployment.apps/cert-manager -n cert-manager
+Waiting for deployment "cert-manager" rollout to finish: 0 of 1 updated replicas are available...
+deployment "cert-manager" successfully rolled out
+kubectl rollout status deployment.apps/cert-manager-cainjector -n cert-manager
+deployment "cert-manager-cainjector" successfully rolled out
+kubectl rollout status deployment.apps/cert-manager-webhook -n cert-manager
+Waiting for deployment "cert-manager-webhook" rollout to finish: 0 of 1 updated replicas are available...
+deployment "cert-manager-webhook" successfully rolled out
+make[1]: Leaving directory '/workspace/source/operator'
+sleep 5 #https://github.com/jetstack/cert-manager/issues/2273
+kubectl create namespace seldon-system || echo "namespace seldon-system exists"
+namespace/seldon-system created
+helm delete seldon --namespace seldon-system || echo "seldon-core not installed"
+Error: uninstall: Release not loaded: seldon: release: not found
+seldon-core not installed
+helm install seldon \
+	../../helm-charts/seldon-core-operator \
+	--namespace seldon-system \
+	--set istio.enabled=true \
+	--set istio.gateway=istio-system/seldon-gateway \
+	--set certManager.enabled=false \
+	--set executor.enabled="true" \
+	--wait
+NAME: seldon
+LAST DEPLOYED: Wed Feb  3 14:44:11 2021
+NAMESPACE: seldon-system
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+kubectl config set-context $(kubectl config current-context) --namespace=seldon
+Context "kind-kind" modified.
+kubectl apply -f metrics.yaml
+clusterrole.rbac.authorization.k8s.io/system:aggregated-metrics-reader created
+clusterrolebinding.rbac.authorization.k8s.io/metrics-server:system:auth-delegator created
+rolebinding.rbac.authorization.k8s.io/metrics-server-auth-reader created
+apiservice.apiregistration.k8s.io/v1beta1.metrics.k8s.io created
+serviceaccount/metrics-server created
+deployment.apps/metrics-server created
+service/metrics-server created
+clusterrole.rbac.authorization.k8s.io/system:metrics-server created
+clusterrolebinding.rbac.authorization.k8s.io/system:metrics-server created
+make: Entering directory '/workspace/source/python'
+pip install -e . -r requirements-dev.txt
+Obtaining file:///workspace/source/python
+Collecting Flask<2.0.0
+  Downloading Flask-1.1.2-py2.py3-none-any.whl (94 kB)
+Requirement already satisfied: jsonschema<4.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 2)) (3.2.0)
+Collecting Flask-cors<4.0.0
+  Downloading Flask_Cors-3.0.10-py2.py3-none-any.whl (14 kB)
+Collecting redis<4.0.0
+  Downloading redis-3.5.3-py2.py3-none-any.whl (72 kB)
+Requirement already satisfied: requests<3.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 5)) (2.23.0)
+Requirement already satisfied: numpy<2.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 6)) (1.18.4)
+Collecting flatbuffers<2.0.0
+  Downloading flatbuffers-1.12-py2.py3-none-any.whl (15 kB)
+Requirement already satisfied: protobuf<4.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 8)) (3.11.3)
+Requirement already satisfied: grpcio<2.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 9)) (1.28.1)
+Collecting Flask-OpenTracing<1.2.0,>=1.1.0
+  Downloading Flask-OpenTracing-1.1.0.tar.gz (8.2 kB)
+Collecting opentracing<2.4.0,>=2.2.0
+  Downloading opentracing-2.3.0.tar.gz (48 kB)
+Collecting jaeger-client<4.4.0,>=4.1.0
+  Downloading jaeger-client-4.3.0.tar.gz (81 kB)
+Collecting grpcio-opentracing<1.2.0,>=1.1.4
+  Downloading grpcio_opentracing-1.1.4-py3-none-any.whl (14 kB)
+Requirement already satisfied: PyYAML<5.4 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 14)) (5.3.1)
+Collecting gunicorn<20.1.0,>=19.9.0
+  Downloading gunicorn-20.0.4-py2.py3-none-any.whl (77 kB)
+Collecting minio<6.0.0,>=4.0.9
+  Downloading minio-5.0.10-py2.py3-none-any.whl (75 kB)
+Collecting azure-storage-blob<3.0.0,>=2.0.1
+  Downloading azure_storage_blob-2.1.0-py2.py3-none-any.whl (88 kB)
+Requirement already satisfied: setuptools>=41.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 18)) (46.3.0)
+Collecting google-cloud-storage>=1.16.0
+  Downloading google_cloud_storage-1.35.1-py2.py3-none-any.whl (96 kB)
+Requirement already satisfied: prometheus_client<0.9.0,>=0.7.1 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 20)) (0.7.1)
+Collecting black==19.10b0
+  Downloading black-19.10b0-py36-none-any.whl (97 kB)
+Collecting flake8==3.8.1
+  Downloading flake8-3.8.1-py2.py3-none-any.whl (72 kB)
+Collecting mypy<0.783
+  Downloading mypy-0.782-cp36-cp36m-manylinux1_x86_64.whl (20.8 MB)
+Collecting Pillow==7.2.0
+  Downloading Pillow-7.2.0-cp36-cp36m-manylinux1_x86_64.whl (2.2 MB)
+Collecting pytest==5.4.2
+  Downloading pytest-5.4.2-py3-none-any.whl (247 kB)
+Collecting pytest-cov==2.10.0
+  Downloading pytest_cov-2.10.0-py2.py3-none-any.whl (19 kB)
+Collecting tox<4.0.0
+  Downloading tox-3.21.4-py2.py3-none-any.whl (84 kB)
+Collecting grpcio-tools==1.30.0
+  Downloading grpcio_tools-1.30.0-cp36-cp36m-manylinux2010_x86_64.whl (2.5 MB)
+Collecting mypy-protobuf==1.22
+  Downloading mypy_protobuf-1.22-py3-none-any.whl (7.5 kB)
+Collecting tenacity==6.2.0
+  Downloading tenacity-6.2.0-py2.py3-none-any.whl (24 kB)
+Collecting coverage==5.2
+  Downloading coverage-5.2-cp36-cp36m-manylinux1_x86_64.whl (229 kB)
+Collecting pandas==1.1.0
+  Downloading pandas-1.1.0-cp36-cp36m-manylinux1_x86_64.whl (10.5 MB)
+Collecting pip-licenses==2.3.0
+  Downloading pip_licenses-2.3.0-py3-none-any.whl (14 kB)
+Requirement already satisfied: Werkzeug>=0.15 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->-r requirements.txt (line 1)) (1.0.1)
+Collecting click>=5.1
+  Downloading click-7.1.2-py2.py3-none-any.whl (82 kB)
+Requirement already satisfied: Jinja2>=2.10.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->-r requirements.txt (line 1)) (2.11.2)
+Collecting itsdangerous>=0.24
+  Downloading itsdangerous-1.1.0-py2.py3-none-any.whl (16 kB)
+Requirement already satisfied: pyrsistent>=0.14.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->-r requirements.txt (line 2)) (0.16.0)
+Requirement already satisfied: attrs>=17.4.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->-r requirements.txt (line 2)) (19.3.0)
+Requirement already satisfied: six>=1.11.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->-r requirements.txt (line 2)) (1.14.0)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->-r requirements.txt (line 2)) (1.6.0)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (2020.4.5.1)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (3.0.4)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (1.25.9)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (2.9)
+Collecting threadloop<2,>=1
+  Downloading threadloop-1.0.2.tar.gz (4.9 kB)
+Collecting thrift
+  Downloading thrift-0.13.0.tar.gz (59 kB)
+Requirement already satisfied: tornado>=4.3 in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.4.0,>=4.1.0->-r requirements.txt (line 12)) (6.0.4)
+Collecting configparser
+  Downloading configparser-5.0.1-py3-none-any.whl (22 kB)
+Requirement already satisfied: python-dateutil in /usr/local/lib/python3.6/site-packages (from minio<6.0.0,>=4.0.9->-r requirements.txt (line 16)) (2.8.1)
+Requirement already satisfied: pytz in /usr/local/lib/python3.6/site-packages (from minio<6.0.0,>=4.0.9->-r requirements.txt (line 16)) (2020.1)
+Collecting azure-storage-common~=2.1
+  Downloading azure_storage_common-2.1.0-py2.py3-none-any.whl (47 kB)
+Collecting azure-common>=1.1.5
+  Downloading azure_common-1.1.26-py2.py3-none-any.whl (12 kB)
+Collecting google-resumable-media<2.0dev,>=1.2.0
+  Downloading google_resumable_media-1.2.0-py2.py3-none-any.whl (75 kB)
+Collecting google-cloud-core<2.0dev,>=1.4.1
+  Downloading google_cloud_core-1.5.0-py2.py3-none-any.whl (27 kB)
+Collecting google-auth<2.0dev,>=1.11.0
+  Downloading google_auth-1.24.0-py2.py3-none-any.whl (114 kB)
+Collecting regex
+  Downloading regex-2020.11.13-cp36-cp36m-manylinux2014_x86_64.whl (723 kB)
+Collecting pathspec<1,>=0.6
+  Downloading pathspec-0.8.1-py2.py3-none-any.whl (28 kB)
+Collecting typed-ast>=1.4.0
+  Downloading typed_ast-1.4.2-cp36-cp36m-manylinux1_x86_64.whl (743 kB)
+Collecting toml>=0.9.4
+  Downloading toml-0.10.2-py2.py3-none-any.whl (16 kB)
+Collecting appdirs
+  Downloading appdirs-1.4.4-py2.py3-none-any.whl (9.6 kB)
+Collecting pycodestyle<2.7.0,>=2.6.0a1
+  Downloading pycodestyle-2.6.0-py2.py3-none-any.whl (41 kB)
+Collecting pyflakes<2.3.0,>=2.2.0
+  Downloading pyflakes-2.2.0-py2.py3-none-any.whl (66 kB)
+Collecting mccabe<0.7.0,>=0.6.0
+  Downloading mccabe-0.6.1-py2.py3-none-any.whl (8.6 kB)
+Collecting typing-extensions>=3.7.4
+  Downloading typing_extensions-3.7.4.3-py3-none-any.whl (22 kB)
+Collecting mypy-extensions<0.5.0,>=0.4.3
+  Downloading mypy_extensions-0.4.3-py2.py3-none-any.whl (4.5 kB)
+Requirement already satisfied: more-itertools>=4.0.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (8.2.0)
+Requirement already satisfied: wcwidth in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (0.1.9)
+Requirement already satisfied: pluggy<1.0,>=0.12 in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (0.13.1)
+Requirement already satisfied: py>=1.5.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (1.8.1)
+Requirement already satisfied: packaging in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (20.3)
+Collecting filelock>=3.0.0
+  Downloading filelock-3.0.12-py3-none-any.whl (7.6 kB)
+Collecting virtualenv!=20.0.0,!=20.0.1,!=20.0.2,!=20.0.3,!=20.0.4,!=20.0.5,!=20.0.6,!=20.0.7,>=16.0.0
+  Downloading virtualenv-20.4.2-py2.py3-none-any.whl (7.2 MB)
+Collecting PTable
+  Downloading PTable-0.9.2.tar.gz (31 kB)
+Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from Jinja2>=2.10.1->Flask<2.0.0->-r requirements.txt (line 1)) (1.1.1)
+Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.6/site-packages (from importlib-metadata; python_version < "3.8"->jsonschema<4.0.0->-r requirements.txt (line 2)) (3.1.0)
+Collecting cryptography
+  Downloading cryptography-3.3.1-cp36-abi3-manylinux2010_x86_64.whl (2.6 MB)
+Collecting google-crc32c<2.0dev,>=1.0; python_version >= "3.5"
+  Downloading google_crc32c-1.1.2-cp36-cp36m-manylinux2014_x86_64.whl (38 kB)
+Collecting google-api-core<2.0.0dev,>=1.21.0
+  Downloading google_api_core-1.25.1-py2.py3-none-any.whl (92 kB)
+Collecting pyasn1-modules>=0.2.1
+  Downloading pyasn1_modules-0.2.8-py2.py3-none-any.whl (155 kB)
+Collecting cachetools<5.0,>=2.0.0
+  Downloading cachetools-4.2.1-py3-none-any.whl (12 kB)
+Collecting rsa<5,>=3.1.4; python_version >= "3.6"
+  Downloading rsa-4.7-py3-none-any.whl (34 kB)
+Requirement already satisfied: pyparsing>=2.0.2 in /usr/local/lib/python3.6/site-packages (from packaging->pytest==5.4.2->-r requirements-dev.txt (line 6)) (2.4.7)
+Collecting distlib<1,>=0.3.1
+  Downloading distlib-0.3.1-py2.py3-none-any.whl (335 kB)
+Collecting importlib-resources>=1.0; python_version < "3.7"
+  Downloading importlib_resources-5.1.0-py3-none-any.whl (24 kB)
+Collecting cffi>=1.12
+  Downloading cffi-1.14.4-cp36-cp36m-manylinux1_x86_64.whl (401 kB)
+Collecting googleapis-common-protos<2.0dev,>=1.6.0
+  Downloading googleapis_common_protos-1.52.0-py2.py3-none-any.whl (100 kB)
+Collecting pyasn1<0.5.0,>=0.4.6
+  Downloading pyasn1-0.4.8-py2.py3-none-any.whl (77 kB)
+Collecting pycparser
+  Downloading pycparser-2.20-py2.py3-none-any.whl (112 kB)
+Building wheels for collected packages: Flask-OpenTracing, opentracing, jaeger-client, threadloop, thrift, PTable
+  Building wheel for Flask-OpenTracing (setup.py): started
+  Building wheel for Flask-OpenTracing (setup.py): finished with status 'done'
+  Created wheel for Flask-OpenTracing: filename=Flask_OpenTracing-1.1.0-py3-none-any.whl size=9070 sha256=0f3435efde5848a1f9c7bb81f677be7c01ee369bf597373026d1b39666e83654
+  Stored in directory: /builder/home/.cache/pip/wheels/ad/4b/2d/24ff0da0a0b53c7c77ce59b843bcceaf644c88703241e59615
+  Building wheel for opentracing (setup.py): started
+  Building wheel for opentracing (setup.py): finished with status 'done'
+  Created wheel for opentracing: filename=opentracing-2.3.0-py3-none-any.whl size=51347 sha256=b572aa940a736b092cc298e4647e1bb516ab78abebc8224a15eb4d9f7b30bea9
+  Stored in directory: /builder/home/.cache/pip/wheels/d4/53/31/bfca74f038fa9f83eb7de2131555b75ffa9bcbca18d23e5edf
+  Building wheel for jaeger-client (setup.py): started
+  Building wheel for jaeger-client (setup.py): finished with status 'done'
+  Created wheel for jaeger-client: filename=jaeger_client-4.3.0-py3-none-any.whl size=64291 sha256=d813ae797c51a47b974d24df55a04f0d368f66dc485a8bfaa31d4f7871d72463
+  Stored in directory: /builder/home/.cache/pip/wheels/a8/37/30/d86c970966efbf6da89e8085db50f2be4cf36ca68513eff785
+  Building wheel for threadloop (setup.py): started
+  Building wheel for threadloop (setup.py): finished with status 'done'
+  Created wheel for threadloop: filename=threadloop-1.0.2-py3-none-any.whl size=3423 sha256=f4d494df4b9d86323a100ff8f174bcd891dffa07f952a73a468ce06828228204
+  Stored in directory: /builder/home/.cache/pip/wheels/02/54/65/9f87de48fe8fcaaee30f279973d946ad55f9df56b93b3e78da
+  Building wheel for thrift (setup.py): started
+  Building wheel for thrift (setup.py): finished with status 'done'
+  Created wheel for thrift: filename=thrift-0.13.0-cp36-cp36m-linux_x86_64.whl size=483919 sha256=1ecebae359d91ec03889241d8c7a9c97860487a81b7ebcc655ea4e87582c641c
+  Stored in directory: /builder/home/.cache/pip/wheels/e0/38/fc/472fe18756b177b42096961f8bd3ff2dc5c5620ac399fce52d
+  Building wheel for PTable (setup.py): started
+  Building wheel for PTable (setup.py): finished with status 'done'
+  Created wheel for PTable: filename=PTable-0.9.2-py3-none-any.whl size=22907 sha256=e898921ddca0afb2b43c161261e09683bdb051a20ff3a505559019fac4d3dbc4
+  Stored in directory: /builder/home/.cache/pip/wheels/f3/65/67/71f473ec87ea4554d1bdfb1b5128cfe1414c2b113b72a1ee8e
+Successfully built Flask-OpenTracing opentracing jaeger-client threadloop thrift PTable
+ERROR: grpcio-tools 1.30.0 has requirement grpcio>=1.30.0, but you'll have grpcio 1.28.1 which is incompatible.
+ERROR: google-api-core 1.25.1 has requirement protobuf>=3.12.0, but you'll have protobuf 3.11.3 which is incompatible.
+Installing collected packages: click, itsdangerous, Flask, Flask-cors, redis, flatbuffers, opentracing, Flask-OpenTracing, threadloop, thrift, jaeger-client, grpcio-opentracing, gunicorn, configparser, minio, pycparser, cffi, cryptography, azure-common, azure-storage-common, azure-storage-blob, google-crc32c, google-resumable-media, pyasn1, pyasn1-modules, cachetools, rsa, google-auth, googleapis-common-protos, google-api-core, google-cloud-core, google-cloud-storage, regex, pathspec, typed-ast, toml, appdirs, black, pycodestyle, pyflakes, mccabe, flake8, typing-extensions, mypy-extensions, mypy, Pillow, pytest, coverage, pytest-cov, filelock, distlib, importlib-resources, virtualenv, tox, grpcio-tools, mypy-protobuf, tenacity, pandas, PTable, pip-licenses, seldon-core
+  Attempting uninstall: Pillow
+    Found existing installation: Pillow 7.1.2
+    Uninstalling Pillow-7.1.2:
+      Successfully uninstalled Pillow-7.1.2
+  Attempting uninstall: pytest
+    Found existing installation: pytest 5.3.1
+    Uninstalling pytest-5.3.1:
+      Successfully uninstalled pytest-5.3.1
+  Attempting uninstall: coverage
+    Found existing installation: coverage 4.5.4
+    Uninstalling coverage-4.5.4:
+      Successfully uninstalled coverage-4.5.4
+  Attempting uninstall: pytest-cov
+    Found existing installation: pytest-cov 2.8.1
+    Uninstalling pytest-cov-2.8.1:
+      Successfully uninstalled pytest-cov-2.8.1
+  Attempting uninstall: grpcio-tools
+    Found existing installation: grpcio-tools 1.28.1
+    Uninstalling grpcio-tools-1.28.1:
+      Successfully uninstalled grpcio-tools-1.28.1
+  Attempting uninstall: tenacity
+    Found existing installation: tenacity 6.0.0
+    Uninstalling tenacity-6.0.0:
+      Successfully uninstalled tenacity-6.0.0
+  Attempting uninstall: pandas
+    Found existing installation: pandas 1.0.3
+    Uninstalling pandas-1.0.3:
+      Successfully uninstalled pandas-1.0.3
+  Running setup.py develop for seldon-core
+Successfully installed Flask-1.1.2 Flask-OpenTracing-1.1.0 Flask-cors-3.0.10 PTable-0.9.2 Pillow-7.2.0 appdirs-1.4.4 azure-common-1.1.26 azure-storage-blob-2.1.0 azure-storage-common-2.1.0 black-19.10b0 cachetools-4.2.1 cffi-1.14.4 click-7.1.2 configparser-5.0.1 coverage-5.2 cryptography-3.3.1 distlib-0.3.1 filelock-3.0.12 flake8-3.8.1 flatbuffers-1.12 google-api-core-1.25.1 google-auth-1.24.0 google-cloud-core-1.5.0 google-cloud-storage-1.35.1 google-crc32c-1.1.2 google-resumable-media-1.2.0 googleapis-common-protos-1.52.0 grpcio-opentracing-1.1.4 grpcio-tools-1.30.0 gunicorn-20.0.4 importlib-resources-5.1.0 itsdangerous-1.1.0 jaeger-client-4.3.0 mccabe-0.6.1 minio-5.0.10 mypy-0.782 mypy-extensions-0.4.3 mypy-protobuf-1.22 opentracing-2.3.0 pandas-1.1.0 pathspec-0.8.1 pip-licenses-2.3.0 pyasn1-0.4.8 pyasn1-modules-0.2.8 pycodestyle-2.6.0 pycparser-2.20 pyflakes-2.2.0 pytest-5.4.2 pytest-cov-2.10.0 redis-3.5.3 regex-2020.11.13 rsa-4.7 seldon-core tenacity-6.2.0 threadloop-1.0.2 thrift-0.13.0 toml-0.10.2 tox-3.21.4 typed-ast-1.4.2 typing-extensions-3.7.4.3 virtualenv-20.4.2
+WARNING: You are using pip version 20.1; however, version 21.0.1 is available.
+You should consider upgrading via the '/usr/local/bin/python -m pip install --upgrade pip' command.
+make: Leaving directory '/workspace/source/python'
+cp ../../proto/prediction.proto ./proto
+cd ../../proto/tensorflow && make create_protos
+make[1]: Entering directory '/workspace/source/proto/tensorflow'
+./create-protos.sh
+Downloading proto files for master
+make[1]: Leaving directory '/workspace/source/proto/tensorflow'
+cp -vr ../../proto/tensorflow/tensorflow .
+'../../proto/tensorflow/tensorflow' -> './tensorflow'
+'../../proto/tensorflow/tensorflow/core' -> './tensorflow/core'
+'../../proto/tensorflow/tensorflow/core/framework' -> './tensorflow/core/framework'
+'../../proto/tensorflow/tensorflow/core/framework/types.proto' -> './tensorflow/core/framework/types.proto'
+'../../proto/tensorflow/tensorflow/core/framework/resource_handle.proto' -> './tensorflow/core/framework/resource_handle.proto'
+'../../proto/tensorflow/tensorflow/core/framework/tensor_shape.proto' -> './tensorflow/core/framework/tensor_shape.proto'
+'../../proto/tensorflow/tensorflow/core/framework/tensor.proto' -> './tensorflow/core/framework/tensor.proto'
+python -m grpc.tools.protoc -I. --python_out=. --grpc_python_out=. ./proto/prediction.proto
+cd ../../notebooks && make build_protos
+make[1]: Entering directory '/workspace/source/notebooks'
+cd ../proto/tensorflow && make create_protos
+make[2]: Entering directory '/workspace/source/proto/tensorflow'
+make[2]: Nothing to be done for 'create_protos'.
+make[2]: Leaving directory '/workspace/source/proto/tensorflow'
+cp -vr ../proto/tensorflow/tensorflow .
+'../proto/tensorflow/tensorflow' -> './tensorflow'
+'../proto/tensorflow/tensorflow/core' -> './tensorflow/core'
+'../proto/tensorflow/tensorflow/core/framework' -> './tensorflow/core/framework'
+'../proto/tensorflow/tensorflow/core/framework/types.proto' -> './tensorflow/core/framework/types.proto'
+'../proto/tensorflow/tensorflow/core/framework/resource_handle.proto' -> './tensorflow/core/framework/resource_handle.proto'
+'../proto/tensorflow/tensorflow/core/framework/tensor_shape.proto' -> './tensorflow/core/framework/tensor_shape.proto'
+'../proto/tensorflow/tensorflow/core/framework/tensor.proto' -> './tensorflow/core/framework/tensor.proto'
+cp ../proto/prediction.proto ./proto
+python -m grpc.tools.protoc -I. --python_out=. --grpc_python_out=. ./proto/prediction.proto
+make[1]: Leaving directory '/workspace/source/notebooks'
+cd ../../proto/k8s && make create_protos
+make[1]: Entering directory '/workspace/source/proto/k8s'
+./create-k8s-protos.sh
+Downloading proto files for master
+Munging proto file packages
+sed -i.bak 's|import "k8s.io/apiextensions-apiserver/|//import "k8s.io/apiextensions-apiserver/|' k8s.io/api/core/v1/generated.proto
+rm k8s.io/api/core/v1/generated.proto.bak
+make[1]: Leaving directory '/workspace/source/proto/k8s'
+pip install -r dev_requirements.txt
+Collecting pytest==5.3.1
+  Downloading pytest-5.3.1-py3-none-any.whl (233 kB)
+Requirement already satisfied: pytest-xdist==1.30.0 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 2)) (1.30.0)
+Collecting pytest-cov==2.8.1
+  Downloading pytest_cov-2.8.1-py2.py3-none-any.whl (18 kB)
+Requirement already satisfied: flaky==3.6.1 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 4)) (3.6.1)
+Collecting tenacity==6.0.0
+  Downloading tenacity-6.0.0-py2.py3-none-any.whl (24 kB)
+Collecting sh==1.13.1
+  Downloading sh-1.13.1-py2.py3-none-any.whl (40 kB)
+Requirement already satisfied: ipython==7.13.0 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 9)) (7.13.0)
+Requirement already satisfied: nbconvert==5.6.1 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 10)) (5.6.1)
+Requirement already satisfied: alibi==0.3.2 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 11)) (0.3.2)
+Requirement already satisfied: matplotlib==3.1.3 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 12)) (3.1.3)
+Requirement already satisfied: tensorflow==1.15.2 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 13)) (1.15.2)
+Collecting coverage==4.5.4
+  Downloading coverage-4.5.4-cp36-cp36m-manylinux1_x86_64.whl (205 kB)
+Requirement already satisfied: py>=1.5.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (1.8.1)
+Requirement already satisfied: wcwidth in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (0.1.9)
+Requirement already satisfied: importlib-metadata>=0.12; python_version < "3.8" in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (1.6.0)
+Requirement already satisfied: attrs>=17.4.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (19.3.0)
+Requirement already satisfied: packaging in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (20.3)
+Requirement already satisfied: more-itertools>=4.0.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (8.2.0)
+Requirement already satisfied: pluggy<1.0,>=0.12 in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (0.13.1)
+Requirement already satisfied: six in /usr/local/lib/python3.6/site-packages (from pytest-xdist==1.30.0->-r dev_requirements.txt (line 2)) (1.14.0)
+Requirement already satisfied: pytest-forked in /usr/local/lib/python3.6/site-packages (from pytest-xdist==1.30.0->-r dev_requirements.txt (line 2)) (1.1.3)
+Requirement already satisfied: execnet>=1.1 in /usr/local/lib/python3.6/site-packages (from pytest-xdist==1.30.0->-r dev_requirements.txt (line 2)) (1.7.1)
+Requirement already satisfied: setuptools>=18.5 in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (46.3.0)
+Requirement already satisfied: decorator in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (4.4.2)
+Requirement already satisfied: pygments in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (2.6.1)
+Requirement already satisfied: pexpect; sys_platform != "win32" in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (4.8.0)
+Requirement already satisfied: pickleshare in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.7.5)
+Requirement already satisfied: traitlets>=4.2 in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (4.3.3)
+Requirement already satisfied: jedi>=0.10 in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.17.0)
+Requirement already satisfied: backcall in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.1.0)
+Requirement already satisfied: prompt-toolkit!=3.0.0,!=3.0.1,<3.1.0,>=2.0.0 in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (3.0.5)
+Requirement already satisfied: testpath in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.4.4)
+Requirement already satisfied: nbformat>=4.4 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (5.0.6)
+Requirement already satisfied: pandocfilters>=1.4.1 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (1.4.2)
+Requirement already satisfied: bleach in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (3.1.5)
+Requirement already satisfied: jinja2>=2.4 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (2.11.2)
+Requirement already satisfied: defusedxml in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.6.0)
+Requirement already satisfied: entrypoints>=0.2.2 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.3)
+Requirement already satisfied: mistune<2,>=0.8.1 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.8.4)
+Requirement already satisfied: jupyter-core in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (4.6.3)
+Requirement already satisfied: scikit-learn in /usr/local/lib/python3.6/site-packages (from alibi==0.3.2->-r dev_requirements.txt (line 11)) (0.23.0)
+Requirement already satisfied: pandas in /usr/local/lib/python3.6/site-packages (from alibi==0.3.2->-r dev_requirements.txt (line 11)) (1.1.0)
+Requirement already satisfied: scikit-image in /usr/local/lib/python3.6/site-packages (from alibi==0.3.2->-r dev_requirements.txt (line 11)) (0.17.2)
+Requirement already satisfied: requests in /usr/local/lib/python3.6/site-packages (from alibi==0.3.2->-r dev_requirements.txt (line 11)) (2.23.0)
+Requirement already satisfied: numpy in /usr/local/lib/python3.6/site-packages (from alibi==0.3.2->-r dev_requirements.txt (line 11)) (1.18.4)
+Requirement already satisfied: Pillow in /usr/local/lib/python3.6/site-packages (from alibi==0.3.2->-r dev_requirements.txt (line 11)) (7.2.0)
+Requirement already satisfied: spacy in /usr/local/lib/python3.6/site-packages (from alibi==0.3.2->-r dev_requirements.txt (line 11)) (2.2.4)
+Requirement already satisfied: beautifulsoup4 in /usr/local/lib/python3.6/site-packages (from alibi==0.3.2->-r dev_requirements.txt (line 11)) (4.9.0)
+Requirement already satisfied: pyparsing!=2.0.4,!=2.1.2,!=2.1.6,>=2.0.1 in /usr/local/lib/python3.6/site-packages (from matplotlib==3.1.3->-r dev_requirements.txt (line 12)) (2.4.7)
+Requirement already satisfied: kiwisolver>=1.0.1 in /usr/local/lib/python3.6/site-packages (from matplotlib==3.1.3->-r dev_requirements.txt (line 12)) (1.2.0)
+Requirement already satisfied: python-dateutil>=2.1 in /usr/local/lib/python3.6/site-packages (from matplotlib==3.1.3->-r dev_requirements.txt (line 12)) (2.8.1)
+Requirement already satisfied: cycler>=0.10 in /usr/local/lib/python3.6/site-packages (from matplotlib==3.1.3->-r dev_requirements.txt (line 12)) (0.10.0)
+Requirement already satisfied: absl-py>=0.7.0 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (0.9.0)
+Requirement already satisfied: keras-applications>=1.0.8 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (1.0.8)
+Requirement already satisfied: google-pasta>=0.1.6 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (0.2.0)
+Requirement already satisfied: keras-preprocessing>=1.0.5 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (1.1.2)
+Requirement already satisfied: opt-einsum>=2.3.2 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (3.2.1)
+Requirement already satisfied: termcolor>=1.1.0 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (1.1.0)
+Requirement already satisfied: gast==0.2.2 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (0.2.2)
+Requirement already satisfied: astor>=0.6.0 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (0.8.1)
+Requirement already satisfied: wheel>=0.26; python_version >= "3" in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (0.34.2)
+Requirement already satisfied: protobuf>=3.6.1 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (3.11.3)
+Requirement already satisfied: grpcio>=1.8.6 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (1.28.1)
+Requirement already satisfied: tensorboard<1.16.0,>=1.15.0 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (1.15.0)
+Requirement already satisfied: wrapt>=1.11.1 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (1.12.1)
+Requirement already satisfied: tensorflow-estimator==1.15.1 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (1.15.1)
+Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.6/site-packages (from importlib-metadata>=0.12; python_version < "3.8"->pytest==5.3.1->-r dev_requirements.txt (line 1)) (3.1.0)
+Requirement already satisfied: apipkg>=1.4 in /usr/local/lib/python3.6/site-packages (from execnet>=1.1->pytest-xdist==1.30.0->-r dev_requirements.txt (line 2)) (1.5)
+Requirement already satisfied: ptyprocess>=0.5 in /usr/local/lib/python3.6/site-packages (from pexpect; sys_platform != "win32"->ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.6.0)
+Requirement already satisfied: ipython-genutils in /usr/local/lib/python3.6/site-packages (from traitlets>=4.2->ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.2.0)
+Requirement already satisfied: parso>=0.7.0 in /usr/local/lib/python3.6/site-packages (from jedi>=0.10->ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.7.0)
+Requirement already satisfied: jsonschema!=2.5.0,>=2.4 in /usr/local/lib/python3.6/site-packages (from nbformat>=4.4->nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (3.2.0)
+Requirement already satisfied: webencodings in /usr/local/lib/python3.6/site-packages (from bleach->nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.5.1)
+Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from jinja2>=2.4->nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (1.1.1)
+Requirement already satisfied: threadpoolctl>=2.0.0 in /usr/local/lib/python3.6/site-packages (from scikit-learn->alibi==0.3.2->-r dev_requirements.txt (line 11)) (2.0.0)
+Requirement already satisfied: joblib>=0.11 in /usr/local/lib/python3.6/site-packages (from scikit-learn->alibi==0.3.2->-r dev_requirements.txt (line 11)) (0.14.1)
+Requirement already satisfied: scipy>=0.19.1 in /usr/local/lib/python3.6/site-packages (from scikit-learn->alibi==0.3.2->-r dev_requirements.txt (line 11)) (1.4.1)
+Requirement already satisfied: pytz>=2017.2 in /usr/local/lib/python3.6/site-packages (from pandas->alibi==0.3.2->-r dev_requirements.txt (line 11)) (2020.1)
+Requirement already satisfied: tifffile>=2019.7.26 in /usr/local/lib/python3.6/site-packages (from scikit-image->alibi==0.3.2->-r dev_requirements.txt (line 11)) (2020.5.11)
+Requirement already satisfied: networkx>=2.0 in /usr/local/lib/python3.6/site-packages (from scikit-image->alibi==0.3.2->-r dev_requirements.txt (line 11)) (2.4)
+Requirement already satisfied: imageio>=2.3.0 in /usr/local/lib/python3.6/site-packages (from scikit-image->alibi==0.3.2->-r dev_requirements.txt (line 11)) (2.8.0)
+Requirement already satisfied: PyWavelets>=1.1.1 in /usr/local/lib/python3.6/site-packages (from scikit-image->alibi==0.3.2->-r dev_requirements.txt (line 11)) (1.1.1)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.3.2->-r dev_requirements.txt (line 11)) (1.25.9)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.3.2->-r dev_requirements.txt (line 11)) (2.9)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.3.2->-r dev_requirements.txt (line 11)) (3.0.4)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.3.2->-r dev_requirements.txt (line 11)) (2020.4.5.1)
+Requirement already satisfied: tqdm<5.0.0,>=4.38.0 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 11)) (4.46.0)
+Requirement already satisfied: catalogue<1.1.0,>=0.0.7 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 11)) (1.0.0)
+Requirement already satisfied: cymem<2.1.0,>=2.0.2 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 11)) (2.0.3)
+Requirement already satisfied: srsly<1.1.0,>=1.0.2 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 11)) (1.0.2)
+Requirement already satisfied: preshed<3.1.0,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 11)) (3.0.2)
+Requirement already satisfied: murmurhash<1.1.0,>=0.28.0 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 11)) (1.0.2)
+Requirement already satisfied: blis<0.5.0,>=0.4.0 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 11)) (0.4.1)
+Requirement already satisfied: thinc==7.4.0 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 11)) (7.4.0)
+Requirement already satisfied: wasabi<1.1.0,>=0.4.0 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 11)) (0.6.0)
+Requirement already satisfied: plac<1.2.0,>=0.9.6 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 11)) (1.1.3)
+Requirement already satisfied: soupsieve>1.2 in /usr/local/lib/python3.6/site-packages (from beautifulsoup4->alibi==0.3.2->-r dev_requirements.txt (line 11)) (2.0)
+Requirement already satisfied: h5py in /usr/local/lib/python3.6/site-packages (from keras-applications>=1.0.8->tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (2.10.0)
+Requirement already satisfied: werkzeug>=0.11.15 in /usr/local/lib/python3.6/site-packages (from tensorboard<1.16.0,>=1.15.0->tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (1.0.1)
+Requirement already satisfied: markdown>=2.6.8 in /usr/local/lib/python3.6/site-packages (from tensorboard<1.16.0,>=1.15.0->tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (3.2.2)
+Requirement already satisfied: pyrsistent>=0.14.0 in /usr/local/lib/python3.6/site-packages (from jsonschema!=2.5.0,>=2.4->nbformat>=4.4->nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.16.0)
+Requirement already satisfied: imagecodecs>=2020.2.18 in /usr/local/lib/python3.6/site-packages (from tifffile>=2019.7.26->scikit-image->alibi==0.3.2->-r dev_requirements.txt (line 11)) (2020.2.18)
+Installing collected packages: pytest, coverage, pytest-cov, tenacity, sh
+  Attempting uninstall: pytest
+    Found existing installation: pytest 5.4.2
+    Uninstalling pytest-5.4.2:
+      Successfully uninstalled pytest-5.4.2
+  Attempting uninstall: coverage
+    Found existing installation: coverage 5.2
+    Uninstalling coverage-5.2:
+      Successfully uninstalled coverage-5.2
+  Attempting uninstall: pytest-cov
+    Found existing installation: pytest-cov 2.10.0
+    Uninstalling pytest-cov-2.10.0:
+      Successfully uninstalled pytest-cov-2.10.0
+  Attempting uninstall: tenacity
+    Found existing installation: tenacity 6.2.0
+    Uninstalling tenacity-6.2.0:
+      Successfully uninstalled tenacity-6.2.0
+Successfully installed coverage-4.5.4 pytest-5.3.1 pytest-cov-2.8.1 sh-1.13.1 tenacity-6.0.0
+WARNING: You are using pip version 20.1; however, version 21.0.1 is available.
+You should consider upgrading via the '/usr/local/bin/python -m pip install --upgrade pip' command.
+pip install -e ../../python
+Obtaining file:///workspace/source/python
+Requirement already satisfied: Flask<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (1.1.2)
+Requirement already satisfied: jsonschema<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (3.2.0)
+Requirement already satisfied: Flask-cors<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (3.0.10)
+Requirement already satisfied: redis<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (3.5.3)
+Requirement already satisfied: requests<3.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (2.23.0)
+Requirement already satisfied: numpy<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (1.18.4)
+Requirement already satisfied: flatbuffers<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (1.12)
+Requirement already satisfied: protobuf<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (3.11.3)
+Requirement already satisfied: grpcio<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (1.28.1)
+Requirement already satisfied: Flask-OpenTracing<1.2.0,>=1.1.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (1.1.0)
+Requirement already satisfied: opentracing<2.4.0,>=2.2.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (2.3.0)
+Requirement already satisfied: jaeger-client<4.4.0,>=4.1.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (4.3.0)
+Requirement already satisfied: grpcio-opentracing<1.2.0,>=1.1.4 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (1.1.4)
+Requirement already satisfied: PyYAML<5.4 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (5.3.1)
+Requirement already satisfied: gunicorn<20.1.0,>=19.9.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (20.0.4)
+Requirement already satisfied: minio<6.0.0,>=4.0.9 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (5.0.10)
+Requirement already satisfied: setuptools>=41.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (46.3.0)
+Requirement already satisfied: prometheus_client<0.9.0,>=0.7.1 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (0.7.1)
+Requirement already satisfied: Werkzeug>=0.15 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.2.4) (1.0.1)
+Requirement already satisfied: click>=5.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.2.4) (7.1.2)
+Requirement already satisfied: Jinja2>=2.10.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.2.4) (2.11.2)
+Requirement already satisfied: itsdangerous>=0.24 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.2.4) (1.1.0)
+Requirement already satisfied: six>=1.11.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->seldon-core==1.2.4) (1.14.0)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->seldon-core==1.2.4) (1.6.0)
+Requirement already satisfied: attrs>=17.4.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->seldon-core==1.2.4) (19.3.0)
+Requirement already satisfied: pyrsistent>=0.14.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->seldon-core==1.2.4) (0.16.0)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.2.4) (2.9)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.2.4) (2020.4.5.1)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.2.4) (1.25.9)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.2.4) (3.0.4)
+Requirement already satisfied: thrift in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core==1.2.4) (0.13.0)
+Requirement already satisfied: tornado>=4.3 in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core==1.2.4) (6.0.4)
+Requirement already satisfied: threadloop<2,>=1 in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core==1.2.4) (1.0.2)
+Requirement already satisfied: python-dateutil in /usr/local/lib/python3.6/site-packages (from minio<6.0.0,>=4.0.9->seldon-core==1.2.4) (2.8.1)
+Requirement already satisfied: pytz in /usr/local/lib/python3.6/site-packages (from minio<6.0.0,>=4.0.9->seldon-core==1.2.4) (2020.1)
+Requirement already satisfied: configparser in /usr/local/lib/python3.6/site-packages (from minio<6.0.0,>=4.0.9->seldon-core==1.2.4) (5.0.1)
+Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from Jinja2>=2.10.1->Flask<2.0.0->seldon-core==1.2.4) (1.1.1)
+Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.6/site-packages (from importlib-metadata; python_version < "3.8"->jsonschema<4.0.0->seldon-core==1.2.4) (3.1.0)
+Installing collected packages: seldon-core
+  Attempting uninstall: seldon-core
+    Found existing installation: seldon-core 1.2.4
+    Uninstalling seldon-core-1.2.4:
+      Successfully uninstalled seldon-core-1.2.4
+  Running setup.py develop for seldon-core
+Successfully installed seldon-core
+WARNING: You are using pip version 20.1; however, version 21.0.1 is available.
+You should consider upgrading via the '/usr/local/bin/python -m pip install --upgrade pip' command.
+# Run the core tests in parallel
+pytest \
+	--verbose \
+	-s \
+	-W ignore \
+	-n "4" \
+	-m "not sequential and not notebooks" 2>&1
+============================= test session starts ==============================
+platform linux -- Python 3.6.10, pytest-5.3.1, py-1.8.1, pluggy-0.13.1 -- /usr/local/bin/python
+cachedir: .pytest_cache
+rootdir: /workspace/source/testing/scripts, inifile: setup.cfg
+plugins: cov-2.8.1, xdist-1.30.0, flaky-3.6.1, forked-1.1.3
+gw0 I / gw1 I / gw2 I / gw3 I
+[gw0] linux Python 3.6.10 cwd: /workspace/source/testing/scripts
+[gw1] linux Python 3.6.10 cwd: /workspace/source/testing/scripts
+[gw2] linux Python 3.6.10 cwd: /workspace/source/testing/scripts
+[gw3] linux Python 3.6.10 cwd: /workspace/source/testing/scripts
+[gw2] Python 3.6.10 (default, May 14 2020, 12:39:37)  -- [GCC 8.3.0]
+[gw1] Python 3.6.10 (default, May 14 2020, 12:39:37)  -- [GCC 8.3.0]
+[gw0] Python 3.6.10 (default, May 14 2020, 12:39:37)  -- [GCC 8.3.0]
+[gw3] Python 3.6.10 (default, May 14 2020, 12:39:37)  -- [GCC 8.3.0]
+gw0 [33] / gw1 [33] / gw2 [33] / gw3 [33]
+
+scheduling tests via LoadScheduling
+
+test_bad_graphs.py::TestBadGraphs::test_duplicate_predictor_name 
+test_api_version.py::test_api_version[machinelearning.seldon.io/v1] 
+test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha2] 
+test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha3] Error from server (SeldonDeployment.machinelearing.seldon.io "dupname" is invalid: [spec.predictors[1]: Invalid value: "mymodel": Duplicate predictor name, spec: Invalid value: "mymodel": Traffic must sum to 100 for multiple predictors]): error when creating "../resources/bad_duplicate_predictor_name.json": admission webhook "v1alpha2.vseldondeployment.kb.io" denied the request: SeldonDeployment.machinelearing.seldon.io "dupname" is invalid: [spec.predictors[1]: Invalid value: "mymodel": Duplicate predictor name, spec: Invalid value: "mymodel": Traffic must sum to 100 for multiple predictors]
+
+[gw3] PASSED test_bad_graphs.py::TestBadGraphs::test_duplicate_predictor_name 
+test_helm_charts_clusterwide.py::TestClusterWide::test_single_model Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw0] PASSED test_api_version.py::test_api_version[machinelearning.seldon.io/v1] Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw1] PASSED test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha3] Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw3] PASSED test_helm_charts_clusterwide.py::TestClusterWide::test_single_model Error: uninstall: Release not loaded: mymodel: release: not found
+
+[gw2] PASSED test_api_version.py::test_api_version[machinelearning.seldon.io/v1alpha2] 
+test_batch_processor.py::TestBatchWorker::test_batch_worker 
+test_helm_charts_clusterwide.py::TestClusterWide::test_abtest_model 
+test_bad_graphs.py::TestBadGraphs::test_model_no_graph Error from server (SeldonDeployment.machinelearing.seldon.io "test-deployment" is invalid: spec.predictors[0].graph: Invalid value: "": Can't find container for Predictive Unit): error when creating "../resources/bad_no_graph.yaml": admission webhook "v1.vseldondeployment.kb.io" denied the request: SeldonDeployment.machinelearing.seldon.io "test-deployment" is invalid: spec.predictors[0].graph: Invalid value: "": Can't find container for Predictive Unit
+
+[gw1] PASSED test_bad_graphs.py::TestBadGraphs::test_model_no_graph 
+test_local_operators.py::TestLocalOperators::test_labelled_operator 
+test_bad_graphs.py::TestBadGraphs::test_model_name_mismatch Error from server (SeldonDeployment.machinelearing.seldon.io "namemismatch" is invalid: spec.predictors[0].graph: Invalid value: "complex-model_bad_name": Can't find container for Predictive Unit): error when creating "../resources/bad_name_mismatch.json": admission webhook "v1alpha2.vseldondeployment.kb.io" denied the request: SeldonDeployment.machinelearing.seldon.io "namemismatch" is invalid: spec.predictors[0].graph: Invalid value: "complex-model_bad_name": Can't find container for Predictive Unit
+
+[gw2] PASSED test_bad_graphs.py::TestBadGraphs::test_model_name_mismatch 
+test_prepackaged_servers.py::TestPrepack::test_tfserving Error from server (InternalError): error when creating "../resources/model_controller_id.yaml": Internal error occurred: failed calling webhook "v1alpha2.mseldondeployment.kb.io": Post https://seldon-webhook-service.test-labelled-operator.svc:443/mutate-machinelearning-seldon-io-v1alpha2-seldondeployment?timeout=30s: dial tcp 10.100.125.85:443: connect: connection refused
+Error from server (InternalError): error when creating "../resources/model_controller_id.yaml": Internal error occurred: failed calling webhook "v1alpha2.mseldondeployment.kb.io": Post https://seldon-webhook-service.test-labelled-operator.svc:443/mutate-machinelearning-seldon-io-v1alpha2-seldondeployment?timeout=30s: dial tcp 10.100.125.85:443: connect: connection refused
+Error from server (InternalError): error when creating "../resources/model_controller_id.yaml": Internal error occurred: failed calling webhook "v1alpha2.mseldondeployment.kb.io": Post https://seldon-webhook-service.test-labelled-operator.svc:443/mutate-machinelearning-seldon-io-v1alpha2-seldondeployment?timeout=30s: dial tcp 10.100.125.85:443: connect: connection refused
+Error from server (InternalError): error when creating "../resources/model_controller_id.yaml": Internal error occurred: failed calling webhook "v1alpha2.mseldondeployment.kb.io": Post https://seldon-webhook-service.test-labelled-operator.svc:443/mutate-machinelearning-seldon-io-v1alpha2-seldondeployment?timeout=30s: dial tcp 10.100.125.85:443: connect: connection refused
+Error from server (InternalError): error when creating "../resources/model_controller_id.yaml": Internal error occurred: failed calling webhook "v1alpha2.mseldondeployment.kb.io": Post https://seldon-webhook-service.test-labelled-operator.svc:443/mutate-machinelearning-seldon-io-v1alpha2-seldondeployment?timeout=30s: dial tcp 10.100.125.85:443: connect: connection refused
+Error from server (InternalError): error when creating "../resources/model_controller_id.yaml": Internal error occurred: failed calling webhook "v1alpha2.mseldondeployment.kb.io": Post https://seldon-webhook-service.test-labelled-operator.svc:443/mutate-machinelearning-seldon-io-v1alpha2-seldondeployment?timeout=30s: dial tcp 10.100.125.85:443: connect: connection refused
+Error from server (InternalError): error when creating "../resources/model_controller_id.yaml": Internal error occurred: failed calling webhook "v1alpha2.mseldondeployment.kb.io": Post https://seldon-webhook-service.test-labelled-operator.svc:443/mutate-machinelearning-seldon-io-v1alpha2-seldondeployment?timeout=30s: dial tcp 10.100.125.85:443: connect: connection refused
+Error from server (InternalError): error when creating "../resources/model_controller_id.yaml": Internal error occurred: failed calling webhook "v1alpha2.mseldondeployment.kb.io": Post https://seldon-webhook-service.test-labelled-operator.svc:443/mutate-machinelearning-seldon-io-v1alpha2-seldondeployment?timeout=30s: dial tcp 10.100.125.85:443: connect: connection refused
+Error from server (InternalError): error when creating "../resources/model_controller_id.yaml": Internal error occurred: failed calling webhook "v1alpha2.mseldondeployment.kb.io": Post https://seldon-webhook-service.test-labelled-operator.svc:443/mutate-machinelearning-seldon-io-v1alpha2-seldondeployment?timeout=30s: dial tcp 10.100.125.85:443: connect: connection refused
+Error from server (InternalError): error when creating "../resources/model_controller_id.yaml": Internal error occurred: failed calling webhook "v1alpha2.mseldondeployment.kb.io": Post https://seldon-webhook-service.test-labelled-operator.svc:443/mutate-machinelearning-seldon-io-v1alpha2-seldondeployment?timeout=30s: dial tcp 10.100.125.85:443: connect: connection refused
+
+[gw1] FAILED test_local_operators.py::TestLocalOperators::test_labelled_operator Error: uninstall: Release not loaded: myabtest: release: not found
+
+[gw3] PASSED test_helm_charts_clusterwide.py::TestClusterWide::test_abtest_model 
+test_prepackaged_servers.py::TestPrepack::test_sklearn 
+test_helm_charts_clusterwide.py::TestClusterWide::test_mab_model 
+[gw2] PASSED test_prepackaged_servers.py::TestPrepack::test_tfserving 
+[gw0] PASSED test_batch_processor.py::TestBatchWorker::test_batch_worker 
+[gw1] PASSED test_prepackaged_servers.py::TestPrepack::test_sklearn 
+test_local_operators.py::TestLocalOperators::test_namespace_operator 
+test_prepackaged_servers.py::TestPrepack::test_mlflow 
+test_prepackaged_servers.py::TestPrepack::test_xgboost Error: uninstall: Release not loaded: mymab: release: not found
+
+[gw3] PASSED test_helm_charts_clusterwide.py::TestClusterWide::test_mab_model 
+[gw0] PASSED test_local_operators.py::TestLocalOperators::test_namespace_operator 
+[gw2] PASSED test_prepackaged_servers.py::TestPrepack::test_xgboost 
+test_prepackaged_servers.py::TestPrepack::test_text_alibi_explainer 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph2.json-True-istio] 
+test_prepackaged_servers.py::TestPrepack::test_openapi_sklearn 
+[gw1] PASSED test_prepackaged_servers.py::TestPrepack::test_mlflow 
+[gw0] PASSED test_prepackaged_servers.py::TestPrepack::test_openapi_sklearn 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph4.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph2.json-True-ambas] 
+[gw3] PASSED test_prepackaged_servers.py::TestPrepack::test_text_alibi_explainer 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph3.json-True-ambas] 
+[gw2] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph2.json-True-istio] 
+[gw0] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph4.json-True-ambas] 
+[gw1] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph2.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph3.json-True-istio] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph4.json-True-istio] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph5.json-True-ambas] 
+[gw3] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph3.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph5.json-True-istio] 
+[gw2] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph3.json-True-istio] 
+[gw1] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph5.json-True-ambas] 
+[gw0] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph4.json-True-istio] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph8.json-True-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph7.json-graph8.json-False-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph1.json-graph8.json-True-istio] 
+[gw3] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph5.json-True-istio] 
+[gw1] PASSED test_rolling_updates.py::test_rolling_deployment[graph7.json-graph8.json-False-ambas] 
+test_rolling_updates.py::test_rolling_deployment[graph7.json-graph8.json-False-istio] 
+test_security.py::test_xss_header 
+[gw2] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph8.json-True-ambas] 
+[gw3] PASSED test_rolling_updates.py::test_rolling_deployment[graph7.json-graph8.json-False-istio] 
+[gw0] PASSED test_rolling_updates.py::test_rolling_deployment[graph1.json-graph8.json-True-istio] 
+[gw1] PASSED test_security.py::test_xss_header 
+test_security.py::test_xss_escaping 
+test_tracing.py::test_tracing_rest 
+[gw2] PASSED test_security.py::test_xss_escaping 
+[gw0] PASSED test_tracing.py::test_tracing_rest 
+
+=================================== FAILURES ===================================
+__________________ TestLocalOperators.test_labelled_operator ___________________
+[gw1] linux -- Python 3.6.10 /usr/local/bin/python
+
+self = <test_local_operators.TestLocalOperators object at 0x7f1528b27710>
+namespace = 'test-labelled-operator'
+
+    def test_labelled_operator(self, namespace):
+        retry_run(
+            f"helm install seldon ../../helm-charts/seldon-core-operator --namespace {namespace} --set executor.enabled=true --set istio.enabled=true --set istio.gateway=istio-system/seldon-gateway --set certManager.enabled=false --set crd.create=false --set controllerId=seldon-id1"
+        )
+        retry_run(
+>           f"kubectl apply -f ../resources/model_controller_id.yaml -n {namespace}"
+        )
+
+test_local_operators.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cmd = 'kubectl apply -f ../resources/model_controller_id.yaml -n test-labelled-operator'
+attempts = 10, sleep = 5
+
+    def retry_run(cmd, attempts=10, sleep=5):
+        for i in range(attempts):
+            ret = run(cmd, shell=True)
+            if ret.returncode == 0:
+                logging.info(f"Successfully ran command: {cmd}")
+                break
+            logging.warning(f"Unsuccessful command but retrying: {cmd}")
+            time.sleep(sleep)
+>       assert ret.returncode == 0, f"Non-zero return code in retry_run for {cmd}"
+E       AssertionError: Non-zero return code in retry_run for kubectl apply -f ../resources/model_controller_id.yaml -n test-labelled-operator
+
+seldon_e2e_utils.py:151: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  root:seldon_e2e_utils.py:149 Unsuccessful command but retrying: kubectl apply -f ../resources/model_controller_id.yaml -n test-labelled-operator
+WARNING  root:seldon_e2e_utils.py:149 Unsuccessful command but retrying: kubectl apply -f ../resources/model_controller_id.yaml -n test-labelled-operator
+WARNING  root:seldon_e2e_utils.py:149 Unsuccessful command but retrying: kubectl apply -f ../resources/model_controller_id.yaml -n test-labelled-operator
+WARNING  root:seldon_e2e_utils.py:149 Unsuccessful command but retrying: kubectl apply -f ../resources/model_controller_id.yaml -n test-labelled-operator
+WARNING  root:seldon_e2e_utils.py:149 Unsuccessful command but retrying: kubectl apply -f ../resources/model_controller_id.yaml -n test-labelled-operator
+WARNING  root:seldon_e2e_utils.py:149 Unsuccessful command but retrying: kubectl apply -f ../resources/model_controller_id.yaml -n test-labelled-operator
+WARNING  root:seldon_e2e_utils.py:149 Unsuccessful command but retrying: kubectl apply -f ../resources/model_controller_id.yaml -n test-labelled-operator
+WARNING  root:seldon_e2e_utils.py:149 Unsuccessful command but retrying: kubectl apply -f ../resources/model_controller_id.yaml -n test-labelled-operator
+WARNING  root:seldon_e2e_utils.py:149 Unsuccessful command but retrying: kubectl apply -f ../resources/model_controller_id.yaml -n test-labelled-operator
+WARNING  root:seldon_e2e_utils.py:149 Unsuccessful command but retrying: kubectl apply -f ../resources/model_controller_id.yaml -n test-labelled-operator
+===Flaky Test Report===
+
+test_rolling_deployment[graph1.json-graph3.json-True-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph5.json-True-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph7.json-graph8.json-False-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph2.json-True-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph5.json-True-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph7.json-graph8.json-False-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph2.json-True-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph3.json-True-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph8.json-True-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph4.json-True-ambas] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph4.json-True-istio] passed 1 out of the required 1 times. Success!
+test_rolling_deployment[graph1.json-graph8.json-True-istio] passed 1 out of the required 1 times. Success!
+
+===End Flaky Test Report===
+================== 1 failed, 32 passed in 1305.69s (0:21:45) ===================
+make: *** [Makefile:129: test_parallel] Error 1
+Test returned errors
+kind delete cluster
+Deleting cluster "kind" ...
+Stopping Docker: dockerProgram process in pidfile '/var/run/docker-ssd.pid', 1 process(es), refused to die.
+[31m
+Pipeline failed on stage 'end-to-end' : container 'step-test-end-to-end'. The execution of the pipeline has stopped.[0m
