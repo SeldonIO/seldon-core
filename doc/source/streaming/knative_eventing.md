@@ -1,14 +1,14 @@
-# KNative Eventing Integration
+# Knative Eventing Integration
 
-Seldon has an integration with KNative eventing that allows for real time processing.
+Seldon has an integration with Knative eventing that allows for real time processing.
 
 This allow Seldon Core users to connect SeldonDeployments through triggers that will receive any relevant Cloudevents.
 
 ## Triggers
 
-The way that KNative Eventing works is by creating triggers that send any relevant Cloudevents that match a specific setup into the relevant addressable location.
+The way that Knative Eventing works is by creating triggers that send any relevant Cloudevents that match a specific setup into the relevant addressable location.
 
-Seldon Core implements the KNative Eventing Duck Typing requirements which allows users to create triggers that reference specific SeldonDeployments.
+Seldon Core implements the Knative Eventing Duck Typing requirements which allows users to create triggers that reference specific SeldonDeployments.
 
 An example of a trigger for a SeldonDeployment named "iris-deployment" can be created with the following format:
 
@@ -59,7 +59,7 @@ Which would then create a trigger that would forward the messages of that type i
 
 ## Sending Test Requests
 
-In production you would have multiple services creating cloudevents from various different sources. However for testing, it's possible to send requests directly from your terminal to the KNative Eventing broker, by using the following `curl` docker image locally:
+In production you would have multiple services creating cloudevents from various different sources. However for testing, it's possible to send requests directly from your terminal to the Knative Eventing broker, by using the following `curl` docker image locally:
 
 ```
 kubectl run --quiet=true -it --rm curl --image=radial/busyboxplus:curl --restart=Never -- \
@@ -150,6 +150,6 @@ This will show all the cloudevents that are sent with that are processed by the 
 
 We have a fully worked notebook where we showcase these capabilities end to end.
 
-You can try it yourself through the [Seldon Core Real Time Stream Processing with KNative Eventing](../examples/knative_eventing_streaming.nblink) page
+You can try it yourself through the [Seldon Core Real Time Stream Processing with Knative Eventing](../examples/knative_eventing_streaming.nblink) page
 
 
