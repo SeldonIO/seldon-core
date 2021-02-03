@@ -1,0 +1,251 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-2922-in-sbd6j-4[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-kxlcj[0m
+{"level":"info","ts":1612375899.20101,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1612375899.2023375,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2922-in-sbd6j-4[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-rprnw[0m
+{"level":"info","ts":1612375899.6070597,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1612375899.6088214,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2922-in-sbd6j-4[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2922-in-sbd6j-4[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-jrsfk[0m
+{"level":"info","ts":1612375905.7857761,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1612375905.787741,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2922-in-sbd6j-4[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-2922-in-sbd6j-ffrl6[0m
+{"level":"info","ts":1612375906.0192974,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1612375914.1532445,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2922-in-sbd6j-4[0m stage [32mpr-build-comment[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2922-in-sbd6j-4[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=master:dfc6e740ffc8bb72059b83c74d9940ddc8fb4884,2922:61a0b31f84988fd9870c1b203c0e7e9d7e19f2d7
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch origin --unshallow 61a0b31f84988fd9870c1b203c0e7e9d7e19f2d7: dfc6e740ffc8bb72059b83c74d9940ddc8fb4884:
+DEBUG: ran git fetch --unshallow origin 61a0b31f84988fd9870c1b203c0e7e9d7e19f2d7: dfc6e740ffc8bb72059b83c74d9940ddc8fb4884: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git checkout master
+DEBUG: ran git checkout master in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard dfc6e740ffc8bb72059b83c74d9940ddc8fb4884
+DEBUG: ran git reset --hard dfc6e740ffc8bb72059b83c74d9940ddc8fb4884 in 
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git merge 61a0b31f84988fd9870c1b203c0e7e9d7e19f2d7
+DEBUG: ran git merge 61a0b31f84988fd9870c1b203c0e7e9d7e19f2d7 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git log --format=%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%s%n%b%x1e dfc6e740ffc8bb72059b83c74d9940ddc8fb4884..HEAD
+Merged SHA 61a0b31f84988fd9870c1b203c0e7e9d7e19f2d7 with commit message 'fix name of metrics notebooks in tests' into base branch master
+Merged SHA 6fa1b710ec501771e99548ea4277a1cd77d6abe0 with commit message 'final fixes' into base branch master
+Merged SHA 00bd2812dc9ec7e9a726d0696100a012de86dfae with commit message 'Add summary metrics to executor' into base branch master
+
+Showing logs for build [32mseldonio-seldon-core-pr-2922-in-sbd6j-4[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=2922
++ BUILD_NUMBER=4
++ PIPELINE_CONTEXT=integration
+++ cat
++++ date
++ COMMENT_MSG='Wed Feb  3 18:12:04 UTC 2021
+The logs for [integration] [4] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2922/4.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2922 --build=4'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=2922 '--comment=Wed Feb  3 18:12:04 UTC 2021
+The logs for [integration] [4] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2922/4.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2922 --build=4'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2922-in-sbd6j-4[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-2922-in-sbd6j-ggjl6[0m
+{"level":"info","ts":1612375927.0100768,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1612375927.0135891,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2922-in-sbd6j-4[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-2922-in-sbd6j-xbccz[0m
+{"level":"info","ts":1612375927.250537,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1612375927.712218,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2922-in-sbd6j-4[0m stage [32mend-to-end[0m and container [32mstep-credential-initializer-t5nbc[0m
+{"level":"info","ts":1612375961.6643083,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1612375961.6647835,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2922-in-sbd6j-4[0m stage [32mend-to-end[0m and container [32mstep-working-dir-initializer-ppv2q[0m
+{"level":"info","ts":1612375962.9559536,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1612375962.9571054,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2922-in-sbd6j-4[0m stage [32mend-to-end[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2922-in-sbd6j-4[0m stage [32mend-to-end[0m and container [32mstep-create-dir-workspace-722pr[0m
+{"level":"info","ts":1612375969.0931187,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1612375969.0942786,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2922-in-sbd6j-4[0m stage [32mend-to-end[0m and container [32mstep-source-copy-workspace-wrpkx[0m
+{"level":"info","ts":1612375969.2960489,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1612375973.6571558,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2922-in-sbd6j-4[0m stage [32mend-to-end[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2922-in-sbd6j-4[0m stage [32mend-to-end[0m and container [32mstep-test-end-to-end[0m
+Test run type is: [base]
+Starting Docker: docker.
+[SETUP] Waiting for Docker to be ready, sleeping for 1 seconds ...
+kind create cluster --config ../resources/kind_config.yaml
+Creating cluster "kind" ...
+ • Ensuring node image (kindest/node:v1.16.3) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.16.3) 🖼
+ • Preparing nodes 📦  ...
+ ✓ Preparing nodes 📦
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+ • Joining worker nodes 🚜  ...
+ ✓ Joining worker nodes 🚜
+Set kubectl context to "kind-kind"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-kind
+
+Have a question, bug, or feature request? Let us know! https://kind.sigs.k8s.io/#community 🙂
+`kind get kubeconfig-path` is deprecated!
+
+KIND will export and merge kubeconfig like kops, minikube, etc.
+This command is now unnecessary and will be removed in a future release.
+
+For more info see: https://github.com/kubernetes-sigs/kind/issues/1060
+See also the output of `kind create cluster`
+
+Files changed in python folder:
+SKIPPING PYTHON IMAGE BUILD...
+Files changed in operator folder:
+SKIPPING OPERATOR IMAGE BUILD...
+Files changed in engine folder:
+SKIPPING ENGINE IMAGE BUILD...
+Files changed in executor folder:
+executor/api/metric/client.go
+executor/api/metric/constants.go
+executor/api/metric/server.go
+executor/api/rest/client.go
+executor/api/rest/server.go
+executor/samples/local/metrics/Makefile
+executor/samples/local/metrics/model.yaml
+cd ../../executor && make kind-image-install
+make[1]: Entering directory '/workspace/source/executor'
+rm -rf _operator
+cp -r ../operator _operator
+go fmt ./api/... ./predictor/... ./k8s/... ./logger/...
+go: downloading github.com/cloudevents/sdk-go v1.2.0
+go: downloading github.com/uber/jaeger-client-go v2.25.0+incompatible
+go: downloading google.golang.org/grpc v1.32.0
+go: downloading github.com/go-logr/logr v0.1.0
+go: downloading github.com/confluentinc/confluent-kafka-go v1.4.2
+go: downloading sigs.k8s.io/controller-runtime v0.6.4
+go: downloading github.com/golang/protobuf v1.4.2
+go: downloading github.com/pkg/errors v0.9.1
+go: downloading github.com/prometheus/client_golang v1.7.1
+go: downloading github.com/google/uuid v1.1.2
+go: downloading github.com/gorilla/mux v1.8.0
+go: downloading github.com/ghodss/yaml v1.0.0
+go: downloading google.golang.org/protobuf v1.25.0
+go: downloading github.com/opentracing/opentracing-go v1.2.0
+go: downloading github.com/prometheus/common v0.14.0
+go: downloading gopkg.in/yaml.v2 v2.4.0
+go: downloading github.com/uber/jaeger-lib v2.2.0+incompatible
+go: downloading github.com/grpc-ecosystem/go-grpc-middleware v1.2.1
+go: downloading github.com/beorn7/perks v1.0.1
+go: downloading github.com/prometheus/client_model v0.2.0
+go: downloading golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
+go: downloading k8s.io/apimachinery v0.18.8
+go: downloading go.uber.org/zap v1.16.0
+go: downloading github.com/spf13/pflag v1.0.5
+go: downloading go.uber.org/atomic v1.6.0
+go: downloading sigs.k8s.io/structured-merge-diff v1.0.1
+go: downloading k8s.io/klog v1.0.0
+go: downloading google.golang.org/genproto v0.0.0-20200731012542-8145dea6a485
+go: downloading github.com/gogo/protobuf v1.3.1
+go: downloading github.com/cespare/xxhash v1.1.0
+go: downloading k8s.io/api v0.18.8
+go: downloading github.com/matttproud/golang_protobuf_extensions v1.0.1
+go: downloading github.com/kedacore/keda v0.0.0-20200911122749-717aab81817f
+go: downloading github.com/prometheus/procfs v0.1.3
+go: downloading github.com/cespare/xxhash/v2 v2.1.1
+go: downloading go.uber.org/multierr v1.5.0
+go: downloading github.com/google/gofuzz v1.1.0
+go: downloading sigs.k8s.io/structured-merge-diff/v3 v3.0.1-0.20200706213357-43c19bbb7fba
+go: downloading golang.org/x/net v0.0.0-20201202161906-c7110b5ffcbb
+go: downloading go.opencensus.io v0.22.4
+go: downloading golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f
+go: downloading github.com/go-logr/zapr v0.1.1
+go: downloading knative.dev/pkg v0.0.0-20200911145400-2d4efecc6bc1
+go: downloading k8s.io/client-go v0.18.8
+go: downloading github.com/google/go-cmp v0.5.4
+go: downloading github.com/json-iterator/go v1.1.10
+go: downloading k8s.io/apiextensions-apiserver v0.18.8
+go: downloading github.com/evanphx/json-patch v4.9.0+incompatible
+go: downloading golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e
+go: downloading gomodules.xyz/jsonpatch/v2 v2.1.0
+go: downloading github.com/lightstep/tracecontext.go v0.0.0-20181129014701-1757c391b1ac
+go: downloading k8s.io/utils v0.0.0-20200603063816-c1c6865ac451
+go: downloading github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+go: downloading github.com/modern-go/reflect2 v1.0.1
+go: downloading gopkg.in/inf.v0 v0.9.1
+go: downloading github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
+go: downloading golang.org/x/text v0.3.3
+go: downloading golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
+go: downloading k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29
+go: downloading golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
+go: downloading github.com/hashicorp/golang-lru v0.5.4
+go: downloading github.com/fsnotify/fsnotify v1.4.9
+go: downloading github.com/davecgh/go-spew v1.1.1
+go: downloading sigs.k8s.io/yaml v1.2.0
+go: downloading k8s.io/klog/v2 v2.0.0
+go: downloading github.com/imdario/mergo v0.3.11
+go: downloading github.com/googleapis/gnostic v0.4.0
+go vet ./api/... ./predictor/... ./k8s/... ./logger/...
+go: downloading gotest.tools v2.2.0+incompatible
+go: downloading github.com/onsi/gomega v1.10.4
+go test ./api/... ./predictor/... ./k8s/... ./logger/... -coverprofile cover.out
+?   	github.com/seldonio/seldon-core/executor/api	[no test files]
+?   	github.com/seldonio/seldon-core/executor/api/client	[no test files]
+ok  	github.com/seldonio/seldon-core/executor/api/grpc	0.092s	coverage: 18.0% of statements
+?   	github.com/seldonio/seldon-core/executor/api/grpc/kfserving	[no test files]
+?   	github.com/seldonio/seldon-core/executor/api/grpc/kfserving/inference	[no test files]
+ok  	github.com/seldonio/seldon-core/executor/api/grpc/seldon	1.198s	coverage: 48.1% of statements
+?   	github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto	[no test files]
+?   	github.com/seldonio/seldon-core/executor/api/grpc/seldon/test	[no test files]
+ok  	github.com/seldonio/seldon-core/executor/api/grpc/tensorflow	0.245s	coverage: 19.0% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/kafka	0.042s	coverage: 1.2% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/metric	0.120s	coverage: 26.7% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/payload	0.035s	coverage: 64.3% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/rest	1.084s	coverage: 63.0% of statements
+?   	github.com/seldonio/seldon-core/executor/api/test	[no test files]
+ok  	github.com/seldonio/seldon-core/executor/api/tracing	0.008s	coverage: 72.2% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/util	0.071s	coverage: 38.0% of statements
+ok  	github.com/seldonio/seldon-core/executor/predictor	0.074s	coverage: 68.2% of statements
+ok  	github.com/seldonio/seldon-core/executor/k8s	0.015s	coverage: 72.7% of statements
+?   	github.com/seldonio/seldon-core/executor/logger	[no test files]
+mkdir -p api/rest/openapi/
+cp ../openapi/swagger-ui/* api/rest/openapi/
+cp ../openapi/engine.oas3.json api/rest/openapi/seldon.json
+docker build -f Dockerfile.executor -t seldonio/seldon-core-executor:1.6.0-dev .
+Sending build context to Docker daemon  24.09MB
+Step 1/27 : FROM golang:1.13 as builder
+unauthorized: authentication required
+make[1]: *** [Makefile:93: docker-build] Error 1
+make[1]: Leaving directory '/workspace/source/executor'
+make: *** [Makefile:25: kind_build_executor] Error 2
+Executor build returned errors
+kind delete cluster
+Deleting cluster "kind" ...
+Stopping Docker: dockerProgram process in pidfile '/var/run/docker-ssd.pid', 1 process(es), refused to die.
+[31m
+Pipeline failed on stage 'end-to-end' : container 'step-test-end-to-end'. The execution of the pipeline has stopped.[0m
