@@ -1,7 +1,7 @@
 FROM registry.access.redhat.com/ubi8/python-36
 LABEL name="Seldon Alibi Wrapper" \
       vendor="Seldon Technologies" \
-      version="1.2.3" \
+      version="1.2.4" \
       release="1" \
       summary="Alibi Explainer Wrapper for Seldon Core" \
       description="Allows Seldon Core inference models to run with a black box model explanation model from the Alibi:Explain project"

@@ -111,7 +111,7 @@ To complete containerisation process you need two more components:
 
 Once these are in place you can use a simple s2i command
 ```bash
-s2i build . seldonio/seldon-core-s2i-python3:1.2.3 model:0.1
+s2i build . seldonio/seldon-core-s2i-python3:1.2.4 model:0.1
 ```
 to create ready to use Docker image.
 
