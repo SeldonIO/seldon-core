@@ -67,7 +67,6 @@ func NewClientMetrics(spec *v1.PredictorSpec, deploymentName string, modelName s
 			} else {
 				summary = e.ExistingCollector.(*prometheus.SummaryVec)
 			}
-
 		}
 	}
 

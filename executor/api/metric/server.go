@@ -42,6 +42,7 @@ func NewServerMetrics(spec *v1.PredictorSpec, deploymentName string) *ServerMetr
 			}
 		}
 	}
+
 	summary := prometheus.NewSummaryVec(
 		prometheus.SummaryOpts{
 			Name:       ServerRequestsMetricName + "_summary",
@@ -59,9 +60,9 @@ func NewServerMetrics(spec *v1.PredictorSpec, deploymentName string) *ServerMetr
 			} else {
 				summary = e.ExistingCollector.(*prometheus.SummaryVec)
 			}
-
 		}
 	}
+
 	return &ServerMetrics{
 		ServerHandledHistogram: histogram,
 		ServerHandledSummary:   summary,
