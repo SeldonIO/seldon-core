@@ -133,7 +133,7 @@ func (smc *JSONRestClient) getMetricsRoundTripper(modelName string, service stri
 			imageVersion = imageParts[1]
 		}
 	}
-	RoundTripper := promhttp.InstrumentRoundTripperDuration(smc.metrics.ClientHandledHistogram.MustCurryWith(prometheus.Labels{
+	roundTripper := promhttp.InstrumentRoundTripperDuration(smc.metrics.ClientHandledHistogram.MustCurryWith(prometheus.Labels{
 		metric.DeploymentNameMetric:   smc.DeploymentName,
 		metric.PredictorNameMetric:    smc.predictor.Name,
 		metric.PredictorVersionMetric: smc.predictor.Annotations["version"],
