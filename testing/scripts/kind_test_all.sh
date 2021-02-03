@@ -41,6 +41,9 @@ export KUBECONFIG=$(kind get kubeconfig-path)
 if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
 
     run_end_to_end_tests() {
+        # Make sure origin/release-1.2.4 is available
+        git fetch origin release-1.2.4
+        git branch origin/release-1.2.4 FETCH_HEAD
 
         echo "Files changed in python folder:"
         git --no-pager diff --exit-code --name-only origin/release-1.2.4 ../../python
