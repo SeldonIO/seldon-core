@@ -91,7 +91,7 @@ class TestNotebooks(object):
 
     def test_metrics(self):
         try:
-            create_and_run_script("../../examples/models/metrics", "metrics")
+            create_and_run_script("../../examples/models/metrics", "general_metrics")
         except CalledProcessError as e:
             run(
                 f"helm delete seldon-core-analytics --namespace seldon-system",
