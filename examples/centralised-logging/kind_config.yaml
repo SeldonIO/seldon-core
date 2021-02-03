@@ -1,32 +1,32 @@
 kind: Cluster
-apiVersion: kind.sigs.k8s.io/v1alpha3
+apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
-- role: control-plane
-- role: worker
-  extraPortMappings:
-  - containerPort: 30080
-    hostPort: 8003
-  - containerPort: 31380
-    hostPort: 8004
+  - role: control-plane
+  - role: worker
+    extraPortMappings:
+      - containerPort: 30080
+        hostPort: 8003
+      - containerPort: 31380
+        hostPort: 8004
 kubeadmConfigPatches:
-- |
-  apiVersion: kubelet.config.k8s.io/v1beta1
-  kind: KubeletConfiguration
-  metadata:
-    name: config
-  kubeReserved:
-      cpu: "300m"
-      memory: "300Mi"
-      ephemeral-storage: "1Gi"
-  kubeReservedCgroup: "/kube-reserved"
-  systemReserved:
-      cpu: "300m"
-      memory: "300Mi"
-      ephemeral-storage: "1Gi"
-  evictionHard:
-      memory.available:  "200Mi"
-      nodefs.available: "10%"
-  featureGates:
-      DynamicKubeletConfig: true
-      RotateKubeletServerCertificate: true
+  - |
+    apiVersion: kubelet.config.k8s.io/v1beta1
+    kind: KubeletConfiguration
+    metadata:
+      name: config
+    kubeReserved:
+        cpu: "300m"
+        memory: "300Mi"
+        ephemeral-storage: "1Gi"
+    kubeReservedCgroup: "/kube-reserved"
+    systemReserved:
+        cpu: "300m"
+        memory: "300Mi"
+        ephemeral-storage: "1Gi"
+    evictionHard:
+        memory.available:  "200Mi"
+        nodefs.available: "10%"
+    featureGates:
+        DynamicKubeletConfig: true
+        RotateKubeletServerCertificate: true
 

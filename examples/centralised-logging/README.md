@@ -8,53 +8,42 @@ Request logging means also logging the http requests and responses in elasticsea
 
 Here we will set up EFK (elasticsearch, fluentd/fluentbit, kibana) as a stack to gather logs from SeldonDeployments and make them searchable.
 
-This demo is aimed at KIND or minikube but can also work with a cloud provider. Uses helm v3.
+This demo is aimed at KIND but can also work with a cloud provider. Uses helm v3.
 
 Either run through step-by-step or use full-kind-setup.sh.
 
-## Setup Elastic - KIND
+## Setup Elastic Stack - KIND
 
 Start cluster
 
 ```
-kind create cluster --config kind_config.yaml --image kindest/node:v1.15.6
+kind create cluster --config ./kind_config.yaml --image kindest/node:v1.17.5@sha256:ab3f9e6ec5ad8840eeb1f76c89bb7948c77bbf76bcebe1a8b59790b8ae9a283a
 ```
 
-Install elastic with KIND config:
+Setup the namespace and KIND config for using volumes:
 
 ```
 kubectl create namespace seldon-logs
 kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
-helm install elasticsearch elasticsearch --version 7.6.0 --namespace=seldon-logs -f elastic-kind.yaml --repo https://helm.elastic.co --set image=docker.elastic.co/elasticsearch/elasticsearch-oss
 ```
 
-## Setup Elastic - Minikube
-
-Start Minikube with flags as shown:
+Install elastic stack:
 
 ```
-minikube start --cpus 6 --memory 10240 --disk-size=30g --kubernetes-version='1.15.0'
-```
-
-Install elasticsearch with minikube configuration:
-
-```
-kubectl create namespace seldon-logs
-helm install elasticsearch elasticsearch --version 7.6.0 --namespace=seldon-logs -f elastic-minikube.yaml --repo https://helm.elastic.co --set image=docker.elastic.co/elasticsearch/elasticsearch-oss
-```
-
-## Fluentd and Kibana
-
-Then fluentd as a collection agent (chosen in preference to fluentbit - see notes at end):
-
-```
-helm install fluentd fluentd-elasticsearch --version 8.0.0 --namespace=seldon-logs -f fluentd-values.yaml --repo https://kiwigrid.github.io
-```
-
-And kibana UI:
-
-```
-helm install kibana kibana --version 7.6.0 --namespace=seldon-logs --set service.type=NodePort --repo https://helm.elastic.co --set image=docker.elastic.co/kibana/kibana-oss
+mkdir -p tempresources
+cp values-opendistro-kind.yaml ./tempresources
+cp fluentd-values.yaml ./tempresources
+cd tempresources
+git clone https://github.com/opendistro-for-elasticsearch/opendistro-build
+cd opendistro-build/helm/opendistro-es/
+git fetch --all --tags
+git checkout tags/v1.12.0
+helm package .
+helm upgrade --install elasticsearch opendistro-es-1.12.0.tgz --namespace=seldon-logs --values=../../../values-opendistro-kind.yaml
+helm upgrade --install fluentd fluentd-elasticsearch --version 9.6.2 --namespace=seldon-logs --values=../../../fluentd-values.yaml --repo https://kiwigrid.github.io
+kubectl rollout status -n seldon-logs deployment/elasticsearch-opendistro-es-kibana
+cd ../../../../
+kubectl apply -f kibana-virtualservice.yaml
 ```
 
 
@@ -80,7 +69,7 @@ helm install seldon-single-model \
   ../../helm-charts/seldon-single-model/ \
   --set 'model.image=seldonio/mock_classifier_rest:1.3' \
   --set model.logger.enabled=true \
-  --set model.logger.url="http://default-broker.seldon-logs"
+  --set model.logger.url="http://broker-ingress.knative-eventing.svc.cluster.local/seldon-logs/default"
 ```
 
 ## Setting up Request Logging
@@ -99,12 +88,25 @@ Run `kubectl apply -f seldon-request-logger.yaml`
 Create broker:
 
 ```
-kubectl label namespace seldon-logs knative-eventing-injection=enabled
-sleep 3
-kubectl -n seldon-logs get broker default
+kubectl create -f - <<EOF
+apiVersion: eventing.knative.dev/v1
+kind: Broker
+metadata:
+  name: default
+  namespace: seldon-logs
+EOF
+
+sleep 6
+broker=$(kubectl -n seldon-logs get broker default -o jsonpath='{.metadata.name}')
+if [ $broker == 'default' ]; then
+  echo "knative broker created"
+else
+  echo "knative broker not created"
+  exit 1
+fi
 ```
 
-The broker should show 'READY' as True.
+The broker should be created.
 
 Note that when we installed the seldon model earlier we told it to log to a broker in the seldon-logs namespace.
 
@@ -127,14 +129,15 @@ helm install seldon-core-loadtesting ../../helm-charts/seldon-core-loadtesting/ 
 
 ## Inspecting Logging and Search for Requests
 
-Access kibana with a port-forward to `localhost:5601`:
+Access kibana with a port-forward to `localhost:8080/kibana/`:
 ```
-kubectl port-forward svc/kibana-kibana -n seldon-logs 5601:5601
+kubectl port-forward -n istio-system svc/istio-ingressgateway 8080:80
 ```
 
 When Kibana appears for the first time there will be a brief animation while it initializes.
+Login in with `admin/admin`.
 On the Welcome page click Explore on my own.
-From the top-left or from the `Visualize and Explore Data` panel select the `Discover` item.
+From the top-left menu under `Kibana` select the `Discover` item.
 In the form field Index pattern enter *
 It should read "Success!" and Click the `> Next` step button on the right.
 In the next form select timestamp from the dropdown labeled `Time Filter` field name.
