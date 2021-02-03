@@ -1,6 +1,116 @@
 # Changelog
 
-## [v1.5.1](https://github.com/seldonio/seldon-core/tree/HEAD)
+## [v1.6.0](https://github.com/seldonio/seldon-core/tree/v1.6.0)
+
+[Full Changelog](https://github.com/seldonio/seldon-core/compare/v1.5.1...v1.6.0)
+
+**Implemented enhancements:**
+
+- Create a prepackaged model server for PyTorch Models [\#831](https://github.com/SeldonIO/seldon-core/issues/831)
+
+**Fixed bugs:**
+
+- IsADirectoryError: \[Errno 21\] Is a directory: '/mnt/models' [\#2876](https://github.com/SeldonIO/seldon-core/issues/2876)
+- error: a container name must be specified for pod  [\#2875](https://github.com/SeldonIO/seldon-core/issues/2875)
+- MLFlow server-- ModuleNotFoundError: No module named 'prediction' [\#2874](https://github.com/SeldonIO/seldon-core/issues/2874)
+- V1 CRD has missing grpcPort and httpPort [\#2866](https://github.com/SeldonIO/seldon-core/issues/2866)
+- Broken Link to Documentation Example I'd like to find if it exists [\#2836](https://github.com/SeldonIO/seldon-core/issues/2836)
+- Executor does not send feedback to Routers. [\#2827](https://github.com/SeldonIO/seldon-core/issues/2827)
+- ArgoCD OutOfSync if SeldonDeployment includes mountpoint [\#2811](https://github.com/SeldonIO/seldon-core/issues/2811)
+- Helm failing to fetch https://kubernetes-charts.storage.googleapis.com/ resulting in failing tests [\#2808](https://github.com/SeldonIO/seldon-core/issues/2808)
+- send\_feedback response is incorrectly managed in seldon\_methods.py [\#2801](https://github.com/SeldonIO/seldon-core/issues/2801)
+- Upgrading to 1.5.0 causes unexpected error when calling predict endpoint of Python custom model [\#2786](https://github.com/SeldonIO/seldon-core/issues/2786)
+- SHAP Breaks Alibi Detect on Python 3.6 due to unpinned Numpy dependency [\#2767](https://github.com/SeldonIO/seldon-core/issues/2767)
+- Error when using the R language wrapper [\#2744](https://github.com/SeldonIO/seldon-core/issues/2744)
+- Transformers model unable to run with Cuda [\#2680](https://github.com/SeldonIO/seldon-core/issues/2680)
+- Allow seldon manager to run as non-root [\#2631](https://github.com/SeldonIO/seldon-core/issues/2631)
+- Operator sets HTTPS on the Engine's liveness and ready checks [\#2586](https://github.com/SeldonIO/seldon-core/issues/2586)
+- high memory and cpu usage in deployment of xgboost rest [\#1986](https://github.com/SeldonIO/seldon-core/issues/1986)
+
+**Security fixes:**
+
+- Resolve CVE for PyYAML - CVE-2020-14343 [\#2252](https://github.com/SeldonIO/seldon-core/issues/2252)
+
+**Closed issues:**
+
+- CVE checks update for redhat image scans [\#2869](https://github.com/SeldonIO/seldon-core/issues/2869)
+- Does Seldon Batch Processing Work with Azure Blob Storage? [\#2858](https://github.com/SeldonIO/seldon-core/issues/2858)
+- Update engine docs as deprecated [\#2840](https://github.com/SeldonIO/seldon-core/issues/2840)
+- Support V2 Protocol in outlier and drift detectors [\#2831](https://github.com/SeldonIO/seldon-core/issues/2831)
+- add example of batch processor with rclone [\#2819](https://github.com/SeldonIO/seldon-core/issues/2819)
+- Add example of custom init container with rclone [\#2818](https://github.com/SeldonIO/seldon-core/issues/2818)
+- remove mutating webhook [\#2817](https://github.com/SeldonIO/seldon-core/issues/2817)
+- Handle KFServing V2 Protocol in request logger [\#2791](https://github.com/SeldonIO/seldon-core/issues/2791)
+- Create 1.5.1 release with cherrypick [\#2756](https://github.com/SeldonIO/seldon-core/issues/2756)
+- Use f-strings in MAB study case examples [\#2729](https://github.com/SeldonIO/seldon-core/issues/2729)
+- helm chart imagePullSecrets support to bypass ratelimiting [\#2694](https://github.com/SeldonIO/seldon-core/issues/2694)
+- Seldon-core-operator Update for handling namespace  [\#2676](https://github.com/SeldonIO/seldon-core/issues/2676)
+- docs: No Release Highlights since 1.1.0 [\#2634](https://github.com/SeldonIO/seldon-core/issues/2634)
+- Depricate engine \(old Java service orchestrator\) [\#2588](https://github.com/SeldonIO/seldon-core/issues/2588)
+- Add support for Datadog Tracing in the Executor and the Python Wrapper [\#2436](https://github.com/SeldonIO/seldon-core/issues/2436)
+- Multi\_Archtecture Support [\#2333](https://github.com/SeldonIO/seldon-core/issues/2333)
+- Make deployment names configurable [\#2301](https://github.com/SeldonIO/seldon-core/issues/2301)
+- java-wrapper-0.2.0 jar is not checked for validity [\#2180](https://github.com/SeldonIO/seldon-core/issues/2180)
+- Stateful Model Serving by Saving state to Redis [\#2138](https://github.com/SeldonIO/seldon-core/issues/2138)
+- Add documentation on how to extend base prepackaged servers with new images \(xgboost, sklearn, etc\) [\#2060](https://github.com/SeldonIO/seldon-core/issues/2060)
+- Add documentation that dives into the iniContainer [\#2055](https://github.com/SeldonIO/seldon-core/issues/2055)
+- Multiplexing or parallel serving of gRPC / REST in Python Wrapper [\#1968](https://github.com/SeldonIO/seldon-core/issues/1968)
+- Allow globally configurable docker registry secret for seldon deployments [\#1923](https://github.com/SeldonIO/seldon-core/issues/1923)
+- Remove probesonly flag [\#1856](https://github.com/SeldonIO/seldon-core/issues/1856)
+- Use custom errors [\#1841](https://github.com/SeldonIO/seldon-core/issues/1841)
+- Allow mixed rest/grpc graphs in new golang based executor [\#1820](https://github.com/SeldonIO/seldon-core/issues/1820)
+
+**Merged pull requests:**
+
+- yum update seemingly not needed for operator [\#2918](https://github.com/SeldonIO/seldon-core/pull/2918) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- update licenses for 1.6.0 [\#2916](https://github.com/SeldonIO/seldon-core/pull/2916) ([cliveseldon](https://github.com/cliveseldon))
+- Update cuda version in wrapper Dockerfile.GPU [\#2906](https://github.com/SeldonIO/seldon-core/pull/2906) ([ashrafgt](https://github.com/ashrafgt))
+- Update Python Builder to use latest git for compatibility with github actions [\#2894](https://github.com/SeldonIO/seldon-core/pull/2894) ([axsaucedo](https://github.com/axsaucedo))
+- Github Action fixes [\#2892](https://github.com/SeldonIO/seldon-core/pull/2892) ([axsaucedo](https://github.com/axsaucedo))
+- 2252 resolve pyyaml cve [\#2891](https://github.com/SeldonIO/seldon-core/pull/2891) ([axsaucedo](https://github.com/axsaucedo))
+- Moving basic CI to github actions [\#2889](https://github.com/SeldonIO/seldon-core/pull/2889) ([axsaucedo](https://github.com/axsaucedo))
+- Generate helm-charts again to fix: Error: secrets "seldon-webhook-ser… [\#2886](https://github.com/SeldonIO/seldon-core/pull/2886) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- updates for redhat scans [\#2870](https://github.com/SeldonIO/seldon-core/pull/2870) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- Fix grpcPort and httpPort in v1 CRD [\#2868](https://github.com/SeldonIO/seldon-core/pull/2868) ([cliveseldon](https://github.com/cliveseldon))
+- Revert "Bump pandas from 1.1.0 to 1.2.0 in /python" [\#2867](https://github.com/SeldonIO/seldon-core/pull/2867) ([adriangonz](https://github.com/adriangonz))
+- Allow feedback for routers and update router examples [\#2865](https://github.com/SeldonIO/seldon-core/pull/2865) ([cliveseldon](https://github.com/cliveseldon))
+- Update Seldon versions for upgrade tests [\#2861](https://github.com/SeldonIO/seldon-core/pull/2861) ([adriangonz](https://github.com/adriangonz))
+- Deprecate Java engine [\#2857](https://github.com/SeldonIO/seldon-core/pull/2857) ([adriangonz](https://github.com/adriangonz))
+- Add engine deprecation note [\#2856](https://github.com/SeldonIO/seldon-core/pull/2856) ([adriangonz](https://github.com/adriangonz))
+- Manager running as non-root [\#2853](https://github.com/SeldonIO/seldon-core/pull/2853) ([cliveseldon](https://github.com/cliveseldon))
+- remove mutating webhook from Seldon Core Operator [\#2852](https://github.com/SeldonIO/seldon-core/pull/2852) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- Bump pandas from 1.1.0 to 1.2.0 in /python [\#2846](https://github.com/SeldonIO/seldon-core/pull/2846) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- Rclone powered batch [\#2842](https://github.com/SeldonIO/seldon-core/pull/2842) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- add hdfs example [\#2841](https://github.com/SeldonIO/seldon-core/pull/2841) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- 2744 R Language Wrapper Fix for JSON requests [\#2837](https://github.com/SeldonIO/seldon-core/pull/2837) ([axsaucedo](https://github.com/axsaucedo))
+- Revert "Bump pandas from 1.1.0 to 1.2.0 in /python" [\#2835](https://github.com/SeldonIO/seldon-core/pull/2835) ([axsaucedo](https://github.com/axsaucedo))
+- Example: Pachyderm -\> Seldon-Core CD4ML [\#2833](https://github.com/SeldonIO/seldon-core/pull/2833) ([philwinder](https://github.com/philwinder))
+- Update Alibi Detect Server [\#2832](https://github.com/SeldonIO/seldon-core/pull/2832) ([cliveseldon](https://github.com/cliveseldon))
+- Update jaeger-client requirement from \<4.4.0,\>=4.1.0 to \>=4.1.0,\<4.5.0 in /python [\#2828](https://github.com/SeldonIO/seldon-core/pull/2828) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- fix nblink to include image of pachyderm example [\#2820](https://github.com/SeldonIO/seldon-core/pull/2820) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- update triton tfserving example [\#2815](https://github.com/SeldonIO/seldon-core/pull/2815) ([cliveseldon](https://github.com/cliveseldon))
+- extend init containers documentation [\#2814](https://github.com/SeldonIO/seldon-core/pull/2814) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- minor fix to pachyderm example \(doc paths\) [\#2813](https://github.com/SeldonIO/seldon-core/pull/2813) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- Bump pillow from 8.0.1 to 8.1.0 in /python [\#2810](https://github.com/SeldonIO/seldon-core/pull/2810) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- Helm chart repo fix for integration tests [\#2809](https://github.com/SeldonIO/seldon-core/pull/2809) ([axsaucedo](https://github.com/axsaucedo))
+- Fix send\_feedback response wrongly wrapped as ndarray [\#2807](https://github.com/SeldonIO/seldon-core/pull/2807) ([frr-ndr](https://github.com/frr-ndr))
+- Bump pandas from 1.1.0 to 1.2.0 in /python [\#2804](https://github.com/SeldonIO/seldon-core/pull/2804) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- Update request logger to support v2 protocol [\#2802](https://github.com/SeldonIO/seldon-core/pull/2802) ([cliveseldon](https://github.com/cliveseldon))
+- Bump pytest from 6.2.0 to 6.2.1 in /python [\#2797](https://github.com/SeldonIO/seldon-core/pull/2797) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- Bump tenacity from 6.2.0 to 6.3.1 in /python [\#2796](https://github.com/SeldonIO/seldon-core/pull/2796) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- Bump coverage from 5.3 to 5.3.1 in /python [\#2795](https://github.com/SeldonIO/seldon-core/pull/2795) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- Updated changelog for v1.5.1 [\#2792](https://github.com/SeldonIO/seldon-core/pull/2792) ([axsaucedo](https://github.com/axsaucedo))
+- Bump tensorflow from 1.15.4 to 2.4.0 in /testing/scripts [\#2790](https://github.com/SeldonIO/seldon-core/pull/2790) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Bump tensorflow from 1.15.4 to 2.4.0 in /examples/explainers/imagenet/resources/transformer [\#2789](https://github.com/SeldonIO/seldon-core/pull/2789) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Bump github.com/onsi/gomega from 1.10.2 to 1.10.4 in /operator [\#2778](https://github.com/SeldonIO/seldon-core/pull/2778) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- Bump pytest from 6.1.2 to 6.2.0 in /python [\#2772](https://github.com/SeldonIO/seldon-core/pull/2772) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- Added f-strings in MAB study case examples [\#2771](https://github.com/SeldonIO/seldon-core/pull/2771) ([midhun1998](https://github.com/midhun1998))
+- Extending Alibi Detect Server to expose prometheus metrics for outliers [\#2770](https://github.com/SeldonIO/seldon-core/pull/2770) ([axsaucedo](https://github.com/axsaucedo))
+- updated black version to 20.8b1 [\#2769](https://github.com/SeldonIO/seldon-core/pull/2769) ([zyxue](https://github.com/zyxue))
+- feat\(examples/pachyderm-simple\): Update and improve Pachyderm example [\#2764](https://github.com/SeldonIO/seldon-core/pull/2764) ([philwinder](https://github.com/philwinder))
+- Allow Namespace Override for seldon-core-operator  [\#2762](https://github.com/SeldonIO/seldon-core/pull/2762) ([ntorba](https://github.com/ntorba))
+
+## [v1.5.1](https://github.com/seldonio/seldon-core/tree/v1.5.1) (2020-12-17)
 
 [Full Changelog](https://github.com/seldonio/seldon-core/compare/v1.5.0...v1.5.1)
 
@@ -25,7 +135,6 @@
 
 - Adds GRPCIO guards on tfserving-proxy server to fix version clash [\#2788](https://github.com/SeldonIO/seldon-core/pull/2788) ([axsaucedo](https://github.com/axsaucedo))
 - do not act on resources that have deletion timestamp set [\#2782](https://github.com/SeldonIO/seldon-core/pull/2782) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
-- Bump pytest from 6.1.2 to 6.2.0 in /python [\#2772](https://github.com/SeldonIO/seldon-core/pull/2772) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
 - Added workaround for alibi explainer image build [\#2768](https://github.com/SeldonIO/seldon-core/pull/2768) ([axsaucedo](https://github.com/axsaucedo))
 - Update Timeouts Notebook [\#2753](https://github.com/SeldonIO/seldon-core/pull/2753) ([cliveseldon](https://github.com/cliveseldon))
 - Revert "Add security context to seldon-controller-manager deployment" [\#2752](https://github.com/SeldonIO/seldon-core/pull/2752) ([cliveseldon](https://github.com/cliveseldon))
@@ -54,13 +163,14 @@
 - Add sideEffects to Webhooks to allow Dry Runs [\#2651](https://github.com/SeldonIO/seldon-core/pull/2651) ([cliveseldon](https://github.com/cliveseldon))
 - add gRPC reflection support for seldon-core-executor and python wrapper [\#2395](https://github.com/SeldonIO/seldon-core/pull/2395) ([CatTail](https://github.com/CatTail))
 
-
-## [v1.5.0](https://github.com/seldonio/seldon-core/tree/v1.5.0) (2020-11-24)
+## [v1.5.0](https://github.com/seldonio/seldon-core/tree/v1.5.0) (2020-12-03)
 
 [Full Changelog](https://github.com/seldonio/seldon-core/compare/v1.4.0...v1.5.0)
 
 **Fixed bugs:**
 
+- Can not create seldondSeldonDeployment crd in k8s v1.19.2 [\#2726](https://github.com/SeldonIO/seldon-core/issues/2726)
+- Custom metrics endpoint produces exceptions during load-testing [\#2704](https://github.com/SeldonIO/seldon-core/issues/2704)
 - Add a note in istio doc about pod security context for nonroot user [\#2686](https://github.com/SeldonIO/seldon-core/issues/2686)
 - KEDA notebook testing is broken  [\#2683](https://github.com/SeldonIO/seldon-core/issues/2683)
 - \[BUG\] NodeSelector not working in SeldonDeployment [\#2682](https://github.com/SeldonIO/seldon-core/issues/2682)
@@ -77,25 +187,39 @@
 - Notebook test `test\_custom\_metrics` failing in master [\#2541](https://github.com/SeldonIO/seldon-core/issues/2541)
 - grafana-prom-import-dashboards pod always fail in seldon-core-analytics chat [\#2518](https://github.com/SeldonIO/seldon-core/issues/2518)
 - requestPath meta missing in new executor [\#2505](https://github.com/SeldonIO/seldon-core/issues/2505)
+- ERROR: no endpoints available for service "seldon-webhook-service" while creating deployment using CUSTOM\_INFERENCE\_SERVER [\#2459](https://github.com/SeldonIO/seldon-core/issues/2459)
+- routing metadata missing in new executor [\#1823](https://github.com/SeldonIO/seldon-core/issues/1823)
 
 **Closed issues:**
 
+- Seldon deployment support for google kubernetes ingress [\#2714](https://github.com/SeldonIO/seldon-core/issues/2714)
+- Using seldon-core-microservice how does one turn on SSL? [\#2706](https://github.com/SeldonIO/seldon-core/issues/2706)
+- Allow user to disable gunicorn access logs [\#2705](https://github.com/SeldonIO/seldon-core/issues/2705)
 - use service account for argo batch example [\#2673](https://github.com/SeldonIO/seldon-core/issues/2673)
 - Update metrics exposed by alibi detect server to include all newer components \(threshold, etc\) [\#2667](https://github.com/SeldonIO/seldon-core/issues/2667)
 - Add namespace to metrics component in seldon core python module [\#2666](https://github.com/SeldonIO/seldon-core/issues/2666)
 - Explore send\_feedback path for tensorflow protocol [\#2665](https://github.com/SeldonIO/seldon-core/issues/2665)
 - More restricted deployment rbac for seldon-core [\#2662](https://github.com/SeldonIO/seldon-core/issues/2662)
 - GCP Workload Identity Support for GCS - Prepackaged Model Server [\#2654](https://github.com/SeldonIO/seldon-core/issues/2654)
+- Dry run deployment config [\#2648](https://github.com/SeldonIO/seldon-core/issues/2648)
+- seldon-batch-processor to support https and sslverify  [\#2638](https://github.com/SeldonIO/seldon-core/issues/2638)
 - document how to use custom init containers [\#2610](https://github.com/SeldonIO/seldon-core/issues/2610)
 - Grafana on Ambassador \(Public DNS\)? [\#2591](https://github.com/SeldonIO/seldon-core/issues/2591)
+- Pip cache removal in wrappers/s2i/python/s2i/bin/assemble [\#2581](https://github.com/SeldonIO/seldon-core/issues/2581)
 - new knative filtering [\#2551](https://github.com/SeldonIO/seldon-core/issues/2551)
+- upgrade alibi-detect-server to use new alibi-detect when released [\#2405](https://github.com/SeldonIO/seldon-core/issues/2405)
 - Support gRPC and HTTP protocols at the same time [\#2378](https://github.com/SeldonIO/seldon-core/issues/2378)
 - Allow Inference Graphs to mix Protocols with the Executor [\#2299](https://github.com/SeldonIO/seldon-core/issues/2299)
 - Initial / immediate term base infrastructure for stateful metrics with feedback \(custom metrics naming, concurrency coherence, etc\) [\#2272](https://github.com/SeldonIO/seldon-core/issues/2272)
+- Extend seldon-single-model helm template to include metadata support [\#2070](https://github.com/SeldonIO/seldon-core/issues/2070)
+- Update ambassador doc and release doc about shadow model [\#1741](https://github.com/SeldonIO/seldon-core/issues/1741)
 - Remove OAuth code from Seldon Client [\#1677](https://github.com/SeldonIO/seldon-core/issues/1677)
+- Remove legacy Python 2 elements [\#1438](https://github.com/SeldonIO/seldon-core/issues/1438)
 
 **Merged pull requests:**
 
+- Updated helm chart docs [\#2742](https://github.com/SeldonIO/seldon-core/pull/2742) ([axsaucedo](https://github.com/axsaucedo))
+- Updated charts and example model [\#2740](https://github.com/SeldonIO/seldon-core/pull/2740) ([axsaucedo](https://github.com/axsaucedo))
 - Add back "seldon" gateway [\#2701](https://github.com/SeldonIO/seldon-core/pull/2701) ([adriangonz](https://github.com/adriangonz))
 - fix batch logging [\#2699](https://github.com/SeldonIO/seldon-core/pull/2699) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
 - Fix typo in ci build images script [\#2698](https://github.com/SeldonIO/seldon-core/pull/2698) ([axsaucedo](https://github.com/axsaucedo))
@@ -136,6 +260,7 @@
 - Bump pillow from 8.0.0 to 8.0.1 in /python [\#2576](https://github.com/SeldonIO/seldon-core/pull/2576) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
 - Allow both http and grpc [\#2574](https://github.com/SeldonIO/seldon-core/pull/2574) ([cliveseldon](https://github.com/cliveseldon))
 - Bump MLServer image to 0.1.1 [\#2558](https://github.com/SeldonIO/seldon-core/pull/2558) ([adriangonz](https://github.com/adriangonz))
+- Update microservice.R for supporting jsonData input in R [\#2544](https://github.com/SeldonIO/seldon-core/pull/2544) ([LueJian](https://github.com/LueJian))
 - add prototype of distributed inference computing with Seldon & Ray [\#2517](https://github.com/SeldonIO/seldon-core/pull/2517) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
 
 ## [v1.4.0](https://github.com/seldonio/seldon-core/tree/v1.4.0) (2020-10-26)
@@ -197,7 +322,6 @@
 - fix links to metrics notebooks [\#2548](https://github.com/SeldonIO/seldon-core/pull/2548) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
 - Add pidfile config for gunicorn [\#2547](https://github.com/SeldonIO/seldon-core/pull/2547) ([anggao](https://github.com/anggao))
 - Update mypy requirement from \<0.783 to \<0.791 in /python [\#2545](https://github.com/SeldonIO/seldon-core/pull/2545) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
-- Update microservice.R for supporting jsonData input in R [\#2544](https://github.com/SeldonIO/seldon-core/pull/2544) ([LueJian](https://github.com/LueJian))
 - Operator sdk v1 [\#2543](https://github.com/SeldonIO/seldon-core/pull/2543) ([cliveseldon](https://github.com/cliveseldon))
 - Fix dead links in docs and add linter [\#2538](https://github.com/SeldonIO/seldon-core/pull/2538) ([adriangonz](https://github.com/adriangonz))
 - Fixed AD Server Dependencies and Added notebook integration test [\#2536](https://github.com/SeldonIO/seldon-core/pull/2536) ([axsaucedo](https://github.com/axsaucedo))
@@ -228,7 +352,6 @@
 - Stateful metrics server [\#2469](https://github.com/SeldonIO/seldon-core/pull/2469) ([axsaucedo](https://github.com/axsaucedo))
 - Github actions added rebase command [\#2451](https://github.com/SeldonIO/seldon-core/pull/2451) ([axsaucedo](https://github.com/axsaucedo))
 - Add support to deploy SKLearn and XGBoost models with MLServer [\#2450](https://github.com/SeldonIO/seldon-core/pull/2450) ([adriangonz](https://github.com/adriangonz))
-- Fix image Jenkinx X build failures [\#2449](https://github.com/SeldonIO/seldon-core/pull/2449) ([axsaucedo](https://github.com/axsaucedo))
 
 ## [v1.3.0](https://github.com/seldonio/seldon-core/tree/v1.3.0) (2020-09-29)
 
@@ -330,6 +453,7 @@
 - Ensure updated pygments installed [\#2457](https://github.com/SeldonIO/seldon-core/pull/2457) ([cliveseldon](https://github.com/cliveseldon))
 - Removed broken links [\#2456](https://github.com/SeldonIO/seldon-core/pull/2456) ([axsaucedo](https://github.com/axsaucedo))
 - upgrade core-builder to 0.18 and fix last 2 failing notebook tests [\#2453](https://github.com/SeldonIO/seldon-core/pull/2453) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- Fix image Jenkinx X build failures [\#2449](https://github.com/SeldonIO/seldon-core/pull/2449) ([axsaucedo](https://github.com/axsaucedo))
 - Add SSL listener back in after removal by multiplexing reversion [\#2448](https://github.com/SeldonIO/seldon-core/pull/2448) ([glindsell](https://github.com/glindsell))
 - add support for runtime metrics [\#2442](https://github.com/SeldonIO/seldon-core/pull/2442) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
 - Update seldon-single-model [\#2435](https://github.com/SeldonIO/seldon-core/pull/2435) ([cliveseldon](https://github.com/cliveseldon))
@@ -379,9 +503,9 @@
 - Expose more boolean Flask Configurations via `FLASK\_` prefix [\#2280](https://github.com/SeldonIO/seldon-core/pull/2280) ([ericandrewmeadows](https://github.com/ericandrewmeadows))
 - Benchmarking grpc extension [\#2254](https://github.com/SeldonIO/seldon-core/pull/2254) ([axsaucedo](https://github.com/axsaucedo))
 - Added PIP\_TRUSTED\_HOST to pass trusted-host to s2i python wrapper [\#2247](https://github.com/SeldonIO/seldon-core/pull/2247) ([hemantkashniyal](https://github.com/hemantkashniyal))
-- Add release notes template [\#2190](https://github.com/SeldonIO/seldon-core/pull/2190) ([adriangonz](https://github.com/adriangonz))
 - assaf-java-s2i-update [\#2178](https://github.com/SeldonIO/seldon-core/pull/2178) ([amoldavsky](https://github.com/amoldavsky))
 - V2 Dataplane in Executor/Operator + Triton Server [\#2023](https://github.com/SeldonIO/seldon-core/pull/2023) ([cliveseldon](https://github.com/cliveseldon))
+- SSL with Executor [\#1987](https://github.com/SeldonIO/seldon-core/pull/1987) ([axsaucedo](https://github.com/axsaucedo))
 
 ## [v1.2.3](https://github.com/seldonio/seldon-core/tree/v1.2.3) (2020-08-14)
 
@@ -427,6 +551,8 @@
 - Update version to 1.3.0-dev [\#2219](https://github.com/SeldonIO/seldon-core/pull/2219) ([cliveseldon](https://github.com/cliveseldon))
 - Add license\_files to setup.py [\#2210](https://github.com/SeldonIO/seldon-core/pull/2210) ([adriangonz](https://github.com/adriangonz))
 - Release Pipeline [\#2191](https://github.com/SeldonIO/seldon-core/pull/2191) ([axsaucedo](https://github.com/axsaucedo))
+- Add release notes template [\#2190](https://github.com/SeldonIO/seldon-core/pull/2190) ([adriangonz](https://github.com/adriangonz))
+- Add labels to deployments and improve label coverage of resources [\#2130](https://github.com/SeldonIO/seldon-core/pull/2130) ([glindsell](https://github.com/glindsell))
 
 ## [v1.2.2](https://github.com/seldonio/seldon-core/tree/v1.2.2) (2020-07-28)
 
@@ -535,7 +661,6 @@
 - Fix Go license linting [\#2136](https://github.com/SeldonIO/seldon-core/pull/2136) ([adriangonz](https://github.com/adriangonz))
 - Mlflowserver use mlflow predict signature [\#2135](https://github.com/SeldonIO/seldon-core/pull/2135) ([meoril](https://github.com/meoril))
 - fix\(port\): Update grpc executor target port [\#2131](https://github.com/SeldonIO/seldon-core/pull/2131) ([groszewn](https://github.com/groszewn))
-- Add labels to deployments and improve label coverage of resources [\#2130](https://github.com/SeldonIO/seldon-core/pull/2130) ([glindsell](https://github.com/glindsell))
 - Upgrade go dependencies: zap istio knative [\#2129](https://github.com/SeldonIO/seldon-core/pull/2129) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
 - Update python licenses [\#2123](https://github.com/SeldonIO/seldon-core/pull/2123) ([cliveseldon](https://github.com/cliveseldon))
 - update version of operator in executor deps [\#2121](https://github.com/SeldonIO/seldon-core/pull/2121) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
@@ -576,13 +701,11 @@
 - Update Ambassador ingress instructions to include edgectl install [\#2007](https://github.com/SeldonIO/seldon-core/pull/2007) ([oparryevans](https://github.com/oparryevans))
 - SeldonMetadata and GRPC support [\#2005](https://github.com/SeldonIO/seldon-core/pull/2005) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
 - Lint licenses [\#1995](https://github.com/SeldonIO/seldon-core/pull/1995) ([adriangonz](https://github.com/adriangonz))
-- SSL with Executor [\#1987](https://github.com/SeldonIO/seldon-core/pull/1987) ([axsaucedo](https://github.com/axsaucedo))
 - Enable production settings in loggers [\#1980](https://github.com/SeldonIO/seldon-core/pull/1980) ([adriangonz](https://github.com/adriangonz))
 - add missing conda deps in tensorflow gpu image [\#1972](https://github.com/SeldonIO/seldon-core/pull/1972) ([CatTail](https://github.com/CatTail))
 - fixed noEngine [\#1970](https://github.com/SeldonIO/seldon-core/pull/1970) ([chengchengpei](https://github.com/chengchengpei))
 - attach serviceAccountName to prepackaged deployment spec [\#1866](https://github.com/SeldonIO/seldon-core/pull/1866) ([enissay14](https://github.com/enissay14))
 - Set idletimeout [\#1800](https://github.com/SeldonIO/seldon-core/pull/1800) ([andrewshaoyu](https://github.com/andrewshaoyu))
-
 
 ## [v1.2.1](https://github.com/seldonio/seldon-core/tree/v1.2.1) (2020-07-01)
 
@@ -733,7 +856,6 @@
 - Allow access to headers in python wrapper [\#1769](https://github.com/SeldonIO/seldon-core/issues/1769)
 - Multiplex HTTP and gRPC on the executor [\#1762](https://github.com/SeldonIO/seldon-core/issues/1762)
 - GCP Marketplace Update CRD Create [\#1755](https://github.com/SeldonIO/seldon-core/issues/1755)
-- Investigate test\_model\_template\_app\_grpc\_metrics flakiness [\#1745](https://github.com/SeldonIO/seldon-core/issues/1745)
 - docs: have a single notebook that helm install minio [\#1740](https://github.com/SeldonIO/seldon-core/issues/1740)
 - RedHat version of core servers [\#1734](https://github.com/SeldonIO/seldon-core/issues/1734)
 - Pachyderm integration [\#1733](https://github.com/SeldonIO/seldon-core/issues/1733)
@@ -783,7 +905,7 @@
 - fix spacy example [\#1935](https://github.com/SeldonIO/seldon-core/pull/1935) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
 - Fix chart integration tests [\#1934](https://github.com/SeldonIO/seldon-core/pull/1934) ([adriangonz](https://github.com/adriangonz))
 - Fix example in top level readme [\#1930](https://github.com/SeldonIO/seldon-core/pull/1930) ([cliveseldon](https://github.com/cliveseldon))
-- Update mypy requirement from `<0.771` to `<0.78` in /python [\#1924](https://github.com/SeldonIO/seldon-core/pull/1924) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- Update mypy requirement from \<0.771 to \<0.781 in /python [\#1924](https://github.com/SeldonIO/seldon-core/pull/1924) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
 - updated histogram buckets [\#1920](https://github.com/SeldonIO/seldon-core/pull/1920) ([chengchengpei](https://github.com/chengchengpei))
 - analytics option to switch nodeExporter port [\#1917](https://github.com/SeldonIO/seldon-core/pull/1917) ([ryandawsonuk](https://github.com/ryandawsonuk))
 - Batch Processor Component [\#1915](https://github.com/SeldonIO/seldon-core/pull/1915) ([axsaucedo](https://github.com/axsaucedo))
@@ -792,7 +914,7 @@
 - Added checks to only build components in tests if have been modified [\#1909](https://github.com/SeldonIO/seldon-core/pull/1909) ([axsaucedo](https://github.com/axsaucedo))
 - fix the loop length from parmeters count [\#1908](https://github.com/SeldonIO/seldon-core/pull/1908) ([abechen](https://github.com/abechen))
 - Clean up and document charts [\#1906](https://github.com/SeldonIO/seldon-core/pull/1906) ([adriangonz](https://github.com/adriangonz))
-- Update prometheus-client requirement from `<0.8.0,>=0.7.1` to `>=0.7.1,<0.9.0` in /python [\#1903](https://github.com/SeldonIO/seldon-core/pull/1903) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- Update prometheus-client requirement from \<0.8.0,\>=0.7.1 to \>=0.7.1,\<0.9.0 in /python [\#1903](https://github.com/SeldonIO/seldon-core/pull/1903) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
 - Fix content-type behaviour in executor [\#1900](https://github.com/SeldonIO/seldon-core/pull/1900) ([cliveseldon](https://github.com/cliveseldon))
 - increase failureThreshold in mlflow server sample [\#1897](https://github.com/SeldonIO/seldon-core/pull/1897) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
 - make docs links relative [\#1893](https://github.com/SeldonIO/seldon-core/pull/1893) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
@@ -920,11 +1042,10 @@
 - executor tracing enhancement [\#1444](https://github.com/SeldonIO/seldon-core/issues/1444)
 - Sync s2i wrapper image versions with Seldon Core releases [\#1439](https://github.com/SeldonIO/seldon-core/issues/1439)
 - Ambassador setup fails to complete on minikube [\#1435](https://github.com/SeldonIO/seldon-core/issues/1435)
-- Seldon v1.0 CRD uses new \(k8s 1.15\) feature that not backward compatible with k8s versions \(`<= 1.14`) [\#1431](https://github.com/SeldonIO/seldon-core/issues/1431)
+- Seldon v1.0 CRD uses new \(k8s 1.15\) feature that not backward compatible with k8s versions \(\<= 1.14\) [\#1431](https://github.com/SeldonIO/seldon-core/issues/1431)
 - Cherrypick PRs for 1.0.2 Release [\#1429](https://github.com/SeldonIO/seldon-core/issues/1429)
 - Document custom pre-packaged model servers [\#1416](https://github.com/SeldonIO/seldon-core/issues/1416)
 - new v1.0.0 CRD's resources validator is not backward compatible  [\#1410](https://github.com/SeldonIO/seldon-core/issues/1410)
-- Add kubernetes labels to help with selectors [\#1405](https://github.com/SeldonIO/seldon-core/issues/1405)
 - Support for Xgboost 0.9 [\#1394](https://github.com/SeldonIO/seldon-core/issues/1394)
 - Updated Seldon Data Plane [\#1389](https://github.com/SeldonIO/seldon-core/issues/1389)
 - Add annotation support for executor [\#1384](https://github.com/SeldonIO/seldon-core/issues/1384)
@@ -941,6 +1062,7 @@
 
 **Merged pull requests:**
 
+- Fixing typo on knative\_eventing.md [\#2920](https://github.com/SeldonIO/seldon-core/pull/2920) ([anksos](https://github.com/anksos))
 - WIP: Cherry picks for v1.1.0 patch fix  [\#1795](https://github.com/SeldonIO/seldon-core/pull/1795) ([axsaucedo](https://github.com/axsaucedo))
 - Outlier and Drift Detection Examples [\#1702](https://github.com/SeldonIO/seldon-core/pull/1702) ([cliveseldon](https://github.com/cliveseldon))
 - add number dataType to logger [\#1700](https://github.com/SeldonIO/seldon-core/pull/1700) ([ryandawsonuk](https://github.com/ryandawsonuk))
@@ -948,7 +1070,6 @@
 - 1695 istio client [\#1696](https://github.com/SeldonIO/seldon-core/pull/1696) ([cliveseldon](https://github.com/cliveseldon))
 - fix release script to preserve comments in operator values yaml file [\#1694](https://github.com/SeldonIO/seldon-core/pull/1694) ([gsunner](https://github.com/gsunner))
 - Leave timeouts as default [\#1693](https://github.com/SeldonIO/seldon-core/pull/1693) ([adriangonz](https://github.com/adriangonz))
-- Bump okhttp from 4.4.0 to 4.5.0 in /engine [\#1687](https://github.com/SeldonIO/seldon-core/pull/1687) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
 - Allow non-model specific predict for Tensorflow protocol [\#1684](https://github.com/SeldonIO/seldon-core/pull/1684) ([cliveseldon](https://github.com/cliveseldon))
 - Fix mdincluded links [\#1683](https://github.com/SeldonIO/seldon-core/pull/1683) ([cliveseldon](https://github.com/cliveseldon))
 - Updating owners file [\#1679](https://github.com/SeldonIO/seldon-core/pull/1679) ([axsaucedo](https://github.com/axsaucedo))
@@ -997,7 +1118,6 @@
 - Added documentation page on local testing [\#1586](https://github.com/SeldonIO/seldon-core/pull/1586) ([axsaucedo](https://github.com/axsaucedo))
 - Update explainer path for Ambassador [\#1585](https://github.com/SeldonIO/seldon-core/pull/1585) ([cliveseldon](https://github.com/cliveseldon))
 - Ensure all labels and annotations added to created deployments [\#1580](https://github.com/SeldonIO/seldon-core/pull/1580) ([cliveseldon](https://github.com/cliveseldon))
-- Update seldon images doc to include missing and rearrange [\#1578](https://github.com/SeldonIO/seldon-core/pull/1578) ([cliveseldon](https://github.com/cliveseldon))
 - Ensure error status codes are surfaced from client failures [\#1575](https://github.com/SeldonIO/seldon-core/pull/1575) ([cliveseldon](https://github.com/cliveseldon))
 - Deployment name changes [\#1573](https://github.com/SeldonIO/seldon-core/pull/1573) ([cliveseldon](https://github.com/cliveseldon))
 - Basic support for Cloudevents with KNative Eventing Example [\#1572](https://github.com/SeldonIO/seldon-core/pull/1572) ([axsaucedo](https://github.com/axsaucedo))
@@ -1125,7 +1245,7 @@
 - Bump guava from 28.1-jre to 28.2-jre in /engine [\#1307](https://github.com/SeldonIO/seldon-core/pull/1307) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
 - Outlier example [\#1306](https://github.com/SeldonIO/seldon-core/pull/1306) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
 - Add logger to graph types [\#1305](https://github.com/SeldonIO/seldon-core/pull/1305) ([cliveseldon](https://github.com/cliveseldon))
-- Update mypy requirement from `<0.751` to `<0.762` in /python [\#1304](https://github.com/SeldonIO/seldon-core/pull/1304) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- Update mypy requirement from \<0.751 to \<0.762 in /python [\#1304](https://github.com/SeldonIO/seldon-core/pull/1304) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
 - Make seldon-core-operator work with helm2 [\#1300](https://github.com/SeldonIO/seldon-core/pull/1300) ([cliveseldon](https://github.com/cliveseldon))
 - use newer certmanager [\#1298](https://github.com/SeldonIO/seldon-core/pull/1298) ([ryandawsonuk](https://github.com/ryandawsonuk))
 - Clean up duplicated code for types and webhooks [\#1296](https://github.com/SeldonIO/seldon-core/pull/1296) ([cliveseldon](https://github.com/cliveseldon))
@@ -1228,7 +1348,7 @@
 - Specify seldon namespace in Tensorflow MNIST Model example [\#1254](https://github.com/SeldonIO/seldon-core/pull/1254) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
 - Fix deployment ready bug [\#1253](https://github.com/SeldonIO/seldon-core/pull/1253) ([cliveseldon](https://github.com/cliveseldon))
 - Added rafal to OWNERS file [\#1252](https://github.com/SeldonIO/seldon-core/pull/1252) ([axsaucedo](https://github.com/axsaucedo))
-- enforce tensorflow `<2.0` in Tensorflow MNIST Model example [\#1251](https://github.com/SeldonIO/seldon-core/pull/1251) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- enforce tensorflow\<2.0 in Tensorflow MNIST Model example [\#1251](https://github.com/SeldonIO/seldon-core/pull/1251) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
 - Add issue templates [\#1244](https://github.com/SeldonIO/seldon-core/pull/1244) ([adriangonz](https://github.com/adriangonz))
 - Revert "Clientset for seldon operator" [\#1240](https://github.com/SeldonIO/seldon-core/pull/1240) ([ryandawsonuk](https://github.com/ryandawsonuk))
 - Adding a way to pass extra index urls to s2i python wrappers [\#1238](https://github.com/SeldonIO/seldon-core/pull/1238) ([nav13n](https://github.com/nav13n))
@@ -1264,7 +1384,7 @@
 - Option to return proto OR dict for SeldonClient methods [\#1175](https://github.com/SeldonIO/seldon-core/pull/1175) ([axsaucedo](https://github.com/axsaucedo))
 - Functionality for model wrapper to return JSON on any Dict return [\#1174](https://github.com/SeldonIO/seldon-core/pull/1174) ([axsaucedo](https://github.com/axsaucedo))
 - build operator image when running e2e locally [\#1172](https://github.com/SeldonIO/seldon-core/pull/1172) ([ryandawsonuk](https://github.com/ryandawsonuk))
-- Update mypy requirement from `<=0.740` to `<0.751` in /python [\#1170](https://github.com/SeldonIO/seldon-core/pull/1170) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- Update mypy requirement from \<=0.740 to \<0.751 in /python [\#1170](https://github.com/SeldonIO/seldon-core/pull/1170) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
 - change annotation location [\#1166](https://github.com/SeldonIO/seldon-core/pull/1166) ([RajeshHegde](https://github.com/RajeshHegde))
 - fix master e2e tests [\#1163](https://github.com/SeldonIO/seldon-core/pull/1163) ([ryandawsonuk](https://github.com/ryandawsonuk))
 - Adding overrides to remove step that creates tag for Jenkins X pipeline [\#1161](https://github.com/SeldonIO/seldon-core/pull/1161) ([axsaucedo](https://github.com/axsaucedo))
@@ -1280,22 +1400,16 @@
 - custom\_metrics.md : Fix typo, make text clearer, fix JSON [\#1127](https://github.com/SeldonIO/seldon-core/pull/1127) ([peter-vandenabeele-axa](https://github.com/peter-vandenabeele-axa))
 - Fix typo and make text a bit clearer [\#1126](https://github.com/SeldonIO/seldon-core/pull/1126) ([peter-vandenabeele-axa](https://github.com/peter-vandenabeele-axa))
 - configurable prepack images [\#1118](https://github.com/SeldonIO/seldon-core/pull/1118) ([ryandawsonuk](https://github.com/ryandawsonuk))
-- Update API from v0.1 to v1.0 [\#1103](https://github.com/SeldonIO/seldon-core/pull/1103) ([cliveseldon](https://github.com/cliveseldon))
 - Allow meta tags to be provided in seldon\_client [\#1096](https://github.com/SeldonIO/seldon-core/pull/1096) ([cliveseldon](https://github.com/cliveseldon))
 - Integrating Python GPU Wrapper into build scripts [\#1074](https://github.com/SeldonIO/seldon-core/pull/1074) ([JoelH96](https://github.com/JoelH96))
 
 ## [v0.5.1](https://github.com/seldonio/seldon-core/tree/v0.5.1) (2019-11-21)
 
-[Full Changelog](https://github.com/seldonio/seldon-core/compare/v0.5.0...v0.5.1)
+[Full Changelog](https://github.com/seldonio/seldon-core/compare/v0.5.13...v0.5.1)
 
 **Fixed bugs:**
 
-- Operator crash if one container in pod not created properly [\#1104](https://github.com/SeldonIO/seldon-core/issues/1104)
 - MLFLOW\_SERVER ModuleNotFoundError [\#828](https://github.com/SeldonIO/seldon-core/issues/828)
-
-**Security fixes:**
-
-- \[Security\] Bump pillow from 6.0.0 to 6.2.0 in /python [\#1062](https://github.com/SeldonIO/seldon-core/pull/1062) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
 
 **Closed issues:**
 
@@ -1303,49 +1417,7 @@
 - How to pass ModelInitializerContainerImage  path [\#1116](https://github.com/SeldonIO/seldon-core/issues/1116)
 - how to define MyModel for PyTorch model which has more than one arguments? [\#1115](https://github.com/SeldonIO/seldon-core/issues/1115)
 - how can I  wrap a PyTorch Image with customed network? [\#1114](https://github.com/SeldonIO/seldon-core/issues/1114)
-- Seldon AB testing - getting an error "info": "Parameter 'ratioA' is missing." [\#1081](https://github.com/SeldonIO/seldon-core/issues/1081)
-- remove old CRD generation [\#1079](https://github.com/SeldonIO/seldon-core/issues/1079)
-- Broken integration tests [\#1076](https://github.com/SeldonIO/seldon-core/issues/1076)
 - Cannot create a SeldonDeployment having volumes of type projected and configMap. [\#1072](https://github.com/SeldonIO/seldon-core/issues/1072)
-- DOCKER\_IMAGE\_VERSION in Makefile is only 0.3 and 0.4; public docker images go up to 0.13 [\#1071](https://github.com/SeldonIO/seldon-core/issues/1071)
-- SeldonDeployment modelUri  support more protocol [\#1070](https://github.com/SeldonIO/seldon-core/issues/1070)
-- Your .dependabot/config.yml contained invalid details [\#1045](https://github.com/SeldonIO/seldon-core/issues/1045)
-- Add tox [\#1042](https://github.com/SeldonIO/seldon-core/issues/1042)
-- Broken imports on 0.5.0.2 release [\#1040](https://github.com/SeldonIO/seldon-core/issues/1040)
-- Improve speed of execution for integration tests [\#1032](https://github.com/SeldonIO/seldon-core/issues/1032)
-- Integration tests fail intermittently [\#1031](https://github.com/SeldonIO/seldon-core/issues/1031)
-- Major version changes on dependencies could cause issues  [\#1029](https://github.com/SeldonIO/seldon-core/issues/1029)
-- with the latest release of azure-storage-blob 12.0.0, seldon build fails [\#1027](https://github.com/SeldonIO/seldon-core/issues/1027)
-- Extend documentation to include optional dependencies and azure blob quickfix [\#1025](https://github.com/SeldonIO/seldon-core/issues/1025)
-- Update release.py script to change version in kustomization.yaml [\#1024](https://github.com/SeldonIO/seldon-core/issues/1024)
-- Set upper limit for azure-storage-blob version [\#1023](https://github.com/SeldonIO/seldon-core/issues/1023)
-- Make GCS support optional [\#1018](https://github.com/SeldonIO/seldon-core/issues/1018)
-- Update Talks/Blogs/Videos/Use cases in Docs [\#1017](https://github.com/SeldonIO/seldon-core/issues/1017)
-- No available release name found for Seldon-Core-Operator [\#1014](https://github.com/SeldonIO/seldon-core/issues/1014)
-- Move API path from v0.1 to v1.0 [\#991](https://github.com/SeldonIO/seldon-core/issues/991)
-- Fully automate CI/CD process and introduce manual trigger for release process [\#986](https://github.com/SeldonIO/seldon-core/issues/986)
-- Use official Helm charts for Grafana and Prometheus [\#965](https://github.com/SeldonIO/seldon-core/issues/965)
-- Set JSON\_SORT\_KEYS and JSONIFY\_PRETTYPRINT\_REGULAR to False by default [\#964](https://github.com/SeldonIO/seldon-core/issues/964)
-- Enable Storage.py to be able to download from HDFS URL [\#963](https://github.com/SeldonIO/seldon-core/issues/963)
-- Fix helm version in Chart.yaml [\#961](https://github.com/SeldonIO/seldon-core/issues/961)
-- Modify engine's Proto Value to JSON conversion to avoid int-to-float conversions in REST requests [\#948](https://github.com/SeldonIO/seldon-core/issues/948)
-- Code style standardisation for Seldon Core Python modules [\#947](https://github.com/SeldonIO/seldon-core/issues/947)
-- Automated Test and Build Hooks  [\#933](https://github.com/SeldonIO/seldon-core/issues/933)
-- Seldon Image at "seldonio/seldon-core-s2i-python3-tf-gpu:0.12-SNAPSHOT" not able to find GPU devices [\#914](https://github.com/SeldonIO/seldon-core/issues/914)
-- Update Java dependencies [\#902](https://github.com/SeldonIO/seldon-core/issues/902)
-- Create 1.0 GA Document [\#887](https://github.com/SeldonIO/seldon-core/issues/887)
-- Enable Storage.py to be able to download from URL file [\#883](https://github.com/SeldonIO/seldon-core/issues/883)
-- Seldon container engine has not resource limit [\#769](https://github.com/SeldonIO/seldon-core/issues/769)
-- Shadow deployment for Istio [\#741](https://github.com/SeldonIO/seldon-core/issues/741)
-- Java Seldon Engine doesn't pass microservice HTTP exceptions upstream [\#705](https://github.com/SeldonIO/seldon-core/issues/705)
-- Feature\_names is redundant when using jsonData in predict. Also meta is redundant in response, as meta can be combined in the jsonData. [\#665](https://github.com/SeldonIO/seldon-core/issues/665)
-- Modify helm chart seldon-core-analytics using chart dependencies [\#613](https://github.com/SeldonIO/seldon-core/issues/613)
-- Update Python SeldonClient to handle JSON payloads [\#607](https://github.com/SeldonIO/seldon-core/issues/607)
-- expand contributing guide [\#569](https://github.com/SeldonIO/seldon-core/issues/569)
-- requirements.txt for Python wrapped models should be a configurable name/path [\#548](https://github.com/SeldonIO/seldon-core/issues/548)
-- Docker Image is too Big [\#526](https://github.com/SeldonIO/seldon-core/issues/526)
-- Deployment of seldon as a new custom resource via fabric8 [\#486](https://github.com/SeldonIO/seldon-core/issues/486)
-- Update developer docs [\#203](https://github.com/SeldonIO/seldon-core/issues/203)
 
 **Merged pull requests:**
 
@@ -1355,27 +1427,168 @@
 - Bump license-maven-plugin from 1.13 to 1.20 in /engine [\#1113](https://github.com/SeldonIO/seldon-core/pull/1113) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
 - make initializer configurable via configmap [\#1112](https://github.com/SeldonIO/seldon-core/pull/1112) ([ryandawsonuk](https://github.com/ryandawsonuk))
 - Conda environment on MLFLOW\_SERVER [\#1108](https://github.com/SeldonIO/seldon-core/pull/1108) ([adriangonz](https://github.com/adriangonz))
-- don't use service that we chose not to create [\#1107](https://github.com/SeldonIO/seldon-core/pull/1107) ([ryandawsonuk](https://github.com/ryandawsonuk))
-- istio shadowing [\#1102](https://github.com/SeldonIO/seldon-core/pull/1102) ([ryandawsonuk](https://github.com/ryandawsonuk))
-- Add GA Doc [\#1101](https://github.com/SeldonIO/seldon-core/pull/1101) ([cliveseldon](https://github.com/cliveseldon))
+- Update gunicorn requirement from \<19.10.0,\>=19.9.0 to \>=19.9.0,… [\#1089](https://github.com/SeldonIO/seldon-core/pull/1089) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+
+## [v0.5.13](https://github.com/seldonio/seldon-core/tree/v0.5.13) (2019-11-15)
+
+[Full Changelog](https://github.com/seldonio/seldon-core/compare/v0.5.12...v0.5.13)
+
+**Closed issues:**
+
+- Move API path from v0.1 to v1.0 [\#991](https://github.com/SeldonIO/seldon-core/issues/991)
+
+**Merged pull requests:**
+
 - Move non python s2i to incubating [\#1099](https://github.com/SeldonIO/seldon-core/pull/1099) ([cliveseldon](https://github.com/cliveseldon))
+
+## [v0.5.12](https://github.com/seldonio/seldon-core/tree/v0.5.12) (2019-11-15)
+
+[Full Changelog](https://github.com/seldonio/seldon-core/compare/v0.5.11...v0.5.12)
+
+## [v0.5.11](https://github.com/seldonio/seldon-core/tree/v0.5.11) (2019-11-15)
+
+[Full Changelog](https://github.com/seldonio/seldon-core/compare/v0.5.10...v0.5.11)
+
+**Closed issues:**
+
+- Shadow deployment for Istio [\#741](https://github.com/SeldonIO/seldon-core/issues/741)
+
+**Merged pull requests:**
+
+- istio shadowing [\#1102](https://github.com/SeldonIO/seldon-core/pull/1102) ([ryandawsonuk](https://github.com/ryandawsonuk))
+
+## [v0.5.10](https://github.com/seldonio/seldon-core/tree/v0.5.10) (2019-11-15)
+
+[Full Changelog](https://github.com/seldonio/seldon-core/compare/v0.5.9...v0.5.10)
+
+**Fixed bugs:**
+
+- Operator crash if one container in pod not created properly [\#1104](https://github.com/SeldonIO/seldon-core/issues/1104)
+
+**Merged pull requests:**
+
+- don't use service that we chose not to create [\#1107](https://github.com/SeldonIO/seldon-core/pull/1107) ([ryandawsonuk](https://github.com/ryandawsonuk))
+
+## [v0.5.9](https://github.com/seldonio/seldon-core/tree/v0.5.9) (2019-11-15)
+
+[Full Changelog](https://github.com/seldonio/seldon-core/compare/v0.5.8...v0.5.9)
+
+**Closed issues:**
+
+- Modify engine's Proto Value to JSON conversion to avoid int-to-float conversions in REST requests [\#948](https://github.com/SeldonIO/seldon-core/issues/948)
+
+## [v0.5.8](https://github.com/seldonio/seldon-core/tree/v0.5.8) (2019-11-15)
+
+[Full Changelog](https://github.com/seldonio/seldon-core/compare/v0.5.7...v0.5.8)
+
+**Merged pull requests:**
+
+- Bump grpc.version from 1.24.0 to 1.25.0 in /engine [\#1065](https://github.com/SeldonIO/seldon-core/pull/1065) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+
+## [v0.5.7](https://github.com/seldonio/seldon-core/tree/v0.5.7) (2019-11-15)
+
+[Full Changelog](https://github.com/seldonio/seldon-core/compare/v0.5.6...v0.5.7)
+
+**Closed issues:**
+
+- Update Python SeldonClient to handle JSON payloads [\#607](https://github.com/SeldonIO/seldon-core/issues/607)
+
+**Merged pull requests:**
+
+- Update Python SeldonClient to handle JSON payloads [\#1082](https://github.com/SeldonIO/seldon-core/pull/1082) ([axsaucedo](https://github.com/axsaucedo))
+
+## [v0.5.6](https://github.com/seldonio/seldon-core/tree/v0.5.6) (2019-11-14)
+
+[Full Changelog](https://github.com/seldonio/seldon-core/compare/v0.5.5...v0.5.6)
+
+**Merged pull requests:**
+
+- Add /health/ping and /health/status endpoint to Python REST Microservices [\#1026](https://github.com/SeldonIO/seldon-core/pull/1026) ([kparaju](https://github.com/kparaju))
+
+## [v0.5.5](https://github.com/seldonio/seldon-core/tree/v0.5.5) (2019-11-14)
+
+[Full Changelog](https://github.com/seldonio/seldon-core/compare/v0.5.4...v0.5.5)
+
+**Merged pull requests:**
+
+- Improve speed of execution for integration tests [\#1086](https://github.com/SeldonIO/seldon-core/pull/1086) ([axsaucedo](https://github.com/axsaucedo))
+
+## [v0.5.4](https://github.com/seldonio/seldon-core/tree/v0.5.4) (2019-11-14)
+
+[Full Changelog](https://github.com/seldonio/seldon-core/compare/v0.5.3...v0.5.4)
+
+**Closed issues:**
+
+- Improve speed of execution for integration tests [\#1032](https://github.com/SeldonIO/seldon-core/issues/1032)
+
+**Merged pull requests:**
+
+- Update redis requirement from \<3.0.0 to \<4.0.0 in /python [\#1053](https://github.com/SeldonIO/seldon-core/pull/1053) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+
+## [v0.5.3](https://github.com/seldonio/seldon-core/tree/v0.5.3) (2019-11-14)
+
+[Full Changelog](https://github.com/seldonio/seldon-core/compare/v0.5.0...v0.5.3)
+
+**Security fixes:**
+
+- \[Security\] Bump pillow from 6.0.0 to 6.2.0 in /python [\#1062](https://github.com/SeldonIO/seldon-core/pull/1062) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+
+**Closed issues:**
+
+- Seldon AB testing - getting an error "info": "Parameter 'ratioA' is missing." [\#1081](https://github.com/SeldonIO/seldon-core/issues/1081)
+- remove old CRD generation [\#1079](https://github.com/SeldonIO/seldon-core/issues/1079)
+- Broken integration tests [\#1076](https://github.com/SeldonIO/seldon-core/issues/1076)
+- DOCKER\_IMAGE\_VERSION in Makefile is only 0.3 and 0.4; public docker images go up to 0.13 [\#1071](https://github.com/SeldonIO/seldon-core/issues/1071)
+- SeldonDeployment modelUri  support more protocol [\#1070](https://github.com/SeldonIO/seldon-core/issues/1070)
+- Your .dependabot/config.yml contained invalid details [\#1045](https://github.com/SeldonIO/seldon-core/issues/1045)
+- Add tox [\#1042](https://github.com/SeldonIO/seldon-core/issues/1042)
+- Broken imports on 0.5.0.2 release [\#1040](https://github.com/SeldonIO/seldon-core/issues/1040)
+- Integration tests fail intermittently [\#1031](https://github.com/SeldonIO/seldon-core/issues/1031)
+- Major version changes on dependencies could cause issues  [\#1029](https://github.com/SeldonIO/seldon-core/issues/1029)
+- with the latest release of azure-storage-blob 12.0.0, seldon build fails [\#1027](https://github.com/SeldonIO/seldon-core/issues/1027)
+- Extend documentation to include optional dependencies and azure blob quickfix [\#1025](https://github.com/SeldonIO/seldon-core/issues/1025)
+- Update release.py script to change version in kustomization.yaml [\#1024](https://github.com/SeldonIO/seldon-core/issues/1024)
+- Set upper limit for azure-storage-blob version [\#1023](https://github.com/SeldonIO/seldon-core/issues/1023)
+- Make GCS support optional [\#1018](https://github.com/SeldonIO/seldon-core/issues/1018)
+- Update Talks/Blogs/Videos/Use cases in Docs [\#1017](https://github.com/SeldonIO/seldon-core/issues/1017)
+- No available release name found for Seldon-Core-Operator [\#1014](https://github.com/SeldonIO/seldon-core/issues/1014)
+- Fully automate CI/CD process and introduce manual trigger for release process [\#986](https://github.com/SeldonIO/seldon-core/issues/986)
+- Use official Helm charts for Grafana and Prometheus [\#965](https://github.com/SeldonIO/seldon-core/issues/965)
+- Set JSON\_SORT\_KEYS and JSONIFY\_PRETTYPRINT\_REGULAR to False by default [\#964](https://github.com/SeldonIO/seldon-core/issues/964)
+- Enable Storage.py to be able to download from HDFS URL [\#963](https://github.com/SeldonIO/seldon-core/issues/963)
+- Fix helm version in Chart.yaml [\#961](https://github.com/SeldonIO/seldon-core/issues/961)
+- Code style standardisation for Seldon Core Python modules [\#947](https://github.com/SeldonIO/seldon-core/issues/947)
+- Automated Test and Build Hooks  [\#933](https://github.com/SeldonIO/seldon-core/issues/933)
+- Seldon Image at "seldonio/seldon-core-s2i-python3-tf-gpu:0.12-SNAPSHOT" not able to find GPU devices [\#914](https://github.com/SeldonIO/seldon-core/issues/914)
+- Update Java dependencies [\#902](https://github.com/SeldonIO/seldon-core/issues/902)
+- Create 1.0 GA Document [\#887](https://github.com/SeldonIO/seldon-core/issues/887)
+- Enable Storage.py to be able to download from URL file [\#883](https://github.com/SeldonIO/seldon-core/issues/883)
+- Seldon container engine has not resource limit [\#769](https://github.com/SeldonIO/seldon-core/issues/769)
+- Java Seldon Engine doesn't pass microservice HTTP exceptions upstream [\#705](https://github.com/SeldonIO/seldon-core/issues/705)
+- Feature\_names is redundant when using jsonData in predict. Also meta is redundant in response, as meta can be combined in the jsonData. [\#665](https://github.com/SeldonIO/seldon-core/issues/665)
+- Modify helm chart seldon-core-analytics using chart dependencies [\#613](https://github.com/SeldonIO/seldon-core/issues/613)
+- expand contributing guide [\#569](https://github.com/SeldonIO/seldon-core/issues/569)
+- requirements.txt for Python wrapped models should be a configurable name/path [\#548](https://github.com/SeldonIO/seldon-core/issues/548)
+- Docker Image is too Big [\#526](https://github.com/SeldonIO/seldon-core/issues/526)
+- Deployment of seldon as a new custom resource via fabric8 [\#486](https://github.com/SeldonIO/seldon-core/issues/486)
+- Update developer docs [\#203](https://github.com/SeldonIO/seldon-core/issues/203)
+
+**Merged pull requests:**
+
+- Update API from v0.1 to v1.0 [\#1103](https://github.com/SeldonIO/seldon-core/pull/1103) ([cliveseldon](https://github.com/cliveseldon))
+- Add GA Doc [\#1101](https://github.com/SeldonIO/seldon-core/pull/1101) ([cliveseldon](https://github.com/cliveseldon))
 - Avoid int-to-float conversions [\#1098](https://github.com/SeldonIO/seldon-core/pull/1098) ([adriangonz](https://github.com/adriangonz))
 - Remove old crd generation scripts [\#1097](https://github.com/SeldonIO/seldon-core/pull/1097) ([cliveseldon](https://github.com/cliveseldon))
 - 986 build and push images [\#1093](https://github.com/SeldonIO/seldon-core/pull/1093) ([axsaucedo](https://github.com/axsaucedo))
 - Bump pb.version from 3.9.2 to 3.10.0 in /engine [\#1091](https://github.com/SeldonIO/seldon-core/pull/1091) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
-- Update gunicorn requirement from \<19.10.0,\>=19.9.0 to \>=19.9.0,… [\#1089](https://github.com/SeldonIO/seldon-core/pull/1089) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
-- Improve speed of execution for integration tests [\#1086](https://github.com/SeldonIO/seldon-core/pull/1086) ([axsaucedo](https://github.com/axsaucedo))
-- Update Python SeldonClient to handle JSON payloads [\#1082](https://github.com/SeldonIO/seldon-core/pull/1082) ([axsaucedo](https://github.com/axsaucedo))
 - add update of operator version to release script [\#1080](https://github.com/SeldonIO/seldon-core/pull/1080) ([gsunner](https://github.com/gsunner))
 - Fix integration tests [\#1077](https://github.com/SeldonIO/seldon-core/pull/1077) ([adriangonz](https://github.com/adriangonz))
 - Temporary fix for kubernetes OpenAPISchema Issue [\#1069](https://github.com/SeldonIO/seldon-core/pull/1069) ([cliveseldon](https://github.com/cliveseldon))
 - Reduce some dependabot noise [\#1068](https://github.com/SeldonIO/seldon-core/pull/1068) ([adriangonz](https://github.com/adriangonz))
 - Bump protobuf-maven-plugin from 0.5.0 to 0.6.1 in /engine [\#1066](https://github.com/SeldonIO/seldon-core/pull/1066) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
-- Bump grpc.version from 1.24.0 to 1.25.0 in /engine [\#1065](https://github.com/SeldonIO/seldon-core/pull/1065) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
 - Bump jacoco-maven-plugin from 0.8.2 to 0.8.5 in /engine [\#1063](https://github.com/SeldonIO/seldon-core/pull/1063) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
 - Bump pandas from 0.23.4 to 0.25.3 in /python [\#1057](https://github.com/SeldonIO/seldon-core/pull/1057) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
 - Bump os-maven-plugin from 1.4.1.Final to 1.6.2 in /engine [\#1056](https://github.com/SeldonIO/seldon-core/pull/1056) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
-- Update redis requirement from `<3.0.0` to `<4.0.0` in /python [\#1053](https://github.com/SeldonIO/seldon-core/pull/1053) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
 - Bump maven-compiler-plugin from 3.5.1 to 3.8.1 in /engine [\#1052](https://github.com/SeldonIO/seldon-core/pull/1052) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
 - Bump httpclient from 4.5.8 to 4.5.10 in /engine [\#1050](https://github.com/SeldonIO/seldon-core/pull/1050) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
 - Document optional dependencies [\#1047](https://github.com/SeldonIO/seldon-core/pull/1047) ([adriangonz](https://github.com/adriangonz))
@@ -1389,7 +1602,6 @@
 - Evaluating and fixing intermittent test failing in e2e integration tests [\#1034](https://github.com/SeldonIO/seldon-core/pull/1034) ([axsaucedo](https://github.com/axsaucedo))
 - Adding max constraint on major versions [\#1033](https://github.com/SeldonIO/seldon-core/pull/1033) ([axsaucedo](https://github.com/axsaucedo))
 - Allow modification of flask app configs [\#1030](https://github.com/SeldonIO/seldon-core/pull/1030) ([kparaju](https://github.com/kparaju))
-- Add /health/ping and /health/status endpoint to Python REST Microservices [\#1026](https://github.com/SeldonIO/seldon-core/pull/1026) ([kparaju](https://github.com/kparaju))
 - Make GCS optional [\#1019](https://github.com/SeldonIO/seldon-core/pull/1019) ([adriangonz](https://github.com/adriangonz))
 - Updated GPU wrapper to uninstall TF without GPU [\#1011](https://github.com/SeldonIO/seldon-core/pull/1011) ([JoelH96](https://github.com/JoelH96))
 
@@ -1452,7 +1664,18 @@
 
 ## [v0.4.2](https://github.com/seldonio/seldon-core/tree/v0.4.2) (2019-10-28)
 
-[Full Changelog](https://github.com/seldonio/seldon-core/compare/v0.4.1...v0.4.2)
+[Full Changelog](https://github.com/seldonio/seldon-core/compare/v-...v0.4.2)
+
+**Merged pull requests:**
+
+- Update spartakus to use apps/v1 [\#1006](https://github.com/SeldonIO/seldon-core/pull/1006) ([cliveseldon](https://github.com/cliveseldon))
+- Updating request-response logging structure [\#886](https://github.com/SeldonIO/seldon-core/pull/886) ([SachinVarghese](https://github.com/SachinVarghese))
+- Move image to doc source [\#881](https://github.com/SeldonIO/seldon-core/pull/881) ([MarcoGorelli](https://github.com/MarcoGorelli))
+- Fix top nav bar colour and typo in README [\#879](https://github.com/SeldonIO/seldon-core/pull/879) ([MarcoGorelli](https://github.com/MarcoGorelli))
+
+## [v-](https://github.com/seldonio/seldon-core/tree/v-) (2019-10-27)
+
+[Full Changelog](https://github.com/seldonio/seldon-core/compare/v0.4.1...v-)
 
 **Closed issues:**
 
@@ -1497,7 +1720,7 @@
 - Add post-commit hook for s2i builder images [\#852](https://github.com/SeldonIO/seldon-core/issues/852)
 - Should seldondeployment generate stable deployment name? [\#851](https://github.com/SeldonIO/seldon-core/issues/851)
 - Allow operator webhook port to be configured [\#849](https://github.com/SeldonIO/seldon-core/issues/849)
-- Encode `<` as `\u003c` in response  [\#837](https://github.com/SeldonIO/seldon-core/issues/837)
+- Encode “\<” as \u003c in response  [\#837](https://github.com/SeldonIO/seldon-core/issues/837)
 - Tensor wrapped Numpy is read-only [\#807](https://github.com/SeldonIO/seldon-core/issues/807)
 - Kubeflow and Istio deployment - HTTP, gRPC endpoints not working  [\#796](https://github.com/SeldonIO/seldon-core/issues/796)
 - javaopts -Xmx throws error [\#784](https://github.com/SeldonIO/seldon-core/issues/784)
@@ -1508,7 +1731,6 @@
 
 **Merged pull requests:**
 
-- Update spartakus to use apps/v1 [\#1006](https://github.com/SeldonIO/seldon-core/pull/1006) ([cliveseldon](https://github.com/cliveseldon))
 - Fixed test by moving bytes conversion to utils [\#1000](https://github.com/SeldonIO/seldon-core/pull/1000) ([axsaucedo](https://github.com/axsaucedo))
 - Decode binData before sending it to Predict function [\#993](https://github.com/SeldonIO/seldon-core/pull/993) ([lennon310](https://github.com/lennon310))
 - Misc 0.5 Issues [\#992](https://github.com/SeldonIO/seldon-core/pull/992) ([cliveseldon](https://github.com/cliveseldon))
@@ -1552,10 +1774,6 @@
 - Fix typos [\#896](https://github.com/SeldonIO/seldon-core/pull/896) ([jklaise](https://github.com/jklaise))
 - Replace sed flag incompatible with macOS [\#895](https://github.com/SeldonIO/seldon-core/pull/895) ([adriangonz](https://github.com/adriangonz))
 - Patches to prevent XSS [\#893](https://github.com/SeldonIO/seldon-core/pull/893) ([adriangonz](https://github.com/adriangonz))
-- Updating request-response logging structure [\#886](https://github.com/SeldonIO/seldon-core/pull/886) ([SachinVarghese](https://github.com/SachinVarghese))
-- Move image to doc source [\#881](https://github.com/SeldonIO/seldon-core/pull/881) ([MarcoGorelli](https://github.com/MarcoGorelli))
-- Fix top nav bar colour and typo in README [\#879](https://github.com/SeldonIO/seldon-core/pull/879) ([MarcoGorelli](https://github.com/MarcoGorelli))
-- Kubebuilder operator move to main repo [\#841](https://github.com/SeldonIO/seldon-core/pull/841) ([cliveseldon](https://github.com/cliveseldon))
 
 ## [v0.4.1](https://github.com/seldonio/seldon-core/tree/v0.4.1) (2019-09-19)
 
@@ -1690,6 +1908,7 @@
 - Added openshift to documentation  [\#846](https://github.com/SeldonIO/seldon-core/pull/846) ([axsaucedo](https://github.com/axsaucedo))
 - Setup basic Jenkins X configuration [\#843](https://github.com/SeldonIO/seldon-core/pull/843) ([axsaucedo](https://github.com/axsaucedo))
 - Removed url for model server [\#842](https://github.com/SeldonIO/seldon-core/pull/842) ([axsaucedo](https://github.com/axsaucedo))
+- Kubebuilder operator move to main repo [\#841](https://github.com/SeldonIO/seldon-core/pull/841) ([cliveseldon](https://github.com/cliveseldon))
 - Update sklearn server examples with debug and fix notebook example [\#840](https://github.com/SeldonIO/seldon-core/pull/840) ([cliveseldon](https://github.com/cliveseldon))
 - Fix tensor return in python wrapper [\#839](https://github.com/SeldonIO/seldon-core/pull/839) ([cliveseldon](https://github.com/cliveseldon))
 - Fix typo [\#835](https://github.com/SeldonIO/seldon-core/pull/835) ([naxty](https://github.com/naxty))
@@ -2214,7 +2433,6 @@
 - Fix storing of Gauge metrics [\#299](https://github.com/SeldonIO/seldon-core/pull/299) ([cliveseldon](https://github.com/cliveseldon))
 - Rolling Update Fixes [\#295](https://github.com/SeldonIO/seldon-core/pull/295) ([cliveseldon](https://github.com/cliveseldon))
 - Update java base images [\#292](https://github.com/SeldonIO/seldon-core/pull/292) ([cliveseldon](https://github.com/cliveseldon))
-- WIP: Create python 3.6 and 3.7 wrapper versions [\#290](https://github.com/SeldonIO/seldon-core/pull/290) ([cliveseldon](https://github.com/cliveseldon))
 - Custom Metrics [\#281](https://github.com/SeldonIO/seldon-core/pull/281) ([cliveseldon](https://github.com/cliveseldon))
 
 ## [v0.2.4](https://github.com/seldonio/seldon-core/tree/v0.2.4) (2018-11-07)
@@ -2245,6 +2463,7 @@
 
 **Merged pull requests:**
 
+- WIP: Create python 3.6 and 3.7 wrapper versions [\#290](https://github.com/SeldonIO/seldon-core/pull/290) ([cliveseldon](https://github.com/cliveseldon))
 - Add optional service account for engine [\#287](https://github.com/SeldonIO/seldon-core/pull/287) ([cliveseldon](https://github.com/cliveseldon))
 - Add missing curl to engine Dockerfile [\#285](https://github.com/SeldonIO/seldon-core/pull/285) ([cliveseldon](https://github.com/cliveseldon))
 - Allow ambassador from other namespace to access SeldonDeployment [\#280](https://github.com/SeldonIO/seldon-core/pull/280) ([ChenyuanZ](https://github.com/ChenyuanZ))
@@ -2566,4 +2785,4 @@
 
 
 
-This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator).
+\* *This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator)*
