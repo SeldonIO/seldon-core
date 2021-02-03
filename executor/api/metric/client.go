@@ -22,6 +22,7 @@ type ClientMetrics struct {
 }
 
 var RecreateClientHistogram = false
+var RecreateClientSummary = false
 
 func NewClientMetrics(spec *v1.PredictorSpec, deploymentName string, modelName string) *ClientMetrics {
 	labelNames := []string{DeploymentNameMetric, PredictorNameMetric, PredictorVersionMetric, ServiceMetric, ModelNameMetric, ModelImageMetric, ModelVersionMetric, "method", "code"}
@@ -60,7 +61,7 @@ func NewClientMetrics(spec *v1.PredictorSpec, deploymentName string, modelName s
 	err = prometheus.Register(summary)
 	if err != nil {
 		if e, ok := err.(prometheus.AlreadyRegisteredError); ok {
-			if RecreateServerSummary {
+			if RecreateClientSummary {
 				prometheus.Unregister(e.ExistingCollector)
 				prometheus.Register(summary)
 			} else {
