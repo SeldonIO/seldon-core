@@ -1,0 +1,4 @@
+# https://pycqa.github.io/isort/docs/configuration/black_compatibility/
+[tool.isort]
+profile = "black"
+multi_line_output = 3
