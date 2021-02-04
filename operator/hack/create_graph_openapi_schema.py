@@ -1,7 +1,8 @@
 import argparse
-import yaml
-import sys
 import copy
+import sys
+
+import yaml
 
 
 def getOpts(cmd_line_args):

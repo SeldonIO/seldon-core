@@ -95,17 +95,23 @@ push_conda:
 	@echo "Alternatively use anaconda upload to publish on own channel"
 
 setup_linter:
-	pip install black==20.8b1
+	pip install black==20.8b1 isort==5.7.0
 
 fmt:
 	black \
 		./ ../testing ../operator/helm ../operator/hack \
-		--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs|.tox)"
+		--exclude "(testing|scripts|proto|seldon_core/proto/|.eggs|.tox)"
+	isort \
+		./ ../testing ../operator/helm ../operator/hack \
+		--skip testing --skip scripts --skip proto --skip seldon_core/proto --skip .eggs --skip .tox
 
 lint: licenses
 	black \
 		--check ./ ../testing \
 		--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs|.tox)"
+	isort \
+		--check-only ./ ../testing \
+		--skip testing --skip scripts --skip proto --skip seldon_core/proto --skip .eggs --skip .tox
 	flake8
 	# Check if licenses have changed
 	git \
