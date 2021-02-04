@@ -100,7 +100,7 @@ setup_linter:
 fmt:
 	black \
 		./ ../testing ../operator/helm ../operator/hack \
-		--exclude "(testing/scripts|proto|seldon_core/proto/|.eggs|.tox)"
+		--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs|.tox)"
 	isort \
 		./ ../testing ../operator/helm ../operator/hack \
 		--skip testing/scripts --skip proto --skip seldon_core/proto --skip .eggs --skip .tox

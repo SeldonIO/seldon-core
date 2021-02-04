@@ -2,3 +2,4 @@
 [tool.isort]
 profile = "black"
 multi_line_output = 3
+known_first_party = ["seldon_core", "e2e_utils", "seldon_e2e_utils"]

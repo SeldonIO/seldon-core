@@ -1,25 +1,24 @@
-import pytest
-import time
-from google.protobuf import json_format
 import json
+import logging
+import time
 from subprocess import run
+
 import numpy as np
+import pytest
+from google.protobuf import json_format
 
 from seldon_core.proto import prediction_pb2
-
 from seldon_e2e_utils import (
-    wait_for_status,
-    wait_for_rollout,
-    rest_request_ambassador,
-    initial_rest_request,
+    API_AMBASSADOR,
     grpc_request_ambassador,
     grpc_request_ambassador_metadata,
     initial_grpc_request,
+    initial_rest_request,
+    rest_request_ambassador,
     retry_run,
-    API_AMBASSADOR,
+    wait_for_rollout,
+    wait_for_status,
 )
-import logging
-
 
 S2I_CREATE = """cd ../s2i/python-features/metadata && \
     s2i build -E environment_{model}_{api_type} . \

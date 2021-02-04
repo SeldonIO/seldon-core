@@ -1,5 +1,5 @@
 import requests
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_result
+from tenacity import retry, retry_if_result, stop_after_attempt, wait_exponential
 
 from seldon_e2e_utils import API_AMBASSADOR
 

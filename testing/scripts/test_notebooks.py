@@ -1,5 +1,6 @@
-from subprocess import run, PIPE, CalledProcessError
 import logging
+from subprocess import PIPE, CalledProcessError, run
+
 import pytest
 
 

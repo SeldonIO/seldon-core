@@ -1,8 +1,9 @@
 import json
-import time
-import yaml
 import subprocess
-from subprocess import run, Popen
+import time
+from subprocess import Popen, run
+
+import yaml
 
 
 def run_model(model_name):
