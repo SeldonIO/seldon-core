@@ -1,14 +1,12 @@
-import os
 import json
 import logging
-
+import os
 from typing import Dict
-
-from seldon_core.metrics import split_image_tag
 
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 
+from seldon_core.metrics import split_image_tag
 
 logger = logging.getLogger(__name__)
 

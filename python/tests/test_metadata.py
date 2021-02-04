@@ -1,18 +1,16 @@
-import logging
-import yaml
 import json
-import pytest
-
+import logging
 from unittest.mock import patch
 
-from seldon_core.metrics import SeldonMetrics
-from seldon_core.proto import prediction_pb2
-from seldon_core.wrapper import get_rest_microservice, SeldonModelGRPC
-from seldon_core.metadata import SeldonInvalidMetadataError, validate_model_metadata
-from seldon_core.utils import json_to_seldon_model_metadata
-
+import pytest
+import yaml
 from google.protobuf import json_format
 
+from seldon_core.metadata import SeldonInvalidMetadataError, validate_model_metadata
+from seldon_core.metrics import SeldonMetrics
+from seldon_core.proto import prediction_pb2
+from seldon_core.utils import json_to_seldon_model_metadata
+from seldon_core.wrapper import SeldonModelGRPC, get_rest_microservice
 
 # test default values
 

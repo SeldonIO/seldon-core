@@ -1,12 +1,12 @@
-import os
-import socket
-import signal
 import logging
+import os
+import signal
+import socket
 import time
-
 from contextlib import contextmanager
 from subprocess import Popen
-from tenacity import retry, wait_fixed, stop_after_attempt, retry_if_exception_type
+
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
 
 
 class UserObject:

@@ -1,11 +1,13 @@
-import threading
-import os
-import time
 import logging
+import os
 import pickle
-import redis
-from seldon_core.user_model import SeldonComponent
+import threading
+import time
 from typing import Dict, Type
+
+import redis
+
+from seldon_core.user_model import SeldonComponent
 
 logger = logging.getLogger(__name__)
 

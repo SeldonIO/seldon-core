@@ -1,26 +1,26 @@
+import base64
+import io
 import json
 import logging
-import numpy as np
-from google.protobuf import json_format
-import base64
-from PIL import Image
-import io
-
 from unittest import mock
 
-from seldon_core.wrapper import get_rest_microservice, SeldonModelGRPC, get_grpc_server
+import numpy as np
+from google.protobuf import json_format
+from PIL import Image
+
+from seldon_core.flask_utils import SeldonMicroserviceException
+from seldon_core.imports_helper import _TF_PRESENT
 from seldon_core.metrics import SeldonMetrics
 from seldon_core.proto import prediction_pb2
 from seldon_core.user_model import SeldonComponent
-from seldon_core.utils import seldon_message_to_json, json_to_seldon_message
-from seldon_core.flask_utils import SeldonMicroserviceException
-from seldon_core.imports_helper import _TF_PRESENT
+from seldon_core.utils import json_to_seldon_message, seldon_message_to_json
+from seldon_core.wrapper import SeldonModelGRPC, get_grpc_server, get_rest_microservice
 
 from .utils import skipif_tf_missing
 
 if _TF_PRESENT:
-    from tensorflow.core.framework.tensor_pb2 import TensorProto
     import tensorflow as tf
+    from tensorflow.core.framework.tensor_pb2 import TensorProto
 
 HEALTH_PING_URL = "/health/ping"
 HEALTH_STATUS_URL = "/health/status"

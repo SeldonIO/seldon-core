@@ -19,8 +19,8 @@
 
 import glob
 import logging
-import tempfile
 import os
+import tempfile
 
 _LOCAL_PREFIX = "file://"
 

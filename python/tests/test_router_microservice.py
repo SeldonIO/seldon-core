@@ -1,13 +1,15 @@
-import logging
 import json
+import logging
+from typing import Dict, List, Union
+
 import numpy as np
 from google.protobuf import json_format
-from seldon_core.wrapper import get_rest_microservice, SeldonModelGRPC, get_grpc_server
+
 from seldon_core.metrics import SeldonMetrics
 from seldon_core.proto import prediction_pb2
-from seldon_core.utils import seldon_message_to_json
 from seldon_core.user_model import SeldonComponent
-from typing import Dict, List, Union
+from seldon_core.utils import seldon_message_to_json
+from seldon_core.wrapper import SeldonModelGRPC, get_grpc_server, get_rest_microservice
 
 
 class MinimalUserObject:

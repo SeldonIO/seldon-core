@@ -1,18 +1,19 @@
-import os
-import pytest
 import json
 import logging
+import os
+from unittest import mock
+
 import numpy as np
+import pytest
 
 from seldon_core.microservice_tester import (
+    SeldonTesterException,
+    reconciliate_cont_type,
     run_method,
     run_send_feedback,
-    reconciliate_cont_type,
-    SeldonTesterException,
 )
-from unittest import mock
-from seldon_core.utils import array_to_grpc_datadef, seldon_message_to_json
 from seldon_core.proto import prediction_pb2
+from seldon_core.utils import array_to_grpc_datadef, seldon_message_to_json
 
 from .conftest import RESOURCES_PATH
 
