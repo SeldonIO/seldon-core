@@ -1,0 +1,3259 @@
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-no-jxd8x-17[0m stage [32mpr-build-comment[0m and container [32mstep-credential-initializer-57b4b[0m
+{"level":"info","ts":1612433453.0640757,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1612433453.0644777,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-no-jxd8x-17[0m stage [32mpr-build-comment[0m and container [32mstep-working-dir-initializer-d25j8[0m
+{"level":"info","ts":1612433453.5709958,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1612433453.5723462,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-no-jxd8x-17[0m stage [32mpr-build-comment[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-no-jxd8x-17[0m stage [32mpr-build-comment[0m and container [32mstep-create-dir-workspace-cvk8g[0m
+{"level":"info","ts":1612433458.7050383,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1612433458.7064123,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-no-jxd8x-17[0m stage [32mpr-build-comment[0m and container [32mstep-git-source-seldonio-seldon-core-pr-2895-no-jxd8x-kshhb[0m
+{"level":"info","ts":1612433458.8651893,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1612433464.6751544,"logger":"fallback-logger","caller":"git/git.go:103","msg":"Successfully cloned https://github.com/SeldonIO/seldon-core.git @ master in path /workspace/source"}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-no-jxd8x-17[0m stage [32mpr-build-comment[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-no-jxd8x-17[0m stage [32mpr-build-comment[0m and container [32mstep-git-merge[0m
+Using SHAs from PULL_REFS=release-1.2.4:a9e2d2d95066edffb43458941bface3d1d8a8d19,2895:9c48a2091541c9528de61e84d41f39f63aa9d85b
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git fetch origin --unshallow 9c48a2091541c9528de61e84d41f39f63aa9d85b: a9e2d2d95066edffb43458941bface3d1d8a8d19:
+DEBUG: ran git fetch --unshallow origin 9c48a2091541c9528de61e84d41f39f63aa9d85b: a9e2d2d95066edffb43458941bface3d1d8a8d19: in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git branch release-1.2.4
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git checkout release-1.2.4
+DEBUG: ran git checkout release-1.2.4 in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git reset --hard a9e2d2d95066edffb43458941bface3d1d8a8d19
+DEBUG: ran git reset --hard a9e2d2d95066edffb43458941bface3d1d8a8d19 in 
+DEBUG: JX_LOG_LEVEL=error LC_ALL=C git clean -fd .
+DEBUG: ran clean --force -d . in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git merge 9c48a2091541c9528de61e84d41f39f63aa9d85b
+DEBUG: ran git merge 9c48a2091541c9528de61e84d41f39f63aa9d85b in 
+DEBUG: LC_ALL=C JX_LOG_LEVEL=error git log --format=%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%s%n%b%x1e a9e2d2d95066edffb43458941bface3d1d8a8d19..HEAD
+Merged SHA 9c48a2091541c9528de61e84d41f39f63aa9d85b with commit message 'fix notebook test' into base branch release-1.2.4
+Merged SHA 7c3761e4d8604ffba5f923391af01cdd2489b7e0 with commit message 'fix name of metrics notebooks in tests' into base branch release-1.2.4
+Merged SHA 5b30a6f40fb3a737b96705e449251f51e6e61dae with commit message 'final fixes' into base branch release-1.2.4
+Merged SHA 59218a307d51043e43e72e28d5b3b1c177dcb881 with commit message 'fix label' into base branch release-1.2.4
+Merged SHA d2a462c459fe15735438f20605c3ef8237a39578 with commit message 'fix missing variable' into base branch release-1.2.4
+Merged SHA f5f70b28c57ecaee069afed421766dcf115fc020 with commit message 'extend metrics notebook tests' into base branch release-1.2.4
+Merged SHA 9a58de167782930cbc71e638511dd7cad469dbb1 with commit message 'add github actions for unit tesets and rename metrics notebook' into base branch release-1.2.4
+Merged SHA 2e8e566ef8a6cc5f03e25377e6d59ec552e59f1e with commit message 'remove deprecate helm charts repo' into base branch release-1.2.4
+Merged SHA 722979bae546a5f05e67de71190102884bc0ee0f with commit message 'make sure that release-1.2.4 branch is available for git diff' into base branch release-1.2.4
+Merged SHA 0ac102828742a6e42fe59ba25eded78c81029219 with commit message 'build images only if diffrence against release-1.2.4' into base branch release-1.2.4
+Merged SHA f0437ea45c44a3a48d1d3512aa43becb4f7f4980 with commit message 'add summary metrics to grpc' into base branch release-1.2.4
+Merged SHA db5729297aa382aed5e824832fd548bc9c1462d1 with commit message 'include quantile for objective=1, add summary to client metrics' into base branch release-1.2.4
+Merged SHA e19514565495a69fa8beba6e1a2884e99fb5c0cf with commit message 'use local copy of _operator instead of symlink (like in master)' into base branch release-1.2.4
+Merged SHA c9ac4c2eb268c6521d90d3bbd173a45ddee8d902 with commit message 'backport quantiles from PR on master' into base branch release-1.2.4
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-no-jxd8x-17[0m stage [32mpr-build-comment[0m and container [32mstep-step2[0m
++++ dirname ./add-pr-build-comment
+++ cd .
+++ pwd
++ STARTUP_DIR=/workspace/source/ci
++ REPO_OWNER=SeldonIO
++ REPO_NAME=seldon-core
++ PULL_NUMBER=2895
++ BUILD_NUMBER=17
++ PIPELINE_CONTEXT=notebooks
+++ cat
++++ date
++ COMMENT_MSG='Thu Feb  4 10:11:13 UTC 2021
+The logs for [notebooks] [17] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2895/17.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2895 --build=17'
++ ** step pr comment --owner=SeldonIO --repository=seldon-core --pull-request=2895 '--comment=Thu Feb  4 10:11:13 UTC 2021
+The logs for [notebooks] [17] will show after the pipeline context has finished.  
+https://github.com/SeldonIO/seldon-core/blob/gh-pages/jenkins-x/logs/SeldonIO/seldon-core/PR-2895/17.log
+
+impatient try  
+** get build logs SeldonIO/seldon-core/PR-2895 --build=17'
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-no-jxd8x-17[0m stage [32mpr-build-comment[0m and container [32mstep-source-mkdir-seldonio-seldon-core-pr-2895-no-jxd8x-tnhm7[0m
+{"level":"info","ts":1612433476.7644205,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1612433476.7677956,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-no-jxd8x-17[0m stage [32mpr-build-comment[0m and container [32mstep-source-copy-seldonio-seldon-core-pr-2895-no-jxd8x-mlndp[0m
+{"level":"info","ts":1612433476.991473,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1612433477.4057543,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r source/. /pvc/pr-build-comment/workspace\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-no-jxd8x-17[0m stage [32mend-to-end[0m and container [32mstep-credential-initializer-ptsh9[0m
+{"level":"info","ts":1612433480.2349384,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/refs/heads/0.8.0-ns-support: no such file or directory"}
+{"level":"info","ts":1612433480.2354336,"logger":"fallback-logger","caller":"creds-init/main.go:40","msg":"Credentials initialized."}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-no-jxd8x-17[0m stage [32mend-to-end[0m and container [32mstep-working-dir-initializer-fhd48[0m
+{"level":"info","ts":1612433481.5865545,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1612433481.588276,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-no-jxd8x-17[0m stage [32mend-to-end[0m and container [32mstep-place-tools[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-no-jxd8x-17[0m stage [32mend-to-end[0m and container [32mstep-create-dir-workspace-8q9d9[0m
+{"level":"info","ts":1612433489.5259511,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1612433489.527361,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c mkdir -p /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-no-jxd8x-17[0m stage [32mend-to-end[0m and container [32mstep-source-copy-workspace-27mxm[0m
+{"level":"info","ts":1612433489.7415102,"logger":"fallback-logger","caller":"logging/config.go:69","msg":"Fetch GitHub commit ID from kodata failed: open /var/run/ko/HEAD: no such file or directory"}
+{"level":"info","ts":1612433490.1388695,"logger":"fallback-logger","caller":"bash/main.go:64","msg":"Successfully executed command \"sh -c cp -r /pvc/pr-build-comment/workspace/. /workspace/source\"; output "}
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-no-jxd8x-17[0m stage [32mend-to-end[0m and container [32mstep-setup-builder-home[0m
+
+Showing logs for build [32mseldonio-seldon-core-pr-2895-no-jxd8x-17[0m stage [32mend-to-end[0m and container [32mstep-test-end-to-end[0m
+Test run type is: [notebooks]
+Starting Docker: docker.
+[SETUP] Waiting for Docker to be ready, sleeping for 1 seconds ...
+[SETUP] Waiting for Docker to be ready, sleeping for 2 seconds ...
+kind create cluster --config ../resources/kind_config.yaml
+Creating cluster "kind" ...
+ • Ensuring node image (kindest/node:v1.16.3) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.16.3) 🖼
+ • Preparing nodes 📦  ...
+ ✓ Preparing nodes 📦
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+ • Joining worker nodes 🚜  ...
+ ✓ Joining worker nodes 🚜
+Set kubectl context to "kind-kind"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-kind
+
+Have a question, bug, or feature request? Let us know! https://kind.sigs.k8s.io/#community 🙂
+`kind get kubeconfig-path` is deprecated!
+
+KIND will export and merge kubeconfig like kops, minikube, etc.
+This command is now unnecessary and will be removed in a future release.
+
+For more info see: https://github.com/kubernetes-sigs/kind/issues/1060
+See also the output of `kind create cluster`
+
+From https://github.com/SeldonIO/seldon-core
+ * branch              release-1.2.4 -> FETCH_HEAD
+ * [new branch]        release-1.2.4 -> origin/release-1.2.4
+Files changed in python folder:
+warning: refname 'origin/release-1.2.4' is ambiguous.
+SKIPPING PYTHON IMAGE BUILD...
+Files changed in operator folder:
+warning: refname 'origin/release-1.2.4' is ambiguous.
+SKIPPING OPERATOR IMAGE BUILD...
+Files changed in engine folder:
+warning: refname 'origin/release-1.2.4' is ambiguous.
+SKIPPING ENGINE IMAGE BUILD...
+Files changed in executor folder:
+warning: refname 'origin/release-1.2.4' is ambiguous.
+executor/.gitignore
+executor/Dockerfile
+executor/Dockerfile.redhat
+executor/Makefile
+executor/api/metric/client.go
+executor/api/metric/constants.go
+executor/api/metric/server.go
+executor/api/rest/client.go
+executor/api/rest/server.go
+executor/go.mod
+executor/go.sum
+cd ../../executor && make kind-image-install
+make[1]: Entering directory '/workspace/source/executor'
+rm -rf _operator
+cp -r ../operator _operator
+go fmt ./api/... ./predictor/... ./k8s/...
+go: downloading golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+go: downloading github.com/uber/jaeger-client-go v2.25.0+incompatible
+go: downloading sigs.k8s.io/controller-runtime v0.5.8
+go: downloading github.com/golang/protobuf v1.4.2
+go: downloading github.com/pkg/errors v0.9.1
+go: downloading github.com/opentracing/opentracing-go v1.2.0
+go: extracting github.com/pkg/errors v0.9.1
+go: downloading github.com/go-logr/logr v0.1.0
+go: extracting github.com/golang/protobuf v1.4.2
+go: downloading google.golang.org/grpc v1.30.0
+go: extracting golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+go: extracting github.com/go-logr/logr v0.1.0
+go: extracting github.com/opentracing/opentracing-go v1.2.0
+go: downloading github.com/prometheus/client_golang v1.7.1
+go: downloading google.golang.org/protobuf v1.23.0
+go: downloading github.com/cloudevents/sdk-go v1.2.0
+go: downloading github.com/google/uuid v1.1.1
+go: extracting github.com/google/uuid v1.1.1
+go: extracting github.com/uber/jaeger-client-go v2.25.0+incompatible
+go: extracting github.com/prometheus/client_golang v1.7.1
+go: extracting sigs.k8s.io/controller-runtime v0.5.8
+go: extracting github.com/cloudevents/sdk-go v1.2.0
+go: downloading github.com/prometheus/common v0.10.0
+go: extracting github.com/prometheus/common v0.10.0
+go: extracting google.golang.org/grpc v1.30.0
+go: downloading github.com/beorn7/perks v1.0.1
+go: extracting google.golang.org/protobuf v1.23.0
+go: extracting github.com/beorn7/perks v1.0.1
+go: downloading go.opencensus.io v0.22.0
+go: downloading github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
+go: downloading github.com/gorilla/mux v1.7.4
+go: downloading github.com/cespare/xxhash/v2 v2.1.1
+go: downloading google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
+go: downloading github.com/prometheus/procfs v0.1.3
+go: downloading k8s.io/apimachinery v0.17.9
+go: downloading k8s.io/client-go v0.17.9
+go: extracting github.com/gorilla/mux v1.7.4
+go: extracting github.com/cespare/xxhash/v2 v2.1.1
+go: downloading go.uber.org/zap v1.15.0
+go: extracting go.opencensus.io v0.22.0
+go: extracting github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
+go: downloading github.com/uber/jaeger-lib v2.2.0+incompatible
+go: downloading github.com/prometheus/client_model v0.2.0
+go: extracting github.com/prometheus/procfs v0.1.3
+go: extracting go.uber.org/zap v1.15.0
+go: extracting github.com/uber/jaeger-lib v2.2.0+incompatible
+go: extracting github.com/prometheus/client_model v0.2.0
+go: downloading gomodules.xyz/jsonpatch/v2 v2.0.1
+go: extracting k8s.io/apimachinery v0.17.9
+go: extracting gomodules.xyz/jsonpatch/v2 v2.0.1
+go: extracting k8s.io/client-go v0.17.9
+go: downloading github.com/lightstep/tracecontext.go v0.0.0-20181129014701-1757c391b1ac
+go: downloading github.com/go-logr/zapr v0.1.0
+go: downloading go.uber.org/atomic v1.6.0
+go: extracting github.com/lightstep/tracecontext.go v0.0.0-20181129014701-1757c391b1ac
+go: extracting github.com/go-logr/zapr v0.1.0
+go: extracting go.uber.org/atomic v1.6.0
+go: downloading k8s.io/klog v1.0.0
+go: extracting k8s.io/klog v1.0.0
+go: downloading k8s.io/api v0.17.9
+go: downloading github.com/gogo/protobuf v1.3.1
+go: downloading github.com/spf13/pflag v1.0.5
+go: extracting github.com/spf13/pflag v1.0.5
+go: downloading github.com/evanphx/json-patch v4.5.0+incompatible
+go: extracting github.com/evanphx/json-patch v4.5.0+incompatible
+go: downloading github.com/matttproud/golang_protobuf_extensions v1.0.1
+go: extracting github.com/matttproud/golang_protobuf_extensions v1.0.1
+go: downloading golang.org/x/net v0.0.0-20200520004742-59133d7f0dd7
+go: extracting github.com/gogo/protobuf v1.3.1
+go: extracting google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
+go: extracting k8s.io/api v0.17.9
+go: extracting golang.org/x/net v0.0.0-20200520004742-59133d7f0dd7
+go: downloading go.uber.org/multierr v1.5.0
+go: downloading golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0
+go: downloading github.com/googleapis/gnostic v0.3.1
+go: downloading k8s.io/utils v0.0.0-20200619165400-6e3d28b6ed19
+go: downloading github.com/hashicorp/golang-lru v0.5.4
+go: extracting github.com/hashicorp/golang-lru v0.5.4
+go: downloading github.com/google/gofuzz v1.0.0
+go: downloading k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29
+go: extracting go.uber.org/multierr v1.5.0
+go: extracting golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0
+go: downloading gopkg.in/inf.v0 v0.9.1
+go: downloading golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+go: downloading github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6
+go: extracting k8s.io/utils v0.0.0-20200619165400-6e3d28b6ed19
+go: extracting github.com/google/gofuzz v1.0.0
+go: extracting gopkg.in/inf.v0 v0.9.1
+go: downloading golang.org/x/text v0.3.3
+go: extracting github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6
+go: downloading github.com/davecgh/go-spew v1.1.1
+go: downloading github.com/modern-go/reflect2 v1.0.1
+go: extracting github.com/davecgh/go-spew v1.1.1
+go: downloading golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+go: downloading sigs.k8s.io/yaml v1.1.0
+go: downloading github.com/json-iterator/go v1.1.10
+go: extracting github.com/googleapis/gnostic v0.3.1
+go: extracting github.com/modern-go/reflect2 v1.0.1
+go: downloading gopkg.in/fsnotify.v1 v1.4.7
+go: downloading k8s.io/klog/v2 v2.0.0
+go: extracting sigs.k8s.io/yaml v1.1.0
+go: downloading github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+go: extracting golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+go: extracting gopkg.in/fsnotify.v1 v1.4.7
+go: extracting k8s.io/klog/v2 v2.0.0
+go: extracting github.com/json-iterator/go v1.1.10
+go: extracting github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+go: downloading gopkg.in/yaml.v2 v2.3.0
+go: downloading golang.org/x/sys v0.0.0-20200615200032-f1bc736245b1
+go: downloading k8s.io/apiextensions-apiserver v0.17.9
+go: extracting gopkg.in/yaml.v2 v2.3.0
+go: extracting k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29
+go: extracting golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+go: downloading github.com/imdario/mergo v0.3.9
+go: extracting github.com/imdario/mergo v0.3.9
+go: downloading github.com/google/go-cmp v0.5.0
+go: extracting github.com/google/go-cmp v0.5.0
+go: extracting k8s.io/apiextensions-apiserver v0.17.9
+go: extracting golang.org/x/sys v0.0.0-20200615200032-f1bc736245b1
+go: extracting golang.org/x/text v0.3.3
+go: finding github.com/go-logr/logr v0.1.0
+go: finding github.com/uber/jaeger-client-go v2.25.0+incompatible
+go: finding github.com/golang/protobuf v1.4.2
+go: finding github.com/opentracing/opentracing-go v1.2.0
+go: finding golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+go: finding github.com/prometheus/client_golang v1.7.1
+go: finding google.golang.org/grpc v1.30.0
+go: finding sigs.k8s.io/controller-runtime v0.5.8
+go: finding github.com/google/uuid v1.1.1
+go: finding github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
+go: finding github.com/pkg/errors v0.9.1
+go: finding google.golang.org/protobuf v1.23.0
+go: finding google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
+go: finding github.com/cloudevents/sdk-go v1.2.0
+go: finding k8s.io/api v0.17.9
+go: finding k8s.io/apimachinery v0.17.9
+go: finding github.com/beorn7/perks v1.0.1
+go: finding github.com/gorilla/mux v1.7.4
+go: finding github.com/cespare/xxhash/v2 v2.1.1
+go: finding golang.org/x/net v0.0.0-20200520004742-59133d7f0dd7
+go: finding github.com/prometheus/client_model v0.2.0
+go: finding github.com/go-logr/zapr v0.1.0
+go: finding github.com/prometheus/common v0.10.0
+go: finding go.uber.org/zap v1.15.0
+go: finding github.com/spf13/pflag v1.0.5
+go: finding github.com/uber/jaeger-lib v2.2.0+incompatible
+go: finding go.opencensus.io v0.22.0
+go: finding github.com/gogo/protobuf v1.3.1
+go: finding github.com/prometheus/procfs v0.1.3
+go: finding github.com/evanphx/json-patch v4.5.0+incompatible
+go: finding github.com/lightstep/tracecontext.go v0.0.0-20181129014701-1757c391b1ac
+go: finding k8s.io/client-go v0.17.9
+go: finding github.com/google/gofuzz v1.0.0
+go: finding go.uber.org/atomic v1.6.0
+go: finding gomodules.xyz/jsonpatch/v2 v2.0.1
+go: finding go.uber.org/multierr v1.5.0
+go: finding gopkg.in/inf.v0 v0.9.1
+go: finding github.com/hashicorp/golang-lru v0.5.4
+go: finding golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0
+go: finding github.com/matttproud/golang_protobuf_extensions v1.0.1
+go: finding k8s.io/utils v0.0.0-20200619165400-6e3d28b6ed19
+go: finding k8s.io/klog v1.0.0
+go: finding github.com/imdario/mergo v0.3.9
+go: finding golang.org/x/sys v0.0.0-20200615200032-f1bc736245b1
+go: finding golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+go: finding gopkg.in/fsnotify.v1 v1.4.7
+go: finding github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6
+go: finding k8s.io/apiextensions-apiserver v0.17.9
+go: finding github.com/googleapis/gnostic v0.3.1
+go: finding github.com/json-iterator/go v1.1.10
+go: finding github.com/modern-go/reflect2 v1.0.1
+go: finding sigs.k8s.io/yaml v1.1.0
+go: finding k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29
+go: finding golang.org/x/text v0.3.3
+go: finding github.com/davecgh/go-spew v1.1.1
+go: finding golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+go: finding github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+go: finding github.com/google/go-cmp v0.5.0
+go: finding gopkg.in/yaml.v2 v2.3.0
+go: finding k8s.io/klog/v2 v2.0.0
+go vet ./api/... ./predictor/... ./k8s/...
+go: downloading github.com/onsi/gomega v1.10.1
+go: downloading gotest.tools v2.2.0+incompatible
+go: extracting gotest.tools v2.2.0+incompatible
+go: extracting github.com/onsi/gomega v1.10.1
+go: finding github.com/onsi/gomega v1.10.1
+go: finding gotest.tools v2.2.0+incompatible
+go test ./api/... ./predictor/... ./k8s/... -coverprofile cover.out
+?   	github.com/seldonio/seldon-core/executor/api	[no test files]
+?   	github.com/seldonio/seldon-core/executor/api/client	[no test files]
+ok  	github.com/seldonio/seldon-core/executor/api/grpc	0.038s	coverage: 18.0% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/grpc/seldon	1.150s	coverage: 48.5% of statements
+?   	github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto	[no test files]
+?   	github.com/seldonio/seldon-core/executor/api/grpc/seldon/test	[no test files]
+ok  	github.com/seldonio/seldon-core/executor/api/grpc/tensorflow	0.266s	coverage: 19.0% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/metric	0.028s	coverage: 26.7% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/payload	0.030s	coverage: 64.3% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/rest	1.085s	coverage: 67.7% of statements
+?   	github.com/seldonio/seldon-core/executor/api/test	[no test files]
+ok  	github.com/seldonio/seldon-core/executor/api/tracing	0.017s	coverage: 72.2% of statements
+ok  	github.com/seldonio/seldon-core/executor/api/util	0.023s	coverage: 48.1% of statements
+ok  	github.com/seldonio/seldon-core/executor/predictor	0.079s	coverage: 78.5% of statements
+ok  	github.com/seldonio/seldon-core/executor/k8s	0.022s	coverage: 72.7% of statements
+mkdir -p api/rest/openapi/
+cp ../openapi/swagger-ui/* api/rest/openapi/
+cp ../openapi/engine.oas3.json api/rest/openapi/seldon.json
+docker build -f Dockerfile -t seldonio/seldon-core-executor:1.2.4 .
+Sending build context to Docker daemon  13.13MB
+Step 1/27 : FROM golang:1.13 as builder
+1.13: Pulling from library/golang
+d6ff36c9ec48: Pulling fs layer
+c958d65b3090: Pulling fs layer
+edaf0a6b092f: Pulling fs layer
+80931cf68816: Pulling fs layer
+813643441356: Pulling fs layer
+799f41bb59c9: Pulling fs layer
+16b5038bccc8: Pulling fs layer
+813643441356: Waiting
+799f41bb59c9: Waiting
+16b5038bccc8: Waiting
+80931cf68816: Waiting
+c958d65b3090: Download complete
+edaf0a6b092f: Download complete
+d6ff36c9ec48: Verifying Checksum
+d6ff36c9ec48: Download complete
+80931cf68816: Verifying Checksum
+80931cf68816: Download complete
+813643441356: Verifying Checksum
+813643441356: Download complete
+16b5038bccc8: Download complete
+799f41bb59c9: Verifying Checksum
+d6ff36c9ec48: Pull complete
+c958d65b3090: Pull complete
+edaf0a6b092f: Pull complete
+80931cf68816: Pull complete
+813643441356: Pull complete
+799f41bb59c9: Pull complete
+16b5038bccc8: Pull complete
+Digest: sha256:8ebb6d5a48deef738381b56b1d4cd33d99a5d608e0d03c5fe8dfa3f68d41a1f8
+Status: Downloaded newer image for golang:1.13
+ ---> d6f3656320fe
+Step 2/27 : WORKDIR /workspace
+ ---> Running in bc6a82995171
+Removing intermediate container bc6a82995171
+ ---> a571a2a3a12a
+Step 3/27 : COPY go.mod go.mod
+ ---> 7b2ca2ab1c77
+Step 4/27 : COPY go.sum go.sum
+ ---> 216be7159401
+Step 5/27 : COPY proto/ proto/
+ ---> 01709700cfbc
+Step 6/27 : COPY _operator/ _operator/
+ ---> f05ae32078b3
+Step 7/27 : RUN go mod download
+ ---> Running in 48a5f8a6d3db
+[91mgo: finding cloud.google.com/go v0.40.0
+[0m[91mgo: finding contrib.go.opencensus.io/exporter/ocagent v0.4.12
+[0m[91mgo: finding contrib.go.opencensus.io/exporter/prometheus v0.1.0
+[0m[91mgo: finding github.com/Azure/azure-sdk-for-go v30.1.0+incompatible
+[0m[91mgo: finding github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78
+[0m[91mgo: finding github.com/Azure/go-autorest v14.2.0+incompatible
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest v0.9.0
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/adal v0.9.0
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/date v0.3.0
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/mocks v0.4.0
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/to v0.2.0
+[0m[91mgo: finding github.com/Azure/go-autorest/autorest/validation v0.1.0
+[0m[91mgo: finding github.com/Azure/go-autorest/logger v0.1.0
+[0m[91mgo: finding github.com/Azure/go-autorest/tracing v0.6.0
+[0m[91mgo: finding github.com/BurntSushi/toml v0.3.1
+[0m[91mgo: finding github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802
+[0m[91mgo: finding github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
+[0m[91mgo: finding github.com/PuerkitoBio/purell v1.1.1
+[0m[91mgo: finding github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
+[0m[91mgo: finding github.com/Shopify/sarama v1.19.0
+[0m[91mgo: finding github.com/Shopify/toxiproxy v2.1.4+incompatible
+[0m[91mgo: finding github.com/agnivade/levenshtein v1.0.1
+[0m[91mgo: finding github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
+[0m[91mgo: finding github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4
+[0m[91mgo: finding github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
+[0m[91mgo: finding github.com/apache/thrift v0.12.0
+[0m[91mgo: finding github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6
+[0m[91mgo: finding github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
+[0m[91mgo: finding github.com/beorn7/perks v1.0.1
+[0m[91mgo: finding github.com/bgentry/speakeasy v0.1.0
+[0m[91mgo: finding github.com/blang/semver v3.5.0+incompatible
+[0m[91mgo: finding github.com/census-instrumentation/opencensus-proto v0.2.1
+[0m[91mgo: finding github.com/cespare/xxhash/v2 v2.1.1
+[0m[91mgo: finding github.com/client9/misspell v0.3.4
+[0m[91mgo: finding github.com/cloudevents/sdk-go v1.2.0
+[0m[91mgo: finding github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f
+[0m[91mgo: finding github.com/cockroachdb/datadriven v0.0.0-20190809214429-80d97fb3cbaa
+[0m[91mgo: finding github.com/coreos/etcd v3.3.10+incompatible
+[0m[91mgo: finding github.com/coreos/go-etcd v2.0.0+incompatible
+[0m[91mgo: finding github.com/coreos/go-oidc v2.1.0+incompatible
+[0m[91mgo: finding github.com/coreos/go-semver v0.3.0
+[0m[91mgo: finding github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e
+[0m[91mgo: finding github.com/coreos/pkg v0.0.0-20180108230652-97fdf19511ea
+[0m[91mgo: finding github.com/cpuguy83/go-md2man v1.0.10
+[0m[91mgo: finding github.com/creack/pty v1.1.7
+[0m[91mgo: finding github.com/davecgh/go-spew v1.1.1
+[0m[91mgo: finding github.com/dgrijalva/jwt-go v3.2.0+incompatible
+[0m[91mgo: finding github.com/docker/docker v0.7.3-0.20190327010347-be7ac8be2ae0
+[0m[91mgo: finding github.com/docker/go-units v0.4.0
+[0m[91mgo: finding github.com/docker/spdystream v0.0.0-20160310174837-449fdfce4d96
+[0m[91mgo: finding github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
+[0m[91mgo: finding github.com/dustin/go-humanize v1.0.0
+[0m[91mgo: finding github.com/eapache/go-resiliency v1.1.0
+[0m[91mgo: finding github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21
+[0m[91mgo: finding github.com/eapache/queue v1.1.0
+[0m[91mgo: finding github.com/elazarl/goproxy v0.0.0-20170405201442-c4fc26588b6e
+[0m[91mgo: finding github.com/emicklei/go-restful v2.9.5+incompatible
+[0m[91mgo: finding github.com/envoyproxy/go-control-plane v0.9.4
+[0m[91mgo: finding github.com/envoyproxy/protoc-gen-validate v0.1.0
+[0m[91mgo: finding github.com/evanphx/json-patch v4.5.0+incompatible
+[0m[91mgo: finding github.com/fatih/color v1.7.0
+[0m[91mgo: finding github.com/fortytw2/leaktest v1.3.0
+[0m[91mgo: finding github.com/fsnotify/fsnotify v1.4.9
+[0m[91mgo: finding github.com/ghodss/yaml v1.0.0
+[0m[91mgo: finding github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
+[0m[91mgo: finding github.com/go-kit/kit v0.9.0
+[0m[91mgo: finding github.com/go-logfmt/logfmt v0.4.0
+[0m[91mgo: finding github.com/go-logr/logr v0.1.0
+[0m[91mgo: finding github.com/go-logr/zapr v0.1.0
+[0m[91mgo: finding github.com/go-openapi/analysis v0.19.5
+[0m[91mgo: finding github.com/go-openapi/errors v0.19.2
+[0m[91mgo: finding github.com/go-openapi/jsonpointer v0.19.3
+[0m[91mgo: finding github.com/go-openapi/jsonreference v0.19.3
+[0m[91mgo: finding github.com/go-openapi/loads v0.19.4
+[0m[91mgo: finding github.com/go-openapi/runtime v0.19.4
+[0m[91mgo: finding github.com/go-openapi/spec v0.19.3
+[0m[91mgo: finding github.com/go-openapi/strfmt v0.19.3
+[0m[91mgo: finding github.com/go-openapi/swag v0.19.5
+[0m[91mgo: finding github.com/go-openapi/validate v0.19.5
+[0m[91mgo: finding github.com/go-stack/stack v1.8.0
+[0m[91mgo: finding github.com/gogo/protobuf v1.3.1
+[0m[91mgo: finding github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
+[0m[91mgo: finding github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6
+[0m[91mgo: finding github.com/golang/mock v1.2.0
+[0m[91mgo: finding github.com/golang/protobuf v1.4.2
+[0m[91mgo: finding github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db
+[0m[91mgo: finding github.com/google/btree v1.0.0
+[0m[91mgo: finding github.com/google/go-cmp v0.5.0
+[0m[91mgo: finding github.com/google/gofuzz v1.0.0
+[0m[91mgo: finding github.com/google/martian v2.1.0+incompatible
+[0m[91mgo: finding github.com/google/pprof v0.0.0-20181206194817-3ea8567a2e57
+[0m[91mgo: finding github.com/google/renameio v0.1.0
+[0m[91mgo: finding github.com/google/uuid v1.1.1
+[0m[91mgo: finding github.com/googleapis/gax-go/v2 v2.0.5
+[0m[91mgo: finding github.com/googleapis/gnostic v0.3.1
+[0m[91mgo: finding github.com/gophercloud/gophercloud v0.1.0
+[0m[91mgo: finding github.com/gorilla/context v1.1.1
+[0m[91mgo: finding github.com/gorilla/mux v1.7.4
+[0m[91mgo: finding github.com/gorilla/websocket v1.4.0
+[0m[91mgo: finding github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7
+[0m[91mgo: finding github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
+[0m[91mgo: finding github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
+[0m[91mgo: finding github.com/grpc-ecosystem/grpc-gateway v1.9.5
+[0m[91mgo: finding github.com/hashicorp/golang-lru v0.5.4
+[0m[91mgo: finding github.com/hashicorp/hcl v1.0.0
+[0m[91mgo: finding github.com/hpcloud/tail v1.0.0
+[0m[91mgo: finding github.com/imdario/mergo v0.3.9
+[0m[91mgo: finding github.com/inconshreveable/mousetrap v1.0.0
+[0m[91mgo: finding github.com/jonboulle/clockwork v0.1.0
+[0m[91mgo: finding github.com/json-iterator/go v1.1.10
+[0m[91mgo: finding github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024
+[0m[91mgo: finding github.com/julienschmidt/httprouter v1.2.0
+[0m[91mgo: finding github.com/kelseyhightower/envconfig v1.4.0
+[0m[91mgo: finding github.com/kisielk/errcheck v1.2.0
+[0m[91mgo: finding github.com/kisielk/gotool v1.0.0
+[0m[91mgo: finding github.com/konsorten/go-windows-terminal-sequences v1.0.1
+[0m[91mgo: finding github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515
+[0m[91mgo: finding github.com/kr/pretty v0.2.0
+[0m[91mgo: finding github.com/kr/pty v1.1.5
+[0m[91mgo: finding github.com/kr/text v0.1.0
+[0m[91mgo: finding github.com/lightstep/tracecontext.go v0.0.0-20181129014701-1757c391b1ac
+[0m[91mgo: finding github.com/magiconair/properties v1.8.0
+[0m[91mgo: finding github.com/mailru/easyjson v0.7.0
+[0m[91mgo: finding github.com/mattn/go-colorable v0.0.9
+[0m[91mgo: finding github.com/mattn/go-isatty v0.0.4
+[0m[91mgo: finding github.com/mattn/go-runewidth v0.0.2
+[0m[91mgo: finding github.com/matttproud/golang_protobuf_extensions v1.0.1
+[0m[91mgo: finding github.com/mitchellh/go-homedir v1.1.0
+[0m[91mgo: finding github.com/mitchellh/mapstructure v1.1.2
+[0m[91mgo: finding github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+[0m[91mgo: finding github.com/modern-go/reflect2 v1.0.1
+[0m[91mgo: finding github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822
+[0m[91mgo: finding github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223
+[0m[91mgo: finding github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f
+[0m[91mgo: finding github.com/nats-io/jwt v0.3.2
+[0m[91mgo: finding github.com/nats-io/nats-server/v2 v2.1.2
+[0m[91mgo: finding github.com/nats-io/nats.go v1.9.1
+[0m[91mgo: finding github.com/nats-io/nkeys v0.1.3
+[0m[91mgo: finding github.com/nats-io/nuid v1.0.1
+[0m[91mgo: finding github.com/nxadm/tail v1.4.4
+[0m[91mgo: finding github.com/olekukonko/tablewriter v0.0.0-20170122224234-a0225b3f23b5
+[0m[91mgo: finding github.com/onsi/ginkgo v1.14.0
+[0m[91mgo: finding github.com/onsi/gomega v1.10.1
+[0m[91mgo: finding github.com/opentracing/opentracing-go v1.2.0
+[0m[91mgo: finding github.com/openzipkin/zipkin-go v0.1.6
+[0m[91mgo: finding github.com/pborman/uuid v1.2.0
+[0m[91mgo: finding github.com/pelletier/go-toml v1.2.0
+[0m[91mgo: finding github.com/peterbourgon/diskv v2.0.1+incompatible
+[0m[91mgo: finding github.com/pierrec/lz4 v2.0.5+incompatible
+[0m[91mgo: finding github.com/pkg/errors v0.9.1
+[0m[91mgo: finding github.com/pmezard/go-difflib v1.0.0
+[0m[91mgo: finding github.com/pquerna/cachecontrol v0.0.0-20171018203845-0dec1b30a021
+[0m[91mgo: finding github.com/prometheus/client_golang v1.7.1
+[0m[91mgo: finding github.com/prometheus/client_model v0.2.0
+[0m[91mgo: finding github.com/prometheus/common v0.10.0
+[0m[91mgo: finding github.com/prometheus/procfs v0.1.3
+[0m[91mgo: finding github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a
+[0m[91mgo: finding github.com/remyoudompheng/bigfft v0.0.0-20170806203942-52369c62f446
+[0m[91mgo: finding github.com/rogpeppe/fastuuid v0.0.0-20150106093220-6724a57986af
+[0m[91mgo: finding github.com/rogpeppe/go-internal v1.3.0
+[0m[91mgo: finding github.com/russross/blackfriday v1.5.2
+[0m[91mgo: finding github.com/sergi/go-diff v1.0.0
+[0m[91mgo: finding github.com/sirupsen/logrus v1.4.2
+[0m[91mgo: finding github.com/soheilhy/cmux v0.1.4
+[0m[91mgo: finding github.com/spf13/afero v1.2.2
+[0m[91mgo: finding github.com/spf13/cast v1.3.0
+[0m[91mgo: finding github.com/spf13/cobra v0.0.5
+[0m[91mgo: finding github.com/spf13/jwalterweatherman v1.0.0
+[0m[91mgo: finding github.com/spf13/pflag v1.0.5
+[0m[91mgo: finding github.com/spf13/viper v1.3.2
+[0m[91mgo: finding github.com/stretchr/ob** v0.2.0
+[0m[91mgo: finding github.com/stretchr/testify v1.4.0
+[0m[91mgo: finding github.com/tidwall/pretty v1.0.0
+[0m[91mgo: finding github.com/tmc/grpc-websocket-proxy v0.0.0-20170815181823-89b8d40f7ca8
+[0m[91mgo: finding github.com/uber/jaeger-client-go v2.25.0+incompatible
+[0m[91mgo: finding github.com/uber/jaeger-lib v2.2.0+incompatible
+[0m[91mgo: finding github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8
+[0m[91mgo: finding github.com/urfave/cli v1.20.0
+[0m[91mgo: finding github.com/valyala/bytebufferpool v1.0.0
+[0m[91mgo: finding github.com/vektah/gqlparser v1.1.2
+[0m[91mgo: finding github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2
+[0m[91mgo: finding github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77
+[0m[91mgo: finding go.etcd.io/bbolt v1.3.3
+[0m[91mgo: finding go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
+[0m[91mgo: finding go.mongodb.org/mongo-driver v1.1.2
+[0m[91mgo: finding go.opencensus.io v0.22.0
+[0m[91mgo: finding go.uber.org/atomic v1.6.0
+[0m[91mgo: finding go.uber.org/multierr v1.5.0
+[0m[91mgo: finding go.uber.org/tools v0.0.0-20190618225709-2cfd321de3ee
+[0m[91mgo: finding go.uber.org/zap v1.15.0
+[0m[91mgo: finding golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+[0m[91mgo: finding golang.org/x/exp v0.0.0-20190312203227-4b39c73a6495
+[0m[91mgo: finding golang.org/x/image v0.0.0-20190227222117-0694c2d4d067
+[0m[91mgo: finding golang.org/x/lint v0.0.0-20190930215403-16217165b5de
+[0m[91mgo: finding golang.org/x/mobile v0.0.0-20190312151609-d3739f865fa6
+[0m[91mgo: finding golang.org/x/mod v0.0.0-20190513183733-4bf6d317e70e
+[0m[91mgo: finding golang.org/x/net v0.0.0-20200520004742-59133d7f0dd7
+[0m[91mgo: finding golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+[0m[91mgo: finding golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
+[0m[91mgo: finding golang.org/x/sys v0.0.0-20200615200032-f1bc736245b1
+[0m[91mgo: finding golang.org/x/text v0.3.3
+[0m[91mgo: finding golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0
+[0m[91mgo: finding golang.org/x/tools v0.0.0-20191029190741-b9c20aec41a5
+[0m[91mgo: finding golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+[0m[91mgo: finding gomodules.xyz/jsonpatch/v2 v2.0.1
+[0m[91mgo: finding gonum.org/v1/gonum v0.0.0-20190331200053-3d26580ed485
+[0m[91mgo: finding gonum.org/v1/netlib v0.0.0-20190331212654-76723241ea4e
+[0m[91mgo: finding google.golang.org/api v0.15.0
+[0m[91mgo: finding google.golang.org/appengine v1.6.5
+[0m[91mgo: finding google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
+[0m[91mgo: finding google.golang.org/grpc v1.30.0
+[0m[91mgo: finding google.golang.org/protobuf v1.23.0
+[0m[91mgo: finding gopkg.in/alecthomas/kingpin.v2 v2.2.6
+[0m[91mgo: finding gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
+[0m[91mgo: finding gopkg.in/cheggaaa/pb.v1 v1.0.25
+[0m[91mgo: finding gopkg.in/errgo.v2 v2.1.0
+[0m[91mgo: finding gopkg.in/fsnotify.v1 v1.4.7
+[0m[91mgo: finding gopkg.in/inf.v0 v0.9.1
+[0m[91mgo: finding gopkg.in/natefinch/lumberjack.v2 v2.0.0
+[0m[91mgo: finding gopkg.in/resty.v1 v1.12.0
+[0m[91mgo: finding gopkg.in/square/go-jose.v2 v2.2.2
+[0m[91mgo: finding gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
+[0m[91mgo: finding gopkg.in/yaml.v2 v2.3.0
+[0m[91mgo: finding gotest.tools v2.2.0+incompatible
+[0m[91mgo: finding honnef.co/go/tools v0.0.1-2019.2.3
+[0m[91mgo: finding istio.io/api v0.0.0-20200513175333-ae3da0d240e3
+[0m[91mgo: finding istio.io/client-go v0.0.0-20200513180646-f8d9d8ff84e6
+[0m[91mgo: finding istio.io/gogo-genproto v0.0.0-20190930162913-45029607206a
+[0m[91mgo: finding k8s.io/api v0.17.9
+[0m[91mgo: finding k8s.io/apiextensions-apiserver v0.17.9
+[0m[91mgo: finding k8s.io/apimachinery v0.17.9
+[0m[91mgo: finding k8s.io/apiserver v0.17.9
+[0m[91mgo: finding k8s.io/client-go v0.17.9
+[0m[91mgo: finding k8s.io/code-generator v0.17.9
+[0m[91mgo: finding k8s.io/component-base v0.17.9
+[0m[91mgo: finding k8s.io/gengo v0.0.0-20190822140433-26a664648505
+[0m[91mgo: finding k8s.io/klog v1.0.0
+[0m[91mgo: finding k8s.io/klog/v2 v2.0.0
+[0m[91mgo: finding k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29
+[0m[91mgo: finding k8s.io/utils v0.0.0-20200619165400-6e3d28b6ed19
+[0m[91mgo: finding knative.dev/pkg v0.0.0-20200513151758-7b6bb61326ae
+[0m[91mgo: finding modernc.org/cc v1.0.0
+[0m[91mgo: finding modernc.org/golex v1.0.0
+[0m[91mgo: finding modernc.org/mathutil v1.0.0
+[0m[91mgo: finding modernc.org/strutil v1.0.0
+[0m[91mgo: finding modernc.org/xc v1.0.0
+[0m[91mgo: finding pack.ag/amqp v0.11.0
+[0m[91mgo: finding rsc.io/binaryregexp v0.2.0
+[0m[91mgo: finding sigs.k8s.io/controller-runtime v0.5.8
+[0m[91mgo: finding sigs.k8s.io/structured-merge-diff v0.0.0-20190525122527-15d366b2352e
+[0m[91mgo: finding sigs.k8s.io/structured-merge-diff/v2 v2.0.1
+[0m[91mgo: finding sigs.k8s.io/yaml v1.1.0
+[0mRemoving intermediate container 48a5f8a6d3db
+ ---> ffb4f95d1279
+Step 8/27 : COPY main.go main.go
+ ---> 660afa1ea13d
+Step 9/27 : COPY api/ api/
+ ---> 671bffcc0530
+Step 10/27 : COPY predictor/ predictor/
+ ---> 1446a3cda9ed
+Step 11/27 : COPY logger/ logger/
+ ---> b9a61f029121
+Step 12/27 : COPY k8s/ k8s/
+ ---> 34a74f6e6545
+Step 13/27 : RUN go build -a -o executor main.go
+ ---> Running in 7f1fe67f840f
+Removing intermediate container 7f1fe67f840f
+ ---> 5c0113d8bfba
+Step 14/27 : RUN wget -O hashicorp-golang-lru.tar.gz https://github.com/hashicorp/golang-lru/archive/master.tar.gz
+ ---> Running in 7d7ea810c438
+[91m--2021-02-04 10:15:37--  https://github.com/hashicorp/golang-lru/archive/master.tar.gz
+[0m[91mResolving github.com (github.com)... [0m[91m140.82.121.4
+Connecting to github.com (github.com)|140.82.121.4|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m302 Found
+Location: https://codeload.github.com/hashicorp/golang-lru/tar.gz/master [following]
+--2021-02-04 10:15:37--  https://codeload.github.com/hashicorp/golang-lru/tar.gz/master
+Resolving codeload.github.com (codeload.github.com)... [0m[91m140.82.121.10
+Connecting to codeload.github.com (codeload.github.com)|140.82.121.10|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m200 OK
+Length: unspecified [application/x-gzip]
+Saving to: 'hashicorp-golang-lru.tar.gz'
+[0m[91m
+     0K ......[0m[91m.... .[0m[91m...                                        1.05M=0.01s
+
+2021-02-04 10:15:38 (1.05 MB/s) - 'hashicorp-golang-lru.tar.gz' saved [14371]
+
+[0mRemoving intermediate container 7d7ea810c438
+ ---> 674b9dc75b82
+Step 15/27 : RUN wget -O armon-consul-api.tar.gz https://github.com/armon/consul-api/archive/master.tar.gz
+ ---> Running in 69ccf5ea9e70
+[91m--2021-02-04 10:15:40--  https://github.com/armon/consul-api/archive/master.tar.gz
+[0m[91mResolving github.com (github.com)... [0m[91m140.82.121.4
+Connecting to github.com (github.com)|140.82.121.4|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m302 Found
+Location: https://codeload.github.com/armon/consul-api/tar.gz/master [following]
+--2021-02-04 10:15:41--  https://codeload.github.com/armon/consul-api/tar.gz/master
+Resolving codeload.github.com (codeload.github.com)... [0m[91m140.82.121.10
+Connecting to codeload.github.com (codeload.github.com)|140.82.121.10|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m200 OK
+Length: unspecified [application/x-gzip]
+Saving to: 'armon-consul-api.tar.gz'
+[0m[91m
+     0K ...[0m[91m.[0m[91m......[0m[91m .[0m[91m......                  [0m[91m                  [0m[91m 1.31M=0.01s
+
+[0m[91m2021-02-04 10:15:41 (1.31 MB/s) - 'armon-consul-api.tar.gz' saved [17977]
+
+[0mRemoving intermediate container 69ccf5ea9e70
+ ---> 740c1d61d81c
+Step 16/27 : RUN wget -O hasicorp-hcl.tar.gz https://github.com/hashicorp/hcl/archive/master.tar.gz
+ ---> Running in 55b3a190bc74
+[91m--2021-02-04 10:15:43--  https://github.com/hashicorp/hcl/archive/master.tar.gz
+[0m[91mResolving github.com (github.com)... [0m[91m140.82.121.4
+Connecting to github.com (github.com)|140.82.121.4|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m302 Found
+Location: https://codeload.github.com/hashicorp/hcl/tar.gz/master [following]
+--2021-02-04 10:15:43--  https://codeload.github.com/hashicorp/hcl/tar.gz/master
+Resolving codeload.github.com (codeload.github.com)... [0m[91m140.82.121.10
+Connecting to codeload.github.com (codeload.github.com)|140.82.121.10|:443... [0m[91mconnected.
+[0m[91mHTTP request sent, awaiting response... [0m[91m200 OK
+Length: unspecified [application/x-gzip]
+Saving to: 'hasicorp-hcl.tar.gz'
+[0m[91m
+     0K ...[0m[91m...[0m[91m....[0m[91m .[0m[91m.....[0m[91m...[0m[91m. ...[0m[91m.....[0m[91m.. ..[0m[91m..[0m[91m....[0m[91m.. ......[0m[91m.... 1.92M[0m[91m
+    50K ........[0m[91m..[0m[91m .....[0m[91m..... .                 [0m[91m               1.67M=0.04s
+
+[0m[91m2021-02-04 10:15:44 (1.84 MB/s) - 'hasicorp-hcl.tar.gz' saved [72944]
+
+[0mRemoving intermediate container 55b3a190bc74
+ ---> b9ec0ab7103b
+Step 17/27 : COPY api/rest/openapi/ /openapi/
+ ---> 3644f5ec14db
+Step 18/27 : RUN chmod -R 660 /openapi/
+ ---> Running in 1a2bba1103c0
+Removing intermediate container 1a2bba1103c0
+ ---> f5880080b7fe
+Step 19/27 : FROM gcr.io/distroless/base:latest
+latest: Pulling from distroless/base
+9e4425256ce4: Pulling fs layer
+a3e61620654b: Pulling fs layer
+9e4425256ce4: Verifying Checksum
+9e4425256ce4: Download complete
+9e4425256ce4: Pull complete
+a3e61620654b: Verifying Checksum
+a3e61620654b: Download complete
+a3e61620654b: Pull complete
+Digest: sha256:7141d41313edcb86e4b6c1886fa514cbdbfd3b9a9f3ee504a2466fc42c6d1b45
+Status: Downloaded newer image for gcr.io/distroless/base:latest
+ ---> e3112a86f087
+Step 20/27 : WORKDIR /
+ ---> Running in ddfe7c795a7c
+Removing intermediate container ddfe7c795a7c
+ ---> fda42eee8374
+Step 21/27 : COPY --from=builder /workspace/executor .
+ ---> db904ba012b2
+Step 22/27 : COPY licenses/license.txt licenses/license.txt
+ ---> 3b811569dea9
+Step 23/27 : COPY --from=builder /workspace/hashicorp-golang-lru.tar.gz licenses/mpl_source/hashicorp-golang-lru.tar.gz
+ ---> 1ecff2dbf5c0
+Step 24/27 : COPY --from=builder /workspace/armon-consul-api.tar.gz licenses/mpl_source/armon-consul-api.tar.gz
+ ---> d3b2ec3fa6ae
+Step 25/27 : COPY --from=builder /workspace/hasicorp-hcl.tar.gz licenses/mpl_source/hasicorp-hcl.tar.gz
+ ---> d783e5a2c392
+Step 26/27 : COPY --from=builder /openapi/ /openapi/
+ ---> fd706c5804ea
+Step 27/27 : ENTRYPOINT ["/executor"]
+ ---> Running in 816dcf6fdbe5
+Removing intermediate container 816dcf6fdbe5
+ ---> 0e0163de97a0
+Successfully built 0e0163de97a0
+Successfully tagged seldonio/seldon-core-executor:1.2.4
+kind load -v 3 docker-image seldonio/seldon-core-executor:1.2.4 --name kind
+Image: "seldonio/seldon-core-executor:1.2.4" with ID "sha256:0e0163de97a0e62eb929a8c47ad39c866ef7b3b638df48945cea7b9a250803e4" not present on node "kind-worker"
+Image: "seldonio/seldon-core-executor:1.2.4" with ID "sha256:0e0163de97a0e62eb929a8c47ad39c866ef7b3b638df48945cea7b9a250803e4" not present on node "kind-control-plane"
+make[1]: Leaving directory '/workspace/source/executor'
+Build test models
+make -C ../docker/fixed-model kind_load_images
+make[1]: Entering directory '/workspace/source/testing/docker/fixed-model'
+s2i build -E environment_rest_v1 . seldonio/seldon-core-s2i-python3:0.15 seldonio/fixed-model:0.1
+---> Installing application source...
+Build completed successfully
+s2i build -E environment_rest_v2 . seldonio/seldon-core-s2i-python3:0.15 seldonio/fixed-model:0.2
+---> Installing application source...
+Build completed successfully
+kind load -v 3 docker-image seldonio/fixed-model:0.1
+Image: "seldonio/fixed-model:0.1" with ID "sha256:6f88b1ae533d8be28279107bff78cbfa6c295681c42b9cb043aa63750af49579" not present on node "kind-worker"
+Image: "seldonio/fixed-model:0.1" with ID "sha256:6f88b1ae533d8be28279107bff78cbfa6c295681c42b9cb043aa63750af49579" not present on node "kind-control-plane"
+kind load -v 3 docker-image seldonio/fixed-model:0.2
+Image: "seldonio/fixed-model:0.2" with ID "sha256:afd19398c647ec61c68704e298a7bcc4c3898b52959bf8e65a1c96928928f30f" not present on node "kind-worker"
+Image: "seldonio/fixed-model:0.2" with ID "sha256:afd19398c647ec61c68704e298a7bcc4c3898b52959bf8e65a1c96928928f30f" not present on node "kind-control-plane"
+make[1]: Leaving directory '/workspace/source/testing/docker/fixed-model'
+make -C ../docker/echo-model kind_load_image
+make[1]: Entering directory '/workspace/source/testing/docker/echo-model'
+s2i build \
+	-E environment_rest \
+	.\
+	seldonio/seldon-core-s2i-python3:1.1.1-SNAPSHOT\
+	seldonio/echo-model:0.1
+---> Installing application source...
+Build completed successfully
+kind load -v 3 docker-image seldonio/echo-model:0.1
+Image: "seldonio/echo-model:0.1" with ID "sha256:52a4ef5e978e28d9ddae98bc31ae7d7625b0ed489f21e1b9896453052b6f4ca3" not present on node "kind-worker"
+Image: "seldonio/echo-model:0.1" with ID "sha256:52a4ef5e978e28d9ddae98bc31ae7d7625b0ed489f21e1b9896453052b6f4ca3" not present on node "kind-control-plane"
+make[1]: Leaving directory '/workspace/source/testing/docker/echo-model'
+Files changed in prepackaged folder:
+warning: refname 'origin/release-1.2.4' is ambiguous.
+SKIPPING PREPACKAGED IMAGE BUILD...
+Files changed in alibi folder:
+warning: refname 'origin/release-1.2.4' is ambiguous.
+SKIPPING ALIBI IMAGE BUILD...
+Files changed in misc folders:
+warning: refname 'origin/release-1.2.4' is ambiguous.
+SKIPPING MISC IMAGE BUILD...
+kubectl create namespace seldon || echo "Namespace seldon already exists"
+namespace/seldon created
+kubectl create namespace test1 || echo "Namespace test1 already exists"
+namespace/test1 created
+helm repo add seldonio https://storage.googleapis.com/seldon-charts
+"seldonio" has been added to your repositories
+helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
+"jaegertracing" has been added to your repositories
+helm repo add datawire https://www.getambassador.io
+"datawire" has been added to your repositories
+helm repo update
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "jaegertracing" chart repository
+...Successfully got an update from the "seldonio" chart repository
+...Successfully got an update from the "datawire" chart repository
+Update Complete. ⎈ Happy Helming!⎈ 
+helm install ambassador \
+	datawire/ambassador \
+	-f ../resources/ambassador_values.yaml \
+	--set image.repository=quay.io/datawire/ambassador \
+	--set crds.keep=false \
+	--set enableAES=false \
+	--namespace seldon \
+	--set replicaCount=1 \
+	--wait
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+NAME: ambassador
+LAST DEPLOYED: Thu Feb  4 10:20:59 2021
+NAMESPACE: seldon
+STATUS: deployed
+REVISION: 1
+NOTES:
+-------------------------------------------------------------------------------
+  Congratulations! You've successfully installed Ambassador!
+
+-------------------------------------------------------------------------------
+To get the IP address of Ambassador, run the following commands:
+  export NODE_PORT=$(kubectl get --namespace seldon -o jsonpath="{.spec.ports[0].nodePort}" services ambassador)
+  export NODE_IP=$(kubectl get nodes --namespace seldon -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+
+For help, visit our Slack at https://d6e.co/slack or view the documentation online at https://www.getambassador.io.
+kubectl apply -f istio-1.4.2.yaml
+clusterrole.rbac.authorization.k8s.io/istio-reader-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-reader-istio-system created
+customresourcedefinition.apiextensions.k8s.io/attributemanifests.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/clusterrbacconfigs.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/destinationrules.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/envoyfilters.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/gateways.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/httpapispecbindings.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/httpapispecs.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/meshpolicies.authentication.istio.io created
+customresourcedefinition.apiextensions.k8s.io/policies.authentication.istio.io created
+customresourcedefinition.apiextensions.k8s.io/quotaspecbindings.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/quotaspecs.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/rbacconfigs.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/rules.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/serviceentries.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/servicerolebindings.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/serviceroles.rbac.istio.io created
+customresourcedefinition.apiextensions.k8s.io/virtualservices.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/adapters.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/instances.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/templates.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/handlers.config.istio.io created
+customresourcedefinition.apiextensions.k8s.io/sidecars.networking.istio.io created
+customresourcedefinition.apiextensions.k8s.io/authorizationpolicies.security.istio.io created
+namespace/istio-system created
+serviceaccount/istio-reader-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-citadel-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-citadel-istio-system created
+deployment.apps/istio-citadel created
+poddisruptionbudget.policy/istio-citadel created
+service/istio-citadel created
+serviceaccount/istio-citadel-service-account created
+deployment.apps/istio-egressgateway created
+poddisruptionbudget.policy/istio-egressgateway created
+gateway.networking.istio.io/istio-multicluster-egressgateway created
+virtualservice.networking.istio.io/istio-multicluster-egressgateway created
+envoyfilter.networking.istio.io/istio-multicluster-egressgateway created
+destinationrule.networking.istio.io/istio-multicluster-destinationrule created
+service/istio-egressgateway created
+role.rbac.authorization.k8s.io/istio-egressgateway-sds created
+rolebinding.rbac.authorization.k8s.io/istio-egressgateway-sds created
+serviceaccount/istio-egressgateway-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-galley-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-galley-*****-role-binding-istio-system created
+configmap/istio-mesh-galley created
+configmap/istio-galley-configuration created
+deployment.apps/istio-galley created
+poddisruptionbudget.policy/istio-galley created
+service/istio-galley created
+serviceaccount/istio-galley-service-account created
+configmap/istio-grafana-configuration-dashboards-citadel-dashboard created
+configmap/istio-grafana-configuration-dashboards-galley-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-mesh-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-performance-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-service-dashboard created
+configmap/istio-grafana-configuration-dashboards-istio-workload-dashboard created
+configmap/istio-grafana-configuration-dashboards-mixer-dashboard created
+configmap/istio-grafana-configuration-dashboards-pilot-dashboard created
+configmap/istio-grafana created
+deployment.apps/grafana created
+policy.authentication.istio.io/grafana-ports-mtls-disabled created
+service/grafana created
+deployment.apps/istio-ingressgateway created
+gateway.networking.istio.io/ingressgateway created
+poddisruptionbudget.policy/ingressgateway created
+service/istio-ingressgateway created
+serviceaccount/istio-ingressgateway-service-account created
+sidecar.networking.istio.io/default created
+clusterrole.rbac.authorization.k8s.io/istio-sidecar-injector-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-sidecar-injector-*****-role-binding-istio-system created
+configmap/injector-mesh created
+deployment.apps/istio-sidecar-injector created
+mutatingwebhookconfiguration.admissionregistration.k8s.io/istio-sidecar-injector created
+poddisruptionbudget.policy/istio-sidecar-injector created
+service/istio-sidecar-injector created
+serviceaccount/istio-sidecar-injector-service-account created
+configmap/istio-sidecar-injector created
+clusterrole.rbac.authorization.k8s.io/kiali created
+clusterrole.rbac.authorization.k8s.io/kiali-viewer created
+clusterrolebinding.rbac.authorization.k8s.io/kiali created
+configmap/kiali created
+secret/kiali created
+deployment.apps/kiali created
+service/kiali created
+serviceaccount/kiali-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-pilot-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-pilot-istio-system created
+configmap/pilot-envoy-config created
+configmap/istio created
+deployment.apps/istio-pilot created
+meshpolicy.authentication.istio.io/default created
+poddisruptionbudget.policy/istio-pilot created
+service/istio-pilot created
+serviceaccount/istio-pilot-service-account created
+clusterrole.rbac.authorization.k8s.io/istio-policy created
+clusterrolebinding.rbac.authorization.k8s.io/istio-policy-*****-role-binding-istio-system created
+destinationrule.networking.istio.io/istio-policy created
+deployment.apps/istio-policy created
+poddisruptionbudget.policy/istio-policy created
+service/istio-policy created
+serviceaccount/istio-policy-service-account created
+clusterrole.rbac.authorization.k8s.io/prometheus-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/prometheus-istio-system created
+configmap/prometheus created
+deployment.apps/prometheus created
+service/prometheus created
+serviceaccount/prometheus created
+horizontalpodautoscaler.autoscaling/istio-telemetry created
+clusterrole.rbac.authorization.k8s.io/istio-mixer-istio-system created
+clusterrolebinding.rbac.authorization.k8s.io/istio-mixer-*****-role-binding-istio-system created
+attributemanifest.config.istio.io/istioproxy created
+attributemanifest.config.istio.io/kubernetes created
+handler.config.istio.io/stdio created
+instance.config.istio.io/accesslog created
+instance.config.istio.io/tcpaccesslog created
+rule.config.istio.io/stdio created
+rule.config.istio.io/stdiotcp created
+instance.config.istio.io/requestcount created
+instance.config.istio.io/requestduration created
+instance.config.istio.io/requestsize created
+instance.config.istio.io/responsesize created
+instance.config.istio.io/tcpbytesent created
+instance.config.istio.io/tcpbytereceived created
+instance.config.istio.io/tcpconnectionsopened created
+instance.config.istio.io/tcpconnectionsclosed created
+handler.config.istio.io/prometheus created
+rule.config.istio.io/promhttp created
+rule.config.istio.io/promtcp created
+rule.config.istio.io/promtcpconnectionopen created
+rule.config.istio.io/promtcpconnectionclosed created
+handler.config.istio.io/kubernetesenv created
+rule.config.istio.io/kubeattrgenrulerule created
+rule.config.istio.io/tcpkubeattrgenrulerule created
+instance.config.istio.io/attributes created
+destinationrule.networking.istio.io/istio-telemetry created
+configmap/telemetry-envoy-config created
+deployment.apps/istio-telemetry created
+poddisruptionbudget.policy/istio-telemetry created
+service/istio-telemetry created
+serviceaccount/istio-mixer-service-account created
+deployment.apps/istio-tracing created
+service/jaeger-query created
+service/jaeger-collector created
+service/jaeger-agent created
+service/zipkin created
+service/tracing created
+kubectl rollout status deployment.apps/istio-ingressgateway -n istio-system
+Waiting for deployment "istio-ingressgateway" rollout to finish: 0 of 1 updated replicas are available...
+deployment "istio-ingressgateway" successfully rolled out
+kubectl rollout status deployment.apps/istio-pilot -n istio-system
+deployment "istio-pilot" successfully rolled out
+kubectl rollout status deployment.apps/istio-citadel -n istio-system
+deployment "istio-citadel" successfully rolled out
+kubectl create -f ../resources/seldon-gateway.yaml -n istio-system
+gateway.networking.istio.io/seldon-gateway created
+helm install jaeger-operator \
+	jaegertracing/jaeger-operator \
+	--set rbac.clusterRole=true \
+	--namespace seldon \
+	--wait
+manifest_sorter.go:192: info: skipping unknown hook: "crd-install"
+NAME: jaeger-operator
+LAST DEPLOYED: Thu Feb  4 10:24:58 2021
+NAMESPACE: seldon
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+jaeger-operator is installed.
+
+
+Check the jaeger-operator logs
+  export POD=$(kubectl get pods -l app.kubernetes.io/instance=jaeger-operator -lapp.kubernetes.io/name=jaeger-operator --namespace seldon --output name)
+  kubectl logs $POD --namespace=seldon
+kubectl apply -f ../resources/jaeger.yaml --namespace seldon
+jaeger.jaegertracing.io/jaeger created
+mapping.getambassador.io/jaeger created
+cd ../../operator && make install-cert-manager
+make[1]: Entering directory '/workspace/source/operator'
+kubectl create namespace cert-manager || echo "Namespace cert-manager-exists"
+namespace/cert-manager created
+kubectl label namespace cert-manager cert-manager.io/disable-validation=true || echo "namespace cert-manager-already labelled"
+namespace/cert-manager labeled
+kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml
+customresourcedefinition.apiextensions.k8s.io/certificaterequests.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/certificates.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/challenges.acme.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/clusterissuers.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/issuers.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/orders.acme.cert-manager.io created
+Warning: kubectl apply should be used on resource created by either kubectl create --save-config or kubectl apply
+namespace/cert-manager configured
+serviceaccount/cert-manager-cainjector created
+serviceaccount/cert-manager created
+serviceaccount/cert-manager-webhook created
+clusterrole.rbac.authorization.k8s.io/cert-manager-cainjector created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-cainjector created
+role.rbac.authorization.k8s.io/cert-manager-cainjector:leaderelection created
+rolebinding.rbac.authorization.k8s.io/cert-manager-cainjector:leaderelection created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-webhook:auth-delegator created
+rolebinding.rbac.authorization.k8s.io/cert-manager-webhook:webhook-authentication-reader created
+clusterrole.rbac.authorization.k8s.io/cert-manager-webhook:webhook-requester created
+role.rbac.authorization.k8s.io/cert-manager:leaderelection created
+rolebinding.rbac.authorization.k8s.io/cert-manager:leaderelection created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-issuers created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-clusterissuers created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-certificates created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-orders created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-challenges created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-ingress-shim created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-issuers created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-clusterissuers created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-certificates created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-orders created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-challenges created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-ingress-shim created
+clusterrole.rbac.authorization.k8s.io/cert-manager-view created
+clusterrole.rbac.authorization.k8s.io/cert-manager-edit created
+service/cert-manager created
+service/cert-manager-webhook created
+deployment.apps/cert-manager-cainjector created
+deployment.apps/cert-manager created
+deployment.apps/cert-manager-webhook created
+mutatingwebhookconfiguration.admissionregistration.k8s.io/cert-manager-webhook created
+validatingwebhookconfiguration.admissionregistration.k8s.io/cert-manager-webhook created
+kubectl rollout status deployment.apps/cert-manager -n cert-manager
+Waiting for deployment "cert-manager" rollout to finish: 0 of 1 updated replicas are available...
+deployment "cert-manager" successfully rolled out
+kubectl rollout status deployment.apps/cert-manager-cainjector -n cert-manager
+deployment "cert-manager-cainjector" successfully rolled out
+kubectl rollout status deployment.apps/cert-manager-webhook -n cert-manager
+Waiting for deployment "cert-manager-webhook" rollout to finish: 0 of 1 updated replicas are available...
+deployment "cert-manager-webhook" successfully rolled out
+make[1]: Leaving directory '/workspace/source/operator'
+sleep 5 #https://github.com/jetstack/cert-manager/issues/2273
+kubectl create namespace seldon-system || echo "namespace seldon-system exists"
+namespace/seldon-system created
+helm delete seldon --namespace seldon-system || echo "seldon-core not installed"
+Error: uninstall: Release not loaded: seldon: release: not found
+seldon-core not installed
+helm install seldon \
+	../../helm-charts/seldon-core-operator \
+	--namespace seldon-system \
+	--set istio.enabled=true \
+	--set istio.gateway=istio-system/seldon-gateway \
+	--set certManager.enabled=false \
+	--set executor.enabled="true" \
+	--wait
+NAME: seldon
+LAST DEPLOYED: Thu Feb  4 10:26:20 2021
+NAMESPACE: seldon-system
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+kubectl config set-context $(kubectl config current-context) --namespace=seldon
+Context "kind-kind" modified.
+kubectl apply -f metrics.yaml
+clusterrole.rbac.authorization.k8s.io/system:aggregated-metrics-reader created
+clusterrolebinding.rbac.authorization.k8s.io/metrics-server:system:auth-delegator created
+rolebinding.rbac.authorization.k8s.io/metrics-server-auth-reader created
+apiservice.apiregistration.k8s.io/v1beta1.metrics.k8s.io created
+serviceaccount/metrics-server created
+deployment.apps/metrics-server created
+service/metrics-server created
+clusterrole.rbac.authorization.k8s.io/system:metrics-server created
+clusterrolebinding.rbac.authorization.k8s.io/system:metrics-server created
+make: Entering directory '/workspace/source/python'
+pip install -e . -r requirements-dev.txt
+Obtaining file:///workspace/source/python
+Collecting Flask<2.0.0
+  Downloading Flask-1.1.2-py2.py3-none-any.whl (94 kB)
+Requirement already satisfied: jsonschema<4.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 2)) (3.2.0)
+Collecting Flask-cors<4.0.0
+  Downloading Flask_Cors-3.0.10-py2.py3-none-any.whl (14 kB)
+Collecting redis<4.0.0
+  Downloading redis-3.5.3-py2.py3-none-any.whl (72 kB)
+Requirement already satisfied: requests<3.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 5)) (2.23.0)
+Requirement already satisfied: numpy<2.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 6)) (1.18.4)
+Collecting flatbuffers<2.0.0
+  Downloading flatbuffers-1.12-py2.py3-none-any.whl (15 kB)
+Requirement already satisfied: protobuf<4.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 8)) (3.11.3)
+Requirement already satisfied: grpcio<2.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 9)) (1.28.1)
+Collecting Flask-OpenTracing<1.2.0,>=1.1.0
+  Downloading Flask-OpenTracing-1.1.0.tar.gz (8.2 kB)
+Collecting opentracing<2.4.0,>=2.2.0
+  Downloading opentracing-2.3.0.tar.gz (48 kB)
+Collecting jaeger-client<4.4.0,>=4.1.0
+  Downloading jaeger-client-4.3.0.tar.gz (81 kB)
+Collecting grpcio-opentracing<1.2.0,>=1.1.4
+  Downloading grpcio_opentracing-1.1.4-py3-none-any.whl (14 kB)
+Requirement already satisfied: PyYAML<5.4 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 14)) (5.3.1)
+Collecting gunicorn<20.1.0,>=19.9.0
+  Downloading gunicorn-20.0.4-py2.py3-none-any.whl (77 kB)
+Collecting minio<6.0.0,>=4.0.9
+  Downloading minio-5.0.10-py2.py3-none-any.whl (75 kB)
+Collecting azure-storage-blob<3.0.0,>=2.0.1
+  Downloading azure_storage_blob-2.1.0-py2.py3-none-any.whl (88 kB)
+Requirement already satisfied: setuptools>=41.0.0 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 18)) (46.3.0)
+Collecting google-cloud-storage>=1.16.0
+  Downloading google_cloud_storage-1.35.1-py2.py3-none-any.whl (96 kB)
+Requirement already satisfied: prometheus_client<0.9.0,>=0.7.1 in /usr/local/lib/python3.6/site-packages (from -r requirements.txt (line 20)) (0.7.1)
+Collecting black==19.10b0
+  Downloading black-19.10b0-py36-none-any.whl (97 kB)
+Collecting flake8==3.8.1
+  Downloading flake8-3.8.1-py2.py3-none-any.whl (72 kB)
+Collecting mypy<0.783
+  Downloading mypy-0.782-cp36-cp36m-manylinux1_x86_64.whl (20.8 MB)
+Collecting Pillow==7.2.0
+  Downloading Pillow-7.2.0-cp36-cp36m-manylinux1_x86_64.whl (2.2 MB)
+Collecting pytest==5.4.2
+  Downloading pytest-5.4.2-py3-none-any.whl (247 kB)
+Collecting pytest-cov==2.10.0
+  Downloading pytest_cov-2.10.0-py2.py3-none-any.whl (19 kB)
+Collecting tox<4.0.0
+  Downloading tox-3.21.4-py2.py3-none-any.whl (84 kB)
+Collecting grpcio-tools==1.30.0
+  Downloading grpcio_tools-1.30.0-cp36-cp36m-manylinux2010_x86_64.whl (2.5 MB)
+Collecting mypy-protobuf==1.22
+  Downloading mypy_protobuf-1.22-py3-none-any.whl (7.5 kB)
+Collecting tenacity==6.2.0
+  Downloading tenacity-6.2.0-py2.py3-none-any.whl (24 kB)
+Collecting coverage==5.2
+  Downloading coverage-5.2-cp36-cp36m-manylinux1_x86_64.whl (229 kB)
+Collecting pandas==1.1.0
+  Downloading pandas-1.1.0-cp36-cp36m-manylinux1_x86_64.whl (10.5 MB)
+Collecting pip-licenses==2.3.0
+  Downloading pip_licenses-2.3.0-py3-none-any.whl (14 kB)
+Collecting click>=5.1
+  Downloading click-7.1.2-py2.py3-none-any.whl (82 kB)
+Collecting itsdangerous>=0.24
+  Downloading itsdangerous-1.1.0-py2.py3-none-any.whl (16 kB)
+Requirement already satisfied: Jinja2>=2.10.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->-r requirements.txt (line 1)) (2.11.2)
+Requirement already satisfied: Werkzeug>=0.15 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->-r requirements.txt (line 1)) (1.0.1)
+Requirement already satisfied: attrs>=17.4.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->-r requirements.txt (line 2)) (19.3.0)
+Requirement already satisfied: pyrsistent>=0.14.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->-r requirements.txt (line 2)) (0.16.0)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->-r requirements.txt (line 2)) (1.6.0)
+Requirement already satisfied: six>=1.11.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->-r requirements.txt (line 2)) (1.14.0)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (2.9)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (1.25.9)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (2020.4.5.1)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->-r requirements.txt (line 5)) (3.0.4)
+Collecting threadloop<2,>=1
+  Downloading threadloop-1.0.2.tar.gz (4.9 kB)
+Collecting thrift
+  Downloading thrift-0.13.0.tar.gz (59 kB)
+Requirement already satisfied: tornado>=4.3 in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.4.0,>=4.1.0->-r requirements.txt (line 12)) (6.0.4)
+Collecting configparser
+  Downloading configparser-5.0.1-py3-none-any.whl (22 kB)
+Requirement already satisfied: python-dateutil in /usr/local/lib/python3.6/site-packages (from minio<6.0.0,>=4.0.9->-r requirements.txt (line 16)) (2.8.1)
+Requirement already satisfied: pytz in /usr/local/lib/python3.6/site-packages (from minio<6.0.0,>=4.0.9->-r requirements.txt (line 16)) (2020.1)
+Collecting azure-common>=1.1.5
+  Downloading azure_common-1.1.26-py2.py3-none-any.whl (12 kB)
+Collecting azure-storage-common~=2.1
+  Downloading azure_storage_common-2.1.0-py2.py3-none-any.whl (47 kB)
+Collecting google-auth<2.0dev,>=1.11.0
+  Downloading google_auth-1.25.0-py2.py3-none-any.whl (116 kB)
+Collecting google-cloud-core<2.0dev,>=1.4.1
+  Downloading google_cloud_core-1.5.0-py2.py3-none-any.whl (27 kB)
+Collecting google-resumable-media<2.0dev,>=1.2.0
+  Downloading google_resumable_media-1.2.0-py2.py3-none-any.whl (75 kB)
+Collecting pathspec<1,>=0.6
+  Downloading pathspec-0.8.1-py2.py3-none-any.whl (28 kB)
+Collecting regex
+  Downloading regex-2020.11.13-cp36-cp36m-manylinux2014_x86_64.whl (723 kB)
+Collecting typed-ast>=1.4.0
+  Downloading typed_ast-1.4.2-cp36-cp36m-manylinux1_x86_64.whl (743 kB)
+Collecting toml>=0.9.4
+  Downloading toml-0.10.2-py2.py3-none-any.whl (16 kB)
+Collecting appdirs
+  Downloading appdirs-1.4.4-py2.py3-none-any.whl (9.6 kB)
+Collecting mccabe<0.7.0,>=0.6.0
+  Downloading mccabe-0.6.1-py2.py3-none-any.whl (8.6 kB)
+Collecting pyflakes<2.3.0,>=2.2.0
+  Downloading pyflakes-2.2.0-py2.py3-none-any.whl (66 kB)
+Collecting pycodestyle<2.7.0,>=2.6.0a1
+  Downloading pycodestyle-2.6.0-py2.py3-none-any.whl (41 kB)
+Collecting mypy-extensions<0.5.0,>=0.4.3
+  Downloading mypy_extensions-0.4.3-py2.py3-none-any.whl (4.5 kB)
+Collecting typing-extensions>=3.7.4
+  Downloading typing_extensions-3.7.4.3-py3-none-any.whl (22 kB)
+Requirement already satisfied: pluggy<1.0,>=0.12 in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (0.13.1)
+Requirement already satisfied: packaging in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (20.3)
+Requirement already satisfied: more-itertools>=4.0.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (8.2.0)
+Requirement already satisfied: py>=1.5.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (1.8.1)
+Requirement already satisfied: wcwidth in /usr/local/lib/python3.6/site-packages (from pytest==5.4.2->-r requirements-dev.txt (line 6)) (0.1.9)
+Collecting filelock>=3.0.0
+  Downloading filelock-3.0.12-py3-none-any.whl (7.6 kB)
+Collecting virtualenv!=20.0.0,!=20.0.1,!=20.0.2,!=20.0.3,!=20.0.4,!=20.0.5,!=20.0.6,!=20.0.7,>=16.0.0
+  Downloading virtualenv-20.4.2-py2.py3-none-any.whl (7.2 MB)
+Collecting PTable
+  Downloading PTable-0.9.2.tar.gz (31 kB)
+Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from Jinja2>=2.10.1->Flask<2.0.0->-r requirements.txt (line 1)) (1.1.1)
+Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.6/site-packages (from importlib-metadata; python_version < "3.8"->jsonschema<4.0.0->-r requirements.txt (line 2)) (3.1.0)
+Collecting cryptography
+  Downloading cryptography-3.3.1-cp36-abi3-manylinux2010_x86_64.whl (2.6 MB)
+Collecting rsa<5,>=3.1.4; python_version >= "3.6"
+  Downloading rsa-4.7-py3-none-any.whl (34 kB)
+Collecting pyasn1-modules>=0.2.1
+  Downloading pyasn1_modules-0.2.8-py2.py3-none-any.whl (155 kB)
+Collecting cachetools<5.0,>=2.0.0
+  Downloading cachetools-4.2.1-py3-none-any.whl (12 kB)
+Collecting google-api-core<2.0.0dev,>=1.21.0
+  Downloading google_api_core-1.25.1-py2.py3-none-any.whl (92 kB)
+Collecting google-crc32c<2.0dev,>=1.0; python_version >= "3.5"
+  Downloading google_crc32c-1.1.2-cp36-cp36m-manylinux2014_x86_64.whl (38 kB)
+Requirement already satisfied: pyparsing>=2.0.2 in /usr/local/lib/python3.6/site-packages (from packaging->pytest==5.4.2->-r requirements-dev.txt (line 6)) (2.4.7)
+Collecting importlib-resources>=1.0; python_version < "3.7"
+  Downloading importlib_resources-5.1.0-py3-none-any.whl (24 kB)
+Collecting distlib<1,>=0.3.1
+  Downloading distlib-0.3.1-py2.py3-none-any.whl (335 kB)
+Collecting cffi>=1.12
+  Downloading cffi-1.14.4-cp36-cp36m-manylinux1_x86_64.whl (401 kB)
+Collecting pyasn1>=0.1.3
+  Downloading pyasn1-0.4.8-py2.py3-none-any.whl (77 kB)
+Collecting googleapis-common-protos<2.0dev,>=1.6.0
+  Downloading googleapis_common_protos-1.52.0-py2.py3-none-any.whl (100 kB)
+Collecting pycparser
+  Downloading pycparser-2.20-py2.py3-none-any.whl (112 kB)
+Building wheels for collected packages: Flask-OpenTracing, opentracing, jaeger-client, threadloop, thrift, PTable
+  Building wheel for Flask-OpenTracing (setup.py): started
+  Building wheel for Flask-OpenTracing (setup.py): finished with status 'done'
+  Created wheel for Flask-OpenTracing: filename=Flask_OpenTracing-1.1.0-py3-none-any.whl size=9070 sha256=afc146fe92a3692d552052c3242bca37f0306f461f5f4d674775ef51105c47d1
+  Stored in directory: /builder/home/.cache/pip/wheels/ad/4b/2d/24ff0da0a0b53c7c77ce59b843bcceaf644c88703241e59615
+  Building wheel for opentracing (setup.py): started
+  Building wheel for opentracing (setup.py): finished with status 'done'
+  Created wheel for opentracing: filename=opentracing-2.3.0-py3-none-any.whl size=51347 sha256=a090bef3bb52a02f8251cfd1033f9848b4350a53c57fc20e9049b274be7113b8
+  Stored in directory: /builder/home/.cache/pip/wheels/d4/53/31/bfca74f038fa9f83eb7de2131555b75ffa9bcbca18d23e5edf
+  Building wheel for jaeger-client (setup.py): started
+  Building wheel for jaeger-client (setup.py): finished with status 'done'
+  Created wheel for jaeger-client: filename=jaeger_client-4.3.0-py3-none-any.whl size=64291 sha256=53e89ad97cbca0544707a4a5a480ceff937590f2f3c3048cbc0c1ed6754fe9e1
+  Stored in directory: /builder/home/.cache/pip/wheels/a8/37/30/d86c970966efbf6da89e8085db50f2be4cf36ca68513eff785
+  Building wheel for threadloop (setup.py): started
+  Building wheel for threadloop (setup.py): finished with status 'done'
+  Created wheel for threadloop: filename=threadloop-1.0.2-py3-none-any.whl size=3423 sha256=656343bd84fe2e3f69853b56447236937efa6887cd79943982f4bce54d50dd09
+  Stored in directory: /builder/home/.cache/pip/wheels/02/54/65/9f87de48fe8fcaaee30f279973d946ad55f9df56b93b3e78da
+  Building wheel for thrift (setup.py): started
+  Building wheel for thrift (setup.py): finished with status 'done'
+  Created wheel for thrift: filename=thrift-0.13.0-cp36-cp36m-linux_x86_64.whl size=483917 sha256=1b2b9bf626c4f083215b323bf84503da76d743c7018f67d0c8b3a1ebf80eb1f0
+  Stored in directory: /builder/home/.cache/pip/wheels/e0/38/fc/472fe18756b177b42096961f8bd3ff2dc5c5620ac399fce52d
+  Building wheel for PTable (setup.py): started
+  Building wheel for PTable (setup.py): finished with status 'done'
+  Created wheel for PTable: filename=PTable-0.9.2-py3-none-any.whl size=22907 sha256=dcf8e853ab0c815e9e3ccfc90696de599b73efb96489397e904272b4577f677f
+  Stored in directory: /builder/home/.cache/pip/wheels/f3/65/67/71f473ec87ea4554d1bdfb1b5128cfe1414c2b113b72a1ee8e
+Successfully built Flask-OpenTracing opentracing jaeger-client threadloop thrift PTable
+ERROR: grpcio-tools 1.30.0 has requirement grpcio>=1.30.0, but you'll have grpcio 1.28.1 which is incompatible.
+ERROR: google-api-core 1.25.1 has requirement protobuf>=3.12.0, but you'll have protobuf 3.11.3 which is incompatible.
+Installing collected packages: click, itsdangerous, Flask, Flask-cors, redis, flatbuffers, opentracing, Flask-OpenTracing, threadloop, thrift, jaeger-client, grpcio-opentracing, gunicorn, configparser, minio, azure-common, pycparser, cffi, cryptography, azure-storage-common, azure-storage-blob, pyasn1, rsa, pyasn1-modules, cachetools, google-auth, googleapis-common-protos, google-api-core, google-cloud-core, google-crc32c, google-resumable-media, google-cloud-storage, pathspec, regex, typed-ast, toml, appdirs, black, mccabe, pyflakes, pycodestyle, flake8, mypy-extensions, typing-extensions, mypy, Pillow, pytest, coverage, pytest-cov, filelock, importlib-resources, distlib, virtualenv, tox, grpcio-tools, mypy-protobuf, tenacity, pandas, PTable, pip-licenses, seldon-core
+  Attempting uninstall: Pillow
+    Found existing installation: Pillow 7.1.2
+    Uninstalling Pillow-7.1.2:
+      Successfully uninstalled Pillow-7.1.2
+  Attempting uninstall: pytest
+    Found existing installation: pytest 5.3.1
+    Uninstalling pytest-5.3.1:
+      Successfully uninstalled pytest-5.3.1
+  Attempting uninstall: coverage
+    Found existing installation: coverage 4.5.4
+    Uninstalling coverage-4.5.4:
+      Successfully uninstalled coverage-4.5.4
+  Attempting uninstall: pytest-cov
+    Found existing installation: pytest-cov 2.8.1
+    Uninstalling pytest-cov-2.8.1:
+      Successfully uninstalled pytest-cov-2.8.1
+  Attempting uninstall: grpcio-tools
+    Found existing installation: grpcio-tools 1.28.1
+    Uninstalling grpcio-tools-1.28.1:
+      Successfully uninstalled grpcio-tools-1.28.1
+  Attempting uninstall: tenacity
+    Found existing installation: tenacity 6.0.0
+    Uninstalling tenacity-6.0.0:
+      Successfully uninstalled tenacity-6.0.0
+  Attempting uninstall: pandas
+    Found existing installation: pandas 1.0.3
+    Uninstalling pandas-1.0.3:
+      Successfully uninstalled pandas-1.0.3
+  Running setup.py develop for seldon-core
+Successfully installed Flask-1.1.2 Flask-OpenTracing-1.1.0 Flask-cors-3.0.10 PTable-0.9.2 Pillow-7.2.0 appdirs-1.4.4 azure-common-1.1.26 azure-storage-blob-2.1.0 azure-storage-common-2.1.0 black-19.10b0 cachetools-4.2.1 cffi-1.14.4 click-7.1.2 configparser-5.0.1 coverage-5.2 cryptography-3.3.1 distlib-0.3.1 filelock-3.0.12 flake8-3.8.1 flatbuffers-1.12 google-api-core-1.25.1 google-auth-1.25.0 google-cloud-core-1.5.0 google-cloud-storage-1.35.1 google-crc32c-1.1.2 google-resumable-media-1.2.0 googleapis-common-protos-1.52.0 grpcio-opentracing-1.1.4 grpcio-tools-1.30.0 gunicorn-20.0.4 importlib-resources-5.1.0 itsdangerous-1.1.0 jaeger-client-4.3.0 mccabe-0.6.1 minio-5.0.10 mypy-0.782 mypy-extensions-0.4.3 mypy-protobuf-1.22 opentracing-2.3.0 pandas-1.1.0 pathspec-0.8.1 pip-licenses-2.3.0 pyasn1-0.4.8 pyasn1-modules-0.2.8 pycodestyle-2.6.0 pycparser-2.20 pyflakes-2.2.0 pytest-5.4.2 pytest-cov-2.10.0 redis-3.5.3 regex-2020.11.13 rsa-4.7 seldon-core tenacity-6.2.0 threadloop-1.0.2 thrift-0.13.0 toml-0.10.2 tox-3.21.4 typed-ast-1.4.2 typing-extensions-3.7.4.3 virtualenv-20.4.2
+WARNING: You are using pip version 20.1; however, version 21.0.1 is available.
+You should consider upgrading via the '/usr/local/bin/python -m pip install --upgrade pip' command.
+make: Leaving directory '/workspace/source/python'
+cp ../../proto/prediction.proto ./proto
+cd ../../proto/tensorflow && make create_protos
+make[1]: Entering directory '/workspace/source/proto/tensorflow'
+./create-protos.sh
+Downloading proto files for master
+make[1]: Leaving directory '/workspace/source/proto/tensorflow'
+cp -vr ../../proto/tensorflow/tensorflow .
+'../../proto/tensorflow/tensorflow' -> './tensorflow'
+'../../proto/tensorflow/tensorflow/core' -> './tensorflow/core'
+'../../proto/tensorflow/tensorflow/core/framework' -> './tensorflow/core/framework'
+'../../proto/tensorflow/tensorflow/core/framework/types.proto' -> './tensorflow/core/framework/types.proto'
+'../../proto/tensorflow/tensorflow/core/framework/resource_handle.proto' -> './tensorflow/core/framework/resource_handle.proto'
+'../../proto/tensorflow/tensorflow/core/framework/tensor_shape.proto' -> './tensorflow/core/framework/tensor_shape.proto'
+'../../proto/tensorflow/tensorflow/core/framework/tensor.proto' -> './tensorflow/core/framework/tensor.proto'
+python -m grpc.tools.protoc -I. --python_out=. --grpc_python_out=. ./proto/prediction.proto
+cd ../../notebooks && make build_protos
+make[1]: Entering directory '/workspace/source/notebooks'
+cd ../proto/tensorflow && make create_protos
+make[2]: Entering directory '/workspace/source/proto/tensorflow'
+make[2]: Nothing to be done for 'create_protos'.
+make[2]: Leaving directory '/workspace/source/proto/tensorflow'
+cp -vr ../proto/tensorflow/tensorflow .
+'../proto/tensorflow/tensorflow' -> './tensorflow'
+'../proto/tensorflow/tensorflow/core' -> './tensorflow/core'
+'../proto/tensorflow/tensorflow/core/framework' -> './tensorflow/core/framework'
+'../proto/tensorflow/tensorflow/core/framework/types.proto' -> './tensorflow/core/framework/types.proto'
+'../proto/tensorflow/tensorflow/core/framework/resource_handle.proto' -> './tensorflow/core/framework/resource_handle.proto'
+'../proto/tensorflow/tensorflow/core/framework/tensor_shape.proto' -> './tensorflow/core/framework/tensor_shape.proto'
+'../proto/tensorflow/tensorflow/core/framework/tensor.proto' -> './tensorflow/core/framework/tensor.proto'
+cp ../proto/prediction.proto ./proto
+python -m grpc.tools.protoc -I. --python_out=. --grpc_python_out=. ./proto/prediction.proto
+make[1]: Leaving directory '/workspace/source/notebooks'
+cd ../../proto/k8s && make create_protos
+make[1]: Entering directory '/workspace/source/proto/k8s'
+./create-k8s-protos.sh
+Downloading proto files for master
+Munging proto file packages
+sed -i.bak 's|import "k8s.io/apiextensions-apiserver/|//import "k8s.io/apiextensions-apiserver/|' k8s.io/api/core/v1/generated.proto
+rm k8s.io/api/core/v1/generated.proto.bak
+make[1]: Leaving directory '/workspace/source/proto/k8s'
+pip install -r dev_requirements.txt
+Collecting pytest==5.3.1
+  Downloading pytest-5.3.1-py3-none-any.whl (233 kB)
+Requirement already satisfied: pytest-xdist==1.30.0 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 2)) (1.30.0)
+Collecting pytest-cov==2.8.1
+  Downloading pytest_cov-2.8.1-py2.py3-none-any.whl (18 kB)
+Requirement already satisfied: flaky==3.6.1 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 4)) (3.6.1)
+Collecting tenacity==6.0.0
+  Downloading tenacity-6.0.0-py2.py3-none-any.whl (24 kB)
+Collecting sh==1.13.1
+  Downloading sh-1.13.1-py2.py3-none-any.whl (40 kB)
+Requirement already satisfied: ipython==7.13.0 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 9)) (7.13.0)
+Requirement already satisfied: nbconvert==5.6.1 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 10)) (5.6.1)
+Requirement already satisfied: alibi==0.3.2 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 11)) (0.3.2)
+Requirement already satisfied: matplotlib==3.1.3 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 12)) (3.1.3)
+Requirement already satisfied: tensorflow==1.15.2 in /usr/local/lib/python3.6/site-packages (from -r dev_requirements.txt (line 13)) (1.15.2)
+Collecting coverage==4.5.4
+  Downloading coverage-4.5.4-cp36-cp36m-manylinux1_x86_64.whl (205 kB)
+Requirement already satisfied: more-itertools>=4.0.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (8.2.0)
+Requirement already satisfied: attrs>=17.4.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (19.3.0)
+Requirement already satisfied: importlib-metadata>=0.12; python_version < "3.8" in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (1.6.0)
+Requirement already satisfied: packaging in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (20.3)
+Requirement already satisfied: pluggy<1.0,>=0.12 in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (0.13.1)
+Requirement already satisfied: py>=1.5.0 in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (1.8.1)
+Requirement already satisfied: wcwidth in /usr/local/lib/python3.6/site-packages (from pytest==5.3.1->-r dev_requirements.txt (line 1)) (0.1.9)
+Requirement already satisfied: execnet>=1.1 in /usr/local/lib/python3.6/site-packages (from pytest-xdist==1.30.0->-r dev_requirements.txt (line 2)) (1.7.1)
+Requirement already satisfied: six in /usr/local/lib/python3.6/site-packages (from pytest-xdist==1.30.0->-r dev_requirements.txt (line 2)) (1.14.0)
+Requirement already satisfied: pytest-forked in /usr/local/lib/python3.6/site-packages (from pytest-xdist==1.30.0->-r dev_requirements.txt (line 2)) (1.1.3)
+Requirement already satisfied: prompt-toolkit!=3.0.0,!=3.0.1,<3.1.0,>=2.0.0 in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (3.0.5)
+Requirement already satisfied: jedi>=0.10 in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.17.0)
+Requirement already satisfied: backcall in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.1.0)
+Requirement already satisfied: setuptools>=18.5 in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (46.3.0)
+Requirement already satisfied: decorator in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (4.4.2)
+Requirement already satisfied: pygments in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (2.6.1)
+Requirement already satisfied: pexpect; sys_platform != "win32" in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (4.8.0)
+Requirement already satisfied: pickleshare in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.7.5)
+Requirement already satisfied: traitlets>=4.2 in /usr/local/lib/python3.6/site-packages (from ipython==7.13.0->-r dev_requirements.txt (line 9)) (4.3.3)
+Requirement already satisfied: bleach in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (3.1.5)
+Requirement already satisfied: defusedxml in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.6.0)
+Requirement already satisfied: pandocfilters>=1.4.1 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (1.4.2)
+Requirement already satisfied: jupyter-core in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (4.6.3)
+Requirement already satisfied: entrypoints>=0.2.2 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.3)
+Requirement already satisfied: jinja2>=2.4 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (2.11.2)
+Requirement already satisfied: testpath in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.4.4)
+Requirement already satisfied: mistune<2,>=0.8.1 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.8.4)
+Requirement already satisfied: nbformat>=4.4 in /usr/local/lib/python3.6/site-packages (from nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (5.0.6)
+Requirement already satisfied: scikit-image in /usr/local/lib/python3.6/site-packages (from alibi==0.3.2->-r dev_requirements.txt (line 11)) (0.17.2)
+Requirement already satisfied: scikit-learn in /usr/local/lib/python3.6/site-packages (from alibi==0.3.2->-r dev_requirements.txt (line 11)) (0.23.0)
+Requirement already satisfied: Pillow in /usr/local/lib/python3.6/site-packages (from alibi==0.3.2->-r dev_requirements.txt (line 11)) (7.2.0)
+Requirement already satisfied: spacy in /usr/local/lib/python3.6/site-packages (from alibi==0.3.2->-r dev_requirements.txt (line 11)) (2.2.4)
+Requirement already satisfied: beautifulsoup4 in /usr/local/lib/python3.6/site-packages (from alibi==0.3.2->-r dev_requirements.txt (line 11)) (4.9.0)
+Requirement already satisfied: pandas in /usr/local/lib/python3.6/site-packages (from alibi==0.3.2->-r dev_requirements.txt (line 11)) (1.1.0)
+Requirement already satisfied: numpy in /usr/local/lib/python3.6/site-packages (from alibi==0.3.2->-r dev_requirements.txt (line 11)) (1.18.4)
+Requirement already satisfied: requests in /usr/local/lib/python3.6/site-packages (from alibi==0.3.2->-r dev_requirements.txt (line 11)) (2.23.0)
+Requirement already satisfied: kiwisolver>=1.0.1 in /usr/local/lib/python3.6/site-packages (from matplotlib==3.1.3->-r dev_requirements.txt (line 12)) (1.2.0)
+Requirement already satisfied: python-dateutil>=2.1 in /usr/local/lib/python3.6/site-packages (from matplotlib==3.1.3->-r dev_requirements.txt (line 12)) (2.8.1)
+Requirement already satisfied: pyparsing!=2.0.4,!=2.1.2,!=2.1.6,>=2.0.1 in /usr/local/lib/python3.6/site-packages (from matplotlib==3.1.3->-r dev_requirements.txt (line 12)) (2.4.7)
+Requirement already satisfied: cycler>=0.10 in /usr/local/lib/python3.6/site-packages (from matplotlib==3.1.3->-r dev_requirements.txt (line 12)) (0.10.0)
+Requirement already satisfied: google-pasta>=0.1.6 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (0.2.0)
+Requirement already satisfied: keras-applications>=1.0.8 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (1.0.8)
+Requirement already satisfied: termcolor>=1.1.0 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (1.1.0)
+Requirement already satisfied: protobuf>=3.6.1 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (3.11.3)
+Requirement already satisfied: opt-einsum>=2.3.2 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (3.2.1)
+Requirement already satisfied: wheel>=0.26; python_version >= "3" in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (0.34.2)
+Requirement already satisfied: tensorflow-estimator==1.15.1 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (1.15.1)
+Requirement already satisfied: grpcio>=1.8.6 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (1.28.1)
+Requirement already satisfied: keras-preprocessing>=1.0.5 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (1.1.2)
+Requirement already satisfied: tensorboard<1.16.0,>=1.15.0 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (1.15.0)
+Requirement already satisfied: absl-py>=0.7.0 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (0.9.0)
+Requirement already satisfied: astor>=0.6.0 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (0.8.1)
+Requirement already satisfied: wrapt>=1.11.1 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (1.12.1)
+Requirement already satisfied: gast==0.2.2 in /usr/local/lib/python3.6/site-packages (from tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (0.2.2)
+Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.6/site-packages (from importlib-metadata>=0.12; python_version < "3.8"->pytest==5.3.1->-r dev_requirements.txt (line 1)) (3.1.0)
+Requirement already satisfied: apipkg>=1.4 in /usr/local/lib/python3.6/site-packages (from execnet>=1.1->pytest-xdist==1.30.0->-r dev_requirements.txt (line 2)) (1.5)
+Requirement already satisfied: parso>=0.7.0 in /usr/local/lib/python3.6/site-packages (from jedi>=0.10->ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.7.0)
+Requirement already satisfied: ptyprocess>=0.5 in /usr/local/lib/python3.6/site-packages (from pexpect; sys_platform != "win32"->ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.6.0)
+Requirement already satisfied: ipython-genutils in /usr/local/lib/python3.6/site-packages (from traitlets>=4.2->ipython==7.13.0->-r dev_requirements.txt (line 9)) (0.2.0)
+Requirement already satisfied: webencodings in /usr/local/lib/python3.6/site-packages (from bleach->nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.5.1)
+Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from jinja2>=2.4->nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (1.1.1)
+Requirement already satisfied: jsonschema!=2.5.0,>=2.4 in /usr/local/lib/python3.6/site-packages (from nbformat>=4.4->nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (3.2.0)
+Requirement already satisfied: tifffile>=2019.7.26 in /usr/local/lib/python3.6/site-packages (from scikit-image->alibi==0.3.2->-r dev_requirements.txt (line 11)) (2020.5.11)
+Requirement already satisfied: imageio>=2.3.0 in /usr/local/lib/python3.6/site-packages (from scikit-image->alibi==0.3.2->-r dev_requirements.txt (line 11)) (2.8.0)
+Requirement already satisfied: scipy>=1.0.1 in /usr/local/lib/python3.6/site-packages (from scikit-image->alibi==0.3.2->-r dev_requirements.txt (line 11)) (1.4.1)
+Requirement already satisfied: PyWavelets>=1.1.1 in /usr/local/lib/python3.6/site-packages (from scikit-image->alibi==0.3.2->-r dev_requirements.txt (line 11)) (1.1.1)
+Requirement already satisfied: networkx>=2.0 in /usr/local/lib/python3.6/site-packages (from scikit-image->alibi==0.3.2->-r dev_requirements.txt (line 11)) (2.4)
+Requirement already satisfied: joblib>=0.11 in /usr/local/lib/python3.6/site-packages (from scikit-learn->alibi==0.3.2->-r dev_requirements.txt (line 11)) (0.14.1)
+Requirement already satisfied: threadpoolctl>=2.0.0 in /usr/local/lib/python3.6/site-packages (from scikit-learn->alibi==0.3.2->-r dev_requirements.txt (line 11)) (2.0.0)
+Requirement already satisfied: catalogue<1.1.0,>=0.0.7 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 11)) (1.0.0)
+Requirement already satisfied: wasabi<1.1.0,>=0.4.0 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 11)) (0.6.0)
+Requirement already satisfied: tqdm<5.0.0,>=4.38.0 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 11)) (4.46.0)
+Requirement already satisfied: murmurhash<1.1.0,>=0.28.0 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 11)) (1.0.2)
+Requirement already satisfied: blis<0.5.0,>=0.4.0 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 11)) (0.4.1)
+Requirement already satisfied: cymem<2.1.0,>=2.0.2 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 11)) (2.0.3)
+Requirement already satisfied: thinc==7.4.0 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 11)) (7.4.0)
+Requirement already satisfied: srsly<1.1.0,>=1.0.2 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 11)) (1.0.2)
+Requirement already satisfied: plac<1.2.0,>=0.9.6 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 11)) (1.1.3)
+Requirement already satisfied: preshed<3.1.0,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from spacy->alibi==0.3.2->-r dev_requirements.txt (line 11)) (3.0.2)
+Requirement already satisfied: soupsieve>1.2 in /usr/local/lib/python3.6/site-packages (from beautifulsoup4->alibi==0.3.2->-r dev_requirements.txt (line 11)) (2.0)
+Requirement already satisfied: pytz>=2017.2 in /usr/local/lib/python3.6/site-packages (from pandas->alibi==0.3.2->-r dev_requirements.txt (line 11)) (2020.1)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.3.2->-r dev_requirements.txt (line 11)) (2020.4.5.1)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.3.2->-r dev_requirements.txt (line 11)) (1.25.9)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.3.2->-r dev_requirements.txt (line 11)) (2.9)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests->alibi==0.3.2->-r dev_requirements.txt (line 11)) (3.0.4)
+Requirement already satisfied: h5py in /usr/local/lib/python3.6/site-packages (from keras-applications>=1.0.8->tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (2.10.0)
+Requirement already satisfied: markdown>=2.6.8 in /usr/local/lib/python3.6/site-packages (from tensorboard<1.16.0,>=1.15.0->tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (3.2.2)
+Requirement already satisfied: werkzeug>=0.11.15 in /usr/local/lib/python3.6/site-packages (from tensorboard<1.16.0,>=1.15.0->tensorflow==1.15.2->-r dev_requirements.txt (line 13)) (1.0.1)
+Requirement already satisfied: pyrsistent>=0.14.0 in /usr/local/lib/python3.6/site-packages (from jsonschema!=2.5.0,>=2.4->nbformat>=4.4->nbconvert==5.6.1->-r dev_requirements.txt (line 10)) (0.16.0)
+Requirement already satisfied: imagecodecs>=2020.2.18 in /usr/local/lib/python3.6/site-packages (from tifffile>=2019.7.26->scikit-image->alibi==0.3.2->-r dev_requirements.txt (line 11)) (2020.2.18)
+Installing collected packages: pytest, coverage, pytest-cov, tenacity, sh
+  Attempting uninstall: pytest
+    Found existing installation: pytest 5.4.2
+    Uninstalling pytest-5.4.2:
+      Successfully uninstalled pytest-5.4.2
+  Attempting uninstall: coverage
+    Found existing installation: coverage 5.2
+    Uninstalling coverage-5.2:
+      Successfully uninstalled coverage-5.2
+  Attempting uninstall: pytest-cov
+    Found existing installation: pytest-cov 2.10.0
+    Uninstalling pytest-cov-2.10.0:
+      Successfully uninstalled pytest-cov-2.10.0
+  Attempting uninstall: tenacity
+    Found existing installation: tenacity 6.2.0
+    Uninstalling tenacity-6.2.0:
+      Successfully uninstalled tenacity-6.2.0
+Successfully installed coverage-4.5.4 pytest-5.3.1 pytest-cov-2.8.1 sh-1.13.1 tenacity-6.0.0
+WARNING: You are using pip version 20.1; however, version 21.0.1 is available.
+You should consider upgrading via the '/usr/local/bin/python -m pip install --upgrade pip' command.
+pip install -e ../../python
+Obtaining file:///workspace/source/python
+Requirement already satisfied: Flask<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (1.1.2)
+Requirement already satisfied: jsonschema<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (3.2.0)
+Requirement already satisfied: Flask-cors<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (3.0.10)
+Requirement already satisfied: redis<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (3.5.3)
+Requirement already satisfied: requests<3.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (2.23.0)
+Requirement already satisfied: numpy<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (1.18.4)
+Requirement already satisfied: flatbuffers<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (1.12)
+Requirement already satisfied: protobuf<4.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (3.11.3)
+Requirement already satisfied: grpcio<2.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (1.28.1)
+Requirement already satisfied: Flask-OpenTracing<1.2.0,>=1.1.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (1.1.0)
+Requirement already satisfied: opentracing<2.4.0,>=2.2.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (2.3.0)
+Requirement already satisfied: jaeger-client<4.4.0,>=4.1.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (4.3.0)
+Requirement already satisfied: grpcio-opentracing<1.2.0,>=1.1.4 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (1.1.4)
+Requirement already satisfied: PyYAML<5.4 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (5.3.1)
+Requirement already satisfied: gunicorn<20.1.0,>=19.9.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (20.0.4)
+Requirement already satisfied: minio<6.0.0,>=4.0.9 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (5.0.10)
+Requirement already satisfied: setuptools>=41.0.0 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (46.3.0)
+Requirement already satisfied: prometheus_client<0.9.0,>=0.7.1 in /usr/local/lib/python3.6/site-packages (from seldon-core==1.2.4) (0.7.1)
+Requirement already satisfied: Jinja2>=2.10.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.2.4) (2.11.2)
+Requirement already satisfied: click>=5.1 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.2.4) (7.1.2)
+Requirement already satisfied: Werkzeug>=0.15 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.2.4) (1.0.1)
+Requirement already satisfied: itsdangerous>=0.24 in /usr/local/lib/python3.6/site-packages (from Flask<2.0.0->seldon-core==1.2.4) (1.1.0)
+Requirement already satisfied: six>=1.11.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->seldon-core==1.2.4) (1.14.0)
+Requirement already satisfied: attrs>=17.4.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->seldon-core==1.2.4) (19.3.0)
+Requirement already satisfied: importlib-metadata; python_version < "3.8" in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->seldon-core==1.2.4) (1.6.0)
+Requirement already satisfied: pyrsistent>=0.14.0 in /usr/local/lib/python3.6/site-packages (from jsonschema<4.0.0->seldon-core==1.2.4) (0.16.0)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.2.4) (1.25.9)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.2.4) (2020.4.5.1)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.2.4) (2.9)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/site-packages (from requests<3.0.0->seldon-core==1.2.4) (3.0.4)
+Requirement already satisfied: threadloop<2,>=1 in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core==1.2.4) (1.0.2)
+Requirement already satisfied: tornado>=4.3 in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core==1.2.4) (6.0.4)
+Requirement already satisfied: thrift in /usr/local/lib/python3.6/site-packages (from jaeger-client<4.4.0,>=4.1.0->seldon-core==1.2.4) (0.13.0)
+Requirement already satisfied: python-dateutil in /usr/local/lib/python3.6/site-packages (from minio<6.0.0,>=4.0.9->seldon-core==1.2.4) (2.8.1)
+Requirement already satisfied: pytz in /usr/local/lib/python3.6/site-packages (from minio<6.0.0,>=4.0.9->seldon-core==1.2.4) (2020.1)
+Requirement already satisfied: configparser in /usr/local/lib/python3.6/site-packages (from minio<6.0.0,>=4.0.9->seldon-core==1.2.4) (5.0.1)
+Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.6/site-packages (from Jinja2>=2.10.1->Flask<2.0.0->seldon-core==1.2.4) (1.1.1)
+Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.6/site-packages (from importlib-metadata; python_version < "3.8"->jsonschema<4.0.0->seldon-core==1.2.4) (3.1.0)
+Installing collected packages: seldon-core
+  Attempting uninstall: seldon-core
+    Found existing installation: seldon-core 1.2.4
+    Uninstalling seldon-core-1.2.4:
+      Successfully uninstalled seldon-core-1.2.4
+  Running setup.py develop for seldon-core
+Successfully installed seldon-core
+WARNING: You are using pip version 20.1; however, version 21.0.1 is available.
+You should consider upgrading via the '/usr/local/bin/python -m pip install --upgrade pip' command.
+pytest \
+	--verbose \
+	-s \
+	-m "notebooks" \
+	-W ignore test_notebooks.py::TestNotebooks 2>&1
+============================= test session starts ==============================
+platform linux -- Python 3.6.10, pytest-5.3.1, py-1.8.1, pluggy-0.13.1 -- /usr/local/bin/python
+cachedir: .pytest_cache
+rootdir: /workspace/source/testing/scripts, inifile: setup.cfg
+plugins: cov-2.8.1, xdist-1.30.0, flaky-3.6.1, forked-1.1.3
+collecting ... collected 25 items
+
+test_notebooks.py::TestNotebooks::test_helm_examples [NbConvertApp] Converting notebook ../../notebooks/helm_examples.ipynb to script
+[NbConvertApp] Writing 6781 bytes to ../../notebooks/helm_examples.py
+
+PODS UPDATE: NAMESPACE       NAME                                         READY   STATUS    RESTARTS   AGE
+
+
+PODS UPDATE: cert-manager    cert-manager-5c47f46f57-x6dp7                1/1     Running   0          5m55s
+
+
+PODS UPDATE: cert-manager    cert-manager-cainjector-6659d6844d-kx6p8     1/1     Running   0          5m55s
+
+
+PODS UPDATE: cert-manager    cert-manager-webhook-547567b88f-4n7kx        1/1     Running   0          5m55s
+
+
+PODS UPDATE: istio-system    grafana-6b65874977-ssk7w                     1/1     Running   0          8m25s
+
+
+PODS UPDATE: istio-system    istio-citadel-86dcf4c6b-cm9f8                1/1     Running   0          8m29s
+
+
+PODS UPDATE: istio-system    istio-egressgateway-68f754ccdd-fxpck         1/1     Running   0          8m29s
+
+
+PODS UPDATE: istio-system    istio-galley-5fc6d6c45b-lswz6                1/1     Running   0          8m25s
+
+
+PODS UPDATE: istio-system    istio-ingressgateway-6d759478d8-tfzht        1/1     Running   0          8m25s
+
+
+PODS UPDATE: istio-system    istio-pilot-5c4995d687-8bcv5                 1/1     Running   0          8m24s
+
+
+PODS UPDATE: istio-system    istio-policy-57b99968f-cfkhv                 1/1     Running   1          8m24s
+
+
+PODS UPDATE: istio-system    istio-sidecar-injector-746f7c7bbb-l47ds      1/1     Running   0          8m25s
+
+
+PODS UPDATE: istio-system    istio-telemetry-854d8556d5-877n5             1/1     Running   1          8m19s
+
+
+PODS UPDATE: istio-system    istio-tracing-c66d67cd9-pzvfx                1/1     Running   0          8m20s
+
+
+PODS UPDATE: istio-system    kiali-8559969566-zzrww                       1/1     Running   0          8m24s
+
+
+PODS UPDATE: istio-system    prometheus-66c5887c86-88gmk                  1/1     Running   0          8m23s
+
+
+PODS UPDATE: kube-system     coredns-5644d7b6d9-726ft                     1/1     Running   0          18m
+
+
+PODS UPDATE: kube-system     coredns-5644d7b6d9-dnz9w                     1/1     Running   0          18m
+
+
+PODS UPDATE: kube-system     etcd-kind-control-plane                      1/1     Running   0          17m
+
+
+PODS UPDATE: kube-system     kindnet-8tt7k                                1/1     Running   0          18m
+
+
+PODS UPDATE: kube-system     kindnet-zgwb5                                1/1     Running   0          18m
+
+
+PODS UPDATE: kube-system     kube-apiserver-kind-control-plane            1/1     Running   0          17m
+
+
+PODS UPDATE: kube-system     kube-controller-manager-kind-control-plane   1/1     Running   0          17m
+
+
+PODS UPDATE: kube-system     kube-proxy-cvjpk                             1/1     Running   0          18m
+
+
+PODS UPDATE: kube-system     kube-proxy-gsld9                             1/1     Running   0          18m
+
+
+PODS UPDATE: kube-system     kube-scheduler-kind-control-plane            1/1     Running   0          17m
+
+
+PODS UPDATE: kube-system     metrics-server-787cbd4d5d-mw8z2              1/1     Running   0          4m30s
+
+
+PODS UPDATE: seldon-system   seldon-controller-manager-754d48b654-gx28p   1/1     Running   0          4m50s
+
+
+PODS UPDATE: seldon          ambassador-77b585665b-6kcqv                  1/1     Running   0          10m
+
+
+PODS UPDATE: seldon          jaeger-57d4bdd84d-r7wtj                      1/1     Running   0          5m55s
+
+
+PODS UPDATE: seldon          jaeger-operator-86c598c58-xnm7c              1/1     Running   0          6m13s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-rdjr9     0/2     Pending   0          0s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-rdjr9     0/2     Pending   0          0s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-rdjr9     0/2     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-rdjr9     0/2     Running             0          2m19s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-rdjr9     1/2     Running             0          2m38s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-rdjr9     2/2     Running             0          2m41s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-rdjr9     2/2     Terminating         0          3m1s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-c8b57d7c4-p47fp      0/2     Pending             0          0s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-c8b57d7c4-p47fp      0/2     Pending             0          0s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-c8b57d7c4-p47fp      0/2     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-rdjr9     1/2     Terminating         0          3m13s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-rdjr9     0/2     Terminating         0          3m35s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-rdjr9     0/2     Terminating         0          3m36s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-rdjr9     0/2     Terminating         0          3m37s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-rdjr9     0/2     Terminating         0          3m37s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-rdjr9     0/2     Terminating         0          3m41s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-rdjr9     0/2     Terminating         0          3m41s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-c8b57d7c4-p47fp      0/2     Running             0          60s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-c8b57d7c4-p47fp      1/2     Running             0          78s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-c8b57d7c4-p47fp      2/2     Running             0          81s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-c8b57d7c4-p47fp      2/2     Terminating         0          97s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-578b5468cc-n7d4n   0/2     Pending             0          0s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6f6f597cb9-dxt5j   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-578b5468cc-n7d4n   0/2     Pending             0          0s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6f6f597cb9-dxt5j   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-578b5468cc-n7d4n   0/2     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6f6f597cb9-dxt5j   0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-578b5468cc-n7d4n   0/2     Running             0          2s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6f6f597cb9-dxt5j   0/1     Running             0          2s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-c8b57d7c4-p47fp            1/2     Terminating         0          111s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-c8b57d7c4-p47fp            0/2     Terminating         0          2m1s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-c8b57d7c4-p47fp            0/2     Terminating         0          2m1s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-c8b57d7c4-p47fp            0/2     Terminating         0          2m2s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-c8b57d7c4-p47fp            0/2     Terminating         0          2m2s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6f6f597cb9-dxt5j   1/1     Running             0          24s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-578b5468cc-n7d4n   1/2     Running             0          25s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-578b5468cc-n7d4n   2/2     Running             0          25s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6f6f597cb9-dxt5j   1/1     Terminating         0          41s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-578b5468cc-n7d4n   2/2     Terminating         0          41s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-645d75dc76-c7vqc   0/2     Pending             0          0s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6b7db66597-4t296   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6b7db66597-4t296   0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-645d75dc76-c7vqc   0/2     Pending             0          0s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6b7db66597-4t296   0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-645d75dc76-c7vqc   0/2     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6b7db66597-4t296   0/1     Running             0          1s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-645d75dc76-c7vqc   0/2     Running             0          2s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-578b5468cc-n7d4n   1/2     Terminating         0          55s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6f6f597cb9-dxt5j   0/1     Terminating         0          62s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-578b5468cc-n7d4n   0/2     Terminating         0          62s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-645d75dc76-c7vqc   1/2     Running             0          22s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6b7db66597-4t296   1/1     Running             0          23s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-578b5468cc-n7d4n   0/2     Terminating         0          72s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-578b5468cc-n7d4n   0/2     Terminating         0          72s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6f6f597cb9-dxt5j   0/1     Terminating         0          72s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6f6f597cb9-dxt5j   0/1     Terminating         0          72s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-645d75dc76-c7vqc   2/2     Running             0          26s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6b7db66597-4t296   1/1     Terminating         0          61s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-645d75dc76-c7vqc   2/2     Terminating         0          61s
+
+
+PODS UPDATE: seldon          mymab-default-0-classifier-1-7d76944d-mbz42        0/2     Pending             0          0s
+
+
+PODS UPDATE: seldon          mymab-default-1-classifier-2-5fbb94b6b6-8b4xn      0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon          mymab-default-1-classifier-2-5fbb94b6b6-8b4xn      0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon          mymab-default-0-classifier-1-7d76944d-mbz42        0/2     Pending             0          0s
+
+
+PODS UPDATE: seldon          mymab-default-2-eg-router-7944df495c-zzh67         0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon          mymab-default-2-eg-router-7944df495c-zzh67         0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon          mymab-default-1-classifier-2-5fbb94b6b6-8b4xn      0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon          mymab-default-0-classifier-1-7d76944d-mbz42        0/2     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon          mymab-default-2-eg-router-7944df495c-zzh67         0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-645d75dc76-c7vqc   1/2     Terminating         0          76s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-645d75dc76-c7vqc   0/2     Terminating         0          92s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6b7db66597-4t296   0/1     Terminating         0          93s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6b7db66597-4t296   0/1     Terminating         0          108s
+
+
+PODS UPDATE: seldon PASSED
+test_notebooks.py::TestNotebooks::test_explainer_examples [NbConvertApp] Converting notebook ../../notebooks/explainer_examples.ipynb to script
+[NbConvertApp] Writing 15022 bytes to ../../notebooks/explainer_examples.py
+         myabtest-default-0-classifier-1-645d75dc76-c7vqc   0/2     Terminating         0          111s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-645d75dc76-c7vqc   0/2     Terminating         0          117s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-645d75dc76-c7vqc   0/2     Terminating         0          2m
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6b7db66597-4t296   0/1     Terminating         0          2m6s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6b7db66597-4t296   0/1     Terminating         0          2m7s
+
+
+PODS UPDATE: seldon          mymab-default-1-classifier-2-5fbb94b6b6-8b4xn      0/1     Running             0          53s
+
+
+PODS UPDATE: seldon          mymab-default-0-classifier-1-7d76944d-mbz42        0/2     Running             0          60s
+
+
+PODS UPDATE: seldon          mymab-default-0-classifier-1-7d76944d-mbz42        1/2     Running             0          63s
+
+
+PODS UPDATE: seldon          mymab-default-2-eg-router-7944df495c-zzh67         0/1     Running             0          72s
+
+
+PODS UPDATE: seldon          mymab-default-1-classifier-2-5fbb94b6b6-8b4xn      1/1     Running             0          77s
+
+
+PODS UPDATE: seldon          mymab-default-2-eg-router-7944df495c-zzh67         1/1     Running             0          111s
+
+
+PODS UPDATE: seldon          mymab-default-0-classifier-1-7d76944d-mbz42        2/2     Running             0          113s
+
+
+PODS UPDATE: seldon          mymab-default-0-classifier-1-7d76944d-mbz42        2/2     Terminating         0          2m14s
+
+
+PODS UPDATE: seldon          mymab-default-2-eg-router-7944df495c-zzh67         1/1     Terminating         0          2m14s
+
+
+PODS UPDATE: seldon          mymab-default-1-classifier-2-5fbb94b6b6-8b4xn      1/1     Terminating         0          2m15s
+
+
+PODS UPDATE: seldon          mymab-default-0-classifier-1-7c56b85558-rt7gz      0/2     Pending             0          0s
+
+
+PODS UPDATE: seldon          mymab-default-1-classifier-2-86df69bc74-92x7b      0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon          mymab-default-0-classifier-1-7c56b85558-rt7gz      0/2     Pending             0          0s
+
+
+PODS UPDATE: seldon          mymab-default-2-eg-router-57bc97dc57-9r4wj         0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon          mymab-default-1-classifier-2-86df69bc74-92x7b      0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon          mymab-default-2-eg-router-57bc97dc57-9r4wj         0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon          mymab-default-0-classifier-1-7c56b85558-rt7gz      0/2     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon          mymab-default-1-classifier-2-86df69bc74-92x7b      0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon          mymab-default-2-eg-router-57bc97dc57-9r4wj         0/1     ContainerCreating   0          0s
+
+
+PODS UPDATE: seldon          mymab-default-1-classifier-2-86df69bc74-92x7b      0/1     Running             0          2s
+
+
+PODS UPDATE: seldon          mymab-default-0-classifier-1-7c56b85558-rt7gz      0/2     Running             0          2s
+
+
+PODS UPDATE: seldon          mymab-default-2-eg-router-57bc97dc57-9r4wj         0/1     Running             0          4s
+
+
+PODS UPDATE: seldon          mymab-default-0-classifier-1-7d76944d-mbz42        1/2     Terminating         0          2m27s
+
+
+PODS UPDATE: seldon          mymab-default-2-eg-router-7944df495c-zzh67         0/1     Terminating         0          2m35s
+
+
+PODS UPDATE: seldon          mymab-default-0-classifier-1-7d76944d-mbz42        0/2     Terminating         0          2m35s
+
+
+PODS UPDATE: seldon          mymab-default-1-classifier-2-5fbb94b6b6-8b4xn      0/1     Terminating         0          2m35s
+
+
+PODS UPDATE: seldon          mymab-default-2-eg-router-7944df495c-zzh67         0/1     Terminating         0          2m36s
+
+
+PODS UPDATE: seldon          mymab-default-2-eg-router-7944df495c-zzh67         0/1     Terminating        seldondeployment.machinelearning.seldon.io "income" deleted
+ 0          2m36s
+
+
+PODS UPDATE: seldon          mymab-default-0-classifier-1-7d76944d-mbz42        0/2     Terminating         0          2m40s
+
+
+PODS UPDATE: seldon          mymab-default-0-classifier-1-7d76944d-mbz42        0/2     Terminating         0          2m40s
+
+
+PODS UPDATE: seldon          mymab-default-1-classifier-2-5fbb94b6b6-8b4xn      0/1     Terminating         0          2m40s
+
+
+PODS UPDATE: seldon          mymab-default-1-classifier-2-5fbb94b6b6-8b4xn      0/1     Terminating         0          2m40s
+
+
+PODS UPDATE: seldon          mymab-default-1-classifier-2-86df69bc74-92x7b      1/1     Running             0          23s
+
+
+PODS UPDATE: seldon          mymab-default-0-classifier-1-7c56b85558-rt7gz      1/2     Running             0          26s
+
+
+PODS UPDATE: seldon          mymab-default-2-eg-router-57bc97dc57-9r4wj         1/1     Running             0          27s
+
+
+PODS UPDATE: seldon          mymab-default-0-classifier-1-7c56b85558-rt7gz      2/2     Running             0          30s
+
+
+PODS UPDATE: seldon          mymab-default-2-eg-router-57bc97dc57-9r4wj         1/1     Terminating         0          46s
+
+
+PODS UPDATE: seldon          mymab-default-1-classifier-2-86df69bc74-92x7b      1/1     Terminating         0          46s
+
+
+PODS UPDATE: seldon          mymab-default-0-classifier-1-7c56b85558-rt7gz      2/2     Terminating         0          46s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-4dbfv          0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-z4qdn       0/2     Pending             0          0s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-4dbfv          0/1     Pending             0          0s
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-z4qdn       0/2     Pending             0          0s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-4dbfv          0/1     Init:0/1            0          0s
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-z4qdn       0/2     Init:0/1            0          0s
+
+
+PODS UPDATE: seldon          mymab-default-0-classifier-1-7c56b85558-rt7gz      1/2     Terminating         0          60s
+
+
+PODS UPDATE: seldon          mymab-default-1-classifier-2-86df69bc74-92x7b      0/1     Terminating         0          79s
+
+
+PODS UPDATE: seldon          mymab-default-0-classifier-1-7c56b85558-rt7gz      0/2     Terminating         0          82s
+
+
+PODS UPDATE: seldon          mymab-default-2-eg-router-57bc97dc57-9r4wj         0/1     Terminating         0          83s
+
+
+PODS UPDATE: seldon          mymab-default-0-classifier-1-7c56b85558-rt7gz      0/2     Terminating         0          106s
+
+
+PODS UPDATE: seldon          mymab-default-0-classifier-1-7c56b85558-rt7gz      0/2     Terminating         0          106s
+
+
+PODS UPDATE: seldon          mymab-default-2-eg-router-57bc97dc57-9r4wj         0/1     Terminating         0          106s
+
+
+PODS UPDATE: seldon          mymab-default-1-classifier-2-86df69bc74-92x7b      0/1     Terminating         0          106s
+
+
+PODS UPDATE: seldon          mymab-default-0-classifier-1-7c56b85558-rt7gz      0/2     Terminating         0          112s
+
+
+PODS UPDATE: seldon          mymab-default-0-classifier-1-7c56b85558-rt7gz      0/2     Terminating         0          112s
+
+
+PODS UPDATE: seldon          mymab-default-2-eg-router-57bc97dc57-9r4wj         0/1     Terminating         0          113s
+
+
+PODS UPDATE: seldon          mymab-default-2-eg-router-57bc97dc57-9r4wj         0/1     Terminating         0          113s
+
+
+PODS UPDATE: seldon          mymab-default-1-classifier-2-86df69bc74-92x7b      0/1     Terminating         0          113s
+
+
+PODS UPDATE: seldon          mymab-default-1-classifier-2-86df69bc74-92x7b      0/1     Terminating         0          113s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-4dbfv          0/1     Init:0/1            0          104s
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8[NbConvertApp] Converting notebook ../../notebooks/explainer_examples.ipynb to script
+[NbConvertApp] Writing 15022 bytes to ../../notebooks/explainer_examples.py
+869b-z4qdn       0/2     Init:0/1            0          104s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-4dbfv          0/1     PodInitializing     0          106s
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-z4qdn       0/2     PodInitializing     0          115s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-4dbfv          0/1     CreateContainerError   0          8m46s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-4dbfv          0/1     CreateContainerError   0          9m
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-z4qdn       0/2     Running                0          9m50s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-4dbfv          0/1     CreateContainerError   0          9m57s
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-z4qdn       1/2     Running                0          10m
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-z4qdn       2/2     Running                0          10m
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-4dbfv          0/1     Running                1          10m
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-4dbfv          1/1     Running                1          10m
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-4dbfv          1/1     Terminating            1          10m
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-v2fjt       0/2     Pending                0          0s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-7mgrs          0/1     Pending                0          0s
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-z4qdn       2/2     Terminating            0          10m
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-v2fjt       0/2     Pending                0          1s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-7mgrs          0/1     Pending                0          1s
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-v2fjt       0/2     Init:0/1               0          3s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-7mgrs          0/1     Init:0/1               0          3s
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-v2fjt       0/2     Terminating            0          4s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-7mgrs          0/1     Terminating            0          4s
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-v2fjt       0/2     Terminating            0          4s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-7mgrs          0/1     Terminating            0          4s
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-v2fjt       0/2     Terminating            0          9s
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-v2fjt       0/2     Terminating            0          10s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-7mgrs          0/1     Terminating            0          11s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-7mgrs          0/1     Terminating            0          12s
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-z4qdn       1/2     Terminating            0          11m
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-z4qdn       0/2     Terminating            0          11m
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-4dbfv          0/1     Terminating            1          11m
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-z4qdn       0/2     Terminating            0          12m
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-4dbfv          0/1     Terminating            0          12m
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-z4qdn       0/2     Terminating            0          12m
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-z4qdn       0/2     Terminating            0          12m
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-h4cxw       0/2     Pending                0          0s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-lqf5f          0/1     Pending                0          0s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-lqf5f          0/1     Pending                0          1s
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-h4cxw       0/2     Pending                0          1s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-lqf5f          0/1     Init:0/1               0          1s
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-h4cxw       0/2     Init:0/1               0          1s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-lqf5f          0/1     Init:0/1               0          7s
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-h4cxw       0/2     Init:0/1               0          7s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-lqf5f          0/1     PodInitializing        0          12s
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-h4cxw       0/2     PodInitializing        0          13s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-lqf5f          0/1     Running                0          14s
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-h4cxw       0/2     Running                0          16s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-lqf5f          1/1     Running                0          34s
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-h4cxw       1/2     Running                0          37s
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-h4cxw       2/2     Running                0          38s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-4dbfv          0/1     Terminating            0          13m
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-4dbfv          0/1     Terminating            0          13m
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-4dbfv          0/1     Terminating            0          13m
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-h4cxw       2/2     Terminating            0          77s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-lqf5f          1/1     Terminating            0          78s
+
+
+PODS UPDATE: seldon          movie-default-0-classifier-546b6476c8-t8mmv        0/2     Pending                0          1s
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-h4cxw       1/2     Terminating            0          89s
+
+
+PODS UPDATE: seldon          movie-default-explainer-bb565c6dd-nztsx            0/1     Pending                0          0s
+
+
+PODS UPDATE: seldon          movie-default-0-classifier-546b6476c8-t8mmv        0/2     Pending                0          1s
+
+
+PODS UPDATE: seldon          movie-default-explainer-bb565c6dd-nztsx            0/1     Pending                0          0s
+
+
+PODS UPDATE: seldon          movie-default-0-classifier-546b6476c8-t8mmv        0/2     Init:0/1               0          3s
+
+
+PODS UPDATE: seldon          movie-default-explainer-bb565c6dd-nztsx            0/1     ContainerCreating      0          3s
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-h4cxw       0/2     Terminating            0          103s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-lqf5f          0/1     Terminating            0          2m9s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-lqf5f          0/1     Terminating            0          5m38s
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-h4cxw       0/2     Terminating            0          5m38s
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-h4cxw       0/2     Terminating            0          5m50s
+
+
+PODS UPDATE: seldon          income-default-0-classifier-849bd8869b-h4cxw       0/2     Terminating            0          5m50s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-lqf5f          0/1     Terminating            0          5m50s
+
+
+PODS UPDATE: seldon          income-default-explainer-5f5947ffc6-lqf5f          0/1     Terminating            0          5m50s
+
+
+PODS UPDATE: seldon          movie-default-explainer-bb565c6dd-nztsx            0/1     CreateContainerError   0          4m28s
+
+
+PODS UPDATE: seldon          movie-default-0-classifier-546b6476c8-t8mmv        0/2     Init:CreateContainerError   0          4m29s
+
+
+PODS UPDATE: seldon          movie-default-0-classifier-546b6476c8-t8mmv        0/2     Init:CreateContainerError   0          4m42s
+
+
+PODS UPDATE: seldon          movie-default-explainer-bb565c6dd-nztsx            0/1     CreateContainerError        0          4m44s
+
+
+PODS UPDATE: seldon          movie-default-0-classifier-546b6476c8-t8mmv        0/2     Init:0/1                    1          4m47s
+
+
+PODS UPDATE: seldon          movie-default-explainer-bb565c6dd-nztsx            0/1     Running                     1          4m46s
+
+
+PODS UPDATE: seldon          movie-default-0-classifier-546b6476c8-t8mmv        0/2     PodInitializing             0          4m49s
+
+
+PODS UPDATE: seldon          movie-default-0-classifier-546b6476c8-t8mmv        0/2     Running                     0          4m52s
+
+
+PODS UPDATE: seldon          movie-default-0-classifier-546b6476c8-t8mmv        1/2     Running                     0          5m13s
+
+
+PODS UPDATE: seldon          movie-default-0-classifier-546b6476c8-t8mmv        2/2     Running                     0          5m14s
+
+
+PODS UPDATE: seldon          movie-default-explainer-bb565c6dd-nztsx            1/1     Running                     1          5m19s
+
+
+PODS UPDATE: seldon          movie-default-0-classifier-546b6476c8-t8mmv        2/2     Running                     0          5m32s
+
+
+PODS UPDATE: seldon          movie-default-0-classifier-546b6476c8-t8mmv        2/2     Terminating                 0          5m49s
+
+
+PODS UPDATE: seldon          movie-default-explainer-bb565c6dd-nztsx            1/1     Terminating                 1          5m48s
+
+
+PODS UPDATE: seldon          image-default-0-transformer-classifier-797d655cc5-srbnl   0/4     Pending                     0          0s
+
+
+PODS UPDATE: seldon          image-default-explainer-6d56465cd9-bxbfs                  0/1     Pending                     0          0s
+
+
+PODS UPDATE: seldon          image-default-0-transformer-classifier-797d655cc5-srbnl   0/4     Pending                     0          0s
+
+
+PODS UPDATE: seldon          image-default-explainer-6d56465cd9-bxbfs                  0/1     Pending                     0          0s
+
+
+PODS UPDATE: seldon          image-default-0-transformer-classifier-797d655cc5-srbnl   0/4     Init:0/1                    0          0s
+
+
+PODS UPDATE: seldon          image-default-explainer-6d56465cd9-bxbfs                  0/1     Init:0/1                    0          0s
+
+
+PODS UPDATE: seldon          movie-default-0-classifier-546b6476c8-t8mmv               1/2     Terminating                 0          6m4s
+
+
+PODS UPDATE: seldon          movie-default-0-classifier-546b6476c8-t8mmv               0/2     Terminating                 0          6m9s
+
+
+PODS UPDATE: seldon          image-default-0-transformer-classifier-797d655cc5-srbnl   0/4     Init:0/1                    0          15s
+
+
+PODS UPDATE: seldon          image-default-explainer-6d56465cd9-bxbfs                  0/1     Init:0/1                    0          15s
+
+
+PODS UPDATE: seldon          movie-default-explainer-bb565c6dd-nztsx                   0/1     Terminating                 0          6m11s
+
+
+PODS UPDATE: seldon          movie-default-0-classifier-546b6476c8-t8mmv               0/2     Terminating  PASSED
+test_notebooks.py::TestNotebooks::test_istio_examples [NbConvertApp] Converting notebook ../../notebooks/istio_example.ipynb to script
+[NbConvertApp] Writing 5706 bytes to ../../notebooks/istio_example.py
+               0          6m12s
+
+
+PODS UPDATE: seldon          movie-default-0-classifier-546b6476c8-t8mmv               0/2     Terminating                 0          6m12s
+
+
+PODS UPDATE: seldon          image-default-explainer-6d56465cd9-bxbfs                  0/1     PodInitializing             0          17s
+
+
+PODS UPDATE: seldon          image-default-explainer-6d56465cd9-bxbfs                  0/1     Running                     0          19s
+
+
+PODS UPDATE: seldon          image-default-0-transformer-classifier-797d655cc5-srbnl   0/4     PodInitializing             0          26s
+
+
+PODS UPDATE: seldon          image-default-explainer-6d56465cd9-bxbfs                  1/1     Running                     0          39s
+
+
+PODS UPDATE: seldon          movie-default-explainer-bb565c6dd-nztsx                   0/1     Terminating                 0          6m34s
+
+
+PODS UPDATE: seldon          movie-default-explainer-bb565c6dd-nztsx                   0/1     Terminating                 0          6m34s
+
+
+PODS UPDATE: seldon          movie-default-explainer-bb565c6dd-nztsx                   0/1     Terminating                 0          6m34s
+
+
+PODS UPDATE: seldon          image-default-0-transformer-classifier-797d655cc5-srbnl   1/4     Running                     0          3m13s
+
+
+PODS UPDATE: seldon          image-default-0-transformer-classifier-797d655cc5-srbnl   2/4     Running                     0          3m15s
+
+
+PODS UPDATE: seldon          image-default-0-transformer-classifier-797d655cc5-srbnl   3/4     Running                     0          3m15s
+
+
+PODS UPDATE: seldon          image-default-0-transformer-classifier-797d655cc5-srbnl   4/4     Running                     0          3m32s
+
+
+PODS UPDATE: seldon          image-default-explainer-6d56465cd9-bxbfs                  1/1     Terminating                 0          6m4s
+
+
+PODS UPDATE: seldon          image-default-0-transformer-classifier-797d655cc5-srbnl   4/4     Terminating                 0          6m4s
+
+
+PODS UPDATE: seldon          cifar10-classifier-default-0-cifar10-classifier-84558cf9686hjlb   0/2     Pending                     0          0s
+
+
+PODS UPDATE: seldon          cifar10-classifier-default-0-cifar10-classifier-84558cf9686hjlb   0/2     Pending                     0          1s
+
+
+PODS UPDATE: seldon          cifar10-classifier-default-explainer-6656884f9d-t5qpl             0/1     Pending                     0          0s
+
+
+PODS UPDATE: seldon          cifar10-classifier-default-explainer-6656884f9d-t5qpl             0/1     Pending                     0          0s
+
+
+PODS UPDATE: seldon          cifar10-classifier-default-0-cifar10-classifier-84558cf9686hjlb   0/2     Init:0/1                    0          2s
+
+
+PODS UPDATE: seldon          cifar10-classifier-default-explainer-6656884f9d-t5qpl             0/1     Init:0/1                    0          2s
+
+
+PODS UPDATE: seldon          image-default-0-transformer-classifier-797d655cc5-srbnl           3/4     Terminating                 0          6m17s
+
+
+PODS UPDATE: seldon          image-default-0-transformer-classifier-797d655cc5-srbnl           2/4     Terminating                 0          6m25s
+
+
+PODS UPDATE: seldon          image-default-explainer-6d56465cd9-bxbfs                          0/1     Terminating                 0          6m32s
+
+
+PODS UPDATE: seldon          image-default-0-transformer-classifier-797d655cc5-srbnl           0/4     Terminating                 0          6m32s
+
+
+PODS UPDATE: seldon          cifar10-classifier-default-0-cifar10-classifier-84558cf9686hjlb   0/2     Init:0/1                    0          20s
+
+
+PODS UPDATE: seldon          cifar10-classifier-default-explainer-6656884f9d-t5qpl             0/1     Init:0/1                    0          19s
+
+
+PODS UPDATE: seldon          image-default-explainer-6d56465cd9-bxbfs                          0/1     Terminating                 0          6m37s
+
+
+PODS UPDATE: seldon          image-default-explainer-6d56465cd9-bxbfs                          0/1     Terminating                 0          6m37s
+
+
+PODS UPDATE: seldon          image-default-0-transformer-classifier-797d655cc5-srbnl           0/4     Terminating                 0          6m38s
+
+
+PODS UPDATE: seldon          image-default-0-transformer-classifier-797d655cc5-srbnl           0/4     Terminating                 0          6m38s
+
+
+PODS UPDATE: seldon          cifar10-classifier-default-0-cifar10-classifier-84558cf9686hjlb   0/2     PodInitializing             0          32s
+
+
+PODS UPDATE: seldon          cifar10-classifier-default-explainer-6656884f9d-t5qpl             0/1     PodInitializing             0          31s
+
+
+PODS UPDATE: seldon          cifar10-classifier-default-explainer-6656884f9d-t5qpl             0/1     Running                     0          32s
+
+
+PODS UPDATE: seldon          cifar10-classifier-default-0-cifar10-classifier-84558cf9686hjlb   0/2     Running                     0          34s
+
+
+PODS UPDATE: seldon          cifar10-classifier-default-explainer-6656884f9d-t5qpl             1/1     Running                     0          51s
+
+
+PODS UPDATE: seldon          cifar10-classifier-default-0-cifar10-classifier-84558cf9686hjlb   1/2     Running                     0          54s
+
+
+PODS UPDATE: seldon          cifar10-classifier-default-0-cifar10-classifier-84558cf9686hjlb   2/2     Running                     0          56s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-nbkh2                          0/2     Pending                     0          0s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-nbkh2                          0/2     Pending                     0          0s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-nbkh2                          0/2     ContainerCreating           0          0s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-nbkh2                          0/2     Running                     0          7s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-nbkh2                          1/2     Running                     0          23s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-nbkh2                          2/2     Running                     0          28s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-nbkh2                          2/2     Terminating                 0          52s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-578b5468cc-zqqv2                  0/2     Pending                     0          0s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6f6f597cb9-fzkfw                  0/1     Pending                     0          0s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-578b5468cc-zqqv2                  0/2     Pending                     0          0s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-nbkh2                          1/2     Terminating                 0          63s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6f6f597cb9-fzkfw                  0/1     Pending                     0          1s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-578b5468cc-zqqv2                  0/2     ContainerCreating           0          1s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6f6f597cb9-fzkfw                  0/1     ContainerCreating           0          1s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-nbkh2                          0/2     Terminating                 0          88s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6f6f597cb9-fzkfw                  0/1     Running                     0          26s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-nbkh2                          0/2     Terminating                 0          91s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-578b5468cc-zqqv2                  0/2     Running                     0          28s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-nbkh2                          0/2     Terminatiseldondeployment.machinelearning.seldon.io "cifar10-classifier" deleted
+seldondeployment.machinelearning.seldon.io "myabtest" deleted
+[NbConvertApp] Converting notebook ../../notebooks/istio_example.ipynb to script
+[NbConvertApp] Writing 5706 bytes to ../../notebooks/istio_example.py
+ng                 0          93s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-nbkh2                          0/2     Terminating                 0          94s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-578b5468cc-zqqv2                  1/2     Running                     0          31s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6f6f597cb9-fzkfw                  1/1     Running                     0          47s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-578b5468cc-zqqv2                  2/2     Running                     0          49s
+
+
+PODS UPDATE: seldon          cifar10-classifier-default-explainer-6656884f9d-t5qpl             1/1     Terminating                 0          4m17s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6f6f597cb9-fzkfw                  1/1     Terminating                 0          63s
+
+
+PODS UPDATE: seldon          cifar10-classifier-default-0-cifar10-classifier-84558cf9686hjlb   2/2     Terminating                 0          4m18s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-578b5468cc-zqqv2                  2/2     Terminating                 0          63s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-578b5468cc-zqqv2                  1/2     Terminating                 0          73s
+
+
+PODS UPDATE: seldon          cifar10-classifier-default-0-cifar10-classifier-84558cf9686hjlb   1/2     Terminating                 0          4m29s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-67f2v                          0/2     Pending                     0          0s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-67f2v                          0/2     Pending                     0          0s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-67f2v                          0/2     ContainerCreating           0          0s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-578b5468cc-zqqv2                  0/2     Terminating                 0          96s
+
+
+PODS UPDATE: seldon          cifar10-classifier-default-0-cifar10-classifier-84558cf9686hjlb   0/2     Terminating                 0          4m51s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6f6f597cb9-fzkfw                  0/1     Terminating                 0          100s
+
+
+PODS UPDATE: seldon          cifar10-classifier-default-0-cifar10-classifier-84558cf9686hjlb   0/2     Terminating                 0          5m
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-578b5468cc-zqqv2                  0/2     Terminating                 0          105s
+
+
+PODS UPDATE: seldon          cifar10-classifier-default-explainer-6656884f9d-t5qpl             0/1     Terminating                 0          5m
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6f6f597cb9-fzkfw                  0/1     Terminating                 0          106s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-67f2v                          0/2     Running                     0          31s
+
+
+PODS UPDATE: seldon          cifar10-classifier-default-explainer-6656884f9d-t5qpl             0/1     Terminating                 0          5m4s
+
+
+PODS UPDATE: seldon          cifar10-classifier-default-explainer-6656884f9d-t5qpl             0/1     Terminating                 0          5m4s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6f6f597cb9-fzkfw                  0/1     Terminating                 0          110s
+
+
+PODS UPDATE: seldon          myabtest-default-1-classifier-2-6f6f597cb9-fzkfw                  0/1     Terminating                 0          110s
+
+
+PODS UPDATE: seldon          cifar10-classifier-default-0-cifar10-classifier-84558cf9686hjlb   0/2     Terminating                 0          5m5s
+
+
+PODS UPDATE: seldon          cifar10-classifier-default-0-cifar10-classifier-84558cf9686hjlb   0/2     Terminating                 0          5m5s
+
+
+PODS UPDATE: seldon          myabtest-default-0-clasNo resources found
+FAILED
+test_notebooks.py::TestNotebooks::test_max_grpc_msg_size [NbConvertApp] Converting notebook ../../notebooks/max_grpc_msg_size.ipynb to script
+[NbConvertApp] Writing 6437 bytes to ../../notebooks/max_grpc_msg_size.py
+sifier-1-578b5468cc-zqqv2                  0/2     Terminating                 0          110s
+
+
+PODS UPDATE: seldon          myabtest-default-0-classifier-1-578b5468cc-zqqv2                  0/2     Terminating                 0          110s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-67f2v                          1/2     Running                     0          53s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-67f2v                          2/2     Running                     0          54s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-67f2v                          2/2     Terminating                 0          96s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-67f2v                          1/2     Terminating                 0          110s
+
+
+PODS UPDATE: seldon          model-long-timeout-test-0-classifier-5cb98c4b78-lz596             0/2     Pending                     0          0s
+
+
+PODS UPDATE: seldon          model-long-timeout-test-0-classifier-5cb98c4b78-lz596             0/2     Pending                     0          0s
+
+
+PODS UPDATE: seldon          model-long-timeout-test-0-classifier-5cb98c4b78-lz596             0/2     ContainerCreating           0          1s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-67f2v                          0/2     Terminating                 0          2m10s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-67f2v                          0/2     Terminating                 0          2m17s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-67f2v                          0/2     Terminating                 0          2m25s
+
+
+PODS UPDATE: seldon          mymodel-default-0-model-5fd45b7889-67f2v                          0/2     Terminating                 0          2m25s
+
+
+PODS UPDATE: seldon          model-long-timeout-test-0-classifier-5cb98c4b78-lz596             0/2     CreateContainerError        0          6m3s
+
+
+PODS UPDATE: seldon          model-long-timeout-test-0-classifier-5cb98c4b78-lz596             1/2     CreateContainerError        0          6m11s
+
+
+PODS UPDATE: seldon          model-long-timeout-test-0-classifier-5cb98c4b78-lz596             1/2     CreateContainerError        0          6m22s
+
+PASSED
+test_notebooks.py::TestNotebooks::test_multiple_operators [NbConvertApp] Converting notebook ../../notebooks/multiple_operators.ipynb to script
+[NbConvertApp] Writing 4010 bytes to ../../notebooks/multiple_operators.py
+PASSED
+test_notebooks.py::TestNotebooks::test_protocol_examples [NbConvertApp] Converting notebook ../../notebooks/protocol_examples.ipynb to script
+[NbConvertApp] Writing 8941 bytes to ../../notebooks/protocol_examples.py
+PASSED
+test_notebooks.py::TestNotebooks::test_server_examples [NbConvertApp] Converting notebook ../../notebooks/server_examples.ipynb to script
+[NbConvertApp] Writing 9041 bytes to ../../notebooks/server_examples.py
+PASSED
+test_notebooks.py::TestNotebooks::test_rolling_updates [NbConvertApp] Converting notebook ../../notebooks/rolling_updates.ipynb to script
+[NbConvertApp] Writing 25670 bytes to ../../notebooks/rolling_updates.py
+PASSED
+test_notebooks.py::TestNotebooks::test_ambassador_canary [NbConvertApp] Converting notebook ../../examples/ambassador/canary/ambassador_canary.ipynb to script
+[NbConvertApp] Writing 3129 bytes to ../../examples/ambassador/canary/ambassador_canary.py
+PASSED
+test_notebooks.py::TestNotebooks::test_ambassador_headers [NbConvertApp] Converting notebook ../../examples/ambassador/headers/ambassador_headers.ipynb to script
+[NbConvertApp] Writing 3771 bytes to ../../examples/ambassador/headers/ambassador_headers.py
+PASSED
+test_notebooks.py::TestNotebooks::test_ambassador_shadow [NbConvertApp] Converting notebook ../../examples/ambassador/shadow/ambassador_shadow.ipynb to script
+[NbConvertApp] Writing 3408 bytes to ../../examples/ambassador/shadow/ambassador_shadow.py
+PASSED
+test_notebooks.py::TestNotebooks::test_ambassador_custom [NbConvertApp] Converting notebook ../../examples/ambassador/custom/ambassador_custom.ipynb to script
+[NbConvertApp] Writing 2334 bytes to ../../examples/ambassador/custom/ambassador_custom.py
+PASSED
+test_notebooks.py::TestNotebooks::test_istio_canary [NbConvertApp] Converting notebook ../../examples/istio/canary_update/canary.ipynb to script
+[NbConvertApp] Writing 6693 bytes to ../../examples/istio/canary_update/canary.py
+PASSED
+test_notebooks.py::TestNotebooks::test_tracing [NbConvertApp] Converting notebook ../../examples/models/tracing/tracing.ipynb to script
+[NbConvertApp] Writing 4792 bytes to ../../examples/models/tracing/tracing.py
+PASSED
+test_notebooks.py::TestNotebooks::test_metrics [NbConvertApp] Converting notebook ../../examples/models/metrics/general_metrics.ipynb to script
+[NbConvertApp] Writing 9215 bytes to ../../examples/models/metrics/general_metrics.py
+PASSED
+test_notebooks.py::TestNotebooks::test_metadata [NbConvertApp] Converting notebook ../../examples/models/metadata/metadata.ipynb to script
+[NbConvertApp] Writing 9903 bytes to ../../examples/models/metadata/metadata.py
+PASSED
+test_notebooks.py::TestNotebooks::test_graph_metadata [NbConvertApp] Converting notebook ../../examples/models/metadata/graph_metadata.ipynb to script
+[NbConvertApp] Writing 25718 bytes to ../../examples/models/metadata/graph_metadata.py
+PASSED
+test_notebooks.py::TestNotebooks::test_grpc_metadata [NbConvertApp] Converting notebook ../../examples/models/metadata/metadata_grpc.ipynb to script
+[NbConvertApp] Writing 3613 bytes to ../../examples/models/metadata/metadata_grpc.py
+PASSED
+test_notebooks.py::TestNotebooks::test_payload_logging [NbConvertApp] Converting notebook ../../examples/models/payload_logging/payload_logging.ipynb to script
+[NbConvertApp] Writing 2868 bytes to ../../examples/models/payload_logging/payload_logging.py
+PASSED
+test_notebooks.py::TestNotebooks::test_custom_metrics [NbConvertApp] Converting notebook ../../examples/models/custom_metrics/customMetrics.ipynb to script
+[NbConvertApp] Writing 4194 bytes to ../../examples/models/custom_metrics/customMetrics.py
+PASSED
+test_notebooks.py::TestNotebooks::test_autoscaling [NbConvertApp] Converting notebook ../../examples/models/autoscaling/autoscaling_example.ipynb to script
+[NbConvertApp] Writing 3770 bytes to ../../examples/models/autoscaling/autoscaling_example.py
+PASSED
+test_notebooks.py::TestNotebooks::test_scaling [NbConvertApp] Converting notebook ../../notebooks/scale.ipynb to script
+[NbConvertApp] Writing 6433 bytes to ../../notebooks/scale.py
+PASSED
+test_notebooks.py::TestNotebooks::test_jsondata [NbConvertApp] Converting notebook ../../examples/models/sklearn_iris_jsondata/sklearn_iris_jsondata.ipynb to script
+[NbConvertApp] Writing 5451 bytes to ../../examples/models/sklearn_iris_jsondata/sklearn_iris_jsondata.py
+PASSED
+test_notebooks.py::TestNotebooks::test_sklearn_iris [NbConvertApp] Converting notebook ../../examples/models/sklearn_iris/sklearn_iris.ipynb to script
+[NbConvertApp] Writing 4765 bytes to ../../examples/models/sklearn_iris/sklearn_iris.py
+PASSED
+test_notebooks.py::TestNotebooks::test_upgrade [NbConvertApp] Converting notebook ../../notebooks/operator_upgrade.ipynb to script
+[NbConvertApp] Writing 6876 bytes to ../../notebooks/operator_upgrade.py
+PASSED
+
+=================================== FAILURES ===================================
+______________________ TestNotebooks.test_istio_examples _______________________
+
+self = <test_notebooks.TestNotebooks object at 0x7f879ed34d30>
+
+    def test_istio_examples(self):
+>       create_and_run_script("../../notebooks", "istio_example")
+
+test_notebooks.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_notebooks.py:27: in create_and_run_script
+    raise e
+test_notebooks.py:20: in create_and_run_script
+    encoding="utf-8",
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+input = None, timeout = None, check = True
+popenargs = ('cd ../../notebooks && ./istio_example.py',)
+kwargs = {'encoding': 'utf-8', 'shell': True, 'stderr': -1, 'stdout': -1}
+process = <subprocess.Popen object at 0x7f879ed34f98>
+stdout = 'Context "kind-kind" modified.\nNAME: mymodel\nLAST DEPLOYED: Thu Feb  4 11:12:04 2021\nNAMESPACE: seldon\nSTATUS: dep...b[0m\x1b[0;34m\x1b[0m\x1b[0m\n\x1b[1;32m    208\x1b[0m \x1b[0;34m\x1b[0m\x1b[0m\n\n\x1b[0;31mAssertionError\x1b[0m: \n'
+stderr = 'Error from server (AlreadyExists): namespaces "seldon" already exists\nError from server (AlreadyExists): error when ...es SQLite, your history will not be saved\n  warn("IPython History requires SQLite, your history will not be saved")\n'
+retcode = 1
+
+    def run(*popenargs, input=None, timeout=None, check=False, **kwargs):
+        """Run command with arguments and return a CompletedProcess instance.
+    
+        The returned instance will have attributes args, returncode, stdout and
+        stderr. By default, stdout and stderr are not captured, and those attributes
+        will be None. Pass stdout=PIPE and/or stderr=PIPE in order to capture them.
+    
+        If check is True and the exit code was non-zero, it raises a
+        CalledProcessError. The CalledProcessError object will have the return code
+        in the returncode attribute, and output & stderr attributes if those streams
+        were captured.
+    
+        If timeout is given, and the process takes too long, a TimeoutExpired
+        exception will be raised.
+    
+        There is an optional argument "input", allowing you to
+        pass a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it will be used internally.
+    
+        The other arguments are the same as for the Popen constructor.
+    
+        If universal_newlines=True is passed, the "input" argument must be a
+        string and stdout/stderr in the returned object will be strings rather than
+        bytes.
+        """
+        if input is not None:
+            if 'stdin' in kwargs:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = PIPE
+    
+        with Popen(*popenargs, **kwargs) as process:
+            try:
+                stdout, stderr = process.communicate(input, timeout=timeout)
+            except TimeoutExpired:
+                process.kill()
+                stdout, stderr = process.communicate()
+                raise TimeoutExpired(process.args, timeout, output=stdout,
+                                     stderr=stderr)
+            except:
+                process.kill()
+                process.wait()
+                raise
+            retcode = process.poll()
+            if check and retcode:
+                raise CalledProcessError(retcode, process.args,
+>                                        output=stdout, stderr=stderr)
+E               subprocess.CalledProcessError: Command 'cd ../../notebooks && ./istio_example.py' returned non-zero exit status 1.
+
+/usr/local/lib/python3.6/subprocess.py:438: CalledProcessError
+------------------------------ Captured log call -------------------------------
+ERROR    root:test_notebooks.py:24 failed notebook test istio_example stdout:Context "kind-kind" modified.
+NAME: mymodel
+LAST DEPLOYED: Thu Feb  4 11:09:46 2021
+NAMESPACE: seldon
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+[04m[91m-[39;49;00m[04m[91m-[39;49;00m[04m[91m-[39;49;00m
+[04m[91m#[39;49;00m [04m[91mS[39;49;00m[04m[91mo[39;49;00m[04m[91mu[39;49;00m[04m[91mr[39;49;00m[04m[91mc[39;49;00m[04m[91me[39;49;00m[04m[91m:[39;49;00m [04m[91ms[39;49;00m[04m[91me[39;49;00m[04m[91ml[39;49;00m[04m[91md[39;49;00m[04m[91mo[39;49;00m[04m[91mn[39;49;00m[04m[91m-[39;49;00m[04m[91ms[39;49;00m[04m[91mi[39;49;00m[04m[91mn[39;49;00m[04m[91mg[39;49;00m[04m[91ml[39;49;00m[04m[91me[39;49;00m[04m[91m-[39;49;00m[04m[91mm[39;49;00m[04m[91mo[39;49;00m[04m[91md[39;49;00m[04m[91me[39;49;00m[04m[91ml[39;49;00m[04m[91m/[39;49;00m[04m[91mt[39;49;00m[04m[91me[39;49;00m[04m[91mm[39;49;00m[04m[91mp[39;49;00m[04m[91ml[39;49;00m[04m[91ma[39;49;00m[04m[91mt[39;49;00m[04m[91me[39;49;00m[04m[91ms[39;49;00m[04m[91m/[39;49;00m[04m[91ms[39;49;00m[04m[91me[39;49;00m[04m[91ml[39;49;00m[04m[91md[39;49;00m[04m[91mo[39;49;00m[04m[91mn[39;49;00m[04m[91md[39;49;00m[04m[91me[39;49;00m[04m[91mp[39;49;00m[04m[91ml[39;49;00m[04m[91mo[39;49;00m[04m[91my[39;49;00m[04m[91mm[39;49;00m[04m[91me[39;49;00m[04m[91mn[39;49;00m[04m[91mt[39;49;00m[04m[91m.[39;49;00m[04m[91mj[39;49;00m[04m[91ms[39;49;00m[04m[91mo[39;49;00m[04m[91mn[39;49;00m
+{
+  [94m"kind"[39;49;00m: [33m"SeldonDeployment"[39;49;00m,
+  [94m"apiVersion"[39;49;00m: [33m"machinelearning.seldon.io/v1"[39;49;00m,
+  [94m"metadata"[39;49;00m: {
+    [94m"name"[39;49;00m: [33m"mymodel"[39;49;00m,
+    [94m"namespace"[39;49;00m: [33m"seldon"[39;49;00m,
+    [94m"labels"[39;49;00m: {}
+  },
+  [94m"spec"[39;49;00m: {
+    [94m"name"[39;49;00m: [33m"mymodel"[39;49;00m,
+    [94m"annotations"[39;49;00m: {},
+    [94m"predictors"[39;49;00m: [
+      {
+        [94m"name"[39;49;00m: [33m"default"[39;49;00m,
+        [94m"graph"[39;49;00m: {
+          [94m"name"[39;49;00m: [33m"model"[39;49;00m,
+          [94m"type"[39;49;00m: [33m"MODEL"[39;49;00m,
+        },
+        [94m"componentSpecs"[39;49;00m: [
+          {
+            [94m"spec"[39;49;00m: {
+              [94m"containers"[39;49;00m: [
+                {
+                  [94m"name"[39;49;00m: [33m"model"[39;49;00m,
+                  [94m"image"[39;49;00m: [33m"seldonio/mock_classifier_rest:1.3"[39;49;00m,
+                  [94m"env"[39;49;00m: [
+                      {
+                        [94m"name"[39;49;00m: [33m"LOG_LEVEL"[39;49;00m,
+                        [94m"value"[39;49;00m: [33m"INFO"[39;49;00m
+                      },
+                    ],
+                  [94m"resources"[39;49;00m: {[94m"requests"[39;49;00m:{[94m"memory"[39;49;00m:[33m"1Mi"[39;49;00m}},
+                }
+              ]
+            },
+          }
+        ],
+        [94m"replicas"[39;49;00m: [34m1[39;49;00m
+      }
+    ]
+  }
+}
+Waiting for deployment "mymodel-default-0-model" rollout to finish: 0 of 1 updated replicas are available...
+deployment "mymodel-default-0-model" successfully rolled out
+release "mymodel" uninstalled
+NAME: myabtest
+LAST DEPLOYED: Thu Feb  4 11:10:48 2021
+NAMESPACE: seldon
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+[04m[91m-[39;49;00m[04m[91m-[39;49;00m[04m[91m-[39;49;00m
+[04m[91m#[39;49;00m [04m[91mS[39;49;00m[04m[91mo[39;49;00m[04m[91mu[39;49;00m[04m[91mr[39;49;00m[04m[91mc[39;49;00m[04m[91me[39;49;00m[04m[91m:[39;49;00m [04m[91ms[39;49;00m[04m[91me[39;49;00m[04m[91ml[39;49;00m[04m[91md[39;49;00m[04m[91mo[39;49;00m[04m[91mn[39;49;00m[04m[91m-[39;49;00m[04m[91ma[39;49;00m[04m[91mb[39;49;00m[04m[91mt[39;49;00m[04m[91me[39;49;00m[04m[91ms[39;49;00m[04m[91mt[39;49;00m[04m[91m/[39;49;00m[04m[91mt[39;49;00m[04m[91me[39;49;00m[04m[91mm[39;49;00m[04m[91mp[39;49;00m[04m[91ml[39;49;00m[04m[91ma[39;49;00m[04m[91mt[39;49;00m[04m[91me[39;49;00m[04m[91ms[39;49;00m[04m[91m/[39;49;00m[04m[91ma[39;49;00m[04m[91mb[39;49;00m[04m[91m_[39;49;00m[04m[91mt[39;49;00m[04m[91me[39;49;00m[04m[91ms[39;49;00m[04m[91mt[39;49;00m[04m[91m_[39;49;00m[34m2[39;49;00m[04m[91mp[39;49;00m[04m[91mo[39;49;00m[04m[91md[39;49;00m[04m[91ms[39;49;00m[04m[91m.[39;49;00m[04m[91mj[39;49;00m[04m[91ms[39;49;00m[04m[91mo[39;49;00m[04m[91mn[39;49;00m
+{
+    [94m"apiVersion"[39;49;00m: [33m"machinelearning.seldon.io/v1alpha2"[39;49;00m,
+    [94m"kind"[39;49;00m: [33m"SeldonDeployment"[39;49;00m,
+    [94m"metadata"[39;49;00m: {
+	[94m"labels"[39;49;00m: {
+	    [94m"app"[39;49;00m: [33m"seldon"[39;49;00m
+	},
+	[94m"name"[39;49;00m: [33m"RELEASE-NAME"[39;49;00m
+    },
+    [94m"spec"[39;49;00m: {
+	[94m"name"[39;49;00m: [33m"RELEASE-NAME"[39;49;00m,
+	[94m"predictors"[39;49;00m: [
+	    {
+		[94m"name"[39;49;00m: [33m"default"[39;49;00m,
+		[94m"replicas"[39;49;00m: [34m1[39;49;00m,
+		[94m"componentSpecs"[39;49;00m: [{
+		    [94m"spec"[39;49;00m: {
+			[94m"containers"[39;49;00m: [
+			    {
+                                [94m"image"[39;49;00m: [33m"seldonio/mock_classifier_rest:1.3"[39;49;00m,
+				[94m"imagePullPolicy"[39;49;00m: [33m"IfNotPresent"[39;49;00m,
+				[94m"name"[39;49;00m: [33m"classifier-1"[39;49;00m,
+				[94m"resources"[39;49;00m: {
+				    [94m"requests"[39;49;00m: {
+					[94m"memory"[39;49;00m: [33m"1Mi"[39;49;00m
+				    }
+				}
+			    }],
+			[94m"terminationGracePeriodSeconds"[39;49;00m: [34m20[39;49;00m
+		    }},
+	        {
+		    [94m"metadata"[39;49;00m:{
+			[94m"labels"[39;49;00m:{
+			    [94m"version"[39;49;00m:[33m"v2"[39;49;00m
+			}
+		    },    
+			[94m"spec"[39;49;00m:{
+			    [94m"containers"[39;49;00m:[
+				{
+                                [94m"image"[39;49;00m: [33m"seldonio/mock_classifier_rest:1.3"[39;49;00m,
+				[94m"imagePullPolicy"[39;49;00m: [33m"IfNotPresent"[39;49;00m,
+				[94m"name"[39;49;00m: [33m"classifier-2"[39;49;00m,
+				[94m"resources"[39;49;00m: {
+				    [94m"requests"[39;49;00m: {
+					[94m"memory"[39;49;00m: [33m"1Mi"[39;49;00m
+				    }
+				}
+			    }
+			],
+			[94m"terminationGracePeriodSeconds"[39;49;00m: [34m20[39;49;00m
+				   }
+				   }],
+		[94m"graph"[39;49;00m: {
+		    [94m"name"[39;49;00m: [33m"RELEASE-NAME"[39;49;00m,
+		    [94m"endpoint"[39;49;00m:{
+			[94m"type"[39;49;00m:[33m"REST"[39;49;00m	
+		    },
+		    [94m"implementation"[39;49;00m:[33m"RANDOM_ABTEST"[39;49;00m,
+		    [94m"parameters"[39;49;00m: [
+			{
+			    [94m"name"[39;49;00m:[33m"ratioA"[39;49;00m,
+			    [94m"value"[39;49;00m:[33m"0.5"[39;49;00m,
+			    [94m"type"[39;49;00m:[33m"FLOAT"[39;49;00m
+			}
+		    ],
+		    [94m"children"[39;49;00m: [
+			{
+			    [94m"name"[39;49;00m: [33m"classifier-1"[39;49;00m,
+			    [94m"endpoint"[39;49;00m:{
+				[94m"type"[39;49;00m:[33m"REST"[39;49;00m				
+			    },
+			    [94m"type"[39;49;00m:[33m"MODEL"[39;49;00m,
+			    [94m"children"[39;49;00m:[]
+			},
+			{
+			    [94m"name"[39;49;00m: [33m"classifier-2"[39;49;00m,
+			    [94m"endpoint"[39;49;00m:{
+				[94m"type"[39;49;00m:[33m"REST"[39;49;00m				
+			    },
+			    [94m"type"[39;49;00m:[33m"MODEL"[39;49;00m,
+			    [94m"children"[39;49;00m:[]
+			}   
+		    ]
+		}
+	    }
+	]
+    }
+}
+Waiting for deployment "myabtest-default-0-classifier-1" rollout to finish: 0 of 1 updated replicas are available...
+deployment "myabtest-default-0-classifier-1" successfully rolled out
+deployment "myabtest-default-1-classifier-2" successfully rolled out
+Overwriting resources/seldon-gateway.yaml
+Success:True message:
+Request:
+meta {
+}
+data {
+  tensor {
+    shape: 1
+    shape: 1
+    values: 0.8599711194169765
+  }
+}
+
+Response:
+{'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.11337757978298942]}}, 'meta': {}}
+[0;31m---------------------------------------------------------------------------[0m
+[0;31mAssertionError[0m                            Traceback (most recent call last)
+[0;32m/workspace/source/notebooks/istio_example.py[0m in [0;36m<module>[0;34m[0m
+[1;32m    204[0m [0;34m[0m[0m
+[1;32m    205[0m [0mr[0m [0;34m=[0m [0msc[0m[0;34m.[0m[0mpredict[0m[0;34m([0m[0mgateway[0m[0;34m=[0m[0;34m"istio"[0m[0;34m,[0m[0mtransport[0m[0;34m=[0m[0;34m"rest"[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0;32m--> 206[0;31m [0;32massert[0m[0;34m([0m[0mr[0m[0;34m.[0m[0msuccess[0m[0;34m==[0m[0;32mTrue[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0m[1;32m    207[0m [0mprint[0m[0;34m([0m[0mr[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[1;32m    208[0m [0;34m[0m[0m
+
+[0;31mAssertionError[0m: 
+, stderr:Error from server (AlreadyExists): namespaces "seldon" already exists
+Error from server (AlreadyExists): error when creating "resources/seldon-gateway.yaml": gateways.networking.istio.io "seldon-gateway" already exists
+/usr/local/lib/python3.6/site-packages/IPython/core/history.py:226: UserWarning: IPython History requires SQLite, your history will not be saved
+  warn("IPython History requires SQLite, your history will not be saved")
+------------------------------ Captured log call -------------------------------
+ERROR    root:test_notebooks.py:24 failed notebook test istio_example stdout:Context "kind-kind" modified.
+NAME: mymodel
+LAST DEPLOYED: Thu Feb  4 11:12:04 2021
+NAMESPACE: seldon
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+[04m[91m-[39;49;00m[04m[91m-[39;49;00m[04m[91m-[39;49;00m
+[04m[91m#[39;49;00m [04m[91mS[39;49;00m[04m[91mo[39;49;00m[04m[91mu[39;49;00m[04m[91mr[39;49;00m[04m[91mc[39;49;00m[04m[91me[39;49;00m[04m[91m:[39;49;00m [04m[91ms[39;49;00m[04m[91me[39;49;00m[04m[91ml[39;49;00m[04m[91md[39;49;00m[04m[91mo[39;49;00m[04m[91mn[39;49;00m[04m[91m-[39;49;00m[04m[91ms[39;49;00m[04m[91mi[39;49;00m[04m[91mn[39;49;00m[04m[91mg[39;49;00m[04m[91ml[39;49;00m[04m[91me[39;49;00m[04m[91m-[39;49;00m[04m[91mm[39;49;00m[04m[91mo[39;49;00m[04m[91md[39;49;00m[04m[91me[39;49;00m[04m[91ml[39;49;00m[04m[91m/[39;49;00m[04m[91mt[39;49;00m[04m[91me[39;49;00m[04m[91mm[39;49;00m[04m[91mp[39;49;00m[04m[91ml[39;49;00m[04m[91ma[39;49;00m[04m[91mt[39;49;00m[04m[91me[39;49;00m[04m[91ms[39;49;00m[04m[91m/[39;49;00m[04m[91ms[39;49;00m[04m[91me[39;49;00m[04m[91ml[39;49;00m[04m[91md[39;49;00m[04m[91mo[39;49;00m[04m[91mn[39;49;00m[04m[91md[39;49;00m[04m[91me[39;49;00m[04m[91mp[39;49;00m[04m[91ml[39;49;00m[04m[91mo[39;49;00m[04m[91my[39;49;00m[04m[91mm[39;49;00m[04m[91me[39;49;00m[04m[91mn[39;49;00m[04m[91mt[39;49;00m[04m[91m.[39;49;00m[04m[91mj[39;49;00m[04m[91ms[39;49;00m[04m[91mo[39;49;00m[04m[91mn[39;49;00m
+{
+  [94m"kind"[39;49;00m: [33m"SeldonDeployment"[39;49;00m,
+  [94m"apiVersion"[39;49;00m: [33m"machinelearning.seldon.io/v1"[39;49;00m,
+  [94m"metadata"[39;49;00m: {
+    [94m"name"[39;49;00m: [33m"mymodel"[39;49;00m,
+    [94m"namespace"[39;49;00m: [33m"seldon"[39;49;00m,
+    [94m"labels"[39;49;00m: {}
+  },
+  [94m"spec"[39;49;00m: {
+    [94m"name"[39;49;00m: [33m"mymodel"[39;49;00m,
+    [94m"annotations"[39;49;00m: {},
+    [94m"predictors"[39;49;00m: [
+      {
+        [94m"name"[39;49;00m: [33m"default"[39;49;00m,
+        [94m"graph"[39;49;00m: {
+          [94m"name"[39;49;00m: [33m"model"[39;49;00m,
+          [94m"type"[39;49;00m: [33m"MODEL"[39;49;00m,
+        },
+        [94m"componentSpecs"[39;49;00m: [
+          {
+            [94m"spec"[39;49;00m: {
+              [94m"containers"[39;49;00m: [
+                {
+                  [94m"name"[39;49;00m: [33m"model"[39;49;00m,
+                  [94m"image"[39;49;00m: [33m"seldonio/mock_classifier_rest:1.3"[39;49;00m,
+                  [94m"env"[39;49;00m: [
+                      {
+                        [94m"name"[39;49;00m: [33m"LOG_LEVEL"[39;49;00m,
+                        [94m"value"[39;49;00m: [33m"INFO"[39;49;00m
+                      },
+                    ],
+                  [94m"resources"[39;49;00m: {[94m"requests"[39;49;00m:{[94m"memory"[39;49;00m:[33m"1Mi"[39;49;00m}},
+                }
+              ]
+            },
+          }
+        ],
+        [94m"replicas"[39;49;00m: [34m1[39;49;00m
+      }
+    ]
+  }
+}
+Waiting for deployment "mymodel-default-0-model" rollout to finish: 0 of 1 updated replicas are available...
+deployment "mymodel-default-0-model" successfully rolled out
+release "mymodel" uninstalled
+[04m[91m-[39;49;00m[04m[91m-[39;49;00m[04m[91m-[39;49;00m
+[04m[91m#[39;49;00m [04m[91mS[39;49;00m[04m[91mo[39;49;00m[04m[91mu[39;49;00m[04m[91mr[39;49;00m[04m[91mc[39;49;00m[04m[91me[39;49;00m[04m[91m:[39;49;00m [04m[91ms[39;49;00m[04m[91me[39;49;00m[04m[91ml[39;49;00m[04m[91md[39;49;00m[04m[91mo[39;49;00m[04m[91mn[39;49;00m[04m[91m-[39;49;00m[04m[91ma[39;49;00m[04m[91mb[39;49;00m[04m[91mt[39;49;00m[04m[91me[39;49;00m[04m[91ms[39;49;00m[04m[91mt[39;49;00m[04m[91m/[39;49;00m[04m[91mt[39;49;00m[04m[91me[39;49;00m[04m[91mm[39;49;00m[04m[91mp[39;49;00m[04m[91ml[39;49;00m[04m[91ma[39;49;00m[04m[91mt[39;49;00m[04m[91me[39;49;00m[04m[91ms[39;49;00m[04m[91m/[39;49;00m[04m[91ma[39;49;00m[04m[91mb[39;49;00m[04m[91m_[39;49;00m[04m[91mt[39;49;00m[04m[91me[39;49;00m[04m[91ms[39;49;00m[04m[91mt[39;49;00m[04m[91m_[39;49;00m[34m2[39;49;00m[04m[91mp[39;49;00m[04m[91mo[39;49;00m[04m[91md[39;49;00m[04m[91ms[39;49;00m[04m[91m.[39;49;00m[04m[91mj[39;49;00m[04m[91ms[39;49;00m[04m[91mo[39;49;00m[04m[91mn[39;49;00m
+{
+    [94m"apiVersion"[39;49;00m: [33m"machinelearning.seldon.io/v1alpha2"[39;49;00m,
+    [94m"kind"[39;49;00m: [33m"SeldonDeployment"[39;49;00m,
+    [94m"metadata"[39;49;00m: {
+	[94m"labels"[39;49;00m: {
+	    [94m"app"[39;49;00m: [33m"seldon"[39;49;00m
+	},
+	[94m"name"[39;49;00m: [33m"RELEASE-NAME"[39;49;00m
+    },
+    [94m"spec"[39;49;00m: {
+	[94m"name"[39;49;00m: [33m"RELEASE-NAME"[39;49;00m,
+	[94m"predictors"[39;49;00m: [
+	    {
+		[94m"name"[39;49;00m: [33m"default"[39;49;00m,
+		[94m"replicas"[39;49;00m: [34m1[39;49;00m,
+		[94m"componentSpecs"[39;49;00m: [{
+		    [94m"spec"[39;49;00m: {
+			[94m"containers"[39;49;00m: [
+			    {
+                                [94m"image"[39;49;00m: [33m"seldonio/mock_classifier_rest:1.3"[39;49;00m,
+				[94m"imagePullPolicy"[39;49;00m: [33m"IfNotPresent"[39;49;00m,
+				[94m"name"[39;49;00m: [33m"classifier-1"[39;49;00m,
+				[94m"resources"[39;49;00m: {
+				    [94m"requests"[39;49;00m: {
+					[94m"memory"[39;49;00m: [33m"1Mi"[39;49;00m
+				    }
+				}
+			    }],
+			[94m"terminationGracePeriodSeconds"[39;49;00m: [34m20[39;49;00m
+		    }},
+	        {
+		    [94m"metadata"[39;49;00m:{
+			[94m"labels"[39;49;00m:{
+			    [94m"version"[39;49;00m:[33m"v2"[39;49;00m
+			}
+		    },    
+			[94m"spec"[39;49;00m:{
+			    [94m"containers"[39;49;00m:[
+				{
+                                [94m"image"[39;49;00m: [33m"seldonio/mock_classifier_rest:1.3"[39;49;00m,
+				[94m"imagePullPolicy"[39;49;00m: [33m"IfNotPresent"[39;49;00m,
+				[94m"name"[39;49;00m: [33m"classifier-2"[39;49;00m,
+				[94m"resources"[39;49;00m: {
+				    [94m"requests"[39;49;00m: {
+					[94m"memory"[39;49;00m: [33m"1Mi"[39;49;00m
+				    }
+				}
+			    }
+			],
+			[94m"terminationGracePeriodSeconds"[39;49;00m: [34m20[39;49;00m
+				   }
+				   }],
+		[94m"graph"[39;49;00m: {
+		    [94m"name"[39;49;00m: [33m"RELEASE-NAME"[39;49;00m,
+		    [94m"endpoint"[39;49;00m:{
+			[94m"type"[39;49;00m:[33m"REST"[39;49;00m	
+		    },
+		    [94m"implementation"[39;49;00m:[33m"RANDOM_ABTEST"[39;49;00m,
+		    [94m"parameters"[39;49;00m: [
+			{
+			    [94m"name"[39;49;00m:[33m"ratioA"[39;49;00m,
+			    [94m"value"[39;49;00m:[33m"0.5"[39;49;00m,
+			    [94m"type"[39;49;00m:[33m"FLOAT"[39;49;00m
+			}
+		    ],
+		    [94m"children"[39;49;00m: [
+			{
+			    [94m"name"[39;49;00m: [33m"classifier-1"[39;49;00m,
+			    [94m"endpoint"[39;49;00m:{
+				[94m"type"[39;49;00m:[33m"REST"[39;49;00m				
+			    },
+			    [94m"type"[39;49;00m:[33m"MODEL"[39;49;00m,
+			    [94m"children"[39;49;00m:[]
+			},
+			{
+			    [94m"name"[39;49;00m: [33m"classifier-2"[39;49;00m,
+			    [94m"endpoint"[39;49;00m:{
+				[94m"type"[39;49;00m:[33m"REST"[39;49;00m				
+			    },
+			    [94m"type"[39;49;00m:[33m"MODEL"[39;49;00m,
+			    [94m"children"[39;49;00m:[]
+			}   
+		    ]
+		}
+	    }
+	]
+    }
+}
+Overwriting resources/seldon-gateway.yaml
+Success:True message:
+Request:
+meta {
+}
+data {
+  tensor {
+    shape: 1
+    shape: 1
+    values: 0.9112527600735832
+  }
+}
+
+Response:
+{'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.11863566739543821]}}, 'meta': {}}
+[0;31m---------------------------------------------------------------------------[0m
+[0;31mAssertionError[0m                            Traceback (most recent call last)
+[0;32m/workspace/source/notebooks/istio_example.py[0m in [0;36m<module>[0;34m[0m
+[1;32m    204[0m [0;34m[0m[0m
+[1;32m    205[0m [0mr[0m [0;34m=[0m [0msc[0m[0;34m.[0m[0mpredict[0m[0;34m([0m[0mgateway[0m[0;34m=[0m[0;34m"istio"[0m[0;34m,[0m[0mtransport[0m[0;34m=[0m[0;34m"rest"[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0;32m--> 206[0;31m [0;32massert[0m[0;34m([0m[0mr[0m[0;34m.[0m[0msuccess[0m[0;34m==[0m[0;32mTrue[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0m[1;32m    207[0m [0mprint[0m[0;34m([0m[0mr[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[1;32m    208[0m [0;34m[0m[0m
+
+[0;31mAssertionError[0m: 
+, stderr:Error from server (AlreadyExists): namespaces "seldon" already exists
+Error from server (AlreadyExists): error when creating "resources/seldon-gateway.yaml": gateways.networking.istio.io "seldon-gateway" already exists
+Error: cannot re-use a name that is still in use
+Error from server (NotFound): deployments.apps "myabtest-default-0-classifier-1" not found
+Error from server (NotFound): deployments.apps "myabtest-default-1-classifier-2" not found
+/usr/local/lib/python3.6/site-packages/IPython/core/history.py:226: UserWarning: IPython History requires SQLite, your history will not be saved
+  warn("IPython History requires SQLite, your history will not be saved")
+===Flaky Test Report===
+
+test_helm_examples passed 1 out of the required 1 times. Success!
+test_explainer_examples failed (1 runs remaining out of 2).
+	<class 'subprocess.CalledProcessError'>
+	Command 'cd ../../notebooks && ./explainer_examples.py' returned non-zero exit status 1.
+	[<TracebackEntry /workspace/source/testing/scripts/test_notebooks.py:42>, <TracebackEntry /workspace/source/testing/scripts/test_notebooks.py:27>, <TracebackEntry /workspace/source/testing/scripts/test_notebooks.py:20>, <TracebackEntry /usr/local/lib/python3.6/subprocess.py:438>]
+test_explainer_examples passed 1 out of the required 1 times. Success!
+test_istio_examples failed (1 runs remaining out of 2).
+	<class 'subprocess.CalledProcessError'>
+	Command 'cd ../../notebooks && ./istio_example.py' returned non-zero exit status 1.
+	[<TracebackEntry /workspace/source/testing/scripts/test_notebooks.py:45>, <TracebackEntry /workspace/source/testing/scripts/test_notebooks.py:27>, <TracebackEntry /workspace/source/testing/scripts/test_notebooks.py:20>, <TracebackEntry /usr/local/lib/python3.6/subprocess.py:438>]
+test_istio_examples failed; it passed 0 out of the required 1 times.
+	<class 'subprocess.CalledProcessError'>
+	Command 'cd ../../notebooks && ./istio_example.py' returned non-zero exit status 1.
+	[<TracebackEntry /workspace/source/testing/scripts/test_notebooks.py:45>, <TracebackEntry /workspace/source/testing/scripts/test_notebooks.py:27>, <TracebackEntry /workspace/source/testing/scripts/test_notebooks.py:20>, <TracebackEntry /usr/local/lib/python3.6/subprocess.py:438>]
+test_max_grpc_msg_size passed 1 out of the required 1 times. Success!
+test_multiple_operators passed 1 out of the required 1 times. Success!
+test_protocol_examples passed 1 out of the required 1 times. Success!
+test_server_examples passed 1 out of the required 1 times. Success!
+test_rolling_updates passed 1 out of the required 1 times. Success!
+test_ambassador_canary passed 1 out of the required 1 times. Success!
+test_ambassador_headers passed 1 out of the required 1 times. Success!
+test_ambassador_shadow passed 1 out of the required 1 times. Success!
+test_ambassador_custom passed 1 out of the required 1 times. Success!
+test_istio_canary passed 1 out of the required 1 times. Success!
+test_tracing passed 1 out of the required 1 times. Success!
+test_metrics passed 1 out of the required 1 times. Success!
+test_metadata passed 1 out of the required 1 times. Success!
+test_graph_metadata passed 1 out of the required 1 times. Success!
+test_grpc_metadata passed 1 out of the required 1 times. Success!
+test_payload_logging passed 1 out of the required 1 times. Success!
+test_custom_metrics passed 1 out of the required 1 times. Success!
+test_autoscaling passed 1 out of the required 1 times. Success!
+test_scaling passed 1 out of the required 1 times. Success!
+test_jsondata passed 1 out of the required 1 times. Success!
+test_sklearn_iris passed 1 out of the required 1 times. Success!
+test_upgrade passed 1 out of the required 1 times. Success!
+
+===End Flaky Test Report===
+================== 1 failed, 24 passed in 9151.62s (2:32:31) ===================
+make: *** [Makefile:146: test_notebooks] Error 1
+Test returned errors
+kind delete cluster
+Deleting cluster "kind" ...
+Stopping Docker: dockerProgram process in pidfile '/var/run/docker-ssd.pid', 1 process(es), refused to die.
+[31m
+Pipeline failed on stage 'end-to-end' : container 'step-test-end-to-end'. The execution of the pipeline has stopped.[0m
