@@ -1,5 +1,6 @@
 import os
 from itertools import chain
+
 from setuptools import find_packages, setup
 
 # Extra dependencies, with special 'all' key
