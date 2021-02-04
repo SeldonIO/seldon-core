@@ -100,18 +100,18 @@ setup_linter:
 fmt:
 	black \
 		./ ../testing ../operator/helm ../operator/hack \
-		--exclude "(scripts/proto|seldon_core/proto/|.eggs|.tox)"
+		--exclude "(proto|seldon_core/proto/|.eggs|.tox)"
 	isort \
 		./ ../testing ../operator/helm ../operator/hack \
-		--skip scripts --skip proto --skip seldon_core/proto --skip .eggs --skip .tox
+		--skip proto --skip seldon_core/proto --skip .eggs --skip .tox
 
 lint: licenses
 	black \
 		--check ./ ../testing \
-		--exclude "(scripts/proto|seldon_core/proto/|.eggs|.tox)"
+		--exclude "(proto|seldon_core/proto/|.eggs|.tox)"
 	isort \
 		--check-only ./ ../testing \
-		--skip scripts --skip proto --skip seldon_core/proto --skip .eggs --skip .tox
+		--skip proto --skip seldon_core/proto --skip .eggs --skip .tox
 	flake8
 	# Check if licenses have changed
 	git \
