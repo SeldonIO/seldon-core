@@ -1,21 +1,18 @@
-from prometheus_client.core import (
-    HistogramMetricFamily,
-    GaugeMetricFamily,
-    CounterMetricFamily,
-    CollectorRegistry,
-)
-from prometheus_client import exposition
-from prometheus_client.utils import floatToGoString
-
+import json
+import logging
+import os
 from multiprocessing import Manager
+from typing import Dict, List, Tuple
 
 import numpy as np
-
-from typing import List, Dict, Tuple
-import logging
-import json
-import os
-
+from prometheus_client import exposition
+from prometheus_client.core import (
+    CollectorRegistry,
+    CounterMetricFamily,
+    GaugeMetricFamily,
+    HistogramMetricFamily,
+)
+from prometheus_client.utils import floatToGoString
 
 logger = logging.getLogger(__name__)
 

@@ -1,13 +1,15 @@
-import click
 import json
-import requests
-from queue import Queue, Empty
-from threading import Thread, Event
-from seldon_core.seldon_client import SeldonClient
-import numpy as np
 import logging
-import uuid
 import time
+import uuid
+from queue import Empty, Queue
+from threading import Event, Thread
+
+import click
+import numpy as np
+import requests
+
+from seldon_core.seldon_client import SeldonClient
 
 CHOICES_GATEWAY_TYPE = ["ambassador", "istio", "seldon"]
 CHOICES_TRANSPORT = ["rest", "grpc"]

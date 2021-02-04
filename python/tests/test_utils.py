@@ -1,14 +1,17 @@
-import pytest
-import logging
-import numpy as np
-import pickle
 import base64
+import logging
+import pickle
+
+import numpy as np
+import pytest
+from google.protobuf import any_pb2
+from google.protobuf.struct_pb2 import Value
+
 import seldon_core.utils as scu
-from seldon_core.proto import prediction_pb2
 from seldon_core.flask_utils import SeldonMicroserviceException
 from seldon_core.imports_helper import _TF_PRESENT
-from google.protobuf.struct_pb2 import Value
-from google.protobuf import any_pb2
+from seldon_core.proto import prediction_pb2
+
 from .utils import skipif_tf_missing
 
 if _TF_PRESENT:

@@ -1,6 +1,7 @@
+from http import HTTPStatus
+
 import pytest
 
-from http import HTTPStatus
 from seldon_core.flask_utils import jsonify
 
 

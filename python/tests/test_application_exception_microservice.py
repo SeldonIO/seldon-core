@@ -1,16 +1,16 @@
+import base64
 import json
 import logging
-import numpy as np
-from google.protobuf import json_format
-import base64
 
-from seldon_core.wrapper import get_rest_microservice, SeldonModelGRPC, get_grpc_server
+import flask
+import numpy as np
+from flask import jsonify
+from google.protobuf import json_format
+
 from seldon_core.metrics import SeldonMetrics
 from seldon_core.proto import prediction_pb2
 from seldon_core.user_model import SeldonComponent
-
-import flask
-from flask import jsonify
+from seldon_core.wrapper import SeldonModelGRPC, get_grpc_server, get_rest_microservice
 
 
 class UserCustomException(Exception):

@@ -1,13 +1,14 @@
-from seldon_core.metrics import validate_metrics
-from seldon_core.flask_utils import SeldonMicroserviceException
-import json
-from typing import Dict, List, Union, Iterable, Tuple
-import numpy as np
-from seldon_core.proto import prediction_pb2
-from seldon_core.metrics import SeldonMetrics
 import inspect
+import json
 import logging
 import os
+from typing import Dict, Iterable, List, Tuple, Union
+
+import numpy as np
+
+from seldon_core.flask_utils import SeldonMicroserviceException
+from seldon_core.metrics import SeldonMetrics, validate_metrics
+from seldon_core.proto import prediction_pb2
 
 logger = logging.getLogger(__name__)
 

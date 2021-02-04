@@ -1,11 +1,12 @@
 import logging
 import os
+from unittest import mock
+
 import numpy as np
 
 from seldon_core.api_tester import run_predict, run_send_feedback
-from unittest import mock
-from seldon_core.utils import array_to_grpc_datadef, seldon_message_to_json
 from seldon_core.proto import prediction_pb2
+from seldon_core.utils import array_to_grpc_datadef, seldon_message_to_json
 
 from .conftest import RESOURCES_PATH
 

@@ -1,21 +1,22 @@
-from seldon_core.proto import prediction_pb2
-from seldon_core.proto import prediction_pb2_grpc
-from seldon_core.utils import (
-    array_to_grpc_datadef,
-    seldon_message_to_json,
-    json_to_feedback,
-    json_to_seldon_message,
-    feedback_to_json,
-    seldon_messages_to_json,
-)
-import numpy as np
-import grpc
-import requests
-from typing import Tuple, Dict, Union, List, Optional, Iterable
+import http.client as http_client
 import json
 import logging
-import http.client as http_client
+from typing import Dict, Iterable, List, Optional, Tuple, Union
+
+import grpc
+import numpy as np
+import requests
 from google.protobuf import any_pb2, json_format
+
+from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
+from seldon_core.utils import (
+    array_to_grpc_datadef,
+    feedback_to_json,
+    json_to_feedback,
+    json_to_seldon_message,
+    seldon_message_to_json,
+    seldon_messages_to_json,
+)
 
 logger = logging.getLogger(__name__)
 

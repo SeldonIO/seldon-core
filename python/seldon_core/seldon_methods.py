@@ -1,45 +1,47 @@
-import os
-import yaml
 import logging
-from seldon_core.utils import (
-    extract_request_parts,
-    construct_response,
-    json_to_seldon_message,
-    seldon_message_to_json,
-    construct_response_json,
-    extract_request_parts_json,
-    extract_feedback_request_parts,
-    getenv_as_bool,
-)
-from seldon_core.user_model import (
-    INCLUDE_METRICS_IN_CLIENT_RESPONSE,
-    SeldonResponse,
-    client_predict,
-    client_aggregate,
-    client_route,
-    client_custom_metrics,
-    client_transform_output,
-    client_transform_input,
-    client_send_feedback,
-    client_health_status,
-    SeldonNotImplementedError,
-)
+import os
+from typing import Any, Dict, List, Tuple, Union
+
+import numpy as np
+import yaml
+from google.protobuf import json_format
+
 from seldon_core.flask_utils import SeldonMicroserviceException
+from seldon_core.metadata import SeldonInvalidMetadataError, validate_model_metadata
 from seldon_core.metrics import (
-    SeldonMetrics,
+    AGGREGATE_METRIC_METHOD_TAG,
     FEEDBACK_METRIC_METHOD_TAG,
-    PREDICT_METRIC_METHOD_TAG,
+    HEALTH_METRIC_METHOD_TAG,
     INPUT_TRANSFORM_METRIC_METHOD_TAG,
     OUTPUT_TRANSFORM_METRIC_METHOD_TAG,
+    PREDICT_METRIC_METHOD_TAG,
     ROUTER_METRIC_METHOD_TAG,
-    AGGREGATE_METRIC_METHOD_TAG,
-    HEALTH_METRIC_METHOD_TAG,
+    SeldonMetrics,
 )
-from seldon_core.metadata import validate_model_metadata, SeldonInvalidMetadataError
-from google.protobuf import json_format
 from seldon_core.proto import prediction_pb2
-from typing import Any, Union, List, Dict, Tuple
-import numpy as np
+from seldon_core.user_model import (
+    INCLUDE_METRICS_IN_CLIENT_RESPONSE,
+    SeldonNotImplementedError,
+    SeldonResponse,
+    client_aggregate,
+    client_custom_metrics,
+    client_health_status,
+    client_predict,
+    client_route,
+    client_send_feedback,
+    client_transform_input,
+    client_transform_output,
+)
+from seldon_core.utils import (
+    construct_response,
+    construct_response_json,
+    extract_feedback_request_parts,
+    extract_request_parts,
+    extract_request_parts_json,
+    getenv_as_bool,
+    json_to_seldon_message,
+    seldon_message_to_json,
+)
 
 logger = logging.getLogger(__name__)
 

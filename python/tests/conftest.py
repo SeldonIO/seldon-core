@@ -1,11 +1,13 @@
-import os
-import pytest
 import logging
-import seldon_core
+import os
 
-from seldon_core.wrapper import get_rest_microservice
+import pytest
+
+import seldon_core
 from seldon_core.metrics import SeldonMetrics
-from .helpers import UserObject, MicroserviceWrapper
+from seldon_core.wrapper import get_rest_microservice
+
+from .helpers import MicroserviceWrapper, UserObject
 
 logging.basicConfig(level=logging.DEBUG)
 
