@@ -108,7 +108,7 @@ fmt:
 lint: licenses
 	black \
 		--check ./ ../testing \
-		--exclude "(testing/scripts/proto|seldon_core/proto/|.eggs|.tox)"
+		--exclude "(testing|scripts/proto|seldon_core/proto/|.eggs|.tox)"
 	isort \
 		--check-only ./ ../testing \
 		--skip testing --skip scripts --skip proto --skip seldon_core/proto --skip .eggs --skip .tox
