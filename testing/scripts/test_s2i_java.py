@@ -1,12 +1,12 @@
 import os
 import time
-import pytest
-
 from subprocess import run
 
-from seldon_e2e_utils import initial_rest_request, wait_for_status, wait_for_rollout
+import pytest
+
 from e2e_utils.common import SC_ROOT_PATH
 from e2e_utils.models import deploy_model
+from seldon_e2e_utils import initial_rest_request, wait_for_rollout, wait_for_status
 
 JAVA_S2I_FOLDER = os.path.join(SC_ROOT_PATH, "testing", "s2i", "java")
 

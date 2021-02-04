@@ -1,12 +1,12 @@
-from seldon_e2e_utils import (
-    get_pod_names,
-    get_deployment_names,
-    retry_run,
-    wait_for_status,
-    wait_for_rollout,
-    initial_rest_request,
-)
 from e2e_utils.jaeger import get_traces
+from seldon_e2e_utils import (
+    get_deployment_names,
+    get_pod_names,
+    initial_rest_request,
+    retry_run,
+    wait_for_rollout,
+    wait_for_status,
+)
 
 
 def assert_trace(trace, expected_operations):

@@ -1,12 +1,13 @@
 import logging
 from subprocess import run
+
 from seldon_e2e_utils import (
-    wait_for_status,
-    wait_for_rollout,
-    rest_request_ambassador,
-    initial_rest_request,
-    retry_run,
     API_AMBASSADOR,
+    initial_rest_request,
+    rest_request_ambassador,
+    retry_run,
+    wait_for_rollout,
+    wait_for_status,
 )
 
 

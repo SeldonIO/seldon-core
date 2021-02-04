@@ -1,22 +1,23 @@
-import time
 import logging
-import pytest
+import time
 from subprocess import run
+
+import pytest
+
 from seldon_e2e_utils import (
-    wait_for_status,
-    wait_for_rollout,
-    rest_request_ambassador,
-    initial_rest_request,
-    assert_model,
-    assert_model_during_op,
-    retry_run,
     API_AMBASSADOR,
     API_ISTIO_GATEWAY,
+    assert_model,
+    assert_model_during_op,
     get_pod_name_for_sdep,
-    wait_for_pod_shutdown,
+    initial_rest_request,
+    rest_request_ambassador,
+    retry_run,
     to_resources_path,
+    wait_for_pod_shutdown,
+    wait_for_rollout,
+    wait_for_status,
 )
-
 
 with_api_gateways = pytest.mark.parametrize(
     "api_gateway", [API_AMBASSADOR, API_ISTIO_GATEWAY], ids=["ambas", "istio"]

@@ -4,7 +4,6 @@ from sh import helm, kubectl
 
 from .common import HELM_CHARTS_PATH, to_helm_values_list
 
-
 SC_NAME = "seldon"
 SC_NAMESPACE = "seldon-system"
 

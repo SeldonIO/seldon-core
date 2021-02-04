@@ -1,6 +1,6 @@
 import argparse
-import json
 import base64
+import json
 
 from tensorflow.contrib.util import make_tensor_proto
 from tensorflow_serving.apis import predict_pb2
