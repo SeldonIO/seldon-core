@@ -4,10 +4,18 @@ Seldon Core exposes metrics that can be scraped by Prometheus. The core metrics 
 
 The metrics are:
 
-**Prediction Requests**
+## Prediction Requests
 
- * `seldon_api_executor_server_requests_seconds_(bucket,count,sum) ` : Requests to the service orchestrator from an ingress, e.g. API gateway or Ambassador
- * `seldon_api_executor_client_requests_seconds_(bucket,count,sum) ` : Requests from the service orchestrator to a component, e.g., a model
+- Requests to the service orchestrator from an ingress, e.g. API gateway or Ambassador
+
+ * `seldon_api_executor_server_requests_seconds_(bucket,count,sum)` - `histogram` type metric
+ * `seldon_api_executor_server_requests_seconds_summary_(count,sum)` - `summary` type metric
+
+- Requests from the service orchestrator to a component, e.g., a model
+
+ * `seldon_api_executor_client_requests_seconds_(bucket,count,sum)` - `histogram` type metric
+ * `seldon_api_executor_client_requests_seconds_summary_(count,sum)` - `summary` type metric
+
 
 Each metric has the following key value pairs for further filtering which will be taken from the SeldonDeployment custom resource that is running:
 
