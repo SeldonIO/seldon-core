@@ -1,7 +1,9 @@
 import json
 import logging
 import os
+from typing import Dict, List
 
+import flask.wrappers
 import numpy as np
 import pytest
 from google.protobuf import json_format
@@ -12,7 +14,7 @@ from seldon_core.metrics import (
     BINS,
     COUNTER,
     FEEDBACK_METRIC_METHOD_TAG,
-    HEALTH_METRIC_METHOD_TAG,
+    HISTOGRAM,
     INPUT_TRANSFORM_METRIC_METHOD_TAG,
     OUTPUT_TRANSFORM_METRIC_METHOD_TAG,
     PREDICT_METRIC_METHOD_TAG,
@@ -111,6 +113,38 @@ def test_validate_no_list():
     assert validate_metrics({"type": COUNTER, "key": "a", "value": 1}) == False
 
 
+@pytest.mark.parametrize(
+    "metrics, expected",
+    [
+        (
+            [
+                {
+                    "type": HISTOGRAM,
+                    "key": "a",
+                    "value": 1,
+                }
+            ],
+            False,
+        ),
+        (
+            [
+                {
+                    "type": HISTOGRAM,
+                    "key": "a",
+                    "value": 1,
+                    "bins": [0, 2],
+                }
+            ],
+            True,
+        ),
+    ],
+)
+def test_validate_metrics_for_histogram_metrics(
+    metrics: List[Dict], expected: bool
+) -> None:
+    assert validate_metrics(metrics) == expected
+
+
 RAW_COUNTER_METRIC = {"type": COUNTER, "key": "a", "value": 1}
 EXPECTED_COUNTER_METRIC = {"type": COUNTER, "key": "a", "value": 1}
 RAW_BAD_COUNTER_METRIC = {"type": "bad", "key": "a", "value": 1}
@@ -200,6 +234,12 @@ class UserObject:
             {"type": "GAUGE", "key": "mygauge", "value": 100},
             {"type": "TIMER", "key": "mytimer", "value": 20.2},
             {
+                "type": "HISTOGRAM",
+                "key": "myhistogram",
+                "value": 20.2,
+                "bins": [10, 20, 30],
+            },
+            {
                 "type": "GAUGE",
                 "key": "customtag",
                 "value": 200,
@@ -225,6 +265,12 @@ class UserObjectLowLevel:
         {"type": "COUNTER", "key": "mycounter", "value": 1},
         {"type": "GAUGE", "key": "mygauge", "value": 100},
         {"type": "TIMER", "key": "mytimer", "value": 20.2},
+        {
+            "type": "HISTOGRAM",
+            "key": "myhistogram",
+            "value": 20.2,
+            "bins": [10, 20, 30],
+        },
         {
             "type": "GAUGE",
             "key": "customtag",
@@ -286,6 +332,12 @@ class UserObjectLowLevelGrpc:
         {"type": "COUNTER", "key": "mycounter", "value": 1},
         {"type": "GAUGE", "key": "mygauge", "value": 100},
         {"type": "TIMER", "key": "mytimer", "value": 20.2},
+        {
+            "type": "HISTOGRAM",
+            "key": "myhistogram",
+            "value": 20.2,
+            "bins": [10, 20, 30],
+        },
         {
             "type": "GAUGE",
             "key": "customtag",
@@ -818,3 +870,137 @@ def test_proto_seldon_metrics_endpoint(cls, client_gets_metrics):
             assert labels["mytag"] == "mytagvalue"
 
     assert timer_present
+
+
+def test_seldon_metrics_predict_update_histogram_metrics() -> None:
+    class Predictor:
+        fake_response = {
+            "data": {
+                "names": ["input-foo"],
+                "data": ["output-bar"],
+            },
+            "meta": {
+                "metrics": [
+                    {
+                        "type": "HISTOGRAM",
+                        "key": "my_histogram",
+                        "value": 20.2,
+                        "bins": [10, 20, 30],
+                        "tags": {"foo": "bar"},
+                    },
+                ]
+            },
+        }
+
+        def predict_raw(self, msg):
+            return self.fake_response
+
+    seldon_metrics = SeldonMetrics()
+
+    app = get_rest_microservice(Predictor(), seldon_metrics)
+    client = app.test_client()
+
+    seldon_metrics_history = []
+    for _ in range(2):
+        response = client.get("/predict?json={}")
+
+        assert isinstance(response, flask.wrappers.Response)
+        assert response.status_code == 200
+        assert response.json == Predictor.fake_response
+
+        assert len(seldon_metrics.data) == 1
+        seldon_metrics_history.append(seldon_metrics.data[os.getpid()])
+
+    worker_data_key = ("HISTOGRAM", "my_histogram", "foo-bar_method-predict")
+
+    assert seldon_metrics_history == [
+        {
+            worker_data_key: {
+                "value": (
+                    [0.0, 1.0],  # count per bin
+                    20.2,  # sum of values
+                ),
+                "tags": {
+                    "method": "predict",  # seldon added by default
+                    "foo": "bar",  # user added tag
+                },
+            }
+        },
+        {
+            worker_data_key: {
+                "value": ([0.0, 2.0], 40.4),
+                "tags": {
+                    "method": "predict",
+                    "foo": "bar",
+                },
+            }
+        },
+    ]
+
+
+def test_proto_seldon_metrics_predict_update_histogram_metrics() -> None:
+    class Predictor:
+        fake_response = prediction_pb2.SeldonMessage(
+            data=prediction_pb2.DefaultData(
+                tensor=prediction_pb2.Tensor(
+                    shape=(1, 2),
+                    values=np.array([3, 5]),
+                )
+            ),
+            meta=prediction_pb2.Meta(
+                metrics=[
+                    prediction_pb2.Metric(
+                        type="HISTOGRAM",
+                        key="my_histogram",
+                        value=30,
+                        bins=[10, 20, 30, 40],
+                    )
+                ],
+            ),
+        )
+
+        def predict_raw(self, msg):
+            return self.fake_response
+
+    seldon_metrics = SeldonMetrics()
+
+    app = SeldonModelGRPC(Predictor(), seldon_metrics)
+
+    seldon_metrics_history = []
+    for _ in range(2):
+        response = app.Predict(
+            request_grpc=prediction_pb2.SeldonMessage(),
+            context=None,
+        )
+        assert isinstance(response, prediction_pb2.SeldonMessage)
+        assert response == Predictor.fake_response
+
+        assert len(seldon_metrics.data) == 1
+        seldon_metrics_history.append(seldon_metrics.data[os.getpid()])
+
+    worker_data_key = ("HISTOGRAM", "my_histogram", "method-predict")
+
+    assert seldon_metrics_history == [
+        {
+            worker_data_key: {
+                "value": (
+                    [0.0, 0.0, 1.0],  # count per bin
+                    30.0,  # sum of values
+                ),
+                "tags": {
+                    "method": "predict",  # seldon added by default
+                },
+            }
+        },
+        {
+            worker_data_key: {
+                "value": (
+                    [0.0, 0.0, 2.0],
+                    60.0,
+                ),
+                "tags": {
+                    "method": "predict",
+                },
+            }
+        },
+    ]
