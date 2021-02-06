@@ -125,27 +125,27 @@ class SeldonMetrics:
             worker_data = self.data.get(self.worker_id_func(), {})
         logger.debug("Read current metrics data from shared memory")
 
-        for metrics in custom_metrics:
-            metrics_type = metrics.get("type", "COUNTER")
+        for metric in custom_metrics:
+            metric_type = metric.get("type", "COUNTER")
 
-            tags = metrics.get("tags", {})
+            tags = metric.get("tags", {})
 
             tags["method"] = method
 
             worker_data_key = (
-                metrics_type,
-                metrics["key"],
+                metric_type,
+                metric["key"],
                 SeldonMetrics._generate_tags_key(tags),
             )
 
-            if metrics_type == "COUNTER":
+            if metric_type == "COUNTER":
                 value = worker_data.get(worker_data_key, {}).get("value", 0)
                 worker_data[worker_data_key] = {
-                    "value": value + metrics["value"],
+                    "value": value + metric["value"],
                     "tags": tags,
                 }
-            elif metrics_type in {"HISTOGRAM", "TIMER"}:
-                bins = metrics.get("bins", BINS)
+            elif metric_type in {"HISTOGRAM", "TIMER"}:
+                bins = metric.get("bins", BINS)
 
                 current_values, current_sum = worker_data.get(worker_data_key, {}).get(
                     "value",
@@ -153,9 +153,9 @@ class SeldonMetrics:
                 )
 
                 new_value = (
-                    metrics["value"] / 1000
-                    if metrics_type == "TIMER"
-                    else metrics["value"]
+                    metric["value"] / 1000
+                    if metric_type == "TIMER"
+                    else metric["value"]
                 )
 
                 worker_data[worker_data_key] = {
@@ -164,13 +164,13 @@ class SeldonMetrics:
                     ),
                     "tags": tags,
                 }
-            elif metrics_type == "GAUGE":
+            elif metric_type == "GAUGE":
                 worker_data[worker_data_key] = {
-                    "value": metrics["value"],
+                    "value": metric["value"],
                     "tags": tags,
                 }
             else:
-                logger.error(f"Unkown metrics type: {metrics_type}")
+                logger.error(f"Unkown metrics type: {metric_type}")
 
         # Write worker's data with lock (again - Proxy objects are not thread-safe)
         with self._lock:
