@@ -1004,3 +1004,72 @@ def test_proto_seldon_metrics_predict_update_histogram_metrics() -> None:
             }
         },
     ]
+
+
+def test_proto_seldon_metrics_predict_update_histogram_metrics_used_default_bins() -> None:
+    """So the default seldon_core.metrics.BINS is expected to be used."""
+
+    class Predictor:
+        fake_response = prediction_pb2.SeldonMessage(
+            data=prediction_pb2.DefaultData(
+                tensor=prediction_pb2.Tensor(
+                    shape=(1, 2),
+                    values=np.array([11, 13]),
+                )
+            ),
+            meta=prediction_pb2.Meta(
+                metrics=[
+                    prediction_pb2.Metric(
+                        type="HISTOGRAM",
+                        key="my_histogram",
+                        value=0.0005,
+                    )
+                ],
+            ),
+        )
+
+        def predict_raw(self, msg):
+            return self.fake_response
+
+    seldon_metrics = SeldonMetrics()
+
+    app = SeldonModelGRPC(Predictor(), seldon_metrics)
+
+    seldon_metrics_history = []
+    for _ in range(2):
+        response = app.Predict(
+            request_grpc=prediction_pb2.SeldonMessage(),
+            context=None,
+        )
+        assert isinstance(response, prediction_pb2.SeldonMessage)
+        assert response == Predictor.fake_response
+
+        assert len(seldon_metrics.data) == 1
+        seldon_metrics_history.append(seldon_metrics.data[os.getpid()])
+
+    worker_data_key = ("HISTOGRAM", "my_histogram", "method-predict")
+
+    assert seldon_metrics_history == [
+        {
+            worker_data_key: {
+                "value": (
+                    [1.0] + [0.0] * 50,  # count per bin by seldon_core.metrics.BINS
+                    0.0005,  # sum of values
+                ),
+                "tags": {
+                    "method": "predict",  # seldon added by default
+                },
+            }
+        },
+        {
+            worker_data_key: {
+                "value": (
+                    [2.0] + [0.0] * 50,
+                    0.001,
+                ),
+                "tags": {
+                    "method": "predict",
+                },
+            }
+        },
+    ]
