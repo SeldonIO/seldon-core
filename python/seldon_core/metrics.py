@@ -351,8 +351,6 @@ def validate_metrics(metrics: List[Dict]) -> bool:
                 return False
             if not metric["type"] in _ALLOWED_METRIC_TYPES:
                 return False
-            if metric["type"] == HISTOGRAM and "bins" not in metric:
-                return False
             try:
                 metric["value"] + 1
             except TypeError:

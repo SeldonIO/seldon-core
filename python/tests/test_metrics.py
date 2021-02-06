@@ -124,7 +124,7 @@ def test_validate_no_list():
                     "value": 1,
                 }
             ],
-            False,
+            True,
         ),
         (
             [
