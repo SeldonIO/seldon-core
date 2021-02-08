@@ -152,11 +152,10 @@ class SeldonMetrics:
                     (np.zeros(len(bins) - 1).tolist(), 0),
                 )
 
-                new_value = (
-                    metric["value"] / 1000
-                    if metric_type == "TIMER"
-                    else metric["value"]
-                )
+                if metric_type == "TIMER":
+                    new_value = metric["value"] / 1000
+                else:
+                    new_value = metric["value"]
 
                 worker_data[worker_data_key] = {
                     "value": self._update_hist(
