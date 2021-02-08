@@ -5,6 +5,7 @@ Release Highlights
 .. toctree::
     :maxdepth: 1
 
+    Release 1.6.0 Highlights <release-1.6.0.md>	       
     Release 1.5.0 Highlights <release-1.5.0.md>	       
     Release 1.1.0 Highlights <release-1.1.0.md>	       
     Release 1.0.0 Highlights <release-1.0.0.md>
