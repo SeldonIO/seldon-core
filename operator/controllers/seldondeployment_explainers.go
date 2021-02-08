@@ -216,7 +216,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 			var err error
 
 			mi := NewModelInitializer(ei.ctx, ei.clientset)
-			deploy, err = mi.InjectModelInitializer(deploy, explainerContainer.Name, p.Explainer.ModelUri, p.Explainer.ServiceAccountName, p.Explainer.EnvSecretRefName)
+			deploy, err = mi.InjectModelInitializer(deploy, explainerContainer.Name, p.Explainer.ModelUri, p.Explainer.ServiceAccountName, p.Explainer.EnvSecretRefName, p.Explainer.StorageInitializerImage)
 			if err != nil {
 				return err
 			}

@@ -4015,6 +4015,8 @@ spec:
                         type: string
                       serviceAccountName:
                         type: string
+                      storageInitializerImage:
+                        type: string
                       type:
                         type: string
                     type: object
@@ -4306,6 +4308,8 @@ spec:
                           type: object
                         type: array
                       serviceAccountName:
+                        type: string
+                      storageInitializerImage:
                         type: string
                       type:
                         type: string

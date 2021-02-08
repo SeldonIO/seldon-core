@@ -59,6 +59,10 @@ func extractEnvSecretRefName(pu *machinelearningv1.PredictiveUnit) string {
 	return envSecretRefName
 }
 
+func extractStorageInitializerImage(pu *machinelearningv1.PredictiveUnit) string {
+	return pu.StorageInitializerImage
+}
+
 func createTensorflowServingContainer(mlDepSepc *machinelearningv1.SeldonDeploymentSpec, pu *machinelearningv1.PredictiveUnit, tensorflowProtocol bool) *v1.Container {
 	ServerConfig := machinelearningv1.GetPrepackServerConfig(string(*pu.Implementation))
 
@@ -129,9 +133,10 @@ func (pi *PrePackedInitialiser) addTFServerContainer(mlDepSpec *machinelearningv
 	}
 
 	envSecretRefName := extractEnvSecretRefName(pu)
+	storageInitializerImage := extractStorageInitializerImage(pu)
 
 	mi := NewModelInitializer(pi.ctx, pi.clientset)
-	_, err := mi.InjectModelInitializer(deploy, tfServingContainer.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName)
+	_, err := mi.InjectModelInitializer(deploy, tfServingContainer.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName, storageInitializerImage)
 	if err != nil {
 		return err
 	}
@@ -229,8 +234,9 @@ func (pi *PrePackedInitialiser) addTritonServer(mlDepSpec *machinelearningv1.Sel
 	}
 
 	envSecretRefName := extractEnvSecretRefName(pu)
+	storageInitializerImage := extractStorageInitializerImage(pu)
 	mi := NewModelInitializer(pi.ctx, pi.clientset)
-	_, err := mi.InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName)
+	_, err := mi.InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName, storageInitializerImage)
 	if err != nil {
 		return err
 	}
@@ -256,9 +262,10 @@ func (pi *PrePackedInitialiser) addMLServerDefault(pu *machinelearningv1.Predict
 	}
 
 	envSecretRefName := extractEnvSecretRefName(pu)
+	storageInitializerImage := extractStorageInitializerImage(pu)
 	mi := NewModelInitializer(pi.ctx, pi.clientset)
 
-	_, err = mi.InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName)
+	_, err = mi.InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName, storageInitializerImage)
 	if err != nil {
 		return err
 	}
@@ -323,9 +330,10 @@ func (pi *PrePackedInitialiser) addModelDefaultServers(mlDepSepc *machinelearnin
 	}
 
 	envSecretRefName := extractEnvSecretRefName(pu)
+	storageInitializerImage := extractStorageInitializerImage(pu)
 
 	mi := NewModelInitializer(pi.ctx, pi.clientset)
-	_, err = mi.InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName)
+	_, err = mi.InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName, storageInitializerImage)
 	if err != nil {
 		return err
 	}

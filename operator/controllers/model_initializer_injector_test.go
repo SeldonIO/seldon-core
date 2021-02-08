@@ -31,7 +31,7 @@ func TestStorageInitalizerInjector(t *testing.T) {
 			},
 		},
 	}
-	_, err = mi.InjectModelInitializer(&d, containerName, "gs://mybucket/mymodel", "", "")
+	_, err = mi.InjectModelInitializer(&d, containerName, "gs://mybucket/mymodel", "", "", "")
 	g.Expect(err).To(BeNil())
 	g.Expect(len(d.Spec.Template.Spec.InitContainers)).To(Equal(1))
 	g.Expect(d.Spec.Template.Spec.InitContainers[0].Image).To(Equal("gcr.io/kfserving/storage-initializer:v0.4.0"))
@@ -59,7 +59,7 @@ func TestStorageInitalizerInjectorWithRelatedImage(t *testing.T) {
 		},
 	}
 	envStorageInitializerImage = "abc:1.2"
-	_, err = mi.InjectModelInitializer(&d, containerName, "gs://mybucket/mymodel", "", "")
+	_, err = mi.InjectModelInitializer(&d, containerName, "gs://mybucket/mymodel", "", "", "")
 	g.Expect(err).To(BeNil())
 	g.Expect(len(d.Spec.Template.Spec.InitContainers)).To(Equal(1))
 	g.Expect(d.Spec.Template.Spec.InitContainers[0].Image).To(Equal(envStorageInitializerImage))

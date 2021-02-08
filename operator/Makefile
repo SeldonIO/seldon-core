@@ -63,7 +63,7 @@ install_v1: manifests_v1
 	kustomize build config/crd_v1 | kubectl create -f -
 
 # Uninstall V1 CRDs into a cluster
-uninstall_v1: 
+uninstall_v1:
 	kustomize build config/crd_v1 | kubectl delete -f -
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
@@ -326,7 +326,7 @@ update_upstream:
 # https://redhat-connect.gitbook.io/certified-operator-guide/appendix/bundle-maintenance-after-migration
 
 PKG_CERT=packagemanifests-certified
-create_certified_bundle: 
+create_certified_bundle:
 	rm -rf ${PKG_CERT}/${VERSION}
 	mkdir -p ${PKG_CERT}/${VERSION}
 	cp bundle/manifests/* ${PKG_CERT}/${VERSION}
@@ -371,7 +371,7 @@ bundle_certified_push:
 update_old_certified_packages:
 	cd packagemanifests-certified && make build_push
 
-update_openshift_certified: update_old_certified_packages create_certified_bundle create_bundle_image_certified push_bundle_image_certified validate_bundle_image_certified opm_index_certified opm_push_certified 
+update_openshift_certified: update_old_certified_packages create_certified_bundle create_bundle_image_certified push_bundle_image_certified validate_bundle_image_certified opm_index_certified opm_push_certified
 
 # Run last to prepare for future release
 PREV_VERSION=1.2.2
