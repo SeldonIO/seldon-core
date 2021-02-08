@@ -14,21 +14,17 @@
 
 from setuptools import setup, find_packages
 
-tests_require = [
-    'pytest',
-    'pytest-tornasync',
-    'mypy'
-]
+tests_require = ["pytest", "pytest-tornasync", "mypy"]
 
 setup(
-    name='alibiexplainer',
-    version='0.3.0',
-    author_email='cc@seldon.io',
-    license='../../LICENSE.txt',
-    url='https://github.com/SeldonIO/seldon-core/tree/master/components/alibi-explain-server',
-    description='Model Explaination Server.',
-    long_description=open('README.md').read(),
-    python_requires='>=3.6',
+    name="alibiexplainer",
+    version="0.3.0",
+    author_email="cc@seldon.io",
+    license="../../LICENSE.txt",
+    url="https://github.com/SeldonIO/seldon-core/tree/master/components/alibi-explain-server",
+    description="Model Explaination Server.",
+    long_description=open("README.md").read(),
+    python_requires=">=3.6",
     packages=find_packages("alibiexplainer"),
     install_requires=[
         "kfserving>=0.3.0",
@@ -40,8 +36,10 @@ setup(
         "dill>=0.3.0",
         "grpcio>=1.22.0",
         "xgboost==1.0.2",
-        "shap==0.36.0"
+        "lightgbm==3.1.1",
+        "catboost==0.24.4",
+        "shap==0.36.0",
     ],
     tests_require=tests_require,
-    extras_require={'test': tests_require}
+    extras_require={"test": tests_require},
 )
