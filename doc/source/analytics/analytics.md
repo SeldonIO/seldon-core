@@ -84,6 +84,12 @@ For this purpose you can supply extra fields in the returned meta data of the re
 				"value": 22.0
 			},
 			{
+				"type": "HISTOGRAM",
+				"key": "myhistogram",
+				"value": 0.5,
+				"bins": [0.0, 1.0, 2.0]
+			},
+			{
 				"type": "TIMER",
 				"key": "mytimer",
 				"value": 1.0
