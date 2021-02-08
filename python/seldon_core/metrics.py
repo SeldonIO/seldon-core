@@ -144,7 +144,7 @@ class SeldonMetrics:
                     "value": value + metric["value"],
                     "tags": tags,
                 }
-            elif metric_type in {"HISTOGRAM", "TIMER"}:
+            elif metric_type in ["HISTOGRAM", "TIMER"]:
                 bins = metric.get("bins", BINS)
 
                 current_values, current_sum = worker_data.get(worker_data_key, {}).get(
