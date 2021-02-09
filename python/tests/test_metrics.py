@@ -137,6 +137,32 @@ def test_validate_no_list():
             ],
             True,
         ),
+        (
+            [
+                {
+                    "type": "COUNTER",
+                    "key": "mycounter",
+                    "value": 1,
+                },
+                {
+                    "type": "GAUGE",
+                    "key": "mygauge",
+                    "value": 100,
+                },
+                {
+                    "type": "HISTOGRAM",
+                    "key": "myhistogram",
+                    "value": 0.5,
+                    "bins": [0, 1, 2],
+                },
+                {
+                    "type": "TIMER",
+                    "key": "mytimer",
+                    "value": 20.2,
+                },
+            ],
+            True,
+        ),
     ],
 )
 def test_validate_metrics_for_histogram_metrics(
