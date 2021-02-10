@@ -440,6 +440,24 @@ spec:
                           - triggers
                           type: object
                         metadata:
+                          properties:
+                            annotations:
+                              additionalProperties:
+                                type: string
+                              description: 'Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. They are not queryable and should be preserved when modifying objects. More info: http://kubernetes.io/docs/user-guide/annotations'
+                              type: object
+                            creationTimestamp:
+                              description: "CreationTimestamp is a timestamp representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations. Clients may not set this value. It is represented in RFC3339 form and is in UTC. \n Populated by the system. Read-only. Null for lists. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata"
+                              format: date-time
+                              type: string
+                            labels:
+                              additionalProperties:
+                                type: string
+                              description: 'Map of string keys and values that can be used to organize and categorize (scope and select) objects. May match selectors of replication controllers and services. More info: http://kubernetes.io/docs/user-guide/labels'
+                              type: object
+                            name:
+                              description: Name must be unique within a namespace. Is required when creating resources, although some resources may allow a client to request the generation of an appropriate name automatically. Name is primarily intended for creation idempotence and configuration definition.
+                              type: string
                           type: object
                         pdbSpec:
                           properties:
