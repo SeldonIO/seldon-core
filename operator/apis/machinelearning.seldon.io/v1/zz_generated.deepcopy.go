@@ -24,6 +24,7 @@ import (
 	"github.com/kedacore/keda/api/v1alpha1"
 	"k8s.io/api/autoscaling/v2beta1"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -113,6 +114,15 @@ func (in *ObjectMeta) DeepCopyInto(out *ObjectMeta) {
 		in, out := &in.CreationTimestamp, &out.CreationTimestamp
 		*out = (*in).DeepCopy()
 	}
+	if in.DeletionTimestamp != nil {
+		in, out := &in.DeletionTimestamp, &out.DeletionTimestamp
+		*out = (*in).DeepCopy()
+	}
+	if in.DeletionGracePeriodSeconds != nil {
+		in, out := &in.DeletionGracePeriodSeconds, &out.DeletionGracePeriodSeconds
+		*out = new(int64)
+		**out = **in
+	}
 	if in.Labels != nil {
 		in, out := &in.Labels, &out.Labels
 		*out = make(map[string]string, len(*in))
@@ -125,6 +135,25 @@ func (in *ObjectMeta) DeepCopyInto(out *ObjectMeta) {
 		*out = make(map[string]string, len(*in))
 		for key, val := range *in {
 			(*out)[key] = val
+		}
+	}
+	if in.OwnerReferences != nil {
+		in, out := &in.OwnerReferences, &out.OwnerReferences
+		*out = make([]metav1.OwnerReference, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	if in.Finalizers != nil {
+		in, out := &in.Finalizers, &out.Finalizers
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.ManagedFields != nil {
+		in, out := &in.ManagedFields, &out.ManagedFields
+		*out = make([]metav1.ManagedFieldsEntry, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
 }
