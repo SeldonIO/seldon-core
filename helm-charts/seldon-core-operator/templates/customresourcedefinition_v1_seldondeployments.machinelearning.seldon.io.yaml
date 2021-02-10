@@ -5,7 +5,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: '{{ include "seldon.namespace" . }}/seldon-serving-cert'
-    controller-gen.kubebuilder.io/version: v0.2.9
+    controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
   name: seldondeployments.machinelearning.seldon.io
 spec:
@@ -1921,6 +1921,7 @@ spec:
                                             description: If specified, this must be an IANA_SVC_NAME and unique within the pod. Each named port in a pod must have a unique name. Name for the port that can be referred to by services.
                                             type: string
                                           protocol:
+                                            default: TCP
                                             description: Protocol for port. Must be UDP, TCP, or SCTP. Defaults to "TCP".
                                             type: string
                                         required:
@@ -7602,6 +7603,7 @@ spec:
                                             description: If specified, this must be an IANA_SVC_NAME and unique within the pod. Each named port in a pod must have a unique name. Name for the port that can be referred to by services.
                                             type: string
                                           protocol:
+                                            default: TCP
                                             description: Protocol for port. Must be UDP, TCP, or SCTP. Defaults to "TCP".
                                             type: string
                                         required:
@@ -13283,6 +13285,7 @@ spec:
                                             description: If specified, this must be an IANA_SVC_NAME and unique within the pod. Each named port in a pod must have a unique name. Name for the port that can be referred to by services.
                                             type: string
                                           protocol:
+                                            default: TCP
                                             description: Protocol for port. Must be UDP, TCP, or SCTP. Defaults to "TCP".
                                             type: string
                                         required:
@@ -17062,11 +17065,5 @@ spec:
         specReplicasPath: .spec.replicas
         statusReplicasPath: .status.replicas
       status: {}
-status:
-  acceptedNames:
-    kind: ''
-    plural: ''
-  conditions: []
-  storedVersions: []
 {{- end }}
 {{- end }}

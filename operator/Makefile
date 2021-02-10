@@ -5,9 +5,6 @@ IMAGE_NAME_BASE=seldon-core-operator
 IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
 IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${VERSION}
 IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
-# Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
-CRD_OPTIONS ?= "crd:trivialVersions=true"
-#CRD_OPTIONS ?= ""
 
 KIND_NAME ?= kind
 
@@ -121,7 +118,7 @@ deploy-lite: manifests
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: controller-gen
-	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases crd:crdVersions=v1beta1
 
 # Commented out alternative is looking ahead to issue that on Openshift our v1 CRD is too large
 # to be installed. This may also affect operator-sdk community operators.
@@ -189,7 +186,7 @@ ifeq (, $(shell which controller-gen))
 	CONTROLLER_GEN_TMP_DIR=$$(mktemp -d) ;\
 	cd $$CONTROLLER_GEN_TMP_DIR ;\
 	go mod init tmp ;\
-	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.2.9 ;\
+	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.4.1 ;\
 	rm -rf $$CONTROLLER_GEN_TMP_DIR ;\
 	}
 
