@@ -27,7 +27,7 @@ func getEngineVarJson(p *machinelearningv1.PredictorSpec) (string, error) {
 	// engine doesn't need to know about metadata or explainer
 	// leaving these out means they're not part of diffs on main predictor deployments
 	for _, compSpec := range pcopy.ComponentSpecs {
-		compSpec.Metadata.CreationTimestamp = metav1.Time{}
+		compSpec.Metadata.CreationTimestamp = &metav1.Time{}
 	}
 	pcopy.Explainer = nil
 
