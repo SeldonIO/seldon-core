@@ -6,7 +6,8 @@ approvers:
 - adriangonz
 - SachinVarghese
 - RafalSkolasinski
-- jklaise
+- jklais
+- ivan-valkov
 reviewers:
 - axsaucedo
 - gsunner
@@ -19,3 +20,4 @@ reviewers:
 - phsiao
 - SachinVarghese
 - RafalSkolasinski
+- ivan-valkov
