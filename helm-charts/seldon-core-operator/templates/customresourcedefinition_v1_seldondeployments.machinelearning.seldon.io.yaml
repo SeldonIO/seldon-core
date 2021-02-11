@@ -4882,6 +4882,8 @@ spec:
                           type: string
                         serviceAccountName:
                           type: string
+                        storageInitializerImage:
+                          type: string
                         type:
                           type: string
                       type: object
@@ -10650,6 +10652,8 @@ spec:
                           type: string
                         serviceAccountName:
                           type: string
+                        storageInitializerImage:
+                          type: string
                         type:
                           type: string
                       type: object
@@ -16417,6 +16421,8 @@ spec:
                         modelUri:
                           type: string
                         serviceAccountName:
+                          type: string
+                        storageInitializerImage:
                           type: string
                         type:
                           type: string

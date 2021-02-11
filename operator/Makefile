@@ -30,7 +30,7 @@ lint: licenses/dep.txt
 		./licenses
 
 # Run tests
-test: generate fmt vet manifests generate-resources
+test: generate fmt vet manifests_all generate-resources
 	ginkgo -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis
 
 # Build manager binary
@@ -38,7 +38,7 @@ manager: generate fmt vet
 	go build -o bin/manager main.go
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
-run: generate fmt vet manifests
+run: generate fmt vet manifests_all
 	go run ./main.go --webhook-port=9000
 
 install-cert-manager:
@@ -48,6 +48,12 @@ install-cert-manager:
 	kubectl rollout status deployment.apps/cert-manager -n cert-manager
 	kubectl rollout status deployment.apps/cert-manager-cainjector -n cert-manager
 	kubectl rollout status deployment.apps/cert-manager-webhook -n cert-manager
+
+
+manifests_all: manifests manifests_v1
+
+install_all: install install_v1
+
 
 # Install CRDs into a cluster
 install: manifests
