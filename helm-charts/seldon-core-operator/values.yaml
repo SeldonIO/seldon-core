@@ -46,7 +46,7 @@ executor:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-core-executor
-    tag: 1.5.1
+    tag: 1.5.2
   resources:
     cpuLimit: 500m
     cpuRequest: 500m
@@ -67,7 +67,7 @@ image:
   pullPolicy: IfNotPresent
   registry: docker.io
   repository: seldonio/seldon-core-operator
-  tag: 1.5.1
+  tag: 1.5.2
 manager:
   cpuLimit: 500m
   cpuRequest: 100m
@@ -104,12 +104,12 @@ predictor_servers:
   MLFLOW_SERVER:
     protocols:
       seldon:
-        defaultImageVersion: "1.5.1"
+        defaultImageVersion: "1.5.2"
         image: seldonio/mlflowserver
   SKLEARN_SERVER:
     protocols:
       seldon:
-        defaultImageVersion: "1.5.1"
+        defaultImageVersion: "1.5.2"
         image: seldonio/sklearnserver
       kfserving:
         defaultImageVersion: "0.1.1"
@@ -117,7 +117,7 @@ predictor_servers:
   TENSORFLOW_SERVER:
     protocols:
       seldon:
-        defaultImageVersion: "1.5.1"
+        defaultImageVersion: "1.5.2"
         image: seldonio/tfserving-proxy
       tensorflow: 
         defaultImageVersion: 2.1.0
@@ -125,7 +125,7 @@ predictor_servers:
   XGBOOST_SERVER:
     protocols:
       seldon:
-        defaultImageVersion: "1.5.1"
+        defaultImageVersion: "1.5.2"
         image: seldonio/xgboostserver
       kfserving:
         defaultImageVersion: "0.1.1"
@@ -167,7 +167,7 @@ engine:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/engine
-    tag: 1.5.1
+    tag: 1.5.2
   resources:
     cpuLimit: 500m
     cpuRequest: 500m
@@ -184,5 +184,5 @@ engine:
 
 # Explainer image
 explainer:
-  image: seldonio/alibiexplainer:1.5.1
+  image: seldonio/alibiexplainer:1.5.2
 
