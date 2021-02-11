@@ -312,8 +312,9 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 					if len(p.ComponentSpecs) > 0 {
 						p.ComponentSpecs[0].Spec.Containers = append(p.ComponentSpecs[0].Spec.Containers, *con)
 					} else {
-						podSpec := SeldonPodSpec{
-							Metadata: metav1.ObjectMeta{CreationTimestamp: metav1.Now()},
+                        creationTime := metav1.Now()
+                        podSpec := SeldonPodSpec{
+                            Metadata: ObjectMeta{CreationTimestamp: &creationTime},
 							Spec: corev1.PodSpec{
 								Containers: []corev1.Container{*con},
 							},
