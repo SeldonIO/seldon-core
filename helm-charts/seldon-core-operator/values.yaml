@@ -78,6 +78,7 @@ manager:
   cpuRequest: 100m
   memoryLimit: 300Mi
   memoryRequest: 200Mi
+  logLevel: INFO
 rbac:
   configmap:
     create: true
