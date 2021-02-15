@@ -17,6 +17,8 @@ kibana:
       value: "/kibana"
 
 elasticsearch:
+  securityConfig:
+    enabled: true
   master:
     enabled: true
     replicas: 1
@@ -34,7 +36,12 @@ elasticsearch:
         - ReadWriteOnce
       size: 400M
       annotations: {}
-
+    livenessProbe:
+      tcpSocket:
+        port: transport
+      initialDelaySeconds: 100
+      failureThreshold: 8
+      periodSeconds: 10
     resources:
       limits:
         cpu: 1
@@ -42,7 +49,7 @@ elasticsearch:
       requests:
         cpu: 200m
         memory: 1024Mi
-    javaOpts: "-Xmx256m -Xms256m"
+    javaOpts: "-Xmx512m -Xms512m"
     podAnnotations:
       fluentbit.io/exclude: "true"
 
@@ -51,7 +58,7 @@ elasticsearch:
     enabled: true
     ## Enables dedicated statefulset for data. Otherwise master nodes as data storage
     dedicatedPod:
-      enabled: true
+      enabled: false
     replicas: 1
     updateStrategy: "RollingUpdate"
 
@@ -90,7 +97,7 @@ elasticsearch:
     enabled: true
     ## Enables dedicated deployment for client/ingest. Otherwise master nodes as client/ingest
     dedicatedPod:
-      enabled: true
+      enabled: false
     replicas: 1
     javaOpts: "-Xmx256m -Xms256m"
 
