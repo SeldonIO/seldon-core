@@ -5,18 +5,20 @@ Dependencies
 * Seldon Core installed
 * Ingress provider (Istio or Ambassador)
 * Install [Elasticsearch for the Seldon Core Logging](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/logging.html)
-* KNative eventing v0.11.0
-* KNative serving v0.11.1 (optional)
+* KNative eventing v0.18.3
+* KNative serving v0.18.1 (optional)
 
-Then port-forward to that ingress on localhost:8003 in a separate terminal either with:
+See the centralized logging example (also in the examples directory) for how to set these up.
+
+Then port-forward to that ingress on localhost:8080 in a separate terminal with either of (istio suggested):
 
 Ambassador:
 
-    kubectl port-forward $(kubectl get pods -n seldon -l app.kubernetes.io/name=ambassador -o jsonpath='{.items[0].metadata.name}') -n seldon 8003:8080
+    kubectl port-forward $(kubectl get pods -n seldon -l app.kubernetes.io/name=ambassador -o jsonpath='{.items[0].metadata.name}') -n seldon 8080
 
 Istio:
 
-    kubectl port-forward $(kubectl get pods -l istio=ingressgateway -n istio-system -o jsonpath='{.items[0].metadata.name}') -n istio-system 8003:80
+    kubectl port-forward -n istio-system svc/istio-ingressgateway 8080:80
 
 
 
@@ -71,12 +73,23 @@ elasticsearch==7.9.1
 Setting up Knative eventing routing for request logger 
 
 
-```python
-!kubectl label namespace seldon-logs knative-eventing-injection=enabled --overwrite=true
+```bash
+%%bash
+kubectl apply -f - <<EOF
+apiVersion: eventing.knative.dev/v1
+kind: Broker
+metadata:
+  name: default
+  namespace: seldon-logs
+EOF
 ```
 
-    namespace/seldon labeled
+Verify broker is up
 
+```bash
+%%bash
+kubectl -n seldon-logs get broker default -o jsonpath='{.status.address.url}'
+```
 
 Adding payload request logger component for redirection of logs
 
@@ -84,61 +97,49 @@ Adding payload request logger component for redirection of logs
 ```bash
 %%bash
 kubectl apply -f - << END
-apiVersion: eventing.knative.dev/v1alpha1
+apiVersion: eventing.knative.dev/v1
 kind: Trigger
 metadata:
- name: seldon-request-logger-trigger
- namespace: seldon-logs
+  name: seldon-request-logger-trigger
+  namespace: seldon-logs
 spec:
- subscriber:
-   ref:
-     apiVersion: v1
-     kind: Service
-     name: seldon-request-logger
+  broker: default
+  subscriber:
+    ref:
+      apiVersion: serving.knative.dev/v1
+      kind: Service
+      name: seldon-request-logger
 END
 
 kubectl apply -f - << END
-apiVersion: apps/v1
-kind: Deployment
-metadata:
- name: seldon-request-logger
- namespace: seldon-logs
- labels:
-   app: seldon-request-logger
-spec:
- replicas: 1
- selector:
-   matchLabels:
-     app: seldon-request-logger
- template:
-   metadata:
-     labels:
-       app: seldon-request-logger
-   spec:
-     containers:
-       - name: user-container
-         image: docker.io/seldonio/seldon-request-logger:1.5.0-dev
-         imagePullPolicy: IfNotPresent
-         env:
-           - name: ELASTICSEARCH_HOST
-             value: "elasticsearch-master.seldon-logs.svc.cluster.local"
-           - name: ELASTICSEARCH_PORT
-             value: "9200"
-END
-
-kubectl apply -f - << END
-apiVersion: v1
+apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
- name: seldon-request-logger
- namespace: seldon-logs
+  name: seldon-request-logger
+  namespace: seldon-logs
+  metadata:
+    labels:
+    fluentd: "true"
 spec:
- selector:
-   app: seldon-request-logger
- ports:
-   - protocol: TCP
-     port: 80
-     targetPort: 8080
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "1"
+    spec:
+      containers:
+        - image: docker.io/seldonio/seldon-request-logger:1.5.1
+          imagePullPolicy: Always
+          env:
+           - name: ELASTICSEARCH_HOST
+             value: "elasticsearch-opendistro-es-client-service.seldon-logs.svc.cluster.local"
+           - name: ELASTICSEARCH_PORT
+             value: "9200"
+           - name: ELASTICSEARCH_PROTOCOL
+             value: "https"
+           - name: ELASTICSEARCH_USER
+             value: "admin"
+           - name: ELASTICSEARCH_PASS
+             value: "admin"
 END
 ```
 
@@ -170,7 +171,7 @@ spec:
       modelUri: gs://seldon-models/sklearn/iris
       name: classifier
       logger:
-        url: http://default-broker.seldon-logs.svc.cluster.local:80/
+        url: http://broker-ingress.knative-eventing.svc.cluster.local/seldon-logs/default
         mode: all
     name: default
     replicas: 1
@@ -193,7 +194,7 @@ END
 
 ```python
 import requests
-url = "http://localhost:80/seldon/seldon/multiclass-model/api/v1.0"
+url = "http://localhost:8080/seldon/seldon/multiclass-model/api/v1.0"
 ```
 
 
@@ -210,10 +211,16 @@ assert(len(pred_resp_1.json()["data"]["ndarray"][0])==3)
 ### Check data in Elasticsearch
 We'll be able to check the elasticsearch through the service or the pods in our cluster.
 
+To do this we'll have to port-forward to elastic in another window. e.g.
+
+kubectl port-forward -n seldon-logs svc/elasticsearch-opendistro-es-client-service 9200
+
+Verify by going to https://admin:admin@localhost:9200/_cat/indices
+
 
 ```python
 from elasticsearch import Elasticsearch
-es = Elasticsearch(['http://localhost:9200'])
+es = Elasticsearch(['https://admin:admin@localhost:9200'],verify_certs=False)
 ```
 
 See the indices that have been created
@@ -335,6 +342,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: seldon-multiclass-model-metrics
+  namespace: seldon-logs
   labels:
     app: seldon-multiclass-model-metrics
 spec:
@@ -351,7 +359,7 @@ spec:
           runAsUser: 8888
       containers:
       - name: user-container
-        image: seldonio/alibi-detect-server:1.5.0-dev
+        image: seldonio/alibi-detect-server:1.7.0-dev
         imagePullPolicy: IfNotPresent
         args:
         - --model_name
@@ -369,7 +377,7 @@ spec:
         - --event_source
         - io.seldon.serving.feedback
         - --elasticsearch_uri
-        - http://elasticsearch-master.seldon-logs:9200
+        - https://admin:admin@elasticsearch-opendistro-es-client-service.seldon-logs:9200
         - MetricsServer
         env:
         - name: "SELDON_DEPLOYMENT_ID"
@@ -377,7 +385,7 @@ spec:
         - name: "PREDICTIVE_UNIT_ID"
           value: "classifier"
         - name: "PREDICTIVE_UNIT_IMAGE"
-          value: "alibi-detect-server:1.5.0-dev"
+          value: "alibi-detect-server:1.7.0-dev"
         - name: "PREDICTOR_ID"
           value: "default"
 ---
@@ -385,6 +393,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: seldon-multiclass-model-metrics
+  namespace: seldon-logs
   labels:
     app: seldon-multiclass-model-metrics
 spec:
@@ -425,17 +434,19 @@ The trigger will be created in the seldon-logs namespace as that is where the in
 %%bash
 
 kubectl apply -f - << END
-apiVersion: eventing.knative.dev/v1alpha1
+apiVersion: eventing.knative.dev/v1
 kind: Trigger
 metadata:
   name: multiclass-model-metrics-trigger
   namespace: seldon-logs
 spec:
+  broker: default
   filter:
-    sourceAndType:
+    attributes:
+      inferenceservicename: cifar10
       type: io.seldon.serving.feedback
   subscriber:
-    uri: http://seldon-multiclass-model-metrics.seldon:80
+    uri: http://seldon-multiclass-model-metrics.seldon-logs:80
 END
 ```
 
@@ -458,6 +469,7 @@ apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
   name: seldon-multiclass-model-metrics
+  namespace: seldon-logs
 spec:
   template:
     metadata:
@@ -465,7 +477,7 @@ spec:
         autoscaling.knative.dev/minScale: "1"
     spec:
       containers:
-      - image: "seldonio/alibi-detect-server:1.5.0-dev"
+      - image: "seldonio/alibi-detect-server:1.7.0-dev"
         args:
         - --model_name
         - multiclassserver
@@ -488,7 +500,7 @@ spec:
         - name: "PREDICTIVE_UNIT_ID"
           value: "classifier"
         - name: "PREDICTIVE_UNIT_IMAGE"
-          value: "alibi-detect-server:1.5.0-dev"
+          value: "alibi-detect-server:1.7.0-dev"
         - name: "PREDICTOR_ID"
           value: "default"
         securityContext:
@@ -514,18 +526,20 @@ kubectl label namespace default knative-eventing-injection=enabled --overwrite=t
 And then the trigger contents:
 
 ```
-apiVersion: eventing.knative.dev/v1alpha1
+apiVersion: eventing.knative.dev/v1
 kind: Trigger
 metadata:
   name: multiclass-model-metrics-trigger
-  namespace: default
+  namespace: seldon-logs
 spec:
+  broker: default
   filter:
-    sourceAndType:
+    attributes:
+      inferenceservicename: cifar10
       type: io.seldon.serving.feedback
   subscriber:
     ref:
-      apiVersion: v1
+      apiVersion: serving.knative.dev/v1
       kind: Service
       name: seldon-multiclass-model-metrics
 ```
@@ -540,7 +554,7 @@ kubectl apply -f config/trigger.yaml
 
 ```python
 !kubectl run --quiet=true -it --rm curl --image=radial/busyboxplus:curl --restart=Never -- \
-    curl -v -X GET "http://seldon-multiclass-model-metrics.seldon.svc.cluster.local:80/v1/metrics" 
+    curl -v -X GET "http://seldon-multiclass-model-metrics.seldon-logs.svc.cluster.local:80/v1/metrics" 
 ```
 
     
@@ -573,7 +587,7 @@ print(feedback_resp_1)
 
 ```python
 !kubectl run --quiet=true -it --rm curl --image=radial/busyboxplus:curl --restart=Never -- \
-    curl -v -X GET "http://seldon-multiclass-model-metrics.seldon:80/v1/metrics" 
+    curl -v -X GET "http://seldon-multiclass-model-metrics.seldon-logs:80/v1/metrics" 
 ```
 
     
