@@ -16,7 +16,7 @@
 "cffi","1.14.5","MIT License"
 "chardet","4.0.0","GNU Library or Lesser General Public License (LGPL)"
 "click","8.0.0a1","BSD License"
-"cryptography","3.4.5","Apache Software License, BSD License"
+"cryptography","3.3","Apache Software License, BSD License"
 "flatbuffers","1.12","Apache Software License"
 "gast","0.3.3","BSD License"
 "google-auth","1.26.1","Apache Software License"
