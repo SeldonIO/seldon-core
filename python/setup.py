@@ -25,6 +25,8 @@ setup(
         "jsonschema<4.0.0",
         "Flask-cors<4.0.0",
         "redis<4.0.0",
+        # Addresses CVE-2020-1971
+        "cryptography >= 3.3, < 3.5"
         "requests<3.0.0",
         # Addresses CVE CVE-2019-11236 and CVE-2020-26137
         "urllib3 >= 1.25.9, < 1.26"
