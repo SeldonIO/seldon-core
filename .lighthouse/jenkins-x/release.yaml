@@ -1,0 +1,67 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  creationTimestamp: null
+  name: release
+spec:
+  pipelineSpec:
+    tasks:
+    - name: release-test-task
+      taskSpec:
+        stepTemplate:
+          name: ""
+          workingDir: /workspace/source
+        steps:
+        - image: uses:jenkins-x/jx3-pipeline-catalog/tasks/git-clone/git-clone.yaml@versionStream
+          name: ""
+        - name: release-step
+          image: seldonio/core-builder:0.19
+          command:
+            - bash
+            - -c
+            - ./ci_build_and_push_images.sh
+          volumeMounts:
+          - mountPath: /lib/modules
+            name: modules
+            readOnly: true
+          - mountPath: /sys/fs/cgroup
+            name: cgroup
+          - name: dind-storage
+            mountPath: /var/lib/docker
+          - mountPath: /builder/home/.docker
+            name: jenkins-docker-config-volume
+          resources:
+            requests:
+              cpu: 2
+              memory: 2000Mi
+              ephemeral-storage: "6Gi"
+            limits:
+              cpu: 2
+              memory: 2000Mi
+              ephemeral-storage: "6Gi"
+          securityContext:
+            privileged: true
+          imagePullPolicy: Always
+        volumes:
+          - name: modules
+            hostPath:
+              path: /lib/modules
+              type: Directory
+          - name: cgroup
+            hostPath:
+              path: /sys/fs/cgroup
+              type: Directory
+          - name: dind-storage
+            emptyDir: {}
+          - name: jenkins-docker-config-volume
+            secret:
+              items:
+              - key: config.json
+                path: config.json
+              secretName: jenkins-docker-cfg
+
+  podTemplate: {}
+  serviceAccountName: tekton-bot
+  timeout: 6h0m0s
+status: {}
+
