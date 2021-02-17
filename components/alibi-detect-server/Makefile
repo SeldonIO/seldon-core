@@ -77,7 +77,7 @@ curl-metrics-server-metrics:
 	curl http://localhost:8080/v1/metrics
 
 docker-build: 
-	docker build --pull -f Dockerfile -t ${REPO}/${IMAGE}:${VERSION} .
+	docker build -f Dockerfile -t ${REPO}/${IMAGE}:${VERSION} .
 
 docker-push:
 	docker push ${REPO}/${IMAGE}:${VERSION} 
