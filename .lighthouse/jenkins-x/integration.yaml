@@ -35,11 +35,11 @@ spec:
             mountPath: /var/lib/docker
           resources:
             requests:
-              cpu: 2
+              cpu: 3
               memory: 8000Mi
               ephemeral-storage: "60Gi"
             limits:
-              cpu: 2
+              cpu: 3
               memory: 8000Mi
               ephemeral-storage: "60Gi"
           securityContext:
