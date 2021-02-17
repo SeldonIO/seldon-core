@@ -4,7 +4,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.2.9
+    controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
   name: seldondeployments.machinelearning.seldon.io
 spec:
@@ -2359,6 +2359,7 @@ spec:
                                               can be referred to by services.
                                             type: string
                                           protocol:
+                                            default: TCP
                                             description: Protocol for port. Must be
                                               UDP, TCP, or SCTP. Defaults to "TCP".
                                             type: string
@@ -3653,6 +3654,7 @@ spec:
                                               can be referred to by services.
                                             type: string
                                           protocol:
+                                            default: TCP
                                             description: Protocol for port. Must be
                                               UDP, TCP, or SCTP. Defaults to "TCP".
                                             type: string
@@ -4955,6 +4957,7 @@ spec:
                                               can be referred to by services.
                                             type: string
                                           protocol:
+                                            default: TCP
                                             description: Protocol for port. Must be
                                               UDP, TCP, or SCTP. Defaults to "TCP".
                                             type: string
@@ -8063,6 +8066,7 @@ spec:
                                       port that can be referred to by services.
                                     type: string
                                   protocol:
+                                    default: TCP
                                     description: Protocol for port. Must be UDP, TCP,
                                       or SCTP. Defaults to "TCP".
                                     type: string
@@ -11274,6 +11278,7 @@ spec:
                                               can be referred to by services.
                                             type: string
                                           protocol:
+                                            default: TCP
                                             description: Protocol for port. Must be
                                               UDP, TCP, or SCTP. Defaults to "TCP".
                                             type: string
@@ -12568,6 +12573,7 @@ spec:
                                               can be referred to by services.
                                             type: string
                                           protocol:
+                                            default: TCP
                                             description: Protocol for port. Must be
                                               UDP, TCP, or SCTP. Defaults to "TCP".
                                             type: string
@@ -13870,6 +13876,7 @@ spec:
                                               can be referred to by services.
                                             type: string
                                           protocol:
+                                            default: TCP
                                             description: Protocol for port. Must be
                                               UDP, TCP, or SCTP. Defaults to "TCP".
                                             type: string
@@ -16978,6 +16985,7 @@ spec:
                                       port that can be referred to by services.
                                     type: string
                                   protocol:
+                                    default: TCP
                                     description: Protocol for port. Must be UDP, TCP,
                                       or SCTP. Defaults to "TCP".
                                     type: string
@@ -20189,6 +20197,7 @@ spec:
                                               can be referred to by services.
                                             type: string
                                           protocol:
+                                            default: TCP
                                             description: Protocol for port. Must be
                                               UDP, TCP, or SCTP. Defaults to "TCP".
                                             type: string
@@ -21483,6 +21492,7 @@ spec:
                                               can be referred to by services.
                                             type: string
                                           protocol:
+                                            default: TCP
                                             description: Protocol for port. Must be
                                               UDP, TCP, or SCTP. Defaults to "TCP".
                                             type: string
@@ -22785,6 +22795,7 @@ spec:
                                               can be referred to by services.
                                             type: string
                                           protocol:
+                                            default: TCP
                                             description: Protocol for port. Must be
                                               UDP, TCP, or SCTP. Defaults to "TCP".
                                             type: string
@@ -25893,6 +25904,7 @@ spec:
                                       port that can be referred to by services.
                                     type: string
                                   protocol:
+                                    default: TCP
                                     description: Protocol for port. Must be UDP, TCP,
                                       or SCTP. Defaults to "TCP".
                                     type: string
