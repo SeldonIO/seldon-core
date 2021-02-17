@@ -35,13 +35,13 @@ spec:
             mountPath: /var/lib/docker
           resources:
             requests:
-              cpu: 3
+              cpu: 2
               memory: 8000Mi
-              ephemeral-storage: "6Gi"
+              ephemeral-storage: "60Gi"
             limits:
-              cpu: 3
+              cpu: 2
               memory: 8000Mi
-              ephemeral-storage: "6Gi"
+              ephemeral-storage: "60Gi"
           securityContext:
             privileged: true
           imagePullPolicy: Always

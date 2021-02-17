@@ -379,3 +379,4 @@ The name Seldon (ˈSɛldən) Core was inspired from [the Foundation Series (Scif
 ![](https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/images/deploy-logo.png)
 
 We offer commercial support via our enterprise product Seldon Deploy. Please visit [https://www.seldon.io/](https://www.seldon.io/) for details and a trial.
+

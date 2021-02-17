@@ -13,8 +13,10 @@
 "attrs","MIT License"
 "cachetools","MIT License"
 "certifi","Mozilla Public License 2.0 (MPL 2.0)"
+"cffi","MIT License"
 "chardet","GNU Library or Lesser General Public License (LGPL)"
 "click","BSD License"
+"cryptography","Apache Software License
 "flatbuffers","Apache Software License"
 "gast","BSD License"
 "google-auth","Apache Software License"
@@ -38,6 +40,7 @@
 "protobuf","3-Clause BSD License"
 "pyasn1","BSD License"
 "pyasn1-modules","BSD License"
+"pycparser","BSD License"
 "pyrsistent","MIT License"
 "redis","MIT License"
 "requests","Apache Software License"
