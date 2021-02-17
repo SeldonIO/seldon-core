@@ -28,7 +28,7 @@ spec:
             name: cgroup
           - name: dind-storage
             mountPath: /var/lib/docker
-          - mountPath: /builder/home/.docker
+          - mountPath: /tekton/home/.docker
             name: jenkins-docker-config-volume
           resources:
             requests:
