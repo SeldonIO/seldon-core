@@ -26,7 +26,7 @@ func createSeldonDeploymentWithReplicas(name string, namespace string, specRepli
 					Replicas: predictorReplicas,
 					ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
 						{
-							Metadata: metav1.ObjectMeta{},
+							Metadata: machinelearningv1.ObjectMeta{},
 							Replicas: componentSpecReplicas,
 							Spec: v1.PodSpec{
 								Containers: []v1.Container{

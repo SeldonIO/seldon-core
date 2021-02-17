@@ -973,7 +973,7 @@ func TestCreateDeploymentWithLabelsAndAnnotations(t *testing.T) {
 					Annotations: map[string]string{annotationKey2: annotationValue2},
 					ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
 						{
-							Metadata: metav1.ObjectMeta{
+							Metadata: machinelearningv1.ObjectMeta{
 								Labels:      map[string]string{labelKey2: labelValue2},
 								Annotations: map[string]string{annotationKey3: annotationValue3},
 							},
@@ -1021,7 +1021,7 @@ func TestCreateDeploymentWithNoLabelsAndAnnotations(t *testing.T) {
 					Name: "p1",
 					ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
 						{
-							Metadata: metav1.ObjectMeta{},
+							Metadata: machinelearningv1.ObjectMeta{},
 							Spec: v1.PodSpec{
 								Containers: []v1.Container{
 									{
