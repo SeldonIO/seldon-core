@@ -1,14 +1,13 @@
-apiVersion: eventing.knative.dev/v1alpha1
+apiVersion: eventing.knative.dev/v1
 kind: Trigger
 metadata:
   name: multiclass-model-metrics-trigger
-  namespace: default
+  namespace: seldon-logs
 spec:
+  broker: default
   filter:
-    sourceAndType:
+    attributes:
+      inferenceservicename: cifar10
       type: io.seldon.serving.feedback
   subscriber:
-    ref:
-      apiVersion: v1
-      kind: Service
-      name: seldon-multiclass-model-metrics
+    uri: http://seldon-multiclass-model-metrics.seldon-logs:80
