@@ -6,6 +6,19 @@ If you were running our Openshift 0.4.2 certified operator and are looking to up
 
 Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed features and bug-fixes in each version.
 
+## Upgrading to 1.7
+
+### Python Dependency Updates
+
+Various CVEs were resolved via #2970, which included several packages upgrades which may affect applications that install packages which may not be compatible. This also includes the installation of pip==20.2, however this version of pip still uses the older resolver.
+
+## Upgrading to 1.6
+
+### Webhook Removal
+
+As part of the 1.6.0 release we are removing the Seldon Core Mutating Webhook. This won't cause any noticable changes, but it is recommended that you manually remove the webhook once you upgrade to version 1.6.0
+
+
 ## Upgrading to 1.5
 
 ### REST and gRPC

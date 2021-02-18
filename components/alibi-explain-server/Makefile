@@ -37,7 +37,7 @@ type_check:
 	mypy --ignore-missing-imports alibiexplainer
 
 docker-build: build_apis
-	docker build --file=Dockerfile --force-rm=true -t seldonio/${IMAGE}:${VERSION} .
+	docker build --file=Dockerfile -t seldonio/${IMAGE}:${VERSION} .
 
 docker-push:
 	docker push seldonio/${IMAGE}:${VERSION}
