@@ -52,6 +52,7 @@ elasticsearch==7.9.1
 
 ```python
 !kubectl create namespace seldon || echo "namespace already created"
+!kubectl create namespace seldon-logs || echo "namespace already created"
 ```
 
     namespace/seldon created
@@ -519,8 +520,15 @@ kubectl get kservice
 
 You'll then have to create the trigger, first by creating the broker:
 
-```
-kubectl label namespace default knative-eventing-injection=enabled --overwrite=true
+```bash
+%%bash
+kubectl apply -f - <<EOF
+apiVersion: eventing.knative.dev/v1
+kind: Broker
+metadata:
+  name: default
+  namespace: seldon-logs
+EOF
 ```
 
 And then the trigger contents:
