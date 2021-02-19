@@ -25,8 +25,6 @@ setup(
         "jsonschema<4.0.0",
         "Flask-cors<4.0.0",
         "redis<4.0.0",
-        # Addresses CVE-2020-1971
-        "cryptography==3.4",
         "requests<3.0.0",
         "numpy<2.0.0",
         "flatbuffers<2.0.0",
@@ -37,11 +35,13 @@ setup(
         "jaeger-client >= 4.1.0, < 4.5.0",
         "grpcio-opentracing >= 1.1.4, < 1.2.0",
         "grpcio-reflection < 1.35.0",
-        # Addresses CVE SNYK-PYTHON-PYYAML-590151
-        "PyYAML >= 5.4, < 5.5",
         "gunicorn >= 19.9.0, < 20.1.0",
         "setuptools >= 41.0.0",
         "prometheus_client >= 0.7.1, < 0.9.0",
+        # Addresses CVE-2020-1971
+        "cryptography==3.3",
+        # Addresses CVE SNYK-PYTHON-PYYAML-590151
+        "PyYAML >= 5.4, < 5.5",
         # Addresses CVE PRISMA-2021-0020
         "click >= 8.0.0a1, < 8.1",
         # Addresses CVE CVE-2019-11236 and CVE-2020-26137
