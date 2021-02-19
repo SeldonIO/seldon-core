@@ -26,7 +26,7 @@ setup(
         "Flask-cors<4.0.0",
         "redis<4.0.0",
         # Addresses CVE-2020-1971
-        "cryptography==3.3",
+        "cryptography==3.4",
         "requests<3.0.0",
         "numpy<2.0.0",
         "flatbuffers<2.0.0",
