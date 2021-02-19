@@ -32,10 +32,10 @@ kind_build_test_models:
 
 .PHONY: kind_build_prepackaged
 kind_build_prepackaged:
-	cd ../../servers/sklearnserver && make kind_load
-	cd ../../servers/xgboostserver && make kind_load
-	cd ../../servers/mlflowserver && make kind_load
-	cd ../../servers/tfserving_proxy && make kind_load
+	cd ../../servers/sklearnserver && make build kind_load
+	cd ../../servers/xgboostserver && make build kind_load
+	cd ../../servers/mlflowserver && make build kind_load
+	cd ../../servers/tfserving_proxy && make build kind_load
 
 .PHONY: kind_build_alibi_explain
 kind_build_alibi_explain:
