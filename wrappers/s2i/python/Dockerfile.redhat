@@ -25,7 +25,4 @@ COPY _python/python/licenses/license.txt .
 RUN mkdir -p /.conda && chmod a+rwx /.conda
 RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical
 
-# CVE https://github.com/SeldonIO/seldon-core/issues/2960
-RUN yum remove -y nodejs httpd
-
 EXPOSE 5000
