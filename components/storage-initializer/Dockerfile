@@ -19,6 +19,10 @@ RUN mkdir ./licenses && pip-licenses --from=mixed --format=csv --output-file=./l
     pip-licenses --from=mixed --format=plain-vertical --with-license-file --no-license-path --output-file=./licenses/license.txt
 RUN mv ./licenses /licenses
 RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical
+
+# CVE https://github.com/SeldonIO/seldon-core/issues/2960
+RUN yum remove -y nodejs httpd
+
 USER default
 
 ENTRYPOINT ["./storage-initializer/scripts/initializer-entrypoint"]
