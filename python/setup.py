@@ -29,7 +29,8 @@ setup(
         "cryptography==3.3",
         "requests<3.0.0",
         # Addresses CVE CVE-2019-11236 and CVE-2020-26137
-        "urllib3 >= 1.25.9, < 1.26" "numpy<2.0.0",
+        "urllib3 >= 1.25.9, < 1.26",
+        "numpy<2.0.0",
         "flatbuffers<2.0.0",
         "protobuf<4.0.0",
         "grpcio<2.0.0",

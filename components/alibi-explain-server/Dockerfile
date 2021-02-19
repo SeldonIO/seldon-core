@@ -9,6 +9,9 @@ LABEL name="Seldon Alibi Wrapper" \
 USER root
 RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical
 
+# CVE https://github.com/SeldonIO/seldon-core/issues/2960
+RUN yum remove -y nodejs httpd
+
 USER default
 RUN pip install \
     --upgrade pip \
@@ -26,8 +29,5 @@ RUN pip install numpy==1.19.04 . --no-binary protobuf
 RUN pip install pip-licenses
 RUN mkdir ./licenses && pip-licenses --from=mixed --format=csv --output-file=./licenses/license_info.csv && \
     pip-licenses --from=mixed --format=plain-vertical --with-license-file --no-license-path --output-file=./licenses/license.txt
-
-# CVE https://github.com/SeldonIO/seldon-core/issues/2960
-RUN yum remove -y nodejs httpd
 
 ENTRYPOINT ["python", "-m", "alibiexplainer"]
