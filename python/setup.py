@@ -28,8 +28,6 @@ setup(
         # Addresses CVE-2020-1971
         "cryptography==3.3",
         "requests<3.0.0",
-        # Addresses CVE CVE-2019-11236 and CVE-2020-26137
-        "urllib3 >= 1.25.9, < 1.26",
         "numpy<2.0.0",
         "flatbuffers<2.0.0",
         "protobuf<4.0.0",
@@ -46,6 +44,8 @@ setup(
         "prometheus_client >= 0.7.1, < 0.9.0",
         # Addresses CVE PRISMA-2021-0020
         "click >= 8.0.0a1, < 8.1",
+        # Addresses CVE CVE-2019-11236 and CVE-2020-26137
+        "urllib3 == 1.25.9",
     ],
     extras_require=extras,
     entry_points={
