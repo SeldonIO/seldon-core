@@ -1,4 +1,4 @@
-FROM continuumio/miniconda3:4.5.12
+FROM continuumio/miniconda3:4.7.12
 
 RUN \
     apt-get update -y && \
@@ -37,6 +37,8 @@ RUN unzip git.zip
 RUN apt-get remove git -y
 RUN make prefix=/usr/local -C git-2.30.0/ all install
 
+# Installs requride
+RUN apt-get install curl
 
 WORKDIR /work
 
