@@ -37,7 +37,7 @@ RUN unzip git.zip
 RUN apt-get remove git -y
 RUN make prefix=/usr/local -C git-2.30.0/ all install
 
-# Installs requride
+# Installs required
 RUN apt-get install curl
 
 WORKDIR /work
