@@ -10,7 +10,7 @@ jobs:
   python-tests:
 
     runs-on: ubuntu-18.04
-    container: seldonio/python-builder:0.3
+    container: seldonio/python-builder:0.4
 
     steps:
     - uses: actions/checkout@v2

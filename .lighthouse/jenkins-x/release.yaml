@@ -12,7 +12,7 @@ spec:
           name: ""
           workingDir: /workspace/source
         steps:
-        - image: uses:jenkins-x/jx3-pipeline-catalog/tasks/git-clone/git-clone.yaml@versionStream
+        - image: uses:jenkins-x/jx3-pipeline-catalog/tasks/git-clone/git-clone-pr.yaml@versionStream
           name: ""
         - name: release-step
           image: seldonio/core-builder:0.19
@@ -32,11 +32,11 @@ spec:
             name: jenkins-docker-config-volume
           resources:
             requests:
-              cpu: 2
+              cpu: 1
               memory: 2000Mi
               ephemeral-storage: "60Gi"
             limits:
-              cpu: 2
+              cpu: 1
               memory: 2000Mi
               ephemeral-storage: "60Gi"
           securityContext:

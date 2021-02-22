@@ -12,7 +12,7 @@ spec:
           name: ""
           workingDir: /workspace/source
         steps:
-        - image: uses:jenkins-x/jx3-pipeline-catalog/tasks/git-clone/git-clone.yaml@versionStream
+        - image: uses:jenkins-x/jx3-pipeline-catalog/tasks/git-clone/git-clone-pr.yaml@versionStream
           name: ""
         - name: notebooks-step
           image: seldonio/core-builder:0.19
@@ -37,11 +37,11 @@ spec:
             requests:
               cpu: 2
               memory: 8000Mi
-              ephemeral-storage: "60Gi"
+              ephemeral-storage: "100Gi"
             limits:
               cpu: 2
               memory: 8000Mi
-              ephemeral-storage: "60Gi"
+              ephemeral-storage: "100Gi"
           securityContext:
             privileged: true
           imagePullPolicy: Always

@@ -20,7 +20,7 @@ from seldon_e2e_utils import (
 
 S2I_CREATE = """cd ../s2i/python-features/tags && \
     s2i build -E environment_{model}_{api_type} . \
-    seldonio/seldon-core-s2i-python3:{s2i_python_version} \
+    seldonio/seldon-core-s2i-python37-ubi8:{s2i_python_version} \
     seldonio/test_tags_{model}_{api_type}:0.1
 """
 IMAGE_NAME = "seldonio/test_tags_{model}_{api_type}:0.1"

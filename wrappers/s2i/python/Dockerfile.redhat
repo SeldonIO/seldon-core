@@ -24,4 +24,5 @@ COPY _python/python/licenses/license.txt .
 
 RUN mkdir -p /.conda && chmod a+rwx /.conda
 RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical
+
 EXPOSE 5000

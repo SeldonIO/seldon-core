@@ -6,7 +6,7 @@ build_image:
 	s2i build \
 		-E environment_rest \
 		.\
-		seldonio/seldon-core-s2i-python3:${S2I_IMAGE_VERSION}\
+		seldonio/seldon-core-s2i-python37-ubi8:${S2I_IMAGE_VERSION}\
 		${IMAGE_BASE}:${VERSION}
 
 push_image:

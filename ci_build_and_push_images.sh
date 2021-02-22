@@ -28,7 +28,9 @@ set +o errexit
 function build_push_python {
     (cd wrappers/s2i/python/build_scripts \
 	    && ./build_all_local.sh \
-	    && ./push_all.sh)
+	    && ./push_all.sh \
+        && ./build_redhat.sh \
+        && ./push_redhat.sh)
     PYTHON_EXIT_VALUE=$?
 }
 
