@@ -7,8 +7,8 @@ build_jar:
 
 build:
 	s2i build . \
-		seldonio/s2i-java-jni-build:0.3.0 \
-		--runtime-image seldonio/s2i-java-jni-runtime:0.3.0 \
+		seldonio/s2i-java-jni-build:0.5.0 \
+		--runtime-image seldonio/s2i-java-jni-runtime:0.5.0 \
 		${IMAGE}
 
 run:
