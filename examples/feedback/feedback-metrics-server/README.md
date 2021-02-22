@@ -10,6 +10,10 @@ Dependencies
 
 See the centralized logging example (also in the examples directory) for how to set these up.
 
+Easiest way is to run `examples/centralized-logging/full-kind-setup.sh` and then:
+    `helm delete seldon-core-loadtesting`
+    `seldon-single-model`
+
 Then port-forward to that ingress on localhost:8080 in a separate terminal with either of (istio suggested):
 
 Ambassador:
@@ -355,6 +359,9 @@ spec:
     metadata:
       labels:
         app: seldon-multiclass-model-metrics
+      annotations:
+        prometheus.io/path: /v1/metrics
+        prometheus.io/scrape: "true"
     spec:
       securityContext:
           runAsUser: 8888
@@ -411,7 +418,7 @@ spec:
 
 
 ```python
-!kubectl apply -n seldon -f config/multiclass-deployment.yaml
+!kubectl apply -f config/multiclass-deployment.yaml
 ```
 
     deployment.apps/seldon-multiclass-model-metrics configured
@@ -420,7 +427,7 @@ spec:
 
 
 ```python
-!kubectl rollout status deploy/seldon-multiclass-model-metrics
+!kubectl rollout status -n seldon-logs deploy/seldon-multiclass-model-metrics
 ```
 
     deployment "seldon-multiclass-model-metrics" successfully rolled out
@@ -444,7 +451,7 @@ spec:
   broker: default
   filter:
     attributes:
-      inferenceservicename: cifar10
+      inferenceservicename: multiclass-model
       type: io.seldon.serving.feedback
   subscriber:
     uri: http://seldon-multiclass-model-metrics.seldon-logs:80
@@ -476,6 +483,8 @@ spec:
     metadata:
       annotations:
         autoscaling.knative.dev/minScale: "1"
+        prometheus.io/path: /v1/metrics
+        prometheus.io/scrape: "true"
     spec:
       containers:
       - image: "seldonio/alibi-detect-server:1.7.0-dev"
@@ -543,7 +552,7 @@ spec:
   broker: default
   filter:
     attributes:
-      inferenceservicename: cifar10
+      inferenceservicename: multiclass-model
       type: io.seldon.serving.feedback
   subscriber:
     ref:
@@ -595,7 +604,7 @@ print(feedback_resp_1)
 
 ```python
 !kubectl run --quiet=true -it --rm curl --image=radial/busyboxplus:curl --restart=Never -- \
-    curl -v -X GET "http://seldon-multiclass-model-metrics.seldon-logs:80/v1/metrics" 
+    curl -v -X GET "http://seldon-multiclass-model-metrics.seldon-logs.svc.cluster.local:80/v1/metrics" 
 ```
 
     

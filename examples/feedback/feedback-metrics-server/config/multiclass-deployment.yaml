@@ -12,42 +12,49 @@ spec:
       app: seldon-multiclass-model-metrics
   template:
     metadata:
+      annotations:
+        prometheus.io/path: /v1/metrics
+        prometheus.io/scrape: "true"
       labels:
         app: seldon-multiclass-model-metrics
     spec:
       securityContext:
-        runAsUser: 8888
+          runAsUser: 8888
       containers:
-        - name: user-container
-          image: seldonio/alibi-detect-server:1.7.0-dev
-          imagePullPolicy: IfNotPresent
-          args:
-            - --model_name
-            - multiclassserver
-            - --http_port
-            - '8080'
-            - --protocol
-            - seldonfeedback.http
-            - --storage_uri
-            - "adserver.cm_models.multiclass_one_hot.MulticlassOneHot"
-            - --reply_url
-            - http://message-dumper.default
-            - --event_type
-            - io.seldon.serving.feedback.metrics
-            - --event_source
-            - io.seldon.serving.feedback
-            - --elasticsearch_uri
-            - https://admin:admin@elasticsearch-opendistro-es-client-service.seldon-logs:9200
-            - MetricsServer
-          env:
-            - name: "SELDON_DEPLOYMENT_ID"
-              value: "multiclass-model"
-            - name: "PREDICTIVE_UNIT_ID"
-              value: "classifier"
-            - name: "PREDICTIVE_UNIT_IMAGE"
-              value: "alibi-detect-server:1.7.0-dev"
-            - name: "PREDICTOR_ID"
-              value: "default"
+      - name: user-container
+        image: seldonio/alibi-detect-server:1.7.0-dev
+        imagePullPolicy: IfNotPresent
+        args:
+        - --model_name
+        - multiclassserver
+        - --http_port
+        - '8080'
+        - --protocol
+        - seldonfeedback.http
+        - --storage_uri
+        - "adserver.cm_models.multiclass_one_hot.MulticlassOneHot"
+        - --reply_url
+        - http://message-dumper.default        
+        - --event_type
+        - io.seldon.serving.feedback.metrics
+        - --event_source
+        - io.seldon.serving.feedback
+        - --elasticsearch_uri
+        - https://admin:admin@elasticsearch-opendistro-es-client-service.seldon-logs:9200
+        - MetricsServer
+        env:
+        - name: "SELDON_DEPLOYMENT_ID"
+          value: "multiclass-model"
+        - name: "PREDICTIVE_UNIT_ID"
+          value: "classifier"
+        - name: "PREDICTIVE_UNIT_IMAGE"
+          value: "alibi-detect-server:1.7.0-dev"
+        - name: "PREDICTOR_ID"
+          value: "default"
+        ports:
+        - containerPort: 8080
+          name: metrics
+          protocol: TCP
 ---
 apiVersion: v1
 kind: Service
