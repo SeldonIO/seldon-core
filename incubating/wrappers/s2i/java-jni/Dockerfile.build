@@ -1,4 +1,4 @@
-FROM seldonio/core-builder:0.16
+FROM maven:3.6.3-jdk-13
 
 LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
 
