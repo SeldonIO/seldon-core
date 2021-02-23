@@ -24,7 +24,7 @@ RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Cri
 # CVE https://github.com/SeldonIO/seldon-core/issues/2960
 RUN yum remove -y nodejs httpd
 
-# Drop root and continue
+# Drop root and continue (base image uses 1001)
 USER default
 
 COPY ./s2i/bin/ /s2i/bin
