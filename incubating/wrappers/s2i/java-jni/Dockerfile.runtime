@@ -1,57 +1,47 @@
-FROM openjdk:13.0.1-jdk-buster
+FROM registry.access.redhat.com/ubi8/python-36
 
-ENV PYTHON_VERSION "3.6.10"
+# NOTE: This Dockerfile installs OpenJDK on top of the Python UBI image.
+# This is required for the JNI runtime.
 
-# Compression and SSL libs required for installing Python
-RUN apt-get upgrade && \
-        apt-get update && \
-        apt-get install build-essential -y && \
-        apt-get install zlib1g -y && \
-        apt-get install zlib1g-dev -y && \
-        apt-get install libssl-dev -y && \
-        apt-get install libbz2-dev -y && \
-        apt-get install liblzma-dev -y
+LABEL io.openshift.s2i.scripts-url="image:///s2i/bin" \
+      io.openshift.s2i.assemble-input-files="/build"
 
-# Build and install Python
-RUN curl -SLO https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz \
-    && tar xvf Python-${PYTHON_VERSION}.tgz \
-    && cd Python-${PYTHON_VERSION} \
-    && ./configure --prefix=/usr/local --with-openssl \
-    && make \
-    && make altinstall \
-    && cd / \
-    && rm -rf Python-${PYTHON_VERSION}* \
-    && (cd /usr/local/bin && ln -svn python3.6 python)
+# Get privileges to install Java
+USER root
 
-# Ensure python3 and pip3 are default
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py >>setup.py && \
-        python setup.py
-RUN update-alternatives --install /usr/bin/python python /usr/local/bin/python3.6 1
-RUN rm -rf /usr/local/bin/pip && \
-        ln -s /usr/local/bin/pip3.6 /usr/local/bin/pip
+# Install OpenJDK (same version as Dockerfile.build)
+ENV JAVA_MAJOR_VERSION=11 \
+    JAVA_HOME=/usr/lib/jvm/jre-11
 
-RUN pip install --upgrade pip setuptools wheel
+RUN INSTALL_PKGS="java-11-openjdk-headless" && \
+    yum -y --setopt=tsflags=nodocs install $INSTALL_PKGS && \
+    rpm -V $INSTALL_PKGS && \
+    yum -y clean all --enablerepo='*'
 
-RUN mkdir /build
+# Security upgrades
+RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical
 
-LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
-LABEL io.openshift.s2i.assemble-input-files="/build"
+# CVE https://github.com/SeldonIO/seldon-core/issues/2960
+RUN yum remove -y nodejs httpd
+
+# Drop root and continue
+USER default
 
 COPY ./s2i/bin/ /s2i/bin
 
-WORKDIR /microservice
+RUN pip install --upgrade pip setuptools wheel
 
 # Install Seldon Core
-COPY _python /microservice
-RUN cd /microservice/python && make install
-COPY _python/python/licenses/license.txt .
+COPY --chown=1001 _python .
+RUN make -C python install
+COPY --chown=1001 _python/python/licenses/license.txt .
 
 # Install extra requirements for the JNI server
-COPY ./java-jni/requirements.txt ./requirements.txt
+COPY --chown=1001 ./java-jni/requirements.txt ./requirements.txt
 RUN pip install -r requirements.txt
 
 # Copy JNI server
-COPY ./java-jni ./
+COPY --chown=1001 ./java-jni ./
 
 EXPOSE 5000
 
