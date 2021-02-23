@@ -6,7 +6,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
   <groupId>io.seldon.wrapper</groupId>
   <artifactId>seldon-core-wrapper</artifactId>
   <packaging>jar</packaging>
-  <version>0.3.0</version>
+  <version>0.4.1</version>
   <name>Seldon Core Java Wrapper</name>
   <url>http://maven.apache.org</url>
   <description>Wrapper for seldon-core Java prediction models.
@@ -48,9 +48,9 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
     <version>2.2.4.RELEASE</version>
   </parent>
   <properties>
-    <java.version>13</java.version>
-    <maven.compiler.source>13</maven.compiler.source>
-    <maven.compiler.target>13</maven.compiler.target>
+    <!-- java.version is only used by Spring -->
+    <java.version>11</java.version>
+    <maven.compiler.release>11</maven.compiler.release>
     <project.build.sourceEncoding>
     UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>
@@ -98,10 +98,8 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.5.1</version>
+        <version>3.8.1</version>
         <configuration>
-          <source>13</source>
-          <target>13</target>
           <encoding>UTF-8</encoding>
           <showWarnings>true</showWarnings>
           <compilerArgs>

@@ -16,9 +16,7 @@ fi
 
 PAYLOAD_PASSTHROUGH=${PAYLOAD_PASSTHROUGH:-true}
 MODEL_NAME=${MODEL_NAME:-"JavaJNIServer"}
-JAVA_JAR_PATH=${JAVA_JAR_PATH:-"/microservice/model.jar"}
-
-cd /microservice
+JAVA_JAR_PATH=${JAVA_JAR_PATH:-"./model.jar"}
 
 echo "Starting microservice"
 exec \
