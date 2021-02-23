@@ -4,7 +4,7 @@ FROM registry.access.redhat.com/ubi8/python-36
 # This is required for the JNI runtime.
 
 LABEL io.openshift.s2i.scripts-url="image:///s2i/bin" \
-      io.openshift.s2i.assemble-input-files="/build"
+      io.openshift.s2i.assemble-input-files="/home/jboss"
 
 # Get privileges to install Java
 USER root
