@@ -1,4 +1,4 @@
-VERSION := 0.1.0
+VERSION := 0.2.0
 IMAGE_NAME_BASE=jni-model-template
 IMAGE=seldonio/${IMAGE_NAME_BASE}:${VERSION}
 
@@ -14,7 +14,7 @@ build:
 run:
 	docker run \
 		--rm -it \
-		-p 5000:5000 \
+		-p 9000:9000 \
 		${IMAGE}
 
 clean:

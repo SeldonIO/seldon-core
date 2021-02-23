@@ -8,6 +8,6 @@
 #
 
 # Move jar binary with inference runtime implementation
-mv ./build/target/*.jar ./model.jar
+cp ./jboss/target/*.jar ./model.jar
 
 
