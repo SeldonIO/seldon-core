@@ -52,9 +52,6 @@ install-cert-manager:
 
 manifests_all: manifests manifests_v1
 
-install_all: install install_v1
-
-
 # Install CRDs into a cluster
 install: manifests
 	kustomize build config/crd | kubectl apply -f -
