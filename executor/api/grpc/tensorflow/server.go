@@ -34,16 +34,16 @@ func NewGrpcTensorflowServer(predictor *v1.PredictorSpec, client client.SeldonAp
 	}
 }
 
-func (g *GrpcTensorflowServer) execute(ctx context.Context, req proto.Message, method string) (payload.SeldonPayload, error) {
+func (g *GrpcTensorflowServer) execute(ctx context.Context, req proto.Message, method string, modelName string) (payload.SeldonPayload, error) {
 	md := grpc.CollectMetadata(ctx)
 	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, md.Get(payload.SeldonPUIDHeader)[0])
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName(method), g.ServerUrl, g.Namespace, md)
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName(method), g.ServerUrl, g.Namespace, md, modelName)
 	reqPayload := payload.ProtoPayload{Msg: req}
 	return seldonPredictorProcess.Predict(&g.predictor.Graph, &reqPayload)
 }
 
 func (g *GrpcTensorflowServer) Classify(ctx context.Context, req *serving.ClassificationRequest) (*serving.ClassificationResponse, error) {
-	resPayload, err := g.execute(ctx, req, "GrpcClassify")
+	resPayload, err := g.execute(ctx, req, "GrpcClassify", req.GetModelSpec().GetName())
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (g *GrpcTensorflowServer) Classify(ctx context.Context, req *serving.Classi
 }
 
 func (g *GrpcTensorflowServer) Regress(ctx context.Context, req *serving.RegressionRequest) (*serving.RegressionResponse, error) {
-	resPayload, err := g.execute(ctx, req, "GrpcRegress")
+	resPayload, err := g.execute(ctx, req, "GrpcRegress", req.GetModelSpec().GetName())
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (g *GrpcTensorflowServer) Regress(ctx context.Context, req *serving.Regress
 }
 
 func (g *GrpcTensorflowServer) Predict(ctx context.Context, req *serving.PredictRequest) (*serving.PredictResponse, error) {
-	resPayload, err := g.execute(ctx, req, "GrpcPredict")
+	resPayload, err := g.execute(ctx, req, "GrpcPredict", req.GetModelSpec().GetName())
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +68,7 @@ func (g *GrpcTensorflowServer) Predict(ctx context.Context, req *serving.Predict
 
 // MultiInference API for multi-headed models.
 func (g *GrpcTensorflowServer) MultiInference(ctx context.Context, req *serving.MultiInferenceRequest) (*serving.MultiInferenceResponse, error) {
-	resPayload, err := g.execute(ctx, req, "GrpcMultiInference")
+	resPayload, err := g.execute(ctx, req, "GrpcMultiInference", "")
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (g *GrpcTensorflowServer) MultiInference(ctx context.Context, req *serving.
 
 // GetModelMetadata - provides access to metadata for loaded models.
 func (g *GrpcTensorflowServer) GetModelMetadata(ctx context.Context, req *serving.GetModelMetadataRequest) (*serving.GetModelMetadataResponse, error) {
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("GrpcGetModelMetadata"), g.ServerUrl, g.Namespace, grpc.CollectMetadata(ctx))
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("GrpcGetModelMetadata"), g.ServerUrl, g.Namespace, grpc.CollectMetadata(ctx), "")
 	reqPayload := payload.ProtoPayload{Msg: req}
 	resPayload, err := seldonPredictorProcess.Metadata(&g.predictor.Graph, req.ModelSpec.Name, &reqPayload)
 	if err != nil {
@@ -87,7 +87,7 @@ func (g *GrpcTensorflowServer) GetModelMetadata(ctx context.Context, req *servin
 }
 
 func (g *GrpcTensorflowServer) GetModelStatus(ctx context.Context, req *serving.GetModelStatusRequest) (*serving.GetModelStatusResponse, error) {
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("GrpcGetModelStatus"), g.ServerUrl, g.Namespace, grpc.CollectMetadata(ctx))
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("GrpcGetModelStatus"), g.ServerUrl, g.Namespace, grpc.CollectMetadata(ctx), "")
 	reqPayload := payload.ProtoPayload{Msg: req}
 	resPayload, err := seldonPredictorProcess.Status(&g.predictor.Graph, req.ModelSpec.Name, &reqPayload)
 	if err != nil {

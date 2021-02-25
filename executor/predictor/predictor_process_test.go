@@ -33,35 +33,42 @@ const (
 func createPredictorProcess(t *testing.T) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
 	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, testSeldonPuid)
-	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{testCustomMetaKey: []string{testCustomMetaValue}})
+	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{testCustomMetaKey: []string{testCustomMetaValue}}, "")
+	return &pp
+}
+
+func createPredictorProcessWithModel(t *testing.T, modelName string) *PredictorProcess {
+	url, _ := url.Parse(testSourceUrl)
+	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, testSeldonPuid)
+	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{testCustomMetaKey: []string{testCustomMetaValue}}, modelName)
 	return &pp
 }
 
 func createPredictorProcessWithMetadata(t *testing.T, metadataResponse payload.SeldonPayload, modelMetadataMap map[string]payload.ModelMetadata) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
 	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, testSeldonPuid)
-	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{MetadataResponse: metadataResponse, ModelMetadataMap: modelMetadataMap}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{testCustomMetaKey: []string{testCustomMetaValue}})
+	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{MetadataResponse: metadataResponse, ModelMetadataMap: modelMetadataMap}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{testCustomMetaKey: []string{testCustomMetaValue}}, "")
 	return &pp
 }
 
 func createPredictorProcessWithRoute(t *testing.T, chosenRoute int) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
 	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, testSeldonPuid)
-	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{ChosenRoute: chosenRoute}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{})
+	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{ChosenRoute: chosenRoute}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{}, "")
 	return &pp
 }
 
 func createPredictorProcessWithError(t *testing.T, errMethod *v1.PredictiveUnitMethod, err error, errPayload payload.SeldonPayload) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
 	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, testSeldonPuid)
-	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{ErrMethod: errMethod, Err: err, ErrPayload: errPayload}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{})
+	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{ErrMethod: errMethod, Err: err, ErrPayload: errPayload}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{}, "")
 	return &pp
 }
 
 func createPredictorProcessWithoutPUIDInContext(t *testing.T) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
 	ctx := context.TODO()
-	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{testCustomMetaKey: []string{testCustomMetaValue}})
+	pp := NewPredictorProcess(ctx, &test.SeldonMessageTestClient{}, logf.Log.WithName("SeldonMessageRestClient"), url, "default", map[string][]string{testCustomMetaKey: []string{testCustomMetaValue}}, "")
 	return &pp
 }
 
@@ -103,6 +110,26 @@ func TestModel(t *testing.T) {
 	}
 
 	pResp, err := createPredictorProcess(t).Predict(graph, createPredictPayload(g))
+	g.Expect(err).Should(BeNil())
+	smRes := pResp.GetPayload().(*proto.SeldonMessage)
+	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(Equal(1.1))
+	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(Equal(2.0))
+}
+
+func TestModelOverride(t *testing.T) {
+	t.Logf("Started")
+	g := NewGomegaWithT(t)
+	model := v1.MODEL
+	graph := &v1.PredictiveUnit{
+		Type: &model,
+		Endpoint: &v1.Endpoint{
+			ServiceHost: "foo",
+			ServicePort: 9000,
+			Type:        v1.REST,
+		},
+	}
+
+	pResp, err := createPredictorProcessWithModel(t, "cifar10").Predict(graph, createPredictPayload(g))
 	g.Expect(err).Should(BeNil())
 	smRes := pResp.GetPayload().(*proto.SeldonMessage)
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(Equal(1.1))

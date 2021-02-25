@@ -30,26 +30,28 @@ var (
 )
 
 type PredictorProcess struct {
-	Ctx          context.Context
-	Client       client.SeldonApiClient
-	Log          logr.Logger
-	ServerUrl    *url.URL
-	Namespace    string
-	Meta         *payload.MetaData
-	Routing      map[string]int32
-	RoutingMutex *sync.RWMutex
+	Ctx               context.Context
+	Client            client.SeldonApiClient
+	Log               logr.Logger
+	ServerUrl         *url.URL
+	Namespace         string
+	Meta              *payload.MetaData
+	Routing           map[string]int32
+	RoutingMutex      *sync.RWMutex
+	ModelNameOverride string
 }
 
-func NewPredictorProcess(context context.Context, client client.SeldonApiClient, log logr.Logger, serverUrl *url.URL, namespace string, meta map[string][]string) PredictorProcess {
+func NewPredictorProcess(context context.Context, client client.SeldonApiClient, log logr.Logger, serverUrl *url.URL, namespace string, meta map[string][]string, modelNameOverride string) PredictorProcess {
 	return PredictorProcess{
-		Ctx:          context,
-		Client:       client,
-		Log:          log,
-		ServerUrl:    serverUrl,
-		Namespace:    namespace,
-		Meta:         payload.NewFromMap(meta),
-		Routing:      make(map[string]int32),
-		RoutingMutex: &sync.RWMutex{},
+		Ctx:               context,
+		Client:            client,
+		Log:               log,
+		ServerUrl:         serverUrl,
+		Namespace:         namespace,
+		Meta:              payload.NewFromMap(meta),
+		Routing:           make(map[string]int32),
+		RoutingMutex:      &sync.RWMutex{},
+		ModelNameOverride: modelNameOverride,
 	}
 }
 
@@ -72,6 +74,14 @@ func (p *PredictorProcess) getPort(node *v1.PredictiveUnit) int32 {
 	}
 }
 
+func (p *PredictorProcess) getModelName(node *v1.PredictiveUnit) string {
+	modelName := node.Name
+	if p.ModelNameOverride != "" {
+		modelName = p.ModelNameOverride
+	}
+	return modelName
+}
+
 func (p *PredictorProcess) transformInput(node *v1.PredictiveUnit, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	callModel := false
 	callTransformInput := false
@@ -86,24 +96,27 @@ func (p *PredictorProcess) transformInput(node *v1.PredictiveUnit, msg payload.S
 	if hasMethod(v1.TRANSFORM_INPUT, node.Methods) {
 		callTransformInput = true
 	}
+
+	modelName := p.getModelName(node)
+
 	if callModel {
-		msg, err := p.Client.Chain(p.Ctx, node.Name, msg)
+		msg, err := p.Client.Chain(p.Ctx, modelName, msg)
 		if err != nil {
 			return nil, err
 		}
 		p.RoutingMutex.Lock()
-		p.Routing[node.Name] = -1
+		p.Routing[modelName] = -1
 		p.RoutingMutex.Unlock()
-		return p.Client.Predict(p.Ctx, node.Name, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
+		return p.Client.Predict(p.Ctx, modelName, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	} else if callTransformInput {
-		msg, err := p.Client.Chain(p.Ctx, node.Name, msg)
+		msg, err := p.Client.Chain(p.Ctx, modelName, msg)
 		if err != nil {
 			return nil, err
 		}
 		p.RoutingMutex.Lock()
-		p.Routing[node.Name] = -1
+		p.Routing[modelName] = -1
 		p.RoutingMutex.Unlock()
-		return p.Client.TransformInput(p.Ctx, node.Name, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
+		return p.Client.TransformInput(p.Ctx, modelName, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	} else {
 		return msg, nil
 	}
@@ -122,12 +135,14 @@ func (p *PredictorProcess) transformOutput(node *v1.PredictiveUnit, msg payload.
 		callClient = true
 	}
 
+	modelName := p.getModelName(node)
+
 	if callClient {
-		msg, err := p.Client.Chain(p.Ctx, node.Name, msg)
+		msg, err := p.Client.Chain(p.Ctx, modelName, msg)
 		if err != nil {
 			return nil, err
 		}
-		return p.Client.TransformOutput(p.Ctx, node.Name, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
+		return p.Client.TransformOutput(p.Ctx, modelName, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	} else {
 		return msg, nil
 	}
@@ -146,8 +161,10 @@ func (p *PredictorProcess) feedback(node *v1.PredictiveUnit, msg payload.SeldonP
 		callClient = true
 	}
 
+	modelName := p.getModelName(node)
+
 	if callClient {
-		return p.Client.Feedback(p.Ctx, node.Name, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
+		return p.Client.Feedback(p.Ctx, modelName, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	} else {
 		return msg, nil
 	}
@@ -173,8 +190,11 @@ func (p *PredictorProcess) route(node *v1.PredictiveUnit, msg payload.SeldonPayl
 	if hasMethod(v1.ROUTE, node.Methods) {
 		callClient = true
 	}
+
+	modelName := p.getModelName(node)
+
 	if callClient {
-		return p.Client.Route(p.Ctx, node.Name, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
+		return p.Client.Route(p.Ctx, modelName, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	} else if node.Implementation != nil && *node.Implementation == v1.RANDOM_ABTEST {
 		return p.abTestRouter(node)
 	} else {
@@ -194,11 +214,13 @@ func (p *PredictorProcess) aggregate(node *v1.PredictiveUnit, msg []payload.Seld
 		callClient = true
 	}
 
+	modelName := p.getModelName(node)
+
 	if callClient {
 		p.RoutingMutex.Lock()
-		p.Routing[node.Name] = -1
+		p.Routing[modelName] = -1
 		p.RoutingMutex.Unlock()
-		return p.Client.Combine(p.Ctx, node.Name, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
+		return p.Client.Combine(p.Ctx, modelName, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	} else {
 		return msg[0], nil
 	}
