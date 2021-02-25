@@ -4,8 +4,6 @@ In this example we will add statistical performance metrics capabilities by leve
 Dependencies
 * Seldon Core installed
 * Ingress provider (Istio or Ambassador)
-* KNative eventing v0.18.3
-* KNative serving v0.18.1 (optional)
 
 See the centralized logging example (also in the examples directory) for how to set these up.
 
@@ -134,7 +132,7 @@ spec:
           runAsUser: 8888
       containers:
       - name: user-container
-        image: seldonio/alibi-detect-server:1.5.0-dev
+        image: seldonio/alibi-detect-server:1.7.0-dev
         imagePullPolicy: Never
         args:
         - --model_name
@@ -158,7 +156,7 @@ spec:
         - name: "PREDICTIVE_UNIT_ID"
           value: "classifier"
         - name: "PREDICTIVE_UNIT_IMAGE"
-          value: "alibi-detect-server:1.5.0-dev"
+          value: "alibi-detect-server:1.7.0-dev"
         - name: "PREDICTOR_ID"
           value: "default"
         ports:
