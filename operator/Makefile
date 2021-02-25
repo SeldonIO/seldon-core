@@ -30,7 +30,7 @@ lint: licenses/dep.txt
 		./licenses
 
 # Run tests
-test: generate fmt vet manifests generate-resources
+test: generate fmt vet manifests_all generate-resources
 	ginkgo -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis
 
 # Build manager binary
@@ -38,7 +38,7 @@ manager: generate fmt vet
 	go build -o bin/manager main.go
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
-run: generate fmt vet manifests
+run: generate fmt vet manifests_all
 	go run ./main.go --webhook-port=9000
 
 install-cert-manager:
@@ -48,6 +48,9 @@ install-cert-manager:
 	kubectl rollout status deployment.apps/cert-manager -n cert-manager
 	kubectl rollout status deployment.apps/cert-manager-cainjector -n cert-manager
 	kubectl rollout status deployment.apps/cert-manager-webhook -n cert-manager
+
+
+manifests_all: manifests manifests_v1
 
 # Install CRDs into a cluster
 install: manifests
@@ -63,7 +66,7 @@ install_v1: manifests_v1
 	kustomize build config/crd_v1 | kubectl create -f -
 
 # Uninstall V1 CRDs into a cluster
-uninstall_v1: 
+uninstall_v1:
 	kustomize build config/crd_v1 | kubectl delete -f -
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
@@ -326,7 +329,7 @@ update_upstream:
 # https://redhat-connect.gitbook.io/certified-operator-guide/appendix/bundle-maintenance-after-migration
 
 PKG_CERT=packagemanifests-certified
-create_certified_bundle: 
+create_certified_bundle:
 	rm -rf ${PKG_CERT}/${VERSION}
 	mkdir -p ${PKG_CERT}/${VERSION}
 	cp bundle/manifests/* ${PKG_CERT}/${VERSION}
@@ -371,7 +374,7 @@ bundle_certified_push:
 update_old_certified_packages:
 	cd packagemanifests-certified && make build_push
 
-update_openshift_certified: update_old_certified_packages create_certified_bundle create_bundle_image_certified push_bundle_image_certified validate_bundle_image_certified opm_index_certified opm_push_certified 
+update_openshift_certified: update_old_certified_packages create_certified_bundle create_bundle_image_certified push_bundle_image_certified validate_bundle_image_certified opm_index_certified opm_push_certified
 
 # Run last to prepare for future release
 PREV_VERSION=1.2.2

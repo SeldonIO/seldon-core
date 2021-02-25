@@ -49,27 +49,41 @@ in our default [helm values](../charts/seldon-core-operator.html#values).
 See the [Dockerfile](https://github.com/kubeflow/kfserving/blob/master/python/storage-initializer.Dockerfile
 ) and its [entrypoint](https://github.com/kubeflow/kfserving/blob/master/python/storage-initializer/scripts/initializer-entrypoint
 ) for a detailed reference.
+You can overwrite this value to specify another default `initContainer`. See details on requirements bellow
+
+Secrets are injected into the init containers as environmental variables from kubernetes `secrets`.
+The default secret name can be defined by setting following [helm value](../charts/seldon-core-operator.html#values)
+```yaml
+predictiveUnit:
+  defaultEnvSecretRefName: ""
+```
 
 
 ### Customizing Init Containers
 
-One can specify a custom `Init Container` globally by overwriting the `storageInitializer.image` helm value as metnioned above.
-The `entrypoint` of the `container` must take two arguments:
-- first representing the models URI
-- second the desired path where binary should be downloaded to
+You can specify a custom `initContainer` image and default `secret` **globally** by overwriting the helm values specified in the previous section.
 
-To illustrate how `initContainers` are used by the prepackaged model servers, following effective `SeldonDeployment` with defualt `initContainer` details updated by the mutating webhook is provided:
-
+To illustrate how `initContainers` are used by the prepackaged model servers, consider a Seldon Deployment with `volumes`, `volumeMounts` and `initContainers` injected by the `Seldon Core Operator`:
 ```yaml
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: example
-spec:
   name: iris
+spec:
   predictors:
-  - componentSpecs:
+  - name: default
+    replicas: 1
+    graph:
+      name: classifier
+      implementation: SKLEARN_SERVER
+      modelUri: s3://sklearn/iris
+
+    componentSpecs:
     - spec:
+        volumes:
+        - name: classifier-provision-location
+          emptyDir: {}
+
         containers:
         - name: classifier
           volumeMounts:
@@ -89,30 +103,36 @@ spec:
           - secretRef:
               name: seldon-init-container-secret
 
-          terminationMessagePath: /dev/termination-log
-          terminationMessagePolicy: File
-
           volumeMounts:
           - mountPath: /mnt/models
             name: classifier-provision-location
-
-        volumes:
-        - emptyDir: {}
-          name: classifier-provision-location
-    graph:
-      children: []
-      implementation: SKLEARN_SERVER
-      modelUri: s3://sklearn/iris
-      name: classifier
-    name: defaul
 ```
 
 Key observations:
-- our prepackaged model will expect model binaries to be saved into `/mnt/models` path
-- default `initContainers` name is constructed from `{predictiveUnitName}-model-initializer`
+- Our prepackaged model will expect model binaries to be saved into `/mnt/models` path
+- Default `initContainers` name is constructed from `{predictiveUnitName}-model-initializer`
+- The `entrypoint` of the `container` must take two arguments:
+  - First representing the models URI
+  - Second the desired path where binary should be downloaded to
+- If user would to provide their own `initContainer` which name matches the above pattern it would be used as provided
 
-Currently image used for `initContainers` can only be specified globally via helm values.
-The per deployment customisation is explored in this [GitHub issue #2611](https://github.com/SeldonIO/seldon-core/issues/2611).
+Image and secret used by Storage Initializer can be customised per-deployment:
+```yaml
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: rclone-sklearn
+spec:
+  predictors:
+  - name: default
+    replicas: 1
+    graph:
+      name: classifier
+      implementation: SKLEARN_SERVER
+      modelUri: mys3:sklearn/iris
+      storageInitializerImage: gcr.io/kfserving/storage-initializer:v0.4.0    # Specify custom image here
+      envSecretRefName: seldon-init-container-secret                          # Specify custom secret here
+```
 
 See our [example](../examples/custom_init_container.html) to learn how to write a custom container that uses [rclone](https://rclone.org/) for cloud storage operations.
 
