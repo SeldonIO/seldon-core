@@ -309,7 +309,14 @@ def main():
         help="Enable gunicorn access log.",
     )
 
-    args = parser.parse_args()
+    args, remaining = parser.parse_known_args()
+
+    if len(remaining) > 0:
+        logger.error(
+            f"Unknown args {remaining}. Note since 1.5.0 this CLI does not take API type (REST, GRPC)"
+        )
+        sys.exit(-1)
+
     parameters = parse_parameters(json.loads(args.parameters))
 
     setup_logger(args.log_level, args.debug)

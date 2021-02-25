@@ -3,7 +3,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: seldon-system/seldon-serving-cert
-    controller-gen.kubebuilder.io/version: v0.2.9
+    controller-gen.kubebuilder.io/version: v0.4.1
   labels:
     app: seldon
     app.kubernetes.io/instance: seldon1
@@ -4015,6 +4015,8 @@ spec:
                         type: string
                       serviceAccountName:
                         type: string
+                      storageInitializerImage:
+                        type: string
                       type:
                         type: string
                     type: object
@@ -4307,6 +4309,8 @@ spec:
                         type: array
                       serviceAccountName:
                         type: string
+                      storageInitializerImage:
+                        type: string
                       type:
                         type: string
                     required:
@@ -4516,9 +4520,3 @@ spec:
   - name: v1alpha3
     served: true
     storage: false
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []

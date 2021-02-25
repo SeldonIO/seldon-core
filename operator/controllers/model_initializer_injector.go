@@ -111,7 +111,7 @@ func getStorageInitializerConfigsFromMap(configMap *corev1.ConfigMap) (*StorageI
 }
 
 // InjectModelInitializer injects an init container to provision model data
-func (mi *ModelInitialiser) InjectModelInitializer(deployment *appsv1.Deployment, containerName string, srcURI string, serviceAccountName string, envSecretRefName string) (deploy *appsv1.Deployment, err error) {
+func (mi *ModelInitialiser) InjectModelInitializer(deployment *appsv1.Deployment, containerName string, srcURI string, serviceAccountName string, envSecretRefName string, storageInitializerImage string) (deploy *appsv1.Deployment, err error) {
 
 	if srcURI == "" {
 		return deployment, nil
@@ -207,17 +207,20 @@ func (mi *ModelInitialiser) InjectModelInitializer(deployment *appsv1.Deployment
 		return nil, err
 	}
 
-	storageInitializerImage := ModelInitializerContainerImage + ":" + ModelInitializerContainerVersion
-	if envStorageInitializerImage != "" {
-		storageInitializerImage = envStorageInitializerImage
+	initContainerImage := ModelInitializerContainerImage + ":" + ModelInitializerContainerVersion
+
+	if storageInitializerImage != "" {
+		initContainerImage = storageInitializerImage
+	} else if envStorageInitializerImage != "" {
+		initContainerImage = envStorageInitializerImage
 	} else if config != nil && config.Image != "" {
-		storageInitializerImage = config.Image
+		initContainerImage = config.Image
 	}
 
 	// Add an init container to run provisioning logic to the PodSpec (with defaults to pass comparison later)
 	initContainer := &corev1.Container{
 		Name:            ModelInitializerContainerName,
-		Image:           storageInitializerImage,
+		Image:           initContainerImage,
 		ImagePullPolicy: corev1.PullIfNotPresent,
 		Args: []string{
 			srcURI,

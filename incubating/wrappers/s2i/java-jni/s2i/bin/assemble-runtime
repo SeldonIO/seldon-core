@@ -8,6 +8,6 @@
 #
 
 # Move jar binary with inference runtime implementation
-mv /microservice/build/target/*.jar /microservice/model.jar
+cp ./jboss/target/*.jar ./model.jar
 
 

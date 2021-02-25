@@ -65,7 +65,7 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
                     f"Elasticsearch URI provided but DEFAULT_LABELS not provided: {DEFAULT_LABELS}"
                 )
             else:
-                self.elasticsearch_client = Elasticsearch(elasticsearch_uri)
+                self.elasticsearch_client = Elasticsearch(elasticsearch_uri,verify_certs=False)
 
     def load(self):
         """

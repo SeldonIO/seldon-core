@@ -25,7 +25,7 @@ s2i](../wrappers/s2i.md) and then follow the steps below.
 To check everything is working you can run
 
 ```bash
-s2i usage seldonio/s2i-java-jni-build:0.3.0
+s2i usage seldonio/s2i-java-jni-build:0.5.1
 ```
 
 ## Step 2 - Create your source code
@@ -153,8 +153,8 @@ The general format is:
 ```bash
 s2i build \
   <git-repo | src-folder> \
-  seldonio/s2i-java-jni-build:0.3.0 \
-  --runtime-image seldonio/s2i-java-jni-runtime:0.3.0 \
+  seldonio/s2i-java-jni-build:0.5.1 \
+  --runtime-image seldonio/s2i-java-jni-runtime:0.5.1 \
   <my-image-name> 
 ```
 
@@ -164,8 +164,8 @@ An example invocation using the test template model inside `seldon-core`:
 s2i build \
   https://github.com/seldonio/seldon-core.git \
   --context-dir=incubating/wrappers/s2i/java-jni/test/model-template-app \
-  seldonio/s2i-java-jni-build:0.3.0 \
-  --runtime-image seldonio/s2i-java-jni-runtime:0.3.0 \
+  seldonio/s2i-java-jni-build:0.5.1 \
+  --runtime-image seldonio/s2i-java-jni-runtime:0.5.1 \
   jni-model-template:0.1.0
 ```
 
@@ -186,15 +186,15 @@ git clone https://github.com/seldonio/seldon-core.git
 cd seldon-core
 s2i build \
   incubating/wrappers/s2i/java-jni/test/model-template-app \
-  seldonio/s2i-java-jni-build:0.3.0 \
-  --runtime-image seldonio/s2i-java-jni-runtime:0.3.0 \
+  seldonio/s2i-java-jni-build:0.5.1 \
+  --runtime-image seldonio/s2i-java-jni-runtime:0.5.1 \
   jni-model-template:0.1.0
 ```
 
 For more help see:
 
 ```bash
-s2i usage seldonio/s2i-java-jni-build:0.3.0
+s2i usage seldonio/s2i-java-jni-build:0.5.1
 s2i build --help
 ```
 

@@ -281,13 +281,14 @@ const (
 )
 
 type Explainer struct {
-	Type               AlibiExplainerType `json:"type,omitempty" protobuf:"string,1,opt,name=type"`
-	ModelUri           string             `json:"modelUri,omitempty" protobuf:"string,2,opt,name=modelUri"`
-	ServiceAccountName string             `json:"serviceAccountName,omitempty" protobuf:"string,3,opt,name=serviceAccountName"`
-	ContainerSpec      v1.Container       `json:"containerSpec,omitempty" protobuf:"bytes,4,opt,name=containerSpec"`
-	Config             map[string]string  `json:"config,omitempty" protobuf:"bytes,5,opt,name=config"`
-	Endpoint           *Endpoint          `json:"endpoint,omitempty" protobuf:"bytes,6,opt,name=endpoint"`
-	EnvSecretRefName   string             `json:"envSecretRefName,omitempty" protobuf:"bytes,7,opt,name=envSecretRefName"`
+	Type                    AlibiExplainerType `json:"type,omitempty" protobuf:"string,1,opt,name=type"`
+	ModelUri                string             `json:"modelUri,omitempty" protobuf:"string,2,opt,name=modelUri"`
+	ServiceAccountName      string             `json:"serviceAccountName,omitempty" protobuf:"string,3,opt,name=serviceAccountName"`
+	ContainerSpec           v1.Container       `json:"containerSpec,omitempty" protobuf:"bytes,4,opt,name=containerSpec"`
+	Config                  map[string]string  `json:"config,omitempty" protobuf:"bytes,5,opt,name=config"`
+	Endpoint                *Endpoint          `json:"endpoint,omitempty" protobuf:"bytes,6,opt,name=endpoint"`
+	EnvSecretRefName        string             `json:"envSecretRefName,omitempty" protobuf:"bytes,7,opt,name=envSecretRefName"`
+	StorageInitializerImage string             `json:"storageInitializerImage,omitempty" protobuf:"bytes,8,opt,name=storageInitializerImage"`
 }
 
 // ObjectMeta is a copy of the "k8s.io/apimachinery/pkg/apis/meta/v1" ObjectMeta.
@@ -570,16 +571,17 @@ type Parameter struct {
 }
 
 type PredictiveUnit struct {
-	Name               string                        `json:"name" protobuf:"string,1,opt,name=name"`
-	Children           []PredictiveUnit              `json:"children,omitempty" protobuf:"bytes,2,opt,name=children"`
-	Type               *PredictiveUnitType           `json:"type,omitempty" protobuf:"int,3,opt,name=type"`
-	Implementation     *PredictiveUnitImplementation `json:"implementation,omitempty" protobuf:"int,4,opt,name=implementation"`
-	Methods            *[]PredictiveUnitMethod       `json:"methods,omitempty" protobuf:"int,5,opt,name=methods"`
-	Endpoint           *Endpoint                     `json:"endpoint,omitempty" protobuf:"bytes,6,opt,name=endpoint"`
-	Parameters         []Parameter                   `json:"parameters,omitempty" protobuf:"bytes,7,opt,name=parameters"`
-	ModelURI           string                        `json:"modelUri,omitempty" protobuf:"bytes,8,opt,name=modelUri"`
-	ServiceAccountName string                        `json:"serviceAccountName,omitempty" protobuf:"bytes,9,opt,name=serviceAccountName"`
-	EnvSecretRefName   string                        `json:"envSecretRefName,omitempty" protobuf:"bytes,10,opt,name=envSecretRefName"`
+	Name                    string                        `json:"name" protobuf:"string,1,opt,name=name"`
+	Children                []PredictiveUnit              `json:"children,omitempty" protobuf:"bytes,2,opt,name=children"`
+	Type                    *PredictiveUnitType           `json:"type,omitempty" protobuf:"int,3,opt,name=type"`
+	Implementation          *PredictiveUnitImplementation `json:"implementation,omitempty" protobuf:"int,4,opt,name=implementation"`
+	Methods                 *[]PredictiveUnitMethod       `json:"methods,omitempty" protobuf:"int,5,opt,name=methods"`
+	Endpoint                *Endpoint                     `json:"endpoint,omitempty" protobuf:"bytes,6,opt,name=endpoint"`
+	Parameters              []Parameter                   `json:"parameters,omitempty" protobuf:"bytes,7,opt,name=parameters"`
+	ModelURI                string                        `json:"modelUri,omitempty" protobuf:"bytes,8,opt,name=modelUri"`
+	ServiceAccountName      string                        `json:"serviceAccountName,omitempty" protobuf:"bytes,9,opt,name=serviceAccountName"`
+	EnvSecretRefName        string                        `json:"envSecretRefName,omitempty" protobuf:"bytes,10,opt,name=envSecretRefName"`
+	StorageInitializerImage string                        `json:"storageInitializerImage,omitempty" protobuf:"bytes,11,opt,name=storageInitializerImage"`
 	// Request/response  payload logging. v2alpha1 feature that is added to v1 for backwards compatibility while v1 is the storage version.
 	Logger *Logger `json:"logger,omitempty"`
 }

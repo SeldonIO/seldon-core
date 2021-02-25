@@ -1,12 +1,27 @@
 elasticsearch:
-  hosts: ['elasticsearch-master']
+  hosts: ['elasticsearch-opendistro-es-client-service.seldon-logs.svc.cluster.local:9200']
   logstash:
+    enabled: true
     prefix: 'kubernetes_cluster'
+  auth:
+    enabled: true
+    user: "admin"
+    password: "admin"
+  scheme: "https"
+  sslVerify: false
 
 configMaps:
   useDefaults:
     containersInputConf: false
     systemInputConf: false
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 500Mi
+  requests:
+    cpu: 100m
+    memory: 200Mi
 
 extraConfigMaps:
   containers.input.conf: |-

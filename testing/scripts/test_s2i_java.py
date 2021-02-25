@@ -12,9 +12,9 @@ JAVA_S2I_FOLDER = os.path.join(SC_ROOT_PATH, "testing", "s2i", "java")
 
 S2I_JNI_PARAMETERS = {
     "s2i_folder": JAVA_S2I_FOLDER,
-    "s2i_image": "seldonio/s2i-java-jni-build:0.4.0",
+    "s2i_image": "seldonio/s2i-java-jni-build:0.5.1",
     "image_name": "seldonio/test-s2i-java-jni:0.2.0",
-    "s2i_runtime_image": "seldonio/s2i-java-jni-runtime:0.4.0",
+    "s2i_runtime_image": "seldonio/s2i-java-jni-runtime:0.5.1",
 }
 
 S2I_JAVA_PARAMETERS = {

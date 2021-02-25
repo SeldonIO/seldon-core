@@ -31,7 +31,7 @@ func TestStorageInitalizerInjector(t *testing.T) {
 			},
 		},
 	}
-	_, err = mi.InjectModelInitializer(&d, containerName, "gs://mybucket/mymodel", "", "")
+	_, err = mi.InjectModelInitializer(&d, containerName, "gs://mybucket/mymodel", "", "", "")
 	g.Expect(err).To(BeNil())
 	g.Expect(len(d.Spec.Template.Spec.InitContainers)).To(Equal(1))
 	g.Expect(d.Spec.Template.Spec.InitContainers[0].Image).To(Equal("gcr.io/kfserving/storage-initializer:v0.4.0"))
@@ -59,9 +59,67 @@ func TestStorageInitalizerInjectorWithRelatedImage(t *testing.T) {
 		},
 	}
 	envStorageInitializerImage = "abc:1.2"
-	_, err = mi.InjectModelInitializer(&d, containerName, "gs://mybucket/mymodel", "", "")
+	_, err = mi.InjectModelInitializer(&d, containerName, "gs://mybucket/mymodel", "", "", "")
 	g.Expect(err).To(BeNil())
 	g.Expect(len(d.Spec.Template.Spec.InitContainers)).To(Equal(1))
 	g.Expect(d.Spec.Template.Spec.InitContainers[0].Image).To(Equal(envStorageInitializerImage))
+	envStorageInitializerImage = ""
+}
+
+func TestStorageInitalizerInjectorWithGraphDefinedImage(t *testing.T) {
+	g := NewGomegaWithT(t)
+	scheme = createScheme()
+	client := fake.NewSimpleClientset()
+	_, err := client.CoreV1().ConfigMaps(ControllerNamespace).Create(context.TODO(), configMap, v1meta.CreateOptions{})
+	g.Expect(err).To(BeNil())
+	mi := NewModelInitializer(context.TODO(), client)
+	containerName := "classifier"
+	d := appsv1.Deployment{
+		Spec: appsv1.DeploymentSpec{
+			Template: v1.PodTemplateSpec{
+				Spec: v1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Name: containerName,
+						},
+					},
+				},
+			},
+		},
+	}
+	storageInitializerImage := "abc:1.3"
+	_, err = mi.InjectModelInitializer(&d, containerName, "gs://mybucket/mymodel", "", "", storageInitializerImage)
+	g.Expect(err).To(BeNil())
+	g.Expect(len(d.Spec.Template.Spec.InitContainers)).To(Equal(1))
+	g.Expect(d.Spec.Template.Spec.InitContainers[0].Image).To(Equal(storageInitializerImage))
+}
+
+func TestStorageInitalizerInjectorWithGraphDefinedImagePriorityOverRelated(t *testing.T) {
+	g := NewGomegaWithT(t)
+	scheme = createScheme()
+	client := fake.NewSimpleClientset()
+	_, err := client.CoreV1().ConfigMaps(ControllerNamespace).Create(context.TODO(), configMap, v1meta.CreateOptions{})
+	g.Expect(err).To(BeNil())
+	mi := NewModelInitializer(context.TODO(), client)
+	containerName := "classifier"
+	d := appsv1.Deployment{
+		Spec: appsv1.DeploymentSpec{
+			Template: v1.PodTemplateSpec{
+				Spec: v1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Name: containerName,
+						},
+					},
+				},
+			},
+		},
+	}
+	envStorageInitializerImage = "abc:1.2"
+	storageInitializerImage := "abc:1.3"
+	_, err = mi.InjectModelInitializer(&d, containerName, "gs://mybucket/mymodel", "", "", storageInitializerImage)
+	g.Expect(err).To(BeNil())
+	g.Expect(len(d.Spec.Template.Spec.InitContainers)).To(Equal(1))
+	g.Expect(d.Spec.Template.Spec.InitContainers[0].Image).To(Equal(storageInitializerImage))
 	envStorageInitializerImage = ""
 }
