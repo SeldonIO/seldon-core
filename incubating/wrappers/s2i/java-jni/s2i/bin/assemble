@@ -18,10 +18,6 @@ if [[ -z "$SERVICE_TYPE" ]]; then
     exit 1
 fi
 
-
-
-cd /build
-
 echo "---> Installing application source..."
 cp -Rf /tmp/src/. ./
 

@@ -1,7 +1,7 @@
 VERSION := $(shell cat ../../version.txt)
 
 # This can be "Auto" or a Number
-PYTEST_WORKERS ?= "4"
+PYTEST_WORKERS ?= "2"
 
 .PHONY: kind_create_cluster
 kind_create_cluster:

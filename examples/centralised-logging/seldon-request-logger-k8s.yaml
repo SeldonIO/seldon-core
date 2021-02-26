@@ -30,13 +30,19 @@ spec:
     spec:    
       containers:
         - name: user-container
-          image: docker.io/seldonio/seldon-request-logger:0.3.2
+        - image: docker.io/seldonio/seldon-request-logger:1.5.1
           imagePullPolicy: Always
           env:
             - name: ELASTICSEARCH_HOST
-              value: "elasticsearch-master.seldon-logs.svc.cluster.local"
+              value: "elasticsearch-opendistro-es-client-service.seldon-logs.svc.cluster.local"
             - name: ELASTICSEARCH_PORT
               value: "9200"
+            - name: ELASTICSEARCH_PROTOCOL
+              value: "https"
+            - name: ELASTICSEARCH_USER
+              value: "admin"
+            - name: ELASTICSEARCH_PASS
+              value: "admin"
             #if SELDON_ENVIRONMENT is defined index_prefix will be inferenece-log-${SELDON_ENVIRONMENT}-... instead of inference-log-...
             - name: SELDON_ENVIRONMENT
               value: "dev"

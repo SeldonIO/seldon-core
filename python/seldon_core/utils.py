@@ -1,24 +1,24 @@
-import os
-import json
-import sys
 import base64
-import numpy as np
+import json
 import logging
+import os
+import sys
+from typing import Dict, Iterable, List, Optional, Tuple, Union
 
-from google.protobuf import json_format, any_pb2
+import numpy as np
+from google.protobuf import any_pb2, json_format
 from google.protobuf.json_format import MessageToDict, ParseDict
 from google.protobuf.struct_pb2 import ListValue
 
-from seldon_core.proto import prediction_pb2
 from seldon_core.flask_utils import SeldonMicroserviceException
+from seldon_core.imports_helper import _TF_PRESENT
+from seldon_core.proto import prediction_pb2
 from seldon_core.user_model import (
+    SeldonComponent,
     client_class_names,
     client_custom_tags,
     client_feature_names,
-    SeldonComponent,
 )
-from seldon_core.imports_helper import _TF_PRESENT
-from typing import Tuple, Dict, Union, List, Optional, Iterable
 
 if _TF_PRESENT:
     import tensorflow as tf

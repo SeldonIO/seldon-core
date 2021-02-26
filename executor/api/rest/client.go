@@ -133,7 +133,7 @@ func (smc *JSONRestClient) getMetricsRoundTripper(modelName string, service stri
 			imageVersion = imageParts[1]
 		}
 	}
-	return promhttp.InstrumentRoundTripperDuration(smc.metrics.ClientHandledHistogram.MustCurryWith(prometheus.Labels{
+	roundTripper := promhttp.InstrumentRoundTripperDuration(smc.metrics.ClientHandledHistogram.MustCurryWith(prometheus.Labels{
 		metric.DeploymentNameMetric:   smc.DeploymentName,
 		metric.PredictorNameMetric:    smc.predictor.Name,
 		metric.PredictorVersionMetric: smc.predictor.Annotations["version"],
@@ -142,6 +142,16 @@ func (smc *JSONRestClient) getMetricsRoundTripper(modelName string, service stri
 		metric.ModelImageMetric:       imageName,
 		metric.ModelVersionMetric:     imageVersion,
 	}), http.DefaultTransport)
+
+	return promhttp.InstrumentRoundTripperDuration(smc.metrics.ClientHandledSummary.MustCurryWith(prometheus.Labels{
+		metric.DeploymentNameMetric:   smc.DeploymentName,
+		metric.PredictorNameMetric:    smc.predictor.Name,
+		metric.PredictorVersionMetric: smc.predictor.Annotations["version"],
+		metric.ServiceMetric:          service,
+		metric.ModelNameMetric:        modelName,
+		metric.ModelImageMetric:       imageName,
+		metric.ModelVersionMetric:     imageVersion,
+	}), roundTripper)
 }
 
 func (smc *JSONRestClient) addHeaders(req *http.Request, m map[string][]string) {

@@ -65,7 +65,7 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
                     f"Elasticsearch URI provided but DEFAULT_LABELS not provided: {DEFAULT_LABELS}"
                 )
             else:
-                self.elasticsearch_client = Elasticsearch(elasticsearch_uri)
+                self.elasticsearch_client = Elasticsearch(elasticsearch_uri,verify_certs=False)
 
     def load(self):
         """
@@ -137,7 +137,7 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
                     seldon_namespace = headers.get(NAMESPACE_HEADER_NAME, "")
 
                     # Currently only supports SELDON inference type (not kfserving)
-                    elasticsearch_index = f"inference-log-{seldon_namespace}-seldon-{SELDON_DEPLOYMENT_ID}-{SELDON_PREDICTOR_ID}"
+                    elasticsearch_index = f"inference-log-seldon-{seldon_namespace}-{SELDON_DEPLOYMENT_ID}-{SELDON_PREDICTOR_ID}"
 
                     doc = self.elasticsearch_client.get(
                         index=elasticsearch_index, id=seldon_puid

@@ -1,9 +1,9 @@
 from seldon_e2e_utils import (
-    wait_for_status,
-    wait_for_rollout,
+    initial_rest_request,
     retry_run,
     to_resources_path,
-    initial_rest_request,
+    wait_for_rollout,
+    wait_for_status,
 )
 
 

@@ -1,5 +1,6 @@
-IMAGE_NAME=seldonio/rclone-init-container
-IMAGE_VERSION := $(shell cat ../../version.txt)
+IMAGE_NAME=seldonio/rclone-init-container-example
+# IMAGE_VERSION := $(shell cat ../../version.txt)
+IMAGE_VERSION=0.1
 
 KIND_NAME ?= kind
 

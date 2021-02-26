@@ -1,11 +1,11 @@
 import pytest
 
 from seldon_e2e_utils import (
-    retry_run,
-    wait_for_status,
-    wait_for_rollout,
-    assert_model_during_op,
     assert_model,
+    assert_model_during_op,
+    retry_run,
+    wait_for_rollout,
+    wait_for_status,
 )
 
 SELDON_VERSIONS_TO_TEST = [

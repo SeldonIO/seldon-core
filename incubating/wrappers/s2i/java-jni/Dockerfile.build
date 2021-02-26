@@ -1,7 +1,5 @@
-FROM seldonio/core-builder:0.16
+FROM registry.access.redhat.com/ubi8/openjdk-11
 
 LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
 
 COPY ./s2i/bin/ /s2i/bin
-
-WORKDIR /build

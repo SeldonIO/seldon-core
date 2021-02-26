@@ -1,20 +1,22 @@
+import json
+import logging
+import time
+import uuid
+from subprocess import run
+
+import requests
+
+from seldon_core.batch_processor import start_multithreaded_batch_worker
 from seldon_e2e_utils import (
-    wait_for_rollout,
+    API_ISTIO_GATEWAY,
+    create_random_data,
     initial_rest_request,
+    rest_request,
     rest_request_ambassador,
     retry_run,
-    create_random_data,
+    wait_for_rollout,
     wait_for_status,
-    rest_request,
-    API_ISTIO_GATEWAY,
 )
-from subprocess import run
-import time
-import logging
-import json
-import requests
-import uuid
-from seldon_core.batch_processor import start_multithreaded_batch_worker
 
 
 class TestBatchWorker(object):

@@ -118,6 +118,8 @@ examples/models/onnx_resnet50/resnet.onnx
 
 #logging example
 examples/centralised-logging/istio-**
+examples/centralised-logging/tempresources/
+examples/centralised-logging/tempresources/**
 
 #openapi
 engine/src/main/resources/static/seldon.json

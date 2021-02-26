@@ -8,7 +8,7 @@ require (
 	github.com/gogo/protobuf v1.3.1
 	github.com/google/go-cmp v0.5.4
 	github.com/kedacore/keda v0.0.0-20200911122749-717aab81817f
-	github.com/onsi/ginkgo v1.14.1
+	github.com/onsi/ginkgo v1.15.0
 	github.com/onsi/gomega v1.10.4
 	go.uber.org/zap v1.15.0
 	gopkg.in/yaml.v2 v2.4.0

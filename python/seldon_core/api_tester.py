@@ -1,8 +1,9 @@
 import argparse
 import json
-from seldon_core.seldon_client import SeldonClient
-from seldon_core.microservice_tester import unfold_contract, generate_batch
 import logging
+
+from seldon_core.microservice_tester import generate_batch, unfold_contract
+from seldon_core.seldon_client import SeldonClient
 
 
 def get_seldon_client(args) -> SeldonClient:

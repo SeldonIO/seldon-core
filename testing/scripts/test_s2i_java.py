@@ -1,20 +1,20 @@
 import os
 import time
-import pytest
-
 from subprocess import run
 
-from seldon_e2e_utils import initial_rest_request, wait_for_status, wait_for_rollout
+import pytest
+
 from e2e_utils.common import SC_ROOT_PATH
 from e2e_utils.models import deploy_model
+from seldon_e2e_utils import initial_rest_request, wait_for_rollout, wait_for_status
 
 JAVA_S2I_FOLDER = os.path.join(SC_ROOT_PATH, "testing", "s2i", "java")
 
 S2I_JNI_PARAMETERS = {
     "s2i_folder": JAVA_S2I_FOLDER,
-    "s2i_image": "seldonio/s2i-java-jni-build:0.4.0",
+    "s2i_image": "seldonio/s2i-java-jni-build:0.5.1",
     "image_name": "seldonio/test-s2i-java-jni:0.2.0",
-    "s2i_runtime_image": "seldonio/s2i-java-jni-runtime:0.4.0",
+    "s2i_runtime_image": "seldonio/s2i-java-jni-runtime:0.5.1",
 }
 
 S2I_JAVA_PARAMETERS = {

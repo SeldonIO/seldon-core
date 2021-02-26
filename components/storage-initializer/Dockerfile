@@ -1,7 +1,7 @@
 FROM registry.access.redhat.com/ubi8/python-36
 LABEL name="Storage Initializer" \
       vendor="Seldon Technologies" \
-      version="1.6.0" \
+      version="1.7.0-dev" \
       release="1" \
       summary="Storage Initializer for Seldon Core" \
       description="Allows Seldon Core to download artifacts from cloud and local storage to a local volume"
@@ -19,6 +19,10 @@ RUN mkdir ./licenses && pip-licenses --from=mixed --format=csv --output-file=./l
     pip-licenses --from=mixed --format=plain-vertical --with-license-file --no-license-path --output-file=./licenses/license.txt
 RUN mv ./licenses /licenses
 RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical
+
+# CVE https://github.com/SeldonIO/seldon-core/issues/2960
+RUN yum remove -y nodejs httpd
+
 USER default
 
 ENTRYPOINT ["./storage-initializer/scripts/initializer-entrypoint"]

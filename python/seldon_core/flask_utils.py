@@ -1,9 +1,11 @@
-import json
 import base64
-
+import json
 from http import HTTPStatus
-from flask import request, current_app, jsonify as flask_jsonify
 from typing import Dict, Union
+
+from flask import current_app
+from flask import jsonify as flask_jsonify
+from flask import request
 
 
 def get_multi_form_data_request() -> Dict:

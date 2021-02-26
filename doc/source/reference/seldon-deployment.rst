@@ -10,6 +10,6 @@ Below is the 2nd half of our `seldondeployment_types.go <https://github.com/Seld
 
 .. literalinclude:: ../../../operator/apis/machinelearning.seldon.io/v1/seldondeployment_types.go
    :language: go
-   :lines: 163-
+   :lines: 203-
 
 

@@ -1,27 +1,27 @@
 import argparse
-import os
 import importlib
 import json
-import time
 import logging
 import multiprocessing as mp
-import threading
+import os
 import sys
-
-from typing import Dict, Callable
+import threading
+import time
 from distutils.util import strtobool
+from typing import Callable, Dict
 
-from seldon_core import persistence, __version__, wrapper as seldon_microservice
-from seldon_core.metrics import SeldonMetrics
-from seldon_core.flask_utils import ANNOTATIONS_FILE, SeldonMicroserviceException
-from seldon_core.utils import getenv_as_bool, setup_tracing
+from seldon_core import __version__, persistence
+from seldon_core import wrapper as seldon_microservice
 from seldon_core.app import (
     StandaloneApplication,
     UserModelApplication,
     accesslog,
-    threads,
     post_worker_init,
+    threads,
 )
+from seldon_core.flask_utils import ANNOTATIONS_FILE, SeldonMicroserviceException
+from seldon_core.metrics import SeldonMetrics
+from seldon_core.utils import getenv_as_bool, setup_tracing
 
 logger = logging.getLogger(__name__)
 
@@ -309,7 +309,14 @@ def main():
         help="Enable gunicorn access log.",
     )
 
-    args = parser.parse_args()
+    args, remaining = parser.parse_known_args()
+
+    if len(remaining) > 0:
+        logger.error(
+            f"Unknown args {remaining}. Note since 1.5.0 this CLI does not take API type (REST, GRPC)"
+        )
+        sys.exit(-1)
+
     parameters = parse_parameters(json.loads(args.parameters))
 
     setup_logger(args.log_level, args.debug)

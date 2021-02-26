@@ -17,8 +17,8 @@
 #
 
 import pytest
-import seldon_core
 
+import seldon_core
 
 STORAGE_MODULE = "seldon_core.storage"
 

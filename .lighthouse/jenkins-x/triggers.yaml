@@ -1,0 +1,33 @@
+apiVersion: config.lighthouse.jenkins-x.io/v1alpha1
+kind: TriggerConfig
+spec:
+  presubmits:
+  - name: notebooks
+    context: "notebooks"
+    always_run: false
+    optional: false
+    trigger: (?m)^/test( all| notebooks.*),?(s+|$)
+    rerun_command: "/test notebooks"
+    source: "notebooks.yaml"
+  - name: integration
+    context: "integration"
+    always_run: false
+    optional: false
+    trigger: (?m)^/test( all| integration.*),?(s+|$)
+    rerun_command: "/test integration"
+    source: "integration.yaml"
+  - name: release-build-push
+    context: "release-build-push"
+    always_run: false
+    optional: false
+    trigger: (?m)^/test( all| release.*),?(s+|$)
+    rerun_command: "/test release"
+    source: "release.yaml"
+  postsubmits:
+  - name: release
+    context: "release"
+    source: "release.yaml"
+    branches:
+    - ^main$
+    - ^master$
+

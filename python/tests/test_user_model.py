@@ -1,6 +1,8 @@
-import numpy as np
-from seldon_core.user_model import SeldonComponent, client_class_names
 import logging
+
+import numpy as np
+
+from seldon_core.user_model import SeldonComponent, client_class_names
 
 
 class UserObjectClassAttr(SeldonComponent):

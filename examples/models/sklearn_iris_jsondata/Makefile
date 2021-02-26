@@ -2,7 +2,7 @@ IMAGE_NAME=seldonio/sklearn-iris-jsondata
 IMAGE_VERSION=0.2
 
 build_image: train
-	s2i build -E environment . seldonio/seldon-core-s2i-python3:1.6.0 ${IMAGE_NAME}:${IMAGE_VERSION}
+	s2i build -E environment . seldonio/seldon-core-s2i-python37-ubi8:1.7.0-dev ${IMAGE_NAME}:${IMAGE_VERSION}
 
 push_image:
 	docker push $(IMAGE_NAME):$(IMAGE_VERSION)

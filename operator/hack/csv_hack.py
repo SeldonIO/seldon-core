@@ -1,6 +1,7 @@
-import yaml
 import argparse
 import sys
+
+import yaml
 
 
 def getOpts(cmd_line_args):
@@ -20,7 +21,9 @@ def remove_versions(csv):
 
 
 def update_container_image(csv, version):
-    csv["metadata"]["annotations"]["containerImage"] = "seldonio/seldon-core-operator:"+version
+    csv["metadata"]["annotations"]["containerImage"] = (
+        "seldonio/seldon-core-operator:" + version
+    )
     return csv
 
 

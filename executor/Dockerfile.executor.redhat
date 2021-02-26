@@ -24,7 +24,7 @@ RUN go build -a -o executor cmd/executor/main.go
 # Get MPL licensed dependencies
 RUN wget -O hashicorp-golang-lru.tar.gz https://github.com/hashicorp/golang-lru/archive/master.tar.gz
 RUN wget -O armon-consul-api.tar.gz https://github.com/armon/consul-api/archive/master.tar.gz
-RUN wget -O hasicorp-hcl.tar.gz https://github.com/hashicorp/hcl/archive/master.tar.gz
+RUN wget -O hasicorp-hcl.tar.gz https://github.com/hashicorp/hcl/archive/hcl1.tar.gz
 
 # Copy OpenAPI folder and change the permissions
 COPY api/rest/openapi/ /openapi/
@@ -33,7 +33,7 @@ RUN chmod -R 660 /openapi/
 FROM registry.access.redhat.com/ubi8/ubi
 LABEL name="Seldon Executor" \
       vendor="Seldon Technologies" \
-      version="1.6.0" \
+      version="1.7.0-dev" \
       release="1" \
       summary="The service orchestrator for Seldon Core" \
       description="The service orchestrator for Seldon Core which manages the request/response flow through the Seldon Core inference graphs deployed via the Seldon Core Operator as SeldonDeployments custom resources"

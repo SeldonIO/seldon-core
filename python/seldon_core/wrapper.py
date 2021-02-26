@@ -1,25 +1,26 @@
-import grpc
-from grpc_reflection.v1alpha import reflection
-import os
 import logging
-import seldon_core.seldon_methods
-
+import os
 from concurrent import futures
-from flask import Flask, send_from_directory, request, Response
+
+import grpc
+from flask import Flask, Response, request, send_from_directory
 from flask_cors import CORS
-from seldon_core.utils import (
-    seldon_message_to_json,
-    json_to_seldon_model_metadata,
-    json_to_feedback,
-    getenv_as_bool,
-)
-from seldon_core.flask_utils import get_request, jsonify
+from grpc_reflection.v1alpha import reflection
+
+import seldon_core.seldon_methods
 from seldon_core.flask_utils import (
-    SeldonMicroserviceException,
     ANNOTATION_GRPC_MAX_MSG_SIZE,
+    SeldonMicroserviceException,
+    get_request,
+    jsonify,
 )
-from seldon_core.proto import prediction_pb2_grpc
-from seldon_core.proto import prediction_pb2
+from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
+from seldon_core.utils import (
+    getenv_as_bool,
+    json_to_feedback,
+    json_to_seldon_model_metadata,
+    seldon_message_to_json,
+)
 
 logger = logging.getLogger(__name__)
 

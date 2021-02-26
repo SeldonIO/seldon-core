@@ -1,6 +1,6 @@
 import logging
 
-from sh import s2i, kind
+from sh import kind, s2i
 
 
 def create_s2i_image(

@@ -3,7 +3,7 @@ IMAGE_BASE=seldonio/model-with-metrics
 PYTHON_WRAPPER:= $(shell cat ../../../version.txt)
 
 build:
-	s2i build -E environment . seldonio/seldon-core-s2i-python36:${PYTHON_WRAPPER} ${IMAGE_BASE}:${VERSION}
+	s2i build -E environment . seldonio/seldon-core-s2i-python37-ubi8:${PYTHON_WRAPPER} ${IMAGE_BASE}:${VERSION}
 
 push:
 	docker push ${IMAGE_BASE}:${VERSION}

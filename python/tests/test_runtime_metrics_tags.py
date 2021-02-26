@@ -1,36 +1,36 @@
-import os
-import logging
-import pytest
-import numpy as np
-from google.protobuf import json_format
 import json
+import logging
+import os
+
+import numpy as np
+import pytest
+from google.protobuf import json_format
 
 from seldon_core.flask_utils import SeldonMicroserviceException
-from seldon_core.proto import prediction_pb2
-from seldon_core.wrapper import (
-    get_rest_microservice,
-    get_metrics_microservice,
-    SeldonModelGRPC,
-)
 from seldon_core.metrics import (
+    AGGREGATE_METRIC_METHOD_TAG,
+    BINS,
+    COUNTER,
+    FEEDBACK_METRIC_METHOD_TAG,
+    HEALTH_METRIC_METHOD_TAG,
+    INPUT_TRANSFORM_METRIC_METHOD_TAG,
+    OUTPUT_TRANSFORM_METRIC_METHOD_TAG,
+    PREDICT_METRIC_METHOD_TAG,
+    ROUTER_METRIC_METHOD_TAG,
     SeldonMetrics,
     create_counter,
     create_gauge,
     create_timer,
     split_image_tag,
     validate_metrics,
-    COUNTER,
-    BINS,
-    FEEDBACK_METRIC_METHOD_TAG,
-    PREDICT_METRIC_METHOD_TAG,
-    INPUT_TRANSFORM_METRIC_METHOD_TAG,
-    OUTPUT_TRANSFORM_METRIC_METHOD_TAG,
-    ROUTER_METRIC_METHOD_TAG,
-    AGGREGATE_METRIC_METHOD_TAG,
-    HEALTH_METRIC_METHOD_TAG,
 )
-from seldon_core.user_model import client_custom_metrics, SeldonResponse
-
+from seldon_core.proto import prediction_pb2
+from seldon_core.user_model import SeldonResponse, client_custom_metrics
+from seldon_core.wrapper import (
+    SeldonModelGRPC,
+    get_metrics_microservice,
+    get_rest_microservice,
+)
 
 RUNTIME_METRICS = [{"type": "GAUGE", "key": "runtime_gauge", "value": 42}]
 

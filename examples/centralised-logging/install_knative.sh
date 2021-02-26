@@ -27,6 +27,12 @@ kubectl rollout status -n knative-eventing deployment/eventing-controller
 sleep 10
 
 #don't install knative monitoring
+#have analytics scrape autoscaler & activator
+kubectl annotate --overwrite -n knative-serving service autoscaler prometheus.io/scrape=true
+kubectl annotate --overwrite -n knative-serving service autoscaler prometheus.io/port=9090
+
+kubectl annotate --overwrite -n knative-serving service activator-service prometheus.io/scrape=true
+kubectl annotate --overwrite -n knative-serving service activator-service prometheus.io/port=9090
 
 kubectl rollout status -n knative-eventing deployment/eventing-controller || true
 kubectl rollout status -n knative-eventing deployment/eventing-webhook || true

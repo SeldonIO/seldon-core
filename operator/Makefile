@@ -5,9 +5,6 @@ IMAGE_NAME_BASE=seldon-core-operator
 IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
 IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${VERSION}
 IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
-# Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
-CRD_OPTIONS ?= "crd:trivialVersions=true"
-#CRD_OPTIONS ?= ""
 
 KIND_NAME ?= kind
 
@@ -33,7 +30,7 @@ lint: licenses/dep.txt
 		./licenses
 
 # Run tests
-test: generate fmt vet manifests generate-resources
+test: generate fmt vet manifests_all generate-resources
 	ginkgo -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis
 
 # Build manager binary
@@ -41,7 +38,7 @@ manager: generate fmt vet
 	go build -o bin/manager main.go
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
-run: generate fmt vet manifests
+run: generate fmt vet manifests_all
 	go run ./main.go --webhook-port=9000
 
 install-cert-manager:
@@ -51,6 +48,9 @@ install-cert-manager:
 	kubectl rollout status deployment.apps/cert-manager -n cert-manager
 	kubectl rollout status deployment.apps/cert-manager-cainjector -n cert-manager
 	kubectl rollout status deployment.apps/cert-manager-webhook -n cert-manager
+
+
+manifests_all: manifests manifests_v1
 
 # Install CRDs into a cluster
 install: manifests
@@ -66,7 +66,7 @@ install_v1: manifests_v1
 	kustomize build config/crd_v1 | kubectl create -f -
 
 # Uninstall V1 CRDs into a cluster
-uninstall_v1: 
+uninstall_v1:
 	kustomize build config/crd_v1 | kubectl delete -f -
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
@@ -121,7 +121,7 @@ deploy-lite: manifests
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: controller-gen
-	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases crd:crdVersions=v1beta1
 
 # Commented out alternative is looking ahead to issue that on Openshift our v1 CRD is too large
 # to be installed. This may also affect operator-sdk community operators.
@@ -178,7 +178,7 @@ ifeq (, $(shell which controller-gen))
 	CONTROLLER_GEN_TMP_DIR=$$(mktemp -d) ;\
 	cd $$CONTROLLER_GEN_TMP_DIR ;\
 	go mod init tmp ;\
-	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.2.9 ;\
+	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.4.1 ;\
 	rm -rf $$CONTROLLER_GEN_TMP_DIR ;\
 	}
 
@@ -324,7 +324,7 @@ update_upstream:
 # https://redhat-connect.gitbook.io/certified-operator-guide/appendix/bundle-maintenance-after-migration
 
 PKG_CERT=packagemanifests-certified
-create_certified_bundle: 
+create_certified_bundle:
 	rm -rf ${PKG_CERT}/${VERSION}
 	mkdir -p ${PKG_CERT}/${VERSION}
 	cp bundle/manifests/* ${PKG_CERT}/${VERSION}
@@ -386,7 +386,7 @@ bundle_certified_push:
 update_old_certified_packages:
 	cd packagemanifests-certified && make build_push
 
-update_openshift_certified: update_old_certified_packages create_certified_bundle create_bundle_image_certified push_bundle_image_certified validate_bundle_image_certified opm_index_certified opm_push_certified 
+update_openshift_certified: update_old_certified_packages create_certified_bundle create_bundle_image_certified push_bundle_image_certified validate_bundle_image_certified opm_index_certified opm_push_certified
 
 # Run last to prepare for future release
 PREV_VERSION=1.5.0

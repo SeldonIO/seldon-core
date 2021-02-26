@@ -1,19 +1,21 @@
-from seldon_core.seldon_client import (
-    SeldonClient,
-    SeldonClientPrediction,
-    SeldonClientCombine,
-)
-from unittest import mock
-from seldon_core.utils import (
-    array_to_grpc_datadef,
-    seldon_message_to_json,
-    json_to_seldon_message,
-)
-from seldon_core.proto import prediction_pb2
-from google.protobuf import any_pb2
-import numpy as np
 import json
 import logging
+from unittest import mock
+
+import numpy as np
+from google.protobuf import any_pb2
+
+from seldon_core.proto import prediction_pb2
+from seldon_core.seldon_client import (
+    SeldonClient,
+    SeldonClientCombine,
+    SeldonClientPrediction,
+)
+from seldon_core.utils import (
+    array_to_grpc_datadef,
+    json_to_seldon_message,
+    seldon_message_to_json,
+)
 
 JSON_TEST_DATA = {"test": [0.0, 1.0]}
 CUSTOM_TEST_DATA = any_pb2.Any(value=b"test")

@@ -1,10 +1,12 @@
 import argparse
-import numpy as np
 import json
-from typing import Dict, List, Union, Tuple
-from numpy.core.multiarray import ndarray
-from seldon_core.seldon_client import SeldonClient
 import logging
+from typing import Dict, List, Tuple, Union
+
+import numpy as np
+from numpy.core.multiarray import ndarray
+
+from seldon_core.seldon_client import SeldonClient
 
 
 class SeldonTesterException(Exception):

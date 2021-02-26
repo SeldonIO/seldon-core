@@ -1,25 +1,26 @@
-import pytest
-import time
-from google.protobuf import json_format
 import json
+import logging
+import time
 from subprocess import run
+
 import numpy as np
+import pytest
+from google.protobuf import json_format
+
 from seldon_e2e_utils import (
-    wait_for_status,
-    wait_for_rollout,
-    rest_request_ambassador,
-    initial_rest_request,
+    API_AMBASSADOR,
     grpc_request_ambassador,
     initial_grpc_request,
+    initial_rest_request,
+    rest_request_ambassador,
     retry_run,
-    API_AMBASSADOR,
+    wait_for_rollout,
+    wait_for_status,
 )
-import logging
-
 
 S2I_CREATE = """cd ../s2i/python-features/tags && \
     s2i build -E environment_{model}_{api_type} . \
-    seldonio/seldon-core-s2i-python3:{s2i_python_version} \
+    seldonio/seldon-core-s2i-python37-ubi8:{s2i_python_version} \
     seldonio/test_tags_{model}_{api_type}:0.1
 """
 IMAGE_NAME = "seldonio/test_tags_{model}_{api_type}:0.1"

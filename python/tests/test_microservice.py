@@ -1,18 +1,17 @@
 import logging
-import requests
-import pytest
-import grpc
-import numpy as np
-
 from os.path import dirname, join
 from unittest import mock
-from tenacity import Retrying, stop_after_attempt, wait_exponential
-from seldon_core import __version__
-from seldon_core.proto import prediction_pb2
-from seldon_core.proto import prediction_pb2_grpc
-from seldon_core import microservice
-from seldon_core.flask_utils import SeldonMicroserviceException
+
+import grpc
+import numpy as np
+import pytest
+import requests
 from google.protobuf import json_format
+from tenacity import Retrying, stop_after_attempt, wait_exponential
+
+from seldon_core import __version__, microservice
+from seldon_core.flask_utils import SeldonMicroserviceException
+from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
 
 from .conftest import RESOURCES_PATH
 

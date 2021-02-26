@@ -1,8 +1,7 @@
 
 #KIND SETUP
 kind delete cluster || true
-#had a problem with 1.15.6 image https://github.com/SeldonIO/seldon-core/pull/1861#issuecomment-632587125
-kind create cluster --config kind_config.yaml --image kindest/node:v1.17.5@sha256:ab3f9e6ec5ad8840eeb1f76c89bb7948c77bbf76bcebe1a8b59790b8ae9a283a
+kind create cluster --config ./kind_config.yaml --image kindest/node:v1.17.5@sha256:ab3f9e6ec5ad8840eeb1f76c89bb7948c77bbf76bcebe1a8b59790b8ae9a283a
 
 #ISTIO
 ./install_istio.sh
@@ -10,15 +9,6 @@ kind create cluster --config kind_config.yaml --image kindest/node:v1.17.5@sha25
 #KNATIVE
 ./install_knative.sh
 
-#remove heavier knative monitoring components as this is kind
-kubectl delete statefulset/elasticsearch-logging -n knative-monitoring
-kubectl delete deployment/grafana -n knative-monitoring
-kubectl delete deployment/kibana-logging -n knative-monitoring
-
-#eventing has to be fully up before
-sleep 20
-kubectl rollout status -n knative-eventing deployments/imc-controller
-kubectl rollout status -n knative-eventing deployments/imc-dispatcher
 
 #REQUEST LOGGER
 kubectl create namespace seldon-logs
@@ -47,15 +37,21 @@ kubectl apply -f ./trigger.yaml
 
 
 #EFK
-kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
-helm install elasticsearch elasticsearch --version 7.6.0 --namespace=seldon-logs -f elastic-kind.yaml --repo https://helm.elastic.co --set image=docker.elastic.co/elasticsearch/elasticsearch-oss
+mkdir -p tempresources
+cp values-opendistro-kind.yaml ./tempresources
+cp fluentd-values.yaml ./tempresources
+cd tempresources
+git clone https://github.com/opendistro-for-elasticsearch/opendistro-build
+cd opendistro-build/helm/opendistro-es/
+git fetch --all --tags
+git checkout tags/v1.12.0
+helm package .
+helm upgrade --install elasticsearch opendistro-es-1.12.0.tgz --namespace=seldon-logs --values=../../../values-opendistro-kind.yaml
+helm upgrade --install fluentd fluentd-elasticsearch --version 9.6.2 --namespace=seldon-logs --values=../../../fluentd-values.yaml --repo https://kiwigrid.github.io
+kubectl rollout status -n seldon-logs deployment/elasticsearch-opendistro-es-kibana
 
-helm install fluentd fluentd-elasticsearch --version 8.0.0 --namespace=seldon-logs -f fluentd-values.yaml --repo https://kiwigrid.github.io
-
-helm install kibana kibana --version 7.6.0 --namespace=seldon-logs --set service.type=NodePort --repo https://helm.elastic.co --set image=docker.elastic.co/kibana/kibana-oss
-
-kubectl rollout status -n seldon-logs statefulset/elasticsearch-master
-
+cd ../../../../
+kubectl apply -f kibana-virtualservice.yaml
 
 #SELDON CORE
 kubectl create namespace seldon-system
@@ -63,7 +59,7 @@ kubectl create namespace seldon-system
 # istio gateway not strictly necessary and example works without - just adding in case we want to call service via ingress
 # (loadtest uses internal service endpoint so doesn't need istio gateway)
 kubectl apply -f ../../notebooks/resources/seldon-gateway.yaml
-helm upgrade --install seldon-core ../../helm-charts/seldon-core-operator/ --namespace seldon-system --set istio.enabled="true" --set istio.gateway="seldon-gateway.istio-system.svc.cluster.local" --set executor.requestLogger.defaultEndpoint="http://broker-ingress.knative-eventing.svc.cluster.local/seldon-logs/default"
+helm upgrade --install seldon-core ../../helm-charts/seldon-core-operator/ --namespace seldon-system --set istio.enabled="true" --set istio.gateway="istio-system/seldon-gateway" --set executor.requestLogger.defaultEndpoint="http://broker-ingress.knative-eventing.svc.cluster.local/seldon-logs/default"
 #if this were with kubeflow above would use kubeflow-gateway.kubeflow.svc.cluster.local and certManager.enabled="true"
 
 kubectl rollout status -n seldon-system deployment/seldon-controller-manager
@@ -90,5 +86,5 @@ helm install seldon-core-loadtesting ../../helm-charts/seldon-core-loadtesting/ 
 
 
 #LAUNCH KIBANA UI
-xdg-open localhost:5601
-kubectl port-forward svc/kibana-kibana -n seldon-logs 5601:5601
+xdg-open localhost:8080/kibana/
+kubectl port-forward -n istio-system svc/istio-ingressgateway 8080:80

@@ -1,22 +1,20 @@
-import os
-import requests
-import re
-import grpc
-import time
-import logging
-import numpy as np
 import json
+import logging
+import os
+import re
 import subprocess
-
+import time
 from concurrent.futures import ThreadPoolExecutor, wait
-from subprocess import run, Popen
-from tenacity import retry, wait_exponential, stop_after_attempt
-from requests.auth import HTTPBasicAuth
+from subprocess import Popen, run
 
-from seldon_core.proto import prediction_pb2
-from seldon_core.proto import prediction_pb2_grpc
-
+import grpc
+import numpy as np
+import requests
 from google.protobuf import empty_pb2
+from requests.auth import HTTPBasicAuth
+from tenacity import retry, stop_after_attempt, wait_exponential
+
+from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
 
 API_AMBASSADOR = "localhost:8003"
 API_ISTIO_GATEWAY = "localhost:8004"
