@@ -2,6 +2,8 @@
 
 ## Summary
 
+*Run this in branch of released version not in master*
+
 We presently still use the v1beta1 CRD. At some point we need to convert to the v1 CRD. However this CRD is too large for operator-registry (it converts the CRD to a configmap and it hits configmap limit it seems). We therefore might need to move forward with just v1 version for the v1 CRD and remove v1alpha2 and v1alpha3 versions of the SeldonDeployment CRD. See https://github.com/operator-framework/operator-registry/issues/385
 
 There are also fixes in crd and crd_v1 configs for https://github.com/kubernetes/kubernetes/issues/91395 under a patch called protocol.yaml
@@ -44,6 +46,10 @@ operator-courier -v
 Update Makefile and change PREV_VERSION.
 
 Login to quay.io as seldon. Password in 1password. 
+
+ * Update `opm_index` in Makefile to include previous version
+ * Update `opm_index_certified` in Makefule to include previous version
+
 
 ```bash
 make update_openshift
@@ -88,14 +94,44 @@ COMMUNITY_OPERATORS_FOLDER=~/work/seldon-core/redhat/community-operators
 
 ### Community Operator
 
+Create a branch for update in above fork. e.g.:
+
+```
+git checkout -b 1.6.0_community
+```
+
 ```
 make update_community
 ```
 
-Verify in community operator updated folder:
+To test, you will need Ansible >= 2.9 installed. Follow [instructions](https://operator-framework.github.io/community-operators/), e.g.
 
 ```
-make operator.verify OP_PATH=community-operators/seldon-operator
+bash <(curl -sL https://cutt.ly/WhkV76k)   kiwi,lemon,orange community-operators/seldon-operator/1.6.0
+```
+
+Example output:
+
+```
+Info: No labels defined
+debug=0
+Using ansible 2.9.18 on host ...
+
+One can do 'tail -f /tmp/op-test/log.out' from second console to see full logs
+
+Checking for kind binary ...
+ [ Preparing testing container 'op-test' from 'quay.io/operator_testing/operator-test-playbooks:latest' ]
+ Test 'kiwi' for 'community-operators seldon-operator 1.6.0' ...
+ [kiwi] Reseting kind cluster ...
+ [kiwi] Running test ...
+ ansible-playbook -i localhost, -e ansible_connection=local upstream/local.yml -e run_upstream=true -e image_protocol='docker://' -vv -e container_tool=podman -e run_prepare_catalog_repo_upstream=false -e operator_dir=/tmp/community-operators-for-catalog/community-operators/seldon-operator -e operator_version=1.6.0 --tags pure_test -e operator_channel_force=optest -e test_skip_deploy=true -e strict_mode=true
+ Test 'kiwi' : [ OK ]
+
+Test 'lemon' for 'community-operators seldon-operator 1.6.0' ...
+[lemon] Reseting kind cluster ...
+[lemon] Running test ...
+ansible-playbook -i localhost, -e ansible_connection=local upstream/local.yml -e run_upstream=true -e image_protocol='docker://' -vv -e container_tool=podman -e run_prepare_catalog_repo_upstream=false -e operator_dir=/tmp/community-operators-for-catalog/community-operators/seldon-operator --tags deploy_bundles -e strict_mode=true
+
 ```
 
 Add new folder and changed package yaml to a PR. Ensure you sign the commit.
@@ -108,22 +144,57 @@ Push and create PR.
 
 ### Upstream Operator
 
-```
-COMMUNITY_OPERATORS_FOLDER=~/work/seldon-core/redhat/community-operators
+Create a branch for update in above fork. e.g.:
 
-cp -r packagemanifests/1.3.0 ${COMMUNITY_OPERATORS_FOLDER}/community-operators/seldon-operator
-cp packagemanifests/seldon-operator.package.yaml ${COMMUNITY_OPERATORS_FOLDER}/community-operators/seldon-operator
+```
+git checkout -b 1.6.0_upstream
+```
+
+```
+make update_upstream
 ```
 
 Run tests
 
+
+To test, you will need Ansible >= 2.9 installed. Follow [instructions](https://operator-framework.github.io/community-operators/), e.g.
+
 ```
 cd ${COMMUNITY_OPERATORS_FOLDER}
-make operator.test KUBE_VER=""  OP_PATH=upstream-community-operators/seldon-operator
+bash <(curl -sL https://cutt.ly/WhkV76k)   kiwi,lemon,orange upstream-community-operators/seldon-operator/1.6.0
+```
+
+```
+Info: No labels defined
+debug=0
+Using ansible 2.9.18 on host ...
+
+One can do 'tail -f /tmp/op-test/log.out' from second console to see full logs
+
+Checking for kind binary ...
+ [ Preparing testing container 'op-test' from 'quay.io/operator_testing/operator-test-playbooks:latest' ]
+ Test 'kiwi' for 'upstream-community-operators seldon-operator 1.6.0' ...
+ [kiwi] Reseting kind cluster ...
+ [sudo] password for clive:
+ [kiwi] Running test ...
+ ansible-playbook -i localhost, -e ansible_connection=local upstream/local.yml -e run_upstream=true -e image_protocol='docker://' -vv -e container_tool=podman -e run_prepare_catalog_repo_upstream=false -e operator_dir=/tmp/community-operators-for-catalog/upstream-community-operators/seldon-operator -e operator_version=1.6.0 --tags pure_test -e operator_channel_force=optest -e strict_mode=true
+ Test 'kiwi' : [ OK ]
+
+Test 'lemon' for 'upstream-community-operators seldon-operator 1.6.0' ...
+[lemon] Reseting kind cluster ...
+[lemon] Running test ...
+ansible-playbook -i localhost, -e ansible_connection=local upstream/local.yml -e run_upstream=true -e image_protocol='docker://' -vv -e container_tool=podman -e run_prepare_catalog_repo_upstream=false -e operator_dir=/tmp/community-operators-for-catalog/upstream-community-operators/seldon-operator --tags deploy_bundles -e strict_mode=true
+```
+
+Ensure you sign the commit, e.g.:
+
+```
+git commit -s -m "Update Seldon Upstream Operator to 1.2.2"
 ```
 
 ## Certified Operators
 
+Update `packagemanifests-certified/Makefile` to include build and push for previous version.
 
 Create new package and push to quay for testing
 
@@ -164,7 +235,7 @@ Push bundle image to scanning and tests. Also needs passwords.
 make bundle_certified_push
 ```
 
-This will start a test of the package in RedHat. Log on to check its success. If it fails you will need to manually delete in UI and build, tag and push a new version manually as you can't delete existing images. So a new tag will be needed which can be anything, e.g. 1.5.0-2, 1.5.0-3 etc.
+This will start a test of the package in RedHat. Log on to check its success. If it fails you will need to manually delete in UI and build, tag and push a new version.
 
 ## Prepare for next release
 

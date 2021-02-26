@@ -15,13 +15,10 @@ kubectl apply -f https://github.com/operator-framework/operator-lifecycle-manage
 kubectl apply -f https://github.com/operator-framework/operator-lifecycle-manager/releases/download/0.16.1/olm.yaml
 ```
 
-For the marketplace you need a patched installed [pending in this PR](https://github.com/operator-framework/operator-marketplace/pull/342).
-
-Temporary fix:
 
 ```bash
-git clone git@github.com:cliveseldon/operator-marketplace.git fork-operator-marketplace
-kubectl create -f fork-operator-marketplace/deploy/upstream/
+git clone https://github.com/operator-framework/operator-marketplace.git
+kubectl create -f operator-marketplace/deploy/upstream/
 ```
 
 Create the bundle image, check and push. Create opm_index, and push if not done so already.
