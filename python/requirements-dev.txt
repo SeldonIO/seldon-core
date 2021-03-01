@@ -5,7 +5,7 @@ flake8==3.8.1
 grpcio-tools==1.33.2
 isort==5.7.0
 mypy-protobuf==2.4
-mypy<0.791
+mypy<0.813
 pandas==1.1.0                # used in serving_test_gen
 pillow==8.1.0
 pip-licenses==3.1.0          # fetch licenses
