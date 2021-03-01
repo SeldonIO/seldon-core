@@ -216,7 +216,7 @@ func (r *SeldonRestApi) metadata(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	modelName := vars[ModelHttpPathVariable]
 
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header)
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header, modelName)
 	resPayload, err := seldonPredictorProcess.Metadata(&r.predictor.Graph, modelName, nil)
 	if err != nil {
 		r.respondWithError(w, resPayload, err)
@@ -238,7 +238,7 @@ func (r *SeldonRestApi) status(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	modelName := vars[ModelHttpPathVariable]
 
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header)
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header, modelName)
 	resPayload, err := seldonPredictorProcess.Status(&r.predictor.Graph, modelName, nil)
 	if err != nil {
 		r.respondWithError(w, resPayload, err)
@@ -264,7 +264,7 @@ func (r *SeldonRestApi) feedback(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header)
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header, "")
 	reqPayload, err := seldonPredictorProcess.Client.Unmarshall(bodyBytes, req.Header.Get(http2.ContentType))
 	if err != nil {
 		r.respondWithError(w, nil, err)
@@ -299,7 +299,10 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header)
+	vars := mux.Vars(req)
+	modelName := vars[ModelHttpPathVariable]
+
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header, modelName)
 
 	reqPayload, err := seldonPredictorProcess.Client.Unmarshall(bodyBytes, req.Header.Get(http2.ContentType))
 	if err != nil {
@@ -309,8 +312,6 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 
 	var graphNode *v1.PredictiveUnit
 	if r.Protocol == api.ProtocolTensorflow {
-		vars := mux.Vars(req)
-		modelName := vars[ModelHttpPathVariable]
 		if modelName != "" {
 			if graphNode = v1.GetPredictiveUnit(&r.predictor.Graph, modelName); graphNode == nil {
 				r.respondWithError(w, nil, fmt.Errorf("Failed to find model %s", modelName))
@@ -342,7 +343,7 @@ func (r *SeldonRestApi) graphMetadata(w http.ResponseWriter, req *http.Request) 
 		defer serverSpan.Finish()
 	}
 
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header)
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header, "")
 
 	graphMetadata, err := seldonPredictorProcess.GraphMetadata(r.predictor)
 

@@ -66,7 +66,8 @@ class TestPrepack(object):
 
         logging.warning("Initial request")
         r = v2_protocol.inference_request(
-            model_name="sklearn",
+            deployment_name="sklearn",
+            model_name="model",
             namespace=namespace,
             payload={
                 "inputs": [
@@ -143,7 +144,8 @@ class TestPrepack(object):
 
         logging.warning("Initial request")
         r = v2_protocol.inference_request(
-            model_name="xgboost",
+            deployment_name="xgboost",
+            model_name="model",
             namespace=namespace,
             payload={
                 "inputs": [
