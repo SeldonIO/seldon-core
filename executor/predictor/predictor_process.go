@@ -105,7 +105,7 @@ func (p *PredictorProcess) transformInput(node *v1.PredictiveUnit, msg payload.S
 			return nil, err
 		}
 		p.RoutingMutex.Lock()
-		p.Routing[modelName] = -1
+		p.Routing[node.Name] = -1
 		p.RoutingMutex.Unlock()
 		return p.Client.Predict(p.Ctx, modelName, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	} else if callTransformInput {
@@ -114,7 +114,7 @@ func (p *PredictorProcess) transformInput(node *v1.PredictiveUnit, msg payload.S
 			return nil, err
 		}
 		p.RoutingMutex.Lock()
-		p.Routing[modelName] = -1
+		p.Routing[node.Name] = -1
 		p.RoutingMutex.Unlock()
 		return p.Client.TransformInput(p.Ctx, modelName, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	} else {
@@ -218,7 +218,7 @@ func (p *PredictorProcess) aggregate(node *v1.PredictiveUnit, msg []payload.Seld
 
 	if callClient {
 		p.RoutingMutex.Lock()
-		p.Routing[modelName] = -1
+		p.Routing[node.Name] = -1
 		p.RoutingMutex.Unlock()
 		return p.Client.Combine(p.Ctx, modelName, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 	} else {
