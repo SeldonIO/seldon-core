@@ -1288,7 +1288,7 @@ func TestNoPredictors(t *testing.T) {
 	g.Expect(err).ToNot(BeNil())
 }
 
-func TestValidateTwoShadows(t *testing.T) {
+func TestValidateTwoShadowsAmbassadorEnabled(t *testing.T) {
 	g := NewGomegaWithT(t)
 	err := setupTestConfigMap()
 	g.Expect(err).To(BeNil())
@@ -1305,7 +1305,7 @@ func TestValidateTwoShadows(t *testing.T) {
 				},
 			},
 			{
-				Name: "p1",
+				Name: "p2",
 				Graph: PredictiveUnit{
 					Name:           "classifier",
 					Implementation: &impl,
@@ -1314,7 +1314,7 @@ func TestValidateTwoShadows(t *testing.T) {
 				Shadow: true,
 			},
 			{
-				Name: "p1",
+				Name: "p3",
 				Graph: PredictiveUnit{
 					Name:           "classifier",
 					Implementation: &impl,
@@ -1325,7 +1325,54 @@ func TestValidateTwoShadows(t *testing.T) {
 		},
 	}
 
+	backupEnvAmbassadorEnabled := envAmbassadorEnabled
+	envAmbassadorEnabled = "true"
 	spec.DefaultSeldonDeployment("mydep", "default")
 	err = spec.ValidateSeldonDeployment()
 	g.Expect(err).ToNot(BeNil())
+	envAmbassadorEnabled = backupEnvAmbassadorEnabled
+}
+
+func TestValidateTwoShadowsAmbassadorDisabled(t *testing.T) {
+	g := NewGomegaWithT(t)
+	err := setupTestConfigMap()
+	g.Expect(err).To(BeNil())
+	impl := PredictiveUnitImplementation(constants.PrePackedServerTensorflow)
+	spec := &SeldonDeploymentSpec{
+		Protocol: ProtocolTensorflow,
+		Predictors: []PredictorSpec{
+			{
+				Name: "p1",
+				Graph: PredictiveUnit{
+					Name:           "classifier",
+					Implementation: &impl,
+					ModelURI:       "s3://mybucket/model",
+				},
+			},
+			{
+				Name: "p2",
+				Graph: PredictiveUnit{
+					Name:           "classifier",
+					Implementation: &impl,
+					ModelURI:       "s3://mybucket/model",
+				},
+				Shadow: true,
+			},
+			{
+				Name: "p3",
+				Graph: PredictiveUnit{
+					Name:           "classifier",
+					Implementation: &impl,
+					ModelURI:       "s3://mybucket/model",
+				},
+				Shadow: true,
+			},
+		},
+	}
+	backupEnvAmbassadorEnabled := envAmbassadorEnabled
+	envAmbassadorEnabled = "false"
+	spec.DefaultSeldonDeployment("mydep", "default")
+	err = spec.ValidateSeldonDeployment()
+	g.Expect(err).To(BeNil())
+	envAmbassadorEnabled = backupEnvAmbassadorEnabled
 }

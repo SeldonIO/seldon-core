@@ -39,6 +39,7 @@ var (
 	envPredictiveUnitGrpcServicePort    = os.Getenv(ENV_PREDICTIVE_UNIT_GRPC_SERVICE_PORT)
 	envPredictiveUnitServicePortMetrics = os.Getenv(ENV_PREDICTIVE_UNIT_SERVICE_PORT_METRICS)
 	envPredictiveUnitMetricsPortName    = GetEnv(ENV_PREDICTIVE_UNIT_METRICS_PORT_NAME, constants.DefaultMetricsPortName)
+	envAmbassadorEnabled                = GetEnv("AMBASSADOR_ENABLED", "false")
 )
 
 // Get an environment variable given by key or return the fallback.
@@ -132,7 +133,7 @@ func checkTraffic(spec *SeldonDeploymentSpec, fldPath *field.Path, allErrs field
 
 		if p.Shadow == true {
 			shadows += 1
-			if shadows > 1 {
+			if envAmbassadorEnabled == "true" && shadows > 1 {
 				allErrs = append(allErrs, field.Invalid(fldPath, spec.Predictors[i].Name, "Multiple shadows are not allowed"))
 			}
 		}
