@@ -184,6 +184,16 @@ class SeldonMetrics:
             exposition.CONTENT_TYPE_LATEST,
         )
 
+    def clear(self):
+        """
+        Clear all metrics from current worker.
+        """
+        worker_id = self.worker_id_func()
+        logger.debug("Clearing metrics from worker #{worker_id}")
+        with self._lock:
+            if worker_id in self.data:
+                del self.data[worker_id]
+
     def _merge_labels(self, worker, tags):
         labels = {
             **tags,

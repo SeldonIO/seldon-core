@@ -17,8 +17,9 @@ def post_worker_init(worker):
     atexit.unregister(_exit_function)
 
 
-def child_exit(server, worker, seldon_metrics: SeldonMetrics):
-    pass
+def worker_exit(server, worker, seldon_metrics: SeldonMetrics):
+    # Clear all metrics from dying worker
+    seldon_metrics.clear()
 
 
 def accesslog(flag: bool) -> Union[str, None]:

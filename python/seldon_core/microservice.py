@@ -18,7 +18,7 @@ from seldon_core.gunicorn_utils import (
     UserModelApplication,
     accesslog,
     post_worker_init,
-    child_exit,
+    worker_exit,
     threads,
 )
 from seldon_core.flask_utils import ANNOTATIONS_FILE, SeldonMicroserviceException
@@ -406,7 +406,7 @@ def main():
                 "max_requests": args.max_requests,
                 "max_requests_jitter": args.max_requests_jitter,
                 "post_worker_init": post_worker_init,
-                "child_exit": partial(child_exit, seldon_metrics=seldon_metrics),
+                "worker_exit": partial(worker_exit, seldon_metrics=seldon_metrics),
             }
             if args.pidfile is not None:
                 options["pidfile"] = args.pidfile
