@@ -444,7 +444,7 @@ def createElelmentsArray(X: np.ndarray, names: list):
             for i in range(X.shape[0]):
                 d = {}
                 for num, name in enumerate(names, start=0):
-                    d[name] = np.expand_dims(X[i, num], axis=0).tolist()
+                    d[name] = X[i, num].tolist()
                 results.append(d)
     return results
 
