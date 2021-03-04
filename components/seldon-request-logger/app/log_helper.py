@@ -17,7 +17,7 @@ TIMESTAMP_HEADER_NAME = "CE-Time"
 # inferenceservicename is k8s resource name for SeldonDeployment or InferenceService
 INFERENCESERVICE_HEADER_NAME = "Ce-Inferenceservicename"
 LENGTH_HEADER_NAME = "Content-Length"
-DOC_TYPE_NAME = "inferencerequest"
+DOC_TYPE_NAME = None
 
 
 def get_max_payload_bytes(default_value):

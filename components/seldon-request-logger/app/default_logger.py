@@ -44,7 +44,7 @@ def index():
             "body too large for "
             + index_name
             + "/"
-            + log_helper.DOC_TYPE_NAME
+            + (log_helper.DOC_TYPE_NAME if log_helper.DOC_TYPE_NAME != None else "_doc")
             + "/"
             + request_id
             + " adding "
@@ -193,7 +193,7 @@ def upsert_doc_to_elastic(
         "upserted to doc "
         + index_name
         + "/"
-        + log_helper.DOC_TYPE_NAME
+        + (log_helper.DOC_TYPE_NAME if log_helper.DOC_TYPE_NAME != None else "_doc")
         + "/"
         + request_id
         + " adding "
