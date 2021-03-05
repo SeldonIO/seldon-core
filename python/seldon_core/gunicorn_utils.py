@@ -1,12 +1,13 @@
 import atexit
 import logging
 import os
-
 from multiprocessing.util import _exit_function
 from typing import Dict, Union
+
 from gunicorn.app.base import BaseApplication
-from seldon_core.utils import setup_tracing
+
 from seldon_core.metrics import SeldonMetrics
+from seldon_core.utils import setup_tracing
 
 logger = logging.getLogger(__name__)
 

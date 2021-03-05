@@ -1,10 +1,10 @@
+import os
+import signal
+import time
+from typing import Set
+
 import pytest
 import requests
-import signal
-import os
-import time
-
-from typing import Set
 from prometheus_client.parser import text_string_to_metric_families
 
 
