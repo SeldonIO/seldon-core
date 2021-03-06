@@ -244,3 +244,8 @@ def test_load_annotations(mock_isfile):
     for data, expected_annotation in read_data:
         with mock.patch("seldon_core.microservice.open", return_value=StringIO(data)):
             assert microservice.load_annotations() == expected_annotation
+
+
+def test_health_status(microservice):
+    response = requests.get("http://127.0.0.1:9000/health/status")
+    response.raise_for_status()

@@ -158,6 +158,7 @@ func (r *SeldonRestApi) Initialise() {
 			api10.Handle("/predictions", r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions))
 			api10.Handle("/feedback", r.wrapMetrics(metric.FeedbackHttpServiceName, r.feedback))
 			r.Router.NewRoute().Path("/api/v1.0/status/{"+ModelHttpPathVariable+"}").Methods("GET", "OPTIONS").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
+			r.Router.NewRoute().Path("/api/v1.0/status").Methods("GET", "OPTIONS").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.checkReady))
 			r.Router.NewRoute().Path("/api/v1.0/metadata").Methods("GET", "OPTIONS").HandlerFunc(r.wrapMetrics(metric.MetadataHttpServiceName, r.graphMetadata))
 			r.Router.NewRoute().Path("/api/v1.0/metadata/{"+ModelHttpPathVariable+"}").Methods("GET", "OPTIONS").HandlerFunc(r.wrapMetrics(metric.MetadataHttpServiceName, r.metadata))
 			r.Router.NewRoute().PathPrefix("/api/v1.0/doc/").Handler(http.StripPrefix("/api/v1.0/doc/", http.FileServer(http.Dir("./openapi/"))))
