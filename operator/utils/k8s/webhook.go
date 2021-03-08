@@ -17,6 +17,8 @@ import (
 	"strings"
 )
 
+const MutatingWebhookName = "seldon-mutating-webhook-configuration"
+
 type WebhookCreator struct {
 	clientset    kubernetes.Interface
 	certs        *Cert
@@ -58,6 +60,24 @@ func NewWebhookCreator(client kubernetes.Interface, certs *Cert, logger logr.Log
 		minorVersion: minorVersion,
 		scheme:       scheme,
 	}, nil
+}
+
+func (wc *WebhookCreator) DeleteMutatingWebhookConfigurationFromFile(ctx context.Context) error {
+	client := wc.clientset.AdmissionregistrationV1beta1().MutatingWebhookConfigurations()
+
+	// Try to delete clusterwide webhook config if available (older versions of seldon core)
+	_, err := client.Get(ctx, MutatingWebhookName, v1.GetOptions{})
+	if err != nil && errors.IsNotFound(err) {
+		wc.logger.Info("existing clusterwide mwc not found", "name", MutatingWebhookName)
+	} else {
+		client.Delete(ctx, MutatingWebhookName, v1.DeleteOptions{})
+		if err != nil {
+			return err
+		}
+		wc.logger.Info("Deleted clusterwide mwc", "name", MutatingWebhookName)
+	}
+
+	return nil
 }
 
 func (wc *WebhookCreator) CreateValidatingWebhookConfigurationFromFile(ctx context.Context, rawYaml []byte, namespace string, owner *apiextensionsv1beta1.CustomResourceDefinition, watchNamespace bool) error {

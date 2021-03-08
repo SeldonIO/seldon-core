@@ -83,6 +83,12 @@ func InitializeOperator(ctx context.Context, config *rest.Config, namespace stri
 		return err
 	}
 
+	//Delete mutating webhook if existing
+	err = wc.DeleteMutatingWebhookConfigurationFromFile(ctx)
+	if err != nil {
+		return err
+	}
+
 	//Create/Update Validating Webhook
 	bytes, err = LoadBytesFromFile(ResourceFolder, ValidatingWebhookFilename)
 	if err != nil {
