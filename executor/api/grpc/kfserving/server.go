@@ -42,7 +42,7 @@ func (g GrpcKFServingServer) ServerReady(ctx context.Context, request *inference
 func (g GrpcKFServingServer) ModelReady(ctx context.Context, request *inference.ModelReadyRequest) (*inference.ModelReadyResponse, error) {
 	md := grpc.CollectMetadata(ctx)
 	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, md.Get(payload.SeldonPUIDHeader)[0])
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("infer"), g.ServerUrl, g.Namespace, md)
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("infer"), g.ServerUrl, g.Namespace, md, request.GetName())
 	reqPayload := payload.ProtoPayload{Msg: request}
 	resPayload, err := seldonPredictorProcess.Status(&g.predictor.Graph, request.Name, &reqPayload)
 	if err != nil {
@@ -58,7 +58,7 @@ func (g GrpcKFServingServer) ServerMetadata(ctx context.Context, request *infere
 func (g GrpcKFServingServer) ModelMetadata(ctx context.Context, request *inference.ModelMetadataRequest) (*inference.ModelMetadataResponse, error) {
 	md := grpc.CollectMetadata(ctx)
 	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, md.Get(payload.SeldonPUIDHeader)[0])
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("infer"), g.ServerUrl, g.Namespace, md)
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("infer"), g.ServerUrl, g.Namespace, md, request.GetName())
 	reqPayload := payload.ProtoPayload{Msg: request}
 	resPayload, err := seldonPredictorProcess.Metadata(&g.predictor.Graph, request.Name, &reqPayload)
 	if err != nil {
@@ -70,7 +70,7 @@ func (g GrpcKFServingServer) ModelMetadata(ctx context.Context, request *inferen
 func (g GrpcKFServingServer) ModelInfer(ctx context.Context, request *inference.ModelInferRequest) (*inference.ModelInferResponse, error) {
 	md := grpc.CollectMetadata(ctx)
 	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, md.Get(payload.SeldonPUIDHeader)[0])
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("infer"), g.ServerUrl, g.Namespace, md)
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("infer"), g.ServerUrl, g.Namespace, md, request.GetModelName())
 	reqPayload := payload.ProtoPayload{Msg: request}
 	resPayload, err := seldonPredictorProcess.Predict(&g.predictor.Graph, &reqPayload)
 	if err != nil {

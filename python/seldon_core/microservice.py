@@ -5,21 +5,22 @@ import logging
 import multiprocessing as mp
 import os
 import sys
-import threading
 import time
 from distutils.util import strtobool
+from functools import partial
 from typing import Callable, Dict
 
 from seldon_core import __version__, persistence
 from seldon_core import wrapper as seldon_microservice
-from seldon_core.app import (
+from seldon_core.flask_utils import ANNOTATIONS_FILE, SeldonMicroserviceException
+from seldon_core.gunicorn_utils import (
     StandaloneApplication,
     UserModelApplication,
     accesslog,
     post_worker_init,
     threads,
+    worker_exit,
 )
-from seldon_core.flask_utils import ANNOTATIONS_FILE, SeldonMicroserviceException
 from seldon_core.metrics import SeldonMetrics
 from seldon_core.utils import getenv_as_bool, setup_tracing
 
@@ -404,6 +405,7 @@ def main():
                 "max_requests": args.max_requests,
                 "max_requests_jitter": args.max_requests_jitter,
                 "post_worker_init": post_worker_init,
+                "worker_exit": partial(worker_exit, seldon_metrics=seldon_metrics),
             }
             if args.pidfile is not None:
                 options["pidfile"] = args.pidfile

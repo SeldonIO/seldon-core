@@ -14,9 +14,9 @@ def _is_404(res):
     retry=retry_if_result(_is_404),
 )
 def inference_request(
-    model_name: str, namespace: str, payload: dict, host: str = API_AMBASSADOR
+    deployment_name: str, model_name: str, namespace: str, payload: dict, host: str = API_AMBASSADOR
 ):
     endpoint = (
-        f"http://{host}/seldon/{namespace}/{model_name}/v2/models/{model_name}/infer"
+        f"http://{host}/seldon/{namespace}/{deployment_name}/v2/models/{model_name}/infer"
     )
     return requests.post(endpoint, json=payload)

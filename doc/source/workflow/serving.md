@@ -25,7 +25,7 @@ class MyModel:
         pass
 
     def predict(*args, **kwargs):
-        return ["hello, "world"]
+        return ["hello", "world"]
 ```
 
 You are able to test your model by running the microservice CLI that is provided by the [Python module](../python/python_module.md)
