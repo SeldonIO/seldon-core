@@ -67,20 +67,20 @@ spec:
           predictors:
             - componentSpecs:
               - spec:
-                containers:
-                - name: classifier
-                  env:
-                  - name: GUNICORN_THREADS
-                    value: {{ .Values.seldonDeployment.serverThreads }}
-                  - name: GUNICORN_WORKERS
-                    value: {{ .Values.seldonDeployment.serverWorkers }}
-                  resources:
-                    requests:
-                      cpu: {{ .Values.seldonDeployment.requests.cpu }}
-                      memory: {{ .Values.seldonDeployment.requests.memory }}
-                    limits:
-                      cpu: {{ .Values.seldonDeployment.limits.cpu }}
-                      memory: {{ .Values.seldonDeployment.limits.memory }}
+                  containers:
+                  - name: classifier
+                    env:
+                    - name: GUNICORN_THREADS
+                      value: "{{ .Values.seldonDeployment.serverThreads }}"
+                    - name: GUNICORN_WORKERS
+                      value: "{{ .Values.seldonDeployment.serverWorkers }}"
+                    resources:
+                      requests:
+                        cpu: {{ .Values.seldonDeployment.requests.cpu }}
+                        memory: {{ .Values.seldonDeployment.requests.memory }}
+                      limits:
+                        cpu: {{ .Values.seldonDeployment.limits.cpu }}
+                        memory: {{ .Values.seldonDeployment.limits.memory }}
               graph:
                 children: []
                 implementation: {{ .Values.seldonDeployment.server }}
