@@ -230,3 +230,4 @@ examples/models/autoscaling/autoscaling_example.py
 
 # python venv
 venv/
+venv3/
