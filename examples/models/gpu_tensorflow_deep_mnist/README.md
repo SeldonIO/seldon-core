@@ -430,7 +430,7 @@ We first start with the custom resource definitions (CRDs)
 
 
 ```python
-!helm install seldon-core-operator --name seldon-core-operator --repo https://storage.googleapis.com/seldon-charts
+!helm install seldon-core-operator seldon-core-operator --repo https://storage.googleapis.com/seldon-charts
 ```
 
     NAME:   seldon-core-operator
