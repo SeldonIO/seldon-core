@@ -36,11 +36,11 @@ spec:
           resources:
             requests:
               cpu: 2
-              memory: 8000Mi
+              memory: "8000Mi"
               ephemeral-storage: "100Gi"
             limits:
-              cpu: 2
-              memory: 8000Mi
+              cpu: 4
+              memory: "10Gi"
               ephemeral-storage: "100Gi"
           securityContext:
             privileged: true
@@ -60,4 +60,3 @@ spec:
   serviceAccountName: tekton-bot
   timeout: 6h0m0s
 status: {}
-
