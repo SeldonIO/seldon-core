@@ -9,7 +9,7 @@ We provide an option to use an anonymous metrics collection tool provided by the
 To help support the development of seldon-core, the voluntary reporting of usage data can be enabled whenever the "seldon-core-operator" helm chart is used  by setting the "--set usageMetrics.enabled=true" option.
 
 ```bash
-helm install seldon-core-operator --name seldon-core \
+helm install seldon-core seldon-core-operator \
         --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true
 ```
 
@@ -62,7 +62,7 @@ An example of what's reported:
 Reporting of usage data is disabled by default, just use "seldon-core-operator" as normal.
 
 ```bash
-helm install seldon-core-operator --name seldon-core \
+helm install seldon-core seldon-core-operator \
         --repo https://storage.googleapis.com/seldon-charts
 ```
 

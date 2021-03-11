@@ -354,7 +354,7 @@ We first start with the custom resource definitions (CRDs)
 
 
 ```python
-!helm install seldon-core-operator --name seldon-core-operator --repo https://storage.googleapis.com/seldon-charts
+!helm install seldon-core-operator seldon-core-operator --repo https://storage.googleapis.com/seldon-charts
 ```
 
     NAME:   seldon-core-operator
@@ -415,7 +415,7 @@ In EKS it automatically creates an Elastic Load Balancer, which you can configur
 
 
 ```python
-!helm install stable/ambassador --name ambassador --set crds.keep=false
+!helm install ambassador stable/ambassador --set crds.keep=false
 ```
 
     Error: release ambassador failed: serviceaccounts "ambassador" already exists
