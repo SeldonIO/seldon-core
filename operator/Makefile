@@ -122,8 +122,6 @@ deploy-lite: manifests
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: controller-gen
 	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases crd:crdVersions=v1beta1
-	# temporary fix until we update to v1 webhooks by updating code to have webhookVersions=v1
-	mv config/webhook/manifests.v1beta1.yaml config/webhook/manifests.yaml
 
 # Commented out alternative is looking ahead to issue that on Openshift our v1 CRD is too large
 # to be installed. This may also affect operator-sdk community operators.
