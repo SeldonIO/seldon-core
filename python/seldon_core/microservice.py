@@ -266,6 +266,12 @@ def main():
         default=int(os.environ.get("GUNICORN_MAX_REQUESTS_JITTER", "0")),
         help="Maximum random jitter to add to max-requests.",
     )
+    parser.add_argument(
+        "--keepalive",
+        type=int,
+        default=int(os.environ.get("GUNICORN_KEEPALIVE", "2")),
+        help="The number of seconds to wait for requests on a Keep-Alive connection.",
+    )
 
     parser.add_argument(
         "--single-threaded",
@@ -406,6 +412,7 @@ def main():
                 "max_requests_jitter": args.max_requests_jitter,
                 "post_worker_init": post_worker_init,
                 "worker_exit": partial(worker_exit, seldon_metrics=seldon_metrics),
+                "keepalive": args.keepalive,
             }
             if args.pidfile is not None:
                 options["pidfile"] = args.pidfile
@@ -468,6 +475,7 @@ def main():
                 "max_requests": args.max_requests,
                 "max_requests_jitter": args.max_requests_jitter,
                 "post_worker_init": post_worker_init,
+                "keepalive": args.keepalive,
             }
             if args.pidfile is not None:
                 options["pidfile"] = args.pidfile
