@@ -2,5 +2,5 @@ Flask==1.0.2
 numpy==1.14.5
 dict_digger==0.2.1
 seldon_core
-elasticsearch==7.10.0
+elasticsearch==7.5.1
 click==8.0.0a1
