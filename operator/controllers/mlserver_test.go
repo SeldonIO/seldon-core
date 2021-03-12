@@ -47,6 +47,7 @@ var _ = Describe("MLServer helpers", func() {
 		It("should merge containers adding extra env", func() {
 			merged := mergeMLServerContainer(existing, mlServer)
 
+			Expect(merged).ToNot(BeNil())
 			Expect(merged.Env).To(ContainElement(v1.EnvVar{Name: "FOO", Value: "BAR"}))
 			Expect(merged.Env).To(ContainElements(mlServer.Env))
 			Expect(merged.Image).To(Equal(mlServer.Image))

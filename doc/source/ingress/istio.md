@@ -95,8 +95,7 @@ Istio has the capability for fine grained traffic routing to your deployments. T
  * A/B testing
  * shadow deployments
 
-More information can be found in our [examples](../examples/istio_examples.html).
-
+More information can be found in our [examples](../examples/istio_examples.html), including [canary updates](../examples/istio_canary.html).
 
 ## Troubleshoot
 If you saw errors like `Failed to generate bootstrap config: mkdir ./etc/istio/proxy: permission denied`, it's probably because you are running istio version <= 1.6.

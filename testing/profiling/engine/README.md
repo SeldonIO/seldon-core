@@ -5,7 +5,7 @@
   1. Create debug image using Makefile. Ensure you use current version of engine.
   1. Launch Seldon Core with this image as the engine image using, e.g.
      ```
-     !helm install ../helm-charts/seldon-core --name seldon-core --namespace seldon  --set ambassador.enabled=true --set engine.image.name=seldonio/engine-debug:0.2.6-SNAPSHOT
+     !helm install seldon-core ../helm-charts/seldon-core --namespace seldon  --set ambassador.enabled=true --set engine.image.name=seldonio/engine-debug:0.2.6-SNAPSHOT
      ```
   1. Check logs of instance to get port and port forward to it, e.g.
      ```

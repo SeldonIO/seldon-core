@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -22,6 +23,13 @@ const (
 )
 
 func mergeMLServerContainer(existing *v1.Container, mlServer *v1.Container) *v1.Container {
+	if mlServer == nil {
+		// Nothing to merge.
+		return existing
+	}
+	if existing == nil {
+		existing = &v1.Container{}
+	}
 	// Overwrite core items if not existing or required
 	if existing.Image == "" {
 		existing.Image = mlServer.Image
@@ -58,6 +66,9 @@ func mergeMLServerContainer(existing *v1.Container, mlServer *v1.Container) *v1.
 }
 
 func getMLServerContainer(pu *machinelearningv1.PredictiveUnit) (*v1.Container, error) {
+	if pu == nil {
+		return nil, errors.New("received nil predictive unit")
+	}
 	image, err := getMLServerImage(pu)
 	if err != nil {
 		return nil, err
@@ -126,6 +137,9 @@ func getMLServerContainer(pu *machinelearningv1.PredictiveUnit) (*v1.Container, 
 }
 
 func getMLServerImage(pu *machinelearningv1.PredictiveUnit) (string, error) {
+	if pu == nil {
+		return "", errors.New("received nil predictive unit")
+	}
 	prepackConfig := machinelearningv1.GetPrepackServerConfig(string(*pu.Implementation))
 	if prepackConfig == nil {
 		return "", fmt.Errorf("failed to get server config for %s", *pu.Implementation)
@@ -146,6 +160,9 @@ func getMLServerImage(pu *machinelearningv1.PredictiveUnit) (string, error) {
 }
 
 func getMLServerEnvVars(pu *machinelearningv1.PredictiveUnit) ([]v1.EnvVar, error) {
+	if pu == nil {
+		return nil, errors.New("received nil predictive unit")
+	}
 	httpPort := pu.Endpoint.HttpPort
 	grpcPort := pu.Endpoint.GrpcPort
 
@@ -184,6 +201,9 @@ func getMLServerEnvVars(pu *machinelearningv1.PredictiveUnit) ([]v1.EnvVar, erro
 }
 
 func getMLServerModelImplementation(pu *machinelearningv1.PredictiveUnit) (string, error) {
+	if pu == nil {
+		return "", errors.New("received nil predictive unit")
+	}
 	switch *pu.Implementation {
 	case machinelearningv1.PrepackSklearnName:
 		return MLServerSKLearnImplementation, nil
