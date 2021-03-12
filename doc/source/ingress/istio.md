@@ -95,8 +95,7 @@ Istio has the capability for fine grained traffic routing to your deployments. T
  * A/B testing
  * shadow deployments
 
-More information on these can be found in our [example showing canary
-updates](../examples/istio_canary.html) and [other examples, including shadow
+More information on these can be found in our [other examples, including shadow
 updates](../examples/istio_examples.html).
 
 
