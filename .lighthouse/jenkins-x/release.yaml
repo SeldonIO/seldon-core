@@ -32,11 +32,11 @@ spec:
             name: jenkins-docker-config-volume
           resources:
             requests:
-              cpu: 1
+              cpu: 2
               memory: 2000Mi
               ephemeral-storage: "60Gi"
             limits:
-              cpu: 1
+              cpu: 2
               memory: 2000Mi
               ephemeral-storage: "60Gi"
           securityContext:
