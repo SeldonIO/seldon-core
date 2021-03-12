@@ -62,7 +62,7 @@ func NewWebhookCreator(client kubernetes.Interface, certs *Cert, logger logr.Log
 	}, nil
 }
 
-func (wc *WebhookCreator) DeleteMutatingWebhookConfigurationFromFile(ctx context.Context) error {
+func (wc *WebhookCreator) DeleteMutatingWebhook(ctx context.Context) error {
 	client := wc.clientset.AdmissionregistrationV1beta1().MutatingWebhookConfigurations()
 
 	// Try to delete clusterwide webhook config if available (older versions of seldon core)

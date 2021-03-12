@@ -84,7 +84,7 @@ func InitializeOperator(ctx context.Context, config *rest.Config, namespace stri
 	}
 
 	//Delete mutating webhook if existing
-	err = wc.DeleteMutatingWebhookConfigurationFromFile(ctx)
+	err = wc.DeleteMutatingWebhook(ctx)
 	if err != nil {
 		return err
 	}
