@@ -151,9 +151,6 @@ create-client: test
 docker-build: test generate-resources
 	docker build . -t ${IMG}
 
-# Build the docker image for Redhat
-docker-build-redhat: test generate-resources
-	docker build . -f Dockerfile.redhat -t ${IMG_REDHAT}
 
 
 # Push the docker image
@@ -163,14 +160,6 @@ docker-push:
 # Push the docker image
 docker-push-redhat:
 	docker push ${IMG_REDHAT}
-
-# password can be found at: https://connect.redhat.com/project/1366481/view
-redhat-image-scan:
-	docker pull ${IMG_REDHAT}
-	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
-		echo $${rh_password_operator} | docker login -u unused scan.connect.redhat.com --password-stdin
-	docker tag ${IMG_REDHAT} scan.connect.redhat.com/ospid-7f50cebe-122b-495a-a143-41426dfcb6c9/${IMG_VERSION_REDHAT}
-	docker push scan.connect.redhat.com/ospid-7f50cebe-122b-495a-a143-41426dfcb6c9/${IMG_VERSION_REDHAT}
 
 kind-image-install: docker-build
 	kind load -v 3 docker-image ${IMG} --name ${KIND_NAME}
@@ -270,9 +259,11 @@ update_packagemanifests:
 	mv packagemanifests/${VERSION}/seldon-operator.clusterserviceversion.yaml packagemanifests/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
 
 
-.PHONY: clear_replaces
-clear_replaces:
-	sed -i '/replaces:.*/d' packagemanifests/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
+# Not sure why clearing of replaces was added
+#.PHONY: clear_replaces
+#clear_replaces:
+#	sed -i '/replaces:.*/d' packagemanifests/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
+
 #
 # Tested with operator-courier 2.1.10
 #
@@ -288,8 +279,11 @@ create_push_bundle_image:
 validate_bundle_image:
 	operator-sdk bundle validate quay.io/seldon/seldon-operator:v${VERSION}
 
+
+# Only index up to 1.2.2 as we have removed "replaces" in 1.2.2 to stop chain there for testing
+.PHONY: opm_index
 opm_index:
-	opm index add -c docker --bundles quay.io/seldon/seldon-operator:v${VERSION} --tag quay.io/seldon/test-catalog:latest
+	opm index add -c docker --bundles quay.io/seldon/seldon-operator:v${VERSION},quay.io/seldon/seldon-operator:v1.5.0,quay.io/seldon/seldon-operator:v1.2.2
 
 
 opm_push:
@@ -297,7 +291,8 @@ opm_push:
 
 
 .PHONY: update_openshift
-update_openshift: recreate_bundle  update_packagemanifests clear_replaces create_push_bundle_image validate_bundle_image opm_index opm_push
+#update_openshift: recreate_bundle  update_packagemanifests clear_replaces create_push_bundle_image validate_bundle_image opm_index opm_push
+update_openshift: recreate_bundle  update_packagemanifests create_push_bundle_image validate_bundle_image opm_index opm_push
 
 
 #
@@ -337,7 +332,7 @@ create_certified_bundle:
 	cd ${PKG_CERT} && opm alpha bundle generate -c stable -e stable -p seldon-operator-certified -d ./${VERSION}/ -u ./${VERSION}/
 	mv ${PKG_CERT}/bundle.Dockerfile ${PKG_CERT}/bundle-${VERSION}.Dockerfile
 	echo '' >> ${PKG_CERT}/bundle-${VERSION}.Dockerfile
-	echo 'LABEL com.redhat.openshift.versions="v4.5,v4.6"' >> ${PKG_CERT}/bundle-${VERSION}.Dockerfile
+	echo 'LABEL com.redhat.openshift.versions="v4.5,v4.6,v4.7"' >> ${PKG_CERT}/bundle-${VERSION}.Dockerfile
 	echo 'LABEL com.redhat.delivery.backport=true' >> ${PKG_CERT}/bundle-${VERSION}.Dockerfile
 	echo 'LABEL com.redhat.delivery.operator.bundle=true' >> ${PKG_CERT}/bundle-${VERSION}.Dockerfile
 	mv ${PKG_CERT}/${VERSION}/seldon-operator.clusterserviceversion.yaml ${PKG_CERT}/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
@@ -358,12 +353,29 @@ validate_bundle_image_certified:
 	operator-sdk bundle validate quay.io/seldon/seldon-operator-certified:v${VERSION}
 
 
+# beware --mode semver seems to cause old versions to be shown in openshift. Not sure why. 
 opm_index_certified:
-	opm index add -c docker --bundles quay.io/seldon/seldon-operator-certified:v${VERSION},quay.io/seldon/seldon-operator-certified:v1.2.2,quay.io/seldon/seldon-operator-certified:v1.2.1,quay.io/seldon/seldon-operator-certified:v1.2.0,quay.io/seldon/seldon-operator-certified:v1.1.0,quay.io/seldon/seldon-operator-certified:v0.1.5 --mode semver --tag quay.io/seldon/test-catalog-certified:latest
+	opm index add -c docker --bundles quay.io/seldon/seldon-operator-certified:v${VERSION},quay.io/seldon/seldon-operator-certified:v1.5.0,quay.io/seldon/seldon-operator-certified:v1.2.2,quay.io/seldon/seldon-operator-certified:v1.2.1,quay.io/seldon/seldon-operator-certified:v1.2.0,quay.io/seldon/seldon-operator-certified:v1.1.0,quay.io/seldon/seldon-operator-certified:v0.1.5 --mode replaces --tag quay.io/seldon/test-catalog-certified:latest
 
 
 opm_push_certified:
 	docker push quay.io/seldon/test-catalog-certified:latest
+
+
+# Build the docker image for Redhat
+docker-build-redhat: test generate-resources
+	docker build . -f Dockerfile.redhat -t ${IMG_REDHAT}
+
+
+# password can be found at: https://connect.redhat.com/project/1366481/view
+redhat-image-scan:
+	docker pull ${IMG_REDHAT}
+	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
+		echo $${rh_password_operator} | docker login -u unused scan.connect.redhat.com --password-stdin
+	docker tag ${IMG_REDHAT} scan.connect.redhat.com/ospid-7f50cebe-122b-495a-a143-41426dfcb6c9/${IMG_VERSION_REDHAT}
+	docker push scan.connect.redhat.com/ospid-7f50cebe-122b-495a-a143-41426dfcb6c9/${IMG_VERSION_REDHAT}
+
+
 
 bundle_certified_push:
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
@@ -377,6 +389,8 @@ update_old_certified_packages:
 update_openshift_certified: update_old_certified_packages create_certified_bundle create_bundle_image_certified push_bundle_image_certified validate_bundle_image_certified opm_index_certified opm_push_certified
 
 # Run last to prepare for future release
-PREV_VERSION=1.2.2
+PREV_VERSION=1.5.0
 update_config:
 	sed -i s#${PREV_VERSION}#${VERSION}# config/manifests/bases/seldon-operator.clusterserviceversion.yaml
+
+

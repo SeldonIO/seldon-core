@@ -9,7 +9,7 @@ LABEL operators.operatorframework.io.bundle.channel.default.v1=alpha
 
 COPY 1.2.2/manifests /manifests/
 COPY 1.2.2/metadata /metadata/
-LABEL com.redhat.openshift.versions="v4.5,v4.6"
+LABEL com.redhat.openshift.versions="v4.5,v4.6,v4.7"
 LABEL com.redhat.delivery.operator.bundle=true
 LABEL com.redhat.delivery.backport=true
 

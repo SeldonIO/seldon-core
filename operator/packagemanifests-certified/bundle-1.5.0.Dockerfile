@@ -10,6 +10,6 @@ LABEL operators.operatorframework.io.bundle.channel.default.v1=stable
 COPY 1.5.0/manifests /manifests/
 COPY 1.5.0/metadata /metadata/
 
-LABEL com.redhat.openshift.versions="v4.5,v4.6"
+LABEL com.redhat.openshift.versions="v4.5,v4.6,v4.7"
 LABEL com.redhat.delivery.backport=true
 LABEL com.redhat.delivery.operator.bundle=true
