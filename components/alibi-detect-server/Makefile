@@ -43,6 +43,9 @@ docker-run-outlier-detector-tensorflow:
 docker-run-drift-detector-tensorflow:
 	docker run --name cifar10cd  -it --rm -p 8080:8080 ${REPO}/${IMAGE}:${VERSION} --model_name cifar10cd --http_port 8080 --protocol tensorflow.http --event_type org.kubeflow.serving.inference.drift --storage_uri gs://seldon-models/alibi-detect/cd/ks/cifar10-0_4_3 --event_source http://localhost:8080 DriftDetector --drift_batch_size=2
 
+docker-run-drift-detector-torch:
+	docker run --name cifar10cd  -it --rm -p 8080:8080 ${REPO}/${IMAGE}-gpu:${VERSION} --model_name cifar10cd --http_port 8080 --protocol tensorflow.http --event_type org.kubeflow.serving.inference.drift --storage_uri gs://seldon-models/alibi-detect/cd/mmd/cifar10_mmd_torch --event_source http://localhost:8080 DriftDetector --drift_batch_size=2
+
 
 #
 # Test curls
@@ -79,8 +82,14 @@ curl-metrics-server-metrics:
 docker-build: 
 	docker build -f Dockerfile -t ${REPO}/${IMAGE}:${VERSION} .
 
+docker-build-gpu: 
+	docker build -f Dockerfile.gpu -t ${REPO}/${IMAGE}-gpu:${VERSION} .
+
 docker-push:
 	docker push ${REPO}/${IMAGE}:${VERSION} 
+
+docker-push-gpu:
+	docker push ${REPO}/${IMAGE}-gpu:${VERSION} 
 
 kind_load: docker-build
 	kind load docker-image ${REPO}/${IMAGE}:${VERSION}

@@ -98,6 +98,8 @@ class AlibiDetectConceptDriftModel(
             )
 
             cd_preds = self.model.predict(self.batch)
+
+            logging.info("Ran drift test")
             self.batch = None
 
             output = json.loads(json.dumps(cd_preds, cls=NumpyEncoder))
