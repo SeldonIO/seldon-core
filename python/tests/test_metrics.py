@@ -141,6 +141,15 @@ def test_component_bad():
         client_custom_metrics(c, SeldonMetrics(), TEST_METRIC_METHOD_TAG)
 
 
+def test_metrics_clear():
+    metrics = SeldonMetrics()
+    metrics.update([RAW_COUNTER_METRIC], method="predict")
+    assert len(metrics.data) > 0
+
+    metrics.clear()
+    assert len(metrics.data) == 0
+
+
 def test_proto_metrics():
     metrics = [{"type": "COUNTER", "key": "a", "value": 1}]
     meta = prediction_pb2.Meta()

@@ -1,0 +1,28 @@
+FROM nvidia/cuda:11.2.1-devel-ubuntu18.04
+
+RUN \
+    apt update && apt install -y git wget unzip bzip2 libgomp1 build-essential
+
+RUN wget -O Miniconda3.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
+    bash Miniconda3.sh -b -p /opt/python
+
+ENV PATH=/opt/python/bin:$PATH
+
+#RUN conda install -c conda-forge python=3.7.10
+
+WORKDIR /app
+
+COPY setup.py setup.py
+COPY alibiexplainer alibiexplainer
+COPY README.md README.md
+
+# Required for https://github.com/slundberg/shap/issues/1633
+RUN pip install . --no-binary protobuf
+
+COPY requirements-gpu.txt .
+
+RUN pip install --force-reinstall -r requirements-gpu.txt
+
+ENTRYPOINT ["python", "-m", "alibiexplainer"]
+
+

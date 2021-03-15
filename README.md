@@ -60,7 +60,7 @@ We provide optimized model servers for some of the most popular Deep Learning an
 You only have to upload your model binaries into your preferred object store, in this case we have a trained scikit-learn iris model in a Google bucket:
 
 ```console
-gs://seldon-models/sklearn/iris/model.pickle
+gs://seldon-models/sklearn/iris/model.joblib
 ```
 
 Create a namespace to run your model in:

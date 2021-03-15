@@ -12,7 +12,7 @@ See the centralized logging example (also in the examples directory) for how to 
 
 Easiest way is to run `examples/centralized-logging/full-kind-setup.sh` and then:
     `helm delete seldon-core-loadtesting`
-    `seldon-single-model`
+    `helm delete seldon-single-model`
 
 Then port-forward to that ingress on localhost:8080 in a separate terminal with either of (istio suggested):
 
@@ -473,7 +473,7 @@ If you want to create a kservice, and you've installed knative eventing and knat
 
 The value of the file `config/multiclass-service.yaml` would be:
 ```
-apiVersion: serving.knative.dev/v1alpha1
+apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   name: seldon-multiclass-model-metrics

@@ -30,3 +30,6 @@ elasticnet_wine.yaml
 halfplustwo_rest.yaml
 mnist_rest.yaml
 iris-xgboost-v2.yaml
+income_gpu_explainer.yaml
+triton_multi.yaml
+triton_tf_cifar10.yaml

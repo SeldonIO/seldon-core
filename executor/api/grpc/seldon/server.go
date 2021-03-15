@@ -35,7 +35,7 @@ func NewGrpcSeldonServer(predictor *v1.PredictorSpec, client client.SeldonApiCli
 func (g GrpcSeldonServer) Predict(ctx context.Context, req *proto.SeldonMessage) (*proto.SeldonMessage, error) {
 	md := grpc.CollectMetadata(ctx)
 	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, md.Get(payload.SeldonPUIDHeader)[0])
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("SeldonMessageRestClient"), g.ServerUrl, g.Namespace, md)
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("SeldonMessageRestClient"), g.ServerUrl, g.Namespace, md, "")
 	reqPayload := payload.ProtoPayload{Msg: req}
 	resPayload, err := seldonPredictorProcess.Predict(&g.predictor.Graph, &reqPayload)
 	if err != nil {
@@ -46,7 +46,7 @@ func (g GrpcSeldonServer) Predict(ctx context.Context, req *proto.SeldonMessage)
 }
 
 func (g GrpcSeldonServer) SendFeedback(ctx context.Context, req *proto.Feedback) (*proto.SeldonMessage, error) {
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("SeldonMessageRestClient"), g.ServerUrl, g.Namespace, grpc.CollectMetadata(ctx))
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("SeldonMessageRestClient"), g.ServerUrl, g.Namespace, grpc.CollectMetadata(ctx), "")
 	reqPayload := payload.ProtoPayload{Msg: req}
 	resPayload, err := seldonPredictorProcess.Feedback(&g.predictor.Graph, &reqPayload)
 	if err != nil {
@@ -57,7 +57,7 @@ func (g GrpcSeldonServer) SendFeedback(ctx context.Context, req *proto.Feedback)
 }
 
 func (g GrpcSeldonServer) ModelMetadata(ctx context.Context, req *proto.SeldonModelMetadataRequest) (*proto.SeldonModelMetadata, error) {
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("SeldonMessageRestClient"), g.ServerUrl, g.Namespace, grpc.CollectMetadata(ctx))
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("SeldonMessageRestClient"), g.ServerUrl, g.Namespace, grpc.CollectMetadata(ctx), req.GetName())
 	resPayload, err := seldonPredictorProcess.Metadata(&g.predictor.Graph, req.GetName(), nil)
 	if err != nil {
 		return nil, err
@@ -67,7 +67,7 @@ func (g GrpcSeldonServer) ModelMetadata(ctx context.Context, req *proto.SeldonMo
 
 func (g GrpcSeldonServer) GraphMetadata(ctx context.Context, req *empty.Empty) (*proto.SeldonGraphMetadata, error) {
 
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("SeldonMessageRestClient"), g.ServerUrl, g.Namespace, grpc.CollectMetadata(ctx))
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("SeldonMessageRestClient"), g.ServerUrl, g.Namespace, grpc.CollectMetadata(ctx), "")
 
 	graphMetadata, err := seldonPredictorProcess.GraphMetadata(g.predictor)
 	if err != nil {
