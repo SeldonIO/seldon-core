@@ -39,8 +39,14 @@ type_check:
 docker-build: build_apis
 	docker build --file=Dockerfile -t seldonio/${IMAGE}:${VERSION} .
 
+docker-build-gpu: 
+	docker build --file=Dockerfile.gpu -t seldonio/${IMAGE}-gpu:${VERSION} .
+
 docker-push:
 	docker push seldonio/${IMAGE}:${VERSION}
+
+docker-push-gpu:
+	docker push seldonio/${IMAGE}-gpu:${VERSION}
 
 kind_load: docker-build
 	kind load docker-image seldonio/${IMAGE}:${VERSION}
@@ -214,3 +220,4 @@ curl_explain_adult_treeshap:
 
 cleanup_treeshap:
 	docker rm -f explainer
+

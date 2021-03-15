@@ -42,8 +42,8 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
 
     run_end_to_end_tests() {
 
-        echo "Files changed in python folder:"
-        git --no-pager diff --exit-code --name-only origin/master ../../python
+        echo "Files changed in python or wrapper folder:"
+        git --no-pager diff --exit-code --name-only origin/master ../../python ../../wrappers/s2i/python
         PYTHON_MODIFIED=$?
         if [[ $PYTHON_MODIFIED -gt 0 ]]; then
             make s2i_build_base_images
@@ -111,8 +111,8 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
             return 1
         fi
 
-        echo "Files changed in prepackaged folder:"
-        git --no-pager diff --exit-code --name-only origin/master ../../servers ../../integrations
+        echo "Files changed in prepackaged, python, or wrapper folder:"
+        git --no-pager diff --exit-code --name-only origin/master ../../servers ../../integrations ../../python ../../wrappers/s2i/python
         PREPACKAGED_MODIFIED=$?
         if [[ $PREPACKAGED_MODIFIED -gt 0 ]]; then
             make kind_build_prepackaged

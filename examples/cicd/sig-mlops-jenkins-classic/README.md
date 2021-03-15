@@ -507,7 +507,7 @@ In particular, you will need to run the following:
 ```bash
 %%bash
 helm install \
-    --name "jenkins" stable/jenkins \
+    jenkins stable/jenkins \
     --namespace "jenkins" \
     --set "rbac.create=true" \
     --set "master.adminUser=admin" \
