@@ -1,0 +1,4 @@
+alibi @ git+git://github.com/jklaise/alibi-1@b4b8dc5b5104049d9445cde785bbd8ef1f38529e
+numpy==1.20.1  # Version of numpy used to compile shap, need this otherwise RuntimeError will be raised. Ignore warning from tensorflow about incompatibility.
+shap @ git+git://github.com/slundberg/shap@fe082e345f7248119c8c0307197df51b839e6a1a
+xgboost==1.3.3
