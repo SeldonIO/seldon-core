@@ -29,7 +29,7 @@ To use our s2i builder image to package your python model you will need:
  * Your model's dependencies and environment, which can be described using either of:
    - `requirements.txt`
    - `setup.py`
-   - `environment.yaml`
+   - `environment.yml`
  * `.s2i/environment` - model definitions used by the s2i builder to correctly wrap your model
 
 We will go into detail for each of these steps:
@@ -41,7 +41,7 @@ Your source code should contain a python file which defines a class of the same 
 ### Dependencies
 
 You can describe your model's dependencies using either of: `requirements.txt`,
-`setup.py` or `environment.yaml`.
+`setup.py` or `environment.yml`.
 
 #### requirements.txt
 
@@ -65,9 +65,9 @@ setup(
 )
 ```
 
-#### environment.yaml
+#### environment.yml
 
-Describe your Conda environment using an `environment.yaml` file:
+Describe your Conda environment using an `environment.yml` file:
 
 ```yaml
 name: my-conda-environment
