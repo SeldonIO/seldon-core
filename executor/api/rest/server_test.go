@@ -402,6 +402,44 @@ func TestSeldonStatus(t *testing.T) {
 	g.Expect(res.Body.String()).To(Equal(test.TestClientStatusResponse))
 }
 
+func TestSeldonStatusDefault(t *testing.T) {
+	t.Logf("Started")
+	g := NewGomegaWithT(t)
+
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	})
+	server := httptest.NewServer(handler)
+	defer server.Close()
+	url, err := url.Parse(server.URL)
+	g.Expect(err).Should(BeNil())
+	urlParts := strings.Split(url.Host, ":")
+	port, err := strconv.Atoi(urlParts[1])
+	g.Expect(err).Should(BeNil())
+
+	model := v1.MODEL
+	p := v1.PredictorSpec{
+		Name: "p",
+		Graph: v1.PredictiveUnit{
+			Type: &model,
+			Endpoint: &v1.Endpoint{
+				ServiceHost: urlParts[0],
+				ServicePort: int32(port),
+				Type:        v1.REST,
+				HttpPort:    int32(port),
+			},
+		},
+	}
+	client, err := NewJSONRestClient(api.ProtocolSeldon, "dep", &p, nil)
+	g.Expect(err).Should(BeNil())
+	r := NewServerRestApi(&p, client, false, url, "default", api.ProtocolSeldon, "test", "/metrics")
+	r.Initialise()
+
+	req, _ := http.NewRequest("GET", "/api/v1.0/status", nil)
+	res := httptest.NewRecorder()
+	r.Router.ServeHTTP(res, req)
+	g.Expect(res.Code).To(Equal(200))
+}
+
 func TestSeldonMetadata(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)

@@ -526,4 +526,4 @@ def client_health_status(
     if hasattr(user_model, "health_status"):
         return user_model.health_status()
     else:
-        raise SeldonNotImplementedError("health_status not defined")
+        return "healthy"

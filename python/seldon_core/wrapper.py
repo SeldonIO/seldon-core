@@ -137,6 +137,7 @@ def get_rest_microservice(user_model, seldon_metrics):
         return "pong"
 
     @app.route("/health/status", methods=["GET"])
+    @app.route("/api/v1.0/health/status", methods=["GET"])
     def HealthStatus():
         logger.debug("REST Health Status Request")
         response = seldon_core.seldon_methods.health_status(user_model, seldon_metrics)
@@ -144,6 +145,7 @@ def get_rest_microservice(user_model, seldon_metrics):
         return jsonify(response)
 
     @app.route("/metadata", methods=["GET"])
+    @app.route("/api/v1.0/metadata", methods=["GET"])
     def Metadata():
         if metadata_data is None:
             # None value represents validation error in current implementation
