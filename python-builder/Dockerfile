@@ -24,7 +24,14 @@ RUN apt-get upgrade -y && \
     apt-get remove git -y && \
     make prefix=/usr/local -C git-2.30.0/ all install
 
-WORKDIR /work
+RUN useradd -u 1000 -m -s /bin/bash builder
+
+USER 1000
+WORKDIR /home/builder
+
+# Install gsutil
+RUN curl -sSL https://sdk.cloud.google.com | bash
+ENV PATH $PATH:/home/builder/google-cloud-sdk/bin
 
 # Define default command.
 CMD ["bash"]
