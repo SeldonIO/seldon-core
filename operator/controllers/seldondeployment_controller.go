@@ -876,6 +876,7 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 	// Add prometheus annotations
 	deploy.Spec.Template.Annotations["prometheus.io/path"] = getPrometheusPath(mlDep)
 	deploy.Spec.Template.Annotations["prometheus.io/scrape"] = "true"
+	deploy.Spec.Template.Annotations["prometheus.io/port"] = "8080"
 
 	if p.Shadow == true {
 		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_shadow] = "true"

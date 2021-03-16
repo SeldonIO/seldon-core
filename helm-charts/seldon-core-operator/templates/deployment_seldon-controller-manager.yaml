@@ -22,6 +22,7 @@ spec:
     metadata:
       annotations:
         prometheus.io/scrape: 'true'
+        promethues.io/port: '8080'
         sidecar.istio.io/inject: 'false'
       labels:
         app: seldon

@@ -493,7 +493,7 @@ func createEngineDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machin
 					Labels: map[string]string{machinelearningv1.Label_seldon_app: seldonId, machinelearningv1.Label_seldon_id: seldonId, "app": depName},
 					Annotations: map[string]string{
 						"prometheus.io/path": getPrometheusPath(mlDep),
-						// "prometheus.io/port":   strconv.Itoa(engine_http_port),
+						"prometheus.io/port": strconv.Itoa(engine_http_port),
 						"prometheus.io/scrape": "true",
 					},
 				},
