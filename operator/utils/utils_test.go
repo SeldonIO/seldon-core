@@ -1,8 +1,10 @@
 package utils
 
 import (
+	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
 	"testing"
 
@@ -110,4 +112,75 @@ func TestMountSecretToDeploymentContainers(t *testing.T) {
 	volumeMounts := &deploy.Spec.Template.Spec.Containers[0].VolumeMounts
 	g.Expect(len(*volumeMounts)).To(Equal(1))
 	g.Expect((*volumeMounts)[0].MountPath).To(Equal(testContainerMountPath))
+}
+
+func TestSeldonPredictionPath(t *testing.T) {
+	g := NewGomegaWithT(t)
+	sdep := &machinelearningv1.SeldonDeployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "default",
+		},
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Predictors: []machinelearningv1.PredictorSpec{
+				{
+					Name: "p1",
+					Graph: machinelearningv1.PredictiveUnit{
+						Name: "classifier",
+					},
+				},
+			},
+		},
+	}
+
+	p := GetPredictionPath(sdep)
+	g.Expect(p).To(Equal("/api/v1.0/predictions"))
+}
+
+func TestKFServingPredictionPath(t *testing.T) {
+	g := NewGomegaWithT(t)
+	sdep := &machinelearningv1.SeldonDeployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "default",
+		},
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Protocol: machinelearningv1.ProtocolKfserving,
+			Predictors: []machinelearningv1.PredictorSpec{
+				{
+					Name: "p1",
+					Graph: machinelearningv1.PredictiveUnit{
+						Name: "classifier",
+					},
+				},
+			},
+		},
+	}
+
+	p := GetPredictionPath(sdep)
+	g.Expect(p).To(Equal("/v2/models/classifier/infer"))
+}
+
+func TestTensorflowPredictionPath(t *testing.T) {
+	g := NewGomegaWithT(t)
+	sdep := &machinelearningv1.SeldonDeployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "default",
+		},
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Protocol: machinelearningv1.ProtocolTensorflow,
+			Predictors: []machinelearningv1.PredictorSpec{
+				{
+					Name: "p1",
+					Graph: machinelearningv1.PredictiveUnit{
+						Name: "classifier",
+					},
+				},
+			},
+		},
+	}
+
+	p := GetPredictionPath(sdep)
+	g.Expect(p).To(Equal("/v1/models/classifier/:predict"))
 }
