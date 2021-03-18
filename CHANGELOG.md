@@ -2782,4 +2782,3 @@
 ## [v0.1.0](https://github.com/seldonio/seldon-core/tree/v0.1.0) (2018-01-03)
 
 [Full Changelog](https://github.com/seldonio/seldon-core/compare/ebc6741c677eefaf59394d804cdc611aea568a27...v0.1.0)
-
