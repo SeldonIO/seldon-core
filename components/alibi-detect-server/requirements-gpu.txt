@@ -1,4 +1,4 @@
-alibi-detect @ git+git://github.com/arnaudvl/alibi-detect@7f8306568d93ea530f0ff132487eb67275f1a1bf
+alibi-detect @ git+git://github.com/arnaudvl/alibi-detect@e2de5b5666357a982085ad0843fdf7007e50a392
 torch
 transformers==4.3.3
 dill
