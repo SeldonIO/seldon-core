@@ -43,9 +43,9 @@
                 "name": "single-model",
                 "replicas": 1,
         "annotations": {
-            "predictor_version" : "v1"
+           "predictor_version": "v1"
         }
-            }
-        ]
-    }
+       }
+    ]
+  }
 }
