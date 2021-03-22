@@ -2,9 +2,13 @@
 
 A summary of the main contributions to the [Seldon Core release 1.7.0](https://github.com/SeldonIO/seldon-core/releases/tag/v1.7.0).
 
-# Experimental XGBoost Model with GPU TreeShap Explainer
+## Experimental GPU Accelerated Explainers and Drift Detection
 
-As part of our NVIDIA GTC 2021 Talk this year we have added a new feature on the Seldon Core explainers, enabling for GPU accelerated GPU TreeShap Explainers, which show how explanations can be optimized using NVIDIA Tesla P100 GPUs to achieve significant speedups when processing explanations.
+As part of our [NVIDIA GTC 2021 Talk](https://gtc21.event.nvidia.com/media/MLOps%20with%20NVIDIA%20GPUs%20on%20Kubernetes%20%5BS32020%5D/1_tgjkxf3l) this year we have added some new features for utilizing GPUs for explainability and drift detection.
+
+### XGBoost Model with GPU TreeShap Explainer
+
+We have added an example for GPU accelerated TreeShap Explainers which show how explanations can be optimized using NVIDIA GPUs to achieve significant speedups when processing explanations as compared to the CPU version of TreeShap.
 
 The example is available in the [GPU Example Section of the Explainer Seldon Core Notebook](https://docs.seldon.io/projects/seldon-core/en/v1.7.0/examples/explainer_examples.html#Experimental:-XGBoost-Model-with-GPU-TreeShap-Explainer). If you have a GPU accelerated cluster, you can try deploying the model with the respective explainer with the following YAML:
 
@@ -34,6 +38,14 @@ spec:
     name: default
     replicas: 1
 ```
+
+## Drift Detection with GPU Accelerated Triton Inference Server and Drift Detector
+
+We provide an example of deploying a CIFAR10 image classification model on Triton Inference Server alongside a GPU accelerated drift detector utilizing KNative. The architecture is as shown below:
+
+![Drift Architecture](./drift-gpu.png)
+
+The [example notebook](https://github.com/SeldonIO/seldon-core/blob/master/components/drift-detection/nvidia-triton-cifar10/cifar10_drift.ipynb) illustrates the steps to deploy the model and drift detector and test drift.
 
 ## Distributed Persistent State for Multi-Armed Bandits
 
