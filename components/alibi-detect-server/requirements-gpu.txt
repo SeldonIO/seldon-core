@@ -1,0 +1,4 @@
+alibi-detect @ git+git://github.com/arnaudvl/alibi-detect@e2de5b5666357a982085ad0843fdf7007e50a392
+torch
+transformers==4.3.3
+dill

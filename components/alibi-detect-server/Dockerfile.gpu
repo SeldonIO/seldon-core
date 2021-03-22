@@ -1,0 +1,52 @@
+#FROM nvidia/cuda:11.2.1-devel-ubuntu18.04
+#FROM nvidia/cuda:10.2-runtime-ubuntu18.04
+FROM tensorflow/tensorflow:2.4.1-gpu
+#FROM nvcr.io/nvidia/tensorflow:21.02-tf2-py3
+
+RUN \
+    apt update && apt install -y git wget unzip bzip2 libgomp1 build-essential
+
+RUN wget -O Miniconda3.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
+    bash Miniconda3.sh -b -p /opt/python
+
+ENV PATH=/opt/python/bin:$PATH
+
+WORKDIR /app
+
+ADD requirements_server.txt .
+
+RUN pip install pip -U
+
+RUN pip install -r requirements_server.txt
+
+# Fix cloudevents bug: https://github.com/cloudevents/sdk-python/issues/24
+RUN git clone --branch 24-extensions https://github.com/ryandawsonuk/sdk-python.git && \
+    cd sdk-python && \
+    pip install -e .
+
+COPY adserver adserver
+COPY setup.py .
+
+RUN pip install -e .
+
+# Add licences
+RUN pip install pip-licenses
+RUN mkdir ./licenses && pip-licenses --from=mixed --format=csv --output-file=./licenses/license_info.csv && \
+    pip-licenses --from=mixed --format=plain-vertical --with-license-file --no-license-path --output-file=./licenses/license.txt
+
+RUN mv ./licenses /licenses
+
+RUN apt-get update 
+RUN apt-get -y install libgl1-mesa-glx libglib2.0-dev
+
+COPY requirements-gpu.txt .
+
+#RUN pip install --force-reinstall -r requirements-gpu.txt
+RUN pip install -r requirements-gpu.txt
+
+#RUN pip install torch==1.7.1+cu101 torchvision==0.8.2+cu101 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html
+
+ENTRYPOINT ["python", "-m", "adserver"]
+
+
+
