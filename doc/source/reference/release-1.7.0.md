@@ -35,7 +35,7 @@ spec:
     replicas: 1
 ```
 
-## Distributed State for Multi-Armed Bandits
+## Distributed Persistent State for Multi-Armed Bandits
 
 In production use-cases of multi-armed bandits and generally other type of online-learning models, the concept of distributed state has growingly become a priority. 
 
