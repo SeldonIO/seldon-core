@@ -2,7 +2,7 @@
 
 A summary of the main contributions to the [Seldon Core release 1.6.0](https://github.com/SeldonIO/seldon-core/releases/tag/v1.6.0).
 
-# MultiArmed Bandit Capabilities and Fixes
+## MultiArmed Bandit Capabilities and Fixes
 
 This release added further capabilities to router-enabled use-cases, such as the multi-armed bandits implementations in the seldon core repository. The extensions added in this release enable for all the `send_feedback` requests to be sent to the `router` component without explicit configuration required. With this change deploying the multi-armed bandits can be done without any further parameters in the CRD yaml.
 
