@@ -55,6 +55,26 @@ In this release we have added an extension to the Multi-Armed Bandit Thomson Sam
 
 You can try the distributed Thomson Sampling multiarmed bandit example in the [MAB case study notebook](https://github.com/SeldonIO/seldon-core/blob/master/components/routers/case_study/credit_card_default.ipynb).
 
+## Storage Initializer Customisation on Seldon Deployment
+
+With version 1.7.0 it is now possible to specify image used for the Storage Initializers used with Pre-Packaged Model servers on each Seldon Deployment CR.
+```yaml
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: custom-sklearn
+spec:
+  predictors:
+  - name: default
+    replicas: 1
+    graph:
+      name: classifier
+      implementation: SKLEARN_SERVER
+      modelUri: mys3:sklearn/iris
+      storageInitializerImage: gcr.io/kfserving/storage-initializer:v0.4.0    # Specify custom image here
+      envSecretRefName: seldon-init-container-secret                          # Specify custom secret here
+```
+
 ## Security Vulnerability Patches
 
 We have updated our base Python images to address CVEs identified, which aligns to the Seldon Core policy. This further strengthens the security of Seldon Core by ensuring that not only the dependencies are updated to address vulnerabilities, but now the containers have been scanned to identify other vulnerabilities.
