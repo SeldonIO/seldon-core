@@ -165,4 +165,21 @@ Here is a truncated version of an example output for an image use-case with outl
 TODO: HANDLE GRPC
 TODO: ELEMENTS ARE CURRENTLY CREATED TO SPLIT FEATURES AND MAKE SEARCHABLE BY FEATURE VALUE. BUT ONLY FOR NON-BATCHED.
 TODO: FEEDBACK - IF SENT WITH CUSTOM ID HEADER COULD SUPPORT A/B TESTS WITH RECORDED RESULTS
-TODO: SOURCE IS ALWAYS http://localhost:8000/ WHEN COMING FROM EXECUTOR. PROB NOT LOGGER PROBLEM.
+
+# Scaling
+
+The example in examples/centralised-logging has manifests for the request logger.
+
+The knative version automatically scales. The non-knative version (seldon-request-logger-k8s.yaml) has a replicas field.
+
+However, at high load there can be scaling considerations on the elastic side. See troubleshooting.
+
+# Troubleshooting
+
+At high load you may see `TransportError(429, 'es_rejected_execution_exception', 'rejected execution of org.elasticsearch.transport.InboundHandler$RequestHandler@396632e3 on EsThreadPoolExecutor[name = elasticsearch-master-0/write, queue capacity = 2000, org.elasticsearch.common.util.concurrent.EsThreadPoolExecutor@39d62961[Running, pool size = 1, active threads = 1, queued tasks = 2000, completed tasks = 111635]]')`
+
+Note the message says queued tasks = 2000 and queue capacity = 2000 from the EsThreadPoolExecutor. This is what happens when elastic gets overwhelmed.
+
+You can [increase the bulk queue size](https://discuss.elastic.co/t/how-to-increase-thread-pool/101142)
+
+If that does not address the issue then it's [likely you'll need to run more nodes of elastic](https://discuss.elastic.co/t/threadpool-settings-for-bulk-indexing-in-elasticsearch-yml/48959/2) with more threads and/or resource
