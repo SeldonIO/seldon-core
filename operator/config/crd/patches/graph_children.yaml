@@ -23,7 +23,7 @@ spec:
                   graph:
                     properties:
                       children:
-                        type: array                        
+                        type: array
                         items:
                           properties:
                             children:
@@ -54,6 +54,8 @@ spec:
                                                   type:
                                                     type: string
                                                 type: object
+                                              storageInitializerImage:
+                                                type: string
                                               envSecretRefName:
                                                 type: string
                                               implementation:
@@ -110,6 +112,8 @@ spec:
                                             type:
                                               type: string
                                           type: object
+                                        storageInitializerImage:
+                                          type: string
                                         envSecretRefName:
                                           type: string
                                         implementation:
@@ -166,6 +170,8 @@ spec:
                                       type:
                                         type: string
                                     type: object
+                                  storageInitializerImage:
+                                    type: string
                                   envSecretRefName:
                                     type: string
                                   implementation:
@@ -222,6 +228,8 @@ spec:
                                 type:
                                   type: string
                               type: object
+                            storageInitializerImage:
+                              type: string
                             envSecretRefName:
                               type: string
                             implementation:
@@ -269,7 +277,7 @@ spec:
                             type: integer
                           httpPort:
                             format: int32
-                            type: integer                          
+                            type: integer
                           service_host:
                             type: string
                           service_port:
@@ -278,6 +286,8 @@ spec:
                           type:
                             type: string
                         type: object
+                      storageInitializerImage:
+                        type: string
                       envSecretRefName:
                         type: string
                       implementation:
@@ -316,5 +326,5 @@ spec:
                           url:
                             description: URL to send request logging CloudEvents
                             type: string
-                        type: object                        
+                        type: object
                     type: object
