@@ -283,7 +283,7 @@ validate_bundle_image:
 # Only index up to 1.2.2 as we have removed "replaces" in 1.2.2 to stop chain there for testing
 .PHONY: opm_index
 opm_index:
-	opm index add -c docker --bundles quay.io/seldon/seldon-operator:v${VERSION},quay.io/seldon/seldon-operator:v1.5.0,quay.io/seldon/seldon-operator:v1.2.2
+	opm index add -c docker --bundles quay.io/seldon/seldon-operator:v${VERSION},quay.io/seldon/seldon-operator:v1.6.0,quay.io/seldon/seldon-operator:v1.5.0,quay.io/seldon/seldon-operator:v1.2.2 --mode replaces --tag quay.io/seldon/test-catalog:latest
 
 
 opm_push:
@@ -355,7 +355,7 @@ validate_bundle_image_certified:
 
 # beware --mode semver seems to cause old versions to be shown in openshift. Not sure why. 
 opm_index_certified:
-	opm index add -c docker --bundles quay.io/seldon/seldon-operator-certified:v${VERSION},quay.io/seldon/seldon-operator-certified:v1.5.0,quay.io/seldon/seldon-operator-certified:v1.2.2,quay.io/seldon/seldon-operator-certified:v1.2.1,quay.io/seldon/seldon-operator-certified:v1.2.0,quay.io/seldon/seldon-operator-certified:v1.1.0,quay.io/seldon/seldon-operator-certified:v0.1.5 --mode replaces --tag quay.io/seldon/test-catalog-certified:latest
+	opm index add -c docker --bundles quay.io/seldon/seldon-operator-certified:v${VERSION},quay.io/seldon/seldon-operator-certified:v1.6.0,quay.io/seldon/seldon-operator-certified:v1.5.0,quay.io/seldon/seldon-operator-certified:v1.2.2,quay.io/seldon/seldon-operator-certified:v1.2.1,quay.io/seldon/seldon-operator-certified:v1.2.0,quay.io/seldon/seldon-operator-certified:v1.1.0,quay.io/seldon/seldon-operator-certified:v0.1.5 --mode replaces --tag quay.io/seldon/test-catalog-certified:latest
 
 
 opm_push_certified:
@@ -389,7 +389,7 @@ update_old_certified_packages:
 update_openshift_certified: update_old_certified_packages create_certified_bundle create_bundle_image_certified push_bundle_image_certified validate_bundle_image_certified opm_index_certified opm_push_certified
 
 # Run last to prepare for future release
-PREV_VERSION=1.5.0
+PREV_VERSION=1.6.0
 update_config:
 	sed -i s#${PREV_VERSION}#${VERSION}# config/manifests/bases/seldon-operator.clusterserviceversion.yaml
 
