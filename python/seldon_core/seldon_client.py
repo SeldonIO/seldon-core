@@ -1819,7 +1819,7 @@ def grpc_predict_gateway(
     if isinstance(raw_data, prediction_pb2.SeldonMessage):
         request = raw_data
     elif raw_data is not None:
-        request = json_to_seldon_message(raw_request)
+        request = json_to_seldon_message(raw_data)
     else:
         if bin_data is not None:
             request = prediction_pb2.SeldonMessage(binData=bin_data, meta=metaKV)
