@@ -83,7 +83,7 @@ Advanced Machine Learning Insights
    :titlesonly:
 
    Real time monitoring of statistical metrics <feedback_reward_custom_metrics>
-   Tabular, Text and Image Model Explainers <explainer_examples>
+   Model Explainers <explainer_examples>
    Outlier Detection on CIFAR10 <outlier_cifar10>
   
 Batch Processing with Seldon Core

@@ -7,6 +7,21 @@ Seldon provides model explanations using its [Alibi](https://github.com/SeldonIO
 
 We provide [an example notebook](../examples/explainer_examples.html) showing how to deploy an explainer for Tabular, Text and Image models.
 
+
+## Available Methods
+
+Seldon Core supports a subset of the methods currently available in [Alibi](https://github.com/SeldonIO/alibi). Presently this the following:
+
+
+| Method | Explainer Key | Example |
+|--------|---------------|---------||
+| [Anchor Tabular](https://docs.seldon.io/projects/alibi/en/latest/methods/Anchors.html) | `AnchorTabular` | [Example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/explainer_examples.html#Income-Prediction-Model-with-Anchors-Explainer) |
+| [Anchor Text](https://docs.seldon.io/projects/alibi/en/latest/methods/Anchors.html) | `AnchorText` | [Example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/explainer_examples.html#Movie-Sentiment-Model) |
+| [Anchor Images](https://docs.seldon.io/projects/alibi/en/latest/methods/Anchors.html) | `AnchorImages` | [Example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/explainer_examples.html#Tensorflow-CIFAR10-Model) |
+| [kernel Shap](https://docs.seldon.io/projects/alibi/en/latest/methods/KernelSHAP.html) | `KernelShap` | [Example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/explainer_examples.html#Wine-Prediction-Model-with-Shap-Explainer) |
+| [Integrated Gradients](https://docs.seldon.io/projects/alibi/en/latest/methods/IntegratedGradients.html) | `IntegratedGradients` | [Example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/explainer_examples.html#MNIST-Model-with-Integrated-Gradients-Explainer) |
+| [Tree Shap](https://docs.seldon.io/projects/alibi/en/latest/methods/TreeSHAP.html) | `TreeShap` | [Example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/explainer_examples.html#XGBoost-Model-with-TreeShap-Explainer) |
+
 ## Creating your explainer
 
 For Alibi explainers that need to be trained you should
