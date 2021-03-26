@@ -1294,7 +1294,7 @@ def grpc_predict_seldon(
     grpc_max_receive_message_length: int = 4 * 1024 * 1024,
     names: Iterable[str] = None,
     client_return_type: str = "proto",
-    raw_data: Dict  = None,
+    raw_data: Dict = None,
     **kwargs,
 ) -> SeldonClientPrediction:
     """
