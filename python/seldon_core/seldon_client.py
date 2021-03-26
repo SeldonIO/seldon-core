@@ -1327,7 +1327,7 @@ def grpc_predict_seldon(
     client_return_type
         the return type of all functions can be either dict or proto
     raw_data
-        Raw payload (dictionary) given by the user
+        Raw payload (dictionary or proto) given by the user
     kwargs
 
     Returns
@@ -1437,7 +1437,7 @@ def rest_predict_gateway(
     client_return_type
         the return type of all functions can be either dict or proto
     raw_data
-        a raw payload given by the user
+        Raw payload (dictionary) given by the user
 
     Returns
     -------
@@ -1803,7 +1803,7 @@ def grpc_predict_gateway(
     client_return_type
         the return type of all functions can be either dict or proto
     raw_data
-        raw payload given by the user
+        Raw payload (dictionary or proto) given by the user
 
     Returns
     -------
