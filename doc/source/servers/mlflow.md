@@ -1,6 +1,6 @@
 # MLflow Server
 
-If you have a trained an MLflow model you are able to deploy one (or several)
+If you have a trained MLflow model you are able to deploy one (or several)
 of the versions saved using Seldon's prepackaged MLflow server.
 During initialisation, the built-in reusable server will create the [Conda
 environment](https://www.mlflow.org/docs/latest/projects.html#project-environments)
