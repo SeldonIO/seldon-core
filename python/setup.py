@@ -12,7 +12,7 @@ setup(
     name="seldon-core",
     author="Seldon Technologies Ltd.",
     author_email="hello@seldon.io",
-    version="1.7.0",
+    version="1.8.0-dev",
     description="Seldon Core client and microservice wrapper",
     url="https://github.com/SeldonIO/seldon-core",
     license="Apache 2.0",
@@ -45,7 +45,7 @@ setup(
         # Addresses CVE PRISMA-2021-0020
         "click >= 8.0.0a1, < 8.1",
         # Addresses CVE CVE-2019-11236 and CVE-2020-26137
-        "urllib3 == 1.25.9",
+        "urllib3 == 1.26.4",
     ],
     extras_require=extras,
     entry_points={
