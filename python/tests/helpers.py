@@ -54,9 +54,9 @@ class MicroserviceWrapper:
             self.env_vars["MODEL_NAME"],
             "--service-type",
             self.env_vars["SERVICE_TYPE"],
-            "--persistence",
-            self.env_vars["PERSISTENCE"],
         )
+        if "PERSISTENCE" in self.env_vars:
+            cmd += ("--persistence", self.env_vars["PERSISTENCE"])
 
         if tracing:
             cmd += ("--tracing",)
