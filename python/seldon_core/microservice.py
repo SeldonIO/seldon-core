@@ -352,9 +352,8 @@ def main():
         user_class = getattr(interface_file, parts[1])
 
     if args.persistence:
-        logger.error(f"persistence is not supported")
-    else:
-        user_object = user_class(**parameters)
+        logger.error(f"persistence: ignored, persistence is deprecated")
+    user_object = user_class(**parameters)
 
     http_port = args.http_port
     grpc_port = args.grpc_port
