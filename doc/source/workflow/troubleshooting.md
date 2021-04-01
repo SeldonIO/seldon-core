@@ -72,7 +72,7 @@ Check if the pods are running successfully.
 
 If your model is running and you are using Ambassador for ingress and are
 having problems check the diagnostics page of Ambassador.
-See [here](https://www.getambassador.io/reference/diagnostics/).
+See [here](https://www.getambassador.io/docs/edge-stack/latest/topics/running/debugging/).
 You can then find out what path your model can be found under to ensure the URL
 you are using is correct.
 
