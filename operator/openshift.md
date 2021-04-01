@@ -41,14 +41,19 @@ operator-courier -v
 2.1.10
 ```
 
-## Version Update
-
-Update Makefile and change PREV_VERSION.
+### Quay
 
 Login to quay.io as seldon. Password in 1password. 
 
+
+## Version Update
+
+
+ * Update Makefile and change PREV_VERSION.
  * Update `opm_index` in Makefile to include previous version
  * Update `opm_index_certified` in Makefule to include previous version
+ * Update `packagemanifests/Makefile` `create_bundles` and `push_bundles` to include last version
+ * Update `packagemanifests-certified/Makefile` `create_bundles` and `push_bundles` to include last version 
 
 
 ```bash
@@ -74,9 +79,9 @@ make scorecard
 
 ## Tests
 
-Run [kind cluster tests](./openshift/tests/README.md). k8s >= 1.16.
+Run [kind cluster tests](./openshift/tests/README.md#local-kind-cluster). k8s >= 1.16.
 
-Run on an openshift cluster. Openshift >= 4.3.
+Run [Openshift cluster tests](./openshift/tests/README.md#openshift-cluster). Openshift >= 4.3.
 
 ## Community and Upstream Operators
 
@@ -97,7 +102,7 @@ COMMUNITY_OPERATORS_FOLDER=~/work/seldon-core/redhat/community-operators
 Create a branch for update in above fork. e.g.:
 
 ```
-git checkout -b 1.6.0_community
+git checkout -b 1.7.0_community
 ```
 
 ```
@@ -137,7 +142,7 @@ ansible-playbook -i localhost, -e ansible_connection=local upstream/local.yml -e
 Add new folder and changed package yaml to a PR. Ensure you sign the commit.
 
 ```
-git commit -s -m "Update Seldon Community Operator to 1.2.2"
+git commit -s -m "Update Seldon Community Operator to 1.7.0"
 ```
 
 Push and create PR.
@@ -147,7 +152,7 @@ Push and create PR.
 Create a branch for update in above fork. e.g.:
 
 ```
-git checkout -b 1.6.0_upstream
+git checkout -b 1.7.0_upstream
 ```
 
 ```
@@ -189,7 +194,7 @@ ansible-playbook -i localhost, -e ansible_connection=local upstream/local.yml -e
 Ensure you sign the commit, e.g.:
 
 ```
-git commit -s -m "Update Seldon Upstream Operator to 1.2.2"
+git commit -s -m "Update Seldon Upstream Operator to 1.7.0"
 ```
 
 ## Certified Operators
@@ -209,7 +214,7 @@ cd {project_base_folder}/marketplaces/redhat
 python scan-images.py
 ```
 
-After these are finished (approx 1.5 hours) you will need to manually publish images on https://connect.redhat.com/project/5892531/images
+After these are finished (approx 1.5 hours) you will need to manually publish images on https://connect.redhat.com/projects
 
 publish
 
@@ -226,7 +231,8 @@ publish
  * https://connect.redhat.com/project/4035711/view
 
 
-Test as above for openshift but using the new catalog source for certified. 
+
+Run [Openshift cluster tests](./openshift/tests/README.md#openshift-cluster-certified). Openshift >= 4.3.
 
 
 Push bundle image to scanning and tests. Also needs passwords.
@@ -236,6 +242,9 @@ make bundle_certified_push
 ```
 
 This will start a test of the package in RedHat. Log on to check its success. If it fails you will need to manually delete in UI and build, tag and push a new version.
+
+Check: https://connect.redhat.com/project/5892531/images
+
 
 ## Prepare for next release
 

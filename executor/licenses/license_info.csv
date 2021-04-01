@@ -24,7 +24,7 @@ BurntSushi/xgb,https://github.com/BurntSushi/xgb/blob/master/LICENSE,BSD 3-Claus
 DataDog/zstd,https://github.com/DataDog/zstd/blob/1.x/LICENSE,BSD 2-Clause "Simplified" License,https://raw.githubusercontent.com/DataDog/zstd/1.x/LICENSE
 Djarvur/go-err113,https://github.com/Djarvur/go-err113/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/Djarvur/go-err113/master/LICENSE
 GoogleCloudPlatform/cloud-builders,https://github.com/GoogleCloudPlatform/cloud-builders/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/GoogleCloudPlatform/cloud-builders/master/LICENSE
-GoogleCloudPlatform/cloudsql-proxy,https://github.com/GoogleCloudPlatform/cloudsql-proxy/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/GoogleCloudPlatform/cloudsql-proxy/master/LICENSE
+GoogleCloudPlatform/cloudsql-proxy,https://github.com/GoogleCloudPlatform/cloudsql-proxy/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/GoogleCloudPlatform/cloudsql-proxy/main/LICENSE
 GoogleCloudPlatform/k8s-cloud-provider,https://github.com/GoogleCloudPlatform/k8s-cloud-provider/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/GoogleCloudPlatform/k8s-cloud-provider/master/LICENSE
 GoogleCloudPlatform/testgrid,https://github.com/GoogleCloudPlatform/testgrid/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/GoogleCloudPlatform/testgrid/master/LICENSE
 Huawei/gophercloud,https://github.com/Huawei/gophercloud/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/Huawei/gophercloud/master/LICENSE
@@ -70,7 +70,7 @@ aryann/difflib,https://github.com/aryann/difflib/blob/master/LICENSE,MIT License
 asaskevich/govalidator,https://github.com/asaskevich/govalidator/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/asaskevich/govalidator/master/LICENSE
 aws/aws-k8s-tester,https://github.com/aws/aws-k8s-tester/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/aws/aws-k8s-tester/master/LICENSE
 aws/aws-lambda-go,https://github.com/aws/aws-lambda-go/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/aws/aws-lambda-go/master/LICENSE
-aws/aws-sdk-go,https://github.com/aws/aws-sdk-go/blob/master/LICENSE.txt,Apache License 2.0,https://raw.githubusercontent.com/aws/aws-sdk-go/master/LICENSE.txt
+aws/aws-sdk-go,https://github.com/aws/aws-sdk-go/blob/main/LICENSE.txt,Apache License 2.0,https://raw.githubusercontent.com/aws/aws-sdk-go/main/LICENSE.txt
 aws/aws-sdk-go-v2,https://github.com/aws/aws-sdk-go-v2/blob/main/LICENSE.txt,Apache License 2.0,https://raw.githubusercontent.com/aws/aws-sdk-go-v2/main/LICENSE.txt
 aybabtme/rgbterm,https://github.com/aybabtme/rgbterm/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/aybabtme/rgbterm/master/LICENSE
 bazelbuild/buildtools,https://github.com/bazelbuild/buildtools/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/bazelbuild/buildtools/master/LICENSE
@@ -102,7 +102,7 @@ clarketm/json,https://github.com/clarketm/json/blob/master/LICENSE,BSD 3-Clause 
 clbanning/x2j,https://github.com/clbanning/x2j/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/clbanning/x2j/master/LICENSE
 client9/misspell,https://github.com/client9/misspell/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/client9/misspell/master/LICENSE
 cloudevents/sdk-go,https://github.com/cloudevents/sdk-go/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/cloudevents/sdk-go/master/LICENSE
-cncf/udpa,https://github.com/cncf/udpa/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/cncf/udpa/master/LICENSE
+cncf/udpa,https://github.com/cncf/udpa/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/cncf/udpa/main/LICENSE
 cockroachdb/datadriven,https://github.com/cockroachdb/datadriven/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/cockroachdb/datadriven/master/LICENSE
 codahale/hdrhistogram,https://github.com/HdrHistogram/hdrhistogram-go/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/HdrHistogram/hdrhistogram-go/master/LICENSE
 confluentinc/confluent-kafka-go,https://github.com/confluentinc/confluent-kafka-go/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/confluentinc/confluent-kafka-go/master/LICENSE
@@ -299,7 +299,7 @@ hashicorp/go-uuid,https://github.com/hashicorp/go-uuid/blob/master/LICENSE,Mozil
 hashicorp/go-version,https://github.com/hashicorp/go-version/blob/master/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/go-version/master/LICENSE
 hashicorp/go.net,https://github.com/hashicorp/go.net/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/hashicorp/go.net/master/LICENSE
 hashicorp/golang-lru,https://github.com/hashicorp/golang-lru/blob/master/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/golang-lru/master/LICENSE
-hashicorp/hcl,https://github.com/hashicorp/hcl/blob/master/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/hcl/master/LICENSE
+hashicorp/hcl,https://github.com/hashicorp/hcl/blob/main/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/hcl/main/LICENSE
 hashicorp/logutils,https://github.com/hashicorp/logutils/blob/master/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/logutils/master/LICENSE
 hashicorp/mdns,https://github.com/hashicorp/mdns/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/hashicorp/mdns/master/LICENSE
 hashicorp/memberlist,https://github.com/hashicorp/memberlist/blob/master/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/memberlist/master/LICENSE
@@ -451,7 +451,7 @@ posener/complete,https://github.com/posener/complete/blob/v1/LICENSE.txt,MIT Lic
 pquerna/cachecontrol,https://github.com/pquerna/cachecontrol/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/pquerna/cachecontrol/master/LICENSE
 prometheus/client_golang,https://github.com/prometheus/client_golang/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/prometheus/client_golang/master/LICENSE
 prometheus/client_model,https://github.com/prometheus/client_model/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/prometheus/client_model/master/LICENSE
-prometheus/common,https://github.com/prometheus/common/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/prometheus/common/master/LICENSE
+prometheus/common,https://github.com/prometheus/common/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/prometheus/common/main/LICENSE
 prometheus/procfs,https://github.com/prometheus/procfs/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/prometheus/procfs/master/LICENSE
 prometheus/statsd_exporter,https://github.com/prometheus/statsd_exporter/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/prometheus/statsd_exporter/master/LICENSE
 prometheus/tsdb,https://github.com/prometheus-junkyard/tsdb/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/prometheus-junkyard/tsdb/master/LICENSE
@@ -505,8 +505,8 @@ stretchr/testify,https://github.com/stretchr/testify/blob/master/LICENSE,MIT Lic
 subosito/gotenv,https://github.com/subosito/gotenv/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/subosito/gotenv/master/LICENSE
 syndtr/gocapability,https://github.com/syndtr/gocapability/blob/master/LICENSE,BSD 2-Clause "Simplified" License,https://raw.githubusercontent.com/syndtr/gocapability/master/LICENSE
 tdakkota/asciicheck,https://github.com/tdakkota/asciicheck/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/tdakkota/asciicheck/master/LICENSE
-tektoncd/pipeline,https://github.com/tektoncd/pipeline/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/tektoncd/pipeline/master/LICENSE
-tektoncd/plumbing,https://github.com/tektoncd/plumbing/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/tektoncd/plumbing/master/LICENSE
+tektoncd/pipeline,https://github.com/tektoncd/pipeline/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/tektoncd/pipeline/main/LICENSE
+tektoncd/plumbing,https://github.com/tektoncd/plumbing/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/tektoncd/plumbing/main/LICENSE
 tensorflow/tensorflow,https://github.com/tensorflow/tensorflow/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/tensorflow/tensorflow/master/LICENSE
 tetafro/godot,https://github.com/tetafro/godot/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/tetafro/godot/master/LICENSE
 tidwall/gjson,https://github.com/tidwall/gjson/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/tidwall/gjson/master/LICENSE
@@ -538,9 +538,6 @@ xanzy/go-gitlab,https://github.com/xanzy/go-gitlab/blob/master/LICENSE,Apache Li
 xanzy/ssh-agent,https://github.com/xanzy/ssh-agent/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/xanzy/ssh-agent/master/LICENSE
 xdg/scram,https://github.com/xdg-go/scram/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/xdg-go/scram/master/LICENSE
 xdg/stringprep,https://github.com/xdg-go/stringprep/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/xdg-go/stringprep/master/LICENSE
-xeipuuv/gojsonpointer,https://github.com/xeipuuv/gojsonpointer/blob/master/LICENSE-APACHE-2.0.txt,Apache License 2.0,https://raw.githubusercontent.com/xeipuuv/gojsonpointer/master/LICENSE-APACHE-2.0.txt
-xeipuuv/gojsonreference,https://github.com/xeipuuv/gojsonreference/blob/master/LICENSE-APACHE-2.0.txt,Apache License 2.0,https://raw.githubusercontent.com/xeipuuv/gojsonreference/master/LICENSE-APACHE-2.0.txt
-xeipuuv/gojsonschema,https://github.com/xeipuuv/gojsonschema/blob/master/LICENSE-APACHE-2.0.txt,Apache License 2.0,https://raw.githubusercontent.com/xeipuuv/gojsonschema/master/LICENSE-APACHE-2.0.txt
 xi2/xz,https://github.com/xi2/xz/blob/master/LICENSE,Public Domain License,https://raw.githubusercontent.com/xi2/xz/master/LICENSE
 xiang90/probing,https://github.com/xiang90/probing/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/xiang90/probing/master/LICENSE
 xlab/handysort,https://github.com/xlab/handysort/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/xlab/handysort/master/LICENSE
@@ -624,10 +621,10 @@ kubernetes/legacy-cloud-providers,https://github.com/kubernetes/legacy-cloud-pro
 kubernetes/metrics,https://github.com/kubernetes/metrics/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/kubernetes/metrics/master/LICENSE
 kubernetes/test-infra,https://github.com/kubernetes/test-infra/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/kubernetes/test-infra/master/LICENSE
 kubernetes/utils,https://github.com/kubernetes/utils/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/kubernetes/utils/master/LICENSE
-knative/caching,https://github.com/knative/caching/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/knative/caching/master/LICENSE
-knative/eventing-contrib,https://github.com/knative/eventing-contrib/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/knative/eventing-contrib/master/LICENSE
-knative/pkg,https://github.com/knative/pkg/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/knative/pkg/master/LICENSE
-knative/test-infra,https://github.com/knative/test-infra/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/knative/test-infra/master/LICENSE
+knative/caching,https://github.com/knative/caching/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/knative/caching/main/LICENSE
+knative/eventing-contrib,https://github.com/knative/eventing-contrib/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/knative/eventing-contrib/main/LICENSE
+knative/pkg,https://github.com/knative/pkg/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/knative/pkg/main/LICENSE
+knative/test-infra,https://github.com/knative/test-infra/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/knative/test-infra/main/LICENSE
 cznic/cc,https://github.com/cznic/cc/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/cznic/cc/master/LICENSE
 cznic/golex,https://github.com/cznic/golex/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/cznic/golex/master/LICENSE
 cznic/mathutil,https://github.com/cznic/mathutil/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/cznic/mathutil/master/LICENSE
