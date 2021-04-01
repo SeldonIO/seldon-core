@@ -44,7 +44,7 @@ def index():
             "body too large for "
             + index_name
             + "/"
-            + log_helper.DOC_TYPE_NAME
+            + (log_helper.DOC_TYPE_NAME if log_helper.DOC_TYPE_NAME != None else "_doc")
             + "/"
             + request_id
             + " adding "
@@ -193,7 +193,7 @@ def upsert_doc_to_elastic(
         "upserted to doc "
         + index_name
         + "/"
-        + log_helper.DOC_TYPE_NAME
+        + (log_helper.DOC_TYPE_NAME if log_helper.DOC_TYPE_NAME != None else "_doc")
         + "/"
         + request_id
         + " adding "
@@ -444,7 +444,7 @@ def createElelmentsArray(X: np.ndarray, names: list):
             for i in range(X.shape[0]):
                 d = {}
                 for num, name in enumerate(names, start=0):
-                    d[name] = np.expand_dims(X[i, num], axis=0).tolist()
+                    d[name] = X[i, num].tolist()
                 results.append(d)
     return results
 

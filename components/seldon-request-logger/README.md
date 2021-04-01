@@ -39,7 +39,7 @@ And in another window run app/test.sh
 
 The output of the logger will say where docs are indexed. The contents can be checked in postman by querying on the elastic host e.g.
 ```
-localhost:9200/inference-log-seldon-unknown-namespace-strdata-unknown-endpoint/inferencerequest/7g
+localhost:9200/inference-log-seldon-unknown-namespace-strdata-unknown-endpoint/_doc/7g
 ```
 
 # Local Testing Against Seldon Executor
@@ -56,14 +56,14 @@ make run_local
 ```
 The log output from the request-logger will show the document id and index name, which is built from the seldon deployment name and namespace (if supplied).
 
-View the document at `localhost:9200/<index>/inferencerequest/<doc_id>`
+View the document at `localhost:9200/<index>/_doc/<doc_id>`
 
 Here is a truncated version of an example output for an image use-case with outlier:
 
 ```
 {
     "_index": "inference-log-inferenceservice-default-cifar10-default",
-    "_type": "inferencerequest",
+    "_type": "_doc",
     "_id": "9i",
     "_version": 3,
     "_seq_no": 2,
