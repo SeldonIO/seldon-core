@@ -44,7 +44,7 @@ else
     fi
 
     echo "starting microservice"
-    if[-n "$PERSISTENCE"]; then
+    if [ -n "$PERSISTENCE" ]; then
       exec seldon-core-microservice $MODEL_NAME --service-type $SERVICE_TYPE --persistence $PERSISTENCE
     else
       exec seldon-core-microservice $MODEL_NAME --service-type $SERVICE_TYPE
