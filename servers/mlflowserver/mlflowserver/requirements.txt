@@ -2,6 +2,3 @@ pyyaml==5.4.0
 requests<2.25.0
 mlflow<1.12.0
 pandas<1.2.0
-
-# local seldon-core inside the s2i image
-/microservice/python
