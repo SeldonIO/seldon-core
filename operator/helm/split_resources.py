@@ -65,6 +65,7 @@ HELM_ENV_SUBST = {
     "ENGINE_DEFAULT_CPU_REQUEST": "engine.resources.cpuRequest",
     "ENGINE_DEFAULT_MEMORY_LIMIT": "engine.resources.memoryLimit",
     "ENGINE_DEFAULT_MEMORY_REQUEST": "engine.resources.memoryRequest",
+    "MANAGER_LOG_LEVEL": "manager.logLevel",
 }
 HELM_VALUES_IMAGE_PULL_POLICY = "{{ .Values.image.pullPolicy }}"
 

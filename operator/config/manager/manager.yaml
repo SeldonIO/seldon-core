@@ -34,7 +34,10 @@ spec:
         - --enable-leader-election
         - --webhook-port=4443
         - --create-resources=$(MANAGER_CREATE_RESOURCES)
+        - --log-level=$(MANAGER_LOG_LEVEL)
         env:
+        - name: MANAGER_LOG_LEVEL
+          value: "INFO"
         - name: WATCH_NAMESPACE
           value: ""
         - name: RELATED_IMAGE_EXECUTOR
