@@ -36,6 +36,7 @@ spec:
         - --webhook-port={{ .Values.webhook.port }}
         - --create-resources=$(MANAGER_CREATE_RESOURCES)
         - '{{- if .Values.singleNamespace }}--namespace={{ include "seldon.namespace" . }}{{- end }}'
+        - --logLevel={{ .Values.manager.logLevel | default "INFO" }}
         command:
         - /manager
         env:

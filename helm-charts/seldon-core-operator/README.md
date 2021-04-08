@@ -83,6 +83,7 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | manager.cpuRequest | string | `"100m"` |  |
 | manager.memoryLimit | string | `"300Mi"` |  |
 | manager.memoryRequest | string | `"200Mi"` |  |
+| manager.logLevel | string | `"INFO"` |  |
 | managerCreateResources | bool | `false` |  |
 | managerUserID | int | `8888` |  |
 | namespaceOverride | string | `""` |  |
