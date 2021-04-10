@@ -19,7 +19,7 @@ COPY ./s2i/bin/ /s2i/bin
 
 # keep install of seldon-core after the COPY to force re-build of layer
 COPY _python /microservice
-RUN cd /microservice/python && make install
+RUN cd /microservice/python && pip install .
 COPY _python/python/licenses/license.txt .
 
 RUN mkdir -p /.conda && chmod a+rwx /.conda
