@@ -50,6 +50,38 @@ func TestValidProtocolTransportServerType(t *testing.T) {
 	g.Expect(err).To(BeNil())
 }
 
+func TestNoGraphType(t *testing.T) {
+	g := NewGomegaWithT(t)
+	spec := &SeldonDeploymentSpec{
+		ServerType: ServerRPC,
+		Protocol:   ProtocolTensorflow,
+		Transport:  TransportGrpc,
+		Predictors: []PredictorSpec{
+			{
+				Name: "p1",
+				ComponentSpecs: []*SeldonPodSpec{
+					{
+						Spec: v1.PodSpec{
+							Containers: []v1.Container{
+								{
+									Image: "seldonio/mock_classifier:1.0",
+									Name:  "classifier",
+								},
+							},
+						},
+					},
+				},
+				Graph: PredictiveUnit{
+					Name: "classifier",
+				},
+			},
+		},
+	}
+
+	err := spec.ValidateSeldonDeployment()
+	g.Expect(err).To(BeNil())
+}
+
 func createScheme() *runtime.Scheme {
 	scheme := runtime.NewScheme()
 	_ = clientgoscheme.AddToScheme(scheme)
