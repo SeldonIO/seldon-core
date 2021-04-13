@@ -32,7 +32,7 @@ spec:
     graph:
       children: []
       implementation: MLFLOW_SERVER
-      modelUri: gs://seldon-models/mlflow/elasticnet_wine
+      modelUri: gs://seldon-models/mlflow/elasticnet_wine_1.8.0
       name: classifier
     name: default
     replicas: 1
