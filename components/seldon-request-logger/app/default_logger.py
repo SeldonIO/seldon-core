@@ -11,6 +11,7 @@ import json
 import logging
 import sys
 import log_helper
+import log_mapping
 from collections.abc import Iterable
 import array
 
@@ -176,6 +177,7 @@ def build_request_id_batched(request_id, no_items_in_batch, item_index):
 def upsert_doc_to_elastic(
     elastic_object, message_type, upsert_body, request_id, index_name
 ):
+    log_mapping.get_log_metadata(elastic_object, message_type, upsert_body, request_id, index_name)
     upsert_doc = {
         "doc_as_upsert": True,
         "doc": upsert_body,
