@@ -705,6 +705,7 @@ func createContainerService(deploy *appsv1.Deployment,
 	seldonId string) *corev1.Service {
 	containerServiceKey := machinelearningv1.Label_seldon_app_svc
 	containerServiceValue := machinelearningv1.GetContainerServiceName(mlDep.Name, p, con)
+	pSvcName := machinelearningv1.GetPredictorKey(mlDep, &p)
 	pu := machinelearningv1.GetPredictiveUnit(&p.Graph, con.Name)
 
 	// only create services for containers defined as pus in the graph
@@ -720,9 +721,12 @@ func createContainerService(deploy *appsv1.Deployment,
 
 	svc := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        containerServiceValue,
-			Namespace:   namespace,
-			Labels:      map[string]string{containerServiceKey: containerServiceValue, machinelearningv1.Label_seldon_id: seldonId},
+			Name:      containerServiceValue,
+			Namespace: namespace,
+			Labels: map[string]string{
+				containerServiceKey:                containerServiceValue,
+				machinelearningv1.Label_seldon_id:  seldonId,
+				machinelearningv1.Label_seldon_app: pSvcName},
 			Annotations: map[string]string{},
 		},
 		Spec: corev1.ServiceSpec{
