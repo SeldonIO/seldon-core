@@ -104,9 +104,10 @@ ENV PATH /usr/local/kubebuilder/bin:$PATH
 RUN curl -L https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash -s -- --version v3.2.0
 
 # DOWNLOAD KUSTOMIZE
-RUN wget https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv3.2.3/kustomize_kustomize.v3.2.3_linux_amd64 && \
-        chmod +x kustomize_kustomize.v3.2.3_linux_amd64 && \
-        mv kustomize_kustomize.v3.2.3_linux_amd64 /usr/local/bin/kustomize
+RUN wget https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.1.2/kustomize_v4.1.2_linux_amd64.tar.gz && \
+    	tar -xzf kustomize_v4.1.2_linux_amd64.tar.gz && \
+        chmod +x kustomize && \
+        mv kustomize /usr/local/bin/kustomize
 
 # iptables fix
 RUN \

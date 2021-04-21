@@ -13,4 +13,4 @@ docker run --rm -it \
     -e MAVEN_REPOSITORY_LOCATION=${MAVEN_REPOSITORY_LOCATION} \
     -v ${HOME}/.m2/repository:${MAVEN_REPOSITORY_LOCATION} \
     -v "${STARTUP_DIR}":/work \
-    seldonio/core-builder:0.19 python release.py "$@"
+    seldonio/core-builder:0.20 python release.py "$@"
