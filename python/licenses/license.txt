@@ -2657,9 +2657,9 @@ THE SOFTWARE.
 
 
 numpy
-1.20.2
-BSD License
-Copyright (c) 2005-2021, NumPy Developers.
+1.18.5
+BSD
+Copyright (c) 2005-2019, NumPy Developers.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -5273,7 +5273,7 @@ Apache 2.0
 UNKNOWN
 
 tensorflow
-2.4.1
+2.3.2
 Apache Software License
 Copyright 2019 The TensorFlow Authors.  All rights reserved.
 
@@ -5481,7 +5481,7 @@ Copyright 2019 The TensorFlow Authors.  All rights reserved.
 
 
 tensorflow-estimator
-2.4.0
+2.3.0
 Apache Software License
 UNKNOWN
 
