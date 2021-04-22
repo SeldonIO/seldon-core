@@ -28,7 +28,7 @@ run_core_builder_in_host:
 			-v /var/run/docker.sock:/var/run/docker.sock \
 			-v $${HOME}/.m2:/root/.m2 \
 			-v $(SELDON_CORE_LOCAL_DIR):/work \
-			seldonio/core-builder:0.19 bash
+			seldonio/core-builder:0.20 bash
 
 
 run_core_builder_in_minikube:
@@ -37,7 +37,7 @@ run_core_builder_in_minikube:
 			-v /var/run/docker.sock:/var/run/docker.sock \
 			-v /home/docker/.m2:/root/.m2 \
 			-v $(SELDON_CORE_VM_DIR):/work \
-			seldonio/core-builder:0.19 bash
+			seldonio/core-builder:0.20 bash
 
 show_paths:
 	@echo "local: $(SELDON_CORE_LOCAL_DIR)"
