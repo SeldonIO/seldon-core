@@ -12,7 +12,7 @@ To use the built-in MLflow server the following pre-requisites need to be met:
 
 - Your [MLmodel artifact
   folder](https://www.mlflow.org/docs/latest/models.html) needs to be
-  accessible remotely (e.g. as `gs://seldon-models/mlflow/elasticnet_wine`).
+  accessible remotely (e.g. as `gs://seldon-models/mlflow/elasticnet_wine_1.8.0`).
 - Your model needs to be compatible with the [python_function
   flavour](https://www.mlflow.org/docs/latest/models.html#python-function-python-function).
 - Your `MLproject` environment needs to be specified using Conda.
@@ -46,7 +46,7 @@ spec:
     - graph:
         children: []
         implementation: MLFLOW_SERVER
-        modelUri: gs://seldon-models/mlflow/elasticnet_wine
+        modelUri: gs://seldon-models/mlflow/elasticnet_wine_1.8.0
         name: classifier
       name: default
       replicas: 1
@@ -67,7 +67,7 @@ spec:
     - graph:
         children: []
         implementation: MLFLOW_SERVER
-        modelUri: gs://seldon-models/mlflow/elasticnet_wine
+        modelUri: gs://seldon-models/mlflow/elasticnet_wine_1.8.0
         name: classifier
         parameters:
         - name: xtype
