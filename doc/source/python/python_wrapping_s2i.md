@@ -89,7 +89,6 @@ Define the core parameters needed by our python builder image to wrap your model
 ```bash
 MODEL_NAME=MyModel
 SERVICE_TYPE=MODEL
-PERSISTENCE=0
 ```
 
 These values can also be provided or overridden on the command line when building the image.
@@ -161,9 +160,6 @@ The service type being created. Available options are:
  * COMBINER
  * OUTLIER_DETECTOR
 
-### PERSISTENCE
-
-Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved periodically to redis and loaded from redis (if exists) or created fresh if not.
 
 ### EXTRA_INDEX_URL
 

@@ -10,7 +10,7 @@ from distutils.util import strtobool
 from functools import partial
 from typing import Callable, Dict
 
-from seldon_core import __version__, persistence
+from seldon_core import __version__
 from seldon_core import wrapper as seldon_microservice
 from seldon_core.flask_utils import ANNOTATIONS_FILE, SeldonMicroserviceException
 from seldon_core.gunicorn_utils import (
@@ -213,7 +213,14 @@ def main():
         choices=["MODEL", "ROUTER", "TRANSFORMER", "COMBINER", "OUTLIER_DETECTOR"],
         default="MODEL",
     )
-    parser.add_argument("--persistence", nargs="?", default=0, const=1, type=int)
+    parser.add_argument(
+        "--persistence",
+        nargs="?",
+        default=0,
+        const=1,
+        type=int,
+        help="deprecated argument ",
+    )
     parser.add_argument(
         "--parameters", type=str, default=os.environ.get(PARAMETERS_ENV_NAME, "[]")
     )
@@ -351,11 +358,8 @@ def main():
         user_class = getattr(interface_file, parts[1])
 
     if args.persistence:
-        logger.info("Restoring persisted component")
-        user_object = persistence.restore(user_class, parameters)
-        persistence.persist(user_object, parameters.get("push_frequency"))
-    else:
-        user_object = user_class(**parameters)
+        logger.error(f"Persistence: ignored, persistence is deprecated")
+    user_object = user_class(**parameters)
 
     http_port = args.http_port
     grpc_port = args.grpc_port

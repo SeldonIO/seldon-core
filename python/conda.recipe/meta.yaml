@@ -27,7 +27,6 @@ requirements:
     - protobuf
     - flask
     - flask-cors
-    - redis-py
     - tornado
     - requests
     - numpy

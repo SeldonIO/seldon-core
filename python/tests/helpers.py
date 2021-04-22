@@ -23,6 +23,16 @@ class MicroserviceWrapper:
 
     def _env_vars(self, envs):
         env_vars = dict(os.environ)
+        s2i_env_file = os.path.join(self.app_location, ".s2i", "environment")
+        with open(s2i_env_file) as fh:
+            for line in fh.readlines():
+                line = line.strip()
+                if line:
+                    key, value = line.split("=", 1)
+                    key, value = key.strip(), value.strip()
+                    if key and value:
+                        env_vars[key] = value
+
         env_vars.update(envs)
         env_vars.update(
             {
@@ -36,16 +46,6 @@ class MicroserviceWrapper:
             }
         )
 
-        s2i_env_file = os.path.join(self.app_location, ".s2i", "environment")
-        with open(s2i_env_file) as fh:
-            for line in fh.readlines():
-                line = line.strip()
-                if line:
-                    key, value = line.split("=", 1)
-                    key, value = key.strip(), value.strip()
-                    if key and value:
-                        env_vars[key] = value
-
         return env_vars
 
     def _get_cmd(self, tracing):
@@ -54,9 +54,9 @@ class MicroserviceWrapper:
             self.env_vars["MODEL_NAME"],
             "--service-type",
             self.env_vars["SERVICE_TYPE"],
-            "--persistence",
-            self.env_vars["PERSISTENCE"],
         )
+        if "PERSISTENCE" in self.env_vars:
+            cmd += ("--persistence", self.env_vars["PERSISTENCE"])
 
         if tracing:
             cmd += ("--tracing",)
