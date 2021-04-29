@@ -249,3 +249,12 @@ def test_load_annotations(mock_isfile):
 def test_health_status(microservice):
     response = requests.get("http://127.0.0.1:9000/health/status")
     response.raise_for_status()
+
+
+@pytest.mark.parametrize(
+    "microservice", [{"envs": {"PERSISTENCE": "1"}}], indirect=True
+)
+def test_persistence_flag_exist(microservice):
+    response = requests.get("http://127.0.0.1:9000/health/status")
+    # This just tests that persistence flag was not removed ("soft" deprecation)
+    response.raise_for_status()
