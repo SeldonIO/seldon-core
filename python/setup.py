@@ -24,7 +24,6 @@ setup(
         "Flask<2.0.0",
         "jsonschema<4.0.0",
         "Flask-cors<4.0.0",
-        "redis<4.0.0",
         "requests<3.0.0",
         "numpy<2.0.0",
         "flatbuffers<2.0.0",

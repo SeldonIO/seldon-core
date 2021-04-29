@@ -80,7 +80,7 @@ func (r *SeldonDeploymentSpec) checkPredictiveUnits(pu *PredictiveUnit, p *Predi
 			allErrs = append(allErrs, field.Invalid(fldPath, pu.Name, "Can't find container for Predictive Unit"))
 		}
 
-		if *pu.Type == UNKNOWN_TYPE && (pu.Methods == nil || len(*pu.Methods) == 0) {
+		if pu.Type != nil && *pu.Type == UNKNOWN_TYPE && (pu.Methods == nil || len(*pu.Methods) == 0) {
 			allErrs = append(allErrs, field.Invalid(fldPath, pu.Name, "Predictive Unit has no implementation methods defined. Change to a known type or add what methods it defines"))
 		}
 

@@ -10,7 +10,7 @@ jobs:
   executor-tests:
 
     runs-on: ubuntu-18.04
-    container: seldonio/core-builder:0.19
+    container: seldonio/core-builder:0.20
 
     steps:
     - uses: actions/checkout@v2
