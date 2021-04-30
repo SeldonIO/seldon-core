@@ -85,13 +85,13 @@ def get_index_mapping(index_name, upsert_body):
         return index_mapping
     else:
         print("Retrieved metadata for index", index_name)
-        if "request" in metadata:
-            req_mapping = get_field_mapping(metadata["request"])
+        if "requests" in metadata:
+            req_mapping = get_field_mapping(metadata["requests"])
             if req_mapping != None:
                 index_mapping["properties"]["request"]["properties"]["elements"] = req_mapping
 
-        if "response" in metadata:
-            resp_mapping = get_field_mapping(metadata["response"])
+        if "responses" in metadata:
+            resp_mapping = get_field_mapping(metadata["responses"])
             if resp_mapping != None:
                 index_mapping["properties"]["response"]["properties"]["elements"] = resp_mapping
 
@@ -100,27 +100,40 @@ def get_index_mapping(index_name, upsert_body):
 
 def get_field_mapping(metadata):
     props = {}
-    if not metadata or not ("schema" in metadata):
+    if not metadata:
         return None
     else:
-        for elm in metadata["schema"]:
-            props[elm["name"]] = {
-                "type": get_data_type(elm)
-            }
-        return None if not props else {"properties": props}
+        for elm in metadata:
+            props = update_props_element(props, elm)
+    return None if not props else {"properties": props}
 
 
 def fetch_metadata(namespace, serving_engine, inferenceservice_name):
-    # Fetch metadata for a specific case
-    print(namespace, serving_engine, inferenceservice_name)
     if namespace == "seldon" and serving_engine == "seldon" and inferenceservice_name == "income-classifier":
         return example_metadata.metadata
     else:
         return None
 
 
-def get_data_type(elm):
-    if elm["qdtype"] == "real":
-        return elm["dtype"] if elm["dtype"] != None else "float"
+def update_props_element(props, elm):
+    if not elm["type"]:
+        props[elm["name"]] = {
+            "type": "float" # Use data_type
+        }
+        return props
+
     else:
-        return "keyword"
+        if elm["type"] == "CATEGORICAL":
+            props[elm["name"]] = {
+                "type": "keyword"
+            }
+            return props 
+        # else if elm["type"] == "PROBA":
+        #     props[elm["name"]] = get_field_mapping(elm["schema"])
+        #     return props
+        else:
+            # if elm["type"] == "REAL":
+            props[elm["name"]] = {
+                "type": "float"
+            }
+            return props
