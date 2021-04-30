@@ -37,6 +37,7 @@ Python Language Wrapper Examples
    TFserving MNIST <tfserving_mnist>
    Statsmodels Holt-Winter's time-series model <statsmodels>
    Runtime Metrics & Tags <runtime_metrics_tags>
+   Triton GPT2 Example <triton_gpt2_example>
 
 Specialised Framework Examples
 ------------------------------
