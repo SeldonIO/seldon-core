@@ -236,6 +236,11 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		if err != nil {
 			return err
 		}
+
+		// Overwrite main Seldon App label onto SVC
+		pSvcName := machinelearningv1.GetPredictorKey(mlDep, p)
+		eSvc.Labels[machinelearningv1.Label_seldon_app] = pSvcName
+
 		eSvc = addLabelsToService(eSvc, nil, p)
 		c.services = append(c.services, eSvc)
 		c.serviceDetails[eSvcName] = &machinelearningv1.ServiceStatus{
