@@ -1,21 +1,22 @@
-from seldon_core.proto import prediction_pb2
-from seldon_core.proto import prediction_pb2_grpc
-from seldon_core.utils import (
-    array_to_grpc_datadef,
-    seldon_message_to_json,
-    json_to_feedback,
-    json_to_seldon_message,
-    feedback_to_json,
-    seldon_messages_to_json,
-)
-import numpy as np
-import grpc
-import requests
-from typing import Tuple, Dict, Union, List, Optional, Iterable
+import http.client as http_client
 import json
 import logging
-import http.client as http_client
+from typing import Dict, Iterable, List, Optional, Tuple, Union
+
+import grpc
+import numpy as np
+import requests
 from google.protobuf import any_pb2, json_format
+
+from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
+from seldon_core.utils import (
+    array_to_grpc_datadef,
+    feedback_to_json,
+    json_to_feedback,
+    json_to_seldon_message,
+    seldon_message_to_json,
+    seldon_messages_to_json,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -166,6 +167,7 @@ class SeldonClient:
         call_credentials: SeldonCallCredentials = None,
         debug: bool = False,
         client_return_type: str = "dict",
+        ssl: bool = None
     ):
         """
 
@@ -281,6 +283,8 @@ class SeldonClient:
         http_path: str = None,
         meta: Dict = None,
         client_return_type: str = None,
+        raw_data: Dict = None,
+        ssl: bool = None,
     ) -> SeldonClientPrediction:
         """
 
@@ -326,6 +330,8 @@ class SeldonClient:
            Custom meta map
         client_return_type
             the return type of all functions can be either dict or proto
+        raw_data
+            Raw payload, a dictionary representing the json request or the raw grpc proto
 
         Returns
         -------
@@ -352,6 +358,8 @@ class SeldonClient:
             http_path=http_path,
             meta=meta,
             client_return_type=client_return_type,
+            raw_data=raw_data,
+            ssl=ssl,
         )
         self._validate_args(**k)
         if k["gateway"] == "ambassador" or k["gateway"] == "istio":
@@ -389,6 +397,7 @@ class SeldonClient:
         gateway_prefix: str = None,
         client_return_type: str = None,
         raw_request: dict = None,
+        ssl: bool = None,
     ) -> SeldonClientFeedback:
         """
 
@@ -442,6 +451,7 @@ class SeldonClient:
             gateway_prefix=gateway_prefix,
             client_return_type=client_return_type,
             raw_request=raw_request,
+            ssl=ssl,
         )
         self._validate_args(**k)
         if k["gateway"] == "ambassador" or k["gateway"] == "istio":
@@ -504,6 +514,7 @@ class SeldonClient:
         http_path: str = None,
         client_return_type: str = None,
         predictor: str = None,
+        ssl: bool = None,
     ) -> Dict:
         """
 
@@ -570,6 +581,7 @@ class SeldonClient:
             http_path=http_path,
             client_return_type=client_return_type,
             predictor=predictor,
+            ssl=ssl,
         )
         self._validate_args(**k)
         if k["gateway"] == "ambassador" or k["gateway"] == "istio":
@@ -1195,6 +1207,7 @@ def rest_predict_seldon(
     json_data: Union[str, List, Dict] = None,
     names: Iterable[str] = None,
     client_return_type: str = "proto",
+    raw_data: Dict = None,
     **kwargs,
 ) -> SeldonClientPrediction:
     """
@@ -1220,6 +1233,8 @@ def rest_predict_seldon(
        column names
     client_return_type
         the return type of all functions can be either dict or proto
+    raw_data
+        Raw payload (dictionary) given by the user
     kwargs
 
     Returns
@@ -1227,18 +1242,22 @@ def rest_predict_seldon(
        Seldon Client Prediction
 
     """
-    if bin_data is not None:
-        request = prediction_pb2.SeldonMessage(binData=bin_data)
-    elif str_data is not None:
-        request = prediction_pb2.SeldonMessage(strData=str_data)
-    elif json_data is not None:
-        request = json_to_seldon_message({"jsonData": json_data})
+    if raw_data:
+        request = json_to_seldon_message(raw_data)
+        payload = raw_data
     else:
-        if data is None:
-            data = np.random.rand(*shape)
-        datadef = array_to_grpc_datadef(payload_type, data, names=names)
-        request = prediction_pb2.SeldonMessage(data=datadef)
-    payload = seldon_message_to_json(request)
+        if bin_data is not None:
+            request = prediction_pb2.SeldonMessage(binData=bin_data)
+        elif str_data is not None:
+            request = prediction_pb2.SeldonMessage(strData=str_data)
+        elif json_data is not None:
+            request = json_to_seldon_message({"jsonData": json_data})
+        else:
+            if data is None:
+                data = np.random.rand(*shape)
+            datadef = array_to_grpc_datadef(payload_type, data, names=names)
+            request = prediction_pb2.SeldonMessage(data=datadef)
+        payload = seldon_message_to_json(request)
 
     response_raw = requests.post(
         "http://" + gateway_endpoint + "/api/v0.1/predictions",
@@ -1282,6 +1301,7 @@ def grpc_predict_seldon(
     grpc_max_receive_message_length: int = 4 * 1024 * 1024,
     names: Iterable[str] = None,
     client_return_type: str = "proto",
+    raw_data: Dict = None,
     **kwargs,
 ) -> SeldonClientPrediction:
     """
@@ -1313,6 +1333,8 @@ def grpc_predict_seldon(
        Column names
     client_return_type
         the return type of all functions can be either dict or proto
+    raw_data
+        Raw payload (dictionary or proto) given by the user
     kwargs
 
     Returns
@@ -1320,19 +1342,24 @@ def grpc_predict_seldon(
        A SeldonMessage proto
 
     """
-    if bin_data is not None:
-        request = prediction_pb2.SeldonMessage(binData=bin_data)
-    elif str_data is not None:
-        request = prediction_pb2.SeldonMessage(strData=str_data)
-    elif json_data is not None:
-        request = json_to_seldon_message({"jsonData": json_data})
-    elif custom_data is not None:
-        request = prediction_pb2.SeldonMessage(customData=custom_data)
+    if isinstance(raw_data, prediction_pb2.SeldonMessage):
+        request = raw_data
+    elif raw_data:
+        request = json_to_seldon_message(raw_data)
     else:
-        if data is None:
-            data = np.random.rand(*shape)
-        datadef = array_to_grpc_datadef(payload_type, data, names=names)
-        request = prediction_pb2.SeldonMessage(data=datadef)
+        if bin_data is not None:
+            request = prediction_pb2.SeldonMessage(binData=bin_data)
+        elif str_data is not None:
+            request = prediction_pb2.SeldonMessage(strData=str_data)
+        elif json_data is not None:
+            request = json_to_seldon_message({"jsonData": json_data})
+        elif custom_data is not None:
+            request = prediction_pb2.SeldonMessage(customData=custom_data)
+        else:
+            if data is None:
+                data = np.random.rand(*shape)
+            datadef = array_to_grpc_datadef(payload_type, data, names=names)
+            request = prediction_pb2.SeldonMessage(data=datadef)
 
     channel = grpc.insecure_channel(
         gateway_endpoint,
@@ -1374,6 +1401,8 @@ def rest_predict_gateway(
     http_path: str = None,
     meta: Dict = {},
     client_return_type: str = "proto",
+    raw_data: Dict = None,
+    ssl: bool = None,
     **kwargs,
 ) -> SeldonClientPrediction:
     """
@@ -1415,6 +1444,8 @@ def rest_predict_gateway(
        Custom meta map
     client_return_type
         the return type of all functions can be either dict or proto
+    raw_data
+        Raw payload (dictionary) given by the user
 
     Returns
     -------
@@ -1425,31 +1456,34 @@ def rest_predict_gateway(
     metaKV = prediction_pb2.Meta()
     metaJson = {"tags": meta}
     json_format.ParseDict(metaJson, metaKV)
-
-    if bin_data is not None:
-        request = prediction_pb2.SeldonMessage(binData=bin_data, meta=metaKV)
-    elif str_data is not None:
-        request = prediction_pb2.SeldonMessage(strData=str_data, meta=metaKV)
-    elif json_data is not None:
-        request = json_to_seldon_message({"jsonData": json_data})
+    if raw_data is not None:
+        request = json_to_seldon_message(raw_data)
+        payload = raw_data
     else:
-        if data is None:
-            data = np.random.rand(*shape)
-        datadef = array_to_grpc_datadef(payload_type, data, names=names)
-        request = prediction_pb2.SeldonMessage(data=datadef, meta=metaKV)
-    payload = seldon_message_to_json(request)
+        if bin_data is not None:
+            request = prediction_pb2.SeldonMessage(binData=bin_data, meta=metaKV)
+        elif str_data is not None:
+            request = prediction_pb2.SeldonMessage(strData=str_data, meta=metaKV)
+        elif json_data is not None:
+            request = json_to_seldon_message({"jsonData": json_data})
+        else:
+            if data is None:
+                data = np.random.rand(*shape)
+            datadef = array_to_grpc_datadef(payload_type, data, names=names)
+            request = prediction_pb2.SeldonMessage(data=datadef, meta=metaKV)
+        payload = seldon_message_to_json(request)
 
     if not headers is None:
         req_headers = headers.copy()
     else:
         req_headers = {}
-    if call_credentials is None:
+    if call_credentials is None or ssl is False:
         scheme = "http"
     else:
-        scheme = "http"
-        if not call_credentials is None:
-            if not call_credentials.token is None:
-                req_headers["X-Auth-Token"] = call_credentials.token
+        scheme = "https"
+    if not call_credentials is None:
+        if not call_credentials.token is None:
+            req_headers["X-Auth-Token"] = call_credentials.token
     if http_path is not None:
         url = url = (
             scheme
@@ -1552,6 +1586,7 @@ def explain_predict_gateway(
     http_path: str = None,
     client_return_type: str = "dict",
     predictor: str = None,
+    ssl: bool = None,
     **kwargs,
 ) -> SeldonClientPrediction:
     """
@@ -1621,13 +1656,13 @@ def explain_predict_gateway(
         req_headers = headers.copy()
     else:
         req_headers = {}
-    if channel_credentials is None:
+    if channel_credentials is None or ssl is False:
         scheme = "http"
     else:
         scheme = "https"
-        if not call_credentials is None:
-            if not call_credentials.token is None:
-                req_headers["X-Auth-Token"] = call_credentials.token
+    if not call_credentials is None:
+        if not call_credentials.token is None:
+            req_headers["X-Auth-Token"] = call_credentials.token
     if http_path is not None:
         url = (
             scheme
@@ -1732,6 +1767,8 @@ def grpc_predict_gateway(
     channel_credentials: SeldonChannelCredentials = None,
     meta: Dict = {},
     client_return_type: str = "proto",
+    raw_data: Dict = None,
+    ssl: bool = None,
     **kwargs,
 ) -> SeldonClientPrediction:
     """
@@ -1775,7 +1812,8 @@ def grpc_predict_gateway(
        Custom meta data map
     client_return_type
         the return type of all functions can be either dict or proto
-
+    raw_data
+        Raw payload (dictionary or proto) given by the user
 
     Returns
     -------
@@ -1788,19 +1826,24 @@ def grpc_predict_gateway(
     metaJson = {"tags": meta}
     json_format.ParseDict(metaJson, metaKV)
 
-    if bin_data is not None:
-        request = prediction_pb2.SeldonMessage(binData=bin_data, meta=metaKV)
-    elif str_data is not None:
-        request = prediction_pb2.SeldonMessage(strData=str_data, meta=metaKV)
-    elif json_data is not None:
-        request = json_to_seldon_message({"jsonData": json_data})
-    elif custom_data is not None:
-        request = prediction_pb2.SeldonMessage(customData=custom_data, meta=metaKV)
+    if isinstance(raw_data, prediction_pb2.SeldonMessage):
+        request = raw_data
+    elif raw_data is not None:
+        request = json_to_seldon_message(raw_data)
     else:
-        if data is None:
-            data = np.random.rand(*shape)
-        datadef = array_to_grpc_datadef(payload_type, data, names=names)
-        request = prediction_pb2.SeldonMessage(data=datadef, meta=metaKV)
+        if bin_data is not None:
+            request = prediction_pb2.SeldonMessage(binData=bin_data, meta=metaKV)
+        elif str_data is not None:
+            request = prediction_pb2.SeldonMessage(strData=str_data, meta=metaKV)
+        elif json_data is not None:
+            request = json_to_seldon_message({"jsonData": json_data})
+        elif custom_data is not None:
+            request = prediction_pb2.SeldonMessage(customData=custom_data, meta=metaKV)
+        else:
+            if data is None:
+                data = np.random.rand(*shape)
+            datadef = array_to_grpc_datadef(payload_type, data, names=names)
+            request = prediction_pb2.SeldonMessage(data=datadef, meta=metaKV)
     options = [
         ("grpc.max_send_message_length", grpc_max_send_message_length),
         ("grpc.max_receive_message_length", grpc_max_receive_message_length),
@@ -1833,8 +1876,10 @@ def grpc_predict_gateway(
             )
         # This piece also allows for blank SSL Channel credentials in case this is required
         else:
-            grpc_channel_credentials = grpc.local_channel_credentials()
-            #grpc_channel_credentials = grpc.ssl_channel_credentials()
+            if ssl is False:
+                grpc_channel_credentials = grpc.local_channel_credentials()
+            else:
+                grpc_channel_credentials = grpc.ssl_channel_credentials()
         if channel_credentials.verify == False:
             # If Verify is set to false then we add the SSL Target Name Override option
             options += [
