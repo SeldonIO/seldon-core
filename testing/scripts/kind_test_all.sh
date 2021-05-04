@@ -153,6 +153,20 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
             echo "SKIPPING ALIBI DETECT IMAGE BUILD..."
         fi
 
+        echo "Files changed in rclone storage initializer folder:"
+        git --no-pager diff --exit-code --name-only origin/master ../../components/rclone-storage-initializer/
+        RCLONE_STRORAGE_INITIALIZER_MODIFIED=$?
+        if [[ $RCLONE_STRORAGE_INITIALIZER_MODIFIED -gt 0 ]]; then
+            make kind_build_rclone_storage_initializer
+            RCLONE_STRORAGE_INITIALIZER_EXIT_VALUE=$?
+            if [[ $RCLONE_STRORAGE_INITIALIZER_EXIT_VALUE -gt 0 ]]; then
+                echo "rclone storage initializer build returned errors"
+                return 1
+            fi
+        else
+            echo "SKIPPING RCLONE STORAGE INITIALIZER IMAGE BUILD..."
+        fi
+
         echo "Files changed in misc folders:"
         git --no-pager diff --exit-code --name-only origin/master ../../components/seldon-request-logger ../../components/storage-initializer ../../components/routers/epsilon-greedy
         MISC_MODIFIED=$?
