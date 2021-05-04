@@ -5,7 +5,7 @@ import logging
 import kfserving
 import numpy as np
 from .numpy_encoder import NumpyEncoder
-from adserver.base import CEModel
+from adserver.base import CEModel, ModelResponse
 from alibi_detect.utils.saving import load_detector, Data
 from seldon_core.user_model import SeldonResponse
 from adserver.constants import (
@@ -66,7 +66,7 @@ class AlibiDetectOutlierModel(CEModel):  # pylint:disable=c-extension-no-member
         self.model: Data = load_detector(model_folder)
         self.ready = True
 
-    def process_event(self, inputs: Union[List, Dict], headers: Dict) -> Dict:
+    def process_event(self, inputs: Union[List, Dict], headers: Dict) -> Optional[ModelResponse]:
         """
         Process the event and return Alibi Detect score
 
@@ -133,7 +133,7 @@ class AlibiDetectOutlierModel(CEModel):  # pylint:disable=c-extension-no-member
             )
 
         # Register metrics
-        metrics = []
+        metrics: List[Dict] = []
         _append_outlier_metrcs(metrics, od_preds, "is_outlier")
         _append_outlier_metrcs(metrics, od_preds, "instance_score", is_count=False)
 
@@ -153,4 +153,4 @@ class AlibiDetectOutlierModel(CEModel):  # pylint:disable=c-extension-no-member
 
         resp_data = json.loads(json.dumps(od_preds, cls=NumpyEncoder))
 
-        return SeldonResponse(resp_data, None, metrics)
+        return ModelResponse(data=resp_data, metrics=metrics)

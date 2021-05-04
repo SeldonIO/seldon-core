@@ -1,6 +1,6 @@
 seldon-core
 kfserving==0.3.0.1
-alibi-detect==0.4.4
+alibi-detect==0.6.1
 pystan==2.19.1.1
 fbprophet==0.6
 holidays==0.9.11
