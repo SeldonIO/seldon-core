@@ -112,9 +112,9 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
         fi
 
         echo "Files changed in prepackaged, python, or wrapper folder:"
-        git --no-pager diff --exit-code --name-only origin/master ../../servers ../../integrations ../../python ../../wrappers/s2i/python
+        git --no-pager diff --exit-code --name-only origin/master ../../servers ../../integrations
         PREPACKAGED_MODIFIED=$?
-        if [[ $PREPACKAGED_MODIFIED -gt 0 ]]; then
+        if [[ $PREPACKAGED_MODIFIED -gt 0 ]] && [[ $PYTHON_MODIFIED -gt 0 ]]; then
             make kind_build_prepackaged
             PREPACKAGED_EXIT_VALUE=$?
             if [[ $PREPACKAGED_EXIT_VALUE -gt 0 ]]; then
