@@ -6,4 +6,8 @@ LABEL name="Storage Initializer (rclone based)" \
       summary="Storage Initializer for Seldon Core" \
       description="Allows Seldon Core to download artifacts from cloud and local storage to a local volume"
 
+
+ENV RCLONE_CONFIG_GS_TYPE google cloud storage
+ENV RCLONE_CONFIG_GS_ANONYMOUS true
+
 ENTRYPOINT ["rclone", "copy"]
