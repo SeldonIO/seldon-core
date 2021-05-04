@@ -1,14 +1,26 @@
 # Ingress with Ambassador
-
 Seldon Core works well with [Ambassador](https://www.getambassador.io/), allowing a single ingress to be used to expose ambassador and [running machine learning deployments can then be dynamically exposed](https://kubernetes.io/blog/2018/06/07/dynamic-ingress-in-kubernetes/) through seldon-created ambassador configurations. In this doc we will discuss how your Seldon Deployments are exposed via Ambassador and how you can use both to do various production rollout strategies.
 
 ## Installing Ambassador
-
 You have two options when installing Ambassador:
 
-### Option 1: Ambassador API Gateway
+### Option 1: Ambassador Edge Stack
+The [Ambassador Edge Stack](https://www.getambassador.io/products/edge-stack/) is the easiest way to get started with Ambassador and to fully leverage the functionality of an API gateway, including features like Authentication and Rate Limiting.
+Follow the [AES installation instructions](https://www.getambassador.io/docs/edge-stack/latest/tutorials/getting-started/) to install it on your Kubernetes cluster.
 
-The [Ambassador API Gateway](https://www.getambassador.io/products/api-gateway/) is open source and provides all the functionality of a traditional ingress controller.
+Using `helm` the steps can be summarised as
+```bash
+kubectl create namespace ambassador || echo "namespace ambassador exists"
+
+helm repo add datawire https://www.getambassador.io
+helm install ambassador datawire/ambassador \
+  --set image.repository=docker.io/datawire/ambassador \
+  --set crds.keep=false \
+  --namespace ambassador
+```
+
+### Option 2: Ambassador API Gateway
+The [Ambassador API Gateway](https://www.getambassador.io/products/api-gateway/) (now Emissary Ingress) is the fully open source version of Ambassador Edge Stack and provides all the functionality of a traditional ingress controller.
 Follow the [Ambassador OSS instructions](https://www.getambassador.io/docs/latest/topics/install/install-ambassador-oss/) to install it on your kubernetes cluster.
 
 Using `helm` the steps can be summarised as
@@ -17,24 +29,16 @@ kubectl create namespace ambassador || echo "namespace ambassador exists"
 
 helm repo add datawire https://www.getambassador.io
 helm install ambassador datawire/ambassador \
-  --set image.repository=quay.io/datawire/ambassador \
+  --set image.repository=docker.io/datawire/ambassador \
   --set enableAES=false \
   --set crds.keep=false \
   --namespace ambassador
 ```
 
-### Option 2: Ambassador Edge Stack
-
-The [Ambassador Edge Stack](https://www.getambassador.io/products/edge-stack/) is the easiest way to get started with ambassador.
-The `edgectl install` command will provision a load balancer, configure TLS, and provide you with an edgestack.me subdomain.
-The edgestack.me subdomain allows the Ambassador Edge Stack to automatically provision TLS and HTTPS for a domain name.
-To install AES using `edgectl` follow the [AES installation instructions](https://www.getambassador.io/docs/latest/topics/install/).
-
-Once the installation has finished, you can run `edgectl login --namespace=ambassador <ambassadorEndpoint>` to access the Ambassador Edge Policy Console where you can manage your deployment.
-The 'Hosts' tab will provide information about the domain that Ambassador set up during the installation process.
+### TLS
+It is highly recommended to utilize TLS to encrypt traffic that is coming into Ambassador.  The default Ambassador Edge Stack installation comes with a self-signed certificate that will be used absent any other TLS configuration.  Follow the [instructions](https://www.getambassador.io/docs/edge-stack/latest/howtos/tls-termination/) for setting up TLS on your cluster.
 
 ## Ambassador REST
-
 Assuming Ambassador is exposed at `<ambassadorEndpoint>` and with a Seldon deployment name `<deploymentName>` running in a namespace `namespace`:
 
 For Seldon Core restricted to a namespace, `singleNamespace=true`, the endpoints exposed are:
@@ -46,13 +50,11 @@ For Seldon Core running cluster wide, `singleNamespace=false`, the endpoints exp
 
  * `http(s)://<ambassadorEndpoint>/seldon/<namespace>/<deploymentName>/api/v1.0/predictions`
 
- Note here that if you chose to install the Ambassador Edge Stack then you will need to use https and the `<AmbassadorEndpoint>` referenced above will be the domain name that Ambassador created for you (e.g. `random-name-1234.edgestack.me`)
-
+ Note here that if you chose to install the Ambassador Edge Stack then you will need to use https.  You can either [set up TLS](https://www.getambassador.io/docs/edge-stack/latest/howtos/tls-termination/) or pass the `-k` flag in `curl` to allow the self-signed certificate.
 
 ## Example Curl
 
 ### Ambassador REST
-
 If you installed the OSS Ambassador API Gateway, and assuming a Seldon Deployment `mymodel` with Ambassador exposed on `0.0.0.0:8003` you can send a curl request as follows:
 
 ```bash
@@ -66,7 +68,6 @@ curl -v https://random-hostname-1234.edgestack.me/seldon/mymodel/api/v1.0/predic
 ```
 
 ## Ambassador Configuration Annotations Reference
-
 | Annotation | Description |
 |------------|-------------|
 |`seldon.io/ambassador-config:<configuration>`| Custom Ambassador Configuration |
@@ -86,9 +87,7 @@ All annotations should be placed in `spec.annotations`.
 
 See below for details.
 
-
 ### Canary Deployments
-
 Canary rollouts are available where you wish to push a certain percentage of traffic to a new model to test whether it works ok in production. To add a canary to your SeldonDeployment simply add a new predictor section and set the traffic levels for the main and canary to desired levels. For example:
 
 ```YAML
@@ -135,7 +134,6 @@ The above example has a "main" predictor with 75% of traffic and a "canary" with
 A worked example for [canary deployments](../examples/ambassador_canary.html) is provided.
 
 ### Shadow Deployments
-
 Shadow deployments allow you to send duplicate requests to a parallel deployment but throw away the response. This allows you to test machine learning models under load and compare the results to the live deployment.
 
 Simply set the `shadow` boolean in your shadow predictor.
@@ -145,7 +143,6 @@ A worked example for [shadow deployments](../examples/ambassador_shadow.html) is
 To understand more about the Ambassador configuration for this see [their docs on shadow deployments](https://www.getambassador.io/reference/shadowing/).
 
 ### Header based Routing
-
 Header based routing allows you to route requests to particular Seldon Deployments based on headers in the incoming requests.
 
 You simply need to add some annotations to your Seldon Deployment resource.
@@ -180,7 +177,6 @@ A worked example for [circuit breakers](../examples/ambassador_circuit_breakers.
 To understand more about the Ambassador configuration for this see [their docs on circuit breakers](https://www.getambassador.io/docs/latest/topics/using/circuit-breakers/).
 
 ## Multiple Ambassadors in the same cluster
-
 To avoid conflicts in a cluster with multiple ambassadors running, you can add the following annotation to your Seldon Deployment resource.
 
   * `seldon.io/ambassador-id:<instance id>`: The instance id to be added to Ambassador `ambassador_id` configuration
@@ -203,10 +199,24 @@ Note that your Ambassador instance must be configured with matching `ambassador_
 See [AMBASSADOR_ID](https://www.getambassador.io/docs/latest/topics/running/running/#ambassador_id) for details
 
 ### Custom Amabassador configuration
+The above discussed configurations should cover most cases but there maybe a case where you want to have a very particular Ambassador configuration under your control.  There are two options for doing so, based on how you want to manage the configuration, Custom Resource Definitions (CRD's) and Annotations.
 
-The above discussed configurations should cover most cases but there maybe a case where you want to have a very particular Ambassador configuration under your control. You can acheieve this by adding your confguration as an annotation to your Seldon Deployment resource.
+Ambassador primarily utilizes [Custom Resource Definitions](https://www.getambassador.io/docs/edge-stack/latest/topics/concepts/gitops-continuous-delivery/#policies-declarative-configuration-and-custom-resource-definitions) for managing configuration.  These are custom `kind` resources that the Kubernetes API can read, and are used to update Ambassador's config in a way that is observable to the cluster as a whole (e.g. you can `kubectl get` these resources).  These CRD's can be managed independent of the Seldon Deploy itself.
+
+Ambassador also supports annotation based configuration, which can be applied to a Seldon Deployment using the `seldon.io/ambassador-config` annotation key.  The overall formatting of the annotation-based config is the same as the CRD based config, except without the `metadata` and `spec` fields.  The following snippets demonstrate the difference between CRD and Annotation based configurations, and are functionally identical.
+
+```yaml
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: seldon_example_rest_mapping
+spec:
+  prefix: /mycompany/ml/
+  service: production-model-example.seldon:8000
+  timeout_ms: 3000
+```
 
  * `seldon.io/ambassador-config:<configuration>` : The custom ambassador configuration
-    * Example: `"seldon.io/ambassador-config":"apiVersion: ambassador/v1\nkind: Mapping\nname: seldon_example_rest_mapping\nprefix: /mycompany/ml/\nservice: production-model-example.seldon:8000\ntimeout_ms: 3000"`
+    * Example: `"seldon.io/ambassador-config":"apiVersion: ambassador/v2\nkind: Mapping\nname: seldon_example_rest_mapping\nprefix: /mycompany/ml/\nservice: production-model-example.seldon:8000\ntimeout_ms: 3000"`
 
 A worked example for [custom Ambassador config](../examples/ambassador_custom.html) is provided.
