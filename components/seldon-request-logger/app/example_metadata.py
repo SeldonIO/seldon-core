@@ -8,7 +8,7 @@ metadata = {
         {
             "name": "Workclass",
             "type": "CATEGORICAL",
-            "data_type": "INT32",
+            "data_type": "INT",
             "n_categories": 9,
             "category_map": {
                     "0": "?",
@@ -25,7 +25,7 @@ metadata = {
         {
             "name": "Education",
             "type": "CATEGORICAL",
-            "data_type": "INT32",
+            "data_type": "INT",
             "n_categories": 7,
             "category_map": {
                     "0": "Associates",
@@ -40,7 +40,7 @@ metadata = {
         {
             "name": "Marital Status",
             "type": "CATEGORICAL",
-            "data_type": "INT32",
+            "data_type": "INT",
             "n_categories": 4,
             "category_map": {
                     "0": "Married",
@@ -52,7 +52,7 @@ metadata = {
         {
             "name": "Occupation",
             "type": "CATEGORICAL",
-            "data_type": "INT32",
+            "data_type": "INT",
             "n_categories": 9,
             "category_map": {
                     "0": "?",
@@ -69,7 +69,7 @@ metadata = {
         {
             "name": "Relationship",
             "type": "CATEGORICAL",
-            "data_type": "INT32",
+            "data_type": "INT",
             "n_categories": 6,
             "category_map": {
                     "0": "Husband",
@@ -83,7 +83,7 @@ metadata = {
         {
             "name": "Race",
             "type": "CATEGORICAL",
-            "data_type": "INT32",
+            "data_type": "INT",
             "n_categories": 5,
             "category_map": {
                     "0": "Amer-Indian-Eskimo",
@@ -96,7 +96,7 @@ metadata = {
         {
             "name": "Sex",
             "type": "CATEGORICAL",
-            "data_type": "INT32",
+            "data_type": "INT",
             "n_categories": 2,
             "category_map": {
                     "0": "Female",
@@ -121,7 +121,7 @@ metadata = {
         {
             "name": "Country",
             "type": "CATEGORICAL",
-            "data_type": "INT32",
+            "data_type": "INT",
             "n_categories": 11,
             "category_map": {
                     "0": "?",

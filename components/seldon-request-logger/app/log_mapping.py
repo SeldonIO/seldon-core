@@ -1,5 +1,4 @@
 import log_helper
-import example_metadata
 
 default_mapping = {
     "properties": {
@@ -94,7 +93,6 @@ def get_index_mapping(index_name, upsert_body):
             resp_mapping = get_field_mapping(metadata["responses"])
             if resp_mapping != None:
                 index_mapping["properties"]["response"]["properties"]["elements"] = resp_mapping
-
         return index_mapping
 
 
@@ -109,16 +107,16 @@ def get_field_mapping(metadata):
 
 
 def fetch_metadata(namespace, serving_engine, inferenceservice_name):
-    if namespace == "seldon" and serving_engine == "seldon" and inferenceservice_name == "income-classifier":
-        return example_metadata.metadata
-    else:
-        return None
+    # Fetch real metadata
+    print("Fetching predictions schema for", namespace+"/" +
+          serving_engine+"/"+inferenceservice_name)
+    return None
 
 
 def update_props_element(props, elm):
-    if not elm["type"]:
+    if not ("type" in elm):
         props[elm["name"]] = {
-            "type": "float" # Use data_type
+            "type": "float"  # Use data type if available
         }
         return props
 
@@ -127,13 +125,17 @@ def update_props_element(props, elm):
             props[elm["name"]] = {
                 "type": "keyword"
             }
-            return props 
-        # else if elm["type"] == "PROBA":
-        #     props[elm["name"]] = get_field_mapping(elm["schema"])
-        #     return props
-        else:
-            # if elm["type"] == "REAL":
+            return props
+        if elm["type"] == "TEXT":
             props[elm["name"]] = {
-                "type": "float"
+                "type": "text"
+            }
+            return props
+        if elm["type"] == "PROBA" or elm["type"] == "ONE_HOT":
+            props[elm["name"]] = get_field_mapping(elm["schema"])
+            return props
+        else:  # For REAL,TENSOR
+            props[elm["name"]] = {
+                "type": "float"  # Use data type if available
             }
             return props
