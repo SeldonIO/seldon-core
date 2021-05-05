@@ -167,7 +167,7 @@ class SeldonClient:
         call_credentials: SeldonCallCredentials = None,
         debug: bool = False,
         client_return_type: str = "dict",
-        ssl: bool = None
+        ssl: bool = None,
     ):
         """
 
