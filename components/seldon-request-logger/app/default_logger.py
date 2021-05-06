@@ -429,6 +429,7 @@ def extractRow(
 
 
 def createElelmentsArray(X: np.ndarray, names: list):
+    # TODO: Fetch deployment metadata and create nested elements array for PROBA and ONE_HOT types
     results = None
     if isinstance(X, np.ndarray):
         if len(X.shape) == 1:

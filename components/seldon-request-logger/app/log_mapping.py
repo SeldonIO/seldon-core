@@ -107,16 +107,14 @@ def get_field_mapping(metadata):
 
 
 def fetch_metadata(namespace, serving_engine, inferenceservice_name):
-    # Fetch real metadata
-    print("Fetching predictions schema for", namespace+"/" +
-          serving_engine+"/"+inferenceservice_name)
+    # TODO: Fetch real metadata
     return None
 
 
 def update_props_element(props, elm):
     if not ("type" in elm):
         props[elm["name"]] = {
-            "type": "float"  # Use data type if available
+            "type": "float"  # TODO: Use data type if available
         }
         return props
 
@@ -136,6 +134,6 @@ def update_props_element(props, elm):
             return props
         else:  # For REAL,TENSOR
             props[elm["name"]] = {
-                "type": "float"  # Use data type if available
+                "type": "float"  # TODO: Use data type if available
             }
             return props
