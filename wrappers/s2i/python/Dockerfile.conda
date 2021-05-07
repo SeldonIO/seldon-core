@@ -9,7 +9,7 @@ ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 ENV PATH /opt/conda/bin:$PATH
 
 RUN dnf update -y && \
-    dnf install -y wget bzip2 ca-certificates curl git
+    dnf install -y wget bzip2 ca-certificates curl git unzip
 
 ARG CONDA_VERSION
 RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-$CONDA_VERSION-Linux-x86_64.sh -O ~/miniconda.sh && \
@@ -20,6 +20,11 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-$CONDA_VERSION-L
     echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
     echo "conda activate base" >> ~/.bashrc && \
     chgrp -R root /opt/conda && chmod -R g+rw /opt/conda
+
+RUN wget https://downloads.rclone.org/v1.55.1/rclone-v1.55.1-linux-amd64.zip && \
+    unzip rclone-v1.55.1-linux-amd64.zip && \
+    mv rclone-v1.55.1-linux-amd64/rclone /usr/bin/rclone && \
+    rm -rf rclone-v1.55.1-linux-amd64.zip rclone-v1.55.1-linux-amd64
 
 ENV TINI_VERSION v0.16.1
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /usr/bin/tini

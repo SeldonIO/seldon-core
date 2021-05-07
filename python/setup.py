@@ -29,6 +29,7 @@ setup(
         "flatbuffers<2.0.0",
         "protobuf<4.0.0",
         "grpcio<2.0.0",
+        "sh<2.0.0",
         "Flask-OpenTracing >= 1.1.0, < 1.2.0",
         "opentracing >= 2.2.0, < 2.5.0",
         "jaeger-client >= 4.1.0, < 4.5.0",
