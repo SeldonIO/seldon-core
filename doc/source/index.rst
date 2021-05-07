@@ -90,6 +90,7 @@ Documentation Index
    :maxdepth: 1
    :caption: Pre-Packaged Inference Servers
 
+   Configuration <servers/index>
    MLflow Server <servers/mlflow.md>
    SKLearn Server <servers/sklearn.md>
    Triton Inference Server <servers/triton.md>
