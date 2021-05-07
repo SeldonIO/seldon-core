@@ -145,6 +145,33 @@ def update_operator_values_yaml_file_core_images(
         print(err)
 
 
+def update_operator_values_yaml_file_storage_initializer(
+    fpath, seldon_core_version, debug=False
+):
+    fpath = os.path.realpath(fpath)
+    if debug:
+        print("processing [{}]".format(fpath))
+    args = [
+        "sed",
+        "-i",
+        "s|seldonio/rclone-storage-initializer:\(.*\)|seldonio/rclone-storage-initializer:{seldon_core_version}|".format(
+            **locals()
+        ),
+        fpath,
+    ]
+    err, out = run_command(args, debug)
+
+    if err == None:
+        print("updated operator values yaml for storage initializer".format(**locals()))
+    else:
+        print(
+            "error updating operator values yaml for storage initializer".format(
+                **locals()
+            )
+        )
+        print(err)
+
+
 def update_operator_values_yaml_file_prepackaged_images(
     current_seldon_core_version, fpath, seldon_core_version, debug=False
 ):
@@ -468,6 +495,9 @@ def set_version(
             debug,
         )
         update_operator_values_yaml_file_explainer_image(
+            operator_values_yaml_file_realpath, seldon_core_version, debug
+        )
+        update_operator_values_yaml_file_storage_initializer(
             operator_values_yaml_file_realpath, seldon_core_version, debug
         )
 
