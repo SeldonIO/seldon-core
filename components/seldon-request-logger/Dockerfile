@@ -23,8 +23,14 @@ RUN yum remove -y nodejs httpd
 
 USER default
 
-COPY app app
+ENV APP_ENV=production \
+  PATH="/home/appuser/.local/bin:${PATH}" \
+  PORT=8080
 
-EXPOSE 8080
-ENTRYPOINT ["python"]
-CMD ["app/default_logger.py"]
+COPY app app
+WORKDIR app
+
+EXPOSE $PORT
+
+CMD gunicorn --bind 0.0.0.0:$PORT --workers 3 --threads 8 default_logger:app
+
