@@ -53,11 +53,15 @@ message Metric {
      COUNTER = 0;
      GAUGE = 1;
      TIMER = 2;
+     HISTOGRAM = 3;
  }
  string key = 1;
  MetricType type = 2;
  float value = 3;
  map<string,string> tags = 4;
+
+ // only used when type is TIMER or HISTOGRAM
+ repeated float bins = 5;
 }
 
 message SeldonMessageList {

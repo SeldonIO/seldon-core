@@ -253,9 +253,11 @@ class Metric(google___protobuf___message___Message):
         COUNTER = typing___cast(Metric.MetricTypeValue, 0)
         GAUGE = typing___cast(Metric.MetricTypeValue, 1)
         TIMER = typing___cast(Metric.MetricTypeValue, 2)
+        HISTOGRAM = typing___cast(Metric.MetricTypeValue, 3)
     COUNTER = typing___cast(Metric.MetricTypeValue, 0)
     GAUGE = typing___cast(Metric.MetricTypeValue, 1)
     TIMER = typing___cast(Metric.MetricTypeValue, 2)
+    HISTOGRAM = typing___cast(Metric.MetricTypeValue, 3)
     type___MetricType = MetricType
 
     class TagsEntry(google___protobuf___message___Message):
@@ -280,6 +282,7 @@ class Metric(google___protobuf___message___Message):
     key: typing___Text = ...
     type: type___Metric.MetricTypeValue = ...
     value: builtin___float = ...
+    bins: google___protobuf___internal___containers___RepeatedScalarFieldContainer[builtin___float] = ...
 
     @property
     def tags(self) -> typing___MutableMapping[typing___Text, typing___Text]: ...
@@ -290,6 +293,7 @@ class Metric(google___protobuf___message___Message):
         type : typing___Optional[type___Metric.MetricTypeValue] = None,
         value : typing___Optional[builtin___float] = None,
         tags : typing___Optional[typing___Mapping[typing___Text, typing___Text]] = None,
+        bins : typing___Optional[typing___Iterable[builtin___float]] = None,
         ) -> None: ...
     if sys.version_info >= (3,):
         @classmethod
@@ -297,7 +301,7 @@ class Metric(google___protobuf___message___Message):
     else:
         @classmethod
         def FromString(cls, s: typing___Union[builtin___bytes, builtin___buffer, builtin___unicode]) -> Metric: ...
-    def ClearField(self, field_name: typing_extensions___Literal[u"key",b"key",u"tags",b"tags",u"type",b"type",u"value",b"value"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions___Literal[u"bins",b"bins",u"key",b"key",u"tags",b"tags",u"type",b"type",u"value",b"value"]) -> None: ...
 type___Metric = Metric
 
 class SeldonMessageList(google___protobuf___message___Message):

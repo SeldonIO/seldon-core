@@ -16,6 +16,7 @@ from prometheus_client.utils import floatToGoString
 
 logger = logging.getLogger(__name__)
 
+
 NONIMPLEMENTED_MSG = "NOT_IMPLEMENTED"
 
 ENV_SELDON_DEPLOYMENT_NAME = "SELDON_DEPLOYMENT_ID"
@@ -30,6 +31,8 @@ FEEDBACK_REWARD_KEY = "seldon_api_model_feedback_reward"
 COUNTER = "COUNTER"
 GAUGE = "GAUGE"
 TIMER = "TIMER"
+HISTOGRAM = "HISTOGRAM"
+_ALLOWED_METRIC_TYPES = {COUNTER, GAUGE, TIMER, HISTOGRAM}
 
 # This sets the bins spread logarithmically between 0.001 and 30
 BINS = [0] + list(np.logspace(-3, np.log10(30), 50)) + [np.inf]
@@ -122,28 +125,51 @@ class SeldonMetrics:
             worker_data = self.data.get(self.worker_id_func(), {})
         logger.debug("Read current metrics data from shared memory")
 
-        for metrics in custom_metrics:
-            metrics_type = metrics.get("type", "COUNTER")
-            tags = metrics.get("tags", {})
+        for metric in custom_metrics:
+            metric_type = metric.get("type", "COUNTER")
+
+            tags = metric.get("tags", {})
+
             tags["method"] = method
-            key = (metrics_type, metrics["key"], SeldonMetrics._generate_tags_key(tags))
-            # Add tag that specifies which method added the metrics
-            if metrics_type == "COUNTER":
-                value = worker_data.get(key, {}).get("value", 0)
-                worker_data[key] = {"value": value + metrics["value"], "tags": tags}
-            elif metrics_type == "TIMER":
-                vals, sumv = worker_data.get(key, {}).get(
-                    "value", (list(np.zeros(len(BINS) - 1)), 0)
-                )
-                # Dividing by 1000 because unit is milliseconds
-                worker_data[key] = {
-                    "value": self._update_hist(metrics["value"] / 1000, vals, sumv),
+
+            worker_data_key = (
+                metric_type,
+                metric["key"],
+                SeldonMetrics._generate_tags_key(tags),
+            )
+
+            if metric_type == "COUNTER":
+                value = worker_data.get(worker_data_key, {}).get("value", 0)
+                worker_data[worker_data_key] = {
+                    "value": value + metric["value"],
                     "tags": tags,
                 }
-            elif metrics_type == "GAUGE":
-                worker_data[key] = {"value": metrics["value"], "tags": tags}
+            elif metric_type in ["HISTOGRAM", "TIMER"]:
+                bins = metric.get("bins", BINS)
+
+                current_values, current_sum = worker_data.get(worker_data_key, {}).get(
+                    "value",
+                    (np.zeros(len(bins) - 1).tolist(), 0),
+                )
+
+                if metric_type == "TIMER":
+                    new_value = metric["value"] / 1000
+                else:
+                    new_value = metric["value"]
+
+                worker_data[worker_data_key] = {
+                    "value": self._update_hist(
+                        new_value, current_values, current_sum, bins
+                    ),
+                    "tags": tags,
+                }
+            elif metric_type == "GAUGE":
+                worker_data[worker_data_key] = {
+                    "value": metric["value"],
+                    "tags": tags,
+                }
             else:
-                logger.error(f"Unkown metrics type: {metrics_type}")
+                logger.error(f"Unkown metrics type: {metric_type}")
 
         # Write worker's data with lock (again - Proxy objects are not thread-safe)
         with self._lock:
@@ -171,7 +197,7 @@ class SeldonMetrics:
                     yield self._expose_counter(
                         item_name, item["value"], labels_keys, labels_values
                     )
-                elif item_type == "TIMER":
+                elif item_type in ["HISTOGRAM", "TIMER"]:
                     yield self._expose_histogram(
                         item_name, item["value"], labels_keys, labels_values
                     )
@@ -208,8 +234,22 @@ class SeldonMetrics:
         return "_".join(["-".join(i) for i in tags.items()])
 
     @staticmethod
-    def _update_hist(x, vals, sumv):
-        hist = np.histogram([x], BINS)[0]
+    def _update_hist(
+        x: float, vals: List[float], sumv: float, bins: List[float]
+    ) -> Tuple[List[float], float]:
+        """Updated vals with x according to which bin it belongs, and add x to
+        sumv.
+
+        Args:
+            x: the new value to be added to the historgram
+            vals: current values of each bin in the histogram
+            sumv: the sum of all x vals in history
+            bins: bins for the histogram.
+
+        Returns:
+            the tuple of updated (vals, sumv)
+        """
+        hist = np.histogram([x], bins)[0]
         vals = list(np.array(vals) + hist)
         return vals, sumv + x
 
@@ -306,13 +346,9 @@ def validate_metrics(metrics: List[Dict]) -> bool:
     """
     if isinstance(metrics, (list,)):
         for metric in metrics:
-            if not ("key" in metric and "value" in metric and "type" in metric):
+            if not all(i in metric for i in ["key", "value", "type"]):
                 return False
-            if not (
-                metric["type"] == COUNTER
-                or metric["type"] == GAUGE
-                or metric["type"] == TIMER
-            ):
+            if not metric["type"] in _ALLOWED_METRIC_TYPES:
                 return False
             try:
                 metric["value"] + 1

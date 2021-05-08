@@ -84,6 +84,12 @@ For this purpose you can supply extra fields in the returned meta data of the re
 				"value": 22.0
 			},
 			{
+				"type": "HISTOGRAM",
+				"key": "myhistogram",
+				"value": 0.5,
+				"bins": [0.0, 1.0, 2.0]
+			},
+			{
 				"type": "TIMER",
 				"key": "mytimer",
 				"value": 1.0
@@ -105,7 +111,11 @@ We provide three types of metric that can be returned in the meta.metrics list:
 
  * COUNTER : a monotonically increasing value. It will be added to any existing value from the metric key.
  * GAUGE : an absolute value showing a level, it will overwrite any existing value.
- * TIMER : a time value (in msecs), it will be aggregated into Prometheus' HISTOGRAM.
+ * HISTOGRAM : a numerical value, it will be aggregated into Prometheus' HISTOGRAM.
+ * TIMER : Similar to HISTOGRAM, it will be aggregated into Prometheus'
+   HISTOGRAM. But TIMER considered the value to be in milliseconds, and it will
+   will be divided by 1000 (msecs => secs) when aggregated into Prometheus'
+   HISTOGRAM.
 
 Each metric, apart from the type, takes a key and a value. The proto buffer definition is shown below:
 
