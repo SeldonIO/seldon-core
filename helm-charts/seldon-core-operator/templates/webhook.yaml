@@ -17,7 +17,10 @@ metadata:
     app.kubernetes.io/version: '{{ .Chart.Version }}'
   name: seldon-validating-webhook-configuration-{{ include "seldon.namespace" . }}
 webhooks:
-- clientConfig:
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
     caBundle: '{{ $ca.Cert | b64enc }}'
     service:
       name: seldon-webhook-service
