@@ -309,7 +309,8 @@ func (p *PredictorProcess) feedbackChildren(node *v1.PredictiveUnit, msg payload
 				return cmsgs[0], err
 			}
 		}
-		return p.aggregate(node, cmsgs)
+		// Arbitrary return of first feedback
+		return cmsgs[0], nil
 	} else {
 		return msg, nil
 	}
