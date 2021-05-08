@@ -194,17 +194,6 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 			arg := "--" + k + "=" + v
 			explainerContainer.Args = append(explainerContainer.Args, arg)
 		}
-		// see https://github.com/cliveseldon/kfserving/tree/explainer_update_jul/docs/samples/explanation/income for more
-
-		// Add Environment Variables - TODO: are these needed
-		if !utils.HasEnvVar(explainerContainer.Env, machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT) {
-			explainerContainer.Env = append(explainerContainer.Env, []corev1.EnvVar{
-				corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT, Value: strconv.Itoa(int(portNum))},
-				corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_ID, Value: explainerContainer.Name},
-				corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTOR_ID, Value: p.Name},
-				corev1.EnvVar{Name: machinelearningv1.ENV_SELDON_DEPLOYMENT_ID, Value: mlDep.ObjectMeta.Name},
-			}...)
-		}
 
 		seldonPodSpec := machinelearningv1.SeldonPodSpec{Spec: corev1.PodSpec{
 			Containers: []corev1.Container{explainerContainer},
