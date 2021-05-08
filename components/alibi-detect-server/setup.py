@@ -11,7 +11,7 @@ setup(
     python_requires=">3.4",
     packages=find_packages(),
     install_requires=[
-        "alibi-detect==0.4.4",
+        "alibi-detect==0.6.1",
         "kfserving>=0.2.0",
         "argparse >= 1.4.0",
         "numpy >= 1.8.2",

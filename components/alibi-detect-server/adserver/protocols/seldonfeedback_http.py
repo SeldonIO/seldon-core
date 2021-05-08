@@ -16,7 +16,7 @@ class SeldonPayload(Enum):
     TFTENSOR = 3
 
 
-def _extract_feedback_request(body: Dict) -> List:
+def _extract_feedback_request(body: Dict) -> Union[List, Dict]:
     res = {}
 
     if "truth" in body:

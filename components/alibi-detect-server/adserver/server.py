@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-import uuid
 from http import HTTPStatus
 from typing import Dict, Optional
 
@@ -9,7 +8,7 @@ import requests
 import tornado.httpserver
 import tornado.ioloop
 import tornado.web
-from adserver.base import CEModel
+from adserver.base import CEModel, ModelResponse
 from adserver.protocols.request_handler import RequestHandler
 from adserver.protocols.seldon_http import SeldonRequestHandler
 from adserver.protocols.seldonfeedback_http import SeldonFeedbackRequestHandler
@@ -19,8 +18,6 @@ from cloudevents.sdk import converters
 from cloudevents.sdk import marshaller
 from cloudevents.sdk.event import v1
 from adserver.protocols import Protocol
-from seldon_core.flask_utils import SeldonMicroserviceException
-from seldon_core.user_model import SeldonResponse
 from seldon_core.metrics import SeldonMetrics, validate_metrics
 import uuid
 
@@ -146,6 +143,8 @@ def get_request_handler(protocol, request: Dict) -> RequestHandler:
         return SeldonFeedbackRequestHandler(request)
     elif protocol == Protocol.kfserving_http:
         return KFservingV2RequestHandler(request)
+    else:
+        raise Exception(f"Unknown protocol {protocol}")
 
 
 def sendCloudEvent(event: v1.Event, url: str):
@@ -242,18 +241,20 @@ class EventHandler(tornado.web.RequestHandler):
         for (key, val) in self.request.headers.get_all():
             headers[key] = val
 
-        response = self.model.process_event(request, headers)
-        seldon_response = SeldonResponse.create(response)
+        response: Optional[ModelResponse] = self.model.process_event(request, headers)
 
-        runtime_metrics = seldon_response.metrics
+        if response is None:
+            return
+
+        runtime_metrics = response.metrics
         if runtime_metrics is not None:
             if validate_metrics(runtime_metrics):
                 self.seldon_metrics.update(runtime_metrics, self.event_type)
             else:
                 logging.error("Metrics returned are invalid: " + str(runtime_metrics))
 
-        if seldon_response.data is not None:
-            responseStr = json.dumps(seldon_response.data)
+        if response.data is not None:
+            responseStr = json.dumps(response.data)
 
             # Create event from response if reply_url is active
             if not self.reply_url == "":
@@ -272,7 +273,7 @@ class EventHandler(tornado.web.RequestHandler):
                 )
                 logging.debug(json.dumps(revent.Properties()))
                 sendCloudEvent(revent, self.reply_url)
-            self.write(json.dumps(seldon_response.data))
+            self.write(json.dumps(response.data))
 
 
 class LivenessHandler(tornado.web.RequestHandler):

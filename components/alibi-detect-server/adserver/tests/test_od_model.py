@@ -4,6 +4,7 @@ from unittest import TestCase
 from adserver.od_model import AlibiDetectOutlierModel
 from adserver.constants import HEADER_RETURN_INSTANCE_SCORE
 from typing import Dict
+from adserver.base import ModelResponse
 
 
 class DummyODModel(BaseDetector):
@@ -37,14 +38,15 @@ class DummyODModel(BaseDetector):
         return od
 
 
-class TestAEModel(TestCase):
+class TestODModel(TestCase):
     def test_basic(self):
         model = DummyODModel()
-        ad_model = AlibiDetectOutlierModel("name", "s3://model", model=model)
+        od_model = AlibiDetectOutlierModel("name", "s3://model", model=model)
         req = [1, 2]
         headers = {}
-        res = ad_model.process_event(req, headers)
-        self.assertEqual(res["data"]["is_outlier"], 0)
+        res: ModelResponse = od_model.process_event(req, headers)
+        self.assert_(res is not None)
+        self.assertEqual(res.data["data"]["is_outlier"], 0)
 
     def test_no_return_instance_score(self):
         expect_return_is_outlier = 1
@@ -55,5 +57,6 @@ class TestAEModel(TestCase):
         ad_model = AlibiDetectOutlierModel("name", "s3://model", model=model)
         req = [1, 2]
         headers = {HEADER_RETURN_INSTANCE_SCORE: "false"}
-        res = ad_model.process_event(req, headers)
-        self.assertEqual(res["data"]["is_outlier"], expect_return_is_outlier)
+        res: ModelResponse = ad_model.process_event(req, headers)
+        self.assert_(res is not None)
+        self.assertEqual(res.data["data"]["is_outlier"], expect_return_is_outlier)
