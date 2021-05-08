@@ -37,5 +37,6 @@ COPY --from=builder /workspace/hasicorp-hcl.tar.gz licenses/mpl_source/hasicorp-
 COPY generated/admissionregistration.k8s.io_v1beta1_validatingwebhookconfiguration_seldon-validating-webhook-configuration.yaml /tmp/operator-resources/validate.yaml
 COPY generated/v1_service_seldon-webhook-service.yaml /tmp/operator-resources/service.yaml
 COPY generated/v1_configmap_seldon-config.yaml /tmp/operator-resources/configmap.yaml
-COPY generated/apiextensions.k8s.io_v1beta1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml /tmp/operator-resources/crd.yaml
+COPY generated/apiextensions.k8s.io_v1beta1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml /tmp/operator-resources/crd-v1beta1.yaml
+COPY generated/apiextensions.k8s.io_v1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml /tmp/operator-resources/crd-v1.yaml
 ENTRYPOINT ["/manager"]

@@ -36,6 +36,7 @@ import (
 	istio "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	crdv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -67,6 +68,7 @@ func init() {
 	_ = machinelearningv1alpha2.AddToScheme(scheme)
 	_ = machinelearningv1alpha3.AddToScheme(scheme)
 	_ = v1beta1.AddToScheme(scheme)
+	_ = crdv1.AddToScheme(scheme)
 	if utils.GetEnv(controllers.ENV_KEDA_ENABLED, "false") == "true" {
 		_ = kedav1alpha1.AddToScheme(scheme)
 	}

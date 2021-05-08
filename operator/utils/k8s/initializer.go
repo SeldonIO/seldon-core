@@ -9,6 +9,7 @@ import (
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"os"
@@ -22,7 +23,8 @@ const (
 	CertsTLSCa  = "ca.crt"
 
 	ResourceFolder            = "/tmp/operator-resources"
-	CRDFilename               = "crd.yaml"
+	CRDFilenameV1Beta1        = "crd-v1beta1.yaml"
+	CRDFilenameV1             = "crd-v1.yaml"
 	MutatingWebhookFilename   = "mutate.yaml"
 	ValidatingWebhookFilename = "validate.yaml"
 	ConfigMapFilename         = "configmap.yaml"
@@ -49,12 +51,21 @@ func InitializeOperator(ctx context.Context, config *rest.Config, namespace stri
 		return err
 	}
 
-	crdCreator := NewCrdCreator(ctx, apiExtensionClient, logger)
-	bytes, err := LoadBytesFromFile(ResourceFolder, CRDFilename)
+	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
 	if err != nil {
 		return err
 	}
-	crd, err := crdCreator.findOrCreateCRD(bytes)
+
+	crdCreator := NewCrdCreator(ctx, apiExtensionClient, discoveryClient, logger)
+	bytesV1Beta1, err := LoadBytesFromFile(ResourceFolder, CRDFilenameV1Beta1)
+	if err != nil {
+		return err
+	}
+	bytesV1, err := LoadBytesFromFile(ResourceFolder, CRDFilenameV1)
+	if err != nil {
+		return err
+	}
+	crd, err := crdCreator.findOrCreateCRD(bytesV1, bytesV1Beta1)
 	if err != nil {
 		return err
 	}
@@ -90,7 +101,7 @@ func InitializeOperator(ctx context.Context, config *rest.Config, namespace stri
 	}
 
 	//Create/Update Validating Webhook
-	bytes, err = LoadBytesFromFile(ResourceFolder, ValidatingWebhookFilename)
+	bytes, err := LoadBytesFromFile(ResourceFolder, ValidatingWebhookFilename)
 	if err != nil {
 		return err
 	}

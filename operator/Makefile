@@ -230,6 +230,7 @@ generate-resources:
 	rm -rf generated
 	mkdir generated
 	kustomize build config/default/ -o generated
+	kustomize build config/crd_v1 -o generated
 	cp generated/apiextensions.k8s.io_v1beta1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml testing/machinelearning.seldon.io_seldondeployments.yaml
 
 config/crd_v1/patches/graph_children.yaml:
