@@ -5,7 +5,7 @@ go 1.14
 require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v0.1.0
-	github.com/gogo/protobuf v1.3.1
+	github.com/gogo/protobuf v1.3.2
 	github.com/google/go-cmp v0.5.4
 	github.com/kedacore/keda v0.0.0-20200911122749-717aab81817f
 	github.com/onsi/ginkgo v1.15.0
