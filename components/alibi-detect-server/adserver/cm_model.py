@@ -3,7 +3,6 @@ from typing import List, Dict, Optional, Union
 import logging
 import numpy as np
 from enum import Enum
-import kfserving
 import importlib
 import pickle
 import os
@@ -14,6 +13,7 @@ from adserver.constants import (
 )
 from .numpy_encoder import NumpyEncoder
 from adserver.base import CEModel
+from adserver.base.storage import download_model
 from seldon_core.user_model import SeldonResponse
 from seldon_core.flask_utils import SeldonMicroserviceException
 from seldon_core.metrics import DEFAULT_LABELS, NONIMPLEMENTED_MSG
@@ -73,7 +73,7 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
 
         """
         if "/" in self.storage_uri:
-            model_folder = kfserving.Storage.download(self.storage_uri)
+            model_folder = download_model(self.storage_uri)
             self.model = pickle.load(
                 open(os.path.join(model_folder, "meta.pickle"), "rb")
             )
