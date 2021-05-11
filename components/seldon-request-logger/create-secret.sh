@@ -1,10 +1,10 @@
 #TODO: want to this in deploy scripts rather than here
 CLIENT_ID=sd-api
 OIDC_USERNAME=admin@seldon.io
-OIDC_PASSWORD=12341234
+OIDC_PASSWORD=xxxxxx
 OIDC_SCOPES='openid profile email groups'
-DEPLOY_API_HOST=http://35.241.224.199/seldon-deploy/api/v1alpha1
-OIDC_PROVIDER=http://35.241.224.199/auth/realms/deploy-realm
+DEPLOY_API_HOST=http://xx.xx.xx.xx/seldon-deploy/api/v1alpha1
+OIDC_PROVIDER=http://xx.xx.xx.xx/auth/realms/deploy-realm
 
 #TODO: something like make run_local but for just the user env get
 
