@@ -14,8 +14,8 @@ def _rclone_enabled():
     for key in os.environ.keys():
         if "RCLONE_CONFIG" in key:
             return True
-        else:
-            return False
+    else:
+        return False
 
 
 RCLONE_ENABLED = _rclone_enabled()
