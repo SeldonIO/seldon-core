@@ -17,6 +17,7 @@ setup(
         "numpy >= 1.8.2",
         "cloudevents == 1.2.0",
         "elasticsearch==7.9.1",
+        "sh<2.0.0",
         # Fixes #2533
         "google-cloud-core==1.4.1",
         "google-cloud-storage==1.31.2",
