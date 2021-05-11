@@ -24,6 +24,7 @@ log = logging.getLogger("werkzeug")
 log.setLevel(logging.ERROR)
 
 es = log_helper.connect_elasticsearch()
+log_mapping.init_api()
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -77,6 +78,28 @@ def index():
     sys.stdout.flush()
     return Response("problem logging request", 500)
 
+
+#below basically proxies to metadata service in deploy for diagnostic purposes
+@app.route("/metadata", methods=["GET", "POST"])
+def metadata():
+    try:
+        serving_engine = request.args['serving_engine']
+        if serving_engine is None or not serving_engine:
+            serving_engine = 'SeldonDeployment'
+
+        namespace = request.args['namespace']
+        name = request.args['name']
+        predictor = request.args['predictor']
+        if predictor is None or not predictor:
+            predictor = 'default'
+
+        metadata = log_mapping.fetch_metadata(namespace=namespace,serving_engine=serving_engine,
+                                              inferenceservice_name=name,predictor_name=predictor)
+        return str(metadata)
+    except Exception as ex:
+        print(ex)
+    sys.stdout.flush()
+    return Response("problem looking up metadata", 500)
 
 def process_and_update_elastic_doc(
     elastic_object, message_type, message_body, request_id, headers, index_name

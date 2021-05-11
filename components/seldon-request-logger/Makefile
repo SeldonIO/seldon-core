@@ -2,13 +2,40 @@ SHELL := /bin/bash
 VERSION := $(shell cat ../../version.txt)
 REPO := seldonio
 
+.EXPORT_ALL_VARIABLES:
+CLIENT_ID=sd-api
+OIDC_USERNAME=admin@seldon.io
+OIDC_PASSWORD=xxxxxxx
+OIDC_SCOPES=openid profile email groups
+DEPLOY_API_HOST=http://xx.xx.xx.xx/seldon-deploy/api/v1alpha1
+OIDC_PROVIDER=http://xx.xx.xx.xx/auth/realms/deploy-realm
+ELASTICSEARCH_HOST=localhost
+ELASTICSEARCH_PORT=9200
+
+#to test metadata, set xxs above then run deploy_test_model and create_dummy_metadata
+#then run_elastic in another window
+#then run_local
+#then curl_metadata
+
+deploy_test_model:
+	./testing/deploy_model.sh
+
+create_dummy_metadata:
+	python testing/create_dummy_metadata.py
+
 run_container:
 	docker run -p 2222:8080 seldonio/seldon-request-logger:latest
+
+run_elastic:
+	docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch-oss:7.6.0
 
 run_local: export FLASK_RUN_PORT = 2222
 run_local: export FLASK_APP = default_logger.py
 run_local:
 	cd app && flask run
+
+curl_metadata:
+	curl -X GET -k -v http://localhost:2222/metadata?namespace=seldon&name=iris&serving_engine=SeldonDeployment&predictor=default -H "Content-Type: application/json"
 
 #see test.sh for more test data
 test:
