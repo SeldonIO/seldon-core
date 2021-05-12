@@ -14,9 +14,9 @@ from seldon_e2e_utils import (
     rest_request,
     rest_request_ambassador,
     retry_run,
+    wait_for_deployment,
     wait_for_rollout,
     wait_for_status,
-    wait_for_deployment,
 )
 
 
