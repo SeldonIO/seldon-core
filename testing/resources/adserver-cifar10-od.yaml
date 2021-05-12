@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cifar10-od-server
+spec:
+  selector:
+    matchLabels:
+      app: cifar10-od-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cifar10-od-server
+    spec:
+      containers:
+      - name: server
+        image: seldonio/alibi-detect-server:1.8.0-dev
+        imagePullPolicy: IfNotPresent
+        args:
+        - --model_name
+        - cifar10od
+        - --http_port
+        - '8080'
+        - --protocol
+        - kfserving.http
+        - --event_type
+        - org.kubeflow.serving.inference.outlier
+        - --storage_uri
+        - gs://seldon-models/alibi-detect/od/OutlierVAE/cifar10
+        - --event_source
+        - http://localhost:8080
+        - OutlierDetector
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cifar10-od-server
+  labels:
+    app: cifar10-od-server
+spec:
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 8000
+    targetPort: 8080
+  selector:
+    app: cifar10-od-server
