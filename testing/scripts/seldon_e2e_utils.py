@@ -130,9 +130,7 @@ def wait_for_deployment(deployment_name, namespace, attempts=50, sleep=5):
         if ret.returncode == 0:
             logging.info(f"Successfully waited for deployment {deployment_name}")
             break
-        logging.warning(
-            f"Unsuccessful wait command but retrying for {deployment_name}"
-        )
+        logging.warning(f"Unsuccessful wait command but retrying for {deployment_name}")
         time.sleep(sleep)
     assert (
         ret.returncode == 0

@@ -46,7 +46,9 @@ class TestADServer:
         with open(self.truck_json) as f:
             data = json.load(f)
 
-        r = requests.post(f"http://localhost:8004/{vs_prefix}/", json=data, headers=self.HEADERS)
+        r = requests.post(
+            f"http://localhost:8004/{vs_prefix}/", json=data, headers=self.HEADERS
+        )
         j = r.json()
 
         assert j["data"]["is_outlier"][0] == 0
@@ -57,7 +59,9 @@ class TestADServer:
         with open(self.truck_json_outlier) as f:
             data = json.load(f)
 
-        r = requests.post(f"http://localhost:8004/{vs_prefix}/", json=data, headers=self.HEADERS)
+        r = requests.post(
+            f"http://localhost:8004/{vs_prefix}/", json=data, headers=self.HEADERS
+        )
         j = r.json()
 
         assert j["data"]["is_outlier"][0] == 1
@@ -81,7 +85,9 @@ class TestADServer:
         with open(self.truck_json) as f:
             data = json.load(f)
 
-        r = requests.post(f"http://localhost:8004/{vs_prefix}/", json=data, headers=self.HEADERS)
+        r = requests.post(
+            f"http://localhost:8004/{vs_prefix}/", json=data, headers=self.HEADERS
+        )
         j = r.json()
 
         assert j["data"]["is_outlier"][0] == 0
@@ -92,7 +98,9 @@ class TestADServer:
         with open(self.truck_json_outlier) as f:
             data = json.load(f)
 
-        r = requests.post(f"http://localhost:8004/{vs_prefix}/", json=data, headers=self.HEADERS)
+        r = requests.post(
+            f"http://localhost:8004/{vs_prefix}/", json=data, headers=self.HEADERS
+        )
         j = r.json()
 
         assert j["data"]["is_outlier"][0] == 1
