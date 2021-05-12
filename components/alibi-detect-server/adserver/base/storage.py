@@ -1,4 +1,5 @@
 import os
+import sys
 import kfserving
 import logging
 import tempfile
@@ -46,11 +47,12 @@ class Rclone:
         if dest is None:
             dest = tempfile.mkdtemp()
 
+        args = ["-v"]
         kwargs = {}
         if self.cfg_file is not None:
             kwargs["config"] = os.path.abspath(os.path.expanduser(self.cfg_file))
 
-        rclone.copy(src, dest, **kwargs)
+        rclone.copy(src, dest, *args, **kwargs, _out=sys.stdout, _err_to_out=True)
         return dest
 
 
