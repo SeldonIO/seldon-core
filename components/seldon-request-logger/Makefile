@@ -5,10 +5,10 @@ REPO := seldonio
 .EXPORT_ALL_VARIABLES:
 CLIENT_ID=sd-api
 OIDC_USERNAME=admin@seldon.io
-OIDC_PASSWORD=12341234
+OIDC_PASSWORD=xxxxxx
 OIDC_SCOPES=openid profile email groups
-DEPLOY_API_HOST=http://35.205.95.189/seldon-deploy/api/v1alpha1
-OIDC_PROVIDER=http://35.205.95.189/auth/realms/deploy-realm
+DEPLOY_API_HOST=http://xx.xx.xx.xx/seldon-deploy/api/v1alpha1
+OIDC_PROVIDER=http://xx.xx.xx.xx/auth/realms/deploy-realm
 ELASTICSEARCH_HOST=localhost
 ELASTICSEARCH_PORT=9200
 
