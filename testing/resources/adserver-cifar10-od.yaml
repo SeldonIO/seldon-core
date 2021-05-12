@@ -43,7 +43,30 @@ spec:
   type: ClusterIP
   ports:
   - protocol: TCP
-    port: 8000
+    port: 8080
     targetPort: 8080
   selector:
     app: cifar10-od-server
+
+---
+
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: cifar10-od-server
+spec:
+  gateways:
+  - seldon-gateway.istio-system.svc.cluster.local
+  hosts:
+  - '*'
+  http:
+  - match:
+    - uri:
+        prefix: /cifar10-od-server/
+    rewrite:
+      uri: /
+    route:
+    - destination:
+        host: cifar10-od-server
+        port:
+          number: 8080

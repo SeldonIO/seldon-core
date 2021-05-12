@@ -120,6 +120,25 @@ def get_deployment_names(sdep_name, namespace, attempts=20, sleep=5):
     return deployment_names
 
 
+def wait_for_deployment(deployment_name, namespace, attempts=50, sleep=5):
+    logging.info(f"Waiting for deployment {deployment_name}")
+    for _ in range(attempts):
+        ret = run(
+            f"kubectl rollout status -n {namespace} deploy/{deployment_name}",
+            shell=True,
+        )
+        if ret.returncode == 0:
+            logging.info(f"Successfully waited for deployment {deployment_name}")
+            break
+        logging.warning(
+            f"Unsuccessful wait command but retrying for {deployment_name}"
+        )
+        time.sleep(sleep)
+    assert (
+        ret.returncode == 0
+    ), f"Wait for rollout of {deployment_name} failed: non-zero return code"
+
+
 def wait_for_rollout(
     sdep_name, namespace, attempts=50, sleep=5, expected_deployments=1
 ):
@@ -138,22 +157,7 @@ def wait_for_rollout(
     assert len(deployment_names) == expected_deployments, error_msg
 
     for deployment_name in deployment_names:
-        logging.info(f"Waiting for deployment {deployment_name}")
-        for _ in range(attempts):
-            ret = run(
-                f"kubectl rollout status -n {namespace} deploy/{deployment_name}",
-                shell=True,
-            )
-            if ret.returncode == 0:
-                logging.info(f"Successfully waited for deployment {deployment_name}")
-                break
-            logging.warning(
-                f"Unsuccessful wait command but retrying for {deployment_name}"
-            )
-            time.sleep(sleep)
-        assert (
-            ret.returncode == 0
-        ), f"Wait for rollout of {deployment_name} failed: non-zero return code"
+        wait_for_deployment(deployment_name, namespace, attempts, sleep)
 
 
 def retry_run(cmd, attempts=10, sleep=5):
