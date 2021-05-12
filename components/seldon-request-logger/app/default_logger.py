@@ -83,15 +83,17 @@ def index():
 @app.route("/metadata", methods=["GET", "POST"])
 def metadata():
     try:
-        serving_engine = request.args['serving_engine']
+        print('in metadata endpoint - this is for debugging')
+        print(request.args)
+        serving_engine = request.args.get('serving_engine','SeldonDeployment')
         if serving_engine is None or not serving_engine:
             serving_engine = 'SeldonDeployment'
 
-        namespace = request.args['namespace']
-        name = request.args['name']
-        predictor = request.args['predictor']
-        if predictor is None or not predictor:
-            predictor = 'default'
+        namespace = request.args.get('namespace','seldon')
+        name = request.args.get('name','iris')
+        predictor = request.args.get('predictor','default')
+
+        print(namespace+'/'+name+'/'+predictor)
 
         metadata = log_mapping.fetch_metadata(namespace=namespace,serving_engine=serving_engine,
                                               inferenceservice_name=name,predictor_name=predictor)

@@ -52,8 +52,6 @@ for model in models:
         env_api = EnvironmentApi(api_client)
         print(env_api.read_user())
 
-        #TODO: below isn't working, even though above is (so problem specific to metadata)
-        #gets response of html with 'You need to enable JavaScript to run this app.'
         api_response = api_instance.model_metadata_service_create_model_metadata(body)
         print(str(api_response))
 
