@@ -56,7 +56,7 @@ metadata:
   name: cifar10-od-server
 spec:
   gateways:
-  - seldon-gateway.istio-system.svc.cluster.local
+  - istio-system/seldon-gateway
   hosts:
   - '*'
   http:
