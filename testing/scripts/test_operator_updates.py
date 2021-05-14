@@ -8,21 +8,11 @@ from seldon_e2e_utils import (
     wait_for_status,
 )
 
-SELDON_VERSIONS_TO_TEST = [
-    "1.0.2",
-    "1.1.0",
-    "1.2.3",
-    "1.3.0",
-    "1.4.0",
-]
+SELDON_VERSIONS_TO_TEST = ["1.0.2", "1.1.0", "1.2.3", "1.3.0", "1.4.0"]
 
 
 @pytest.mark.sequential
-@pytest.mark.parametrize(
-    "seldon_version",
-    SELDON_VERSIONS_TO_TEST,
-    indirect=True,
-)
+@pytest.mark.parametrize("seldon_version", SELDON_VERSIONS_TO_TEST, indirect=True)
 def test_cluster_update(namespace, seldon_version):
     # Deploy test model
     retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
@@ -45,11 +35,7 @@ def test_cluster_update(namespace, seldon_version):
 
 @pytest.mark.flaky(max_runs=2)
 @pytest.mark.sequential
-@pytest.mark.parametrize(
-    "seldon_version",
-    SELDON_VERSIONS_TO_TEST,
-    indirect=True,
-)
+@pytest.mark.parametrize("seldon_version", SELDON_VERSIONS_TO_TEST, indirect=True)
 def test_namespace_update(namespace, seldon_version):
     # Deploy test model
     retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
@@ -82,11 +68,7 @@ def test_namespace_update(namespace, seldon_version):
 
 
 @pytest.mark.sequential
-@pytest.mark.parametrize(
-    "seldon_version",
-    SELDON_VERSIONS_TO_TEST,
-    indirect=True,
-)
+@pytest.mark.parametrize("seldon_version", SELDON_VERSIONS_TO_TEST, indirect=True)
 def test_label_update(namespace, seldon_version):
     # Deploy test model
     retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
