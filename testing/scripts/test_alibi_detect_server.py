@@ -5,8 +5,7 @@ import uuid
 from subprocess import run
 
 import requests
-
-from tenacity import Retrying, RetryError, wait_fixed, stop_after_attempt
+from tenacity import RetryError, Retrying, stop_after_attempt, wait_fixed
 
 from seldon_core.batch_processor import start_multithreaded_batch_worker
 from seldon_e2e_utils import (
