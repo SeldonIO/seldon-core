@@ -6,6 +6,8 @@ from subprocess import run
 
 import requests
 
+from tenacity import Retrying, RetryError, wait_fixed, stop_after_attempt
+
 from seldon_core.batch_processor import start_multithreaded_batch_worker
 from seldon_e2e_utils import (
     API_ISTIO_GATEWAY,
@@ -41,15 +43,19 @@ class TestADServer:
 
         wait_for_deployment(name, namespace)
 
-        time.sleep(5)
+        time.sleep(10)
 
         with open(self.truck_json) as f:
             data = json.load(f)
 
-        r = requests.post(
-            f"http://localhost:8004/{vs_prefix}/", json=data, headers=self.HEADERS
-        )
-        j = r.json()
+        for attempt in Retrying(wait=wait_fixed(4), stop=stop_after_attempt(3)):
+            with attempt:
+                r = requests.post(
+                    f"http://localhost:8004/{vs_prefix}/",
+                    json=data,
+                    headers=self.HEADERS,
+                )
+                j = r.json()
 
         assert j["data"]["is_outlier"][0] == 0
         assert j["meta"]["name"] == "OutlierVAE"
@@ -80,15 +86,19 @@ class TestADServer:
 
         wait_for_deployment(name, namespace)
 
-        time.sleep(5)
+        time.sleep(10)
 
         with open(self.truck_json) as f:
             data = json.load(f)
 
-        r = requests.post(
-            f"http://localhost:8004/{vs_prefix}/", json=data, headers=self.HEADERS
-        )
-        j = r.json()
+        for attempt in Retrying(wait=wait_fixed(4), stop=stop_after_attempt(3)):
+            with attempt:
+                r = requests.post(
+                    f"http://localhost:8004/{vs_prefix}/",
+                    json=data,
+                    headers=self.HEADERS,
+                )
+                j = r.json()
 
         assert j["data"]["is_outlier"][0] == 0
         assert j["meta"]["name"] == "OutlierVAE"
