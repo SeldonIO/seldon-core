@@ -90,7 +90,7 @@ def metadata():
             serving_engine = 'SeldonDeployment'
 
         namespace = request.args.get('namespace','seldon')
-        name = request.args.get('name','iris')
+        name = request.args.get('name','sklearn')
         predictor = request.args.get('predictor','default')
 
         print(namespace+'/'+name+'/'+predictor)

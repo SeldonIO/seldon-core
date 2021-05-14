@@ -179,9 +179,10 @@ def fetch_metadata(namespace, serving_engine, inferenceservice_name, predictor_n
         model_uri = runtime_metadata.runtime_metadata[0].model_uri
         print('model is '+model_uri)
         model_metadata = metadata_api.model_metadata_service_list_model_metadata(uri=model_uri)
-        # TODO: need to find out what field prediction schema will be contained in
         print(model_metadata)
-        print('not yet able to parse metadata')
+        print('prediction schema is')
+        print(model_metadata.prediction_schema)
+        return model_metadata.prediction_schema
     else:
         print('no metadata found for '+namespace+' / '+inferenceservice_name+' / '+predictor_name)
     return None
