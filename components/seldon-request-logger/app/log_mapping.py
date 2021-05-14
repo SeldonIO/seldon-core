@@ -153,7 +153,7 @@ def init_api():
     print('connected to deploy')
     print(env_api.read_user())
     global metadata_api
-    metadata_api = ModelMetadataServiceApi()
+    metadata_api = ModelMetadataServiceApi(api_client)
 
 
 def fetch_user():
@@ -168,8 +168,14 @@ def fetch_metadata(namespace, serving_engine, inferenceservice_name, predictor_n
         return None
 
     # TODO: in next iteration will only need one lookup straight to model metadata
-    runtime_metadata = metadata_api.model_metadata_service_list_runtime_metadata_for_model(deployment_name=inferenceservice_name,deployment_namespace=namespace,predictor_name=predictor_name,deployment_type=serving_engine)
+    # was expcting to set deployment_type=serving_engine but deployment_type does not seem to be a param
+    runtime_metadata = metadata_api.model_metadata_service_list_runtime_metadata_for_model(
+        deployment_name=inferenceservice_name,deployment_namespace=namespace,predictor_name=predictor_name)
     if runtime_metadata is not None and runtime_metadata.runtime_metadata is not None:
+        print(runtime_metadata.runtime_metadata)
+        if len(runtime_metadata.runtime_metadata) == 0:
+            print('no runtime metadata')
+            return None
         model_uri = runtime_metadata.runtime_metadata[0].model_uri
         print('model is '+model_uri)
         model_metadata = metadata_api.model_metadata_service_list_model_metadata(uri=model_uri)
