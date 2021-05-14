@@ -21,11 +21,6 @@ RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Cri
 # CVE https://github.com/SeldonIO/seldon-core/issues/2960
 RUN yum remove -y nodejs httpd
 
-RUN git clone git@github.com:SeldonIO/seldon-deploy-sdk.git
-RUN cd seldon-deploy-sdk/python
-RUN pip install -e . -r test-requirements.txt
-RUN cd ../..
-
 USER default
 
 COPY app app
