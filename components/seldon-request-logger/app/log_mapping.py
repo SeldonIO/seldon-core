@@ -174,15 +174,18 @@ def fetch_metadata(namespace, serving_engine, inferenceservice_name, predictor_n
     if runtime_metadata is not None and runtime_metadata.runtime_metadata is not None:
         print(runtime_metadata.runtime_metadata)
         if len(runtime_metadata.runtime_metadata) == 0:
-            print('no runtime metadata')
+            print('no runtime metadata for '+namespace+'/'+inferenceservice_name)
             return None
         model_uri = runtime_metadata.runtime_metadata[0].model_uri
         print('model is '+model_uri)
         model_metadata = metadata_api.model_metadata_service_list_model_metadata(uri=model_uri)
-        print(model_metadata)
-        print('prediction schema is')
-        print(model_metadata.prediction_schema)
-        return model_metadata.prediction_schema
+        if model_metadata is None or len(model_metadata.models) == 0:
+            print('no model corresponding to runtime metadata '+namespace+'/'+inferenceservice_name)
+            return None
+
+        print('prediction schema for '+namespace+'/'+inferenceservice_name)
+        print(model_metadata.models[0].prediction_schema)
+        return model_metadata.models[0].prediction_schema
     else:
         print('no metadata found for '+namespace+' / '+inferenceservice_name+' / '+predictor_name)
     return None
