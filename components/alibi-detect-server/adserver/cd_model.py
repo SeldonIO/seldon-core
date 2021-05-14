@@ -6,7 +6,6 @@ from .numpy_encoder import NumpyEncoder
 from alibi_detect.utils.saving import load_detector, Data
 from adserver.base import AlibiDetectModel
 from seldon_core.user_model import SeldonResponse
-import kfserving
 import tensorflow as tf
 from transformers import AutoTokenizer
 

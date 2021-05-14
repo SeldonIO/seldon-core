@@ -10,4 +10,4 @@ LABEL name="Storage Initializer (rclone based)" \
 ENV RCLONE_CONFIG_GS_TYPE google cloud storage
 ENV RCLONE_CONFIG_GS_ANONYMOUS true
 
-ENTRYPOINT ["rclone", "copy"]
+ENTRYPOINT ["rclone", "copy", "-v"]
