@@ -97,6 +97,43 @@ Istio has the capability for fine grained traffic routing to your deployments. T
 
 More information can be found in our [examples](../examples/istio_examples.html), including [canary updates](../examples/istio_canary.html).
 
+## Configuring Authentication/Authorization
+To force clients to authenticate/authorize themselves in order to access the seldon model deployments, you can leverage Istio's 
+`RequestAuthentication` and `AuthorizationPolicy`. This will deny or accept requests to the model depending on specified conditions that you designated in the policies. 
+More information can be found [here](https://istio.io/latest/docs/reference/config/security/authorization-policy/).
+
+You can set the policies to target all the models belonging to a specific namespace, but you must be using istio sidecar proxy, 
+and ensure your seldon operator configuration has the following:
+```
+istio:
+  enabled: true
+  tlsMode: STRICT
+```
+
+When you've set up an `AuthorizationPolicy`, this will disrupt Prometheus from scraping metrics. Two proposed options to 
+resolve this issue are: 
+- You can specify that you want to allow GET requests to the prometheus endpoint in the `AuthorizationPolicy`
+
+Example:
+```
+  - to:
+    - operation:
+        methods: ["GET"]
+        paths: ["/prometheus"]
+        ports: ["6000", "8000", "6001"]
+```
+
+- You can also exclude ports in your Istio Operator configuration
+```
+  proxy:
+        autoInject: enabled
+        clusterDomain: cluster.local
+        componentLogLevel: misc:error
+        enableCoreDump: false
+        excludeInboundPorts: ""
+        excludeOutboundPorts: "15021"
+```
+
 ## Troubleshoot
 If you saw errors like `Failed to generate bootstrap config: mkdir ./etc/istio/proxy: permission denied`, it's probably because you are running istio version <= 1.6.
 Istio proxy sidecar by default needs to run as root (This changed in version >= 1.7, non-root is the default)

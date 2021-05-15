@@ -2,12 +2,11 @@ import json
 from typing import List, Dict, Optional, Union
 import os
 import logging
-import kfserving
 import numpy as np
 from .numpy_encoder import NumpyEncoder
 from adserver.base import CEModel, ModelResponse
 from alibi_detect.utils.saving import load_detector, Data
-from seldon_core.user_model import SeldonResponse
+from adserver.base.storage import download_model
 from adserver.constants import (
     HEADER_RETURN_INSTANCE_SCORE,
     HEADER_RETURN_FEATURE_SCORE,
@@ -62,7 +61,7 @@ class AlibiDetectOutlierModel(CEModel):  # pylint:disable=c-extension-no-member
         Load the model from storage
 
         """
-        model_folder = kfserving.Storage.download(self.storage_uri)
+        model_folder = download_model(self.storage_uri)
         self.model: Data = load_detector(model_folder)
         self.ready = True
 

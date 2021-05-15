@@ -3,8 +3,8 @@ from typing import List, Dict, Optional, Union
 import logging
 import numpy as np
 from .numpy_encoder import NumpyEncoder
-from alibi_detect.utils.saving import Data
 from adserver.base import AlibiDetectModel, ModelResponse
+from alibi_detect.utils.saving import load_detector, Data
 
 
 def _append_drift_metrcs(metrics, drift, name):

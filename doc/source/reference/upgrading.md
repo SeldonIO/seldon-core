@@ -6,6 +6,28 @@ If you were running our Openshift 0.4.2 certified operator and are looking to up
 
 Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed features and bug-fixes in each version.
 
+## Upgrading to 1.8
+
+### Rclone Storage Initailizer
+In Seldon Core 1.8 the rclone-based [storage initalizer](https://github.com/SeldonIO/seldon-core/tree/master/components/rclone-storage-initializer) becomes the default one.
+
+The storage initailizer image that is being used is controlled by the helm value:
+```yaml
+storageInitializer:
+  image: seldonio/rclone-storage-initializer:1.8.0-dev
+```
+and can be customised on per-deployment basis as described in [Prepackaged Model Servers](../servers/overview.md) documentation by setting value of `storageInitializerImage` variable in the graph definition.
+
+This transition requires **creation of the new secrets** for the prepackaged model servers that will be compatible with the rclone configuration format as described [here](../servers/overview.md#handling-credentials).
+
+If you do not wish to configure these secrets now and wish to preserve prior behaviour you can opt for usage of previous storage initializer by using following helm value:
+```yaml
+storageInitializer:
+  image: gcr.io/kfserving/storage-initializer:v0.4.0
+```
+See further documentation [here](../servers/kfserving-storage-initializer.md).
+
+
 ## Upgrading to 1.7
 
 ### Python Dependency Updates
@@ -45,7 +67,7 @@ All seldon-managed pods will be subject to a rolling update as part of this upgr
  * To allow CRDs to be created by the manager. If `managerCreateResources` is true then extra RBAC to `create` CRDs is added from the previous versions RBAC which was to just list and get.
  * If upgrading the analytics helm chart then a `kubectl delete deployment -n seldon-system -l app=grafana` should be [run first](https://github.com/SeldonIO/seldon-core/pull/1917)
  * All the prepackaged model servers are now created with RedHat UBI images. One consequence of this is that they will all run as non-root as it best practice.
- 
+
 ### Request Logger
 
 The values.yaml for the seldon-core-operator helm chart has changed. The field `defaultRequestLoggerEndpointPrefix` is replaced by:

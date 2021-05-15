@@ -90,7 +90,7 @@ singleNamespace: false
 storageInitializer:
   cpuLimit: "1"
   cpuRequest: 100m
-  image: gcr.io/kfserving/storage-initializer:v0.4.0
+  image: seldonio/rclone-storage-initializer:1.8.0-dev
   memoryLimit: 1Gi
   memoryRequest: 100Mi
 usageMetrics:

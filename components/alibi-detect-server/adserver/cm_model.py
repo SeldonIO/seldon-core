@@ -1,16 +1,15 @@
 import json
 from typing import List, Dict, Optional, Union
 import logging
-import kfserving
 import pickle
 import os
 from adserver.constants import (
-    HEADER_RETURN_INSTANCE_SCORE,
     REQUEST_ID_HEADER_NAME,
     NAMESPACE_HEADER_NAME,
 )
+
 from adserver.base import CEModel, ModelResponse
-from seldon_core.user_model import SeldonResponse
+from adserver.base.storage import download_model
 from seldon_core.flask_utils import SeldonMicroserviceException
 from seldon_core.metrics import DEFAULT_LABELS, NONIMPLEMENTED_MSG
 from elasticsearch import Elasticsearch
@@ -69,7 +68,7 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
 
         """
         if "/" in self.storage_uri:
-            model_folder = kfserving.Storage.download(self.storage_uri)
+            model_folder = download_model(self.storage_uri)
             self.model = pickle.load(
                 open(os.path.join(model_folder, "meta.pickle"), "rb")
             )
