@@ -20,6 +20,7 @@ const (
 	PrepackXgboostName           = "XGBOOST_SERVER"
 	PrepackMlflowName            = "MLFLOW_SERVER"
 	PrepackTritonName            = "TRITON_SERVER"
+	PrepackTempoName             = "TEMPO_SERVER"
 )
 
 const PredictorServerConfigMapKeyName = "predictor_servers"
