@@ -9,7 +9,6 @@ kind: ValidatingWebhookConfiguration
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: '{{ include "seldon.namespace" . }}/seldon-serving-cert'
-  creationTimestamp: null
   labels:
     app: seldon
     app.kubernetes.io/instance: '{{ .Release.Name }}'

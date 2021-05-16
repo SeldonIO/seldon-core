@@ -100,7 +100,8 @@ webhook:
 
 # ## Predictive Unit Values
 predictiveUnit:
-  port: 9000
+  httpPort: 9000
+  grpcPort: 9500  
   metricsPortName: metrics
   # If you would like to add extra environment variables to the init container to make available
   #   secrets such as cloud credentials, you can provide a default secret name that will be loaded
