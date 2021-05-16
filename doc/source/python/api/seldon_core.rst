@@ -97,14 +97,6 @@ seldon\_core.mlmd\_utils module
    :undoc-members:
    :show-inheritance:
 
-seldon\_core.persistence module
--------------------------------
-
-.. automodule:: seldon_core.persistence
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 seldon\_core.seldon\_client module
 ----------------------------------
 
