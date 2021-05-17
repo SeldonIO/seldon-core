@@ -36,11 +36,7 @@ func mergeMLServerContainer(existing *v1.Container, mlServer *v1.Container) *v1.
 	if existing.Image == "" {
 		existing.Image = mlServer.Image
 	}
-
-	//if existing.Args == nil {
-	//	existing.Args = mlServer.Args
-	//}
-
+	
 	if existing.Env == nil {
 		existing.Env = []v1.EnvVar{}
 	}
