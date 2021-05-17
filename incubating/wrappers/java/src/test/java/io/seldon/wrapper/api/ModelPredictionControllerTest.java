@@ -22,11 +22,12 @@ import org.springframework.web.context.WebApplicationContext;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 // @AutoConfigureMockMvc
-public class RestControllerTest {
+public class ModelPredictionControllerTest {
 
   @Autowired private WebApplicationContext context;
 
-  @Autowired ModelRestController modelRestController;
+  @Autowired
+  ModelPredictionController modelPredictionController;
 
   // @Autowired
   private MockMvc mvc;

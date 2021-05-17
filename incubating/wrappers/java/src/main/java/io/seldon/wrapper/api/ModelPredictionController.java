@@ -1,5 +1,13 @@
 package io.seldon.wrapper.api;
 
+/**
+ * This is a model prediction API and container everything related to predictions.
+ *
+ * NOTE:
+ * This is NOT a RestFull API, since there is no resource or state (aka there is no prediction object or state)
+ * involved.
+ */
+
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.seldon.protos.PredictionProtos.Feedback;
 import io.seldon.protos.PredictionProtos.SeldonMessage;
@@ -19,8 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @ConditionalOnExpression("${seldon.api.model.enabled:false}")
-public class ModelRestController {
-  private static Logger logger = LoggerFactory.getLogger(ModelRestController.class.getName());
+public class ModelPredictionController {
+  private static Logger logger = LoggerFactory.getLogger(ModelPredictionController.class.getName());
 
   @Autowired SeldonPredictionService predictionService;
 
