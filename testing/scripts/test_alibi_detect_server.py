@@ -3,6 +3,7 @@ import logging
 import time
 import uuid
 from subprocess import run
+import pytest
 
 import requests
 from tenacity import RetryError, Retrying, stop_after_attempt, wait_fixed
@@ -33,6 +34,7 @@ class TestADServer:
         "ce-specversion": "1.0",
     }
 
+    @pytest.mark.flaky(max_runs=5)
     def test_alibi_detect_cifar10(self, namespace):
         spec = "../resources/adserver-cifar10-od.yaml"
         name = "cifar10-od-server"
@@ -76,6 +78,7 @@ class TestADServer:
 
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
 
+    @pytest.mark.flaky(max_runs=5)
     def test_alibi_detect_cifar10_rclone(self, namespace):
         spec = "../resources/adserver-cifar10-od-rclone.yaml"
         name = "cifar10-od-server-rclone"
