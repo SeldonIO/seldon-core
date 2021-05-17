@@ -47,7 +47,7 @@ class Rclone:
         if dest is None:
             dest = tempfile.mkdtemp()
 
-        args = ["-v"]
+        args = ["-vv"]
         kwargs = {}
         if self.cfg_file is not None:
             kwargs["config"] = os.path.abspath(os.path.expanduser(self.cfg_file))
