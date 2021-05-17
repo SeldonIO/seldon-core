@@ -41,7 +41,7 @@ var _ = Describe("MLServer helpers", func() {
 				},
 			}
 
-			mlServer, _ = getMLServerContainer(pu)
+			mlServer, _ = getMLServerContainer(pu, "default")
 		})
 
 		It("should merge containers adding extra env", func() {
@@ -58,7 +58,7 @@ var _ = Describe("MLServer helpers", func() {
 		var cServer *v1.Container
 
 		BeforeEach(func() {
-			cServer, _ = getMLServerContainer(pu)
+			cServer, _ = getMLServerContainer(pu, "default")
 		})
 
 		It("creates container with image", func() {
@@ -91,7 +91,7 @@ var _ = Describe("MLServer helpers", func() {
 		var envs []v1.EnvVar
 
 		BeforeEach(func() {
-			envs, _ = getMLServerEnvVars(pu)
+			envs, _ = getMLServerEnvVars(pu, "default")
 		})
 
 		It("adds the right ports", func() {
@@ -158,6 +158,7 @@ var _ = Describe("MLServer helpers", func() {
 			},
 			Entry("sklearn", machinelearningv1.PrepackSklearnName, MLServerSKLearnImplementation),
 			Entry("xgboost", machinelearningv1.PrepackXgboostName, MLServerXGBoostImplementation),
+			Entry("tempo", machinelearningv1.PrepackTempoName, MLServerTempoImplementation),
 			Entry("unknown", "foo", ""),
 		)
 	})

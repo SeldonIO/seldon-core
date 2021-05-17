@@ -238,7 +238,7 @@ func (pi *PrePackedInitialiser) addTritonServer(mlDepSpec *machinelearningv1.Sel
 }
 
 func (pi *PrePackedInitialiser) addMLServerDefault(pu *machinelearningv1.PredictiveUnit, deploy *appsv1.Deployment) error {
-	c, err := getMLServerContainer(pu)
+	c, err := getMLServerContainer(pu, deploy.Namespace)
 	if err != nil {
 		return err
 	}
