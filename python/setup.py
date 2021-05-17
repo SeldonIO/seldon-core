@@ -26,7 +26,7 @@ setup(
         "Flask-cors<4.0.0",
         "requests<3.0.0",
         "numpy<2.0.0",
-        "flatbuffers<2.0.0",
+        "flatbuffers<3.0.0",
         "protobuf<4.0.0",
         "grpcio<2.0.0",
         "Flask-OpenTracing >= 1.1.0, < 1.2.0",
