@@ -40,7 +40,7 @@ public class ModelPredictionControllerTest {
   @LocalServerPort private int port;
 
   @Test
-  public void testPredict() throws Exception {
+  public void testPredictLegacyGetQuery() throws Exception {
     final String predictJson = readFile("src/test/resources/request.json", StandardCharsets.UTF_8);
     MvcResult res =
         mvc.perform(
@@ -48,6 +48,51 @@ public class ModelPredictionControllerTest {
                     .accept(MediaType.APPLICATION_JSON_UTF8)
                     .param("json", predictJson)
                     .contentType(MediaType.APPLICATION_JSON_UTF8))
+            .andReturn();
+    String response = res.getResponse().getContentAsString();
+    System.out.println(response);
+    Assert.assertEquals(200, res.getResponse().getStatus());
+  }
+
+  @Test
+  public void testPredictLegacyPostQuery() throws Exception {
+    final String predictJson = readFile("src/test/resources/request.json", StandardCharsets.UTF_8);
+    MvcResult res =
+        mvc.perform(
+            MockMvcRequestBuilders.post("/predict")
+                .accept(MediaType.APPLICATION_JSON_UTF8)
+                .param("json", predictJson)
+                .contentType(MediaType.APPLICATION_JSON_UTF8))
+            .andReturn();
+    String response = res.getResponse().getContentAsString();
+    System.out.println(response);
+    Assert.assertEquals(200, res.getResponse().getStatus());
+  }
+
+  @Test
+  public void testPredictLegacyPostForm() throws Exception {
+    final String predictJson = readFile("src/test/resources/request.json", StandardCharsets.UTF_8);
+    MvcResult res =
+        mvc.perform(
+            MockMvcRequestBuilders.post("/predict")
+                .accept(MediaType.APPLICATION_JSON_UTF8)
+                .param("json", predictJson)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED))
+            .andReturn();
+    String response = res.getResponse().getContentAsString();
+    System.out.println(response);
+    Assert.assertEquals(200, res.getResponse().getStatus());
+  }
+
+  @Test
+  public void testPredict() throws Exception {
+    final String predictJson = readFile("src/test/resources/request.json", StandardCharsets.UTF_8);
+    MvcResult res =
+        mvc.perform(
+            MockMvcRequestBuilders.post("/predict")
+                .accept(MediaType.APPLICATION_JSON)
+                .content(predictJson)
+                .contentType(MediaType.APPLICATION_JSON))
             .andReturn();
     String response = res.getResponse().getContentAsString();
     System.out.println(response);
