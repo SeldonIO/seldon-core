@@ -12,9 +12,8 @@ import numpy as np
 import requests
 from google.protobuf import empty_pb2
 from requests.auth import HTTPBasicAuth
-from tenacity import retry, stop_after_attempt, wait_exponential
-
 from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 API_AMBASSADOR = "localhost:8003"
 API_ISTIO_GATEWAY = "localhost:8004"

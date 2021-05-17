@@ -5,18 +5,11 @@ import uuid
 from subprocess import run
 
 import requests
-
 from seldon_core.batch_processor import start_multithreaded_batch_worker
-from seldon_e2e_utils import (
-    API_ISTIO_GATEWAY,
-    create_random_data,
-    initial_rest_request,
-    rest_request,
-    rest_request_ambassador,
-    retry_run,
-    wait_for_rollout,
-    wait_for_status,
-)
+from seldon_e2e_utils import (API_ISTIO_GATEWAY, create_random_data,
+                              initial_rest_request, rest_request,
+                              rest_request_ambassador, retry_run,
+                              wait_for_rollout, wait_for_status)
 
 
 class TestBatchWorker(object):

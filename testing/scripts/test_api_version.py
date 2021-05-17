@@ -1,7 +1,6 @@
 from subprocess import run
 
 import pytest
-
 from seldon_e2e_utils import assert_model, wait_for_rollout, wait_for_status
 
 

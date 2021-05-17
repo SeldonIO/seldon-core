@@ -6,19 +6,12 @@ from subprocess import run
 import numpy as np
 import pytest
 from google.protobuf import json_format
-
 from seldon_core.proto import prediction_pb2
-from seldon_e2e_utils import (
-    API_AMBASSADOR,
-    grpc_request_ambassador,
-    grpc_request_ambassador_metadata,
-    initial_grpc_request,
-    initial_rest_request,
-    rest_request_ambassador,
-    retry_run,
-    wait_for_rollout,
-    wait_for_status,
-)
+from seldon_e2e_utils import (API_AMBASSADOR, grpc_request_ambassador,
+                              grpc_request_ambassador_metadata,
+                              initial_grpc_request, initial_rest_request,
+                              rest_request_ambassador, retry_run,
+                              wait_for_rollout, wait_for_status)
 
 S2I_CREATE = """cd ../s2i/python-features/metadata && \
     s2i build -E environment_{model}_{api_type} . \

@@ -2503,7 +2503,7 @@ Apache Software License
 
 
 gunicorn
-20.0.4
+20.1.0
 MIT License
 2009-2018 (c) Benoît Chesneau <benoitc@e-engura.org>
 2009-2015 (c) Paul J. Davis <paul.joseph.davis@gmail.com>

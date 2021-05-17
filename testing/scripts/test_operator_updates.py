@@ -1,12 +1,6 @@
 import pytest
-
-from seldon_e2e_utils import (
-    assert_model,
-    assert_model_during_op,
-    retry_run,
-    wait_for_rollout,
-    wait_for_status,
-)
+from seldon_e2e_utils import (assert_model, assert_model_during_op, retry_run,
+                              wait_for_rollout, wait_for_status)
 
 SELDON_VERSIONS_TO_TEST = ["1.0.2", "1.1.0", "1.2.3", "1.3.0", "1.4.0"]
 
