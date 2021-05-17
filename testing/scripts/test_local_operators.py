@@ -1,9 +1,14 @@
 import logging
 from subprocess import run
 
-from seldon_e2e_utils import (API_AMBASSADOR, initial_rest_request,
-                              rest_request_ambassador, retry_run,
-                              wait_for_rollout, wait_for_status)
+from seldon_e2e_utils import (
+    API_AMBASSADOR,
+    initial_rest_request,
+    rest_request_ambassador,
+    retry_run,
+    wait_for_rollout,
+    wait_for_status,
+)
 
 
 class TestLocalOperators(object):

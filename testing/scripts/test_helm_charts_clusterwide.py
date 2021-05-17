@@ -1,9 +1,14 @@
 import logging
 from subprocess import run
 
-from seldon_e2e_utils import (API_AMBASSADOR, assert_model,
-                              initial_rest_request, rest_request_ambassador,
-                              wait_for_rollout, wait_for_status)
+from seldon_e2e_utils import (
+    API_AMBASSADOR,
+    assert_model,
+    initial_rest_request,
+    rest_request_ambassador,
+    wait_for_rollout,
+    wait_for_status,
+)
 
 
 class TestClusterWide(object):

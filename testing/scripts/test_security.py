@@ -1,6 +1,10 @@
-from seldon_e2e_utils import (initial_rest_request, retry_run,
-                              to_resources_path, wait_for_rollout,
-                              wait_for_status)
+from seldon_e2e_utils import (
+    initial_rest_request,
+    retry_run,
+    to_resources_path,
+    wait_for_rollout,
+    wait_for_status,
+)
 
 
 def test_xss_escaping(namespace):

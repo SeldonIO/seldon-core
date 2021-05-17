@@ -4,13 +4,20 @@ import time
 from subprocess import run
 
 import numpy as np
+from google.protobuf import json_format
+
 from e2e_utils import v2_protocol
 from e2e_utils.models import deploy_model
-from google.protobuf import json_format
-from seldon_e2e_utils import (create_random_data, grpc_request_ambassador,
-                              initial_rest_request, log_sdep_logs,
-                              rest_request_ambassador, retry_run,
-                              wait_for_rollout, wait_for_status)
+from seldon_e2e_utils import (
+    create_random_data,
+    grpc_request_ambassador,
+    initial_rest_request,
+    log_sdep_logs,
+    rest_request_ambassador,
+    retry_run,
+    wait_for_rollout,
+    wait_for_status,
+)
 
 
 class TestPrepack(object):

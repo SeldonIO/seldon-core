@@ -4,9 +4,15 @@ from subprocess import run
 
 import numpy as np
 import pytest
-from seldon_e2e_utils import (API_AMBASSADOR, initial_rest_request,
-                              rest_request_ambassador, retry_run,
-                              wait_for_rollout, wait_for_status)
+
+from seldon_e2e_utils import (
+    API_AMBASSADOR,
+    initial_rest_request,
+    rest_request_ambassador,
+    retry_run,
+    wait_for_rollout,
+    wait_for_status,
+)
 
 S2I_CREATE = "cd ../s2i/python/#TYPE# && s2i build -E environment#SUFFIX# . seldonio/seldon-core-s2i-python3:#VERSION# seldonio/test#TYPE##SUFFIX#:0.1"
 IMAGE_NAME = "seldonio/test#TYPE##SUFFIX#:0.1"

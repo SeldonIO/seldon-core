@@ -2,6 +2,7 @@ import os
 from subprocess import run
 
 import pytest
+
 from e2e_utils.install import delete_seldon, install_seldon
 from e2e_utils.s2i import create_s2i_image, kind_load_image
 from seldon_e2e_utils import clean_string, get_seldon_version, retry_run
