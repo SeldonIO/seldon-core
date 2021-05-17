@@ -249,6 +249,7 @@ if __name__ == "__main__":
                 if (
                     name == "seldon1-manager-rolebinding"
                     or name == "seldon1-manager-sas-rolebinding"
+                    or name == "seldon-leader-election-rolebinding"
                 ):
                     res["subjects"][0]["name"] = helm_value("serviceAccount.name")
                     res["subjects"][0]["namespace"] = helm_namespace_override()
