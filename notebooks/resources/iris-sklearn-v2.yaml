@@ -9,7 +9,7 @@ spec:
   - graph:
       children: []
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/sklearn/iris
+      modelUri: gs://seldon-models/sklearn/iris-0.23.2/lr_model
       name: classifier
     name: default
     replicas: 1
