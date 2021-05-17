@@ -36,7 +36,7 @@ public class ModelPredictionController {
       value = "/predict",
       method = {RequestMethod.GET, RequestMethod.POST},
       produces = "application/json; charset=utf-8")
-  public ResponseEntity<String> predictions(@RequestParam("json") String json) {
+  public ResponseEntity<String> predict(@RequestParam("json") String json) {
     SeldonMessage request;
     try {
       SeldonMessage.Builder builder = SeldonMessage.newBuilder();
