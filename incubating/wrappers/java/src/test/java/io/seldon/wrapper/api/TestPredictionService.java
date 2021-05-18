@@ -12,14 +12,5 @@ public class TestPredictionService implements SeldonPredictionService {
   public SeldonMessage predict(SeldonMessage payload) {
     // echo payload back
     return payload.toBuilder().build();
-//    SeldonMessage.Builder builder = SeldonMessage.newBuilder();
-//    ProtoBufUtils.updateMessageBuilderFromJson(builder, payload.getData());
-//    request = builder.build();
-//    SeldonMessage response = SeldonMessage.newBuilder();
-//    ProtoBufUtils.updateMessageBuilderFromJson(response, payload);
-//    return response;
-//    return SeldonMessage.newBuilder()
-//        .setData(DefaultData.newBuilder().setTensor(Tensor.newBuilder().addShape(1).addValues(1.0)))
-//        .build();
   }
 }
