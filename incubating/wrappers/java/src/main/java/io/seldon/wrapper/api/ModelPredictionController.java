@@ -31,7 +31,7 @@ public class ModelPredictionController {
   @Autowired SeldonPredictionService predictionService;
 
   /**
-   * Will access a POST or a GET request with either a query parameter or a FORM parameter.
+   * Will accept a POST or a GET request with either a query parameter or a FORM parameter.
    *
    * Examples:
    * GET -> /predict?json={ ... }
@@ -58,6 +58,22 @@ public class ModelPredictionController {
     return this.predict(json);
   }
 
+  /**
+   * Will accept a POST with a proper JSON body.
+   *
+   * Examples:
+   * POST -> /predict
+   * curl -s -X POST \
+   *  -d '{"data": {"names": ["a", "b"], "ndarray": [[1.0, 2.0]]}}' \
+   *  localhost:9000/predict
+   *
+   * curl -s -X POST \
+   *  -d '{"jsonData": {"foo": "bar"}' \
+   *  localhost:9000/predict
+   *
+   * @param jsonStr
+   * @return
+   */
   @RequestMapping(
       value = "/predict",
       method = {RequestMethod.POST},
