@@ -4,6 +4,7 @@ import time
 import uuid
 from subprocess import run
 
+import pytest
 import requests
 from tenacity import RetryError, Retrying, stop_after_attempt, wait_fixed
 
@@ -33,6 +34,7 @@ class TestADServer:
         "ce-specversion": "1.0",
     }
 
+    @pytest.mark.sequential
     def test_alibi_detect_cifar10(self, namespace):
         spec = "../resources/adserver-cifar10-od.yaml"
         name = "cifar10-od-server"
@@ -47,7 +49,7 @@ class TestADServer:
         with open(self.truck_json) as f:
             data = json.load(f)
 
-        for attempt in Retrying(wait=wait_fixed(4), stop=stop_after_attempt(3)):
+        for attempt in Retrying(wait=wait_fixed(10), stop=stop_after_attempt(4)):
             with attempt:
                 r = requests.post(
                     f"http://localhost:8004/{vs_prefix}/",
@@ -76,6 +78,7 @@ class TestADServer:
 
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
 
+    @pytest.mark.sequential
     def test_alibi_detect_cifar10_rclone(self, namespace):
         spec = "../resources/adserver-cifar10-od-rclone.yaml"
         name = "cifar10-od-server-rclone"
@@ -90,7 +93,7 @@ class TestADServer:
         with open(self.truck_json) as f:
             data = json.load(f)
 
-        for attempt in Retrying(wait=wait_fixed(4), stop=stop_after_attempt(3)):
+        for attempt in Retrying(wait=wait_fixed(10), stop=stop_after_attempt(4)):
             with attempt:
                 r = requests.post(
                     f"http://localhost:8004/{vs_prefix}/",

@@ -1,20 +1,15 @@
 import json
 from typing import List, Dict, Optional, Union
 import logging
-import numpy as np
-from enum import Enum
-import importlib
 import pickle
 import os
 from adserver.constants import (
-    HEADER_RETURN_INSTANCE_SCORE,
     REQUEST_ID_HEADER_NAME,
     NAMESPACE_HEADER_NAME,
 )
-from .numpy_encoder import NumpyEncoder
-from adserver.base import CEModel
+
+from adserver.base import CEModel, ModelResponse
 from adserver.base.storage import download_model
-from seldon_core.user_model import SeldonResponse
 from seldon_core.flask_utils import SeldonMicroserviceException
 from seldon_core.metrics import DEFAULT_LABELS, NONIMPLEMENTED_MSG
 from elasticsearch import Elasticsearch
@@ -84,7 +79,7 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
 
         self.ready = True
 
-    def process_event(self, inputs: Union[List, Dict], headers: Dict) -> Dict:
+    def process_event(self, inputs: Union[List, Dict], headers: Dict) -> Optional[ModelResponse]:
         """
         Process the event and return Alibi Detect score
 
@@ -104,11 +99,18 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
         logging.info(str(headers))
         logging.info("----")
 
-        metrics = []
-        output = {}
+        metrics: List[Dict] = []
+        output: Dict = {}
         truth = None
         response = None
         error = None
+
+        if not isinstance(inputs, dict):
+            raise SeldonMicroserviceException(
+                f"Data is not a dict: {json.dumps(inputs)}",
+                status_code=400,
+                reason="BAD_DATA",
+            )
 
         if "truth" not in inputs:
             raise SeldonMicroserviceException(
@@ -126,7 +128,6 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
         # If response is provided then we can perform a comparison
         if "response" in inputs:
             response = inputs["response"]
-
         elif REQUEST_ID_HEADER_NAME in headers:
             # Otherwise if UUID is provided we can fetch from elasticsearch
             if not self.elasticsearch_client:
@@ -160,9 +161,8 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
             )
 
         logging.error(f"{truth}, {response}")
-        output = self.model.transform(truth, response)
-        seldon_response = SeldonResponse.create(output or None)
+        metrics_transformed = self.model.transform(truth, response)
 
-        seldon_response.metrics.extend(metrics)
+        metrics.extend(metrics_transformed.metrics)
 
-        return seldon_response
+        return ModelResponse(data={}, metrics=metrics)

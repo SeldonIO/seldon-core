@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Union
 
 
 class RequestHandler(object):
@@ -12,7 +12,7 @@ class RequestHandler(object):
         """
         raise NotImplementedError
 
-    def extract_request(self) -> List:
+    def extract_request(self) -> Union[List,Dict]:
         """
         Extract the request
 

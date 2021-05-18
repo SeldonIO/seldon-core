@@ -11,7 +11,7 @@ setup(
     python_requires=">3.4",
     packages=find_packages(),
     install_requires=[
-        "alibi-detect==0.4.4",
+        "alibi-detect==0.6.2",
         "kfserving>=0.2.0",
         "argparse >= 1.4.0",
         "numpy >= 1.8.2",
@@ -22,7 +22,7 @@ setup(
         "google-cloud-core==1.4.1",
         "google-cloud-storage==1.31.2",
         "seldon_core",
-        "transformers==3.5.1",
+        "transformers>=4.0.0",
     ],
     tests_require=tests_require,
     extras_require={"test": tests_require},

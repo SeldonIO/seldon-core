@@ -1,13 +1,10 @@
 import json
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union
 import logging
 import numpy as np
 from .numpy_encoder import NumpyEncoder
+from adserver.base import AlibiDetectModel, ModelResponse
 from alibi_detect.utils.saving import load_detector, Data
-from adserver.base import AlibiDetectModel
-from seldon_core.user_model import SeldonResponse
-import tensorflow as tf
-from transformers import AutoTokenizer
 
 
 def _append_drift_metrcs(metrics, drift, name):
@@ -58,7 +55,7 @@ class AlibiDetectConceptDriftModel(
         self.batch: np.array = None
         self.model: Data = model
 
-    def process_event(self, inputs: List, headers: Dict) -> Optional[Dict]:
+    def process_event(self, inputs: Union[List, Dict], headers: Dict) -> Optional[ModelResponse]:
         """
         Process the event and return Alibi Detect score
 
@@ -103,7 +100,7 @@ class AlibiDetectConceptDriftModel(
 
             output = json.loads(json.dumps(cd_preds, cls=NumpyEncoder))
 
-            metrics = []
+            metrics: List[Dict] = []
             drift = output.get("data")
 
             if drift:
@@ -112,9 +109,7 @@ class AlibiDetectConceptDriftModel(
                 _append_drift_metrcs(metrics, drift, "p_val")
                 _append_drift_metrcs(metrics, drift, "threshold")
 
-            seldon_response = SeldonResponse(output, None, metrics)
-
-            return seldon_response
+            return ModelResponse(data=output, metrics=metrics)
         else:
             logging.info(
                 "Not running drift detection. Batch size is %d. Need %d",

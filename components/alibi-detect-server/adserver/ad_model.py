@@ -1,11 +1,11 @@
 import json
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union
 import logging
 import numpy as np
 from adserver.constants import HEADER_RETURN_INSTANCE_SCORE
 from .numpy_encoder import NumpyEncoder
 from alibi_detect.utils.saving import load_detector, Data
-from adserver.base import CEModel
+from adserver.base import CEModel, ModelResponse
 from adserver.base.storage import download_model
 
 
@@ -40,7 +40,7 @@ class AlibiDetectAdversarialDetectionModel(
 
         # or create
 
-    def process_event(self, inputs: List, headers: Dict) -> Dict:
+    def process_event(self, inputs: Union[List, Dict], headers: Dict) -> ModelResponse:
         """
         Process the event and return Alibi Detect score
 
@@ -75,4 +75,5 @@ class AlibiDetectAdversarialDetectionModel(
 
         ad_preds = self.model.predict(X, return_instance_score=ret_instance_score)
 
-        return json.loads(json.dumps(ad_preds, cls=NumpyEncoder))
+        data =  json.loads(json.dumps(ad_preds, cls=NumpyEncoder))
+        return ModelResponse(data=data, metrics=None)
