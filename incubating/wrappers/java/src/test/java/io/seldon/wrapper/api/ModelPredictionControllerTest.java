@@ -163,7 +163,7 @@ public class ModelPredictionControllerTest {
 
   @Test
   public void testPredictWithUTF8Header() throws Exception {
-    final String predictJson = readFile("src/test/resources/request.json", StandardCharsets.UTF_8);
+    final String predictJson = TestMessages.DEFAULT_DATA;
     assertNotNull(predictJson);
 
     MvcResult res =
