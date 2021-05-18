@@ -51,6 +51,7 @@ public class ModelPredictionController {
   @RequestMapping(
       value = "/predict",
       method = {RequestMethod.GET, RequestMethod.POST},
+      params = {"json"},
       produces = MediaType.APPLICATION_JSON_UTF8_VALUE
   )
   public ResponseEntity<String> predictLegacy(@RequestParam("json") String json) {
