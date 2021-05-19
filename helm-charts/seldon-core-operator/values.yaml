@@ -54,9 +54,9 @@ executor:
     tag: 1.8.0-dev
   resources:
     cpuLimit: 500m
-    cpuRequest: 500m
+    cpuRequest: 100m
     memoryLimit: 512Mi
-    memoryRequest: 512Mi
+    memoryRequest: 256Mi
   prometheus:
     path: /prometheus
   serviceAccount:
@@ -182,9 +182,9 @@ engine:
     tag: 1.8.0-dev
   resources:
     cpuLimit: 500m
-    cpuRequest: 500m
+    cpuRequest: 100m
     memoryLimit: 512Mi
-    memoryRequest: 512Mi
+    memoryRequest: 256Mi
   logMessagesExternally: false
   port: 8000
   prometheus:
