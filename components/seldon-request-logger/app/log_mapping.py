@@ -176,6 +176,9 @@ def fetch_metadata(namespace, serving_engine, inferenceservice_name, predictor_n
         if len(runtime_metadata.runtime_metadata) == 0:
             print('no runtime metadata for '+namespace+'/'+inferenceservice_name)
             return None
+        if len(runtime_metadata.runtime_metadata) > 1:
+            print('multiple models for '+namespace+'/'+inferenceservice_name+'/'+predictor_name+
+                  ' - only first will be used for prediction schema lookup')
         model_uri = runtime_metadata.runtime_metadata[0].model_uri
         print('model is '+model_uri)
         model_metadata = metadata_api.model_metadata_service_list_model_metadata(uri=model_uri)
