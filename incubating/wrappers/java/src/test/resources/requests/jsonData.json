@@ -1,0 +1,9 @@
+{
+  "jsonData": {
+    "data": {
+      "subject": "helpful message",
+      "body": "nothing strange, good, rewarding"
+    },
+    "foo": "bar"
+  }
+}
