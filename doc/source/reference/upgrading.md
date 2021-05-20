@@ -28,6 +28,16 @@ storageInitializer:
 See further documentation [here](../servers/kfserving-storage-initializer.md).
 
 
+### Request Logger
+
+In Seldon Core 1.9 we will be moving [seldon-request-logger](https://github.com/SeldonIO/seldon-core/tree/master/components/seldon-request-logger) to separate repository.
+
+
+### Legacy Java Engine Orchestrator
+
+In Seldon Core 1.9 final deprecation of Java Engine will happen with removal of all the related code from the repository.
+
+
 ## Upgrading to 1.7
 
 ### Python Dependency Updates
