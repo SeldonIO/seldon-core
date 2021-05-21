@@ -80,3 +80,44 @@ spec:
 
 
 Try out a [worked notebook](../examples/server_examples.html)
+
+
+## Multi-Model Serving
+
+You can utilize Tensorflow Serving's functionality to load multiple models from one model repository as shown in this [example notebook](../examples/protocol_examples.html). You should follow the configuration details as disucussed in the [Tensorflow Serving documentation on advanced configuration](https://www.tensorflow.org/tfx/serving/serving_config).
+
+```
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: example-tfserving
+spec:
+  protocol: tensorflow
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - args: 
+          - --port=8500
+          - --rest_api_port=8501
+          - --model_config_file=/mnt/models/models.config
+          image: tensorflow/serving
+          name: multi
+          ports:
+          - containerPort: 8501
+            name: http
+            protocol: TCP
+          - containerPort: 8500
+            name: grpc
+            protocol: TCP
+    graph:
+      name: multi
+      type: MODEL
+      implementation: TENSORFLOW_SERVER
+      modelUri: gs://seldon-models/tfserving/multi-model
+      endpoint:
+        httpPort: 8501
+        grpcPort: 8500
+    name: model
+    replicas: 1
+```
