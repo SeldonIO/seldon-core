@@ -1,7 +1,7 @@
 sphinx==3.2.1
 sphinx-autobuild>=0.7.1
 sphinx-autodoc-typehints>=1.6.0
-sphinx-rtd-theme>=0.4.3
+sphinx_material==0.0.30
 m2r2>=0.2.5
 sphinxcontrib-apidoc>=0.3.0
 nbsphinx>=0.4.2
