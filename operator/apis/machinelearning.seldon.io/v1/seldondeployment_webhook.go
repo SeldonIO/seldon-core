@@ -168,7 +168,6 @@ func collectTransports(pu *PredictiveUnit, transportsFound map[EndpointType]bool
 const (
 	ENV_KAFKA_BROKER       = "KAFKA_BROKER"
 	ENV_KAFKA_INPUT_TOPIC  = "KAFKA_INPUT_TOPIC"
-	ENV_KAFKA_OUTPUT_TOPIC = "KAFKA_OUTPUT_TOPIC"
 )
 
 func (r *SeldonDeploymentSpec) validateKafka(allErrs field.ErrorList) field.ErrorList {
@@ -176,18 +175,18 @@ func (r *SeldonDeploymentSpec) validateKafka(allErrs field.ErrorList) field.Erro
 		for i, p := range r.Predictors {
 			if len(p.SvcOrchSpec.Env) == 0 {
 				fldPath := field.NewPath("spec").Child("predictors").Index(i)
-				allErrs = append(allErrs, field.Invalid(fldPath, p.Name, "For kafka please supply svcOrchSpec envs KAFKA_BROKER, KAFKA_INPUT_TOPIC, KAFKA_OUTPUT_TOPIC"))
+				allErrs = append(allErrs, field.Invalid(fldPath, p.Name, "For kafka please supply svcOrchSpec envs KAFKA_BROKER, KAFKA_INPUT_TOPIC and optionally KAFKA_OUTPUT_TOPIC"))
 			} else {
 				found := 0
 				for _, env := range p.SvcOrchSpec.Env {
 					switch env.Name {
-					case ENV_KAFKA_BROKER, ENV_KAFKA_INPUT_TOPIC, ENV_KAFKA_OUTPUT_TOPIC:
+					case ENV_KAFKA_BROKER, ENV_KAFKA_INPUT_TOPIC:
 						found = found + 1
 					}
 				}
-				if found < 3 {
+				if found < 2 {
 					fldPath := field.NewPath("spec").Child("predictors").Index(i)
-					allErrs = append(allErrs, field.Invalid(fldPath, p.Name, "For kafka please supply svcOrchSpec envs KAFKA_BROKER, KAFKA_INPUT_TOPIC, KAFKA_OUTPUT_TOPIC"))
+					allErrs = append(allErrs, field.Invalid(fldPath, p.Name, "For kafka please supply svcOrchSpec envs KAFKA_BROKER, KAFKA_INPUT_TOPIC and optionally KAFKA_OUTPUT_TOPIC"))
 				}
 			}
 		}

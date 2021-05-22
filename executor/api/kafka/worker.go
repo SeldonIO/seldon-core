@@ -47,25 +47,28 @@ func (ks *SeldonKafkaServer) processKafkaRequest(job *KafkaJob) {
 		ks.Log.Error(err, "Failed prediction")
 		return
 	}
-	resBytes, err := resPayload.GetBytes()
-	if err != nil {
-		ks.Log.Error(err, "Failed to get bytes from prediction response")
-		return
-	}
 
-	kafkaHeaders := make([]kafka.Header, 0)
-	// Could in the future add the proto message name. At present seems we need to know the class to cast to so would need to do
-	// an exhaustive check, e.g. check its a tensorflow_serving.predict_pb2.PredictResponse, etc
-	//if ks.Transport == api.TransportGrpc {
-	//	kafkaHeaders = []kafka.Header{{Key: KeyProtoName, Value: []byte(proto2.MessageName(*resPayload.GetPayload().(*proto2.Message)))}}
-	//}
+	if ks.Producer != nil {
+		resBytes, err := resPayload.GetBytes()
+		if err != nil {
+			ks.Log.Error(err, "Failed to get bytes from prediction response")
+			return
+		}
 
-	err = ks.Producer.Produce(&kafka.Message{
-		TopicPartition: kafka.TopicPartition{Topic: &ks.TopicOut, Partition: kafka.PartitionAny},
-		Value:          resBytes,
-		Headers:        kafkaHeaders,
-	}, nil)
-	if err != nil {
-		ks.Log.Error(err, "Failed to produce response")
+		kafkaHeaders := make([]kafka.Header, 0)
+		// Could in the future add the proto message name. At present seems we need to know the class to cast to so would need to do
+		// an exhaustive check, e.g. check its a tensorflow_serving.predict_pb2.PredictResponse, etc
+		//if ks.Transport == api.TransportGrpc {
+		//	kafkaHeaders = []kafka.Header{{Key: KeyProtoName, Value: []byte(proto2.MessageName(*resPayload.GetPayload().(*proto2.Message)))}}
+		//}
+
+		err = ks.Producer.Produce(&kafka.Message{
+			TopicPartition: kafka.TopicPartition{Topic: &ks.TopicOut, Partition: kafka.PartitionAny},
+			Value:          resBytes,
+			Headers:        kafkaHeaders,
+		}, nil)
+		if err != nil {
+			ks.Log.Error(err, "Failed to produce response")
+		}
 	}
 }
