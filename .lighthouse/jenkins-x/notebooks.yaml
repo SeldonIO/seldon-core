@@ -37,11 +37,11 @@ spec:
             requests:
               cpu: 3
               memory: 10000Mi
-              ephemeral-storage: "100Gi"
+              ephemeral-storage: "150Gi"
             limits:
               cpu: 3
               memory: 10000Mi
-              ephemeral-storage: "100Gi"
+              ephemeral-storage: "150Gi"
           securityContext:
             privileged: true
           imagePullPolicy: Always

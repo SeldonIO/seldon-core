@@ -14,7 +14,7 @@ In Seldon Core 1.8 the rclone-based [storage initalizer](https://github.com/Seld
 The storage initailizer image that is being used is controlled by the helm value:
 ```yaml
 storageInitializer:
-  image: seldonio/rclone-storage-initializer:1.8.0-dev
+  image: seldonio/rclone-storage-initializer:1.9.0-dev
 ```
 and can be customised on per-deployment basis as described in [Prepackaged Model Servers](../servers/overview.md) documentation by setting value of `storageInitializerImage` variable in the graph definition.
 
@@ -26,6 +26,16 @@ storageInitializer:
   image: gcr.io/kfserving/storage-initializer:v0.4.0
 ```
 See further documentation [here](../servers/kfserving-storage-initializer.md).
+
+
+### Request Logger
+
+In Seldon Core 1.9 we will be moving [seldon-request-logger](https://github.com/SeldonIO/seldon-core/tree/master/components/seldon-request-logger) to separate repository.
+
+
+### Legacy Java Engine Orchestrator
+
+In Seldon Core 1.9 final deprecation of Java Engine will happen with removal of all the related code from the repository.
 
 
 ## Upgrading to 1.7
