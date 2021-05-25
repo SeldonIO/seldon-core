@@ -12,6 +12,7 @@ oidc_username = os.getenv("OIDC_USERNAME")
 oidc_password = os.getenv("OIDC_PASSWORD")
 oidc_auth_method = os.getenv("OIDC_AUTH_METHOD")
 deploy_api_host = os.getenv("DEPLOY_API_HOST")
+verify_ssl = os.getenv("VERIFY_SSL", "False")
 env_api = None
 metadata_api = None
 
@@ -130,6 +131,9 @@ def init_api():
     config.password = oidc_password
     config.oidc_client_secret = oidc_client_secret
     config.auth_method = oidc_auth_method
+    if verify_ssl.lower() != "true":
+        config.verify_ssl = False
+        os.environ["CURL_CA_BUNDLE"] = ""
 
     if not config.auth_method or config.auth_method is None:
         config.auth_method = 'password_grant'
