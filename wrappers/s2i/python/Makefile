@@ -34,7 +34,7 @@ build_local: get_local_repo
 	set -x && docker build -f Dockerfile.local --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${BASE_IMAGE} -t $(IMAGE_NAME):$(IMAGE_VERSION) .
 
 .PHONY: build_redhat
-build_redhat: get_local_repo
+build_redhat: get_local_repo build_conda_base
 	set -x && docker build -f Dockerfile.redhat --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${CONDA_BASE_IMAGE} -t $(IMAGE_NAME)-ubi8:$(IMAGE_VERSION) .
 
 
@@ -79,4 +79,5 @@ after_build_image_seldon_core_check:
 
 
 build_conda_base:
-	docker build -f Dockerfile.conda --build-arg CONDA_VERSION=${CONDA_VERSION} -t ${CONDA_BASE_IMAGE}:${CONDA_VERSION} .
+	docker pull registry.access.redhat.com/ubi8/ubi
+	docker build -f Dockerfile.conda --build-arg CONDA_VERSION=${CONDA_VERSION} -t ${CONDA_BASE_IMAGE}:${CONDA_VERSION} . --no-cache
