@@ -76,7 +76,13 @@ class UserModelApplication(StandaloneApplication):
     """
 
     def __init__(
-        self, app, user_object, tracing, jaeger_extra_tags, interface_name, options: Dict = None
+        self,
+        app,
+        user_object,
+        tracing,
+        jaeger_extra_tags,
+        interface_name,
+        options: Dict = None,
     ):
         self.user_object = user_object
         self.tracing = tracing
