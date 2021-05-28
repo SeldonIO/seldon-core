@@ -82,8 +82,9 @@ You can also provide the gateway on a per Seldon Deployment resource basis by pr
 |`seldon.io/istio-gateway:<gateway name>`| istio-system/seldon-gateway | The gateway to use for this deployment. If no namespace prefix is applied it will refer to the namespace of the Seldon Deployment. |
 | `seldon.io/istio-retries` | None | The number of istio retries |
 | `seldon.io/istio-retries-timeout` | None | The per try timeout if istio retries is set |
+| `seldon.io/istio-host` | `*` | The Host for istio Virtual Service |
 
-All annotations should be placed in `spec.annotations`.
+All annotations should be placed in `spec.annotations` or `metadata.annotations`. `spec.annotations` will take precedence.
 
 
 ## Traffic Routing
