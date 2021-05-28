@@ -365,9 +365,6 @@ def main():
     grpc_port = args.grpc_port
     metrics_port = args.metrics_port
 
-    # if args.tracing:
-    #    tracer = setup_tracing(args.interface_name)
-
     seldon_metrics = SeldonMetrics(worker_id_func=os.getpid)
     # TODO why 2 ways to create metrics server
     # seldon_metrics = SeldonMetrics(
@@ -425,6 +422,7 @@ def main():
             UserModelApplication(
                 app,
                 user_object,
+                args.tracing,
                 jaeger_extra_tags,
                 args.interface_name,
                 options=options,

@@ -76,15 +76,16 @@ class UserModelApplication(StandaloneApplication):
     """
 
     def __init__(
-        self, app, user_object, jaeger_extra_tags, interface_name, options: Dict = None
+        self, app, user_object, tracing, jaeger_extra_tags, interface_name, options: Dict = None
     ):
         self.user_object = user_object
+        self.tracing = tracing
         self.jaeger_extra_tags = jaeger_extra_tags
         self.interface_name = interface_name
         super().__init__(app, options)
 
     def load(self):
-        if self.jaeger_extra_tags is not None:
+        if self.tracing and self.jaeger_extra_tags is not None:
             logger.info("Tracing branch is active")
             from flask_opentracing import FlaskTracing
 
@@ -92,6 +93,8 @@ class UserModelApplication(StandaloneApplication):
 
             logger.info("Set JAEGER_EXTRA_TAGS %s", self.jaeger_extra_tags)
             FlaskTracing(tracer, True, self.application, self.jaeger_extra_tags)
+        else:
+            logger.info("Tracing not active")
         logger.debug("LOADING APP %d", os.getpid())
         try:
             logger.debug("Calling user load method")
