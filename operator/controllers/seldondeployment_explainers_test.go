@@ -156,6 +156,7 @@ var _ = Describe("Create a Seldon Deployment with explainer", func() {
 	const timeout = time.Second * 30
 	const interval = time.Second * 1
 	namespaceName := rand.String(10)
+	replicas := int32(2)
 	By("Creating a resource")
 	It("should create a resource with defaults", func() {
 		Expect(k8sClient).NotTo(BeNil())
@@ -191,7 +192,8 @@ var _ = Describe("Create a Seldon Deployment with explainer", func() {
 							Type: &modelType,
 						},
 						Explainer: &machinelearningv1.Explainer{
-							Type: machinelearningv1.AlibiAnchorsTabularExplainer,
+							Type:     machinelearningv1.AlibiAnchorsTabularExplainer,
+							Replicas: &replicas,
 						},
 					},
 				},
@@ -245,7 +247,7 @@ var _ = Describe("Create a Seldon Deployment with explainer", func() {
 			return err
 		}, timeout, interval).Should(BeNil())
 		Expect(len(depFetched.Spec.Template.Spec.Containers)).Should(Equal(1))
-		Expect(*depFetched.Spec.Replicas).To(Equal(int32(1)))
+		Expect(*depFetched.Spec.Replicas).To(Equal(int32(2)))
 		Expect(*depFetched.Spec.Template.Spec.SecurityContext.RunAsUser).To(Equal(int64(2)))
 		Expect(depFetched.Spec.Template.Spec.Containers[0].Image).To(Equal("seldonio/alibiexplainer:1.2.0"))
 

@@ -8578,6 +8578,9 @@ spec:
                           type: string
                         modelUri:
                           type: string
+                        replicas:
+                          format: int32
+                          type: integer
                         serviceAccountName:
                           type: string
                         storageInitializerImage:
@@ -17452,6 +17455,9 @@ spec:
                           type: string
                         modelUri:
                           type: string
+                        replicas:
+                          format: int32
+                          type: integer
                         serviceAccountName:
                           type: string
                         storageInitializerImage:
@@ -26326,6 +26332,9 @@ spec:
                           type: string
                         modelUri:
                           type: string
+                        replicas:
+                          format: int32
+                          type: integer
                         serviceAccountName:
                           type: string
                         storageInitializerImage:
