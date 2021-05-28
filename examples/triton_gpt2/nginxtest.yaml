@@ -13,11 +13,18 @@ spec:
       command:
         - "/bin/sh"
         - "-c"
-        - while true; do echo $(date) >> /mnt/blob/outfile; sleep 1; done
+        - while true; do echo $(date) >> /mnt/models/outfile; sleep 1; done
       volumeMounts:
-        - name: blob01
-          mountPath: "/mnt/blob"
+       - mountPath: /mnt/pvc
+         name: kfserving-pvc-source
+         readOnly: true
+       - mountPath: /mnt/models
+         name: gpt2-provision-location  
+      securityContext:
+        runAsUser: 8888   
   volumes:
-    - name: blob01
+    - name: kfserving-pvc-source
       persistentVolumeClaim:
-        claimName: pvc-gptblob
+        claimName: pvc-gpt2blob
+    - emptyDir: {}
+      name: gpt2-provision-location
