@@ -142,6 +142,9 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		if mlDep.Spec.Protocol == machinelearningv1.ProtocolTensorflow {
 			explainerProtocol = string(machinelearningv1.ProtocolTensorflow)
 		}
+		if mlDep.Spec.Protocol == machinelearningv1.ProtocolKfserving {
+			explainerProtocol = string(machinelearningv1.ProtocolKfserving)
+		}
 
 		if customPort == nil {
 			explainerContainer.Ports = append(explainerContainer.Ports, corev1.ContainerPort{Name: portType, ContainerPort: portNum, Protocol: corev1.ProtocolTCP})
