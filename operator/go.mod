@@ -11,7 +11,7 @@ require (
 	github.com/kedacore/keda v0.0.0-20200911122749-717aab81817f
 	github.com/onsi/ginkgo v1.15.0
 	github.com/onsi/gomega v1.10.4
-	go.uber.org/zap v1.15.0
+	go.uber.org/zap v1.17.0
 	gopkg.in/yaml.v2 v2.4.0
 	istio.io/api v0.0.0-20200513175333-ae3da0d240e3
 	istio.io/client-go v0.0.0-20200513180646-f8d9d8ff84e6
