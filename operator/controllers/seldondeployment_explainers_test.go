@@ -156,7 +156,8 @@ var _ = Describe("Create a Seldon Deployment with explainer", func() {
 	const timeout = time.Second * 30
 	const interval = time.Second * 1
 	namespaceName := rand.String(10)
-	replicas := int32(2)
+	replicas := int32(3)
+	replicasExplainer := int32(2)
 	By("Creating a resource")
 	It("should create a resource with defaults", func() {
 		Expect(k8sClient).NotTo(BeNil())
@@ -171,7 +172,8 @@ var _ = Describe("Create a Seldon Deployment with explainer", func() {
 				Namespace: key.Namespace,
 			},
 			Spec: machinelearningv1.SeldonDeploymentSpec{
-				Name: "mydep",
+				Replicas: &replicas,
+				Name:     "mydep",
 				Predictors: []machinelearningv1.PredictorSpec{
 					{
 						Name: "p1",
@@ -193,7 +195,7 @@ var _ = Describe("Create a Seldon Deployment with explainer", func() {
 						},
 						Explainer: &machinelearningv1.Explainer{
 							Type:     machinelearningv1.AlibiAnchorsTabularExplainer,
-							Replicas: &replicas,
+							Replicas: &replicasExplainer,
 						},
 					},
 				},
@@ -233,7 +235,7 @@ var _ = Describe("Create a Seldon Deployment with explainer", func() {
 			return err
 		}, timeout, interval).Should(BeNil())
 		Expect(len(depFetched.Spec.Template.Spec.Containers)).Should(Equal(2))
-		Expect(*depFetched.Spec.Replicas).To(Equal(int32(1)))
+		Expect(*depFetched.Spec.Replicas).To(Equal(replicas))
 		Expect(*depFetched.Spec.Template.Spec.SecurityContext.RunAsUser).To(Equal(int64(2)))
 
 		//Check explainer deployment
@@ -247,9 +249,138 @@ var _ = Describe("Create a Seldon Deployment with explainer", func() {
 			return err
 		}, timeout, interval).Should(BeNil())
 		Expect(len(depFetched.Spec.Template.Spec.Containers)).Should(Equal(1))
-		Expect(*depFetched.Spec.Replicas).To(Equal(int32(2)))
+		Expect(*depFetched.Spec.Replicas).To(Equal(replicasExplainer))
 		Expect(*depFetched.Spec.Template.Spec.SecurityContext.RunAsUser).To(Equal(int64(2)))
 		Expect(depFetched.Spec.Template.Spec.Containers[0].Image).To(Equal("seldonio/alibiexplainer:1.2.0"))
+
+		//Check svc created
+		svcKey := types.NamespacedName{
+			Name:      machinelearningv1.GetContainerServiceName("dep", instance.Spec.Predictors[0], &instance.Spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0]),
+			Namespace: namespaceName,
+		}
+		svcFetched := &v1.Service{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), svcKey, svcFetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+
+		// Check events created
+		serviceCreatedEvents := 0
+		deploymentsCreatedEvents := 0
+		evts, err := clientset.CoreV1().Events(namespaceName).Search(scheme, fetched)
+		Expect(err).To(BeNil())
+		for _, evt := range evts.Items {
+			if evt.Reason == constants.EventsCreateService {
+				serviceCreatedEvents = serviceCreatedEvents + 1
+			} else if evt.Reason == constants.EventsCreateDeployment {
+				deploymentsCreatedEvents = deploymentsCreatedEvents + 1
+			}
+		}
+
+		Expect(serviceCreatedEvents).To(Equal(3))
+		Expect(deploymentsCreatedEvents).To(Equal(2))
+
+		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
+
+	})
+
+})
+
+var _ = Describe("Create a Seldon Deployment with zero replicas with explainer", func() {
+	const timeout = time.Second * 30
+	const interval = time.Second * 1
+	namespaceName := rand.String(10)
+	replicas := int32(0)
+	replicasExplainer := int32(3)
+	By("Creating a resource")
+	It("should create a resource with defaults", func() {
+		Expect(k8sClient).NotTo(BeNil())
+		var modelType = machinelearningv1.MODEL
+		key := types.NamespacedName{
+			Name:      "dep",
+			Namespace: namespaceName,
+		}
+		instance := &machinelearningv1.SeldonDeployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      key.Name,
+				Namespace: key.Namespace,
+			},
+			Spec: machinelearningv1.SeldonDeploymentSpec{
+				Name:     "mydep",
+				Replicas: &replicas,
+				Predictors: []machinelearningv1.PredictorSpec{
+					{
+						Name: "p1",
+						ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
+							{
+								Spec: v1.PodSpec{
+									Containers: []v1.Container{
+										{
+											Image: "seldonio/mock_classifier:1.0",
+											Name:  "classifier",
+										},
+									},
+								},
+							},
+						},
+						Graph: machinelearningv1.PredictiveUnit{
+							Name: "classifier",
+							Type: &modelType,
+						},
+						Explainer: &machinelearningv1.Explainer{
+							Type:     machinelearningv1.AlibiAnchorsTabularExplainer,
+							Replicas: &replicasExplainer,
+						},
+					},
+				},
+			},
+		}
+
+		//Create namespace
+		namespace := &v1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: namespaceName,
+			},
+		}
+		Expect(k8sClient.Create(context.Background(), namespace)).Should(Succeed())
+
+		// Run Defaulter
+		instance.Default()
+		envUseExecutor = "true"
+		envDefaultUser = "2"
+		Expect(k8sClient.Create(context.Background(), instance)).Should(Succeed())
+		//time.Sleep(time.Second * 5)
+
+		fetched := &machinelearningv1.SeldonDeployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), key, fetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+		Expect(fetched.Name).Should(Equal("dep"))
+
+		// Check deployment created
+		depKey := types.NamespacedName{
+			Name:      machinelearningv1.GetDeploymentName(instance, instance.Spec.Predictors[0], instance.Spec.Predictors[0].ComponentSpecs[0], 0),
+			Namespace: namespaceName,
+		}
+		depFetched := &appsv1.Deployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), depKey, depFetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+		Expect(*depFetched.Spec.Replicas).To(Equal(replicas))
+
+		//Check explainer deployment
+		depKey = types.NamespacedName{
+			Name:      machinelearningv1.GetExplainerDeploymentName(instance.Name, &instance.Spec.Predictors[0]),
+			Namespace: namespaceName,
+		}
+		depFetched = &appsv1.Deployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), depKey, depFetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+		Expect(*depFetched.Spec.Replicas).To(Equal(replicas))
 
 		//Check svc created
 		svcKey := types.NamespacedName{
