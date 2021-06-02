@@ -112,7 +112,7 @@ def process_and_update_elastic_doc(
         sys.stdout.flush()
 
     # first do any needed transformations
-    new_content_part = process_content(message_type, message_body)
+    new_content_part = process_content(message_type, message_body, headers)
 
     # set metadata to go just in this part (request or response) and not top-level
     log_helper.field_from_header(
@@ -231,7 +231,7 @@ def upsert_doc_to_elastic(
 
 
 # take request or response part and process it by deriving metadata
-def process_content(message_type, content):
+def process_content(message_type, content, headers):
 
     if content is None:
         print("content is empty")
@@ -248,7 +248,7 @@ def process_content(message_type, content):
 
     # extract data part out and process for req or resp - handle differently later for outlier
     if message_type == "request" or message_type == "response":
-        requestCopy = extract_data_part(content)
+        requestCopy = extract_data_part(content, headers)
 
     return requestCopy
 
@@ -285,7 +285,7 @@ def create_np_from_v2(data: list,ty: str, shape: list) -> np.array:
     arr.shape = tuple(shape)
     return arr
 
-def extract_data_part(content):
+def extract_data_part(content, headers):
     copy = content.copy()
 
     # if 'instances' in body then tensorflow request protocol
@@ -367,8 +367,12 @@ def extract_data_part(content):
             copy["dataType"] = "image"
 
         if isinstance(req_features, Iterable):
+            namespace = log_helper.get_header(log_helper.NAMESPACE_HEADER_NAME, headers)
+            inferenceservice_name = log_helper.get_header(log_helper.INFERENCESERVICE_HEADER_NAME, headers)
+            endpoint_name = log_helper.get_header(log_helper.ENDPOINT_HEADER_NAME, headers)
+            serving_engine = log_helper.serving_engine(headers)
 
-            elements = createElelmentsArray(req_features, list(req_datadef.names))
+            elements = createElelmentsArray(req_features, list(req_datadef.names), namespace, serving_engine, inferenceservice_name, endpoint_name)
 
             if isinstance(elements, Iterable):
 
@@ -453,8 +457,14 @@ def extractRow(
     return reqJson
 
 
-def createElelmentsArray(X: np.ndarray, names: list):
+def createElelmentsArray(X: np.ndarray, names: list, namespace_name, serving_engine, inferenceservice_name, endpoint_name):
     # TODO: Fetch deployment metadata and create nested elements array for PROBA and ONE_HOT types
+
+    #need to call this
+    #    metadata = fetch_metadata(namespace_name, serving_engine, inferenceservice_name, endpoint_name)
+    #needs passing more params through
+    #shouldn't fail if can't find metadata or can't find for this field or if a param is None
+
     results = None
     if isinstance(X, np.ndarray):
         if len(X.shape) == 1:
