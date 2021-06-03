@@ -279,3 +279,14 @@ stringData:
   RCLONE_CONFIG_S3_SECRET_ACCESS_KEY: ""
   RCLONE_CONFIG_S3_ENV_AUTH: "true"
 ```
+
+### Directly from PVC
+
+You are able to make models available directly from PVCs instead of object stores. This may be desirable if you have a lot of very large files and you want to avoid uploading/downloading, for example through NFS drives.
+
+The way in which you are able to specify the PVC is using the `modelUri` with the following format below. One thing to take into consideration is the permissions in the files as the containers will have their respective `runAsUser` parameters.
+
+```
+...
+    modelUri: pvc://<pvc-name>/<path>
+```
