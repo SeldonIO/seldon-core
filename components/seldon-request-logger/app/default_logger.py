@@ -483,7 +483,7 @@ def createElementsWithMetadata(X, names, results, metadata_schema, message_type)
                 names.append(elem['name'])
                 metadata_dict[elem['name']] = elem
 
-            #TODO if it's ONE_HOT there'll actually be multiple columns for a single metadata element
+            #TODO if it's ONE_HOT there'll be multiple request columns for a single metadata element
             # this kinda breaks the dict lookup pattern
             # maybe we can put elements in dict for each true column and key off the true column name
             # then the metadata element value will be there multiple times in a row and we'd join them up later
@@ -498,15 +498,14 @@ def createElementsWithMetadata(X, names, results, metadata_schema, message_type)
                     for subelem in elem['schema']:
                         names.append(subelem['name'])
                         metadata_dict[subelem['name']] = elem
-                names.append(elem['name'])
-                metadata_dict[elem['name']] = elem
+                else:
+                    names.append(elem['name'])
+                    metadata_dict[elem['name']] = elem
             #TODO: same problem as with requests with ONE_HOT
 
 
     if isinstance(X, np.ndarray):
         if len(X.shape) == 1:
-            print('len(X.shape) == 1')
-            sys.stdout.flush()
             results = []
             for i in range(X.shape[0]):
                 d = {}
@@ -517,8 +516,6 @@ def createElementsWithMetadata(X, names, results, metadata_schema, message_type)
                         d[name] = lookupValueWithMetadata(name,metadata_dict,X[i])
                 results.append(d)
         elif len(X.shape) >= 2:
-            print('len(X.shape) >= 2')
-            sys.stdout.flush()
             results = []
             for i in range(X.shape[0]):
                 d = {}
@@ -560,7 +557,9 @@ def lookupValueWithMetadata(name, metadata_dict, raw_value):
     if metadata_elem['type'] == "ONE_HOT":
         return raw_value
 
-    #for proba should be ok to return raw value as all we've done is map names from schema to column names
+    #for proba currently all we do is map names from schema to column names
+    #TODO: should actually handle like ONE_HOT
+    #so for income want "elements":{"Income":{">$50K":0.14611811908359656,"<=$50K":0.8538818809164035}}
     if metadata_elem['type'] == "PROBA":
         return raw_value
 
