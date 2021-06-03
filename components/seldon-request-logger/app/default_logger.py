@@ -505,6 +505,8 @@ def createElementsWithMetadata(X, names, results, metadata_schema, message_type)
 
     if isinstance(X, np.ndarray):
         if len(X.shape) == 1:
+            print('len(X.shape) == 1')
+            sys.stdout.flush()
             results = []
             for i in range(X.shape[0]):
                 d = {}
@@ -515,23 +517,42 @@ def createElementsWithMetadata(X, names, results, metadata_schema, message_type)
                         d[name] = lookupValueWithMetadata(name,metadata_dict,X[i])
                 results.append(d)
         elif len(X.shape) >= 2:
+            print('len(X.shape) >= 2')
+            sys.stdout.flush()
             results = []
             for i in range(X.shape[0]):
                 d = {}
                 for num, name in enumerate(names, start=0):
                     d[name] = X[i, num].tolist()
+                    if isinstance(d[name], Iterable):
+                        newlist = []
+                        for val in d[name]:
+                            newlist.append(lookupValueWithMetadata(name,metadata_dict,val))
+                        d[name] = newlist
+                    else:
+                        d[name] = lookupValueWithMetadata(name,metadata_dict,d[name])
                 results.append(d)
     return results
 
 def lookupValueWithMetadata(name, metadata_dict, raw_value):
     metadata_elem = metadata_dict[name]
+    #FIXME: remove this logging
+    print('metadata_elem')
+    print(metadata_elem)
+    sys.stdout.flush()
+
     if metadata_elem is None:
         return raw_value
 
     #categorical
     if metadata_elem['type'] == "CATEGORICAL":
-        if metadata_elem['category_map'][raw_value] is not None:
-            return metadata_elem['category_map'][raw_value]
+
+        if metadata_elem['data_type'] == 'INT':
+            #need to convert raw vals back to ints as could have been floatified
+            raw_value = int(raw_value)
+
+        if metadata_elem['category_map'][str(raw_value)] is not None:
+            return metadata_elem['category_map'][str(raw_value)]
         return raw_value
 
     #TODO: ONE_HOT is not so simple as would need to collapse multiple columns
