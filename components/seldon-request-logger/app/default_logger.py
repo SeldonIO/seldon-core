@@ -248,7 +248,7 @@ def process_content(message_type, content, headers):
 
     # extract data part out and process for req or resp - handle differently later for outlier
     if message_type == "request" or message_type == "response":
-        requestCopy = extract_data_part(content, headers)
+        requestCopy = extract_data_part(content, headers, message_type)
 
     return requestCopy
 
@@ -285,7 +285,7 @@ def create_np_from_v2(data: list,ty: str, shape: list) -> np.array:
     arr.shape = tuple(shape)
     return arr
 
-def extract_data_part(content, headers):
+def extract_data_part(content, headers, message_type):
     copy = content.copy()
 
     # if 'instances' in body then tensorflow request protocol
@@ -372,7 +372,7 @@ def extract_data_part(content, headers):
             endpoint_name = log_helper.get_header(log_helper.ENDPOINT_HEADER_NAME, headers)
             serving_engine = log_helper.serving_engine(headers)
 
-            elements = createElelmentsArray(req_features, list(req_datadef.names), namespace, serving_engine, inferenceservice_name, endpoint_name)
+            elements = createElelmentsArray(req_features, list(req_datadef.names), namespace, serving_engine, inferenceservice_name, endpoint_name, message_type)
 
             if isinstance(elements, Iterable):
 
@@ -457,15 +457,95 @@ def extractRow(
     return reqJson
 
 
-def createElelmentsArray(X: np.ndarray, names: list, namespace_name, serving_engine, inferenceservice_name, endpoint_name):
-    # TODO: Fetch deployment metadata and create nested elements array for PROBA and ONE_HOT types
-
-    #need to call this
-    #    metadata = fetch_metadata(namespace_name, serving_engine, inferenceservice_name, endpoint_name)
-    #needs passing more params through
-    #shouldn't fail if can't find metadata or can't find for this field or if a param is None
+def createElelmentsArray(X: np.ndarray, names: list, namespace_name, serving_engine, inferenceservice_name, endpoint_name, message_type):
+    if namespace_name is not None and inferenceservice_name is not None and serving_engine is not None and endpoint_name is not None:
+        metadata_schema = log_mapping.fetch_metadata(namespace_name, serving_engine, inferenceservice_name, endpoint_name)
+    else:
+        print('missing a param required for metadata lookup')
 
     results = None
+    if metadata_schema is None:
+        results = createElementsNoMetadata(X, names, results)
+    else:
+        results = createElementsWithMetadata(X, names, results, metadata_schema, message_type)
+    return results
+
+
+def createElementsWithMetadata(X, names, results, metadata_schema, message_type):
+    #we want field names from metadata if available - also build a dict of metadata by name for easy lookup
+    metadata_dict = {}
+
+    if metadata_schema['requests'] is not None and message_type == "request":
+        names = []
+        #we'll get names from metadata, assuming field order to match the request
+        for elem in metadata_schema['requests']:
+            if elem['name']:
+                names.append(elem['name'])
+                metadata_dict[elem['name']] = elem
+
+            #TODO if it's ONE_HOT there'll actually be multiple columns for a single metadata element
+            # this kinda breaks the dict lookup pattern
+            # maybe we can put elements in dict for each true column and key off the true column name
+            # then the metadata element value will be there multiple times in a row and we'd join them up later
+
+    if metadata_schema['responses'] is not None and message_type == "response":
+        names = []
+        #we'll get names from metadata, assuming field order to match the response
+        for elem in metadata_schema['responses']:
+            if elem['name']:
+                if elem['type'] == "PROBA":
+                    #for proba don't just take element as name - instead each name entry in schema is a column name
+                    for subelem in elem['schema']:
+                        names.append(subelem['name'])
+                        metadata_dict[subelem['name']] = elem
+                names.append(elem['name'])
+                metadata_dict[elem['name']] = elem
+            #TODO: same problem as with requests with ONE_HOT
+
+
+    if isinstance(X, np.ndarray):
+        if len(X.shape) == 1:
+            results = []
+            for i in range(X.shape[0]):
+                d = {}
+                for num, name in enumerate(names, start=0):
+                    if isinstance(X[i], bytes):
+                        d[name] = lookupValueWithMetadata(name,metadata_dict,X[i].decode("utf-8"))
+                    else:
+                        d[name] = lookupValueWithMetadata(name,metadata_dict,X[i])
+                results.append(d)
+        elif len(X.shape) >= 2:
+            results = []
+            for i in range(X.shape[0]):
+                d = {}
+                for num, name in enumerate(names, start=0):
+                    d[name] = X[i, num].tolist()
+                results.append(d)
+    return results
+
+def lookupValueWithMetadata(name, metadata_dict, raw_value):
+    metadata_elem = metadata_dict[name]
+    if metadata_elem is None:
+        return raw_value
+
+    #categorical
+    if metadata_elem['type'] == "CATEGORICAL":
+        if metadata_elem['category_map'][raw_value] is not None:
+            return metadata_elem['category_map'][raw_value]
+        return raw_value
+
+    #TODO: ONE_HOT is not so simple as would need to collapse multiple columns
+    # maybe can just map column vals to encoded categories here and do a pass of the elements after the fact to collapse
+    if metadata_elem['type'] == "ONE_HOT":
+        return raw_value
+
+    #for proba should be ok to return raw value as all we've done is map names from schema to column names
+    if metadata_elem['type'] == "PROBA":
+        return raw_value
+
+    return raw_value
+
+def createElementsNoMetadata(X, names, results):
     if isinstance(X, np.ndarray):
         if len(X.shape) == 1:
             results = []
