@@ -43,7 +43,11 @@ func getAnnotation(mlDep *machinelearningv1.SeldonDeployment, annotationKey stri
 	if annotation, hasAnnotation := mlDep.Spec.Annotations[annotationKey]; hasAnnotation {
 		return annotation
 	} else {
-		return fallback
+		if annotation, hasAnnotation := mlDep.Annotations[annotationKey]; hasAnnotation {
+			return annotation
+		} else {
+			return fallback
+		}
 	}
 }
 

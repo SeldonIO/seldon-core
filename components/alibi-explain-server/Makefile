@@ -221,3 +221,32 @@ curl_explain_adult_treeshap:
 cleanup_treeshap:
 	docker rm -f explainer
 
+
+
+#
+# Test Triton Cifar10
+#
+
+test_models/triton/cifar10/tf_cifar10:
+	mkdir -p test_models/triton/tf_cifar10
+	gsutil cp -r gs://seldon-models/triton/tf_cifar10 test_models/triton
+
+
+run_triton_cifar10: test_models/triton/cifar10/tf_cifar10
+	docker run --rm --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 -p9000:9000 -p8001:8001 -p8002:8002 -p5001:5001 -v ${PWD}/test_models/triton/tf_cifar10:/models nvcr.io/nvidia/tritonserver:20.08-py3 /opt/tritonserver/bin/tritonserver --model-repository=/models --http-port=9000 --grpc-port=5001
+
+curl_triton_cifar10:
+	curl -H "Content-Type: application/json" http://0.0.0.0:9000/v2/models/cifar10/infer -d '@tests/data/truck-v2.json'
+
+
+run_explainer_triton_cifar10:
+	python -m alibiexplainer --model_name cifar10 --protocol kfserving.http --storage_uri gs://seldon-models/tfserving/cifar10/explainer-py36-0.5.2 --predictor_host localhost:9000 AnchorImages
+
+
+run_explainer_triton_cifar10_docker:
+	docker run --rm -d --name "explainer" --network=host -p 8080:8080 seldonio/${IMAGE}:${VERSION} --model_name cifar10 --protocol kfserving.http --storage_uri gs://seldon-models/tfserving/cifar10/explainer-py36-0.5.2 --predictor_host localhost:9000 AnchorImages 
+
+
+curl_explain_triton_cifar10_image:
+	curl -d @tests/data/truck-v2.json  -X POST http://localhost:8080/v2/models/cifar10/explain    -H "Content-Type: application/json"
+
