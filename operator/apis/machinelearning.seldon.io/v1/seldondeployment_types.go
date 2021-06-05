@@ -289,6 +289,7 @@ type Explainer struct {
 	Endpoint                *Endpoint          `json:"endpoint,omitempty" protobuf:"bytes,6,opt,name=endpoint"`
 	EnvSecretRefName        string             `json:"envSecretRefName,omitempty" protobuf:"bytes,7,opt,name=envSecretRefName"`
 	StorageInitializerImage string             `json:"storageInitializerImage,omitempty" protobuf:"bytes,8,opt,name=storageInitializerImage"`
+	Replicas                *int32             `json:"replicas,omitempty" protobuf:"string,4,opt,name=replicas"`
 }
 
 // ObjectMeta is a copy of the "k8s.io/apimachinery/pkg/apis/meta/v1" ObjectMeta.
