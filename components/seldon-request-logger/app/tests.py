@@ -3,6 +3,7 @@ import unittest
 import default_logger
 import numpy as np
 
+#for more local testing see README
 class TestRequestLogger(unittest.TestCase):
 
     def test_enriched_elements_request(self):
