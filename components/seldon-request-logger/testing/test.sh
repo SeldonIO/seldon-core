@@ -58,4 +58,10 @@ curl 0.0.0.0:2222 -d  '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,
 #curl 0.0.0.0:2222 -d  '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"BYTES","shape":[16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' -H "Content-Type: application/json" -H "Ce-Inferenceservicename: tensor" -H "Ce-Type: io.seldon.serving.inference.request" -H "Ce-Requestid: 2z3"
 
 
+# income classifier
+curl 0.0.0.0:2222 -d  '{"data":{"names":["Age","Workclass","Education","Marital Status","Occupation","Relationship","Race","Sex","Capital Gain","Capital Loss","Hours per week","Country"],"ndarray":[[53,4,0,2,8,4,2,0,0,0,60,9]]}}' -H "Content-Type: application/json" -H "Ce-Inferenceservicename: income" -H "Ce-Type: io.seldon.serving.inference.request" -H "Ce-Namespace: seldon" -H "Ce-Endpoint: default" -H "Ce-Requestid: 2z4"
+curl 0.0.0.0:2222 -d  '{"data":{"names":["t:0","t:1"],"ndarray":[[0.8538818809164035,0.14611811908359656]]},"meta":{"requestPath":{"income-container":"seldonio\/sklearnserver:1.7.0"}}}' -H "Content-Type: application/json" -H "Ce-Inferenceservicename: income" -H "Ce-Type: io.seldon.serving.inference.response" -H "Ce-Namespace: seldon" -H "Ce-Endpoint: default" -H "Ce-Requestid: 2z4"
 
+# mix of one_hot, categorical and float
+curl 0.0.0.0:2222 -d  '{"data":{"names":["dummy_one_hot_1","dummy_one_hot_2","dummy_categorical","dummy_float"],"ndarray":[[0,1,0,2.54]]}}' -H "Content-Type: application/json" -H "Ce-Inferenceservicename: dummy" -H "Ce-Type: io.seldon.serving.inference.request" -H "Ce-Namespace: seldon" -H "Ce-Endpoint: default" -H "Ce-Requestid: 2z5"
+curl 0.0.0.0:2222 -d  '{"data":{"names":["dummy_proba_0","dummy_proba_1","dummy_float"],"ndarray":[[0.8538818809164035,0.14611811908359656,3.65]]}}' -H "Content-Type: application/json" -H "Ce-Inferenceservicename: dummy" -H "Ce-Type: io.seldon.serving.inference.response" -H "Ce-Namespace: seldon" -H "Ce-Endpoint: default" -H "Ce-Requestid: 2z5"

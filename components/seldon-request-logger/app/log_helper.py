@@ -133,6 +133,9 @@ def serving_engine(headers):
     elif type_header.startswith("org.kubeflow.serving"):
         return "inferenceservice"
 
+def get_header(header_name, headers):
+    if not headers.get(header_name) is None:
+        return clean_header(header_name, headers)
 
 def field_from_header(content, header_name, headers):
     if not headers.get(header_name) is None:

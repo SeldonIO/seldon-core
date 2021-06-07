@@ -35,7 +35,7 @@ Run the logger:
 ```
 make run_local
 ```
-And in another window run testing/test.sh
+And in another window run testing/test.sh or particular lines you're interested in.
 
 The output of the logger will say where docs are indexed. The contents can be checked in postman by querying on the elastic host e.g.
 ```

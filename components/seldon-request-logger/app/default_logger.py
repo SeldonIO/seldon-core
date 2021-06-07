@@ -112,7 +112,7 @@ def process_and_update_elastic_doc(
         sys.stdout.flush()
 
     # first do any needed transformations
-    new_content_part = process_content(message_type, message_body)
+    new_content_part = process_content(message_type, message_body, headers)
 
     # set metadata to go just in this part (request or response) and not top-level
     log_helper.field_from_header(
@@ -231,7 +231,7 @@ def upsert_doc_to_elastic(
 
 
 # take request or response part and process it by deriving metadata
-def process_content(message_type, content):
+def process_content(message_type, content, headers):
 
     if content is None:
         print("content is empty")
@@ -248,7 +248,7 @@ def process_content(message_type, content):
 
     # extract data part out and process for req or resp - handle differently later for outlier
     if message_type == "request" or message_type == "response":
-        requestCopy = extract_data_part(content)
+        requestCopy = extract_data_part(content, headers, message_type)
 
     return requestCopy
 
@@ -285,7 +285,7 @@ def create_np_from_v2(data: list,ty: str, shape: list) -> np.array:
     arr.shape = tuple(shape)
     return arr
 
-def extract_data_part(content):
+def extract_data_part(content, headers, message_type):
     copy = content.copy()
 
     # if 'instances' in body then tensorflow request protocol
@@ -367,8 +367,12 @@ def extract_data_part(content):
             copy["dataType"] = "image"
 
         if isinstance(req_features, Iterable):
+            namespace = log_helper.get_header(log_helper.NAMESPACE_HEADER_NAME, headers)
+            inferenceservice_name = log_helper.get_header(log_helper.INFERENCESERVICE_HEADER_NAME, headers)
+            endpoint_name = log_helper.get_header(log_helper.ENDPOINT_HEADER_NAME, headers)
+            serving_engine = log_helper.serving_engine(headers)
 
-            elements = createElelmentsArray(req_features, list(req_datadef.names))
+            elements = createElelmentsArray(req_features, list(req_datadef.names), namespace, serving_engine, inferenceservice_name, endpoint_name, message_type)
 
             if isinstance(elements, Iterable):
 
@@ -453,9 +457,149 @@ def extractRow(
     return reqJson
 
 
-def createElelmentsArray(X: np.ndarray, names: list):
-    # TODO: Fetch deployment metadata and create nested elements array for PROBA and ONE_HOT types
+def createElelmentsArray(X: np.ndarray, names: list, namespace_name, serving_engine, inferenceservice_name, endpoint_name, message_type):
+    if namespace_name is not None and inferenceservice_name is not None and serving_engine is not None and endpoint_name is not None:
+        metadata_schema = log_mapping.fetch_metadata(namespace_name, serving_engine, inferenceservice_name, endpoint_name)
+    else:
+        print('missing a param required for metadata lookup')
+
     results = None
+    if metadata_schema is None:
+        results = createElementsNoMetadata(X, names, results)
+    else:
+        results = createElementsWithMetadata(X, names, results, metadata_schema, message_type)
+    return results
+
+
+def createElementsWithMetadata(X, names, results, metadata_schema, message_type):
+    #we want field names from metadata if available - also build a dict of metadata by name for easy lookup
+    metadata_dict = {}
+
+    if metadata_schema['requests'] is not None and message_type == "request":
+        names = []
+        #we'll get names from metadata, assuming field order to match the request
+        for elem in metadata_schema['requests']:
+            if elem['name']:
+                if elem['type'] == "ONE_HOT" or elem['type'] == "PROBA":
+                    #don't just take element as name - instead each name entry in schema is a column name
+                    # used later for merging columns
+                    for subelem in elem['schema']:
+                        names.append(subelem['name'])
+                        metadata_dict[subelem['name']] = elem
+                else:
+                    #used for categorical lookups
+                    names.append(elem['name'])
+                    metadata_dict[elem['name']] = elem
+
+    if metadata_schema['responses'] is not None and message_type == "response":
+        names = []
+        #we'll get names from metadata, assuming field order to match the response
+        for elem in metadata_schema['responses']:
+            if elem['name']:
+                if elem['type'] == "PROBA" or elem['type'] == "ONE_HOT":
+                    #don't just take element as name - instead each name entry in schema is a column name
+                    for subelem in elem['schema']:
+                        names.append(subelem['name'])
+                        metadata_dict[subelem['name']] = elem
+                else:
+                    names.append(elem['name'])
+                    metadata_dict[elem['name']] = elem
+
+
+    if isinstance(X, np.ndarray):
+        if len(X.shape) == 1:
+            temp_results = []
+            results = []
+            for i in range(X.shape[0]):
+                d = {}
+                for num, name in enumerate(names, start=0):
+                    if isinstance(X[i], bytes):
+                        d[name] = lookupValueWithMetadata(name,metadata_dict,X[i].decode("utf-8"))
+                    else:
+                        d[name] = lookupValueWithMetadata(name,metadata_dict,X[i])
+                temp_results.append(d)
+            results = mergeLinkedColumns(temp_results, metadata_dict)
+        elif len(X.shape) >= 2:
+            temp_results = []
+            results = []
+            for i in range(X.shape[0]):
+                d = {}
+                for num, name in enumerate(names, start=0):
+                    d[name] = X[i, num].tolist()
+                    if isinstance(d[name], Iterable):
+                        newlist = []
+                        for val in d[name]:
+                            newlist.append(lookupValueWithMetadata(name,metadata_dict,val))
+                        d[name] = newlist
+                    else:
+                        d[name] = lookupValueWithMetadata(name,metadata_dict,d[name])
+                temp_results.append(d)
+            results = mergeLinkedColumns(temp_results, metadata_dict)
+
+    return results
+
+def mergeLinkedColumns(raw_list, metadata_dict):
+    new_list = []
+
+    #one_hot and proba elements need to be grouped
+    #the names from the schema section of their entries in the metadata tell us which columns to group
+    #they should be grouped under a new top column with the name of the top-level element in the metadata
+    #e.g. for Income we have top-level proba element and subelements for greater or less than 50k
+    #so we should end up with "elements":{"Income":{">$50K":0.14611811908359656,"<=$50K":0.8538818809164035}}}}}
+    elems_to_group = {}
+
+    for key, metadata_elem in metadata_dict.items():
+        if metadata_elem['type'] == "ONE_HOT" or metadata_elem['type'] == "PROBA":
+            for subelem in metadata_elem['schema']:
+                sub_name = subelem['name']
+                elems_to_group[sub_name] = metadata_elem['name']
+
+    #raw list is actually a list containing a dict or set of dicts
+    for dict in raw_list:
+
+        #transform each dict to group one_hot and proba fields
+        new_dict = {}
+
+        for key, elem in dict.items():
+
+            if not elems_to_group or key not in elems_to_group:
+                #if element doesn't need to be grouped (e.g. it's a float) then just add it
+                new_dict[key] = elem
+            else:
+                top_elem_name = elems_to_group[key]
+
+                #if top_elem_name entry already in dict we're building then add to that
+                if top_elem_name in new_dict:
+                    new_dict[top_elem_name][key] = elem
+                else:
+                    #otherwise put in a new element
+                    new_dict[top_elem_name] = {key: elem}
+
+        if new_dict:
+            new_list.append(new_dict)
+
+    return new_list
+
+def lookupValueWithMetadata(name, metadata_dict, raw_value):
+    metadata_elem = metadata_dict[name]
+
+    if metadata_elem is None:
+        return raw_value
+
+    #categorical currently only case where we replace value
+    if metadata_elem['type'] == "CATEGORICAL":
+
+        if metadata_elem['data_type'] == 'INT':
+            #need to convert raw vals back to ints as could have been floatified
+            raw_value = int(raw_value)
+
+        if metadata_elem['category_map'][str(raw_value)] is not None:
+            return metadata_elem['category_map'][str(raw_value)]
+        return raw_value
+
+    return raw_value
+
+def createElementsNoMetadata(X, names, results):
     if isinstance(X, np.ndarray):
         if len(X.shape) == 1:
             results = []
