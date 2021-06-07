@@ -482,17 +482,14 @@ def createElementsWithMetadata(X, names, results, metadata_schema, message_type)
             if elem['name']:
                 if elem['type'] == "ONE_HOT" or elem['type'] == "PROBA":
                     #don't just take element as name - instead each name entry in schema is a column name
+                    # used later for merging columns
                     for subelem in elem['schema']:
                         names.append(subelem['name'])
                         metadata_dict[subelem['name']] = elem
                 else:
+                    #used for categorical lookups
                     names.append(elem['name'])
                     metadata_dict[elem['name']] = elem
-
-            #TODO if it's ONE_HOT there'll be multiple request columns for a single metadata element
-            # this kinda breaks the dict lookup pattern
-            # maybe we can put elements in dict for each true column and key off the true column name
-            # then the metadata element value will be there multiple times in a row and we'd join them up later
 
     if metadata_schema['responses'] is not None and message_type == "response":
         names = []
@@ -507,7 +504,6 @@ def createElementsWithMetadata(X, names, results, metadata_schema, message_type)
                 else:
                     names.append(elem['name'])
                     metadata_dict[elem['name']] = elem
-            #TODO: same problem as with requests with ONE_HOT
 
 
     if isinstance(X, np.ndarray):
@@ -539,6 +535,7 @@ def createElementsWithMetadata(X, names, results, metadata_schema, message_type)
                         d[name] = lookupValueWithMetadata(name,metadata_dict,d[name])
                 temp_results.append(d)
             results = mergeLinkedColumns(temp_results, metadata_dict)
+
     return results
 
 def mergeLinkedColumns(raw_list, metadata_dict):
@@ -560,29 +557,23 @@ def mergeLinkedColumns(raw_list, metadata_dict):
     #raw list is actually a list containing a dict or set of dicts
     for dict in raw_list:
 
+        #transform each dict to group one_hot and proba fields
         new_dict = {}
 
         for key, elem in dict.items():
 
-            if not elems_to_group or elems_to_group[key] is None:
-
+            if not elems_to_group or key not in elems_to_group:
+                #if element doesn't need to be grouped (e.g. it's a float) then just add it
                 new_dict[key] = elem
             else:
                 top_elem_name = elems_to_group[key]
 
-                #TODO: need to test this with a one_hot where there are also categoricals or floats at the same level
-                #so far only tested with just a proba and with elems_to_group empty
-                #esp need to check that it's right below to add to call new_list.append at that level
-
-                #if the key of the last element in new_list is top_elem_name then add to that
-                if new_list:
-                    last_elem = new_list[-1]
-
-                    if list(last_elem.keys())[0] == top_elem_name:
-                        last_elem[top_elem_name][key] = elem
+                #if top_elem_name entry already in dict we're building then add to that
+                if top_elem_name in new_dict:
+                    new_dict[top_elem_name][key] = elem
                 else:
                     #otherwise put in a new element
-                    new_list.append({top_elem_name: {key: elem}})
+                    new_dict[top_elem_name] = {key: elem}
 
         if new_dict:
             new_list.append(new_dict)
@@ -591,15 +582,11 @@ def mergeLinkedColumns(raw_list, metadata_dict):
 
 def lookupValueWithMetadata(name, metadata_dict, raw_value):
     metadata_elem = metadata_dict[name]
-    #FIXME: remove this logging
-    print('metadata_elem')
-    print(metadata_elem)
-    sys.stdout.flush()
 
     if metadata_elem is None:
         return raw_value
 
-    #categorical
+    #categorical currently only case where we replace value
     if metadata_elem['type'] == "CATEGORICAL":
 
         if metadata_elem['data_type'] == 'INT':
@@ -608,16 +595,6 @@ def lookupValueWithMetadata(name, metadata_dict, raw_value):
 
         if metadata_elem['category_map'][str(raw_value)] is not None:
             return metadata_elem['category_map'][str(raw_value)]
-        return raw_value
-
-    #TODO: ONE_HOT is not so simple as would need to collapse aggregate columns
-    if metadata_elem['type'] == "ONE_HOT":
-        return raw_value
-
-    #for proba currently all we do is map names from schema to column names
-    #TODO: should actually handle like ONE_HOT
-    #so for income want "elements":{"Income":{">$50K":0.14611811908359656,"<=$50K":0.8538818809164035}}
-    if metadata_elem['type'] == "PROBA":
         return raw_value
 
     return raw_value
