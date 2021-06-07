@@ -475,7 +475,7 @@ def createElementsWithMetadata(X, names, results, metadata_schema, message_type)
     #we want field names from metadata if available - also build a dict of metadata by name for easy lookup
     metadata_dict = {}
 
-    if metadata_schema['requests'] is not None and message_type == "request":
+    if 'requests' in metadata_schema and message_type == "request":
         names = []
         #we'll get names from metadata, assuming field order to match the request
         for elem in metadata_schema['requests']:
@@ -491,7 +491,7 @@ def createElementsWithMetadata(X, names, results, metadata_schema, message_type)
                     names.append(elem['name'])
                     metadata_dict[elem['name']] = elem
 
-    if metadata_schema['responses'] is not None and message_type == "response":
+    if 'responses' in metadata_schema and message_type == "response":
         names = []
         #we'll get names from metadata, assuming field order to match the response
         for elem in metadata_schema['responses']:
