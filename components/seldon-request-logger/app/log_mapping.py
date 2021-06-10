@@ -97,7 +97,7 @@ def get_index_mapping(index_name, upsert_body):
 
     metadata = fetch_metadata(
         namespace_name, serving_engine, inferenceservice_name, endpoint_name)
-    if not metadata:
+    if not metadata or metadata is None:
         return index_mapping
     else:
         print("Retrieved metadata for index", index_name)
@@ -175,7 +175,9 @@ def fetch_metadata(namespace, serving_engine, inferenceservice_name, predictor_n
     # was expcting to set deployment_type=serving_engine but deployment_type does not seem to be a param
     runtime_metadata = metadata_api.model_metadata_service_list_runtime_metadata_for_model(
         deployment_name=inferenceservice_name,deployment_namespace=namespace,predictor_name=predictor_name)
-    if runtime_metadata is not None and runtime_metadata.runtime_metadata is not None:
+
+    if runtime_metadata is not None and runtime_metadata and \
+            runtime_metadata.runtime_metadata is not None and runtime_metadata.runtime_metadata:
         print(runtime_metadata.runtime_metadata)
         if len(runtime_metadata.runtime_metadata) == 0:
             print('no runtime metadata for '+namespace+'/'+inferenceservice_name)
@@ -193,7 +195,10 @@ def fetch_metadata(namespace, serving_engine, inferenceservice_name, predictor_n
 
         print('prediction schema for '+namespace+'/'+inferenceservice_name)
         print(model_metadata.models[0].prediction_schema)
-        return model_metadata.models[0].prediction_schema.to_dict()
+        if model_metadata.models[0].prediction_schema:
+            return model_metadata.models[0].prediction_schema.to_dict()
+        else:
+            return None
     else:
         print('no metadata found for '+namespace+' / '+inferenceservice_name+' / '+predictor_name)
     return None

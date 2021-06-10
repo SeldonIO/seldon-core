@@ -27,6 +27,8 @@ api_instance = ModelMetadataServiceApi(api_client)
 
 
 models = [
+    #  To test e2e have to use wizard to deploy some of below AFTER running this script
+    #  Use names, uris and artifact types below when filling in wizard.
     #    Same model different versions
     {
         "uri": "gs://test-model-beta-v2.0.0",
@@ -35,6 +37,7 @@ models = [
         "artifact_type": "SKLEARN",
         "task_type": "classification",
         "tags": {"author": "Jon"},
+        "prediction_schema": {"requests":[{"name":"Sepal Length","type":"REAL","data_type":"FLOAT"},{"name":"Sepal Width","type":"REAL","data_type":"FLOAT"},{"name":"Petal Length","type":"REAL","data_type":"FLOAT"},{"name":"Petal Width","type":"REAL","data_type":"FLOAT"}],"responses":[{"name":"Iris Species","type":"PROBA","data_type":"FLOAT","schema":[{"name":"Setosa"},{"name":"Versicolor"},{"name":"Virginica"}]}]}
     },
     {
         "uri": "gs://seldon-models/sklearn/iris",
@@ -43,6 +46,7 @@ models = [
         "artifact_type": "SKLEARN",
         "task_type": "classification",
         "tags": {"author": "Bob"},
+        "prediction_schema": {"requests":[{"name":"Sepal Length","type":"REAL","data_type":"FLOAT"},{"name":"Sepal Width","type":"REAL","data_type":"FLOAT"},{"name":"Petal Length","type":"REAL","data_type":"FLOAT"},{"name":"Petal Width","type":"REAL","data_type":"FLOAT"}],"responses":[{"name":"Iris Species","type":"PROBA","data_type":"FLOAT","schema":[{"name":"Setosa"},{"name":"Versicolor"},{"name":"Virginica"}]}]}
     },
     { #schema from https://github.com/SeldonIO/ml-prediction-schema/blob/master/examples/income-classifier.json
         "uri": "gs://seldon-models/sklearn/income/model-0.23.2",
@@ -61,6 +65,15 @@ models = [
         "task_type": "classification",
         "tags": {"author": "Noname"},
         "prediction_schema": {"requests":[{"name":"dummy_one_hot","type":"ONE_HOT","data_type":"INT","schema":[{"name":"dummy_one_hot_1"},{"name":"dummy_one_hot_2"}]},{"name":"dummy_categorical","type":"CATEGORICAL","data_type":"INT","n_categories":2,"category_map":{"0":"dummy_cat_0","1":"dummy_cat_1"}},{"name":"dummy_float","type":"REAL","data_type":"FLOAT"}],"responses":[{"name":"dummy_proba","type":"PROBA","data_type":"FLOAT","schema":[{"name":"dummy_proba_0"},{"name":"dummy_proba_1"}]},{"name":"dummy_float","type":"REAL","data_type":"FLOAT"}]}
+    },
+    {  # cifar10
+        "uri": "gs://seldon-models/tfserving/cifar10/resnet32",
+        "name": "cifar10",
+        "version": "v1.0.0",
+        "artifact_type": "TENSORFLOW",
+        "task_type": "classification",
+        "tags": {"author": "Noname"},
+        "prediction_schema": {"requests":[{"name":"Input Image","type":"TENSOR","data_type":"FLOAT","shape":[32,32,3]}],"responses":[{"name":"Image Class","type":"PROBA","data_type":"FLOAT","schema":[{"name":"Airplane"},{"name":"Automobile"},{"name":"Bird"},{"name":"Cat"},{"name":"Deer"},{"name":"Dog"},{"name":"Frog"},{"name":"Horse"},{"name":"Ship"},{"name":"Truck"}]}]}
     }
 ]
 
