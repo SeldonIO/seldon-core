@@ -48,7 +48,7 @@ Specialised Framework Examples
    NVIDIA TensorRT MNIST <tensorrt>
    OpenVINO ImageNet <openvino>
    OpenVINO ImageNet Ensemble <openvino_ensemble>
-
+   Triton Examples <triton_examples>
 
 Incubating Projects Examples
 ----------------------------
