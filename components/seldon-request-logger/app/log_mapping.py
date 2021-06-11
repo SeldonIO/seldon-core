@@ -167,6 +167,17 @@ def fetch_user():
 
 def fetch_metadata(namespace, serving_engine, inferenceservice_name, predictor_name):
 
+    deployment_type = None
+    if serving_engine == 'seldon':
+        deployment_type = 'SeldonDeployment'
+    if serving_engine == 'inferenceservice':
+        deployment_type = 'InferenceService'
+
+    if not deployment_type:
+        print('unknown deployment type for '+namespace+' / '+inferenceservice_name)
+        print(deployment_type)
+        #TODO: should be sending deployment_type in call below but currently sdk says unexpected keyword argument
+
     if metadata_api is None:
         print('metadata service not configured')
         return None
