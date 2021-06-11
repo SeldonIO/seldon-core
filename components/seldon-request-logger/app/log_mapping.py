@@ -135,14 +135,14 @@ def init_api():
         config.verify_ssl = False
         os.environ["CURL_CA_BUNDLE"] = ""
 
-    if not config.auth_method or config.auth_method is None:
+    if not config.auth_method:
         config.auth_method = 'password_grant'
 
-    if not config.host or config.host is None:
+    if not config.host:
         print('No DEPLOY_API_HOST - will not look up metadata from Deploy')
         return
 
-    if not config.oidc_server or config.oidc_server is None:
+    if not config.oidc_server:
         print('No OIDC_PROVIDER - auth will not be used in connecting to metadata')
         return
 

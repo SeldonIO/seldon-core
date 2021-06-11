@@ -86,7 +86,7 @@ def metadata():
         print('in metadata endpoint - this is for debugging')
         print(request.args)
         serving_engine = request.args.get('serving_engine','SeldonDeployment')
-        if serving_engine is None or not serving_engine:
+        if not serving_engine:
             serving_engine = 'SeldonDeployment'
 
         namespace = request.args.get('namespace','seldon')
@@ -145,7 +145,7 @@ def process_and_update_elastic_doc(
 
                 item_body[message_type]["instance"] = item
 
-                if type(elements) == type([]) and len(elements) >= num:
+                if type(elements) == type([]) and len(elements) > num:
                     item_body[message_type]["elements"] = elements[num]
 
                 item_request_id = build_request_id_batched(
@@ -477,7 +477,7 @@ def createElelmentsArray(X: np.ndarray, names: list, namespace_name, serving_eng
         sys.stdout.flush()
 
     results = None
-    if not metadata_schema or metadata_schema is None:
+    if not metadata_schema:
         results = createElementsNoMetadata(X, names, results)
     else:
         results = createElementsWithMetadata(X, names, results, metadata_schema, message_type)
@@ -597,7 +597,7 @@ def mergeLinkedColumns(raw_list, metadata_dict):
 def lookupValueWithMetadata(name, metadata_dict, raw_value):
     metadata_elem = metadata_dict[name]
 
-    if metadata_elem is None:
+    if not metadata_elem:
         return raw_value
 
     #categorical currently only case where we replace value
