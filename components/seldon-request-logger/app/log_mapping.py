@@ -135,14 +135,14 @@ def init_api():
         config.verify_ssl = False
         os.environ["CURL_CA_BUNDLE"] = ""
 
-    if not config.auth_method or config.auth_method is None:
+    if not config.auth_method:
         config.auth_method = 'password_grant'
 
-    if not config.host or config.host is None:
+    if not config.host:
         print('No DEPLOY_API_HOST - will not look up metadata from Deploy')
         return
 
-    if not config.oidc_server or config.oidc_server is None:
+    if not config.oidc_server:
         print('No OIDC_PROVIDER - auth will not be used in connecting to metadata')
         return
 
@@ -176,7 +176,6 @@ def fetch_metadata(namespace, serving_engine, inferenceservice_name, predictor_n
     if not deployment_type:
         print('unknown deployment type for '+namespace+' / '+inferenceservice_name)
         print(deployment_type)
-        #TODO: should be sending deployment_type in call below but currently sdk says unexpected keyword argument
 
     if metadata_api is None:
         print('metadata service not configured')
@@ -185,7 +184,8 @@ def fetch_metadata(namespace, serving_engine, inferenceservice_name, predictor_n
     # TODO: in next iteration will only need one lookup straight to model metadata
     # was expcting to set deployment_type=serving_engine but deployment_type does not seem to be a param
     runtime_metadata = metadata_api.model_metadata_service_list_runtime_metadata_for_model(
-        deployment_name=inferenceservice_name,deployment_namespace=namespace,predictor_name=predictor_name)
+        deployment_name=inferenceservice_name,deployment_namespace=namespace,
+        predictor_name=predictor_name,deployment_type=deployment_type)
 
     if runtime_metadata is not None and runtime_metadata and \
             runtime_metadata.runtime_metadata is not None and runtime_metadata.runtime_metadata:
