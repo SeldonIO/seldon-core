@@ -135,11 +135,19 @@ def process_and_update_elastic_doc(
 
             no_items_in_batch = len(new_content_part["instance"])
             index = 0
-            for item in new_content_part["instance"]:
+            elements = None
+            if "elements" in new_content_part:
+                elements = new_content_part["elements"]
+
+            for num, item in enumerate(new_content_part["instance"],start=0):
 
                 item_body = doc_body.copy()
 
                 item_body[message_type]["instance"] = item
+
+                if type(elements) == type([]) and len(elements) >= num:
+                    item_body[message_type]["elements"] = elements[num]
+
                 item_request_id = build_request_id_batched(
                     request_id, no_items_in_batch, index
                 )
@@ -148,6 +156,10 @@ def process_and_update_elastic_doc(
                 )
                 index = index + 1
         else:
+            #not batch so don't batch elements either
+            if "elements" in new_content_part and type(new_content_part["elements"]) == type([]):
+                new_content_part["elements"] = new_content_part["elements"][0]
+
             item_request_id = build_request_id_batched(request_id, 1, 0)
             upsert_doc_to_elastic(
                 elastic_object, message_type, doc_body, item_request_id, index_name
@@ -288,6 +300,11 @@ def create_np_from_v2(data: list,ty: str, shape: list) -> np.array:
 def extract_data_part(content, headers, message_type):
     copy = content.copy()
 
+    namespace = log_helper.get_header(log_helper.NAMESPACE_HEADER_NAME, headers)
+    inferenceservice_name = log_helper.get_header(log_helper.INFERENCESERVICE_HEADER_NAME, headers)
+    endpoint_name = log_helper.get_header(log_helper.ENDPOINT_HEADER_NAME, headers)
+    serving_engine = log_helper.serving_engine(headers)
+
     # if 'instances' in body then tensorflow request protocol
     # if 'predictions' then tensorflow response
     # if 'model_name' and 'outputs' then v2 dataplane response
@@ -342,6 +359,9 @@ def extract_data_part(content, headers, message_type):
         first_element = content_np.item(0)
 
         set_datatype_from_numpy(content_np, copy, first_element)
+        elements = createElelmentsArray(content_np, None, namespace, serving_engine, inferenceservice_name, endpoint_name, message_type)
+        copy["elements"] = elements
+
         del copy["instances"]
     elif "predictions" in copy:
         copy["instance"] = copy["predictions"]
@@ -350,6 +370,8 @@ def extract_data_part(content, headers, message_type):
         copy["dataType"] = "tabular"
         first_element = content_np.item(0)
         set_datatype_from_numpy(content_np, copy, first_element)
+        elements = createElelmentsArray(content_np, None, namespace, serving_engine, inferenceservice_name, endpoint_name, message_type)
+        copy["elements"] = elements
 
         del copy["predictions"]
     else:
@@ -367,21 +389,9 @@ def extract_data_part(content, headers, message_type):
             copy["dataType"] = "image"
 
         if isinstance(req_features, Iterable):
-            namespace = log_helper.get_header(log_helper.NAMESPACE_HEADER_NAME, headers)
-            inferenceservice_name = log_helper.get_header(log_helper.INFERENCESERVICE_HEADER_NAME, headers)
-            endpoint_name = log_helper.get_header(log_helper.ENDPOINT_HEADER_NAME, headers)
-            serving_engine = log_helper.serving_engine(headers)
 
             elements = createElelmentsArray(req_features, list(req_datadef.names), namespace, serving_engine, inferenceservice_name, endpoint_name, message_type)
-
-            if isinstance(elements, Iterable):
-
-                for i, e in enumerate(elements):
-                    reqJson = extractRow(
-                        i, requestMsg, req_datatype, req_features, req_datadef
-                    )
-                    reqJson["elements"] = e
-                    copy = reqJson
+            copy["elements"] = elements
 
         copy["instance"] = json.loads(
             json.dumps(req_features, cls=log_helper.NumpyEncoder)
@@ -458,16 +468,20 @@ def extractRow(
 
 
 def createElelmentsArray(X: np.ndarray, names: list, namespace_name, serving_engine, inferenceservice_name, endpoint_name, message_type):
+    metadata_schema = None
+
     if namespace_name is not None and inferenceservice_name is not None and serving_engine is not None and endpoint_name is not None:
         metadata_schema = log_mapping.fetch_metadata(namespace_name, serving_engine, inferenceservice_name, endpoint_name)
     else:
         print('missing a param required for metadata lookup')
+        sys.stdout.flush()
 
     results = None
-    if metadata_schema is None:
+    if not metadata_schema or metadata_schema is None:
         results = createElementsNoMetadata(X, names, results)
     else:
         results = createElementsWithMetadata(X, names, results, metadata_schema, message_type)
+
     return results
 
 
@@ -600,6 +614,8 @@ def lookupValueWithMetadata(name, metadata_dict, raw_value):
     return raw_value
 
 def createElementsNoMetadata(X, names, results):
+    if not names:
+        return results
     if isinstance(X, np.ndarray):
         if len(X.shape) == 1:
             results = []

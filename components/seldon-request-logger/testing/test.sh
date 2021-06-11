@@ -28,11 +28,11 @@ curl 0.0.0.0:2222 -d '{"data":{"names":["t0","t1"],"ndarray":[[0.5,0.5]]}}' -H "
 curl 0.0.0.0:2222 -d '{"strData":"{\"columns\":[\"DISPO_CD\",\"ENG_CD\",\"HUE_CD\",\"SALE_OFFER_CD\",\"SHADE_CD\",\"TRGTPRCE_MDLGRP_CD\",\"TRGT_CUST_GROUP_CD\",\"TRG_CATG\",\"VIN\",\"calc_cd\",\"category\",\"color\",\"cond_cd\",\"country\",\"cust_cd\",\"default_cond_cd\",\"dispo_date\",\"dispo_day\",\"drivetype\",\"floor_price\",\"mlge_arriv\",\"mlge_dispo\",\"model\",\"modelyr\",\"region\",\"saleloc\",\"series_cd\",\"sys_enter_date\",\"tag\",\"target_price\",\"v47\",\"v62\",\"v64\",\"vehvalue\",\"warranty_age\",\"wrstdt\",\"wsd\"],\"index\":[0],\"data\":[[3,\"L\",\"RD\",\"CAO\",\"DK\",41,1,\"RTR\",\"MAJ6P1CL3JC166908\",null,\"RPO\",\"RR\",5,\"A\",7,3,\"2018-07-11\",6766,null,0.0,2013,2013,\"ECO\",2018,1,\"C63\",\"P1C\",\"2018-06-16\",null,0.0,\"5\",null,\"5\",\"ecosport\",146.0,\"2018-02-15\",26750.56]]}"}' -H "Content-Type: application/json" -H "Ce-Inferenceservicename: strdata" -H "Ce-Type: io.seldon.serving.inference.request" -H "Ce-Requestid: 7g"
 
 #kfserving tensor - iris (batch of two)
-curl 0.0.0.0:2222 -d '{"instances": [[6.8,  2.8,  4.8,  1.4],[6.0,  3.4,  4.5,  1.6]]}' -H "Content-Type: application/json" -H "Ce-Type: org.kubeflow.serving.inference.request" -H "Ce-Namespace: default" -H "Ce-Inferenceservicename: iris" -H "Ce-Requestid: 8h"
-curl 0.0.0.0:2222 -d '{"predictions": [1,1]}' -H "Content-Type: application/json" -H "Ce-Type: org.kubeflow.serving.inference.response" -H "Ce-Namespace: default" -H "Ce-Inferenceservicename: iris" -H "Ce-Requestid: 8h"
-curl 0.0.0.0:2222 -d '{"data": {"feature_score": null, "instance_score": null, "is_outlier": [1, 1]}, "meta": {"name": "OutlierVAE", "detector_type": "offline", "data_type": "image"}}' -H "Content-Type: application/json" -H "Ce-Type: org.kubeflow.serving.inference.outlier" -H "Ce-Namespace: default" -H "Ce-Inferenceservicename: iris" -H "Ce-id: 8h"
+curl 0.0.0.0:2222 -d '{"instances": [[6.8,  2.8,  4.8,  1.4],[6.0,  3.4,  4.5,  1.6]]}' -H "Content-Type: application/json" -H "Ce-Type: org.kubeflow.serving.inference.request" -H "Ce-Namespace: seldon" -H "Ce-Inferenceservicename: iris-kf" -H "Ce-Endpoint: default" -H "Ce-Requestid: 8h"
+curl 0.0.0.0:2222 -d '{"predictions": [1,1]}' -H "Content-Type: application/json" -H "Ce-Type: org.kubeflow.serving.inference.response" -H "Ce-Namespace: seldon" -H "Ce-Inferenceservicename: iris-kf" -H "Ce-Endpoint: default" -H "Ce-Requestid: 8h"
+curl 0.0.0.0:2222 -d '{"data": {"feature_score": null, "instance_score": null, "is_outlier": [1, 1]}, "meta": {"name": "OutlierVAE", "detector_type": "offline", "data_type": "image"}}' -H "Content-Type: application/json" -H "Ce-Type: org.kubeflow.serving.inference.outlier" -H "Ce-Namespace: seldon" -H "Ce-Inferenceservicename: iris-kf" -H "Ce-Endpoint: default" -H "Ce-id: 8h"
 
-#cifar10 image
+#cifar10 image - kfserving (possibly old)
 curl 0.0.0.0:2222 --data-binary "@cifardata.json" -H "Content-Type: application/json" -H "Ce-Type: org.kubeflow.serving.inference.request" -H "Ce-Namespace: default" -H "Ce-Inferenceservicename: cifar10" -H "Ce-Endpoint: default" -H "Ce-id: 9i" -H 'CE-SpecVersion: 0.2' -v
 curl 0.0.0.0:2222 -d '{"predictions":[2]}' -H "Content-Type: application/json" -H "Ce-Type: org.kubeflow.serving.inference.response" -H "Ce-Namespace: default" -H "Ce-Inferenceservicename: cifar10" -H "Ce-Endpoint: default" -H "Ce-id: 9i"
 curl 0.0.0.0:2222 -d '{"data": {"feature_score": null, "instance_score": null, "is_outlier": [1]}, "meta": {"name": "OutlierVAE", "detector_type": "offline", "data_type": "image"}}' -H "Content-Type: application/json" -H "Ce-Type: org.kubeflow.serving.inference.outlier" -H "Ce-Namespace: default" -H "Ce-Inferenceservicename: cifar10" -H "Ce-Endpoint: default" -H "Ce-id: 9i"
@@ -65,3 +65,17 @@ curl 0.0.0.0:2222 -d  '{"data":{"names":["t:0","t:1"],"ndarray":[[0.853881880916
 # mix of one_hot, categorical and float
 curl 0.0.0.0:2222 -d  '{"data":{"names":["dummy_one_hot_1","dummy_one_hot_2","dummy_categorical","dummy_float"],"ndarray":[[0,1,0,2.54]]}}' -H "Content-Type: application/json" -H "Ce-Inferenceservicename: dummy" -H "Ce-Type: io.seldon.serving.inference.request" -H "Ce-Namespace: seldon" -H "Ce-Endpoint: default" -H "Ce-Requestid: 2z5"
 curl 0.0.0.0:2222 -d  '{"data":{"names":["dummy_proba_0","dummy_proba_1","dummy_float"],"ndarray":[[0.8538818809164035,0.14611811908359656,3.65]]}}' -H "Content-Type: application/json" -H "Ce-Inferenceservicename: dummy" -H "Ce-Type: io.seldon.serving.inference.response" -H "Ce-Namespace: seldon" -H "Ce-Endpoint: default" -H "Ce-Requestid: 2z5"
+
+#cifar10 image - seldon
+curl 0.0.0.0:2222 --data-binary "@cifardata.json" -H "Content-Type: application/json" -H "Ce-Type: io.seldon.serving.inference.request" -H "Ce-Namespace: seldon" -H "Ce-Inferenceservicename: cifar10" -H "Ce-Endpoint: default" -H "Ce-id: 2z6" -v
+curl 0.0.0.0:2222 -d '{"predictions":[[1.26448515e-6,4.88145879e-9,1.51533219e-9,8.49055848e-9,5.51306611e-10,1.16171928e-9,5.77288495e-10,2.88396933e-7,0.000614895718,0.999383569]]}' -H "Content-Type: application/json" -H "Ce-Type: io.seldon.serving.inference.response" -H "Ce-Namespace: seldon" -H "Ce-Inferenceservicename: cifar10" -H "Ce-Endpoint: default" -H "Ce-id: 2z6"
+curl 0.0.0.0:2222 -d '{"data": {"feature_score": null, "instance_score": null, "is_outlier": [1]}, "meta": {"name": "OutlierVAE", "detector_type": "offline", "data_type": "image"}}' -H "Content-Type: application/json" -H "Ce-Type: io.seldon.serving.inference.outlier" -H "Ce-Namespace: seldon" -H "Ce-Inferenceservicename: cifar10" -H "Ce-Endpoint: default" -H "Ce-id: 2z6"
+
+#iris seldon - batch
+curl 0.0.0.0:2222 -d '{"data":{"names":["Sepal length","Sepal width","Petal length","Petal Width"],"ndarray":[[6.8,2.8,4.8,1.4],[6.1,3.4,4.5,1.6]]}}' -H "Content-Type: application/json" -H "Ce-Type: io.seldon.serving.inference.request" -H "Ce-Namespace: seldon" -H "Ce-Inferenceservicename: iris" -H "Ce-Endpoint: default" -H "Ce-id: 2z7" -v
+
+#iris seldon - not batch
+curl 0.0.0.0:2222 -d '{"data":{"names":["Sepal length","Sepal width","Petal length","Petal Width"],"ndarray":[[6.8,2.8,4.8,1.4]]}}' -H "Content-Type: application/json" -H "Ce-Type: io.seldon.serving.inference.request" -H "Ce-Namespace: seldon" -H "Ce-Inferenceservicename: iris" -H "Ce-Endpoint: default" -H "Ce-id: 2z8" -v
+
+#kfserving income
+curl 0.0.0.0:2222 -d '{"instances":[[39, 7, 1, 1, 1, 1, 4, 1, 2174, 0, 40, 9]]}' -H "Content-Type: application/json" -H "Ce-Type: org.kubeflow.serving.inference.request" -H "Ce-Namespace: seldon" -H "Ce-Inferenceservicename: income-kf" -H "Ce-Endpoint: default" -H "Ce-Requestid: 2z9"
