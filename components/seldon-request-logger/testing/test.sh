@@ -79,3 +79,7 @@ curl 0.0.0.0:2222 -d '{"data":{"names":["Sepal length","Sepal width","Petal leng
 
 #kfserving income
 curl 0.0.0.0:2222 -d '{"instances":[[39, 7, 1, 1, 1, 1, 4, 1, 2174, 0, 40, 9]]}' -H "Content-Type: application/json" -H "Ce-Type: org.kubeflow.serving.inference.request" -H "Ce-Namespace: seldon" -H "Ce-Inferenceservicename: income-kf" -H "Ce-Endpoint: default" -H "Ce-Requestid: 2z9"
+
+#v2 protocol seldon triton tf cifar10
+curl 0.0.0.0:2222 --data-binary "@truck-v2.json" -H "Content-Type: application/json" -H "Ce-Type: io.seldon.serving.inference.request" -H "Ce-Namespace: seldon" -H "Ce-Inferenceservicename: tfcifar10" -H "Ce-Endpoint: default" -H "Ce-id: 2z10" -v
+curl 0.0.0.0:2222 -d '{"model_name":"cifar10","model_version":"1","outputs":[{"data":[1.2644851494769682e-6,4.881458792738158e-9,1.5153321930583274e-9,8.490558478513321e-9,5.513066114737342e-10,1.1617192763324624e-9,5.772884947852219e-10,2.8839693300142244e-7,0.0006148957181721926,0.9993835687637329],"datatype":"FP32","name":"fc10","shape":[1,10]}]}' -H "Content-Type: application/json" -H "Ce-Type: io.seldon.serving.inference.response" -H "Ce-Namespace: seldon" -H "Ce-Inferenceservicename: tfcifar10" -H "Ce-Endpoint: default" -H "Ce-Requestid: 2z10"

@@ -76,7 +76,11 @@ def index():
     except Exception as ex:
         print(ex)
     sys.stdout.flush()
-    return Response("problem logging request", 500)
+
+    error_output = "problem logging request "
+    if request_id:
+        error_output = error_output + request_id
+    return Response(error_output, 500)
 
 
 #below basically proxies to metadata service in deploy for diagnostic purposes
@@ -313,41 +317,33 @@ def extract_data_part(content, headers, message_type):
 
     # V2 Data Plane Response
     if "model_name" in copy and "outputs" in copy:
-        # assumes single output
-        output = copy["outputs"][0]
-        data_type = output["datatype"]
-        shape = output["shape"]
-        data = output["data"]
 
-        if data_type == "BYTES":
-            copy["dataType"] = "text"
-            copy["instance"] = array.array('B', data).tostring()
-        else:
-            arr = create_np_from_v2(data, data_type, shape)
-            copy["dataType"] = "tabular"
-            first_element = arr.item(0)
-            set_datatype_from_numpy(arr, copy, first_element)
-            copy["instance"] = arr.tolist()
+        # first get schema if there is one
+        metadata_schema = log_mapping.fetch_metadata(namespace, serving_engine, inferenceservice_name,
+                                                     endpoint_name)
+
+        sys.stdout.flush()
+
+        metadata_dict = {}
+        if metadata_schema:
+            build_metadata_names_dict_basic(message_type, metadata_dict, metadata_schema, [])
+
+        instance_elements_for_v2_protocol(copy, metadata_dict, "outputs")
 
         del copy["outputs"]
+        #TODO: do we really need to remove below model_name and model_version from request?
         del copy["model_name"]
         del copy["model_version"]
     elif "inputs" in copy:
-        # assumes single input
-        inputs = copy["inputs"][0]
-        data_type = inputs["datatype"]
-        shape = inputs["shape"]
-        data = inputs["data"]
+        #first get schema if there is one
+        metadata_schema = log_mapping.fetch_metadata(namespace, serving_engine, inferenceservice_name,
+                                                     endpoint_name)
 
-        if data_type == "BYTES":
-            copy["dataType"] = "text"
-            copy["instance"] = array.array('B', data).tostring()
-        else:
-            arr = create_np_from_v2(data, data_type, shape)
-            copy["dataType"] = "tabular"
-            first_element = arr.item(0)
-            set_datatype_from_numpy(arr, copy, first_element)
-            copy["instance"] = arr.tolist()
+        metadata_dict = {}
+        if metadata_schema:
+            build_metadata_names_dict_basic(message_type, metadata_dict, metadata_schema, [])
+
+        instance_elements_for_v2_protocol(copy, metadata_dict, "inputs")
 
         del copy["inputs"]
     elif "instances" in copy:
@@ -420,6 +416,85 @@ def extract_data_part(content, headers, message_type):
     return copy
 
 
+def instance_elements_for_v2_protocol(copy, metadata_dict, input_or_output):
+
+    # instance should be an array of all the values
+    instance = []
+    #TODO: or if it's batch it should be an array of array... but batch isn't clear for v2 so assuming not batch
+
+    # elments a dict of k-v for names and resolved values
+    elements = {}
+
+    for element in copy[input_or_output]:
+
+        data_type = element["datatype"]
+        shape = element["shape"]
+        if not shape:
+            # if no shape then assume a single element
+            shape = [1, 1]
+        data = element["data"]
+        name = element["name"]
+
+        currentValue = None
+        # will need a separete value for values looked up from metadata (categorical)
+        resolvedValue = None
+
+        if data_type == "BYTES":
+            copy["dataType"] = "text"
+            currentValue = array.array('B', data).tostring()
+        else:
+            arr = create_np_from_v2(data, data_type, shape)
+            # assuming that if not bytes then tabular
+            copy["dataType"] = "tabular"
+            first_element = arr.item(0)
+            set_datatype_from_numpy(arr, copy, first_element)
+            currentValue = arr.tolist()
+
+
+        instance.append(currentValue)
+
+        # could be categorical and need to look up
+        if isinstance(currentValue, list):
+
+            if len(currentValue) == 1:
+                currentValue = currentValue[0]
+
+                if name in metadata_dict:
+                    currentValue = lookupValueWithMetadata(name, metadata_dict, currentValue)
+
+        elements[name] = currentValue
+
+    copy["instance"] = instance
+
+    # might contain one_hot but we don't merge one_hot for v2, not yet clear what we'll do but prob something like proba
+
+    #proba has special handling for v2 - will be single field containing multiple elements so find name for each
+    #TODO: is it the same for one_hot? not clear for v2
+    if elements:
+        for key, value in elements.items():
+
+            if metadata_dict and key in metadata_dict:
+                metadata_elem = metadata_dict[key]
+
+                if metadata_elem['type'] == "PROBA":
+                    #check if this element contains a list
+
+                    if isinstance(value, list):
+
+                        #if we have metadata then replace proba list with k-v pairs
+                        #to do that the schema needs to tell us what the names should be
+                        if metadata_elem['schema']:
+                            new_entries = {}
+                            for num, proba_sub_elem in enumerate(metadata_elem['schema']):
+                                subelem_name = proba_sub_elem['name']
+                                #assume index of element in schema to correspond to ordering in body
+                                new_entries[subelem_name] = value[num]
+
+                            elements[key] = new_entries
+
+    copy["elements"] = elements
+
+
 def set_datatype_from_numpy(content_np, copy, first_element):
 
     if first_element is not None and not isinstance(first_element, (int, float)):
@@ -489,36 +564,7 @@ def createElementsWithMetadata(X, names, results, metadata_schema, message_type)
     #we want field names from metadata if available - also build a dict of metadata by name for easy lookup
     metadata_dict = {}
 
-    if 'requests' in metadata_schema and message_type == "request":
-        names = []
-        #we'll get names from metadata, assuming field order to match the request
-        for elem in metadata_schema['requests']:
-            if elem['name']:
-                if elem['type'] == "ONE_HOT" or elem['type'] == "PROBA":
-                    #don't just take element as name - instead each name entry in schema is a column name
-                    # used later for merging columns
-                    for subelem in elem['schema']:
-                        names.append(subelem['name'])
-                        metadata_dict[subelem['name']] = elem
-                else:
-                    #used for categorical lookups
-                    names.append(elem['name'])
-                    metadata_dict[elem['name']] = elem
-
-    if 'responses' in metadata_schema and message_type == "response":
-        names = []
-        #we'll get names from metadata, assuming field order to match the response
-        for elem in metadata_schema['responses']:
-            if elem['name']:
-                if elem['type'] == "PROBA" or elem['type'] == "ONE_HOT":
-                    #don't just take element as name - instead each name entry in schema is a column name
-                    for subelem in elem['schema']:
-                        names.append(subelem['name'])
-                        metadata_dict[subelem['name']] = elem
-                else:
-                    names.append(elem['name'])
-                    metadata_dict[elem['name']] = elem
-
+    names = build_metadata_names_dict_probas(message_type, metadata_dict, metadata_schema, names)
 
     if isinstance(X, np.ndarray):
         if len(X.shape) == 1:
@@ -551,6 +597,57 @@ def createElementsWithMetadata(X, names, results, metadata_schema, message_type)
             results = mergeLinkedColumns(temp_results, metadata_dict)
 
     return results
+
+
+def build_metadata_names_dict_basic(message_type, metadata_dict, metadata_schema, names):
+    if 'requests' in metadata_schema and message_type == "request":
+        names = []
+        # we'll get names from metadata, assuming field order to match the request
+        for elem in metadata_schema['requests']:
+            if elem['name']:
+                names.append(elem['name'])
+                metadata_dict[elem['name']] = elem
+    if 'responses' in metadata_schema and message_type == "response":
+        names = []
+        # we'll get names from metadata, assuming field order to match the response
+        for elem in metadata_schema['responses']:
+            if elem['name']:
+                names.append(elem['name'])
+                metadata_dict[elem['name']] = elem
+    return names
+
+
+def build_metadata_names_dict_probas(message_type, metadata_dict, metadata_schema, names):
+    if 'requests' in metadata_schema and message_type == "request":
+        names = []
+        # we'll get names from metadata, assuming field order to match the request
+        for elem in metadata_schema['requests']:
+            if elem['name']:
+                if elem['type'] == "ONE_HOT" or elem['type'] == "PROBA":
+                    # don't just take element as name - instead each name entry in schema is a column name
+                    # used later for merging columns
+                    for subelem in elem['schema']:
+                        names.append(subelem['name'])
+                        metadata_dict[subelem['name']] = elem
+                else:
+                    # used for categorical lookups
+                    names.append(elem['name'])
+                    metadata_dict[elem['name']] = elem
+    if 'responses' in metadata_schema and message_type == "response":
+        names = []
+        # we'll get names from metadata, assuming field order to match the response
+        for elem in metadata_schema['responses']:
+            if elem['name']:
+                if elem['type'] == "PROBA" or elem['type'] == "ONE_HOT":
+                    # don't just take element as name - instead each name entry in schema is a column name
+                    for subelem in elem['schema']:
+                        names.append(subelem['name'])
+                        metadata_dict[subelem['name']] = elem
+                else:
+                    names.append(elem['name'])
+                    metadata_dict[elem['name']] = elem
+    return names
+
 
 def mergeLinkedColumns(raw_list, metadata_dict):
     new_list = []

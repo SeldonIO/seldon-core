@@ -209,6 +209,7 @@ def fetch_metadata(namespace, serving_engine, inferenceservice_name, predictor_n
         if model_metadata.models[0].prediction_schema:
             return model_metadata.models[0].prediction_schema.to_dict()
         else:
+            print('no prediction schema for '+namespace+'/'+inferenceservice_name)
             return None
     else:
         print('no metadata found for '+namespace+' / '+inferenceservice_name+' / '+predictor_name)

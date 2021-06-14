@@ -92,6 +92,15 @@ models = [
         "task_type": "classification",
         "tags": {"author": "Noname"},
         "prediction_schema": {"requests":[{"name":"Input Image","type":"TENSOR","data_type":"FLOAT","shape":[32,32,3]}],"responses":[{"name":"Image Class","type":"PROBA","data_type":"FLOAT","schema":[{"name":"Airplane"},{"name":"Automobile"},{"name":"Bird"},{"name":"Cat"},{"name":"Deer"},{"name":"Dog"},{"name":"Frog"},{"name":"Horse"},{"name":"Ship"},{"name":"Truck"}]}]}
+    },
+    {  # tfcifar10 - triton
+        "uri": "gs://seldon-models/triton/tf_cifar10",
+        "name": "tfcifar10",
+        "version": "v1.0.0",
+        "artifact_type": "TENSORFLOW",
+        "task_type": "classification",
+        "tags": {"author": "Noname"},
+        "prediction_schema": {"requests":[{"name":"input_1","type":"TENSOR","data_type":"FLOAT","shape":[32,32,3]}],"responses":[{"name":"fc10","type":"PROBA","data_type":"FLOAT","schema":[{"name":"Airplane"},{"name":"Automobile"},{"name":"Bird"},{"name":"Cat"},{"name":"Deer"},{"name":"Dog"},{"name":"Frog"},{"name":"Horse"},{"name":"Ship"},{"name":"Truck"}]}]}
     }
 ]
 
