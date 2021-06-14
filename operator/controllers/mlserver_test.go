@@ -33,11 +33,13 @@ var _ = Describe("MLServer helpers", func() {
 	Describe("mergeMLServerContainer", func() {
 		var existing *v1.Container
 		var mlServer *v1.Container
+		customEnvValue := "{\"custom\":1}"
 
 		BeforeEach(func() {
 			existing = &v1.Container{
 				Env: []v1.EnvVar{
 					{Name: "FOO", Value: "BAR"},
+					{Name: MLServerTempoRuntimeEnv, Value: customEnvValue},
 				},
 			}
 
@@ -49,6 +51,7 @@ var _ = Describe("MLServer helpers", func() {
 
 			Expect(merged).ToNot(BeNil())
 			Expect(merged.Env).To(ContainElement(v1.EnvVar{Name: "FOO", Value: "BAR"}))
+			Expect(merged.Env).To(ContainElement(v1.EnvVar{Name: MLServerTempoRuntimeEnv, Value: customEnvValue}))
 			Expect(merged.Env).To(ContainElements(mlServer.Env))
 			Expect(merged.Image).To(Equal(mlServer.Image))
 		})

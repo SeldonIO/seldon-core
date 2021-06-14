@@ -29,7 +29,7 @@ def get_max_payload_bytes(default_value):
 
 def extract_request_id(headers):
     request_id = headers.get(REQUEST_ID_HEADER_NAME)
-    if request_id is None:
+    if not request_id:
         # TODO: need to fix this upstream - https://github.com/kubeflow/kfserving/pull/699/files#diff-de6e9737c409666fc6c48dbcb50363faR18
         request_id = headers.get(CLOUD_EVENT_ID)
     return request_id
@@ -51,22 +51,22 @@ def build_index_name(headers):
     # otherwise create an index per deployment
     # index_name = "inference-log-" + serving_engine(headers)
     namespace = clean_header(NAMESPACE_HEADER_NAME, headers)
-    if namespace is None:
+    if not namespace:
         index_name = index_name + "-unknown-namespace"
     else:
         index_name = index_name + "-" + namespace
     inference_service_name = clean_header(INFERENCESERVICE_HEADER_NAME, headers)
     # won't get inference service name for older kfserving versions i.e. prior to https://github.com/kubeflow/kfserving/pull/699/
-    if inference_service_name is None or not inference_service_name:
+    if not inference_service_name:
         inference_service_name = clean_header(MODELID_HEADER_NAME, headers)
 
-    if inference_service_name is None:
+    if not inference_service_name:
         index_name = index_name + "-unknown-inferenceservice"
     else:
         index_name = index_name + "-" + inference_service_name
 
     endpoint_name = clean_header(ENDPOINT_HEADER_NAME, headers)
-    if endpoint_name is None:
+    if not endpoint_name:
         index_name = index_name + "-unknown-endpoint"
     else:
         index_name = index_name + "-" + endpoint_name
@@ -111,14 +111,14 @@ def set_metadata(content, headers, message_type, request_id):
 
     inference_service_name = content.get(INFERENCESERVICE_HEADER_NAME)
     # kfserving won't set inferenceservice header
-    if inference_service_name is None or not inference_service_name:
+    if not inference_service_name:
         content[INFERENCESERVICE_HEADER_NAME] = clean_header(
             MODELID_HEADER_NAME, headers
         )
 
     if message_type == "request" or not "@timestamp" in content:
         timestamp = headers.get(TIMESTAMP_HEADER_NAME)
-        if timestamp is None:
+        if not timestamp:
             timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
         content["@timestamp"] = timestamp
 
@@ -133,15 +133,18 @@ def serving_engine(headers):
     elif type_header.startswith("org.kubeflow.serving"):
         return "inferenceservice"
 
+def get_header(header_name, headers):
+    if headers.get(header_name):
+        return clean_header(header_name, headers)
 
 def field_from_header(content, header_name, headers):
-    if not headers.get(header_name) is None:
+    if headers.get(header_name):
         content[header_name] = clean_header(header_name, headers)
 
 
 def clean_header(header_name, headers):
     header_val = headers.get(header_name)
-    if not header_val is None:
+    if header_val:
         header_val = header_val.translate({ord(c): None for c in '!@#$"<>/?'})
     return header_val
 

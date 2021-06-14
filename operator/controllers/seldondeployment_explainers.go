@@ -204,6 +204,15 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 
 		deploy := createDeploymentWithoutEngine(depName, seldonId, &seldonPodSpec, p, mlDep, podSecurityContect)
 
+		// Set replicas to zero if main predictor or graph has zero replicas otherwise set to explainer replicas
+		if p.Replicas != nil && *p.Replicas == 0 {
+			deploy.Spec.Replicas = p.Replicas
+		} else if p.Replicas == nil && mlDep.Spec.Replicas != nil && *mlDep.Spec.Replicas == 0 {
+			deploy.Spec.Replicas = mlDep.Spec.Replicas
+		} else {
+			deploy.Spec.Replicas = p.Explainer.Replicas
+		}
+
 		if p.Explainer.ModelUri != "" {
 			var err error
 

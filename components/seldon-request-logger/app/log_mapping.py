@@ -97,7 +97,7 @@ def get_index_mapping(index_name, upsert_body):
 
     metadata = fetch_metadata(
         namespace_name, serving_engine, inferenceservice_name, endpoint_name)
-    if not metadata:
+    if not metadata or metadata is None:
         return index_mapping
     else:
         print("Retrieved metadata for index", index_name)
@@ -135,14 +135,14 @@ def init_api():
         config.verify_ssl = False
         os.environ["CURL_CA_BUNDLE"] = ""
 
-    if not config.auth_method or config.auth_method is None:
+    if not config.auth_method:
         config.auth_method = 'password_grant'
 
-    if not config.host or config.host is None:
+    if not config.host:
         print('No DEPLOY_API_HOST - will not look up metadata from Deploy')
         return
 
-    if not config.oidc_server or config.oidc_server is None:
+    if not config.oidc_server:
         print('No OIDC_PROVIDER - auth will not be used in connecting to metadata')
         return
 
@@ -167,6 +167,16 @@ def fetch_user():
 
 def fetch_metadata(namespace, serving_engine, inferenceservice_name, predictor_name):
 
+    deployment_type = None
+    if serving_engine == 'seldon':
+        deployment_type = 'SeldonDeployment'
+    if serving_engine == 'inferenceservice':
+        deployment_type = 'InferenceService'
+
+    if not deployment_type:
+        print('unknown deployment type for '+namespace+' / '+inferenceservice_name)
+        print(deployment_type)
+
     if metadata_api is None:
         print('metadata service not configured')
         return None
@@ -174,8 +184,11 @@ def fetch_metadata(namespace, serving_engine, inferenceservice_name, predictor_n
     # TODO: in next iteration will only need one lookup straight to model metadata
     # was expcting to set deployment_type=serving_engine but deployment_type does not seem to be a param
     runtime_metadata = metadata_api.model_metadata_service_list_runtime_metadata_for_model(
-        deployment_name=inferenceservice_name,deployment_namespace=namespace,predictor_name=predictor_name)
-    if runtime_metadata is not None and runtime_metadata.runtime_metadata is not None:
+        deployment_name=inferenceservice_name,deployment_namespace=namespace,
+        predictor_name=predictor_name,deployment_type=deployment_type)
+
+    if runtime_metadata is not None and runtime_metadata and \
+            runtime_metadata.runtime_metadata is not None and runtime_metadata.runtime_metadata:
         print(runtime_metadata.runtime_metadata)
         if len(runtime_metadata.runtime_metadata) == 0:
             print('no runtime metadata for '+namespace+'/'+inferenceservice_name)
@@ -193,7 +206,10 @@ def fetch_metadata(namespace, serving_engine, inferenceservice_name, predictor_n
 
         print('prediction schema for '+namespace+'/'+inferenceservice_name)
         print(model_metadata.models[0].prediction_schema)
-        return model_metadata.models[0].prediction_schema.to_dict()
+        if model_metadata.models[0].prediction_schema:
+            return model_metadata.models[0].prediction_schema.to_dict()
+        else:
+            return None
     else:
         print('no metadata found for '+namespace+' / '+inferenceservice_name+' / '+predictor_name)
     return None
