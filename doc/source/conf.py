@@ -31,6 +31,7 @@ author = "Seldon Technologies Ltd"
 # The full version, including alpha/beta/rc tags
 # release = seldon-core.__version__
 
+
 # -- General configuration ---------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -106,9 +107,6 @@ napoleon_use_ivar = False
 napoleon_use_param = True
 napoleon_use_rtype = False
 
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ["_templates"]
-
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
@@ -181,7 +179,7 @@ html_theme = "sphinx_material"
 
 if html_theme == "sphinx_material":
     html_theme_options = {
-        "google_analytics_account": "",
+        "google_analytics_account": "GTM-WT76RV",
         "base_url": "https://docs.seldon.io/projects/seldon-core/",
         "color_primary": "indigo",
         "color_accent": "teal",
@@ -220,16 +218,15 @@ html_logo = "Seldon_White.png"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-# override default theme width
-html_context = {
-    "css_files": ["_static/theme_overrides.css",],  # override wide tables in RTD theme
-}
-
 html_extra_path = ["_extra"]
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
 #
+
+# Add any paths that contain templates here, relative to this directory.
+templates_path = ["_templates"]
+
 # The default sidebars (for documents that don't match any pattern) are
 # defined by theme itself.  Builtin themes are using these templates by
 # default: ``['localtoc.html', 'relations.html', 'sourcelink.html',
