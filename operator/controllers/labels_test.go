@@ -72,7 +72,10 @@ var _ = Describe("addLabelsToDeployment", func() {
 
 			addLabelsToDeployment(dep, pu, p)
 
-			Expect(dep.Labels[result]).To(Equal("true"))
+			if result != "" {
+				Expect(dep.Labels[result]).To(Equal("true"))
+			}
+
 			for _, m := range missing {
 				Expect(dep.Labels).ToNot(HaveKey(m))
 			}
@@ -82,7 +85,7 @@ var _ = Describe("addLabelsToDeployment", func() {
 			false,
 			nil,
 			0,
-			machinelearningv1.Label_default,
+			"",
 			[]string{machinelearningv1.Label_explainer},
 		),
 		Entry(
@@ -90,7 +93,7 @@ var _ = Describe("addLabelsToDeployment", func() {
 			false,
 			nil,
 			50,
-			machinelearningv1.Label_default,
+			"",
 			[]string{machinelearningv1.Label_explainer},
 		),
 		Entry(
@@ -98,7 +101,7 @@ var _ = Describe("addLabelsToDeployment", func() {
 			false,
 			nil,
 			50,
-			machinelearningv1.Label_default,
+			"",
 			[]string{machinelearningv1.Label_explainer},
 		),
 		Entry(
@@ -106,7 +109,7 @@ var _ = Describe("addLabelsToDeployment", func() {
 			false,
 			&machinelearningv1.Explainer{},
 			0,
-			machinelearningv1.Label_default,
+			"",
 			[]string{machinelearningv1.Label_explainer},
 		),
 		Entry(
@@ -117,7 +120,6 @@ var _ = Describe("addLabelsToDeployment", func() {
 			machinelearningv1.Label_shadow,
 			[]string{
 				machinelearningv1.Label_explainer,
-				machinelearningv1.Label_default,
 			},
 		),
 		Entry(
@@ -125,10 +127,9 @@ var _ = Describe("addLabelsToDeployment", func() {
 			false,
 			nil,
 			48,
-			machinelearningv1.Label_canary,
+			"",
 			[]string{
 				machinelearningv1.Label_explainer,
-				machinelearningv1.Label_default,
 			},
 		),
 		Entry(
@@ -194,7 +195,9 @@ var _ = Describe("addLabelsToService", func() {
 
 			addLabelsToService(svc, pu, p)
 
-			Expect(svc.Labels[result]).To(Equal("true"))
+			if result != "" {
+				Expect(svc.Labels[result]).To(Equal("true"))
+			}
 			for _, m := range missing {
 				Expect(svc.Labels).ToNot(HaveKey(m))
 			}
@@ -204,7 +207,7 @@ var _ = Describe("addLabelsToService", func() {
 			false,
 			nil,
 			0,
-			machinelearningv1.Label_default,
+			"",
 			[]string{machinelearningv1.Label_explainer},
 		),
 		Entry(
@@ -212,7 +215,7 @@ var _ = Describe("addLabelsToService", func() {
 			false,
 			nil,
 			50,
-			machinelearningv1.Label_default,
+			"",
 			[]string{machinelearningv1.Label_explainer},
 		),
 		Entry(
@@ -220,7 +223,7 @@ var _ = Describe("addLabelsToService", func() {
 			false,
 			nil,
 			50,
-			machinelearningv1.Label_default,
+			"",
 			[]string{machinelearningv1.Label_explainer},
 		),
 		Entry(
@@ -228,7 +231,7 @@ var _ = Describe("addLabelsToService", func() {
 			false,
 			&machinelearningv1.Explainer{},
 			0,
-			machinelearningv1.Label_default,
+			"",
 			[]string{machinelearningv1.Label_explainer},
 		),
 		Entry(
@@ -239,7 +242,6 @@ var _ = Describe("addLabelsToService", func() {
 			machinelearningv1.Label_shadow,
 			[]string{
 				machinelearningv1.Label_explainer,
-				machinelearningv1.Label_default,
 			},
 		),
 		Entry(
@@ -247,10 +249,9 @@ var _ = Describe("addLabelsToService", func() {
 			false,
 			nil,
 			48,
-			machinelearningv1.Label_canary,
+			"",
 			[]string{
 				machinelearningv1.Label_explainer,
-				machinelearningv1.Label_default,
 			},
 		),
 		Entry(
