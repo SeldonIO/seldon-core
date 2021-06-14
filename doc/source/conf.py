@@ -14,6 +14,7 @@
 #
 import os
 import sys
+import sphinx_material
 
 sys.path.insert(0, os.path.abspath("../.."))
 
@@ -168,10 +169,43 @@ pygments_style = None
 
 # -- Options for HTML output -------------------------------------------------
 
+# -- Options for HTML output -------------------------------------------------
+
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
+# Chosen Themes:
+# * https://github.com/bashtage/sphinx-material/
+# * https://github.com/myyasuda/sphinx_materialdesign_theme
+html_theme = "sphinx_material"
+
+if html_theme == "sphinx_material":
+    html_theme_options = {
+        "google_analytics_account": "",
+        "base_url": "https://docs.seldon.io/projects/seldon-core/",
+        "color_primary": "indigo",
+        "color_accent": "teal",
+        "repo_url": "https://github.com/SeldonIO/seldon-core/",
+        "repo_name": "Seldon Core",
+        "nav_title": "Seldon Core Documentation",
+        "globaltoc_depth": 1,
+        "globaltoc_collapse": False,
+        "globaltoc_includehidden": False,
+        "repo_type": "github",
+        "nav_links": [
+            {
+                "href": "https://github.com/SeldonIO/seldon-core",
+                "internal": False,
+                "title": "Seldon Repo",
+            },
+        ],
+    }
+
+    extensions.append("sphinx_material")
+    html_theme_path = sphinx_material.html_theme_path()
+    html_context = sphinx_material.get_html_context()
+
+html_sidebars = {"**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]}
 
 # The Seldon Logo located at the top of the navigation bar.
 html_logo = "Seldon_White.png"
@@ -180,7 +214,6 @@ html_logo = "Seldon_White.png"
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-html_theme_options = {"sticky_navigation": False, "includehidden": False}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
