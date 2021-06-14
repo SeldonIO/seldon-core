@@ -472,6 +472,8 @@ def instance_elements_for_v2_protocol(copy, metadata_dict, input_or_output):
     #TODO: is it the same for one_hot? not clear for v2
     if elements:
         for key, value in elements.items():
+            print('in proba loop')
+            print(key)
 
             if metadata_dict and key in metadata_dict:
                 metadata_elem = metadata_dict[key]
@@ -600,6 +602,7 @@ def createElementsWithMetadata(X, names, results, metadata_schema, message_type)
 
 
 def build_metadata_names_dict_basic(message_type, metadata_dict, metadata_schema, names):
+
     if 'requests' in metadata_schema and message_type == "request":
         names = []
         # we'll get names from metadata, assuming field order to match the request

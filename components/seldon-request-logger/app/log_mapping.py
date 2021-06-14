@@ -166,6 +166,15 @@ def fetch_user():
 
 
 def fetch_metadata(namespace, serving_engine, inferenceservice_name, predictor_name):
+    #replace Nones with empty for loggin purposes
+    if namespace is None:
+        namespace = ''
+
+    if inferenceservice_name is None:
+        inferenceservice_name = ''
+
+    if predictor_name is None:
+        predictor_name = ''
 
     deployment_type = None
     if serving_engine == 'seldon':
