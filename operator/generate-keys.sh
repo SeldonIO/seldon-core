@@ -25,9 +25,17 @@
 : ${1?'missing key directory'}
 
 key_dir="$1"
+ext_file="extensions.cnf"
 
 chmod 0700 "$key_dir"
 cd "$key_dir"
+
+cat > $ext_file << EOF
+[v3_ca]
+basicConstraints = CA:FALSE
+keyUsage = digitalSignature, keyEncipherment
+subjectAltName = DNS:seldon-webhook-service.seldon-system.svc
+EOF
 
 # Generate the CA cert and private key
 openssl req -nodes -new -days 358000 -x509 -keyout ca.key -out ca.crt -subj "/CN=Admission Controller Webhook Demo CA"
@@ -35,4 +43,6 @@ openssl req -nodes -new -days 358000 -x509 -keyout ca.key -out ca.crt -subj "/CN
 openssl genrsa -out tls.key 2048
 # Generate a Certificate Signing Request (CSR) for the private key, and sign it with the private key of the CA.
 openssl req -new -key tls.key -subj "/CN=seldon-webhook-service.seldon-system.svc" \
-    | openssl x509 -req -CA ca.crt -CAkey ca.key -CAcreateserial -out tls.crt
+    | openssl x509 -req -CA ca.crt -CAkey ca.key -CAcreateserial -extensions v3_ca -extfile ./extensions.cnf -out tls.crt 
+
+rm extensions.cnf
