@@ -1,0 +1,63 @@
+---
+- name: Create Kind Cluster and Install MetalLB
+  hosts: localhost
+  roles:
+    - seldonio.k8s.kind
+    - seldonio.k8s.metallb
+  vars:
+    # Name of kind cluster to be created; default: ansible
+    # If kind cluster of this name already exist it will not be removed and only
+    # the current kubectl context will be updated (kind export kubeconfig ... equivalent)
+    kind_cluster_name: iter8
+    kind_image_version: kindest/node:v1.18.15
+    kind_config_file: files/kind_config.yaml    
+
+    # Default namespace to be created and set for current context (if not null).
+    kind_kubectl_default_namespace: seldon
+
+
+- name: Install and configure Istio
+  hosts: localhost
+  roles:
+    - seldonio.k8s.istio
+  vars:
+    # Version of Istio to be installed; defaults to 1.7.6
+    istio_version: 1.7.6
+
+    # This flag allows to skip verification of Istio installation, default: true
+    # Reason: verify install does not work for Istio 1.7.x and k8s 1.18.x.
+    istio_verify_install: false
+
+    # This flag controls creation of Seldon Gateway, default: true
+    istio_create_seldon_gateway: true
+
+
+- name: Install Seldon Core
+  hosts: localhost
+  roles:
+    - seldonio.k8s.seldon_core
+  vars:
+    # Version of Seldon Core to be installed, default: master
+    # This can be any value accepted by "git checkout": branch, tag, SHA, HEAD, etc...
+    seldon_core_version: master
+
+    # Local folder of already cloned Seldon Core git repository to be used.
+    # If defined then `seldon_core_version` will be ignored.
+    # seldon_core_source_dir: "~/work/seldon-core"
+
+    # Helm Values used for Seldon Core installation
+    seldon_core_values:
+      istio:
+        enabled: true
+        gateway: "istio-system/seldon-gateway"
+
+
+- name: Install Seldon Core Analytics
+  hosts: localhost
+  roles:
+    - seldonio.k8s.seldon_core_analytics
+
+- name: Install Iter8
+  hosts: localhost
+  roles:
+    - seldonio.k8s.iter8
