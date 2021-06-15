@@ -1,0 +1,87 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: fortio-requests
+  namespace: default
+spec:
+  template:
+    spec:
+      volumes:
+      - name: shared
+        emptyDir: {}    
+      containers:
+      - name: fortio
+        image: fortio/fortio
+        command: [ 'fortio', 'load', '-t', '6000s', '-qps', "5", '-json', '/shared/fortiooutput.json', '-H', 'Content-Type: application/json', '-payload', '{"data": {"ndarray":[[6.8,2.8,4.8,1.4]]}}',  "$(URL)" ]
+        env:
+        - name: URL
+          value: URL_VALUE/seldon/ns-production/iris/api/v1.0/predictions
+        volumeMounts:
+        - name: shared
+          mountPath: /shared         
+      - name: busybox
+        image: busybox:1.28
+        command: ['sh', '-c', 'echo busybox is running! && sleep 6000']          
+        volumeMounts:
+        - name: shared
+          mountPath: /shared       
+      restartPolicy: Never
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: fortio-irisv1-rewards
+  namespace: default  
+spec:
+  template:
+    spec:
+      volumes:
+      - name: shared
+        emptyDir: {}    
+      containers:
+      - name: fortio
+        image: fortio/fortio
+        command: [ 'fortio', 'load', '-t', '6000s', '-qps', "0.7", '-json', '/shared/fortiooutput.json', '-H', 'Content-Type: application/json', '-payload', '{"reward": 1}',  "$(URL)" ]
+        env:
+        - name: URL
+          value: iris-baseline.ns-production:8000/api/v1.0/feedback
+        volumeMounts:
+        - name: shared
+          mountPath: /shared         
+      - name: busybox
+        image: busybox:1.28
+        command: ['sh', '-c', 'echo busybox is running! && sleep 6000']          
+        volumeMounts:
+        - name: shared
+          mountPath: /shared       
+      restartPolicy: Never
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: fortio-irisv2-rewards
+  namespace: default  
+spec:
+  template:
+    spec:
+      volumes:
+      - name: shared
+        emptyDir: {}    
+      containers:
+      - name: fortio
+        image: fortio/fortio
+        command: [ 'fortio', 'load', '-t', '6000s', '-qps', "1", '-json', '/shared/fortiooutput.json', '-H', 'Content-Type: application/json', '-payload', '{"reward": 1}',  "$(URL)" ]
+        env:
+        - name: URL
+          value: iris-candidate.ns-production:8000/api/v1.0/feedback
+        volumeMounts:
+        - name: shared
+          mountPath: /shared         
+      - name: busybox
+        image: busybox:1.28
+        command: ['sh', '-c', 'echo busybox is running! && sleep 6000']          
+        volumeMounts:
+        - name: shared
+          mountPath: /shared       
+      restartPolicy: Never

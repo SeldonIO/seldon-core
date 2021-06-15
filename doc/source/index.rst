@@ -102,6 +102,7 @@ Documentation Index
    :maxdepth: 1
    :caption: Production
 
+   AB Tests and Progressive Rollouts <rollouts/abtests.md>
    Supported API Protocols <graph/protocols.md>
    CI/CD MLOps at Scale <analytics/cicd-mlops.md>
    Metrics with Prometheus <analytics/analytics.md>
