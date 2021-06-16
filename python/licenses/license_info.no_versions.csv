@@ -34,7 +34,7 @@
 "jaeger-client","Apache Software License"
 "jsonschema","MIT License"
 "keras-nightly","Apache Software License"
-"numpy","BSD License"
+"numpy","BSD"
 "oauthlib","BSD License"
 "opentracing","Apache Software License"
 "opt-einsum","MIT"
