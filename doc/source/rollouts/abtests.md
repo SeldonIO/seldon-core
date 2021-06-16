@@ -236,7 +236,7 @@ spec:
       - name: predictor
         value: baseline
       - name: promote
-        value: https://gist.githubusercontent.com/cliveseldon/acac9b7e6ba3c52cde556323be0fc776/raw/78781a1f5c86a6cc24c3c7e64e3df211bc083207/promote-v1.yaml
+        value: https://raw.githubusercontent.com/SeldonIO/seldon-core/master/examples/iter8/progressive_rollout/single_sdep/promote-v1.yaml
     candidates:
     - name: iris-v2
       weightObjRef:
@@ -253,7 +253,7 @@ spec:
       - name: predictor
         value: candidate
       - name: promote
-        value: https://gist.githubusercontent.com/cliveseldon/3766b9315a187aa2800422205832ad9b/raw/ba00718fcacb8014e826cc6410a8190aa19116d4/promote-v2.yaml
+        value: https://raw.githubusercontent.com/SeldonIO/seldon-core/master/examples/iter8/progressive_rollout/single_sdep/promote-v2.yaml
 
 ```
 
@@ -475,7 +475,7 @@ spec:
       - name: predictor
         value: default
       - name: promote
-        value: https://raw.githubusercontent.com/iter8-tools/iter8/master/samples/seldon/quickstart/promote-v1.yaml
+        value: https://raw.githubusercontent.com/SeldonIO/seldon-core/master/examples/iter8/progressive_rollout/separate_sdeps/promote-v1.yaml
     candidates:
     - name: iris-v2
       weightObjRef:
@@ -492,7 +492,7 @@ spec:
       - name: predictor
         value: default
       - name: promote
-        value: https://raw.githubusercontent.com/iter8-tools/iter8/master/samples/seldon/quickstart/promote-v2.yaml
+        value: https://raw.githubusercontent.com/SeldonIO/seldon-core/master/examples/iter8/progressive_rollout/separate_sdeps/promote-v2.yaml
 
 ```
 
