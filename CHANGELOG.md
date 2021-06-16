@@ -1,5 +1,34 @@
 # Changelog
 
+## [v1.9.0](https://github.com/seldonio/seldon-core/tree/HEAD)
+
+[Full Changelog](https://github.com/seldonio/seldon-core/compare/v1.8.0...v1.9.0)
+
+**Fixed bugs:**
+
+- seldon-core 1.8.0 helm chart CRD error [\#3254](https://github.com/SeldonIO/seldon-core/issues/3254)
+- explainer don't repect the spec.replicas  [\#3241](https://github.com/SeldonIO/seldon-core/issues/3241)
+- Setting TRACING=0 does not disable Jaeger tracing [\#3158](https://github.com/SeldonIO/seldon-core/issues/3158)
+
+**Closed issues:**
+
+- Allow Tempo Server Env Override [\#3282](https://github.com/SeldonIO/seldon-core/issues/3282)
+- req logger - create elements section for tensorflow protocol [\#3279](https://github.com/SeldonIO/seldon-core/issues/3279)
+- Integrate Iter8 [\#3278](https://github.com/SeldonIO/seldon-core/issues/3278)
+- add some unit tests for request logger [\#3270](https://github.com/SeldonIO/seldon-core/issues/3270)
+- Update OpenAPI folder definitions [\#3261](https://github.com/SeldonIO/seldon-core/issues/3261)
+- parsing of categorical and proba in req logger for ndarray [\#3255](https://github.com/SeldonIO/seldon-core/issues/3255)
+- Custom name for Seldon deployment instead of metadataname-graph component names [\#3253](https://github.com/SeldonIO/seldon-core/issues/3253)
+- Allow V2 Protocol for Alibi Explain Server [\#3247](https://github.com/SeldonIO/seldon-core/issues/3247)
+- Usage of route\_raw in seldon core 1.1.0 [\#3236](https://github.com/SeldonIO/seldon-core/issues/3236)
+- option to skip verify ssl in req logger [\#3230](https://github.com/SeldonIO/seldon-core/issues/3230)
+- GPT2-Triton Example: extand to contain load test example [\#3216](https://github.com/SeldonIO/seldon-core/issues/3216)
+- Allow multi-model repositories for Tensorflow Serving [\#3206](https://github.com/SeldonIO/seldon-core/issues/3206)
+- Allow for overriding Istio VirtualService hosts  [\#3137](https://github.com/SeldonIO/seldon-core/issues/3137)
+- Run black \(nbQA\) on notebooks as part of fmt/lint [\#2885](https://github.com/SeldonIO/seldon-core/issues/2885)
+- Update request logger to run with gunicorn [\#2141](https://github.com/SeldonIO/seldon-core/issues/2141)
+- Progressive Rollout [\#1805](https://github.com/SeldonIO/seldon-core/issues/1805)
+
 ## [v1.8.0](https://github.com/seldonio/seldon-core/tree/v1.8.0) (2021-05-20)
 
 [Full Changelog](https://github.com/seldonio/seldon-core/compare/v1.7.0...v1.8.0)
@@ -3054,3 +3083,4 @@
 
 
 
+\* *This Changelog was automatically generated       by [github_changelog_generator]      (https://github.com/github-changelog-generator/github-changelog-generator)*
