@@ -83,11 +83,11 @@ class TestBatchWorker(object):
         with open(output_data_path, "r") as f:
             count = 0
             for line in f:
-                count +=1
+                count += 1
                 output = json.loads(line)
                 # Ensure all requests are successful
                 assert output.get("data", {}).get("ndarray", False)
-            assert (count == batch_size)
+            assert count == batch_size
 
         logging.info("Success for test_batch_worker")
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
