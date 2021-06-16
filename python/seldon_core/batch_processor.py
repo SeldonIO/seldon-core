@@ -402,7 +402,7 @@ def _send_batch_predict(
     traced back individually in the Seldon Request Logger context. Each request
     will be attempted for the number of retries, and will return the string
     serialised result.
-    Paramters
+    Parameters
     ---
     batch_idx
         The enumerated index given to the batch datapoint in order of local dataset
@@ -420,7 +420,7 @@ def _send_batch_predict(
         The unique identifier for the batch which is passed to all requests
     Returns
     ---
-        A string serialised result of the response (or equivallent data with error info)
+        A string serialised result of the response (or equivalent data with error info)
     """
 
     predict_kwargs = {}
@@ -507,7 +507,6 @@ def _send_batch_feedback(
     meta = {
         "tags": {
             "batch_id": batch_id,
-            # TODO: tidy these
             "batch_instance_id": batch_instance_id,
             "batch_index": batch_idx,
         }
