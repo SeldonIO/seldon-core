@@ -309,16 +309,18 @@ def _send_batch_predict_multi_request(
 
     try:
         if data_type == "data":
+            # Initialise concatenated array for data
             data = json.loads(first_prediction)
             data_np = np.array(data)
-            overall = data_np
+            concat = data_np
             for i, raw_data in enumerate(input_data):
+                # Already added first item.
                 if i == 0:
                     continue
                 data = json.loads(raw_data[2])
                 data_np = np.array(data)
-                overall = np.concatenate((overall, data_np))
-            predict_kwargs["data"] = overall
+                concat = np.concatenate((concat, data_np))
+            predict_kwargs["data"] = concat
         data = json.loads(first_prediction)
         if data_type == "str":
             predict_kwargs["str_data"] = data
@@ -346,7 +348,7 @@ def _send_batch_predict_multi_request(
             },
             "meta": meta,
         }
-        print(e)
+        print('Exception: %s' % e)
         str_output = json.dumps(error_resp)
         return [str_output]
 
