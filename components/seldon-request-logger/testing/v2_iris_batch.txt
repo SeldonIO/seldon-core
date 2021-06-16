@@ -1,0 +1,56 @@
+#iris dummy batch inputs
+#defining shape so that first dim is batch
+#is first dim always batch (for non-BYTES)?
+#or if 'shape' might be missing does that mean shape is [1,1] (want to do this in req logger, which has to identify batch somehow)
+{
+  "model_name": "iris",
+  "model_version": "1",
+  "inputs": [
+    {
+      "name": "Sepal length",
+      "shape": [2, 1],
+      "datatype": "FP32",
+      "data": [6.8, 6.1]
+    },
+    {
+      "name": "Sepal width",
+      "shape": [2, 1],
+      "datatype": "FP32",
+      "data": [2.8, 3.4]
+    },
+    {
+      "name": "Petal length",
+      "shape": [2, 1],
+      "datatype": "FP32",
+      "data": [4.8, 4.5]
+    },
+    {
+      "name": "Petal width",
+      "shape": [2, 1],
+      "datatype": "FP32",
+      "data": [1.4, 1.6]
+    }
+  ]
+}
+
+#iris dummy batch outputs
+#here it's proba so we've pairs representing classes (iris or not iris)
+#again first dimension is rows (same question as before)
+{
+	"model_name": "iris",
+	"model_version": "1",
+	"outputs": [
+		{
+			"data": [
+				0.1, 0.9,
+				0.6, 0.4
+			],
+			"datatype": "FP32",
+			"name": "dummy_proba_output_name",
+			"shape": [
+				2,
+				2
+			]
+		}
+	]
+}

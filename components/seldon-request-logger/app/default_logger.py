@@ -133,6 +133,9 @@ def process_and_update_elastic_doc(
     # req or res might be batches of instances so split out into individual docs
     if "instance" in new_content_part:
 
+        print('type of instance')
+        print(type(new_content_part["instance"]))
+
         if type(new_content_part["instance"]) == type([]):
             # if we've a list then this is batch
             # we assume first dimension is always batch
@@ -317,33 +320,23 @@ def extract_data_part(content, headers, message_type):
 
     # V2 Data Plane Response
     if "model_name" in copy and "outputs" in copy:
-
         # first get schema if there is one
         metadata_schema = log_mapping.fetch_metadata(namespace, serving_engine, inferenceservice_name,
                                                      endpoint_name)
-
-        sys.stdout.flush()
-
-        metadata_dict = {}
-        if metadata_schema:
-            build_metadata_names_dict_basic(message_type, metadata_dict, metadata_schema, [])
-
-        instance_elements_for_v2_protocol(copy, metadata_dict, "outputs")
+        instance_elements_for_v2_protocol(copy, "outputs", namespace, serving_engine, inferenceservice_name,
+                                                     endpoint_name, metadata_schema)
 
         del copy["outputs"]
         #TODO: do we really need to remove below model_name and model_version from request?
         del copy["model_name"]
         del copy["model_version"]
     elif "inputs" in copy:
-        #first get schema if there is one
+        # first get schema if there is one
         metadata_schema = log_mapping.fetch_metadata(namespace, serving_engine, inferenceservice_name,
                                                      endpoint_name)
 
-        metadata_dict = {}
-        if metadata_schema:
-            build_metadata_names_dict_basic(message_type, metadata_dict, metadata_schema, [])
-
-        instance_elements_for_v2_protocol(copy, metadata_dict, "inputs")
+        instance_elements_for_v2_protocol(copy, "inputs", namespace, serving_engine, inferenceservice_name,
+                                                     endpoint_name, metadata_schema)
 
         del copy["inputs"]
     elif "instances" in copy:
@@ -355,7 +348,7 @@ def extract_data_part(content, headers, message_type):
         first_element = content_np.item(0)
 
         set_datatype_from_numpy(content_np, copy, first_element)
-        elements = createElelmentsArray(content_np, None, namespace, serving_engine, inferenceservice_name, endpoint_name, message_type)
+        elements = createElelmentsArray(content_np, None, namespace, serving_engine, inferenceservice_name, endpoint_name, message_type, None)
         copy["elements"] = elements
 
         del copy["instances"]
@@ -366,7 +359,7 @@ def extract_data_part(content, headers, message_type):
         copy["dataType"] = "tabular"
         first_element = content_np.item(0)
         set_datatype_from_numpy(content_np, copy, first_element)
-        elements = createElelmentsArray(content_np, None, namespace, serving_engine, inferenceservice_name, endpoint_name, message_type)
+        elements = createElelmentsArray(content_np, None, namespace, serving_engine, inferenceservice_name, endpoint_name, message_type, None)
         copy["elements"] = elements
 
         del copy["predictions"]
@@ -386,7 +379,7 @@ def extract_data_part(content, headers, message_type):
 
         if isinstance(req_features, Iterable):
 
-            elements = createElelmentsArray(req_features, list(req_datadef.names), namespace, serving_engine, inferenceservice_name, endpoint_name, message_type)
+            elements = createElelmentsArray(req_features, list(req_datadef.names), namespace, serving_engine, inferenceservice_name, endpoint_name, message_type, None)
             copy["elements"] = elements
 
         copy["instance"] = json.loads(
@@ -416,14 +409,13 @@ def extract_data_part(content, headers, message_type):
     return copy
 
 
-def instance_elements_for_v2_protocol(copy, metadata_dict, input_or_output):
+def instance_elements_for_v2_protocol(copy, input_or_output, namespace, serving_engine, inferenceservice_name,
+                                                     endpoint_name, metadata_schema):
 
-    # instance should be an array of all the values
-    instance = []
-    #TODO: or if it's batch it should be an array of array... but batch isn't clear for v2 so assuming not batch
-
-    # elments a dict of k-v for names and resolved values
-    elements = {}
+    # v2 protocol is like a transpose of seldon ndarray as it is column-oriented
+    # can basically go through the columns, take entries to list of columns and then transpose
+    cols_entries = []
+    names = []
 
     for element in copy[input_or_output]:
 
@@ -433,66 +425,70 @@ def instance_elements_for_v2_protocol(copy, metadata_dict, input_or_output):
             # if no shape then assume a single element
             shape = [1, 1]
         data = element["data"]
-        name = element["name"]
+        names.append(element["name"])
 
-        currentValue = None
-        # will need a separete value for values looked up from metadata (categorical)
-        resolvedValue = None
 
         if data_type == "BYTES":
             copy["dataType"] = "text"
-            currentValue = array.array('B', data).tostring()
         else:
             arr = create_np_from_v2(data, data_type, shape)
             # assuming that if not bytes then tabular
             copy["dataType"] = "tabular"
             first_element = arr.item(0)
             set_datatype_from_numpy(arr, copy, first_element)
-            currentValue = arr.tolist()
 
+        print('arr is')
+        print(arr)
+        #FIXME: this transpose logic doesn't work with proba or anything multidimensional
+        #only way would be to only add cols where not multidimensional (second dim >1 or more than 2)
+        #put multidimensional columns in a separate array and then union everything
+        cols_entries.append(arr)
 
-        instance.append(currentValue)
+    #convert from cols to rows by transpose, a squeeze is needed because a dim gets added in the process
+    rows = np.array(cols_entries).transpose().squeeze()
 
-        # could be categorical and need to look up
-        if isinstance(currentValue, list):
+    print('rows is ')
+    print(rows)
+    sys.stdout.flush()
 
-            if len(currentValue) == 1:
-                currentValue = currentValue[0]
+    message_type = "request"
+    if input_or_output == "output":
+        message_type = "response"
 
-                if name in metadata_dict:
-                    currentValue = lookupValueWithMetadata(name, metadata_dict, currentValue)
+    elements = createElelmentsArray(rows, names, namespace, serving_engine, inferenceservice_name, endpoint_name, message_type, metadata_schema)
 
-        elements[name] = currentValue
+    copy["instance"] = rows.tolist()
 
-    copy["instance"] = instance
+    metadata_dict = {}
+    if metadata_schema:
+        build_metadata_names_dict_basic(message_type, metadata_dict, metadata_schema, [])
 
     # might contain one_hot but we don't merge one_hot for v2, not yet clear what we'll do but prob something like proba
 
-    #proba has special handling for v2 - will be single field containing multiple elements so find name for each
-    #TODO: is it the same for one_hot? not clear for v2
     if elements:
-        for key, value in elements.items():
-            print('in proba loop')
-            print(key)
+        for elements_row in elements:
+            for key, value in elements_row.items():
+                print('in proba loop')
+                print(key)
 
-            if metadata_dict and key in metadata_dict:
-                metadata_elem = metadata_dict[key]
+                if metadata_dict and key in metadata_dict:
+                    metadata_elem = metadata_dict[key]
 
-                if metadata_elem['type'] == "PROBA":
-                    #check if this element contains a list
+                    if metadata_elem['type'] == "PROBA":
+                        #check if this element contains a list
 
-                    if isinstance(value, list):
+                        if isinstance(value, list):
 
-                        #if we have metadata then replace proba list with k-v pairs
-                        #to do that the schema needs to tell us what the names should be
-                        if metadata_elem['schema']:
-                            new_entries = {}
-                            for num, proba_sub_elem in enumerate(metadata_elem['schema']):
-                                subelem_name = proba_sub_elem['name']
-                                #assume index of element in schema to correspond to ordering in body
-                                new_entries[subelem_name] = value[num]
+                            #if we have metadata then replace proba list with k-v pairs
+                            #to do that the schema needs to tell us what the names should be
+                            if metadata_elem['schema']:
+                                new_entries = {}
+                                for num, proba_sub_elem in enumerate(metadata_elem['schema']):
+                                    subelem_name = proba_sub_elem['name']
+                                    #assume index of element in schema to correspond to ordering in body
+                                    new_entries[subelem_name] = value[num]
 
-                            elements[key] = new_entries
+                                elements_row[key] = new_entries
 
     copy["elements"] = elements
 
@@ -544,10 +540,11 @@ def extractRow(
     return reqJson
 
 
-def createElelmentsArray(X: np.ndarray, names: list, namespace_name, serving_engine, inferenceservice_name, endpoint_name, message_type):
-    metadata_schema = None
+def createElelmentsArray(X: np.ndarray, names: list, namespace_name, serving_engine,
+                         inferenceservice_name, endpoint_name, message_type, metadata_schema):
 
-    if namespace_name is not None and inferenceservice_name is not None and serving_engine is not None and endpoint_name is not None:
+    if not metadata_schema and namespace_name is not None and inferenceservice_name is not None\
+            and serving_engine is not None and endpoint_name is not None:
         metadata_schema = log_mapping.fetch_metadata(namespace_name, serving_engine, inferenceservice_name, endpoint_name)
     else:
         print('missing a param required for metadata lookup')
