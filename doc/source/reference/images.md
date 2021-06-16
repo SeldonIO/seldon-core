@@ -5,30 +5,30 @@
 
 | Description | Image URL | Stable Version | Development |
 |-------------|-----------|----------------|-------------|
-| [Seldon Operator](../workflow/install.md) | [seldonio/seldon-core-operator](https://hub.docker.com/r/seldonio/seldon-core-operator/tags/) | 1.9.0 | 1.10.0-dev |
-| [Seldon Service Orchestrator (Go)](../graph/svcorch.md)| [seldonio/seldon-core-executor](https://hub.docker.com/r/seldonio/executor/tags/) | 1.9.0 | 1.10.0-dev |
+| [Seldon Operator](../workflow/install.md) | [seldonio/seldon-core-operator](https://hub.docker.com/r/seldonio/seldon-core-operator/tags/) | 1.10.0 | 1.11.0-dev |
+| [Seldon Service Orchestrator (Go)](../graph/svcorch.md)| [seldonio/seldon-core-executor](https://hub.docker.com/r/seldonio/executor/tags/) | 1.10.0 | 1.11.0-dev |
 
 ## Pre-packaged servers
 
 
 | Description | Image URL | Version |
 |-------------|-----------|---------|
-| [MLFlow Server REST](../servers/mlflow.md) | [seldonio/mlflowserver_rest](https://hub.docker.com/r/seldonio/mlflowserver_rest/tags/) | 1.9.0 |
-| [MLFlow Server GRPC](../servers/mlflow.md) | [seldonio/mlflowserver_grpc](https://hub.docker.com/r/seldonio/mlflowserver_grpc/tags/) | 1.9.0 |
-| [SKLearn Server REST](../servers/sklearn.md) | [seldonio/sklearnserver_rest](https://hub.docker.com/r/seldonio/sklearnserver_rest/tags/) | 1.9.0 |
-| [SKLearn Server GRPC](../servers/sklearn.md) | [seldonio/sklearnserver_grpc](https://hub.docker.com/r/seldonio/sklearnserver_grpc/tags/) | 1.9.0 |
-| [XGBoost Server REST](../servers/xgboost.md) | [seldonio/xgboostserver_rest](https://hub.docker.com/r/seldonio/xgboostserver_rest/tags/) | 1.9.0 |
-| [XGBoost Server GRPC](../servers/xgboost.md) | [seldonio/xgboostserver_grpc](https://hub.docker.com/r/seldonio/xgboostserver_grpc/tags/) | 1.9.0 |
+| [MLFlow Server REST](../servers/mlflow.md) | [seldonio/mlflowserver_rest](https://hub.docker.com/r/seldonio/mlflowserver_rest/tags/) | 1.10.0 |
+| [MLFlow Server GRPC](../servers/mlflow.md) | [seldonio/mlflowserver_grpc](https://hub.docker.com/r/seldonio/mlflowserver_grpc/tags/) | 1.10.0 |
+| [SKLearn Server REST](../servers/sklearn.md) | [seldonio/sklearnserver_rest](https://hub.docker.com/r/seldonio/sklearnserver_rest/tags/) | 1.10.0 |
+| [SKLearn Server GRPC](../servers/sklearn.md) | [seldonio/sklearnserver_grpc](https://hub.docker.com/r/seldonio/sklearnserver_grpc/tags/) | 1.10.0 |
+| [XGBoost Server REST](../servers/xgboost.md) | [seldonio/xgboostserver_rest](https://hub.docker.com/r/seldonio/xgboostserver_rest/tags/) | 1.10.0 |
+| [XGBoost Server GRPC](../servers/xgboost.md) | [seldonio/xgboostserver_grpc](https://hub.docker.com/r/seldonio/xgboostserver_grpc/tags/) | 1.10.0 |
 
 ## Language wrappers
 
 | Description | Image URL | Stable Version | Development |
 |-------------|-----------|----------------|-------------|
-| [Seldon Python 3 (3.6) Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python3](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/) | 1.9.0 | 1.10.0-dev |
-| [Seldon Python 3.6 Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python36](https://hub.docker.com/r/seldonio/seldon-core-s2i-python36/tags/) | 1.9.0 | 1.10.0-dev |
-| [Seldon Python 3.7 Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python37](https://hub.docker.com/r/seldonio/seldon-core-s2i-python37/tags/) | 1.9.0 | 1.10.0-dev |
-| [Seldon Python 3.6 GPU Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python36-gpu](https://hub.docker.com/r/seldonio/seldon-core-s2i-python36-gpu/tags/) | 1.9.0 | 1.10.0-dev |
-| [Seldon Python 3.7 GPU Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python37-gpu](https://hub.docker.com/r/seldonio/seldon-core-s2i-python37-gpu/tags/) | 1.9.0 | 1.10.0-dev |
+| [Seldon Python 3 (3.6) Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python3](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/) | 1.10.0 | 1.11.0-dev |
+| [Seldon Python 3.6 Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python36](https://hub.docker.com/r/seldonio/seldon-core-s2i-python36/tags/) | 1.10.0 | 1.11.0-dev |
+| [Seldon Python 3.7 Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python37](https://hub.docker.com/r/seldonio/seldon-core-s2i-python37/tags/) | 1.10.0 | 1.11.0-dev |
+| [Seldon Python 3.6 GPU Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python36-gpu](https://hub.docker.com/r/seldonio/seldon-core-s2i-python36-gpu/tags/) | 1.10.0 | 1.11.0-dev |
+| [Seldon Python 3.7 GPU Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python37-gpu](https://hub.docker.com/r/seldonio/seldon-core-s2i-python37-gpu/tags/) | 1.10.0 | 1.11.0-dev |
 
 ## Server proxies
 
@@ -44,7 +44,7 @@
 
 | Description | Python Version | Version |
 |-------------|----------------|---------|
-| [seldon-core](https://pypi.org/project/seldon-core/) | >3.4,<3.7 | 1.9.0 |
+| [seldon-core](https://pypi.org/project/seldon-core/) | >3.4,<3.7 | 1.10.0 |
 | [seldon-core](https://pypi.org/project/seldon-core/) | 2,>=3,<3.7 | 0.2.6 (deprecated) |
 
 

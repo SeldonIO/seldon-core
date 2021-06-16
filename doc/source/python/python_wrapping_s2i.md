@@ -17,7 +17,7 @@ If you are not familiar with s2i you can read [general instructions on using s2i
 To check everything is working you can run
 
 ```bash
-s2i usage seldonio/seldon-core-s2i-python3:1.9.0
+s2i usage seldonio/seldon-core-s2i-python3:1.10.0-dev
 ```
 
 
@@ -98,14 +98,14 @@ See below for the possible keys and values for this file.
 ## Step 3 - Build your image
 Use `s2i build` to create your Docker image from source code. You will need Docker installed on the machine and optionally git if your source code is in a public git repo. You can choose from three python builder images
 
- * Python 3.6 : seldonio/seldon-core-s2i-python36:1.9.0 seldonio/seldon-core-s2i-python3:1.9.0
+ * Python 3.6 : seldonio/seldon-core-s2i-python36:1.10.0-dev seldonio/seldon-core-s2i-python3:1.10.0-dev
    * Note there are [issues running TensorFlow under Python 3.7](https://github.com/tensorflow/tensorflow/issues/20444) (Nov 2018) and Python 3.7 is not officially supported by TensorFlow (Dec 2018).
  * Python 3.6 plus ONNX support via [Intel nGraph](https://github.com/NervanaSystems/ngraph) : seldonio/seldon-core-s2i-python3-ngraph-onnx:0.1
 
 Using s2i you can build directly from a git repo or from a local source folder. See the [s2i docs](https://github.com/openshift/source-to-image/blob/master/docs/cli.md#s2i-build) for further details. The general format is:
 
 ```bash
-s2i build <src-folder> seldonio/seldon-core-s2i-python3:1.9.0 <my-image-name>
+s2i build <src-folder> seldonio/seldon-core-s2i-python3:1.10.0-dev <my-image-name>
 ```
 
 Change to seldonio/seldon-core-s2i-python3 if using python 3.
@@ -113,7 +113,7 @@ Change to seldonio/seldon-core-s2i-python3 if using python 3.
 An example invocation using the test template model inside seldon-core:
 
 ```bash
-s2i build https://github.com/seldonio/seldon-core.git --context-dir=wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python3:1.9.0 seldon-core-template-model
+s2i build https://github.com/seldonio/seldon-core.git --context-dir=wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python3:1.10.0-dev seldon-core-template-model
 ```
 
 The above s2i build invocation:
@@ -128,13 +128,13 @@ For building from a local source folder, an example where we clone the seldon-co
 ```bash
 git clone https://github.com/seldonio/seldon-core.git
 cd seldon-core
-s2i build wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python3:1.9.0 seldon-core-template-model
+s2i build wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python3:1.10.0-dev seldon-core-template-model
 ```
 
 For more help see:
 
 ```bash
-s2i usage seldonio/seldon-core-s2i-python3:1.9.0
+s2i usage seldonio/seldon-core-s2i-python3:1.10.0-dev
 s2i build --help
 ```
 
@@ -179,7 +179,7 @@ s2i build \
    -e EXTRA_INDEX_URL=https://<pypi-user>:<pypi-auth>@mypypi.example.com/simple \
    -e PIP_TRUSTED_HOST=mypypi.example.com \
    <src-folder> \
-   seldonio/seldon-core-s2i-python3:1.9.0 \
+   seldonio/seldon-core-s2i-python3:1.10.0-dev \
    <my-image-name>
 ```
 
@@ -271,7 +271,7 @@ The allowable `type` values for the parameters are defined in the [proto buffer 
 To use a private repository for installing Python dependencies use the following build command:
 
 ```bash
-s2i build -i <python-wheel-folder>:/whl <src-folder> seldonio/seldon-core-s2i-python3:1.9.0 <my-image-name>
+s2i build -i <python-wheel-folder>:/whl <src-folder> seldonio/seldon-core-s2i-python3:1.10.0-dev <my-image-name>
 ```
 
 This command will look for local Python wheels in the `<python-wheel-folder>` and use these before searching PyPI.
