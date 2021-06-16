@@ -147,7 +147,7 @@ def _start_input_file_worker(q_in: Queue, input_data_path: str, batch_size: int)
 
 
 def _start_output_file_worker(
-        q_out: Queue, output_data_path: str, stop_event: Event
+    q_out: Queue, output_data_path: str, stop_event: Event
 ) -> None:
     """
     Runs logic for the output file worker which receives all the processed output
@@ -212,8 +212,11 @@ def _start_request_worker(
     """
     while True:
         input_data = q_in.get()
+        # For the case where batch size == 1
+        batch_idx, batch_instance_id, input_raw = input_data[0]
         if method == "predict":
-            # If we have a batch size > 1 then we wish to use the other method and add each output to queue
+            # If we have a batch size > 1 then we wish to use the method for sending multiple predictions
+            # as a single request and split the response into multiple responses.
             if len(input_data) > 1:
                 str_outputs = _send_batch_predict_multi_request(
                     input_data,
@@ -225,10 +228,9 @@ def _start_request_worker(
                 )
                 for str_output in str_outputs:
                     q_out.put(str_output)
-                # continue with next input
                 q_in.task_done()
+                # Continue with next input
                 continue
-            batch_idx, batch_instance_id, input_raw = input_data[0]
             str_output = _send_batch_predict(
                 batch_idx,
                 batch_instance_id,
@@ -240,7 +242,10 @@ def _start_request_worker(
             )
         elif method == "feedback":
             str_output = _send_batch_feedback(
-                input_data,
+                batch_idx,
+                batch_instance_id,
+                input_raw,
+                data_type,
                 sc,
                 retries,
                 batch_id,
@@ -437,7 +442,10 @@ def _send_batch_predict(
     return str_output
 
 def _send_batch_feedback(
-        input_raw: [],
+        batch_idx: int,
+        batch_instance_id: int,
+        input_raw: str,
+        data_type: str,
         sc: SeldonClient,
         retries: int,
         batch_id: str,
@@ -472,13 +480,13 @@ def _send_batch_feedback(
         "tags": {
             "batch_id": batch_id,
             # TODO: tidy these
-            "batch_instance_id": input_raw[0][1],
-            "batch_index": input_raw[0][0],
+            "batch_instance_id": batch_instance_id,
+            "batch_index": batch_idx,
         }
     }
     # Feedback protos do not support meta - defined to include in file output only.
     try:
-        data = json.loads(input_raw[0][2])
+        data = json.loads(input_raw)
         feedback_kwargs["raw_request"] = data
 
         str_output = None
