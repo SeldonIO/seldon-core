@@ -261,7 +261,7 @@ def _start_request_worker(
 
 
 def _send_batch_predict_multi_request(
-    input_raw: [],
+    input_data: [],
     data_type: str,
     sc: SeldonClient,
     retries: int,
@@ -274,12 +274,12 @@ def _send_batch_predict_multi_request(
     function also uses the unique batch ID as request ID so the request can be
     traced back individually in the Seldon Request Logger context. Each request
     will be attempted for the number of retries, and will return the string
-    serialised result.
+    serialised result. This method is similar to _send_batch_predict, but allows multiple
+    requests to be combined into a single prediction.
     Parameters
     ---
-    # TODO: Change this
-    input_raw
-        The raw input in string format to be loaded to the respective format
+    input_data
+        The input data containing the indexes, instance_ids and predictions
     data_type
         The data type to send which can be str, json and data
     sc
@@ -293,8 +293,9 @@ def _send_batch_predict_multi_request(
         A string serialised result of the response (or equivalent data with error info)
     """
 
-    instance_ids = [x[1] for x in input_raw]
-    indexes = [x[0] for x in input_raw]
+    indexes = [x[0] for x in input_data]
+    instance_ids = [x[1] for x in input_data]
+    first_prediction = input_data[0][2]
 
     predict_kwargs = {}
     meta = {
@@ -308,17 +309,17 @@ def _send_batch_predict_multi_request(
 
     try:
         if data_type == "data":
-            data = json.loads(input_raw[0][2])
+            data = json.loads(first_prediction)
             data_np = np.array(data)
             overall = data_np
-            for i, raw_data in enumerate(input_raw):
+            for i, raw_data in enumerate(input_data):
                 if i == 0:
                     continue
                 data = json.loads(raw_data[2])
                 data_np = np.array(data)
                 overall = np.concatenate((overall, data_np))
             predict_kwargs["data"] = overall
-        data = json.loads(input_raw[0][2])
+        data = json.loads(first_prediction)
         if data_type == "str":
             predict_kwargs["str_data"] = data
         elif data_type == "json":
@@ -351,29 +352,35 @@ def _send_batch_predict_multi_request(
 
     # Take the response create new responses for each request
     responses = []
-    for i in range(len(input_raw)):
-        newResponse = copy.deepcopy(response)
+    # If tensor then prepare the ndarray
+    tensor_ndarray = np.array(())
+    if payload_type == "tensor":
+        tensor = np.array(response["data"]["tensor"]["values"])
+        shape = response["data"]["tensor"]["shape"]
+        tensor_ndarray = tensor.reshape(shape)
+
+    for i in range(len(input_data)):
+        new_response = copy.deepcopy(response)
         if payload_type == "ndarray":
-            newResponse["data"]["ndarray"] = [response["data"]["ndarray"][i]]
-            newResponse["meta"]["tags"]["tags"]["batch_index"] = indexes[i]
-            newResponse["meta"]["tags"]["tags"][
+            # Format new responses for each original prediction request
+            new_response["data"]["ndarray"] = [response["data"]["ndarray"][i]]
+            new_response["meta"]["tags"]["tags"]["batch_index"] = indexes[i]
+            new_response["meta"]["tags"]["tags"][
                 "batch_instance_id"] = instance_ids[i]
-            responses.append(json.dumps(newResponse))
+            responses.append(json.dumps(new_response))
         elif payload_type == "tensor":
-            tensor = np.array(response["data"]["tensor"]["values"])
-            shape = response["data"]["tensor"]["shape"]
-            ndarray = tensor.reshape(shape)
-            newResponse["data"]["tensor"]["shape"][0] = 1
-            newResponse["data"]["tensor"]["values"] = [
-                np.ndarray.tolist(ndarray[i])
+            # Format new responses for each original prediction request
+            new_response["data"]["tensor"]["shape"][0] = 1
+            new_response["data"]["tensor"]["values"] = [
+                np.ndarray.tolist(tensor_ndarray[i])
             ]
-            newResponse["meta"]["tags"]["tags"]["batch_index"] = indexes[i]
-            newResponse["meta"]["tags"]["tags"][
+            new_response["meta"]["tags"]["tags"]["batch_index"] = indexes[i]
+            new_response["meta"]["tags"]["tags"][
                 "batch_instance_id"] = instance_ids[i]
-            responses.append(json.dumps(newResponse))
+            responses.append(json.dumps(new_response))
         else:
             raise RuntimeError(
-                "Only `ndarray` and `tensor` input is currently supported for batch size greater than 1."
+                "Only `ndarray` and `tensor` input are currently supported for batch size greater than 1."
             )
 
     return responses
