@@ -41,79 +41,67 @@ $ seldon-batch-processor --help
 
 Usage: seldon-batch-processor [OPTIONS]
 
-  Command line interface for Seldon Batch Processor, which can be used to
-  send requests through configurable parallel workers to Seldon Core models.
-  It is recommended that the respective Seldon Core model is also optimized
-  with number of replicas to distribute and scale out the batch processing
-  work. The processor is able to process data from local filestore input
-  file in various formats supported by the SeldonClient module. It is also
-  suggested to use the batch processor component integrated with an ETL
-  Workflow Manager such as Kubeflow, Argo Pipelines, Airflow, etc. which
-  would allow for extra setup / teardown steps such as downloading the data
-  from object store or starting a seldon core model with replicas. See the
-  Seldon Core examples folder for implementations of this batch module with
-  Seldon Core.
+  Command line interface for Seldon Batch Processor, which can be used to send
+  requests through configurable parallel workers to Seldon Core models. It is
+  recommended that the respective Seldon Core model is also optimized with
+  number of replicas to distribute and scale out the batch processing work.
+  The processor is able to process data from local filestore input file in
+  various formats supported by the SeldonClient module. It is also suggested
+  to use the batch processor component integrated with an ETL Workflow Manager
+  such as Kubeflow, Argo Pipelines, Airflow, etc. which would allow for extra
+  setup / teardown steps such as downloading the data from object store or
+  starting a seldon core model with replicas. See the Seldon Core examples
+  folder for implementations of this batch module with Seldon Core.
 
 Options:
   -d, --deployment-name TEXT      The name of the SeldonDeployment to send the
                                   requests to  [required]
-
   -g, --gateway-type [ambassador|istio|seldon]
                                   The gateway type for the seldon model, which
                                   can be through the ingress provider
                                   (istio/ambassador) or directly through the
                                   service (seldon)
-
   -n, --namespace TEXT            The Kubernetes namespace where the
                                   SeldonDeployment is deployed in
-
   -h, --host TEXT                 The hostname for the seldon model to send
                                   the request to, which can be the ingress of
                                   the Seldon model or the service itself
-
   -t, --transport [rest|grpc]     The transport type of the SeldonDeployment
                                   model which can be REST or GRPC
-
-  -a, --data-type [data|json|str]
+  -a, --data-type [data|json|str|raw]
                                   Whether to use json, strData or Seldon Data
                                   type for the payload to send to the
                                   SeldonDeployment which aligns with the
                                   SeldonClient format
-
   -p, --payload-type [ndarray|tensor|tftensor]
                                   The payload type expected by the
                                   SeldonDeployment and hence the expected
                                   format for the data in the input file which
                                   can be an array
-
   -w, --workers INTEGER           The number of parallel request processor
                                   workers to run for parallel processing
-
   -r, --retries INTEGER           The number of retries for each request
                                   before marking an error
-
   -i, --input-data-path PATH      The local filestore path where the input
                                   file with the data to process is located
-
   -o, --output-data-path PATH     The local filestore path where the output
                                   file should be written with the outputs of
                                   the batch processing
-
-  -m, --method [predict]          The method of the SeldonDeployment to send
+  -m, --method [predict|feedback]
+                                  The method of the SeldonDeployment to send
                                   the request to which currently only supports
                                   the predict method
-
   -l, --log-level [debug|info|warning|error]
                                   The log level for the batch processor
   -b, --benchmark                 If true the batch processor will print the
                                   elapsed time taken to run the process
-
   -u, --batch-id TEXT             Unique batch ID to identify all datapoints
                                   processed in this batch, if not provided is
                                   auto generated
-
+  -u, --batch-size INTEGER        Batch size greater than 1 can be used to
+                                  group multiple predictions into a single
+                                  request.
   --help                          Show this message and exit.
-
 ```
 
 ### Identifiers
@@ -148,3 +136,8 @@ Benchmarking was carried out using vanilla Python requests module to assess perf
 
 However currently the implementation uses the Seldon Client which does not leverage quite a few optimization requirements to increase the performance of processing, such as re-using a requests.py session. However even without these optimisations the worker will still reach a highly concurrent performance, and these optimizations will be introduced as adoption of this component (and feedback) grows.
 
+### Micro batching
+
+When using the batch processor CLI you can specify a `batch-size` parameter which can group multiple predictions into a single request. This allows you to take advantage of the higher performance this provides for some models, and reduce networking overhead. The response will be split back into multiple single prediction responses so that the output file looks identical to running the processor with a batch size of 1.
+
+Currently we only support micro batching for `ndarray` and `tensor` payload types.
