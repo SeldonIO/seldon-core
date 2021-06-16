@@ -133,7 +133,12 @@ def process_and_update_elastic_doc(
     # req or res might be batches of instances so split out into individual docs
     if "instance" in new_content_part:
 
+        print('is this batch?')
+        print(type(new_content_part["instance"]))
+        print(new_content_part["instance"])
+
         if type(new_content_part["instance"]) == type([]):
+            print('yes it is batch')
             # if we've a list then this is batch
             # we assume first dimension is always batch
 
@@ -160,6 +165,7 @@ def process_and_update_elastic_doc(
                 )
                 index = index + 1
         else:
+            print('no it is not batch')
             #not batch so don't batch elements either
             if "elements" in new_content_part and type(new_content_part["elements"]) == type([]):
                 new_content_part["elements"] = new_content_part["elements"][0]
@@ -419,11 +425,19 @@ def extract_data_part(content, headers, message_type):
 def instance_elements_for_v2_protocol(copy, metadata_dict, input_or_output):
 
     # instance should be an array of all the values
+    # an array of arrays actually due to batch
     instance = []
     #TODO: or if it's batch it should be an array of array... but batch isn't clear for v2 so assuming not batch
 
     # elments a dict of k-v for names and resolved values
-    elements = {}
+    # an array of dict actually due to batch
+    elements = []
+
+    # list of lists (columns-based)
+    cols_list = []
+    names = []
+    col_shape = None
+    data_type = None
 
     for element in copy[input_or_output]:
 
@@ -433,7 +447,7 @@ def instance_elements_for_v2_protocol(copy, metadata_dict, input_or_output):
             # if no shape then assume a single element
             shape = [1, 1]
         data = element["data"]
-        name = element["name"]
+        names.append(element["name"])
 
         currentValue = None
         # will need a separete value for values looked up from metadata (categorical)
@@ -447,54 +461,112 @@ def instance_elements_for_v2_protocol(copy, metadata_dict, input_or_output):
             # assuming that if not bytes then tabular
             copy["dataType"] = "tabular"
             first_element = arr.item(0)
+            col_shape = arr.shape
             set_datatype_from_numpy(arr, copy, first_element)
-            currentValue = arr.tolist()
+            currentValue = arr
 
 
-        instance.append(currentValue)
+        cols_list.append(currentValue)
 
-        # could be categorical and need to look up
-        if isinstance(currentValue, list):
+    print('col_shape')
+    print(col_shape)
+    print('cols_list')
+    print(cols_list)
 
-            if len(currentValue) == 1:
-                currentValue = currentValue[0]
+    # only transform if tabular and not proba
+    if len(col_shape) < 3 and (len(col_shape)<2 or col_shape[1] < 2):
+        for col in cols_list:
+            for num, row_val in enumerate(col):
+                print(num)
+                print('in col')
+                print(col)
+                if len(instance) == num:
+                    instance.append([])
+                if len(row_val) == 1:
+                    row_val = row_val[0]
+                instance[num].append(row_val)
+    else:
+        #treat it as image
+        instance = create_np_from_v2(copy[input_or_output][0]["data"], data_type, copy[input_or_output][0]["shape"])
+        if metadata_dict:
+            names = list(metadata_dict.keys())
 
-                if name in metadata_dict:
-                    currentValue = lookupValueWithMetadata(name, metadata_dict, currentValue)
+    #elements only apply for tabular or proba but need names
+    if len(col_shape) < 3 and names:
+        for row in instance:
+            elements_dict = {}
+            for num, column in enumerate(row):
+                # could be categorical and need to look up
+                if isinstance(column, list):
 
-        elements[name] = currentValue
+                    if len(column) == 1:
+                        column = column[0]
 
-    copy["instance"] = instance
+                        if names[num] in metadata_dict:
+                            column = lookupValueWithMetadata(names[num], metadata_dict, column)
+
+                print('adding to elements dict')
+                print(column)
+                elements_dict[names[num]] = column
+            elements.append(elements_dict)
+
+    instance = np.array(instance)
+    print(len(instance.shape))
+    print(len(col_shape))
+
+    print('instance shape')
+    print(instance.shape)
+    print('col shape')
+    print(col_shape)
+
+    #this hack is because we end up with an extra dimension when parsing numpy but actually do want an extra dim if proba
+    if len(instance.shape) > len(col_shape) and input_or_output == "inputs":
+        instance = instance[0]
+
+    print('instance shape')
+    print(instance.shape)
+    print('col shape')
+    print(col_shape)
+
+    print('elements')
+    print(elements)
+    print('instance')
+    print(instance)
 
     # might contain one_hot but we don't merge one_hot for v2, not yet clear what we'll do but prob something like proba
 
     #proba has special handling for v2 - will be single field containing multiple elements so find name for each
     #TODO: is it the same for one_hot? not clear for v2
     if elements:
-        for key, value in elements.items():
-            print('in proba loop')
-            print(key)
+        for elements_row in elements:
+            for key, value in elements_row.items():
 
-            if metadata_dict and key in metadata_dict:
-                metadata_elem = metadata_dict[key]
+                if metadata_dict and key in metadata_dict:
+                    metadata_elem = metadata_dict[key]
 
-                if metadata_elem['type'] == "PROBA":
-                    #check if this element contains a list
+                    if metadata_elem['type'] == "PROBA":
+                        print('type is proba')
+                        #check if this element contains a list
 
-                    if isinstance(value, list):
+                        if isinstance(value, np.ndarray):
+                            print('its an ndarray')
+                            value = value.tolist()
 
-                        #if we have metadata then replace proba list with k-v pairs
-                        #to do that the schema needs to tell us what the names should be
-                        if metadata_elem['schema']:
-                            new_entries = {}
-                            for num, proba_sub_elem in enumerate(metadata_elem['schema']):
-                                subelem_name = proba_sub_elem['name']
-                                #assume index of element in schema to correspond to ordering in body
-                                new_entries[subelem_name] = value[num]
+                        if isinstance(value, list):
 
-                            elements[key] = new_entries
+                            #if we have metadata then replace proba list with k-v pairs
+                            #to do that the schema needs to tell us what the names should be
+                            if metadata_elem['schema']:
+                                new_entries = {}
+                                for num, proba_sub_elem in enumerate(metadata_elem['schema']):
+                                    subelem_name = proba_sub_elem['name']
+                                    #assume index of element in schema to correspond to ordering in body
+                                    new_entries[subelem_name] = value[num]
+
+                                elements_row[key] = new_entries
 
     copy["elements"] = elements
+    copy["instance"] = instance.tolist()
 
 
 def set_datatype_from_numpy(content_np, copy, first_element):
