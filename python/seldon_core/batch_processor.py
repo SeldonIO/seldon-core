@@ -320,7 +320,7 @@ def _send_batch_predict_multi_request(
             data_np = np.array(data)
             concat = np.concatenate((concat, data_np))
         predict_kwargs["data"] = concat
-        
+
         response = None
         for i in range(retries):
             try:
