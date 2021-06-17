@@ -985,7 +985,7 @@ We can visualise the performance using the SeldonAnalytics package, which we can
 !helm install seldon-core-analytics --repo https://storage.googleapis.com/seldon-charts --namespace kubeflow
 ```
 
-In my case, similar to what I did with Ambassador, I need to make sure the the service is a LoadBalancer instead of a NodePort
+In my case, similar to what I did with Ambassador, I need to make sure the service is a LoadBalancer instead of a NodePort
 
 
 ```python
