@@ -22,7 +22,7 @@ setup(
     author_email="cc@seldon.io",
     license="../../LICENSE.txt",
     url="https://github.com/SeldonIO/seldon-core/tree/master/components/alibi-explain-server",
-    description="Model Explaination Server.",
+    description="Model Explanation Server.",
     long_description=open("README.md").read(),
     python_requires=">=3.6",
     packages=find_packages("alibiexplainer"),

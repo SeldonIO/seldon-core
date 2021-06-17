@@ -107,7 +107,7 @@ class ThompsonSamplingPersistent(object):
         n_success, n_failures = self.n_success_failures(features, reward)
         logger.debug(f"n_success: {n_success}, n_failures: {n_failures}")
 
-        # TODO: Non atomic / non-thread-safe operation which will get overriden by other replicas/threads
+        # TODO: Non atomic / non-thread-safe operation which will get overridden by other replicas/threads
         self.rc.lset(self.key, routing*2, self.rc.lindex(self.key, routing*2) + n_success)
         self.rc.lset(self.key, routing*2 + 1, self.rc.lindex(self.key, routing*2 + 1) + n_failures)
 
