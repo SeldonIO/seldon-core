@@ -6,3 +6,9 @@
 .md-nav span.caption {
     margin-left: 0px !important;
 }
+
+/* Hide first elem of nav bar */
+.md-tabs__list > li:first-child {
+    display: none;
+}
+
