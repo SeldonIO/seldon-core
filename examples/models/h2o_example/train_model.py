@@ -20,7 +20,7 @@ if __name__=="__main__":
     # Alternatively, you can import the data directly from a URL
     loan_csv = "https://raw.githubusercontent.com/h2oai/app-consumer-loan/master/data/loan.csv"
     data = h2o.import_file(loan_csv)  # 163,987 rows x 15 columns
-    data['bad_loan'] = data['bad_loan'].asfactor()  #encode the binary repsonse as a factor
+    data['bad_loan'] = data['bad_loan'].asfactor()  #encode the binary response as a factor
     #data['bad_loan'].levels()  #optional: after encoding, this shows the two factor levels, '0' and '1'
     
     y = 'bad_loan'

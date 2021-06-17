@@ -55,7 +55,7 @@ def start_servers(
     target1
        Main flask process
     target2
-       Auxilary flask process
+       Auxiliary flask process
 
     """
     p2 = None

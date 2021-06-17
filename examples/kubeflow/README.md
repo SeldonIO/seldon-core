@@ -437,7 +437,7 @@ Now that I've changed it to a loadbalancer, it has allocated the external IP as 
     ambassador   LoadBalancer   10.97.236.196   localhost     80:30209/TCP   9m20s
 
 
-If this was successfull, you should be able to access the dashboard
+If this was successful, you should be able to access the dashboard
 ![](img/k-pipeline-dashboard.jpg)
 
 ### Define the pipeline
@@ -985,7 +985,7 @@ We can visualise the performance using the SeldonAnalytics package, which we can
 !helm install seldon-core-analytics --repo https://storage.googleapis.com/seldon-charts --namespace kubeflow
 ```
 
-In my case, similar to what I did with Ambassador, I need to make sure the the service is a LoadBalancer instead of a NodePort
+In my case, similar to what I did with Ambassador, I need to make sure the service is a LoadBalancer instead of a NodePort
 
 
 ```python

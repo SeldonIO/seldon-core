@@ -274,7 +274,7 @@ def test_transformer_input_bin_data_nparray():
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
 
 
-def test_tranform_input_no_json():
+def test_transform_input_no_json():
     user_object = UserObject()
     seldon_metrics = SeldonMetrics()
     app = get_rest_microservice(user_object, seldon_metrics)
@@ -487,7 +487,7 @@ def test_transformer_output_bin_data_nparray():
     assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
 
 
-def test_tranform_output_no_json():
+def test_transform_output_no_json():
     user_object = UserObject()
     seldon_metrics = SeldonMetrics()
     app = get_rest_microservice(user_object, seldon_metrics)

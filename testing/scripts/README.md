@@ -70,7 +70,7 @@ kubectl logs -f -n seldon-system $(kubectl get pods -n seldon-system -l app=seld
 
 ## Writing new tests
 
-### Invididual namespaces
+### Individual namespaces
 
 Each test should run on its own separate Kubernetes namespace.
 This allows for a cleaner environment as well as enables some of them

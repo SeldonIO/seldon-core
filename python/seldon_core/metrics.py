@@ -143,7 +143,7 @@ class SeldonMetrics:
             elif metrics_type == "GAUGE":
                 worker_data[key] = {"value": metrics["value"], "tags": tags}
             else:
-                logger.error(f"Unkown metrics type: {metrics_type}")
+                logger.error(f"Unknown metrics type: {metrics_type}")
 
         # Write worker's data with lock (again - Proxy objects are not thread-safe)
         with self._lock:
@@ -256,17 +256,17 @@ def create_counter(key: str, value: float):
 
 def create_gauge(key: str, value: float) -> Dict:
     """
-    Utility method to create a guage metric
+    Utility method to create a gauge metric
     Parameters
     ----------
     key
-      Guage name
+      Gauge name
     value
-      Guage value
+      Gauge value
 
     Returns
     -------
-       Valid Guage metric dict
+       Valid Gauge metric dict
 
     """
     test = value + 1
