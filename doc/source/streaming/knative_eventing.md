@@ -91,7 +91,7 @@ Ce-Type: seldon.<sdep_name>.<namespace>.response
 Ce-Source: seldon.<sdep_name>.<namespace>
 ```
 
-This means that you could create a trigger for a seldon deployment of name `iris-deployment` in namespace `default`, such as the following example which woudl create an `event-display` pod that will print out the contents of that cloudevent:
+This means that you could create a trigger for a seldon deployment of name `iris-deployment` in namespace `default`, such as the following example which would create an `event-display` pod that will print out the contents of that cloudevent:
 
 ```yaml
 ---

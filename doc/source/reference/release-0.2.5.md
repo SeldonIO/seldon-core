@@ -28,7 +28,7 @@ The ability to identify unexpected input feature payloads to a machine learning 
 
 The problem of deciding how to route requests to competing machine learning model so that one determines which model is the best in the shortest amount of time can be treated as a [Multi-Armed Bandit Problem](https://en.wikipedia.org/wiki/Multi-armed_bandit). Seldon Core has extended the available components you can use with [Thompson Sampling](https://github.com/SeldonIO/seldon-core/tree/master/components/routers/thompson-sampling) and a [case study](https://github.com/SeldonIO/seldon-core/blob/master/components/routers/case_study/credit_card_default.ipynb) comparing it to the more basic [Epsilon Greedy](https://github.com/SeldonIO/seldon-core/tree/master/components/routers/epsilon-greedy) strategy.
 
-![mab dashbaord](./mab-dashboard.png)
+![mab dashboard](./mab-dashboard.png)
 
 ## Cluster Wide Operations
 Seldon Core can now be installed in two ways:
@@ -51,4 +51,4 @@ The Seldon Core Service Orchestrator component that manages the request/response
 ## Distributed Tracing
 We have integrated distributed tracing via [Jaeger](https://www.jaegertracing.io/) into the Service Orchestrator and Python wrappers. This will allow you to get tracing information as shown below for REST and gRPC requests through your Seldon Deployment. For more details see the [full documentation](../distributed-tracing.md).
 
-![mab dashbaord](./dist-tracing.png)
+![mab dashboard](./dist-tracing.png)

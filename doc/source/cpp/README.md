@@ -133,7 +133,7 @@ Above we used the default binding, which was the following line:
 SELDON_DEFAULT_BIND_MODULE()
 ```
 
-The macro above is equivallent to defining the following macro:
+The macro above is equivalent to defining the following macro:
 
 ```cpp
 SELDON_BIND_MODULE(SeldonPackage, ModelClass)
@@ -199,7 +199,7 @@ target_link_libraries(
 The outline above is the simplest cmake file that you could create. It has the following components:
 
 * find_package(seldon,...) - This fetches the seldon package
-* find_package(pybind11, ...) - This fetches the requried bindings
+* find_package(pybind11, ...) - This fetches the required bindings
 * pybind11_add_module(SeldonPackage, ModelClass.cpp) - This creates your module with the name of your package, and all the relevant C++ source files.
 * target_link_libraries(CustomSeldonPackage PRIVATE seldon::seldon) binds the Seldon shared/static library
 

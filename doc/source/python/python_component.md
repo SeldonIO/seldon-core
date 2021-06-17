@@ -127,7 +127,7 @@ class ModelWithMetrics(object):
 
 Note: prior to Seldon Core 1.1 custom metrics have always been returned to client. From SC 1.1 you can control this behaviour setting `INCLUDE_METRICS_IN_CLIENT_RESPONSE` environmental variable to either `true` or `false`. Despite value of this environmental variable custom metrics will always be exposed to Prometheus.
 
-Prior to Seldon Core 1.1.0 not implementing custom metrics logs a message at the info level at each predict call. Starting with Seldon Core 1.1.0 this is logged at the debug level. To supress this warning implement a metrics function returning an empty list:
+Prior to Seldon Core 1.1.0 not implementing custom metrics logs a message at the info level at each predict call. Starting with Seldon Core 1.1.0 this is logged at the debug level. To suppress this warning implement a metrics function returning an empty list:
 
 ```python
 def metrics(self):

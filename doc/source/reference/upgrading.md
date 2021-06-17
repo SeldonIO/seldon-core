@@ -9,7 +9,7 @@ Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed fe
 ## Upgrading to 1.8
 
 ### Rclone Storage Initailizer
-In Seldon Core 1.8 the rclone-based [storage initalizer](https://github.com/SeldonIO/seldon-core/tree/master/components/rclone-storage-initializer) becomes the default one.
+In Seldon Core 1.8 the rclone-based [storage initializer](https://github.com/SeldonIO/seldon-core/tree/master/components/rclone-storage-initializer) becomes the default one.
 
 The storage initailizer image that is being used is controlled by the helm value:
 ```yaml
@@ -48,14 +48,14 @@ Various CVEs were resolved via #2970, which included several packages upgrades w
 
 ### Webhook Removal
 
-As part of the 1.6.0 release we are removing the Seldon Core Mutating Webhook. This won't cause any noticable changes, but it is recommended that you manually remove the webhook once you upgrade to version 1.6.0
+As part of the 1.6.0 release we are removing the Seldon Core Mutating Webhook. This won't cause any noticeable changes, but it is recommended that you manually remove the webhook once you upgrade to version 1.6.0
 
 
 ## Upgrading to 1.5
 
 ### REST and gRPC
 
-To take advantage of the ability to handle both REST and gRPC on any deployed model python model images will need to be recreated using the 1.5 python wrapper. If they are not updated they will only expose the protocol they were orginally wrapped for.
+To take advantage of the ability to handle both REST and gRPC on any deployed model python model images will need to be recreated using the 1.5 python wrapper. If they are not updated they will only expose the protocol they were originally wrapped for.
 
 You can use and extend the [backwards compatibility notebook](../examples/backwards_compatibility.html) to check your deployments will work if you do not intend to upgrade them.
 
@@ -161,7 +161,7 @@ The Python Wrapper was using naming convention in the format 0.1 ... 0.18. In th
 
 Whenever a new PR was merged to master, we have set up our CI to build a "SNAPSHOT" version, which would contain the Docker images for that specific development / master-branch code.
 
-Previously, we always had the SNAPSHOT tag being overriden with the latest. This didn't allow us to know what version someone may be trying out when using master, so we wanted to introduce a way to actually get unique tags for every image that gets landed into master.
+Previously, we always had the SNAPSHOT tag being overridden with the latest. This didn't allow us to know what version someone may be trying out when using master, so we wanted to introduce a way to actually get unique tags for every image that gets landed into master.
 
 Now every time that a PR is landed to master, a new "dated" SNAPSHOT version is created, which pushes images with the tag `"<next-version>-SNAPSHOT_<timestamp>"`. A new branch is also created with the name `"v<next-version>-SNAPSHOT_<timestamp>"`, which contains the respective helm charts, and allows for the specific version (as outlined by the version in `version.txt`) to be installed.
 
