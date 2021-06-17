@@ -12,7 +12,7 @@ The Seldon Service Orchestrator manages the request and response flow through th
 
 ## Outlier and Drift Detection Examples
 
-Once you have deployed a model using Seldon Core its key to ensure its running as expected. Two key areas for this are outlier detection and drift detection. Outlier detection identified individuals requests that seem to fall out of the expected distribution of features the model was trained on. These need to be identified as they will likely cause unreliable predictions from the deployed model. Drift detecton identified when the observed distribution of features over some time period has changed to what the model was trained on. This is important so that data scientists can be informed to updates and train a new model on more recent data.
+Once you have deployed a model using Seldon Core its key to ensure its running as expected. Two key areas for this are outlier detection and drift detection. Outlier detection identified individual requests that seem to fall out of the expected distribution of features the model was trained on. These need to be identified as they will likely cause unreliable predictions from the deployed model. Drift detecton identified when the observed distribution of features over some time period has changed to what the model was trained on. This is important so that data scientists can be informed to updates and train a new model on more recent data.
 
 We provide two examples in out docs:
 
