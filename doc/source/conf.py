@@ -246,12 +246,6 @@ html_logo = "Seldon_White.png"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_static"]
-
-# override default theme width
-html_context = {
-    "css_files": ["_static/theme_overrides.css",],  # override wide tables in RTD theme
-}
 
 html_extra_path = ["_extra"]
 
