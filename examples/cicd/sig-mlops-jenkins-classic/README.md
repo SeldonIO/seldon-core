@@ -97,7 +97,7 @@ This includes a detailed description of the `Jenkinsfile`, as well as a look int
 Note that this will cover a generic example.
 However, as we shall see, specialising this approach into any of our [three main use cases](#Use-cases) will be straightforward.
 
-We leverage [Jenkins Pipelines](https://jenkins.io/doc/book/pipeline/) in order to run our continous integration and delivery automation.
+We leverage [Jenkins Pipelines](https://jenkins.io/doc/book/pipeline/) in order to run our continuous integration and delivery automation.
 From a high-level point of view, the pipeline configuration will be responsible for:
 
 - Define a **replicable** test and build environment.
