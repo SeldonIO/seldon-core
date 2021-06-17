@@ -218,8 +218,6 @@ def _start_request_worker(
     """
     while True:
         input_data = q_in.get()
-        # For the case where batch size == 1
-        batch_idx, batch_instance_id, input_raw = input_data[0]
         if method == "predict":
             # If we have a batch size > 1 then we wish to use the method for sending multiple predictions
             # as a single request and split the response into multiple responses.
@@ -234,19 +232,20 @@ def _start_request_worker(
                 )
                 for str_output in str_outputs:
                     q_out.put(str_output)
-                q_in.task_done()
-                # Continue with next input
-                continue
-            str_output = _send_batch_predict(
-                batch_idx,
-                batch_instance_id,
-                input_raw,
-                data_type,
-                sc,
-                retries,
-                batch_id,
-            )
+            else:
+                batch_idx, batch_instance_id, input_raw = input_data[0]
+                str_output = _send_batch_predict(
+                    batch_idx,
+                    batch_instance_id,
+                    input_raw,
+                    data_type,
+                    sc,
+                    retries,
+                    batch_id,
+                )
+                q_out.put(str_output)
         elif method == "feedback":
+            batch_idx, batch_instance_id, input_raw = input_data[0]
             str_output = _send_batch_feedback(
                 batch_idx,
                 batch_instance_id,
@@ -256,8 +255,8 @@ def _start_request_worker(
                 retries,
                 batch_id,
             )
+            q_out.put(str_output)
         # Mark task as done in the queue to add space for new tasks
-        q_out.put(str_output)
         q_in.task_done()
 
 
@@ -282,7 +281,7 @@ def _send_batch_predict_multi_request(
     input_data
         The input data containing the indexes, instance_ids and predictions
     data_type
-        The data type to send which can be str, json and data
+        The data type to send which can be `data`
     sc
         The instance of SeldonClient to use to send the requests to the seldon model
     retries
@@ -309,25 +308,19 @@ def _send_batch_predict_multi_request(
     predict_kwargs["headers"] = {"Seldon-Puid": instance_ids[0]}
 
     try:
-        if data_type == "data":
-            # Initialise concatenated array for data
-            data = json.loads(first_prediction)
-            data_np = np.array(data)
-            concat = data_np
-            for i, raw_data in enumerate(input_data):
-                # Already added first item.
-                if i == 0:
-                    continue
-                data = json.loads(raw_data[2])
-                data_np = np.array(data)
-                concat = np.concatenate((concat, data_np))
-            predict_kwargs["data"] = concat
+        # Initialise concatenated array for data
         data = json.loads(first_prediction)
-        if data_type == "str":
-            predict_kwargs["str_data"] = data
-        elif data_type == "json":
-            predict_kwargs["json_data"] = data
-
+        data_np = np.array(data)
+        concat = data_np
+        for i, raw_data in enumerate(input_data):
+            # Already added first item.
+            if i == 0:
+                continue
+            data = json.loads(raw_data[2])
+            data_np = np.array(data)
+            concat = np.concatenate((concat, data_np))
+        predict_kwargs["data"] = concat
+        
         response = None
         for i in range(retries):
             try:
@@ -408,7 +401,7 @@ def _send_batch_predict(
     input_raw
         The raw input in string format to be loaded to the respective format
     data_type
-        The data type to send which can be str, json and data
+        The data type to send which can be `str`, `json` and `data`
     sc
         The instance of SeldonClient to use to send the requests to the seldon model
     retries
@@ -659,7 +652,7 @@ def _send_batch_feedback(
     "--batch-size",
     "-u",
     envvar="SELDON_BATCH_SIZE",
-    default=int(1),
+    default=1,
     type=int,
     help="Batch size greater than 1 can be used to group multiple predictions into a single request.",
 )
