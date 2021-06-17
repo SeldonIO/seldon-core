@@ -45,6 +45,7 @@ class TestBatchWorker(object):
             "ndarray",
             100,
             3,
+            1,
             input_data_path,
             output_data_path,
             "predict",
@@ -58,6 +59,35 @@ class TestBatchWorker(object):
                 output = json.loads(line)
                 # Ensure all requests are successful
                 assert output.get("data", {}).get("ndarray", False)
+
+        # Now test that a batch size of 10 works
+        start_multithreaded_batch_worker(
+            "sklearn",
+            "istio",
+            namespace,
+            API_ISTIO_GATEWAY,
+            "rest",
+            "data",
+            "ndarray",
+            100,
+            3,
+            10,
+            input_data_path,
+            output_data_path,
+            "predict",
+            "debug",
+            True,
+            str(uuid.uuid1()),
+        )
+
+        with open(output_data_path, "r") as f:
+            count = 0
+            for line in f:
+                count += 1
+                output = json.loads(line)
+                # Ensure all requests are successful
+                assert output.get("data", {}).get("ndarray", False)
+            assert count == batch_size
 
         logging.info("Success for test_batch_worker")
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
