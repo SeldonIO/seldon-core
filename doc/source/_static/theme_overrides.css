@@ -1,0 +1,8 @@
+
+.md-nav__link {
+    margin-left: 10px;
+}
+
+.md-nav span.caption {
+    margin-left: 0px !important;
+}
