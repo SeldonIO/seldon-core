@@ -353,7 +353,9 @@ def _send_batch_predict_multi_request(
         elif payload_type == "tensor":
             # Format new responses for each original prediction request
             new_response["data"]["tensor"]["shape"][0] = 1
-            new_response["data"]["tensor"]["values"] = np.ndarray.tolist(tensor_ndarray[i])
+            new_response["data"]["tensor"]["values"] = np.ndarray.tolist(
+                tensor_ndarray[i]
+            )
             new_response["meta"]["tags"]["tags"]["batch_index"] = indexes[i]
             new_response["meta"]["tags"]["tags"]["batch_instance_id"] = instance_ids[i]
             responses.append(json.dumps(new_response))
@@ -695,5 +697,6 @@ def run_cli(
         batch_id,
     )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     run_cli()
