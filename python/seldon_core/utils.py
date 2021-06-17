@@ -615,9 +615,9 @@ def extract_request_parts_json(
         datadef = request["data"]
         if "tensor" in datadef:
             tensor = datadef["tensor"]
-            features = np.array(tensor["values"]).reshape(tensor["shape"])
+            features = np.array(tensor["values"], dtype=np.object).reshape(tensor["shape"])
         elif "ndarray" in datadef:
-            features = np.array(datadef["ndarray"])
+            features = np.array(datadef["ndarray"], dtype=np.object)
         elif "tftensor" in datadef:
             tf_proto = TensorProto()
             json_format.ParseDict(datadef["tftensor"], tf_proto)
