@@ -295,7 +295,6 @@ def _send_batch_predict_multi_request(
 
     indexes = [x[0] for x in input_data]
     instance_ids = [x[1] for x in input_data]
-    first_prediction = input_data[0][2]
 
     predict_kwargs = {}
     meta = {
@@ -309,18 +308,10 @@ def _send_batch_predict_multi_request(
 
     try:
         # Initialise concatenated array for data
-        data = json.loads(first_prediction)
-        data_np = np.array(data)
-        concat = data_np
-        for i, raw_data in enumerate(input_data):
-            # Already added first item.
-            if i == 0:
-                continue
-            data = json.loads(raw_data[2])
-            data_np = np.array(data)
-            concat = np.concatenate((concat, data_np))
+        loaded = [json.loads(raw_data[2]) for raw_data in input_data]
+        concat = np.concatenate(loaded)
         predict_kwargs["data"] = concat
-        
+
         response = None
         for i in range(retries):
             try:
@@ -362,9 +353,9 @@ def _send_batch_predict_multi_request(
         elif payload_type == "tensor":
             # Format new responses for each original prediction request
             new_response["data"]["tensor"]["shape"][0] = 1
-            new_response["data"]["tensor"]["values"] = [
-                np.ndarray.tolist(tensor_ndarray[i])
-            ]
+            new_response["data"]["tensor"]["values"] = np.ndarray.tolist(
+                tensor_ndarray[i]
+            )
             new_response["meta"]["tags"]["tags"]["batch_index"] = indexes[i]
             new_response["meta"]["tags"]["tags"]["batch_instance_id"] = instance_ids[i]
             responses.append(json.dumps(new_response))
@@ -450,6 +441,7 @@ def _send_batch_predict(
             "status": {"info": "FAILURE", "reason": str(e), "status": 1},
             "meta": meta,
         }
+        print("Exception: %s" % e)
         str_output = json.dumps(error_resp)
 
     return str_output
@@ -526,6 +518,7 @@ def _send_batch_feedback(
             "status": {"info": "FAILURE", "reason": str(e), "status": 1},
             "meta": meta,
         }
+        print("Exception: %s" % e)
         str_output = json.dumps(error_resp)
 
     return str_output
@@ -703,3 +696,7 @@ def run_cli(
         benchmark,
         batch_id,
     )
+
+
+if __name__ == "__main__":
+    run_cli()
