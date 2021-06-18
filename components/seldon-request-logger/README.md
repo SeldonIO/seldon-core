@@ -35,7 +35,7 @@ Run the logger:
 ```
 make run_local
 ```
-And in another window run app/test.sh
+And in another window run testing/test.sh or particular lines you're interested in.
 
 The output of the logger will say where docs are indexed. The contents can be checked in postman by querying on the elastic host e.g.
 ```
@@ -163,7 +163,6 @@ Here is a truncated version of an example output for an image use-case with outl
 
 
 TODO: HANDLE GRPC
-TODO: ELEMENTS ARE CURRENTLY CREATED TO SPLIT FEATURES AND MAKE SEARCHABLE BY FEATURE VALUE. BUT ONLY FOR NON-BATCHED.
 TODO: FEEDBACK - IF SENT WITH CUSTOM ID HEADER COULD SUPPORT A/B TESTS WITH RECORDED RESULTS
 
 # Scaling

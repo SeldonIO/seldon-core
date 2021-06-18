@@ -58,7 +58,7 @@ class TestPrepack(object):
             namespace=namespace,
             protocol="kfserving",
             model_implementation="SKLEARN_SERVER",
-            model_uri="gs://seldon-models/sklearn/iris",
+            model_uri="gs://seldon-models/sklearn/iris-0.23.2/lr_model",
         )
         wait_for_status("sklearn", namespace)
         wait_for_rollout("sklearn", namespace)

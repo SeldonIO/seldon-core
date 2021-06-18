@@ -38,10 +38,10 @@ helm install $MY_MODEL_NAME seldonio/seldon-abtest --namespace $MODELS_NAMESPACE
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | modela.image.name | string | `"seldonio/mock_classifier"` |  |
-| modela.image.version | string | `"1.8.0-dev"` |  |
+| modela.image.version | string | `"1.9.0"` |  |
 | modela.name | string | `"classifier-1"` |  |
 | modelb.image.name | string | `"seldonio/mock_classifier"` |  |
-| modelb.image.version | string | `"1.8.0-dev"` |  |
+| modelb.image.version | string | `"1.9.0"` |  |
 | modelb.name | string | `"classifier-2"` |  |
 | predictor.name | string | `"default"` |  |
 | replicas | int | `1` |  |

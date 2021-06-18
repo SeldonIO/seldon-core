@@ -311,20 +311,7 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var graphNode *v1.PredictiveUnit
-	if r.Protocol == api.ProtocolTensorflow {
-		if modelName != "" {
-			if graphNode = v1.GetPredictiveUnit(&r.predictor.Graph, modelName); graphNode == nil {
-				r.respondWithError(w, nil, fmt.Errorf("Failed to find model %s", modelName))
-				return
-			}
-		} else {
-			graphNode = &r.predictor.Graph
-		}
-	} else {
-		graphNode = &r.predictor.Graph
-	}
-	resPayload, err := seldonPredictorProcess.Predict(graphNode, reqPayload)
+	resPayload, err := seldonPredictorProcess.Predict(&r.predictor.Graph, reqPayload)
 	if err != nil {
 		r.respondWithError(w, resPayload, err)
 		return

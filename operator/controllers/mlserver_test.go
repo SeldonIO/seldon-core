@@ -33,15 +33,17 @@ var _ = Describe("MLServer helpers", func() {
 	Describe("mergeMLServerContainer", func() {
 		var existing *v1.Container
 		var mlServer *v1.Container
+		customEnvValue := "{\"custom\":1}"
 
 		BeforeEach(func() {
 			existing = &v1.Container{
 				Env: []v1.EnvVar{
 					{Name: "FOO", Value: "BAR"},
+					{Name: MLServerTempoRuntimeEnv, Value: customEnvValue},
 				},
 			}
 
-			mlServer, _ = getMLServerContainer(pu)
+			mlServer, _ = getMLServerContainer(pu, "default")
 		})
 
 		It("should merge containers adding extra env", func() {
@@ -49,6 +51,7 @@ var _ = Describe("MLServer helpers", func() {
 
 			Expect(merged).ToNot(BeNil())
 			Expect(merged.Env).To(ContainElement(v1.EnvVar{Name: "FOO", Value: "BAR"}))
+			Expect(merged.Env).To(ContainElement(v1.EnvVar{Name: MLServerTempoRuntimeEnv, Value: customEnvValue}))
 			Expect(merged.Env).To(ContainElements(mlServer.Env))
 			Expect(merged.Image).To(Equal(mlServer.Image))
 		})
@@ -58,7 +61,7 @@ var _ = Describe("MLServer helpers", func() {
 		var cServer *v1.Container
 
 		BeforeEach(func() {
-			cServer, _ = getMLServerContainer(pu)
+			cServer, _ = getMLServerContainer(pu, "default")
 		})
 
 		It("creates container with image", func() {
@@ -91,7 +94,7 @@ var _ = Describe("MLServer helpers", func() {
 		var envs []v1.EnvVar
 
 		BeforeEach(func() {
-			envs, _ = getMLServerEnvVars(pu)
+			envs, _ = getMLServerEnvVars(pu, "default")
 		})
 
 		It("adds the right ports", func() {
@@ -158,6 +161,7 @@ var _ = Describe("MLServer helpers", func() {
 			},
 			Entry("sklearn", machinelearningv1.PrepackSklearnName, MLServerSKLearnImplementation),
 			Entry("xgboost", machinelearningv1.PrepackXgboostName, MLServerXGBoostImplementation),
+			Entry("tempo", machinelearningv1.PrepackTempoName, MLServerTempoImplementation),
 			Entry("unknown", "foo", ""),
 		)
 	})

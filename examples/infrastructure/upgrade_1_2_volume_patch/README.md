@@ -245,7 +245,7 @@ helm upgrade --install seldon-core seldon-core-operator \
 
 The error is due a rename on the volumeMounts. We have created the script below which goes through all the seldon deploymetns across all namespaces to rename the volumeMount from podinfo to "seldon-podinfo".
 
-It is recommended to understand this script fully if this is to be run in prodution as it woudl clash if any existing volume is actually named "podinfo".
+It is recommended to understand this script fully if this is to be run in prodution as it would clash if any existing volume is actually named "podinfo".
 
 
 ```python

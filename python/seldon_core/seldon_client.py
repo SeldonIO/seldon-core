@@ -167,6 +167,7 @@ class SeldonClient:
         call_credentials: SeldonCallCredentials = None,
         debug: bool = False,
         client_return_type: str = "dict",
+        ssl: bool = None,
     ):
         """
 
@@ -283,6 +284,7 @@ class SeldonClient:
         meta: Dict = None,
         client_return_type: str = None,
         raw_data: Dict = None,
+        ssl: bool = None,
     ) -> SeldonClientPrediction:
         """
 
@@ -357,6 +359,7 @@ class SeldonClient:
             meta=meta,
             client_return_type=client_return_type,
             raw_data=raw_data,
+            ssl=ssl,
         )
         self._validate_args(**k)
         if k["gateway"] == "ambassador" or k["gateway"] == "istio":
@@ -394,6 +397,7 @@ class SeldonClient:
         gateway_prefix: str = None,
         client_return_type: str = None,
         raw_request: dict = None,
+        ssl: bool = None,
     ) -> SeldonClientFeedback:
         """
 
@@ -447,6 +451,7 @@ class SeldonClient:
             gateway_prefix=gateway_prefix,
             client_return_type=client_return_type,
             raw_request=raw_request,
+            ssl=ssl,
         )
         self._validate_args(**k)
         if k["gateway"] == "ambassador" or k["gateway"] == "istio":
@@ -509,6 +514,7 @@ class SeldonClient:
         http_path: str = None,
         client_return_type: str = None,
         predictor: str = None,
+        ssl: bool = None,
     ) -> Dict:
         """
 
@@ -575,6 +581,7 @@ class SeldonClient:
             http_path=http_path,
             client_return_type=client_return_type,
             predictor=predictor,
+            ssl=ssl,
         )
         self._validate_args(**k)
         if k["gateway"] == "ambassador" or k["gateway"] == "istio":
@@ -1253,8 +1260,7 @@ def rest_predict_seldon(
         payload = seldon_message_to_json(request)
 
     response_raw = requests.post(
-        "http://" + gateway_endpoint + "/api/v0.1/predictions",
-        json=payload,
+        "http://" + gateway_endpoint + "/api/v0.1/predictions", json=payload
     )
     if response_raw.status_code == 200:
         success = True
@@ -1395,6 +1401,7 @@ def rest_predict_gateway(
     meta: Dict = {},
     client_return_type: str = "proto",
     raw_data: Dict = None,
+    ssl: bool = None,
     **kwargs,
 ) -> SeldonClientPrediction:
     """
@@ -1469,13 +1476,13 @@ def rest_predict_gateway(
         req_headers = headers.copy()
     else:
         req_headers = {}
-    if call_credentials is None:
+    if call_credentials is None or ssl is False:
         scheme = "http"
     else:
         scheme = "https"
-        if not call_credentials is None:
-            if not call_credentials.token is None:
-                req_headers["X-Auth-Token"] = call_credentials.token
+    if not call_credentials is None:
+        if not call_credentials.token is None:
+            req_headers["X-Auth-Token"] = call_credentials.token
     if http_path is not None:
         url = url = (
             scheme
@@ -1578,6 +1585,7 @@ def explain_predict_gateway(
     http_path: str = None,
     client_return_type: str = "dict",
     predictor: str = None,
+    ssl: bool = None,
     **kwargs,
 ) -> SeldonClientPrediction:
     """
@@ -1647,13 +1655,13 @@ def explain_predict_gateway(
         req_headers = headers.copy()
     else:
         req_headers = {}
-    if channel_credentials is None:
+    if channel_credentials is None or ssl is False:
         scheme = "http"
     else:
         scheme = "https"
-        if not call_credentials is None:
-            if not call_credentials.token is None:
-                req_headers["X-Auth-Token"] = call_credentials.token
+    if not call_credentials is None:
+        if not call_credentials.token is None:
+            req_headers["X-Auth-Token"] = call_credentials.token
     if http_path is not None:
         url = (
             scheme
@@ -1759,6 +1767,7 @@ def grpc_predict_gateway(
     meta: Dict = {},
     client_return_type: str = "proto",
     raw_data: Dict = None,
+    ssl: bool = None,
     **kwargs,
 ) -> SeldonClientPrediction:
     """
@@ -1866,7 +1875,10 @@ def grpc_predict_gateway(
             )
         # This piece also allows for blank SSL Channel credentials in case this is required
         else:
-            grpc_channel_credentials = grpc.ssl_channel_credentials()
+            if ssl is False:
+                grpc_channel_credentials = grpc.local_channel_credentials()
+            else:
+                grpc_channel_credentials = grpc.ssl_channel_credentials()
         if channel_credentials.verify == False:
             # If Verify is set to false then we add the SSL Target Name Override option
             options += [
@@ -1954,8 +1966,7 @@ def rest_feedback_seldon(
         payload = feedback_to_json(request)
 
     response_raw = requests.post(
-        "http://" + gateway_endpoint + "/api/v1.0/feedback",
-        json=payload,
+        "http://" + gateway_endpoint + "/api/v1.0/feedback", json=payload
     )
     if response_raw.status_code == 200:
         success = True

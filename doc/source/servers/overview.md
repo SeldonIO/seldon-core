@@ -14,69 +14,64 @@ For these servers you only need the location of the saved model in a local files
 apiVersion: machinelearning.seldon.io/v1alpha2
 kind: SeldonDeployment
 metadata:
-  name: sklearn
+  name: sklearn-iris
 spec:
-  name: iris
   predictors:
-    - graph:
-        children: []
+    - name: default
+      replicas: 1
+      graph:
+        name: classifier
         implementation: SKLEARN_SERVER
         modelUri: gs://seldon-models/sklearn/iris
-        name: classifier
-      name: default
-      replicas: 1
 ```
 
-The `modelUri` specifies the bucket containing the saved model, in this case `gs://seldon-models/sklearn/iris`.
-
-`modeluri` supports the following three object storage providers:
-
-- Google Cloud Storage (using `gs://`)
-- S3-compatible (using `s3://`)
-- Minio-compatible (using `s3://`)
-- Azure Blob storage (using `https://(.+?).blob.core.windows.net/(.+)`)
+By default only public models published to Google Cloud Storage will be accessible.
+See below notes on how to configure credentials for AWS S3, Minio and other storage solutions.
 
 
 ## Init Containers
 
-Seldon Core uses [Init Containers](https://kubernetes.io/docs/concepts/workloads/pods/init-containers/) to download model binaries for the prepackaged model servers. We use [kfserving's storage.py library](https://github.com/kubeflow/kfserving/blob/master/python/kfserving/kfserving/storage.py
+Seldon Core uses [Init Containers](https://kubernetes.io/docs/concepts/workloads/pods/init-containers/) to download model binaries for the prepackaged model servers. We use [rclone](https://rclone.org/)-based [storage initailizer](https://github.com/SeldonIO/seldon-core/tree/master/components/rclone-storage-initializer
 ) for our `Init Containers` by defining
+
 ```yaml
 storageInitializer:
-  image: gcr.io/kfserving/storage-initializer:v0.4.0
+  image: seldonio/rclone-storage-initializer:1.10.0-dev
 ```
 in our default [helm values](../charts/seldon-core-operator.html#values).
-See the [Dockerfile](https://github.com/kubeflow/kfserving/blob/master/python/storage-initializer.Dockerfile
-) and its [entrypoint](https://github.com/kubeflow/kfserving/blob/master/python/storage-initializer/scripts/initializer-entrypoint
+See the [Dockerfile](https://github.com/SeldonIO/seldon-core/blob/master/components/rclone-storage-initializer/Dockerfile
 ) for a detailed reference.
 You can overwrite this value to specify another default `initContainer`. See details on requirements bellow
 
 Secrets are injected into the init containers as environmental variables from kubernetes `secrets`.
 The default secret name can be defined by setting following [helm value](../charts/seldon-core-operator.html#values)
+
 ```yaml
 predictiveUnit:
   defaultEnvSecretRefName: ""
 ```
+
+Note: prior to Seldon Core 1.8 we were using `kfserving/storage-initializer`, see [these](./kfserving-storage-initializer.md) notes if you wish to keep using it.
 
 
 ### Customizing Init Containers
 
 You can specify a custom `initContainer` image and default `secret` **globally** by overwriting the helm values specified in the previous section.
 
-To illustrate how `initContainers` are used by the prepackaged model servers, consider a Seldon Deployment with `volumes`, `volumeMounts` and `initContainers` injected by the `Seldon Core Operator`:
+To illustrate how `initContainers` are used by the prepackaged model servers, consider a following Seldon Deployment with `volumes`, `volumeMounts` and `initContainers` equivalent to ones that would be injected by the `Seldon Core Operator` if this was prepackaged model server:
+
 ```yaml
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: iris
+  name: sklearn-iris
 spec:
   predictors:
   - name: default
     replicas: 1
     graph:
       name: classifier
-      implementation: SKLEARN_SERVER
-      modelUri: s3://sklearn/iris
+      type: MODEL
 
     componentSpecs:
     - spec:
@@ -84,28 +79,34 @@ spec:
         - name: classifier-provision-location
           emptyDir: {}
 
-        containers:
-        - name: classifier
+        initContainers:
+        - name: classifier-model-initializer
+          image: seldonio/rclone-storage-initializer:1.10.0-dev
+          imagePullPolicy: IfNotPresent
+          args:
+            - "s3://sklearn/iris"
+            - "/mnt/models"
+
           volumeMounts:
           - mountPath: /mnt/models
             name: classifier-provision-location
-            readOnly: true
-
-        initContainers:
-        - name: classifier-model-initializer
-          image: gcr.io/kfserving/storage-initializer:v0.4.0
-          imagePullPolicy: IfNotPresent
-          args:
-          - s3://sklearn/iris
-          - /mnt/models
 
           envFrom:
           - secretRef:
               name: seldon-init-container-secret
 
+        containers:
+        - name: classifier
+          image: seldonio/sklearnserver:1.8.0-dev
+
           volumeMounts:
           - mountPath: /mnt/models
             name: classifier-provision-location
+            readOnly: true
+
+          env:
+          - name: PREDICTIVE_UNIT_PARAMETERS
+            value: '[{"name":"model_uri","value":"/mnt/models","type":"STRING"}]'
 ```
 
 Key observations:
@@ -116,12 +117,13 @@ Key observations:
   - Second the desired path where binary should be downloaded to
 - If user would to provide their own `initContainer` which name matches the above pattern it would be used as provided
 
-Image and secret used by Storage Initializer can be customised per-deployment:
+This is equivalent to the following `sklearn-iris` Seldon Deployment. As we can see using prepackaged model servers allow one to avoid defining boilerplate and make definition much cleaner:
+
 ```yaml
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: rclone-sklearn
+  name: iris-sklearn
 spec:
   predictors:
   - name: default
@@ -129,12 +131,13 @@ spec:
     graph:
       name: classifier
       implementation: SKLEARN_SERVER
-      modelUri: mys3:sklearn/iris
-      storageInitializerImage: gcr.io/kfserving/storage-initializer:v0.4.0    # Specify custom image here
+      modelUri: s3://sklearn/iris
+      storageInitializerImage: seldonio/rclone-storage-initializer:1.10.0-dev  # Specify custom image here
       envSecretRefName: seldon-init-container-secret                          # Specify custom secret here
 ```
+Note that image and secret used by Storage Initializer can be customised per-deployment.
 
-See our [example](../examples/custom_init_container.html) to learn how to write a custom container that uses [rclone](https://rclone.org/) for cloud storage operations.
+See our [example](../examples/custom_init_container.html) that explains in details how init containers are used and how to write a custom one using [rclone](https://rclone.org/) for cloud storage operations as an example.
 
 ## Further Customisation for Prepackaged Model Servers
 
@@ -144,9 +147,8 @@ If you want to customize the resources for the server you can add a skeleton `Co
 apiVersion: machinelearning.seldon.io/v1alpha2
 kind: SeldonDeployment
 metadata:
-  name: sklearn
+  name: sklearn-iris
 spec:
-  name: iris
   predictors:
   - componentSpecs:
     - spec:
@@ -155,19 +157,15 @@ spec:
           resources:
             requests:
               memory: 50Mi
-    graph:
-      children: []
-      implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/sklearn/iris
-      name: classifier
     name: default
     replicas: 1
-
+    graph:
+      name: classifier
+      implementation: SKLEARN_SERVER
+      modelUri: gs://seldon-models/sklearn/iris
 ```
 
 The image name and other details will be added when this is deployed automatically.
-
-A Kubernetes PersistentVolume [can be used](../examples/pvc-tfjob.html) instead of a bucket using `pvc://`.
 
 Next steps:
 
@@ -183,163 +181,112 @@ which can then be used in a similar way as the prepackaged ones.
 
 If your use case does not fit for a reusable standard server then you can create your own component using our wrappers.
 
+
 ## Handling Credentials
 
-In order to handle credentials you must make available a secret with the environment variables that will be added into the `Init Containers`. For this you need to perform the following actions:
+### General notes
 
-1. Understand which environment variables you need to set
-2. Create a secret containing the environment variables
-3. Provide the Seldon Core Controller or Seldon Deployment with the name of the secret
+Rclone remotes can be configured using the environmental variables:
+```
+RCLONE_CONFIG_<remote name>_<config variable>: <config value>
+```
 
-### 1. Understand which Environment Variables you need to set
+Note: multiple remotes can be configured simultaneously.
 
-In order to understand what are the environment variables required, you can have a look directly into our [Storage.py library](https://github.com/SeldonIO/seldon-core/blob/master/python/seldon_core/storage.py) that we use in our `Init Containers`.
+Once the remote is configured the modelUri that is compatible with `rclone` takes form
+```
+modelUri: <remote>:<bucket name>
+```
+for example `modelUri: s3:sklearn/iris`.
 
-#### AWS Required Variables
+Note: Rclone will remove the leading slashes for buckets so this is equivalent to `s3://sklearn/iris`.
 
-- AWS_ACCESS_KEY_ID
-- AWS_SECRET_ACCESS_KEY
-- AWS_ENDPOINT_URL
-- USE_SSL
+Below you will find a few example configurations. For other cloud solutions, please, consult great [documentation](https://rclone.org/) of the rclone project.
 
-#### Minio Required Variables
 
-- AWS_ACCESS_KEY_ID
-- AWS_SECRET_ACCESS_KEY
-- AWS_ENDPOINT_URL
-- USE_SSL
+### Example for public GCS configuration
 
-#### Azure Required Variables
+Note: this is configured by default in the `seldonio/rclone-storage-initializer` image.
 
-- AZ_TENANT_ID
-- AZ_CLIENT_ID
-- AZ_CLIENT_SECRET
-- AZ_SUBSCRIPTION_ID
+Reference: [rclone documentation](https://rclone.org/googlecloudstorage/).
 
-#### Google Cloud Required Variables
-
-Currently for Google Cloud it is required to follow a slightly more complex method given that it requires the secret to be mounted as a file. For this please follow the example at the Google Cloud Section.
-
-If application cretentials are not set, the client will use an Anonymous client.
-
-### 2. Create a secret containing the environment variables
-
-You can now create a secret, below we show what the env variables would look like for the AWS credentials.
 
 ```yaml
 apiVersion: v1
 kind: Secret
 metadata:
-  name: seldon-init-container-secret
+  name: seldon-rclone-secret
 type: Opaque
-data:
-  AWS_ACCESS_KEY_ID: XXXX
-  AWS_SECRET_ACCESS_KEY: XXXX
-  AWS_ENDPOINT_URL: XXXX
-  USE_SSL: XXXX
+stringData:
+  RCLONE_CONFIG_GS_TYPE: google cloud storage
+  RCLONE_CONFIG_GS_ANONYMOUS: "true"
 ```
 
-It is also possible to create a `Secret` object from the command line:
-
-```bash
-kubectl create secret generic seldon-init-container-secret \
-    --from-literal=AWS_ENDPOINT_URL='XXXX' \
-    --from-literal=AWS_ACCESS_KEY_ID='XXXX' \
-    --from-literal=AWS_SECRET_ACCESS_KEY='XXXX' \
-    --from-literal=USE_SSL=false
-```
-
-You can read the [documentation of Kubernetes](https://kubernetes.io/docs/concepts/configuration/secret/) to learn more about Kubernetes Secrets.
-
-### 3. Ensure your SeldonDeployment has access to the secret
-
-In order for your SeldonDeployment to know what is the name of the secret, we have to specify the name of the secret we created - in the example above we named the secret `seldon-init-container-secret`.
-
-#### Option 1: Default Seldon Core Manager Controller value
-
-You can set a global default when you install Seldon Core through the Helm chart through the `values.yaml` variable `executor.defaultEnvSecretRefName`. You can see all the variables available in the [Advanced Helm Installation Page](../reference/helm.rst).
+Example deployment
 
 ```yaml
-# ... other variables
-predictiveUnit:
-  defaultEnvSecretRefName: seldon-init-container-secret
-# ... other variables
-```
-
-#### Option 2: Override through SeldonDeployment config
-
-It is also possible to provide an override value when you deploy your model using the SeldonDeploymen YAML. You can do this through the `envSecretRefName` value:
-
-```yaml
-apiVersion: machinelearning.seldon.io/v1alpha2
+apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: sklearn
+  name: rclone-sklearn-gs
 spec:
-  name: iris
   predictors:
-  - graph:
-      children: []
-      implementation: SKLEARN_SERVER
-      modelUri: s3://seldon-models/sklearn/iris
-      envSecretRefName: seldon-init-container-secret
-      name: classifier
-    name: default
+  - name: default
     replicas: 1
+    graph:
+      name: classifier
+      implementation: SKLEARN_SERVER
+      modelUri: gs:seldon-models/sklearn/iris
+      envSecretRefName: seldon-rclone-secret
 ```
 
-### Examples
 
-#### MinIO running inside same Kubernetes cluster
-Assuming that you have MinIO instance running on port `9000` avaible at `minio.minio-system.svc.cluster.local` and you want to reference bucket `mymodel` you would set
-```bash
-AWS_ENDPOINT_URL=http://minio.minio-system.svc.cluster.local:9000
-```
-with `modelUri` being set as `s3://mymodel`.
+### Example minio configuration
 
-For full example please see this [notebook](../examples/minio-sklearn.html).
-
-## Adding Credentials for Google Cloud
-
-Currently the Google Credentials require a file to be set up so the process required involves creation of a service account as outlined below.
-
-You can also create a `ServiceAccount` and attach a differently formatted `Secret` to it similar to how kfserving does it. See kfserving documentation [on this topic](https://github.com/kubeflow/kfserving/blob/master/docs/samples/storage/s3/README.md). Supported annotation prefix includes `serving.kubeflow.org` and `machinelearning.seldon.io`.
-
-For GCP/GKE, go to gcloud console and create a key as json and export as a file. Then create a secret from the file using:
-
-```bash
-kubectl create secret generic user-gcp-sa --from-file=gcloud-application-credentials.json=<LOCALFILE>
-```
-
-The file in the secret needs to be called `gcloud-application-credentials.json` (the name can be configured in the seldon configmap, visible in `kubectl get cm -n seldon-system seldon-config -o yaml`).
-
-Then create a service account to reference the secret:
+Reference: [rclone documentation](https://rclone.org/s3/#minio)
 
 ```yaml
 apiVersion: v1
-kind: ServiceAccount
+kind: Secret
 metadata:
-  name: user-gcp-sa
-secrets:
-  - name: user-gcp-sa
+  name: seldon-rclone-secret
+type: Opaque
+stringData:
+  RCLONE_CONFIG_S3_TYPE: s3
+  RCLONE_CONFIG_S3_PROVIDER: minio
+  RCLONE_CONFIG_S3_ENV_AUTH: "false"
+  RCLONE_CONFIG_S3_ACCESS_KEY_ID: minioadmin
+  RCLONE_CONFIG_S3_SECRET_ACCESS_KEY: minioadmin
+  RCLONE_CONFIG_S3_ENDPOINT: http://minio.minio-system.svc.cluster.local:9000
 ```
 
-This can then be referenced in the SeldonDeployment manifest by setting `serviceAccountName: user-gcp-sa` at the same level as `m̀odelUri` e.g.
+
+
+### Example AWS S3 with IAM roles configuration
+
+Reference: [rclone documentation](https://rclone.org/s3/#amazon-s3)
 
 ```yaml
-apiVersion: machinelearning.seldon.io/v1alpha2
-kind: SeldonDeployment
+apiVersion: v1
+kind: Secret
 metadata:
-  name: sklearn
-spec:
-  name: iris
-  predictors:
-  - graph:
-      children: []
-      implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/sklearn/iris
-      serviceAccountName: user-gcp-sa
-      name: classifier
-    name: default
-    replicas: 1
+  name: seldon-rclone-secret
+type: Opaque
+stringData:
+  RCLONE_CONFIG_S3_TYPE: s3
+  RCLONE_CONFIG_S3_PROVIDER: aws
+  RCLONE_CONFIG_S3_ACCESS_KEY_ID: ""
+  RCLONE_CONFIG_S3_SECRET_ACCESS_KEY: ""
+  RCLONE_CONFIG_S3_ENV_AUTH: "true"
+```
+
+### Directly from PVC
+
+You are able to make models available directly from PVCs instead of object stores. This may be desirable if you have a lot of very large files and you want to avoid uploading/downloading, for example through NFS drives.
+
+The way in which you are able to specify the PVC is using the `modelUri` with the following format below. One thing to take into consideration is the permissions in the files as the containers will have their respective `runAsUser` parameters.
+
+```
+...
+    modelUri: pvc://<pvc-name>/<path>
 ```

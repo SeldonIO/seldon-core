@@ -6,7 +6,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
   <groupId>io.seldon.wrapper</groupId>
   <artifactId>seldon-core-wrapper</artifactId>
   <packaging>jar</packaging>
-  <version>0.4.1</version>
+  <version>0.4.2</version>
   <name>Seldon Core Java Wrapper</name>
   <url>http://maven.apache.org</url>
   <description>Wrapper for seldon-core Java prediction models.

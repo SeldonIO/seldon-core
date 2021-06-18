@@ -82,8 +82,9 @@ You can also provide the gateway on a per Seldon Deployment resource basis by pr
 |`seldon.io/istio-gateway:<gateway name>`| istio-system/seldon-gateway | The gateway to use for this deployment. If no namespace prefix is applied it will refer to the namespace of the Seldon Deployment. |
 | `seldon.io/istio-retries` | None | The number of istio retries |
 | `seldon.io/istio-retries-timeout` | None | The per try timeout if istio retries is set |
+| `seldon.io/istio-host` | `*` | The Host for istio Virtual Service |
 
-All annotations should be placed in `spec.annotations`.
+All annotations should be placed in `spec.annotations` or `metadata.annotations`. `spec.annotations` will take precedence.
 
 
 ## Traffic Routing
@@ -96,6 +97,43 @@ Istio has the capability for fine grained traffic routing to your deployments. T
  * shadow deployments
 
 More information can be found in our [examples](../examples/istio_examples.html), including [canary updates](../examples/istio_canary.html).
+
+## Configuring Authentication/Authorization
+To force clients to authenticate/authorize themselves in order to access the seldon model deployments, you can leverage Istio's 
+`RequestAuthentication` and `AuthorizationPolicy`. This will deny or accept requests to the model depending on specified conditions that you designated in the policies. 
+More information can be found [here](https://istio.io/latest/docs/reference/config/security/authorization-policy/).
+
+You can set the policies to target all the models belonging to a specific namespace, but you must be using istio sidecar proxy, 
+and ensure your seldon operator configuration has the following:
+```
+istio:
+  enabled: true
+  tlsMode: STRICT
+```
+
+When you've set up an `AuthorizationPolicy`, this will disrupt Prometheus from scraping metrics. Two proposed options to 
+resolve this issue are: 
+- You can specify that you want to allow GET requests to the prometheus endpoint in the `AuthorizationPolicy`
+
+Example:
+```
+  - to:
+    - operation:
+        methods: ["GET"]
+        paths: ["/prometheus"]
+        ports: ["6000", "8000", "6001"]
+```
+
+- You can also exclude ports in your Istio Operator configuration
+```
+  proxy:
+        autoInject: enabled
+        clusterDomain: cluster.local
+        componentLogLevel: misc:error
+        enableCoreDump: false
+        excludeInboundPorts: ""
+        excludeOutboundPorts: "15021"
+```
 
 ## Troubleshoot
 If you saw errors like `Failed to generate bootstrap config: mkdir ./etc/istio/proxy: permission denied`, it's probably because you are running istio version <= 1.6.

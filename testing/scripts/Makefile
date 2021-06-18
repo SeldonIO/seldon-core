@@ -45,6 +45,10 @@ kind_build_alibi_explain:
 kind_build_alibi_detect:
 	cd ../../components/alibi-detect-server && make kind_load
 
+.PHONY: kind_build_rclone_storage_initializer
+kind_build_rclone_storage_initializer:
+	cd ../../components/rclone-storage-initializer && make kind-load
+
 .PHONY: kind_build_misc
 kind_build_misc:
 	cd ../../components/seldon-request-logger && make kind_load
@@ -52,7 +56,7 @@ kind_build_misc:
 	cd ../../components/routers/epsilon-greedy && make kind_load
 
 .PHONY: kind_build_images
-kind_build_images: build_protos kind_build_engine kind_build_operator kind_build_executor kind_build_test_models kind_build_prepackaged kind_build_alibi_explain kind_build_alibi_detect kind_build_misc
+kind_build_images: build_protos kind_build_engine kind_build_operator kind_build_executor kind_build_test_models kind_build_prepackaged kind_build_alibi_explain kind_build_alibi_detect kind_build_rclone_storage_initializer kind_build_misc
 
 .PHONY: helm_setup
 helm_setup:

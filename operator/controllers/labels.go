@@ -23,14 +23,8 @@ func addLabelsToService(svc *corev1.Service, pu *machinelearningv1.PredictiveUni
 	} else if !isEmptyExplainer(p.Explainer) {
 		svc.Labels[machinelearningv1.Label_explainer] = "true"
 	}
-	if p.Shadow != true && (p.Traffic >= 50 || p.Traffic == 0) {
-		svc.Labels[machinelearningv1.Label_default] = "true"
-	}
 	if p.Shadow == true {
 		svc.Labels[machinelearningv1.Label_shadow] = "true"
-	}
-	if p.Traffic < 50 && p.Traffic > 0 {
-		svc.Labels[machinelearningv1.Label_canary] = "true"
 	}
 	svc.Labels[machinelearningv1.Label_managed_by] = machinelearningv1.Label_value_seldon
 	return svc
@@ -59,17 +53,9 @@ func addLabelsToDeployment(deploy *appsv1.Deployment, pu *machinelearningv1.Pred
 		deploy.Labels[machinelearningv1.Label_explainer] = "true"
 		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_explainer] = "true"
 	}
-	if p.Shadow != true && (p.Traffic >= 50 || p.Traffic == 0) {
-		deploy.Labels[machinelearningv1.Label_default] = "true"
-		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_default] = "true"
-	}
 	if p.Shadow == true {
 		deploy.Labels[machinelearningv1.Label_shadow] = "true"
 		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_shadow] = "true"
-	}
-	if p.Traffic < 50 && p.Traffic > 0 {
-		deploy.Labels[machinelearningv1.Label_canary] = "true"
-		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_canary] = "true"
 	}
 	deploy.ObjectMeta.Labels[machinelearningv1.Label_managed_by] = machinelearningv1.Label_value_seldon
 	deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_managed_by] = machinelearningv1.Label_value_seldon

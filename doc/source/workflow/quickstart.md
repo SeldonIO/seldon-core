@@ -148,7 +148,7 @@ $ curl -X POST http://<ingress>/seldon/model-namespace/iris-model/api/v1.0/predi
 
 Below are the high level steps required to containerise your model using Seldon Core's Language Wrappers.
 
-Language wrappers are used for more custom use-cases that require dependencies that are not covered by our pre-packaged model servers. Langauge wrappers can be built using our graduated Python and Java wrappers - for further details check out our [Language Wrappers section](../wrappers/language_wrappers.html).
+Language wrappers are used for more custom use-cases that require dependencies that are not covered by our pre-packaged model servers. Language wrappers can be built using our graduated Python and Java wrappers - for further details check out our [Language Wrappers section](../wrappers/language_wrappers.html).
 
 **1. Export your model binaries and/or artifacts:**
 
@@ -217,7 +217,7 @@ Now we can use the Seldon Core utilities to convert our python class into a full
 The result below is a container with the name `sklearn_iris` and the tag `0.1` which we will be able to deploy using Seldon Core.
 
 ```console
-s2i build . seldonio/seldon-core-s2i-python3:1.8.0-dev sklearn_iris:0.1
+s2i build . seldonio/seldon-core-s2i-python3:1.10.0-dev sklearn_iris:0.1
 ```
 
 **5. Deploy to Kubernetes**

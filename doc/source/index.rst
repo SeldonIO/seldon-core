@@ -34,6 +34,9 @@ Seldon Core
    Seldon Client <examples/seldon_client>
    Server Examples <examples/server_examples>
 
+.. image:: ./images/core-logo-small.png
+   :alt: Seldon logo
+   :align: center
 
 An open source platform to deploy your machine learning models on Kubernetes at massive scale.
 
@@ -90,9 +93,11 @@ Documentation Index
    :maxdepth: 1
    :caption: Pre-Packaged Inference Servers
 
+   Configuration <servers/index>
    MLflow Server <servers/mlflow.md>
    SKLearn Server <servers/sklearn.md>
    Triton Inference Server <servers/triton.md>
+   Tempo Server <servers/tempo.md>   
    Tensorflow Serving <servers/tensorflow.md>
    XGBoost Server <servers/xgboost.md>
 
@@ -100,6 +105,7 @@ Documentation Index
    :maxdepth: 1
    :caption: Production
 
+   AB Tests and Progressive Rollouts <rollouts/abtests.md>
    Supported API Protocols <graph/protocols.md>
    CI/CD MLOps at Scale <analytics/cicd-mlops.md>
    Metrics with Prometheus <analytics/analytics.md>

@@ -1,6 +1,6 @@
 # Triton examples
 
-## Prerequisties
+## Prerequisite
 
 Install Ambassador and port-forward to 
 

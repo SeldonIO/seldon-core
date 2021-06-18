@@ -28,7 +28,7 @@ RUN wget -O hasicorp-hcl.tar.gz https://github.com/hashicorp/hcl/archive/hcl1.ta
 FROM registry.access.redhat.com/ubi8/ubi-minimal
 LABEL name="Seldon Operator" \
       vendor="Seldon Technologies" \
-      version="1.8.0-dev" \
+      version="1.10.0-dev" \
       release="1" \
       summary="An Operator to deploy, monitor, explain and manage production machine learning models at scale." \
       description="The Seldon operator for management, monitoring and operations of machine learning systems through the Seldon Engine. Once installed, the Seldon Operator provides multiple functions which facilitate the productisation, monitoring and maintenance of machine learning systems at scale."
@@ -40,7 +40,8 @@ COPY --from=builder /workspace/hashicorp-golang-lru.tar.gz licenses/mpl_source/h
 COPY --from=builder /workspace/armon-consul-api.tar.gz licenses/mpl_source/armon-consul-api.tar.gz
 COPY --from=builder /workspace/hasicorp-hcl.tar.gz licenses/mpl_source/hasicorp-hcl.tar.gz
 COPY generated/admissionregistration.k8s.io_v1beta1_validatingwebhookconfiguration_seldon-validating-webhook-configuration.yaml /tmp/operator-resources/validate.yaml
-COPY generated/~g_v1_service_seldon-webhook-service.yaml /tmp/operator-resources/service.yaml
-COPY generated/~g_v1_configmap_seldon-config.yaml /tmp/operator-resources/configmap.yaml
-COPY generated/apiextensions.k8s.io_v1beta1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml /tmp/operator-resources/crd.yaml
+COPY generated/v1_service_seldon-webhook-service.yaml /tmp/operator-resources/service.yaml
+COPY generated/v1_configmap_seldon-config.yaml /tmp/operator-resources/configmap.yaml
+COPY generated/apiextensions.k8s.io_v1beta1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml /tmp/operator-resources/crd-v1beta1.yaml
+COPY generated/apiextensions.k8s.io_v1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml /tmp/operator-resources/crd-v1.yaml
 ENTRYPOINT ["/manager"]

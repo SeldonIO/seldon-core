@@ -14,6 +14,7 @@
 #
 import os
 import sys
+import sphinx_material
 
 sys.path.insert(0, os.path.abspath("../.."))
 
@@ -29,6 +30,7 @@ author = "Seldon Technologies Ltd"
 # version = seldon-core.__version__
 # The full version, including alpha/beta/rc tags
 # release = seldon-core.__version__
+
 
 # -- General configuration ---------------------------------------------------
 
@@ -105,9 +107,6 @@ napoleon_use_ivar = False
 napoleon_use_param = True
 napoleon_use_rtype = False
 
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ["_templates"]
-
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
@@ -168,10 +167,73 @@ pygments_style = None
 
 # -- Options for HTML output -------------------------------------------------
 
+# -- Options for HTML output -------------------------------------------------
+
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
+# Chosen Themes:
+# * https://github.com/bashtage/sphinx-material/
+# * https://github.com/myyasuda/sphinx_materialdesign_theme
+html_theme = "sphinx_material"
+
+if html_theme == "sphinx_material":
+    html_theme_options = {
+        "google_analytics_account": "GTM-WT76RV",
+        "base_url": "https://docs.seldon.io/projects/seldon-core/",
+        "color_primary": "indigo",
+        "color_accent": "teal",
+        "repo_url": "https://github.com/SeldonIO/seldon-core/",
+        "repo_name": "Seldon Core",
+        "nav_title": "Seldon Core Documentation",
+        "globaltoc_depth": 1,
+        "globaltoc_collapse": False,
+        "globaltoc_includehidden": False,
+        "repo_type": "github",
+        "nav_links": [
+            {
+                "href": "https://docs.seldon.io/projects/seldon-core/en/latest/",
+                "internal": False,
+                "title": "🚀 Our Other Projects & Products:",
+            },
+            {
+                "href": "https://docs.seldon.io/projects/alibi/en/stable/",
+                "internal": False,
+                "title": "Alibi Explain",
+            },
+            {
+                "href": "https://docs.seldon.io/projects/alibi-detect/en/stable/",
+                "internal": False,
+                "title": "Alibi Detect",
+            },
+            {
+                "href": "https://github.com/SeldonIO/mlserver",
+                "internal": False,
+                "title": "MLServer",
+            },
+            {
+                "href": "https://tempo.readthedocs.io/en/latest/",
+                "internal": False,
+                "title": "Tempo SDK",
+            },
+            {
+                "href": "https://deploy.seldon.io/docs/about/",
+                "internal": False,
+                "title": "Seldon Deploy (Enterprise)",
+            },
+            {
+                "href": "https://github.com/SeldonIO/seldon-deploy-sdk#seldon-deploy-sdk",
+                "internal": False,
+                "title": "Seldon Deploy SDK (Enterprise)",
+            },
+        ],
+    }
+
+    extensions.append("sphinx_material")
+    html_theme_path = sphinx_material.html_theme_path()
+    html_context = sphinx_material.get_html_context()
+
+html_sidebars = {"**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]}
 
 # The Seldon Logo located at the top of the navigation bar.
 html_logo = "Seldon_White.png"
@@ -180,23 +242,20 @@ html_logo = "Seldon_White.png"
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-html_theme_options = {"sticky_navigation": False, "includehidden": False}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_static"]
-
-# override default theme width
-html_context = {
-    "css_files": ["_static/theme_overrides.css",],  # override wide tables in RTD theme
-}
 
 html_extra_path = ["_extra"]
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
 #
+
+# Add any paths that contain templates here, relative to this directory.
+templates_path = ["_templates"]
+
 # The default sidebars (for documents that don't match any pattern) are
 # defined by theme itself.  Builtin themes are using these templates by
 # default: ``['localtoc.html', 'relations.html', 'sourcelink.html',

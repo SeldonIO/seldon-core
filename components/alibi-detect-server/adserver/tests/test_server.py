@@ -1,6 +1,7 @@
 from adserver.server import Protocol, CEServer, CEModel
 from tornado.testing import AsyncHTTPTestCase
-from typing import List, Dict
+from adserver.base import ModelResponse
+from typing import List, Dict, Optional
 import json
 import requests_mock
 
@@ -26,13 +27,13 @@ class DummyModel(CEModel):
         self.create_response = create_response
 
     @staticmethod
-    def getResponse() -> Dict:
-        return {"foo": 1}
+    def getResponse() -> ModelResponse:
+        return ModelResponse(data={"foo": 1}, metrics=None)
 
     def load(self):
         pass
 
-    def process_event(self, inputs: List, headers: Dict) -> Dict:
+    def process_event(self, inputs: List, headers: Dict) -> Optional[ModelResponse]:
         assert headers[customHeaderKey] == customHeaderVal
         if self.create_response:
             return DummyModel.getResponse()
@@ -72,10 +73,10 @@ class TestSeldonHttpModel(AsyncHTTPTestCase):
                 },
             )
             self.assertEqual(response.code, 200)
-            expectedResponse = json.dumps(DummyModel.getResponse())
+            expectedResponse = json.dumps(DummyModel.getResponse().data)
             self.assertEqual(response.body.decode("utf-8"), expectedResponse)
             self.assertEqual(
-                m.request_history[0].json(), json.dumps(DummyModel.getResponse())
+                m.request_history[0].json(), json.dumps(DummyModel.getResponse().data)
             )
             headers: Dict = m.request_history[0]._request.headers
             self.assertEqual(headers["ce-source"], self.eventSource)
@@ -129,10 +130,10 @@ class TestKFservingV2HttpModel(AsyncHTTPTestCase):
                 },
             )
             self.assertEqual(response.code, 200)
-            expectedResponse = json.dumps(DummyModel.getResponse())
+            expectedResponse = json.dumps(DummyModel.getResponse().data)
             self.assertEqual(response.body.decode("utf-8"), expectedResponse)
             self.assertEqual(
-                m.request_history[0].json(), json.dumps(DummyModel.getResponse())
+                m.request_history[0].json(), json.dumps(DummyModel.getResponse().data)
             )
             headers: Dict = m.request_history[0]._request.headers
             self.assertEqual(headers["ce-source"], self.eventSource)

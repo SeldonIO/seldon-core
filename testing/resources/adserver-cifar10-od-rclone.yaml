@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: seldon-rclone-secret
+type: Opaque
+stringData:
+  RCLONE_CONFIG_GS_TYPE: google cloud storage
+  RCLONE_CONFIG_GS_ANONYMOUS: "true"
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cifar10-od-server-rclone
+spec:
+  selector:
+    matchLabels:
+      app: cifar10-od-server-rclone
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cifar10-od-server-rclone
+    spec:
+      containers:
+      - name: server
+        image: seldonio/alibi-detect-server:1.8.0-dev
+        imagePullPolicy: IfNotPresent
+        args:
+        - --model_name
+        - cifar10od
+        - --http_port
+        - '8080'
+        - --protocol
+        - kfserving.http
+        - --event_type
+        - org.kubeflow.serving.inference.outlier
+        - --storage_uri
+        - gs://seldon-models/alibi-detect/od/OutlierVAE/cifar10
+        - --event_source
+        - http://localhost:8080
+        - OutlierDetector
+        envFrom:
+        - secretRef:
+            name: seldon-rclone-secret
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cifar10-od-server-rclone
+  labels:
+    app: cifar10-od-server-rclone
+spec:
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+  selector:
+    app: cifar10-od-server-rclone
+
+---
+
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: cifar10-od-server-rclone
+spec:
+  gateways:
+  - istio-system/seldon-gateway
+  hosts:
+  - '*'
+  http:
+  - match:
+    - uri:
+        prefix: /cifar10-od-server-rclone/
+    rewrite:
+      uri: /
+    route:
+    - destination:
+        host: cifar10-od-server-rclone
+        port:
+          number: 8080

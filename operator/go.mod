@@ -3,6 +3,7 @@ module github.com/seldonio/seldon-core/operator
 go 1.14
 
 require (
+	github.com/Masterminds/semver v1.5.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v0.1.0
 	github.com/gogo/protobuf v1.3.1

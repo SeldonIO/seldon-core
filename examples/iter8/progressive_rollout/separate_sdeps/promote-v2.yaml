@@ -1,0 +1,34 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: iris
+  namespace: ns-baseline
+spec:
+  predictors:
+  - name: default
+    graph:
+      name: classifier
+      modelUri: gs://seldon-models/xgboost/iris
+      implementation: XGBOOST_SERVER
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: routing-rule
+  namespace: default
+spec:
+  gateways:
+  - istio-system/seldon-gateway
+  hosts:
+  - iris.example.com
+  http:
+  - route:
+    - destination:
+        host: iris-default.ns-baseline.svc.cluster.local
+        port:
+          number: 8000
+      headers:
+        response:
+          set:
+            version: iris-v2
+      weight: 100

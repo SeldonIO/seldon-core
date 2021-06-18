@@ -142,6 +142,9 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		if mlDep.Spec.Protocol == machinelearningv1.ProtocolTensorflow {
 			explainerProtocol = string(machinelearningv1.ProtocolTensorflow)
 		}
+		if mlDep.Spec.Protocol == machinelearningv1.ProtocolKfserving {
+			explainerProtocol = string(machinelearningv1.ProtocolKfserving)
+		}
 
 		if customPort == nil {
 			explainerContainer.Ports = append(explainerContainer.Ports, corev1.ContainerPort{Name: portType, ContainerPort: portNum, Protocol: corev1.ProtocolTCP})
@@ -194,23 +197,21 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 			arg := "--" + k + "=" + v
 			explainerContainer.Args = append(explainerContainer.Args, arg)
 		}
-		// see https://github.com/cliveseldon/kfserving/tree/explainer_update_jul/docs/samples/explanation/income for more
-
-		// Add Environment Variables - TODO: are these needed
-		if !utils.HasEnvVar(explainerContainer.Env, machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT) {
-			explainerContainer.Env = append(explainerContainer.Env, []corev1.EnvVar{
-				corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT, Value: strconv.Itoa(int(portNum))},
-				corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_ID, Value: explainerContainer.Name},
-				corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTOR_ID, Value: p.Name},
-				corev1.EnvVar{Name: machinelearningv1.ENV_SELDON_DEPLOYMENT_ID, Value: mlDep.ObjectMeta.Name},
-			}...)
-		}
 
 		seldonPodSpec := machinelearningv1.SeldonPodSpec{Spec: corev1.PodSpec{
 			Containers: []corev1.Container{explainerContainer},
 		}}
 
 		deploy := createDeploymentWithoutEngine(depName, seldonId, &seldonPodSpec, p, mlDep, podSecurityContect)
+
+		// Set replicas to zero if main predictor or graph has zero replicas otherwise set to explainer replicas
+		if p.Replicas != nil && *p.Replicas == 0 {
+			deploy.Spec.Replicas = p.Replicas
+		} else if p.Replicas == nil && mlDep.Spec.Replicas != nil && *mlDep.Spec.Replicas == 0 {
+			deploy.Spec.Replicas = mlDep.Spec.Replicas
+		} else {
+			deploy.Spec.Replicas = p.Explainer.Replicas
+		}
 
 		if p.Explainer.ModelUri != "" {
 			var err error

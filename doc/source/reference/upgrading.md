@@ -6,6 +6,38 @@ If you were running our Openshift 0.4.2 certified operator and are looking to up
 
 Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed features and bug-fixes in each version.
 
+## Upgrading to 1.8
+
+### Rclone Storage Initailizer
+In Seldon Core 1.8 the rclone-based [storage initializer](https://github.com/SeldonIO/seldon-core/tree/master/components/rclone-storage-initializer) becomes the default one.
+
+The storage initailizer image that is being used is controlled by the helm value:
+```yaml
+storageInitializer:
+  image: seldonio/rclone-storage-initializer:1.10.0-dev
+```
+and can be customised on per-deployment basis as described in [Prepackaged Model Servers](../servers/overview.md) documentation by setting value of `storageInitializerImage` variable in the graph definition.
+
+This transition requires **creation of the new secrets** for the prepackaged model servers that will be compatible with the rclone configuration format as described [here](../servers/overview.md#handling-credentials).
+
+If you do not wish to configure these secrets now and wish to preserve prior behaviour you can opt for usage of previous storage initializer by using following helm value:
+```yaml
+storageInitializer:
+  image: gcr.io/kfserving/storage-initializer:v0.4.0
+```
+See further documentation [here](../servers/kfserving-storage-initializer.md).
+
+
+### Request Logger
+
+In Seldon Core 1.9 we will be moving [seldon-request-logger](https://github.com/SeldonIO/seldon-core/tree/master/components/seldon-request-logger) to separate repository.
+
+
+### Legacy Java Engine Orchestrator
+
+In Seldon Core 1.9 final deprecation of Java Engine will happen with removal of all the related code from the repository.
+
+
 ## Upgrading to 1.7
 
 ### Python Dependency Updates
@@ -16,14 +48,14 @@ Various CVEs were resolved via #2970, which included several packages upgrades w
 
 ### Webhook Removal
 
-As part of the 1.6.0 release we are removing the Seldon Core Mutating Webhook. This won't cause any noticable changes, but it is recommended that you manually remove the webhook once you upgrade to version 1.6.0
+As part of the 1.6.0 release we are removing the Seldon Core Mutating Webhook. This won't cause any noticeable changes, but it is recommended that you manually remove the webhook once you upgrade to version 1.6.0
 
 
 ## Upgrading to 1.5
 
 ### REST and gRPC
 
-To take advantage of the ability to handle both REST and gRPC on any deployed model python model images will need to be recreated using the 1.5 python wrapper. If they are not updated they will only expose the protocol they were orginally wrapped for.
+To take advantage of the ability to handle both REST and gRPC on any deployed model python model images will need to be recreated using the 1.5 python wrapper. If they are not updated they will only expose the protocol they were originally wrapped for.
 
 You can use and extend the [backwards compatibility notebook](../examples/backwards_compatibility.html) to check your deployments will work if you do not intend to upgrade them.
 
@@ -45,7 +77,7 @@ All seldon-managed pods will be subject to a rolling update as part of this upgr
  * To allow CRDs to be created by the manager. If `managerCreateResources` is true then extra RBAC to `create` CRDs is added from the previous versions RBAC which was to just list and get.
  * If upgrading the analytics helm chart then a `kubectl delete deployment -n seldon-system -l app=grafana` should be [run first](https://github.com/SeldonIO/seldon-core/pull/1917)
  * All the prepackaged model servers are now created with RedHat UBI images. One consequence of this is that they will all run as non-root as it best practice.
- 
+
 ### Request Logger
 
 The values.yaml for the seldon-core-operator helm chart has changed. The field `defaultRequestLoggerEndpointPrefix` is replaced by:
@@ -129,7 +161,7 @@ The Python Wrapper was using naming convention in the format 0.1 ... 0.18. In th
 
 Whenever a new PR was merged to master, we have set up our CI to build a "SNAPSHOT" version, which would contain the Docker images for that specific development / master-branch code.
 
-Previously, we always had the SNAPSHOT tag being overriden with the latest. This didn't allow us to know what version someone may be trying out when using master, so we wanted to introduce a way to actually get unique tags for every image that gets landed into master.
+Previously, we always had the SNAPSHOT tag being overridden with the latest. This didn't allow us to know what version someone may be trying out when using master, so we wanted to introduce a way to actually get unique tags for every image that gets landed into master.
 
 Now every time that a PR is landed to master, a new "dated" SNAPSHOT version is created, which pushes images with the tag `"<next-version>-SNAPSHOT_<timestamp>"`. A new branch is also created with the name `"v<next-version>-SNAPSHOT_<timestamp>"`, which contains the respective helm charts, and allows for the specific version (as outlined by the version in `version.txt`) to be installed.
 

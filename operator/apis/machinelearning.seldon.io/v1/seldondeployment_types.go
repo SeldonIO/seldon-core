@@ -43,9 +43,7 @@ const (
 	Label_model              = "seldon.io/model"
 	Label_transformer        = "seldon.io/transformer"
 	Label_output_transformer = "seldon.io/output-transformer"
-	Label_default            = "seldon.io/default"
 	Label_shadow             = "seldon.io/shadow"
-	Label_canary             = "seldon.io/canary"
 	Label_explainer          = "seldon.io/explainer"
 	Label_managed_by         = "app.kubernetes.io/managed-by"
 	Label_value_seldon       = "seldon-core"
@@ -289,6 +287,7 @@ type Explainer struct {
 	Endpoint                *Endpoint          `json:"endpoint,omitempty" protobuf:"bytes,6,opt,name=endpoint"`
 	EnvSecretRefName        string             `json:"envSecretRefName,omitempty" protobuf:"bytes,7,opt,name=envSecretRefName"`
 	StorageInitializerImage string             `json:"storageInitializerImage,omitempty" protobuf:"bytes,8,opt,name=storageInitializerImage"`
+	Replicas                *int32             `json:"replicas,omitempty" protobuf:"string,4,opt,name=replicas"`
 }
 
 // ObjectMeta is a copy of the "k8s.io/apimachinery/pkg/apis/meta/v1" ObjectMeta.

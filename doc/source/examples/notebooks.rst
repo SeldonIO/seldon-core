@@ -48,7 +48,7 @@ Specialised Framework Examples
    NVIDIA TensorRT MNIST <tensorrt>
    OpenVINO ImageNet <openvino>
    OpenVINO ImageNet Ensemble <openvino_ensemble>
-
+   Triton Examples <triton_examples>
 
 Incubating Projects Examples
 ----------------------------
@@ -127,6 +127,19 @@ Production Configurations and Integrations
    Custom Protobuf Data Example <customdata_example>
    Disruption Budgets Example <pdbs_example>
 
+AB Tests and Progressive Rollouts
+---------------------------------
+
+.. toctree::
+   :titlesonly:
+
+   Istio AB Test <istio_canary>
+   Ambassador AB Test <ambassador_canary>
+   Seldon/Iter8 - Progressive AB Test with Single Seldon Deployment <iter8-single>
+   Seldon/Iter8 - Progressive AB Test with Multiple Seldon Deployments <iter8-separate>
+
+
+
 Complex Graph Examples
 ----------------------
 
@@ -166,4 +179,4 @@ Benchmarking and Load Tests
    Service Orchestrator <bench_svcOrch>
    Tensorflow <bench_tensorflow>   
    Argo Workflows Benchmarking <vegeta_bench_argo_workflows>   
-   Backwards Compatability Tests <backwards_compatibility>
+   Backwards Compatibility Tests <backwards_compatibility>

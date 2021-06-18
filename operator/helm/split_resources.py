@@ -45,7 +45,8 @@ HELM_ENV_SUBST = {
     "KEDA_ENABLED": "keda.enabled",
     "ISTIO_GATEWAY": "istio.gateway",
     "ISTIO_TLS_MODE": "istio.tlsMode",
-    "PREDICTIVE_UNIT_SERVICE_PORT": "predictiveUnit.port",
+    "PREDICTIVE_UNIT_HTTP_SERVICE_PORT": "predictiveUnit.httpPort",
+    "PREDICTIVE_UNIT_GRPC_SERVICE_PORT": "predictiveUnit.grpcPort",
     "PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME": "predictiveUnit.defaultEnvSecretRefName",
     "PREDICTIVE_UNIT_METRICS_PORT_NAME": "predictiveUnit.metricsPortName",
     "EXECUTOR_CONTAINER_IMAGE_PULL_POLICY": "executor.image.pullPolicy",
@@ -248,6 +249,7 @@ if __name__ == "__main__":
                 if (
                     name == "seldon1-manager-rolebinding"
                     or name == "seldon1-manager-sas-rolebinding"
+                    or name == "seldon-leader-election-rolebinding"
                 ):
                     res["subjects"][0]["name"] = helm_value("serviceAccount.name")
                     res["subjects"][0]["namespace"] = helm_namespace_override()

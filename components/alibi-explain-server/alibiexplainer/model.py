@@ -11,5 +11,5 @@ class ExplainerModel(ABC):
         self.ready = True
 
     @abstractmethod
-    def explain(self, request: Dict) -> Dict:
+    def explain(self, request: Dict, model_name = None) -> Dict:
        pass

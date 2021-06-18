@@ -45,7 +45,7 @@ def rs232_checksum(the_bytes):
 
 
 class UserObject(SeldonComponent):
-    HEALTH_STATUS_REPONSE = [0.123]
+    HEALTH_STATUS_RESPONSE = [0.123]
     METADATA_RESPONSE = {
         "name": "my-model-name",
         "versions": ["model-version"],
@@ -98,7 +98,7 @@ class UserObject(SeldonComponent):
             return [{"type": "BAD", "key": "mycounter", "value": 1}]
 
     def health_status(self):
-        return self.predict(self.HEALTH_STATUS_REPONSE, ["some_float"])
+        return self.predict(self.HEALTH_STATUS_RESPONSE, ["some_float"])
 
     def init_metadata(self):
         return self.METADATA_RESPONSE
@@ -795,7 +795,7 @@ def test_model_health_status():
     assert rv.status_code == 200
     j = json.loads(rv.data)
     logging.info(j)
-    assert j["data"]["tensor"]["values"] == UserObject.HEALTH_STATUS_REPONSE
+    assert j["data"]["tensor"]["values"] == UserObject.HEALTH_STATUS_RESPONSE
 
 
 def test_model_health_status_raw():

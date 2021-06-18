@@ -95,22 +95,28 @@ push_conda:
 	@echo "Alternatively use anaconda upload to publish on own channel"
 
 setup_linter:
-	pip install black==20.8b1 isort==5.7.0
+	pip install black==20.8b1 isort==5.7.0 nbqa==0.10.0
 
 fmt:
 	black \
-		./ ../testing ../operator/helm ../operator/hack \
+		./ ../testing/scripts ../operator/helm ../operator/hack \
 		--exclude "(proto|seldon_core/proto/|.eggs|.tox)"
 	isort \
-		./ ../testing ../operator/helm ../operator/hack \
+		./ ../testing/scripts ../operator/helm ../operator/hack \
 		--skip proto --skip seldon_core/proto --skip .eggs --skip .tox
+	nbqa black \
+		../ --nbqa-skip-bad-cells --nbqa-mutate \
+		--nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)"
+	nbqa isort \
+		../ --profile black --nbqa-skip-bad-cells --nbqa-mutate \
+		--nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)"
 
 lint: licenses
 	black \
-		--check ./ ../testing \
+		--check ./ ../testing/scripts \
 		--exclude "(proto|seldon_core/proto/|.eggs|.tox)"
 	isort \
-		--check-only ./ ../testing \
+		--check-only ./ ../testing/scripts \
 		--skip proto --skip seldon_core/proto --skip .eggs --skip .tox
 	flake8
 	# Check if licenses have changed

@@ -1,0 +1,13 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: iris
+  namespace: ns-production
+spec:
+  predictors:
+  - name: default
+    graph:
+      name: classifier
+      modelUri: gs://seldon-models/xgboost/iris
+      implementation: XGBOOST_SERVER
+
