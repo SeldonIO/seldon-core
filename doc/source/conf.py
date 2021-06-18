@@ -165,13 +165,6 @@ linkcheck_anchors_ignore = [".*"]
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = None
 
-# Set html context if not set
-try:
-    html_context
-    if not isinstance(html_context, dict): raise Exception()
-except:
-    html_context = {}
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -246,12 +239,6 @@ html_logo = "Seldon_White.png"
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#
-
-# override default theme width
-html_context.update({
-    "css_files": ["_static/theme_overrides.css",],  # override wide tables in RTD theme
-})
 
 html_extra_path = ["_extra"]
 
