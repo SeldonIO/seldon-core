@@ -177,6 +177,20 @@ pygments_style = None
 # * https://github.com/myyasuda/sphinx_materialdesign_theme
 html_theme = "sphinx_material"
 
+# Set html context if not set
+try:
+    html_context
+    if not isinstance(html_context, dict): raise Exception()
+except:
+    html_context = {}
+
+# Set staticpath if not set
+try:
+    html_static_path
+    if not isinstance(html_static_path, list): raise Exception()
+except:
+    html_static_path = []
+
 if html_theme == "sphinx_material":
     html_theme_options = {
         "google_analytics_account": "GTM-WT76RV",
@@ -231,7 +245,7 @@ if html_theme == "sphinx_material":
 
     extensions.append("sphinx_material")
     html_theme_path = sphinx_material.html_theme_path()
-    html_context = sphinx_material.get_html_context()
+    html_context.update(sphinx_material.get_html_context())
 
 html_sidebars = {"**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]}
 
@@ -246,6 +260,12 @@ html_logo = "Seldon_White.png"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
+html_static_path.append("_static")
+
+# override default theme width
+html_context.update({
+    "css_files": ["_static/theme_overrides.css",],  # override wide tables in RTD theme
+})
 
 html_extra_path = ["_extra"]
 
