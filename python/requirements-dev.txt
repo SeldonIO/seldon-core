@@ -3,7 +3,7 @@ black==20.8b1
 coverage==5.4              # 2nd lvl dep on cov required to avoid sqllite dep
 flake8==3.9.0
 grpcio-tools==1.37.1
-isort==5.8.0
+isort==5.9.0
 mypy-protobuf==2.4
 mypy<0.791
 pandas==1.1.0                # used in serving_test_gen
