@@ -327,6 +327,7 @@ def extract_data_part(content, headers, message_type):
             copy["dataType"] = "tabular"
             first_element = arr.item(0)
             set_datatype_from_numpy(arr, copy, first_element)
+            copy["elements"] = createElelmentsArray(arr, None, namespace, serving_engine, inferenceservice_name, endpoint_name, message_type)
             copy["instance"] = arr.tolist()
 
         del copy["outputs"]
@@ -347,6 +348,7 @@ def extract_data_part(content, headers, message_type):
             copy["dataType"] = "tabular"
             first_element = arr.item(0)
             set_datatype_from_numpy(arr, copy, first_element)
+            copy["elements"] = createElelmentsArray(arr, None, namespace, serving_engine, inferenceservice_name, endpoint_name, message_type)
             copy["instance"] = arr.tolist()
 
         del copy["inputs"]
