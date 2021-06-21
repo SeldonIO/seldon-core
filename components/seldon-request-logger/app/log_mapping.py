@@ -185,7 +185,8 @@ def fetch_metadata(namespace, serving_engine, inferenceservice_name, predictor_n
     # was expcting to set deployment_type=serving_engine but deployment_type does not seem to be a param
     runtime_metadata = metadata_api.model_metadata_service_list_runtime_metadata_for_model(
         deployment_name=inferenceservice_name,deployment_namespace=namespace,
-        predictor_name=predictor_name,deployment_type=deployment_type)
+        predictor_name=predictor_name,deployment_type=deployment_type,
+        deployment_status="Running")
 
     if runtime_metadata is not None and runtime_metadata and \
             runtime_metadata.runtime_metadata is not None and runtime_metadata.runtime_metadata:
