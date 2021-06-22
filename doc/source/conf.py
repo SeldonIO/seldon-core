@@ -215,7 +215,7 @@ if html_theme == "sphinx_material":
                 "title": "Tempo SDK",
             },
             {
-                "href": "https://deploy.seldon.io/docs/about/",
+                "href": "https://deploy.seldon.io",
                 "internal": False,
                 "title": "Seldon Deploy (Enterprise)",
             },
