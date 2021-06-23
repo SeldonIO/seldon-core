@@ -210,7 +210,7 @@ test_models/triton/cifar10/tf_cifar10:
 
 
 anchor_images_triton_model: test_models/triton/cifar10/tf_cifar10
-	docker run --rm --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 -p9000:9000 -p8001:8001 -p8002:8002 -p5001:5001 -v ${PWD}/test_models/triton/tf_cifar10:/models nvcr.io/nvidia/tritonserver:20.08-py3 /opt/tritonserver/bin/tritonserver --model-repository=/models --http-port=9000 --grpc-port=5001
+	docker run --rm --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 -p9000:9000 -p8001:8001 -p8002:8002 -p5001:5001 -v ${PWD}/test_models/triton/tf_cifar10:/models nvcr.io/nvidia/tritonserver:21.05-py3 /opt/tritonserver/bin/tritonserver --model-repository=/models --http-port=9000 --grpc-port=5001
 
 anchor_images_triton_predict:
 	curl -H "Content-Type: application/json" http://0.0.0.0:9000/v2/models/cifar10/infer -d '@tests/data/truck-v2.json'

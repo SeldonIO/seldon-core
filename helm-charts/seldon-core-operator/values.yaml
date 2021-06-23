@@ -140,7 +140,7 @@ predictor_servers:
   TRITON_SERVER:
     protocols:
       kfserving:
-        defaultImageVersion: "20.08-py3"
+        defaultImageVersion: "21.05-py3"
         image: nvcr.io/nvidia/tritonserver
   TEMPO_SERVER:
     protocols:

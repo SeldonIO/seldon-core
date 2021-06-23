@@ -103,7 +103,7 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | predictor_servers.TENSORFLOW_SERVER.protocols.seldon.image | string | `"seldonio/tfserving-proxy"` |  |
 | predictor_servers.TENSORFLOW_SERVER.protocols.tensorflow.defaultImageVersion | string | `"2.1.0"` |  |
 | predictor_servers.TENSORFLOW_SERVER.protocols.tensorflow.image | string | `"tensorflow/serving"` |  |
-| predictor_servers.TRITON_SERVER.protocols.kfserving.defaultImageVersion | string | `"20.08-py3"` |  |
+| predictor_servers.TRITON_SERVER.protocols.kfserving.defaultImageVersion | string | `"21.05-py3"` |  |
 | predictor_servers.TRITON_SERVER.protocols.kfserving.image | string | `"nvcr.io/nvidia/tritonserver"` |  |
 | predictor_servers.XGBOOST_SERVER.protocols.kfserving.defaultImageVersion | string | `"0.3.2"` |  |
 | predictor_servers.XGBOOST_SERVER.protocols.kfserving.image | string | `"seldonio/mlserver"` |  |
