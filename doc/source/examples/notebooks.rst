@@ -76,6 +76,8 @@ Cloud-Specific Examples
    Azure AKS Tensorflow Deep MNIST <azure_aks_deep_mnist>
    GKE with GPU Tensorflow Deep MNIST <gpu_tensorflow_deep_mnist>
    Alibaba Cloud Tensorflow Deep MNIST <alibaba_ack_deep_mnist>
+   Triton GPT2 Example Azure <triton_gpt2_example_azure>
+   Setup for Triton GPT2 Example Azure <triton_gpt2_example_azure_setup>
 
 Advanced Machine Learning Insights
 ----------------------------------
