@@ -223,6 +223,10 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 			}
 		}
 
+		if p.Explainer.ServiceAccountName != "" {
+			deploy.Spec.Template.Spec.ServiceAccountName = p.Explainer.ServiceAccountName
+		}
+
 		// for explainer use same service name as its Deployment
 		eSvcName := machinelearningv1.GetExplainerDeploymentName(mlDep.GetName(), p)
 
