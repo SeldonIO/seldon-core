@@ -25,7 +25,7 @@ helm install ambassador datawire/ambassador \
 ### Option 2: Ambassador API Gateway (now Emissary Ingress)
 
 The [Ambassador API Gateway](https://www.getambassador.io/products/api-gateway/) (now Emissary Ingress) is the fully open source version of Ambassador Edge Stack and provides all the functionality of a traditional ingress controller.
-Follow the [Ambassador OSS instructions](https://www.getambassador.io/docs/latest/topics/install/install-ambassador-oss/) to install it on your kubernetes cluster.
+Follow the [Ambassador OSS instructions](https://www.getambassador.io/docs/latest/topics/install/) to install it on your kubernetes cluster.
 
 Using `helm` the steps can be summarised as
 ```bash
