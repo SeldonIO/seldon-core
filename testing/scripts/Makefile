@@ -185,8 +185,7 @@ test_benchmark: build_protos install
 	pytest \
 		--verbose \
 		-s \
-		-m "benchmark" \
-		-W ignore test_notebooks.py::TestNotebooks 2>&1
+		-m "benchmark" 2>&1
 
 .PHONY: clean
 clean:

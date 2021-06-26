@@ -2,10 +2,10 @@ import json
 import logging
 import os
 import re
+import subprocess
 import time
 from concurrent.futures import ThreadPoolExecutor, wait
-import subprocess
-from subprocess import Popen, CalledProcessError, run
+from subprocess import CalledProcessError, Popen, run
 
 import grpc
 import numpy as np

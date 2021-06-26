@@ -1,4 +1,3 @@
-
 import pytest
 
 from seldon_e2e_utils import create_and_run_script
