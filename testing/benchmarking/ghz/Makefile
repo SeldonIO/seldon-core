@@ -1,4 +1,4 @@
-VERSION=v0.55.0
+VERSION=v0.95.0
 IMG=seldonio/ghz:${VERSION}
 
 docker-build:
