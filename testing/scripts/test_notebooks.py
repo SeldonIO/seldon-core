@@ -1,31 +1,7 @@
-import logging
-from subprocess import PIPE, CalledProcessError, run
 
 import pytest
 
-
-def create_and_run_script(folder, notebook):
-    run(
-        f"jupyter nbconvert --template ../../notebooks/convert.tpl --to script {folder}/{notebook}.ipynb",
-        shell=True,
-        check=True,
-    )
-    run(f"chmod u+x {folder}/{notebook}.py", shell=True, check=True)
-    try:
-        run(
-            f"cd {folder} && ./{notebook}.py",
-            shell=True,
-            check=True,
-            stdout=PIPE,
-            stderr=PIPE,
-            encoding="utf-8",
-        )
-    except CalledProcessError as e:
-        logging.error(
-            f"failed notebook test {notebook} stdout:{e.stdout}, stderr:{e.stderr}"
-        )
-        run("kubectl delete sdep --all", shell=True, check=False)
-        raise e
+from seldon_e2e_utils import create_and_run_script
 
 
 @pytest.mark.flaky(max_runs=2)

@@ -206,6 +206,8 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
             make test_parallel test_sequential
         elif [ "$TESTS_TO_RUN" == "parallel" ]; then
             make test_parallel
+        elif [ "$TESTS_TO_RUN" == "benchmark" ]; then
+            make test_benchmark
         fi
         TEST_EXIT_VALUE=$?
         if [[ $TEST_EXIT_VALUE -gt 0 ]]; then

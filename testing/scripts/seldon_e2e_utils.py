@@ -2,10 +2,10 @@ import json
 import logging
 import os
 import re
-import subprocess
 import time
 from concurrent.futures import ThreadPoolExecutor, wait
-from subprocess import Popen, run
+import subprocess
+from subprocess import Popen, CalledProcessError, run
 
 import grpc
 import numpy as np
@@ -628,3 +628,27 @@ def assert_model(sdep_name, namespace, initial=False, endpoint=API_AMBASSADOR):
 
 def to_resources_path(file_name):
     return os.path.join(RESOURCES_PATH, file_name)
+
+
+def create_and_run_script(folder, notebook):
+    run(
+        f"jupyter nbconvert --template ../../notebooks/convert.tpl --to script {folder}/{notebook}.ipynb",
+        shell=True,
+        check=True,
+    )
+    run(f"chmod u+x {folder}/{notebook}.py", shell=True, check=True)
+    try:
+        run(
+            f"cd {folder} && ./{notebook}.py",
+            shell=True,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding="utf-8",
+        )
+    except CalledProcessError as e:
+        logging.error(
+            f"failed notebook test {notebook} stdout:{e.stdout}, stderr:{e.stderr}"
+        )
+        run("kubectl delete sdep --all", shell=True, check=False)
+        raise e
