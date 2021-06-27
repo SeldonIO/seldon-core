@@ -133,6 +133,13 @@ RUN go get -u github.com/onsi/ginkgo/ginkgo
 # Helm docs
 RUN GO111MODULE=on go get github.com/norwoodj/helm-docs/cmd/helm-docs@f66fdbd6fe
 
+# Argo workflows CLI
+RUN wget https://github.com/argoproj/argo-workflows/releases/download/v3.0.8/argo-linux-amd64.gz && \
+    gunzip argo-linux-amd64.gz && \
+    mv argo-linux-amd64 argo && \
+    chmod a+x argo && \
+    mv argo /usr/local/bin/argo
+
 WORKDIR /work
 
 # Define default command.
