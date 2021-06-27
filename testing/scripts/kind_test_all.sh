@@ -103,12 +103,18 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
             echo "SKIPPING EXECUTOR IMAGE BUILD..."
         fi
 
-        echo "Build test models"
-        make kind_build_test_models
-        KIND_BUILD_EXIT_VALUE=$?
-        if [[ $KIND_BUILD_EXIT_VALUE -gt 0 ]]; then
-            echo "Kind build has errors"
-            return 1
+        echo "Files changed in test models folder:"
+        git --no-pager diff --exit-code --name-only origin/master ../../examples/models/mean_classifier/ ../../testing/docker/echo-model/ ../../testing/docker/fixed-model
+        TEST_MODELS_MODIFIED=$?
+        if [[ $TEST_MODELS_MODIFIED -gt 0 ]]; then
+            make kind_build_test_models
+            KIND_BUILD_EXIT_VALUE=$?
+            if [[ $KIND_BUILD_EXIT_VALUE -gt 0 ]]; then
+                echo "Kind build has errors"
+                return 1
+            fi
+        else
+            echo "SKIPPING TEST MODEL BUILD..."
         fi
 
         echo "Files changed in prepackaged, python, or wrapper folder:"
