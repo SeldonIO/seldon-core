@@ -185,6 +185,7 @@ test_benchmark: build_protos install
 	pytest \
 		--verbose \
 		-s \
+		-W ignore \
 		-m "benchmark" 2>&1
 
 .PHONY: clean
