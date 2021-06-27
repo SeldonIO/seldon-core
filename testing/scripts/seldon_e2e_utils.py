@@ -642,9 +642,8 @@ def create_and_run_script(folder, notebook):
             f"cd {folder} && ./{notebook}.py",
             shell=True,
             check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
             encoding="utf-8",
+            capture_output=False,
         )
     except CalledProcessError as e:
         logging.error(
