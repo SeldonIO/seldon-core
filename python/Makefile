@@ -124,6 +124,14 @@ lint: licenses
 		--no-pager diff \
 		--exit-code \
 		./licenses/license_info.no_versions.csv
+	nbqa black \
+		-- check \
+		../ --nbqa-skip-bad-cells --nbqa-mutate \
+		--nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)"
+	nbqa isort \
+		--check-only \
+		../ --profile black --nbqa-skip-bad-cells --nbqa-mutate \
+		--nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)"
 
 .PHONY: clean
 clean:
