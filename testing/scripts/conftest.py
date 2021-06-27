@@ -19,8 +19,6 @@ def s2i_python_version():
     """Return version of s2i images, the IMAGE_VERSION, e.g. 0.17-SNAPSHOT."""
     return do_s2i_python_version()
 
-@pytest.fixture
-def ensure_argo_workflows():
 
 @pytest.fixture
 def namespace(request):
