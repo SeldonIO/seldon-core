@@ -14,29 +14,13 @@ def _to_python_bool(val):
     return val.lower() in {"1", "t", "true"}
 
 
-SELDON_E2E_TESTS_POD_INFORMATION = _to_python_bool(
-    os.getenv("SELDON_E2E_TESTS_POD_INFORMATION", default="false")
-)
-
-
-@pytest.fixture(scope="session", autouse=SELDON_E2E_TESTS_POD_INFORMATION)
-def run_pod_information_in_background(request):
-    # This command runs the pod information and prints it in the background
-    # every time there's a new update
-    run(
-        (
-            "kubectl get pods --all-namespaces -w | "
-            + 'awk \'{print "\\nPODS UPDATE: "$0"\\n"}\' & '
-        ),
-        shell=True,
-    )
-
-
 @pytest.fixture(scope="module")
 def s2i_python_version():
     """Return version of s2i images, the IMAGE_VERSION, e.g. 0.17-SNAPSHOT."""
     return do_s2i_python_version()
 
+@pytest.fixture
+def ensure_argo_workflows():
 
 @pytest.fixture
 def namespace(request):
