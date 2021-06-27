@@ -643,7 +643,6 @@ def create_and_run_script(folder, notebook):
             shell=True,
             check=True,
             encoding="utf-8",
-            capture_output=False,
         )
     except CalledProcessError as e:
         logging.error(
