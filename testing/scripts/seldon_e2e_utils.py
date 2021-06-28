@@ -667,7 +667,7 @@ def create_and_run_script(folder, notebook):
 def bench_results_from_output_logs(name, namespace="argo", print_results=True):
 
     output = run(f"argo logs --no-color {name} -n {namespace}",
-                 capture_output=True, encoding="utf-8", check=True, shell=True)
+                 stdout=subprocess.PIPE, encoding="utf-8", check=True, shell=True)
 
     output.check_returncode()
 
