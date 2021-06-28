@@ -157,16 +157,16 @@ Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved pe
 
 ### MODEL
 
- * [A minimal skeleton for model source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/model-template-app)
- * [Example model notebooks](../examples/notebooks.html)
+ * [A minimal skeleton for model source code](https://github.com/cliveseldon/seldon-core/tree/master/wrappers/s2i/python/test/model-template-app)
+ * [Example model notebooks (broken link)](../examples/notebooks.html)
 
 ### ROUTER
- * [Description of routers in Seldon Core](../components/routers.html)
- * [A minimal skeleton for router source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/router-template-app)
+ * [Description of routers in Seldon Core](../analytics/routers.html)
+ * [A minimal skeleton for router source code](https://github.com/cliveseldon/seldon-core/tree/master/wrappers/s2i/python/test/router-template-app)
 
 ### TRANSFORMER
 
- * [A minimal skeleton for transformer source code](https://github.com/cliveseldon/seldon-core/tree/s2i/wrappers/s2i/python/test/transformer-template-app)
+ * [A minimal skeleton for transformer source code](https://github.com/cliveseldon/seldon-core/tree/master/wrappers/s2i/python/test/transformer-template-app)
  * [Example transformers](https://github.com/SeldonIO/seldon-core/tree/master/examples/transformers)
 
 
