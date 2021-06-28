@@ -9,11 +9,11 @@ from subprocess import CalledProcessError, Popen, run
 
 import grpc
 import numpy as np
+import pandas as pd
 import requests
 from google.protobuf import empty_pb2
 from requests.auth import HTTPBasicAuth
 from tenacity import retry, stop_after_attempt, wait_exponential
-import pandas as pd
 
 from seldon_core.proto import prediction_pb2, prediction_pb2_grpc
 
@@ -666,8 +666,13 @@ def create_and_run_script(folder, notebook):
 
 def bench_results_from_output_logs(name, namespace="argo", print_results=True):
 
-    output = run(f"argo logs --no-color {name} -n {namespace}",
-                 stdout=subprocess.PIPE, encoding="utf-8", check=True, shell=True)
+    output = run(
+        f"argo logs --no-color {name} -n {namespace}",
+        stdout=subprocess.PIPE,
+        encoding="utf-8",
+        check=True,
+        shell=True,
+    )
 
     output.check_returncode()
 
@@ -678,13 +683,34 @@ def bench_results_from_output_logs(name, namespace="argo", print_results=True):
         if "latenc" in log:
             # Only process if contains results of benchmark
             log_clean = json.loads(":".join(log.split(":")[1:]))
-            result = parse_bench_results_from_log(log_clean, print_results=print_results)
+            result = parse_bench_results_from_log(
+                log_clean, print_results=print_results
+            )
             results.append(result)
 
     return results
 
 
-def parse_bench_results_from_log(results_log, print_results=True,):
+def print_benchmark_results(final):
+    print("-----")
+    print("ParamNames:", final["params"].keys())
+    print("ParamNames:", final["params"].values())
+    print("\tLatencies:")
+    print("\t\tmean:", final["mean"], "ms")
+    print("\t\t50th:", final["50th"], "ms")
+    print("\t\t90th:", final["90th"], "ms")
+    print("\t\t95th:", final["95th"], "ms")
+    print("\t\t99th:", final["99th"], "ms")
+    print("")
+    print("\tRate:", str(final["throughputAchieved"]) + "/s")
+    print("\tSuccess:", final["success"])
+    print("\tErrors:", final["errors"])
+
+
+def parse_bench_results_from_log(
+    results_log,
+    print_results=True,
+):
     final = {}
     # For GHZ / grpc
     if "average" in results_log:
@@ -696,7 +722,9 @@ def parse_bench_results_from_log(results_log, print_results=True,):
             final["99th"] = results_log["latencyDistribution"][-1]["latency"] / 1e6
         final["throughputAchieved"] = results_log["rps"]
         final["success"] = results_log["statusCodeDistribution"].get("OK", 0)
-        final["errors"] = sum(results_log["statusCodeDistribution"].values()) - final["success"]
+        final["errors"] = (
+            sum(results_log["statusCodeDistribution"].values()) - final["success"]
+        )
     # For vegeta / rest
     else:
         final["mean"] = results_log["latencies"]["mean"] / 1e6
@@ -707,51 +735,40 @@ def parse_bench_results_from_log(results_log, print_results=True,):
         final["throughputAchieved"] = results_log["throughput"]
         final["success"] = results_log["status_codes"].get("200", 0)
         final["errors"] = sum(results_log["status_codes"].values()) - final["success"]
+    # Including parameters
     for k in results_log["params"].keys():
         final[k] = results_log["params"][k]
-    if print_results:
-        logging.warning("-----")
-        logging.warning("ParamNames:", results_log["params"].keys())
-        logging.warning("ParamNames:", results_log["params"].values())
-        logging.warning("\tLatencies:")
-        logging.warning("\t\tmean:", final["mean"], "ms")
-        logging.warning("\t\t50th:", final["50th"], "ms")
-        logging.warning("\t\t90th:", final["90th"], "ms")
-        logging.warning("\t\t95th:", final["95th"], "ms")
-        logging.warning("\t\t99th:", final["99th"], "ms")
-        logging.warning("")
-        logging.warning("\tRate:", str(final["throughputAchieved"]) + "/s")
-        logging.warning("\tSuccess:", final["success"])
-        logging.warning("\tErrors:", final["errors"])
     return final
 
 
 def run_benchmark_and_capture_results(
-            name="seldon-batch-job",
-            namespace="argo",
-            parallelism=BENCHMARK_PARALLELISM,
-            replicas_list=["1"],
-            server_workers_list=["5"],
-            server_threads_list=["1"],
-            model_uri_list=["gs://seldon-models/sklearn/iris"],
-            server_list=["SKLEARN_SERVER"],
-            api_type_list=["rest"],
-            requests_cpu_list=["2000Mi"],
-            requests_memory_list=["500Mi"],
-            limits_cpu_list=["2000Mi"],
-            limits_memory_list=["500Mi"],
-            disable_orchestrator_list=["false"],
-            benchmark_cpu_list=["1"],
-            benchmark_concurrency_list=["1"],
-            benchmark_duration_list=["30s"],
-            benchmark_rate_list=["0"],
-            benchmark_data={"data": {"ndarray": [[1, 2, 3, 4]]}},
-        ):
+    name="seldon-batch-job",
+    namespace="argo",
+    parallelism=BENCHMARK_PARALLELISM,
+    replicas_list=["1"],
+    server_workers_list=["5"],
+    server_threads_list=["1"],
+    model_uri_list=["gs://seldon-models/sklearn/iris"],
+    server_list=["SKLEARN_SERVER"],
+    api_type_list=["rest"],
+    requests_cpu_list=["2000Mi"],
+    requests_memory_list=["500Mi"],
+    limits_cpu_list=["2000Mi"],
+    limits_memory_list=["500Mi"],
+    disable_orchestrator_list=["false"],
+    benchmark_cpu_list=["1"],
+    benchmark_concurrency_list=["1"],
+    benchmark_duration_list=["30s"],
+    benchmark_rate_list=["0"],
+    benchmark_data={"data": {"ndarray": [[1, 2, 3, 4]]}},
+):
 
-    data_str = (json.dumps(benchmark_data)
-                    .replace("{", "\\{")
-                    .replace("}", "\\}")
-                    .replace(",", "\\,"))
+    data_str = (
+        json.dumps(benchmark_data)
+        .replace("{", "\\{")
+        .replace("}", "\\}")
+        .replace(",", "\\,")
+    )
 
     delim = "|"
 
@@ -776,7 +793,8 @@ def run_benchmark_and_capture_results(
         "check": True,
     }
 
-    run(f'''
+    run(
+        f"""
         helm template seldon-benchmark-workflow ../../helm-charts/seldon-benchmark-workflow/ \\
             --set workflow.namespace="{namespace}" \\
             --set workflow.name="{name}" \\
@@ -799,8 +817,9 @@ def run_benchmark_and_capture_results(
             --set benchmark.rate="{benchmark_rate}" \\
             --set benchmark.data='{data_str}' \\
             | argo submit -
-        ''',
-        **kwargs)
+        """,
+        **kwargs,
+    )
     run("argo list -n {namespace}", **kwargs)
     run(f"argo logs -n {namespace} -f {name}", **kwargs)
 
@@ -811,4 +830,3 @@ def run_benchmark_and_capture_results(
     run(f"argo delete -n {namespace} {name}", **kwargs)
 
     return df_results
-

@@ -47,16 +47,26 @@ def install_argo():
         "shell": True,
     }
 
-    run('kubectl create namespace argo', **kwargs)
-    run('kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo/stable/manifests/install.yaml', **kwargs)
-    run('kubectl rollout status -n argo deployment/argo-server', **kwargs)
-    run('kubectl rollout status -n argo deployment/workflow-controller', **kwargs)
-    run('kubectl create rolebinding argo-default-admin --clusterrole=admin --serviceaccount=argo:default -n argo', **kwargs)
-    run('kubectl create rolebinding argo-seldon-workflow --clusterrole=seldon-manager-role-seldon-system --serviceaccount=argo:default -n argo', **kwargs)
-    run('kubectl apply -n argo -f ../resources/argo-configmap.yaml', **kwargs)
+    run("kubectl create namespace argo", **kwargs)
+    run(
+        "kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo/stable/manifests/install.yaml",
+        **kwargs,
+    )
+    run("kubectl rollout status -n argo deployment/argo-server", **kwargs)
+    run("kubectl rollout status -n argo deployment/workflow-controller", **kwargs)
+    run(
+        "kubectl create rolebinding argo-default-admin --clusterrole=admin --serviceaccount=argo:default -n argo",
+        **kwargs,
+    )
+    run(
+        "kubectl create rolebinding argo-seldon-workflow --clusterrole=seldon-manager-role-seldon-system --serviceaccount=argo:default -n argo",
+        **kwargs,
+    )
+    run("kubectl apply -n argo -f ../resources/argo-configmap.yaml", **kwargs)
+
 
 def delete_argo():
-    run('kubectl delete namespace argo', check=True, shell=True)
+    run("kubectl delete namespace argo", check=True, shell=True)
 
 
 @pytest.fixture()
