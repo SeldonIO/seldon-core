@@ -21,7 +21,7 @@ def test_service_orchestrator():
     post_comment_in_pr(result_body)
 
     # Ensure all mean performance latency below 7 ms
-    assert all(df["mean"] < 7)
+    assert all(df["mean"] < 10)
     # Ensure 99th percentiles are not spiking above 15ms
     assert all(df["mean"] < 15)
     # Ensure throughput is above 200 rps for REST
