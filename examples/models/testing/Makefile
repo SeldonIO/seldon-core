@@ -20,11 +20,11 @@ kind_load_%:
 
 
 .PHONY: run_build_all
-run_build_all: build_predict
+run_build_all: build_predict build_predict_raw
 
 .PHONY: run_push_all
-run_push_all: push_predict
+run_push_all: push_predict push_predict_raw
 
 .PHONY: run_kind_load_all
-run_kind_load_all: kind_load_predict
+run_kind_load_all: kind_load_predict kind_load_predict_raw
 
