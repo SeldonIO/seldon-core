@@ -25,9 +25,9 @@ def test_service_orchestrator():
     # Ensure 99th percentiles are not spiking above 15ms
     assert all(df["mean"] < 15)
     # Ensure throughput is above 200 rps for REST
-    assert all(df[df["apiType"] == "rest"]["throughputAchieved"] > 150)
+    assert all(df[df["apiType"] == "rest"]["throughputAchieved"] > 140)
     # Ensure throughput is above 250 rps for GRPC
-    assert all(df[df["apiType"] == "grpc"]["throughputAchieved"] > 180)
+    assert all(df[df["apiType"] == "grpc"]["throughputAchieved"] > 160)
     # Validate latenc added by adding service orchestrator is lower than 4ms
     assert all(
         (
