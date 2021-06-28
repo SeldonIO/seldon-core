@@ -140,6 +140,12 @@ RUN wget https://github.com/argoproj/argo-workflows/releases/download/v3.0.8/arg
     chmod a+x argo && \
     mv argo /usr/local/bin/argo
 
+# Installing jx
+RUN wget https://github.com/jenkins-x/jx-cli/releases/download/v3.1.242/jx-cli-linux-amd64.tar.gz && \
+    tar -zxvf jx-cli-linux-amd64.tar.gz && \
+    chmod a+x jx && \
+    mv jx /usr/local/bin/jx
+
 WORKDIR /work
 
 # Define default command.
