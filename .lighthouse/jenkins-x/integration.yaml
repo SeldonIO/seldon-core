@@ -37,11 +37,11 @@ spec:
             requests:
               cpu: 3
               memory: 8000Mi
-              ephemeral-storage: "100Gi"
+              ephemeral-storage: "150Gi"
             limits:
               cpu: 3
               memory: 8000Mi
-              ephemeral-storage: "100Gi"
+              ephemeral-storage: "150Gi"
           securityContext:
             privileged: true
           imagePullPolicy: Always
@@ -56,7 +56,14 @@ spec:
               type: Directory
           - name: dind-storage
             emptyDir: {}
-  podTemplate: {}
+  podTemplate:
+    nodeSelector:
+      cloud.google.com/gke-nodepool: general-pipelines-pool
+    tolerations:
+    - key: job-type
+      operator: Equals
+      value: general
+      effect: NoSchedule
   serviceAccountName: tekton-bot
   timeout: 6h0m0s
 status: {}

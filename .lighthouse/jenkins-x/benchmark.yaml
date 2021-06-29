@@ -33,6 +33,15 @@ spec:
             name: cgroup
           - name: dind-storage
             mountPath: /var/lib/docker
+          resources:
+            requests:
+              cpu: 4
+              memory: 10000Mi
+              ephemeral-storage: "150Gi"
+            limits:
+              cpu: 4
+              memory: 10000Mi
+              ephemeral-storage: "150Gi"
           securityContext:
             privileged: true
           imagePullPolicy: Always
@@ -49,10 +58,11 @@ spec:
             emptyDir: {}
   podTemplate:
     nodeSelector:
-      cloud.google.com/gke-nodepool: benchmark-pool
+      cloud.google.com/gke-nodepool: benchmark-pipelines-pool
     tolerations:
     - key: job-type
-      operator: Exists
+      operator: Equals
+      value: benchmark
       effect: NoSchedule
   serviceAccountName: tekton-bot
   timeout: 6h0m0s
