@@ -45,13 +45,6 @@ spec:
           securityContext:
             privileged: true
           imagePullPolicy: Always
-        nodeSelector:
-          cloud.google.com/gke-nodepool: benchmark-pool
-        tolerations:
-        - key: job-type
-          operator: Equal
-          value: benchmark
-          effect: NoSchedule
         volumes:
           - name: modules
             hostPath:
@@ -63,7 +56,14 @@ spec:
               type: Directory
           - name: dind-storage
             emptyDir: {}
-  podTemplate: {}
+  podTemplate:
+    nodeSelector:
+      cloud.google.com/gke-nodepool: benchmark-pool
+    tolerations:
+    - key: job-type
+      operator: Equal
+      value: benchmark
+      effect: NoSchedule
   serviceAccountName: tekton-bot
   timeout: 6h0m0s
 status: {}
