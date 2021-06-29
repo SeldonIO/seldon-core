@@ -36,7 +36,7 @@ spec:
           resources:
             requests:
               cpu: 7
-              memory: 30000Mi
+              memory: 10000Mi
               ephemeral-storage: "150Gi"
           securityContext:
             privileged: true
