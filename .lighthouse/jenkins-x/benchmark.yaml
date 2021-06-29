@@ -61,8 +61,7 @@ spec:
       cloud.google.com/gke-nodepool: benchmark-pool
     tolerations:
     - key: job-type
-      operator: Equal
-      value: benchmark
+      operator: Exists
       effect: NoSchedule
   serviceAccountName: tekton-bot
   timeout: 6h0m0s
