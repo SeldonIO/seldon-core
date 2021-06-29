@@ -2,11 +2,11 @@ apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
   creationTimestamp: null
-  name: integration
+  name: benchmark
 spec:
   pipelineSpec:
     tasks:
-    - name: integration-test-task
+    - name: benchmark-test-task
       taskSpec:
         stepTemplate:
           name: ""
@@ -14,11 +14,11 @@ spec:
         steps:
         - image: uses:jenkins-x/jx3-pipeline-catalog/tasks/git-clone/git-clone-pr.yaml@versionStream
           name: ""
-        - name: integration-step
-          image: seldonio/core-builder:0.20
+        - name: benchmark-step
+          image: seldonio/core-builder:0.21
           env:
             - name: SELDON_E2E_TESTS_TO_RUN
-              value: base
+              value: benchmark
             - name: SELDON_E2E_TESTS_POD_INFORMATION
               value: "true"
           command:
@@ -35,12 +35,12 @@ spec:
             mountPath: /var/lib/docker
           resources:
             requests:
-              cpu: 3
-              memory: 8000Mi
+              cpu: 4
+              memory: 10000Mi
               ephemeral-storage: "150Gi"
             limits:
-              cpu: 3
-              memory: 8000Mi
+              cpu: 4
+              memory: 10000Mi
               ephemeral-storage: "150Gi"
           securityContext:
             privileged: true
@@ -58,11 +58,11 @@ spec:
             emptyDir: {}
   podTemplate:
     nodeSelector:
-      cloud.google.com/gke-nodepool: general-pipelines-pool
+      cloud.google.com/gke-nodepool: benchmark-pipelines-pool
     tolerations:
     - key: job-type
       operator: Equal
-      value: general
+      value: benchmark
       effect: NoSchedule
   serviceAccountName: tekton-bot
   timeout: 6h0m0s
