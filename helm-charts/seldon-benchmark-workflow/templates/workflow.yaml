@@ -388,7 +388,7 @@ spec:
                 attack \
                 -duration="{{`{{inputs.parameters.duration}}`}}" \
                 -rate="{{`{{inputs.parameters.rate}}`}}" \
-                -workers="{{`{{inputs.parameters.concurrency}}`}}" \
+                -max-connections="{{`{{inputs.parameters.concurrency}}`}}" \
                 -max-workers="{{`{{inputs.parameters.concurrency}}`}}" \
                 -format=json \
           | vegeta \
