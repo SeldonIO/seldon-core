@@ -268,7 +268,7 @@ class SeldonModelGRPC:
         raise NotImplementedError("GraphMetadata not available on the Model level.")
 
 
-def get_grpc_server(user_model, seldon_metrics, annotations={}, trace_interceptor=None):
+def get_grpc_server(user_model, seldon_metrics, annotations={}, trace_interceptor=None, num_threads=1):
     seldon_model = SeldonModelGRPC(user_model, seldon_metrics)
     options = []
     if ANNOTATION_GRPC_MAX_MSG_SIZE in annotations:
@@ -278,7 +278,7 @@ def get_grpc_server(user_model, seldon_metrics, annotations={}, trace_intercepto
         options.append(("grpc.max_send_message_length", max_msg))
         options.append(("grpc.max_receive_message_length", max_msg))
 
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options=options)
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=num_threads), options=options)
 
     if trace_interceptor:
         from grpc_opentracing.grpcext import intercept_server
