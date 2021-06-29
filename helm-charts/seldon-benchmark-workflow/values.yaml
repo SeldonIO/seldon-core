@@ -17,6 +17,10 @@ seldonDeployment:
   image:
   # Prepackaged model server to use [see https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html]
   server: CUSTOM_SERVER
+  # The name of the model in the graph as well as the name of the model in tf / kf protocol
+  modelName: classifier
+  # The schema protocol to use which would be dependent on data
+  protocol: seldon
   # The URL for the model that is to be used
   modelUri:
   # The API Type (REST vs GRPC)

@@ -20,7 +20,7 @@ spec:
         arguments:
           parameters:
           - name: listitem
-            value: "{{`{{item.name}}`}}"
+            value: "{{`{{item.iteration_name}}`}}"
           - name: replicas
             value: "{{`{{item.replicas}}`}}"
           - name: serverWorkers
@@ -84,7 +84,7 @@ spec:
         template: create-seldon-resource-template
         arguments:
           parameters:
-          - name: inparam
+          - name: iteration_name
             value: "{{`{{inputs.parameters.listitem}}`}}"
           - name: replicas
             value: "{{`{{inputs.parameters.replicas}}`}}"
@@ -124,14 +124,14 @@ spec:
         template: wait-seldon-resource-template
         arguments:
           parameters:
-          - name: inparam
+          - name: iteration_name
             value: "{{`{{inputs.parameters.listitem}}`}}"
     - - name: run-benchmark-rest
         template: run-benchmark-template-rest
         when: "{{`{{inputs.parameters.apiType}}`}} == rest"
         arguments:
           parameters:
-          - name: inparam
+          - name: iteration_name
             value: "{{`{{inputs.parameters.listitem}}`}}"
           - name: replicas
             value: "{{`{{inputs.parameters.replicas}}`}}"
@@ -172,7 +172,7 @@ spec:
         when: "{{`{{inputs.parameters.apiType}}`}} == grpc"
         arguments:
           parameters:
-          - name: inparam
+          - name: iteration_name
             value: "{{`{{inputs.parameters.listitem}}`}}"
           - name: replicas
             value: "{{`{{inputs.parameters.replicas}}`}}"
@@ -212,7 +212,7 @@ spec:
         template: delete-seldon-resource-template
         arguments:
           parameters:
-          - name: inparam
+          - name: iteration_name
             value: "{{`{{inputs.parameters.listitem}}`}}"
 
   - name: generate-parameters-template
@@ -248,9 +248,9 @@ spec:
 
         list_params = []
         for idx, param in enumerate(params):
-            name = "{{ .Values.seldonDeployment.name }}-" + str(idx)
+            iteration_name = "{{ .Values.seldonDeployment.name }}-" + str(idx)
             curr = {
-                "name": name,
+                "iteration_name": iteration_name,
                 "replicas": param[0],
                 "serverWorkers": param[1],
                 "serverThreads": param[2],
@@ -276,7 +276,7 @@ spec:
   - name: create-seldon-resource-template
     inputs:
       parameters:
-      - name: inparam
+      - name: iteration_name
       - name: replicas
       - name: serverWorkers
       - name: serverThreads
@@ -300,7 +300,7 @@ spec:
             apiVersion: machinelearning.seldon.io/v1
             kind: SeldonDeployment
             metadata:
-              name: "{{`{{inputs.parameters.inparam}}`}}"
+              name: "{{`{{inputs.parameters.iteration_name}}`}}"
               namespace: {{ .Values.workflow.namespace }}
               ownerReferences:
               - apiVersion: argoproj.io/v1alpha1
@@ -309,15 +309,16 @@ spec:
                 name: "{{`{{workflow.name}}`}}"
                 uid: "{{`{{workflow.uid}}`}}"
             spec:
-              name: "{{`{{inputs.parameters.inparam}}`}}"
+              name: "{{`{{inputs.parameters.iteration_name}}`}}"
               transport: "{{`{{inputs.parameters.apiType}}`}}"
+              protocol: {{ .Values.seldonDeployment.protocol }}
               predictors:
                 - annotations:
                     seldonio/no-engine: "{{`{{inputs.parameters.disableOrchestrator}}`}}"
                   componentSpecs:
                   - spec:
                       containers:
-                      - name: classifier
+                      - name: {{ .Values.seldonDeployment.modelName }}
                       {{- if .Values.benchmark.image }}
                         image: "{{`{{inputs.parameters.image}}`}}"
                       {{- end }}
@@ -343,26 +344,26 @@ spec:
                     {{- if .Values.seldonDeployment.modelUri }}
                     modelUri: {{`{{inputs.parameters.modelUri}}`}}
                     {{- end }}
-                    name: classifier
+                    name: {{ .Values.seldonDeployment.modelName }}
                   name: default
                   replicas: {{`{{inputs.parameters.replicas}}`}}
 
   - name: wait-seldon-resource-template
     inputs:
       parameters:
-      - name: inparam
+      - name: iteration_name
     script:
       image: bitnami/kubectl:1.17
       command: [bash]
       source: |
         sleep {{ .Values.seldonDeployment.waitTime }}
         kubectl rollout status \
-            deploy/$(kubectl get deploy -l seldon-deployment-id="{{`{{inputs.parameters.inparam}}`}}" -o jsonpath='{.items[0].metadata.name}')
+            deploy/$(kubectl get deploy -l seldon-deployment-id="{{`{{inputs.parameters.iteration_name}}`}}" -o jsonpath='{.items[0].metadata.name}')
 
   - name: run-benchmark-template-rest
     inputs:
       parameters:
-      - name: inparam
+      - name: iteration_name
       - name: replicas
       - name: serverWorkers
       - name: serverThreads
@@ -384,7 +385,13 @@ spec:
       image: {{ .Values.benchmark.restImage }}
       command: [sh]
       source: |
-        echo '{"method": "POST", "header": {"Content-Type": ["application/json"] }, "url": "http://{{ .Values.benchmark.host }}/seldon/{{ .Values.workflow.namespace }}/{{`{{inputs.parameters.inparam}}`}}/api/v1.0/predictions", "body": "{{ .Values.benchmark.data | b64enc }}" }' \
+        {{- if eq .Values.seldonDeployment.protocol "seldon" }}
+        echo '{"method": "POST", "header": {"Content-Type": ["application/json"] }, "url": "http://{{ .Values.benchmark.host }}/seldon/{{ .Values.workflow.namespace }}/{{`{{inputs.parameters.iteration_name}}`}}/api/v1.0/predictions", "body": "{{ .Values.benchmark.data | b64enc }}" }' \
+        {{- else if eq .Values.seldonDeployment.protocol "tensorflow" }}
+        echo '{"method": "POST", "header": {"Content-Type": ["application/json"] }, "url": "http://{{ .Values.benchmark.host }}/seldon/{{ .Values.workflow.namespace }}/{{`{{inputs.parameters.iteration_name}}`}}/v1/models/{{ .Values.seldonDeployment.modelName }}/:predict", "body": "{{ .Values.benchmark.data | b64enc }}" }' \
+        {{- else if eq .Values.seldonDeployment.protocol "kfserving" }}
+        echo '{"method": "POST", "header": {"Content-Type": ["application/json"] }, "url": "http://{{ .Values.benchmark.host }}/seldon/{{ .Values.workflow.namespace }}/{{`{{inputs.parameters.iteration_name}}`}}/v2/models/{{ .Values.seldonDeployment.modelName }}/infer", "body": "{{ .Values.benchmark.data | b64enc }}" }' \
+        {{- end }}
           | vegeta \
                 -cpus="{{`{{inputs.parameters.benchmarkCpu}}`}}" \
                 attack \
@@ -401,7 +408,7 @@ spec:
   - name: run-benchmark-template-grpc
     inputs:
       parameters:
-      - name: inparam
+      - name: iteration_name
       - name: replicas
       - name: serverWorkers
       - name: serverThreads
@@ -425,15 +432,23 @@ spec:
       source: |
         ghz \
             --insecure \
+        {{- if eq .Values.seldonDeployment.protocol "seldon" }}
             --proto /proto/prediction.proto \
             --call seldon.protos.Seldon/Predict \
+        {{- else if eq .Values.seldonDeployment.protocol "tensorflow" }}
+            --proto /proto/prediction_service.proto \
+            --call tensorflow.serving.PredictionService/Predict \
+        {{- else if eq .Values.seldonDeployment.protocol "kfserving" }}
+            --proto /proto/grpc_service.proto \
+            --call inference.GRPCInferenceService/ModelInfer \
+        {{- end }}
             --data='{{ .Values.benchmark.data }}' \
             --qps="{{`{{inputs.parameters.rate}}`}}" \
             --cpus="{{`{{inputs.parameters.benchmarkCpu}}`}}" \
             --duration="{{`{{inputs.parameters.duration}}`}}" \
             --concurrency="{{`{{inputs.parameters.concurrency}}`}}" \
             --format json \
-            --metadata='{"seldon": "{{`{{inputs.parameters.inparam}}`}}", "namespace": "{{ .Values.workflow.namespace }}"}' \
+            --metadata='{"seldon": "{{`{{inputs.parameters.iteration_name}}`}}", "namespace": "{{ .Values.workflow.namespace }}"}' \
             {{ .Values.benchmark.host }} \
         | jq \
           -c \
@@ -443,10 +458,10 @@ spec:
   - name: delete-seldon-resource-template
     inputs:
       parameters:
-      - name: inparam
+      - name: iteration_name
     script:
       image: bitnami/kubectl:1.17
       command: [bash]
       source: |
-        kubectl delete sdep {{`{{inputs.parameters.inparam}}`}} -n {{ .Values.workflow.namespace }}
+        kubectl delete sdep {{`{{inputs.parameters.iteration_name}}`}} -n {{ .Values.workflow.namespace }}
 
