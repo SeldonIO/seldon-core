@@ -742,8 +742,9 @@ def parse_bench_results_from_log(
 
 
 def run_benchmark_and_capture_results(
-    name="seldon-batch-job",
+    name="seldon-benchmark",
     namespace="argo",
+    protocol="seldon",
     parallelism=BENCHMARK_PARALLELISM,
     replicas_list=["1"],
     server_workers_list=["5"],
@@ -800,6 +801,7 @@ def run_benchmark_and_capture_results(
             --set workflow.name="{name}" \\
             --set workflow.parallelism="{parallelism}" \\
             --set seldonDeployment.name="{name}-sdep" \\
+            --set seldonDeployment.protocol="{protocol}" \\
             --set seldonDeployment.replicas="{replicas}" \\
             --set seldonDeployment.serverWorkers="{server_workers}" \\
             --set seldonDeployment.serverThreads="{server_threads}" \\
