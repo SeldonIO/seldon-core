@@ -61,7 +61,7 @@ spec:
       cloud.google.com/gke-nodepool: benchmark-pipelines-pool
     tolerations:
     - key: job-type
-      operator: Equals
+      operator: Equal
       value: benchmark
       effect: NoSchedule
   serviceAccountName: tekton-bot
