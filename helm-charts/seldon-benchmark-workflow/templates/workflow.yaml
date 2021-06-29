@@ -324,6 +324,8 @@ spec:
                         env:
                         - name: GUNICORN_THREADS
                           value: "{{`{{inputs.parameters.serverThreads}}`}}"
+                        - name: GRPC_THREADS
+                          value: "{{`{{inputs.parameters.serverThreads}}`}}"
                         - name: GUNICORN_WORKERS
                           value: "{{`{{inputs.parameters.serverWorkers}}`}}"
                         {{- if eq .Values.seldonDeployment.enableResources "true" }}
