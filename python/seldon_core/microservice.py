@@ -327,7 +327,6 @@ def main():
         "--grpc-threads",
         type=int,
         default=os.environ.get("GRPC_THREADS", default="1"),
-        const=True,
         help="Number of gunicorn threads.",
     )
 
