@@ -258,7 +258,7 @@ def main():
     parser.add_argument(
         "--threads",
         type=int,
-        default=int(os.environ.get("GUNICORN_THREADS", "10")),
+        default=int(os.environ.get("GUNICORN_THREADS", "1")),
         help="Number of threads to run per Gunicorn worker.",
     )
     parser.add_argument(
@@ -321,6 +321,13 @@ def main():
         default=getenv_as_bool(GUNICORN_ACCESS_LOG_ENV, default=False),
         const=True,
         help="Enable gunicorn access log.",
+    )
+
+    parser.add_argument(
+        "--grpc-threads",
+        type=int,
+        default=os.environ.get("GRPC_THREADS", default="1"),
+        help="Number of gunicorn threads.",
     )
 
     args, remaining = parser.parse_known_args()
@@ -447,6 +454,7 @@ def main():
             seldon_metrics,
             annotations=annotations,
             trace_interceptor=interceptor,
+            num_threads=args.grpc_threads,
         )
 
         try:
