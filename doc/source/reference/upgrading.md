@@ -18,7 +18,10 @@ storageInitializer:
 ```
 and can be customised on per-deployment basis as described in [Prepackaged Model Servers](../servers/overview.md) documentation by setting value of `storageInitializerImage` variable in the graph definition.
 
-This transition requires **creation of the new secrets** for the prepackaged model servers that will be compatible with the rclone configuration format as described [here](../servers/overview.md#handling-credentials).
+This transition requires **creation of the new secrets** for the prepackaged model servers that will be compatible with the rclone configuration format as described [here](../servers/overview.md#handling-credentials). Read more:
+
+- [How to test new secret format](../examples/rclone-upgrade.html)
+- [Example cluster upgrade for AWS/MinIO configuration](../examples/global-rclone-upgrade.html)
 
 If you do not wish to configure these secrets now and wish to preserve prior behaviour you can opt for usage of previous storage initializer by using following helm value:
 ```yaml
