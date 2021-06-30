@@ -67,15 +67,15 @@ def test_python_wrapper_v1_vs_v2():
     result_body = ""
     result_body += "\n# Benchmark Python Wrapper V1 vs V2\n\n"
 
-    # df_pywrapper = run_benchmark_and_capture_results(
-    #    api_type_list=["rest", "grpc"],
-    #    protocol="seldon",
-    #    server_list=["SKLEARN_SERVER"],
-    #    benchmark_data={"data": {"ndarray": [[1, 2, 3, 4]]}},
-    # )
+    df_pywrapper = run_benchmark_and_capture_results(
+       api_type_list=["rest", "grpc"],
+       protocol="seldon",
+       server_list=["SKLEARN_SERVER"],
+       benchmark_data={"data": {"ndarray": [[1, 2, 3, 4]]}},
+    )
 
-    # result_body += "\n### Python V1 Wrapper Results table\n\n"
-    # result_body += str(df_pywrapper.to_markdown())
+    result_body += "\n### Python V1 Wrapper Results table\n\n"
+    result_body += str(df_pywrapper.to_markdown())
 
     # TODO: Validate equivallent of parallel workers in MLServer
     df_mlserver = run_benchmark_and_capture_results(
