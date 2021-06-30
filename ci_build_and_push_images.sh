@@ -71,7 +71,15 @@ function build_push_mock {
     make \
 	-C examples/models/mean_classifier \
 	build \
-	push
+	push && \
+    make \
+    -C testing/docker/echo-model \
+    build_image \
+    push_image && \
+    make \
+    -C testing/docker/fixed-model \
+    build_images \
+    push_images
     MOCK_MODEL_EXIT_VALUE=$?
 }
 

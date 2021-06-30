@@ -260,6 +260,23 @@ stringData:
   RCLONE_CONFIG_S3_ENDPOINT: http://minio.minio-system.svc.cluster.local:9000
 ```
 
+### Example AWS S3 with access key and secret
+
+Reference: [rclone documentation](https://rclone.org/s3/#amazon-s3)
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: seldon-rclone-secret
+type: Opaque
+stringData:
+  RCLONE_CONFIG_S3_TYPE: s3
+  RCLONE_CONFIG_S3_PROVIDER: aws
+  RCLONE_CONFIG_S3_ENV_AUTH: "false"
+  RCLONE_CONFIG_S3_ACCESS_KEY_ID: "<your AWS_ACCESS_KEY_ID here>"
+  RCLONE_CONFIG_S3_SECRET_ACCESS_KEY: "<your AWS_SECRET_ACCESS_KEY here>"
+```
 
 
 ### Example AWS S3 with IAM roles configuration
