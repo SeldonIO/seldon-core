@@ -1,11 +1,11 @@
 import json
 import logging
 
-import pandas as pd
 import numpy as np
+import pandas as pd
+import pytest
 import tensorflow as tf
 from google.protobuf import json_format
-import pytest
 
 from seldon_e2e_utils import post_comment_in_pr, run_benchmark_and_capture_results
 
@@ -111,7 +111,9 @@ def test_python_wrapper_v1_vs_v2_iris():
     result_body += f"* Mean latency MLServer lower than V1 Wrapper: {perf_mean}\n"
     perf_nth = all(df_pywrapper["99th"] > df_mlserver["99th"])
     result_body += f"* 99th latency MLServer lower than V1 Wrapper: {perf_nth}\n"
-    perf_rps = all(df_pywrapper["throughputAchieved"] < df_mlserver["throughputAchieved"])
+    perf_rps = all(
+        df_pywrapper["throughputAchieved"] < df_mlserver["throughputAchieved"]
+    )
     result_body += f"* Throughput MLServer larger than V1 Wrapper: {perf_rps}\n"
 
     result_body += "\n### Python V1 Wrapper Results table\n\n"
@@ -156,7 +158,7 @@ def test_v1_seldon_data_types():
         model_uri_list=[""],
         server_list=[""],
         benchmark_concurrency_list=benchmark_concurrency_list,
-        benchmark_data=data_ndarray
+        benchmark_data=data_ndarray,
     )
     df_tensor = run_benchmark_and_capture_results(
         api_type_list=["rest", "grpc"],
@@ -164,7 +166,7 @@ def test_v1_seldon_data_types():
         model_uri_list=[""],
         server_list=[""],
         benchmark_concurrency_list=benchmark_concurrency_list,
-        benchmark_data=data_tensor
+        benchmark_data=data_tensor,
     )
     df_tftensor = run_benchmark_and_capture_results(
         api_type_list=["rest", "grpc"],
@@ -172,7 +174,7 @@ def test_v1_seldon_data_types():
         model_uri_list=[""],
         server_list=[""],
         benchmark_concurrency_list=benchmark_concurrency_list,
-        benchmark_data=data_tftensor
+        benchmark_data=data_tftensor,
     )
 
     result_body = "# Benchmark results\n\n"
@@ -184,4 +186,3 @@ def test_v1_seldon_data_types():
     result_body += "\n### Results for TFTensor\n\n"
     result_body += str(df_tftensor.to_markdown())
     post_comment_in_pr(result_body)
-
