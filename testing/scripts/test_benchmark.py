@@ -103,7 +103,7 @@ def test_python_wrapper_v1_vs_v2():
                     "shape": [1, 4],
                     "contents": {"fp32_contents": [1, 2, 3, 4]},
                 }
-            ]
+            ],
         },
     )
 
