@@ -68,10 +68,10 @@ def test_python_wrapper_v1_vs_v2():
     result_body += "\n# Benchmark Python Wrapper V1 vs V2\n\n"
 
     df_pywrapper = run_benchmark_and_capture_results(
-       api_type_list=["rest", "grpc"],
-       protocol="seldon",
-       server_list=["SKLEARN_SERVER"],
-       benchmark_data={"data": {"ndarray": [[1, 2, 3, 4]]}},
+        api_type_list=["rest", "grpc"],
+        protocol="seldon",
+        server_list=["SKLEARN_SERVER"],
+        benchmark_data={"data": {"ndarray": [[1, 2, 3, 4]]}},
     )
 
     result_body += "\n### Python V1 Wrapper Results table\n\n"
