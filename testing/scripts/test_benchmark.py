@@ -156,7 +156,6 @@ def test_v1_seldon_data_types():
         model_uri_list=[""],
         server_list=[""],
         benchmark_concurrency_list=benchmark_concurrency_list,
-        disable_orchestrator_list=["false", "true"],
         benchmark_data=data_ndarray
     )
     df_tensor = run_benchmark_and_capture_results(
@@ -165,7 +164,6 @@ def test_v1_seldon_data_types():
         model_uri_list=[""],
         server_list=[""],
         benchmark_concurrency_list=benchmark_concurrency_list,
-        disable_orchestrator_list=["false", "true"],
         benchmark_data=data_tensor
     )
     df_tftensor = run_benchmark_and_capture_results(
@@ -174,7 +172,6 @@ def test_v1_seldon_data_types():
         model_uri_list=[""],
         server_list=[""],
         benchmark_concurrency_list=benchmark_concurrency_list,
-        disable_orchestrator_list=["false", "true"],
         benchmark_data=data_tftensor
     )
 

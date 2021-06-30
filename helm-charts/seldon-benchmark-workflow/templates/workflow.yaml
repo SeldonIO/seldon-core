@@ -459,7 +459,8 @@ spec:
         | jq \
           -c \
           'del(.histogram)|del(.details)' \
-        | jq -c ". += {\"params\": {{`{{inputs.parameters.params}}`}}}"
+        | jq -c ". += {\"params\": {{`{{inputs.parameters.params}}`}}}" \
+        | jq -c 'del(.options.data)'
 
   - name: delete-seldon-resource-template
     inputs:
