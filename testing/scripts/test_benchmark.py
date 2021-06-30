@@ -2,6 +2,9 @@ import json
 import logging
 
 import pandas as pd
+import numpy as np
+import tensorflow as tf
+from google.protobuf import json_format
 import pytest
 
 from seldon_e2e_utils import post_comment_in_pr, run_benchmark_and_capture_results
@@ -9,7 +12,7 @@ from seldon_e2e_utils import post_comment_in_pr, run_benchmark_and_capture_resul
 
 @pytest.mark.benchmark
 @pytest.mark.usefixtures("argo_worfklows")
-def test_service_orchestrator():
+def test_service_orchestrator_flowers():
 
     df = run_benchmark_and_capture_results(
         api_type_list=["rest", "grpc"],
@@ -24,8 +27,8 @@ def test_service_orchestrator():
     # Ensure 99th percentiles are not spiking above 15ms
     latency_nth = all(df["99th"] < 10)
     result_body += f"* All 99th performance latenc under 10ms: {latency_nth}\n"
-    # Ensure throughput is above 200 rps for REST
-    rps_rest = all(df[df["apiType"] == "rest"]["throughputAchieved"] > 200)
+    # Ensure throughput is above 180 rps for REST
+    rps_rest = all(df[df["apiType"] == "rest"]["throughputAchieved"] > 180)
     result_body += f"* REST throughput above 200rps: {rps_rest}\n"
     # Ensure throughput is above 250 rps for GRPC
     rps_grpc = all(df[df["apiType"] == "grpc"]["throughputAchieved"] > 250)
@@ -62,7 +65,7 @@ def test_service_orchestrator():
 
 @pytest.mark.benchmark
 @pytest.mark.usefixtures("argo_worfklows")
-def test_python_wrapper_v1_vs_v2():
+def test_python_wrapper_v1_vs_v2_iris():
 
     result_body = ""
     result_body += "\n# Benchmark Python Wrapper V1 vs V2\n\n"
@@ -73,9 +76,6 @@ def test_python_wrapper_v1_vs_v2():
         server_list=["SKLEARN_SERVER"],
         benchmark_data={"data": {"ndarray": [[1, 2, 3, 4]]}},
     )
-
-    result_body += "\n### Python V1 Wrapper Results table\n\n"
-    result_body += str(df_pywrapper.to_markdown())
 
     # TODO: Validate equivallent of parallel workers in MLServer
     df_mlserver = run_benchmark_and_capture_results(
@@ -107,7 +107,84 @@ def test_python_wrapper_v1_vs_v2():
         },
     )
 
+    perf_mean = all(df_pywrapper["mean"] > df_mlserver["mean"])
+    result_body += f"* Mean latency MLServer lower than V1 Wrapper: {perf_mean}\n"
+    perf_nth = all(df_pywrapper["99th"] > df_mlserver["99th"])
+    result_body += f"* 99th latency MLServer lower than V1 Wrapper: {perf_nth}\n"
+    perf_rps = all(df_pywrapper["throughputAchieved"] < df_mlserver["throughputAchieved"])
+    result_body += f"* Throughput MLServer larger than V1 Wrapper: {perf_rps}\n"
+
+    result_body += "\n### Python V1 Wrapper Results table\n\n"
+    result_body += str(df_pywrapper.to_markdown())
     result_body += "\n\n\n### Python V2 MLServer Results table\n\n"
     result_body += str(df_mlserver.to_markdown())
 
     post_comment_in_pr(result_body)
+
+    assert perf_mean
+    assert perf_nth
+    assert perf_rps
+
+
+@pytest.mark.benchmark
+@pytest.mark.usefixtures("argo_worfklows")
+def test_v1_seldon_data_types():
+
+    # 10000 element array
+    data_size = 10_000
+    data = [100.0] * data_size
+
+    benchmark_concurrency_list = ["1", "50", "150", "500", "1000"]
+
+    image_list = [
+        "seldonio/seldontest_predict:1.10.0-dev",
+        "seldonio/seldontest_predict_raw:1.10.0-dev",
+    ]
+
+    data_ndarray = {"data": {"ndarray": data}}
+    data_tensor = {"data": {"tensor": data, "shape": [1, data_size]}}
+
+    array = np.array(data)
+    tftensor_proto = tf.make_tensor_proto(array)
+    tftensor_json_str = json_format.MessageToJson(tftensor_proto)
+    tftensor_dict = json.loads(tftensor_json_str)
+    data_tftensor = {"data": {"tftensor": tftensor_dict}}
+
+    df_ndarray = run_benchmark_and_capture_results(
+        api_type_list=["rest", "grpc"],
+        image_list=image_list,
+        model_uri_list=[""],
+        server_list=[""],
+        benchmark_concurrency_list=benchmark_concurrency_list,
+        disable_orchestrator_list=["false", "true"],
+        benchmark_data=data_ndarray
+    )
+    df_tensor = run_benchmark_and_capture_results(
+        api_type_list=["rest", "grpc"],
+        image_list=image_list,
+        model_uri_list=[""],
+        server_list=[""],
+        benchmark_concurrency_list=benchmark_concurrency_list,
+        disable_orchestrator_list=["false", "true"],
+        benchmark_data=data_tensor
+    )
+    df_tftensor = run_benchmark_and_capture_results(
+        api_type_list=["rest", "grpc"],
+        image_list=image_list,
+        model_uri_list=[""],
+        server_list=[""],
+        benchmark_concurrency_list=benchmark_concurrency_list,
+        disable_orchestrator_list=["false", "true"],
+        benchmark_data=data_tftensor
+    )
+
+    result_body = "# Benchmark results\n\n"
+
+    result_body += "\n### Results for NDArray\n\n"
+    result_body += str(df_ndarray.to_markdown())
+    result_body += "\n### Results for Tensor\n\n"
+    result_body += str(df_tensor.to_markdown())
+    result_body += "\n### Results for TFTensor\n\n"
+    result_body += str(df_tftensor.to_markdown())
+    post_comment_in_pr(result_body)
+

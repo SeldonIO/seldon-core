@@ -751,6 +751,7 @@ def run_benchmark_and_capture_results(
     server_workers_list=["5"],
     server_threads_list=["1"],
     model_uri_list=["gs://seldon-models/sklearn/iris"],
+    image_list=[""],
     server_list=["SKLEARN_SERVER"],
     api_type_list=["rest"],
     requests_cpu_list=["2000Mi"],
@@ -789,6 +790,7 @@ def run_benchmark_and_capture_results(
     server_workers = delim.join(server_workers_list)
     server_threads = delim.join(server_threads_list)
     model_uri = delim.join(model_uri_list)
+    image = delim.join(image_list)
     server = delim.join(server_list)
     api_type = delim.join(api_type_list)
     requests_cpu = delim.join(requests_cpu_list)
@@ -820,6 +822,7 @@ def run_benchmark_and_capture_results(
             --set seldonDeployment.serverThreads="{server_threads}" \\
             --set seldonDeployment.modelUri="{model_uri}" \\
             --set seldonDeployment.server="{server}" \\
+            --set seldonDeployment.image="{image}" \\
             --set seldonDeployment.apiType="{api_type}" \\
             --set seldonDeployment.requests.cpu="{requests_cpu}" \\
             --set seldonDeployment.requests.memory="{requests_memory}" \\

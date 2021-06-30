@@ -16,7 +16,7 @@ seldonDeployment:
   # Image parameter to use in addition or alternative to prepackaged server
   image:
   # Prepackaged model server to use [see https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html]
-  server: CUSTOM_SERVER
+  server:
   # The name of the model in the graph as well as the name of the model in tf / kf protocol
   modelName: classifier
   # The schema protocol to use which would be dependent on data

@@ -318,7 +318,7 @@ spec:
                   - spec:
                       containers:
                       - name: {{ .Values.seldonDeployment.modelName }}
-                      {{- if .Values.benchmark.image }}
+                      {{- if .Values.seldonDeployment.image }}
                         image: "{{`{{inputs.parameters.image}}`}}"
                       {{- end }}
                         env:
@@ -339,7 +339,9 @@ spec:
                         {{- end }}
                   graph:
                     children: []
+                    {{- if .Values.seldonDeployment.server }}
                     implementation: {{`{{inputs.parameters.server}}`}}
+                    {{- end }}
                     {{- if .Values.seldonDeployment.modelUri }}
                     modelUri: {{`{{inputs.parameters.modelUri}}`}}
                     {{- end }}
@@ -450,6 +452,7 @@ spec:
             --cpus="{{`{{inputs.parameters.benchmarkCpu}}`}}" \
             --duration="{{`{{inputs.parameters.duration}}`}}" \
             --concurrency="{{`{{inputs.parameters.concurrency}}`}}" \
+            --connections="{{`{{inputs.parameters.concurrency}}`}}" \
             --format json \
             --metadata='{"seldon": "{{`{{inputs.parameters.iteration_name}}`}}", "namespace": "{{ .Values.workflow.namespace }}"}' \
             {{ .Values.benchmark.host }} \
