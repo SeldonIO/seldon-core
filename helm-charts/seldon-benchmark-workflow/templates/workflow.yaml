@@ -245,7 +245,6 @@ spec:
             "{{ .Values.seldonDeployment.disableOrchestrator }}".split(delim),
         )
 
-
         list_params = []
         for idx, param in enumerate(params):
             iteration_name = "{{ .Values.seldonDeployment.name }}-" + str(idx)
@@ -442,8 +441,12 @@ spec:
             --proto /proto/grpc_service.proto \
             --call inference.GRPCInferenceService/ModelInfer \
         {{- end }}
+        {{- if .Values.benchmark.grpcDataOverride }}
+            --data='{{ .Values.benchmark.grpcDataOverride }}' \
+        {{- else }}
             --data='{{ .Values.benchmark.data }}' \
-            --qps="{{`{{inputs.parameters.rate}}`}}" \
+        {{- end }}
+            --rps="{{`{{inputs.parameters.rate}}`}}" \
             --cpus="{{`{{inputs.parameters.benchmarkCpu}}`}}" \
             --duration="{{`{{inputs.parameters.duration}}`}}" \
             --concurrency="{{`{{inputs.parameters.concurrency}}`}}" \
