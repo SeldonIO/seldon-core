@@ -745,6 +745,7 @@ def run_benchmark_and_capture_results(
     name="seldon-benchmark",
     namespace="argo",
     protocol="seldon",
+    model_name="classifier",
     parallelism=BENCHMARK_PARALLELISM,
     replicas_list=["1"],
     server_workers_list=["5"],
@@ -762,8 +763,10 @@ def run_benchmark_and_capture_results(
     benchmark_duration_list=["30s"],
     benchmark_rate_list=["0"],
     benchmark_data={"data": {"ndarray": [[1, 2, 3, 4]]}},
+    benchmark_grpc_data_override="",
 ):
 
+    # Helm chart command requires escaped commas and brackets
     data_str = (
         json.dumps(benchmark_data)
         .replace("{", "\\{")
@@ -771,6 +774,15 @@ def run_benchmark_and_capture_results(
         .replace(",", "\\,")
     )
 
+    if benchmark_grpc_data_override:
+        benchmark_grpc_data_override = (
+            json.dumps(benchmark_grpc_data_override)
+            .replace("{", "\\{")
+            .replace("}", "\\}")
+            .replace(",", "\\,")
+        )
+
+    # Default delimiter in helm chart is pipe
     delim = "|"
 
     replicas = delim.join(replicas_list)
@@ -801,6 +813,7 @@ def run_benchmark_and_capture_results(
             --set workflow.name="{name}" \\
             --set workflow.parallelism="{parallelism}" \\
             --set seldonDeployment.name="{name}-sdep" \\
+            --set seldonDeployment.modelName="{model_name}" \\
             --set seldonDeployment.protocol="{protocol}" \\
             --set seldonDeployment.replicas="{replicas}" \\
             --set seldonDeployment.serverWorkers="{server_workers}" \\
@@ -818,6 +831,7 @@ def run_benchmark_and_capture_results(
             --set benchmark.duration="{benchmark_duration}" \\
             --set benchmark.rate="{benchmark_rate}" \\
             --set benchmark.data='{data_str}' \\
+            --set benchmark.grpcDataOverride='{benchmark_grpc_data_override}' \\
             | argo submit -
         """,
         **kwargs,

@@ -67,28 +67,47 @@ def test_python_wrapper_v1_vs_v2():
     result_body = ""
     result_body += "\n# Benchmark Python Wrapper V1 vs V2\n\n"
 
-    df_pywrapper = run_benchmark_and_capture_results(
-        api_type_list=["rest", "grpc"],
-        protocol="seldon",
-        server_list=["SKLEARN_SERVER"],
-        benchmark_data={"data": {"ndarray": [[1, 2, 3, 4]]}},
-    )
+    # df_pywrapper = run_benchmark_and_capture_results(
+    #    api_type_list=["rest", "grpc"],
+    #    protocol="seldon",
+    #    server_list=["SKLEARN_SERVER"],
+    #    benchmark_data={"data": {"ndarray": [[1, 2, 3, 4]]}},
+    # )
 
-    result_body += "\n### Python V1 Wrapper Results table\n\n"
-    result_body += str(df_pywrapper.to_markdown())
+    # result_body += "\n### Python V1 Wrapper Results table\n\n"
+    # result_body += str(df_pywrapper.to_markdown())
 
     # TODO: Validate equivallent of parallel workers in MLServer
     df_mlserver = run_benchmark_and_capture_results(
         api_type_list=["rest", "grpc"],
+        model_name="classifier",
         protocol="kfserving",
         server_list=["SKLEARN_SERVER"],
         model_uri_list=["gs://seldon-models/sklearn/iris-0.23.2/lr_model"],
-        benchmark_data={"inputs": [{"name": "input0", "data": [1, 2, 3, 4]}]},
+        benchmark_data={
+            "inputs": [
+                {
+                    "name": "predict",
+                    "datatype": "FP32",
+                    "shape": [1, 4],
+                    "data": [[1, 2, 3, 4]],
+                }
+            ]
+        },
+        benchmark_grpc_data_override={
+            "model_name": "classifier",
+            "inputs": [
+                {
+                    "name": "predict",
+                    "datatype": "FP32",
+                    "shape": [1, 4],
+                    "contents": {"fp32_contents": [1, 2, 3, 4]},
+                }
+            ]
+        },
     )
 
     result_body += "\n\n\n### Python V2 MLServer Results table\n\n"
     result_body += str(df_mlserver.to_markdown())
 
     post_comment_in_pr(result_body)
-
-
