@@ -12,28 +12,22 @@ from seldon_e2e_utils import post_comment_in_pr, run_benchmark_and_capture_resul
 
 @pytest.mark.benchmark
 @pytest.mark.usefixtures("argo_worfklows")
-def test_service_orchestrator_flowers():
+def test_service_orchestrator():
+
+    data_size = 10_000
+    data = [100.0] * data_size
+
+    data_tensor = {"data": {"tensor": {"values": data, "shape": [1, data_size]}}}
 
     df = run_benchmark_and_capture_results(
         api_type_list=["rest", "grpc"],
         disable_orchestrator_list=["false", "true"],
+        image_list=["seldonio/seldontest_predict:1.10.0-dev"],
+        benchmark_data=data_tensor
     )
 
     result_body = "# Benchmark results\n\n"
 
-    # Ensure all mean performance latency below 5 ms
-    latency_mean = all(df["mean"] < 5)
-    result_body += f"* All mean performance latency under 5ms: {latency_mean}\n"
-    # Ensure 99th percentiles are not spiking above 15ms
-    latency_nth = all(df["99th"] < 10)
-    result_body += f"* All 99th performance latenc under 10ms: {latency_nth}\n"
-    # Ensure throughput is above 180 rps for REST
-    rps_rest = all(df[df["apiType"] == "rest"]["throughputAchieved"] > 180)
-    result_body += f"* REST throughput above 200rps: {rps_rest}\n"
-    # Ensure throughput is above 250 rps for GRPC
-    rps_grpc = all(df[df["apiType"] == "grpc"]["throughputAchieved"] > 250)
-    result_body += f"* GRPC throughput above 250rps: {rps_grpc}\n"
-    # Validate latenc added by adding service orchestrator is lower than 4ms
     orch_mean = all(
         (
             df[df["disableOrchestrator"] == "true"]["mean"].values
@@ -41,13 +35,13 @@ def test_service_orchestrator_flowers():
         )
         < 2
     )
-    result_body += f"* Orch added mean latency under 2ms: {orch_mean}\n"
+    result_body += f"* Orch added mean latency under 4ms: {orch_mean}\n"
     orch_nth = all(
         (
             df[df["disableOrchestrator"] == "true"]["99th"].values
             - df[df["disableOrchestrator"] == "false"]["99th"].values
         )
-        < 2
+        < 4
     )
     result_body += f"* Orch added 99th latency under 2ms: {orch_nth}\n"
 
@@ -55,10 +49,6 @@ def test_service_orchestrator_flowers():
     result_body += str(df.to_markdown())
     post_comment_in_pr(result_body)
 
-    assert latency_mean
-    assert latency_nth
-    assert rps_rest
-    assert rps_grpc
     assert orch_mean
     assert orch_nth
 
@@ -74,8 +64,24 @@ def test_python_wrapper_v1_vs_v2_iris():
         api_type_list=["rest", "grpc"],
         protocol="seldon",
         server_list=["SKLEARN_SERVER"],
+        model_uri_list=["gs://seldon-models/sklearn/iris"],
         benchmark_data={"data": {"ndarray": [[1, 2, 3, 4]]}},
     )
+
+    # Python V1 Wrapper Validations
+    # Ensure all mean performance latency below 5 ms
+    v1_latency_mean = all(df_pywrapper["mean"] < 5)
+    result_body += f"* V1 mean performance latency under 5ms: {v1_latency_mean}\n"
+    # Ensure 99th percentiles are not spiking above 15ms
+    v1_latency_nth = all(df_pywrapper["99th"] < 10)
+    result_body += f"* V1 99th performance latenc under 10ms: {v1_latency_nth}\n"
+    # Ensure throughput is above 180 rps for REST
+    v1_rps_rest = all(df_pywrapper[df_pywrapper["apiType"] == "rest"]["throughputAchieved"] > 180)
+    result_body += f"* V1 throughput above 180rps: {v1_rps_rest}\n"
+    # Ensure throughput is above 250 rps for GRPC
+    v1_rps_grpc = all(df_pywrapper[df_pywrapper["apiType"] == "grpc"]["throughputAchieved"] > 250)
+    result_body += f"* V1 throughput above 250rps: {v1_rps_grpc}\n"
+    # Validate latenc added by adding service orchestrator is lower than 4ms
 
     # TODO: Validate equivallent of parallel workers in MLServer
     df_mlserver = run_benchmark_and_capture_results(
@@ -107,6 +113,24 @@ def test_python_wrapper_v1_vs_v2_iris():
         },
     )
 
+    # Python V1 Wrapper Validations
+
+    # Ensure all mean performance latency below 5 ms
+    v2_latency_mean = all(df_mlserver["mean"] < 5)
+    result_body += f"* V2 mean performance latency under 5ms: {v2_latency_mean}\n"
+    # Ensure 99th percentiles are not spiking above 15ms
+    v2_latency_nth = all(df_mlserver["99th"] < 10)
+    result_body += f"* V2 99th performance latenc under 10ms: {v2_latency_nth}\n"
+    # Ensure throughput is above 180 rps for REST
+    v2_rps_rest = all(df_mlserver[df_mlserver["apiType"] == "rest"]["throughputAchieved"] > 250)
+    result_body += f"* V2 REST throughput above 250rps: {v2_rps_rest}\n"
+    # Ensure throughput is above 250 rps for GRPC
+    v2_rps_grpc = all(df_mlserver[df_mlserver["apiType"] == "grpc"]["throughputAchieved"] > 250)
+    result_body += f"* V2 throughput above 300rps: {v2_rps_grpc}\n"
+    # Validate latenc added by adding service orchestrator is lower than 4ms
+
+    # General comparisons
+
     perf_mean = all(df_pywrapper["mean"] > df_mlserver["mean"])
     result_body += f"* Mean latency MLServer lower than V1 Wrapper: {perf_mean}\n"
     perf_nth = all(df_pywrapper["99th"] > df_mlserver["99th"])
@@ -123,6 +147,14 @@ def test_python_wrapper_v1_vs_v2_iris():
 
     post_comment_in_pr(result_body)
 
+    assert v1_latency_mean
+    assert v1_latency_nth
+    assert v1_rps_rest
+    assert v1_rps_grpc
+    assert v2_latency_mean
+    assert v2_latency_nth
+    assert v2_rps_rest
+    assert v2_rps_grpc
     assert perf_mean
     assert perf_nth
     assert perf_rps
@@ -136,15 +168,12 @@ def test_v1_seldon_data_types():
     data_size = 10_000
     data = [100.0] * data_size
 
-    benchmark_concurrency_list = ["1", "50", "150", "500", "1000"]
+    benchmark_concurrency_list = ["1", "50", "150"]
 
-    image_list = [
-        "seldonio/seldontest_predict:1.10.0-dev",
-        "seldonio/seldontest_predict_raw:1.10.0-dev",
-    ]
+    image_list = ["seldonio/seldontest_predict:1.10.0-dev"]
 
     data_ndarray = {"data": {"ndarray": data}}
-    data_tensor = {"data": {"tensor": data, "shape": [1, data_size]}}
+    data_tensor = {"data": {"tensor": {"values": data, "shape": [1, data_size]}}}
 
     array = np.array(data)
     tftensor_proto = tf.make_tensor_proto(array)
@@ -155,24 +184,18 @@ def test_v1_seldon_data_types():
     df_ndarray = run_benchmark_and_capture_results(
         api_type_list=["rest", "grpc"],
         image_list=image_list,
-        model_uri_list=[""],
-        server_list=[""],
         benchmark_concurrency_list=benchmark_concurrency_list,
         benchmark_data=data_ndarray,
     )
     df_tensor = run_benchmark_and_capture_results(
         api_type_list=["rest", "grpc"],
         image_list=image_list,
-        model_uri_list=[""],
-        server_list=[""],
         benchmark_concurrency_list=benchmark_concurrency_list,
         benchmark_data=data_tensor,
     )
     df_tftensor = run_benchmark_and_capture_results(
         api_type_list=["rest", "grpc"],
         image_list=image_list,
-        model_uri_list=[""],
-        server_list=[""],
         benchmark_concurrency_list=benchmark_concurrency_list,
         benchmark_data=data_tftensor,
     )
