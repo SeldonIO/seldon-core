@@ -29,7 +29,7 @@ def test_service_orchestrator():
     )
     df = df.sort_values(sort_by)
 
-    result_body = "# Benchmark results\n\n"
+    result_body = "# Benchmark results - Testing Service Orchestrator\n\n"
 
     orch_mean = all(
         (
@@ -64,13 +64,15 @@ def test_python_wrapper_v1_vs_v2_iris():
     benchmark_concurrency_list = ["1", "50", "150"]
 
     result_body = ""
-    result_body += "\n# Benchmark Python Wrapper V1 vs V2\n\n"
+    result_body += "\n# Benchmark Results - Python Wrapper V1 vs V2\n\n"
 
+    # Using single worker as fastapi also uses single worker
     df_pywrapper = run_benchmark_and_capture_results(
         api_type_list=["rest", "grpc"],
         protocol="seldon",
         server_list=["SKLEARN_SERVER"],
         benchmark_concurrency_list=benchmark_concurrency_list,
+        server_workers_list=["1"],
         model_uri_list=["gs://seldon-models/sklearn/iris"],
         benchmark_data={"data": {"ndarray": [[1, 2, 3, 4]]}},
     )
@@ -159,12 +161,10 @@ def test_python_wrapper_v1_vs_v2_iris():
 
     # General comparisons
 
-    perf_mean = all(df_pywrapper["mean"] > df_mlserver["mean"])
+    perf_mean = all(df_pywrapper["mean"].values > df_mlserver["mean"].values)
     result_body += f"* Mean latency MLServer lower than V1 Wrapper: {perf_mean}\n"
-    perf_nth = all(df_pywrapper["99th"] > df_mlserver["99th"])
-    result_body += f"* 99th latency MLServer lower than V1 Wrapper: {perf_nth}\n"
     perf_rps = all(
-        df_pywrapper["throughputAchieved"] < df_mlserver["throughputAchieved"]
+        df_pywrapper["throughputAchieved"].values < df_mlserver["throughputAchieved"].values
     )
     result_body += f"* Throughput MLServer larger than V1 Wrapper: {perf_rps}\n"
 
@@ -184,7 +184,6 @@ def test_python_wrapper_v1_vs_v2_iris():
     assert v2_rps_rest
     assert v2_rps_grpc
     assert perf_mean
-    assert perf_nth
     assert perf_rps
 
 
@@ -235,7 +234,7 @@ def test_v1_seldon_data_types():
     )
     df_tftensor = df_tftensor.sort_values(sort_by)
 
-    result_body = "# Benchmark results\n\n"
+    result_body = "# Benchmark results - Testing Seldon V1 Data Types\n\n"
 
     result_body += "\n### Results for NDArray\n\n"
     result_body += str(df_ndarray.to_markdown())
