@@ -33,10 +33,10 @@ def test_service_orchestrator():
 
     orch_mean = all(
         (
-            df[df["disableOrchestrator"] == "true"]["mean"].values
-            - df[df["disableOrchestrator"] == "false"]["mean"].values
+            df[df["disableOrchestrator"] == "false"]["mean"].values
+            - df[df["disableOrchestrator"] == "true"]["mean"].values
         )
-        < 2
+        < 4
     )
     result_body += f"* Orch added mean latency under 4ms: {orch_mean}\n"
     orch_nth = all(
@@ -44,9 +44,9 @@ def test_service_orchestrator():
             df[df["disableOrchestrator"] == "true"]["99th"].values
             - df[df["disableOrchestrator"] == "false"]["99th"].values
         )
-        < 4
+        < 10
     )
-    result_body += f"* Orch added 99th latency under 2ms: {orch_nth}\n"
+    result_body += f"* Orch added 99th latency under 10ms: {orch_nth}\n"
 
     result_body += "\n### Results table\n\n"
     result_body += str(df.to_markdown())

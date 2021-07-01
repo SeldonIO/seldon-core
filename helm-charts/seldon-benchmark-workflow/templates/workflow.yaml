@@ -313,7 +313,7 @@ spec:
               protocol: {{ .Values.seldonDeployment.protocol }}
               predictors:
                 - annotations:
-                    seldonio/no-engine: "{{`{{inputs.parameters.disableOrchestrator}}`}}"
+                    seldon.io/no-engine: "{{`{{inputs.parameters.disableOrchestrator}}`}}"
                   componentSpecs:
                   - spec:
                       containers:
