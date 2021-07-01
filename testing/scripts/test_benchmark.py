@@ -57,6 +57,8 @@ def test_service_orchestrator():
 @pytest.mark.usefixtures("argo_worfklows")
 def test_python_wrapper_v1_vs_v2_iris():
 
+    benchmark_concurrency_list = ["1", "50", "150"]
+
     result_body = ""
     result_body += "\n# Benchmark Python Wrapper V1 vs V2\n\n"
 
@@ -64,22 +66,24 @@ def test_python_wrapper_v1_vs_v2_iris():
         api_type_list=["rest", "grpc"],
         protocol="seldon",
         server_list=["SKLEARN_SERVER"],
+        benchmark_concurrency_list=benchmark_concurrency_list,
         model_uri_list=["gs://seldon-models/sklearn/iris"],
         benchmark_data={"data": {"ndarray": [[1, 2, 3, 4]]}},
     )
 
+    conc_idx = df_pywrapper["concurrency"] == 1
     # Python V1 Wrapper Validations
-    # Ensure all mean performance latency below 5 ms
-    v1_latency_mean = all(df_pywrapper["mean"] < 5)
-    result_body += f"* V1 mean performance latency under 5ms: {v1_latency_mean}\n"
+    # Ensure base mean performance latency below 5 ms
+    v1_latency_mean = all((df_pywrapper[conc_idx]["mean"] < 5))
+    result_body += f"* V1 base mean performance latency under 5ms: {v1_latency_mean}\n"
     # Ensure 99th percentiles are not spiking above 15ms
-    v1_latency_nth = all(df_pywrapper["99th"] < 10)
+    v1_latency_nth = all(df_pywrapper[conc_idx]["99th"] < 10)
     result_body += f"* V1 99th performance latenc under 10ms: {v1_latency_nth}\n"
     # Ensure throughput is above 180 rps for REST
-    v1_rps_rest = all(df_pywrapper[df_pywrapper["apiType"] == "rest"]["throughputAchieved"] > 180)
+    v1_rps_rest = all(df_pywrapper[df_pywrapper[conc_idx]["apiType"] == "rest"]["throughputAchieved"] > 180)
     result_body += f"* V1 throughput above 180rps: {v1_rps_rest}\n"
     # Ensure throughput is above 250 rps for GRPC
-    v1_rps_grpc = all(df_pywrapper[df_pywrapper["apiType"] == "grpc"]["throughputAchieved"] > 250)
+    v1_rps_grpc = all(df_pywrapper[df_pywrapper[conc_idx]["apiType"] == "grpc"]["throughputAchieved"] > 250)
     result_body += f"* V1 throughput above 250rps: {v1_rps_grpc}\n"
     # Validate latenc added by adding service orchestrator is lower than 4ms
 
@@ -90,6 +94,7 @@ def test_python_wrapper_v1_vs_v2_iris():
         protocol="kfserving",
         server_list=["SKLEARN_SERVER"],
         model_uri_list=["gs://seldon-models/sklearn/iris-0.23.2/lr_model"],
+        benchmark_concurrency_list=benchmark_concurrency_list,
         benchmark_data={
             "inputs": [
                 {
@@ -115,17 +120,18 @@ def test_python_wrapper_v1_vs_v2_iris():
 
     # Python V1 Wrapper Validations
 
+    conc_idx = df_mlserver["concurrency"] == 1
     # Ensure all mean performance latency below 5 ms
-    v2_latency_mean = all(df_mlserver["mean"] < 5)
+    v2_latency_mean = all(df_mlserver[conc_idx]["mean"] < 5)
     result_body += f"* V2 mean performance latency under 5ms: {v2_latency_mean}\n"
     # Ensure 99th percentiles are not spiking above 15ms
-    v2_latency_nth = all(df_mlserver["99th"] < 10)
+    v2_latency_nth = all(df_mlserver[conc_idx]["99th"] < 10)
     result_body += f"* V2 99th performance latenc under 10ms: {v2_latency_nth}\n"
     # Ensure throughput is above 180 rps for REST
-    v2_rps_rest = all(df_mlserver[df_mlserver["apiType"] == "rest"]["throughputAchieved"] > 250)
+    v2_rps_rest = all(df_mlserver[(df_mlserver["apiType"] == "rest") & conc_idx]["throughputAchieved"] > 250)
     result_body += f"* V2 REST throughput above 250rps: {v2_rps_rest}\n"
     # Ensure throughput is above 250 rps for GRPC
-    v2_rps_grpc = all(df_mlserver[df_mlserver["apiType"] == "grpc"]["throughputAchieved"] > 250)
+    v2_rps_grpc = all(df_mlserver[(df_mlserver["apiType"] == "grpc") & conc_idx]["throughputAchieved"] > 250)
     result_body += f"* V2 throughput above 300rps: {v2_rps_grpc}\n"
     # Validate latenc added by adding service orchestrator is lower than 4ms
 
