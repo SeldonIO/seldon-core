@@ -27,7 +27,7 @@ def test_service_orchestrator():
         image_list=["seldonio/seldontest_predict:1.10.0-dev"],
         benchmark_data=data_tensor,
     )
-    df.sort_values(*sort_by)
+    df.sort_values(sort_by)
 
     result_body = "# Benchmark results\n\n"
 
@@ -60,7 +60,7 @@ def test_service_orchestrator():
 @pytest.mark.usefixtures("argo_worfklows")
 def test_python_wrapper_v1_vs_v2_iris():
 
-    sort_by = "concurrency", "apiType"
+    sort_by = ["concurrency", "apiType"]
     benchmark_concurrency_list = ["1", "50", "150"]
 
     result_body = ""
@@ -74,7 +74,7 @@ def test_python_wrapper_v1_vs_v2_iris():
         model_uri_list=["gs://seldon-models/sklearn/iris"],
         benchmark_data={"data": {"ndarray": [[1, 2, 3, 4]]}},
     )
-    df_pywrapper.sort_values(*sort_by)
+    df_pywrapper.sort_values(sort_by)
 
     conc_idx = df_pywrapper["concurrency"] == 1
     # Python V1 Wrapper Validations
@@ -133,7 +133,7 @@ def test_python_wrapper_v1_vs_v2_iris():
         },
     )
     # First we sort the dataframes to ensure they are compared correctly
-    df_mlserver.sort_values(*sort_by)
+    df_mlserver.sort_values(sort_by)
 
     # Python V1 Wrapper Validations
 
@@ -217,7 +217,7 @@ def test_v1_seldon_data_types():
         benchmark_concurrency_list=benchmark_concurrency_list,
         benchmark_data=data_ndarray,
     )
-    df_ndarray.sort_values(*sort_by)
+    df_ndarray.sort_values(sort_by)
 
     df_tensor = run_benchmark_and_capture_results(
         api_type_list=["rest", "grpc"],
@@ -225,7 +225,7 @@ def test_v1_seldon_data_types():
         benchmark_concurrency_list=benchmark_concurrency_list,
         benchmark_data=data_tensor,
     )
-    df_tensor.sort_values(*sort_by)
+    df_tensor.sort_values(sort_by)
 
     df_tftensor = run_benchmark_and_capture_results(
         api_type_list=["rest", "grpc"],
@@ -233,7 +233,7 @@ def test_v1_seldon_data_types():
         benchmark_concurrency_list=benchmark_concurrency_list,
         benchmark_data=data_tftensor,
     )
-    df_tftensor.sort_values(*sort_by)
+    df_tftensor.sort_values(sort_by)
 
     result_body = "# Benchmark results\n\n"
 
