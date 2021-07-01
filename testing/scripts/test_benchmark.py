@@ -14,7 +14,7 @@ from seldon_e2e_utils import post_comment_in_pr, run_benchmark_and_capture_resul
 @pytest.mark.usefixtures("argo_worfklows")
 def test_service_orchestrator():
 
-    sort_by = ["apiType", "disableOrchestrator"]
+    sort_by = ["api_type", "disableOrchestrator"]
 
     data_size = 10_000
     data = [100.0] * data_size
@@ -60,7 +60,7 @@ def test_service_orchestrator():
 @pytest.mark.usefixtures("argo_worfklows")
 def test_python_wrapper_v1_vs_v2_iris():
 
-    sort_by = "concurrency", "apiType"
+    sort_by = "concurrency", "api_type"
     benchmark_concurrency_list = ["1", "50", "150"]
 
     result_body = ""
@@ -86,7 +86,7 @@ def test_python_wrapper_v1_vs_v2_iris():
     result_body += f"* V1 base 99th performance latenc under 10ms: {v1_latency_nth}\n"
     # Ensure throughput is above 180 rps for REST
     v1_rps_rest = all(
-        df_pywrapper[(df_pywrapper["apiType"] == "rest") & conc_idx][
+        df_pywrapper[(df_pywrapper["api_type"] == "rest") & conc_idx][
             "throughputAchieved"
         ]
         > 180
@@ -94,7 +94,7 @@ def test_python_wrapper_v1_vs_v2_iris():
     result_body += f"* V1 base throughput above 180rps: {v1_rps_rest}\n"
     # Ensure throughput is above 250 rps for GRPC
     v1_rps_grpc = all(
-        df_pywrapper[(df_pywrapper["apiType"] == "grpc") & conc_idx][
+        df_pywrapper[(df_pywrapper["api_type"] == "grpc") & conc_idx][
             "throughputAchieved"
         ]
         > 250
@@ -146,13 +146,13 @@ def test_python_wrapper_v1_vs_v2_iris():
     result_body += f"* V2 99th performance latenc under 10ms: {v2_latency_nth}\n"
     # Ensure throughput is above 180 rps for REST
     v2_rps_rest = all(
-        df_mlserver[(df_mlserver["apiType"] == "rest") & conc_idx]["throughputAchieved"]
+        df_mlserver[(df_mlserver["api_type"] == "rest") & conc_idx]["throughputAchieved"]
         > 250
     )
     result_body += f"* V2 REST throughput above 250rps: {v2_rps_rest}\n"
     # Ensure throughput is above 250 rps for GRPC
     v2_rps_grpc = all(
-        df_mlserver[(df_mlserver["apiType"] == "grpc") & conc_idx]["throughputAchieved"]
+        df_mlserver[(df_mlserver["api_type"] == "grpc") & conc_idx]["throughputAchieved"]
         > 250
     )
     result_body += f"* V2 throughput above 300rps: {v2_rps_grpc}\n"
@@ -192,7 +192,7 @@ def test_python_wrapper_v1_vs_v2_iris():
 @pytest.mark.usefixtures("argo_worfklows")
 def test_v1_seldon_data_types():
 
-    sort_by = ["concurrency", "apiType"]
+    sort_by = ["concurrency", "api_type"]
 
     # 10000 element array
     data_size = 10_000
