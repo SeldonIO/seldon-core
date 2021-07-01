@@ -11,6 +11,7 @@ from functools import partial
 from typing import Callable, Dict
 import contextlib
 import socket
+import multiprocessing
 
 from seldon_core import __version__
 from seldon_core import wrapper as seldon_microservice
@@ -329,7 +330,14 @@ def main():
         "--grpc-threads",
         type=int,
         default=os.environ.get("GRPC_THREADS", default="1"),
-        help="Number of gunicorn threads.",
+        help="Number of GRPC threads per worker.",
+    )
+    
+    parser.add_argument(
+        "--grpc-workers",
+        type=int,
+        default=os.environ.get("GRPC_WORKERS", default="1"),
+        help="Number of GPRC workers.",
     )
 
     args, remaining = parser.parse_known_args()
@@ -443,7 +451,7 @@ def main():
     def _wait_forever(server):
         try:
             while True:
-                time.sleep(_ONE_DAY.total_seconds())
+                time.sleep(60*60)
         except KeyboardInterrupt:
             server.stop(None)
 
