@@ -63,7 +63,7 @@ def start_servers(
     """
     p2 = None
     if target2:
-        p2 = mp.Process(target=target2, daemon=True)
+        p2 = mp.Process(target=target2, daemon=False)
         p2.start()
 
     p3 = None
