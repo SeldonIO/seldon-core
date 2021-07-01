@@ -504,7 +504,7 @@ def main():
             logger.info(f"GRPC Server Binding to '%s' {bind_address} with {args.workers} processes")
             sys.stdout.flush()
             workers = []
-            for _ in range(args.workers):
+            for _ in range(args.grpc_workers):
                 # NOTE: It is imperative that the worker subprocesses be forked before
                 # any gRPC servers start up. See
                 # https://github.com/grpc/grpc/issues/16001 for more details.
