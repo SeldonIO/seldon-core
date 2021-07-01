@@ -41,12 +41,20 @@ def test_service_orchestrator():
     result_body += f"* Orch added mean latency under 4ms: {orch_mean}\n"
     orch_nth = all(
         (
-            df[df["disableOrchestrator"] == "true"]["99th"].values
-            - df[df["disableOrchestrator"] == "false"]["99th"].values
+            df[df["disableOrchestrator"] == "false"]["95th"].values
+            - df[df["disableOrchestrator"] == "true"]["95th"].values
         )
         < 10
     )
     result_body += f"* Orch added 99th latency under 10ms: {orch_nth}\n"
+    orch_nth = all(
+        (
+            df[df["disableOrchestrator"] == "false"]["99th"].values
+            - df[df["disableOrchestrator"] == "true"]["99th"].values
+        )
+        < 20
+    )
+    result_body += f"* Orch added 99th latency under 20ms: {orch_nth}\n"
 
     result_body += "\n### Results table\n\n"
     result_body += str(df.to_markdown())
@@ -72,7 +80,6 @@ def test_python_wrapper_v1_vs_v2_iris():
         protocol="seldon",
         server_list=["SKLEARN_SERVER"],
         benchmark_concurrency_list=benchmark_concurrency_list,
-        server_workers_list=["1"],
         model_uri_list=["gs://seldon-models/sklearn/iris"],
         benchmark_data={"data": {"ndarray": [[1, 2, 3, 4]]}},
     )
@@ -158,15 +165,6 @@ def test_python_wrapper_v1_vs_v2_iris():
         > 250
     )
     result_body += f"* V2 throughput above 300rps: {v2_rps_grpc}\n"
-
-    # General comparisons
-
-    perf_mean = all(df_pywrapper["mean"].values > df_mlserver["mean"].values)
-    result_body += f"* Mean latency MLServer lower than V1 Wrapper: {perf_mean}\n"
-    perf_rps = all(
-        df_pywrapper["throughputAchieved"].values < df_mlserver["throughputAchieved"].values
-    )
-    result_body += f"* Throughput MLServer larger than V1 Wrapper: {perf_rps}\n"
 
     result_body += "\n### Python V1 Wrapper Results table\n\n"
     result_body += str(df_pywrapper.to_markdown())
