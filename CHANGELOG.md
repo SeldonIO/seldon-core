@@ -1,6 +1,42 @@
 # Changelog
 
-## [v1.9.0](https://github.com/seldonio/seldon-core/tree/HEAD)
+## [Unreleased](https://github.com/seldonio/seldon-core/tree/HEAD)
+
+[Full Changelog](https://github.com/seldonio/seldon-core/compare/v1.9.1...HEAD)
+
+**Fixed bugs:**
+
+- Istio virtualservice created does not whitelist V2 Inference Protocol protobuf names [\#3352](https://github.com/SeldonIO/seldon-core/issues/3352)
+- If no-engine=true used only REST/HTTP virtuaservice is created with istio and no GRPC [\#3329](https://github.com/SeldonIO/seldon-core/issues/3329)
+- Seldon Explainer Container Crashes Due to GCS Permission Error [\#3324](https://github.com/SeldonIO/seldon-core/issues/3324)
+- I deploy tensorflow model using tensorflow2.4.1 and occur error:CUDA error \(3\): initialization error. [\#3314](https://github.com/SeldonIO/seldon-core/issues/3314)
+- Status address URL incorrect for no engine [\#3312](https://github.com/SeldonIO/seldon-core/issues/3312)
+
+**Closed issues:**
+
+- Create notebook that outlines steps required to extend all existing secrets to be compatible with rclone [\#3360](https://github.com/SeldonIO/seldon-core/issues/3360)
+- Create narrative / documentation around security [\#3345](https://github.com/SeldonIO/seldon-core/issues/3345)
+- Add GRPC\_THREADS for configuring the number of threads in the Python wrapper \(and default to 1\) [\#3333](https://github.com/SeldonIO/seldon-core/issues/3333)
+- Set GUNICORN\_THREADS to 1 by default [\#3332](https://github.com/SeldonIO/seldon-core/issues/3332)
+- Python GRPC Server does not adhere to Worker/Thread environment variables [\#3238](https://github.com/SeldonIO/seldon-core/issues/3238)
+- Update Benchmarking with Argo Worfklows & Vegeta notebook example [\#3162](https://github.com/SeldonIO/seldon-core/issues/3162)
+- 1.8.0 Release [\#3125](https://github.com/SeldonIO/seldon-core/issues/3125)
+- Add integration tests to outlier detector and concept drift components [\#2681](https://github.com/SeldonIO/seldon-core/issues/2681)
+
+## [v1.9.1](https://github.com/seldonio/seldon-core/tree/v1.9.1) (2021-06-22)
+
+[Full Changelog](https://github.com/seldonio/seldon-core/compare/v1.9.0...v1.9.1)
+
+**Fixed bugs:**
+
+- Help: Unable to run any standard demos on GKE cluster [\#3305](https://github.com/SeldonIO/seldon-core/issues/3305)
+
+**Closed issues:**
+
+- Seldon Core 1.9.0 release [\#3287](https://github.com/SeldonIO/seldon-core/issues/3287)
+- add micro-batching to batch processor [\#2734](https://github.com/SeldonIO/seldon-core/issues/2734)
+
+## [v1.9.0](https://github.com/seldonio/seldon-core/tree/v1.9.0) (2021-06-16)
 
 [Full Changelog](https://github.com/seldonio/seldon-core/compare/v1.8.0...v1.9.0)
 
@@ -25,9 +61,86 @@
 - GPT2-Triton Example: extand to contain load test example [\#3216](https://github.com/SeldonIO/seldon-core/issues/3216)
 - Allow multi-model repositories for Tensorflow Serving [\#3206](https://github.com/SeldonIO/seldon-core/issues/3206)
 - Allow for overriding Istio VirtualService hosts  [\#3137](https://github.com/SeldonIO/seldon-core/issues/3137)
-- Run black \(nbQA\) on notebooks as part of fmt/lint [\#2885](https://github.com/SeldonIO/seldon-core/issues/2885)
 - Update request logger to run with gunicorn [\#2141](https://github.com/SeldonIO/seldon-core/issues/2141)
 - Progressive Rollout [\#1805](https://github.com/SeldonIO/seldon-core/issues/1805)
+
+**Merged pull requests:**
+
+- Docs styling fix to work on readthedocs [\#3291](https://github.com/SeldonIO/seldon-core/pull/3291) ([axsaucedo](https://github.com/axsaucedo))
+- Allow MLServer envs to be overriden [\#3288](https://github.com/SeldonIO/seldon-core/pull/3288) ([cliveseldon](https://github.com/cliveseldon))
+- Iter8 Integration [\#3286](https://github.com/SeldonIO/seldon-core/pull/3286) ([cliveseldon](https://github.com/cliveseldon))
+- small cleanups in req logger [\#3281](https://github.com/SeldonIO/seldon-core/pull/3281) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- elements for batch and tf protocol [\#3280](https://github.com/SeldonIO/seldon-core/pull/3280) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- Add Triton Examples Notebook to docs [\#3277](https://github.com/SeldonIO/seldon-core/pull/3277) ([cliveseldon](https://github.com/cliveseldon))
+- some unit tests for req logger [\#3271](https://github.com/SeldonIO/seldon-core/pull/3271) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- Clean up openapi [\#3262](https://github.com/SeldonIO/seldon-core/pull/3262) ([cliveseldon](https://github.com/cliveseldon))
+- categorical and proba for req logger ndarray [\#3256](https://github.com/SeldonIO/seldon-core/pull/3256) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- Fixed broken "tutum/curl" image in Notebook tests tests [\#3252](https://github.com/SeldonIO/seldon-core/pull/3252) ([axsaucedo](https://github.com/axsaucedo))
+- Run black \(nbQA\) on notebooks as part of fmt/lint [\#3249](https://github.com/SeldonIO/seldon-core/pull/3249) ([MarcoGorelli](https://github.com/MarcoGorelli))
+- Add kfserving protocol to alibi explainer server [\#3248](https://github.com/SeldonIO/seldon-core/pull/3248) ([cliveseldon](https://github.com/cliveseldon))
+- Add explainer replicas and handle scale to zero [\#3246](https://github.com/SeldonIO/seldon-core/pull/3246) ([cliveseldon](https://github.com/cliveseldon))
+- Add istio host annotation [\#3244](https://github.com/SeldonIO/seldon-core/pull/3244) ([cliveseldon](https://github.com/cliveseldon))
+- Documenting PVC storage initialiser [\#3243](https://github.com/SeldonIO/seldon-core/pull/3243) ([axsaucedo](https://github.com/axsaucedo))
+- Fix tracing debug [\#3240](https://github.com/SeldonIO/seldon-core/pull/3240) ([cliveseldon](https://github.com/cliveseldon))
+- update notebooks to use port 8080 for istio [\#3239](https://github.com/SeldonIO/seldon-core/pull/3239) ([cliveseldon](https://github.com/cliveseldon))
+- option to skip verify ssl on req logger [\#3231](https://github.com/SeldonIO/seldon-core/pull/3231) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- Converting model predictions schema to dict in request logger processing [\#3222](https://github.com/SeldonIO/seldon-core/pull/3222) ([SachinVarghese](https://github.com/SachinVarghese))
+- Docs styling update [\#3221](https://github.com/SeldonIO/seldon-core/pull/3221) ([axsaucedo](https://github.com/axsaucedo))
+- Tensorflow multi-model server [\#3220](https://github.com/SeldonIO/seldon-core/pull/3220) ([cliveseldon](https://github.com/cliveseldon))
+- Start 190 dev [\#3219](https://github.com/SeldonIO/seldon-core/pull/3219) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- Gpt2 notebook example [\#3217](https://github.com/SeldonIO/seldon-core/pull/3217) ([nadinet](https://github.com/nadinet))
+- Java Wrapper JSON POST API regression fix [\#3211](https://github.com/SeldonIO/seldon-core/pull/3211) ([amoldavsky](https://github.com/amoldavsky))
+- Tfserving proxy custom data [\#3209](https://github.com/SeldonIO/seldon-core/pull/3209) ([sebov](https://github.com/sebov))
+- Fix operator image build for redhat [\#3205](https://github.com/SeldonIO/seldon-core/pull/3205) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- make rclone storage initializer more verbose [\#3203](https://github.com/SeldonIO/seldon-core/pull/3203) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- Allow leader election to use configurable seldon-manager service account [\#3200](https://github.com/SeldonIO/seldon-core/pull/3200) ([cliveseldon](https://github.com/cliveseldon))
+- Add Tempo Prepackaged Server [\#3193](https://github.com/SeldonIO/seldon-core/pull/3193) ([cliveseldon](https://github.com/cliveseldon))
+- update community call calendar [\#3191](https://github.com/SeldonIO/seldon-core/pull/3191) ([cliveseldon](https://github.com/cliveseldon))
+- update docs [\#3188](https://github.com/SeldonIO/seldon-core/pull/3188) ([rileyhun](https://github.com/rileyhun))
+- request logger metadata lookup [\#3183](https://github.com/SeldonIO/seldon-core/pull/3183) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- include rclone in adserver [\#3172](https://github.com/SeldonIO/seldon-core/pull/3172) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- include seldonio/rclone-storageinitializer in release.py script [\#3171](https://github.com/SeldonIO/seldon-core/pull/3171) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- Explicit mapping for elasticsearch Indexes in request logger component [\#3166](https://github.com/SeldonIO/seldon-core/pull/3166) ([SachinVarghese](https://github.com/SachinVarghese))
+- Documentation updates for the Ambassador Install process and to introduce CRD based config. [\#3163](https://github.com/SeldonIO/seldon-core/pull/3163) ([cakuros](https://github.com/cakuros))
+- Update Alibi-Detect to 0.6.2 [\#3160](https://github.com/SeldonIO/seldon-core/pull/3160) ([cliveseldon](https://github.com/cliveseldon))
+- Rclone as default storage initalizer [\#3159](https://github.com/SeldonIO/seldon-core/pull/3159) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- Bump grpcio-tools from 1.33.2 to 1.37.1 in /python [\#3155](https://github.com/SeldonIO/seldon-core/pull/3155) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- ensure http and grpc envs are used [\#3153](https://github.com/SeldonIO/seldon-core/pull/3153) ([cliveseldon](https://github.com/cliveseldon))
+- remove aggregate from feedback [\#3152](https://github.com/SeldonIO/seldon-core/pull/3152) ([cliveseldon](https://github.com/cliveseldon))
+- create v1 or vebeta1 CRD [\#3151](https://github.com/SeldonIO/seldon-core/pull/3151) ([cliveseldon](https://github.com/cliveseldon))
+- Upgrade to GitHub-native Dependabot [\#3147](https://github.com/SeldonIO/seldon-core/pull/3147) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- Gpt2 notebook example [\#3142](https://github.com/SeldonIO/seldon-core/pull/3142) ([nadinet](https://github.com/nadinet))
+- Support disabling of ssl/tls in seldon\_client [\#3141](https://github.com/SeldonIO/seldon-core/pull/3141) ([juliusvonkohout](https://github.com/juliusvonkohout))
+- Update kustomize to 4.1.2 [\#3135](https://github.com/SeldonIO/seldon-core/pull/3135) ([cliveseldon](https://github.com/cliveseldon))
+- Fix broken Alibi Detect image in master [\#3134](https://github.com/SeldonIO/seldon-core/pull/3134) ([axsaucedo](https://github.com/axsaucedo))
+- Add label to container services for graph internal nodes [\#3123](https://github.com/SeldonIO/seldon-core/pull/3123) ([cliveseldon](https://github.com/cliveseldon))
+- add gunicorn to request logger [\#3121](https://github.com/SeldonIO/seldon-core/pull/3121) ([rileyhun](https://github.com/rileyhun))
+- mlflow example fix & image change: do not use editable install of SC for s2i wrapper [\#3118](https://github.com/SeldonIO/seldon-core/pull/3118) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- Add log-level to operator helm chart [\#3117](https://github.com/SeldonIO/seldon-core/pull/3117) ([cliveseldon](https://github.com/cliveseldon))
+- Allow nil graph TYPE [\#3116](https://github.com/SeldonIO/seldon-core/pull/3116) ([cliveseldon](https://github.com/cliveseldon))
+- Revert "Bump urllib3 from 1.25.9 to 1.26.4 in /python" [\#3110](https://github.com/SeldonIO/seldon-core/pull/3110) ([adriangonz](https://github.com/adriangonz))
+- Depricate persistence  [\#3104](https://github.com/SeldonIO/seldon-core/pull/3104) ([nadinet](https://github.com/nadinet))
+- Redhat 1.7.0 [\#3101](https://github.com/SeldonIO/seldon-core/pull/3101) ([cliveseldon](https://github.com/cliveseldon))
+- Update gunicorn requirement from \<20.1.0,\>=19.9.0 to \>=19.9.0,\<20.2.0 in /python [\#3099](https://github.com/SeldonIO/seldon-core/pull/3099) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- Add raw\_data parameter to SeldonClient predict [\#3095](https://github.com/SeldonIO/seldon-core/pull/3095) ([nadinet](https://github.com/nadinet))
+- Fix grammar [\#3094](https://github.com/SeldonIO/seldon-core/pull/3094) ([YikSanChan](https://github.com/YikSanChan))
+- Increasing memory of notebook tests [\#3093](https://github.com/SeldonIO/seldon-core/pull/3093) ([axsaucedo](https://github.com/axsaucedo))
+- Update alibi docs [\#3092](https://github.com/SeldonIO/seldon-core/pull/3092) ([cliveseldon](https://github.com/cliveseldon))
+- fix kustomize patch to include storageInitializerImage in the CRD [\#3090](https://github.com/SeldonIO/seldon-core/pull/3090) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- rclone-based storage initializer - first steps [\#3089](https://github.com/SeldonIO/seldon-core/pull/3089) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- note on scaling request logger [\#3088](https://github.com/SeldonIO/seldon-core/pull/3088) ([ryandawsonuk](https://github.com/ryandawsonuk))
+- Add note on storageInitializerImage to release-1.7.0 highlights  [\#3086](https://github.com/SeldonIO/seldon-core/pull/3086) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- Updated tag 1.8.0-dev [\#3083](https://github.com/SeldonIO/seldon-core/pull/3083) ([axsaucedo](https://github.com/axsaucedo))
+- Bump urllib3 from 1.25.9 to 1.26.4 in /python [\#3082](https://github.com/SeldonIO/seldon-core/pull/3082) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- Bump isort from 5.7.0 to 5.8.0 in /python [\#3081](https://github.com/SeldonIO/seldon-core/pull/3081) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- Bump pillow from 8.1.0 to 8.1.1 in /python [\#3078](https://github.com/SeldonIO/seldon-core/pull/3078) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Updating spacy notebook [\#3076](https://github.com/SeldonIO/seldon-core/pull/3076) ([nadinet](https://github.com/nadinet))
+- Update python server docs [\#3074](https://github.com/SeldonIO/seldon-core/pull/3074) ([cliveseldon](https://github.com/cliveseldon))
+- GPU drift work [\#3060](https://github.com/SeldonIO/seldon-core/pull/3060) ([cliveseldon](https://github.com/cliveseldon))
+- Bump flake8 from 3.8.1 to 3.9.0 in /python [\#3055](https://github.com/SeldonIO/seldon-core/pull/3055) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- Add keepalive [\#3048](https://github.com/SeldonIO/seldon-core/pull/3048) ([ktleung2017](https://github.com/ktleung2017))
+- docs: use Helm v3 commands in Istio docs [\#3044](https://github.com/SeldonIO/seldon-core/pull/3044) ([masonlr](https://github.com/masonlr))
+- Request logger elastic mapping type unsetting [\#3014](https://github.com/SeldonIO/seldon-core/pull/3014) ([SachinVarghese](https://github.com/SachinVarghese))
 
 ## [v1.8.0](https://github.com/seldonio/seldon-core/tree/v1.8.0) (2021-05-20)
 
