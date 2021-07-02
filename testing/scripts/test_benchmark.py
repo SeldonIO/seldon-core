@@ -1,8 +1,6 @@
 import json
-import logging
 
 import numpy as np
-import pandas as pd
 import pytest
 import tensorflow as tf
 from google.protobuf import json_format
@@ -16,7 +14,7 @@ def test_service_orchestrator():
 
     sort_by = ["apiType", "disableOrchestrator"]
 
-    data_size = 10_000
+    data_size = 1_000
     data = [100.0] * data_size
 
     data_tensor = {"data": {"tensor": {"values": data, "shape": [1, data_size]}}}
@@ -36,7 +34,7 @@ def test_service_orchestrator():
             df[df["disableOrchestrator"] == "false"]["mean"].values
             - df[df["disableOrchestrator"] == "true"]["mean"].values
         )
-        < 4
+        < 3
     )
     result_body += f"* Orch added mean latency under 4ms: {orch_mean}\n"
     orch_nth = all(
@@ -44,17 +42,17 @@ def test_service_orchestrator():
             df[df["disableOrchestrator"] == "false"]["95th"].values
             - df[df["disableOrchestrator"] == "true"]["95th"].values
         )
-        < 10
+        < 5
     )
-    result_body += f"* Orch added 99th latency under 10ms: {orch_nth}\n"
+    result_body += f"* Orch added 95th latency under 5ms: {orch_nth}\n"
     orch_nth = all(
         (
             df[df["disableOrchestrator"] == "false"]["99th"].values
             - df[df["disableOrchestrator"] == "true"]["99th"].values
         )
-        < 20
+        < 10
     )
-    result_body += f"* Orch added 99th latency under 20ms: {orch_nth}\n"
+    result_body += f"* Orch added 99th latency under 10ms: {orch_nth}\n"
 
     result_body += "\n### Results table\n\n"
     result_body += str(df.to_markdown())
