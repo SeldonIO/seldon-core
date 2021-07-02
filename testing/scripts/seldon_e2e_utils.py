@@ -742,14 +742,17 @@ def parse_bench_results_from_log(
 
 
 def run_benchmark_and_capture_results(
-    name="seldon-batch-job",
+    name="seldon-benchmark",
     namespace="argo",
+    protocol="seldon",
+    model_name="classifier",
     parallelism=BENCHMARK_PARALLELISM,
     replicas_list=["1"],
     server_workers_list=["5"],
     server_threads_list=["1"],
-    model_uri_list=["gs://seldon-models/sklearn/iris"],
-    server_list=["SKLEARN_SERVER"],
+    model_uri_list=[""],
+    image_list=[""],
+    server_list=[""],
     api_type_list=["rest"],
     requests_cpu_list=["2000Mi"],
     requests_memory_list=["500Mi"],
@@ -761,8 +764,10 @@ def run_benchmark_and_capture_results(
     benchmark_duration_list=["30s"],
     benchmark_rate_list=["0"],
     benchmark_data={"data": {"ndarray": [[1, 2, 3, 4]]}},
+    benchmark_grpc_data_override="",
 ):
 
+    # Helm chart command requires escaped commas and brackets
     data_str = (
         json.dumps(benchmark_data)
         .replace("{", "\\{")
@@ -770,12 +775,22 @@ def run_benchmark_and_capture_results(
         .replace(",", "\\,")
     )
 
+    if benchmark_grpc_data_override:
+        benchmark_grpc_data_override = (
+            json.dumps(benchmark_grpc_data_override)
+            .replace("{", "\\{")
+            .replace("}", "\\}")
+            .replace(",", "\\,")
+        )
+
+    # Default delimiter in helm chart is pipe
     delim = "|"
 
     replicas = delim.join(replicas_list)
     server_workers = delim.join(server_workers_list)
     server_threads = delim.join(server_threads_list)
     model_uri = delim.join(model_uri_list)
+    image = delim.join(image_list)
     server = delim.join(server_list)
     api_type = delim.join(api_type_list)
     requests_cpu = delim.join(requests_cpu_list)
@@ -800,11 +815,14 @@ def run_benchmark_and_capture_results(
             --set workflow.name="{name}" \\
             --set workflow.parallelism="{parallelism}" \\
             --set seldonDeployment.name="{name}-sdep" \\
+            --set seldonDeployment.modelName="{model_name}" \\
+            --set seldonDeployment.protocol="{protocol}" \\
             --set seldonDeployment.replicas="{replicas}" \\
             --set seldonDeployment.serverWorkers="{server_workers}" \\
             --set seldonDeployment.serverThreads="{server_threads}" \\
             --set seldonDeployment.modelUri="{model_uri}" \\
             --set seldonDeployment.server="{server}" \\
+            --set seldonDeployment.image="{image}" \\
             --set seldonDeployment.apiType="{api_type}" \\
             --set seldonDeployment.requests.cpu="{requests_cpu}" \\
             --set seldonDeployment.requests.memory="{requests_memory}" \\
@@ -816,6 +834,7 @@ def run_benchmark_and_capture_results(
             --set benchmark.duration="{benchmark_duration}" \\
             --set benchmark.rate="{benchmark_rate}" \\
             --set benchmark.data='{data_str}' \\
+            --set benchmark.grpcDataOverride='{benchmark_grpc_data_override}' \\
             | argo submit -
         """,
         **kwargs,

@@ -21,5 +21,6 @@ RUN apt-get update && \
 
 COPY --from=builder /go/ghz/dist/ghz /usr/local/bin
 COPY --from=builder /go/seldon-core/executor/proto /proto
+COPY --from=builder /go/seldon-core/executor/api/grpc/kfserving/inference/*.proto /proto
 
 CMD ["ghz","--help"]

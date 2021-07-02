@@ -16,7 +16,11 @@ seldonDeployment:
   # Image parameter to use in addition or alternative to prepackaged server
   image:
   # Prepackaged model server to use [see https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html]
-  server: CUSTOM_SERVER
+  server:
+  # The name of the model in the graph as well as the name of the model in tf / kf protocol
+  modelName: classifier
+  # The schema protocol to use which would be dependent on data
+  protocol: seldon
   # The URL for the model that is to be used
   modelUri:
   # The API Type (REST vs GRPC)
@@ -56,10 +60,11 @@ benchmark:
   # Rate (number of requests per second [0 = infinity])
   rate: 0
   # Data that the benchmark worker will use to send
-  # TODO: Explore adding multiple data instances with configurable split token (eg |)
   data: '{"data": {"ndarray": [[0,1,2,3]]}}'
+  # GRPC Data Override would be used for grpc requests if provided (relevant for kfserving protocol)
+  grpcDataOverride:
   # Image to use for the benchmark REST client
   # TODO: Move image to seldonio
   restImage: peterevans/vegeta:latest-vegeta12.8.4
   # Image to use for the benchmark GRPC client
-  grpcImage: seldonio/ghz:v0.55.0
+  grpcImage: seldonio/ghz:v0.95.0
