@@ -1,17 +1,17 @@
 import argparse
+import contextlib
 import importlib
 import json
 import logging
+import multiprocessing
 import multiprocessing as mp
 import os
+import socket
 import sys
 import time
 from distutils.util import strtobool
 from functools import partial
 from typing import Callable, Dict
-import contextlib
-import socket
-import multiprocessing
 
 from seldon_core import __version__
 from seldon_core import wrapper as seldon_microservice
@@ -332,7 +332,7 @@ def main():
         default=os.environ.get("GRPC_THREADS", default="1"),
         help="Number of GRPC threads per worker.",
     )
-    
+
     parser.add_argument(
         "--grpc-workers",
         type=int,
@@ -451,7 +451,7 @@ def main():
     def _wait_forever(server):
         try:
             while True:
-                time.sleep(60*60)
+                time.sleep(60 * 60)
         except KeyboardInterrupt:
             server.stop(None)
 
@@ -492,7 +492,7 @@ def main():
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         if sock.getsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT) != 1:
             raise RuntimeError("Failed to set SO_REUSEPORT.")
-        sock.bind(('', grpc_port))
+        sock.bind(("", grpc_port))
         try:
             yield sock.getsockname()[1]
         finally:
@@ -500,8 +500,10 @@ def main():
 
     def grpc_prediction_server():
         with _reserve_grpc_port() as bind_port:
-            bind_address = '0.0.0.0:{}'.format(bind_port)
-            logger.info(f"GRPC Server Binding to '%s' {bind_address} with {args.workers} processes")
+            bind_address = "0.0.0.0:{}".format(bind_port)
+            logger.info(
+                f"GRPC Server Binding to '%s' {bind_address} with {args.workers} processes"
+            )
             sys.stdout.flush()
             workers = []
             for _ in range(args.grpc_workers):
@@ -509,7 +511,8 @@ def main():
                 # any gRPC servers start up. See
                 # https://github.com/grpc/grpc/issues/16001 for more details.
                 worker = multiprocessing.Process(
-                    target=_run_grpc_server, args=(bind_address,))
+                    target=_run_grpc_server, args=(bind_address,)
+                )
                 worker.start()
                 workers.append(worker)
             for worker in workers:
