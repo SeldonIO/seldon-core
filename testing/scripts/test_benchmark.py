@@ -54,6 +54,10 @@ def test_service_orchestrator():
     )
     result_body += f"* Orch added 99th latency under 10ms: {orch_nth}\n"
 
+    # We have to set no errors to 1 as the tools for some reason have 1 as base
+    no_err = all(df["errors"] <= 1)
+    result_body += f"* No errors: {no_err}\n"
+
     result_body += "\n### Results table\n\n"
     result_body += str(df.to_markdown())
     post_comment_in_pr(result_body)
