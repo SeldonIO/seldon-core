@@ -181,8 +181,6 @@ def test_python_wrapper_v1_vs_v2_iris():
     assert v2_latency_nth
     assert v2_rps_rest
     assert v2_rps_grpc
-    assert perf_mean
-    assert perf_rps
 
 
 @pytest.mark.benchmark
