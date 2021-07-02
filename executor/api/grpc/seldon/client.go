@@ -3,11 +3,11 @@ package seldon
 import (
 	"context"
 	"fmt"
-	"sync"
-	"math/rand"
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 	"github.com/seldonio/seldon-core/executor/api/client"
+	"math/rand"
+	"sync"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	grpc2 "github.com/seldonio/seldon-core/executor/api/grpc"
@@ -26,7 +26,7 @@ import (
 var numConns = 10
 
 type SeldonMessageGrpcClient struct {
-    sync.RWMutex
+	sync.RWMutex
 	Log            logr.Logger
 	callOptions    []grpc.CallOption
 	conns          map[string][]*grpc.ClientConn
@@ -59,56 +59,56 @@ func NewSeldonGrpcClient(spec *v1.PredictorSpec, deploymentName string, annotati
 // TODO: Verify this logic is necessary, or if we can just create numConns connections at once (simplifying logic)
 // TODO: Investigate a TLL for conns--may result in better load balancing if connections occasionally re-connect
 func (s *SeldonMessageGrpcClient) getConnection(host string, port int32, modelName string) (*grpc.ClientConn, error) {
-    s.RLock()
-    randNum := rand.Intn(numConns)
+	s.RLock()
+	randNum := rand.Intn(numConns)
 	k := fmt.Sprintf("%s:%d", host, port)
 	if nodeConns, ok := s.conns[k]; ok {
-	    if c := nodeConns[randNum]; c != nil {
-	        defer s.RUnlock()
-	        return c, nil
-	    }
-	    s.RUnlock()
+		if c := nodeConns[randNum]; c != nil {
+			defer s.RUnlock()
+			return c, nil
+		}
+		s.RUnlock()
 
-	    c, err := s.createNewConn(modelName, host, port)
-	    if err != nil {
-	        return nil, err
-	    }
+		c, err := s.createNewConn(modelName, host, port)
+		if err != nil {
+			return nil, err
+		}
 
-	    s.Lock()
-	    s.conns[k][randNum] = c
-	    s.Unlock()
+		s.Lock()
+		s.conns[k][randNum] = c
+		s.Unlock()
 
 		return s.conns[k][randNum], nil
 	} else {
-	    s.RUnlock()
-	    connList := make([]*grpc.ClientConn, numConns)
+		s.RUnlock()
+		connList := make([]*grpc.ClientConn, numConns)
 
-	    c, err := s.createNewConn(modelName, host, port)
-	    if err != nil {
-	        return nil, err
-	    }
+		c, err := s.createNewConn(modelName, host, port)
+		if err != nil {
+			return nil, err
+		}
 
-	    connList[randNum] = c
+		connList[randNum] = c
 
-	    s.Lock()
-	    s.conns[k] = connList
-	    s.Unlock()
+		s.Lock()
+		s.conns[k] = connList
+		s.Unlock()
 
 		return s.conns[k][randNum], nil
 	}
 }
 
 func (s *SeldonMessageGrpcClient) createNewConn(modelName, host string, port int32) (*grpc.ClientConn, error) {
-    opts := []grpc.DialOption{
-        grpc.WithInsecure(),
-    }
+	opts := []grpc.DialOption{
+		grpc.WithInsecure(),
+	}
 
-    opts = append(opts, grpc2.AddClientInterceptors(s.Predictor, s.DeploymentName, modelName, s.annotations, s.Log))
-    conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), opts...)
-    if err != nil {
-        return nil, err
-    }
-    return conn, nil
+	opts = append(opts, grpc2.AddClientInterceptors(s.Predictor, s.DeploymentName, modelName, s.annotations, s.Log))
+	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), opts...)
+	if err != nil {
+		return nil, err
+	}
+	return conn, nil
 }
 
 func (s *SeldonMessageGrpcClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
