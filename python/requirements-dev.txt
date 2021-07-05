@@ -7,7 +7,7 @@ isort==5.9.0
 mypy-protobuf==2.4
 mypy<0.791
 pandas==1.1.0                # used in serving_test_gen
-pillow==8.1.1
+pillow==8.3.0
 pip-licenses==3.4.0          # fetch licenses
 pytest-cov==2.10.1
 pytest==6.2.2
