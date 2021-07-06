@@ -117,7 +117,7 @@ RUN pip install jupyter
 
 # Install grpcurl
 RUN go get github.com/fullstorydev/grpcurl/... && \
-    go install github.com/fullstorydev/grpcurl/cmd/grpcurl
+    go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
 
 ENV PATH="${PATH}:/root/go/bin"
 
