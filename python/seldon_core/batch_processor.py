@@ -347,8 +347,8 @@ def _send_batch_predict_multi_request(
         if payload_type == "ndarray":
             # Format new responses for each original prediction request
             new_response["data"]["ndarray"] = [response["data"]["ndarray"][i]]
-            new_response["meta"]["tags"]["tags"]["batch_index"] = indexes[i]
-            new_response["meta"]["tags"]["tags"]["batch_instance_id"] = instance_ids[i]
+            new_response["meta"]["tags"]["batch_index"] = indexes[i]
+            new_response["meta"]["tags"]["batch_instance_id"] = instance_ids[i]
             responses.append(json.dumps(new_response))
         elif payload_type == "tensor":
             # Format new responses for each original prediction request
@@ -356,8 +356,8 @@ def _send_batch_predict_multi_request(
             new_response["data"]["tensor"]["values"] = np.ndarray.tolist(
                 tensor_ndarray[i]
             )
-            new_response["meta"]["tags"]["tags"]["batch_index"] = indexes[i]
-            new_response["meta"]["tags"]["tags"]["batch_instance_id"] = instance_ids[i]
+            new_response["meta"]["tags"]["batch_index"] = indexes[i]
+            new_response["meta"]["tags"]["batch_instance_id"] = instance_ids[i]
             responses.append(json.dumps(new_response))
         else:
             raise RuntimeError(
