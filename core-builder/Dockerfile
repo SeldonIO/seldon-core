@@ -67,15 +67,20 @@ RUN apt-get upgrade && \
 	apt-get install libbz2-dev -y && \
 	apt-get install liblzma-dev -y
 
-RUN curl -SLO https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz \
-    && tar xvf Python-${PYTHON_VERSION}.tgz \
-    && cd Python-${PYTHON_VERSION} \
-    && ./configure --prefix=/usr/local --enable-optimizations --with-openssl=/usr/local \
-    && make \
-    && make altinstall \
-    && cd / \
-    && rm -rf Python-${PYTHON_VERSION}* \
-    && (cd /usr/local/bin && ln -svn python3.7 python)
+ENV CONDA_VERSION "4.7.12"
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-$CONDA_VERSION-Linux-x86_64.sh -O ~/miniconda.sh && \
+    /bin/bash ~/miniconda.sh -b -p /opt/conda && \
+    rm ~/miniconda.sh && \
+    /opt/conda/bin/conda clean -tipsy && \
+    ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
+    echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
+    echo "conda activate base" >> ~/.bashrc && \
+    chgrp -R root /opt/conda && chmod -R g+rw /opt/conda
+ENV PATH="/opt/conda/bin:${PATH}"
+ENV PYTHON_VERSION "3.7.10"
+
+# This is to install desired version of Python without updating conda version
+RUN conda install --yes python=$PYTHON_VERSION conda=$CONDA_VERSION
 
 # Ensure python3 and pip3 are default
 RUN curl -sS https://bootstrap.pypa.io/get-pip.py >>setup.py && \
