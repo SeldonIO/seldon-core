@@ -1237,7 +1237,7 @@ def rest_predict_seldon(
     raw_data
         Raw payload (dictionary) given by the user
     meta
-        Custom meta map
+        Custom meta data map, supplied as tags
     kwargs
 
     Returns
