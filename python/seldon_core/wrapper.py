@@ -272,7 +272,9 @@ def get_grpc_server(
     user_model, seldon_metrics, annotations={}, trace_interceptor=None, num_threads=1
 ):
     seldon_model = SeldonModelGRPC(user_model, seldon_metrics)
-    options = [("grpc.so_reuseport", 1),]
+    options = [
+        ("grpc.so_reuseport", 1),
+    ]
     if ANNOTATION_GRPC_MAX_MSG_SIZE in annotations:
         max_msg = int(annotations[ANNOTATION_GRPC_MAX_MSG_SIZE])
         logger.info("Setting grpc max message and receive length to %d", max_msg)
