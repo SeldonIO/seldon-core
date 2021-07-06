@@ -267,7 +267,7 @@ def _send_batch_predict_multi_request(
     retries: int,
     batch_id: str,
     payload_type: str,
-) -> str:
+) -> [str]:
     """
     Send an request using the Seldon Client with batch context including the
     unique ID of the batch and the Batch enumerated index as metadata. This
@@ -343,26 +343,34 @@ def _send_batch_predict_multi_request(
         tensor_ndarray = tensor.reshape(shape)
 
     for i in range(len(input_data)):
-        new_response = copy.deepcopy(response)
-        if payload_type == "ndarray":
-            # Format new responses for each original prediction request
-            new_response["data"]["ndarray"] = [response["data"]["ndarray"][i]]
-            new_response["meta"]["tags"]["batch_index"] = indexes[i]
-            new_response["meta"]["tags"]["batch_instance_id"] = instance_ids[i]
-            responses.append(json.dumps(new_response))
-        elif payload_type == "tensor":
-            # Format new responses for each original prediction request
-            new_response["data"]["tensor"]["shape"][0] = 1
-            new_response["data"]["tensor"]["values"] = np.ndarray.tolist(
-                tensor_ndarray[i]
-            )
-            new_response["meta"]["tags"]["batch_index"] = indexes[i]
-            new_response["meta"]["tags"]["batch_instance_id"] = instance_ids[i]
-            responses.append(json.dumps(new_response))
-        else:
-            raise RuntimeError(
-                "Only `ndarray` and `tensor` input are currently supported for batch size greater than 1."
-            )
+        try:
+            new_response = copy.deepcopy(response)
+            if payload_type == "ndarray":
+                # Format new responses for each original prediction request
+                new_response["data"]["ndarray"] = [response["data"]["ndarray"][i]]
+                new_response["meta"]["tags"]["batch_index"] = indexes[i]
+                new_response["meta"]["tags"]["batch_instance_id"] = instance_ids[i]
+                responses.append(json.dumps(new_response))
+            elif payload_type == "tensor":
+                # Format new responses for each original prediction request
+                new_response["data"]["tensor"]["shape"][0] = 1
+                new_response["data"]["tensor"]["values"] = np.ndarray.tolist(
+                    tensor_ndarray[i]
+                )
+                new_response["meta"]["tags"]["batch_index"] = indexes[i]
+                new_response["meta"]["tags"]["batch_instance_id"] = instance_ids[i]
+                responses.append(json.dumps(new_response))
+            else:
+                raise RuntimeError(
+                    "Only `ndarray` and `tensor` input are currently supported for batch size greater than 1."
+                )
+        except Exception as e:
+            error_resp = {
+                "status": {"info": "FAILURE", "reason": str(e), "status": 1},
+                "meta": meta,
+            }
+            print("Exception: %s" % e)
+            responses.append(json.dumps(error_resp))
 
     return responses
 
