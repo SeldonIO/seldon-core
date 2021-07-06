@@ -33,4 +33,7 @@ RUN mkdir ./licenses && pip-licenses --from=mixed --format=csv --output-file=./l
     pip-licenses --from=mixed --format=plain-vertical --with-license-file --no-license-path --output-file=./licenses/license.txt
 RUN cp ./licenses/* /licenses
 
+# Install python spacy model to avoid issues in airgapped envs
+RUN python -m spacy download en_core_web_md
+
 ENTRYPOINT ["python", "-m", "alibiexplainer"]
