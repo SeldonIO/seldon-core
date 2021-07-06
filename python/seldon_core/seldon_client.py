@@ -327,7 +327,7 @@ class SeldonClient:
         http_path:
            Custom http path for predict call to use
         meta:
-           Custom meta map
+           Custom meta map, supplied as tags
         client_return_type
             the return type of all functions can be either dict or proto
         raw_data
@@ -1246,7 +1246,7 @@ def rest_predict_seldon(
 
     """
     metaKV = prediction_pb2.Meta()
-    metaJson = {meta}
+    metaJson = {"tags": meta}
     json_format.ParseDict(metaJson, metaKV)
     if raw_data:
         request = json_to_seldon_message(raw_data)
@@ -1459,7 +1459,7 @@ def rest_predict_gateway(
     """
     # Create meta data
     metaKV = prediction_pb2.Meta()
-    metaJson = {meta}
+    metaJson = {"tags": meta}
     json_format.ParseDict(metaJson, metaKV)
     if raw_data is not None:
         request = json_to_seldon_message(raw_data)
@@ -1814,7 +1814,7 @@ def grpc_predict_gateway(
     channel_credentials
        Channel credentials - see SeldonChannelCredentials
     meta
-       Custom meta data map
+       Custom meta data map, supplied as tags
     client_return_type
         the return type of all functions can be either dict or proto
     raw_data

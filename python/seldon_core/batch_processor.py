@@ -297,13 +297,11 @@ def _send_batch_predict_multi_request(
     instance_ids = [x[1] for x in input_data]
 
     predict_kwargs = {}
-    meta = {
-        "tags": {
-            "batch_id": batch_id,
-        }
+    tags = {
+        "batch_id": batch_id,
     }
 
-    predict_kwargs["meta"] = meta
+    predict_kwargs["meta"] = tags
     predict_kwargs["headers"] = {"Seldon-Puid": instance_ids[0]}
 
     try:
@@ -327,7 +325,7 @@ def _send_batch_predict_multi_request(
     except Exception as e:
         error_resp = {
             "status": {"info": "FAILURE", "reason": str(e), "status": 1},
-            "meta": meta,
+            "meta": tags,
         }
         print("Exception: %s" % e)
         str_output = json.dumps(error_resp)
@@ -367,7 +365,7 @@ def _send_batch_predict_multi_request(
         except Exception as e:
             error_resp = {
                 "status": {"info": "FAILURE", "reason": str(e), "status": 1},
-                "meta": meta,
+                "meta": tags,
             }
             print("Exception: %s" % e)
             responses.append(json.dumps(error_resp))
@@ -413,14 +411,12 @@ def _send_batch_predict(
     """
 
     predict_kwargs = {}
-    meta = {
-        "tags": {
-            "batch_id": batch_id,
-            "batch_instance_id": batch_instance_id,
-            "batch_index": batch_idx,
-        }
+    tags = {
+        "batch_id": batch_id,
+        "batch_instance_id": batch_instance_id,
+        "batch_index": batch_idx,
     }
-    predict_kwargs["meta"] = meta
+    predict_kwargs["meta"] = tags
     predict_kwargs["headers"] = {"Seldon-Puid": batch_instance_id}
     try:
         data = json.loads(input_raw)
@@ -447,7 +443,7 @@ def _send_batch_predict(
     except Exception as e:
         error_resp = {
             "status": {"info": "FAILURE", "reason": str(e), "status": 1},
-            "meta": meta,
+            "meta": tags,
         }
         print("Exception: %s" % e)
         str_output = json.dumps(error_resp)
