@@ -32,7 +32,7 @@ echo "Files changed in core builder folder:"
 git --no-pager diff --exit-code --name-only origin/master core-builder/
 CORE_BUILDER_MODIFIED=$?
 if [[ $CORE_BUILDER_MODIFIED -gt 0 ]]; then
-    make build_docker_image push_to_registry
+    make -C core-builder/ build_docker_image push_to_registry
     CORE_BUILDER_EXIT_VALUE=$?
     if [[ $CORE_BUILDER_EXIT_VALUE -gt 0 ]]; then
         echo "Prepackaged server build returned errors"
