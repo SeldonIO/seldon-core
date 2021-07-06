@@ -91,8 +91,8 @@ RUN apt-get remove -y --auto-remove \
 
 # INSTALL GO
 ENV PATH /usr/local/go/bin:$PATH
-RUN wget https://dl.google.com/go/go1.14.7.linux-amd64.tar.gz && \
-        tar -zxvf go1.14.7.linux-amd64.tar.gz && \
+RUN wget https://dl.google.com/go/go1.16.5.linux-amd64.tar.gz && \
+        tar -zxvf go1.16.5.linux-amd64.tar.gz && \
         mv go/ /usr/local/go
 RUN curl -sL https://go.kubebuilder.io/dl/2.3.0/linux/amd64 | tar -xz -C /tmp/ && \
         mv /tmp/kubebuilder_2.3.0_linux_amd64 /usr/local/kubebuilder/
