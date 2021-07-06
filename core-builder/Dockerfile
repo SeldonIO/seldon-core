@@ -1,6 +1,6 @@
 FROM openjdk:13.0.1-jdk-buster
 
-ENV PYTHON_VERSION "3.6.10"
+ENV PYTHON_VERSION "3.7.11"
 
 # install docker
 RUN \
@@ -70,12 +70,12 @@ RUN apt-get upgrade && \
 RUN curl -SLO https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz \
     && tar xvf Python-${PYTHON_VERSION}.tgz \
     && cd Python-${PYTHON_VERSION} \
-    && ./configure --prefix=/usr/local --with-openssl \
+    && ./configure --prefix=/usr/local --enable-optimizations --with-openssl=/usr/local \
     && make \
     && make altinstall \
     && cd / \
     && rm -rf Python-${PYTHON_VERSION}* \
-    && (cd /usr/local/bin && ln -svn python3.6 python)
+    && (cd /usr/local/bin && ln -svn python3.7 python)
 
 # Ensure python3 and pip3 are default
 RUN curl -sS https://bootstrap.pypa.io/get-pip.py >>setup.py && \

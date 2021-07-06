@@ -25,6 +25,27 @@ done
 # AVOID EXIT ON ERROR FOR FOLLOWING CMDS
 set +o errexit
 
+
+###########################################################
+### Images that don't need build every time only on change
+echo "Files changed in core builder folder:"
+git --no-pager diff --exit-code --name-only origin/master core-builder/
+CORE_BUILDER_MODIFIED=$?
+if [[ $CORE_BUILDER_MODIFIED -gt 0 ]]; then
+    make build_docker_image push_to_registry
+    CORE_BUILDER_EXIT_VALUE=$?
+    if [[ $CORE_BUILDER_EXIT_VALUE -gt 0 ]]; then
+        echo "Prepackaged server build returned errors"
+        return 1
+    fi
+else
+    echo "SKIPPING PREPACKAGED IMAGE BUILD..."
+    CORE_BUILDER_EXIT_VALUE=0
+fi
+
+###########################################################
+### Images that need build every time
+
 function build_push_python {
     (cd wrappers/s2i/python/build_scripts \
 	    && ./build_all_local.sh \
@@ -214,4 +235,5 @@ exit $((${PYTHON_EXIT_VALUE} \
     + ${STORAGE_INITIALIZER_EXIT_VALUE} \
     + ${RCLONE_STORAGE_INITIALIZER_EXIT_VALUE} \
     + ${MAB_EXIT_VALUE} \
+    + ${CORE_BUILDER_EXIT_VALUE} \
     + ${EXPLAIN_EXIT_VALUE}))
