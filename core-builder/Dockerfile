@@ -82,13 +82,6 @@ ENV PYTHON_VERSION "3.7.10"
 # This is to install desired version of Python without updating conda version
 RUN conda install --yes python=$PYTHON_VERSION conda=$CONDA_VERSION
 
-# Ensure python3 and pip3 are default
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py >>setup.py && \
-        python setup.py
-RUN update-alternatives --install /usr/bin/python python /usr/local/bin/python3.6 1
-RUN rm -rf /usr/local/bin/pip && \
-        ln -s /usr/local/bin/pip3.6 /usr/local/bin/pip
-
 # Upgrade and install some Python packages
 RUN pip install --upgrade pip setuptools wheel
 RUN pip install pyyaml grpcio grpcio-tools
