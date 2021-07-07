@@ -63,7 +63,6 @@ fi
 
 function build_push_python {
     (cd wrappers/s2i/python/build_scripts \
-        && make build_conda_base \
 	    && ./build_all.sh \
 	    && ./push_all.sh)
     PYTHON_EXIT_VALUE=$?

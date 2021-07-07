@@ -3,7 +3,7 @@ SHELL:=/bin/bash
 
 PYTHON_VERSION=3.7.10
 CONDA_VERSION=4.7.12
-IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | sed 's/\.//g'`
+IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | cut -d. -f1-2 | sed 's/\.//g'`
 DEFAULT_IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | cut -d. -f1`
 IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python${IMAGE_PYTHON_VERSION}
 DEFAULT_IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python${DEFAULT_IMAGE_PYTHON_VERSION}
