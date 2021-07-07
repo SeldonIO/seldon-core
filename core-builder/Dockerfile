@@ -28,7 +28,7 @@ RUN wget https://github.com/openshift/source-to-image/releases/download/v1.1.14/
     mv ./sti /bin
 
 # Installing KIND
-RUN wget https://github.com/kubernetes-sigs/kind/releases/download/v0.6.1/kind-linux-amd64 && \
+RUN wget https://github.com/kubernetes-sigs/kind/releases/download/v0.11.1/kind-linux-amd64 && \
     chmod +x kind-linux-amd64 && \
     mv ./kind-linux-amd64 /bin/kind
 
