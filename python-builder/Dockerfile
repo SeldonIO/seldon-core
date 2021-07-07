@@ -37,6 +37,12 @@ RUN unzip git.zip
 RUN apt-get remove git -y
 RUN make prefix=/usr/local -C git-2.30.0/ all install
 
+
+# This is to install desired version of Python without updating conda version
+ENV PYTHON_VERSION "3.7.10"
+ENV CONDA_VERSION "4.7.12"
+RUN conda install --yes python=$PYTHON_VERSION conda=$CONDA_VERSION
+
 # Installs required
 RUN apt-get install curl
 
