@@ -39,8 +39,23 @@ if [[ $CORE_BUILDER_MODIFIED -gt 0 ]]; then
         return 1
     fi
 else
-    echo "SKIPPING PREPACKAGED IMAGE BUILD..."
+    echo "SKIPPING CORE BUILDER IMAGE BUILD..."
     CORE_BUILDER_EXIT_VALUE=0
+fi
+
+echo "Files changed in python builder folder:"
+git --no-pager diff --exit-code --name-only origin/master python-builder/
+PYTHON_BUILDER_MODIFIED=$?
+if [[ $PYTHON_BUILDER_MODIFIED -gt 0 ]]; then
+    make -C python-builder/ build_docker_image push_to_registry
+    PYTHON_BUILDER_EXIT_VALUE=$?
+    if [[ $PYTHON_BUILDER_EXIT_VALUE -gt 0 ]]; then
+        echo "Prepackaged server build returned errors"
+        return 1
+    fi
+else
+    echo "SKIPPING PYTHON BUILDER IMAGE BUILD..."
+    PYTHON_BUILDER_EXIT_VALUE=0
 fi
 
 ###########################################################
@@ -236,4 +251,5 @@ exit $((${PYTHON_EXIT_VALUE} \
     + ${RCLONE_STORAGE_INITIALIZER_EXIT_VALUE} \
     + ${MAB_EXIT_VALUE} \
     + ${CORE_BUILDER_EXIT_VALUE} \
+    + ${PYTHON_BUILDER_EXIT_VALUE} \
     + ${EXPLAIN_EXIT_VALUE}))
