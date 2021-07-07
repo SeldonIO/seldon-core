@@ -1,7 +1,7 @@
 IMAGE_VERSION := $(shell cat ../../../version.txt)
 SHELL:=/bin/bash
 
-PYTHON_VERSION=3.7
+PYTHON_VERSION=3.7.10
 CONDA_VERSION=4.7.12
 IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | sed 's/\.//g'`
 DEFAULT_IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | cut -d. -f1`
