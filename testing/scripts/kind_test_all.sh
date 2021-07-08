@@ -104,7 +104,7 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
         fi
 
         echo "Files changed in test models folder:"
-        git --no-pager diff --exit-code --name-only origin/master ../../examples/models/mean_classifier/ ../../testing/docker/echo-model/ ../../testing/docker/fixed-model
+        git --no-pager diff --exit-code --name-only origin/master ../../examples/models/mean_classifier/ ../../examples/models/testing/ ../../testing/docker/echo-model/ ../../testing/docker/fixed-model
         TEST_MODELS_MODIFIED=$?
         if [[ $TEST_MODELS_MODIFIED -gt 0 ]]; then
             make kind_build_test_models
