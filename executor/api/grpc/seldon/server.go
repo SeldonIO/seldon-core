@@ -50,7 +50,10 @@ func (g GrpcSeldonServer) Predict(ctx context.Context, req *proto.SeldonMessage)
 }
 
 func (g GrpcSeldonServer) SendFeedback(ctx context.Context, req *proto.Feedback) (*proto.SeldonMessage, error) {
-	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("SeldonMessageRestClient"), g.ServerUrl, g.Namespace, grpc.CollectMetadata(ctx), "")
+	md := grpc.CollectMetadata(ctx)
+	header := protoGrpcMetadata.Pairs(payload.SeldonPUIDHeader, md.Get(payload.SeldonPUIDHeader)[0])
+	protoGrpc.SetHeader(ctx, header)
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("SeldonMessageRestClient"), g.ServerUrl, g.Namespace, md, "")
 	reqPayload := payload.ProtoPayload{Msg: req}
 	resPayload, err := seldonPredictorProcess.Feedback(&g.predictor.Graph, &reqPayload)
 	if err != nil {
