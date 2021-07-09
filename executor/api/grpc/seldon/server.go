@@ -10,6 +10,8 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/predictor"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	protoGrpc "google.golang.org/grpc"
+	protoGrpcMetadata "google.golang.org/grpc/metadata"
 	"net/url"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
@@ -34,6 +36,8 @@ func NewGrpcSeldonServer(predictor *v1.PredictorSpec, client client.SeldonApiCli
 
 func (g GrpcSeldonServer) Predict(ctx context.Context, req *proto.SeldonMessage) (*proto.SeldonMessage, error) {
 	md := grpc.CollectMetadata(ctx)
+	header := protoGrpcMetadata.Pairs(payload.SeldonPUIDHeader, md.Get(payload.SeldonPUIDHeader)[0])
+	protoGrpc.SendHeader(ctx, header)
 	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, md.Get(payload.SeldonPUIDHeader)[0])
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("SeldonMessageRestClient"), g.ServerUrl, g.Namespace, md, "")
 	reqPayload := payload.ProtoPayload{Msg: req}
