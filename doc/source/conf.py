@@ -205,7 +205,7 @@ if html_theme == "sphinx_material":
                 "title": "Alibi Detect",
             },
             {
-                "href": "https://github.com/SeldonIO/mlserver",
+                "href": "https://mlserver.readthedocs.io/en/latest/",
                 "internal": False,
                 "title": "MLServer",
             },
@@ -231,7 +231,9 @@ if html_theme == "sphinx_material":
     html_theme_path = sphinx_material.html_theme_path()
     html_context = sphinx_material.get_html_context()
 
-html_sidebars = {"**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]}
+html_sidebars = {
+    "**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]
+}
 
 # The Seldon Logo located at the top of the navigation bar.
 html_logo = "Seldon_White.png"
