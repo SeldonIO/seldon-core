@@ -13,7 +13,7 @@ Dependencies:
 #### Install Seldon Core
 Use the notebook to [set-up Seldon Core with Ambassador or Istio Ingress](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html).
 
-Note: If running with KIND you need to make sure do follow [these steps](https://github.com/argoproj/argo/issues/2376#issuecomment-595593237) as workaround to the `/.../docker.sock` known issue.
+Note: If running with KIND you need to make sure do follow [these steps](https://github.com/argoproj/argo-workflows/issues/2376#issuecomment-595593237) as workaround to the `/.../docker.sock` known issue.
 
 #### Set up Minio in your cluster
 Use the notebook to [set-up Minio in your cluster](https://docs.seldon.io/projects/seldon-core/en/latest/examples/minio_setup.html).
@@ -427,4 +427,3 @@ Now we can output the contents of the file created using the `mc head` command.
 ```
 
     Workflow 'seldon-batch-process' deleted
-
