@@ -179,7 +179,7 @@ def send_feedback(
     -------
 
     """
-    is_proto = isinstance(request, prediction_pb2.SeldonMessage)
+    is_proto = isinstance(request, prediction_pb2.Feedback)
     seldon_metrics.update_reward(request.reward)
 
     if hasattr(user_model, "send_feedback_rest"):
