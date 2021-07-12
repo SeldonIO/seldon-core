@@ -11,5 +11,5 @@ pillow==8.1.1
 pip-licenses==3.4.0          # fetch licenses
 pytest-cov==2.10.1
 pytest==6.2.2
-tenacity==6.3.1              # tenacity - used for smart retrying
+tenacity==8.0.1              # tenacity - used for smart retrying
 tox<4.0.0
