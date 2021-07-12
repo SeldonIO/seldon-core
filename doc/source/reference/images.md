@@ -63,10 +63,12 @@
 
 ### Java packages
 
+You can find these packages in the Maven repository.
+
 | Description | Package | Version |
 |-------------|---------|---------|
-| [Seldon Core Wrapper](https://github.com/SeldonIO/seldon-java-wrapper) | [seldon-core-wrapper](https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-wrapper) | 0.1.5 |
-| [Seldon Core JPMML](https://github.com/SeldonIO/JPMML-utils) | [seldon-core-jpmml](https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-jpmml) | 0.0.1 |
+| [Seldon Core Wrapper](https://github.com/SeldonIO/seldon-java-wrapper) | seldon-core-wrapper | 0.1.5 |
+| [Seldon Core JPMML](https://github.com/SeldonIO/JPMML-utils) | seldon-core-jpmml | 0.0.1 |
 
 
 
