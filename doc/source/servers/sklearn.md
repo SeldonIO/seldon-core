@@ -178,7 +178,7 @@ existing SKLearn server to build your own.
 In particular, you could extend the code in the
 [`servers/sklearnserver`](https://github.com/SeldonIO/seldon-core/tree/master/servers/sklearnserver)
 folder to build a custom image.
-This image used for the `SKLEARN_SERVER` implementation can then be overriden
+This image used for the `SKLEARN_SERVER` implementation can then be overridden
 in the `componentSpecs`.
 
 Note that you can also change the image used globally for the SKLearn server by

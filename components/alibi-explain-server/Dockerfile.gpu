@@ -23,6 +23,9 @@ COPY requirements-gpu.txt .
 
 RUN pip install --force-reinstall -r requirements-gpu.txt
 
+# Install python spacy model to avoid issues in airgapped envs
+RUN python -m spacy download en_core_web_md
+
 ENTRYPOINT ["python", "-m", "alibiexplainer"]
 
 

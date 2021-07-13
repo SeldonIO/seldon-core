@@ -6,7 +6,7 @@ If you have a trained Tensorflow model you can deploy this directly via REST or 
 
 ### REST MNIST Example
 
-For REST you need to specify paramaters for:
+For REST you need to specify parameters for:
 
  * signature_name
  * model_name

@@ -163,7 +163,7 @@ test_parallel: build_protos install
 		-s \
 		-W ignore \
 		-n $(PYTEST_WORKERS) \
-		-m "not sequential and not notebooks" 2>&1
+		-m "not sequential and not notebooks and not benchmark" 2>&1
 
 # Then run the s2i tests in sequence (as they currently fail in parallel
 test_sequential: build_protos install
@@ -180,6 +180,13 @@ test_notebooks: build_protos install
 		-s \
 		-m "notebooks" \
 		-W ignore test_notebooks.py::TestNotebooks 2>&1
+
+test_benchmark: build_protos install
+	pytest \
+		--verbose \
+		-s \
+		-W ignore \
+		-m "benchmark" 2>&1
 
 .PHONY: clean
 clean:

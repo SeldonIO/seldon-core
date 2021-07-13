@@ -18,6 +18,6 @@ ${KUBECTL} rollout status deployment.apps/argocd-repo-server -n argocd -w && ${K
 
 ${KUBECTL} patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
 
-# add abilty to receive Webhooks
+# add ability to receive Webhooks
 ${STARTUP_DIR}/update-argocd-webhook-secret
 

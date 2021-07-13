@@ -1,0 +1,1 @@
+seldon_core[tensorflow]

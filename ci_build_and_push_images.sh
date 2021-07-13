@@ -25,12 +25,46 @@ done
 # AVOID EXIT ON ERROR FOR FOLLOWING CMDS
 set +o errexit
 
+
+###########################################################
+### Images that don't need build every time only on change
+echo "Files changed in core builder folder:"
+git --no-pager diff --exit-code --name-only origin/master core-builder/
+CORE_BUILDER_MODIFIED=$?
+if [[ $CORE_BUILDER_MODIFIED -gt 0 ]]; then
+    make -C core-builder/ build_docker_image push_to_registry
+    CORE_BUILDER_EXIT_VALUE=$?
+    if [[ $CORE_BUILDER_EXIT_VALUE -gt 0 ]]; then
+        echo "Prepackaged server build returned errors"
+        return 1
+    fi
+else
+    echo "SKIPPING CORE BUILDER IMAGE BUILD..."
+    CORE_BUILDER_EXIT_VALUE=0
+fi
+
+echo "Files changed in python builder folder:"
+git --no-pager diff --exit-code --name-only origin/master python-builder/
+PYTHON_BUILDER_MODIFIED=$?
+if [[ $PYTHON_BUILDER_MODIFIED -gt 0 ]]; then
+    make -C python-builder/ build_docker_image push_to_registry
+    PYTHON_BUILDER_EXIT_VALUE=$?
+    if [[ $PYTHON_BUILDER_EXIT_VALUE -gt 0 ]]; then
+        echo "Prepackaged server build returned errors"
+        return 1
+    fi
+else
+    echo "SKIPPING PYTHON BUILDER IMAGE BUILD..."
+    PYTHON_BUILDER_EXIT_VALUE=0
+fi
+
+###########################################################
+### Images that need build every time
+
 function build_push_python {
     (cd wrappers/s2i/python/build_scripts \
-	    && ./build_all_local.sh \
-	    && ./push_all.sh \
-        && ./build_redhat.sh \
-        && ./push_redhat.sh)
+	    && ./build_all.sh \
+	    && ./push_all.sh)
     PYTHON_EXIT_VALUE=$?
 }
 
@@ -71,7 +105,15 @@ function build_push_mock {
     make \
 	-C examples/models/mean_classifier \
 	build \
-	push
+	push && \
+    make \
+    -C testing/docker/echo-model \
+    build_image \
+    push_image && \
+    make \
+    -C testing/docker/fixed-model \
+    build_images \
+    push_images
     MOCK_MODEL_EXIT_VALUE=$?
 }
 
@@ -206,4 +248,6 @@ exit $((${PYTHON_EXIT_VALUE} \
     + ${STORAGE_INITIALIZER_EXIT_VALUE} \
     + ${RCLONE_STORAGE_INITIALIZER_EXIT_VALUE} \
     + ${MAB_EXIT_VALUE} \
+    + ${CORE_BUILDER_EXIT_VALUE} \
+    + ${PYTHON_BUILDER_EXIT_VALUE} \
     + ${EXPLAIN_EXIT_VALUE}))

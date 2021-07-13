@@ -167,8 +167,6 @@ pygments_style = None
 
 # -- Options for HTML output -------------------------------------------------
 
-# -- Options for HTML output -------------------------------------------------
-
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
@@ -179,7 +177,7 @@ html_theme = "sphinx_material"
 
 if html_theme == "sphinx_material":
     html_theme_options = {
-        "google_analytics_account": "GTM-WT76RV",
+        "google_analytics_account": "UA-54780881-2",
         "base_url": "https://docs.seldon.io/projects/seldon-core/",
         "color_primary": "indigo",
         "color_accent": "teal",
@@ -192,9 +190,39 @@ if html_theme == "sphinx_material":
         "repo_type": "github",
         "nav_links": [
             {
-                "href": "https://github.com/SeldonIO/seldon-core",
+                "href": "https://docs.seldon.io/projects/seldon-core/en/latest/",
                 "internal": False,
-                "title": "Seldon Repo",
+                "title": "🚀 Our Other Projects & Products:",
+            },
+            {
+                "href": "https://docs.seldon.io/projects/alibi/en/stable/",
+                "internal": False,
+                "title": "Alibi Explain",
+            },
+            {
+                "href": "https://docs.seldon.io/projects/alibi-detect/en/stable/",
+                "internal": False,
+                "title": "Alibi Detect",
+            },
+            {
+                "href": "https://mlserver.readthedocs.io/en/latest/",
+                "internal": False,
+                "title": "MLServer",
+            },
+            {
+                "href": "https://tempo.readthedocs.io/en/latest/",
+                "internal": False,
+                "title": "Tempo SDK",
+            },
+            {
+                "href": "https://deploy.seldon.io",
+                "internal": False,
+                "title": "Seldon Deploy (Enterprise)",
+            },
+            {
+                "href": "https://github.com/SeldonIO/seldon-deploy-sdk#seldon-deploy-sdk",
+                "internal": False,
+                "title": "Seldon Deploy SDK (Enterprise)",
             },
         ],
     }
@@ -203,7 +231,9 @@ if html_theme == "sphinx_material":
     html_theme_path = sphinx_material.html_theme_path()
     html_context = sphinx_material.get_html_context()
 
-html_sidebars = {"**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]}
+html_sidebars = {
+    "**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]
+}
 
 # The Seldon Logo located at the top of the navigation bar.
 html_logo = "Seldon_White.png"
@@ -211,12 +241,6 @@ html_logo = "Seldon_White.png"
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#
-
-# Add any paths that contain custom static files (such as style sheets) here,
-# relative to this directory. They are copied after the builtin static files,
-# so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ["_static"]
 
 html_extra_path = ["_extra"]
 

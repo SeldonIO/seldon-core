@@ -34,11 +34,11 @@ public class ModelPredictionController {
    * Will accept a POST or a GET request with either a query parameter or a FORM parameter.
    *
    * Examples:
-   * GET -> /predict?json={ ... }
+   * GET - /predict?json={ ... }
    * curl -s \
    *  localhost:9000/predict?json={"data": {"names": ["a", "b"], "ndarray": [[1.0, 2.0]]}}' \
    *
-   * POST FORM -> /predict
+   * POST FORM - /predict
    * curl -s -X POST \
    *  -d 'json={"data": {"names": ["a", "b"], "ndarray": [[1.0, 2.0]]}}' \
    *  localhost:9000/predict
@@ -62,7 +62,7 @@ public class ModelPredictionController {
    * Will accept a POST with a proper JSON body.
    *
    * Examples:
-   * POST -> /predict
+   * POST - /predict
    * curl -s -X POST \
    *  -d '{"data": {"names": ["a", "b"], "ndarray": [[1.0, 2.0]]}}' \
    *  localhost:9000/predict

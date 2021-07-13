@@ -1,0 +1,474 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  {{- if eq .Values.workflow.useNameAsGenerateName "false" }}
+  name: {{ .Values.workflow.name }}
+  {{- else }}
+  generateName: {{ .Values.workflow.name }}
+  {{- end }}
+  namespace: {{ .Values.workflow.namespace }}
+spec:
+  entrypoint: seldon-benchmark-process
+  templates:
+  - name: seldon-benchmark-process
+    parallelism: {{ .Values.workflow.parallelism }}
+    steps:
+    - - name: generate-parameters
+        template: generate-parameters-template
+    - - name: run-benchmark-iteration
+        arguments:
+          parameters:
+          - name: listitem
+            value: "{{`{{item.iteration_name}}`}}"
+          - name: replicas
+            value: "{{`{{item.replicas}}`}}"
+          - name: serverWorkers
+            value: "{{`{{item.serverWorkers}}`}}"
+          - name: serverThreads
+            value: "{{`{{item.serverThreads}}`}}"
+          - name: modelUri
+            value: "{{`{{item.modelUri}}`}}"
+          - name: image
+            value: "{{`{{item.image}}`}}"
+          - name: server
+            value: "{{`{{item.server}}`}}"
+          - name: apiType
+            value: "{{`{{item.apiType}}`}}"
+          - name: requestsCpu
+            value: "{{`{{item.requestsCpu}}`}}"
+          - name: requestsMemory
+            value: "{{`{{item.requestsMemory}}`}}"
+          - name: limitsCpu
+            value: "{{`{{item.limitsCpu}}`}}"
+          - name: limitsMemory
+            value: "{{`{{item.limitsMemory}}`}}"
+          - name: benchmarkCpu
+            value: "{{`{{item.benchmarkCpu}}`}}"
+          - name: concurrency
+            value: "{{`{{item.concurrency}}`}}"
+          - name: duration
+            value: "{{`{{item.duration}}`}}"
+          - name: rate
+            value: "{{`{{item.rate}}`}}"
+          - name: params
+            value: "{{`{{item.params}}`}}"
+          - name: disableOrchestrator
+            value: "{{`{{item.disableOrchestrator}}`}}"
+        withParam: "{{`{{steps.generate-parameters.outputs.result}}`}}"
+        template: run-benchmark-iteration-step-template
+
+  - name: run-benchmark-iteration-step-template
+    inputs:
+      parameters:
+      - name: listitem
+      - name: replicas
+      - name: serverWorkers
+      - name: serverThreads
+      - name: modelUri
+      - name: image
+      - name: server
+      - name: apiType
+      - name: requestsCpu
+      - name: requestsMemory
+      - name: limitsCpu
+      - name: limitsMemory
+      - name: benchmarkCpu
+      - name: concurrency
+      - name: duration
+      - name: rate
+      - name: params
+      - name: disableOrchestrator
+    steps:
+    - - name: create-seldon-resource
+        template: create-seldon-resource-template
+        arguments:
+          parameters:
+          - name: iteration_name
+            value: "{{`{{inputs.parameters.listitem}}`}}"
+          - name: replicas
+            value: "{{`{{inputs.parameters.replicas}}`}}"
+          - name: serverWorkers
+            value: "{{`{{inputs.parameters.serverWorkers}}`}}"
+          - name: serverThreads
+            value: "{{`{{inputs.parameters.serverThreads}}`}}"
+          - name: modelUri
+            value: "{{`{{inputs.parameters.modelUri}}`}}"
+          - name: image
+            value: "{{`{{inputs.parameters.image}}`}}"
+          - name: server
+            value: "{{`{{inputs.parameters.server}}`}}"
+          - name: apiType
+            value: "{{`{{inputs.parameters.apiType}}`}}"
+          - name: requestsCpu
+            value: "{{`{{inputs.parameters.requestsCpu}}`}}"
+          - name: requestsMemory
+            value: "{{`{{inputs.parameters.requestsMemory}}`}}"
+          - name: limitsCpu
+            value: "{{`{{inputs.parameters.limitsCpu}}`}}"
+          - name: limitsMemory
+            value: "{{`{{inputs.parameters.limitsMemory}}`}}"
+          - name: benchmarkCpu
+            value: "{{`{{inputs.parameters.benchmarkCpu}}`}}"
+          - name: concurrency
+            value: "{{`{{inputs.parameters.concurrency}}`}}"
+          - name: duration
+            value: "{{`{{inputs.parameters.duration}}`}}"
+          - name: rate
+            value: "{{`{{inputs.parameters.rate}}`}}"
+          - name: params
+            value: "{{`{{inputs.parameters.params}}`}}"
+          - name: disableOrchestrator
+            value: "{{`{{inputs.parameters.disableOrchestrator}}`}}"
+    - - name: wait-seldon-resource
+        template: wait-seldon-resource-template
+        arguments:
+          parameters:
+          - name: iteration_name
+            value: "{{`{{inputs.parameters.listitem}}`}}"
+    - - name: run-benchmark-rest
+        template: run-benchmark-template-rest
+        when: "{{`{{inputs.parameters.apiType}}`}} == rest"
+        arguments:
+          parameters:
+          - name: iteration_name
+            value: "{{`{{inputs.parameters.listitem}}`}}"
+          - name: replicas
+            value: "{{`{{inputs.parameters.replicas}}`}}"
+          - name: serverWorkers
+            value: "{{`{{inputs.parameters.serverWorkers}}`}}"
+          - name: serverThreads
+            value: "{{`{{inputs.parameters.serverThreads}}`}}"
+          - name: modelUri
+            value: "{{`{{inputs.parameters.modelUri}}`}}"
+          - name: image
+            value: "{{`{{inputs.parameters.image}}`}}"
+          - name: server
+            value: "{{`{{inputs.parameters.server}}`}}"
+          - name: apiType
+            value: "{{`{{inputs.parameters.apiType}}`}}"
+          - name: requestsCpu
+            value: "{{`{{inputs.parameters.requestsCpu}}`}}"
+          - name: requestsMemory
+            value: "{{`{{inputs.parameters.requestsMemory}}`}}"
+          - name: limitsCpu
+            value: "{{`{{inputs.parameters.limitsCpu}}`}}"
+          - name: limitsMemory
+            value: "{{`{{inputs.parameters.limitsMemory}}`}}"
+          - name: benchmarkCpu
+            value: "{{`{{inputs.parameters.benchmarkCpu}}`}}"
+          - name: concurrency
+            value: "{{`{{inputs.parameters.concurrency}}`}}"
+          - name: duration
+            value: "{{`{{inputs.parameters.duration}}`}}"
+          - name: rate
+            value: "{{`{{inputs.parameters.rate}}`}}"
+          - name: params
+            value: "{{`{{inputs.parameters.params}}`}}"
+          - name: disableOrchestrator
+            value: "{{`{{inputs.parameters.disableOrchestrator}}`}}"
+      - name: run-benchmark-grpc
+        template: run-benchmark-template-grpc
+        when: "{{`{{inputs.parameters.apiType}}`}} == grpc"
+        arguments:
+          parameters:
+          - name: iteration_name
+            value: "{{`{{inputs.parameters.listitem}}`}}"
+          - name: replicas
+            value: "{{`{{inputs.parameters.replicas}}`}}"
+          - name: serverWorkers
+            value: "{{`{{inputs.parameters.serverWorkers}}`}}"
+          - name: serverThreads
+            value: "{{`{{inputs.parameters.serverThreads}}`}}"
+          - name: modelUri
+            value: "{{`{{inputs.parameters.modelUri}}`}}"
+          - name: image
+            value: "{{`{{inputs.parameters.image}}`}}"
+          - name: server
+            value: "{{`{{inputs.parameters.server}}`}}"
+          - name: apiType
+            value: "{{`{{inputs.parameters.apiType}}`}}"
+          - name: requestsCpu
+            value: "{{`{{inputs.parameters.requestsCpu}}`}}"
+          - name: requestsMemory
+            value: "{{`{{inputs.parameters.requestsMemory}}`}}"
+          - name: limitsCpu
+            value: "{{`{{inputs.parameters.limitsCpu}}`}}"
+          - name: limitsMemory
+            value: "{{`{{inputs.parameters.limitsMemory}}`}}"
+          - name: benchmarkCpu
+            value: "{{`{{inputs.parameters.benchmarkCpu}}`}}"
+          - name: concurrency
+            value: "{{`{{inputs.parameters.concurrency}}`}}"
+          - name: duration
+            value: "{{`{{inputs.parameters.duration}}`}}"
+          - name: rate
+            value: "{{`{{inputs.parameters.rate}}`}}"
+          - name: params
+            value: "{{`{{inputs.parameters.params}}`}}"
+          - name: disableOrchestrator
+            value: "{{`{{inputs.parameters.disableOrchestrator}}`}}"
+    - - name: delete-seldon-resource
+        template: delete-seldon-resource-template
+        arguments:
+          parameters:
+          - name: iteration_name
+            value: "{{`{{inputs.parameters.listitem}}`}}"
+
+  - name: generate-parameters-template
+    script:
+      image: python:alpine3.6
+      command: [python]
+      source: |
+        import json
+        import sys
+        from itertools import product
+
+        delim = "{{ .Values.workflow.paramDelimiter }}"
+
+        params = product(
+            "{{ .Values.seldonDeployment.replicas }}".split(delim),
+            "{{ .Values.seldonDeployment.serverWorkers }}".split(delim),
+            "{{ .Values.seldonDeployment.serverThreads }}".split(delim),
+            "{{ .Values.seldonDeployment.modelUri }}".split(delim),
+            "{{ .Values.seldonDeployment.image }}".split(delim),
+            "{{ .Values.seldonDeployment.server }}".split(delim),
+            "{{ .Values.seldonDeployment.apiType }}".split(delim),
+            "{{ .Values.seldonDeployment.requests.cpu }}".split(delim),
+            "{{ .Values.seldonDeployment.requests.memory }}".split(delim),
+            "{{ .Values.seldonDeployment.limits.cpu }}".split(delim),
+            "{{ .Values.seldonDeployment.limits.memory }}".split(delim),
+            "{{ .Values.benchmark.cpu }}".split(delim),
+            "{{ .Values.benchmark.concurrency }}".split(delim),
+            "{{ .Values.benchmark.duration }}".split(delim),
+            "{{ .Values.benchmark.rate }}".split(delim),
+            "{{ .Values.seldonDeployment.disableOrchestrator }}".split(delim),
+        )
+
+        list_params = []
+        for idx, param in enumerate(params):
+            iteration_name = "{{ .Values.seldonDeployment.name }}-" + str(idx)
+            curr = {
+                "iteration_name": iteration_name,
+                "replicas": param[0],
+                "serverWorkers": param[1],
+                "serverThreads": param[2],
+                "modelUri": param[3],
+                "image": param[4],
+                "server": param[5],
+                "apiType": param[6],
+                "requestsCpu": param[7],
+                "requestsMemory": param[8],
+                "limitsCpu": param[9],
+                "limitsMemory": param[10],
+                "benchmarkCpu": param[11],
+                "concurrency": param[12],
+                "duration": param[13],
+                "rate": param[14],
+                "disableOrchestrator": param[15],
+            }
+            curr["params"] = json.dumps(curr)
+            list_params.append(curr)
+
+        json.dump(list_params, sys.stdout)
+
+  - name: create-seldon-resource-template
+    inputs:
+      parameters:
+      - name: iteration_name
+      - name: replicas
+      - name: serverWorkers
+      - name: serverThreads
+      - name: modelUri
+      - name: image
+      - name: server
+      - name: apiType
+      - name: requestsCpu
+      - name: requestsMemory
+      - name: limitsCpu
+      - name: limitsMemory
+      - name: benchmarkCpu
+      - name: concurrency
+      - name: duration
+      - name: rate
+      - name: params
+      - name: disableOrchestrator
+    resource:
+      action: create
+      manifest: |
+            apiVersion: machinelearning.seldon.io/v1
+            kind: SeldonDeployment
+            metadata:
+              name: "{{`{{inputs.parameters.iteration_name}}`}}"
+              namespace: {{ .Values.workflow.namespace }}
+              ownerReferences:
+              - apiVersion: argoproj.io/v1alpha1
+                blockOwnerDeletion: true
+                kind: Workflow
+                name: "{{`{{workflow.name}}`}}"
+                uid: "{{`{{workflow.uid}}`}}"
+            spec:
+              name: "{{`{{inputs.parameters.iteration_name}}`}}"
+              transport: "{{`{{inputs.parameters.apiType}}`}}"
+              protocol: {{ .Values.seldonDeployment.protocol }}
+              predictors:
+                - annotations:
+                    seldon.io/no-engine: "{{`{{inputs.parameters.disableOrchestrator}}`}}"
+                  componentSpecs:
+                  - spec:
+                      containers:
+                      - name: {{ .Values.seldonDeployment.modelName }}
+                      {{- if .Values.seldonDeployment.image }}
+                        image: "{{`{{inputs.parameters.image}}`}}"
+                      {{- end }}
+                        env:
+                        - name: GUNICORN_THREADS
+                          value: "{{`{{inputs.parameters.serverThreads}}`}}"
+                        - name: GRPC_THREADS
+                          value: "{{`{{inputs.parameters.serverThreads}}`}}"
+                        - name: GUNICORN_WORKERS
+                          value: "{{`{{inputs.parameters.serverWorkers}}`}}"
+                        {{- if eq .Values.seldonDeployment.enableResources "true" }}
+                        resources:
+                          requests:
+                            cpu: {{`{{inputs.parameters.requestsCpu}}`}}
+                            memory: {{`{{inputs.parameters.requestsMemory}}`}}
+                          limits:
+                            cpu: {{`{{inputs.parameters.limitsCpu}}`}}
+                            memory: {{`{{inputs.parameters.limitsMemory}}`}}
+                        {{- end }}
+                  graph:
+                    children: []
+                    {{- if .Values.seldonDeployment.server }}
+                    implementation: {{`{{inputs.parameters.server}}`}}
+                    {{- end }}
+                    {{- if .Values.seldonDeployment.modelUri }}
+                    modelUri: {{`{{inputs.parameters.modelUri}}`}}
+                    {{- end }}
+                    name: {{ .Values.seldonDeployment.modelName }}
+                  name: default
+                  replicas: {{`{{inputs.parameters.replicas}}`}}
+
+  - name: wait-seldon-resource-template
+    inputs:
+      parameters:
+      - name: iteration_name
+    script:
+      image: bitnami/kubectl:1.17
+      command: [bash]
+      source: |
+        sleep {{ .Values.seldonDeployment.waitTime }}
+        kubectl rollout status \
+            deploy/$(kubectl get deploy -l seldon-deployment-id="{{`{{inputs.parameters.iteration_name}}`}}" -o jsonpath='{.items[0].metadata.name}')
+
+  - name: run-benchmark-template-rest
+    inputs:
+      parameters:
+      - name: iteration_name
+      - name: replicas
+      - name: serverWorkers
+      - name: serverThreads
+      - name: modelUri
+      - name: image
+      - name: server
+      - name: apiType
+      - name: requestsCpu
+      - name: requestsMemory
+      - name: limitsCpu
+      - name: limitsMemory
+      - name: benchmarkCpu
+      - name: concurrency
+      - name: duration
+      - name: rate
+      - name: params
+      - name: disableOrchestrator
+    script:
+      image: {{ .Values.benchmark.restImage }}
+      command: [sh]
+      source: |
+        {{- if eq .Values.seldonDeployment.protocol "seldon" }}
+        echo '{"method": "POST", "header": {"Content-Type": ["application/json"] }, "url": "http://{{ .Values.benchmark.host }}/seldon/{{ .Values.workflow.namespace }}/{{`{{inputs.parameters.iteration_name}}`}}/api/v1.0/predictions", "body": "{{ .Values.benchmark.data | b64enc }}" }' \
+        {{- else if eq .Values.seldonDeployment.protocol "tensorflow" }}
+        echo '{"method": "POST", "header": {"Content-Type": ["application/json"] }, "url": "http://{{ .Values.benchmark.host }}/seldon/{{ .Values.workflow.namespace }}/{{`{{inputs.parameters.iteration_name}}`}}/v1/models/{{ .Values.seldonDeployment.modelName }}/:predict", "body": "{{ .Values.benchmark.data | b64enc }}" }' \
+        {{- else if eq .Values.seldonDeployment.protocol "kfserving" }}
+        echo '{"method": "POST", "header": {"Content-Type": ["application/json"] }, "url": "http://{{ .Values.benchmark.host }}/seldon/{{ .Values.workflow.namespace }}/{{`{{inputs.parameters.iteration_name}}`}}/v2/models/{{ .Values.seldonDeployment.modelName }}/infer", "body": "{{ .Values.benchmark.data | b64enc }}" }' \
+        {{- end }}
+          | vegeta \
+                -cpus="{{`{{inputs.parameters.benchmarkCpu}}`}}" \
+                attack \
+                -duration="{{`{{inputs.parameters.duration}}`}}" \
+                -rate="{{`{{inputs.parameters.rate}}`}}" \
+                -max-connections="{{`{{inputs.parameters.concurrency}}`}}" \
+                -max-workers="{{`{{inputs.parameters.concurrency}}`}}" \
+                -format=json \
+          | vegeta \
+                report \
+                -type=json \
+          | jq -c ". += {\"params\": {{`{{inputs.parameters.params}}`}}}"
+
+  - name: run-benchmark-template-grpc
+    inputs:
+      parameters:
+      - name: iteration_name
+      - name: replicas
+      - name: serverWorkers
+      - name: serverThreads
+      - name: modelUri
+      - name: image
+      - name: server
+      - name: apiType
+      - name: requestsCpu
+      - name: requestsMemory
+      - name: limitsCpu
+      - name: limitsMemory
+      - name: benchmarkCpu
+      - name: concurrency
+      - name: duration
+      - name: rate
+      - name: params
+      - name: disableOrchestrator
+    script:
+      image: {{ .Values.benchmark.grpcImage }}
+      command: [sh]
+      source: |
+        ghz \
+            --insecure \
+        {{- if eq .Values.seldonDeployment.protocol "seldon" }}
+            --proto /proto/prediction.proto \
+            --call seldon.protos.Seldon/Predict \
+        {{- else if eq .Values.seldonDeployment.protocol "tensorflow" }}
+            --proto /proto/prediction_service.proto \
+            --call tensorflow.serving.PredictionService/Predict \
+        {{- else if eq .Values.seldonDeployment.protocol "kfserving" }}
+            --proto /proto/grpc_service.proto \
+            --call inference.GRPCInferenceService/ModelInfer \
+        {{- end }}
+        {{- if .Values.benchmark.grpcDataOverride }}
+            --data='{{ .Values.benchmark.grpcDataOverride }}' \
+        {{- else }}
+            --data='{{ .Values.benchmark.data }}' \
+        {{- end }}
+            --rps="{{`{{inputs.parameters.rate}}`}}" \
+            --cpus="{{`{{inputs.parameters.benchmarkCpu}}`}}" \
+            --duration="{{`{{inputs.parameters.duration}}`}}" \
+            --concurrency="{{`{{inputs.parameters.concurrency}}`}}" \
+            --connections="{{`{{inputs.parameters.concurrency}}`}}" \
+            --format json \
+            --metadata='{"seldon": "{{`{{inputs.parameters.iteration_name}}`}}", "namespace": "{{ .Values.workflow.namespace }}"}' \
+            {{ .Values.benchmark.host }} \
+        | jq \
+          -c \
+          'del(.histogram)|del(.details)' \
+        | jq -c ". += {\"params\": {{`{{inputs.parameters.params}}`}}}" \
+        | jq -c 'del(.options.data)'
+
+  - name: delete-seldon-resource-template
+    inputs:
+      parameters:
+      - name: iteration_name
+    script:
+      image: bitnami/kubectl:1.17
+      command: [bash]
+      source: |
+        kubectl delete sdep {{`{{inputs.parameters.iteration_name}}`}} -n {{ .Values.workflow.namespace }}
+

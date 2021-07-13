@@ -20,9 +20,16 @@ spec:
     context: "release-build-push"
     always_run: false
     optional: false
-    trigger: (?m)^/test( all| release.*),?(s+|$)
+    trigger: (?m)^/test( release.*),?(s+|$)
     rerun_command: "/test release"
     source: "release.yaml"
+  - name: benchmark
+    context: "benchmark"
+    always_run: false
+    optional: false
+    trigger: (?m)^/test( benchmark.*),?(s+|$)
+    rerun_command: "/test benchmark"
+    source: "benchmark.yaml"
   postsubmits:
   - name: release
     context: "release"

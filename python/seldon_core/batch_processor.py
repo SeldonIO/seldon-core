@@ -1,3 +1,4 @@
+import copy
 import json
 import logging
 import time
@@ -23,7 +24,6 @@ CHOICES_LOG_LEVEL = {
     "error": logging.ERROR,
 }
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -44,6 +44,7 @@ def start_multithreaded_batch_worker(
     payload_type: str,
     workers: int,
     retries: int,
+    batch_size: int,
     input_data_path: str,
     output_data_path: str,
     method: str,
@@ -69,7 +70,11 @@ def start_multithreaded_batch_worker(
     q_out = Queue(workers * 2)
 
     if method == "feedback" and data_type != "raw":
-        raise RuntimeError("Feedback method is supported only with raw data type.")
+        raise RuntimeError("Feedback method is supported only with `raw` data type.")
+    elif data_type != "data" and batch_size > 1:
+        raise RuntimeError(
+            "Batch size greater than 1 is only supported for `data` data type."
+        )
     elif data_type == "raw" and method != "feedback":
         raise RuntimeError("Raw input is currently only support for feedback method.")
 
@@ -84,14 +89,16 @@ def start_multithreaded_batch_worker(
     )
 
     t_in = Thread(
-        target=_start_input_file_worker, args=(q_in, input_data_path), daemon=True
+        target=_start_input_file_worker,
+        args=(q_in, input_data_path, batch_size),
+        daemon=True,
     )
     t_in.start()
 
     for _ in range(workers):
         Thread(
             target=_start_request_worker,
-            args=(q_in, q_out, data_type, sc, method, retries, batch_id),
+            args=(q_in, q_out, data_type, sc, method, retries, batch_id, payload_type),
             daemon=True,
         ).start()
 
@@ -118,7 +125,9 @@ def start_multithreaded_batch_worker(
         logger.info(f"Elapsed time: {time.time() - start_time}")
 
 
-def _start_input_file_worker(q_in: Queue, input_data_path: str) -> None:
+def _start_input_file_worker(
+    q_in: Queue, input_data_path: str, batch_size: int
+) -> None:
     """
     Runs logic for the input file worker which reads the input file from filestore
     and puts all of the lines into the input queue so it can be processed.
@@ -132,9 +141,14 @@ def _start_input_file_worker(q_in: Queue, input_data_path: str) -> None:
     """
     input_data_file = open(input_data_path, "r")
     enum_idx = 0
+    batch = []
     for line in input_data_file:
         unique_id = str(uuid.uuid1())
-        q_in.put((enum_idx, unique_id, line))
+        batch.append((enum_idx, unique_id, line))
+        # If the batch to send is the size then push to queue and rest batch
+        if len(batch) == batch_size:
+            q_in.put(batch)
+            batch = []
         enum_idx += 1
 
 
@@ -143,7 +157,7 @@ def _start_output_file_worker(
 ) -> None:
     """
     Runs logic for the output file worker which receives all the processed output
-    fro the request worker through the queue and adds it into the output file in a
+    from the request worker through the queue and adds it into the output file in a
     thread safe manner.
 
     Parameters
@@ -178,6 +192,7 @@ def _start_request_worker(
     method: str,
     retries: int,
     batch_id: str,
+    payload_type: str,
 ) -> None:
     """
     Runs logic for the worker that sends requests from the queue until the queue
@@ -202,19 +217,35 @@ def _start_request_worker(
         The unique identifier for the batch which is passed to all requests
     """
     while True:
-        batch_idx, batch_instance_id, input_raw = q_in.get()
+        input_data = q_in.get()
         if method == "predict":
-            str_output = _send_batch_predict(
-                batch_idx,
-                batch_instance_id,
-                input_raw,
-                data_type,
-                sc,
-                retries,
-                batch_id,
-            )
-            # Mark task as done in the queue to add space for new tasks
+            # If we have a batch size > 1 then we wish to use the method for sending multiple predictions
+            # as a single request and split the response into multiple responses.
+            if len(input_data) > 1:
+                str_outputs = _send_batch_predict_multi_request(
+                    input_data,
+                    data_type,
+                    sc,
+                    retries,
+                    batch_id,
+                    payload_type,
+                )
+                for str_output in str_outputs:
+                    q_out.put(str_output)
+            else:
+                batch_idx, batch_instance_id, input_raw = input_data[0]
+                str_output = _send_batch_predict(
+                    batch_idx,
+                    batch_instance_id,
+                    input_raw,
+                    data_type,
+                    sc,
+                    retries,
+                    batch_id,
+                )
+                q_out.put(str_output)
         elif method == "feedback":
+            batch_idx, batch_instance_id, input_raw = input_data[0]
             str_output = _send_batch_feedback(
                 batch_idx,
                 batch_instance_id,
@@ -224,8 +255,122 @@ def _start_request_worker(
                 retries,
                 batch_id,
             )
-        q_out.put(str_output)
+            q_out.put(str_output)
+        # Mark task as done in the queue to add space for new tasks
         q_in.task_done()
+
+
+def _send_batch_predict_multi_request(
+    input_data: [],
+    data_type: str,
+    sc: SeldonClient,
+    retries: int,
+    batch_id: str,
+    payload_type: str,
+) -> [str]:
+    """
+    Send an request using the Seldon Client with batch context including the
+    unique ID of the batch and the Batch enumerated index as metadata. This
+    function also uses the unique batch ID as request ID so the request can be
+    traced back individually in the Seldon Request Logger context. Each request
+    will be attempted for the number of retries, and will return the string
+    serialised result. This method is similar to _send_batch_predict, but allows multiple
+    requests to be combined into a single prediction.
+    Parameters
+    ---
+    input_data
+        The input data containing the indexes, instance_ids and predictions
+    data_type
+        The data type to send which can be `data`
+    sc
+        The instance of SeldonClient to use to send the requests to the seldon model
+    retries
+        The number of times to retry the request
+    batch_id
+        The unique identifier for the batch which is passed to all requests
+    Returns
+    ---
+        A string serialised result of the response (or equivalent data with error info)
+    """
+
+    indexes = [x[0] for x in input_data]
+    instance_ids = [x[1] for x in input_data]
+
+    predict_kwargs = {}
+    tags = {
+        "batch_id": batch_id,
+    }
+
+    predict_kwargs["meta"] = tags
+    predict_kwargs["headers"] = {"Seldon-Puid": instance_ids[0]}
+
+    try:
+        # Initialise concatenated array for data
+        loaded = [json.loads(raw_data[2]) for raw_data in input_data]
+        concat = np.concatenate(loaded)
+        predict_kwargs["data"] = concat
+
+        response = None
+        for i in range(retries):
+            try:
+                seldon_payload = sc.predict(**predict_kwargs)
+                assert seldon_payload.success
+                response = seldon_payload.response
+                break
+            except (requests.exceptions.RequestException, AssertionError) as e:
+                logger.error(f"Exception: {e}, retries {retries}")
+                if i == (retries - 1):
+                    raise
+
+    except Exception as e:
+        error_resp = {
+            "status": {"info": "FAILURE", "reason": str(e), "status": 1},
+            "meta": tags,
+        }
+        print("Exception: %s" % e)
+        str_output = json.dumps(error_resp)
+        return [str_output]
+
+    # Take the response create new responses for each request
+    responses = []
+    # If tensor then prepare the ndarray
+    tensor_ndarray = np.array(())
+    if payload_type == "tensor":
+        tensor = np.array(response["data"]["tensor"]["values"])
+        shape = response["data"]["tensor"]["shape"]
+        tensor_ndarray = tensor.reshape(shape)
+
+    for i in range(len(input_data)):
+        try:
+            new_response = copy.deepcopy(response)
+            if payload_type == "ndarray":
+                # Format new responses for each original prediction request
+                new_response["data"]["ndarray"] = [response["data"]["ndarray"][i]]
+                new_response["meta"]["tags"]["batch_index"] = indexes[i]
+                new_response["meta"]["tags"]["batch_instance_id"] = instance_ids[i]
+                responses.append(json.dumps(new_response))
+            elif payload_type == "tensor":
+                # Format new responses for each original prediction request
+                new_response["data"]["tensor"]["shape"][0] = 1
+                new_response["data"]["tensor"]["values"] = np.ndarray.tolist(
+                    tensor_ndarray[i]
+                )
+                new_response["meta"]["tags"]["batch_index"] = indexes[i]
+                new_response["meta"]["tags"]["batch_instance_id"] = instance_ids[i]
+                responses.append(json.dumps(new_response))
+            else:
+                raise RuntimeError(
+                    "Only `ndarray` and `tensor` input are currently supported for batch size greater than 1."
+                )
+        except Exception as e:
+            error_resp = {
+                "status": {"info": "FAILURE", "reason": str(e), "status": 1},
+                "meta": tags,
+            }
+            print("Exception: %s" % e)
+            responses.append(json.dumps(error_resp))
+
+    return responses
 
 
 def _send_batch_predict(
@@ -244,7 +389,7 @@ def _send_batch_predict(
     traced back individually in the Seldon Request Logger context. Each request
     will be attempted for the number of retries, and will return the string
     serialised result.
-    Paramters
+    Parameters
     ---
     batch_idx
         The enumerated index given to the batch datapoint in order of local dataset
@@ -253,7 +398,7 @@ def _send_batch_predict(
     input_raw
         The raw input in string format to be loaded to the respective format
     data_type
-        The data type to send which can be str, json and data
+        The data type to send which can be `str`, `json` and `data`
     sc
         The instance of SeldonClient to use to send the requests to the seldon model
     retries
@@ -262,18 +407,16 @@ def _send_batch_predict(
         The unique identifier for the batch which is passed to all requests
     Returns
     ---
-        A string serialised result of the response (or equivallent data with error info)
+        A string serialised result of the response (or equivalent data with error info)
     """
 
     predict_kwargs = {}
-    meta = {
-        "tags": {
-            "batch_id": batch_id,
-            "batch_instance_id": batch_instance_id,
-            "batch_index": batch_idx,
-        }
+    tags = {
+        "batch_id": batch_id,
+        "batch_instance_id": batch_instance_id,
+        "batch_index": batch_idx,
     }
-    predict_kwargs["meta"] = meta
+    predict_kwargs["meta"] = tags
     predict_kwargs["headers"] = {"Seldon-Puid": batch_instance_id}
     try:
         data = json.loads(input_raw)
@@ -300,8 +443,9 @@ def _send_batch_predict(
     except Exception as e:
         error_resp = {
             "status": {"info": "FAILURE", "reason": str(e), "status": 1},
-            "meta": meta,
+            "meta": tags,
         }
+        print("Exception: %s" % e)
         str_output = json.dumps(error_resp)
 
     return str_output
@@ -319,7 +463,7 @@ def _send_batch_feedback(
     """
     Send an request using the Seldon Client with feedback
 
-    Paramters
+    Parameters
     ---
     batch_idx
         The enumerated index given to the batch datapoint in order of local dataset
@@ -338,7 +482,7 @@ def _send_batch_feedback(
 
     Returns
     ---
-        A string serialised result of the response (or equivallent data with error info)
+        A string serialised result of the response (or equivalent data with error info)
     """
 
     feedback_kwargs = {}
@@ -349,7 +493,7 @@ def _send_batch_feedback(
             "batch_index": batch_idx,
         }
     }
-    # Feedback Protos does not support meta - defined to include in file output only.
+    # Feedback protos do not support meta - defined to include in file output only.
     try:
         data = json.loads(input_raw)
         feedback_kwargs["raw_request"] = data
@@ -360,7 +504,7 @@ def _send_batch_feedback(
                 seldon_payload = sc.feedback(**feedback_kwargs)
                 assert seldon_payload.success
 
-                # Update Tags so we can track feedback intances in output file
+                # Update Tags so we can track feedback instances in output file
                 tags = seldon_payload.response.get("meta", {}).get("tags", {})
                 tags.update(meta["tags"])
                 if "meta" not in seldon_payload.response:
@@ -378,6 +522,7 @@ def _send_batch_feedback(
             "status": {"info": "FAILURE", "reason": str(e), "status": 1},
             "meta": meta,
         }
+        print("Exception: %s" % e)
         str_output = json.dumps(error_resp)
 
     return str_output
@@ -500,6 +645,14 @@ def _send_batch_feedback(
     type=str,
     help="Unique batch ID to identify all datapoints processed in this batch, if not provided is auto generated",
 )
+@click.option(
+    "--batch-size",
+    "-u",
+    envvar="SELDON_BATCH_SIZE",
+    default=1,
+    type=int,
+    help="Batch size greater than 1 can be used to group multiple predictions into a single request.",
+)
 def run_cli(
     deployment_name: str,
     gateway_type: str,
@@ -510,6 +663,7 @@ def run_cli(
     payload_type: str,
     workers: int,
     retries: int,
+    batch_size: int,
     input_data_path: str,
     output_data_path: str,
     method: str,
@@ -538,6 +692,7 @@ def run_cli(
         payload_type,
         workers,
         retries,
+        batch_size,
         input_data_path,
         output_data_path,
         method,
@@ -545,3 +700,7 @@ def run_cli(
         benchmark,
         batch_id,
     )
+
+
+if __name__ == "__main__":
+    run_cli()

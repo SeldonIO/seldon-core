@@ -1,5 +1,5 @@
 DOCKER_IMAGE_NAME=seldonio/core-builder
-DOCKER_IMAGE_VERSION=0.20
+DOCKER_IMAGE_VERSION=0.22
 
 build_docker_image:
 	cp ../testing/scripts/dev_requirements.txt .

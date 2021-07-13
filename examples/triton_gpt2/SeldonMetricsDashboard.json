@@ -1,0 +1,550 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "clusterId": {
+      "type": "string",
+      "defaultValue":"/subscriptions/xxxx/resourcegroups/seldon/providers/Microsoft.ContainerService/managedClusters/modeltests"
+     
+    }
+  },
+  "resources": [
+  {
+    "properties": {
+      "lenses": {
+        "0": {
+          "order": 0,
+          "parts": {
+            "0": {
+              "position": {
+                "x": 0,
+                "y": 0,
+                "colSpan": 5,
+                "rowSpan": 4
+              },
+              "metadata": {
+                "inputs": [
+                  {
+                    "name": "resourceTypeMode",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "ComponentId",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "Scope",
+                    "value": {
+                      "resourceIds": [
+                        "[parameters('clusterId')]"
+                      ]
+                    },
+                    "isOptional": true
+                  },
+                  {
+                    "name": "PartId",
+                    "value": "00294c68-30d2-47a8-a14e-154cbf66219a",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "Version",
+                    "value": "2.0",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "TimeRange",
+                    "value": "PT1H",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "DashboardId",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "DraftRequestParameters",
+                    "value": {
+                      "scope": "hierarchy"
+                    },
+                    "isOptional": true
+                  },
+                  {
+                    "name": "Query",
+                    "value": "InsightsMetrics \n| where Namespace == \"prometheus\"\n| where Name == \"seldon_api_executor_server_requests_seconds_count\"\n| extend Model = parse_json(Tags).deployment_name\n| where parse_json(Tags).service == \"predictions\"  \n| order by TimeGenerated asc \n| extend RequestsPerMin = Val - prev(Val,1)\n| project TimeGenerated, RequestsPerMin\n| render areachart \n\n",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "ControlType",
+                    "value": "FrameControlChart",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "SpecificChart",
+                    "value": "StackedArea",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "PartTitle",
+                    "value": "Analytics",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "PartSubTitle",
+                    "value": "modeltests",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "Dimensions",
+                    "value": {
+                      "xAxis": {
+                        "name": "TimeGenerated",
+                        "type": "datetime"
+                      },
+                      "yAxis": [
+                        {
+                          "name": "RequestsPerMin",
+                          "type": "real"
+                        }
+                      ],
+                      "splitBy": [],
+                      "aggregation": "Sum"
+                    },
+                    "isOptional": true
+                  },
+                  {
+                    "name": "LegendOptions",
+                    "value": {
+                      "isEnabled": true,
+                      "position": "Bottom"
+                    },
+                    "isOptional": true
+                  },
+                  {
+                    "name": "IsQueryContainTimeRange",
+                    "value": false,
+                    "isOptional": true
+                  }
+                ],
+                "type": "Extension/Microsoft_OperationsManagementSuite_Workspace/PartType/LogsDashboardPart",
+                "settings": {},
+                "savedContainerState": {
+                  "partTitle": "Analytics",
+                  "assetName": "modeltests"
+                }
+              }
+            },
+            "1": {
+              "position": {
+                "x": 5,
+                "y": 0,
+                "colSpan": 6,
+                "rowSpan": 4
+              },
+              "metadata": {
+                "inputs": [
+                  {
+                    "name": "resourceTypeMode",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "ComponentId",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "Scope",
+                    "value": {
+                      "resourceIds": [
+                        "/subscriptions/f869415f-5cff-46a3-b728-20659d14d62d/resourcegroups/seldon/providers/Microsoft.ContainerService/managedClusters/modeltests"
+                      ]
+                    },
+                    "isOptional": true
+                  },
+                  {
+                    "name": "PartId",
+                    "value": "10181a5a-1191-44ac-a933-57043a27f74a",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "Version",
+                    "value": "2.0",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "TimeRange",
+                    "value": "PT1H",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "DashboardId",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "DraftRequestParameters",
+                    "value": {
+                      "scope": "hierarchy"
+                    },
+                    "isOptional": true
+                  },
+                  {
+                    "name": "Query",
+                    "value": "InsightsMetrics \n| where Namespace == \"prometheus\"\n| where Name in (\"nv_inference_request_duration_us\")\n| order by TimeGenerated asc\n| extend InferDurationSec = (Val - prev(Val, 1)) / 1000\n| project TimeGenerated, Name, InferDurationSec\n| render areachart   \n\n",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "ControlType",
+                    "value": "FrameControlChart",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "SpecificChart",
+                    "value": "StackedArea",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "PartTitle",
+                    "value": "Analytics",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "PartSubTitle",
+                    "value": "modeltests",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "Dimensions",
+                    "value": {
+                      "xAxis": {
+                        "name": "TimeGenerated",
+                        "type": "datetime"
+                      },
+                      "yAxis": [
+                        {
+                          "name": "InferDurationSec",
+                          "type": "real"
+                        }
+                      ],
+                      "splitBy": [
+                        {
+                          "name": "Name",
+                          "type": "string"
+                        }
+                      ],
+                      "aggregation": "Sum"
+                    },
+                    "isOptional": true
+                  },
+                  {
+                    "name": "LegendOptions",
+                    "value": {
+                      "isEnabled": true,
+                      "position": "Bottom"
+                    },
+                    "isOptional": true
+                  },
+                  {
+                    "name": "IsQueryContainTimeRange",
+                    "value": false,
+                    "isOptional": true
+                  }
+                ],
+                "type": "Extension/Microsoft_OperationsManagementSuite_Workspace/PartType/LogsDashboardPart",
+                "settings": {},
+                "savedContainerState": {
+                  "partTitle": "Analytics",
+                  "assetName": "modeltests"
+                }
+              }
+            },
+            "2": {
+              "position": {
+                "x": 0,
+                "y": 4,
+                "colSpan": 5,
+                "rowSpan": 4
+              },
+              "metadata": {
+                "inputs": [
+                  {
+                    "name": "resourceTypeMode",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "ComponentId",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "Scope",
+                    "value": {
+                      "resourceIds": [
+                        "[parameters('clusterId')]"
+                      ]
+                    },
+                    "isOptional": true
+                  },
+                  {
+                    "name": "PartId",
+                    "value": "61a274fb-2040-4aa2-812f-23dcbe10e4c0",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "Version",
+                    "value": "2.0",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "TimeRange",
+                    "value": "PT1H",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "DashboardId",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "DraftRequestParameters",
+                    "value": {
+                      "scope": "hierarchy"
+                    },
+                    "isOptional": true
+                  },
+                  {
+                    "name": "Query",
+                    "value": "let Success =\n InsightsMetrics \n    | where Namespace == \"prometheus\"\n    | where Name in (\"nv_inference_request_success\")\n    | order by TimeGenerated asc\n    | project TimeGenerated, Name, Successes = Val;\nlet Failure =\n InsightsMetrics \n    | where Namespace == \"prometheus\"\n    | where Name in (\"nv_inference_request_failure\")\n    | order by TimeGenerated asc\n    | project TimeGenerated, Name, Failures = Val;\nSuccess\n| join (Failure) on TimeGenerated\n| project TimeGenerated, Successes, Failures\n| render timechart  \n\n",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "ControlType",
+                    "value": "FrameControlChart",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "SpecificChart",
+                    "value": "Line",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "PartTitle",
+                    "value": "Analytics",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "PartSubTitle",
+                    "value": "modeltests",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "Dimensions",
+                    "value": {
+                      "xAxis": {
+                        "name": "TimeGenerated",
+                        "type": "datetime"
+                      },
+                      "yAxis": [
+                        {
+                          "name": "Successes",
+                          "type": "real"
+                        },
+                        {
+                          "name": "Failures",
+                          "type": "real"
+                        }
+                      ],
+                      "splitBy": [],
+                      "aggregation": "Sum"
+                    },
+                    "isOptional": true
+                  },
+                  {
+                    "name": "LegendOptions",
+                    "value": {
+                      "isEnabled": true,
+                      "position": "Bottom"
+                    },
+                    "isOptional": true
+                  },
+                  {
+                    "name": "IsQueryContainTimeRange",
+                    "value": false,
+                    "isOptional": true
+                  }
+                ],
+                "type": "Extension/Microsoft_OperationsManagementSuite_Workspace/PartType/LogsDashboardPart",
+                "settings": {},
+                "savedContainerState": {
+                  "partTitle": "Analytics",
+                  "assetName": "modeltests"
+                }
+              }
+            },
+            "3": {
+              "position": {
+                "x": 5,
+                "y": 4,
+                "colSpan": 6,
+                "rowSpan": 4
+              },
+              "metadata": {
+                "inputs": [
+                  {
+                    "name": "resourceTypeMode",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "ComponentId",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "Scope",
+                    "value": {
+                      "resourceIds": [
+                        "[parameters('clusterId')]"
+                      ]
+                    },
+                    "isOptional": true
+                  },
+                  {
+                    "name": "PartId",
+                    "value": "07987b60-ca0f-44f0-870e-835a01390d89",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "Version",
+                    "value": "2.0",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "TimeRange",
+                    "value": "PT1H",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "DashboardId",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "DraftRequestParameters",
+                    "value": {
+                      "scope": "hierarchy"
+                    },
+                    "isOptional": true
+                  },
+                  {
+                    "name": "Query",
+                    "value": "InsightsMetrics \n| where Namespace == \"prometheus\"\n| where Name in (\"nv_inference_queue_duration_us\")\n| order by TimeGenerated asc\n| extend QueueDurationSec = (Val - prev(Val,1))/1000\n| project TimeGenerated, Name, QueueDurationSec\n| render areachart   \n\n",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "ControlType",
+                    "value": "FrameControlChart",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "SpecificChart",
+                    "value": "StackedArea",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "PartTitle",
+                    "value": "Analytics",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "PartSubTitle",
+                    "value": "modeltests",
+                    "isOptional": true
+                  },
+                  {
+                    "name": "Dimensions",
+                    "value": {
+                      "xAxis": {
+                        "name": "TimeGenerated",
+                        "type": "datetime"
+                      },
+                      "yAxis": [
+                        {
+                          "name": "QueueDurationSec",
+                          "type": "real"
+                        }
+                      ],
+                      "splitBy": [
+                        {
+                          "name": "Name",
+                          "type": "string"
+                        }
+                      ],
+                      "aggregation": "Sum"
+                    },
+                    "isOptional": true
+                  },
+                  {
+                    "name": "LegendOptions",
+                    "value": {
+                      "isEnabled": true,
+                      "position": "Bottom"
+                    },
+                    "isOptional": true
+                  },
+                  {
+                    "name": "IsQueryContainTimeRange",
+                    "value": false,
+                    "isOptional": true
+                  }
+                ],
+                "type": "Extension/Microsoft_OperationsManagementSuite_Workspace/PartType/LogsDashboardPart",
+                "settings": {},
+                "savedContainerState": {
+                  "partTitle": "Analytics",
+                  "assetName": "modeltests"
+                }
+              }
+            }
+          }
+        }
+      },
+      "metadata": {
+        "model": {
+          "timeRange": {
+            "value": {
+              "relative": {
+                "duration": 24,
+                "timeUnit": 1
+              }
+            },
+            "type": "MsPortalFx.Composition.Configuration.ValueTypes.TimeRange"
+          },
+          "filterLocale": {
+            "value": "en-us"
+          },
+          "filters": {
+            "value": {
+              "MsPortalFx_TimeRange": {
+                "model": {
+                  "format": "utc",
+                  "granularity": "auto",
+                  "relative": "1h"
+                },
+                "displayCache": {
+                  "name": "UTC Time",
+                  "value": "Past hour"
+                },
+                "filteredPartIds": [
+                  "StartboardPart-LogsDashboardPart-6364554f-1af7-4e36-913c-004cf554050f",
+                  "StartboardPart-LogsDashboardPart-6364554f-1af7-4e36-913c-004cf5540511",
+                  "StartboardPart-LogsDashboardPart-6364554f-1af7-4e36-913c-004cf5540513",
+                  "StartboardPart-LogsDashboardPart-6364554f-1af7-4e36-913c-004cf5540515"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "name": "SeldonMetrics",
+    "type": "Microsoft.Portal/dashboards",
+    "location": "INSERT LOCATION",
+    "tags": {
+      "hidden-title": "SeldonMetrics"
+    },
+    "apiVersion": "2015-08-01-preview"
+  }
+ ]
+}

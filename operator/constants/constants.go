@@ -5,7 +5,7 @@ const (
 	TFServingContainerName = "tfserving"
 
 	GRPCRegExMatchAmbassador = "/(seldon.protos.*|tensorflow.serving.*|inference.*)/.*"
-	GRPCRegExMatchIstio      = ".*tensorflow.*|.*seldon.protos.*"
+	GRPCRegExMatchIstio      = ".*tensorflow.*|.*seldon.protos.*|.*inference.*"
 
 	PrePackedServerTensorflow = "TENSORFLOW_SERVER"
 	PrePackedServerSklearn    = "SKLEARN_SERVER"

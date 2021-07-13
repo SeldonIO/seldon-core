@@ -1,31 +1,8 @@
-import logging
-from subprocess import PIPE, CalledProcessError, run
+from subprocess import CalledProcessError, run
 
 import pytest
 
-
-def create_and_run_script(folder, notebook):
-    run(
-        f"jupyter nbconvert --template ../../notebooks/convert.tpl --to script {folder}/{notebook}.ipynb",
-        shell=True,
-        check=True,
-    )
-    run(f"chmod u+x {folder}/{notebook}.py", shell=True, check=True)
-    try:
-        run(
-            f"cd {folder} && ./{notebook}.py",
-            shell=True,
-            check=True,
-            stdout=PIPE,
-            stderr=PIPE,
-            encoding="utf-8",
-        )
-    except CalledProcessError as e:
-        logging.error(
-            f"failed notebook test {notebook} stdout:{e.stdout}, stderr:{e.stderr}"
-        )
-        run("kubectl delete sdep --all", shell=True, check=False)
-        raise e
+from seldon_e2e_utils import create_and_run_script
 
 
 @pytest.mark.flaky(max_runs=2)
@@ -85,7 +62,7 @@ class TestNotebooks(object):
             create_and_run_script("../../examples/keda", "keda_prom_auto_scale")
         except CalledProcessError as e:
             run(
-                f"helm delete seldon-core-analytics --namespace seldon-system",
+                "helm delete seldon-core-analytics --namespace seldon-system",
                 shell=True,
                 check=False,
             )
@@ -104,7 +81,7 @@ class TestNotebooks(object):
             create_and_run_script("../../examples/models/metrics", "general_metrics")
         except CalledProcessError as e:
             run(
-                f"helm delete seldon-core-analytics --namespace seldon-system",
+                "helm delete seldon-core-analytics --namespace seldon-system",
                 shell=True,
                 check=False,
             )
@@ -131,7 +108,7 @@ class TestNotebooks(object):
             )
         except CalledProcessError as e:
             run(
-                f"helm delete seldon-core-analytics --namespace seldon-system",
+                "helm delete seldon-core-analytics --namespace seldon-system",
                 shell=True,
                 check=False,
             )
@@ -143,7 +120,7 @@ class TestNotebooks(object):
                 "../../examples/models/autoscaling", "autoscaling_example"
             )
         except CalledProcessError as e:
-            run(f"helm delete loadtester --namespace seldon", shell=True, check=False)
+            run("helm delete loadtester --namespace seldon", shell=True, check=False)
             raise e
 
     def test_scaling(self):

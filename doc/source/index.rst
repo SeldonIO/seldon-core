@@ -34,6 +34,9 @@ Seldon Core
    Seldon Client <examples/seldon_client>
    Server Examples <examples/server_examples>
 
+.. image:: ./images/core-logo-small.png
+   :alt: Seldon logo
+   :align: center
 
 An open source platform to deploy your machine learning models on Kubernetes at massive scale.
 

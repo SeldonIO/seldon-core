@@ -1,9 +1,9 @@
 IMAGE_VERSION := $(shell cat ../../../version.txt)
 SHELL:=/bin/bash
 
-PYTHON_VERSION=3.7
+PYTHON_VERSION=3.7.10
 CONDA_VERSION=4.7.12
-IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | sed 's/\.//g'`
+IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | cut -d. -f1-2 | sed 's/\.//g'`
 DEFAULT_IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | cut -d. -f1`
 IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python${IMAGE_PYTHON_VERSION}
 DEFAULT_IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python${DEFAULT_IMAGE_PYTHON_VERSION}
@@ -23,7 +23,7 @@ get_local_repo:
 
 .PHONY: build
 build: get_local_repo
-	set -x && docker build -f Dockerfile --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${BASE_IMAGE} -t $(IMAGE_NAME):$(IMAGE_VERSION) .
+	set -x && docker build -f Dockerfile --build-arg IMAGE_VERSION=${IMAGE_VERSION} --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${CONDA_BASE_IMAGE} -t $(IMAGE_NAME):$(IMAGE_VERSION) .
 
 .PHONY: build_gpu
 build_gpu: get_local_repo
@@ -31,11 +31,15 @@ build_gpu: get_local_repo
 
 .PHONY: build_local
 build_local: get_local_repo
-	set -x && docker build -f Dockerfile.local --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${BASE_IMAGE} -t $(IMAGE_NAME):$(IMAGE_VERSION) .
+	set -x && docker build -f Dockerfile.local --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION}  --build-arg BASE_IMAGE=${CONDA_BASE_IMAGE} --build-arg IMAGE_VERSION=${IMAGE_VERSION} -t $(IMAGE_NAME):$(IMAGE_VERSION) .
+
+.PHONY: build_local
+build_local_redhat: get_local_repo
+	set -x && docker build -f Dockerfile.local --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION}  --build-arg BASE_IMAGE=${CONDA_BASE_IMAGE} --build-arg IMAGE_VERSION=${IMAGE_VERSION} -t $(IMAGE_NAME)-ubi8:$(IMAGE_VERSION) .
 
 .PHONY: build_redhat
 build_redhat: get_local_repo
-	set -x && docker build -f Dockerfile.redhat --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${CONDA_BASE_IMAGE} -t $(IMAGE_NAME)-ubi8:$(IMAGE_VERSION) .
+	set -x && docker build -f Dockerfile.redhat --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${CONDA_BASE_IMAGE} --build-arg IMAGE_VERSION=${IMAGE_VERSION} -t $(IMAGE_NAME)-ubi8:$(IMAGE_VERSION) .
 
 
 
@@ -79,4 +83,4 @@ after_build_image_seldon_core_check:
 
 
 build_conda_base:
-	docker build -f Dockerfile.conda --build-arg CONDA_VERSION=${CONDA_VERSION} -t ${CONDA_BASE_IMAGE}:${CONDA_VERSION} .
+	docker build -f Dockerfile.conda --build-arg CONDA_VERSION=${CONDA_VERSION} -t ${CONDA_BASE_IMAGE}:${IMAGE_VERSION} .

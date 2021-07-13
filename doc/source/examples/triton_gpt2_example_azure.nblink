@@ -1,0 +1,8 @@
+{
+  "path": "../../../examples/triton_gpt2/GPT2-ONNX-Azure.ipynb",
+  "extra-media": [
+    "../../../examples/triton_gpt2/azure.jpg",
+    "../../../examples/triton_gpt2/azure-metrics-cm.yaml",
+    "../../../examples/triton_gpt2/azuredashboard.jpg"
+  ]
+}

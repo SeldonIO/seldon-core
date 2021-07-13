@@ -25,4 +25,3 @@ redhat-image-scan:
 	docker tag ${IMAGE_NAME}:${VERSION} scan.connect.redhat.com/${scan}/${IMAGE_NAME_BASE}:${VERSION}
 	docker push scan.connect.redhat.com/${scan}/${IMAGE_NAME_BASE}:${VERSION}
 
-

@@ -1,0 +1,20 @@
+---
+- name: Install Seldon Core
+  hosts: localhost
+  roles:
+    - seldonio.k8s.kind
+    - seldonio.k8s.metallb    
+    - seldonio.k8s.istio
+    - seldonio.k8s.seldon_core
+  vars:
+    kind_cluster_name: ansible
+    kind_image_version: kindest/node:v1.18.15
+    kind_kubectl_default_namespace: seldon
+        
+    istio_version: 1.7.6
+    istio_verify_install: false
+    seldon_core_version: v1.9.1
+    seldon_core_values:
+      istio:
+        enabled: true
+        gateway: "seldon-gateway.istio-system.svc.cluster.local"
