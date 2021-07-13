@@ -8,7 +8,7 @@ from seldon_e2e_utils import (
     wait_for_status,
 )
 
-SELDON_VERSIONS_TO_TEST = ["1.2.3", "1.3.0", "1.4.0", "1.5.0"]
+SELDON_VERSIONS_TO_TEST = ["1.3.0", "1.4.0", "1.5.0", "1.6.0", "1.7.0"]
 
 
 @pytest.mark.sequential
