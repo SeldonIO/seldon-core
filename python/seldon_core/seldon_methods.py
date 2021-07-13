@@ -179,6 +179,8 @@ def send_feedback(
     -------
 
     """
+    seldon_metrics.update_reward(request.reward)
+
     if hasattr(user_model, "send_feedback_rest"):
         logger.warning("send_feedback_rest is deprecated. Please use send_feedback_raw")
         request_json = json_format.MessageToJson(request)
