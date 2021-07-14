@@ -84,3 +84,6 @@ after_build_image_seldon_core_check:
 
 build_conda_base:
 	docker build -f Dockerfile.conda --build-arg CONDA_VERSION=${CONDA_VERSION} -t ${CONDA_BASE_IMAGE}:${IMAGE_VERSION} .
+
+push_to_dockerhub_conda_base:
+	docker push $(CONDA_BASE_IMAGE):$(IMAGE_VERSION)
