@@ -139,7 +139,7 @@ port-forward-ambassador:
 
 .PHONY: s2i_build_base_images
 s2i_build_base_images:
-	cd ../../wrappers/s2i/python/build_scripts && ./build_all_local.sh
+	cd ../../wrappers/s2i/python/build_scripts && ./build_all.sh
 
 .PHONY: build_protos
 build_protos:
