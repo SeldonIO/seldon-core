@@ -5,7 +5,8 @@ import dill
 from alibi.datasets import fetch_adult
 import numpy as np
 import json
-ADULT_EXPLAINER_URI = "gs://seldon-models/xgboost/adult/tree_shap_py368_alibi_0.5.5"
+import shap
+ADULT_EXPLAINER_URI = "gs://seldon-models/xgboost/adult/tree_shap_py37_alibi_0.6.0"
 EXPLAINER_FILENAME = "explainer.dill"
 
 
