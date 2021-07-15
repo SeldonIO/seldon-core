@@ -68,6 +68,36 @@ def test_service_orchestrator():
 
 @pytest.mark.benchmark
 @pytest.mark.usefixtures("argo_worfklows")
+def test_workers_performance():
+
+    sort_by = ["apiType", "serverWorkers"]
+
+    data_size = 10
+    data = [100.0] * data_size
+
+    data_tensor = {"data": {"tensor": {"values": data, "shape": [1, data_size]}}}
+
+    df = run_benchmark_and_capture_results(
+        api_type_list=["grpc", "rest"],
+        server_workers_list=["1", "5", "10"],
+        benchmark_concurrency_list=["10", "100", "1000"],
+        parallelism="1",
+        requests_cpu_list=["4000Mi"],
+        limits_cpu_list=["4000Mi"],
+        image_list=["seldonio/seldontest_predict:1.10.0-dev"],
+        benchmark_data=data_tensor,
+    )
+    df = df.sort_values(sort_by)
+
+    result_body = "# Benchmark results - Testing Workers Performance\n\n"
+
+    result_body += "\n### Results table\n\n"
+    result_body += str(df.to_markdown())
+    post_comment_in_pr(result_body)
+
+
+@pytest.mark.benchmark
+@pytest.mark.usefixtures("argo_worfklows")
 def test_python_wrapper_v1_vs_v2_iris():
 
     sort_by = ["concurrency", "apiType"]
