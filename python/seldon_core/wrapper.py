@@ -50,6 +50,18 @@ def get_rest_microservice(user_model, seldon_metrics):
         logger.error("%s", error.to_dict())
         response.status_code = error.status_code
         return response
+    
+    @app.errorhandler(Exception)
+    def handle_generic_exception(e):
+        error = SeldonMicroserviceException(
+            message=str(e),
+            status_code=500,
+            reason="MICROSERVICE_INTERNAL_ERROR"
+        ) 
+        response = jsonify(error.to_dict())
+        logger.error("%s", error.to_dict())
+        response.status_code = error.status_code
+        return response
 
     @app.route("/seldon.json", methods=["GET"])
     def openAPI():
