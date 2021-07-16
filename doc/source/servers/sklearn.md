@@ -18,9 +18,7 @@ The expected versions in the latest SKLearn pre-packaged server are as follows:
 
 | Package | Version |
 | ------ | ----- |
-| `scikit-learn` | `0.23.2` |
-| `joblib` | `0.16.0` |
-| `numpy` | `1.8.2` |
+| `scikit-learn` | `0.24.2` |
 
 To check compatibility requirements for older versions of Seldon Core you can
 see the [compatibility table below](#version-compatibility).
