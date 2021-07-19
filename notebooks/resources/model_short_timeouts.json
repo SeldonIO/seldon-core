@@ -10,7 +10,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/mock_classifier:1.6.0-dev
+        - image: seldonio/mock_classifier:1.10.0-dev
           name: classifier
     graph:
       children: []
@@ -19,6 +19,6 @@ spec:
       parameters:
       - name: delaySecs
         type: INT
-        value: "2"       
+        value: "30"       
     name: example
     replicas: 1
