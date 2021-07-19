@@ -3,6 +3,7 @@ import io
 import json
 import logging
 from unittest import mock
+from unittest.mock import MagicMock
 
 import numpy as np
 from google.protobuf import json_format
@@ -311,8 +312,8 @@ def test_model_puid_ok():
     assert j["meta"]["puid"] == "123"
 
 
-@mock.patch("seldon_core.utils.model_name", "my-test-model")
-@mock.patch("seldon_core.utils.image_name", "my-test-model-image")
+@mock.patch("seldon_core.utils.get_model_name", MagicMock(return_value="my-test-model"))
+@mock.patch("seldon_core.utils.get_image_name", MagicMock(return_value="my-test-model-image"))
 def test_requestPath_ok():
     user_object = UserObject()
     seldon_metrics = SeldonMetrics()
@@ -327,8 +328,8 @@ def test_requestPath_ok():
     assert j["meta"]["requestPath"] == {"my-test-model": "my-test-model-image"}
 
 
-@mock.patch("seldon_core.utils.model_name", "my-test-model")
-@mock.patch("seldon_core.utils.image_name", "my-test-model-image")
+@mock.patch("seldon_core.utils.get_model_name", MagicMock(return_value="my-test-model"))
+@mock.patch("seldon_core.utils.get_image_name", MagicMock(return_value="my-test-model-image"))
 def test_requestPath_2nd_node_ok():
     user_object = UserObject()
     seldon_metrics = SeldonMetrics()
@@ -346,8 +347,8 @@ def test_requestPath_2nd_node_ok():
     }
 
 
-@mock.patch("seldon_core.utils.model_name", "my-test-model")
-@mock.patch("seldon_core.utils.image_name", "my-test-model-image")
+@mock.patch("seldon_core.utils.get_model_name", MagicMock(return_value="my-test-model"))
+@mock.patch("seldon_core.utils.get_image_name", MagicMock(return_value="my-test-model-image"))
 def test_proto_requestPath_ok():
     user_object = UserObject()
     seldon_metrics = SeldonMetrics()
@@ -366,8 +367,8 @@ def test_proto_requestPath_ok():
     assert j["meta"]["requestPath"] == {"my-test-model": "my-test-model-image"}
 
 
-@mock.patch("seldon_core.utils.model_name", "my-test-model")
-@mock.patch("seldon_core.utils.image_name", "my-test-model-image")
+@mock.patch("seldon_core.utils.get_model_name", MagicMock(return_value="my-test-model"))
+@mock.patch("seldon_core.utils.get_image_name", MagicMock(return_value="my-test-model-image"))
 def test_proto_requestPath_2nd_node_ok():
     user_object = UserObject()
     seldon_metrics = SeldonMetrics()

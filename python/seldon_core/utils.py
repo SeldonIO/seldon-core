@@ -9,7 +9,9 @@ import numpy as np
 from google.protobuf import any_pb2, json_format
 from google.protobuf.json_format import MessageToDict, ParseDict
 from google.protobuf.struct_pb2 import ListValue
-
+from seldon_core.env_utils import ENV_MODEL_NAME, ENV_MODEL_IMAGE, NONIMPLEMENTED_MSG, NONIMPLEMENTED_IMAGE_MSG, \
+    get_model_name, \
+    get_image_name
 from seldon_core.flask_utils import SeldonMicroserviceException
 from seldon_core.imports_helper import _TF_PRESENT
 from seldon_core.proto import prediction_pb2
@@ -25,42 +27,6 @@ if _TF_PRESENT:
     from tensorflow.core.framework.tensor_pb2 import TensorProto
 
 logger = logging.getLogger(__name__)
-
-"""
-Environment variables
-"""
-ENV_MODEL_NAME = "PREDICTIVE_UNIT_ID"
-ENV_MODEL_IMAGE = "PREDICTIVE_UNIT_IMAGE"
-ENV_SELDON_DEPLOYMENT_NAME = "SELDON_DEPLOYMENT_ID"
-ENV_PREDICTOR_NAME = "PREDICTOR_ID"
-ENV_PREDICTOR_LABELS = "PREDICTOR_LABELS"
-
-NONIMPLEMENTED_MSG = "NOT_IMPLEMENTED"
-NONIMPLEMENTED_IMAGE_MSG = f"{NONIMPLEMENTED_MSG}:{NONIMPLEMENTED_MSG}"
-
-
-def get_predictior_version() -> str:
-    return json.loads(os.environ.get(ENV_PREDICTOR_LABELS, "{}")).get(
-        "version", f"{NONIMPLEMENTED_MSG}")
-
-
-def get_predictor_name() -> str:
-    return os.environ.get(ENV_PREDICTOR_NAME, f"{NONIMPLEMENTED_MSG}")
-
-
-def get_deployment_name() -> str:
-    return os.environ.get(
-        ENV_SELDON_DEPLOYMENT_NAME, f"{NONIMPLEMENTED_MSG}"
-    )
-
-
-def get_model_name() -> str:
-    return os.environ.get(ENV_MODEL_NAME, NONIMPLEMENTED_MSG)
-
-
-def get_image_name() -> str:
-    return os.environ.get(
-        ENV_MODEL_IMAGE, NONIMPLEMENTED_IMAGE_MSG)
 
 
 def get_request_path():
