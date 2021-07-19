@@ -164,6 +164,7 @@ def feedback_to_json(message_proto: prediction_pb2.Feedback) -> Dict:
     ----------
     message_proto
        SeldonMessage proto
+
     Returns
     -------
        JSON Dict
@@ -348,6 +349,7 @@ def array_to_list_value(array: np.ndarray, lv: Optional[ListValue] = None) -> Li
 
     Returns
     -------
+    ListValue protobuf
 
     """
     if lv is None:
