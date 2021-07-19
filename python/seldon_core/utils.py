@@ -30,16 +30,24 @@ logger = logging.getLogger(__name__)
 ENV_MODEL_NAME = "PREDICTIVE_UNIT_ID"
 ENV_MODEL_IMAGE = "PREDICTIVE_UNIT_IMAGE"
 NONIMPLEMENTED_MSG = "NOT_IMPLEMENTED"
+NONIMPLEMENTED_IMAGE_MSG = f"{NONIMPLEMENTED_MSG}:{NONIMPLEMENTED_MSG}"
 
-model_name = os.environ.get(ENV_MODEL_NAME, f"{NONIMPLEMENTED_MSG}")
-image_name = os.environ.get(
-    ENV_MODEL_IMAGE, f"{NONIMPLEMENTED_MSG}:{NONIMPLEMENTED_MSG}"
-)
+
+def get_model_name() -> str:
+    return os.environ.get(ENV_MODEL_NAME, NONIMPLEMENTED_MSG)
+
+
+def get_image_name() -> str:
+    return os.environ.get(
+        ENV_MODEL_IMAGE, NONIMPLEMENTED_IMAGE_MSG)
 
 
 def get_request_path():
+    model_name = get_model_name()
     if model_name == NONIMPLEMENTED_MSG:
         return {}
+    image_name = get_image_name()
+    assert image_name != NONIMPLEMENTED_IMAGE_MSG, f"Both {ENV_MODEL_NAME} and {ENV_MODEL_IMAGE} have to be set"
     return {model_name: image_name}
 
 
