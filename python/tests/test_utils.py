@@ -8,6 +8,8 @@ from google.protobuf import any_pb2
 from google.protobuf.struct_pb2 import Value
 
 import seldon_core.utils as scu
+from seldon_core.env_utils import ENV_MODEL_IMAGE, get_image_name, NONIMPLEMENTED_MSG, get_model_name, ENV_MODEL_NAME, \
+    NONIMPLEMENTED_IMAGE_MSG
 from seldon_core.flask_utils import SeldonMicroserviceException
 from seldon_core.imports_helper import _TF_PRESENT
 from seldon_core.proto import prediction_pb2
@@ -469,3 +471,35 @@ def test_getenv_as_bool(monkeypatch, env_val, expected):
 
     value = scu.getenv_as_bool(env_var, default=False)
     assert value == expected
+
+
+class TestEnvironmentVariables:
+    @pytest.mark.parametrize(
+        "val, expected_val",
+        [
+            ("DUMMY_IMG_NAME", "DUMMY_IMG_NAME"),
+            ("", ""),
+        ],
+    )
+    def test_get_image_name_ok(self, monkeypatch, val, expected_val):
+        monkeypatch.setenv(ENV_MODEL_IMAGE, val)
+        assert get_image_name() == expected_val
+
+    def test_get_image_name_notset_ok(self):
+        assert get_image_name() == NONIMPLEMENTED_IMAGE_MSG
+
+    @pytest.mark.parametrize(
+        "val, expected_val",
+        [
+            ("DUMMY_MODEL_NAME", "DUMMY_MODEL_NAME"),
+            ("", ""),
+        ],
+    )
+    def test_get_model_name_ok(self, monkeypatch, val, expected_val):
+        monkeypatch.setenv(ENV_MODEL_NAME, val)
+        assert get_model_name() == expected_val
+
+    def test_get_model_name_notset_ok(self):
+        assert get_model_name() == NONIMPLEMENTED_MSG
+
+
