@@ -104,3 +104,7 @@ For example:
   }
 }
 ```
+
+## Worked Example
+
+A worked example to build a LighGBM Model server can be found [here](../examples/custom_server.html)

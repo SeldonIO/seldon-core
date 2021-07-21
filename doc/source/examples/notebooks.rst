@@ -24,6 +24,7 @@ Prepackaged Inference Server Examples
    MLflow Pre-packaged Model Server A/B Test <mlflow_server_ab_test_ambassador>
    Deploy a XGBoost Model Binary <../servers/xgboost.md>
    Deploy Pre-packaged Model Server with Cluster's MinIO <minio-sklearn>
+   Custom Pre-packaged LightGBM Server <custom_server>
 
 Python Language Wrapper Examples
 --------------------------------

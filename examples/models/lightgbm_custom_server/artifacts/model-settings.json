@@ -1,0 +1,8 @@
+{
+    "name": "irislgbm",
+    "implementation": "mlserver_lightgbm.LightGBMModel",
+    "parameters": {
+        "uri": "/mnt/models/model.txt",
+        "version": "v0.1.0"
+    }
+}
