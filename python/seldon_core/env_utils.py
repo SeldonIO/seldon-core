@@ -13,7 +13,7 @@ NONIMPLEMENTED_MSG = "NOT_IMPLEMENTED"
 NONIMPLEMENTED_IMAGE_MSG = f"{NONIMPLEMENTED_MSG}:{NONIMPLEMENTED_MSG}"
 
 
-def get_predictior_version(default_str: str = NONIMPLEMENTED_MSG) -> str:
+def get_predictor_version(default_str: str = NONIMPLEMENTED_MSG) -> str:
     return json.loads(os.environ.get(ENV_PREDICTOR_LABELS, "{}")).get(
         "version", default_str
     )

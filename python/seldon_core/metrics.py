@@ -17,7 +17,7 @@ from seldon_core.env_utils import (
     get_deployment_name,
     get_image_name,
     get_model_name,
-    get_predictior_version,
+    get_predictor_version,
     get_predictor_name,
 )
 
@@ -54,7 +54,7 @@ def split_image_tag(tag: str) -> Tuple[str]:
 # Development placeholder
 image = get_image_name()
 model_image, model_version = split_image_tag(image)
-predictor_version = get_predictior_version()
+predictor_version = get_predictor_version()
 
 legacy_mode = os.environ.get("SELDON_EXECUTOR_ENABLED", "true").lower() == "false"
 
