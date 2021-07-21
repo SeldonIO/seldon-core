@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 from multiprocessing import Manager
@@ -13,15 +14,15 @@ from prometheus_client.core import (
 )
 from prometheus_client.utils import floatToGoString
 
-from seldon_core.env_utils import (
-    get_deployment_name,
-    get_image_name,
-    get_model_name,
-    get_predictior_version,
-    get_predictor_name,
-)
-
 logger = logging.getLogger(__name__)
+
+NONIMPLEMENTED_MSG = "NOT_IMPLEMENTED"
+
+ENV_SELDON_DEPLOYMENT_NAME = "SELDON_DEPLOYMENT_ID"
+ENV_MODEL_NAME = "PREDICTIVE_UNIT_ID"
+ENV_MODEL_IMAGE = "PREDICTIVE_UNIT_IMAGE"
+ENV_PREDICTOR_NAME = "PREDICTOR_ID"
+ENV_PREDICTOR_LABELS = "PREDICTOR_LABELS"
 
 FEEDBACK_KEY = "seldon_api_model_feedback"
 FEEDBACK_REWARD_KEY = "seldon_api_model_feedback_reward"
@@ -52,18 +53,22 @@ def split_image_tag(tag: str) -> Tuple[str]:
 
 
 # Development placeholder
-image = get_image_name()
+image = os.environ.get(ENV_MODEL_IMAGE, f"{NONIMPLEMENTED_MSG}:{NONIMPLEMENTED_MSG}")
 model_image, model_version = split_image_tag(image)
-predictor_version = get_predictior_version()
+predictor_version = json.loads(os.environ.get(ENV_PREDICTOR_LABELS, "{}")).get(
+    "version", f"{NONIMPLEMENTED_MSG}"
+)
 
 legacy_mode = os.environ.get("SELDON_EXECUTOR_ENABLED", "true").lower() == "false"
 
 DEFAULT_LABELS = {
-    "deployment_name": get_deployment_name(),
-    "model_name": get_model_name(),
+    "deployment_name": os.environ.get(
+        ENV_SELDON_DEPLOYMENT_NAME, f"{NONIMPLEMENTED_MSG}"
+    ),
+    "model_name": os.environ.get(ENV_MODEL_NAME, f"{NONIMPLEMENTED_MSG}"),
     "model_image": model_image,
     "model_version": model_version,
-    "predictor_name": get_predictor_name(),
+    "predictor_name": os.environ.get(ENV_PREDICTOR_NAME, f"{NONIMPLEMENTED_MSG}"),
     "predictor_version": predictor_version,
 }
 
