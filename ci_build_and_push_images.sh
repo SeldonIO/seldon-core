@@ -198,6 +198,15 @@ function build_push_mab {
 }
 
 
+function build_push_lgbm {
+    make \
+	-C examples/models/lightgbm_custom_server \
+        build \
+	push 
+    LGBM_EXIT_VALUE=$?
+}
+
+
 build_push_python
 build_push_operator
 build_push_executor
@@ -213,6 +222,7 @@ build_push_alibi_explainer
 build_push_storage_initializer
 build_push_rclone_storage_initializer
 build_push_mab
+build_push_lgbm
 
 #######################################
 # EXIT STOPS COMMANDS FROM HERE ONWARDS
@@ -233,6 +243,7 @@ echo "Request Logger exit value: $LOGGER_EXIT_VALUE"
 echo "Tensorflow Proxy exit value: $TFPROXY_EXIT_VALUE"
 echo "Rclone Storage Initializer exit value: $RCLONE_STORAGE_INITIALIZER_EXIT_VALUE"
 echo "MAB exit value: $MAB_EXIT_VALUE"
+echo "LGBM exit value: $LGBM_EXIT_VALUE"
 
 exit $((${PYTHON_EXIT_VALUE} \
     + ${OPERATOR_EXIT_VALUE} \
@@ -248,6 +259,7 @@ exit $((${PYTHON_EXIT_VALUE} \
     + ${STORAGE_INITIALIZER_EXIT_VALUE} \
     + ${RCLONE_STORAGE_INITIALIZER_EXIT_VALUE} \
     + ${MAB_EXIT_VALUE} \
+    + ${LGBM_EXIT_VALUE} \    
     + ${CORE_BUILDER_EXIT_VALUE} \
     + ${PYTHON_BUILDER_EXIT_VALUE} \
     + ${EXPLAIN_EXIT_VALUE}))
