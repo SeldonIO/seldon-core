@@ -243,9 +243,7 @@ class UserObjectLowLevelGrpc(SeldonComponent):
 @pytest.fixture(name="mock_get_model_name")
 def fixture_get_model_name(mocker):
     return mocker.patch(
-        "seldon_core.utils.get_model_name",
-        autospec=True,
-        return_value="my-test-model"
+        "seldon_core.utils.get_model_name", autospec=True, return_value="my-test-model"
     )
 
 
@@ -254,7 +252,7 @@ def fixture_get_image_name(mocker):
     return mocker.patch(
         "seldon_core.utils.get_image_name",
         autospec=True,
-        return_value="my-test-model-image"
+        return_value="my-test-model-image",
     )
 
 
@@ -1084,4 +1082,3 @@ def test_unimplemented_feedback_raw():
 
     logging.info(j)
     assert rv.status_code == 200
-

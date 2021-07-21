@@ -15,7 +15,8 @@ NONIMPLEMENTED_IMAGE_MSG = f"{NONIMPLEMENTED_MSG}:{NONIMPLEMENTED_MSG}"
 
 def get_predictior_version() -> str:
     return json.loads(os.environ.get(ENV_PREDICTOR_LABELS, "{}")).get(
-        "version", NONIMPLEMENTED_MSG)
+        "version", NONIMPLEMENTED_MSG
+    )
 
 
 def get_predictor_name() -> str:
@@ -23,9 +24,7 @@ def get_predictor_name() -> str:
 
 
 def get_deployment_name() -> str:
-    return os.environ.get(
-        ENV_SELDON_DEPLOYMENT_NAME, NONIMPLEMENTED_MSG
-    )
+    return os.environ.get(ENV_SELDON_DEPLOYMENT_NAME, NONIMPLEMENTED_MSG)
 
 
 def get_model_name() -> str:
@@ -33,5 +32,4 @@ def get_model_name() -> str:
 
 
 def get_image_name() -> str:
-    return os.environ.get(
-        ENV_MODEL_IMAGE, NONIMPLEMENTED_IMAGE_MSG)
+    return os.environ.get(ENV_MODEL_IMAGE, NONIMPLEMENTED_IMAGE_MSG)

@@ -9,9 +9,15 @@ import numpy as np
 from google.protobuf import any_pb2, json_format
 from google.protobuf.json_format import MessageToDict, ParseDict
 from google.protobuf.struct_pb2 import ListValue
-from seldon_core.env_utils import ENV_MODEL_NAME, ENV_MODEL_IMAGE, NONIMPLEMENTED_MSG, NONIMPLEMENTED_IMAGE_MSG, \
-    get_model_name, \
-    get_image_name
+
+from seldon_core.env_utils import (
+    ENV_MODEL_IMAGE,
+    ENV_MODEL_NAME,
+    NONIMPLEMENTED_IMAGE_MSG,
+    NONIMPLEMENTED_MSG,
+    get_image_name,
+    get_model_name,
+)
 from seldon_core.flask_utils import SeldonMicroserviceException
 from seldon_core.imports_helper import _TF_PRESENT
 from seldon_core.proto import prediction_pb2
@@ -34,7 +40,9 @@ def get_request_path():
     if model_name == NONIMPLEMENTED_MSG:
         return {}
     image_name = get_image_name()
-    assert image_name != NONIMPLEMENTED_IMAGE_MSG, f"Both {ENV_MODEL_NAME} and {ENV_MODEL_IMAGE} have to be set"
+    assert (
+        image_name != NONIMPLEMENTED_IMAGE_MSG
+    ), f"Both {ENV_MODEL_NAME} and {ENV_MODEL_IMAGE} have to be set"
     return {model_name: image_name}
 
 

@@ -1,5 +1,4 @@
 import logging
-import logging
 import os
 from multiprocessing import Manager
 from typing import Dict, List, Tuple
@@ -13,8 +12,14 @@ from prometheus_client.core import (
     HistogramMetricFamily,
 )
 from prometheus_client.utils import floatToGoString
-from seldon_core.env_utils import get_predictior_version, get_predictor_name, \
-    get_deployment_name, get_model_name, get_image_name
+
+from seldon_core.env_utils import (
+    get_deployment_name,
+    get_image_name,
+    get_model_name,
+    get_predictior_version,
+    get_predictor_name,
+)
 
 logger = logging.getLogger(__name__)
 
