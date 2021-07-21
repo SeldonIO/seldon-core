@@ -490,6 +490,7 @@ class TestEnvironmentVariables:
     """
     Tests for getting values from environment variables
     """
+
     @pytest.mark.parametrize(
         "val, expected_val, env_var, getter",
         [
