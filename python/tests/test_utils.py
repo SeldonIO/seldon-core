@@ -487,6 +487,9 @@ def test_getenv_as_bool(monkeypatch, env_val, expected):
 
 
 class TestEnvironmentVariables:
+    """
+    Tests for getting values from environment variables
+    """
     @pytest.mark.parametrize(
         "val, expected_val, env_var, getter",
         [
@@ -530,3 +533,17 @@ class TestEnvironmentVariables:
     )
     def test_env_notset_ok(self, val, getter):
         assert getter() == val
+
+    @pytest.mark.parametrize(
+        "val, getter",
+        [
+            ("0", get_deployment_name),
+            ("0", get_model_name),
+            ("0", get_model_name),
+            ("0", get_image_name),
+            ("0", get_predictor_name),
+            ("0", get_predictior_version),
+        ],
+    )
+    def test_env_notset_with_default_ok(self, val, getter):
+        assert getter(default_str=val) == val

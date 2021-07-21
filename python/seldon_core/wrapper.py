@@ -8,6 +8,7 @@ from flask_cors import CORS
 from grpc_reflection.v1alpha import reflection
 
 import seldon_core.seldon_methods
+from seldon_core.env_utils import get_model_name
 from seldon_core.flask_utils import (
     ANNOTATION_GRPC_MAX_MSG_SIZE,
     SeldonMicroserviceException,
@@ -24,7 +25,7 @@ from seldon_core.utils import (
 
 logger = logging.getLogger(__name__)
 
-PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID", "0")
+PRED_UNIT_ID = get_model_name("0")
 METRICS_ENDPOINT = os.environ.get("PREDICTIVE_UNIT_METRICS_ENDPOINT", "/metrics")
 PAYLOAD_PASSTHROUGH = getenv_as_bool("PAYLOAD_PASSTHROUGH", default=False)
 
