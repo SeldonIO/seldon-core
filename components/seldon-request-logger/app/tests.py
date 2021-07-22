@@ -2,6 +2,10 @@ import unittest
 
 import default_logger
 import numpy as np
+import log_helper
+import json
+
+testapp = default_logger.app.test_client()
 
 #for more local testing see README
 class TestRequestLogger(unittest.TestCase):
@@ -83,6 +87,80 @@ class TestRequestLogger(unittest.TestCase):
         actual_results = default_logger.createElementsNoMetadata(X,names,results)
         self.assertEqual(expected_results, actual_results)
 
+
+    def test_no_ce_requied_headers(self):
+        response = testapp.post(
+            '/',
+            data=dict(data=dict(ndarray=[[1]])),
+            follow_redirects=True
+        )
+        self.assertTrue(response.status_code == 400)
+
+
+    def test_seldon_request(self):
+        response = testapp.post(
+            '/',
+            data='{"data":{"ndarray":[[1]]}}',
+            follow_redirects=True,
+            headers=[(log_helper.TYPE_HEADER_NAME,"io.seldon.serving.inference.request"),
+                     (log_helper.REQUEST_ID_HEADER_NAME,"1"),
+                     (log_helper.MODELID_HEADER_NAME,self.test_seldon_request.__name__)]
+        )
+        self.assertTrue(response.status_code == 200)
+        contents_added = response.json
+        for item in contents_added:
+            document =  default_logger.es.get(item["_index"],item["_id"])
+            data = document["_source"]
+            self.assertTrue(data["request"]["dataType"] == "number")
+
+    def test_seldon_jsondata_request(self):
+        response = testapp.post(
+            '/',
+            data=json.dumps({"jsonData":[1,2,3,5]}),
+            follow_redirects=True,
+            headers=[(log_helper.TYPE_HEADER_NAME,"io.seldon.serving.inference.request"),
+                     (log_helper.REQUEST_ID_HEADER_NAME,"1"),
+                     (log_helper.MODELID_HEADER_NAME,self.test_seldon_jsondata_request.__name__)]
+        )
+        self.assertTrue(response.status_code == 200)
+        contents_added = response.json
+        self.assertTrue(len(contents_added) == 1)
+
+
+    def test_seldon_requests_ok(self):
+        payloads = ['{"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[1,2,3,4]}}}',
+                    '{"data":{"names":["a","b"],"ndarray":[[1,2],[3,4]]}}',
+                    '{"data":{"names":["a"],"ndarray":["test1","test2"]}}',
+                    '{"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[1,2,3,4]}}}']
+        for idx,payload in enumerate(payloads):
+            response = testapp.post(
+                '/',
+                data=json.dumps({"jsonData": [1, 2, 3, 5]}),
+                follow_redirects=True,
+                headers=[(log_helper.TYPE_HEADER_NAME, "io.seldon.serving.inference.request"),
+                         (log_helper.REQUEST_ID_HEADER_NAME, "1"),
+                         (log_helper.MODELID_HEADER_NAME,
+                          self.test_seldon_requests_ok.__name__+str(idx))]
+            )
+            self.assertTrue(response.status_code == 200)
+
+
+    def test_seldon_responses_ok(self):
+        payloads = ['{"data":{"names":["c"],"tensor":{"shape":[2,1],"values":[5,6]}}}',
+                    '{"data":{"names":["c"],"ndarray":[[7],[8]]}}',
+                    '{"data":{"names":["c"],"ndarray":[[7],[8]]}}',
+                    '{"data":{"names":["t0","t1"],"ndarray":[[0.5,0.5]]}}']
+        for idx, payload in enumerate(payloads):
+            response = testapp.post(
+                '/',
+                data=json.dumps({"jsonData": [1, 2, 3, 5]}),
+                follow_redirects=True,
+                headers=[(log_helper.TYPE_HEADER_NAME, "io.seldon.serving.inference.response"),
+                     (log_helper.REQUEST_ID_HEADER_NAME, "1"),
+                     (log_helper.MODELID_HEADER_NAME,
+                      self.test_seldon_requests_ok.__name__ + str(idx))]
+            )
+            self.assertTrue(response.status_code == 200)
 
 if __name__ == '__main__':
     unittest.main()

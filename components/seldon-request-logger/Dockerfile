@@ -25,12 +25,14 @@ USER default
 
 ENV APP_ENV=production \
   PATH="/home/appuser/.local/bin:${PATH}" \
-  PORT=8080
+  PORT=8080 \
+  GUNICORN_WORKERS=3 \
+  GUNICORN_THREADS=8
 
 COPY app app
 WORKDIR app
 
 EXPOSE $PORT
 
-CMD gunicorn --bind 0.0.0.0:$PORT --workers 3 --threads 8 default_logger:app
+CMD gunicorn --bind 0.0.0.0:$PORT --workers $GUNICORN_WORKERS --threads $GUNICORN_THREADS default_logger:app
 
