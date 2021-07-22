@@ -20,8 +20,8 @@ from seldon_core.env_utils import (
     get_deployment_name,
     get_image_name,
     get_model_name,
-    get_predictor_version,
     get_predictor_name,
+    get_predictor_version,
 )
 from seldon_core.flask_utils import SeldonMicroserviceException
 from seldon_core.imports_helper import _TF_PRESENT
@@ -509,10 +509,10 @@ class TestEnvironmentVariables:
                 get_predictor_name,
             ),
             (
-                    json.dumps({"key": "dummy", "version": "2"}),
+                json.dumps({"key": "dummy", "version": "2"}),
                 "2",
-                    ENV_PREDICTOR_LABELS,
-                    get_predictor_version,
+                ENV_PREDICTOR_LABELS,
+                get_predictor_version,
             ),
         ],
     )
@@ -547,4 +547,4 @@ class TestEnvironmentVariables:
         ],
     )
     def test_env_notset_with_default_ok(self, val, getter):
-        assert getter(default_str=val) == val
+        assert getter(default_val=val) == val

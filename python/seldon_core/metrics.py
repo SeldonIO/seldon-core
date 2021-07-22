@@ -17,8 +17,8 @@ from seldon_core.env_utils import (
     get_deployment_name,
     get_image_name,
     get_model_name,
-    get_predictor_version,
     get_predictor_name,
+    get_predictor_version,
 )
 
 logger = logging.getLogger(__name__)
