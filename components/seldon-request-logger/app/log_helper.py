@@ -40,14 +40,14 @@ def build_index_name(headers):
     index_name = os.getenv("INDEX_NAME")
     if index_name:
         return index_name
-    
+
     # Adding seldon_environment (dev/test/staging/prod) to index_name if defined as a environment variable
     seldon_environment = os.getenv("SELDON_ENVIRONMENT")
     if seldon_environment:
        index_name = "inference-log-" + seldon_environment + "-" + serving_engine(headers)
     else:
        index_name = "inference-log-" + serving_engine(headers)
-    
+
     # otherwise create an index per deployment
     # index_name = "inference-log-" + serving_engine(headers)
     namespace = clean_header(NAMESPACE_HEADER_NAME, headers)
@@ -183,7 +183,7 @@ def connect_elasticsearch():
     else:
         print("Could not connect to Elasticsearch")
         sys.stdout.flush()
-        sys.exit()
+        sys.exit(-1)
     return _es
 
 
