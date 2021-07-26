@@ -577,6 +577,7 @@ def main(argv):
             "examples/iter8/progressive_rollout/single_sdep/abtest.ipynb",
             "examples/iter8/progressive_rollout/single_sdep/abtest.yaml",
             "examples/iter8/progressive_rollout/single_sdep/promote-v1.yaml",
+            "examples/init_containers/custom_init_container.ipynb",
             "README.md",
         ],
         "sklearn/moviesentiment": [
