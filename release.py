@@ -565,9 +565,13 @@ def main(argv):
             "servers/sklearnserver/samples/iris_predict.yaml",
             "testing/benchmarking/automated-benchmark/README.ipynb",
             "testing/scripts/test_benchmark.py",
+            "notebooks/server_examples.ipynb",
+            "notebooks/resources/istio_shadow.yaml",
         ],
         "sklearn/moviesentiment": [
             "testing/resources/movies-text-explainer.yaml",
+            "notebooks/explainer_examples.ipynb",
+            "notebooks/resources/moviesentiment_explainer.yaml",
         ],
     }
 
