@@ -578,6 +578,11 @@ def main(argv):
             "examples/iter8/progressive_rollout/single_sdep/abtest.yaml",
             "examples/iter8/progressive_rollout/single_sdep/promote-v1.yaml",
             "examples/init_containers/custom_init_container.ipynb",
+            "examples/feedback/feedback-metrics-server/README.ipynb",
+            "examples/feedback/feedback-metrics-server/README.md",
+            "examples/feedback/metrics-server/README.ipynb",
+            "examples/feedback/metrics-server/README.md",
+
             "README.md",
         ],
         "sklearn/moviesentiment": [
