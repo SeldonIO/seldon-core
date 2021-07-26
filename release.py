@@ -592,6 +592,8 @@ def main(argv):
             "doc/source/servers/kfserving-storage-initializer.md",
             "doc/source/servers/overview.md",
             "doc/source/servers/sklearn.md",
+            "doc/source/graph/protocols.md",
+            "doc/source/rollouts/abtests.md",
             "README.md",
         ],
         "sklearn/moviesentiment": [
