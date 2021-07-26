@@ -567,6 +567,7 @@ def main(argv):
             "testing/scripts/test_benchmark.py",
             "notebooks/server_examples.ipynb",
             "notebooks/resources/istio_shadow.yaml",
+            "README.md"
         ],
         "sklearn/moviesentiment": [
             "testing/resources/movies-text-explainer.yaml",
