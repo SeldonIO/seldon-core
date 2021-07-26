@@ -567,7 +567,10 @@ def main(argv):
             "testing/scripts/test_benchmark.py",
             "notebooks/server_examples.ipynb",
             "notebooks/resources/istio_shadow.yaml",
-            "README.md"
+            "examples/streaming/knative-eventing/README.ipynb",
+            "examples/streaming/knative-eventing/README.md",
+            "examples/streaming/knative-eventing/assets/simple-iris-deployment.yaml",
+            "README.md",
         ],
         "sklearn/moviesentiment": [
             "testing/resources/movies-text-explainer.yaml",
