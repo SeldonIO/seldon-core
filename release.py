@@ -570,6 +570,8 @@ def main(argv):
             "examples/streaming/knative-eventing/README.ipynb",
             "examples/streaming/knative-eventing/README.md",
             "examples/streaming/knative-eventing/assets/simple-iris-deployment.yaml",
+            "examples/security/ssl_requests/README.ipynb",
+            "examples/security/ssl_requests/README.md,"
             "README.md",
         ],
         "sklearn/moviesentiment": [
