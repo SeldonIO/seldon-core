@@ -563,7 +563,12 @@ def main(argv):
             "servers/sklearnserver/samples/iris.yaml",
             "servers/sklearnserver/samples/iris_custom.yaml",
             "servers/sklearnserver/samples/iris_predict.yaml",
-        ]
+            "testing/benchmarking/automated-benchmark/README.ipynb",
+            "testing/scripts/test_benchmark.py",
+        ],
+        "sklearn/moviesentiment": [
+            "testing/resources/movies-text-explainer.yaml",
+        ],
     }
 
     opts = getOpts(argv[1:])
