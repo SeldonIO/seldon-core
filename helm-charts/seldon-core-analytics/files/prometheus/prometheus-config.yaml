@@ -11,7 +11,7 @@ alerting:
   alertmanagers:
   - static_configs:
     - targets:
-      - alertmanager
+      - seldon-core-analytics-prometheus-alertmanager
 scrape_configs:
 - job_name: kubernetes-nodes
   tls_config:
