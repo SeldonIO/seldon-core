@@ -589,6 +589,9 @@ def main(argv):
             "examples/batch/kubeflow-pipelines-batch/README.md",
             "examples/batch/kubeflow-pipelines-batch/assets/seldon-batch-pipeline.py",
             "doc/source/workflow/quickstart.md",
+            "doc/source/servers/kfserving-storage-initializer.md",
+            "doc/source/servers/overview.md",
+            "doc/source/servers/sklearn.md",
             "README.md",
         ],
         "sklearn/moviesentiment": [
