@@ -571,7 +571,12 @@ def main(argv):
             "examples/streaming/knative-eventing/README.md",
             "examples/streaming/knative-eventing/assets/simple-iris-deployment.yaml",
             "examples/security/ssl_requests/README.ipynb",
-            "examples/security/ssl_requests/README.md,"
+            "examples/security/ssl_requests/README.md",
+            "examples/iter8/progressive_rollout/separate_sdeps/abtest.ipynb",
+            "examples/iter8/progressive_rollout/separate_sdeps/baseline.yaml",
+            "examples/iter8/progressive_rollout/single_sdep/abtest.ipynb",
+            "examples/iter8/progressive_rollout/single_sdep/abtest.yaml",
+            "examples/iter8/progressive_rollout/single_sdep/promote-v1.yaml",
             "README.md",
         ],
         "sklearn/moviesentiment": [
