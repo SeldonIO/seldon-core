@@ -16,6 +16,7 @@ const (
 	MLServerSKLearnImplementation = "mlserver_sklearn.SKLearnModel"
 	MLServerXGBoostImplementation = "mlserver_xgboost.XGBoostModel"
 	MLServerTempoImplementation   = "tempo.mlserver.InferenceRuntime"
+	MLServerMLFlowImplementation  = "mlserver_mlflow.MLflowRuntime"
 
 	MLServerHTTPPortEnv            = "MLSERVER_HTTP_PORT"
 	MLServerGRPCPortEnv            = "MLSERVER_GRPC_PORT"
@@ -215,6 +216,8 @@ func getMLServerModelImplementation(pu *machinelearningv1.PredictiveUnit) (strin
 		return MLServerXGBoostImplementation, nil
 	case machinelearningv1.PrepackTempoName:
 		return MLServerTempoImplementation, nil
+	case machinelearningv1.PrepackMlflowName:
+		return MLServerMLFlowImplementation, nil
 	default:
 		return "", nil
 	}
