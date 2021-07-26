@@ -157,6 +157,7 @@ var _ = Describe("MLServer helpers", func() {
 			Entry("sklearn", machinelearningv1.PrepackSklearnName, MLServerSKLearnImplementation),
 			Entry("xgboost", machinelearningv1.PrepackXgboostName, MLServerXGBoostImplementation),
 			Entry("tempo", machinelearningv1.PrepackTempoName, MLServerTempoImplementation),
+			Entry("mlserver", machinelearningv1.PrepackMlflowName, MLServerMLFlowImplementation),
 			Entry("unknown", "foo", ""),
 		)
 	})
