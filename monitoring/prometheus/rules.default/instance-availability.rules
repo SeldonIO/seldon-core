@@ -2,7 +2,7 @@ ALERT InstanceDown
   IF up == 0
   FOR 1m
   LABELS {
-    context="unkown",
+    context="unknown",
     severity = "page"
   }
   ANNOTATIONS {

@@ -5,7 +5,7 @@ groups:
     expr: up == 0
     for: 1m
     labels:
-      context: unkown
+      context: unknown
       severity: page
     annotations:
       description: '{{ $labels.instance }} of job {{ $labels.job }} has been down
