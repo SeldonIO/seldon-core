@@ -588,6 +588,7 @@ def main(argv):
             "examples/batch/kubeflow-pipelines-batch/README.ipynb",
             "examples/batch/kubeflow-pipelines-batch/README.md",
             "examples/batch/kubeflow-pipelines-batch/assets/seldon-batch-pipeline.py",
+            "doc/source/workflow/quickstart.md",
             "README.md",
         ],
         "sklearn/moviesentiment": [
