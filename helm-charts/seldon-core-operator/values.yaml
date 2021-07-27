@@ -113,6 +113,9 @@ predictor_servers:
       seldon:
         defaultImageVersion: "1.10.0-dev"
         image: seldonio/mlflowserver
+      kfserving:
+        defaultImageVersion: "test"
+        image: mlserver
   SKLEARN_SERVER:
     protocols:
       seldon:
