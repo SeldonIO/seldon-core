@@ -19,7 +19,7 @@ spec:
           command:
             - bash
             - -c
-            - gcloud init --account tf-jx-working-weevil-tekton@seldon-core-ops.iam.gserviceaccount.com --project seldon-core-ops && cd servers && make models
+            - gcloud init --account tf-jx-working-weevil-tekton@seldon-core-ops.iam.gserviceaccount.com --project seldon-pub && cd servers && make models
           volumeMounts:
           - mountPath: /lib/modules
             name: modules
