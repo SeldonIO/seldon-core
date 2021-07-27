@@ -1,4 +1,3 @@
-ARG CONDA_VERSION
 ARG BASE_IMAGE
 ARG IMAGE_VERSION
 FROM $BASE_IMAGE:$IMAGE_VERSION
@@ -6,7 +5,12 @@ FROM $BASE_IMAGE:$IMAGE_VERSION
 LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
 
 # This is to install desired version of Python without updating conda version
+# Note: ARGs must be after FROM statement , see source:
+# https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
+
 ARG PYTHON_VERSION
+ARG CONDA_VERSION
+
 RUN conda install --yes python=$PYTHON_VERSION conda=$CONDA_VERSION
 RUN dnf install -y make automake gcc gcc-c++
 

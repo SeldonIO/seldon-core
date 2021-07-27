@@ -2,7 +2,7 @@ ALERT NodeSwapUsage
   IF (((node_memory_SwapTotal-node_memory_SwapFree)/node_memory_SwapTotal)*100) > 75
   FOR 2m
   LABELS {
-    context="unkown",
+    context="unknown",
     severity="page"
   }
   ANNOTATIONS {
@@ -14,7 +14,7 @@ ALERT NodeMemoryUsage
   IF (((node_memory_MemTotal-node_memory_MemFree-node_memory_Cached)/(node_memory_MemTotal)*100)) > 75
   FOR 2m
   LABELS {
-    context="unkown",
+    context="unknown",
     severity="page"
   }
   ANNOTATIONS {

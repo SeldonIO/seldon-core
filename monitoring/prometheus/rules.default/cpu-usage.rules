@@ -2,7 +2,7 @@ ALERT NodeCPUUsage
   IF (100 - (avg by (instance) (irate(node_cpu{component="node-exporter",mode="idle"}[5m])) * 100)) > 75
   FOR 2m
   LABELS {
-    context="unkown",
+    context="unknown",
     severity="page"
   }
   ANNOTATIONS {

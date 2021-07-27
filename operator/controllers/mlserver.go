@@ -215,8 +215,7 @@ func getMLServerModelImplementation(pu *machinelearningv1.PredictiveUnit) (strin
 		return MLServerXGBoostImplementation, nil
 	case machinelearningv1.PrepackTempoName:
 		return MLServerTempoImplementation, nil
+	default:
+		return "", nil
 	}
-
-	err := fmt.Errorf("invalid implementation: %s", *pu.Implementation)
-	return "", err
 }

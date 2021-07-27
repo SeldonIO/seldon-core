@@ -150,6 +150,8 @@ def _start_input_file_worker(
             q_in.put(batch)
             batch = []
         enum_idx += 1
+    if batch:
+        q_in.put(batch)
 
 
 def _start_output_file_worker(

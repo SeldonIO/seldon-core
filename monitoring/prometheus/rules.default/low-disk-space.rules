@@ -2,7 +2,7 @@ ALERT NodeLowRootDisk
   IF ((node_filesystem_size{mountpoint="/"} - node_filesystem_free{mountpoint="/"} ) / node_filesystem_size{mountpoint="/"} * 100) > 75
   FOR 2m
   LABELS {
-    context="unkown",
+    context="unknown",
     severity="page"
   }
   ANNOTATIONS {
@@ -14,7 +14,7 @@ ALERT NodeLowDataDisk
   IF ((node_filesystem_size{mountpoint="/data-disk"} - node_filesystem_free{mountpoint="/data-disk"} ) / node_filesystem_size{mountpoint="/data-disk"} * 100) > 75
   FOR 2m
   LABELS {
-    context="unkown",
+    context="unknown",
     severity="page"
   }
   ANNOTATIONS {

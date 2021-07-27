@@ -96,7 +96,7 @@ class SeldonMetrics:
         self._manager.shutdown()
 
     def update_reward(self, reward: float):
-        """"Update metrics key corresponding to feedback reward counter."""
+        """Update metrics key corresponding to feedback reward counter."""
         if not reward or legacy_mode:
             return
         self.update(
