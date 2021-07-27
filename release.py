@@ -601,6 +601,9 @@ def main(argv):
             "notebooks/explainer_examples.ipynb",
             "notebooks/resources/moviesentiment_explainer.yaml",
         ],
+        "elasticnet_wine": [
+            "notebooks/server_examples.ipynb",
+        ],
     }
 
     opts = getOpts(argv[1:])
