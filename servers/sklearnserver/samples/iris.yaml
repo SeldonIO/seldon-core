@@ -3,13 +3,11 @@ kind: SeldonDeployment
 metadata:
   name: sklearn
 spec:
-  name: iris
   predictors:
   - graph:
-      children: []
-      implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/sklearn/iris
       name: classifier
+      implementation: SKLEARN_SERVER
+      modelUri: gs://seldon-models/v1.10.0-dev/sklearn/iris
     name: default
     replicas: 1
     svcOrchSpec: 

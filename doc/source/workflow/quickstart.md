@@ -70,9 +70,9 @@ Export your model binaries using the instructions provided in the requirements o
 
 ```python
 >>my_sklearn_model.train(...)
->>pickle.dumps(my_sklearn_model, "model.pickle")
+>>joblib.dump(my_sklearn_model, "model.joblib")
 
-[Created file at /mypath/model.pickle]
+[Created file at /mypath/model.joblib]
 ```
 
 **2. Upload your model to an object store**
@@ -82,9 +82,9 @@ You can upload your models into any of the object stores supported by our pre-pa
 For simplicity we have already uploaded it to the bucket so you can just proceed to the next step and run your model on Seldon Core.
 
 ```console
-$ gsutil cp model.pickle gs://seldon-models/sklearn/iris/model.pickle
+$ gsutil cp model.joblib gs://seldon-models/v1.10.0-dev/sklearn/iris/model.joblib
 
-[ Saved into gs://seldon-models/sklearn/iris/model.pickle ]
+[ Saved into gs://seldon-models/v1.10.0-dev/sklearn/iris/model.joblib ]
 ```
 
 **3. Deploy to Seldon Core in Kubernetes**
@@ -103,7 +103,7 @@ spec:
   predictors:
   - graph:
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/sklearn/iris
+      modelUri: gs://seldon-models/v1.10.0-dev/sklearn/iris
       name: classifier
     name: default
     replicas: 1
@@ -156,9 +156,9 @@ In this case we are also exporting the model binaries/artifacts, but we will be 
 
 ```python
 >> my_sklearn_model.train(...)
->> pickle.dumps(my_sklearn_model, "model.pickle")
+>> joblib.dump(my_sklearn_model, "model.joblib")
 
-[Created file at /mypath/model.pickle]
+[Created file at /mypath/model.joblib]
 ```
 
 **2. Create a wrapper class Model.py**
@@ -170,7 +170,7 @@ The python SDK also allows for other functions such as `load` for loading logic,
 ```python
 class Model:
     def __init__(self):
-        self._model = pickle.loads("model.pickle")
+        self._model = joblib.load("model.joblib")
 
     def predict(self, X):
         output = self._model(X)
