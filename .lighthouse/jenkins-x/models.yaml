@@ -19,7 +19,7 @@ spec:
           command:
             - bash
             - -c
-            - cd servers && make models
+            - gcloud init && cd servers && make models
           volumeMounts:
           - mountPath: /lib/modules
             name: modules
