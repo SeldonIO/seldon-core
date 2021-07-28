@@ -2,9 +2,9 @@ import base64
 import io
 import json
 import logging
-from unittest import mock
 
 import numpy as np
+import pytest
 from google.protobuf import json_format
 from PIL import Image
 
@@ -240,6 +240,22 @@ class UserObjectLowLevelGrpc(SeldonComponent):
         logging.info("Feedback called")
 
 
+@pytest.fixture(name="mock_get_model_name")
+def fixture_get_model_name(mocker):
+    return mocker.patch(
+        "seldon_core.utils.get_model_name", autospec=True, return_value="my-test-model"
+    )
+
+
+@pytest.fixture(name="mock_get_image_name")
+def fixture_get_image_name(mocker):
+    return mocker.patch(
+        "seldon_core.utils.get_image_name",
+        autospec=True,
+        return_value="my-test-model-image",
+    )
+
+
 def test_model_ok():
     user_object = UserObject()
     seldon_metrics = SeldonMetrics()
@@ -311,9 +327,7 @@ def test_model_puid_ok():
     assert j["meta"]["puid"] == "123"
 
 
-@mock.patch("seldon_core.utils.model_name", "my-test-model")
-@mock.patch("seldon_core.utils.image_name", "my-test-model-image")
-def test_requestPath_ok():
+def test_requestPath_ok(mock_get_model_name, mock_get_image_name):
     user_object = UserObject()
     seldon_metrics = SeldonMetrics()
     app = get_rest_microservice(user_object, seldon_metrics)
@@ -327,9 +341,7 @@ def test_requestPath_ok():
     assert j["meta"]["requestPath"] == {"my-test-model": "my-test-model-image"}
 
 
-@mock.patch("seldon_core.utils.model_name", "my-test-model")
-@mock.patch("seldon_core.utils.image_name", "my-test-model-image")
-def test_requestPath_2nd_node_ok():
+def test_requestPath_2nd_node_ok(mock_get_model_name, mock_get_image_name):
     user_object = UserObject()
     seldon_metrics = SeldonMetrics()
     app = get_rest_microservice(user_object, seldon_metrics)
@@ -346,9 +358,7 @@ def test_requestPath_2nd_node_ok():
     }
 
 
-@mock.patch("seldon_core.utils.model_name", "my-test-model")
-@mock.patch("seldon_core.utils.image_name", "my-test-model-image")
-def test_proto_requestPath_ok():
+def test_proto_requestPath_ok(mock_get_model_name, mock_get_image_name):
     user_object = UserObject()
     seldon_metrics = SeldonMetrics()
     app = SeldonModelGRPC(user_object, seldon_metrics)
@@ -366,9 +376,7 @@ def test_proto_requestPath_ok():
     assert j["meta"]["requestPath"] == {"my-test-model": "my-test-model-image"}
 
 
-@mock.patch("seldon_core.utils.model_name", "my-test-model")
-@mock.patch("seldon_core.utils.image_name", "my-test-model-image")
-def test_proto_requestPath_2nd_node_ok():
+def test_proto_requestPath_2nd_node_ok(mock_get_model_name, mock_get_image_name):
     user_object = UserObject()
     seldon_metrics = SeldonMetrics()
     app = SeldonModelGRPC(user_object, seldon_metrics)
