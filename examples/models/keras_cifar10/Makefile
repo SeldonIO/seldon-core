@@ -3,8 +3,10 @@ VERSION := $(shell cat ../../../version.txt)
 IMAGE_NAME_BASE=keras_cifar10
 IMAGE_BASE=seldonio/${IMAGE_NAME_BASE}
 
+model.h5:
+	gsutil cp gs://seldon-models/alibi-detect/classifier/cifar10/resnet32/model.h5 .
 
-build:
+build: model.h5
 	s2i build -E environment . seldonio/seldon-core-s2i-python37-ubi8:${VERSION} ${IMAGE_BASE}$*:${VERSION}
 
 
