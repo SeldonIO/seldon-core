@@ -178,9 +178,11 @@ Benchmarking and Load Tests
 .. toctree::
    :titlesonly:
   
-   Service Orchestrator <bench_svcOrch>
-   Tensorflow <bench_tensorflow>   
-   Argo Workflows Benchmarking <vegeta_bench_argo_workflows>   
+   Service Orchestrator Overhead <bench_svcOrch>
+   Tensorflow Benchmark <bench_tensorflow>   
+   Argo Workflows Benchmarking <vegeta_bench_argo_workflows>
+   Python Serialization Cost Benchmark <python_serialization>
+   KMP_AFFINITY Benchmarking Example <python_kmp_affinity>
 
 
 Upgrading Examples
