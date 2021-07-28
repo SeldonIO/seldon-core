@@ -5,7 +5,7 @@ import uuid
 from queue import Empty, Queue
 from threading import Event, Thread
 import copy
-# import click
+import click
 import numpy as np
 import requests
 import os
