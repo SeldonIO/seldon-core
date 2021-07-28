@@ -5,6 +5,7 @@ import time
 import uuid
 from queue import Empty, Queue
 from threading import Event, Thread
+
 import click
 import numpy as np
 import requests
@@ -71,7 +72,8 @@ def start_multithreaded_batch_worker(
     if method == "feedback" and data_type != "raw":
         raise RuntimeError("Feedback method is supported only with `raw` data type.")
     elif data_type != "data" and batch_size > 1:
-        raise RuntimeError("Batch size greater than 1 is only supported for `data` data type."
+        raise RuntimeError(
+            "Batch size greater than 1 is only supported for `data` data type."
         )
     elif data_type == "raw" and method != "feedback":
         raise RuntimeError("Raw input is currently only support for feedback method.")
@@ -96,7 +98,7 @@ def start_multithreaded_batch_worker(
     for _ in range(workers):
         Thread(
             target=_start_request_worker,
-            args=(q_in, q_out, data_type, sc, method, retries, batch_id,payload_type, batch_size),
+            args=(q_in, q_out, data_type, sc, method, retries, batch_id, payload_type, batch_size),
             daemon=True,
         ).start()
 
@@ -129,6 +131,7 @@ def _start_input_file_worker(
     """
     Runs logic for the input file worker which reads the input file from filestore
     and puts all of the lines into the input queue so it can be processed.
+
     Parameters
     ---
     q_in
@@ -139,11 +142,9 @@ def _start_input_file_worker(
     input_data_file = open(input_data_path, "r")
     enum_idx = 0
     batch = []
-
     for line in input_data_file:
         unique_id = str(uuid.uuid1())
         batch.append((enum_idx, unique_id, line))
-
         # If the batch to send is the size then push to queue and rest batch
         if len(batch) == batch_size:
             q_in.put(batch)
@@ -163,6 +164,7 @@ def _start_output_file_worker(
     Runs logic for the output file worker which receives all the processed output
     from the request worker through the queue and adds it into the output file in a
     thread safe manner.
+
     Parameters
     ---
     q_out
@@ -202,6 +204,7 @@ def _start_request_worker(
     Runs logic for the worker that sends requests from the queue until the queue
     gets completely empty. The worker marks the task as done when it finishes processing
     to ensure that the queue gets populated as it's currently configured with a threshold.
+
     Parameters
     ---
     q_in
@@ -315,7 +318,6 @@ def _send_batch_predict_multi_request(
     try:
         if data_type == "data":
             data = json.loads(input_raw[0][2])
-
             data_np = np.array(data, dtype="O")
             overall = data_np[0, 1:].reshape(1, -1)
             ids.append((data_np[0, 0]))
