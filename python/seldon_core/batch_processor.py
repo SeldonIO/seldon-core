@@ -156,8 +156,9 @@ def _start_input_file_worker(
         q_in.put(batch)
 
 
-def _start_output_file_worker(q_out: Queue, output_data_path: str,
-                              stop_event: Event) -> None:
+def _start_output_file_worker(
+    q_out: Queue, output_data_path: str, stop_event: Event
+) -> None:
     """
     Runs logic for the output file worker which receives all the processed output
     from the request worker through the queue and adds it into the output file in a
@@ -220,7 +221,6 @@ def _start_request_worker(
     """
     while True:
         input_data = q_in.get()
-
         # For the case where batch size == 1
         batch_idx, batch_instance_id, input_raw = input_data[0]
         if method == "predict":
