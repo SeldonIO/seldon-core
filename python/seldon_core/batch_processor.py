@@ -35,22 +35,22 @@ def setup_logging(log_level: str):
 
 
 def start_multithreaded_batch_worker(
-            deployment_name: str,
-            gateway_type: str,
-            namespace: str,
-            host: str,
-            transport: str,
-            data_type: str,
-            payload_type: str,
-            workers: int,
-            retries: int,
-            batch_size: int,
-            input_data_path: str,
-            output_data_path: str,
-            method: str,
-            log_level: str,
-            benchmark: bool,
-            batch_id: str,
+    deployment_name: str,
+    gateway_type: str,
+    namespace: str,
+    host: str,
+    transport: str,
+    data_type: str,
+    payload_type: str,
+    workers: int,
+    retries: int,
+    batch_size: int,
+    input_data_path: str,
+    output_data_path: str,
+    method: str,
+    log_level: str,
+    benchmark: bool,
+    batch_id: str,
 ) -> None:
     """
     Starts the multithreaded batch worker which consists of three worker types and
