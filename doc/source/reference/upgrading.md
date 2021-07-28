@@ -6,6 +6,18 @@ If you were running our Openshift 0.4.2 certified operator and are looking to up
 
 Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed features and bug-fixes in each version.
 
+## Upgrading to 1.10
+
+### Server Updates
+
+ * SKLearn server has been updated to use sklearn 0.24.2
+ * XGBoost server has been updated to use xgboost 1.4.2
+
+### Alibi Server Updates
+
+ * Alibi has been updated to 0.6.0
+ * Alibi server python has been updated to 3.7.10
+
 ## Upgrading to 1.8
 
 ### Rclone Storage Initailizer

@@ -27,6 +27,7 @@ kind_build_executor:
 .PHONY: kind_build_test_models
 kind_build_test_models:
 	make -C ../../examples/models/mean_classifier kind_load
+	make -C ../../examples/models/testing run_kind_load_all
 	make -C ../docker/fixed-model kind_load_images
 	make -C ../docker/echo-model kind_load_image
 
@@ -138,7 +139,7 @@ port-forward-ambassador:
 
 .PHONY: s2i_build_base_images
 s2i_build_base_images:
-	cd ../../wrappers/s2i/python/build_scripts && ./build_all_local.sh
+	cd ../../wrappers/s2i/python/build_scripts && ./build_all.sh
 
 .PHONY: build_protos
 build_protos:
@@ -163,7 +164,7 @@ test_parallel: build_protos install
 		-s \
 		-W ignore \
 		-n $(PYTEST_WORKERS) \
-		-m "not sequential and not notebooks" 2>&1
+		-m "not sequential and not notebooks and not benchmark" 2>&1
 
 # Then run the s2i tests in sequence (as they currently fail in parallel
 test_sequential: build_protos install

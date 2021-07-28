@@ -9,8 +9,8 @@ spec:
       children: []
       endpoint:
         service_host: 0.0.0.0
-        http_port: 9000
-        grpc_port: 5001        
+        httpPort: 9000
+        grpcPort: 5001
       implementation: TRITON_SERVER
       modelUri: gs://seldon-models/trtis/simple-model
       name: simple

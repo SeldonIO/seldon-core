@@ -46,7 +46,7 @@ spec:
     traffic: 100    
     graph:
       name: classifier
-      modelUri: gs://seldon-models/sklearn/iris
+      modelUri: gs://seldon-models/v1.10.0-dev/sklearn/iris
       implementation: SKLEARN_SERVER
   - name: candidate
     traffic: 0
@@ -360,7 +360,7 @@ spec:
   - name: default
     graph:
       name: classifier
-      modelUri: gs://seldon-models/sklearn/iris
+      modelUri: gs://seldon-models/v1.10.0-dev/sklearn/iris
       implementation: SKLEARN_SERVER
 ```
 

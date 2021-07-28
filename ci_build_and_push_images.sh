@@ -25,12 +25,46 @@ done
 # AVOID EXIT ON ERROR FOR FOLLOWING CMDS
 set +o errexit
 
+
+###########################################################
+### Images that don't need build every time only on change
+echo "Files changed in core builder folder:"
+git --no-pager diff --exit-code --name-only origin/master core-builder/
+CORE_BUILDER_MODIFIED=$?
+if [[ $CORE_BUILDER_MODIFIED -gt 0 ]]; then
+    make -C core-builder/ build_docker_image push_to_registry
+    CORE_BUILDER_EXIT_VALUE=$?
+    if [[ $CORE_BUILDER_EXIT_VALUE -gt 0 ]]; then
+        echo "Prepackaged server build returned errors"
+        return 1
+    fi
+else
+    echo "SKIPPING CORE BUILDER IMAGE BUILD..."
+    CORE_BUILDER_EXIT_VALUE=0
+fi
+
+echo "Files changed in python builder folder:"
+git --no-pager diff --exit-code --name-only origin/master python-builder/
+PYTHON_BUILDER_MODIFIED=$?
+if [[ $PYTHON_BUILDER_MODIFIED -gt 0 ]]; then
+    make -C python-builder/ build_docker_image push_to_registry
+    PYTHON_BUILDER_EXIT_VALUE=$?
+    if [[ $PYTHON_BUILDER_EXIT_VALUE -gt 0 ]]; then
+        echo "Prepackaged server build returned errors"
+        return 1
+    fi
+else
+    echo "SKIPPING PYTHON BUILDER IMAGE BUILD..."
+    PYTHON_BUILDER_EXIT_VALUE=0
+fi
+
+###########################################################
+### Images that need build every time
+
 function build_push_python {
     (cd wrappers/s2i/python/build_scripts \
-	    && ./build_all_local.sh \
-	    && ./push_all.sh \
-        && ./build_redhat.sh \
-        && ./push_redhat.sh)
+	    && ./build_all.sh \
+	    && ./push_all.sh)
     PYTHON_EXIT_VALUE=$?
 }
 
@@ -172,6 +206,15 @@ function build_push_keras_cifar10 {
 }
 
 
+function build_push_lgbm {
+    make \
+	-C examples/models/lightgbm_custom_server \
+        build \
+	push 
+    LGBM_EXIT_VALUE=$?
+}
+
+
 build_push_python
 build_push_operator
 build_push_executor
@@ -188,6 +231,7 @@ build_push_storage_initializer
 build_push_rclone_storage_initializer
 build_push_mab
 build_push_keras_cifar10
+build_push_lgbm
 
 #######################################
 # EXIT STOPS COMMANDS FROM HERE ONWARDS
@@ -209,6 +253,7 @@ echo "Tensorflow Proxy exit value: $TFPROXY_EXIT_VALUE"
 echo "Rclone Storage Initializer exit value: $RCLONE_STORAGE_INITIALIZER_EXIT_VALUE"
 echo "MAB exit value: $MAB_EXIT_VALUE"
 echo "Keras CIFAR10 model exit value: $CIFAR10_EXIT_VALUE"
+echo "LGBM exit value: $LGBM_EXIT_VALUE"
 
 exit $((${PYTHON_EXIT_VALUE} \
     + ${OPERATOR_EXIT_VALUE} \
@@ -225,4 +270,7 @@ exit $((${PYTHON_EXIT_VALUE} \
     + ${RCLONE_STORAGE_INITIALIZER_EXIT_VALUE} \
     + ${MAB_EXIT_VALUE} \
     + ${CIFAR10_EXIT_VALUE} \    
+    + ${LGBM_EXIT_VALUE} \    
+    + ${CORE_BUILDER_EXIT_VALUE} \
+    + ${PYTHON_BUILDER_EXIT_VALUE} \
     + ${EXPLAIN_EXIT_VALUE}))

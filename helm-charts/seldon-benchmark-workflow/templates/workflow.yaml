@@ -328,6 +328,8 @@ spec:
                           value: "{{`{{inputs.parameters.serverThreads}}`}}"
                         - name: GUNICORN_WORKERS
                           value: "{{`{{inputs.parameters.serverWorkers}}`}}"
+                        - name: GRPC_WORKERS
+                          value: "{{`{{inputs.parameters.serverWorkers}}`}}"
                         {{- if eq .Values.seldonDeployment.enableResources "true" }}
                         resources:
                           requests:

@@ -1,6 +1,6 @@
 SELDON_CORE_DIR=../../..
 IMAGE_NAME=seldon-java-wrapper
-VERSION := $(shell cat ../version.txt)
+VERSION := $(shell cat ../../../version.txt)
 
 version:
 	echo ${VERSION}

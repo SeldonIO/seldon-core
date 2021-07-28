@@ -150,6 +150,8 @@ def _start_input_file_worker(
             q_in.put(batch)
             batch = []
         enum_idx += 1
+    if batch:
+        q_in.put(batch)
 
 
 def _start_output_file_worker(
@@ -267,7 +269,7 @@ def _send_batch_predict_multi_request(
     retries: int,
     batch_id: str,
     payload_type: str,
-) -> str:
+) -> [str]:
     """
     Send an request using the Seldon Client with batch context including the
     unique ID of the batch and the Batch enumerated index as metadata. This
@@ -297,13 +299,11 @@ def _send_batch_predict_multi_request(
     instance_ids = [x[1] for x in input_data]
 
     predict_kwargs = {}
-    meta = {
-        "tags": {
-            "batch_id": batch_id,
-        }
+    tags = {
+        "batch_id": batch_id,
     }
 
-    predict_kwargs["meta"] = meta
+    predict_kwargs["meta"] = tags
     predict_kwargs["headers"] = {"Seldon-Puid": instance_ids[0]}
 
     try:
@@ -327,7 +327,7 @@ def _send_batch_predict_multi_request(
     except Exception as e:
         error_resp = {
             "status": {"info": "FAILURE", "reason": str(e), "status": 1},
-            "meta": meta,
+            "meta": tags,
         }
         print("Exception: %s" % e)
         str_output = json.dumps(error_resp)
@@ -343,26 +343,34 @@ def _send_batch_predict_multi_request(
         tensor_ndarray = tensor.reshape(shape)
 
     for i in range(len(input_data)):
-        new_response = copy.deepcopy(response)
-        if payload_type == "ndarray":
-            # Format new responses for each original prediction request
-            new_response["data"]["ndarray"] = [response["data"]["ndarray"][i]]
-            new_response["meta"]["tags"]["tags"]["batch_index"] = indexes[i]
-            new_response["meta"]["tags"]["tags"]["batch_instance_id"] = instance_ids[i]
-            responses.append(json.dumps(new_response))
-        elif payload_type == "tensor":
-            # Format new responses for each original prediction request
-            new_response["data"]["tensor"]["shape"][0] = 1
-            new_response["data"]["tensor"]["values"] = np.ndarray.tolist(
-                tensor_ndarray[i]
-            )
-            new_response["meta"]["tags"]["tags"]["batch_index"] = indexes[i]
-            new_response["meta"]["tags"]["tags"]["batch_instance_id"] = instance_ids[i]
-            responses.append(json.dumps(new_response))
-        else:
-            raise RuntimeError(
-                "Only `ndarray` and `tensor` input are currently supported for batch size greater than 1."
-            )
+        try:
+            new_response = copy.deepcopy(response)
+            if payload_type == "ndarray":
+                # Format new responses for each original prediction request
+                new_response["data"]["ndarray"] = [response["data"]["ndarray"][i]]
+                new_response["meta"]["tags"]["batch_index"] = indexes[i]
+                new_response["meta"]["tags"]["batch_instance_id"] = instance_ids[i]
+                responses.append(json.dumps(new_response))
+            elif payload_type == "tensor":
+                # Format new responses for each original prediction request
+                new_response["data"]["tensor"]["shape"][0] = 1
+                new_response["data"]["tensor"]["values"] = np.ndarray.tolist(
+                    tensor_ndarray[i]
+                )
+                new_response["meta"]["tags"]["batch_index"] = indexes[i]
+                new_response["meta"]["tags"]["batch_instance_id"] = instance_ids[i]
+                responses.append(json.dumps(new_response))
+            else:
+                raise RuntimeError(
+                    "Only `ndarray` and `tensor` input are currently supported for batch size greater than 1."
+                )
+        except Exception as e:
+            error_resp = {
+                "status": {"info": "FAILURE", "reason": str(e), "status": 1},
+                "meta": tags,
+            }
+            print("Exception: %s" % e)
+            responses.append(json.dumps(error_resp))
 
     return responses
 
@@ -405,14 +413,12 @@ def _send_batch_predict(
     """
 
     predict_kwargs = {}
-    meta = {
-        "tags": {
-            "batch_id": batch_id,
-            "batch_instance_id": batch_instance_id,
-            "batch_index": batch_idx,
-        }
+    tags = {
+        "batch_id": batch_id,
+        "batch_instance_id": batch_instance_id,
+        "batch_index": batch_idx,
     }
-    predict_kwargs["meta"] = meta
+    predict_kwargs["meta"] = tags
     predict_kwargs["headers"] = {"Seldon-Puid": batch_instance_id}
     try:
         data = json.loads(input_raw)
@@ -439,7 +445,7 @@ def _send_batch_predict(
     except Exception as e:
         error_resp = {
             "status": {"info": "FAILURE", "reason": str(e), "status": 1},
-            "meta": meta,
+            "meta": tags,
         }
         print("Exception: %s" % e)
         str_output = json.dumps(error_resp)

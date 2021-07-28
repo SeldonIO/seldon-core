@@ -44,7 +44,7 @@ from tensorflow import keras
 SELDON_LOGLEVEL = os.environ.get('SELDON_LOGLEVEL', 'INFO').upper()
 logging.basicConfig(level=SELDON_LOGLEVEL)
 GRPC_MAX_MSG_LEN = 1000000000
-TENSORFLOW_PREDICTOR_URL_FORMAT = "http://{0}/v1/models/:predict"
+TENSORFLOW_PREDICTOR_URL_FORMAT = "http://{0}/v1/models/{1}:predict"
 SELDON_PREDICTOR_URL_FORMAT = "http://{0}/api/v0.1/predictions"
 V2_PREDICTOR_URL_FORMAT = "http://{0}/v2/models/{1}/infer"
 
@@ -133,8 +133,9 @@ class AlibiExplainer(ExplainerModel):
                 else:
                     instances.append(req_data)
             request = {"instances": instances}
+            print(self.predictor_host)
             response = requests.post(
-                TENSORFLOW_PREDICTOR_URL_FORMAT.format(self.predictor_host),
+                TENSORFLOW_PREDICTOR_URL_FORMAT.format(self.predictor_host, self.v2_model_name),
                 json.dumps(request)
             )
             if response.status_code != 200:
@@ -162,6 +163,7 @@ class AlibiExplainer(ExplainerModel):
                 self.method is ExplainerMethod.anchor_text or self.method is ExplainerMethod.kernel_shap or \
                 self.method is ExplainerMethod.integrated_gradients or self.method is ExplainerMethod.tree_shap:
             if self.protocol == Protocol.tensorflow_http:
+                self.v2_model_name = model_name
                 explanation: Explanation = self.wrapper.explain(request["instances"])
             elif self.protocol == Protocol.v2_http:
                 logging.info("model name %s", model_name)

@@ -182,5 +182,5 @@ func TestTensorflowPredictionPath(t *testing.T) {
 	}
 
 	p := GetPredictionPath(sdep)
-	g.Expect(p).To(Equal("/v1/models/classifier/:predict"))
+	g.Expect(p).To(Equal("/v1/models/classifier:predict"))
 }

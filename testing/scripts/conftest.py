@@ -49,7 +49,7 @@ def install_argo():
 
     run("kubectl create namespace argo", **kwargs)
     run(
-        "kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo/stable/manifests/install.yaml",
+        "kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo-workflows/stable/manifests/install.yaml",
         **kwargs,
     )
     run("kubectl rollout status -n argo deployment/argo-server", **kwargs)

@@ -1,3 +1,5 @@
+from subprocess import CalledProcessError, run
+
 import pytest
 
 from seldon_e2e_utils import create_and_run_script
@@ -60,7 +62,7 @@ class TestNotebooks(object):
             create_and_run_script("../../examples/keda", "keda_prom_auto_scale")
         except CalledProcessError as e:
             run(
-                f"helm delete seldon-core-analytics --namespace seldon-system",
+                "helm delete seldon-core-analytics --namespace seldon-system",
                 shell=True,
                 check=False,
             )
@@ -79,7 +81,7 @@ class TestNotebooks(object):
             create_and_run_script("../../examples/models/metrics", "general_metrics")
         except CalledProcessError as e:
             run(
-                f"helm delete seldon-core-analytics --namespace seldon-system",
+                "helm delete seldon-core-analytics --namespace seldon-system",
                 shell=True,
                 check=False,
             )
@@ -106,7 +108,7 @@ class TestNotebooks(object):
             )
         except CalledProcessError as e:
             run(
-                f"helm delete seldon-core-analytics --namespace seldon-system",
+                "helm delete seldon-core-analytics --namespace seldon-system",
                 shell=True,
                 check=False,
             )
@@ -118,7 +120,7 @@ class TestNotebooks(object):
                 "../../examples/models/autoscaling", "autoscaling_example"
             )
         except CalledProcessError as e:
-            run(f"helm delete loadtester --namespace seldon", shell=True, check=False)
+            run("helm delete loadtester --namespace seldon", shell=True, check=False)
             raise e
 
     def test_scaling(self):

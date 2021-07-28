@@ -7,8 +7,8 @@ CLIENT_ID=sd-api
 OIDC_USERNAME=admin@seldon.io
 OIDC_PASSWORD=xxxxxx
 OIDC_SCOPES=openid profile email groups
-DEPLOY_API_HOST=http://xx.xx.xx.xx/seldon-deploy/api/v1alpha1
-OIDC_PROVIDER=http://xx.xx.xx.xx/auth/realms/deploy-realm
+#DEPLOY_API_HOST=http://xx.xx.xx.xx/seldon-deploy/api/v1alpha1
+#OIDC_PROVIDER=http://xx.xx.xx.xx/auth/realms/deploy-realm
 ELASTICSEARCH_HOST=localhost
 ELASTICSEARCH_PORT=9200
 
@@ -24,10 +24,14 @@ create_dummy_metadata:
 	python testing/create_dummy_metadata.py
 
 run_container:
-	docker run -p 2222:8080 seldonio/seldon-request-logger:latest
+	docker run -p 2222:2222 -e PORT=2222 --network host seldonio/seldon-request-logger:${VERSION}
 
 run_elastic:
-	docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch-oss:7.6.0
+	docker run -p 9200:9200 -p 9300:9300 --network host -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch-oss:7.6.0
+
+
+test:
+	python app/tests.py
 
 run_local: export FLASK_RUN_PORT = 2222
 run_local: export FLASK_APP = default_logger.py
@@ -38,7 +42,7 @@ curl_metadata:
 	curl -X GET -k -v http://localhost:2222/metadata -H "Content-Type: application/json"
 
 #see test.sh for more test data
-test:
+smoke_test:
 	curl -v "http://localhost:2222/" \
       -X POST \
       -H "X-B3-Flags: 1" \
@@ -48,19 +52,8 @@ test:
       -H "CE-ID: 45a8b444-3213-4758-be3f-540bf93f85ff" \
       -H "CE-Source: dev.knative.example" \
       -H 'Content-Type: application/json' \
-      -d '{"request": {"meta": {"puid": "71dlk7k1rhmci0cd8g5rmeolmn", "tags": {}, "routing": {}, "requestPath": {}, "metrics": []}, "data": {"names": ["f0", "f1"], "ndarray": [[0.77, 0.63]]}, "date": "2019-06-17T10:59:55.693Z[GMT]"}, "response": {"meta": {"puid": "71dlk7k1rhmci0cd8g5rmeolmn", "tags": {}, "routing": {}, "requestPath": {"classifier": "seldonio/mock_classifier:1.0"}, "metrics": []}, "data": {"names": ["proba"], "ndarray": [[0.09826376903346358]]}, "date": "2019-06-17T10:59:55.696Z[GMT]"}, "sdepName": "seldon-single-model"}'
+      -d '{"data":{"names":["a","b"],"tensor":{"shape":[2,2],"values":[1,2,3,4]}}}'
 
-test_single_dim:
-	curl -v "http://localhost:2222/" \
-      -X POST \
-      -H "X-B3-Flags: 1" \
-      -H 'CE-SpecVersion: 0.2' \
-      -H "CE-Type: io.seldon.serving.inference.request" \
-      -H "CE-Time: 2018-04-05T03:56:24Z" \
-      -H "CE-ID: 45a8b444-3213-4758-be3f-540bf93f85ff" \
-      -H "CE-Source: dev.knative.example" \
-      -H 'Content-Type: application/json' \
-      -d '{"request": {"meta": {"puid": "71dlk7k1rhmci0cd8g5rmeolmn", "tags": {}, "routing": {}, "requestPath": {}, "metrics": []}, "data": {"names": ["f0", "f1"], "ndarray": [0.77, 0.63]}, "date": "2019-06-17T10:59:55.693Z[GMT]"}, "response": {"meta": {"puid": "71dlk7k1rhmci0cd8g5rmeolmn", "tags": {}, "routing": {}, "requestPath": {"classifier": "seldonio/mock_classifier:1.0"}, "metrics": []}, "data": {"names": ["proba"], "ndarray": [0.09826376903346358]}, "date": "2019-06-17T10:59:55.696Z[GMT]"}, "sdepName": "seldon-single-model"}'
 
 
 IMAGE=seldon-request-logger
