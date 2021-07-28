@@ -513,7 +513,6 @@ def _send_batch_feedback(
     meta = {
         "tags": {
             "batch_id": batch_id,
-            # TODO: tidy these
             "batch_instance_id": batch_instance_id,
             "batch_index": batch_idx,
         }
@@ -668,14 +667,13 @@ def _send_batch_feedback(
     envvar="SELDON_BATCH_ID",
     default=str(uuid.uuid1()),
     type=str,
-    help=
-    "Unique batch ID to identify all datapoints processed in this batch, if not provided is auto generated",
+    help="Unique batch ID to identify all datapoints processed in this batch, if not provided is auto generated",
 )
 @click.option(
     "--batch-size",
     "-u",
     envvar="SELDON_BATCH_SIZE",
-    default=int(1),
+    default=1,
     type=int,
     help="Batch size greater than 1 can be used to group multiple predictions into a single request.",
 )
