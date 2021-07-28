@@ -1,14 +1,13 @@
+import copy
 import json
 import logging
 import time
 import uuid
 from queue import Empty, Queue
 from threading import Event, Thread
-import copy
 import click
 import numpy as np
 import requests
-import os
 
 from seldon_core.seldon_client import SeldonClient
 
@@ -29,29 +28,29 @@ logger = logging.getLogger(__name__)
 
 def setup_logging(log_level: str):
     LOG_FORMAT = (
-        "%(asctime)s - batch_processor:%(lineno)s - %(levelname)s:  %(message)s"
+        "%(asctime)s - batch_processor.py:%(lineno)s - %(levelname)s:  %(message)s"
     )
     logging.basicConfig(level=CHOICES_LOG_LEVEL[log_level], format=LOG_FORMAT)
     logger.setLevel(CHOICES_LOG_LEVEL[log_level])
 
 
 def start_multithreaded_batch_worker(
-        deployment_name: str,
-        gateway_type: str,
-        namespace: str,
-        host: str,
-        transport: str,
-        data_type: str,
-        payload_type: str,
-        workers: int,
-        retries: int,
-        batch_size: int,
-        input_data_path: str,
-        output_data_path: str,
-        method: str,
-        log_level: str,
-        benchmark: bool,
-        batch_id: str,
+            deployment_name: str,
+            gateway_type: str,
+            namespace: str,
+            host: str,
+            transport: str,
+            data_type: str,
+            payload_type: str,
+            workers: int,
+            retries: int,
+            batch_size: int,
+            input_data_path: str,
+            output_data_path: str,
+            method: str,
+            log_level: str,
+            benchmark: bool,
+            batch_id: str,
 ) -> None:
     """
     Starts the multithreaded batch worker which consists of three worker types and
@@ -70,15 +69,12 @@ def start_multithreaded_batch_worker(
     q_out = Queue(workers * 2)
 
     if method == "feedback" and data_type != "raw":
-        raise RuntimeError(
-            "Feedback method is supported only with `raw` data type.")
+        raise RuntimeError("Feedback method is supported only with `raw` data type.")
     elif data_type != "data" and batch_size > 1:
-        raise RuntimeError(
-            "Batch size greater than 1 is only supported for `data` data type."
+        raise RuntimeError("Batch size greater than 1 is only supported for `data` data type."
         )
     elif data_type == "raw" and method != "feedback":
-        raise RuntimeError(
-            "Raw input is currently only support for feedback method.")
+        raise RuntimeError("Raw input is currently only support for feedback method.")
 
     sc = SeldonClient(
         gateway=gateway_type,
@@ -90,16 +86,17 @@ def start_multithreaded_batch_worker(
         client_return_type="dict",
     )
 
-    t_in = Thread(target=_start_input_file_worker,
-                  args=(q_in, input_data_path, batch_size),
-                  daemon=True)
+    t_in = Thread(
+        target=_start_input_file_worker,
+        args=(q_in, input_data_path, batch_size),
+        daemon=True,
+    )
     t_in.start()
 
     for _ in range(workers):
         Thread(
             target=_start_request_worker,
-            args=(q_in, q_out, data_type, sc, method, retries, batch_id,
-                  payload_type, batch_size),
+            args=(q_in, q_out, data_type, sc, method, retries, batch_id,payload_type, batch_size),
             daemon=True,
         ).start()
 
@@ -126,8 +123,9 @@ def start_multithreaded_batch_worker(
         logger.info(f"Elapsed time: {time.time() - start_time}")
 
 
-def _start_input_file_worker(q_in: Queue, input_data_path: str,
-                             batch_size: int) -> None:
+def _start_input_file_worker(
+    q_in: Queue, input_data_path: str, batch_size: int
+) -> None:
     """
     Runs logic for the input file worker which reads the input file from filestore
     and puts all of the lines into the input queue so it can be processed.
@@ -141,7 +139,6 @@ def _start_input_file_worker(q_in: Queue, input_data_path: str,
     input_data_file = open(input_data_path, "r")
     enum_idx = 0
     batch = []
-    start_merge = time.time()
 
     for line in input_data_file:
         unique_id = str(uuid.uuid1())
@@ -184,21 +181,21 @@ def _start_output_file_worker(q_out: Queue, output_data_path: str,
             q_out.task_done()
 
             counter += 1
-            if counter % 10000 == 0:
+            if counter % 100 == 0:
                 logger.info(f"Processed instances: {counter}")
     logger.info(f"Total processed instances: {counter}")
 
 
 def _start_request_worker(
-        q_in: Queue,
-        q_out: Queue,
-        data_type: str,
-        sc: SeldonClient,
-        method: str,
-        retries: int,
-        batch_id: str,
-        payload_type: str,
-        batch_size: int,
+    q_in: Queue,
+    q_out: Queue,
+    data_type: str,
+    sc: SeldonClient,
+    method: str,
+    retries: int,
+    batch_id: str,
+    payload_type: str,
+    batch_size: int,
 ) -> None:
     """
     Runs logic for the worker that sends requests from the queue until the queue
@@ -229,7 +226,6 @@ def _start_request_worker(
         if method == "predict":
             # If we have a batch size > 1 then we wish to use the method for sending multiple predictions
             # as a single request and split the response into multiple responses.
-            # changed by Yali Qin
             if (batch_size > 0):
                 str_outputs = _send_batch_predict_multi_request(
                     input_data,
@@ -245,7 +241,6 @@ def _start_request_worker(
                 # Continue with next input
                 continue
             else:
-                #                 print('_send_batch_predict')
                 str_output = _send_batch_predict(
                     batch_idx,
                     batch_instance_id,
@@ -271,12 +266,12 @@ def _start_request_worker(
 
 
 def _send_batch_predict_multi_request(
-        input_raw: [],
-        data_type: str,
-        sc: SeldonClient,
-        retries: int,
-        batch_id: str,
-        payload_type: str,
+    input_raw: [],
+    data_type: str,
+    sc: SeldonClient,
+    retries: int,
+    batch_id: str,
+    payload_type: str,
 ) -> str:
     """
     Send an request using the Seldon Client with batch context including the
@@ -284,7 +279,8 @@ def _send_batch_predict_multi_request(
     function also uses the unique batch ID as request ID so the request can be
     traced back individually in the Seldon Request Logger context. Each request
     will be attempted for the number of retries, and will return the string
-    serialised result.
+    serialised result. This method is similar to _send_batch_predict, but allows multiple
+    requests to be combined into a single prediction.
     Parameters
     ---
     # TODO: Change this
@@ -318,7 +314,6 @@ def _send_batch_predict_multi_request(
 
     try:
         if data_type == "data":
-            start_load = time.time()
             data = json.loads(input_raw[0][2])
 
             data_np = np.array(data, dtype="O")
@@ -350,7 +345,6 @@ def _send_batch_predict_multi_request(
                 break
             except (requests.exceptions.RequestException, AssertionError) as e:
                 logger.error(f"Exception: {e}, retries {retries}, message:{msg}")
-                logger.error(f"Exception: {e}, retries {retries}")
                 if i == (retries - 1):
                     raise
             except requests.exceptions.Timeout:
@@ -360,14 +354,10 @@ def _send_batch_predict_multi_request(
 
     except Exception as e:
         error_resp = {
-            "status": {
-                "info": "FAILURE",
-                "reason": str(e),
-                "status": 1
-            },
-            "meta": meta,
+            "status": {"info": "FAILURE", "reason": str(e), "status": 1},
+            "meta": tags,
         }
-        print(e)
+        print("Exception: %s" % e)
         str_output = json.dumps(error_resp)
         return [str_output]
 
@@ -401,13 +391,13 @@ def _send_batch_predict_multi_request(
 
 
 def _send_batch_predict(
-        batch_idx: int,
-        batch_instance_id: int,
-        input_raw: str,
-        data_type: str,
-        sc: SeldonClient,
-        retries: int,
-        batch_id: str,
+    batch_idx: int,
+    batch_instance_id: int,
+    input_raw: str,
+    data_type: str,
+    sc: SeldonClient,
+    retries: int,
+    batch_id: str,
 ) -> str:
     """
     Send an request using the Seldon Client with batch context including the
@@ -416,7 +406,7 @@ def _send_batch_predict(
     traced back individually in the Seldon Request Logger context. Each request
     will be attempted for the number of retries, and will return the string
     serialised result.
-    Paramters
+    Parameters
     ---
     batch_idx
         The enumerated index given to the batch datapoint in order of local dataset
@@ -425,7 +415,7 @@ def _send_batch_predict(
     input_raw
         The raw input in string format to be loaded to the respective format
     data_type
-        The data type to send which can be str, json and data
+        The data type to send which can be `str`, `json` and `data`
     sc
         The instance of SeldonClient to use to send the requests to the seldon model
     retries
@@ -434,7 +424,7 @@ def _send_batch_predict(
         The unique identifier for the batch which is passed to all requests
     Returns
     ---
-        A string serialised result of the response (or equivallent data with error info)
+        A string serialised result of the response (or equivalent data with error info)
     """
 
     predict_kwargs = {}
@@ -471,32 +461,28 @@ def _send_batch_predict(
                 break
             except (requests.exceptions.RequestException, AssertionError) as e:
                 logger.error(f"Exception: {e}, retries {retries}, message:{msg}, request data:{data_np}")
-
                 if i == (retries - 1):
                     raise
 
     except Exception as e:
         error_resp = {
-            "status": {
-                "info": "FAILURE",
-                "reason": str(e),
-                "status": 1
-            },
-            "meta": meta,
+            "status": {"info": "FAILURE", "reason": str(e), "status": 1},
+            "meta": tags,
         }
+        print("Exception: %s" % e)
         str_output = json.dumps(error_resp)
 
     return str_output
 
 
 def _send_batch_feedback(
-        batch_idx: int,
-        batch_instance_id: int,
-        input_raw: str,
-        data_type: str,
-        sc: SeldonClient,
-        retries: int,
-        batch_id: str,
+    batch_idx: int,
+    batch_instance_id: int,
+    input_raw: str,
+    data_type: str,
+    sc: SeldonClient,
+    retries: int,
+    batch_id: str,
 ) -> str:
     """
     Send an request using the Seldon Client with feedback
@@ -556,13 +542,10 @@ def _send_batch_feedback(
 
     except Exception as e:
         error_resp = {
-            "status": {
-                "info": "FAILURE",
-                "reason": str(e),
-                "status": 1
-            },
+            "status": {"info": "FAILURE", "reason": str(e), "status": 1},
             "meta": meta,
         }
+        print("Exception: %s" % e)
         str_output = json.dumps(error_resp)
 
     return str_output
@@ -582,8 +565,7 @@ def _send_batch_feedback(
     envvar="SELDON_BATCH_GATEWAY_TYPE",
     type=click.Choice(CHOICES_GATEWAY_TYPE),
     default="istio",
-    help=
-    "The gateway type for the seldon model, which can be through the ingress provider (istio/ambassador) or directly through the service (seldon)",
+    help="The gateway type for the seldon model, which can be through the ingress provider (istio/ambassador) or directly through the service (seldon)",
 )
 @click.option(
     "--namespace",
@@ -597,8 +579,7 @@ def _send_batch_feedback(
     "-h",
     envvar="SELDON_BATCH_HOST",
     default="istio-ingressgateway.istio-system.svc.cluster.local:80",
-    help=
-    "The hostname for the seldon model to send the request to, which can be the ingress of the Seldon model or the service itself",
+    help="The hostname for the seldon model to send the request to, which can be the ingress of the Seldon model or the service itself",
 )
 @click.option(
     "--transport",
@@ -606,8 +587,7 @@ def _send_batch_feedback(
     envvar="SELDON_BATCH_TRANSPORT",
     type=click.Choice(CHOICES_TRANSPORT),
     default="rest",
-    help=
-    "The transport type of the SeldonDeployment model which can be REST or GRPC",
+    help="The transport type of the SeldonDeployment model which can be REST or GRPC",
 )
 @click.option(
     "--data-type",
@@ -615,8 +595,7 @@ def _send_batch_feedback(
     envvar="SELDON_BATCH_DATA_TYPE",
     type=click.Choice(CHOICES_DATA_TYPE),
     default="data",
-    help=
-    "Whether to use json, strData or Seldon Data type for the payload to send to the SeldonDeployment which aligns with the SeldonClient format",
+    help="Whether to use json, strData or Seldon Data type for the payload to send to the SeldonDeployment which aligns with the SeldonClient format",
 )
 @click.option(
     "--payload-type",
@@ -624,8 +603,7 @@ def _send_batch_feedback(
     envvar="SELDON_BATCH_PAYLOAD_TYPE",
     type=click.Choice(CHOICES_PAYLOAD_TYPE),
     default="ndarray",
-    help=
-    "The payload type expected by the SeldonDeployment and hence the expected format for the data in the input file which can be an array",
+    help="The payload type expected by the SeldonDeployment and hence the expected format for the data in the input file which can be an array",
 )
 @click.option(
     "--workers",
@@ -633,8 +611,7 @@ def _send_batch_feedback(
     envvar="SELDON_BATCH_WORKERS",
     type=int,
     default=1,
-    help=
-    "The number of parallel request processor workers to run for parallel processing",
+    help="The number of parallel request processor workers to run for parallel processing",
 )
 @click.option(
     "--retries",
@@ -650,8 +627,7 @@ def _send_batch_feedback(
     envvar="SELDON_BATCH_INPUT_DATA_PATH",
     type=click.Path(),
     default="/assets/input-data.txt",
-    help=
-    "The local filestore path where the input file with the data to process is located",
+    help="The local filestore path where the input file with the data to process is located",
 )
 @click.option(
     "--output-data-path",
@@ -659,8 +635,7 @@ def _send_batch_feedback(
     envvar="SELDON_BATCH_OUTPUT_DATA_PATH",
     type=click.Path(),
     default="/assets/input-data.txt",
-    help=
-    "The local filestore path where the output file should be written with the outputs of the batch processing",
+    help="The local filestore path where the output file should be written with the outputs of the batch processing",
 )
 @click.option(
     "--method",
@@ -668,8 +643,7 @@ def _send_batch_feedback(
     envvar="SELDON_BATCH_METHOD",
     type=click.Choice(CHOICES_METHOD),
     default="predict",
-    help=
-    "The method of the SeldonDeployment to send the request to which currently only supports the predict method",
+    help="The method of the SeldonDeployment to send the request to which currently only supports the predict method",
 )
 @click.option(
     "--log-level",
@@ -684,8 +658,7 @@ def _send_batch_feedback(
     "-b",
     envvar="SELDON_BATCH_BENCHMARK",
     is_flag=True,
-    help=
-    "If true the batch processor will print the elapsed time taken to run the process",
+    help="If true the batch processor will print the elapsed time taken to run the process",
 )
 @click.option(
     "--batch-id",
@@ -702,28 +675,27 @@ def _send_batch_feedback(
     envvar="SELDON_BATCH_SIZE",
     default=int(1),
     type=int,
-    help=
-    "Batch size greater than 1 can be used to group multiple predictions into a single request.",
+    help="Batch size greater than 1 can be used to group multiple predictions into a single request.",
 )
 
 
 def run_cli(
-        deployment_name: str,
-        gateway_type: str,
-        namespace: str,
-        host: str,
-        transport: str,
-        data_type: str,
-        payload_type: str,
-        workers: int,
-        retries: int,
-        batch_size: int,
-        input_data_path: str,
-        output_data_path: str,
-        method: str,
-        log_level: str,
-        benchmark: bool,
-        batch_id: str,
+    deployment_name: str,
+    gateway_type: str,
+    namespace: str,
+    host: str,
+    transport: str,
+    data_type: str,
+    payload_type: str,
+    workers: int,
+    retries: int,
+    batch_size: int,
+    input_data_path: str,
+    output_data_path: str,
+    method: str,
+    log_level: str,
+    benchmark: bool,
+    batch_id: str,
 ):
     """
     Command line interface for Seldon Batch Processor, which can be used to send requests
@@ -756,5 +728,5 @@ def run_cli(
     )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run_cli()
