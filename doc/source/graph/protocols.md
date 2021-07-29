@@ -83,6 +83,6 @@ In particular,
 | -- | -- | -- |
 | [TRITON_SERVER](../servers/triton.md) | ✅ | [NVIDIA Triton](https://github.com/triton-inference-server/server) |
 | [SKLEARN_SERVER](../servers/sklearn.md) | ✅  | [Seldon MLServer](https://github.com/seldonio/mlserver) |
-| [XGBOOST_SERVER](../servers/xgboost.md) | ✅  | [Seldon MLServer](https://github.com/seldonio/mlserver) |
+| [XGBOOST_SERVER](../servers/xgboost.md) | ✅  | [Seldon MLFlow](../servers/mlflow.md) |
 
 You can try out the `kfserving` in [this example notebook](../examples/protocol_examples.html). 
