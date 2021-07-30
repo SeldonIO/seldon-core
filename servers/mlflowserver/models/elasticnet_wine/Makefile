@@ -1,5 +1,9 @@
 VERSION := $(shell cat ../../../../version.txt)
 
+all: env train collect upload
+
+model: env train
+
 env:
 	python3 -m venv .env
 	./.env/bin/pip install --upgrade pip setuptools

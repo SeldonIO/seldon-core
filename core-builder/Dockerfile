@@ -144,6 +144,11 @@ RUN wget https://github.com/jenkins-x/jx-cli/releases/download/v3.1.242/jx-cli-l
     chmod a+x jx && \
     mv jx /usr/local/bin/jx
 
+RUN curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-349.0.0-linux-x86_64.tar.gz && \
+    tar xvfz google-cloud-sdk-349.0.0-linux-x86_64.tar.gz -C /tmp/ && \
+    mv /tmp/google-cloud-sdk /usr/local/google-cloud-sdk
+ENV PATH /usr/local/google-cloud-sdk/bin:$PATH
+
 WORKDIR /work
 
 # Define default command.
