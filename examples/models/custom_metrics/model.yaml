@@ -3,16 +3,12 @@ kind: SeldonDeployment
 metadata:
   name: seldon-model
 spec:
-  name: test-deployment
   predictors:
   - componentSpecs:
     - spec:
         containers:
         - image: seldonio/model-with-metrics:0.2
           name: classifier
-          env:
-          - name: GUNICORN_WORKERS
-            value: "1"
     graph:
       children: []
       name: classifier
