@@ -197,6 +197,14 @@ function build_push_mab {
     MAB_EXIT_VALUE=$?
 }
 
+function build_push_keras_cifar10 {
+    make \
+	-C examples/models/keras_cifar10 \
+        build \
+	push 
+    CIFAR10_EXIT_VALUE=$?
+}
+
 
 function build_push_lgbm {
     make \
@@ -222,6 +230,7 @@ build_push_alibi_explainer
 build_push_storage_initializer
 build_push_rclone_storage_initializer
 build_push_mab
+build_push_keras_cifar10
 build_push_lgbm
 
 #######################################
@@ -243,6 +252,7 @@ echo "Request Logger exit value: $LOGGER_EXIT_VALUE"
 echo "Tensorflow Proxy exit value: $TFPROXY_EXIT_VALUE"
 echo "Rclone Storage Initializer exit value: $RCLONE_STORAGE_INITIALIZER_EXIT_VALUE"
 echo "MAB exit value: $MAB_EXIT_VALUE"
+echo "Keras CIFAR10 model exit value: $CIFAR10_EXIT_VALUE"
 echo "LGBM exit value: $LGBM_EXIT_VALUE"
 
 exit $((${PYTHON_EXIT_VALUE} \
@@ -259,6 +269,7 @@ exit $((${PYTHON_EXIT_VALUE} \
     + ${STORAGE_INITIALIZER_EXIT_VALUE} \
     + ${RCLONE_STORAGE_INITIALIZER_EXIT_VALUE} \
     + ${MAB_EXIT_VALUE} \
+    + ${CIFAR10_EXIT_VALUE} \    
     + ${LGBM_EXIT_VALUE} \    
     + ${CORE_BUILDER_EXIT_VALUE} \
     + ${PYTHON_BUILDER_EXIT_VALUE} \

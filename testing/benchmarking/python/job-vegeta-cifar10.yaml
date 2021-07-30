@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cifar10-loadtest
+spec:
+  backoffLimit: 6
+  parallelism: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+        - args:
+            - vegeta -cpus=1 attack -format=json -keepalive=false -duration=60s -rate=0 -max-workers=10 -targets=/var/vegeta/cifar10.json
+              | vegeta report -type=text
+          command:
+            - sh
+            - -c
+          image: peterevans/vegeta:latest
+          imagePullPolicy: Always
+          name: vegeta
+          volumeMounts:
+            - mountPath: /var/vegeta
+              name: vegeta-cfg
+      restartPolicy: Never
+      volumes:
+        - configMap:
+            defaultMode: 420
+            name: vegeta-cfg
+          name: vegeta-cfg

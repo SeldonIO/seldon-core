@@ -1,0 +1,73 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  creationTimestamp: null
+  name: models
+spec:
+  pipelineSpec:
+    tasks:
+    - name: models-test-task
+      taskSpec:
+        stepTemplate:
+          name: ""
+          workingDir: /workspace/source
+        steps:
+        - image: uses:jenkins-x/jx3-pipeline-catalog/tasks/git-clone/git-clone-pr.yaml@versionStream
+          name: ""
+        - name: models-step
+          image: seldonio/core-builder:0.23
+          command:
+            - bash
+            - -c
+            - cd servers && make models
+          volumeMounts:
+          - mountPath: /lib/modules
+            name: modules
+            readOnly: true
+          - mountPath: /sys/fs/cgroup
+            name: cgroup
+          - name: dind-storage
+            mountPath: /var/lib/docker
+          - mountPath: /tekton/home/.docker
+            name: jenkins-docker-config-volume
+          resources:
+            requests:
+              cpu: 1
+              memory: 3000Mi
+              ephemeral-storage: "60Gi"
+            limits:
+              cpu: 1
+              memory: 3000Mi
+              ephemeral-storage: "60Gi"
+          securityContext:
+            privileged: true
+          imagePullPolicy: Always
+        volumes:
+          - name: modules
+            hostPath:
+              path: /lib/modules
+              type: Directory
+          - name: cgroup
+            hostPath:
+              path: /sys/fs/cgroup
+              type: Directory
+          - name: dind-storage
+            emptyDir: {}
+          - name: jenkins-docker-config-volume
+            secret:
+              items:
+              - key: config.json
+                path: config.json
+              secretName: jenkins-docker-cfg
+
+  podTemplate:
+    nodeSelector:
+      cloud.google.com/gke-nodepool: general-pipelines-pool
+    tolerations:
+    - key: job-type
+      operator: Equal
+      value: general
+      effect: NoSchedule
+  serviceAccountName: tekton-bot
+  timeout: 6h0m0s
+status: {}

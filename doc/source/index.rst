@@ -115,6 +115,7 @@ Documentation Index
    Replica Scaling  <graph/scaling.md>
    Budgeting Disruptions <graph/disruption-budgets.md>
    Custom Inference Servers <servers/custom.md>
+   Inference Optimization <production/optimization.md>
 
 .. toctree::
    :maxdepth: 1

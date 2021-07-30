@@ -1,5 +1,8 @@
 VERSION := $(shell cat ../../../../version.txt)
 
+all: env train upload
+
+model: env train
 
 env:
 	python3 -m venv .env
@@ -9,10 +12,6 @@ env:
 train:
 	.env/bin/python train.py
 
-
 upload:
 	gsutil -m cp metadata.yaml gs://seldon-models/v${VERSION}/sklearn/iris/
 	gsutil -m cp model.joblib gs://seldon-models/v${VERSION}/sklearn/iris/
-
-
-model: env train

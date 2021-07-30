@@ -2,6 +2,13 @@ apiVersion: config.lighthouse.jenkins-x.io/v1alpha1
 kind: TriggerConfig
 spec:
   presubmits:
+  - name: models
+    context: "models"
+    always_run: false
+    optional: false
+    trigger: (?m)^/test( all| models.*),?(s+|$)
+    rerun_command: "/test models"
+    source: "models.yaml"
   - name: notebooks
     context: "notebooks"
     always_run: false
@@ -37,4 +44,3 @@ spec:
     branches:
     - ^main$
     - ^master$
-
