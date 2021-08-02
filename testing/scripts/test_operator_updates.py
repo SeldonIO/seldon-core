@@ -14,6 +14,9 @@ SELDON_VERSIONS_TO_TEST = ["1.0.2", "1.1.0", "1.2.3", "1.3.0", "1.4.0"]
 @pytest.mark.sequential
 @pytest.mark.parametrize("seldon_version", SELDON_VERSIONS_TO_TEST, indirect=True)
 def test_cluster_update(namespace, seldon_version):
+    # NOTE: if this fails we might need to rebuild the test (fixed) models to pick up latest python changes.
+    # run:
+    #   `make kind_build_test_models`
     # Deploy test model
     retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
     wait_for_status("mymodel", namespace)
