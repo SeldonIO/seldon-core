@@ -85,8 +85,6 @@ To be more specific, we had to provide two versions of the CRD as part of the se
 3. Manually add spec.preserveUnknownFields, to helm chart and install CRD (so it ignores invalid fields of now invalid CRD)
 4. Remove the spec.preserveUnknownFields, from helm chart manually again, and re-install now the current CRD
 
-This is something that we should probably add to the UPGRADING.md page, I'll update it there. Let us know if there's still any questions, otherwise I can close the issue.
-
 ## Upgrading to 1.3
 
 ### Breaking Changes
