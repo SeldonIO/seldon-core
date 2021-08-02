@@ -5,6 +5,8 @@ metadata:
     app: seldon
   name: seldon-model
 spec:
+  annotations:
+    seldon.io/executor: "true"
   name: test-deployment
   predictors:
   - componentSpecs:
@@ -15,11 +17,13 @@ spec:
     graph:
       children: []
       endpoint:
-        type: REST
         service_host: 0.0.0.0
         httpPort: 9001
+        grpcPort: 5001
       name: classifier
       type: MODEL
+      logger:
+        mode: all
     labels:
       version: v1
     name: example

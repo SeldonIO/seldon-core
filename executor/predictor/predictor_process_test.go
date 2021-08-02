@@ -443,7 +443,7 @@ func TestModelWithLogRequests(t *testing.T) {
 
 	logf.SetLogger(logf.ZapLogger(false))
 	log := logf.Log.WithName("entrypoint")
-	logger.StartDispatcher(1, log, "", "", "")
+	logger.StartDispatcher(1, log, "", "", "", "", "")
 
 	model := v1.MODEL
 	graph := &v1.PredictiveUnit{
@@ -491,7 +491,7 @@ func TestModelWithLogRequestsAtDefaultedUrl(t *testing.T) {
 
 	logf.SetLogger(logf.ZapLogger(false))
 	log := logf.Log.WithName("entrypoint")
-	logger.StartDispatcher(1, log, "", "", "")
+	logger.StartDispatcher(1, log, "", "", "", "", "")
 
 	model := v1.MODEL
 	graph := &v1.PredictiveUnit{
@@ -534,7 +534,7 @@ func TestModelWithLogResponses(t *testing.T) {
 
 	logf.SetLogger(logf.ZapLogger(false))
 	log := logf.Log.WithName("entrypoint")
-	logger.StartDispatcher(1, log, "", "", "")
+	logger.StartDispatcher(1, log, "", "", "", "", "")
 
 	model := v1.MODEL
 	graph := &v1.PredictiveUnit{

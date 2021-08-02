@@ -1,24 +1,22 @@
 SHELL=/bin/bash
-KAFKA_BIN=../kafka_2.12-2.5.0/bin
+KAFKA_BIN=../kafka_2.13-2.8.0/bin
+KAFKA_IP := $(shell kubectl get service  my-cluster-kafka-plain-0 -n kafka -o=jsonpath='{.status.loadBalancer.ingress[0].ip}{"\n"}')
 
-KAFKA_PORT := $(shell kubectl get service my-cluster-kafka-external-bootstrap -n default -o=jsonpath='{.spec.ports[0].nodePort}{"\n"}')
 
-
-# https://github.com/strimzi/strimzi-kafka-operator/tree/master/helm-charts/strimzi-kafka-operator
+#https://strimzi.io/quickstarts/
 install:
-	helm install my-release strimzi/strimzi-kafka-operator
-
+	kubectl create namespace kafka
+	kubectl create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
 
 create_cluster:
-	kubectl create -f cluster.yaml
+	kubectl apply -f https://strimzi.io/examples/latest/kafka/kafka-persistent-single.yaml -n kafka
+	kubectl wait kafka/my-cluster --for=condition=Ready --timeout=300s -n kafka
 
 create_topic:
 	kubectl create -f topic.yaml
 
 start_consumer:
-	cd .. && $(MAKE) kafka_2.12-2.5.0
-	${KAFKA_BIN}/kafka-console-consumer.sh --bootstrap-server 172.17.0.2:${KAFKA_PORT} --topic my-topic --from-beginning
+	${KAFKA_BIN}/kafka-console-consumer.sh --bootstrap-server ${KAFKA_IP}:9092 --topic my-topic --from-beginning
 
 start_producer:
-	cd .. && $(MAKE) kafka_2.12-2.5.0
-	${KAFKA_BIN}/kafka-console-producer.sh --broker-list 172.17.0.2:${KAFKA_PORT} --topic my-topic
+	${KAFKA_BIN}/kafka-console-producer.sh --broker-list ${KAFKA_IP}:9092 --topic my-topic
