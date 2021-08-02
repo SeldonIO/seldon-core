@@ -1,3 +1,4 @@
+# Makefile for building and pushing fixed models docker images using for testing
 VERSION := $(shell cat ../../../version.txt)
 
 build_images:
