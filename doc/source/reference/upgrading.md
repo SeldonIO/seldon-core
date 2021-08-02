@@ -74,6 +74,19 @@ To take advantage of the ability to handle both REST and gRPC on any deployed mo
 
 You can use and extend the [backwards compatibility notebook](../examples/backwards_compatibility.html) to check your deployments will work if you do not intend to upgrade them.
 
+## Upgrading to Kubernetes version >= 1.18
+
+If you have a Kubernetes cluster with Seldon Core installed, and you want to upgrade the Kubernetes cluster, you have to carry out a set of manual steps due to the more strict validation that this version of Kubernetes introduced.
+
+To be more specific, we had to provide two versions of the CRD as part of the seldon core install helm chart. imilarly the CRD for post-kubernetes 1.18 is actually differnt - you can actually see that in version 1.3.0 we introduced new CRD changes in the helm chart via an IF statement to install the CRD depending on the k8s version. Due to this, the path to upgrade from pre-18 is similar to what you have done, namely:
+
+1. Start with kubernetes cluster pre 1.18 with seldon core pre-1.3.0
+2. Upgrade Kubernetes cluster to post 1.18 (seldon core CRD is now "invalid" but still installed as still in etcd)
+3. Manually add spec.preserveUnknownFields, to helm chart and install CRD (so it ignores invalid fields of now invalid CRD)
+4. Remove the spec.preserveUnknownFields, from helm chart manually again, and re-install now the current CRD
+
+This is something that we should probably add to the UPGRADING.md page, I'll update it there. Let us know if there's still any questions, otherwise I can close the issue.
+
 ## Upgrading to 1.3
 
 ### Breaking Changes
