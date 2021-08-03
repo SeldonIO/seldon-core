@@ -1689,7 +1689,7 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 	}
 
 	//Get Security Context
-	podSecurityContext, err := createSecurityContext(instance)
+	podSecurityContext, _ := createSecurityContext(instance)
 
 	//run defaulting
 	instance.Default()
