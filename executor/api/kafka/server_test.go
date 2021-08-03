@@ -1,11 +1,12 @@
 package kafka
 
 import (
+	"testing"
+
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 	. "github.com/onsi/gomega"
 	seldon "github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
-	"testing"
 )
 
 func TestGetProtoSeldonMessage(t *testing.T) {

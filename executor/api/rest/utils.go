@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/seldonio/seldon-core/executor/api/payload"
 	"io/ioutil"
 	"strings"
+
+	"github.com/seldonio/seldon-core/executor/api/payload"
 )
 
 const (

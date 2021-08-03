@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net"
+	"testing"
+
 	"github.com/golang/protobuf/jsonpb"
 	. "github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/executor/api/grpc"
@@ -12,9 +15,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/k8s"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	"net"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
-	"testing"
 )
 
 var testProtoModelMetadata = proto.SeldonModelMetadata{

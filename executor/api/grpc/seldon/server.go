@@ -2,6 +2,8 @@ package seldon
 
 import (
 	"context"
+	"net/url"
+
 	"github.com/go-logr/logr"
 	empty "github.com/golang/protobuf/ptypes/empty"
 	"github.com/seldonio/seldon-core/executor/api/client"
@@ -12,7 +14,6 @@ import (
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	protoGrpc "google.golang.org/grpc"
 	protoGrpcMetadata "google.golang.org/grpc/metadata"
-	"net/url"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 

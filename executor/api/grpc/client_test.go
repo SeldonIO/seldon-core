@@ -2,14 +2,15 @@ package grpc
 
 import (
 	"context"
+	"reflect"
+	"testing"
+
 	"github.com/golang/protobuf/jsonpb"
 	proto2 "github.com/golang/protobuf/proto"
 	. "github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"google.golang.org/grpc/metadata"
-	"reflect"
-	"testing"
 )
 
 func TestAddPuidToCtx(t *testing.T) {

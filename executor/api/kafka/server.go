@@ -2,6 +2,13 @@ package kafka
 
 import (
 	"fmt"
+	"net/url"
+	"os"
+	"os/signal"
+	"reflect"
+	"syscall"
+	"time"
+
 	"github.com/cloudevents/sdk-go/pkg/bindings/http"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/go-logr/logr"
@@ -15,17 +22,6 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/rest"
 	"github.com/seldonio/seldon-core/executor/predictor"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	"net/url"
-	"os"
-	"os/signal"
-	"reflect"
-	"syscall"
-	"time"
-)
-
-const (
-	kafkaPayloadJson  = "json"
-	kafkaPayloadProto = "proto"
 )
 
 const (
@@ -108,17 +104,11 @@ func (ks *SeldonKafkaServer) getGroupName() string {
 func collectHeaders(headers []kafka.Header) map[string][]string {
 	sheaders := make(map[string][]string)
 	foundPuid := false
-	if headers != nil {
-		for _, header := range headers {
-			if header.Key == payload.SeldonPUIDHeader {
-				foundPuid = true
-			}
-			if _, ok := sheaders[header.Key]; ok {
-				sheaders[header.Key] = append(sheaders[header.Key], string(header.Value))
-			} else {
-				sheaders[header.Key] = []string{string(header.Value)}
-			}
+	for _, header := range headers {
+		if header.Key == payload.SeldonPUIDHeader {
+			foundPuid = true
 		}
+		sheaders[header.Key] = append(sheaders[header.Key], string(header.Value))
 	}
 	// PUID if not found
 	if !foundPuid {
@@ -165,7 +155,7 @@ func (ks *SeldonKafkaServer) Serve() error {
 
 	//wait for graph to be ready
 	ready := false
-	for ready == false {
+	for !ready {
 		err := predictor.Ready(&ks.Predictor.Graph)
 		ready = err == nil
 		if !ready {
@@ -175,7 +165,7 @@ func (ks *SeldonKafkaServer) Serve() error {
 	}
 
 	cnt := 0
-	for run == true {
+	for run {
 		select {
 		case sig := <-sigchan:
 			ks.Log.Info("Terminating", "signal", sig)

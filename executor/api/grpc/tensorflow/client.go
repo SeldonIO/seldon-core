@@ -3,6 +3,9 @@ package tensorflow
 import (
 	"context"
 	"fmt"
+	"io"
+	"math"
+
 	"github.com/go-logr/logr"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
@@ -14,8 +17,6 @@ import (
 	"google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	"io"
-	"math"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 

@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"

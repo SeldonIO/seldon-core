@@ -2,15 +2,16 @@ package kafka
 
 import (
 	"context"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/cloudevents/sdk-go/pkg/bindings/http"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/go-logr/logr"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/api/rest"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 type KafkaProxy struct {
@@ -79,7 +80,7 @@ func (kp *KafkaProxy) Consume() error {
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
 
-	for run == true {
+	for run {
 		select {
 		case sig := <-sigchan:
 			kp.Log.Info("Terminating", "signal", sig)

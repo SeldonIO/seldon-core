@@ -2,6 +2,11 @@ package tensorflow
 
 import (
 	"context"
+	"io"
+	"net/http"
+	"net/url"
+	"testing"
+
 	"github.com/golang/protobuf/jsonpb"
 	. "github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/executor/api/client"
@@ -12,10 +17,6 @@ import (
 	codes "google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	status "google.golang.org/grpc/status"
-	"io"
-	"net/http"
-	"net/url"
-	"testing"
 )
 
 const (

@@ -2,13 +2,14 @@ package main
 
 import (
 	"flag"
+	"os"
+
 	"github.com/prometheus/common/log"
 	"github.com/seldonio/seldon-core/executor/api"
 	"github.com/seldonio/seldon-core/executor/api/kafka"
 	"github.com/seldonio/seldon-core/executor/api/rest"
 	"github.com/seldonio/seldon-core/executor/k8s"
 	predictor2 "github.com/seldonio/seldon-core/executor/predictor"
-	"os"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 

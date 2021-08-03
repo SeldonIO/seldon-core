@@ -3,9 +3,10 @@ package client
 import (
 	"context"
 	"fmt"
+	"io"
+
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"golang.org/x/xerrors"
-	"io"
 )
 
 const (

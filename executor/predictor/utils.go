@@ -4,11 +4,12 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/ghodss/yaml"
-	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"io/ioutil"
 	"os"
 	"strings"
+
+	"github.com/ghodss/yaml"
+	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 )
 
 func GetPredictor(predictorName, filename, sdepName, namespace string, configPath *string) (*v1.PredictorSpec, error) {

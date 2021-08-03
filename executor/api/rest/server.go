@@ -4,10 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	http2 "github.com/cloudevents/sdk-go/pkg/bindings/http"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+
+	http2 "github.com/cloudevents/sdk-go/pkg/bindings/http"
+
+	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/gorilla/mux"
@@ -22,7 +25,6 @@ import (
 	"github.com/seldonio/seldon-core/executor/predictor"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
-	"time"
 )
 
 type SeldonRestApi struct {

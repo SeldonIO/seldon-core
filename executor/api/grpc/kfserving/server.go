@@ -2,6 +2,8 @@ package kfserving
 
 import (
 	"context"
+	"net/url"
+
 	"github.com/go-logr/logr"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/grpc"
@@ -11,8 +13,7 @@ import (
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	protoGrpc "google.golang.org/grpc"
 	protoGrpcMetadata "google.golang.org/grpc/metadata"
-	"net/url"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 type GrpcKFServingServer struct {

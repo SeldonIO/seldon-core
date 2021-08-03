@@ -11,10 +11,9 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"strconv"
 	"syscall"
 	"time"
-
-	"strconv"
 
 	"github.com/go-logr/logr"
 	"github.com/seldonio/seldon-core/executor/api"
@@ -41,12 +40,11 @@ import (
 )
 
 const (
-	logLevelEnvVar        = "SELDON_LOG_LEVEL"
-	logLevelDefault       = "INFO"
-	debugEnvVar           = "SELDON_DEBUG"
-	certMountPathEnvVar   = "SELDON_CERT_MOUNT_PATH"
-	certFileEnvVar        = "SELDON_CERT_FILE_NAME"
-	certKeyFileNameEnvVar = "SELDON_CERT_KEY_FILE_NAME"
+	logLevelEnvVar      = "SELDON_LOG_LEVEL"
+	logLevelDefault     = "INFO"
+	debugEnvVar         = "SELDON_DEBUG"
+	certMountPathEnvVar = "SELDON_CERT_MOUNT_PATH"
+	certFileEnvVar      = "SELDON_CERT_FILE_NAME"
 )
 
 var (

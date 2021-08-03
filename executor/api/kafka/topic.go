@@ -2,15 +2,16 @@ package kafka
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
+
 	"github.com/cloudevents/sdk-go/pkg/bindings/http"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/go-logr/logr"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/api/rest"
-	"os"
-	"os/signal"
-	"sync"
-	"syscall"
 )
 
 const (
@@ -96,7 +97,7 @@ func (tp *KafkaRPC) start() {
 		sigchan := make(chan os.Signal, 1)
 		signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
 
-		for run == true {
+		for run {
 			select {
 			case sig := <-sigchan:
 				tp.Log.Info("Terminating", "signal", sig)
