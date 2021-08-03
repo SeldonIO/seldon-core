@@ -3,8 +3,11 @@ package k8s
 import (
 	"context"
 	"fmt"
-	"github.com/go-logr/logr"
 	"io/ioutil"
+	"os"
+	"path/filepath"
+
+	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,8 +15,6 @@ import (
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"os"
-	"path/filepath"
 )
 
 const (

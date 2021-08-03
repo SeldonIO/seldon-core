@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	v1 "k8s.io/api/core/v1"
 

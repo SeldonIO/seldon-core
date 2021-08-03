@@ -2,6 +2,9 @@ package k8s
 
 import (
 	"context"
+	"strconv"
+	"strings"
+
 	"github.com/ghodss/yaml"
 	"github.com/go-logr/logr"
 	"k8s.io/api/admissionregistration/v1beta1"
@@ -12,8 +15,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"strconv"
-	"strings"
 )
 
 const MutatingWebhookName = "seldon-mutating-webhook-configuration"
@@ -105,13 +106,13 @@ func (wc *WebhookCreator) CreateValidatingWebhookConfigurationFromFile(ctx conte
 	}
 
 	// add caBundle
-	for idx, _ := range vwc.Webhooks {
+	for idx := range vwc.Webhooks {
 		vwc.Webhooks[idx].ClientConfig.CABundle = []byte(wc.certs.caPEM)
 		// set namespace
 		vwc.Webhooks[idx].ClientConfig.Service.Namespace = namespace
 
 		//Remove namespace exclusion if watchNamespace
-		//TODO change to add a namespace selector if the initalizer adds a label to namespace
+		//TODO change to add a namespace selector if the initializer adds a label to namespace
 		if watchNamespace {
 			vwc.Webhooks[idx].NamespaceSelector = nil
 		}
