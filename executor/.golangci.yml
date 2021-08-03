@@ -28,7 +28,7 @@ linters:
   disable-all: true
   enable:
     # Sorted alphabetically.
-#    - errcheck
+    - errcheck
     - exportloopref
     - goimports
     - gosimple

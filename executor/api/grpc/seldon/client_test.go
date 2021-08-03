@@ -65,7 +65,9 @@ func createTestGrpcServer(g *GomegaWithT, annotations map[string]string) (*v1.Pr
 	testSeldonGrpcServer := test.NewSeldonTestServer(1, &testProtoModelMetadata)
 	proto.RegisterModelServer(grpcServer, testSeldonGrpcServer)
 
-	go grpcServer.Serve(lis)
+	go func() {
+		_ = grpcServer.Serve(lis)
+	}()
 	stopFunc := grpcServer.Stop
 
 	return &p, host, port, stopFunc

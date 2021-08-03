@@ -11,7 +11,8 @@ import (
 func TestGetPayload(t *testing.T) {
 	var sm proto.SeldonMessage
 	var data = `{"data":{"ndarray":[1.1,2]}}`
-	jsonpb.UnmarshalString(data, &sm)
+	err := jsonpb.UnmarshalString(data, &sm)
+	assert.NilError(t, err)
 
 	var sp SeldonPayload = &ProtoPayload{&sm}
 

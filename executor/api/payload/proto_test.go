@@ -13,13 +13,15 @@ func TestGetProtoPayload(t *testing.T) {
 	g := NewGomegaWithT(t)
 	var sm seldon.SeldonMessage
 	var data = `{"data":{"ndarray":[1.1,2]}}`
-	jsonpb.UnmarshalString(data, &sm)
+	err := jsonpb.UnmarshalString(data, &sm)
+	g.Expect(err).Should(BeNil())
 
 	payload := ProtoPayload{Msg: &sm}
 	b, err := payload.GetBytes()
 	g.Expect(err).Should(BeNil())
 	var sm2 seldon.SeldonMessage
-	proto.Unmarshal(b, &sm2)
+	err = proto.Unmarshal(b, &sm2)
+	g.Expect(err).Should(BeNil())
 
 	g.Expect(proto.Equal(&sm2, &sm)).Should(Equal(true))
 

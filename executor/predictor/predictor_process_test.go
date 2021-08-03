@@ -435,7 +435,7 @@ func TestModelWithLogRequests(t *testing.T) {
 		g.Expect(r.Header.Get(modelIdHeaderName)).To(Equal(modelName))
 		g.Expect(r.Header.Get(contentTypeHeaderName)).To(Equal(grpc.ProtobufContentType))
 		g.Expect(r.Header.Get(requestIdHeaderName)).To(Equal(testSeldonPuid))
-		w.Write([]byte(""))
+		_, _ = w.Write([]byte(""))
 		logged = true
 		fmt.Printf("%+v\n", r.Header)
 		fmt.Printf("%+v\n", r.Body)
@@ -481,7 +481,7 @@ func TestModelWithLogRequestsAtDefaultedUrl(t *testing.T) {
 		g.Expect(r.Header.Get(modelIdHeaderName)).To(Equal(modelName))
 		g.Expect(r.Header.Get(contentTypeHeaderName)).To(Equal(grpc.ProtobufContentType))
 		g.Expect(r.Header.Get(requestIdHeaderName)).To(Equal(testSeldonPuid))
-		w.Write([]byte(""))
+		_, _ = w.Write([]byte(""))
 		logged = true
 		fmt.Printf("%+v\n", r.Header)
 		fmt.Printf("%+v\n", r.Body)
@@ -528,7 +528,7 @@ func TestModelWithLogResponses(t *testing.T) {
 		g.Expect(r.Header.Get(modelIdHeaderName)).To(Equal(modelName))
 		g.Expect(r.Header.Get(contentTypeHeaderName)).To(Equal(grpc.ProtobufContentType))
 		g.Expect(r.Header.Get(requestIdHeaderName)).To(Equal(testSeldonPuid))
-		w.Write([]byte(""))
+		_, _ = w.Write([]byte(""))
 		logged = true
 	})
 	server := httptest.NewServer(handler)

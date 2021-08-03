@@ -30,7 +30,7 @@ func TestAddPuidToCtx(t *testing.T) {
 func getProto(messageType string, messageBytes []byte) proto2.Message {
 	pbtype := proto2.MessageType(messageType)
 	msg := reflect.New(pbtype.Elem()).Interface().(proto2.Message)
-	proto2.Unmarshal(messageBytes, msg)
+	_ = proto2.Unmarshal(messageBytes, msg)
 	return msg
 }
 
