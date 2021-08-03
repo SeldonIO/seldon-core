@@ -18,7 +18,7 @@ type ResourceCleaner struct {
 }
 
 func (r *ResourceCleaner) cleanUnusedVirtualServices() ([]*istio.VirtualService, error) {
-	deleted := []*istio.VirtualService{}
+	var deleted []*istio.VirtualService
 	vlist := &istio.VirtualServiceList{}
 	err := r.client.List(context.Background(), vlist, &client.ListOptions{Namespace: r.instance.Namespace})
 	for _, vsvc := range vlist.Items {
@@ -33,8 +33,10 @@ func (r *ResourceCleaner) cleanUnusedVirtualServices() ([]*istio.VirtualService,
 				}
 				if !found {
 					r.logger.Info("Will delete VirtualService", "name", vsvc.Name, "namespace", vsvc.Namespace)
-					r.client.Delete(context.Background(), &vsvc, client.PropagationPolicy(metav1.DeletePropagationForeground))
-					deleted = append(deleted, vsvc.DeepCopy())
+					deleteErr := r.client.Delete(context.Background(), &vsvc, client.PropagationPolicy(metav1.DeletePropagationForeground))
+					if deleteErr == nil {
+						deleted = append(deleted, vsvc.DeepCopy())
+					}
 				}
 			}
 		}

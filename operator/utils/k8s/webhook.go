@@ -70,7 +70,7 @@ func (wc *WebhookCreator) DeleteMutatingWebhook(ctx context.Context) error {
 	if err != nil && errors.IsNotFound(err) {
 		wc.logger.Info("existing clusterwide mwc not found", "name", MutatingWebhookName)
 	} else {
-		client.Delete(ctx, MutatingWebhookName, v1.DeleteOptions{})
+		err = client.Delete(ctx, MutatingWebhookName, v1.DeleteOptions{})
 		if err != nil {
 			return err
 		}
@@ -96,7 +96,7 @@ func (wc *WebhookCreator) CreateValidatingWebhookConfigurationFromFile(ctx conte
 		if err != nil && errors.IsNotFound(err) {
 			wc.logger.Info("existing clusterwide vwc not found", "name", vwc.Name)
 		} else {
-			client.Delete(ctx, vwc.Name, v1.DeleteOptions{})
+			err = client.Delete(ctx, vwc.Name, v1.DeleteOptions{})
 			if err != nil {
 				return err
 			}

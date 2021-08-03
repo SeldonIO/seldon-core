@@ -133,18 +133,24 @@ func InitializeOperator(ctx context.Context, config *rest.Config, namespace stri
 	}
 
 	// Create cert files
-	createCertFiles(certs, logger)
+	err = createCertFiles(certs, logger)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
 func createCertFiles(certs *Cert, logger logr.Logger) error {
 	//Save certs to filesystem
-	os.MkdirAll(CertsFolder, os.ModePerm)
+	err := os.MkdirAll(CertsFolder, os.ModePerm)
+	if err != nil {
+		return err
+	}
 
 	filename := fmt.Sprintf("%s/%s", CertsFolder, CertsTLSCa)
 	logger.Info("Creating ", "filename", filename)
-	err := ioutil.WriteFile(filename, []byte(certs.caPEM), 0600)
+	err = ioutil.WriteFile(filename, []byte(certs.caPEM), 0600)
 	if err != nil {
 		return err
 	}
