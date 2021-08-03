@@ -52,7 +52,10 @@ func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, prot
 	var err error
 	if fullGraph {
 		log.Info("Starting full graph kafka server")
-		apiClient = NewKafkaClient(serverUrl.Hostname(), deploymentName, namespace, protocol, transport, predictor, broker, log)
+		apiClient, err = NewKafkaClient(serverUrl.Hostname(), deploymentName, namespace, protocol, transport, predictor, broker, log)
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		switch transport {
 		case api.TransportRest:

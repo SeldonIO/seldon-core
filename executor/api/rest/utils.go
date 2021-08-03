@@ -44,7 +44,10 @@ func ExtractSeldonMessagesFromJson(msg payload.SeldonPayload) ([]payload.SeldonP
 	}
 	var v []interface{}
 	sms := make([]payload.SeldonPayload, len(v))
-	json.Unmarshal(bytes, &v)
+	err = json.Unmarshal(bytes, &v)
+	if err != nil {
+		return nil, err
+	}
 	for _, m := range v {
 		mBytes, err := json.Marshal(m)
 		if err != nil {

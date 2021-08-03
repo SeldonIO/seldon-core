@@ -31,7 +31,7 @@ func (kc *KafkaClient) IsGrpc() bool {
 	return false
 }
 
-func NewKafkaClient(hostname, deploymentName, namespace, protocol, transport string, predictor *v1.PredictorSpec, broker string, log logr.Logger) client.SeldonApiClient {
+func NewKafkaClient(hostname, deploymentName, namespace, protocol, transport string, predictor *v1.PredictorSpec, broker string, log logr.Logger) (client.SeldonApiClient, error) {
 	skc := &KafkaClient{
 		Hostname:       hostname,
 		DeploymentName: deploymentName,
@@ -43,8 +43,11 @@ func NewKafkaClient(hostname, deploymentName, namespace, protocol, transport str
 		Log:            log.WithName("KafkaClient"),
 		topicHandlers:  make(map[string]*KafkaRPC),
 	}
-	skc.createTopicHandlers(&predictor.Graph)
-	return skc
+	err := skc.createTopicHandlers(&predictor.Graph)
+	if err != nil {
+		return nil, err
+	}
+	return skc, nil
 }
 
 func (kc *KafkaClient) createTopicHandlers(node *v1.PredictiveUnit) error {

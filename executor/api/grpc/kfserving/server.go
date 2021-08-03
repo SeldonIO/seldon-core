@@ -45,7 +45,7 @@ func (g GrpcKFServingServer) ServerReady(ctx context.Context, request *inference
 func (g GrpcKFServingServer) ModelReady(ctx context.Context, request *inference.ModelReadyRequest) (*inference.ModelReadyResponse, error) {
 	md := grpc.CollectMetadata(ctx)
 	header := protoGrpcMetadata.Pairs(payload.SeldonPUIDHeader, md.Get(payload.SeldonPUIDHeader)[0])
-	protoGrpc.SetHeader(ctx, header)
+	_ = protoGrpc.SetHeader(ctx, header)
 	ctx = context.WithValue(ctx, payload.SeldonPUIDHeaderIdentifier(payload.SeldonPUIDHeader), md.Get(payload.SeldonPUIDHeader)[0])
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("infer"), g.ServerUrl, g.Namespace, md, request.GetName())
 	reqPayload := payload.ProtoPayload{Msg: request}
@@ -63,7 +63,7 @@ func (g GrpcKFServingServer) ServerMetadata(ctx context.Context, request *infere
 func (g GrpcKFServingServer) ModelMetadata(ctx context.Context, request *inference.ModelMetadataRequest) (*inference.ModelMetadataResponse, error) {
 	md := grpc.CollectMetadata(ctx)
 	header := protoGrpcMetadata.Pairs(payload.SeldonPUIDHeader, md.Get(payload.SeldonPUIDHeader)[0])
-	protoGrpc.SetHeader(ctx, header)
+	_ = protoGrpc.SetHeader(ctx, header)
 	ctx = context.WithValue(ctx, payload.SeldonPUIDHeaderIdentifier(payload.SeldonPUIDHeader), md.Get(payload.SeldonPUIDHeader)[0])
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("infer"), g.ServerUrl, g.Namespace, md, request.GetName())
 	reqPayload := payload.ProtoPayload{Msg: request}
@@ -77,7 +77,7 @@ func (g GrpcKFServingServer) ModelMetadata(ctx context.Context, request *inferen
 func (g GrpcKFServingServer) ModelInfer(ctx context.Context, request *inference.ModelInferRequest) (*inference.ModelInferResponse, error) {
 	md := grpc.CollectMetadata(ctx)
 	header := protoGrpcMetadata.Pairs(payload.SeldonPUIDHeader, md.Get(payload.SeldonPUIDHeader)[0])
-	protoGrpc.SetHeader(ctx, header)
+	_ = protoGrpc.SetHeader(ctx, header)
 	ctx = context.WithValue(ctx, payload.SeldonPUIDHeaderIdentifier(payload.SeldonPUIDHeader), md.Get(payload.SeldonPUIDHeader)[0])
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName("infer"), g.ServerUrl, g.Namespace, md, request.GetModelName())
 	reqPayload := payload.ProtoPayload{Msg: request}
