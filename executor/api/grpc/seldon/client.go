@@ -3,11 +3,16 @@ package seldon
 import (
 	"context"
 	"fmt"
+	"math/rand"
+	"sync"
+
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 	"github.com/seldonio/seldon-core/executor/api/client"
-	"math/rand"
-	"sync"
+
+	"io"
+	"math"
+	"net/http"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	grpc2 "github.com/seldonio/seldon-core/executor/api/grpc"
@@ -16,10 +21,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/util"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"google.golang.org/grpc"
-	"io"
-	"math"
-	"net/http"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 // TODO: make this configurable

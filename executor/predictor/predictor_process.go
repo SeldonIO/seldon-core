@@ -333,7 +333,7 @@ func (p *PredictorProcess) logPayload(nodeName string, logger *v1.Logger, reqTyp
 	if err != nil {
 		return err
 	}
-	payloadLogger.QueueLogRequest(payloadLogger.LogRequest{
+	return payloadLogger.QueueLogRequest(payloadLogger.LogRequest{
 		Url:         logUrl,
 		Bytes:       &data,
 		ContentType: msg.GetContentType(),
@@ -343,12 +343,11 @@ func (p *PredictorProcess) logPayload(nodeName string, logger *v1.Logger, reqTyp
 		ModelId:     nodeName,
 		RequestId:   puid,
 	})
-	return nil
 }
 
 func (p *PredictorProcess) getPUIDHeader() (string, error) {
 	// Check request ID is not nil
-	if puid, ok := p.Ctx.Value(payload.SeldonPUIDHeader).(string); ok {
+	if puid, ok := p.Ctx.Value(payload.SeldonPUIDHeaderIdentifier(payload.SeldonPUIDHeader)).(string); ok {
 		return puid, nil
 	}
 	return "", fmt.Errorf(NilPUIDError)

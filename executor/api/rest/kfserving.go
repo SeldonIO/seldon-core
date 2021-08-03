@@ -2,6 +2,7 @@ package rest
 
 import (
 	"encoding/json"
+
 	"github.com/pkg/errors"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 )

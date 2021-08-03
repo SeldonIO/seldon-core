@@ -4,6 +4,15 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"io"
+	"io/ioutil"
+	"net"
+	"net/http"
+	"net/url"
+	"strconv"
+	"strings"
+	"time"
+
 	http2 "github.com/cloudevents/sdk-go/pkg/bindings/http"
 	"github.com/go-logr/logr"
 	"github.com/golang/protobuf/jsonpb"
@@ -19,15 +28,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/util"
 	"github.com/seldonio/seldon-core/executor/k8s"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	"io"
-	"io/ioutil"
-	"net"
-	"net/http"
-	"net/url"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
-	"strconv"
-	"strings"
-	"time"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 const (
@@ -197,7 +198,8 @@ func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method 
 			method,
 			startSpanOptions...)
 		defer clientSpan.Finish()
-		tracer.Inject(clientSpan.Context(), opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(req.Header))
+		err := tracer.Inject(clientSpan.Context(), opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(req.Header))
+		smc.Log.Info("injecting trace failed", "error", err.Error())
 	}
 
 	client := smc.httpClient

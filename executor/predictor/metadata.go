@@ -3,8 +3,8 @@ package predictor
 import (
 	// "github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
-	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	"sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 type GraphMetadata struct {

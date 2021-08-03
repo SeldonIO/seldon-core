@@ -2,6 +2,9 @@ package grpc
 
 import (
 	"context"
+	"strconv"
+	"time"
+
 	"github.com/go-logr/logr"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
@@ -11,8 +14,6 @@ import (
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-	"strconv"
-	"time"
 )
 
 func AddMetadataToOutgoingGrpcContext(ctx context.Context, meta map[string][]string) context.Context {

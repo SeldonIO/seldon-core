@@ -1,8 +1,9 @@
 package k8s
 
 import (
-	. "github.com/onsi/gomega"
 	"testing"
+
+	. "github.com/onsi/gomega"
 )
 
 func TestGetAnnotationsSimple(t *testing.T) {
