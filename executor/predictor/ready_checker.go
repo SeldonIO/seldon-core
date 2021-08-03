@@ -18,11 +18,8 @@ func Ready(node *v1.PredictiveUnit) error {
 		c, err := net.Dial("tcp", fmt.Sprintf("%s:%d", node.Endpoint.ServiceHost, node.Endpoint.ServicePort))
 		if err != nil {
 			return err
-		} else {
-			err = c.Close()
-			return nil
 		}
-	} else {
-		return nil
+		_ = c.Close()
 	}
+	return nil
 }

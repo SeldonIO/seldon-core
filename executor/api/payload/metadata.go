@@ -1,5 +1,7 @@
 package payload
 
+type SeldonPUIDHeaderIdentifier string
+
 const (
 	SeldonPUIDHeader = "Seldon-Puid"
 )

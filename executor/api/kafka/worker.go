@@ -8,7 +8,7 @@ import (
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/predictor"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 type KafkaJob struct {
@@ -31,7 +31,7 @@ func (ks *SeldonKafkaServer) worker(jobChan <-chan *KafkaJob, cancelChan <-chan 
 func (ks *SeldonKafkaServer) processKafkaRequest(job *KafkaJob) {
 	ctx := context.Background()
 	// Add Seldon Puid to Context
-	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, job.headers[payload.SeldonPUIDHeader][0])
+	ctx = context.WithValue(ctx, payload.SeldonPUIDHeaderIdentifier(payload.SeldonPUIDHeader), job.headers[payload.SeldonPUIDHeader][0])
 
 	// Apply tracing if active
 	if opentracing.IsGlobalTracerRegistered() {

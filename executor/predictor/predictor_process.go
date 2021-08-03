@@ -348,7 +348,7 @@ func (p *PredictorProcess) logPayload(nodeName string, logger *v1.Logger, reqTyp
 
 func (p *PredictorProcess) getPUIDHeader() (string, error) {
 	// Check request ID is not nil
-	if puid, ok := p.Ctx.Value(payload.SeldonPUIDHeader).(string); ok {
+	if puid, ok := p.Ctx.Value(payload.SeldonPUIDHeaderIdentifier(payload.SeldonPUIDHeader)).(string); ok {
 		return puid, nil
 	}
 	return "", fmt.Errorf(NilPUIDError)

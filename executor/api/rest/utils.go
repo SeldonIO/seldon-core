@@ -127,6 +127,9 @@ func EmbedSeldonDeploymentValuesInSwaggerFile(namespace string, sdepName string)
 
 	// We use MarshalIndent so that the output can be humanly visible and indented
 	openapiOutputBytes, err := json.MarshalIndent(openapiInterface, "", "    ")
+	if err != nil {
+		return err
+	}
 
 	if err := ioutil.WriteFile(openapiFilePath, openapiOutputBytes, 0644); err != nil {
 		return err

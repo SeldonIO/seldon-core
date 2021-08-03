@@ -35,8 +35,8 @@ import (
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/reflection"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	zapf "sigs.k8s.io/controller-runtime/pkg/log/zap"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
 const (

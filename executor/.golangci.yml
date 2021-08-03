@@ -34,7 +34,7 @@ linters:
     - gosimple
     - govet
     - misspell
-#    - staticcheck
+    - staticcheck
     - structcheck
     - typecheck
     - varcheck
@@ -44,3 +44,9 @@ linters-settings:
     exclude: ./.errcheck_excludes.txt
   goconst:
     min-occurrences: 5
+
+issues:
+  exclude-rules:
+    - linters:
+        - staticcheck
+      text: "SA1019:" # Delete this exclusion once https://github.com/SeldonIO/seldon-core/issues/3452 is fixed.

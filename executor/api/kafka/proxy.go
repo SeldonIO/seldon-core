@@ -130,7 +130,7 @@ func (kp *KafkaProxy) Consume() error {
 				headers := collectHeaders(e.Headers)
 				ctx := context.Background()
 				// Add Seldon Puid to Context
-				ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, puid)
+				ctx = context.WithValue(ctx, payload.SeldonPUIDHeaderIdentifier(payload.SeldonPUIDHeader), puid)
 
 				// Assume JSON if no content type - should maybe be application/octet-stream?
 				contentType := rest.ContentTypeJSON
@@ -157,6 +157,9 @@ func (kp *KafkaProxy) Consume() error {
 						continue
 					}
 					resPayload, err = kp.Client.Combine(ctx, kp.ModelName, kp.Hostname, kp.Port, msgs, headers)
+					if err != nil {
+						kp.Log.Error(err, "Failed to combine Payload")
+					}
 				}
 
 				if err != nil {

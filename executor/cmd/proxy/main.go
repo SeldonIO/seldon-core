@@ -10,7 +10,8 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/rest"
 	"github.com/seldonio/seldon-core/executor/k8s"
 	predictor2 "github.com/seldonio/seldon-core/executor/predictor"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
 
 var (
@@ -61,8 +62,11 @@ func main() {
 	}
 
 	client, err := rest.NewJSONRestClient(*protocol, *sdepName, predictor, annotations)
+	if err != nil {
+		log.Error(err, "Failed to create JSON Rest Client")
+	}
 
-	logf.SetLogger(logf.ZapLogger(false))
+	logf.SetLogger(zap.New(zap.UseDevMode(false)))
 	logger := logf.Log.WithName("entrypoint")
 
 	kafkaProxy := kafka.NewKafkaProxy(client, *modelName, *predictorName, *sdepName, *namespace, *broker, *hostname, int32(*httpPort), logger)

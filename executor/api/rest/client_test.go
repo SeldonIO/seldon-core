@@ -84,7 +84,7 @@ func createPayload(g *GomegaWithT) payload.SeldonPayload {
 
 func createTestContext() context.Context {
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, "1")
+	ctx = context.WithValue(ctx, payload.SeldonPUIDHeaderIdentifier(payload.SeldonPUIDHeader), "1")
 	return ctx
 }
 

@@ -7,7 +7,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 type GrpcSeldonTestServer struct {
