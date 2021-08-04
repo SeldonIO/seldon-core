@@ -2,13 +2,14 @@ package k8s
 
 import (
 	"context"
+	"testing"
+
 	. "github.com/onsi/gomega"
 	apiextensionsfake "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/fake"
 	"k8s.io/apimachinery/pkg/version"
 	discovery "k8s.io/client-go/discovery/fake"
 	coretesting "k8s.io/client-go/testing"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"testing"
 )
 
 func TestCRDCreateV1beta1(t *testing.T) {

@@ -1,10 +1,11 @@
 package v1
 
 import (
-	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/operator/constants"
 	"strconv"
 	"testing"
+
+	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/operator/constants"
 )
 
 func TestPredictiveUnitHttpPort(t *testing.T) {

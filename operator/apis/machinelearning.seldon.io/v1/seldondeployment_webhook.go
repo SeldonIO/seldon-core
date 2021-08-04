@@ -17,16 +17,17 @@ limitations under the License.
 package v1
 
 import (
+	"os"
+
 	"github.com/seldonio/seldon-core/operator/constants"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
@@ -130,7 +131,7 @@ func checkTraffic(spec *SeldonDeploymentSpec, fldPath *field.Path, allErrs field
 		p := spec.Predictors[i]
 		trafficSum = trafficSum + p.Traffic
 
-		if p.Shadow == true {
+		if p.Shadow {
 			shadows += 1
 			if shadows > 1 {
 				allErrs = append(allErrs, field.Invalid(fldPath, spec.Predictors[i].Name, "Multiple shadows are not allowed"))

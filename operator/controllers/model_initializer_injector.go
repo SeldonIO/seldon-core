@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"strings"
 
+	"os"
+
 	"github.com/seldonio/seldon-core/operator/controllers/resources/credentials"
 	"github.com/seldonio/seldon-core/operator/utils"
 	appsv1 "k8s.io/api/apps/v1"
@@ -26,7 +28,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"os"
 )
 
 // TODO: change image to seldon? is at least configurable by configmap now (with fixed version there)

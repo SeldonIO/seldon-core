@@ -2,12 +2,13 @@ package controllers
 
 import (
 	"context"
+	"testing"
+
 	. "github.com/onsi/gomega"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"testing"
 )
 
 func createSeldonDeploymentWithReplicas(name string, namespace string, specReplicas *int32, predictorReplicas *int32, componentSpecReplicas *int32, svcOrchReplicas *int32) *machinelearningv1.SeldonDeployment {

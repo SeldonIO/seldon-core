@@ -1,9 +1,10 @@
 package v1
 
 import (
+	"testing"
+
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
-	"testing"
 )
 
 func TestImageSetNormal(t *testing.T) {
