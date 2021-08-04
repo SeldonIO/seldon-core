@@ -1,11 +1,10 @@
 package metric
 
 import (
-	"testing"
-
 	. "github.com/onsi/gomega"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	v12 "k8s.io/api/core/v1"
+	"testing"
 )
 
 func TestNewFromtMeta(t *testing.T) {

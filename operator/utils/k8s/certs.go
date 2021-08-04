@@ -47,22 +47,16 @@ func certSetup(hosts []string) (*Cert, error) {
 
 	// pem encode
 	caPEM := new(bytes.Buffer)
-	err = pem.Encode(caPEM, &pem.Block{
+	pem.Encode(caPEM, &pem.Block{
 		Type:  "CERTIFICATE",
 		Bytes: caBytes,
 	})
-	if err != nil {
-		return nil, err
-	}
 
 	caPrivKeyPEM := new(bytes.Buffer)
-	err = pem.Encode(caPrivKeyPEM, &pem.Block{
+	pem.Encode(caPrivKeyPEM, &pem.Block{
 		Type:  "RSA PRIVATE KEY",
 		Bytes: x509.MarshalPKCS1PrivateKey(caPrivKey),
 	})
-	if err != nil {
-		return nil, err
-	}
 
 	// set up our server certificate
 	cert := &x509.Certificate{
@@ -96,22 +90,16 @@ func certSetup(hosts []string) (*Cert, error) {
 	}
 
 	certPEM := new(bytes.Buffer)
-	err = pem.Encode(certPEM, &pem.Block{
+	pem.Encode(certPEM, &pem.Block{
 		Type:  "CERTIFICATE",
 		Bytes: certBytes,
 	})
-	if err != nil {
-		return nil, err
-	}
 
 	certPrivKeyPEM := new(bytes.Buffer)
-	err = pem.Encode(certPrivKeyPEM, &pem.Block{
+	pem.Encode(certPrivKeyPEM, &pem.Block{
 		Type:  "RSA PRIVATE KEY",
 		Bytes: x509.MarshalPKCS1PrivateKey(certPrivKey),
 	})
-	if err != nil {
-		return nil, err
-	}
 
 	return &Cert{
 		caPEM:          caPEM.String(),

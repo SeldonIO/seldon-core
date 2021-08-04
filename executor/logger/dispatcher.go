@@ -18,7 +18,7 @@ func StartDispatcher(nworkers int, log logr.Logger, sdepName string, namespace s
 	}
 
 	go func() {
-		for { //nolint. We can use for work := range WorkQueue here, but then the value passed to worker can be mutated.
+		for {
 			select {
 			case work := <-WorkQueue:
 				go func() {

@@ -2,11 +2,10 @@ package predictor
 
 import (
 	"encoding/json"
-	"testing"
-
 	. "github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/executor/api/payload"
-	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	"testing"
 )
 
 var metadataMap = map[string]payload.ModelMetadata{

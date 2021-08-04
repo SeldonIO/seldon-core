@@ -41,9 +41,7 @@ func TestExtractRouteFromSeldonMessage(t *testing.T) {
 
 	for _, c := range cases {
 		var sm proto.SeldonMessage
-		err := jsonpb.UnmarshalString(c.msg, &sm)
-		g.Expect(err).Should(BeNil())
-
+		jsonpb.UnmarshalString(c.msg, &sm)
 		routes := ExtractRouteFromSeldonMessage(&sm)
 
 		g.Expect(routes).To(Equal(c.expected))
@@ -110,8 +108,7 @@ func TestInjectRouteSeldonProto(t *testing.T) {
 
 	var smIn proto.SeldonMessage
 	jsonBytes := []byte(`{"data":{"ndarray":[0]},"meta":{"routing":{"test_route":22}}}`)
-	err := jsonpb.UnmarshalString(string(jsonBytes), &smIn)
-	g.Expect(err).To(BeNil())
+	jsonpb.UnmarshalString(string(jsonBytes), &smIn)
 	msg := payload.ProtoPayload{Msg: &smIn}
 
 	outMsg, err := InsertRouteToSeldonPredictPayload(&msg, &testRouting)
@@ -138,8 +135,7 @@ func TestInjectRouteSeldonJson(t *testing.T) {
 	g.Expect(err).To(BeNil())
 
 	var sm proto.SeldonMessage
-	err = jsonpb.UnmarshalString(string(outBytes), &sm)
-	g.Expect(err).To(BeNil())
+	jsonpb.UnmarshalString(string(outBytes), &sm)
 	t.Log(string(outBytes))
 	routes := sm.GetMeta().GetRouting()
 

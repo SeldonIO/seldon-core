@@ -36,7 +36,7 @@ func NewServerMetrics(spec *v1.PredictorSpec, deploymentName string) *ServerMetr
 		if e, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			if RecreateServerHistogram {
 				prometheus.Unregister(e.ExistingCollector)
-				_ = prometheus.Register(histogram)
+				prometheus.Register(histogram)
 			} else {
 				histogram = e.ExistingCollector.(*prometheus.HistogramVec)
 			}
@@ -56,7 +56,7 @@ func NewServerMetrics(spec *v1.PredictorSpec, deploymentName string) *ServerMetr
 		if e, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			if RecreateServerSummary {
 				prometheus.Unregister(e.ExistingCollector)
-				_ = prometheus.Register(summary)
+				prometheus.Register(summary)
 			} else {
 				summary = e.ExistingCollector.(*prometheus.SummaryVec)
 			}

@@ -93,8 +93,7 @@ func TestExplainerImageRelated(t *testing.T) {
 		},
 	}
 	envExplainerImage = "explainer:123"
-	err = ei.createExplainer(sdep, &sdep.Spec.Predictors[0], &c, svcName, nil, ctrl.Log)
-	g.Expect(err).To(BeNil())
+	ei.createExplainer(sdep, &sdep.Spec.Predictors[0], &c, svcName, nil, ctrl.Log)
 	g.Expect(len(c.deployments)).To(Equal(1))
 	g.Expect(c.deployments[0].Spec.Template.Spec.Containers[0].Image).To(Equal(envExplainerImage))
 }

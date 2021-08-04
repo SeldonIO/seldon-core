@@ -185,7 +185,7 @@ func TestRequestPuuidHeaderIsSet(t *testing.T) {
 		g.Expect(err).To(BeNil())
 		g.Expect(len(r.Header.Get(payload.SeldonPUIDHeader))).To(Equal(len(guuid.New().String())))
 		called = true
-		_, _ = w.Write(bodyBytes)
+		w.Write([]byte(bodyBytes))
 	})
 	server := httptest.NewServer(handler)
 	defer server.Close()
@@ -266,7 +266,7 @@ func TestModelWithServer(t *testing.T) {
 		g.Expect(err).To(BeNil())
 		g.Expect(r.Header.Get(payload.SeldonPUIDHeader)).To(Equal(TestSeldonPuid))
 		called = true
-		_, _ = w.Write([]byte(bodyBytes))
+		w.Write([]byte(bodyBytes))
 	})
 	server := httptest.NewServer(handler)
 	defer server.Close()
@@ -609,7 +609,7 @@ func TestPredictErrorWithServer(t *testing.T) {
 		g.Expect(r.Header.Get(payload.SeldonPUIDHeader)).To(Equal(TestSeldonPuid))
 		called = true
 		w.WriteHeader(errorCode)
-		_, _ = w.Write([]byte(errorPredictResponse))
+		w.Write([]byte(errorPredictResponse))
 	})
 	server := httptest.NewServer(handler)
 	defer server.Close()

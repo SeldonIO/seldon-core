@@ -13,7 +13,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/predictor"
 	"github.com/seldonio/seldon-core/executor/proto/tensorflow/serving"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
 type GrpcTensorflowServer struct {
@@ -36,7 +36,7 @@ func NewGrpcTensorflowServer(predictor *v1.PredictorSpec, client client.SeldonAp
 
 func (g *GrpcTensorflowServer) execute(ctx context.Context, req proto.Message, method string, modelName string) (payload.SeldonPayload, error) {
 	md := grpc.CollectMetadata(ctx)
-	ctx = context.WithValue(ctx, payload.SeldonPUIDHeaderIdentifier(payload.SeldonPUIDHeader), md.Get(payload.SeldonPUIDHeader)[0])
+	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, md.Get(payload.SeldonPUIDHeader)[0])
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, g.Client, logf.Log.WithName(method), g.ServerUrl, g.Namespace, md, modelName)
 	reqPayload := payload.ProtoPayload{Msg: req}
 	return seldonPredictorProcess.Predict(&g.predictor.Graph, &reqPayload)

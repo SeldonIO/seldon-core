@@ -23,7 +23,7 @@ func addLabelsToService(svc *corev1.Service, pu *machinelearningv1.PredictiveUni
 	} else if !isEmptyExplainer(p.Explainer) {
 		svc.Labels[machinelearningv1.Label_explainer] = "true"
 	}
-	if p.Shadow {
+	if p.Shadow == true {
 		svc.Labels[machinelearningv1.Label_shadow] = "true"
 	}
 	svc.Labels[machinelearningv1.Label_managed_by] = machinelearningv1.Label_value_seldon
@@ -53,7 +53,7 @@ func addLabelsToDeployment(deploy *appsv1.Deployment, pu *machinelearningv1.Pred
 		deploy.Labels[machinelearningv1.Label_explainer] = "true"
 		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_explainer] = "true"
 	}
-	if p.Shadow {
+	if p.Shadow == true {
 		deploy.Labels[machinelearningv1.Label_shadow] = "true"
 		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_shadow] = "true"
 	}

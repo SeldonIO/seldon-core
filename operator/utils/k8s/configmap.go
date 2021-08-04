@@ -2,7 +2,6 @@ package k8s
 
 import (
 	"context"
-
 	"github.com/ghodss/yaml"
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"

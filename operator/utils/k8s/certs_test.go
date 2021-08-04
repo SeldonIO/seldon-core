@@ -1,9 +1,8 @@
 package k8s
 
 import (
-	"testing"
-
 	. "github.com/onsi/gomega"
+	"testing"
 )
 
 func TestGenerateCerts(t *testing.T) {

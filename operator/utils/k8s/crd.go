@@ -2,7 +2,6 @@ package k8s
 
 import (
 	"context"
-
 	"github.com/Masterminds/semver"
 	"github.com/ghodss/yaml"
 	"github.com/go-logr/logr"

@@ -30,11 +30,11 @@ lint: licenses/dep.txt
 		./licenses
 
 # Run tests
-test: generate fmt vet golangci-lint manifests_all generate-resources
+test: generate fmt vet manifests_all generate-resources
 	ginkgo -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis
 
 # Build manager binary
-manager: generate fmt vet golangci-lint
+manager: generate fmt vet
 	go build -o bin/manager main.go
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
@@ -138,10 +138,6 @@ fmt:
 # Run go vet against code
 vet:
 	go vet ./...
-
-# Run the linters specified in the .golangci.yml config
-golangci-lint:
-	golangci-lint run
 
 # Generate code
 generate: controller-gen

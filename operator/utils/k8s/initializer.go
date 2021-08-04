@@ -3,11 +3,8 @@ package k8s
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-
 	"github.com/go-logr/logr"
+	"io/ioutil"
 	appsv1 "k8s.io/api/apps/v1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -15,6 +12,8 @@ import (
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"os"
+	"path/filepath"
 )
 
 const (
@@ -133,24 +132,18 @@ func InitializeOperator(ctx context.Context, config *rest.Config, namespace stri
 	}
 
 	// Create cert files
-	err = createCertFiles(certs, logger)
-	if err != nil {
-		return err
-	}
+	createCertFiles(certs, logger)
 
 	return nil
 }
 
 func createCertFiles(certs *Cert, logger logr.Logger) error {
 	//Save certs to filesystem
-	err := os.MkdirAll(CertsFolder, os.ModePerm)
-	if err != nil {
-		return err
-	}
+	os.MkdirAll(CertsFolder, os.ModePerm)
 
 	filename := fmt.Sprintf("%s/%s", CertsFolder, CertsTLSCa)
 	logger.Info("Creating ", "filename", filename)
-	err = ioutil.WriteFile(filename, []byte(certs.caPEM), 0600)
+	err := ioutil.WriteFile(filename, []byte(certs.caPEM), 0600)
 	if err != nil {
 		return err
 	}
