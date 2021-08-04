@@ -98,9 +98,6 @@ RUN curl -sL https://go.kubebuilder.io/dl/2.3.0/linux/amd64 | tar -xz -C /tmp/ &
         mv /tmp/kubebuilder_2.3.0_linux_amd64 /usr/local/kubebuilder/
 ENV PATH /usr/local/kubebuilder/bin:$PATH
 
-# Install golangci-lint
-RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.35.2
-
 # DOWNLOAD HELM
 RUN curl -L https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash -s -- --version v3.2.0
 
