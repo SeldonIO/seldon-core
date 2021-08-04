@@ -1,0 +1,5 @@
+---
+- name: Install Kafka
+  hosts: localhost
+  roles:
+    - seldonio.k8s.kafka

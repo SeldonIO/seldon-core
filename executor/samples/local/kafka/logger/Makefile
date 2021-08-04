@@ -1,6 +1,7 @@
 BASE=../../../..
 KAFKA_BIN=../kafka_2.13-2.8.0/bin
-KAFKA_IP := $(shell kubectl get service  my-cluster-kafka-plain-0 -n kafka -o=jsonpath='{.status.loadBalancer.ingress[0].ip}{"\n"}')
+# Assume kafka cluster created by ansible playbooks in core woth loadbalncer exposed endpoints
+KAFKA_IP := $(shell kubectl get service  seldon-kafka-plain-0 -n kafka -o=jsonpath='{.status.loadBalancer.ingress[0].ip}{"\n"}')
 KAFKA_TOPIC=seldon
 
 ## REST
