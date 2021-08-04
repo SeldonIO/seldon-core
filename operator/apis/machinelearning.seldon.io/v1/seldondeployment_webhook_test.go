@@ -2,8 +2,6 @@ package v1
 
 import (
 	"context"
-	"testing"
-
 	. "github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/operator/constants"
 	appsv1 "k8s.io/api/apps/v1"
@@ -16,6 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
+	"testing"
 )
 
 func TestValidProtocolTransportServerType(t *testing.T) {

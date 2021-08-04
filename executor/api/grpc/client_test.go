@@ -2,15 +2,14 @@ package grpc
 
 import (
 	"context"
-	"reflect"
-	"testing"
-
 	"github.com/golang/protobuf/jsonpb"
 	proto2 "github.com/golang/protobuf/proto"
 	. "github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"google.golang.org/grpc/metadata"
+	"reflect"
+	"testing"
 )
 
 func TestAddPuidToCtx(t *testing.T) {
@@ -30,7 +29,7 @@ func TestAddPuidToCtx(t *testing.T) {
 func getProto(messageType string, messageBytes []byte) proto2.Message {
 	pbtype := proto2.MessageType(messageType)
 	msg := reflect.New(pbtype.Elem()).Interface().(proto2.Message)
-	_ = proto2.Unmarshal(messageBytes, msg)
+	proto2.Unmarshal(messageBytes, msg)
 	return msg
 }
 

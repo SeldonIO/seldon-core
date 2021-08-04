@@ -1,7 +1,5 @@
 package payload
 
-type SeldonPUIDHeaderIdentifier string
-
 const (
 	SeldonPUIDHeader = "Seldon-Puid"
 )
@@ -15,7 +13,9 @@ func NewFromMap(m map[string][]string) *MetaData {
 		Meta: map[string][]string{},
 	}
 	for k, vv := range m {
-		meta.Meta[k] = append(meta.Meta[k], vv...)
+		for _, v := range vv {
+			meta.Meta[k] = append(meta.Meta[k], v)
+		}
 	}
 	return &meta
 }

@@ -1,12 +1,11 @@
 package kafka
 
 import (
-	"testing"
-
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 	. "github.com/onsi/gomega"
 	seldon "github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
+	"testing"
 )
 
 func TestGetProtoSeldonMessage(t *testing.T) {
@@ -14,8 +13,7 @@ func TestGetProtoSeldonMessage(t *testing.T) {
 
 	var sm seldon.SeldonMessage
 	var data = `{"data":{"ndarray":[1.1,2]}}`
-	err := jsonpb.UnmarshalString(data, &sm)
-	g.Expect(err).To(BeNil())
+	jsonpb.UnmarshalString(data, &sm)
 
 	b, err := proto.Marshal(&sm)
 	g.Expect(err).To(BeNil())

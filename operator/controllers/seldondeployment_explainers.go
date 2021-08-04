@@ -184,7 +184,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 
 		// Order explainer config map keys
 		var keys []string
-		for k := range p.Explainer.Config {
+		for k, _ := range p.Explainer.Config {
 			keys = append(keys, k)
 		}
 		sort.Strings(keys)

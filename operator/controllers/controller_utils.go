@@ -56,7 +56,7 @@ func getEngineEnvAnnotations(mlDep *machinelearningv1.SeldonDeployment) []corev1
 
 	envVars := make([]corev1.EnvVar, 0)
 	var keys []string
-	for k := range mlDep.Spec.Annotations {
+	for k, _ := range mlDep.Spec.Annotations {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
