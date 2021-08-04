@@ -2,16 +2,15 @@ package kafka
 
 import (
 	"context"
-	"os"
-	"os/signal"
-	"syscall"
-
 	"github.com/cloudevents/sdk-go/pkg/bindings/http"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/go-logr/logr"
 	"github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/api/rest"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 type KafkaProxy struct {
@@ -80,7 +79,7 @@ func (kp *KafkaProxy) Consume() error {
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
 
-	for run {
+	for run == true {
 		select {
 		case sig := <-sigchan:
 			kp.Log.Info("Terminating", "signal", sig)
@@ -130,7 +129,7 @@ func (kp *KafkaProxy) Consume() error {
 				headers := collectHeaders(e.Headers)
 				ctx := context.Background()
 				// Add Seldon Puid to Context
-				ctx = context.WithValue(ctx, payload.SeldonPUIDHeaderIdentifier(payload.SeldonPUIDHeader), puid)
+				ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, puid)
 
 				// Assume JSON if no content type - should maybe be application/octet-stream?
 				contentType := rest.ContentTypeJSON
@@ -157,9 +156,6 @@ func (kp *KafkaProxy) Consume() error {
 						continue
 					}
 					resPayload, err = kp.Client.Combine(ctx, kp.ModelName, kp.Hostname, kp.Port, msgs, headers)
-					if err != nil {
-						kp.Log.Error(err, "Failed to combine Payload")
-					}
 				}
 
 				if err != nil {

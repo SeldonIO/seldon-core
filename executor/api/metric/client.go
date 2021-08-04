@@ -41,7 +41,7 @@ func NewClientMetrics(spec *v1.PredictorSpec, deploymentName string, modelName s
 		if e, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			if RecreateClientHistogram {
 				prometheus.Unregister(e.ExistingCollector)
-				_ = prometheus.Register(histogram)
+				prometheus.Register(histogram)
 			} else {
 				histogram = e.ExistingCollector.(*prometheus.HistogramVec)
 			}
@@ -62,7 +62,7 @@ func NewClientMetrics(spec *v1.PredictorSpec, deploymentName string, modelName s
 		if e, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			if RecreateClientSummary {
 				prometheus.Unregister(e.ExistingCollector)
-				_ = prometheus.Register(summary)
+				prometheus.Register(summary)
 			} else {
 				summary = e.ExistingCollector.(*prometheus.SummaryVec)
 			}

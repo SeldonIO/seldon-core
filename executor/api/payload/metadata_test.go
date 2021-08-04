@@ -1,9 +1,8 @@
 package payload
 
 import (
-	"testing"
-
 	. "github.com/onsi/gomega"
+	"testing"
 )
 
 func TestNewFromtMeta(t *testing.T) {

@@ -4,10 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/seldonio/seldon-core/executor/api/payload"
 	"io/ioutil"
 	"strings"
-
-	"github.com/seldonio/seldon-core/executor/api/payload"
 )
 
 const (
@@ -44,10 +43,7 @@ func ExtractSeldonMessagesFromJson(msg payload.SeldonPayload) ([]payload.SeldonP
 	}
 	var v []interface{}
 	sms := make([]payload.SeldonPayload, len(v))
-	err = json.Unmarshal(bytes, &v)
-	if err != nil {
-		return nil, err
-	}
+	json.Unmarshal(bytes, &v)
 	for _, m := range v {
 		mBytes, err := json.Marshal(m)
 		if err != nil {
@@ -130,9 +126,6 @@ func EmbedSeldonDeploymentValuesInSwaggerFile(namespace string, sdepName string)
 
 	// We use MarshalIndent so that the output can be humanly visible and indented
 	openapiOutputBytes, err := json.MarshalIndent(openapiInterface, "", "    ")
-	if err != nil {
-		return err
-	}
 
 	if err := ioutil.WriteFile(openapiFilePath, openapiOutputBytes, 0644); err != nil {
 		return err
