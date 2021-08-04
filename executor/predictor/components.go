@@ -1,10 +1,9 @@
 package predictor
 
 import (
+	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"math/rand"
 	"strconv"
-
-	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 )
 
 func (p *PredictorProcess) abTestRouter(node *v1.PredictiveUnit) (int, error) {

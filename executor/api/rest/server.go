@@ -4,13 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	http2 "github.com/cloudevents/sdk-go/pkg/bindings/http"
 	"io/ioutil"
 	"net/http"
 	"net/url"
-
-	http2 "github.com/cloudevents/sdk-go/pkg/bindings/http"
-
-	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/gorilla/mux"
@@ -24,7 +21,8 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/predictor"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	"time"
 )
 
 type SeldonRestApi struct {
@@ -252,7 +250,7 @@ func (r *SeldonRestApi) status(w http.ResponseWriter, req *http.Request) {
 
 func (r *SeldonRestApi) feedback(w http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
-	ctx = context.WithValue(ctx, payload.SeldonPUIDHeaderIdentifier(payload.SeldonPUIDHeader), req.Header.Get(payload.SeldonPUIDHeader))
+	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, req.Header.Get(payload.SeldonPUIDHeader))
 
 	// Apply tracing if active
 	if opentracing.IsGlobalTracerRegistered() {
@@ -287,7 +285,7 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 
 	ctx := req.Context()
 	// Add Seldon Puid to Context
-	ctx = context.WithValue(ctx, payload.SeldonPUIDHeaderIdentifier(payload.SeldonPUIDHeader), req.Header.Get(payload.SeldonPUIDHeader))
+	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, req.Header.Get(payload.SeldonPUIDHeader))
 
 	// Apply tracing if active
 	if opentracing.IsGlobalTracerRegistered() {

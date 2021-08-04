@@ -3,9 +3,8 @@ package controllers
 import (
 	"errors"
 	"fmt"
-	"strconv"
-
 	"github.com/seldonio/seldon-core/operator/utils"
+	"strconv"
 
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"

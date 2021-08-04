@@ -2,9 +2,6 @@ package seldon
 
 import (
 	"context"
-	"net/url"
-	"testing"
-
 	"github.com/golang/protobuf/jsonpb"
 	empty "github.com/golang/protobuf/ptypes/empty"
 	. "github.com/onsi/gomega"
@@ -12,7 +9,11 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/api/test"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	"net/url"
+	"testing"
 )
+
+const testSeldonPuid = "1"
 
 func TestPredict(t *testing.T) {
 	t.Logf("Started")

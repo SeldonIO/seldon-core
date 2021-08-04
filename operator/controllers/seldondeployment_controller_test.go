@@ -792,10 +792,7 @@ var _ = Describe("Create a Seldon Deployment and then a new one", func() {
 
 		Eventually(func() error {
 			fetched := &machinelearningv1.SeldonDeployment{}
-			err = k8sClient.Get(context.Background(), key, fetched)
-			if err != nil {
-				return err
-			}
+			k8sClient.Get(context.Background(), key, fetched)
 			fetched.Spec = instance2.Spec
 			err := k8sClient.Update(context.Background(), fetched)
 			return err

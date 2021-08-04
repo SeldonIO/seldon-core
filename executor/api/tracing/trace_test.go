@@ -1,11 +1,10 @@
 package tracing
 
 import (
-	"os"
-	"testing"
-
 	"github.com/opentracing/opentracing-go"
 	"github.com/uber/jaeger-client-go"
+	"os"
+	"testing"
 )
 
 var (

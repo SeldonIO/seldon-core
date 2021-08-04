@@ -2,13 +2,6 @@ package kafka
 
 import (
 	"fmt"
-	"net/url"
-	"os"
-	"os/signal"
-	"reflect"
-	"syscall"
-	"time"
-
 	"github.com/cloudevents/sdk-go/pkg/bindings/http"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/go-logr/logr"
@@ -22,6 +15,17 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/rest"
 	"github.com/seldonio/seldon-core/executor/predictor"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	"net/url"
+	"os"
+	"os/signal"
+	"reflect"
+	"syscall"
+	"time"
+)
+
+const (
+	kafkaPayloadJson  = "json"
+	kafkaPayloadProto = "proto"
 )
 
 const (
@@ -52,10 +56,7 @@ func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, prot
 	var err error
 	if fullGraph {
 		log.Info("Starting full graph kafka server")
-		apiClient, err = NewKafkaClient(serverUrl.Hostname(), deploymentName, namespace, protocol, transport, predictor, broker, log)
-		if err != nil {
-			return nil, err
-		}
+		apiClient = NewKafkaClient(serverUrl.Hostname(), deploymentName, namespace, protocol, transport, predictor, broker, log)
 	} else {
 		switch transport {
 		case api.TransportRest:
@@ -107,11 +108,17 @@ func (ks *SeldonKafkaServer) getGroupName() string {
 func collectHeaders(headers []kafka.Header) map[string][]string {
 	sheaders := make(map[string][]string)
 	foundPuid := false
-	for _, header := range headers {
-		if header.Key == payload.SeldonPUIDHeader {
-			foundPuid = true
+	if headers != nil {
+		for _, header := range headers {
+			if header.Key == payload.SeldonPUIDHeader {
+				foundPuid = true
+			}
+			if _, ok := sheaders[header.Key]; ok {
+				sheaders[header.Key] = append(sheaders[header.Key], string(header.Value))
+			} else {
+				sheaders[header.Key] = []string{string(header.Value)}
+			}
 		}
-		sheaders[header.Key] = append(sheaders[header.Key], string(header.Value))
 	}
 	// PUID if not found
 	if !foundPuid {
@@ -158,7 +165,7 @@ func (ks *SeldonKafkaServer) Serve() error {
 
 	//wait for graph to be ready
 	ready := false
-	for !ready {
+	for ready == false {
 		err := predictor.Ready(&ks.Predictor.Graph)
 		ready = err == nil
 		if !ready {
@@ -168,7 +175,7 @@ func (ks *SeldonKafkaServer) Serve() error {
 	}
 
 	cnt := 0
-	for run {
+	for run == true {
 		select {
 		case sig := <-sigchan:
 			ks.Log.Info("Terminating", "signal", sig)

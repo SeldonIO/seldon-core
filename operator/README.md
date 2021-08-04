@@ -6,7 +6,6 @@ We assume:
 
  * Go 1.13
  * Kubebuilder 2.3.0
- * golangci-lint v1.35.2
 
 ### Issues
 
@@ -16,11 +15,6 @@ We assume:
 ### Prerequisites
 
 For running locally `kind`, `kustomize` and `kubebuilder` should be installed.
-
-For linting the `golangci-lint` binary is required. To install, follow the [official install instructions](https://golangci-lint.run/usage/install/) by running:
-```shell
-curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.35.2
-```
 
 ### Testing
 

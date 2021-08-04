@@ -78,7 +78,7 @@ const (
 
 func hash(text string) string {
 	hasher := md5.New()
-	_, _ = hasher.Write([]byte(text))
+	hasher.Write([]byte(text))
 	return hex.EncodeToString(hasher.Sum(nil))
 }
 

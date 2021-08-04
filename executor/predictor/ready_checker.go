@@ -2,9 +2,8 @@ package predictor
 
 import (
 	"fmt"
+	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"net"
-
-	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 )
 
 func Ready(node *v1.PredictiveUnit) error {
@@ -18,8 +17,11 @@ func Ready(node *v1.PredictiveUnit) error {
 		c, err := net.Dial("tcp", fmt.Sprintf("%s:%d", node.Endpoint.ServiceHost, node.Endpoint.ServicePort))
 		if err != nil {
 			return err
+		} else {
+			err = c.Close()
+			return nil
 		}
-		_ = c.Close()
+	} else {
+		return nil
 	}
-	return nil
 }
