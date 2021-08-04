@@ -3,6 +3,9 @@ package kfserving
 import (
 	"context"
 	"fmt"
+	"io"
+	"math"
+
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 	"github.com/seldonio/seldon-core/executor/api/client"
@@ -11,9 +14,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"google.golang.org/grpc"
-	"io"
-	"math"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 type KFServingGrpcClient struct {

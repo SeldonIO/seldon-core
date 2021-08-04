@@ -84,7 +84,7 @@ func createPayload(g *GomegaWithT) payload.SeldonPayload {
 
 func createTestContext() context.Context {
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, "1")
+	ctx = context.WithValue(ctx, payload.SeldonPUIDHeaderIdentifier(payload.SeldonPUIDHeader), "1")
 	return ctx
 }
 
@@ -92,7 +92,7 @@ func TestSimpleMethods(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(okPredictResponse))
+		_, _ = w.Write([]byte(okPredictResponse))
 	})
 	host, port, httpClient, teardown := testingHTTPClient(g, h)
 	defer teardown()
@@ -121,7 +121,7 @@ func TestRouter(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(okRouteResponse))
+		_, _ = w.Write([]byte(okRouteResponse))
 	})
 	host, port, httpClient, teardown := testingHTTPClient(g, h)
 	defer teardown()
@@ -142,7 +142,7 @@ func TestStatus(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(okStatusResponse))
+		_, _ = w.Write([]byte(okStatusResponse))
 	})
 	host, port, httpClient, teardown := testingHTTPClient(g, h)
 	defer teardown()
@@ -163,7 +163,7 @@ func TestMetadata(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(okMetadataResponse))
+		_, _ = w.Write([]byte(okMetadataResponse))
 	})
 	host, port, httpClient, teardown := testingHTTPClient(g, h)
 	defer teardown()
@@ -190,7 +190,7 @@ func TestCombiner(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(okPredictResponse))
+		_, _ = w.Write([]byte(okPredictResponse))
 	})
 	host, port, httpClient, teardown := testingHTTPClient(g, h)
 	defer teardown()
@@ -218,7 +218,7 @@ func TestClientMetrics(t *testing.T) {
 	metric.RecreateClientHistogram = true
 	g := NewGomegaWithT(t)
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(okPredictResponse))
+		_, _ = w.Write([]byte(okPredictResponse))
 	})
 	host, port, httpClient, teardown := testingHTTPClient(g, h)
 	defer teardown()
@@ -285,7 +285,7 @@ func TestErrorResponse(t *testing.T) {
 	g := NewGomegaWithT(t)
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(errorPredictResponse))
+		_, _ = w.Write([]byte(errorPredictResponse))
 	})
 	host, port, _, teardown := testingHTTPClient(g, h)
 
@@ -316,7 +316,7 @@ func TestTimeout(t *testing.T) {
 	g := NewGomegaWithT(t)
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(1 * time.Second)
-		w.Write([]byte(okStatusResponse))
+		_, _ = w.Write([]byte(okStatusResponse))
 	})
 	host, port, _, teardown := testingHTTPClient(g, h)
 

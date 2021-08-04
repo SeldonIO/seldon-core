@@ -115,7 +115,7 @@ func SetEnvVar(envVars []v1.EnvVar, newVar v1.EnvVar) (newEnvVars []v1.EnvVar) {
 		}
 	}
 	if found {
-		newEnvVars = append(envVars[:index])
+		newEnvVars = envVars[:index]
 		newEnvVars = append(newEnvVars, newVar)
 		newEnvVars = append(newEnvVars, envVars[index+1:]...)
 	} else {

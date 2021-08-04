@@ -3,8 +3,9 @@ package controllers
 import (
 	"errors"
 	"fmt"
-	"github.com/seldonio/seldon-core/operator/utils"
 	"strconv"
+
+	"github.com/seldonio/seldon-core/operator/utils"
 
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
@@ -16,6 +17,7 @@ const (
 	MLServerSKLearnImplementation = "mlserver_sklearn.SKLearnModel"
 	MLServerXGBoostImplementation = "mlserver_xgboost.XGBoostModel"
 	MLServerTempoImplementation   = "tempo.mlserver.InferenceRuntime"
+	MLServerMLFlowImplementation  = "mlserver_mlflow.MLflowRuntime"
 
 	MLServerHTTPPortEnv            = "MLSERVER_HTTP_PORT"
 	MLServerGRPCPortEnv            = "MLSERVER_GRPC_PORT"
@@ -215,6 +217,8 @@ func getMLServerModelImplementation(pu *machinelearningv1.PredictiveUnit) (strin
 		return MLServerXGBoostImplementation, nil
 	case machinelearningv1.PrepackTempoName:
 		return MLServerTempoImplementation, nil
+	case machinelearningv1.PrepackMlflowName:
+		return MLServerMLFlowImplementation, nil
 	default:
 		return "", nil
 	}

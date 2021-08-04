@@ -199,6 +199,110 @@ class TestPrepack(object):
 
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
 
+    # test mlflow with kfserving (v2) protocol
+    def test_mlflow_v2(self, namespace):
+        tag = "mlflow"
+        deploy_model(
+            tag,
+            namespace=namespace,
+            protocol="kfserving",
+            model_implementation="MLFLOW_SERVER",
+            model_uri="gs://seldon-models/v1.10.0-dev/mlflow/elasticnet_wine",
+        )
+        wait_for_status(tag, namespace)
+        wait_for_rollout(tag, namespace)
+        time.sleep(1)
+
+        logging.warning("Initial request")
+        r = v2_protocol.inference_request(
+            deployment_name=tag,
+            model_name="model",
+            namespace=namespace,
+            payload={
+                "parameters": {"content_type": "pd"},
+                "inputs": [
+                    {
+                        "name": "fixed acidity",
+                        "shape": [1],
+                        "datatype": "FP32",
+                        "data": [7.4],
+                        "parameters": {"content_type": "np"},
+                    },
+                    {
+                        "name": "volatile acidity",
+                        "shape": [1],
+                        "datatype": "FP32",
+                        "data": [0.7000],
+                        "parameters": {"content_type": "np"},
+                    },
+                    {
+                        "name": "citric acidity",
+                        "shape": [1],
+                        "datatype": "FP32",
+                        "data": [0],
+                        "parameters": {"content_type": "np"},
+                    },
+                    {
+                        "name": "residual sugar",
+                        "shape": [1],
+                        "datatype": "FP32",
+                        "data": [1.9],
+                        "parameters": {"content_type": "np"},
+                    },
+                    {
+                        "name": "chlorides",
+                        "shape": [1],
+                        "datatype": "FP32",
+                        "data": [0.076],
+                        "parameters": {"content_type": "np"},
+                    },
+                    {
+                        "name": "free sulfur dioxide",
+                        "shape": [1],
+                        "datatype": "FP32",
+                        "data": [11],
+                        "parameters": {"content_type": "np"},
+                    },
+                    {
+                        "name": "total sulfur dioxide",
+                        "shape": [1],
+                        "datatype": "FP32",
+                        "data": [34],
+                        "parameters": {"content_type": "np"},
+                    },
+                    {
+                        "name": "density",
+                        "shape": [1],
+                        "datatype": "FP32",
+                        "data": [0.9978],
+                        "parameters": {"content_type": "np"},
+                    },
+                    {
+                        "name": "pH",
+                        "shape": [1],
+                        "datatype": "FP32",
+                        "data": [3.51],
+                        "parameters": {"content_type": "np"},
+                    },
+                    {
+                        "name": "sulphates",
+                        "shape": [1],
+                        "datatype": "FP32",
+                        "data": [0.56],
+                        "parameters": {"content_type": "np"},
+                    },
+                    {
+                        "name": "alcohol",
+                        "shape": [1],
+                        "datatype": "FP32",
+                        "data": [9.4],
+                        "parameters": {"content_type": "np"},
+                    },
+                ],
+            },
+        )
+        assert r.status_code == 200
+
     # Test prepackaged Text SKLearn Alibi Explainer
     def test_text_alibi_explainer(self, namespace):
         spec = "../resources/movies-text-explainer.yaml"

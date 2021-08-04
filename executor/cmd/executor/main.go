@@ -11,10 +11,9 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"strconv"
 	"syscall"
 	"time"
-
-	"strconv"
 
 	"github.com/go-logr/logr"
 	"github.com/seldonio/seldon-core/executor/api"
@@ -36,17 +35,16 @@ import (
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/reflection"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	zapf "sigs.k8s.io/controller-runtime/pkg/log/zap"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
 const (
-	logLevelEnvVar        = "SELDON_LOG_LEVEL"
-	logLevelDefault       = "INFO"
-	debugEnvVar           = "SELDON_DEBUG"
-	certMountPathEnvVar   = "SELDON_CERT_MOUNT_PATH"
-	certFileEnvVar        = "SELDON_CERT_FILE_NAME"
-	certKeyFileNameEnvVar = "SELDON_CERT_KEY_FILE_NAME"
+	logLevelEnvVar      = "SELDON_LOG_LEVEL"
+	logLevelDefault     = "INFO"
+	debugEnvVar         = "SELDON_DEBUG"
+	certMountPathEnvVar = "SELDON_CERT_MOUNT_PATH"
+	certFileEnvVar      = "SELDON_CERT_FILE_NAME"
 )
 
 var (
@@ -124,7 +122,8 @@ func runHttpServer(lis net.Listener, logger logr.Logger, predictor *v1.Predictor
 	defer cancel()
 	// Doesn't block if no connections, but will otherwise wait
 	// until the timeout deadline.
-	srv.Shutdown(ctx)
+	err := srv.Shutdown(ctx)
+	logger.Error(err, "shutdown did not complete successfully")
 	// Optionally, you could run srv.Shutdown in a goroutine and block on
 	// <-ctx.Done() if your application should wait for other services
 	// to finalize based on context cancellation.

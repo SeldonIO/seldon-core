@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	v1 "k8s.io/api/core/v1"
 
@@ -157,6 +158,7 @@ var _ = Describe("MLServer helpers", func() {
 			Entry("sklearn", machinelearningv1.PrepackSklearnName, MLServerSKLearnImplementation),
 			Entry("xgboost", machinelearningv1.PrepackXgboostName, MLServerXGBoostImplementation),
 			Entry("tempo", machinelearningv1.PrepackTempoName, MLServerTempoImplementation),
+			Entry("mlserver", machinelearningv1.PrepackMlflowName, MLServerMLFlowImplementation),
 			Entry("unknown", "foo", ""),
 		)
 	})

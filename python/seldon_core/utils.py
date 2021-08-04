@@ -40,9 +40,6 @@ def get_request_path():
     if model_name == NONIMPLEMENTED_MSG:
         return {}
     image_name = get_image_name()
-    assert (
-        image_name != NONIMPLEMENTED_IMAGE_MSG
-    ), f"Both {ENV_MODEL_NAME} and {ENV_MODEL_IMAGE} have to be set"
     return {model_name: image_name}
 
 

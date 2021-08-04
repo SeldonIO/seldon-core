@@ -275,7 +275,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 	var shadows int = 0
 	for i := 0; i < len(mlDep.Spec.Predictors); i++ {
 		p := mlDep.Spec.Predictors[i]
-		if p.Shadow == true {
+		if p.Shadow {
 			shadows += 1
 		}
 	}
@@ -319,7 +319,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 		}
 		drules[i] = drule
 
-		if p.Shadow == true {
+		if p.Shadow {
 			//if there's a shadow then add a mirror section to the VirtualService
 
 			httpVsvc.Spec.Http[0].Mirror = &istio_networking.Destination{
@@ -492,10 +492,9 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 
 			// create services for each container
 			for k := 0; k < len(cSpec.Spec.Containers); k++ {
-				var con *corev1.Container
 				// get the container on the created deployment, as createDeploymentWithoutEngine will have created as a copy of the spec in the manifest and added defaults to it
 				// we need the reference as we may have to modify the container when creating the Service (e.g. to add probes)
-				con = utils.GetContainerForDeployment(deploy, cSpec.Spec.Containers[k].Name)
+				con := utils.GetContainerForDeployment(deploy, cSpec.Spec.Containers[k].Name)
 				pu := machinelearningv1.GetPredictiveUnit(&p.Graph, con.Name)
 				deploy = addLabelsToDeployment(deploy, pu, &p)
 
@@ -562,7 +561,7 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 					return nil, fmt.Errorf("Engine not separate and no pu with localhost service - not clear where to inject engine")
 				}
 				// find the deployment with a container for the pu marked for engine
-				for i, _ := range c.deployments {
+				for i := range c.deployments {
 					dep := c.deployments[i]
 					for _, con := range dep.Spec.Template.Spec.Containers {
 						if strings.Compare(con.Name, pu.Name) == 0 {
@@ -877,7 +876,7 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 	deploy.Spec.Template.Annotations["prometheus.io/path"] = getPrometheusPath(mlDep)
 	deploy.Spec.Template.Annotations["prometheus.io/scrape"] = "true"
 
-	if p.Shadow == true {
+	if p.Shadow {
 		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_shadow] = "true"
 	}
 
@@ -1690,7 +1689,7 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 	}
 
 	//Get Security Context
-	podSecurityContext, err := createSecurityContext(instance)
+	podSecurityContext, _ := createSecurityContext(instance)
 
 	//run defaulting
 	instance.Default()

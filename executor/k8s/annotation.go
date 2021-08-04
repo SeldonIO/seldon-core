@@ -32,6 +32,9 @@ func GetAnnotations() (map[string]string, error) {
 	defer file.Close()
 
 	b, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
 	return getAnnotationMap(string(b))
 }
 
