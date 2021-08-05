@@ -35,7 +35,10 @@ func NewWorker(id int, workerQueue chan chan LogRequest, log logr.Logger, sdepNa
 	var err error
 	if kafkaBroker != "" {
 		log.Info("Creating producer", "broker", kafkaBroker, "topic", kafkaTopic)
-		producer, err = kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": kafkaBroker})
+		producer, err = kafka.NewProducer(&kafka.ConfigMap{
+			"bootstrap.servers":   kafkaBroker,
+			"go.delivery.reports": false, // Need this othewise will get memory leak
+		})
 		if err != nil {
 			return nil, err
 		}

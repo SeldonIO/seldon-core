@@ -33,6 +33,14 @@ seldon\_core.batch\_processor module
    :undoc-members:
    :show-inheritance:
 
+seldon\_core.env\_utils module
+------------------------------
+
+.. automodule:: seldon_core.env_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 seldon\_core.flask\_utils module
 --------------------------------
 
