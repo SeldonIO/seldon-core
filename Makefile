@@ -58,3 +58,6 @@ run_python_builder:
 		--user=$$(id -u) \
 		-v $(SELDON_CORE_LOCAL_DIR):/work \
 		seldonio/python-builder:0.2 bash
+
+golangci-lint-operator:
+	make -C operator golangci-lint

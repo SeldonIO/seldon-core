@@ -10,3 +10,14 @@ repos:
     hooks:
       - id: black
         args: ['python/', 'testing/', 'components/alibi-detect-server', '--exclude', '(testing/scripts/proto|seldon_core/proto/|.eggs)']
+  - repo: local
+    hooks:
+      - id: lint-operator
+        name: lint-operator
+#        entry: 'make -C operator golangci-lint'
+        entry: 'make golangci-lint-operator'
+        language: system
+#      - id: lint-executor
+#        name: lint-executor
+#        entry: 'make -C executor golangci-lint'
+#        language: system
