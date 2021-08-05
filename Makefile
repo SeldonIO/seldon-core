@@ -61,3 +61,6 @@ run_python_builder:
 
 golangci-lint-operator:
 	make -C operator golangci-lint
+
+golangci-lint-executor:
+	make -C executor golangci-lint
