@@ -59,6 +59,7 @@ run_python_builder:
 		-v $(SELDON_CORE_LOCAL_DIR):/work \
 		seldonio/python-builder:0.2 bash
 
+# linters used as pre-commit hooks. pre-commit does not support
 golangci-lint-operator:
 	make -C operator golangci-lint
 

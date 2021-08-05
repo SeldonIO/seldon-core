@@ -14,10 +14,9 @@ repos:
     hooks:
       - id: lint-operator
         name: lint-operator
-#        entry: 'make -C operator golangci-lint'
         entry: 'make golangci-lint-operator'
         language: system
-#      - id: lint-executor
-#        name: lint-executor
-#        entry: 'make -C executor golangci-lint'
-#        language: system
+      - id: lint-executor
+        name: lint-executor
+        entry: 'make golangci-lint-executor'
+        language: system
