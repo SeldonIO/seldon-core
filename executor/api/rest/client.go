@@ -199,7 +199,9 @@ func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method 
 			startSpanOptions...)
 		defer clientSpan.Finish()
 		err := tracer.Inject(clientSpan.Context(), opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(req.Header))
-		smc.Log.Info("injecting trace failed", "error", err.Error())
+		if err != nil {
+			smc.Log.Info("injecting trace failed", "error", err.Error())
+		}
 	}
 
 	client := smc.httpClient
