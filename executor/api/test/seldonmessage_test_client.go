@@ -4,10 +4,11 @@ import (
 	"context"
 	// "errors"
 	"fmt"
+	"io"
+
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
-	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	"io"
+	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 )
 
 type SeldonMessageTestClient struct {
@@ -117,7 +118,7 @@ func (s SeldonMessageTestClient) Feedback(ctx context.Context, modelName string,
 		return nil, s.Err
 	}
 	protoFeedback, ok := msg.GetPayload().(*proto.Feedback)
-	if ok == true {
+	if ok {
 		resp := &payload.ProtoPayload{Msg: protoFeedback.Request}
 		return resp, nil
 	}

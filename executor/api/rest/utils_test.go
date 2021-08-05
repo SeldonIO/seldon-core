@@ -2,10 +2,11 @@ package rest
 
 import (
 	"encoding/json"
+	"testing"
+
 	. "github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/api/util"
-	"testing"
 )
 
 func TestCombineExtractMessages(t *testing.T) {

@@ -2,10 +2,11 @@ package k8s
 
 import (
 	"context"
+	"testing"
+
 	. "github.com/onsi/gomega"
 	"k8s.io/client-go/kubernetes/fake"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"testing"
 )
 
 func TestConfigmapCreate(t *testing.T) {

@@ -3,6 +3,8 @@ package kafka
 import (
 	"context"
 	"fmt"
+	"io"
+
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 	"github.com/seldonio/seldon-core/executor/api"
@@ -11,7 +13,6 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/rest"
 	"github.com/seldonio/seldon-core/executor/api/util"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	"io"
 )
 
 type KafkaClient struct {
@@ -30,7 +31,7 @@ func (kc *KafkaClient) IsGrpc() bool {
 	return false
 }
 
-func NewKafkaClient(hostname, deploymentName, namespace, protocol, transport string, predictor *v1.PredictorSpec, broker string, log logr.Logger) client.SeldonApiClient {
+func NewKafkaClient(hostname, deploymentName, namespace, protocol, transport string, predictor *v1.PredictorSpec, broker string, log logr.Logger) (client.SeldonApiClient, error) {
 	skc := &KafkaClient{
 		Hostname:       hostname,
 		DeploymentName: deploymentName,
@@ -42,8 +43,11 @@ func NewKafkaClient(hostname, deploymentName, namespace, protocol, transport str
 		Log:            log.WithName("KafkaClient"),
 		topicHandlers:  make(map[string]*KafkaRPC),
 	}
-	skc.createTopicHandlers(&predictor.Graph)
-	return skc
+	err := skc.createTopicHandlers(&predictor.Graph)
+	if err != nil {
+		return nil, err
+	}
+	return skc, nil
 }
 
 func (kc *KafkaClient) createTopicHandlers(node *v1.PredictiveUnit) error {

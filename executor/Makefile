@@ -25,9 +25,12 @@ fmt:
 vet:
 	go vet ${EXECUTOR_FOLDERS}
 
+# Run the linters specified in the .golangci.yml config
+golangci-lint:
+	golangci-lint run
 
 # Build manager binary
-executor: copy_operator fmt vet
+executor: copy_operator fmt vet golangci-lint
 	go build -o executor cmd/executor/main.go
 
 
@@ -80,7 +83,7 @@ add_protos:
 	cd serving && find ./tensorflow_serving -name '*.proto' | cpio -pdm ../proto
 
 # Run tests
-test: copy_operator fmt vet
+test: copy_operator fmt vet golangci-lint
 	go test ${EXECUTOR_FOLDERS} -coverprofile cover.out
 
 copy_openapi_resources:
