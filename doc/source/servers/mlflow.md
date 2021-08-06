@@ -95,7 +95,7 @@ KFServing Protocol](../graph/protocols.md#v2-kfserving-protocol).
 Note that, under the hood, it will use the [Seldon
 MLServer](https://github.com/SeldonIO/MLServer) runtime.
 
-### Create a model using `mlflow`
+### Create a model using `mlflow` and deploy to `seldon-core`
 As an example we are going to use the elasticnet wine model.
 
 1. Create a `conda` environment
@@ -269,3 +269,6 @@ response = requests.post(endpoint, json=inference_request)
 
 print(json.dumps(response.json(), indent=2))
 ```
+
+### Caveats
+- The version of `mlserver` installed in the conda environment will need to match the supported version in `seldon-core`. We are working on tooling to make this more seamless.
