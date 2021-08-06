@@ -43,13 +43,6 @@ def get_rest_microservice(user_model, seldon_metrics):
     if hasattr(user_model, "model_error_handler"):
         logger.info("Registering the custom error handler...")
         app.register_blueprint(user_model.model_error_handler)
-
-    @app.errorhandler(SeldonMicroserviceException)
-    def handle_invalid_usage(error):
-        response = jsonify(error.to_dict())
-        logger.error("%s", error.to_dict())
-        response.status_code = error.status_code
-        return response
     
     @app.errorhandler(Exception)
     def handle_generic_exception(e):
@@ -62,6 +55,14 @@ def get_rest_microservice(user_model, seldon_metrics):
         logger.error("%s", error.to_dict())
         response.status_code = error.status_code
         return response
+
+    @app.errorhandler(SeldonMicroserviceException)
+    def handle_invalid_usage(error):
+        response = jsonify(error.to_dict())
+        logger.error("%s", error.to_dict())
+        response.status_code = error.status_code
+        return response
+    
 
     @app.route("/seldon.json", methods=["GET"])
     def openAPI():
