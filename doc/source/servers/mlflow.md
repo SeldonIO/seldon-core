@@ -272,3 +272,4 @@ print(json.dumps(response.json(), indent=2))
 
 ### Caveats
 - The version of `mlserver` installed in the conda environment will need to match the supported version in `seldon-core`. We are working on tooling to make this more seamless.
+- Check the caveats of using [`conda-pack`](https://conda.github.io/conda-pack/#caveats)
