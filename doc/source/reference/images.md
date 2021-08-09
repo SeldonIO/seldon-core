@@ -13,9 +13,9 @@
 
 | Description | Image URL | Version |
 |-------------|-----------|---------|
-| [MLFlow Server REST](../servers/mlflow.md) | [seldonio/mlflowserver](https://hub.docker.com/r/seldonio/mlflowserver/tags/) | 1.9.1 |
-| [SKLearn Server REST](../servers/sklearn.md) | [seldonio/sklearnserver](https://hub.docker.com/r/seldonio/sklearnserver/tags/) | 1.9.1 |
-| [XGBoost Server REST](../servers/xgboost.md) | [seldonio/xgboostserver](https://hub.docker.com/r/seldonio/xgboostserver/tags/) | 1.9.1 |
+| [MLFlow Server](../servers/mlflow.md) | [seldonio/mlflowserver](https://hub.docker.com/r/seldonio/mlflowserver/tags/) | 1.9.1 |
+| [SKLearn Server](../servers/sklearn.md) | [seldonio/sklearnserver](https://hub.docker.com/r/seldonio/sklearnserver/tags/) | 1.9.1 |
+| [XGBoost Server](../servers/xgboost.md) | [seldonio/xgboostserver](https://hub.docker.com/r/seldonio/xgboostserver/tags/) | 1.9.1 |
 
 ## Language wrappers
 
@@ -35,7 +35,7 @@
 |-------------|-----------|----------------|
 | [NVIDIA inference server proxy](integration_nvidia_link.rst) | [seldonio/nvidia-inference-server-proxy](https://hub.docker.com/r/seldonio/nvidia-inference-server-proxy/tags/) | 0.1 |
 | [SageMaker proxy](https://github.com/SeldonIO/seldon-core/tree/master/integrations/sagemaker) | [seldonio/sagemaker-proxy](https://hub.docker.com/r/seldonio/sagemaker-proxy/tags/) | 0.1 |
-| [Tensorflow Serving REST proxy](../servers/tensorflow.md) | [seldonio/tfserving-proxy](https://hub.docker.com/r/seldonio/tfserving-proxy/tags/) | 1.9.1 |
+| [Tensorflow Serving proxy](../servers/tensorflow.md) | [seldonio/tfserving-proxy](https://hub.docker.com/r/seldonio/tfserving-proxy/tags/) | 1.9.1 |
 
 
 ## Python modules
