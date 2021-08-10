@@ -1,7 +1,7 @@
 import json
 from typing import List, Dict, Optional, Union
 import logging
-import pickle
+import dill
 import os
 from adserver.constants import (
     REQUEST_ID_HEADER_NAME,
@@ -70,7 +70,7 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
         """
         if "/" in self.storage_uri:
             model_folder = download_model(self.storage_uri)
-            self.model = pickle.load(
+            self.model = dill.load(
                 open(os.path.join(model_folder, "meta.pickle"), "rb")
             )
         else:
