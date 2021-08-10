@@ -1,0 +1,36 @@
+---
+- name: Install Seldon Core & Prerequisites
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - role: seldonio.k8s.istio
+      when: install_istio | bool
+
+    - role: seldonio.k8s.ambassador
+      when: install_ambassador | bool
+
+    - role: seldonio.k8s.minio
+      when: install_minio | bool
+
+    - role: seldonio.k8s.seldon_core_analytics
+      when: install_seldon_core_analytics | bool
+
+    - role: seldonio.k8s.seldon_core
+      when: install_seldon_core | bool
+
+  vars:
+    full_install: yes
+
+    install_istio: "{{ full_install }}"
+    install_ambassador: "{{ full_install }}"
+    install_minio: "{{ full_install }}"
+
+    install_seldon_core_analytics: "{{ full_install }}"
+    install_seldon_core: "{{ full_install }}"
+
+    # Overwrite this variable if you want to DO NOT want to include any variable from defaults
+    vars_file: vars/default.yaml
+
+  pre_tasks:
+  - name: "Load vars from {{ vars_file }}"
+    include_vars: "{{ vars_file }}"
