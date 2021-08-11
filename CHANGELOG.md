@@ -1,5 +1,62 @@
 # Changelog
 
+## [v1.10.0](https://github.com/seldonio/seldon-core/tree/HEAD)
+
+[Full Changelog](https://github.com/seldonio/seldon-core/compare/operator/v1.9.1...v1.10.0)
+
+**Fixed bugs:**
+
+- sklearn iris model incompatible with latest sklearnserver \(1.10.0-dev\) [\#3424](https://github.com/SeldonIO/seldon-core/issues/3424)
+- It is not possible to add a new inference server. [\#3415](https://github.com/SeldonIO/seldon-core/issues/3415)
+- REST Executor Returns wrong Error message in DAG [\#3411](https://github.com/SeldonIO/seldon-core/issues/3411)
+- Conda base image is not being pushed to docker hub [\#3405](https://github.com/SeldonIO/seldon-core/issues/3405)
+- spec.preserveUnknownFields  missing while upgrading seldon-core-operator to 1.9.1 from 1.2.2 using helm chart [\#3393](https://github.com/SeldonIO/seldon-core/issues/3393)
+- seldon-puid not included in grpc requests [\#3389](https://github.com/SeldonIO/seldon-core/issues/3389)
+- Docs lint is failing due to argo moving repo [\#3386](https://github.com/SeldonIO/seldon-core/issues/3386)
+- Seldon Deployment: Dryrun using k8s java Api is not validating all fields [\#3378](https://github.com/SeldonIO/seldon-core/issues/3378)
+- batch\_processor.py: data will be left unprocessed if the line number in the input file can't be aliquoted by the batch\_size [\#3377](https://github.com/SeldonIO/seldon-core/issues/3377)
+- Cannot apply Seldon Deployment from Kubernetes Python API [\#3375](https://github.com/SeldonIO/seldon-core/issues/3375)
+- click dependencies could not be resolved [\#3373](https://github.com/SeldonIO/seldon-core/issues/3373)
+- Can't change REST timeout [\#3368](https://github.com/SeldonIO/seldon-core/issues/3368)
+- Deployment giving certificate expired or is not yet valid [\#3366](https://github.com/SeldonIO/seldon-core/issues/3366)
+- go mod fails because of invalid character in file name [\#3354](https://github.com/SeldonIO/seldon-core/issues/3354)
+- Istio virtualservice created does not whitelist V2 Inference Protocol protobuf names [\#3352](https://github.com/SeldonIO/seldon-core/issues/3352)
+- Add functionality to support multiprocessing for Python wrapper GRPC [\#3334](https://github.com/SeldonIO/seldon-core/issues/3334)
+- If no-engine=true used only REST/HTTP virtuaservice is created with istio and no GRPC [\#3329](https://github.com/SeldonIO/seldon-core/issues/3329)
+- Seldon Explainer Container Crashes Due to GCS Permission Error [\#3324](https://github.com/SeldonIO/seldon-core/issues/3324)
+- I deploy tensorflow model using tensorflow2.4.1 and occur error:CUDA error \(3\): initialization error. [\#3314](https://github.com/SeldonIO/seldon-core/issues/3314)
+- Status address URL incorrect for no engine [\#3312](https://github.com/SeldonIO/seldon-core/issues/3312)
+- cant build simple-cpp example [\#3251](https://github.com/SeldonIO/seldon-core/issues/3251)
+- wrong conda version used in the mlflowserver image [\#3115](https://github.com/SeldonIO/seldon-core/issues/3115)
+- Failures on send\_feedback\_raw path when using proto [\#2606](https://github.com/SeldonIO/seldon-core/issues/2606)
+- custom\_metrics notebook test is flaky [\#2570](https://github.com/SeldonIO/seldon-core/issues/2570)
+
+**Closed issues:**
+
+- Create MLflow example using MLServer [\#3462](https://github.com/SeldonIO/seldon-core/issues/3462)
+- Run Kubernetes PodSpec validation  [\#3440](https://github.com/SeldonIO/seldon-core/issues/3440)
+- automatise generation and upload of example models for pre-packaged model servers [\#3439](https://github.com/SeldonIO/seldon-core/issues/3439)
+- Request Logger Update [\#3421](https://github.com/SeldonIO/seldon-core/issues/3421)
+- Upgrade Alibi Server to 0.6.0 [\#3401](https://github.com/SeldonIO/seldon-core/issues/3401)
+- Add MLServer MLFlow Server to Core [\#3384](https://github.com/SeldonIO/seldon-core/issues/3384)
+- Release 1.9.2 [\#3367](https://github.com/SeldonIO/seldon-core/issues/3367)
+- Create notebook that outlines steps required to extend all existing secrets to be compatible with rclone [\#3360](https://github.com/SeldonIO/seldon-core/issues/3360)
+- Research performance improvements for Python Seldon wrapper and research performance between versions of Seldon Core [\#3359](https://github.com/SeldonIO/seldon-core/issues/3359)
+- Update Core Builder to use more recent version of Python [\#3358](https://github.com/SeldonIO/seldon-core/issues/3358)
+- Create narrative / documentation around security [\#3345](https://github.com/SeldonIO/seldon-core/issues/3345)
+- Add GRPC\_THREADS for configuring the number of threads in the Python wrapper \(and default to 1\) [\#3333](https://github.com/SeldonIO/seldon-core/issues/3333)
+- Set GUNICORN\_THREADS to 1 by default [\#3332](https://github.com/SeldonIO/seldon-core/issues/3332)
+- Release 1.9.1 [\#3319](https://github.com/SeldonIO/seldon-core/issues/3319)
+- Python GRPC Server does not adhere to Worker/Thread environment variables [\#3238](https://github.com/SeldonIO/seldon-core/issues/3238)
+- Update Benchmarking with Argo Worfklows & Vegeta notebook example [\#3162](https://github.com/SeldonIO/seldon-core/issues/3162)
+- 1.8.0 Release [\#3125](https://github.com/SeldonIO/seldon-core/issues/3125)
+- Missing appVersion inside Chart.yaml [\#2737](https://github.com/SeldonIO/seldon-core/issues/2737)
+- Add integration tests to outlier detector and concept drift components [\#2681](https://github.com/SeldonIO/seldon-core/issues/2681)
+- Occasional Latency Spike in Python Nodes of Inference Graph [\#2656](https://github.com/SeldonIO/seldon-core/issues/2656)
+- Refactor env var retrieval for model\_name / image\_name in python wrapper so it's centralised in util [\#2621](https://github.com/SeldonIO/seldon-core/issues/2621)
+- Python Wrapper should Handle Exceptions correctly [\#2338](https://github.com/SeldonIO/seldon-core/issues/2338)
+- Seldon wrapper image with python 3.8 [\#1230](https://github.com/SeldonIO/seldon-core/issues/1230)
+
 ## [v1.9.0](https://github.com/seldonio/seldon-core/tree/HEAD)
 
 [Full Changelog](https://github.com/seldonio/seldon-core/compare/v1.8.0...v1.9.0)
