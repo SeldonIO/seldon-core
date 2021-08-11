@@ -35,42 +35,57 @@ def extract_request_id(headers):
     return request_id
 
 
+def get_partition_index(partition_type: str):
+    current_date = datetime.datetime.today().date()
+    if partition_type == "D":
+        return current_date.strftime("%Y-%m-%d")
+    elif partition_type == "M":
+        return current_date.strftime("%Y-%m")
+    elif partition_type == "Y":
+        return current_date.strftime("%Y")
+    else:
+        return None
+
+
 def build_index_name(headers):
     # use a fixed index name if user chooses to do so
     index_name = os.getenv("INDEX_NAME")
-    if index_name:
-        return index_name
+    if not index_name:
+        # Adding seldon_environment (dev/test/staging/prod) to index_name if defined as a environment variable
+        seldon_environment = os.getenv("SELDON_ENVIRONMENT")
+        if seldon_environment:
+            index_name = (
+                "inference-log-" + seldon_environment + "-" + serving_engine(headers)
+            )
+        else:
+            index_name = "inference-log-" + serving_engine(headers)
 
-    # Adding seldon_environment (dev/test/staging/prod) to index_name if defined as a environment variable
-    seldon_environment = os.getenv("SELDON_ENVIRONMENT")
-    if seldon_environment:
-       index_name = "inference-log-" + seldon_environment + "-" + serving_engine(headers)
-    else:
-       index_name = "inference-log-" + serving_engine(headers)
+        # otherwise create an index per deployment
+        # index_name = "inference-log-" + serving_engine(headers)
+        namespace = clean_header(NAMESPACE_HEADER_NAME, headers)
+        if not namespace:
+            index_name = index_name + "-unknown-namespace"
+        else:
+            index_name = index_name + "-" + namespace
+        inference_service_name = clean_header(INFERENCESERVICE_HEADER_NAME, headers)
+        # won't get inference service name for older kfserving versions i.e. prior to https://github.com/kubeflow/kfserving/pull/699/
+        if not inference_service_name:
+            inference_service_name = clean_header(MODELID_HEADER_NAME, headers)
 
-    # otherwise create an index per deployment
-    # index_name = "inference-log-" + serving_engine(headers)
-    namespace = clean_header(NAMESPACE_HEADER_NAME, headers)
-    if not namespace:
-        index_name = index_name + "-unknown-namespace"
-    else:
-        index_name = index_name + "-" + namespace
-    inference_service_name = clean_header(INFERENCESERVICE_HEADER_NAME, headers)
-    # won't get inference service name for older kfserving versions i.e. prior to https://github.com/kubeflow/kfserving/pull/699/
-    if not inference_service_name:
-        inference_service_name = clean_header(MODELID_HEADER_NAME, headers)
+        if not inference_service_name:
+            index_name = index_name + "-unknown-inferenceservice"
+        else:
+            index_name = index_name + "-" + inference_service_name
 
-    if not inference_service_name:
-        index_name = index_name + "-unknown-inferenceservice"
-    else:
-        index_name = index_name + "-" + inference_service_name
+        endpoint_name = clean_header(ENDPOINT_HEADER_NAME, headers)
+        if not endpoint_name:
+            index_name = index_name + "-unknown-endpoint"
+        else:
+            index_name = index_name + "-" + endpoint_name
 
-    endpoint_name = clean_header(ENDPOINT_HEADER_NAME, headers)
-    if not endpoint_name:
-        index_name = index_name + "-unknown-endpoint"
-    else:
-        index_name = index_name + "-" + endpoint_name
-
+    partition_type = get_partition_index(os.getenv("INDEX_PARTITION_TYPE"))
+    if partition_type:
+        return index_name + "-" + partition_type
     return index_name
 
 
@@ -133,9 +148,11 @@ def serving_engine(headers):
     elif type_header.startswith("org.kubeflow.serving"):
         return "inferenceservice"
 
+
 def get_header(header_name, headers):
     if headers.get(header_name):
         return clean_header(header_name, headers)
+
 
 def field_from_header(content, header_name, headers):
     if headers.get(header_name):
