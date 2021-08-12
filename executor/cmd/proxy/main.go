@@ -9,7 +9,8 @@ import (
 	"github.com/seldonio/seldon-core/executor/k8s"
 	predictor2 "github.com/seldonio/seldon-core/executor/predictor"
 	"os"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
 
 var (
@@ -61,7 +62,7 @@ func main() {
 
 	client, err := rest.NewJSONRestClient(*protocol, *sdepName, predictor, annotations)
 
-	logf.SetLogger(logf.ZapLogger(false))
+	logf.SetLogger(zap.New())
 	logger := logf.Log.WithName("entrypoint")
 
 	kafkaProxy := kafka.NewKafkaProxy(client, *modelName, *predictorName, *sdepName, *namespace, *broker, *hostname, int32(*httpPort), logger)

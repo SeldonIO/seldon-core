@@ -13,7 +13,7 @@ import (
 	"google.golang.org/grpc"
 	"io"
 	"math"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 type KFServingGrpcClient struct {

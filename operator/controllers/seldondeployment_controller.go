@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"knative.dev/pkg/apis"
 	"net/url"
 	"strconv"
 	"strings"
@@ -1062,7 +1063,7 @@ func (r *SeldonDeploymentReconciler) createIstioServices(components *components,
 	//Cleanup unused VirtualService. This should usually only happen on Operator upgrades where there is a breaking change to the names of the VirtualServices created
 	//Only run if we have virtualservices to create - implies we are running with istio active
 	if len(components.virtualServices) > 0 && ready {
-		cleaner := ResourceCleaner{instance: instance, client: r, virtualServices: components.virtualServices, logger: r.Log}
+		cleaner := ResourceCleaner{instance: instance, client: r.Client, virtualServices: components.virtualServices, logger: r.Log}
 		deleted, err := cleaner.cleanUnusedVirtualServices()
 		if err != nil {
 			return ready, err
@@ -1482,11 +1483,32 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 				if found.Status.ReadyReplicas == 0 || found.Status.UnavailableReplicas > 0 {
 					ready = false
 				}
+
+				//condition := getDeploymentCondition(found, appsv1.DeploymentAvailable)
+				//instance.Status.SetCondition(machinelearningv1.DeploymentsReady, condition)
 			}
 
 		}
 	}
+
 	return ready, nil
+}
+
+func getDeploymentCondition(deployment *appsv1.Deployment, conditionType appsv1.DeploymentConditionType) *apis.Condition {
+	condition := apis.Condition{}
+	for _, con := range deployment.Status.Conditions {
+		if con.Type == conditionType {
+			condition.Type = apis.ConditionType(conditionType)
+			condition.Status = con.Status
+			condition.Message = con.Message
+			condition.LastTransitionTime = apis.VolatileTime{
+				Inner: con.LastTransitionTime,
+			}
+			condition.Reason = con.Reason
+			break
+		}
+	}
+	return &condition
 }
 
 func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinelearningv1.SeldonDeployment, components *components, log logr.Logger) error {
@@ -1639,8 +1661,8 @@ func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinele
 // +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch
 // +kubebuilder:rbac:groups="",resources=events,verbs=create;patch
 
-func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.Background()
+func (r *SeldonDeploymentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	//ctx := context.Background()
 	log := r.Log.WithValues("SeldonDeployment", req.NamespacedName)
 	log.Info("Reconcile called")
 	// your logic here
@@ -1818,7 +1840,7 @@ var (
 
 func (r *SeldonDeploymentReconciler) SetupWithManager(ctx context.Context, mgr ctrl.Manager, name string) error {
 
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &appsv1.Deployment{}, ownerKey, func(rawObj runtime.Object) []string {
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &appsv1.Deployment{}, ownerKey, func(rawObj client.Object) []string {
 		// grab the deployment object, extract the owner...
 		dep := rawObj.(*appsv1.Deployment)
 		owner := metav1.GetControllerOf(dep)
@@ -1836,7 +1858,7 @@ func (r *SeldonDeploymentReconciler) SetupWithManager(ctx context.Context, mgr c
 		return err
 	}
 
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &corev1.Service{}, ownerKey, func(rawObj runtime.Object) []string {
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &corev1.Service{}, ownerKey, func(rawObj client.Object) []string {
 		// grab the deployment object, extract the owner...
 		svc := rawObj.(*corev1.Service)
 		owner := metav1.GetControllerOf(svc)
@@ -1855,7 +1877,7 @@ func (r *SeldonDeploymentReconciler) SetupWithManager(ctx context.Context, mgr c
 	}
 
 	if utils.GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
-		if err := mgr.GetFieldIndexer().IndexField(ctx, &istio.VirtualService{}, ownerKey, func(rawObj runtime.Object) []string {
+		if err := mgr.GetFieldIndexer().IndexField(ctx, &istio.VirtualService{}, ownerKey, func(rawObj client.Object) []string {
 			// grab the deployment object, extract the owner...
 			vsvc := rawObj.(*istio.VirtualService)
 			owner := metav1.GetControllerOf(vsvc)

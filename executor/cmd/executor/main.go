@@ -37,7 +37,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc/reflection"
 	zapf "sigs.k8s.io/controller-runtime/pkg/log/zap"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 const (

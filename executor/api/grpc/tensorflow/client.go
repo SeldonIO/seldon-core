@@ -16,7 +16,7 @@ import (
 	status "google.golang.org/grpc/status"
 	"io"
 	"math"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 type TensorflowGrpcClient struct {
