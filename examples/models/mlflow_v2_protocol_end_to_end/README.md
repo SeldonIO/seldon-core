@@ -26,30 +26,6 @@ Use the setup notebook to [Setup Cluster](https://docs.seldon.io/projects/seldon
 Use the provided [notebook](https://docs.seldon.io/projects/seldon-core/en/latest/examples/minio_setup.html) to install Minio in your cluster and configure `mc` CLI tool. 
 Instructions [also online](https://docs.seldon.io/projects/seldon-core/en/latest/examples/minio_setup.html).
 
-## Alternatively setup `seldon-core` and `minio` using `ansible`
-
-### Install `ansible` prerequisites
-
-
-```python
-!pip install ansible openshift docker passlib
-```
-
-
-```python
-!ansible-galaxy collection install git+https://github.com/SeldonIO/ansible-k8s-collection.git
-```
-
-### Setup kind cluster and install `seldon-core`
-
-
-```bash
-%%bash
-cd ../../../ansible
-ansible-playbook playbooks/kind_cluster.yaml
-ansible-playbook playbooks/main.yaml -e seldon_core_version=master 
-```
-
 ## Train elasticnet wine model using `mlflow`
 
 ### Install `mlflow` and required dependencies to train the model
@@ -64,8 +40,10 @@ ansible-playbook playbooks/main.yaml -e seldon_core_version=master
 
 ```python
 import os
+import shutil
 from pathlib import Path
 MODEL_DIR = Path(os.getcwd()) / "elasticnet_wine_model"
+shutil.rmtree(MODEL_DIR, ignore_errors=True)
 ```
 
 ### Define training function
@@ -205,7 +183,7 @@ note: make sure that minio ip is reflected properly below, run `kubectl get serv
 
 ```python
 import os
-target_bucket = "minio-seldon/model"
+target_bucket = "minio-seldon/models"
 os.system(f"mc rb --force {target_bucket}")
 os.system(f"mc mb {target_bucket}")
 os.system(f"mc cp --recursive {MODEL_DIR} {target_bucket}")
@@ -227,7 +205,7 @@ spec:
     - graph:
         children: []
         implementation: MLFLOW_SERVER
-        modelUri: s3:/model
+        modelUri: s3://models/elasticnet_wine_model  # note: s3 points to minio-seldon in the local kind cluster
         envSecretRefName: seldon-rclone-secret
         name: classifier
       name: default
@@ -375,4 +353,9 @@ assert response.ok
 
 ```python
 !kubectl delete -f mlflow_elasticnet_wine_v2.yaml
+```
+
+
+```python
+
 ```
