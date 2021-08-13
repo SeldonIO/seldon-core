@@ -119,7 +119,7 @@ $ python sklearn_elasticnet_wine/train.py
 After the script ends, there will be a models persisted at `mlruns/0/<uuid>/artifacts/model`. This can
 be fetched from the ui (`mlflow ui`)
 
-4. Install additional packaged required to deploy and ack the conda environment using [conda-pack](https://conda.github.io/conda-pack/)
+4. Install additional packaged required to deploy and pack the conda environment using `conda-pack`
 ```bash
 $ pip install conda-pack
 $ pip install mlserver
