@@ -20,13 +20,12 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"k8s.io/client-go/kubernetes"
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"knative.dev/pkg/apis"
 	"net/url"
 	"strconv"
 	"strings"
-
-	"k8s.io/client-go/kubernetes"
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	types2 "github.com/gogo/protobuf/types"
 	"github.com/seldonio/seldon-core/operator/constants"
@@ -1146,6 +1145,27 @@ func (r *SeldonDeploymentReconciler) createServices(components *components, inst
 
 	}
 
+	if all && ready {
+		condition := apis.Condition{}
+		condition.Status = corev1.ConditionTrue
+		condition.Type = machinelearningv1.ServicesReady
+		condition.Reason = "All services created"
+		condition.LastTransitionTime = apis.VolatileTime{
+			Inner: metav1.Now(),
+		}
+		instance.Status.SetCondition(machinelearningv1.ServicesReady, &condition)
+	} else {
+		condition := apis.Condition{}
+		condition.Status = corev1.ConditionFalse
+		condition.Type = machinelearningv1.ServicesReady
+		condition.Reason = "Not all services created"
+		condition.LastTransitionTime = apis.VolatileTime{
+			Inner: metav1.Now(),
+		}
+		instance.Status.SetCondition(machinelearningv1.ServicesReady, &condition)
+
+	}
+
 	return ready, nil
 }
 
@@ -1403,6 +1423,7 @@ func jsonEquals(a, b interface{}) (bool, error) {
 // Create Deployments specified in components.
 func (r *SeldonDeploymentReconciler) createDeployments(components *components, instance *machinelearningv1.SeldonDeployment, log logr.Logger) (bool, error) {
 	ready := true
+	var lastSuccessfulCondition *apis.Condition
 	for _, deploy := range components.deployments {
 
 		log.Info("Scheme", "r.scheme", r.Scheme)
@@ -1481,16 +1502,30 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 				}
 				log.Info("Deployment status ", "name", found.Name, "status", found.Status)
 				if found.Status.ReadyReplicas == 0 || found.Status.UnavailableReplicas > 0 {
+					if ready {
+						condition := getDeploymentCondition(found, appsv1.DeploymentAvailable)
+						log.Info("Updating condition for deployment", "name", found.Name, "condition", condition)
+						instance.Status.SetCondition(machinelearningv1.DeploymentsReady, condition)
+						log.Info("Inference status", "status", instance.Status)
+					}
 					ready = false
 				}
 
-				//condition := getDeploymentCondition(found, appsv1.DeploymentAvailable)
-				//instance.Status.SetCondition(machinelearningv1.DeploymentsReady, condition)
+				if ready {
+					condition := getDeploymentCondition(found, appsv1.DeploymentAvailable)
+					if lastSuccessfulCondition == nil || lastSuccessfulCondition.LastTransitionTime.Inner.Before(&condition.LastTransitionTime.Inner) {
+						lastSuccessfulCondition = condition
+					}
+				}
+
 			}
 
 		}
 	}
 
+	if ready {
+		instance.Status.SetCondition(machinelearningv1.DeploymentsReady, lastSuccessfulCondition)
+	}
 	return ready, nil
 }
 

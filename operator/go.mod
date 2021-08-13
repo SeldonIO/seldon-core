@@ -19,7 +19,7 @@ require (
 	k8s.io/apiextensions-apiserver v0.21.3
 	k8s.io/apimachinery v0.21.3
 	k8s.io/client-go v12.0.0+incompatible
-	knative.dev/pkg v0.0.0-20200911145400-2d4efecc6bc1
+	knative.dev/pkg v0.0.0-20210426101439-2a0fc657a712
 	sigs.k8s.io/controller-runtime v0.9.6
 )
 
