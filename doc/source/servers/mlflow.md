@@ -98,28 +98,31 @@ MLServer](https://github.com/SeldonIO/MLServer) runtime.
 ### Create a model using `mlflow` and deploy to `seldon-core`
 As an example we are going to use the elasticnet wine model.
 
-1. Create a `conda` environment
+- Create a `conda` environment
+
 ```bash
 $ conda -y create -n python3.8-mlflow-example python=3.8
 $ conda activate python3.8-mlflow-example
 ```
 
-2. Install `mlflow`
+- Install `mlflow`
+
 ```bash
 $ pip install mlflow
 ```
 
-3. Train the elasticnet wine example
+- Train the elasticnet wine example
+
 ```bash
 $ git clone https://github.com/mlflow/mlflow
 $ cd mlflow/examples
 $ python sklearn_elasticnet_wine/train.py
 ```
-
 After the script ends, there will be a models persisted at `mlruns/0/<uuid>/artifacts/model`. This can
 be fetched from the ui (`mlflow ui`)
 
-4. Install additional packaged required to deploy and pack the conda environment using `conda-pack`
+- Install additional packaged required to deploy and pack the conda environment using [conda-pack](https://conda.github.io/conda-pack/)
+
 ```bash
 $ pip install conda-pack
 $ pip install mlserver
@@ -127,16 +130,15 @@ $ pip install mlserver-mlflow
 $ cd mlflow/examples/mlruns/0/<uuid>/artifacts/model
 $ conda pack -o environment.tar.gz -f
 ```
-
 This will pack the current conda environment to `environment.tar.gz`, this will be required by `mlserver` to create the same environment used during train for serving the model.
 
-6. copy the model directory to a Google Storage bucket that is accessible by seldon-core
+- copy the model directory to a Google Storage bucket that is accessible by seldon-core
+
 ```bash
 $ gsutil cp -r ../model gs://seldon-models/test/elasticnet_wine_<uuid>
 ```
 
-6. deploy the model to seldon-core
-
+- deploy the model to seldon-core
 In order to enable support for the V2 KFServing protocol, it's enough to
 specify the `protocol` of the `SeldonDeployment` to use `kfserving`.
 For example,
@@ -159,7 +161,7 @@ spec:
       replicas: 1
 ```
 
-7. get predictions from the deployed model
+- get predictions from the deployed model using REST
 
 ```python
 import json
