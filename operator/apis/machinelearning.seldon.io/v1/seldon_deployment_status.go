@@ -2,6 +2,7 @@ package v1
 
 import (
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
@@ -49,14 +50,22 @@ type SeldonDeploymentStatus struct {
 }
 
 const (
-	DeploymentsReady apis.ConditionType = "DeploymentsReady"
-	ServicesReady    apis.ConditionType = "ServicesReady"
+	DeploymentsReady     apis.ConditionType = "DeploymentsReady"
+	ServicesReady        apis.ConditionType = "ServicesReady"
+	KedaReady            apis.ConditionType = "KedaReady"
+	VirtualServicesReady apis.ConditionType = "istioVirtualServicesReady"
+	HpasReady            apis.ConditionType = "HpasReady"
+	PdbsReady            apis.ConditionType = "PdbsReady"
 )
 
 // InferenceService Ready condition is depending on predictor and route readiness condition
 var conditionSet = apis.NewLivingConditionSet(
 	DeploymentsReady,
 	ServicesReady,
+	KedaReady,
+	VirtualServicesReady,
+	HpasReady,
+	PdbsReady,
 )
 
 var _ apis.ConditionsAccessor = (*SeldonDeploymentStatus)(nil)
@@ -86,8 +95,23 @@ func (ss *SeldonDeploymentStatus) SetCondition(conditionType apis.ConditionType,
 	case condition.Status == v1.ConditionUnknown:
 		conditionSet.Manage(ss).MarkUnknown(conditionType, condition.Reason, condition.Message)
 	case condition.Status == v1.ConditionTrue:
-		conditionSet.Manage(ss).MarkTrue(conditionType)
+		conditionSet.Manage(ss).MarkTrueWithReason(conditionType, condition.Reason, condition.Message)
 	case condition.Status == v1.ConditionFalse:
 		conditionSet.Manage(ss).MarkFalse(conditionType, condition.Reason, condition.Message)
 	}
+}
+
+func (ss *SeldonDeploymentStatus) CreateCondition(conditionType apis.ConditionType, isTrue bool, reason string) {
+	condition := apis.Condition{}
+	if isTrue {
+		condition.Status = v1.ConditionTrue
+	} else {
+		condition.Status = v1.ConditionFalse
+	}
+	condition.Type = conditionType
+	condition.Reason = reason
+	condition.LastTransitionTime = apis.VolatileTime{
+		Inner: metav1.Now(),
+	}
+	ss.SetCondition(conditionType, &condition)
 }
