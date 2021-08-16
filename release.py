@@ -266,7 +266,28 @@ def update_operator_kustomize_prepackaged_images(
         print(err)
 
 
-def update_sklearn_models_version(
+def update_alibi_detect_image(
+    fpath, seldon_core_version, debug=False
+):
+    fpath = os.path.realpath(fpath)
+    if debug:
+        print("processing [{}]".format(fpath))
+    args = [
+        "sed",
+        "-i",
+        f"s|seldonio/alibi-detect-server:\(.*\)|seldonio/alibi-detect-server:{seldon_core_version}|",
+        fpath,
+    ]
+    err, out = run_command(args, debug)
+
+    if err is None:
+        print(f"updated alibi-detect-server version in {fpath}")
+    else:
+        print(f"error updating alibi-detect-server version in {fpath}")
+        print(err)
+
+
+def update_models_version(
     fpath, model_name, current_seldon_core_version, seldon_core_version, debug=False
 ):
     fpath = os.path.realpath(fpath)
@@ -450,6 +471,7 @@ def set_version(
     chart_yaml_files,
     operator_values_yaml_file,
     operator_kustomize_yaml_file,
+    alibi_detect_image_files,
     abtest_yaml_file,
     mab_yaml_file,
     model_uri_updates,
@@ -539,9 +561,13 @@ def set_version(
     # update models' uris
     for model_name, paths in model_uri_updates.items():
         for fpath in paths:
-            update_sklearn_models_version(
+            update_models_version(
                 fpath, model_name, current_seldon_core_version, seldon_core_version
             )
+
+    # update alibi detect image references
+    for fpath in alibi_detect_image_files:
+        update_alibi_detect_image(fpath, seldon_core_version)
 
     # Update image version labels
     update_image_metadata_json(seldon_core_version, debug)
@@ -607,6 +633,11 @@ def main(argv):
         ],
     }
 
+    ALIBI_DETECT_FILES = [
+        "testing/resources/adserver-cifar10-od-rclone.yaml",
+        "testing/resources/adserver-cifar10-od.yaml",
+    ]
+
     opts = getOpts(argv[1:])
     current_version = get_current_version()
     if opts.debug:
@@ -618,6 +649,7 @@ def main(argv):
         CHART_YAML_FILES,
         OPERATOR_VALUES_YAML_FILE,
         OPERATOR_KUSTOMIZE_CONFIGMAP,
+        ALIBI_DETECT_FILES,
         AB_VALUES_YAML_FILE,
         MAB_VALUES_YAML_FILE,
         MODEL_URI_UPDATES,
