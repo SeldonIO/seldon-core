@@ -1,6 +1,9 @@
 seldon-core
 kfserving==0.3.0.1
 alibi-detect==0.6.1
+tensorflow==2.4.2
+tensorflow-estimator==2.4.0
+tensorflow-probability==0.12.2
 pystan==2.19.1.1
 fbprophet==0.6
 holidays==0.9.11
