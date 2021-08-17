@@ -22,6 +22,7 @@ from seldon_e2e_utils import (
 )
 
 
+@pytest.mark.sequential
 class TestADServer:
     truck_json = "../../components/alibi-detect-server/cifar10-v2.json"
     truck_json_outlier = "../../components/alibi-detect-server/cifar10-v2-outlier.json"
