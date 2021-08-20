@@ -21,7 +21,6 @@ from seldon_e2e_utils import (
     wait_for_status,
 )
 
-
 AFTER_WAIT_SLEEP = 20
 TENACITY_WAIT = 10
 TENACITY_STOP_AFTER_ATTEMPT = 5
