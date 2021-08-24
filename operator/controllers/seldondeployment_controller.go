@@ -1075,13 +1075,13 @@ func (r *SeldonDeploymentReconciler) createIstioServices(components *components,
 	if ready {
 		var reason string
 		if len(components.virtualServices) > 0 {
-			reason = "All VirtualServices created"
+			reason = machinelearningv1.VirtualServiceReady
 		} else {
-			reason = "No VirtualServices defined"
+			reason = machinelearningv1.VirtualServiceNotDefined
 		}
 		instance.Status.CreateCondition(machinelearningv1.VirtualServicesReady, true, reason)
 	} else {
-		instance.Status.CreateCondition(machinelearningv1.VirtualServicesReady, false, "Not all VirtualServices created")
+		instance.Status.CreateCondition(machinelearningv1.VirtualServicesReady, false, machinelearningv1.VirtualServiceNotReady)
 	}
 
 	return ready, nil
@@ -1158,9 +1158,9 @@ func (r *SeldonDeploymentReconciler) createServices(components *components, inst
 	}
 
 	if all && ready {
-		instance.Status.CreateCondition(machinelearningv1.ServicesReady, true, "All services created")
+		instance.Status.CreateCondition(machinelearningv1.ServicesReady, true, machinelearningv1.SvcReadyReason)
 	} else {
-		instance.Status.CreateCondition(machinelearningv1.ServicesReady, false, "Not all services created")
+		instance.Status.CreateCondition(machinelearningv1.ServicesReady, false, machinelearningv1.SvcNotReadyReason)
 	}
 
 	return ready, nil
@@ -1245,13 +1245,13 @@ func (r *SeldonDeploymentReconciler) createKedaScaledObjects(components *compone
 	if ready {
 		var reason string
 		if len(components.kedaScaledObjects) > 0 {
-			reason = "All KEDA resources ready"
+			reason = machinelearningv1.KedaReadyReason
 		} else {
-			reason = "No KEDA resources defined"
+			reason = machinelearningv1.KedaNotDefinedReason
 		}
 		instance.Status.CreateCondition(machinelearningv1.KedaReady, true, reason)
 	} else {
-		instance.Status.CreateCondition(machinelearningv1.KedaReady, false, "KEDA resources not ready")
+		instance.Status.CreateCondition(machinelearningv1.KedaReady, false, machinelearningv1.KedaNotReadyReason)
 	}
 
 	return ready, nil
@@ -1337,13 +1337,13 @@ func (r *SeldonDeploymentReconciler) createHpas(components *components, instance
 	if ready {
 		var reason string
 		if len(components.hpas) > 0 {
-			reason = "All HPAs resources ready"
+			reason = machinelearningv1.HpaReadyReason
 		} else {
-			reason = "No HPAs defined"
+			reason = machinelearningv1.HpaNotDefinedReason
 		}
 		instance.Status.CreateCondition(machinelearningv1.HpasReady, true, reason)
 	} else {
-		instance.Status.CreateCondition(machinelearningv1.HpasReady, false, "HPAs not ready")
+		instance.Status.CreateCondition(machinelearningv1.HpasReady, false, machinelearningv1.HpaNotReadyReason)
 	}
 
 	return ready, nil
@@ -1429,13 +1429,13 @@ func (r *SeldonDeploymentReconciler) createPdbs(components *components, instance
 	if ready {
 		var reason string
 		if len(components.pdbs) > 0 {
-			reason = "All PDBs resources ready"
+			reason = machinelearningv1.PdbReadyReason
 		} else {
-			reason = "No PDBs defined"
+			reason = machinelearningv1.PdbNotDefinedReason
 		}
 		instance.Status.CreateCondition(machinelearningv1.PdbsReady, true, reason)
 	} else {
-		instance.Status.CreateCondition(machinelearningv1.PdbsReady, false, "PDBs not ready")
+		instance.Status.CreateCondition(machinelearningv1.PdbsReady, false, machinelearningv1.PdbNotReadyReason)
 	}
 
 	return ready, nil
@@ -1816,7 +1816,7 @@ func (r *SeldonDeploymentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			return ctrl.Result{}, err
 		}
 	} else {
-		instance.Status.CreateCondition(machinelearningv1.KedaReady, true, "KEDA not enabled")
+		instance.Status.CreateCondition(machinelearningv1.KedaReady, true, machinelearningv1.KedaNotDefinedReason)
 	}
 
 	pdbsReady, err := r.createPdbs(components, instance, log)

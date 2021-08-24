@@ -56,6 +56,21 @@ const (
 	VirtualServicesReady apis.ConditionType = "istioVirtualServicesReady"
 	HpasReady            apis.ConditionType = "HpasReady"
 	PdbsReady            apis.ConditionType = "PdbsReady"
+
+	SvcNotReadyReason        string = "Not all services created"
+	SvcReadyReason           string = "All services created"
+	KedaNotDefinedReason     string = "No KEDA resources defined"
+	KedaNotReadyReason       string = "KEDA resources not ready"
+	KedaReadyReason          string = "All KEDA resources ready"
+	HpaNotDefinedReason      string = "No HPAs defined"
+	HpaNotReadyReason        string = "HPAs not ready"
+	HpaReadyReason           string = "All HPAs resources ready"
+	PdbNotDefinedReason      string = "No PDBs defined"
+	PdbNotReadyReason        string = "PDBs not ready"
+	PdbReadyReason           string = "All PDBs resources ready"
+	VirtualServiceNotDefined string = "No VirtualServices defined"
+	VirtualServiceNotReady   string = "Not all VirtualServices created"
+	VirtualServiceReady      string = "All VirtualServices created"
 )
 
 // InferenceService Ready condition is depending on predictor and route readiness condition
@@ -92,6 +107,7 @@ func (ss *SeldonDeploymentStatus) IsConditionReady(t apis.ConditionType) bool {
 func (ss *SeldonDeploymentStatus) SetCondition(conditionType apis.ConditionType, condition *apis.Condition) {
 	switch {
 	case condition == nil:
+		conditionSet.Manage(ss).MarkUnknown(conditionType, "", "")
 	case condition.Status == v1.ConditionUnknown:
 		conditionSet.Manage(ss).MarkUnknown(conditionType, condition.Reason, condition.Message)
 	case condition.Status == v1.ConditionTrue:
