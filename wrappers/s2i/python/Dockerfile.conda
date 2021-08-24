@@ -11,8 +11,8 @@ ENV PATH /opt/conda/bin:$PATH
 RUN dnf update -y && \
     dnf install -y wget bzip2 ca-certificates curl git
 
-ARG CONDA_VERSION
-RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-$CONDA_VERSION-Linux-x86_64.sh -O ~/miniconda.sh && \
+ARG CONDA_DOWNLOAD_VERSION
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-${CONDA_DOWNLOAD_VERSION}-Linux-x86_64.sh -O ~/miniconda.sh && \
     /bin/bash ~/miniconda.sh -b -p /opt/conda && \
     rm ~/miniconda.sh && \
     /opt/conda/bin/conda clean -tipsy && \
