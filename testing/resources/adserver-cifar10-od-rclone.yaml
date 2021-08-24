@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
       - name: server
-        image: seldonio/alibi-detect-server:1.10.0-dev
+        image: seldonio/alibi-detect-server:1.11.0-dev
         imagePullPolicy: IfNotPresent
         args:
         - --model_name
