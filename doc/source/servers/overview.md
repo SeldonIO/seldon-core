@@ -297,6 +297,35 @@ stringData:
   RCLONE_CONFIG_S3_ENV_AUTH: "true"
 ```
 
+
+### Example for GCP/GKE
+
+Reference: [rclone documentation](https://rclone.org/googlecloudstorage/)
+
+For GCP/GKE, you will need create a service-account key and have it as local `json` file.
+First make sure that you have `[SA-NAME]@[PROJECT-ID].iam.gserviceaccount.com` service account created in the gcloud console that have sufficient permissions to access the bucket with your models (i.e. `Storage Object Admin`).
+
+Now, generate `keys` locally using the `gcloud` tool
+```bash
+gcloud iam service-accounts keys create gcloud-application-credentials.json --iam-account [SA-NAME]@[PROJECT-ID].iam.gserviceaccount.com
+```
+
+Now using the content of locally saved `gcloud-application-credentials.json` file create a secret
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: seldon-rclone-secret
+type: Opaque
+stringData:
+  RCLONE_CONFIG_GSC_TYPE: google cloud storage
+  RCLONE_CONFIG_GSC_ANONYMOUS: "false"
+  RCLONE_CONFIG_GSC_SERVICE_ACCOUNT_CREDENTIALS: '{"type":"service_account", ... <rest of gcloud-application-credentials.json>}'
+```
+
+Note: remote name is `gsc` here so urls would take form similar to `gsc:<your bucket>`.
+
+
 ### Directly from PVC
 
 You are able to make models available directly from PVCs instead of object stores. This may be desirable if you have a lot of very large files and you want to avoid uploading/downloading, for example through NFS drives.
