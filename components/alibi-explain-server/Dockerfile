@@ -1,5 +1,5 @@
 ARG VERSION
-FROM seldonio/seldon-core-s2i-python37-ubi8:1.11.0-dev
+FROM seldonio/seldon-core-s2i-python37-ubi8:$VERSION
 LABEL name="Seldon Alibi Wrapper" \
       vendor="Seldon Technologies" \
       version="1.11.0-dev" \
@@ -20,7 +20,8 @@ RUN pip install \
     --upgrade wheel
 
 # https://github.com/slundberg/shap/pull/1802#issuecomment-846299228
-RUN pip install numpy==1.19
+# https://github.com/SeldonIO/alibi/issues/466
+RUN pip install numpy==1.19 numba==0.53.1
 
 COPY setup.py setup.py
 COPY alibiexplainer alibiexplainer
