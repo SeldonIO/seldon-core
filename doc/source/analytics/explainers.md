@@ -86,3 +86,4 @@ The explain method is also supported for tensorflow and v2 kfserving protocols. 
 | kfserving | `http://<host>/<ingress-path>/v2/models/<model-name>/explain` |
 
 
+Note: for `tensorflow` protocol we support similar non-standard extension as for the [prediction API](../graph/protocols.md#rest-and-grpc-tensorflow-protocol), `http://<host>/<ingress-path>/v1/models/:explain`.

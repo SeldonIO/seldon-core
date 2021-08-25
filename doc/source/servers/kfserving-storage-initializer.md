@@ -143,10 +143,17 @@ Currently the Google Credentials require a file to be set up so the process requ
 
 You can also create a `ServiceAccount` and attach a differently formatted `Secret` to it similar to how kfserving does it. See kfserving documentation [on this topic](https://github.com/kubeflow/kfserving/blob/master/docs/samples/storage/s3/README.md). Supported annotation prefix includes `serving.kubeflow.org` and `machinelearning.seldon.io`.
 
-For GCP/GKE, go to gcloud console and create a key as json and export as a file. Then create a secret from the file using:
+For GCP/GKE, you will need create a service-account key and have it as local `json` file.
+First make sure that you have `[SA-NAME]@[PROJECT-ID].iam.gserviceaccount.com` service account created in the gcloud console that have sufficient permissions to access the bucket with your models (i.e. `Storage Object Admin`).
 
+Now, generate `keys` locally using the `gcloud` tool
 ```bash
-kubectl create secret generic user-gcp-sa --from-file=gcloud-application-credentials.json=<LOCALFILE>
+gcloud iam service-accounts keys create gcloud-application-credentials.json --iam-account [SA-NAME]@[PROJECT-ID].iam.gserviceaccount.com
+```
+
+Once you have `gcloud-application-credentials.json` file locally create the k8s `secret` with:
+```bash
+kubectl create secret generic user-gcp-sa --from-file=gcloud-application-credentials.json=<LOCALFILE JSON FILE>
 ```
 
 The file in the secret needs to be called `gcloud-application-credentials.json` (the name can be configured in the seldon configmap, visible in `kubectl get cm -n seldon-system seldon-config -o yaml`).
