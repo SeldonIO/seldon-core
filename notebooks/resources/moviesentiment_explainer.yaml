@@ -3,13 +3,15 @@ kind: SeldonDeployment
 metadata:
   name: movie
 spec:
+  name: movie
   annotations:
     seldon.io/rest-timeout: "100000"
   predictors:
   - graph:
-      name: classifier
+      children: []
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.11.0-dev/sklearn/moviesentiment
+      modelUri: "gs://seldon-models/v1.11.0-dev/sklearn/moviesentiment"
+      name: classifier
     explainer:
       type: AnchorText
     name: default
