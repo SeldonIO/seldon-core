@@ -104,12 +104,10 @@ fmt:
 	isort \
 		./ ../testing/scripts ../operator/helm ../operator/hack \
 		--skip proto --skip seldon_core/proto --skip .eggs --skip .tox
-	nbqa black \
-		../ --nbqa-skip-bad-cells --nbqa-mutate \
+	nbqa black ../ \
 		--nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)"
-	nbqa isort \
-		../ --profile black --nbqa-skip-bad-cells --nbqa-mutate \
-		--nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)"
+	nbqa isort ../ \
+		--profile black --nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)"
 
 lint: licenses
 	black \
