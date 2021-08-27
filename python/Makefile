@@ -105,10 +105,10 @@ fmt:
 		./ ../testing/scripts ../operator/helm ../operator/hack \
 		--skip proto --skip seldon_core/proto --skip .eggs --skip .tox
 	nbqa black \
-		../ --nbqa-skip-bad-cells --nbqa-mutate \
+		../ --nbqa-mutate \
 		--nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)"
 	nbqa isort \
-		../ --profile black --nbqa-skip-bad-cells --nbqa-mutate \
+		../ --profile black --nbqa-mutate \
 		--nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)"
 
 lint: licenses
