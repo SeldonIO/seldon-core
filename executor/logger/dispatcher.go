@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"fmt"
 	"github.com/go-logr/logr"
 	"os"
 )
@@ -25,7 +24,7 @@ func StartDispatcher(nworkers int, log logr.Logger, sdepName string, namespace s
 			kafkaTopic = os.Getenv(ENV_LOGGER_KAFKA_TOPIC)
 		}
 		if kafkaTopic == "" {
-			return fmt.Errorf("%s not provided", ENV_LOGGER_KAFKA_TOPIC)
+			kafkaTopic = "seldon"
 		}
 	}
 
