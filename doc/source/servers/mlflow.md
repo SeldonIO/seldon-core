@@ -95,6 +95,50 @@ KFServing Protocol](../graph/protocols.md#v2-kfserving-protocol).
 Note that, under the hood, it will use the [Seldon
 MLServer](https://github.com/SeldonIO/MLServer) runtime.
 
+### Create a model using `mlflow` and deploy to `seldon-core`
+As an example we are going to use the elasticnet wine model.
+
+- Create a `conda` environment
+
+```bash
+$ conda -y create -n python3.8-mlflow-example python=3.8
+$ conda activate python3.8-mlflow-example
+```
+
+- Install `mlflow`
+
+```bash
+$ pip install mlflow
+```
+
+- Train the elasticnet wine example
+
+```bash
+$ git clone https://github.com/mlflow/mlflow
+$ cd mlflow/examples
+$ python sklearn_elasticnet_wine/train.py
+```
+After the script ends, there will be a models persisted at `mlruns/0/<uuid>/artifacts/model`. This can
+be fetched from the ui (`mlflow ui`)
+
+- Install additional packaged required to deploy and pack the conda environment using [conda-pack](https://conda.github.io/conda-pack/)
+
+```bash
+$ pip install conda-pack
+$ pip install mlserver
+$ pip install mlserver-mlflow
+$ cd mlflow/examples/mlruns/0/<uuid>/artifacts/model
+$ conda pack -o environment.tar.gz -f
+```
+This will pack the current conda environment to `environment.tar.gz`, this will be required by `mlserver` to create the same environment used during train for serving the model.
+
+- copy the model directory to a Google Storage bucket that is accessible by seldon-core
+
+```bash
+$ gsutil cp -r ../model gs://seldon-models/test/elasticnet_wine_<uuid>
+```
+
+- deploy the model to seldon-core
 In order to enable support for the V2 KFServing protocol, it's enough to
 specify the `protocol` of the `SeldonDeployment` to use `kfserving`.
 For example,
@@ -111,8 +155,132 @@ spec:
     - graph:
         children: []
         implementation: MLFLOW_SERVER
-        modelUri: gs://seldon-models/v1.10.0-dev/mlflow/elasticnet_wine
+        modelUri: gs://seldon-models/test/elasticnet_wine_<uuid>
         name: classifier
       name: default
       replicas: 1
 ```
+
+- get predictions from the deployed model using REST
+
+```python
+import json
+
+import requests
+
+inference_request = {
+    "parameters": {
+        "content_type": "pd"
+    },
+    "inputs": [
+        {
+          "name": "fixed acidity",
+          "shape": [1],
+          "datatype": "FP32",
+          "data": [7.4],
+          "parameters": {
+              "content_type": "np"
+          }
+        },
+        {
+          "name": "volatile acidity",
+          "shape": [1],
+          "datatype": "FP32",
+          "data": [0.7000],
+          "parameters": {
+              "content_type": "np"
+          }
+        },
+        {
+          "name": "citric acidity",
+          "shape": [1],
+          "datatype": "FP32",
+          "data": [0],
+          "parameters": {
+              "content_type": "np"
+          }
+        },
+        {
+          "name": "residual sugar",
+          "shape": [1],
+          "datatype": "FP32",
+          "data": [1.9],
+          "parameters": {
+              "content_type": "np"
+          }
+        },
+        {
+          "name": "chlorides",
+          "shape": [1],
+          "datatype": "FP32",
+          "data": [0.076],
+          "parameters": {
+              "content_type": "np"
+          }
+        },
+        {
+          "name": "free sulfur dioxide",
+          "shape": [1],
+          "datatype": "FP32",
+          "data": [11],
+          "parameters": {
+              "content_type": "np"
+          }
+        },
+        {
+          "name": "total sulfur dioxide",
+          "shape": [1],
+          "datatype": "FP32",
+          "data": [34],
+          "parameters": {
+              "content_type": "np"
+          }
+        },
+        {
+          "name": "density",
+          "shape": [1],
+          "datatype": "FP32",
+          "data": [0.9978],
+          "parameters": {
+              "content_type": "np"
+          }
+        },
+        {
+          "name": "pH",
+          "shape": [1],
+          "datatype": "FP32",
+          "data": [3.51],
+          "parameters": {
+              "content_type": "np"
+          }
+        },
+        {
+          "name": "sulphates",
+          "shape": [1],
+          "datatype": "FP32",
+          "data": [0.56],
+          "parameters": {
+              "content_type": "np"
+          }
+        },
+        {
+          "name": "alcohol",
+          "shape": [1],
+          "datatype": "FP32",
+          "data": [9.4],
+          "parameters": {
+              "content_type": "np"
+          }
+        },
+    ]
+}
+
+endpoint = "http://localhost:8003/seldon/seldon/mlflow/v2/models/infer"
+response = requests.post(endpoint, json=inference_request)
+
+print(json.dumps(response.json(), indent=2))
+```
+
+### Caveats
+- The version of `mlserver` installed in the conda environment will need to match the supported version in `seldon-core`. We are working on tooling to make this more seamless.
+- Check the caveats of using [`conda-pack`](https://conda.github.io/conda-pack/#caveats)

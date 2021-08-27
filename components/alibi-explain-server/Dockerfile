@@ -2,7 +2,7 @@ ARG VERSION
 FROM seldonio/seldon-core-s2i-python37-ubi8:$VERSION
 LABEL name="Seldon Alibi Wrapper" \
       vendor="Seldon Technologies" \
-      version="1.10.0-dev" \
+      version="1.11.0-dev" \
       release="1" \
       summary="Alibi Explainer Wrapper for Seldon Core" \
       description="Allows Seldon Core inference models to run with a black box model explanation model from the Alibi:Explain project"
@@ -20,7 +20,8 @@ RUN pip install \
     --upgrade wheel
 
 # https://github.com/slundberg/shap/pull/1802#issuecomment-846299228
-RUN pip install numpy==1.19
+# https://github.com/SeldonIO/alibi/issues/466
+RUN pip install numpy==1.19 numba==0.53.1
 
 COPY setup.py setup.py
 COPY alibiexplainer alibiexplainer

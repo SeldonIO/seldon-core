@@ -25,7 +25,7 @@ data:
               },
             "seldon": {
               "image": "seldonio/tfserving-proxy",
-              "defaultImageVersion": "1.10.0-dev"
+              "defaultImageVersion": "1.11.0-dev"
               }
             }
         },
@@ -33,11 +33,11 @@ data:
           "protocols" : {
             "seldon": {
               "image": "seldonio/sklearnserver",
-              "defaultImageVersion": "1.10.0-dev"
+              "defaultImageVersion": "1.11.0-dev"
               },
             "kfserving": {
               "image": "seldonio/mlserver",
-              "defaultImageVersion": "0.3.2"
+              "defaultImageVersion": "0.4.0"
               }
             }
         },
@@ -45,11 +45,11 @@ data:
           "protocols" : {
             "seldon": {
               "image": "seldonio/xgboostserver",
-              "defaultImageVersion": "1.10.0-dev"
+              "defaultImageVersion": "1.11.0-dev"
               },
             "kfserving": {
               "image": "seldonio/mlserver",
-              "defaultImageVersion": "0.3.2"
+              "defaultImageVersion": "0.4.0"
               }
             }
         },
@@ -57,11 +57,11 @@ data:
           "protocols" : {
             "seldon": {
               "image": "seldonio/mlflowserver",
-              "defaultImageVersion": "1.10.0-dev"
+              "defaultImageVersion": "1.11.0-dev"
               },
             "kfserving": {
               "image": "seldonio/mlserver",
-              "defaultImageVersion": "0.4.0.dev1"
+              "defaultImageVersion": "0.4.0"
               }
             }
         },
@@ -77,7 +77,7 @@ data:
           "protocols" : {
             "kfserving": {
               "image": "seldonio/mlserver",
-              "defaultImageVersion": "0.3.2"
+              "defaultImageVersion": "0.4.0"
               }
             }
         },
