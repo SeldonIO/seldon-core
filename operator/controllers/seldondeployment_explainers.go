@@ -142,6 +142,9 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		if mlDep.Spec.Protocol == machinelearningv1.ProtocolTensorflow {
 			explainerProtocol = string(machinelearningv1.ProtocolTensorflow)
 		}
+		if mlDep.Spec.Protocol == machinelearningv1.ProtocolKfserving {
+			explainerProtocol = string(machinelearningv1.ProtocolKfserving)
+		}
 
 		if customPort == nil {
 			explainerContainer.Ports = append(explainerContainer.Ports, corev1.ContainerPort{Name: portType, ContainerPort: portNum, Protocol: corev1.ProtocolTCP})
@@ -201,6 +204,15 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 
 		deploy := createDeploymentWithoutEngine(depName, seldonId, &seldonPodSpec, p, mlDep, podSecurityContect)
 
+		// Set replicas to zero if main predictor or graph has zero replicas otherwise set to explainer replicas
+		if p.Replicas != nil && *p.Replicas == 0 {
+			deploy.Spec.Replicas = p.Replicas
+		} else if p.Replicas == nil && mlDep.Spec.Replicas != nil && *mlDep.Spec.Replicas == 0 {
+			deploy.Spec.Replicas = mlDep.Spec.Replicas
+		} else {
+			deploy.Spec.Replicas = p.Explainer.Replicas
+		}
+
 		if p.Explainer.ModelUri != "" {
 			var err error
 
@@ -209,6 +221,10 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 			if err != nil {
 				return err
 			}
+		}
+
+		if p.Explainer.ServiceAccountName != "" {
+			deploy.Spec.Template.Spec.ServiceAccountName = p.Explainer.ServiceAccountName
 		}
 
 		// for explainer use same service name as its Deployment

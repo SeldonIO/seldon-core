@@ -18,8 +18,8 @@ spec:
       children: []
       endpoint:
         service_host: 0.0.0.0
-        http_port: 9001
-        grpc_port: 5001
+        httpPort: 9001
+        grpcPort: 5001
       name: classifier
       type: MODEL
       logger:

@@ -30,7 +30,7 @@ curl_metadata:
 
 
 grpc_test:
-	cd ${BASE}/api/grpc/kfserving/inference && grpcurl -d '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' -plaintext -proto ./grpc_service.proto  0.0.0.0:5000 inference.GRPCInferenceService/ModelInfer
+	cd ${BASE}/api/grpc/kfserving/inference && grpcurl -v -d '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' -plaintext -proto ./grpc_service.proto  0.0.0.0:5000 inference.GRPCInferenceService/ModelInfer
 
 grpc_status:
 	cd ${BASE}/api/grpc/kfserving/inference && grpcurl -d '{"name":"simple"}' -plaintext -proto ./grpc_service.proto  0.0.0.0:5000 inference.GRPCInferenceService/ModelReady
@@ -41,5 +41,3 @@ grpc_status_triton:
 
 grpc_metadata:
 	cd ${BASE}/api/grpc/kfserving/inference && grpcurl -d '{"name":"simple"}' -plaintext -proto ./grpc_service.proto  0.0.0.0:5000 inference.GRPCInferenceService/ModelMetadata
-
-

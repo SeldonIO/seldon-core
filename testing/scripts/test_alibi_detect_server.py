@@ -21,6 +21,10 @@ from seldon_e2e_utils import (
     wait_for_status,
 )
 
+AFTER_WAIT_SLEEP = 20
+TENACITY_WAIT = 10
+TENACITY_STOP_AFTER_ATTEMPT = 5
+
 
 class TestADServer:
     truck_json = "../../components/alibi-detect-server/cifar10-v2.json"
@@ -44,12 +48,15 @@ class TestADServer:
 
         wait_for_deployment(name, namespace)
 
-        time.sleep(10)
+        time.sleep(AFTER_WAIT_SLEEP)
 
         with open(self.truck_json) as f:
             data = json.load(f)
 
-        for attempt in Retrying(wait=wait_fixed(10), stop=stop_after_attempt(4)):
+        for attempt in Retrying(
+            wait=wait_fixed(TENACITY_WAIT),
+            stop=stop_after_attempt(TENACITY_STOP_AFTER_ATTEMPT),
+        ):
             with attempt:
                 r = requests.post(
                     f"http://localhost:8004/{vs_prefix}/",
@@ -66,10 +73,17 @@ class TestADServer:
         with open(self.truck_json_outlier) as f:
             data = json.load(f)
 
-        r = requests.post(
-            f"http://localhost:8004/{vs_prefix}/", json=data, headers=self.HEADERS
-        )
-        j = r.json()
+        for attempt in Retrying(
+            wait=wait_fixed(TENACITY_WAIT),
+            stop=stop_after_attempt(TENACITY_STOP_AFTER_ATTEMPT),
+        ):
+            with attempt:
+                r = requests.post(
+                    f"http://localhost:8004/{vs_prefix}/",
+                    json=data,
+                    headers=self.HEADERS,
+                )
+                j = r.json()
 
         assert j["data"]["is_outlier"][0] == 1
         assert j["meta"]["name"] == "OutlierVAE"
@@ -88,12 +102,15 @@ class TestADServer:
 
         wait_for_deployment(name, namespace)
 
-        time.sleep(10)
+        time.sleep(AFTER_WAIT_SLEEP)
 
         with open(self.truck_json) as f:
             data = json.load(f)
 
-        for attempt in Retrying(wait=wait_fixed(10), stop=stop_after_attempt(4)):
+        for attempt in Retrying(
+            wait=wait_fixed(TENACITY_WAIT),
+            stop=stop_after_attempt(TENACITY_STOP_AFTER_ATTEMPT),
+        ):
             with attempt:
                 r = requests.post(
                     f"http://localhost:8004/{vs_prefix}/",
@@ -110,10 +127,17 @@ class TestADServer:
         with open(self.truck_json_outlier) as f:
             data = json.load(f)
 
-        r = requests.post(
-            f"http://localhost:8004/{vs_prefix}/", json=data, headers=self.HEADERS
-        )
-        j = r.json()
+        for attempt in Retrying(
+            wait=wait_fixed(TENACITY_WAIT),
+            stop=stop_after_attempt(TENACITY_STOP_AFTER_ATTEMPT),
+        ):
+            with attempt:
+                r = requests.post(
+                    f"http://localhost:8004/{vs_prefix}/",
+                    json=data,
+                    headers=self.HEADERS,
+                )
+                j = r.json()
 
         assert j["data"]["is_outlier"][0] == 1
         assert j["meta"]["name"] == "OutlierVAE"

@@ -2,7 +2,7 @@
 #
 
 # You can set these variables from the command line.
-SPHINXOPTS    = -j auto -n
+SPHINXOPTS    = -n
 SPHINXBUILD   = sphinx-build
 SOURCEDIR     = source
 BUILDDIR      = _build
@@ -32,7 +32,7 @@ linkcheck:
 	# Check for links reported as broken, ignoring 429 (too many requests)
 	- LINKCHECK=true $(SPHINXBUILD) \
 		-b linkcheck \
-		 $(SPHINXOPTS) \
+		-j auto $(SPHINXOPTS) \
 		"$(SOURCEDIR)" \
 		"$(BUILDDIR)"
 	! grep -v '429' _build/output.txt | grep 'broken'
@@ -41,13 +41,13 @@ linkcheck:
 livehtml:
 	sphinx-autobuild \
 		-b html \
-		--ignore "*~" $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)"
+		--ignore "*~" -j auto $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)"
 
 livehtml-fast:
 	FAST_BUILD=true sphinx-autobuild \
 		 -b html \
 		 --ignore "*~" \
-		 $(SPHINXOPTS) \
+		 -j auto $(SPHINXOPTS) \
 		 "$(SOURCEDIR)" \
 		 "$(BUILDDIR)"
 

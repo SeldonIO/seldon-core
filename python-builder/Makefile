@@ -1,5 +1,5 @@
 DOCKER_IMAGE_NAME=seldonio/python-builder
-DOCKER_IMAGE_VERSION=0.4
+DOCKER_IMAGE_VERSION=0.5
 
 build_docker_image:
 	docker build --force-rm=true -t $(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION) .

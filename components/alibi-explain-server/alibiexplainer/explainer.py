@@ -35,6 +35,7 @@ from alibi.api.interfaces import Explanation
 import grpc
 import tensorflow as tf
 import alibiexplainer.seldon_http as seldon
+import alibiexplainer.v2_http as v2
 import requests
 import os
 from alibiexplainer.model import ExplainerModel
@@ -43,13 +44,15 @@ from tensorflow import keras
 SELDON_LOGLEVEL = os.environ.get('SELDON_LOGLEVEL', 'INFO').upper()
 logging.basicConfig(level=SELDON_LOGLEVEL)
 GRPC_MAX_MSG_LEN = 1000000000
-TENSORFLOW_PREDICTOR_URL_FORMAT = "http://{0}/v1/models/:predict"
+TENSORFLOW_PREDICTOR_URL_FORMAT = "http://{0}/v1/models/{1}:predict"
 SELDON_PREDICTOR_URL_FORMAT = "http://{0}/api/v0.1/predictions"
+V2_PREDICTOR_URL_FORMAT = "http://{0}/v2/models/{1}/infer"
 
 class Protocol(Enum):
     tensorflow_http = "tensorflow.http"
     seldon_http = "seldon.http"
     seldon_grpc = "seldon.grpc"
+    v2_http = "kfserving.http"
 
     def __str__(self):
         return self.value
@@ -83,6 +86,9 @@ class AlibiExplainer(ExplainerModel):
         self.protocol = protocol
         self.tf_data_type = tf_data_type
         logging.info("Protocol is %s",str(self.protocol))
+        self.v2_name = None
+        self.v2_type = None
+        self.v2_model_name = None
 
         # Add type for first value to help pass mypy type checks
         if self.method is ExplainerMethod.anchor_tabular:
@@ -127,21 +133,47 @@ class AlibiExplainer(ExplainerModel):
                 else:
                     instances.append(req_data)
             request = {"instances": instances}
+            print(self.predictor_host)
             response = requests.post(
-                TENSORFLOW_PREDICTOR_URL_FORMAT.format(self.predictor_host),
+                TENSORFLOW_PREDICTOR_URL_FORMAT.format(self.predictor_host, self.v2_model_name),
                 json.dumps(request)
             )
             if response.status_code != 200:
                 raise Exception(
                     "Failed to get response from model return_code:%d" % response.status_code)
             return np.array(response.json()["predictions"])
+        elif self.protocol == Protocol.v2_http:
+            rh = v2.KFServingV2RequestHandler()
+            request = rh.create_request(arr, self.v2_name, self.v2_type)
+            logging.info("url %s",V2_PREDICTOR_URL_FORMAT.format(self.predictor_host, self.v2_model_name))
+            response = requests.post(
+                V2_PREDICTOR_URL_FORMAT.format(self.predictor_host, self.v2_model_name),
+                json.dumps(request)
+            )
+            if response.status_code != 200:
+                raise Exception(
+                    "Failed to get response from model return_code:%d" % response.status_code)
+            response_json = response.json()
+            arr = rh.extract_response(response_json)
+            return arr
 
-    def explain(self, request: Dict) -> Any:
+
+    def explain(self, request: Dict, model_name=None) -> Any:
         if self.method is ExplainerMethod.anchor_tabular or self.method is ExplainerMethod.anchor_images or \
                 self.method is ExplainerMethod.anchor_text or self.method is ExplainerMethod.kernel_shap or \
                 self.method is ExplainerMethod.integrated_gradients or self.method is ExplainerMethod.tree_shap:
             if self.protocol == Protocol.tensorflow_http:
+                self.v2_model_name = model_name
                 explanation: Explanation = self.wrapper.explain(request["instances"])
+            elif self.protocol == Protocol.v2_http:
+                logging.info("model name %s", model_name)
+                rh = v2.KFServingV2RequestHandler()
+                self.v2_model_name = model_name
+                self.v2_name = rh.extract_name(request)
+                self.v2_type = rh.extract_type(request)
+                logging.info("v2 name from inputs %s:", self.v2_name)
+                response_list = rh.extract_request(request)
+                explanation = self.wrapper.explain(response_list)
             else:
                 rh = seldon.SeldonRequestHandler(request)
                 response_list = rh.extract_request()

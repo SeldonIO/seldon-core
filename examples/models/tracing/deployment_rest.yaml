@@ -11,7 +11,7 @@ spec:
         containers:
         - env:
           - name: TRACING
-            value: '1'
+            value: '0'
           - name: JAEGER_AGENT_HOST
             valueFrom:
               fieldRef:
@@ -22,7 +22,7 @@ spec:
             value: const
           - name: JAEGER_SAMPLER_PARAM
             value: '1'
-          image: seldonio/mock_classifier_rest:1.3
+          image: seldonio/mock_classifier:1.9.0-dev
           name: model1
         terminationGracePeriodSeconds: 1
     graph:

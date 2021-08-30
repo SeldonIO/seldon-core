@@ -1,9 +1,12 @@
 IMAGE_VERSION := $(shell cat ../../../version.txt)
 SHELL:=/bin/bash
 
-PYTHON_VERSION=3.7
-CONDA_VERSION=4.7.12
-IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | sed 's/\.//g'`
+PYTHON_VERSION=3.7.10
+
+CONDA_DOWNLOAD_VERSION=4.7.12
+CONDA_VERSION=4.10.3
+
+IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | cut -d. -f1-2 | sed 's/\.//g'`
 DEFAULT_IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | cut -d. -f1`
 IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python${IMAGE_PYTHON_VERSION}
 DEFAULT_IMAGE_NAME = docker.io/seldonio/seldon-core-s2i-python${DEFAULT_IMAGE_PYTHON_VERSION}
@@ -21,22 +24,15 @@ get_local_repo:
 	cp ../../../version.txt version.txt
 	cp -r $(SELDON_CORE_DIR)/python _python
 
+
 .PHONY: build
 build: get_local_repo
-	set -x && docker build -f Dockerfile --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${BASE_IMAGE} -t $(IMAGE_NAME):$(IMAGE_VERSION) .
+	set -x && docker build -f Dockerfile --build-arg IMAGE_VERSION=${IMAGE_VERSION} --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${CONDA_BASE_IMAGE} -t $(IMAGE_NAME):$(IMAGE_VERSION) .
+	docker tag  $(IMAGE_NAME):$(IMAGE_VERSION) $(IMAGE_NAME)-ubi8:$(IMAGE_VERSION)
 
 .PHONY: build_gpu
 build_gpu: get_local_repo
-	docker build -f Dockerfile.gpu --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} -t ${GPU_IMAGE_NAME}:${IMAGE_VERSION} .
-
-.PHONY: build_local
-build_local: get_local_repo
-	set -x && docker build -f Dockerfile.local --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${BASE_IMAGE} -t $(IMAGE_NAME):$(IMAGE_VERSION) .
-
-.PHONY: build_redhat
-build_redhat: get_local_repo
-	set -x && docker build -f Dockerfile.redhat --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${CONDA_BASE_IMAGE} -t $(IMAGE_NAME)-ubi8:$(IMAGE_VERSION) .
-
+	set -x && docker build -f Dockerfile.gpu --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg CONDA_DOWNLOAD_VERSION=${CONDA_DOWNLOAD_VERSION} -t ${GPU_IMAGE_NAME}:${IMAGE_VERSION} .
 
 
 tag_base_python:
@@ -47,9 +43,8 @@ push_to_dockerhub_base_python:
 
 push_to_dockerhub:
 	docker push $(IMAGE_NAME):$(IMAGE_VERSION)
-
-push_redhat_to_dockerhub:
 	docker push $(IMAGE_NAME)-ubi8:$(IMAGE_VERSION)
+
 
 push_gpu_to_dockerhub:
 	docker push ${GPU_IMAGE_NAME}:${IMAGE_VERSION}
@@ -61,7 +56,7 @@ test:
 
 .PHONY: test_local
 test_local:
-	docker build -f Dockerfile.local --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${BASE_IMAGE} -t $(IMAGE_NAME)-candidate .
+	docker build -f Dockerfile --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${BASE_IMAGE} -t $(IMAGE_NAME)-candidate .
 	IMAGE_NAME=$(IMAGE_NAME)-candidate test/run
 
 .PHONY: clean
@@ -79,4 +74,7 @@ after_build_image_seldon_core_check:
 
 
 build_conda_base:
-	docker build -f Dockerfile.conda --build-arg CONDA_VERSION=${CONDA_VERSION} -t ${CONDA_BASE_IMAGE}:${CONDA_VERSION} .
+	docker build -f Dockerfile.conda --build-arg CONDA_DOWNLOAD_VERSION=${CONDA_DOWNLOAD_VERSION} -t ${CONDA_BASE_IMAGE}:${IMAGE_VERSION} .
+
+push_to_dockerhub_conda_base:
+	docker push $(CONDA_BASE_IMAGE):$(IMAGE_VERSION)

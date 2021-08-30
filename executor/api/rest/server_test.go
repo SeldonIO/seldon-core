@@ -706,6 +706,5 @@ func TestTensorflowModelBadModelName(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/v1/models/xyz/:predict", strings.NewReader(data))
 	res := httptest.NewRecorder()
 	r.Router.ServeHTTP(res, req)
-	g.Expect(res.Code).To(Equal(500))
-	g.Expect(res.Header().Get("Content-Type")).To(Equal(test.TestContentType))
+	g.Expect(res.Code).To(Equal(200))
 }

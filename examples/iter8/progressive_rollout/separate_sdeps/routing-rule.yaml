@@ -1,0 +1,30 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: routing-rule
+  namespace: default
+spec:
+  gateways:
+  - istio-system/seldon-gateway
+  hosts:
+  - iris.example.com
+  http:
+  - route:
+    - destination:
+        host: iris-default.ns-baseline.svc.cluster.local
+        port:
+          number: 8000
+      headers:
+        response:
+          set:
+            version: iris-v1
+      weight: 100
+    - destination:
+        host: iris-default.ns-candidate.svc.cluster.local
+        port:
+          number: 8000
+      headers:
+        response:
+          set:
+            version: iris-v2
+      weight: 0

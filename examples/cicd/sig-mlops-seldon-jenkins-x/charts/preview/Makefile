@@ -12,7 +12,7 @@ else ifeq ($(OS),Linux)
 	sed -i -e "s/name:.*/name: $(APP_NAME)/" Chart.yaml
 	sed -i -e "s/name:.*/name: $(APP_NAME)/" values.yaml
 else
-	echo "platfrom $(OS) not supported to release from"
+	echo "platform $(OS) not supported to release from"
 	exit -1
 endif
 	echo "  version: $(PREVIEW_VERSION)" >> requirements.yaml

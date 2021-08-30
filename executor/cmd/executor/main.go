@@ -73,6 +73,8 @@ var (
 	kafkaTopicOut  = flag.String("kafka_output_topic", "", "The kafka output topic")
 	kafkaFullGraph = flag.Bool("kafka_full_graph", false, "Use kafka for internal graph processing")
 	kafkaWorkers   = flag.Int("kafka_workers", 4, "Number of kafka workers")
+	logKafkaBroker  = flag.String("log_kafka_broker", "", "The kafka log broker")
+	logKafkaTopic  = flag.String("log_kafka_topic", "", "The kafka log topic")
 	debug          = flag.Bool(
 		"debug",
 		util.GetEnvAsBool(debugEnvVar, debugDefault),
@@ -306,7 +308,10 @@ func main() {
 	}
 
 	//Start Logger Dispacther
-	loghandler.StartDispatcher(*logWorkers, logger, *sdepName, *namespace, *predictorName)
+	err = loghandler.StartDispatcher(*logWorkers, logger, *sdepName, *namespace, *predictorName, *logKafkaBroker, *logKafkaTopic)
+	if err != nil {
+		log.Fatal("Failed to start log dispatcher", err)
+	}
 
 	//Init Tracing
 	closer, err := tracing.InitTracing()

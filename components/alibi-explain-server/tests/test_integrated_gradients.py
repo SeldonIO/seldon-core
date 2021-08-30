@@ -29,6 +29,6 @@ def test_integrated_gradients():
     print('x_test shape:', x_test.shape)
 
     explanation = integrated_gradients.explain(x_test[0:1].tolist())
-    attrs = explanation.attributions
-    print(explanation.meta)
-    print('Attributions shape:', attrs.shape)
+    attrs = explanation["attributions"]
+    assert len(attrs) > 0
+    print(explanation)

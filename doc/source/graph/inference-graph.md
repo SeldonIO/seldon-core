@@ -84,7 +84,7 @@ It's possible to define complex graphs with ROUTERS, COMBINERS, and other compon
 
 ## Learn about all types through GoLang Reference
 
-You can learn more about the SeldonDeployment YAML definition by reading the the content on our [Kubernetes Seldon Deployment GoLang Types file](../reference/seldon-deployment.rst).
+You can learn more about the SeldonDeployment YAML definition by reading the content on our [Kubernetes Seldon Deployment GoLang Types file](../reference/seldon-deployment.rst).
 
 
 ## Image UserIds

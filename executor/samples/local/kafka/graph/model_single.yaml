@@ -17,7 +17,7 @@ spec:
       endpoint:
         type: REST
         service_host: 0.0.0.0
-        service_port: 9000
+        httpPort: 9001
       name: classifier
       type: MODEL
     labels:

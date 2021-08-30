@@ -19,7 +19,7 @@ See [example notebook](../examples/protocol_examples.html).
 ## REST and gRPC Tensorflow Protocol
 
    * [REST Tensorflow Protocol definition](https://github.com/tensorflow/serving/blob/master/tensorflow_serving/g3doc/api_rest.md).
-   * [gRPC Tensorflow Procotol definition](https://github.com/tensorflow/serving/blob/master/tensorflow_serving/apis/prediction_service.proto).
+   * [gRPC Tensorflow Protocol definition](https://github.com/tensorflow/serving/blob/master/tensorflow_serving/apis/prediction_service.proto).
 
 Activate this protocol by speicfying `protocol: tensorflow` and `transport: rest` or `transport: grpc` in your Seldon Deployment. See [example notebook](../examples/protocol_examples.html). 
 
@@ -50,7 +50,7 @@ The core idea behind this joint effort is that this new protocol will become
 the standard inference protocol and will be used across multiple inference
 services.
 
-In Seldon Core, this protocol can be used by specifing `protocol: kfserving` on
+In Seldon Core, this protocol can be used by specifying `protocol: kfserving` on
 your `SeldonDeployment`. 
 For example, 
 
@@ -66,7 +66,7 @@ spec:
   - graph:
       children: []
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/sklearn/iris
+      modelUri: gs://seldon-models/v1.11.0-dev/sklearn/iris
       name: classifier
       parameters:
         - name: method
@@ -84,5 +84,6 @@ In particular,
 | [TRITON_SERVER](../servers/triton.md) | ✅ | [NVIDIA Triton](https://github.com/triton-inference-server/server) |
 | [SKLEARN_SERVER](../servers/sklearn.md) | ✅  | [Seldon MLServer](https://github.com/seldonio/mlserver) |
 | [XGBOOST_SERVER](../servers/xgboost.md) | ✅  | [Seldon MLServer](https://github.com/seldonio/mlserver) |
+| [MLFLOW_SERVER](../servers/mlflow.md) | ✅  | [Seldon MLServer](https://github.com/seldonio/mlserver) |
 
 You can try out the `kfserving` in [this example notebook](../examples/protocol_examples.html). 

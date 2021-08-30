@@ -6,19 +6,34 @@ If you were running our Openshift 0.4.2 certified operator and are looking to up
 
 Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed features and bug-fixes in each version.
 
+## Upgrading to 1.10
+
+### Server Updates
+
+ * SKLearn server has been updated to use sklearn 0.24.2
+ * XGBoost server has been updated to use xgboost 1.4.2
+
+### Alibi Server Updates
+
+ * Alibi has been updated to 0.6.0
+ * Alibi server python has been updated to 3.7.10
+
 ## Upgrading to 1.8
 
 ### Rclone Storage Initailizer
-In Seldon Core 1.8 the rclone-based [storage initalizer](https://github.com/SeldonIO/seldon-core/tree/master/components/rclone-storage-initializer) becomes the default one.
+In Seldon Core 1.8 the rclone-based [storage initializer](https://github.com/SeldonIO/seldon-core/tree/master/components/rclone-storage-initializer) becomes the default one.
 
 The storage initailizer image that is being used is controlled by the helm value:
 ```yaml
 storageInitializer:
-  image: seldonio/rclone-storage-initializer:1.8.0-dev
+  image: seldonio/rclone-storage-initializer:1.11.0-dev
 ```
 and can be customised on per-deployment basis as described in [Prepackaged Model Servers](../servers/overview.md) documentation by setting value of `storageInitializerImage` variable in the graph definition.
 
-This transition requires **creation of the new secrets** for the prepackaged model servers that will be compatible with the rclone configuration format as described [here](../servers/overview.md#handling-credentials).
+This transition requires **creation of the new secrets** for the prepackaged model servers that will be compatible with the rclone configuration format as described [here](../servers/overview.md#handling-credentials). Read more:
+
+- [How to test new secret format](../examples/rclone-upgrade.html)
+- [Example cluster upgrade for AWS/MinIO configuration](../examples/global-rclone-upgrade.html)
 
 If you do not wish to configure these secrets now and wish to preserve prior behaviour you can opt for usage of previous storage initializer by using following helm value:
 ```yaml
@@ -26,6 +41,16 @@ storageInitializer:
   image: gcr.io/kfserving/storage-initializer:v0.4.0
 ```
 See further documentation [here](../servers/kfserving-storage-initializer.md).
+
+
+### Request Logger
+
+In Seldon Core 1.9 we will be moving [seldon-request-logger](https://github.com/SeldonIO/seldon-core/tree/master/components/seldon-request-logger) to separate repository.
+
+
+### Legacy Java Engine Orchestrator
+
+In Seldon Core 1.9 final deprecation of Java Engine will happen with removal of all the related code from the repository.
 
 
 ## Upgrading to 1.7
@@ -38,16 +63,27 @@ Various CVEs were resolved via #2970, which included several packages upgrades w
 
 ### Webhook Removal
 
-As part of the 1.6.0 release we are removing the Seldon Core Mutating Webhook. This won't cause any noticable changes, but it is recommended that you manually remove the webhook once you upgrade to version 1.6.0
+As part of the 1.6.0 release we are removing the Seldon Core Mutating Webhook. This won't cause any noticeable changes, but it is recommended that you manually remove the webhook once you upgrade to version 1.6.0
 
 
 ## Upgrading to 1.5
 
 ### REST and gRPC
 
-To take advantage of the ability to handle both REST and gRPC on any deployed model python model images will need to be recreated using the 1.5 python wrapper. If they are not updated they will only expose the protocol they were orginally wrapped for.
+To take advantage of the ability to handle both REST and gRPC on any deployed model python model images will need to be recreated using the 1.5 python wrapper. If they are not updated they will only expose the protocol they were originally wrapped for.
 
 You can use and extend the [backwards compatibility notebook](../examples/backwards_compatibility.html) to check your deployments will work if you do not intend to upgrade them.
+
+## Upgrading to Kubernetes version >= 1.18
+
+If you have a Kubernetes cluster with Seldon Core installed, and you want to upgrade the Kubernetes cluster, you have to carry out a set of manual steps due to the more strict validation that this version of Kubernetes introduced.
+
+To be more specific, we had to provide two versions of the CRD as part of the seldon core install helm chart. Similarly the CRD for Seldon Core in Kubernetes post-1.18 is actually differnt - namely, you can actually see that in version 1.3.0 we introduced new CRD changes in the helm chart via an IF statement to use a different CRD depending on the k8s version. Due to this, the path to upgrade from pre-1.18 to post-1.18 requires the following manual steps to be carried out:
+
+1. Start with kubernetes cluster pre 1.18 with seldon core pre-1.3.0
+2. Upgrade Kubernetes cluster to post 1.18 (seldon core CRD is now "invalid" but still installed as still in etcd)
+3. Manually add "spec.preserveUnknownFields", to helm chart and install CRD (so it ignores invalid fields of now invalid CRD)
+4. Remove the "spec.preserveUnknownFields", from helm chart manually again, and re-install now the current CRD
 
 ## Upgrading to 1.3
 
@@ -151,7 +187,7 @@ The Python Wrapper was using naming convention in the format 0.1 ... 0.18. In th
 
 Whenever a new PR was merged to master, we have set up our CI to build a "SNAPSHOT" version, which would contain the Docker images for that specific development / master-branch code.
 
-Previously, we always had the SNAPSHOT tag being overriden with the latest. This didn't allow us to know what version someone may be trying out when using master, so we wanted to introduce a way to actually get unique tags for every image that gets landed into master.
+Previously, we always had the SNAPSHOT tag being overridden with the latest. This didn't allow us to know what version someone may be trying out when using master, so we wanted to introduce a way to actually get unique tags for every image that gets landed into master.
 
 Now every time that a PR is landed to master, a new "dated" SNAPSHOT version is created, which pushes images with the tag `"<next-version>-SNAPSHOT_<timestamp>"`. A new branch is also created with the name `"v<next-version>-SNAPSHOT_<timestamp>"`, which contains the respective helm charts, and allows for the specific version (as outlined by the version in `version.txt`) to be installed.
 

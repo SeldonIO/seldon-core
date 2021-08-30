@@ -1,0 +1,58 @@
+########################### Generic Configuration #############################
+
+seldon_system_namespace: seldon-system
+seldon_logs_namespace: seldon-logs
+
+seldon_namespaces: [ seldon ]
+
+
+######################## Seldon Core Configuration ############################
+
+# Version of Seldon Core to be installed, default: master
+# This can be any value accepted by "git checkout": branch, tag, SHA, HEAD, etc...
+seldon_core_version: v1.9.1
+
+# Local folder of already cloned Seldon Core git repository to be used.
+# If defined then `seldon_core_version` will be ignored.
+# seldon_core_source_dir: "~/work/seldon-core"
+
+# Helm Values used for Seldon Core installation
+seldon_core_values:
+  istio:
+    enabled: true
+    gateway: "seldon-gateway.istio-system.svc.cluster.local"
+
+  ambassador:
+    enabled: true
+
+############################ Istio Configuration ##############################
+
+# Version of Istio to be installed; defaults to 1.7.6
+istio_version: 1.10.3
+
+# This flag controls creation of Seldon Gateway, default: true
+istio_create_seldon_gateway: true
+
+
+########################### MinIO Configuration ###############################
+
+# Type of MinIO Service; default: ClusterIP
+minio_service_type: LoadBalancer
+
+# Name of rclone-compatible secret; default: seldon-rclone-secret
+# If set to "null" then secret will not be written
+minio_rclone_secret_name: seldon-rclone-secret
+
+# Name of rclone-compatible secret; default: null
+# If set to "null" then secret will not be written
+minio_kfserving_secret_name: seldon-kfserving-secret
+
+# List of namespaces to which MinIO secret should be written
+minio_secret_namespaces: "{{ seldon_namespaces }}"
+
+
+#################### Seldon Core Analytics Configuration ######################
+
+# Seldon Core Analytics version: helm chart version, default: null (latest)
+seldon_core_analytics_version: v1.9.1
+seldon_core_analytics_values: {}

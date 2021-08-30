@@ -18,9 +18,7 @@ The expected versions in the latest SKLearn pre-packaged server are as follows:
 
 | Package | Version |
 | ------ | ----- |
-| `scikit-learn` | `0.23.2` |
-| `joblib` | `0.16.0` |
-| `numpy` | `1.8.2` |
+| `scikit-learn` | `0.24.2` |
 
 To check compatibility requirements for older versions of Seldon Core you can
 see the [compatibility table below](#version-compatibility).
@@ -42,7 +40,7 @@ spec:
   - graph:
       children: []
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/sklearn/iris
+      modelUri: gs://seldon-models/v1.11.0-dev/sklearn/iris
       name: classifier
     name: default
     replicas: 1
@@ -70,7 +68,7 @@ spec:
   - graph:
       children: []
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/sklearn/iris
+      modelUri: gs://seldon-models/v1.11.0-dev/sklearn/iris
       name: classifier
       parameters:
         - name: method
@@ -113,7 +111,7 @@ spec:
   - graph:
       children: []
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/sklearn/iris
+      modelUri: gs://seldon-models/v1.11.0-dev/sklearn/iris
       name: classifier
       parameters:
         - name: method
@@ -161,7 +159,7 @@ spec:
     graph:
       children: []
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/sklearn/iris
+      modelUri: gs://seldon-models/v1.11.0-dev/sklearn/iris
       name: classifier
     name: default
     replicas: 1
@@ -178,7 +176,7 @@ existing SKLearn server to build your own.
 In particular, you could extend the code in the
 [`servers/sklearnserver`](https://github.com/SeldonIO/seldon-core/tree/master/servers/sklearnserver)
 folder to build a custom image.
-This image used for the `SKLEARN_SERVER` implementation can then be overriden
+This image used for the `SKLEARN_SERVER` implementation can then be overridden
 in the `componentSpecs`.
 
 Note that you can also change the image used globally for the SKLearn server by

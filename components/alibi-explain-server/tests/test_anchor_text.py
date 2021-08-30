@@ -24,7 +24,7 @@ from .utils import SKLearnServer
 import json
 import numpy as np
 
-MOVIE_MODEL_URI = "gs://seldon-models/sklearn/moviesentiment"
+MOVIE_MODEL_URI = "gs://seldon-models/sklearn/moviesentiment_sklearn_0.24.2"
 
 
 def test_anchor_text():

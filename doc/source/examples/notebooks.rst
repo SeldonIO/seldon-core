@@ -22,8 +22,10 @@ Prepackaged Inference Server Examples
    Deploy a Scikit-learn Model Binary <../servers/sklearn.md>
    Deploy a Tensorflow Exported Model <../servers/tensorflow.md>
    MLflow Pre-packaged Model Server A/B Test <mlflow_server_ab_test_ambassador>
+   MLflow v2 Protocol End to End Workflow (Incubating) <mlflow_v2_protocol_end_to_end>
    Deploy a XGBoost Model Binary <../servers/xgboost.md>
    Deploy Pre-packaged Model Server with Cluster's MinIO <minio-sklearn>
+   Custom Pre-packaged LightGBM Server <custom_server>
 
 Python Language Wrapper Examples
 --------------------------------
@@ -48,7 +50,7 @@ Specialised Framework Examples
    NVIDIA TensorRT MNIST <tensorrt>
    OpenVINO ImageNet <openvino>
    OpenVINO ImageNet Ensemble <openvino_ensemble>
-
+   Triton Examples <triton_examples>
 
 Incubating Projects Examples
 ----------------------------
@@ -76,6 +78,8 @@ Cloud-Specific Examples
    Azure AKS Tensorflow Deep MNIST <azure_aks_deep_mnist>
    GKE with GPU Tensorflow Deep MNIST <gpu_tensorflow_deep_mnist>
    Alibaba Cloud Tensorflow Deep MNIST <alibaba_ack_deep_mnist>
+   Triton GPT2 Example Azure <triton_gpt2_example_azure>
+   Setup for Triton GPT2 Example Azure <triton_gpt2_example_azure_setup>
 
 Advanced Machine Learning Insights
 ----------------------------------
@@ -127,6 +131,19 @@ Production Configurations and Integrations
    Custom Protobuf Data Example <customdata_example>
    Disruption Budgets Example <pdbs_example>
 
+AB Tests and Progressive Rollouts
+---------------------------------
+
+.. toctree::
+   :titlesonly:
+
+   Istio AB Test <istio_canary>
+   Ambassador AB Test <ambassador_canary>
+   Seldon/Iter8 - Progressive AB Test with Single Seldon Deployment <iter8-single>
+   Seldon/Iter8 - Progressive AB Test with Multiple Seldon Deployments <iter8-separate>
+
+
+
 Complex Graph Examples
 ----------------------
 
@@ -163,7 +180,20 @@ Benchmarking and Load Tests
 .. toctree::
    :titlesonly:
   
-   Service Orchestrator <bench_svcOrch>
-   Tensorflow <bench_tensorflow>   
-   Argo Workflows Benchmarking <vegeta_bench_argo_workflows>   
-   Backwards Compatability Tests <backwards_compatibility>
+   Service Orchestrator Overhead <bench_svcOrch>
+   Tensorflow Benchmark <bench_tensorflow>   
+   Argo Workflows Benchmarking <vegeta_bench_argo_workflows>
+   Python Serialization Cost Benchmark <python_serialization>
+   KMP_AFFINITY Benchmarking Example <python_kmp_affinity>
+   Kafka Payload Logging <kafka_logger>
+
+
+Upgrading Examples
+------------------
+
+.. toctree::
+   :titlesonly:
+
+   Backwards Compatibility Tests <backwards_compatibility>
+   RClone Storage Initializer - testing new secret format <rclone-upgrade>
+   RClone Storage Initializer - upgrading your cluster (AWS S3 / MinIO) <global-rclone-upgrade>

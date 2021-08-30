@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: ns-baseline
+---
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: iris
+  namespace: ns-baseline
+spec:
+  predictors:
+  - name: default
+    graph:
+      name: classifier
+      modelUri: gs://seldon-models/v1.11.0-dev/sklearn/iris
+      implementation: SKLEARN_SERVER

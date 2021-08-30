@@ -1,7 +1,7 @@
 FROM registry.access.redhat.com/ubi8/python-38
 LABEL name="Seldon Request Logger" \
       vendor="Seldon Technologies" \
-      version="1.8.0-dev" \
+      version="1.11.0-dev" \
       release="1" \
       summary="The payload logger for Seldon Core" \
       description="The Seldon Payload Logger allows request and response payloads from a Seldon Core inference graph to be processed and sent to an ELK endpoint"
@@ -23,8 +23,16 @@ RUN yum remove -y nodejs httpd
 
 USER default
 
-COPY app app
+ENV APP_ENV=production \
+  PATH="/home/appuser/.local/bin:${PATH}" \
+  PORT=8080 \
+  GUNICORN_WORKERS=3 \
+  GUNICORN_THREADS=8
 
-EXPOSE 8080
-ENTRYPOINT ["python"]
-CMD ["app/default_logger.py"]
+COPY app app
+WORKDIR app
+
+EXPOSE $PORT
+
+CMD gunicorn --bind 0.0.0.0:$PORT --workers $GUNICORN_WORKERS --threads $GUNICORN_THREADS default_logger:app
+

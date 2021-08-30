@@ -1,9 +1,12 @@
 import argparse
+import contextlib
 import importlib
 import json
 import logging
+import multiprocessing
 import multiprocessing as mp
 import os
+import socket
 import sys
 import time
 from distutils.util import strtobool
@@ -55,12 +58,12 @@ def start_servers(
     target1
        Main flask process
     target2
-       Auxilary flask process
+       Auxiliary flask process
 
     """
     p2 = None
     if target2:
-        p2 = mp.Process(target=target2, daemon=True)
+        p2 = mp.Process(target=target2, daemon=False)
         p2.start()
 
     p3 = None
@@ -258,7 +261,7 @@ def main():
     parser.add_argument(
         "--threads",
         type=int,
-        default=int(os.environ.get("GUNICORN_THREADS", "10")),
+        default=int(os.environ.get("GUNICORN_THREADS", "1")),
         help="Number of threads to run per Gunicorn worker.",
     )
     parser.add_argument(
@@ -323,6 +326,20 @@ def main():
         help="Enable gunicorn access log.",
     )
 
+    parser.add_argument(
+        "--grpc-threads",
+        type=int,
+        default=os.environ.get("GRPC_THREADS", default="1"),
+        help="Number of GRPC threads per worker.",
+    )
+
+    parser.add_argument(
+        "--grpc-workers",
+        type=int,
+        default=os.environ.get("GRPC_WORKERS", default="1"),
+        help="Number of GPRC workers.",
+    )
+
     args, remaining = parser.parse_known_args()
 
     if len(remaining) > 0:
@@ -364,9 +381,6 @@ def main():
     http_port = args.http_port
     grpc_port = args.grpc_port
     metrics_port = args.metrics_port
-
-    # if args.tracing:
-    #    tracer = setup_tracing(args.interface_name)
 
     seldon_metrics = SeldonMetrics(worker_id_func=os.getpid)
     # TODO why 2 ways to create metrics server
@@ -425,6 +439,7 @@ def main():
             UserModelApplication(
                 app,
                 user_object,
+                args.tracing,
                 jaeger_extra_tags,
                 args.interface_name,
                 options=options,
@@ -433,7 +448,16 @@ def main():
         logger.info("REST gunicorn microservice running on port %i", http_port)
         server1_func = rest_prediction_server
 
-    def grpc_prediction_server():
+    def _wait_forever(server):
+        try:
+            while True:
+                time.sleep(60 * 60)
+        except KeyboardInterrupt:
+            server.stop(None)
+
+    def _run_grpc_server(bind_address):
+        """Start a server in a subprocess."""
+        logger.info(f"Starting new GRPC server with {args.grpc_threads}.")
 
         if args.tracing:
             from grpc_opentracing import open_tracing_server_interceptor
@@ -449,6 +473,7 @@ def main():
             seldon_metrics,
             annotations=annotations,
             trace_interceptor=interceptor,
+            num_threads=args.grpc_threads,
         )
 
         try:
@@ -456,13 +481,42 @@ def main():
         except (NotImplementedError, AttributeError):
             pass
 
-        server.add_insecure_port(f"0.0.0.0:{grpc_port}")
-
+        server.add_insecure_port(bind_address)
         server.start()
+        _wait_forever(server)
 
-        logger.info("GRPC microservice Running on port %i", grpc_port)
-        while True:
-            time.sleep(1000)
+    @contextlib.contextmanager
+    def _reserve_grpc_port():
+        """Find and reserve a port for all subprocesses to use."""
+        sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+        if sock.getsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT) != 1:
+            raise RuntimeError("Failed to set SO_REUSEPORT.")
+        sock.bind(("", grpc_port))
+        try:
+            yield sock.getsockname()[1]
+        finally:
+            sock.close()
+
+    def grpc_prediction_server():
+        with _reserve_grpc_port() as bind_port:
+            bind_address = "0.0.0.0:{}".format(bind_port)
+            logger.info(
+                f"GRPC Server Binding to '%s' {bind_address} with {args.workers} processes"
+            )
+            sys.stdout.flush()
+            workers = []
+            for _ in range(args.grpc_workers):
+                # NOTE: It is imperative that the worker subprocesses be forked before
+                # any gRPC servers start up. See
+                # https://github.com/grpc/grpc/issues/16001 for more details.
+                worker = multiprocessing.Process(
+                    target=_run_grpc_server, args=(bind_address,)
+                )
+                worker.start()
+                workers.append(worker)
+            for worker in workers:
+                worker.join()
 
     server2_func = grpc_prediction_server
 

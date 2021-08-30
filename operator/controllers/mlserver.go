@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"fmt"
+	"github.com/seldonio/seldon-core/operator/utils"
 	"strconv"
 
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
@@ -15,6 +16,7 @@ const (
 	MLServerSKLearnImplementation = "mlserver_sklearn.SKLearnModel"
 	MLServerXGBoostImplementation = "mlserver_xgboost.XGBoostModel"
 	MLServerTempoImplementation   = "tempo.mlserver.InferenceRuntime"
+	MLServerMLFlowImplementation  = "mlserver_mlflow.MLflowRuntime"
 
 	MLServerHTTPPortEnv            = "MLSERVER_HTTP_PORT"
 	MLServerGRPCPortEnv            = "MLSERVER_GRPC_PORT"
@@ -36,13 +38,19 @@ func mergeMLServerContainer(existing *v1.Container, mlServer *v1.Container) *v1.
 	if existing.Image == "" {
 		existing.Image = mlServer.Image
 	}
-	
+
 	if existing.Env == nil {
 		existing.Env = []v1.EnvVar{}
 	}
 
-	// TODO: Allow overriding some of the env vars
-	existing.Env = append(existing.Env, mlServer.Env...)
+	for _, envVar := range existing.Env {
+		if utils.HasEnvVar(mlServer.Env, envVar.Name) {
+			mlServer.Env = utils.SetEnvVar(mlServer.Env, envVar)
+		} else {
+			mlServer.Env = append(mlServer.Env, envVar)
+		}
+	}
+	existing.Env = mlServer.Env
 
 	if existing.ReadinessProbe == nil {
 		existing.ReadinessProbe = mlServer.ReadinessProbe
@@ -208,8 +216,9 @@ func getMLServerModelImplementation(pu *machinelearningv1.PredictiveUnit) (strin
 		return MLServerXGBoostImplementation, nil
 	case machinelearningv1.PrepackTempoName:
 		return MLServerTempoImplementation, nil
+	case machinelearningv1.PrepackMlflowName:
+		return MLServerMLFlowImplementation, nil
+	default:
+		return "", nil
 	}
-
-	err := fmt.Errorf("invalid implementation: %s", *pu.Implementation)
-	return "", err
 }

@@ -1,0 +1,15 @@
+
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: sklearn-iris-rclone
+spec:
+  predictors:
+  - name: default
+    replicas: 1
+    graph:
+      name: classifier
+      implementation: SKLEARN_SERVER
+      modelUri: s3://sklearn/iris
+      envSecretRefName: seldon-rclone-secret
+      storageInitializerImage: seldonio/rclone-storage-initializer:1.9.1

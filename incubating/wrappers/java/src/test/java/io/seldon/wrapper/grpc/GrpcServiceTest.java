@@ -30,7 +30,7 @@ public class GrpcServiceTest {
     ArgumentCaptor<SeldonMessage> argument = ArgumentCaptor.forClass(SeldonMessage.class);
     verify(responseObserver).onNext(argument.capture());
     SeldonMessage response = argument.getAllValues().get(0);
-    Assert.assertEquals(1, response.getData().getTensor().getValuesCount());
+    Assert.assertEquals(0, response.getData().getTensor().getValuesCount());
   }
 
   @Test

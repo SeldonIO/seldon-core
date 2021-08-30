@@ -1,0 +1,14 @@
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: iris
+spec:
+  predictors:
+  - graph:
+      implementation: LIGHTGBM_SERVER
+      modelUri: gs://seldon-models/lightgbm/iris/model_3.2.1
+      name: irislgbm
+    name: default
+    replicas: 1
+
+

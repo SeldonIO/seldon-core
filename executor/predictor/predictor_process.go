@@ -372,7 +372,7 @@ func (p *PredictorProcess) Predict(node *v1.PredictiveUnit, msg payload.SeldonPa
 	}
 	cmsg, err := p.predictChildren(node, tmsg)
 	if err != nil {
-		return tmsg, err
+		return cmsg, err
 	}
 	response, err := p.transformOutput(node, cmsg)
 	// Log Response

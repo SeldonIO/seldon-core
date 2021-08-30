@@ -34,6 +34,9 @@ Seldon Core
    Seldon Client <examples/seldon_client>
    Server Examples <examples/server_examples>
 
+.. image:: ./images/core-logo-small.png
+   :alt: Seldon logo
+   :align: center
 
 An open source platform to deploy your machine learning models on Kubernetes at massive scale.
 
@@ -102,15 +105,17 @@ Documentation Index
    :maxdepth: 1
    :caption: Production
 
+   AB Tests and Progressive Rollouts <rollouts/abtests.md>
    Supported API Protocols <graph/protocols.md>
    CI/CD MLOps at Scale <analytics/cicd-mlops.md>
    Metrics with Prometheus <analytics/analytics.md>
    Model Metadata <reference/apis/metadata.md>
-   Payload Logging with ELK <analytics/logging.md>
+   Prediction Request Logging <analytics/logging.md>
    Distributed Tracing with Jaeger <graph/distributed-tracing.md>
    Replica Scaling  <graph/scaling.md>
    Budgeting Disruptions <graph/disruption-budgets.md>
    Custom Inference Servers <servers/custom.md>
+   Inference Optimization <production/optimization.md>
 
 .. toctree::
    :maxdepth: 1

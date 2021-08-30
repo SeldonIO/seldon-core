@@ -118,16 +118,12 @@ func init() {
 	istio_networking.GatewayUnmarshaler.AllowUnknownFields = true
 }
 
-func createAddressableResource(mlDep *machinelearningv1.SeldonDeployment, namespace string) (*machinelearningv1.SeldonAddressable, error) {
+func createAddressableResource(mlDep *machinelearningv1.SeldonDeployment, namespace string, externalPorts []httpGrpcPorts) (*machinelearningv1.SeldonAddressable, error) {
 	// It was an explicit design decision to expose the service name instead of the ingress
 	// Currently there will only be a URL for the first predictor, and assumes always REST
 	firstPredictor := &mlDep.Spec.Predictors[0]
 	sdepSvcName := machinelearningv1.GetPredictorKey(mlDep, firstPredictor)
-	addressablePort, err := getEngineHttpPort()
-	if err != nil {
-		return nil, err
-	}
-	addressableHost := sdepSvcName + "." + namespace + ".svc.cluster.local" + ":" + strconv.Itoa(addressablePort)
+	addressableHost := sdepSvcName + "." + namespace + ".svc.cluster.local" + ":" + strconv.Itoa(externalPorts[0].httpPort)
 	addressablePath := utils.GetPredictionPath(mlDep)
 	addressableUrl := url.URL{Scheme: "http", Host: addressableHost, Path: addressablePath}
 
@@ -231,7 +227,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 			Namespace: namespace,
 		},
 		Spec: istio_networking.VirtualService{
-			Hosts:    []string{"*"},
+			Hosts:    []string{getAnnotation(mlDep, ANNOTATION_ISTIO_HOST, "*")},
 			Gateways: []string{getAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
 			Http: []*istio_networking.HTTPRoute{
 				{
@@ -252,7 +248,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 			Namespace: namespace,
 		},
 		Spec: istio_networking.VirtualService{
-			Hosts:    []string{"*"},
+			Hosts:    []string{getAnnotation(mlDep, ANNOTATION_ISTIO_HOST, "*")},
 			Gateways: []string{getAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
 			Http: []*istio_networking.HTTPRoute{
 				{
@@ -626,7 +622,7 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 	}
 
 	// Create the addressable as all services are created when SeldonDeployment is ready
-	c.addressable, err = createAddressableResource(mlDep, namespace)
+	c.addressable, err = createAddressableResource(mlDep, namespace, externalPorts)
 	if err != nil {
 		return nil, err
 	}

@@ -6,7 +6,7 @@ groups:
       * 100)) > 75
     for: 2m
     labels:
-      context: unkown
+      context: unknown
       severity: page
     annotations:
       DESCRIPTION: '{{$labels.instance}}: CPU usage is above 75% (current value is:

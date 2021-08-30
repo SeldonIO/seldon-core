@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 from multiprocessing import Manager
@@ -14,15 +13,15 @@ from prometheus_client.core import (
 )
 from prometheus_client.utils import floatToGoString
 
+from seldon_core.env_utils import (
+    get_deployment_name,
+    get_image_name,
+    get_model_name,
+    get_predictor_name,
+    get_predictor_version,
+)
+
 logger = logging.getLogger(__name__)
-
-NONIMPLEMENTED_MSG = "NOT_IMPLEMENTED"
-
-ENV_SELDON_DEPLOYMENT_NAME = "SELDON_DEPLOYMENT_ID"
-ENV_MODEL_NAME = "PREDICTIVE_UNIT_ID"
-ENV_MODEL_IMAGE = "PREDICTIVE_UNIT_IMAGE"
-ENV_PREDICTOR_NAME = "PREDICTOR_ID"
-ENV_PREDICTOR_LABELS = "PREDICTOR_LABELS"
 
 FEEDBACK_KEY = "seldon_api_model_feedback"
 FEEDBACK_REWARD_KEY = "seldon_api_model_feedback_reward"
@@ -53,22 +52,18 @@ def split_image_tag(tag: str) -> Tuple[str]:
 
 
 # Development placeholder
-image = os.environ.get(ENV_MODEL_IMAGE, f"{NONIMPLEMENTED_MSG}:{NONIMPLEMENTED_MSG}")
+image = get_image_name()
 model_image, model_version = split_image_tag(image)
-predictor_version = json.loads(os.environ.get(ENV_PREDICTOR_LABELS, "{}")).get(
-    "version", f"{NONIMPLEMENTED_MSG}"
-)
+predictor_version = get_predictor_version()
 
 legacy_mode = os.environ.get("SELDON_EXECUTOR_ENABLED", "true").lower() == "false"
 
 DEFAULT_LABELS = {
-    "deployment_name": os.environ.get(
-        ENV_SELDON_DEPLOYMENT_NAME, f"{NONIMPLEMENTED_MSG}"
-    ),
-    "model_name": os.environ.get(ENV_MODEL_NAME, f"{NONIMPLEMENTED_MSG}"),
+    "deployment_name": get_deployment_name(),
+    "model_name": get_model_name(),
     "model_image": model_image,
     "model_version": model_version,
-    "predictor_name": os.environ.get(ENV_PREDICTOR_NAME, f"{NONIMPLEMENTED_MSG}"),
+    "predictor_name": get_predictor_name(),
     "predictor_version": predictor_version,
 }
 
@@ -101,7 +96,7 @@ class SeldonMetrics:
         self._manager.shutdown()
 
     def update_reward(self, reward: float):
-        """"Update metrics key corresponding to feedback reward counter."""
+        """Update metrics key corresponding to feedback reward counter."""
         if not reward or legacy_mode:
             return
         self.update(
@@ -143,7 +138,7 @@ class SeldonMetrics:
             elif metrics_type == "GAUGE":
                 worker_data[key] = {"value": metrics["value"], "tags": tags}
             else:
-                logger.error(f"Unkown metrics type: {metrics_type}")
+                logger.error(f"Unknown metrics type: {metrics_type}")
 
         # Write worker's data with lock (again - Proxy objects are not thread-safe)
         with self._lock:
@@ -256,17 +251,17 @@ def create_counter(key: str, value: float):
 
 def create_gauge(key: str, value: float) -> Dict:
     """
-    Utility method to create a guage metric
+    Utility method to create a gauge metric
     Parameters
     ----------
     key
-      Guage name
+      Gauge name
     value
-      Guage value
+      Gauge value
 
     Returns
     -------
-       Valid Guage metric dict
+       Valid Gauge metric dict
 
     """
     test = value + 1

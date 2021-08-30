@@ -70,9 +70,9 @@ Export your model binaries using the instructions provided in the requirements o
 
 ```python
 >>my_sklearn_model.train(...)
->>pickle.dumps(my_sklearn_model, "model.pickle")
+>>joblib.dump(my_sklearn_model, "model.joblib")
 
-[Created file at /mypath/model.pickle]
+[Created file at /mypath/model.joblib]
 ```
 
 **2. Upload your model to an object store**
@@ -82,9 +82,9 @@ You can upload your models into any of the object stores supported by our pre-pa
 For simplicity we have already uploaded it to the bucket so you can just proceed to the next step and run your model on Seldon Core.
 
 ```console
-$ gsutil cp model.pickle gs://seldon-models/sklearn/iris/model.pickle
+$ gsutil cp model.joblib gs://seldon-models/v1.11.0-dev/sklearn/iris/model.joblib
 
-[ Saved into gs://seldon-models/sklearn/iris/model.pickle ]
+[ Saved into gs://seldon-models/v1.11.0-dev/sklearn/iris/model.joblib ]
 ```
 
 **3. Deploy to Seldon Core in Kubernetes**
@@ -103,7 +103,7 @@ spec:
   predictors:
   - graph:
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/sklearn/iris
+      modelUri: gs://seldon-models/v1.11.0-dev/sklearn/iris
       name: classifier
     name: default
     replicas: 1
@@ -148,7 +148,7 @@ $ curl -X POST http://<ingress>/seldon/model-namespace/iris-model/api/v1.0/predi
 
 Below are the high level steps required to containerise your model using Seldon Core's Language Wrappers.
 
-Language wrappers are used for more custom use-cases that require dependencies that are not covered by our pre-packaged model servers. Langauge wrappers can be built using our graduated Python and Java wrappers - for further details check out our [Language Wrappers section](../wrappers/language_wrappers.html).
+Language wrappers are used for more custom use-cases that require dependencies that are not covered by our pre-packaged model servers. Language wrappers can be built using our graduated Python and Java wrappers - for further details check out our [Language Wrappers section](../wrappers/language_wrappers.html).
 
 **1. Export your model binaries and/or artifacts:**
 
@@ -156,9 +156,9 @@ In this case we are also exporting the model binaries/artifacts, but we will be 
 
 ```python
 >> my_sklearn_model.train(...)
->> pickle.dumps(my_sklearn_model, "model.pickle")
+>> joblib.dump(my_sklearn_model, "model.joblib")
 
-[Created file at /mypath/model.pickle]
+[Created file at /mypath/model.joblib]
 ```
 
 **2. Create a wrapper class Model.py**
@@ -170,7 +170,7 @@ The python SDK also allows for other functions such as `load` for loading logic,
 ```python
 class Model:
     def __init__(self):
-        self._model = pickle.loads("model.pickle")
+        self._model = joblib.load("model.joblib")
 
     def predict(self, X):
         output = self._model(X)
@@ -217,7 +217,7 @@ Now we can use the Seldon Core utilities to convert our python class into a full
 The result below is a container with the name `sklearn_iris` and the tag `0.1` which we will be able to deploy using Seldon Core.
 
 ```console
-s2i build . seldonio/seldon-core-s2i-python3:1.8.0-dev sklearn_iris:0.1
+s2i build . seldonio/seldon-core-s2i-python3:1.11.0-dev sklearn_iris:0.1
 ```
 
 **5. Deploy to Kubernetes**

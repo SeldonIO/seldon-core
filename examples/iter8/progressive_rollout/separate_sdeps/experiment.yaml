@@ -1,0 +1,67 @@
+apiVersion: iter8.tools/v2alpha2
+kind: Experiment
+metadata:
+  name: quickstart-exp
+spec:
+  target: iris
+  strategy:
+    testingPattern: A/B
+    deploymentPattern: Progressive
+    actions:
+      # when the experiment completes, promote the winning version using kubectl apply
+      finish:
+      - task: common/exec
+        with:
+          cmd: /bin/bash
+          args: [ "-c", "kubectl apply -f {{ .promote }}" ]
+  criteria:
+    requestCount: iter8-seldon/request-count
+    rewards: # Business rewards
+    - metric: iter8-seldon/user-engagement
+      preferredDirection: High # maximize user engagement
+    objectives:
+    - metric: iter8-seldon/mean-latency
+      upperLimit: 2000
+    - metric: iter8-seldon/95th-percentile-tail-latency
+      upperLimit: 5000
+    - metric: iter8-seldon/error-rate
+      upperLimit: "0.01"
+  duration:
+    intervalSeconds: 10
+    iterationsPerLoop: 10
+  versionInfo:
+    # information about model versions used in this experiment
+    baseline:
+      name: iris-v1
+      weightObjRef:
+        apiVersion: networking.istio.io/v1alpha3
+        kind: VirtualService
+        name: routing-rule
+        namespace: default
+        fieldPath: .spec.http[0].route[0].weight      
+      variables:
+      - name: ns
+        value: ns-baseline
+      - name: sid
+        value: iris
+      - name: predictor
+        value: default
+      - name: promote
+        value: https://raw.githubusercontent.com/SeldonIO/seldon-core/master/examples/iter8/progressive_rollout/separate_sdeps/promote-v1.yaml
+    candidates:
+    - name: iris-v2
+      weightObjRef:
+        apiVersion: networking.istio.io/v1alpha3
+        kind: VirtualService
+        name: routing-rule
+        namespace: default
+        fieldPath: .spec.http[0].route[1].weight      
+      variables:
+      - name: ns
+        value: ns-candidate
+      - name: sid
+        value: iris
+      - name: predictor
+        value: default
+      - name: promote
+        value: https://raw.githubusercontent.com/SeldonIO/seldon-core/master/examples/iter8/progressive_rollout/separate_sdeps/promote-v2.yaml

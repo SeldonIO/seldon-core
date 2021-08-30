@@ -2,18 +2,17 @@ approvers:
 - axsaucedo
 - gsunner
 - cliveseldon
-- ryandawsonuk
 - adriangonz
 - SachinVarghese
 - RafalSkolasinski
 - jklaise
 - ivan-valkov
+- majolo
 reviewers:
 - axsaucedo
 - gsunner
 - cliveseldon
 - jklaise
-- ryandawsonuk
 - gipster
 - arnaudvl
 - adriangonz
@@ -21,3 +20,4 @@ reviewers:
 - SachinVarghese
 - RafalSkolasinski
 - ivan-valkov
+- majolo

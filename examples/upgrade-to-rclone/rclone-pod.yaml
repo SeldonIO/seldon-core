@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rclone-pod
+spec:
+  containers:
+  - name: rclone
+    image: seldonio/rclone-storage-initializer:1.9.1
+    command: [ "/bin/sh", "-c", "--", "sleep 3600"]
+    envFrom:
+    - secretRef:
+        name: seldon-rclone-secret

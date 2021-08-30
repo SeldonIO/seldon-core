@@ -8,10 +8,9 @@ spec:
   transport: rest
   predictors:
   - graph:
-      children: []
+      name:  halfplustwo
       implementation: TENSORFLOW_SERVER
       modelUri: gs://seldon-models/tfserving/half_plus_two
-      name:  halfplustwo
       parameters:
         - name: model_name
           type: STRING

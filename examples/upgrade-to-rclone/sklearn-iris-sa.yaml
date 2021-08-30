@@ -1,0 +1,37 @@
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: minio-sa
+secrets:
+  - name: minio-sa-secret
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: minio-sa-secret
+  annotations:
+     machinelearning.seldon.io/s3-endpoint: minio.minio-system.svc.cluster.local:9000
+     machinelearning.seldon.io/s3-usehttps: "0"
+type: Opaque
+stringData:
+  awsAccessKeyID: "minioadmin"
+  awsSecretAccessKey: "minioadmin"
+
+---
+    
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: sklearn-iris-sa
+spec:
+  predictors:
+  - name: default
+    replicas: 1
+    graph:
+      name: classifier
+      implementation: SKLEARN_SERVER
+      modelUri: s3://sklearn/iris
+      serviceAccountName: minio-sa

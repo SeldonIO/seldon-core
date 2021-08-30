@@ -80,7 +80,9 @@ func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, prot
 
 	// Create Producer
 	log.Info("Creating producer", "broker", broker)
-	var producerConfigMap = kafka.ConfigMap{"bootstrap.servers": broker}
+	var producerConfigMap = kafka.ConfigMap{"bootstrap.servers": broker,
+    "go.delivery.reports": false, // Need this othewise will get memory leak
+  }
 	for _, value := range kafkaProducerEnvs {
 		producerConfigMap.SetKey(value[0], value[1])
 	}

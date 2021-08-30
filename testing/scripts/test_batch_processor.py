@@ -18,6 +18,8 @@ from seldon_e2e_utils import (
     wait_for_status,
 )
 
+logging.basicConfig(level=logging.DEBUG)
+
 
 class TestBatchWorker(object):
     def test_batch_worker(self, namespace):
@@ -35,6 +37,8 @@ class TestBatchWorker(object):
             for i in range(batch_size):
                 f.write("[[1,2,3,4]]\n")
 
+        logging.info("Sending first batch: mini-batch size=1")
+
         start_multithreaded_batch_worker(
             "sklearn",
             "istio",
@@ -45,6 +49,7 @@ class TestBatchWorker(object):
             "ndarray",
             100,
             3,
+            1,
             input_data_path,
             output_data_path,
             "predict",
@@ -53,11 +58,49 @@ class TestBatchWorker(object):
             str(uuid.uuid1()),
         )
 
+        logging.info("Finished first batch. Checking.")
+
         with open(output_data_path, "r") as f:
+            count = 0
             for line in f:
+                count += 1
                 output = json.loads(line)
                 # Ensure all requests are successful
                 assert output.get("data", {}).get("ndarray", False)
+            assert count == batch_size
+
+        logging.info("Sending first batch: mini-batch size=30")
+
+        # Now test that with a mini batch size of 30 works
+        start_multithreaded_batch_worker(
+            "sklearn",
+            "istio",
+            namespace,
+            API_ISTIO_GATEWAY,
+            "rest",
+            "data",
+            "ndarray",
+            100,
+            3,
+            30,
+            input_data_path,
+            output_data_path,
+            "predict",
+            "debug",
+            True,
+            str(uuid.uuid1()),
+        )
+
+        logging.info("Finished first batch. Checking.")
+
+        with open(output_data_path, "r") as f:
+            count = 0
+            for line in f:
+                count += 1
+                output = json.loads(line)
+                # Ensure all requests are successful
+                assert output.get("data", {}).get("ndarray", False)
+            assert count == batch_size
 
         logging.info("Success for test_batch_worker")
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
