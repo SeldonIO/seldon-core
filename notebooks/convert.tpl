@@ -10,6 +10,9 @@ time.sleep(5)
 {% elif "docker run" in super() %}
 {{ super() }}
 time.sleep(3)
+{% elif "kubectl wait" in super() %}
+{{ super() }}
+time.sleep(5)
 {% else %}
 {{ super().replace("'inline'","'agg'") }}
 {% endif %}
