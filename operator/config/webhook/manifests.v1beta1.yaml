@@ -27,8 +27,7 @@ webhooks:
     resources:
     - seldondeployments
   sideEffects: None
-- admissionReviewVersions: null
-  clientConfig:
+- clientConfig:
     service:
       name: webhook-service
       namespace: system
@@ -46,8 +45,7 @@ webhooks:
     resources:
     - seldondeployments
   sideEffects: None
-- admissionReviewVersions: null
-  clientConfig:
+- clientConfig:
     service:
       name: webhook-service
       namespace: system

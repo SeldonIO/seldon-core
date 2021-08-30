@@ -79,7 +79,9 @@ func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, prot
 
 	// Create Producer
 	log.Info("Creating producer", "broker", broker)
-	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": broker})
+	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": broker,
+		"go.delivery.reports": false, // Need this othewise will get memory leak
+	})
 	if err != nil {
 		return nil, err
 	}

@@ -185,6 +185,7 @@ Benchmarking and Load Tests
    Argo Workflows Benchmarking <vegeta_bench_argo_workflows>
    Python Serialization Cost Benchmark <python_serialization>
    KMP_AFFINITY Benchmarking Example <python_kmp_affinity>
+   Kafka Payload Logging <kafka_logger>
 
 
 Upgrading Examples

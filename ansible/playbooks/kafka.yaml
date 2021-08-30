@@ -1,0 +1,5 @@
+---
+- name: Install Strimzi Kafka
+  hosts: localhost
+  roles:
+    - seldonio.k8s.strimzi_kafka
