@@ -37,21 +37,22 @@ const (
 )
 
 type SeldonKafkaServer struct {
-	Client         client.SeldonApiClient
-	Producer       *kafka.Producer
-	DeploymentName string
-	Namespace      string
-	Transport      string
-	Predictor      *v1.PredictorSpec
-	Broker         string
-	TopicIn        string
-	TopicOut       string
-	ServerUrl      *url.URL
-	Workers        int
-	Log            logr.Logger
+	Client            client.SeldonApiClient
+	Producer          *kafka.Producer
+	DeploymentName    string
+	Namespace         string
+	Transport         string
+	Predictor         *v1.PredictorSpec
+	Broker            string
+	TopicIn           string
+	TopicOut          string
+	kafkaConsumerEnvs [][]string
+	ServerUrl         *url.URL
+	Workers           int
+	Log               logr.Logger
 }
 
-func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, protocol, transport string, annotations map[string]string, serverUrl *url.URL, predictor *v1.PredictorSpec, broker, topicIn, topicOut string, log logr.Logger) (*SeldonKafkaServer, error) {
+func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, protocol, transport string, annotations map[string]string, serverUrl *url.URL, predictor *v1.PredictorSpec, broker, topicIn, topicOut string, kafkaProducerEnvs [][]string, kafkaConsumerEnvs [][]string, log logr.Logger) (*SeldonKafkaServer, error) {
 	var apiClient client.SeldonApiClient
 	var err error
 	if fullGraph {
@@ -79,25 +80,30 @@ func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, prot
 
 	// Create Producer
 	log.Info("Creating producer", "broker", broker)
-	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": broker})
+	var producerConfigMap = kafka.ConfigMap{"bootstrap.servers": broker}
+	for _, value := range kafkaProducerEnvs {
+		producerConfigMap.SetKey(value[0], value[1])
+	}
+	p, err := kafka.NewProducer(&producerConfigMap)
 	if err != nil {
 		return nil, err
 	}
 	log.Info("Created", "producer", p.String())
 
 	return &SeldonKafkaServer{
-		Client:         apiClient,
-		Producer:       p,
-		DeploymentName: deploymentName,
-		Namespace:      namespace,
-		Transport:      transport,
-		Predictor:      predictor,
-		Broker:         broker,
-		TopicIn:        topicIn,
-		TopicOut:       topicOut,
-		ServerUrl:      serverUrl,
-		Workers:        workers,
-		Log:            log.WithName("KafkaServer"),
+		Client:            apiClient,
+		Producer:          p,
+		DeploymentName:    deploymentName,
+		Namespace:         namespace,
+		Transport:         transport,
+		Predictor:         predictor,
+		Broker:            broker,
+		TopicIn:           topicIn,
+		TopicOut:          topicOut,
+		kafkaConsumerEnvs: kafkaConsumerEnvs,
+		ServerUrl:         serverUrl,
+		Workers:           workers,
+		Log:               log.WithName("KafkaServer"),
 	}, nil
 }
 
@@ -135,12 +141,16 @@ func getProto(messageType string, messageBytes []byte) (proto2.Message, error) {
 }
 
 func (ks *SeldonKafkaServer) Serve() error {
-	c, err := kafka.NewConsumer(&kafka.ConfigMap{
+	var consumerConfigMap = kafka.ConfigMap{
 		"bootstrap.servers":     ks.Broker,
 		"broker.address.family": "v4",
 		"group.id":              ks.getGroupName(),
 		"session.timeout.ms":    6000,
-		"auto.offset.reset":     "earliest"})
+		"auto.offset.reset":     "earliest"}
+	for _, value := range ks.kafkaConsumerEnvs {
+		consumerConfigMap.SetKey(value[0], value[1])
+	}
+	c, err := kafka.NewConsumer(&consumerConfigMap)
 	if err != nil {
 		return err
 	}

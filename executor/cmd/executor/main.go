@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"strings"
 	"syscall"
 	"time"
 
@@ -202,6 +203,8 @@ func main() {
 		log.Fatal("Protocol must be seldon, tensorflow or kfserving")
 	}
 
+	var kafkaProducerEnvs [][]string
+	var kafkaConsumerEnvs [][]string
 	if *serverType == "kafka" {
 		// Get Broker
 		if *kafkaBroker == "" {
@@ -243,6 +246,20 @@ func main() {
 				log.Fatalf("Failed to parse %s %s", kafka.ENV_KAFKA_WORKERS, kafkaWorkersFromEnv)
 			} else {
 				*kafkaWorkers = kafkaWorkersFromEnvInt
+			}
+		}
+
+		//Kafka ConfigMap
+		for _, e := range os.Environ() {
+			pair := strings.SplitN(e, "=", 2)
+			pair[0] = strings.Replace(pair[0], "_", ".", -1)
+			pair[0] = strings.ToLower(pair[0])
+			if strings.HasPrefix(pair[0], "kafka.producer.") {
+				pair[0] = strings.Replace(pair[0], "kafka.producer.", "", 1)
+				kafkaProducerEnvs = append(kafkaProducerEnvs, pair)
+			} else if strings.HasPrefix(pair[0], "kafka.consumer.") {
+				pair[0] = strings.Replace(pair[0], "kafka.consumer.", "", 1)
+				kafkaConsumerEnvs = append(kafkaConsumerEnvs, pair)
 			}
 		}
 	}
@@ -300,7 +317,7 @@ func main() {
 
 	if *serverType == "kafka" {
 		logger.Info("Starting kafka server")
-		kafkaServer, err := kafka.NewKafkaServer(*kafkaFullGraph, *kafkaWorkers, *sdepName, *namespace, *protocol, *transport, annotations, serverUrl, predictor, *kafkaBroker, *kafkaTopicIn, *kafkaTopicOut, logger)
+		kafkaServer, err := kafka.NewKafkaServer(*kafkaFullGraph, *kafkaWorkers, *sdepName, *namespace, *protocol, *transport, annotations, serverUrl, predictor, *kafkaBroker, *kafkaTopicIn, *kafkaTopicOut, kafkaProducerEnvs, kafkaConsumerEnvs, logger)
 		if err != nil {
 			log.Fatalf("Failed to create kafka server: %v", err)
 		}
