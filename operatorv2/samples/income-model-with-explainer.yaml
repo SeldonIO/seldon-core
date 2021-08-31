@@ -1,0 +1,16 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: InferenceArtifact
+metadata:
+  name: income-model
+spec:
+  type: "sklearn"
+  storageUri: "gs://seldon-models/sklearn/income/model-0.23.2"
+--
+apiVersion: mlops.seldon.io/v1alpha1
+kind: InferenceExplainer
+metadata:
+  name: income-explainer
+spec:
+  storageUri: "gs://seldon-models/sklearn/income/explainer-py37-0.6.0"
+  modelRef: "income-model.default"
+

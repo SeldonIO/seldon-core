@@ -29,11 +29,18 @@ type InferenceExplainerSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
+	// The artifact type e.g. Alibi
+	// If not provided then Alibi is assumed
+	// +optional
+	Type string `json:"type,omitempty" protobuf:"bytes,1,opt,name=type"`
+	// The storage location of the saved explainer
+	// +optional
 	StorageURI string `json:"storageUri,omitempty" protobuf:"bytes,1,opt,name=storageUri"`
 	// Resources needed for artifact, cpu, memory etc
 	// +optional
 	Resources v1.ResourceList `json:"resources,omitempty" protobuf:"bytes,2,rep,name=resources,casttype=ResourceList,castkey=ResourceName"`
-	// Name of the InferenceServer to deploy this artifact
+	// Name of the InferenceServer to deploy this artifact.
+	// +optional
 	Server string `json:"server,omitempty" protobuf:"bytes,3,opt,name=server"`
 	// Whether the artifact can be run on a shared server
 	// +optional

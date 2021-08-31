@@ -1,0 +1,11 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: InferenceArtifact
+metadata:
+  name: sklearn-model
+spec:
+  type: "sklearn"
+  storageUri: "gs://seldon-models/sklearn/iris-0.23.2/lr_model"
+  resources:
+    memory: "10Mi"
+    cpu: 1
+  shared: true

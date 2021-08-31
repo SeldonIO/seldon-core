@@ -28,8 +28,11 @@ type InferenceGraphSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of InferenceGraph. Edit inferencegraph_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// The steps of this inference graph pipeline
+	Steps []InferenceStep `json:"steps" protobuf:"bytes,1,name=steps"`
+	// The associated explainers for this inference graph
+	// +optional
+	Explainers []GraphExplainersSpec `json:"explainers,omitempty" protobuf:"bytes,1,opt,name=explainers"`
 }
 
 // InferenceGraphStatus defines the observed state of InferenceGraph
