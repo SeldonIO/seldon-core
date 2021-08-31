@@ -13,7 +13,7 @@ import (
 	protoGrpc "google.golang.org/grpc"
 	protoGrpcMetadata "google.golang.org/grpc/metadata"
 	"net/url"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 type GrpcSeldonServer struct {

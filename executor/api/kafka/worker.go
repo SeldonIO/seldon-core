@@ -7,7 +7,7 @@ import (
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/predictor"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 type KafkaJob struct {

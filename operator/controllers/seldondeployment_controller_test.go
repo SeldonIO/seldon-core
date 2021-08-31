@@ -26,6 +26,7 @@ import (
 	. "github.com/onsi/gomega"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
+	testutils "github.com/seldonio/seldon-core/operator/controllers/testing"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscaling "k8s.io/api/autoscaling/v2beta1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta1"
@@ -34,12 +35,17 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/rand"
+	duckv1beta1 "knative.dev/pkg/apis/duck/v1beta1"
+)
+
+const (
+	TestTimout = time.Second * 60
 )
 
 var _ = Describe("Create a Seldon Deployment", func() {
-	const timeout = time.Second * 30
 	const interval = time.Second * 1
 	namespaceName := rand.String(10)
+	replicas := int32(1)
 	By("Creating a resource")
 	It("should create a resource with defaults", func() {
 		Expect(k8sClient).NotTo(BeNil())
@@ -74,6 +80,7 @@ var _ = Describe("Create a Seldon Deployment", func() {
 							Name: "classifier",
 							Type: &modelType,
 						},
+						Replicas: &replicas,
 					},
 				},
 			},
@@ -97,7 +104,7 @@ var _ = Describe("Create a Seldon Deployment", func() {
 		Eventually(func() error {
 			err := k8sClient.Get(context.Background(), key, fetched)
 			return err
-		}, timeout, interval).Should(BeNil())
+		}, TestTimout, interval).Should(BeNil())
 		Expect(fetched.Name).Should(Equal("dep"))
 
 		// Check deployment created
@@ -109,9 +116,22 @@ var _ = Describe("Create a Seldon Deployment", func() {
 		Eventually(func() error {
 			err := k8sClient.Get(context.Background(), depKey, depFetched)
 			return err
-		}, timeout, interval).Should(BeNil())
+		}, TestTimout, interval).Should(BeNil())
 		Expect(len(depFetched.Spec.Template.Spec.Containers)).Should(Equal(2))
 		Expect(*depFetched.Spec.Replicas).To(Equal(int32(1)))
+
+		//Update Deployment as pods not created with test client.
+		depUpdated := depFetched.DeepCopy()
+		depUpdated.Status.AvailableReplicas = replicas
+		depUpdated.Status.ReadyReplicas = replicas
+		depUpdated.Status.Replicas = replicas
+		depUpdated.Status.Conditions = []appsv1.DeploymentCondition{
+			{
+				Type:   appsv1.DeploymentAvailable,
+				Status: v1.ConditionTrue,
+			},
+		}
+		Expect(k8sClient.Status().Update(context.Background(), depUpdated)).Should(Succeed())
 
 		//Check svc created
 		svcKey := types.NamespacedName{
@@ -122,7 +142,7 @@ var _ = Describe("Create a Seldon Deployment", func() {
 		Eventually(func() error {
 			err := k8sClient.Get(context.Background(), svcKey, svcFetched)
 			return err
-		}, timeout, interval).Should(BeNil())
+		}, TestTimout, interval).Should(BeNil())
 
 		// Check events created
 		serviceCreatedEvents := 0
@@ -139,6 +159,56 @@ var _ = Describe("Create a Seldon Deployment", func() {
 
 		Expect(serviceCreatedEvents).To(Equal(2))
 		Expect(deploymentsCreatedEvents).To(Equal(1))
+
+		// Wait for sdep to update status
+		Eventually(func() int32 {
+			err := k8sClient.Get(context.Background(), key, fetched)
+			if err != nil {
+				return 0
+			}
+			return fetched.Status.Replicas
+		}, TestTimout, interval).Should(Equal(replicas))
+		Expect(fetched.Name).Should(Equal("dep"))
+
+		conditions := duckv1beta1.Conditions{
+			{
+				Type:   machinelearningv1.DeploymentsReady,
+				Status: "True",
+				Reason: "",
+			},
+			{
+				Type:   machinelearningv1.HpasReady,
+				Status: "True",
+				Reason: machinelearningv1.HpaNotDefinedReason,
+			},
+			{
+				Type:   machinelearningv1.KedaReady,
+				Status: "True",
+				Reason: machinelearningv1.KedaNotDefinedReason,
+			},
+			{
+				Type:   machinelearningv1.PdbsReady,
+				Status: "True",
+				Reason: machinelearningv1.PdbNotDefinedReason,
+			},
+			{
+				Type:   "Ready",
+				Status: "True",
+				Reason: "",
+			},
+			{
+				Type:   machinelearningv1.ServicesReady,
+				Status: "True",
+				Reason: machinelearningv1.SvcReadyReason,
+			},
+			{
+				Type:   machinelearningv1.VirtualServicesReady,
+				Status: "True",
+				Reason: machinelearningv1.VirtualServiceReady,
+			},
+		}
+
+		Expect(fetched.Status.Conditions).Should(testutils.BeSematicEqual(conditions))
 
 		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
 
