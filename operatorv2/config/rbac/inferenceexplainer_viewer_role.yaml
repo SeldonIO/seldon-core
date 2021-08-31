@@ -1,0 +1,20 @@
+# permissions for end users to view inferenceexplainers.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: inferenceexplainer-viewer-role
+rules:
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - inferenceexplainers
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - inferenceexplainers/status
+  verbs:
+  - get

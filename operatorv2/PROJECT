@@ -1,0 +1,44 @@
+domain: seldon.io
+layout:
+- go.kubebuilder.io/v3
+multigroup: true
+projectName: operatorv2
+repo: github.com/seldonio/seldon-core/operatorv2
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: seldon.io
+  group: mlops
+  kind: InferenceArtifact
+  path: github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1
+  version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: seldon.io
+  group: mlops
+  kind: InferenceServer
+  path: github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1
+  version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: seldon.io
+  group: mlops
+  kind: InferenceGraph
+  path: github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1
+  version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: seldon.io
+  group: mlops
+  kind: InferenceExplainer
+  path: github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1
+  version: v1alpha1
+version: "3"

@@ -1,0 +1,24 @@
+# permissions for end users to edit inferencegraphs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: inferencegraph-editor-role
+rules:
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - inferencegraphs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - inferencegraphs/status
+  verbs:
+  - get

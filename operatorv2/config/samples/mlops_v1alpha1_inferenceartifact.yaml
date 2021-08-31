@@ -1,0 +1,7 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: InferenceArtifact
+metadata:
+  name: inferenceartifact-sample
+spec:
+  # Add fields here
+  foo: bar
