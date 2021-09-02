@@ -3,7 +3,7 @@
 
 ## Slack Channel
 
-For any questions, as well as to keep up to date with any announcements please feel free to [join our Slack Channel through this link](https://join.slack.com/t/seldondev/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU).
+For any questions, as well as to keep up to date with any announcements please feel free to [join our Slack Channel through this link](https://join.slack.com/t/seldondev/shared_invite/zt-vejg6ttd-ksZiQs3O_HOtPQsen_labg).
 
 ## Working Group Calls
 
