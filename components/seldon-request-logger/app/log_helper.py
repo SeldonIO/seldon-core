@@ -34,7 +34,7 @@ def extract_request_id(headers):
         request_id = headers.get(CLOUD_EVENT_ID)
     return request_id
 
-def build_index_name(headers, prefix = None, suffix = True, nameOverride = None):
+def build_index_name(headers, prefix = None, suffix = True, name_override = None):
     # use a fixed index name if user chooses to do so
     index_name = os.getenv("INDEX_NAME")
     if index_name:
@@ -56,13 +56,13 @@ def build_index_name(headers, prefix = None, suffix = True, nameOverride = None)
         index_name = index_name + "-unknown-namespace"
     else:
         index_name = index_name + "-" + namespace
-    if nameOverride is None:
+    if name_override is None:
         inference_service_name = clean_header(INFERENCESERVICE_HEADER_NAME, headers)
         # won't get inference service name for older kfserving versions i.e. prior to https://github.com/kubeflow/kfserving/pull/699/
         if not inference_service_name:
             inference_service_name = clean_header(MODELID_HEADER_NAME, headers)
     else:
-        inference_service_name = nameOverride
+        inference_service_name = name_override
     if not inference_service_name:
         index_name = index_name + "-unknown-inferenceservice"
     else:
