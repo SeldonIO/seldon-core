@@ -20,12 +20,12 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"k8s.io/client-go/kubernetes"
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
+	"knative.dev/pkg/apis"
 	"net/url"
 	"strconv"
 	"strings"
-
-	"k8s.io/client-go/kubernetes"
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	types2 "github.com/gogo/protobuf/types"
 	"github.com/seldonio/seldon-core/operator/constants"
@@ -118,16 +118,12 @@ func init() {
 	istio_networking.GatewayUnmarshaler.AllowUnknownFields = true
 }
 
-func createAddressableResource(mlDep *machinelearningv1.SeldonDeployment, namespace string) (*machinelearningv1.SeldonAddressable, error) {
+func createAddressableResource(mlDep *machinelearningv1.SeldonDeployment, namespace string, externalPorts []httpGrpcPorts) (*machinelearningv1.SeldonAddressable, error) {
 	// It was an explicit design decision to expose the service name instead of the ingress
 	// Currently there will only be a URL for the first predictor, and assumes always REST
 	firstPredictor := &mlDep.Spec.Predictors[0]
 	sdepSvcName := machinelearningv1.GetPredictorKey(mlDep, firstPredictor)
-	addressablePort, err := getEngineHttpPort()
-	if err != nil {
-		return nil, err
-	}
-	addressableHost := sdepSvcName + "." + namespace + ".svc.cluster.local" + ":" + strconv.Itoa(addressablePort)
+	addressableHost := sdepSvcName + "." + namespace + ".svc.cluster.local" + ":" + strconv.Itoa(externalPorts[0].httpPort)
 	addressablePath := utils.GetPredictionPath(mlDep)
 	addressableUrl := url.URL{Scheme: "http", Host: addressableHost, Path: addressablePath}
 
@@ -626,7 +622,7 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 	}
 
 	// Create the addressable as all services are created when SeldonDeployment is ready
-	c.addressable, err = createAddressableResource(mlDep, namespace)
+	c.addressable, err = createAddressableResource(mlDep, namespace, externalPorts)
 	if err != nil {
 		return nil, err
 	}
@@ -1066,7 +1062,7 @@ func (r *SeldonDeploymentReconciler) createIstioServices(components *components,
 	//Cleanup unused VirtualService. This should usually only happen on Operator upgrades where there is a breaking change to the names of the VirtualServices created
 	//Only run if we have virtualservices to create - implies we are running with istio active
 	if len(components.virtualServices) > 0 && ready {
-		cleaner := ResourceCleaner{instance: instance, client: r, virtualServices: components.virtualServices, logger: r.Log}
+		cleaner := ResourceCleaner{instance: instance, client: r.Client, virtualServices: components.virtualServices, logger: r.Log}
 		deleted, err := cleaner.cleanUnusedVirtualServices()
 		if err != nil {
 			return ready, err
@@ -1074,6 +1070,18 @@ func (r *SeldonDeploymentReconciler) createIstioServices(components *components,
 		for _, vsvcDeleted := range deleted {
 			r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsDeleteVirtualService, "Delete VirtualService %q", vsvcDeleted.GetName())
 		}
+	}
+
+	if ready {
+		var reason string
+		if len(components.virtualServices) > 0 {
+			reason = machinelearningv1.VirtualServiceReady
+		} else {
+			reason = machinelearningv1.VirtualServiceNotDefined
+		}
+		instance.Status.CreateCondition(machinelearningv1.VirtualServicesReady, true, reason)
+	} else {
+		instance.Status.CreateCondition(machinelearningv1.VirtualServicesReady, false, machinelearningv1.VirtualServiceNotReady)
 	}
 
 	return ready, nil
@@ -1147,6 +1155,12 @@ func (r *SeldonDeploymentReconciler) createServices(components *components, inst
 			}
 		}
 
+	}
+
+	if all && ready {
+		instance.Status.CreateCondition(machinelearningv1.ServicesReady, true, machinelearningv1.SvcReadyReason)
+	} else {
+		instance.Status.CreateCondition(machinelearningv1.ServicesReady, false, machinelearningv1.SvcNotReadyReason)
 	}
 
 	return ready, nil
@@ -1226,6 +1240,18 @@ func (r *SeldonDeploymentReconciler) createKedaScaledObjects(components *compone
 				}
 			}
 		}
+	}
+
+	if ready {
+		var reason string
+		if len(components.kedaScaledObjects) > 0 {
+			reason = machinelearningv1.KedaReadyReason
+		} else {
+			reason = machinelearningv1.KedaNotDefinedReason
+		}
+		instance.Status.CreateCondition(machinelearningv1.KedaReady, true, reason)
+	} else {
+		instance.Status.CreateCondition(machinelearningv1.KedaReady, false, machinelearningv1.KedaNotReadyReason)
 	}
 
 	return ready, nil
@@ -1308,6 +1334,18 @@ func (r *SeldonDeploymentReconciler) createHpas(components *components, instance
 		}
 	}
 
+	if ready {
+		var reason string
+		if len(components.hpas) > 0 {
+			reason = machinelearningv1.HpaReadyReason
+		} else {
+			reason = machinelearningv1.HpaNotDefinedReason
+		}
+		instance.Status.CreateCondition(machinelearningv1.HpasReady, true, reason)
+	} else {
+		instance.Status.CreateCondition(machinelearningv1.HpasReady, false, machinelearningv1.HpaNotReadyReason)
+	}
+
 	return ready, nil
 }
 
@@ -1388,6 +1426,18 @@ func (r *SeldonDeploymentReconciler) createPdbs(components *components, instance
 		}
 	}
 
+	if ready {
+		var reason string
+		if len(components.pdbs) > 0 {
+			reason = machinelearningv1.PdbReadyReason
+		} else {
+			reason = machinelearningv1.PdbNotDefinedReason
+		}
+		instance.Status.CreateCondition(machinelearningv1.PdbsReady, true, reason)
+	} else {
+		instance.Status.CreateCondition(machinelearningv1.PdbsReady, false, machinelearningv1.PdbNotReadyReason)
+	}
+
 	return ready, nil
 }
 
@@ -1406,6 +1456,7 @@ func jsonEquals(a, b interface{}) (bool, error) {
 // Create Deployments specified in components.
 func (r *SeldonDeploymentReconciler) createDeployments(components *components, instance *machinelearningv1.SeldonDeployment, log logr.Logger) (bool, error) {
 	ready := true
+	var lastSuccessfulCondition *apis.Condition
 	for _, deploy := range components.deployments {
 
 		log.Info("Scheme", "r.scheme", r.Scheme)
@@ -1484,13 +1535,48 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 				}
 				log.Info("Deployment status ", "name", found.Name, "status", found.Status)
 				if found.Status.ReadyReplicas == 0 || found.Status.UnavailableReplicas > 0 {
+					if ready {
+						condition := getDeploymentCondition(found, appsv1.DeploymentAvailable)
+						log.Info("Updating condition for deployment", "name", found.Name, "condition", condition)
+						instance.Status.SetCondition(machinelearningv1.DeploymentsReady, condition)
+						log.Info("Inference status", "status", instance.Status)
+					}
 					ready = false
 				}
+
+				if ready {
+					condition := getDeploymentCondition(found, appsv1.DeploymentAvailable)
+					if lastSuccessfulCondition == nil || lastSuccessfulCondition.LastTransitionTime.Inner.Before(&condition.LastTransitionTime.Inner) {
+						lastSuccessfulCondition = condition
+					}
+				}
+
 			}
 
 		}
 	}
+
+	if ready {
+		instance.Status.SetCondition(machinelearningv1.DeploymentsReady, lastSuccessfulCondition)
+	}
 	return ready, nil
+}
+
+func getDeploymentCondition(deployment *appsv1.Deployment, conditionType appsv1.DeploymentConditionType) *apis.Condition {
+	condition := apis.Condition{}
+	for _, con := range deployment.Status.Conditions {
+		if con.Type == conditionType {
+			condition.Type = apis.ConditionType(conditionType)
+			condition.Status = con.Status
+			condition.Message = con.Message
+			condition.LastTransitionTime = apis.VolatileTime{
+				Inner: con.LastTransitionTime,
+			}
+			condition.Reason = con.Reason
+			break
+		}
+	}
+	return &condition
 }
 
 func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinelearningv1.SeldonDeployment, components *components, log logr.Logger) error {
@@ -1643,8 +1729,8 @@ func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinele
 // +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch
 // +kubebuilder:rbac:groups="",resources=events,verbs=create;patch
 
-func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.Background()
+func (r *SeldonDeploymentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	//ctx := context.Background()
 	log := r.Log.WithValues("SeldonDeployment", req.NamespacedName)
 	log.Info("Reconcile called")
 	// your logic here
@@ -1729,6 +1815,8 @@ func (r *SeldonDeploymentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 			r.updateStatusForError(instance, err, log)
 			return ctrl.Result{}, err
 		}
+	} else {
+		instance.Status.CreateCondition(machinelearningv1.KedaReady, true, machinelearningv1.KedaNotDefinedReason)
 	}
 
 	pdbsReady, err := r.createPdbs(components, instance, log)
@@ -1822,7 +1910,7 @@ var (
 
 func (r *SeldonDeploymentReconciler) SetupWithManager(ctx context.Context, mgr ctrl.Manager, name string) error {
 
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &appsv1.Deployment{}, ownerKey, func(rawObj runtime.Object) []string {
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &appsv1.Deployment{}, ownerKey, func(rawObj client.Object) []string {
 		// grab the deployment object, extract the owner...
 		dep := rawObj.(*appsv1.Deployment)
 		owner := metav1.GetControllerOf(dep)
@@ -1840,7 +1928,7 @@ func (r *SeldonDeploymentReconciler) SetupWithManager(ctx context.Context, mgr c
 		return err
 	}
 
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &corev1.Service{}, ownerKey, func(rawObj runtime.Object) []string {
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &corev1.Service{}, ownerKey, func(rawObj client.Object) []string {
 		// grab the deployment object, extract the owner...
 		svc := rawObj.(*corev1.Service)
 		owner := metav1.GetControllerOf(svc)
@@ -1859,7 +1947,7 @@ func (r *SeldonDeploymentReconciler) SetupWithManager(ctx context.Context, mgr c
 	}
 
 	if utils.GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
-		if err := mgr.GetFieldIndexer().IndexField(ctx, &istio.VirtualService{}, ownerKey, func(rawObj runtime.Object) []string {
+		if err := mgr.GetFieldIndexer().IndexField(ctx, &istio.VirtualService{}, ownerKey, func(rawObj client.Object) []string {
 			// grab the deployment object, extract the owner...
 			vsvc := rawObj.(*istio.VirtualService)
 			owner := metav1.GetControllerOf(vsvc)

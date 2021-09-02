@@ -66,7 +66,7 @@ spec:
   - graph:
       children: []
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/sklearn/iris
+      modelUri: gs://seldon-models/v1.11.0-dev/sklearn/iris
       name: classifier
       parameters:
         - name: method
@@ -84,5 +84,6 @@ In particular,
 | [TRITON_SERVER](../servers/triton.md) | ✅ | [NVIDIA Triton](https://github.com/triton-inference-server/server) |
 | [SKLEARN_SERVER](../servers/sklearn.md) | ✅  | [Seldon MLServer](https://github.com/seldonio/mlserver) |
 | [XGBOOST_SERVER](../servers/xgboost.md) | ✅  | [Seldon MLServer](https://github.com/seldonio/mlserver) |
+| [MLFLOW_SERVER](../servers/mlflow.md) | ✅  | [Seldon MLServer](https://github.com/seldonio/mlserver) |
 
 You can try out the `kfserving` in [this example notebook](../examples/protocol_examples.html). 

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"testing"
 
 	"github.com/golang/protobuf/jsonpb"
@@ -17,7 +18,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/test"
 	"github.com/seldonio/seldon-core/executor/logger"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 const (
@@ -441,9 +442,9 @@ func TestModelWithLogRequests(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	logf.SetLogger(logf.ZapLogger(false))
+	logf.SetLogger(zap.New())
 	log := logf.Log.WithName("entrypoint")
-	logger.StartDispatcher(1, log, "", "", "")
+	logger.StartDispatcher(1, log, "", "", "", "", "")
 
 	model := v1.MODEL
 	graph := &v1.PredictiveUnit{
@@ -489,9 +490,9 @@ func TestModelWithLogRequestsAtDefaultedUrl(t *testing.T) {
 
 	envRequestLoggerDefaultEndpoint = server.URL
 
-	logf.SetLogger(logf.ZapLogger(false))
+	logf.SetLogger(zap.New())
 	log := logf.Log.WithName("entrypoint")
-	logger.StartDispatcher(1, log, "", "", "")
+	logger.StartDispatcher(1, log, "", "", "", "", "")
 
 	model := v1.MODEL
 	graph := &v1.PredictiveUnit{
@@ -532,9 +533,9 @@ func TestModelWithLogResponses(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	logf.SetLogger(logf.ZapLogger(false))
+	logf.SetLogger(zap.New())
 	log := logf.Log.WithName("entrypoint")
-	logger.StartDispatcher(1, log, "", "", "")
+	logger.StartDispatcher(1, log, "", "", "", "", "")
 
 	model := v1.MODEL
 	graph := &v1.PredictiveUnit{

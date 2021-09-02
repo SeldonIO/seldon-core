@@ -173,7 +173,7 @@ spec:
   - graph:
       children: []
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/sklearn/iris
+      modelUri: gs://seldon-models/v1.11.0-dev/sklearn/iris
       name: classifier
       logger:
         url: http://broker-ingress.knative-eventing.svc.cluster.local/seldon-logs/default

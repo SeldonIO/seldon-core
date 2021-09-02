@@ -327,7 +327,7 @@ class SeldonClient:
         http_path:
            Custom http path for predict call to use
         meta:
-           Custom meta map
+           Custom meta map, supplied as tags
         client_return_type
             the return type of all functions can be either dict or proto
         raw_data
@@ -1208,6 +1208,7 @@ def rest_predict_seldon(
     names: Iterable[str] = None,
     client_return_type: str = "proto",
     raw_data: Dict = None,
+    meta: Dict = {},
     **kwargs,
 ) -> SeldonClientPrediction:
     """
@@ -1235,6 +1236,8 @@ def rest_predict_seldon(
         the return type of all functions can be either dict or proto
     raw_data
         Raw payload (dictionary) given by the user
+    meta
+        Custom meta data map, supplied as tags
     kwargs
 
     Returns
@@ -1242,21 +1245,24 @@ def rest_predict_seldon(
        Seldon Client Prediction
 
     """
+    metaKV = prediction_pb2.Meta()
+    metaJson = {"tags": meta}
+    json_format.ParseDict(metaJson, metaKV)
     if raw_data:
         request = json_to_seldon_message(raw_data)
         payload = raw_data
     else:
         if bin_data is not None:
-            request = prediction_pb2.SeldonMessage(binData=bin_data)
+            request = prediction_pb2.SeldonMessage(binData=bin_data, meta=metaKV)
         elif str_data is not None:
-            request = prediction_pb2.SeldonMessage(strData=str_data)
+            request = prediction_pb2.SeldonMessage(strData=str_data, meta=metaKV)
         elif json_data is not None:
             request = json_to_seldon_message({"jsonData": json_data})
         else:
             if data is None:
                 data = np.random.rand(*shape)
             datadef = array_to_grpc_datadef(payload_type, data, names=names)
-            request = prediction_pb2.SeldonMessage(data=datadef)
+            request = prediction_pb2.SeldonMessage(data=datadef, meta=metaKV)
         payload = seldon_message_to_json(request)
 
     response_raw = requests.post(
@@ -1808,7 +1814,7 @@ def grpc_predict_gateway(
     channel_credentials
        Channel credentials - see SeldonChannelCredentials
     meta
-       Custom meta data map
+       Custom meta data map, supplied as tags
     client_return_type
         the return type of all functions can be either dict or proto
     raw_data

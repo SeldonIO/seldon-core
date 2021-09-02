@@ -1,0 +1,12 @@
+
+name: mlflow-wines
+versions: [mlflow-wines/v1]
+platform: sklearn
+inputs:
+- datatype: BYTES
+  name: input
+  shape: [ 1, 11 ]
+outputs:
+- datatype: BYTES
+  name: output
+  shape: [ 1, 1 ]

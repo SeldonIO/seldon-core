@@ -54,7 +54,7 @@ func GetPredictionPath(mlDep *machinelearningv1.SeldonDeployment) string {
 
 	if protocol == machinelearningv1.ProtocolTensorflow {
 		// This will be updated as part of https://github.com/SeldonIO/seldon-core/issues/1611
-		return "/v1/models/" + mlDep.Spec.Predictors[0].Graph.Name + "/:predict"
+		return "/v1/models/" + mlDep.Spec.Predictors[0].Graph.Name + ":predict"
 	} else if protocol == machinelearningv1.ProtocolKfserving {
 		return "/v2/models/" + mlDep.Spec.Predictors[0].Graph.Name + "/infer"
 	} else {

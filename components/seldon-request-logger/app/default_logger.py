@@ -14,6 +14,8 @@ import log_helper
 import log_mapping
 from collections.abc import Iterable
 import array
+import traceback
+from flask import jsonify
 
 MAX_PAYLOAD_BYTES = 300000
 app = Flask(__name__)
@@ -31,7 +33,11 @@ log_mapping.init_api()
 def index():
 
     request_id = log_helper.extract_request_id(request.headers)
+    if not request_id:
+        return Response(f"Header {log_helper.REQUEST_ID_HEADER_NAME} not found", 400)
     type_header = request.headers.get(log_helper.TYPE_HEADER_NAME)
+    if type_header is None:
+        return Response(f"Header {log_helper.TYPE_HEADER_NAME} not found", 400)
     message_type = log_helper.parse_message_type(type_header)
     index_name = log_helper.build_index_name(request.headers)
 
@@ -68,13 +74,13 @@ def index():
     try:
 
         # now process and update the doc
-        process_and_update_elastic_doc(
+        added_content = process_and_update_elastic_doc(
             es, message_type, body, request_id, request.headers, index_name
         )
 
-        return ""
+        return jsonify(added_content)
     except Exception as ex:
-        print(ex)
+        traceback.print_exc()
     sys.stdout.flush()
     return Response("problem logging request", 500)
 
@@ -107,6 +113,8 @@ def process_and_update_elastic_doc(
     elastic_object, message_type, message_body, request_id, headers, index_name
 ):
 
+    added_content = []
+
     if message_type == "unknown":
         print("UNKNOWN REQUEST TYPE FOR " + request_id + " - NOT PROCESSING")
         sys.stdout.flush()
@@ -129,7 +137,7 @@ def process_and_update_elastic_doc(
     # req or res might be batches of instances so split out into individual docs
     if "instance" in new_content_part:
 
-        if type(new_content_part["instance"]) == type([]):
+        if type(new_content_part["instance"]) == type([]) and not (new_content_part["dataType"] == "json"):
             # if we've a list then this is batch
             # we assume first dimension is always batch
 
@@ -151,9 +159,9 @@ def process_and_update_elastic_doc(
                 item_request_id = build_request_id_batched(
                     request_id, no_items_in_batch, index
                 )
-                upsert_doc_to_elastic(
+                added_content.append(upsert_doc_to_elastic(
                     elastic_object, message_type, item_body, item_request_id, index_name
-                )
+                ))
                 index = index + 1
         else:
             #not batch so don't batch elements either
@@ -161,9 +169,9 @@ def process_and_update_elastic_doc(
                 new_content_part["elements"] = new_content_part["elements"][0]
 
             item_request_id = build_request_id_batched(request_id, 1, 0)
-            upsert_doc_to_elastic(
+            added_content.append(upsert_doc_to_elastic(
                 elastic_object, message_type, doc_body, item_request_id, index_name
-            )
+            ))
     elif message_type == "feedback":
         item_request_id = build_request_id_batched(request_id, 1, 0)
         upsert_doc_to_elastic(elastic_object, message_type, doc_body, item_request_id, index_name)
@@ -232,7 +240,7 @@ def process_and_update_elastic_doc(
     else:
         print("unexpected data format")
         print(new_content_part)
-    return
+    return added_content
 
 
 def build_request_id_batched(request_id, no_items_in_batch, item_index):
@@ -270,7 +278,7 @@ def upsert_doc_to_elastic(
         + message_type
     )
     sys.stdout.flush()
-    return str(new_content)
+    return new_content
 
 
 # take request or response part and process it by deriving metadata
@@ -327,6 +335,7 @@ def create_np_from_v2(data: list,ty: str, shape: list) -> np.array:
     arr = np.array(data, dtype=npty)
     arr.shape = tuple(shape)
     return arr
+
 
 def extract_data_part(content, headers, message_type):
     copy = content.copy()
@@ -421,7 +430,7 @@ def extract_data_part(content, headers, message_type):
         if req_datatype == "binData":
             copy["dataType"] = "image"
 
-        if isinstance(req_features, Iterable):
+        if isinstance(req_features, Iterable) and not(req_datatype == "jsonData" or req_datatype == "binData" or req_datatype == "strData"):
 
             elements = createElelmentsArray(req_features, list(req_datadef.names), namespace, serving_engine, inferenceservice_name, endpoint_name, message_type)
             copy["elements"] = elements

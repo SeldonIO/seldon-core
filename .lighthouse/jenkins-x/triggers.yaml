@@ -2,6 +2,13 @@ apiVersion: config.lighthouse.jenkins-x.io/v1alpha1
 kind: TriggerConfig
 spec:
   presubmits:
+  - name: models
+    context: "models"
+    always_run: false
+    optional: false
+    trigger: (?m)^/test( all| models.*),?(s+|$)
+    rerun_command: "/test models"
+    source: "models.yaml"
   - name: notebooks
     context: "notebooks"
     always_run: false
@@ -20,9 +27,16 @@ spec:
     context: "release-build-push"
     always_run: false
     optional: false
-    trigger: (?m)^/test( all| release.*),?(s+|$)
+    trigger: (?m)^/test( release.*),?(s+|$)
     rerun_command: "/test release"
     source: "release.yaml"
+  - name: benchmark
+    context: "benchmark"
+    always_run: false
+    optional: false
+    trigger: (?m)^/test( benchmark.*),?(s+|$)
+    rerun_command: "/test benchmark"
+    source: "benchmark.yaml"
   postsubmits:
   - name: release
     context: "release"
@@ -30,4 +44,3 @@ spec:
     branches:
     - ^main$
     - ^master$
-

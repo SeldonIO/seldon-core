@@ -1,0 +1,16 @@
+---
+- name: Create Kind Cluster and Install MetalLB
+  hosts: localhost
+  roles:
+    - seldonio.k8s.kind
+    - seldonio.k8s.metallb
+  vars:
+    # Name of kind cluster to be created; default: ansible
+    # If kind cluster of this name already exist it will not be removed and only
+    # the current kubectl context will be updated (kind export kubeconfig ... equivalent)
+    kind_cluster_name: ansible
+    kind_image_version: kindest/node:v1.18.15
+    kind_config_file: files/kind_config.yaml    
+
+    # Default namespace to be created and set for current context (if not null).
+    kind_kubectl_default_namespace: seldon

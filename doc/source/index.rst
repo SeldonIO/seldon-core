@@ -110,11 +110,12 @@ Documentation Index
    CI/CD MLOps at Scale <analytics/cicd-mlops.md>
    Metrics with Prometheus <analytics/analytics.md>
    Model Metadata <reference/apis/metadata.md>
-   Payload Logging with ELK <analytics/logging.md>
+   Prediction Request Logging <analytics/logging.md>
    Distributed Tracing with Jaeger <graph/distributed-tracing.md>
    Replica Scaling  <graph/scaling.md>
    Budgeting Disruptions <graph/disruption-budgets.md>
    Custom Inference Servers <servers/custom.md>
+   Inference Optimization <production/optimization.md>
 
 .. toctree::
    :maxdepth: 1

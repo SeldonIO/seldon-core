@@ -151,17 +151,13 @@ var _ = Describe("MLServer helpers", func() {
 
 				mlServerImplementation, err := getMLServerModelImplementation(pu)
 
-				if expected == "" {
-					Expect(err).To(HaveOccurred())
-					Expect(mlServerImplementation).To(Equal(expected))
-				} else {
-					Expect(err).To(Not(HaveOccurred()))
-					Expect(mlServerImplementation).To(Equal(expected))
-				}
+				Expect(err).To(Not(HaveOccurred()))
+				Expect(mlServerImplementation).To(Equal(expected))
 			},
 			Entry("sklearn", machinelearningv1.PrepackSklearnName, MLServerSKLearnImplementation),
 			Entry("xgboost", machinelearningv1.PrepackXgboostName, MLServerXGBoostImplementation),
 			Entry("tempo", machinelearningv1.PrepackTempoName, MLServerTempoImplementation),
+			Entry("mlserver", machinelearningv1.PrepackMlflowName, MLServerMLFlowImplementation),
 			Entry("unknown", "foo", ""),
 		)
 	})

@@ -30,3 +30,4 @@ redhat-image-scan:
 	docker push scan.connect.redhat.com/${scan}/${IMAGE_NAME_BASE}:${VERSION}
 
 
+

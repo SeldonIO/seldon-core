@@ -40,6 +40,7 @@ VividCortex/gohistogram
 afex/hystrix-go
 agnivade/levenshtein
 alcortesm/tgz
+alecthomas/jsonschema
 alecthomas/kingpin
 alecthomas/template
 alecthomas/units
@@ -66,12 +67,14 @@ aws/aws-sdk-go
 aws/aws-sdk-go-v2
 aybabtme/rgbterm
 bazelbuild/buildtools
+benbjohnson/clock
 beorn7/perks
 bgentry/speakeasy
 bitly/go-simplejson
 bketelsen/crypt
 blakesmith/ar
 blang/semver
+blendle/zapdriver
 bmizerany/assert
 bmizerany/perks
 bombsimon/wsl
@@ -80,6 +83,7 @@ bugsnag/bugsnag-go
 bugsnag/osext
 bugsnag/panicwrap
 bwmarrin/snowflake
+c2h5oh/datasize
 caarlos0/ctrlc
 campoy/unique
 casbin/casbin
@@ -126,6 +130,7 @@ denverdino/aliyungo
 devigned/tab
 dgrijalva/jwt-go
 dgryski/go-gk
+dgryski/go-lttb
 dgryski/go-sip13
 dimchansky/utfbom
 djherbis/atime
@@ -160,6 +165,7 @@ fatih/camelcase
 fatih/color
 fatih/structs
 flynn/go-shlex
+form3tech-oss/jwt-go
 fortytw2/leaktest
 franela/goblin
 franela/goreq
@@ -175,6 +181,7 @@ go-critic/go-critic
 go-gl/glfw
 go-ini/ini
 go-kit/kit
+go-kit/log
 go-ldap/ldap
 go-lintpack/lintpack
 go-logfmt/logfmt
@@ -194,6 +201,7 @@ go-openapi/validate
 go-redis/redis
 go-sql-driver/mysql
 go-stack/stack
+go-task/slim-sprig
 go-test/deep
 go-toolsmith/astcast
 go-toolsmith/astcopy
@@ -207,6 +215,7 @@ go-toolsmith/typep
 go-xmlfmt/xmlfmt
 go-yaml/yaml
 gobuffalo/envy
+gobuffalo/flect
 gobwas/glob
 godbus/dbus
 gofrs/flock
@@ -239,6 +248,15 @@ golangplus/bytes
 golangplus/fmt
 golangplus/testing
 gomodule/redigo
+gonum/blas
+gonum/diff
+gonum/floats
+gonum/integrate
+gonum/internal
+gonum/lapack
+gonum/mathext
+gonum/matrix
+gonum/stat
 google/btree
 google/go-cmp
 google/go-containerregistry
@@ -387,6 +405,8 @@ mitchellh/ioprogress
 mitchellh/mapstructure
 mitchellh/osext
 mitchellh/reflectwalk
+moby/spdystream
+moby/term
 modern-go/concurrent
 modern-go/reflect2
 mohae/deepcopy
@@ -494,6 +514,7 @@ spf13/jwalterweatherman
 spf13/pflag
 spf13/viper
 src-d/gcfg
+stoewer/go-strcase
 streadway/amqp
 streadway/handy
 streadway/quantile
@@ -516,6 +537,7 @@ tj/go-kinesis
 tj/go-spin
 tmc/grpc-websocket-proxy
 tommy-muehle/go-mnd
+tsenart/go-tsz
 tsenart/vegeta
 uber/jaeger-client-go
 uber/jaeger-lib

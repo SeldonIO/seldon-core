@@ -62,6 +62,7 @@ extensions = [
     # Fix `ipython3` warning
     # https://github.com/spatialaudio/nbsphinx/issues/24
     "IPython.sphinxext.ipython_console_highlighting",
+    "sphinx_search.extension",
 ]
 
 # Ignore py:class warnings about 3rd party deps or ignored packages (e.g.
@@ -177,7 +178,7 @@ html_theme = "sphinx_material"
 
 if html_theme == "sphinx_material":
     html_theme_options = {
-        "google_analytics_account": "GTM-WT76RV",
+        "google_analytics_account": "UA-54780881-2",
         "base_url": "https://docs.seldon.io/projects/seldon-core/",
         "color_primary": "indigo",
         "color_accent": "teal",
@@ -205,7 +206,7 @@ if html_theme == "sphinx_material":
                 "title": "Alibi Detect",
             },
             {
-                "href": "https://github.com/SeldonIO/mlserver",
+                "href": "https://mlserver.readthedocs.io/en/latest/",
                 "internal": False,
                 "title": "MLServer",
             },
@@ -215,7 +216,7 @@ if html_theme == "sphinx_material":
                 "title": "Tempo SDK",
             },
             {
-                "href": "https://deploy.seldon.io/docs/about/",
+                "href": "https://deploy.seldon.io",
                 "internal": False,
                 "title": "Seldon Deploy (Enterprise)",
             },
@@ -231,7 +232,9 @@ if html_theme == "sphinx_material":
     html_theme_path = sphinx_material.html_theme_path()
     html_context = sphinx_material.get_html_context()
 
-html_sidebars = {"**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]}
+html_sidebars = {
+    "**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]
+}
 
 # The Seldon Logo located at the top of the navigation bar.
 html_logo = "Seldon_White.png"

@@ -46,8 +46,8 @@ class ExplainerServer(object):
     def create_application(self):
         return tornado.web.Application(
             [
-                (r"/v1/models/[a-zA-Z0-9_-]+:explain",
-                 ExplainHandler, dict(model=self.registered_model)),
+                (r"/v1/models/([a-zA-Z0-9_-]*):explain",
+                 ExplainV2Handler, dict(model=self.registered_model)),
                 (r"/api/v0.1/explain",
                  ExplainHandler, dict(model=self.registered_model)),
                 (r"/api/v1.0/explain",
@@ -112,4 +112,3 @@ class ExplainV2Handler(tornado.web.RequestHandler):
             )
         response =self.model.explain(body, model_name=model_name)
         self.write(response)
-

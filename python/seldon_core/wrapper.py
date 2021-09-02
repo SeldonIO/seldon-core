@@ -8,6 +8,7 @@ from flask_cors import CORS
 from grpc_reflection.v1alpha import reflection
 
 import seldon_core.seldon_methods
+from seldon_core.env_utils import get_model_name
 from seldon_core.flask_utils import (
     ANNOTATION_GRPC_MAX_MSG_SIZE,
     SeldonMicroserviceException,
@@ -24,7 +25,7 @@ from seldon_core.utils import (
 
 logger = logging.getLogger(__name__)
 
-PRED_UNIT_ID = os.environ.get("PREDICTIVE_UNIT_ID", "0")
+PRED_UNIT_ID = get_model_name("0")
 METRICS_ENDPOINT = os.environ.get("PREDICTIVE_UNIT_METRICS_ENDPOINT", "/metrics")
 PAYLOAD_PASSTHROUGH = getenv_as_bool("PAYLOAD_PASSTHROUGH", default=False)
 
@@ -42,6 +43,16 @@ def get_rest_microservice(user_model, seldon_metrics):
     if hasattr(user_model, "model_error_handler"):
         logger.info("Registering the custom error handler...")
         app.register_blueprint(user_model.model_error_handler)
+
+    @app.errorhandler(Exception)
+    def handle_generic_exception(e):
+        error = SeldonMicroserviceException(
+            message=str(e), status_code=500, reason="MICROSERVICE_INTERNAL_ERROR"
+        )
+        response = jsonify(error.to_dict())
+        logger.error("%s", error.to_dict())
+        response.status_code = error.status_code
+        return response
 
     @app.errorhandler(SeldonMicroserviceException)
     def handle_invalid_usage(error):
@@ -268,9 +279,13 @@ class SeldonModelGRPC:
         raise NotImplementedError("GraphMetadata not available on the Model level.")
 
 
-def get_grpc_server(user_model, seldon_metrics, annotations={}, trace_interceptor=None):
+def get_grpc_server(
+    user_model, seldon_metrics, annotations={}, trace_interceptor=None, num_threads=1
+):
     seldon_model = SeldonModelGRPC(user_model, seldon_metrics)
-    options = []
+    options = [
+        ("grpc.so_reuseport", 1),
+    ]
     if ANNOTATION_GRPC_MAX_MSG_SIZE in annotations:
         max_msg = int(annotations[ANNOTATION_GRPC_MAX_MSG_SIZE])
         logger.info("Setting grpc max message and receive length to %d", max_msg)
@@ -278,7 +293,9 @@ def get_grpc_server(user_model, seldon_metrics, annotations={}, trace_intercepto
         options.append(("grpc.max_send_message_length", max_msg))
         options.append(("grpc.max_receive_message_length", max_msg))
 
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options=options)
+    server = grpc.server(
+        futures.ThreadPoolExecutor(max_workers=num_threads), options=options
+    )
 
     if trace_interceptor:
         from grpc_opentracing.grpcext import intercept_server

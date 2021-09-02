@@ -3,7 +3,7 @@ BASE=../../..
 ## REST
 
 run_executor:
-	${BASE}/executor --sdep seldon-model --namespace default --predictor example --file ./model.yaml --http_port 8000 --grpc_port 9500
+	${BASE}/executor --sdep seldon-model --namespace default --predictor example --file ./model.yaml --http_port 8000 --grpc_port 9500 --debug
 
 
 run_dummy_model:

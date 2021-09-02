@@ -4,13 +4,13 @@ metadata:
   name: seldon-model
 spec:
   annotations:
-    seldon.io/rest-timeout: "5000"
-    seldon.io/grpc-timeout: "5000"
+    seldon.io/rest-timeout: "40000"
+    seldon.io/grpc-timeout: "40000"
   predictors:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/mock_classifier:1.6.0-dev
+        - image: seldonio/mock_classifier:1.10.0-dev
           name: classifier
     graph:
       children: []
@@ -19,6 +19,6 @@ spec:
       parameters:
       - name: delaySecs
         type: INT
-        value: "2"       
+        value: "30"       
     name: example
     replicas: 1

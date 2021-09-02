@@ -1,6 +1,6 @@
 FROM openjdk:13.0.1-jdk-buster
 
-ENV PYTHON_VERSION "3.6.10"
+ENV PYTHON_VERSION "3.7.11"
 
 # install docker
 RUN \
@@ -67,22 +67,20 @@ RUN apt-get upgrade && \
 	apt-get install libbz2-dev -y && \
 	apt-get install liblzma-dev -y
 
-RUN curl -SLO https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz \
-    && tar xvf Python-${PYTHON_VERSION}.tgz \
-    && cd Python-${PYTHON_VERSION} \
-    && ./configure --prefix=/usr/local --with-openssl \
-    && make \
-    && make altinstall \
-    && cd / \
-    && rm -rf Python-${PYTHON_VERSION}* \
-    && (cd /usr/local/bin && ln -svn python3.6 python)
+ENV CONDA_VERSION "4.7.12"
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-$CONDA_VERSION-Linux-x86_64.sh -O ~/miniconda.sh && \
+    /bin/bash ~/miniconda.sh -b -p /opt/conda && \
+    rm ~/miniconda.sh && \
+    /opt/conda/bin/conda clean -tipsy && \
+    ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
+    echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
+    echo "conda activate base" >> ~/.bashrc && \
+    chgrp -R root /opt/conda && chmod -R g+rw /opt/conda
+ENV PATH="/opt/conda/bin:${PATH}"
+ENV PYTHON_VERSION "3.7.10"
 
-# Ensure python3 and pip3 are default
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py >>setup.py && \
-        python setup.py
-RUN update-alternatives --install /usr/bin/python python /usr/local/bin/python3.6 1
-RUN rm -rf /usr/local/bin/pip && \
-        ln -s /usr/local/bin/pip3.6 /usr/local/bin/pip
+# This is to install desired version of Python without updating conda version
+RUN conda install --yes python=$PYTHON_VERSION conda=$CONDA_VERSION
 
 # Upgrade and install some Python packages
 RUN pip install --upgrade pip setuptools wheel
@@ -93,8 +91,8 @@ RUN apt-get remove -y --auto-remove \
 
 # INSTALL GO
 ENV PATH /usr/local/go/bin:$PATH
-RUN wget https://dl.google.com/go/go1.14.7.linux-amd64.tar.gz && \
-        tar -zxvf go1.14.7.linux-amd64.tar.gz && \
+RUN wget https://dl.google.com/go/go1.16.5.linux-amd64.tar.gz && \
+        tar -zxvf go1.16.5.linux-amd64.tar.gz && \
         mv go/ /usr/local/go
 RUN curl -sL https://go.kubebuilder.io/dl/2.3.0/linux/amd64 | tar -xz -C /tmp/ && \
         mv /tmp/kubebuilder_2.3.0_linux_amd64 /usr/local/kubebuilder/
@@ -119,7 +117,7 @@ RUN pip install jupyter
 
 # Install grpcurl
 RUN go get github.com/fullstorydev/grpcurl/... && \
-    go install github.com/fullstorydev/grpcurl/cmd/grpcurl
+    go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
 
 ENV PATH="${PATH}:/root/go/bin"
 
@@ -132,6 +130,24 @@ RUN go get -u github.com/onsi/ginkgo/ginkgo
 
 # Helm docs
 RUN GO111MODULE=on go get github.com/norwoodj/helm-docs/cmd/helm-docs@f66fdbd6fe
+
+# Argo workflows CLI
+RUN wget https://github.com/argoproj/argo-workflows/releases/download/v3.0.8/argo-linux-amd64.gz && \
+    gunzip argo-linux-amd64.gz && \
+    mv argo-linux-amd64 argo && \
+    chmod a+x argo && \
+    mv argo /usr/local/bin/argo
+
+# Installing jx
+RUN wget https://github.com/jenkins-x/jx-cli/releases/download/v3.1.242/jx-cli-linux-amd64.tar.gz && \
+    tar -zxvf jx-cli-linux-amd64.tar.gz && \
+    chmod a+x jx && \
+    mv jx /usr/local/bin/jx
+
+RUN curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-349.0.0-linux-x86_64.tar.gz && \
+    tar xvfz google-cloud-sdk-349.0.0-linux-x86_64.tar.gz -C /tmp/ && \
+    mv /tmp/google-cloud-sdk /usr/local/google-cloud-sdk
+ENV PATH /usr/local/google-cloud-sdk/bin:$PATH
 
 WORKDIR /work
 

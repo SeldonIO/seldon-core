@@ -1,7 +1,7 @@
 import json
 from typing import List, Dict, Optional, Union
 import logging
-import pickle
+import dill
 import os
 from adserver.constants import (
     REQUEST_ID_HEADER_NAME,
@@ -11,7 +11,8 @@ from adserver.constants import (
 from adserver.base import CEModel, ModelResponse
 from adserver.base.storage import download_model
 from seldon_core.flask_utils import SeldonMicroserviceException
-from seldon_core.metrics import DEFAULT_LABELS, NONIMPLEMENTED_MSG
+from seldon_core.metrics import DEFAULT_LABELS
+from seldon_core.env_utils import NONIMPLEMENTED_MSG
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import NotFoundError
 
@@ -69,7 +70,7 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
         """
         if "/" in self.storage_uri:
             model_folder = download_model(self.storage_uri)
-            self.model = pickle.load(
+            self.model = dill.load(
                 open(os.path.join(model_folder, "meta.pickle"), "rb")
             )
         else:

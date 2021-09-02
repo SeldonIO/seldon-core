@@ -18,8 +18,7 @@ as follows:
 
 | Package | Version |
 | ------ | ----- |
-| `xgboost` | `1.2.0` |
-| `numpy` | `1.15.4` |
+| `xgboost` | `1.4.2` |
 
 ## Usage
 

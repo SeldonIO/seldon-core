@@ -13,22 +13,21 @@
 
 | Description | Image URL | Version |
 |-------------|-----------|---------|
-| [MLFlow Server REST](../servers/mlflow.md) | [seldonio/mlflowserver_rest](https://hub.docker.com/r/seldonio/mlflowserver_rest/tags/) | 1.10.0 |
-| [MLFlow Server GRPC](../servers/mlflow.md) | [seldonio/mlflowserver_grpc](https://hub.docker.com/r/seldonio/mlflowserver_grpc/tags/) | 1.10.0 |
-| [SKLearn Server REST](../servers/sklearn.md) | [seldonio/sklearnserver_rest](https://hub.docker.com/r/seldonio/sklearnserver_rest/tags/) | 1.10.0 |
-| [SKLearn Server GRPC](../servers/sklearn.md) | [seldonio/sklearnserver_grpc](https://hub.docker.com/r/seldonio/sklearnserver_grpc/tags/) | 1.10.0 |
-| [XGBoost Server REST](../servers/xgboost.md) | [seldonio/xgboostserver_rest](https://hub.docker.com/r/seldonio/xgboostserver_rest/tags/) | 1.10.0 |
-| [XGBoost Server GRPC](../servers/xgboost.md) | [seldonio/xgboostserver_grpc](https://hub.docker.com/r/seldonio/xgboostserver_grpc/tags/) | 1.10.0 |
+| [MLFlow Server](../servers/mlflow.md) | [seldonio/mlflowserver](https://hub.docker.com/r/seldonio/mlflowserver/tags/) | 1.10.0 |
+| [SKLearn Server](../servers/sklearn.md) | [seldonio/sklearnserver](https://hub.docker.com/r/seldonio/sklearnserver/tags/) | 1.10.0 |
+| [XGBoost Server](../servers/xgboost.md) | [seldonio/xgboostserver](https://hub.docker.com/r/seldonio/xgboostserver/tags/) | 1.10.0 |
 
 ## Language wrappers
 
 | Description | Image URL | Stable Version | Development |
 |-------------|-----------|----------------|-------------|
-| [Seldon Python 3 (3.6) Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python3](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/) | 1.10.0 | 1.11.0-dev |
+| [Seldon Python 3 (3.7) Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python3](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/) | 1.10.0 | 1.11.0-dev |
 | [Seldon Python 3.6 Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python36](https://hub.docker.com/r/seldonio/seldon-core-s2i-python36/tags/) | 1.10.0 | 1.11.0-dev |
 | [Seldon Python 3.7 Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python37](https://hub.docker.com/r/seldonio/seldon-core-s2i-python37/tags/) | 1.10.0 | 1.11.0-dev |
+| [Seldon Python 3.7 Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python38](https://hub.docker.com/r/seldonio/seldon-core-s2i-python38/tags/) |       | 1.11.0-dev |
 | [Seldon Python 3.6 GPU Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python36-gpu](https://hub.docker.com/r/seldonio/seldon-core-s2i-python36-gpu/tags/) | 1.10.0 | 1.11.0-dev |
 | [Seldon Python 3.7 GPU Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python37-gpu](https://hub.docker.com/r/seldonio/seldon-core-s2i-python37-gpu/tags/) | 1.10.0 | 1.11.0-dev |
+| [Seldon Python 3.8 GPU Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python38-gpu](https://hub.docker.com/r/seldonio/seldon-core-s2i-python38-gpu/tags/) |       | 1.11.0-dev |
 
 ## Server proxies
 
@@ -36,15 +35,14 @@
 |-------------|-----------|----------------|
 | [NVIDIA inference server proxy](integration_nvidia_link.rst) | [seldonio/nvidia-inference-server-proxy](https://hub.docker.com/r/seldonio/nvidia-inference-server-proxy/tags/) | 0.1 |
 | [SageMaker proxy](https://github.com/SeldonIO/seldon-core/tree/master/integrations/sagemaker) | [seldonio/sagemaker-proxy](https://hub.docker.com/r/seldonio/sagemaker-proxy/tags/) | 0.1 |
-| [Tensorflow Serving REST proxy](../servers/tensorflow.md) | [seldonio/tfserving-proxy_rest](https://hub.docker.com/r/seldonio/tfserving-proxy_rest/tags/) | 0.7 |
-| [Tensorflow Serving GRPC proxy](../servers/tensorflow.md) | [seldonio/tfserving-proxy_grpc](https://hub.docker.com/r/seldonio/tfserving-proxy_grpc/tags/) | 0.7 |
+| [Tensorflow Serving proxy](../servers/tensorflow.md) | [seldonio/tfserving-proxy](https://hub.docker.com/r/seldonio/tfserving-proxy/tags/) | 1.10.0 |
 
 
 ## Python modules
 
 | Description | Python Version | Version |
 |-------------|----------------|---------|
-| [seldon-core](https://pypi.org/project/seldon-core/) | >3.4,<3.7 | 1.10.0 |
+| [seldon-core](https://pypi.org/project/seldon-core/) | >3.4,<3.9 | 1.10.0 |
 | [seldon-core](https://pypi.org/project/seldon-core/) | 2,>=3,<3.7 | 0.2.6 (deprecated) |
 
 
@@ -63,10 +61,12 @@
 
 ### Java packages
 
+You can find these packages in the Maven repository.
+
 | Description | Package | Version |
 |-------------|---------|---------|
-| [Seldon Core Wrapper](https://github.com/SeldonIO/seldon-java-wrapper) | [seldon-core-wrapper](https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-wrapper) | 0.1.5 |
-| [Seldon Core JPMML](https://github.com/SeldonIO/JPMML-utils) | [seldon-core-jpmml](https://mvnrepository.com/artifact/io.seldon.wrapper/seldon-core-jpmml) | 0.0.1 |
+| [Seldon Core Wrapper](https://github.com/SeldonIO/seldon-java-wrapper) | seldon-core-wrapper | 0.1.5 |
+| [Seldon Core JPMML](https://github.com/SeldonIO/JPMML-utils) | seldon-core-jpmml | 0.0.1 |
 
 
 

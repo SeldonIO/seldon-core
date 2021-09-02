@@ -15,7 +15,7 @@ spec:
         - image: uses:jenkins-x/jx3-pipeline-catalog/tasks/git-clone/git-clone-pr.yaml@versionStream
           name: ""
         - name: release-step
-          image: seldonio/core-builder:0.20
+          image: seldonio/core-builder:0.23
           command:
             - bash
             - -c
@@ -33,11 +33,11 @@ spec:
           resources:
             requests:
               cpu: 1
-              memory: 3000Mi
+              memory: 6000Mi
               ephemeral-storage: "60Gi"
             limits:
               cpu: 1
-              memory: 3000Mi
+              memory: 6000Mi
               ephemeral-storage: "60Gi"
           securityContext:
             privileged: true
@@ -60,8 +60,14 @@ spec:
                 path: config.json
               secretName: jenkins-docker-cfg
 
-  podTemplate: {}
+  podTemplate:
+    nodeSelector:
+      cloud.google.com/gke-nodepool: general-pipelines-pool
+    tolerations:
+    - key: job-type
+      operator: Equal
+      value: general
+      effect: NoSchedule
   serviceAccountName: tekton-bot
   timeout: 6h0m0s
 status: {}
-

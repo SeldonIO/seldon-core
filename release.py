@@ -96,6 +96,7 @@ def update_chart_yaml_file(fpath, seldon_core_version, debug=False):
 
     d = yaml_to_dict(yaml_data)
     d["version"] = seldon_core_version
+    d["appVersion"] = seldon_core_version
 
     with open(fpath, "w") as f:
         f.write(dict_to_yaml(d))
@@ -265,6 +266,52 @@ def update_operator_kustomize_prepackaged_images(
         print(err)
 
 
+def update_alibi_detect_image(
+    fpath, seldon_core_version, debug=False
+):
+    fpath = os.path.realpath(fpath)
+    if debug:
+        print("processing [{}]".format(fpath))
+    args = [
+        "sed",
+        "-i",
+        f"s|seldonio/alibi-detect-server:\(.*\)|seldonio/alibi-detect-server:{seldon_core_version}|",
+        fpath,
+    ]
+    err, out = run_command(args, debug)
+
+    if err is None:
+        print(f"updated alibi-detect-server version in {fpath}")
+    else:
+        print(f"error updating alibi-detect-server version in {fpath}")
+        print(err)
+
+
+def update_models_version(
+    fpath, model_name, current_seldon_core_version, seldon_core_version, debug=False
+):
+    fpath = os.path.realpath(fpath)
+    if debug:
+        print("processing [{}]".format(fpath))
+    args = [
+        "sed",
+        "-i",
+        f"s|gs://seldon-models/v{current_seldon_core_version}/{model_name}|gs://seldon-models/v{seldon_core_version}/{model_name}|",
+        fpath,
+    ]
+    err, out = run_command(args, debug)
+
+    if err == None:
+        print(
+            f"updated model uri gs://seldon-models/v:{seldon_core_version}{model_name} in {fpath}"
+        )
+    else:
+        print(
+            f"error updating model uri gs://seldon-models/v:{seldon_core_version}{model_name} in {fpath}"
+        )
+        print(err)
+
+
 def update_versions_txt(seldon_core_version, debug=False):
     with open("version.txt", "w") as f:
         f.write("{seldon_core_version}\n".format(**locals()))
@@ -274,7 +321,7 @@ def update_versions_txt(seldon_core_version, debug=False):
 def get_current_version():
     with open("version.txt", "r") as f:
         version = f.read()
-        print("Current version fron version.txt", version)
+        print("Current version from version.txt:", version)
         return version.strip()
 
 
@@ -424,8 +471,10 @@ def set_version(
     chart_yaml_files,
     operator_values_yaml_file,
     operator_kustomize_yaml_file,
+    alibi_detect_image_files,
     abtest_yaml_file,
     mab_yaml_file,
+    model_uri_updates,
     debug=False,
 ):
     update_python_wrapper_fixed_versions(seldon_core_version, debug)
@@ -509,6 +558,17 @@ def set_version(
             debug,
         )
 
+    # update models' uris
+    for model_name, paths in model_uri_updates.items():
+        for fpath in paths:
+            update_models_version(
+                fpath, model_name, current_seldon_core_version, seldon_core_version
+            )
+
+    # update alibi detect image references
+    for fpath in alibi_detect_image_files:
+        update_alibi_detect_image(fpath, seldon_core_version)
+
     # Update image version labels
     update_image_metadata_json(seldon_core_version, debug)
     update_dockerfile_label_version(seldon_core_version, debug)
@@ -525,6 +585,59 @@ def main(argv):
     AB_VALUES_YAML_FILE = "helm-charts/seldon-abtest/values.yaml"
     MAB_VALUES_YAML_FILE = "helm-charts/seldon-mab/values.yaml"
 
+    MODEL_URI_UPDATES = {
+        "sklearn/iris": [
+            "servers/sklearnserver/samples/iris.yaml",
+            "servers/sklearnserver/samples/iris_custom.yaml",
+            "servers/sklearnserver/samples/iris_predict.yaml",
+            "testing/benchmarking/automated-benchmark/README.ipynb",
+            "testing/scripts/test_benchmark.py",
+            "notebooks/server_examples.ipynb",
+            "notebooks/resources/istio_shadow.yaml",
+            "examples/streaming/knative-eventing/README.ipynb",
+            "examples/streaming/knative-eventing/README.md",
+            "examples/streaming/knative-eventing/assets/simple-iris-deployment.yaml",
+            "examples/security/ssl_requests/README.ipynb",
+            "examples/security/ssl_requests/README.md",
+            "examples/iter8/progressive_rollout/separate_sdeps/abtest.ipynb",
+            "examples/iter8/progressive_rollout/separate_sdeps/baseline.yaml",
+            "examples/iter8/progressive_rollout/single_sdep/abtest.ipynb",
+            "examples/iter8/progressive_rollout/single_sdep/abtest.yaml",
+            "examples/iter8/progressive_rollout/single_sdep/promote-v1.yaml",
+            "examples/init_containers/custom_init_container.ipynb",
+            "examples/feedback/feedback-metrics-server/README.ipynb",
+            "examples/feedback/feedback-metrics-server/README.md",
+            "examples/feedback/metrics-server/README.ipynb",
+            "examples/feedback/metrics-server/README.md",
+            "examples/batch/argo-workflows-batch/helm-charts/seldon-batch-workflow/values.yaml",
+            "examples/batch/hdfs-argo-workflows/deployment.yaml",
+            "examples/batch/hdfs-argo-workflows/hdfs-batch.ipynb",
+            "examples/batch/kubeflow-pipelines-batch/README.ipynb",
+            "examples/batch/kubeflow-pipelines-batch/README.md",
+            "examples/batch/kubeflow-pipelines-batch/assets/seldon-batch-pipeline.py",
+            "doc/source/workflow/quickstart.md",
+            "doc/source/servers/kfserving-storage-initializer.md",
+            "doc/source/servers/overview.md",
+            "doc/source/servers/sklearn.md",
+            "doc/source/graph/protocols.md",
+            "doc/source/rollouts/abtests.md",
+            "README.md",
+        ],
+        "sklearn/moviesentiment": [
+            "testing/resources/movies-text-explainer.yaml",
+            "notebooks/explainer_examples.ipynb",
+            "notebooks/resources/moviesentiment_explainer.yaml",
+        ],
+        "elasticnet_wine": [
+            "notebooks/server_examples.ipynb",
+        ],
+    }
+
+    ALIBI_DETECT_FILES = [
+        "testing/resources/adserver-cifar10-od-rclone.yaml",
+        "testing/resources/adserver-cifar10-od.yaml",
+    ]
+
     opts = getOpts(argv[1:])
     current_version = get_current_version()
     if opts.debug:
@@ -536,8 +649,10 @@ def main(argv):
         CHART_YAML_FILES,
         OPERATOR_VALUES_YAML_FILE,
         OPERATOR_KUSTOMIZE_CONFIGMAP,
+        ALIBI_DETECT_FILES,
         AB_VALUES_YAML_FILE,
         MAB_VALUES_YAML_FILE,
+        MODEL_URI_UPDATES,
         opts.debug,
     )
 

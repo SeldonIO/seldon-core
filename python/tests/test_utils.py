@@ -1,4 +1,5 @@
 import base64
+import json
 import logging
 import pickle
 
@@ -8,6 +9,20 @@ from google.protobuf import any_pb2
 from google.protobuf.struct_pb2 import Value
 
 import seldon_core.utils as scu
+from seldon_core.env_utils import (
+    ENV_MODEL_IMAGE,
+    ENV_MODEL_NAME,
+    ENV_PREDICTOR_LABELS,
+    ENV_PREDICTOR_NAME,
+    ENV_SELDON_DEPLOYMENT_NAME,
+    NONIMPLEMENTED_IMAGE_MSG,
+    NONIMPLEMENTED_MSG,
+    get_deployment_name,
+    get_image_name,
+    get_model_name,
+    get_predictor_name,
+    get_predictor_version,
+)
 from seldon_core.flask_utils import SeldonMicroserviceException
 from seldon_core.imports_helper import _TF_PRESENT
 from seldon_core.proto import prediction_pb2
@@ -469,3 +484,67 @@ def test_getenv_as_bool(monkeypatch, env_val, expected):
 
     value = scu.getenv_as_bool(env_var, default=False)
     assert value == expected
+
+
+class TestEnvironmentVariables:
+    """
+    Tests for getting values from environment variables
+    """
+
+    @pytest.mark.parametrize(
+        "val, expected_val, env_var, getter",
+        [
+            (
+                "DUMMY_VAL_NAME",
+                "DUMMY_VAL_NAME",
+                ENV_SELDON_DEPLOYMENT_NAME,
+                get_deployment_name,
+            ),
+            ("DUMMY_VAL_NAME", "DUMMY_VAL_NAME", ENV_MODEL_NAME, get_model_name),
+            ("DUMMY_VAL_NAME", "DUMMY_VAL_NAME", ENV_MODEL_IMAGE, get_image_name),
+            (
+                "DUMMY_VAL_NAME",
+                "DUMMY_VAL_NAME",
+                ENV_PREDICTOR_NAME,
+                get_predictor_name,
+            ),
+            (
+                json.dumps({"key": "dummy", "version": "2"}),
+                "2",
+                ENV_PREDICTOR_LABELS,
+                get_predictor_version,
+            ),
+        ],
+    )
+    def test_get_deployment_name_ok(
+        self, monkeypatch, val, expected_val, env_var, getter
+    ):
+        monkeypatch.setenv(env_var, val)
+        assert getter() == expected_val
+
+    @pytest.mark.parametrize(
+        "val, getter",
+        [
+            (NONIMPLEMENTED_MSG, get_deployment_name),
+            (NONIMPLEMENTED_MSG, get_model_name),
+            (NONIMPLEMENTED_IMAGE_MSG, get_image_name),
+            (NONIMPLEMENTED_MSG, get_predictor_name),
+            (NONIMPLEMENTED_MSG, get_predictor_version),
+        ],
+    )
+    def test_env_notset_ok(self, val, getter):
+        assert getter() == val
+
+    @pytest.mark.parametrize(
+        "val, getter",
+        [
+            ("0", get_deployment_name),
+            ("0", get_model_name),
+            ("0", get_model_name),
+            ("0", get_image_name),
+            ("0", get_predictor_name),
+            ("0", get_predictor_version),
+        ],
+    )
+    def test_env_notset_with_default_ok(self, val, getter):
+        assert getter(default_val=val) == val

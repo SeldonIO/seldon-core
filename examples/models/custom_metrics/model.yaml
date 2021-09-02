@@ -3,7 +3,6 @@ kind: SeldonDeployment
 metadata:
   name: seldon-model
 spec:
-  name: test-deployment
   predictors:
   - componentSpecs:
     - spec:
