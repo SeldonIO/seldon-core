@@ -34,8 +34,7 @@ def extract_request_id(headers):
         request_id = headers.get(CLOUD_EVENT_ID)
     return request_id
 
-
-def build_index_name(headers):
+def build_index_name(headers, prefix = "inference", suffix = True, name_override = None):
     # use a fixed index name if user chooses to do so
     index_name = os.getenv("INDEX_NAME")
     if index_name:
@@ -44,10 +43,10 @@ def build_index_name(headers):
     # Adding seldon_environment (dev/test/staging/prod) to index_name if defined as a environment variable
     seldon_environment = os.getenv("SELDON_ENVIRONMENT")
     if seldon_environment:
-       index_name = "inference-log-" + seldon_environment + "-" + serving_engine(headers)
+       index_name = prefix+"-log-" + seldon_environment + "-" + serving_engine(headers)
     else:
-       index_name = "inference-log-" + serving_engine(headers)
-
+       index_name = prefix+"-log-" + serving_engine(headers)
+   
     # otherwise create an index per deployment
     # index_name = "inference-log-" + serving_engine(headers)
     namespace = clean_header(NAMESPACE_HEADER_NAME, headers)
@@ -55,21 +54,24 @@ def build_index_name(headers):
         index_name = index_name + "-unknown-namespace"
     else:
         index_name = index_name + "-" + namespace
-    inference_service_name = clean_header(INFERENCESERVICE_HEADER_NAME, headers)
-    # won't get inference service name for older kfserving versions i.e. prior to https://github.com/kubeflow/kfserving/pull/699/
-    if not inference_service_name:
-        inference_service_name = clean_header(MODELID_HEADER_NAME, headers)
-
+    if name_override is None:
+        inference_service_name = clean_header(INFERENCESERVICE_HEADER_NAME, headers)
+        # won't get inference service name for older kfserving versions i.e. prior to https://github.com/kubeflow/kfserving/pull/699/
+        if not inference_service_name:
+            inference_service_name = clean_header(MODELID_HEADER_NAME, headers)
+    else:
+        inference_service_name = name_override
     if not inference_service_name:
         index_name = index_name + "-unknown-inferenceservice"
     else:
         index_name = index_name + "-" + inference_service_name
 
-    endpoint_name = clean_header(ENDPOINT_HEADER_NAME, headers)
-    if not endpoint_name:
-        index_name = index_name + "-unknown-endpoint"
-    else:
-        index_name = index_name + "-" + endpoint_name
+    if suffix:
+        endpoint_name = clean_header(ENDPOINT_HEADER_NAME, headers)
+        if not endpoint_name:
+            index_name = index_name + "-unknown-endpoint"
+        else:
+            index_name = index_name + "-" + endpoint_name
 
     return index_name
 
@@ -96,6 +98,11 @@ def parse_message_type(type_header):
         or type_header == "org.kubeflow.serving.inference.outlier"
     ):
         return "outlier"
+    if (
+        type_header == "io.seldon.serving.inference.drift"
+        or type_header == "org.kubeflow.serving.inference.drift"
+    ):
+        return "drift"
     return "unknown"
 
 

@@ -206,6 +206,43 @@ def process_and_update_elastic_doc(
                 elastic_object, message_type, item_body, item_request_id, index_name
             )
             index = index + 1
+    elif "data" in new_content_part and message_type == "drift":
+        item_body = doc_body.copy()
+
+        namespace = log_helper.get_header(log_helper.NAMESPACE_HEADER_NAME, headers)
+        inferenceservice_name = log_helper.get_header(log_helper.INFERENCESERVICE_HEADER_NAME, headers)
+        endpoint_name = log_helper.get_header(log_helper.ENDPOINT_HEADER_NAME, headers)
+        serving_engine = log_helper.serving_engine(headers)
+        item_body[message_type]["data"]["is_drift"] = bool(item_body[message_type]["data"]["is_drift"])
+        item_body[message_type]["data"]["drift_type"] = "batch"
+        if (
+                "distance" in item_body[message_type]["data"]
+                and item_body[message_type]["data"]["distance"] is not None
+                and isinstance(item_body[message_type]["data"]["distance"], list)
+            ):
+                content_dist = np.array(item_body[message_type]["data"]["distance"])
+                x = np.expand_dims(content_dist, axis=0)
+                item_body[message_type]["data"]["drift_type"] = "feature"
+                item_body[message_type]["data"]["distance"] = createElelmentsArray(x, None, namespace, serving_engine, inferenceservice_name, endpoint_name, "request")
+        if (
+                "p_val" in item_body[message_type]["data"]
+                and item_body[message_type]["data"]["p_val"] is not None
+                and isinstance(item_body[message_type]["data"]["p_val"], list)
+            ):
+                content_dist = np.array(item_body[message_type]["data"]["p_val"])
+                x = np.expand_dims(content_dist, axis=0)
+                item_body[message_type]["data"]["drift_type"] = "feature"
+                item_body[message_type]["data"]["p_val"] = createElelmentsArray(x, None, namespace, serving_engine, inferenceservice_name, endpoint_name, "request")
+        detectorName=None
+        ce_source = item_body[message_type]["ce-source"]
+        if ce_source.startswith("io.seldon.serving."):
+            detectorName =  ce_source[len("io.seldon.serving."):]
+        elif ce_source.startswith("org.kubeflow.serving."):
+            detectorName =  ce_source[len("org.kubeflow.serving."):]
+        index_name = log_helper.build_index_name(request.headers, message_type, False, detectorName)
+        upsert_doc_to_elastic(
+            elastic_object, message_type, item_body, request_id, index_name
+        )
     else:
         print("unexpected data format")
         print(new_content_part)
@@ -476,7 +513,6 @@ def extractRow(
     # don't want to set it at the payload level
     reqJson["dataType"] = dataType
     return reqJson
-
 
 def createElelmentsArray(X: np.ndarray, names: list, namespace_name, serving_engine, inferenceservice_name, endpoint_name, message_type):
     metadata_schema = None
