@@ -34,14 +34,12 @@ def extract_request_id(headers):
         request_id = headers.get(CLOUD_EVENT_ID)
     return request_id
 
-def build_index_name(headers, prefix = None, suffix = True, name_override = None):
+def build_index_name(headers, prefix = "inference", suffix = True, name_override = None):
     # use a fixed index name if user chooses to do so
     index_name = os.getenv("INDEX_NAME")
     if index_name:
         return index_name
 
-    if prefix is None:
-        prefix = "inference"
     # Adding seldon_environment (dev/test/staging/prod) to index_name if defined as a environment variable
     seldon_environment = os.getenv("SELDON_ENVIRONMENT")
     if seldon_environment:
