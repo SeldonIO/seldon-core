@@ -225,7 +225,12 @@ def _start_request_worker(
             # as a single request and split the response into multiple responses.
             if len(input_data) > 1:
                 str_outputs = _send_batch_predict_multi_request(
-                    input_data, data_type, sc, retries, batch_id, payload_type,
+                    input_data,
+                    data_type,
+                    sc,
+                    retries,
+                    batch_id,
+                    payload_type,
                 )
                 for str_output in str_outputs:
                     q_out.put(str_output)

@@ -651,7 +651,10 @@ def create_and_run_script(folder, notebook):
     run(f"chmod u+x {folder}/{notebook}.py", shell=True, check=True)
     try:
         run(
-            f"cd {folder} && ./{notebook}.py", shell=True, check=True, encoding="utf-8",
+            f"cd {folder} && ./{notebook}.py",
+            shell=True,
+            check=True,
+            encoding="utf-8",
         )
     except CalledProcessError as e:
         logging.error(
@@ -705,7 +708,8 @@ def print_benchmark_results(final):
 
 
 def parse_bench_results_from_log(
-    results_log, print_results=True,
+    results_log,
+    print_results=True,
 ):
     final = {}
     # For GHZ / grpc
