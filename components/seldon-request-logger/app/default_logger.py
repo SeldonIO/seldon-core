@@ -233,7 +233,12 @@ def process_and_update_elastic_doc(
                 x = np.expand_dims(content_dist, axis=0)
                 item_body[message_type]["data"]["drift_type"] = "feature"
                 item_body[message_type]["data"]["p_val"] = createElelmentsArray(x, None, namespace, serving_engine, inferenceservice_name, endpoint_name, "request")
-        index_name = log_helper.build_index_name(request.headers, message_type, False)
+        detectorName=None
+        if item_body[message_type]["ce-source"].startswith("io.seldon.serving."):
+            detectorName =  item_body[message_type]["ce-source"][len("io.seldon.serving."):]
+        elif item_body[message_type]["ce-source"].startswith("org.kubeflow.serving."):
+            detectorName =  item_body[message_type]["ce-source"][len("org.kubeflow.serving."):]
+        index_name = log_helper.build_index_name(request.headers, message_type, False, detectorName)
         upsert_doc_to_elastic(
             elastic_object, message_type, item_body, request_id, index_name
         )
