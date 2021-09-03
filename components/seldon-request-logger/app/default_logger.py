@@ -148,6 +148,11 @@ def process_and_update_elastic_doc(
     # req or res might be batches of instances so split out into individual docs
     if "instance" in new_content_part:
 
+        if log_helper.is_reference_data(headers):
+            index_name = log_helper.build_index_name(headers, prefix="reference", suffix=False)
+            # Ignore payload for reference data
+            doc_body[message_type].pop("payload", None)
+
         if type(new_content_part["instance"]) == type([]) and not (new_content_part["dataType"] == "json"):
             # if we've a list then this is batch
             # we assume first dimension is always batch
