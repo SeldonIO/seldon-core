@@ -239,7 +239,11 @@ def process_and_update_elastic_doc(
                 content_dist = np.array(item_body[message_type]["data"]["distance"])
                 x = np.expand_dims(content_dist, axis=0)
                 item_body[message_type]["data"]["drift_type"] = "feature"
-                item_body[message_type]["data"]["distance"] = createElelmentsArray(x, None, namespace, serving_engine, inferenceservice_name, endpoint_name, "request")
+                elements = createElelmentsArray(x, None, namespace, serving_engine, inferenceservice_name, endpoint_name, "request", True)
+                if type(elements) == type([]):
+                    elements = elements[0]
+                item_body[message_type]["data"]["feature_distance"] = elements
+                del item_body[message_type]["data"]["distance"]
         if (
                 "p_val" in item_body[message_type]["data"]
                 and item_body[message_type]["data"]["p_val"] is not None
@@ -248,7 +252,11 @@ def process_and_update_elastic_doc(
                 content_dist = np.array(item_body[message_type]["data"]["p_val"])
                 x = np.expand_dims(content_dist, axis=0)
                 item_body[message_type]["data"]["drift_type"] = "feature"
-                item_body[message_type]["data"]["p_val"] = createElelmentsArray(x, None, namespace, serving_engine, inferenceservice_name, endpoint_name, "request")
+                elements = createElelmentsArray(x, None, namespace, serving_engine, inferenceservice_name, endpoint_name, "request", True)
+                if type(elements) == type([]):
+                    elements = elements[0]
+                item_body[message_type]["data"]["feature_p_val"] = elements
+                del item_body[message_type]["data"]["p_val"]
         detectorName=None
         ce_source = item_body[message_type]["ce-source"]
         if ce_source.startswith("io.seldon.serving."):
@@ -530,7 +538,7 @@ def extractRow(
     reqJson["dataType"] = dataType
     return reqJson
 
-def createElelmentsArray(X: np.ndarray, names: list, namespace_name, serving_engine, inferenceservice_name, endpoint_name, message_type):
+def createElelmentsArray(X: np.ndarray, names: list, namespace_name, serving_engine, inferenceservice_name, endpoint_name, message_type, force_raw_value = False):
     metadata_schema = None
 
     if namespace_name is not None and inferenceservice_name is not None and serving_engine is not None and endpoint_name is not None:
@@ -543,12 +551,12 @@ def createElelmentsArray(X: np.ndarray, names: list, namespace_name, serving_eng
     if not metadata_schema:
         results = createElementsNoMetadata(X, names, results)
     else:
-        results = createElementsWithMetadata(X, names, results, metadata_schema, message_type)
+        results = createElementsWithMetadata(X, names, results, metadata_schema, message_type, force_raw_value)
 
     return results
 
 
-def createElementsWithMetadata(X, names, results, metadata_schema, message_type):
+def createElementsWithMetadata(X, names, results, metadata_schema, message_type, force_raw_value = False):
     #we want field names from metadata if available - also build a dict of metadata by name for easy lookup
     metadata_dict = {}
 
@@ -582,7 +590,6 @@ def createElementsWithMetadata(X, names, results, metadata_schema, message_type)
                     names.append(elem['name'])
                     metadata_dict[elem['name']] = elem
 
-
     if isinstance(X, np.ndarray):
         if len(X.shape) == 1:
             if X.shape[0] != len(names):
@@ -594,9 +601,9 @@ def createElementsWithMetadata(X, names, results, metadata_schema, message_type)
                 d = {}
                 for num, name in enumerate(names, start=0):
                     if isinstance(X[i], bytes):
-                        d[name] = lookupValueWithMetadata(name,metadata_dict,X[i].decode("utf-8"))
+                        d[name] = lookupValueWithMetadata(name,metadata_dict,X[i].decode("utf-8"), force_raw_value)
                     else:
-                        d[name] = lookupValueWithMetadata(name,metadata_dict,X[i])
+                        d[name] = lookupValueWithMetadata(name,metadata_dict,X[i], force_raw_value)
                 temp_results.append(d)
             results = mergeLinkedColumns(temp_results, metadata_dict)
         elif len(X.shape) >= 2:
@@ -612,10 +619,10 @@ def createElementsWithMetadata(X, names, results, metadata_schema, message_type)
                     if isinstance(d[name], Iterable):
                         newlist = []
                         for val in d[name]:
-                            newlist.append(lookupValueWithMetadata(name,metadata_dict,val))
+                            newlist.append(lookupValueWithMetadata(name,metadata_dict,val), force_raw_value)
                         d[name] = newlist
                     else:
-                        d[name] = lookupValueWithMetadata(name,metadata_dict,d[name])
+                        d[name] = lookupValueWithMetadata(name,metadata_dict,d[name], force_raw_value)
                 temp_results.append(d)
             results = mergeLinkedColumns(temp_results, metadata_dict)
 
@@ -663,14 +670,14 @@ def mergeLinkedColumns(raw_list, metadata_dict):
 
     return new_list
 
-def lookupValueWithMetadata(name, metadata_dict, raw_value):
+def lookupValueWithMetadata(name, metadata_dict, raw_value, force_raw_value = False):
     metadata_elem = metadata_dict[name]
 
     if not metadata_elem:
         return raw_value
 
     #categorical currently only case where we replace value
-    if metadata_elem['type'] == "CATEGORICAL":
+    if metadata_elem['type'] == "CATEGORICAL" and not force_raw_value:
 
         if metadata_elem['data_type'] == 'INT':
             #need to convert raw vals back to ints as could have been floatified
