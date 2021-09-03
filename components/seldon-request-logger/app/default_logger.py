@@ -109,6 +109,11 @@ def metadata():
     sys.stdout.flush()
     return Response("problem looking up metadata", 500)
 
+
+class BadPayloadException(Exception):
+    pass
+
+
 def process_and_update_elastic_doc(
     elastic_object, message_type, message_body, request_id, headers, index_name
 ):
@@ -120,7 +125,13 @@ def process_and_update_elastic_doc(
         sys.stdout.flush()
 
     # first do any needed transformations
-    new_content_part = process_content(message_type, message_body, headers)
+    try:
+        new_content_part = process_content(message_type, message_body, headers)
+    except BadPayloadException as e:
+        logging.warning(f"bad payload received. " +
+                        f"Not inserting {message_type} data with request id {request_id} into elasticsearch: " +
+                        f"{e}")
+        return added_content
 
     # set metadata to go just in this part (request or response) and not top-level
     log_helper.field_from_header(
@@ -136,6 +147,11 @@ def process_and_update_elastic_doc(
 
     # req or res might be batches of instances so split out into individual docs
     if "instance" in new_content_part:
+
+        if log_helper.is_reference_data(headers):
+            index_name = log_helper.build_index_name(headers, prefix="reference", suffix=False)
+            # Ignore payload for reference data
+            doc_body[message_type].pop("payload", None)
 
         if type(new_content_part["instance"]) == type([]) and not (new_content_part["dataType"] == "json"):
             # if we've a list then this is batch
@@ -569,6 +585,9 @@ def createElementsWithMetadata(X, names, results, metadata_schema, message_type)
 
     if isinstance(X, np.ndarray):
         if len(X.shape) == 1:
+            if X.shape[0] != len(names):
+                raise BadPayloadException(
+                    f"size of columns ({X.shape[0]})do not match number of features ({len(names)})")
             temp_results = []
             results = []
             for i in range(X.shape[0]):
@@ -581,6 +600,9 @@ def createElementsWithMetadata(X, names, results, metadata_schema, message_type)
                 temp_results.append(d)
             results = mergeLinkedColumns(temp_results, metadata_dict)
         elif len(X.shape) >= 2:
+            if X.shape[1] != len(names):
+                raise BadPayloadException(
+                    f"size of columns ({X.shape[1]})do not match number of features ({len(names)})")
             temp_results = []
             results = []
             for i in range(X.shape[0]):

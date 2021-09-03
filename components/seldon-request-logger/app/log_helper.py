@@ -46,7 +46,7 @@ def build_index_name(headers, prefix = "inference", suffix = True, name_override
        index_name = prefix+"-log-" + seldon_environment + "-" + serving_engine(headers)
     else:
        index_name = prefix+"-log-" + serving_engine(headers)
-   
+
     # otherwise create an index per deployment
     # index_name = "inference-log-" + serving_engine(headers)
     namespace = clean_header(NAMESPACE_HEADER_NAME, headers)
@@ -76,15 +76,27 @@ def build_index_name(headers, prefix = "inference", suffix = True, name_override
     return index_name
 
 
+def is_reference_data(headers):
+    type_header = headers.get(TYPE_HEADER_NAME)
+    if type_header.startswith("io.seldon.serving.reference") or \
+            type_header.startswith("org.kubeflow.serving.reference"):
+        return True
+    return False
+
+
 def parse_message_type(type_header):
     if (
         type_header == "io.seldon.serving.inference.request"
         or type_header == "org.kubeflow.serving.inference.request"
+        or type_header == "io.seldon.serving.reference.request"
+        or type_header == "org.kubeflow.serving.reference.request"
     ):
         return "request"
     if (
         type_header == "io.seldon.serving.inference.response"
         or type_header == "org.kubeflow.serving.inference.response"
+        or type_header == "io.seldon.serving.reference.response"
+        or type_header == "org.kubeflow.serving.reference.response"
     ):
         return "response"
     if (
