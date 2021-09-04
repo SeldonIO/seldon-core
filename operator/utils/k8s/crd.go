@@ -102,11 +102,11 @@ func (cc *CrdCreator) findOrCreateCRDV1(rawYaml []byte) (*extensionsv1.CustomRes
 }
 
 func (cc *CrdCreator) findOrCreateCRD(rawYamlv1 []byte, rawYamlv1beta1 []byte) (v1.Object, error) {
-	sv, err := cc.discoveryClient.ServerVersion()
+	serverVersion, err := GetServerVersion(cc.discoveryClient, cc.logger)
 	if err != nil {
 		return nil, err
 	}
-	v, err := semver.NewVersion(sv.String())
+	v, err := semver.NewVersion(serverVersion)
 	if err != nil {
 		return nil, err
 	}
@@ -116,10 +116,10 @@ func (cc *CrdCreator) findOrCreateCRD(rawYamlv1 []byte, rawYamlv1beta1 []byte) (
 	}
 	check := c.Check(v)
 	if check {
-		cc.logger.Info("Creating V1 CRD for K8s", "version", sv.String())
+		cc.logger.Info("Creating V1 CRD for K8s", "version", serverVersion)
 		return cc.findOrCreateCRDV1(rawYamlv1)
 	} else {
-		cc.logger.Info("Creating V1Beta1 CRD for K8s", "version", sv.String())
+		cc.logger.Info("Creating V1Beta1 CRD for K8s", "version", serverVersion)
 		return cc.findOrCreateCRDV1beta1(rawYamlv1beta1)
 	}
 }

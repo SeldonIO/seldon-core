@@ -12,52 +12,23 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"strconv"
-	"strings"
 )
 
 const MutatingWebhookName = "seldon-mutating-webhook-configuration"
 
 type WebhookCreator struct {
-	clientset    kubernetes.Interface
-	certs        *Cert
-	logger       logr.Logger
-	majorVersion int
-	minorVersion int
-	scheme       *runtime.Scheme
+	clientset kubernetes.Interface
+	certs     *Cert
+	logger    logr.Logger
+	scheme    *runtime.Scheme
 }
 
 func NewWebhookCreator(client kubernetes.Interface, certs *Cert, logger logr.Logger, scheme *runtime.Scheme) (*WebhookCreator, error) {
-	serverVersion, err := client.Discovery().ServerVersion()
-	if err != nil {
-		return nil, err
-	}
-	logger.Info("Server version", "Major", serverVersion.Major, "Minor", serverVersion.Minor)
-	majorVersion, err := strconv.Atoi(serverVersion.Major)
-	if err != nil {
-		logger.Error(err, "Failed to parse majorVersion defaulting to 1")
-		majorVersion = 1
-	}
-	minorVersion, err := strconv.Atoi(serverVersion.Minor)
-	if err != nil {
-		if strings.HasSuffix(serverVersion.Minor, "+") {
-			minorVersion, err = strconv.Atoi(serverVersion.Minor[0 : len(serverVersion.Minor)-1])
-			if err != nil {
-				logger.Error(err, "Failed to parse minorVersion defaulting to 12")
-				minorVersion = 12
-			}
-		} else {
-			logger.Error(err, "Failed to parse minorVersion defaulting to 12")
-			minorVersion = 12
-		}
-	}
 	return &WebhookCreator{
-		clientset:    client,
-		certs:        certs,
-		logger:       logger,
-		majorVersion: majorVersion,
-		minorVersion: minorVersion,
-		scheme:       scheme,
+		clientset: client,
+		certs:     certs,
+		logger:    logger,
+		scheme:    scheme,
 	}, nil
 }
 
