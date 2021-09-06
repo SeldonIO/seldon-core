@@ -10,11 +10,10 @@ jobs:
   executor-lint:
 
     runs-on: ubuntu-18.04
-    container: seldonio/core-builder:0.22
+    container: seldonio/core-builder:0.25
 
     steps:
     - uses: actions/checkout@v2
     - name: test-executor
       run: |
         make -C executor lint
-
