@@ -2,13 +2,15 @@ package main
 
 import (
 	"flag"
+	"os"
+
 	"github.com/prometheus/common/log"
 	"github.com/seldonio/seldon-core/executor/api"
 	"github.com/seldonio/seldon-core/executor/api/kafka"
 	"github.com/seldonio/seldon-core/executor/api/rest"
 	"github.com/seldonio/seldon-core/executor/k8s"
 	predictor2 "github.com/seldonio/seldon-core/executor/predictor"
-	"os"
+	"go.uber.org/automaxprocs/maxprocs"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
@@ -64,6 +66,13 @@ func main() {
 
 	logf.SetLogger(zap.New())
 	logger := logf.Log.WithName("entrypoint")
+
+	// Set runtime.GOMAXPROCS to respect container limits if the env var GOMAXPROCS is not set or is invalid, preventing CPU throttling.
+	undo, err := maxprocs.Set(maxprocs.Logger(logger.Info))
+	defer undo()
+	if err != nil {
+		logger.Error(err, "failed to set GOMAXPROCS")
+	}
 
 	kafkaProxy := kafka.NewKafkaProxy(client, *modelName, *predictorName, *sdepName, *namespace, *broker, *hostname, int32(*httpPort), logger)
 

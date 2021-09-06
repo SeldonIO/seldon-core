@@ -34,6 +34,7 @@ import (
 	predictor2 "github.com/seldonio/seldon-core/executor/predictor"
 	"github.com/seldonio/seldon-core/executor/proto/tensorflow/serving"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	"go.uber.org/automaxprocs/maxprocs"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/reflection"
 	zapf "sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -260,6 +261,13 @@ func main() {
 
 	setupLogger()
 	logger := logf.Log.WithName("entrypoint")
+
+	// Set runtime.GOMAXPROCS to respect container limits if the env var GOMAXPROCS is not set or is invalid, preventing CPU throttling.
+	undo, err := maxprocs.Set(maxprocs.Logger(logger.Info))
+	defer undo()
+	if err != nil {
+		logger.Error(err, "failed to set GOMAXPROCS")
+	}
 
 	// Set hostname
 	if *hostname == "" {
