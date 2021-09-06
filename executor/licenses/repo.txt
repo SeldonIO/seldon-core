@@ -39,6 +39,7 @@ StackExchange/wmi
 VividCortex/gohistogram
 afex/hystrix-go
 agnivade/levenshtein
+ajstarks/svgo
 alcortesm/tgz
 alecthomas/jsonschema
 alecthomas/kingpin
@@ -165,6 +166,7 @@ fatih/camelcase
 fatih/color
 fatih/structs
 flynn/go-shlex
+fogleman/gg
 form3tech-oss/jwt-go
 fortytw2/leaktest
 franela/goblin
@@ -222,6 +224,7 @@ gofrs/flock
 gogo/googleapis
 gogo/protobuf
 golang-sql/civil
+golang/freetype
 golang/gddo
 golang/glog
 golang/groupcache
@@ -348,6 +351,7 @@ json-iterator/go
 jstemmer/go-junit-report
 jtolds/gls
 julienschmidt/httprouter
+jung-kurt/gofpdf
 kballard/go-shellquote
 kedacore/keda
 kelseyhightower/envconfig

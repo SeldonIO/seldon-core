@@ -69,6 +69,7 @@ github.com/StackExchange/wmi
 github.com/VividCortex/gohistogram
 github.com/afex/hystrix-go
 github.com/agnivade/levenshtein
+github.com/ajstarks/svgo
 github.com/alcortesm/tgz
 github.com/alecthomas/jsonschema
 github.com/alecthomas/kingpin
@@ -200,6 +201,7 @@ github.com/fatih/camelcase
 github.com/fatih/color
 github.com/fatih/structs
 github.com/flynn/go-shlex
+github.com/fogleman/gg
 github.com/form3tech-oss/jwt-go
 github.com/fortytw2/leaktest
 github.com/franela/goblin
@@ -258,6 +260,7 @@ github.com/gofrs/flock
 github.com/gogo/googleapis
 github.com/gogo/protobuf
 github.com/golang-sql/civil
+github.com/golang/freetype
 github.com/golang/gddo
 github.com/golang/glog
 github.com/golang/groupcache
@@ -392,6 +395,7 @@ github.com/json-iterator/go
 github.com/jstemmer/go-junit-report
 github.com/jtolds/gls
 github.com/julienschmidt/httprouter
+github.com/jung-kurt/gofpdf
 github.com/kballard/go-shellquote
 github.com/kedacore/keda
 github.com/kelseyhightower/envconfig
@@ -648,6 +652,7 @@ golang.org/x/xerrors
 gomodules.xyz/jsonpatch/v2
 gonum.org/v1/gonum
 gonum.org/v1/netlib
+gonum.org/v1/plot
 google.golang.org/api
 google.golang.org/appengine
 google.golang.org/cloud
@@ -728,6 +733,7 @@ pack.ag/amqp
 pgregory.net/rapid
 rsc.io/binaryregexp
 rsc.io/letsencrypt
+rsc.io/pdf
 rsc.io/quote/v3
 rsc.io/sampler
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client

@@ -32,6 +32,7 @@ import (
 	machinelearningv1alpha3 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha3"
 	"github.com/seldonio/seldon-core/operator/controllers"
 	k8sutils "github.com/seldonio/seldon-core/operator/utils/k8s"
+	"go.uber.org/automaxprocs/maxprocs"
 	"go.uber.org/zap"
 	istio "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
@@ -134,6 +135,13 @@ func main() {
 	setupLogger(logLevel, debug)
 
 	config := ctrl.GetConfigOrDie()
+
+	// Set runtime.GOMAXPROCS to respect container limits if the env var GOMAXPROCS is not set or is invalid, preventing CPU throttling.
+	undo, err := maxprocs.Set(maxprocs.Logger(setupLog.Info))
+	defer undo()
+	if err != nil {
+		setupLog.Error(err, "failed to set GOMAXPROCS")
+	}
 
 	//Override operator namespace from environment variable as the source of truth
 	operatorNamespace = utils.GetEnv("POD_NAMESPACE", operatorNamespace)

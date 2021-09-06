@@ -38,6 +38,7 @@ StackExchange/wmi,https://github.com/StackExchange/wmi/blob/master/LICENSE,MIT L
 VividCortex/gohistogram,https://github.com/VividCortex/gohistogram/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/VividCortex/gohistogram/master/LICENSE
 afex/hystrix-go,https://github.com/afex/hystrix-go/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/afex/hystrix-go/master/LICENSE
 agnivade/levenshtein,https://github.com/agnivade/levenshtein/blob/master/License.txt,MIT License,https://raw.githubusercontent.com/agnivade/levenshtein/master/License.txt
+ajstarks/svgo,https://github.com/ajstarks/svgo/blob/master/LICENSE,Creative Commons Attribution 4.0 International Public License,https://raw.githubusercontent.com/ajstarks/svgo/master/LICENSE
 alcortesm/tgz,https://github.com/alcortesm/tgz/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/alcortesm/tgz/master/LICENSE
 alecthomas/jsonschema,https://github.com/alecthomas/jsonschema/blob/master/COPYING,MIT License,https://raw.githubusercontent.com/alecthomas/jsonschema/master/COPYING
 alecthomas/kingpin,https://github.com/alecthomas/kingpin/blob/master/COPYING,MIT License,https://raw.githubusercontent.com/alecthomas/kingpin/master/COPYING
@@ -162,6 +163,7 @@ fatih/camelcase,https://github.com/fatih/camelcase/blob/master/LICENSE.md,MIT Li
 fatih/color,https://github.com/fatih/color/blob/master/LICENSE.md,MIT License,https://raw.githubusercontent.com/fatih/color/master/LICENSE.md
 fatih/structs,https://github.com/fatih/structs/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/fatih/structs/master/LICENSE
 flynn/go-shlex,https://github.com/flynn-archive/go-shlex/blob/master/COPYING,Apache License 2.0,https://raw.githubusercontent.com/flynn-archive/go-shlex/master/COPYING
+fogleman/gg,https://github.com/fogleman/gg/blob/master/LICENSE.md,MIT License,https://raw.githubusercontent.com/fogleman/gg/master/LICENSE.md
 form3tech-oss/jwt-go,https://github.com/form3tech-oss/jwt-go/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/form3tech-oss/jwt-go/master/LICENSE
 fortytw2/leaktest,https://github.com/fortytw2/leaktest/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/fortytw2/leaktest/master/LICENSE
 franela/goblin,https://github.com/franela/goblin/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/franela/goblin/master/LICENSE
@@ -176,7 +178,7 @@ globalsign/mgo,https://github.com/globalsign/mgo/blob/master/LICENSE,BSD 2-Claus
 go-bindata/go-bindata,https://github.com/go-bindata/go-bindata/blob/master/LICENSE,Public Domain per Creative Commons CC0 1.0 Universal (CC0 1.0),https://raw.githubusercontent.com/go-bindata/go-bindata/master/LICENSE
 go-critic/go-critic,https://github.com/go-critic/go-critic/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/go-critic/go-critic/master/LICENSE
 go-gl/glfw,https://github.com/go-gl/glfw/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/go-gl/glfw/master/LICENSE
-go-ini/ini,https://github.com/go-ini/ini/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/go-ini/ini/master/LICENSE
+go-ini/ini,https://github.com/go-ini/ini/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/go-ini/ini/main/LICENSE
 go-kit/kit,https://github.com/go-kit/kit/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/go-kit/kit/master/LICENSE
 go-kit/log,https://github.com/go-kit/log/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/go-kit/log/main/LICENSE
 go-ldap/ldap,https://github.com/go-ldap/ldap/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/go-ldap/ldap/master/LICENSE
@@ -219,6 +221,7 @@ gofrs/flock,https://github.com/gofrs/flock/blob/master/LICENSE,BSD 3-Clause "New
 gogo/googleapis,https://github.com/gogo/googleapis/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/gogo/googleapis/master/LICENSE
 gogo/protobuf,https://github.com/gogo/protobuf/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/gogo/protobuf/master/LICENSE
 golang-sql/civil,https://github.com/golang-sql/civil/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/golang-sql/civil/master/LICENSE
+golang/freetype,https://github.com/golang/freetype/blob/master/LICENSE,The GNU General Public License Version 3.0,https://raw.githubusercontent.com/golang/freetype/master/LICENSE
 golang/gddo,https://github.com/golang/gddo/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/golang/gddo/master/LICENSE
 golang/glog,https://github.com/golang/glog/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/golang/glog/master/LICENSE
 golang/groupcache,https://github.com/golang/groupcache/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/golang/groupcache/master/LICENSE
@@ -335,6 +338,7 @@ json-iterator/go,https://github.com/json-iterator/go/blob/master/LICENSE,MIT Lic
 jstemmer/go-junit-report,https://github.com/jstemmer/go-junit-report/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/jstemmer/go-junit-report/master/LICENSE
 jtolds/gls,https://github.com/jtolio/gls/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/jtolio/gls/master/LICENSE
 julienschmidt/httprouter,https://github.com/julienschmidt/httprouter/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/julienschmidt/httprouter/master/LICENSE
+jung-kurt/gofpdf,https://github.com/jung-kurt/gofpdf/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/jung-kurt/gofpdf/master/LICENSE
 kballard/go-shellquote,https://github.com/kballard/go-shellquote/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/kballard/go-shellquote/master/LICENSE
 kedacore/keda,https://github.com/kedacore/keda/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/kedacore/keda/main/LICENSE
 kelseyhightower/envconfig,https://github.com/kelseyhightower/envconfig/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/kelseyhightower/envconfig/master/LICENSE
@@ -407,7 +411,7 @@ nats-io/gnatsd,https://github.com/nats-io/nats-server/blob/main/LICENSE,Apache L
 nats-io/go-nats,https://github.com/nats-io/go-nats/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/nats-io/go-nats/master/LICENSE
 nats-io/jwt,https://github.com/nats-io/jwt/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/nats-io/jwt/master/LICENSE
 nats-io/nats-server,https://github.com/nats-io/nats-server/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/nats-io/nats-server/main/LICENSE
-nats-io/nats.go,https://github.com/nats-io/nats.go/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/nats-io/nats.go/master/LICENSE
+nats-io/nats.go,https://github.com/nats-io/nats.go/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/nats-io/nats.go/main/LICENSE
 nats-io/nkeys,https://github.com/nats-io/nkeys/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/nats-io/nkeys/master/LICENSE
 nats-io/nuid,https://github.com/nats-io/nuid/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/nats-io/nuid/master/LICENSE
 nbio/st,https://github.com/nbio/st/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/nbio/st/master/LICENSE
@@ -446,7 +450,7 @@ performancecopilot/speed,https://github.com/performancecopilot/speed/blob/main/L
 peterbourgon/diskv,https://github.com/peterbourgon/diskv/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/peterbourgon/diskv/master/LICENSE
 phayes/checkstyle,https://github.com/phayes/checkstyle/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/phayes/checkstyle/master/LICENSE
 phayes/freeport,https://github.com/phayes/freeport/blob/master/LICENSE.md,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/phayes/freeport/master/LICENSE.md
-pierrec/lz4,https://github.com/pierrec/lz4/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/pierrec/lz4/master/LICENSE
+pierrec/lz4,https://github.com/pierrec/lz4/blob/v4/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/pierrec/lz4/v4/LICENSE
 pkg/errors,https://github.com/pkg/errors/blob/master/LICENSE,BSD 2-Clause "Simplified" License,https://raw.githubusercontent.com/pkg/errors/master/LICENSE
 pkg/profile,https://github.com/pkg/profile/blob/master/LICENSE,BSD 2-Clause "Simplified" License,https://raw.githubusercontent.com/pkg/profile/master/LICENSE
 pmezard/go-difflib,https://github.com/pmezard/go-difflib/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/pmezard/go-difflib/master/LICENSE
