@@ -10,7 +10,7 @@ jobs:
   docs-lint:
 
     runs-on: ubuntu-18.04
-    container: seldonio/core-builder:0.22
+    container: seldonio/core-builder:0.25
 
     steps:
     - uses: actions/checkout@v2
@@ -21,11 +21,10 @@ jobs:
   docs-build:
 
     runs-on: ubuntu-18.04
-    container: seldonio/core-builder:0.22
+    container: seldonio/core-builder:0.25
 
     steps:
     - uses: actions/checkout@v2
     - name: docs-build-step
       run: |
         make -C doc install-dev html
-

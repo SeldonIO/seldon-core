@@ -15,7 +15,7 @@ spec:
         - image: uses:jenkins-x/jx3-pipeline-catalog/tasks/git-clone/git-clone-pr.yaml@versionStream
           name: ""
         - name: integration-step
-          image: seldonio/core-builder:0.22
+          image: seldonio/core-builder:0.25
           env:
             - name: SELDON_E2E_TESTS_TO_RUN
               value: base
@@ -67,4 +67,3 @@ spec:
   serviceAccountName: tekton-bot
   timeout: 6h0m0s
 status: {}
-

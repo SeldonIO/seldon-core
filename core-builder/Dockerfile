@@ -28,7 +28,7 @@ RUN wget https://github.com/openshift/source-to-image/releases/download/v1.1.14/
     mv ./sti /bin
 
 # Installing KIND
-RUN wget https://github.com/kubernetes-sigs/kind/releases/download/v0.6.1/kind-linux-amd64 && \
+RUN wget https://github.com/kubernetes-sigs/kind/releases/download/v0.11.1/kind-linux-amd64 && \
     chmod +x kind-linux-amd64 && \
     mv ./kind-linux-amd64 /bin/kind
 
@@ -94,7 +94,9 @@ ENV PATH /usr/local/go/bin:$PATH
 RUN wget https://dl.google.com/go/go1.16.5.linux-amd64.tar.gz && \
         tar -zxvf go1.16.5.linux-amd64.tar.gz && \
         mv go/ /usr/local/go
-RUN curl -sL https://go.kubebuilder.io/dl/2.3.0/linux/amd64 | tar -xz -C /tmp/ && \
+
+# Install kubebuilder (using github link)
+RUN curl -sL https://github.com/kubernetes-sigs/kubebuilder/releases/download/v2.3.0/kubebuilder_2.3.0_linux_amd64.tar.gz | tar -xz -C /tmp/ && \
         mv /tmp/kubebuilder_2.3.0_linux_amd64 /usr/local/kubebuilder/
 ENV PATH /usr/local/kubebuilder/bin:$PATH
 
