@@ -48,9 +48,11 @@ import (
 )
 
 const (
-	logLevelEnvVar  = "SELDON_LOG_LEVEL"
-	logLevelDefault = "INFO"
-	debugEnvVar     = "SELDON_DEBUG"
+	logLevelEnvVar          = "SELDON_LOG_LEVEL"
+	logLevelDefault         = "INFO"
+	debugEnvVar             = "SELDON_DEBUG"
+	leaderElectionIDEnvVar  = "LEADER_ELECTION_ID"
+	leaderElectionIDDefault = "a33bd623.machinelearning.seldon.io"
 )
 
 var (
@@ -114,6 +116,7 @@ func main() {
 	var createResources bool
 	var debug bool
 	var logLevel string
+	var leaderElectionID string
 
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
@@ -128,6 +131,7 @@ func main() {
 		"Enable debug mode. Logs will be sampled and less structured.",
 	)
 	flag.StringVar(&logLevel, "log-level", utils.GetEnv(logLevelEnvVar, logLevelDefault), "Log level.")
+	flag.StringVar(&leaderElectionID, "leader-election-id", utils.GetEnv(leaderElectionIDEnvVar, leaderElectionIDDefault), "Leader Election ID determines the name of the resource that leader election will use for holding the leader lock.")
 	flag.Parse()
 
 	ctx := context.Background()
@@ -165,7 +169,7 @@ func main() {
 		Scheme:             scheme,
 		MetricsBindAddress: metricsAddr,
 		LeaderElection:     enableLeaderElection,
-		LeaderElectionID:   "a33bd623.machinelearning.seldon.io",
+		LeaderElectionID:   leaderElectionID,
 		Port:               webHookPort,
 		Namespace:          namespace,
 	})
