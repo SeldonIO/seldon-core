@@ -36,10 +36,13 @@ spec:
         - --webhook-port={{ .Values.webhook.port }}
         - --create-resources=$(MANAGER_CREATE_RESOURCES)
         - --log-level=$(MANAGER_LOG_LEVEL)
+        - --leader-election-id=$(MANAGER_LEADER_ELECTION_ID)
         - '{{- if .Values.singleNamespace }}--namespace={{ include "seldon.namespace" . }}{{- end }}'
         command:
         - /manager
         env:
+        - name: MANAGER_LEADER_ELECTION_ID
+          value: '{{ .Values.manager.leaderElectionID }}'
         - name: MANAGER_LOG_LEVEL
           value: '{{ .Values.manager.logLevel }}'
         - name: WATCH_NAMESPACE

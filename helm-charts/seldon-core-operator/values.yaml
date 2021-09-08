@@ -79,6 +79,7 @@ manager:
   memoryLimit: 300Mi
   memoryRequest: 200Mi
   logLevel: INFO
+  leaderElectionID: a33bd623.machinelearning.seldon.io
 rbac:
   configmap:
     create: true
