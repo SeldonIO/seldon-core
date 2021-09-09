@@ -12,6 +12,7 @@ import (
 
 type KafkaJob struct {
 	headers    map[string][]string
+	reqKey     []byte
 	reqPayload payload.SeldonPayload
 }
 
@@ -62,6 +63,7 @@ func (ks *SeldonKafkaServer) processKafkaRequest(job *KafkaJob) {
 
 	err = ks.Producer.Produce(&kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &ks.TopicOut, Partition: kafka.PartitionAny},
+		Key:            job.reqKey,
 		Value:          resBytes,
 		Headers:        kafkaHeaders,
 	}, nil)
