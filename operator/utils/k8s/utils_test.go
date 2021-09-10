@@ -17,8 +17,9 @@ func TestServerVersion(t *testing.T) {
 		minor    string
 		expected string
 	}{
-		"1.18 test": {major: "1", minor: "18", expected: "1.18"},
-		"GKE 1.20":  {major: "1", minor: "20+", expected: "1.20"},
+		"1.18 test":             {major: "1", minor: "18", expected: "1.18"},
+		"GKE 1.20":              {major: "1", minor: "20+", expected: "1.20"},
+		"Unknown minor version": {major: "1", minor: "XYZ", expected: "1.18"},
 	}
 
 	for _, scenario := range scenarios {
