@@ -214,7 +214,7 @@ type SeldonDeploymentSpec struct {
 	Protocol    Protocol          `json:"protocol,omitempty" protobuf:"bytes,6,opt,name=protocol"`
 	Transport   Transport         `json:"transport,omitempty" protobuf:"bytes,7,opt,name=transport"`
 	Replicas    *int32            `json:"replicas,omitempty" protobuf:"bytes,8,opt,name=replicas"`
-	ServerType  ServerType        `json:"serverType,omitempty" protobuf:"bytes,8,opt,name=serverType"`
+	ServerType  ServerType        `json:"serverType,omitempty" protobuf:"bytes,9,opt,name=serverType"`
 }
 
 type SSL struct {
@@ -233,7 +233,7 @@ type PredictorSpec struct {
 	Traffic         int32                   `json:"traffic,omitempty" protobuf:"bytes,9,opt,name=traffic"`
 	Explainer       *Explainer              `json:"explainer,omitempty" protobuf:"bytes,10,opt,name=explainer"`
 	Shadow          bool                    `json:"shadow,omitempty" protobuf:"bytes,11,opt,name=shadow"`
-	SSL             *SSL                    `json:"ssl,omitempty" protobuf:"bytes,11,opt,name=ssl"`
+	SSL             *SSL                    `json:"ssl,omitempty" protobuf:"bytes,12,opt,name=ssl"`
 }
 
 type Protocol string
@@ -287,7 +287,7 @@ type Explainer struct {
 	Endpoint                *Endpoint          `json:"endpoint,omitempty" protobuf:"bytes,6,opt,name=endpoint"`
 	EnvSecretRefName        string             `json:"envSecretRefName,omitempty" protobuf:"bytes,7,opt,name=envSecretRefName"`
 	StorageInitializerImage string             `json:"storageInitializerImage,omitempty" protobuf:"bytes,8,opt,name=storageInitializerImage"`
-	Replicas                *int32             `json:"replicas,omitempty" protobuf:"string,4,opt,name=replicas"`
+	Replicas                *int32             `json:"replicas,omitempty" protobuf:"string,9,opt,name=replicas"`
 }
 
 // ObjectMeta is a copy of the "k8s.io/apimachinery/pkg/apis/meta/v1" ObjectMeta.
@@ -581,8 +581,7 @@ type PredictiveUnit struct {
 	ServiceAccountName      string                        `json:"serviceAccountName,omitempty" protobuf:"bytes,9,opt,name=serviceAccountName"`
 	EnvSecretRefName        string                        `json:"envSecretRefName,omitempty" protobuf:"bytes,10,opt,name=envSecretRefName"`
 	StorageInitializerImage string                        `json:"storageInitializerImage,omitempty" protobuf:"bytes,11,opt,name=storageInitializerImage"`
-	// Request/response  payload logging. v2alpha1 feature that is added to v1 for backwards compatibility while v1 is the storage version.
-	Logger *Logger `json:"logger,omitempty"`
+	Logger                  *Logger                       `json:"logger,omitempty" protobuf:"bytes,12,opt,name=logger"`
 }
 
 type LoggerMode string
