@@ -9636,9 +9636,8 @@ spec:
                         implementation:
                           type: string
                         logger:
-                          description: Request/response  payload logging. v2alpha1
-                            feature that is added to v1 for backwards compatibility
-                            while v1 is the storage version.
+                          description: Logger provides optional payload logging for
+                            all endpoints
                           properties:
                             mode:
                               description: What payloads to log
@@ -19585,9 +19584,8 @@ spec:
                         implementation:
                           type: string
                         logger:
-                          description: Request/response  payload logging. v2alpha1
-                            feature that is added to v1 for backwards compatibility
-                            while v1 is the storage version.
+                          description: Logger provides optional payload logging for
+                            all endpoints
                           properties:
                             mode:
                               description: What payloads to log
@@ -29534,9 +29532,8 @@ spec:
                         implementation:
                           type: string
                         logger:
-                          description: Request/response  payload logging. v2alpha1
-                            feature that is added to v1 for backwards compatibility
-                            while v1 is the storage version.
+                          description: Logger provides optional payload logging for
+                            all endpoints
                           properties:
                             mode:
                               description: What payloads to log
