@@ -18,6 +18,10 @@ func (s *ProtoPayload) GetContentType() string {
 	return APPLICATION_TYPE_PROTOBUF
 }
 
+func (s *ProtoPayload) GetContentEncoding() string {
+	return ""
+}
+
 func (s *ProtoPayload) GetBytes() ([]byte, error) {
 	data, err := proto.Marshal(s.Msg)
 	if err != nil {

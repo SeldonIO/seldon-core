@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	http2 "github.com/cloudevents/sdk-go/pkg/bindings/http"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+
+	http2 "github.com/cloudevents/sdk-go/pkg/bindings/http"
+	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/gorilla/mux"
@@ -22,7 +24,6 @@ import (
 	"github.com/seldonio/seldon-core/executor/predictor"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
-	"time"
 )
 
 type SeldonRestApi struct {
@@ -76,6 +77,10 @@ func (r *SeldonRestApi) CreateHttpServer(port int) *http.Server {
 
 func (r *SeldonRestApi) respondWithSuccess(w http.ResponseWriter, code int, payload payload.SeldonPayload) {
 	w.Header().Set("Content-Type", payload.GetContentType())
+	contentEncoding := payload.GetContentEncoding()
+	if contentEncoding != "" {
+		w.Header().Set("Content-Encoding", contentEncoding)
+	}
 	w.WriteHeader(code)
 
 	err := r.Client.Marshall(w, payload)
