@@ -64,10 +64,15 @@ func (smc *JSONRestClient) Marshall(w io.Writer, msg payload.SeldonPayload) erro
 		return invalidPayload("couldn't convert to []byte")
 	}
 
-	var escaped bytes.Buffer
+	var err error
+	if msg.GetContentEncoding() != "" {
+		_, err = w.Write(payload)
+	} else {
+		var escaped bytes.Buffer
 
-	json.HTMLEscape(&escaped, payload)
-	_, err := escaped.WriteTo(w)
+		json.HTMLEscape(&escaped, payload)
+		_, err = escaped.WriteTo(w)
+	}
 
 	return err
 }
