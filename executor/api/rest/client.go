@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	http2 "github.com/cloudevents/sdk-go/pkg/bindings/http"
 	"github.com/go-logr/logr"
 	"github.com/golang/protobuf/jsonpb"
@@ -192,7 +191,6 @@ func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method 
 	}
 
 	// Add metadata passed in
-	fmt.Println(meta)
 	smc.addHeaders(req, meta)
 
 	if opentracing.IsGlobalTracerRegistered() {
