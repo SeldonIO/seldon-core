@@ -292,9 +292,6 @@ func (r *SeldonRestApi) predictions(w http.ResponseWriter, req *http.Request) {
 	// Add Seldon Puid to Context
 	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, req.Header.Get(payload.SeldonPUIDHeader))
 
-	// Force no compressions
-	req.Header.Set("Accept-Encoding", "ident")
-
 	// Apply tracing if active
 	if opentracing.IsGlobalTracerRegistered() {
 		var serverSpan opentracing.Span
