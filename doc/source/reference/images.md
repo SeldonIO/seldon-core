@@ -24,7 +24,7 @@
 | [Seldon Python 3 (3.8) Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python3](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/) | 1.10.0 | 1.11.0-dev |
 | [Seldon Python 3.6 Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python36](https://hub.docker.com/r/seldonio/seldon-core-s2i-python36/tags/) | 1.10.0 | 1.11.0-dev |
 | [Seldon Python 3.7 Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python37](https://hub.docker.com/r/seldonio/seldon-core-s2i-python37/tags/) | 1.10.0 | 1.11.0-dev |
-| [Seldon Python 3.8 Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python38](https://hub.docker.com/r/seldonio/seldon-core-s2i-python38/tags/) |       | 1.11.0-dev |
+| [Seldon Python 3.8 Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python38](https://hub.docker.com/r/seldonio/seldon-core-s2i-python38/tags/) |  1.10.0  | 1.11.0-dev |
 | [Seldon Python 3.6 GPU Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python36-gpu](https://hub.docker.com/r/seldonio/seldon-core-s2i-python36-gpu/tags/) | 1.10.0 | 1.11.0-dev |
 | [Seldon Python 3.7 GPU Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python37-gpu](https://hub.docker.com/r/seldonio/seldon-core-s2i-python37-gpu/tags/) | 1.10.0 | 1.11.0-dev |
 | [Seldon Python 3.8 GPU Wrapper for S2I](../python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python38-gpu](https://hub.docker.com/r/seldonio/seldon-core-s2i-python38-gpu/tags/) |       | 1.11.0-dev |
