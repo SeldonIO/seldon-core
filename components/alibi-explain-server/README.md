@@ -27,6 +27,6 @@ make dev_install
 ### Notes
 
  * Pythin 3.8 ubi can not be presently used because this would require all explainer models to be saved as python 3.8 in examples otherwise dill load issues happen.
- * KernelShap has issues for models not saved in matching pyhthon to Docker container - e.g., py36
+ * KernelShap has issues for models not saved in matching python to Docker container - e.g., py36
 
 
