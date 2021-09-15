@@ -64,6 +64,11 @@ func (smc *JSONRestClient) Marshall(w io.Writer, msg payload.SeldonPayload) erro
 	}
 
 	var err error
+	// When "Content-Encoding" header is not empty it means that payload is compressed.
+	// We do not to modify it in this situation. This change was added during update of Triton
+	// image from 20.08 to 21.08 as new version allowed for gzip-encoded payloads. 
+	// Related PR: https://github.com/SeldonIO/seldon-core/pull/3589
+	// More on this header: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Encoding
 	if msg.GetContentEncoding() != "" {
 		_, err = w.Write(payload)
 	} else {
