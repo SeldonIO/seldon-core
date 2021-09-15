@@ -159,7 +159,7 @@ var configs = map[string]string{
           "protocols" : {
             "kfserving": {
               "image": "nvcr.io/nvidia/tritonserver",
-              "defaultImageVersion": "20.08-py3"
+              "defaultImageVersion": "21.08-py3"
               }
             }
         },

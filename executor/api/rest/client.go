@@ -63,10 +63,20 @@ func (smc *JSONRestClient) Marshall(w io.Writer, msg payload.SeldonPayload) erro
 		return invalidPayload("couldn't convert to []byte")
 	}
 
-	var escaped bytes.Buffer
+	var err error
+	// When "Content-Encoding" header is not empty it means that payload is compressed.
+	// We do not want to modify it in this situation. This change was added during update of Triton
+	// image from 20.08 to 21.08 as new version allowed for gzip-encoded payloads.
+	// Related PR: https://github.com/SeldonIO/seldon-core/pull/3589
+	// More on this header: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Encoding
+	if msg.GetContentEncoding() != "" {
+		_, err = w.Write(payload)
+	} else {
+		var escaped bytes.Buffer
 
-	json.HTMLEscape(&escaped, payload)
-	_, err := escaped.WriteTo(w)
+		json.HTMLEscape(&escaped, payload)
+		_, err = escaped.WriteTo(w)
+	}
 
 	return err
 }
@@ -164,7 +174,7 @@ func (smc *JSONRestClient) addHeaders(req *http.Request, m map[string][]string) 
 	}
 }
 
-func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method string, url *url.URL, msg []byte, meta map[string][]string, contentType string) ([]byte, string, error) {
+func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method string, url *url.URL, msg []byte, meta map[string][]string, contentType string, contentEncoding string) ([]byte, string, string, error) {
 	smc.Log.V(1).Info("Calling HTTP", "URL", url)
 
 	var req *http.Request
@@ -172,13 +182,16 @@ func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method 
 	if msg != nil {
 		req, err = http.NewRequest("POST", url.String(), bytes.NewBuffer(msg))
 		if err != nil {
-			return nil, "", err
+			return nil, "", "", err
 		}
 		req.Header.Set(http2.ContentType, contentType)
+		if contentEncoding != "" {
+			req.Header.Set("Content-Encoding", contentEncoding)
+		}
 	} else {
 		req, err = http.NewRequest("GET", url.String(), nil)
 		if err != nil {
-			return nil, "", err
+			return nil, "", "", err
 		}
 	}
 
@@ -205,24 +218,25 @@ func (smc *JSONRestClient) doHttp(ctx context.Context, modelName string, method 
 
 	response, err := client.Do(req)
 	if err != nil {
-		return nil, "", err
+		return nil, "", "", err
 	}
 
 	//Read response
 	b, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return nil, "", err
+		return nil, "", "", err
 	}
 	defer response.Body.Close()
 
 	contentTypeResponse := response.Header.Get(http2.ContentType)
+	contentEncodingResponse := response.Header.Get("Content-Encoding")
 
 	if response.StatusCode != http.StatusOK {
 		smc.Log.Info("httpPost failed", "response code", response.StatusCode)
 		err = &httpStatusError{StatusCode: response.StatusCode, Url: url}
 	}
 
-	return b, contentTypeResponse, err
+	return b, contentTypeResponse, contentEncodingResponse, err
 }
 
 func (smc *JSONRestClient) modifyMethod(method string, modelName string) string {
@@ -271,12 +285,14 @@ func (smc *JSONRestClient) call(ctx context.Context, modelName string, method st
 	}
 	var bytes []byte
 	var contentType = ContentTypeJSON
+	var contentEncoding = ""
 	if req != nil {
 		bytes = req.GetPayload().([]byte)
 		contentType = req.GetContentType()
+		contentEncoding = req.GetContentEncoding()
 	}
-	sm, contentType, err := smc.doHttp(ctx, modelName, method, &url, bytes, meta, contentType)
-	res := payload.BytesPayload{Msg: sm, ContentType: contentType}
+	sm, contentType, contentEncoding, err := smc.doHttp(ctx, modelName, method, &url, bytes, meta, contentType, contentEncoding)
+	res := payload.BytesPayload{Msg: sm, ContentType: contentType, ContentEncoding: contentEncoding}
 	return &res, err
 }
 
