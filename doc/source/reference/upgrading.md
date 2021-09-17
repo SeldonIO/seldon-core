@@ -8,6 +8,10 @@ Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed fe
 
 ## Upgrading to 1.10
 
+### Seldon Core Wrapper
+
+ * With introduction of multi-processing in gRPC module the `SO_REUSEPORT` socket option is required. On certain Python distributions you may see `AttributeError: module 'socket' has no attribute 'SO_REUSEPORT'` error which would render gRPC endpoint non-operational. For Anaconda Python distributions we confirmed that upgrading to Python 3.7.10 or 3.8.10 removes the problem.
+
 ### Server Updates
 
  * SKLearn server has been updated to use sklearn 0.24.2
