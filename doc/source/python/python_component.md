@@ -166,7 +166,7 @@ from seldon_core.user_model import SeldonResponse
 
 
 class Model:
-    def predict(self, features, names=[], meta={}):
+    def predict(self, X, names=[], meta={}):
         runtime_metrics = {"type": "COUNTER", "key": "instance_counter", "value": len(X)},
         runtime_tags = {"runtime": "tag", "shared": "right one"}
         return SeldonResponse(data=X, metrics=runtime_metrics, tags=runtime_tags)
