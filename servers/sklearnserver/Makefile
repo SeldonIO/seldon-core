@@ -8,7 +8,7 @@ build:
 	s2i build \
 		-E environment \
 		./sklearnserver \
-		seldonio/seldon-core-s2i-python37-ubi8:${VERSION} \
+		seldonio/seldon-core-s2i-python38-ubi8:${VERSION} \
 		${IMAGE_NAME}:${VERSION}
 
 push:
@@ -24,4 +24,3 @@ redhat-image-scan:
 		echo $${rh_password_sklearnserver} | docker login -u unused scan.connect.redhat.com --password-stdin
 	docker tag ${IMAGE_NAME}:${VERSION} scan.connect.redhat.com/${scan}/${IMAGE_NAME_BASE}:${VERSION}
 	docker push scan.connect.redhat.com/${scan}/${IMAGE_NAME_BASE}:${VERSION}
-
