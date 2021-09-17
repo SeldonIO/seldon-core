@@ -51,7 +51,7 @@ executor:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-core-executor
-    tag: 1.11.0-dev
+    tag: 1.11.0
   resources:
     cpuLimit: 500m
     cpuRequest: 500m
@@ -72,7 +72,7 @@ image:
   pullPolicy: IfNotPresent
   registry: docker.io
   repository: seldonio/seldon-core-operator
-  tag: 1.11.0-dev
+  tag: 1.11.0
 manager:
   cpuLimit: 500m
   cpuRequest: 100m
@@ -91,7 +91,7 @@ singleNamespace: false
 storageInitializer:
   cpuLimit: "1"
   cpuRequest: 100m
-  image: seldonio/rclone-storage-initializer:1.11.0-dev
+  image: seldonio/rclone-storage-initializer:1.11.0
   memoryLimit: 1Gi
   memoryRequest: 100Mi
 usageMetrics:
@@ -112,7 +112,7 @@ predictor_servers:
   MLFLOW_SERVER:
     protocols:
       seldon:
-        defaultImageVersion: "1.11.0-dev"
+        defaultImageVersion: "1.11.0"
         image: seldonio/mlflowserver
       kfserving:
         defaultImageVersion: "0.5.0"
@@ -120,7 +120,7 @@ predictor_servers:
   SKLEARN_SERVER:
     protocols:
       seldon:
-        defaultImageVersion: "1.11.0-dev"
+        defaultImageVersion: "1.11.0"
         image: seldonio/sklearnserver
       kfserving:
         defaultImageVersion: "0.5.0"
@@ -128,7 +128,7 @@ predictor_servers:
   TENSORFLOW_SERVER:
     protocols:
       seldon:
-        defaultImageVersion: "1.11.0-dev"
+        defaultImageVersion: "1.11.0"
         image: seldonio/tfserving-proxy
       tensorflow: 
         defaultImageVersion: 2.1.0
@@ -136,7 +136,7 @@ predictor_servers:
   XGBOOST_SERVER:
     protocols:
       seldon:
-        defaultImageVersion: "1.11.0-dev"
+        defaultImageVersion: "1.11.0"
         image: seldonio/xgboostserver
       kfserving:
         defaultImageVersion: "0.5.0"
@@ -183,7 +183,7 @@ engine:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/engine
-    tag: 1.11.0-dev
+    tag: 1.11.0
   resources:
     cpuLimit: 500m
     cpuRequest: 500m
@@ -200,4 +200,4 @@ engine:
 
 # Explainer image
 explainer:
-  image: seldonio/alibiexplainer:1.11.0-dev
+  image: seldonio/alibiexplainer:1.11.0

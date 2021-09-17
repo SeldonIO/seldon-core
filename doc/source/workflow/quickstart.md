@@ -82,9 +82,9 @@ You can upload your models into any of the object stores supported by our pre-pa
 For simplicity we have already uploaded it to the bucket so you can just proceed to the next step and run your model on Seldon Core.
 
 ```console
-$ gsutil cp model.joblib gs://seldon-models/v1.11.0-dev/sklearn/iris/model.joblib
+$ gsutil cp model.joblib gs://seldon-models/v1.11.0/sklearn/iris/model.joblib
 
-[ Saved into gs://seldon-models/v1.11.0-dev/sklearn/iris/model.joblib ]
+[ Saved into gs://seldon-models/v1.11.0/sklearn/iris/model.joblib ]
 ```
 
 **3. Deploy to Seldon Core in Kubernetes**
@@ -103,7 +103,7 @@ spec:
   predictors:
   - graph:
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.11.0-dev/sklearn/iris
+      modelUri: gs://seldon-models/v1.11.0/sklearn/iris
       name: classifier
     name: default
     replicas: 1
@@ -217,7 +217,7 @@ Now we can use the Seldon Core utilities to convert our python class into a full
 The result below is a container with the name `sklearn_iris` and the tag `0.1` which we will be able to deploy using Seldon Core.
 
 ```console
-s2i build . seldonio/seldon-core-s2i-python3:1.11.0-dev sklearn_iris:0.1
+s2i build . seldonio/seldon-core-s2i-python3:1.11.0 sklearn_iris:0.1
 ```
 
 **5. Deploy to Kubernetes**
