@@ -616,7 +616,7 @@ def createElementsWithMetadata(X, names, results, metadata_schema, message_type,
                     if isinstance(d[name], Iterable):
                         newlist = []
                         for val in d[name]:
-                            newlist.append(lookupValueWithMetadata(name,metadata_dict,val), force_raw_value)
+                            newlist.append(lookupValueWithMetadata(name, metadata_dict, val, force_raw_value))
                         d[name] = newlist
                     else:
                         d[name] = lookupValueWithMetadata(name,metadata_dict,d[name], force_raw_value)
