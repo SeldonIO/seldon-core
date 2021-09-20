@@ -592,9 +592,6 @@ def createElementsWithMetadata(X, names, results, metadata_schema, message_type,
 
     if isinstance(X, np.ndarray):
         if len(X.shape) == 1:
-            if X.shape[0] != len(names):
-                raise BadPayloadException(
-                    f"size of columns ({X.shape[0]})do not match number of features ({len(names)})")
             temp_results = []
             results = []
             for i in range(X.shape[0]):
