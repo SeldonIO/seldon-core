@@ -1,8 +1,8 @@
 # Install Seldon-Core
 
 ## Pre-requisites:
-* Kubernetes cluster version equal or higher than 1.12
-    * For Openshift it requires version 4.2 or higher
+* Kubernetes cluster version equal or higher than 1.18
+    * For Openshift it requires version 4.6 or higher
 * Installer method
     * Helm version equal or higher than 3.0
     * Kustomize version equal or higher than 0.1.0
