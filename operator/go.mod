@@ -12,7 +12,7 @@ require (
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.14.0
 	go.uber.org/automaxprocs v1.4.0
-	go.uber.org/zap v1.19.0
+	go.uber.org/zap v1.19.1
 	gopkg.in/yaml.v2 v2.4.0
 	istio.io/api v0.0.0-20200513175333-ae3da0d240e3
 	istio.io/client-go v0.0.0-20200513180646-f8d9d8ff84e6
