@@ -462,9 +462,11 @@ def construct_response_json(
     if meta:
         tags = meta.get("tags", {})
         metrics = meta.get("metrics", [])
+        request_path = meta.get("requestPath", {})
     else:
         tags = {}
         metrics = []
+        request_path = {}
     custom_tags = client_custom_tags(user_model)
     if custom_tags:
         tags.update(custom_tags)
@@ -480,7 +482,6 @@ def construct_response_json(
     if puid:
         response["meta"]["puid"] = puid
 
-    request_path = client_request_raw.get("meta", {}).get("requestPath", {})
     request_path = {**get_request_path(), **request_path}
     if request_path:
         response["meta"]["requestPath"] = request_path
