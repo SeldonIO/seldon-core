@@ -6,6 +6,14 @@ If you were running our Openshift 0.4.2 certified operator and are looking to up
 
 Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed features and bug-fixes in each version.
 
+## Upgrading to 1.11
+
+### Python S2I Wrapper
+
+  * The default wrapper `seldonio/seldon-core-s2i-python3` is now Python 3.8
+  * Python 3.7 wrapper is still available as `seldonio/seldon-core-s2i-python37`
+
+
 ## Upgrading to 1.10
 
 ### Seldon Core Wrapper
