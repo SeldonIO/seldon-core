@@ -144,7 +144,6 @@ def init_api():
 
     if not config.oidc_server:
         print('No OIDC_PROVIDER - auth will not be used in connecting to metadata')
-        return
 
     auth = None
     if config.oidc_server:
