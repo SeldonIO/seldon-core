@@ -28,7 +28,7 @@ RUN wget -O hasicorp-hcl.tar.gz https://github.com/hashicorp/hcl/archive/hcl1.ta
 FROM registry.access.redhat.com/ubi8/ubi-minimal
 LABEL name="Seldon Operator" \
       vendor="Seldon Technologies" \
-      version="1.11.0-dev" \
+      version="1.12.0-dev" \
       release="1" \
       summary="An Operator to deploy, monitor, explain and manage production machine learning models at scale." \
       description="The Seldon operator for management, monitoring and operations of machine learning systems through the Seldon Engine. Once installed, the Seldon Operator provides multiple functions which facilitate the productisation, monitoring and maintenance of machine learning systems at scale."

@@ -1,8 +1,8 @@
 ARG VERSION
-FROM seldonio/seldon-core-s2i-python37-ubi8:$VERSION
+FROM seldonio/seldon-core-s2i-python37-ubi8:1.12.0-dev
 LABEL name="Seldon Alibi Wrapper" \
       vendor="Seldon Technologies" \
-      version="1.11.0-dev" \
+      version="1.12.0-dev" \
       release="1" \
       summary="Alibi Explainer Wrapper for Seldon Core" \
       description="Allows Seldon Core inference models to run with a black box model explanation model from the Alibi:Explain project"

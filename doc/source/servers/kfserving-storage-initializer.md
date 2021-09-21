@@ -8,7 +8,7 @@ storageInitializer:
   image: gcr.io/kfserving/storage-initializer:v0.4.0
 ```
 
-> :warning: **NOTE:** Current default storage initializer is `seldonio/rclone-storage-initializer:1.11.0-dev` is described [here](./overview.md).
+> :warning: **NOTE:** Current default storage initializer is `seldonio/rclone-storage-initializer:1.12.0-dev` is described [here](./overview.md).
 
 
 When `kfserving/storage-initializer` is used `modeluri` supports the following four object storage providers:
