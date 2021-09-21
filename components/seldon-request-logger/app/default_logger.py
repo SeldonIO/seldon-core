@@ -110,10 +110,6 @@ def metadata():
     return Response("problem looking up metadata", 500)
 
 
-class BadPayloadException(Exception):
-    pass
-
-
 def process_and_update_elastic_doc(
     elastic_object, message_type, message_body, request_id, headers, index_name
 ):
@@ -125,13 +121,7 @@ def process_and_update_elastic_doc(
         sys.stdout.flush()
 
     # first do any needed transformations
-    try:
-        new_content_part = process_content(message_type, message_body, headers)
-    except BadPayloadException as e:
-        logging.warning(f"bad payload received. " +
-                        f"Not inserting {message_type} data with request id {request_id} into elasticsearch: " +
-                        f"{e}")
-        return added_content
+    new_content_part = process_content(message_type, message_body, headers)
 
     # set metadata to go just in this part (request or response) and not top-level
     log_helper.field_from_header(
@@ -604,9 +594,6 @@ def createElementsWithMetadata(X, names, results, metadata_schema, message_type,
                 temp_results.append(d)
             results = mergeLinkedColumns(temp_results, metadata_dict)
         elif len(X.shape) >= 2:
-            if X.shape[1] != len(names):
-                raise BadPayloadException(
-                    f"size of columns ({X.shape[1]})do not match number of features ({len(names)})")
             temp_results = []
             results = []
             for i in range(X.shape[0]):
