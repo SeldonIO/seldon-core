@@ -357,7 +357,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 	vsvc.Spec.Http[0].Route = routesHttp
 	vsvc.Spec.Http[1].Route = routesGrpc
 
-	vscs := make([]*istio.VirtualService, 2)
+	vscs := make([]*istio.VirtualService, 1)
 	vscs[0] = vsvc
 	return vscs, drules, nil
 
