@@ -535,10 +535,12 @@ def aggregate(
 
     def merge_meta(meta_list):
         tags = {}
+        requestPath = {}
         for meta in meta_list:
             if meta:
                 tags.update(meta.get("tags", {}))
-        return {"tags": tags}
+                requestPath.update(meta.get("requestPath", {}))
+        return {"tags": tags, "requestPath": requestPath}
 
     def merge_metrics(meta_list, custom_metrics):
         metrics = []

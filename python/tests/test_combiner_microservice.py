@@ -126,6 +126,32 @@ def test_aggreate_combines_tags():
     assert j["data"]["ndarray"] == [0]
 
 
+def test_aggreate_combines_request_paths():
+    user_object = UserObject()
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
+    client = app.test_client()
+    msgs = (
+        "["
+        '{"meta":{"requestPath":{"node-1": "image-1:tag1"}}, "data":{"ndarray":[0]}}, '
+        '{"meta":{"requestPath":{"node-2": "image-2:tag2"}}, "data":{"ndarray":[1]}}'
+        "]"
+    )
+    # Note: double "{{}}" used to escape for string formatting
+    rv = client.get('/aggregate?json={{"seldonMessages":{}}}'.format(msgs))
+    logging.info(rv)
+    j = json.loads(rv.data)
+    logging.info(j)
+    assert rv.status_code == 200
+    assert j["meta"]["requestPath"] == {
+        "node-1": "image-1:tag1",
+        "node-2": "image-2:tag2",
+    }
+    assert j["meta"]["metrics"][0]["key"] == user_object.metrics()[0]["key"]
+    assert j["meta"]["metrics"][0]["value"] == user_object.metrics()[0]["value"]
+    assert j["data"]["ndarray"] == [0]
+
+
 def test_aggreate_combines_metrics():
     user_object = UserObject()
     seldon_metrics = SeldonMetrics()
