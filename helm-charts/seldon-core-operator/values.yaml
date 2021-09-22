@@ -51,7 +51,7 @@ executor:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-core-executor
-    tag: 1.11.0-dev
+    tag: 1.12.0-dev
   resources:
     cpuLimit: 500m
     cpuRequest: 500m
@@ -72,7 +72,7 @@ image:
   pullPolicy: IfNotPresent
   registry: docker.io
   repository: seldonio/seldon-core-operator
-  tag: 1.11.0-dev
+  tag: 1.12.0-dev
 manager:
   cpuLimit: 500m
   cpuRequest: 100m
@@ -91,7 +91,7 @@ singleNamespace: false
 storageInitializer:
   cpuLimit: "1"
   cpuRequest: 100m
-  image: seldonio/rclone-storage-initializer:1.11.0-dev
+  image: seldonio/rclone-storage-initializer:1.12.0-dev
   memoryLimit: 1Gi
   memoryRequest: 100Mi
 usageMetrics:
@@ -183,7 +183,7 @@ engine:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/engine
-    tag: 1.11.0-dev
+    tag: 1.12.0-dev
   resources:
     cpuLimit: 500m
     cpuRequest: 500m
@@ -200,4 +200,4 @@ engine:
 
 # Explainer image
 explainer:
-  image: seldonio/alibiexplainer:1.11.0-dev
+  image: seldonio/alibiexplainer:1.12.0-dev
