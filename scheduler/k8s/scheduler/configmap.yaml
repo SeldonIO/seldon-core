@@ -9,11 +9,11 @@ data:
       servers:
       - name: mlserver1
         replicas:
-        - address: 10.244.0.108
+        - address: 10.244.0.11
           port: 9000
-        - address: 10.244.0.110
+        - address: 10.244.0.13
           port: 9000
-        - address: 10.244.0.112
+        - address: 10.244.0.15
           port: 9000
       models:
       - name: model1

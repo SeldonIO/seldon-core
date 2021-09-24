@@ -27,3 +27,37 @@ envoy --version
 
 envoy  version: a2a1e3eed4214a38608ec223859fcfa8fb679b14/1.19.1/Clean/RELEASE/BoringSSL
 ```
+
+
+## Smoke Test with MLServer
+
+Install KEDA. Todo: create Ansible script. Only needed for scaling tests.
+
+```
+make install-keda
+```
+
+
+```
+kubectl create namespace seldon-mesh
+```
+
+Install MlServer first with 3 replicas serving a hardwired Iris model.
+
+```
+make deploy-mlserver
+```
+
+When mlserver is up you need to find the 3 `endpoints` and set the ip addresses in the configmap in `k8s/scheduler/configmap.yaml`. Then deploy seldon-mesh:
+
+```
+make deploy
+```
+
+The current scheduler will use configmap to update Envoy and allow correct routing of model.
+
+Test with curl (you will need to update ip address of svc mesh loadbalancer IP):
+
+```
+make curl-mlserver-test
+```
