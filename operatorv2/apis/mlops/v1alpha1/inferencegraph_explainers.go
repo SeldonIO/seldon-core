@@ -1,6 +1,5 @@
 package v1alpha1
 
-
 type GraphExplainersSpec struct {
 	// Start step name. If omitted will assume first step
 	// +optional

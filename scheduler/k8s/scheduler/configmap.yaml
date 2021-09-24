@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: scheduler-config
+data:
+  seldon.yaml: |
+    name: testconfig
+    spec:
+      servers:
+      - name: mlserver1
+        replicas:
+        - address: 10.244.0.108
+          port: 9000
+        - address: 10.244.0.110
+          port: 9000
+        - address: 10.244.0.112
+          port: 9000
+      models:
+      - name: model1
+        modelServer: mlserver1
+        servers: [0]
+      - name: model2
+        modelServer: mlserver1
+        servers: [0, 1]

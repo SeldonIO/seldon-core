@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- envoy.yaml
+- svc.yaml
+
+images:
+- name: envoy
+  newName: seldonio/seldon-envoy
+  newTag: latest
+- name: scheduler
+  newName: seldonio/seldon-envoy
+  newTag: latest

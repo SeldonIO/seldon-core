@@ -1,0 +1,6 @@
+namespace: seldon-mesh
+namePrefix: seldon-
+    
+bases:
+- ../scheduler
+- ../envoy

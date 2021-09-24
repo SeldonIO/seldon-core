@@ -41,4 +41,13 @@ resources:
   kind: InferenceExplainer
   path: github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1
   version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: seldon.io
+  group: mlops
+  kind: InferenceServerInstance
+  path: github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1
+  version: v1alpha1
 version: "3"

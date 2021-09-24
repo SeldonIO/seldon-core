@@ -1,0 +1,212 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlserver
+  labels:
+    app: mlserver
+spec:
+  ports:
+  - port: 9000
+    name: http
+  - port: 9500
+    name: grpc
+  type: LoadBalancer
+  selector:
+    app: mlserver
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlserver-0
+  labels:
+    app: mlserver-0
+spec:
+  ports:
+  - port: 9000
+    name: http
+  - port: 9500
+    name: grpc
+  clusterIP: None
+  selector:
+    statefulset.kubernetes.io/pod-name: seldon-mlserver-0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlserver-1
+  labels:
+    app: mlserver-1
+spec:
+  ports:
+  - port: 9000
+    name: http
+  - port: 9500
+    name: grpc
+  clusterIP: None
+  selector:
+    statefulset.kubernetes.io/pod-name: seldon-mlserver-1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlserver-2
+  labels:
+    app: mlserver-2
+spec:
+  ports:
+  - port: 9000
+    name: http
+  - port: 9500
+    name: grpc
+  clusterIP: None
+  selector:
+    statefulset.kubernetes.io/pod-name: seldon-mlserver-2
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mlserver
+spec:
+  serviceName: "mlserver"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mlserver
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /prometheus
+        prometheus.io/scrape: "true"  
+      labels:
+        app: mlserver
+      name: mlserver
+      namespace: seldon
+    spec:
+      terminationGracePeriodSeconds: 5
+      containers:
+      - env:
+        - name: MLSERVER_HTTP_PORT
+          value: "9000"
+        - name: MLSERVER_GRPC_PORT
+          value: "9500"
+        - name: MLSERVER_MODEL_IMPLEMENTATION
+          value: mlserver_sklearn.SKLearnModel
+        - name: MLSERVER_MODEL_NAME
+          value: classifier
+        - name: MLSERVER_MODEL_VERSION
+          value: v1
+        - name: MLSERVER_MODEL_URI
+          value: /mnt/models
+        - name: TEMPO_RUNTIME_OPTIONS
+          value: '{"k8s_options": {"defaultRuntime": "tempo.seldon.SeldonKubernetesRuntime",
+            "namespace": "seldon"}}'
+        - name: PREDICTIVE_UNIT_SERVICE_PORT
+          value: "9000"
+        - name: PREDICTIVE_UNIT_HTTP_SERVICE_PORT
+          value: "9000"
+        - name: PREDICTIVE_UNIT_GRPC_SERVICE_PORT
+          value: "9500"
+        - name: PREDICTIVE_UNIT_ID
+          value: classifier
+        - name: PREDICTIVE_UNIT_IMAGE
+          value: seldonio/mlserver:0.4.1
+        - name: PREDICTOR_ID
+          value: default
+        - name: PREDICTOR_LABELS
+          value: '{"version":"default"}'
+        - name: SELDON_DEPLOYMENT_ID
+          value: sklearn
+        - name: SELDON_EXECUTOR_ENABLED
+          value: "true"
+        - name: PREDICTIVE_UNIT_METRICS_SERVICE_PORT
+          value: "6000"
+        - name: PREDICTIVE_UNIT_METRICS_ENDPOINT
+          value: /prometheus
+        image: seldonio/mlserver:0.4.1
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            cpu: '0.5'
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - /bin/sleep 10
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 60
+          periodSeconds: 5
+          successThreshold: 1
+          tcpSocket:
+            port: 9000
+          timeoutSeconds: 1
+        name: classifier
+        ports:
+        - containerPort: 9500
+          name: grpc
+          protocol: TCP
+        - containerPort: 9000
+          name: http
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          successThreshold: 1
+          tcpSocket:
+            port: 9000
+          timeoutSeconds: 1
+        volumeMounts:
+        - mountPath: /mnt/models
+          name: mlserver-models
+          readOnly: true
+      initContainers:
+      - args:
+        - gs://seldon-models/sklearn/iris-0.23.2/lr_model
+        - /mnt/models
+        image: seldonio/rclone-storage-initializer:1.11.0-dev
+        imagePullPolicy: IfNotPresent
+        name: classifier-model-initializer
+        resources:
+          limits:
+            cpu: "1"
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /mnt/models
+          name: mlserver-models
+      securityContext:
+        runAsUser: 8888
+  volumeClaimTemplates:
+  - metadata:
+      name: mlserver-models
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: mlserver
+  namespace: seldon
+spec:
+  scaleTargetRef:
+    kind: StatefulSet    
+    name: mlserver
+  triggers:
+  - type: cpu
+    metadata:
+      type: Utilization
+      value: "90"
+
+
+

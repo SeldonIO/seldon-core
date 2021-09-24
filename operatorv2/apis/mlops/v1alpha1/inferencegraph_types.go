@@ -32,7 +32,7 @@ type InferenceGraphSpec struct {
 	Steps []InferenceStep `json:"steps" protobuf:"bytes,1,name=steps"`
 	// The associated explainers for this inference graph
 	// +optional
-	Explainers []GraphExplainersSpec `json:"explainers,omitempty" protobuf:"bytes,1,opt,name=explainers"`
+	Explainers []GraphExplainersSpec `json:"explainers,omitempty" protobuf:"bytes,2,opt,name=explainers"`
 }
 
 // InferenceGraphStatus defines the observed state of InferenceGraph

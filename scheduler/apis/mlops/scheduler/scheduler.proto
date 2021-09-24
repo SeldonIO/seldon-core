@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package seldon.mlops.scheduler;
+
+option go_package = "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler";
+
+// [START Messages]
+
+/* LoadServerRequest represents a new or updated model server
+*/
+message LoadServerRequest {
+  string name = 1;
+  repeated ServerReplica replicas = 2;
+  map<string,int32> capacities = 3; // The capacity of the server in various dimensios, e.g. memory, cpu, gpu
+  repeated string capabilities = 4; // The list of capabilities of the server, e.g. sklearn, pytorch, xgboost, mlflow
+}
+
+/* UnloadServerMessage represents a server to be removed
+*/
+message UnloadServerRequest {
+  string name = 1;
+}
+
+/* ServerReplica represents a server instance
+*/
+message ServerReplica {
+  string ipAddress = 1; // inference ip address
+  int32 port = 2; // inference port
+  string agentSvc = 3; // agent DNS service name
+  int32 agentPort = 4; // agent port
+}
+
+/* LoadModelRequest
+*/
+message LoadModelRequest {
+  string name = 1; // name of the model
+  string uri = 2; // storage uri from where to download the artifacts
+  optional string storageSecretName = 3; // optional k8s secret name for authentication to storage uri
+  repeated string requirements = 4; // list of capabilities the server must satisfy to run this model
+  int32 replicas = 5; // number of replicas of model to create
+  optional string server = 6; // the particualar model server to load the model. If unspecified will be chosen.
+}
+
+message UnloadModelRequest {
+  string name = 1;
+}
+
+message SchedulerResponse {
+  int32 status = 1;
+  string message = 2;
+}
+
+// [END Messages]
+
+
+// [START Services]
+
+service Scheduler {
+  rpc LoadServer(LoadServerRequest) returns (SchedulerResponse) {};
+  rpc UnloadServer(UnloadServerRequest) returns (SchedulerResponse) {};
+  rpc LoadModel(LoadModelRequest) returns (SchedulerResponse) {};
+  rpc UnloadModel(UnloadModelRequest) returns (SchedulerResponse) {};
+}
+
+// [END Services]

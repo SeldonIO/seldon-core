@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mesh
+  labels:
+    app: seldon-mesh
+spec:
+  type: LoadBalancer
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+    protocol: TCP
+  - name: admin
+    port: 9003
+    targetPort: envoy-admin
+    protocol: TCP
+  selector:
+    app: seldon-envoy

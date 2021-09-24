@@ -1,8 +1,9 @@
 
 # Image URL to use all building/pushing image targets
-IMG ?= controller:latest
+IMG ?= seldonio/seldon-manager:latest
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
+KIND_NAME=ansible
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -69,17 +70,21 @@ docker-build: test ## Build docker image with the manager.
 docker-push: ## Push docker image with the manager.
 	docker push ${IMG}
 
+kind-image-install: docker-build
+	kind load -v 3 docker-image ${IMG} --name ${KIND_NAME}
+
 ##@ Deployment
 
+# Needed to change kubectl apply to kubectl create to get around issue with apply discussed: https://github.com/argoproj/argo-cd/issues/820
 install: manifests kustomize ## Install CRDs into the K8s cluster specified in ~/.kube/config.
-	$(KUSTOMIZE) build config/crd | kubectl apply -f -
+	$(KUSTOMIZE) build config/crd | kubectl create -f -
 
 uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config.
 	$(KUSTOMIZE) build config/crd | kubectl delete -f -
 
 deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-	$(KUSTOMIZE) build config/default | kubectl apply -f -
+	$(KUSTOMIZE) build config/default | kubectl create -f -
 
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config.
 	$(KUSTOMIZE) build config/default | kubectl delete -f -
@@ -106,3 +111,36 @@ GOBIN=$(PROJECT_DIR)/bin go get $(2) ;\
 rm -rf $$TMP_DIR ;\
 }
 endef
+
+## Experimental ##
+
+##
+## Create protos from go code in case we want to use CRD types in grpc calls
+##
+
+go-to-protobuf: clean_protos
+	git clone https://github.com/kubernetes/code-generator
+	cd code-generator && go build -o go-to-protobuf cmd/go-to-protobuf/main.go
+
+# Create protos from Go code
+create_protos: go-to-protobuf
+	mkdir -p protos
+	mkdir -p protos/k8s.io
+	cd protos/k8s.io && git clone git@github.com:kubernetes/apimachinery.git
+	cd protos/k8s.io && git clone git@github.com:kubernetes/api.git
+	mkdir -p protos/github.com/gogo
+	cd protos/github.com/gogo && git clone git@github.com:gogo/protobuf.git
+	rm -rf ./protos/apis
+	./code-generator/go-to-protobuf --packages ./apis/mlops/v1alpha1 --go-header-file hack/boilerplate.go.txt --output-base ./protos --apimachinery-packages "-sigs.k8s.io/controller-runtime/pkg/scheme,-k8s.io/api/core/v1,-k8s.io/apimachinery/pkg/api/resource,-k8s.io/apimachinery/pkg/apis/meta/v1,-k8s.io/apimachinery/pkg/runtime,-k8s.io/apimachinery/pkg/runtime/schema,-sigs.k8s.io/controller-runtime/pkg/scheme" --only-idl
+
+
+build_protos:
+	sed -i '/^import "sigs/d' protos/apis/mlops/v1alpha1/generated.proto
+	sed -i '/schema/d' protos/apis/mlops/v1alpha1/generated.proto
+	sed -i 's/package \.\./package seldon./' protos/apis/mlops/v1alpha1/generated.proto
+	protoc -I=./protos --go_out=./protos/apis/mlops/v1alpha1 --go_opt=paths=source_relative --go_opt=Mk8s.io/apimachinery/pkg/api/resource/generated.proto=k8s.io/apimachinery/pkg/api/resource --go_opt=Mk8s.io/apimachinery/pkg/runtime/generated.proto=k8s.io/apimachinery/pkg/runtime --go_opt=Mk8s.io/apimachinery/pkg/runtime/schema/generated.proto=k8s.io/apimachinery/pkg/runtime/schema --go_opt=Mk8s.io/apimachinery/pkg/apis/meta/v1/generated.proto=k8s.io/apimachinery/pkg/apis/meta/v1 --go_opt=Mk8s.io/apimachinery/pkg/util/intstr/generated.proto=k8s.io/apimachinery/pkg/util/intstr --go_opt=Mk8s.io/api/core/v1/generated.proto=k8s.io/api/core/v1 --go_opt=Mapis/mlops/v1alpha1/generated.proto=apis/mlops/v1alpha1 ./protos/apis/mlops/v1alpha1/generated.proto
+
+
+clean_protos:
+	rm -rf code-generator
+	rm -rf protos

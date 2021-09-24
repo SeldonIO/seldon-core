@@ -23,3 +23,7 @@ testbin/*
 *.swp
 *.swo
 *~
+
+# experimental for proto creation
+code-generator
+protos/

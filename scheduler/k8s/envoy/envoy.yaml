@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: envoy
+  labels:
+    app: seldon-envoy
+spec:
+  selector:
+    matchLabels:
+      app: seldon-envoy
+  template:
+    metadata:
+      labels:
+        app: seldon-envoy
+      annotations:
+        prometheus.io/path: /stats/prometheus
+        prometheus.io/scrape: "true"
+        prometheus.io/port: '9003'
+    spec:
+      containers:
+      - name: envoy
+        image: envoy:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 9000
+        - name: envoy-admin
+          containerPort: 9003
+      terminationGracePeriodSeconds: 5

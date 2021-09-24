@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package seldon.mlops.agent;
+
+option go_package = "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent";
+
+// [START Messages]
+
+/* ModelLoadMessage directs agent to load a model.
+*/
+message ModelLoadRequest {
+  string name = 1;
+  string uri = 2; // storage uri for model artifacts
+  optional string storageSecretName = 3; // k8s secret name for authentication to storage uri
+}
+
+message ModelLoadResponse {
+  string name = 1;
+  enum Status {
+      UNKNOWN_STATUS = 0;
+      LOADED = 1;
+      LOAD_FAILED = 2;
+    }
+  Status status = 2;
+  string message = 3;
+}
+
+/* ModelUnloadMessage directs agent to unload a model.
+*/
+message ModelUnloadRequest {
+  string modelName = 1;
+  bool remove = 2; // don't just unload from server but remove from disk
+}
+
+/* ModelUnloadMessage allows the agent to confirm a model is unloaded. (This could be proactive by agent - tbc).
+*/
+message ModelUnloadMessage {
+  string modelName = 1;
+  enum Status {
+      UNKNOWN_STATUS = 0;
+      UNLOADED = 1;
+      UNLOAD_FAILED = 2;
+      REMOVED = 2; // unloaded and removed from local PVC
+      REMOVE_FAILED = 3;
+    }
+  Status status = 2;
+  string message = 3;
+}
+
+// [END Messages]
+
+
+// [START Services]
+
+service Agent {
+  rpc LoadModel(stream ModelLoadRequest) returns (stream ModelLoadResponse) {};
+  rpc UnloadModel(stream ModelUnloadRequest) returns (stream ModelUnloadMessage) {};
+}
+
+// [END Services]

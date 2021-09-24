@@ -1,0 +1,7 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: InferenceServerInstance
+metadata:
+  name: inferenceserverinstance-sample
+spec:
+  # Add fields here
+  foo: bar

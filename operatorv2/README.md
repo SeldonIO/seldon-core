@@ -17,5 +17,6 @@ kubebuilder create api --group mlops --version v1alpha1 --kind InferenceArtifact
 kubebuilder create api --group mlops --version v1alpha1 --kind InferenceServer --resource --controller
 kubebuilder create api --group mlops --version v1alpha1 --kind InferenceGraph --resource --controller
 kubebuilder create api --group mlops --version v1alpha1 --kind InferenceExplainer --resource --controller
+kubebuilder create api --group mlops --version v1alpha1 --kind InferenceServerInstance --resource --controller
 ```
 

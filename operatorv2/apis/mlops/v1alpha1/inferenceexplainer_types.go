@@ -35,19 +35,19 @@ type InferenceExplainerSpec struct {
 	Type string `json:"type,omitempty" protobuf:"bytes,1,opt,name=type"`
 	// The storage location of the saved explainer
 	// +optional
-	StorageURI string `json:"storageUri,omitempty" protobuf:"bytes,1,opt,name=storageUri"`
+	StorageURI string `json:"storageUri,omitempty" protobuf:"bytes,2,opt,name=storageUri"`
 	// Resources needed for artifact, cpu, memory etc
 	// +optional
-	Resources v1.ResourceList `json:"resources,omitempty" protobuf:"bytes,2,rep,name=resources,casttype=ResourceList,castkey=ResourceName"`
+	Resources v1.ResourceList `json:"resources,omitempty" protobuf:"bytes,3,rep,name=resources,casttype=ResourceList,castkey=ResourceName"`
 	// Name of the InferenceServer to deploy this artifact.
 	// +optional
-	Server string `json:"server,omitempty" protobuf:"bytes,3,opt,name=server"`
+	Server string `json:"server,omitempty" protobuf:"bytes,4,opt,name=server"`
 	// Whether the artifact can be run on a shared server
 	// +optional
-	Shared bool `json:"shared,omitempty" protobuf:"bytes,4,opt,name=shared"`
+	Shared bool `json:"shared,omitempty" protobuf:"bytes,5,opt,name=shared"`
 	// Reference to model InferenceArtifact for Black Box models
 	// +optional
-	ModelRef string `json:"modelRef,omitempty" protobuf:"bytes,5,opt,name=modelRef"`
+	ModelRef string `json:"modelRef,omitempty" protobuf:"bytes,6,opt,name=modelRef"`
 }
 
 // InferenceExplainerStatus defines the observed state of InferenceExplainer

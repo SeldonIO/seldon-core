@@ -1,0 +1,57 @@
+# Base config for a split xDS management server on 9002, admin port on 9003
+static_resources:
+  clusters:
+    - connect_timeout: 1s
+      type: LOGICAL_DNS
+      load_assignment:
+        cluster_name: xds_cluster
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: seldon-scheduler.seldon-mesh
+                      port_value: 9002
+      http2_protocol_options: {}
+      name: xds_cluster
+dynamic_resources:
+  cds_config:
+    resource_api_version: V3
+    api_config_source:
+      api_type: DELTA_GRPC
+      transport_api_version: V3
+      grpc_services:
+        - envoy_grpc:
+            cluster_name: xds_cluster
+      set_node_on_first_message_only: true
+  lds_config:
+    resource_api_version: V3
+    api_config_source:
+      api_type: DELTA_GRPC
+      transport_api_version: V3
+      grpc_services:
+        - envoy_grpc:
+            cluster_name: xds_cluster
+      set_node_on_first_message_only: true
+node:
+  cluster: test-cluster
+  id: test-id
+layered_runtime:
+  layers:
+    - name: runtime-0
+      rtds_layer:
+        rtds_config:
+          resource_api_version: V3
+          api_config_source:
+            transport_api_version: V3
+            api_type: DELTA_GRPC
+            grpc_services:
+              envoy_grpc:
+                cluster_name: xds_cluster
+        name: runtime-0
+admin:
+  access_log_path: /dev/null
+  address:
+    socket_address:
+      address: 0.0.0.0
+      port_value: 9003

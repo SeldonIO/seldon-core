@@ -50,12 +50,17 @@ spec:
                 description: Resources needed for artifact, cpu, memory etc
                 type: object
               server:
-                description: Name of the InferenceServer to deploy this artifact
+                description: Name of the InferenceServer to deploy this artifact.
                 type: string
               shared:
                 description: Whether the artifact can be run on a shared server
                 type: boolean
               storageUri:
+                description: The storage location of the saved explainer
+                type: string
+              type:
+                description: The artifact type e.g. Alibi If not provided then Alibi
+                  is assumed
                 type: string
             type: object
           status:

@@ -1,0 +1,60 @@
+# Base config for a split xDS management server on 18000, admin port on 19000
+admin:
+  access_log_path: /dev/stdout
+  address:
+    socket_address:
+      address: 127.0.0.1
+      port_value: 19000
+
+dynamic_resources:
+  lds_config:
+    resource_api_version: V3
+    api_config_source:
+      api_type: DELTA_GRPC
+      transport_api_version: V3
+      grpc_services:
+      - envoy_grpc:
+          cluster_name: xds_cluster
+      set_node_on_first_message_only: true
+  cds_config:
+    resource_api_version: V3
+    api_config_source:
+      api_type: DELTA_GRPC
+      transport_api_version: V3
+      grpc_services:
+      - envoy_grpc:
+          cluster_name: xds_cluster
+      set_node_on_first_message_only: true
+
+node:
+  cluster: test-cluster
+  id: test-id
+
+static_resources:
+  clusters:
+  - connect_timeout: 1s
+    load_assignment:
+      cluster_name: xds_cluster
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address:
+                address: 127.0.0.1
+                port_value: 18000
+    http2_protocol_options: {}
+    name: xds_cluster
+
+layered_runtime:
+  layers:
+    - name: runtime-0
+      rtds_layer:
+        rtds_config:
+          resource_api_version: V3
+          api_config_source:
+            transport_api_version: V3
+            api_type: DELTA_GRPC
+            grpc_services:
+              envoy_grpc:
+                cluster_name: xds_cluster
+        name: runtime-0

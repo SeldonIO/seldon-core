@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: scheduler
+  labels:
+    app: seldon-scheduler
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 9002
+    targetPort: http
+    protocol: TCP
+  selector:
+    control-plane: seldon-scheduler

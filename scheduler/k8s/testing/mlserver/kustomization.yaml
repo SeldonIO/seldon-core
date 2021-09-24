@@ -1,0 +1,6 @@
+namespace: seldon-mesh
+namePrefix: seldon-
+
+resources:
+- mlserver.yaml
+

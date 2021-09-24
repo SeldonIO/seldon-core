@@ -1,0 +1,44 @@
+#apiVersion: v1
+#kind: Namespace
+#metadata:
+#  labels:
+#    control-plane: seldon-scheduler
+#  name: system
+#---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scheduler
+  namespace: system
+  labels:
+    control-plane: seldon-scheduler
+spec:
+  selector:
+    matchLabels:
+      control-plane: seldon-scheduler
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        control-plane: seldon-scheduler
+    spec:
+      serviceAccountName: scheduler
+      securityContext:
+        runAsUser: 8888
+      containers:
+      - command:
+        - /bin/scheduler
+        image: scheduler:latest
+        imagePullPolicy: IfNotPresent
+        name: scheduler
+        ports:
+        - name: http
+          containerPort: 9002
+        resources:
+          limits:
+            cpu: 500m
+            memory: 300Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+      terminationGracePeriodSeconds: 5
