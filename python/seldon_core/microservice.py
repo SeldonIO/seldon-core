@@ -16,10 +16,10 @@ from typing import Callable, Dict
 from seldon_core import __version__
 from seldon_core import wrapper as seldon_microservice
 from seldon_core.flask_utils import (
-    ANNOTATIONS_FILE,
-    SeldonMicroserviceException,
-    DEFAULT_ANNOTATION_REST_TIMEOUT,
     ANNOTATION_REST_TIMEOUT,
+    ANNOTATIONS_FILE,
+    DEFAULT_ANNOTATION_REST_TIMEOUT,
+    SeldonMicroserviceException,
 )
 from seldon_core.gunicorn_utils import (
     StandaloneApplication,
