@@ -428,7 +428,7 @@ def main():
             rest_timeout = DEFAULT_ANNOTATION_REST_TIMEOUT
             if ANNOTATION_REST_TIMEOUT in annotations:
                 # Gunicorn timeout is in seconds so convert as annotation is in miliseconds
-                rest_timeout = int(annotations[ANNOTATION_REST_TIMEOUT])/1000
+                rest_timeout = int(annotations[ANNOTATION_REST_TIMEOUT]) / 1000
                 # Converting timeout from float to int and set to 1 if is 0
                 rest_timeout = int(rest_timeout) or 1
 
