@@ -117,3 +117,5 @@ class SeldonMicroserviceException(Exception):
 
 ANNOTATIONS_FILE = "/etc/podinfo/annotations"
 ANNOTATION_GRPC_MAX_MSG_SIZE = "seldon.io/grpc-max-message-size"
+DEFAULT_ANNOTATION_REST_TIMEOUT = 5000
+ANNOTATION_REST_TIMEOUT = "seldon.io/rest-timeout"
