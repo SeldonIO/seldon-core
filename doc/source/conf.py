@@ -185,13 +185,15 @@ if html_theme == "sphinx_material":
         "repo_url": "https://github.com/SeldonIO/seldon-core/",
         "repo_name": "Seldon Core",
         "nav_title": "Seldon Core Documentation",
-        "globaltoc_depth": 1,
-        "globaltoc_collapse": False,
+        "globaltoc_depth": -1,
+        "globaltoc_collapse": True,
         "globaltoc_includehidden": False,
         "repo_type": "github",
+        "version_dropdown": True,
+        "version_dropdown_text": "Versions",
         "nav_links": [
             {
-                "href": "https://docs.seldon.io/projects/seldon-core/en/latest/",
+                "href": "",
                 "internal": False,
                 "title": "🚀 Our Other Projects & Products:",
             },
