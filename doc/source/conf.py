@@ -66,6 +66,10 @@ extensions = [
     "sphinx_copybutton"
 ]
 
+# Copybutton regex to pick up bash, jupyter, python etc.. (not needed if we standardise)
+# copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
+# copybutton_prompt_is_regexp = True
+
 # Ignore py:class warnings about 3rd party deps or ignored packages (e.g.
 # generated proto)
 # https://stackoverflow.com/a/30624034/5015573
@@ -186,7 +190,7 @@ if html_theme == "sphinx_material":
         "repo_url": "https://github.com/SeldonIO/seldon-core/",
         "repo_name": "Seldon Core",
         "nav_title": "Seldon Core Documentation",
-        "globaltoc_depth": -1,
+        "globaltoc_depth": 3,
         "globaltoc_collapse": True,
         "globaltoc_includehidden": False,
         "repo_type": "github",
@@ -245,6 +249,9 @@ html_logo = "Seldon_White.png"
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
+html_static_path = ['_static']
+
+html_css_files = ['theme_overrides.css']
 
 html_extra_path = ["_extra"]
 

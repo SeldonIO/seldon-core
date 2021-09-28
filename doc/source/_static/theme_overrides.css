@@ -1,14 +1,12 @@
-
-.md-nav__link {
-    margin-left: 10px;
+.rst-versions .rst-current-version {
+    background-color: #3f51b5 !important;
+    color: #fff !important;
 }
 
-.md-nav span.caption {
-    margin-left: 0px !important;
+.rst-versions {
+    background-color: #fff !important;
 }
 
-/* Hide first elem of nav bar */
-.md-tabs__list > li:first-child {
-    display: none;
+.rst-versions .rst-other-versions dd a {
+    color: #3f51b5 !important
 }
-
