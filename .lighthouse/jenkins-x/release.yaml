@@ -16,6 +16,9 @@ spec:
           name: ""
         - name: release-step
           image: seldonio/core-builder:0.25
+          env:
+            - name: GOMAXPROCS
+              value: 3
           command:
             - bash
             - -c

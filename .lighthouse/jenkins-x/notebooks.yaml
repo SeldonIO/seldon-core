@@ -21,6 +21,8 @@ spec:
               value: notebooks
             - name: SELDON_E2E_TESTS_POD_INFORMATION
               value: "true"
+            - name: GOMAXPROCS
+              value: 3
           command:
             - bash
             - -c
