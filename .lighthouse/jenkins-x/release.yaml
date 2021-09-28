@@ -18,7 +18,7 @@ spec:
           image: seldonio/core-builder:0.25
           env:
             - name: GOMAXPROCS
-              value: 3
+              value: 1
           command:
             - bash
             - -c
