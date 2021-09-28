@@ -17,14 +17,16 @@ spec:
         - name: integration-step
           image: seldonio/core-builder:0.25
           env:
-            - name: SELDON_E2E_TESTS_TO_RUN
-              value: base
-            - name: SELDON_E2E_TESTS_POD_INFORMATION
-              value: "true"
+          - name: SELDON_E2E_TESTS_TO_RUN
+            value: base
+          - name: SELDON_E2E_TESTS_POD_INFORMATION
+            value: "true"
+          - name: GOMAXPROCS
+            value: "3"
           command:
-            - bash
-            - -c
-            - cd testing/scripts && bash kind_test_all.sh
+          - bash
+          - -c
+          - cd testing/scripts && bash kind_test_all.sh
           volumeMounts:
           - mountPath: /lib/modules
             name: modules
