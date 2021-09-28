@@ -17,12 +17,12 @@ spec:
         - name: release-step
           image: seldonio/core-builder:0.25
           env:
-            - name: GOMAXPROCS
-              value: 1
+          - name: GOMAXPROCS
+            value: "1"
           command:
-            - bash
-            - -c
-            - ./ci_build_and_push_images.sh
+          - bash
+          - -c
+          - ./ci_build_and_push_images.sh
           volumeMounts:
           - mountPath: /lib/modules
             name: modules
