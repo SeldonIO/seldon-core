@@ -63,6 +63,7 @@ extensions = [
     # https://github.com/spatialaudio/nbsphinx/issues/24
     "IPython.sphinxext.ipython_console_highlighting",
     "sphinx_search.extension",
+    "sphinx_copybutton"
 ]
 
 # Ignore py:class warnings about 3rd party deps or ignored packages (e.g.
