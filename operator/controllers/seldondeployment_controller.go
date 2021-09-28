@@ -223,7 +223,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 	}
 	vsvc := &istio.VirtualService{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      seldonId + "-http",
+			Name:      seldonId,
 			Namespace: namespace,
 		},
 		Spec: istio_networking.VirtualService{
