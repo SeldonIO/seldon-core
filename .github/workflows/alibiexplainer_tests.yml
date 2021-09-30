@@ -17,4 +17,4 @@ jobs:
     - name: test-python
       run: |
         pip install --upgrade pip setuptools
-        make -C components/alibi-explain-server dev_install test
+        make -C components/alibi-explain-server dev_install build_apis test
