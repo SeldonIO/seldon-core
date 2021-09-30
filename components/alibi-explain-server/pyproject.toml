@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "alibi-explain-server"
-version = "1.11.0-dev"
+name = "alibiexplainer"
+version = "1.12.0-dev"
 description = "Model Explanation Server"
 authors = ["Seldon Technologies Ltd. <hello@seldon.io>"]
 license = "Apache-2.0"
@@ -8,7 +8,7 @@ license = "Apache-2.0"
 [tool.poetry.dependencies]
 python = "^3.7"
 alibi = "0.6.0"
-kfserving = "0.6.0"
+kfserving = "0.6.1"
 numpy = "1.19.5"
 tensorflow = "2.5.1"
 scikit-learn = "0.24.2"
@@ -23,6 +23,9 @@ protobuf = "^3.17.3"
 pytest = "^6.2.4"
 pytest-tornasync = "^0.6.0"
 mypy = "^0.910"
+grpcio-tools = "1.31.0"
+mypy-protobuf = "1.22"
+pip-licenses = "^3.5.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

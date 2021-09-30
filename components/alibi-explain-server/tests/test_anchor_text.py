@@ -28,7 +28,7 @@ MOVIE_MODEL_URI = "gs://seldon-models/sklearn/moviesentiment_sklearn_0.24.2"
 
 
 def test_anchor_text():
-    os.environ.clear()
+
     skmodel = SKLearnServer(MOVIE_MODEL_URI)
     skmodel.load()
     movies = fetch_movie_sentiment()

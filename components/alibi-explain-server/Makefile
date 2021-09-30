@@ -1,22 +1,24 @@
 SELDON_CORE_DIR=../..
 SHELL := /bin/bash
+
 VERSION := $(shell cat ../../version.txt)
 IMAGE=alibiexplainer
 
-.PHONY: get_apis
+BASE_IMAGE ?= seldonio/conda-ubi8
+PYTHON_VERSION ?= 3.7.10
+CONDA_VERSION ?= 4.7.12
+
+#
+# Building protos
+#
 get_apis:
 	cp ${SELDON_CORE_DIR}/proto/prediction.proto alibiexplainer/proto/
 	$(MAKE) -C ${SELDON_CORE_DIR}/proto/tensorflow/ create_protos
-	cp -r $(SELDON_CORE_DIR)/proto/tensorflow/tensorflow \
-		alibiexplainer/proto/
+	cp -r $(SELDON_CORE_DIR)/proto/tensorflow/tensorflow alibiexplainer/proto/
 	$(MAKE) -C ${SELDON_CORE_DIR}/proto/tensorflow clean
 
-.PHONY: install_requirements
-install_requirements:
-	pip install -r requirements-dev.txt
-
-.PHONY: build_apis
-build_apis: get_apis install_requirements
+build_apis: get_apis
+	pip install -r requirements-apis.txt
 	cd alibiexplainer && python \
 		-m grpc.tools.protoc \
 		-I./ \
@@ -27,17 +29,21 @@ build_apis: get_apis install_requirements
 		./proto/prediction.proto
 	sed -i "s/from proto/from alibiexplainer.proto/g" alibiexplainer/proto/prediction_pb2_grpc.py
 
+
+environment:
+	conda create --yes --prefix ./venv python=${PYTHON_VERSION} || echo "already exists"
+
 dev_install:
-	pip install -e .[test] --no-binary protobuf
+	poetry install
 
 test: #type_check
-	pytest -W ignore
+	poetry run pytest -v -W ignore
 
 type_check:
 	mypy --ignore-missing-imports alibiexplainer
 
 docker-build: build_apis
-	docker build --file=Dockerfile --build-arg VERSION=${VERSION} -t seldonio/${IMAGE}:${VERSION} .
+	docker build --file=Dockerfile --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg VERSION=${VERSION} -t seldonio/${IMAGE}:${VERSION} .
 
 docker-build-gpu: 
 	docker build --file=Dockerfile.gpu -t seldonio/${IMAGE}-gpu:${VERSION} .

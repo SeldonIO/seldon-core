@@ -1,5 +1,8 @@
 ARG VERSION
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}:${VERSION} as base
 
+ARG VERSION
 LABEL name="Seldon Alibi Wrapper" \
       vendor="Seldon Technologies" \
       version="$VERSION" \
@@ -7,13 +10,13 @@ LABEL name="Seldon Alibi Wrapper" \
       summary="Alibi Explainer Wrapper for Seldon Core" \
       description="Allows Seldon Core inference models to run with a black box model explanation model from the Alibi:Explain project"
 
-FROM seldonio/conda-ubi8:$VERSION as base
-
 FROM base as builder
+ARG PYTHON_VERSION
+ARG CONDA_VERSION
 
 # Install Python / Conda
-RUN conda install --yes python=3.7.10 conda=4.7.12
-RUN pip install pip==21.2.4 setuptools==57.4.0
+RUN conda install --yes python=${PYTHON_VERSION} conda=${CONDA_VERSION}
+RUN pip install pip==21.2.4 setuptools==58.1.0
 RUN dnf install -y make automake gcc gcc-c++
 
 # Make home dir
@@ -33,13 +36,9 @@ ENV POETRY_VIRTUALENVS_CREATE false
 COPY poetry.lock pyproject.toml ./
 RUN poetry install && rm ~/.cache/pip -rf
 
-# Copy rest of the package
-COPY alibiexplainer alibiexplainer
-COPY README.md README.md
 
 # Add licences
 RUN mkdir /licenses
-RUN pip install pip-licenses
 RUN mkdir ./licenses && pip-licenses --from=mixed --format=csv --output-file=./licenses/license_info.csv && \
     pip-licenses --from=mixed --format=plain-vertical --with-license-file --no-license-path --output-file=./licenses/license.txt
 RUN cp ./licenses/* /licenses
@@ -47,6 +46,10 @@ RUN cp ./licenses/* /licenses
 # Install python spacy model to avoid issues in airgapped envs
 RUN python -m spacy download en_core_web_md
 
+
+# Copy rest of the package
+COPY alibiexplainer alibiexplainer
+COPY README.md README.md
 
 
 FROM base as final
