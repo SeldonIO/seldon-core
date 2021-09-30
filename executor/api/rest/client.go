@@ -291,13 +291,13 @@ func (smc *JSONRestClient) call(ctx context.Context, modelName string, method st
 		contentType = req.GetContentType()
 		contentEncoding = req.GetContentEncoding()
 	}
+
 	sm, contentType, contentEncoding, err := smc.doHttp(ctx, modelName, method, &url, bytes, meta, contentType, contentEncoding)
-	res := payload.BytesPayload{Msg: sm, ContentType: contentType, ContentEncoding: contentEncoding}
-	
-	// If an error is returned from doHttp, we should set it as the response object
 	if err != nil {
-		res.Msg = smc.CreateErrorPayload(err)
+		return smc.CreateErrorPayload(err), err
 	}
+
+	res := payload.BytesPayload{Msg: sm, ContentType: contentType, ContentEncoding: contentEncoding}
 	return &res, err
 }
 
