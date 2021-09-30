@@ -4,6 +4,15 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"io"
+	"io/ioutil"
+	"net"
+	"net/http"
+	"net/url"
+	"strconv"
+	"strings"
+	"time"
+
 	http2 "github.com/cloudevents/sdk-go/pkg/bindings/http"
 	"github.com/go-logr/logr"
 	"github.com/golang/protobuf/jsonpb"
@@ -19,15 +28,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/util"
 	"github.com/seldonio/seldon-core/executor/k8s"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	"io"
-	"io/ioutil"
-	"net"
-	"net/http"
-	"net/url"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
-	"strconv"
-	"strings"
-	"time"
 )
 
 const (
@@ -293,8 +294,12 @@ func (smc *JSONRestClient) call(ctx context.Context, modelName string, method st
 	}
 
 	sm, contentType, contentEncoding, err := smc.doHttp(ctx, modelName, method, &url, bytes, meta, contentType, contentEncoding)
+
+	// Check if a httpStatusError was returned.
 	if err != nil {
-		return smc.CreateErrorPayload(err), err
+		if _, ok := err.(*httpStatusError); !ok {
+			return smc.CreateErrorPayload(err), err
+		}
 	}
 
 	res := payload.BytesPayload{Msg: sm, ContentType: contentType, ContentEncoding: contentEncoding}
