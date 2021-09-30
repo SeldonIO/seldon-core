@@ -51,6 +51,7 @@ def start_multithreaded_batch_worker(
     log_level: str,
     benchmark: bool,
     batch_id: str,
+    batch_interval: int,
 ) -> None:
     """
     Starts the multithreaded batch worker which consists of three worker types and
@@ -98,7 +99,17 @@ def start_multithreaded_batch_worker(
     for _ in range(workers):
         Thread(
             target=_start_request_worker,
-            args=(q_in, q_out, data_type, sc, method, retries, batch_id, payload_type),
+            args=(
+                q_in,
+                q_out,
+                data_type,
+                sc,
+                method,
+                retries,
+                batch_id,
+                payload_type,
+                batch_interval,
+            ),
             daemon=True,
         ).start()
 
@@ -195,6 +206,7 @@ def _start_request_worker(
     retries: int,
     batch_id: str,
     payload_type: str,
+    batch_interval: int,
 ) -> None:
     """
     Runs logic for the worker that sends requests from the queue until the queue
@@ -259,6 +271,9 @@ def _start_request_worker(
             )
             q_out.put(str_output)
         # Mark task as done in the queue to add space for new tasks
+        if batch_interval > 0:
+            time.sleep(batch_interval)
+
         q_in.task_done()
 
 
@@ -649,11 +664,19 @@ def _send_batch_feedback(
 )
 @click.option(
     "--batch-size",
-    "-u",
+    "-s",
     envvar="SELDON_BATCH_SIZE",
     default=1,
     type=int,
     help="Batch size greater than 1 can be used to group multiple predictions into a single request.",
+)
+@click.option(
+    "--batch-interval",
+    "-z",
+    envvar="SELDON_BATCH_INTERVAL",
+    default=0,
+    type=int,
+    help="Time interval(in seconds) between batch predictions made by every worker",
 )
 def run_cli(
     deployment_name: str,
@@ -672,6 +695,7 @@ def run_cli(
     log_level: str,
     benchmark: bool,
     batch_id: str,
+    batch_interval: int,
 ):
     """
     Command line interface for Seldon Batch Processor, which can be used to send requests
@@ -701,6 +725,7 @@ def run_cli(
         log_level,
         benchmark,
         batch_id,
+        batch_interval,
     )
 
 
