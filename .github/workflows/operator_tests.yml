@@ -10,7 +10,7 @@ jobs:
   operator-tests:
 
     runs-on: ubuntu-18.04
-    container: seldonio/core-builder:0.25
+    container: seldonio/core-builder:0.26
 
     steps:
     - uses: actions/checkout@v2

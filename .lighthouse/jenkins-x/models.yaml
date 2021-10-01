@@ -15,7 +15,7 @@ spec:
         - image: uses:jenkins-x/jx3-pipeline-catalog/tasks/git-clone/git-clone-pr.yaml@versionStream
           name: ""
         - name: models-step
-          image: seldonio/core-builder:0.25
+          image: seldonio/core-builder:0.26
           command:
             - bash
             - -c
