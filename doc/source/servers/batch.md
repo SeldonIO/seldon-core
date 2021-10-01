@@ -101,6 +101,8 @@ Options:
   -u, --batch-size INTEGER        Batch size greater than 1 can be used to
                                   group multiple predictions into a single
                                   request.
+  -z, --batch-interval INTEGER    Time interval(in seconds) between batch
+                                  predictions made by every worker
   --help                          Show this message and exit.
 ```
 
