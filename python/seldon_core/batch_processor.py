@@ -274,8 +274,7 @@ def _start_request_worker(
 
         # Setting time interval before the task is marked as done
         if batch_interval > 0:
-            end = time.time()
-            remaining_interval = batch_interval - (end - start)
+            remaining_interval = batch_interval - (time.time() - start_time)
             if remaining_interval > 0:
                 time.sleep(remaining_interval)
 
