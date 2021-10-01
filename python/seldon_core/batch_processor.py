@@ -51,7 +51,7 @@ def start_multithreaded_batch_worker(
     log_level: str,
     benchmark: bool,
     batch_id: str,
-    batch_interval: int,
+    batch_interval: float,
 ) -> None:
     """
     Starts the multithreaded batch worker which consists of three worker types and
@@ -206,7 +206,7 @@ def _start_request_worker(
     retries: int,
     batch_id: str,
     payload_type: str,
-    batch_interval: int,
+    batch_interval: float,
 ) -> None:
     """
     Runs logic for the worker that sends requests from the queue until the queue
@@ -672,10 +672,10 @@ def _send_batch_feedback(
 )
 @click.option(
     "--batch-interval",
-    "-z",
+    "-t",
     envvar="SELDON_BATCH_INTERVAL",
     default=0,
-    type=int,
+    type=float,
     help="Time interval(in seconds) between batch predictions made by every worker",
 )
 def run_cli(
@@ -695,7 +695,7 @@ def run_cli(
     log_level: str,
     benchmark: bool,
     batch_id: str,
-    batch_interval: int,
+    batch_interval: float,
 ):
     """
     Command line interface for Seldon Batch Processor, which can be used to send requests
