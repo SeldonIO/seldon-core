@@ -147,9 +147,8 @@ def process_and_update_elastic_doc(
         if type(new_content_part["instance"]) == type([]) and not (new_content_part["dataType"] == "json"):
             # if we've a list then this is batch
             # we assume first dimension is always batch
-            item_body = doc_body.copy()
-            bulk_upsert_doc_to_elastic(elastic_object, message_type, item_body,
-                                       item_body[message_type].copy(), request_id, index_name)
+            bulk_upsert_doc_to_elastic(elastic_object, message_type, doc_body,
+                                       doc_body[message_type].copy(), request_id, index_name)
         else:
             #not batch so don't batch elements either
             if "elements" in new_content_part and type(new_content_part["elements"]) == type([]):
@@ -293,7 +292,7 @@ def bulk_upsert_doc_to_elastic(
 
     def gen_data():
         for num, item in enumerate(new_content_part["instance"], start=0):
-            print(f"bulk inserting item {num}")
+
             item_body = doc_body.copy()
             item_body[message_type]["instance"] = item
             if type(elements) == type([]) and len(elements) > num:
@@ -303,9 +302,20 @@ def bulk_upsert_doc_to_elastic(
                     request_id, no_items_in_batch, num
                 )
 
+            print(
+                "bulk upserting to doc "
+                + index_name
+                + "/"
+                + (log_helper.DOC_TYPE_NAME if log_helper.DOC_TYPE_NAME != None else "_doc")
+                + "/"
+                + request_id
+                + " adding "
+                + message_type
+            )
+
             yield {
                 "_index": index_name,
-                "_type": "_doc",
+                "_type": log_helper.DOC_TYPE_NAME,
                 "_op_type": "update",
                 "_id": item_request_id,
                 "_source": {"doc_as_upsert": True, "doc": item_body},
