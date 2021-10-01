@@ -101,8 +101,8 @@ Options:
   -u, --batch-size INTEGER        Batch size greater than 1 can be used to
                                   group multiple predictions into a single
                                   request.
-  -t, --batch-interval FLOAT      Time interval(in seconds) between batch
-                                  predictions made by every worker
+  -t, --batch-interval FLOAT      Minimum Time interval(in seconds) between
+                                  batch predictions made by every worker
   --help                          Show this message and exit.
 ```
 

@@ -231,6 +231,7 @@ def _start_request_worker(
         The unique identifier for the batch which is passed to all requests
     """
     while True:
+        start_time = time.time()
         input_data = q_in.get()
         if method == "predict":
             # If we have a batch size > 1 then we wish to use the method for sending multiple predictions
@@ -270,10 +271,15 @@ def _start_request_worker(
                 batch_id,
             )
             q_out.put(str_output)
-        # Mark task as done in the queue to add space for new tasks
-        if batch_interval > 0:
-            time.sleep(batch_interval)
 
+        # Setting time interval before the task is marked as done
+        if batch_interval > 0:
+            end = time.time()
+            remaining_interval = batch_interval - (end - start)
+            if remaining_interval > 0:
+                time.sleep(remaining_interval)
+
+        # Mark task as done in the queue to add space for new tasks
         q_in.task_done()
 
 
@@ -673,10 +679,10 @@ def _send_batch_feedback(
 @click.option(
     "--batch-interval",
     "-t",
-    envvar="SELDON_BATCH_INTERVAL",
+    envvar="SELDON_BATCH_MIN_INTERVAL",
     default=0,
     type=float,
-    help="Time interval(in seconds) between batch predictions made by every worker",
+    help="Minimum Time interval(in seconds) between batch predictions made by every worker",
 )
 def run_cli(
     deployment_name: str,
