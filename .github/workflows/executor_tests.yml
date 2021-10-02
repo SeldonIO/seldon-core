@@ -2,9 +2,9 @@ name: Executor Tests
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, v*-release ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, v*-release ]
 
 jobs:
   executor-tests:
