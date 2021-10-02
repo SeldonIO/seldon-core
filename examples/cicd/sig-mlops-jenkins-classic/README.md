@@ -547,11 +547,11 @@ Once you update our plugins you should be ready to go.
 ## ArgoCD
 
 A key point of this approach to MLOps relies on having a GitOps repository which gets synced with our Kubernetes cluster.
-To achieve this we leverage [ArgoCD](https://argoproj.github.io/argo-cd/), which will take care of setting up webhooks with your GitOps repository so that on every change it triggers a synchronisation between the resources you've pushed and what's deployed on the cluster.
+To achieve this we leverage [ArgoCD](https://argo-cd.readthedocs.io/en/stable/), which will take care of setting up webhooks with your GitOps repository so that on every change it triggers a synchronisation between the resources you've pushed and what's deployed on the cluster.
 
 ### Installation
 
-If you don't have it already, you can install ArgoCD following the [official documentation](https://argoproj.github.io/argo-cd/getting_started/#1-install-argo-cd):
+If you don't have it already, you can install ArgoCD following the [official documentation](https://argo-cd.readthedocs.io/en/stable/getting_started/#1-install-argo-cd):
 
 
 ```bash
@@ -563,7 +563,7 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 Additionally, you will need to install the accompanying CLI tool.
 This tool will allow you to easily link your GitOps repository taking care of the entire process.
 The instructions to install it will vary between different platforms.
-The official documentation shows the [recommended method](https://argoproj.github.io/argo-cd/cli_installation/) on each of the major ones.
+The official documentation shows the [recommended method](https://argo-cd.readthedocs.io/en/stable/cli_installation/) on each of the major ones.
 
 ### Setting up GitOps repository
 
@@ -580,7 +580,7 @@ export REPONAME=seldon-gitops
 #### Private repositories (optional)
 
 If your repository is private, we will first need to provide the right credentials for ArgoCD to use.
-We can do so either using a [user / password login](https://argoproj.github.io/argo-cd/user-guide/private-repositories/#https-username-and-password-credential) or using [SSH keys](https://argoproj.github.io/argo-cd/user-guide/private-repositories/#tls-client-certificates-for-https-repositories).
+We can do so either using a [user / password login](https://argo-cd.readthedocs.io/en/stable/user-guide/private-repositories/#https-username-and-password-credential) or using [SSH keys](https://argo-cd.readthedocs.io/en/stable/user-guide/private-repositories/#tls-client-certificates-for-https-repositories).
 Note that, for the former, we can also use a [personal access token](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line) instead of the password.
 
 As an example, we will add our GitOps repository using a personal access token.
