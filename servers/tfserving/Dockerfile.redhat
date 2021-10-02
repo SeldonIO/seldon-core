@@ -5,7 +5,7 @@ FROM ${TF_SERVING_BUILD_IMAGE} as build_image
 FROM registry.access.redhat.com/ubi8/ubi-minimal
 LABEL name="Seldon Tensorflow Serving Server" \
       vendor="Seldon Technologies" \
-      version="1.11.0" \
+      version="1.11.1-dev" \
       release="1" \
       summary="Tensorflow serving for Seldon Core" \
       description="Tensorflow serving for Seldon Core to server Tensorflow models"
