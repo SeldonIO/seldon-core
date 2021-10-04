@@ -1,1 +1,1 @@
-{"labels": [{"name": "Seldon SKLearn Server"}, {"vendor": "Seldon Technologies"}, {"version": "1.11.1-dev"}, {"release": "1"}, {"summary": "A SKLearn Model Server for Seldon Core"}, {"description": "The model server for sklearn models saved as pickles."}]}
+{"labels": [{"name": "Seldon SKLearn Server"}, {"vendor": "Seldon Technologies"}, {"version": "1.11.1"}, {"release": "1"}, {"summary": "A SKLearn Model Server for Seldon Core"}, {"description": "The model server for sklearn models saved as pickles."}]}
