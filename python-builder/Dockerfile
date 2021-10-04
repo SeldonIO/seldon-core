@@ -1,7 +1,7 @@
 FROM continuumio/miniconda3:4.7.12
 
 RUN \
-    apt-get update -y && \
+    apt-get update  --allow-releaseinfo-change -y && \
     apt-get install -y vim && \
     apt-get install -y git && \
     apt-get install -y build-essential && \
@@ -46,8 +46,16 @@ RUN conda install --yes python=$PYTHON_VERSION conda=$CONDA_VERSION
 # Installs required
 RUN apt-get install curl
 
+# Install Poetry
+ENV POETRY_HOME /var/poetry
+RUN curl -sSL \
+    https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py \
+    | python3
+
+ENV PATH "$POETRY_HOME/bin:$PATH"
+ENV POETRY_VIRTUALENVS_CREATE false
+
 WORKDIR /work
 
 # Define default command.
 CMD ["bash"]
-

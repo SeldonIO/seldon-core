@@ -31,7 +31,7 @@ EXPLAINER_FILENAME = "explainer.dill"
 
 
 def test_cifar10_images():  # pylint: disable-msg=too-many-locals
-    os.environ.clear()
+
     alibi_model = os.path.join(
         kfserving.Storage.download(CIFAR10_EXPLAINER_URI), EXPLAINER_FILENAME
     )
