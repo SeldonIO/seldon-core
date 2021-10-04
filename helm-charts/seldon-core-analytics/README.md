@@ -1,6 +1,6 @@
 # seldon-core-analytics
 
-![Version: 1.11.1-dev](https://img.shields.io/static/v1?label=Version&message=1.11.1--dev&color=informational&style=flat-square)
+![Version: 1.11.1](https://img.shields.io/static/v1?label=Version&message=1.11.1&color=informational&style=flat-square)
 
 Prometheus and Grafana installation with a basic Grafana dashboard showing
 the default Prometheus metrics exposed by Seldon for each inference graph
