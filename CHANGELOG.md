@@ -1,5 +1,24 @@
 # Changelog
 
+## [v1.11.1](https://github.com/seldonio/seldon-core/tree/v1.11.1) (2021-10-04)
+
+[Full Changelog](https://github.com/seldonio/seldon-core/compare/v1.11.0...v1.11.1)
+
+**Fixed bugs:**
+
+- gRPC broken for non ipv6 systems post 1.9.1 [\#3616](https://github.com/SeldonIO/seldon-core/issues/3616)
+- How seldon core analytics is working for model metrics monitoring ??? [\#3592](https://github.com/SeldonIO/seldon-core/issues/3592)
+- incomplete meta.requestPath in responses and redundant "tags" field [\#3477](https://github.com/SeldonIO/seldon-core/issues/3477)
+
+**Closed issues:**
+
+- Python Wrapper does not adhere to Timeout annotations [\#3613](https://github.com/SeldonIO/seldon-core/issues/3613)
+- Are you interested in becoming a listed KEDA end-user? [\#3612](https://github.com/SeldonIO/seldon-core/issues/3612)
+- Seldon Core v1.11.0 Release [\#3598](https://github.com/SeldonIO/seldon-core/issues/3598)
+- what is the best way for receiving/sending data fast? [\#3449](https://github.com/SeldonIO/seldon-core/issues/3449)
+- HPA support for autoscaling/v2beta2 API [\#3143](https://github.com/SeldonIO/seldon-core/issues/3143)
+
+
 ## [v1.11.0](https://github.com/seldonio/seldon-core/tree/v1.11.0)
 
 [Full Changelog](https://github.com/seldonio/seldon-core/compare/operator/v1.10.0...v1.11.0)
