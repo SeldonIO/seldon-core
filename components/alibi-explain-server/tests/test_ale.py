@@ -13,7 +13,7 @@ EXPLAINER_FILENAME = "explainer.dill"
 
 
 def test_ale():
-    os.environ.clear()
+
     alibi_model = os.path.join(
         kfserving.Storage.download(ALE_EXPLAINER_URI), EXPLAINER_FILENAME
     )

@@ -182,7 +182,7 @@ spec:
   - graph:
       children: []
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.11.0-dev/sklearn/iris
+      modelUri: gs://seldon-models/v1.12.0-dev/sklearn/iris
       serviceAccountName: user-gcp-sa
       name: classifier
     name: default

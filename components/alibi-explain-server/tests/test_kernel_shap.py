@@ -12,7 +12,7 @@ EXPLAINER_FILENAME = "explainer.dill"
 
 
 def test_kernel_shap():
-    os.environ.clear()
+
     alibi_model = os.path.join(
         kfserving.Storage.download(WINE_EXPLAINER_URI), EXPLAINER_FILENAME
     )

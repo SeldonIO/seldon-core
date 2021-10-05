@@ -112,7 +112,7 @@ predictor_servers:
   MLFLOW_SERVER:
     protocols:
       seldon:
-        defaultImageVersion: "1.11.0-dev"
+        defaultImageVersion: "1.12.0-dev"
         image: seldonio/mlflowserver
       kfserving:
         defaultImageVersion: "0.5.0"
@@ -120,7 +120,7 @@ predictor_servers:
   SKLEARN_SERVER:
     protocols:
       seldon:
-        defaultImageVersion: "1.11.0-dev"
+        defaultImageVersion: "1.12.0-dev"
         image: seldonio/sklearnserver
       kfserving:
         defaultImageVersion: "0.5.0"
@@ -128,7 +128,7 @@ predictor_servers:
   TENSORFLOW_SERVER:
     protocols:
       seldon:
-        defaultImageVersion: "1.11.0-dev"
+        defaultImageVersion: "1.12.0-dev"
         image: seldonio/tfserving-proxy
       tensorflow: 
         defaultImageVersion: 2.1.0
@@ -136,7 +136,7 @@ predictor_servers:
   XGBOOST_SERVER:
     protocols:
       seldon:
-        defaultImageVersion: "1.11.0-dev"
+        defaultImageVersion: "1.12.0-dev"
         image: seldonio/xgboostserver
       kfserving:
         defaultImageVersion: "0.5.0"
