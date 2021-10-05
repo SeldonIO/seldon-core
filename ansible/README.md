@@ -7,7 +7,7 @@ Once installed you can use the following Playbooks.
 ## Create Kind Cluster
 
 ```
-ansible-playbook playbooks/kind.yaml
+ansible-playbook playbooks/kind_cluster.yaml
 ```
 
 
@@ -23,4 +23,3 @@ ansible-playbook playbooks/seldon_core.yaml
 ```
 ansible-playbook playbooks/kafka.yaml
 ```
-
