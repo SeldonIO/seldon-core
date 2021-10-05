@@ -10,7 +10,7 @@ KERAS_MODEL_FILENAME = "model.h5"
 
 
 def test_integrated_gradients():
-    os.environ.clear()
+
     keras_model_path = os.path.join(
         kfserving.Storage.download(IMDB_KERAS_MODEL_URI), KERAS_MODEL_FILENAME
     )

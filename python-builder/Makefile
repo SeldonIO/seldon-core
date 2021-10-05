@@ -1,5 +1,5 @@
 DOCKER_IMAGE_NAME=seldonio/python-builder
-DOCKER_IMAGE_VERSION=0.5
+DOCKER_IMAGE_VERSION=0.6
 
 build_docker_image:
 	docker build --force-rm=true -t $(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION) .
@@ -14,4 +14,3 @@ test:
 
 check_docker_hub_tags:
 	@echo "use: https://hub.docker.com/r/${DOCKER_IMAGE_NAME}/tags/"
-

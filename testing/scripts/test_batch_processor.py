@@ -56,6 +56,7 @@ class TestBatchWorker(object):
             "debug",
             True,
             str(uuid.uuid1()),
+            0,
         )
 
         logging.info("Finished first batch. Checking.")
@@ -89,6 +90,7 @@ class TestBatchWorker(object):
             "debug",
             True,
             str(uuid.uuid1()),
+            0,
         )
 
         logging.info("Finished first batch. Checking.")

@@ -11,7 +11,7 @@ EXPLAINER_FILENAME = "explainer.dill"
 
 
 def test_tree_shap():
-    os.environ.clear()
+
     alibi_model = os.path.join(
         kfserving.Storage.download(ADULT_EXPLAINER_URI), EXPLAINER_FILENAME
     )

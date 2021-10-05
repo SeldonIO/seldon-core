@@ -503,7 +503,7 @@ def main():
     @contextlib.contextmanager
     def _reserve_grpc_port():
         """Find and reserve a port for all subprocesses to use."""
-        sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         if sock.getsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT) != 1:
             raise RuntimeError("Failed to set SO_REUSEPORT.")
