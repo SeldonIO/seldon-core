@@ -51,7 +51,13 @@ func (smc *JSONRestClient) IsGrpc() bool {
 }
 
 func (smc *JSONRestClient) CreateErrorPayload(err error) payload.SeldonPayload {
-	respFailed := proto.SeldonMessage{Status: &proto.Status{Code: http.StatusInternalServerError, Info: err.Error()}}
+	respFailed := proto.SeldonMessage{
+		Status: &proto.Status{
+			Code:   http.StatusInternalServerError,
+			Info:   err.Error(),
+			Status: proto.Status_FAILURE,
+		},
+	}
 	m := jsonpb.Marshaler{}
 	jStr, _ := m.MarshalToString(&respFailed)
 	res := payload.BytesPayload{Msg: []byte(jStr)}
