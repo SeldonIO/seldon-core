@@ -15,6 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: security-python
+      continue-on-error: true
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       run: |
@@ -29,9 +30,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: security-operator
+      continue-on-error: true
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       run: |
+        echo ${SNYK_TOKEN:0:4}
         make -C operator/ fmt
         snyk test --file=operator/go.mod
 
@@ -43,9 +46,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: security-executor
+      continue-on-error: true
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       run: |
+        echo ${SNYK_TOKEN:0:4}
         make -C executor/ executor
         snyk test --file=executor/go.mod
 
