@@ -29,17 +29,21 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 )
 
+const (
+	RouteConfigurationName = "listener_0"
+)
 
-func MakeCluster(clusterName string) *cluster.Cluster {
+func MakeCluster(clusterName string, eps []Endpoint) *cluster.Cluster {
 	return &cluster.Cluster{
 		Name:                 clusterName,
 		ConnectTimeout:       ptypes.DurationProto(5 * time.Second),
-		ClusterDiscoveryType: &cluster.Cluster_Type{Type: cluster.Cluster_EDS},
-		//ClusterDiscoveryType: &cluster.Cluster_Type{Type: cluster.Cluster_STRICT_DNS},
+		//ClusterDiscoveryType: &cluster.Cluster_Type{Type: cluster.Cluster_EDS},
+		ClusterDiscoveryType: &cluster.Cluster_Type{Type: cluster.Cluster_STRICT_DNS},
 		LbPolicy:             cluster.Cluster_ROUND_ROBIN,
 		//LoadAssignment:       makeEndpoint(clusterName, UpstreamHost),
+		LoadAssignment:  MakeEndpoint(clusterName, eps),
 		DnsLookupFamily:  cluster.Cluster_V4_ONLY,
-		EdsClusterConfig: makeEDSCluster(),
+		//EdsClusterConfig: makeEDSCluster(),
 	}
 }
 
@@ -85,21 +89,21 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 
 	for _, r := range routes {
 		rts = append(rts, &route.Route{
-			//Name: r.Name,
+			Name: r.Name, // Seems optional
 			Match: &route.RouteMatch{
 				PathSpecifier: &route.RouteMatch_Prefix{
 					Prefix: "/",
 				},
 				Headers: []*route.HeaderMatcher{
-					&route.HeaderMatcher{
-						Name: "Host",
+					{
+						Name: "Host", // Header name we will match on
 						HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
-							ExactMatch: r.Prefix,
+							ExactMatch: r.Host,
 						},
 						//HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
 						//	StringMatch: &matcher.StringMatcher{
 						//		MatchPattern: &matcher.StringMatcher_Exact{
-						//			Exact: r.Prefix,
+						//			Exact: r.Host,
 						//		},
 						//	},
 						//},
@@ -117,16 +121,16 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 	}
 
 	return &route.RouteConfiguration{
-		Name: "listener_0",
+		Name: RouteConfigurationName,
 		VirtualHosts: []*route.VirtualHost{{
-			Name:    "local_service",
+			Name:    "seldon_service",
 			Domains: []string{"*"},
 			Routes:  rts,
 		}},
 	}
 }
 
-func MakeHTTPListener(listenerName, route, address string, port uint32) *listener.Listener {
+func MakeHTTPListener(listenerName, address string, port uint32) *listener.Listener {
 	// HTTP filter configuration
 	manager := &hcm.HttpConnectionManager{
 		CodecType:  hcm.HttpConnectionManager_AUTO,
@@ -134,7 +138,7 @@ func MakeHTTPListener(listenerName, route, address string, port uint32) *listene
 		RouteSpecifier: &hcm.HttpConnectionManager_Rds{
 			Rds: &hcm.Rds{
 				ConfigSource:    makeConfigSource(),
-				RouteConfigName: "listener_0",
+				RouteConfigName: RouteConfigurationName,
 			},
 		},
 		HttpFilters: []*hcm.HttpFilter{{

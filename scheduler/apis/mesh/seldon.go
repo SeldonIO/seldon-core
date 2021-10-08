@@ -1,4 +1,4 @@
-package v1alpha1
+package mesh
 
 type SeldonConfig struct {
 	Name string `yaml:"name"`
@@ -25,5 +25,3 @@ type Model struct {
 	ModelServer string `yaml:"modelServer"`
 	Servers []int `yaml:"servers"`
 }
-
-type ServerSubset map[string][]int

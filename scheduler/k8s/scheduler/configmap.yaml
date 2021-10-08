@@ -9,11 +9,7 @@ data:
       servers:
       - name: mlserver1
         replicas:
-        - address: 10.244.0.11
-          port: 9000
-        - address: 10.244.0.13
-          port: 9000
-        - address: 10.244.0.15
+        - address: seldon-mlserver
           port: 9000
       models:
       - name: model1
@@ -21,4 +17,4 @@ data:
         servers: [0]
       - name: model2
         modelServer: mlserver1
-        servers: [0, 1]
+        servers: [0]

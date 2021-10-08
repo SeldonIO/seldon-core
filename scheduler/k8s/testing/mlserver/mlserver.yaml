@@ -11,7 +11,7 @@ spec:
     name: http
   - port: 9500
     name: grpc
-  type: LoadBalancer
+  clusterIP: None    
   selector:
     app: mlserver
 ---
@@ -193,7 +193,7 @@ spec:
         requests:
           storage: 1Gi
 ---
-apiVersion: keda.sh/v1alpha1
+apiVersion: keda.sh/mesh
 kind: ScaledObject
 metadata:
   name: mlserver

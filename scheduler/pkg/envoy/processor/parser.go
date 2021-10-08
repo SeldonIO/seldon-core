@@ -15,13 +15,13 @@
 package processor
 
 import (
-	"github.com/seldonio/seldon-core/scheduler/apis/v1alpha1"
+	"github.com/seldonio/seldon-core/scheduler/apis/mesh"
 	"gopkg.in/yaml.v2"
 )
 
 // parseYaml takes in a yaml envoy config and returns a typed version
-func parseSeldonYaml(data []byte) (*v1alpha1.SeldonConfig, error) {
-	var config v1alpha1.SeldonConfig
+func parseSeldonYaml(data []byte) (*mesh.SeldonConfig, error) {
+	var config mesh.SeldonConfig
 
 	err := yaml.Unmarshal(data, &config)
 	if err != nil {

@@ -3,13 +3,13 @@ spec:
   servers:
   - name: mlserver1
     replicas:
-    - address: 0.0.0.0
+    - address: echo1
       port: 9100
-    - address: 0.0.0.0
+    - address: echo2
       port: 9101
-    - address: 0.0.0.0
+    - address: echo3
       port: 9102
-    - address: 0.0.0.0
+    - address: echo4
       port: 9103      
   - name: triton
     replicas:
@@ -21,4 +21,4 @@ spec:
     servers: [0]
   - name: model2
     modelServer: mlserver1
-    servers: [0, 1, 3]
+    servers: [0, 1]

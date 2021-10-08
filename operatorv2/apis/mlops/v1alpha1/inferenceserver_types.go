@@ -26,9 +26,6 @@ import (
 
 // InferenceServerSpec defines the desired state of InferenceServer
 type InferenceServerSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
 	// Ability to customize the server with a v1.podSpec
 	PodSpec PodSpec `json:"podSpec,omitempty" protobuf:"bytes,1,opt,name=podSpec"`
 	// 1 of N semantic to specify a particular type of server

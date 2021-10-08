@@ -18,18 +18,18 @@ type Listener struct {
 	Name       string
 	Address    string
 	Port       uint32
-	RouteNames []string
+	//RouteNames []string
 }
 
 type Route struct {
 	Name    string
-	Prefix  string
+	Host    string
 	Cluster string
 }
 
 type Cluster struct {
 	Name      string
-	Endpoints []Endpoint
+	Endpoints map[string]Endpoint
 }
 
 type Endpoint struct {

@@ -18,8 +18,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AgentClient interface {
-	LoadModel(ctx context.Context, opts ...grpc.CallOption) (Agent_LoadModelClient, error)
-	UnloadModel(ctx context.Context, opts ...grpc.CallOption) (Agent_UnloadModelClient, error)
+	LoadModel(ctx context.Context, in *LoadModelRequest, opts ...grpc.CallOption) (*LoadModelResponse, error)
+	UnloadModel(ctx context.Context, in *UnloadModelRequest, opts ...grpc.CallOption) (*UnloadModelResponse, error)
+	Subscribe(ctx context.Context, in *SubscriptionRequest, opts ...grpc.CallOption) (Agent_SubscribeClient, error)
 }
 
 type agentClient struct {
@@ -30,62 +31,50 @@ func NewAgentClient(cc grpc.ClientConnInterface) AgentClient {
 	return &agentClient{cc}
 }
 
-func (c *agentClient) LoadModel(ctx context.Context, opts ...grpc.CallOption) (Agent_LoadModelClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Agent_ServiceDesc.Streams[0], "/seldon.mlops.agent.Agent/LoadModel", opts...)
+func (c *agentClient) LoadModel(ctx context.Context, in *LoadModelRequest, opts ...grpc.CallOption) (*LoadModelResponse, error) {
+	out := new(LoadModelResponse)
+	err := c.cc.Invoke(ctx, "/seldon.mlops.agent.Agent/LoadModel", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &agentLoadModelClient{stream}
-	return x, nil
+	return out, nil
 }
 
-type Agent_LoadModelClient interface {
-	Send(*ModelLoadRequest) error
-	Recv() (*ModelLoadResponse, error)
-	grpc.ClientStream
-}
-
-type agentLoadModelClient struct {
-	grpc.ClientStream
-}
-
-func (x *agentLoadModelClient) Send(m *ModelLoadRequest) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *agentLoadModelClient) Recv() (*ModelLoadResponse, error) {
-	m := new(ModelLoadResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *agentClient) UnloadModel(ctx context.Context, opts ...grpc.CallOption) (Agent_UnloadModelClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Agent_ServiceDesc.Streams[1], "/seldon.mlops.agent.Agent/UnloadModel", opts...)
+func (c *agentClient) UnloadModel(ctx context.Context, in *UnloadModelRequest, opts ...grpc.CallOption) (*UnloadModelResponse, error) {
+	out := new(UnloadModelResponse)
+	err := c.cc.Invoke(ctx, "/seldon.mlops.agent.Agent/UnloadModel", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &agentUnloadModelClient{stream}
+	return out, nil
+}
+
+func (c *agentClient) Subscribe(ctx context.Context, in *SubscriptionRequest, opts ...grpc.CallOption) (Agent_SubscribeClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Agent_ServiceDesc.Streams[0], "/seldon.mlops.agent.Agent/Subscribe", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &agentSubscribeClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
 	return x, nil
 }
 
-type Agent_UnloadModelClient interface {
-	Send(*ModelUnloadRequest) error
-	Recv() (*ModelUnloadMessage, error)
+type Agent_SubscribeClient interface {
+	Recv() (*ModelEventMessage, error)
 	grpc.ClientStream
 }
 
-type agentUnloadModelClient struct {
+type agentSubscribeClient struct {
 	grpc.ClientStream
 }
 
-func (x *agentUnloadModelClient) Send(m *ModelUnloadRequest) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *agentUnloadModelClient) Recv() (*ModelUnloadMessage, error) {
-	m := new(ModelUnloadMessage)
+func (x *agentSubscribeClient) Recv() (*ModelEventMessage, error) {
+	m := new(ModelEventMessage)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -96,8 +85,9 @@ func (x *agentUnloadModelClient) Recv() (*ModelUnloadMessage, error) {
 // All implementations must embed UnimplementedAgentServer
 // for forward compatibility
 type AgentServer interface {
-	LoadModel(Agent_LoadModelServer) error
-	UnloadModel(Agent_UnloadModelServer) error
+	LoadModel(context.Context, *LoadModelRequest) (*LoadModelResponse, error)
+	UnloadModel(context.Context, *UnloadModelRequest) (*UnloadModelResponse, error)
+	Subscribe(*SubscriptionRequest, Agent_SubscribeServer) error
 	mustEmbedUnimplementedAgentServer()
 }
 
@@ -105,11 +95,14 @@ type AgentServer interface {
 type UnimplementedAgentServer struct {
 }
 
-func (UnimplementedAgentServer) LoadModel(Agent_LoadModelServer) error {
-	return status.Errorf(codes.Unimplemented, "method LoadModel not implemented")
+func (UnimplementedAgentServer) LoadModel(context.Context, *LoadModelRequest) (*LoadModelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LoadModel not implemented")
 }
-func (UnimplementedAgentServer) UnloadModel(Agent_UnloadModelServer) error {
-	return status.Errorf(codes.Unimplemented, "method UnloadModel not implemented")
+func (UnimplementedAgentServer) UnloadModel(context.Context, *UnloadModelRequest) (*UnloadModelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UnloadModel not implemented")
+}
+func (UnimplementedAgentServer) Subscribe(*SubscriptionRequest, Agent_SubscribeServer) error {
+	return status.Errorf(codes.Unimplemented, "method Subscribe not implemented")
 }
 func (UnimplementedAgentServer) mustEmbedUnimplementedAgentServer() {}
 
@@ -124,56 +117,61 @@ func RegisterAgentServer(s grpc.ServiceRegistrar, srv AgentServer) {
 	s.RegisterService(&Agent_ServiceDesc, srv)
 }
 
-func _Agent_LoadModel_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(AgentServer).LoadModel(&agentLoadModelServer{stream})
-}
-
-type Agent_LoadModelServer interface {
-	Send(*ModelLoadResponse) error
-	Recv() (*ModelLoadRequest, error)
-	grpc.ServerStream
-}
-
-type agentLoadModelServer struct {
-	grpc.ServerStream
-}
-
-func (x *agentLoadModelServer) Send(m *ModelLoadResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *agentLoadModelServer) Recv() (*ModelLoadRequest, error) {
-	m := new(ModelLoadRequest)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+func _Agent_LoadModel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoadModelRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return m, nil
+	if interceptor == nil {
+		return srv.(AgentServer).LoadModel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/seldon.mlops.agent.Agent/LoadModel",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServer).LoadModel(ctx, req.(*LoadModelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _Agent_UnloadModel_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(AgentServer).UnloadModel(&agentUnloadModelServer{stream})
-}
-
-type Agent_UnloadModelServer interface {
-	Send(*ModelUnloadMessage) error
-	Recv() (*ModelUnloadRequest, error)
-	grpc.ServerStream
-}
-
-type agentUnloadModelServer struct {
-	grpc.ServerStream
-}
-
-func (x *agentUnloadModelServer) Send(m *ModelUnloadMessage) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *agentUnloadModelServer) Recv() (*ModelUnloadRequest, error) {
-	m := new(ModelUnloadRequest)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+func _Agent_UnloadModel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnloadModelRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return m, nil
+	if interceptor == nil {
+		return srv.(AgentServer).UnloadModel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/seldon.mlops.agent.Agent/UnloadModel",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServer).UnloadModel(ctx, req.(*UnloadModelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Agent_Subscribe_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(SubscriptionRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(AgentServer).Subscribe(m, &agentSubscribeServer{stream})
+}
+
+type Agent_SubscribeServer interface {
+	Send(*ModelEventMessage) error
+	grpc.ServerStream
+}
+
+type agentSubscribeServer struct {
+	grpc.ServerStream
+}
+
+func (x *agentSubscribeServer) Send(m *ModelEventMessage) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 // Agent_ServiceDesc is the grpc.ServiceDesc for Agent service.
@@ -182,19 +180,21 @@ func (x *agentUnloadModelServer) Recv() (*ModelUnloadRequest, error) {
 var Agent_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "seldon.mlops.agent.Agent",
 	HandlerType: (*AgentServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams: []grpc.StreamDesc{
+	Methods: []grpc.MethodDesc{
 		{
-			StreamName:    "LoadModel",
-			Handler:       _Agent_LoadModel_Handler,
-			ServerStreams: true,
-			ClientStreams: true,
+			MethodName: "LoadModel",
+			Handler:    _Agent_LoadModel_Handler,
 		},
 		{
-			StreamName:    "UnloadModel",
-			Handler:       _Agent_UnloadModel_Handler,
+			MethodName: "UnloadModel",
+			Handler:    _Agent_UnloadModel_Handler,
+		},
+	},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "Subscribe",
+			Handler:       _Agent_Subscribe_Handler,
 			ServerStreams: true,
-			ClientStreams: true,
 		},
 	},
 	Metadata: "agent.proto",

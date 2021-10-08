@@ -18,18 +18,15 @@ import (
 	"context"
 	"flag"
 	"io/ioutil"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
-	"os"
+	"math/rand"
 	"path/filepath"
+	"time"
 
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	serverv3 "github.com/envoyproxy/go-control-plane/pkg/server/v3"
-	"github.com/seldonio/seldon-core/scheduler/internal/envoy/processor"
-	"github.com/seldonio/seldon-core/scheduler/internal/envoy/server"
-	"github.com/seldonio/seldon-core/scheduler/internal/envoy/watcher"
+	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/server"
+	"github.com/seldonio/seldon-core/scheduler/pkg/scheduler"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -37,8 +34,8 @@ var (
 	l log.FieldLogger
 
 	configFilename string
-	port           uint
-	basePort       uint
+	envoyPort      uint
+	schedulerPort       uint
 	mode           string
 	kubeconfig     string
 	namespace      string
@@ -47,20 +44,16 @@ var (
 )
 
 func init() {
-	l = log.New()
-	log.SetLevel(log.DebugLevel)
+	rand.Seed(time.Now().UnixNano())
 
-	// The port that this xDS server listens on
-	flag.UintVar(&port, "port", 9002, "xDS management server port")
+	// The envoyPort that this xDS server listens on
+	flag.UintVar(&envoyPort, "envoy-port", 9002, "xDS management server port")
+
+	// The envoyPort that this xDS server listens on
+	flag.UintVar(&schedulerPort, "scheduler-port", 9004, "scheduler server port")
 
 	// Tell Envoy to use this Node ID
 	flag.StringVar(&nodeID, "nodeID", "test-id", "Node ID")
-
-	// Define the directory to watch for Envoy configuration files
-	flag.StringVar(&configFilename, "config", "", "full path to directory to watch for files")
-
-	// Namespace - used for configmap watcher
-	flag.StringVar(&namespace, "namespace", "seldon-mesh", "namespace we are running in")
 
 	if home := homedir.HomeDir(); home != "" {
 		flag.StringVar(&kubeconfig, "kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
@@ -81,74 +74,26 @@ func getNamespace() string {
 }
 
 func main() {
+	logger := log.New()
+	log.SetLevel(log.DebugLevel)
 	flag.Parse()
 
 	// Create a cache
-	cache := cache.NewSnapshotCache(false, cache.IDHash{}, l)
+	cache := cache.NewSnapshotCache(false, cache.IDHash{}, logger)
 
-	// Create a processor
-	proc := processor.NewSeldonProcessor(
-		cache, nodeID, log.WithField("context", "processor"))
-
-	// Notify channel for file system events
-	notifyCh := make(chan watcher.NotifyMessage)
-
-	if configFilename != "" {
-		log.Info("Starting from local config file")
-		// Create initial snapshot from file
-		yamlFile, err := ioutil.ReadFile(configFilename)
-		if err != nil {
-			panic("Failed to load file")
-		}
-		proc.ProcessFile(watcher.NotifyMessage{
-			Operation: watcher.Create,
-			Contents:  yamlFile,
-		})
-
-		go func() {
-			// WatchFile for file changes
-			watcher.WatchFile(configFilename, notifyCh)
-		}()
-	} else {
-		log.Info("Starting from configmap")
-		var clientCfg *rest.Config
-		if _, err := os.Stat(kubeconfig); err == nil {
-			// use the current context in kubeconfig
-			log.Info("Using user kubeconfig")
-			clientCfg, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
-			if err != nil {
-				panic(err.Error())
-			}
-		} else {
-			log.Info("Using in cluster kubeconfig")
-			// Get things set up for watching - we need a valid k8s client
-			clientCfg, err = rest.InClusterConfig()
-			if err != nil {
-				panic("Unable to get our client configuration")
-			}
-		}
-		clientset, err := kubernetes.NewForConfig(clientCfg)
-		if err != nil {
-			panic("Unable to create our clientset")
-		}
-		go func() {
-			// WatchFile for file changes
-			watcher.WatchConfigmap(clientset, getNamespace(), notifyCh)
-		}()
-	}
-
-
+	// Start xDS server
 	go func() {
-		// Run the xDS server
 		ctx := context.Background()
 		srv := serverv3.NewServer(ctx, cache, nil)
-		server.RunServer(ctx, srv, port)
+		server.RunServer(ctx, srv, envoyPort)
 	}()
 
-	for {
-		select {
-		case msg := <-notifyCh:
-			proc.ProcessFile(msg)
-		}
+	s := scheduler.NewScheduler(cache, nodeID, logger)
+	err := s.StartGrpcServer(schedulerPort)
+	if err != nil {
+		log.WithError(err).Fatalf("Scheduler start server error")
 	}
+
+
+
 }

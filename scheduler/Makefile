@@ -5,8 +5,11 @@ KIND_NAME=ansible
 GO_LDFLAGS := -s -w $(patsubst %,-X %, $(GO_BUILD_VARS))
 
 #go build -o seldon-xds-server -mod=readonly -v -ldflags="$(GO_LDFLAGS)" $(MODULE)/cmd/server
-build: ## Build and install the binary
+build: test
 	go build -o bin/scheduler -v ./cmd/server
+
+test:
+	go test ./pkg/...
 
 start-local-svcs:
 	docker run -d --rm --name=echo9100 -p 9100:8080 stevesloka/echo-server echo-server --echotext=Sample-Endpoint1!
@@ -26,14 +29,15 @@ stop-svcs:
 start-scheduler-from-file:
 	./bin/scheduler -config ./config/seldon.yaml
 
-start-scheduler-from-configmap:
+start-scheduler:
 	./bin/scheduler
 
-start-envoy_imcremental:
+start-envoy:
 	./hack/start-envoy-delta.sh
 
+# sends host header to allow routing
 curl-model2:
-	watch -n1 curl 0.0.0.0:9000/model2
+	watch -n1 curl -H \"Host: model2\" 0.0.0.0:9000/model2
 
 
 docker-build-scheduler:
@@ -57,17 +61,13 @@ kind-image-install-envoy: docker-build-envoy
 deploy:
 	cd k8s/scheduler && kustomize edit set image scheduler=${SCHEDULER_IMG}
 	cd k8s/envoy && kustomize edit set image scheduler=${ENVOY_IMG}
-	kustomize build k8s/default | kubectl create -f -
+	kustomize build k8s/default | kubectl apply -f -
 
 undeploy:
 	kustomize build k8s/default | kubectl delete -f -
 
-#TODO create ansible script
-install-keda:
-	kubectl create namespace keda
-	helm install keda kedacore/keda --namespace keda
-
 deploy-mlserver:
+	kubectl apply namespace seldon-mesh || echo "namespace seldon-mesh exists"
 	kustomize build k8s/testing/mlserver | kubectl create -f -
 
 undeploy-mlserver:
@@ -76,7 +76,7 @@ undeploy-mlserver:
 
 # ip address will change. Make automatic?
 curl-mlserver-test:
-	curl -v -H "Host: model2" -H "Content-Type: application/json" 172.18.255.2/v2/models/classifier/infer -d '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
+	curl -v -H "Host: model2" -H "Content-Type: application/json" 172.18.255.1/v2/models/classifier/infer -d '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 
 build-protos:
 	protoc -I=./apis/mlops/scheduler --go_out=./apis/mlops/scheduler --go_opt=paths=source_relative --go-grpc_out=./apis/mlops/scheduler --go-grpc_opt=paths=source_relative ./apis/mlops/scheduler/scheduler.proto

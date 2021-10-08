@@ -17,9 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -27,35 +26,25 @@ import (
 
 // InferenceArtifactSpec defines the desired state of InferenceArtifact
 type InferenceArtifactSpec struct {
-	Name string `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
-	// The artifact type sklearn, pytorch, alibi-explain, alibi-detect
-	// +optional
-	Type string `json:"type,omitempty" protobuf:"bytes,2,opt,name=type"`
-	// List of extra requirements for this model to be loaded on a compatible server, e.g. sklearn19
-	Requirements []string `json:"requirements,omitempty" protobuf:"bytes,3,opt,name=requirements"`
+	// Name of inference artifact
+	Name string `json:"name,omitempty" protobuf:"bytes,1,name=name"`
+	// List of extra requirements for this model to be loaded on a compatible server,
+	// e.g. sklearn, sklearn18, pytorch, tensorflow, mlflow
+	Requirements []string `json:"requirements,omitempty" protobuf:"bytes,2,opt,name=requirements"`
 	// Storage URI for the model repository
-	StorageURI string `json:"storageUri" protobuf:"bytes,4,name=storageUri"`
-	// Resources needed for artifact, cpu, memory etc
+	StorageURI string `json:"storageUri" protobuf:"bytes,3,name=storageUri"`
+	// Memory needed for artifact
 	// +optional
-	Resources v1.ResourceList `json:"resources,omitempty" protobuf:"bytes,5,rep,name=resources,casttype=ResourceList,castkey=ResourceName"`
-	//
-	Memory resource.Quantity `json:"memory" protobuf:"bytes,6,name=memory"`
+	Memory resource.Quantity `json:"memory,omitempty" protobuf:"bytes,4,name=memory"`
 	// Name of the InferenceServer to deploy this artifact
-	Server *string `json:"server,omitempty" protobuf:"bytes,7,opt,name=server"`
+	// +optional
+	Server *string `json:"server,omitempty" protobuf:"bytes,5,opt,name=server"`
 	// Whether the artifact can be run on a shared server
 	// +optional
-	Shared bool `json:"shared,omitempty" protobuf:"bytes,8,opt,name=shared"`
-	//TODO move to metadata sub struct
-	//
-	// swagger URI endpoint
+	Shared bool `json:"shared,omitempty" protobuf:"bytes,6,opt,name=shared"`
+	// Metadata
 	// +optional
-	SwaggerURI *string `json:"swaggerURI,omitempty" protobuf:"bytes,9,opt,name=swaggerURI"`
-	// model server setting URI endpoint
-	// +optional
-	modelSettingsURI *string `json:"modelSettingsURI,omitempy" protobuf:"bytes,10,opt,name=modelSettingsURI"`
-	// Prediction schema URI endpoint
-	// +optional
-	predictionSchemaURI *string `json:"predictionSchemaURI,omitempy" protobuf:"bytes,11,opt,name=predictionSchemaURI"`
+	Metadata *ArtifactMetadataSpec `json:"metadata,omitempty" protobuf:"bytes,7,opt,name=metadata"`
 }
 
 // InferenceArtifactStatus defines the observed state of InferenceArtifact
