@@ -1,6 +1,6 @@
 import dill
 import click
-import dill
+
 try:
     # Running for tests
     from .Transformer import Transformer
