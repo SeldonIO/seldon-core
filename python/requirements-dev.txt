@@ -1,6 +1,6 @@
 # Test and linters
 black==21.7b0
-coverage==5.4              # 2nd lvl dep on cov required to avoid sqllite dep
+coverage==6.0.1              # 2nd lvl dep on cov required to avoid sqllite dep
 flake8==3.9.0
 grpcio-tools==1.37.1
 isort==5.9.0
