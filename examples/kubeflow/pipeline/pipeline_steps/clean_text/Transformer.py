@@ -1,7 +1,8 @@
 import re
-from html.parser import HTMLParser
-import numpy as np
 import logging
+from html.parser import HTMLParser
+
+import numpy as np
 
 
 class Transformer:
