@@ -4,11 +4,25 @@
 {{- $cert := genSignedCert "seldon-webhook-service" nil $altNames 365 $ca -}}
 ---
 
-apiVersion: admissionregistration.k8s.io/v1beta1
+{{- if not .Values.certManager.enabled -}}
+apiVersion: v1
+data:
+  ca.crt: '{{ $ca.Cert | b64enc }}'
+  tls.crt: '{{ $cert.Cert | b64enc }}'
+  tls.key: '{{ $cert.Key | b64enc }}'
+kind: Secret
+metadata:
+  name: seldon-webhook-server-cert
+  namespace: '{{ include "seldon.namespace" . }}'
+type: kubernetes.io/tls
+{{- end }}
+---
+
+apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   annotations:
-    cert-manager.io/inject-ca-from: '{{ include "seldon.namespace" . }}/seldon-serving-cert'
+    cert-manager.io/inject-ca-from: seldon-system/seldon-serving-cert
   labels:
     app: seldon
     app.kubernetes.io/instance: '{{ .Release.Name }}'
@@ -16,7 +30,10 @@ metadata:
     app.kubernetes.io/version: '{{ .Chart.Version }}'
   name: seldon-validating-webhook-configuration-{{ include "seldon.namespace" . }}
 webhooks:
-- clientConfig:
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
     caBundle: '{{ $ca.Cert | b64enc }}'
     service:
       name: seldon-webhook-service
@@ -67,121 +84,5 @@ webhooks:
     resources:
     - seldondeployments
   sideEffects: None
-- clientConfig:
-    caBundle: '{{ $ca.Cert | b64enc }}'
-    service:
-      name: seldon-webhook-service
-      namespace: '{{ include "seldon.namespace" . }}'
-      path: /validate-machinelearning-seldon-io-v1alpha2-seldondeployment
-  failurePolicy: Fail
-  name: v1alpha2.vseldondeployment.kb.io
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
-{{- if not .Values.singleNamespace }}
-  namespaceSelector:
-    matchExpressions:
-    - key: seldon.io/controller-id
-      operator: DoesNotExist
-{{- if .Values.kubeflow }}
-    matchLabels:
-      serving.kubeflow.org/inferenceservice: enabled
-{{- end }}
-{{- end }}
-{{- end }}
-{{- if .Values.singleNamespace }}
-  namespaceSelector:
-    matchLabels:
-      seldon.io/controller-id: {{ include "seldon.namespace" . }}
-{{- end }}
-{{- if not .Values.kubeflow }}
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
-{{- if not .Values.controllerId }}
-  objectSelector:
-    matchExpressions:
-    - key: seldon.io/controller-id
-      operator: DoesNotExist
-{{- end }}
-{{- end }}
-{{- if .Values.controllerId }}
-  objectSelector:
-    matchLabels:
-      seldon.io/controller-id: {{ .Values.controllerId }}
-{{- end }}
-{{- end }}
-  rules:
-  - apiGroups:
-    - machinelearning.seldon.io
-    apiVersions:
-    - v1alpha2
-    operations:
-    - CREATE
-    - UPDATE
-    resources:
-    - seldondeployments
-  sideEffects: None
-- clientConfig:
-    caBundle: '{{ $ca.Cert | b64enc }}'
-    service:
-      name: seldon-webhook-service
-      namespace: '{{ include "seldon.namespace" . }}'
-      path: /validate-machinelearning-seldon-io-v1alpha3-seldondeployment
-  failurePolicy: Fail
-  name: v1alpha3.vseldondeployment.kb.io
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
-{{- if not .Values.singleNamespace }}
-  namespaceSelector:
-    matchExpressions:
-    - key: seldon.io/controller-id
-      operator: DoesNotExist
-{{- if .Values.kubeflow }}
-    matchLabels:
-      serving.kubeflow.org/inferenceservice: enabled
-{{- end }}
-{{- end }}
-{{- end }}
-{{- if .Values.singleNamespace }}
-  namespaceSelector:
-    matchLabels:
-      seldon.io/controller-id: {{ include "seldon.namespace" . }}
-{{- end }}
-{{- if not .Values.kubeflow }}
-{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
-{{- if not .Values.controllerId }}
-  objectSelector:
-    matchExpressions:
-    - key: seldon.io/controller-id
-      operator: DoesNotExist
-{{- end }}
-{{- end }}
-{{- if .Values.controllerId }}
-  objectSelector:
-    matchLabels:
-      seldon.io/controller-id: {{ .Values.controllerId }}
-{{- end }}
-{{- end }}
-  rules:
-  - apiGroups:
-    - machinelearning.seldon.io
-    apiVersions:
-    - v1alpha3
-    operations:
-    - CREATE
-    - UPDATE
-    resources:
-    - seldondeployments
-  sideEffects: None
----
-
-{{- if not .Values.certManager.enabled -}}
-apiVersion: v1
-data:
-  ca.crt: '{{ $ca.Cert | b64enc }}'
-  tls.crt: '{{ $cert.Cert | b64enc }}'
-  tls.key: '{{ $cert.Key | b64enc }}'
-kind: Secret
-metadata:
-  name: seldon-webhook-server-cert
-  namespace: '{{ include "seldon.namespace" . }}'
-type: kubernetes.io/tls
-{{- end }}
 
 {{- end }}

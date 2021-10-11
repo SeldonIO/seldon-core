@@ -10,3 +10,15 @@
     matchExpressions:
     - operator: DoesNotExist
       key: seldon.io/controller-id
+- op: add
+  path: /webhooks/1/objectSelector
+  value:
+    matchExpressions:
+    - operator: DoesNotExist
+      key: seldon.io/controller-id
+- op: add
+  path: /webhooks/1/namespaceSelector
+  value:
+    matchExpressions:
+    - operator: DoesNotExist
+      key: seldon.io/controller-id
