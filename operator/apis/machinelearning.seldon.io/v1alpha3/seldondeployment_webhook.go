@@ -38,7 +38,7 @@ func (r *SeldonDeployment) SetupWebhookWithManager(mgr ctrl.Manager) error {
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
-// +kubebuilder:webhook:webhookVersions=v1beta1,verbs=create;update,path=/validate-machinelearning-seldon-io-v1alpha3-seldondeployment,mutating=false,failurePolicy=fail,sideEffects=None,groups=machinelearning.seldon.io,resources=seldondeployments,versions=v1alpha3,name=v1alpha3.vseldondeployment.kb.io
+// +kubebuilder:webhook:webhookVersions=v1,verbs=create;update,path=/validate-machinelearning-seldon-io-v1-seldondeployment,mutating=false,failurePolicy=fail,sideEffects=None,admissionReviewVersions=v1;v1beta1,groups=machinelearning.seldon.io,resources=seldondeployments,versions=v1,name=v1.vseldondeployment.kb.io
 
 var _ webhook.Validator = &SeldonDeployment{}
 
