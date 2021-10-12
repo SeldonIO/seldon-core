@@ -22,7 +22,7 @@ apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   annotations:
-    cert-manager.io/inject-ca-from: seldon-system/seldon-serving-cert
+    cert-manager.io/inject-ca-from: '{{ include "seldon.namespace" . }}/seldon-serving-cert'
   labels:
     app: seldon
     app.kubernetes.io/instance: '{{ .Release.Name }}'
