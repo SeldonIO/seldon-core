@@ -22,7 +22,7 @@ spec:
       graph:
         name: classifier
         implementation: SKLEARN_SERVER
-        modelUri: gs://seldon-models/v1.11.0/sklearn/iris
+        modelUri: gs://seldon-models/v1.11.2/sklearn/iris
 ```
 
 By default only public models published to Google Cloud Storage will be accessible.
@@ -162,7 +162,7 @@ spec:
     graph:
       name: classifier
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.11.0/sklearn/iris
+      modelUri: gs://seldon-models/v1.11.2/sklearn/iris
 ```
 
 The image name and other details will be added when this is deployed automatically.

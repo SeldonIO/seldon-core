@@ -82,9 +82,9 @@ You can upload your models into any of the object stores supported by our pre-pa
 For simplicity we have already uploaded it to the bucket so you can just proceed to the next step and run your model on Seldon Core.
 
 ```console
-$ gsutil cp model.joblib gs://seldon-models/v1.11.0/sklearn/iris/model.joblib
+$ gsutil cp model.joblib gs://seldon-models/v1.11.2/sklearn/iris/model.joblib
 
-[ Saved into gs://seldon-models/v1.11.0/sklearn/iris/model.joblib ]
+[ Saved into gs://seldon-models/v1.11.2/sklearn/iris/model.joblib ]
 ```
 
 **3. Deploy to Seldon Core in Kubernetes**
@@ -103,7 +103,7 @@ spec:
   predictors:
   - graph:
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.11.0/sklearn/iris
+      modelUri: gs://seldon-models/v1.11.2/sklearn/iris
       name: classifier
     name: default
     replicas: 1

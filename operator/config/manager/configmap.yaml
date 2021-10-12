@@ -25,7 +25,7 @@ data:
               },
             "seldon": {
               "image": "seldonio/tfserving-proxy",
-              "defaultImageVersion": "1.11.0"
+              "defaultImageVersion": "1.11.2"
               }
             }
         },
@@ -33,7 +33,7 @@ data:
           "protocols" : {
             "seldon": {
               "image": "seldonio/sklearnserver",
-              "defaultImageVersion": "1.11.0"
+              "defaultImageVersion": "1.11.2"
               },
             "kfserving": {
               "image": "seldonio/mlserver",
@@ -45,7 +45,7 @@ data:
           "protocols" : {
             "seldon": {
               "image": "seldonio/xgboostserver",
-              "defaultImageVersion": "1.11.0"
+              "defaultImageVersion": "1.11.2"
               },
             "kfserving": {
               "image": "seldonio/mlserver",
@@ -57,7 +57,7 @@ data:
           "protocols" : {
             "seldon": {
               "image": "seldonio/mlflowserver",
-              "defaultImageVersion": "1.11.0"
+              "defaultImageVersion": "1.11.2"
               },
             "kfserving": {
               "image": "seldonio/mlserver",

@@ -126,7 +126,7 @@ from kubernetes import client as k8s
 def nlp_pipeline(
         namespace="kubeflow",
         seldon_server="SKLEARN_SERVER",
-        model_path="gs://seldon-models/v1.11.0/sklearn/iris",
+        model_path="gs://seldon-models/v1.11.2/sklearn/iris",
         gateway_endpoint="istio-ingressgateway.istio-system.svc.cluster.local",
         retries=3,
         replicas=10,

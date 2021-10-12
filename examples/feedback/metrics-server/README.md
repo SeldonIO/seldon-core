@@ -65,7 +65,7 @@ spec:
   - graph:
       children: []
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.11.0/sklearn/iris
+      modelUri: gs://seldon-models/v1.11.2/sklearn/iris
       name: classifier
       logger:
         url: http://seldon-multiclass-model-metrics.seldon.svc.cluster.local:80/
