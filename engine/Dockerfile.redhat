@@ -14,7 +14,7 @@ RUN yum install -y java-11-openjdk.x86_64
 RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical
 LABEL name="Seldon Engine" \
       vendor="Seldon Technologies" \
-      version="1.11.1" \
+      version="1.11.2" \
       release="1" \
       summary="The Seldon Engine that is deployed for each model to handle the data flow of each ML computational graph." \
       description="The Seldon Engine that is deployed for each model to handle the data flow of each ML computational graph."

@@ -1,7 +1,7 @@
 FROM registry.access.redhat.com/ubi8/python-36
 LABEL name="Storage Initializer" \
       vendor="Seldon Technologies" \
-      version="1.11.1" \
+      version="1.11.2" \
       release="1" \
       summary="Storage Initializer for Seldon Core" \
       description="Allows Seldon Core to download artifacts from cloud and local storage to a local volume"
