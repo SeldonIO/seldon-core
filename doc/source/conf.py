@@ -199,7 +199,7 @@ if html_theme == "sphinx_material":
         "master_doc": False,
         "nav_links": [
             {
-                "href": "",
+                "href": "/",
                 "internal": False,
                 "title": "🚀 Our Other Projects & Products:",
             },
