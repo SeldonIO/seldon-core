@@ -5,14 +5,13 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
-    types: [ labeled ]
 
 jobs:
   security-python:
 
     runs-on: ubuntu-18.04
     container: snyk/snyk:python-3.8
-    if: ${{ github.event.label.name == 'security' }}
+    if: contains(github.event.pull_request.labels.*.name, 'security')
 
     steps:
     - uses: actions/checkout@v2
@@ -28,7 +27,7 @@ jobs:
 
     runs-on: ubuntu-18.04
     container: snyk/snyk:golang
-    if: ${{ github.event.label.name == 'security' }}
+    if: contains(github.event.pull_request.labels.*.name, 'security')
 
     steps:
     - uses: actions/checkout@v2
@@ -49,7 +48,7 @@ jobs:
 
     runs-on: ubuntu-18.04
     container: snyk/snyk:golang
-    if: ${{ github.event.label.name == 'security' }}
+    if: contains(github.event.pull_request.labels.*.name, 'security')
 
     steps:
     - uses: actions/checkout@v2
