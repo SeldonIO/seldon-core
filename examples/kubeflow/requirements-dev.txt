@@ -1,3 +1,4 @@
+dill==0.3.2
 python-dateutil==2.8.1
 kfp==1.0.0
 kubernetes==11.0.0
@@ -6,5 +7,5 @@ seldon_core==1.2.3
 numpy==1.19.1
 pandas==1.1.1
 spacy==2.3.2
-scikit-learn-0.23.2
-en-core-web-sm=2.3.1
+scikit-learn==0.23.2
+https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-2.3.1/en_core_web_sm-2.3.1.tar.gz

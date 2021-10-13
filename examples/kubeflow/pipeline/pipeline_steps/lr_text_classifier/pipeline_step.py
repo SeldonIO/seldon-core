@@ -1,6 +1,7 @@
 import click
-import numpy as np
 import dill
+
+import numpy as np
 from sklearn.linear_model import LogisticRegression
 
 @click.command()

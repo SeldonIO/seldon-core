@@ -1,6 +1,7 @@
 import click
-import numpy as np
 import dill
+
+import numpy as np
 import pandas as pd
 
 @click.command()
