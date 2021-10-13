@@ -63,7 +63,8 @@ extensions = [
     # https://github.com/spatialaudio/nbsphinx/issues/24
     "IPython.sphinxext.ipython_console_highlighting",
     "sphinx_search.extension",
-    "sphinx_copybutton"
+    "sphinx_copybutton",
+    "sphinx_panels"
 ]
 
 # Copybutton regex to pick up bash, jupyter, python etc.. (not needed if we standardise)

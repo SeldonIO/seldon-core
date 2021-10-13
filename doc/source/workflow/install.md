@@ -33,14 +33,28 @@ kubectl create namespace seldon-system
 
 Now we can install Seldon Core in the `seldon-system` namespace.
 
+Install for [Istio Ingress](../ingress/istio.md):
 ```bash
 helm install seldon-core seldon-core-operator \
     --repo https://storage.googleapis.com/seldon-charts \
     --set usageMetrics.enabled=true \
+    --set istio.enabled=true \
+    --namespace seldon-system
+```
+**or**
+
+Install for [Ambassador Ingress](../ingress/ambassador.md)
+```
+helm install seldon-core seldon-core-operator \
+    --repo https://storage.googleapis.com/seldon-charts \
+    --set usageMetrics.enabled=true \
+    --set ambassador.enabled=true \
     --namespace seldon-system
 ```
 
-Make sure you install it with the relevant ingress (`ambassador.enabled` or `istio.enabled`) so you are able to send requests (instructions below).
+For full instructions on installation with Istio and Ambassador read the following pages:
+- [Ingress with Istio](../ingress/istio.md)
+- [Ingress with Ambassador](../ingress/ambassador.md)
 
 ### Install a specific version
 
@@ -76,17 +90,6 @@ helm install seldon-core seldon-core-operator \
     --namespace seldon-system \
     --set certManager.enabled=true
 ```
-
-## Ingress Support
-
-For particular ingresses that we support, you can inform the controller it should activate processing for them.
-
- * Ambassador
-   * add `--set ambassador.enabled=true` : The controller will add annotations to services it creates so Ambassador can pick them up and wire an endpoint for your deployments.
-   * For full instructions on installation with Ambassador read the [Ingress with Ambassador](../ingress/ambassador.md) page.
- * Istio Gateway
-   * add `--set istio.enabled=true` : The controller will create virtual services and destination rules to wire up endpoints in your istio ingress gateway.
-   * For full instructions on installation with Istio read the [Ingress with Istio](../ingress/istio.md) page.
 
 
 ## Seldon Core Kustomize Install 

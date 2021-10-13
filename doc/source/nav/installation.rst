@@ -6,4 +6,4 @@ Installation
     :maxdepth: 1
     :titlesonly:
 
-    Installation on Kubernetes </workflow/install.md>
+    Installation on Kubernetes </workflow/install.rst>
