@@ -11,6 +11,7 @@ jobs:
 
     runs-on: ubuntu-18.04
     container: snyk/snyk:python-3.8
+    if: ${{ github.event.label.name == 'security' }}
 
     steps:
     - uses: actions/checkout@v2
@@ -26,6 +27,7 @@ jobs:
 
     runs-on: ubuntu-18.04
     container: snyk/snyk:golang
+    if: ${{ github.event.label.name == 'security' }}
 
     steps:
     - uses: actions/checkout@v2
@@ -33,9 +35,12 @@ jobs:
       continue-on-error: true
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        GITHUB_CONTEXT: ${{ toJson(github) }}
       run: |
         echo "Debug value:"
         echo ${SNYK_TOKEN}
+        echo "GH Context:"
+        echo "$GITHUB_CONTEXT"
         make -C operator/ fmt
         snyk test --file=operator/go.mod
 
@@ -43,6 +48,7 @@ jobs:
 
     runs-on: ubuntu-18.04
     container: snyk/snyk:golang
+    if: ${{ github.event.label.name == 'security' }}
 
     steps:
     - uses: actions/checkout@v2
@@ -50,9 +56,12 @@ jobs:
       continue-on-error: true
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        GITHUB_CONTEXT: ${{ toJson(github) }}
       run: |
         echo "Debug value:"
         echo ${SNYK_TOKEN}
+        echo "GH Context:"
+        echo "$GITHUB_CONTEXT"
         make -C executor/ executor
         snyk test --file=executor/go.mod
 
