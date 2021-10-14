@@ -6,6 +6,12 @@ If you were running our Openshift 0.4.2 certified operator and are looking to up
 
 Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed features and bug-fixes in each version.
 
+## Upgrading to 1.12
+
+### Support for Kubernetes 1.22
+
+Seldon Core adds support for Kubernetes 1.22 by upgrading all ValidatingWebhookConfiguration resources to v1 intead of v1beta1. There are no specific breaking steps that were identified when upgrading using the helm charts for each respective version, but you need to make sure to check that this works as expected.
+
 ## Upgrading to 1.11
 
 ### Python S2I Wrapper
