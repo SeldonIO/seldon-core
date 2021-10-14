@@ -16,7 +16,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: security-python
-      continue-on-error: true
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       run: |
@@ -32,7 +31,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: security-operator
-      continue-on-error: true
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         GITHUB_CONTEXT: ${{ toJson(github) }}
@@ -49,7 +47,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: security-executor
-      continue-on-error: true
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         GITHUB_CONTEXT: ${{ toJson(github) }}
