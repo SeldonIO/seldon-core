@@ -29,8 +29,6 @@ jobs:
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       run: |
-        echo "Debug value:"
-        echo ${SNYK_TOKEN}
         make -C operator/ fmt
         snyk test --file=operator/go.mod
 
@@ -45,8 +43,6 @@ jobs:
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       run: |
-        echo "Debug value:"
-        echo ${SNYK_TOKEN}
         make -C executor/ executor
         snyk test --file=executor/go.mod
 
