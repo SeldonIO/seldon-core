@@ -33,8 +33,9 @@ jobs:
     - name: security-operator
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        GITHUB_CONTEXT: ${{ toJson(github) }}
       run: |
+        echo "Debug value:"
+        echo ${SNYK_TOKEN}
         make -C operator/ fmt
         snyk test --file=operator/go.mod
 
@@ -49,8 +50,9 @@ jobs:
     - name: security-executor
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        GITHUB_CONTEXT: ${{ toJson(github) }}
       run: |
+        echo "Debug value:"
+        echo ${SNYK_TOKEN}
         make -C executor/ executor
         snyk test --file=executor/go.mod
 
