@@ -91,8 +91,8 @@ RUN apt-get remove -y --auto-remove \
 
 # INSTALL GO
 ENV PATH /usr/local/go/bin:$PATH
-RUN wget https://dl.google.com/go/go1.16.5.linux-amd64.tar.gz && \
-        tar -zxvf go1.16.5.linux-amd64.tar.gz && \
+RUN wget https://dl.google.com/go/go1.17.1.linux-amd64.tar.gz && \
+        tar -zxvf go1.17.1.linux-amd64.tar.gz && \
         mv go/ /usr/local/go
 
 # Install kubebuilder (using github link)
