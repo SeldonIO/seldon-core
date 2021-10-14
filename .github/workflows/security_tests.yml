@@ -1,0 +1,60 @@
+name: Security Tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  security-python:
+
+    runs-on: ubuntu-18.04
+    container: snyk/snyk:python-3.8
+    if: contains(github.event.pull_request.labels.*.name, 'security')
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: security-python
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      run: |
+        pip install -e python/.
+        snyk test --file=python/setup.py
+
+  security-operator:
+
+    runs-on: ubuntu-18.04
+    container: snyk/snyk:golang
+    if: contains(github.event.pull_request.labels.*.name, 'security')
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: security-operator
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      run: |
+        echo "Debug value:"
+        echo ${SNYK_TOKEN}
+        make -C operator/ fmt
+        snyk test --file=operator/go.mod
+
+  security-executor:
+
+    runs-on: ubuntu-18.04
+    container: snyk/snyk:golang
+    if: contains(github.event.pull_request.labels.*.name, 'security')
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: security-executor
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      run: |
+        echo "Debug value:"
+        echo ${SNYK_TOKEN}
+        make -C executor/ executor
+        snyk test --file=executor/go.mod
+
+
