@@ -4,7 +4,7 @@ metadata:
   name: seldon-spartakus-volunteer
   namespace: kube-system
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: seldon-spartakus-volunteer
@@ -16,7 +16,7 @@ rules:
   verbs:
   - list
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: seldon-spartakus-volunteer
