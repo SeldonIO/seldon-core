@@ -4,7 +4,7 @@
 {{- $cert := genSignedCert "seldon-webhook-service" nil $altNames 365 $ca -}}
 ---
 
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   annotations:
@@ -22,6 +22,7 @@ webhooks:
       name: seldon-webhook-service
       namespace: '{{ include "seldon.namespace" . }}'
       path: /validate-machinelearning-seldon-io-v1-seldondeployment
+  admissionReviewVersions: ["v1", "v1beta1"]
   failurePolicy: Fail
   name: v1.vseldondeployment.kb.io
 {{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
@@ -67,6 +68,7 @@ webhooks:
     resources:
     - seldondeployments
   sideEffects: None
+  admissionReviewVersions: ["v1", "v1beta1"]
 - clientConfig:
     caBundle: '{{ $ca.Cert | b64enc }}'
     service:
@@ -118,6 +120,7 @@ webhooks:
     resources:
     - seldondeployments
   sideEffects: None
+  admissionReviewVersions: ["v1", "v1beta1"]
 - clientConfig:
     caBundle: '{{ $ca.Cert | b64enc }}'
     service:
@@ -169,6 +172,7 @@ webhooks:
     resources:
     - seldondeployments
   sideEffects: None
+  admissionReviewVersions: ["v1", "v1beta1"]
 ---
 
 {{- if not .Values.certManager.enabled -}}
