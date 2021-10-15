@@ -66,17 +66,21 @@ spec:
     app.kubernetes.io/name: ambassador
   type: NodePort
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ambassador
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: ambassador
   template:
     metadata:
       annotations:
         sidecar.istio.io/inject: 'false'
       labels:
+        app: ambassador
         app.kubernetes.io/name: ambassador
     spec:
       containers:
