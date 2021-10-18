@@ -26,3 +26,13 @@ Quick Links
 * Learn how you can `start contributing <./developer/contributing.html>`_
 * Check out `Blogs <./tutorials/blogs.html>`_ that dive into Seldon Core components
 * Watch some of the `Videos and Talks <./tutorials/videos.html>`_ using Seldon Core
+
+.. toctree::
+   :hidden:
+
+   Getting Started </nav/getting-started.rst>
+   Concepts </nav/concepts.rst>
+   Configuration </nav/configuration.rst>
+   Tutorials </nav/tutorials.rst>
+   Reference <nav/reference.rst>
+   Contributing </nav/contributing.rst>
