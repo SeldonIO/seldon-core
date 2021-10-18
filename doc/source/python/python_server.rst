@@ -8,8 +8,8 @@ scale your model across multiple worker processes and threads.
 
 .. Note:: Gunicorn will only handle the horizontal scaling of your model
 **within the same pod and container**. To learn more about how to scale
-your model across multiple pod replicas see the
-:doc:``../graph/scaling`` section of the docs.
+your model across multiple pod replicas see
+`this section <../graph/scaling>`_ of the docs.
 
 Workers
 -------
