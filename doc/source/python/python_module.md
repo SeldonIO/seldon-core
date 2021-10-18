@@ -1,6 +1,6 @@
 # Seldon Core Python Package
 
-Seldon Core has a python package `seldon-core` available on PyPI. The package makes it easier to work with Seldon Core if you are using python and is the basis of the Python S2I wrapper. The module provides:
+Seldon Core has a python package `seldon-core` available on PyPI. The package makes it easier to work with Seldon Core if you are using python. The module provides:
 
  * `seldon-core-microservice` executable to serve microservice components in Seldon Core. This is used by the Python Wrapper for Seldon Core.
  * `seldon_core.seldon_client` library. Core reference API module to call Seldon Core services (internal microservices or the external API). This is used by the testing executable and can be used by users to build their own clients to Seldon Core in Python.
