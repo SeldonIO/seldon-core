@@ -23,8 +23,16 @@ We use Zoom for the conference calls. Details can found:
 
  * [Working Group Agenda Document](https://docs.google.com/document/d/1gAmiJoD-1NHSr0gvDQBhYGR5ryrgWVWRu3nOOxPdKJk/edit?usp=sharing)
  * [Google Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=bDM3ZjNtbGlyNDAxM2N1NWY5aDJtOXU0NDBfMjAyMTEwMjFUMTUwMDAwWiBlZG11bmQuc2hlZUBzZWxkb24uaW8&tmsrc=edmund.shee%40seldon.io&scp=ALL)
- * [Calendar ics](https://calendar.google.com/calendar/ical/seldon.io_m4n2vmrfnl273qls5gb9p65i0s%40group.calendar.google.com/public/basic.ics)
+ * [iCal](https://calendar.google.com/calendar/ical/seldon.io_m4n2vmrfnl273qls5gb9p65i0s%40group.calendar.google.com/public/basic.ics)
  
 If you have any topics you would like to add or discuss, please feel free to add to the agenda point for the next meeting, or alternatively you can add an in-line comment.
+
+## Meetup
+
+We organise a regular [MLOps Community Meetup](https://mlops.london/). The events are "hybrid"; feel free to attend in person if you're near to London or otherwise follow the [YouTube Channel](https://www.youtube.com/channel/UCSBfllj_pRPB36TAZJfjXWg).
+
+## Twitter
+
+Follow our [Seldon](https://twitter.com/seldon_io) account on twitter for product releases and announcements. We also have a [Seldon Research](https://twitter.com/SeldonResearch) for the latest in research around Drift/Outlier Detection and Explainability.
 
 

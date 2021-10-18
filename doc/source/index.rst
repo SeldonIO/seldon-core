@@ -22,7 +22,7 @@ Quick Links
 
 * Join our `community Slack <https://join.slack.com/t/seldondev/shared_invite/zt-vejg6ttd-ksZiQs3O_HOtPQsen_labg>`_ to ask any questions
 * Get started with `Seldon Core Notebook Examples <./examples/notebooks.html>`_
-* Join our fortnightly `online community calls <./developer/community.html#community-calls>`_ : `Google Calendar <https://calendar.google.com/event?action=TEMPLATE&tmeid=MXBtNzI1cjk0dG9kczhsZTRkcWlmcm1kdjVfMjAyMDA3MDlUMTUwMDAwWiBzZWxkb24uaW9fbTRuMnZtcmZubDI3M3FsczVnYjlwNjVpMHNAZw&tmsrc=seldon.io_m4n2vmrfnl273qls5gb9p65i0s%40group.calendar.google.com&scp=ALL>`_
+* Join our fortnightly `online community calls <./developer/community.html#community-calls>`_ (`Google Calendar <https://calendar.google.com/event?action=TEMPLATE&tmeid=bDM3ZjNtbGlyNDAxM2N1NWY5aDJtOXU0NDBfMjAyMTEwMjFUMTUwMDAwWiBlZG11bmQuc2hlZUBzZWxkb24uaW8&tmsrc=edmund.shee%40seldon.io&scp=ALL>`_ , `iCal <https://calendar.google.com/calendar/ical/seldon.io_m4n2vmrfnl273qls5gb9p65i0s%40group.calendar.google.com/public/basic.ics>`_)
 * Learn how you can `start contributing <./developer/contributing.html>`_
 * Check out `Blogs <./tutorials/blogs.html>`_ that dive into Seldon Core components
 * Watch some of the `Videos and Talks <./tutorials/videos.html>`_ using Seldon Core
