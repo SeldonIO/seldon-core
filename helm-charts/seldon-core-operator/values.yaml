@@ -27,7 +27,7 @@ certManager:
 
 # ## Install with limited namespace visibility
 # If you want to ensure seldon-core-controller can only have visibility
-#   to specifci namespaces you can set the controllerId
+#   to specify namespaces you can set the controllerId
 controllerId: ""
 
 # Whether operator should create the webhooks and configmap on startup (false means created from chart)
@@ -43,7 +43,7 @@ defaultUserID: "8888"
 managerUserID: 8888
 
 # ## Service Orchestrator (Executor)
-# The executor is the default service orchestrator which has superceeded the "Java Engine"
+# The executor is the default service orchestrator which has superceded the "Java Engine"
 executor:
   port: 8000
   metricsPortName: metrics
