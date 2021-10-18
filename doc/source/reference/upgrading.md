@@ -6,6 +6,16 @@ If you were running our Openshift 0.4.2 certified operator and are looking to up
 
 Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed features and bug-fixes in each version.
 
+
+## Upgrading to 1.12
+
+### Updated Python wrapper folder configurations
+
+  * The default running user in Seldon Core is 8888
+  * Some servers like the MLFlow Server v1 installs installations in runtime
+  * Access required to modify files in the local folder are required so the application folder should be writable
+  * The default base image now changes the owner of the /microservice folder to user 8888
+
 ## Upgrading to 1.11
 
 ### Python S2I Wrapper

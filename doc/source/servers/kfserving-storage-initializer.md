@@ -35,24 +35,18 @@ In order to understand what are the environment variables required, you can have
 
 #### AWS Required Variables
 
-- AWS_ACCESS_KEY_ID
-- AWS_SECRET_ACCESS_KEY
-- AWS_ENDPOINT_URL
-- USE_SSL
+  RCLONE_CONFIG_S3_PROVIDER: aws
+- RCLONE_CONFIG_S3_ACCESS_KEY_ID
+- RCLONE_CONFIG_S3_SECRET_ACCESS_KEY
+- RCLONE_CONFIG_S3_ENDPOINT
 
 #### Minio Required Variables
 
-- AWS_ACCESS_KEY_ID
-- AWS_SECRET_ACCESS_KEY
-- AWS_ENDPOINT_URL
-- USE_SSL
-
-#### Azure Required Variables
-
-- AZ_TENANT_ID
-- AZ_CLIENT_ID
-- AZ_CLIENT_SECRET
-- AZ_SUBSCRIPTION_ID
+  RCLONE_CONFIG_S3_PROVIDER: minio
+- RCLONE_CONFIG_S3_ACCESS_KEY_ID
+- RCLONE_CONFIG_S3_SECRET_ACCESS_KEY
+- RCLONE_CONFIG_S3_ENDPOINT
+- RCLONE_CONFIG_S3_ENV_AUTH
 
 #### Google Cloud Required Variables
 
@@ -71,20 +65,24 @@ metadata:
   name: seldon-init-container-secret
 type: Opaque
 data:
-  AWS_ACCESS_KEY_ID: XXXX
-  AWS_SECRET_ACCESS_KEY: XXXX
-  AWS_ENDPOINT_URL: XXXX
-  USE_SSL: XXXX
+  RCLONE_CONFIG_S3_TYPE: s3
+  RCLONE_CONFIG_S3_PROVIDER: aws
+  RCLONE_CONFIG_S3_ENV_AUTH: "false"
+  RCLONE_CONFIG_S3_ACCESS_KEY_ID: "<your AWS_ACCESS_KEY_ID here>"
+  RCLONE_CONFIG_S3_SECRET_ACCESS_KEY: "<your AWS_SECRET_ACCESS_KEY here>"
+  RCLONE_CONFIG_S3_ENDPOINT: "<your S3 endpoint here>"
 ```
 
 It is also possible to create a `Secret` object from the command line:
 
 ```bash
 kubectl create secret generic seldon-init-container-secret \
-    --from-literal=AWS_ENDPOINT_URL='XXXX' \
-    --from-literal=AWS_ACCESS_KEY_ID='XXXX' \
-    --from-literal=AWS_SECRET_ACCESS_KEY='XXXX' \
-    --from-literal=USE_SSL=false
+    --from-literal=RCLONE_CONFIG_S3_ENDPOINT='XXXX' \
+    --from-literal=RCLONE_CONFIG_S3_ACCESS_KEY_ID='XXXX' \
+    --from-literal=RCLONE_CONFIG_S3_SECRET_ACCESS_KEY='XXXX' \
+    --from-literal=RCLONE_CONFIG_S3_PROVIDER='aws' \
+    --from-literal=RCLONE_CONFIG_S3_TYPE='s3' \
+    --from-literal=RCLONE_CONFIG_S3_ENV_AUTH=false
 ```
 
 You can read the [documentation of Kubernetes](https://kubernetes.io/docs/concepts/configuration/secret/) to learn more about Kubernetes Secrets.
@@ -131,7 +129,7 @@ spec:
 #### MinIO running inside same Kubernetes cluster
 Assuming that you have MinIO instance running on port `9000` avaible at `minio.minio-system.svc.cluster.local` and you want to reference bucket `mymodel` you would set
 ```bash
-AWS_ENDPOINT_URL=http://minio.minio-system.svc.cluster.local:9000
+RCLONE_CONFIG_S3_ENDPOINT=http://minio.minio-system.svc.cluster.local:9000
 ```
 with `modelUri` being set as `s3://mymodel`.
 
