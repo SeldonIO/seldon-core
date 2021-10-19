@@ -271,18 +271,6 @@ if __name__ == "__main__":
                 res["webhooks"][0]["clientConfig"]["service"][
                     "namespace"
                 ] = helm_namespace_override()
-                res["webhooks"][1]["clientConfig"][
-                    "caBundle"
-                ] = "{{ $ca.Cert | b64enc }}"
-                res["webhooks"][1]["clientConfig"]["service"][
-                    "namespace"
-                ] = helm_namespace_override()
-                res["webhooks"][2]["clientConfig"][
-                    "caBundle"
-                ] = "{{ $ca.Cert | b64enc }}"
-                res["webhooks"][2]["clientConfig"]["service"][
-                    "namespace"
-                ] = helm_namespace_override()
                 if "cert-manager.io/inject-ca-from" in res["metadata"]["annotations"]:
                     res["metadata"]["annotations"]["cert-manager.io/inject-ca-from"] = (
                         helm_namespace_override() + "/seldon-serving-cert"

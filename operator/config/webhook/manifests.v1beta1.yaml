@@ -6,27 +6,6 @@ metadata:
   creationTimestamp: null
   name: validating-webhook-configuration
 webhooks:
-- admissionReviewVersions:
-  - v1
-  - v1beta1
-  clientConfig:
-    service:
-      name: webhook-service
-      namespace: system
-      path: /validate-machinelearning-seldon-io-v1-seldondeployment
-  failurePolicy: Fail
-  name: v1.vseldondeployment.kb.io
-  rules:
-  - apiGroups:
-    - machinelearning.seldon.io
-    apiVersions:
-    - v1
-    operations:
-    - CREATE
-    - UPDATE
-    resources:
-    - seldondeployments
-  sideEffects: None
 - clientConfig:
     service:
       name: webhook-service
@@ -39,24 +18,6 @@ webhooks:
     - machinelearning.seldon.io
     apiVersions:
     - v1alpha2
-    operations:
-    - CREATE
-    - UPDATE
-    resources:
-    - seldondeployments
-  sideEffects: None
-- clientConfig:
-    service:
-      name: webhook-service
-      namespace: system
-      path: /validate-machinelearning-seldon-io-v1alpha3-seldondeployment
-  failurePolicy: Fail
-  name: v1alpha3.vseldondeployment.kb.io
-  rules:
-  - apiGroups:
-    - machinelearning.seldon.io
-    apiVersions:
-    - v1alpha3
     operations:
     - CREATE
     - UPDATE
