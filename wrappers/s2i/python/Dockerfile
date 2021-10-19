@@ -31,4 +31,7 @@ RUN cd /microservice/python && pip install .
 RUN mkdir -p /.conda && chmod a+rwx /.conda
 RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical
 
+# Default user is 8888 so changing for permissiosn to modify (needed in mlflow server)
+RUN chown -R 8888 /microservice
+
 EXPOSE 5000

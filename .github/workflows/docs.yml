@@ -10,7 +10,7 @@ jobs:
   docs-lint:
 
     runs-on: ubuntu-18.04
-    container: seldonio/core-builder:0.25
+    container: seldonio/core-builder:0.26
 
     steps:
     - uses: actions/checkout@v2
@@ -21,7 +21,7 @@ jobs:
   docs-build:
 
     runs-on: ubuntu-18.04
-    container: seldonio/core-builder:0.25
+    container: seldonio/core-builder:0.26
 
     steps:
     - uses: actions/checkout@v2

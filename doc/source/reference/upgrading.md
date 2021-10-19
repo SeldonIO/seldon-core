@@ -5,12 +5,19 @@ This page provides with instructions on how to upgrade from previous versions. E
 If you were running our Openshift 0.4.2 certified operator and are looking to upgrade to our 1.1 certified operator, you will also need to follow the "upgrading process" steps in the "Upgrading to 0.5.2 from previous versions" section.
 
 Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed features and bug-fixes in each version.
-
 ## Upgrading to 1.12
 
 ### Support for Kubernetes 1.22
 
 Seldon Core adds support for Kubernetes 1.22 by upgrading all ValidatingWebhookConfiguration resources to v1 intead of v1beta1. There are no specific breaking steps that were identified when upgrading using the helm charts for each respective version, but you need to make sure to check that this works as expected.
+
+
+### Updated Python wrapper folder configurations
+
+  * The default running user in Seldon Core is 8888
+  * Some servers like the MLFlow Server v1 installs installations in runtime
+  * Access required to modify files in the local folder are required so the application folder should be writable
+  * The default base image now changes the owner of the /microservice folder to user 8888
 
 ## Upgrading to 1.11
 
