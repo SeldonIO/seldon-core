@@ -35,6 +35,7 @@ import (
 	istio_networking "istio.io/api/networking/v1alpha3"
 	istio "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -165,37 +166,84 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 			explainerContainer.Lifecycle = &corev1.Lifecycle{PreStop: &corev1.Handler{Exec: &corev1.ExecAction{Command: []string{"/bin/sh", "-c", "/bin/sleep 10"}}}}
 		}
 
-		explainerContainer.Args = []string{
-			"--model_name=" + mlDep.Name,
-			"--predictor_host=" + pSvcEndpoint,
-			"--protocol=" + explainerProtocol + "." + explainerTransport,
-			"--http_port=" + strconv.Itoa(int(portNum)),
-		}
-
-		if p.Explainer.ModelUri != "" {
-			explainerContainer.Args = append(explainerContainer.Args, "--storage_uri="+DefaultModelLocalMountPath)
-		}
-
-		explainerContainer.Args = append(explainerContainer.Args, string(p.Explainer.Type))
-
-		if p.Explainer.Type == machinelearningv1.AlibiAnchorsImageExplainer {
-			explainerContainer.Args = append(explainerContainer.Args, "--tf_data_type=float32")
-		}
-
-		// Order explainer config map keys
-		var keys []string
-		for k, _ := range p.Explainer.Config {
-			keys = append(keys, k)
-		}
-		sort.Strings(keys)
-		for _, k := range keys {
-			v := p.Explainer.Config[k]
-			//remote files in model location should get downloaded by initializer
-			if p.Explainer.ModelUri != "" {
-				v = strings.Replace(v, p.Explainer.ModelUri, "/mnt/models", 1)
+		if explainerProtocol == string(machinelearningv1.ProtocolKfserving) {
+			// add mlserver alibi runtime env vars
+			// alibi-specific json
+			explain_env_map := map[string]string{
+				"explainer_type": "anchor_image",  // use p.Explainer.Type 
+				"infer_uri": pSvcEndpoint,
 			}
-			arg := "--" + k + "=" + v
-			explainerContainer.Args = append(explainerContainer.Args, arg)
+			explain_env_json, _ := json.Marshal(explain_env_map)
+
+			explainerContainer.Env = []v1.EnvVar{
+				{
+					Name:  MLServerHTTPPortEnv,
+					Value: strconv.Itoa(int(portNum)),
+				},
+				// note: we skip grpc port settings, relying on mlserver default
+				// grpc is not supported yet anyway for explainers?
+				{
+					// TODO: add value in constant
+					Name:  MLServerModelImplementationEnv,
+					Value: "mlserver_alibi_explain.AlibiExplainRuntime",
+				},
+				{
+					Name:  MLServerModelNameEnv,
+					Value: explainerContainer.Name,
+				},
+				{
+					// TODO: Should we make version optional in MLServer?
+					Name:  "MLSERVER_MODEL_VERSION",
+					Value: "v1",
+				},
+				{
+					Name:  MLServerModelURIEnv,
+					Value: DefaultModelLocalMountPath,
+				},
+				{
+					Name:  MLServerTempoRuntimeEnv,
+					Value: fmt.Sprintf("{\"k8s_options\": {\"defaultRuntime\": \"tempo.seldon.SeldonKubernetesRuntime\", \"namespace\": \"%s\"}}", mlDep.Namespace),
+				},
+				{
+					// TODO: add to constent
+					// TODO2: nested dict for explain_init settings?
+					Name: "MLSERVER_MODEL_EXTRA",
+					Value: string(explain_env_json),
+				},
+			}
+		} else {
+			explainerContainer.Args = []string{
+				"--model_name=" + mlDep.Name,
+				"--predictor_host=" + pSvcEndpoint,
+				"--protocol=" + explainerProtocol + "." + explainerTransport,
+				"--http_port=" + strconv.Itoa(int(portNum)),
+			}
+
+			if p.Explainer.ModelUri != "" {
+				explainerContainer.Args = append(explainerContainer.Args, "--storage_uri="+DefaultModelLocalMountPath)
+			}
+
+			explainerContainer.Args = append(explainerContainer.Args, string(p.Explainer.Type))
+
+			if p.Explainer.Type == machinelearningv1.AlibiAnchorsImageExplainer {
+				explainerContainer.Args = append(explainerContainer.Args, "--tf_data_type=float32")
+			}
+
+			// Order explainer config map keys
+			var keys []string
+			for k, _ := range p.Explainer.Config {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+			for _, k := range keys {
+				v := p.Explainer.Config[k]
+				//remote files in model location should get downloaded by initializer
+				if p.Explainer.ModelUri != "" {
+					v = strings.Replace(v, p.Explainer.ModelUri, "/mnt/models", 1)
+				}
+				arg := "--" + k + "=" + v
+				explainerContainer.Args = append(explainerContainer.Args, arg)
+			}
 		}
 
 		seldonPodSpec := machinelearningv1.SeldonPodSpec{Spec: corev1.PodSpec{

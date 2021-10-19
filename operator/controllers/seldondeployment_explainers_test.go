@@ -152,6 +152,95 @@ var _ = Describe("createExplainer", func() {
 	)
 })
 
+var _ = Describe("Create a V2 Seldon Deployment with explainer", func() {
+	const timeout = time.Second * 30
+	const interval = time.Second * 1
+	namespaceName := rand.String(10)
+	v2protocol := machinelearningv1.ProtocolKfserving
+	By("Creating a resource")
+	It("should create a resource with defaults", func() {
+		Expect(k8sClient).NotTo(BeNil())
+
+		var modelType = machinelearningv1.MODEL
+		key := types.NamespacedName{
+			Name:      "dep",
+			Namespace: namespaceName,
+		}
+		instance := &machinelearningv1.SeldonDeployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      key.Name,
+				Namespace: key.Namespace,
+			},
+			Spec: machinelearningv1.SeldonDeploymentSpec{
+				Protocol: v2protocol,
+				Name:     "mydep",
+				Predictors: []machinelearningv1.PredictorSpec{
+					{
+						Name: "p1",
+						ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
+							{
+								Spec: v1.PodSpec{
+									Containers: []v1.Container{
+										{
+											Image: "seldonio/mock_classifier:1.0",
+											Name:  "classifier",
+										},
+									},
+								},
+							},
+						},
+						Graph: machinelearningv1.PredictiveUnit{
+							Name: "classifier",
+							Type: &modelType,
+						},
+						Explainer: &machinelearningv1.Explainer{
+							Type:     machinelearningv1.AlibiAnchorsImageExplainer,
+						},
+					},
+				},
+			},
+		}
+
+		//Create namespace
+		namespace := &v1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: namespaceName,
+			},
+		}
+		Expect(k8sClient.Create(context.Background(), namespace)).Should(Succeed())
+
+		// Run Defaulter
+		instance.Default()
+		envUseExecutor = "true"
+		envDefaultUser = "2"
+		Expect(k8sClient.Create(context.Background(), instance)).Should(Succeed())
+
+		depKey := types.NamespacedName{
+			Name:      machinelearningv1.GetDeploymentName(instance, instance.Spec.Predictors[0], instance.Spec.Predictors[0].ComponentSpecs[0], 0),
+			Namespace: namespaceName,
+		}
+		depFetched := &appsv1.Deployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), depKey, depFetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+
+		//Check explainer deployment
+		depKey = types.NamespacedName{
+			Name:      machinelearningv1.GetExplainerDeploymentName(instance.Name, &instance.Spec.Predictors[0]),
+			Namespace: namespaceName,
+		}
+		depFetched = &appsv1.Deployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), depKey, depFetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+		Expect(len(depFetched.Spec.Template.Spec.Containers[0].Env)).ShouldNot(Equal(0))
+
+	})
+
+})
+
 var _ = Describe("Create a Seldon Deployment with explainer", func() {
 	const timeout = time.Second * 30
 	const interval = time.Second * 1
