@@ -170,8 +170,8 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 			// add mlserver alibi runtime env vars
 			// alibi-specific json
 			explain_env_map := map[string]string{
-				"explainer_type": "anchor_image",  // use p.Explainer.Type 
-				"infer_uri": pSvcEndpoint,
+				"explainer_type": "anchor_text", // use p.Explainer.Type
+				"infer_uri":      pSvcEndpoint,
 			}
 			explain_env_json, _ := json.Marshal(explain_env_map)
 
@@ -192,22 +192,13 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 					Value: explainerContainer.Name,
 				},
 				{
-					// TODO: Should we make version optional in MLServer?
-					Name:  "MLSERVER_MODEL_VERSION",
-					Value: "v1",
-				},
-				{
 					Name:  MLServerModelURIEnv,
 					Value: DefaultModelLocalMountPath,
 				},
 				{
-					Name:  MLServerTempoRuntimeEnv,
-					Value: fmt.Sprintf("{\"k8s_options\": {\"defaultRuntime\": \"tempo.seldon.SeldonKubernetesRuntime\", \"namespace\": \"%s\"}}", mlDep.Namespace),
-				},
-				{
 					// TODO: add to constent
 					// TODO2: nested dict for explain_init settings?
-					Name: "MLSERVER_MODEL_EXTRA",
+					Name:  "MLSERVER_MODEL_EXTRA",
 					Value: string(explain_env_json),
 				},
 			}

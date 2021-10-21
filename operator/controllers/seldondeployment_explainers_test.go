@@ -161,7 +161,10 @@ var _ = Describe("Create a V2 Seldon Deployment with explainer", func() {
 	It("should create a resource with defaults", func() {
 		Expect(k8sClient).NotTo(BeNil())
 
-		var modelType = machinelearningv1.MODEL
+		modelType := machinelearningv1.MODEL
+		modelImplementation := machinelearningv1.PredictiveUnitImplementation(
+			machinelearningv1.PrepackSklearnName,
+		)
 		key := types.NamespacedName{
 			Name:      "dep",
 			Namespace: namespaceName,
@@ -182,19 +185,19 @@ var _ = Describe("Create a V2 Seldon Deployment with explainer", func() {
 								Spec: v1.PodSpec{
 									Containers: []v1.Container{
 										{
-											Image: "seldonio/mock_classifier:1.0",
-											Name:  "classifier",
+											Name: "classifier",
 										},
 									},
 								},
 							},
 						},
 						Graph: machinelearningv1.PredictiveUnit{
-							Name: "classifier",
-							Type: &modelType,
+							Name:           "classifier",
+							Type:           &modelType,
+							Implementation: &modelImplementation,
 						},
 						Explainer: &machinelearningv1.Explainer{
-							Type:     machinelearningv1.AlibiAnchorsImageExplainer,
+							Type: machinelearningv1.AlibiAnchorsImageExplainer,
 						},
 					},
 				},
