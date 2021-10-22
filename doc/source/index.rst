@@ -174,7 +174,6 @@ Documentation Index
    :caption: Reference
 
    Annotation-based Configuration <graph/annotations.md>
-   AWS Marketplace Install <reference/aws-mp-install.md>
    Benchmarking <reference/benchmarking.md>
    General Availability <reference/ga.md>
    Helm Charts <graph/helm_charts.md>
