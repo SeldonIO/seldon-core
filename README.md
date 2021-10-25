@@ -346,7 +346,6 @@ Below are some of the core components together with link to the logs that provid
 ### Reference
 
 * [Annotation-based Configuration ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/annotations.html)
-* [AWS Marketplace Install ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/aws-mp-install.html)
 * [Benchmarking ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/benchmarking.html)
 * [General Availability ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/ga.html)
 * [Helm Charts ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/helm_charts.html)
