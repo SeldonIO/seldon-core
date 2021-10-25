@@ -144,3 +144,78 @@ You can fix this by changing `defaultUserID=0` in your helm chart, or add the fo
 securityContext:
   runAsUser: 0
 ```
+
+
+# Using the Istio Service Mesh
+Istio can also be used to direct traffic internal to the cluster, rather than using it as an ingress (traffic from outside the cluster). 
+
+To do this, the Virutal Services Seldon will create need to be attached to the "special" Gateway named `mesh`. This applies the routing rules to traffic inside the mesh without needing to route through a Gateway.
+
+Due to limitations in Istio (as of v1.11.3), virtual services in the local mesh can only apply to one Host. (see their docs [here](https://istio.io/latest/docs/ops/best-practices/traffic-management/#split-virtual-services)). Therefor, a unique service is required for each Graph, which can be achieved by setting the `seldon.io/svc-name` annotation in the main predictor. 
+
+Here's an example `SeldonDeployment` that will utilize the internal mesh networking to split traffic between two predictors, 75% to the first, 25% to the second: 
+``` yaml
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  labels:
+    app: seldon
+  name: canary-example-1
+  namespace: my-ns
+spec:
+  annotations:
+    seldon.io/istio-gateway: mesh # NOTE
+    seldon.io/istio-host: canary-example-1 # NOTE
+  name: canary-example-1
+  predictors:
+  - annotations:
+      seldon.io/svc-name: canary-example-1   # NOTE
+    componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/mock_classifier:1.11.0
+          imagePullPolicy: IfNotPresent
+          name: classifier
+          securityContext:
+            readOnlyRootFilesystem: false
+        terminationGracePeriodSeconds: 1
+    graph:
+      endpoint:
+        type: REST
+      name: classifier
+      type: MODEL
+    labels:
+      sidecar.istio.io/inject: "true"
+    name: main
+    replicas: 1
+    traffic: 75
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/mock_classifier:1.11.0
+          imagePullPolicy: IfNotPresent
+          name: classifier
+        terminationGracePeriodSeconds: 1
+    graph:
+      endpoint:
+        type: REST
+      name: classifier
+      type: MODEL
+    labels:
+      sidecar.istio.io/inject: "true"
+    name: canary
+    replicas: 1
+    traffic: 25
+```
+
+A few key things to point out:  
+1. A unique service is created for the main (first) predictor named `canary-example-1`. This service cannot collide with any other services in the namespace. This service could be a service _not_ created via the SeldonDeployment, but also must match the necessary Istio routing rules. 
+2. The above service is referenced in the annotations in `spec` by specify ing the host as follows:  `seldon.io/istio-host: canary-example-1`. This will set the host in the Istio Virutal Service to be the newly created service. 
+3. The gateway is specified as `seldon.io/istio-gateway: mesh` to utilize this routing in the Istio Mesh. NOTE: In order to call this service, and have the appropriate routing take place, the Client _must_ also be _inside_ the mesh. This is accomplished by injecting the Istio Sidecar into the pod of the client. 
+
+From within the cluster, and inside a pod that is inside the mesh, a call like the following will work, as well as split traffic between the two predictors:
+``` shell
+curl -X POST -H 'Content-Type: application/json' \
+  -d '{"data": { "names": ["a", "b"], "ndarray": [[1,2]]}}' \
+  http://mysvcname:8000/seldon/batest/canary-example-1/api/v1.0/predictions
+```

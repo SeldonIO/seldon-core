@@ -221,9 +221,9 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 			return nil, nil, err
 		}
 	}
-	httpVsvc := &istio.VirtualService{
+	vsvc := &istio.VirtualService{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      seldonId + "-http",
+			Name:      seldonId,
 			Namespace: namespace,
 		},
 		Spec: istio_networking.VirtualService{
@@ -238,19 +238,6 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 					},
 					Rewrite: &istio_networking.HTTPRewrite{Uri: "/"},
 				},
-			},
-		},
-	}
-
-	grpcVsvc := &istio.VirtualService{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      seldonId + "-grpc",
-			Namespace: namespace,
-		},
-		Spec: istio_networking.VirtualService{
-			Hosts:    []string{getAnnotation(mlDep, ANNOTATION_ISTIO_HOST, "*")},
-			Gateways: []string{getAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
-			Http: []*istio_networking.HTTPRoute{
 				{
 					Match: []*istio_networking.HTTPMatchRequest{
 						{
@@ -265,10 +252,11 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 			},
 		},
 	}
+
 	// Add retries
 	if istioRetries > 0 {
-		httpVsvc.Spec.Http[0].Retries = &istio_networking.HTTPRetry{Attempts: int32(istioRetries), PerTryTimeout: &types2.Duration{Seconds: int64(istioRetriesTimeout)}, RetryOn: "gateway-error,connect-failure,refused-stream"}
-		grpcVsvc.Spec.Http[0].Retries = &istio_networking.HTTPRetry{Attempts: int32(istioRetries), PerTryTimeout: &types2.Duration{Seconds: int64(istioRetriesTimeout)}, RetryOn: "gateway-error,connect-failure,refused-stream"}
+		vsvc.Spec.Http[0].Retries = &istio_networking.HTTPRetry{Attempts: int32(istioRetries), PerTryTimeout: &types2.Duration{Seconds: int64(istioRetriesTimeout)}, RetryOn: "gateway-error,connect-failure,refused-stream"}
+		vsvc.Spec.Http[1].Retries = &istio_networking.HTTPRetry{Attempts: int32(istioRetries), PerTryTimeout: &types2.Duration{Seconds: int64(istioRetriesTimeout)}, RetryOn: "gateway-error,connect-failure,refused-stream"}
 	}
 
 	// shadows don't get destinations in the vs as a shadow is a mirror instead
@@ -322,7 +310,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 		if p.Shadow == true {
 			//if there's a shadow then add a mirror section to the VirtualService
 
-			httpVsvc.Spec.Http[0].Mirror = &istio_networking.Destination{
+			vsvc.Spec.Http[0].Mirror = &istio_networking.Destination{
 				Host:   pSvcName,
 				Subset: p.Name,
 				Port: &istio_networking.PortSelector{
@@ -330,7 +318,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 				},
 			}
 
-			grpcVsvc.Spec.Http[0].Mirror = &istio_networking.Destination{
+			vsvc.Spec.Http[1].Mirror = &istio_networking.Destination{
 				Host:   pSvcName,
 				Subset: p.Name,
 				Port: &istio_networking.PortSelector{
@@ -366,12 +354,11 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 		routesIdx += 1
 
 	}
-	httpVsvc.Spec.Http[0].Route = routesHttp
-	grpcVsvc.Spec.Http[0].Route = routesGrpc
+	vsvc.Spec.Http[0].Route = routesHttp
+	vsvc.Spec.Http[1].Route = routesGrpc
 
-	vscs := make([]*istio.VirtualService, 2)
-	vscs[0] = httpVsvc
-	vscs[1] = grpcVsvc
+	vscs := make([]*istio.VirtualService, 1)
+	vscs[0] = vsvc
 	return vscs, drules, nil
 
 }

@@ -23,7 +23,7 @@ func (r *ResourceCleaner) cleanUnusedVirtualServices() ([]*istio.VirtualService,
 	err := r.client.List(context.Background(), vlist, &client.ListOptions{Namespace: r.instance.Namespace})
 	for _, vsvc := range vlist.Items {
 		for _, ownerRef := range vsvc.OwnerReferences {
-			if ownerRef.Name == r.instance.Name {
+			if ownerRef.UID == r.instance.GetUID() {
 				found := false
 				for _, expectedVsvc := range r.virtualServices {
 					if expectedVsvc.Name == vsvc.Name {
