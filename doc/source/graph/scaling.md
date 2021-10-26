@@ -106,7 +106,7 @@ For more details you can follow [a worked example of scaling](../examples/scale.
 To autoscale your Seldon Deployment resources you can add Horizontal Pod Template Specifications to the Pod Template Specifications you create. There are three steps:
 
   1. Ensure you have a resource request for the metric you want to scale on if it is a standard metric such as cpu or memory.
-  1. Add a HPA Spec referring to this Deployment. (We presently support v1beta1 version of k8s HPA Metrics spec)
+  1. Add a HPA Spec referring to this Deployment. (We presently support v2beta2 version of k8s HPA Metrics spec)
 
 To illustrate this we have an example Seldon Deployment below:
 

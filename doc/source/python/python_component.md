@@ -1,6 +1,6 @@
 # Seldon Python Component
 
-To create your component to run under Seldon you should create a class that implements the signatures needed for the type of component you are creating.
+In order to run a custom python model on Seldon Core, you first need to wrap the model in it's own Python Class.
 
 ## Model
 
@@ -53,7 +53,7 @@ You can also provide a method to return the column names for your prediction wit
 
 ### Examples
 
-You can follow [various notebook examples](../examples/notebooks.html).
+You can follow [various notebook examples](../examples/notebooks.html#python-language-wrapper-examples).
 
 ## Transformers
 
@@ -360,7 +360,7 @@ class Model:
 
 ## Gunicorn and load
 
-If the wrapped python class is [served under Gunicorn](./python_server) then as
+If the wrapped python class is served under [Gunicorn](https://gunicorn.org/) then as
 part of initialization of each gunicorn worker a `load` method will be called
 on your class if it has it.
 You should use this method to load and initialise your model.

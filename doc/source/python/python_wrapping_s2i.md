@@ -1,9 +1,8 @@
 # Packaging a Python model for Seldon Core using s2i
 
+In this guide, we illustrate the steps needed to wrap your own python model in a docker image ready for deployment with Seldon Core using [S2I](https://github.com/openshift/source-to-image).
 
-In this guide, we illustrate the steps needed to wrap your own python model in a docker image ready for deployment with Seldon Core using [source-to-image app s2i](https://github.com/openshift/source-to-image).
-
-If you are not familiar with s2i you can read [general instructions on using s2i](../wrappers/s2i.md) and then follow the steps below.
+[Source-to-Image](https://github.com/openshift/source-to-image) (S2I) is a toolkit and workflow for building reproducible container images from source code. S2I produces ready-to-run images by injecting source code into a container image and letting the container prepare that source code for execution.
 
 
 ## Step 1 - Install s2i
@@ -108,8 +107,6 @@ Using s2i you can build directly from a git repo or from a local source folder. 
 s2i build <src-folder> seldonio/seldon-core-s2i-python3:1.12.0-dev <my-image-name>
 ```
 
-Change to seldonio/seldon-core-s2i-python3 if using python 3.
-
 An example invocation using the test template model inside seldon-core:
 
 ```bash
@@ -198,7 +195,8 @@ By default, this option will be disabled.
 ### MODEL
 
  * [A minimal skeleton for model source code](https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i/python/test/model-template-app)
- * [Example model notebooks](../examples/notebooks.html)
+ * [Example using SKLearn Spacy NLP](/examples/sklearn_spacy_text_classifier_example)
+ * [Example with SKLearn Iris Classifier](/examples/iris)
 
 ### ROUTER
  * [Description of routers in Seldon Core](../analytics/routers.html)
