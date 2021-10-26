@@ -1,4 +1,4 @@
-FROM rclone/rclone:1.55.1
+FROM rclone/rclone:1.56.2
 LABEL name="Storage Initializer (rclone based)" \
       vendor="Seldon Technologies" \
       version="1.8.0-dev" \
