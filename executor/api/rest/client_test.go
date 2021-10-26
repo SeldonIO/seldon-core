@@ -329,8 +329,16 @@ func TestTimeout(t *testing.T) {
 	seldonRestClient, err := NewJSONRestClient(api.ProtocolSeldon, "test", &predictor, annotations)
 	g.Expect(err).To(BeNil())
 
-	_, err = seldonRestClient.Status(createTestContext(), "model", host, int32(port), nil, map[string][]string{})
+	r, err := seldonRestClient.Status(createTestContext(), "model", host, int32(port), nil, map[string][]string{})
 	g.Expect(err).ToNot(BeNil())
+	g.Expect(r).ToNot((BeNil()))
+
+	data := r.GetPayload().([]byte)
+	var smRes proto.SeldonMessage
+	err = jsonpb.UnmarshalString(string(data), &smRes)
+	g.Expect(err).Should(BeNil())
+	g.Expect(smRes.GetStatus().GetCode()).Should(BeEquivalentTo(int32(500)))
+	g.Expect(smRes.GetStatus().GetInfo()).Should(ContainSubstring("Client.Timeout exceeded while awaiting headers"))
 }
 
 func TestMarshall(t *testing.T) {
