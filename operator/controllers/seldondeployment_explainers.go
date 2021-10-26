@@ -171,8 +171,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 			// alibi-specific json
 			explain_env_map := map[string]string{
 				"explainer_type": "anchor_text", // use p.Explainer.Type
-				//TODO: get classifier from dep
-				"infer_uri": "http://" + pSvcEndpoint + "/v2/models/" + p.Graph.Name + "/infer",
+				"infer_uri":      "http://" + pSvcEndpoint + "/v2/models/" + p.Graph.Name + "/infer",
 			}
 			explain_env_json, _ := json.Marshal(explain_env_map)
 
