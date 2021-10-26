@@ -195,8 +195,8 @@ By default, this option will be disabled.
 ### MODEL
 
  * [A minimal skeleton for model source code](https://github.com/SeldonIO/seldon-core/tree/master/wrappers/s2i/python/test/model-template-app)
- * [Example using SKLearn Spacy NLP](/examples/sklearn_spacy_text_classifier_example)
- * [Example with SKLearn Iris Classifier](/examples/iris)
+ * [Example using SKLearn Spacy NLP](../examples/sklearn_spacy_text_classifier_example)
+ * [Example with SKLearn Iris Classifier](../examples/iris)
 
 ### ROUTER
  * [Description of routers in Seldon Core](../analytics/routers.html)

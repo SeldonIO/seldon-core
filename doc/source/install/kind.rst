@@ -117,13 +117,13 @@ Seldon Core supports using either `Istio <https://istio.io/>`_ or `Ambassador <h
             - "*"
         END
     
-    For custom configuration and more details on installing seldon core with Istio please see the `Istio Ingress </ingress/istio.md>`_ page.
+    For custom configuration and more details on installing seldon core with Istio please see the `Istio Ingress <../ingress/istio.md>`_ page.
 
 .. tabbed:: Ambassador
 
     Instructions for Ambassador
 
-    For custom configuration and more details on installing seldon core with Istio please see the `Ambassador Ingress </ingress/ambassador.md>`_ page.
+    For custom configuration and more details on installing seldon core with Istio please see the `Ambassador Ingress <../ingress/ambassador.md>`_ page.
 
 Install Seldon Core
 ----------------------------
@@ -175,4 +175,4 @@ Because your kubernetes cluster is running locally, we need to forward a port on
 
 This will forward any traffic from port 8080 on your local machine to port 80 inside your cluster.
 
-You have now successfully installed Seldon Core on a local cluster and are ready to `start deploying models </workflow/github-readme.md>`_ as production microservices.
+You have now successfully installed Seldon Core on a local cluster and are ready to `start deploying models <../workflow/github-readme.md>`_ as production microservices.
