@@ -2,162 +2,169 @@ package scheduler
 
 import (
 	"context"
-	"fmt"
-	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	. "github.com/onsi/gomega"
+	pba "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/pkg/store"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"testing"
 )
 
-func createTestServer(name string, memory int, replicas int, capabilities []string) (*pb.ServerDetails) {
-	s := &pb.ServerDetails{
-		Name: name,
-		Replicas: []*pb.ServerReplica{},
-		Memory: 1e6,
-		Capabilities: capabilities,
-	}
-	for i:=0; i < replicas; i++ {
-		r := &pb.ServerReplica{
-		InferenceSvc: fmt.Sprintf("server.default%d",i),
-			InferencePort: 9000,
-			AgentPort: 9001,
-		}
-		s.Replicas = append(s.Replicas,r)
-	}
-	return s
-}
-
-
-func createTestModel(name string, requirements []string, memory int32, replicas int32) (*pb.ModelDetails) {
-	return &pb.ModelDetails{
-		Name: name,
-		Requirements: requirements,
-		Memory: memory,
-		Replicas: replicas,
-	}
-}
-
-
-func createTestScheduler() *SchedulerServer{
+func createTestScheduler() (*SchedulerServer){
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
 	// Create a cache
-	cache := cache.NewSnapshotCache(false, cache.IDHash{}, logger)
-	s := NewScheduler(cache, "node1", logger)
+	agentChan := make(chan string, 10)
+	envoyChan := make(chan string, 10)
+	schedulerStore := store.NewMemoryScheduler(logger, agentChan, envoyChan)
+	s := NewScheduler(logger, schedulerStore)
 	return s
 }
 
-func TestAddServer(t *testing.T) {
+
+func TestAddRemoveServerReplica(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
-	serverName := "test"
 	s := createTestScheduler()
-	sd := createTestServer(serverName, 1e6, 1, []string{"sklearn"})
-	_, err := s.AddServer(context.Background(),sd)
+
+	err := s.store.UpdateServerReplica(&pba.AgentSubscribeRequest{ServerName:
+		"server1", ReplicaIdx: 0, ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, Memory: 1000, Capabilities: []string{"sklearn"}}})
 	g.Expect(err).To(BeNil())
-	ss, err := s.ServerStatus(context.Background(),&pb.ServerReference{Name: serverName})
+	server, err := s.store.GetServer("server1")
 	g.Expect(err).To(BeNil())
-	g.Expect(len(ss.LoadedModels)).To(Equal(0))
-	g.Expect(ss.ServerName).To(Equal(serverName))
+	g.Expect(server).ToNot(BeNil())
+	err = s.store.RemoveServerReplicaAndRedeployModels("server1",0)
+	g.Expect(err).To(BeNil())
 }
 
-func TestAddServerEmptyName(t *testing.T) {
-	t.Logf("Started")
-	g := NewGomegaWithT(t)
-
-	s := createTestScheduler()
-	sd := createTestServer("", 1e6, 1, []string{"sklearn"})
-	_, err := s.AddServer(context.Background(),sd)
-	g.Expect(err).ToNot(BeNil())
-	g.Expect(err).To(Equal(ErrAddServerEmptyServerName))
-}
-
-func TestRemoveServerNotFound(t *testing.T) {
-	t.Logf("Started")
-	g := NewGomegaWithT(t)
-
-	s := createTestScheduler()
-	sr := &pb.ServerReference{Name: "foo"}
-	_, err := s.RemoveServer(context.Background(), sr)
-	g.Expect(err).ToNot(BeNil())
-	g.Expect(err).To(Equal(ErrRemoveServerServerNotFound))
-}
 
 func TestLoadModel(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
-	serverName := "test"
-	modelName := "model"
-	s := createTestScheduler()
-	sd := createTestServer(serverName, 1e6, 2, []string{"sklearn"})
-	md := createTestModel(modelName, []string{"sklearn"}, 1e5, 2)
-	_, err := s.AddServer(context.Background(),sd)
-	g.Expect(err).To(BeNil())
-	_, err = s.LoadModel(context.Background(), md)
-	g.Expect(err).To(BeNil())
-	ss, err := s.ServerStatus(context.Background(),&pb.ServerReference{Name: serverName})
-	g.Expect(err).To(BeNil())
-	g.Expect(len(ss.LoadedModels)).To(Equal(1))
-	g.Expect(ss.ServerName).To(Equal(serverName))
-	ms, err := s.ModelStatus(context.Background(),&pb.ModelReference{Name: modelName})
-	g.Expect(err).To(BeNil())
-	g.Expect(ms.ServerName).To(Equal(serverName))
-	g.Expect(ms.ModelName).To(Equal(modelName))
+
+	type test struct {
+		req []*pba.AgentSubscribeRequest
+		model *pb.ModelDetails
+		code codes.Code
+	}
+	smallMemory := uint64(100)
+	largeMemory := uint64(2000)
+	tests := []test {
+		{req: []*pba.AgentSubscribeRequest{{ServerName: "server1", ReplicaIdx: 0,
+			ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, Memory: 1000, AvailableMemory: 1000, Capabilities: []string{"sklearn"}}}},
+			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"sklearn"}, Memory:&smallMemory, Replicas: 1},
+			code: codes.OK},
+		{req: []*pba.AgentSubscribeRequest{{ServerName: "server1", ReplicaIdx: 0,
+			ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, Memory: 1000, AvailableMemory: 1000, Capabilities: []string{"sklearn"}}}},
+			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"sklearn"}, Memory:&smallMemory, Replicas: 2},
+			code: codes.FailedPrecondition}, // ask for too many replicas
+		{req: []*pba.AgentSubscribeRequest{{ServerName: "server1", ReplicaIdx: 0,
+			ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, Memory: 1000, AvailableMemory: 1000, Capabilities: []string{"sklearn"}}}},
+			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"sklearn"}, Memory:&largeMemory, Replicas: 1},
+			code: codes.FailedPrecondition}, // ask for too much memory
+		{req: []*pba.AgentSubscribeRequest{{ServerName: "server1", ReplicaIdx: 0,
+			ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, Memory: 1000, AvailableMemory: 1000, Capabilities: []string{"sklearn"}}}},
+			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"xgboost"}, Memory:&smallMemory, Replicas: 1},
+			code: codes.FailedPrecondition}, // unable to find requirements
+		{req: []*pba.AgentSubscribeRequest{{ServerName: "server1", ReplicaIdx: 0,
+			ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, Memory: 1000, AvailableMemory: 1000, Capabilities: []string{"sklearn","xgboost"}}}},
+			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"xgboost","sklearn"}, Memory:&smallMemory, Replicas: 1},
+			code: codes.OK}, // multiple requirements
+		{req: []*pba.AgentSubscribeRequest{{ServerName: "server1", ReplicaIdx: 0,
+			ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, Memory: 1000, AvailableMemory: 1000, Capabilities: []string{"sklearn"}}},
+			{ServerName: "server1", ReplicaIdx: 1,
+				ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, Memory: 1000, AvailableMemory: 1000, Capabilities: []string{"sklearn"}}}},
+			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"sklearn"}, Memory:&smallMemory, Replicas: 2},
+			code: codes.OK}, // schedule to 2 replicas
+		{req: []*pba.AgentSubscribeRequest{{ServerName: "server1", ReplicaIdx: 0,
+			ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, Memory: 1000, AvailableMemory: 1000, Capabilities: []string{"sklearn"}}},
+			{ServerName: "server1", ReplicaIdx: 1,
+				ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, Memory: 1000, AvailableMemory: 1000, Capabilities: []string{"foo"}}}},
+			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"sklearn"}, Memory:&smallMemory, Replicas: 2},
+			code: codes.FailedPrecondition}, // schedule to 2 replicas but 1 fails
+	}
+	for tidx,test := range tests {
+		t.Logf("start test %d",tidx)
+		s := createTestScheduler()
+		for _, repReq := range test.req {
+			err := s.store.UpdateServerReplica(repReq) // Create server and replicas
+			g.Expect(err).To(BeNil())
+		}
+		lm := pb.LoadModelRequest{
+			Model: test.model,
+		}
+		r,err := s.LoadModel(context.Background(), &lm)
+		if test.code != codes.OK {
+			g.Expect(err).ToNot(BeNil())
+			e, ok := status.FromError(err)
+			g.Expect(ok).To(BeTrue())
+			g.Expect(e.Code()).To(Equal(test.code))
+		} else {
+			g.Expect(err).To(BeNil())
+			g.Expect(r).ToNot(BeNil())
+		}
+
+	}
 }
 
-func TestLoadModelFailedRequirement(t *testing.T) {
+func TestUnloadModel(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 
-	s := createTestScheduler()
-	sd := createTestServer("test", 1e6, 1, []string{"sklearn"})
-	md := createTestModel("model", []string{"foo"}, 1e5, 1)
-	_, err := s.AddServer(context.Background(),sd)
-	g.Expect(err).To(BeNil())
-	_, err = s.LoadModel(context.Background(), md)
-	g.Expect(err).ToNot(BeNil())
-	g.Expect(err).To(Equal(ErrLoadModelRequirementFailed))
-}
+	type test struct {
+		req []*pba.AgentSubscribeRequest
+		model *pb.ModelDetails
+		code codes.Code
+	}
+	modelName := "model1"
+	smallMemory := uint64(100)
+	tests := []test {
+		{req: []*pba.AgentSubscribeRequest{{ServerName: "server1", ReplicaIdx: 0,
+			ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, Memory: 1000, Capabilities: []string{"sklearn"}}}},
+			model: &pb.ModelDetails{Name: modelName, Uri: "gs://model", Requirements: []string{"sklearn"}, Memory:&smallMemory, Replicas: 1},
+			code: codes.OK}, // simple create
+		{req: []*pba.AgentSubscribeRequest{{ServerName: "server1", ReplicaIdx: 0,
+			ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, Memory: 1000, Capabilities: []string{"sklearn","xgboost"}}}},
+			model: &pb.ModelDetails{Name: modelName, Uri: "gs://model", Requirements: []string{"xgboost","sklearn"}, Memory:&smallMemory, Replicas: 1},
+			code: codes.OK}, // multiple requirements
+		{req: []*pba.AgentSubscribeRequest{{ServerName: "server1", ReplicaIdx: 0,
+			ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, Memory: 1000, Capabilities: []string{"sklearn"}}},
+			{ServerName: "server1", ReplicaIdx: 1,
+				ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, Memory: 1000, Capabilities: []string{"sklearn"}}}},
+			model: &pb.ModelDetails{Name: modelName, Uri: "gs://model", Requirements: []string{"sklearn"}, Memory:&smallMemory, Replicas: 2},
+			code: codes.OK}, // schedule to 2 replicas
+		{req: []*pba.AgentSubscribeRequest{{ServerName: "server1", ReplicaIdx: 0,
+			ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, Memory: 1000, Capabilities: []string{"sklearn"}}}},
+			model: nil,
+			code: codes.FailedPrecondition}, // Fail to unload model that does not exist
+	}
+	for _,test := range tests {
+		s := createTestScheduler()
+		for _, repReq := range test.req {
+			err := s.store.UpdateServerReplica(repReq) // Create server and replicas
+			g.Expect(err).To(BeNil())
+		}
 
-func TestLoadModelFailedRequirementReplicas(t *testing.T) {
-	t.Logf("Started")
-	g := NewGomegaWithT(t)
-
-	s := createTestScheduler()
-	sd := createTestServer("test", 1e6, 1, []string{"sklearn"})
-	md := createTestModel("model", []string{"sklearn"}, 1e5, 2)
-	_, err := s.AddServer(context.Background(),sd)
-	g.Expect(err).To(BeNil())
-	_, err = s.LoadModel(context.Background(), md)
-	g.Expect(err).ToNot(BeNil())
-	g.Expect(err).To(Equal(ErrLoadModelRequirementFailed))
-}
-
-func TestLoadModelUpdates(t *testing.T) {
-	modelName := "model"
-	serverName := "server"
-	replicas := int32(7)
-	t.Logf("Started")
-	g := NewGomegaWithT(t)
-
-	s := createTestScheduler()
-	sd := createTestServer(serverName, 1e6, 20, []string{"sklearn"})
-	md := createTestModel(modelName, []string{"sklearn"}, 1e5, 1)
-	// Add Server
-	_, err := s.AddServer(context.Background(),sd)
-	g.Expect(err).To(BeNil())
-	// Add Model
-	_, err = s.LoadModel(context.Background(), md)
-	g.Expect(err).To(BeNil())
-	md.Replicas = replicas
-	// Update Model
-	_, err = s.LoadModel(context.Background(), md)
-	g.Expect(err).To(BeNil())
-	// get Model status
-	ms, err := s.ModelStatus(context.Background(), &pb.ModelReference{Name: modelName})
-	g.Expect(err).To(BeNil())
-	g.Expect(ms.ModelName).To(Equal(modelName))
-	g.Expect(ms.ServerName).To(Equal(serverName))
-	g.Expect(len(ms.Assignment)).To(Equal(int(replicas)))
+		if test.model != nil {
+			lm := pb.LoadModelRequest{
+				Model: test.model,
+			}
+			r,err := s.LoadModel(context.Background(), &lm)
+			g.Expect(err).To(BeNil())
+			g.Expect(r).ToNot(BeNil())
+		}
+		rm := &pb.ModelReference{Name: modelName}
+		r, err := s.UnloadModel(context.Background(), rm)
+		if test.code != codes.OK {
+			g.Expect(err).ToNot(BeNil())
+			e, ok := status.FromError(err)
+			g.Expect(ok).To(BeTrue())
+			g.Expect(e.Code()).To(Equal(test.code))
+		} else {
+			g.Expect(err).To(BeNil())
+			g.Expect(r).ToNot(BeNil())
+		}
+	}
 }

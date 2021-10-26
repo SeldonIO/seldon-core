@@ -76,11 +76,11 @@ func (xds *SeldonXDSCache) AddListener(name string) {
 	}
 }
 
-func (xds *SeldonXDSCache) AddRoute(name, modelName string, server string) {
+func (xds *SeldonXDSCache) AddRoute(name, modelName string, clusterName string) {
 	xds.Routes[name] = resources.Route{
 		Name:    name,
 		Host:    modelName,
-		Cluster: server,
+		Cluster: clusterName,
 	}
 }
 
@@ -89,11 +89,30 @@ func (xds *SeldonXDSCache) HasCluster(name string) bool {
 	return ok
 }
 
-func (xds *SeldonXDSCache) AddCluster(name string) {
-	xds.Clusters[name] = resources.Cluster{
-		Name: name,
-		Endpoints: make(map[string]resources.Endpoint),
+func (xds *SeldonXDSCache) AddCluster(name string, route string) {
+	cluster, ok := xds.Clusters[name]
+	if !ok {
+		cluster = resources.Cluster{
+			Name: name,
+			Endpoints: make(map[string]resources.Endpoint),
+			Routes: make(map[string]bool),
+		}
 	}
+	cluster.Routes[route] = true
+	xds.Clusters[name] = cluster
+}
+
+
+func (xds *SeldonXDSCache) RemoveRoute(modelName string) {
+	route := xds.Routes[modelName]
+	cluster := xds.Clusters[route.Cluster]
+	delete(cluster.Routes, modelName)
+	if len(cluster.Routes) == 0 {
+		delete(xds.Clusters, route.Cluster)
+	} else {
+		xds.Clusters[route.Cluster] = cluster
+	}
+	delete(xds.Routes, modelName)
 }
 
 func (xds *SeldonXDSCache) AddEndpoint(clusterName, upstreamHost string, upstreamPort uint32) {

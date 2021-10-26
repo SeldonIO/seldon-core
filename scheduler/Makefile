@@ -1,12 +1,18 @@
 SCHEDULER_IMG ?= seldonio/seldon-scheduler:latest
+AGENT_IMG ?= seldonio/seldon-agent:latest
+RCLONE_IMG ?= seldonio/seldon-rclone:latest
 ENVOY_IMG ?= seldonio/seldon-envoy:latest
 KIND_NAME=ansible
 
 GO_LDFLAGS := -s -w $(patsubst %,-X %, $(GO_BUILD_VARS))
 
-#go build -o seldon-xds-server -mod=readonly -v -ldflags="$(GO_LDFLAGS)" $(MODULE)/cmd/server
-build: test
-	go build -o bin/scheduler -v ./cmd/server
+build-scheduler: test
+	go build -o bin/scheduler -v ./cmd/scheduler
+
+build-agent: test
+	go build -o bin/agent -v ./cmd/agent
+
+build: build-scheduler build-agent
 
 test:
 	go test ./pkg/...
@@ -26,19 +32,25 @@ stop-svcs:
 	docker rm -f echo9103 
 	docker rm -f echo9104
 
-start-scheduler-from-file:
-	./bin/scheduler -config ./config/seldon.yaml
-
 start-scheduler:
 	./bin/scheduler
 
 start-envoy:
 	./hack/start-envoy-delta.sh
 
+start-agent:
+	./bin/agent --model-repository ${PWD}/mlrepo --inference-port 8080 \
+		--replica-config '{"inferenceSvc":"0.0.0.0","inferencePort":8080,"memory":1000,"capabilities":["sklearn"],"overCommit":false}'
+
+start-mlserver:
+	cd mlrepo && mlserver start .
+
+start-rclone:
+	cd mlrepo && rclone rcd --rc-no-auth --verbose
+
 # sends host header to allow routing
 curl-model2:
 	watch -n1 curl -H \"Host: model2\" 0.0.0.0:9000/model2
-
 
 docker-build-scheduler:
 	docker build -t ${SCHEDULER_IMG} -f Dockerfile.scheduler .
@@ -49,6 +61,24 @@ docker-push-scheduler: ## Push docker image with the manager.
 kind-image-install-scheduler: docker-build-scheduler
 	kind load -v 3 docker-image ${SCHEDULER_IMG} --name ${KIND_NAME}
 
+docker-build-agent:
+	docker build -t ${AGENT_IMG} -f Dockerfile.agent .
+
+docker-push-agent: ## Push docker image with the manager.
+	docker push ${AGENT_IMG}
+
+kind-image-install-agent: docker-build-agent
+	kind load -v 3 docker-image ${AGENT_IMG} --name ${KIND_NAME}
+
+docker-build-rclone:
+	docker build -t ${RCLONE_IMG} -f Dockerfile.rclone .
+
+docker-push-rclone: ## Push docker image with the manager.
+	docker push ${RCLONE_IMG}
+
+kind-image-install-rclone: docker-build-rclone
+	kind load -v 3 docker-image ${RCLONE_IMG} --name ${KIND_NAME}
+
 docker-build-envoy:
 	docker build -t ${ENVOY_IMG} -f Dockerfile.envoy .
 
@@ -58,9 +88,13 @@ docker-push-envoy: ## Push docker image with the manager.
 kind-image-install-envoy: docker-build-envoy 
 	kind load -v 3 docker-image ${ENVOY_IMG} --name ${KIND_NAME}
 
+kind-image-install-all: kind-image-install-scheduler kind-image-install-envoy kind-image-install-agent kind-image-install-rclone
+
 deploy:
 	cd k8s/scheduler && kustomize edit set image scheduler=${SCHEDULER_IMG}
 	cd k8s/envoy && kustomize edit set image scheduler=${ENVOY_IMG}
+	cd k8s/mlserver && kustomize edit set image agent=${AGENT_IMG}
+	cd k8s/mlserver && kustomize edit set image rclone=${RCLONE_IMG}
 	kustomize build k8s/default | kubectl apply -f -
 
 undeploy:
@@ -80,4 +114,4 @@ curl-mlserver-test:
 
 build-protos:
 	protoc -I=./apis/mlops/scheduler --go_out=./apis/mlops/scheduler --go_opt=paths=source_relative --go-grpc_out=./apis/mlops/scheduler --go-grpc_opt=paths=source_relative ./apis/mlops/scheduler/scheduler.proto
-	protoc -I=./apis/mlops/agent --go_out=./apis/mlops/agent --go_opt=paths=source_relative --go-grpc_out=./apis/mlops/agent --go-grpc_opt=paths=source_relative ./apis/mlops/agent/agent.proto
+	protoc -I=./apis/mlops/agent -I=./apis/mlops/scheduler --go_out=./apis/mlops/agent --go_opt=paths=source_relative --go-grpc_out=./apis/mlops/agent --go-grpc_opt=paths=source_relative ./apis/mlops/agent/agent.proto

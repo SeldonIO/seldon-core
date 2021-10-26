@@ -5,11 +5,19 @@ metadata:
   labels:
     app: seldon-scheduler
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   ports:
-  - name: http
+  - name: xds
     port: 9002
-    targetPort: http
+    targetPort: xds
+    protocol: TCP
+  - name: scheduler
+    port: 9004
+    targetPort: scheduler
+    protocol: TCP
+  - name: agent
+    port: 9005
+    targetPort: agent
     protocol: TCP
   selector:
     control-plane: seldon-scheduler

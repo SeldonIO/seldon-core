@@ -1,0 +1,189 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlserver
+  labels:
+    app: mlserver
+spec:
+  ports:
+  - port: 9000
+    name: http
+  - port: 9500
+    name: grpc
+  clusterIP: None    
+  selector:
+    app: mlserver
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlserver-0
+  labels:
+    app: mlserver-0
+spec:
+  ports:
+  - port: 9000
+    name: http
+  - port: 9500
+    name: grpc
+  - port: 9005
+    name: agent
+  clusterIP: None
+  selector:
+    statefulset.kubernetes.io/pod-name: seldon-mlserver-0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlserver-1
+  labels:
+    app: mlserver-1
+spec:
+  ports:
+  - port: 9000
+    name: http
+  - port: 9500
+    name: grpc
+  - port: 9005
+    name: agent
+  clusterIP: None
+  selector:
+    statefulset.kubernetes.io/pod-name: seldon-mlserver-1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlserver-2
+  labels:
+    app: mlserver-2
+spec:
+  ports:
+  - port: 9000
+    name: http
+  - port: 9500
+    name: grpc
+  - port: 9005
+    name: agent
+  clusterIP: None
+  selector:
+    statefulset.kubernetes.io/pod-name: seldon-mlserver-2
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mlserver
+spec:
+  serviceName: "mlserver"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mlserver
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /prometheus
+        prometheus.io/scrape: "true"  
+      labels:
+        app: mlserver
+      name: mlserver
+      namespace: seldon
+    spec:
+      terminationGracePeriodSeconds: 5
+      containers:
+      - image: rclone:latest
+        imagePullPolicy: IfNotPresent
+        name: rclone
+        ports:
+        - containerPort: 5572
+          name: http
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          successThreshold: 1
+          tcpSocket:
+            port: 5572
+          timeoutSeconds: 1
+        volumeMounts:
+        - mountPath: /mnt/models
+          name: mlserver-models
+      - image: agent:latest
+        imagePullPolicy: IfNotPresent
+        name: agent
+        env:
+        - name: MLSERVER_HTTP_PORT
+          value: "9000"
+        - name: SELDON_SCHEDULER_HOST
+          value: "seldon-scheduler"
+        - name: SELDON_SCHEDULER_PORT
+          value: "9005"
+        - name: SELDON_SERVER_NAME
+          value: "mlserver"
+        - name: SELDON_REPLICA_CONFIG
+          value: '{"inferenceSvc":"DYNAMIC","inferencePort":9000,"memory":100000,"capabilities":["sklearn"],"overCommit":false}'
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        volumeMounts:
+        - mountPath: /mnt/models
+          name: mlserver-models
+      - image: seldonio/mlserver:0.5.0
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: MLSERVER_HTTP_PORT
+          value: "9000"
+        - name: MLSERVER_GRPC_PORT
+          value: "9500"
+        - name: MLSERVER_MODELS_DIR
+          value: "/mnt/models"
+        resources:
+          requests:
+            cpu: '0.5'
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - /bin/sleep 10
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 60
+          periodSeconds: 5
+          successThreshold: 1
+          tcpSocket:
+            port: 9000
+          timeoutSeconds: 1
+        name: mlserver
+        ports:
+        - containerPort: 9500
+          name: grpc
+          protocol: TCP
+        - containerPort: 9000
+          name: http
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          successThreshold: 1
+          tcpSocket:
+            port: 9000
+          timeoutSeconds: 1
+        volumeMounts:
+        - mountPath: /mnt/models
+          name: mlserver-models
+          readOnly: true
+      securityContext:
+        runAsUser: 8888
+  volumeClaimTemplates:
+  - metadata:
+      name: mlserver-models
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi

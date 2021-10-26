@@ -4,66 +4,68 @@ package seldon.mlops.agent;
 
 option go_package = "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent";
 
+import "scheduler.proto";
+
 // [START Messages]
 
-message LoadModelRequest {
-  string modelName = 1;
-  optional string storageURI = 2; // storage uri for model artifacts
-  optional string storageSecretName = 3; // k8s secret name for authentication to storage uri
-  bool async = 4; // perform asynchronously (result will be sent on subscription channel)
-}
-
-message LoadModelResponse {
-  enum Event {
-      UNKNOWN_EVENT = 0;
-      LOAD_STARTED = 1;
-      LOADED = 2;
-     }
-  Event event = 2;
-}
-
-message UnloadModelRequest {
-  string modelName = 1;
-  bool remove = 2; // remove from local storage
-  bool async = 3; // perform asynchronously (result will be sent on subscription channel)
-}
-
-message UnloadModelResponse {
-  enum Event {
-      UNKNOWN_EVENT = 0;
-      UNLOAD_STARTED = 1; // For async load case
-      UNLOADED = 2;
-     }
-  Event event = 2;
-}
-
-message SubscriptionRequest {
-}
-
 message ModelEventMessage {
-  string modelName = 1;
+  string serverName = 1;
+  uint32 replicaIdx = 2;
+  string modelName = 3;
   enum Event {
       UNKNOWN_EVENT = 0;
-      LOADED = 1;
-      LOAD_FAILED = 2;
-      UNLOADED = 3;
-      UNLOAD_FAILED = 4;
-      REMOVED = 5; // unloaded and removed from local PVC
-      REMOVE_FAILED = 6;
-      AUTOSCALE_ALERT = 7;
+      LOAD_FAIL_MEMORY = 1;
+      LOADED = 2;
+      LOAD_FAILED = 3;
+      UNLOADED = 4;
+      UNLOAD_FAILED = 5;
+      REMOVED = 6; // unloaded and removed from local PVC
+      REMOVE_FAILED = 7;
+      SCALE_UP_REQUEST = 8;
+      RSYNC = 9; // Ask server for all models that need to be loaded
       }
-  Event event = 2;
-  string message = 3;
+  Event event = 4;
+  string message = 5;
+  uint64 availableMemory = 6;
+}
+
+message ModelEventResponse {
+
+}
+
+message AgentSubscribeRequest {
+  string serverName = 1;
+  uint32 replicaIdx = 2;
+  ReplicaConfig replicaConfig = 3;
+  repeated scheduler.ModelDetails loadedModels = 4;
+}
+
+message ReplicaConfig {
+  string inferenceSvc = 1; // inference DNS service name
+  int32 inferencePort = 2; // inference port
+  uint64 memory = 3; // The memory capacity of the server replica
+  repeated string capabilities = 4; // The list of capabilities of the server, e.g. sklearn, pytorch, xgboost, mlflow
+  bool overCommit = 5; // Allow models to be swapped to disk to allow over committing on memory
+  uint64 availableMemory = 6;
+}
+
+message ModelOperationMessage {
+  enum Operation {
+    UNKNOWN_EVENT = 0;
+    LOAD_MODEL = 1;
+    UNLOAD_MODEL = 2;
+  }
+  Operation operation = 1;
+  scheduler.ModelDetails details = 2;
 }
 
 // [END Messages]
 
 // [START Services]
 
-service Agent {
-  rpc LoadModel(LoadModelRequest) returns (LoadModelResponse) {};
-  rpc UnloadModel(UnloadModelRequest) returns (UnloadModelResponse) {};
-  rpc Subscribe(SubscriptionRequest) returns (stream ModelEventMessage) {};
+service AgentService {
+  rpc AgentEvent(ModelEventMessage) returns (ModelEventResponse) {};
+  rpc Subscribe(AgentSubscribeRequest) returns (stream ModelOperationMessage) {};
 }
 
 // [END Services]

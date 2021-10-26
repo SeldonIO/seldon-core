@@ -14,47 +14,37 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// AgentClient is the client API for Agent service.
+// AgentServiceClient is the client API for AgentService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type AgentClient interface {
-	LoadModel(ctx context.Context, in *LoadModelRequest, opts ...grpc.CallOption) (*LoadModelResponse, error)
-	UnloadModel(ctx context.Context, in *UnloadModelRequest, opts ...grpc.CallOption) (*UnloadModelResponse, error)
-	Subscribe(ctx context.Context, in *SubscriptionRequest, opts ...grpc.CallOption) (Agent_SubscribeClient, error)
+type AgentServiceClient interface {
+	AgentEvent(ctx context.Context, in *ModelEventMessage, opts ...grpc.CallOption) (*ModelEventResponse, error)
+	Subscribe(ctx context.Context, in *AgentSubscribeRequest, opts ...grpc.CallOption) (AgentService_SubscribeClient, error)
 }
 
-type agentClient struct {
+type agentServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewAgentClient(cc grpc.ClientConnInterface) AgentClient {
-	return &agentClient{cc}
+func NewAgentServiceClient(cc grpc.ClientConnInterface) AgentServiceClient {
+	return &agentServiceClient{cc}
 }
 
-func (c *agentClient) LoadModel(ctx context.Context, in *LoadModelRequest, opts ...grpc.CallOption) (*LoadModelResponse, error) {
-	out := new(LoadModelResponse)
-	err := c.cc.Invoke(ctx, "/seldon.mlops.agent.Agent/LoadModel", in, out, opts...)
+func (c *agentServiceClient) AgentEvent(ctx context.Context, in *ModelEventMessage, opts ...grpc.CallOption) (*ModelEventResponse, error) {
+	out := new(ModelEventResponse)
+	err := c.cc.Invoke(ctx, "/seldon.mlops.agent.AgentService/AgentEvent", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *agentClient) UnloadModel(ctx context.Context, in *UnloadModelRequest, opts ...grpc.CallOption) (*UnloadModelResponse, error) {
-	out := new(UnloadModelResponse)
-	err := c.cc.Invoke(ctx, "/seldon.mlops.agent.Agent/UnloadModel", in, out, opts...)
+func (c *agentServiceClient) Subscribe(ctx context.Context, in *AgentSubscribeRequest, opts ...grpc.CallOption) (AgentService_SubscribeClient, error) {
+	stream, err := c.cc.NewStream(ctx, &AgentService_ServiceDesc.Streams[0], "/seldon.mlops.agent.AgentService/Subscribe", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
-}
-
-func (c *agentClient) Subscribe(ctx context.Context, in *SubscriptionRequest, opts ...grpc.CallOption) (Agent_SubscribeClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Agent_ServiceDesc.Streams[0], "/seldon.mlops.agent.Agent/Subscribe", opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &agentSubscribeClient{stream}
+	x := &agentServiceSubscribeClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -64,136 +54,110 @@ func (c *agentClient) Subscribe(ctx context.Context, in *SubscriptionRequest, op
 	return x, nil
 }
 
-type Agent_SubscribeClient interface {
-	Recv() (*ModelEventMessage, error)
+type AgentService_SubscribeClient interface {
+	Recv() (*ModelOperationMessage, error)
 	grpc.ClientStream
 }
 
-type agentSubscribeClient struct {
+type agentServiceSubscribeClient struct {
 	grpc.ClientStream
 }
 
-func (x *agentSubscribeClient) Recv() (*ModelEventMessage, error) {
-	m := new(ModelEventMessage)
+func (x *agentServiceSubscribeClient) Recv() (*ModelOperationMessage, error) {
+	m := new(ModelOperationMessage)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-// AgentServer is the server API for Agent service.
-// All implementations must embed UnimplementedAgentServer
+// AgentServiceServer is the server API for AgentService service.
+// All implementations must embed UnimplementedAgentServiceServer
 // for forward compatibility
-type AgentServer interface {
-	LoadModel(context.Context, *LoadModelRequest) (*LoadModelResponse, error)
-	UnloadModel(context.Context, *UnloadModelRequest) (*UnloadModelResponse, error)
-	Subscribe(*SubscriptionRequest, Agent_SubscribeServer) error
-	mustEmbedUnimplementedAgentServer()
+type AgentServiceServer interface {
+	AgentEvent(context.Context, *ModelEventMessage) (*ModelEventResponse, error)
+	Subscribe(*AgentSubscribeRequest, AgentService_SubscribeServer) error
+	mustEmbedUnimplementedAgentServiceServer()
 }
 
-// UnimplementedAgentServer must be embedded to have forward compatible implementations.
-type UnimplementedAgentServer struct {
+// UnimplementedAgentServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedAgentServiceServer struct {
 }
 
-func (UnimplementedAgentServer) LoadModel(context.Context, *LoadModelRequest) (*LoadModelResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method LoadModel not implemented")
+func (UnimplementedAgentServiceServer) AgentEvent(context.Context, *ModelEventMessage) (*ModelEventResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AgentEvent not implemented")
 }
-func (UnimplementedAgentServer) UnloadModel(context.Context, *UnloadModelRequest) (*UnloadModelResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UnloadModel not implemented")
-}
-func (UnimplementedAgentServer) Subscribe(*SubscriptionRequest, Agent_SubscribeServer) error {
+func (UnimplementedAgentServiceServer) Subscribe(*AgentSubscribeRequest, AgentService_SubscribeServer) error {
 	return status.Errorf(codes.Unimplemented, "method Subscribe not implemented")
 }
-func (UnimplementedAgentServer) mustEmbedUnimplementedAgentServer() {}
+func (UnimplementedAgentServiceServer) mustEmbedUnimplementedAgentServiceServer() {}
 
-// UnsafeAgentServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to AgentServer will
+// UnsafeAgentServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AgentServiceServer will
 // result in compilation errors.
-type UnsafeAgentServer interface {
-	mustEmbedUnimplementedAgentServer()
+type UnsafeAgentServiceServer interface {
+	mustEmbedUnimplementedAgentServiceServer()
 }
 
-func RegisterAgentServer(s grpc.ServiceRegistrar, srv AgentServer) {
-	s.RegisterService(&Agent_ServiceDesc, srv)
+func RegisterAgentServiceServer(s grpc.ServiceRegistrar, srv AgentServiceServer) {
+	s.RegisterService(&AgentService_ServiceDesc, srv)
 }
 
-func _Agent_LoadModel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LoadModelRequest)
+func _AgentService_AgentEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ModelEventMessage)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AgentServer).LoadModel(ctx, in)
+		return srv.(AgentServiceServer).AgentEvent(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/seldon.mlops.agent.Agent/LoadModel",
+		FullMethod: "/seldon.mlops.agent.AgentService/AgentEvent",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AgentServer).LoadModel(ctx, req.(*LoadModelRequest))
+		return srv.(AgentServiceServer).AgentEvent(ctx, req.(*ModelEventMessage))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Agent_UnloadModel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UnloadModelRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AgentServer).UnloadModel(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/seldon.mlops.agent.Agent/UnloadModel",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AgentServer).UnloadModel(ctx, req.(*UnloadModelRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Agent_Subscribe_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(SubscriptionRequest)
+func _AgentService_Subscribe_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(AgentSubscribeRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(AgentServer).Subscribe(m, &agentSubscribeServer{stream})
+	return srv.(AgentServiceServer).Subscribe(m, &agentServiceSubscribeServer{stream})
 }
 
-type Agent_SubscribeServer interface {
-	Send(*ModelEventMessage) error
+type AgentService_SubscribeServer interface {
+	Send(*ModelOperationMessage) error
 	grpc.ServerStream
 }
 
-type agentSubscribeServer struct {
+type agentServiceSubscribeServer struct {
 	grpc.ServerStream
 }
 
-func (x *agentSubscribeServer) Send(m *ModelEventMessage) error {
+func (x *agentServiceSubscribeServer) Send(m *ModelOperationMessage) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-// Agent_ServiceDesc is the grpc.ServiceDesc for Agent service.
+// AgentService_ServiceDesc is the grpc.ServiceDesc for AgentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Agent_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "seldon.mlops.agent.Agent",
-	HandlerType: (*AgentServer)(nil),
+var AgentService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "seldon.mlops.agent.AgentService",
+	HandlerType: (*AgentServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "LoadModel",
-			Handler:    _Agent_LoadModel_Handler,
-		},
-		{
-			MethodName: "UnloadModel",
-			Handler:    _Agent_UnloadModel_Handler,
+			MethodName: "AgentEvent",
+			Handler:    _AgentService_AgentEvent_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "Subscribe",
-			Handler:       _Agent_Subscribe_Handler,
+			Handler:       _AgentService_Subscribe_Handler,
 			ServerStreams: true,
 		},
 	},

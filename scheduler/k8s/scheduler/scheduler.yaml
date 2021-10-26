@@ -1,10 +1,10 @@
-#apiVersion: v1
-#kind: Namespace
-#metadata:
-#  labels:
-#    control-plane: seldon-scheduler
-#  name: system
-#---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    control-plane: seldon-scheduler
+  name: system
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -32,8 +32,12 @@ spec:
         imagePullPolicy: IfNotPresent
         name: scheduler
         ports:
-        - name: http
+        - name: xds
           containerPort: 9002
+        - name: scheduler
+          containerPort: 9004
+        - name: agent
+          containerPort: 9005
         resources:
           limits:
             cpu: 500m

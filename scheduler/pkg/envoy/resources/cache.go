@@ -30,6 +30,7 @@ type Route struct {
 type Cluster struct {
 	Name      string
 	Endpoints map[string]Endpoint
+	Routes map[string]bool
 }
 
 type Endpoint struct {

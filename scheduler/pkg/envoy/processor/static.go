@@ -87,7 +87,7 @@ func (p *SeldonProcessor) ProcessFile(msg watcher.NotifyMessage) {
 		clusterName := m.ModelServer+"_"+serverSubsetHash
 		p.xdsCache.AddRoute(m.Name,m.Name,clusterName)
 		if _,ok := clustersAdded[clusterName]; !ok {
-			p.xdsCache.AddCluster(clusterName)
+			p.xdsCache.AddCluster(clusterName, m.Name)
 			for _,serverIdx := range m.Servers {
 				replica := servers[m.ModelServer][serverIdx]
 				p.xdsCache.AddEndpoint(clusterName, replica.Address, replica.Port)

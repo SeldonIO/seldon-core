@@ -4,3 +4,4 @@ namePrefix: seldon-
 bases:
 - ../scheduler
 - ../envoy
+- ../mlserver

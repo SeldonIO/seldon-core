@@ -17,6 +17,9 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent"
+	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/processor"
+	"github.com/seldonio/seldon-core/scheduler/pkg/store"
 	"io/ioutil"
 	"k8s.io/client-go/util/homedir"
 	"math/rand"
@@ -31,12 +34,9 @@ import (
 )
 
 var (
-	l log.FieldLogger
-
-	configFilename string
 	envoyPort      uint
-	schedulerPort       uint
-	mode           string
+	agentPort      uint
+	schedulerPort  uint
 	kubeconfig     string
 	namespace      string
 
@@ -49,8 +49,11 @@ func init() {
 	// The envoyPort that this xDS server listens on
 	flag.UintVar(&envoyPort, "envoy-port", 9002, "xDS management server port")
 
-	// The envoyPort that this xDS server listens on
+	// The scheduler port to listen for schedule commands
 	flag.UintVar(&schedulerPort, "scheduler-port", 9004, "scheduler server port")
+
+	// The agent port to listen for agent subscriptions
+	flag.UintVar(&agentPort, "agent-port", 9005, "agent server port")
 
 	// Tell Envoy to use this Node ID
 	flag.StringVar(&nodeID, "nodeID", "test-id", "Node ID")
@@ -88,12 +91,27 @@ func main() {
 		server.RunServer(ctx, srv, envoyPort)
 	}()
 
-	s := scheduler.NewScheduler(cache, nodeID, logger)
-	err := s.StartGrpcServer(schedulerPort)
+	agentChan := make(chan string, 1)
+	defer close(agentChan)
+	envoyChan := make(chan string, 1)
+	defer close(envoyChan)
+	ss := store.NewMemoryScheduler(logger, agentChan, envoyChan)
+	es := processor.NewIncrementalProcessor(cache, nodeID, logger, ss, envoyChan)
+	as := agent.NewAgentServer(logger, ss, es, agentChan)
+	go as.ListenForSyncs() // Start agent syncs
+	go es.ListenForSyncs() // Start envoy syncs
+
+
+	s := scheduler.NewScheduler(logger, ss)
+	go func() {
+		err := s.StartGrpcServer(schedulerPort)
+		if err != nil {
+			log.WithError(err).Fatalf("Scheduler start server error")
+		}
+	}()
+
+	err := as.StartGrpcServer(agentPort)
 	if err != nil {
-		log.WithError(err).Fatalf("Scheduler start server error")
+		log.Fatalf("Failed to start agent grpc server %s",err.Error())
 	}
-
-
-
 }

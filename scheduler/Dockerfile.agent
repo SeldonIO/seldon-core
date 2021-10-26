@@ -5,9 +5,9 @@ ADD . /build/
 WORKDIR /build
 
 # Build the binary
-RUN go build -o scheduler ./cmd/scheduler/main.go
+RUN go build -o agent ./cmd/agent/main.go
 
 # Copy into scratch
 FROM golang:alpine
-COPY --from=builder /build/scheduler /bin/scheduler
-CMD ["/bin/scheduler"]
+COPY --from=builder /build/agent /bin/agent
+CMD ["/bin/agent"]
