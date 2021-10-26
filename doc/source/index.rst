@@ -28,7 +28,8 @@ Quick Links
 * Watch some of the `Videos and Talks <./tutorials/videos.html>`_ using Seldon Core
 
 .. toctree::
-
+   :hidden:
+   
    Getting Started </nav/getting-started.rst>
    Concepts </nav/concepts.rst>
    Configuration </nav/configuration.rst>
