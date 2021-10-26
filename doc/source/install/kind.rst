@@ -9,6 +9,20 @@ Prerequisites
 
 In order to install Seldon Core locally you'll need the following tools:
 
+.. warning:: Depending on permissions for your local machine and the directory you're working in, some tools might require root access
+
+Docker or Podman
+^^^^^^^^^^^^^^^^^^^
+`Docker <https://www.docker.com/>`_ and `Podman <https://podman.io/>`_ are container engines. Kind needs a container engine (like docker or podman) to actually run the containers inside your clusters.
+You only need one of either Docker or Podman. Note that Docker is no longer free for individual use at large companies:
+
+* Install Docker for `Linux <https://docs.docker.com/engine/install/ubuntu/>`_ , `Mac <https://docs.docker.com/desktop/mac/install/>`_ , `Windows <https://docs.docker.com/desktop/windows/install/>`_
+or
+
+* `Install Podman <https://podman.io/getting-started/installation>`_
+
+.. note:: If using Podman remember to set ``alias docker=podman``
+
 Kind
 ^^^^^^^^^^^^^
 `Kind <https://kind.sigs.k8s.io/>`_ is a tool for running Kubernetes clusters locally. We'll use it to create a cluster on your machine so that you can install Seldon Core in to it. If don't already have `kind <https://kind.sigs.k8s.io/>`_ installed on your machine, you'll need to follow their installation guide:
@@ -97,6 +111,8 @@ Seldon Core supports using either `Istio <https://istio.io/>`_ or `Ambassador <h
 
     In order for Seldon Core to use Istio's features to manage cluster traffic, we need to create an `Istio Gateway <https://istio.io/latest/docs/tasks/traffic-management/ingress/ingress-control/>`_ by running the following command:
 
+    .. warning:: You will need to copy the entire command from the code block below
+    
     .. code-block:: yaml
 
         kubectl apply -f - << END
