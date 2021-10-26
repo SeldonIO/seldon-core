@@ -26,6 +26,20 @@ const (
 	MLServerTempoRuntimeEnv        = "TEMPO_RUNTIME_OPTIONS"
 )
 
+var (
+	ExplainerTypeToMLServerExplainerType = map[machinelearningv1.AlibiExplainerType]string{
+		machinelearningv1.AlibiAnchorsTabularExplainer:      "anchor_tabular",
+		machinelearningv1.AlibiAnchorsImageExplainer:        "anchor_image",
+		machinelearningv1.AlibiAnchorsTextExplainer:         "anchor_text",
+		machinelearningv1.AlibiCounterfactualsExplainer:     "counterfactuals",
+		machinelearningv1.AlibiContrastiveExplainer:         "contrastive",
+		machinelearningv1.AlibiKernelShapExplainer:          "kernel_shap",
+		machinelearningv1.AlibiIntegratedGradientsExplainer: "integrated_gradients",
+		machinelearningv1.AlibiALEExplainer:                 "ALE",
+		machinelearningv1.AlibiTreeShap:                     "tree_shap",
+	}
+)
+
 func mergeMLServerContainer(existing *v1.Container, mlServer *v1.Container) *v1.Container {
 	if mlServer == nil {
 		// Nothing to merge.
@@ -221,4 +235,8 @@ func getMLServerModelImplementation(pu *machinelearningv1.PredictiveUnit) (strin
 	default:
 		return "", nil
 	}
+}
+
+func getAlibiExplainExplainerType(explainerType machinelearningv1.AlibiExplainerType) (string, error) {
+	return ExplainerTypeToMLServerExplainerType[explainerType], nil
 }

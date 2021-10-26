@@ -169,8 +169,9 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		if explainerProtocol == string(machinelearningv1.ProtocolKfserving) {
 			// add mlserver alibi runtime env vars
 			// alibi-specific json
+			explainerType, _ := getAlibiExplainExplainerType(p.Explainer.Type)
 			explain_env_map := map[string]string{
-				"explainer_type": "anchor_text", // use p.Explainer.Type
+				"explainer_type": explainerType,
 				"infer_uri":      "http://" + pSvcEndpoint + "/v2/models/" + p.Graph.Name + "/infer",
 			}
 			explain_env_json, _ := json.Marshal(explain_env_map)
