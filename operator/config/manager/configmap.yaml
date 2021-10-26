@@ -93,4 +93,5 @@ data:
   explainer: |-
     {
         "image" : "seldonio/alibiexplainer:1.1.1-SNAPSHOT"
+        "image_v2" : "seldonio/mlserver:0.6.0"
     }
