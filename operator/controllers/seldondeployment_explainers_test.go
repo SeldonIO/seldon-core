@@ -239,7 +239,7 @@ var _ = Describe("Create a V2 Seldon Deployment with explainer", func() {
 			return err
 		}, timeout, interval).Should(BeNil())
 		Expect(len(depFetched.Spec.Template.Spec.Containers[0].Env)).ShouldNot(Equal(0))
-
+		Expect(depFetched.Spec.Template.Spec.Containers[0].Image).Should(Equal("seldonio/mlserver:0.6.0"))
 	})
 
 })

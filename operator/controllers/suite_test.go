@@ -132,7 +132,8 @@ var configs = map[string]string{
 	}`,
 	"explainer": `
 	{
-	"image" : "seldonio/alibiexplainer:1.2.0"
+	"image" : "seldonio/alibiexplainer:1.2.0",
+	"image_v2" : "seldonio/mlserver:0.6.0"
 	}`,
 }
 
