@@ -20,12 +20,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"k8s.io/client-go/kubernetes"
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
-	"knative.dev/pkg/apis"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"k8s.io/client-go/kubernetes"
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
+	"knative.dev/pkg/apis"
 
 	types2 "github.com/gogo/protobuf/types"
 	"github.com/seldonio/seldon-core/operator/constants"
