@@ -239,12 +239,13 @@ var _ = Describe("Create a V2 Seldon Deployment with explainer", func() {
 			return err
 		}, timeout, interval).Should(BeNil())
 		explainerEnvs := depFetched.Spec.Template.Spec.Containers[0].Env
+		explainerExpectedExtraEnvs, _ := getAlibiExplainExtraEnvVars(machinelearningv1.AlibiAnchorsImageExplainer, "dep-p1."+namespaceName+":8000", "classifier")
 		explainerExpectedEnvs := []v1.EnvVar{
 			{Name: MLServerHTTPPortEnv, Value: "9000"},
 			{Name: MLServerModelImplementationEnv, Value: MLServerAlibiExplainImplementation},
 			{Name: MLServerModelNameEnv, Value: "dep-p1-explainer"},
 			{Name: MLServerModelURIEnv, Value: DefaultModelLocalMountPath},
-			{Name: MLServerModelExtraEnv, Value: "{\"explainer_type\":\"anchor_image\",\"infer_uri\":\"http://dep-p1." + namespaceName + ":8000/v2/models/classifier/infer\"}"},
+			{Name: MLServerModelExtraEnv, Value: explainerExpectedExtraEnvs},
 		}
 		Expect(explainerEnvs).Should(Equal(explainerExpectedEnvs))
 		Expect(depFetched.Spec.Template.Spec.Containers[0].Image).Should(Equal("seldonio/mlserver:0.6.0"))

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -240,6 +241,56 @@ func getMLServerModelImplementation(pu *machinelearningv1.PredictiveUnit) (strin
 	}
 }
 
-func getAlibiExplainExplainerType(explainerType machinelearningv1.AlibiExplainerType) (string, error) {
+func getAlibiExplainExplainerTypeTag(explainerType machinelearningv1.AlibiExplainerType) (string, error) {
 	return ExplainerTypeToMLServerExplainerType[explainerType], nil
+}
+
+func getAlibiExplainExtraEnvVars(explainerType machinelearningv1.AlibiExplainerType, pSvcEndpoint string, graphName string) (string, error) {
+	explainerTypeTag, err := getAlibiExplainExplainerTypeTag(explainerType)
+	if err != nil {
+		return "", err
+	}
+	explain_env_map := map[string]string{
+		"explainer_type": explainerTypeTag,
+		"infer_uri":      "http://" + pSvcEndpoint + "/v2/models/" + graphName + "/infer",
+	}
+	explain_env_json, err := json.Marshal(explain_env_map)
+	if err != nil {
+		return "", err
+	}
+	return string(explain_env_json), nil
+}
+
+func getAlibiExplainEnvVars(httpPortNum int, explainerModelName string, explainerType machinelearningv1.AlibiExplainerType, pSvcEndpoint string, graphName string) ([]v1.EnvVar, error) {
+	explain_extra_env, err := getAlibiExplainExtraEnvVars(explainerType, pSvcEndpoint, graphName)
+	if err != nil {
+		return nil, err
+	}
+	alibiEnvs := []v1.EnvVar{
+		{
+			Name:  MLServerHTTPPortEnv,
+			Value: strconv.Itoa(httpPortNum),
+		},
+		// note: we skip grpc port settings, relying on mlserver default
+		// TODO: add gprc port
+		{
+			Name:  MLServerModelImplementationEnv,
+			Value: MLServerAlibiExplainImplementation,
+		},
+		{
+			Name:  MLServerModelNameEnv,
+			Value: explainerModelName,
+		},
+		{
+			Name:  MLServerModelURIEnv,
+			Value: DefaultModelLocalMountPath,
+		},
+		{
+			// TODO2: nested dict for explain_init settings?
+			Name:  MLServerModelExtraEnv,
+			Value: explain_extra_env,
+		},
+	}
+	return alibiEnvs, nil
+
 }

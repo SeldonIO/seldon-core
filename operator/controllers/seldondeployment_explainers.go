@@ -35,7 +35,6 @@ import (
 	istio_networking "istio.io/api/networking/v1alpha3"
 	istio "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -174,38 +173,12 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		if explainerProtocol == string(machinelearningv1.ProtocolKfserving) {
 			// add mlserver alibi runtime env vars
 			// alibi-specific json
-			explainerType, _ := getAlibiExplainExplainerType(p.Explainer.Type)
-			explain_env_map := map[string]string{
-				"explainer_type": explainerType,
-				"infer_uri":      "http://" + pSvcEndpoint + "/v2/models/" + p.Graph.Name + "/infer",
+			explainEnvs, err := getAlibiExplainEnvVars(int(portNum), explainerContainer.Name, p.Explainer.Type, pSvcEndpoint, p.Graph.Name)
+			if err != nil {
+				return err
 			}
-			explain_env_json, _ := json.Marshal(explain_env_map)
 
-			explainerContainer.Env = []v1.EnvVar{
-				{
-					Name:  MLServerHTTPPortEnv,
-					Value: strconv.Itoa(int(portNum)),
-				},
-				// note: we skip grpc port settings, relying on mlserver default
-				// TODO: add gprc port
-				{
-					Name:  MLServerModelImplementationEnv,
-					Value: MLServerAlibiExplainImplementation,
-				},
-				{
-					Name:  MLServerModelNameEnv,
-					Value: explainerContainer.Name,
-				},
-				{
-					Name:  MLServerModelURIEnv,
-					Value: DefaultModelLocalMountPath,
-				},
-				{
-					// TODO2: nested dict for explain_init settings?
-					Name:  MLServerModelExtraEnv,
-					Value: string(explain_env_json),
-				},
-			}
+			explainerContainer.Env = explainEnvs
 		} else {
 			explainerContainer.Args = []string{
 				"--model_name=" + mlDep.Name,
