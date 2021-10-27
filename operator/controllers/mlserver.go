@@ -3,8 +3,9 @@ package controllers
 import (
 	"errors"
 	"fmt"
-	"github.com/seldonio/seldon-core/operator/utils"
 	"strconv"
+
+	"github.com/seldonio/seldon-core/operator/utils"
 
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
@@ -13,10 +14,11 @@ import (
 )
 
 const (
-	MLServerSKLearnImplementation = "mlserver_sklearn.SKLearnModel"
-	MLServerXGBoostImplementation = "mlserver_xgboost.XGBoostModel"
-	MLServerTempoImplementation   = "tempo.mlserver.InferenceRuntime"
-	MLServerMLFlowImplementation  = "mlserver_mlflow.MLflowRuntime"
+	MLServerSKLearnImplementation      = "mlserver_sklearn.SKLearnModel"
+	MLServerXGBoostImplementation      = "mlserver_xgboost.XGBoostModel"
+	MLServerTempoImplementation        = "tempo.mlserver.InferenceRuntime"
+	MLServerMLFlowImplementation       = "mlserver_mlflow.MLflowRuntime"
+	MLServerAlibiExplainImplementation = "mlserver_alibi_explain.AlibiExplainRuntime"
 
 	MLServerHTTPPortEnv            = "MLSERVER_HTTP_PORT"
 	MLServerGRPCPortEnv            = "MLSERVER_GRPC_PORT"
@@ -24,6 +26,7 @@ const (
 	MLServerModelImplementationEnv = "MLSERVER_MODEL_IMPLEMENTATION"
 	MLServerModelURIEnv            = "MLSERVER_MODEL_URI"
 	MLServerTempoRuntimeEnv        = "TEMPO_RUNTIME_OPTIONS"
+	MLServerModelExtraEnv          = "MLSERVER_MODEL_EXTRA"
 )
 
 var (

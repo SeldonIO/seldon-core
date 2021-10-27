@@ -187,11 +187,10 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 					Value: strconv.Itoa(int(portNum)),
 				},
 				// note: we skip grpc port settings, relying on mlserver default
-				// grpc is not supported yet anyway for explainers?
+				// TODO: add gprc port
 				{
-					// TODO: add value in constant
 					Name:  MLServerModelImplementationEnv,
-					Value: "mlserver_alibi_explain.AlibiExplainRuntime",
+					Value: MLServerAlibiExplainImplementation,
 				},
 				{
 					Name:  MLServerModelNameEnv,
@@ -202,9 +201,8 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 					Value: DefaultModelLocalMountPath,
 				},
 				{
-					// TODO: add to constent
 					// TODO2: nested dict for explain_init settings?
-					Name:  "MLSERVER_MODEL_EXTRA",
+					Name:  MLServerModelExtraEnv,
 					Value: string(explain_env_json),
 				},
 			}
