@@ -401,7 +401,7 @@ func (pi *PrePackedInitialiser) createStandaloneModelServers(mlDep *machinelearn
 		// might not be a Deployment yet - if so we have to create one
 		if deploy == nil {
 			seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
-			deploy = createDeploymentWithoutEngine(depName, seldonId, sPodSpec, p, mlDep, podSecurityContext)
+			deploy = createDeploymentWithoutEngine(depName, seldonId, sPodSpec, p, mlDep, podSecurityContext, true)
 		}
 
 		// apply serviceAccountName to pod to enable EKS fine-grained IAM roles

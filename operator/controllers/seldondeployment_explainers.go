@@ -202,7 +202,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 			Containers: []corev1.Container{explainerContainer},
 		}}
 
-		deploy := createDeploymentWithoutEngine(depName, seldonId, &seldonPodSpec, p, mlDep, podSecurityContect)
+		deploy := createDeploymentWithoutEngine(depName, seldonId, &seldonPodSpec, p, mlDep, podSecurityContect, false)
 
 		// Set replicas to zero if main predictor or graph has zero replicas otherwise set to explainer replicas
 		if p.Replicas != nil && *p.Replicas == 0 {
