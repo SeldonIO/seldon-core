@@ -11,6 +11,8 @@ import (
 	"strings"
 )
 
+const EnvKeyEnginePredictor = "ENGINE_PREDICTOR"
+
 func GetPredictor(predictorName, filename, sdepName, namespace string, configPath *string) (*v1.PredictorSpec, error) {
 	if filename != "" {
 		predictor, err := getPredictorFromFile(predictorName, filename)
@@ -25,7 +27,10 @@ func GetPredictor(predictorName, filename, sdepName, namespace string, configPat
 }
 
 func getPredictorFromEnv() (*v1.PredictorSpec, error) {
-	b64Predictor := os.Getenv("ENGINE_PREDICTOR")
+	b64Predictor, ok := os.LookupEnv(EnvKeyEnginePredictor)
+	if !ok {
+		return nil, fmt.Errorf("Predictor not found, enviroment variable %s not set", EnvKeyEnginePredictor)
+	}
 	if b64Predictor != "" {
 		bytes, err := base64.StdEncoding.DecodeString(b64Predictor)
 		if err != nil {
