@@ -191,8 +191,8 @@ endif
 
 .PHONY: install-ginkgo
 install-ginkgo:
-ifeq (, $(shell command -v controller-gen))
-	go install github.com/onsi/ginkgo/ginkgo@1.16.4
+ifeq (, $(shell command -v ginkgo))
+	go install github.com/onsi/ginkgo/ginkgo@v1.16.4
 
 GINKGO=$(GOBIN)/ginkgo
 else
