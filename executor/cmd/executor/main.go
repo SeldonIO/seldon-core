@@ -307,7 +307,9 @@ func main() {
 	logger := logf.Log.WithName("entrypoint")
 
 	// Set runtime.GOMAXPROCS to respect container limits if the env var GOMAXPROCS is not set or is invalid, preventing CPU throttling.
-	undo, err := maxprocs.Set(maxprocs.Logger(logger.Info))
+	undo, err := maxprocs.Set(maxprocs.Logger(func(format string, a ...interface{}) {
+		logger.WithName("maxprocs").Info(fmt.Sprintf(format, a...))
+	}))
 	defer undo()
 	if err != nil {
 		logger.Error(err, "failed to set GOMAXPROCS")
