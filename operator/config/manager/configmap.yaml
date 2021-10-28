@@ -80,8 +80,7 @@ data:
               "defaultImageVersion": "0.5.0"
               }
             }
-        },
-
+        }
     }
   storageInitializer: |-
     {

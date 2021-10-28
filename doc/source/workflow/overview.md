@@ -140,7 +140,7 @@ Read more about [Seldon Deployment CRD on its dedicated documentation page](../r
 
 ## Seldon Core Operator
 
-Seldon Core `Operator`, build using [Kubebuilder](https://github.com/kubernetes-sigs/kubebuilder), is what controls your `Seldon Deployments` in the `Kubernetes` cluster.
+The Seldon Core `Operator` is what controls your `Seldon Deployments` in the `Kubernetes` cluster.
 It reads the CRD definition of `Seldon Deployment` resources applied to the cluster and takes
 care that all required components like `Pods` and `Services` are created.
 
@@ -191,31 +191,12 @@ Out of the box Seldon Core deployments expose standard metrics to [Prometheus](h
 
 ![](../images/metrics.svg)
 
-Users can also define their custom metrics that will be exposed by models directly.
-To add metrics to Python models one can simply define `metrics` method:
-```python
-class Model:
-    ...
-
-    def metrics(self):
-        return [
-            # a counter which will increase by the given value
-            {"type": "COUNTER", "key": "mycounter", "value": 1},
-
-            # a gauge which will be set to given value
-            {"type": "GAUGE", "key": "mygauge", "value": 100},
-
-            # a timer which will add sum and count metrics - assumed millisecs
-            {"type": "TIMER", "key": "mytimer", "value": 20.2},
-        ]
-```
-
 Read more about [metrics on its dedicated documentation page](../analytics/analytics.html).
 
 
 ## Distributed Tracing with Jaeger
 
-You can use Open Tracing to trace your API calls to Seldon Core. By default we support [Jaeger](https://www.jaegertracing.io/) for Distributed Tracing, which will allow you to obtain insights on latency and performance across each microservice-hop in your Seldon deployment.
+By default, we support [Jaeger](https://www.jaegertracing.io/) for Distributed Tracing.
 
 ![](../images/tracing.svg)
 
