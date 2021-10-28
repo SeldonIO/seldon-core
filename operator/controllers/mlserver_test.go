@@ -175,7 +175,8 @@ var _ = Describe("MLServer explain helpers", func() {
 			},
 			Entry("anchor text", machinelearningv1.AlibiAnchorsTabularExplainer, "url", "p", "", "{\"explainer_type\":\"anchor_tabular\",\"infer_uri\":\"http://url/v2/models/p/infer\"}"),
 			Entry("anchor image", machinelearningv1.AlibiAnchorsImageExplainer, "url", "p", "", "{\"explainer_type\":\"anchor_image\",\"infer_uri\":\"http://url/v2/models/p/infer\"}"),
-			Entry("anchor text with init", machinelearningv1.AlibiAnchorsTabularExplainer, "url", "p", "{}", "{\"explainer_type\":\"anchor_tabular\",\"infer_uri\":\"http://url/v2/models/p/infer\",\"init_parameters\":{}}"),
+			Entry("anchor text with empty init", machinelearningv1.AlibiAnchorsTabularExplainer, "url", "p", "{}", "{\"explainer_type\":\"anchor_tabular\",\"infer_uri\":\"http://url/v2/models/p/infer\",\"init_parameters\":{}}"),
+			Entry("anchor text with init", machinelearningv1.AlibiAnchorsTabularExplainer, "url", "p", "{\"v\":2}", "{\"explainer_type\":\"anchor_tabular\",\"infer_uri\":\"http://url/v2/models/p/infer\",\"init_parameters\":{\"v\":2}}"),
 		)
 	})
 
