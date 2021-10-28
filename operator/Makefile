@@ -30,8 +30,10 @@ lint: licenses/dep.txt
 		./licenses
 
 # Run tests
-test: generate fmt vet manifests_all generate-resources
-	ginkgo -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis
+test: install-ginkgo generate fmt vet manifests_all generate-resources
+	ACK_GINKGO_RC=true \
+	ACK_GINKGO_DEPRECATIONS=1.16.4 \
+	$(GINKGO) -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis
 
 # Build manager binary
 manager: generate fmt vet
