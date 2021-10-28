@@ -187,6 +187,16 @@ else
 CONTROLLER_GEN=$(shell which controller-gen)
 endif
 
+.PHONY: install-ginkgo
+install-ginkgo:
+ifeq (, $(shell command -v controller-gen))
+	go install github.com/onsi/ginkgo/ginkgo@1.16.4
+
+GINKGO=$(GOBIN)/ginkgo
+else
+GINKGO=$(shell type -p ginkgo)
+endif
+
 WEBHOOK_DIR=/tmp/k8s-webhook-server/serving-certs
 
 tls-extract:
