@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	v1 "k8s.io/api/core/v1"
 
@@ -159,6 +160,40 @@ var _ = Describe("MLServer helpers", func() {
 			Entry("tempo", machinelearningv1.PrepackTempoName, MLServerTempoImplementation),
 			Entry("mlserver", machinelearningv1.PrepackMlflowName, MLServerMLFlowImplementation),
 			Entry("unknown", "foo", ""),
+		)
+	})
+})
+
+var _ = Describe("MLServer explain helpers", func() {
+	Describe("getAlibiExplainExtraEnvVars", func() {
+		DescribeTable(
+			"returns the right extra envs",
+			func(explainerType machinelearningv1.AlibiExplainerType, pSvcEndpoint string, graphName string, initParameters string, expected string) {
+
+				extraEnvs, _ := getAlibiExplainExtraEnvVars(explainerType, pSvcEndpoint, graphName, initParameters)
+				Expect(extraEnvs).To(Equal(expected))
+			},
+			Entry("anchor text", machinelearningv1.AlibiAnchorsTabularExplainer, "url", "p", "", "{\"explainer_type\":\"anchor_tabular\",\"infer_uri\":\"http://url/v2/models/p/infer\"}"),
+			Entry("anchor image", machinelearningv1.AlibiAnchorsImageExplainer, "url", "p", "", "{\"explainer_type\":\"anchor_image\",\"infer_uri\":\"http://url/v2/models/p/infer\"}"),
+			Entry("anchor text with init", machinelearningv1.AlibiAnchorsTabularExplainer, "url", "p", "{}", "{\"explainer_type\":\"anchor_tabular\",\"infer_uri\":\"http://url/v2/models/p/infer\",\"init_parameters\":{}}"),
+		)
+	})
+
+	Describe("getAlibiExplainExplainerTypeTag", func() {
+		DescribeTable(
+			"returns the right extra envs",
+			func(explainerType machinelearningv1.AlibiExplainerType, expected string) {
+
+				tag, err := getAlibiExplainExplainerTypeTag(explainerType)
+				if err == nil {
+					Expect(tag).To(Equal(expected))
+				}else {
+					Expect(tag).To(Equal(""))
+				}
+			},
+			Entry("anchor text", machinelearningv1.AlibiAnchorsTabularExplainer, "anchor_tabular"),
+			Entry("anchor image", machinelearningv1.AlibiAnchorsImageExplainer, "anchor_image"),
+			Entry("unknown", machinelearningv1.AlibiExplainerType("unknown"), ""),
 		)
 	})
 })

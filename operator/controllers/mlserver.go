@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -242,27 +241,42 @@ func getMLServerModelImplementation(pu *machinelearningv1.PredictiveUnit) (strin
 }
 
 func getAlibiExplainExplainerTypeTag(explainerType machinelearningv1.AlibiExplainerType) (string, error) {
-	return ExplainerTypeToMLServerExplainerType[explainerType], nil
+	tag, ok := ExplainerTypeToMLServerExplainerType[explainerType]
+	if ok {
+		return tag, nil
+	} else {
+		return "", errors.New(string(explainerType) + " not supported")
+	}
 }
 
-func getAlibiExplainExtraEnvVars(explainerType machinelearningv1.AlibiExplainerType, pSvcEndpoint string, graphName string) (string, error) {
+func wrapDoubleQuotes(str string) string {
+	const escQuotes string = "\""
+	return escQuotes + str + escQuotes
+}
+func getAlibiExplainExtraEnvVars(explainerType machinelearningv1.AlibiExplainerType, pSvcEndpoint string, graphName string, initParameters string) (string, error) {
+	// we need to pack one big envVar for MLSERVER_MODEL_EXTRA that can contain nested json / dict
 	explainerTypeTag, err := getAlibiExplainExplainerTypeTag(explainerType)
 	if err != nil {
 		return "", err
 	}
-	explain_env_map := map[string]string{
-		"explainer_type": explainerTypeTag,
-		"infer_uri":      "http://" + pSvcEndpoint + "/v2/models/" + graphName + "/infer",
+
+	v2URI := "http://" + pSvcEndpoint + "/v2/models/" + graphName + "/infer"
+	explainExtraEnv := "{" + wrapDoubleQuotes("explainer_type") + ":" + wrapDoubleQuotes(explainerTypeTag)
+	explainExtraEnv = explainExtraEnv + "," + wrapDoubleQuotes("infer_uri") + ":" + wrapDoubleQuotes(v2URI)
+
+	if initParameters != "" {
+		//init parameters is passed as json string so we need to reconstruct the dictionary
+		explainExtraEnv = explainExtraEnv + "," + wrapDoubleQuotes("init_parameters") + ":" + initParameters
 	}
-	explain_env_json, err := json.Marshal(explain_env_map)
-	if err != nil {
-		return "", err
-	}
-	return string(explain_env_json), nil
+	
+	// end
+	explainExtraEnv = explainExtraEnv + "}"
+	
+	return explainExtraEnv, nil
 }
 
-func getAlibiExplainEnvVars(httpPortNum int, explainerModelName string, explainerType machinelearningv1.AlibiExplainerType, pSvcEndpoint string, graphName string) ([]v1.EnvVar, error) {
-	explain_extra_env, err := getAlibiExplainExtraEnvVars(explainerType, pSvcEndpoint, graphName)
+func getAlibiExplainEnvVars(httpPortNum int, explainerModelName string, explainerType machinelearningv1.AlibiExplainerType, pSvcEndpoint string, graphName string, initParameters string) ([]v1.EnvVar, error) {
+	explain_extra_env, err := getAlibiExplainExtraEnvVars(explainerType, pSvcEndpoint, graphName, initParameters)
 	if err != nil {
 		return nil, err
 	}
@@ -286,7 +300,6 @@ func getAlibiExplainEnvVars(httpPortNum int, explainerModelName string, explaine
 			Value: DefaultModelLocalMountPath,
 		},
 		{
-			// TODO2: nested dict for explain_init settings?
 			Name:  MLServerModelExtraEnv,
 			Value: explain_extra_env,
 		},

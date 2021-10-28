@@ -157,6 +157,7 @@ var _ = Describe("Create a V2 Seldon Deployment with explainer", func() {
 	const interval = time.Second * 1
 	namespaceName := rand.String(10)
 	v2protocol := machinelearningv1.ProtocolKfserving
+	explainerInitParameters := "{'a': 1, 'b': 's', 'c': {'c1': [1, 1]}}"
 	By("Creating a resource")
 	It("should create a resource with defaults", func() {
 		Expect(k8sClient).NotTo(BeNil())
@@ -197,7 +198,8 @@ var _ = Describe("Create a V2 Seldon Deployment with explainer", func() {
 							Implementation: &modelImplementation,
 						},
 						Explainer: &machinelearningv1.Explainer{
-							Type: machinelearningv1.AlibiAnchorsImageExplainer,
+							Type:           machinelearningv1.AlibiAnchorsImageExplainer,
+							InitParameters: explainerInitParameters,
 						},
 					},
 				},
@@ -239,7 +241,7 @@ var _ = Describe("Create a V2 Seldon Deployment with explainer", func() {
 			return err
 		}, timeout, interval).Should(BeNil())
 		explainerEnvs := depFetched.Spec.Template.Spec.Containers[0].Env
-		explainerExpectedExtraEnvs, _ := getAlibiExplainExtraEnvVars(machinelearningv1.AlibiAnchorsImageExplainer, "dep-p1."+namespaceName+":8000", "classifier")
+		explainerExpectedExtraEnvs, _ := getAlibiExplainExtraEnvVars(machinelearningv1.AlibiAnchorsImageExplainer, "dep-p1."+namespaceName+":8000", "classifier", explainerInitParameters)
 		explainerExpectedEnvs := []v1.EnvVar{
 			{Name: MLServerHTTPPortEnv, Value: "9000"},
 			{Name: MLServerModelImplementationEnv, Value: MLServerAlibiExplainImplementation},

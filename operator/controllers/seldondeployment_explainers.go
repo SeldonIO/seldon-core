@@ -173,7 +173,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		if explainerProtocol == string(machinelearningv1.ProtocolKfserving) {
 			// add mlserver alibi runtime env vars
 			// alibi-specific json
-			explainEnvs, err := getAlibiExplainEnvVars(int(portNum), explainerContainer.Name, p.Explainer.Type, pSvcEndpoint, p.Graph.Name)
+			explainEnvs, err := getAlibiExplainEnvVars(int(portNum), explainerContainer.Name, p.Explainer.Type, pSvcEndpoint, p.Graph.Name, p.Explainer.InitParameters)
 			if err != nil {
 				return err
 			}
