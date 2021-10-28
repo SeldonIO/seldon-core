@@ -1,12 +1,14 @@
 name: Security Tests
 
 on:
+  push:
+    branches: [ master ]
   workflow_dispatch:
 
 jobs:
   security-python:
 
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     container: snyk/snyk:python-3.8
 
     steps:
@@ -20,7 +22,7 @@ jobs:
 
   security-operator:
 
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     container: snyk/snyk:golang
 
     steps:
@@ -34,7 +36,7 @@ jobs:
 
   security-executor:
 
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     container: snyk/snyk:golang
 
     steps:
@@ -46,4 +48,120 @@ jobs:
         make -C executor/ executor
         snyk test --file=executor/go.mod
 
+  security-image-executor:
+
+    runs-on: ubuntu-latest
+    steps:
+    - name: security-image-executor
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: seldonio/seldon-core-executor:1.12.0-dev
+        args: --file=executor/Dockerfile.executor
+
+  security-image-operator:
+
+    runs-on: ubuntu-latest
+    steps:
+    - name: security-image-operator
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: seldonio/seldon-core-operator:1.12.0-dev
+        args: --file=operator/Dockerfile.operator
+
+  security-image-python-base:
+
+    runs-on: ubuntu-latest
+    steps:
+    - name: security-image-python-base
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: seldonio/seldon-core-s2i-python37-ubi8:1.12.0-dev
+        args: --file=wrappers/s2i/python/Dockerfile
+
+  security-image-python-sklearn:
+
+    runs-on: ubuntu-latest
+    steps:
+    - name: security-image-python-sklearn
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: seldonio/sklearnserver:1.12.0-dev
+
+  security-image-python-mlflow:
+
+    runs-on: ubuntu-latest
+    steps:
+    - name: security-image-python-mlflow
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: seldonio/mlflowserver:1.12.0-dev
+
+  security-image-python-xgboost:
+
+    runs-on: ubuntu-latest
+    steps:
+    - name: security-image-python-xgboost
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: seldonio/xgboostserver:1.12.0-dev
+
+  security-image-alibi-explain:
+
+    runs-on: ubuntu-latest
+    steps:
+    - name: security-image-alibi-explain
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: seldonio/alibiexplainer:1.12.0-dev
+        args: --file=components/alibi-explain-server/Dockerfile
+
+  security-image-alibi-detect:
+
+    runs-on: ubuntu-latest
+    steps:
+    - name: security-image-alibi-detect
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: seldonio/alibi-detect-server:1.12.0-dev
+        args: --file=components/alibi-detect-server/Dockerfile
+
+  security-image-request-logger:
+
+    runs-on: ubuntu-latest
+    steps:
+    - name: security-image-request-logger
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: seldonio/seldon-request-logger:1.12.0-dev
+        args: --file=components/seldon-request-logger/Dockerfile
+
+  security-image-initializer-rclone:
+
+    runs-on: ubuntu-latest
+    steps:
+    - name: security-image-request-logger
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: seldonio/rclone-storage-initializer:1.12.0-dev
+        args: --file=components/rclone-storage-initializer/Dockerfile
 
