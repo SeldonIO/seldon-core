@@ -194,6 +194,13 @@ var _ = Describe("MLServer explain helpers", func() {
 			},
 			Entry("anchor text", machinelearningv1.AlibiAnchorsTabularExplainer, "anchor_tabular"),
 			Entry("anchor image", machinelearningv1.AlibiAnchorsImageExplainer, "anchor_image"),
+			Entry("anchor image", machinelearningv1.AlibiAnchorsTextExplainer, "anchor_text"),
+			Entry("anchor image", machinelearningv1.AlibiCounterfactualsExplainer, "counterfactuals"),
+			Entry("anchor image", machinelearningv1.AlibiContrastiveExplainer, "contrastive"),
+			Entry("anchor image", machinelearningv1.AlibiKernelShapExplainer, "kernel_shap"),
+			Entry("anchor image", machinelearningv1.AlibiIntegratedGradientsExplainer, "integrated_gradients"),
+			Entry("anchor image", machinelearningv1.AlibiALEExplainer, "ALE"),
+			Entry("anchor image", machinelearningv1.AlibiTreeShap, "tree_shap"),
 			Entry("unknown", machinelearningv1.AlibiExplainerType("unknown"), ""),
 		)
 	})
