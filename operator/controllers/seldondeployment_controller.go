@@ -20,12 +20,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"k8s.io/client-go/kubernetes"
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
-	"knative.dev/pkg/apis"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"k8s.io/client-go/kubernetes"
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
+	"knative.dev/pkg/apis"
 
 	types2 "github.com/gogo/protobuf/types"
 	"github.com/seldonio/seldon-core/operator/constants"
@@ -456,7 +457,7 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 			if i == 0 && j == 0 {
 				c.defaultDeploymentName = depName
 			}
-			deploy := createDeploymentWithoutEngine(depName, seldonId, cSpec, &p, mlDep, securityContext)
+			deploy := createDeploymentWithoutEngine(depName, seldonId, cSpec, &p, mlDep, securityContext, true)
 
 			if cSpec.KedaSpec != nil { // Add KEDA if needed
 				c.kedaScaledObjects = append(c.kedaScaledObjects, createKeda(cSpec, depName, seldonId, namespace))
@@ -827,7 +828,7 @@ func createContainerService(deploy *appsv1.Deployment,
 	return svc
 }
 
-func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpec *machinelearningv1.SeldonPodSpec, p *machinelearningv1.PredictorSpec, mlDep *machinelearningv1.SeldonDeployment, podSecurityContext *corev1.PodSecurityContext) *appsv1.Deployment {
+func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpec *machinelearningv1.SeldonPodSpec, p *machinelearningv1.PredictorSpec, mlDep *machinelearningv1.SeldonDeployment, podSecurityContext *corev1.PodSecurityContext, metricsEnabled bool) *appsv1.Deployment {
 	deploy := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      depName,
@@ -860,9 +861,12 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 	if deploy.Spec.Template.Annotations == nil {
 		deploy.Spec.Template.Annotations = map[string]string{}
 	}
-	// Add prometheus annotations
-	deploy.Spec.Template.Annotations["prometheus.io/path"] = getPrometheusPath(mlDep)
-	deploy.Spec.Template.Annotations["prometheus.io/scrape"] = "true"
+
+	if metricsEnabled {
+		// Add prometheus annotations
+		deploy.Spec.Template.Annotations["prometheus.io/path"] = getPrometheusPath(mlDep)
+		deploy.Spec.Template.Annotations["prometheus.io/scrape"] = "true"
+	}
 
 	if p.Shadow == true {
 		deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_shadow] = "true"
