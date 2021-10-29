@@ -182,13 +182,14 @@ var _ = Describe("MLServer explain helpers", func() {
 
 	Describe("getAlibiExplainExplainerTypeTag", func() {
 		DescribeTable(
-			"returns the right extra envs",
+			"returns the right explainer tag",
 			func(explainerType machinelearningv1.AlibiExplainerType, expected string) {
 
 				tag, err := getAlibiExplainExplainerTypeTag(explainerType)
 				if err == nil {
 					Expect(tag).To(Equal(expected))
 				}else {
+					// if there is an error, the tag should also be ""
 					Expect(tag).To(Equal(""))
 				}
 			},
