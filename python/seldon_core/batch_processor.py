@@ -5,6 +5,7 @@ import time
 import uuid
 from queue import Empty, Queue
 from threading import Event, Thread
+from itertools import groupby
 
 import click
 import numpy as np
@@ -32,6 +33,11 @@ def setup_logging(log_level: str):
         "%(asctime)s - batch_processor.py:%(lineno)s - %(levelname)s:  %(message)s"
     )
     logging.basicConfig(level=CHOICES_LOG_LEVEL[log_level], format=LOG_FORMAT)
+
+
+def all_equal(iterable):
+    g = groupby(iterable)
+    return next(g, True) and not next(g, False)
 
 
 def start_multithreaded_batch_worker(
@@ -72,12 +78,10 @@ def start_multithreaded_batch_worker(
 
     if method == "feedback" and data_type != "raw":
         raise RuntimeError("Feedback method is supported only with `raw` data type.")
-    elif data_type != "data" and batch_size > 1:
+    elif data_type not in ["data", "raw"] and batch_size > 1:
         raise RuntimeError(
             "Batch size greater than 1 is only supported for `data` data type."
         )
-    elif data_type == "raw" and method != "feedback":
-        raise RuntimeError("Raw input is currently only support for feedback method.")
 
     sc = SeldonClient(
         gateway=gateway_type,
@@ -220,7 +224,7 @@ def _start_request_worker(
     q_out
         Queue to put the resulting requests into
     data_type
-        The json/str/data type to send the requests as
+        The json/str/data/raw type to send the requests as
     sc
         An initialised Seldon Client configured to send the requests to
     method:
@@ -316,23 +320,91 @@ def _send_batch_predict_multi_request(
     """
 
     indexes = [x[0] for x in input_data]
-    instance_ids = [x[1] for x in input_data]
+
+    seldon_puid = input_data[0][1]
+    instance_ids = [f"{seldon_puid}-item-{n}" for n, _ in enumerate(input_data)]
+    loaded_data = [json.loads(data[2]) for data in input_data]
 
     predict_kwargs = {}
     tags = {
         "batch_id": batch_id,
     }
-
     predict_kwargs["meta"] = tags
-    predict_kwargs["headers"] = {"Seldon-Puid": instance_ids[0]}
+    predict_kwargs["headers"] = {"Seldon-Puid": seldon_puid}
 
     try:
-        # Initialise concatenated array for data
-        loaded = [json.loads(raw_data[2]) for raw_data in input_data]
-        concat = np.concatenate(loaded)
-        predict_kwargs["data"] = concat
+        # Process raw input format
+        if data_type == "raw":
+            input_tags = [d.get("meta", {}).get("tags", {}) for d in loaded_data]
+            first_input = loaded_data[0]
 
-        response = None
+            # Raw input format in mini-batch mode only work for "data" format
+            if "data" not in first_input:
+                raise ValueError(
+                    "raw input with predict in mini-batch mode requires data payload"
+                )
+            # If-block for ndarray case
+            elif "ndarray" in first_input["data"]:
+                payload_type = "ndarray"
+                names_list = [d["data"]["names"] for d in loaded_data]
+                arrays = [np.array(d["data"]["ndarray"]) for d in loaded_data]
+                if not all_equal(names_list):
+                    raise ValueError("All names in mini-batch must be the same.")
+                else:
+                    names = names_list[0]
+                for arr in arrays:
+                    if arr.shape[0] != 1:
+                        raise ValueError("When using mini-batching each row should contain single instance.")
+                ndarray = np.concatenate(arrays)
+                raw_data = {
+                    "data": {"names": names_list[0], "ndarray": ndarray.tolist()},
+                    "meta": {"tags": predict_kwargs["meta"]},
+                }
+                predict_kwargs["raw_data"] = raw_data
+            # If-block for tensor case
+            elif "tensor" in first_input["data"]:
+                payload_type = "tensor"
+                names_list = [d["data"]["names"] for d in loaded_data]
+                tensor_shapes = [d["data"]["tensor"]["shape"] for d in loaded_data]
+                tensor_values = [d["data"]["tensor"]["values"] for d in loaded_data]
+
+                if not all_equal(names_list):
+                    raise ValueError("All names in mini-batch must be the same.")
+
+                dim_0 = 0
+                dim_1 = tensor_shapes[0][1]
+                for shape in tensor_shapes:
+                    if shape[0] != 1:
+                        raise ValueError("When using mini-batching each row should contain single instance.")
+                    dim_0 += shape[0]
+                    if dim_1 != shape[1]:
+                        raise ValueError("All instances in mini-batch must have same number of features.")
+                values = sum(tensor_values, [])
+                shape = [dim_0, dim_1]
+                raw_data = {
+                    "data": {"names": names_list[0], "tensor": {"shape": shape, "values": values}},
+                    "meta": {"tags": predict_kwargs["meta"]},
+                }
+                predict_kwargs["raw_data"] = raw_data
+        else:
+            # Initialise concatenated array for data
+            arrays = [np.array(arr) for arr in loaded_data]
+            for arr in arrays:
+                if arr.shape[0] != 1:
+                    raise ValueError("When using mini-batching each row should contain single instance.")
+            concat = np.concatenate(arrays)
+            predict_kwargs["data"] = concat
+        logger.info(f"calling sc.predict with {predict_kwargs}")
+    except Exception as e:
+        error_resp = {
+            "status": {"info": "FAILURE", "reason": str(e), "status": 1},
+            "meta": tags,
+        }
+        print(f"Exception: {e}")
+        str_output = json.dumps(error_resp)
+        return [str_output]
+
+    try:
         for i in range(retries):
             try:
                 seldon_payload = sc.predict(**predict_kwargs)
@@ -349,14 +421,14 @@ def _send_batch_predict_multi_request(
             "status": {"info": "FAILURE", "reason": str(e), "status": 1},
             "meta": tags,
         }
-        print("Exception: %s" % e)
+        print(f"Exception: {e}")
         str_output = json.dumps(error_resp)
         return [str_output]
 
     # Take the response create new responses for each request
     responses = []
+
     # If tensor then prepare the ndarray
-    tensor_ndarray = np.array(())
     if payload_type == "tensor":
         tensor = np.array(response["data"]["tensor"]["values"])
         shape = response["data"]["tensor"]["shape"]
@@ -365,11 +437,14 @@ def _send_batch_predict_multi_request(
     for i in range(len(input_data)):
         try:
             new_response = copy.deepcopy(response)
+            if data_type == "raw":
+                new_response["meta"]["tags"].update(input_tags[i])
             if payload_type == "ndarray":
                 # Format new responses for each original prediction request
                 new_response["data"]["ndarray"] = [response["data"]["ndarray"][i]]
                 new_response["meta"]["tags"]["batch_index"] = indexes[i]
                 new_response["meta"]["tags"]["batch_instance_id"] = instance_ids[i]
+
                 responses.append(json.dumps(new_response))
             elif payload_type == "tensor":
                 # Format new responses for each original prediction request
@@ -449,6 +524,16 @@ def _send_batch_predict(
             predict_kwargs["str_data"] = data
         elif data_type == "json":
             predict_kwargs["json_data"] = data
+        elif data_type == "raw":
+            # Make sure data contains meta.tags keys.
+            data["meta"] = data.get("meta", {})
+            data["meta"]["tags"] = data["meta"].get("tags", {})
+
+            # Update them with our
+            data["meta"]["tags"].update(tags)
+            predict_kwargs["raw_data"] = data
+
+        logger.info(f"calling sc.predict with {predict_kwargs}")
 
         str_output = None
         for i in range(retries):
@@ -601,7 +686,7 @@ def _send_batch_feedback(
     "-p",
     envvar="SELDON_BATCH_PAYLOAD_TYPE",
     type=click.Choice(CHOICES_PAYLOAD_TYPE),
-    default="ndarray",
+    default=None,
     help="The payload type expected by the SeldonDeployment and hence the expected format for the data in the input file which can be an array",
 )
 @click.option(
