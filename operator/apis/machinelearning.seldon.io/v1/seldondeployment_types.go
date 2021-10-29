@@ -288,6 +288,7 @@ type Explainer struct {
 	EnvSecretRefName        string             `json:"envSecretRefName,omitempty" protobuf:"bytes,7,opt,name=envSecretRefName"`
 	StorageInitializerImage string             `json:"storageInitializerImage,omitempty" protobuf:"bytes,8,opt,name=storageInitializerImage"`
 	Replicas                *int32             `json:"replicas,omitempty" protobuf:"string,9,opt,name=replicas"`
+	InitParameters          string             `json:"initParameters,omitempty" protobuf:"string,10,opt,name=initParameters"`
 }
 
 // ObjectMeta is a copy of the "k8s.io/apimachinery/pkg/apis/meta/v1" ObjectMeta.
