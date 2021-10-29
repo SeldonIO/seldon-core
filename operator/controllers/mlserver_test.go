@@ -188,7 +188,7 @@ var _ = Describe("MLServer explain helpers", func() {
 				tag, err := getAlibiExplainExplainerTypeTag(explainerType)
 				if err == nil {
 					Expect(tag).To(Equal(expected))
-				}else {
+				} else {
 					// if there is an error, the tag should also be ""
 					Expect(tag).To(Equal(""))
 				}

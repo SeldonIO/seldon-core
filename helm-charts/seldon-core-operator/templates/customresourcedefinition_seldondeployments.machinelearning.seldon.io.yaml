@@ -4272,6 +4272,8 @@ spec:
                         type: object
                       envSecretRefName:
                         type: string
+                      initParameters:
+                        type: string
                       modelUri:
                         type: string
                       replicas:

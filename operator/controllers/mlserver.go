@@ -268,10 +268,10 @@ func getAlibiExplainExtraEnvVars(explainerType machinelearningv1.AlibiExplainerT
 		//init parameters is passed as json string so we need to reconstruct the dictionary
 		explainExtraEnv = explainExtraEnv + "," + wrapDoubleQuotes("init_parameters") + ":" + initParameters
 	}
-	
+
 	// end
 	explainExtraEnv = explainExtraEnv + "}"
-	
+
 	return explainExtraEnv, nil
 }
 

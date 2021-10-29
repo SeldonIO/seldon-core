@@ -9598,6 +9598,8 @@ spec:
                           type: object
                         envSecretRefName:
                           type: string
+                        initParameters:
+                          type: string
                         modelUri:
                           type: string
                         replicas:
@@ -19546,6 +19548,8 @@ spec:
                           type: object
                         envSecretRefName:
                           type: string
+                        initParameters:
+                          type: string
                         modelUri:
                           type: string
                         replicas:
@@ -29493,6 +29497,8 @@ spec:
                               type: string
                           type: object
                         envSecretRefName:
+                          type: string
+                        initParameters:
                           type: string
                         modelUri:
                           type: string
