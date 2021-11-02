@@ -1,0 +1,88 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.7.0
+  creationTimestamp: null
+  name: models.mlops.seldon.io
+spec:
+  group: mlops.seldon.io
+  names:
+    kind: Model
+    listKind: ModelList
+    plural: models
+    singular: model
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Model is the Schema for the models API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ModelSpec defines the desired state of Model
+            properties:
+              memory:
+                anyOf:
+                - type: integer
+                - type: string
+                pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                x-kubernetes-int-or-string: true
+              name:
+                description: Name override
+                type: string
+              replicas:
+                description: Number of replicas - default
+                format: int32
+                type: integer
+              requirements:
+                description: List of extra requirements for this model to be loaded
+                  on a compatible server, e.g. sklearn, sklearn18, pytorch, tensorflow,
+                  mlflow
+                items:
+                  type: string
+                type: array
+              schemaUri:
+                description: Schme URI
+                type: string
+              secret:
+                description: Secret
+                type: string
+              server:
+                description: Name of the Server to deploy this artifact
+                type: string
+              serviceAccountName:
+                description: Service Account Name for auth
+                type: string
+              storageUri:
+                description: Storage URI for the model repository
+                type: string
+            type: object
+          status:
+            description: ModelStatus defines the observed state of Model
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

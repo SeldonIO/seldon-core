@@ -1,0 +1,6 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: model-sample
+spec:
+  # TODO(user): Add fields here

@@ -1,0 +1,112 @@
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: manager-role
+rules:
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - explainers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - explainers/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - explainers/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - models
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - models/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - models/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - pipelines
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - pipelines/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - pipelines/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - servers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - servers/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - servers/status
+  verbs:
+  - get
+  - patch
+  - update

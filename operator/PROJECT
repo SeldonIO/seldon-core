@@ -1,0 +1,44 @@
+domain: seldon.io
+layout:
+- go.kubebuilder.io/v3
+multigroup: true
+projectName: operatorv3
+repo: github.com/seldonio/seldon-research/seldon-core/operatorv2
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: seldon.io
+  group: mlops
+  kind: Model
+  path: github.com/seldonio/seldon-research/seldon-core/operatorv2/apis/mlops/v1alpha1
+  version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: seldon.io
+  group: mlops
+  kind: Server
+  path: github.com/seldonio/seldon-research/seldon-core/operatorv2/apis/mlops/v1alpha1
+  version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: seldon.io
+  group: mlops
+  kind: Pipeline
+  path: github.com/seldonio/seldon-research/seldon-core/operatorv2/apis/mlops/v1alpha1
+  version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: seldon.io
+  group: mlops
+  kind: Explainer
+  path: github.com/seldonio/seldon-research/seldon-core/operatorv2/apis/mlops/v1alpha1
+  version: v1alpha1
+version: "3"
