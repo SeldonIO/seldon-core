@@ -3,9 +3,9 @@ import json
 import logging
 import time
 import uuid
+from itertools import groupby
 from queue import Empty, Queue
 from threading import Event, Thread
-from itertools import groupby
 
 import click
 import numpy as np
@@ -354,7 +354,9 @@ def _send_batch_predict_multi_request(
                     names = names_list[0]
                 for arr in arrays:
                     if arr.shape[0] != 1:
-                        raise ValueError("When using mini-batching each row should contain single instance.")
+                        raise ValueError(
+                            "When using mini-batching each row should contain single instance."
+                        )
                 ndarray = np.concatenate(arrays)
                 raw_data = {
                     "data": {"names": names_list[0], "ndarray": ndarray.tolist()},
@@ -375,14 +377,21 @@ def _send_batch_predict_multi_request(
                 dim_1 = tensor_shapes[0][1]
                 for shape in tensor_shapes:
                     if shape[0] != 1:
-                        raise ValueError("When using mini-batching each row should contain single instance.")
+                        raise ValueError(
+                            "When using mini-batching each row should contain single instance."
+                        )
                     dim_0 += shape[0]
                     if dim_1 != shape[1]:
-                        raise ValueError("All instances in mini-batch must have same number of features.")
+                        raise ValueError(
+                            "All instances in mini-batch must have same number of features."
+                        )
                 values = sum(tensor_values, [])
                 shape = [dim_0, dim_1]
                 raw_data = {
-                    "data": {"names": names_list[0], "tensor": {"shape": shape, "values": values}},
+                    "data": {
+                        "names": names_list[0],
+                        "tensor": {"shape": shape, "values": values},
+                    },
                     "meta": {"tags": predict_kwargs["meta"]},
                 }
                 predict_kwargs["raw_data"] = raw_data
@@ -391,7 +400,9 @@ def _send_batch_predict_multi_request(
             arrays = [np.array(arr) for arr in loaded_data]
             for arr in arrays:
                 if arr.shape[0] != 1:
-                    raise ValueError("When using mini-batching each row should contain single instance.")
+                    raise ValueError(
+                        "When using mini-batching each row should contain single instance."
+                    )
             concat = np.concatenate(arrays)
             predict_kwargs["data"] = concat
         logger.info(f"calling sc.predict with {predict_kwargs}")
