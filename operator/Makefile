@@ -30,8 +30,10 @@ lint: licenses/dep.txt
 		./licenses
 
 # Run tests
-test: generate fmt vet manifests_all generate-resources
-	ginkgo -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis
+test: install-ginkgo generate fmt vet manifests_all generate-resources
+	ACK_GINKGO_RC=true \
+	ACK_GINKGO_DEPRECATIONS=1.16.4 \
+	$(GINKGO) -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis
 
 # Build manager binary
 manager: generate fmt vet
@@ -185,6 +187,16 @@ ifeq (, $(shell which controller-gen))
 CONTROLLER_GEN=$(GOBIN)/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)
+endif
+
+.PHONY: install-ginkgo
+install-ginkgo:
+ifeq (, $(shell command -v ginkgo))
+	go install github.com/onsi/ginkgo/ginkgo@v1.16.4
+
+GINKGO=$(GOBIN)/ginkgo
+else
+GINKGO=$(shell type -p ginkgo)
 endif
 
 WEBHOOK_DIR=/tmp/k8s-webhook-server/serving-certs
