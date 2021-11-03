@@ -36,6 +36,7 @@ def setup_logging(log_level: str):
 
 
 def all_equal(iterable):
+    """From itertools recipes: https://docs.python.org/3/library/itertools.html#itertools-recipes"""
     g = groupby(iterable)
     return next(g, True) and not next(g, False)
 
@@ -350,8 +351,6 @@ def _send_batch_predict_multi_request(
                 arrays = [np.array(d["data"]["ndarray"]) for d in loaded_data]
                 if not all_equal(names_list):
                     raise ValueError("All names in mini-batch must be the same.")
-                else:
-                    names = names_list[0]
                 for arr in arrays:
                     if arr.shape[0] != 1:
                         raise ValueError(
