@@ -22,7 +22,7 @@ We always announce the community call in our Community Slack and social media so
 We use Zoom for the conference calls. Details can found:
 
  * [Working Group Agenda Document](https://docs.google.com/document/d/1gAmiJoD-1NHSr0gvDQBhYGR5ryrgWVWRu3nOOxPdKJk/edit?usp=sharing)
- * [Google Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=bDM3ZjNtbGlyNDAxM2N1NWY5aDJtOXU0NDBfMjAyMTEwMjFUMTUwMDAwWiBlZG11bmQuc2hlZUBzZWxkb24uaW8&tmsrc=edmund.shee%40seldon.io&scp=ALL)
+ * [Google Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=MmpzaWliOTQxdjEzbmduMTkyaHF0MnBpcGZfMjAyMTExMDRUMTYwMDAwWiBzZWxkb24uaW9fbTRuMnZtcmZubDI3M3FsczVnYjlwNjVpMHNAZw&tmsrc=seldon.io_m4n2vmrfnl273qls5gb9p65i0s%40group.calendar.google.com&scp=ALL)
  * [iCal](https://calendar.google.com/calendar/ical/seldon.io_m4n2vmrfnl273qls5gb9p65i0s%40group.calendar.google.com/public/basic.ics)
  
 If you have any topics you would like to add or discuss, please feel free to add to the agenda point for the next meeting, or alternatively you can add an in-line comment.
