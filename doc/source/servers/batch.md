@@ -190,3 +190,5 @@ Example raw `input.data` may look like this for example
 {"data": {"names": ["a", "b", "c"], "ndarray": [[7, 8, 9]]}, "meta": {"tags": {"customer-id": 2}}}
 {"data": {"names": ["a", "b", "c"], "ndarray": [[1, 3, 6]]}, "meta": {"tags": {"customer-id": 3}}}
 ```
+
+See [#3702](https://github.com/SeldonIO/seldon-core/issues/3702) for additional information.
