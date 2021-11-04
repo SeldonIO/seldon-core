@@ -29,7 +29,7 @@ Installation
     :img-top: ../_static/gcp_logo.png
 
     +++
-    .. link-button:: ../workflow/install.rst
+    .. link-button:: ../install/gcp.rst
         :text: Install on GCP
         :classes: stretched-link
 
@@ -71,3 +71,4 @@ Installation
 
     Install on Kubernetes </workflow/install.rst>
     Install Locally </install/kind.rst>
+    Install on Google Cloud</install/gcp.rst>
