@@ -161,6 +161,8 @@ crd:
   # Whether to force the use of the v1beta1 or v1 CRD.
   forceV1: false
   forceV1beta1: false
+  annotations:  # Annotations to add to the CRD if not created by the Manager
+    my-annotation: my-annotation-value
 
 # Warning: credentials will be depricated soon, please use defaultEnvSecretRefName above
 # For more info please check the documentation
