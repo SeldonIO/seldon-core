@@ -425,19 +425,21 @@ def _send_batch_predict_multi_request(
                 break
             except (requests.exceptions.RequestException, AssertionError) as e:
                 logger.error(
-                    f"Exception: {e}, retries {i+1} / {retries} for entries {indices}"
+                    f"Exception: {e}, retries {i+1} / {retries} for batch_id(s)={indices}"
                 )
                 if i == (retries - 1):
                     raise
 
     except Exception as e:
-        error_resp = {
-            "status": {"info": "FAILURE", "reason": str(e), "status": 1},
-            "meta": tags,
-        }
-        logger.error(f"Exception: {e}")
-        str_output = json.dumps(error_resp)
-        return [str_output]
+        output = []
+        for batch_index, batch_instance_id in zip(indices, instance_ids):
+            error_resp = {
+                "status": {"info": "FAILURE", "reason": str(e), "status": 1},
+                "meta": dict(batch_index=batch_index, batch_instance_id=batch_instance_id, **tags),
+            }
+            logger.error(f"Exception: {e}")
+            output.append(json.dumps(error_resp))
+        return output
 
     # Take the response create new responses for each request
     responses = []
@@ -557,7 +559,9 @@ def _send_batch_predict(
                 str_output = json.dumps(seldon_payload.response)
                 break
             except (requests.exceptions.RequestException, AssertionError) as e:
-                logger.error(f"Exception: {e}, retries {retries}")
+                logger.error(
+                    f"Exception: {e}, retries {i+1} / {retries} for batch_index={batch_idx}"
+                )
                 if i == (retries - 1):
                     raise
 
