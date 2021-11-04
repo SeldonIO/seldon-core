@@ -35,12 +35,6 @@ def setup_logging(log_level: str):
     logging.basicConfig(level=CHOICES_LOG_LEVEL[log_level], format=LOG_FORMAT)
 
 
-def all_equal(iterable):
-    """From itertools recipes: https://docs.python.org/3/library/itertools.html#itertools-recipes"""
-    g = groupby(iterable)
-    return next(g, True) and not next(g, False)
-
-
 def start_multithreaded_batch_worker(
     deployment_name: str,
     gateway_type: str,
@@ -301,7 +295,7 @@ def _multi_request_extract_raw_data(loaded_data, tags):
         payload_type = "ndarray"
         names_list = [d["data"]["names"] for d in loaded_data]
         arrays = [np.array(d["data"]["ndarray"]) for d in loaded_data]
-        if not all_equal(names_list):
+        if not all(names_list[0] == name for name in names_list):
             raise ValueError("All names in mini-batch must be the same.")
         for arr in arrays:
             if arr.shape[0] != 1:
@@ -322,7 +316,7 @@ def _multi_request_extract_raw_data(loaded_data, tags):
         tensor_shapes = [d["data"]["tensor"]["shape"] for d in loaded_data]
         tensor_values = [d["data"]["tensor"]["values"] for d in loaded_data]
 
-        if not all_equal(names_list):
+        if not all(names_list[0] == name for name in names_list):
             raise ValueError("All names in mini-batch must be the same.")
 
         dim_0 = 0
