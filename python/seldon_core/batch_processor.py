@@ -132,7 +132,7 @@ def start_multithreaded_batch_worker(
     t_out.join()
 
     if benchmark:
-        logger.info(f"Elapsed time: {time.time() - start_time}")
+        logger.debug(f"Elapsed time: {time.time() - start_time}")
 
 
 def _start_input_file_worker(
@@ -362,7 +362,7 @@ def _send_batch_predict_multi_request(
     Parameters
     ---
     input_data
-        The input data containing the indexes, instance_ids and predictions
+        The input data containing the indices, instance_ids and predictions
     data_type
         The data type to send which can be `data`
     sc
@@ -376,7 +376,7 @@ def _send_batch_predict_multi_request(
         A string serialised result of the response (or equivalent data with error info)
     """
 
-    indexes = [x[0] for x in input_data]
+    indices = [x[0] for x in input_data]
 
     seldon_puid = input_data[0][1]
     instance_ids = [f"{seldon_puid}-item-{n}" for n, _ in enumerate(input_data)]
@@ -406,13 +406,13 @@ def _send_batch_predict_multi_request(
                     )
             concat = np.concatenate(arrays)
             predict_kwargs["data"] = concat
-        logger.info(f"calling sc.predict with {predict_kwargs}")
+        logger.debug(f"calling sc.predict with {predict_kwargs}")
     except Exception as e:
         error_resp = {
             "status": {"info": "FAILURE", "reason": str(e), "status": 1},
             "meta": tags,
         }
-        print(f"Exception: {e}")
+        logger.error(f"Exception: {e}")
         str_output = json.dumps(error_resp)
         return [str_output]
 
@@ -424,7 +424,9 @@ def _send_batch_predict_multi_request(
                 response = seldon_payload.response
                 break
             except (requests.exceptions.RequestException, AssertionError) as e:
-                logger.error(f"Exception: {e}, retries {retries}")
+                logger.error(
+                    f"Exception: {e}, retries {i+1} / {retries} for entries {indices}"
+                )
                 if i == (retries - 1):
                     raise
 
@@ -433,7 +435,7 @@ def _send_batch_predict_multi_request(
             "status": {"info": "FAILURE", "reason": str(e), "status": 1},
             "meta": tags,
         }
-        print(f"Exception: {e}")
+        logger.error(f"Exception: {e}")
         str_output = json.dumps(error_resp)
         return [str_output]
 
@@ -454,7 +456,7 @@ def _send_batch_predict_multi_request(
             if payload_type == "ndarray":
                 # Format new responses for each original prediction request
                 new_response["data"]["ndarray"] = [response["data"]["ndarray"][i]]
-                new_response["meta"]["tags"]["batch_index"] = indexes[i]
+                new_response["meta"]["tags"]["batch_index"] = indices[i]
                 new_response["meta"]["tags"]["batch_instance_id"] = instance_ids[i]
 
                 responses.append(json.dumps(new_response))
@@ -464,7 +466,7 @@ def _send_batch_predict_multi_request(
                 new_response["data"]["tensor"]["values"] = np.ndarray.tolist(
                     tensor_ndarray[i]
                 )
-                new_response["meta"]["tags"]["batch_index"] = indexes[i]
+                new_response["meta"]["tags"]["batch_index"] = indices[i]
                 new_response["meta"]["tags"]["batch_instance_id"] = instance_ids[i]
                 responses.append(json.dumps(new_response))
             else:
@@ -476,7 +478,7 @@ def _send_batch_predict_multi_request(
                 "status": {"info": "FAILURE", "reason": str(e), "status": 1},
                 "meta": tags,
             }
-            print("Exception: %s" % e)
+            logger.error("Exception: %s" % e)
             responses.append(json.dumps(error_resp))
 
     return responses
@@ -545,7 +547,7 @@ def _send_batch_predict(
             data["meta"]["tags"].update(tags)
             predict_kwargs["raw_data"] = data
 
-        logger.info(f"calling sc.predict with {predict_kwargs}")
+        logger.debug(f"calling sc.predict with {predict_kwargs}")
 
         str_output = None
         for i in range(retries):
@@ -564,7 +566,7 @@ def _send_batch_predict(
             "status": {"info": "FAILURE", "reason": str(e), "status": 1},
             "meta": tags,
         }
-        print("Exception: %s" % e)
+        logger.error("Exception: %s" % e)
         str_output = json.dumps(error_resp)
 
     return str_output
@@ -641,7 +643,7 @@ def _send_batch_feedback(
             "status": {"info": "FAILURE", "reason": str(e), "status": 1},
             "meta": meta,
         }
-        print("Exception: %s" % e)
+        logger.error("Exception: %s" % e)
         str_output = json.dumps(error_resp)
 
     return str_output
