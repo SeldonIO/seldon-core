@@ -46,11 +46,39 @@ Helm
 Set Up Kind
 ----------------
 
+
+
 Once kind is installed on your system you can create a new Kubernetes cluster by running
 
-.. code-block:: bash
+.. tabbed:: Istio 
 
-    kind create cluster --name seldon
+    .. code-block:: bash
+
+        kind create cluster --name seldon
+
+.. tabbed:: Ambassador
+
+    .. code-block:: bash 
+
+        cat <<EOF | kind create cluster --name seldon --config=-
+        kind: Cluster
+        apiVersion: kind.x-k8s.io/v1alpha4
+        nodes:
+        - role: control-plane
+          kubeadmConfigPatches:
+          - |
+            kind: InitConfiguration
+            nodeRegistration:
+              kubeletExtraArgs:
+                node-labels: "ingress-ready=true"
+          extraPortMappings:
+          - containerPort: 80
+            hostPort: 80
+            protocol: TCP
+          - containerPort: 443
+            hostPort: 443
+            protocol: TCP
+        EOF
 
 After ``kind`` has created your cluster, you can configure ``kubectl`` to use the cluster by setting the context:
 
@@ -137,9 +165,24 @@ Seldon Core supports using either `Istio <https://istio.io/>`_ or `Ambassador <h
 
 .. tabbed:: Ambassador
 
-    Instructions for Ambassador
+    `Ambassador <https://www.getambassador.io/>`_ is a Kubernetes ingress controller and API gateway. It routes incomming traffic to the underlying kubernetes workloads through configuration. 
 
-    For custom configuration and more details on installing seldon core with Istio please see the `Ambassador Ingress <../ingress/ambassador.md>`_ page.
+    **Install Ambassador**
+
+    First, we must install the Custom Resource Definitions by running:
+
+    .. code-block:: bash 
+
+        kubectl apply -f https://github.com/datawire/ambassador-operator/releases/latest/download/ambassador-operator-crds.yaml
+
+    Now install the kind-specific manifests in the ``ambassador`` namespace:
+
+    .. code-block:: bash 
+
+        kubectl apply -n ambassador -f https://github.com/datawire/ambassador-operator/releases/latest/download/ambassador-operator-kind.yaml
+        kubectl wait --timeout=180s -n ambassador --for=condition=deployed ambassadorinstallations/ambassador
+
+    Ambassador is now ready to use. For custom configuration and more details on installing seldon core with Istio please see the `Ambassador Ingress <../ingress/ambassador.md>`_ page.
 
 Install Seldon Core
 ----------------------------
@@ -185,9 +228,17 @@ Local Port Forwarding
 
 Because your kubernetes cluster is running locally, we need to forward a port on your local machine to one in the cluster for us to be able to access it externally. You can do this by running:
 
-.. code-block:: bash
+.. tabbed:: Istio
 
-    kubectl port-forward -n istio-system svc/istio-ingressgateway 8080:80
+    .. code-block:: bash
+
+        kubectl port-forward -n istio-system svc/istio-ingressgateway 8080:80
+
+.. tabbed:: Ambassador
+
+    .. code-block:: bash 
+
+        kubectl port-forward -n ambassador svc/ambassador 8080:80
 
 This will forward any traffic from port 8080 on your local machine to port 80 inside your cluster.
 
