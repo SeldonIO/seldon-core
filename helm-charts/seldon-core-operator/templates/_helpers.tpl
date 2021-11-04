@@ -52,8 +52,3 @@ Create the name of the service account to use
     {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
-
-
-{{- define "seldon.annotations" -}}
-{{ toYaml .Values.globalAnnotations }}
-{{- end -}}
