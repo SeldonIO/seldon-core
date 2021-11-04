@@ -6,6 +6,7 @@ import uuid
 from itertools import groupby
 from queue import Empty, Queue
 from threading import Event, Thread
+from typing import Dict, List, Tuple
 
 import click
 import numpy as np
@@ -281,7 +282,9 @@ def _start_request_worker(
         q_in.task_done()
 
 
-def _extract_raw_data_multi_request(loaded_data, tags):
+def _extract_raw_data_multi_request(
+    loaded_data: List[Dict], tags: Dict
+) -> Tuple[Dict, str, Dict]:
     raw_input_tags = [d.get("meta", {}).get("tags", {}) for d in loaded_data]
     first_input = loaded_data[0]
 
@@ -362,7 +365,7 @@ def _send_batch_predict_multi_request(
     Parameters
     ---
     input_data
-        The input data containing the indices, instance_ids and predictions
+        The input data containing the indexes, instance_ids and predictions
     data_type
         The data type to send which can be `data`
     sc
@@ -376,7 +379,7 @@ def _send_batch_predict_multi_request(
         A string serialised result of the response (or equivalent data with error info)
     """
 
-    indices = [x[0] for x in input_data]
+    indexes = [x[0] for x in input_data]
 
     seldon_puid = input_data[0][1]
     instance_ids = [f"{seldon_puid}-item-{n}" for n, _ in enumerate(input_data)]
@@ -425,14 +428,14 @@ def _send_batch_predict_multi_request(
                 break
             except (requests.exceptions.RequestException, AssertionError) as e:
                 logger.error(
-                    f"Exception: {e}, retries {i+1} / {retries} for batch_id(s)={indices}"
+                    f"Exception: {e}, retries {i+1} / {retries} for batch_id(s)={indexes}"
                 )
                 if i == (retries - 1):
                     raise
 
     except Exception as e:
         output = []
-        for batch_index, batch_instance_id in zip(indices, instance_ids):
+        for batch_index, batch_instance_id in zip(indexes, instance_ids):
             error_resp = {
                 "status": {"info": "FAILURE", "reason": str(e), "status": 1},
                 "meta": dict(
@@ -460,7 +463,7 @@ def _send_batch_predict_multi_request(
             if payload_type == "ndarray":
                 # Format new responses for each original prediction request
                 new_response["data"]["ndarray"] = [response["data"]["ndarray"][i]]
-                new_response["meta"]["tags"]["batch_index"] = indices[i]
+                new_response["meta"]["tags"]["batch_index"] = indexes[i]
                 new_response["meta"]["tags"]["batch_instance_id"] = instance_ids[i]
 
                 responses.append(json.dumps(new_response))
@@ -470,7 +473,7 @@ def _send_batch_predict_multi_request(
                 new_response["data"]["tensor"]["values"] = np.ndarray.tolist(
                     tensor_ndarray[i]
                 )
-                new_response["meta"]["tags"]["batch_index"] = indices[i]
+                new_response["meta"]["tags"]["batch_index"] = indexes[i]
                 new_response["meta"]["tags"]["batch_instance_id"] = instance_ids[i]
                 responses.append(json.dumps(new_response))
             else:
