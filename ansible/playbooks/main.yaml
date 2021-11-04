@@ -6,9 +6,6 @@
     - role: seldonio.k8s.istio
       when: install_istio | bool
 
-    - role: seldonio.k8s.ambassador
-      when: install_ambassador | bool
-
     - role: seldonio.k8s.minio
       when: install_minio | bool
 
