@@ -80,6 +80,7 @@ manager:
   memoryRequest: 200Mi
   logLevel: INFO
   leaderElectionID: a33bd623.machinelearning.seldon.io
+  annotations: {}
 rbac:
   configmap:
     create: true
@@ -161,8 +162,7 @@ crd:
   # Whether to force the use of the v1beta1 or v1 CRD.
   forceV1: false
   forceV1beta1: false
-  annotations:  # Annotations to add to the CRD if not created by the Manager
-    my-annotation: my-annotation-value
+  annotations: {} # Annotations to add to the CRD if not created by the Manager
 
 # Warning: credentials will be depricated soon, please use defaultEnvSecretRefName above
 # For more info please check the documentation
