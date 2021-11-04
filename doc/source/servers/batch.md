@@ -140,6 +140,53 @@ However currently the implementation uses the Seldon Client which does not lever
 
 ### Micro batching
 
-When using the batch processor CLI you can specify a `batch-size` parameter which can group multiple predictions into a single request. This allows you to take advantage of the higher performance this provides for some models, and reduce networking overhead. The response will be split back into multiple single prediction responses so that the output file looks identical to running the processor with a batch size of 1.
+When using the batch processor CLI you can specify a `--batch-size` parameter which can group multiple predictions into a single request. This allows you to take advantage of the higher performance this provides for some models, and reduce networking overhead. The response will be split back into multiple single prediction responses so that the output file looks identical to running the processor with a batch size of 1.
 
-Currently we only support micro batching for `ndarray` and `tensor` payload types.
+Currently we only support micro batching for `ndarray` and `tensor` payload types, as well as for `raw` data type of inputs.
+For `raw` inputs each row must contain a single inference request instance when using micro batching.
+
+
+### Input file formats
+
+#### Data type: data
+
+Default data type is `data` with `ndarray` payload type. The `input.data` file can look for exampleas following
+```yaml
+[[1, 2, 3]]
+[[4, 5, 6]]
+[[7, 8, 9]]
+[[1, 3, 6]]
+```
+Each row in input file represents a single inference request instance. These would be sent to model as
+```yaml
+{"data": {"ndarray": [[1, 2, 3]]}, "meta": {"tags": {"batch_index": 0, "batch_id": ..., "batch_instance_id": ...}}}
+{"data": {"ndarray": [[4, 5, 6]]}, "meta": {"tags": {"batch_index": 1, "batch_id": ..., "batch_instance_id": ...}}}
+{"data": {"ndarray": [[7, 8, 9]]}, "meta": {"tags": {"batch_index": 2, "batch_id": ..., "batch_instance_id": ...}}}
+{"data": {"ndarray": [[1, 3, 6]]}, "meta": {"tags": {"batch_index": 3, "batch_id": ..., "batch_instance_id": ...}}}
+```
+
+Choosing `tensor` payload type would effectively result in data being sent to model as
+```yaml
+{"data": {"tensor": {"shape": [1, 3], "values": [1, 2, 3]}}, "meta": ...}
+{"data": {"tensor": {"shape": [1, 3], "values": [4, 5, 6]}}, "meta": ...}
+{"data": {"tensor": {"shape": [1, 3], "values": [7, 8, 9]}}, "meta": ...}
+{"data": {"tensor": {"shape": [1, 3], "values": [1, 3, 6]}}, "meta": ...}
+```
+
+
+#### Data type: raw
+
+If data type is specified as `raw` then each row in the input file will be sent to model as it is.
+In this situation the payload type setting is ignored.
+
+When not using micro batching each row will be understood as independent SeldonMessage and send to model as it is, including the `meta.tags` information.
+
+If micro batching is used then each "raw" input must represent `ndarray` or `tensor` payload type and contain only a single inference request. In this situation user-provided tags are not sent to the model. They will be however merged into responses and written into the output file.
+
+Example raw `input.data` may look like this for example
+```yaml
+{"data": {"names": ["a", "b", "c"], "ndarray": [[1, 2, 3]]}, "meta": {"tags": {"customer-id": 0}}}
+{"data": {"names": ["a", "b", "c"], "ndarray": [[4, 5, 6]]}, "meta": {"tags": {"customer-id": 1}}}
+{"data": {"names": ["a", "b", "c"], "ndarray": [[7, 8, 9]]}, "meta": {"tags": {"customer-id": 2}}}
+{"data": {"names": ["a", "b", "c"], "ndarray": [[1, 3, 6]]}, "meta": {"tags": {"customer-id": 3}}}
+```

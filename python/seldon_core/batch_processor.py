@@ -281,7 +281,7 @@ def _start_request_worker(
         q_in.task_done()
 
 
-def _multi_request_extract_raw_data(loaded_data, tags):
+def _extract_raw_data_multi_request(loaded_data, tags):
     raw_input_tags = [d.get("meta", {}).get("tags", {}) for d in loaded_data]
     first_input = loaded_data[0]
 
@@ -392,7 +392,7 @@ def _send_batch_predict_multi_request(
     try:
         # Process raw input format
         if data_type == "raw":
-            raw_data, payload_type, raw_input_tags = _multi_request_extract_raw_data(
+            raw_data, payload_type, raw_input_tags = _extract_raw_data_multi_request(
                 loaded_data, predict_kwargs["meta"]
             )
             predict_kwargs["raw_data"] = raw_data
@@ -435,7 +435,9 @@ def _send_batch_predict_multi_request(
         for batch_index, batch_instance_id in zip(indices, instance_ids):
             error_resp = {
                 "status": {"info": "FAILURE", "reason": str(e), "status": 1},
-                "meta": dict(batch_index=batch_index, batch_instance_id=batch_instance_id, **tags),
+                "meta": dict(
+                    batch_index=batch_index, batch_instance_id=batch_instance_id, **tags
+                ),
             }
             logger.error(f"Exception: {e}")
             output.append(json.dumps(error_resp))
@@ -704,7 +706,7 @@ def _send_batch_feedback(
     "-p",
     envvar="SELDON_BATCH_PAYLOAD_TYPE",
     type=click.Choice(CHOICES_PAYLOAD_TYPE),
-    default=None,
+    default="ndarray",
     help="The payload type expected by the SeldonDeployment and hence the expected format for the data in the input file which can be an array",
 )
 @click.option(
