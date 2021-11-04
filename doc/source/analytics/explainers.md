@@ -22,12 +22,12 @@ Seldon Core supports a subset of the methods currently available in [Alibi](http
 
 | Method | Explainer Key | Example |
 |--------|---------------|---------||
-| [Anchor Tabular](https://docs.seldon.io/projects/alibi/en/latest/methods/Anchors.html) | `AnchorTabular` | [Example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/explainer_examples.html#Income-Prediction-Model-with-Anchors-Explainer) |
-| [Anchor Text](https://docs.seldon.io/projects/alibi/en/latest/methods/Anchors.html) | `AnchorText` | [Example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/explainer_examples.html#Movie-Sentiment-Model) |
-| [Anchor Images](https://docs.seldon.io/projects/alibi/en/latest/methods/Anchors.html) | `AnchorImages` | [Example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/explainer_examples.html#Tensorflow-CIFAR10-Model) |
-| [kernel Shap](https://docs.seldon.io/projects/alibi/en/latest/methods/KernelSHAP.html) | `KernelShap` | [Example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/explainer_examples.html#Wine-Prediction-Model-with-Shap-Explainer) |
-| [Integrated Gradients](https://docs.seldon.io/projects/alibi/en/latest/methods/IntegratedGradients.html) | `IntegratedGradients` | [Example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/explainer_examples.html#MNIST-Model-with-Integrated-Gradients-Explainer) |
-| [Tree Shap](https://docs.seldon.io/projects/alibi/en/latest/methods/TreeSHAP.html) | `TreeShap` | [Example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/explainer_examples.html#XGBoost-Model-with-TreeShap-Explainer) |
+| [Anchor Tabular](https://docs.seldon.io/projects/alibi/en/latest/methods/Anchors.html) | `AnchorTabular` | [Example](../examples/explainer_examples.html#Income-Prediction-Model-with-Anchors-Explainer) |
+| [Anchor Text](https://docs.seldon.io/projects/alibi/en/latest/methods/Anchors.html) | `AnchorText` | [Example](../examples/explainer_examples.html#Movie-Sentiment-Model) |
+| [Anchor Images](https://docs.seldon.io/projects/alibi/en/latest/methods/Anchors.html) | `AnchorImages` | [Example](../examples/explainer_examples.html#Tensorflow-CIFAR10-Model) |
+| [kernel Shap](https://docs.seldon.io/projects/alibi/en/latest/methods/KernelSHAP.html) | `KernelShap` | [Example](../examples/explainer_examples.html#Wine-Prediction-Model-with-Shap-Explainer) |
+| [Integrated Gradients](https://docs.seldon.io/projects/alibi/en/latest/methods/IntegratedGradients.html) | `IntegratedGradients` | [Example](../examples/explainer_examples.html#MNIST-Model-with-Integrated-Gradients-Explainer) |
+| [Tree Shap](https://docs.seldon.io/projects/alibi/en/latest/methods/TreeSHAP.html) | `TreeShap` | [Example](../examples/explainer_examples.html#XGBoost-Model-with-TreeShap-Explainer) |
 
 ## Creating your explainer
 
@@ -35,8 +35,9 @@ For Alibi explainers that need to be trained you should
 
  1. Use python 3.7 as the Seldon python Alibi explainer wrapper also runs in python 3.7.10 when it loads your explainer.
  1. Follow the [Alibi docs](https://docs.seldon.io/projects/alibi/en/latest/index.html) for your particular desired explainer. The Seldon Wrapper presently supports: Anchors (Tabular, Text and Image), KernelShap and Integrated Gradients.
- 1. Save your explainer to a file called `explainer.dill` using the [dill](https://pypi.org/project/dill/) python package and store on a bucket store or PVC in your cluster. We support gcs, s3 (including Minio) or Azure blob.
+ 1. Save your explainer using [explainer.save](https://docs.seldon.io/projects/alibi/en/latest/overview/saving.html) method and store in the object store or PVC in your cluster. We support various cloud storage solutions through our [init container](../servers/overview.html).
 
+The runtime environment in our [Alibi Explain Server](https://github.com/SeldonIO/seldon-core/tree/master/components/alibi-explain-server) is locked using [Poetry](https://python-poetry.org/). See our e2e example [here](../examples/iris_explainer_poetry.html) on how to use that definition to train your explainers.
 
 ## Explain API
 

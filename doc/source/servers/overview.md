@@ -7,6 +7,7 @@ Seldon provides several prepacked servers you can use to deploy trained models:
 - [Tensorflow Serving](./tensorflow.html)
 - [MLflow Server](./mlflow.html)
 - [Custom Servers](./custom.html)
+- [Alibi Explainers](../analytics/explainers.html)
 
 For these servers you only need the location of the saved model in a local filestore, Google bucket, S3 bucket, azure or minio. An example manifest with an sklearn server is shown below:
 

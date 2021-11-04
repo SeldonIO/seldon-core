@@ -10,7 +10,7 @@ seldon_namespaces: [ seldon ]
 
 # Version of Seldon Core to be installed, default: master
 # This can be any value accepted by "git checkout": branch, tag, SHA, HEAD, etc...
-seldon_core_version: v1.9.1
+seldon_core_version: master
 
 # Local folder of already cloned Seldon Core git repository to be used.
 # If defined then `seldon_core_version` will be ignored.
@@ -22,13 +22,11 @@ seldon_core_values:
     enabled: true
     gateway: "seldon-gateway.istio-system.svc.cluster.local"
 
-  ambassador:
-    enabled: true
 
 ############################ Istio Configuration ##############################
 
-# Version of Istio to be installed; defaults to 1.7.6
-istio_version: 1.10.3
+# Version of Istio to be installed
+istio_version: 1.10.4
 
 # This flag controls creation of Seldon Gateway, default: true
 istio_create_seldon_gateway: true

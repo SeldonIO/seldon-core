@@ -1,19 +1,26 @@
 ---
-
 - name: Install and configure Istio
   hosts: localhost
   roles:
     - seldonio.k8s.istio
   vars:
     # Version of Istio to be installed; defaults to 1.7.6
-    istio_version: 1.7.6
+    istio_version: 1.9.5
 
     # This flag allows to skip verification of Istio installation, default: true
     # Reason: verify install does not work for Istio 1.7.x and k8s 1.18.x.
-    istio_verify_install: false
+    istio_verify_install: true
 
     # This flag controls creation of Seldon Gateway, default: true
     istio_create_seldon_gateway: true
+
+
+- name: Install and configure MinIO
+  hosts: localhost
+  roles:
+    - seldonio.k8s.minio
+  vars:
+    minio_rclone_secret_name: "seldon-rclone-secret"
 
 
 - name: Install Seldon Core
@@ -35,3 +42,5 @@
         enabled: true
         gateway: "istio-system/seldon-gateway"
 
+      predictiveUnit:
+        defaultEnvSecretRefName: "seldon-rclone-secret"
