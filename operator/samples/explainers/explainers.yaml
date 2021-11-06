@@ -1,0 +1,25 @@
+---
+# Simple black box
+
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Explainer
+metadata:
+  name: explainer1
+spec:
+  storageUri: "gs://seldon-models/sklearn/explainer"
+  blackBox:
+    modelRef: model1
+
+---
+# Simple white box
+
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Explainer
+metadata:
+  name: explainer2
+spec:
+  storageUri: "gs://seldon-models/sklearn/explainer"
+  whiteBox:
+    storageUri: "gs://seldon-models/sklearn/iris-0.23.2/lr_model"
+
+

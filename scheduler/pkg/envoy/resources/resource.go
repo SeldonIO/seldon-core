@@ -100,6 +100,7 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 						HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
 							ExactMatch: r.Host,
 						},
+						//TODO: https://github.com/envoyproxy/envoy/blob/c75c1410c8682cb44c9136ce4ad01e6a58e16e8e/api/envoy/api/v2/route/route_components.proto#L1513
 						//HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
 						//	StringMatch: &matcher.StringMatcher{
 						//		MatchPattern: &matcher.StringMatcher_Exact{

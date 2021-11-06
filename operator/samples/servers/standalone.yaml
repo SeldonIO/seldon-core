@@ -1,0 +1,51 @@
+---
+# Most simple. Will default to MLServer
+
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Server
+metadata:
+  name: myserver-static-1
+spec:
+  models:
+  - storageUri: "gs://seldon-models/sklearn/iris"
+
+---    
+# MLServer single model.
+
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Server
+metadata:
+  name: myserver-static-2
+spec:
+  server:
+    type: "mlserver"
+  models:
+  - storageUri: "gs://seldon-models/sklearn/iris"
+  replicas: 3    
+
+---
+# MLServer multi model. PodSpec and Container overrides.
+
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Server
+metadata:
+  name: myserver-static-3
+spec:
+  server:
+    type: "mlserver"
+    container:
+      resources:
+        limits:
+          memory: "1G"
+  podSpec:
+    volumes:
+    - name: cache-volume
+      emptyDir: {}
+  models:
+  - name: "iris-sk"
+    storageUri: "gs://seldon-models/sklearn/iris"
+    secret: "mysecret"
+  - name: "iris-sgb"
+    storageUri: "gs://seldon-models/xgboost/iris"
+    serviceAccountName: "mysa"
+  replicas: 3

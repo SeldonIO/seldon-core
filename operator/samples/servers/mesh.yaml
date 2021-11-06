@@ -1,0 +1,53 @@
+---
+# Most simple. Will default to MLServer
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Server
+metadata:
+  name: myserver-mesh-1
+spec:
+  mesh:
+
+---
+# MLServer specified with version
+
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Server
+metadata:
+  name: myserver-mesh-2
+spec:
+  server:
+    type: "mlserver"
+    capabilities:
+    - "sklearn"
+    - "xgboost"
+    - "alibi"
+    - "alibi-detect"
+    runtimeVersion: "0.5.0"
+  mesh:
+  replicas: 3
+---
+# Complex with overrides
+
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Server
+metadata:
+  name: myserver-mesh-3
+spec:
+  server:
+    type: "mlserver"
+    container:
+      resources:
+        limits:
+          memory: "1G"
+  podSpec:
+    volumes:
+    - name: cache-volume
+      emptyDir: {}
+  mesh:
+    agent:
+      image: "seldonio/agent:1.0.0"
+      resources:
+        limits:
+          memory: "100Mi"
+    rclone:
+      image: "seldonio/rclone:1.0.0"

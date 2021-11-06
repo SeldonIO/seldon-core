@@ -42,7 +42,7 @@ spec:
                   load models dynamically
                 properties:
                   agent:
-                    description: The agent overrides
+                    description: The Agent overrides
                     properties:
                       args:
                         description: 'Arguments to the entrypoint. The docker image''s
@@ -1211,7 +1211,7 @@ spec:
                       type: string
                     type: array
                   init:
-                    description: The init container overrides to download preset models
+                    description: The Init container overrides to download preset models
                     properties:
                       args:
                         description: 'Arguments to the entrypoint. The docker image''s
@@ -2373,9 +2373,6 @@ spec:
                     required:
                     - name
                     type: object
-                  overcommit:
-                    description: Whether to allow overcommit
-                    type: boolean
                   rclone:
                     description: The RClone server overrides
                     properties:
@@ -3539,22 +3536,27 @@ spec:
                     required:
                     - name
                     type: object
-                required:
-                - overcommit
+                  swapMemoryBytes:
+                    description: How much memory to push to disk to allow overcommited
+                      models
+                    type: boolean
                 type: object
               models:
                 description: Either Models or Mesh needs to be provides Preloaded
                   models for non mesh server
                 items:
                   properties:
+                    modelType:
+                      description: Artifact type
+                      type: string
                     name:
                       description: Name override
                       type: string
                     schemaUri:
-                      description: Schme URI
+                      description: Schema URI
                       type: string
-                    secret:
-                      description: Secret
+                    secretName:
+                      description: Secret name
                       type: string
                     serviceAccountName:
                       description: Service Account Name for auth

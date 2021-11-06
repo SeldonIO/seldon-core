@@ -37,6 +37,7 @@ spec:
             description: ExplainerSpec defines the desired state of Explainer
             properties:
               blackbox:
+                description: Either ModelRef or PipelineRef is required
                 properties:
                   modelRef:
                     description: Reference to Model for Black Box models
@@ -48,38 +49,70 @@ spec:
                     description: Reference to Pipeline step - must include pipeline
                     type: string
                 type: object
-              name:
-                description: Name override
+              maxReplicas:
+                description: Max number of replicas - default equal to replicas
+                format: int32
+                type: integer
+              memory:
+                anyOf:
+                - type: integer
+                - type: string
+                description: Memory needed for model
+                pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                x-kubernetes-int-or-string: true
+              minReplicas:
+                description: Min number of replicas - default equal to replicas
+                format: int32
+                type: integer
+              modelType:
+                description: Artifact type
                 type: string
-              resources:
-                additionalProperties:
-                  anyOf:
-                  - type: integer
-                  - type: string
-                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                  x-kubernetes-int-or-string: true
-                description: Resources needed for artifact, cpu, memory etc
-                type: object
+              preloaded:
+                description: Model already loaded on a server. Don't schedule. Default
+                  false
+                type: boolean
+              replicas:
+                description: Number of replicas - default 1
+                format: int32
+                type: integer
+              requirements:
+                description: List of extra requirements for this model to be loaded
+                  on a compatible server
+                items:
+                  type: string
+                type: array
               schemaUri:
-                description: Schme URI
+                description: Schema URI
                 type: string
-              secret:
-                description: Secret
+              secretName:
+                description: Secret name
+                type: string
+              server:
+                description: Name of the Server to deploy this artifact
                 type: string
               serviceAccountName:
                 description: Service Account Name for auth
                 type: string
-              shared:
-                description: Whether the artifact can be run on a shared server
-                type: boolean
               storageUri:
                 description: Storage URI for the model repository
                 type: string
-              type:
-                description: The artifact type e.g. Alibi If not provided then Alibi
-                  is assumed
-                type: string
               whitebox:
+                properties:
+                  modelType:
+                    description: Artifact type
+                    type: string
+                  schemaUri:
+                    description: Schema URI
+                    type: string
+                  secretName:
+                    description: Secret name
+                    type: string
+                  serviceAccountName:
+                    description: Service Account Name for auth
+                    type: string
+                  storageUri:
+                    description: Storage URI for the model repository
+                    type: string
                 type: object
             type: object
           status:

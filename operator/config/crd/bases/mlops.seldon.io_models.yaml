@@ -36,31 +36,43 @@ spec:
           spec:
             description: ModelSpec defines the desired state of Model
             properties:
+              maxReplicas:
+                description: Max number of replicas - default equal to replicas
+                format: int32
+                type: integer
               memory:
                 anyOf:
                 - type: integer
                 - type: string
+                description: Memory needed for model
                 pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                 x-kubernetes-int-or-string: true
-              name:
-                description: Name override
+              minReplicas:
+                description: Min number of replicas - default equal to replicas
+                format: int32
+                type: integer
+              modelType:
+                description: Artifact type
                 type: string
+              preloaded:
+                description: Model already loaded on a server. Don't schedule. Default
+                  false
+                type: boolean
               replicas:
-                description: Number of replicas - default
+                description: Number of replicas - default 1
                 format: int32
                 type: integer
               requirements:
                 description: List of extra requirements for this model to be loaded
-                  on a compatible server, e.g. sklearn, sklearn18, pytorch, tensorflow,
-                  mlflow
+                  on a compatible server
                 items:
                   type: string
                 type: array
               schemaUri:
-                description: Schme URI
+                description: Schema URI
                 type: string
-              secret:
-                description: Secret
+              secretName:
+                description: Secret name
                 type: string
               server:
                 description: Name of the Server to deploy this artifact

@@ -47,40 +47,17 @@ spec:
                     name:
                       description: Name of the step
                       type: string
-                    next:
-                      description: Next synchronous step
-                      items:
-                        type: string
-                      type: array
-                    nextAsync:
-                      description: Next asynchronous step
+                    previous:
+                      description: Previous step to receive data from
                       items:
                         type: string
                       type: array
                     ref:
                       description: Reference to model artifact
                       type: string
-                    spec:
-                      description: Model artifact spec inline
-                      properties:
-                        name:
-                          description: Name override
-                          type: string
-                        schemaUri:
-                          description: Schme URI
-                          type: string
-                        secret:
-                          description: Secret
-                          type: string
-                        serviceAccountName:
-                          description: Service Account Name for auth
-                          type: string
-                        storageUri:
-                          description: Storage URI for the model repository
-                          type: string
-                      type: object
                   required:
                   - name
+                  - ref
                   type: object
                 type: array
             required:

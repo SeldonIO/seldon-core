@@ -1,0 +1,37 @@
+---
+# Transformer and model
+
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: inferencegraph-sample
+spec:
+  steps:
+    - name: start
+      ref: transformer1
+    - name: infer
+      previous:
+        - start
+      ref: model1
+
+---
+# With drift detector async
+
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: inferencegraph-sample
+spec:
+  steps:
+    - name: start
+      ref: transformer1
+    - name: infer
+      previous:
+        - start
+      ref: model1
+    - name: drift
+      previous:
+        - infer
+      ref: drift1
+      async: true
+
