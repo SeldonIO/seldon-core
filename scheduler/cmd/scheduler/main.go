@@ -19,6 +19,9 @@ import (
 	"flag"
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent"
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/processor"
+	"github.com/seldonio/seldon-core/scheduler/pkg/scheduler/filters"
+	"github.com/seldonio/seldon-core/scheduler/pkg/scheduler/sorters"
+	server2 "github.com/seldonio/seldon-core/scheduler/pkg/server"
 	"github.com/seldonio/seldon-core/scheduler/pkg/store"
 	"io/ioutil"
 	"k8s.io/client-go/util/homedir"
@@ -78,7 +81,7 @@ func getNamespace() string {
 
 func main() {
 	logger := log.New()
-	log.SetLevel(log.DebugLevel)
+	logger.SetLevel(log.DebugLevel)
 	flag.Parse()
 
 	// Create a cache
@@ -91,18 +94,22 @@ func main() {
 		server.RunServer(ctx, srv, envoyPort)
 	}()
 
-	agentChan := make(chan string, 1)
-	defer close(agentChan)
-	envoyChan := make(chan string, 1)
-	defer close(envoyChan)
-	ss := store.NewMemoryScheduler(logger, agentChan, envoyChan)
-	es := processor.NewIncrementalProcessor(cache, nodeID, logger, ss, envoyChan)
-	as := agent.NewAgentServer(logger, ss, es, agentChan)
+	ss := store.NewMemoryStore(logger, store.NewLocalSchedulerStore())
+	es := processor.NewIncrementalProcessor(cache, nodeID, logger, ss)
+	sched := scheduler.NewSimpleScheduler(logger,
+		ss,
+		[]scheduler.ServerFilter{filters.SharingServerFilter{}},
+		[]scheduler.ReplicaFilter{filters.RequirementsReplicaFilter{}, filters.AvailableMemoryFilter{}},
+		[]sorters.ServerSorter{},
+		[]sorters.ReplicaSorter{sorters.ModelAlreadyLoadedSorter{}})
+	as := agent.NewAgentServer(logger, ss, es, sched)
+
+
 	go as.ListenForSyncs() // Start agent syncs
 	go es.ListenForSyncs() // Start envoy syncs
 
 
-	s := scheduler.NewScheduler(logger, ss)
+	s := server2.NewSchedulerServer(logger, ss, sched, as)
 	go func() {
 		err := s.StartGrpcServer(schedulerPort)
 		if err != nil {
@@ -114,4 +121,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to start agent grpc server %s",err.Error())
 	}
+
+	as.StopAgentSync()
+	es.StopEnvoySync()
 }

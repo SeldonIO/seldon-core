@@ -40,7 +40,7 @@ start-envoy:
 
 start-agent:
 	./bin/agent --model-repository ${PWD}/mlrepo --inference-port 8080 \
-		--replica-config '{"inferenceSvc":"0.0.0.0","inferencePort":8080,"memory":1000,"capabilities":["sklearn"],"overCommit":false}'
+		--replica-config '{"inferenceSvc":"0.0.0.0","inferencePort":8080,"memoryBytes":1000,"availableMemoryBytes":1000,"capabilities":["sklearn"],"overCommit":false}'
 
 start-mlserver:
 	cd mlrepo && mlserver start .

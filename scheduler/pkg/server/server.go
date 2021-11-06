@@ -1,10 +1,11 @@
-package scheduler
+package server
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent"
+	scheduler2 "github.com/seldonio/seldon-core/scheduler/pkg/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/pkg/store"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -20,7 +21,9 @@ var (
 type SchedulerServer struct {
 	pb.UnimplementedSchedulerServer
 	logger log.FieldLogger
-	store       store.SchedulerStore
+	store        store.SchedulerStore
+	scheduler    scheduler2.Scheduler
+	agentHandler agent.AgentHandler
 }
 
 func (s SchedulerServer) SubscribeModelEvents(req *pb.ModelSubscriptionRequest, server pb.Scheduler_SubscribeModelEventsServer) error {
@@ -39,71 +42,44 @@ func(s SchedulerServer) StartGrpcServer(schedulerPort uint) error {
 	return  grpcServer.Serve(lis)
 }
 
-func NewScheduler(logger log.FieldLogger, store store.SchedulerStore) *SchedulerServer {
+func NewSchedulerServer(logger log.FieldLogger, store store.SchedulerStore, scheduler scheduler2.Scheduler, agentHandler agent.AgentHandler) *SchedulerServer {
 
 	s := &SchedulerServer{
 		logger:         logger,
 		store:          store,
+		scheduler: scheduler,
+		agentHandler: agentHandler,
 	}
 	return s
 }
 
 func (s SchedulerServer) LoadModel(ctx context.Context, req *pb.LoadModelRequest) (*pb.LoadModelResponse, error) {
-	// find modelAssignment assignment
-	modelKey := req.Model.Name
-	model, err := s.store.GetModel(modelKey)
+	logger := s.logger.WithField("func","LoadModel")
+	logger.Debugf("Load model %s",req.GetModel().GetName())
+	err := s.store.UpdateModel(req.GetModel())
 	if err != nil {
-		if errors.Is(err, store.ModelNotFoundErr) {
-			err := s.store.CreateModel(modelKey, req.Model)
-			if err != nil {
-				return nil, status.Errorf(codes.FailedPrecondition, err.Error())
-			}
-			model, err = s.store.GetModel(modelKey)
-			if err != nil {
-				return nil, status.Errorf(codes.FailedPrecondition, err.Error())
-			}
-		} else {
-			return nil, status.Errorf(codes.FailedPrecondition, err.Error())
-		}
+		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
-
-	var server *store.Server
-	if !model.HasServer() {
-		if req.Model.Server != nil {
-			server, err = s.store.GetServer(*req.Model.Server)
-			if err != nil {
-				return nil, status.Errorf(codes.FailedPrecondition, err.Error())
-			}
-		}
-	} else {
-		server, err = s.store.GetServer(model.Server())
-		if err != nil {
-			return nil, status.Errorf(codes.FailedPrecondition, err.Error())
-		}
+	err = s.scheduler.Schedule(req.GetModel().GetName())
+	if err != nil {
+		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
-
-	if server != nil {
-		err := s.store.UpdateModelOnServer(model.Key(), server.Key())
-		if err != nil {
-			return nil, status.Errorf(codes.FailedPrecondition, err.Error())
-		}
-	} else {
-		err := s.store.ScheduleModelToServer(modelKey)
-		if err != nil {
-			return nil, status.Errorf(codes.FailedPrecondition, err.Error())
-		}
-	}
-
-
+	s.agentHandler.SendAgentSync(req.GetModel().GetName())
 	return &pb.LoadModelResponse{}, nil
 }
 
 func (s SchedulerServer) UnloadModel(ctx context.Context, reference *pb.ModelReference) (*pb.UnloadModelResponse, error) {
+	logger := s.logger.WithField("func","UnloadModel")
+	logger.Debugf("Unload model %s",reference.Name)
 	err := s.store.RemoveModel(reference.Name)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
-
+	err = s.scheduler.Schedule(reference.Name)
+	if err != nil {
+		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+	}
+	s.agentHandler.SendAgentSync(reference.GetName())
 	return &pb.UnloadModelResponse{}, nil
 }
 
@@ -112,10 +88,18 @@ func (s SchedulerServer) ModelStatus(ctx context.Context, reference *pb.ModelRef
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
+	if model == nil {
+		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("Failed to find model %s",reference.Name))
+	}
+	latestModel := model.GetLatest()
+	if latestModel == nil {
+		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("Failed to find model %s",reference.Name))
+	}
 	return &pb.ModelStatusResponse{
 		ModelName: reference.Name,
-		ServerName: model.Server(),
-		State: model.ReplicaState(),
+		Version: latestModel.GetVersion(),
+		ServerName: latestModel.Server(),
+		ModelReplicaState: latestModel.ReplicaState(),
 	}, nil
 }
 
@@ -124,14 +108,17 @@ func (s SchedulerServer) ServerStatus(ctx context.Context, reference *pb.ServerR
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
+	if server == nil {
+		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("Failed to find server %s",reference.Name))
+	}
 	ss := &pb.ServerStatusResponse{
 		ServerName: reference.Name,
 	}
 
-	for ridx := 0; ridx <  server.NumReplicas(); ridx++{
+	for _, replica := range server.Replicas {
 		ss.Resources = append(ss.Resources, &pb.ServerResources{
-			Memory: server.GetMemory(ridx),
-			AvailableMemory: server.GetAvailableMemory(ridx),
+			Memory: replica.GetMemory(),
+			AvailableMemoryBytes: replica.GetAvailableMemory(),
 		})
 	}
 	return ss, nil

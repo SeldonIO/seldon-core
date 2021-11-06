@@ -2,10 +2,8 @@ package agent
 
 import (
 	"context"
-	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	. "github.com/onsi/gomega"
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
-	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/processor"
 	"github.com/seldonio/seldon-core/scheduler/pkg/store"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/metadata"
@@ -51,25 +49,43 @@ func (m MockAgentServer) RecvMsg(message interface{}) error {
 	panic("implement me")
 }
 
-func setupTestAgent() (*Server, *store.MemorySchedulerStore, chan string) {
+type mockEnvoyHandler struct {
+	sentSyncs int
+}
+
+func (m *mockEnvoyHandler) SendEnvoySync(modelName string) {
+	m.sentSyncs++
+}
+
+type mockScheduler struct {
+	numSchedules int
+}
+
+func (m *mockScheduler) ScheduleFailedModels() ([]string, error) {
+	return nil, nil
+}
+
+func (m *mockScheduler) Schedule(modelKey string) error {
+	m.numSchedules++
+	return nil
+}
+
+func setupTestAgent() (*Server, *store.MemoryStore) {
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
-	agentChan := make(chan string, 10)
-	envoyChan := make(chan string, 10)
-	schedulerStore := store.NewMemoryScheduler(logger, agentChan, envoyChan)
-	cache := cache.NewSnapshotCache(false, cache.IDHash{}, logger)
-	es := processor.NewIncrementalProcessor(cache, "nodeID", logger, schedulerStore, envoyChan)
-	as := NewAgentServer(logger, schedulerStore, es, agentChan)
+	schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore())
+	mockEnvoyHandler := &mockEnvoyHandler{}
+	mockSched := &mockScheduler{}
+	as := NewAgentServer(logger, schedulerStore, mockEnvoyHandler, mockSched)
 	go as.ListenForSyncs()
-	return as, schedulerStore, agentChan
+	return as, schedulerStore
 }
 
 func TestSubscribe(t *testing.T) {
 	g := NewGomegaWithT(t)
-	as,_ ,ch := setupTestAgent()
-	defer close(ch)
+	as,_ := setupTestAgent()
 	mockStream := NewMockAgentServer()
-	err := as.Subscribe(&pb.AgentSubscribeRequest{ServerName: "test", ReplicaIdx: 0, ReplicaConfig: &pb.ReplicaConfig{Capabilities: []string{"sklearn"}, Memory: 1000}}, mockStream)
+	err := as.Subscribe(&pb.AgentSubscribeRequest{ServerName: "test", ReplicaIdx: 0, ReplicaConfig: &pb.ReplicaConfig{Capabilities: []string{"sklearn"}, MemoryBytes: 1000}}, mockStream)
 	g.Expect(err).To(BeNil())
 	g.Expect(mockStream.sentMessages).To(Equal(0))
 }

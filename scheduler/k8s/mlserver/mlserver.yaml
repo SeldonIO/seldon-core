@@ -122,7 +122,7 @@ spec:
         - name: SELDON_SERVER_NAME
           value: "mlserver"
         - name: SELDON_REPLICA_CONFIG
-          value: '{"inferenceSvc":"DYNAMIC","inferencePort":9000,"memory":100000,"capabilities":["sklearn"],"overCommit":false}'
+          value: '{"inferenceSvc":"DYNAMIC","inferencePort":9000,"memoryBytes":100000,"availableMemoryBytes":100000,"capabilities":["sklearn"],"overCommit":false}'
         - name: POD_NAME
           valueFrom:
             fieldRef:

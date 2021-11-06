@@ -132,22 +132,22 @@ func TestLoadModel(t *testing.T) {
 	largeMemory := uint64(2000)
 	tests := []test{
 		{models: []string{"iris"},
-			op: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", Memory: &smallMemory}},
-			replicaConfig: &pb.ReplicaConfig{Memory: 1000},
+			op: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory}},
+			replicaConfig: &pb.ReplicaConfig{MemoryBytes: 1000},
 			expectedAvailableMemory: 500,
 			v2Status: 200,
 			rsStatus: 200,
 			success: true}, // Success
 		{models: []string{"iris"},
-			op: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", Memory: &smallMemory}},
-			replicaConfig: &pb.ReplicaConfig{Memory: 1000},
+			op: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory}},
+			replicaConfig: &pb.ReplicaConfig{MemoryBytes: 1000},
 			expectedAvailableMemory: 1000,
 			v2Status: 400,
 			rsStatus: 200,
 			success: false}, // Fail as V2 fail
 		{models: []string{"iris"},
-			op: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", Memory: &largeMemory}},
-			replicaConfig: &pb.ReplicaConfig{Memory: 1000},
+			op: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &largeMemory}},
+			replicaConfig: &pb.ReplicaConfig{MemoryBytes: 1000},
 			expectedAvailableMemory: 500,
 			v2Status: 200,
 			rsStatus: 200,
@@ -172,7 +172,7 @@ func TestLoadModel(t *testing.T) {
 			g.Expect(err).To(BeNil())
 			g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
 			g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
-			g.Expect(client.replicaConfig.AvailableMemory).To(Equal(test.expectedAvailableMemory))
+			g.Expect(client.replicaConfig.AvailableMemoryBytes).To(Equal(test.expectedAvailableMemory))
 		} else {
 			g.Expect(err).ToNot(BeNil())
 			g.Expect(mockAgentV2Server.loadedEvents).To(Equal(0))
@@ -202,16 +202,16 @@ func TestUnloadModel(t *testing.T) {
 	smallMemory := uint64(500)
 	tests := []test{
 		{models: []string{"iris"},
-			loadOp: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", Memory: &smallMemory}},
-			unloadOp: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", Memory: &smallMemory}},
-			replicaConfig: &pb.ReplicaConfig{Memory: 1000},
+			loadOp: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory}},
+			unloadOp: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory}},
+			replicaConfig: &pb.ReplicaConfig{MemoryBytes: 1000},
 			expectedAvailableMemory: 1000,
 			v2Status: 200,
 			success: true}, // Success
 		{models: []string{"iris"},
-			loadOp: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", Memory: &smallMemory}},
-			unloadOp: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris2", Uri: "gs://models/iris", Memory: &smallMemory}},
-			replicaConfig: &pb.ReplicaConfig{Memory: 1000},
+			loadOp: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory}},
+			unloadOp: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris2", Uri: "gs://models/iris", MemoryBytes: &smallMemory}},
+			replicaConfig: &pb.ReplicaConfig{MemoryBytes: 1000},
 			expectedAvailableMemory: 500,
 			v2Status: 200,
 			success: false}, // Fail to unload unknown model
@@ -239,7 +239,7 @@ func TestUnloadModel(t *testing.T) {
 			g.Expect(mockAgentV2Server.unloadedEvents).To(Equal(1))
 			g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
 			g.Expect(mockAgentV2Server.unloadFailedEvents).To(Equal(0))
-			g.Expect(client.replicaConfig.AvailableMemory).To(Equal(test.expectedAvailableMemory))
+			g.Expect(client.replicaConfig.AvailableMemoryBytes).To(Equal(test.expectedAvailableMemory))
 		} else {
 			g.Expect(err).ToNot(BeNil())
 			g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))

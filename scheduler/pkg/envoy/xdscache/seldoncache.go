@@ -104,8 +104,14 @@ func (xds *SeldonXDSCache) AddCluster(name string, route string) {
 
 
 func (xds *SeldonXDSCache) RemoveRoute(modelName string) {
-	route := xds.Routes[modelName]
-	cluster := xds.Clusters[route.Cluster]
+	route, ok := xds.Routes[modelName]
+	if !ok {
+		return
+	}
+	cluster, ok := xds.Clusters[route.Cluster]
+	if !ok {
+		return
+	}
 	delete(cluster.Routes, modelName)
 	if len(cluster.Routes) == 0 {
 		delete(xds.Clusters, route.Cluster)

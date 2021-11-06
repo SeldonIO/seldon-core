@@ -26,8 +26,9 @@ message ModelDetails {
   string uri = 3; // storage uri from where to download the artifacts
   optional string storageSecretName = 4; // optional k8s secret name for authentication to storage uri
   repeated string requirements = 5; // list of capabilities the server must satisfy to run this model
+  //TODO maybe map for requirements
   uint32 replicas = 6; // number of replicas of model to create
-  optional uint64 memory = 7; // Requested memory
+  optional uint64 memoryBytes = 7; // Requested memory
   optional string server = 8; // the particular model server to load the model. If unspecified will be chosen.
 }
 
@@ -49,8 +50,9 @@ message UnloadModelResponse {
 */
 message ModelStatusResponse {
   string modelName = 1;
-  string serverName = 2;
-  map<int32,string> state = 3;
+  string version = 2;
+  string serverName = 3;
+  map<int32,string> modelReplicaState = 4;
 }
 
 /* ServerStatusResponse provides details of current server status
@@ -63,7 +65,7 @@ message ServerStatusResponse {
 message ServerResources {
   map<string,string> loadedModels = 1;
   uint64 memory = 2;
-  uint64 availableMemory = 3;
+  uint64 availableMemoryBytes = 3;
 }
 
 message ModelSubscriptionRequest {

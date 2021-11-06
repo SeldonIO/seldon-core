@@ -50,7 +50,7 @@ func NewClient(serverName string,
 	replicaConfig *agent.ReplicaConfig,
 	inferenceSvcName string)  (*Client, error) {
 	replicaConfig.InferenceSvc = inferenceSvcName
-	replicaConfig.AvailableMemory = replicaConfig.Memory
+	replicaConfig.AvailableMemoryBytes = replicaConfig.MemoryBytes
 
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
@@ -129,6 +129,7 @@ func (c *Client) Start() error {
 		ReplicaIdx: c.replicaIdx,
 		ReplicaConfig: c.replicaConfig,
 		LoadedModels: loadedModels,
+		Shared: true,
 	},grpc_retry.WithMax(100))
 	if err != nil {
 		return err
@@ -160,7 +161,7 @@ func (c *Client) Start() error {
 	return nil
 }
 
-func (c *Client) sendModelEventError(modelName string, event agent.ModelEventMessage_Event, err error) error {
+func (c *Client) sendModelEventError(modelName string, modelVersion string, event agent.ModelEventMessage_Event, err error) error {
 	grpcClient := agent.NewAgentServiceClient(c.conn)
 	_, err = grpcClient.AgentEvent(context.Background(), &agent.ModelEventMessage{
 		ServerName: c.serverName,
@@ -168,7 +169,7 @@ func (c *Client) sendModelEventError(modelName string, event agent.ModelEventMes
 		ModelName: modelName,
 		Event: event,
 		Message: err.Error(),
-		AvailableMemory: c.replicaConfig.AvailableMemory,
+		AvailableMemoryBytes: c.replicaConfig.AvailableMemoryBytes,
 	})
 	return err
 }
@@ -180,9 +181,9 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error  {
 		return fmt.Errorf("Empty request received for load model")
 	}
 	modelName := request.Details.Name
-	if request.Details.GetMemory() > c.replicaConfig.AvailableMemory {
-		err := fmt.Errorf("Not enough memory on replica for model %s available %d requested %d",modelName,c.replicaConfig.AvailableMemory, request.Details.GetMemory())
-		err2 := c.sendModelEventError(modelName, agent.ModelEventMessage_LOAD_FAILED, err)
+	if request.Details.GetMemoryBytes() > c.replicaConfig.AvailableMemoryBytes {
+		err := fmt.Errorf("Not enough memory on replica for model %s available %d requested %d",modelName,c.replicaConfig.AvailableMemoryBytes, request.Details.GetMemoryBytes())
+		err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
 		if err2 != nil {
 			c.logger.WithError(err2).Errorf("Failed to send error back on load model")
 		}
@@ -192,7 +193,7 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error  {
 	c.logger.Infof("Load model %s", modelName)
 	err := c.RCloneClient.Copy(request.Details.Name, request.Details.Uri)
 	if err != nil {
-		err2 := c.sendModelEventError(modelName, agent.ModelEventMessage_LOAD_FAILED, err)
+		err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
 		if err2 != nil {
 			c.logger.WithError(err2).Errorf("Failed to send error back on load model")
 		}
@@ -200,22 +201,27 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error  {
 	}
 	err = c.V2Client.LoadModel(modelName)
 	if err != nil {
-		err2 := c.sendModelEventError(modelName, agent.ModelEventMessage_LOAD_FAILED, err)
+		err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
 		if err2 != nil {
 			c.logger.WithError(err2).Errorf("Failed to send error back on load model")
 		}
 		return err
 	}
 	c.logger.Infof("Load model %s success", modelName)
+	loadedModel, ok := c.loadedModels[modelName]
+	if ok {
+		c.replicaConfig.AvailableMemoryBytes = c.replicaConfig.AvailableMemoryBytes + loadedModel.GetMemoryBytes()
+	}
 	c.loadedModels[modelName] = request.Details
-	c.replicaConfig.AvailableMemory = c.replicaConfig.AvailableMemory - request.Details.GetMemory()
+	c.replicaConfig.AvailableMemoryBytes = c.replicaConfig.AvailableMemoryBytes - request.Details.GetMemoryBytes()
 	grpcClient := agent.NewAgentServiceClient(c.conn)
 	_, err = grpcClient.AgentEvent(context.Background(), &agent.ModelEventMessage{
 		ServerName: c.serverName,
 		ReplicaIdx: c.replicaIdx,
 		ModelName: modelName,
+		ModelVersion: request.Details.GetVersion(),
 		Event: agent.ModelEventMessage_LOADED,
-		AvailableMemory: c.replicaConfig.AvailableMemory,
+		AvailableMemoryBytes: c.replicaConfig.AvailableMemoryBytes,
 	})
 	if err != nil {
 		return err
@@ -233,7 +239,7 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 	c.logger.Infof("Unload model %s", modelName)
 	err := c.V2Client.UnloadModel(modelName)
 	if err != nil {
-		err2 := c.sendModelEventError(modelName, agent.ModelEventMessage_UNLOAD_FAILED, err)
+		err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_UNLOAD_FAILED, err)
 		if err2 != nil {
 			c.logger.WithError(err2).Errorf("Failed to send error back on unload model")
 		}
@@ -242,7 +248,7 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 	loadedModel, ok := c.loadedModels[modelName]
 	if !ok {
 		err := fmt.Errorf("Unknown model with name %s", modelName)
-		err2 := c.sendModelEventError(modelName, agent.ModelEventMessage_UNLOAD_FAILED, err)
+		err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_UNLOAD_FAILED, err)
 		if err2 != nil {
 			c.logger.WithError(err2).Errorf("Failed to send error back on unload model")
 		}
@@ -250,14 +256,15 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 	}
 	c.logger.Infof("Unload model %s success", modelName)
 	delete(c.loadedModels, modelName)
-	c.replicaConfig.AvailableMemory = c.replicaConfig.AvailableMemory + loadedModel.GetMemory()
+	c.replicaConfig.AvailableMemoryBytes = c.replicaConfig.AvailableMemoryBytes + loadedModel.GetMemoryBytes()
 	grpcClient := agent.NewAgentServiceClient(c.conn)
 	_, err = grpcClient.AgentEvent(context.Background(), &agent.ModelEventMessage{
 		ServerName: c.serverName,
 		ReplicaIdx: c.replicaIdx,
 		ModelName: modelName,
+		ModelVersion: loadedModel.GetVersion(),
 		Event: agent.ModelEventMessage_UNLOADED,
-		AvailableMemory: c.replicaConfig.AvailableMemory,
+		AvailableMemoryBytes: c.replicaConfig.AvailableMemoryBytes,
 	})
 	if err != nil {
 		return err

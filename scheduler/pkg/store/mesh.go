@@ -1,6 +1,7 @@
 package store
 
 import (
+	pba "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	"google.golang.org/protobuf/proto"
 )
@@ -11,16 +12,69 @@ type LocalSchedulerStore struct {
 	failedToScheduleModels map[string]bool
 }
 
+func NewLocalSchedulerStore() *LocalSchedulerStore {
+	m := LocalSchedulerStore{}
+	m.servers = make(map[string]*Server)
+	m.models = make(map[string]*Model)
+	m.failedToScheduleModels = make(map[string]bool)
+	return &m
+}
+
 type Model struct {
+	versionMap map[string]*ModelVersion
+	versions []*ModelVersion
+	deleted bool
+}
+
+func NewModel() *Model {
+	return &Model{
+		versionMap: make(map[string]*ModelVersion),
+	}
+}
+
+type ModelVersion struct {
 	config *pb.ModelDetails
 	server string
-	replicas map[int]ModelState
+	replicas map[int]ModelReplicaState
 	deleted bool
+	state ModelState
+}
+
+func NewDefaultModelVersion(config *pb.ModelDetails) *ModelVersion {
+	return &ModelVersion{
+		config: config,
+		replicas: make(map[int]ModelReplicaState),
+		deleted: false,
+		state: ModelStateUnknown,
+	}
+}
+
+func NewModelVersion(config *pb.ModelDetails,
+	server string,
+	replicas map[int]ModelReplicaState,
+	deleted bool,
+	state ModelState) *ModelVersion {
+	return &ModelVersion{
+		config: config,
+		server: server,
+		replicas: replicas,
+		deleted: deleted,
+		state: state,
+	}
 }
 
 type Server struct {
 	name string
 	replicas map[int]*ServerReplica
+	shared bool
+}
+
+func NewServer(name string, shared bool) *Server {
+	return &Server{
+		name: name,
+		replicas: make(map[int]*ServerReplica),
+		shared: shared,
+	}
 }
 
 type ServerReplica struct {
@@ -35,10 +89,58 @@ type ServerReplica struct {
 	overCommit bool
 }
 
+func NewServerReplica(inferenceSvc string,
+	inferencePort int32,
+	replicaIdx int,
+	server *Server,
+	capabilities []string,
+	memory uint64,
+	availableMemory uint64,
+	loadedModels map[string]bool,
+	overCommit bool) *ServerReplica {
+	return &ServerReplica{
+		inferenceSvc: inferenceSvc,
+		inferencePort: inferencePort,
+		replicaIdx: replicaIdx,
+		server: server,
+		capabilities: capabilities,
+		memory: memory,
+		availableMemory: availableMemory,
+		loadedModels: loadedModels,
+		overCommit: overCommit,
+	}
+}
+
+func NewServerReplicaFromConfig (server *Server, replicaIdx int, loadedModels map[string]bool, config *pba.ReplicaConfig) *ServerReplica {
+	return &ServerReplica{
+		inferenceSvc: config.GetInferenceSvc(),
+		inferencePort: config.GetInferencePort(),
+		replicaIdx: replicaIdx,
+		server: server,
+		capabilities: config.GetCapabilities(),
+		memory: config.GetMemoryBytes(),
+		availableMemory: config.GetAvailableMemoryBytes(),
+		loadedModels: loadedModels,
+		overCommit: config.GetOverCommit(),
+	}
+}
+
 type ModelState uint32
 
 const (
-	Unknown ModelState = iota
+	ModelStateUnknown ModelState = iota
+	ModelProgressing
+	ModelAvailable
+	ModelFailed
+	ModelTerminating
+	ModelTerminated
+	ModelTerminateFailed
+)
+
+type ModelReplicaState uint32
+
+const (
+	ModelReplicaStateUnknown ModelReplicaState = iota
 	LoadRequested
 	Loading
 	Loaded
@@ -49,15 +151,56 @@ const (
 	UnloadFailed
 )
 
-func (m *Model) Details() *pb.ModelDetails {
+func (m *Model) HasLatest() bool {
+	return len(m.versions) > 0
+}
+
+func (m *Model) Latest() *ModelVersion {
+	if len(m.versions) > 0 {
+		return m.versions[len(m.versions) - 1]
+	} else {
+		return nil
+	}
+}
+
+func (m *Model) Inactive() bool {
+	for _,mv := range m.versions {
+		if !mv.Inactive() {
+			return false
+		}
+	}
+	return true
+}
+
+func (m *Model) isDeleted() bool {
+	return m.deleted
+}
+
+func (m *ModelVersion) GetVersion() string {
+	return m.config.GetVersion()
+}
+
+func (m *ModelVersion) GetRequiredMemory() uint64 {
+	return m.config.GetMemoryBytes()
+}
+
+func (m *ModelVersion) GetRequirements() []string {
+	return m.config.GetRequirements()
+}
+
+func (m *ModelVersion) DesiredReplicas() int {
+	return int(m.config.Replicas)
+}
+
+func (m *ModelVersion) Details() *pb.ModelDetails {
 	return proto.Clone(m.config).(*pb.ModelDetails)
 }
 
-func (m *Model) Server() string {
+func (m *ModelVersion) Server() string {
 	return m.server
 }
 
-func (m *Model) ReplicaState() map[int32]string {
+func (m *ModelVersion) ReplicaState() map[int32]string {
 	replicaState := make(map[int32]string)
 	for k,v:= range  m.replicas {
 		replicaState[int32(k)] = v.String()
@@ -66,15 +209,15 @@ func (m *Model) ReplicaState() map[int32]string {
 }
 
 
-func (m *Model) GetModelReplicaState(replicaIdx int) ModelState {
+func (m *ModelVersion) GetModelReplicaState(replicaIdx int) ModelReplicaState {
 	state, ok := m.replicas[replicaIdx]
 	if !ok {
-		return Unknown
+		return ModelReplicaStateUnknown
 	}
 	return state
 }
 
-func (m *Model) GetReplicaForState(state ModelState) []int {
+func (m *ModelVersion) GetReplicaForState(state ModelReplicaState) []int {
 	var assignment []int
 	for k, v := range m.replicas {
 		if v == state {
@@ -84,46 +227,33 @@ func (m *Model) GetReplicaForState(state ModelState) []int {
 	return assignment
 }
 
-func (m *Model) HasServer() bool {
+func (m *ModelVersion) GetRequestedServer() *string {
+	return m.config.Server
+}
+
+func (m *ModelVersion) HasServer() bool {
 	return m.server != ""
 }
 
-func (m *Model) NumReplicas() int {
-	return len(m.replicas)
-}
-
-func (m *Model) NumActiveReplicas() uint32 {
-	count := uint32(0)
+func (m *ModelVersion) Inactive() bool {
 	for _,v := range m.replicas {
-		if v.CanUnload() {
-			count++
-		}
-	}
-	return count;
-}
-
-func (m *Model) CanRemove() bool {
-	if !m.deleted {
-		return false
-	}
-	for _,v := range m.replicas {
-		if !v.CanRemove() {
+		if !(v == Unloaded || v == UnloadFailed || v == ModelReplicaStateUnknown) {
 			return false
 		}
 	}
-	return true;
+	return true
 }
 
-func (m *Model) isLiveReplica(replicaIdx int) bool {
+func (m *ModelVersion) IsLoading(replicaIdx int) bool {
 	for r,v := range m.replicas {
-		if r == replicaIdx && v == Loaded {
+		if r == replicaIdx && (v == Loaded || v == LoadRequested || v == Loading) {
 			return true
 		}
 	}
 	return false
 }
 
-func (m *Model) NoLiveReplica() bool {
+func (m *ModelVersion) NoLiveReplica() bool {
 	for _,v := range m.replicas {
 		if !v.NoEndpoint() {
 			return false
@@ -132,7 +262,7 @@ func (m *Model) NoLiveReplica() bool {
 	return true;
 }
 
-func (m *Model) GetAssignment() []int {
+func (m *ModelVersion) GetAssignment() []int {
 	var assignment []int
 	for k,v := range m.replicas {
 		if v == Loaded {
@@ -142,41 +272,20 @@ func (m *Model) GetAssignment() []int {
 	return assignment
 }
 
-func (m *Model) Key() string {
+func (m *ModelVersion) Key() string {
 	return m.config.Name
 }
 
-func (m *Model) isDeleted() bool {
+func (m *ModelVersion) IsDeleted() bool {
 	return m.deleted
-}
-
-func (m *Model) GetUri() string {
-	return m.config.Uri
-}
-
-func (m *Model) GetStorageSecretName() *string {
-	return m.config.StorageSecretName
-}
-
-func (s* Server) maxReplicas() uint32 {
-	if len(s.replicas) == 0 {
-		return 0
-	}
-	maxIdx := 0;
-	for k:= range s.replicas {
-		if k>maxIdx {
-			maxIdx = k
-		}
-	}
-	return uint32(maxIdx+1)
 }
 
 func (s *Server) Key() string {
 	return s.name
 }
 
-func (s *Server) NumReplicas() int {
-	return len(s.replicas)
+func (s *Server) NumReplicas() uint32 {
+	return uint32(len(s.replicas))
 }
 
 func (s *Server) GetAvailableMemory(idx int) uint64 {
@@ -211,32 +320,65 @@ func (s *ServerReplica) GetLoadedModels() []string {
 	return models
 }
 
-func NewLocalSchedulerStore() *LocalSchedulerStore {
-	m := LocalSchedulerStore{}
-	m.servers = make(map[string]*Server)
-	m.models = make(map[string]*Model)
-	m.failedToScheduleModels = make(map[string]bool)
-	return &m
+func (s *ServerReplica) GetAvailableMemory() uint64 {
+	return s.availableMemory
 }
 
-func (m ModelState) CanLoad() bool {
-	return !(m == LoadRequested || m == Loading || m == Loaded || m == Unknown )
+func (s *ServerReplica) GetMemory() uint64 {
+	return s.memory
 }
 
-func (m ModelState) CanUnload() bool {
-	return !(m == UnloadRequested || m == Unloading || m == Unloaded || m == Unknown)
+func (s *ServerReplica) GetCapabilities() []string {
+	return s.capabilities
 }
 
-func (m ModelState) CanRemove() bool {
-	return (m == Unloaded || m == Unknown || m == UnloadFailed)
+func (s *ServerReplica) GetReplicaIdx() int {
+	return s.replicaIdx
 }
 
-func (m ModelState) NoEndpoint() bool {
-	return (m == Unloaded || m == Unknown || m == UnloadFailed || m == Unloading || m == UnloadRequested)
+func (s *ServerReplica) GetInferenceSvc() string {
+	return s.inferenceSvc
 }
 
-func (me ModelState) String() string {
+func (s *ServerReplica) GetInferencePort() int32 {
+	return s.inferencePort
+}
+
+func (m ModelReplicaState) CanLoad() bool {
+	return !(m == LoadRequested || m == Loading || m == Loaded || m == ModelReplicaStateUnknown)
+}
+
+func (m ModelReplicaState) CanUnload() bool {
+	return !(m == UnloadRequested || m == Unloading || m == Unloaded || m == ModelReplicaStateUnknown)
+}
+
+func (m ModelReplicaState) CanRemove() bool {
+	return (m == Unloaded || m == ModelReplicaStateUnknown || m == UnloadFailed)
+}
+
+func (m ModelReplicaState) NoEndpoint() bool {
+	return (m == Unloaded || m == ModelReplicaStateUnknown || m == UnloadFailed || m == Unloading || m == UnloadRequested)
+}
+
+func (m ModelReplicaState) AlreadyLoadingOrLoaded() bool {
+	return (m == Loading || m == Loaded)
+}
+
+func (m ModelReplicaState) AlreadyUnloadingOrUnloaded() bool {
+	return (m == Unloading || m == Unloaded)
+}
+
+func (me ModelReplicaState) String() string {
 	return [...]string{"Unknown", "LoadRequested", "Loading", "Loaded", "LoadFailed", "UnloadRequested", "Unloading", "Unloaded", "UnloadFailed"}[me]
+}
+
+func (m ModelReplicaState) IsLoadingState() bool {
+	switch m {
+	case LoadRequested, Loading, Loaded:
+		return true
+	default:
+		return false
+	}
 }
 
 

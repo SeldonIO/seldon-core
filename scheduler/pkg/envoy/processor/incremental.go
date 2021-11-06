@@ -2,7 +2,7 @@ package processor
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	rsrc "github.com/envoyproxy/go-control-plane/pkg/resource/v3"
@@ -16,6 +16,10 @@ import (
 	"sync"
 )
 
+type EnvoyHandler interface {
+	SendEnvoySync(modelName string)
+}
+
 type IncrementalProcessor struct {
 	cache  cache.SnapshotCache
 	nodeID string
@@ -28,12 +32,12 @@ type IncrementalProcessor struct {
 	source chan string
 }
 
-func NewIncrementalProcessor(cache cache.SnapshotCache, nodeID string, log logrus.FieldLogger, store store.SchedulerStore, source chan string) *IncrementalProcessor {
+func NewIncrementalProcessor(cache cache.SnapshotCache, nodeID string, log logrus.FieldLogger, store store.SchedulerStore) *IncrementalProcessor {
 	ip := &IncrementalProcessor{
 		cache:           cache,
 		nodeID:          nodeID,
 		snapshotVersion: rand.Int63n(1000),
-		logger:   log.WithField("Source","EnvoyServer"),
+		logger:   log.WithField("source","EnvoyServer"),
 		xdsCache: xdscache.SeldonXDSCache{
 			Listeners: make(map[string]resources.Listener),
 			Clusters:  make(map[string]resources.Cluster),
@@ -41,18 +45,27 @@ func NewIncrementalProcessor(cache cache.SnapshotCache, nodeID string, log logru
 			Endpoints: make(map[string]resources.Endpoint),
 		},
 		store: store,
-		source: source,
+		source: make(chan string, 1),
 	}
 	ip.SetListener("seldon_http")
 	return ip
 }
 
+func (s *IncrementalProcessor) SendEnvoySync(modelName string) {
+	s.source <- modelName
+}
+
+func (s *IncrementalProcessor) StopEnvoySync() {
+	close(s.source)
+}
+
 func (s *IncrementalProcessor) ListenForSyncs() {
+	logger := s.logger.WithField("func","ListenForSyncs")
 	for msg := range s.source {
-		s.logger.Infof("Received sync for model %s",msg)
+		logger.Debugf("Received sync for model %s",msg)
 		err := s.Sync(msg)
 		if err != nil {
-			s.logger.Errorf("Failed to process sync")
+			logger.Errorf("Failed to process sync")
 		}
 	}
 }
@@ -79,6 +92,7 @@ func (p *IncrementalProcessor) newSnapshotVersion() string {
 }
 
 func (p *IncrementalProcessor) updateEnvoy() error {
+	logger := p.logger.WithField("func","updateEnvoy")
 	// Create the snapshot that we'll serve to Envoy
 	snapshot,err := cache.NewSnapshot(
 		p.newSnapshotVersion(), // version
@@ -94,7 +108,7 @@ func (p *IncrementalProcessor) updateEnvoy() error {
 	if err := snapshot.Consistent(); err != nil {
 		return err
 	}
-	p.logger.Debugf("will serve snapshot %+v", snapshot)
+	logger.Debugf("will serve snapshot %+v", snapshot)
 
 	// Add the snapshot to the cache
 	if err := p.cache.SetSnapshot(context.Background(), p.nodeID, snapshot); err != nil {
@@ -111,32 +125,44 @@ func (p *IncrementalProcessor) removeModelForServerInEnvoy(modelName string) err
 }
 
 func (p *IncrementalProcessor) Sync(modelName string) error {
+	logger := p.logger.WithField("func","Sync")
 	model, err := p.store.GetModel(modelName)
 	if err != nil {
-		if errors.Is(err, store.ModelNotFoundErr) {
-			return p.removeModelForServerInEnvoy(modelName)
-		}
-		return nil
-	}
-	server, err := p.store.GetServer(model.Server())
-	if err != nil {
-		if errors.Is(err, store.ServerNotFoundErr) {
-			return p.removeModelForServerInEnvoy(modelName)
-		}
-		return nil
-	}
-	if model.NoLiveReplica() {
+		logger.WithError(err).Errorf("Failed to sync model %s", modelName)
 		return p.removeModelForServerInEnvoy(modelName)
 	}
+	if model == nil {
+		logger.Debugf("sync: No model - removing for %s",modelName)
+		return p.removeModelForServerInEnvoy(modelName)
+	}
+	latestModel := model.GetLatest()
+	if latestModel == nil {
+		logger.Debugf("sync: No latest model - removing for %s",modelName)
+		return p.removeModelForServerInEnvoy(modelName)
+	}
+	if latestModel.NoLiveReplica() {
+		logger.Debugf("sync: No live model - removing for %s",modelName)
+		return p.removeModelForServerInEnvoy(modelName)
+	}
+	server, err := p.store.GetServer(latestModel.Server())
+	if server == nil {
+		logger.Debugf("sync: No server - removing for %s",modelName)
+		return p.removeModelForServerInEnvoy(modelName)
+	}
+
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	assignment := model.GetAssignment() // Get loaded replicas for model
-	clusterName := server.Key() + "_" + computeHashKeyForList(assignment)
+	assignment := latestModel.GetAssignment() // Get loaded replicas for model
+	clusterName := server.Name + "_" + computeHashKeyForList(assignment)
 	p.xdsCache.AddRoute(modelName,modelName,clusterName)
 	if !p.xdsCache.HasCluster(clusterName) {
 		p.xdsCache.AddCluster(clusterName, modelName)
 		for _,serverIdx := range assignment {
-			p.xdsCache.AddEndpoint(clusterName, server.GetReplicaInferenceSvc(serverIdx), uint32(server.GetReplicaInferencePort(serverIdx)))
+			replica, ok := server.Replicas[serverIdx]
+			if !ok {
+				return fmt.Errorf("Invalid replica index %d for server %s",serverIdx, server.Name)
+			}
+			p.xdsCache.AddEndpoint(clusterName, replica.GetInferenceSvc(), uint32(replica.GetInferencePort()))
 		}
 	}
 	return p.updateEnvoy()

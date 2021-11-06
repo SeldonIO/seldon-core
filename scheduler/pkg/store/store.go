@@ -1,26 +1,45 @@
 package store
 
 import (
+	"errors"
 	pba "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 )
 
-//TODO remove pointer returns to make thread safe
+type ServerSnapshot struct {
+	Name string
+	Replicas map[int]*ServerReplica
+	Shared bool
+}
+
+type ModelSnapshot struct {
+	Name string
+	Versions []*ModelVersion
+	Deleted bool
+}
+
+func (m *ModelSnapshot) GetLatest() *ModelVersion {
+	if len(m.Versions) > 0 {
+		return m.Versions[len(m.Versions)-1]
+	} else {
+		return nil
+	}
+
+}
+
+var (
+	ModelVersionExistsErr = errors.New("model version already exists")
+	ModelNotLatestVersionRejectErr = errors.New("Model version is not latest. Rejecting update.")
+)
+
 type SchedulerStore interface {
-	// Server
-	UpdateServerReplica(request *pba.AgentSubscribeRequest) error
-	RemoveServerReplicaAndRedeployModels(serverName string, replicaIdx int) error
-	GetServer (key string) (*Server, error)
-	GetServerReplica(key string, replicaIdx int) (*ServerReplica, error)
-
-	// Models
-	CreateModel(key string, config *pb.ModelDetails) error
-	UpdateModel(key string, config *pb.ModelDetails) error
-	GetModel(key string) (*Model, error)
-	RemoveModel(key string) error
-
-	// Assign model to server
-	ScheduleModelToServer(modelKey string) error
-	UpdateModelOnServer(modelKey string, serverKey string) error
-	SetModelState(modelKey string, serverKey string, replicaIdx int, state ModelState, availableMemory *uint64) error
+	UpdateModel(config *pb.ModelDetails) error
+	GetModel(key string) (*ModelSnapshot, error)
+	RemoveModel(modelKey string) error
+	GetServers() ([]*ServerSnapshot, error)
+	GetServer(serverKey string) (*ServerSnapshot, error)
+	UpdateLoadedModels(modelKey string, version string, serverKey string, replicas []*ServerReplica) error
+	UpdateModelState(modelKey string, version string, serverKey string, replicaIdx int, availableMemory *uint64, state ModelReplicaState) error
+	AddServerReplica(request *pba.AgentSubscribeRequest) error
+	RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) // return previously loaded models
 }

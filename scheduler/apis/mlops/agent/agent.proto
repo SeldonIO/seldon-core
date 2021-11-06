@@ -12,6 +12,7 @@ message ModelEventMessage {
   string serverName = 1;
   uint32 replicaIdx = 2;
   string modelName = 3;
+  string modelVersion = 4;
   enum Event {
       UNKNOWN_EVENT = 0;
       LOAD_FAIL_MEMORY = 1;
@@ -24,9 +25,9 @@ message ModelEventMessage {
       SCALE_UP_REQUEST = 8;
       RSYNC = 9; // Ask server for all models that need to be loaded
       }
-  Event event = 4;
-  string message = 5;
-  uint64 availableMemory = 6;
+  Event event = 5;
+  string message = 6;
+  uint64 availableMemoryBytes = 7;
 }
 
 message ModelEventResponse {
@@ -35,18 +36,19 @@ message ModelEventResponse {
 
 message AgentSubscribeRequest {
   string serverName = 1;
-  uint32 replicaIdx = 2;
-  ReplicaConfig replicaConfig = 3;
-  repeated scheduler.ModelDetails loadedModels = 4;
+  bool shared = 2;
+  uint32 replicaIdx = 3;
+  ReplicaConfig replicaConfig = 4;
+  repeated scheduler.ModelDetails loadedModels = 5;
 }
 
 message ReplicaConfig {
   string inferenceSvc = 1; // inference DNS service name
   int32 inferencePort = 2; // inference port
-  uint64 memory = 3; // The memory capacity of the server replica
+  uint64 memoryBytes = 3; // The memory capacity of the server replica
   repeated string capabilities = 4; // The list of capabilities of the server, e.g. sklearn, pytorch, xgboost, mlflow
   bool overCommit = 5; // Allow models to be swapped to disk to allow over committing on memory
-  uint64 availableMemory = 6;
+  uint64 availableMemoryBytes = 6;// Available memory on the server
 }
 
 message ModelOperationMessage {
