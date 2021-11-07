@@ -13,7 +13,8 @@
 # limitations under the License.
 
 #
-# Copied from https://github.com/kubeflow/kfserving/blob/master/python/alibiexplainer/alibiexplainer/__main__.py
+# Copied from https://github.com/kubeflow/kfserving/blob/master/python/alibiexplainer
+# /alibiexplainer/__main__.py
 # and modified since
 #
 
@@ -21,16 +22,19 @@ import logging
 import os
 import kfserving
 import dill
+from alibi.saving import load_explainer
 from alibiexplainer.server import server_parser, ExplainerServer
-from alibiexplainer import AlibiExplainer, Protocol
-from alibiexplainer.explainer import ExplainerMethod  # pylint:disable=no-name-in-module
+from alibiexplainer import AlibiExplainer
+from alibiexplainer.utils import ExplainerMethod, \
+    Protocol  # pylint:disable=no-name-in-module
 from alibiexplainer.constants import SELDON_LOGLEVEL
 from alibiexplainer.parser import parse_args
 import sys
 from tensorflow import keras
 
+from alibiexplainer.utils import construct_predict_fn
+
 logging.basicConfig(level=SELDON_LOGLEVEL)
-EXPLAINER_FILENAME = "explainer.dill"
 KERAS_MODEL = "model.h5"
 
 
@@ -39,13 +43,19 @@ def main():
     # Pretrained Alibi explainer
     alibi_model = None
     keras_model = None
+    predict_fn = construct_predict_fn(
+        predictor_host=args.predictor_host,
+        model_name=args.model_name,
+        protocol=Protocol(args.protocol),
+        tf_data_type=args.tf_data_type,
+    )
     if args.storage_uri is not None:
         path = kfserving.Storage.download(args.storage_uri)
-        alibi_model = os.path.join(path, EXPLAINER_FILENAME)
-        if os.path.exists(alibi_model):
-            with open(alibi_model, "rb") as f:
-                logging.info("Loading Alibi model")
-                alibi_model = dill.load(f)
+        if os.path.exists(path):
+            logging.info("Loading Alibi model")
+            alibi_model = load_explainer(
+                predictor=predict_fn,
+                path=path)
         else:
             keras_path = os.path.join(path, KERAS_MODEL)
             if os.path.exists(keras_path):
@@ -54,14 +64,12 @@ def main():
                     keras_model = keras.models.load_model(keras_path)
 
     explainer = AlibiExplainer(
-        args.model_name,
-        args.predictor_host,
-        ExplainerMethod(args.command),
-        extra,
-        alibi_model,
-        Protocol(args.protocol),
-        args.tf_data_type,
-        keras_model,
+        predict_fn=predict_fn,
+        method=ExplainerMethod(args.command),
+        config=extra,
+        explainer=alibi_model,
+        protocol=Protocol(args.protocol),
+        keras_model=keras_model,
     )
     explainer.load()
     ExplainerServer(args.http_port).start(explainer)

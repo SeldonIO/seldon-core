@@ -13,7 +13,8 @@
 # limitations under the License.
 
 #
-# original source from https://github.com/kubeflow/kfserving/blob/master/python/alibiexplainer/alibiexplainer/anchor_text.py
+# original source from https://github.com/kubeflow/kfserving/blob/master/python/
+# alibiexplainer/alibiexplainer/anchor_text.py
 # and since modified
 #
 
@@ -47,23 +48,13 @@ class AnchorText(ExplainerWrapper):
             spacy_model(model=spacy_language_model)
             self.nlp = spacy.load(spacy_language_model)
             logging.info("Language model loaded")
-        self.anchors_text = explainer
+            self.anchors_text = alibi.explainers.AnchorText(
+                predictor=predict_fn,
+                sampling_strategy="unknown",
+                nlp=self.nlp)
+        else:
+            self.anchors_text = explainer
 
     def explain(self, inputs: List) -> Explanation:
-        if self.anchors_text is None:
-            self.anchors_text = alibi.explainers.AnchorText(predictor=self.predict_fn,
-                                                            sampling_strategy='unknown',
-                                                            nlp=self.nlp)
-
-        # We assume the input has batch dimension but Alibi explainers presently assume no batch
-        input_words = inputs[0]
-
-        # check if predictor returns predicted class or prediction probabilities for each class
-        # if needed adjust predictor so it returns the predicted class
-        if np.argmax(self.predict_fn([input_words]).shape) == 0:
-            self.anchors_text.predictor = self.predict_fn
-        else:
-            self.anchors_text.predictor = ArgmaxTransformer(self.predict_fn)
-
-        anchor_exp = self.anchors_text.explain(input_words, **self.kwargs)
+        anchor_exp = self.anchors_text.explain(inputs[0], **self.kwargs)
         return anchor_exp

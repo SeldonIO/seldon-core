@@ -26,6 +26,7 @@ server_parser.add_argument('--workers', default=0, type=int,
                            help='The number of works to fork')
 args, _ = server_parser.parse_known_args()
 
+
 class ExplainerServer(object):
     def __init__(
         self,
@@ -82,6 +83,7 @@ class ExplainerServer(object):
         self.registered_model = model
         logging.info("Registering model:" + model.name)
 
+
 class ExplainHandler(tornado.web.RequestHandler):
     def initialize(self, model: ExplainerModel):
         self.model = model  # pylint:disable=attribute-defined-outside-init
@@ -97,18 +99,3 @@ class ExplainHandler(tornado.web.RequestHandler):
         response =self.model.explain(body)
         self.write(response)
 
-
-class ExplainV2Handler(tornado.web.RequestHandler):
-    def initialize(self, model: ExplainerModel):
-        self.model = model  # pylint:disable=attribute-defined-outside-init
-
-    def post(self, model_name):
-        try:
-            body = json.loads(self.request.body)
-        except json.decoder.JSONDecodeError as e:
-            raise tornado.web.HTTPError(
-                status_code=HTTPStatus.BAD_REQUEST,
-                reason="Unrecognized request format: %s" % e
-            )
-        response =self.model.explain(body, model_name=model_name)
-        self.write(response)

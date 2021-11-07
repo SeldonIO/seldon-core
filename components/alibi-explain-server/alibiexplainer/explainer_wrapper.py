@@ -13,7 +13,8 @@
 # limitations under the License.
 
 #
-# Originally copied from https://github.com/kubeflow/kfserving/blob/master/python/alibiexplainer/alibiexplainer/explainer_wrapper.py
+# Originally copied from https://github.com/kubeflow/kfserving/blob/master/python/
+# alibiexplainer/alibiexplainer/explainer_wrapper.py
 # and since modified
 #
 

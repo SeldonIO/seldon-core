@@ -13,7 +13,8 @@
 # limitations under the License.
 
 #
-# Original source from https://github.com/kubeflow/kfserving/blob/master/python/alibiexplainer/alibiexplainer/anchor_tabular.py
+# Original source from https://github.com/kubeflow/kfserving/blob/master/python/
+# alibiexplainer/alibiexplainer/anchor_tabular.py
 # and since modified
 #
 
@@ -32,34 +33,18 @@ logging.basicConfig(level=SELDON_LOGLEVEL)
 class AnchorTabular(ExplainerWrapper):
     def __init__(
         self,
-        predict_fn: Callable,
         explainer=Optional[alibi.explainers.AnchorTabular],
         **kwargs
     ):
         if explainer is None:
             raise Exception("Anchor images requires a built explainer")
-        self.predict_fn = predict_fn
         self.anchors_tabular: alibi.explainers.AnchorTabular = explainer
         self.anchors_tabular = explainer
         self.kwargs = kwargs
 
     def explain(self, inputs: List) -> Explanation:
         arr = np.array(inputs)
-        # set anchor_tabular predict function so it always returns predicted class
-        # See anchor_tablular.__init__
-        logging.info("Arr shape %s ", (arr.shape,))
-
-        # check if predictor returns predicted class or prediction probabilities for each class
-        # if needed adjust predictor so it returns the predicted class
-        if np.argmax(self.predict_fn(arr).shape) == 0:
-            self.anchors_tabular.predictor = self.predict_fn
-            self.anchors_tabular.samplers[0].predictor = self.predict_fn
-        else:
-            self.anchors_tabular.predictor = ArgmaxTransformer(self.predict_fn)
-            self.anchors_tabular.samplers[0].predictor = ArgmaxTransformer(
-                self.predict_fn
-            )
-
-        # We assume the input has batch dimension but Alibi explainers presently assume no batch
+        # We assume the input has batch dimension
+        # but Alibi explainers presently assume no batch
         anchor_exp = self.anchors_tabular.explain(arr[0], **self.kwargs)
         return anchor_exp

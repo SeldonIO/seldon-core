@@ -19,11 +19,13 @@ _v2tymap: Dict[str, np.dtype] = {
 _nptymap = dict([(value, key) for key, value in _v2tymap.items()])
 _nptymap[np.dtype("float32")] = "FP32"  # Ensure correct mapping for ambiguous type
 
+
 def _create_np_from_v2(data: list, ty: str, shape: list) -> np.array:
     npty = _v2tymap[ty]
     arr = np.array(data, dtype=npty)
     arr.shape = tuple(shape)
     return arr
+
 
 def _create_v2_from_np(arr: np.ndarray, name: str, ty: str) -> Dict:
     if arr.dtype in _nptymap:
@@ -36,9 +38,9 @@ def _create_v2_from_np(arr: np.ndarray, name: str, ty: str) -> Dict:
     else:
         raise ValueError(f"Unknown numpy type {arr.dtype}")
 
-# Only handle single input/output payloads
-class KFServingV2RequestHandler():
 
+# Only handle single input/output payloads
+class KFServingV2RequestHandler:
     def extract_request(self, request: Dict) -> List:
         inputs = request["inputs"][0]
         data_type = inputs["datatype"]
