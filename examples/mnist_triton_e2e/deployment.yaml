@@ -1,7 +1,7 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: mnist-save-model
+  name: mnist
   namespace: seldon
 spec:
   name: default
@@ -10,29 +10,7 @@ spec:
       implementation: TRITON_SERVER
       logger:
         mode: all
-      modelUri: s3:triton-mlflow/mnist-save-model
-      envSecretRefName: seldon-rclone-secret
-      name: mnist
-      type: MODEL
-    name: default
-    replicas: 1
-  protocol: kfserving
-    
----
-
-apiVersion: machinelearning.seldon.io/v1
-kind: SeldonDeployment
-metadata:
-  name: mnist-log-model
-  namespace: seldon
-spec:
-  name: default
-  predictors:
-  - graph:
-      implementation: TRITON_SERVER
-      logger:
-        mode: all
-      modelUri: s3:triton-mlflow/mnist-log-model
+      modelUri: s3:triton-models/mnist-model
       envSecretRefName: seldon-rclone-secret
       name: mnist
       type: MODEL
