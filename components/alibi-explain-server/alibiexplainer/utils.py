@@ -38,6 +38,7 @@ class ExplainerMethod(Enum):
     kernel_shap = "KernelShap"
     integrated_gradients = "IntegratedGradients"
     tree_shap = "TreeShap"
+    ale = "ALE"
 
     def __str__(self):
         return self.value

@@ -28,6 +28,7 @@ from alibiexplainer.predict_fn_utils import Protocol
 from tensorflow import keras
 
 import alibiexplainer.seldon_http as seldon
+from alibiexplainer.ale import ALE
 from alibiexplainer.anchor_images import AnchorImages
 from alibiexplainer.anchor_tabular import AnchorTabular
 from alibiexplainer.anchor_text import AnchorText
@@ -70,6 +71,8 @@ class AlibiExplainer(ExplainerModel):
             self.wrapper = IntegratedGradients(keras_model, **config)
         elif self.method is ExplainerMethod.tree_shap:
             self.wrapper = TreeShap(explainer, **config)
+        elif self.method is ExplainerMethod.ale:
+            self.wrapper = ALE(explainer, **config)
         else:
             raise NotImplementedError
 
@@ -89,8 +92,8 @@ class AlibiExplainer(ExplainerModel):
                 rh = seldon.SeldonRequestHandler(request)
                 response_list = rh.extract_request()
                 explanation = self.wrapper.explain(response_list)
-            explanationAsJsonStr = explanation.to_json()
-            logging.info("Explanation: %s", explanationAsJsonStr)
-            return json.loads(explanationAsJsonStr)
+            explanation_as_json_str = explanation.to_json()
+            logging.info("Explanation: %s", explanation_as_json_str)
+            return json.loads(explanation_as_json_str)
         else:
             raise NotImplementedError
