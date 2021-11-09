@@ -6,7 +6,7 @@ Triton has multiple supported backends including support for TensorRT, Tensorflo
 
 ## Example
 
-```
+```yaml
 apiVersion: machinelearning.seldon.io/v1alpha2
 kind: SeldonDeployment
 metadata:
@@ -22,4 +22,9 @@ spec:
     replicas: 1
 ```
 
-Try out a [worked notebook](../examples/protocol_examples.html)
+See more deployment examples in [triton examples](../examples/triton_examples.html) and [protocol examples](../examples/protocol_examples.html).
+
+See also:
+- [Tensorflow MNIST - e2e example with MinIO](../examples/triton_mnist_e2e.html)
+- [GPT2 Model - pretrained with Azure](../examples/triton_gpt2_example_azure.html)
+- [GPT2 Model - pretrained with MinIO](../examples/triton_gpt2_example_azure.html)
