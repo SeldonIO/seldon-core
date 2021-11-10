@@ -44,11 +44,12 @@ message AgentSubscribeRequest {
 
 message ReplicaConfig {
   string inferenceSvc = 1; // inference DNS service name
-  int32 inferencePort = 2; // inference port
-  uint64 memoryBytes = 3; // The memory capacity of the server replica
-  repeated string capabilities = 4; // The list of capabilities of the server, e.g. sklearn, pytorch, xgboost, mlflow
-  bool overCommit = 5; // Allow models to be swapped to disk to allow over committing on memory
-  uint64 availableMemoryBytes = 6;// Available memory on the server
+  int32 inferenceHttpPort = 2; // inference HTTP port
+  int32 inferenceGrpcPort = 3; // Inference grpc port
+  uint64 memoryBytes = 4; // The memory capacity of the server replica
+  repeated string capabilities = 5; // The list of capabilities of the server, e.g. sklearn, pytorch, xgboost, mlflow
+  bool overCommit = 6; // Allow models to be swapped to disk to allow over committing on memory
+  uint64 availableMemoryBytes = 7;// Available memory on the server
 }
 
 message ModelOperationMessage {

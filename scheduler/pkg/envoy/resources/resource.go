@@ -33,7 +33,18 @@ const (
 	RouteConfigurationName = "listener_0"
 )
 
-func MakeCluster(clusterName string, eps []Endpoint) *cluster.Cluster {
+func MakeCluster(clusterName string, eps []Endpoint, isGrpc bool) *cluster.Cluster {
+	if isGrpc {
+		return &cluster.Cluster{
+			Name:                 clusterName,
+			ConnectTimeout:       ptypes.DurationProto(5 * time.Second),
+			ClusterDiscoveryType: &cluster.Cluster_Type{Type: cluster.Cluster_STRICT_DNS},
+			LbPolicy:             cluster.Cluster_ROUND_ROBIN,
+			LoadAssignment:  MakeEndpoint(clusterName, eps),
+			DnsLookupFamily:  cluster.Cluster_V4_ONLY,
+			Http2ProtocolOptions: &core.Http2ProtocolOptions{},
+		}
+	}
 	return &cluster.Cluster{
 		Name:                 clusterName,
 		ConnectTimeout:       ptypes.DurationProto(5 * time.Second),
@@ -44,6 +55,7 @@ func MakeCluster(clusterName string, eps []Endpoint) *cluster.Cluster {
 		LoadAssignment:  MakeEndpoint(clusterName, eps),
 		DnsLookupFamily:  cluster.Cluster_V4_ONLY,
 		//EdsClusterConfig: makeEDSCluster(),
+		//Http2ProtocolOptions: &core.Http2ProtocolOptions{},
 	}
 }
 
@@ -89,10 +101,10 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 
 	for _, r := range routes {
 		rts = append(rts, &route.Route{
-			Name: r.Name, // Seems optional
+			Name: r.Name+"_http", // Seems optional
 			Match: &route.RouteMatch{
 				PathSpecifier: &route.RouteMatch_Prefix{
-					Prefix: "/",
+					Prefix: "/v2",
 				},
 				Headers: []*route.HeaderMatcher{
 					{
@@ -114,7 +126,38 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 			Action: &route.Route_Route{
 				Route: &route.RouteAction{
 					ClusterSpecifier: &route.RouteAction_Cluster{
-						Cluster: r.Cluster,
+						Cluster: r.HttpCluster,
+					},
+				},
+			},
+		})
+		rts = append(rts, &route.Route{
+			Name: r.Name+"_grpc", // Seems optional
+			Match: &route.RouteMatch{
+				PathSpecifier: &route.RouteMatch_Prefix{
+					Prefix: "/inference.GRPCInferenceService",
+				},
+				Headers: []*route.HeaderMatcher{
+					{
+						Name: "Seldon", // Header name we will match on
+						HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
+							ExactMatch: r.Host,
+						},
+						//TODO: https://github.com/envoyproxy/envoy/blob/c75c1410c8682cb44c9136ce4ad01e6a58e16e8e/api/envoy/api/v2/route/route_components.proto#L1513
+						//HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
+						//	StringMatch: &matcher.StringMatcher{
+						//		MatchPattern: &matcher.StringMatcher_Exact{
+						//			Exact: r.Host,
+						//		},
+						//	},
+						//},
+					},
+				},
+			},
+			Action: &route.Route_Route{
+				Route: &route.RouteAction{
+					ClusterSpecifier: &route.RouteAction_Cluster{
+						Cluster: r.GrpcCluster,
 					},
 				},
 			},

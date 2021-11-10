@@ -79,7 +79,8 @@ func NewServer(name string, shared bool) *Server {
 
 type ServerReplica struct {
 	inferenceSvc string
-	inferencePort int32
+	inferenceHttpPort int32
+	inferenceGrpcPort int32
 	replicaIdx int
 	server *Server
 	capabilities []string
@@ -90,7 +91,8 @@ type ServerReplica struct {
 }
 
 func NewServerReplica(inferenceSvc string,
-	inferencePort int32,
+	inferenceHttpPort int32,
+	inferenceGrpcPort int32,
 	replicaIdx int,
 	server *Server,
 	capabilities []string,
@@ -100,7 +102,8 @@ func NewServerReplica(inferenceSvc string,
 	overCommit bool) *ServerReplica {
 	return &ServerReplica{
 		inferenceSvc: inferenceSvc,
-		inferencePort: inferencePort,
+		inferenceHttpPort: inferenceHttpPort,
+		inferenceGrpcPort: inferenceGrpcPort,
 		replicaIdx: replicaIdx,
 		server: server,
 		capabilities: capabilities,
@@ -114,7 +117,8 @@ func NewServerReplica(inferenceSvc string,
 func NewServerReplicaFromConfig (server *Server, replicaIdx int, loadedModels map[string]bool, config *pba.ReplicaConfig) *ServerReplica {
 	return &ServerReplica{
 		inferenceSvc: config.GetInferenceSvc(),
-		inferencePort: config.GetInferencePort(),
+		inferenceHttpPort: config.GetInferenceHttpPort(),
+		inferenceGrpcPort: config.GetInferenceGrpcPort(),
 		replicaIdx: replicaIdx,
 		server: server,
 		capabilities: config.GetCapabilities(),
@@ -306,8 +310,8 @@ func (s *Server) GetReplicaInferenceSvc(idx int) string {
 	return s.replicas[idx].inferenceSvc
 }
 
-func (s *Server) GetReplicaInferencePort(idx int) int32 {
-	return s.replicas[idx].inferencePort
+func (s *Server) GetReplicaInferenceHttpPort(idx int) int32 {
+	return s.replicas[idx].inferenceHttpPort
 }
 
 
@@ -340,8 +344,12 @@ func (s *ServerReplica) GetInferenceSvc() string {
 	return s.inferenceSvc
 }
 
-func (s *ServerReplica) GetInferencePort() int32 {
-	return s.inferencePort
+func (s *ServerReplica) GetInferenceHttpPort() int32 {
+	return s.inferenceHttpPort
+}
+
+func (s *ServerReplica) GetInferenceGrpcPort() int32 {
+	return s.inferenceGrpcPort
 }
 
 func (m ModelReplicaState) CanLoad() bool {

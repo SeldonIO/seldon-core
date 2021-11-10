@@ -153,16 +153,28 @@ func (p *IncrementalProcessor) Sync(modelName string) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	assignment := latestModel.GetAssignment() // Get loaded replicas for model
-	clusterName := server.Name + "_" + computeHashKeyForList(assignment)
-	p.xdsCache.AddRoute(modelName,modelName,clusterName)
-	if !p.xdsCache.HasCluster(clusterName) {
-		p.xdsCache.AddCluster(clusterName, modelName)
+	clusterNameBase := server.Name + "_" + computeHashKeyForList(assignment)
+	httpClusterName := clusterNameBase + "_http"
+	grpcClusterName := clusterNameBase + "_grpc"
+	p.xdsCache.AddRoute(modelName,modelName,httpClusterName, grpcClusterName)
+	if !p.xdsCache.HasCluster(httpClusterName) {
+		p.xdsCache.AddCluster(httpClusterName, modelName, false)
 		for _,serverIdx := range assignment {
 			replica, ok := server.Replicas[serverIdx]
 			if !ok {
 				return fmt.Errorf("Invalid replica index %d for server %s",serverIdx, server.Name)
 			}
-			p.xdsCache.AddEndpoint(clusterName, replica.GetInferenceSvc(), uint32(replica.GetInferencePort()))
+			p.xdsCache.AddEndpoint(httpClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceHttpPort()))
+		}
+	}
+	if !p.xdsCache.HasCluster(grpcClusterName) {
+		p.xdsCache.AddCluster(grpcClusterName, modelName, true)
+		for _,serverIdx := range assignment {
+			replica, ok := server.Replicas[serverIdx]
+			if !ok {
+				return fmt.Errorf("Invalid replica index %d for server %s",serverIdx, server.Name)
+			}
+			p.xdsCache.AddEndpoint(grpcClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceGrpcPort()))
 		}
 	}
 	return p.updateEnvoy()

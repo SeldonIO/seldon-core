@@ -88,7 +88,7 @@ func TestScheduler(t *testing.T) {
 	}
 
 	gsr := func(replicaIdx int, availableMemory uint64, capabilities []string) *store.ServerReplica {
-		return store.NewServerReplica("svc", 8080, replicaIdx,nil, capabilities,availableMemory,availableMemory,nil,true)
+		return store.NewServerReplica("svc", 8080, 5001, replicaIdx,nil, capabilities,availableMemory,availableMemory,nil,true)
 	}
 
 

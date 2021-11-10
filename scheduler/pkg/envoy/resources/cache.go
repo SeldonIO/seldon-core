@@ -9,12 +9,14 @@ type Listener struct {
 
 type Route struct {
 	Name    string
-	Host    string
-	Cluster string
+	Host        string
+	HttpCluster string
+	GrpcCluster string
 }
 
 type Cluster struct {
 	Name      string
+	Grpc      bool
 	Endpoints map[string]Endpoint
 	Routes map[string]bool
 }

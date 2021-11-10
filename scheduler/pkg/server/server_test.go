@@ -56,53 +56,53 @@ func TestLoadModel(t *testing.T) {
 			name: "Simple",
 			req: []*pba.AgentSubscribeRequest{
 				{ServerName: "server1", ReplicaIdx: 0, Shared: true,
-					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}}},
+					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}}},
 			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes:&smallMemory, Replicas: 1},
 			code: codes.OK},
 		{
 			name: "TooManyReplicas",
 			req: []*pba.AgentSubscribeRequest{
 				{ServerName: "server1", ReplicaIdx: 0, Shared: true,
-					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}}},
+					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}}},
 			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes:&smallMemory, Replicas: 2},
 			code: codes.FailedPrecondition},
 		{
 			name: "TooMuchMemory",
 			req: []*pba.AgentSubscribeRequest{
 				{ServerName: "server1", ReplicaIdx: 0, Shared: true,
-					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}}},
+					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}}},
 			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes:&largeMemory, Replicas: 1},
 			code: codes.FailedPrecondition},
 		{
 			name: "FailedRequirements",
 			req: []*pba.AgentSubscribeRequest{
 				{ServerName: "server1", ReplicaIdx: 0, Shared: true,
-					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}}},
+					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}}},
 			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"xgboost"}, MemoryBytes:&smallMemory, Replicas: 1},
 			code: codes.FailedPrecondition},
 		{
 			name: "MultipleRequirements",
 			req: []*pba.AgentSubscribeRequest{
 				{ServerName: "server1", ReplicaIdx: 0, Shared: true,
-					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn","xgboost"}}}},
+					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn","xgboost"}}}},
 			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"xgboost","sklearn"}, MemoryBytes:&smallMemory, Replicas: 1},
 			code: codes.OK},
 		{
 			name: "TwoReplicas",
 			req: []*pba.AgentSubscribeRequest{
 				{ServerName: "server1", ReplicaIdx: 0, Shared: true,
-					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}},
+					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}},
 				{ServerName: "server1", ReplicaIdx: 1, Shared: true,
-					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}}},
+					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}}},
 			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes:&smallMemory, Replicas: 2},
 			code: codes.OK},
 		{
 			name: "TwoReplicasFail",
 			req: []*pba.AgentSubscribeRequest{
 				{ServerName: "server1", ReplicaIdx: 0, Shared: true,
-					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}},
+					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}},
 				{ServerName: "server1", ReplicaIdx: 1, Shared: true,
-					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"foo"}}}},
+					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"foo"}}}},
 			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes:&smallMemory, Replicas: 2},
 			code: codes.FailedPrecondition}, // schedule to 2 replicas but 1 fails
 	}
@@ -164,7 +164,7 @@ func TestUnloadModel(t *testing.T) {
 			name: "Simple",
 			req: []*pba.AgentSubscribeRequest{
 				{ServerName: "server1", ReplicaIdx: 0, Shared: true,
-					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}}},
+					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}}},
 			model: &pb.ModelDetails{Name: modelName, Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes:&smallMemory, Replicas: 1},
 			code: codes.OK,
 			modelReplicaStates: map[int]store.ModelReplicaState{0:store.UnloadRequested},
@@ -173,7 +173,7 @@ func TestUnloadModel(t *testing.T) {
 			name: "Multiple",
 			req: []*pba.AgentSubscribeRequest{
 				{ServerName: "server1", ReplicaIdx: 0, Shared: true,
-					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn", "xgboost"}}}},
+					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn", "xgboost"}}}},
 			model:              &pb.ModelDetails{Name: modelName, Uri: "gs://model", Requirements: []string{"xgboost", "sklearn"}, MemoryBytes: &smallMemory, Replicas: 1},
 			code:               codes.OK,
 			modelReplicaStates: map[int]store.ModelReplicaState{0: store.UnloadRequested},
@@ -182,9 +182,9 @@ func TestUnloadModel(t *testing.T) {
 			name: "TwoReplicas",
 			req: []*pba.AgentSubscribeRequest{
 				{ServerName: "server1", ReplicaIdx: 0, Shared: true,
-					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}},
+					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}},
 				{ServerName: "server1", ReplicaIdx: 1, Shared: true,
-					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}}},
+					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}}},
 			model: &pb.ModelDetails{Name: modelName, Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes:&smallMemory, Replicas: 2},
 			code: codes.OK,
 			modelReplicaStates: map[int]store.ModelReplicaState{0: store.UnloadRequested, 1: store.UnloadRequested},
@@ -193,7 +193,7 @@ func TestUnloadModel(t *testing.T) {
 			name: "NotExist",
 			req: []*pba.AgentSubscribeRequest{
 				{ServerName: "server1", ReplicaIdx: 0, Shared: true,
-					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferencePort: 1, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}}},
+					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}}},
 			model: nil,
 			code: codes.FailedPrecondition},
 	}

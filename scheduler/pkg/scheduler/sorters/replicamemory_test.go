@@ -27,9 +27,9 @@ func TestMemoryReplicaFilter(t *testing.T) {
 		{
 			name: "ThreeReplicasDifferentMemory",
 			replicas: []*CandidateReplica{
-				{Model: model, Replica: store.NewServerReplica("",8080,1,nil,[]string{},100,100,map[string]bool{},true)},
-				{Model: model, Replica: store.NewServerReplica("",8080,2,nil,[]string{},100,200,map[string]bool{},true)},
-				{Model: model, Replica: store.NewServerReplica("",8080,3,nil,[]string{},100,150,map[string]bool{},true)},
+				{Model: model, Replica: store.NewServerReplica("",8080, 5001, 1,nil,[]string{},100,100,map[string]bool{},true)},
+				{Model: model, Replica: store.NewServerReplica("",8080, 5001, 2,nil,[]string{},100,200,map[string]bool{},true)},
+				{Model: model, Replica: store.NewServerReplica("",8080, 5001, 3,nil,[]string{},100,150,map[string]bool{},true)},
 			},
 			ordering: []int{2,3,1},
 		},

@@ -26,7 +26,7 @@ func (xds *SeldonXDSCache) ClusterContents() []types.Resource {
 		for  _, value := range c.Endpoints { // Likely to be small (<100?) as is number of model replicas
 			endpoints = append(endpoints, value)
 		}
-		r = append(r, resources.MakeCluster(c.Name, endpoints))
+		r = append(r, resources.MakeCluster(c.Name, endpoints, c.Grpc))
 	}
 
 	return r
@@ -76,11 +76,12 @@ func (xds *SeldonXDSCache) AddListener(name string) {
 	}
 }
 
-func (xds *SeldonXDSCache) AddRoute(name, modelName string, clusterName string) {
+func (xds *SeldonXDSCache) AddRoute(name, modelName string, httpClusterName string, grpcClusterName string) {
 	xds.Routes[name] = resources.Route{
-		Name:    name,
-		Host:    modelName,
-		Cluster: clusterName,
+		Name:        name,
+		Host:        modelName,
+		HttpCluster: httpClusterName,
+		GrpcCluster: grpcClusterName,
 	}
 }
 
@@ -89,13 +90,14 @@ func (xds *SeldonXDSCache) HasCluster(name string) bool {
 	return ok
 }
 
-func (xds *SeldonXDSCache) AddCluster(name string, route string) {
+func (xds *SeldonXDSCache) AddCluster(name string, route string, isGrpc bool) {
 	cluster, ok := xds.Clusters[name]
 	if !ok {
 		cluster = resources.Cluster{
 			Name: name,
 			Endpoints: make(map[string]resources.Endpoint),
 			Routes: make(map[string]bool),
+			Grpc: isGrpc,
 		}
 	}
 	cluster.Routes[route] = true
@@ -108,15 +110,15 @@ func (xds *SeldonXDSCache) RemoveRoute(modelName string) {
 	if !ok {
 		return
 	}
-	cluster, ok := xds.Clusters[route.Cluster]
+	cluster, ok := xds.Clusters[route.HttpCluster]
 	if !ok {
 		return
 	}
 	delete(cluster.Routes, modelName)
 	if len(cluster.Routes) == 0 {
-		delete(xds.Clusters, route.Cluster)
+		delete(xds.Clusters, route.HttpCluster)
 	} else {
-		xds.Clusters[route.Cluster] = cluster
+		xds.Clusters[route.HttpCluster] = cluster
 	}
 	delete(xds.Routes, modelName)
 }
