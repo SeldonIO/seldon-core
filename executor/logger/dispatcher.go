@@ -10,12 +10,7 @@ const (
 	ENV_LOGGER_KAFKA_TOPIC  = "LOGGER_KAFKA_TOPIC"
 )
 
-var WorkerQueue chan chan LogRequest
-
-func StartDispatcher(nworkers int, log logr.Logger, sdepName string, namespace string, predictorName string, kafkaBroker string, kafkaTopic string) error {
-	// First, initialize the channel we are going to put the workers' work channels into.
-	WorkerQueue = make(chan chan LogRequest, nworkers)
-
+func StartDispatcher(nworkers int, logBufferSize int, writeTimeoutMs int, log logr.Logger, sdepName string, namespace string, predictorName string, kafkaBroker string, kafkaTopic string) error {
 	if kafkaBroker == "" {
 		kafkaBroker = os.Getenv(ENV_LOGGER_KAFKA_BROKER)
 	}
@@ -28,10 +23,13 @@ func StartDispatcher(nworkers int, log logr.Logger, sdepName string, namespace s
 		}
 	}
 
+	workQueue = make(chan LogRequest, logBufferSize)
+	writeTimeoutMilliseconds = writeTimeoutMs
+
 	// Now, create all of our workers.
 	for i := 0; i < nworkers; i++ {
 		log.Info("Starting", "worker", i+1)
-		worker, err := NewWorker(i+1, WorkQueue, log, sdepName, namespace, predictorName, kafkaBroker, kafkaTopic)
+		worker, err := NewWorker(i+1, workQueue, log, sdepName, namespace, predictorName, kafkaBroker, kafkaTopic)
 		if err != nil {
 			return err
 		}

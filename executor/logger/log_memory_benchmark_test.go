@@ -4,24 +4,32 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	_ "net/http/pprof"
 	"net/url"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"testing"
 	"time"
-	_ "net/http/pprof"
 )
+
+/*
+Benchmark for debugging high memory usage as reported in https://github.com/SeldonIO/seldon-core/issues/3726
+The actual time to complete is irrelevant, the important information is in the profiles we can get while running it.
+It simulates the executor getting a lot of requests and trying to write to a slow request logger.
+To run you should limit the number of executions like:
+go test -bench=. -run=^$ . -benchtime=10000x
+The profile endpoint will be printed to the screen.
+*/
 
 var processedChan = make(chan bool, 100)
 
 func BenchmarkLoggerMemoryUsage(b *testing.B) {
-	//fmt.Println("starting benchmark..")
 	serverPort := startSlowLogListener()
 
-	err := StartDispatcher(5, logf.Log.WithName("test"), "test-name", "test-namespace", "test-predictor", "", "")
+	err := StartDispatcher(5, DefaultWorkQueueSize, DefaultWriteTimeoutMilliseconds, logf.Log.WithName("test"), "test-name", "test-namespace", "test-predictor", "", "")
 	if err != nil {
 		b.Fatal(err)
 	}
-	logURL, err := url.Parse(fmt.Sprintf("http://localhost:%v/log",serverPort))
+	logURL, err := url.Parse(fmt.Sprintf("http://localhost:%v/log", serverPort))
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -30,11 +38,11 @@ func BenchmarkLoggerMemoryUsage(b *testing.B) {
 
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		<- processedChan
+		<-processedChan
 	}
 }
 
-func logNTimes(n int, b *testing.B, url *url.URL)  {
+func logNTimes(n int, b *testing.B, url *url.URL) {
 	testMessage := []byte("test message")
 	for i := 0; i < n; i++ {
 		err := QueueLogRequest(LogRequest{
@@ -76,7 +84,6 @@ func startSlowLogListener() int {
 	mux.Handle("/debug/pprof/", http.DefaultServeMux)
 
 	go func() {
-		// todo: cleanup
 		panic(http.Serve(listener, mux))
 	}()
 

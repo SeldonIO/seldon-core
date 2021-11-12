@@ -346,7 +346,6 @@ func (p *PredictorProcess) logPayload(nodeName string, logger *v1.Logger, reqTyp
 			RequestId:   puid,
 		})
 		if err != nil {
-			// TODO(ivan): is this how to log to stderr?
 			p.Log.Error(err, "failed to log request")
 		}
 	}()

@@ -47,10 +47,10 @@ func NewWorker(id int, workQueue chan LogRequest, log logr.Logger, sdepName stri
 
 	// Create, and return the worker.
 	return &Worker{
-		Log:         log,
-		ID:          id,
-		Work:        workQueue,
-		QuitChan:    make(chan bool),
+		Log:      log,
+		ID:       id,
+		Work:     workQueue,
+		QuitChan: make(chan bool),
 		Client: http.Client{
 			Timeout: 60 * time.Second,
 		},
