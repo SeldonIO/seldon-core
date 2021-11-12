@@ -70,7 +70,10 @@ var (
 	transport      = flag.String("transport", "rest", "The network transport mechanism rest, grpc")
 	filename       = flag.String("file", "", "Load graph from file")
 	hostname       = flag.String("hostname", "", "The hostname of the running server")
-	logWorkers     = flag.Int("logger_workers", 5, "Number of workers handling payload logging")
+	// TODO(ivan): expose this through operator
+	logWorkers     = flag.Int("logger_workers", 10, "Number of workers handling payload logging")
+	logWorkBufferSize = flag.Int("log_work_buffer_size", 10000, "Limit of buffered logs in memory while waiting for downstream request ingestion")
+
 	prometheusPath = flag.String("prometheus_path", "/metrics", "The prometheus metrics path")
 	kafkaBroker    = flag.String("kafka_broker", "", "The kafka broker as host:port")
 	kafkaTopicIn   = flag.String("kafka_input_topic", "", "The kafka input topic")
