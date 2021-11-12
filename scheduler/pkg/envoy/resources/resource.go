@@ -15,9 +15,9 @@
 package resources
 
 import (
+	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/durationpb"
 	"time"
-
-	"github.com/golang/protobuf/ptypes"
 
 	cluster "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
@@ -25,6 +25,7 @@ import (
 	listener "github.com/envoyproxy/go-control-plane/envoy/config/listener/v3"
 	route "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	hcm "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
+	http "github.com/envoyproxy/go-control-plane/envoy/extensions/upstreams/http/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 )
@@ -35,27 +36,36 @@ const (
 
 func MakeCluster(clusterName string, eps []Endpoint, isGrpc bool) *cluster.Cluster {
 	if isGrpc {
+		httpProtocolOptions := http.HttpProtocolOptions{
+			UpstreamProtocolOptions: &http.HttpProtocolOptions_ExplicitHttpConfig_{
+				ExplicitHttpConfig: &http.HttpProtocolOptions_ExplicitHttpConfig{
+					ProtocolConfig: &http.HttpProtocolOptions_ExplicitHttpConfig_Http2ProtocolOptions{
+						Http2ProtocolOptions: &core.Http2ProtocolOptions{},
+					},
+				},
+			},
+		}
+		hpoMarshalled, err := anypb.New(&httpProtocolOptions)
+		if err != nil {
+			panic(err)
+		}
 		return &cluster.Cluster{
 			Name:                 clusterName,
-			ConnectTimeout:       ptypes.DurationProto(5 * time.Second),
+			ConnectTimeout:       durationpb.New(5 * time.Second),
 			ClusterDiscoveryType: &cluster.Cluster_Type{Type: cluster.Cluster_STRICT_DNS},
 			LbPolicy:             cluster.Cluster_ROUND_ROBIN,
 			LoadAssignment:  MakeEndpoint(clusterName, eps),
 			DnsLookupFamily:  cluster.Cluster_V4_ONLY,
-			Http2ProtocolOptions: &core.Http2ProtocolOptions{},
+			TypedExtensionProtocolOptions: map[string]*anypb.Any{"envoy.extensions.upstreams.http.v3.HttpProtocolOptions":hpoMarshalled},
 		}
 	}
 	return &cluster.Cluster{
 		Name:                 clusterName,
-		ConnectTimeout:       ptypes.DurationProto(5 * time.Second),
-		//ClusterDiscoveryType: &cluster.Cluster_Type{Type: cluster.Cluster_EDS},
+		ConnectTimeout:       durationpb.New(5 * time.Second),
 		ClusterDiscoveryType: &cluster.Cluster_Type{Type: cluster.Cluster_STRICT_DNS},
 		LbPolicy:             cluster.Cluster_ROUND_ROBIN,
-		//LoadAssignment:       makeEndpoint(clusterName, UpstreamHost),
 		LoadAssignment:  MakeEndpoint(clusterName, eps),
 		DnsLookupFamily:  cluster.Cluster_V4_ONLY,
-		//EdsClusterConfig: makeEDSCluster(),
-		//Http2ProtocolOptions: &core.Http2ProtocolOptions{},
 	}
 }
 
@@ -189,7 +199,7 @@ func MakeHTTPListener(listenerName, address string, port uint32) *listener.Liste
 			Name: wellknown.Router,
 		}},
 	}
-	pbst, err := ptypes.MarshalAny(manager)
+	pbst, err := anypb.New(manager)
 	if err != nil {
 		panic(err)
 	}
