@@ -37,6 +37,7 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | crd.create | bool | `true` |  |
 | crd.forceV1 | bool | `false` |  |
 | crd.forceV1beta1 | bool | `false` |  |
+| crd.annotations | map | `{}` | Annotations to add to the CRD |
 | credentials.gcs.gcsCredentialFileName | string | `"gcloud-application-credentials.json"` |  |
 | credentials.s3.s3AccessKeyIDName | string | `"awsAccessKeyID"` |  |
 | credentials.s3.s3SecretAccessKeyName | string | `"awsSecretAccessKey"` |  |
@@ -85,6 +86,7 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | manager.leaderElectionID | string | `"a33bd623.machinelearning.seldon.io"` |  |
 | manager.memoryLimit | string | `"300Mi"` |  |
 | manager.memoryRequest | string | `"200Mi"` |  |
+| manager.annotations | map | `{}` | Annotations to add to the deployment template spec |
 | managerCreateResources | bool | `false` |  |
 | managerUserID | int | `8888` |  |
 | namespaceOverride | string | `""` |  |

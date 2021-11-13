@@ -21,6 +21,9 @@ spec:
   template:
     metadata:
       annotations:
+{{- with .Values.manager.annotations }}
+{{- toYaml . | nindent 4}}
+{{- end }}
         prometheus.io/scrape: 'true'
         sidecar.istio.io/inject: 'false'
       labels:

@@ -5,7 +5,8 @@ import re
 import yaml
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--prefix", default="xx", help="find files matching prefix")
+parser.add_argument("--prefix", default="xx",
+                    help="find files matching prefix")
 parser.add_argument("--folder", required=True, help="Output folder")
 args, _ = parser.parse_known_args()
 
@@ -29,6 +30,9 @@ HELM_CREATERESOURCES_IF_START = "{{- if not .Values.managerCreateResources }}\n"
 HELM_CREATERESOURCES_RBAC_IF_START = "{{- if .Values.managerCreateResources }}\n"
 HELM_K8S_V1_CRD_IF_START = '{{- if or (ge (int (regexFind "[0-9]+" .Capabilities.KubeVersion.Minor)) 18) (.Values.crd.forcev1) }}\n'
 HELM_K8S_V1BETA1_CRD_IF_START = '{{- if or (lt (int (regexFind "[0-9]+" .Capabilities.KubeVersion.Minor)) 18) (.Values.crd.forcev1beta1) }}\n'
+HELM_CRD_ANNOTATIONS_WITH_START = '{{- with .Values.crd.annotations }}\n'
+HELM_ANNOTATIONS_TOYAML = '{{- toYaml . | nindent 4}}\n'
+HELM_CONTROLER_DEP_ANNOTATIONS_WITH_START = '{{- with .Values.manager.annotations }}\n'
 HELM_IF_END = "{{- end }}\n"
 
 HELM_ENV_SUBST = {
@@ -96,7 +100,8 @@ if __name__ == "__main__":
         webhookData
         + '{{- $altNames := list ( printf "seldon-webhook-service.%s" (include "seldon.namespace" .) ) ( printf "seldon-webhook-service.%s.svc" (include "seldon.namespace" .) ) -}}\n'
     )
-    webhookData = webhookData + '{{- $ca := genCA "custom-metrics-ca" 365 -}}\n'
+    webhookData = webhookData + \
+        '{{- $ca := genCA "custom-metrics-ca" 365 -}}\n'
     webhookData = (
         webhookData
         + '{{- $cert := genSignedCert "seldon-webhook-service" nil $altNames 365 $ca -}}\n'
@@ -108,7 +113,8 @@ if __name__ == "__main__":
             kind = res["kind"].lower()
             name = res["metadata"]["name"].lower()
             version = res["apiVersion"]
-            filename = args.folder + "/" + (kind + "_" + name).lower() + ".yaml"
+            filename = args.folder + "/" + \
+                (kind + "_" + name).lower() + ".yaml"
             print(filename)
             print(version)
             if (
@@ -201,7 +207,8 @@ if __name__ == "__main__":
                     if portSpec["name"] == "webhook-server":
                         portSpec["containerPort"] = helm_value("webhook.port")
                 for argIdx in range(
-                    0, len(res["spec"]["template"]["spec"]["containers"][0]["args"])
+                    0, len(res["spec"]["template"]["spec"]
+                           ["containers"][0]["args"])
                 ):
                     if (
                         res["spec"]["template"]["spec"]["containers"][0]["args"][argIdx]
@@ -216,7 +223,8 @@ if __name__ == "__main__":
 
             if kind == "configmap" and name == "seldon-config":
                 res["data"]["credentials"] = helm_value_json("credentials")
-                res["data"]["predictor_servers"] = helm_value_json("predictor_servers")
+                res["data"]["predictor_servers"] = helm_value_json(
+                    "predictor_servers")
                 res["data"]["storageInitializer"] = helm_value_json(
                     "storageInitializer"
                 )
@@ -239,7 +247,8 @@ if __name__ == "__main__":
                     res["roleRef"]["name"] + "-" + helm_namespace_override()
                 )
                 if name == "seldon-manager-rolebinding":
-                    res["subjects"][0]["name"] = helm_value("serviceAccount.name")
+                    res["subjects"][0]["name"] = helm_value(
+                        "serviceAccount.name")
                     res["subjects"][0]["namespace"] = helm_namespace_override()
                 elif name != "seldon-spartakus-volunteer":
                     res["subjects"][0]["namespace"] = helm_namespace_override()
@@ -252,7 +261,8 @@ if __name__ == "__main__":
                     or name == "seldon1-manager-sas-rolebinding"
                     or name == "seldon-leader-election-rolebinding"
                 ):
-                    res["subjects"][0]["name"] = helm_value("serviceAccount.name")
+                    res["subjects"][0]["name"] = helm_value(
+                        "serviceAccount.name")
                     res["subjects"][0]["namespace"] = helm_namespace_override()
 
             # Update webhook certificates
@@ -301,7 +311,8 @@ if __name__ == "__main__":
 
             # Update webhook service port
             if kind == "service" and name == "seldon-webhook-service":
-                res["spec"]["ports"][0]["targetPort"] = helm_value("webhook.port")
+                res["spec"]["ports"][0]["targetPort"] = helm_value(
+                    "webhook.port")
 
             fdata = yaml.dump(res, width=1000)
 
@@ -392,7 +403,13 @@ if __name__ == "__main__":
                 fdata = (
                     HELM_CRD_IF_START
                     + HELM_K8S_V1BETA1_CRD_IF_START
-                    + fdata
+                    + re.sub(
+                        r"(.*controller-gen.kubebuilder.io/version.*\n)",
+                        r"\1" + HELM_CRD_ANNOTATIONS_WITH_START +
+                        HELM_ANNOTATIONS_TOYAML + HELM_IF_END,
+                        fdata,
+                        re.M,
+                    )
                     + HELM_IF_END
                     + HELM_IF_END
                 )
@@ -403,7 +420,13 @@ if __name__ == "__main__":
                 fdata = (
                     HELM_CRD_IF_START
                     + HELM_K8S_V1_CRD_IF_START
-                    + fdata
+                    + re.sub(
+                        r"(.*controller-gen.kubebuilder.io/version.*\n)",
+                        r"\1" + HELM_CRD_ANNOTATIONS_WITH_START +
+                        HELM_ANNOTATIONS_TOYAML + HELM_IF_END,
+                        fdata,
+                        re.M,
+                    )
                     + HELM_IF_END
                     + HELM_IF_END
                 )
@@ -421,6 +444,14 @@ if __name__ == "__main__":
                 fdata = re.sub(
                     r"(.*volumes:\n.*\n.*\n.*\n.*\n)",
                     HELM_CREATERESOURCES_IF_START + r"\1" + HELM_IF_END,
+                    fdata,
+                    re.M,
+                )
+
+                fdata = re.sub(
+                    r"(.*template:\n.*metadata:\n.*annotations:\n)",
+                    r"\1" + HELM_CONTROLER_DEP_ANNOTATIONS_WITH_START +
+                    HELM_ANNOTATIONS_TOYAML + HELM_IF_END,
                     fdata,
                     re.M,
                 )
