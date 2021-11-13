@@ -333,16 +333,22 @@ func (p *PredictorProcess) logPayload(nodeName string, logger *v1.Logger, reqTyp
 	if err != nil {
 		return err
 	}
-	payloadLogger.QueueLogRequest(payloadLogger.LogRequest{
-		Url:         logUrl,
-		Bytes:       &data,
-		ContentType: msg.GetContentType(),
-		ReqType:     reqType,
-		Id:          guuid.New().String(),
-		SourceUri:   p.ServerUrl,
-		ModelId:     nodeName,
-		RequestId:   puid,
-	})
+
+	go func() {
+		err := payloadLogger.QueueLogRequest(payloadLogger.LogRequest{
+			Url:         logUrl,
+			Bytes:       &data,
+			ContentType: msg.GetContentType(),
+			ReqType:     reqType,
+			Id:          guuid.New().String(),
+			SourceUri:   p.ServerUrl,
+			ModelId:     nodeName,
+			RequestId:   puid,
+		})
+		if err != nil {
+			p.Log.Error(err, "failed to log request")
+		}
+	}()
 	return nil
 }
 

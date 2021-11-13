@@ -29,7 +29,7 @@ const (
 // NewWorker creates, and returns a new Worker object. Its only argument
 // is a channel that the worker can add itself to whenever it is done its
 // work.
-func NewWorker(id int, workerQueue chan chan LogRequest, log logr.Logger, sdepName string, namespace string, predictorName string, kafkaBroker string, kafkaTopic string) (*Worker, error) {
+func NewWorker(id int, workQueue chan LogRequest, log logr.Logger, sdepName string, namespace string, predictorName string, kafkaBroker string, kafkaTopic string) (*Worker, error) {
 
 	var producer *kafka.Producer
 	var err error
@@ -47,11 +47,10 @@ func NewWorker(id int, workerQueue chan chan LogRequest, log logr.Logger, sdepNa
 
 	// Create, and return the worker.
 	return &Worker{
-		Log:         log,
-		ID:          id,
-		Work:        make(chan LogRequest),
-		WorkerQueue: workerQueue,
-		QuitChan:    make(chan bool),
+		Log:      log,
+		ID:       id,
+		Work:     workQueue,
+		QuitChan: make(chan bool),
 		Client: http.Client{
 			Timeout: 60 * time.Second,
 		},
@@ -68,7 +67,6 @@ type Worker struct {
 	Log           logr.Logger
 	ID            int
 	Work          chan LogRequest
-	WorkerQueue   chan chan LogRequest
 	QuitChan      chan bool
 	Client        http.Client
 	CeCtx         context.Context
@@ -173,9 +171,6 @@ func (w *Worker) sendCloudEvent(logReq LogRequest) error {
 func (w *Worker) Start() {
 	go func() {
 		for {
-			// Add ourselves into the worker queue.
-			w.WorkerQueue <- w.Work
-
 			select {
 			case work := <-w.Work:
 				// Receive a work request.

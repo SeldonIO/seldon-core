@@ -19,7 +19,6 @@ require (
 	github.com/seldonio/seldon-core/operator v0.0.0-00010101000000-000000000000
 	github.com/tensorflow/tensorflow/tensorflow/go/core v0.0.0-00010101000000-000000000000
 	github.com/uber/jaeger-client-go v2.25.0+incompatible
-	github.com/uber/jaeger-lib v2.2.0+incompatible // indirect
 	go.uber.org/automaxprocs v1.4.0
 	go.uber.org/zap v1.19.0
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
@@ -55,6 +54,7 @@ require (
 	github.com/prometheus/procfs v0.6.0 // indirect
 	github.com/sirupsen/logrus v1.7.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/uber/jaeger-lib v2.2.0+incompatible // indirect
 	go.opencensus.io v0.23.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect

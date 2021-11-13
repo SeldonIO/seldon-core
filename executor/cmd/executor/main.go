@@ -58,28 +58,30 @@ var (
 
 	debugDefault = false
 
-	configPath     = flag.String("config", "", "Path to kubconfig")
-	sdepName       = flag.String("sdep", "", "Seldon deployment name")
-	namespace      = flag.String("namespace", "", "Namespace")
-	predictorName  = flag.String("predictor", "", "Name of the predictor inside the SeldonDeployment")
-	httpPort       = flag.Int("http_port", 8080, "Executor http port")
-	grpcPort       = flag.Int("grpc_port", 5000, "Executor grpc port")
-	wait           = flag.Duration("graceful_timeout", time.Second*15, "Graceful shutdown secs")
-	delay          = flag.Duration("shutdown_delay", 0, "Shutdown delay secs")
-	protocol       = flag.String("protocol", "seldon", "The payload protocol")
-	transport      = flag.String("transport", "rest", "The network transport mechanism rest, grpc")
-	filename       = flag.String("file", "", "Load graph from file")
-	hostname       = flag.String("hostname", "", "The hostname of the running server")
-	logWorkers     = flag.Int("logger_workers", 5, "Number of workers handling payload logging")
-	prometheusPath = flag.String("prometheus_path", "/metrics", "The prometheus metrics path")
-	kafkaBroker    = flag.String("kafka_broker", "", "The kafka broker as host:port")
-	kafkaTopicIn   = flag.String("kafka_input_topic", "", "The kafka input topic")
-	kafkaTopicOut  = flag.String("kafka_output_topic", "", "The kafka output topic")
-	kafkaFullGraph = flag.Bool("kafka_full_graph", false, "Use kafka for internal graph processing")
-	kafkaWorkers   = flag.Int("kafka_workers", 4, "Number of kafka workers")
-	logKafkaBroker = flag.String("log_kafka_broker", "", "The kafka log broker")
-	logKafkaTopic  = flag.String("log_kafka_topic", "", "The kafka log topic")
-	debug          = flag.Bool(
+	configPath        = flag.String("config", "", "Path to kubconfig")
+	sdepName          = flag.String("sdep", "", "Seldon deployment name")
+	namespace         = flag.String("namespace", "", "Namespace")
+	predictorName     = flag.String("predictor", "", "Name of the predictor inside the SeldonDeployment")
+	httpPort          = flag.Int("http_port", 8080, "Executor http port")
+	grpcPort          = flag.Int("grpc_port", 5000, "Executor grpc port")
+	wait              = flag.Duration("graceful_timeout", time.Second*15, "Graceful shutdown secs")
+	delay             = flag.Duration("shutdown_delay", 0, "Shutdown delay secs")
+	protocol          = flag.String("protocol", "seldon", "The payload protocol")
+	transport         = flag.String("transport", "rest", "The network transport mechanism rest, grpc")
+	filename          = flag.String("file", "", "Load graph from file")
+	hostname          = flag.String("hostname", "", "The hostname of the running server")
+	logWorkers        = flag.Int("logger_workers", 10, "Number of workers handling payload logging")
+	logWorkBufferSize = flag.Int("log_work_buffer_size", 10000, "Limit of buffered logs in memory while waiting for downstream request ingestion")
+	logWriteTimeoutMs = flag.Int("log_write_timeout_ms", 2000, "Timeout before giving up writing log if buffer is full. If <= 0 will immediately drop log on full log buffer.")
+	prometheusPath    = flag.String("prometheus_path", "/metrics", "The prometheus metrics path")
+	kafkaBroker       = flag.String("kafka_broker", "", "The kafka broker as host:port")
+	kafkaTopicIn      = flag.String("kafka_input_topic", "", "The kafka input topic")
+	kafkaTopicOut     = flag.String("kafka_output_topic", "", "The kafka output topic")
+	kafkaFullGraph    = flag.Bool("kafka_full_graph", false, "Use kafka for internal graph processing")
+	kafkaWorkers      = flag.Int("kafka_workers", 4, "Number of kafka workers")
+	logKafkaBroker    = flag.String("log_kafka_broker", "", "The kafka log broker")
+	logKafkaTopic     = flag.String("log_kafka_topic", "", "The kafka log topic")
+	debug             = flag.Bool(
 		"debug",
 		util.GetEnvAsBool(debugEnvVar, debugDefault),
 		"Enable debug mode. Logs will be sampled and less structured.",
@@ -345,7 +347,7 @@ func main() {
 	}
 
 	//Start Logger Dispacther
-	err = loghandler.StartDispatcher(*logWorkers, logger, *sdepName, *namespace, *predictorName, *logKafkaBroker, *logKafkaTopic)
+	err = loghandler.StartDispatcher(*logWorkers, *logWorkBufferSize, *logWriteTimeoutMs, logger, *sdepName, *namespace, *predictorName, *logKafkaBroker, *logKafkaTopic)
 	if err != nil {
 		log.Fatal("Failed to start log dispatcher", err)
 	}
