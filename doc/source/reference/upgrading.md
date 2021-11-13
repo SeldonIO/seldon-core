@@ -26,6 +26,11 @@ The request logging from the executor now has a configurable queue size and writ
   * `executor.requestLogger.workQueueSize` (default 10000)
   * `executor.requestLogger.writeTimeoutMs` (default 2000)
 
+It is also possible to update these values on a per SeldonDeployment basis with the annotations:
+
+ * `seldon.io/executor-logger-queue-size`
+ * `seldon.io/executor-logger-write-timeout-ms`
+
 ## Upgrading to 1.11
 
 ### Python S2I Wrapper

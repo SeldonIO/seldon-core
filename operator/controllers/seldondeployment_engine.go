@@ -253,12 +253,14 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 		probeScheme = corev1.URISchemeHTTPS
 	}
 
-	_, err := strconv.Atoi(executorReqLoggerWorkQueueSize)
+	loggerQSize := getAnnotation(mlDep, machinelearningv1.ANNOTATION_LOGGER_WORK_QUEUE_SIZE, executorReqLoggerWorkQueueSize)
+	_, err := strconv.Atoi(loggerQSize)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to parse %s as integer for %s. %w", executorReqLoggerWorkQueueSize, ENV_EXECUTOR_REQUEST_LOGGER_WORK_QUEUE_SIZE, err)
+		return nil, fmt.Errorf("Failed to parse %s as integer for %s. %w", loggerQSize, ENV_EXECUTOR_REQUEST_LOGGER_WORK_QUEUE_SIZE, err)
 	}
 
-	_, err = strconv.Atoi(executorReqLoggerWriteTimeoutMs)
+	loggerWriteTimeout := getAnnotation(mlDep, machinelearningv1.ANNOTATION_LOGGER_WRITE_TIMEOUT_MS, executorReqLoggerWriteTimeoutMs)
+	_, err = strconv.Atoi(loggerWriteTimeout)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to parse %s as integer for %s. %w", executorReqLoggerWriteTimeoutMs, ENV_EXECUTOR_REQUEST_LOGGER_WRITE_TIMEOUT_MS, err)
 	}
@@ -275,8 +277,8 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 			"--protocol", string(protocol),
 			"--prometheus_path", getPrometheusPath(mlDep),
 			"--server_type", string(serverType),
-			"--log_work_buffer_size", executorReqLoggerWorkQueueSize,
-			"--log_write_timeout_ms", executorReqLoggerWriteTimeoutMs,
+			"--log_work_buffer_size", loggerQSize,
+			"--log_write_timeout_ms", loggerWriteTimeout,
 		},
 		ImagePullPolicy:          corev1.PullPolicy(utils.GetEnv("EXECUTOR_CONTAINER_IMAGE_PULL_POLICY", "IfNotPresent")),
 		TerminationMessagePath:   "/dev/termination-log",
