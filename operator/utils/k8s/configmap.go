@@ -22,7 +22,7 @@ type ConfigmapCreator struct {
 func NewConfigmapCreator(client kubernetes.Interface, logger logr.Logger, scheme *runtime.Scheme) *ConfigmapCreator {
 	return &ConfigmapCreator{
 		clientset: client,
-		logger:    logger,
+		logger:    logger.WithName("ConfigMapCreator"),
 		scheme:    scheme,
 	}
 }
@@ -43,6 +43,7 @@ func (cc *ConfigmapCreator) CreateConfigmap(ctx context.Context, rawYaml []byte,
 	// add ownership
 	err = ctrl.SetControllerReference(owner, &cm, cc.scheme)
 	if err != nil {
+		cc.logger.Error(err, "Failed to set controller reference on configmap")
 		return err
 	}
 

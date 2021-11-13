@@ -110,11 +110,10 @@ func TestValidatingWebhookCreate(t *testing.T) {
 	hosts := []string{"seldon-webhook-service.seldon-system", "seldon-webhook-service.seldon-system.svc"}
 	certs, err := certSetup(hosts)
 	g.Expect(err).To(BeNil())
-	wc, err := NewWebhookCreator(client, certs, ctrl.Log, scheme)
-	g.Expect(err).To(BeNil())
+	wc := NewWebhookCreator(client, certs, ctrl.Log, scheme)
 	err = wc.CreateValidatingWebhookConfigurationFromFile(context.TODO(), bytes, TestNamespace, crd, false)
 	g.Expect(err).To(BeNil())
-	_, err = client.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().Get(context.TODO(), "seldon-validating-webhook", metav1.GetOptions{})
+	_, err = client.AdmissionregistrationV1().ValidatingWebhookConfigurations().Get(context.TODO(), "seldon-validating-webhook", metav1.GetOptions{})
 	g.Expect(err).To(BeNil())
 }
 
@@ -130,11 +129,10 @@ func TestValidatingWebhookCreateNamespaced(t *testing.T) {
 	hosts := []string{"seldon-webhook-service.seldon-system", "seldon-webhook-service.seldon-system.svc"}
 	certs, err := certSetup(hosts)
 	g.Expect(err).To(BeNil())
-	wc, err := NewWebhookCreator(client, certs, ctrl.Log, scheme)
-	g.Expect(err).To(BeNil())
+	wc := NewWebhookCreator(client, certs, ctrl.Log, scheme)
 	err = wc.CreateValidatingWebhookConfigurationFromFile(context.TODO(), bytes, TestNamespace, crd, true)
 	g.Expect(err).To(BeNil())
-	_, err = client.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().Get(context.TODO(), "seldon-validating-webhook-"+TestNamespace, metav1.GetOptions{})
+	_, err = client.AdmissionregistrationV1().ValidatingWebhookConfigurations().Get(context.TODO(), "seldon-validating-webhook-"+TestNamespace, metav1.GetOptions{})
 	g.Expect(err).To(BeNil())
 }
 
@@ -149,8 +147,7 @@ func TestWebHookSvcCreate(t *testing.T) {
 	hosts := []string{"seldon-webhook-service.seldon-system", "seldon-webhook-service.seldon-system.svc"}
 	certs, err := certSetup(hosts)
 	g.Expect(err).To(BeNil())
-	wc, err := NewWebhookCreator(client, certs, ctrl.Log, scheme)
-	g.Expect(err).To(BeNil())
+	wc := NewWebhookCreator(client, certs, ctrl.Log, scheme)
 	err = wc.CreateWebhookServiceFromFile(context.TODO(), bytes, TestNamespace, dep)
 	g.Expect(err).To(BeNil())
 }

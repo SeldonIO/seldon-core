@@ -24,7 +24,7 @@ func NewCrdCreator(ctx context.Context, apiExtensionsClient apiextensionsclient.
 	return &CrdCreator{
 		apiExtensionsClient: apiExtensionsClient,
 		discoveryClient:     discoveryClient,
-		logger:              logger,
+		logger:              logger.WithName("CRDCreator"),
 		ctx:                 ctx,
 	}
 }
@@ -43,6 +43,7 @@ func (cc *CrdCreator) createCRDV1beta1(rawYaml []byte) (*v1beta1.CustomResourceD
 	crd := v1beta1.CustomResourceDefinition{}
 	err := yaml.Unmarshal(rawYaml, &crd)
 	if err != nil {
+		cc.logger.Error(err, "Failed to unmarshall v1beta1 CRD")
 		return nil, err
 	}
 	client := cc.apiExtensionsClient.ApiextensionsV1beta1().CustomResourceDefinitions()
@@ -53,6 +54,7 @@ func (cc *CrdCreator) createCRDV1(rawYaml []byte) (*extensionsv1.CustomResourceD
 	crd := extensionsv1.CustomResourceDefinition{}
 	err := yaml.Unmarshal(rawYaml, &crd)
 	if err != nil {
+		cc.logger.Error(err, "Failed to unmarshall V1 CRD")
 		return nil, err
 	}
 	client := cc.apiExtensionsClient.ApiextensionsV1().CustomResourceDefinitions()
@@ -68,10 +70,12 @@ func (cc *CrdCreator) findOrCreateCRDV1beta1(rawYaml []byte) (v1.Object, error) 
 			cc.logger.Info("CRD v1beta1 not found - trying to create")
 			crd, err = cc.createCRDV1beta1(rawYaml)
 			if err != nil {
+				cc.logger.Error(err, "Failed to create v1beta1 CRD")
 				return nil, err
 			}
 			cc.logger.Info("CRD v1beta1 created")
 		} else {
+			cc.logger.Error(err, "Failed finding v1beta1 crd")
 			return nil, err
 		}
 	} else {
@@ -89,10 +93,12 @@ func (cc *CrdCreator) findOrCreateCRDV1(rawYaml []byte) (*extensionsv1.CustomRes
 			cc.logger.Info("CRD V1 not found - trying to create")
 			crd, err = cc.createCRDV1(rawYaml)
 			if err != nil {
+				cc.logger.Error(err, "Failed to create v1 CRD")
 				return nil, err
 			}
 			cc.logger.Info("CRD V1 created")
 		} else {
+			cc.logger.Error(err, "Failed finding V1 CRD")
 			return nil, err
 		}
 	} else {
@@ -104,14 +110,17 @@ func (cc *CrdCreator) findOrCreateCRDV1(rawYaml []byte) (*extensionsv1.CustomRes
 func (cc *CrdCreator) findOrCreateCRD(rawYamlv1 []byte, rawYamlv1beta1 []byte) (v1.Object, error) {
 	serverVersion, err := GetServerVersion(cc.discoveryClient, cc.logger)
 	if err != nil {
+		cc.logger.Error(err, "Failed to get version from cluster")
 		return nil, err
 	}
 	v, err := semver.NewVersion(serverVersion)
 	if err != nil {
+		cc.logger.Error(err, "Failed to create semver Version")
 		return nil, err
 	}
 	c, err := semver.NewConstraint(">= 1.18.0")
 	if err != nil {
+		cc.logger.Error(err, "Failed applying constraint to check greater than 1.18.0 cluster")
 		return nil, err
 	}
 	check := c.Check(v)
