@@ -14,6 +14,7 @@ const DefaultMinorVersion = 18
 func GetServerVersion(client discovery.DiscoveryInterface, logger logr.Logger) (string, error) {
 	serverVersion, err := client.ServerVersion()
 	if err != nil {
+		logger.Error(err, "Failed to get server version")
 		return "", err
 	}
 	logger.Info("Server version", "Major", serverVersion.Major, "Minor", serverVersion.Minor)
