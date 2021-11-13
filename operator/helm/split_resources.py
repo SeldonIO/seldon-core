@@ -72,6 +72,8 @@ HELM_ENV_SUBST = {
     "ENGINE_DEFAULT_MEMORY_REQUEST": "engine.resources.memoryRequest",
     "MANAGER_LOG_LEVEL": "manager.logLevel",
     "MANAGER_LEADER_ELECTION_ID": "manager.leaderElectionID",
+    "EXECUTOR_REQUEST_LOGGER_WORK_QUEUE_SIZE": "executor.requestLogger.workQueueSize",
+    "EXECUTOR_REQUEST_LOGGER_WRITE_TIMEOUT_MS": "executor.requestLogger.writeTimeoutMs",
 }
 HELM_VALUES_IMAGE_PULL_POLICY = "{{ .Values.image.pullPolicy }}"
 

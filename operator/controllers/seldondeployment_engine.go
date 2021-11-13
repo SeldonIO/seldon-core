@@ -33,22 +33,24 @@ import (
 )
 
 const (
-	ENV_DEFAULT_EXECUTOR_SERVER_PORT      = "EXECUTOR_SERVER_PORT"
-	ENV_DEFAULT_EXECUTOR_SERVER_GRPC_PORT = "EXECUTOR_SERVER_GRPC_PORT"
-	ENV_DEFAULT_EXECUTOR_CPU_REQUEST      = "EXECUTOR_DEFAULT_CPU_REQUEST"
-	ENV_DEFAULT_EXECUTOR_MEMORY_REQUEST   = "EXECUTOR_DEFAULT_MEMORY_REQUEST"
-	ENV_DEFAULT_EXECUTOR_CPU_LIMIT        = "EXECUTOR_DEFAULT_CPU_LIMIT"
-	ENV_DEFAULT_EXECUTOR_MEMORY_LIMIT     = "EXECUTOR_DEFAULT_MEMORY_LIMIT"
-	ENV_DEFAULT_ENGINE_CPU_REQUEST        = "ENGINE_DEFAULT_CPU_REQUEST"
-	ENV_DEFAULT_ENGINE_MEMORY_REQUEST     = "ENGINE_DEFAULT_MEMORY_REQUEST"
-	ENV_DEFAULT_ENGINE_CPU_LIMIT          = "ENGINE_DEFAULT_CPU_LIMIT"
-	ENV_DEFAULT_ENGINE_MEMORY_LIMIT       = "ENGINE_DEFAULT_MEMORY_LIMIT"
-	ENV_EXECUTOR_METRICS_PORT_NAME        = "EXECUTOR_SERVER_METRICS_PORT_NAME"
-	ENV_EXECUTOR_PROMETHEUS_PATH          = "EXECUTOR_PROMETHEUS_PATH"
-	ENV_ENGINE_PROMETHEUS_PATH            = "ENGINE_PROMETHEUS_PATH"
-	ENV_EXECUTOR_USER                     = "EXECUTOR_CONTAINER_USER"
-	ENV_ENGINE_USER                       = "ENGINE_CONTAINER_USER"
-	ENV_USE_EXECUTOR                      = "USE_EXECUTOR"
+	ENV_DEFAULT_EXECUTOR_SERVER_PORT             = "EXECUTOR_SERVER_PORT"
+	ENV_DEFAULT_EXECUTOR_SERVER_GRPC_PORT        = "EXECUTOR_SERVER_GRPC_PORT"
+	ENV_DEFAULT_EXECUTOR_CPU_REQUEST             = "EXECUTOR_DEFAULT_CPU_REQUEST"
+	ENV_DEFAULT_EXECUTOR_MEMORY_REQUEST          = "EXECUTOR_DEFAULT_MEMORY_REQUEST"
+	ENV_DEFAULT_EXECUTOR_CPU_LIMIT               = "EXECUTOR_DEFAULT_CPU_LIMIT"
+	ENV_DEFAULT_EXECUTOR_MEMORY_LIMIT            = "EXECUTOR_DEFAULT_MEMORY_LIMIT"
+	ENV_DEFAULT_ENGINE_CPU_REQUEST               = "ENGINE_DEFAULT_CPU_REQUEST"
+	ENV_DEFAULT_ENGINE_MEMORY_REQUEST            = "ENGINE_DEFAULT_MEMORY_REQUEST"
+	ENV_DEFAULT_ENGINE_CPU_LIMIT                 = "ENGINE_DEFAULT_CPU_LIMIT"
+	ENV_DEFAULT_ENGINE_MEMORY_LIMIT              = "ENGINE_DEFAULT_MEMORY_LIMIT"
+	ENV_EXECUTOR_METRICS_PORT_NAME               = "EXECUTOR_SERVER_METRICS_PORT_NAME"
+	ENV_EXECUTOR_PROMETHEUS_PATH                 = "EXECUTOR_PROMETHEUS_PATH"
+	ENV_EXECUTOR_REQUEST_LOGGER_WORK_QUEUE_SIZE  = "EXECUTOR_REQUEST_LOGGER_WORK_QUEUE_SIZE"
+	ENV_EXECUTOR_REQUEST_LOGGER_WRITE_TIMEOUT_MS = "EXECUTOR_REQUEST_LOGGER_WRITE_TIMEOUT_MS"
+	ENV_ENGINE_PROMETHEUS_PATH                   = "ENGINE_PROMETHEUS_PATH"
+	ENV_EXECUTOR_USER                            = "EXECUTOR_CONTAINER_USER"
+	ENV_ENGINE_USER                              = "ENGINE_CONTAINER_USER"
+	ENV_USE_EXECUTOR                             = "USE_EXECUTOR"
 
 	DEFAULT_EXECUTOR_CONTAINER_PORT = 8000
 	DEFAULT_EXECUTOR_GRPC_PORT      = 5001
@@ -71,10 +73,12 @@ var (
 
 	executorMetricsPortName = utils.GetEnv(ENV_EXECUTOR_METRICS_PORT_NAME, constants.DefaultMetricsPortName)
 
-	executorDefaultCpuRequest    = utils.GetEnv(ENV_DEFAULT_EXECUTOR_CPU_REQUEST, constants.DefaultExecutorCpuRequest)
-	executorDefaultCpuLimit      = utils.GetEnv(ENV_DEFAULT_EXECUTOR_CPU_LIMIT, constants.DefaultExecutorCpuLimit)
-	executorDefaultMemoryRequest = utils.GetEnv(ENV_DEFAULT_EXECUTOR_MEMORY_REQUEST, constants.DefaultExecutorMemoryRequest)
-	executorDefaultMemoryLimit   = utils.GetEnv(ENV_DEFAULT_EXECUTOR_MEMORY_LIMIT, constants.DefaultExecutorMemoryLimit)
+	executorDefaultCpuRequest       = utils.GetEnv(ENV_DEFAULT_EXECUTOR_CPU_REQUEST, constants.DefaultExecutorCpuRequest)
+	executorDefaultCpuLimit         = utils.GetEnv(ENV_DEFAULT_EXECUTOR_CPU_LIMIT, constants.DefaultExecutorCpuLimit)
+	executorDefaultMemoryRequest    = utils.GetEnv(ENV_DEFAULT_EXECUTOR_MEMORY_REQUEST, constants.DefaultExecutorMemoryRequest)
+	executorDefaultMemoryLimit      = utils.GetEnv(ENV_DEFAULT_EXECUTOR_MEMORY_LIMIT, constants.DefaultExecutorMemoryLimit)
+	executorReqLoggerWorkQueueSize  = utils.GetEnv(ENV_EXECUTOR_REQUEST_LOGGER_WORK_QUEUE_SIZE, constants.DefaultExecutorReqLoggerWorkQueueSize)
+	executorReqLoggerWriteTimeoutMs = utils.GetEnv(ENV_EXECUTOR_REQUEST_LOGGER_WRITE_TIMEOUT_MS, constants.DefaultExecutorReqLoggerWriteTimeoutMs)
 
 	engineDefaultCpuRequest    = utils.GetEnv(ENV_DEFAULT_ENGINE_CPU_REQUEST, constants.DefaultEngineCpuRequest)
 	engineDefaultCpuLimit      = utils.GetEnv(ENV_DEFAULT_ENGINE_CPU_LIMIT, constants.DefaultEngineCpuLimit)
@@ -249,6 +253,16 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 		probeScheme = corev1.URISchemeHTTPS
 	}
 
+	_, err := strconv.Atoi(executorReqLoggerWorkQueueSize)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to parse %s as integer for %s. %w", executorReqLoggerWorkQueueSize, ENV_EXECUTOR_REQUEST_LOGGER_WORK_QUEUE_SIZE, err)
+	}
+
+	_, err = strconv.Atoi(executorReqLoggerWriteTimeoutMs)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to parse %s as integer for %s. %w", executorReqLoggerWriteTimeoutMs, ENV_EXECUTOR_REQUEST_LOGGER_WRITE_TIMEOUT_MS, err)
+	}
+
 	return &corev1.Container{
 		Name:  EngineContainerName,
 		Image: executorImage,
@@ -261,6 +275,8 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 			"--protocol", string(protocol),
 			"--prometheus_path", getPrometheusPath(mlDep),
 			"--server_type", string(serverType),
+			"--log_work_buffer_size", executorReqLoggerWorkQueueSize,
+			"--log_write_timeout_ms", executorReqLoggerWriteTimeoutMs,
 		},
 		ImagePullPolicy:          corev1.PullPolicy(utils.GetEnv("EXECUTOR_CONTAINER_IMAGE_PULL_POLICY", "IfNotPresent")),
 		TerminationMessagePath:   "/dev/termination-log",

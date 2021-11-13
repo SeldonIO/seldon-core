@@ -132,6 +132,10 @@ spec:
           value: '{{ .Values.executor.metricsPortName }}'
         - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT
           value: '{{ .Values.executor.requestLogger.defaultEndpoint }}'
+        - name: EXECUTOR_REQUEST_LOGGER_WORK_QUEUE_SIZE
+          value: '{{ .Values.executor.requestLogger.workQueueSize }}'
+        - name: EXECUTOR_REQUEST_LOGGER_WRITE_TIMEOUT_MS
+          value: '{{ .Values.executor.requestLogger.writeTimeoutMs }}'
         - name: DEFAULT_USER_ID
           value: '{{ .Values.defaultUserID }}'
         - name: EXECUTOR_DEFAULT_CPU_REQUEST

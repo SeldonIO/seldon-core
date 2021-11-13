@@ -5,6 +5,7 @@ import (
 
 	. "github.com/onsi/gomega"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	"github.com/seldonio/seldon-core/operator/constants"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -177,4 +178,44 @@ func TestExecutorCreateKafka(t *testing.T) {
 	_, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
 	g.Expect(err).ToNot(BeNil())
 	cleanEnvImages()
+}
+
+func TestEngineCreateLoggerParams(t *testing.T) {
+	g := NewGomegaWithT(t)
+	cleanEnvImages()
+	envExecutorImage = "executor"
+	mlDep := createTestSeldonDeployment()
+	con, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
+	g.Expect(err).To(BeNil())
+	for idx, arg := range con.Args {
+		if arg == "--log_work_buffer_size" {
+			g.Expect(con.Args[idx+1]).To(Equal(constants.DefaultExecutorReqLoggerWorkQueueSize))
+		}
+		if arg == "--log_write_timeout_ms" {
+			g.Expect(con.Args[idx+1]).To(Equal(constants.DefaultExecutorReqLoggerWriteTimeoutMs))
+		}
+	}
+	cleanEnvImages()
+}
+
+func TestEngineCreateLoggerParamsEnv(t *testing.T) {
+	g := NewGomegaWithT(t)
+	cleanEnvImages()
+	envExecutorImage = "executor"
+	executorReqLoggerWorkQueueSize = "1"
+	executorReqLoggerWriteTimeoutMs = "1"
+	mlDep := createTestSeldonDeployment()
+	con, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
+	g.Expect(err).To(BeNil())
+	for idx, arg := range con.Args {
+		if arg == "--log_work_buffer_size" {
+			g.Expect(con.Args[idx+1]).To(Equal("1"))
+		}
+		if arg == "--log_write_timeout_ms" {
+			g.Expect(con.Args[idx+1]).To(Equal("1"))
+		}
+	}
+	cleanEnvImages()
+	executorReqLoggerWorkQueueSize = constants.DefaultExecutorReqLoggerWorkQueueSize
+	executorReqLoggerWriteTimeoutMs = constants.DefaultExecutorReqLoggerWriteTimeoutMs
 }

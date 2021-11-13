@@ -66,6 +66,8 @@ executor:
 # For more information see the Production Integration for Payload Request Logging with ELK in the docs
   requestLogger:
     defaultEndpoint: 'http://default-broker'
+    workQueueSize: 10000
+    writeTimeoutMs: 2000
 
 # ## Seldon Core Controller Manager Options
 image:

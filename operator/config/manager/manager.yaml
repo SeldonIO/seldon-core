@@ -125,6 +125,10 @@ spec:
           value: "metrics"
         - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT
           value: "http://default-broker"
+        - name: EXECUTOR_REQUEST_LOGGER_WORK_QUEUE_SIZE
+          value: "10000"
+        - name: EXECUTOR_REQUEST_LOGGER_WRITE_TIMEOUT_MS
+          value: "2000"
         - name: DEFAULT_USER_ID
           value: ''
         - name: EXECUTOR_DEFAULT_CPU_REQUEST
