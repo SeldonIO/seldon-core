@@ -34,6 +34,7 @@ HELM_CRD_ANNOTATIONS_WITH_START = '{{- with .Values.crd.annotations }}\n'
 HELM_ANNOTATIONS_TOYAML4 = '{{- toYaml . | nindent 4}}\n'
 HELM_ANNOTATIONS_TOYAML8 = '{{- toYaml . | nindent 8}}\n'
 HELM_CONTROLER_DEP_ANNOTATIONS_WITH_START = '{{- with .Values.manager.annotations }}\n'
+HELM_CONTROLER_DEP_POD_SEC_CTX_WITH_START = '{{- with .Values.manager.containerSecurityContext }}\n'
 HELM_IF_END = "{{- end }}\n"
 
 HELM_ENV_SUBST = {
@@ -437,6 +438,14 @@ if __name__ == "__main__":
                 fdata = HELM_CREATERESOURCES_IF_START + fdata + HELM_IF_END
             elif kind == "deployment" and name == "seldon-controller-manager":
                 fdata = re.sub(
+                    r"(.*template:\n.*metadata:\n.*annotations:\n)",
+                    r"\1" + HELM_CONTROLER_DEP_ANNOTATIONS_WITH_START +
+                    HELM_ANNOTATIONS_TOYAML8 + HELM_IF_END,
+                    fdata,
+                    re.M,
+                )
+
+                fdata = re.sub(
                     r"(.*volumeMounts:\n.*\n.*\n.*\n)",
                     HELM_CREATERESOURCES_IF_START + r"\1" + HELM_IF_END,
                     fdata,
@@ -450,9 +459,9 @@ if __name__ == "__main__":
                 )
 
                 fdata = re.sub(
-                    r"(.*template:\n.*metadata:\n.*annotations:\n)",
-                    r"\1" + HELM_CONTROLER_DEP_ANNOTATIONS_WITH_START +
-                    HELM_ANNOTATIONS_TOYAML8 + HELM_IF_END,
+                    r"(.*command:\n)",
+                    HELM_CONTROLER_DEP_POD_SEC_CTX_WITH_START +
+                    HELM_ANNOTATIONS_TOYAML8 + HELM_IF_END + r"\1",
                     fdata,
                     re.M,
                 )
