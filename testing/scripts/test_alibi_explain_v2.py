@@ -7,10 +7,7 @@ import pytest
 import requests
 from tenacity import Retrying, stop_after_attempt, wait_fixed
 
-from seldon_e2e_utils import (
-    retry_run,
-    wait_for_deployment,
-)
+from seldon_e2e_utils import retry_run, wait_for_deployment
 
 # NOTE:
 # to recreate the artifacts for these test:
@@ -26,26 +23,24 @@ class TestExplainV2Server:
     @pytest.mark.sequential
     def test_alibi_explain_anchor_tabular(self, namespace):
         spec = "../resources/iris_anchor_tabular_explainer_v2.yaml"
-        name = "iris"
-        vs_prefix = "seldon/seldon/iris-explainer/default/v2/models/" \
-                    "iris-default-explainer/infer"
+        name = "iris-default-explainer"
+        vs_prefix = (
+            f"seldon/{namespace}/iris-explainer/default/v2/models/"
+            f"iris-default-explainer/infer"
+        )
 
         test_data = np.array([[5.964, 4.006, 2.081, 1.031]])
         inference_request = {
-            "parameters": {
-                "content_type": "np"
-            },
+            "parameters": {"content_type": "np"},
             "inputs": [
                 {
                     "name": "explain",
                     "shape": test_data.shape,
                     "datatype": "FP32",
                     "data": test_data.tolist(),
-                    "parameters": {
-                        "content_type": "np"
-                    }
+                    "parameters": {"content_type": "np"},
                 },
-            ]
+            ],
         }
 
         retry_run(f"kubectl apply -f {spec} -n {namespace}")
@@ -67,9 +62,8 @@ class TestExplainV2Server:
                 explanation = json.loads(r.json()["outputs"][0]["data"])
 
         assert explanation["meta"]["name"] == "AnchorTabular"
-        assert "Anchor" in explanation["data"]
-        assert "Precision" in explanation["data"]
-        assert "Coverage" in explanation["data"]
+        assert "anchor" in explanation["data"]
+        assert "precision" in explanation["data"]
+        assert "coverage" in explanation["data"]
 
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
-
