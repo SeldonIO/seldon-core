@@ -81,6 +81,7 @@ manager:
   logLevel: INFO
   leaderElectionID: a33bd623.machinelearning.seldon.io
   annotations: {}
+  containerSecurityContext: {}
 rbac:
   configmap:
     create: true

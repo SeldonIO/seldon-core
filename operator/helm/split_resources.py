@@ -31,8 +31,10 @@ HELM_CREATERESOURCES_RBAC_IF_START = "{{- if .Values.managerCreateResources }}\n
 HELM_K8S_V1_CRD_IF_START = '{{- if or (ge (int (regexFind "[0-9]+" .Capabilities.KubeVersion.Minor)) 18) (.Values.crd.forcev1) }}\n'
 HELM_K8S_V1BETA1_CRD_IF_START = '{{- if or (lt (int (regexFind "[0-9]+" .Capabilities.KubeVersion.Minor)) 18) (.Values.crd.forcev1beta1) }}\n'
 HELM_CRD_ANNOTATIONS_WITH_START = '{{- with .Values.crd.annotations }}\n'
-HELM_ANNOTATIONS_TOYAML = '{{- toYaml . | nindent 4}}\n'
+HELM_ANNOTATIONS_TOYAML4 = '{{- toYaml . | nindent 4}}\n'
+HELM_ANNOTATIONS_TOYAML8 = '{{- toYaml . | nindent 8}}\n'
 HELM_CONTROLER_DEP_ANNOTATIONS_WITH_START = '{{- with .Values.manager.annotations }}\n'
+HELM_CONTROLER_DEP_POD_SEC_CTX_WITH_START = '{{- with .Values.manager.containerSecurityContext }}\n'
 HELM_IF_END = "{{- end }}\n"
 
 HELM_ENV_SUBST = {
@@ -406,7 +408,7 @@ if __name__ == "__main__":
                     + re.sub(
                         r"(.*controller-gen.kubebuilder.io/version.*\n)",
                         r"\1" + HELM_CRD_ANNOTATIONS_WITH_START +
-                        HELM_ANNOTATIONS_TOYAML + HELM_IF_END,
+                        HELM_ANNOTATIONS_TOYAML4 + HELM_IF_END,
                         fdata,
                         re.M,
                     )
@@ -423,7 +425,7 @@ if __name__ == "__main__":
                     + re.sub(
                         r"(.*controller-gen.kubebuilder.io/version.*\n)",
                         r"\1" + HELM_CRD_ANNOTATIONS_WITH_START +
-                        HELM_ANNOTATIONS_TOYAML + HELM_IF_END,
+                        HELM_ANNOTATIONS_TOYAML4 + HELM_IF_END,
                         fdata,
                         re.M,
                     )
@@ -435,6 +437,14 @@ if __name__ == "__main__":
             elif kind == "configmap" and name == "seldon-config":
                 fdata = HELM_CREATERESOURCES_IF_START + fdata + HELM_IF_END
             elif kind == "deployment" and name == "seldon-controller-manager":
+                fdata = re.sub(
+                    r"(.*template:\n.*metadata:\n.*annotations:\n)",
+                    r"\1" + HELM_CONTROLER_DEP_ANNOTATIONS_WITH_START +
+                    HELM_ANNOTATIONS_TOYAML8 + HELM_IF_END,
+                    fdata,
+                    re.M,
+                )
+
                 fdata = re.sub(
                     r"(.*volumeMounts:\n.*\n.*\n.*\n)",
                     HELM_CREATERESOURCES_IF_START + r"\1" + HELM_IF_END,
@@ -449,9 +459,9 @@ if __name__ == "__main__":
                 )
 
                 fdata = re.sub(
-                    r"(.*template:\n.*metadata:\n.*annotations:\n)",
-                    r"\1" + HELM_CONTROLER_DEP_ANNOTATIONS_WITH_START +
-                    HELM_ANNOTATIONS_TOYAML + HELM_IF_END,
+                    r"(.*command:\n)",
+                    HELM_CONTROLER_DEP_POD_SEC_CTX_WITH_START +
+                    HELM_ANNOTATIONS_TOYAML8 + HELM_IF_END + r"\1",
                     fdata,
                     re.M,
                 )
