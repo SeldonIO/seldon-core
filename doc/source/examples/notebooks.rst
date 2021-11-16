@@ -151,6 +151,7 @@ Complex Graph Examples
    :titlesonly:
   
    Chainer MNIST <chainer_mnist>
+   Custom pre-processors with the V2 Protocol <transformers-v2-protocol>
 
 Ingress
 -------
