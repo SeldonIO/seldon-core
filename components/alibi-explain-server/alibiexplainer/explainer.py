@@ -46,6 +46,7 @@ logging.basicConfig(level=SELDON_LOGLEVEL)
 class AlibiExplainer(ExplainerModel):
     def __init__(
             self,
+            name: str,
             predict_fn: Callable,
             method: ExplainerMethod,
             config: Mapping,
@@ -53,7 +54,7 @@ class AlibiExplainer(ExplainerModel):
             protocol: Protocol = Protocol.seldon_grpc,
             keras_model: keras.Model = None
     ) -> None:
-        super().__init__()
+        super().__init__(name)
         self.method = method
         self.protocol = protocol
         logging.info("Protocol is %s", str(self.protocol))

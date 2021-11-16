@@ -73,24 +73,24 @@ clean:
 # Test Tabular Explanations
 #
 
-test_models/sklearn/income/model-0.23.2:
-	mkdir -p test_models/sklearn/income
-	gsutil cp -r gs://seldon-models/sklearn/income/model-0.23.2 test_models/sklearn/income
+test_models/sklearn/iris:
+	mkdir -p test_models/sklearn/iris
+	gsutil cp -r gs://seldon-models/v1.11.0-dev/sklearn/iris test_models/sklearn
 
-anchor_tabular_model: test_models/sklearn/income/model-0.23.2
-	docker run -it --rm --name "sklearnserver"  -p 9000:9000 -v ${PWD}/test_models:/models -e PREDICTIVE_UNIT_PARAMETERS='[{"type":"STRING","name":"model_uri","value":"/models/sklearn/income/model-0.23.2"}]' seldonio/sklearnserver:${VERSION}
+anchor_tabular_model: test_models/sklearn/iris
+	docker run -it --rm --name "sklearnserver"  -p 9000:9000 -v ${PWD}/test_models:/models -e PREDICTIVE_UNIT_PARAMETERS='[{"type":"STRING","name":"model_uri","value":"/models/sklearn/iris"}]' seldonio/sklearnserver:${VERSION}
 
 anchor_tabular_predict:
-	curl -d '{"data": {"ndarray":[[39, 7, 1, 1, 1, 1, 4, 1, 2174, 0, 40, 9]]}}'    -X POST http://localhost:9000/api/v1.0/predictions    -H "Content-Type: application/json"
+	curl -d '{"data": {"ndarray":[[5.964, 4.006, 2.081, 1.031]]}}'    -X POST http://localhost:9000/api/v1.0/predictions    -H "Content-Type: application/json"
 
 anchor_tabular:
-	python -m alibiexplainer --model_name adult --protocol seldon.http --storage_uri gs://seldon-models/sklearn/income/explainer-py37-0.6.0 --predictor_host localhost:9000 AnchorTabular
+	python -m alibiexplainer --model_name iris --protocol seldon.http --storage_uri gs://seldon-models/alibi/iris_anchor_tabular_explainer_v2 --predictor_host localhost:9000 AnchorTabular
 
 anchor_tabular_docker:
-	docker run -it --rm --name "explainer" --network=host -p 8080:8080 seldonio/${IMAGE}:${VERSION} --model_name adult --protocol seldon.http --storage_uri gs://seldon-models/sklearn/income/explainer-py37-0.6.0 --predictor_host localhost:9000 AnchorTabular
+	docker run -it --rm --name "explainer" --network=host -p 8080:8080 seldonio/${IMAGE}:${VERSION} --model_name adult --protocol seldon.http --storage_uri gs://seldon-models/alibi/iris_anchor_tabular_explainer_v2 --predictor_host localhost:9000 AnchorTabular
 
 anchor_tabular_explain:
-	curl -d '{"data": {"ndarray":[[39, 7, 1, 1, 1, 1, 4, 1, 2174, 0, 40, 9]]}}'    -X POST http://localhost:8080/api/v1.0/explain    -H "Content-Type: application/json"
+	curl -d '{"data": {"ndarray":[[5.964, 4.006, 2.081, 1.031]]}}'    -X POST http://localhost:8080/api/v1.0/explain    -H "Content-Type: application/json"
 
 
 #

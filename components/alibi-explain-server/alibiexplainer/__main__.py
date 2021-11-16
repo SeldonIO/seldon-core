@@ -64,6 +64,7 @@ def main():
                     keras_model = keras.models.load_model(keras_path)
 
     explainer = AlibiExplainer(
+        name=args.model_name,
         predict_fn=predict_fn,
         method=ExplainerMethod(args.command),
         config=extra,

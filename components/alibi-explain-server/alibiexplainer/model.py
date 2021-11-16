@@ -4,7 +4,8 @@ from abc import ABC, abstractmethod
 
 class ExplainerModel(ABC):
 
-    def __init__(self):
+    def __init__(self, name: str):
+        self.name = name
         self.ready = False
 
     def load(self):
