@@ -1,0 +1,2 @@
+mlserver==0.5.3
+transformers==4.12.3
