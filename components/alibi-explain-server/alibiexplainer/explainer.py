@@ -24,7 +24,6 @@ import os
 from typing import Any, Mapping, Dict, Callable
 
 from alibi.api.interfaces import Explanation
-from alibiexplainer.predict_fn_utils import Protocol
 from tensorflow import keras
 
 import alibiexplainer.seldon_http as seldon
@@ -38,6 +37,7 @@ from alibiexplainer.kernel_shap import KernelShap
 from alibiexplainer.model import ExplainerModel
 from alibiexplainer.tree_shap import TreeShap
 from alibiexplainer.utils import ExplainerMethod
+from alibiexplainer.utils import Protocol
 
 SELDON_LOGLEVEL = os.environ.get('SELDON_LOGLEVEL', 'INFO').upper()
 logging.basicConfig(level=SELDON_LOGLEVEL)

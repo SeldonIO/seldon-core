@@ -2,8 +2,7 @@ import json
 import logging
 import os
 from enum import Enum
-from types import Union
-from typing import List, Callable
+from typing import List, Callable, Union
 
 import grpc
 import numpy as np
@@ -11,8 +10,7 @@ import requests
 import tensorflow as tf
 
 import alibiexplainer.seldon_http as seldon
-from alibiexplainer.proto import prediction_pb2
-from alibiexplainer.proto import prediction_pb2_grpc
+from alibiexplainer.proto import prediction_pb2_grpc, prediction_pb2
 
 SELDON_LOGLEVEL = os.environ.get('SELDON_LOGLEVEL', 'INFO').upper()
 logging.basicConfig(level=SELDON_LOGLEVEL)

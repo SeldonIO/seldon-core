@@ -20,18 +20,18 @@
 
 import logging
 import os
-import kfserving
-import dill
-from alibi.saving import load_explainer
-from alibiexplainer.server import server_parser, ExplainerServer
-from alibiexplainer import AlibiExplainer
-from alibiexplainer.utils import ExplainerMethod, \
-    Protocol  # pylint:disable=no-name-in-module
-from alibiexplainer.constants import SELDON_LOGLEVEL
-from alibiexplainer.parser import parse_args
 import sys
+
+import kfserving
+from alibi.saving import load_explainer
 from tensorflow import keras
 
+from alibiexplainer import AlibiExplainer
+from alibiexplainer.constants import SELDON_LOGLEVEL
+from alibiexplainer.parser import parse_args
+from alibiexplainer.server import ExplainerServer
+from alibiexplainer.utils import ExplainerMethod, \
+    Protocol  # pylint:disable=no-name-in-module
 from alibiexplainer.utils import construct_predict_fn
 
 logging.basicConfig(level=SELDON_LOGLEVEL)
