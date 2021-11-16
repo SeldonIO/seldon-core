@@ -66,12 +66,14 @@ const (
 	ENV_SELDON_DEPLOYMENT_ID                 = "SELDON_DEPLOYMENT_ID"
 	ENV_SELDON_EXECUTOR_ENABLED              = "SELDON_EXECUTOR_ENABLED"
 
-	ANNOTATION_JAVA_OPTS       = "seldon.io/engine-java-opts"
-	ANNOTATION_SEPARATE_ENGINE = "seldon.io/engine-separate-pod"
-	ANNOTATION_HEADLESS_SVC    = "seldon.io/headless-svc"
-	ANNOTATION_NO_ENGINE       = "seldon.io/no-engine"
-	ANNOTATION_CUSTOM_SVC_NAME = "seldon.io/svc-name"
-	ANNOTATION_EXECUTOR        = "seldon.io/executor"
+	ANNOTATION_JAVA_OPTS               = "seldon.io/engine-java-opts"
+	ANNOTATION_SEPARATE_ENGINE         = "seldon.io/engine-separate-pod"
+	ANNOTATION_HEADLESS_SVC            = "seldon.io/headless-svc"
+	ANNOTATION_NO_ENGINE               = "seldon.io/no-engine"
+	ANNOTATION_CUSTOM_SVC_NAME         = "seldon.io/svc-name"
+	ANNOTATION_EXECUTOR                = "seldon.io/executor"
+	ANNOTATION_LOGGER_WORK_QUEUE_SIZE  = "seldon.io/executor-logger-queue-size"
+	ANNOTATION_LOGGER_WRITE_TIMEOUT_MS = "seldon.io/executor-logger-write-timeout-ms"
 
 	DeploymentNamePrefix = "seldon"
 )

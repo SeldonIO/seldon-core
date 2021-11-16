@@ -19,6 +19,18 @@ Seldon Core adds support for Kubernetes 1.22 by upgrading all ValidatingWebhookC
   * Access required to modify files in the local folder are required so the application folder should be writable
   * The default base image now changes the owner of the /microservice folder to user 8888
 
+### Updated executor request logger settings
+
+The request logging from the executor now has a configurable queue size and write timeout. This will allow a tradeoff between pending request memory usage and failing requests when sending to various logging endpoints that may be slow. The write timeout will mean logging of requests will fail if waiting for more than the given time to be added to the work queue. The two settings are:
+
+  * `executor.requestLogger.workQueueSize` (default 10000)
+  * `executor.requestLogger.writeTimeoutMs` (default 2000)
+
+It is also possible to update these values on a per SeldonDeployment basis with the annotations:
+
+ * `seldon.io/executor-logger-queue-size`
+ * `seldon.io/executor-logger-write-timeout-ms`
+
 ## Upgrading to 1.11
 
 ### Python S2I Wrapper

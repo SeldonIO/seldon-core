@@ -79,12 +79,14 @@ const (
 
 // Default resources
 const (
-	DefaultExecutorCpuRequest    = "0.5"
-	DefaultExecutorCpuLimit      = "0.5"
-	DefaultExecutorMemoryRequest = "512Mi"
-	DefaultExecutorMemoryLimit   = "512Mi"
-	DefaultEngineCpuRequest      = "0.5"
-	DefaultEngineCpuLimit        = "0.5"
-	DefaultEngineMemoryRequest   = "512Mi"
-	DefaultEngineMemoryLimit     = "512Mi"
+	DefaultExecutorCpuRequest              = "0.5"
+	DefaultExecutorCpuLimit                = "0.5"
+	DefaultExecutorMemoryRequest           = "512Mi"
+	DefaultExecutorMemoryLimit             = "512Mi"
+	DefaultEngineCpuRequest                = "0.5"
+	DefaultEngineCpuLimit                  = "0.5"
+	DefaultEngineMemoryRequest             = "512Mi"
+	DefaultEngineMemoryLimit               = "512Mi"
+	DefaultExecutorReqLoggerWorkQueueSize  = "10000"
+	DefaultExecutorReqLoggerWriteTimeoutMs = "2000"
 )
