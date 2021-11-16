@@ -3,8 +3,9 @@ package controllers
 import (
 	"errors"
 	"fmt"
-	"github.com/seldonio/seldon-core/operator/utils"
 	"strconv"
+
+	"github.com/seldonio/seldon-core/operator/utils"
 
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
@@ -13,10 +14,11 @@ import (
 )
 
 const (
-	MLServerSKLearnImplementation = "mlserver_sklearn.SKLearnModel"
-	MLServerXGBoostImplementation = "mlserver_xgboost.XGBoostModel"
-	MLServerTempoImplementation   = "tempo.mlserver.InferenceRuntime"
-	MLServerMLFlowImplementation  = "mlserver_mlflow.MLflowRuntime"
+	MLServerSKLearnImplementation      = "mlserver_sklearn.SKLearnModel"
+	MLServerXGBoostImplementation      = "mlserver_xgboost.XGBoostModel"
+	MLServerTempoImplementation        = "tempo.mlserver.InferenceRuntime"
+	MLServerMLFlowImplementation       = "mlserver_mlflow.MLflowRuntime"
+	MLServerAlibiExplainImplementation = "mlserver_alibi_explain.AlibiExplainRuntime"
 
 	MLServerHTTPPortEnv            = "MLSERVER_HTTP_PORT"
 	MLServerGRPCPortEnv            = "MLSERVER_GRPC_PORT"
@@ -24,6 +26,21 @@ const (
 	MLServerModelImplementationEnv = "MLSERVER_MODEL_IMPLEMENTATION"
 	MLServerModelURIEnv            = "MLSERVER_MODEL_URI"
 	MLServerTempoRuntimeEnv        = "TEMPO_RUNTIME_OPTIONS"
+	MLServerModelExtraEnv          = "MLSERVER_MODEL_EXTRA"
+)
+
+var (
+	ExplainerTypeToMLServerExplainerType = map[machinelearningv1.AlibiExplainerType]string{
+		machinelearningv1.AlibiAnchorsTabularExplainer:      "anchor_tabular",
+		machinelearningv1.AlibiAnchorsImageExplainer:        "anchor_image",
+		machinelearningv1.AlibiAnchorsTextExplainer:         "anchor_text",
+		machinelearningv1.AlibiCounterfactualsExplainer:     "counterfactuals",
+		machinelearningv1.AlibiContrastiveExplainer:         "contrastive",
+		machinelearningv1.AlibiKernelShapExplainer:          "kernel_shap",
+		machinelearningv1.AlibiIntegratedGradientsExplainer: "integrated_gradients",
+		machinelearningv1.AlibiALEExplainer:                 "ALE",
+		machinelearningv1.AlibiTreeShap:                     "tree_shap",
+	}
 )
 
 func mergeMLServerContainer(existing *v1.Container, mlServer *v1.Container) *v1.Container {
@@ -221,4 +238,72 @@ func getMLServerModelImplementation(pu *machinelearningv1.PredictiveUnit) (strin
 	default:
 		return "", nil
 	}
+}
+
+func getAlibiExplainExplainerTypeTag(explainerType machinelearningv1.AlibiExplainerType) (string, error) {
+	tag, ok := ExplainerTypeToMLServerExplainerType[explainerType]
+	if ok {
+		return tag, nil
+	} else {
+		return "", errors.New(string(explainerType) + " not supported")
+	}
+}
+
+func wrapDoubleQuotes(str string) string {
+	const escQuotes string = "\""
+	return escQuotes + str + escQuotes
+}
+func getAlibiExplainExtraEnvVars(explainerType machinelearningv1.AlibiExplainerType, pSvcEndpoint string, graphName string, initParameters string) (string, error) {
+	// we need to pack one big envVar for MLSERVER_MODEL_EXTRA that can contain nested json / dict
+	explainerTypeTag, err := getAlibiExplainExplainerTypeTag(explainerType)
+	if err != nil {
+		return "", err
+	}
+
+	v2URI := "http://" + pSvcEndpoint + "/v2/models/" + graphName + "/infer"
+	explainExtraEnv := "{" + wrapDoubleQuotes("explainer_type") + ":" + wrapDoubleQuotes(explainerTypeTag)
+	explainExtraEnv = explainExtraEnv + "," + wrapDoubleQuotes("infer_uri") + ":" + wrapDoubleQuotes(v2URI)
+
+	if initParameters != "" {
+		//init parameters is passed as json string so we need to reconstruct the dictionary
+		explainExtraEnv = explainExtraEnv + "," + wrapDoubleQuotes("init_parameters") + ":" + initParameters
+	}
+
+	// end
+	explainExtraEnv = explainExtraEnv + "}"
+
+	return explainExtraEnv, nil
+}
+
+func getAlibiExplainEnvVars(httpPortNum int, explainerModelName string, explainerType machinelearningv1.AlibiExplainerType, pSvcEndpoint string, graphName string, initParameters string) ([]v1.EnvVar, error) {
+	explain_extra_env, err := getAlibiExplainExtraEnvVars(explainerType, pSvcEndpoint, graphName, initParameters)
+	if err != nil {
+		return nil, err
+	}
+	alibiEnvs := []v1.EnvVar{
+		{
+			Name:  MLServerHTTPPortEnv,
+			Value: strconv.Itoa(httpPortNum),
+		},
+		// note: we skip grpc port settings, relying on mlserver default
+		// TODO: add gprc port
+		{
+			Name:  MLServerModelImplementationEnv,
+			Value: MLServerAlibiExplainImplementation,
+		},
+		{
+			Name:  MLServerModelNameEnv,
+			Value: explainerModelName,
+		},
+		{
+			Name:  MLServerModelURIEnv,
+			Value: DefaultModelLocalMountPath,
+		},
+		{
+			Name:  MLServerModelExtraEnv,
+			Value: explain_extra_env,
+		},
+	}
+	return alibiEnvs, nil
+
 }

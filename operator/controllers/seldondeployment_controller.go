@@ -1082,12 +1082,6 @@ func (r *SeldonDeploymentReconciler) createIstioServices(components *components,
 func (r *SeldonDeploymentReconciler) createServices(components *components, instance *machinelearningv1.SeldonDeployment, all bool, log logr.Logger) (bool, error) {
 	ready := true
 	for _, svc := range components.services {
-		if !all {
-			if _, ok := svc.Annotations[AMBASSADOR_ANNOTATION]; ok {
-				log.Info("Skipping Ambassador Svc", "all", all, "namespace", svc.Namespace, "name", svc.Name)
-				continue
-			}
-		}
 		if err := ctrl.SetControllerReference(instance, svc, r.Scheme); err != nil {
 			return ready, err
 		}

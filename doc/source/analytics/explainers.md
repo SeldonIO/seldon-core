@@ -39,6 +39,13 @@ For Alibi explainers that need to be trained you should
 
 The runtime environment in our [Alibi Explain Server](https://github.com/SeldonIO/seldon-core/tree/master/components/alibi-explain-server) is locked using [Poetry](https://python-poetry.org/). See our e2e example [here](../examples/iris_explainer_poetry.html) on how to use that definition to train your explainers.
 
+### V2 protocol for explainer using [MLServer](https://github.com/SeldonIO/MLServer) (incubating)
+
+The support for v2 protocol is now handled with MLServer moving forward. This is experimental
+and only works for black-box explainers.
+
+For an e2e example, please check AnchorTabular notebook [here](../examples/iris_anchor_tabular_explainer_v2.html).
+
 ## Explain API
 
 For the Seldon Protocol an endpoint path will be exposed for:
@@ -84,7 +91,7 @@ The explain method is also supported for tensorflow and v2 kfserving protocols. 
 | ------ | ----- |
 | seldon | `http://<host>/<ingress-path>/api/v1.0/explain` |
 | tensorflow | `http://<host>/<ingress-path>/v1/models/<model-name>:explain` |
-| kfserving | `http://<host>/<ingress-path>/v2/models/<model-name>/explain` |
+| kfserving | `http://<host>/<ingress-path>/v2/models/<model-name>/infer` |
 
 
 Note: for `tensorflow` protocol we support similar non-standard extension as for the [prediction API](../graph/protocols.md#rest-and-grpc-tensorflow-protocol), `http://<host>/<ingress-path>/v1/models/:explain`.

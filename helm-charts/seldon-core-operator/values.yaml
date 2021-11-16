@@ -27,7 +27,7 @@ certManager:
 
 # ## Install with limited namespace visibility
 # If you want to ensure seldon-core-controller can only have visibility
-#   to specifci namespaces you can set the controllerId
+#   to specify namespaces you can set the controllerId
 controllerId: ""
 
 # Whether operator should create the webhooks and configmap on startup (false means created from chart)
@@ -43,7 +43,7 @@ defaultUserID: "8888"
 managerUserID: 8888
 
 # ## Service Orchestrator (Executor)
-# The executor is the default service orchestrator which has superceeded the "Java Engine"
+# The executor is the default service orchestrator which has superceded the "Java Engine"
 executor:
   port: 8000
   metricsPortName: metrics
@@ -119,7 +119,7 @@ predictor_servers:
         defaultImageVersion: "1.12.0-dev"
         image: seldonio/mlflowserver
       kfserving:
-        defaultImageVersion: "0.5.0"
+        defaultImageVersion: "0.6.0.dev0"
         image: seldonio/mlserver
   SKLEARN_SERVER:
     protocols:
@@ -127,7 +127,7 @@ predictor_servers:
         defaultImageVersion: "1.12.0-dev"
         image: seldonio/sklearnserver
       kfserving:
-        defaultImageVersion: "0.5.0"
+        defaultImageVersion: "0.6.0.dev0"
         image: seldonio/mlserver
   TENSORFLOW_SERVER:
     protocols:
@@ -143,7 +143,7 @@ predictor_servers:
         defaultImageVersion: "1.12.0-dev"
         image: seldonio/xgboostserver
       kfserving:
-        defaultImageVersion: "0.5.0"
+        defaultImageVersion: "0.6.0.dev0"
         image: seldonio/mlserver
   TRITON_SERVER:
     protocols:
@@ -153,7 +153,7 @@ predictor_servers:
   TEMPO_SERVER:
     protocols:
       kfserving:
-        defaultImageVersion: "0.5.0"
+        defaultImageVersion: "0.6.0.dev0"
         image: seldonio/mlserver
 
 # ## Other
@@ -206,3 +206,4 @@ engine:
 # Explainer image
 explainer:
   image: seldonio/alibiexplainer:1.12.0-dev
+  image_v2: seldonio/mlserver:0.6.0.dev2

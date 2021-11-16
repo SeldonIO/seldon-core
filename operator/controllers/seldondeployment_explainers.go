@@ -58,7 +58,8 @@ func NewExplainerInitializer(ctx context.Context, clientset kubernetes.Interface
 }
 
 type ExplainerConfig struct {
-	Image string `json:"image"`
+	Image    string `json:"image"`
+	Image_v2 string `json:"image_v2"`
 }
 
 func (ei *ExplainerInitialiser) getExplainerConfigs() (*ExplainerConfig, error) {
@@ -103,6 +104,14 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 			p.Graph.Endpoint = &machinelearningv1.Endpoint{Type: machinelearningv1.REST}
 		}
 
+		explainerProtocol := string(machinelearningv1.ProtocolSeldon)
+		if mlDep.Spec.Protocol == machinelearningv1.ProtocolTensorflow {
+			explainerProtocol = string(machinelearningv1.ProtocolTensorflow)
+		}
+		if mlDep.Spec.Protocol == machinelearningv1.ProtocolKfserving {
+			explainerProtocol = string(machinelearningv1.ProtocolKfserving)
+		}
+
 		// Image from configMap or Relalated Image if its not set
 		if explainerContainer.Image == "" {
 			if envExplainerImage != "" {
@@ -112,7 +121,11 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 				if err != nil {
 					return err
 				}
-				explainerContainer.Image = config.Image
+				if explainerProtocol == string(machinelearningv1.ProtocolKfserving) {
+					explainerContainer.Image = config.Image_v2
+				} else {
+					explainerContainer.Image = config.Image
+				}
 			}
 		}
 
@@ -138,14 +151,6 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 			pSvcEndpoint = c.serviceDetails[pSvcName].HttpEndpoint
 		}
 
-		explainerProtocol := string(machinelearningv1.ProtocolSeldon)
-		if mlDep.Spec.Protocol == machinelearningv1.ProtocolTensorflow {
-			explainerProtocol = string(machinelearningv1.ProtocolTensorflow)
-		}
-		if mlDep.Spec.Protocol == machinelearningv1.ProtocolKfserving {
-			explainerProtocol = string(machinelearningv1.ProtocolKfserving)
-		}
-
 		if customPort == nil {
 			explainerContainer.Ports = append(explainerContainer.Ports, corev1.ContainerPort{Name: portType, ContainerPort: portNum, Protocol: corev1.ProtocolTCP})
 		} else {
@@ -165,37 +170,48 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 			explainerContainer.Lifecycle = &corev1.Lifecycle{PreStop: &corev1.Handler{Exec: &corev1.ExecAction{Command: []string{"/bin/sh", "-c", "/bin/sleep 10"}}}}
 		}
 
-		explainerContainer.Args = []string{
-			"--model_name=" + mlDep.Name,
-			"--predictor_host=" + pSvcEndpoint,
-			"--protocol=" + explainerProtocol + "." + explainerTransport,
-			"--http_port=" + strconv.Itoa(int(portNum)),
-		}
-
-		if p.Explainer.ModelUri != "" {
-			explainerContainer.Args = append(explainerContainer.Args, "--storage_uri="+DefaultModelLocalMountPath)
-		}
-
-		explainerContainer.Args = append(explainerContainer.Args, string(p.Explainer.Type))
-
-		if p.Explainer.Type == machinelearningv1.AlibiAnchorsImageExplainer {
-			explainerContainer.Args = append(explainerContainer.Args, "--tf_data_type=float32")
-		}
-
-		// Order explainer config map keys
-		var keys []string
-		for k, _ := range p.Explainer.Config {
-			keys = append(keys, k)
-		}
-		sort.Strings(keys)
-		for _, k := range keys {
-			v := p.Explainer.Config[k]
-			//remote files in model location should get downloaded by initializer
-			if p.Explainer.ModelUri != "" {
-				v = strings.Replace(v, p.Explainer.ModelUri, "/mnt/models", 1)
+		if explainerProtocol == string(machinelearningv1.ProtocolKfserving) {
+			// add mlserver alibi runtime env vars
+			// alibi-specific json
+			explainEnvs, err := getAlibiExplainEnvVars(int(portNum), explainerContainer.Name, p.Explainer.Type, pSvcEndpoint, p.Graph.Name, p.Explainer.InitParameters)
+			if err != nil {
+				return err
 			}
-			arg := "--" + k + "=" + v
-			explainerContainer.Args = append(explainerContainer.Args, arg)
+
+			explainerContainer.Env = explainEnvs
+		} else {
+			explainerContainer.Args = []string{
+				"--model_name=" + mlDep.Name,
+				"--predictor_host=" + pSvcEndpoint,
+				"--protocol=" + explainerProtocol + "." + explainerTransport,
+				"--http_port=" + strconv.Itoa(int(portNum)),
+			}
+
+			if p.Explainer.ModelUri != "" {
+				explainerContainer.Args = append(explainerContainer.Args, "--storage_uri="+DefaultModelLocalMountPath)
+			}
+
+			explainerContainer.Args = append(explainerContainer.Args, string(p.Explainer.Type))
+
+			if p.Explainer.Type == machinelearningv1.AlibiAnchorsImageExplainer {
+				explainerContainer.Args = append(explainerContainer.Args, "--tf_data_type=float32")
+			}
+
+			// Order explainer config map keys
+			var keys []string
+			for k, _ := range p.Explainer.Config {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+			for _, k := range keys {
+				v := p.Explainer.Config[k]
+				//remote files in model location should get downloaded by initializer
+				if p.Explainer.ModelUri != "" {
+					v = strings.Replace(v, p.Explainer.ModelUri, "/mnt/models", 1)
+				}
+				arg := "--" + k + "=" + v
+				explainerContainer.Args = append(explainerContainer.Args, arg)
+			}
 		}
 
 		seldonPodSpec := machinelearningv1.SeldonPodSpec{Spec: corev1.PodSpec{
