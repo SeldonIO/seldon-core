@@ -15,8 +15,8 @@
 package resources
 
 import (
-	envoy_extensions_common_tap_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/common/tap/v3"
 	matcher "github.com/envoyproxy/go-control-plane/envoy/config/common/matcher/v3"
+	envoy_extensions_common_tap_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/common/tap/v3"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"time"
@@ -26,17 +26,17 @@ import (
 	endpoint "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
 	listener "github.com/envoyproxy/go-control-plane/envoy/config/listener/v3"
 	route "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
+	tap "github.com/envoyproxy/go-control-plane/envoy/config/tap/v3"
+	tapfilter "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/tap/v3"
 	hcm "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 	http "github.com/envoyproxy/go-control-plane/envoy/extensions/upstreams/http/v3"
-	tapfilter "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/tap/v3"
-	tap "github.com/envoyproxy/go-control-plane/envoy/config/tap/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 )
 
 const (
 	RouteConfigurationName = "listener_0"
-	SeldonLoggingResponseHeader = "seldon-logging"
+	SeldonLoggingHeader    = "Seldon-Logging"
 )
 
 func MakeCluster(clusterName string, eps []Endpoint, isGrpc bool) *cluster.Cluster {
@@ -148,7 +148,7 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 		}
 		if r.LogPayloads {
 			rt.ResponseHeadersToAdd = []*core.HeaderValueOption{
-				{Header: &core.HeaderValue{Key: SeldonLoggingResponseHeader,Value: "true"}},
+				{Header: &core.HeaderValue{Key: SeldonLoggingHeader,Value: "true"}},
 			}
 		}
 		rts = append(rts,rt)
@@ -185,7 +185,7 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 		}
 		if r.LogPayloads {
 			rt.ResponseHeadersToAdd = []*core.HeaderValueOption{
-				{Header: &core.HeaderValue{Key: SeldonLoggingResponseHeader,Value: "true"}},
+				{Header: &core.HeaderValue{Key: SeldonLoggingHeader,Value: "true"}},
 			}
 		}
 		rts = append(rts,rt)
@@ -208,12 +208,32 @@ func createTapConfig() *anypb.Any {
 			ConfigType: &envoy_extensions_common_tap_v3.CommonExtensionConfig_StaticConfig{
 				StaticConfig: &tap.TapConfig{
 					Match: &matcher.MatchPredicate{
-						Rule: &matcher.MatchPredicate_HttpResponseHeadersMatch{
-							HttpResponseHeadersMatch: &matcher.HttpHeadersMatch{
-								Headers: []*route.HeaderMatcher{
+						Rule: &matcher.MatchPredicate_OrMatch{
+							OrMatch: &matcher.MatchPredicate_MatchSet{
+								Rules: []*matcher.MatchPredicate{
 									{
-										Name: SeldonLoggingResponseHeader,
-										HeaderMatchSpecifier: &route.HeaderMatcher_PresentMatch{PresentMatch: true},
+										Rule: &matcher.MatchPredicate_HttpResponseHeadersMatch{
+											HttpResponseHeadersMatch: &matcher.HttpHeadersMatch{
+												Headers: []*route.HeaderMatcher{
+													{
+														Name:                 SeldonLoggingHeader,
+														HeaderMatchSpecifier: &route.HeaderMatcher_PresentMatch{PresentMatch: true},
+													},
+												},
+											},
+										},
+									},
+									{
+										Rule: &matcher.MatchPredicate_HttpRequestHeadersMatch{
+											HttpRequestHeadersMatch: &matcher.HttpHeadersMatch{
+												Headers: []*route.HeaderMatcher{
+													{
+														Name:                 SeldonLoggingHeader,
+														HeaderMatchSpecifier: &route.HeaderMatcher_PresentMatch{PresentMatch: true},
+													},
+												},
+											},
+										},
 									},
 								},
 							},
@@ -224,7 +244,7 @@ func createTapConfig() *anypb.Any {
 							{
 								OutputSinkType: &tap.OutputSink_FilePerTap{
 									FilePerTap: &tap.FilePerTapSink{
-										PathPrefix: "/tmp/envoy",
+										PathPrefix: "/tmp/request-log",
 									},
 								},
 							},
