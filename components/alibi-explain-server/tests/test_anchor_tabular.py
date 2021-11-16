@@ -45,4 +45,4 @@ def test_anchor_tabular():
     test_data = np.array([[5.964, 4.006, 2.081, 1.031]])
     explanation = anchor_tabular.explain(test_data)
     explanation_json = json.loads(explanation.to_json())
-    print(explanation_json)
+    assert explanation_json["meta"]["name"] == "AnchorTabular"
