@@ -37,6 +37,7 @@ import (
 const (
 	RouteConfigurationName = "listener_0"
 	SeldonLoggingHeader    = "Seldon-Logging"
+	EnvoyLogPathPrefix = "/tmp/request-log"
 )
 
 func MakeCluster(clusterName string, eps []Endpoint, isGrpc bool) *cluster.Cluster {
@@ -208,11 +209,11 @@ func createTapConfig() *anypb.Any {
 			ConfigType: &envoy_extensions_common_tap_v3.CommonExtensionConfig_StaticConfig{
 				StaticConfig: &tap.TapConfig{
 					Match: &matcher.MatchPredicate{
-						Rule: &matcher.MatchPredicate_OrMatch{
+						Rule: &matcher.MatchPredicate_OrMatch{ // Either match request or response header
 							OrMatch: &matcher.MatchPredicate_MatchSet{
 								Rules: []*matcher.MatchPredicate{
 									{
-										Rule: &matcher.MatchPredicate_HttpResponseHeadersMatch{
+										Rule: &matcher.MatchPredicate_HttpResponseHeadersMatch{ // Response header
 											HttpResponseHeadersMatch: &matcher.HttpHeadersMatch{
 												Headers: []*route.HeaderMatcher{
 													{
@@ -224,7 +225,7 @@ func createTapConfig() *anypb.Any {
 										},
 									},
 									{
-										Rule: &matcher.MatchPredicate_HttpRequestHeadersMatch{
+										Rule: &matcher.MatchPredicate_HttpRequestHeadersMatch{ // Request header
 											HttpRequestHeadersMatch: &matcher.HttpHeadersMatch{
 												Headers: []*route.HeaderMatcher{
 													{
@@ -244,7 +245,7 @@ func createTapConfig() *anypb.Any {
 							{
 								OutputSinkType: &tap.OutputSink_FilePerTap{
 									FilePerTap: &tap.FilePerTapSink{
-										PathPrefix: "/tmp/request-log",
+										PathPrefix: EnvoyLogPathPrefix,
 									},
 								},
 							},
