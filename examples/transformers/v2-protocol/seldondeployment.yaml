@@ -1,0 +1,30 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: gpt2
+spec:
+  protocol: kfserving
+  predictors:
+    - name: default
+      graph:
+        name: tokeniser
+        children:
+          - name: gpt2
+            implementation: TRITON_SERVER
+            modelUri: gs://seldon-models/triton/onnx_gpt2
+      componentSpecs:
+        - spec:
+            containers:
+              - name: tokeniser
+                image: gpt2-tokeniser:0.1.0
+                securityContext:
+                  # Workaround for multi-user bug in custom images in MLServer:
+                  # https://github.com/SeldonIO/MLServer/issues/388
+                  runAsUser: 1000
+                ports:
+                  - containerPort: 8080
+                    name: http
+                    protocol: TCP
+                  - containerPort: 8081
+                    name: grpc
+                    protocol: TCP
