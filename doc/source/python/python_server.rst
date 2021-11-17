@@ -6,10 +6,11 @@ To serve your component, Seldon's Python wrapper will use
 is a high-performing HTTP server for Unix which allows you to easily
 scale your model across multiple worker processes and threads.
 
-.. Note:: Gunicorn will only handle the horizontal scaling of your model
-**within the same pod and container**. To learn more about how to scale
-your model across multiple pod replicas see
-`this section <../graph/scaling>`_ of the docs.
+.. Note:: 
+  Gunicorn will only handle the horizontal scaling of your model
+  **within the same pod and container**. To learn more about how to scale
+  your model across multiple pod replicas see
+  `this section <../graph/scaling>`_ of the docs.
 
 Workers
 -------
