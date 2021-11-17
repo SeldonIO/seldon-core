@@ -19,15 +19,17 @@
 #
 
 import logging
+from typing import Callable, List, Optional
+
+import alibi
 import numpy as np
 import spacy
-import alibi
 from alibi.api.interfaces import Explanation
 from alibi.utils.download import spacy_model
 from alibi.utils.wrappers import ArgmaxTransformer
-from alibiexplainer.explainer_wrapper import ExplainerWrapper
+
 from alibiexplainer.constants import SELDON_LOGLEVEL
-from typing import Callable, List, Optional
+from alibiexplainer.explainer_wrapper import ExplainerWrapper
 
 logging.basicConfig(level=SELDON_LOGLEVEL)
 
@@ -49,9 +51,8 @@ class AnchorText(ExplainerWrapper):
             self.nlp = spacy.load(spacy_language_model)
             logging.info("Language model loaded")
             self.anchors_text = alibi.explainers.AnchorText(
-                predictor=predict_fn,
-                sampling_strategy="unknown",
-                nlp=self.nlp)
+                predictor=predict_fn, sampling_strategy="unknown", nlp=self.nlp
+            )
         else:
             self.anchors_text = explainer
 

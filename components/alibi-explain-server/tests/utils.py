@@ -1,14 +1,16 @@
+import logging
+import os
+from typing import Dict, Iterable, List, Union
+
+import joblib
 import kfserving
 import numpy as np
-from typing import Dict, List, Union, Iterable
-import os
-import logging
-import joblib
 
 JOBLIB_FILE = "model.joblib"
 logger = logging.getLogger(__name__)
 
-class SKLearnServer():
+
+class SKLearnServer:
     def __init__(self, model_uri: str = None, method: str = "predict_proba"):
         super().__init__()
         self.model_uri = model_uri
@@ -29,7 +31,7 @@ class SKLearnServer():
 
     def predict(self, X: np.ndarray) -> Union[np.ndarray, List, str, bytes]:
         if not isinstance(X, np.ndarray):
-            if isinstance(X,list):
+            if isinstance(X, list):
                 X = np.array(X)
             else:
                 X = np.array([X])

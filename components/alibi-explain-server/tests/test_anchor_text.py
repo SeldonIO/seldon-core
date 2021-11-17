@@ -17,12 +17,15 @@
 # and modified since
 #
 
-from alibiexplainer.anchor_text import AnchorText
-import os
-from alibi.datasets import fetch_movie_sentiment
-from .utils import SKLearnServer
 import json
+import os
+
 import numpy as np
+from alibi.datasets import fetch_movie_sentiment
+
+from alibiexplainer.anchor_text import AnchorText
+
+from .utils import SKLearnServer
 
 MOVIE_MODEL_URI = "gs://seldon-models/sklearn/moviesentiment_sklearn_0.24.2"
 

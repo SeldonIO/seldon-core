@@ -17,14 +17,15 @@
 # and modified since
 #
 
-from alibiexplainer.anchor_images import AnchorImages
-import os
-import tensorflow as tf
 import json
-import numpy as np
-import kfserving
-import dill
+import os
 
+import dill
+import kfserving
+import numpy as np
+import tensorflow as tf
+
+from alibiexplainer.anchor_images import AnchorImages
 
 CIFAR10_EXPLAINER_URI = "gs://seldon-models/tfserving/cifar10/explainer-py36-0.5.2"
 EXPLAINER_FILENAME = "explainer.dill"
@@ -45,9 +46,10 @@ def test_cifar10_images():  # pylint: disable-msg=too-many-locals
         X_test, _ = test
         X_test = X_test.astype("float32") / 255
         idx = 12
-        test_example = X_test[idx: idx + 1]
+        test_example = X_test[idx : idx + 1]
         anchor_images = AnchorImages(
-            lambda x: model.predict(x), alibi_model)  # pylint: disable-msg=unnecessary-lambda
+            lambda x: model.predict(x), alibi_model
+        )  # pylint: disable-msg=unnecessary-lambda
         np.random.seed(0)
         explanation = anchor_images.explain(test_example)
         exp_json = json.loads(explanation.to_json())

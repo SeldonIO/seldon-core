@@ -26,6 +26,8 @@ mypy = "^0.910"
 grpcio-tools = "1.31.0"
 mypy-protobuf = "1.22"
 pip-licenses = "^3.5.2"
+black = "21.7b0"
+isort = "5.9.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

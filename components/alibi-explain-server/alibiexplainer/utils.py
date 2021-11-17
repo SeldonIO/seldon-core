@@ -2,7 +2,7 @@ import json
 import logging
 import os
 from enum import Enum
-from typing import List, Callable, Union
+from typing import Callable, List, Union
 
 import grpc
 import numpy as np
@@ -10,9 +10,9 @@ import requests
 import tensorflow as tf
 
 import alibiexplainer.seldon_http as seldon
-from alibiexplainer.proto import prediction_pb2_grpc, prediction_pb2
+from alibiexplainer.proto import prediction_pb2, prediction_pb2_grpc
 
-SELDON_LOGLEVEL = os.environ.get('SELDON_LOGLEVEL', 'INFO').upper()
+SELDON_LOGLEVEL = os.environ.get("SELDON_LOGLEVEL", "INFO").upper()
 logging.basicConfig(level=SELDON_LOGLEVEL)
 GRPC_MAX_MSG_LEN = 1000000000
 
@@ -43,24 +43,23 @@ class ExplainerMethod(Enum):
 
 
 def construct_predict_fn(
-        predictor_host: str,
-        model_name: str,
-        protocol: Protocol = Protocol.seldon_grpc,
-        tf_data_type: str = None,
+    predictor_host: str,
+    model_name: str,
+    protocol: Protocol = Protocol.seldon_grpc,
+    tf_data_type: str = None,
 ) -> Callable:
     def _predict_fn(arr: Union[np.ndarray, List]) -> np.ndarray:
         if type(arr) == list:
             arr = np.array(arr)
         if protocol == Protocol.seldon_grpc:
             return _grpc(
-                arr=arr,
-                predictor_host=predictor_host,
-                tf_data_type=tf_data_type
+                arr=arr, predictor_host=predictor_host, tf_data_type=tf_data_type
             )
         elif protocol == Protocol.seldon_http:
             payload = seldon.create_request(arr, seldon.SeldonPayload.NDARRAY)
             response_raw = requests.post(
-                SELDON_PREDICTOR_URL_FORMAT.format(predictor_host), json=payload)
+                SELDON_PREDICTOR_URL_FORMAT.format(predictor_host), json=payload
+            )
             if response_raw.status_code == 200:
                 rh = seldon.SeldonRequestHandler(response_raw.json())
                 response_list = rh.extract_request()
@@ -68,7 +67,8 @@ def construct_predict_fn(
             else:
                 raise Exception(
                     "Failed to get response from model return_code"
-                    ":%d" % response_raw.status_code)
+                    ":%d" % response_raw.status_code
+                )
         elif protocol == Protocol.tensorflow_http:
             instances = []
             for req_data in arr:
@@ -78,35 +78,32 @@ def construct_predict_fn(
                     instances.append(req_data)
             request = {"instances": instances}
             response = requests.post(
-                TENSORFLOW_PREDICTOR_URL_FORMAT.format(
-                    predictor_host, model_name),
-                json.dumps(request)
+                TENSORFLOW_PREDICTOR_URL_FORMAT.format(predictor_host, model_name),
+                json.dumps(request),
             )
             if response.status_code != 200:
                 raise Exception(
                     "Failed to get response from model return_code"
-                    ":%d" % response.status_code)
+                    ":%d" % response.status_code
+                )
             return np.array(response.json()["predictions"])
 
     return _predict_fn
 
 
-def _grpc(
-        arr: np.array,
-        predictor_host: str,
-        tf_data_type: str
-) -> np.array:
+def _grpc(arr: np.array, predictor_host: str, tf_data_type: str) -> np.array:
     options = [
-        ('grpc.max_send_message_length', GRPC_MAX_MSG_LEN),
-        ('grpc.max_receive_message_length', GRPC_MAX_MSG_LEN)]
+        ("grpc.max_send_message_length", GRPC_MAX_MSG_LEN),
+        ("grpc.max_receive_message_length", GRPC_MAX_MSG_LEN),
+    ]
     channel = grpc.insecure_channel(predictor_host, options)
     stub = prediction_pb2_grpc.SeldonStub(channel)
     if tf_data_type is not None:
         datadef = prediction_pb2.DefaultData(
-            tftensor=tf.make_tensor_proto(arr, tf_data_type))
+            tftensor=tf.make_tensor_proto(arr, tf_data_type)
+        )
     else:
-        datadef = prediction_pb2.DefaultData(
-            tftensor=tf.make_tensor_proto(arr))
+        datadef = prediction_pb2.DefaultData(tftensor=tf.make_tensor_proto(arr))
     request = prediction_pb2.SeldonMessage(data=datadef)
     response = stub.Predict(request=request)
     arr_resp = tf.make_ndarray(response.data.tftensor)

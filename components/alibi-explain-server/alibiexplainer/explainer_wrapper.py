@@ -18,11 +18,10 @@
 # and since modified
 #
 
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 
 
 class ExplainerWrapper(object):
-
     def validate(self, training_data_url: Optional[str]):
         pass
 

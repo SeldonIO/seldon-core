@@ -1,20 +1,18 @@
 import logging
-import numpy as np
-import alibi
-from alibi.api.interfaces import Explanation
-from alibiexplainer.explainer_wrapper import ExplainerWrapper
-from alibiexplainer.constants import SELDON_LOGLEVEL
 from typing import Callable, List, Optional
+
+import alibi
+import numpy as np
+from alibi.api.interfaces import Explanation
+
+from alibiexplainer.constants import SELDON_LOGLEVEL
+from alibiexplainer.explainer_wrapper import ExplainerWrapper
 
 logging.basicConfig(level=SELDON_LOGLEVEL)
 
 
 class ALE(ExplainerWrapper):
-    def __init__(
-        self,
-        explainer: Optional[alibi.explainers.ale.ALE],
-        **kwargs
-    ):
+    def __init__(self, explainer: Optional[alibi.explainers.ale.ALE], **kwargs):
         if explainer is None:
             raise Exception("ALE requires a built explainer")
         self.ale = explainer

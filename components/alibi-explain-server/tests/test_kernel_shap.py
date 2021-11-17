@@ -1,11 +1,15 @@
-from alibiexplainer.kernel_shap import KernelShap
-import kfserving
-import os
-import dill
-from sklearn.datasets import load_wine
-import numpy as np
 import json
+import os
+
+import dill
+import kfserving
+import numpy as np
+from sklearn.datasets import load_wine
+
+from alibiexplainer.kernel_shap import KernelShap
+
 from .utils import SKLearnServer
+
 WINE_EXPLAINER_URI = "gs://seldon-models/sklearn/wine/kernel_shap_py36_alibi_0.5.5"
 WINE_MODEL_URI = "gs://seldon-models/sklearn/wine/model-py36-0.23.2"
 EXPLAINER_FILENAME = "explainer.dill"

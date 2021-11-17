@@ -146,6 +146,7 @@ LAYER = 1
 N_STEPS = 50
 INTERNAL_BATCH_SIZE = 100
 
+
 def test_integrated_gradients_parser():
     args = [
         "--predictor_host",
@@ -158,8 +159,7 @@ def test_integrated_gradients_parser():
         "--n_steps",
         str(N_STEPS),
         "--internal_batch_size",
-        str(INTERNAL_BATCH_SIZE)
-
+        str(INTERNAL_BATCH_SIZE),
     ]
     parser, _ = parse_args(args)
     assert parser.predictor_host == PREDICTOR_HOST

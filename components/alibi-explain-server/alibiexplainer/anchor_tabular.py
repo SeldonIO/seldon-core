@@ -19,23 +19,21 @@
 #
 
 import logging
-import numpy as np
+from typing import Callable, List, Optional
+
 import alibi
+import numpy as np
 from alibi.api.interfaces import Explanation
 from alibi.utils.wrappers import ArgmaxTransformer
-from alibiexplainer.explainer_wrapper import ExplainerWrapper
+
 from alibiexplainer.constants import SELDON_LOGLEVEL
-from typing import Callable, List, Optional
+from alibiexplainer.explainer_wrapper import ExplainerWrapper
 
 logging.basicConfig(level=SELDON_LOGLEVEL)
 
 
 class AnchorTabular(ExplainerWrapper):
-    def __init__(
-        self,
-        explainer=Optional[alibi.explainers.AnchorTabular],
-        **kwargs
-    ):
+    def __init__(self, explainer=Optional[alibi.explainers.AnchorTabular], **kwargs):
         if explainer is None:
             raise Exception("Anchor images requires a built explainer")
         self.anchors_tabular: alibi.explainers.AnchorTabular = explainer

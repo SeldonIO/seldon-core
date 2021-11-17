@@ -1,12 +1,16 @@
-from alibiexplainer.ale import ALE
-import kfserving
+import json
 import os
+
 import dill
+import kfserving
+import numpy as np
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
-import numpy as np
-import json
+
+from alibiexplainer.ale import ALE
+
 from .utils import SKLearnServer
+
 ALE_EXPLAINER_URI = "gs://seldon-models/sklearn/iris-0.23.2/ale_py37"
 IRIS_MODEL_URI = "gs://seldon-models/sklearn/iris-0.23.2/lr_model"
 EXPLAINER_FILENAME = "explainer.dill"
@@ -25,7 +29,9 @@ def test_ale():
         data = load_iris()
         X = data.data
         y = data.target
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.25, random_state=42
+        )
         np.random.seed(0)
         explanation = ale.explain(X_test.tolist())
         exp_json = json.loads(explanation.to_json())

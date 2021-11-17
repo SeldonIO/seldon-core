@@ -30,9 +30,8 @@ from alibiexplainer import AlibiExplainer
 from alibiexplainer.constants import SELDON_LOGLEVEL
 from alibiexplainer.parser import parse_args
 from alibiexplainer.server import ExplainerServer
-from alibiexplainer.utils import ExplainerMethod, \
-    Protocol  # pylint:disable=no-name-in-module
-from alibiexplainer.utils import construct_predict_fn
+from alibiexplainer.utils import (  # pylint:disable=no-name-in-module
+    ExplainerMethod, Protocol, construct_predict_fn)
 
 logging.basicConfig(level=SELDON_LOGLEVEL)
 KERAS_MODEL = "model.h5"
@@ -53,9 +52,7 @@ def main():
         path = kfserving.Storage.download(args.storage_uri)
         if os.path.exists(path):
             logging.info("Loading Alibi model")
-            alibi_model = load_explainer(
-                predictor=predict_fn,
-                path=path)
+            alibi_model = load_explainer(predictor=predict_fn, path=path)
         else:
             keras_path = os.path.join(path, KERAS_MODEL)
             if os.path.exists(keras_path):

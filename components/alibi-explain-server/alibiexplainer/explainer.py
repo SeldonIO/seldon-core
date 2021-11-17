@@ -21,7 +21,7 @@
 import json
 import logging
 import os
-from typing import Any, Mapping, Dict, Callable
+from typing import Any, Callable, Dict, Mapping
 
 from alibi.api.interfaces import Explanation
 from tensorflow import keras
@@ -36,23 +36,22 @@ from alibiexplainer.integrated_gradients import IntegratedGradients
 from alibiexplainer.kernel_shap import KernelShap
 from alibiexplainer.model import ExplainerModel
 from alibiexplainer.tree_shap import TreeShap
-from alibiexplainer.utils import ExplainerMethod
-from alibiexplainer.utils import Protocol
+from alibiexplainer.utils import ExplainerMethod, Protocol
 
-SELDON_LOGLEVEL = os.environ.get('SELDON_LOGLEVEL', 'INFO').upper()
+SELDON_LOGLEVEL = os.environ.get("SELDON_LOGLEVEL", "INFO").upper()
 logging.basicConfig(level=SELDON_LOGLEVEL)
 
 
 class AlibiExplainer(ExplainerModel):
     def __init__(
-            self,
-            name: str,
-            predict_fn: Callable,
-            method: ExplainerMethod,
-            config: Mapping,
-            explainer: object = None,
-            protocol: Protocol = Protocol.seldon_grpc,
-            keras_model: keras.Model = None
+        self,
+        name: str,
+        predict_fn: Callable,
+        method: ExplainerMethod,
+        config: Mapping,
+        explainer: object = None,
+        protocol: Protocol = Protocol.seldon_grpc,
+        keras_model: keras.Model = None,
     ) -> None:
         super().__init__(name)
         self.method = method
@@ -81,12 +80,14 @@ class AlibiExplainer(ExplainerModel):
         pass
 
     def explain(self, request: Dict) -> Any:
-        if self.method is ExplainerMethod.anchor_tabular or \
-                self.method is ExplainerMethod.anchor_images or \
-                self.method is ExplainerMethod.anchor_text or \
-                self.method is ExplainerMethod.kernel_shap or \
-                self.method is ExplainerMethod.integrated_gradients or\
-                self.method is ExplainerMethod.tree_shap:
+        if (
+            self.method is ExplainerMethod.anchor_tabular
+            or self.method is ExplainerMethod.anchor_images
+            or self.method is ExplainerMethod.anchor_text
+            or self.method is ExplainerMethod.kernel_shap
+            or self.method is ExplainerMethod.integrated_gradients
+            or self.method is ExplainerMethod.tree_shap
+        ):
             if self.protocol == Protocol.tensorflow_http:
                 explanation: Explanation = self.wrapper.explain(request["instances"])
             else:
