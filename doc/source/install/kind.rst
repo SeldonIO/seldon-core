@@ -17,6 +17,7 @@ Docker or Podman
 You only need one of either Docker or Podman. Note that Docker is no longer free for individual use at large companies:
 
 * Install Docker for `Linux <https://docs.docker.com/engine/install/ubuntu/>`_ , `Mac <https://docs.docker.com/desktop/mac/install/>`_ , `Windows <https://docs.docker.com/desktop/windows/install/>`_
+
 or
 
 * `Install Podman <https://podman.io/getting-started/installation>`_

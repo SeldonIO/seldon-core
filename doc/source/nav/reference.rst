@@ -18,3 +18,4 @@ Reference
     Seldon Deployment CRD </reference/seldon-deployment.md>
     Service Orchestrator </graph/svcorch.md>
     Kubeflow </analytics/kubeflow.md>
+    Archived Docs </nav/archive.rst>
