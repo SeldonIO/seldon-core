@@ -1,15 +1,19 @@
 package logger
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"time"
+
 	cloudevents "github.com/cloudevents/sdk-go"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/transport"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/go-logr/logr"
-	"net/http"
-	"time"
 )
 
 const (
@@ -122,6 +126,26 @@ func (w *Worker) sendKafkaEvent(logReq LogRequest) error {
 }
 
 func (w *Worker) sendCloudEvent(logReq LogRequest) error {
+	var data []byte
+
+	// This temporary fix related to the fact that Triton server responses
+	// are now gzipped compressed. Until we introduce support for gzip
+	// compressed payloads in the logger / adserver and include content-encoding
+	// header in the CloudEvent messages this can serve as temporary solution.
+	if logReq.ContentEncoding == "gzip" {
+		bytesReader := bytes.NewReader(*logReq.Bytes)
+		gzipReader, err := gzip.NewReader(bytesReader)
+		if err != nil {
+			return err
+		}
+		output, err := ioutil.ReadAll(gzipReader)
+		if err != nil {
+			return err
+		}
+		data = output
+	} else {
+		data = *logReq.Bytes
+	}
 
 	t, err := cloudevents.NewHTTPTransport(
 		cloudevents.WithTarget(logReq.Url.String()),
@@ -154,7 +178,7 @@ func (w *Worker) sendCloudEvent(logReq LogRequest) error {
 
 	event.SetSource(logReq.SourceUri.String())
 	event.SetDataContentType(logReq.ContentType)
-	if err := event.SetData(*logReq.Bytes); err != nil {
+	if err := event.SetData(data); err != nil {
 		return fmt.Errorf("while setting cloudevents data: %s", err)
 	}
 

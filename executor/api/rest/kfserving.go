@@ -1,14 +1,37 @@
 package rest
 
 import (
+	"compress/gzip"
 	"encoding/json"
+	"io/ioutil"
+
 	"github.com/pkg/errors"
 	"github.com/seldonio/seldon-core/executor/api/payload"
+
+	"bytes"
 )
 
 func ChainKFserving(msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+	data, err := msg.GetBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	if msg.GetContentEncoding() == "gzip" {
+		bytesReader := bytes.NewReader(data)
+		gzipReader, err := gzip.NewReader(bytesReader)
+		if err != nil {
+			return nil, err
+		}
+		output, err := ioutil.ReadAll(gzipReader)
+		if err != nil {
+			return nil, err
+		}
+		data = output
+	}
+
 	var f interface{}
-	err := json.Unmarshal(msg.GetPayload().([]byte), &f)
+	err = json.Unmarshal(data, &f)
 	if err != nil {
 		return nil, err
 	}
@@ -21,10 +44,9 @@ func ChainKFserving(msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 		b, err := json.Marshal(m)
 		if err != nil {
 			return nil, err
-		} else {
-			p := payload.BytesPayload{Msg: b}
-			return &p, nil
 		}
+		p := payload.BytesPayload{Msg: b, ContentType: msg.GetContentType()}
+		return &p, nil
 	} else {
 		return nil, errors.Errorf("Failed to convert kfserving response so it could be chained to new input")
 	}
