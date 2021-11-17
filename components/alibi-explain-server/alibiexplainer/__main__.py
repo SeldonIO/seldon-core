@@ -22,7 +22,6 @@ import logging
 import os
 import sys
 
-import kfserving
 from alibi.saving import load_explainer
 from tensorflow import keras
 
@@ -49,7 +48,7 @@ def main():
         tf_data_type=args.tf_data_type,
     )
     if args.storage_uri is not None:
-        path = kfserving.Storage.download(args.storage_uri)
+        path = args.storage_uri
         if os.path.exists(path):
             logging.info("Loading Alibi model")
             alibi_model = load_explainer(predictor=predict_fn, path=path)

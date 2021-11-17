@@ -19,29 +19,29 @@
 #
 
 import json
+import tempfile
 
-import kfserving
 import numpy as np
 from alibi.saving import load_explainer
 
 from alibiexplainer.anchor_tabular import AnchorTabular
-
-from .utils import SKLearnServer
+from .utils import SKLearnServer, download_from_gs
 
 # to recreate these artifacts, use notebooks/explainer_examples_v2.ipynb
 # TODO: move to a python runnable
-IRIS_MODEL_URI = "gs://seldon-models/v1.11.0-dev/sklearn/iris"
+IRIS_MODEL_URI = "gs://seldon-models/v1.11.0-dev/sklearn/iris/*"
 # note: nothing special about v2
-IRIS_EXPLAINER_URI = "gs://seldon-models/alibi/iris_anchor_tabular_explainer_v2"
+IRIS_EXPLAINER_URI = "gs://seldon-models/alibi/iris_anchor_tabular_explainer_v2/*"
 
 
 def test_anchor_tabular():
-    local_alibi_model = kfserving.Storage.download(IRIS_EXPLAINER_URI)
     skmodel = SKLearnServer(IRIS_MODEL_URI)
     skmodel.load()
 
-    alibi_model = load_explainer(predictor=skmodel.predict, path=local_alibi_model)
-    anchor_tabular = AnchorTabular(alibi_model)
+    with tempfile.TemporaryDirectory() as local_alibi_model:
+        download_from_gs(IRIS_EXPLAINER_URI, local_alibi_model)
+        alibi_model = load_explainer(predictor=skmodel.predict, path=local_alibi_model)
+        anchor_tabular = AnchorTabular(alibi_model)
 
     test_data = np.array([[5.964, 4.006, 2.081, 1.031]])
     explanation = anchor_tabular.explain(test_data)

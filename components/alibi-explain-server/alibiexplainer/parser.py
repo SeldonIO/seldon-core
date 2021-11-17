@@ -22,14 +22,12 @@ import argparse
 import logging
 import os
 
-import kfserving
-
 import alibiexplainer
 from alibiexplainer import server_parser
 from alibiexplainer.explainer import \
     ExplainerMethod  # pylint:disable=no-name-in-module
 
-logging.basicConfig(level=kfserving.constants.KFSERVING_LOGLEVEL)
+logging.basicConfig(level=logging.INFO)
 
 DEFAULT_EXPLAINER_NAME = "explainer"
 ENV_STORAGE_URI = "STORAGE_URI"
