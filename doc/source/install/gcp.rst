@@ -127,6 +127,28 @@ Seldon Core supports using either `Istio <https://istio.io/>`_ or `Ambassador <h
     
     For custom configuration and more details on installing seldon core with Istio please see the `Istio Ingress <../ingress/istio.md>`_ page.
 
+.. tabbed:: Ambassador
+
+    `Ambassador <https://www.getambassador.io/>`_ is a Kubernetes ingress controller and API gateway. It routes incomming traffic to the underlying kubernetes workloads through configuration. 
+
+    **Install Ambassador**
+
+    First add the datawire helm repository:
+
+    .. code-block:: bash
+
+        helm repo add datawire https://www.getambassador.io
+        helm repo update
+
+    Run the following `helm` command to install Ambassador on your GKE cluster:
+
+    .. code-block:: bash
+
+        helm install ambassador datawire/ambassador --set enableAES=false --namespace ambassador --create-namespace
+        kubectl rollout status -n ambassador deployment/ambassador -w
+        
+    Ambassador is now ready to use. For custom configuration and more details on installing seldon core with Ambassador please see the `Ambassador Ingress <../ingress/ambassador.md>`_ page.
+
 Install Seldon Core
 ----------------------------
 
@@ -177,6 +199,17 @@ Congratulations! Seldon Core is now fully installed and operational. Before you 
 
         export INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
         export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].port}')
+        export INGRESS_URL=$INGRESS_HOST:$INGRESS_PORT
+        echo $INGRESS_URL
+
+    This is the public address you will use to access models running in your cluster.
+
+.. tabbed:: Ambassador
+
+    .. code-block:: bash
+
+        export INGRESS_HOST=$(kubectl -n ambassador get service ambassador -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+        export INGRESS_PORT=$(kubectl -n ambassador get service ambassador -o jsonpath='{.spec.ports[?(@.name=="http")].port}')
         export INGRESS_URL=$INGRESS_HOST:$INGRESS_PORT
         echo $INGRESS_URL
 

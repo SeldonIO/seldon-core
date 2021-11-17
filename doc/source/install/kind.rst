@@ -183,7 +183,7 @@ Seldon Core supports using either `Istio <https://istio.io/>`_ or `Ambassador <h
         kubectl apply -n ambassador -f https://github.com/datawire/ambassador-operator/releases/latest/download/ambassador-operator-kind.yaml
         kubectl wait --timeout=180s -n ambassador --for=condition=deployed ambassadorinstallations/ambassador
 
-    Ambassador is now ready to use. For custom configuration and more details on installing seldon core with Istio please see the `Ambassador Ingress <../ingress/ambassador.md>`_ page.
+    Ambassador is now ready to use. For custom configuration and more details on installing seldon core with Ambassador please see the `Ambassador Ingress <../ingress/ambassador.md>`_ page.
 
 Install Seldon Core
 ----------------------------
