@@ -320,6 +320,10 @@ def parse_args(sys_args):
         default=argparse.SUPPRESS,
     )
 
+    # ALE Arguments
+    # TODO: add actual arguments (not sure if they are really needed!)
+    parser_ale = subparsers.add_parser(str(ExplainerMethod.ale))
+
     args, _ = parser.parse_known_args(sys_args)
 
     argdDict = vars(args).copy()

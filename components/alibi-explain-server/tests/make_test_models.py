@@ -7,8 +7,9 @@ import numpy as np
 import tensorflow as tf
 import xgboost
 from alibi.datasets import fetch_adult
-from alibi.explainers import AnchorImage, KernelShap, TreeShap
-from sklearn.datasets import load_wine
+from alibi.explainers import ALE, AnchorImage, KernelShap, TreeShap
+from sklearn.datasets import load_iris, load_wine
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
@@ -110,6 +111,31 @@ def make_tree_shap(dirname: Optional[Path] = None) -> TreeShap:
     return tree_explainer
 
 
+def make_ale(dirname: Optional[Path] = None) -> ALE:
+    data = load_iris()
+    feature_names = data.feature_names
+    target_names = data.target_names
+    X = data.data
+    y = data.target
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.25, random_state=42
+    )
+
+    # train model
+    lr = LogisticRegression(max_iter=200)
+    lr.fit(X_train, y_train)
+
+    # create explainer
+    logit_fun_lr = lr.decision_function
+    logit_ale_lr = ALE(
+        logit_fun_lr, feature_names=feature_names, target_names=target_names
+    )
+
+    if dirname is not None:
+        logit_ale_lr.save(dirname)
+    return logit_ale_lr
+
+
 def _main():
     args_parser = argparse.ArgumentParser(add_help=False)
     args_parser.add_argument(
@@ -131,6 +157,8 @@ def _main():
         make_kernel_shap(model_dir)
     elif model_name == "tree_shap":
         make_tree_shap(model_dir)
+    elif model_name == "ale":
+        make_ale(model_dir)
 
 
 if __name__ == "__main__":

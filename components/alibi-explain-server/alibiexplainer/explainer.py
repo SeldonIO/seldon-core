@@ -87,6 +87,7 @@ class AlibiExplainer(ExplainerModel):
             or self.method is ExplainerMethod.kernel_shap
             or self.method is ExplainerMethod.integrated_gradients
             or self.method is ExplainerMethod.tree_shap
+            or self.method is ExplainerMethod.ale
         ):
             if self.protocol == Protocol.tensorflow_http:
                 explanation: Explanation = self.wrapper.explain(request["instances"])

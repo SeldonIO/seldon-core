@@ -213,7 +213,7 @@ integrated_gradients_explain:
 
 #
 # Test Tree Shap
-# White box so does not need separate model
+# This is an odd case where we do not need a separate model (yet)
 #
 test_models/explainers/tree_shap:
 	mkdir -p test_models/explainers/tree_shap
@@ -227,6 +227,36 @@ tree_shap_docker: test_models/explainers/tree_shap
 
 tree_shap_explain:
 	curl -d '{"data": {"ndarray":[[39, 7, 1, 1, 1, 1, 4, 1, 2174, 0, 40, 9]]}}'    -X POST http://localhost:8080/api/v1.0/explain    -H "Content-Type: application/json"
+
+
+#
+# Test ALE
+#
+test_models/sklearn/iris-0.23.2/lr_model:
+	mkdir -p test_models/sklearn/iris-0.23.2
+	gsutil cp -r gs://seldon-models/sklearn/iris-0.23.2/lr_model test_models/sklearn/iris-0.23.2
+
+test_models/explainers/ale:
+	mkdir -p test_models/explainers/ale
+	python tests/make_test_models.py --model ale --model_dir test_models/explainers/ale
+
+ale_model: test_models/sklearn/iris-0.23.2/lr_model
+	docker run -it --rm --name "sklearnserver"  -p 9000:9000 -v ${PWD}/test_models:/models -e PREDICTIVE_UNIT_PARAMETERS='[{"type":"STRING","name":"model_uri","value":"/models/sklearn/iris-0.23.2/lr_model"},{"type":"STRING","name":"method","value":"decision_function"}]' seldonio/sklearnserver:${VERSION}
+
+ale_predict:
+	curl -d '{"data": {"ndarray":[[6.1, 2.8, 4.7, 1.2]]}}'    -X POST http://localhost:9000/api/v1.0/predictions    -H "Content-Type: application/json"
+
+
+ale: test_models/explainers/ale
+	python -m alibiexplainer --model_name iris --protocol seldon.http --storage_uri "${PWD}/test_models/explainers/ale" --predictor_host localhost:9000 ALE
+
+
+ale_docker: test_models/explainers/ale
+	docker run -it --rm  --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models seldonio/${IMAGE}:${VERSION} --model_name iris --protocol seldon.http --storage_uri /models/explainers/ale --predictor_host localhost:9000 ALE
+
+
+ale_explain:
+	curl -d '{"data": {"ndarray":[[6.1, 2.8, 4.7, 1.2]]}}'    -X POST http://localhost:8080/api/v1.0/explain    -H "Content-Type: application/json"
 
 
 
