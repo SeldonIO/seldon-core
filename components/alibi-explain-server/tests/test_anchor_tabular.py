@@ -39,9 +39,9 @@ def test_anchor_tabular():
     skmodel = SKLearnServer(IRIS_MODEL_URI)
     skmodel.load()
 
-    with tempfile.TemporaryDirectory() as alibi_model_path:
-        download_from_gs(IRIS_EXPLAINER_URI, alibi_model_path)
-        alibi_model = load_explainer(predictor=skmodel.predict, path=alibi_model_path)
+    with tempfile.TemporaryDirectory() as alibi_model_dir:
+        download_from_gs(IRIS_EXPLAINER_URI, alibi_model_dir)
+        alibi_model = load_explainer(predictor=skmodel.predict, path=alibi_model_dir)
         anchor_tabular = AnchorTabular(alibi_model)
 
     test_data = np.array([[5.964, 4.006, 2.081, 1.031]])

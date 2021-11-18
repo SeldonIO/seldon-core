@@ -19,20 +19,23 @@
 #
 
 import logging
-import os
 import sys
-
-from alibi.saving import load_explainer
-from tensorflow import keras
 
 from alibiexplainer import AlibiExplainer
 from alibiexplainer.constants import SELDON_LOGLEVEL
 from alibiexplainer.parser import parse_args
 from alibiexplainer.server import ExplainerServer
-from alibiexplainer.utils import ExplainerMethod, Protocol, construct_predict_fn
+from alibiexplainer.utils import (
+    ExplainerMethod,
+    Protocol,
+    construct_predict_fn,
+    get_persisted_explainer,
+    get_persisted_keras,
+    is_persisted_explainer,
+    is_persisted_keras,
+)
 
 logging.basicConfig(level=SELDON_LOGLEVEL)
-KERAS_MODEL = "model.h5"
 
 
 def main():
@@ -40,23 +43,23 @@ def main():
     # Pretrained Alibi explainer
     alibi_model = None
     keras_model = None
+
     predict_fn = construct_predict_fn(
         predictor_host=args.predictor_host,
         model_name=args.model_name,
         protocol=Protocol(args.protocol),
         tf_data_type=args.tf_data_type,
     )
+
     if args.storage_uri is not None:
+        # we assume here that model is local
         path = args.storage_uri
-        if os.path.exists(path):
-            logging.info("Loading Alibi model")
-            alibi_model = load_explainer(predictor=predict_fn, path=path)
-        else:
-            keras_path = os.path.join(path, KERAS_MODEL)
-            if os.path.exists(keras_path):
-                with open(keras_path, "rb") as f:
-                    logging.info("Loading Keras model")
-                    keras_model = keras.models.load_model(keras_path)
+
+        if is_persisted_explainer(path):
+            alibi_model = get_persisted_explainer(predict_fn=predict_fn, dirname=path)
+
+        if is_persisted_keras(path):
+            keras_model = get_persisted_keras(path)
 
     explainer = AlibiExplainer(
         name=args.model_name,

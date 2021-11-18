@@ -195,13 +195,16 @@ kernel_shap_explain:
 #
 # Test Integrated Gradients
 #
+test_models/keras/imdb:
+	mkdir -p test_models/keras/imdb
+	gsutil cp -r gs://seldon-models/keras/imdb test_models/keras
 
-integrated_gradients:
-	python -m alibiexplainer --model_name adult --protocol seldon.http --storage_uri gs://seldon-models/keras/imdb IntegratedGradients IntegratedGradients --layer 1
+integrated_gradients: test_models/keras/imdb
+	python -m alibiexplainer --model_name imdb --protocol seldon.http --storage_uri ${PWD}/test_models/keras/imdb  IntegratedGradients IntegratedGradients --layer 1
 
 
-integrated_gradients_docker:
-	docker run -it --rm  --name "explainer" --network=host -p 8080:8080 seldonio/${IMAGE}:${VERSION} --model_name adult --protocol seldon.http --storage_uri gs://seldon-models/keras/imdb IntegratedGradients --layer 1
+integrated_gradients_docker: test_models/keras/imdb
+	docker run -it --rm  --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models seldonio/${IMAGE}:${VERSION} --model_name adult --protocol seldon.http --storage_uri /models/keras/imdb IntegratedGradients --layer 1
 
 integrated_gradients_explain:
 	curl -d '{"data": {"ndarray":[[   0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    1, 591,  202,   14,   31,    6,  717,   10,   10,    2,    2,    5, 4,  360,    7,    4,  177, 5760,  394,  354,    4,  123,    9, 1035, 1035, 1035,   10,   10,   13,   92,  124,   89,  488, 7944, 100,   28, 1668,   14,   31,   23,   27, 7479,   29,  220,  468, 8,  124,   14,  286,  170,    8,  157,   46,    5,   27,  239, 16,  179,    2,   38,   32,   25, 7944,  451,  202,   14,    6, 717]]}}'    -X POST http://localhost:8080/api/v1.0/explain    -H "Content-Type: application/json"
