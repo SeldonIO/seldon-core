@@ -325,20 +325,16 @@ func (p *PredictorProcess) getLogUrl(logger *v1.Logger) (*url.URL, error) {
 }
 
 func (p *PredictorProcess) logPayload(nodeName string, logger *v1.Logger, reqType payloadLogger.LogRequestType, msg payload.SeldonPayload, puid string) error {
+	data, err := msg.GetBytes()
+	if err != nil {
+		return err
+	}
 	logUrl, err := p.getLogUrl(logger)
 	if err != nil {
 		return err
 	}
 	go func() {
-		// This temporary fix related to the fact that Triton server responses
-		// are now gzipped compressed. Until we introduce support for gzip
-		// compressed payloads in the logger / adserver and include content-encoding
-		// header in the CloudEvent messages this can serve as temporary solution.
-		data, err := payload.DecompressSeldonPayload(msg)
-		if err != nil {
-			p.Log.Error(err, "failed to log request")
-		}
-		err = payloadLogger.QueueLogRequest(payloadLogger.LogRequest{
+		err := payloadLogger.QueueLogRequest(payloadLogger.LogRequest{
 			Url:             logUrl,
 			Bytes:           &data,
 			ContentType:     msg.GetContentType(),
