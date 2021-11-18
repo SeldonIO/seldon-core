@@ -84,6 +84,8 @@ def _main():
     model_dir = args.model_dir
     if model_name == "anchor_image":
         make_anchor_image(model_dir)
+    elif model_name == "kernel_shap":
+        make_kernel_shap(model_dir)
 
 
 if __name__ == "__main__":

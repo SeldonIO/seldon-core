@@ -19,11 +19,9 @@
 #
 
 import json
-import os
 
 import numpy as np
 import tensorflow as tf
-from alibi.explainers import AnchorImage
 
 from alibiexplainer.anchor_images import AnchorImages
 

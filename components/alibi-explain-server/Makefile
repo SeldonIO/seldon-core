@@ -169,6 +169,10 @@ test_models/sklearn/wine/model-py36-0.23.2:
 	mkdir -p test_models/sklearn/wine
 	gsutil cp -r gs://seldon-models/sklearn/wine/model-py36-0.23.2 test_models/sklearn/wine
 
+test_models/explainers/kernel_shap:
+	mkdir -p test_models/explainers/kernel_shap
+	python tests/make_test_models.py --model kernel_shap --model_dir test_models/explainers/kernel_shap
+
 kernel_shap_model: test_models/sklearn/wine/model-py36-0.23.2
 	docker run -it --rm --name "sklearnserver"  -p 9000:9000 -v ${PWD}/test_models:/models -e PREDICTIVE_UNIT_PARAMETERS='[{"type":"STRING","name":"model_uri","value":"/models/sklearn/wine/model-py36-0.23.2"},{"type":"STRING","name":"method","value":"decision_function"}]' seldonio/sklearnserver:${VERSION}
 
@@ -176,12 +180,12 @@ kernel_shap_predict:
 	curl -d '{"data": {"ndarray":[[-0.24226334,  0.26757916,  0.42085937,  0.7127641 ,  0.84067236, -1.27747161, -0.60582812, -0.9706341 , -0.5873972 ,  2.42611713, -2.06608025, -1.55017035, -0.86659858]]}}'    -X POST http://localhost:9000/api/v1.0/predictions    -H "Content-Type: application/json"
 
 
-kernel_shap:
-	python -m alibiexplainer --model_name wine --protocol seldon.http --storage_uri gs://seldon-models/sklearn/wine/kernel_shap_py36_alibi_0.5.5 --predictor_host localhost:9000 KernelShap
+kernel_shap: test_models/explainers/kernel_shap
+	python -m alibiexplainer --model_name wine --protocol seldon.http --storage_uri "${PWD}/test_models/explainers/kernel_shap" --predictor_host localhost:9000 KernelShap
 
 
-kernel_shap_docker:
-	docker run -it --rm  --name "explainer" --network=host -p 8080:8080 seldonio/${IMAGE}:${VERSION} --model_name wine --protocol seldon.http --storage_uri gs://seldon-models/sklearn/wine/kernel_shap_py36_alibi_0.5.5 --predictor_host localhost:9000 KernelShap
+kernel_shap_docker: test_models/explainers/kernel_shap
+	docker run -it --rm  --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models seldonio/${IMAGE}:${VERSION} --model_name wine --protocol seldon.http --storage_uri /models/explainers/kernel_shap --predictor_host localhost:9000 KernelShap
 
 
 kernel_shap_explain:
