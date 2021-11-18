@@ -27,16 +27,11 @@ from alibi.explainers import AnchorImage
 
 from alibiexplainer.anchor_images import AnchorImages
 
+from .make_test_models import make_anchor_image
+
 
 def test_cifar10_images():  # pylint: disable-msg=too-many-locals
-    url = "https://storage.googleapis.com/seldon-models/alibi-detect/classifier/"
-    path_model = os.path.join(url, "cifar10", "resnet32", "model.h5")
-    save_path = tf.keras.utils.get_file("resnet32", path_model)
-    model = tf.keras.models.load_model(save_path)
-
-    # we drop the first batch dimension because AnchorImage expects a single image
-    image_shape = model.get_layer(index=0).input_shape[0][1:]
-    alibi_model = AnchorImage(predictor=model, image_shape=image_shape)
+    alibi_model = make_anchor_image()
     anchor_images = AnchorImages(alibi_model)
 
     _, test = tf.keras.datasets.cifar10.load_data()

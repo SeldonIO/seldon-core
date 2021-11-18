@@ -1,33 +1,20 @@
 import json
-import os
 
-import dill
-import kfserving
 import numpy as np
 from sklearn.datasets import load_wine
 
 from alibiexplainer.kernel_shap import KernelShap
 
-from .utils import SKLearnServer
-
-WINE_EXPLAINER_URI = "gs://seldon-models/sklearn/wine/kernel_shap_py36_alibi_0.5.5"
-WINE_MODEL_URI = "gs://seldon-models/sklearn/wine/model-py36-0.23.2"
-EXPLAINER_FILENAME = "explainer.dill"
+from .make_test_models import make_kernel_shap
 
 
 def test_kernel_shap():
+    np.random.seed(0)
 
-    alibi_model = os.path.join(
-        kfserving.Storage.download(WINE_EXPLAINER_URI), EXPLAINER_FILENAME
-    )
-    with open(alibi_model, "rb") as f:
-        skmodel = SKLearnServer(WINE_MODEL_URI)
-        skmodel.load()
-        alibi_model = dill.load(f)
-        kernel_shap = KernelShap(skmodel.predict, alibi_model)
-        wine = load_wine()
-        X_test = wine.data
-        np.random.seed(0)
-        explanation = kernel_shap.explain(X_test[0:1].tolist())
-        exp_json = json.loads(explanation.to_json())
-        print(exp_json)
+    alibi_model = make_kernel_shap()
+    kernel_shap = KernelShap(alibi_model)
+    wine = load_wine()
+    X_test = wine.data
+    explanation = kernel_shap.explain(X_test[0:1].tolist())
+    exp_json = json.loads(explanation.to_json())
+    assert exp_json["meta"]["name"] == "KernelShap"
