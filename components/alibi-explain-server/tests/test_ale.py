@@ -5,6 +5,7 @@ from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 
 from alibiexplainer.ale import ALE
+
 from .make_test_models import make_ale
 from .utils import SKLearnServer
 
