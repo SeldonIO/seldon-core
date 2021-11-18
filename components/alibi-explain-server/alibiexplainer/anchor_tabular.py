@@ -19,12 +19,11 @@
 #
 
 import logging
-from typing import Callable, List, Optional
+from typing import List, Optional
 
 import alibi
 import numpy as np
 from alibi.api.interfaces import Explanation
-from alibi.utils.wrappers import ArgmaxTransformer
 
 from alibiexplainer.constants import SELDON_LOGLEVEL
 from alibiexplainer.explainer_wrapper import ExplainerWrapper
