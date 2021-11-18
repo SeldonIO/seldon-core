@@ -13,21 +13,20 @@
 # limitations under the License.
 
 #
-# Copied from https://github.com/kubeflow/kfserving/blob/master/python/alibiexplainer/tests/test_anchor_text.py
+# Copied from https://github.com/kubeflow/kfserving/blob/master/python/alibiexplainer/
+# tests/test_anchor_text.py
 # and modified since
 #
 
 import json
-import os
 
 import numpy as np
 from alibi.datasets import fetch_movie_sentiment
 
 from alibiexplainer.anchor_text import AnchorText
-
 from .utils import SKLearnServer
 
-MOVIE_MODEL_URI = "gs://seldon-models/sklearn/moviesentiment_sklearn_0.24.2"
+MOVIE_MODEL_URI = "gs://seldon-models/sklearn/moviesentiment_sklearn_0.24.2/*"
 
 
 def test_anchor_text():
@@ -40,4 +39,4 @@ def test_anchor_text():
     np.random.seed(0)
     explanation = anchor_text.explain(movies.data[4:5])
     exp_json = json.loads(explanation.to_json())
-    print(exp_json["data"]["anchor"])
+    assert exp_json["meta"]["name"] == "AnchorText"

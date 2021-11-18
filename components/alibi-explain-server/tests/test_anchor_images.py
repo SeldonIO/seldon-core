@@ -20,17 +20,12 @@
 
 import json
 import os
-import tempfile
 
-import dill
 import numpy as np
 import tensorflow as tf
 from alibi.explainers import AnchorImage
-from alibi.saving import load_explainer
 
 from alibiexplainer.anchor_images import AnchorImages
-
-from .utils import download_from_gs
 
 
 def test_cifar10_images():  # pylint: disable-msg=too-many-locals
