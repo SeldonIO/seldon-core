@@ -29,8 +29,7 @@ from alibiexplainer import AlibiExplainer
 from alibiexplainer.constants import SELDON_LOGLEVEL
 from alibiexplainer.parser import parse_args
 from alibiexplainer.server import ExplainerServer
-from alibiexplainer.utils import (  # pylint:disable=no-name-in-module
-    ExplainerMethod, Protocol, construct_predict_fn)
+from alibiexplainer.utils import ExplainerMethod, Protocol, construct_predict_fn
 
 logging.basicConfig(level=SELDON_LOGLEVEL)
 KERAS_MODEL = "model.h5"

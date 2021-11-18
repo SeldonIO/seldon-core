@@ -13,44 +13,44 @@
 # limitations under the License.
 
 #
-# Copied from https://github.com/kubeflow/kfserving/blob/master/python/alibiexplainer/tests/test_anchor_images.py
+# Copied from https://github.com/kubeflow/kfserving/blob/master/python/alibiexplainer/
+# tests/test_anchor_images.py
 # and modified since
 #
 
 import json
 import os
+import tempfile
 
 import dill
-import kfserving
 import numpy as np
 import tensorflow as tf
+from alibi.explainers import AnchorImage
+from alibi.saving import load_explainer
 
 from alibiexplainer.anchor_images import AnchorImages
 
-CIFAR10_EXPLAINER_URI = "gs://seldon-models/tfserving/cifar10/explainer-py36-0.5.2"
-EXPLAINER_FILENAME = "explainer.dill"
+from .utils import download_from_gs
 
 
 def test_cifar10_images():  # pylint: disable-msg=too-many-locals
+    url = "https://storage.googleapis.com/seldon-models/alibi-detect/classifier/"
+    path_model = os.path.join(url, "cifar10", "resnet32", "model.h5")
+    save_path = tf.keras.utils.get_file("resnet32", path_model)
+    model = tf.keras.models.load_model(save_path)
 
-    alibi_model = os.path.join(
-        kfserving.Storage.download(CIFAR10_EXPLAINER_URI), EXPLAINER_FILENAME
-    )
-    with open(alibi_model, "rb") as f:
-        alibi_model = dill.load(f)
-        url = "https://storage.googleapis.com/seldon-models/alibi-detect/classifier/"
-        path_model = os.path.join(url, "cifar10", "resnet32", "model.h5")
-        save_path = tf.keras.utils.get_file("resnet32", path_model)
-        model = tf.keras.models.load_model(save_path)
-        _, test = tf.keras.datasets.cifar10.load_data()
-        X_test, _ = test
-        X_test = X_test.astype("float32") / 255
-        idx = 12
-        test_example = X_test[idx : idx + 1]
-        anchor_images = AnchorImages(
-            lambda x: model.predict(x), alibi_model
-        )  # pylint: disable-msg=unnecessary-lambda
-        np.random.seed(0)
-        explanation = anchor_images.explain(test_example)
-        exp_json = json.loads(explanation.to_json())
-        assert exp_json["data"]["precision"] > 0.9
+    # we drop the first batch dimension because AnchorImage expects a single image
+    image_shape = model.get_layer(index=0).input_shape[0][1:]
+    alibi_model = AnchorImage(predictor=model, image_shape=image_shape)
+    anchor_images = AnchorImages(alibi_model)
+
+    _, test = tf.keras.datasets.cifar10.load_data()
+    X_test, _ = test
+    X_test = X_test.astype("float32") / 255
+    idx = 12
+    test_example = X_test[idx : idx + 1]
+
+    np.random.seed(0)
+    explanation = anchor_images.explain(test_example)
+    exp_json = json.loads(explanation.to_json())
+    assert exp_json["data"]["precision"] > 0.9

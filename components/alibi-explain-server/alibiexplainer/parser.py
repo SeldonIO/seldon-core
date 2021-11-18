@@ -13,7 +13,8 @@
 # limitations under the License.
 
 #
-# Copied from https://github.com/kubeflow/kfserving/blob/master/python/alibiexplainer/alibiexplainer/parser.py
+# Copied from https://github.com/kubeflow/kfserving/blob/master/python/alibiexplainer/
+# alibiexplainer/parser.py
 # and modified since
 #
 
@@ -24,8 +25,7 @@ import os
 
 import alibiexplainer
 from alibiexplainer import server_parser
-from alibiexplainer.explainer import \
-    ExplainerMethod  # pylint:disable=no-name-in-module
+from alibiexplainer.explainer import ExplainerMethod
 
 logging.basicConfig(level=logging.INFO)
 

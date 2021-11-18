@@ -40,12 +40,15 @@ test: #type_check
 	poetry run pytest -v -W ignore
 
 type_check:
-	mypy --ignore-missing-imports alibiexplainer
+	mypy --ignore-missing-imports alibiexplainer --exclude proto
+
+lint: type_check
+	isort --profile black --check . --skip proto --skip .eggs --skip .tox
+	black --check . --exclude "(proto|.eggs|.tox)"
 
 fmt:
+	isort . --profile black --skip proto --skip .eggs --skip .tox
 	black . --exclude "(proto|.eggs|.tox)"
-
-	isort . --skip proto --skip .eggs --skip .tox
 
 docker-build: build_apis
 	docker build --file=Dockerfile --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg VERSION=${VERSION} -t seldonio/${IMAGE}:${VERSION} .

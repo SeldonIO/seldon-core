@@ -2,7 +2,7 @@ import json
 import logging
 import os
 from enum import Enum
-from typing import Callable, List, Union
+from typing import Callable, List, Optional, Union
 
 import grpc
 import numpy as np
@@ -91,7 +91,7 @@ def construct_predict_fn(
     return _predict_fn
 
 
-def _grpc(arr: np.array, predictor_host: str, tf_data_type: str) -> np.array:
+def _grpc(arr: np.array, predictor_host: str, tf_data_type: Optional[str]) -> np.array:
     options = [
         ("grpc.max_send_message_length", GRPC_MAX_MSG_LEN),
         ("grpc.max_receive_message_length", GRPC_MAX_MSG_LEN),
