@@ -1,33 +1,16 @@
 package rest
 
 import (
-	"compress/gzip"
 	"encoding/json"
-	"io/ioutil"
 
 	"github.com/pkg/errors"
 	"github.com/seldonio/seldon-core/executor/api/payload"
-
-	"bytes"
 )
 
 func ChainKFserving(msg payload.SeldonPayload) (payload.SeldonPayload, error) {
-	data, err := msg.GetBytes()
+	data, err := payload.DecompressSeldonPayload(msg)
 	if err != nil {
 		return nil, err
-	}
-
-	if msg.GetContentEncoding() == "gzip" {
-		bytesReader := bytes.NewReader(data)
-		gzipReader, err := gzip.NewReader(bytesReader)
-		if err != nil {
-			return nil, err
-		}
-		output, err := ioutil.ReadAll(gzipReader)
-		if err != nil {
-			return nil, err
-		}
-		data = output
 	}
 
 	var f interface{}
