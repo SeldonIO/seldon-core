@@ -263,26 +263,28 @@ ale_explain:
 #
 # Test Triton Cifar10
 #
+# TODO: move the below in relevant place
+# as we are moving to mlserver alibi runtime for V2 protocol
 
-test_models/triton/cifar10/tf_cifar10:
-	mkdir -p test_models/triton/tf_cifar10
-	gsutil cp -r gs://seldon-models/triton/tf_cifar10 test_models/triton
-
-
-anchor_images_triton_model: test_models/triton/cifar10/tf_cifar10
-	docker run --rm --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 -p9000:9000 -p8001:8001 -p8002:8002 -p5001:5001 -v ${PWD}/test_models/triton/tf_cifar10:/models nvcr.io/nvidia/tritonserver:21.08-py3 /opt/tritonserver/bin/tritonserver --model-repository=/models --http-port=9000 --grpc-port=5001
-
-anchor_images_triton_predict:
-	curl -H "Content-Type: application/json" http://0.0.0.0:9000/v2/models/cifar10/infer -d '@tests/data/truck-v2.json'
-
-
-anchor_images_triton:
-	python -m alibiexplainer --model_name cifar10 --protocol kfserving.http --storage_uri gs://seldon-models/tfserving/cifar10/explainer-py36-0.5.2 --predictor_host localhost:9000 AnchorImages
-
-
-anchor_images_triton_docker:
-	docker run -it --rm --name "explainer" --network=host -p 8080:8080 seldonio/${IMAGE}:${VERSION} --model_name cifar10 --protocol kfserving.http --storage_uri gs://seldon-models/tfserving/cifar10/explainer-py36-0.5.2 --predictor_host localhost:9000 AnchorImages 
-
-
-anchor_images_triton_explain:
-	curl -d @tests/data/truck-v2.json  -X POST http://localhost:8080/v2/models/cifar10/explain    -H "Content-Type: application/json"
+#test_models/triton/cifar10/tf_cifar10:
+#	mkdir -p test_models/triton/tf_cifar10
+#	gsutil cp -r gs://seldon-models/triton/tf_cifar10 test_models/triton
+#
+#
+#anchor_images_triton_model: test_models/triton/cifar10/tf_cifar10
+#	docker run --rm --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 -p9000:9000 -p8001:8001 -p8002:8002 -p5001:5001 -v ${PWD}/test_models/triton/tf_cifar10:/models nvcr.io/nvidia/tritonserver:21.08-py3 /opt/tritonserver/bin/tritonserver --model-repository=/models --http-port=9000 --grpc-port=5001
+#
+#anchor_images_triton_predict:
+#	curl -H "Content-Type: application/json" http://0.0.0.0:9000/v2/models/cifar10/infer -d '@tests/data/truck-v2.json'
+#
+#
+#anchor_images_triton: test_models/explainers/anchor_image
+#	python -m alibiexplainer --model_name cifar10 --protocol kfserving.http --storage_uri ${PWD}/explainers/anchor_image --predictor_host localhost:9000 AnchorImages
+#
+#
+#anchor_images_triton_docker: test_models/explainers/anchor_image
+#	docker run -it --rm --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models seldonio/${IMAGE}:${VERSION} --model_name cifar10 --protocol kfserving.http --storage_uri /models/explainers/anchor_image --predictor_host localhost:9000 AnchorImages
+#
+#
+#anchor_images_triton_explain:
+#	curl -d @tests/data/truck-v2.json  -X POST http://localhost:8080/v2/models/cifar10/explain    -H "Content-Type: application/json"
