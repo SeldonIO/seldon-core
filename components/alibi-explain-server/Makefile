@@ -215,12 +215,15 @@ integrated_gradients_explain:
 # Test Tree Shap
 # White box so does not need separate model
 #
+test_models/explainers/tree_shap:
+	mkdir -p test_models/explainers/tree_shap
+	python tests/make_test_models.py --model tree_shap --model_dir test_models/explainers/tree_shap
 
-tree_shap:
-	python -m alibiexplainer --model_name adult --protocol seldon.http --storage_uri gs://seldon-models/xgboost/adult/tree_shap_py37_alibi_0.6.0 TreeShap
+tree_shap: test_models/explainers/tree_shap
+	python -m alibiexplainer --model_name adult --protocol seldon.http --storage_uri ${PWD}/test_models/explainers/tree_shap TreeShap
 
-tree_shap_docker:
-	docker run -it --rm  --name "explainer" --network=host -p 8080:8080 seldonio/${IMAGE}:${VERSION} --model_name adult --protocol seldon.http --storage_uri gs://seldon-models/xgboost/adult/tree_shap_py37_alibi_0.6.0 TreeShap
+tree_shap_docker: test_models/explainers/tree_shap
+	docker run -it --rm  --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models seldonio/${IMAGE}:${VERSION} --model_name adult --protocol seldon.http --storage_uri /models/explainers/tree_shap TreeShap
 
 tree_shap_explain:
 	curl -d '{"data": {"ndarray":[[39, 7, 1, 1, 1, 1, 4, 1, 2174, 0, 40, 9]]}}'    -X POST http://localhost:8080/api/v1.0/explain    -H "Content-Type: application/json"
