@@ -24,13 +24,13 @@ import numpy as np
 from alibi.datasets import fetch_movie_sentiment
 
 from alibiexplainer.anchor_text import AnchorText
+
 from .utils import SKLearnServer
 
 MOVIE_MODEL_URI = "gs://seldon-models/sklearn/moviesentiment_sklearn_0.24.2/*"
 
 
 def test_anchor_text():
-
     skmodel = SKLearnServer(MOVIE_MODEL_URI)
     skmodel.load()
     movies = fetch_movie_sentiment()

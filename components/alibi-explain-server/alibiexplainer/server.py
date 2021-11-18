@@ -60,6 +60,11 @@ class ExplainerServer(object):
         return tornado.web.Application(
             [
                 (
+                    r"/v1/models/([a-zA-Z0-9_-]*):explain",
+                    ExplainV2Handler,
+                    dict(model=self.registered_model),
+                ),
+                (
                     r"/api/v0.1/explain",
                     ExplainHandler,
                     dict(model=self.registered_model),
@@ -103,6 +108,22 @@ class ExplainHandler(tornado.web.RequestHandler):
         self.model = model  # pylint:disable=attribute-defined-outside-init
 
     def post(self):
+        try:
+            body = json.loads(self.request.body)
+        except json.decoder.JSONDecodeError as e:
+            raise tornado.web.HTTPError(
+                status_code=HTTPStatus.BAD_REQUEST,
+                reason="Unrecognized request format: %s" % e,
+            )
+        response = self.model.explain(body)
+        self.write(response)
+
+
+class ExplainV2Handler(tornado.web.RequestHandler):
+    def initialize(self, model: ExplainerModel):
+        self.model = model  # pylint:disable=attribute-defined-outside-init
+
+    def post(self, model_name):
         try:
             body = json.loads(self.request.body)
         except json.decoder.JSONDecodeError as e:

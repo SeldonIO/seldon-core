@@ -84,7 +84,7 @@ test_models/sklearn/iris:
 	mkdir -p test_models/sklearn/iris
 	gsutil cp -r gs://seldon-models/v1.11.0-dev/sklearn/iris test_models/sklearn
 
-test_models/sklearn/iris_explainer:
+test_models/explainers/iris_explainer:
 	mkdir -p test_models/explainers/iris_anchor_tabular_explainer_v2
 	gsutil cp -r gs://seldon-models/alibi/iris_anchor_tabular_explainer_v2 test_models/explainers
 
@@ -94,11 +94,11 @@ anchor_tabular_model: test_models/sklearn/iris
 anchor_tabular_predict:
 	curl -d '{"data": {"ndarray":[[5.964, 4.006, 2.081, 1.031]]}}'    -X POST http://localhost:9000/api/v1.0/predictions    -H "Content-Type: application/json"
 
-anchor_tabular: test_models/sklearn/iris_explainer
+anchor_tabular: test_models/explainers/iris_explainer
 	python -m alibiexplainer --model_name iris --protocol seldon.http --storage_uri ${PWD}/test_models/explainers/iris_anchor_tabular_explainer_v2 --predictor_host localhost:9000 AnchorTabular
 
 anchor_tabular_docker:
-	docker run -it --rm --name "explainer" --network=host -p 8080:8080 seldonio/${IMAGE}:${VERSION} --model_name adult --protocol seldon.http --storage_uri gs://seldon-models/alibi/iris_anchor_tabular_explainer_v2 --predictor_host localhost:9000 AnchorTabular
+	docker run -it --rm --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models seldonio/${IMAGE}:${VERSION} --model_name iris --protocol seldon.http --storage_uri /models/explainers/iris_anchor_tabular_explainer_v2 --predictor_host localhost:9000 AnchorTabular
 
 anchor_tabular_explain:
 	curl -d '{"data": {"ndarray":[[5.964, 4.006, 2.081, 1.031]]}}'    -X POST http://localhost:8080/api/v1.0/explain    -H "Content-Type: application/json"
@@ -138,23 +138,26 @@ test_models/tfserving/cifar10/resnet32:
 	mkdir -p test_models/tfserving/cifar10
 	gsutil cp -r gs://seldon-models/tfserving/cifar10/resnet32 test_models/tfserving/cifar10
 
+test_models/explainers/anchor_image:
+	mkdir -p test_models/explainers/anchor_image
+	python tests/make_test_models.py --model anchor_image --model_dir test_models/explainers/anchor_image
 
 anchor_images_model: test_models/tfserving/cifar10/resnet32
 	docker run --name tfserver -it --rm  -p 8501:8501 -p 8500:8500 -v "${PWD}/test_models/tfserving/cifar10:/models" -e MODEL_NAME=resnet32 tensorflow/serving
 
 
 anchor_images_predict:
-	curl -d @./input.json  -X POST http://localhost:8501/v1/models/resnet32:predict    -H "Content-Type: application/json"
+	curl -d @./tests/data/input.json  -X POST http://localhost:8501/v1/models/resnet32:predict    -H "Content-Type: application/json"
 
 
-anchor_images:
-	python -m alibiexplainer --model_name resnet32 --protocol tensorflow.http --storage_uri gs://seldon-models/tfserving/imagenet/explainer-py36-0.5.2 --predictor_host localhost:8501 AnchorImages
+anchor_images: test_models/explainers/anchor_image
+	python -m alibiexplainer --model_name resnet32 --protocol tensorflow.http --storage_uri "${PWD}/test_models/explainers/anchor_image" --predictor_host localhost:8501 AnchorImages
 
-anchor_images_docker:
-	docker run -it --rm --name "explainer" --network=host -p 8080:8080 seldonio/${IMAGE}:${VERSION} --model_name resnet32 --protocol tensorflow.http --storage_uri gs://seldon-models/tfserving/imagenet/explainer-py36-0.5.2 --predictor_host localhost:8501 AnchorImages
+anchor_images_docker: test_models/explainers/anchor_image
+	docker run -it --rm --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models seldonio/${IMAGE}:${VERSION} --model_name resnet32 --protocol tensorflow.http --storage_uri /models/explainers/anchor_image --predictor_host localhost:8501 AnchorImages
 
 anchor_images_explain:
-	curl -d @./input.json  -X POST http://localhost:8080/v1/models/resnet32:explain    -H "Content-Type: application/json"
+	curl -d @./tests/data/input.json  -X POST http://localhost:8080/v1/models/resnet32:explain    -H "Content-Type: application/json"
 
 
 #
