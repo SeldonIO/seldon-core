@@ -13,7 +13,8 @@
 # limitations under the License.
 
 #
-# Copied from https://github.com/kubeflow/kfserving/blob/master/python/alibiexplainer/tests/test_parser.py
+# Copied from https://github.com/kubeflow/kfserving/blob/master/python/alibiexplainer
+# /tests/test_parser.py
 # and modified since
 #
 

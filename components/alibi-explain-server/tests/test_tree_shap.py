@@ -1,29 +1,21 @@
 import json
 import os
 
-import dill
-import kfserving
 import numpy as np
-import shap
 from alibi.datasets import fetch_adult
 
 from alibiexplainer.tree_shap import TreeShap
 
-ADULT_EXPLAINER_URI = "gs://seldon-models/xgboost/adult/tree_shap_py37_alibi_0.6.0"
-EXPLAINER_FILENAME = "explainer.dill"
+from .make_test_models import make_tree_shap
 
 
 def test_tree_shap():
+    np.random.seed(0)
 
-    alibi_model = os.path.join(
-        kfserving.Storage.download(ADULT_EXPLAINER_URI), EXPLAINER_FILENAME
-    )
-    with open(alibi_model, "rb") as f:
-        alibi_model = dill.load(f)
-        tree_shap = TreeShap(alibi_model)
-        adult = fetch_adult()
-        X_test = adult.data[30001:, :]
-        np.random.seed(0)
-        explanation = tree_shap.explain(X_test[0:1].tolist())
-        exp_json = json.loads(explanation.to_json())
-        print(exp_json)
+    alibi_model = make_tree_shap()
+    tree_shap = TreeShap(alibi_model)
+    adult = fetch_adult()
+    X_test = adult.data[30001:, :]
+    explanation = tree_shap.explain(X_test[0:1].tolist())
+    exp_json = json.loads(explanation.to_json())
+    assert exp_json["meta"]["name"] == "TreeShap"

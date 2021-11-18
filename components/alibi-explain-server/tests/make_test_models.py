@@ -5,7 +5,9 @@ from typing import Optional
 
 import numpy as np
 import tensorflow as tf
-from alibi.explainers import AnchorImage, KernelShap
+import xgboost
+from alibi.datasets import fetch_adult
+from alibi.explainers import AnchorImage, KernelShap, TreeShap
 from sklearn.datasets import load_wine
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -67,6 +69,47 @@ def make_kernel_shap(dirname: Optional[Path] = None) -> KernelShap:
     return svm_explainer
 
 
+def make_tree_shap(dirname: Optional[Path] = None) -> TreeShap:
+    np.random.seed(0)
+
+    # get X_train for explainer fit
+    adult = fetch_adult()
+    data = adult.data
+    target = adult.target
+    data_perm = np.random.permutation(np.c_[data, target])
+    data = data_perm[:, :-1]
+    target = data_perm[:, -1]
+    idx = 30000
+    X_train, y_train = data[:idx, :], target[:idx]
+    X_test, y_test = data[idx + 1 :, :], target[idx + 1 :]
+
+    d_train = xgboost.DMatrix(X_train, label=y_train)
+    d_test = xgboost.DMatrix(X_test, label=y_test)
+
+    params = {
+        "eta": 0.01,
+        "objective": "binary:logistic",
+        "subsample": 0.5,
+        "base_score": np.mean(y_train),
+        "eval_metric": "logloss",
+    }
+    model = xgboost.train(
+        params,
+        d_train,
+        5000,
+        evals=[(d_test, "test")],
+        verbose_eval=100,
+        early_stopping_rounds=20,
+    )
+
+    tree_explainer = TreeShap(model, model_output="raw", task="classification")
+    tree_explainer.fit(X_train)
+
+    if dirname is not None:
+        tree_explainer.save(dirname)
+    return tree_explainer
+
+
 def _main():
     args_parser = argparse.ArgumentParser(add_help=False)
     args_parser.add_argument(
@@ -86,6 +129,8 @@ def _main():
         make_anchor_image(model_dir)
     elif model_name == "kernel_shap":
         make_kernel_shap(model_dir)
+    elif model_name == "tree_shap":
+        make_tree_shap(model_dir)
 
 
 if __name__ == "__main__":
