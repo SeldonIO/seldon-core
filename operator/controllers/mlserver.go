@@ -127,21 +127,21 @@ func getMLServerContainer(pu *machinelearningv1.PredictiveUnit, namespace string
 				Port: intstr.FromString("http"),
 			}},
 			InitialDelaySeconds: 20,
-			TimeoutSeconds:      1,
-			PeriodSeconds:       10,
-			SuccessThreshold:    1,
+			PeriodSeconds:       5,
 			FailureThreshold:    3,
+			SuccessThreshold:    1,
+			TimeoutSeconds:      60,
 		},
 		LivenessProbe: &v1.Probe{
 			Handler: v1.Handler{HTTPGet: &v1.HTTPGetAction{
 				Path: constants.KFServingProbeLivePath,
 				Port: intstr.FromString("http"),
 			}},
-			InitialDelaySeconds: 60,
-			TimeoutSeconds:      1,
-			PeriodSeconds:       10,
-			SuccessThreshold:    1,
+			InitialDelaySeconds: 20,
+			PeriodSeconds:       5,
 			FailureThreshold:    3,
+			SuccessThreshold:    1,
+			TimeoutSeconds:      60,
 		},
 		VolumeMounts: []v1.VolumeMount{
 			{
