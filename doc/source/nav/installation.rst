@@ -51,8 +51,8 @@ Installation
     :img-top: ../_static/azure_logo.png
 
     +++
-    .. link-button:: #
-        :text: Install on Azure (Coming Soon)
+    .. link-button:: ../install/azure.rst
+        :text: Install on Azure
         :classes: stretched-link
 
     ---
