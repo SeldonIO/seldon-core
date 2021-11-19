@@ -14,6 +14,9 @@ spec:
       implementation: TRITON_SERVER
       modelUri: gs://seldon-models/trtis/simple-model
       name: simple
-      type: MODEL      
+      type: MODEL
+      logger:
+        mode: all
+        url: http://localhost:2222
     name: simple
     replicas: 1

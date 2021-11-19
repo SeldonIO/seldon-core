@@ -2,13 +2,19 @@ package rest
 
 import (
 	"encoding/json"
+
 	"github.com/pkg/errors"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 )
 
 func ChainKFserving(msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+	data, err := payload.DecompressSeldonPayload(msg)
+	if err != nil {
+		return nil, err
+	}
+
 	var f interface{}
-	err := json.Unmarshal(msg.GetPayload().([]byte), &f)
+	err = json.Unmarshal(data, &f)
 	if err != nil {
 		return nil, err
 	}
@@ -21,10 +27,9 @@ func ChainKFserving(msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 		b, err := json.Marshal(m)
 		if err != nil {
 			return nil, err
-		} else {
-			p := payload.BytesPayload{Msg: b}
-			return &p, nil
 		}
+		p := payload.BytesPayload{Msg: b, ContentType: msg.GetContentType()}
+		return &p, nil
 	} else {
 		return nil, errors.Errorf("Failed to convert kfserving response so it could be chained to new input")
 	}

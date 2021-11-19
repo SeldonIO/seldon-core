@@ -1,4 +1,5 @@
 BASE=../../..
+TRITON_VERSION ?= 21.08-py3
 
 triton-inference-server:
 	git clone https://github.com/NVIDIA/triton-inference-server
@@ -6,14 +7,19 @@ triton-inference-server:
 triton-inference-server/docs/examples/model_repository/simple: triton-inference-server
 	cd triton-inference-server/docs/examples && ./fetch_models.sh
 
+
+## dummy logger
+run_dummy_logsink:
+	docker run -it -p 2222:80 --rm -t mendhak/http-https-echo
+
 ## REST
 
 run_executor:
-	${BASE}/executor --sdep triton --namespace default --predictor simple --file ./model.yaml --http_port 8000 --grpc_port 5000 --protocol kfserving
+	${BASE}/executor --sdep triton --namespace default --predictor simple --file ./model.yaml --http_port 8000 --grpc_port 5000 --protocol kfserving --log_level DEBUG
 
 
 run_triton_simple:
-	docker run --rm --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 -p9000:9000 -p8001:8001 -p8002:8002 -p5001:5001 -v ${PWD}/triton-inference-server/docs/examples/model_repository:/models nvcr.io/nvidia/tritonserver:21.08-py3 /opt/tritonserver/bin/tritonserver --model-repository=/models --http-port=9000 --grpc-port=5001
+	docker run --rm --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 -p9000:9000 -p8001:8001 -p8002:8002 -p5001:5001 -v ${PWD}/triton-inference-server/docs/examples/model_repository:/models nvcr.io/nvidia/tritonserver:${TRITON_VERSION} /opt/tritonserver/bin/tritonserver --model-repository=/models --http-port=9000 --grpc-port=5001 --log-verbose=1
 
 curl_rest_triton:
 	curl -v -d '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'    -X POST http://0.0.0.0:9000/v2/models/simple/infer    -H "Content-Type: application/json"
