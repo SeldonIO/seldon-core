@@ -69,12 +69,18 @@ func mergeMLServerContainer(existing *v1.Container, mlServer *v1.Container) *v1.
 	}
 	existing.Env = mlServer.Env
 
+	// If the readiness or liveness probe already exist, ensure the handler is
+	// V2-compatible (otherwise, set all to default)
 	if existing.ReadinessProbe == nil {
 		existing.ReadinessProbe = mlServer.ReadinessProbe
+	} else {
+		existing.ReadinessProbe.Handler = mlServer.ReadinessProbe.Handler
 	}
 
 	if existing.LivenessProbe == nil {
 		existing.LivenessProbe = mlServer.LivenessProbe
+	} else {
+		existing.LivenessProbe.Handler = mlServer.LivenessProbe.Handler
 	}
 
 	if existing.SecurityContext == nil {

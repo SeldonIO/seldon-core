@@ -4,7 +4,9 @@ import (
 	"fmt"
 
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	"github.com/seldonio/seldon-core/operator/constants"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
@@ -55,6 +57,45 @@ var _ = Describe("MLServer helpers", func() {
 			Expect(merged.Env).To(ContainElement(v1.EnvVar{Name: MLServerTempoRuntimeEnv, Value: customEnvValue}))
 			Expect(merged.Env).To(ContainElements(mlServer.Env))
 			Expect(merged.Image).To(Equal(mlServer.Image))
+		})
+
+		It("should set probes to default if not present", func() {
+			merged := mergeMLServerContainer(existing, mlServer)
+
+			Expect(merged).ToNot(BeNil())
+			Expect(merged.ReadinessProbe).ToNot(BeNil())
+			Expect(merged.ReadinessProbe.Handler.HTTPGet).ToNot(BeNil())
+			Expect(merged.ReadinessProbe.Handler.HTTPGet.Path).To(Equal(constants.KFServingProbeReadyPath))
+			Expect(merged.LivenessProbe).ToNot(BeNil())
+			Expect(merged.LivenessProbe.Handler.HTTPGet).ToNot(BeNil())
+			Expect(merged.LivenessProbe.Handler.HTTPGet.Path).To(Equal(constants.KFServingProbeLivePath))
+		})
+
+		It("should override only path if probes present", func() {
+			existing.ReadinessProbe = &v1.Probe{
+				Handler: v1.Handler{
+					TCPSocket: &v1.TCPSocketAction{Port: intstr.FromString("http")},
+				},
+				InitialDelaySeconds: 66,
+			}
+			existing.LivenessProbe = &v1.Probe{
+				Handler: v1.Handler{
+					TCPSocket: &v1.TCPSocketAction{Port: intstr.FromString("http")},
+				},
+				InitialDelaySeconds: 67,
+			}
+
+			merged := mergeMLServerContainer(existing, mlServer)
+
+			Expect(merged).ToNot(BeNil())
+			Expect(merged.ReadinessProbe).ToNot(BeNil())
+			Expect(merged.ReadinessProbe.Handler.HTTPGet).ToNot(BeNil())
+			Expect(merged.ReadinessProbe.Handler.HTTPGet.Path).To(Equal(constants.KFServingProbeReadyPath))
+			Expect(merged.ReadinessProbe.InitialDelaySeconds).To(Equal(int32(66)))
+			Expect(merged.LivenessProbe).ToNot(BeNil())
+			Expect(merged.LivenessProbe.Handler.HTTPGet).ToNot(BeNil())
+			Expect(merged.LivenessProbe.Handler.HTTPGet.Path).To(Equal(constants.KFServingProbeLivePath))
+			Expect(merged.LivenessProbe.InitialDelaySeconds).To(Equal(int32(67)))
 		})
 	})
 
