@@ -21,7 +21,7 @@ If you haven't already created a Kubernetes cluster on AKS, you can follow this 
 
 * `Create AKS Cluster <https://docs.microsoft.com/en-us/azure/aks/tutorial-kubernetes-deploy-cluster?tabs=azure-cli>`_
 
-.. info:: 
+.. note:: 
 
     If you are just evaluating Seldon Core and are want to use http rather than https, make sure you select "Enable HTTP application routing" in your networking configuration.
 

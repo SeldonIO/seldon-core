@@ -30,7 +30,7 @@ Below are languages that have not yet been signed off as graduated and stable, b
 
 Currently the Java wrapper is being used across a large amount of critical environments, however we are currently requiring the Java wrapper to have the same level of features as the python wrapper for graduation. You can follow the progress for this [through our GitHub issue #1344](https://github.com/SeldonIO/seldon-core/issues/1344).
 
-Java based models including, [H2O](https://www.h2o.ai/), [Deep Learning 4J](https://deeplearning4j.org/), [Spark](https://spark.apache.org/) (standalone exported models).
+Java based models including, [H2O](https://www.h2o.ai/), [Spark](https://spark.apache.org/) (standalone exported models).
 
 Please read the [Java models wrapped using source-to-image](../java/README.md) for further information in regards to how it can be used.
 
