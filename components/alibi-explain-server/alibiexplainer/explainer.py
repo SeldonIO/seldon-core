@@ -76,9 +76,6 @@ class AlibiExplainer(ExplainerModel):
         else:
             raise NotImplementedError
 
-    def load(self):
-        pass
-
     def explain(self, request: Dict) -> Any:
         if (
             self.method is ExplainerMethod.anchor_tabular

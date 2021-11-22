@@ -7,7 +7,7 @@ import numpy as np
 import tensorflow as tf
 import xgboost
 from alibi.datasets import fetch_adult
-from alibi.explainers import ALE, AnchorImage, KernelShap, TreeShap
+from alibi.explainers import ALE, AnchorImage, AnchorTabular, KernelShap, TreeShap
 from sklearn.datasets import load_iris, load_wine
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
@@ -136,6 +136,22 @@ def make_ale(dirname: Optional[Path] = None) -> ALE:
     return logit_ale_lr
 
 
+def make_anchor_tabular(dirname: Optional[Path] = None) -> AnchorTabular:
+    # train model
+    iris_data = load_iris()
+
+    clf = LogisticRegression(solver="liblinear", multi_class="ovr")
+    clf.fit(iris_data.data, iris_data.target)
+
+    # create explainer
+    explainer = AnchorTabular(clf.predict, feature_names=iris_data.feature_names)
+    explainer.fit(iris_data.data, disc_perc=(25, 50, 75))
+
+    if dirname is not None:
+        explainer.save(dirname)
+    return explainer
+
+
 def _main():
     args_parser = argparse.ArgumentParser(add_help=False)
     args_parser.add_argument(
@@ -159,6 +175,8 @@ def _main():
         make_tree_shap(model_dir)
     elif model_name == "ale":
         make_ale(model_dir)
+    elif model_name == "anchor_tabular":
+        make_anchor_tabular(model_dir)
 
 
 if __name__ == "__main__":

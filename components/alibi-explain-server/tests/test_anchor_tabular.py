@@ -26,13 +26,10 @@ from alibi.saving import load_explainer
 
 from alibiexplainer.anchor_tabular import AnchorTabular
 
-from .utils import SKLearnServer, download_from_gs
+from .make_test_models import make_anchor_tabular
+from .utils import SKLearnServer
 
-# to recreate these artifacts, use notebooks/explainer_examples_v2.ipynb
-# TODO: move to a python runnable
 IRIS_MODEL_URI = "gs://seldon-models/v1.11.0-dev/sklearn/iris/*"
-# note: nothing special about v2
-IRIS_EXPLAINER_URI = "gs://seldon-models/alibi/iris_anchor_tabular_explainer_v2/*"
 
 
 def test_anchor_tabular():
@@ -40,7 +37,7 @@ def test_anchor_tabular():
     skmodel.load()
 
     with tempfile.TemporaryDirectory() as alibi_model_dir:
-        download_from_gs(IRIS_EXPLAINER_URI, alibi_model_dir)
+        make_anchor_tabular(alibi_model_dir)
         alibi_model = load_explainer(predictor=skmodel.predict, path=alibi_model_dir)
         anchor_tabular = AnchorTabular(alibi_model)
 
