@@ -8,10 +8,15 @@ import tensorflow as tf
 import xgboost
 from alibi.datasets import fetch_adult
 from alibi.explainers import ALE, AnchorImage, AnchorTabular, KernelShap, TreeShap
+from joblib import dump
+from sklearn.compose import ColumnTransformer
 from sklearn.datasets import load_iris, load_wine
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.svm import SVC
 
 
@@ -152,6 +157,74 @@ def make_anchor_tabular(dirname: Optional[Path] = None) -> AnchorTabular:
     return explainer
 
 
+def make_anchor_tabular_income(dirname: Optional[Path] = None) -> AnchorTabular:
+    # adapted from:
+    # https://docs.seldon.io/projects/alibi/en/latest/examples/anchor_tabular_adult.html
+    np.random.seed(0)
+
+    # prepare data
+    adult = fetch_adult()
+    data = adult.data
+    target = adult.target
+    feature_names = adult.feature_names
+    category_map = adult.category_map
+
+    data_perm = np.random.permutation(np.c_[data, target])
+    data = data_perm[:, :-1]
+    target = data_perm[:, -1]
+
+    # build model
+    idx = 30000
+    X_train, Y_train = data[:idx, :], target[:idx]
+    X_test, Y_test = data[idx + 1 :, :], target[idx + 1 :]
+
+    ordinal_features = [
+        x for x in range(len(feature_names)) if x not in list(category_map.keys())
+    ]
+    ordinal_transformer = Pipeline(
+        steps=[
+            ("imputer", SimpleImputer(strategy="median")),
+            ("scaler", StandardScaler()),
+        ]
+    )
+
+    categorical_features = list(category_map.keys())
+    categorical_transformer = Pipeline(
+        steps=[
+            ("imputer", SimpleImputer(strategy="median")),
+            ("onehot", OneHotEncoder(handle_unknown="ignore")),
+        ]
+    )
+
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ("num", ordinal_transformer, ordinal_features),
+            ("cat", categorical_transformer, categorical_features),
+        ]
+    )
+
+    clf = RandomForestClassifier(n_estimators=50)
+
+    model_pipeline = Pipeline(
+        steps=[
+            ("preprocess", preprocessor),
+            ("classifier", clf),
+        ]
+    )
+
+    model_pipeline.fit(X_train, Y_train)
+
+    explainer = AnchorTabular(
+        model_pipeline.predict, feature_names, categorical_names=category_map, seed=1
+    )
+
+    explainer.fit(X_train, disc_perc=[25, 50, 75])
+
+    if dirname is not None:
+        explainer.save(dirname)
+    return explainer
+
+
 def _main():
     args_parser = argparse.ArgumentParser(add_help=False)
     args_parser.add_argument(
@@ -177,6 +250,8 @@ def _main():
         make_ale(model_dir)
     elif model_name == "anchor_tabular":
         make_anchor_tabular(model_dir)
+    elif model_name == "anchor_tabular_income":
+        make_anchor_tabular_income(model_dir)
 
 
 if __name__ == "__main__":
