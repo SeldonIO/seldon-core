@@ -84,9 +84,9 @@ test_models/sklearn/iris:
 	mkdir -p test_models/sklearn/iris
 	gsutil cp -r gs://seldon-models/v1.11.0-dev/sklearn/iris test_models/sklearn
 
-test_models/explainers/iris_explainer:
-	mkdir -p test_models/explainers/iris_anchor_tabular_explainer_v2
-	gsutil cp -r gs://seldon-models/alibi/iris_anchor_tabular_explainer_v2 test_models/explainers
+test_models/explainers/anchor_tabular:
+	mkdir -p test_models/explainers/anchor_tabular
+	python tests/make_test_models.py --model anchor_tabular --model_dir test_models/explainers/anchor_tabular
 
 anchor_tabular_model: test_models/sklearn/iris
 	docker run -it --rm --name "sklearnserver"  -p 9000:9000 -v ${PWD}/test_models:/models -e PREDICTIVE_UNIT_PARAMETERS='[{"type":"STRING","name":"model_uri","value":"/models/sklearn/iris"}]' seldonio/sklearnserver:${VERSION}
@@ -94,11 +94,11 @@ anchor_tabular_model: test_models/sklearn/iris
 anchor_tabular_predict:
 	curl -d '{"data": {"ndarray":[[5.964, 4.006, 2.081, 1.031]]}}'    -X POST http://localhost:9000/api/v1.0/predictions    -H "Content-Type: application/json"
 
-anchor_tabular: test_models/explainers/iris_explainer
-	python -m alibiexplainer --model_name iris --protocol seldon.http --storage_uri ${PWD}/test_models/explainers/iris_anchor_tabular_explainer_v2 --predictor_host localhost:9000 AnchorTabular
+anchor_tabular: test_models/explainers/anchor_tabular
+	python -m alibiexplainer --model_name iris --protocol seldon.http --storage_uri ${PWD}/test_models/explainers/anchor_tabular --predictor_host localhost:9000 AnchorTabular
 
-anchor_tabular_docker:
-	docker run -it --rm --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models seldonio/${IMAGE}:${VERSION} --model_name iris --protocol seldon.http --storage_uri /models/explainers/iris_anchor_tabular_explainer_v2 --predictor_host localhost:9000 AnchorTabular
+anchor_tabular_docker: test_models/explainers/anchor_tabular
+	docker run -it --rm --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models seldonio/${IMAGE}:${VERSION} --model_name iris --protocol seldon.http --storage_uri /models/explainers/anchor_tabular --predictor_host localhost:9000 AnchorTabular
 
 anchor_tabular_explain:
 	curl -d '{"data": {"ndarray":[[5.964, 4.006, 2.081, 1.031]]}}'    -X POST http://localhost:8080/api/v1.0/explain    -H "Content-Type: application/json"
