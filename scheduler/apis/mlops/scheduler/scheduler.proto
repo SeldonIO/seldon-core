@@ -25,11 +25,12 @@ message ModelDetails {
   string version = 2;
   string uri = 3; // storage uri from where to download the artifacts
   optional string storageSecretName = 4; // optional k8s secret name for authentication to storage uri
-  repeated string requirements = 5; // list of capabilities the server must satisfy to run this model
+  optional string storageRCloneConfig = 5; // raw rclone configuration. Non k8s alternative to storageSecret
+  repeated string requirements = 6; // list of capabilities the server must satisfy to run this model
   //TODO maybe map for requirements
-  uint32 replicas = 6; // number of replicas of model to create
-  optional uint64 memoryBytes = 7; // Requested memory
-  optional string server = 8; // the particular model server to load the model. If unspecified will be chosen.
+  uint32 replicas = 7; // number of replicas of model to create
+  optional uint64 memoryBytes = 8; // Requested memory
+  optional string server = 9; // the particular model server to load the model. If unspecified will be chosen.
 }
 
 message LoadModelResponse {

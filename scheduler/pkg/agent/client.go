@@ -191,7 +191,16 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error  {
 	}
 
 	c.logger.Infof("Load model %s", modelName)
-	err := c.RCloneClient.Copy(request.Details.Name, request.Details.Uri)
+
+	// Load model storage configuration before copying if needed
+	if len(request.Details.GetStorageRCloneConfig()) > 0 {
+		err := c.RCloneClient.Config(request.Details.GetName(), request.Details.GetVersion(), []byte(request.Details.GetStorageRCloneConfig()))
+		if err != nil {
+			return err
+		}
+	}
+
+	err := c.RCloneClient.Copy(request.Details.Name, request.Details.GetVersion(), request.Details.Uri)
 	if err != nil {
 		err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
 		if err2 != nil {

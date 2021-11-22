@@ -6,6 +6,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.1.1 // indirect
 	github.com/envoyproxy/go-control-plane v0.9.10-0.20210910171841-453346fa5903
 	github.com/fsnotify/fsnotify v1.4.9
+	github.com/go-playground/validator/v10 v10.9.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
 	github.com/jarcoal/httpmock v1.0.8 // indirect

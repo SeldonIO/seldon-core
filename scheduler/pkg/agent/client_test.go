@@ -82,16 +82,17 @@ func TestClientCreate(t *testing.T) {
 		replicaConfig *pb.ReplicaConfig
 		v2Status int
 		rsStatus int
+		rsBody string
 	}
 	tests := []test{
-		{models: []string{"model"}, replicaConfig: &pb.ReplicaConfig{}, v2Status: 200, rsStatus: 200},
-		{models: []string{"model"}, replicaConfig: &pb.ReplicaConfig{}, v2Status: 400, rsStatus: 200},
+		{models: []string{"model"}, replicaConfig: &pb.ReplicaConfig{}, v2Status: 200, rsStatus: 200, rsBody: "{}"},
+		{models: []string{"model"}, replicaConfig: &pb.ReplicaConfig{}, v2Status: 400, rsStatus: 200, rsBody: "{}"},
 	}
 
 	for _,test := range tests {
 		httpmock.Activate()
 		v2Client := createTestV2Client(test.models, test.v2Status)
-		rcloneClient := createTestRCloneClient(test.rsStatus)
+		rcloneClient := createTestRCloneClient(test.rsStatus, test.rsBody)
 		client, err := NewClient("mlserver",1, "scheduler",9002,logger,rcloneClient, v2Client, test.replicaConfig,"0.0.0.0")
 		g.Expect(err).To(BeNil())
 		mockAgentV2Server := &mockAgentV2Server{models: test.models}
@@ -126,6 +127,7 @@ func TestLoadModel(t *testing.T) {
 		expectedAvailableMemory uint64
 		v2Status int
 		rsStatus int
+		rsBody  string
 		success bool
 	}
 	smallMemory := uint64(500)
@@ -137,6 +139,7 @@ func TestLoadModel(t *testing.T) {
 			expectedAvailableMemory: 500,
 			v2Status: 200,
 			rsStatus: 200,
+			rsBody: "{}",
 			success: true}, // Success
 		{models: []string{"iris"},
 			op: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory}},
@@ -144,6 +147,7 @@ func TestLoadModel(t *testing.T) {
 			expectedAvailableMemory: 1000,
 			v2Status: 400,
 			rsStatus: 200,
+			rsBody: "{}",
 			success: false}, // Fail as V2 fail
 		{models: []string{"iris"},
 			op: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &largeMemory}},
@@ -151,6 +155,7 @@ func TestLoadModel(t *testing.T) {
 			expectedAvailableMemory: 500,
 			v2Status: 200,
 			rsStatus: 200,
+			rsBody: "{}",
 			success: false}, // Fail due to too much memory required
 	}
 
@@ -158,7 +163,7 @@ func TestLoadModel(t *testing.T) {
 		t.Logf("Test #%d",tidx)
 		httpmock.Activate()
 		v2Client := createTestV2Client(test.models, test.v2Status)
-		rcloneClient := createTestRCloneClient(test.rsStatus)
+		rcloneClient := createTestRCloneClient(test.rsStatus, test.rsBody)
 		client, err := NewClient("mlserver",1, "scheduler",9002,logger,rcloneClient, v2Client, test.replicaConfig, "0.0.0.0")
 		g.Expect(err).To(BeNil())
 		mockAgentV2Server := &mockAgentV2Server{models: []string{}}
@@ -221,7 +226,7 @@ func TestUnloadModel(t *testing.T) {
 		t.Logf("Test #%d",tidx)
 		httpmock.Activate()
 		v2Client := createTestV2Client(test.models, test.v2Status)
-		rcloneClient := createTestRCloneClient(200)
+		rcloneClient := createTestRCloneClient(200, "{}")
 		client, err := NewClient("mlserver",1, "scheduler",9002,logger,rcloneClient, v2Client, test.replicaConfig, "0.0.0.0")
 		g.Expect(err).To(BeNil())
 		mockAgentV2Server := &mockAgentV2Server{models: []string{}}
