@@ -39,7 +39,7 @@ start-envoy:
 	./hack/start-envoy-delta.sh
 
 start-agent:
-	./bin/agent --model-repository ${PWD}/mlrepo --inference-port 8080 \
+	./bin/agent --model-repository ${PWD}/mlrepo --inference-port 8080 -namespace seldon-mesh \
 		--replica-config '{"inferenceSvc":"0.0.0.0","inferenceHttpPort":8080,"inferenceGrpcPort":8081,"memoryBytes":1000,"availableMemoryBytes":1000,"capabilities":["sklearn"],"overCommit":false}'
 
 start-mlserver:
@@ -96,6 +96,10 @@ deploy:
 	cd k8s/mlserver && kustomize edit set image agent=${AGENT_IMG}
 	cd k8s/mlserver && kustomize edit set image rclone=${RCLONE_IMG}
 	kustomize build k8s/default | kubectl apply -f -
+
+deploy-minio-secret:
+	kubectl create namespace seldon-mesh || echo "seldon-mesh namespace exists"
+	kustomize build k8s/auth | kubectl apply -f -
 
 undeploy:
 	kustomize build k8s/default | kubectl delete -f -

@@ -6,9 +6,13 @@ import (
 	. "github.com/onsi/gomega"
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 	pbs "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/k8s"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/fake"
 	"net"
 	"testing"
 )
@@ -93,7 +97,7 @@ func TestClientCreate(t *testing.T) {
 		httpmock.Activate()
 		v2Client := createTestV2Client(test.models, test.v2Status)
 		rcloneClient := createTestRCloneClient(test.rsStatus, test.rsBody)
-		client, err := NewClient("mlserver",1, "scheduler",9002,logger,rcloneClient, v2Client, test.replicaConfig,"0.0.0.0")
+		client, err := NewClient("mlserver",1, "scheduler",9002,logger,rcloneClient, v2Client, test.replicaConfig,"0.0.0.0", "default")
 		g.Expect(err).To(BeNil())
 		mockAgentV2Server := &mockAgentV2Server{models: test.models}
 		conn, err := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
@@ -164,7 +168,7 @@ func TestLoadModel(t *testing.T) {
 		httpmock.Activate()
 		v2Client := createTestV2Client(test.models, test.v2Status)
 		rcloneClient := createTestRCloneClient(test.rsStatus, test.rsBody)
-		client, err := NewClient("mlserver",1, "scheduler",9002,logger,rcloneClient, v2Client, test.replicaConfig, "0.0.0.0")
+		client, err := NewClient("mlserver",1, "scheduler",9002,logger,rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default")
 		g.Expect(err).To(BeNil())
 		mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 		conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
@@ -186,6 +190,113 @@ func TestLoadModel(t *testing.T) {
 		httpmock.DeactivateAndReset()
 		err = conn.Close()
 		g.Expect(err).To(BeNil())
+	}
+}
+
+
+func TestLoadModelWithAuth(t *testing.T) {
+	t.Logf("Started")
+	logger := log.New()
+	log.SetLevel(log.DebugLevel)
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name string
+		models []string
+		replicaConfig *pb.ReplicaConfig
+		op *pb.ModelOperationMessage
+		secretData string
+		expectedAvailableMemory uint64
+		v2Status int
+		rsStatus int
+		rsBody  string
+		success bool
+	}
+	rcloneConfig := `{"type":"s3","name":"s3","parameters":{"provider":"minio","env_auth":"false","access_key_id":"minioadmin","secret_access_key":"minioadmin","endpoint":"http://172.18.255.2:9000"}}`
+	rcloneSecret := "minio-secret"
+	yamlSecretDataOK := `
+type: s3                                                                                                  
+name: s3                                                                                                  
+parameters:                                                                                               
+   provider: minio                                                                                         
+   env_auth: false                                                                                         
+   access_key_id: minioadmin                                                                               
+   secret_access_key: minioadmin                                                                           
+   endpoint: http://172.18.255.2:9000
+`
+	smallMemory := uint64(500)
+	tests := []test{
+		{
+			name: "rclongConfig",
+			models: []string{"iris"},
+			op: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory, StorageRCloneConfig: &rcloneConfig}},
+			replicaConfig: &pb.ReplicaConfig{MemoryBytes: 1000},
+			expectedAvailableMemory: 500,
+			v2Status: 200,
+			rsStatus: 200,
+			rsBody: "{}",
+			success: true,
+		},
+		{
+			name: "secretConfig",
+			models: []string{"iris"},
+			op: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory, StorageSecretName: &rcloneSecret}},
+			secretData: yamlSecretDataOK,
+			replicaConfig: &pb.ReplicaConfig{MemoryBytes: 1000},
+			expectedAvailableMemory: 500,
+			v2Status: 200,
+			rsStatus: 200,
+			rsBody: "{}",
+			success: true,
+		},
+		{
+			name: "secretConfigBad",
+			models: []string{"iris"},
+			op: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory, StorageSecretName: &rcloneSecret}},
+			secretData: "foo:bar",
+			replicaConfig: &pb.ReplicaConfig{MemoryBytes: 1000},
+			expectedAvailableMemory: 500,
+			v2Status: 200,
+			rsStatus: 200,
+			rsBody: "{}",
+			success: false,
+		},
+	}
+
+	for tidx,test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Logf("Test #%d", tidx)
+			httpmock.Activate()
+			v2Client := createTestV2Client(test.models, test.v2Status)
+			rcloneClient := createTestRCloneClient(test.rsStatus, test.rsBody)
+			client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default")
+			g.Expect(err).To(BeNil())
+			if test.op.Details.StorageSecretName != nil {
+				secret := &v1.Secret{ObjectMeta:metav1.ObjectMeta{Name: *test.op.Details.StorageSecretName, Namespace: client.namespace},StringData: map[string]string {"mys3": test.secretData}}
+				fakeClientset := fake.NewSimpleClientset(secret)
+				s := k8s.NewSecretsHandler(fakeClientset, client.namespace)
+				client.secretsHandler = s
+			}
+			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
+			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
+			g.Expect(cerr).To(BeNil())
+			client.conn = conn
+			err = client.Start()
+			g.Expect(err).To(BeNil())
+			err = client.LoadModel(test.op)
+			if test.success {
+				g.Expect(err).To(BeNil())
+				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
+				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
+				g.Expect(client.replicaConfig.AvailableMemoryBytes).To(Equal(test.expectedAvailableMemory))
+			} else {
+				g.Expect(err).ToNot(BeNil())
+				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(0))
+			}
+			httpmock.DeactivateAndReset()
+			err = conn.Close()
+			g.Expect(err).To(BeNil())
+		})
 	}
 }
 
@@ -227,7 +338,7 @@ func TestUnloadModel(t *testing.T) {
 		httpmock.Activate()
 		v2Client := createTestV2Client(test.models, test.v2Status)
 		rcloneClient := createTestRCloneClient(200, "{}")
-		client, err := NewClient("mlserver",1, "scheduler",9002,logger,rcloneClient, v2Client, test.replicaConfig, "0.0.0.0")
+		client, err := NewClient("mlserver",1, "scheduler",9002,logger,rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default")
 		g.Expect(err).To(BeNil())
 		mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 		conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))

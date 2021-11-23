@@ -4,10 +4,8 @@ import (
 	"flag"
 	"github.com/cenkalti/backoff/v4"
 	"io/ioutil"
-	"k8s.io/client-go/util/homedir"
 	"math/rand"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -27,7 +25,6 @@ var (
 	inferenceHost string
 	inferencePort int
 	modelRepository string
-	kubeconfig string
 	namespace        string
 	replicaConfigStr string
 	inferenceSvcName string
@@ -62,12 +59,7 @@ func init() {
 	flag.IntVar(&inferencePort, FlagInferencePort, 8080, "Inference server port")
 	flag.StringVar(&modelRepository, "model-repository", "/mnt/models", "Model repository folder")
 	flag.StringVar(&replicaConfigStr, FlagReplicaConfig, "", "Replica Json Config")
-
-	if home := homedir.HomeDir(); home != "" {
-		flag.StringVar(&kubeconfig, "kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-	} else {
-		flag.StringVar(&kubeconfig, "kubeconfig", "", "absolute path to the kubeconfig file")
-	}
+	flag.StringVar(&namespace,"namespace", "default", "Namespace")
 }
 
 func isFlagPassed(name string) bool {
@@ -183,7 +175,7 @@ func main() {
 
 	rcloneClient := agent.NewRCloneClient(rcloneHost, rclonePort, modelRepository, logger)
 	v2Client := agent.NewV2Client(inferenceHost, inferencePort, logger)
-	client, err := agent.NewClient(serverName, uint32(replicaIdx), schedulerHost, schedulerPort, logger, rcloneClient, v2Client, replicaConfig, inferenceSvcName)
+	client, err := agent.NewClient(serverName, uint32(replicaIdx), schedulerHost, schedulerPort, logger, rcloneClient, v2Client, replicaConfig, inferenceSvcName, namespace)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to  client")
 	}

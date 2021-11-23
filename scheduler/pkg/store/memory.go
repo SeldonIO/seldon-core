@@ -118,7 +118,7 @@ func (m *MemoryStore) getModelServer(modelKey string, version string, serverKey 
 		return nil, nil, nil, fmt.Errorf("No latest version for model %s",modelKey)
 	}
 	if modelVersion.config.Version != version {
-		return nil, nil, nil, fmt.Errorf("Model version is not match found %s but was trying to update %s. %w",modelVersion.config.Version,version,ModelNotLatestVersionRejectErr)
+		return nil, nil, nil, fmt.Errorf("Model version is not matching. Found %s but was trying to update %s. %w",modelVersion.config.Version,version,ModelNotLatestVersionRejectErr)
 	}
 	server, ok := m.store.servers[serverKey]
 	if !ok {

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	log "github.com/sirupsen/logrus"
+	yaml "gopkg.in/yaml.v2"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -40,20 +41,20 @@ type RCloneCopy struct {
 }
 
 type RCloneConfigKey struct {
-	Name string `json:"name"`
+	Name string `json:"name" yaml:"name"`
 }
 
 type RCloneConfigCreate struct {
-	Name string `json:"name" validate:"required"`
-	Type string `json:"type" validate:"required"`
-	Parameters map[string]string `json:"parameters" validate:"required"`
-	Opts map[string]string `json:"opts"`
+	Name string `json:"name" yaml:"name" validate:"required"`
+	Type string `json:"type" yaml:"type" validate:"required"`
+	Parameters map[string]string `json:"parameters" yaml:"parameters" validate:"required"`
+	Opts map[string]string `json:"opts" yaml:"opts"`
 }
 
 type RCloneConfigUpdate struct {
-	Name string `json:"name"`
-	Parameters map[string]string `json:"parameters"`
-	Opts map[string]string `json:"opts"`
+	Name string `json:"name" yaml:"name"`
+	Parameters map[string]string `json:"parameters" yaml:"parameters"`
+	Opts map[string]string `json:"opts" yaml:"opts"`
 }
 
 func createConfigUpdateFromCreate(create *RCloneConfigCreate) *RCloneConfigUpdate {
@@ -190,7 +191,10 @@ func (r *RCloneClient) createConfigCreate(modelName string, modelVersion string,
 	configCreate := RCloneConfigCreate{}
 	err := json.Unmarshal(config, &configCreate)
 	if err != nil {
-		return nil, err
+		err2 := yaml.Unmarshal(config, &configCreate)
+		if err2 != nil {
+			return nil, fmt.Errorf("Failed to unmarshall config as json or yaml. JSON error %s. YAML error %s",err.Error(), err2.Error())
+		}
 	}
 	err = r.validate.Struct(configCreate)
 	if err != nil {

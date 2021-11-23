@@ -7,6 +7,7 @@ import (
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 	pbs "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+	k8s "github.com/seldonio/seldon-core/scheduler/pkg/agent/k8s"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -29,6 +30,8 @@ type Client struct {
 	V2Client *V2Client
 	replicaConfig *agent.ReplicaConfig
 	loadedModels map[string]*pbs.ModelDetails
+	secretsHandler *k8s.SecretHandler
+	namespace string
 }
 
 func ParseReplicConfig(json string) (*agent.ReplicaConfig, error) {
@@ -48,7 +51,8 @@ func NewClient(serverName string,
 	rcloneClient *RCloneClient,
 	v2Client *V2Client,
 	replicaConfig *agent.ReplicaConfig,
-	inferenceSvcName string)  (*Client, error) {
+	inferenceSvcName string,
+	namespace string)  (*Client, error) {
 	replicaConfig.InferenceSvc = inferenceSvcName
 	replicaConfig.AvailableMemoryBytes = replicaConfig.MemoryBytes
 
@@ -68,6 +72,7 @@ func NewClient(serverName string,
 		V2Client: v2Client,
 		replicaConfig: replicaConfig,
 		loadedModels: make(map[string]*pbs.ModelDetails),
+		namespace: namespace,
 	}, nil
 }
 
@@ -167,6 +172,7 @@ func (c *Client) sendModelEventError(modelName string, modelVersion string, even
 		ServerName: c.serverName,
 		ReplicaIdx: c.replicaIdx,
 		ModelName: modelName,
+		ModelVersion: modelVersion,
 		Event: event,
 		Message: err.Error(),
 		AvailableMemoryBytes: c.replicaConfig.AvailableMemoryBytes,
@@ -193,13 +199,46 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error  {
 	c.logger.Infof("Load model %s", modelName)
 
 	// Load model storage configuration before copying if needed
-	if len(request.Details.GetStorageRCloneConfig()) > 0 {
+	if request.Details.StorageRCloneConfig != nil { // Load rclone config from model details
 		err := c.RCloneClient.Config(request.Details.GetName(), request.Details.GetVersion(), []byte(request.Details.GetStorageRCloneConfig()))
 		if err != nil {
+			err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
+			if err2 != nil {
+				c.logger.WithError(err2).Errorf("Failed to send error back on load model")
+			}
+			return err
+		}
+	} else if request.Details.StorageSecretName != nil { // Load rclone config from k8s secret
+		if c.secretsHandler == nil {
+			secretClientSet, err := k8s.CreateSecretsClientset()
+			if err != nil {
+				err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
+				if err2 != nil {
+					c.logger.WithError(err2).Errorf("Failed to send error back on load model")
+				}
+				return err
+			}
+			c.secretsHandler = k8s.NewSecretsHandler(secretClientSet, c.namespace)
+		}
+		config, err := c.secretsHandler.GetSecretConfig(request.Details.GetStorageSecretName())
+		if err != nil {
+			err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
+			if err2 != nil {
+				c.logger.WithError(err2).Errorf("Failed to send error back on load model")
+			}
+			return err
+		}
+		err = c.RCloneClient.Config(request.Details.GetName(), request.Details.GetVersion(), config)
+		if err != nil {
+			err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
+			if err2 != nil {
+				c.logger.WithError(err2).Errorf("Failed to send error back on load model")
+			}
 			return err
 		}
 	}
 
+	// Copy model artifact using RClone
 	err := c.RCloneClient.Copy(request.Details.Name, request.Details.GetVersion(), request.Details.Uri)
 	if err != nil {
 		err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)

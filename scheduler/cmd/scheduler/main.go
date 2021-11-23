@@ -24,9 +24,7 @@ import (
 	server2 "github.com/seldonio/seldon-core/scheduler/pkg/server"
 	"github.com/seldonio/seldon-core/scheduler/pkg/store"
 	"io/ioutil"
-	"k8s.io/client-go/util/homedir"
 	"math/rand"
-	"path/filepath"
 	"time"
 
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
@@ -40,7 +38,6 @@ var (
 	envoyPort      uint
 	agentPort      uint
 	schedulerPort  uint
-	kubeconfig     string
 	namespace      string
 
 	nodeID string
@@ -61,11 +58,6 @@ func init() {
 	// Tell Envoy to use this Node ID
 	flag.StringVar(&nodeID, "nodeID", "test-id", "Node ID")
 
-	if home := homedir.HomeDir(); home != "" {
-		flag.StringVar(&kubeconfig, "kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-	} else {
-		flag.StringVar(&kubeconfig, "kubeconfig", "", "absolute path to the kubeconfig file")
-	}
 }
 
 func getNamespace() string {
