@@ -28,10 +28,15 @@ COPY _python/python/licenses/license.txt .
 COPY _python /microservice
 RUN cd /microservice/python && pip install .
 
-RUN mkdir -p /.conda && chmod a+rwx /.conda
 RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical
 
-# Default user is 8888 so changing for permissiosn to modify (needed in mlflow server)
-RUN chown -R 8888 /microservice
+# Default user is 8888 so changing for permissiosn to modify (needed in mlflow
+# server).
+# Clean Conda's cache to avoid cache file conflicts between user IDs:
+# https://github.com/conda/conda/issues/7227
+RUN mkdir -p /.conda && \
+    chmod a+rwx /.conda && \
+    chown -R 8888 /microservice  && \
+    conda clean --index-cache
 
 EXPOSE 5000
