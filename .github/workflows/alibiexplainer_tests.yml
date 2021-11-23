@@ -7,14 +7,28 @@ on:
     branches: [ master ]
 
 jobs:
+  lint:
+    runs-on: ubuntu-18.04
+    container: seldonio/python-builder:0.6
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip setuptools
+          make -C components/alibi-explain-server dev_install
+      - name: Lint
+        run: |
+          make -C components/alibi-explain-server lint
+
   python-tests:
 
     runs-on: ubuntu-18.04
     container: seldonio/python-builder:0.6
 
     steps:
-    - uses: actions/checkout@v2
-    - name: test-python
-      run: |
-        pip install --upgrade pip setuptools
-        make -C components/alibi-explain-server dev_install build_apis test
+      - uses: actions/checkout@v2
+      - name: test-python
+        run: |
+          pip install --upgrade pip setuptools
+          make -C components/alibi-explain-server dev_install build_apis test

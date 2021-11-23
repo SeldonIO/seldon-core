@@ -13,36 +13,35 @@
 # limitations under the License.
 
 #
-# Copied from https://github.com/kubeflow/kfserving/blob/master/python/alibiexplainer/tests/test_anchor_tabular.py
+# Copied from https://github.com/kubeflow/kfserving/blob/master/python/alibiexplainer/
+# tests/test_anchor_tabular.py
 # and modified since
 #
 
-from alibiexplainer.anchor_tabular import AnchorTabular
-import kfserving
-import os
-import dill
-from alibi.datasets import fetch_adult
-import numpy as np
 import json
+import tempfile
+
+import numpy as np
+from alibi.saving import load_explainer
+
+from alibiexplainer.anchor_tabular import AnchorTabular
+
+from .make_test_models import make_anchor_tabular
 from .utils import SKLearnServer
-ADULT_EXPLAINER_URI = "gs://seldon-models/sklearn/income/explainer-py37-0.6.0"
-ADULT_MODEL_URI = "gs://seldon-models/sklearn/income/model-0.23.2"
-EXPLAINER_FILENAME = "explainer.dill"
+
+IRIS_MODEL_URI = "gs://seldon-models/v1.11.0-dev/sklearn/iris/*"
 
 
 def test_anchor_tabular():
+    skmodel = SKLearnServer(IRIS_MODEL_URI)
+    skmodel.load()
 
-    alibi_model = os.path.join(
-        kfserving.Storage.download(ADULT_EXPLAINER_URI), EXPLAINER_FILENAME
-    )
-    with open(alibi_model, "rb") as f:
-        skmodel = SKLearnServer(ADULT_MODEL_URI)
-        skmodel.load()
-        alibi_model = dill.load(f)
-        anchor_tabular = AnchorTabular(skmodel.predict, alibi_model)
-        adult = fetch_adult()
-        X_test = adult.data[30001:, :]
-        np.random.seed(0)
-        explanation = anchor_tabular.explain(X_test[0:1].tolist())
-        exp_json = json.loads(explanation.to_json())
-        assert exp_json["data"]["anchor"][0] == "Marital Status = Never-Married"
+    with tempfile.TemporaryDirectory() as alibi_model_dir:
+        make_anchor_tabular(alibi_model_dir)
+        alibi_model = load_explainer(predictor=skmodel.predict, path=alibi_model_dir)
+        anchor_tabular = AnchorTabular(alibi_model)
+
+    test_data = np.array([[5.964, 4.006, 2.081, 1.031]])
+    explanation = anchor_tabular.explain(test_data)
+    explanation_json = json.loads(explanation.to_json())
+    assert explanation_json["meta"]["name"] == "AnchorTabular"

@@ -181,7 +181,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 			explainerContainer.Env = explainEnvs
 		} else {
 			explainerContainer.Args = []string{
-				"--model_name=" + mlDep.Name,
+				"--model_name=" + p.Graph.Name,
 				"--predictor_host=" + pSvcEndpoint,
 				"--protocol=" + explainerProtocol + "." + explainerTransport,
 				"--http_port=" + strconv.Itoa(int(portNum)),

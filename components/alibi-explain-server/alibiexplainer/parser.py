@@ -13,20 +13,21 @@
 # limitations under the License.
 
 #
-# Copied from https://github.com/kubeflow/kfserving/blob/master/python/alibiexplainer/alibiexplainer/parser.py
+# Copied from https://github.com/kubeflow/kfserving/blob/master/python/alibiexplainer/
+# alibiexplainer/parser.py
 # and modified since
 #
 
 
 import argparse
-import kfserving
 import logging
 import os
-from alibiexplainer.explainer import ExplainerMethod  # pylint:disable=no-name-in-module
+
 import alibiexplainer
 from alibiexplainer import server_parser
+from alibiexplainer.explainer import ExplainerMethod
 
-logging.basicConfig(level=kfserving.constants.KFSERVING_LOGLEVEL)
+logging.basicConfig(level=logging.INFO)
 
 DEFAULT_EXPLAINER_NAME = "explainer"
 ENV_STORAGE_URI = "STORAGE_URI"
@@ -168,11 +169,15 @@ def parse_args(sys_args):
     )
 
     # Additions for Seldon
-    parser.add_argument('--protocol', default=str(alibiexplainer.Protocol.seldon_grpc),
-                        choices=[str(p) for p in alibiexplainer.Protocol],
-                        help='Whether to use grpc to call predictor')
-    parser.add_argument('--tf_data_type',
-                        help='Tensorflow payload datatype - only with seldon.grpc')
+    parser.add_argument(
+        "--protocol",
+        default=str(alibiexplainer.Protocol.seldon_grpc),
+        choices=[str(p) for p in alibiexplainer.Protocol],
+        help="Whether to use grpc to call predictor",
+    )
+    parser.add_argument(
+        "--tf_data_type", help="Tensorflow payload datatype - only with seldon.grpc"
+    )
 
     subparsers = parser.add_subparsers(help="sub-command help", dest="command")
 
@@ -235,7 +240,9 @@ def parse_args(sys_args):
     addCommonParserArgs(parser_kernel_shap)
 
     # Integrated Gradients Arguments
-    parser_integrated_gradients = subparsers.add_parser(str(ExplainerMethod.integrated_gradients))
+    parser_integrated_gradients = subparsers.add_parser(
+        str(ExplainerMethod.integrated_gradients)
+    )
     addCommonParserArgs(parser_integrated_gradients)
 
     parser_integrated_gradients.add_argument(
@@ -312,6 +319,10 @@ def parse_args(sys_args):
         dest="explainer.summarise_result",
         default=argparse.SUPPRESS,
     )
+
+    # ALE Arguments
+    # TODO: add actual arguments (not sure if they are really needed!)
+    parser_ale = subparsers.add_parser(str(ExplainerMethod.ale))
 
     args, _ = parser.parse_known_args(sys_args)
 

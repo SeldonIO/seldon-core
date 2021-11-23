@@ -13,15 +13,15 @@
 # limitations under the License.
 
 #
-# Originally copied from https://github.com/kubeflow/kfserving/blob/master/python/alibiexplainer/alibiexplainer/explainer_wrapper.py
+# Originally copied from https://github.com/kubeflow/kfserving/blob/master/python/
+# alibiexplainer/alibiexplainer/explainer_wrapper.py
 # and since modified
 #
 
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 
 
 class ExplainerWrapper(object):
-
     def validate(self, training_data_url: Optional[str]):
         pass
 

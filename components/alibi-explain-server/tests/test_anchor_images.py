@@ -13,42 +13,32 @@
 # limitations under the License.
 
 #
-# Copied from https://github.com/kubeflow/kfserving/blob/master/python/alibiexplainer/tests/test_anchor_images.py
+# Copied from https://github.com/kubeflow/kfserving/blob/master/python/alibiexplainer/
+# tests/test_anchor_images.py
 # and modified since
 #
 
-from alibiexplainer.anchor_images import AnchorImages
-import os
-import tensorflow as tf
 import json
+
 import numpy as np
-import kfserving
-import dill
+import tensorflow as tf
 
+from alibiexplainer.anchor_images import AnchorImages
 
-CIFAR10_EXPLAINER_URI = "gs://seldon-models/tfserving/cifar10/explainer-py36-0.5.2"
-EXPLAINER_FILENAME = "explainer.dill"
+from .make_test_models import make_anchor_image
 
 
 def test_cifar10_images():  # pylint: disable-msg=too-many-locals
+    alibi_model = make_anchor_image()
+    anchor_images = AnchorImages(alibi_model)
 
-    alibi_model = os.path.join(
-        kfserving.Storage.download(CIFAR10_EXPLAINER_URI), EXPLAINER_FILENAME
-    )
-    with open(alibi_model, "rb") as f:
-        alibi_model = dill.load(f)
-        url = "https://storage.googleapis.com/seldon-models/alibi-detect/classifier/"
-        path_model = os.path.join(url, "cifar10", "resnet32", "model.h5")
-        save_path = tf.keras.utils.get_file("resnet32", path_model)
-        model = tf.keras.models.load_model(save_path)
-        _, test = tf.keras.datasets.cifar10.load_data()
-        X_test, _ = test
-        X_test = X_test.astype("float32") / 255
-        idx = 12
-        test_example = X_test[idx: idx + 1]
-        anchor_images = AnchorImages(
-            lambda x: model.predict(x), alibi_model)  # pylint: disable-msg=unnecessary-lambda
-        np.random.seed(0)
-        explanation = anchor_images.explain(test_example)
-        exp_json = json.loads(explanation.to_json())
-        assert exp_json["data"]["precision"] > 0.9
+    _, test = tf.keras.datasets.cifar10.load_data()
+    X_test, _ = test
+    X_test = X_test.astype("float32") / 255
+    idx = 12
+    test_example = X_test[idx : idx + 1]
+
+    np.random.seed(0)
+    explanation = anchor_images.explain(test_example)
+    exp_json = json.loads(explanation.to_json())
+    assert exp_json["data"]["precision"] > 0.9

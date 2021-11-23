@@ -13,25 +13,29 @@
 # limitations under the License.
 
 #
-# Copied from https://github.com/kubeflow/kfserving/blob/master/python/alibiexplainer/alibiexplainer/__main__.py
+# Copied from https://github.com/kubeflow/kfserving/blob/master/python/alibiexplainer
+# /alibiexplainer/__main__.py
 # and modified since
 #
 
 import logging
-import os
-import kfserving
-import dill
-from alibiexplainer.server import server_parser, ExplainerServer
-from alibiexplainer import AlibiExplainer, Protocol
-from alibiexplainer.explainer import ExplainerMethod  # pylint:disable=no-name-in-module
+import sys
+
+from alibiexplainer import AlibiExplainer
 from alibiexplainer.constants import SELDON_LOGLEVEL
 from alibiexplainer.parser import parse_args
-import sys
-from tensorflow import keras
+from alibiexplainer.server import ExplainerServer
+from alibiexplainer.utils import (
+    ExplainerMethod,
+    Protocol,
+    construct_predict_fn,
+    get_persisted_explainer,
+    get_persisted_keras,
+    is_persisted_explainer,
+    is_persisted_keras,
+)
 
 logging.basicConfig(level=SELDON_LOGLEVEL)
-EXPLAINER_FILENAME = "explainer.dill"
-KERAS_MODEL = "model.h5"
 
 
 def main():
@@ -39,29 +43,32 @@ def main():
     # Pretrained Alibi explainer
     alibi_model = None
     keras_model = None
+
+    predict_fn = construct_predict_fn(
+        predictor_host=args.predictor_host,
+        model_name=args.model_name,
+        protocol=Protocol(args.protocol),
+        tf_data_type=args.tf_data_type,
+    )
+
     if args.storage_uri is not None:
-        path = kfserving.Storage.download(args.storage_uri)
-        alibi_model = os.path.join(path, EXPLAINER_FILENAME)
-        if os.path.exists(alibi_model):
-            with open(alibi_model, "rb") as f:
-                logging.info("Loading Alibi model")
-                alibi_model = dill.load(f)
-        else:
-            keras_path = os.path.join(path, KERAS_MODEL)
-            if os.path.exists(keras_path):
-                with open(keras_path, "rb") as f:
-                    logging.info("Loading Keras model")
-                    keras_model = keras.models.load_model(keras_path)
+        # we assume here that model is local
+        path = args.storage_uri
+
+        if is_persisted_explainer(path):
+            alibi_model = get_persisted_explainer(predict_fn=predict_fn, dirname=path)
+
+        if is_persisted_keras(path):
+            keras_model = get_persisted_keras(path)
 
     explainer = AlibiExplainer(
-        args.model_name,
-        args.predictor_host,
-        ExplainerMethod(args.command),
-        extra,
-        alibi_model,
-        Protocol(args.protocol),
-        args.tf_data_type,
-        keras_model,
+        name=args.model_name,
+        predict_fn=predict_fn,
+        method=ExplainerMethod(args.command),
+        config=extra,
+        explainer=alibi_model,
+        protocol=Protocol(args.protocol),
+        keras_model=keras_model,
     )
     explainer.load()
     ExplainerServer(args.http_port).start(explainer)

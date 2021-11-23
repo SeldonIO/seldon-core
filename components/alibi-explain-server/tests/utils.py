@@ -1,14 +1,20 @@
-import kfserving
-import numpy as np
-from typing import Dict, List, Union, Iterable
-import os
 import logging
+import os
+import tempfile
+from typing import Dict, Iterable, List, Union
+
 import joblib
+import numpy as np
 
 JOBLIB_FILE = "model.joblib"
 logger = logging.getLogger(__name__)
 
-class SKLearnServer():
+
+def download_from_gs(gs_uri: str, dirname: str) -> None:
+    os.system(f"gsutil cp -r {gs_uri} {dirname}")
+
+
+class SKLearnServer:
     def __init__(self, model_uri: str = None, method: str = "predict_proba"):
         super().__init__()
         self.model_uri = model_uri
@@ -20,16 +26,16 @@ class SKLearnServer():
 
     def load(self):
         logger.info("load")
-        model_file = os.path.join(
-            kfserving.Storage.download(self.model_uri), JOBLIB_FILE
-        )
-        logger.info(f"model file: {model_file}")
-        self._joblib = joblib.load(model_file)
+        with tempfile.TemporaryDirectory() as model_dir:
+            download_from_gs(self.model_uri, model_dir)
+            model_file = os.path.join(model_dir, JOBLIB_FILE)
+            logger.info(f"model file: {model_file}")
+            self._joblib = joblib.load(model_file)
         self.ready = True
 
     def predict(self, X: np.ndarray) -> Union[np.ndarray, List, str, bytes]:
         if not isinstance(X, np.ndarray):
-            if isinstance(X,list):
+            if isinstance(X, list):
                 X = np.array(X)
             else:
                 X = np.array([X])

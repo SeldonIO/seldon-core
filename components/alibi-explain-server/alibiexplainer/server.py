@@ -1,13 +1,15 @@
+import argparse
 import json
 import logging
 from http import HTTPStatus
 from typing import Dict, Optional
+
 import tornado.httpserver
 import tornado.ioloop
 import tornado.web
-from alibiexplainer.model import ExplainerModel
+
 from alibiexplainer.constants import SELDON_LOGLEVEL
-import argparse
+from alibiexplainer.model import ExplainerModel
 
 logging.basicConfig(level=SELDON_LOGLEVEL)
 
@@ -16,21 +18,32 @@ DEFAULT_GRPC_PORT = 8081
 DEFAULT_MAX_BUFFER_SIZE = 104857600
 
 server_parser = argparse.ArgumentParser(add_help=False)
-server_parser.add_argument('--http_port', default=DEFAULT_HTTP_PORT, type=int,
-                           help='The HTTP Port listened to by the model server.')
-server_parser.add_argument('--grpc_port', default=DEFAULT_GRPC_PORT, type=int,
-                           help='The GRPC Port listened to by the model server.')
-server_parser.add_argument('--max_buffer_size', default=DEFAULT_MAX_BUFFER_SIZE, type=int,
-                           help='The max buffer size for tornado.')
-server_parser.add_argument('--workers', default=0, type=int,
-                           help='The number of works to fork')
+server_parser.add_argument(
+    "--http_port",
+    default=DEFAULT_HTTP_PORT,
+    type=int,
+    help="The HTTP Port listened to by the model server.",
+)
+server_parser.add_argument(
+    "--grpc_port",
+    default=DEFAULT_GRPC_PORT,
+    type=int,
+    help="The GRPC Port listened to by the model server.",
+)
+server_parser.add_argument(
+    "--max_buffer_size",
+    default=DEFAULT_MAX_BUFFER_SIZE,
+    type=int,
+    help="The max buffer size for tornado.",
+)
+server_parser.add_argument(
+    "--workers", default=0, type=int, help="The number of works to fork"
+)
 args, _ = server_parser.parse_known_args()
 
+
 class ExplainerServer(object):
-    def __init__(
-        self,
-        http_port: int = DEFAULT_HTTP_PORT
-    ):
+    def __init__(self, http_port: int = DEFAULT_HTTP_PORT):
         """
         Explainer Server
 
@@ -46,14 +59,21 @@ class ExplainerServer(object):
     def create_application(self):
         return tornado.web.Application(
             [
-                (r"/v1/models/([a-zA-Z0-9_-]*):explain",
-                 ExplainV2Handler, dict(model=self.registered_model)),
-                (r"/api/v0.1/explain",
-                 ExplainHandler, dict(model=self.registered_model)),
-                (r"/api/v1.0/explain",
-                 ExplainHandler, dict(model=self.registered_model)),
-                (r"/v2/models/([a-zA-Z0-9_-]+)/explain",
-                 ExplainV2Handler, dict(model=self.registered_model)),
+                (
+                    r"/v1/models/([a-zA-Z0-9_-]*):explain",
+                    ExplainV2Handler,
+                    dict(model=self.registered_model),
+                ),
+                (
+                    r"/api/v0.1/explain",
+                    ExplainHandler,
+                    dict(model=self.registered_model),
+                ),
+                (
+                    r"/api/v1.0/explain",
+                    ExplainHandler,
+                    dict(model=self.registered_model),
+                ),
             ]
         )
 
@@ -82,6 +102,7 @@ class ExplainerServer(object):
         self.registered_model = model
         logging.info("Registering model:" + model.name)
 
+
 class ExplainHandler(tornado.web.RequestHandler):
     def initialize(self, model: ExplainerModel):
         self.model = model  # pylint:disable=attribute-defined-outside-init
@@ -92,9 +113,9 @@ class ExplainHandler(tornado.web.RequestHandler):
         except json.decoder.JSONDecodeError as e:
             raise tornado.web.HTTPError(
                 status_code=HTTPStatus.BAD_REQUEST,
-                reason="Unrecognized request format: %s" % e
+                reason="Unrecognized request format: %s" % e,
             )
-        response =self.model.explain(body)
+        response = self.model.explain(body)
         self.write(response)
 
 
@@ -108,7 +129,7 @@ class ExplainV2Handler(tornado.web.RequestHandler):
         except json.decoder.JSONDecodeError as e:
             raise tornado.web.HTTPError(
                 status_code=HTTPStatus.BAD_REQUEST,
-                reason="Unrecognized request format: %s" % e
+                reason="Unrecognized request format: %s" % e,
             )
-        response =self.model.explain(body, model_name=model_name)
+        response = self.model.explain(body)
         self.write(response)
