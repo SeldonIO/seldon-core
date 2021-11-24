@@ -122,21 +122,30 @@ func (r *RCloneClient) Ready() error {
 	return err
 }
 
-func createRCloneKey(modelName string, modelVersion string) string {
-	return modelName +"_" + modelVersion
+func getRemoteName(uri string) (string, error) {
+	idx := strings.Index(uri,":")
+	if idx == -1 {
+		return "", fmt.Errorf("Failed to find : in %s for rclone name match",uri)
+	}
+	name := uri[0:idx]
+	return name, nil
 }
 
-func updatePath(srcPath string, rcloneUniqueName string) (string, error) {
-	idx := strings.Index(srcPath,":")
-	if idx == -1 {
-		return "", fmt.Errorf("Failed to find : in %s for rclone name match",srcPath)
-	}
-	name := srcPath[0:idx]
-	return strings.Replace(srcPath,name, rcloneUniqueName, 1), nil
+func createRCloneKey(modelName string, modelVersion string, remoteName string) string {
+	return modelName +"-" + modelVersion+ "-" + remoteName
+}
+
+func updatePath(srcPath string, currentRemoteKey string, rcloneUniqueName string) string {
+	return strings.Replace(srcPath, currentRemoteKey, rcloneUniqueName, 1)
 }
 
 func (r *RCloneClient) Copy(modelName string, modelVersion string, src string) error {
-	srcUpdated, err := updatePath(src, createRCloneKey(modelName, modelVersion))
+	currentRemoteKey, err := getRemoteName(src)
+	if err != nil {
+		return err
+	}
+	rcloneRemoteKey := createRCloneKey(modelName, modelVersion, currentRemoteKey)
+	srcUpdated := updatePath(src, currentRemoteKey, rcloneRemoteKey)
 	dst := fmt.Sprintf("%s/%s",r.localPath,modelName)
 	copy := RCloneCopy{
 		SrcFs: srcUpdated,
@@ -154,22 +163,25 @@ func (r *RCloneClient) Copy(modelName string, modelVersion string, src string) e
 
 func (r *RCloneClient) Config(modelName string, modelVersion string, config []byte) error {
 	logger := r.logger.WithField("func", "Config")
-	exists, err := r.configExists(modelName, modelVersion)
+	configCreate, err := r.createConfigCreate(modelName, modelVersion, config)
+	if err != nil {
+		return err
+	}
+	exists, err := r.configExists(modelName, modelVersion, configCreate.Name)
 	if err != nil {
 		return err
 	}
 	if exists {
 		logger.Infof("Config exists for %s:%s", modelName, modelVersion)
-		return r.configUpdate(modelName, modelVersion, config)
+		return r.configUpdate(modelName, modelVersion, configCreate)
 	} else {
 		logger.Infof("Config does not exists for %s:%s", modelName, modelVersion)
-		return r.configCreate(modelName, modelVersion, config)
+		return r.configCreate(modelName, modelVersion, configCreate)
 	}
 }
 
-func (r *RCloneClient) configExists(modelName string, modelVersion string) (bool, error) {
-	name := createRCloneKey(modelName, modelVersion)
-	key := RCloneConfigKey{Name: name}
+func (r *RCloneClient) configExists(modelName string, modelVersion string, rcloneRemoteKey string) (bool, error) {
+	key := RCloneConfigKey{Name: rcloneRemoteKey}
 	b, err := json.Marshal(key)
 	if err != nil {
 		return false, err
@@ -200,17 +212,13 @@ func (r *RCloneClient) createConfigCreate(modelName string, modelVersion string,
 	if err != nil {
 		return nil, err
 	}
-	configCreate.Name =  createRCloneKey(modelName, modelVersion) //overwrite name with model name and version which is unique?
+	configCreate.Name =  createRCloneKey(modelName, modelVersion,configCreate.Name) //overwrite name with model name and version which is unique?
 	return &configCreate, nil
 }
 
-func (r *RCloneClient) configCreate(modelName string, modelVersion string, config []byte) error {
+func (r *RCloneClient) configCreate(modelName string, modelVersion string, configCreate *RCloneConfigCreate) error {
 	logger := r.logger.WithField("func","ConfigCreate")
 	logger.Infof("model %s version %s",modelName,modelVersion)
-	configCreate, err := r.createConfigCreate(modelName, modelVersion, config)
-	if err != nil {
-		return err
-	}
 	b, err := json.Marshal(configCreate)
 	if err != nil {
 		return err
@@ -220,13 +228,9 @@ func (r *RCloneClient) configCreate(modelName string, modelVersion string, confi
 }
 
 
-func (r *RCloneClient) configUpdate(modelName string, modelVersion string, config []byte) error {
+func (r *RCloneClient) configUpdate(modelName string, modelVersion string, configCreate *RCloneConfigCreate) error {
 	logger := r.logger.WithField("func","ConfigUpdate")
 	logger.Infof("model %s version %s",modelName,modelVersion)
-	configCreate, err := r.createConfigCreate(modelName, modelVersion, config)
-	if err != nil {
-		return err
-	}
 	configUpdate := createConfigUpdateFromCreate(configCreate)
 	b, err := json.Marshal(configUpdate)
 	if err != nil {

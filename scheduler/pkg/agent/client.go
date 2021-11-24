@@ -197,20 +197,11 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error  {
 	}
 
 	c.logger.Infof("Load model %s", modelName)
-
-	// Load model storage configuration before copying if needed
-	if request.Details.StorageRCloneConfig != nil { // Load rclone config from model details
-		err := c.RCloneClient.Config(request.Details.GetName(), request.Details.GetVersion(), []byte(request.Details.GetStorageRCloneConfig()))
-		if err != nil {
-			err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
-			if err2 != nil {
-				c.logger.WithError(err2).Errorf("Failed to send error back on load model")
-			}
-			return err
-		}
-	} else if request.Details.StorageSecretName != nil { // Load rclone config from k8s secret
-		if c.secretsHandler == nil {
-			secretClientSet, err := k8s.CreateSecretsClientset()
+	if request.Details.StorageConfig != nil {
+		c.logger.Infof("Handling Rclone configuration")
+		switch x := request.Details.StorageConfig.Config.(type) {
+		case *pbs.StorageConfig_StorageRcloneConfig:
+			err := c.RCloneClient.Config(request.Details.GetName(), request.Details.GetVersion(), []byte(x.StorageRcloneConfig))
 			if err != nil {
 				err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
 				if err2 != nil {
@@ -218,23 +209,34 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error  {
 				}
 				return err
 			}
-			c.secretsHandler = k8s.NewSecretsHandler(secretClientSet, c.namespace)
-		}
-		config, err := c.secretsHandler.GetSecretConfig(request.Details.GetStorageSecretName())
-		if err != nil {
-			err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
-			if err2 != nil {
-				c.logger.WithError(err2).Errorf("Failed to send error back on load model")
+		case *pbs.StorageConfig_StorageSecretName:
+			if c.secretsHandler == nil {
+				secretClientSet, err := k8s.CreateSecretsClientset()
+				if err != nil {
+					err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
+					if err2 != nil {
+						c.logger.WithError(err2).Errorf("Failed to send error back on load model")
+					}
+					return err
+				}
+				c.secretsHandler = k8s.NewSecretsHandler(secretClientSet, c.namespace)
 			}
-			return err
-		}
-		err = c.RCloneClient.Config(request.Details.GetName(), request.Details.GetVersion(), config)
-		if err != nil {
-			err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
-			if err2 != nil {
-				c.logger.WithError(err2).Errorf("Failed to send error back on load model")
+			config, err := c.secretsHandler.GetSecretConfig(x.StorageSecretName)
+			if err != nil {
+				err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
+				if err2 != nil {
+					c.logger.WithError(err2).Errorf("Failed to send error back on load model")
+				}
+				return err
 			}
-			return err
+			err = c.RCloneClient.Config(request.Details.GetName(), request.Details.GetVersion(), config)
+			if err != nil {
+				err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
+				if err2 != nil {
+					c.logger.WithError(err2).Errorf("Failed to send error back on load model")
+				}
+				return err
+			}
 		}
 	}
 

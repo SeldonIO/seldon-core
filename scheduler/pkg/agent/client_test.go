@@ -229,7 +229,7 @@ parameters:
 		{
 			name: "rclongConfig",
 			models: []string{"iris"},
-			op: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory, StorageRCloneConfig: &rcloneConfig}},
+			op: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory, StorageConfig: &pbs.StorageConfig{Config: &pbs.StorageConfig_StorageRcloneConfig{StorageRcloneConfig: rcloneConfig}}}},
 			replicaConfig: &pb.ReplicaConfig{MemoryBytes: 1000},
 			expectedAvailableMemory: 500,
 			v2Status: 200,
@@ -240,7 +240,7 @@ parameters:
 		{
 			name: "secretConfig",
 			models: []string{"iris"},
-			op: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory, StorageSecretName: &rcloneSecret}},
+			op: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory, StorageConfig: &pbs.StorageConfig{Config: &pbs.StorageConfig_StorageSecretName{StorageSecretName: rcloneSecret}}}},
 			secretData: yamlSecretDataOK,
 			replicaConfig: &pb.ReplicaConfig{MemoryBytes: 1000},
 			expectedAvailableMemory: 500,
@@ -252,7 +252,7 @@ parameters:
 		{
 			name: "secretConfigBad",
 			models: []string{"iris"},
-			op: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory, StorageSecretName: &rcloneSecret}},
+			op: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory, StorageConfig: &pbs.StorageConfig{Config: &pbs.StorageConfig_StorageRcloneConfig{StorageRcloneConfig: `{"foo":"bar"`}}}},
 			secretData: "foo:bar",
 			replicaConfig: &pb.ReplicaConfig{MemoryBytes: 1000},
 			expectedAvailableMemory: 500,
@@ -271,8 +271,9 @@ parameters:
 			rcloneClient := createTestRCloneClient(test.rsStatus, test.rsBody)
 			client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default")
 			g.Expect(err).To(BeNil())
-			if test.op.Details.StorageSecretName != nil {
-				secret := &v1.Secret{ObjectMeta:metav1.ObjectMeta{Name: *test.op.Details.StorageSecretName, Namespace: client.namespace},StringData: map[string]string {"mys3": test.secretData}}
+			switch x := test.op.Details.StorageConfig.Config.(type) {
+			case *pbs.StorageConfig_StorageSecretName:
+				secret := &v1.Secret{ObjectMeta:metav1.ObjectMeta{Name: x.StorageSecretName, Namespace: client.namespace},StringData: map[string]string {"mys3": test.secretData}}
 				fakeClientset := fake.NewSimpleClientset(secret)
 				s := k8s.NewSecretsHandler(fakeClientset, client.namespace)
 				client.secretsHandler = s

@@ -150,35 +150,31 @@ func TestRcloneConfig(t *testing.T) {
 	}
 }
 
-func TestUpdatePath(t *testing.T) {
+func TestGetRemoteName(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 	type test struct {
 		name           string
-		srcPath           string
-		rcloneUniqName string
+		uri            string
 		expected       string
 		err            bool
 	}
 	tests := []test{
 		{
 			name:           "simple",
-			srcPath:        "s3://models/iris",
-			rcloneUniqName: "mys3",
-			expected:       "mys3://models/iris",
+			uri:        "s3://models/iris",
+			expected: "s3",
 			err:            false,
 		},
 		{
-			name:           "IncorrectURI",
-			srcPath:        "models/iris",
-			rcloneUniqName: "mys3",
-			expected:       "",
+			name:           "Fail",
+			uri:        "s3//models/iris",
 			err:            true,
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			res, err := updatePath(test.srcPath, test.rcloneUniqName)
+			res, err := getRemoteName(test.uri)
 			if test.err {
 				g.Expect(err).ToNot(BeNil())
 			} else {
