@@ -72,9 +72,9 @@ class TestExplainServer:
     @pytest.mark.sequential
     def test_alibi_explain_anchor_image_tensorflow_protocol(self, namespace):
         spec = "../resources/tf_cifar_anchor_image_explainer.yaml"
-        name = "cifar10-classifier-default-explainer"
+        name = "cifar10-default-explainer"
         vs_prefix = (
-            f"seldon/{namespace}/cifar10-classifier-explainer/default/v1/models/"
+            f"seldon/{namespace}/cifar10-explainer/default/v1/models/"
             f"cifar10-classifier:explain"
         )
         retry_run(f"kubectl apply -f {spec} -n {namespace}")
@@ -82,7 +82,7 @@ class TestExplainServer:
         wait_for_deployment(name, namespace)
 
         test_data = np.random.randn(32, 32, 3)
-        inference_request = {"instances": test_data.tolist()}
+        inference_request = {"instances": f"{test_data.tolist()}"}
 
         for attempt in Retrying(
             wait=wait_fixed(TENACITY_WAIT),
