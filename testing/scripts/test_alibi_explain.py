@@ -81,8 +81,9 @@ class TestExplainServer:
 
         wait_for_deployment(name, namespace)
 
-        test_data = np.random.randn(32, 32, 3)
-        inference_request = {"instances": f"{test_data.tolist()}"}
+        # note: we add a batch dimension but it should be really one image
+        test_data = np.random.randn(1, 32, 32, 3)
+        inference_request = {"instances": test_data.tolist()}
 
         for attempt in Retrying(
             wait=wait_fixed(TENACITY_WAIT),
