@@ -1,8 +1,8 @@
 SHELL := /bin/bash
 VERSION := $(shell cat ../../version.txt)
+KIND_NAME ?= kind
 IMAGE_NAME_BASE=mlflowserver
 IMAGE_NAME=seldonio/${IMAGE_NAME_BASE}
-KIND_NAME ?= kind
 
 build:
 	s2i build \
