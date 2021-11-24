@@ -156,7 +156,7 @@ func (p *IncrementalProcessor) Sync(modelName string) error {
 	clusterNameBase := server.Name + "_" + computeHashKeyForList(assignment)
 	httpClusterName := clusterNameBase + "_http"
 	grpcClusterName := clusterNameBase + "_grpc"
-	p.xdsCache.AddRoute(modelName,modelName,httpClusterName, grpcClusterName)
+	p.xdsCache.AddRoute(modelName,modelName,httpClusterName, grpcClusterName, latestModel.Details().LogPayloads)
 	if !p.xdsCache.HasCluster(httpClusterName) {
 		p.xdsCache.AddCluster(httpClusterName, modelName, false)
 		for _,serverIdx := range assignment {

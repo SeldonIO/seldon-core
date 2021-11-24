@@ -76,12 +76,13 @@ func (xds *SeldonXDSCache) AddListener(name string) {
 	}
 }
 
-func (xds *SeldonXDSCache) AddRoute(name, modelName string, httpClusterName string, grpcClusterName string) {
+func (xds *SeldonXDSCache) AddRoute(name, modelName string, httpClusterName string, grpcClusterName string, logPayloads bool) {
 	xds.Routes[name] = resources.Route{
 		Name:        name,
 		Host:        modelName,
 		HttpCluster: httpClusterName,
 		GrpcCluster: grpcClusterName,
+		LogPayloads: logPayloads,
 	}
 }
 
