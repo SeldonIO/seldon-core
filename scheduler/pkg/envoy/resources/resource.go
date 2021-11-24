@@ -15,6 +15,8 @@
 package resources
 
 import (
+	matcher "github.com/envoyproxy/go-control-plane/envoy/config/common/matcher/v3"
+	envoy_extensions_common_tap_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/common/tap/v3"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"time"
@@ -24,6 +26,8 @@ import (
 	endpoint "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
 	listener "github.com/envoyproxy/go-control-plane/envoy/config/listener/v3"
 	route "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
+	tap "github.com/envoyproxy/go-control-plane/envoy/config/tap/v3"
+	tapfilter "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/tap/v3"
 	hcm "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 	http "github.com/envoyproxy/go-control-plane/envoy/extensions/upstreams/http/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
@@ -32,6 +36,8 @@ import (
 
 const (
 	RouteConfigurationName = "listener_0"
+	SeldonLoggingHeader    = "Seldon-Logging"
+	EnvoyLogPathPrefix = "/tmp/request-log"
 )
 
 func MakeCluster(clusterName string, eps []Endpoint, isGrpc bool) *cluster.Cluster {
@@ -110,7 +116,7 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 	var rts []*route.Route
 
 	for _, r := range routes {
-		rts = append(rts, &route.Route{
+		rt := &route.Route{
 			Name: r.Name+"_http", // Seems optional
 			Match: &route.RouteMatch{
 				PathSpecifier: &route.RouteMatch_Prefix{
@@ -140,8 +146,14 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 					},
 				},
 			},
-		})
-		rts = append(rts, &route.Route{
+		}
+		if r.LogPayloads {
+			rt.ResponseHeadersToAdd = []*core.HeaderValueOption{
+				{Header: &core.HeaderValue{Key: SeldonLoggingHeader,Value: "true"}},
+			}
+		}
+		rts = append(rts,rt)
+		rt = &route.Route{
 			Name: r.Name+"_grpc", // Seems optional
 			Match: &route.RouteMatch{
 				PathSpecifier: &route.RouteMatch_Prefix{
@@ -171,7 +183,13 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 					},
 				},
 			},
-		})
+		}
+		if r.LogPayloads {
+			rt.ResponseHeadersToAdd = []*core.HeaderValueOption{
+				{Header: &core.HeaderValue{Key: SeldonLoggingHeader,Value: "true"}},
+			}
+		}
+		rts = append(rts,rt)
 	}
 
 	return &route.RouteConfiguration{
@@ -184,7 +202,68 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 	}
 }
 
+func createTapConfig() *anypb.Any {
+	// Create Tap Config
+	tapFilter := tapfilter.Tap{
+		CommonConfig: &envoy_extensions_common_tap_v3.CommonExtensionConfig{
+			ConfigType: &envoy_extensions_common_tap_v3.CommonExtensionConfig_StaticConfig{
+				StaticConfig: &tap.TapConfig{
+					Match: &matcher.MatchPredicate{
+						Rule: &matcher.MatchPredicate_OrMatch{ // Either match request or response header
+							OrMatch: &matcher.MatchPredicate_MatchSet{
+								Rules: []*matcher.MatchPredicate{
+									{
+										Rule: &matcher.MatchPredicate_HttpResponseHeadersMatch{ // Response header
+											HttpResponseHeadersMatch: &matcher.HttpHeadersMatch{
+												Headers: []*route.HeaderMatcher{
+													{
+														Name:                 SeldonLoggingHeader,
+														HeaderMatchSpecifier: &route.HeaderMatcher_PresentMatch{PresentMatch: true},
+													},
+												},
+											},
+										},
+									},
+									{
+										Rule: &matcher.MatchPredicate_HttpRequestHeadersMatch{ // Request header
+											HttpRequestHeadersMatch: &matcher.HttpHeadersMatch{
+												Headers: []*route.HeaderMatcher{
+													{
+														Name:                 SeldonLoggingHeader,
+														HeaderMatchSpecifier: &route.HeaderMatcher_PresentMatch{PresentMatch: true},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					OutputConfig: &tap.OutputConfig{
+						Sinks: []*tap.OutputSink{
+							{
+								OutputSinkType: &tap.OutputSink_FilePerTap{
+									FilePerTap: &tap.FilePerTapSink{
+										PathPrefix: EnvoyLogPathPrefix,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	tapAny, err := anypb.New(&tapFilter)
+	if err != nil {
+		panic(err)
+	}
+	return tapAny
+}
+
 func MakeHTTPListener(listenerName, address string, port uint32) *listener.Listener {
+
 	// HTTP filter configuration
 	manager := &hcm.HttpConnectionManager{
 		CodecType:  hcm.HttpConnectionManager_AUTO,
@@ -195,14 +274,23 @@ func MakeHTTPListener(listenerName, address string, port uint32) *listener.Liste
 				RouteConfigName: RouteConfigurationName,
 			},
 		},
-		HttpFilters: []*hcm.HttpFilter{{
-			Name: wellknown.Router,
-		}},
+		HttpFilters: []*hcm.HttpFilter{
+			{
+				Name: "envoy.filters.http.tap",
+				ConfigType: &hcm.HttpFilter_TypedConfig{
+					TypedConfig: createTapConfig(),
+				},
+			},
+			{
+				Name: wellknown.Router,
+			},
+		},
 	}
 	pbst, err := anypb.New(manager)
 	if err != nil {
 		panic(err)
 	}
+
 
 	return &listener.Listener{
 		Name: listenerName,
@@ -218,12 +306,14 @@ func MakeHTTPListener(listenerName, address string, port uint32) *listener.Liste
 			},
 		},
 		FilterChains: []*listener.FilterChain{{
-			Filters: []*listener.Filter{{
-				Name: wellknown.HTTPConnectionManager,
-				ConfigType: &listener.Filter_TypedConfig{
-					TypedConfig: pbst,
+			Filters: []*listener.Filter{
+				{
+					Name: wellknown.HTTPConnectionManager,
+					ConfigType: &listener.Filter_TypedConfig{
+						TypedConfig: pbst,
+					},
 				},
-			}},
+			},
 		}},
 	}
 }

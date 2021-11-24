@@ -31,6 +31,7 @@ message ModelDetails {
   uint32 replicas = 7; // number of replicas of model to create
   optional uint64 memoryBytes = 8; // Requested memory
   optional string server = 9; // the particular model server to load the model. If unspecified will be chosen.
+  bool logPayloads = 10; // Whether to log request/response payloads to this model
 }
 
 message LoadModelResponse {

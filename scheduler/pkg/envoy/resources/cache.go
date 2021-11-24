@@ -12,6 +12,7 @@ type Route struct {
 	Host        string
 	HttpCluster string
 	GrpcCluster string
+	LogPayloads bool
 }
 
 type Cluster struct {
