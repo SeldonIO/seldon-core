@@ -28,7 +28,6 @@ requests = ">=2.21.0,<3.0.0"
 scikit-image = ">=0.14.2,<0.17.1 || >0.17.1,<0.19"
 scikit-learn = ">=0.20.2,<1.1.0"
 scipy = ">=1.1.0,<2.0.0"
-shap = {version = ">=0.40.0,<0.41.0", optional = true, markers = "extra == \"shap\""}
 spacy = {version = ">=2.0.0,<4.0.0", extras = ["lookups"]}
 tensorflow = ">=2.0.0,<2.6.0 || >2.6.0,<2.6.1 || >2.6.1,<2.7.0"
 tqdm = ">=4.28.1,<5.0.0"
@@ -1356,6 +1355,7 @@ description = "A unified approach to explain the output of any machine learning 
 category = "main"
 optional = false
 python-versions = "*"
+develop = false
 
 [package.dependencies]
 cloudpickle = "*"
@@ -1369,11 +1369,17 @@ slicer = "0.0.7"
 tqdm = ">4.25.0"
 
 [package.extras]
-all = ["catboost", "nbsphinx", "matplotlib", "sphinx", "pytest-cov", "pyod", "torch", "pytest", "sentencepiece", "xgboost", "opencv-python", "transformers", "lime", "pyspark", "lightgbm", "pytest-mpl", "numpydoc", "ipython", "sphinx-rtd-theme"]
+all = ["opencv-python", "pytest-cov", "pyod", "sentencepiece", "pyspark", "xgboost", "torch", "sphinx", "pytest", "matplotlib", "catboost", "nbsphinx", "transformers", "lime", "sphinx-rtd-theme", "pytest-mpl", "numpydoc", "lightgbm", "ipython"]
 docs = ["matplotlib", "ipython", "numpydoc", "sphinx-rtd-theme", "sphinx", "nbsphinx"]
 others = ["lime"]
 plots = ["matplotlib", "ipython"]
 test = ["pytest", "pytest-mpl", "pytest-cov", "xgboost", "lightgbm", "catboost", "pyspark", "pyod", "transformers", "torch", "sentencepiece", "opencv-python"]
+
+[package.source]
+type = "git"
+url = "https://github.com/slundberg/shap.git"
+reference = "v0.40.0"
+resolved_reference = "429fb3e0ac2ef179f1cff7e1a64b4f7b26f41eb5"
 
 [[package]]
 name = "six"
@@ -1887,7 +1893,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "08ae6ba9810b83b9935f4ff14934b66a9f9816e11ddff9a54d9871b51b6d43ce"
+content-hash = "0050cdee58a166ba7583e590a62681fa42080c6f094914e0e8df4e35b503c65c"
 
 [metadata.files]
 absl-py = [
@@ -3071,12 +3077,7 @@ setuptools-scm = [
     {file = "setuptools_scm-6.3.2-py3-none-any.whl", hash = "sha256:4c64444b1d49c4063ae60bfe1680f611c8b13833d556fd1d6050c0023162a119"},
     {file = "setuptools_scm-6.3.2.tar.gz", hash = "sha256:a49aa8081eeb3514eb9728fa5040f2eaa962d6c6f4ec9c32f6c1fba88f88a0f2"},
 ]
-shap = [
-    {file = "shap-0.40.0-cp36-cp36m-win_amd64.whl", hash = "sha256:bbf0cfa30cd8c51f8830d3f25c3881b9949e062124cd0d0b3d8efdc7e0cf5136"},
-    {file = "shap-0.40.0-cp37-cp37m-win_amd64.whl", hash = "sha256:dbd07e48fc7f4d5916f6cdd9dbb8d29b7711a265cc9beac92e7d4a4d9e738bc7"},
-    {file = "shap-0.40.0-cp38-cp38-win_amd64.whl", hash = "sha256:fb1b325a55fdf58061d332ed3308d44162084d4cb5f53f2c7774ce943d60b0ad"},
-    {file = "shap-0.40.0.tar.gz", hash = "sha256:add0a27bb4eb57f0a363c2c4265b1a1328a8c15b01c14c7d432d9cc387dd8579"},
-]
+shap = []
 six = [
     {file = "six-1.15.0-py2.py3-none-any.whl", hash = "sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced"},
     {file = "six-1.15.0.tar.gz", hash = "sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259"},

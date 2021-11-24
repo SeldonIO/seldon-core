@@ -7,6 +7,7 @@ license = "Apache-2.0"
 
 [tool.poetry.dependencies]
 python = "^3.7"
+alibi = "0.6.2"
 numpy = "1.19.5"
 tensorflow = "2.5.1"
 scikit-learn = "0.24.2"
@@ -15,8 +16,9 @@ xgboost = "1.4.2"
 catboost = "0.24.4"
 tornado = "^6.1"
 fastapi = "0.68.1"
+
+shap = { git = "https://github.com/slundberg/shap.git", tag = "v0.40.0" }
 protobuf = "^3.17.3"
-alibi = {extras = ["shap"], version = "^0.6.2"}
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.4"
