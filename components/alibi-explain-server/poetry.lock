@@ -11,7 +11,7 @@ six = "*"
 
 [[package]]
 name = "alibi"
-version = "0.6.0"
+version = "0.6.2"
 description = "Algorithms for monitoring and explaining machine learning models"
 category = "main"
 optional = false
@@ -26,17 +26,19 @@ pandas = ">=0.23.3,<2.0.0"
 Pillow = ">=5.4.1,<9.0"
 requests = ">=2.21.0,<3.0.0"
 scikit-image = ">=0.14.2,<0.17.1 || >0.17.1,<0.19"
-scikit-learn = ">=0.20.2,<0.25.0"
+scikit-learn = ">=0.20.2,<1.1.0"
 scipy = ">=1.1.0,<2.0.0"
+shap = {version = ">=0.40.0,<0.41.0", optional = true, markers = "extra == \"shap\""}
 spacy = {version = ">=2.0.0,<4.0.0", extras = ["lookups"]}
-tensorflow = ">=2.0.0,<2.6.0"
+tensorflow = ">=2.0.0,<2.6.0 || >2.6.0,<2.6.1 || >2.6.1,<2.7.0"
+tqdm = ">=4.28.1,<5.0.0"
 transformers = ">=4.7.0,<5.0.0"
 typing-extensions = {version = ">=3.7.2", markers = "python_version < \"3.8\""}
 
 [package.extras]
-examples = ["seaborn (>=0.9.0)", "xgboost (>=0.90)"]
+examples = ["seaborn (>=0.9.0)", "xgboost (>=0.90)", "ipywidgets (>=7.6)"]
 ray = ["ray (>=0.8.7,<2.0.0)"]
-shap = ["shap (>=0.36.0,!=0.38.1,<0.40.0)"]
+shap = ["shap (>=0.40.0,<0.41.0)"]
 
 [[package]]
 name = "appdirs"
@@ -1349,17 +1351,17 @@ toml = ["setuptools (>=42)", "tomli (>=1.0.0)"]
 
 [[package]]
 name = "shap"
-version = "0.39.0"
+version = "0.40.0"
 description = "A unified approach to explain the output of any machine learning model."
 category = "main"
 optional = false
 python-versions = "*"
-develop = false
 
 [package.dependencies]
 cloudpickle = "*"
 numba = "*"
 numpy = "*"
+packaging = ">20.9"
 pandas = "*"
 scikit-learn = "*"
 scipy = "*"
@@ -1367,17 +1369,11 @@ slicer = "0.0.7"
 tqdm = ">4.25.0"
 
 [package.extras]
-all = ["xgboost", "pyspark", "numpydoc", "torch", "lime", "pyod", "matplotlib", "pytest-cov", "ipython", "sphinx-rtd-theme", "sphinx", "sentencepiece", "nbsphinx", "lightgbm", "transformers", "pytest", "opencv-python", "catboost", "pytest-mpl"]
+all = ["catboost", "nbsphinx", "matplotlib", "sphinx", "pytest-cov", "pyod", "torch", "pytest", "sentencepiece", "xgboost", "opencv-python", "transformers", "lime", "pyspark", "lightgbm", "pytest-mpl", "numpydoc", "ipython", "sphinx-rtd-theme"]
 docs = ["matplotlib", "ipython", "numpydoc", "sphinx-rtd-theme", "sphinx", "nbsphinx"]
 others = ["lime"]
 plots = ["matplotlib", "ipython"]
 test = ["pytest", "pytest-mpl", "pytest-cov", "xgboost", "lightgbm", "catboost", "pyspark", "pyod", "transformers", "torch", "sentencepiece", "opencv-python"]
-
-[package.source]
-type = "git"
-url = "https://github.com/slundberg/shap.git"
-reference = "v0.39.0"
-resolved_reference = "765c7147d4562fa72c16ae31358399451e85a2b3"
 
 [[package]]
 name = "six"
@@ -1891,7 +1887,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "83a9b64898c4cb06482c1068d11ed5b55b18dae9de09a58e1c479ee7e5735aec"
+content-hash = "08ae6ba9810b83b9935f4ff14934b66a9f9816e11ddff9a54d9871b51b6d43ce"
 
 [metadata.files]
 absl-py = [
@@ -1899,8 +1895,8 @@ absl-py = [
     {file = "absl_py-0.15.0-py3-none-any.whl", hash = "sha256:ea907384af023a7e681368bedb896159ab100c7db593efbbd5cde22af11270cd"},
 ]
 alibi = [
-    {file = "alibi-0.6.0-py3-none-any.whl", hash = "sha256:3550ab110106198f880a4e948e8ef0a28e4b0d6d621b291759bba47b3ac1759e"},
-    {file = "alibi-0.6.0.tar.gz", hash = "sha256:b031a4ffde59bf59e3f5095948a1a4f5c6a05860848db2081f2f0f2c6f5db714"},
+    {file = "alibi-0.6.2-py3-none-any.whl", hash = "sha256:3aa0a61143bbcb5e63b69a91eb7bc6a7a1e2357650df2228221f02bd3b12cd3f"},
+    {file = "alibi-0.6.2.tar.gz", hash = "sha256:079969fad3f6955d8316e22599095e8afa3482da1cfe83690af11cdfb55270ea"},
 ]
 appdirs = [
     {file = "appdirs-1.4.4-py2.py3-none-any.whl", hash = "sha256:a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128"},
@@ -3075,7 +3071,12 @@ setuptools-scm = [
     {file = "setuptools_scm-6.3.2-py3-none-any.whl", hash = "sha256:4c64444b1d49c4063ae60bfe1680f611c8b13833d556fd1d6050c0023162a119"},
     {file = "setuptools_scm-6.3.2.tar.gz", hash = "sha256:a49aa8081eeb3514eb9728fa5040f2eaa962d6c6f4ec9c32f6c1fba88f88a0f2"},
 ]
-shap = []
+shap = [
+    {file = "shap-0.40.0-cp36-cp36m-win_amd64.whl", hash = "sha256:bbf0cfa30cd8c51f8830d3f25c3881b9949e062124cd0d0b3d8efdc7e0cf5136"},
+    {file = "shap-0.40.0-cp37-cp37m-win_amd64.whl", hash = "sha256:dbd07e48fc7f4d5916f6cdd9dbb8d29b7711a265cc9beac92e7d4a4d9e738bc7"},
+    {file = "shap-0.40.0-cp38-cp38-win_amd64.whl", hash = "sha256:fb1b325a55fdf58061d332ed3308d44162084d4cb5f53f2c7774ce943d60b0ad"},
+    {file = "shap-0.40.0.tar.gz", hash = "sha256:add0a27bb4eb57f0a363c2c4265b1a1328a8c15b01c14c7d432d9cc387dd8579"},
+]
 six = [
     {file = "six-1.15.0-py2.py3-none-any.whl", hash = "sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced"},
     {file = "six-1.15.0.tar.gz", hash = "sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259"},

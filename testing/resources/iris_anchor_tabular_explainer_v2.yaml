@@ -15,6 +15,6 @@ spec:
       name: classifier
     explainer:
       type: AnchorTabular
-      modelUri: gs://seldon-models/alibi/iris_anchor_tabular_explainer_v2
+      modelUri: gs://seldon-models/alibi/iris_anchor_tabular-python3.7-alibi-0.6.2
     name: default
     replicas: 1

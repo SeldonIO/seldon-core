@@ -11,8 +11,11 @@ from seldon_e2e_utils import retry_run, wait_for_deployment
 
 # NOTE:
 # to recreate the artifacts for these test:
-# 1. use notebooks/explainer_examples_v2.ipynb to create them
-# 2. upload to gs
+# 1. python components/alibi-explain-server/tests/make_test_models.py
+# --model anchor_tabular
+# --model_dir <dir_name>
+# 2. upload <dir_name> to gs
+# 3. patch ../resources/iris_anchor_tabular_explainer_v2.yaml to reflect change
 
 AFTER_WAIT_SLEEP = 20
 TENACITY_WAIT = 10
