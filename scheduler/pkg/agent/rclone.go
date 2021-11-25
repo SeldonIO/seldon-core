@@ -136,12 +136,15 @@ func updatePath(srcPath string, currentRemoteKey string, rcloneUniqueName string
 	return strings.Replace(srcPath, currentRemoteKey, rcloneUniqueName, 1)
 }
 
-func (r *RCloneClient) Copy(modelName string, modelVersion string, src string) error {
+func (r *RCloneClient) Copy(modelName string, modelVersion string, src string, sharedAuth bool) error {
 	currentRemoteKey, err := getRemoteName(src)
 	if err != nil {
 		return err
 	}
-	rcloneRemoteKey := createRCloneKey(modelName, modelVersion, currentRemoteKey)
+	rcloneRemoteKey := currentRemoteKey
+	if !sharedAuth {
+		rcloneRemoteKey = createRCloneKey(modelName, modelVersion, currentRemoteKey)
+	}
 	srcUpdated := updatePath(src, currentRemoteKey, rcloneRemoteKey)
 	dst := fmt.Sprintf("%s/%s", r.localPath, modelName)
 	copy := RCloneCopy{
@@ -160,11 +163,11 @@ func (r *RCloneClient) Copy(modelName string, modelVersion string, src string) e
 
 func (r *RCloneClient) Config(modelName string, modelVersion string, config []byte) error {
 	logger := r.logger.WithField("func", "Config")
-	configCreate, err := r.createConfigCreate(modelName, modelVersion, config)
+	configCreate, err := r.parseRcloneConfig(modelName, modelVersion, config)
 	if err != nil {
 		return err
 	}
-	exists, err := r.configExists(modelName, modelVersion, configCreate.Name)
+	exists, err := r.configExists(configCreate.Name)
 	if err != nil {
 		return err
 	}
@@ -177,7 +180,7 @@ func (r *RCloneClient) Config(modelName string, modelVersion string, config []by
 	}
 }
 
-func (r *RCloneClient) configExists(modelName string, modelVersion string, rcloneRemoteKey string) (bool, error) {
+func (r *RCloneClient) configExists(rcloneRemoteKey string) (bool, error) {
 	key := RCloneConfigKey{Name: rcloneRemoteKey}
 	b, err := json.Marshal(key)
 	if err != nil {
@@ -199,7 +202,7 @@ func (r *RCloneClient) configExists(modelName string, modelVersion string, rclon
 	}
 }
 
-func (r *RCloneClient) createConfigCreate(modelName string, modelVersion string, config []byte) (*RCloneConfigCreate, error) {
+func (r *RCloneClient) parseRcloneConfig(modelName string, modelVersion string, config []byte) (*RCloneConfigCreate, error) {
 	configCreate := RCloneConfigCreate{}
 	err := json.Unmarshal(config, &configCreate)
 	if err != nil {

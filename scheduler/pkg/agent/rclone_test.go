@@ -52,7 +52,7 @@ func TestRcloneCopy(t *testing.T) {
 	for _, test := range tests {
 		httpmock.Activate()
 		r := createTestRCloneClient(test.status, test.body)
-		err := r.Copy(test.modelName, test.modelVersion, test.uri)
+		err := r.Copy(test.modelName, test.modelVersion, test.uri, true)
 		if test.status == 200 {
 			g.Expect(err).To(BeNil())
 		} else {

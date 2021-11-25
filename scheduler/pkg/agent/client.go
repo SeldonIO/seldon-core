@@ -166,7 +166,7 @@ func (c *Client) Start() error {
 	return nil
 }
 
-func (c *Client) sendModelEventError(modelName string, modelVersion string, event agent.ModelEventMessage_Event, err error) error {
+func (c *Client) sendModelEventError(modelName string, modelVersion string, event agent.ModelEventMessage_Event, err error)  {
 	grpcClient := agent.NewAgentServiceClient(c.conn)
 	_, err = grpcClient.AgentEvent(context.Background(), &agent.ModelEventMessage{
 		ServerName:           c.serverName,
@@ -177,10 +177,42 @@ func (c *Client) sendModelEventError(modelName string, modelVersion string, even
 		Message:              err.Error(),
 		AvailableMemoryBytes: c.replicaConfig.AvailableMemoryBytes,
 	})
-	return err
+	if err != nil {
+		c.logger.WithError(err).Errorf("Failed to send error back on load model")
+	}
+}
+
+func (c *Client) setupArtifactConfig(request *agent.ModelOperationMessage) error {
+	logger := c.logger.WithField("func","setupArtifactConfig")
+	logger.Infof("Handling Rclone configuration")
+	switch x := request.Details.StorageConfig.Config.(type) {
+	case *pbs.StorageConfig_StorageRcloneConfig:
+		err := c.RCloneClient.Config(request.Details.GetName(), request.Details.GetVersion(), []byte(x.StorageRcloneConfig))
+		if err != nil {
+			return err
+		}
+	case *pbs.StorageConfig_StorageSecretName:
+		if c.secretsHandler == nil {
+			secretClientSet, err := k8s.CreateSecretsClientset()
+			if err != nil {
+				return err
+			}
+			c.secretsHandler = k8s.NewSecretsHandler(secretClientSet, c.namespace)
+		}
+		config, err := c.secretsHandler.GetSecretConfig(x.StorageSecretName)
+		if err != nil {
+			return err
+		}
+		err = c.RCloneClient.Config(request.Details.GetName(), request.Details.GetVersion(), config)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
+	logger := c.logger.WithField("func","LoadModel")
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if request == nil || request.Details == nil {
@@ -189,75 +221,32 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	modelName := request.Details.Name
 	if request.Details.GetMemoryBytes() > c.replicaConfig.AvailableMemoryBytes {
 		err := fmt.Errorf("Not enough memory on replica for model %s available %d requested %d", modelName, c.replicaConfig.AvailableMemoryBytes, request.Details.GetMemoryBytes())
-		err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
-		if err2 != nil {
-			c.logger.WithError(err2).Errorf("Failed to send error back on load model")
-		}
+		c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
 		return err
 	}
 
-	c.logger.Infof("Load model %s", modelName)
+	logger.Infof("Load model %s", modelName)
+
+	// Handle Rclone configuration
 	if request.Details.StorageConfig != nil {
-		c.logger.Infof("Handling Rclone configuration")
-		switch x := request.Details.StorageConfig.Config.(type) {
-		case *pbs.StorageConfig_StorageRcloneConfig:
-			err := c.RCloneClient.Config(request.Details.GetName(), request.Details.GetVersion(), []byte(x.StorageRcloneConfig))
-			if err != nil {
-				err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
-				if err2 != nil {
-					c.logger.WithError(err2).Errorf("Failed to send error back on load model")
-				}
-				return err
-			}
-		case *pbs.StorageConfig_StorageSecretName:
-			if c.secretsHandler == nil {
-				secretClientSet, err := k8s.CreateSecretsClientset()
-				if err != nil {
-					err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
-					if err2 != nil {
-						c.logger.WithError(err2).Errorf("Failed to send error back on load model")
-					}
-					return err
-				}
-				c.secretsHandler = k8s.NewSecretsHandler(secretClientSet, c.namespace)
-			}
-			config, err := c.secretsHandler.GetSecretConfig(x.StorageSecretName)
-			if err != nil {
-				err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
-				if err2 != nil {
-					c.logger.WithError(err2).Errorf("Failed to send error back on load model")
-				}
-				return err
-			}
-			err = c.RCloneClient.Config(request.Details.GetName(), request.Details.GetVersion(), config)
-			if err != nil {
-				err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
-				if err2 != nil {
-					c.logger.WithError(err2).Errorf("Failed to send error back on load model")
-				}
-				return err
-			}
+		err := c.setupArtifactConfig(request)
+		if err != nil {
+			c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
+			return err
 		}
 	}
-
 	// Copy model artifact using RClone
-	err := c.RCloneClient.Copy(request.Details.Name, request.Details.GetVersion(), request.Details.Uri)
+	err := c.RCloneClient.Copy(request.Details.Name, request.Details.GetVersion(), request.Details.Uri, request.Details.StorageConfig == nil)
 	if err != nil {
-		err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
-		if err2 != nil {
-			c.logger.WithError(err2).Errorf("Failed to send error back on load model")
-		}
+		c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
 		return err
 	}
 	err = c.V2Client.LoadModel(modelName)
 	if err != nil {
-		err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
-		if err2 != nil {
-			c.logger.WithError(err2).Errorf("Failed to send error back on load model")
-		}
+		c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
 		return err
 	}
-	c.logger.Infof("Load model %s success", modelName)
+	logger.Infof("Load model %s success", modelName)
 	loadedModel, ok := c.loadedModels[modelName]
 	if ok {
 		c.replicaConfig.AvailableMemoryBytes = c.replicaConfig.AvailableMemoryBytes + loadedModel.GetMemoryBytes()
@@ -280,31 +269,26 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 }
 
 func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
+	logger := c.logger.WithField("func", "UnloadModel")
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if request == nil || request.Details == nil {
 		return fmt.Errorf("Empty request received for load model")
 	}
 	modelName := request.Details.Name
-	c.logger.Infof("Unload model %s", modelName)
+	logger.Infof("Unload model %s", modelName)
 	err := c.V2Client.UnloadModel(modelName)
 	if err != nil {
-		err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_UNLOAD_FAILED, err)
-		if err2 != nil {
-			c.logger.WithError(err2).Errorf("Failed to send error back on unload model")
-		}
+		c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_UNLOAD_FAILED, err)
 		return err
 	}
 	loadedModel, ok := c.loadedModels[modelName]
 	if !ok {
 		err := fmt.Errorf("Unknown model with name %s", modelName)
-		err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_UNLOAD_FAILED, err)
-		if err2 != nil {
-			c.logger.WithError(err2).Errorf("Failed to send error back on unload model")
-		}
+		c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_UNLOAD_FAILED, err)
 		return err
 	}
-	c.logger.Infof("Unload model %s success", modelName)
+	logger.Infof("Unload model %s success", modelName)
 	delete(c.loadedModels, modelName)
 	c.replicaConfig.AvailableMemoryBytes = c.replicaConfig.AvailableMemoryBytes + loadedModel.GetMemoryBytes()
 	grpcClient := agent.NewAgentServiceClient(c.conn)
