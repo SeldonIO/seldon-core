@@ -2,20 +2,21 @@ package store
 
 import (
 	"errors"
+
 	pba "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 )
 
 type ServerSnapshot struct {
-	Name string
+	Name     string
 	Replicas map[int]*ServerReplica
-	Shared bool
+	Shared   bool
 }
 
 type ModelSnapshot struct {
-	Name string
+	Name     string
 	Versions []*ModelVersion
-	Deleted bool
+	Deleted  bool
 }
 
 func (m *ModelSnapshot) GetLatest() *ModelVersion {
@@ -28,7 +29,7 @@ func (m *ModelSnapshot) GetLatest() *ModelVersion {
 }
 
 var (
-	ModelVersionExistsErr = errors.New("model version already exists")
+	ModelVersionExistsErr          = errors.New("model version already exists")
 	ModelNotLatestVersionRejectErr = errors.New("Model version is not latest. Rejecting update.")
 )
 

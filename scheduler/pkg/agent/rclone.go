@@ -4,26 +4,26 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
 	"strconv"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const (
 	ContentTypeJSON = "application/json"
-	ContentType = "Content-Type"
+	ContentType     = "Content-Type"
 )
 
-
 type RCloneClient struct {
-	host string
-	port int
-	localPath string
-	httpClient     *http.Client
-	logger log.FieldLogger
+	host       string
+	port       int
+	localPath  string
+	httpClient *http.Client
+	logger     log.FieldLogger
 }
 
 type Noop struct {
@@ -31,24 +31,21 @@ type Noop struct {
 }
 
 type RcloneCopy struct {
-	SrcFs string `json:"srcFs"`
-	DstFs string `json:"dstFs"`
-	CreateEmptySrcDirs bool `json:"createEmptySrcDirs"`
+	SrcFs              string `json:"srcFs"`
+	DstFs              string `json:"dstFs"`
+	CreateEmptySrcDirs bool   `json:"createEmptySrcDirs"`
 }
-
 
 func NewRCloneClient(host string, port int, localPath string, logger log.FieldLogger) *RCloneClient {
-	logger.Infof("Rclone server %s:%d with model-repository:%s",host, port, localPath)
+	logger.Infof("Rclone server %s:%d with model-repository:%s", host, port, localPath)
 	return &RCloneClient{
-		host: host,
-		port: port,
-		localPath: localPath,
+		host:       host,
+		port:       port,
+		localPath:  localPath,
 		httpClient: http.DefaultClient,
-		logger: logger.WithField("Source","RCloneClient"),
+		logger:     logger.WithField("Source", "RCloneClient"),
 	}
 }
-
-
 
 func (r *RCloneClient) call(op []byte, path string) error {
 	rcloneUrl := url.URL{
@@ -74,9 +71,9 @@ func (r *RCloneClient) call(op []byte, path string) error {
 	if err != nil {
 		return err
 	}
-	r.logger.Printf("rclone response: %s",b)
+	r.logger.Printf("rclone response: %s", b)
 	if response.StatusCode != http.StatusOK {
-		return fmt.Errorf("Failed rclone request to host:%s port:%d path:%s",r.host,r.port,path)
+		return fmt.Errorf("Failed rclone request to host:%s port:%d path:%s", r.host, r.port, path)
 	}
 	return nil
 }
@@ -87,21 +84,20 @@ func (r *RCloneClient) Ready() error {
 	if err != nil {
 		return err
 	}
-	return r.call(b ,"/rc/noop")
+	return r.call(b, "/rc/noop")
 }
 
-
 func (r *RCloneClient) Copy(modelName string, src string) error {
-	dst := fmt.Sprintf("%s/%s",r.localPath,modelName)
+	dst := fmt.Sprintf("%s/%s", r.localPath, modelName)
 	copy := RcloneCopy{
-		SrcFs: src,
-		DstFs: dst,
+		SrcFs:              src,
+		DstFs:              dst,
 		CreateEmptySrcDirs: true,
 	}
-	r.logger.Infof("Copy from %s to %s",src, dst)
+	r.logger.Infof("Copy from %s to %s", src, dst)
 	b, err := json.Marshal(copy)
 	if err != nil {
 		return err
 	}
-	return r.call(b,"/sync/copy")
+	return r.call(b, "/sync/copy")
 }

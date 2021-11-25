@@ -2,6 +2,9 @@ package agent
 
 import (
 	"context"
+	"net"
+	"testing"
+
 	"github.com/jarcoal/httpmock"
 	. "github.com/onsi/gomega"
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
@@ -9,18 +12,16 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
-	"net"
-	"testing"
 )
 
 type mockAgentV2Server struct {
 	models []string
 	pb.UnimplementedAgentServiceServer
-	loadedEvents int
-	loadFailedEvents int
-	unloadedEvents int
+	loadedEvents       int
+	loadFailedEvents   int
+	unloadedEvents     int
 	unloadFailedEvents int
-	otherEvents int
+	otherEvents        int
 }
 
 func dialerv2(mockAgentV2Server *mockAgentV2Server) func(context.Context, string) (net.Conn, error) {
@@ -58,18 +59,20 @@ func (m *mockAgentV2Server) AgentEvent(ctx context.Context, message *pb.ModelEve
 }
 
 func (m mockAgentV2Server) Subscribe(request *pb.AgentSubscribeRequest, server pb.AgentService_SubscribeServer) error {
-	for _,model := range m.models {
-		server.Send(&pb.ModelOperationMessage{
+	for _, model := range m.models {
+		err := server.Send(&pb.ModelOperationMessage{
 			Operation: pb.ModelOperationMessage_LOAD_MODEL,
 			Details: &pbs.ModelDetails{
 				Name: model,
-				Uri: "gs://model",
+				Uri:  "gs://model",
 			},
 		})
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
-
 
 func TestClientCreate(t *testing.T) {
 	t.Logf("Started")
@@ -78,21 +81,21 @@ func TestClientCreate(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		models []string
+		models        []string
 		replicaConfig *pb.ReplicaConfig
-		v2Status int
-		rsStatus int
+		v2Status      int
+		rsStatus      int
 	}
 	tests := []test{
 		{models: []string{"model"}, replicaConfig: &pb.ReplicaConfig{}, v2Status: 200, rsStatus: 200},
 		{models: []string{"model"}, replicaConfig: &pb.ReplicaConfig{}, v2Status: 400, rsStatus: 200},
 	}
 
-	for _,test := range tests {
+	for _, test := range tests {
 		httpmock.Activate()
 		v2Client := createTestV2Client(test.models, test.v2Status)
 		rcloneClient := createTestRCloneClient(test.rsStatus)
-		client, err := NewClient("mlserver",1, "scheduler",9002,logger,rcloneClient, v2Client, test.replicaConfig,"0.0.0.0")
+		client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0")
 		g.Expect(err).To(BeNil())
 		mockAgentV2Server := &mockAgentV2Server{models: test.models}
 		conn, err := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
@@ -120,46 +123,46 @@ func TestLoadModel(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		models []string
-		replicaConfig *pb.ReplicaConfig
-		op *pb.ModelOperationMessage
+		models                  []string
+		replicaConfig           *pb.ReplicaConfig
+		op                      *pb.ModelOperationMessage
 		expectedAvailableMemory uint64
-		v2Status int
-		rsStatus int
-		success bool
+		v2Status                int
+		rsStatus                int
+		success                 bool
 	}
 	smallMemory := uint64(500)
 	largeMemory := uint64(2000)
 	tests := []test{
 		{models: []string{"iris"},
-			op: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory}},
-			replicaConfig: &pb.ReplicaConfig{MemoryBytes: 1000},
+			op:                      &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory}},
+			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
 			expectedAvailableMemory: 500,
-			v2Status: 200,
-			rsStatus: 200,
-			success: true}, // Success
+			v2Status:                200,
+			rsStatus:                200,
+			success:                 true}, // Success
 		{models: []string{"iris"},
-			op: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory}},
-			replicaConfig: &pb.ReplicaConfig{MemoryBytes: 1000},
+			op:                      &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory}},
+			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
 			expectedAvailableMemory: 1000,
-			v2Status: 400,
-			rsStatus: 200,
-			success: false}, // Fail as V2 fail
+			v2Status:                400,
+			rsStatus:                200,
+			success:                 false}, // Fail as V2 fail
 		{models: []string{"iris"},
-			op: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &largeMemory}},
-			replicaConfig: &pb.ReplicaConfig{MemoryBytes: 1000},
+			op:                      &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &largeMemory}},
+			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
 			expectedAvailableMemory: 500,
-			v2Status: 200,
-			rsStatus: 200,
-			success: false}, // Fail due to too much memory required
+			v2Status:                200,
+			rsStatus:                200,
+			success:                 false}, // Fail due to too much memory required
 	}
 
-	for tidx,test := range tests {
-		t.Logf("Test #%d",tidx)
+	for tidx, test := range tests {
+		t.Logf("Test #%d", tidx)
 		httpmock.Activate()
 		v2Client := createTestV2Client(test.models, test.v2Status)
 		rcloneClient := createTestRCloneClient(test.rsStatus)
-		client, err := NewClient("mlserver",1, "scheduler",9002,logger,rcloneClient, v2Client, test.replicaConfig, "0.0.0.0")
+		client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0")
 		g.Expect(err).To(BeNil())
 		mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 		conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
@@ -191,38 +194,38 @@ func TestUnloadModel(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		models []string
-		replicaConfig *pb.ReplicaConfig
-		loadOp *pb.ModelOperationMessage
-		unloadOp *pb.ModelOperationMessage
+		models                  []string
+		replicaConfig           *pb.ReplicaConfig
+		loadOp                  *pb.ModelOperationMessage
+		unloadOp                *pb.ModelOperationMessage
 		expectedAvailableMemory uint64
-		v2Status int
-		success bool
+		v2Status                int
+		success                 bool
 	}
 	smallMemory := uint64(500)
 	tests := []test{
 		{models: []string{"iris"},
-			loadOp: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory}},
-			unloadOp: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory}},
-			replicaConfig: &pb.ReplicaConfig{MemoryBytes: 1000},
+			loadOp:                  &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory}},
+			unloadOp:                &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory}},
+			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
 			expectedAvailableMemory: 1000,
-			v2Status: 200,
-			success: true}, // Success
+			v2Status:                200,
+			success:                 true}, // Success
 		{models: []string{"iris"},
-			loadOp: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory}},
-			unloadOp: &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris2", Uri: "gs://models/iris", MemoryBytes: &smallMemory}},
-			replicaConfig: &pb.ReplicaConfig{MemoryBytes: 1000},
+			loadOp:                  &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory}},
+			unloadOp:                &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris2", Uri: "gs://models/iris", MemoryBytes: &smallMemory}},
+			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
 			expectedAvailableMemory: 500,
-			v2Status: 200,
-			success: false}, // Fail to unload unknown model
+			v2Status:                200,
+			success:                 false}, // Fail to unload unknown model
 	}
 
-	for tidx,test := range tests {
-		t.Logf("Test #%d",tidx)
+	for tidx, test := range tests {
+		t.Logf("Test #%d", tidx)
 		httpmock.Activate()
 		v2Client := createTestV2Client(test.models, test.v2Status)
 		rcloneClient := createTestRCloneClient(200)
-		client, err := NewClient("mlserver",1, "scheduler",9002,logger,rcloneClient, v2Client, test.replicaConfig, "0.0.0.0")
+		client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0")
 		g.Expect(err).To(BeNil())
 		mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 		conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))

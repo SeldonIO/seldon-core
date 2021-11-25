@@ -2,13 +2,14 @@ package agent
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	. "github.com/onsi/gomega"
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 	"github.com/seldonio/seldon-core/scheduler/pkg/store"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/metadata"
-	"testing"
-	"time"
 )
 
 type MockAgentServer struct {
@@ -37,7 +38,7 @@ func (m MockAgentServer) SetTrailer(md metadata.MD) {
 }
 
 func (m MockAgentServer) Context() context.Context {
-	ctx, _ := context.WithTimeout(context.Background(), time.Duration(time.Millisecond*80))
+	ctx, _ := context.WithTimeout(context.Background(), time.Millisecond*80) // nolint
 	return ctx
 }
 
@@ -83,10 +84,9 @@ func setupTestAgent() (*Server, *store.MemoryStore) {
 
 func TestSubscribe(t *testing.T) {
 	g := NewGomegaWithT(t)
-	as,_ := setupTestAgent()
+	as, _ := setupTestAgent()
 	mockStream := NewMockAgentServer()
 	err := as.Subscribe(&pb.AgentSubscribeRequest{ServerName: "test", ReplicaIdx: 0, ReplicaConfig: &pb.ReplicaConfig{Capabilities: []string{"sklearn"}, MemoryBytes: 1000}}, mockStream)
 	g.Expect(err).To(BeNil())
 	g.Expect(mockStream.sentMessages).To(Equal(0))
 }
-

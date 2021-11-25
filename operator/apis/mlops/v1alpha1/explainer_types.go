@@ -23,8 +23,8 @@ import (
 // ExplainerSpec defines the desired state of Explainer
 type ExplainerSpec struct {
 	ModelSpec `json:",inline"`
-	BlackBox *BlackBox `json:"blackbox,omitempty"`
-	WhiteBox *WhiteBox `json:"whitebox,omitempty"`
+	BlackBox  *BlackBox `json:"blackbox,omitempty"`
+	WhiteBox  *WhiteBox `json:"whitebox,omitempty"`
 }
 
 // Either ModelRef or PipelineRef is required
@@ -41,7 +41,7 @@ type BlackBox struct {
 type WhiteBox struct {
 	// Storage URI for the model repository
 	// +optional
-	InferenceArtifactSpec`json:",inline"`
+	InferenceArtifactSpec `json:",inline"`
 }
 
 // ExplainerStatus defines the observed state of Explainer

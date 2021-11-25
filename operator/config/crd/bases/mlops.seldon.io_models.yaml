@@ -36,6 +36,20 @@ spec:
           spec:
             description: ModelSpec defines the desired state of Model
             properties:
+              dedicated:
+                description: Dedicated server exclusive to this model Default false
+                type: boolean
+              logger:
+                description: Payload logging
+                properties:
+                  percent:
+                    description: Percentage of payloads to log Defaults to 100%
+                    format: int32
+                    type: integer
+                  uri:
+                    description: URI to logging endpoint.
+                    type: string
+                type: object
               maxReplicas:
                 description: Max number of replicas - default equal to replicas
                 format: int32

@@ -16,4 +16,3 @@ type ReplicaFilter interface {
 type ServerFilter interface {
 	Filter(model *store.ModelVersion, server *store.ServerSnapshot) bool
 }
-

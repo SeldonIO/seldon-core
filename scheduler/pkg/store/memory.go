@@ -2,10 +2,11 @@ package store
 
 import (
 	"fmt"
+	"sync"
+
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	log "github.com/sirupsen/logrus"
-	"sync"
 )
 
 type MemoryStore struct {
@@ -16,19 +17,18 @@ type MemoryStore struct {
 
 func NewMemoryStore(logger log.FieldLogger, store *LocalSchedulerStore) *MemoryStore {
 	return &MemoryStore{
-		store: store,
-		logger: logger.WithField("source","MemoryStore"),
+		store:  store,
+		logger: logger.WithField("source", "MemoryStore"),
 	}
 }
 
-
-func (m *MemoryStore) updateModelImpl(config *pb.ModelDetails, addAsLatest bool)  (*ModelVersion, error) {
+func (m *MemoryStore) updateModelImpl(config *pb.ModelDetails, addAsLatest bool) (*ModelVersion, error) {
 	model, ok := m.store.models[config.Name]
 	if !ok {
 		model = NewModel()
 		m.store.models[config.Name] = model
 	}
-	if existingModelVersion,ok := model.versionMap[config.Version]; !ok {
+	if existingModelVersion, ok := model.versionMap[config.Version]; !ok {
 		modelVersion := NewDefaultModelVersion(config)
 		model.versionMap[config.Version] = modelVersion
 		if addAsLatest {
@@ -39,7 +39,7 @@ func (m *MemoryStore) updateModelImpl(config *pb.ModelDetails, addAsLatest bool)
 		return modelVersion, nil
 	} else {
 		if addAsLatest {
-			return nil, fmt.Errorf("Model %s version %s already exists. %w",config.Name,config.Version, ModelVersionExistsErr)
+			return nil, fmt.Errorf("Model %s version %s already exists. %w", config.Name, config.Version, ModelVersionExistsErr)
 		} else {
 			return existingModelVersion, nil
 		}
@@ -60,14 +60,14 @@ func (m *MemoryStore) GetModel(key string) (*ModelSnapshot, error) {
 	model, ok := m.store.models[key]
 	if ok {
 		return &ModelSnapshot{
-			Name: key,
+			Name:     key,
 			Versions: model.versions, //TODO make a copy for safety?
-			Deleted: model.deleted,
+			Deleted:  model.deleted,
 		}, nil
 	} else {
 		return &ModelSnapshot{
-			Name: key,
-			Versions:nil,
+			Name:     key,
+			Versions: nil,
 		}, nil
 	}
 
@@ -81,12 +81,14 @@ func (m *MemoryStore) RemoveModel(modelKey string) error {
 	return nil
 }
 
-
 func createServerSnapshot(server *Server) *ServerSnapshot {
+	if server == nil {
+		return nil
+	}
 	return &ServerSnapshot{
-		Name: server.name,
+		Name:     server.name,
 		Replicas: server.replicas,
-		Shared: server.shared,
+		Shared:   server.shared,
 	}
 }
 
@@ -94,7 +96,7 @@ func (m *MemoryStore) GetServers() ([]*ServerSnapshot, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	var servers []*ServerSnapshot
-	for _,server := range m.store.servers {
+	for _, server := range m.store.servers {
 		servers = append(servers, createServerSnapshot(server))
 	}
 	return servers, nil
@@ -103,7 +105,10 @@ func (m *MemoryStore) GetServers() ([]*ServerSnapshot, error) {
 func (m *MemoryStore) GetServer(serverKey string) (*ServerSnapshot, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	server, _ := m.store.servers[serverKey]
+	server, ok := m.store.servers[serverKey]
+	if !ok {
+		return nil, fmt.Errorf("failed to find server %s", serverKey)
+	}
 	return createServerSnapshot(server), nil
 }
 
@@ -115,10 +120,10 @@ func (m *MemoryStore) getModelServer(modelKey string, version string, serverKey 
 	}
 	modelVersion := model.Latest()
 	if modelVersion == nil {
-		return nil, nil, nil, fmt.Errorf("No latest version for model %s",modelKey)
+		return nil, nil, nil, fmt.Errorf("No latest version for model %s", modelKey)
 	}
 	if modelVersion.config.Version != version {
-		return nil, nil, nil, fmt.Errorf("Model version is not match found %s but was trying to update %s. %w",modelVersion.config.Version,version,ModelNotLatestVersionRejectErr)
+		return nil, nil, nil, fmt.Errorf("Model version is not match found %s but was trying to update %s. %w", modelVersion.config.Version, version, ModelNotLatestVersionRejectErr)
 	}
 	server, ok := m.store.servers[serverKey]
 	if !ok {
@@ -128,7 +133,7 @@ func (m *MemoryStore) getModelServer(modelKey string, version string, serverKey 
 }
 
 func (m *MemoryStore) UpdateLoadedModels(modelKey string, version string, serverKey string, replicas []*ServerReplica) error {
-	logger := m.logger.WithField("func","UpdateLoadedModels")
+	logger := m.logger.WithField("func", "UpdateLoadedModels")
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -137,7 +142,7 @@ func (m *MemoryStore) UpdateLoadedModels(modelKey string, version string, server
 	if err != nil {
 		return err
 	}
-	for _,replica := range replicas {
+	for _, replica := range replicas {
 		_, ok := server.replicas[replica.GetReplicaIdx()]
 		if !ok {
 			return fmt.Errorf("Failed to reserve replica %d as it does not exist on server %s", replica.GetReplicaIdx(), serverKey)
@@ -146,24 +151,24 @@ func (m *MemoryStore) UpdateLoadedModels(modelKey string, version string, server
 
 	// Update
 	updatedReplicas := make(map[int]bool)
-	for _,replica := range replicas {
+	for _, replica := range replicas {
 		existingState := modelVersion.replicas[replica.GetReplicaIdx()]
 		if !existingState.AlreadyLoadingOrLoaded() {
-			logger.Debugf("Setting model %s on server %s replica %d to LoadRequested",modelKey, serverKey, replica.GetReplicaIdx())
+			logger.Debugf("Setting model %s on server %s replica %d to LoadRequested", modelKey, serverKey, replica.GetReplicaIdx())
 			modelVersion.replicas[replica.GetReplicaIdx()] = LoadRequested
 		} else {
-			logger.Debugf("model %s on server %s replica %d already loaded",modelKey, serverKey, replica.GetReplicaIdx())
+			logger.Debugf("model %s on server %s replica %d already loaded", modelKey, serverKey, replica.GetReplicaIdx())
 		}
 		updatedReplicas[replica.GetReplicaIdx()] = true
 	}
-	for replicaIdx,existingState := range modelVersion.replicas {
-		logger.Debugf("Looking at replicaidx %d with state %s but ignoring processed %v",replicaIdx, existingState.String(), updatedReplicas)
-		if _,ok := updatedReplicas[replicaIdx]; !ok {
+	for replicaIdx, existingState := range modelVersion.replicas {
+		logger.Debugf("Looking at replicaidx %d with state %s but ignoring processed %v", replicaIdx, existingState.String(), updatedReplicas)
+		if _, ok := updatedReplicas[replicaIdx]; !ok {
 			if !existingState.AlreadyUnloadingOrUnloaded() {
-				logger.Debugf("Setting model %s on server %s replica %d to UnloadRequested",modelKey, serverKey, replicaIdx)
+				logger.Debugf("Setting model %s on server %s replica %d to UnloadRequested", modelKey, serverKey, replicaIdx)
 				modelVersion.replicas[replicaIdx] = UnloadRequested
 			} else {
-				logger.Debugf("model %s on server %s replica %d already unloaded",modelKey, serverKey, replicaIdx)
+				logger.Debugf("model %s on server %s replica %d already unloaded", modelKey, serverKey, replicaIdx)
 			}
 		}
 	}
@@ -172,7 +177,7 @@ func (m *MemoryStore) UpdateLoadedModels(modelKey string, version string, server
 }
 
 func (m *MemoryStore) UpdateModelState(modelKey string, version string, serverKey string, replicaIdx int, availableMemory *uint64, state ModelReplicaState) error {
-	logger := m.logger.WithField("func","UpdateModelState")
+	logger := m.logger.WithField("func", "UpdateModelState")
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -183,7 +188,7 @@ func (m *MemoryStore) UpdateModelState(modelKey string, version string, serverKe
 	}
 
 	modelVersion.replicas[replicaIdx] = state
-	logger.Debugf("Setting model %s version %s on server %s replica %d to %s",modelKey, version, serverKey, replicaIdx, state.String())
+	logger.Debugf("Setting model %s version %s on server %s replica %d to %s", modelKey, version, serverKey, replicaIdx, state.String())
 	// Update models loaded onto replica if loaded or unloaded is state
 	if state == Loaded || state == Unloaded {
 		server, ok := m.store.servers[serverKey]
@@ -193,7 +198,7 @@ func (m *MemoryStore) UpdateModelState(modelKey string, version string, serverKe
 				if state == Loaded {
 					replica.loadedModels[modelKey] = true
 				} else {
-					delete(replica.loadedModels,modelKey)
+					delete(replica.loadedModels, modelKey)
 				}
 			}
 		}
@@ -218,7 +223,7 @@ func (m *MemoryStore) AddServerReplica(request *agent.AgentSubscribeRequest) err
 		m.store.servers[request.ServerName] = server
 	}
 	loadedModels := make(map[string]bool)
-	for _,modelConfig := range request.LoadedModels {
+	for _, modelConfig := range request.LoadedModels {
 		modelVersion, err := m.updateModelImpl(modelConfig, false)
 		if err != nil {
 			return err
@@ -234,18 +239,18 @@ func (m *MemoryStore) AddServerReplica(request *agent.AgentSubscribeRequest) err
 func (m *MemoryStore) RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) {
 	server, ok := m.store.servers[serverName]
 	if !ok {
-		return nil, fmt.Errorf("Failed to find server %s",serverName)
+		return nil, fmt.Errorf("Failed to find server %s", serverName)
 	}
 	serverReplica, ok := server.replicas[replicaIdx]
 	if !ok {
-		return nil, fmt.Errorf("Failed to find replica %d for server %s",replicaIdx,serverName)
+		return nil, fmt.Errorf("Failed to find replica %d for server %s", replicaIdx, serverName)
 	}
-	delete(server.replicas,replicaIdx)
+	delete(server.replicas, replicaIdx)
 	if len(server.replicas) == 0 {
 		delete(m.store.servers, serverName)
 	}
 	var modelNames []string
-	for modelName,_ := range serverReplica.loadedModels {
+	for modelName := range serverReplica.loadedModels {
 		model, ok := m.store.models[modelName]
 		if ok {
 			latestVersion := model.Latest()
@@ -254,7 +259,7 @@ func (m *MemoryStore) RemoveServerReplica(serverName string, replicaIdx int) ([]
 				delete(latestVersion.replicas, replicaIdx)
 			}
 		}
-		modelNames = append(modelNames,modelName)
+		modelNames = append(modelNames, modelName)
 	}
 	return modelNames, nil
 }

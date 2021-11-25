@@ -17,10 +17,7 @@ func computeHashKeyForList(list []int) string {
 		buffer.WriteString(",")
 	}
 	h := sha256.New()
-	h.Write([]byte(buffer.String()))
+	_, _ = h.Write(buffer.Bytes())
 	b := h.Sum(nil)
 	return base64.StdEncoding.EncodeToString(b)
 }
-
-
-

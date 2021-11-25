@@ -25,12 +25,12 @@ import (
 // TODO do we need autoscaling spec?
 type ServerSpec struct {
 	// Server definition
-	Server      ServerDefn `json:"server,omitempty"`
+	Server ServerDefn `json:"server,omitempty"`
 	// Either Models or Mesh needs to be provides
 	// Preloaded models for non mesh server
-	Models      []PreLoadedModelSpec `json:"models,omitempty"`
+	Models []PreLoadedModelSpec `json:"models,omitempty"`
 	// Seldon mesh specifications for mesh servers that can load models dynamically
-	Mesh        *MeshDefn `json:"mesh"`
+	Mesh *MeshDefn `json:"mesh"`
 	// PodSpec overrides
 	PodOverride PodSpec `json:"podSpec,omitempty"`
 	// Number of replicas - defaults to 1
@@ -40,7 +40,7 @@ type ServerSpec struct {
 type PreLoadedModelSpec struct {
 	// Name override
 	// +optional
-	Name *string `json:"name,omitempty"`
+	Name                  *string `json:"name,omitempty"`
 	InferenceArtifactSpec `json:",inline"`
 }
 
@@ -59,10 +59,10 @@ type MeshDefn struct {
 
 type ServerDefn struct {
 	// Server type - mlserver, triton or left out if custom container
-	Type      *string       `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 	// +optional
 	RuntimeVersion *string `json:"runtimeVersion,omitempty"`
-	// Conatiner overrides for server
+	// Container overrides for server
 	Container *v1.Container `json:"container,omitempty"`
 }
 

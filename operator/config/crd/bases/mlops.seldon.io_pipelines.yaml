@@ -40,6 +40,9 @@ spec:
                 description: The steps of this inference graph pipeline
                 items:
                   properties:
+                    async:
+                      description: Whether this step is asynchronous
+                      type: boolean
                     if:
                       description: Condition specification to satisfy for this step
                         to be run

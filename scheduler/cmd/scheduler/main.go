@@ -17,17 +17,18 @@ package main
 import (
 	"context"
 	"flag"
+	"io/ioutil"
+	"math/rand"
+	"path/filepath"
+	"time"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent"
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/processor"
 	"github.com/seldonio/seldon-core/scheduler/pkg/scheduler/filters"
 	"github.com/seldonio/seldon-core/scheduler/pkg/scheduler/sorters"
 	server2 "github.com/seldonio/seldon-core/scheduler/pkg/server"
 	"github.com/seldonio/seldon-core/scheduler/pkg/store"
-	"io/ioutil"
 	"k8s.io/client-go/util/homedir"
-	"math/rand"
-	"path/filepath"
-	"time"
 
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	serverv3 "github.com/envoyproxy/go-control-plane/pkg/server/v3"
@@ -37,11 +38,11 @@ import (
 )
 
 var (
-	envoyPort      uint
-	agentPort      uint
-	schedulerPort  uint
-	kubeconfig     string
-	namespace      string
+	envoyPort     uint
+	agentPort     uint
+	schedulerPort uint
+	kubeconfig    string
+	namespace     string
 
 	nodeID string
 )
@@ -104,10 +105,8 @@ func main() {
 		[]sorters.ReplicaSorter{sorters.ModelAlreadyLoadedSorter{}})
 	as := agent.NewAgentServer(logger, ss, es, sched)
 
-
 	go as.ListenForSyncs() // Start agent syncs
 	go es.ListenForSyncs() // Start envoy syncs
-
 
 	s := server2.NewSchedulerServer(logger, ss, sched, as)
 	go func() {
@@ -119,7 +118,7 @@ func main() {
 
 	err := as.StartGrpcServer(agentPort)
 	if err != nil {
-		log.Fatalf("Failed to start agent grpc server %s",err.Error())
+		log.Fatalf("Failed to start agent grpc server %s", err.Error())
 	}
 
 	as.StopAgentSync()
