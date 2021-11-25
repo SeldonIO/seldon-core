@@ -211,7 +211,8 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
         elif [ "$TESTS_TO_RUN" == "notebooks" ]; then
             make test_notebooks
         elif [ "$TESTS_TO_RUN" == "base" ]; then
-            make test_parallel test_sequential
+            make test_parallel 
+            make test_sequential
         elif [ "$TESTS_TO_RUN" == "parallel" ]; then
             make test_parallel
         elif [ "$TESTS_TO_RUN" == "benchmark" ]; then
