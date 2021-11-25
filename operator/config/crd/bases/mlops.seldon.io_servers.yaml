@@ -8906,7 +8906,7 @@ spec:
                 description: Server definition
                 properties:
                   container:
-                    description: Conatiner overrides for server
+                    description: Container overrides for server
                     properties:
                       args:
                         description: 'Arguments to the entrypoint. The docker image''s

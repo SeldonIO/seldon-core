@@ -7,8 +7,8 @@ import (
 )
 
 type LocalSchedulerStore struct {
-	servers map[string]*Server
-	models map[string]*Model
+	servers                map[string]*Server
+	models                 map[string]*Model
 	failedToScheduleModels map[string]bool
 }
 
@@ -22,8 +22,8 @@ func NewLocalSchedulerStore() *LocalSchedulerStore {
 
 type Model struct {
 	versionMap map[string]*ModelVersion
-	versions []*ModelVersion
-	deleted bool
+	versions   []*ModelVersion
+	deleted    bool
 }
 
 func NewModel() *Model {
@@ -33,19 +33,19 @@ func NewModel() *Model {
 }
 
 type ModelVersion struct {
-	config *pb.ModelDetails
-	server string
+	config   *pb.ModelDetails
+	server   string
 	replicas map[int]ModelReplicaState
-	deleted bool
-	state ModelState
+	deleted  bool
+	state    ModelState
 }
 
 func NewDefaultModelVersion(config *pb.ModelDetails) *ModelVersion {
 	return &ModelVersion{
-		config: config,
+		config:   config,
 		replicas: make(map[int]ModelReplicaState),
-		deleted: false,
-		state: ModelStateUnknown,
+		deleted:  false,
+		state:    ModelStateUnknown,
 	}
 }
 
@@ -55,39 +55,39 @@ func NewModelVersion(config *pb.ModelDetails,
 	deleted bool,
 	state ModelState) *ModelVersion {
 	return &ModelVersion{
-		config: config,
-		server: server,
+		config:   config,
+		server:   server,
 		replicas: replicas,
-		deleted: deleted,
-		state: state,
+		deleted:  deleted,
+		state:    state,
 	}
 }
 
 type Server struct {
-	name string
+	name     string
 	replicas map[int]*ServerReplica
-	shared bool
+	shared   bool
 }
 
 func NewServer(name string, shared bool) *Server {
 	return &Server{
-		name: name,
+		name:     name,
 		replicas: make(map[int]*ServerReplica),
-		shared: shared,
+		shared:   shared,
 	}
 }
 
 type ServerReplica struct {
-	inferenceSvc string
+	inferenceSvc      string
 	inferenceHttpPort int32
 	inferenceGrpcPort int32
-	replicaIdx int
-	server *Server
-	capabilities []string
-	memory uint64
-	availableMemory uint64
-	loadedModels map[string]bool
-	overCommit bool
+	replicaIdx        int
+	server            *Server
+	capabilities      []string
+	memory            uint64
+	availableMemory   uint64
+	loadedModels      map[string]bool
+	overCommit        bool
 }
 
 func NewServerReplica(inferenceSvc string,
@@ -101,31 +101,31 @@ func NewServerReplica(inferenceSvc string,
 	loadedModels map[string]bool,
 	overCommit bool) *ServerReplica {
 	return &ServerReplica{
-		inferenceSvc: inferenceSvc,
+		inferenceSvc:      inferenceSvc,
 		inferenceHttpPort: inferenceHttpPort,
 		inferenceGrpcPort: inferenceGrpcPort,
-		replicaIdx: replicaIdx,
-		server: server,
-		capabilities: capabilities,
-		memory: memory,
-		availableMemory: availableMemory,
-		loadedModels: loadedModels,
-		overCommit: overCommit,
+		replicaIdx:        replicaIdx,
+		server:            server,
+		capabilities:      capabilities,
+		memory:            memory,
+		availableMemory:   availableMemory,
+		loadedModels:      loadedModels,
+		overCommit:        overCommit,
 	}
 }
 
-func NewServerReplicaFromConfig (server *Server, replicaIdx int, loadedModels map[string]bool, config *pba.ReplicaConfig) *ServerReplica {
+func NewServerReplicaFromConfig(server *Server, replicaIdx int, loadedModels map[string]bool, config *pba.ReplicaConfig) *ServerReplica {
 	return &ServerReplica{
-		inferenceSvc: config.GetInferenceSvc(),
+		inferenceSvc:      config.GetInferenceSvc(),
 		inferenceHttpPort: config.GetInferenceHttpPort(),
 		inferenceGrpcPort: config.GetInferenceGrpcPort(),
-		replicaIdx: replicaIdx,
-		server: server,
-		capabilities: config.GetCapabilities(),
-		memory: config.GetMemoryBytes(),
-		availableMemory: config.GetAvailableMemoryBytes(),
-		loadedModels: loadedModels,
-		overCommit: config.GetOverCommit(),
+		replicaIdx:        replicaIdx,
+		server:            server,
+		capabilities:      config.GetCapabilities(),
+		memory:            config.GetMemoryBytes(),
+		availableMemory:   config.GetAvailableMemoryBytes(),
+		loadedModels:      loadedModels,
+		overCommit:        config.GetOverCommit(),
 	}
 }
 
@@ -161,14 +161,14 @@ func (m *Model) HasLatest() bool {
 
 func (m *Model) Latest() *ModelVersion {
 	if len(m.versions) > 0 {
-		return m.versions[len(m.versions) - 1]
+		return m.versions[len(m.versions)-1]
 	} else {
 		return nil
 	}
 }
 
 func (m *Model) Inactive() bool {
-	for _,mv := range m.versions {
+	for _, mv := range m.versions {
 		if !mv.Inactive() {
 			return false
 		}
@@ -206,12 +206,11 @@ func (m *ModelVersion) Server() string {
 
 func (m *ModelVersion) ReplicaState() map[int32]string {
 	replicaState := make(map[int32]string)
-	for k,v:= range  m.replicas {
+	for k, v := range m.replicas {
 		replicaState[int32(k)] = v.String()
 	}
 	return replicaState
 }
-
 
 func (m *ModelVersion) GetModelReplicaState(replicaIdx int) ModelReplicaState {
 	state, ok := m.replicas[replicaIdx]
@@ -240,7 +239,7 @@ func (m *ModelVersion) HasServer() bool {
 }
 
 func (m *ModelVersion) Inactive() bool {
-	for _,v := range m.replicas {
+	for _, v := range m.replicas {
 		if !(v == Unloaded || v == UnloadFailed || v == ModelReplicaStateUnknown) {
 			return false
 		}
@@ -249,7 +248,7 @@ func (m *ModelVersion) Inactive() bool {
 }
 
 func (m *ModelVersion) IsLoading(replicaIdx int) bool {
-	for r,v := range m.replicas {
+	for r, v := range m.replicas {
 		if r == replicaIdx && (v == Loaded || v == LoadRequested || v == Loading) {
 			return true
 		}
@@ -258,19 +257,19 @@ func (m *ModelVersion) IsLoading(replicaIdx int) bool {
 }
 
 func (m *ModelVersion) NoLiveReplica() bool {
-	for _,v := range m.replicas {
+	for _, v := range m.replicas {
 		if !v.NoEndpoint() {
 			return false
 		}
 	}
-	return true;
+	return true
 }
 
 func (m *ModelVersion) GetAssignment() []int {
 	var assignment []int
-	for k,v := range m.replicas {
+	for k, v := range m.replicas {
 		if v == Loaded {
-			assignment = append(assignment,k)
+			assignment = append(assignment, k)
 		}
 	}
 	return assignment
@@ -313,8 +312,6 @@ func (s *Server) GetReplicaInferenceSvc(idx int) string {
 func (s *Server) GetReplicaInferenceHttpPort(idx int) int32 {
 	return s.replicas[idx].inferenceHttpPort
 }
-
-
 
 func (s *ServerReplica) GetLoadedModels() []string {
 	var models []string
@@ -388,7 +385,3 @@ func (m ModelReplicaState) IsLoadingState() bool {
 		return false
 	}
 }
-
-
-
-

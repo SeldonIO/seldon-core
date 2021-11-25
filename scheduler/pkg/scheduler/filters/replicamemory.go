@@ -7,6 +7,3 @@ type AvailableMemoryFilter struct{}
 func (r AvailableMemoryFilter) Filter(model *store.ModelVersion, replica *store.ServerReplica) bool {
 	return model.GetRequiredMemory() <= replica.GetAvailableMemory()
 }
-
-
-

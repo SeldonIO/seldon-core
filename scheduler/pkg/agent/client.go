@@ -3,6 +3,11 @@ package agent
 import (
 	"context"
 	"fmt"
+	"io"
+	"math"
+	"sync"
+	"time"
+
 	backoff "github.com/cenkalti/backoff/v4"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
@@ -10,30 +15,26 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
-	"io"
-	"math"
-	"sync"
-	"time"
 )
 
 type Client struct {
-	mu sync.RWMutex
+	mu            sync.RWMutex
 	schedulerHost string
 	schedulerPort int
-	serverName string
-	replicaIdx uint32
-	conn *grpc.ClientConn
-	callOptions []grpc.CallOption
-	logger log.FieldLogger
-	RCloneClient *RCloneClient
-	V2Client *V2Client
+	serverName    string
+	replicaIdx    uint32
+	conn          *grpc.ClientConn
+	callOptions   []grpc.CallOption
+	logger        log.FieldLogger
+	RCloneClient  *RCloneClient
+	V2Client      *V2Client
 	replicaConfig *agent.ReplicaConfig
-	loadedModels map[string]*pbs.ModelDetails
+	loadedModels  map[string]*pbs.ModelDetails
 }
 
 func ParseReplicConfig(json string) (*agent.ReplicaConfig, error) {
 	config := agent.ReplicaConfig{}
-	err := protojson.Unmarshal([]byte(json),&config)
+	err := protojson.Unmarshal([]byte(json), &config)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +49,7 @@ func NewClient(serverName string,
 	rcloneClient *RCloneClient,
 	v2Client *V2Client,
 	replicaConfig *agent.ReplicaConfig,
-	inferenceSvcName string)  (*Client, error) {
+	inferenceSvcName string) (*Client, error) {
 	replicaConfig.InferenceSvc = inferenceSvcName
 	replicaConfig.AvailableMemoryBytes = replicaConfig.MemoryBytes
 
@@ -60,19 +61,19 @@ func NewClient(serverName string,
 	return &Client{
 		schedulerHost: schedulerHost,
 		schedulerPort: schedulerPort,
-		serverName: serverName,
-		replicaIdx: replicaIdx,
-		callOptions: opts,
-		logger: logger.WithField("Name","Client"),
-		RCloneClient: rcloneClient,
-		V2Client: v2Client,
+		serverName:    serverName,
+		replicaIdx:    replicaIdx,
+		callOptions:   opts,
+		logger:        logger.WithField("Name", "Client"),
+		RCloneClient:  rcloneClient,
+		V2Client:      v2Client,
 		replicaConfig: replicaConfig,
-		loadedModels: make(map[string]*pbs.ModelDetails),
+		loadedModels:  make(map[string]*pbs.ModelDetails),
 	}, nil
 }
 
 func (c *Client) CreateConnection() error {
-	c.logger.Infof("Creating connection to %s:%d",c.schedulerHost,c.schedulerPort)
+	c.logger.Infof("Creating connection to %s:%d", c.schedulerHost, c.schedulerPort)
 	conn, err := getConnection(c.schedulerHost, c.schedulerPort)
 	if err != nil {
 		return err
@@ -81,7 +82,7 @@ func (c *Client) CreateConnection() error {
 	return nil
 }
 
-func ( c *Client) WaitReady() error {
+func (c *Client) WaitReady() error {
 	logFailure := func(err error, delay time.Duration) {
 		c.logger.WithError(err).Errorf("Rclone not ready")
 	}
@@ -116,21 +117,20 @@ func getConnection(host string, port int) (*grpc.ClientConn, error) {
 	return conn, nil
 }
 
-
 func (c *Client) Start() error {
 	c.logger.Infof("Call subscribe to scheduler")
 	grpcClient := agent.NewAgentServiceClient(c.conn)
 	var loadedModels []*pbs.ModelDetails
-	for _,v := range c.loadedModels {
-		loadedModels = append(loadedModels,v)
+	for _, v := range c.loadedModels {
+		loadedModels = append(loadedModels, v)
 	}
 	stream, err := grpcClient.Subscribe(context.Background(), &agent.AgentSubscribeRequest{
-		ServerName: c.serverName,
-		ReplicaIdx: c.replicaIdx,
+		ServerName:    c.serverName,
+		ReplicaIdx:    c.replicaIdx,
 		ReplicaConfig: c.replicaConfig,
-		LoadedModels: loadedModels,
-		Shared: true,
-	},grpc_retry.WithMax(100))
+		LoadedModels:  loadedModels,
+		Shared:        true,
+	}, grpc_retry.WithMax(100))
 	if err != nil {
 		return err
 	}
@@ -146,7 +146,7 @@ func (c *Client) Start() error {
 		switch operation.Operation {
 		case agent.ModelOperationMessage_LOAD_MODEL:
 			c.logger.Infof("calling load model")
-			err  := c.LoadModel(operation)
+			err := c.LoadModel(operation)
 			if err != nil {
 				c.logger.WithError(err).Errorf("Failed to handle load model")
 			}
@@ -164,17 +164,17 @@ func (c *Client) Start() error {
 func (c *Client) sendModelEventError(modelName string, modelVersion string, event agent.ModelEventMessage_Event, err error) error {
 	grpcClient := agent.NewAgentServiceClient(c.conn)
 	_, err = grpcClient.AgentEvent(context.Background(), &agent.ModelEventMessage{
-		ServerName: c.serverName,
-		ReplicaIdx: c.replicaIdx,
-		ModelName: modelName,
-		Event: event,
-		Message: err.Error(),
+		ServerName:           c.serverName,
+		ReplicaIdx:           c.replicaIdx,
+		ModelName:            modelName,
+		Event:                event,
+		Message:              err.Error(),
 		AvailableMemoryBytes: c.replicaConfig.AvailableMemoryBytes,
 	})
 	return err
 }
 
-func (c *Client) LoadModel(request *agent.ModelOperationMessage) error  {
+func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if request == nil || request.Details == nil {
@@ -182,7 +182,7 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error  {
 	}
 	modelName := request.Details.Name
 	if request.Details.GetMemoryBytes() > c.replicaConfig.AvailableMemoryBytes {
-		err := fmt.Errorf("Not enough memory on replica for model %s available %d requested %d",modelName,c.replicaConfig.AvailableMemoryBytes, request.Details.GetMemoryBytes())
+		err := fmt.Errorf("Not enough memory on replica for model %s available %d requested %d", modelName, c.replicaConfig.AvailableMemoryBytes, request.Details.GetMemoryBytes())
 		err2 := c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
 		if err2 != nil {
 			c.logger.WithError(err2).Errorf("Failed to send error back on load model")
@@ -216,11 +216,11 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error  {
 	c.replicaConfig.AvailableMemoryBytes = c.replicaConfig.AvailableMemoryBytes - request.Details.GetMemoryBytes()
 	grpcClient := agent.NewAgentServiceClient(c.conn)
 	_, err = grpcClient.AgentEvent(context.Background(), &agent.ModelEventMessage{
-		ServerName: c.serverName,
-		ReplicaIdx: c.replicaIdx,
-		ModelName: modelName,
-		ModelVersion: request.Details.GetVersion(),
-		Event: agent.ModelEventMessage_LOADED,
+		ServerName:           c.serverName,
+		ReplicaIdx:           c.replicaIdx,
+		ModelName:            modelName,
+		ModelVersion:         request.Details.GetVersion(),
+		Event:                agent.ModelEventMessage_LOADED,
 		AvailableMemoryBytes: c.replicaConfig.AvailableMemoryBytes,
 	})
 	if err != nil {
@@ -259,11 +259,11 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 	c.replicaConfig.AvailableMemoryBytes = c.replicaConfig.AvailableMemoryBytes + loadedModel.GetMemoryBytes()
 	grpcClient := agent.NewAgentServiceClient(c.conn)
 	_, err = grpcClient.AgentEvent(context.Background(), &agent.ModelEventMessage{
-		ServerName: c.serverName,
-		ReplicaIdx: c.replicaIdx,
-		ModelName: modelName,
-		ModelVersion: loadedModel.GetVersion(),
-		Event: agent.ModelEventMessage_UNLOADED,
+		ServerName:           c.serverName,
+		ReplicaIdx:           c.replicaIdx,
+		ModelName:            modelName,
+		ModelVersion:         loadedModel.GetVersion(),
+		Event:                agent.ModelEventMessage_UNLOADED,
 		AvailableMemoryBytes: c.replicaConfig.AvailableMemoryBytes,
 	})
 	if err != nil {

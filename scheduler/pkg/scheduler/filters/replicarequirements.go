@@ -5,7 +5,7 @@ import "github.com/seldonio/seldon-core/scheduler/pkg/store"
 type RequirementsReplicaFilter struct{}
 
 func (s RequirementsReplicaFilter) Filter(model *store.ModelVersion, replica *store.ServerReplica) bool {
-	for _,requirement := range model.GetRequirements() {
+	for _, requirement := range model.GetRequirements() {
 		requirementFound := false
 		for _, capability := range replica.GetCapabilities() {
 			if requirement == capability {
@@ -14,11 +14,8 @@ func (s RequirementsReplicaFilter) Filter(model *store.ModelVersion, replica *st
 			}
 		}
 		if !requirementFound {
-				return false
-			}
+			return false
+		}
 	}
 	return true
 }
-
-
-
