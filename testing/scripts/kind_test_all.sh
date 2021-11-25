@@ -205,7 +205,9 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
 
         ## RUNNING TESTS AND CAPTURING ERROR
         if [ "$TESTS_TO_RUN" == "all" ]; then
-            make test_parallel test_sequential test_notebooks
+            make test_parallel
+            make test_sequential
+            make test_notebooks
         elif [ "$TESTS_TO_RUN" == "notebooks" ]; then
             make test_notebooks
         elif [ "$TESTS_TO_RUN" == "base" ]; then
