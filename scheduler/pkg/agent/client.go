@@ -166,7 +166,7 @@ func (c *Client) Start() error {
 	return nil
 }
 
-func (c *Client) sendModelEventError(modelName string, modelVersion string, event agent.ModelEventMessage_Event, err error)  {
+func (c *Client) sendModelEventError(modelName string, modelVersion string, event agent.ModelEventMessage_Event, err error) {
 	grpcClient := agent.NewAgentServiceClient(c.conn)
 	_, err = grpcClient.AgentEvent(context.Background(), &agent.ModelEventMessage{
 		ServerName:           c.serverName,
@@ -183,7 +183,7 @@ func (c *Client) sendModelEventError(modelName string, modelVersion string, even
 }
 
 func (c *Client) setupArtifactConfig(request *agent.ModelOperationMessage) error {
-	logger := c.logger.WithField("func","setupArtifactConfig")
+	logger := c.logger.WithField("func", "setupArtifactConfig")
 	logger.Infof("Handling Rclone configuration")
 	switch x := request.Details.StorageConfig.Config.(type) {
 	case *pbs.StorageConfig_StorageRcloneConfig:
@@ -212,7 +212,7 @@ func (c *Client) setupArtifactConfig(request *agent.ModelOperationMessage) error
 }
 
 func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
-	logger := c.logger.WithField("func","LoadModel")
+	logger := c.logger.WithField("func", "LoadModel")
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if request == nil || request.Details == nil {
