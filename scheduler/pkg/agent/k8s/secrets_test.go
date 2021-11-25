@@ -1,22 +1,22 @@
 package k8s
 
 import (
+	"testing"
+
 	. "github.com/onsi/gomega"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
-	"testing"
 )
-
 
 func TestGetSecretsConfig(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 	type test struct {
-		name               string
-		secret *v1.Secret
+		name       string
+		secret     *v1.Secret
 		secretName string
-		err bool
+		err        bool
 	}
 	yamlTestData := `
 type: s3                                                                                                  
@@ -30,31 +30,31 @@ parameters:
 `
 	tests := []test{
 		{
-			name: "simple",
-			secret: &v1.Secret{ObjectMeta:metav1.ObjectMeta{Name: "mysec", Namespace: "default"},Data: map[string][]byte {"mys3":[]byte("xyz")}},
+			name:       "simple",
+			secret:     &v1.Secret{ObjectMeta: metav1.ObjectMeta{Name: "mysec", Namespace: "default"}, Data: map[string][]byte{"mys3": []byte("xyz")}},
 			secretName: "mysec",
-			err: false,
+			err:        false,
 		},
 		{
-			name: "NotFound",
-			secret: &v1.Secret{ObjectMeta:metav1.ObjectMeta{Name: "mysec", Namespace: "default"},Data: map[string][]byte {"mys3":[]byte("xyz")}},
+			name:       "NotFound",
+			secret:     &v1.Secret{ObjectMeta: metav1.ObjectMeta{Name: "mysec", Namespace: "default"}, Data: map[string][]byte{"mys3": []byte("xyz")}},
 			secretName: "foo",
-			err: true,
+			err:        true,
 		},
 		{
-			name: "NoData",
-			secret: &v1.Secret{ObjectMeta:metav1.ObjectMeta{Name: "mysec", Namespace: "default"}},
+			name:       "NoData",
+			secret:     &v1.Secret{ObjectMeta: metav1.ObjectMeta{Name: "mysec", Namespace: "default"}},
 			secretName: "mysec",
-			err: true,
+			err:        true,
 		},
 		{
-			name: "StringData",
-			secret: &v1.Secret{ObjectMeta:metav1.ObjectMeta{Name: "mysec", Namespace: "default"},StringData: map[string]string {"mys3":yamlTestData}},
+			name:       "StringData",
+			secret:     &v1.Secret{ObjectMeta: metav1.ObjectMeta{Name: "mysec", Namespace: "default"}, StringData: map[string]string{"mys3": yamlTestData}},
 			secretName: "mysec",
-			err: false,
+			err:        false,
 		},
 	}
-	for _,test := range tests {
+	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			fakeClientset := fake.NewSimpleClientset(test.secret)
 			s := NewSecretsHandler(fakeClientset, test.secret.Namespace)

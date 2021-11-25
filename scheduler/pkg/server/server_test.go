@@ -2,6 +2,8 @@ package server
 
 import (
 	"context"
+	"testing"
+
 	. "github.com/onsi/gomega"
 	pba "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
@@ -12,15 +14,13 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"testing"
 )
-
 
 type mockAgentHandler struct {
 	numSyncs int
 }
 
-func (m *mockAgentHandler) SendAgentSync(modelName string){
+func (m *mockAgentHandler) SendAgentSync(modelName string) {
 	m.numSyncs++
 }
 
@@ -28,7 +28,7 @@ func TestLoadModel(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 
-	createTestScheduler := func() (*SchedulerServer, *mockAgentHandler){
+	createTestScheduler := func() (*SchedulerServer, *mockAgentHandler) {
 		logger := log.New()
 		log.SetLevel(log.DebugLevel)
 		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore())
@@ -44,49 +44,49 @@ func TestLoadModel(t *testing.T) {
 	}
 
 	type test struct {
-		name string
-		req []*pba.AgentSubscribeRequest
+		name  string
+		req   []*pba.AgentSubscribeRequest
 		model *pb.ModelDetails
-		code codes.Code
+		code  codes.Code
 	}
 	smallMemory := uint64(100)
 	largeMemory := uint64(2000)
-	tests := []test {
+	tests := []test{
 		{
 			name: "Simple",
 			req: []*pba.AgentSubscribeRequest{
 				{ServerName: "server1", ReplicaIdx: 0, Shared: true,
 					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}}},
-			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes:&smallMemory, Replicas: 1},
-			code: codes.OK},
+			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes: &smallMemory, Replicas: 1},
+			code:  codes.OK},
 		{
 			name: "TooManyReplicas",
 			req: []*pba.AgentSubscribeRequest{
 				{ServerName: "server1", ReplicaIdx: 0, Shared: true,
 					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}}},
-			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes:&smallMemory, Replicas: 2},
-			code: codes.FailedPrecondition},
+			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes: &smallMemory, Replicas: 2},
+			code:  codes.FailedPrecondition},
 		{
 			name: "TooMuchMemory",
 			req: []*pba.AgentSubscribeRequest{
 				{ServerName: "server1", ReplicaIdx: 0, Shared: true,
 					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}}},
-			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes:&largeMemory, Replicas: 1},
-			code: codes.FailedPrecondition},
+			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes: &largeMemory, Replicas: 1},
+			code:  codes.FailedPrecondition},
 		{
 			name: "FailedRequirements",
 			req: []*pba.AgentSubscribeRequest{
 				{ServerName: "server1", ReplicaIdx: 0, Shared: true,
 					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}}},
-			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"xgboost"}, MemoryBytes:&smallMemory, Replicas: 1},
-			code: codes.FailedPrecondition},
+			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"xgboost"}, MemoryBytes: &smallMemory, Replicas: 1},
+			code:  codes.FailedPrecondition},
 		{
 			name: "MultipleRequirements",
 			req: []*pba.AgentSubscribeRequest{
 				{ServerName: "server1", ReplicaIdx: 0, Shared: true,
-					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn","xgboost"}}}},
-			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"xgboost","sklearn"}, MemoryBytes:&smallMemory, Replicas: 1},
-			code: codes.OK},
+					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn", "xgboost"}}}},
+			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"xgboost", "sklearn"}, MemoryBytes: &smallMemory, Replicas: 1},
+			code:  codes.OK},
 		{
 			name: "TwoReplicas",
 			req: []*pba.AgentSubscribeRequest{
@@ -94,8 +94,8 @@ func TestLoadModel(t *testing.T) {
 					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}},
 				{ServerName: "server1", ReplicaIdx: 1, Shared: true,
 					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}}},
-			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes:&smallMemory, Replicas: 2},
-			code: codes.OK},
+			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes: &smallMemory, Replicas: 2},
+			code:  codes.OK},
 		{
 			name: "TwoReplicasFail",
 			req: []*pba.AgentSubscribeRequest{
@@ -103,10 +103,10 @@ func TestLoadModel(t *testing.T) {
 					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}},
 				{ServerName: "server1", ReplicaIdx: 1, Shared: true,
 					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, MemoryBytes: 1000, AvailableMemoryBytes: 1000, Capabilities: []string{"foo"}}}},
-			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes:&smallMemory, Replicas: 2},
-			code: codes.FailedPrecondition}, // schedule to 2 replicas but 1 fails
+			model: &pb.ModelDetails{Name: "model1", Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes: &smallMemory, Replicas: 2},
+			code:  codes.FailedPrecondition}, // schedule to 2 replicas but 1 fails
 	}
-	for _,test := range tests {
+	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			s, mockAgent := createTestScheduler()
 			for _, repReq := range test.req {
@@ -135,7 +135,7 @@ func TestUnloadModel(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 
-	createTestScheduler := func() (*SchedulerServer, *mockAgentHandler){
+	createTestScheduler := func() (*SchedulerServer, *mockAgentHandler) {
 		logger := log.New()
 		log.SetLevel(log.DebugLevel)
 		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore())
@@ -146,28 +146,28 @@ func TestUnloadModel(t *testing.T) {
 			[]scheduler2.ReplicaFilter{filters.RequirementsReplicaFilter{}, filters.AvailableMemoryFilter{}},
 			[]sorters.ServerSorter{},
 			[]sorters.ReplicaSorter{sorters.ModelAlreadyLoadedSorter{}})
-		s := NewSchedulerServer(logger, schedulerStore, scheduler,mockAgent)
+		s := NewSchedulerServer(logger, schedulerStore, scheduler, mockAgent)
 		return s, mockAgent
 	}
 
 	type test struct {
-		name string
-		req []*pba.AgentSubscribeRequest
-		model *pb.ModelDetails
-		code codes.Code
+		name               string
+		req                []*pba.AgentSubscribeRequest
+		model              *pb.ModelDetails
+		code               codes.Code
 		modelReplicaStates map[int]store.ModelReplicaState
 	}
 	modelName := "model1"
 	smallMemory := uint64(100)
-	tests := []test {
+	tests := []test{
 		{
 			name: "Simple",
 			req: []*pba.AgentSubscribeRequest{
 				{ServerName: "server1", ReplicaIdx: 0, Shared: true,
 					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}}},
-			model: &pb.ModelDetails{Name: modelName, Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes:&smallMemory, Replicas: 1},
-			code: codes.OK,
-			modelReplicaStates: map[int]store.ModelReplicaState{0:store.UnloadRequested},
+			model:              &pb.ModelDetails{Name: modelName, Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes: &smallMemory, Replicas: 1},
+			code:               codes.OK,
+			modelReplicaStates: map[int]store.ModelReplicaState{0: store.UnloadRequested},
 		},
 		{
 			name: "Multiple",
@@ -185,8 +185,8 @@ func TestUnloadModel(t *testing.T) {
 					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}},
 				{ServerName: "server1", ReplicaIdx: 1, Shared: true,
 					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}}},
-			model: &pb.ModelDetails{Name: modelName, Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes:&smallMemory, Replicas: 2},
-			code: codes.OK,
+			model:              &pb.ModelDetails{Name: modelName, Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes: &smallMemory, Replicas: 2},
+			code:               codes.OK,
 			modelReplicaStates: map[int]store.ModelReplicaState{0: store.UnloadRequested, 1: store.UnloadRequested},
 		},
 		{
@@ -195,9 +195,9 @@ func TestUnloadModel(t *testing.T) {
 				{ServerName: "server1", ReplicaIdx: 0, Shared: true,
 					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, AvailableMemoryBytes: 1000, Capabilities: []string{"sklearn"}}}},
 			model: nil,
-			code: codes.FailedPrecondition},
+			code:  codes.FailedPrecondition},
 	}
-	for _,test := range tests {
+	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			s, mockAgent := createTestScheduler()
 			for _, repReq := range test.req {
@@ -226,7 +226,7 @@ func TestUnloadModel(t *testing.T) {
 				ms, err := s.store.GetModel(modelName)
 				g.Expect(err).To(BeNil())
 				g.Expect(mockAgent.numSyncs).To(Equal(2))
-				for replicaIdx,state := range test.modelReplicaStates {
+				for replicaIdx, state := range test.modelReplicaStates {
 					g.Expect(ms.GetLatest().GetModelReplicaState(replicaIdx)).To(Equal(state))
 				}
 			}

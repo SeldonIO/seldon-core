@@ -15,11 +15,12 @@
 package resources
 
 import (
+	"time"
+
 	matcher "github.com/envoyproxy/go-control-plane/envoy/config/common/matcher/v3"
 	envoy_extensions_common_tap_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/common/tap/v3"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
-	"time"
 
 	cluster "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
@@ -37,7 +38,7 @@ import (
 const (
 	RouteConfigurationName = "listener_0"
 	SeldonLoggingHeader    = "Seldon-Logging"
-	EnvoyLogPathPrefix = "/tmp/request-log"
+	EnvoyLogPathPrefix     = "/tmp/request-log"
 )
 
 func MakeCluster(clusterName string, eps []Endpoint, isGrpc bool) *cluster.Cluster {
@@ -56,13 +57,13 @@ func MakeCluster(clusterName string, eps []Endpoint, isGrpc bool) *cluster.Clust
 			panic(err)
 		}
 		return &cluster.Cluster{
-			Name:                 clusterName,
-			ConnectTimeout:       durationpb.New(5 * time.Second),
-			ClusterDiscoveryType: &cluster.Cluster_Type{Type: cluster.Cluster_STRICT_DNS},
-			LbPolicy:             cluster.Cluster_ROUND_ROBIN,
-			LoadAssignment:  MakeEndpoint(clusterName, eps),
-			DnsLookupFamily:  cluster.Cluster_V4_ONLY,
-			TypedExtensionProtocolOptions: map[string]*anypb.Any{"envoy.extensions.upstreams.http.v3.HttpProtocolOptions":hpoMarshalled},
+			Name:                          clusterName,
+			ConnectTimeout:                durationpb.New(5 * time.Second),
+			ClusterDiscoveryType:          &cluster.Cluster_Type{Type: cluster.Cluster_STRICT_DNS},
+			LbPolicy:                      cluster.Cluster_ROUND_ROBIN,
+			LoadAssignment:                MakeEndpoint(clusterName, eps),
+			DnsLookupFamily:               cluster.Cluster_V4_ONLY,
+			TypedExtensionProtocolOptions: map[string]*anypb.Any{"envoy.extensions.upstreams.http.v3.HttpProtocolOptions": hpoMarshalled},
 		}
 	}
 	return &cluster.Cluster{
@@ -70,8 +71,8 @@ func MakeCluster(clusterName string, eps []Endpoint, isGrpc bool) *cluster.Clust
 		ConnectTimeout:       durationpb.New(5 * time.Second),
 		ClusterDiscoveryType: &cluster.Cluster_Type{Type: cluster.Cluster_STRICT_DNS},
 		LbPolicy:             cluster.Cluster_ROUND_ROBIN,
-		LoadAssignment:  MakeEndpoint(clusterName, eps),
-		DnsLookupFamily:  cluster.Cluster_V4_ONLY,
+		LoadAssignment:       MakeEndpoint(clusterName, eps),
+		DnsLookupFamily:      cluster.Cluster_V4_ONLY,
 	}
 }
 
@@ -117,7 +118,7 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 
 	for _, r := range routes {
 		rt := &route.Route{
-			Name: r.Name+"_http", // Seems optional
+			Name: r.Name + "_http", // Seems optional
 			Match: &route.RouteMatch{
 				PathSpecifier: &route.RouteMatch_Prefix{
 					Prefix: "/v2",
@@ -149,12 +150,12 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 		}
 		if r.LogPayloads {
 			rt.ResponseHeadersToAdd = []*core.HeaderValueOption{
-				{Header: &core.HeaderValue{Key: SeldonLoggingHeader,Value: "true"}},
+				{Header: &core.HeaderValue{Key: SeldonLoggingHeader, Value: "true"}},
 			}
 		}
-		rts = append(rts,rt)
+		rts = append(rts, rt)
 		rt = &route.Route{
-			Name: r.Name+"_grpc", // Seems optional
+			Name: r.Name + "_grpc", // Seems optional
 			Match: &route.RouteMatch{
 				PathSpecifier: &route.RouteMatch_Prefix{
 					Prefix: "/inference.GRPCInferenceService",
@@ -186,10 +187,10 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 		}
 		if r.LogPayloads {
 			rt.ResponseHeadersToAdd = []*core.HeaderValueOption{
-				{Header: &core.HeaderValue{Key: SeldonLoggingHeader,Value: "true"}},
+				{Header: &core.HeaderValue{Key: SeldonLoggingHeader, Value: "true"}},
 			}
 		}
-		rts = append(rts,rt)
+		rts = append(rts, rt)
 	}
 
 	return &route.RouteConfiguration{
@@ -290,7 +291,6 @@ func MakeHTTPListener(listenerName, address string, port uint32) *listener.Liste
 	if err != nil {
 		panic(err)
 	}
-
 
 	return &listener.Listener{
 		Name: listenerName,

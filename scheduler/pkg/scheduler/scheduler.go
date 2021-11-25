@@ -2,22 +2,23 @@ package scheduler
 
 import (
 	"fmt"
+	"sort"
+	"sync"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/scheduler/sorters"
 	store "github.com/seldonio/seldon-core/scheduler/pkg/store"
 	log "github.com/sirupsen/logrus"
-	"sort"
-	"sync"
 )
 
 type SimpleScheduler struct {
-	mu     sync.RWMutex
-	store  store.SchedulerStore
-	logger log.FieldLogger
-	serverFilters []ServerFilter
-	serverSorts []sorters.ServerSorter
+	mu             sync.RWMutex
+	store          store.SchedulerStore
+	logger         log.FieldLogger
+	serverFilters  []ServerFilter
+	serverSorts    []sorters.ServerSorter
 	replicaFilters []ReplicaFilter
-	replicaSorts []sorters.ReplicaSorter
-	failedModels map[string]bool
+	replicaSorts   []sorters.ReplicaSorter
+	failedModels   map[string]bool
 }
 
 func NewSimpleScheduler(logger log.FieldLogger,
@@ -27,13 +28,13 @@ func NewSimpleScheduler(logger log.FieldLogger,
 	serverSorts []sorters.ServerSorter,
 	replicaSorts []sorters.ReplicaSorter) *SimpleScheduler {
 	return &SimpleScheduler{
-		store: store,
-		logger: logger,
-		serverFilters: serverFilters,
-		serverSorts: serverSorts,
+		store:          store,
+		logger:         logger,
+		serverFilters:  serverFilters,
+		serverSorts:    serverSorts,
 		replicaFilters: replicaFilters,
-		replicaSorts: replicaSorts,
-		failedModels: make(map[string]bool),
+		replicaSorts:   replicaSorts,
+		failedModels:   make(map[string]bool),
 	}
 }
 
@@ -53,10 +54,10 @@ func (s *SimpleScheduler) ScheduleFailedModels() ([]string, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	var updatedModels []string
-	for modelName,_ := range s.failedModels {
+	for modelName := range s.failedModels {
 		err := s.scheduleToServer(modelName)
 		if err != nil {
-			s.logger.Debugf("Failed to schedule failed model %s",modelName)
+			s.logger.Debugf("Failed to schedule failed model %s", modelName)
 		} else {
 			updatedModels = append(updatedModels, modelName)
 		}
@@ -66,25 +67,25 @@ func (s *SimpleScheduler) ScheduleFailedModels() ([]string, error) {
 
 //TODO - clarify non shared models should not be scheduled
 func (s *SimpleScheduler) scheduleToServer(modelKey string) error {
-	s.logger.Debugf("Schedule model %s",modelKey)
+	s.logger.Debugf("Schedule model %s", modelKey)
 	// Get Model
 	model, err := s.store.GetModel(modelKey)
 	if err != nil {
 		return err
 	}
 	if model == nil {
-		fmt.Errorf("Can't find model with key %s",modelKey)
+		return fmt.Errorf("Can't find model with key %s", modelKey)
 	}
 	latestModel := model.GetLatest()
 	if latestModel == nil {
 		return fmt.Errorf("No latest model for %s", modelKey)
 	}
 
-	if model.Deleted && latestModel.HasServer(){
-		s.logger.Debugf("Model %s is deleted ensuring removed",modelKey)
+	if model.Deleted && latestModel.HasServer() {
+		s.logger.Debugf("Model %s is deleted ensuring removed", modelKey)
 		err = s.store.UpdateLoadedModels(modelKey, latestModel.GetVersion(), latestModel.Server(), []*store.ServerReplica{})
 		if err != nil {
-			s.logger.Warnf("Failed to unschedule model replicas for model %s on server %s",modelKey,latestModel.Server())
+			s.logger.Warnf("Failed to unschedule model replicas for model %s on server %s", modelKey, latestModel.Server())
 		}
 	} else {
 		// Get all servers
@@ -96,9 +97,9 @@ func (s *SimpleScheduler) scheduleToServer(modelKey string) error {
 		filteredServers := s.filterServers(latestModel, servers)
 		s.sortServers(latestModel, filteredServers)
 		ok := false
-		s.logger.Debugf("Model %s candidate servers %v",modelKey, filteredServers)
+		s.logger.Debugf("Model %s candidate servers %v", modelKey, filteredServers)
 		// For each server filter and sort replicas and attempt schedule if enough replicas
-		for _,candidateServer := range filteredServers {
+		for _, candidateServer := range filteredServers {
 			candidateReplicas := s.filterReplicas(latestModel, candidateServer)
 			if len(candidateReplicas.ChosenReplicas) < latestModel.DesiredReplicas() {
 				continue
@@ -107,7 +108,7 @@ func (s *SimpleScheduler) scheduleToServer(modelKey string) error {
 
 			err = s.store.UpdateLoadedModels(modelKey, latestModel.GetVersion(), candidateServer.Name, candidateReplicas.ChosenReplicas[0:latestModel.DesiredReplicas()])
 			if err != nil {
-				s.logger.Warnf("Failed to update model replicas for model %s on server %s",modelKey,candidateServer.Name)
+				s.logger.Warnf("Failed to update model replicas for model %s on server %s", modelKey, candidateServer.Name)
 			} else {
 				ok = true
 				break
@@ -123,23 +124,26 @@ func (s *SimpleScheduler) scheduleToServer(modelKey string) error {
 }
 
 func (s *SimpleScheduler) sortServers(model *store.ModelVersion, server []*store.ServerSnapshot) {
-	for _,sorter := range s.serverSorts {
-		sort.SliceStable(server, func(i, j int) bool { return sorter.IsLess(&sorters.CandidateServer{Model: model, Server: server[i]}, &sorters.CandidateServer{Model: model, Server: server[j]})})
+	for _, sorter := range s.serverSorts {
+		sort.SliceStable(server, func(i, j int) bool {
+			return sorter.IsLess(&sorters.CandidateServer{Model: model, Server: server[i]}, &sorters.CandidateServer{Model: model, Server: server[j]})
+		})
 	}
 }
 
 func (s *SimpleScheduler) sortReplicas(candidateServer *sorters.CandidateServer) {
-	for _,sorter := range s.replicaSorts {
+	for _, sorter := range s.replicaSorts {
 		sort.SliceStable(candidateServer.ChosenReplicas, func(i, j int) bool {
 			return sorter.IsLess(&sorters.CandidateReplica{Model: candidateServer.Model, Server: candidateServer.Server, Replica: candidateServer.ChosenReplicas[i]},
-				&sorters.CandidateReplica{Model: candidateServer.Model, Server: candidateServer.Server, Replica: candidateServer.ChosenReplicas[j]})})
+				&sorters.CandidateReplica{Model: candidateServer.Model, Server: candidateServer.Server, Replica: candidateServer.ChosenReplicas[j]})
+		})
 	}
 }
 
 // Filter servers for this model
 func (s *SimpleScheduler) filterServers(model *store.ModelVersion, servers []*store.ServerSnapshot) []*store.ServerSnapshot {
 	var filteredServers []*store.ServerSnapshot
-	for _,server := range servers {
+	for _, server := range servers {
 		ok := true
 		for _, serverFilter := range s.serverFilters {
 			if !serverFilter.Filter(model, server) {
@@ -154,12 +158,11 @@ func (s *SimpleScheduler) filterServers(model *store.ModelVersion, servers []*st
 	return filteredServers
 }
 
-
 func (s *SimpleScheduler) filterReplicas(model *store.ModelVersion, server *store.ServerSnapshot) *sorters.CandidateServer {
 	candidateServer := sorters.CandidateServer{Model: model, Server: server}
-	for _,replica := range server.Replicas {
+	for _, replica := range server.Replicas {
 		ok := true
-		for _,replicaFilter := range s.replicaFilters {
+		for _, replicaFilter := range s.replicaFilters {
 			if !replicaFilter.Filter(model, replica) {
 				ok = false
 				break
@@ -171,5 +174,3 @@ func (s *SimpleScheduler) filterReplicas(model *store.ModelVersion, server *stor
 	}
 	return &candidateServer
 }
-
-

@@ -4,30 +4,30 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/go-playground/validator/v10"
-	log "github.com/sirupsen/logrus"
-	yaml "gopkg.in/yaml.v2"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/go-playground/validator/v10"
+	log "github.com/sirupsen/logrus"
+	yaml "gopkg.in/yaml.v2"
 )
 
 const (
 	ContentTypeJSON = "application/json"
-	ContentType = "Content-Type"
+	ContentType     = "Content-Type"
 )
 
-
 type RCloneClient struct {
-	host string
-	port int
-	localPath string
-	httpClient     *http.Client
-	logger log.FieldLogger
-	validate *validator.Validate
+	host       string
+	port       int
+	localPath  string
+	httpClient *http.Client
+	logger     log.FieldLogger
+	validate   *validator.Validate
 }
 
 type Noop struct {
@@ -35,9 +35,9 @@ type Noop struct {
 }
 
 type RCloneCopy struct {
-	SrcFs string `json:"srcFs"`
-	DstFs string `json:"dstFs"`
-	CreateEmptySrcDirs bool `json:"createEmptySrcDirs"`
+	SrcFs              string `json:"srcFs"`
+	DstFs              string `json:"dstFs"`
+	CreateEmptySrcDirs bool   `json:"createEmptySrcDirs"`
 }
 
 type RCloneConfigKey struct {
@@ -45,41 +45,38 @@ type RCloneConfigKey struct {
 }
 
 type RCloneConfigCreate struct {
-	Name string `json:"name" yaml:"name" validate:"required"`
-	Type string `json:"type" yaml:"type" validate:"required"`
+	Name       string            `json:"name" yaml:"name" validate:"required"`
+	Type       string            `json:"type" yaml:"type" validate:"required"`
 	Parameters map[string]string `json:"parameters" yaml:"parameters" validate:"required"`
-	Opts map[string]string `json:"opts" yaml:"opts"`
+	Opts       map[string]string `json:"opts" yaml:"opts"`
 }
 
 type RCloneConfigUpdate struct {
-	Name string `json:"name" yaml:"name"`
+	Name       string            `json:"name" yaml:"name"`
 	Parameters map[string]string `json:"parameters" yaml:"parameters"`
-	Opts map[string]string `json:"opts" yaml:"opts"`
+	Opts       map[string]string `json:"opts" yaml:"opts"`
 }
 
 func createConfigUpdateFromCreate(create *RCloneConfigCreate) *RCloneConfigUpdate {
 	update := RCloneConfigUpdate{
-		Name: create.Name,
+		Name:       create.Name,
 		Parameters: create.Parameters,
-		Opts: create.Opts,
+		Opts:       create.Opts,
 	}
 	return &update
 }
 
-
 func NewRCloneClient(host string, port int, localPath string, logger log.FieldLogger) *RCloneClient {
-	logger.Infof("Rclone server %s:%d with model-repository:%s",host, port, localPath)
+	logger.Infof("Rclone server %s:%d with model-repository:%s", host, port, localPath)
 	return &RCloneClient{
-		host: host,
-		port: port,
-		localPath: localPath,
+		host:       host,
+		port:       port,
+		localPath:  localPath,
 		httpClient: http.DefaultClient,
-		logger: logger.WithField("Source","RCloneClient"),
-		validate: validator.New(),
+		logger:     logger.WithField("Source", "RCloneClient"),
+		validate:   validator.New(),
 	}
 }
-
-
 
 func (r *RCloneClient) call(op []byte, path string) ([]byte, error) {
 	rcloneUrl := url.URL{
@@ -105,9 +102,9 @@ func (r *RCloneClient) call(op []byte, path string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	r.logger.Printf("rclone response: %s",b)
+	r.logger.Printf("rclone response: %s", b)
 	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Failed rclone request to host:%s port:%d path:%s",r.host,r.port,path)
+		return nil, fmt.Errorf("Failed rclone request to host:%s port:%d path:%s", r.host, r.port, path)
 	}
 	return b, nil
 }
@@ -118,21 +115,21 @@ func (r *RCloneClient) Ready() error {
 	if err != nil {
 		return err
 	}
-	_,err = r.call(b ,"/rc/noop")
+	_, err = r.call(b, "/rc/noop")
 	return err
 }
 
 func getRemoteName(uri string) (string, error) {
-	idx := strings.Index(uri,":")
+	idx := strings.Index(uri, ":")
 	if idx == -1 {
-		return "", fmt.Errorf("Failed to find : in %s for rclone name match",uri)
+		return "", fmt.Errorf("Failed to find : in %s for rclone name match", uri)
 	}
 	name := uri[0:idx]
 	return name, nil
 }
 
 func createRCloneKey(modelName string, modelVersion string, remoteName string) string {
-	return modelName +"-" + modelVersion+ "-" + remoteName
+	return modelName + "-" + modelVersion + "-" + remoteName
 }
 
 func updatePath(srcPath string, currentRemoteKey string, rcloneUniqueName string) string {
@@ -146,18 +143,18 @@ func (r *RCloneClient) Copy(modelName string, modelVersion string, src string) e
 	}
 	rcloneRemoteKey := createRCloneKey(modelName, modelVersion, currentRemoteKey)
 	srcUpdated := updatePath(src, currentRemoteKey, rcloneRemoteKey)
-	dst := fmt.Sprintf("%s/%s",r.localPath,modelName)
+	dst := fmt.Sprintf("%s/%s", r.localPath, modelName)
 	copy := RCloneCopy{
-		SrcFs: srcUpdated,
-		DstFs: dst,
+		SrcFs:              srcUpdated,
+		DstFs:              dst,
 		CreateEmptySrcDirs: true,
 	}
-	r.logger.Infof("Copy from %s (original %s) to %s",srcUpdated, src, dst)
+	r.logger.Infof("Copy from %s (original %s) to %s", srcUpdated, src, dst)
 	b, err := json.Marshal(copy)
 	if err != nil {
 		return err
 	}
-	_, err = r.call(b,"/sync/copy")
+	_, err = r.call(b, "/sync/copy")
 	return err
 }
 
@@ -187,6 +184,9 @@ func (r *RCloneClient) configExists(modelName string, modelVersion string, rclon
 		return false, err
 	}
 	res, err := r.call(b, "/config/get")
+	if err != nil {
+		return false, err
+	}
 	var anyJson map[string]interface{}
 	err = json.Unmarshal(res, &anyJson)
 	if err != nil {
@@ -205,37 +205,36 @@ func (r *RCloneClient) createConfigCreate(modelName string, modelVersion string,
 	if err != nil {
 		err2 := yaml.Unmarshal(config, &configCreate)
 		if err2 != nil {
-			return nil, fmt.Errorf("Failed to unmarshall config as json or yaml. JSON error %s. YAML error %s",err.Error(), err2.Error())
+			return nil, fmt.Errorf("Failed to unmarshall config as json or yaml. JSON error %s. YAML error %s", err.Error(), err2.Error())
 		}
 	}
 	err = r.validate.Struct(configCreate)
 	if err != nil {
 		return nil, err
 	}
-	configCreate.Name =  createRCloneKey(modelName, modelVersion,configCreate.Name) //overwrite name with model name and version which is unique?
+	configCreate.Name = createRCloneKey(modelName, modelVersion, configCreate.Name) //overwrite name with model name and version which is unique?
 	return &configCreate, nil
 }
 
 func (r *RCloneClient) configCreate(modelName string, modelVersion string, configCreate *RCloneConfigCreate) error {
-	logger := r.logger.WithField("func","ConfigCreate")
-	logger.Infof("model %s version %s",modelName,modelVersion)
+	logger := r.logger.WithField("func", "ConfigCreate")
+	logger.Infof("model %s version %s", modelName, modelVersion)
 	b, err := json.Marshal(configCreate)
 	if err != nil {
 		return err
 	}
-	_,err = r.call(b,"/config/create")
+	_, err = r.call(b, "/config/create")
 	return err
 }
 
-
 func (r *RCloneClient) configUpdate(modelName string, modelVersion string, configCreate *RCloneConfigCreate) error {
-	logger := r.logger.WithField("func","ConfigUpdate")
-	logger.Infof("model %s version %s",modelName,modelVersion)
+	logger := r.logger.WithField("func", "ConfigUpdate")
+	logger.Infof("model %s version %s", modelName, modelVersion)
 	configUpdate := createConfigUpdateFromCreate(configCreate)
 	b, err := json.Marshal(configUpdate)
 	if err != nil {
 		return err
 	}
-	_,err = r.call(b,"/config/update")
+	_, err = r.call(b, "/config/update")
 	return err
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"github.com/cenkalti/backoff/v4"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -10,21 +9,22 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent"
 	log "github.com/sirupsen/logrus"
 )
 
 var (
-	l log.FieldLogger
-	serverName string
-	replicaIdx uint
-	schedulerHost string
-	schedulerPort int
-	rcloneHost string
-	rclonePort int
-	inferenceHost string
-	inferencePort int
-	modelRepository string
+	serverName       string
+	replicaIdx       uint
+	schedulerHost    string
+	schedulerPort    int
+	rcloneHost       string
+	rclonePort       int
+	inferenceHost    string
+	inferencePort    int
+	modelRepository  string
 	namespace        string
 	replicaConfigStr string
 	inferenceSvcName string
@@ -32,16 +32,16 @@ var (
 
 const (
 	EnvMLServerHttpPort = "MLSERVER_HTTP_PORT"
-	EnvServerName = "SELDON_SERVER_NAME"
-	EnvServerIdx = "POD_NAME"
-	EnvSchedulerHost = "SELDON_SCHEDULER_HOST"
-	EnvSchedulerPort = "SELDON_SCHEDULER_PORT"
-	EnvReplicaConfig = "SELDON_REPLICA_CONFIG"
+	EnvServerName       = "SELDON_SERVER_NAME"
+	EnvServerIdx        = "POD_NAME"
+	EnvSchedulerHost    = "SELDON_SCHEDULER_HOST"
+	EnvSchedulerPort    = "SELDON_SCHEDULER_PORT"
+	EnvReplicaConfig    = "SELDON_REPLICA_CONFIG"
 
 	FlagSchedulerHost = "scheduler-host"
 	FlagSchedulerPort = "scheduler-port"
-	FlagServerName = "server-name"
-	FlagServerIdx = "server-idx"
+	FlagServerName    = "server-name"
+	FlagServerIdx     = "server-idx"
 	FlagInferencePort = "inference-port"
 	FlagReplicaConfig = "replica-config"
 )
@@ -59,7 +59,7 @@ func init() {
 	flag.IntVar(&inferencePort, FlagInferencePort, 8080, "Inference server port")
 	flag.StringVar(&modelRepository, "model-repository", "/mnt/models", "Model repository folder")
 	flag.StringVar(&replicaConfigStr, FlagReplicaConfig, "", "Replica Json Config")
-	flag.StringVar(&namespace,"namespace", "default", "Namespace")
+	flag.StringVar(&namespace, "namespace", "default", "Namespace")
 }
 
 func isFlagPassed(name string) bool {
@@ -72,72 +72,69 @@ func isFlagPassed(name string) bool {
 	return found
 }
 
-
-
 func updateFlagsFromEnv() {
 	if !isFlagPassed(FlagInferencePort) {
 		port := os.Getenv(EnvMLServerHttpPort)
 		if port != "" {
-			log.Infof("Got %s from %s setting to %s",FlagInferencePort, EnvMLServerHttpPort, port)
+			log.Infof("Got %s from %s setting to %s", FlagInferencePort, EnvMLServerHttpPort, port)
 			var err error
-			inferencePort,err = strconv.Atoi(port)
+			inferencePort, err = strconv.Atoi(port)
 			if err != nil {
-				log.WithError(err).Fatalf("Failed to parse %s with value %s",EnvMLServerHttpPort,port)
+				log.WithError(err).Fatalf("Failed to parse %s with value %s", EnvMLServerHttpPort, port)
 			}
 		}
 	}
 	if !isFlagPassed(FlagServerName) {
 		val := os.Getenv(EnvServerName)
 		if val != "" {
-			log.Infof("Got %s from %s setting to %s",FlagServerName, EnvServerName, val)
+			log.Infof("Got %s from %s setting to %s", FlagServerName, EnvServerName, val)
 			serverName = val
 		}
 	}
 	if !isFlagPassed(FlagServerIdx) {
 		podName := os.Getenv(EnvServerIdx)
 		if podName != "" {
-			lastDashIdx := strings.LastIndex(podName,"-")
+			lastDashIdx := strings.LastIndex(podName, "-")
 			if lastDashIdx == -1 {
 				log.Info("Can't decypher pod name to find last dash and index")
 				return
 			}
 			val := podName[lastDashIdx+1:]
 			var err error
-			idxAsInt,err := strconv.Atoi(val)
+			idxAsInt, err := strconv.Atoi(val)
 			if err != nil {
-				log.WithError(err).Fatalf("Failed to parse %s with value %s",EnvServerIdx,val)
+				log.WithError(err).Fatalf("Failed to parse %s with value %s", EnvServerIdx, val)
 			}
 			replicaIdx = uint(idxAsInt)
-			log.Infof("Got %s from %s with value %s setting with %d",FlagServerIdx, EnvServerIdx, podName, replicaIdx)
+			log.Infof("Got %s from %s with value %s setting with %d", FlagServerIdx, EnvServerIdx, podName, replicaIdx)
 		}
 	}
 	if !isFlagPassed(FlagSchedulerHost) {
 		val := os.Getenv(EnvSchedulerHost)
 		if val != "" {
-			log.Infof("Got %s from %s setting to %s",FlagSchedulerHost, EnvSchedulerHost, val)
+			log.Infof("Got %s from %s setting to %s", FlagSchedulerHost, EnvSchedulerHost, val)
 			schedulerHost = val
 		}
 	}
 	if !isFlagPassed(FlagSchedulerPort) {
 		port := os.Getenv(EnvSchedulerPort)
 		if port != "" {
-			log.Infof("Got %s from %s setting to %s",FlagSchedulerPort, EnvSchedulerPort, port)
+			log.Infof("Got %s from %s setting to %s", FlagSchedulerPort, EnvSchedulerPort, port)
 			var err error
-			schedulerPort,err = strconv.Atoi(port)
+			schedulerPort, err = strconv.Atoi(port)
 			if err != nil {
-				log.WithError(err).Fatalf("Failed to parse %s with value %s",EnvSchedulerPort,port)
+				log.WithError(err).Fatalf("Failed to parse %s with value %s", EnvSchedulerPort, port)
 			}
 		}
 	}
 	if !isFlagPassed(FlagReplicaConfig) {
 		val := os.Getenv(EnvReplicaConfig)
 		if val != "" {
-			log.Infof("Got %s from %s setting to %s",FlagReplicaConfig, EnvReplicaConfig, val)
+			log.Infof("Got %s from %s setting to %s", FlagReplicaConfig, EnvReplicaConfig, val)
 			replicaConfigStr = val
 		}
 	}
 }
-
 
 func getNamespace() string {
 	nsBytes, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
@@ -157,9 +154,8 @@ func setInferenceSvcName() {
 	} else {
 		inferenceSvcName = inferenceHost
 	}
-	log.Infof("Setting inference svc name to %s",inferenceSvcName)
+	log.Infof("Setting inference svc name to %s", inferenceSvcName)
 }
-
 
 func main() {
 	logger := log.New()
@@ -170,7 +166,7 @@ func main() {
 
 	replicaConfig, err := agent.ParseReplicConfig(replicaConfigStr)
 	if err != nil {
-		log.Fatalf("Failed to parse replica config %s",replicaConfigStr)
+		log.Fatalf("Failed to parse replica config %s", replicaConfigStr)
 	}
 
 	rcloneClient := agent.NewRCloneClient(rcloneHost, rclonePort, modelRepository, logger)

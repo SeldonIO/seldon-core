@@ -14,6 +14,9 @@ build-agent: test
 
 build: build-scheduler build-agent
 
+lint: ## Run go linters against code.
+	golangci-lint run --fix
+
 test:
 	go test ./pkg/...
 

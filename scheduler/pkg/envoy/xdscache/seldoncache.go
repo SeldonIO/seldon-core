@@ -2,13 +2,14 @@ package xdscache
 
 import (
 	"fmt"
+
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
 )
 
 const (
-	DefaultListenerAddress = "0.0.0.0"
-	DefaultListenerPort uint32 = 9000
+	DefaultListenerAddress        = "0.0.0.0"
+	DefaultListenerPort    uint32 = 9000
 )
 
 type SeldonXDSCache struct {
@@ -23,7 +24,7 @@ func (xds *SeldonXDSCache) ClusterContents() []types.Resource {
 
 	for _, c := range xds.Clusters {
 		endpoints := make([]resources.Endpoint, 0, len(c.Endpoints))
-		for  _, value := range c.Endpoints { // Likely to be small (<100?) as is number of model replicas
+		for _, value := range c.Endpoints { // Likely to be small (<100?) as is number of model replicas
 			endpoints = append(endpoints, value)
 		}
 		r = append(r, resources.MakeCluster(c.Name, endpoints, c.Grpc))
@@ -58,7 +59,7 @@ func (xds *SeldonXDSCache) EndpointsContents() []types.Resource {
 
 	for _, c := range xds.Clusters {
 		endpoints := make([]resources.Endpoint, 0, len(c.Endpoints))
-		for  _, value := range c.Endpoints {
+		for _, value := range c.Endpoints {
 			endpoints = append(endpoints, value)
 		}
 		r = append(r, resources.MakeEndpoint(c.Name, endpoints))
@@ -67,12 +68,11 @@ func (xds *SeldonXDSCache) EndpointsContents() []types.Resource {
 	return r
 }
 
-
 func (xds *SeldonXDSCache) AddListener(name string) {
 	xds.Listeners[name] = resources.Listener{
-		Name:       name,
-		Address:    DefaultListenerAddress,
-		Port:       DefaultListenerPort,
+		Name:    name,
+		Address: DefaultListenerAddress,
+		Port:    DefaultListenerPort,
 	}
 }
 
@@ -95,16 +95,15 @@ func (xds *SeldonXDSCache) AddCluster(name string, route string, isGrpc bool) {
 	cluster, ok := xds.Clusters[name]
 	if !ok {
 		cluster = resources.Cluster{
-			Name: name,
+			Name:      name,
 			Endpoints: make(map[string]resources.Endpoint),
-			Routes: make(map[string]bool),
-			Grpc: isGrpc,
+			Routes:    make(map[string]bool),
+			Grpc:      isGrpc,
 		}
 	}
 	cluster.Routes[route] = true
 	xds.Clusters[name] = cluster
 }
-
 
 func (xds *SeldonXDSCache) RemoveRoute(modelName string) {
 	route, ok := xds.Routes[modelName]
@@ -126,7 +125,7 @@ func (xds *SeldonXDSCache) RemoveRoute(modelName string) {
 
 func (xds *SeldonXDSCache) AddEndpoint(clusterName, upstreamHost string, upstreamPort uint32) {
 	cluster := xds.Clusters[clusterName]
-	k := fmt.Sprintf("%s:%d",upstreamHost,upstreamPort)
+	k := fmt.Sprintf("%s:%d", upstreamHost, upstreamPort)
 	cluster.Endpoints[k] = resources.Endpoint{
 		UpstreamHost: upstreamHost,
 		UpstreamPort: upstreamPort,
