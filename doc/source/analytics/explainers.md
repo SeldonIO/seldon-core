@@ -5,14 +5,11 @@
 
 Seldon provides model explanations using its [Alibi](https://github.com/SeldonIO/alibi)  Open Source library.
 
-We support explainers saved using dill with python 3.7.
+We support explainers saved using python 3.7 in v1 explainer server. However, for v2 protocol (using MLServer) this is not a requirement anymore.
 
 | Package | Version |
 | ------ | ----- |
-| `alibi` | `0.6.0` |
-
-
-We provide [an example notebook](../examples/explainer_examples.html) showing how to deploy an explainer for Tabular, Text and Image models.
+| `alibi` | `0.6.2` |
 
 
 ## Available Methods
@@ -20,14 +17,14 @@ We provide [an example notebook](../examples/explainer_examples.html) showing ho
 Seldon Core supports a subset of the methods currently available in [Alibi](https://github.com/SeldonIO/alibi). Presently this the following:
 
 
-| Method | Explainer Key | Example |
-|--------|---------------|---------||
-| [Anchor Tabular](https://docs.seldon.io/projects/alibi/en/latest/methods/Anchors.html) | `AnchorTabular` | [Example](../examples/explainer_examples.html#Income-Prediction-Model-with-Anchors-Explainer) |
-| [Anchor Text](https://docs.seldon.io/projects/alibi/en/latest/methods/Anchors.html) | `AnchorText` | [Example](../examples/explainer_examples.html#Movie-Sentiment-Model) |
-| [Anchor Images](https://docs.seldon.io/projects/alibi/en/latest/methods/Anchors.html) | `AnchorImages` | [Example](../examples/explainer_examples.html#Tensorflow-CIFAR10-Model) |
-| [kernel Shap](https://docs.seldon.io/projects/alibi/en/latest/methods/KernelSHAP.html) | `KernelShap` | [Example](../examples/explainer_examples.html#Wine-Prediction-Model-with-Shap-Explainer) |
-| [Integrated Gradients](https://docs.seldon.io/projects/alibi/en/latest/methods/IntegratedGradients.html) | `IntegratedGradients` | [Example](../examples/explainer_examples.html#MNIST-Model-with-Integrated-Gradients-Explainer) |
-| [Tree Shap](https://docs.seldon.io/projects/alibi/en/latest/methods/TreeSHAP.html) | `TreeShap` | [Example](../examples/explainer_examples.html#XGBoost-Model-with-TreeShap-Explainer) |
+| Method | Explainer Key |
+|--------|---------------||
+| [Anchor Tabular](https://docs.seldon.io/projects/alibi/en/latest/methods/Anchors.html) | `AnchorTabular` |
+| [Anchor Text](https://docs.seldon.io/projects/alibi/en/latest/methods/Anchors.html) | `AnchorText` |
+| [Anchor Images](https://docs.seldon.io/projects/alibi/en/latest/methods/Anchors.html) | `AnchorImages` |
+| [kernel Shap](https://docs.seldon.io/projects/alibi/en/latest/methods/KernelSHAP.html) | `KernelShap` |
+| [Integrated Gradients](https://docs.seldon.io/projects/alibi/en/latest/methods/IntegratedGradients.html) | `IntegratedGradients` |
+| [Tree Shap](https://docs.seldon.io/projects/alibi/en/latest/methods/TreeSHAP.html) | `TreeShap` |
 
 ## Creating your explainer
 

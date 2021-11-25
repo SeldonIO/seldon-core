@@ -11,7 +11,7 @@ six = "*"
 
 [[package]]
 name = "alibi"
-version = "0.6.0"
+version = "0.6.2"
 description = "Algorithms for monitoring and explaining machine learning models"
 category = "main"
 optional = false
@@ -26,17 +26,18 @@ pandas = ">=0.23.3,<2.0.0"
 Pillow = ">=5.4.1,<9.0"
 requests = ">=2.21.0,<3.0.0"
 scikit-image = ">=0.14.2,<0.17.1 || >0.17.1,<0.19"
-scikit-learn = ">=0.20.2,<0.25.0"
+scikit-learn = ">=0.20.2,<1.1.0"
 scipy = ">=1.1.0,<2.0.0"
 spacy = {version = ">=2.0.0,<4.0.0", extras = ["lookups"]}
-tensorflow = ">=2.0.0,<2.6.0"
+tensorflow = ">=2.0.0,<2.6.0 || >2.6.0,<2.6.1 || >2.6.1,<2.7.0"
+tqdm = ">=4.28.1,<5.0.0"
 transformers = ">=4.7.0,<5.0.0"
 typing-extensions = {version = ">=3.7.2", markers = "python_version < \"3.8\""}
 
 [package.extras]
-examples = ["seaborn (>=0.9.0)", "xgboost (>=0.90)"]
+examples = ["seaborn (>=0.9.0)", "xgboost (>=0.90)", "ipywidgets (>=7.6)"]
 ray = ["ray (>=0.8.7,<2.0.0)"]
-shap = ["shap (>=0.36.0,!=0.38.1,<0.40.0)"]
+shap = ["shap (>=0.40.0,<0.41.0)"]
 
 [[package]]
 name = "appdirs"
@@ -1349,7 +1350,7 @@ toml = ["setuptools (>=42)", "tomli (>=1.0.0)"]
 
 [[package]]
 name = "shap"
-version = "0.39.0"
+version = "0.40.0"
 description = "A unified approach to explain the output of any machine learning model."
 category = "main"
 optional = false
@@ -1360,6 +1361,7 @@ develop = false
 cloudpickle = "*"
 numba = "*"
 numpy = "*"
+packaging = ">20.9"
 pandas = "*"
 scikit-learn = "*"
 scipy = "*"
@@ -1367,7 +1369,7 @@ slicer = "0.0.7"
 tqdm = ">4.25.0"
 
 [package.extras]
-all = ["xgboost", "pyspark", "numpydoc", "torch", "lime", "pyod", "matplotlib", "pytest-cov", "ipython", "sphinx-rtd-theme", "sphinx", "sentencepiece", "nbsphinx", "lightgbm", "transformers", "pytest", "opencv-python", "catboost", "pytest-mpl"]
+all = ["opencv-python", "pytest-cov", "pyod", "sentencepiece", "pyspark", "xgboost", "torch", "sphinx", "pytest", "matplotlib", "catboost", "nbsphinx", "transformers", "lime", "sphinx-rtd-theme", "pytest-mpl", "numpydoc", "lightgbm", "ipython"]
 docs = ["matplotlib", "ipython", "numpydoc", "sphinx-rtd-theme", "sphinx", "nbsphinx"]
 others = ["lime"]
 plots = ["matplotlib", "ipython"]
@@ -1376,8 +1378,8 @@ test = ["pytest", "pytest-mpl", "pytest-cov", "xgboost", "lightgbm", "catboost",
 [package.source]
 type = "git"
 url = "https://github.com/slundberg/shap.git"
-reference = "v0.39.0"
-resolved_reference = "765c7147d4562fa72c16ae31358399451e85a2b3"
+reference = "v0.40.0"
+resolved_reference = "429fb3e0ac2ef179f1cff7e1a64b4f7b26f41eb5"
 
 [[package]]
 name = "six"
@@ -1891,7 +1893,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "83a9b64898c4cb06482c1068d11ed5b55b18dae9de09a58e1c479ee7e5735aec"
+content-hash = "0050cdee58a166ba7583e590a62681fa42080c6f094914e0e8df4e35b503c65c"
 
 [metadata.files]
 absl-py = [
@@ -1899,8 +1901,8 @@ absl-py = [
     {file = "absl_py-0.15.0-py3-none-any.whl", hash = "sha256:ea907384af023a7e681368bedb896159ab100c7db593efbbd5cde22af11270cd"},
 ]
 alibi = [
-    {file = "alibi-0.6.0-py3-none-any.whl", hash = "sha256:3550ab110106198f880a4e948e8ef0a28e4b0d6d621b291759bba47b3ac1759e"},
-    {file = "alibi-0.6.0.tar.gz", hash = "sha256:b031a4ffde59bf59e3f5095948a1a4f5c6a05860848db2081f2f0f2c6f5db714"},
+    {file = "alibi-0.6.2-py3-none-any.whl", hash = "sha256:3aa0a61143bbcb5e63b69a91eb7bc6a7a1e2357650df2228221f02bd3b12cd3f"},
+    {file = "alibi-0.6.2.tar.gz", hash = "sha256:079969fad3f6955d8316e22599095e8afa3482da1cfe83690af11cdfb55270ea"},
 ]
 appdirs = [
     {file = "appdirs-1.4.4-py2.py3-none-any.whl", hash = "sha256:a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128"},

@@ -1,4 +1,3 @@
-import json
 import time
 from subprocess import run
 
@@ -16,42 +15,34 @@ from seldon_e2e_utils import retry_run, wait_for_deployment
 # --model anchor_tabular
 # --model_dir <dir_name>
 # 2. upload <dir_name> to gs
-# 3. patch ../resources/iris_anchor_tabular_explainer_v2.yaml to reflect change
+# 3. patch ../resources/iris_anchor_tabular_explainer.yaml to reflect change
 #
 # anchor image:
 # 1. python components/alibi-explain-server/tests/make_test_models.py
 # --model anchor_image
 # --model_dir <dir_name>
 # 2. upload <dir_name> to gs
-# 3. patch ../resources/tf_cifar_anchor_image_explainer_v2.yaml to reflect change
+# 3. patch ../resources/tf_cifar_anchor_image_explainer.yaml to reflect change
+
+# note: create models using poetry env for explainer v1 server
 
 AFTER_WAIT_SLEEP = 20
 TENACITY_WAIT = 10
 TENACITY_STOP_AFTER_ATTEMPT = 5
 
 
-class TestExplainV2Server:
+class TestExplainServer:
     @pytest.mark.sequential
     def test_alibi_explain_anchor_tabular(self, namespace):
-        spec = "../resources/iris_anchor_tabular_explainer_v2.yaml"
+        spec = "../resources/iris_anchor_tabular_explainer.yaml"
         name = "iris-default-explainer"
-        vs_prefix = (
-            f"seldon/{namespace}/iris-explainer/default/v2/models/"
-            f"iris-default-explainer/infer"
-        )
+        vs_prefix = f"seldon/{namespace}/iris-explainer/default/api/v1.0/explain"
 
-        test_data = np.array([[5.964, 4.006, 2.081, 1.031]])
         inference_request = {
-            "parameters": {"content_type": "np"},
-            "inputs": [
-                {
-                    "name": "explain",
-                    "shape": test_data.shape,
-                    "datatype": "FP32",
-                    "data": test_data.tolist(),
-                    "parameters": {"content_type": "np"},
-                },
-            ],
+            "data": {
+                "names": ["text"],
+                "ndarray": [[5.964, 4.006, 2.081, 1.031]],
+            }
         }
 
         retry_run(f"kubectl apply -f {spec} -n {namespace}")
@@ -69,8 +60,7 @@ class TestExplainV2Server:
                     f"http://localhost:8004/{vs_prefix}",
                     json=inference_request,
                 )
-                # note: explanation will come back in v2 as a nested json dictionary
-                explanation = json.loads(r.json()["outputs"][0]["data"])
+                explanation = r.json()
 
         assert explanation["meta"]["name"] == "AnchorTabular"
         assert "anchor" in explanation["data"]
@@ -80,31 +70,20 @@ class TestExplainV2Server:
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
 
     @pytest.mark.sequential
-    def test_alibi_explain_anchor_image_triton(self, namespace):
-        spec = "../resources/tf_cifar_anchor_image_explainer_v2.yaml"
+    def test_alibi_explain_anchor_image_tensorflow_protocol(self, namespace):
+        spec = "../resources/tf_cifar_anchor_image_explainer.yaml"
         name = "cifar10-default-explainer"
         vs_prefix = (
-            f"seldon/{namespace}/cifar10-explainer/default/v2/models/"
-            f"cifar10-default-explainer/infer"
+            f"seldon/{namespace}/cifar10-explainer/default/v1/models/"
+            f"cifar10-classifier:explain"
         )
-
-        test_data = np.random.randn(32, 32, 3)
-        inference_request = {
-            "parameters": {"content_type": "np"},
-            "inputs": [
-                {
-                    "name": "explain",
-                    "shape": test_data.shape,
-                    "datatype": "FP32",
-                    "data": test_data.tolist(),
-                    "parameters": {"content_type": "np"},
-                },
-            ],
-        }
-
         retry_run(f"kubectl apply -f {spec} -n {namespace}")
 
         wait_for_deployment(name, namespace)
+
+        # note: we add a batch dimension but it should be really one image
+        test_data = np.random.randn(1, 32, 32, 3)
+        inference_request = {"instances": test_data.tolist()}
 
         for attempt in Retrying(
             wait=wait_fixed(TENACITY_WAIT),
@@ -115,8 +94,7 @@ class TestExplainV2Server:
                     f"http://localhost:8004/{vs_prefix}",
                     json=inference_request,
                 )
-                # note: explanation will come back in v2 as a nested json dictionary
-                explanation = json.loads(r.json()["outputs"][0]["data"])
+                explanation = r.json()
 
         assert explanation["meta"]["name"] == "AnchorImage"
         assert "anchor" in explanation["data"]

@@ -1,0 +1,20 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: cifar10
+spec:
+  protocol: tensorflow
+  annotations:
+    seldon.io/rest-timeout: "100000"
+  predictors:
+  - graph:
+      implementation: TENSORFLOW_SERVER
+      modelUri: gs://seldon-models/tfserving/cifar10/resnet32
+      name: cifar10-classifier
+      logger:
+        mode: all
+    explainer:
+      type: AnchorImages
+      modelUri: gs://seldon-models/tfserving/cifar10/cifar10_anchor_image_py3.7_alibi-0.6.2
+    name: default
+    replicas: 1

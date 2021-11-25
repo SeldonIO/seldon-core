@@ -87,8 +87,9 @@ Advanced Machine Learning Insights
 .. toctree::
    :titlesonly:
 
-   Real time monitoring of statistical metrics <feedback_reward_custom_metrics>
-   Model Explainers <explainer_examples>
+   Real Time Monitoring of Statistical Metrics <feedback_reward_custom_metrics>
+   Model Explainer Example <iris_explainer_poetry>
+   Model Explainer V2 protocol Example (Incubating) <iris_anchor_tabular_explainer_v2>
    Outlier Detection on CIFAR10 <outlier_cifar10>
   
 Batch Processing with Seldon Core

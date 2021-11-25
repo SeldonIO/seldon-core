@@ -27,7 +27,8 @@ def make_anchor_image(dirname: Optional[Path] = None) -> AnchorImage:
 
     # we drop the first batch dimension because AnchorImage expects a single image
     image_shape = model.get_layer(index=0).input_shape[0][1:]
-    alibi_model = AnchorImage(predictor=model, image_shape=image_shape)
+
+    alibi_model = AnchorImage(predictor=model.predict, image_shape=image_shape)
 
     if dirname is not None:
         alibi_model.save(dirname)
