@@ -1,0 +1,17 @@
+name: test
+on:
+  pull_request:
+jobs:
+  lint:
+    name: test
+    if: github.repository == 'SeldonIO/seldon-core-v2' # Do not run this on forks.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.16.4'
+      - name: test-operator
+        run: make -C operator test
+      - name: test-scheduler
+        run: make -C scheduler test
