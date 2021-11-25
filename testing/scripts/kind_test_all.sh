@@ -206,19 +206,28 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
         ## RUNNING TESTS AND CAPTURING ERROR
         if [ "$TESTS_TO_RUN" == "all" ]; then
             make test_parallel
+            TEST_PARALLEL_EXIT_VALUE=$?
             make test_sequential
+            TEST_SEQUENTIAL_EXIT_VALUE=$?
             make test_notebooks
+            TEST_NOTEBOOK_EXIT_VALUE=$?
+            TEST_EXIT_VALUE=$(($TEST_PARALLEL_EXIT_VALUE + $TEST_SEQUENTIAL_EXIT_VALUE + $TEST_NOTEBOOK_EXIT_VALUE))
         elif [ "$TESTS_TO_RUN" == "notebooks" ]; then
             make test_notebooks
+            TEST_EXIT_VALUE=$?
         elif [ "$TESTS_TO_RUN" == "base" ]; then
-            make test_parallel 
+            make test_parallel
+            TEST_PARALLEL_EXIT_VALUE=$?
             make test_sequential
+            TEST_SEQUENTIAL_EXIT_VALUE=$?
+            TEST_EXIT_VALUE=$(($TEST_PARALLEL_EXIT_VALUE + $TEST_SEQUENTIAL_EXIT_VALUE))
         elif [ "$TESTS_TO_RUN" == "parallel" ]; then
             make test_parallel
+            TEST_EXIT_VALUE=$?
         elif [ "$TESTS_TO_RUN" == "benchmark" ]; then
             make test_benchmark
+            TEST_EXIT_VALUE=$?
         fi
-        TEST_EXIT_VALUE=$?
         if [[ $TEST_EXIT_VALUE -gt 0 ]]; then
             echo "Test returned errors"
             return 1
