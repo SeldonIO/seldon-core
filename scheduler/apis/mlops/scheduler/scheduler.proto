@@ -24,7 +24,7 @@ message ModelDetails {
   string name = 1; // name of the model
   string version = 2;
   string uri = 3; // storage uri from where to download the artifacts
-  StorageConfig storageConfig = 4; // Storage auth configuration
+  optional StorageConfig storageConfig = 4; // Storage auth configuration
   repeated string requirements = 5; // list of capabilities the server must satisfy to run this model
   //TODO maybe map for requirements
   uint32 replicas = 6; // number of replicas of model to create

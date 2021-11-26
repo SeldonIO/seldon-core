@@ -174,7 +174,7 @@ func (s *Server) AgentEvent(ctx context.Context, message *pb.ModelEventMessage) 
 	logger.Infof("Updating state for model %s to %s", message.ModelName, state.String())
 	err := s.store.UpdateModelState(message.ModelName, message.GetModelVersion(), message.ServerName, int(message.ReplicaIdx), &message.AvailableMemoryBytes, state)
 	if err != nil {
-		logger.Infof("Failed Updating state for model %s: err:%s", message.ModelName, err.Error())
+		logger.WithError(err).Infof("Failed Updating state for model %s", message.ModelName)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	s.envoyHandler.SendEnvoySync(message.ModelName)
