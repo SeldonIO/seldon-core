@@ -182,33 +182,30 @@ func (c *Client) sendModelEventError(modelName string, modelVersion string, even
 	}
 }
 
-func (c *Client) setupArtifactConfig(request *agent.ModelOperationMessage) error {
+func (c *Client) getArtifactConfig(request *agent.ModelOperationMessage) ([]byte, error) {
+	if request.Details.StorageConfig == nil {
+		return nil, nil
+	}
 	logger := c.logger.WithField("func", "setupArtifactConfig")
-	logger.Infof("Handling Rclone configuration")
+	logger.Infof("Getting Rclone configuration")
 	switch x := request.Details.StorageConfig.Config.(type) {
 	case *pbs.StorageConfig_StorageRcloneConfig:
-		err := c.RCloneClient.Config(request.Details.GetName(), request.Details.GetVersion(), []byte(x.StorageRcloneConfig))
-		if err != nil {
-			return err
-		}
+		return []byte(x.StorageRcloneConfig), nil
 	case *pbs.StorageConfig_StorageSecretName:
 		if c.secretsHandler == nil {
 			secretClientSet, err := k8s.CreateSecretsClientset()
 			if err != nil {
-				return err
+				return nil, err
 			}
 			c.secretsHandler = k8s.NewSecretsHandler(secretClientSet, c.namespace)
 		}
 		config, err := c.secretsHandler.GetSecretConfig(x.StorageSecretName)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		err = c.RCloneClient.Config(request.Details.GetName(), request.Details.GetVersion(), config)
-		if err != nil {
-			return err
-		}
+		return config, nil
 	}
-	return nil
+	return nil, nil
 }
 
 func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
@@ -227,16 +224,14 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 
 	logger.Infof("Load model %s", modelName)
 
-	// Handle Rclone configuration
-	if request.Details.StorageConfig != nil {
-		err := c.setupArtifactConfig(request)
-		if err != nil {
-			c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
-			return err
-		}
+	// Get Rclone configuration
+	config, err := c.getArtifactConfig(request)
+	if err != nil {
+		c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
+		return err
 	}
 	// Copy model artifact using RClone
-	err := c.RCloneClient.Copy(request.Details.Name, request.Details.GetVersion(), request.Details.Uri, request.Details.StorageConfig == nil)
+	err = c.RCloneClient.Copy(request.Details.Name, request.Details.Uri, config)
 	if err != nil {
 		c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
 		return err

@@ -253,7 +253,7 @@ parameters:
 			success:                 true,
 		},
 		{
-			name:                    "secretConfigBad",
+			name:                    "rcloneConfigBad",
 			models:                  []string{"iris"},
 			op:                      &pb.ModelOperationMessage{Details: &pbs.ModelDetails{Name: "iris", Uri: "gs://models/iris", MemoryBytes: &smallMemory, StorageConfig: &pbs.StorageConfig{Config: &pbs.StorageConfig_StorageRcloneConfig{StorageRcloneConfig: `{"foo":"bar"`}}}},
 			secretData:              "foo:bar",
