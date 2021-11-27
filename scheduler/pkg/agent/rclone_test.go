@@ -39,15 +39,14 @@ func TestRcloneCopy(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 	type test struct {
-		modelName    string
-		modelVersion string
-		uri          string
-		status       int
-		body         string
+		modelName string
+		uri       string
+		status    int
+		body      string
 	}
 	tests := []test{
-		{modelName: "iris", modelVersion: "1", uri: "gs://seldon-models/sklearn/iris-0.23.2/lr_model", status: 200, body: "{}"},
-		{modelName: "iris", modelVersion: "1", uri: "gs://seldon-models/sklearn/iris-0.23.2/lr_model", status: 400, body: "{}"},
+		{modelName: "iris", uri: "gs://seldon-models/sklearn/iris-0.23.2/lr_model", status: 200, body: "{}"},
+		{modelName: "iris", uri: "gs://seldon-models/sklearn/iris-0.23.2/lr_model", status: 400, body: "{}"},
 	}
 	for _, test := range tests {
 		httpmock.Activate()
@@ -175,56 +174,55 @@ func TestGetRemoteName(t *testing.T) {
 	}
 }
 
-
 func TestCreateUriWithConfig(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 	type test struct {
-		name     string
-		uri      string
-		config  []byte
+		name        string
+		uri         string
+		config      []byte
 		expectedUri string
-		err      bool
+		err         bool
 	}
 	tests := []test{
 		{
-			name:     "simple",
-			uri:      "s3://models/iris",
-			config: []byte(`{"name":"s3","type":"s3","parameters":{"foo":"bar"}}`),
+			name:        "simple",
+			uri:         "s3://models/iris",
+			config:      []byte(`{"name":"s3","type":"s3","parameters":{"foo":"bar"}}`),
 			expectedUri: ":s3,foo=bar://models/iris",
-			err:      false,
+			err:         false,
 		},
 		{
-			name:     "ContainsColon",
-			uri:      "s3://models/iris",
-			config: []byte(`{"name":"s3","type":"s3","parameters":{"endpoint":"http://minio:9000"}}`),
+			name:        "ContainsColon",
+			uri:         "s3://models/iris",
+			config:      []byte(`{"name":"s3","type":"s3","parameters":{"endpoint":"http://minio:9000"}}`),
 			expectedUri: `:s3,endpoint="http://minio:9000"://models/iris`,
-			err:      false,
+			err:         false,
 		},
 		{
-			name:     "ContainsComma",
-			uri:      "s3://models/iris",
-			config: []byte(`{"name":"s3","type":"s3","parameters":{"foo":"a,b"}}`),
+			name:        "ContainsComma",
+			uri:         "s3://models/iris",
+			config:      []byte(`{"name":"s3","type":"s3","parameters":{"foo":"a,b"}}`),
 			expectedUri: `:s3,foo="a,b"://models/iris`,
-			err:      false,
+			err:         false,
 		},
 		{
-			name:     "ContainsDoubleQuoteWithColon",
-			uri:      "s3://models/iris",
-			config: []byte(`{"name":"s3","type":"s3","parameters":{"foo":"a:\"b"}}`),
+			name:        "ContainsDoubleQuoteWithColon",
+			uri:         "s3://models/iris",
+			config:      []byte(`{"name":"s3","type":"s3","parameters":{"foo":"a:\"b"}}`),
 			expectedUri: `:s3,foo="a:""b"://models/iris`,
-			err:      false,
+			err:         false,
 		},
 		{
-			name:     "BadUri",
-			uri:      "s3//models/iris",
-			err:      true,
+			name: "BadUri",
+			uri:  "s3//models/iris",
+			err:  true,
 		},
 		{
-			name:     "BadConfigMissingFields",
-			uri:      "s3://models/iris",
+			name:   "BadConfigMissingFields",
+			uri:    "s3://models/iris",
 			config: []byte(`{"name":"s3"}`),
-			err:      true,
+			err:    true,
 		},
 	}
 	for _, test := range tests {
@@ -234,7 +232,7 @@ func TestCreateUriWithConfig(t *testing.T) {
 			host := "rclone-server"
 			port := 5572
 			r := NewRCloneClient(host, port, "/tmp/rclone", logger)
-			res, err := r.createUriWithConfig(test.uri,test.config)
+			res, err := r.createUriWithConfig(test.uri, test.config)
 			if test.err {
 				g.Expect(err).ToNot(BeNil())
 			} else {

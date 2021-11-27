@@ -84,7 +84,7 @@ func (r *RCloneClient) call(op []byte, path string) ([]byte, error) {
 		Host:   net.JoinHostPort(r.host, strconv.Itoa(r.port)),
 		Path:   path,
 	}
-	r.logger.Infof("Calling Rclone server: %s with %s",path, string(op))
+	r.logger.Infof("Calling Rclone server: %s with %s", path, string(op))
 	req, err := http.NewRequest("POST", rcloneUrl.String(), bytes.NewBuffer(op))
 	if err != nil {
 		return nil, err
@@ -140,24 +140,21 @@ func (r *RCloneClient) createUriWithConfig(uri string, config []byte) (string, e
 	var sb strings.Builder
 	sb.WriteString(":")
 	sb.WriteString(remote)
-	for k,v := range parsed.Parameters {
+	for k, v := range parsed.Parameters {
 		sb.WriteString(",")
 		sb.WriteString(k)
 		sb.WriteString("=")
-		if strings.Index(v,":") > -1 || strings.Index(v,",") > -1 {
+		if strings.ContainsAny(v, ":,") {
 			sb.WriteString(`"`)
-			if strings.Index(v,`"`) > -1 {
-				v = strings.Replace(v,`"`,`""`,-1)
-			}
+			v = strings.Replace(v, `"`, `""`, -1)
 		}
 		sb.WriteString(v)
-		if strings.Index(v,":") > -1 || strings.Index(v,",") > -1 {
+		if strings.ContainsAny(v, ":,") {
 			sb.WriteString(`"`)
 		}
 	}
-	return strings.Replace(uri, remote, sb.String(),1), nil
+	return strings.Replace(uri, remote, sb.String(), 1), nil
 }
-
 
 func (r *RCloneClient) Copy(modelName string, src string, config []byte) error {
 	var srcUpdated string
