@@ -86,6 +86,7 @@ func TestClientCreate(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
+		name string
 		models        []string
 		replicaConfig *pb.ReplicaConfig
 		v2Status      int
@@ -93,32 +94,36 @@ func TestClientCreate(t *testing.T) {
 		rsBody        string
 	}
 	tests := []test{
-		{models: []string{"model"}, replicaConfig: &pb.ReplicaConfig{}, v2Status: 200, rsStatus: 200, rsBody: "{}"},
-		{models: []string{"model"}, replicaConfig: &pb.ReplicaConfig{}, v2Status: 400, rsStatus: 200, rsBody: "{}"},
+		{name: "simpleOK", models: []string{"model"}, replicaConfig: &pb.ReplicaConfig{}, v2Status: 200, rsStatus: 200, rsBody: "{}"},
+		{name: "v2Respone400", models: []string{"model"}, replicaConfig: &pb.ReplicaConfig{}, v2Status: 400, rsStatus: 200, rsBody: "{}"},
 	}
 
 	for _, test := range tests {
-		httpmock.Activate()
-		v2Client := createTestV2Client(test.models, test.v2Status)
-		rcloneClient := createTestRCloneClient(test.rsStatus, test.rsBody)
-		client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default")
-		g.Expect(err).To(BeNil())
-		mockAgentV2Server := &mockAgentV2Server{models: test.models}
-		conn, err := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
-		g.Expect(err).To(BeNil())
-		client.conn = conn
-		err = client.Start()
-		g.Expect(err).To(BeNil())
-		if test.v2Status == 200 && test.rsStatus == 200 {
-			g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
-			g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
-		} else {
-			g.Expect(mockAgentV2Server.loadedEvents).To(Equal(0))
-			g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(1))
-		}
-		httpmock.DeactivateAndReset()
-		err = conn.Close()
-		g.Expect(err).To(BeNil())
+		t.Run(test.name, func(t *testing.T) {
+			httpmock.Activate()
+			defer httpmock.DeactivateAndReset()
+			v2Client := createTestV2Client(test.models, test.v2Status)
+			rcloneClient := createTestRCloneClient(test.rsStatus, test.rsBody)
+			configHandler, err := NewAgentConfigHandler("", "")
+			g.Expect(err).To(BeNil())
+			client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default", configHandler)
+			g.Expect(err).To(BeNil())
+			mockAgentV2Server := &mockAgentV2Server{models: test.models}
+			conn, err := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
+			g.Expect(err).To(BeNil())
+			client.conn = conn
+			err = client.Start()
+			g.Expect(err).To(BeNil())
+			if test.v2Status == 200 && test.rsStatus == 200 {
+				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
+				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
+			} else {
+				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(0))
+				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(1))
+			}
+			err = conn.Close()
+			g.Expect(err).To(BeNil())
+		})
 	}
 }
 
@@ -170,9 +175,12 @@ func TestLoadModel(t *testing.T) {
 	for tidx, test := range tests {
 		t.Logf("Test #%d", tidx)
 		httpmock.Activate()
+		defer httpmock.DeactivateAndReset()
 		v2Client := createTestV2Client(test.models, test.v2Status)
 		rcloneClient := createTestRCloneClient(test.rsStatus, test.rsBody)
-		client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default")
+		configHandler, err := NewAgentConfigHandler("","")
+		g.Expect(err).To(BeNil())
+		client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default", configHandler)
 		g.Expect(err).To(BeNil())
 		mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 		conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
@@ -191,7 +199,6 @@ func TestLoadModel(t *testing.T) {
 			g.Expect(mockAgentV2Server.loadedEvents).To(Equal(0))
 			g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(1))
 		}
-		httpmock.DeactivateAndReset()
 		err = conn.Close()
 		g.Expect(err).To(BeNil())
 	}
@@ -270,9 +277,12 @@ parameters:
 		t.Run(test.name, func(t *testing.T) {
 			t.Logf("Test #%d", tidx)
 			httpmock.Activate()
+			defer httpmock.DeactivateAndReset()
 			v2Client := createTestV2Client(test.models, test.v2Status)
 			rcloneClient := createTestRCloneClient(test.rsStatus, test.rsBody)
-			client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default")
+			configHandler, err := NewAgentConfigHandler("","")
+			g.Expect(err).To(BeNil())
+			client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default", configHandler)
 			g.Expect(err).To(BeNil())
 			switch x := test.op.Details.StorageConfig.Config.(type) {
 			case *pbs.StorageConfig_StorageSecretName:
@@ -297,7 +307,6 @@ parameters:
 				g.Expect(err).ToNot(BeNil())
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(0))
 			}
-			httpmock.DeactivateAndReset()
 			err = conn.Close()
 			g.Expect(err).To(BeNil())
 		})
@@ -340,9 +349,12 @@ func TestUnloadModel(t *testing.T) {
 	for tidx, test := range tests {
 		t.Logf("Test #%d", tidx)
 		httpmock.Activate()
+		defer httpmock.DeactivateAndReset()
 		v2Client := createTestV2Client(test.models, test.v2Status)
 		rcloneClient := createTestRCloneClient(200, "{}")
-		client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default")
+		configHandler, err := NewAgentConfigHandler("","")
+		g.Expect(err).To(BeNil())
+		client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default", configHandler)
 		g.Expect(err).To(BeNil())
 		mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 		conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
@@ -367,8 +379,61 @@ func TestUnloadModel(t *testing.T) {
 			g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
 			g.Expect(mockAgentV2Server.unloadFailedEvents).To(Equal(1))
 		}
-		httpmock.DeactivateAndReset()
 		err = conn.Close()
 		g.Expect(err).To(BeNil())
+	}
+}
+
+
+func TestLoadRcloneDefaults(t *testing.T) {
+	t.Logf("Started")
+	logger := log.New()
+	log.SetLevel(log.DebugLevel)
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name               string
+		agentConfiguration *AgentConfiguration
+		error              bool
+	}
+
+	tests := []test{
+		{
+			name: "config",
+			agentConfiguration: &AgentConfiguration{
+				Rclone: &RcloneConfiguration{
+					Config: []string{`{"type":"google cloud storage","name":"gs","parameters":{"anonymous":true}}`},
+				},
+			},
+		},
+		{
+			name: "badConfig",
+			agentConfiguration: &AgentConfiguration{
+				Rclone: &RcloneConfiguration{
+					Config: []string{`{"foo":"google cloud storage","bar":"gs","parameters":{"anonymous":true}}`},
+				},
+			},
+			error: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			httpmock.Activate()
+			defer httpmock.DeactivateAndReset()
+			v2Client := createTestV2Client([]string{}, 200)
+			rcloneClient := createTestRCloneClient(200, "{}")
+			configHandler, err := NewAgentConfigHandler("","")
+			g.Expect(err).To(BeNil())
+			client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, &pb.ReplicaConfig{}, "0.0.0.0", "default", configHandler)
+			g.Expect(err).To(BeNil())
+			configHandler.config = test.agentConfiguration
+			err = client.loadRcloneDefaults()
+			if test.error {
+				g.Expect(err).ToNot(BeNil())
+			} else {
+				g.Expect(err).To(BeNil())
+			}
+		})
 	}
 }

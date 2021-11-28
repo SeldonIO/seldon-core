@@ -15,6 +15,8 @@ func createTestV2ClientMockResponders(host string, port int, modelName string, s
 		httpmock.NewStringResponder(status, `{}`))
 	httpmock.RegisterResponder("POST", fmt.Sprintf("http://%s:%d/v2/repository/models/%s/unload", host, port, modelName),
 		httpmock.NewStringResponder(status, `{}`))
+	httpmock.RegisterResponder("GET", fmt.Sprintf("http://%s:%d/v2/health/ready", host, port),
+		httpmock.NewStringResponder(200, `{}`))
 }
 
 func createTestV2Client(models []string, status int) *V2Client {

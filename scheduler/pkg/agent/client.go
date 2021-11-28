@@ -33,6 +33,7 @@ type Client struct {
 	loadedModels   map[string]*pbs.ModelDetails
 	secretsHandler *k8s.SecretHandler
 	namespace      string
+	configHandler  *AgentConfigHandler
 }
 
 func ParseReplicConfig(json string) (*agent.ReplicaConfig, error) {
@@ -53,7 +54,8 @@ func NewClient(serverName string,
 	v2Client *V2Client,
 	replicaConfig *agent.ReplicaConfig,
 	inferenceSvcName string,
-	namespace string) (*Client, error) {
+	namespace string,
+	configHandler *AgentConfigHandler) (*Client, error) {
 	replicaConfig.InferenceSvc = inferenceSvcName
 	replicaConfig.AvailableMemoryBytes = replicaConfig.MemoryBytes
 
@@ -74,10 +76,78 @@ func NewClient(serverName string,
 		replicaConfig: replicaConfig,
 		loadedModels:  make(map[string]*pbs.ModelDetails),
 		namespace:     namespace,
+		configHandler: configHandler,
 	}, nil
 }
 
-func (c *Client) CreateConnection() error {
+func (c *Client) Start() error {
+	err := c.waitReady()
+	if err != nil {
+		c.logger.WithError(err).Errorf("Failed to create connection")
+		return err
+	}
+	if c.conn == nil {
+		err = c.createConnection()
+		if err != nil {
+			c.logger.WithError(err).Errorf("Failed to create connection")
+			return err
+		}
+	}
+	err = c.loadRcloneDefaults()
+	if err != nil {
+		c.logger.WithError(err).Fatal("Failed to load rclone defaults")
+		return err
+	}
+	logFailure := func(err error, delay time.Duration) {
+		c.logger.WithError(err).Errorf("Scheduler not ready")
+	}
+	err = backoff.RetryNotify(c.StartService, backoff.NewExponentialBackOff(), logFailure)
+	if err != nil {
+		c.logger.WithError(err).Fatal("Failed to start client")
+		return err
+	}
+	return nil
+}
+
+func (c *Client) loadRcloneDefaults() error {
+	logger := c.logger.WithField("func","loadRcloneDefaults")
+	rcloneConfig := c.configHandler.getConfiguration()
+	if rcloneConfig != nil {
+		// Load any secrets that have Rclone config
+		if len(rcloneConfig.Rclone.ConfigSecrets) > 0 {
+			secretClientSet, err := k8s.CreateSecretsClientset()
+			if err != nil {
+				return err
+			}
+			secretsHandler := k8s.NewSecretsHandler(secretClientSet, c.namespace)
+			for _,secret := range rcloneConfig.Rclone.ConfigSecrets {
+				logger.Infof("Loading rclone secret %s",secret)
+				config, err := secretsHandler.GetSecretConfig(secret)
+				if err != nil {
+					return err
+				}
+				err = c.RCloneClient.Config(config)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		// Load any raw Rclone configs
+		if len(rcloneConfig.Rclone.Config) > 0 {
+			for _,config := range rcloneConfig.Rclone.Config {
+				logger.Infof("Loading rclone config %s",config)
+				err := c.RCloneClient.Config([]byte(config))
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
+
+func (c *Client) createConnection() error {
 	c.logger.Infof("Creating connection to %s:%d", c.schedulerHost, c.schedulerPort)
 	conn, err := getConnection(c.schedulerHost, c.schedulerPort)
 	if err != nil {
@@ -87,7 +157,7 @@ func (c *Client) CreateConnection() error {
 	return nil
 }
 
-func (c *Client) WaitReady() error {
+func (c *Client) waitReady() error {
 	logFailure := func(err error, delay time.Duration) {
 		c.logger.WithError(err).Errorf("Rclone not ready")
 	}
@@ -122,7 +192,7 @@ func getConnection(host string, port int) (*grpc.ClientConn, error) {
 	return conn, nil
 }
 
-func (c *Client) Start() error {
+func (c *Client) StartService() error {
 	c.logger.Infof("Call subscribe to scheduler")
 	grpcClient := agent.NewAgentServiceClient(c.conn)
 	var loadedModels []*pbs.ModelDetails

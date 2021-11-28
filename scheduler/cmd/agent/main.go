@@ -9,8 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cenkalti/backoff/v4"
-
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent"
 	log "github.com/sirupsen/logrus"
 )
@@ -28,6 +26,7 @@ var (
 	namespace        string
 	replicaConfigStr string
 	inferenceSvcName string
+	configPath string
 )
 
 const (
@@ -60,6 +59,7 @@ func init() {
 	flag.StringVar(&modelRepository, "model-repository", "/mnt/models", "Model repository folder")
 	flag.StringVar(&replicaConfigStr, FlagReplicaConfig, "", "Replica Json Config")
 	flag.StringVar(&namespace, "namespace", "default", "Namespace")
+	flag.StringVar(&configPath, "config-path", "", "Path to folder with configuration files. Will assume agent.yaml or agent.json in this folder")
 }
 
 func isFlagPassed(name string) bool {
@@ -169,28 +169,20 @@ func main() {
 		log.Fatalf("Failed to parse replica config %s", replicaConfigStr)
 	}
 
+	agentConfigHandler, err := agent.NewAgentConfigHandler(configPath,namespace)
+	if err != nil {
+		logger.WithError(err).Fatal("Failed to create agent config handler")
+	}
 	rcloneClient := agent.NewRCloneClient(rcloneHost, rclonePort, modelRepository, logger)
 	v2Client := agent.NewV2Client(inferenceHost, inferencePort, logger)
-	client, err := agent.NewClient(serverName, uint32(replicaIdx), schedulerHost, schedulerPort, logger, rcloneClient, v2Client, replicaConfig, inferenceSvcName, namespace)
+	client, err := agent.NewClient(serverName, uint32(replicaIdx), schedulerHost, schedulerPort, logger, rcloneClient, v2Client, replicaConfig, inferenceSvcName, namespace, agentConfigHandler)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to  client")
 	}
 
-	//TODO wait for rclone and V2 server to be ready
-	err = client.WaitReady()
+	err = client.Start()
 	if err != nil {
-		logger.WithError(err).Fatal("Failed to create connection")
+		logger.WithError(err).Fatal("Failed to initialise client")
 	}
-	err = client.CreateConnection()
-	if err != nil {
-		logger.WithError(err).Fatal("Failed to create connection")
-	}
-	logFailure := func(err error, delay time.Duration) {
-		logger.WithError(err).Errorf("Scheduler not ready")
-	}
-	err = backoff.RetryNotify(client.Start, backoff.NewExponentialBackOff(), logFailure)
-	//err = client.Start()
-	if err != nil {
-		logger.WithError(err).Fatal("Failed to start client")
-	}
+
 }
