@@ -86,7 +86,7 @@ func TestClientCreate(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name string
+		name          string
 		models        []string
 		replicaConfig *pb.ReplicaConfig
 		v2Status      int
@@ -178,7 +178,7 @@ func TestLoadModel(t *testing.T) {
 		defer httpmock.DeactivateAndReset()
 		v2Client := createTestV2Client(test.models, test.v2Status)
 		rcloneClient := createTestRCloneClient(test.rsStatus, test.rsBody)
-		configHandler, err := NewAgentConfigHandler("","")
+		configHandler, err := NewAgentConfigHandler("", "")
 		g.Expect(err).To(BeNil())
 		client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default", configHandler)
 		g.Expect(err).To(BeNil())
@@ -280,7 +280,7 @@ parameters:
 			defer httpmock.DeactivateAndReset()
 			v2Client := createTestV2Client(test.models, test.v2Status)
 			rcloneClient := createTestRCloneClient(test.rsStatus, test.rsBody)
-			configHandler, err := NewAgentConfigHandler("","")
+			configHandler, err := NewAgentConfigHandler("", "")
 			g.Expect(err).To(BeNil())
 			client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default", configHandler)
 			g.Expect(err).To(BeNil())
@@ -352,7 +352,7 @@ func TestUnloadModel(t *testing.T) {
 		defer httpmock.DeactivateAndReset()
 		v2Client := createTestV2Client(test.models, test.v2Status)
 		rcloneClient := createTestRCloneClient(200, "{}")
-		configHandler, err := NewAgentConfigHandler("","")
+		configHandler, err := NewAgentConfigHandler("", "")
 		g.Expect(err).To(BeNil())
 		client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default", configHandler)
 		g.Expect(err).To(BeNil())
@@ -383,7 +383,6 @@ func TestUnloadModel(t *testing.T) {
 		g.Expect(err).To(BeNil())
 	}
 }
-
 
 func TestLoadRcloneDefaults(t *testing.T) {
 	t.Logf("Started")
@@ -423,7 +422,7 @@ func TestLoadRcloneDefaults(t *testing.T) {
 			defer httpmock.DeactivateAndReset()
 			v2Client := createTestV2Client([]string{}, 200)
 			rcloneClient := createTestRCloneClient(200, "{}")
-			configHandler, err := NewAgentConfigHandler("","")
+			configHandler, err := NewAgentConfigHandler("", "")
 			g.Expect(err).To(BeNil())
 			client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, &pb.ReplicaConfig{}, "0.0.0.0", "default", configHandler)
 			g.Expect(err).To(BeNil())

@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	yaml "gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
 	"os"
 	"sync"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
 const (
@@ -22,12 +23,12 @@ type AgentConfiguration struct {
 
 type RcloneConfiguration struct {
 	ConfigSecrets []string `json:"config_secrets,omitempty" yaml:"config_secrets,omitempty"`
-	Config []string `json:"config,omitempty" yaml:"config,omitempty"`
+	Config        []string `json:"config,omitempty" yaml:"config,omitempty"`
 }
 
 type AgentConfigHandler struct {
 	config *AgentConfiguration
-	mu sync.RWMutex
+	mu     sync.RWMutex
 }
 
 func NewAgentConfigHandler(configPath string, namespace string) (*AgentConfigHandler, error) {
@@ -56,7 +57,7 @@ func loadConfigFile(configPath string) (io.Reader, error) {
 	if _, err := os.Stat(yamConfigPath); errors.Is(err, os.ErrNotExist) {
 		jsonConfigPath := configPath + "/" + AgentConfigJsonFilename
 		if _, err := os.Stat(jsonConfigPath); errors.Is(err, os.ErrNotExist) {
-			return nil, fmt.Errorf("Failed to find config file as either %s or %s",yamConfigPath,jsonConfigPath)
+			return nil, fmt.Errorf("Failed to find config file as either %s or %s", yamConfigPath, jsonConfigPath)
 		}
 		return os.Open(jsonConfigPath)
 	} else {

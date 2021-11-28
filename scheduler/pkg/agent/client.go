@@ -110,7 +110,7 @@ func (c *Client) Start() error {
 }
 
 func (c *Client) loadRcloneDefaults() error {
-	logger := c.logger.WithField("func","loadRcloneDefaults")
+	logger := c.logger.WithField("func", "loadRcloneDefaults")
 	rcloneConfig := c.configHandler.getConfiguration()
 	if rcloneConfig != nil {
 		// Load any secrets that have Rclone config
@@ -120,8 +120,8 @@ func (c *Client) loadRcloneDefaults() error {
 				return err
 			}
 			secretsHandler := k8s.NewSecretsHandler(secretClientSet, c.namespace)
-			for _,secret := range rcloneConfig.Rclone.ConfigSecrets {
-				logger.Infof("Loading rclone secret %s",secret)
+			for _, secret := range rcloneConfig.Rclone.ConfigSecrets {
+				logger.Infof("Loading rclone secret %s", secret)
 				config, err := secretsHandler.GetSecretConfig(secret)
 				if err != nil {
 					return err
@@ -134,8 +134,8 @@ func (c *Client) loadRcloneDefaults() error {
 		}
 		// Load any raw Rclone configs
 		if len(rcloneConfig.Rclone.Config) > 0 {
-			for _,config := range rcloneConfig.Rclone.Config {
-				logger.Infof("Loading rclone config %s",config)
+			for _, config := range rcloneConfig.Rclone.Config {
+				logger.Infof("Loading rclone config %s", config)
 				err := c.RCloneClient.Config([]byte(config))
 				if err != nil {
 					return err
@@ -145,7 +145,6 @@ func (c *Client) loadRcloneDefaults() error {
 	}
 	return nil
 }
-
 
 func (c *Client) createConnection() error {
 	c.logger.Infof("Creating connection to %s:%d", c.schedulerHost, c.schedulerPort)

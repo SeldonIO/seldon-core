@@ -1,25 +1,26 @@
 package agent
 
 import (
-	. "github.com/onsi/gomega"
 	"strings"
 	"testing"
+
+	. "github.com/onsi/gomega"
 )
 
 func TestLoadConfigRcloneSecrets(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 	type test struct {
-		name        string
-		config      string
-		expected  []string
-		err         bool
+		name     string
+		config   string
+		expected []string
+		err      bool
 	}
 	tests := []test{
 		{
-			name: "yaml",
-			config: `{"rclone":{"config_secrets":["a","b"]}}`,
-			expected: []string{"a","b"},
+			name:     "yaml",
+			config:   `{"rclone":{"config_secrets":["a","b"]}}`,
+			expected: []string{"a", "b"},
 		},
 		{
 			name: "json",
@@ -27,13 +28,13 @@ func TestLoadConfigRcloneSecrets(t *testing.T) {
                          config_secrets:
                           - a
                           - b`,
-			expected: []string{"a","b"},
+			expected: []string{"a", "b"},
 		},
 		{
-			name: "badJson",
-			config:  `{"rclone":{"config_secrets":["a","b"]}`,
-			expected: []string{"a","b"},
-			err: true,
+			name:     "badJson",
+			config:   `{"rclone":{"config_secrets":["a","b"]}`,
+			expected: []string{"a", "b"},
+			err:      true,
 		},
 	}
 	for _, test := range tests {

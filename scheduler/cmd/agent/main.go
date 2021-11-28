@@ -26,7 +26,7 @@ var (
 	namespace        string
 	replicaConfigStr string
 	inferenceSvcName string
-	configPath string
+	configPath       string
 )
 
 const (
@@ -169,7 +169,7 @@ func main() {
 		log.Fatalf("Failed to parse replica config %s", replicaConfigStr)
 	}
 
-	agentConfigHandler, err := agent.NewAgentConfigHandler(configPath,namespace)
+	agentConfigHandler, err := agent.NewAgentConfigHandler(configPath, namespace)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create agent config handler")
 	}
