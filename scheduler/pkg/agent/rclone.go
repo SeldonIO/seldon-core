@@ -57,6 +57,14 @@ type RCloneConfigUpdate struct {
 	Opts       map[string]string `json:"opts" yaml:"opts"`
 }
 
+type RCloneListRemotes struct {
+	Remotes []string `json:"remotes"`
+}
+
+type RCloneDeleteRemote struct {
+	Name string `json:"name"`
+}
+
 func createConfigUpdateFromCreate(create *RCloneConfigCreate) *RCloneConfigUpdate {
 	update := RCloneConfigUpdate{
 		Name:       create.Name,
@@ -128,6 +136,22 @@ func getRemoteName(uri string) (string, error) {
 	return name, nil
 }
 
+func (r *RCloneClient) parseRcloneConfig(config []byte) (*RCloneConfigCreate, error) {
+	configCreate := RCloneConfigCreate{}
+	err := json.Unmarshal(config, &configCreate)
+	if err != nil {
+		err2 := yaml.Unmarshal(config, &configCreate)
+		if err2 != nil {
+			return nil, fmt.Errorf("Failed to unmarshall config as json or yaml. JSON error %s. YAML error %s", err.Error(), err2.Error())
+		}
+	}
+	err = r.validate.Struct(configCreate)
+	if err != nil {
+		return nil, err
+	}
+	return &configCreate, nil
+}
+
 func (r *RCloneClient) createUriWithConfig(uri string, config []byte) (string, error) {
 	remote, err := getRemoteName(uri)
 	if err != nil {
@@ -156,6 +180,23 @@ func (r *RCloneClient) createUriWithConfig(uri string, config []byte) (string, e
 	return strings.Replace(uri, remote, sb.String(), 1), nil
 }
 
+func (r *RCloneClient) Config(config []byte) (string, error) {
+	configCreate, err := r.parseRcloneConfig(config)
+	if err != nil {
+		return "", err
+	}
+	exists, err := r.configExists(configCreate.Name)
+	if err != nil {
+		return "", err
+	}
+	if exists {
+		return configCreate.Name, r.configUpdate(configCreate)
+	} else {
+		return configCreate.Name, r.configCreate(configCreate)
+	}
+}
+
+// Call Rclone /sync/copy
 func (r *RCloneClient) Copy(modelName string, src string, config []byte) error {
 	var srcUpdated string
 	var err error
@@ -183,22 +224,7 @@ func (r *RCloneClient) Copy(modelName string, src string, config []byte) error {
 	return err
 }
 
-func (r *RCloneClient) Config(config []byte) error {
-	configCreate, err := r.parseRcloneConfig(config)
-	if err != nil {
-		return err
-	}
-	exists, err := r.configExists(configCreate.Name)
-	if err != nil {
-		return err
-	}
-	if exists {
-		return r.configUpdate(configCreate)
-	} else {
-		return r.configCreate(configCreate)
-	}
-}
-
+// Call Rclone /config/get
 func (r *RCloneClient) configExists(rcloneRemoteKey string) (bool, error) {
 	key := RCloneConfigKey{Name: rcloneRemoteKey}
 	b, err := json.Marshal(key)
@@ -221,22 +247,7 @@ func (r *RCloneClient) configExists(rcloneRemoteKey string) (bool, error) {
 	}
 }
 
-func (r *RCloneClient) parseRcloneConfig(config []byte) (*RCloneConfigCreate, error) {
-	configCreate := RCloneConfigCreate{}
-	err := json.Unmarshal(config, &configCreate)
-	if err != nil {
-		err2 := yaml.Unmarshal(config, &configCreate)
-		if err2 != nil {
-			return nil, fmt.Errorf("Failed to unmarshall config as json or yaml. JSON error %s. YAML error %s", err.Error(), err2.Error())
-		}
-	}
-	err = r.validate.Struct(configCreate)
-	if err != nil {
-		return nil, err
-	}
-	return &configCreate, nil
-}
-
+// Call Rclone /config/create
 func (r *RCloneClient) configCreate(configCreate *RCloneConfigCreate) error {
 	b, err := json.Marshal(configCreate)
 	if err != nil {
@@ -246,6 +257,7 @@ func (r *RCloneClient) configCreate(configCreate *RCloneConfigCreate) error {
 	return err
 }
 
+// Call Rclone /config/update
 func (r *RCloneClient) configUpdate(configCreate *RCloneConfigCreate) error {
 	configUpdate := createConfigUpdateFromCreate(configCreate)
 	b, err := json.Marshal(configUpdate)
@@ -253,5 +265,29 @@ func (r *RCloneClient) configUpdate(configCreate *RCloneConfigCreate) error {
 		return err
 	}
 	_, err = r.call(b, "/config/update")
+	return err
+}
+
+// Call Rclone /config/listremotes
+func (r *RCloneClient) ListRemotes() ([]string, error) {
+	res, err := r.call([]byte("{}"), "/config/listremotes")
+	if err != nil {
+		return nil, err
+	}
+	remotes := RCloneListRemotes{}
+	err = json.Unmarshal(res, &remotes)
+	if err != nil {
+		return nil, err
+	}
+	return remotes.Remotes, nil
+}
+
+func (r *RCloneClient) DeleteRemote(name string) error {
+	delRemote := RCloneDeleteRemote{Name: name}
+	b, err := json.Marshal(&delRemote)
+	if err != nil {
+		return err
+	}
+	_, err = r.call(b, "/config/delete")
 	return err
 }

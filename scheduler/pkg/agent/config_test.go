@@ -1,6 +1,7 @@
 package agent
 
 import (
+	log "github.com/sirupsen/logrus"
 	"strings"
 	"testing"
 
@@ -9,6 +10,8 @@ import (
 
 func TestLoadConfigRcloneSecrets(t *testing.T) {
 	t.Logf("Started")
+	logger := log.New()
+	log.SetLevel(log.DebugLevel)
 	g := NewGomegaWithT(t)
 	type test struct {
 		name     string
@@ -39,12 +42,14 @@ func TestLoadConfigRcloneSecrets(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			c, err := loadConfig(strings.NewReader(test.config))
+			configHandler, err := NewAgentConfigHandler("", "", logger)
+			g.Expect(err).To(BeNil())
+			err = configHandler.updateConfig(strings.NewReader(test.config))
 			if test.err {
 				g.Expect(err).ToNot(BeNil())
 			} else {
 				g.Expect(err).To(BeNil())
-				g.Expect(c.Rclone.ConfigSecrets).To(Equal(test.expected))
+				g.Expect(configHandler.config.Rclone.ConfigSecrets).To(Equal(test.expected))
 			}
 		})
 	}

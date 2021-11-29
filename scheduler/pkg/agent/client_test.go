@@ -2,6 +2,8 @@ package agent
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"net"
 	"testing"
 
@@ -104,7 +106,7 @@ func TestClientCreate(t *testing.T) {
 			defer httpmock.DeactivateAndReset()
 			v2Client := createTestV2Client(test.models, test.v2Status)
 			rcloneClient := createTestRCloneClient(test.rsStatus, test.rsBody)
-			configHandler, err := NewAgentConfigHandler("", "")
+			configHandler, err := NewAgentConfigHandler("", "", logger)
 			g.Expect(err).To(BeNil())
 			client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default", configHandler)
 			g.Expect(err).To(BeNil())
@@ -178,7 +180,7 @@ func TestLoadModel(t *testing.T) {
 		defer httpmock.DeactivateAndReset()
 		v2Client := createTestV2Client(test.models, test.v2Status)
 		rcloneClient := createTestRCloneClient(test.rsStatus, test.rsBody)
-		configHandler, err := NewAgentConfigHandler("", "")
+		configHandler, err := NewAgentConfigHandler("", "", logger)
 		g.Expect(err).To(BeNil())
 		client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default", configHandler)
 		g.Expect(err).To(BeNil())
@@ -280,7 +282,7 @@ parameters:
 			defer httpmock.DeactivateAndReset()
 			v2Client := createTestV2Client(test.models, test.v2Status)
 			rcloneClient := createTestRCloneClient(test.rsStatus, test.rsBody)
-			configHandler, err := NewAgentConfigHandler("", "")
+			configHandler, err := NewAgentConfigHandler("", "", logger)
 			g.Expect(err).To(BeNil())
 			client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default", configHandler)
 			g.Expect(err).To(BeNil())
@@ -352,7 +354,7 @@ func TestUnloadModel(t *testing.T) {
 		defer httpmock.DeactivateAndReset()
 		v2Client := createTestV2Client(test.models, test.v2Status)
 		rcloneClient := createTestRCloneClient(200, "{}")
-		configHandler, err := NewAgentConfigHandler("", "")
+		configHandler, err := NewAgentConfigHandler("", "", logger)
 		g.Expect(err).To(BeNil())
 		client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default", configHandler)
 		g.Expect(err).To(BeNil())
@@ -386,13 +388,17 @@ func TestUnloadModel(t *testing.T) {
 
 func TestLoadRcloneDefaults(t *testing.T) {
 	t.Logf("Started")
-	logger := log.New()
 	log.SetLevel(log.DebugLevel)
 	g := NewGomegaWithT(t)
 
 	type test struct {
 		name               string
 		agentConfiguration *AgentConfiguration
+		rcloneListRemotes *RCloneListRemotes
+		rcloneGetResponse string
+		expectedDeleteCalls int
+		expectedUpdateCalls int
+		expectedCreateCalls int
 		error              bool
 	}
 
@@ -404,6 +410,63 @@ func TestLoadRcloneDefaults(t *testing.T) {
 					Config: []string{`{"type":"google cloud storage","name":"gs","parameters":{"anonymous":true}}`},
 				},
 			},
+			rcloneListRemotes: &RCloneListRemotes{Remotes: []string{"gs"}},
+			expectedDeleteCalls: 0,
+			expectedCreateCalls: 1,
+		},
+		{
+			name: "multipleCreate",
+			agentConfiguration: &AgentConfiguration{
+				Rclone: &RcloneConfiguration{
+					Config: []string{
+						`{"type":"google cloud storage","name":"gs","parameters":{"anonymous":true}}`,
+						`{"type":"google cloud storage","name":"gs2","parameters":{"anonymous":true}}`,
+					},
+				},
+			},
+			rcloneListRemotes: &RCloneListRemotes{Remotes: []string{"gs","gs2"}},
+			expectedDeleteCalls: 0,
+			expectedCreateCalls: 2,
+		},
+		{
+			name: "multipleUpdate",
+			agentConfiguration: &AgentConfiguration{
+				Rclone: &RcloneConfiguration{
+					Config: []string{
+						`{"type":"google cloud storage","name":"gs","parameters":{"anonymous":true}}`,
+						`{"type":"google cloud storage","name":"gs2","parameters":{"anonymous":true}}`,
+					},
+				},
+			},
+			rcloneGetResponse: `{"type":"google cloud storage"}`,
+			expectedUpdateCalls: 2,
+			rcloneListRemotes: &RCloneListRemotes{Remotes: []string{"gs","gs2"}},
+			expectedDeleteCalls: 0,
+			expectedCreateCalls: 0,
+		},
+		{
+			name: "configDeleted",
+			agentConfiguration: &AgentConfiguration{
+				Rclone: &RcloneConfiguration{
+					Config: []string{`{"type":"google cloud storage","name":"gs","parameters":{"anonymous":true}}`},
+				},
+			},
+			rcloneListRemotes: &RCloneListRemotes{Remotes: []string{"gs","extra"}},
+			expectedDeleteCalls: 1,
+			expectedCreateCalls: 1,
+		},
+		{
+			name: "configUpdated",
+			agentConfiguration: &AgentConfiguration{
+				Rclone: &RcloneConfiguration{
+					Config: []string{`{"type":"google cloud storage","name":"gs","parameters":{"anonymous":true}}`},
+				},
+			},
+			rcloneGetResponse: `{"type":"google cloud storage"}`,
+			expectedUpdateCalls: 1,
+			expectedCreateCalls: 0,
+			rcloneListRemotes: &RCloneListRemotes{Remotes: []string{"gs"}},
+			expectedDeleteCalls: 0,
 		},
 		{
 			name: "badConfig",
@@ -421,17 +484,55 @@ func TestLoadRcloneDefaults(t *testing.T) {
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
 			v2Client := createTestV2Client([]string{}, 200)
-			rcloneClient := createTestRCloneClient(200, "{}")
-			configHandler, err := NewAgentConfigHandler("", "")
+			logger := log.New()
+			log.SetLevel(log.DebugLevel)
+			host := "rclone-server"
+			port := 5572
+			rcloneClient := NewRCloneClient(host, port, "/tmp/rclone", logger)
+
+			// Add expected Rclone list remotes response
+			b, err := json.Marshal(test.rcloneListRemotes)
+			g.Expect(err).To(BeNil())
+			deleteURI := fmt.Sprintf("=~http://%s:%d%s", host, port, "/config/delete")
+			updateURI := fmt.Sprintf("=~http://%s:%d%s", host, port, "/config/update")
+			createURI := fmt.Sprintf("=~http://%s:%d%s", host, port, "/config/create")
+			listURI := fmt.Sprintf("=~http://%s:%d%s", host, port, "/config/listremotes")
+			getURI := fmt.Sprintf("=~http://%s:%d%s", host, port, "/config/get")
+			httpmock.RegisterResponder("POST", listURI,
+				httpmock.NewBytesResponder(200,b))
+			httpmock.RegisterResponder("POST", deleteURI,
+				httpmock.NewStringResponder(200,"{}"))
+			httpmock.RegisterResponder("POST", getURI,
+				httpmock.NewStringResponder(200,"{}"))
+			httpmock.RegisterResponder("POST", createURI,
+				httpmock.NewStringResponder(200,"{}"))
+			httpmock.RegisterResponder("POST", updateURI,
+				httpmock.NewStringResponder(200,"{}"))
+
+			configHandler, err := NewAgentConfigHandler("", "", logger)
 			g.Expect(err).To(BeNil())
 			client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, &pb.ReplicaConfig{}, "0.0.0.0", "default", configHandler)
 			g.Expect(err).To(BeNil())
-			configHandler.config = test.agentConfiguration
-			err = client.loadRcloneDefaults()
+			err = client.loadRcloneDefaults(test.agentConfiguration)
 			if test.error {
 				g.Expect(err).ToNot(BeNil())
 			} else {
 				g.Expect(err).To(BeNil())
+				// Test the expected calls to each endpoint of rclone
+				calls := httpmock.GetCallCountInfo()
+				for k,v := range calls {
+					switch k {
+					case deleteURI:
+						g.Expect(v).To(Equal(test.expectedDeleteCalls))
+					case updateURI:
+						g.Expect(v).To(Equal(test.expectedUpdateCalls))
+					case createURI:
+						g.Expect(v).To(Equal(test.expectedCreateCalls))
+					case listURI, getURI:
+						g.Expect(v).To(Equal(len(test.agentConfiguration.Rclone.Config)))
+					}
+
+				}
 			}
 		})
 	}

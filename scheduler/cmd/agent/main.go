@@ -169,7 +169,7 @@ func main() {
 		log.Fatalf("Failed to parse replica config %s", replicaConfigStr)
 	}
 
-	agentConfigHandler, err := agent.NewAgentConfigHandler(configPath, namespace)
+	agentConfigHandler, err := agent.NewAgentConfigHandler(configPath, namespace, logger)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create agent config handler")
 	}

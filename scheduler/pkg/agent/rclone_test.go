@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -39,26 +40,29 @@ func TestRcloneCopy(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 	type test struct {
+		name string
 		modelName string
 		uri       string
 		status    int
 		body      string
 	}
 	tests := []test{
-		{modelName: "iris", uri: "gs://seldon-models/sklearn/iris-0.23.2/lr_model", status: 200, body: "{}"},
-		{modelName: "iris", uri: "gs://seldon-models/sklearn/iris-0.23.2/lr_model", status: 400, body: "{}"},
+		{name: "ok", modelName: "iris", uri: "gs://seldon-models/sklearn/iris-0.23.2/lr_model", status: 200, body: "{}"},
+		{name: "badResponse", modelName: "iris", uri: "gs://seldon-models/sklearn/iris-0.23.2/lr_model", status: 400, body: "{}"},
 	}
 	for _, test := range tests {
-		httpmock.Activate()
-		r := createTestRCloneClient(test.status, test.body)
-		err := r.Copy(test.modelName, test.uri, []byte{})
-		if test.status == 200 {
-			g.Expect(err).To(BeNil())
-		} else {
-			g.Expect(err).ToNot(BeNil())
-		}
-		g.Expect(httpmock.GetTotalCallCount()).To(Equal(1))
-		httpmock.DeactivateAndReset()
+		t.Run(test.name, func(t *testing.T) {
+			httpmock.Activate()
+			defer httpmock.DeactivateAndReset()
+			r := createTestRCloneClient(test.status, test.body)
+			err := r.Copy(test.modelName, test.uri, []byte{})
+			if test.status == 200 {
+				g.Expect(err).To(BeNil())
+			} else {
+				g.Expect(err).ToNot(BeNil())
+			}
+			g.Expect(httpmock.GetTotalCallCount()).To(Equal(1))
+		})
 	}
 }
 
@@ -71,6 +75,7 @@ func TestRcloneConfig(t *testing.T) {
 		expectedPath       string
 		existsBody         []byte
 		createUpdateStatus int
+		expectedName string
 		err                bool
 	}
 	tests := []test{
@@ -80,6 +85,7 @@ func TestRcloneConfig(t *testing.T) {
 			expectedPath:       "/config/create",
 			existsBody:         []byte(`{}`),
 			createUpdateStatus: 200,
+			expectedName: "mys3",
 			err:                false,
 		},
 		{
@@ -104,6 +110,7 @@ func TestRcloneConfig(t *testing.T) {
 			expectedPath:       "/config/update",
 			existsBody:         []byte(`{"name":"mys3"}`),
 			createUpdateStatus: 200,
+			expectedName: "mys3",
 			err:                false,
 		},
 		{
@@ -118,6 +125,7 @@ func TestRcloneConfig(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			httpmock.Activate()
+			defer httpmock.DeactivateAndReset()
 			logger := log.New()
 			log.SetLevel(log.DebugLevel)
 			host := "rclone-server"
@@ -127,13 +135,13 @@ func TestRcloneConfig(t *testing.T) {
 				httpmock.NewStringResponder(test.createUpdateStatus, "{}"))
 			httpmock.RegisterResponder("POST", fmt.Sprintf("=~http://%s:%d/config/get", host, port),
 				httpmock.NewStringResponder(200, string(test.existsBody)))
-			err := r.Config(test.config)
+			name, err := r.Config(test.config)
 			if !test.err {
 				g.Expect(err).To(BeNil())
+				g.Expect(name).To(Equal(test.expectedName))
 			} else {
 				g.Expect(err).ToNot(BeNil())
 			}
-			httpmock.DeactivateAndReset()
 		})
 	}
 }
@@ -240,6 +248,56 @@ func TestCreateUriWithConfig(t *testing.T) {
 				g.Expect(res).To(Equal(test.expectedUri))
 			}
 
+		})
+	}
+}
+
+
+func TestListRemotes(t *testing.T) {
+	t.Logf("Started")
+	g := NewGomegaWithT(t)
+	type test struct {
+		name        string
+		rcloneResponse         *RCloneListRemotes
+		expected  []string
+		err         bool
+	}
+	tests := []test{
+		{
+			name: "simple",
+			rcloneResponse: &RCloneListRemotes{
+				Remotes: []string{"a","b"},
+			},
+			expected: []string{"a","b"},
+		},
+		{
+			name: "empty",
+			rcloneResponse: &RCloneListRemotes{
+				Remotes: []string{},
+			},
+			expected: []string{},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			httpmock.Activate()
+			defer httpmock.DeactivateAndReset()
+			logger := log.New()
+			log.SetLevel(log.DebugLevel)
+			host := "rclone-server"
+			port := 5572
+			r := NewRCloneClient(host, port, "/tmp/rclone", logger)
+			b, err := json.Marshal(test.rcloneResponse)
+			g.Expect(err).To(BeNil())
+			httpmock.RegisterResponder("POST", fmt.Sprintf("=~http://%s:%d%s", host, port, "/config/listremotes"),
+				httpmock.NewBytesResponder(200,b))
+			remotes, err := r.ListRemotes()
+			if !test.err {
+				g.Expect(err).To(BeNil())
+			} else {
+				g.Expect(err).ToNot(BeNil())
+				g.Expect(remotes).To(Equal(test.expected))
+			}
 		})
 	}
 }

@@ -34,6 +34,7 @@ type Client struct {
 	secretsHandler *k8s.SecretHandler
 	namespace      string
 	configHandler  *AgentConfigHandler
+	configChan     chan string
 }
 
 func ParseReplicConfig(json string) (*agent.ReplicaConfig, error) {
@@ -77,6 +78,7 @@ func NewClient(serverName string,
 		loadedModels:  make(map[string]*pbs.ModelDetails),
 		namespace:     namespace,
 		configHandler: configHandler,
+		configChan: make(chan string),
 	}, nil
 }
 
@@ -93,7 +95,10 @@ func (c *Client) Start() error {
 			return err
 		}
 	}
-	err = c.loadRcloneDefaults()
+	// Start config listener
+	go c.listenForConfigUpdates()
+	// Add ourself as listener on channel and handle initial config
+	err = c.loadRcloneDefaults(c.configHandler.AddListener(c.configChan))
 	if err != nil {
 		c.logger.WithError(err).Fatal("Failed to load rclone defaults")
 		return err
@@ -109,9 +114,17 @@ func (c *Client) Start() error {
 	return nil
 }
 
-func (c *Client) loadRcloneDefaults() error {
+
+func (c *Client) listenForConfigUpdates() {
+	for _ = range c.configChan {
+		c.logger.Info("Received config update")
+		go c.loadRcloneDefaults(c.configHandler.getConfiguration())
+	}
+}
+
+func (c *Client) loadRcloneDefaults(rcloneConfig *AgentConfiguration) error {
 	logger := c.logger.WithField("func", "loadRcloneDefaults")
-	rcloneConfig := c.configHandler.getConfiguration()
+	var rcloneNamesAdded []string
 	if rcloneConfig != nil {
 		// Load any secrets that have Rclone config
 		if len(rcloneConfig.Rclone.ConfigSecrets) > 0 {
@@ -126,17 +139,41 @@ func (c *Client) loadRcloneDefaults() error {
 				if err != nil {
 					return err
 				}
-				err = c.RCloneClient.Config(config)
+				name, err := c.RCloneClient.Config(config)
 				if err != nil {
 					return err
 				}
+				rcloneNamesAdded = append(rcloneNamesAdded, name)
 			}
 		}
 		// Load any raw Rclone configs
 		if len(rcloneConfig.Rclone.Config) > 0 {
 			for _, config := range rcloneConfig.Rclone.Config {
 				logger.Infof("Loading rclone config %s", config)
-				err := c.RCloneClient.Config([]byte(config))
+				name, err := c.RCloneClient.Config([]byte(config))
+				if err != nil {
+					return err
+				}
+				rcloneNamesAdded = append(rcloneNamesAdded, name)
+			}
+		}
+
+		// Delete any existing remotes not in defaults
+		exsitingNames, err := c.RCloneClient.ListRemotes()
+		if err != nil {
+			return err
+		}
+		for _,existingName := range exsitingNames {
+			found := false
+			for _,addedName := range rcloneNamesAdded {
+				if existingName == addedName {
+					found = true
+					break
+				}
+			}
+			if !found {
+				logger.Warnf("Delete remote %s as not in new list of defaults",existingName)
+				err := c.RCloneClient.DeleteRemote(existingName)
 				if err != nil {
 					return err
 				}
