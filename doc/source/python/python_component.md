@@ -150,7 +150,7 @@ class ModelWithTags(object):
     def predict(self,X,features_names):
         return X
 
-    def tags(self,X):
+    def tags(self):
         return {"system":"production"}
 ```
 
