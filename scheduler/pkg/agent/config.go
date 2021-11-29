@@ -34,6 +34,8 @@ type AgentConfigHandler struct {
 	mu        sync.RWMutex
 	listeners []chan string
 	logger    log.FieldLogger
+	watcher   *fsnotify.Watcher
+	done      chan struct{}
 }
 
 func NewAgentConfigHandler(configPath string, namespace string, logger log.FieldLogger) (*AgentConfigHandler, error) {
@@ -58,6 +60,16 @@ func NewAgentConfigHandler(configPath string, namespace string, logger log.Field
 	return &AgentConfigHandler{
 		logger: logger,
 	}, nil
+}
+
+func (a *AgentConfigHandler) Close() error {
+	if a.done != nil {
+		close(a.done)
+	}
+	if a.watcher != nil {
+		return a.watcher.Close()
+	}
+	return nil
 }
 
 func (a *AgentConfigHandler) AddListener(c chan string) *AgentConfiguration {
@@ -108,14 +120,15 @@ func (c *AgentConfigHandler) updateConfig(file io.Reader) error {
 	return nil
 }
 
+// Watch the config file passed for changes and reload and signal listerners when it does
+// TODO could be extended to watch config directories created by K8S on configmap mounts
 func (c *AgentConfigHandler) watchFile(filePath string) error {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		c.logger.Error(err, "Failed to create watcher")
 		return err
 	}
-	//TODO close watcher when we finish?
-	//defer watcher.Close()
+	c.watcher = watcher
 
 	go func() {
 		for {
@@ -141,6 +154,8 @@ func (c *AgentConfigHandler) watchFile(filePath string) error {
 				}
 			case err := <-watcher.Errors:
 				c.logger.Error(err, "watcher error")
+			case <-c.done:
+				return
 			}
 		}
 	}()

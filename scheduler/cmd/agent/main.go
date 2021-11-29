@@ -5,8 +5,10 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent"
@@ -164,15 +166,31 @@ func main() {
 	updateFlagsFromEnv()
 	setInferenceSvcName()
 
+	done := make(chan bool, 1)
+
+	go func() {
+		exit := make(chan os.Signal, 1)
+		signal.Notify(exit, os.Interrupt, syscall.SIGTERM)
+		<-exit
+		logger.Info("shutting down due to SIGTERM or SIGINT")
+		close(done)
+	}()
+
 	replicaConfig, err := agent.ParseReplicConfig(replicaConfigStr)
 	if err != nil {
 		log.Fatalf("Failed to parse replica config %s", replicaConfigStr)
 	}
 
+	// Start Agent configuration handler
 	agentConfigHandler, err := agent.NewAgentConfigHandler(configPath, namespace, logger)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create agent config handler")
 	}
+	defer func() {
+		logger.Info("Closing agent handler")
+		_ = agentConfigHandler.Close()
+	}()
+
 	rcloneClient := agent.NewRCloneClient(rcloneHost, rclonePort, modelRepository, logger)
 	v2Client := agent.NewV2Client(inferenceHost, inferencePort, logger)
 	client, err := agent.NewClient(serverName, uint32(replicaIdx), schedulerHost, schedulerPort, logger, rcloneClient, v2Client, replicaConfig, inferenceSvcName, namespace, agentConfigHandler)
@@ -180,9 +198,15 @@ func main() {
 		logger.WithError(err).Fatal("Failed to  client")
 	}
 
-	err = client.Start()
-	if err != nil {
-		logger.WithError(err).Fatal("Failed to initialise client")
-	}
+	// Start client grpc server
+	go func() {
+		err = client.Start()
+		if err != nil {
+			logger.WithError(err).Fatal("Failed to initialise client")
+		}
+		close(done)
+	}()
 
+	// Wait for completion
+	<-done
 }
