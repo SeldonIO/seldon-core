@@ -392,14 +392,14 @@ func TestLoadRcloneDefaults(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name               string
-		agentConfiguration *AgentConfiguration
-		rcloneListRemotes *RCloneListRemotes
-		rcloneGetResponse string
+		name                string
+		agentConfiguration  *AgentConfiguration
+		rcloneListRemotes   *RCloneListRemotes
+		rcloneGetResponse   string
 		expectedDeleteCalls int
 		expectedUpdateCalls int
 		expectedCreateCalls int
-		error              bool
+		error               bool
 	}
 
 	tests := []test{
@@ -410,9 +410,10 @@ func TestLoadRcloneDefaults(t *testing.T) {
 					Config: []string{`{"type":"google cloud storage","name":"gs","parameters":{"anonymous":true}}`},
 				},
 			},
-			rcloneListRemotes: &RCloneListRemotes{Remotes: []string{"gs"}},
+			rcloneListRemotes:   &RCloneListRemotes{Remotes: []string{"gs"}},
 			expectedDeleteCalls: 0,
 			expectedCreateCalls: 1,
+			rcloneGetResponse:   "{}",
 		},
 		{
 			name: "multipleCreate",
@@ -424,9 +425,10 @@ func TestLoadRcloneDefaults(t *testing.T) {
 					},
 				},
 			},
-			rcloneListRemotes: &RCloneListRemotes{Remotes: []string{"gs","gs2"}},
+			rcloneListRemotes:   &RCloneListRemotes{Remotes: []string{"gs", "gs2"}},
 			expectedDeleteCalls: 0,
 			expectedCreateCalls: 2,
+			rcloneGetResponse:   "{}",
 		},
 		{
 			name: "multipleUpdate",
@@ -438,9 +440,9 @@ func TestLoadRcloneDefaults(t *testing.T) {
 					},
 				},
 			},
-			rcloneGetResponse: `{"type":"google cloud storage"}`,
+			rcloneGetResponse:   `{"type":"google cloud storage"}`,
 			expectedUpdateCalls: 2,
-			rcloneListRemotes: &RCloneListRemotes{Remotes: []string{"gs","gs2"}},
+			rcloneListRemotes:   &RCloneListRemotes{Remotes: []string{"gs", "gs2"}},
 			expectedDeleteCalls: 0,
 			expectedCreateCalls: 0,
 		},
@@ -451,9 +453,10 @@ func TestLoadRcloneDefaults(t *testing.T) {
 					Config: []string{`{"type":"google cloud storage","name":"gs","parameters":{"anonymous":true}}`},
 				},
 			},
-			rcloneListRemotes: &RCloneListRemotes{Remotes: []string{"gs","extra"}},
+			rcloneListRemotes:   &RCloneListRemotes{Remotes: []string{"gs", "extra"}},
 			expectedDeleteCalls: 1,
 			expectedCreateCalls: 1,
+			rcloneGetResponse:   "{}",
 		},
 		{
 			name: "configUpdated",
@@ -462,10 +465,10 @@ func TestLoadRcloneDefaults(t *testing.T) {
 					Config: []string{`{"type":"google cloud storage","name":"gs","parameters":{"anonymous":true}}`},
 				},
 			},
-			rcloneGetResponse: `{"type":"google cloud storage"}`,
+			rcloneGetResponse:   `{"type":"google cloud storage"}`,
 			expectedUpdateCalls: 1,
 			expectedCreateCalls: 0,
-			rcloneListRemotes: &RCloneListRemotes{Remotes: []string{"gs"}},
+			rcloneListRemotes:   &RCloneListRemotes{Remotes: []string{"gs"}},
 			expectedDeleteCalls: 0,
 		},
 		{
@@ -499,15 +502,15 @@ func TestLoadRcloneDefaults(t *testing.T) {
 			listURI := fmt.Sprintf("=~http://%s:%d%s", host, port, "/config/listremotes")
 			getURI := fmt.Sprintf("=~http://%s:%d%s", host, port, "/config/get")
 			httpmock.RegisterResponder("POST", listURI,
-				httpmock.NewBytesResponder(200,b))
+				httpmock.NewBytesResponder(200, b))
 			httpmock.RegisterResponder("POST", deleteURI,
-				httpmock.NewStringResponder(200,"{}"))
+				httpmock.NewStringResponder(200, "{}"))
 			httpmock.RegisterResponder("POST", getURI,
-				httpmock.NewStringResponder(200,"{}"))
+				httpmock.NewStringResponder(200, test.rcloneGetResponse))
 			httpmock.RegisterResponder("POST", createURI,
-				httpmock.NewStringResponder(200,"{}"))
+				httpmock.NewStringResponder(200, "{}"))
 			httpmock.RegisterResponder("POST", updateURI,
-				httpmock.NewStringResponder(200,"{}"))
+				httpmock.NewStringResponder(200, "{}"))
 
 			configHandler, err := NewAgentConfigHandler("", "", logger)
 			g.Expect(err).To(BeNil())
@@ -520,7 +523,7 @@ func TestLoadRcloneDefaults(t *testing.T) {
 				g.Expect(err).To(BeNil())
 				// Test the expected calls to each endpoint of rclone
 				calls := httpmock.GetCallCountInfo()
-				for k,v := range calls {
+				for k, v := range calls {
 					switch k {
 					case deleteURI:
 						g.Expect(v).To(Equal(test.expectedDeleteCalls))

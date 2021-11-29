@@ -78,7 +78,7 @@ func NewClient(serverName string,
 		loadedModels:  make(map[string]*pbs.ModelDetails),
 		namespace:     namespace,
 		configHandler: configHandler,
-		configChan: make(chan string),
+		configChan:    make(chan string),
 	}, nil
 }
 
@@ -114,11 +114,16 @@ func (c *Client) Start() error {
 	return nil
 }
 
-
 func (c *Client) listenForConfigUpdates() {
-	for _ = range c.configChan {
+	logger := c.logger.WithField("func", "listenForConfigUpdates")
+	for range c.configChan {
 		c.logger.Info("Received config update")
-		go c.loadRcloneDefaults(c.configHandler.getConfiguration())
+		go func() {
+			err := c.loadRcloneDefaults(c.configHandler.getConfiguration())
+			if err != nil {
+				logger.WithError(err).Error("Failed to load rclone defaults")
+			}
+		}()
 	}
 }
 
@@ -163,16 +168,16 @@ func (c *Client) loadRcloneDefaults(rcloneConfig *AgentConfiguration) error {
 		if err != nil {
 			return err
 		}
-		for _,existingName := range exsitingNames {
+		for _, existingName := range exsitingNames {
 			found := false
-			for _,addedName := range rcloneNamesAdded {
+			for _, addedName := range rcloneNamesAdded {
 				if existingName == addedName {
 					found = true
 					break
 				}
 			}
 			if !found {
-				logger.Warnf("Delete remote %s as not in new list of defaults",existingName)
+				logger.Warnf("Delete remote %s as not in new list of defaults", existingName)
 				err := c.RCloneClient.DeleteRemote(existingName)
 				if err != nil {
 					return err

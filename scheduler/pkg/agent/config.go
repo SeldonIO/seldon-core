@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"os"
 	"sync"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/fsnotify/fsnotify"
 	yaml "gopkg.in/yaml.v2"
@@ -29,13 +30,13 @@ type RcloneConfiguration struct {
 }
 
 type AgentConfigHandler struct {
-	config *AgentConfiguration
-	mu     sync.RWMutex
+	config    *AgentConfiguration
+	mu        sync.RWMutex
 	listeners []chan string
-	logger         log.FieldLogger
+	logger    log.FieldLogger
 }
 
-func NewAgentConfigHandler(configPath string, namespace string, logger log.FieldLogger,) (*AgentConfigHandler, error) {
+func NewAgentConfigHandler(configPath string, namespace string, logger log.FieldLogger) (*AgentConfigHandler, error) {
 	if configPath != "" {
 		configFilePath, configFile, err := loadConfigFile(configPath)
 		if err != nil {
@@ -79,10 +80,10 @@ func loadConfigFile(configPath string) (string, io.Reader, error) {
 		if _, err := os.Stat(jsonConfigPath); errors.Is(err, os.ErrNotExist) {
 			return "", nil, fmt.Errorf("Failed to find config file as either %s or %s", yamConfigPath, jsonConfigPath)
 		}
-		reader, err :=  os.Open(jsonConfigPath)
+		reader, err := os.Open(jsonConfigPath)
 		return jsonConfigPath, reader, err
 	} else {
-		reader, err :=  os.Open(yamConfigPath)
+		reader, err := os.Open(yamConfigPath)
 		return yamConfigPath, reader, err
 	}
 }
@@ -124,15 +125,15 @@ func (c *AgentConfigHandler) watchFile(filePath string) error {
 				isCreate := event.Op&fsnotify.Create != 0
 				isWrite := event.Op&fsnotify.Write != 0
 				if isCreate || isWrite {
-					reader, err :=  os.Open(filePath)
+					reader, err := os.Open(filePath)
 					if err != nil {
-						c.logger.WithError(err).Errorf("Failed to open %s",filePath)
+						c.logger.WithError(err).Errorf("Failed to open %s", filePath)
 					} else {
 						err := c.updateConfig(reader)
 						if err != nil {
-							c.logger.WithError(err).Errorf("Failed to update config %s",filePath)
+							c.logger.WithError(err).Errorf("Failed to update config %s", filePath)
 						} else {
-							for _,ch := range c.listeners {
+							for _, ch := range c.listeners {
 								ch <- "updated"
 							}
 						}
@@ -145,7 +146,7 @@ func (c *AgentConfigHandler) watchFile(filePath string) error {
 	}()
 
 	if err = watcher.Add(filePath); err != nil {
-		c.logger.Errorf("Failed add filePath %s to watcher",filePath)
+		c.logger.Errorf("Failed add filePath %s to watcher", filePath)
 		return err
 	}
 	c.logger.Infof("Start to watch config file %s", filePath)

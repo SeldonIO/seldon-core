@@ -40,7 +40,7 @@ func TestRcloneCopy(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 	type test struct {
-		name string
+		name      string
 		modelName string
 		uri       string
 		status    int
@@ -75,7 +75,7 @@ func TestRcloneConfig(t *testing.T) {
 		expectedPath       string
 		existsBody         []byte
 		createUpdateStatus int
-		expectedName string
+		expectedName       string
 		err                bool
 	}
 	tests := []test{
@@ -85,7 +85,7 @@ func TestRcloneConfig(t *testing.T) {
 			expectedPath:       "/config/create",
 			existsBody:         []byte(`{}`),
 			createUpdateStatus: 200,
-			expectedName: "mys3",
+			expectedName:       "mys3",
 			err:                false,
 		},
 		{
@@ -110,7 +110,7 @@ func TestRcloneConfig(t *testing.T) {
 			expectedPath:       "/config/update",
 			existsBody:         []byte(`{"name":"mys3"}`),
 			createUpdateStatus: 200,
-			expectedName: "mys3",
+			expectedName:       "mys3",
 			err:                false,
 		},
 		{
@@ -252,23 +252,22 @@ func TestCreateUriWithConfig(t *testing.T) {
 	}
 }
 
-
 func TestListRemotes(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 	type test struct {
-		name        string
-		rcloneResponse         *RCloneListRemotes
-		expected  []string
-		err         bool
+		name           string
+		rcloneResponse *RCloneListRemotes
+		expected       []string
+		err            bool
 	}
 	tests := []test{
 		{
 			name: "simple",
 			rcloneResponse: &RCloneListRemotes{
-				Remotes: []string{"a","b"},
+				Remotes: []string{"a", "b"},
 			},
-			expected: []string{"a","b"},
+			expected: []string{"a", "b"},
 		},
 		{
 			name: "empty",
@@ -290,7 +289,7 @@ func TestListRemotes(t *testing.T) {
 			b, err := json.Marshal(test.rcloneResponse)
 			g.Expect(err).To(BeNil())
 			httpmock.RegisterResponder("POST", fmt.Sprintf("=~http://%s:%d%s", host, port, "/config/listremotes"),
-				httpmock.NewBytesResponder(200,b))
+				httpmock.NewBytesResponder(200, b))
 			remotes, err := r.ListRemotes()
 			if !test.err {
 				g.Expect(err).To(BeNil())

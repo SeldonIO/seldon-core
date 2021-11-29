@@ -1,9 +1,10 @@
 package agent
 
 import (
-	log "github.com/sirupsen/logrus"
 	"strings"
 	"testing"
+
+	log "github.com/sirupsen/logrus"
 
 	. "github.com/onsi/gomega"
 )
