@@ -12,7 +12,7 @@ import click
 import numpy as np
 import requests
 
-from seldon_core.seldon_client import SeldonClient
+from seldon_core.seldon_client import SeldonClient, SeldonCallCredentials
 
 CHOICES_GATEWAY_TYPE = ["ambassador", "istio", "seldon"]
 CHOICES_TRANSPORT = ["rest", "grpc"]
@@ -79,6 +79,8 @@ def start_multithreaded_batch_worker(
             "Batch size greater than 1 is only supported for `data` data type."
         )
 
+    creds = SeldonCallCredentials(token=jwt)
+
     sc = SeldonClient(
         gateway=gateway_type,
         transport=transport,
@@ -87,6 +89,7 @@ def start_multithreaded_batch_worker(
         gateway_endpoint=host,
         namespace=namespace,
         client_return_type="dict",
+        call_credentials=creds,
     )
 
     t_in = Thread(
@@ -789,7 +792,14 @@ def _send_batch_feedback(
     envvar="SELDON_BATCH_MIN_INTERVAL",
     default=0,
     type=float,
-    help="Minimum Time interval(in seconds) between batch predictions made by every worker",
+    help="Minimum Time interval(in seconds) between batch predictions made by every worker.",
+)
+@click.option(
+    "--use-ssl",
+    envvar="SELDON_BATCH_USE_SSL",
+    default=False,
+    type=bool,
+    help="Whether to use SSL in transport.",
 )
 def run_cli(
     deployment_name: str,
