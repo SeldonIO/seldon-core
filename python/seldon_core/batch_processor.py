@@ -12,7 +12,7 @@ import click
 import numpy as np
 import requests
 
-from seldon_core.seldon_client import SeldonClient, SeldonCallCredentials
+from seldon_core.seldon_client import SeldonCallCredentials, SeldonClient
 
 CHOICES_GATEWAY_TYPE = ["ambassador", "istio", "seldon"]
 CHOICES_TRANSPORT = ["rest", "grpc"]
