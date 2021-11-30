@@ -54,6 +54,7 @@ def start_multithreaded_batch_worker(
     benchmark: bool,
     batch_id: str,
     batch_interval: float,
+    call_credentials_token: str,
 ) -> None:
     """
     Starts the multithreaded batch worker which consists of three worker types and
@@ -79,7 +80,9 @@ def start_multithreaded_batch_worker(
             "Batch size greater than 1 is only supported for `data` data type."
         )
 
-    creds = SeldonCallCredentials(token=jwt)
+    creds = None
+    if len(call_credentials_token) > 0:
+        creds = SeldonCallCredentials(token=call_credentials_token)
 
     sc = SeldonClient(
         gateway=gateway_type,
@@ -776,7 +779,7 @@ def _send_batch_feedback(
     envvar="SELDON_BATCH_ID",
     default=str(uuid.uuid1()),
     type=str,
-    help="Unique batch ID to identify all datapoints processed in this batch, if not provided is auto generated",
+    help="Unique batch ID to identify all data points processed in this batch, if not provided is auto generated",
 )
 @click.option(
     "--batch-size",
@@ -792,14 +795,14 @@ def _send_batch_feedback(
     envvar="SELDON_BATCH_MIN_INTERVAL",
     default=0,
     type=float,
-    help="Minimum Time interval(in seconds) between batch predictions made by every worker.",
+    help="Minimum Time interval (in seconds) between batch predictions made by every worker.",
 )
 @click.option(
-    "--use-ssl",
-    envvar="SELDON_BATCH_USE_SSL",
-    default=False,
-    type=bool,
-    help="Whether to use SSL in transport.",
+    "--call-credentials-token",
+    envvar="SELDON_BATCH_CALL_CREDENTIALS_TOKEN",
+    default="",
+    type=str,
+    help="Auth token used by Seldon Client.",
 )
 def run_cli(
     deployment_name: str,
@@ -819,6 +822,7 @@ def run_cli(
     benchmark: bool,
     batch_id: str,
     batch_interval: float,
+    call_credentials_token: str,
 ):
     """
     Command line interface for Seldon Batch Processor, which can be used to send requests
@@ -849,6 +853,7 @@ def run_cli(
         benchmark,
         batch_id,
         batch_interval,
+        call_credentials_token,
     )
 
 
