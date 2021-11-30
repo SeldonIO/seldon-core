@@ -82,7 +82,7 @@ def start_multithreaded_batch_worker(
         )
 
     # Providing call credentials sets the REST transport protocol to https,
-    # so we configure credentials even without a supplied token is use_ssl is set.
+    # so we configure credentials even without a supplied token if use_ssl is set.
     credentials = None
     if use_ssl or len(call_credentials_token) > 0:
         token = None
