@@ -1478,7 +1478,7 @@ def rest_predict_gateway(
             request = prediction_pb2.SeldonMessage(data=datadef, meta=metaKV)
         payload = seldon_message_to_json(request)
 
-    if not headers is None:
+    if headers is not None:
         req_headers = headers.copy()
     else:
         req_headers = {}
@@ -1486,11 +1486,11 @@ def rest_predict_gateway(
         scheme = "http"
     else:
         scheme = "https"
-    if not call_credentials is None:
-        if not call_credentials.token is None:
+    if call_credentials is not None:
+        if call_credentials.token is not None:
             req_headers["X-Auth-Token"] = call_credentials.token
     if http_path is not None:
-        url = url = (
+        url = (
             scheme
             + "://"
             + gateway_endpoint
@@ -1532,12 +1532,12 @@ def rest_predict_gateway(
             )
     verify = True
     cert = None
-    if not channel_credentials is None:
-        if not channel_credentials.certificate_chain_file is None:
+    if channel_credentials is not None:
+        if channel_credentials.certificate_chain_file is not None:
             verify = channel_credentials.certificate_chain_file
         else:
             verify = channel_credentials.verify
-        if not channel_credentials.private_key_file is None:
+        if channel_credentials.private_key_file is not None:
             cert = (
                 channel_credentials.root_certificates_file,
                 channel_credentials.private_key_file,
