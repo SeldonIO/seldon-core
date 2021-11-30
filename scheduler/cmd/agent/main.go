@@ -60,8 +60,8 @@ func init() {
 	flag.IntVar(&inferencePort, FlagInferencePort, 8080, "Inference server port")
 	flag.StringVar(&modelRepository, "model-repository", "/mnt/models", "Model repository folder")
 	flag.StringVar(&replicaConfigStr, FlagReplicaConfig, "", "Replica Json Config")
-	flag.StringVar(&namespace, "namespace", "default", "Namespace")
-	flag.StringVar(&configPath, "config-path", "", "Path to folder with configuration files. Will assume agent.yaml or agent.json in this folder")
+	flag.StringVar(&namespace, "namespace", "", "Namespace")
+	flag.StringVar(&configPath, "config-path", "/mnt/config", "Path to folder with configuration files. Will assume agent.yaml or agent.json in this folder")
 }
 
 func isFlagPassed(name string) bool {
@@ -165,6 +165,7 @@ func main() {
 	flag.Parse()
 	updateFlagsFromEnv()
 	setInferenceSvcName()
+	namespace = getNamespace()
 
 	done := make(chan bool, 1)
 

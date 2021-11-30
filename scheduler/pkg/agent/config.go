@@ -2,12 +2,14 @@ package agent
 
 import (
 	"encoding/json"
-	"errors"
-	"fmt"
-	"io"
-	"io/ioutil"
 	"os"
+	"path"
 	"sync"
+
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/k8s"
+	corev1 "k8s.io/api/core/v1"
+	"knative.dev/pkg/configmap"
+	"knative.dev/pkg/configmap/informer"
 
 	log "github.com/sirupsen/logrus"
 
@@ -18,6 +20,7 @@ import (
 const (
 	AgentConfigYamlFilename = "agent.yaml"
 	AgentConfigJsonFilename = "agent.json"
+	ConfigMapName           = "seldon-agent"
 )
 
 type AgentConfiguration struct {
@@ -30,41 +33,63 @@ type RcloneConfiguration struct {
 }
 
 type AgentConfigHandler struct {
-	config    *AgentConfiguration
-	mu        sync.RWMutex
-	listeners []chan string
-	logger    log.FieldLogger
-	watcher   *fsnotify.Watcher
-	done      chan struct{}
+	config               *AgentConfiguration
+	mu                   sync.RWMutex
+	listeners            []chan string
+	logger               log.FieldLogger
+	watcher              *fsnotify.Watcher
+	fileWatcherDone      chan struct{}
+	namespace            string
+	configFilePath       string
+	configMapWatcherDone chan struct{}
 }
 
 func NewAgentConfigHandler(configPath string, namespace string, logger log.FieldLogger) (*AgentConfigHandler, error) {
-	if configPath != "" {
-		configFilePath, configFile, err := loadConfigFile(configPath)
-		if err != nil {
-			return nil, err
-		}
-		configHandler := &AgentConfigHandler{
-			logger: logger,
-		}
-		err = configHandler.updateConfig(configFile)
-		if err != nil {
-			return nil, err
-		}
-		err = configHandler.watchFile(configFilePath)
-		if err != nil {
-			return nil, err
-		}
-		return configHandler, nil
+	configHandler := &AgentConfigHandler{
+		logger:    logger,
+		namespace: namespace,
 	}
-	return &AgentConfigHandler{
-		logger: logger,
-	}, nil
+	if configPath != "" {
+		m, err := configmap.Load(configPath)
+		if err != nil {
+			return nil, err
+		}
+		if v, ok := m[AgentConfigYamlFilename]; ok {
+			err = configHandler.updateConfig([]byte(v))
+			if err != nil {
+				return nil, err
+			}
+			configHandler.configFilePath = path.Join(configPath, AgentConfigYamlFilename)
+		} else if v, ok := m[AgentConfigJsonFilename]; ok {
+			err = configHandler.updateConfig([]byte(v))
+			if err != nil {
+				return nil, err
+			}
+			configHandler.configFilePath = path.Join(configPath, AgentConfigJsonFilename)
+		}
+	}
+
+	if namespace != "" { // Running in k8s
+		err := configHandler.watchConfigMap()
+		if err != nil {
+			return nil, err
+		}
+	} else { // Watch local file
+		err := configHandler.watchFile(configHandler.configFilePath)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return configHandler, nil
 }
 
 func (a *AgentConfigHandler) Close() error {
-	if a.done != nil {
-		close(a.done)
+	if a.fileWatcherDone != nil {
+		close(a.fileWatcherDone)
+	}
+	if a.configMapWatcherDone != nil {
+		close(a.configMapWatcherDone)
 	}
 	if a.watcher != nil {
 		return a.watcher.Close()
@@ -82,34 +107,16 @@ func (a *AgentConfigHandler) AddListener(c chan string) *AgentConfiguration {
 func (a *AgentConfigHandler) getConfiguration() *AgentConfiguration {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
+	a.logger.Infof("get configuration call")
 	return a.config
 }
 
-func loadConfigFile(configPath string) (string, io.Reader, error) {
-	yamConfigPath := configPath + "/" + AgentConfigYamlFilename
-	if _, err := os.Stat(yamConfigPath); errors.Is(err, os.ErrNotExist) {
-		jsonConfigPath := configPath + "/" + AgentConfigJsonFilename
-		if _, err := os.Stat(jsonConfigPath); errors.Is(err, os.ErrNotExist) {
-			return "", nil, fmt.Errorf("Failed to find config file as either %s or %s", yamConfigPath, jsonConfigPath)
-		}
-		reader, err := os.Open(jsonConfigPath)
-		return jsonConfigPath, reader, err
-	} else {
-		reader, err := os.Open(yamConfigPath)
-		return yamConfigPath, reader, err
-	}
-}
-
-func (c *AgentConfigHandler) updateConfig(file io.Reader) error {
-	c.logger.Info("Updating config")
+func (c *AgentConfigHandler) updateConfig(configData []byte) error {
+	c.logger.Infof("Updating config %s", configData)
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	configData, err := ioutil.ReadAll(file)
-	if err != nil {
-		return err
-	}
 	config := AgentConfiguration{}
-	err = yaml.Unmarshal(configData, &config)
+	err := yaml.Unmarshal(configData, &config)
 	if err != nil {
 		err = json.Unmarshal(configData, &config)
 		if err != nil {
@@ -120,8 +127,7 @@ func (c *AgentConfigHandler) updateConfig(file io.Reader) error {
 	return nil
 }
 
-// Watch the config file passed for changes and reload and signal listerners when it does
-// TODO could be extended to watch config directories created by K8S on configmap mounts
+// Watch the config file passed for changes and reload and signal listeners when it does
 func (c *AgentConfigHandler) watchFile(filePath string) error {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -129,6 +135,7 @@ func (c *AgentConfigHandler) watchFile(filePath string) error {
 		return err
 	}
 	c.watcher = watcher
+	c.fileWatcherDone = make(chan struct{})
 
 	go func() {
 		for {
@@ -138,11 +145,11 @@ func (c *AgentConfigHandler) watchFile(filePath string) error {
 				isCreate := event.Op&fsnotify.Create != 0
 				isWrite := event.Op&fsnotify.Write != 0
 				if isCreate || isWrite {
-					reader, err := os.Open(filePath)
+					b, err := os.ReadFile(filePath)
 					if err != nil {
-						c.logger.WithError(err).Errorf("Failed to open %s", filePath)
+						c.logger.WithError(err).Errorf("Failed to read %s", filePath)
 					} else {
-						err := c.updateConfig(reader)
+						err := c.updateConfig(b)
 						if err != nil {
 							c.logger.WithError(err).Errorf("Failed to update config %s", filePath)
 						} else {
@@ -154,7 +161,7 @@ func (c *AgentConfigHandler) watchFile(filePath string) error {
 				}
 			case err := <-watcher.Errors:
 				c.logger.Error(err, "watcher error")
-			case <-c.done:
+			case <-c.fileWatcherDone:
 				return
 			}
 		}
@@ -169,7 +176,30 @@ func (c *AgentConfigHandler) watchFile(filePath string) error {
 	return nil
 }
 
-//TODO finish
-func loadFromK8s(namespace string) *AgentConfiguration {
+func (a *AgentConfigHandler) watchConfigMap() error {
+	logger := a.logger.WithField("func", "watchConfigMap")
+	clientset, err := k8s.CreateClientset()
+	if err != nil {
+		return err
+	}
+	watcher := informer.NewInformedWatcher(clientset, a.namespace)
+	watcher.Watch(ConfigMapName, func(updated *corev1.ConfigMap) {
+		if data, ok := updated.Data[AgentConfigYamlFilename]; ok {
+			err := a.updateConfig([]byte(data))
+			if err != nil {
+				logger.Errorf("Failed to update configmap from data in %s", AgentConfigYamlFilename)
+			}
+		} else if data, ok := updated.Data[AgentConfigJsonFilename]; ok {
+			err := a.updateConfig([]byte(data))
+			if err != nil {
+				logger.Errorf("Failed to update configmap from data in %s", AgentConfigJsonFilename)
+			}
+		}
+	})
+	a.configMapWatcherDone = make(chan struct{})
+	err = watcher.Start(a.configMapWatcherDone)
+	if err != nil {
+		return err
+	}
 	return nil
 }

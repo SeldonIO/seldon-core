@@ -133,7 +133,7 @@ func (c *Client) loadRcloneDefaults(rcloneConfig *AgentConfiguration) error {
 	if rcloneConfig != nil {
 		// Load any secrets that have Rclone config
 		if len(rcloneConfig.Rclone.ConfigSecrets) > 0 {
-			secretClientSet, err := k8s.CreateSecretsClientset()
+			secretClientSet, err := k8s.CreateClientset()
 			if err != nil {
 				return err
 			}
@@ -199,16 +199,19 @@ func (c *Client) createConnection() error {
 }
 
 func (c *Client) waitReady() error {
+	logger := c.logger.WithField("func", "waitReady")
 	logFailure := func(err error, delay time.Duration) {
-		c.logger.WithError(err).Errorf("Rclone not ready")
+		logger.WithError(err).Errorf("Rclone not ready")
 	}
+	logger.Infof("Waiting for Rclone server to be ready")
 	err := backoff.RetryNotify(c.RCloneClient.Ready, backoff.NewExponentialBackOff(), logFailure)
 	if err != nil {
 		return err
 	}
 	logFailure = func(err error, delay time.Duration) {
-		c.logger.WithError(err).Errorf("Server not ready")
+		logger.WithError(err).Errorf("Server not ready")
 	}
+	logger.Infof("Waiting for inference server to be ready")
 	err = backoff.RetryNotify(c.V2Client.Ready, backoff.NewExponentialBackOff(), logFailure)
 	if err != nil {
 		return err
@@ -304,7 +307,7 @@ func (c *Client) getArtifactConfig(request *agent.ModelOperationMessage) ([]byte
 		return []byte(x.StorageRcloneConfig), nil
 	case *pbs.StorageConfig_StorageSecretName:
 		if c.secretsHandler == nil {
-			secretClientSet, err := k8s.CreateSecretsClientset()
+			secretClientSet, err := k8s.CreateClientset()
 			if err != nil {
 				return nil, err
 			}

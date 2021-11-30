@@ -1,0 +1,4 @@
+resources:
+- agent-configmap.yaml
+- rclone-gs-public.yaml
+

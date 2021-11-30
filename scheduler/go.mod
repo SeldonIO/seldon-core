@@ -11,11 +11,12 @@ require (
 	github.com/jarcoal/httpmock v1.0.8
 	github.com/onsi/gomega v1.16.0
 	github.com/sirupsen/logrus v1.8.1
-	google.golang.org/grpc v1.38.0
-	google.golang.org/protobuf v1.26.0
+	google.golang.org/grpc v1.42.0
+	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.22.2
 	k8s.io/apimachinery v0.22.2
 	k8s.io/client-go v0.22.2
+	knative.dev/pkg v0.0.0-20211129153605-754f332c0c51
 	sigs.k8s.io/controller-runtime v0.10.3
 )
