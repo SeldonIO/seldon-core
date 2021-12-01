@@ -6,7 +6,8 @@ import (
 	"path"
 	"sync"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/k8s"
+	"k8s.io/client-go/kubernetes"
+
 	corev1 "k8s.io/api/core/v1"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/configmap/informer"
@@ -44,7 +45,7 @@ type AgentConfigHandler struct {
 	configMapWatcherDone chan struct{}
 }
 
-func NewAgentConfigHandler(configPath string, namespace string, logger log.FieldLogger) (*AgentConfigHandler, error) {
+func NewAgentConfigHandler(configPath string, namespace string, logger log.FieldLogger, clientset kubernetes.Interface) (*AgentConfigHandler, error) {
 	configHandler := &AgentConfigHandler{
 		logger:    logger,
 		namespace: namespace,
@@ -69,16 +70,18 @@ func NewAgentConfigHandler(configPath string, namespace string, logger log.Field
 		}
 	}
 
-	if namespace != "" { // Running in k8s
-		err := configHandler.watchConfigMap()
+	if namespace != "" && clientset != nil { // Running in k8s
+		err := configHandler.watchConfigMap(clientset)
 		if err != nil {
 			return nil, err
 		}
-	} else { // Watch local file
+	} else if configPath != "" { // Watch local file
 		err := configHandler.watchFile(configHandler.configFilePath)
 		if err != nil {
 			return nil, err
 		}
+	} else {
+		logger.Warnf("No config available on initialization")
 	}
 
 	return configHandler, nil
@@ -176,12 +179,9 @@ func (c *AgentConfigHandler) watchFile(filePath string) error {
 	return nil
 }
 
-func (a *AgentConfigHandler) watchConfigMap() error {
+func (a *AgentConfigHandler) watchConfigMap(clientset kubernetes.Interface) error {
 	logger := a.logger.WithField("func", "watchConfigMap")
-	clientset, err := k8s.CreateClientset()
-	if err != nil {
-		return err
-	}
+
 	watcher := informer.NewInformedWatcher(clientset, a.namespace)
 	watcher.Watch(ConfigMapName, func(updated *corev1.ConfigMap) {
 		if data, ok := updated.Data[AgentConfigYamlFilename]; ok {
@@ -197,7 +197,7 @@ func (a *AgentConfigHandler) watchConfigMap() error {
 		}
 	})
 	a.configMapWatcherDone = make(chan struct{})
-	err = watcher.Start(a.configMapWatcherDone)
+	err := watcher.Start(a.configMapWatcherDone)
 	if err != nil {
 		return err
 	}

@@ -11,6 +11,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/k8s"
+	"k8s.io/client-go/kubernetes"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent"
 	log "github.com/sirupsen/logrus"
 )
@@ -182,8 +185,15 @@ func main() {
 		log.Fatalf("Failed to parse replica config %s", replicaConfigStr)
 	}
 
+	var clientset kubernetes.Interface
+	if namespace != "" {
+		clientset, err = k8s.CreateClientset()
+		if err != nil {
+			logger.WithError(err).Fatal("Failed to create kubernetes clientset")
+		}
+	}
 	// Start Agent configuration handler
-	agentConfigHandler, err := agent.NewAgentConfigHandler(configPath, namespace, logger)
+	agentConfigHandler, err := agent.NewAgentConfigHandler(configPath, namespace, logger, clientset)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create agent config handler")
 	}
