@@ -8,5 +8,5 @@ spec:
   - name: default
     graph:
       name: classifier
-      modelUri: gs://seldon-models/v1.10.0-dev/sklearn/iris
+      modelUri: gs://seldon-models/v1.12.0/sklearn/iris
       implementation: SKLEARN_SERVER

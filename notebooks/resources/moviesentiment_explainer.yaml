@@ -9,7 +9,7 @@ spec:
   - graph:
       name: classifier
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.10.0-dev/sklearn/moviesentiment
+      modelUri: gs://seldon-models/v1.12.0/sklearn/moviesentiment
     explainer:
       type: AnchorText
     name: default
