@@ -41,7 +41,7 @@ type RcloneConfiguration struct {
 type AgentConfigHandler struct {
 	config               *AgentConfiguration
 	mu                   sync.RWMutex
-	listeners            []chan string
+	listeners            []chan AgentConfiguration
 	logger               log.FieldLogger
 	watcher              *fsnotify.Watcher
 	fileWatcherDone      chan struct{}
@@ -119,7 +119,7 @@ func (a *AgentConfigHandler) Close() error {
 	return nil
 }
 
-func (a *AgentConfigHandler) AddListener(c chan string) *AgentConfiguration {
+func (a *AgentConfigHandler) AddListener(c chan AgentConfiguration) *AgentConfiguration {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	a.listeners = append(a.listeners, c)
@@ -175,9 +175,11 @@ func (a *AgentConfigHandler) watchFile(filePath string) error {
 						if err != nil {
 							logger.WithError(err).Errorf("Failed to update config %s", filePath)
 						} else {
+							a.mu.RLock()
 							for _, ch := range a.listeners {
-								ch <- "updated"
+								ch <- *a.config
 							}
+							a.mu.RUnlock()
 						}
 					}
 				}
@@ -213,9 +215,11 @@ func (a *AgentConfigHandler) watchConfigMap(clientset kubernetes.Interface) erro
 			if err != nil {
 				logger.Errorf("Failed to update configmap from data in %s", AgentConfigJsonFilename)
 			} else {
+				a.mu.RLock()
 				for _, ch := range a.listeners {
-					ch <- "updated"
+					ch <- *a.config
 				}
+				a.mu.RUnlock()
 			}
 		}
 	})

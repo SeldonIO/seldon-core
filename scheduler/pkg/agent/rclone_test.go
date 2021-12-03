@@ -163,8 +163,13 @@ func TestGetRemoteName(t *testing.T) {
 			err:      false,
 		},
 		{
-			name: "Fail",
+			name: "BadURIFail",
 			uri:  "s3//models/iris",
+			err:  true,
+		},
+		{
+			name: "InlineFail",
+			uri:  ":,provider=minio,env_auth=false,access_key_id=minioadmin,secret_access_key=minoadmin,endpoint='http://172.18.255.1:9000'://models/iris",
 			err:  true,
 		},
 	}
@@ -257,21 +262,21 @@ func TestListRemotes(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
 		name           string
-		rcloneResponse *RCloneListRemotes
+		rcloneResponse *RcloneListRemotes
 		expected       []string
 		err            bool
 	}
 	tests := []test{
 		{
 			name: "simple",
-			rcloneResponse: &RCloneListRemotes{
+			rcloneResponse: &RcloneListRemotes{
 				Remotes: []string{"a", "b"},
 			},
 			expected: []string{"a", "b"},
 		},
 		{
 			name: "empty",
-			rcloneResponse: &RCloneListRemotes{
+			rcloneResponse: &RcloneListRemotes{
 				Remotes: []string{},
 			},
 			expected: []string{},

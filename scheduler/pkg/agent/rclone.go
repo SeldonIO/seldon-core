@@ -17,8 +17,14 @@ import (
 )
 
 const (
-	ContentTypeJSON = "application/json"
-	ContentType     = "Content-Type"
+	ContentTypeJSON        = "application/json"
+	ContentType            = "Content-Type"
+	RcloneNoopPath         = "/rc/noop"
+	RcloneSyncCopyPath     = "/sync/copy"
+	RcloneConfigCreatePath = "/config/create"
+	RcloneConfigUpdatePath = "/config/update"
+	RcloneListRemotesPath  = "/config/listremotes"
+	RcloneConfigDeletePath = "/config/delete"
 )
 
 type RCloneClient struct {
@@ -34,42 +40,42 @@ type Noop struct {
 	Foo string `json:"foo,omitempty" protobuf:"bytes,1,name=foo"`
 }
 
-type RCloneCopy struct {
+type RcloneCopy struct {
 	SrcFs              string `json:"srcFs"`
 	DstFs              string `json:"dstFs"`
 	CreateEmptySrcDirs bool   `json:"createEmptySrcDirs"`
 }
 
-type RCloneConfigKey struct {
+type RcloneConfigKey struct {
 	Name string `json:"name" yaml:"name"`
 }
 
-type RCloneConfigCreate struct {
+type RcloneConfigCreate struct {
 	Name       string            `json:"name" yaml:"name" validate:"required"`
 	Type       string            `json:"type" yaml:"type" validate:"required"`
 	Parameters map[string]string `json:"parameters" yaml:"parameters" validate:"required"`
-	Opts       map[string]string `json:"opts" yaml:"opts"`
+	Opt        map[string]string `json:"opt" yaml:"opt"`
 }
 
-type RCloneConfigUpdate struct {
+type RcloneConfigUpdate struct {
 	Name       string            `json:"name" yaml:"name"`
 	Parameters map[string]string `json:"parameters" yaml:"parameters"`
-	Opts       map[string]string `json:"opts" yaml:"opts"`
+	Opt        map[string]string `json:"opt" yaml:"opt"`
 }
 
-type RCloneListRemotes struct {
+type RcloneListRemotes struct {
 	Remotes []string `json:"remotes"`
 }
 
-type RCloneDeleteRemote struct {
+type RcloneDeleteRemote struct {
 	Name string `json:"name"`
 }
 
-func createConfigUpdateFromCreate(create *RCloneConfigCreate) *RCloneConfigUpdate {
-	update := RCloneConfigUpdate{
+func createConfigUpdateFromCreate(create *RcloneConfigCreate) *RcloneConfigUpdate {
+	update := RcloneConfigUpdate{
 		Name:       create.Name,
 		Parameters: create.Parameters,
-		Opts:       create.Opts,
+		Opt:        create.Opt,
 	}
 	return &update
 }
@@ -123,21 +129,25 @@ func (r *RCloneClient) Ready() error {
 	if err != nil {
 		return err
 	}
-	_, err = r.call(b, "/rc/noop")
+	_, err = r.call(b, RcloneNoopPath)
 	return err
 }
 
+// This method assumes a simple remote URI with no config. e.g. s3://mybucket
 func getRemoteName(uri string) (string, error) {
 	idx := strings.Index(uri, ":")
 	if idx == -1 {
 		return "", fmt.Errorf("Failed to find : in %s for rclone name match", uri)
 	}
+	if idx == 0 {
+		return "", fmt.Errorf("Can't get remote from URI with configuration included inline")
+	}
 	name := uri[0:idx]
 	return name, nil
 }
 
-func (r *RCloneClient) parseRcloneConfig(config []byte) (*RCloneConfigCreate, error) {
-	configCreate := RCloneConfigCreate{}
+func (r *RCloneClient) parseRcloneConfig(config []byte) (*RcloneConfigCreate, error) {
+	configCreate := RcloneConfigCreate{}
 	err := json.Unmarshal(config, &configCreate)
 	if err != nil {
 		err2 := yaml.Unmarshal(config, &configCreate)
@@ -152,6 +162,7 @@ func (r *RCloneClient) parseRcloneConfig(config []byte) (*RCloneConfigCreate, er
 	return &configCreate, nil
 }
 
+// Creating a connection string with https://rclone.org/docs/#connection-strings
 func (r *RCloneClient) createUriWithConfig(uri string, config []byte) (string, error) {
 	remote, err := getRemoteName(uri)
 	if err != nil {
@@ -210,7 +221,7 @@ func (r *RCloneClient) Copy(modelName string, src string, config []byte) error {
 	}
 
 	dst := fmt.Sprintf("%s/%s", r.localPath, modelName)
-	copy := RCloneCopy{
+	copy := RcloneCopy{
 		SrcFs:              srcUpdated,
 		DstFs:              dst,
 		CreateEmptySrcDirs: true,
@@ -220,13 +231,13 @@ func (r *RCloneClient) Copy(modelName string, src string, config []byte) error {
 	if err != nil {
 		return err
 	}
-	_, err = r.call(b, "/sync/copy")
+	_, err = r.call(b, RcloneSyncCopyPath)
 	return err
 }
 
 // Call Rclone /config/get
 func (r *RCloneClient) configExists(rcloneRemoteKey string) (bool, error) {
-	key := RCloneConfigKey{Name: rcloneRemoteKey}
+	key := RcloneConfigKey{Name: rcloneRemoteKey}
 	b, err := json.Marshal(key)
 	if err != nil {
 		return false, err
@@ -248,33 +259,33 @@ func (r *RCloneClient) configExists(rcloneRemoteKey string) (bool, error) {
 }
 
 // Call Rclone /config/create
-func (r *RCloneClient) configCreate(configCreate *RCloneConfigCreate) error {
+func (r *RCloneClient) configCreate(configCreate *RcloneConfigCreate) error {
 	b, err := json.Marshal(configCreate)
 	if err != nil {
 		return err
 	}
-	_, err = r.call(b, "/config/create")
+	_, err = r.call(b, RcloneConfigCreatePath)
 	return err
 }
 
 // Call Rclone /config/update
-func (r *RCloneClient) configUpdate(configCreate *RCloneConfigCreate) error {
+func (r *RCloneClient) configUpdate(configCreate *RcloneConfigCreate) error {
 	configUpdate := createConfigUpdateFromCreate(configCreate)
 	b, err := json.Marshal(configUpdate)
 	if err != nil {
 		return err
 	}
-	_, err = r.call(b, "/config/update")
+	_, err = r.call(b, RcloneConfigUpdatePath)
 	return err
 }
 
 // Call Rclone /config/listremotes
 func (r *RCloneClient) ListRemotes() ([]string, error) {
-	res, err := r.call([]byte("{}"), "/config/listremotes")
+	res, err := r.call([]byte("{}"), RcloneListRemotesPath)
 	if err != nil {
 		return nil, err
 	}
-	remotes := RCloneListRemotes{}
+	remotes := RcloneListRemotes{}
 	err = json.Unmarshal(res, &remotes)
 	if err != nil {
 		return nil, err
@@ -283,11 +294,11 @@ func (r *RCloneClient) ListRemotes() ([]string, error) {
 }
 
 func (r *RCloneClient) DeleteRemote(name string) error {
-	delRemote := RCloneDeleteRemote{Name: name}
+	delRemote := RcloneDeleteRemote{Name: name}
 	b, err := json.Marshal(&delRemote)
 	if err != nil {
 		return err
 	}
-	_, err = r.call(b, "/config/delete")
+	_, err = r.call(b, RcloneConfigDeletePath)
 	return err
 }

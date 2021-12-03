@@ -42,7 +42,12 @@ start-envoy:
 	./hack/start-envoy-delta.sh
 
 start-agent:
-	./bin/agent --model-repository ${PWD}/mlrepo --inference-port 8080 -namespace seldon-mesh \
+	./bin/agent --model-repository ${PWD}/mlrepo --inference-port 8080 \
+		--config-path ${PWD}/config \
+		--replica-config '{"inferenceSvc":"0.0.0.0","inferenceHttpPort":8080,"inferenceGrpcPort":8081,"memoryBytes":1000,"availableMemoryBytes":1000,"capabilities":["sklearn"],"overCommit":false}'
+
+start-agent-k8s:
+	./bin/agent --model-repository ${PWD}/mlrepo --inference-port 8080 --namespace seldon-mesh \
 		--config-path ${PWD}/config \
 		--replica-config '{"inferenceSvc":"0.0.0.0","inferenceHttpPort":8080,"inferenceGrpcPort":8081,"memoryBytes":1000,"availableMemoryBytes":1000,"capabilities":["sklearn"],"overCommit":false}'
 

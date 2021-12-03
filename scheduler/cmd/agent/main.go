@@ -189,7 +189,7 @@ func main() {
 		close(done)
 	}()
 
-	replicaConfig, err := agent.ParseReplicConfig(replicaConfigStr)
+	replicaConfig, err := agent.ParseReplicaConfig(replicaConfigStr)
 	if err != nil {
 		log.Fatalf("Failed to parse replica config %s", replicaConfigStr)
 	}
@@ -213,14 +213,14 @@ func main() {
 
 	rcloneClient := agent.NewRCloneClient(rcloneHost, rclonePort, modelRepository, logger)
 	v2Client := agent.NewV2Client(inferenceHost, inferencePort, logger)
-	client, err := agent.NewClient(serverName, uint32(replicaIdx), schedulerHost, schedulerPort, logger, rcloneClient, v2Client, replicaConfig, inferenceSvcName, namespace, agentConfigHandler)
+	client, err := agent.NewClient(serverName, uint32(replicaIdx), schedulerHost, schedulerPort, logger, rcloneClient, v2Client, replicaConfig, inferenceSvcName, namespace)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create new Agent client")
 	}
 
 	// Start client grpc server
 	go func() {
-		err = client.Start()
+		err = client.Start(agentConfigHandler)
 		if err != nil {
 			logger.WithError(err).Fatal("Failed to initialise client")
 		}

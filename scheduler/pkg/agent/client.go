@@ -33,11 +33,10 @@ type Client struct {
 	loadedModels   map[string]*pbs.ModelDetails
 	secretsHandler *k8s.SecretHandler
 	namespace      string
-	configHandler  *AgentConfigHandler
-	configChan     chan string
+	configChan     chan AgentConfiguration
 }
 
-func ParseReplicConfig(json string) (*agent.ReplicaConfig, error) {
+func ParseReplicaConfig(json string) (*agent.ReplicaConfig, error) {
 	config := agent.ReplicaConfig{}
 	err := protojson.Unmarshal([]byte(json), &config)
 	if err != nil {
@@ -55,8 +54,8 @@ func NewClient(serverName string,
 	v2Client *V2Client,
 	replicaConfig *agent.ReplicaConfig,
 	inferenceSvcName string,
-	namespace string,
-	configHandler *AgentConfigHandler) (*Client, error) {
+	namespace string) (*Client, error) {
+
 	replicaConfig.InferenceSvc = inferenceSvcName
 	replicaConfig.AvailableMemoryBytes = replicaConfig.MemoryBytes
 
@@ -77,28 +76,27 @@ func NewClient(serverName string,
 		replicaConfig: replicaConfig,
 		loadedModels:  make(map[string]*pbs.ModelDetails),
 		namespace:     namespace,
-		configHandler: configHandler,
-		configChan:    make(chan string),
+		configChan:    make(chan AgentConfiguration),
 	}, nil
 }
 
-func (c *Client) Start() error {
+func (c *Client) Start(configHandler *AgentConfigHandler) error {
 	err := c.waitReady()
 	if err != nil {
-		c.logger.WithError(err).Errorf("Failed to create connection")
+		c.logger.WithError(err).Errorf("Failed to wait for all agent dependent services to be ready")
 		return err
 	}
 	if c.conn == nil {
 		err = c.createConnection()
 		if err != nil {
-			c.logger.WithError(err).Errorf("Failed to create connection")
+			c.logger.WithError(err).Errorf("Failed to create connection to scheduler")
 			return err
 		}
 	}
 	// Start config listener
 	go c.listenForConfigUpdates()
 	// Add ourself as listener on channel and handle initial config
-	err = c.loadRcloneDefaults(c.configHandler.AddListener(c.configChan))
+	err = c.loadRcloneConfiguration(configHandler.AddListener(c.configChan))
 	if err != nil {
 		c.logger.WithError(err).Fatal("Failed to load rclone defaults")
 		return err
@@ -116,81 +114,16 @@ func (c *Client) Start() error {
 
 func (c *Client) listenForConfigUpdates() {
 	logger := c.logger.WithField("func", "listenForConfigUpdates")
-	for range c.configChan {
+	for config := range c.configChan {
 		c.logger.Info("Received config update")
+		config := config
 		go func() {
-			err := c.loadRcloneDefaults(c.configHandler.getConfiguration())
+			err := c.loadRcloneConfiguration(&config)
 			if err != nil {
 				logger.WithError(err).Error("Failed to load rclone defaults")
 			}
 		}()
 	}
-}
-
-func (c *Client) loadRcloneDefaults(rcloneConfig *AgentConfiguration) error {
-	logger := c.logger.WithField("func", "loadRcloneDefaults")
-	var rcloneNamesAdded []string
-	if rcloneConfig != nil {
-		// Load any secrets that have Rclone config
-		if len(rcloneConfig.Rclone.ConfigSecrets) > 0 {
-			secretClientSet, err := k8s.CreateClientset()
-			if err != nil {
-				return err
-			}
-			secretsHandler := k8s.NewSecretsHandler(secretClientSet, c.namespace)
-			for _, secret := range rcloneConfig.Rclone.ConfigSecrets {
-				logger.Infof("Loading rclone secret %s", secret)
-				config, err := secretsHandler.GetSecretConfig(secret)
-				if err != nil {
-					return err
-				}
-				name, err := c.RCloneClient.Config(config)
-				if err != nil {
-					return err
-				}
-				rcloneNamesAdded = append(rcloneNamesAdded, name)
-			}
-		}
-		// Load any raw Rclone configs
-		if len(rcloneConfig.Rclone.Config) > 0 {
-			for _, config := range rcloneConfig.Rclone.Config {
-				logger.Infof("Loading rclone config %s", config)
-				name, err := c.RCloneClient.Config([]byte(config))
-				if err != nil {
-					return err
-				}
-				rcloneNamesAdded = append(rcloneNamesAdded, name)
-			}
-		}
-
-		// Delete any existing remotes not in defaults
-		existingRemotes, err := c.RCloneClient.ListRemotes()
-		if err != nil {
-			return err
-		}
-		for _, existingName := range existingRemotes {
-			found := false
-			for _, addedName := range rcloneNamesAdded {
-				if existingName == addedName {
-					found = true
-					break
-				}
-			}
-			if !found {
-				logger.Warnf("Delete remote %s as not in new list of defaults", existingName)
-				err := c.RCloneClient.DeleteRemote(existingName)
-				if err != nil {
-					return err
-				}
-			}
-		}
-		existingRemotes, err = c.RCloneClient.ListRemotes()
-		if err != nil {
-			return err
-		}
-		logger.Infof("After update current set of remotes is %v", existingRemotes)
-	}
-	return nil
 }
 
 func (c *Client) createConnection() error {
