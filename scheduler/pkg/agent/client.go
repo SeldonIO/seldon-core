@@ -164,11 +164,11 @@ func (c *Client) loadRcloneDefaults(rcloneConfig *AgentConfiguration) error {
 		}
 
 		// Delete any existing remotes not in defaults
-		exsitingNames, err := c.RCloneClient.ListRemotes()
+		existingRemotes, err := c.RCloneClient.ListRemotes()
 		if err != nil {
 			return err
 		}
-		for _, existingName := range exsitingNames {
+		for _, existingName := range existingRemotes {
 			found := false
 			for _, addedName := range rcloneNamesAdded {
 				if existingName == addedName {
@@ -184,6 +184,11 @@ func (c *Client) loadRcloneDefaults(rcloneConfig *AgentConfiguration) error {
 				}
 			}
 		}
+		existingRemotes, err = c.RCloneClient.ListRemotes()
+		if err != nil {
+			return err
+		}
+		logger.Infof("After update current set of remotes is %v", existingRemotes)
 	}
 	return nil
 }

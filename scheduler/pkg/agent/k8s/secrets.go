@@ -35,5 +35,6 @@ func (s *SecretHandler) GetSecretConfig(secretName string) ([]byte, error) {
 			return []byte(val), nil
 		}
 	}
+	//TODO allow more than 1 key in secret
 	return nil, fmt.Errorf("Secret does not have 1 key %s", secretName)
 }

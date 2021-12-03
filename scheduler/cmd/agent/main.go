@@ -141,15 +141,20 @@ func updateFlagsFromEnv() {
 	}
 }
 
-func getNamespace() string {
+func runningInsideK8s() bool {
+	return namespace != ""
+}
+
+func updateNamespace() {
 	nsBytes, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
 	if err != nil {
 		log.Warn("Using namespace from command line argument")
-		return namespace
+	} else {
+		namespace = string(nsBytes)
 	}
-	ns := string(nsBytes)
-	log.Info("Namespace is ", ns)
-	return ns
+	if runningInsideK8s() {
+		log.Info("Running inside k8s. Namespace is ", namespace)
+	}
 }
 
 func setInferenceSvcName() {
@@ -162,13 +167,17 @@ func setInferenceSvcName() {
 	log.Infof("Setting inference svc name to %s", inferenceSvcName)
 }
 
+func updateFlags() {
+	updateFlagsFromEnv()
+	setInferenceSvcName()
+	updateNamespace()
+}
+
 func main() {
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
 	flag.Parse()
-	updateFlagsFromEnv()
-	setInferenceSvcName()
-	namespace = getNamespace()
+	updateFlags()
 
 	done := make(chan bool, 1)
 
@@ -186,7 +195,7 @@ func main() {
 	}
 
 	var clientset kubernetes.Interface
-	if namespace != "" {
+	if runningInsideK8s() {
 		clientset, err = k8s.CreateClientset()
 		if err != nil {
 			logger.WithError(err).Fatal("Failed to create kubernetes clientset")
@@ -198,15 +207,15 @@ func main() {
 		logger.WithError(err).Fatal("Failed to create agent config handler")
 	}
 	defer func() {
-		logger.Info("Closing agent handler")
 		_ = agentConfigHandler.Close()
+		logger.Info("Closing agent handler")
 	}()
 
 	rcloneClient := agent.NewRCloneClient(rcloneHost, rclonePort, modelRepository, logger)
 	v2Client := agent.NewV2Client(inferenceHost, inferencePort, logger)
 	client, err := agent.NewClient(serverName, uint32(replicaIdx), schedulerHost, schedulerPort, logger, rcloneClient, v2Client, replicaConfig, inferenceSvcName, namespace, agentConfigHandler)
 	if err != nil {
-		logger.WithError(err).Fatal("Failed to  client")
+		logger.WithError(err).Fatal("Failed to create new Agent client")
 	}
 
 	// Start client grpc server

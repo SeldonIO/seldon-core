@@ -52,10 +52,6 @@ type LoggingSpec struct {
 	// URI to logging endpoint.
 	// +optional
 	Uri *string `json:"uri,omitempty"`
-	// Percentage of payloads to log
-	// Defaults to 100%
-	// +optional
-	Percent *int32 `json:"percent,omitempty"`
 }
 
 type InferenceArtifactSpec struct {
@@ -68,9 +64,6 @@ type InferenceArtifactSpec struct {
 	// Schema URI
 	// +optional
 	SchemaURI *string `json:"schemaUri,omitempty"`
-	// Service Account Name for auth
-	// +optional
-	ServiceAccountName *string `json:"serviceAccountName,omitempty"`
 	// Secret name
 	// +optional
 	SecretName *string `json:"secretName,omitempty"`

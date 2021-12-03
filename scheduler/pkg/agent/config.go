@@ -2,6 +2,7 @@ package agent
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path"
 	"sync"
@@ -22,6 +23,10 @@ const (
 	AgentConfigYamlFilename = "agent.yaml"
 	AgentConfigJsonFilename = "agent.json"
 	ConfigMapName           = "seldon-agent"
+)
+
+var (
+	ConfigFileNames = []string{AgentConfigYamlFilename, AgentConfigJsonFilename}
 )
 
 type AgentConfiguration struct {
@@ -51,40 +56,54 @@ func NewAgentConfigHandler(configPath string, namespace string, logger log.Field
 		namespace: namespace,
 	}
 	if configPath != "" {
-		m, err := configmap.Load(configPath)
+		err := configHandler.initConfigFromPath(configPath)
 		if err != nil {
 			return nil, err
-		}
-		if v, ok := m[AgentConfigYamlFilename]; ok {
-			err = configHandler.updateConfig([]byte(v))
-			if err != nil {
-				return nil, err
-			}
-			configHandler.configFilePath = path.Join(configPath, AgentConfigYamlFilename)
-		} else if v, ok := m[AgentConfigJsonFilename]; ok {
-			err = configHandler.updateConfig([]byte(v))
-			if err != nil {
-				return nil, err
-			}
-			configHandler.configFilePath = path.Join(configPath, AgentConfigJsonFilename)
 		}
 	}
 
-	if namespace != "" && clientset != nil { // Running in k8s
-		err := configHandler.watchConfigMap(clientset)
+	err := configHandler.initWatcher(configPath, namespace, clientset)
+	if err != nil {
+		return nil, err
+	}
+
+	return configHandler, nil
+}
+
+func (a *AgentConfigHandler) initConfigFromPath(configPath string) error {
+	m, err := configmap.Load(configPath)
+	if err != nil {
+		return err
+	}
+	for _, fileKey := range ConfigFileNames {
+		if v, ok := m[fileKey]; ok {
+			err = a.updateConfig([]byte(v))
+			if err != nil {
+				return err
+			}
+			a.configFilePath = path.Join(configPath, fileKey)
+			return nil
+		}
+	}
+	return fmt.Errorf("Failed to find config file from loaded config. Searched keys %v", ConfigFileNames)
+}
+
+func (a *AgentConfigHandler) initWatcher(configPath string, namespace string, clientset kubernetes.Interface) error {
+	logger := a.logger.WithField("func", "initWatcher")
+	if namespace != "" { // Running in k8s
+		err := a.watchConfigMap(clientset)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	} else if configPath != "" { // Watch local file
-		err := configHandler.watchFile(configHandler.configFilePath)
+		err := a.watchFile(a.configFilePath)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	} else {
 		logger.Warnf("No config available on initialization")
 	}
-
-	return configHandler, nil
+	return nil
 }
 
 func (a *AgentConfigHandler) Close() error {
@@ -110,14 +129,13 @@ func (a *AgentConfigHandler) AddListener(c chan string) *AgentConfiguration {
 func (a *AgentConfigHandler) getConfiguration() *AgentConfiguration {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
-	a.logger.Infof("get configuration call")
 	return a.config
 }
 
-func (c *AgentConfigHandler) updateConfig(configData []byte) error {
-	c.logger.Infof("Updating config %s", configData)
-	c.mu.Lock()
-	defer c.mu.Unlock()
+func (a *AgentConfigHandler) updateConfig(configData []byte) error {
+	a.logger.Infof("Updating config %s", configData)
+	a.mu.Lock()
+	defer a.mu.Unlock()
 	config := AgentConfiguration{}
 	err := yaml.Unmarshal(configData, &config)
 	if err != nil {
@@ -126,55 +144,56 @@ func (c *AgentConfigHandler) updateConfig(configData []byte) error {
 			return err
 		}
 	}
-	c.config = &config
+	a.config = &config
 	return nil
 }
 
 // Watch the config file passed for changes and reload and signal listeners when it does
-func (c *AgentConfigHandler) watchFile(filePath string) error {
+func (a *AgentConfigHandler) watchFile(filePath string) error {
+	logger := a.logger.WithField("func", "watchFile")
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		c.logger.Error(err, "Failed to create watcher")
+		logger.Error(err, "Failed to create watcher")
 		return err
 	}
-	c.watcher = watcher
-	c.fileWatcherDone = make(chan struct{})
+	a.watcher = watcher
+	a.fileWatcherDone = make(chan struct{})
 
 	go func() {
 		for {
 			select {
 			case event := <-watcher.Events:
-				c.logger.Infof("Processing event %v", event)
+				logger.Infof("Processing event %v", event)
 				isCreate := event.Op&fsnotify.Create != 0
 				isWrite := event.Op&fsnotify.Write != 0
 				if isCreate || isWrite {
 					b, err := os.ReadFile(filePath)
 					if err != nil {
-						c.logger.WithError(err).Errorf("Failed to read %s", filePath)
+						logger.WithError(err).Errorf("Failed to read %s", filePath)
 					} else {
-						err := c.updateConfig(b)
+						err := a.updateConfig(b)
 						if err != nil {
-							c.logger.WithError(err).Errorf("Failed to update config %s", filePath)
+							logger.WithError(err).Errorf("Failed to update config %s", filePath)
 						} else {
-							for _, ch := range c.listeners {
+							for _, ch := range a.listeners {
 								ch <- "updated"
 							}
 						}
 					}
 				}
 			case err := <-watcher.Errors:
-				c.logger.Error(err, "watcher error")
-			case <-c.fileWatcherDone:
+				logger.Error(err, "watcher error")
+			case <-a.fileWatcherDone:
 				return
 			}
 		}
 	}()
 
 	if err = watcher.Add(filePath); err != nil {
-		c.logger.Errorf("Failed add filePath %s to watcher", filePath)
+		a.logger.Errorf("Failed add filePath %s to watcher", filePath)
 		return err
 	}
-	c.logger.Infof("Start to watch config file %s", filePath)
+	a.logger.Infof("Start to watch config file %s", filePath)
 
 	return nil
 }
@@ -193,6 +212,10 @@ func (a *AgentConfigHandler) watchConfigMap(clientset kubernetes.Interface) erro
 			err := a.updateConfig([]byte(data))
 			if err != nil {
 				logger.Errorf("Failed to update configmap from data in %s", AgentConfigJsonFilename)
+			} else {
+				for _, ch := range a.listeners {
+					ch <- "updated"
+				}
 			}
 		}
 	})
