@@ -69,12 +69,18 @@ func mergeMLServerContainer(existing *v1.Container, mlServer *v1.Container) *v1.
 	}
 	existing.Env = mlServer.Env
 
+	// If the readiness or liveness probe already exist, ensure the handler is
+	// V2-compatible (otherwise, set all to default)
 	if existing.ReadinessProbe == nil {
 		existing.ReadinessProbe = mlServer.ReadinessProbe
+	} else {
+		existing.ReadinessProbe.Handler = mlServer.ReadinessProbe.Handler
 	}
 
 	if existing.LivenessProbe == nil {
 		existing.LivenessProbe = mlServer.LivenessProbe
+	} else {
+		existing.LivenessProbe.Handler = mlServer.LivenessProbe.Handler
 	}
 
 	if existing.SecurityContext == nil {
@@ -127,21 +133,21 @@ func getMLServerContainer(pu *machinelearningv1.PredictiveUnit, namespace string
 				Port: intstr.FromString("http"),
 			}},
 			InitialDelaySeconds: 20,
-			TimeoutSeconds:      1,
-			PeriodSeconds:       10,
-			SuccessThreshold:    1,
+			PeriodSeconds:       5,
 			FailureThreshold:    3,
+			SuccessThreshold:    1,
+			TimeoutSeconds:      60,
 		},
 		LivenessProbe: &v1.Probe{
 			Handler: v1.Handler{HTTPGet: &v1.HTTPGetAction{
 				Path: constants.KFServingProbeLivePath,
 				Port: intstr.FromString("http"),
 			}},
-			InitialDelaySeconds: 60,
-			TimeoutSeconds:      1,
-			PeriodSeconds:       10,
-			SuccessThreshold:    1,
+			InitialDelaySeconds: 20,
+			PeriodSeconds:       5,
 			FailureThreshold:    3,
+			SuccessThreshold:    1,
+			TimeoutSeconds:      60,
 		},
 		VolumeMounts: []v1.VolumeMount{
 			{
