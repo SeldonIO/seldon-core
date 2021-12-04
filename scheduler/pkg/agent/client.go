@@ -70,7 +70,7 @@ func NewClient(serverName string,
 	v2Client *V2Client,
 	replicaConfig *agent.ReplicaConfig,
 	inferenceSvcName string,
-	namespace string) (*Client, error) {
+	namespace string) *Client {
 
 	replicaConfig.InferenceSvc = inferenceSvcName
 	replicaConfig.AvailableMemoryBytes = replicaConfig.MemoryBytes
@@ -101,7 +101,7 @@ func NewClient(serverName string,
 		KubernetesOptions: KubernetesOptions{
 			namespace: namespace,
 		},
-	}, nil
+	}
 }
 
 func (c *Client) Start(configHandler *AgentConfigHandler) error {

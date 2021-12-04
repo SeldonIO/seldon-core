@@ -138,8 +138,7 @@ func TestLoadRcloneConfig(t *testing.T) {
 				httpmock.NewStringResponder(200, "{}"))
 
 			g.Expect(err).To(gomega.BeNil())
-			client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, &agent.ReplicaConfig{}, "0.0.0.0", "default")
-			g.Expect(err).To(gomega.BeNil())
+			client := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, &agent.ReplicaConfig{}, "0.0.0.0", "default")
 			err = client.loadRcloneConfiguration(test.agentConfiguration)
 			if test.error {
 				g.Expect(err).ToNot(gomega.BeNil())

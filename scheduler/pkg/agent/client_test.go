@@ -106,8 +106,7 @@ func TestClientCreate(t *testing.T) {
 			rcloneClient := createTestRCloneClient(test.rsStatus, test.rsBody)
 			configHandler, err := NewAgentConfigHandler("", "", logger, nil)
 			g.Expect(err).To(BeNil())
-			client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default")
-			g.Expect(err).To(BeNil())
+			client := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default")
 			mockAgentV2Server := &mockAgentV2Server{models: test.models}
 			conn, err := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(err).To(BeNil())
@@ -180,8 +179,7 @@ func TestLoadModel(t *testing.T) {
 		rcloneClient := createTestRCloneClient(test.rsStatus, test.rsBody)
 		configHandler, err := NewAgentConfigHandler("", "", logger, nil)
 		g.Expect(err).To(BeNil())
-		client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default")
-		g.Expect(err).To(BeNil())
+		client := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default")
 		mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 		conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 		g.Expect(cerr).To(BeNil())
@@ -282,8 +280,7 @@ parameters:
 			rcloneClient := createTestRCloneClient(test.rsStatus, test.rsBody)
 			configHandler, err := NewAgentConfigHandler("", "", logger, nil)
 			g.Expect(err).To(BeNil())
-			client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default")
-			g.Expect(err).To(BeNil())
+			client := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default")
 			switch x := test.op.Details.StorageConfig.Config.(type) {
 			case *pbs.StorageConfig_StorageSecretName:
 				secret := &v1.Secret{ObjectMeta: metav1.ObjectMeta{Name: x.StorageSecretName, Namespace: client.namespace}, StringData: map[string]string{"mys3": test.secretData}}
@@ -354,8 +351,7 @@ func TestUnloadModel(t *testing.T) {
 		rcloneClient := createTestRCloneClient(200, "{}")
 		configHandler, err := NewAgentConfigHandler("", "", logger, nil)
 		g.Expect(err).To(BeNil())
-		client, err := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default")
-		g.Expect(err).To(BeNil())
+		client := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, test.replicaConfig, "0.0.0.0", "default")
 		mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 		conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 		g.Expect(cerr).To(BeNil())
