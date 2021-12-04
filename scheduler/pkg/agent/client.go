@@ -20,21 +20,38 @@ import (
 
 type Client struct {
 	mu             sync.RWMutex
+	logger         log.FieldLogger
+	configChan     chan AgentConfiguration
+	ClientState
+	ClientServices
+	SchedulerGrpcClientOptions
+	KubernetesOptions
+}
+
+type ClientState struct {
+	replicaConfig  *agent.ReplicaConfig
+	loadedModels   map[string]*pbs.ModelDetails
+}
+
+type SchedulerGrpcClientOptions struct {
 	schedulerHost  string
 	schedulerPort  int
 	serverName     string
 	replicaIdx     uint32
 	conn           *grpc.ClientConn
 	callOptions    []grpc.CallOption
-	logger         log.FieldLogger
-	RCloneClient   *RCloneClient
-	V2Client       *V2Client
-	replicaConfig  *agent.ReplicaConfig
-	loadedModels   map[string]*pbs.ModelDetails
+}
+
+type KubernetesOptions struct {
 	secretsHandler *k8s.SecretHandler
 	namespace      string
-	configChan     chan AgentConfiguration
 }
+
+type ClientServices struct {
+	RCloneClient   *RCloneClient
+	V2Client       *V2Client
+}
+
 
 func ParseReplicaConfig(json string) (*agent.ReplicaConfig, error) {
 	config := agent.ReplicaConfig{}
@@ -65,18 +82,26 @@ func NewClient(serverName string,
 	}
 
 	return &Client{
-		schedulerHost: schedulerHost,
-		schedulerPort: schedulerPort,
-		serverName:    serverName,
-		replicaIdx:    replicaIdx,
-		callOptions:   opts,
 		logger:        logger.WithField("Name", "Client"),
-		RCloneClient:  rcloneClient,
-		V2Client:      v2Client,
-		replicaConfig: replicaConfig,
-		loadedModels:  make(map[string]*pbs.ModelDetails),
-		namespace:     namespace,
 		configChan:    make(chan AgentConfiguration),
+		ClientState: ClientState{
+			replicaConfig: replicaConfig,
+			loadedModels:  make(map[string]*pbs.ModelDetails),
+		},
+		ClientServices: ClientServices{
+			RCloneClient:  rcloneClient,
+			V2Client:      v2Client,
+		},
+		SchedulerGrpcClientOptions: SchedulerGrpcClientOptions{
+			schedulerHost: schedulerHost,
+			schedulerPort: schedulerPort,
+			serverName:    serverName,
+			replicaIdx:    replicaIdx,
+			callOptions: opts,
+		},
+		KubernetesOptions: KubernetesOptions{
+			namespace: namespace,
+		},
 	}, nil
 }
 
