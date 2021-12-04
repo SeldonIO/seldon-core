@@ -19,9 +19,9 @@ import (
 )
 
 type Client struct {
-	mu             sync.RWMutex
-	logger         log.FieldLogger
-	configChan     chan AgentConfiguration
+	mu         sync.RWMutex
+	logger     log.FieldLogger
+	configChan chan AgentConfiguration
 	ClientState
 	ClientServices
 	SchedulerGrpcClientOptions
@@ -29,17 +29,17 @@ type Client struct {
 }
 
 type ClientState struct {
-	replicaConfig  *agent.ReplicaConfig
-	loadedModels   map[string]*pbs.ModelDetails
+	replicaConfig *agent.ReplicaConfig
+	loadedModels  map[string]*pbs.ModelDetails
 }
 
 type SchedulerGrpcClientOptions struct {
-	schedulerHost  string
-	schedulerPort  int
-	serverName     string
-	replicaIdx     uint32
-	conn           *grpc.ClientConn
-	callOptions    []grpc.CallOption
+	schedulerHost string
+	schedulerPort int
+	serverName    string
+	replicaIdx    uint32
+	conn          *grpc.ClientConn
+	callOptions   []grpc.CallOption
 }
 
 type KubernetesOptions struct {
@@ -48,10 +48,9 @@ type KubernetesOptions struct {
 }
 
 type ClientServices struct {
-	RCloneClient   *RCloneClient
-	V2Client       *V2Client
+	RCloneClient *RCloneClient
+	V2Client     *V2Client
 }
-
 
 func ParseReplicaConfig(json string) (*agent.ReplicaConfig, error) {
 	config := agent.ReplicaConfig{}
@@ -82,22 +81,22 @@ func NewClient(serverName string,
 	}
 
 	return &Client{
-		logger:        logger.WithField("Name", "Client"),
-		configChan:    make(chan AgentConfiguration),
+		logger:     logger.WithField("Name", "Client"),
+		configChan: make(chan AgentConfiguration),
 		ClientState: ClientState{
 			replicaConfig: replicaConfig,
 			loadedModels:  make(map[string]*pbs.ModelDetails),
 		},
 		ClientServices: ClientServices{
-			RCloneClient:  rcloneClient,
-			V2Client:      v2Client,
+			RCloneClient: rcloneClient,
+			V2Client:     v2Client,
 		},
 		SchedulerGrpcClientOptions: SchedulerGrpcClientOptions{
 			schedulerHost: schedulerHost,
 			schedulerPort: schedulerPort,
 			serverName:    serverName,
 			replicaIdx:    replicaIdx,
-			callOptions: opts,
+			callOptions:   opts,
 		},
 		KubernetesOptions: KubernetesOptions{
 			namespace: namespace,
@@ -157,7 +156,7 @@ func (c *Client) createConnection() error {
 	if err != nil {
 		return err
 	}
-	c.conn = conn
+	c.SchedulerGrpcClientOptions.conn = conn
 	return nil
 }
 
@@ -274,7 +273,7 @@ func (c *Client) getArtifactConfig(request *agent.ModelOperationMessage) ([]byte
 			if err != nil {
 				return nil, err
 			}
-			c.secretsHandler = k8s.NewSecretsHandler(secretClientSet, c.namespace)
+			c.KubernetesOptions.secretsHandler = k8s.NewSecretsHandler(secretClientSet, c.namespace)
 		}
 		config, err := c.secretsHandler.GetSecretConfig(x.StorageSecretName)
 		if err != nil {
