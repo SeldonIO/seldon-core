@@ -3,9 +3,25 @@ VERSION := $(shell cat ../../version.txt)
 REPO=seldonio
 IMAGE=alibi-detect-server
 
-.PHONY: install_dev
-install_dev:
-	pip install -e . -r requirements-dev.txt
+SELDON_CORE_DIR=../..
+
+BASE_IMAGE ?= seldonio/conda-ubi8
+PYTHON_VERSION ?= 3.7.10
+CONDA_VERSION ?= 4.7.12
+
+
+
+get_local_repo: clean
+	cp $(SELDON_CORE_DIR)/version.txt version.txt
+	cp -rT $(SELDON_CORE_DIR)/python/ _seldon_core/
+
+clean:
+	rm version.txt || true
+	rm -rf _seldon_core || true
+
+dev_install: get_local_repo
+	poetry install
+
 
 .PHONY: type_check
 type_check:
@@ -79,17 +95,21 @@ curl-metrics-server-elasticsearch:
 curl-metrics-server-metrics:
 	curl http://localhost:8080/v1/metrics
 
-docker-build: 
-	docker build -f Dockerfile -t ${REPO}/${IMAGE}:${VERSION} .
 
-docker-build-gpu: 
+
+# image building logic
+
+docker-build: get_local_repo
+	docker build -f Dockerfile --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg VERSION=${VERSION} -t ${REPO}/${IMAGE}:${VERSION} .
+
+docker-build-gpu:
 	docker build -f Dockerfile.gpu -t ${REPO}/${IMAGE}-gpu:${VERSION} .
 
 docker-push:
-	docker push ${REPO}/${IMAGE}:${VERSION} 
+	docker push ${REPO}/${IMAGE}:${VERSION}
 
 docker-push-gpu:
-	docker push ${REPO}/${IMAGE}-gpu:${VERSION} 
+	docker push ${REPO}/${IMAGE}-gpu:${VERSION}
 
 kind_load: docker-build
 	kind load docker-image ${REPO}/${IMAGE}:${VERSION}
