@@ -22,13 +22,15 @@ jobs:
           make -C components/alibi-detect-server lint
 
   python-tests:
-
     runs-on: ubuntu-18.04
     container: seldonio/python-builder:0.6
 
     steps:
       - uses: actions/checkout@v2
-      - name: test-python
+      - name: Install dependencies
         run: |
           pip install --upgrade pip setuptools
-          make -C components/alibi-detect-server dev_install test
+          make -C components/alibi-detect-server dev_install
+      - name: Test
+        run: |
+          make -C components/alibi-detect-server test
