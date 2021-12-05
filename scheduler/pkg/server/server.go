@@ -57,6 +57,11 @@ func NewSchedulerServer(logger log.FieldLogger, store store.SchedulerStore, sche
 func (s SchedulerServer) LoadModel(ctx context.Context, req *pb.LoadModelRequest) (*pb.LoadModelResponse, error) {
 	logger := s.logger.WithField("func", "LoadModel")
 	logger.Debugf("Load model %s", req.GetModel().GetName())
+	exists := s.store.ExistsModelVersion(req.GetModel().Name, req.GetModel().Version)
+	if exists { //TODO check the model details match what we have otherwise error
+		logger.Infof("Model %s:%s already exists",req.GetModel().Name, req.Model.Version)
+		return &pb.LoadModelResponse{}, nil
+	}
 	err := s.store.UpdateModel(req.GetModel())
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())

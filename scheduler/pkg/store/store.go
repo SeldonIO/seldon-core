@@ -36,6 +36,7 @@ var (
 type SchedulerStore interface {
 	UpdateModel(config *pb.ModelDetails) error
 	GetModel(key string) (*ModelSnapshot, error)
+	ExistsModelVersion(key string, version string) bool
 	RemoveModel(modelKey string) error
 	GetServers() ([]*ServerSnapshot, error)
 	GetServer(serverKey string) (*ServerSnapshot, error)

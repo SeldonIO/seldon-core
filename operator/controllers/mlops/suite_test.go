@@ -30,7 +30,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	mlopsv1alpha1 "github.com/seldonio/seldon-research/seldon-core/operatorv2/apis/mlops/v1alpha1"
+	mlopsv1alpha1 "github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1"
 	//+kubebuilder:scaffold:imports
 )
 

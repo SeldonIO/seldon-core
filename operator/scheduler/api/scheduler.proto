@@ -1,0 +1,113 @@
+syntax = "proto3";
+
+package seldon.mlops.scheduler;
+
+option go_package = "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler";
+
+// [START Messages]
+
+/* ServerReference represents a unique server
+*/
+message ServerReference {
+  string name = 1;
+}
+
+
+message LoadModelRequest {
+  ModelDetails model = 1;
+  bool async = 2;
+}
+
+/* ModelDetails
+*/
+message ModelDetails {
+  string name = 1; // name of the model
+  string version = 2;
+  string uri = 3; // storage uri from where to download the artifacts
+  optional StorageConfig storageConfig = 4; // Storage auth configuration
+  repeated string requirements = 5; // list of capabilities the server must satisfy to run this model
+  //TODO maybe map for requirements
+  uint32 replicas = 6; // number of replicas of model to create
+  optional uint64 memoryBytes = 7; // Requested memory
+  optional string server = 8; // the particular model server to load the model. If unspecified will be chosen.
+  bool logPayloads = 9; // Whether to log request/response payloads to this model
+}
+
+message StorageConfig {
+  oneof config {
+    string storageSecretName = 1;
+    string storageRcloneConfig = 2;
+  }
+}
+
+message LoadModelResponse {
+
+}
+
+/* ModelReference represents a unique model
+*/
+message ModelReference {
+  string name = 1;
+}
+
+message UnloadModelResponse {
+}
+
+
+/* ModelStatusResponse provides the current assignment of the model onto a server
+*/
+message ModelStatusResponse {
+  string modelName = 1;
+  string version = 2;
+  string serverName = 3;
+  map<int32,string> modelReplicaState = 4;
+}
+
+/* ServerStatusResponse provides details of current server status
+*/
+message ServerStatusResponse {
+  string serverName = 1;
+  repeated ServerResources resources = 2;
+}
+
+message ServerResources {
+  map<string,string> loadedModels = 1;
+  uint64 memory = 2;
+  uint64 availableMemoryBytes = 3;
+}
+
+message ModelSubscriptionRequest {
+}
+
+message ModelEventMessage {
+  string modelName = 1;
+  string serverName = 2;
+  enum Event {
+    UNKNOWN_EVENT = 0;
+    REPLICAS_LOADED = 1;
+    REPLICAS_LOAD_FAILED = 2;
+    REPLICAS_UNLOADED = 3;
+    REPLICAS_UNLOAD_FAILED = 4;
+    REPLICAS_AVAILABLE = 5;
+    REPLICAS_UNAVAILABLE = 6;
+  }
+  Event event = 3;
+  int32 readyReplicas = 4;
+  int32 unavailableReplicas = 5;
+  string message = 6;
+}
+// [END Messages]
+
+
+// [START Services]
+
+service Scheduler {
+  rpc ServerStatus(ServerReference) returns (ServerStatusResponse) {}
+  rpc LoadModel(LoadModelRequest) returns (LoadModelResponse) {};
+  rpc UnloadModel(ModelReference) returns (UnloadModelResponse) {};
+  rpc ModelStatus(ModelReference) returns (ModelStatusResponse) {}
+
+  rpc SubscribeModelEvents(ModelSubscriptionRequest) returns (stream ModelEventMessage) {};
+}
+
+// [END Services]

@@ -70,7 +70,19 @@ func (m *MemoryStore) GetModel(key string) (*ModelSnapshot, error) {
 			Versions: nil,
 		}, nil
 	}
+}
 
+func (m *MemoryStore) ExistsModelVersion(key string, version string) bool {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	if model, ok := m.store.models[key]; ok {
+		for _,mv := range model.versions {
+			if mv.Details().Version == version {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (m *MemoryStore) RemoveModel(modelKey string) error {

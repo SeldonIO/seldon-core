@@ -31,6 +31,10 @@ func (f mockStore) GetModel(key string) (*store.ModelSnapshot, error) {
 	return f.models[key], nil
 }
 
+func (f mockStore) ExistsModelVersion(key string, version string) bool {
+	return false
+}
+
 func (f mockStore) GetServers() ([]*store.ServerSnapshot, error) {
 	return f.servers, nil
 }

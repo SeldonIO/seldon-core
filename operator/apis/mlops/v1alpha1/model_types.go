@@ -17,6 +17,9 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"fmt"
+
+	scheduler "github.com/seldonio/seldon-core/operatorv2/scheduler/api"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -49,9 +52,8 @@ type ModelSpec struct {
 }
 
 type LoggingSpec struct {
-	// URI to logging endpoint.
-	// +optional
-	Uri *string `json:"uri,omitempty"`
+	//Percentage of payloads to log
+	Percent *uint `json:"percent,omitempty"`
 }
 
 type InferenceArtifactSpec struct {
@@ -59,8 +61,7 @@ type InferenceArtifactSpec struct {
 	// +optional
 	ModelType *string `json:"modelType,omitempty"`
 	// Storage URI for the model repository
-	// +optional
-	StorageURI *string `json:"storageUri,omitempty"`
+	StorageURI string `json:"storageUri"`
 	// Schema URI
 	// +optional
 	SchemaURI *string `json:"schemaUri,omitempty"`
@@ -98,4 +99,44 @@ type ModelList struct {
 
 func init() {
 	SchemeBuilder.Register(&Model{}, &ModelList{})
+}
+
+func (m Model) AsModelDetails() (*scheduler.ModelDetails, error) {
+	md := &scheduler.ModelDetails{
+		Name:         m.Name,
+		Version:      m.ResourceVersion,
+		Uri:          m.Spec.StorageURI,
+		Requirements: m.Spec.Requirements,
+		Server:       m.Spec.Server,
+		LogPayloads:  m.Spec.Logger != nil, // Simple boolean switch at present
+	}
+	// Add storage secret if specified
+	if m.Spec.SecretName != nil {
+		md.StorageConfig = &scheduler.StorageConfig{
+			Config: &scheduler.StorageConfig_StorageSecretName{
+				StorageSecretName: *m.Spec.SecretName,
+			},
+		}
+	}
+	// Add modelType to requirements if specified
+	if m.Spec.ModelType != nil {
+		md.Requirements = append(md.Requirements, *m.Spec.ModelType)
+	}
+	// Set Replicas
+	//TODO add min/max replicas
+	if m.Spec.Replicas != nil {
+		md.Replicas = uint32(*m.Spec.Replicas)
+	} else {
+		md.Replicas = 1
+	}
+	// Set memory bytes
+	if m.Spec.Memory != nil {
+		if i64, ok := m.Spec.Memory.AsInt64(); ok {
+			ui64 := uint64(i64)
+			md.MemoryBytes = &ui64
+		} else {
+			return nil, fmt.Errorf("Can't convert model memory quantity to bytes. %s", m.Spec.Memory.String())
+		}
+	}
+	return md, nil
 }

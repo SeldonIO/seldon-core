@@ -115,6 +115,75 @@ func TestGetModel(t *testing.T) {
 	}
 }
 
+
+func TestExistsModelVersion(t *testing.T) {
+	logger := log.New()
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name     string
+		store    *LocalSchedulerStore
+		key      string
+		version  string
+		expected bool
+	}
+
+	tests := []test{
+		{
+			name:     "NoModel",
+			store:    NewLocalSchedulerStore(),
+			key:      "model",
+			version:  "1",
+			expected: false,
+		},
+		{
+			name: "VersionAlreadyExists",
+			store: &LocalSchedulerStore{models: map[string]*Model{"model": &Model{
+				versions: []*ModelVersion{
+					{config: &pb.ModelDetails{Name: "model", Version: "1"}},
+				},
+			}}},
+			key:      "model",
+			version:  "1",
+			expected: true,
+		},
+		{
+			name: "VersionAlreadyExistsMultiple",
+			store: &LocalSchedulerStore{models: map[string]*Model{"model": &Model{
+				versions: []*ModelVersion{
+					{config: &pb.ModelDetails{Name: "model", Version: "1"}},
+					{config: &pb.ModelDetails{Name: "model", Version: "2"}},
+				},
+			}}},
+			key:      "model",
+			version:  "2",
+			expected: true,
+		},
+		{
+			name: "VersionNotExists",
+			store: &LocalSchedulerStore{models: map[string]*Model{"model": &Model{
+				versions: []*ModelVersion{
+					{config: &pb.ModelDetails{Name: "model", Version: "1"}},
+					{config: &pb.ModelDetails{Name: "model", Version: "2"}},
+				},
+			}}},
+			key:      "model",
+			version:  "3",
+			expected: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ms := NewMemoryStore(logger, test.store)
+			exists := ms.ExistsModelVersion(test.key, test.version)
+			g.Expect(exists).To(Equal(test.expected))
+		})
+	}
+}
+
+
+
 func TestRemoveModel(t *testing.T) {
 	logger := log.New()
 	g := NewGomegaWithT(t)
