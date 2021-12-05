@@ -1828,6 +1828,17 @@ python-versions = "*"
 numpy = "*"
 
 [[package]]
+name = "tenacity"
+version = "8.0.1"
+description = "Retry code until it succeeds"
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+
+[package.extras]
+doc = ["reno", "sphinx", "tornado (>=4.5)"]
+
+[[package]]
 name = "tensorboard"
 version = "2.7.0"
 description = "TensorBoard lets you watch Tensors Flow"
@@ -2168,7 +2179,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "ef280aa0773dd1b025faf06295fd66f5a0bac17b260cfd3d232643a626369bb8"
+content-hash = "fddfafe6c8b7fcf3b9d50ac50273bde20697dc0c9a0d16c60528604364802118"
 
 [metadata.files]
 absl-py = [
@@ -3583,6 +3594,10 @@ six = [
 table-logger = [
     {file = "table-logger-0.3.6.tar.gz", hash = "sha256:cd348ba7d9d167d0bd7fdb988cd2d1d3051b5a17236a7c50979678a82f0b4ca4"},
     {file = "table_logger-0.3.6-py3-none-any.whl", hash = "sha256:dac0be8b20ea8ce6a9646bf68fb2f71218724fb4dbe3108a105641ca14bd167a"},
+]
+tenacity = [
+    {file = "tenacity-8.0.1-py3-none-any.whl", hash = "sha256:f78f4ea81b0fabc06728c11dc2a8c01277bfc5181b321a4770471902e3eb844a"},
+    {file = "tenacity-8.0.1.tar.gz", hash = "sha256:43242a20e3e73291a28bcbcacfd6e000b02d3857a9a9fff56b297a27afdc932f"},
 ]
 tensorboard = [
     {file = "tensorboard-2.7.0-py3-none-any.whl", hash = "sha256:239f78a4a8dff200ce585a030c787773a8c1184d5c159252f5f85bac4e3c3b38"},

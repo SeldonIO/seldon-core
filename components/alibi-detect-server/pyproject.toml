@@ -41,6 +41,7 @@ isort = "5.9.0"
 types-requests = "2.26.0"
 gsutil = "5.5"
 requests-mock = "^1.9.3"
+tenacity = "^8.0.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
