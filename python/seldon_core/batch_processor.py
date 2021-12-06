@@ -11,7 +11,7 @@ import click
 import numpy as np
 import requests
 
-from seldon_core.seldon_client import SeldonCallCredentials, SeldonClient
+from seldon_core.seldon_client import SeldonCallCredentials, SeldonChannelCredentials, SeldonClient
 
 CHOICES_GATEWAY_TYPE = ["ambassador", "istio", "seldon"]
 CHOICES_TRANSPORT = ["rest", "grpc"]
@@ -55,6 +55,7 @@ def start_multithreaded_batch_worker(
     batch_interval: float,
     call_credentials_token: str,
     use_ssl: bool,
+    ssl_verify: bool,
 ) -> None:
     """
     Starts the multithreaded batch worker which consists of three worker types and
@@ -83,11 +84,13 @@ def start_multithreaded_batch_worker(
     # Providing call credentials sets the REST transport protocol to https,
     # so we configure credentials even without a supplied token if use_ssl is set.
     credentials = None
+    channel_credentials = None
     if use_ssl or len(call_credentials_token) > 0:
         token = None
         if len(call_credentials_token) > 0:
             token = call_credentials_token
         credentials = SeldonCallCredentials(token=token)
+        channel_credentials = SeldonChannelCredentials(verify=ssl_verify)
 
     sc = SeldonClient(
         gateway=gateway_type,
@@ -98,6 +101,7 @@ def start_multithreaded_batch_worker(
         namespace=namespace,
         client_return_type="dict",
         call_credentials=credentials,
+        channel_credentials=channel_credentials,
     )
 
     t_in = Thread(
@@ -816,6 +820,13 @@ def _send_batch_feedback(
     type=str,
     help="Auth token used by Seldon Client, if supplied and using REST the transport protocol will be https.",
 )
+@click.option(
+    "--ssl-verify",
+    envvar="SELDON_BATCH_SSL_VERIFY",
+    default=True,
+    type=bool,
+    help="Can be set to false to avoid SSL verification in REST.",
+)
 def run_cli(
     deployment_name: str,
     gateway_type: str,
@@ -836,6 +847,7 @@ def run_cli(
     batch_interval: float,
     call_credentials_token: str,
     use_ssl: bool,
+    ssl_verify: bool,
 ):
     """
     Command line interface for Seldon Batch Processor, which can be used to send requests
@@ -868,6 +880,7 @@ def run_cli(
         batch_interval,
         call_credentials_token,
         use_ssl,
+        ssl_verify,
     )
 
 
