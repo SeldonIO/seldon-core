@@ -3,7 +3,6 @@ import json
 import logging
 import time
 import uuid
-from itertools import groupby
 from queue import Empty, Queue
 from threading import Event, Thread
 from typing import Dict, List, Tuple
