@@ -5,7 +5,7 @@ IMAGE_BASE=seldonio/${IMAGE_NAME_BASE}
 
 
 build:
-	s2i build -E environment . seldonio/seldon-core-s2i-python37-ubi8:${VERSION} ${IMAGE_BASE}:${VERSION}
+	s2i build -E environment . seldonio/seldon-core-s2i-python38-ubi8:${VERSION} ${IMAGE_BASE}:${VERSION}
 
 push:
 	docker push ${IMAGE_BASE}:${VERSION}
