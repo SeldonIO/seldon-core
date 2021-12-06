@@ -53,7 +53,7 @@ func (f *mockStore) UpdateLoadedModels(modelKey string, version string, serverKe
 	return nil
 }
 
-func (f mockStore) UpdateModelState(modelKey string, version string, serverKey string, replicaIdx int, availableMemory *uint64, state store.ModelReplicaState) error {
+func (f mockStore) UpdateModelState(modelKey string, version string, serverKey string, replicaIdx int, availableMemory *uint64, state store.ModelReplicaState, reason string) error {
 	panic("implement me")
 }
 

@@ -38,6 +38,7 @@ type ModelVersion struct {
 	replicas map[int]ModelReplicaState
 	deleted  bool
 	state    ModelState
+	stateReason string
 }
 
 func NewDefaultModelVersion(config *pb.ModelDetails) *ModelVersion {

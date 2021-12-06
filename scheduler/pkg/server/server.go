@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"sync"
 
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent"
@@ -25,13 +26,46 @@ type SchedulerServer struct {
 	store        store.SchedulerStore
 	scheduler    scheduler2.Scheduler
 	agentHandler agent.AgentHandler
+	mutext sync.RWMutex
+	streams map[pb.Scheduler_SubscribeModelEventsServer]*Subscription
 }
 
-func (s SchedulerServer) SubscribeModelEvents(req *pb.ModelSubscriptionRequest, server pb.Scheduler_SubscribeModelEventsServer) error {
-	panic("implement me")
+type Subscription struct {
+	stream pb.Scheduler_SubscribeModelEventsServer
+	fin chan bool
 }
 
-func (s SchedulerServer) StartGrpcServer(schedulerPort uint) error {
+func (s *SchedulerServer) SubscribeModelEvents(req *pb.ModelSubscriptionRequest, stream pb.Scheduler_SubscribeModelEventsServer) error {
+	logger := s.logger.WithField("func", "Subscribe")
+	logger.Infof("Received subscribe request from %s",req.GetName())
+
+	fin := make(chan bool)
+
+	s.mutext.Lock()
+	s.streams[stream] = &Subscription{
+		stream: stream,
+		fin: fin,
+	}
+	s.mutext.Unlock()
+
+	ctx := stream.Context()
+	// Keep this scope alive because once this scope exits - the stream is closed
+	for {
+		select {
+		case <-fin:
+			logger.Infof("Closing stream for %s", req.GetName())
+			return nil
+		case <-ctx.Done():
+			logger.Infof("Stream disconnected %s", req.GetName())
+			s.mutext.Lock()
+			delete(s.streams, stream)
+			s.mutext.Unlock()
+			return nil
+		}
+	}
+}
+
+func (s *SchedulerServer) StartGrpcServer(schedulerPort uint) error {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", schedulerPort))
 	if err != nil {
 		log.Fatalf("failed to create listener: %v", err)
@@ -46,15 +80,16 @@ func (s SchedulerServer) StartGrpcServer(schedulerPort uint) error {
 func NewSchedulerServer(logger log.FieldLogger, store store.SchedulerStore, scheduler scheduler2.Scheduler, agentHandler agent.AgentHandler) *SchedulerServer {
 
 	s := &SchedulerServer{
-		logger:       logger,
+		logger:       logger.WithField("Source","SchedulerServer"),
 		store:        store,
 		scheduler:    scheduler,
 		agentHandler: agentHandler,
+		streams: make(map[pb.Scheduler_SubscribeModelEventsServer]*Subscription),
 	}
 	return s
 }
 
-func (s SchedulerServer) LoadModel(ctx context.Context, req *pb.LoadModelRequest) (*pb.LoadModelResponse, error) {
+func (s *SchedulerServer) LoadModel(ctx context.Context, req *pb.LoadModelRequest) (*pb.LoadModelResponse, error) {
 	logger := s.logger.WithField("func", "LoadModel")
 	logger.Debugf("Load model %s", req.GetModel().GetName())
 	exists := s.store.ExistsModelVersion(req.GetModel().Name, req.GetModel().Version)
@@ -74,7 +109,7 @@ func (s SchedulerServer) LoadModel(ctx context.Context, req *pb.LoadModelRequest
 	return &pb.LoadModelResponse{}, nil
 }
 
-func (s SchedulerServer) UnloadModel(ctx context.Context, reference *pb.ModelReference) (*pb.UnloadModelResponse, error) {
+func (s *SchedulerServer) UnloadModel(ctx context.Context, reference *pb.ModelReference) (*pb.UnloadModelResponse, error) {
 	logger := s.logger.WithField("func", "UnloadModel")
 	logger.Debugf("Unload model %s", reference.Name)
 	err := s.store.RemoveModel(reference.Name)
@@ -89,7 +124,7 @@ func (s SchedulerServer) UnloadModel(ctx context.Context, reference *pb.ModelRef
 	return &pb.UnloadModelResponse{}, nil
 }
 
-func (s SchedulerServer) ModelStatus(ctx context.Context, reference *pb.ModelReference) (*pb.ModelStatusResponse, error) {
+func (s *SchedulerServer) ModelStatus(ctx context.Context, reference *pb.ModelReference) (*pb.ModelStatusResponse, error) {
 	model, err := s.store.GetModel(reference.Name)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
@@ -109,7 +144,7 @@ func (s SchedulerServer) ModelStatus(ctx context.Context, reference *pb.ModelRef
 	}, nil
 }
 
-func (s SchedulerServer) ServerStatus(ctx context.Context, reference *pb.ServerReference) (*pb.ServerStatusResponse, error) {
+func (s *SchedulerServer) ServerStatus(ctx context.Context, reference *pb.ServerReference) (*pb.ServerStatusResponse, error) {
 	server, err := s.store.GetServer(reference.Name)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())

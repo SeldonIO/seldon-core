@@ -123,7 +123,7 @@ func (s *Server) Sync(modelName string) {
 				logger.WithError(err).Errorf("stream message send failed for model %s and replicaidx %d", modelName, replicaIdx)
 				continue
 			}
-			err := s.store.UpdateModelState(latestModel.Key(), latestModel.GetVersion(), latestModel.Server(), replicaIdx, nil, store.Loading)
+			err := s.store.UpdateModelState(latestModel.Key(), latestModel.GetVersion(), latestModel.Server(), replicaIdx, nil, store.Loading,"")
 			if err != nil {
 				logger.WithError(err).Errorf("Sync set model state failed for model %s replicaidx %d", modelName, replicaIdx)
 				continue
@@ -148,7 +148,7 @@ func (s *Server) Sync(modelName string) {
 				logger.WithError(err).Errorf("stream message send failed for model %s and replicaidx %d", modelName, replicaIdx)
 				continue
 			}
-			err := s.store.UpdateModelState(modelVersion.Key(), modelVersion.GetVersion(), modelVersion.Server(), replicaIdx, nil, store.Unloading)
+			err := s.store.UpdateModelState(modelVersion.Key(), modelVersion.GetVersion(), modelVersion.Server(), replicaIdx, nil, store.Unloading,"")
 			if err != nil {
 				logger.WithError(err).Errorf("Sync set model state failed for model %s replicaidx %d", modelName, replicaIdx)
 				continue
@@ -172,7 +172,7 @@ func (s *Server) AgentEvent(ctx context.Context, message *pb.ModelEventMessage) 
 		state = store.ModelReplicaStateUnknown
 	}
 	logger.Infof("Updating state for model %s to %s", message.ModelName, state.String())
-	err := s.store.UpdateModelState(message.ModelName, message.GetModelVersion(), message.ServerName, int(message.ReplicaIdx), &message.AvailableMemoryBytes, state)
+	err := s.store.UpdateModelState(message.ModelName, message.GetModelVersion(), message.ServerName, int(message.ReplicaIdx), &message.AvailableMemoryBytes, state, message.GetMessage())
 	if err != nil {
 		logger.WithError(err).Infof("Failed Updating state for model %s", message.ModelName)
 		return nil, status.Error(codes.Internal, err.Error())

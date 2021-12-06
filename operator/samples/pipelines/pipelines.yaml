@@ -20,18 +20,23 @@ spec:
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Pipeline
 metadata:
-  name: inferencegraph-sample
+  name: transform-outlier-model-drift
 spec:
   steps:
-    - name: start
-      ref: transformer1
+    - name: transform-input
+      model: transformer
+    - name: check-for-outlier
+      inputs:
+      - transform-input
+      model: alibi-outlier-model
     - name: infer
-      previous:
-        - start
-      ref: model1
+      if: outlier.response.outlier == 0
+      inputs:
+      - transform-input
+      model: my-model
     - name: drift
-      previous:
-        - infer
-      ref: drift1
+      inputs:
+      - infer
+      model: alibi-drift-model
       async: true
 

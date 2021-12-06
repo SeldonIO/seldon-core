@@ -41,7 +41,7 @@ type SchedulerStore interface {
 	GetServers() ([]*ServerSnapshot, error)
 	GetServer(serverKey string) (*ServerSnapshot, error)
 	UpdateLoadedModels(modelKey string, version string, serverKey string, replicas []*ServerReplica) error
-	UpdateModelState(modelKey string, version string, serverKey string, replicaIdx int, availableMemory *uint64, state ModelReplicaState) error
+	UpdateModelState(modelKey string, version string, serverKey string, replicaIdx int, availableMemory *uint64, state ModelReplicaState, reason string) error
 	AddServerReplica(request *pba.AgentSubscribeRequest) error
 	RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) // return previously loaded models
 }

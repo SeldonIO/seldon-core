@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
 
@@ -87,6 +88,13 @@ func main() {
 		setupLog.Error(err, "unable to connect to scheduler")
 		os.Exit(1)
 	}
+	go func() {
+		err := schedulerClient.SubscribeEvents(context.Background())
+		if err != nil {
+			setupLog.Error(err, "Failed to subscribe to scheduler events")
+		}
+		os.Exit(1)
+	}()
 
 	if err = (&mlopscontrollers.ModelReconciler{
 		Client:    mgr.GetClient(),

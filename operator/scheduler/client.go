@@ -3,6 +3,7 @@ package scheduler
 import (
 	"context"
 	"fmt"
+	"io"
 	"math"
 	"time"
 
@@ -80,6 +81,30 @@ func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model
 	_, err := grcpClient.UnloadModel(ctx, modelRef, grpc_retry.WithMax(2))
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func (s *SchedulerClient) SubscribeEvents(ctx context.Context) error {
+	logger := s.logger.WithName("SubscribeEvent")
+	grcpClient := scheduler.NewSchedulerClient(s.conn)
+
+	stream, err := grcpClient.SubscribeModelEvents(ctx, &scheduler.ModelSubscriptionRequest{Name: "seldon manager"}, grpc_retry.WithMax(10))
+	if err != nil {
+		return err
+	}
+	for {
+		operation, err := stream.Recv()
+		logger.Info("Received event %v", operation.Event)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		switch operation.Event {
+		case scheduler.ModelEventMessage_REPLICAS_LOADED:
+		}
 	}
 	return nil
 }

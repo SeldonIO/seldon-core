@@ -14,10 +14,10 @@ func TestAsModelDetails(t *testing.T) {
 	logrus.SetLevel(logrus.DebugLevel)
 	g := NewGomegaWithT(t)
 	type test struct {
-		name string
-		model *Model
+		name         string
+		model        *Model
 		modelDetails *scheduler.ModelDetails
-		error bool
+		error        bool
 	}
 	replicas := int32(4)
 	secret := "secret"
@@ -30,7 +30,7 @@ func TestAsModelDetails(t *testing.T) {
 			name: "simple",
 			model: &Model{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "foo",
+					Name:            "foo",
 					ResourceVersion: "1",
 				},
 				Spec: ModelSpec{
@@ -40,9 +40,9 @@ func TestAsModelDetails(t *testing.T) {
 				},
 			},
 			modelDetails: &scheduler.ModelDetails{
-				Name: "foo",
-				Version: "1",
-				Uri: "gs://test",
+				Name:     "foo",
+				Version:  "1",
+				Uri:      "gs://test",
 				Replicas: 1,
 			},
 		},
@@ -50,38 +50,37 @@ func TestAsModelDetails(t *testing.T) {
 			name: "complex",
 			model: &Model{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "foo",
+					Name:            "foo",
 					ResourceVersion: "1",
 				},
 				Spec: ModelSpec{
 					InferenceArtifactSpec: InferenceArtifactSpec{
-						ModelType: &modelType,
+						ModelType:  &modelType,
 						StorageURI: "gs://test",
 						SecretName: &secret,
 					},
-					Logger: &LoggingSpec{
-					},
-					Requirements: []string{"a","b"},
-					Replicas: &replicas,
-					Server: &server,
+					Logger:       &LoggingSpec{},
+					Requirements: []string{"a", "b"},
+					Replicas:     &replicas,
+					Server:       &server,
 				},
 			},
 			modelDetails: &scheduler.ModelDetails{
-				Name: "foo",
-				Version: "1",
-				Uri: "gs://test",
-				Replicas: 4,
-				Requirements: []string{"a","b", modelType},
+				Name:          "foo",
+				Version:       "1",
+				Uri:           "gs://test",
+				Replicas:      4,
+				Requirements:  []string{"a", "b", modelType},
 				StorageConfig: &scheduler.StorageConfig{Config: &scheduler.StorageConfig_StorageSecretName{StorageSecretName: "secret"}},
-				Server: &server,
-				LogPayloads: true,
+				Server:        &server,
+				LogPayloads:   true,
 			},
 		},
 		{
 			name: "memory",
 			model: &Model{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "foo",
+					Name:            "foo",
 					ResourceVersion: "1",
 				},
 				Spec: ModelSpec{
@@ -92,10 +91,10 @@ func TestAsModelDetails(t *testing.T) {
 				},
 			},
 			modelDetails: &scheduler.ModelDetails{
-				Name: "foo",
-				Version: "1",
-				Uri: "gs://test",
-				Replicas: 1,
+				Name:        "foo",
+				Version:     "1",
+				Uri:         "gs://test",
+				Replicas:    1,
 				MemoryBytes: &m1bytes,
 			},
 		},

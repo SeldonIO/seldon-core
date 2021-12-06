@@ -132,3 +132,7 @@ GOBIN=$(PROJECT_DIR)/bin go get $(2) ;\
 rm -rf $$TMP_DIR ;\
 }
 endef
+
+.PHONY: build-protos
+build-protos:
+	protoc -I=../scheduler/apis/mlops/scheduler --go_out=./scheduler/api --go_opt=paths=source_relative --go-grpc_out=./scheduler/api --go-grpc_opt=paths=source_relative ../scheduler/apis/mlops/scheduler/scheduler.proto

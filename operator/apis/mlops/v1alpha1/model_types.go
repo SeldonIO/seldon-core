@@ -18,10 +18,13 @@ package v1alpha1
 
 import (
 	"fmt"
+	"knative.dev/pkg/apis"
 
 	scheduler "github.com/seldonio/seldon-core/operatorv2/scheduler/api"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
 // ModelSpec defines the desired state of Model
@@ -74,6 +77,7 @@ type InferenceArtifactSpec struct {
 type ModelStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	duckv1.Status `json:",inline"`
 }
 
 //+kubebuilder:object:root=true
@@ -139,4 +143,64 @@ func (m Model) AsModelDetails() (*scheduler.ModelDetails, error) {
 		}
 	}
 	return md, nil
+}
+
+const (
+	DeploymentsReady apis.ConditionType = "DeploymentsReady"
+	SeldonMeshReady  apis.ConditionType = "SeldonMeshReady"
+)
+
+// InferenceService Ready condition is depending on predictor and route readiness condition
+var conditionSet = apis.NewLivingConditionSet(
+	DeploymentsReady,
+	SeldonMeshReady,
+)
+
+var _ apis.ConditionsAccessor = (*ModelStatus)(nil)
+
+func (ms *ModelStatus) InitializeConditions() {
+	conditionSet.Manage(ms).InitializeConditions()
+}
+
+// IsReady returns if the service is ready to serve the requested configuration.
+func (ss *ModelStatus) IsReady() bool {
+	return conditionSet.Manage(ss).IsHappy()
+}
+
+// GetCondition returns the condition by name.
+func (ms *ModelStatus) GetCondition(t apis.ConditionType) *apis.Condition {
+	return conditionSet.Manage(ms).GetCondition(t)
+}
+
+// IsConditionReady returns the readiness for a given condition
+func (ss *ModelStatus) IsConditionReady(t apis.ConditionType) bool {
+	return conditionSet.Manage(ss).GetCondition(t) != nil && conditionSet.Manage(ss).GetCondition(t).Status == v1.ConditionTrue
+}
+
+func (ms *ModelStatus) SetCondition(conditionType apis.ConditionType, condition *apis.Condition) {
+	switch {
+	case condition == nil:
+		conditionSet.Manage(ms).MarkUnknown(conditionType, "", "")
+	case condition.Status == v1.ConditionUnknown:
+		conditionSet.Manage(ms).MarkUnknown(conditionType, condition.Reason, condition.Message)
+	case condition.Status == v1.ConditionTrue:
+		conditionSet.Manage(ms).MarkTrueWithReason(conditionType, condition.Reason, condition.Message)
+	case condition.Status == v1.ConditionFalse:
+		conditionSet.Manage(ms).MarkFalse(conditionType, condition.Reason, condition.Message)
+	}
+}
+
+func (ms *ModelStatus) CreateAndSetCondition(conditionType apis.ConditionType, isTrue bool, reason string) {
+	condition := apis.Condition{}
+	if isTrue {
+		condition.Status = v1.ConditionTrue
+	} else {
+		condition.Status = v1.ConditionFalse
+	}
+	condition.Type = conditionType
+	condition.Reason = reason
+	condition.LastTransitionTime = apis.VolatileTime{
+		Inner: metav1.Now(),
+	}
+	ms.SetCondition(conditionType, &condition)
 }

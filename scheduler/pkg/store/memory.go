@@ -182,7 +182,7 @@ func (m *MemoryStore) UpdateLoadedModels(modelKey string, version string, server
 	return nil
 }
 
-func (m *MemoryStore) UpdateModelState(modelKey string, version string, serverKey string, replicaIdx int, availableMemory *uint64, state ModelReplicaState) error {
+func (m *MemoryStore) UpdateModelState(modelKey string, version string, serverKey string, replicaIdx int, availableMemory *uint64, state ModelReplicaState, reason string) error {
 	logger := m.logger.WithField("func", "UpdateModelState")
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -194,6 +194,9 @@ func (m *MemoryStore) UpdateModelState(modelKey string, version string, serverKe
 	}
 
 	modelVersion.replicas[replicaIdx] = state
+	if reason != "" {
+		modelVersion.stateReason = reason
+	}
 	logger.Debugf("Setting model %s version %s on server %s replica %d to %s", modelKey, version, serverKey, replicaIdx, state.String())
 	// Update models loaded onto replica if loaded or unloaded is state
 	if state == Loaded || state == Unloaded {
