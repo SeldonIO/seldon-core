@@ -95,14 +95,21 @@ Options:
                                   The log level for the batch processor
   -b, --benchmark                 If true the batch processor will print the
                                   elapsed time taken to run the process
-  -u, --batch-id TEXT             Unique batch ID to identify all datapoints
+  -u, --batch-id TEXT             Unique batch ID to identify all data points
                                   processed in this batch, if not provided is
                                   auto generated
-  -u, --batch-size INTEGER        Batch size greater than 1 can be used to
+  -s, --batch-size INTEGER        Batch size greater than 1 can be used to
                                   group multiple predictions into a single
                                   request.
-  -t, --batch-interval FLOAT      Minimum Time interval(in seconds) between
-                                  batch predictions made by every worker
+  -t, --batch-interval FLOAT      Minimum Time interval (in seconds) between
+                                  batch predictions made by every worker.
+  --use-ssl BOOLEAN               Whether to use https rather than http as the
+                                  REST transport protocol.
+  --call-credentials-token TEXT   Auth token used by Seldon Client, if
+                                  supplied and using REST the transport
+                                  protocol will be https.
+  --ssl-verify BOOLEAN            Can be set to false to avoid SSL
+                                  verification in REST.
   --help                          Show this message and exit.
 ```
 
