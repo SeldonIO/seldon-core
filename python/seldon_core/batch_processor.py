@@ -459,7 +459,11 @@ def _send_batch_predict_multi_request(
         try:
             new_response = copy.deepcopy(response)
             if data_type == "raw":
-                new_response["meta"]["tags"].update(raw_input_tags[i])
+                # This is for tags from model to take priority (match BATCH_SIZE: 1 behaviour)
+                new_response["meta"]["tags"] = {
+                    **raw_input_tags[i],
+                    **new_response["meta"]["tags"],
+                }
             if payload_type == "ndarray":
                 # Format new responses for each original prediction request
                 new_response["data"]["ndarray"] = [response["data"]["ndarray"][i]]
