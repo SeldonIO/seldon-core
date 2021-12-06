@@ -51,9 +51,7 @@ FROM gcr.io/distroless/base-debian10:latest
 WORKDIR /
 COPY --from=builder /workspace/manager .
 COPY licenses/license.txt licenses/license.txt
-COPY --from=builder /workspace/hashicorp-golang-lru.tar.gz licenses/mpl_source/hashicorp-golang-lru.tar.gz
-COPY --from=builder /workspace/armon-consul-api.tar.gz licenses/mpl_source/armon-consul-api.tar.gz
-COPY --from=builder /workspace/hasicorp-hcl.tar.gz licenses/mpl_source/hasicorp-hcl.tar.gz
+COPY --from=builder /workspace/*.tar.gz licenses/mpl_source/
 COPY generated/admissionregistration.k8s.io_v1_validatingwebhookconfiguration_seldon-validating-webhook-configuration.yaml /tmp/operator-resources/validate.yaml
 COPY generated/v1_service_seldon-webhook-service.yaml /tmp/operator-resources/service.yaml
 COPY generated/v1_configmap_seldon-config.yaml /tmp/operator-resources/configmap.yaml
