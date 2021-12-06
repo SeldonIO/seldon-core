@@ -16,7 +16,7 @@ RUN apt-get update -y && apt-get install -qy --no-install-recommends \
 ENV PATH /opt/conda/bin:$PATH
 
 # MPL based licenses
-RUN wget -O certifi-python-certifi.tar.gz https://github.com/certifi/archive/master.tar.gz
+RUN wget -O certifi-python-certifi.tar.gz https://github.com/certifi/python-certifi/archive/master.tar.gz
 
 # Install Miniconda3
 ARG CONDA_DOWNLOAD_VERSION
