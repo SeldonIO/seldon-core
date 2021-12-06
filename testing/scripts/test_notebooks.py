@@ -16,9 +16,6 @@ class TestNotebooks(object):
     def test_helm_examples(self):
         create_and_run_script("../../notebooks", "helm_examples")
 
-    def test_explainer_examples(self):
-        create_and_run_script("../../notebooks", "explainer_examples")
-
     def test_istio_examples(self):
         create_and_run_script("../../notebooks", "istio_example")
 
