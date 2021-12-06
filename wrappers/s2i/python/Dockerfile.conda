@@ -11,6 +11,9 @@ ENV PATH /opt/conda/bin:$PATH
 RUN dnf update -y && \
     dnf install -y wget bzip2 ca-certificates curl git
 
+# MPL based licenses
+RUN wget -O certifi.tar.gz https://github.com/certifi/archive/master.tar.gz
+
 ARG CONDA_DOWNLOAD_VERSION
 RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-${CONDA_DOWNLOAD_VERSION}-Linux-x86_64.sh -O ~/miniconda.sh && \
     /bin/bash ~/miniconda.sh -b -p /opt/conda && \

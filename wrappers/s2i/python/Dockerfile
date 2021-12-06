@@ -11,6 +11,9 @@ LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
 ARG PYTHON_VERSION
 ARG CONDA_VERSION
 
+# MPL based licenses
+RUN wget -O certifi.tar.gz https://github.com/certifi/archive/master.tar.gz
+
 RUN conda install --yes python=$PYTHON_VERSION conda=$CONDA_VERSION
 RUN dnf install -y make automake gcc gcc-c++
 

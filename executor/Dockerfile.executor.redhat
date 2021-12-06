@@ -22,9 +22,29 @@ COPY k8s/ k8s/
 RUN go build -a -o executor cmd/executor/main.go
 
 # Get MPL licensed dependencies
-RUN wget -O hashicorp-golang-lru.tar.gz https://github.com/hashicorp/golang-lru/archive/master.tar.gz
 RUN wget -O armon-consul-api.tar.gz https://github.com/armon/consul-api/archive/master.tar.gz
-RUN wget -O hasicorp-hcl.tar.gz https://github.com/hashicorp/hcl/archive/hcl1.tar.gz
+RUN wget -O go-sql-driver-mysql.tar.gz https://github.com/go-sql-driver/mysql/archive/master.tar.gz
+RUN wget -O hashicorp-consul.tar.gz https://github.com/hashicorp/consul/archive/master.tar.gz
+RUN wget -O hashicorp-errwrap.tar.gz https://github.com/hashicorp/errwrap/archive/master.tar.gz
+RUN wget -O hashicorp-go-cleanhttp.tar.gz https://github.com/hashicorp/go-cleanhttp/archive/master.tar.gz
+RUN wget -O hashicorp-go-immutable-radix.tar.gz https://github.com/hashicorp/go-immutable-radix/archive/master.tar.gz
+RUN wget -O hashicorp-go-multierror.tar.gz https://github.com/hashicorp/go-multierror/archive/master.tar.gz
+RUN wget -O hashicorp-go-plugin.tar.gz https://github.com/hashicorp/go-plugin/archive/master.tar.gz
+RUN wget -O hashicorp-go-retryablehttp.tar.gz https://github.com/hashicorp/go-retryablehttp/archive/master.tar.gz
+RUN wget -O hashicorp-go-rootcerts.tar.gz https://github.com/hashicorp/go-rootcerts/archive/master.tar.gz
+RUN wget -O hashicorp-go-sockaddr.tar.gz https://github.com/hashicorp/go-sockaddr/archive/master.tar.gz
+RUN wget -O hashicorp-go-uuid.tar.gz https://github.com/hashicorp/go-uuid/archive/master.tar.gz
+RUN wget -O hashicorp-go-version.tar.gz https://github.com/hashicorp/go-version/archive/master.tar.gz
+RUN wget -O hashicorp-golang-lru.tar.gz https://github.com/hashicorp/golang-lru/archive/master.tar.gz
+RUN wget -O hashicorp-hcl.tar.gz https://github.com/hashicorp/hcl/archive/master.tar.gz
+RUN wget -O hashicorp-logutils.tar.gz https://github.com/hashicorp/logutils/archive/master.tar.gz
+RUN wget -O hashicorp-memberlist.tar.gz https://github.com/hashicorp/memberlist/archive/master.tar.gz
+RUN wget -O hashicorp-serf.tar.gz https://github.com/hashicorp/serf/archive/master.tar.gz
+RUN wget -O hashicorp-vault.tar.gz https://github.com/hashicorp/vault/archive/master.tar.gz
+RUN wget -O hashicorp-yamux.tar.gz https://github.com/hashicorp/yamux/archive/master.tar.gz
+RUN wget -O mitchellh-cli.tar.gz https://github.com/mitchellh/cli/archive/master.tar.gz
+RUN wget -O mitchellh-gox.tar.gz https://github.com/mitchellh/gox/archive/master.tar.gz
+RUN wget -O mozilla-tls-observatory.tar.gz https://github.com/mozilla/tls-observatory/archive/master.tar.gz
 
 # Copy OpenAPI folder and change the permissions
 COPY api/rest/openapi/ /openapi/
