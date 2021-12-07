@@ -14,9 +14,9 @@ train:
 
 collect:
 	cp metadata.yaml output/
-	find ./mlruns -name "MLmodel" -type f -exec cp {} ../output \;
-	find ./mlruns -name "conda.yaml" -type f -exec cp {} ../output \;
-	find ./mlruns -name "model.pkl" -type f -exec cp {} ../output \;
+	find ./mlruns -name "MLmodel" -type f -exec cp {} ./output \;
+	find ./mlruns -name "conda.yaml" -type f -exec cp {} ./output \;
+	find ./mlruns -name "model.pkl" -type f -exec cp {} ./output \;
 	conda env create --force -p ./.inference-env -f ./output/conda.yaml
 	./.inference-env/bin/pip install mlserver[all] mlserver-mlflow
 	./.env/bin/conda-pack -p ./.inference-env -f -o output/environment.tar.gz
