@@ -50,7 +50,7 @@ func (c *Client) loadRcloneRawConfiguration(config *AgentConfiguration) ([]strin
 }
 
 func (c *Client) deleteUnusedRcloneConfiguration(config *AgentConfiguration, rcloneNamesAdded []string) error {
-	logger := c.logger.WithField("func", "deleteUnsedRcloneConfiguration")
+	logger := c.logger.WithField("func", "deleteUnusedRcloneConfiguration")
 	existingRemotes, err := c.RCloneClient.ListRemotes()
 	if err != nil {
 		return err
