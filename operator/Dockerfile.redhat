@@ -21,9 +21,29 @@ COPY client/ client/
 RUN go build -a -o manager main.go
 
 # Get MPL licensed dependencies
-RUN wget -O hashicorp-golang-lru.tar.gz https://github.com/hashicorp/golang-lru/archive/master.tar.gz
 RUN wget -O armon-consul-api.tar.gz https://github.com/armon/consul-api/archive/master.tar.gz
-RUN wget -O hasicorp-hcl.tar.gz https://github.com/hashicorp/hcl/archive/hcl1.tar.gz
+RUN wget -O go-sql-driver-mysql.tar.gz https://github.com/go-sql-driver/mysql/archive/master.tar.gz
+RUN wget -O hashicorp-consul.tar.gz https://github.com/hashicorp/consul/archive/main.tar.gz
+RUN wget -O hashicorp-errwrap.tar.gz https://github.com/hashicorp/errwrap/archive/master.tar.gz
+RUN wget -O hashicorp-go-cleanhttp.tar.gz https://github.com/hashicorp/go-cleanhttp/archive/master.tar.gz
+RUN wget -O hashicorp-go-immutable-radix.tar.gz https://github.com/hashicorp/go-immutable-radix/archive/master.tar.gz
+RUN wget -O hashicorp-go-multierror.tar.gz https://github.com/hashicorp/go-multierror/archive/master.tar.gz
+RUN wget -O hashicorp-go-plugin.tar.gz https://github.com/hashicorp/go-plugin/archive/master.tar.gz
+RUN wget -O hashicorp-go-retryablehttp.tar.gz https://github.com/hashicorp/go-retryablehttp/archive/master.tar.gz
+RUN wget -O hashicorp-go-rootcerts.tar.gz https://github.com/hashicorp/go-rootcerts/archive/master.tar.gz
+RUN wget -O hashicorp-go-sockaddr.tar.gz https://github.com/hashicorp/go-sockaddr/archive/master.tar.gz
+RUN wget -O hashicorp-go-uuid.tar.gz https://github.com/hashicorp/go-uuid/archive/master.tar.gz
+RUN wget -O hashicorp-go-version.tar.gz https://github.com/hashicorp/go-version/archive/master.tar.gz
+RUN wget -O hashicorp-golang-lru.tar.gz https://github.com/hashicorp/golang-lru/archive/master.tar.gz
+RUN wget -O hashicorp-hcl.tar.gz https://github.com/hashicorp/hcl/archive/main.tar.gz
+RUN wget -O hashicorp-logutils.tar.gz https://github.com/hashicorp/logutils/archive/master.tar.gz
+RUN wget -O hashicorp-memberlist.tar.gz https://github.com/hashicorp/memberlist/archive/master.tar.gz
+RUN wget -O hashicorp-serf.tar.gz https://github.com/hashicorp/serf/archive/master.tar.gz
+RUN wget -O hashicorp-vault.tar.gz https://github.com/hashicorp/vault/archive/master.tar.gz
+RUN wget -O hashicorp-yamux.tar.gz https://github.com/hashicorp/yamux/archive/master.tar.gz
+RUN wget -O mitchellh-cli.tar.gz https://github.com/mitchellh/cli/archive/master.tar.gz
+RUN wget -O mitchellh-gox.tar.gz https://github.com/mitchellh/gox/archive/master.tar.gz
+RUN wget -O mozilla-tls-observatory.tar.gz https://github.com/mozilla/tls-observatory/archive/master.tar.gz
 
 FROM registry.access.redhat.com/ubi8/ubi-minimal
 LABEL name="Seldon Operator" \
@@ -36,9 +56,7 @@ LABEL name="Seldon Operator" \
 WORKDIR /
 COPY --from=builder /workspace/manager .
 COPY licenses/license.txt licenses/license.txt
-COPY --from=builder /workspace/hashicorp-golang-lru.tar.gz licenses/mpl_source/hashicorp-golang-lru.tar.gz
-COPY --from=builder /workspace/armon-consul-api.tar.gz licenses/mpl_source/armon-consul-api.tar.gz
-COPY --from=builder /workspace/hasicorp-hcl.tar.gz licenses/mpl_source/hasicorp-hcl.tar.gz
+COPY --from=builder /workspace/*.tar.gz licenses/mpl_source/
 COPY generated/admissionregistration.k8s.io_v1_validatingwebhookconfiguration_seldon-validating-webhook-configuration.yaml /tmp/operator-resources/validate.yaml
 COPY generated/v1_service_seldon-webhook-service.yaml /tmp/operator-resources/service.yaml
 COPY generated/v1_configmap_seldon-config.yaml /tmp/operator-resources/configmap.yaml
