@@ -18,7 +18,7 @@ func TestReplicaRequirementsFilter(t *testing.T) {
 				Requirements: requirements,
 			},
 			"server",
-			map[int]store.ModelReplicaState{3: store.Loading},
+			map[int]store.ReplicaState{3: {State: store.Loading}},
 			false,
 			store.ModelProgressing)
 	}

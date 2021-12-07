@@ -136,11 +136,18 @@ func (s *SchedulerServer) ModelStatus(ctx context.Context, reference *pb.ModelRe
 	if latestModel == nil {
 		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("Failed to find model %s", reference.Name))
 	}
+	stateMap := make(map[int32]*pb.ModelReplicaState)
+	for k,v := range latestModel.ReplicaState() {
+		stateMap[int32(k)] = &pb.ModelReplicaState{
+			State: v.State.String(),
+			Reason: v.Reason,
+		}
+	}
 	return &pb.ModelStatusResponse{
 		ModelName:         reference.Name,
 		Version:           latestModel.GetVersion(),
 		ServerName:        latestModel.Server(),
-		ModelReplicaState: latestModel.ReplicaState(),
+		ModelReplicaState: stateMap,
 	}, nil
 }
 

@@ -180,11 +180,13 @@ func (p *IncrementalProcessor) Sync(modelName string) error {
 	err = p.updateEnvoy()
 	// Update the state after the envoy sync depending on whether we got an error doing the sync
 	state := store.Available
+	reason := ""
 	if err != nil {
 		state = store.LoadedUnavailable
+		reason = err.Error()
 	}
 	for _, serverIdx := range assignment {
-		err2 := p.store.UpdateModelState(modelName, latestModel.GetVersion(), server.Name, serverIdx, nil, state, "")
+		err2 := p.store.UpdateModelState(modelName, latestModel.GetVersion(), server.Name, serverIdx, nil, state, reason)
 		if err2 != nil {
 			return err2
 		}

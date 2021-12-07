@@ -77,9 +77,9 @@ func TestScheduler(t *testing.T) {
 			Server:       server,
 			Replicas:     replicas,
 		}
-		rmap := make(map[int]store.ModelReplicaState)
+		rmap := make(map[int]store.ReplicaState)
 		for _, ridx := range loadedModels {
-			rmap[ridx] = store.Loaded
+			rmap[ridx] = store.ReplicaState{State: store.Loaded}
 		}
 		return &store.ModelSnapshot{
 			Name:     name,

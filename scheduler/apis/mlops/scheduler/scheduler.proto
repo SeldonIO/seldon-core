@@ -60,7 +60,12 @@ message ModelStatusResponse {
   string modelName = 1;
   string version = 2;
   string serverName = 3;
-  map<int32,string> modelReplicaState = 4;
+  map<int32,ModelReplicaState> modelReplicaState = 4;
+}
+
+message ModelReplicaState {
+  string state = 1;
+  string reason = 2;
 }
 
 /* ServerStatusResponse provides details of current server status

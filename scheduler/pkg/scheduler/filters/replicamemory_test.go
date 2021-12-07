@@ -16,7 +16,7 @@ func getTestModelWithMemory(requiredmemory *uint64) *store.ModelVersion {
 			MemoryBytes:  requiredmemory,
 		},
 		"server",
-		map[int]store.ModelReplicaState{3: store.Loading},
+		map[int]store.ReplicaState{3: {State: store.Loading}},
 		false,
 		store.ModelProgressing)
 }

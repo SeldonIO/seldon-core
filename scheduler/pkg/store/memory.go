@@ -159,20 +159,20 @@ func (m *MemoryStore) UpdateLoadedModels(modelKey string, version string, server
 	updatedReplicas := make(map[int]bool)
 	for _, replica := range replicas {
 		existingState := modelVersion.replicas[replica.GetReplicaIdx()]
-		if !existingState.AlreadyLoadingOrLoaded() {
+		if !existingState.State.AlreadyLoadingOrLoaded() {
 			logger.Debugf("Setting model %s on server %s replica %d to LoadRequested", modelKey, serverKey, replica.GetReplicaIdx())
-			modelVersion.replicas[replica.GetReplicaIdx()] = LoadRequested
+			modelVersion.replicas[replica.GetReplicaIdx()] = ReplicaState{State: LoadRequested}
 		} else {
 			logger.Debugf("model %s on server %s replica %d already loaded", modelKey, serverKey, replica.GetReplicaIdx())
 		}
 		updatedReplicas[replica.GetReplicaIdx()] = true
 	}
 	for replicaIdx, existingState := range modelVersion.replicas {
-		logger.Debugf("Looking at replicaidx %d with state %s but ignoring processed %v", replicaIdx, existingState.String(), updatedReplicas)
+		logger.Debugf("Looking at replicaidx %d with state %s but ignoring processed %v", replicaIdx, existingState.State.String(), updatedReplicas)
 		if _, ok := updatedReplicas[replicaIdx]; !ok {
-			if !existingState.AlreadyUnloadingOrUnloaded() {
+			if !existingState.State.AlreadyUnloadingOrUnloaded() {
 				logger.Debugf("Setting model %s on server %s replica %d to UnloadRequested", modelKey, serverKey, replicaIdx)
-				modelVersion.replicas[replicaIdx] = UnloadRequested
+				modelVersion.replicas[replicaIdx] = ReplicaState{State: UnloadRequested}
 			} else {
 				logger.Debugf("model %s on server %s replica %d already unloaded", modelKey, serverKey, replicaIdx)
 			}
@@ -193,10 +193,7 @@ func (m *MemoryStore) UpdateModelState(modelKey string, version string, serverKe
 		return err
 	}
 
-	modelVersion.replicas[replicaIdx] = state
-	if reason != "" {
-		modelVersion.stateReason = reason
-	}
+	modelVersion.replicas[replicaIdx] = ReplicaState{State: state, Reason: reason}
 	logger.Debugf("Setting model %s version %s on server %s replica %d to %s", modelKey, version, serverKey, replicaIdx, state.String())
 	// Update models loaded onto replica if loaded or unloaded is state
 	if state == Loaded || state == Unloaded {
@@ -238,7 +235,7 @@ func (m *MemoryStore) AddServerReplica(request *agent.AgentSubscribeRequest) err
 			return err
 		}
 		loadedModels[modelConfig.Name] = true
-		modelVersion.replicas[int(request.ReplicaIdx)] = Loaded
+		modelVersion.replicas[int(request.ReplicaIdx)] = ReplicaState{State: Loaded}
 	}
 	serverReplica := NewServerReplicaFromConfig(server, int(request.ReplicaIdx), loadedModels, request.ReplicaConfig)
 	server.replicas[int(request.ReplicaIdx)] = serverReplica
