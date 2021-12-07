@@ -1,0 +1,6 @@
+version: v1.14.0
+ignore:
+  'snyk:lic:golang:github.com:hashicorp:golang-lru:MPL-2.0':
+    - '*':
+        reason: "Source code of MPL licenses included in images"
+        expires: 2025-11-07T11:38:28.614Z
