@@ -1,7 +1,6 @@
 package agent
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path"
@@ -139,10 +138,7 @@ func (a *AgentConfigHandler) updateConfig(configData []byte) error {
 	config := AgentConfiguration{}
 	err := yaml.Unmarshal(configData, &config)
 	if err != nil {
-		err = json.Unmarshal(configData, &config)
-		if err != nil {
-			return err
-		}
+		return err
 	}
 	a.config = &config
 	return nil
