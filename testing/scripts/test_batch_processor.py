@@ -37,7 +37,7 @@ class TestBatchWorker(object):
             for i in range(batch_size):
                 f.write("[[1,2,3,4]]\n")
 
-        logging.info("Sending first batch: mini-batch size=1")
+        logging.info("Sending first batch (rest): mini-batch size=1")
 
         start_multithreaded_batch_worker(
             "sklearn",
@@ -45,6 +45,42 @@ class TestBatchWorker(object):
             namespace,
             API_ISTIO_GATEWAY,
             "rest",
+            "data",
+            "ndarray",
+            100,
+            3,
+            1,
+            input_data_path,
+            output_data_path,
+            "predict",
+            "debug",
+            True,
+            str(uuid.uuid1()),
+            0,
+            "",
+            False,
+            True,
+        )
+
+        logging.info("Finished first batch. Checking.")
+
+        with open(output_data_path, "r") as f:
+            count = 0
+            for line in f:
+                count += 1
+                output = json.loads(line)
+                # Ensure all requests are successful
+                assert output.get("data", {}).get("ndarray", False)
+            assert count == batch_size
+
+        logging.info("Sending first batch (grpc): mini-batch size=1")
+
+        start_multithreaded_batch_worker(
+            "sklearn",
+            "istio",
+            namespace,
+            API_ISTIO_GATEWAY,
+            "grpc",
             "data",
             "ndarray",
             100,

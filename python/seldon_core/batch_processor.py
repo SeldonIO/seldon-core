@@ -17,6 +17,9 @@ from seldon_core.seldon_client import (
     SeldonClient,
 )
 
+# lower case as grpc really does not like upper case here and rest does not care
+SELDON_PUID_HEADER = "seldon-puid"
+
 CHOICES_GATEWAY_TYPE = ["ambassador", "istio", "seldon"]
 CHOICES_TRANSPORT = ["rest", "grpc"]
 CHOICES_PAYLOAD_TYPE = ["ndarray", "tensor", "tftensor"]
@@ -409,7 +412,7 @@ def _send_batch_predict_multi_request(
         "batch_id": batch_id,
     }
     predict_kwargs["meta"] = tags
-    predict_kwargs["headers"] = {"Seldon-Puid": seldon_puid}
+    predict_kwargs["headers"] = {SELDON_PUID_HEADER: seldon_puid}
 
     try:
         # Process raw input format
@@ -558,7 +561,7 @@ def _send_batch_predict(
         "batch_index": batch_idx,
     }
     predict_kwargs["meta"] = tags
-    predict_kwargs["headers"] = {"Seldon-Puid": batch_instance_id}
+    predict_kwargs["headers"] = {SELDON_PUID_HEADER: batch_instance_id}
     try:
         data = json.loads(input_raw)
         if data_type == "data":
