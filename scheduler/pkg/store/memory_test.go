@@ -594,7 +594,7 @@ func TestUpdateModelState(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			ms := NewMemoryStore(logger, test.store)
-			err := ms.UpdateModelState(test.modelKey, test.version, test.serverKey, test.replicaIdx, &test.availableMemory, test.state)
+			err := ms.UpdateModelState(test.modelKey, test.version, test.serverKey, test.replicaIdx, &test.availableMemory, test.state,"")
 			if test.err == nil {
 				g.Expect(err).To(BeNil())
 				if !test.deleted {

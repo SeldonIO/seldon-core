@@ -154,7 +154,39 @@ const (
 	Unloading
 	Unloaded
 	UnloadFailed
+	Available
+	LoadedUnavailable
 )
+
+var replicaStates = []ModelReplicaState{
+	ModelReplicaStateUnknown,
+	LoadRequested,
+	Loading,
+	Loaded,
+	LoadFailed,
+	UnloadRequested,
+	Unloading,
+	Unloaded,
+	UnloadFailed,
+	Available,
+	LoadedUnavailable,
+}
+
+func (m ModelReplicaState) NoEndpoint() bool {
+	return (m == Unloaded || m == ModelReplicaStateUnknown || m == UnloadFailed || m == Unloading || m == UnloadRequested)
+}
+
+func (m ModelReplicaState) AlreadyLoadingOrLoaded() bool {
+	return (m == Loading || m == Loaded || m == Available || m == LoadedUnavailable)
+}
+
+func (m ModelReplicaState) AlreadyUnloadingOrUnloaded() bool {
+	return (m == Unloading || m == Unloaded)
+}
+
+func (me ModelReplicaState) String() string {
+	return [...]string{"Unknown", "LoadRequested", "Loading", "Loaded", "LoadFailed", "UnloadRequested", "Unloading", "Unloaded", "UnloadFailed", "Available", "LoadedUnavailable"}[me]
+}
 
 func (m *Model) HasLatest() bool {
 	return len(m.versions) > 0
@@ -350,39 +382,3 @@ func (s *ServerReplica) GetInferenceGrpcPort() int32 {
 	return s.inferenceGrpcPort
 }
 
-func (m ModelReplicaState) CanLoad() bool {
-	return !(m == LoadRequested || m == Loading || m == Loaded || m == ModelReplicaStateUnknown)
-}
-
-func (m ModelReplicaState) CanUnload() bool {
-	return !(m == UnloadRequested || m == Unloading || m == Unloaded || m == ModelReplicaStateUnknown)
-}
-
-func (m ModelReplicaState) CanRemove() bool {
-	return (m == Unloaded || m == ModelReplicaStateUnknown || m == UnloadFailed)
-}
-
-func (m ModelReplicaState) NoEndpoint() bool {
-	return (m == Unloaded || m == ModelReplicaStateUnknown || m == UnloadFailed || m == Unloading || m == UnloadRequested)
-}
-
-func (m ModelReplicaState) AlreadyLoadingOrLoaded() bool {
-	return (m == Loading || m == Loaded)
-}
-
-func (m ModelReplicaState) AlreadyUnloadingOrUnloaded() bool {
-	return (m == Unloading || m == Unloaded)
-}
-
-func (me ModelReplicaState) String() string {
-	return [...]string{"Unknown", "LoadRequested", "Loading", "Loaded", "LoadFailed", "UnloadRequested", "Unloading", "Unloaded", "UnloadFailed"}[me]
-}
-
-func (m ModelReplicaState) IsLoadingState() bool {
-	switch m {
-	case LoadRequested, Loading, Loaded:
-		return true
-	default:
-		return false
-	}
-}

@@ -8,11 +8,11 @@ metadata:
 spec:
   steps:
     - name: start
-      ref: transformer1
+      model: transformer1
     - name: infer
-      previous:
+      inputs:
         - start
-      ref: model1
+      model: model1
 
 ---
 # With drift detector async
@@ -39,4 +39,9 @@ spec:
       - infer
       model: alibi-drift-model
       async: true
+  return:
+    - name: infer
+      If: outlier.response.outlier == 0
+    - name: alibi-outlier-model
+      If: outlier.response.outlier == 1
 

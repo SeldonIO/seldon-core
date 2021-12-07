@@ -52,19 +52,19 @@ func NewIncrementalProcessor(cache cache.SnapshotCache, nodeID string, log logru
 	return ip
 }
 
-func (s *IncrementalProcessor) SendEnvoySync(modelName string) {
-	s.source <- modelName
+func (p *IncrementalProcessor) SendEnvoySync(modelName string) {
+	p.source <- modelName
 }
 
-func (s *IncrementalProcessor) StopEnvoySync() {
-	close(s.source)
+func (p *IncrementalProcessor) StopEnvoySync() {
+	close(p.source)
 }
 
-func (s *IncrementalProcessor) ListenForSyncs() {
-	logger := s.logger.WithField("func", "ListenForSyncs")
-	for msg := range s.source {
+func (p *IncrementalProcessor) ListenForSyncs() {
+	logger := p.logger.WithField("func", "ListenForSyncs")
+	for msg := range p.source {
 		logger.Debugf("Received sync for model %s", msg)
-		err := s.Sync(msg)
+		err := p.Sync(msg)
 		if err != nil {
 			logger.Errorf("Failed to process sync")
 		}
@@ -177,5 +177,17 @@ func (p *IncrementalProcessor) Sync(modelName string) error {
 			p.xdsCache.AddEndpoint(grpcClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceGrpcPort()))
 		}
 	}
-	return p.updateEnvoy()
+	err = p.updateEnvoy()
+	// Update the state after the envoy sync depending on whether we got an error doing the sync
+	state := store.Available
+	if err != nil {
+		state = store.LoadedUnavailable
+	}
+	for _, serverIdx := range assignment {
+		err2 := p.store.UpdateModelState(modelName, latestModel.GetVersion(), server.Name, serverIdx, nil, state, "")
+		if err2 != nil {
+			return err2
+		}
+	}
+	return err
 }

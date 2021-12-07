@@ -34,9 +34,9 @@ type InferenceStep struct {
 	// Whether this step is asynchronous
 	Async bool `json:"async,omitempty"`
 	// Previous step to receive data from
-	Preceding []InferenceNextStep `json:"previous,omitempty"`
+	Inputs []InferenceNextStep `json:"inputs,omitempty"`
 	// Reference to model artifact
-	Ref string `json:"ref"`
+	Model string `json:"model"`
 	// Condition specification to satisfy for this step to be run
 	// +optional
 	If string `json:"if,omitempty"`
