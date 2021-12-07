@@ -3,7 +3,6 @@ import json
 import logging
 import time
 import uuid
-from itertools import groupby
 from queue import Empty, Queue
 from threading import Event, Thread
 from typing import Dict, List, Tuple
@@ -12,7 +11,11 @@ import click
 import numpy as np
 import requests
 
-from seldon_core.seldon_client import SeldonClient
+from seldon_core.seldon_client import (
+    SeldonCallCredentials,
+    SeldonChannelCredentials,
+    SeldonClient,
+)
 
 CHOICES_GATEWAY_TYPE = ["ambassador", "istio", "seldon"]
 CHOICES_TRANSPORT = ["rest", "grpc"]
@@ -54,6 +57,9 @@ def start_multithreaded_batch_worker(
     benchmark: bool,
     batch_id: str,
     batch_interval: float,
+    call_credentials_token: str,
+    use_ssl: bool,
+    ssl_verify: bool,
 ) -> None:
     """
     Starts the multithreaded batch worker which consists of three worker types and
@@ -79,6 +85,17 @@ def start_multithreaded_batch_worker(
             "Batch size greater than 1 is only supported for `data` data type."
         )
 
+    # Providing call credentials sets the REST transport protocol to https,
+    # so we configure credentials even without a supplied token if use_ssl is set.
+    credentials = None
+    channel_credentials = None
+    if use_ssl or len(call_credentials_token) > 0:
+        token = None
+        if len(call_credentials_token) > 0:
+            token = call_credentials_token
+        credentials = SeldonCallCredentials(token=token)
+        channel_credentials = SeldonChannelCredentials(verify=ssl_verify)
+
     sc = SeldonClient(
         gateway=gateway_type,
         transport=transport,
@@ -87,6 +104,8 @@ def start_multithreaded_batch_worker(
         gateway_endpoint=host,
         namespace=namespace,
         client_return_type="dict",
+        call_credentials=credentials,
+        channel_credentials=channel_credentials,
     )
 
     t_in = Thread(
@@ -777,7 +796,7 @@ def _send_batch_feedback(
     envvar="SELDON_BATCH_ID",
     default=str(uuid.uuid1()),
     type=str,
-    help="Unique batch ID to identify all datapoints processed in this batch, if not provided is auto generated",
+    help="Unique batch ID to identify all data points processed in this batch, if not provided is auto generated",
 )
 @click.option(
     "--batch-size",
@@ -793,7 +812,28 @@ def _send_batch_feedback(
     envvar="SELDON_BATCH_MIN_INTERVAL",
     default=0,
     type=float,
-    help="Minimum Time interval(in seconds) between batch predictions made by every worker",
+    help="Minimum Time interval (in seconds) between batch predictions made by every worker.",
+)
+@click.option(
+    "--use-ssl",
+    envvar="SELDON_BATCH_USE_SSL",
+    default=False,
+    type=bool,
+    help="Whether to use https rather than http as the REST transport protocol.",
+)
+@click.option(
+    "--call-credentials-token",
+    envvar="SELDON_BATCH_CALL_CREDENTIALS_TOKEN",
+    default="",
+    type=str,
+    help="Auth token used by Seldon Client, if supplied and using REST the transport protocol will be https.",
+)
+@click.option(
+    "--ssl-verify",
+    envvar="SELDON_BATCH_SSL_VERIFY",
+    default=True,
+    type=bool,
+    help="Can be set to false to avoid SSL verification in REST.",
 )
 def run_cli(
     deployment_name: str,
@@ -813,6 +853,9 @@ def run_cli(
     benchmark: bool,
     batch_id: str,
     batch_interval: float,
+    call_credentials_token: str,
+    use_ssl: bool,
+    ssl_verify: bool,
 ):
     """
     Command line interface for Seldon Batch Processor, which can be used to send requests
@@ -843,6 +886,9 @@ def run_cli(
         benchmark,
         batch_id,
         batch_interval,
+        call_credentials_token,
+        use_ssl,
+        ssl_verify,
     )
 
 

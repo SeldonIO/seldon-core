@@ -4,7 +4,7 @@ A summary of the main contributions to the [Seldon Core release 1.7.0](https://g
 
 ## Experimental GPU Accelerated Explainers and Drift Detection
 
-As part of our [NVIDIA GTC 2021 Talk](https://gtc21.event.nvidia.com/media/MLOps%20with%20NVIDIA%20GPUs%20on%20Kubernetes%20%5BS32020%5D/1_tgjkxf3l) this year we have added some new features for utilizing GPUs for explainability and drift detection.
+As part of our NVIDIA GTC 2021 Talk this year we have added some new features for utilizing GPUs for explainability and drift detection.
 
 ### XGBoost Model with GPU TreeShap Explainer
 

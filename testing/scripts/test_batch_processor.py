@@ -57,6 +57,9 @@ class TestBatchWorker(object):
             True,
             str(uuid.uuid1()),
             0,
+            "",
+            False,
+            True,
         )
 
         logging.info("Finished first batch. Checking.")
@@ -91,6 +94,9 @@ class TestBatchWorker(object):
             True,
             str(uuid.uuid1()),
             0,
+            "",
+            False,
+            True,
         )
 
         logging.info("Finished first batch. Checking.")
@@ -146,6 +152,9 @@ class TestBatchWorker(object):
             True,
             str(uuid.uuid1()),
             0,
+            "",
+            False,
+            True,
         )
 
         logging.info("Finished first batch. Checking.")
@@ -187,6 +196,9 @@ class TestBatchWorker(object):
             True,
             str(uuid.uuid1()),
             0,
+            "",
+            False,
+            True,
         )
 
         logging.info("Finished first batch. Checking.")
@@ -252,6 +264,9 @@ class TestBatchWorker(object):
             True,
             str(uuid.uuid1()),
             0,
+            "",
+            False,
+            True,
         )
 
         logging.info("Finished first batch. Checking.")
@@ -293,6 +308,9 @@ class TestBatchWorker(object):
             True,
             str(uuid.uuid1()),
             0,
+            "",
+            False,
+            True,
         )
 
         logging.info("Finished first batch. Checking.")
