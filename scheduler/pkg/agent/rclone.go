@@ -25,7 +25,7 @@ const (
 	RcloneConfigUpdatePath = "/config/update"
 	RcloneListRemotesPath  = "/config/listremotes"
 	RcloneConfigDeletePath = "/config/delete"
-	RcloneConfigGetPath = "/config/get"
+	RcloneConfigGetPath    = "/config/get"
 )
 
 type RCloneClient struct {
