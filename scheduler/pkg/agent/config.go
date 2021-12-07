@@ -39,10 +39,10 @@ type RcloneConfiguration struct {
 }
 
 type AgentConfigHandler struct {
-	config               *AgentConfiguration
-	mu                   sync.RWMutex
-	listeners            []chan<- AgentConfiguration
 	logger               log.FieldLogger
+	mu                   sync.RWMutex
+	config               *AgentConfiguration
+	listeners            []chan<- AgentConfiguration
 	watcher              *fsnotify.Watcher
 	fileWatcherDone      chan struct{}
 	namespace            string
@@ -118,6 +118,9 @@ func (a *AgentConfigHandler) Close() error {
 	}
 	if a.watcher != nil {
 		return a.watcher.Close()
+	}
+	for _,c := range a.listeners {
+		close(c)
 	}
 	return nil
 }
