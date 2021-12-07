@@ -107,6 +107,9 @@ func (a *AgentConfigHandler) initWatcher(configPath string, namespace string, cl
 }
 
 func (a *AgentConfigHandler) Close() error {
+	if a == nil {
+		return nil
+	}
 	if a.fileWatcherDone != nil {
 		close(a.fileWatcherDone)
 	}

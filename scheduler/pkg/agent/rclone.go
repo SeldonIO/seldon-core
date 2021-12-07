@@ -25,6 +25,7 @@ const (
 	RcloneConfigUpdatePath = "/config/update"
 	RcloneListRemotesPath  = "/config/listremotes"
 	RcloneConfigDeletePath = "/config/delete"
+	RcloneConfigGetPath = "/config/get"
 )
 
 type RCloneClient struct {
@@ -242,7 +243,7 @@ func (r *RCloneClient) configExists(rcloneRemoteKey string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	res, err := r.call(b, "/config/get")
+	res, err := r.call(b, RcloneConfigGetPath)
 	if err != nil {
 		return false, err
 	}
