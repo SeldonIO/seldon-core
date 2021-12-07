@@ -20,7 +20,7 @@ func (c *Client) loadRcloneConfiguration(config *AgentConfiguration) error {
 		rcloneNamesAdded = append(rcloneNamesAdded, rcloneNamesAddedSecrets...)
 
 		// Delete any existing remotes not in defaults
-		err = c.deleteUnsedRcloneConfiguration(config, rcloneNamesAdded)
+		err = c.deleteUnusedRcloneConfiguration(config, rcloneNamesAdded)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to delete unused Rclone configuration")
 		}
@@ -49,7 +49,7 @@ func (c *Client) loadRcloneRawConfiguration(config *AgentConfiguration) ([]strin
 	return rcloneNamesAdded, nil
 }
 
-func (c *Client) deleteUnsedRcloneConfiguration(config *AgentConfiguration, rcloneNamesAdded []string) error {
+func (c *Client) deleteUnusedRcloneConfiguration(config *AgentConfiguration, rcloneNamesAdded []string) error {
 	logger := c.logger.WithField("func", "deleteUnsedRcloneConfiguration")
 	existingRemotes, err := c.RCloneClient.ListRemotes()
 	if err != nil {
