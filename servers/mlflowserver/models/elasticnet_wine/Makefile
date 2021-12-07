@@ -14,12 +14,16 @@ train:
 
 collect:
 	cp metadata.yaml output/
-	cp conda.yaml output/
 	cd mlruns && find . -name "MLmodel" -type f -exec cp {} ../output \;
+	cd mlruns && find . -name "conda.yaml" -type f -exec cp {} ../output \;
 	cd mlruns && find . -name "model.pkl" -type f -exec cp {} ../output \;
+	cd output && \
+		conda env create --force -n elasticnet-wine-env -f conda.yaml && \
+		conda-pack -n elasticnet-wine-env -f -o environment.tar.gz
 
 upload:
 	gsutil -m cp output/conda.yaml gs://seldon-models/v${VERSION}/mlflow/elasticnet_wine/
 	gsutil -m cp output/metadata.yaml gs://seldon-models/v${VERSION}/mlflow/elasticnet_wine/
 	gsutil -m cp output/MLmodel gs://seldon-models/v${VERSION}/mlflow/elasticnet_wine/
 	gsutil -m cp output/model.pkl gs://seldon-models/v${VERSION}/mlflow/elasticnet_wine/
+	gsutil -m cp output/environment.tar.gz gs://seldon-models/v${VERSION}/mlflow/elasticnet_wine/
