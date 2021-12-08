@@ -157,6 +157,8 @@ spec:
           value: '{{ .Values.engine.resources.cpuLimit }}'
         - name: ENGINE_DEFAULT_MEMORY_LIMIT
           value: '{{ .Values.engine.resources.memoryLimit }}'
+        - name: DEPLOYMENT_NAME_AS_PREFIX
+          value: '{{ .Values.manager.deploymentNameAsPrefix }}'
         image: '{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}'
         imagePullPolicy: '{{ .Values.image.pullPolicy }}'
         name: manager

@@ -84,6 +84,7 @@ manager:
   leaderElectionID: a33bd623.machinelearning.seldon.io
   annotations: {}
   containerSecurityContext: {}
+  deploymentNameAsPrefix: false
 rbac:
   configmap:
     create: true

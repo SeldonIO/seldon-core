@@ -19,6 +19,7 @@ package v1
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"os"
 	"strconv"
 
 	"k8s.io/apimachinery/pkg/types"
@@ -65,6 +66,7 @@ const (
 	ENV_PREDICTOR_LABELS                     = "PREDICTOR_LABELS"
 	ENV_SELDON_DEPLOYMENT_ID                 = "SELDON_DEPLOYMENT_ID"
 	ENV_SELDON_EXECUTOR_ENABLED              = "SELDON_EXECUTOR_ENABLED"
+	ENV_DEPLOYMENT_NAME_AS_PREFIX            = "DEPLOYMENT_NAME_AS_PREFIX"
 
 	ANNOTATION_JAVA_OPTS               = "seldon.io/engine-java-opts"
 	ANNOTATION_SEPARATE_ENGINE         = "seldon.io/engine-separate-pod"
@@ -76,6 +78,10 @@ const (
 	ANNOTATION_LOGGER_WRITE_TIMEOUT_MS = "seldon.io/executor-logger-write-timeout-ms"
 
 	DeploymentNamePrefix = "seldon"
+)
+
+var (
+	envDeploymentNameAsPrefix = os.Getenv(ENV_DEPLOYMENT_NAME_AS_PREFIX)
 )
 
 func hash(text string) string {
@@ -122,7 +128,13 @@ func GetDeploymentName(mlDep *SeldonDeployment, predictorSpec PredictorSpec, pod
 		name = baseName + getContainerNames(podSpec.Spec.Containers)
 	}
 	if len(name) > 63 {
-		return DeploymentNamePrefix + "-" + hash(name)
+		if envDeploymentNameAsPrefix == "true" {
+			possibleName := mlDep.Name + "-" + hash(name)
+			if len(possibleName) <= 63 { // Check that the created name is still less than k8s limit
+				return possibleName
+			}
+		}
+		return DeploymentNamePrefix + "-" + hash(name) // default name we know will be ok
 	} else {
 		return name
 	}

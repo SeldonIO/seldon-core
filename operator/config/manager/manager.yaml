@@ -147,6 +147,8 @@ spec:
           value: "0.5"
         - name: ENGINE_DEFAULT_MEMORY_LIMIT
           value: "512Mi"
+        - name: DEPLOYMENT_NAME_AS_PREFIX
+          value: "false"
         image: controller:latest
         name: manager
         resources:
