@@ -29,7 +29,7 @@ type_check:
 
 .PHONY: test
 test: type_check
-	pytest -W ignore
+	pytest -W ignore adserver
 
 .PHONY: lint
 lint:
@@ -125,4 +125,3 @@ redhat-image-scan:
 		echo $${rh_password_alibi_detect} | docker login -u unused scan.connect.redhat.com --password-stdin
 	docker tag ${REPO}/${IMAGE}:${VERSION} scan.connect.redhat.com/ospid-32ed6498-bce5-4c3b-9486-fe1c6e2582d3/${IMAGE}:${VERSION}
 	docker push scan.connect.redhat.com/ospid-32ed6498-bce5-4c3b-9486-fe1c6e2582d3/${IMAGE}:${VERSION}
-
