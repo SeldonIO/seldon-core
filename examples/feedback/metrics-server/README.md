@@ -132,7 +132,7 @@ spec:
           runAsUser: 8888
       containers:
       - name: user-container
-        image: seldonio/alibi-detect-server:1.7.0-dev
+        image: seldonio/alibi-detect-server:1.12.0-dev
         imagePullPolicy: Never
         args:
         - --model_name
@@ -156,7 +156,7 @@ spec:
         - name: "PREDICTIVE_UNIT_ID"
           value: "classifier"
         - name: "PREDICTIVE_UNIT_IMAGE"
-          value: "alibi-detect-server:1.7.0-dev"
+          value: "seldonio/alibi-detect-server:1.12.0-dev"
         - name: "PREDICTOR_ID"
           value: "default"
         ports:

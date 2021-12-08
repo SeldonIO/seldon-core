@@ -1,0 +1,48 @@
+[tool.poetry]
+name = "adserver"
+version = "1.12.0-dev"
+description = "Model Explanation Server"
+authors = ["Seldon Technologies Ltd. <hello@seldon.io>"]
+license = "Apache-2.0"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+seldon-core = { path = "_seldon_core", develop = false }
+alibi-detect = "0.6.2"
+numpy = "1.19.5"
+cloudevents = "1.2.0"
+tensorflow = "2.4.2"
+scikit-learn = "0.24.2"
+
+elasticsearch = "7.9.1"
+
+sh = "^1.14.2"
+tornado = "^6.1"
+kfserving = "^0.3"
+protobuf = "^3.19.1"
+
+google-cloud-core = "1.4.1"
+google-cloud-storage = "1.31.2"
+transformers = "^4.0"
+dill = "0.3.2"
+
+pystan = "2.19.1.1"
+fbprophet = "0.6"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.4"
+pytest-tornasync = "^0.6.0"
+mypy = "^0.910"
+grpcio-tools = "1.31.0"
+mypy-protobuf = "1.22"
+pip-licenses = "^3.5.2"
+black = "21.7b0"
+isort = "5.9.0"
+types-requests = "2.26.0"
+gsutil = "5.5"
+requests-mock = "^1.9.3"
+tenacity = "^8.0.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

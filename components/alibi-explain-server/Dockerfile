@@ -60,6 +60,7 @@ RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Cri
 RUN yum remove -y nodejs httpd
 
 COPY --from=builder /microservice /microservice
+COPY --from=builder /licenses /licenses
 COPY --from=builder /opt/conda /opt/conda
 
 ENTRYPOINT ["python", "-m", "alibiexplainer"]

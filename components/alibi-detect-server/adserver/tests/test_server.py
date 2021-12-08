@@ -1,7 +1,7 @@
 from adserver.server import Protocol, CEServer, CEModel
 from tornado.testing import AsyncHTTPTestCase
 from adserver.base import ModelResponse
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union
 import json
 import requests_mock
 
@@ -33,7 +33,7 @@ class DummyModel(CEModel):
     def load(self):
         pass
 
-    def process_event(self, inputs: List, headers: Dict) -> Optional[ModelResponse]:
+    def process_event(self, inputs: Union[List, Dict], headers: Dict):
         assert headers[customHeaderKey] == customHeaderVal
         if self.create_response:
             return DummyModel.getResponse()
