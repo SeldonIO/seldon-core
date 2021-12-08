@@ -105,6 +105,9 @@ func NewClient(serverName string,
 }
 
 func (c *Client) Start(configHandler *AgentConfigHandler) error {
+	if configHandler == nil {
+		return fmt.Errorf("configHandler is nil. Can't start client grpc server.")
+	}
 	err := c.waitReady()
 	if err != nil {
 		c.logger.WithError(err).Errorf("Failed to wait for all agent dependent services to be ready")

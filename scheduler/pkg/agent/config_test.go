@@ -90,7 +90,7 @@ func TestWatchFile(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			tdir := t.TempDir()
-			configFile := path.Join(tdir, "agent.json")
+			configFile := path.Join(tdir, AgentConfigYamlFilename)
 			b, err := json.Marshal(test.contents1)
 			g.Expect(err).To(BeNil())
 			err = os.WriteFile(configFile, b, 0644)
@@ -128,14 +128,14 @@ func TestWatchConfigMap(t *testing.T) {
 			configMapV1: &v1.ConfigMap{
 				ObjectMeta: metav1.ObjectMeta{Name: ConfigMapName, Namespace: namespace},
 				Data: map[string]string{
-					AgentConfigJsonFilename: "{\"rclone\":{\"config_secrets\":[\"rclone-gs-public\"]}}",
+					AgentConfigYamlFilename: "{\"rclone\":{\"config_secrets\":[\"rclone-gs-public\"]}}",
 				},
 			},
 			expectedSecretsV1: []string{"rclone-gs-public"},
 			configMapV2: &v1.ConfigMap{
 				ObjectMeta: metav1.ObjectMeta{Name: ConfigMapName, Namespace: namespace},
 				Data: map[string]string{
-					AgentConfigJsonFilename: "{\"rclone\":{\"config_secrets\":[\"rclone-gs-public2\"]}}",
+					AgentConfigYamlFilename: "{\"rclone\":{\"config_secrets\":[\"rclone-gs-public2\"]}}",
 				},
 			},
 			expectedSecretsV2: []string{"rclone-gs-public2"},

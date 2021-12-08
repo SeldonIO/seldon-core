@@ -197,7 +197,7 @@ func main() {
 	var clientset kubernetes.Interface
 	if runningInsideK8s() {
 		clientset, err = k8s.CreateClientset()
-		if err != nil {
+		if err != nil { //TODO change to Error from Fatal?
 			logger.WithError(err).Fatal("Failed to create kubernetes clientset")
 		}
 	}
@@ -208,7 +208,7 @@ func main() {
 	}
 	defer func() {
 		_ = agentConfigHandler.Close()
-		logger.Info("Closing agent handler")
+		logger.Info("Closed agent handler")
 	}()
 
 	rcloneClient := agent.NewRCloneClient(rcloneHost, rclonePort, modelRepository, logger)
@@ -219,7 +219,7 @@ func main() {
 	go func() {
 		err = client.Start(agentConfigHandler)
 		if err != nil {
-			logger.WithError(err).Fatal("Failed to initialise client")
+			logger.WithError(err).Error("Failed to initialise client")
 		}
 		close(done)
 	}()

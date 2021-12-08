@@ -1,7 +1,6 @@
 package agent
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path"
@@ -21,12 +20,7 @@ import (
 
 const (
 	AgentConfigYamlFilename = "agent.yaml"
-	AgentConfigJsonFilename = "agent.json"
 	ConfigMapName           = "seldon-agent"
-)
-
-var (
-	ConfigFileNames = []string{AgentConfigYamlFilename, AgentConfigJsonFilename}
 )
 
 type AgentConfiguration struct {
@@ -39,10 +33,10 @@ type RcloneConfiguration struct {
 }
 
 type AgentConfigHandler struct {
-	config               *AgentConfiguration
-	mu                   sync.RWMutex
-	listeners            []chan AgentConfiguration
 	logger               log.FieldLogger
+	mu                   sync.RWMutex
+	config               *AgentConfiguration
+	listeners            []chan<- AgentConfiguration
 	watcher              *fsnotify.Watcher
 	fileWatcherDone      chan struct{}
 	namespace            string
@@ -75,17 +69,16 @@ func (a *AgentConfigHandler) initConfigFromPath(configPath string) error {
 	if err != nil {
 		return err
 	}
-	for _, fileKey := range ConfigFileNames {
-		if v, ok := m[fileKey]; ok {
-			err = a.updateConfig([]byte(v))
-			if err != nil {
-				return err
-			}
-			a.configFilePath = path.Join(configPath, fileKey)
-			return nil
+
+	if v, ok := m[AgentConfigYamlFilename]; ok {
+		err = a.updateConfig([]byte(v))
+		if err != nil {
+			return err
 		}
+		a.configFilePath = path.Join(configPath, AgentConfigYamlFilename)
+		return nil
 	}
-	return fmt.Errorf("Failed to find config file from loaded config. Searched keys %v", ConfigFileNames)
+	return fmt.Errorf("Failed to find config file %s", AgentConfigYamlFilename)
 }
 
 func (a *AgentConfigHandler) initWatcher(configPath string, namespace string, clientset kubernetes.Interface) error {
@@ -107,6 +100,9 @@ func (a *AgentConfigHandler) initWatcher(configPath string, namespace string, cl
 }
 
 func (a *AgentConfigHandler) Close() error {
+	if a == nil {
+		return nil
+	}
 	if a.fileWatcherDone != nil {
 		close(a.fileWatcherDone)
 	}
@@ -115,6 +111,9 @@ func (a *AgentConfigHandler) Close() error {
 	}
 	if a.watcher != nil {
 		return a.watcher.Close()
+	}
+	for _, c := range a.listeners {
+		close(c)
 	}
 	return nil
 }
@@ -139,10 +138,7 @@ func (a *AgentConfigHandler) updateConfig(configData []byte) error {
 	config := AgentConfiguration{}
 	err := yaml.Unmarshal(configData, &config)
 	if err != nil {
-		err = json.Unmarshal(configData, &config)
-		if err != nil {
-			return err
-		}
+		return err
 	}
 	a.config = &config
 	return nil
@@ -209,11 +205,6 @@ func (a *AgentConfigHandler) watchConfigMap(clientset kubernetes.Interface) erro
 			err := a.updateConfig([]byte(data))
 			if err != nil {
 				logger.Errorf("Failed to update configmap from data in %s", AgentConfigYamlFilename)
-			}
-		} else if data, ok := updated.Data[AgentConfigJsonFilename]; ok {
-			err := a.updateConfig([]byte(data))
-			if err != nil {
-				logger.Errorf("Failed to update configmap from data in %s", AgentConfigJsonFilename)
 			} else {
 				a.mu.RLock()
 				for _, ch := range a.listeners {
