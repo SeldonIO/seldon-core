@@ -161,7 +161,7 @@ func (m *MemoryStore) UpdateLoadedModels(modelKey string, version string, server
 		existingState := modelVersion.replicas[replica.GetReplicaIdx()]
 		if !existingState.State.AlreadyLoadingOrLoaded() {
 			logger.Debugf("Setting model %s on server %s replica %d to LoadRequested", modelKey, serverKey, replica.GetReplicaIdx())
-			modelVersion.replicas[replica.GetReplicaIdx()] = ReplicaState{State: LoadRequested}
+			modelVersion.replicas[replica.GetReplicaIdx()] = ReplicaStatus{State: LoadRequested}
 		} else {
 			logger.Debugf("model %s on server %s replica %d already loaded", modelKey, serverKey, replica.GetReplicaIdx())
 		}
@@ -172,7 +172,7 @@ func (m *MemoryStore) UpdateLoadedModels(modelKey string, version string, server
 		if _, ok := updatedReplicas[replicaIdx]; !ok {
 			if !existingState.State.AlreadyUnloadingOrUnloaded() {
 				logger.Debugf("Setting model %s on server %s replica %d to UnloadRequested", modelKey, serverKey, replicaIdx)
-				modelVersion.replicas[replicaIdx] = ReplicaState{State: UnloadRequested}
+				modelVersion.replicas[replicaIdx] = ReplicaStatus{State: UnloadRequested}
 			} else {
 				logger.Debugf("model %s on server %s replica %d already unloaded", modelKey, serverKey, replicaIdx)
 			}
@@ -193,7 +193,7 @@ func (m *MemoryStore) UpdateModelState(modelKey string, version string, serverKe
 		return err
 	}
 
-	modelVersion.replicas[replicaIdx] = ReplicaState{State: state, Reason: reason}
+	modelVersion.replicas[replicaIdx] = ReplicaStatus{State: state, Reason: reason}
 	logger.Debugf("Setting model %s version %s on server %s replica %d to %s", modelKey, version, serverKey, replicaIdx, state.String())
 	// Update models loaded onto replica if loaded or unloaded is state
 	if state == Loaded || state == Unloaded {
@@ -235,7 +235,7 @@ func (m *MemoryStore) AddServerReplica(request *agent.AgentSubscribeRequest) err
 			return err
 		}
 		loadedModels[modelConfig.Name] = true
-		modelVersion.replicas[int(request.ReplicaIdx)] = ReplicaState{State: Loaded}
+		modelVersion.replicas[int(request.ReplicaIdx)] = ReplicaStatus{State: Loaded}
 	}
 	serverReplica := NewServerReplicaFromConfig(server, int(request.ReplicaIdx), loadedModels, request.ReplicaConfig)
 	server.replicas[int(request.ReplicaIdx)] = serverReplica

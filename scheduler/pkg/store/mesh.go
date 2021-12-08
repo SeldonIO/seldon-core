@@ -35,13 +35,17 @@ func NewModel() *Model {
 type ModelVersion struct {
 	config   *pb.ModelDetails
 	server   string
-	replicas map[int]ReplicaState
+	replicas map[int]ReplicaStatus
 	deleted  bool
-	state    ModelState
-	stateReason string
+	state    ModelStatus
 }
 
-type ReplicaState struct {
+type ModelStatus struct {
+	State  ModelState
+	Reason string
+}
+
+type ReplicaStatus struct {
 	State  ModelReplicaState
 	Reason string
 }
@@ -49,15 +53,15 @@ type ReplicaState struct {
 func NewDefaultModelVersion(config *pb.ModelDetails) *ModelVersion {
 	return &ModelVersion{
 		config:   config,
-		replicas: make(map[int]ReplicaState),
+		replicas: make(map[int]ReplicaStatus),
 		deleted:  false,
-		state:    ModelStateUnknown,
+		state:    ModelStatus{State: ModelStateUnknown},
 	}
 }
 
 func NewModelVersion(config *pb.ModelDetails,
 	server string,
-	replicas map[int]ReplicaState,
+	replicas map[int]ReplicaStatus,
 	deleted bool,
 	state ModelState) *ModelVersion {
 	return &ModelVersion{
@@ -65,7 +69,7 @@ func NewModelVersion(config *pb.ModelDetails,
 		server:   server,
 		replicas: replicas,
 		deleted:  deleted,
-		state:    state,
+		state:    ModelStatus{State: state},
 	}
 }
 
@@ -250,7 +254,7 @@ func (m *ModelVersion) Server() string {
 	return m.server
 }
 
-func (m *ModelVersion) ReplicaState() map[int]ReplicaState {
+func (m *ModelVersion) ReplicaState() map[int]ReplicaStatus {
 	return m.replicas
 }
 

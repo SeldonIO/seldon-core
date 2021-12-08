@@ -239,7 +239,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 		version        string
 		serverKey      string
 		replicas       []*ServerReplica
-		expectedStates map[int]ReplicaState
+		expectedStates map[int]ReplicaStatus
 		err            error
 	}
 
@@ -250,16 +250,16 @@ func TestUpdateLoadedModels(t *testing.T) {
 				models: map[string]*Model{"model": &Model{
 					versionMap: map[string]*ModelVersion{"1": {
 						config:   &pb.ModelDetails{Name: "model", Version: "1"},
-						replicas: map[int]ReplicaState{},
+						replicas: map[int]ReplicaStatus{},
 					}},
 					versions: []*ModelVersion{
 						{
 							config:   &pb.ModelDetails{Name: "model", Version: "1"},
-							replicas: map[int]ReplicaState{},
+							replicas: map[int]ReplicaStatus{},
 						},
 						{
 							config:   &pb.ModelDetails{Name: "model", Version: "2"},
-							replicas: map[int]ReplicaState{},
+							replicas: map[int]ReplicaStatus{},
 						},
 					},
 				}},
@@ -281,12 +281,12 @@ func TestUpdateLoadedModels(t *testing.T) {
 				models: map[string]*Model{"model": &Model{
 					versionMap: map[string]*ModelVersion{"1": {
 						config:   &pb.ModelDetails{Name: "model", Version: "1"},
-						replicas: map[int]ReplicaState{},
+						replicas: map[int]ReplicaStatus{},
 					}},
 					versions: []*ModelVersion{
 						{
 							config:   &pb.ModelDetails{Name: "model", Version: "1"},
-							replicas: map[int]ReplicaState{},
+							replicas: map[int]ReplicaStatus{},
 						},
 					},
 				}},
@@ -306,7 +306,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 			replicas: []*ServerReplica{
 				{replicaIdx: 0}, {replicaIdx: 1},
 			},
-			expectedStates: map[int]ReplicaState{0: {State: LoadRequested}, 1: {State: LoadRequested}},
+			expectedStates: map[int]ReplicaStatus{0: {State: LoadRequested}, 1: {State: LoadRequested}},
 			err:            nil,
 		},
 		{
@@ -315,12 +315,12 @@ func TestUpdateLoadedModels(t *testing.T) {
 				models: map[string]*Model{"model": &Model{
 					versionMap: map[string]*ModelVersion{"1": {
 						config:   &pb.ModelDetails{Name: "model", Version: "1"},
-						replicas: map[int]ReplicaState{},
+						replicas: map[int]ReplicaStatus{},
 					}},
 					versions: []*ModelVersion{
 						{
 							config: &pb.ModelDetails{Name: "model", Version: "1"},
-							replicas: map[int]ReplicaState{
+							replicas: map[int]ReplicaStatus{
 								0: {State: Loaded},
 							},
 						},
@@ -342,7 +342,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 			replicas: []*ServerReplica{
 				{replicaIdx: 0}, {replicaIdx: 1},
 			},
-			expectedStates: map[int]ReplicaState{0: {State: Loaded}, 1: {State: LoadRequested}},
+			expectedStates: map[int]ReplicaStatus{0: {State: Loaded}, 1: {State: LoadRequested}},
 			err:            nil,
 		},
 		{
@@ -351,12 +351,12 @@ func TestUpdateLoadedModels(t *testing.T) {
 				models: map[string]*Model{"model": &Model{
 					versionMap: map[string]*ModelVersion{"1": {
 						config:   &pb.ModelDetails{Name: "model", Version: "1"},
-						replicas: map[int]ReplicaState{},
+						replicas: map[int]ReplicaStatus{},
 					}},
 					versions: []*ModelVersion{
 						{
 							config: &pb.ModelDetails{Name: "model", Version: "1"},
-							replicas: map[int]ReplicaState{
+							replicas: map[int]ReplicaStatus{
 								0: {State: Loaded},
 							},
 						},
@@ -378,7 +378,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 			replicas: []*ServerReplica{
 				{replicaIdx: 1},
 			},
-			expectedStates: map[int]ReplicaState{0: {State: UnloadRequested}, 1: {State: LoadRequested}},
+			expectedStates: map[int]ReplicaStatus{0: {State: UnloadRequested}, 1: {State: LoadRequested}},
 			err:            nil,
 		},
 		{
@@ -387,12 +387,12 @@ func TestUpdateLoadedModels(t *testing.T) {
 				models: map[string]*Model{"model": &Model{
 					versionMap: map[string]*ModelVersion{"1": {
 						config:   &pb.ModelDetails{Name: "model", Version: "1"},
-						replicas: map[int]ReplicaState{},
+						replicas: map[int]ReplicaStatus{},
 					}},
 					versions: []*ModelVersion{
 						{
 							config:   &pb.ModelDetails{Name: "model", Version: "1"},
-							replicas: map[int]ReplicaState{
+							replicas: map[int]ReplicaStatus{
 								0: {State: Loaded},
 							},
 						},
@@ -413,7 +413,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 			version:        "1",
 			serverKey:      "server",
 			replicas:       []*ServerReplica{},
-			expectedStates: map[int]ReplicaState{0: {State: UnloadRequested}},
+			expectedStates: map[int]ReplicaStatus{0: {State: UnloadRequested}},
 			err:            nil,
 		},
 		{
@@ -422,12 +422,12 @@ func TestUpdateLoadedModels(t *testing.T) {
 				models: map[string]*Model{"model": &Model{
 					versionMap: map[string]*ModelVersion{"1": {
 						config:   &pb.ModelDetails{Name: "model", Version: "1"},
-						replicas: map[int]ReplicaState{},
+						replicas: map[int]ReplicaStatus{},
 					}},
 					versions: []*ModelVersion{
 						{
 							config:   &pb.ModelDetails{Name: "model", Version: "1"},
-							replicas: map[int]ReplicaState{
+							replicas: map[int]ReplicaStatus{
 								0: {State: Unloaded},
 							},
 						},
@@ -448,7 +448,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 			version:        "1",
 			serverKey:      "server",
 			replicas:       []*ServerReplica{},
-			expectedStates: map[int]ReplicaState{0: {State: Unloaded}},
+			expectedStates: map[int]ReplicaStatus{0: {State: Unloaded}},
 			err:            nil,
 		},
 	}
@@ -481,7 +481,7 @@ func TestUpdateModelState(t *testing.T) {
 		version         string
 		serverKey       string
 		replicaIdx      int
-		state           ReplicaState
+		state           ReplicaStatus
 		availableMemory uint64
 		loaded          bool
 		deleted         bool
@@ -495,12 +495,12 @@ func TestUpdateModelState(t *testing.T) {
 				models: map[string]*Model{"model": &Model{
 					versionMap: map[string]*ModelVersion{"1": {
 						config:   &pb.ModelDetails{Name: "model", Version: "1"},
-						replicas: map[int]ReplicaState{},
+						replicas: map[int]ReplicaStatus{},
 					}},
 					versions: []*ModelVersion{
 						{
 							config:   &pb.ModelDetails{Name: "model", Version: "1"},
-							replicas: map[int]ReplicaState{},
+							replicas: map[int]ReplicaStatus{},
 						},
 					},
 				}},
@@ -518,7 +518,7 @@ func TestUpdateModelState(t *testing.T) {
 			version:         "1",
 			serverKey:       "server",
 			replicaIdx:      0,
-			state:           ReplicaState{State: Loaded},
+			state:           ReplicaStatus{State: Loaded},
 			loaded:          true,
 			availableMemory: 20,
 			err:             nil,
@@ -529,12 +529,12 @@ func TestUpdateModelState(t *testing.T) {
 				models: map[string]*Model{"model": &Model{
 					versionMap: map[string]*ModelVersion{"1": {
 						config:   &pb.ModelDetails{Name: "model", Version: "1"},
-						replicas: map[int]ReplicaState{},
+						replicas: map[int]ReplicaStatus{},
 					}},
 					versions: []*ModelVersion{
 						{
 							config:   &pb.ModelDetails{Name: "model", Version: "1"},
-							replicas: map[int]ReplicaState{},
+							replicas: map[int]ReplicaStatus{},
 						},
 					},
 				}},
@@ -552,7 +552,7 @@ func TestUpdateModelState(t *testing.T) {
 			version:         "1",
 			serverKey:       "server",
 			replicaIdx:      0,
-			state:           ReplicaState{State: Unloaded},
+			state:           ReplicaStatus{State: Unloaded},
 			loaded:          false,
 			availableMemory: 20,
 			err:             nil,
@@ -563,12 +563,12 @@ func TestUpdateModelState(t *testing.T) {
 				models: map[string]*Model{"model": &Model{
 					versionMap: map[string]*ModelVersion{"1": {
 						config:   &pb.ModelDetails{Name: "model", Version: "1"},
-						replicas: map[int]ReplicaState{},
+						replicas: map[int]ReplicaStatus{},
 					}},
 					versions: []*ModelVersion{
 						{
 							config:   &pb.ModelDetails{Name: "model", Version: "1"},
-							replicas: map[int]ReplicaState{},
+							replicas: map[int]ReplicaStatus{},
 						},
 					},
 					deleted: true,
@@ -587,7 +587,7 @@ func TestUpdateModelState(t *testing.T) {
 			version:         "1",
 			serverKey:       "server",
 			replicaIdx:      0,
-			state:           ReplicaState{State: Unloaded},
+			state:           ReplicaStatus{State: Unloaded},
 			loaded:          false,
 			availableMemory: 20,
 			deleted:         true,

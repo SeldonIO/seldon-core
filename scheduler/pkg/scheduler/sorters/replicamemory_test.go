@@ -20,7 +20,7 @@ func TestMemoryReplicaFilter(t *testing.T) {
 	model := store.NewModelVersion(
 		nil,
 		"server1",
-		map[int]store.ReplicaState{3: {State:store.Loading}},
+		map[int]store.ReplicaStatus{3: {State: store.Loading}},
 		false,
 		store.ModelProgressing)
 	tests := []test{

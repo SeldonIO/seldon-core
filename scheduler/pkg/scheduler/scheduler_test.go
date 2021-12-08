@@ -1,6 +1,7 @@
 package scheduler
 
 import (
+	"sort"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -77,9 +78,9 @@ func TestScheduler(t *testing.T) {
 			Server:       server,
 			Replicas:     replicas,
 		}
-		rmap := make(map[int]store.ReplicaState)
+		rmap := make(map[int]store.ReplicaStatus)
 		for _, ridx := range loadedModels {
-			rmap[ridx] = store.ReplicaState{State: store.Loaded}
+			rmap[ridx] = store.ReplicaStatus{State: store.Loaded}
 		}
 		return &store.ModelSnapshot{
 			Name:     name,
@@ -266,6 +267,8 @@ func TestScheduler(t *testing.T) {
 			if test.scheduled {
 				g.Expect(err).To(BeNil())
 				g.Expect(test.scheduledServer).To(Equal(mockStore.scheduledServer))
+				sort.Ints(test.scheduledReplicas)
+				sort.Ints(mockStore.scheduledReplicas)
 				g.Expect(test.scheduledReplicas).To(Equal(mockStore.scheduledReplicas))
 			} else {
 				g.Expect(err).ToNot(BeNil())

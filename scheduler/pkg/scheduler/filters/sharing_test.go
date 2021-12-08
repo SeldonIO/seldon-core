@@ -24,7 +24,7 @@ func TestSharingFilter(t *testing.T) {
 			Server: &serverName,
 		},
 		serverName,
-		map[int]store.ReplicaState{3: {State: store.Loading}},
+		map[int]store.ReplicaStatus{3: {State: store.Loading}},
 		false,
 		store.ModelProgressing)
 	modelSharedServer := store.NewModelVersion(
@@ -33,7 +33,7 @@ func TestSharingFilter(t *testing.T) {
 			Server: nil,
 		},
 		serverName,
-		map[int]store.ReplicaState{3: {State: store.Loading}},
+		map[int]store.ReplicaStatus{3: {State: store.Loading}},
 		false,
 		store.ModelProgressing)
 	tests := []test{
