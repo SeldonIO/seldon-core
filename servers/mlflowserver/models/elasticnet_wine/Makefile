@@ -14,12 +14,16 @@ train:
 
 collect:
 	cp metadata.yaml output/
-	cp conda.yaml output/
-	cd mlruns && find . -name "MLmodel" -type f -exec cp {} ../output \;
-	cd mlruns && find . -name "model.pkl" -type f -exec cp {} ../output \;
+	find ./mlruns -name "MLmodel" -type f -exec cp {} ./output \;
+	find ./mlruns -name "conda.yaml" -type f -exec cp {} ./output \;
+	find ./mlruns -name "model.pkl" -type f -exec cp {} ./output \;
+	conda env create --force -p ./.inference-env -f ./output/conda.yaml
+	./.inference-env/bin/pip install mlserver[all] mlserver-mlflow
+	./.env/bin/conda-pack -p ./.inference-env -f -o output/environment.tar.gz
 
 upload:
 	gsutil -m cp output/conda.yaml gs://seldon-models/v${VERSION}/mlflow/elasticnet_wine/
 	gsutil -m cp output/metadata.yaml gs://seldon-models/v${VERSION}/mlflow/elasticnet_wine/
 	gsutil -m cp output/MLmodel gs://seldon-models/v${VERSION}/mlflow/elasticnet_wine/
 	gsutil -m cp output/model.pkl gs://seldon-models/v${VERSION}/mlflow/elasticnet_wine/
+	gsutil -m cp output/environment.tar.gz gs://seldon-models/v${VERSION}/mlflow/elasticnet_wine/
