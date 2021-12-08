@@ -267,7 +267,7 @@ def update_operator_kustomize_prepackaged_images(
 
 
 def update_alibi_detect_image(
-    fpath, seldon_core_version, debug=False
+    fpath, current_seldon_core_version, seldon_core_version, debug=False
 ):
     fpath = os.path.realpath(fpath)
     if debug:
@@ -275,7 +275,7 @@ def update_alibi_detect_image(
     args = [
         "sed",
         "-i",
-        f"s|seldonio/alibi-detect-server:\(.*\)|seldonio/alibi-detect-server:{seldon_core_version}|",
+        f"s|seldonio/alibi-detect-server:{current_seldon_core_version}|seldonio/alibi-detect-server:{seldon_core_version}|",
         fpath,
     ]
     err, out = run_command(args, debug)
@@ -567,7 +567,7 @@ def set_version(
 
     # update alibi detect image references
     for fpath in alibi_detect_image_files:
-        update_alibi_detect_image(fpath, seldon_core_version)
+        update_alibi_detect_image(fpath, current_seldon_core_version, seldon_core_version)
 
     # Update image version labels
     update_image_metadata_json(seldon_core_version, debug)
@@ -636,6 +636,8 @@ def main(argv):
     ALIBI_DETECT_FILES = [
         "testing/resources/adserver-cifar10-od-rclone.yaml",
         "testing/resources/adserver-cifar10-od.yaml",
+        "examples/feedback/metrics-server/README.ipynb",
+        "examples/feedback/feedback-metrics-server/README.md",
     ]
 
     opts = getOpts(argv[1:])
