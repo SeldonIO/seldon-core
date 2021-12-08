@@ -5,13 +5,14 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"os"
-	"path/filepath"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
-	"github.com/cenkalti/backoff/v4"
-	"k8s.io/client-go/util/homedir"
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/k8s"
+	"k8s.io/client-go/kubernetes"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent"
 	log "github.com/sirupsen/logrus"
@@ -27,10 +28,10 @@ var (
 	inferenceHost    string
 	inferencePort    int
 	modelRepository  string
-	kubeconfig       string
 	namespace        string
 	replicaConfigStr string
 	inferenceSvcName string
+	configPath       string
 )
 
 const (
@@ -62,12 +63,8 @@ func init() {
 	flag.IntVar(&inferencePort, FlagInferencePort, 8080, "Inference server port")
 	flag.StringVar(&modelRepository, "model-repository", "/mnt/models", "Model repository folder")
 	flag.StringVar(&replicaConfigStr, FlagReplicaConfig, "", "Replica Json Config")
-
-	if home := homedir.HomeDir(); home != "" {
-		flag.StringVar(&kubeconfig, "kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-	} else {
-		flag.StringVar(&kubeconfig, "kubeconfig", "", "absolute path to the kubeconfig file")
-	}
+	flag.StringVar(&namespace, "namespace", "", "Namespace")
+	flag.StringVar(&configPath, "config-path", "/mnt/config", "Path to folder with configuration files. Will assume agent.yaml or agent.json in this folder")
 }
 
 func isFlagPassed(name string) bool {
@@ -144,15 +141,20 @@ func updateFlagsFromEnv() {
 	}
 }
 
-func getNamespace() string {
+func runningInsideK8s() bool {
+	return namespace != ""
+}
+
+func updateNamespace() {
 	nsBytes, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
 	if err != nil {
 		log.Warn("Using namespace from command line argument")
-		return namespace
+	} else {
+		namespace = string(nsBytes)
 	}
-	ns := string(nsBytes)
-	log.Info("Namespace is ", ns)
-	return ns
+	if runningInsideK8s() {
+		log.Info("Running inside k8s. Namespace is ", namespace)
+	}
 }
 
 func setInferenceSvcName() {
@@ -165,40 +167,63 @@ func setInferenceSvcName() {
 	log.Infof("Setting inference svc name to %s", inferenceSvcName)
 }
 
+func updateFlags() {
+	updateFlagsFromEnv()
+	setInferenceSvcName()
+	updateNamespace()
+}
+
 func main() {
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
 	flag.Parse()
-	updateFlagsFromEnv()
-	setInferenceSvcName()
+	updateFlags()
 
-	replicaConfig, err := agent.ParseReplicConfig(replicaConfigStr)
+	done := make(chan bool, 1)
+
+	go func() {
+		exit := make(chan os.Signal, 1)
+		signal.Notify(exit, os.Interrupt, syscall.SIGTERM)
+		<-exit
+		logger.Info("shutting down due to SIGTERM or SIGINT")
+		close(done)
+	}()
+
+	replicaConfig, err := agent.ParseReplicaConfig(replicaConfigStr)
 	if err != nil {
 		log.Fatalf("Failed to parse replica config %s", replicaConfigStr)
 	}
 
+	var clientset kubernetes.Interface
+	if runningInsideK8s() {
+		clientset, err = k8s.CreateClientset()
+		if err != nil { //TODO change to Error from Fatal?
+			logger.WithError(err).Fatal("Failed to create kubernetes clientset")
+		}
+	}
+	// Start Agent configuration handler
+	agentConfigHandler, err := agent.NewAgentConfigHandler(configPath, namespace, logger, clientset)
+	if err != nil {
+		logger.WithError(err).Fatal("Failed to create agent config handler")
+	}
+	defer func() {
+		_ = agentConfigHandler.Close()
+		logger.Info("Closed agent handler")
+	}()
+
 	rcloneClient := agent.NewRCloneClient(rcloneHost, rclonePort, modelRepository, logger)
 	v2Client := agent.NewV2Client(inferenceHost, inferencePort, logger)
-	client, err := agent.NewClient(serverName, uint32(replicaIdx), schedulerHost, schedulerPort, logger, rcloneClient, v2Client, replicaConfig, inferenceSvcName)
-	if err != nil {
-		logger.WithError(err).Fatal("Failed to  client")
-	}
+	client := agent.NewClient(serverName, uint32(replicaIdx), schedulerHost, schedulerPort, logger, rcloneClient, v2Client, replicaConfig, inferenceSvcName, namespace)
 
-	//TODO wait for rclone and V2 server to be ready
-	err = client.WaitReady()
-	if err != nil {
-		logger.WithError(err).Fatal("Failed to create connection")
-	}
-	err = client.CreateConnection()
-	if err != nil {
-		logger.WithError(err).Fatal("Failed to create connection")
-	}
-	logFailure := func(err error, delay time.Duration) {
-		logger.WithError(err).Errorf("Scheduler not ready")
-	}
-	err = backoff.RetryNotify(client.Start, backoff.NewExponentialBackOff(), logFailure)
-	//err = client.Start()
-	if err != nil {
-		logger.WithError(err).Fatal("Failed to start client")
-	}
+	// Start client grpc server
+	go func() {
+		err = client.Start(agentConfigHandler)
+		if err != nil {
+			logger.WithError(err).Error("Failed to initialise client")
+		}
+		close(done)
+	}()
+
+	// Wait for completion
+	<-done
 }

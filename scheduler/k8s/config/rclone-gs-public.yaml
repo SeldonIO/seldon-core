@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rclone-gs-public
+type: Opaque
+stringData:
+  gs: |
+    type: "google cloud storage"
+    name: gs
+    parameters:
+      anonymous: true

@@ -82,9 +82,6 @@ func (m *MemoryStore) RemoveModel(modelKey string) error {
 }
 
 func createServerSnapshot(server *Server) *ServerSnapshot {
-	if server == nil {
-		return nil
-	}
 	return &ServerSnapshot{
 		Name:     server.name,
 		Replicas: server.replicas,
@@ -105,10 +102,7 @@ func (m *MemoryStore) GetServers() ([]*ServerSnapshot, error) {
 func (m *MemoryStore) GetServer(serverKey string) (*ServerSnapshot, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	server, ok := m.store.servers[serverKey]
-	if !ok {
-		return nil, fmt.Errorf("failed to find server %s", serverKey)
-	}
+	server := m.store.servers[serverKey]
 	return createServerSnapshot(server), nil
 }
 
@@ -123,7 +117,7 @@ func (m *MemoryStore) getModelServer(modelKey string, version string, serverKey 
 		return nil, nil, nil, fmt.Errorf("No latest version for model %s", modelKey)
 	}
 	if modelVersion.config.Version != version {
-		return nil, nil, nil, fmt.Errorf("Model version is not match found %s but was trying to update %s. %w", modelVersion.config.Version, version, ModelNotLatestVersionRejectErr)
+		return nil, nil, nil, fmt.Errorf("Model version is not matching. Found %s but was trying to update %s. %w", modelVersion.config.Version, version, ModelNotLatestVersionRejectErr)
 	}
 	server, ok := m.store.servers[serverKey]
 	if !ok {

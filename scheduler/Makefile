@@ -43,13 +43,20 @@ start-envoy:
 
 start-agent:
 	./bin/agent --model-repository ${PWD}/mlrepo --inference-port 8080 \
+		--config-path ${PWD}/config \
+		--replica-config '{"inferenceSvc":"0.0.0.0","inferenceHttpPort":8080,"inferenceGrpcPort":8081,"memoryBytes":1000,"availableMemoryBytes":1000,"capabilities":["sklearn"],"overCommit":false}'
+
+start-agent-k8s:
+	./bin/agent --model-repository ${PWD}/mlrepo --inference-port 8080 --namespace seldon-mesh \
+		--config-path ${PWD}/config \
 		--replica-config '{"inferenceSvc":"0.0.0.0","inferenceHttpPort":8080,"inferenceGrpcPort":8081,"memoryBytes":1000,"availableMemoryBytes":1000,"capabilities":["sklearn"],"overCommit":false}'
 
 start-mlserver:
 	cd mlrepo && mlserver start .
 
 start-rclone:
-	cd mlrepo && rclone rcd --rc-no-auth --verbose
+	rm -f config/rclone.config
+	cd mlrepo && rclone rcd --config=../config/rclone.config --rc-no-auth --verbose
 
 # sends host header to allow routing
 curl-model2:
@@ -99,6 +106,10 @@ deploy:
 	cd k8s/mlserver && kustomize edit set image agent=${AGENT_IMG}
 	cd k8s/mlserver && kustomize edit set image rclone=${RCLONE_IMG}
 	kustomize build k8s/default | kubectl apply -f -
+
+deploy-minio-secret:
+	kubectl create namespace seldon-mesh || echo "seldon-mesh namespace exists"
+	kustomize build k8s/auth | kubectl apply -f -
 
 undeploy:
 	kustomize build k8s/default | kubectl delete -f -

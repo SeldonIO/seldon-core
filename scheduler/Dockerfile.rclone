@@ -1,6 +1,5 @@
 FROM rclone/rclone:1.56.2
 
-COPY rclone.conf /.rclone.conf
-RUN chmod a+r /.rclone.conf
-CMD ["rcd","--rc-no-auth","--rc-addr=0.0.0.0:5572","--verbose"]
+RUN mkdir -p /rclone && chmod a+rw /rclone && touch /rclone/rclone.conf
+CMD ["rcd","--rc-no-auth","--config=/rclone/rclone.conf","--rc-addr=0.0.0.0:5572","--verbose"]
 

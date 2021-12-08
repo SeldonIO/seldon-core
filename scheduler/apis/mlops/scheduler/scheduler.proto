@@ -24,13 +24,20 @@ message ModelDetails {
   string name = 1; // name of the model
   string version = 2;
   string uri = 3; // storage uri from where to download the artifacts
-  optional string storageSecretName = 4; // optional k8s secret name for authentication to storage uri
+  optional StorageConfig storageConfig = 4; // Storage auth configuration
   repeated string requirements = 5; // list of capabilities the server must satisfy to run this model
   //TODO maybe map for requirements
   uint32 replicas = 6; // number of replicas of model to create
   optional uint64 memoryBytes = 7; // Requested memory
   optional string server = 8; // the particular model server to load the model. If unspecified will be chosen.
   bool logPayloads = 9; // Whether to log request/response payloads to this model
+}
+
+message StorageConfig {
+  oneof config {
+    string storageSecretName = 1;
+    string storageRcloneConfig = 2;
+  }
 }
 
 message LoadModelResponse {

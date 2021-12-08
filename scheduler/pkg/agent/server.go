@@ -26,7 +26,7 @@ type AgentHandler interface {
 }
 
 type Server struct {
-	mu sync.RWMutex
+	mutext sync.RWMutex
 	pb.UnimplementedAgentServiceServer
 	logger       log.FieldLogger
 	agents       map[ServerKey]*AgentSubscriber
@@ -42,8 +42,8 @@ type SchedulerAgent interface {
 
 type AgentSubscriber struct {
 	finished chan<- bool
-	mu       sync.Mutex // grpc streams are not thread safe for sendMsg https://github.com/grpc/grpc-go/issues/2355
-	stream   pb.AgentService_SubscribeServer
+	//mutext   sync.Mutex // grpc streams are not thread safe for sendMsg https://github.com/grpc/grpc-go/issues/2355
+	stream pb.AgentService_SubscribeServer
 }
 
 func NewAgentServer(logger log.FieldLogger,
@@ -89,8 +89,8 @@ func (s *Server) StartGrpcServer(agentPort uint) error {
 
 func (s *Server) Sync(modelName string) {
 	logger := s.logger.WithField("func", "Sync")
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	s.mutext.RLock()
+	defer s.mutext.RUnlock()
 
 	model, err := s.store.GetModel(modelName)
 	if err != nil {
@@ -114,17 +114,15 @@ func (s *Server) Sync(modelName string) {
 				logger.Errorf("Failed to find server replica for %s:%d", latestModel.Server(), replicaIdx)
 				continue
 			}
-			as.mu.Lock()
+
 			err = as.stream.Send(&pb.ModelOperationMessage{
 				Operation: pb.ModelOperationMessage_LOAD_MODEL,
 				Details:   latestModel.Details(),
 			})
 			if err != nil {
-				as.mu.Unlock()
 				logger.WithError(err).Errorf("stream message send failed for model %s and replicaidx %d", modelName, replicaIdx)
 				continue
 			}
-			as.mu.Unlock()
 			err := s.store.UpdateModelState(latestModel.Key(), latestModel.GetVersion(), latestModel.Server(), replicaIdx, nil, store.Loading)
 			if err != nil {
 				logger.WithError(err).Errorf("Sync set model state failed for model %s replicaidx %d", modelName, replicaIdx)
@@ -142,17 +140,14 @@ func (s *Server) Sync(modelName string) {
 				logger.Errorf("Failed to find server replica for %s:%d", modelVersion.Server(), replicaIdx)
 				continue
 			}
-			as.mu.Lock()
 			err = as.stream.Send(&pb.ModelOperationMessage{
 				Operation: pb.ModelOperationMessage_UNLOAD_MODEL,
 				Details:   modelVersion.Details(),
 			})
 			if err != nil {
-				as.mu.Unlock()
 				logger.WithError(err).Errorf("stream message send failed for model %s and replicaidx %d", modelName, replicaIdx)
 				continue
 			}
-			as.mu.Unlock()
 			err := s.store.UpdateModelState(modelVersion.Key(), modelVersion.GetVersion(), modelVersion.Server(), replicaIdx, nil, store.Unloading)
 			if err != nil {
 				logger.WithError(err).Errorf("Sync set model state failed for model %s replicaidx %d", modelName, replicaIdx)
@@ -179,7 +174,7 @@ func (s *Server) AgentEvent(ctx context.Context, message *pb.ModelEventMessage) 
 	logger.Infof("Updating state for model %s to %s", message.ModelName, state.String())
 	err := s.store.UpdateModelState(message.ModelName, message.GetModelVersion(), message.ServerName, int(message.ReplicaIdx), &message.AvailableMemoryBytes, state)
 	if err != nil {
-		logger.Infof("Failed Updating state for model %s", message.ModelName)
+		logger.WithError(err).Infof("Failed Updating state for model %s", message.ModelName)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	s.envoyHandler.SendEnvoySync(message.ModelName)
@@ -192,12 +187,12 @@ func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentSer
 
 	fin := make(chan bool)
 
-	s.mu.Lock()
+	s.mutext.Lock()
 	s.agents[ServerKey{serverName: request.ServerName, replicaIdx: request.ReplicaIdx}] = &AgentSubscriber{
 		finished: fin,
 		stream:   stream,
 	}
-	s.mu.Unlock()
+	s.mutext.Unlock()
 
 	err := s.syncMessage(request, stream)
 	if err != nil {
@@ -213,9 +208,9 @@ func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentSer
 			return nil
 		case <-ctx.Done():
 			logger.Infof("Client replica %s:%d has disconnected", request.ServerName, request.ReplicaIdx)
-			s.mu.Lock()
+			s.mutext.Lock()
 			delete(s.agents, ServerKey{serverName: request.ServerName, replicaIdx: request.ReplicaIdx})
-			s.mu.Unlock()
+			s.mutext.Unlock()
 			modelsChanged, err := s.store.RemoveServerReplica(request.ServerName, int(request.ReplicaIdx))
 			if err != nil {
 				logger.WithError(err).Errorf("Failed to remove replica and redeploy models for %s:%d", request.ServerName, request.ReplicaIdx)
@@ -236,8 +231,8 @@ func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentSer
 }
 
 func (s *Server) syncMessage(request *pb.AgentSubscribeRequest, stream pb.AgentService_SubscribeServer) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.mutext.Lock()
+	defer s.mutext.Unlock()
 
 	err := s.store.AddServerReplica(request)
 	if err != nil {

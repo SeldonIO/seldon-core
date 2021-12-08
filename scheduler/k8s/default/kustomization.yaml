@@ -5,3 +5,4 @@ bases:
 - ../scheduler
 - ../envoy
 - ../mlserver
+- ../config
