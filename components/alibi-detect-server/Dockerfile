@@ -67,6 +67,7 @@ RUN yum remove -y nodejs httpd
 
 COPY --from=builder /microservice /microservice
 COPY --from=builder /opt/conda /opt/conda
+COPY --from=builder /usr/bin/rclone /usr/bin/rclone
 COPY --from=builder /licenses /licenses
 
 ENTRYPOINT ["python", "-m", "adserver"]
