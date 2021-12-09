@@ -6,10 +6,13 @@ Seldon Core works well with [Ambassador](https://www.getambassador.io/), allowin
 
 You have [two options](https://www.getambassador.io/editions/) when installing Ambassador:
 
+.. warning::
+   Seldon Core currently only supports the V1 Ambassador APIs. You **must** use the ``datawire/ambassador`` helm chart rather than the V2 ``datawire/edge-stack`` or V2 ``datawire/emissary`` charts. Following the installation instructions below or in our `installation guides </nav/installation.rst>`_ should work fine.
+
 ### Option 1: Ambassador Edge Stack
 
 The [Ambassador Edge Stack](https://www.getambassador.io/products/edge-stack/) is the easiest way to get started with Ambassador, providing easy, [Automatic TLS configuration](https://www.getambassador.io/docs/edge-stack/latest/topics/running/host-crd/#acme-support) in addition to other features, like [Authentication](https://www.getambassador.io/docs/edge-stack/latest/topics/using/filters/), [Rate Limiting](https://www.getambassador.io/docs/edge-stack/latest/topics/using/rate-limits/), and advanced routing behaviors, like [custom prefixes](https://www.getambassador.io/docs/edge-stack/latest/topics/using/intro-mappings/), [virtual hosting](https://www.getambassador.io/docs/edge-stack/latest/topics/using/headers/host/), [method](https://www.getambassador.io/docs/edge-stack/latest/topics/using/method/)/[query-parameter](https://www.getambassador.io/docs/edge-stack/latest/topics/using/query_parameters/) based routing, and many others.
-Follow the [AES installation instructions](https://www.getambassador.io/docs/edge-stack/latest/tutorials/getting-started/) to install it on your Kubernetes cluster.
+Follow the [AES installation instructions](https://www.getambassador.io/docs/edge-stack/1.14/tutorials/getting-started/) to install it on your Kubernetes cluster.
 
 Using `helm` the steps can be summarised as
 ```bash
@@ -25,7 +28,7 @@ helm install ambassador datawire/ambassador \
 ### Option 2: Ambassador API Gateway (now Emissary Ingress)
 
 The [Ambassador API Gateway](https://www.getambassador.io/products/api-gateway/) (now Emissary Ingress) is the fully open source version of Ambassador Edge Stack and provides all the functionality of a traditional ingress controller.
-Follow the [Ambassador OSS instructions](https://www.getambassador.io/docs/latest/topics/install/) to install it on your kubernetes cluster.
+Follow the [Ambassador OSS instructions](https://www.getambassador.io/docs/emissary/1.14/tutorials/getting-started/) to install it on your kubernetes cluster.
 
 Using `helm` the steps can be summarised as
 ```bash
