@@ -10,7 +10,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
   </parent>
   <groupId>io.seldon.engine</groupId>
   <artifactId>seldon-engine</artifactId>
-  <version>1.12.0-dev</version>
+  <version>1.12.0</version>
   <packaging>jar</packaging>
   <name>engine</name>
   <url>http://maven.apache.org</url>
