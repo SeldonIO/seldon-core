@@ -1,1 +1,1 @@
-{"labels": [{"name": "Seldon MLFlow Server"}, {"vendor": "Seldon Technologies"}, {"version": "1.12.0-dev"}, {"release": "1"}, {"summary": "An MLFlow Model Server for Seldon Core"}, {"description": "The model server for MLFlow models"}]}
+{"labels": [{"name": "Seldon MLFlow Server"}, {"vendor": "Seldon Technologies"}, {"version": "1.13.0-dev"}, {"release": "1"}, {"summary": "An MLFlow Model Server for Seldon Core"}, {"description": "The model server for MLFlow models"}]}

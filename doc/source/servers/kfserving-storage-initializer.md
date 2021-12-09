@@ -8,7 +8,7 @@ storageInitializer:
   image: gcr.io/kfserving/storage-initializer:v0.4.0
 ```
 
-> :warning: **NOTE:** Current default storage initializer is `seldonio/rclone-storage-initializer:1.12.0-dev` is described [here](./overview.md).
+> :warning: **NOTE:** Current default storage initializer is `seldonio/rclone-storage-initializer:1.13.0-dev` is described [here](./overview.md).
 
 
 When `kfserving/storage-initializer` is used `modeluri` supports the following four object storage providers:
@@ -180,7 +180,7 @@ spec:
   - graph:
       children: []
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.12.0-dev/sklearn/iris
+      modelUri: gs://seldon-models/v1.13.0-dev/sklearn/iris
       serviceAccountName: user-gcp-sa
       name: classifier
     name: default
