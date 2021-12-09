@@ -7,7 +7,7 @@ Seldon Core works well with [Ambassador](https://www.getambassador.io/), allowin
 You have [two options](https://www.getambassador.io/editions/) when installing Ambassador:
 
 .. warning::
-   Seldon Core currently only supports the V1 Ambassador APIs. You **must** use the ``datawire/ambassador`` helm chart rather than the V2 ``datawire/edge-stack`` or V2 ``datawire/emissary`` charts. Following the installation instructions below or in our `installation guides </nav/installation.rst>`_ should work fine.
+   Seldon Core currently only supports the V1 Ambassador APIs. You **must** use the ``datawire/ambassador`` helm chart rather than the V2 ``datawire/edge-stack`` or V2 ``datawire/emissary`` charts. Following the installation instructions below or in our `installation guides <../nav/installation.rst>`_ should work fine.
 
 ### Option 1: Ambassador Edge Stack
 
