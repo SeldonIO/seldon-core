@@ -207,7 +207,7 @@ class TestPrepack(object):
             namespace=namespace,
             protocol="kfserving",
             model_implementation="MLFLOW_SERVER",
-            model_uri="gs://seldon-models/v1.10.0-dev/mlflow/elasticnet_wine",
+            model_uri="gs://seldon-models/v1.12.0-dev/mlflow/elasticnet_wine",
         )
         wait_for_status(tag, namespace)
         wait_for_rollout(tag, namespace)

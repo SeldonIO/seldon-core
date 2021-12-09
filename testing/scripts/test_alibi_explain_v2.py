@@ -88,7 +88,7 @@ class TestExplainV2Server:
             f"cifar10-default-explainer/infer"
         )
 
-        test_data = np.random.randn(32, 32, 3)
+        test_data = np.random.randn(1, 32, 32, 3)
         inference_request = {
             "parameters": {"content_type": "np"},
             "inputs": [

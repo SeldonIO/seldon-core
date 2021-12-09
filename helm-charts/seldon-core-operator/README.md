@@ -73,6 +73,7 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | executor.serviceAccount.name | string | `"default"` |  |
 | executor.user | int | `8888` |  |
 | explainer.image | string | `"seldonio/alibiexplainer:1.12.0-dev"` |  |
+| explainer.image_v2 | string | `"seldonio/mlserver:1.0.0.rc1-alibi-explain"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.registry | string | `"docker.io"` |  |
 | image.repository | string | `"seldonio/seldon-core-operator"` |  |
@@ -83,6 +84,7 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | keda.enabled | bool | `false` |  |
 | kubeflow | bool | `false` |  |
 | manager.annotations | object | `{}` |  |
+| manager.containerSecurityContext | object | `{}` |  |
 | manager.cpuLimit | string | `"500m"` |  |
 | manager.cpuRequest | string | `"100m"` |  |
 | manager.leaderElectionID | string | `"a33bd623.machinelearning.seldon.io"` |  |
@@ -96,15 +98,15 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | predictiveUnit.grpcPort | int | `9500` |  |
 | predictiveUnit.httpPort | int | `9000` |  |
 | predictiveUnit.metricsPortName | string | `"metrics"` |  |
-| predictor_servers.MLFLOW_SERVER.protocols.kfserving.defaultImageVersion | string | `"0.5.0"` |  |
+| predictor_servers.MLFLOW_SERVER.protocols.kfserving.defaultImageVersion | string | `"1.0.0.rc1-mlflow"` |  |
 | predictor_servers.MLFLOW_SERVER.protocols.kfserving.image | string | `"seldonio/mlserver"` |  |
 | predictor_servers.MLFLOW_SERVER.protocols.seldon.defaultImageVersion | string | `"1.12.0-dev"` |  |
 | predictor_servers.MLFLOW_SERVER.protocols.seldon.image | string | `"seldonio/mlflowserver"` |  |
-| predictor_servers.SKLEARN_SERVER.protocols.kfserving.defaultImageVersion | string | `"0.5.0"` |  |
+| predictor_servers.SKLEARN_SERVER.protocols.kfserving.defaultImageVersion | string | `"1.0.0.rc1-sklearn"` |  |
 | predictor_servers.SKLEARN_SERVER.protocols.kfserving.image | string | `"seldonio/mlserver"` |  |
 | predictor_servers.SKLEARN_SERVER.protocols.seldon.defaultImageVersion | string | `"1.12.0-dev"` |  |
 | predictor_servers.SKLEARN_SERVER.protocols.seldon.image | string | `"seldonio/sklearnserver"` |  |
-| predictor_servers.TEMPO_SERVER.protocols.kfserving.defaultImageVersion | string | `"0.5.0"` |  |
+| predictor_servers.TEMPO_SERVER.protocols.kfserving.defaultImageVersion | string | `"1.0.0.rc1-slim"` |  |
 | predictor_servers.TEMPO_SERVER.protocols.kfserving.image | string | `"seldonio/mlserver"` |  |
 | predictor_servers.TENSORFLOW_SERVER.protocols.seldon.defaultImageVersion | string | `"1.12.0-dev"` |  |
 | predictor_servers.TENSORFLOW_SERVER.protocols.seldon.image | string | `"seldonio/tfserving-proxy"` |  |
@@ -112,7 +114,7 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | predictor_servers.TENSORFLOW_SERVER.protocols.tensorflow.image | string | `"tensorflow/serving"` |  |
 | predictor_servers.TRITON_SERVER.protocols.kfserving.defaultImageVersion | string | `"21.08-py3"` |  |
 | predictor_servers.TRITON_SERVER.protocols.kfserving.image | string | `"nvcr.io/nvidia/tritonserver"` |  |
-| predictor_servers.XGBOOST_SERVER.protocols.kfserving.defaultImageVersion | string | `"0.5.0"` |  |
+| predictor_servers.XGBOOST_SERVER.protocols.kfserving.defaultImageVersion | string | `"1.0.0.rc1-xgboost"` |  |
 | predictor_servers.XGBOOST_SERVER.protocols.kfserving.image | string | `"seldonio/mlserver"` |  |
 | predictor_servers.XGBOOST_SERVER.protocols.seldon.defaultImageVersion | string | `"1.12.0-dev"` |  |
 | predictor_servers.XGBOOST_SERVER.protocols.seldon.image | string | `"seldonio/xgboostserver"` |  |
