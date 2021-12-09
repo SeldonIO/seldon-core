@@ -1,5 +1,176 @@
 # Changelog
 
+## [v1.12.0](https://github.com/SeldonIO/seldon-core/tree/v1.12.0)
+
+[Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v1.11.2...v1.12.0)
+
+**Fixed bugs:**
+
+- Ensure docker images have the source code included for MPL based licenses [\#3787](https://github.com/SeldonIO/seldon-core/issues/3787)
+- Stateful Model Feedback Metrics Server uses wrong image [\#3784](https://github.com/SeldonIO/seldon-core/issues/3784)
+- seldon-core-microservice: error: unrecognized arguments: test REST --service-type MODEL --persistence 0 [\#3775](https://github.com/SeldonIO/seldon-core/issues/3775)
+- Tensorflow protocol can't support /v1/models/${MODEL\_NAME}\[/versions/${VERSION}|/labels/${LABEL}\] when using istioingress gateway [\#3767](https://github.com/SeldonIO/seldon-core/issues/3767)
+- seldonio/mlflowserver:1.12.0-dev now unable to server models [\#3766](https://github.com/SeldonIO/seldon-core/issues/3766)
+- TEP PY SITH [\#3752](https://github.com/SeldonIO/seldon-core/issues/3752)
+- OOM when stress test the Seldon model, which may be caused by the logging of request and response payloads [\#3726](https://github.com/SeldonIO/seldon-core/issues/3726)
+- Unable to install seldon via Helm [\#3725](https://github.com/SeldonIO/seldon-core/issues/3725)
+- Conda pip install permission denied in OpenShift [\#3712](https://github.com/SeldonIO/seldon-core/issues/3712)
+- Python/Executor path mis-match [\#3705](https://github.com/SeldonIO/seldon-core/issues/3705)
+- seldon-core-operator helm chart - in single namespace mode the role seldon1-manager-role does not include poddisruptionbudgets [\#3692](https://github.com/SeldonIO/seldon-core/issues/3692)
+- Currently engine related values cannot be ommited from the values.yaml while deploying seldon [\#3691](https://github.com/SeldonIO/seldon-core/issues/3691)
+- apiversion is deprecated in `notebooks/resources/ambassador-rbac.yaml` [\#3677](https://github.com/SeldonIO/seldon-core/issues/3677)
+- Error to build env:  Command 'conda run -n mlflow pip install -r /microservice/requirements.txt' returned non-zero exit status 1. [\#3670](https://github.com/SeldonIO/seldon-core/issues/3670)
+- Seldon Manager Config Map has an extra comma that can cause parsing error [\#3652](https://github.com/SeldonIO/seldon-core/issues/3652)
+- Validate and address recent apparent flakiness in v2 server tests [\#3639](https://github.com/SeldonIO/seldon-core/issues/3639)
+- Executor returns minimal information on http client failure [\#3625](https://github.com/SeldonIO/seldon-core/issues/3625)
+- helm chart not compatible with k8s v1.22 [\#3618](https://github.com/SeldonIO/seldon-core/issues/3618)
+- Upgrade Grafana chart in seldon-core-analytics [\#3558](https://github.com/SeldonIO/seldon-core/issues/3558)
+- Mlflow getting downgraded  [\#3454](https://github.com/SeldonIO/seldon-core/issues/3454)
+- Deploying custom MLflow model - stuck at "Readiness probe failed" [\#3186](https://github.com/SeldonIO/seldon-core/issues/3186)
+- Java Engine and Go Executor Does not Terminate Graph upon Error [\#2480](https://github.com/SeldonIO/seldon-core/issues/2480)
+
+**Security fixes:**
+
+- Added snyk security scans [\#3645](https://github.com/SeldonIO/seldon-core/pull/3645) ([axsaucedo](https://github.com/axsaucedo))
+
+**Closed issues:**
+
+- Exposing GRPC timeouts in Python client  [\#3779](https://github.com/SeldonIO/seldon-core/issues/3779)
+- remove explainer\_examples notebook [\#3777](https://github.com/SeldonIO/seldon-core/issues/3777)
+- Submit cloud events uncompressed until consumers supports it [\#3749](https://github.com/SeldonIO/seldon-core/issues/3749)
+- When is seldon v1.12 going to drop? [\#3735](https://github.com/SeldonIO/seldon-core/issues/3735)
+- Add model chaining example for the V2 protocol [\#3732](https://github.com/SeldonIO/seldon-core/issues/3732)
+- Fix `alibi-explain-server` to use `alibi` `load\_explainer` helper function [\#3708](https://github.com/SeldonIO/seldon-core/issues/3708)
+- Batch processor enhancemenst through raw data parameter [\#3702](https://github.com/SeldonIO/seldon-core/issues/3702)
+- Allow for Annotations and Labels to be injected into helm chart templates [\#3699](https://github.com/SeldonIO/seldon-core/issues/3699)
+- Allow Controller Manager to have configurable container security context [\#3698](https://github.com/SeldonIO/seldon-core/issues/3698)
+- Batch processor cast integers to floats in payloads [\#3681](https://github.com/SeldonIO/seldon-core/issues/3681)
+- Integrated alibi-explain mlserver runtime in Core [\#3675](https://github.com/SeldonIO/seldon-core/issues/3675)
+- Add e2e example on training explainers with Poetry-locked environment [\#3664](https://github.com/SeldonIO/seldon-core/issues/3664)
+- Move adserver to use Poetry [\#3660](https://github.com/SeldonIO/seldon-core/issues/3660)
+- Update Openshift OperatorHub Releases for 1.11.1 [\#3563](https://github.com/SeldonIO/seldon-core/issues/3563)
+- Better support Istio Mesh Internal to cluster [\#3485](https://github.com/SeldonIO/seldon-core/issues/3485)
+- Enable index filed in batch\_processor [\#3409](https://github.com/SeldonIO/seldon-core/issues/3409)
+- Add "names" field in batch\_processor.py to align with seldon\_client.py [\#3408](https://github.com/SeldonIO/seldon-core/issues/3408)
+- upgrade seldon-core-analytics helm charts [\#3403](https://github.com/SeldonIO/seldon-core/issues/3403)
+- batch processor: add raw inputs support to predict method [\#2657](https://github.com/SeldonIO/seldon-core/issues/2657)
+- Publish RedHat images via API [\#2085](https://github.com/SeldonIO/seldon-core/issues/2085)
+- Seldon deployment name in case of complex graph  [\#1801](https://github.com/SeldonIO/seldon-core/issues/1801)
+
+**Merged pull requests:**
+
+- fix missing rclone in adserver [\#3796](https://github.com/SeldonIO/seldon-core/pull/3796) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- Bump MLServer image to 1.0.0.rc1 [\#3795](https://github.com/SeldonIO/seldon-core/pull/3795) ([adriangonz](https://github.com/adriangonz))
+- Tweak script to generate MLflow environment tarball [\#3794](https://github.com/SeldonIO/seldon-core/pull/3794) ([adriangonz](https://github.com/adriangonz))
+- Addressed vulnerabilities with snyk for containers and libraries [\#3793](https://github.com/SeldonIO/seldon-core/pull/3793) ([axsaucedo](https://github.com/axsaucedo))
+- use lowercase seldon-puid in batch processor [\#3791](https://github.com/SeldonIO/seldon-core/pull/3791) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- batch processor: always prioritize tags from model [\#3789](https://github.com/SeldonIO/seldon-core/pull/3789) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- Added MPL Licenses to Docker images [\#3788](https://github.com/SeldonIO/seldon-core/pull/3788) ([axsaucedo](https://github.com/axsaucedo))
+- build adserver dockerimage using poetry-defined environment [\#3783](https://github.com/SeldonIO/seldon-core/pull/3783) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- remove explainer\_examples.ipynb from notebook test [\#3778](https://github.com/SeldonIO/seldon-core/pull/3778) ([sakoush](https://github.com/sakoush))
+- Support https on batch processor [\#3774](https://github.com/SeldonIO/seldon-core/pull/3774) ([majolo](https://github.com/majolo))
+- Docs: Removed argument from tags example [\#3771](https://github.com/SeldonIO/seldon-core/pull/3771) ([jacobmalmberg](https://github.com/jacobmalmberg))
+- Allow deployment name as prefix when default name to long [\#3768](https://github.com/SeldonIO/seldon-core/pull/3768) ([cliveseldon](https://github.com/cliveseldon))
+- upgrade alibi to 0.6.2 [\#3765](https://github.com/SeldonIO/seldon-core/pull/3765) ([sakoush](https://github.com/sakoush))
+- fixed iris sklearn model example [\#3762](https://github.com/SeldonIO/seldon-core/pull/3762) ([karan6190](https://github.com/karan6190))
+- Address MLServer flakiness in CI tests [\#3754](https://github.com/SeldonIO/seldon-core/pull/3754) ([adriangonz](https://github.com/adriangonz))
+- executor: decompress gzip paloyads before logging them [\#3746](https://github.com/SeldonIO/seldon-core/pull/3746) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- Fixing docs-build test [\#3745](https://github.com/SeldonIO/seldon-core/pull/3745) ([edshee](https://github.com/edshee))
+- Sherif akoush/sc 2549/alibi v1 fixes [\#3744](https://github.com/SeldonIO/seldon-core/pull/3744) ([sakoush](https://github.com/sakoush))
+- Transformers example [\#3743](https://github.com/SeldonIO/seldon-core/pull/3743) ([adriangonz](https://github.com/adriangonz))
+- Chart annotations cont, manager container security context [\#3741](https://github.com/SeldonIO/seldon-core/pull/3741) ([mwm5945](https://github.com/mwm5945))
+- Logger params [\#3738](https://github.com/SeldonIO/seldon-core/pull/3738) ([cliveseldon](https://github.com/cliveseldon))
+- fix python lint [\#3737](https://github.com/SeldonIO/seldon-core/pull/3737) ([cliveseldon](https://github.com/cliveseldon))
+- Fix 1.22 Webhook Create by ensuring v1 is used [\#3736](https://github.com/SeldonIO/seldon-core/pull/3736) ([cliveseldon](https://github.com/cliveseldon))
+- Performance fix for the logger in the executor [\#3734](https://github.com/SeldonIO/seldon-core/pull/3734) ([ivan-valkov](https://github.com/ivan-valkov))
+- add endpoint to match python status endpoint [\#3731](https://github.com/SeldonIO/seldon-core/pull/3731) ([mwm5945](https://github.com/mwm5945))
+- Mnist e2e triton [\#3728](https://github.com/SeldonIO/seldon-core/pull/3728) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- Chart annotations [\#3724](https://github.com/SeldonIO/seldon-core/pull/3724) ([mwm5945](https://github.com/mwm5945))
+- Batch processor enhancemenst through raw data parameter [\#3718](https://github.com/SeldonIO/seldon-core/pull/3718) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- add shutdown\_delay option to executor & gRPC GracefulStop [\#3711](https://github.com/SeldonIO/seldon-core/pull/3711) ([asobrien](https://github.com/asobrien))
+- Disable scraping of explainer metrics as unsupported [\#3710](https://github.com/SeldonIO/seldon-core/pull/3710) ([agrski](https://github.com/agrski))
+- Add ginkgo Make target [\#3709](https://github.com/SeldonIO/seldon-core/pull/3709) ([agrski](https://github.com/agrski))
+- Sherif akoush/sc 2543/alibi explain mlserver runtime [\#3707](https://github.com/SeldonIO/seldon-core/pull/3707) ([sakoush](https://github.com/sakoush))
+- Added security scans for containers [\#3706](https://github.com/SeldonIO/seldon-core/pull/3706) ([axsaucedo](https://github.com/axsaucedo))
+- upgrade rclone base to 1.56.2 [\#3701](https://github.com/SeldonIO/seldon-core/pull/3701) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- Removed broken link in readme for docs test lint fix [\#3700](https://github.com/SeldonIO/seldon-core/pull/3700) ([axsaucedo](https://github.com/axsaucedo))
+- remove aws docs [\#3695](https://github.com/SeldonIO/seldon-core/pull/3695) ([cliveseldon](https://github.com/cliveseldon))
+- Add pdb to namespaced roles [\#3694](https://github.com/SeldonIO/seldon-core/pull/3694) ([cliveseldon](https://github.com/cliveseldon))
+- Fix extra comma in kustomize operator configmap [\#3693](https://github.com/SeldonIO/seldon-core/pull/3693) ([cliveseldon](https://github.com/cliveseldon))
+- Update ambassador-rbac.yaml [\#3678](https://github.com/SeldonIO/seldon-core/pull/3678) ([westford14](https://github.com/westford14))
+- Change rbac in example yaml to v1 api [\#3676](https://github.com/SeldonIO/seldon-core/pull/3676) ([westford14](https://github.com/westford14))
+- Updated Python wrapper application folder owner to default 8888 [\#3674](https://github.com/SeldonIO/seldon-core/pull/3674) ([axsaucedo](https://github.com/axsaucedo))
+- Fixed KFserving version to v0.6.0 for Alibi Detect Server [\#3673](https://github.com/SeldonIO/seldon-core/pull/3673) ([axsaucedo](https://github.com/axsaucedo))
+- Fix for broken readme links [\#3671](https://github.com/SeldonIO/seldon-core/pull/3671) ([majolo](https://github.com/majolo))
+- Fix broken links for broken docs tests master [\#3669](https://github.com/SeldonIO/seldon-core/pull/3669) ([axsaucedo](https://github.com/axsaucedo))
+- Updating the request logger requirements seldon-deploy-sdk to latest version [\#3668](https://github.com/SeldonIO/seldon-core/pull/3668) ([SachinVarghese](https://github.com/SachinVarghese))
+- Adding support for Kubernetes 1.22 through validation webhook v1 [\#3667](https://github.com/SeldonIO/seldon-core/pull/3667) ([axsaucedo](https://github.com/axsaucedo))
+- Fix typo in admission webhook for tensorflow protocol [\#3656](https://github.com/SeldonIO/seldon-core/pull/3656) ([agrski](https://github.com/agrski))
+- Issue-3372 [\#3654](https://github.com/SeldonIO/seldon-core/pull/3654) ([westford14](https://github.com/westford14))
+- e2e examples for iris explainer using poetry-defined environment [\#3642](https://github.com/SeldonIO/seldon-core/pull/3642) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- Update release script to update on all images it builds [\#3638](https://github.com/SeldonIO/seldon-core/pull/3638) ([axsaucedo](https://github.com/axsaucedo))
+- Updated batch processor e2e tests to include interval parameter [\#3631](https://github.com/SeldonIO/seldon-core/pull/3631) ([axsaucedo](https://github.com/axsaucedo))
+- Updated broken links for Argo in docs to fix tests [\#3630](https://github.com/SeldonIO/seldon-core/pull/3630) ([axsaucedo](https://github.com/axsaucedo))
+- bulk insert batch requests [\#3628](https://github.com/SeldonIO/seldon-core/pull/3628) ([michaelcheah](https://github.com/michaelcheah))
+- Update to Go 1.17.1 [\#3627](https://github.com/SeldonIO/seldon-core/pull/3627) ([cliveseldon](https://github.com/cliveseldon))
+- Executor Returns Clearer Errors on HTTP Failures [\#3626](https://github.com/SeldonIO/seldon-core/pull/3626) ([mwm5945](https://github.com/mwm5945))
+- update slack link [\#3624](https://github.com/SeldonIO/seldon-core/pull/3624) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- Adding an interval config to batch processor component [\#3623](https://github.com/SeldonIO/seldon-core/pull/3623) ([SachinVarghese](https://github.com/SachinVarghese))
+- Added GOMAXPROCS for CI pipeline jobs in JX [\#3619](https://github.com/SeldonIO/seldon-core/pull/3619) ([axsaucedo](https://github.com/axsaucedo))
+- Added python timeouts [\#3617](https://github.com/SeldonIO/seldon-core/pull/3617) ([axsaucedo](https://github.com/axsaucedo))
+- use ipv4 protocol \(for systems without ipv6\) [\#3614](https://github.com/SeldonIO/seldon-core/pull/3614) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- Update the examples to reflect the move to rclone-based storage initializer [\#3611](https://github.com/SeldonIO/seldon-core/pull/3611) ([jsuchome](https://github.com/jsuchome))
+- Release 1.12.0-dev tag [\#3610](https://github.com/SeldonIO/seldon-core/pull/3610) ([axsaucedo](https://github.com/axsaucedo))
+- combine virtualservices into one [\#3609](https://github.com/SeldonIO/seldon-core/pull/3609) ([mwm5945](https://github.com/mwm5945))
+- make combiner propagate requestPath from all children [\#3604](https://github.com/SeldonIO/seldon-core/pull/3604) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+- build alibi explain server using poetry [\#3549](https://github.com/SeldonIO/seldon-core/pull/3549) ([RafalSkolasinski](https://github.com/RafalSkolasinski))
+
+## [v1.11.2](https://github.com/SeldonIO/seldon-core/tree/v1.11.2) (2021-10-14)
+
+[Full Changelog](https://github.com/SeldonIO/seldon-core/compare/operator/v1.11.2...v1.11.2)
+
+**Closed issues:**
+
+- Update Go to 1.17 [\#3533](https://github.com/SeldonIO/seldon-core/issues/3533)
+
+## [operator/v1.11.2](https://github.com/SeldonIO/seldon-core/tree/operator/v1.11.2) (2021-10-13)
+
+[Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v1.11.1...operator/v1.11.2)
+
+**Fixed bugs:**
+
+- failed calling webhook "v1.vseldondeployment.kb.io" [\#3653](https://github.com/SeldonIO/seldon-core/issues/3653)
+- Unable to install python package via pipenv [\#3647](https://github.com/SeldonIO/seldon-core/issues/3647)
+- Lacking requirements in Kubeflow example [\#3372](https://github.com/SeldonIO/seldon-core/issues/3372)
+
+**Closed issues:**
+
+- Move alibiexplain server to use poetry [\#3658](https://github.com/SeldonIO/seldon-core/issues/3658)
+- Add support for Datadog Tracing in the Executor and the Python Wrapper [\#2854](https://github.com/SeldonIO/seldon-core/issues/2854)
+
+## [v1.11.1](https://github.com/SeldonIO/seldon-core/tree/v1.11.1) (2021-10-04)
+
+[Full Changelog](https://github.com/SeldonIO/seldon-core/compare/operator/v1.11.1...v1.11.1)
+
+## [operator/v1.11.1](https://github.com/SeldonIO/seldon-core/tree/operator/v1.11.1) (2021-10-04)
+
+[Full Changelog](https://github.com/SeldonIO/seldon-core/compare/v1.11.0...operator/v1.11.1)
+
+**Fixed bugs:**
+
+- gRPC broken for non ipv6 systems post 1.9.1 [\#3616](https://github.com/SeldonIO/seldon-core/issues/3616)
+- How seldon core analytics is working for model metrics monitoring ??? [\#3592](https://github.com/SeldonIO/seldon-core/issues/3592)
+- incomplete meta.requestPath in responses and redundant "tags" field [\#3477](https://github.com/SeldonIO/seldon-core/issues/3477)
+
+**Closed issues:**
+
+- Python Wrapper does not adhere to Timeout annotations [\#3613](https://github.com/SeldonIO/seldon-core/issues/3613)
+- Are you interested in becoming a listed KEDA end-user? [\#3612](https://github.com/SeldonIO/seldon-core/issues/3612)
+- Seldon Core v1.11.0 Release [\#3598](https://github.com/SeldonIO/seldon-core/issues/3598)
+- what is the best way for receiving/sending data fast? [\#3449](https://github.com/SeldonIO/seldon-core/issues/3449)
+- HPA support for autoscaling/v2beta2 API [\#3143](https://github.com/SeldonIO/seldon-core/issues/3143)
+
+
 ## [v1.11.0](https://github.com/seldonio/seldon-core/tree/v1.11.0)
 
 [Full Changelog](https://github.com/seldonio/seldon-core/compare/operator/v1.10.0...v1.11.0)
