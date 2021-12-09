@@ -4,6 +4,7 @@ import (
 	pba "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	"google.golang.org/protobuf/proto"
+	"time"
 )
 
 type LocalSchedulerStore struct {
@@ -41,13 +42,17 @@ type ModelVersion struct {
 }
 
 type ModelStatus struct {
-	State  ModelState
-	Reason string
+	State             ModelState
+	Reason              string
+	AvailableReplicas   uint32
+	UnavailableReplicas uint32
+	Timestamp           time.Time
 }
 
 type ReplicaStatus struct {
 	State  ModelReplicaState
 	Reason string
+	Timestamp time.Time
 }
 
 func NewDefaultModelVersion(config *pb.ModelDetails) *ModelVersion {
@@ -151,6 +156,10 @@ const (
 	ModelTerminateFailed
 )
 
+func (m ModelState) String() string {
+	return [...]string{"ModelStateUnknown", "ModelProgressing", "ModelAvailable", "ModelFailed", "ModelTerminating", "ModelTerminated", "ModelTerminateFailed"}[m]
+}
+
 type ModelReplicaState uint32
 
 const (
@@ -217,6 +226,14 @@ func (m *Model) Latest() *ModelVersion {
 	}
 }
 
+func (m *Model) Previous() *ModelVersion {
+	if len(m.versions) > 1 {
+		return m.versions[len(m.versions)-2]
+	} else {
+		return nil
+	}
+}
+
 func (m *Model) Inactive() bool {
 	for _, mv := range m.versions {
 		if !mv.Inactive() {
@@ -256,6 +273,10 @@ func (m *ModelVersion) Server() string {
 
 func (m *ModelVersion) ReplicaState() map[int]ReplicaStatus {
 	return m.replicas
+}
+
+func (m *ModelVersion) ModelState() ModelStatus {
+	return m.state
 }
 
 func (m *ModelVersion) GetModelReplicaState(replicaIdx int) ModelReplicaState {

@@ -3,6 +3,7 @@ package store
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
@@ -144,7 +145,7 @@ func (m *MemoryStore) UpdateLoadedModels(modelKey string, version string, server
 	defer m.mu.Unlock()
 
 	// Validate
-	_, modelVersion, server, err := m.getModelServer(modelKey, version, serverKey)
+	model, modelVersion, server, err := m.getModelServer(modelKey, version, serverKey)
 	if err != nil {
 		return err
 	}
@@ -179,6 +180,7 @@ func (m *MemoryStore) UpdateLoadedModels(modelKey string, version string, server
 		}
 	}
 	modelVersion.server = serverKey
+	m.updateModelStatus(modelVersion, model.Previous())
 	return nil
 }
 
@@ -193,7 +195,7 @@ func (m *MemoryStore) UpdateModelState(modelKey string, version string, serverKe
 		return err
 	}
 
-	modelVersion.replicas[replicaIdx] = ReplicaStatus{State: state, Reason: reason}
+	modelVersion.replicas[replicaIdx] = ReplicaStatus{State: state, Reason: reason, Timestamp: time.Now()}
 	logger.Debugf("Setting model %s version %s on server %s replica %d to %s", modelKey, version, serverKey, replicaIdx, state.String())
 	// Update models loaded onto replica if loaded or unloaded is state
 	if state == Loaded || state == Unloaded {
@@ -212,6 +214,7 @@ func (m *MemoryStore) UpdateModelState(modelKey string, version string, serverKe
 	if availableMemory != nil {
 		server.replicas[replicaIdx].availableMemory = *availableMemory
 	}
+	m.updateModelStatus(modelVersion, model.Previous())
 	if model.isDeleted() && model.Inactive() {
 		logger.Debugf("Deleting model %s as inactive", modelKey)
 		delete(m.store.models, modelKey)
@@ -268,4 +271,70 @@ func (m *MemoryStore) RemoveServerReplica(serverName string, replicaIdx int) ([]
 		modelNames = append(modelNames, modelName)
 	}
 	return modelNames, nil
+}
+
+func (m *MemoryStore) updateModelStatus(modelVersion *ModelVersion, prevModelVersion *ModelVersion)  {
+	var replicasAvailable, replicasLoading, replicasLoadFailed, replicasUnloading, replicasUnloaded, replicasUnloadFailed  uint32
+	var lastFailedReason string
+	lastFailedStateTime := time.Time{}
+	latestTime := time.Time{}
+	for _,replicaState := range modelVersion.ReplicaState() {
+		switch replicaState.State {
+		case Available:
+			replicasAvailable++
+		case LoadRequested, Loading, Loaded: // unavailable but OK
+			replicasLoading++
+		case LoadFailed, LoadedUnavailable: // unavailable but not OK
+			replicasLoadFailed++
+			if !modelVersion.deleted && replicaState.Timestamp.After(lastFailedStateTime) {
+				lastFailedStateTime = replicaState.Timestamp
+				lastFailedReason = replicaState.Reason
+			}
+		case UnloadRequested, Unloading:
+			replicasUnloading++
+		case Unloaded:
+			replicasUnloaded++
+		case UnloadFailed:
+			replicasUnloadFailed++
+			if modelVersion.deleted && replicaState.Timestamp.After(lastFailedStateTime) {
+				lastFailedStateTime = replicaState.Timestamp
+				lastFailedReason = replicaState.Reason
+			}
+		}
+		if replicaState.Timestamp.After(latestTime) {
+			latestTime = replicaState.Timestamp
+		}
+	}
+	var modelState ModelState
+	var modelReason string
+	modelTimestamp := latestTime
+	if modelVersion.deleted {
+		if replicasUnloadFailed > 0 {
+			modelState = ModelTerminateFailed
+			modelReason = lastFailedReason
+			modelTimestamp = lastFailedStateTime
+		}  else if replicasUnloading > 0 || replicasAvailable > 0{
+			modelState = ModelTerminating
+		} else {
+			modelState = ModelTerminated
+		}
+	} else {
+		if replicasLoadFailed > 0 {
+			modelState = ModelFailed
+			modelReason = lastFailedReason
+			modelTimestamp = lastFailedStateTime
+		} else if (modelVersion.Details() != nil && replicasAvailable == modelVersion.Details().Replicas && prevModelVersion == nil) ||
+			(replicasAvailable > 0 && prevModelVersion != nil && prevModelVersion.state.State == ModelAvailable) { //TODO In future check if available replicas is > minReplicas
+			modelState = ModelAvailable
+		} else {
+			modelState = ModelProgressing
+		}
+	}
+	modelVersion.state = ModelStatus{
+		State:               modelState,
+		Reason:              modelReason,
+		Timestamp:           modelTimestamp,
+		AvailableReplicas:   replicasAvailable,
+		UnavailableReplicas: replicasLoading,
+	}
 }

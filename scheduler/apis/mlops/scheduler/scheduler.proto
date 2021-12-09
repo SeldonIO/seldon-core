@@ -4,6 +4,8 @@ package seldon.mlops.scheduler;
 
 option go_package = "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler";
 
+import "google/protobuf/timestamp.proto";
+
 // [START Messages]
 
 /* ServerReference represents a unique server
@@ -53,19 +55,28 @@ message ModelReference {
 message UnloadModelResponse {
 }
 
-
 /* ModelStatusResponse provides the current assignment of the model onto a server
 */
 message ModelStatusResponse {
   string modelName = 1;
   string version = 2;
   string serverName = 3;
-  map<int32,ModelReplicaState> modelReplicaState = 4;
+  map<int32,ModelReplicaStatus> modelReplicaState = 4;
+  ModelStatus state = 5;
 }
 
-message ModelReplicaState {
+message ModelStatus {
   string state = 1;
   string reason = 2;
+  uint32 availableReplicas = 3;
+  uint32 unavailableReplicas = 4;
+  google.protobuf.Timestamp timestamp = 5;
+}
+
+message ModelReplicaStatus {
+  string state = 1;
+  string reason = 2;
+  google.protobuf.Timestamp timestamp = 3;
 }
 
 /* ServerStatusResponse provides details of current server status
@@ -85,23 +96,6 @@ message ModelSubscriptionRequest {
   string name = 1; //Name of the subscription caller
 }
 
-message ModelEventMessage {
-  string modelName = 1;
-  string serverName = 2;
-  enum Event {
-    UNKNOWN_EVENT = 0;
-    REPLICAS_LOADED = 1;
-    REPLICAS_LOAD_FAILED = 2;
-    REPLICAS_UNLOADED = 3;
-    REPLICAS_UNLOAD_FAILED = 4;
-    REPLICAS_AVAILABLE = 5;
-    REPLICAS_UNAVAILABLE = 6;
-  }
-  Event event = 3;
-  int32 readyReplicas = 4;
-  int32 unavailableReplicas = 5;
-  string message = 6;
-}
 // [END Messages]
 
 
@@ -112,8 +106,7 @@ service Scheduler {
   rpc LoadModel(LoadModelRequest) returns (LoadModelResponse) {};
   rpc UnloadModel(ModelReference) returns (UnloadModelResponse) {};
   rpc ModelStatus(ModelReference) returns (ModelStatusResponse) {}
-
-  rpc SubscribeModelEvents(ModelSubscriptionRequest) returns (stream ModelEventMessage) {};
+  rpc SubscribeModelStatus(ModelSubscriptionRequest) returns (stream ModelStatusResponse) {};
 }
 
 // [END Services]

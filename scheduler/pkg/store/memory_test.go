@@ -3,6 +3,7 @@ package store
 import (
 	"errors"
 	"testing"
+	"time"
 
 	. "github.com/onsi/gomega"
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
@@ -612,6 +613,192 @@ func TestUpdateModelState(t *testing.T) {
 				g.Expect(err).ToNot(BeNil())
 				g.Expect(errors.Is(err, test.err)).To(BeTrue())
 			}
+		})
+	}
+}
+
+func TestUpdateModelStatus(t *testing.T) {
+	logger := log.New()
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name            string
+		modelVersion *ModelVersion
+		prevModelVersion *ModelVersion
+		expectedState ModelState
+		expectedReason string
+		expectedAvailableReplicas uint32
+		expectedTimestamp time.Time
+	}
+	d1 := time.Date(2021, 1,1,12 , 0 , 0, 0 ,time.UTC)
+	r1 := "reason1"
+	d2 := time.Date(2021, 1,2,12 , 0 , 0, 0 ,time.UTC)
+	r2 := "reason2"
+	tests := []test {
+		{
+			name: "Available",
+			modelVersion: NewModelVersion(
+				&pb.ModelDetails{Version:"1", Replicas: 1},
+				"server",
+				map[int]ReplicaStatus{
+					0: {State: Available, Reason: "", Timestamp: d1},
+				},
+				false,
+				ModelProgressing),
+			prevModelVersion: nil,
+			expectedState: ModelAvailable,
+			expectedAvailableReplicas: 1,
+			expectedReason: "",
+			expectedTimestamp: d1,
+		},
+		{
+			name: "Progressing",
+			modelVersion: NewModelVersion(
+				&pb.ModelDetails{Version:"1", Replicas: 2},
+				"server",
+				map[int]ReplicaStatus{
+					0: {State: Available, Reason: "", Timestamp: d1},
+					1: {State: Loading, Reason: "", Timestamp: d1},
+				},
+				false,
+				ModelProgressing),
+			prevModelVersion: nil,
+			expectedState: ModelProgressing,
+			expectedAvailableReplicas: 1,
+			expectedReason: "",
+			expectedTimestamp: d1,
+		},
+		{
+			name: "Failed",
+			modelVersion: NewModelVersion(
+				&pb.ModelDetails{Version:"1", Replicas: 1},
+				"server",
+				map[int]ReplicaStatus{
+					0: {State: LoadFailed, Reason: r1, Timestamp: d1},
+				},
+				false,
+				ModelProgressing),
+			prevModelVersion: nil,
+			expectedState: ModelFailed,
+			expectedAvailableReplicas: 0,
+			expectedReason: r1,
+			expectedTimestamp: d1,
+		},
+		{
+			name: "AvailableAndFailed",
+			modelVersion: NewModelVersion(
+				&pb.ModelDetails{Version:"1", Replicas: 2},
+				"server",
+				map[int]ReplicaStatus{
+					0: {State: Loaded, Reason: "", Timestamp: d1},
+					1: {State: LoadFailed, Reason: r1, Timestamp: d2},
+				},
+				false,
+				ModelProgressing),
+			prevModelVersion: nil,
+			expectedState: ModelFailed,
+			expectedAvailableReplicas: 0,
+			expectedReason: r1,
+			expectedTimestamp: d2,
+		},
+		{
+			name: "TwoFailed",
+			modelVersion: NewModelVersion(
+				&pb.ModelDetails{Version:"1", Replicas: 2},
+				"server",
+				map[int]ReplicaStatus{
+					0: {State: LoadFailed, Reason: r1, Timestamp: d1},
+					1: {State: LoadFailed, Reason: r2, Timestamp: d2},
+				},
+				false,
+				ModelProgressing),
+			prevModelVersion: nil,
+			expectedState: ModelFailed,
+			expectedAvailableReplicas: 0,
+			expectedReason: r2,
+			expectedTimestamp: d2,
+		},
+		{
+			name: "AvailableV2",
+			modelVersion: NewModelVersion(
+				&pb.ModelDetails{Version:"2", Replicas: 2},
+				"server",
+				map[int]ReplicaStatus{
+					0: {State: Loading, Reason: "", Timestamp: d1},
+					1: {State: Available, Reason: "", Timestamp: d2},
+				},
+				false,
+				ModelProgressing),
+			prevModelVersion: NewModelVersion(
+				&pb.ModelDetails{Version:"1", Replicas: 1},
+				"server",
+				map[int]ReplicaStatus{
+					0: {State: Available, Reason: "", Timestamp: d1},
+				},
+				false,
+				ModelAvailable),
+			expectedState: ModelAvailable,
+			expectedAvailableReplicas: 1,
+			expectedReason: "",
+			expectedTimestamp: d2,
+		},
+		{
+			name: "Terminating",
+			modelVersion: NewModelVersion(
+				&pb.ModelDetails{Version:"2", Replicas: 2},
+				"server",
+				map[int]ReplicaStatus{
+					0: {State: Unloading, Reason: "", Timestamp: d1},
+					1: {State: Unloading, Reason: "", Timestamp: d2},
+				},
+				true,
+				ModelProgressing),
+			expectedState: ModelTerminating,
+			expectedAvailableReplicas: 0,
+			expectedReason: "",
+			expectedTimestamp: d2,
+		},
+		{
+			name: "Terminated",
+			modelVersion: NewModelVersion(
+				&pb.ModelDetails{Version:"2", Replicas: 2},
+				"server",
+				map[int]ReplicaStatus{
+					0: {State: Unloaded, Reason: "", Timestamp: d1},
+					1: {State: Unloaded, Reason: "", Timestamp: d2},
+				},
+				true,
+				ModelProgressing),
+			expectedState: ModelTerminated,
+			expectedAvailableReplicas: 0,
+			expectedReason: "",
+			expectedTimestamp: d2,
+		},
+		{
+			name: "TerminateFailed",
+			modelVersion: NewModelVersion(
+				&pb.ModelDetails{Version:"2", Replicas: 2},
+				"server",
+				map[int]ReplicaStatus{
+					0: {State: UnloadFailed, Reason: r1, Timestamp: d1},
+					1: {State: Unloaded, Reason: "", Timestamp: d2},
+				},
+				true,
+				ModelProgressing),
+			expectedState: ModelTerminateFailed,
+			expectedAvailableReplicas: 0,
+			expectedReason: r1,
+			expectedTimestamp: d1,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ms := NewMemoryStore(logger, &LocalSchedulerStore{})
+			ms.updateModelStatus(test.modelVersion, test.prevModelVersion)
+			g.Expect(test.modelVersion.state.State).To(Equal(test.expectedState))
+			g.Expect(test.modelVersion.state.Reason).To(Equal(test.expectedReason))
+			g.Expect(test.modelVersion.state.AvailableReplicas).To(Equal(test.expectedAvailableReplicas))
+			g.Expect(test.modelVersion.state.Timestamp).To(Equal(test.expectedTimestamp))
 		})
 	}
 }

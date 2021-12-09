@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"net"
 	"sync"
 
@@ -27,43 +28,15 @@ type SchedulerServer struct {
 	scheduler    scheduler2.Scheduler
 	agentHandler agent.AgentHandler
 	mutext sync.RWMutex
-	streams map[pb.Scheduler_SubscribeModelEventsServer]*Subscription
+	streams map[pb.Scheduler_SubscribeModelStatusServer]*Subscription
 }
 
 type Subscription struct {
-	stream pb.Scheduler_SubscribeModelEventsServer
+	name string
+	stream pb.Scheduler_SubscribeModelStatusServer
 	fin chan bool
 }
 
-func (s *SchedulerServer) SubscribeModelEvents(req *pb.ModelSubscriptionRequest, stream pb.Scheduler_SubscribeModelEventsServer) error {
-	logger := s.logger.WithField("func", "Subscribe")
-	logger.Infof("Received subscribe request from %s",req.GetName())
-
-	fin := make(chan bool)
-
-	s.mutext.Lock()
-	s.streams[stream] = &Subscription{
-		stream: stream,
-		fin: fin,
-	}
-	s.mutext.Unlock()
-
-	ctx := stream.Context()
-	// Keep this scope alive because once this scope exits - the stream is closed
-	for {
-		select {
-		case <-fin:
-			logger.Infof("Closing stream for %s", req.GetName())
-			return nil
-		case <-ctx.Done():
-			logger.Infof("Stream disconnected %s", req.GetName())
-			s.mutext.Lock()
-			delete(s.streams, stream)
-			s.mutext.Unlock()
-			return nil
-		}
-	}
-}
 
 func (s *SchedulerServer) StartGrpcServer(schedulerPort uint) error {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", schedulerPort))
@@ -84,7 +57,7 @@ func NewSchedulerServer(logger log.FieldLogger, store store.SchedulerStore, sche
 		store:        store,
 		scheduler:    scheduler,
 		agentHandler: agentHandler,
-		streams: make(map[pb.Scheduler_SubscribeModelEventsServer]*Subscription),
+		streams: make(map[pb.Scheduler_SubscribeModelStatusServer]*Subscription),
 	}
 	return s
 }
@@ -136,18 +109,26 @@ func (s *SchedulerServer) ModelStatus(ctx context.Context, reference *pb.ModelRe
 	if latestModel == nil {
 		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("Failed to find model %s", reference.Name))
 	}
-	stateMap := make(map[int32]*pb.ModelReplicaState)
+	stateMap := make(map[int32]*pb.ModelReplicaStatus)
 	for k,v := range latestModel.ReplicaState() {
-		stateMap[int32(k)] = &pb.ModelReplicaState{
+		stateMap[int32(k)] = &pb.ModelReplicaStatus{
 			State: v.State.String(),
 			Reason: v.Reason,
+			Timestamp: timestamppb.New(v.Timestamp),
 		}
 	}
+	modelState := latestModel.ModelState()
 	return &pb.ModelStatusResponse{
 		ModelName:         reference.Name,
 		Version:           latestModel.GetVersion(),
 		ServerName:        latestModel.Server(),
 		ModelReplicaState: stateMap,
+		State: &pb.ModelStatus{
+			State: modelState.State.String(),
+			Reason: modelState.Reason,
+			Timestamp: timestamppb.New(modelState.Timestamp),
+			AvailableReplicas: modelState.AvailableReplicas,
+		},
 	}, nil
 }
 

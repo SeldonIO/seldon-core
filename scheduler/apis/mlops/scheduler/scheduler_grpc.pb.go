@@ -22,7 +22,7 @@ type SchedulerClient interface {
 	LoadModel(ctx context.Context, in *LoadModelRequest, opts ...grpc.CallOption) (*LoadModelResponse, error)
 	UnloadModel(ctx context.Context, in *ModelReference, opts ...grpc.CallOption) (*UnloadModelResponse, error)
 	ModelStatus(ctx context.Context, in *ModelReference, opts ...grpc.CallOption) (*ModelStatusResponse, error)
-	SubscribeModelEvents(ctx context.Context, in *ModelSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribeModelEventsClient, error)
+	SubscribeModelStatus(ctx context.Context, in *ModelSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribeModelStatusClient, error)
 }
 
 type schedulerClient struct {
@@ -69,12 +69,12 @@ func (c *schedulerClient) ModelStatus(ctx context.Context, in *ModelReference, o
 	return out, nil
 }
 
-func (c *schedulerClient) SubscribeModelEvents(ctx context.Context, in *ModelSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribeModelEventsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Scheduler_ServiceDesc.Streams[0], "/seldon.mlops.scheduler.Scheduler/SubscribeModelEvents", opts...)
+func (c *schedulerClient) SubscribeModelStatus(ctx context.Context, in *ModelSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribeModelStatusClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Scheduler_ServiceDesc.Streams[0], "/seldon.mlops.scheduler.Scheduler/SubscribeModelStatus", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &schedulerSubscribeModelEventsClient{stream}
+	x := &schedulerSubscribeModelStatusClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -84,17 +84,17 @@ func (c *schedulerClient) SubscribeModelEvents(ctx context.Context, in *ModelSub
 	return x, nil
 }
 
-type Scheduler_SubscribeModelEventsClient interface {
-	Recv() (*ModelEventMessage, error)
+type Scheduler_SubscribeModelStatusClient interface {
+	Recv() (*ModelStatusResponse, error)
 	grpc.ClientStream
 }
 
-type schedulerSubscribeModelEventsClient struct {
+type schedulerSubscribeModelStatusClient struct {
 	grpc.ClientStream
 }
 
-func (x *schedulerSubscribeModelEventsClient) Recv() (*ModelEventMessage, error) {
-	m := new(ModelEventMessage)
+func (x *schedulerSubscribeModelStatusClient) Recv() (*ModelStatusResponse, error) {
+	m := new(ModelStatusResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ type SchedulerServer interface {
 	LoadModel(context.Context, *LoadModelRequest) (*LoadModelResponse, error)
 	UnloadModel(context.Context, *ModelReference) (*UnloadModelResponse, error)
 	ModelStatus(context.Context, *ModelReference) (*ModelStatusResponse, error)
-	SubscribeModelEvents(*ModelSubscriptionRequest, Scheduler_SubscribeModelEventsServer) error
+	SubscribeModelStatus(*ModelSubscriptionRequest, Scheduler_SubscribeModelStatusServer) error
 	mustEmbedUnimplementedSchedulerServer()
 }
 
@@ -129,8 +129,8 @@ func (UnimplementedSchedulerServer) UnloadModel(context.Context, *ModelReference
 func (UnimplementedSchedulerServer) ModelStatus(context.Context, *ModelReference) (*ModelStatusResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ModelStatus not implemented")
 }
-func (UnimplementedSchedulerServer) SubscribeModelEvents(*ModelSubscriptionRequest, Scheduler_SubscribeModelEventsServer) error {
-	return status.Errorf(codes.Unimplemented, "method SubscribeModelEvents not implemented")
+func (UnimplementedSchedulerServer) SubscribeModelStatus(*ModelSubscriptionRequest, Scheduler_SubscribeModelStatusServer) error {
+	return status.Errorf(codes.Unimplemented, "method SubscribeModelStatus not implemented")
 }
 func (UnimplementedSchedulerServer) mustEmbedUnimplementedSchedulerServer() {}
 
@@ -217,24 +217,24 @@ func _Scheduler_ModelStatus_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Scheduler_SubscribeModelEvents_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _Scheduler_SubscribeModelStatus_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(ModelSubscriptionRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(SchedulerServer).SubscribeModelEvents(m, &schedulerSubscribeModelEventsServer{stream})
+	return srv.(SchedulerServer).SubscribeModelStatus(m, &schedulerSubscribeModelStatusServer{stream})
 }
 
-type Scheduler_SubscribeModelEventsServer interface {
-	Send(*ModelEventMessage) error
+type Scheduler_SubscribeModelStatusServer interface {
+	Send(*ModelStatusResponse) error
 	grpc.ServerStream
 }
 
-type schedulerSubscribeModelEventsServer struct {
+type schedulerSubscribeModelStatusServer struct {
 	grpc.ServerStream
 }
 
-func (x *schedulerSubscribeModelEventsServer) Send(m *ModelEventMessage) error {
+func (x *schedulerSubscribeModelStatusServer) Send(m *ModelStatusResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -264,8 +264,8 @@ var Scheduler_ServiceDesc = grpc.ServiceDesc{
 	},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "SubscribeModelEvents",
-			Handler:       _Scheduler_SubscribeModelEvents_Handler,
+			StreamName:    "SubscribeModelStatus",
+			Handler:       _Scheduler_SubscribeModelStatus_Handler,
 			ServerStreams: true,
 		},
 	},
