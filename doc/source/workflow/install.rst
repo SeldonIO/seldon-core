@@ -18,7 +18,7 @@ Pre-requisites:
    -  Istio ( sample installation using Istio 1.5 can be found at
       https://github.com/SeldonIO/seldon-core/tree/master/examples/auth
       )
-   -  Ambassador
+   -  Ambassador v1 (v2 not currently supported)
 
 Running older versions of Seldon Core?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

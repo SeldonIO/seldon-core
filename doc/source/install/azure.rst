@@ -133,6 +133,10 @@ Seldon Core supports using either `Istio <https://istio.io/>`_ or `Ambassador <h
 
     **Install Ambassador**
 
+    .. note::
+        Seldon Core currently only supports the Ambassador V1 APIs. The installation instructions below will install the latest v1 version of emissary ingress.
+
+
     First add the datawire helm repository:
 
     .. code-block:: bash
