@@ -63,7 +63,6 @@ class CEServer(object):
         self.event_type = event_type
         self.event_source = event_source
         self.seldon_metrics = SeldonMetrics(
-            worker_id_func=lambda: str(uuid.uuid1()),
             extra_default_labels=DEFAULT_LABELS,
         )
 
