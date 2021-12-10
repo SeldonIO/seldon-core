@@ -200,6 +200,8 @@ func TestUnloadModel(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			s, mockAgent := createTestScheduler()
+			go s.ListenForEvents()
+			defer s.StopListenForEvents()
 			for _, repReq := range test.req {
 				err := s.store.AddServerReplica(repReq)
 				g.Expect(err).To(BeNil())

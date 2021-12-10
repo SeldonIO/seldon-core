@@ -44,4 +44,5 @@ type SchedulerStore interface {
 	UpdateModelState(modelKey string, version string, serverKey string, replicaIdx int, availableMemory *uint64, state ModelReplicaState, reason string) error
 	AddServerReplica(request *pba.AgentSubscribeRequest) error
 	RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) // return previously loaded models
+	AddListener(c chan string)
 }

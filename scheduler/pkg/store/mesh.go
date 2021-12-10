@@ -234,13 +234,9 @@ func (m *Model) Previous() *ModelVersion {
 	}
 }
 
+//TODO do we need to consider previous versions?
 func (m *Model) Inactive() bool {
-	for _, mv := range m.versions {
-		if !mv.Inactive() {
-			return false
-		}
-	}
-	return true
+	return m.Latest().Inactive()
 }
 
 func (m *Model) isDeleted() bool {

@@ -623,6 +623,7 @@ func TestUpdateModelStatus(t *testing.T) {
 
 	type test struct {
 		name            string
+		deleted bool
 		modelVersion *ModelVersion
 		prevModelVersion *ModelVersion
 		expectedState ModelState
@@ -637,6 +638,7 @@ func TestUpdateModelStatus(t *testing.T) {
 	tests := []test {
 		{
 			name: "Available",
+			deleted: false,
 			modelVersion: NewModelVersion(
 				&pb.ModelDetails{Version:"1", Replicas: 1},
 				"server",
@@ -653,6 +655,7 @@ func TestUpdateModelStatus(t *testing.T) {
 		},
 		{
 			name: "Progressing",
+			deleted: false,
 			modelVersion: NewModelVersion(
 				&pb.ModelDetails{Version:"1", Replicas: 2},
 				"server",
@@ -670,6 +673,7 @@ func TestUpdateModelStatus(t *testing.T) {
 		},
 		{
 			name: "Failed",
+			deleted: false,
 			modelVersion: NewModelVersion(
 				&pb.ModelDetails{Version:"1", Replicas: 1},
 				"server",
@@ -686,6 +690,7 @@ func TestUpdateModelStatus(t *testing.T) {
 		},
 		{
 			name: "AvailableAndFailed",
+			deleted: false,
 			modelVersion: NewModelVersion(
 				&pb.ModelDetails{Version:"1", Replicas: 2},
 				"server",
@@ -703,6 +708,7 @@ func TestUpdateModelStatus(t *testing.T) {
 		},
 		{
 			name: "TwoFailed",
+			deleted: false,
 			modelVersion: NewModelVersion(
 				&pb.ModelDetails{Version:"1", Replicas: 2},
 				"server",
@@ -720,6 +726,7 @@ func TestUpdateModelStatus(t *testing.T) {
 		},
 		{
 			name: "AvailableV2",
+			deleted: false,
 			modelVersion: NewModelVersion(
 				&pb.ModelDetails{Version:"2", Replicas: 2},
 				"server",
@@ -744,6 +751,7 @@ func TestUpdateModelStatus(t *testing.T) {
 		},
 		{
 			name: "Terminating",
+			deleted: true,
 			modelVersion: NewModelVersion(
 				&pb.ModelDetails{Version:"2", Replicas: 2},
 				"server",
@@ -760,6 +768,7 @@ func TestUpdateModelStatus(t *testing.T) {
 		},
 		{
 			name: "Terminated",
+			deleted: true,
 			modelVersion: NewModelVersion(
 				&pb.ModelDetails{Version:"2", Replicas: 2},
 				"server",
@@ -776,6 +785,7 @@ func TestUpdateModelStatus(t *testing.T) {
 		},
 		{
 			name: "TerminateFailed",
+			deleted: true,
 			modelVersion: NewModelVersion(
 				&pb.ModelDetails{Version:"2", Replicas: 2},
 				"server",
@@ -794,7 +804,7 @@ func TestUpdateModelStatus(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			ms := NewMemoryStore(logger, &LocalSchedulerStore{})
-			ms.updateModelStatus(test.modelVersion, test.prevModelVersion)
+			ms.updateModelStatus(test.deleted, test.modelVersion, test.prevModelVersion)
 			g.Expect(test.modelVersion.state.State).To(Equal(test.expectedState))
 			g.Expect(test.modelVersion.state.Reason).To(Equal(test.expectedReason))
 			g.Expect(test.modelVersion.state.AvailableReplicas).To(Equal(test.expectedAvailableReplicas))

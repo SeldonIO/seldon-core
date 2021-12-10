@@ -28,7 +28,12 @@ type SchedulerServer struct {
 	scheduler    scheduler2.Scheduler
 	agentHandler agent.AgentHandler
 	mutext sync.RWMutex
+	EventStream
+}
+
+type EventStream struct {
 	streams map[pb.Scheduler_SubscribeModelStatusServer]*Subscription
+	chanEvent          chan string
 }
 
 type Subscription struct {
@@ -57,8 +62,12 @@ func NewSchedulerServer(logger log.FieldLogger, store store.SchedulerStore, sche
 		store:        store,
 		scheduler:    scheduler,
 		agentHandler: agentHandler,
-		streams: make(map[pb.Scheduler_SubscribeModelStatusServer]*Subscription),
+		EventStream: EventStream{
+			streams: make(map[pb.Scheduler_SubscribeModelStatusServer]*Subscription),
+			chanEvent: make(chan string, 1),
+		},
 	}
+	store.AddListener(s.EventStream.chanEvent)
 	return s
 }
 
@@ -118,10 +127,15 @@ func (s *SchedulerServer) ModelStatus(ctx context.Context, reference *pb.ModelRe
 		}
 	}
 	modelState := latestModel.ModelState()
+	var namespace string
+	if latestModel.Details().KubernetesConfig != nil {
+		namespace = latestModel.Details().KubernetesConfig.Namespace
+	}
 	return &pb.ModelStatusResponse{
 		ModelName:         reference.Name,
 		Version:           latestModel.GetVersion(),
 		ServerName:        latestModel.Server(),
+		Namespace: namespace,
 		ModelReplicaState: stateMap,
 		State: &pb.ModelStatus{
 			State: modelState.State.String(),

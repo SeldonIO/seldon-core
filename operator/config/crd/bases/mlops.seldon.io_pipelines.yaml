@@ -47,20 +47,20 @@ spec:
                       description: Condition specification to satisfy for this step
                         to be run
                       type: string
-                    name:
-                      description: Name of the step
-                      type: string
-                    previous:
+                    inputs:
                       description: Previous step to receive data from
                       items:
                         type: string
                       type: array
-                    ref:
+                    model:
                       description: Reference to model artifact
                       type: string
+                    name:
+                      description: Name of the step
+                      type: string
                   required:
+                  - model
                   - name
-                  - ref
                   type: object
                 type: array
             required:

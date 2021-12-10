@@ -101,6 +101,7 @@ func main() {
 	go es.ListenForSyncs() // Start envoy syncs
 
 	s := server2.NewSchedulerServer(logger, ss, sched, as)
+	go s.ListenForEvents()
 	go func() {
 		err := s.StartGrpcServer(schedulerPort)
 		if err != nil {
@@ -115,4 +116,5 @@ func main() {
 
 	as.StopAgentSync()
 	es.StopEnvoySync()
+	s.StopListenForEvents()
 }

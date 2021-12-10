@@ -33,6 +33,11 @@ message ModelDetails {
   optional uint64 memoryBytes = 7; // Requested memory
   optional string server = 8; // the particular model server to load the model. If unspecified will be chosen.
   bool logPayloads = 9; // Whether to log request/response payloads to this model
+  KubernetesConfig kubernetesConfig = 10; // Kubernetes specific config
+}
+
+message KubernetesConfig {
+  string namespace = 1;
 }
 
 message StorageConfig {
@@ -61,8 +66,9 @@ message ModelStatusResponse {
   string modelName = 1;
   string version = 2;
   string serverName = 3;
-  map<int32,ModelReplicaStatus> modelReplicaState = 4;
-  ModelStatus state = 5;
+  string namespace = 4;
+  map<int32,ModelReplicaStatus> modelReplicaState = 5;
+  ModelStatus state = 6;
 }
 
 message ModelStatus {

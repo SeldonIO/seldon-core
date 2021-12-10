@@ -66,6 +66,10 @@ func (f mockStore) RemoveServerReplica(serverName string, replicaIdx int) ([]str
 	panic("implement me")
 }
 
+func (f mockStore) AddListener(c chan string) {
+	
+}
+
 func TestScheduler(t *testing.T) {
 	logger := log.New()
 	g := NewGomegaWithT(t)

@@ -113,6 +113,9 @@ func (m Model) AsModelDetails() (*scheduler.ModelDetails, error) {
 		Requirements: m.Spec.Requirements,
 		Server:       m.Spec.Server,
 		LogPayloads:  m.Spec.Logger != nil, // Simple boolean switch at present
+		KubernetesConfig: &scheduler.KubernetesConfig{
+			Namespace: m.Namespace,
+		},
 	}
 	// Add storage secret if specified
 	if m.Spec.SecretName != nil {

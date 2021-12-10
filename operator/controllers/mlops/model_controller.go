@@ -18,6 +18,10 @@ package mlops
 
 import (
 	"context"
+	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/record"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/seldonio/seldon-core/operatorv2/pkg/utils"
@@ -37,14 +41,14 @@ type ModelReconciler struct {
 	client.Client
 	Scheme    *runtime.Scheme
 	Scheduler *scheduler.SchedulerClient
+	Recorder  record.EventRecorder
 }
 
 //+kubebuilder:rbac:groups=mlops.seldon.io,resources=models,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=mlops.seldon.io,resources=models/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=mlops.seldon.io,resources=models/finalizers,verbs=update
-//
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.10.0/pkg/reconcile
+//+kubebuilder:rbac:groups="",resources=events,verbs=create;patch
+
 func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx).WithName("Reconcile")
 
@@ -97,9 +101,41 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	return ctrl.Result{}, nil
 }
 
+func (r *ModelReconciler) updateStatus(model *mlopsv1alpha1.Model) error {
+	existingModel := &mlopsv1alpha1.Model{}
+	namespacedName := types.NamespacedName{Name: model.Name, Namespace: model.Namespace}
+	if err := r.Get(context.TODO(), namespacedName, existingModel); err != nil {
+		return err
+	}
+	//ready := modelReady(existingModel.Status)
+	if equality.Semantic.DeepEqual(existingModel.Status, model.Status) {
+		// Do nothing
+	} else if err := r.Status().Update(context.TODO(), model); err != nil {
+		//r.l.Error(err, "Failed to update InferenceService status", "InferenceService", model.Name)
+		//r.Recorder.Eventf(model, v1.EventTypeWarning, "UpdateFailed",
+		//	"Failed to update status for InferenceService %q: %v", desiredService.Name, err)
+		return err
+	} else {
+		// If there was a difference and there was no error.
+		//isReady := modelReady(model.Status)
+		//if ready && !isReady { // Moved to NotReady State
+		//	r.Recorder.Eventf(desiredService, v1.EventTypeWarning, string(InferenceServiceNotReadyState),
+		//		fmt.Sprintf("InferenceService [%v] is no longer Ready", desiredService.GetName()))
+		//} else if !wasReady && isReady { // Moved to Ready State
+		//	r.Recorder.Eventf(desiredService, v1.EventTypeNormal, string(InferenceServiceReadyState),
+		//		fmt.Sprintf("InferenceService [%v] is Ready", desiredService.GetName()))
+		//}
+	}
+	return nil
+}
+
 // SetupWithManager sets up the controller with the Manager.
+// Uses https://github.com/kubernetes-sigs/kubebuilder/issues/618#issuecomment-698018831
+// This ensures we don't reconcile when just the status is updated by checking if generation changed
 func (r *ModelReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	pred := predicate.GenerationChangedPredicate{}
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&mlopsv1alpha1.Model{}).
+		WithEventFilter(pred).
 		Complete(r)
 }

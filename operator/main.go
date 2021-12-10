@@ -19,11 +19,13 @@ package main
 import (
 	"context"
 	"flag"
+	"k8s.io/client-go/tools/record"
 	"os"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1"
 	mlopscontrollers "github.com/seldonio/seldon-core/operatorv2/controllers/mlops"
 	"github.com/seldonio/seldon-core/operatorv2/scheduler"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -81,8 +83,10 @@ func main() {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)
 	}
+	eventBroadcaster := record.NewBroadcaster()
 
-	schedulerClient := scheduler.NewSchedulerClient(logger)
+	schedulerClient := scheduler.NewSchedulerClient(logger, mgr.GetClient(), eventBroadcaster.NewRecorder(
+		mgr.GetScheme(), v1.EventSource{Component: "scheduler-client"}))
 	err = schedulerClient.ConnectToScheduler(schedulerHost, schedulerPort)
 	if err != nil {
 		setupLog.Error(err, "unable to connect to scheduler")
@@ -100,6 +104,8 @@ func main() {
 		Client:    mgr.GetClient(),
 		Scheme:    mgr.GetScheme(),
 		Scheduler: schedulerClient,
+		Recorder: eventBroadcaster.NewRecorder(
+			mgr.GetScheme(), v1.EventSource{Component: "model-controller"}),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Model")
 		os.Exit(1)

@@ -31,6 +31,7 @@ func TestAsModelDetails(t *testing.T) {
 			model: &Model{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:            "foo",
+					Namespace:       "default",
 					ResourceVersion: "1",
 				},
 				Spec: ModelSpec{
@@ -40,10 +41,11 @@ func TestAsModelDetails(t *testing.T) {
 				},
 			},
 			modelDetails: &scheduler.ModelDetails{
-				Name:     "foo",
-				Version:  "1",
-				Uri:      "gs://test",
-				Replicas: 1,
+				Name:             "foo",
+				Version:          "1",
+				Uri:              "gs://test",
+				Replicas:         1,
+				KubernetesConfig: &scheduler.KubernetesConfig{Namespace: "default"},
 			},
 		},
 		{

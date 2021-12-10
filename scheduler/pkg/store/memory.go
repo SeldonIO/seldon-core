@@ -14,6 +14,7 @@ type MemoryStore struct {
 	mu     sync.RWMutex
 	store  *LocalSchedulerStore
 	logger log.FieldLogger
+	modelEventListeners  []chan<- string
 }
 
 func NewMemoryStore(logger log.FieldLogger, store *LocalSchedulerStore) *MemoryStore {
@@ -22,6 +23,13 @@ func NewMemoryStore(logger log.FieldLogger, store *LocalSchedulerStore) *MemoryS
 		logger: logger.WithField("source", "MemoryStore"),
 	}
 }
+
+func (m *MemoryStore) AddListener(c chan string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.modelEventListeners = append(m.modelEventListeners, c)
+}
+
 
 func (m *MemoryStore) updateModelImpl(config *pb.ModelDetails, addAsLatest bool) (*ModelVersion, error) {
 	model, ok := m.store.models[config.Name]
@@ -180,7 +188,7 @@ func (m *MemoryStore) UpdateLoadedModels(modelKey string, version string, server
 		}
 	}
 	modelVersion.server = serverKey
-	m.updateModelStatus(modelVersion, model.Previous())
+	m.updateModelStatus(model.isDeleted(), modelVersion, model.Previous())
 	return nil
 }
 
@@ -214,7 +222,8 @@ func (m *MemoryStore) UpdateModelState(modelKey string, version string, serverKe
 	if availableMemory != nil {
 		server.replicas[replicaIdx].availableMemory = *availableMemory
 	}
-	m.updateModelStatus(modelVersion, model.Previous())
+	m.updateModelStatus(model.isDeleted(), modelVersion, model.Previous())
+	logger.Infof("Model %s deleted %v active %v",modelKey, model.isDeleted(), model.Inactive())
 	if model.isDeleted() && model.Inactive() {
 		logger.Debugf("Deleting model %s as inactive", modelKey)
 		delete(m.store.models, modelKey)
@@ -273,7 +282,8 @@ func (m *MemoryStore) RemoveServerReplica(serverName string, replicaIdx int) ([]
 	return modelNames, nil
 }
 
-func (m *MemoryStore) updateModelStatus(modelVersion *ModelVersion, prevModelVersion *ModelVersion)  {
+func (m *MemoryStore) updateModelStatus(deleted bool, modelVersion *ModelVersion, prevModelVersion *ModelVersion)  {
+	logger := m.logger.WithField("func","updateModelStatus")
 	var replicasAvailable, replicasLoading, replicasLoadFailed, replicasUnloading, replicasUnloaded, replicasUnloadFailed  uint32
 	var lastFailedReason string
 	lastFailedStateTime := time.Time{}
@@ -286,7 +296,7 @@ func (m *MemoryStore) updateModelStatus(modelVersion *ModelVersion, prevModelVer
 			replicasLoading++
 		case LoadFailed, LoadedUnavailable: // unavailable but not OK
 			replicasLoadFailed++
-			if !modelVersion.deleted && replicaState.Timestamp.After(lastFailedStateTime) {
+			if !deleted && replicaState.Timestamp.After(lastFailedStateTime) {
 				lastFailedStateTime = replicaState.Timestamp
 				lastFailedReason = replicaState.Reason
 			}
@@ -296,7 +306,7 @@ func (m *MemoryStore) updateModelStatus(modelVersion *ModelVersion, prevModelVer
 			replicasUnloaded++
 		case UnloadFailed:
 			replicasUnloadFailed++
-			if modelVersion.deleted && replicaState.Timestamp.After(lastFailedStateTime) {
+			if deleted && replicaState.Timestamp.After(lastFailedStateTime) {
 				lastFailedStateTime = replicaState.Timestamp
 				lastFailedReason = replicaState.Reason
 			}
@@ -308,7 +318,8 @@ func (m *MemoryStore) updateModelStatus(modelVersion *ModelVersion, prevModelVer
 	var modelState ModelState
 	var modelReason string
 	modelTimestamp := latestTime
-	if modelVersion.deleted {
+	logger.Infof("Model details %v, replicasAvailable %d, deleted %v, prev model %v",modelVersion.Details(),replicasAvailable,deleted,prevModelVersion)
+	if deleted {
 		if replicasUnloadFailed > 0 {
 			modelState = ModelTerminateFailed
 			modelReason = lastFailedReason
@@ -336,5 +347,8 @@ func (m *MemoryStore) updateModelStatus(modelVersion *ModelVersion, prevModelVer
 		Timestamp:           modelTimestamp,
 		AvailableReplicas:   replicasAvailable,
 		UnavailableReplicas: replicasLoading,
+	}
+	for _,listener := range m.modelEventListeners {
+		listener <- modelVersion.Details().Name
 	}
 }
