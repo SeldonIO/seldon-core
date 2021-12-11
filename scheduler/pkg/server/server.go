@@ -121,7 +121,7 @@ func (s *SchedulerServer) ModelStatus(ctx context.Context, reference *pb.ModelRe
 	stateMap := make(map[int32]*pb.ModelReplicaStatus)
 	for k,v := range latestModel.ReplicaState() {
 		stateMap[int32(k)] = &pb.ModelReplicaStatus{
-			State: v.State.String(),
+			State: pb.ModelReplicaStatus_ModelReplicaState(pb.ModelReplicaStatus_ModelReplicaState_value[v.State.String()]),
 			Reason: v.Reason,
 			Timestamp: timestamppb.New(v.Timestamp),
 		}
@@ -138,7 +138,7 @@ func (s *SchedulerServer) ModelStatus(ctx context.Context, reference *pb.ModelRe
 		Namespace: namespace,
 		ModelReplicaState: stateMap,
 		State: &pb.ModelStatus{
-			State: modelState.State.String(),
+			State: pb.ModelStatus_ModelState(pb.ModelStatus_ModelState_value[modelState.State.String()]),
 			Reason: modelState.Reason,
 			Timestamp: timestamppb.New(modelState.Timestamp),
 			AvailableReplicas: modelState.AvailableReplicas,

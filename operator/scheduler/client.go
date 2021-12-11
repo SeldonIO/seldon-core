@@ -119,13 +119,10 @@ func (s *SchedulerClient) SubscribeEvents(ctx context.Context) error {
 		if err != nil {
 			logger.Error(err, "Failed to get model", "name", event.ModelName, "namespace", event.Namespace)
 		} else {
-			//TODO refactor with const
 			switch event.State.State {
-			case "ModelAvailable":
-				s.logger.Info("Updating status to available")
-				model.Status.CreateAndSetCondition(mlopsv1alpha1.SeldonMeshReady, true, "")
-			case "ModelFailed":
-				s.logger.Info("Updating status to failed")
+			case scheduler.ModelStatus_ModelAvailable:
+				model.Status.CreateAndSetCondition(mlopsv1alpha1.SeldonMeshReady, true, event.State.Reason)
+			default:
 				model.Status.CreateAndSetCondition(mlopsv1alpha1.SeldonMeshReady, false, event.State.Reason)
 			}
 			err = s.updateStatus(model)

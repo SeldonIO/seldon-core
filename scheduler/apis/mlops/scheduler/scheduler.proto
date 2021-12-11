@@ -72,7 +72,16 @@ message ModelStatusResponse {
 }
 
 message ModelStatus {
-  string state = 1;
+  enum ModelState {
+      ModelStateUnknown = 0;
+      ModelProgressing = 1;
+      ModelAvailable = 2;
+      ModelFailed = 3;
+      ModelTerminating = 4;
+      ModelTerminated = 5;
+      ModelTerminateFailed = 6;
+  }
+  ModelState state = 1;
   string reason = 2;
   uint32 availableReplicas = 3;
   uint32 unavailableReplicas = 4;
@@ -80,7 +89,20 @@ message ModelStatus {
 }
 
 message ModelReplicaStatus {
-  string state = 1;
+  enum ModelReplicaState {
+      ModelReplicaStateUnknown = 0;
+      LoadRequested = 1;
+      Loading = 2;
+      Loaded = 3;
+      LoadFailed = 4;
+      UnloadRequested = 5;
+      Unloading = 6;
+      Unloaded = 7;
+      UnloadFailed = 8;
+      Available = 9;
+      LoadedUnavailable = 10;
+  }
+  ModelReplicaState state = 1;
   string reason = 2;
   google.protobuf.Timestamp timestamp = 3;
 }

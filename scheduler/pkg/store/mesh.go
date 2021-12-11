@@ -22,15 +22,8 @@ func NewLocalSchedulerStore() *LocalSchedulerStore {
 }
 
 type Model struct {
-	versionMap map[string]*ModelVersion
 	versions   []*ModelVersion
 	deleted    bool
-}
-
-func NewModel() *Model {
-	return &Model{
-		versionMap: make(map[string]*ModelVersion),
-	}
 }
 
 type ModelVersion struct {
@@ -224,6 +217,15 @@ func (m *Model) Latest() *ModelVersion {
 	} else {
 		return nil
 	}
+}
+
+func (m *Model) GetVersion(version string) *ModelVersion {
+	for _, mv := range m.versions {
+		if mv.GetVersion() == version {
+			return mv
+		}
+	}
+	return nil
 }
 
 func (m *Model) Previous() *ModelVersion {

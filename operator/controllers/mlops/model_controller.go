@@ -18,8 +18,6 @@ package mlops
 
 import (
 	"context"
-	"k8s.io/apimachinery/pkg/api/equality"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -44,6 +42,37 @@ type ModelReconciler struct {
 	Recorder  record.EventRecorder
 }
 
+func (r *ModelReconciler) handleFinalizer(ctx context.Context, model *mlopsv1alpha1.Model) (bool, error) {
+	finalizerName := "seldon.model.finalizer"
+	// Check if we are being deleted or not
+	if model.ObjectMeta.DeletionTimestamp.IsZero() { // Not being deleted
+
+		// Add our finalizer
+		if !utils.ContainsStr(model.ObjectMeta.Finalizers, finalizerName) {
+			model.ObjectMeta.Finalizers = append(model.ObjectMeta.Finalizers, finalizerName)
+			if err := r.Update(context.Background(), model); err != nil {
+				return true, err
+			}
+		}
+	} else { // model is being deleted
+		if utils.ContainsStr(model.ObjectMeta.Finalizers, finalizerName) {
+			// Handle unload in scheduler
+			if err := r.Scheduler.UnloadModel(ctx, model); err != nil {
+				return true, err
+			}
+
+			// remove finalizer now we have completed successfully
+			model.ObjectMeta.Finalizers = utils.RemoveStr(model.ObjectMeta.Finalizers, finalizerName)
+			if err := r.Update(context.Background(), model); err != nil {
+				return true, err
+			}
+		}
+		// Stop reconciliation as the item is being deleted
+		return true, nil
+	}
+	return false, nil
+}
+
 //+kubebuilder:rbac:groups=mlops.seldon.io,resources=models,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=mlops.seldon.io,resources=models/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=mlops.seldon.io,resources=models/finalizers,verbs=update
@@ -64,69 +93,17 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return reconcile.Result{}, err
 	}
 
-	finalizerName := "seldon.model.finalizer"
-	// Check if we are being deleted or not
-	if model.ObjectMeta.DeletionTimestamp.IsZero() { // Not being deleted
-
-		// Add our finalizer
-		if !utils.ContainsStr(model.ObjectMeta.Finalizers, finalizerName) {
-			model.ObjectMeta.Finalizers = append(model.ObjectMeta.Finalizers, finalizerName)
-			if err := r.Update(context.Background(), model); err != nil {
-				return ctrl.Result{}, err
-			}
-		}
-	} else { // model is being deleted
-		if utils.ContainsStr(model.ObjectMeta.Finalizers, finalizerName) {
-			// Handel unloadin scheduler
-			if err := r.Scheduler.UnloadModel(ctx, model); err != nil {
-				return ctrl.Result{}, err
-			}
-
-			// remove finalizer now we have completed successfully
-			model.ObjectMeta.Finalizers = utils.RemoveStr(model.ObjectMeta.Finalizers, finalizerName)
-			if err := r.Update(context.Background(), model); err != nil {
-				return ctrl.Result{}, err
-			}
-		}
-
-		// Stop reconciliation as the item is being deleted
-		return ctrl.Result{}, nil
+	stop, err := r.handleFinalizer(ctx, model)
+	if stop {
+		return  reconcile.Result{}, err
 	}
 
-	err := r.Scheduler.LoadModel(ctx, model)
+	err = r.Scheduler.LoadModel(ctx, model)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
 	return ctrl.Result{}, nil
-}
-
-func (r *ModelReconciler) updateStatus(model *mlopsv1alpha1.Model) error {
-	existingModel := &mlopsv1alpha1.Model{}
-	namespacedName := types.NamespacedName{Name: model.Name, Namespace: model.Namespace}
-	if err := r.Get(context.TODO(), namespacedName, existingModel); err != nil {
-		return err
-	}
-	//ready := modelReady(existingModel.Status)
-	if equality.Semantic.DeepEqual(existingModel.Status, model.Status) {
-		// Do nothing
-	} else if err := r.Status().Update(context.TODO(), model); err != nil {
-		//r.l.Error(err, "Failed to update InferenceService status", "InferenceService", model.Name)
-		//r.Recorder.Eventf(model, v1.EventTypeWarning, "UpdateFailed",
-		//	"Failed to update status for InferenceService %q: %v", desiredService.Name, err)
-		return err
-	} else {
-		// If there was a difference and there was no error.
-		//isReady := modelReady(model.Status)
-		//if ready && !isReady { // Moved to NotReady State
-		//	r.Recorder.Eventf(desiredService, v1.EventTypeWarning, string(InferenceServiceNotReadyState),
-		//		fmt.Sprintf("InferenceService [%v] is no longer Ready", desiredService.GetName()))
-		//} else if !wasReady && isReady { // Moved to Ready State
-		//	r.Recorder.Eventf(desiredService, v1.EventTypeNormal, string(InferenceServiceReadyState),
-		//		fmt.Sprintf("InferenceService [%v] is Ready", desiredService.GetName()))
-		//}
-	}
-	return nil
 }
 
 // SetupWithManager sets up the controller with the Manager.

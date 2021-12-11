@@ -34,12 +34,11 @@ func (m *MemoryStore) AddListener(c chan string) {
 func (m *MemoryStore) updateModelImpl(config *pb.ModelDetails, addAsLatest bool) (*ModelVersion, error) {
 	model, ok := m.store.models[config.Name]
 	if !ok {
-		model = NewModel()
+		model = &Model{}
 		m.store.models[config.Name] = model
 	}
-	if existingModelVersion, ok := model.versionMap[config.Version]; !ok {
+	if existingModelVersion := model.GetVersion(config.Version); existingModelVersion == nil {
 		modelVersion := NewDefaultModelVersion(config)
-		model.versionMap[config.Version] = modelVersion
 		if addAsLatest {
 			model.versions = append(model.versions, modelVersion)
 		} else {
@@ -133,13 +132,13 @@ func (m *MemoryStore) getModelServer(modelKey string, version string, serverKey 
 	if !ok {
 		return nil, nil, nil, fmt.Errorf("failed to find model %s", modelKey)
 	}
-	modelVersion := model.Latest()
+	modelVersion:= model.GetVersion(version)
 	if modelVersion == nil {
-		return nil, nil, nil, fmt.Errorf("No latest version for model %s", modelKey)
+		return nil, nil, nil, fmt.Errorf("Version not found for model %s, version %s", modelKey, version)
 	}
-	if modelVersion.config.Version != version {
-		return nil, nil, nil, fmt.Errorf("Model version is not matching. Found %s but was trying to update %s. %w", modelVersion.config.Version, version, ModelNotLatestVersionRejectErr)
-	}
+	//if modelVersion.config.Version != version {
+	//	return nil, nil, nil, fmt.Errorf("Model version is not matching. Found %s but was trying to update %s. %w", modelVersion.config.Version, version, ModelNotLatestVersionRejectErr)
+	//}
 	server, ok := m.store.servers[serverKey]
 	if !ok {
 		return nil, nil, nil, fmt.Errorf("failed to find server %s", serverKey)
@@ -188,7 +187,9 @@ func (m *MemoryStore) UpdateLoadedModels(modelKey string, version string, server
 		}
 	}
 	modelVersion.server = serverKey
-	m.updateModelStatus(model.isDeleted(), modelVersion, model.Previous())
+	latestModel := model.Latest()
+	isLatest := latestModel.GetVersion() == modelVersion.GetVersion()
+	m.updateModelStatus(isLatest, model.isDeleted(), modelVersion, model.Previous())
 	return nil
 }
 
@@ -222,7 +223,9 @@ func (m *MemoryStore) UpdateModelState(modelKey string, version string, serverKe
 	if availableMemory != nil {
 		server.replicas[replicaIdx].availableMemory = *availableMemory
 	}
-	m.updateModelStatus(model.isDeleted(), modelVersion, model.Previous())
+	latestModel := model.Latest()
+	isLatest := latestModel.GetVersion() == modelVersion.GetVersion()
+	m.updateModelStatus(isLatest, model.isDeleted(), modelVersion, model.Previous())
 	logger.Infof("Model %s deleted %v active %v",modelKey, model.isDeleted(), model.Inactive())
 	if model.isDeleted() && model.Inactive() {
 		logger.Debugf("Deleting model %s as inactive", modelKey)
@@ -282,73 +285,3 @@ func (m *MemoryStore) RemoveServerReplica(serverName string, replicaIdx int) ([]
 	return modelNames, nil
 }
 
-func (m *MemoryStore) updateModelStatus(deleted bool, modelVersion *ModelVersion, prevModelVersion *ModelVersion)  {
-	logger := m.logger.WithField("func","updateModelStatus")
-	var replicasAvailable, replicasLoading, replicasLoadFailed, replicasUnloading, replicasUnloaded, replicasUnloadFailed  uint32
-	var lastFailedReason string
-	lastFailedStateTime := time.Time{}
-	latestTime := time.Time{}
-	for _,replicaState := range modelVersion.ReplicaState() {
-		switch replicaState.State {
-		case Available:
-			replicasAvailable++
-		case LoadRequested, Loading, Loaded: // unavailable but OK
-			replicasLoading++
-		case LoadFailed, LoadedUnavailable: // unavailable but not OK
-			replicasLoadFailed++
-			if !deleted && replicaState.Timestamp.After(lastFailedStateTime) {
-				lastFailedStateTime = replicaState.Timestamp
-				lastFailedReason = replicaState.Reason
-			}
-		case UnloadRequested, Unloading:
-			replicasUnloading++
-		case Unloaded:
-			replicasUnloaded++
-		case UnloadFailed:
-			replicasUnloadFailed++
-			if deleted && replicaState.Timestamp.After(lastFailedStateTime) {
-				lastFailedStateTime = replicaState.Timestamp
-				lastFailedReason = replicaState.Reason
-			}
-		}
-		if replicaState.Timestamp.After(latestTime) {
-			latestTime = replicaState.Timestamp
-		}
-	}
-	var modelState ModelState
-	var modelReason string
-	modelTimestamp := latestTime
-	logger.Infof("Model details %v, replicasAvailable %d, deleted %v, prev model %v",modelVersion.Details(),replicasAvailable,deleted,prevModelVersion)
-	if deleted {
-		if replicasUnloadFailed > 0 {
-			modelState = ModelTerminateFailed
-			modelReason = lastFailedReason
-			modelTimestamp = lastFailedStateTime
-		}  else if replicasUnloading > 0 || replicasAvailable > 0{
-			modelState = ModelTerminating
-		} else {
-			modelState = ModelTerminated
-		}
-	} else {
-		if replicasLoadFailed > 0 {
-			modelState = ModelFailed
-			modelReason = lastFailedReason
-			modelTimestamp = lastFailedStateTime
-		} else if (modelVersion.Details() != nil && replicasAvailable == modelVersion.Details().Replicas && prevModelVersion == nil) ||
-			(replicasAvailable > 0 && prevModelVersion != nil && prevModelVersion.state.State == ModelAvailable) { //TODO In future check if available replicas is > minReplicas
-			modelState = ModelAvailable
-		} else {
-			modelState = ModelProgressing
-		}
-	}
-	modelVersion.state = ModelStatus{
-		State:               modelState,
-		Reason:              modelReason,
-		Timestamp:           modelTimestamp,
-		AvailableReplicas:   replicasAvailable,
-		UnavailableReplicas: replicasLoading,
-	}
-	for _,listener := range m.modelEventListeners {
-		listener <- modelVersion.Details().Name
-	}
-}
