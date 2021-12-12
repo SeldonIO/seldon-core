@@ -15,6 +15,7 @@ build-agent: test
 build: build-scheduler build-agent
 
 lint: ## Run go linters against code.
+	gofmt -w pkg
 	golangci-lint run --fix
 
 test:
