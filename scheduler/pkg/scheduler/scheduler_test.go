@@ -67,7 +67,7 @@ func (f mockStore) RemoveServerReplica(serverName string, replicaIdx int) ([]str
 }
 
 func (f mockStore) AddListener(c chan string) {
-	
+
 }
 
 func TestScheduler(t *testing.T) {

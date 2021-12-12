@@ -11,10 +11,10 @@ import (
 )
 
 type MemoryStore struct {
-	mu     sync.RWMutex
-	store  *LocalSchedulerStore
-	logger log.FieldLogger
-	modelEventListeners  []chan<- string
+	mu                  sync.RWMutex
+	store               *LocalSchedulerStore
+	logger              log.FieldLogger
+	modelEventListeners []chan<- string
 }
 
 func NewMemoryStore(logger log.FieldLogger, store *LocalSchedulerStore) *MemoryStore {
@@ -29,7 +29,6 @@ func (m *MemoryStore) AddListener(c chan string) {
 	defer m.mu.Unlock()
 	m.modelEventListeners = append(m.modelEventListeners, c)
 }
-
 
 func (m *MemoryStore) updateModelImpl(config *pb.ModelDetails, addAsLatest bool) (*ModelVersion, error) {
 	model, ok := m.store.models[config.Name]
@@ -84,7 +83,7 @@ func (m *MemoryStore) ExistsModelVersion(key string, version string) bool {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	if model, ok := m.store.models[key]; ok {
-		for _,mv := range model.versions {
+		for _, mv := range model.versions {
 			if mv.Details().Version == version {
 				return true
 			}
@@ -132,7 +131,7 @@ func (m *MemoryStore) getModelServer(modelKey string, version string, serverKey 
 	if !ok {
 		return nil, nil, nil, fmt.Errorf("failed to find model %s", modelKey)
 	}
-	modelVersion:= model.GetVersion(version)
+	modelVersion := model.GetVersion(version)
 	if modelVersion == nil {
 		return nil, nil, nil, fmt.Errorf("Version not found for model %s, version %s", modelKey, version)
 	}
@@ -226,7 +225,7 @@ func (m *MemoryStore) UpdateModelState(modelKey string, version string, serverKe
 	latestModel := model.Latest()
 	isLatest := latestModel.GetVersion() == modelVersion.GetVersion()
 	m.updateModelStatus(isLatest, model.isDeleted(), modelVersion, model.Previous())
-	logger.Infof("Model %s deleted %v active %v",modelKey, model.isDeleted(), model.Inactive())
+	logger.Infof("Model %s deleted %v active %v", modelKey, model.isDeleted(), model.Inactive())
 	if model.isDeleted() && model.Inactive() { //TODO probably needs further work when versions of models correctly handled
 		logger.Debugf("Deleting model %s as inactive", modelKey)
 		delete(m.store.models, modelKey)
@@ -284,4 +283,3 @@ func (m *MemoryStore) RemoveServerReplica(serverName string, replicaIdx int) ([]
 	}
 	return modelNames, nil
 }
-

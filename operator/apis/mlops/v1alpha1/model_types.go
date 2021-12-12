@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	"fmt"
+
 	"knative.dev/pkg/apis"
 
 	scheduler "github.com/seldonio/seldon-core/operatorv2/scheduler/api"

@@ -3,15 +3,15 @@ package store
 import "time"
 
 type replicaStateStatistics struct {
-	replicasAvailable uint32
-	replicasLoading uint32
-	replicasLoadFailed uint32
-	replicasUnloading uint32
-	replicasUnloaded uint32
+	replicasAvailable    uint32
+	replicasLoading      uint32
+	replicasLoadFailed   uint32
+	replicasUnloading    uint32
+	replicasUnloaded     uint32
 	replicasUnloadFailed uint32
-	lastFailedStateTime time.Time
-	latestTime time.Time
-	lastFailedReason string
+	lastFailedStateTime  time.Time
+	latestTime           time.Time
+	lastFailedReason     string
 }
 
 func calcReplicaStateStatistics(modelVersion *ModelVersion, deleted bool) *replicaStateStatistics {
@@ -84,7 +84,7 @@ func updateModelState(modelVersion *ModelVersion, prevModelVersion *ModelVersion
 func (m *MemoryStore) updateModelStatus(isLatest bool, deleted bool, modelVersion *ModelVersion, prevModelVersion *ModelVersion) {
 	stats := calcReplicaStateStatistics(modelVersion, deleted)
 
-	updateModelState(modelVersion, prevModelVersion, stats,  deleted)
+	updateModelState(modelVersion, prevModelVersion, stats, deleted)
 
 	if isLatest {
 		for _, listener := range m.modelEventListeners {

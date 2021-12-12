@@ -107,7 +107,6 @@ func TestGetModel(t *testing.T) {
 	}
 }
 
-
 func TestExistsModelVersion(t *testing.T) {
 	logger := log.New()
 	g := NewGomegaWithT(t)
@@ -173,8 +172,6 @@ func TestExistsModelVersion(t *testing.T) {
 		})
 	}
 }
-
-
 
 func TestRemoveModel(t *testing.T) {
 	logger := log.New()
@@ -360,7 +357,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 				models: map[string]*Model{"model": &Model{
 					versions: []*ModelVersion{
 						{
-							config:   &pb.ModelDetails{Name: "model", Version: "1"},
+							config: &pb.ModelDetails{Name: "model", Version: "1"},
 							replicas: map[int]ReplicaStatus{
 								0: {State: Loaded},
 							},
@@ -391,7 +388,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 				models: map[string]*Model{"model": &Model{
 					versions: []*ModelVersion{
 						{
-							config:   &pb.ModelDetails{Name: "model", Version: "1"},
+							config: &pb.ModelDetails{Name: "model", Version: "1"},
 							replicas: map[int]ReplicaStatus{
 								0: {State: Unloaded},
 							},
@@ -425,7 +422,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 			if test.err == nil {
 				g.Expect(err).To(BeNil())
 				for replicaIdx, state := range test.expectedStates {
-					mv:= test.store.models[test.modelKey].GetVersion(test.version)
+					mv := test.store.models[test.modelKey].GetVersion(test.version)
 					g.Expect(mv).ToNot(BeNil())
 					g.Expect(mv.GetModelReplicaState(replicaIdx)).To(Equal(state.State))
 				}
@@ -553,7 +550,7 @@ func TestUpdateModelState(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			ms := NewMemoryStore(logger, test.store)
-			err := ms.UpdateModelState(test.modelKey, test.version, test.serverKey, test.replicaIdx, &test.availableMemory, test.state.State,"")
+			err := ms.UpdateModelState(test.modelKey, test.version, test.serverKey, test.replicaIdx, &test.availableMemory, test.state.State, "")
 			if test.err == nil {
 				g.Expect(err).To(BeNil())
 				if !test.deleted {
@@ -576,42 +573,42 @@ func TestUpdateModelStatus(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name            string
-		deleted bool
-		modelVersion *ModelVersion
-		prevModelVersion *ModelVersion
-		expectedState ModelState
-		expectedReason string
+		name                      string
+		deleted                   bool
+		modelVersion              *ModelVersion
+		prevModelVersion          *ModelVersion
+		expectedState             ModelState
+		expectedReason            string
 		expectedAvailableReplicas uint32
-		expectedTimestamp time.Time
+		expectedTimestamp         time.Time
 	}
-	d1 := time.Date(2021, 1,1,12 , 0 , 0, 0 ,time.UTC)
+	d1 := time.Date(2021, 1, 1, 12, 0, 0, 0, time.UTC)
 	r1 := "reason1"
-	d2 := time.Date(2021, 1,2,12 , 0 , 0, 0 ,time.UTC)
+	d2 := time.Date(2021, 1, 2, 12, 0, 0, 0, time.UTC)
 	r2 := "reason2"
-	tests := []test {
+	tests := []test{
 		{
-			name: "Available",
+			name:    "Available",
 			deleted: false,
 			modelVersion: NewModelVersion(
-				&pb.ModelDetails{Version:"1", Replicas: 1},
+				&pb.ModelDetails{Version: "1", Replicas: 1},
 				"server",
 				map[int]ReplicaStatus{
 					0: {State: Available, Reason: "", Timestamp: d1},
 				},
 				false,
 				ModelProgressing),
-			prevModelVersion: nil,
-			expectedState: ModelAvailable,
+			prevModelVersion:          nil,
+			expectedState:             ModelAvailable,
 			expectedAvailableReplicas: 1,
-			expectedReason: "",
-			expectedTimestamp: d1,
+			expectedReason:            "",
+			expectedTimestamp:         d1,
 		},
 		{
-			name: "Progressing",
+			name:    "Progressing",
 			deleted: false,
 			modelVersion: NewModelVersion(
-				&pb.ModelDetails{Version:"1", Replicas: 2},
+				&pb.ModelDetails{Version: "1", Replicas: 2},
 				"server",
 				map[int]ReplicaStatus{
 					0: {State: Available, Reason: "", Timestamp: d1},
@@ -619,34 +616,34 @@ func TestUpdateModelStatus(t *testing.T) {
 				},
 				false,
 				ModelProgressing),
-			prevModelVersion: nil,
-			expectedState: ModelProgressing,
+			prevModelVersion:          nil,
+			expectedState:             ModelProgressing,
 			expectedAvailableReplicas: 1,
-			expectedReason: "",
-			expectedTimestamp: d1,
+			expectedReason:            "",
+			expectedTimestamp:         d1,
 		},
 		{
-			name: "Failed",
+			name:    "Failed",
 			deleted: false,
 			modelVersion: NewModelVersion(
-				&pb.ModelDetails{Version:"1", Replicas: 1},
+				&pb.ModelDetails{Version: "1", Replicas: 1},
 				"server",
 				map[int]ReplicaStatus{
 					0: {State: LoadFailed, Reason: r1, Timestamp: d1},
 				},
 				false,
 				ModelProgressing),
-			prevModelVersion: nil,
-			expectedState: ModelFailed,
+			prevModelVersion:          nil,
+			expectedState:             ModelFailed,
 			expectedAvailableReplicas: 0,
-			expectedReason: r1,
-			expectedTimestamp: d1,
+			expectedReason:            r1,
+			expectedTimestamp:         d1,
 		},
 		{
-			name: "AvailableAndFailed",
+			name:    "AvailableAndFailed",
 			deleted: false,
 			modelVersion: NewModelVersion(
-				&pb.ModelDetails{Version:"1", Replicas: 2},
+				&pb.ModelDetails{Version: "1", Replicas: 2},
 				"server",
 				map[int]ReplicaStatus{
 					0: {State: Loaded, Reason: "", Timestamp: d1},
@@ -654,17 +651,17 @@ func TestUpdateModelStatus(t *testing.T) {
 				},
 				false,
 				ModelProgressing),
-			prevModelVersion: nil,
-			expectedState: ModelFailed,
+			prevModelVersion:          nil,
+			expectedState:             ModelFailed,
 			expectedAvailableReplicas: 0,
-			expectedReason: r1,
-			expectedTimestamp: d2,
+			expectedReason:            r1,
+			expectedTimestamp:         d2,
 		},
 		{
-			name: "TwoFailed",
+			name:    "TwoFailed",
 			deleted: false,
 			modelVersion: NewModelVersion(
-				&pb.ModelDetails{Version:"1", Replicas: 2},
+				&pb.ModelDetails{Version: "1", Replicas: 2},
 				"server",
 				map[int]ReplicaStatus{
 					0: {State: LoadFailed, Reason: r1, Timestamp: d1},
@@ -672,17 +669,17 @@ func TestUpdateModelStatus(t *testing.T) {
 				},
 				false,
 				ModelProgressing),
-			prevModelVersion: nil,
-			expectedState: ModelFailed,
+			prevModelVersion:          nil,
+			expectedState:             ModelFailed,
 			expectedAvailableReplicas: 0,
-			expectedReason: r2,
-			expectedTimestamp: d2,
+			expectedReason:            r2,
+			expectedTimestamp:         d2,
 		},
 		{
-			name: "AvailableV2",
+			name:    "AvailableV2",
 			deleted: false,
 			modelVersion: NewModelVersion(
-				&pb.ModelDetails{Version:"2", Replicas: 2},
+				&pb.ModelDetails{Version: "2", Replicas: 2},
 				"server",
 				map[int]ReplicaStatus{
 					0: {State: Loading, Reason: "", Timestamp: d1},
@@ -691,23 +688,23 @@ func TestUpdateModelStatus(t *testing.T) {
 				false,
 				ModelProgressing),
 			prevModelVersion: NewModelVersion(
-				&pb.ModelDetails{Version:"1", Replicas: 1},
+				&pb.ModelDetails{Version: "1", Replicas: 1},
 				"server",
 				map[int]ReplicaStatus{
 					0: {State: Available, Reason: "", Timestamp: d1},
 				},
 				false,
 				ModelAvailable),
-			expectedState: ModelAvailable,
+			expectedState:             ModelAvailable,
 			expectedAvailableReplicas: 1,
-			expectedReason: "",
-			expectedTimestamp: d2,
+			expectedReason:            "",
+			expectedTimestamp:         d2,
 		},
 		{
-			name: "Terminating",
+			name:    "Terminating",
 			deleted: true,
 			modelVersion: NewModelVersion(
-				&pb.ModelDetails{Version:"2", Replicas: 2},
+				&pb.ModelDetails{Version: "2", Replicas: 2},
 				"server",
 				map[int]ReplicaStatus{
 					0: {State: Unloading, Reason: "", Timestamp: d1},
@@ -715,16 +712,16 @@ func TestUpdateModelStatus(t *testing.T) {
 				},
 				true,
 				ModelProgressing),
-			expectedState: ModelTerminating,
+			expectedState:             ModelTerminating,
 			expectedAvailableReplicas: 0,
-			expectedReason: "",
-			expectedTimestamp: d2,
+			expectedReason:            "",
+			expectedTimestamp:         d2,
 		},
 		{
-			name: "Terminated",
+			name:    "Terminated",
 			deleted: true,
 			modelVersion: NewModelVersion(
-				&pb.ModelDetails{Version:"2", Replicas: 2},
+				&pb.ModelDetails{Version: "2", Replicas: 2},
 				"server",
 				map[int]ReplicaStatus{
 					0: {State: Unloaded, Reason: "", Timestamp: d1},
@@ -732,16 +729,16 @@ func TestUpdateModelStatus(t *testing.T) {
 				},
 				true,
 				ModelProgressing),
-			expectedState: ModelTerminated,
+			expectedState:             ModelTerminated,
 			expectedAvailableReplicas: 0,
-			expectedReason: "",
-			expectedTimestamp: d2,
+			expectedReason:            "",
+			expectedTimestamp:         d2,
 		},
 		{
-			name: "TerminateFailed",
+			name:    "TerminateFailed",
 			deleted: true,
 			modelVersion: NewModelVersion(
-				&pb.ModelDetails{Version:"2", Replicas: 2},
+				&pb.ModelDetails{Version: "2", Replicas: 2},
 				"server",
 				map[int]ReplicaStatus{
 					0: {State: UnloadFailed, Reason: r1, Timestamp: d1},
@@ -749,10 +746,10 @@ func TestUpdateModelStatus(t *testing.T) {
 				},
 				true,
 				ModelProgressing),
-			expectedState: ModelTerminateFailed,
+			expectedState:             ModelTerminateFailed,
 			expectedAvailableReplicas: 0,
-			expectedReason: r1,
-			expectedTimestamp: d1,
+			expectedReason:            r1,
+			expectedTimestamp:         d1,
 		},
 	}
 	for _, test := range tests {

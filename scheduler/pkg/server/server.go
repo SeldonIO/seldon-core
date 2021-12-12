@@ -3,9 +3,10 @@ package server
 import (
 	"context"
 	"fmt"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"net"
 	"sync"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent"
@@ -27,21 +28,20 @@ type SchedulerServer struct {
 	store        store.SchedulerStore
 	scheduler    scheduler2.Scheduler
 	agentHandler agent.AgentHandler
-	mutext sync.RWMutex
+	mutext       sync.RWMutex
 	EventStream
 }
 
 type EventStream struct {
-	streams map[pb.Scheduler_SubscribeModelStatusServer]*Subscription
-	chanEvent          chan string
+	streams   map[pb.Scheduler_SubscribeModelStatusServer]*Subscription
+	chanEvent chan string
 }
 
 type Subscription struct {
-	name string
+	name   string
 	stream pb.Scheduler_SubscribeModelStatusServer
-	fin chan bool
+	fin    chan bool
 }
-
 
 func (s *SchedulerServer) StartGrpcServer(schedulerPort uint) error {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", schedulerPort))
@@ -58,12 +58,12 @@ func (s *SchedulerServer) StartGrpcServer(schedulerPort uint) error {
 func NewSchedulerServer(logger log.FieldLogger, store store.SchedulerStore, scheduler scheduler2.Scheduler, agentHandler agent.AgentHandler) *SchedulerServer {
 
 	s := &SchedulerServer{
-		logger:       logger.WithField("source","SchedulerServer"),
+		logger:       logger.WithField("source", "SchedulerServer"),
 		store:        store,
 		scheduler:    scheduler,
 		agentHandler: agentHandler,
 		EventStream: EventStream{
-			streams: make(map[pb.Scheduler_SubscribeModelStatusServer]*Subscription),
+			streams:   make(map[pb.Scheduler_SubscribeModelStatusServer]*Subscription),
 			chanEvent: make(chan string, 1),
 		},
 	}
@@ -76,7 +76,7 @@ func (s *SchedulerServer) LoadModel(ctx context.Context, req *pb.LoadModelReques
 	logger.Debugf("Load model %s", req.GetModel().GetName())
 	exists := s.store.ExistsModelVersion(req.GetModel().Name, req.GetModel().Version)
 	if exists { //TODO check the model details match what we have otherwise error
-		logger.Infof("Model %s:%s already exists",req.GetModel().Name, req.Model.Version)
+		logger.Infof("Model %s:%s already exists", req.GetModel().Name, req.Model.Version)
 		return &pb.LoadModelResponse{}, nil
 	}
 	err := s.store.UpdateModel(req.GetModel())
@@ -119,10 +119,10 @@ func (s *SchedulerServer) ModelStatus(ctx context.Context, reference *pb.ModelRe
 		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("Failed to find model %s", reference.Name))
 	}
 	stateMap := make(map[int32]*pb.ModelReplicaStatus)
-	for k,v := range latestModel.ReplicaState() {
+	for k, v := range latestModel.ReplicaState() {
 		stateMap[int32(k)] = &pb.ModelReplicaStatus{
-			State: pb.ModelReplicaStatus_ModelReplicaState(pb.ModelReplicaStatus_ModelReplicaState_value[v.State.String()]),
-			Reason: v.Reason,
+			State:     pb.ModelReplicaStatus_ModelReplicaState(pb.ModelReplicaStatus_ModelReplicaState_value[v.State.String()]),
+			Reason:    v.Reason,
 			Timestamp: timestamppb.New(v.Timestamp),
 		}
 	}
@@ -135,12 +135,12 @@ func (s *SchedulerServer) ModelStatus(ctx context.Context, reference *pb.ModelRe
 		ModelName:         reference.Name,
 		Version:           latestModel.GetVersion(),
 		ServerName:        latestModel.Server(),
-		Namespace: namespace,
+		Namespace:         namespace,
 		ModelReplicaState: stateMap,
 		State: &pb.ModelStatus{
-			State: pb.ModelStatus_ModelState(pb.ModelStatus_ModelState_value[modelState.State.String()]),
-			Reason: modelState.Reason,
-			Timestamp: timestamppb.New(modelState.Timestamp),
+			State:             pb.ModelStatus_ModelState(pb.ModelStatus_ModelState_value[modelState.State.String()]),
+			Reason:            modelState.Reason,
+			Timestamp:         timestamppb.New(modelState.Timestamp),
 			AvailableReplicas: modelState.AvailableReplicas,
 		},
 	}, nil

@@ -2,20 +2,21 @@ package server
 
 import (
 	"context"
+
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 )
 
 func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest, stream pb.Scheduler_SubscribeModelStatusServer) error {
 	logger := s.logger.WithField("func", "SubscribeModelStatus")
-	logger.Infof("Received subscribe request from %s",req.GetName())
+	logger.Infof("Received subscribe request from %s", req.GetName())
 
 	fin := make(chan bool)
 
 	s.mutext.Lock()
 	s.streams[stream] = &Subscription{
-		name: req.Name,
+		name:   req.Name,
 		stream: stream,
-		fin: fin,
+		fin:    fin,
 	}
 	s.mutext.Unlock()
 
@@ -39,7 +40,7 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 func (s *SchedulerServer) ListenForEvents() {
 	logger := s.logger.WithField("func", "listenForEvents")
 	for modelName := range s.chanEvent {
-		logger.Infof("Got model state change for %s",modelName)
+		logger.Infof("Got model state change for %s", modelName)
 		modelName := modelName
 		go func() {
 			err := s.ModelStatusEvent(modelName)
@@ -55,16 +56,16 @@ func (s *SchedulerServer) StopListenForEvents() {
 }
 
 func (s *SchedulerServer) ModelStatusEvent(modelName string) error {
-	logger := s.logger.WithField("func","ModelStatusEvent")
+	logger := s.logger.WithField("func", "ModelStatusEvent")
 	ms, err := s.ModelStatus(context.Background(), &pb.ModelReference{Name: modelName})
 	if err != nil {
-		logger.WithError(err).Errorf("Failed to create model status for model %s",modelName)
+		logger.WithError(err).Errorf("Failed to create model status for model %s", modelName)
 		return err
 	}
-	for stream,subscription := range s.streams {
+	for stream, subscription := range s.streams {
 		err := stream.Send(ms)
 		if err != nil {
-			logger.WithError(err).Errorf("Failed to send model status event to %s",subscription.name)
+			logger.WithError(err).Errorf("Failed to send model status event to %s", subscription.name)
 		}
 	}
 	return nil

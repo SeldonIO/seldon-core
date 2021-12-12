@@ -1,10 +1,11 @@
 package store
 
 import (
+	"time"
+
 	pba "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	"google.golang.org/protobuf/proto"
-	"time"
 )
 
 type LocalSchedulerStore struct {
@@ -22,8 +23,8 @@ func NewLocalSchedulerStore() *LocalSchedulerStore {
 }
 
 type Model struct {
-	versions   []*ModelVersion
-	deleted    bool
+	versions []*ModelVersion
+	deleted  bool
 }
 
 type ModelVersion struct {
@@ -35,7 +36,7 @@ type ModelVersion struct {
 }
 
 type ModelStatus struct {
-	State             ModelState
+	State               ModelState
 	Reason              string
 	AvailableReplicas   uint32
 	UnavailableReplicas uint32
@@ -43,8 +44,8 @@ type ModelStatus struct {
 }
 
 type ReplicaStatus struct {
-	State  ModelReplicaState
-	Reason string
+	State     ModelReplicaState
+	Reason    string
 	Timestamp time.Time
 }
 
@@ -413,4 +414,3 @@ func (s *ServerReplica) GetInferenceHttpPort() int32 {
 func (s *ServerReplica) GetInferenceGrpcPort() int32 {
 	return s.inferenceGrpcPort
 }
-

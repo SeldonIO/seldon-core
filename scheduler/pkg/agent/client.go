@@ -105,7 +105,7 @@ func NewClient(serverName string,
 }
 
 func (c *Client) Start(configHandler *AgentConfigHandler) error {
-	logger := c.logger.WithField("func","Start")
+	logger := c.logger.WithField("func", "Start")
 	if configHandler == nil {
 		return fmt.Errorf("configHandler is nil. Can't start client grpc server.")
 	}

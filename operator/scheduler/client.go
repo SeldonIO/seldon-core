@@ -4,14 +4,15 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"math"
+	"time"
+
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	"knative.dev/pkg/apis"
-	"math"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"time"
 
 	"github.com/go-logr/logr"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"

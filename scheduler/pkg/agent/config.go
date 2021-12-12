@@ -132,7 +132,7 @@ func (a *AgentConfigHandler) getConfiguration() *AgentConfiguration {
 }
 
 func (a *AgentConfigHandler) updateConfig(configData []byte) error {
-	logger := a.logger.WithField("func","updateConfig")
+	logger := a.logger.WithField("func", "updateConfig")
 	logger.Infof("Updating config %s", configData)
 	a.mu.Lock()
 	defer a.mu.Unlock()
@@ -142,7 +142,7 @@ func (a *AgentConfigHandler) updateConfig(configData []byte) error {
 		return err
 	}
 	if config.Rclone != nil {
-		logger.Infof("Rclone Config loaded %v",config.Rclone)
+		logger.Infof("Rclone Config loaded %v", config.Rclone)
 	}
 	a.config = &config
 	return nil

@@ -5,7 +5,7 @@ import (
 )
 
 func TestReplicaStateToString(t *testing.T) {
-	for _,state := range replicaStates {
+	for _, state := range replicaStates {
 		_ = state.String()
 	}
 }

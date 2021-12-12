@@ -19,8 +19,9 @@ package main
 import (
 	"context"
 	"flag"
-	"k8s.io/client-go/tools/record"
 	"os"
+
+	"k8s.io/client-go/tools/record"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1"
 	mlopscontrollers "github.com/seldonio/seldon-core/operatorv2/controllers/mlops"
