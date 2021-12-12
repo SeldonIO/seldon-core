@@ -124,7 +124,7 @@ func (c *Client) Start(configHandler *AgentConfigHandler) error {
 	// Start config listener
 	go c.listenForConfigUpdates()
 	// Add ourself as listener on channel and handle initial config
-	logger.Info("Loadining initial rclone configuration")
+	logger.Info("Loading initial rclone configuration")
 	err = c.loadRcloneConfiguration(configHandler.AddListener(c.configChan))
 	if err != nil {
 		c.logger.WithError(err).Fatal("Failed to load rclone defaults")

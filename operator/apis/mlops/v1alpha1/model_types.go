@@ -106,6 +106,7 @@ func init() {
 	SchemeBuilder.Register(&Model{}, &ModelList{})
 }
 
+// Method to convert Model resource to scheduler proto for communication with Scheduler
 func (m Model) AsModelDetails() (*scheduler.ModelDetails, error) {
 	md := &scheduler.ModelDetails{
 		Name:         m.Name,
@@ -154,7 +155,6 @@ const (
 	SeldonMeshReady  apis.ConditionType = "SeldonMeshReady"
 )
 
-// InferenceService Ready condition is depending on predictor and route readiness condition
 var conditionSet = apis.NewLivingConditionSet(
 	DeploymentsReady,
 	SeldonMeshReady,
@@ -166,17 +166,14 @@ func (ms *ModelStatus) InitializeConditions() {
 	conditionSet.Manage(ms).InitializeConditions()
 }
 
-// IsReady returns if the service is ready to serve the requested configuration.
 func (ss *ModelStatus) IsReady() bool {
 	return conditionSet.Manage(ss).IsHappy()
 }
 
-// GetCondition returns the condition by name.
 func (ms *ModelStatus) GetCondition(t apis.ConditionType) *apis.Condition {
 	return conditionSet.Manage(ms).GetCondition(t)
 }
 
-// IsConditionReady returns the readiness for a given condition
 func (ss *ModelStatus) IsConditionReady(t apis.ConditionType) bool {
 	return conditionSet.Manage(ss).GetCondition(t) != nil && conditionSet.Manage(ss).GetCondition(t).Status == v1.ConditionTrue
 }
