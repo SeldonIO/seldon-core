@@ -227,7 +227,7 @@ func (m *MemoryStore) UpdateModelState(modelKey string, version string, serverKe
 	isLatest := latestModel.GetVersion() == modelVersion.GetVersion()
 	m.updateModelStatus(isLatest, model.isDeleted(), modelVersion, model.Previous())
 	logger.Infof("Model %s deleted %v active %v",modelKey, model.isDeleted(), model.Inactive())
-	if model.isDeleted() && model.Inactive() {
+	if model.isDeleted() && model.Inactive() { //TODO probably needs further work when versions of models correctly handled
 		logger.Debugf("Deleting model %s as inactive", modelKey)
 		delete(m.store.models, modelKey)
 	}

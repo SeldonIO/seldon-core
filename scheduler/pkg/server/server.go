@@ -58,7 +58,7 @@ func (s *SchedulerServer) StartGrpcServer(schedulerPort uint) error {
 func NewSchedulerServer(logger log.FieldLogger, store store.SchedulerStore, scheduler scheduler2.Scheduler, agentHandler agent.AgentHandler) *SchedulerServer {
 
 	s := &SchedulerServer{
-		logger:       logger.WithField("Source","SchedulerServer"),
+		logger:       logger.WithField("source","SchedulerServer"),
 		store:        store,
 		scheduler:    scheduler,
 		agentHandler: agentHandler,

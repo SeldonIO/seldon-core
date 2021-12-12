@@ -3,10 +3,7 @@ kind: ConfigMap
 metadata:
   name: agent
 data:
-  agent.json: |-
-    {
-       "rclone" : {
-           "config_secrets": ["seldon-rclone-gs-public"]
-       },
-    }
+  agent.yaml: |-
+    rclone: 
+      config_secrets: ["seldon-rclone-gs-public"]
 

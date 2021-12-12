@@ -6,7 +6,7 @@ import (
 )
 
 func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest, stream pb.Scheduler_SubscribeModelStatusServer) error {
-	logger := s.logger.WithField("func", "Subscribe")
+	logger := s.logger.WithField("func", "SubscribeModelStatus")
 	logger.Infof("Received subscribe request from %s",req.GetName())
 
 	fin := make(chan bool)

@@ -3,7 +3,7 @@ package agent
 import "github.com/seldonio/seldon-core/scheduler/pkg/agent/k8s"
 
 func (c *Client) loadRcloneConfiguration(config *AgentConfiguration) error {
-	logger := c.logger.WithField("func", "loadRcloneDefaults")
+	logger := c.logger.WithField("func", "loadRcloneConfiguration")
 	var rcloneNamesAdded []string
 	var err error
 	if config != nil {
@@ -29,6 +29,8 @@ func (c *Client) loadRcloneConfiguration(config *AgentConfiguration) error {
 			return err
 		}
 		logger.Infof("After update current set of remotes is %v", existingRemotes)
+	} else {
+		logger.Warn("nil config passed")
 	}
 	return nil
 }

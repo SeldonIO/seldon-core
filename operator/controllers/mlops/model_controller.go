@@ -95,7 +95,7 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	stop, err := r.handleFinalizer(ctx, model)
 	if stop {
-		return  reconcile.Result{}, err
+		return reconcile.Result{}, err
 	}
 
 	err = r.Scheduler.LoadModel(ctx, model)

@@ -100,7 +100,7 @@ func (s *SchedulerClient) SubscribeEvents(ctx context.Context) error {
 	logger := s.logger.WithName("SubscribeEvent")
 	grcpClient := scheduler.NewSchedulerClient(s.conn)
 
-	stream, err := grcpClient.SubscribeModelStatus(ctx, &scheduler.ModelSubscriptionRequest{Name: "seldon manager"}, grpc_retry.WithMax(10))
+	stream, err := grcpClient.SubscribeModelStatus(ctx, &scheduler.ModelSubscriptionRequest{Name: "seldon manager"}, grpc_retry.WithMax(1))
 	if err != nil {
 		return err
 	}
@@ -113,7 +113,7 @@ func (s *SchedulerClient) SubscribeEvents(ctx context.Context) error {
 			logger.Error(err, "event recv failed")
 			return err
 		}
-		logger.Info("Received event", "name", event.ModelName, "version", event.Version, "state", event.State.State, "reason", event.State.Reason)
+		logger.Info("Received event", "name", event.ModelName, "version", event.Version, "state", event.State.State.String(), "reason", event.State.Reason)
 		model := &mlopsv1alpha1.Model{}
 		err = s.Get(ctx, client.ObjectKey{Name: event.ModelName, Namespace: event.Namespace}, model)
 		if err != nil {

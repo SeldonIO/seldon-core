@@ -24,7 +24,7 @@ func TestAsModelDetails(t *testing.T) {
 	modelType := "sklearn"
 	server := "server"
 	m1 := resource.MustParse("1M")
-	m1bytes := uint64(100000)
+	m1bytes := uint64(1000000)
 	tests := []test{
 		{
 			name: "simple",
@@ -53,6 +53,7 @@ func TestAsModelDetails(t *testing.T) {
 			model: &Model{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:            "foo",
+					Namespace:       "default",
 					ResourceVersion: "1",
 				},
 				Spec: ModelSpec{
@@ -68,14 +69,15 @@ func TestAsModelDetails(t *testing.T) {
 				},
 			},
 			modelDetails: &scheduler.ModelDetails{
-				Name:          "foo",
-				Version:       "1",
-				Uri:           "gs://test",
-				Replicas:      4,
-				Requirements:  []string{"a", "b", modelType},
-				StorageConfig: &scheduler.StorageConfig{Config: &scheduler.StorageConfig_StorageSecretName{StorageSecretName: "secret"}},
-				Server:        &server,
-				LogPayloads:   true,
+				Name:             "foo",
+				Version:          "1",
+				Uri:              "gs://test",
+				Replicas:         4,
+				Requirements:     []string{"a", "b", modelType},
+				StorageConfig:    &scheduler.StorageConfig{Config: &scheduler.StorageConfig_StorageSecretName{StorageSecretName: "secret"}},
+				Server:           &server,
+				LogPayloads:      true,
+				KubernetesConfig: &scheduler.KubernetesConfig{Namespace: "default"},
 			},
 		},
 		{
@@ -83,6 +85,7 @@ func TestAsModelDetails(t *testing.T) {
 			model: &Model{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:            "foo",
+					Namespace:       "default",
 					ResourceVersion: "1",
 				},
 				Spec: ModelSpec{
@@ -93,11 +96,12 @@ func TestAsModelDetails(t *testing.T) {
 				},
 			},
 			modelDetails: &scheduler.ModelDetails{
-				Name:        "foo",
-				Version:     "1",
-				Uri:         "gs://test",
-				Replicas:    1,
-				MemoryBytes: &m1bytes,
+				Name:             "foo",
+				Version:          "1",
+				Uri:              "gs://test",
+				Replicas:         1,
+				MemoryBytes:      &m1bytes,
+				KubernetesConfig: &scheduler.KubernetesConfig{Namespace: "default"},
 			},
 		},
 	}

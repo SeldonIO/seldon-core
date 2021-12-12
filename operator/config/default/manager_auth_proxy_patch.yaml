@@ -25,3 +25,6 @@ spec:
         - "--health-probe-bind-address=:8081"
         - "--metrics-bind-address=127.0.0.1:8080"
         - "--leader-elect"
+        - "--scheduler-host=$(SELDON_SCHEDULER_SVC)"
+        - "--scheduler-port=$(SELDON_SCHEDULER_PORT)"
+
