@@ -1,12 +1,12 @@
 import os
 import time
+
 import pytest
+from conftest import RESOURCES_PATH
 
 from e2e_utils import v2_protocol
 from e2e_utils.models import deploy_model
 from seldon_e2e_utils import retry_run, wait_for_rollout, wait_for_status
-
-from conftest import RESOURCES_PATH
 
 
 @pytest.mark.parametrize("use_grpc", [True, False])
