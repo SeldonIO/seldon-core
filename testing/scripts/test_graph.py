@@ -9,8 +9,7 @@ from seldon_e2e_utils import retry_run, wait_for_rollout, wait_for_status
 from conftest import RESOURCES_PATH
 
 
-#  @pytest.mark.parametrize("use_grpc", [True, False])
-@pytest.mark.parametrize("use_grpc", [True])
+@pytest.mark.parametrize("use_grpc", [True, False])
 def test_graph_v2(namespace: str, use_grpc: bool):
     sdep_name = "graph-test"
     spec = os.path.join(RESOURCES_PATH, "graph-v2.yaml")
