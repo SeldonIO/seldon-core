@@ -112,11 +112,15 @@ func (s *KFServingGrpcClient) Chain(ctx context.Context, modelName string, msg p
 	switch v := msg.GetPayload().(type) {
 	case *inference.ModelInferRequest:
 		s.Log.Info("Identity chain")
+		if v.ModelName == "" {
+			v.ModelName = modelName
+		}
+
 		return msg, nil
 	case *inference.ModelInferResponse:
 		s.Log.Info("Chain!")
+
 		inputTensors := make([]*inference.ModelInferRequest_InferInputTensor, len(v.Outputs))
-		fmt.Println(len(inputTensors))
 		for idx, oTensor := range v.Outputs {
 			inputTensor := &inference.ModelInferRequest_InferInputTensor{
 				Name:       oTensor.Name,
@@ -127,6 +131,7 @@ func (s *KFServingGrpcClient) Chain(ctx context.Context, modelName string, msg p
 			}
 			inputTensors[idx] = inputTensor
 		}
+
 		pr := inference.ModelInferRequest{
 			ModelName: modelName,
 			Inputs:    inputTensors,

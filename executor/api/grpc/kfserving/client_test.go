@@ -52,6 +52,34 @@ func TestChain(t *testing.T) {
 			},
 		},
 		{
+			name: "ensure that request's model name is always set",
+			msg: &payload.ProtoPayload{
+				Msg: &inference.ModelInferRequest{
+					Inputs: []*inference.ModelInferRequest_InferInputTensor{
+						{
+							Name:     "input-1",
+							Datatype: "INT32",
+							Shape:    []int64{1},
+							Contents: &inference.InferTensorContents{IntContents: []int32{1}},
+						},
+					},
+				},
+			},
+			expected: &payload.ProtoPayload{
+				Msg: &inference.ModelInferRequest{
+					ModelName: nextModelName,
+					Inputs: []*inference.ModelInferRequest_InferInputTensor{
+						{
+							Name:     "input-1",
+							Datatype: "INT32",
+							Shape:    []int64{1},
+							Contents: &inference.InferTensorContents{IntContents: []int32{1}},
+						},
+					},
+				},
+			},
+		},
+		{
 			name: "response should be chained",
 			msg: &payload.ProtoPayload{
 				Msg: &inference.ModelInferResponse{
