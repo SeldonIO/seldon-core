@@ -16,3 +16,6 @@ tabulate==0.8.7
 
 # 2nd lvl dep on cov required to avoid sqllite dep
 coverage==4.5.4
+
+# Required to build mock test images
+mlserver==1.0.0.rc1
