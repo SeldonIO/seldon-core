@@ -41,7 +41,11 @@ def inference_request(
     return response.json()
 
 
-# TODO: Retry for gRPC errors
+@retry(
+    wait=wait_exponential(multiplier=1),
+    stop=stop_after_attempt(3),
+    retry=retry_if_exception_type(grpc.RpcError),
+)
 def inference_request_grpc(
     deployment_name: str,
     namespace: str,
