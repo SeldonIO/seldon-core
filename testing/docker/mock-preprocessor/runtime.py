@@ -16,7 +16,7 @@ class MockPreprocessor(MLModel):
                     name="input-0",
                     shape=[1, 4],
                     datatype="FP32",
-                    data=[[0.1, 0.2, 0.3, 0.4]],
+                    data=[0.1, 0.2, 0.3, 0.4],
                 )
             ],
         )
