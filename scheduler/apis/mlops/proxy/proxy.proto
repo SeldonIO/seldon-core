@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package seldon.mlops.proxy;
+
+option go_package = "github.com/seldonio/seldon-core/scheduler/apis/mlops/proxy";
+
+import "scheduler.proto";
+
+// [START Messages]
+
+message LoadModelRequest {
+  //repeated string agents = 1;
+  seldon.mlops.scheduler.LoadModelRequest request = 1;
+}
+
+message LoadModelResponse {
+}
+
+message UnloadModelRequest {
+  //repeated string agents = 1;
+  seldon.mlops.scheduler.ModelReference model = 1;
+}
+
+message UnloadModelResponse {
+}
+
+// [END Messages]
+
+// [START Services]
+
+service SchedulerProxy {
+    rpc LoadModel(LoadModelRequest) returns (LoadModelResponse) {};
+    rpc UnloadModel(UnloadModelRequest) returns (UnloadModelResponse) {};
+}
+
+// [END Services]
