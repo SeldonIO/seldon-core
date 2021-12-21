@@ -17,6 +17,7 @@ COPY api/ api/
 COPY predictor/ predictor/
 COPY logger/ logger/
 COPY k8s/ k8s/
+COPY certs/ certs/
 
 # Build
 RUN go build -a -o executor cmd/executor/main.go
@@ -55,6 +56,7 @@ RUN chmod -R 660 /openapi/
 FROM gcr.io/distroless/base-debian10:latest
 WORKDIR /
 COPY --from=builder /workspace/executor .
+COPY --from=builder /workspace/certs/ /certs/
 COPY licenses/license.txt licenses/license.txt
 COPY --from=builder /workspace/*.tar.gz licenses/mpl_source/
 

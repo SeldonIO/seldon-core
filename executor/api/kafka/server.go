@@ -2,6 +2,13 @@ package kafka
 
 import (
 	"fmt"
+	"net/url"
+	"os"
+	"os/signal"
+	"reflect"
+	"syscall"
+	"time"
+
 	"github.com/cloudevents/sdk-go/pkg/bindings/http"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/go-logr/logr"
@@ -15,12 +22,6 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/rest"
 	"github.com/seldonio/seldon-core/executor/predictor"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	"net/url"
-	"os"
-	"os/signal"
-	"reflect"
-	"syscall"
-	"time"
 )
 
 const (
@@ -29,11 +30,12 @@ const (
 )
 
 const (
-	ENV_KAFKA_BROKER       = "KAFKA_BROKER"
-	ENV_KAFKA_INPUT_TOPIC  = "KAFKA_INPUT_TOPIC"
-	ENV_KAFKA_OUTPUT_TOPIC = "KAFKA_OUTPUT_TOPIC"
-	ENV_KAFKA_FULL_GRAPH   = "KAFKA_FULL_GRAPH"
-	ENV_KAFKA_WORKERS      = "KAFKA_WORKERS"
+	ENV_KAFKA_BROKER            = "KAFKA_BROKER"
+	ENV_KAFKA_INPUT_TOPIC       = "KAFKA_INPUT_TOPIC"
+	ENV_KAFKA_OUTPUT_TOPIC      = "KAFKA_OUTPUT_TOPIC"
+	ENV_KAFKA_FULL_GRAPH        = "KAFKA_FULL_GRAPH"
+	ENV_KAFKA_WORKERS           = "KAFKA_WORKERS"
+	ENV_KAFKA_SECURITY_PROTOCOL = "KAFKA_SECURITY_PROTOCOL"
 )
 
 type SeldonKafkaServer struct {
@@ -49,6 +51,7 @@ type SeldonKafkaServer struct {
 	ServerUrl      *url.URL
 	Workers        int
 	Log            logr.Logger
+	// KafkaSecurityProtocol string
 }
 
 func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, protocol, transport string, annotations map[string]string, serverUrl *url.URL, predictor *v1.PredictorSpec, broker, topicIn, topicOut string, log logr.Logger) (*SeldonKafkaServer, error) {
@@ -81,6 +84,13 @@ func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, prot
 	log.Info("Creating producer", "broker", broker)
 	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": broker,
 		"go.delivery.reports": false, // Need this othewise will get memory leak
+		// "debug":               "security,broker",
+		// "ssl.key.location":         "/certs/client.pem",
+		// "ssl.key.password":         "test1234",
+		"security.protocol":        "SSL",
+		"ssl.ca.location":          "/certs/access_cert_wolt_overview.cert",
+		"ssl.key.location":         "/certs/access_key_overview.key",
+		"ssl.certificate.location": "/certs/ca_overview.pem",
 	})
 	if err != nil {
 		return nil, err

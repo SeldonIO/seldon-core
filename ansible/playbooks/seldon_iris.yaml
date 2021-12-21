@@ -1,0 +1,37 @@
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: seldon-deployment-example
+spec:
+  name: sklearn-iris-deployment
+  predictors:
+    - componentSpecs:
+        - spec:
+            containers:
+              - image: seldonio/sklearn-iris:0.2
+                imagePullPolicy: IfNotPresent
+                name: sklearn-iris-classifier
+      graph:
+        logger:
+          mode: response
+        children: []
+        endpoint:
+          type: REST
+        name: sklearn-iris-classifier
+        type: MODEL
+      name: sklearn-iris-predictor
+      svcOrchSpec:
+        env:
+          - name: LOGGER_KAFKA_BROKER
+            value: kafka-development-dev-development.aivencloud.com:24925
+          - name: LOGGER_KAFKA_TOPIC
+            value: ml_estimates.prep_time_estimate
+          - name: KAFKA_SSL_CA_CERT_FILE
+            value: /certs/ca_overview.pem
+          - name: KAFKA_SSL_CLIENT_CERT_FILE
+            value: /certs/ca_wolt.cert
+          - name: KAFKA_SSL_CLIENT_KEY_FILE
+            value: /certs/ca_wolt.key
+          - name: SELDON_LOG_LEVEL
+            value: DEBUG
+      replicas: 1

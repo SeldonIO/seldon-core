@@ -31,16 +31,29 @@ const (
 // NewWorker creates, and returns a new Worker object. Its only argument
 // is a channel that the worker can add itself to whenever it is done its
 // work.
-func NewWorker(id int, workQueue chan LogRequest, log logr.Logger, sdepName string, namespace string, predictorName string, kafkaBroker string, kafkaTopic string) (*Worker, error) {
+func NewWorker(id int, workQueue chan LogRequest, log logr.Logger, sdepName string, namespace string, predictorName string, kafkaBroker string, kafkaTopic string, sslKakfa SslKakfa) (*Worker, error) {
 
 	var producer *kafka.Producer
 	var err error
 	if kafkaBroker != "" {
 		log.Info("Creating producer", "broker", kafkaBroker, "topic", kafkaTopic)
-		producer, err = kafka.NewProducer(&kafka.ConfigMap{
-			"bootstrap.servers":   kafkaBroker,
+		var producerConfigMap = kafka.ConfigMap{"bootstrap.servers": kafkaBroker,
 			"go.delivery.reports": false, // Need this othewise will get memory leak
-		})
+		}
+		log.Info("kafkaSecurityProtocol", "kafkaSecurityProtocol", sslKakfa.kafkaSecurityProtocol)
+		if kafkaBroker != "" {
+			if sslKakfa.kafkaSecurityProtocol != "" {
+
+				// producerConfigMap["debug"] = "security,broker,protocol,metadata,topic"
+				producerConfigMap["security.protocol"] = sslKakfa.kafkaSecurityProtocol
+				producerConfigMap["ssl.ca.location"] = sslKakfa.kafkaSslCACertFile
+				producerConfigMap["ssl.key.location"] = sslKakfa.kafkaSslClientKeyFile
+				producerConfigMap["ssl.certificate.location"] = sslKakfa.kafkaSslClientCertFile
+				producerConfigMap["ssl.key.password"] = sslKakfa.kafkaSslClientKeyPass // Key password, if any
+
+			}
+		}
+		producer, err = kafka.NewProducer(&producerConfigMap)
 		if err != nil {
 			return nil, err
 		}
@@ -94,7 +107,7 @@ func getCEType(logReq LogRequest) (string, error) {
 }
 
 func (w *Worker) sendKafkaEvent(logReq LogRequest) error {
-
+	w.Log.Info("SENDING KAFKA EVENT", "LogReq", logReq)
 	reqType, err := getCEType(logReq)
 	if err != nil {
 		return err
@@ -109,12 +122,15 @@ func (w *Worker) sendKafkaEvent(logReq LogRequest) error {
 		{Key: NamespaceAttr, Value: []byte(w.Namespace)},
 		{Key: EndpointAttr, Value: []byte(w.PredictorName)},
 	}
-
+	w.Log.Info("kafkaHeaders is", "kafkaHeaders", kafkaHeaders)
 	err = w.Producer.Produce(&kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &w.KafkaTopic, Partition: kafka.PartitionAny},
 		Value:          *logReq.Bytes,
 		Headers:        kafkaHeaders,
 	}, nil)
+	w.Log.Info("Topic Partition:", "topic", kafka.TopicPartition{Topic: &w.KafkaTopic, Partition: kafka.PartitionAny})
+	w.Log.Info("Value:", "logReqBytes", *logReq.Bytes)
+	w.Log.Info("Kafka Headers:", "headers", kafkaHeaders)
 	if err != nil {
 		w.Log.Error(err, "Failed to produce response")
 		return err
@@ -187,6 +203,7 @@ func (w *Worker) Start() {
 				// Receive a work request.
 
 				if w.KafkaTopic != "" {
+					w.Log.Info("KAFKA TOPIC IS NOT NULL", "Topic", w.KafkaTopic)
 					if err := w.sendKafkaEvent(work); err != nil {
 						w.Log.Error(err, "Failed to send kafka log", "Topic", w.KafkaTopic)
 					}

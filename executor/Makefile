@@ -8,7 +8,7 @@ IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
 
 EXECUTOR_FOLDERS ?= ./api/... ./predictor/... ./k8s/... ./logger/...
 
-KIND_NAME ?= kind
+KIND_NAME ?= ansible
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
