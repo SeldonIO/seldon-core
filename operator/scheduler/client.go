@@ -114,21 +114,26 @@ func (s *SchedulerClient) SubscribeEvents(ctx context.Context) error {
 			logger.Error(err, "event recv failed")
 			return err
 		}
-		logger.Info("Received event", "name", event.ModelName, "version", event.Version, "state", event.State.State.String(), "reason", event.State.Reason)
-		model := &mlopsv1alpha1.Model{}
-		err = s.Get(ctx, client.ObjectKey{Name: event.ModelName, Namespace: event.Namespace}, model)
-		if err != nil {
-			logger.Error(err, "Failed to get model", "name", event.ModelName, "namespace", event.Namespace)
+		if event.Namespace == nil {
+			logger.Info("Received event with nil namespace", "model", event.ModelName)
+
 		} else {
-			switch event.State.State {
-			case scheduler.ModelStatus_ModelAvailable:
-				model.Status.CreateAndSetCondition(mlopsv1alpha1.SeldonMeshReady, true, event.State.Reason)
-			default:
-				model.Status.CreateAndSetCondition(mlopsv1alpha1.SeldonMeshReady, false, event.State.Reason)
-			}
-			err = s.updateStatus(model)
+			logger.Info("Received event", "name", event.ModelName, "version", event.Version, "state", event.State.State.String(), "reason", event.State.Reason)
+			model := &mlopsv1alpha1.Model{}
+			err = s.Get(ctx, client.ObjectKey{Name: event.ModelName, Namespace: *event.Namespace}, model)
 			if err != nil {
-				logger.Error(err, "Failed to update status")
+				logger.Error(err, "Failed to get model", "name", event.ModelName, "namespace", event.Namespace)
+			} else {
+				switch event.State.State {
+				case scheduler.ModelStatus_ModelAvailable:
+					model.Status.CreateAndSetCondition(mlopsv1alpha1.SeldonMeshReady, true, event.State.Reason)
+				default:
+					model.Status.CreateAndSetCondition(mlopsv1alpha1.SeldonMeshReady, false, event.State.Reason)
+				}
+				err = s.updateStatus(model)
+				if err != nil {
+					logger.Error(err, "Failed to update status")
+				}
 			}
 		}
 	}
