@@ -20,6 +20,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/grpc/tensorflow"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/api/rest"
+	"github.com/seldonio/seldon-core/executor/api/util"
 	"github.com/seldonio/seldon-core/executor/predictor"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 )
@@ -38,6 +39,14 @@ const (
 	ENV_KAFKA_SECURITY_PROTOCOL = "KAFKA_SECURITY_PROTOCOL"
 )
 
+type SslKakfa struct {
+	kafkaSslClientCertFile string
+	kafkaSslClientKeyFile  string
+	kafkaSslCACertFile     string
+	kafkaSecurityProtocol  string
+	kafkaSslClientKeyPass  string
+}
+
 type SeldonKafkaServer struct {
 	Client         client.SeldonApiClient
 	Producer       *kafka.Producer
@@ -52,6 +61,17 @@ type SeldonKafkaServer struct {
 	Workers        int
 	Log            logr.Logger
 	// KafkaSecurityProtocol string
+}
+
+func getSslElements() *SslKakfa {
+	sslElements := SslKakfa{
+		kafkaSslClientCertFile: util.GetEnv("KAFKA_SSL_CLIENT_CERT_FILE", ""),
+		kafkaSslClientKeyFile:  util.GetEnv("KAFKA_SSL_CLIENT_KEY_FILE", ""),
+		kafkaSslCACertFile:     util.GetEnv("KAFKA_SSL_CA_CERT_FILE", ""),
+		kafkaSecurityProtocol:  util.GetEnv("KAFKA_SECURITY_PROTOCOL", ""),
+		kafkaSslClientKeyPass:  util.GetEnv("KAFKA_SSL_CLIENT_KEY_PASS", ""),
+	}
+	return &sslElements
 }
 
 func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, protocol, transport string, annotations map[string]string, serverUrl *url.URL, predictor *v1.PredictorSpec, broker, topicIn, topicOut string, log logr.Logger) (*SeldonKafkaServer, error) {
@@ -79,19 +99,24 @@ func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, prot
 			return nil, fmt.Errorf("Unknown transport %s", transport)
 		}
 	}
+	sslKakfaServer := getSslElements()
+	var producerConfigMap = kafka.ConfigMap{"bootstrap.servers": broker,
+		"go.delivery.reports": false, // Need this othewise will get memory leak
+	}
+	if broker != "" {
+		if sslKakfaServer.kafkaSecurityProtocol != "" {
+			// producerConfigMap["debug"] = "security,broker,protocol,metadata,topic"
+			producerConfigMap["security.protocol"] = sslKakfaServer.kafkaSecurityProtocol
+			producerConfigMap["ssl.ca.location"] = sslKakfaServer.kafkaSslCACertFile
+			producerConfigMap["ssl.key.location"] = sslKakfaServer.kafkaSslClientKeyFile
+			producerConfigMap["ssl.certificate.location"] = sslKakfaServer.kafkaSslClientCertFile
+			producerConfigMap["ssl.key.password"] = sslKakfaServer.kafkaSslClientKeyPass // Key password, if any
 
+		}
+	}
 	// Create Producer
 	log.Info("Creating producer", "broker", broker)
-	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": broker,
-		"go.delivery.reports": false, // Need this othewise will get memory leak
-		// "debug":               "security,broker",
-		// "ssl.key.location":         "/certs/client.pem",
-		// "ssl.key.password":         "test1234",
-		"security.protocol":        "SSL",
-		"ssl.ca.location":          "/certs/access_cert_wolt_overview.cert",
-		"ssl.key.location":         "/certs/access_key_overview.key",
-		"ssl.certificate.location": "/certs/ca_overview.pem",
-	})
+	p, err := kafka.NewProducer(&producerConfigMap)
 	if err != nil {
 		return nil, err
 	}

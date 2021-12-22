@@ -23,3 +23,11 @@ type LogRequest struct {
 	ModelId         string
 	RequestId       string
 }
+
+type SslKakfa struct {
+	kafkaSslClientCertFile string
+	kafkaSslClientKeyFile  string
+	kafkaSslCACertFile     string
+	kafkaSecurityProtocol  string
+	kafkaSslClientKeyPass  string
+}

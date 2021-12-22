@@ -14,14 +14,6 @@ const (
 
 var WorkerQueue chan chan LogRequest
 
-type SslKakfa struct {
-	kafkaSslClientCertFile string
-	kafkaSslClientKeyFile  string
-	kafkaSslCACertFile     string
-	kafkaSecurityProtocol  string
-	kafkaSslClientKeyPass  string
-}
-
 func getSslElements() *SslKakfa {
 	sslElements := SslKakfa{
 		kafkaSslClientCertFile: util.GetEnv("KAFKA_SSL_CLIENT_CERT_FILE", ""),
