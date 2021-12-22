@@ -171,6 +171,7 @@ func (c *Client) waitReady() error {
 		logger.WithError(err).Errorf("Rclone not ready")
 	}
 	logger.Infof("Waiting for Rclone server to be ready")
+	//TODO make rety configurable
 	err := backoff.RetryNotify(c.RCloneClient.Ready, backoff.NewExponentialBackOff(), logFailure)
 	if err != nil {
 		return err
@@ -216,7 +217,7 @@ func (c *Client) StartService() error {
 		ReplicaConfig: c.replicaConfig,
 		LoadedModels:  loadedModels,
 		Shared:        true,
-	}, grpc_retry.WithMax(100))
+	}, grpc_retry.WithMax(100)) //TODO: make config
 	if err != nil {
 		return err
 	}

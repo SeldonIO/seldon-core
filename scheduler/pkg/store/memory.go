@@ -83,10 +83,8 @@ func (m *MemoryStore) ExistsModelVersion(key string, version string) bool {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	if model, ok := m.store.models[key]; ok {
-		for _, mv := range model.versions {
-			if mv.Details().Version == version {
-				return true
-			}
+		if model.GetVersion(version) != nil {
+			return true
 		}
 	}
 	return false
@@ -135,9 +133,6 @@ func (m *MemoryStore) getModelServer(modelKey string, version string, serverKey 
 	if modelVersion == nil {
 		return nil, nil, nil, fmt.Errorf("Version not found for model %s, version %s", modelKey, version)
 	}
-	//if modelVersion.config.Version != version {
-	//	return nil, nil, nil, fmt.Errorf("Model version is not matching. Found %s but was trying to update %s. %w", modelVersion.config.Version, version, ModelNotLatestVersionRejectErr)
-	//}
 	server, ok := m.store.servers[serverKey]
 	if !ok {
 		return nil, nil, nil, fmt.Errorf("failed to find server %s", serverKey)
@@ -188,7 +183,7 @@ func (m *MemoryStore) UpdateLoadedModels(modelKey string, version string, server
 	modelVersion.server = serverKey
 	latestModel := model.Latest()
 	isLatest := latestModel.GetVersion() == modelVersion.GetVersion()
-	m.updateModelStatus(isLatest, model.isDeleted(), modelVersion, model.Previous())
+	m.updateModelStatus(isLatest, model.IsDeleted(), modelVersion, model.Previous())
 	return nil
 }
 
@@ -224,9 +219,9 @@ func (m *MemoryStore) UpdateModelState(modelKey string, version string, serverKe
 	}
 	latestModel := model.Latest()
 	isLatest := latestModel.GetVersion() == modelVersion.GetVersion()
-	m.updateModelStatus(isLatest, model.isDeleted(), modelVersion, model.Previous())
-	logger.Infof("Model %s deleted %v active %v", modelKey, model.isDeleted(), model.Inactive())
-	if model.isDeleted() && model.Inactive() { //TODO probably needs further work when versions of models correctly handled
+	m.updateModelStatus(isLatest, model.IsDeleted(), modelVersion, model.Previous())
+	logger.Infof("Model %s deleted %v active %v", modelKey, model.IsDeleted(), model.Inactive())
+	if model.IsDeleted() && model.Inactive() { //TODO probably needs further work when versions of models correctly handled
 		logger.Debugf("Deleting model %s as inactive", modelKey)
 		delete(m.store.models, modelKey)
 	}

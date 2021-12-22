@@ -718,6 +718,23 @@ func TestUpdateModelStatus(t *testing.T) {
 			expectedTimestamp:         d2,
 		},
 		{
+			name:    "TerminatingLoadingReplicas",
+			deleted: true,
+			modelVersion: NewModelVersion(
+				&pb.ModelDetails{Version: "2", Replicas: 2},
+				"server",
+				map[int]ReplicaStatus{
+					0: {State: Loading, Reason: "", Timestamp: d1},
+					1: {State: Loading, Reason: "", Timestamp: d2},
+				},
+				true,
+				ModelProgressing),
+			expectedState:             ModelTerminating,
+			expectedAvailableReplicas: 0,
+			expectedReason:            "",
+			expectedTimestamp:         d2,
+		},
+		{
 			name:    "Terminated",
 			deleted: true,
 			modelVersion: NewModelVersion(

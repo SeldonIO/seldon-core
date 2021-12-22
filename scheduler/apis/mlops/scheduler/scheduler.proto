@@ -33,7 +33,7 @@ message ModelDetails {
   optional uint64 memoryBytes = 7; // Requested memory
   optional string server = 8; // the particular model server to load the model. If unspecified will be chosen.
   bool logPayloads = 9; // Whether to log request/response payloads to this model
-  KubernetesConfig kubernetesConfig = 10; // Kubernetes specific config
+  optional KubernetesConfig kubernetesConfig = 10; // Kubernetes specific config
 }
 
 message KubernetesConfig {
@@ -66,7 +66,7 @@ message ModelStatusResponse {
   string modelName = 1;
   string version = 2;
   string serverName = 3;
-  string namespace = 4;
+  optional string namespace = 4;
   map<int32,ModelReplicaStatus> modelReplicaState = 5;
   ModelStatus state = 6;
 }
@@ -85,7 +85,7 @@ message ModelStatus {
   string reason = 2;
   uint32 availableReplicas = 3;
   uint32 unavailableReplicas = 4;
-  google.protobuf.Timestamp timestamp = 5;
+  google.protobuf.Timestamp lastChangeTimestamp = 5;
 }
 
 message ModelReplicaStatus {
@@ -104,7 +104,7 @@ message ModelReplicaStatus {
   }
   ModelReplicaState state = 1;
   string reason = 2;
-  google.protobuf.Timestamp timestamp = 3;
+  google.protobuf.Timestamp lastChangeTimestamp = 3;
 }
 
 /* ServerStatusResponse provides details of current server status

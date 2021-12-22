@@ -76,7 +76,6 @@ type InferenceArtifactSpec struct {
 
 // ModelStatus defines the observed state of Model
 type ModelStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	duckv1.Status `json:",inline"`
 }
@@ -166,16 +165,16 @@ func (ms *ModelStatus) InitializeConditions() {
 	conditionSet.Manage(ms).InitializeConditions()
 }
 
-func (ss *ModelStatus) IsReady() bool {
-	return conditionSet.Manage(ss).IsHappy()
+func (ms *ModelStatus) IsReady() bool {
+	return conditionSet.Manage(ms).IsHappy()
 }
 
 func (ms *ModelStatus) GetCondition(t apis.ConditionType) *apis.Condition {
 	return conditionSet.Manage(ms).GetCondition(t)
 }
 
-func (ss *ModelStatus) IsConditionReady(t apis.ConditionType) bool {
-	return conditionSet.Manage(ss).GetCondition(t) != nil && conditionSet.Manage(ss).GetCondition(t).Status == v1.ConditionTrue
+func (ms *ModelStatus) IsConditionReady(t apis.ConditionType) bool {
+	return conditionSet.Manage(ms).GetCondition(t) != nil && conditionSet.Manage(ms).GetCondition(t).Status == v1.ConditionTrue
 }
 
 func (ms *ModelStatus) SetCondition(conditionType apis.ConditionType, condition *apis.Condition) {

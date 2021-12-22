@@ -184,7 +184,7 @@ var replicaStates = []ModelReplicaState{
 	LoadedUnavailable,
 }
 
-func (m ModelReplicaState) NoEndpoint() bool {
+func (m ModelReplicaState) NoProgressingEndpoint() bool {
 	return (m == Unloaded || m == ModelReplicaStateUnknown || m == UnloadFailed || m == Unloading || m == UnloadRequested)
 }
 
@@ -205,7 +205,7 @@ func (m ModelReplicaState) IsLoadingOrLoaded() bool {
 }
 
 func (me ModelReplicaState) String() string {
-	return [...]string{"Unknown", "LoadRequested", "Loading", "Loaded", "LoadFailed", "UnloadRequested", "Unloading", "Unloaded", "UnloadFailed", "Available", "LoadedUnavailable"}[me]
+	return [...]string{"ModelReplicaStateUnknown", "LoadRequested", "Loading", "Loaded", "LoadFailed", "UnloadRequested", "Unloading", "Unloaded", "UnloadFailed", "Available", "LoadedUnavailable"}[me]
 }
 
 func (m *Model) HasLatest() bool {
@@ -242,7 +242,7 @@ func (m *Model) Inactive() bool {
 	return m.Latest().Inactive()
 }
 
-func (m *Model) isDeleted() bool {
+func (m *Model) IsDeleted() bool {
 	return m.deleted
 }
 
@@ -324,7 +324,7 @@ func (m *ModelVersion) IsLoadingOrLoaded(replicaIdx int) bool {
 
 func (m *ModelVersion) NoLiveReplica() bool {
 	for _, v := range m.replicas {
-		if !v.State.NoEndpoint() {
+		if !v.State.NoProgressingEndpoint() {
 			return false
 		}
 	}

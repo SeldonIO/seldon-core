@@ -55,7 +55,7 @@ func updateModelState(modelVersion *ModelVersion, prevModelVersion *ModelVersion
 			modelState = ModelTerminateFailed
 			modelReason = stats.lastFailedReason
 			modelTimestamp = stats.lastFailedStateTime
-		} else if stats.replicasUnloading > 0 || stats.replicasAvailable > 0 {
+		} else if stats.replicasUnloading > 0 || stats.replicasAvailable > 0 || stats.replicasLoading > 0 {
 			modelState = ModelTerminating
 		} else {
 			modelState = ModelTerminated
@@ -77,7 +77,7 @@ func updateModelState(modelVersion *ModelVersion, prevModelVersion *ModelVersion
 		Reason:              modelReason,
 		Timestamp:           modelTimestamp,
 		AvailableReplicas:   stats.replicasAvailable,
-		UnavailableReplicas: stats.replicasLoading,
+		UnavailableReplicas: stats.replicasLoading + stats.replicasLoadFailed,
 	}
 }
 
