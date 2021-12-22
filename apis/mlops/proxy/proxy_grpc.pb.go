@@ -133,5 +133,5 @@ var SchedulerProxy_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proxy.proto",
+	Metadata: "mlops/proxy/proxy.proto",
 }

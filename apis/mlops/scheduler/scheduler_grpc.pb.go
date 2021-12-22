@@ -269,5 +269,5 @@ var Scheduler_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "scheduler.proto",
+	Metadata: "mlops/scheduler/scheduler.proto",
 }

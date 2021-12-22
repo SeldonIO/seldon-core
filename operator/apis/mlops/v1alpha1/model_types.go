@@ -21,7 +21,7 @@ import (
 
 	"knative.dev/pkg/apis"
 
-	scheduler "github.com/seldonio/seldon-core/operatorv2/scheduler/api"
+	scheduler "github.com/seldonio/seldon-core/operatorv2/scheduler/apis/mlops/scheduler"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

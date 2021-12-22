@@ -4,7 +4,7 @@ package seldon.mlops.agent;
 
 option go_package = "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent";
 
-import "scheduler.proto";
+import "mlops/scheduler/scheduler.proto";
 
 // [START Messages]
 

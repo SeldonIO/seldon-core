@@ -136,28 +136,3 @@ undeploy-mlserver:
 # ip address will change. Make automatic?
 curl-mlserver-test:
 	curl -v -H "Host: model2" -H "Content-Type: application/json" 172.18.255.1/v2/models/classifier/infer -d '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
-
-build-protos:
-	protoc \
-		-I=./apis/mlops/scheduler \
-		--go_out=./apis/mlops/scheduler \
-		--go_opt=paths=source_relative \
-		--go-grpc_out=./apis/mlops/scheduler \
-		--go-grpc_opt=paths=source_relative \
-		./apis/mlops/scheduler/scheduler.proto
-	protoc \
-		-I=./apis/mlops/agent \
-		-I=./apis/mlops/scheduler \
-		--go_out=./apis/mlops/agent \
-		--go_opt=paths=source_relative \
-		--go-grpc_out=./apis/mlops/agent \
-		--go-grpc_opt=paths=source_relative \
-		./apis/mlops/agent/agent.proto
-	protoc \
-		-I=./apis/mlops/proxy \
-		-I=./apis/mlops/scheduler \
-		--go_out=./apis/mlops/proxy \
-		--go_opt=paths=source_relative \
-		--go-grpc_out=./apis/mlops/proxy \
-		--go-grpc_opt=paths=source_relative \
-		./apis/mlops/proxy/proxy.proto

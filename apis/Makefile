@@ -1,0 +1,16 @@
+PROTOC_IMPORT_PATH := -I.
+
+PROTOC_GO_PATH := --go_opt=paths=source_relative
+PROTOC_GO_OUT := --go_out=.
+PROTOC_GO_GRPC_PATH := --go-grpc_opt=paths=source_relative
+PROTOC_GO_GRPC_OUT := --go-grpc_out=.
+PROTOC_GO_OPTIONS = $(PROTOC_GO_PATH) $(PROTOC_GO_OUT) $(PROTOC_GO_GRPC_PATH) $(PROTOC_GO_GRPC_OUT)
+
+.PHONY: build
+build:
+	protoc \
+		$(PROTOC_IMPORT_PATH) \
+		$(PROTOC_GO_OPTIONS) \
+		./mlops/agent/agent.proto \
+		./mlops/proxy/proxy.proto \
+		./mlops/scheduler/scheduler.proto

@@ -18,7 +18,7 @@ import (
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1"
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1"
-	scheduler "github.com/seldonio/seldon-core/operatorv2/scheduler/api"
+	scheduler "github.com/seldonio/seldon-core/operatorv2/scheduler/apis/mlops/scheduler"
 	"google.golang.org/grpc"
 )
 

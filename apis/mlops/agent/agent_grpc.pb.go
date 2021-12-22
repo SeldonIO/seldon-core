@@ -161,5 +161,5 @@ var AgentService_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "agent.proto",
+	Metadata: "mlops/agent/agent.proto",
 }
