@@ -31,8 +31,16 @@ spec:
         - /manager
         args:
         - --leader-elect
+        - --scheduler-host=$(SELDON_SCHEDULER_SVC)
+        - --scheduler-port=$(SELDON_SCHEDULER_PORT)
         image: controller:latest
+        imagePullPolicy: IfNotPresent
         name: manager
+        env:
+          - name: SELDON_SCHEDULER_SVC
+            value: "seldon-scheduler.seldon-mesh"
+          - name: SELDON_SCHEDULER_PORT
+            value: "9004"
         securityContext:
           allowPrivilegeEscalation: false
         livenessProbe:

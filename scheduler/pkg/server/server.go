@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"sync"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent"
@@ -25,13 +28,22 @@ type SchedulerServer struct {
 	store        store.SchedulerStore
 	scheduler    scheduler2.Scheduler
 	agentHandler agent.AgentHandler
+	mutext       sync.RWMutex
+	EventStream
 }
 
-func (s SchedulerServer) SubscribeModelEvents(req *pb.ModelSubscriptionRequest, server pb.Scheduler_SubscribeModelEventsServer) error {
-	panic("implement me")
+type EventStream struct {
+	streams   map[pb.Scheduler_SubscribeModelStatusServer]*Subscription
+	chanEvent chan string
 }
 
-func (s SchedulerServer) StartGrpcServer(schedulerPort uint) error {
+type Subscription struct {
+	name   string
+	stream pb.Scheduler_SubscribeModelStatusServer
+	fin    chan bool
+}
+
+func (s *SchedulerServer) StartGrpcServer(schedulerPort uint) error {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", schedulerPort))
 	if err != nil {
 		log.Fatalf("failed to create listener: %v", err)
@@ -46,17 +58,27 @@ func (s SchedulerServer) StartGrpcServer(schedulerPort uint) error {
 func NewSchedulerServer(logger log.FieldLogger, store store.SchedulerStore, scheduler scheduler2.Scheduler, agentHandler agent.AgentHandler) *SchedulerServer {
 
 	s := &SchedulerServer{
-		logger:       logger,
+		logger:       logger.WithField("source", "SchedulerServer"),
 		store:        store,
 		scheduler:    scheduler,
 		agentHandler: agentHandler,
+		EventStream: EventStream{
+			streams:   make(map[pb.Scheduler_SubscribeModelStatusServer]*Subscription),
+			chanEvent: make(chan string, 1),
+		},
 	}
+	store.AddListener(s.EventStream.chanEvent)
 	return s
 }
 
-func (s SchedulerServer) LoadModel(ctx context.Context, req *pb.LoadModelRequest) (*pb.LoadModelResponse, error) {
+func (s *SchedulerServer) LoadModel(ctx context.Context, req *pb.LoadModelRequest) (*pb.LoadModelResponse, error) {
 	logger := s.logger.WithField("func", "LoadModel")
 	logger.Debugf("Load model %s", req.GetModel().GetName())
+	exists := s.store.ExistsModelVersion(req.GetModel().Name, req.GetModel().Version)
+	if exists { //TODO check the model details match what we have otherwise error
+		logger.Infof("Model %s:%s already exists", req.GetModel().Name, req.Model.Version)
+		return &pb.LoadModelResponse{}, nil
+	}
 	err := s.store.UpdateModel(req.GetModel())
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
@@ -69,7 +91,7 @@ func (s SchedulerServer) LoadModel(ctx context.Context, req *pb.LoadModelRequest
 	return &pb.LoadModelResponse{}, nil
 }
 
-func (s SchedulerServer) UnloadModel(ctx context.Context, reference *pb.ModelReference) (*pb.UnloadModelResponse, error) {
+func (s *SchedulerServer) UnloadModel(ctx context.Context, reference *pb.ModelReference) (*pb.UnloadModelResponse, error) {
 	logger := s.logger.WithField("func", "UnloadModel")
 	logger.Debugf("Unload model %s", reference.Name)
 	err := s.store.RemoveModel(reference.Name)
@@ -84,7 +106,7 @@ func (s SchedulerServer) UnloadModel(ctx context.Context, reference *pb.ModelRef
 	return &pb.UnloadModelResponse{}, nil
 }
 
-func (s SchedulerServer) ModelStatus(ctx context.Context, reference *pb.ModelReference) (*pb.ModelStatusResponse, error) {
+func (s *SchedulerServer) ModelStatus(ctx context.Context, reference *pb.ModelReference) (*pb.ModelStatusResponse, error) {
 	model, err := s.store.GetModel(reference.Name)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
@@ -96,15 +118,36 @@ func (s SchedulerServer) ModelStatus(ctx context.Context, reference *pb.ModelRef
 	if latestModel == nil {
 		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("Failed to find model %s", reference.Name))
 	}
+	stateMap := make(map[int32]*pb.ModelReplicaStatus)
+	for k, v := range latestModel.ReplicaState() {
+		stateMap[int32(k)] = &pb.ModelReplicaStatus{
+			State:               pb.ModelReplicaStatus_ModelReplicaState(pb.ModelReplicaStatus_ModelReplicaState_value[v.State.String()]),
+			Reason:              v.Reason,
+			LastChangeTimestamp: timestamppb.New(v.Timestamp),
+		}
+	}
+	modelState := latestModel.ModelState()
+	var namespace *string
+	if latestModel.Details().KubernetesConfig != nil {
+		namespace = &latestModel.Details().KubernetesConfig.Namespace
+	}
 	return &pb.ModelStatusResponse{
 		ModelName:         reference.Name,
 		Version:           latestModel.GetVersion(),
 		ServerName:        latestModel.Server(),
-		ModelReplicaState: latestModel.ReplicaState(),
+		Namespace:         namespace,
+		ModelReplicaState: stateMap,
+		State: &pb.ModelStatus{
+			State:               pb.ModelStatus_ModelState(pb.ModelStatus_ModelState_value[modelState.State.String()]),
+			Reason:              modelState.Reason,
+			LastChangeTimestamp: timestamppb.New(modelState.Timestamp),
+			AvailableReplicas:   modelState.AvailableReplicas,
+			UnavailableReplicas: modelState.UnavailableReplicas,
+		},
 	}, nil
 }
 
-func (s SchedulerServer) ServerStatus(ctx context.Context, reference *pb.ServerReference) (*pb.ServerStatusResponse, error) {
+func (s *SchedulerServer) ServerStatus(ctx context.Context, reference *pb.ServerReference) (*pb.ServerStatusResponse, error) {
 	server, err := s.store.GetServer(reference.Name)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())

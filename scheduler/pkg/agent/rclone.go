@@ -233,7 +233,10 @@ func (r *RCloneClient) Copy(modelName string, src string, config []byte) error {
 		return err
 	}
 	_, err = r.call(b, RcloneSyncCopyPath)
-	return err
+	if err != nil {
+		return fmt.Errorf("Failed to sync/copy %s to %s %w", srcUpdated, dst, err)
+	}
+	return nil
 }
 
 // Call Rclone /config/get

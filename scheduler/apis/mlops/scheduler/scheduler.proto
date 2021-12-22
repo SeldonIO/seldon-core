@@ -4,6 +4,8 @@ package seldon.mlops.scheduler;
 
 option go_package = "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler";
 
+import "google/protobuf/timestamp.proto";
+
 // [START Messages]
 
 /* ServerReference represents a unique server
@@ -31,6 +33,11 @@ message ModelDetails {
   optional uint64 memoryBytes = 7; // Requested memory
   optional string server = 8; // the particular model server to load the model. If unspecified will be chosen.
   bool logPayloads = 9; // Whether to log request/response payloads to this model
+  optional KubernetesConfig kubernetesConfig = 10; // Kubernetes specific config
+}
+
+message KubernetesConfig {
+  string namespace = 1;
 }
 
 message StorageConfig {
@@ -53,14 +60,51 @@ message ModelReference {
 message UnloadModelResponse {
 }
 
-
 /* ModelStatusResponse provides the current assignment of the model onto a server
 */
 message ModelStatusResponse {
   string modelName = 1;
   string version = 2;
   string serverName = 3;
-  map<int32,string> modelReplicaState = 4;
+  optional string namespace = 4;
+  map<int32,ModelReplicaStatus> modelReplicaState = 5;
+  ModelStatus state = 6;
+}
+
+message ModelStatus {
+  enum ModelState {
+      ModelStateUnknown = 0;
+      ModelProgressing = 1;
+      ModelAvailable = 2;
+      ModelFailed = 3;
+      ModelTerminating = 4;
+      ModelTerminated = 5;
+      ModelTerminateFailed = 6;
+  }
+  ModelState state = 1;
+  string reason = 2;
+  uint32 availableReplicas = 3;
+  uint32 unavailableReplicas = 4;
+  google.protobuf.Timestamp lastChangeTimestamp = 5;
+}
+
+message ModelReplicaStatus {
+  enum ModelReplicaState {
+      ModelReplicaStateUnknown = 0;
+      LoadRequested = 1;
+      Loading = 2;
+      Loaded = 3;
+      LoadFailed = 4;
+      UnloadRequested = 5;
+      Unloading = 6;
+      Unloaded = 7;
+      UnloadFailed = 8;
+      Available = 9;
+      LoadedUnavailable = 10;
+  }
+  ModelReplicaState state = 1;
+  string reason = 2;
+  google.protobuf.Timestamp lastChangeTimestamp = 3;
 }
 
 /* ServerStatusResponse provides details of current server status
@@ -77,25 +121,9 @@ message ServerResources {
 }
 
 message ModelSubscriptionRequest {
+  string name = 1; //Name of the subscription caller
 }
 
-message ModelEventMessage {
-  string modelName = 1;
-  string serverName = 2;
-  enum Event {
-    UNKNOWN_EVENT = 0;
-    REPLICAS_LOADED = 1;
-    REPLICAS_LOAD_FAILED = 2;
-    REPLICAS_UNLOADED = 3;
-    REPLICAS_UNLOAD_FAILED = 4;
-    REPLICAS_AVAILABLE = 5;
-    REPLICAS_UNAVAILABLE = 6;
-  }
-  Event event = 3;
-  int32 readyReplicas = 4;
-  int32 unavailableReplicas = 5;
-  string message = 6;
-}
 // [END Messages]
 
 
@@ -106,8 +134,7 @@ service Scheduler {
   rpc LoadModel(LoadModelRequest) returns (LoadModelResponse) {};
   rpc UnloadModel(ModelReference) returns (UnloadModelResponse) {};
   rpc ModelStatus(ModelReference) returns (ModelStatusResponse) {}
-
-  rpc SubscribeModelEvents(ModelSubscriptionRequest) returns (stream ModelEventMessage) {};
+  rpc SubscribeModelStatus(ModelSubscriptionRequest) returns (stream ModelStatusResponse) {};
 }
 
 // [END Services]

@@ -56,12 +56,8 @@ spec:
                 description: Payload logging
                 properties:
                   percent:
-                    description: Percentage of payloads to log Defaults to 100%
-                    format: int32
+                    description: Percentage of payloads to log
                     type: integer
-                  uri:
-                    description: URI to logging endpoint.
-                    type: string
                 type: object
               maxReplicas:
                 description: Max number of replicas - default equal to replicas
@@ -104,9 +100,6 @@ spec:
               server:
                 description: Name of the Server to deploy this artifact
                 type: string
-              serviceAccountName:
-                description: Service Account Name for auth
-                type: string
               storageUri:
                 description: Storage URI for the model repository
                 type: string
@@ -121,13 +114,14 @@ spec:
                   secretName:
                     description: Secret name
                     type: string
-                  serviceAccountName:
-                    description: Service Account Name for auth
-                    type: string
                   storageUri:
                     description: Storage URI for the model repository
                     type: string
+                required:
+                - storageUri
                 type: object
+            required:
+            - storageUri
             type: object
           status:
             description: ExplainerStatus defines the observed state of Explainer

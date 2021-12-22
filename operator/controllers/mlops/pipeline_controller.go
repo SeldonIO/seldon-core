@@ -24,7 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	mlopsv1alpha1 "github.com/seldonio/seldon-research/seldon-core/operatorv2/apis/mlops/v1alpha1"
+	mlopsv1alpha1 "github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1"
 )
 
 // PipelineReconciler reconciles a Pipeline object
@@ -36,6 +36,7 @@ type PipelineReconciler struct {
 //+kubebuilder:rbac:groups=mlops.seldon.io,resources=pipelines,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=mlops.seldon.io,resources=pipelines/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=mlops.seldon.io,resources=pipelines/finalizers,verbs=update
+//+kubebuilder:rbac:groups="",resources=events,verbs=create;patch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.

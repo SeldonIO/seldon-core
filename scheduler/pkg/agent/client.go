@@ -105,6 +105,7 @@ func NewClient(serverName string,
 }
 
 func (c *Client) Start(configHandler *AgentConfigHandler) error {
+	logger := c.logger.WithField("func", "Start")
 	if configHandler == nil {
 		return fmt.Errorf("configHandler is nil. Can't start client grpc server.")
 	}
@@ -123,6 +124,7 @@ func (c *Client) Start(configHandler *AgentConfigHandler) error {
 	// Start config listener
 	go c.listenForConfigUpdates()
 	// Add ourself as listener on channel and handle initial config
+	logger.Info("Loading initial rclone configuration")
 	err = c.loadRcloneConfiguration(configHandler.AddListener(c.configChan))
 	if err != nil {
 		c.logger.WithError(err).Fatal("Failed to load rclone defaults")
@@ -169,6 +171,7 @@ func (c *Client) waitReady() error {
 		logger.WithError(err).Errorf("Rclone not ready")
 	}
 	logger.Infof("Waiting for Rclone server to be ready")
+	//TODO make rety configurable
 	err := backoff.RetryNotify(c.RCloneClient.Ready, backoff.NewExponentialBackOff(), logFailure)
 	if err != nil {
 		return err
@@ -214,7 +217,7 @@ func (c *Client) StartService() error {
 		ReplicaConfig: c.replicaConfig,
 		LoadedModels:  loadedModels,
 		Shared:        true,
-	}, grpc_retry.WithMax(100))
+	}, grpc_retry.WithMax(100)) //TODO: make config
 	if err != nil {
 		return err
 	}

@@ -1,6 +1,7 @@
 package scheduler
 
 import (
+	"sort"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -31,6 +32,10 @@ func (f mockStore) GetModel(key string) (*store.ModelSnapshot, error) {
 	return f.models[key], nil
 }
 
+func (f mockStore) ExistsModelVersion(key string, version string) bool {
+	return false
+}
+
 func (f mockStore) GetServers() ([]*store.ServerSnapshot, error) {
 	return f.servers, nil
 }
@@ -49,7 +54,7 @@ func (f *mockStore) UpdateLoadedModels(modelKey string, version string, serverKe
 	return nil
 }
 
-func (f mockStore) UpdateModelState(modelKey string, version string, serverKey string, replicaIdx int, availableMemory *uint64, state store.ModelReplicaState) error {
+func (f mockStore) UpdateModelState(modelKey string, version string, serverKey string, replicaIdx int, availableMemory *uint64, state store.ModelReplicaState, reason string) error {
 	panic("implement me")
 }
 
@@ -59,6 +64,10 @@ func (f mockStore) AddServerReplica(request *agent.AgentSubscribeRequest) error 
 
 func (f mockStore) RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) {
 	panic("implement me")
+}
+
+func (f mockStore) AddListener(c chan string) {
+
 }
 
 func TestScheduler(t *testing.T) {
@@ -73,9 +82,9 @@ func TestScheduler(t *testing.T) {
 			Server:       server,
 			Replicas:     replicas,
 		}
-		rmap := make(map[int]store.ModelReplicaState)
+		rmap := make(map[int]store.ReplicaStatus)
 		for _, ridx := range loadedModels {
-			rmap[ridx] = store.Loaded
+			rmap[ridx] = store.ReplicaStatus{State: store.Loaded}
 		}
 		return &store.ModelSnapshot{
 			Name:     name,
@@ -262,6 +271,8 @@ func TestScheduler(t *testing.T) {
 			if test.scheduled {
 				g.Expect(err).To(BeNil())
 				g.Expect(test.scheduledServer).To(Equal(mockStore.scheduledServer))
+				sort.Ints(test.scheduledReplicas)
+				sort.Ints(mockStore.scheduledReplicas)
 				g.Expect(test.scheduledReplicas).To(Equal(mockStore.scheduledReplicas))
 			} else {
 				g.Expect(err).ToNot(BeNil())

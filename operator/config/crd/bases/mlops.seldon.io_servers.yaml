@@ -3558,12 +3558,11 @@ spec:
                     secretName:
                       description: Secret name
                       type: string
-                    serviceAccountName:
-                      description: Service Account Name for auth
-                      type: string
                     storageUri:
                       description: Storage URI for the model repository
                       type: string
+                  required:
+                  - storageUri
                   type: object
                 type: array
               podSpec:

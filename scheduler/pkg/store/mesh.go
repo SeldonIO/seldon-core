@@ -1,6 +1,8 @@
 package store
 
 import (
+	"time"
+
 	pba "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	"google.golang.org/protobuf/proto"
@@ -21,37 +23,44 @@ func NewLocalSchedulerStore() *LocalSchedulerStore {
 }
 
 type Model struct {
-	versionMap map[string]*ModelVersion
-	versions   []*ModelVersion
-	deleted    bool
-}
-
-func NewModel() *Model {
-	return &Model{
-		versionMap: make(map[string]*ModelVersion),
-	}
+	versions []*ModelVersion
+	deleted  bool
 }
 
 type ModelVersion struct {
 	config   *pb.ModelDetails
 	server   string
-	replicas map[int]ModelReplicaState
+	replicas map[int]ReplicaStatus
 	deleted  bool
-	state    ModelState
+	state    ModelStatus
+}
+
+type ModelStatus struct {
+	State               ModelState
+	Reason              string
+	AvailableReplicas   uint32
+	UnavailableReplicas uint32
+	Timestamp           time.Time
+}
+
+type ReplicaStatus struct {
+	State     ModelReplicaState
+	Reason    string
+	Timestamp time.Time
 }
 
 func NewDefaultModelVersion(config *pb.ModelDetails) *ModelVersion {
 	return &ModelVersion{
 		config:   config,
-		replicas: make(map[int]ModelReplicaState),
+		replicas: make(map[int]ReplicaStatus),
 		deleted:  false,
-		state:    ModelStateUnknown,
+		state:    ModelStatus{State: ModelStateUnknown},
 	}
 }
 
 func NewModelVersion(config *pb.ModelDetails,
 	server string,
-	replicas map[int]ModelReplicaState,
+	replicas map[int]ReplicaStatus,
 	deleted bool,
 	state ModelState) *ModelVersion {
 	return &ModelVersion{
@@ -59,7 +68,7 @@ func NewModelVersion(config *pb.ModelDetails,
 		server:   server,
 		replicas: replicas,
 		deleted:  deleted,
-		state:    state,
+		state:    ModelStatus{State: state},
 	}
 }
 
@@ -141,6 +150,10 @@ const (
 	ModelTerminateFailed
 )
 
+func (m ModelState) String() string {
+	return [...]string{"ModelStateUnknown", "ModelProgressing", "ModelAvailable", "ModelFailed", "ModelTerminating", "ModelTerminated", "ModelTerminateFailed"}[m]
+}
+
 type ModelReplicaState uint32
 
 const (
@@ -153,7 +166,47 @@ const (
 	Unloading
 	Unloaded
 	UnloadFailed
+	Available
+	LoadedUnavailable
 )
+
+var replicaStates = []ModelReplicaState{
+	ModelReplicaStateUnknown,
+	LoadRequested,
+	Loading,
+	Loaded,
+	LoadFailed,
+	UnloadRequested,
+	Unloading,
+	Unloaded,
+	UnloadFailed,
+	Available,
+	LoadedUnavailable,
+}
+
+func (m ModelReplicaState) NoProgressingEndpoint() bool {
+	return (m == Unloaded || m == ModelReplicaStateUnknown || m == UnloadFailed || m == Unloading || m == UnloadRequested)
+}
+
+func (m ModelReplicaState) AlreadyLoadingOrLoaded() bool {
+	return (m == Loading || m == Loaded || m == Available || m == LoadedUnavailable)
+}
+
+func (m ModelReplicaState) AlreadyUnloadingOrUnloaded() bool {
+	return (m == Unloading || m == Unloaded)
+}
+
+func (m ModelReplicaState) Inactive() bool {
+	return (m == Unloaded || m == UnloadFailed || m == ModelReplicaStateUnknown)
+}
+
+func (m ModelReplicaState) IsLoadingOrLoaded() bool {
+	return (m == Loaded || m == LoadRequested || m == Loading || m == Available || m == LoadedUnavailable)
+}
+
+func (me ModelReplicaState) String() string {
+	return [...]string{"ModelReplicaStateUnknown", "LoadRequested", "Loading", "Loaded", "LoadFailed", "UnloadRequested", "Unloading", "Unloaded", "UnloadFailed", "Available", "LoadedUnavailable"}[me]
+}
 
 func (m *Model) HasLatest() bool {
 	return len(m.versions) > 0
@@ -167,16 +220,29 @@ func (m *Model) Latest() *ModelVersion {
 	}
 }
 
-func (m *Model) Inactive() bool {
+func (m *Model) GetVersion(version string) *ModelVersion {
 	for _, mv := range m.versions {
-		if !mv.Inactive() {
-			return false
+		if mv.GetVersion() == version {
+			return mv
 		}
 	}
-	return true
+	return nil
 }
 
-func (m *Model) isDeleted() bool {
+func (m *Model) Previous() *ModelVersion {
+	if len(m.versions) > 1 {
+		return m.versions[len(m.versions)-2]
+	} else {
+		return nil
+	}
+}
+
+//TODO do we need to consider previous versions?
+func (m *Model) Inactive() bool {
+	return m.Latest().Inactive()
+}
+
+func (m *Model) IsDeleted() bool {
 	return m.deleted
 }
 
@@ -204,12 +270,12 @@ func (m *ModelVersion) Server() string {
 	return m.server
 }
 
-func (m *ModelVersion) ReplicaState() map[int32]string {
-	replicaState := make(map[int32]string)
-	for k, v := range m.replicas {
-		replicaState[int32(k)] = v.String()
-	}
-	return replicaState
+func (m *ModelVersion) ReplicaState() map[int]ReplicaStatus {
+	return m.replicas
+}
+
+func (m *ModelVersion) ModelState() ModelStatus {
+	return m.state
 }
 
 func (m *ModelVersion) GetModelReplicaState(replicaIdx int) ModelReplicaState {
@@ -217,13 +283,13 @@ func (m *ModelVersion) GetModelReplicaState(replicaIdx int) ModelReplicaState {
 	if !ok {
 		return ModelReplicaStateUnknown
 	}
-	return state
+	return state.State
 }
 
 func (m *ModelVersion) GetReplicaForState(state ModelReplicaState) []int {
 	var assignment []int
 	for k, v := range m.replicas {
-		if v == state {
+		if v.State == state {
 			assignment = append(assignment, k)
 		}
 	}
@@ -240,16 +306,16 @@ func (m *ModelVersion) HasServer() bool {
 
 func (m *ModelVersion) Inactive() bool {
 	for _, v := range m.replicas {
-		if !(v == Unloaded || v == UnloadFailed || v == ModelReplicaStateUnknown) {
+		if !v.State.Inactive() {
 			return false
 		}
 	}
 	return true
 }
 
-func (m *ModelVersion) IsLoading(replicaIdx int) bool {
+func (m *ModelVersion) IsLoadingOrLoaded(replicaIdx int) bool {
 	for r, v := range m.replicas {
-		if r == replicaIdx && (v == Loaded || v == LoadRequested || v == Loading) {
+		if r == replicaIdx && v.State.IsLoadingOrLoaded() {
 			return true
 		}
 	}
@@ -258,7 +324,7 @@ func (m *ModelVersion) IsLoading(replicaIdx int) bool {
 
 func (m *ModelVersion) NoLiveReplica() bool {
 	for _, v := range m.replicas {
-		if !v.NoEndpoint() {
+		if !v.State.NoProgressingEndpoint() {
 			return false
 		}
 	}
@@ -268,7 +334,7 @@ func (m *ModelVersion) NoLiveReplica() bool {
 func (m *ModelVersion) GetAssignment() []int {
 	var assignment []int
 	for k, v := range m.replicas {
-		if v == Loaded {
+		if v.State == Loaded || v.State == Available || v.State == LoadedUnavailable {
 			assignment = append(assignment, k)
 		}
 	}
@@ -347,41 +413,4 @@ func (s *ServerReplica) GetInferenceHttpPort() int32 {
 
 func (s *ServerReplica) GetInferenceGrpcPort() int32 {
 	return s.inferenceGrpcPort
-}
-
-func (m ModelReplicaState) CanLoad() bool {
-	return !(m == LoadRequested || m == Loading || m == Loaded || m == ModelReplicaStateUnknown)
-}
-
-func (m ModelReplicaState) CanUnload() bool {
-	return !(m == UnloadRequested || m == Unloading || m == Unloaded || m == ModelReplicaStateUnknown)
-}
-
-func (m ModelReplicaState) CanRemove() bool {
-	return (m == Unloaded || m == ModelReplicaStateUnknown || m == UnloadFailed)
-}
-
-func (m ModelReplicaState) NoEndpoint() bool {
-	return (m == Unloaded || m == ModelReplicaStateUnknown || m == UnloadFailed || m == Unloading || m == UnloadRequested)
-}
-
-func (m ModelReplicaState) AlreadyLoadingOrLoaded() bool {
-	return (m == Loading || m == Loaded)
-}
-
-func (m ModelReplicaState) AlreadyUnloadingOrUnloaded() bool {
-	return (m == Unloading || m == Unloaded)
-}
-
-func (me ModelReplicaState) String() string {
-	return [...]string{"Unknown", "LoadRequested", "Loading", "Loaded", "LoadFailed", "UnloadRequested", "Unloading", "Unloaded", "UnloadFailed"}[me]
-}
-
-func (m ModelReplicaState) IsLoadingState() bool {
-	switch m {
-	case LoadRequested, Loading, Loaded:
-		return true
-	default:
-		return false
-	}
 }
