@@ -158,6 +158,27 @@ Here is a truncated version of an example output for an image use-case with outl
 }
 ```
 
+# CORS Support
+```
+# Enable CORS (use "1" or "true")
+export CORS_ENABLED="1"
+
+# Comma-delimited string of origins or wildcard "*"
+export CORS_ORIGINS="*"
+
+# Comma-delimited string of allowed methods
+export CORS_METHODS="GET,POST,OPTIONS"
+
+# Comma-delimited string of exposed headers
+export CORS_EXPOSE_HEADERS="Special-Header"
+
+# Comma-delimited string of allowed headers
+export CORS_ALLOW_HEADERS="Content-Type"
+
+# Credential support
+export CORS_ALLOW_CREDENTIALS="true"
+```
+
 
 # On-going work
 

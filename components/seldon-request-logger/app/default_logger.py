@@ -8,6 +8,7 @@ from seldon_core.utils import (
 from seldon_core.proto import prediction_pb2
 import numpy as np
 import json
+import os
 import logging
 import sys
 import log_helper
@@ -18,8 +19,34 @@ import traceback
 from flask import jsonify
 from elasticsearch import Elasticsearch, helpers
 
+cors_enabled = os.getenv("CORS_ENABLED", "False")
+cors_origins = os.getenv("CORS_ORIGINS")
+cors_methods = os.getenv("CORS_METHODS")
+cors_expose_headers = os.getenv("CORS_EXPOSE_HEADERS")
+cors_allow_headers = os.getenv("CORS_ALLOW_HEADERS")
+cors_allow_creds = os.getenv("CORS_ALLOW_CREDENTIALS")
+
+
 MAX_PAYLOAD_BYTES = 300000
 app = Flask(__name__)
+
+if cors_enabled.lower() in ("true", "1"):
+    print("Enabling CORS configuration ")
+    @app.after_request
+    def add_headers(response):
+        if cors_origins:
+            response.headers.add('Access-Control-Allow-Origin', cors_origins)
+        if cors_methods:
+            response.headers.add('Access-Control-Allow-Methods', cors_methods)
+        if cors_allow_headers:
+            response.headers.add('Access-Control-Allow-Headers', cors_allow_headers)
+        if cors_expose_headers:
+            response.headers.add('Access-Control-Expose-Headers', cors_expose_headers)
+        if cors_allow_creds:
+            response.headers.add('Access-Control-Allow-Credentials', cors_allow_creds)
+        return response
+
+
 print("starting logger")
 sys.stdout.flush()
 
