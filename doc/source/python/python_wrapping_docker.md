@@ -58,15 +58,21 @@ Define a Dockerfile in the same directory as your source code and requirements.t
 
 ```dockerfile
 FROM python:3.7-slim
-COPY . /app
 WORKDIR /app
+
+# Install python packages
+COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
+
+# Copy source code
+COPY . .
+
 # Port for GRPC
 EXPOSE 5000
 # Port for REST
 EXPOSE 9000
 
-# Define environment variable
+# Define environment variables
 ENV MODEL_NAME MyModel
 ENV SERVICE_TYPE MODEL
 
