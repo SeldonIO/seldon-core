@@ -141,3 +141,26 @@ func GetEnvAsBool(key string, fallback bool) bool {
 
 	return fallback
 }
+
+type SslKakfa struct {
+	KafkaSslClientCertFile string
+	KafkaSslClientKeyFile  string
+	KafkaSslCACertFile     string
+	KafkaSslClientKeyPass  string
+}
+
+func (o SslKakfa) String() string {
+	return "SslKakfa"
+}
+
+var KafkaSecurityProtocol = GetEnv("KAFKA_SECURITY_PROTOCOL", "")
+
+func GetSslElements() *SslKakfa {
+	sslElements := SslKakfa{
+		KafkaSslClientCertFile: GetEnv("KAFKA_SSL_CLIENT_CERT_FILE", ""),
+		KafkaSslClientKeyFile:  GetEnv("KAFKA_SSL_CLIENT_KEY_FILE", ""),
+		KafkaSslCACertFile:     GetEnv("KAFKA_SSL_CA_CERT_FILE", ""),
+		KafkaSslClientKeyPass:  GetEnv("KAFKA_SSL_CLIENT_KEY_PASS", ""),
+	}
+	return &sslElements
+}

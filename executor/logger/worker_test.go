@@ -10,55 +10,14 @@ import (
 	"testing"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/seldonio/seldon-core/executor/api/util"
 )
 
-// func testLoggerKafkaSSL(t *testing.T) {
-// 	os.Setenv("ENV_LOGGER_KAFKA_BROKER", "test-broker")
-// 	os.Setenv("KAFKA_SECURITY_PROTOCOL", "ssl")
-// 	os.Setenv("KAFKA_SSL_CA_CERT_FILE", "test_ca.pem")
-// 	os.Setenv("KAFKA_SSL_CLIENT_CERT_FILE", "test_ca.cert")
-// 	os.Setenv("KAFKA_SSL_CLIENT_KEY_FILE", "test_ca.key")
-
-// 	defer os.Unsetenv("ENV_LOGGER_KAFKA_BROKER")
-// 	defer os.Unsetenv("KAFKA_SECURITY_PROTOCOL")
-// 	defer os.Unsetenv("KAFKA_SSL_CA_CERT_FILE")
-// 	defer os.Unsetenv("KAFKA_SSL_CLIENT_CERT_FILE")
-// 	defer os.Unsetenv("KAFKA_SSL_CLIENT_KEY_FILE")
-
-// 	err := StartDispatcher(2, DefaultWorkQueueSize, DefaultWriteTimeoutMilliseconds, logf.Log.WithName("test"), "test-name", "test-namespace", "test-predictor", "test-broker", "")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-
-// 	// How can I create a mux(?) thingy but for Kafka and not http?!
-// 	mux := http.NewServeMux()
-
-// 	mux.HandleFunc("/log", func(w http.ResponseWriter, r *http.Request) {
-// 		fmt.Println("received a message to the /log endpoint")
-// 		fmt.Fprint(w, "logged successfully")
-// 	})
-// 	mux.Handle("/debug/pprof/", http.DefaultServeMux)
-// 	// logKafka, err :=
-// 	// err := LogRequest(LogRequest{
-// 	// 	Url:         url,
-// 	// 	Bytes:       &testMessage,
-// 	// 	ContentType: "test",
-// 	// 	ReqType:     InferenceRequest,
-// 	// 	Id:          "test",
-// 	// 	SourceUri:   url,
-// 	// 	ModelId:     "1",
-// 	// 	RequestId:   "1",
-// 	// })
-// 	// if err != nil {
-// 	// 	t.Log(err)
-// 	// }
-
-// }
-
 type certsConfig struct {
-	CertPEM string
-	KeyPEM  string
-	CaPEM   string
+	CertPEM     string
+	KeyPEM      string
+	KeyPassword string
+	CaPEM       string
 }
 
 func tlsConfig(t *testing.T) *certsConfig {
@@ -135,6 +94,7 @@ DhSJS+/iIaroc8umDnbPfhhgnlMf0/D4q0TjiLSSqyLzVifxnv9yHz56TrhHG/QP
 E/8+FEGCHYKM4JLr5smGlzv72Kfx9E1CkG6TgFNIHjipVv1AtYDvaNMdPF2533+F
 wE3YmpC3Q0g9r44nEbz4Bw==
 -----END CERTIFICATE-----`
+		keyPassword = ""
 	)
 
 	tmpFileCaPem, err := ioutil.TempFile(os.TempDir(), "test-ca.pem")
@@ -170,9 +130,10 @@ wE3YmpC3Q0g9r44nEbz4Bw==
 	}
 
 	return &certsConfig{
-		CertPEM: tmpFileCert.Name(),
-		KeyPEM:  tmpFileKey.Name(),
-		CaPEM:   tmpFileCaPem.Name(),
+		CertPEM:     tmpFileCert.Name(),
+		KeyPEM:      tmpFileKey.Name(),
+		KeyPassword: keyPassword,
+		CaPEM:       tmpFileCaPem.Name(),
 	}
 }
 
@@ -187,7 +148,7 @@ func TestWorkerProducerLog(t *testing.T) {
 		"ssl.ca.location":          config.CaPEM,
 		"ssl.key.location":         config.KeyPEM,
 		"ssl.certificate.location": config.CertPEM,
-		"ssl.key.password":         "",
+		"ssl.key.password":         config.KeyPassword,
 	})
 
 	if err != nil {
@@ -223,4 +184,56 @@ func TestWorkerProducerLog(t *testing.T) {
 			}
 		}
 	}()
+}
+
+func TestWorkerProducerLogSSL(t *testing.T) {
+
+	config := tlsConfig(t)
+	p, err := kafka.NewProducer(&kafka.ConfigMap{
+		"bootstrap.servers":        "broker",
+		"debug":                    "all",
+		"socket.timeout.ms":        10,
+		"security.protocol":        "SSL",
+		"ssl.ca.location":          config.CaPEM,
+		"ssl.key.location":         config.KeyPEM,
+		"ssl.certificate.location": config.CertPEM,
+		"ssl.key.password":         config.KeyPassword})
+
+	// myOAuthConfig := "scope=myscope principal=gotest"
+	// p, err := kafka.NewProducer(&kafka.ConfigMap{
+	// 	"security.protocol":       "SASL_PLAINTEXT",
+	// 	"sasl.mechanisms":         "OAUTHBEARER",
+	// 	"sasl.oauthbearer.config": myOAuthConfig,
+	// })
+
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+	for {
+		ev := <-p.Events()
+		sslKafka, ok := ev.(util.SslKakfa)
+
+		// t.Logf("ev %s", ev)
+		t.Logf("sslKakfa %s, ok is %t", sslKafka, ok)
+		if !ok {
+			continue
+		}
+		t.Logf("Got %s", sslKafka)
+		if sslKafka.KafkaSslCACertFile != config.CertPEM {
+			t.Fatalf("%s: Excepted CertPEM to be %s, not %s", sslKafka, sslKafka.KafkaSslClientCertFile, config.CertPEM)
+		}
+		if sslKafka.KafkaSslClientCertFile != config.CaPEM {
+			t.Fatalf("%s: Excepted CertPEM to be %s, not %s", sslKafka, sslKafka.KafkaSslClientCertFile, config.CaPEM)
+		}
+		if sslKafka.KafkaSslClientKeyFile != config.KeyPEM {
+			t.Fatalf("%s: Excepted CertPEM to be %s, not %s", sslKafka, sslKafka.KafkaSslClientKeyFile, config.KeyPEM)
+		}
+		if sslKafka.KafkaSslClientKeyPass != config.KeyPassword {
+			t.Fatalf("%s: Excepted CertPEM to be %s, not %s", sslKafka, sslKafka.KafkaSslClientKeyPass, config.KeyPassword)
+		}
+		break
+	}
+
+	p.Close()
+
 }

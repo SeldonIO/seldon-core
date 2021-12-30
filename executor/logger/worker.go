@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go"
@@ -12,6 +13,7 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/go-logr/logr"
 	"github.com/seldonio/seldon-core/executor/api/payload"
+	"github.com/seldonio/seldon-core/executor/api/util"
 )
 
 const (
@@ -31,28 +33,25 @@ const (
 // NewWorker creates, and returns a new Worker object. Its only argument
 // is a channel that the worker can add itself to whenever it is done its
 // work.
-func NewWorker(id int, workQueue chan LogRequest, log logr.Logger, sdepName string, namespace string, predictorName string, kafkaBroker string, kafkaTopic string, sslKakfa SslKakfa) (*Worker, error) {
+func NewWorker(id int, workQueue chan LogRequest, log logr.Logger, sdepName string, namespace string, predictorName string, kafkaBroker string, kafkaTopic string) (*Worker, error) {
 
 	var producer *kafka.Producer
 	var err error
+	sslKafka := util.GetSslElements()
 	if kafkaBroker != "" {
 		log.Info("Creating producer", "broker", kafkaBroker, "topic", kafkaTopic)
 		var producerConfigMap = kafka.ConfigMap{"bootstrap.servers": kafkaBroker,
 			"go.delivery.reports": false, // Need this othewise will get memory leak
 		}
-		log.Info("kafkaSecurityProtocol", "kafkaSecurityProtocol", sslKakfa.kafkaSecurityProtocol)
-		if kafkaBroker != "" {
-			if sslKakfa.kafkaSecurityProtocol != "" {
-
-				// producerConfigMap["debug"] = "security,broker,protocol,metadata,topic"
-				producerConfigMap["security.protocol"] = sslKakfa.kafkaSecurityProtocol
-				producerConfigMap["ssl.ca.location"] = sslKakfa.kafkaSslCACertFile
-				producerConfigMap["ssl.key.location"] = sslKakfa.kafkaSslClientKeyFile
-				producerConfigMap["ssl.certificate.location"] = sslKakfa.kafkaSslClientCertFile
-				producerConfigMap["ssl.key.password"] = sslKakfa.kafkaSslClientKeyPass // Key password, if any
-
-			}
+		log.Info("kafkaSecurityProtocol", "kafkaSecurityProtocol", util.KafkaSecurityProtocol)
+		if strings.ToLower(util.KafkaSecurityProtocol) == "ssl" {
+			producerConfigMap["security.protocol"] = util.KafkaSecurityProtocol
+			producerConfigMap["ssl.ca.location"] = sslKafka.KafkaSslCACertFile
+			producerConfigMap["ssl.key.location"] = sslKafka.KafkaSslClientKeyFile
+			producerConfigMap["ssl.certificate.location"] = sslKafka.KafkaSslClientCertFile
+			producerConfigMap["ssl.key.password"] = sslKafka.KafkaSslClientKeyPass // Key password, if any
 		}
+
 		producer, err = kafka.NewProducer(&producerConfigMap)
 		if err != nil {
 			return nil, err
@@ -128,9 +127,6 @@ func (w *Worker) sendKafkaEvent(logReq LogRequest) error {
 		Value:          *logReq.Bytes,
 		Headers:        kafkaHeaders,
 	}, nil)
-	w.Log.Info("Topic Partition:", "topic", kafka.TopicPartition{Topic: &w.KafkaTopic, Partition: kafka.PartitionAny})
-	w.Log.Info("Value:", "logReqBytes", *logReq.Bytes)
-	w.Log.Info("Kafka Headers:", "headers", kafkaHeaders)
 	if err != nil {
 		w.Log.Error(err, "Failed to produce response")
 		return err

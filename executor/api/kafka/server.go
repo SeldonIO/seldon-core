@@ -39,14 +39,6 @@ const (
 	ENV_KAFKA_SECURITY_PROTOCOL = "KAFKA_SECURITY_PROTOCOL"
 )
 
-type SslKakfa struct {
-	kafkaSslClientCertFile string
-	kafkaSslClientKeyFile  string
-	kafkaSslCACertFile     string
-	kafkaSecurityProtocol  string
-	kafkaSslClientKeyPass  string
-}
-
 type SeldonKafkaServer struct {
 	Client         client.SeldonApiClient
 	Producer       *kafka.Producer
@@ -61,17 +53,6 @@ type SeldonKafkaServer struct {
 	Workers        int
 	Log            logr.Logger
 	// KafkaSecurityProtocol string
-}
-
-func getSslElements() *SslKakfa {
-	sslElements := SslKakfa{
-		kafkaSslClientCertFile: util.GetEnv("KAFKA_SSL_CLIENT_CERT_FILE", ""),
-		kafkaSslClientKeyFile:  util.GetEnv("KAFKA_SSL_CLIENT_KEY_FILE", ""),
-		kafkaSslCACertFile:     util.GetEnv("KAFKA_SSL_CA_CERT_FILE", ""),
-		kafkaSecurityProtocol:  util.GetEnv("KAFKA_SECURITY_PROTOCOL", ""),
-		kafkaSslClientKeyPass:  util.GetEnv("KAFKA_SSL_CLIENT_KEY_PASS", ""),
-	}
-	return &sslElements
 }
 
 func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, protocol, transport string, annotations map[string]string, serverUrl *url.URL, predictor *v1.PredictorSpec, broker, topicIn, topicOut string, log logr.Logger) (*SeldonKafkaServer, error) {
@@ -99,18 +80,18 @@ func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, prot
 			return nil, fmt.Errorf("Unknown transport %s", transport)
 		}
 	}
-	sslKakfaServer := getSslElements()
+	sslKakfaServer := util.GetSslElements()
 	var producerConfigMap = kafka.ConfigMap{"bootstrap.servers": broker,
 		"go.delivery.reports": false, // Need this othewise will get memory leak
 	}
 	if broker != "" {
-		if sslKakfaServer.kafkaSecurityProtocol != "" {
+		if util.KafkaSecurityProtocol == "ssl" {
 			// producerConfigMap["debug"] = "security,broker,protocol,metadata,topic"
-			producerConfigMap["security.protocol"] = sslKakfaServer.kafkaSecurityProtocol
-			producerConfigMap["ssl.ca.location"] = sslKakfaServer.kafkaSslCACertFile
-			producerConfigMap["ssl.key.location"] = sslKakfaServer.kafkaSslClientKeyFile
-			producerConfigMap["ssl.certificate.location"] = sslKakfaServer.kafkaSslClientCertFile
-			producerConfigMap["ssl.key.password"] = sslKakfaServer.kafkaSslClientKeyPass // Key password, if any
+			producerConfigMap["security.protocol"] = util.KafkaSecurityProtocol
+			producerConfigMap["ssl.ca.location"] = sslKakfaServer.KafkaSslCACertFile
+			producerConfigMap["ssl.key.location"] = sslKakfaServer.KafkaSslClientKeyFile
+			producerConfigMap["ssl.certificate.location"] = sslKakfaServer.KafkaSslClientCertFile
+			producerConfigMap["ssl.key.password"] = sslKakfaServer.KafkaSslClientKeyPass // Key password, if any
 
 		}
 	}
