@@ -33,7 +33,7 @@ RUN wget -O hashicorp-go-retryablehttp.tar.gz https://github.com/hashicorp/go-re
 RUN wget -O hashicorp-go-rootcerts.tar.gz https://github.com/hashicorp/go-rootcerts/archive/master.tar.gz
 RUN wget -O hashicorp-go-sockaddr.tar.gz https://github.com/hashicorp/go-sockaddr/archive/master.tar.gz
 RUN wget -O hashicorp-go-uuid.tar.gz https://github.com/hashicorp/go-uuid/archive/master.tar.gz
-RUN wget -O hashicorp-go-version.tar.gz https://github.com/hashicorp/go-version/archive/master.tar.gz
+RUN wget -O hashicorp-go-version.tar.gz https://github.com/hashicorp/go-version/archive/main.tar.gz
 RUN wget -O hashicorp-golang-lru.tar.gz https://github.com/hashicorp/golang-lru/archive/master.tar.gz
 RUN wget -O hashicorp-hcl.tar.gz https://github.com/hashicorp/hcl/archive/main.tar.gz
 RUN wget -O hashicorp-logutils.tar.gz https://github.com/hashicorp/logutils/archive/master.tar.gz
