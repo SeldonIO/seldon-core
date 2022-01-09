@@ -412,6 +412,10 @@ func (p *PredictorProcess) Metadata(node *v1.PredictiveUnit, modelName string, m
 	}
 }
 
+func (p *PredictorProcess) Config(node *v1.PredictiveUnit, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
+	return p.Client.Config(p.Ctx, modelName, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
+}
+
 func (p *PredictorProcess) GraphMetadata(spec *v1.PredictorSpec) (*GraphMetadata, error) {
 	metadataMap, err := p.ModelMetadataMap(&spec.Graph)
 	if err != nil {

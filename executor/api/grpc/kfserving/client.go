@@ -178,6 +178,10 @@ func (s *KFServingGrpcClient) Metadata(ctx context.Context, modelName string, ho
 	return &resPayload, nil
 }
 
+func (kc *KFServingGrpcClient) Config(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+	panic("Not implemented")
+}
+
 func (s *KFServingGrpcClient) Unmarshall(msg []byte, contentType string) (payload.SeldonPayload, error) {
 	panic("implement me")
 }

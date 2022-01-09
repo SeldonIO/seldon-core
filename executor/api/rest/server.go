@@ -183,6 +183,7 @@ func (r *SeldonRestApi) Initialise() {
 			r.Router.NewRoute().Path("/v2/models/infer").Methods("OPTIONS", "POST").HandlerFunc(r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions)) // Nonstandard path - Seldon extension
 			r.Router.NewRoute().Path("/v2/models/{"+ModelHttpPathVariable+"}/ready").Methods("GET", "OPTIONS").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
 			r.Router.NewRoute().Path("/v2/models/{"+ModelHttpPathVariable+"}").Methods("GET", "OPTIONS").HandlerFunc(r.wrapMetrics(metric.MetadataHttpServiceName, r.metadata))
+			r.Router.NewRoute().Path("/v2/models/{" + ModelHttpPathVariable + "/config").Methods("GET").HandlerFunc(r.wrapMetrics(metric.ConfigHttpServiceName, r.config))
 
 		}
 	}
@@ -225,6 +226,28 @@ func (r *SeldonRestApi) metadata(w http.ResponseWriter, req *http.Request) {
 
 	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header, modelName)
 	resPayload, err := seldonPredictorProcess.Metadata(&r.predictor.Graph, modelName, nil)
+	if err != nil {
+		r.respondWithError(w, resPayload, err)
+		return
+	}
+	r.respondWithSuccess(w, http.StatusOK, resPayload)
+}
+
+func (r *SeldonRestApi) config(w http.ResponseWriter, req *http.Request) {
+	ctx := req.Context()
+
+	// Apply tracing if active
+	if opentracing.IsGlobalTracerRegistered() {
+		var serverSpan opentracing.Span
+		ctx, serverSpan = setupTracing(ctx, req, TracingConfigName)
+		defer serverSpan.Finish()
+	}
+
+	vars := mux.Vars(req)
+	modelName := vars[ModelHttpPathVariable]
+
+	seldonPredictorProcess := predictor.NewPredictorProcess(ctx, r.Client, logf.Log.WithName(LoggingRestClientName), r.ServerUrl, r.Namespace, req.Header, modelName)
+	resPayload, err := seldonPredictorProcess.Config(&r.predictor.Graph, modelName, nil)
 	if err != nil {
 		r.respondWithError(w, resPayload, err)
 		return

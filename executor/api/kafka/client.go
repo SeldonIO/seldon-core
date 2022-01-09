@@ -142,6 +142,10 @@ func (kc *KafkaClient) Metadata(ctx context.Context, modelName string, host stri
 	panic("Not implemented")
 }
 
+func (kc *KafkaClient) Config(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+	panic("Not implemented")
+}
+
 func (kc *KafkaClient) CreateErrorPayload(err error) payload.SeldonPayload {
 	panic("Not implemented")
 }

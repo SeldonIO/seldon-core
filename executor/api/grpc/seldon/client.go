@@ -260,3 +260,7 @@ func (s *SeldonMessageGrpcClient) ModelMetadata(ctx context.Context, modelName s
 	}
 	return output, nil
 }
+
+func (s *SeldonMessageGrpcClient) Config(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+	panic("Not implemented")
+}

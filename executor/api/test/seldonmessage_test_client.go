@@ -67,6 +67,10 @@ func (s SeldonMessageTestClient) ModelMetadata(ctx context.Context, modelName st
 	return output, nil
 }
 
+func (s SeldonMessageTestClient) Config(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+	return msg, nil
+}
+
 func (s SeldonMessageTestClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {
 	return msg, nil
 }

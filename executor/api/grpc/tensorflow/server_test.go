@@ -119,6 +119,11 @@ func (s TestTensorflowClient) TransformOutput(ctx context.Context, modelName str
 func (s TestTensorflowClient) Feedback(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	panic("not implemented")
 }
+
+func (s TestTensorflowClient) Config(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+	panic("not implemented")
+}
+
 func TestPredict(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)

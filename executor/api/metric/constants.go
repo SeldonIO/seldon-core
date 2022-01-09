@@ -18,6 +18,7 @@ const (
 	StatusHttpServiceName     = "status"
 	MetadataHttpServiceName   = "metadata"
 	FeedbackHttpServiceName   = "feedback"
+	ConfigHttpServiceName     = "config"
 )
 
 var (

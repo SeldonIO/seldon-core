@@ -277,6 +277,8 @@ func (smc *JSONRestClient) modifyMethod(method string, modelName string) string 
 			return "/v2/models/" + modelName + "/ready"
 		case client.SeldonMetadataPath:
 			return "/v2/models/" + modelName
+		case client.SeldonConfigPath:
+			return "/v2/models/" + modelName + "/config"
 		}
 	default:
 		return method
@@ -338,6 +340,10 @@ func (smc *JSONRestClient) ModelMetadata(ctx context.Context, modelName string, 
 		return payload.ModelMetadata{}, err
 	}
 	return modelMetadata, nil
+}
+
+func (smc *JSONRestClient) Config(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+	return smc.call(ctx, modelName, smc.modifyMethod(client.SeldonConfigPath, modelName), host, port, msg, meta)
 }
 
 func (smc *JSONRestClient) Chain(ctx context.Context, modelName string, msg payload.SeldonPayload) (payload.SeldonPayload, error) {

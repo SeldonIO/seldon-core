@@ -161,6 +161,10 @@ func (s *TensorflowGrpcClient) ModelMetadata(ctx context.Context, modelName stri
 	return payload.ModelMetadata{}, status.Errorf(codes.Unimplemented, "ModelMetadata not implemented")
 }
 
+func (kc *TensorflowGrpcClient) Config(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
+	panic("Not implemented")
+}
+
 func (s *TensorflowGrpcClient) Feedback(ctx context.Context, modelName string, host string, port int32, msg payload.SeldonPayload, meta map[string][]string) (payload.SeldonPayload, error) {
 	panic("implement me")
 }
