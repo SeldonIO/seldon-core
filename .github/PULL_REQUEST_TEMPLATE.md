@@ -14,14 +14,3 @@ Usage: `Fixes #<issue number>`, or `Fixes (paste link of issue)`.
 Fixes #
 
 **Special notes for your reviewer**:
-
-**Does this PR introduce a user-facing change?**:
-<!--
-If no, just write "NONE" in the release-note block below.
-Otherwise, enter your extended release note in the block below.
-For more information on release notes see: 
-https://docs.seldon.io/projects/seldon-core/en/latest/developer/contributing.html#release-notes
--->
-```release-note
-```
-
