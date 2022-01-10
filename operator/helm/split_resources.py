@@ -40,13 +40,7 @@ HELM_IF_END = "{{- end }}\n"
 HELM_ENV_SUBST = {
     "AMBASSADOR_ENABLED": "ambassador.enabled",
     "AMBASSADOR_SINGLE_NAMESPACE": "ambassador.singleNamespace",
-    "ENGINE_SERVER_GRPC_PORT": "engine.grpc.port",
-    "ENGINE_CONTAINER_IMAGE_PULL_POLICY": "engine.image.pullPolicy",
     "ENGINE_LOG_MESSAGES_EXTERNALLY": "engine.logMessagesExternally",
-    "ENGINE_SERVER_PORT": "engine.port",
-    "ENGINE_PROMETHEUS_PATH": "engine.prometheus.path",
-    "ENGINE_CONTAINER_USER": "engine.user",
-    "ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME": "engine.serviceAccount.name",
     "ISTIO_ENABLED": "istio.enabled",
     "KEDA_ENABLED": "keda.enabled",
     "ISTIO_GATEWAY": "istio.gateway",
@@ -68,10 +62,6 @@ HELM_ENV_SUBST = {
     "EXECUTOR_DEFAULT_CPU_REQUEST": "executor.resources.cpuRequest",
     "EXECUTOR_DEFAULT_MEMORY_LIMIT": "executor.resources.memoryLimit",
     "EXECUTOR_DEFAULT_MEMORY_REQUEST": "executor.resources.memoryRequest",
-    "ENGINE_DEFAULT_CPU_LIMIT": "engine.resources.cpuLimit",
-    "ENGINE_DEFAULT_CPU_REQUEST": "engine.resources.cpuRequest",
-    "ENGINE_DEFAULT_MEMORY_LIMIT": "engine.resources.memoryLimit",
-    "ENGINE_DEFAULT_MEMORY_REQUEST": "engine.resources.memoryRequest",
     "MANAGER_LOG_LEVEL": "manager.logLevel",
     "MANAGER_LEADER_ELECTION_ID": "manager.leaderElectionID",
     "EXECUTOR_REQUEST_LOGGER_WORK_QUEUE_SIZE": "executor.requestLogger.workQueueSize",
@@ -194,10 +184,6 @@ if __name__ == "__main__":
                 for env in res["spec"]["template"]["spec"]["containers"][0]["env"]:
                     if env["name"] in HELM_ENV_SUBST:
                         env["value"] = helm_value(HELM_ENV_SUBST[env["name"]])
-                    elif env["name"] == "ENGINE_CONTAINER_IMAGE_AND_VERSION":
-                        env[
-                            "value"
-                        ] = "{{ .Values.engine.image.registry }}/{{ .Values.engine.image.repository }}:{{ .Values.engine.image.tag }}"
                     elif env["name"] == "EXECUTOR_CONTAINER_IMAGE_AND_VERSION":
                         env[
                             "value"
