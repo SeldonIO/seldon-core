@@ -19,7 +19,7 @@ Keep reading to learn more!
 
 ## E2E Serving with Model Servers
 
-With `Seldon Core` you can take and put it directly into the production using our flexible `Model Servers`.
+With `Seldon Core` you can take your model and put it directly into the production using our flexible `Model Servers`.
 
 ![](../images/e2e-model-serving.svg)
 
