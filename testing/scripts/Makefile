@@ -11,11 +11,6 @@ kind_create_cluster:
 kind_delete_cluster:
 	kind delete cluster
 
-.PHONY: kind_build_engine
-kind_build_engine:
-	cd ../../engine/ && make build_image
-	kind load docker-image seldonio/engine:$(VERSION) --loglevel trace
-
 .PHONY: kind_build_operator
 kind_build_operator:
 	cd ../../operator && make kind-image-install
@@ -57,7 +52,7 @@ kind_build_misc:
 	cd ../../components/routers/epsilon-greedy && make kind_load
 
 .PHONY: kind_build_images
-kind_build_images: build_protos kind_build_engine kind_build_operator kind_build_executor kind_build_test_models kind_build_prepackaged kind_build_alibi_explain kind_build_alibi_detect kind_build_rclone_storage_initializer kind_build_misc
+kind_build_images: build_protos kind_build_operator kind_build_executor kind_build_test_models kind_build_prepackaged kind_build_alibi_explain kind_build_alibi_detect kind_build_rclone_storage_initializer kind_build_misc
 
 .PHONY: helm_setup
 helm_setup:
