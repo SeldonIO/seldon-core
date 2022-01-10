@@ -5,8 +5,6 @@ metadata:
     app: seldon
   name: seldon-model
 spec:
-  annotations:
-    seldon.io/executor: "true"
   name: deployment
   predictors:
   - graph:

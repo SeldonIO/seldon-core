@@ -5,8 +5,6 @@ metadata:
     app: seldon
   name: seldon-mock-model
 spec:
-  annotations:
-    seldon.io/executor: "true"
   name: mock-deployment
   predictors:
   - graph:
