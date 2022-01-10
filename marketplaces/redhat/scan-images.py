@@ -24,7 +24,6 @@ def scan_images(debug=False):
     paths = [
     "operator",
     "executor",
-    "engine",
     "examples/models/mean_classifier",
     "components/alibi-detect-server",
     "components/seldon-request-logger",
