@@ -31,12 +31,11 @@ const (
 )
 
 const (
-	ENV_KAFKA_BROKER            = "KAFKA_BROKER"
-	ENV_KAFKA_INPUT_TOPIC       = "KAFKA_INPUT_TOPIC"
-	ENV_KAFKA_OUTPUT_TOPIC      = "KAFKA_OUTPUT_TOPIC"
-	ENV_KAFKA_FULL_GRAPH        = "KAFKA_FULL_GRAPH"
-	ENV_KAFKA_WORKERS           = "KAFKA_WORKERS"
-	ENV_KAFKA_SECURITY_PROTOCOL = "KAFKA_SECURITY_PROTOCOL"
+	ENV_KAFKA_BROKER       = "KAFKA_BROKER"
+	ENV_KAFKA_INPUT_TOPIC  = "KAFKA_INPUT_TOPIC"
+	ENV_KAFKA_OUTPUT_TOPIC = "KAFKA_OUTPUT_TOPIC"
+	ENV_KAFKA_FULL_GRAPH   = "KAFKA_FULL_GRAPH"
+	ENV_KAFKA_WORKERS      = "KAFKA_WORKERS"
 )
 
 type SeldonKafkaServer struct {
@@ -52,7 +51,6 @@ type SeldonKafkaServer struct {
 	ServerUrl      *url.URL
 	Workers        int
 	Log            logr.Logger
-	// KafkaSecurityProtocol string
 }
 
 func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, protocol, transport string, annotations map[string]string, serverUrl *url.URL, predictor *v1.PredictorSpec, broker, topicIn, topicOut string, log logr.Logger) (*SeldonKafkaServer, error) {
@@ -85,13 +83,13 @@ func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, prot
 		"go.delivery.reports": false, // Need this othewise will get memory leak
 	}
 	if broker != "" {
-		if util.KafkaSecurityProtocol == "ssl" {
+		if util.KafkaSecurityProtocol == "SSL" {
 			// producerConfigMap["debug"] = "security,broker,protocol,metadata,topic"
 			producerConfigMap["security.protocol"] = util.KafkaSecurityProtocol
-			producerConfigMap["ssl.ca.location"] = sslKakfaServer.KafkaSslCACertFile
-			producerConfigMap["ssl.key.location"] = sslKakfaServer.KafkaSslClientKeyFile
-			producerConfigMap["ssl.certificate.location"] = sslKakfaServer.KafkaSslClientCertFile
-			producerConfigMap["ssl.key.password"] = sslKakfaServer.KafkaSslClientKeyPass // Key password, if any
+			producerConfigMap["ssl.ca.location"] = sslKakfaServer.CACertFile
+			producerConfigMap["ssl.key.location"] = sslKakfaServer.ClientKeyFile
+			producerConfigMap["ssl.certificate.location"] = sslKakfaServer.ClientCertFile
+			producerConfigMap["ssl.key.password"] = sslKakfaServer.ClientKeyPass // Key password, if any
 
 		}
 	}

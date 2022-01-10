@@ -141,3 +141,10 @@ func TestInjectRouteSeldonJson(t *testing.T) {
 
 	g.Expect(routes).To(Equal(testRouting))
 }
+
+func TestSSLSecurityProtocol(t *testing.T) {
+	g := NewGomegaWithT(t)
+	os.Setenv("KAFKA_SECURITY_PROTOCOL", "ssl")
+	val := getKafkaSecurityProtocol()
+	g.Expect(val).To(Equal("SSL"))
+}

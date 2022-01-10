@@ -219,17 +219,17 @@ func TestWorkerProducerLogSSL(t *testing.T) {
 			continue
 		}
 		t.Logf("Got %s", sslKafka)
-		if sslKafka.KafkaSslCACertFile != config.CertPEM {
-			t.Fatalf("%s: Excepted CertPEM to be %s, not %s", sslKafka, sslKafka.KafkaSslClientCertFile, config.CertPEM)
+		if sslKafka.CACertFile != config.CertPEM {
+			t.Fatalf("%s: Excepted CertPEM to be %s, not %s", sslKafka, sslKafka.ClientCertFile, config.CertPEM)
 		}
-		if sslKafka.KafkaSslClientCertFile != config.CaPEM {
-			t.Fatalf("%s: Excepted CertPEM to be %s, not %s", sslKafka, sslKafka.KafkaSslClientCertFile, config.CaPEM)
+		if sslKafka.ClientCertFile != config.CaPEM {
+			t.Fatalf("%s: Excepted CertPEM to be %s, not %s", sslKafka, sslKafka.ClientCertFile, config.CaPEM)
 		}
-		if sslKafka.KafkaSslClientKeyFile != config.KeyPEM {
-			t.Fatalf("%s: Excepted CertPEM to be %s, not %s", sslKafka, sslKafka.KafkaSslClientKeyFile, config.KeyPEM)
+		if sslKafka.ClientKeyFile != config.KeyPEM {
+			t.Fatalf("%s: Excepted CertPEM to be %s, not %s", sslKafka, sslKafka.ClientKeyFile, config.KeyPEM)
 		}
-		if sslKafka.KafkaSslClientKeyPass != config.KeyPassword {
-			t.Fatalf("%s: Excepted CertPEM to be %s, not %s", sslKafka, sslKafka.KafkaSslClientKeyPass, config.KeyPassword)
+		if sslKafka.ClientKeyPass != config.KeyPassword {
+			t.Fatalf("%s: Excepted CertPEM to be %s, not %s", sslKafka, sslKafka.ClientKeyPass, config.KeyPassword)
 		}
 		break
 	}

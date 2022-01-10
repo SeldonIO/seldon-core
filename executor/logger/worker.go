@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go"
@@ -44,12 +43,12 @@ func NewWorker(id int, workQueue chan LogRequest, log logr.Logger, sdepName stri
 			"go.delivery.reports": false, // Need this othewise will get memory leak
 		}
 		log.Info("kafkaSecurityProtocol", "kafkaSecurityProtocol", util.KafkaSecurityProtocol)
-		if strings.ToLower(util.KafkaSecurityProtocol) == "ssl" {
+		if util.KafkaSecurityProtocol == "SSL" {
 			producerConfigMap["security.protocol"] = util.KafkaSecurityProtocol
-			producerConfigMap["ssl.ca.location"] = sslKafka.KafkaSslCACertFile
-			producerConfigMap["ssl.key.location"] = sslKafka.KafkaSslClientKeyFile
-			producerConfigMap["ssl.certificate.location"] = sslKafka.KafkaSslClientCertFile
-			producerConfigMap["ssl.key.password"] = sslKafka.KafkaSslClientKeyPass // Key password, if any
+			producerConfigMap["ssl.ca.location"] = sslKafka.CACertFile
+			producerConfigMap["ssl.key.location"] = sslKafka.ClientKeyFile
+			producerConfigMap["ssl.certificate.location"] = sslKafka.ClientCertFile
+			producerConfigMap["ssl.key.password"] = sslKafka.ClientKeyPass // Key password, if any
 		}
 
 		producer, err = kafka.NewProducer(&producerConfigMap)
