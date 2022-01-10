@@ -152,8 +152,6 @@ var _ = JustBeforeEach(func() {
 	envUseExecutor = "true"
 	envExecutorImage = "a"
 	envExecutorImageRelated = "b"
-	envEngineImage = "c"
-	envEngineImageRelated = "d"
 	envDefaultUser = ""
 	envExplainerImage = ""
 })

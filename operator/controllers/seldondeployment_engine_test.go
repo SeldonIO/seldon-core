@@ -58,41 +58,6 @@ func cleanEnvImages() {
 	envUseExecutor = ""
 	envExecutorImage = ""
 	envExecutorImageRelated = ""
-	envEngineImage = ""
-	envEngineImageRelated = ""
-}
-
-func setUseExecutorAnnotation(mlDep *machinelearningv1.SeldonDeployment, useExecutor string) {
-	mlDep.Spec.Annotations[machinelearningv1.ANNOTATION_EXECUTOR] = useExecutor
-}
-
-func conductExecutorUsageTest(t *testing.T, testEnvUseExecutor, testAnnotationUseExecutor string, expectedExecutorEnabled bool) {
-	g := NewGomegaWithT(t)
-	cleanEnvImages()
-	mlDep := createTestSeldonDeployment()
-	if testAnnotationUseExecutor != "" {
-		setUseExecutorAnnotation(mlDep, testAnnotationUseExecutor)
-	}
-	if testEnvUseExecutor != "" {
-		envUseExecutor = testEnvUseExecutor
-	}
-	executorEnabled := isExecutorEnabled(mlDep)
-	g.Expect(executorEnabled).To(Equal(expectedExecutorEnabled))
-	cleanEnvImages()
-}
-
-func TestUseExecutor(t *testing.T) {
-	conductExecutorUsageTest(t, "", "", false)
-
-	// environment variable works as default if annotation is not set
-	conductExecutorUsageTest(t, "false", "", false)
-	conductExecutorUsageTest(t, "true", "", true)
-
-	// annotation always takes priority
-	conductExecutorUsageTest(t, "true", "true", true)
-	conductExecutorUsageTest(t, "true", "false", false)
-	conductExecutorUsageTest(t, "false", "true", true)
-	conductExecutorUsageTest(t, "false", "false", false)
 }
 
 func TestExecutorCreateNoEnv(t *testing.T) {
@@ -128,44 +93,6 @@ func TestExecutorCreateEnvRelated(t *testing.T) {
 	envExecutorImageRelated = imageNameRelated
 	mlDep := createTestSeldonDeployment()
 	con, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
-	g.Expect(err).To(BeNil())
-	g.Expect(con.Image).To(Equal(imageNameRelated))
-	cleanEnvImages()
-}
-
-func TestEngineCreateNoEnv(t *testing.T) {
-	g := NewGomegaWithT(t)
-	cleanEnvImages()
-	envEngineImage = ""
-	envEngineImageRelated = ""
-	mlDep := createTestSeldonDeployment()
-	_, err := createEngineContainerSpec(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
-	g.Expect(err).ToNot(BeNil())
-	cleanEnvImages()
-}
-
-func TestEngineCreateEnv(t *testing.T) {
-	g := NewGomegaWithT(t)
-	cleanEnvImages()
-	imageName := "myimage"
-	envEngineImage = imageName
-	envEngineImageRelated = ""
-	mlDep := createTestSeldonDeployment()
-	con, err := createEngineContainerSpec(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
-	g.Expect(err).To(BeNil())
-	g.Expect(con.Image).To(Equal(imageName))
-	cleanEnvImages()
-}
-
-func TestEngineCreateEnvRelated(t *testing.T) {
-	g := NewGomegaWithT(t)
-	cleanEnvImages()
-	imageName := "myimage"
-	imageNameRelated := "myimage2"
-	envEngineImage = imageName
-	envEngineImageRelated = imageNameRelated
-	mlDep := createTestSeldonDeployment()
-	con, err := createEngineContainerSpec(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
 	g.Expect(err).To(BeNil())
 	g.Expect(con.Image).To(Equal(imageNameRelated))
 	cleanEnvImages()
