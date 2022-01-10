@@ -73,8 +73,6 @@ spec:
           value: "true"
         - name: AMBASSADOR_SINGLE_NAMESPACE
           value: "false"
-        - name: ENGINE_LOG_MESSAGES_EXTERNALLY
-          value: "false"
         - name: PREDICTIVE_UNIT_HTTP_SERVICE_PORT
           value: "9000"
         - name: PREDICTIVE_UNIT_GRPC_SERVICE_PORT

@@ -83,8 +83,6 @@ spec:
           value: '{{ .Values.ambassador.enabled }}'
         - name: AMBASSADOR_SINGLE_NAMESPACE
           value: '{{ .Values.ambassador.singleNamespace }}'
-        - name: ENGINE_LOG_MESSAGES_EXTERNALLY
-          value: '{{ .Values.engine.logMessagesExternally }}'
         - name: PREDICTIVE_UNIT_HTTP_SERVICE_PORT
           value: '{{ .Values.predictiveUnit.httpPort }}'
         - name: PREDICTIVE_UNIT_GRPC_SERVICE_PORT

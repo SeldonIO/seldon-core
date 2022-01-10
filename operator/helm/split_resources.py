@@ -40,7 +40,6 @@ HELM_IF_END = "{{- end }}\n"
 HELM_ENV_SUBST = {
     "AMBASSADOR_ENABLED": "ambassador.enabled",
     "AMBASSADOR_SINGLE_NAMESPACE": "ambassador.singleNamespace",
-    "ENGINE_LOG_MESSAGES_EXTERNALLY": "engine.logMessagesExternally",
     "ISTIO_ENABLED": "istio.enabled",
     "KEDA_ENABLED": "keda.enabled",
     "ISTIO_GATEWAY": "istio.gateway",

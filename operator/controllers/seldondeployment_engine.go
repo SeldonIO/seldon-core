@@ -353,11 +353,6 @@ func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machine
 
 	}
 
-	if _, ok := svcOrchEnvMap["SELDON_LOG_MESSAGES_EXTERNALLY"]; ok {
-		//this env var is set already so no need to set a default
-	} else {
-		c.Env = append(c.Env, corev1.EnvVar{Name: "SELDON_LOG_MESSAGES_EXTERNALLY", Value: utils.GetEnv("ENGINE_LOG_MESSAGES_EXTERNALLY", "false")})
-	}
 	return c, nil
 }
 
