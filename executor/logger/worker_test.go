@@ -13,16 +13,8 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/util"
 )
 
-type certsConfig struct {
-	CertPEM     string
-	KeyPEM      string
-	KeyPassword string
-	CaPEM       string
-}
-
-func tlsConfig(t *testing.T) *certsConfig {
-	const (
-		certPEM = `-----BEGIN CERTIFICATE-----
+const (
+	certPEM = `-----BEGIN CERTIFICATE-----
 MIID2zCCAsOgAwIBAgIJAMSqbewCgw4xMA0GCSqGSIb3DQEBCwUAMGAxCzAJBgNV
 BAYTAlVTMRMwEQYDVQQIDApDYWxpZm9ybmlhMRYwFAYDVQQHDA1TYW4gRnJhbmNp
 c2NvMRAwDgYDVQQKDAdTZWdtZW50MRIwEAYDVQQDDAlsb2NhbGhvc3QwHhcNMTcx
@@ -46,7 +38,7 @@ HU9LpQh0i6oTK0UCqnDwlhJl1c7A3UooxFpc3NGxyjogzTfI/gnBKfPo7eeswwsV
 77rjIkhBW49L35KOo1uyblgK1vTT7VPtzJnuDq3ORg==
 -----END CERTIFICATE-----`
 
-		keyPEM = `-----BEGIN RSA PRIVATE KEY-----
+	keyPEM = `-----BEGIN RSA PRIVATE KEY-----
 MIIEowIBAAKCAQEAtda9OWKYNtINe/BKAoB+/zLg2qbaTeHN7L722Ug7YoY6zMVB
 aQEHrUmshw/TOrT7GLN/6e6rFN74UuNg72C1tsflZvxqkGdrup3I3jxMh2ApAxLi
 zem/M6Eke2OAqt+SzRPqc5GXH/nrWVd3wqg48DZOAR0jVTY2e0fWy+Er/cPJI1lc
@@ -74,7 +66,7 @@ DUpdbxbJHSi0xAjOjLVswNws4pVwzgtZVK8R7k8j3Z5TtYTJTSQLfgVowuyEdAaI
 C8OxVJ/At/IJGnWSIz8z+/YCUf7p4jd2LJgmZVVzXeDsOFcH62gu
 -----END RSA PRIVATE KEY-----`
 
-		caPEM = `-----BEGIN CERTIFICATE-----
+	caPEM = `-----BEGIN CERTIFICATE-----
 MIIDPDCCAiQCCQCBYUuEuypDMTANBgkqhkiG9w0BAQsFADBgMQswCQYDVQQGEwJV
 UzETMBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNU2FuIEZyYW5jaXNjbzEQ
 MA4GA1UECgwHU2VnbWVudDESMBAGA1UEAwwJbG9jYWxob3N0MB4XDTE3MTIyMzE1
@@ -94,47 +86,43 @@ DhSJS+/iIaroc8umDnbPfhhgnlMf0/D4q0TjiLSSqyLzVifxnv9yHz56TrhHG/QP
 E/8+FEGCHYKM4JLr5smGlzv72Kfx9E1CkG6TgFNIHjipVv1AtYDvaNMdPF2533+F
 wE3YmpC3Q0g9r44nEbz4Bw==
 -----END CERTIFICATE-----`
-		keyPassword = ""
-	)
+	keyPassword = ""
+)
 
-	tmpFileCaPem, err := ioutil.TempFile(os.TempDir(), "test-ca.pem")
-	if err != nil {
-		log.Fatal("Cannot create temporary file", err)
-	}
-	// defer os.Remove(tmpFileCaPem.Name())
+type certsConfig struct {
+	CertPEM     string
+	KeyPEM      string
+	KeyPassword string
+	CaPEM       string
+}
 
-	caPemText := []byte(caPEM)
-	if _, err = tmpFileCaPem.Write(caPemText); err != nil {
-		log.Fatal("Failed to write to temporary file", err)
-	}
-	tmpFileKey, err := ioutil.TempFile(os.TempDir(), "test-key.key")
-	if err != nil {
-		log.Fatal("Cannot create temporary file", err)
-	}
-	// defer os.Remove(tmpFileKey.Name())
+func tlsConfig(t *testing.T) *certsConfig {
+	tmpDir := t.TempDir()
 
-	KeyPemText := []byte(keyPEM)
-	if _, err = tmpFileKey.Write(KeyPemText); err != nil {
-		log.Fatal("Failed to write to temporary file", err)
-	}
-
-	tmpFileCert, err := ioutil.TempFile(os.TempDir(), "test-cert.cert")
-	if err != nil {
-		log.Fatal("Cannot create temporary file", err)
-	}
-	// defer os.Remove(tmpFileCert.Name())
-
-	certPemText := []byte(certPEM)
-	if _, err = tmpFileCert.Write(certPemText); err != nil {
-		log.Fatal("Failed to write to temporary file", err)
-	}
+	tmpFileCa := writeTmpFile(tmpDir, "test-ca.pem", []byte(caPEM))
+	tmpFileKey := writeTmpFile(tmpDir, "test-key.key", []byte(keyPEM))
+	tmpFileCert := writeTmpFile(tmpDir, "test-cert.cert", []byte(certPEM))
 
 	return &certsConfig{
 		CertPEM:     tmpFileCert.Name(),
 		KeyPEM:      tmpFileKey.Name(),
 		KeyPassword: keyPassword,
-		CaPEM:       tmpFileCaPem.Name(),
+		CaPEM:       tmpFileCa.Name(),
 	}
+}
+
+func writeTmpFile(dirname string, filename string, contents []byte) *os.File {
+	f, err := ioutil.TempFile(dirname, filename)
+	if err != nil {
+		log.Fatalf("cannot create temporary file %s/%s: %v", dirname, filename, err)
+	}
+
+	_, err = f.Write(contents)
+	if err != nil {
+		log.Fatalf("cannot write to temporary file %s/%s: %v", dirname, filename, err)
+	}
+
+	return f
 }
 
 func TestWorkerProducerLog(t *testing.T) {
