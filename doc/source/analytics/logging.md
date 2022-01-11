@@ -80,6 +80,49 @@ The two required environment variables are:
  * LOGGER_KAFKA_BROKER : The Kafka Broker service endpoint.
  * LOGGER_KAFKA_TOPIC : The kafka Topic to log the requests.
 
+### Logging to encrypted Kafka with SSL
+
+You can log requests to an encrypted Kafka with SSL. SSL uses private-key/ certificate pairs, which are used during the SSL handshake process. 
+
+To be able to log payload, the client needs to authenticate with SSL, the client needs its own keystore, made up of a key pair and a signed certificate, signed by the CA certificate file for verifying the broker's certificate. Here is an example below on how to define those for a deployment: 
+
+```yaml
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: cifar10
+  namespace: seldon
+spec:
+  name: resnet32
+  predictors:
+  - graph:
+      implementation: TRITON_SERVER
+      logger:
+        mode: all
+      modelUri: gs://seldon-models/triton/tf_cifar10
+      name: cifar10
+    name: default
+    svcOrchSpec:
+      env:
+      - name: LOGGER_KAFKA_BROKER
+        value: seldon-kafka-plain-0.kafka:9092
+      - name: LOGGER_KAFKA_TOPIC
+        value: seldon
+      - name: KAFKA_SECURITY_PROTOCOL
+        value: ssl
+      - name: KAFKA_SSL_CA_CERT_FILE
+        value: /path/to/ca.pem
+      - name: KAFKA_SSL_CLIENT_CERT_FILE
+        value: /path/to/ca.cert
+      - name: KAFKA_SSL_CLIENT_KEY_FILE
+        value: /path/to/access.key
+      - name: KAFKA_SSL_CLIENT_KEY_PASS
+        value: abcdefgh # Key password, if any (optional field)
+    replicas: 1
+  protocol: kfserving
+
+```
+=
 Follow a [benchmarking notebook for CIFAR10 image payload logging showing 3K predictions per second with Triton Inference Server](../examples/kafka_logger.html).
 
 ## Setting Global Default
