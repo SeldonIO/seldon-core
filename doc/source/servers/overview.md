@@ -319,9 +319,9 @@ metadata:
   name: seldon-rclone-secret
 type: Opaque
 stringData:
-  RCLONE_CONFIG_GCS_TYPE: google cloud storage
-  RCLONE_CONFIG_GCS_ANONYMOUS: "false"
-  RCLONE_CONFIG_GCS_SERVICE_ACCOUNT_CREDENTIALS: '{"type":"service_account", ... <rest of gcloud-application-credentials.json>}'
+  RCLONE_CONFIG_GS_TYPE: google cloud storage
+  RCLONE_CONFIG_GS_ANONYMOUS: "false"
+  RCLONE_CONFIG_GS_SERVICE_ACCOUNT_CREDENTIALS: '{"type":"service_account", ... <rest of gcloud-application-credentials.json>}'
 ```
 
 Note: remote name is `gcs` here so urls would take form similar to `gcs:<your bucket>`.
