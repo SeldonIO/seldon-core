@@ -113,11 +113,14 @@ spec:
       - name: KAFKA_SSL_CA_CERT_FILE
         value: /path/to/ca.pem
       - name: KAFKA_SSL_CLIENT_CERT_FILE
-        value: /path/to/ca.cert
+        value: /path/to/access.cert
       - name: KAFKA_SSL_CLIENT_KEY_FILE
         value: /path/to/access.key
       - name: KAFKA_SSL_CLIENT_KEY_PASS
-        value: abcdefgh # Key password, if any (optional field)
+        valueFrom:
+          secretKeyRef:
+            name: my-kafka-secret
+            key: ssl-password # Key password, if any (optional field)
     replicas: 1
   protocol: kfserving
 
