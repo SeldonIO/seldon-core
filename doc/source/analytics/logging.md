@@ -84,7 +84,14 @@ The two required environment variables are:
 
 You can log requests to an encrypted Kafka with SSL. SSL uses private-key/ certificate pairs, which are used during the SSL handshake process. 
 
-To be able to log payload, the client needs to authenticate with SSL, the client needs its own keystore, made up of a key pair and a signed certificate, signed by the CA certificate file for verifying the broker's certificate. Here is an example below on how to define those for a deployment: 
+To be able to log payloads, the client needs:
+* to authenticate with SSL
+* its own keystore, made up of a key pair and a signed certificate
+* the CA certificate used to sign the key-certificate pair
+
+The CA certificate needs to be recognised by the broker and can also be used for verifying the broker's certificate.
+
+Here is an example on how to define these for a deployment: 
 
 ```yaml
 apiVersion: machinelearning.seldon.io/v1
