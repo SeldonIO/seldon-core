@@ -547,7 +547,7 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 				pu := machinelearningv1.GetEnginePredictiveUnit(&p.Graph)
 				if pu == nil {
 					// below should never happen - if it did would suggest problem in webhook
-					return nil, fmt.Errorf("Engine not separate and no pu with localhost service - not clear where to inject engine")
+					return nil, fmt.Errorf("engine not separate and no pu with localhost service - not clear where to inject engine")
 				}
 				// find the deployment with a container for the pu marked for engine
 				for i, _ := range c.deployments {
@@ -562,7 +562,7 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 
 				if !found {
 					// by this point we should have created the Deployment corresponding to the pu marked localhost - if we haven't something has gone wrong
-					return nil, fmt.Errorf("Engine not separate and no deployment for pu with localhost service - not clear where to inject engine")
+					return nil, fmt.Errorf("engine not separate and no deployment for pu with localhost service - not clear where to inject engine")
 				}
 				err := addEngineToDeployment(mlDep, &p, engine_http_port, engine_grpc_port, pSvcName, deploy)
 				if err != nil {
@@ -1440,6 +1440,7 @@ func jsonEquals(a, b interface{}) (bool, error) {
 
 // Create Deployments specified in components.
 func (r *SeldonDeploymentReconciler) createDeployments(components *components, instance *machinelearningv1.SeldonDeployment, log logr.Logger) (bool, error) {
+	// TODO(user) refactor ready variable to be less confusing
 	ready := true
 	var lastSuccessfulCondition *apis.Condition
 	for _, deploy := range components.deployments {
@@ -1518,13 +1519,20 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 						instance.Status.Replicas = found.Status.Replicas
 					}
 				}
-				log.Info("Deployment status ", "name", found.Name, "status", found.Status)
+				log.Info("Deployment status", "name", found.Name, "status", found.Status)
 				if found.Status.ReadyReplicas == 0 || found.Status.UnavailableReplicas > 0 {
 					if ready {
-						condition := getDeploymentCondition(found, appsv1.DeploymentAvailable)
-						log.Info("Updating condition for deployment", "name", found.Name, "condition", condition)
-						instance.Status.SetCondition(machinelearningv1.DeploymentsReady, condition)
+
+						availableCondition := getDeploymentCondition(found, appsv1.DeploymentAvailable)
+						log.Info("Updating availableCondition for deployment", "name", found.Name, "availableCondition", availableCondition)
+						instance.Status.SetCondition(machinelearningv1.DeploymentsReady, availableCondition)
 						log.Info("Inference status", "status", instance.Status)
+
+						progressingCondition := getDeploymentCondition(found, appsv1.DeploymentProgressing)
+						if progressingCondition.IsFalse() && availableCondition.IsFalse() {
+							log.Info("Deployment is not progressing, returning failed status", "name", found.Name)
+							return false, fmt.Errorf("deployment %s is not progressing and not available: (%s)", found.Name, progressingCondition.GetMessage())
+						}
 					}
 					ready = false
 				}
@@ -1535,9 +1543,7 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 						lastSuccessfulCondition = condition
 					}
 				}
-
 			}
-
 		}
 	}
 
@@ -1735,13 +1741,13 @@ func (r *SeldonDeploymentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	// Required for foreground deletion (e.g. ArgoCD does it)
 	if !instance.ObjectMeta.DeletionTimestamp.IsZero() {
-		// If Deletion Tiemstamp is set it means object is being deleted.
+		// If Deletion Timestamp is set it means object is being deleted.
 		// We should take no action in this situation.
 		log.Info("Deletion timestamp is set. Doing nothing.")
 		return ctrl.Result{}, nil
 	}
 
-	// Check if we are not namespaced and should ignore this as its in a namespace managed by another operator
+	// Check if we are not namespaced and should ignore this as it's in a namespace managed by another operator
 	if r.Namespace == "" {
 		ns := &corev1.Namespace{}
 		err := r.Get(ctx, types.NamespacedName{Name: instance.Namespace}, ns)
@@ -1844,7 +1850,6 @@ func (r *SeldonDeploymentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 }
 
 func (r *SeldonDeploymentReconciler) updateStatusForError(desired *machinelearningv1.SeldonDeployment, err error, log logr.Logger) {
-
 	//Ignore conflict errors
 	switch se := err.(type) {
 	case *errors.StatusError:

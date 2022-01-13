@@ -153,7 +153,9 @@ create-client: test
 docker-build: test generate-resources
 	docker build . -t ${IMG}
 
-
+# Build the docker image without testing
+docker-build-no-test: generate-resources
+	docker build . -t ${IMG}
 
 # Push the docker image
 docker-push:

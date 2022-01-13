@@ -24,7 +24,7 @@ patchesStrategicMerge:
 # but be aware issue means we can't support k8s <1.12 https://github.com/knative/eventing-contrib/issues/114
 #- patches/preserve_ukn_fields.yaml
 
-# Seldon addtion
+# Seldon addition
 # Allow graphs up to a set number of levels. Recursive openApi Validation is not presently supported in CRDs.
 - patches/graph_children.yaml
 
