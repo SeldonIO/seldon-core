@@ -83,9 +83,9 @@ func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, prot
 		"go.delivery.reports": false, // Need this othewise will get memory leak
 	}
 	if broker != "" {
-		if util.KafkaSecurityProtocol == "SSL" {
+		if util.GetKafkaSecurityProtocol() == "SSL" {
 			// producerConfigMap["debug"] = "security,broker,protocol,metadata,topic"
-			producerConfigMap["security.protocol"] = util.KafkaSecurityProtocol
+			producerConfigMap["security.protocol"] = util.GetKafkaSecurityProtocol()
 			producerConfigMap["ssl.ca.location"] = sslKakfaServer.CACertFile
 			producerConfigMap["ssl.key.location"] = sslKakfaServer.ClientKeyFile
 			producerConfigMap["ssl.certificate.location"] = sslKakfaServer.ClientCertFile

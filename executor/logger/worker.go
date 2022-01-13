@@ -42,9 +42,9 @@ func NewWorker(id int, workQueue chan LogRequest, log logr.Logger, sdepName stri
 		var producerConfigMap = kafka.ConfigMap{"bootstrap.servers": kafkaBroker,
 			"go.delivery.reports": false, // Need this othewise will get memory leak
 		}
-		log.Info("kafkaSecurityProtocol", "kafkaSecurityProtocol", util.KafkaSecurityProtocol)
-		if util.KafkaSecurityProtocol == "SSL" {
-			producerConfigMap["security.protocol"] = util.KafkaSecurityProtocol
+		log.Info("kafkaSecurityProtocol", "kafkaSecurityProtocol", util.GetKafkaSecurityProtocol())
+		if util.GetKafkaSecurityProtocol() == "SSL" {
+			producerConfigMap["security.protocol"] = util.GetKafkaSecurityProtocol()
 			producerConfigMap["ssl.ca.location"] = sslKafka.CACertFile
 			producerConfigMap["ssl.key.location"] = sslKafka.ClientKeyFile
 			producerConfigMap["ssl.certificate.location"] = sslKafka.ClientCertFile

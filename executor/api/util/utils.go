@@ -154,9 +154,7 @@ func (o SslKakfa) String() string {
 	return "SslKakfa"
 }
 
-var KafkaSecurityProtocol = getKafkaSecurityProtocol()
-
-func getKafkaSecurityProtocol() string {
+func GetKafkaSecurityProtocol() string {
 	return strings.ToUpper(GetEnv("KAFKA_SECURITY_PROTOCOL", ""))
 }
 
