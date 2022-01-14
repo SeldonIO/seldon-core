@@ -89,7 +89,9 @@ To be able to log payloads, the client needs:
 * its own keystore, made up of a key pair and a signed certificate
 * the CA certificate used to sign the key-certificate pair
 
-The CA certificate needs to be recognised by the broker and can also be used for verifying the broker's certificate. It is possible to read more about the different options available on [Confluent documentation](https://docs.confluent.io/platform/current/kafka/authentication_ssl.html) and [librdkafka Configuration](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) page. 
+The CA certificate needs to be recognised by the broker and can also be used for verifying the broker's certificate.
+
+It is possible to read more about the different options available on the [Confluent documentation](https://docs.confluent.io/platform/current/kafka/authentication_ssl.html) and [librdkafka Configuration](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) pages. 
 
 Here is an example on how to define these for a deployment: 
 
