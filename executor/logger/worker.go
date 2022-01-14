@@ -105,7 +105,6 @@ func getCEType(logReq LogRequest) (string, error) {
 }
 
 func (w *Worker) sendKafkaEvent(logReq LogRequest) error {
-	w.Log.Info("SENDING KAFKA EVENT", "LogReq", logReq)
 	reqType, err := getCEType(logReq)
 	if err != nil {
 		return err
@@ -198,7 +197,6 @@ func (w *Worker) Start() {
 				// Receive a work request.
 
 				if w.KafkaTopic != "" {
-					w.Log.Info("KAFKA TOPIC IS NOT NULL", "Topic", w.KafkaTopic)
 					if err := w.sendKafkaEvent(work); err != nil {
 						w.Log.Error(err, "Failed to send kafka log", "Topic", w.KafkaTopic)
 					}

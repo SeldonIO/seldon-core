@@ -84,7 +84,6 @@ func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, prot
 	}
 	if broker != "" {
 		if util.GetKafkaSecurityProtocol() == "SSL" {
-			// producerConfigMap["debug"] = "security,broker,protocol,metadata,topic"
 			producerConfigMap["security.protocol"] = util.GetKafkaSecurityProtocol()
 			producerConfigMap["ssl.ca.location"] = sslKakfaServer.CACertFile
 			producerConfigMap["ssl.key.location"] = sslKakfaServer.ClientKeyFile

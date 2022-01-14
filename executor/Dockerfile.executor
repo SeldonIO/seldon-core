@@ -56,7 +56,6 @@ RUN chmod -R 660 /openapi/
 FROM gcr.io/distroless/base-debian10:latest
 WORKDIR /
 COPY --from=builder /workspace/executor .
-COPY --from=builder /workspace/certs/ /certs/
 COPY licenses/license.txt licenses/license.txt
 COPY --from=builder /workspace/*.tar.gz licenses/mpl_source/
 
