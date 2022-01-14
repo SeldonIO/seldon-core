@@ -1441,13 +1441,14 @@ func jsonEquals(a, b interface{}) (bool, error) {
 // Create Deployments specified in components, returns ready, progressing, error.
 func (r *SeldonDeploymentReconciler) createDeployments(components *components, instance *machinelearningv1.SeldonDeployment, log logr.Logger) (bool, bool, error) {
 	ready := true
+	progressing := true
 	var lastSuccessfulCondition *apis.Condition
 	for _, deploy := range components.deployments {
 
 		log.Info("Scheme", "r.scheme", r.Scheme)
 		log.Info("createDeployments", "deploy", deploy)
 		if err := ctrl.SetControllerReference(instance, deploy, r.Scheme); err != nil {
-			return ready, true, err
+			return ready, progressing, err
 		}
 
 		// TODO(user): Change this for the object type created by your controller
@@ -1459,11 +1460,11 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 			log.Info("Creating Deployment", "namespace", deploy.Namespace, "name", deploy.Name)
 			err = r.Create(context.TODO(), deploy)
 			if err != nil {
-				return ready, true, err
+				return ready, progressing, err
 			}
 			r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsCreateDeployment, "Created Deployment %q", deploy.GetName())
 		} else if err != nil {
-			return ready, true,  err
+			return ready, progressing,  err
 		} else {
 			identical := true
 			if !equality.Semantic.DeepEqual(deploy.Spec.Template.Spec, found.Spec.Template.Spec) {
@@ -1478,7 +1479,7 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 
 				err = r.Update(context.TODO(), found)
 				if err != nil {
-					return ready, true, err
+					return ready, progressing, err
 				}
 
 				// Check if what came back from server modulo the defaults applied by k8s is the same or not
@@ -1521,7 +1522,6 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 				log.Info("Deployment status", "name", found.Name, "status", found.Status)
 				if found.Status.ReadyReplicas == 0 || found.Status.UnavailableReplicas > 0 {
 					if ready {
-
 						availableCondition := getDeploymentCondition(found, appsv1.DeploymentAvailable)
 						log.Info("Updating availableCondition for deployment", "name", found.Name, "availableCondition", availableCondition)
 						instance.Status.SetCondition(machinelearningv1.DeploymentsReady, availableCondition)
@@ -1530,7 +1530,7 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 						progressingCondition := getDeploymentCondition(found, appsv1.DeploymentProgressing)
 						if progressingCondition.IsFalse() && availableCondition.IsFalse() {
 							log.Info("Deployment is not progressing, returning failed status", "name", found.Name)
-							return false, false, nil
+							progressing = false
 						}
 					}
 					ready = false
@@ -1549,7 +1549,7 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 	if ready {
 		instance.Status.SetCondition(machinelearningv1.DeploymentsReady, lastSuccessfulCondition)
 	}
-	return ready, true, nil
+	return ready, progressing, nil
 }
 
 func getDeploymentCondition(deployment *appsv1.Deployment, conditionType appsv1.DeploymentConditionType) *apis.Condition {
