@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-	"github.com/seldonio/seldon-core/executor/api/util"
 )
 
 const (
@@ -174,54 +173,46 @@ func TestWorkerProducerLog(t *testing.T) {
 	}()
 }
 
-func TestWorkerProducerLogSSL(t *testing.T) {
-
+func TestWorkerProducerWrongFilesSSL(t *testing.T) {
 	config := tlsConfig(t)
-	p, err := kafka.NewProducer(&kafka.ConfigMap{
-		"bootstrap.servers":        "broker",
-		"debug":                    "all",
-		"socket.timeout.ms":        10,
+	_, err := kafka.NewProducer(&kafka.ConfigMap{
+		"security.protocol":        "SSL",
+		"ssl.ca.location":          "/fakepath/to/test-ca.pem",
+		"ssl.key.location":         config.KeyPEM,
+		"ssl.certificate.location": config.CertPEM,
+		"ssl.key.password":         config.KeyPassword,
+	})
+	_, err2 := kafka.NewProducer(&kafka.ConfigMap{
+		"security.protocol":        "SSL",
+		"ssl.ca.location":          config.CaPEM,
+		"ssl.key.location":         "/fakepath/to/test-access.key",
+		"ssl.certificate.location": config.CertPEM,
+		"ssl.key.password":         config.KeyPassword,
+	})
+	_, err3 := kafka.NewProducer(&kafka.ConfigMap{
+		"security.protocol":        "SSL",
+		"ssl.ca.location":          config.CaPEM,
+		"ssl.key.location":         config.KeyPEM,
+		"ssl.certificate.location": "/fakepath/to/test-cert.cert",
+		"ssl.key.password":         config.KeyPassword,
+	})
+	if err != nil && err2 != nil && err3 != nil {
+		t.Logf("Producers threw errors as expected %s", err)
+
+	}
+}
+
+func TestWorkerProducerCorrectFilesSSL(t *testing.T) {
+	config := tlsConfig(t)
+	_, err := kafka.NewProducer(&kafka.ConfigMap{
 		"security.protocol":        "SSL",
 		"ssl.ca.location":          config.CaPEM,
 		"ssl.key.location":         config.KeyPEM,
 		"ssl.certificate.location": config.CertPEM,
-		"ssl.key.password":         config.KeyPassword})
-
-	// myOAuthConfig := "scope=myscope principal=gotest"
-	// p, err := kafka.NewProducer(&kafka.ConfigMap{
-	// 	"security.protocol":       "SASL_PLAINTEXT",
-	// 	"sasl.mechanisms":         "OAUTHBEARER",
-	// 	"sasl.oauthbearer.config": myOAuthConfig,
-	// })
+		"ssl.key.password":         config.KeyPassword,
+	})
 
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
-	for {
-		ev := <-p.Events()
-		sslKafka, ok := ev.(util.SslKakfa)
-
-		// t.Logf("ev %s", ev)
-		t.Logf("sslKakfa %s, ok is %t", sslKafka, ok)
-		if !ok {
-			continue
-		}
-		t.Logf("Got %s", sslKafka)
-		if sslKafka.CACertFile != config.CertPEM {
-			t.Fatalf("%s: Excepted CertPEM to be %s, not %s", sslKafka, sslKafka.ClientCertFile, config.CertPEM)
-		}
-		if sslKafka.ClientCertFile != config.CaPEM {
-			t.Fatalf("%s: Excepted CertPEM to be %s, not %s", sslKafka, sslKafka.ClientCertFile, config.CaPEM)
-		}
-		if sslKafka.ClientKeyFile != config.KeyPEM {
-			t.Fatalf("%s: Excepted CertPEM to be %s, not %s", sslKafka, sslKafka.ClientKeyFile, config.KeyPEM)
-		}
-		if sslKafka.ClientKeyPass != config.KeyPassword {
-			t.Fatalf("%s: Excepted CertPEM to be %s, not %s", sslKafka, sslKafka.ClientKeyPass, config.KeyPassword)
-		}
-		break
-	}
-
-	p.Close()
-
 }
