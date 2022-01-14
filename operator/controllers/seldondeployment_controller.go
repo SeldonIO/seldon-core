@@ -1438,9 +1438,8 @@ func jsonEquals(a, b interface{}) (bool, error) {
 	return bytes.Equal(b1, b2), nil
 }
 
-// Create Deployments specified in components.
-func (r *SeldonDeploymentReconciler) createDeployments(components *components, instance *machinelearningv1.SeldonDeployment, log logr.Logger) (bool, error) {
-	// TODO(user) refactor ready variable to be less confusing
+// Create Deployments specified in components, returns ready, progressing, error.
+func (r *SeldonDeploymentReconciler) createDeployments(components *components, instance *machinelearningv1.SeldonDeployment, log logr.Logger) (bool, bool, error) {
 	ready := true
 	var lastSuccessfulCondition *apis.Condition
 	for _, deploy := range components.deployments {
@@ -1448,7 +1447,7 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 		log.Info("Scheme", "r.scheme", r.Scheme)
 		log.Info("createDeployments", "deploy", deploy)
 		if err := ctrl.SetControllerReference(instance, deploy, r.Scheme); err != nil {
-			return ready, err
+			return ready, true, err
 		}
 
 		// TODO(user): Change this for the object type created by your controller
@@ -1460,11 +1459,11 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 			log.Info("Creating Deployment", "namespace", deploy.Namespace, "name", deploy.Name)
 			err = r.Create(context.TODO(), deploy)
 			if err != nil {
-				return ready, err
+				return ready, true, err
 			}
 			r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsCreateDeployment, "Created Deployment %q", deploy.GetName())
 		} else if err != nil {
-			return ready, err
+			return ready, true,  err
 		} else {
 			identical := true
 			if !equality.Semantic.DeepEqual(deploy.Spec.Template.Spec, found.Spec.Template.Spec) {
@@ -1479,7 +1478,7 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 
 				err = r.Update(context.TODO(), found)
 				if err != nil {
-					return ready, err
+					return ready, true, err
 				}
 
 				// Check if what came back from server modulo the defaults applied by k8s is the same or not
@@ -1531,7 +1530,7 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 						progressingCondition := getDeploymentCondition(found, appsv1.DeploymentProgressing)
 						if progressingCondition.IsFalse() && availableCondition.IsFalse() {
 							log.Info("Deployment is not progressing, returning failed status", "name", found.Name)
-							return false, fmt.Errorf("deployment %s is not progressing and not available: (%s)", found.Name, progressingCondition.GetMessage())
+							return false, false, nil
 						}
 					}
 					ready = false
@@ -1550,7 +1549,7 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 	if ready {
 		instance.Status.SetCondition(machinelearningv1.DeploymentsReady, lastSuccessfulCondition)
 	}
-	return ready, nil
+	return ready, true, nil
 }
 
 func getDeploymentCondition(deployment *appsv1.Deployment, conditionType appsv1.DeploymentConditionType) *apis.Condition {
@@ -1817,13 +1816,12 @@ func (r *SeldonDeploymentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{}, err
 	}
 
-	deploymentsReady, err := r.createDeployments(components, instance, log)
+	deploymentsReady, deploymentsProgressing, err := r.createDeployments(components, instance, log)
 	if err != nil {
 		r.Recorder.Eventf(instance, corev1.EventTypeWarning, constants.EventsInternalError, err.Error())
 		r.updateStatusForError(instance, err, log)
 		return ctrl.Result{}, err
 	}
-
 	if deploymentsReady {
 		err := r.completeServiceCreation(instance, components, log)
 		if err != nil {
@@ -1833,13 +1831,21 @@ func (r *SeldonDeploymentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		}
 	}
 
-	if deploymentsReady && servicesReady && hpasReady && pdbsReady && (!withKedaSupport || kedaScaledObjectsReady) {
+	switch {
+	// Everything is available - happy case.
+	case deploymentsReady && servicesReady && hpasReady && pdbsReady && (!withKedaSupport || kedaScaledObjectsReady):
 		instance.Status.State = machinelearningv1.StatusStateAvailable
 		instance.Status.Description = ""
-	} else {
+	// Deployment is not ready and no longer progressing - set status to failed.
+	case !deploymentsProgressing && !deploymentsReady:
+		instance.Status.State = machinelearningv1.StatusStateFailed
+		instance.Status.Description = "Deployment is no longer progressing and not available."
+	// Everything else is still creating.
+	default:
 		instance.Status.State = machinelearningv1.StatusStateCreating
 		instance.Status.Description = ""
 	}
+
 	err = r.updateStatus(instance, log)
 	if err != nil {
 		return ctrl.Result{}, err
