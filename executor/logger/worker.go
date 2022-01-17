@@ -36,7 +36,6 @@ func NewWorker(id int, workQueue chan LogRequest, log logr.Logger, sdepName stri
 
 	var producer *kafka.Producer
 	var err error
-	sslKafka := util.GetSslElements()
 	if kafkaBroker != "" {
 		log.Info("Creating producer", "broker", kafkaBroker, "topic", kafkaTopic)
 		var producerConfigMap = kafka.ConfigMap{"bootstrap.servers": kafkaBroker,
@@ -44,6 +43,7 @@ func NewWorker(id int, workQueue chan LogRequest, log logr.Logger, sdepName stri
 		}
 		log.Info("kafkaSecurityProtocol", "kafkaSecurityProtocol", util.GetKafkaSecurityProtocol())
 		if util.GetKafkaSecurityProtocol() == "SSL" {
+			sslKafka := util.GetSslElements()
 			producerConfigMap["security.protocol"] = util.GetKafkaSecurityProtocol()
 			producerConfigMap["ssl.ca.location"] = sslKafka.CACertFile
 			producerConfigMap["ssl.key.location"] = sslKafka.ClientKeyFile

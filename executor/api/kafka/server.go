@@ -78,12 +78,12 @@ func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, prot
 			return nil, fmt.Errorf("Unknown transport %s", transport)
 		}
 	}
-	sslKakfaServer := util.GetSslElements()
 	var producerConfigMap = kafka.ConfigMap{"bootstrap.servers": broker,
 		"go.delivery.reports": false, // Need this othewise will get memory leak
 	}
 	if broker != "" {
 		if util.GetKafkaSecurityProtocol() == "SSL" {
+			sslKakfaServer := util.GetSslElements()
 			producerConfigMap["security.protocol"] = util.GetKafkaSecurityProtocol()
 			producerConfigMap["ssl.ca.location"] = sslKakfaServer.CACertFile
 			producerConfigMap["ssl.key.location"] = sslKakfaServer.ClientKeyFile
