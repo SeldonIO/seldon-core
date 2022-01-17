@@ -134,7 +134,6 @@ spec:
   protocol: kfserving
 
 ```
-=
 Follow a [benchmarking notebook for CIFAR10 image payload logging showing 3K predictions per second with Triton Inference Server](../examples/kafka_logger.html).
 
 ## Setting Global Default

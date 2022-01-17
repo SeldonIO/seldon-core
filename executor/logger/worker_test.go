@@ -173,46 +173,70 @@ func TestWorkerProducerLog(t *testing.T) {
 	}()
 }
 
-func TestWorkerProducerWrongFilesSSL(t *testing.T) {
-	config := tlsConfig(t)
-	_, err := kafka.NewProducer(&kafka.ConfigMap{
-		"security.protocol":        "SSL",
-		"ssl.ca.location":          "/fakepath/to/test-ca.pem",
-		"ssl.key.location":         config.KeyPEM,
-		"ssl.certificate.location": config.CertPEM,
-		"ssl.key.password":         config.KeyPassword,
-	})
-	_, err2 := kafka.NewProducer(&kafka.ConfigMap{
-		"security.protocol":        "SSL",
-		"ssl.ca.location":          config.CaPEM,
-		"ssl.key.location":         "/fakepath/to/test-access.key",
-		"ssl.certificate.location": config.CertPEM,
-		"ssl.key.password":         config.KeyPassword,
-	})
-	_, err3 := kafka.NewProducer(&kafka.ConfigMap{
-		"security.protocol":        "SSL",
-		"ssl.ca.location":          config.CaPEM,
-		"ssl.key.location":         config.KeyPEM,
-		"ssl.certificate.location": "/fakepath/to/test-cert.cert",
-		"ssl.key.password":         config.KeyPassword,
-	})
-	if err != nil && err2 != nil && err3 != nil {
-		t.Logf("Producers threw errors as expected %s", err)
-
+func TestWorkerKafkaConfigurations(t *testing.T) {
+	type test struct {
+		name        string
+		kafkaConfig kafka.ConfigMap
+		expectError bool
 	}
-}
 
-func TestWorkerProducerCorrectFilesSSL(t *testing.T) {
+	g := NewWithT(t)
 	config := tlsConfig(t)
-	_, err := kafka.NewProducer(&kafka.ConfigMap{
-		"security.protocol":        "SSL",
-		"ssl.ca.location":          config.CaPEM,
-		"ssl.key.location":         config.KeyPEM,
-		"ssl.certificate.location": config.CertPEM,
-		"ssl.key.password":         config.KeyPassword,
-	})
 
-	if err != nil {
-		t.Fatalf("%s", err)
+	tests := []test{
+		{
+			name: "All options are valid",
+			kafkaConfig: kafka.ConfigMap{
+				"security.protocol":        "SSL",
+				"ssl.ca.location":          config.CaPEM,
+				"ssl.key.location":         config.KeyPEM,
+				"ssl.certificate.location": config.CertPEM,
+				"ssl.key.password":         config.KeyPassword,
+			},
+			expectError: false,
+		},
+		{
+			name: "CA cert location is invalid",
+			kafkaConfig: kafka.ConfigMap{
+				"security.protocol":        "SSL",
+				"ssl.ca.location":          "/fakepath/to/test-ca.pem",
+				"ssl.key.location":         config.KeyPEM,
+				"ssl.certificate.location": config.CertPEM,
+				"ssl.key.password":         config.KeyPassword,
+			},
+			expectError: true,
+		},
+		{
+			name: "Private key file location is invalid",
+			kafkaConfig: kafka.ConfigMap{
+				"security.protocol":        "SSL",
+				"ssl.ca.location":          config.CaPEM,
+				"ssl.key.location":         "/fakepath/to/test-access.key",
+				"ssl.certificate.location": config.CertPEM,
+				"ssl.key.password":         config.KeyPassword,
+			},
+			expectError: true,
+		},
+		{
+			name: "Public key certificate location is invalid",
+			kafkaConfig: kafka.ConfigMap{
+				"security.protocol":        "SSL",
+				"ssl.ca.location":          config.CaPEM,
+				"ssl.key.location":         config.KeyPEM,
+				"ssl.certificate.location": "/fakepath/to/test-cert.cert",
+				"ssl.key.password":         config.KeyPassword,
+			},
+			expectError: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := kafka.NewProducer(&tt.kafkaConfig)
+			if tt.expectError {
+				g.Expect(err).ToNot(BeNil())
+			} else {
+				g.Expect(err).To(BeNil())
+			}
+		})
 	}
 }
