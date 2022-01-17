@@ -69,7 +69,7 @@ func (wc *WebhookCreator) CreateValidatingWebhookConfigurationFromFile(ctx conte
 		vwc.Webhooks[idx].ClientConfig.Service.Namespace = namespace
 
 		//Remove namespace exclusion if watchNamespace
-		//TODO change to add a namespace selector if the initalizer adds a label to namespace
+		//TODO change to add a namespace selector if the initializer adds a label to namespace
 		if watchNamespace {
 			vwc.Webhooks[idx].NamespaceSelector = nil
 		}

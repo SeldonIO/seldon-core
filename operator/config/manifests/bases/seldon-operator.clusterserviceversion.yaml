@@ -56,7 +56,7 @@ spec:
   customresourcedefinitions:
     owned:
     - description: A seldon engine deployment
-      displayName: Seldon Delpoyment
+      displayName: Seldon Deployment
       kind: SeldonDeployment
       name: seldondeployments.machinelearning.seldon.io
       resources:
