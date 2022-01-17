@@ -12,6 +12,7 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/go-logr/logr"
 	"github.com/seldonio/seldon-core/executor/api/payload"
+	"github.com/seldonio/seldon-core/executor/api/util"
 )
 
 const (
@@ -37,10 +38,20 @@ func NewWorker(id int, workQueue chan LogRequest, log logr.Logger, sdepName stri
 	var err error
 	if kafkaBroker != "" {
 		log.Info("Creating producer", "broker", kafkaBroker, "topic", kafkaTopic)
-		producer, err = kafka.NewProducer(&kafka.ConfigMap{
-			"bootstrap.servers":   kafkaBroker,
+		var producerConfigMap = kafka.ConfigMap{"bootstrap.servers": kafkaBroker,
 			"go.delivery.reports": false, // Need this othewise will get memory leak
-		})
+		}
+		log.Info("kafkaSecurityProtocol", "kafkaSecurityProtocol", util.GetKafkaSecurityProtocol())
+		if util.GetKafkaSecurityProtocol() == "SSL" {
+			sslKafka := util.GetSslElements()
+			producerConfigMap["security.protocol"] = util.GetKafkaSecurityProtocol()
+			producerConfigMap["ssl.ca.location"] = sslKafka.CACertFile
+			producerConfigMap["ssl.key.location"] = sslKafka.ClientKeyFile
+			producerConfigMap["ssl.certificate.location"] = sslKafka.ClientCertFile
+			producerConfigMap["ssl.key.password"] = sslKafka.ClientKeyPass // Key password, if any
+		}
+
+		producer, err = kafka.NewProducer(&producerConfigMap)
 		if err != nil {
 			return nil, err
 		}
@@ -94,7 +105,6 @@ func getCEType(logReq LogRequest) (string, error) {
 }
 
 func (w *Worker) sendKafkaEvent(logReq LogRequest) error {
-
 	reqType, err := getCEType(logReq)
 	if err != nil {
 		return err
@@ -109,7 +119,7 @@ func (w *Worker) sendKafkaEvent(logReq LogRequest) error {
 		{Key: NamespaceAttr, Value: []byte(w.Namespace)},
 		{Key: EndpointAttr, Value: []byte(w.PredictorName)},
 	}
-
+	w.Log.Info("kafkaHeaders is", "kafkaHeaders", kafkaHeaders)
 	err = w.Producer.Produce(&kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &w.KafkaTopic, Partition: kafka.PartitionAny},
 		Value:          *logReq.Bytes,

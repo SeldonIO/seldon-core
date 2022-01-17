@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
@@ -140,4 +141,29 @@ func GetEnvAsBool(key string, fallback bool) bool {
 	}
 
 	return fallback
+}
+
+type SslKakfa struct {
+	ClientCertFile string
+	ClientKeyFile  string
+	CACertFile     string
+	ClientKeyPass  string
+}
+
+func (o SslKakfa) String() string {
+	return "SslKakfa"
+}
+
+func GetKafkaSecurityProtocol() string {
+	return strings.ToUpper(GetEnv("KAFKA_SECURITY_PROTOCOL", ""))
+}
+
+func GetSslElements() *SslKakfa {
+	sslElements := SslKakfa{
+		ClientCertFile: GetEnv("KAFKA_SSL_CLIENT_CERT_FILE", ""),
+		ClientKeyFile:  GetEnv("KAFKA_SSL_CLIENT_KEY_FILE", ""),
+		CACertFile:     GetEnv("KAFKA_SSL_CA_CERT_FILE", ""),
+		ClientKeyPass:  GetEnv("KAFKA_SSL_CLIENT_KEY_PASS", ""),
+	}
+	return &sslElements
 }

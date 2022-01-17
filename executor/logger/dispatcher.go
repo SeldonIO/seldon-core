@@ -1,8 +1,9 @@
 package logger
 
 import (
-	"github.com/go-logr/logr"
 	"os"
+
+	"github.com/go-logr/logr"
 )
 
 const (
@@ -25,7 +26,6 @@ func StartDispatcher(nworkers int, logBufferSize int, writeTimeoutMs int, log lo
 
 	workQueue = make(chan LogRequest, logBufferSize)
 	writeTimeoutMilliseconds = writeTimeoutMs
-
 	// Now, create all of our workers.
 	for i := 0; i < nworkers; i++ {
 		log.Info("Starting", "worker", i+1)
