@@ -17,7 +17,6 @@ COPY api/ api/
 COPY predictor/ predictor/
 COPY logger/ logger/
 COPY k8s/ k8s/
-COPY certs/ certs/
 
 # Build
 RUN go build -a -o executor cmd/executor/main.go

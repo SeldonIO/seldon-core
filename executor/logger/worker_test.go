@@ -4,12 +4,12 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"strings"
 
 	_ "net/http/pprof"
 	"testing"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/onsi/gomega"
 )
 
 const (
@@ -124,55 +124,6 @@ func writeTmpFile(dirname string, filename string, contents []byte) *os.File {
 	return f
 }
 
-func TestWorkerProducerLog(t *testing.T) {
-	config := tlsConfig(t)
-	p, err := kafka.NewProducer(&kafka.ConfigMap{
-		"bootstrap.servers":        "broker",
-		"go.delivery.reports":      false,
-		"debug":                    "all",
-		"socket.timeout.ms":        10,
-		"security.protocol":        "ssl",
-		"ssl.ca.location":          config.CaPEM,
-		"ssl.key.location":         config.KeyPEM,
-		"ssl.certificate.location": config.CertPEM,
-		"ssl.key.password":         config.KeyPassword,
-	})
-
-	if err != nil {
-		t.Fatalf("%s", err)
-	}
-	expectedLogs := map[struct {
-		tag     string
-		message string
-	}]bool{
-		{"INIT", "librdkafka"}: false,
-	}
-	go func() {
-		for {
-			select {
-			case log, ok := <-p.Logs():
-				if !ok {
-					return
-				}
-
-				t.Log(log.String())
-
-				for expectedLog, found := range expectedLogs {
-					if found {
-						continue
-					}
-					if log.Tag != expectedLog.tag {
-						continue
-					}
-					if strings.Contains(log.Message, expectedLog.message) {
-						expectedLogs[expectedLog] = true
-					}
-				}
-			}
-		}
-	}()
-}
-
 func TestWorkerKafkaConfigurations(t *testing.T) {
 	type test struct {
 		name        string
@@ -180,7 +131,7 @@ func TestWorkerKafkaConfigurations(t *testing.T) {
 		expectError bool
 	}
 
-	g := NewWithT(t)
+	g := gomega.NewWithT(t)
 	config := tlsConfig(t)
 
 	tests := []test{
@@ -233,9 +184,9 @@ func TestWorkerKafkaConfigurations(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := kafka.NewProducer(&tt.kafkaConfig)
 			if tt.expectError {
-				g.Expect(err).ToNot(BeNil())
+				g.Expect(err).ToNot(gomega.BeNil())
 			} else {
-				g.Expect(err).To(BeNil())
+				g.Expect(err).To(gomega.BeNil())
 			}
 		})
 	}
