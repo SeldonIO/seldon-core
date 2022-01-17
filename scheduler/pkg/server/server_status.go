@@ -3,6 +3,8 @@ package server
 import (
 	"context"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/store"
+
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 )
 
@@ -38,14 +40,14 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 }
 
 func (s *SchedulerServer) ListenForEvents() {
-	logger := s.logger.WithField("func", "listenForEvents")
-	for modelName := range s.chanEvent {
-		logger.Infof("Got model state change for %s", modelName)
-		modelName := modelName
+	logger := s.logger.WithField("func", "ListenForEvents")
+	for modelSnapshot := range s.chanEvent {
+		logger.Infof("Got model state change for %s", modelSnapshot.Name)
+		modelSnapshot := modelSnapshot
 		go func() {
-			err := s.ModelStatusEvent(modelName)
+			err := s.ModelStatusEvent(modelSnapshot)
 			if err != nil {
-				logger.WithError(err).Errorf("Faile to update status for model %s", modelName)
+				logger.WithError(err).Errorf("Faile to update status for model %s", modelSnapshot.Name)
 			}
 		}()
 	}
@@ -55,11 +57,11 @@ func (s *SchedulerServer) StopListenForEvents() {
 	close(s.chanEvent)
 }
 
-func (s *SchedulerServer) ModelStatusEvent(modelName string) error {
+func (s *SchedulerServer) ModelStatusEvent(modelSnapshot *store.ModelSnapshot) error {
 	logger := s.logger.WithField("func", "ModelStatusEvent")
-	ms, err := s.ModelStatus(context.Background(), &pb.ModelReference{Name: modelName})
+	ms, err := s.modelStatusImpl(context.Background(), modelSnapshot, false)
 	if err != nil {
-		logger.WithError(err).Errorf("Failed to create model status for model %s", modelName)
+		logger.WithError(err).Errorf("Failed to create model status for model %s", modelSnapshot.Name)
 		return err
 	}
 	for stream, subscription := range s.streams {

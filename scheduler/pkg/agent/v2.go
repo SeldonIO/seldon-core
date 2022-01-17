@@ -33,7 +33,7 @@ func NewV2Client(host string, port int, logger log.FieldLogger) *V2Client {
 		host:       host,
 		port:       port,
 		httpClient: http.DefaultClient,
-		logger:     logger.WithField("Source", "V2Client"),
+		logger:     logger.WithField("Source", "V2InferenceServerClient"),
 	}
 }
 
@@ -73,7 +73,7 @@ func (v *V2Client) call(path string) error {
 			}
 			return fmt.Errorf("%s. %w", v2Error.Error, V2BadRequestErr)
 		} else {
-			return err
+			return fmt.Errorf("V2 server error: %s", b)
 		}
 	}
 	return nil

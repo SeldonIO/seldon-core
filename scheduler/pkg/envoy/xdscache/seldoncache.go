@@ -14,9 +14,16 @@ const (
 
 type SeldonXDSCache struct {
 	Listeners map[string]resources.Listener
-	Routes    map[string]resources.Route
+	Routes    map[string][]resources.Route
 	Clusters  map[string]resources.Cluster
-	Endpoints map[string]resources.Endpoint
+}
+
+func NewSeldonXDSCache() *SeldonXDSCache {
+	return &SeldonXDSCache{
+		Listeners: make(map[string]resources.Listener),
+		Clusters:  make(map[string]resources.Cluster),
+		Routes:    make(map[string][]resources.Route),
+	}
 }
 
 func (xds *SeldonXDSCache) ClusterContents() []types.Resource {
@@ -37,7 +44,7 @@ func (xds *SeldonXDSCache) RouteContents() []types.Resource {
 
 	var routesArray []resources.Route
 	for _, r := range xds.Routes { //This could be very large as is equal to number of models (100k?)
-		routesArray = append(routesArray, r)
+		routesArray = append(routesArray, r...)
 	}
 
 	return []types.Resource{resources.MakeRoute(routesArray)}
@@ -76,19 +83,16 @@ func (xds *SeldonXDSCache) AddListener(name string) {
 	}
 }
 
-func (xds *SeldonXDSCache) AddRoute(name, modelName string, httpClusterName string, grpcClusterName string, logPayloads bool) {
-	xds.Routes[name] = resources.Route{
-		Name:        name,
-		Host:        modelName,
-		HttpCluster: httpClusterName,
-		GrpcCluster: grpcClusterName,
-		LogPayloads: logPayloads,
-	}
-}
-
-func (xds *SeldonXDSCache) HasCluster(name string) bool {
-	_, ok := xds.Clusters[name]
-	return ok
+func (xds *SeldonXDSCache) AddRoute(name, modelName string, httpClusterName string, grpcClusterName string, logPayloads bool, trafficPercent uint32, version uint32) {
+	xds.Routes[name] = append(xds.Routes[name], resources.Route{
+		Name:           name,
+		Host:           modelName,
+		HttpCluster:    httpClusterName,
+		GrpcCluster:    grpcClusterName,
+		LogPayloads:    logPayloads,
+		TrafficPercent: trafficPercent,
+		Version:        version,
+	})
 }
 
 func (xds *SeldonXDSCache) AddCluster(name string, route string, isGrpc bool) {
@@ -105,22 +109,32 @@ func (xds *SeldonXDSCache) AddCluster(name string, route string, isGrpc bool) {
 	xds.Clusters[name] = cluster
 }
 
-func (xds *SeldonXDSCache) RemoveRoute(modelName string) {
-	route, ok := xds.Routes[modelName]
+func (xds *SeldonXDSCache) RemoveRoutes(modelName string) error {
+	routeList, ok := xds.Routes[modelName]
 	if !ok {
-		return
-	}
-	cluster, ok := xds.Clusters[route.HttpCluster]
-	if !ok {
-		return
-	}
-	delete(cluster.Routes, modelName)
-	if len(cluster.Routes) == 0 {
-		delete(xds.Clusters, route.HttpCluster)
-	} else {
-		xds.Clusters[route.HttpCluster] = cluster
+		return nil
 	}
 	delete(xds.Routes, modelName)
+	for _, route := range routeList {
+		httpCluster, ok := xds.Clusters[route.HttpCluster]
+		if !ok {
+			return fmt.Errorf("Can't find http cluster for model %s", modelName)
+		}
+		grpcCluster, ok := xds.Clusters[route.GrpcCluster]
+		if !ok {
+			return fmt.Errorf("Can't find grpc cluster for model %s", modelName)
+		}
+		delete(httpCluster.Routes, modelName)
+		delete(grpcCluster.Routes, modelName)
+		if len(httpCluster.Routes) == 0 {
+			delete(xds.Clusters, route.HttpCluster)
+			delete(xds.Clusters, route.GrpcCluster)
+		} else {
+			xds.Clusters[route.HttpCluster] = httpCluster
+			xds.Clusters[route.GrpcCluster] = grpcCluster
+		}
+	}
+	return nil
 }
 
 func (xds *SeldonXDSCache) AddEndpoint(clusterName, upstreamHost string, upstreamPort uint32) {

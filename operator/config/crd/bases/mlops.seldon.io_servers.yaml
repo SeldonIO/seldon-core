@@ -3546,8 +3546,13 @@ spec:
                   models for non mesh server
                 items:
                   properties:
+                    artifactVersion:
+                      description: Artifact Version A v2 version folder to select
+                        from storage bucket
+                      format: int32
+                      type: integer
                     modelType:
-                      description: Artifact type
+                      description: Model type
                       type: string
                     name:
                       description: Name override

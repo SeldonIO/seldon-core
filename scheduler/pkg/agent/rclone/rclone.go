@@ -1,4 +1,4 @@
-package agent
+package rclone
 
 import (
 	"bytes"
@@ -10,6 +10,10 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/config"
 
 	"github.com/go-playground/validator/v10"
 	log "github.com/sirupsen/logrus"
@@ -35,6 +39,8 @@ type RCloneClient struct {
 	httpClient *http.Client
 	logger     log.FieldLogger
 	validate   *validator.Validate
+	namespace  string
+	configChan chan config.AgentConfiguration
 }
 
 type Noop struct {
@@ -81,8 +87,8 @@ func createConfigUpdateFromCreate(create *RcloneConfigCreate) *RcloneConfigUpdat
 	return &update
 }
 
-func NewRCloneClient(host string, port int, localPath string, logger log.FieldLogger) *RCloneClient {
-	logger.Infof("Rclone server %s:%d with model-repository:%s", host, port, localPath)
+func NewRCloneClient(host string, port int, localPath string, logger log.FieldLogger, namespace string) *RCloneClient {
+	logger.Infof("Rclone server %s:%d with model-cache:%s", host, port, localPath)
 	return &RCloneClient{
 		host:       host,
 		port:       port,
@@ -90,6 +96,36 @@ func NewRCloneClient(host string, port int, localPath string, logger log.FieldLo
 		httpClient: http.DefaultClient,
 		logger:     logger.WithField("Source", "RCloneClient"),
 		validate:   validator.New(),
+		namespace:  namespace,
+		configChan: make(chan config.AgentConfiguration, 1),
+	}
+}
+
+func (r *RCloneClient) StartConfigListener(configHandler *config.AgentConfigHandler) error {
+	logger := r.logger.WithField("func", "StartConfigListener")
+	// Start config listener
+	go r.listenForConfigUpdates()
+	// Add ourself as listener on channel and handle initial config
+	logger.Info("Loading initial rclone configuration")
+	err := r.loadRcloneConfiguration(configHandler.AddListener(r.configChan))
+	if err != nil {
+		r.logger.WithError(err).Errorf("Failed to load rclone defaults")
+		return err
+	}
+	return nil
+}
+
+func (r *RCloneClient) listenForConfigUpdates() {
+	logger := r.logger.WithField("func", "listenForConfigUpdates")
+	for config := range r.configChan {
+		r.logger.Info("Received config update")
+		config := config
+		go func() {
+			err := r.loadRcloneConfiguration(&config)
+			if err != nil {
+				logger.WithError(err).Error("Failed to load rclone defaults")
+			}
+		}()
 	}
 }
 
@@ -209,34 +245,38 @@ func (r *RCloneClient) Config(config []byte) (string, error) {
 }
 
 // Call Rclone /sync/copy
-func (r *RCloneClient) Copy(modelName string, src string, config []byte) error {
+func (r *RCloneClient) Copy(modelName string, srcUri string, config []byte) (string, error) {
 	var srcUpdated string
 	var err error
 	if len(config) > 0 {
-		srcUpdated, err = r.createUriWithConfig(src, config)
+		srcUpdated, err = r.createUriWithConfig(srcUri, config)
 		if err != nil {
-			return err
+			return "", err
 		}
 	} else {
-		srcUpdated = src
+		srcUpdated = srcUri
 	}
 
-	dst := fmt.Sprintf("%s/%s", r.localPath, modelName)
+	hash, err := util.Hash(srcUri)
+	if err != nil {
+		return "", err
+	}
+	dst := fmt.Sprintf("%s/%d", r.localPath, hash)
 	copy := RcloneCopy{
 		SrcFs:              srcUpdated,
 		DstFs:              dst,
 		CreateEmptySrcDirs: true,
 	}
-	r.logger.Infof("Copy from %s (original %s) to %s", srcUpdated, src, dst)
+	r.logger.Infof("Copy from %s (original %s) to %s", srcUpdated, srcUri, dst)
 	b, err := json.Marshal(copy)
 	if err != nil {
-		return err
+		return "", err
 	}
 	_, err = r.call(b, RcloneSyncCopyPath)
 	if err != nil {
-		return fmt.Errorf("Failed to sync/copy %s to %s %w", srcUpdated, dst, err)
+		return "", fmt.Errorf("Failed to sync/copy %s to %s %w", srcUpdated, dst, err)
 	}
-	return nil
+	return dst, nil
 }
 
 // Call Rclone /config/get

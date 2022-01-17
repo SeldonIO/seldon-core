@@ -1,0 +1,208 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: triton
+  labels:
+    app: triton
+spec:
+  ports:
+  - port: 9000
+    name: http
+  - port: 9500
+    name: grpc
+  clusterIP: None    
+  selector:
+    app: triton
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: triton-0
+  labels:
+    app: triton-0
+spec:
+  ports:
+  - port: 9000
+    name: http
+  - port: 9500
+    name: grpc
+  - port: 9005
+    name: agent
+  clusterIP: None
+  selector:
+    statefulset.kubernetes.io/pod-name: seldon-triton-0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: triton-1
+  labels:
+    app: triton-1
+spec:
+  ports:
+  - port: 9000
+    name: http
+  - port: 9500
+    name: grpc
+  - port: 9005
+    name: agent
+  clusterIP: None
+  selector:
+    statefulset.kubernetes.io/pod-name: seldon-triton-1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: triton-2
+  labels:
+    app: triton-2
+spec:
+  ports:
+  - port: 9000
+    name: http
+  - port: 9500
+    name: grpc
+  - port: 9005
+    name: agent
+  clusterIP: None
+  selector:
+    statefulset.kubernetes.io/pod-name: seldon-triton-2
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: triton
+spec:
+  serviceName: "triton"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: triton
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /prometheus
+        prometheus.io/scrape: "true"  
+      labels:
+        app: triton
+      name: triton
+      namespace: seldon
+    spec:
+      terminationGracePeriodSeconds: 5
+      serviceAccountName: server
+      containers:
+      - image: rclone:latest
+        imagePullPolicy: IfNotPresent
+        name: rclone
+        ports:
+        - containerPort: 5572
+          name: http
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          successThreshold: 1
+          tcpSocket:
+            port: 5572
+          timeoutSeconds: 1
+        volumeMounts:
+        - mountPath: /mnt/agent
+          name: triton-models
+      - image: agent:latest
+        imagePullPolicy: IfNotPresent
+        name: agent
+        env:
+        - name: SELDON_SERVER_HTTP_PORT
+          value: "9000"
+        - name: SELDON_SERVER_GRPC_PORT
+          value: "9500"
+        - name: SELDON_SCHEDULER_HOST
+          value: "seldon-scheduler"
+        - name: SELDON_SCHEDULER_PORT
+          value: "9005"
+        - name: SELDON_SERVER_NAME
+          value: "triton"
+        - name: SELDON_SERVER_TYPE
+          value: "triton"
+        - name: SELDON_REPLICA_CONFIG
+          value: '{"inferenceSvc":"DYNAMIC","inferenceHttpPort":9000,"inferenceGrpcPort":9500,"memoryBytes":100000,"capabilities":["tensorflow","onnx","pytorch","tensorrt"],"overCommit":false}'
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        volumeMounts:
+        - mountPath: /mnt/agent
+          name: triton-models
+        - name: config-volume
+          mountPath: /mnt/config
+      - image: nvcr.io/nvidia/tritonserver:21.12-py3
+        command:
+        - /opt/tritonserver/bin/tritonserver
+        args:
+        - --model-repository=$(SERVER_MODELS_DIR)
+        - --http-port=$(SERVER_HTTP_PORT)
+        - --grpc-port=$(SERVER_GRPC_PORT)
+        - --log-verbose=1
+        - --model-control-mode=explicit
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: SERVER_HTTP_PORT
+          value: "9000"
+        - name: SERVER_GRPC_PORT
+          value: "9500"
+        - name: SERVER_MODELS_DIR
+          value: "/mnt/agent/models"
+        resources:
+          requests:
+            cpu: '0.1'
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - /bin/sleep 10
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 60
+          periodSeconds: 5
+          successThreshold: 1
+          tcpSocket:
+            port: 9000
+          timeoutSeconds: 1
+        name: triton
+        ports:
+        - containerPort: 9500
+          name: grpc
+          protocol: TCP
+        - containerPort: 9000
+          name: http
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          successThreshold: 1
+          tcpSocket:
+            port: 9000
+          timeoutSeconds: 1
+        volumeMounts:
+        - mountPath: /mnt/agent
+          name: triton-models
+          readOnly: true
+      securityContext:
+        runAsUser: 8888
+      volumes:
+      - name: config-volume
+        configMap:
+          name: seldon-agent
+  volumeClaimTemplates:
+  - metadata:
+      name: triton-models
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi

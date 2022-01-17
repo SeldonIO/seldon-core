@@ -20,8 +20,8 @@ const _ = grpc.SupportPackageIsVersion7
 type SchedulerClient interface {
 	ServerStatus(ctx context.Context, in *ServerReference, opts ...grpc.CallOption) (*ServerStatusResponse, error)
 	LoadModel(ctx context.Context, in *LoadModelRequest, opts ...grpc.CallOption) (*LoadModelResponse, error)
-	UnloadModel(ctx context.Context, in *ModelReference, opts ...grpc.CallOption) (*UnloadModelResponse, error)
-	ModelStatus(ctx context.Context, in *ModelReference, opts ...grpc.CallOption) (*ModelStatusResponse, error)
+	UnloadModel(ctx context.Context, in *UnloadModelRequest, opts ...grpc.CallOption) (*UnloadModelResponse, error)
+	ModelStatus(ctx context.Context, in *ModelStatusRequest, opts ...grpc.CallOption) (*ModelStatusResponse, error)
 	SubscribeModelStatus(ctx context.Context, in *ModelSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribeModelStatusClient, error)
 }
 
@@ -51,7 +51,7 @@ func (c *schedulerClient) LoadModel(ctx context.Context, in *LoadModelRequest, o
 	return out, nil
 }
 
-func (c *schedulerClient) UnloadModel(ctx context.Context, in *ModelReference, opts ...grpc.CallOption) (*UnloadModelResponse, error) {
+func (c *schedulerClient) UnloadModel(ctx context.Context, in *UnloadModelRequest, opts ...grpc.CallOption) (*UnloadModelResponse, error) {
 	out := new(UnloadModelResponse)
 	err := c.cc.Invoke(ctx, "/seldon.mlops.scheduler.Scheduler/UnloadModel", in, out, opts...)
 	if err != nil {
@@ -60,7 +60,7 @@ func (c *schedulerClient) UnloadModel(ctx context.Context, in *ModelReference, o
 	return out, nil
 }
 
-func (c *schedulerClient) ModelStatus(ctx context.Context, in *ModelReference, opts ...grpc.CallOption) (*ModelStatusResponse, error) {
+func (c *schedulerClient) ModelStatus(ctx context.Context, in *ModelStatusRequest, opts ...grpc.CallOption) (*ModelStatusResponse, error) {
 	out := new(ModelStatusResponse)
 	err := c.cc.Invoke(ctx, "/seldon.mlops.scheduler.Scheduler/ModelStatus", in, out, opts...)
 	if err != nil {
@@ -107,8 +107,8 @@ func (x *schedulerSubscribeModelStatusClient) Recv() (*ModelStatusResponse, erro
 type SchedulerServer interface {
 	ServerStatus(context.Context, *ServerReference) (*ServerStatusResponse, error)
 	LoadModel(context.Context, *LoadModelRequest) (*LoadModelResponse, error)
-	UnloadModel(context.Context, *ModelReference) (*UnloadModelResponse, error)
-	ModelStatus(context.Context, *ModelReference) (*ModelStatusResponse, error)
+	UnloadModel(context.Context, *UnloadModelRequest) (*UnloadModelResponse, error)
+	ModelStatus(context.Context, *ModelStatusRequest) (*ModelStatusResponse, error)
 	SubscribeModelStatus(*ModelSubscriptionRequest, Scheduler_SubscribeModelStatusServer) error
 	mustEmbedUnimplementedSchedulerServer()
 }
@@ -123,10 +123,10 @@ func (UnimplementedSchedulerServer) ServerStatus(context.Context, *ServerReferen
 func (UnimplementedSchedulerServer) LoadModel(context.Context, *LoadModelRequest) (*LoadModelResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LoadModel not implemented")
 }
-func (UnimplementedSchedulerServer) UnloadModel(context.Context, *ModelReference) (*UnloadModelResponse, error) {
+func (UnimplementedSchedulerServer) UnloadModel(context.Context, *UnloadModelRequest) (*UnloadModelResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnloadModel not implemented")
 }
-func (UnimplementedSchedulerServer) ModelStatus(context.Context, *ModelReference) (*ModelStatusResponse, error) {
+func (UnimplementedSchedulerServer) ModelStatus(context.Context, *ModelStatusRequest) (*ModelStatusResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ModelStatus not implemented")
 }
 func (UnimplementedSchedulerServer) SubscribeModelStatus(*ModelSubscriptionRequest, Scheduler_SubscribeModelStatusServer) error {
@@ -182,7 +182,7 @@ func _Scheduler_LoadModel_Handler(srv interface{}, ctx context.Context, dec func
 }
 
 func _Scheduler_UnloadModel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ModelReference)
+	in := new(UnloadModelRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -194,13 +194,13 @@ func _Scheduler_UnloadModel_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: "/seldon.mlops.scheduler.Scheduler/UnloadModel",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SchedulerServer).UnloadModel(ctx, req.(*ModelReference))
+		return srv.(SchedulerServer).UnloadModel(ctx, req.(*UnloadModelRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Scheduler_ModelStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ModelReference)
+	in := new(ModelStatusRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -212,7 +212,7 @@ func _Scheduler_ModelStatus_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: "/seldon.mlops.scheduler.Scheduler/ModelStatus",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SchedulerServer).ModelStatus(ctx, req.(*ModelReference))
+		return srv.(SchedulerServer).ModelStatus(ctx, req.(*ModelStatusRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

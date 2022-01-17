@@ -7,6 +7,12 @@ import (
 	"math"
 	"time"
 
+	"github.com/seldonio/seldon-core/operatorv2/pkg/constants"
+	"github.com/seldonio/seldon-core/operatorv2/pkg/utils"
+	"k8s.io/client-go/util/retry"
+
+	apimachinary_errors "k8s.io/apimachinery/pkg/api/errors"
+
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/types"
@@ -66,7 +72,7 @@ func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model) 
 	logger := s.logger.WithName("LoadModel")
 	grcpClient := scheduler.NewSchedulerClient(s.conn)
 
-	md, err := model.AsModelDetails()
+	md, err := model.AsSchedulerModel()
 	if err != nil {
 		return err
 	}
@@ -86,8 +92,14 @@ func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model
 	logger := s.logger.WithName("UnloadModel")
 	grcpClient := scheduler.NewSchedulerClient(s.conn)
 
-	modelRef := &scheduler.ModelReference{
-		Name: model.Name,
+	modelRef := &scheduler.UnloadModelRequest{
+		Model: &scheduler.ModelReference{
+			Name: model.Name,
+		},
+		KubernetesMeta: &scheduler.KubernetesMeta{
+			Namespace:  model.Namespace,
+			Generation: model.Generation,
+		},
 	}
 	logger.Info("Unload", "model name", model.Name)
 	_, err := grcpClient.UnloadModel(ctx, modelRef, grpc_retry.WithMax(2))
@@ -114,28 +126,64 @@ func (s *SchedulerClient) SubscribeEvents(ctx context.Context) error {
 			logger.Error(err, "event recv failed")
 			return err
 		}
-		if event.Namespace == nil {
-			logger.Info("Received event with nil namespace", "model", event.ModelName)
-
-		} else {
-			logger.Info("Received event", "name", event.ModelName, "version", event.Version, "state", event.State.State.String(), "reason", event.State.Reason)
-			model := &mlopsv1alpha1.Model{}
-			err = s.Get(ctx, client.ObjectKey{Name: event.ModelName, Namespace: *event.Namespace}, model)
-			if err != nil {
-				logger.Error(err, "Failed to get model", "name", event.ModelName, "namespace", event.Namespace)
-			} else {
-				switch event.State.State {
-				case scheduler.ModelStatus_ModelAvailable:
-					model.Status.CreateAndSetCondition(mlopsv1alpha1.SeldonMeshReady, true, event.State.Reason)
-				default:
-					model.Status.CreateAndSetCondition(mlopsv1alpha1.SeldonMeshReady, false, event.State.Reason)
-				}
-				err = s.updateStatus(model)
-				if err != nil {
-					logger.Error(err, "Failed to update status")
-				}
-			}
+		// The expected contract is just the latest version will be sent to us
+		if len(event.Versions) < 1 {
+			logger.Info("Expected a single model version", "numVersions", len(event.Versions), "name", event.GetModelName())
+			continue
 		}
+		latestVersionStatus := event.Versions[0]
+		if latestVersionStatus.GetKubernetesMeta() == nil {
+			logger.Info("Ignoring event with no Kubernetes metadata.", "model", event.ModelName)
+			continue
+		}
+		logger.Info("Received event", "name", event.ModelName, "version", latestVersionStatus.Version, "generation", latestVersionStatus.GetKubernetesMeta().Generation, "state", latestVersionStatus.State.State.String(), "reason", latestVersionStatus.State.Reason)
+
+		// Handle terminated event to remove finalizer
+		if latestVersionStatus.State.State == scheduler.ModelStatus_ModelTerminated {
+			retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+				latestModel := &mlopsv1alpha1.Model{}
+				err = s.Get(ctx, client.ObjectKey{Name: event.ModelName, Namespace: latestVersionStatus.GetKubernetesMeta().Namespace}, latestModel)
+				if err != nil {
+					return err
+				}
+				// remove finalizer now we have completed successfully
+				latestModel.ObjectMeta.Finalizers = utils.RemoveStr(latestModel.ObjectMeta.Finalizers, constants.ModelFinalizerName)
+				if err := s.Update(ctx, latestModel); err != nil {
+					logger.Error(err, "Failed to remove finalizer", "model", latestModel.GetName())
+					return err
+				}
+				return nil
+			})
+			if retryErr != nil {
+				logger.Error(err, "Failed to remove finalizer after retries")
+			}
+			continue
+		}
+
+		// Try to update status
+		retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+			latestModel := &mlopsv1alpha1.Model{}
+			err = s.Get(ctx, client.ObjectKey{Name: event.ModelName, Namespace: latestVersionStatus.GetKubernetesMeta().Namespace}, latestModel)
+			if err != nil {
+				return err
+			}
+			if latestVersionStatus.GetKubernetesMeta().Generation != latestModel.Generation {
+				logger.Info("Ignoring event for old generation", "currentGeneration", latestModel.Generation, "eventGeneration", latestVersionStatus.GetKubernetesMeta().Generation, "model", event.ModelName)
+				return nil
+			}
+			// Handle status update
+			switch latestVersionStatus.State.State {
+			case scheduler.ModelStatus_ModelAvailable:
+				latestModel.Status.CreateAndSetCondition(mlopsv1alpha1.SeldonMeshReady, true, latestVersionStatus.State.Reason)
+			default:
+				latestModel.Status.CreateAndSetCondition(mlopsv1alpha1.SeldonMeshReady, false, latestVersionStatus.State.Reason)
+			}
+			return s.updateStatus(latestModel)
+		})
+		if retryErr != nil {
+			logger.Error(err, "Failed to update status", "model", event.ModelName)
+		}
+
 	}
 	return nil
 }
@@ -147,19 +195,21 @@ func modelReady(status mlopsv1alpha1.ModelStatus) bool {
 }
 
 func (s *SchedulerClient) updateStatus(model *mlopsv1alpha1.Model) error {
+	//logger := s.logger.WithName("updateStatus")
 	model.Status.CreateAndSetCondition(mlopsv1alpha1.DeploymentsReady, true, "No deployments used")
 	existingModel := &mlopsv1alpha1.Model{}
 	namespacedName := types.NamespacedName{Name: model.Name, Namespace: model.Namespace}
 	if err := s.Get(context.TODO(), namespacedName, existingModel); err != nil {
+		if apimachinary_errors.IsNotFound(err) { //Ignore NotFound errors
+			return nil
+		}
 		return err
 	}
 	prevWasReady := modelReady(existingModel.Status)
 	if equality.Semantic.DeepEqual(existingModel.Status, model.Status) {
-		s.logger.Info("No difference not updating status")
+		// Not updating as no difference
 	} else {
 		if err := s.Status().Update(context.TODO(), model); err != nil {
-			s.logger.Error(err, "Failed to update status", "Model", model.Name)
-
 			s.recorder.Eventf(model, v1.EventTypeWarning, "UpdateFailed",
 				"Failed to update status for Model %q: %v", model.Name, err)
 			return err

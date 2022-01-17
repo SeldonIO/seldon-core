@@ -10,6 +10,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/jarcoal/httpmock v1.0.8
 	github.com/onsi/gomega v1.16.0
+	github.com/otiai10/copy v1.7.0
 	github.com/sirupsen/logrus v1.8.1
 	google.golang.org/grpc v1.42.0
 	google.golang.org/protobuf v1.27.1

@@ -2,14 +2,23 @@ package main
 
 import (
 	"flag"
+	"io/fs"
 	"io/ioutil"
 	"math/rand"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/repository/mlserver"
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/repository/triton"
+
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/config"
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/rclone"
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/repository"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/k8s"
 	"k8s.io/client-go/kubernetes"
@@ -27,20 +36,25 @@ var (
 	rclonePort       int
 	inferenceHost    string
 	inferencePort    int
-	modelRepository  string
+	agentFolder      string
 	namespace        string
 	replicaConfigStr string
 	inferenceSvcName string
 	configPath       string
+	logLevel         string
+	serverType       string
+	serverTypes      = [...]string{"mlserver", "triton"}
 )
 
 const (
-	EnvMLServerHttpPort = "MLSERVER_HTTP_PORT"
-	EnvServerName       = "SELDON_SERVER_NAME"
-	EnvServerIdx        = "POD_NAME"
-	EnvSchedulerHost    = "SELDON_SCHEDULER_HOST"
-	EnvSchedulerPort    = "SELDON_SCHEDULER_PORT"
-	EnvReplicaConfig    = "SELDON_REPLICA_CONFIG"
+	EnvServerHttpPort = "SELDON_SERVER_HTTP_PORT"
+	EnvServerName     = "SELDON_SERVER_NAME"
+	EnvServerIdx      = "POD_NAME"
+	EnvSchedulerHost  = "SELDON_SCHEDULER_HOST"
+	EnvSchedulerPort  = "SELDON_SCHEDULER_PORT"
+	EnvReplicaConfig  = "SELDON_REPLICA_CONFIG"
+	EnvLogLevel       = "SELDON_LOG_LEVEL"
+	EnvServerType     = "SELDON_SERVER_TYPE"
 
 	FlagSchedulerHost = "scheduler-host"
 	FlagSchedulerPort = "scheduler-port"
@@ -48,6 +62,8 @@ const (
 	FlagServerIdx     = "server-idx"
 	FlagInferencePort = "inference-port"
 	FlagReplicaConfig = "replica-config"
+	FlagLogLevel      = "log-level"
+	FlagServerType    = "server-type"
 )
 
 func init() {
@@ -61,10 +77,12 @@ func init() {
 	flag.IntVar(&rclonePort, "rclone-port", 5572, "RClone server port")
 	flag.StringVar(&inferenceHost, "inference-host", "0.0.0.0", "Inference server host")
 	flag.IntVar(&inferencePort, FlagInferencePort, 8080, "Inference server port")
-	flag.StringVar(&modelRepository, "model-repository", "/mnt/models", "Model repository folder")
+	flag.StringVar(&agentFolder, "agent-folder", "/mnt/agent", "Model repository folder")
 	flag.StringVar(&replicaConfigStr, FlagReplicaConfig, "", "Replica Json Config")
 	flag.StringVar(&namespace, "namespace", "", "Namespace")
 	flag.StringVar(&configPath, "config-path", "/mnt/config", "Path to folder with configuration files. Will assume agent.yaml or agent.json in this folder")
+	flag.StringVar(&logLevel, FlagLogLevel, "debug", "Log level - examples: debug, info, error")
+	flag.StringVar(&serverType, FlagServerType, serverTypes[0], "server type. Default mlserver")
 }
 
 func isFlagPassed(name string) bool {
@@ -79,13 +97,13 @@ func isFlagPassed(name string) bool {
 
 func updateFlagsFromEnv() {
 	if !isFlagPassed(FlagInferencePort) {
-		port := os.Getenv(EnvMLServerHttpPort)
+		port := os.Getenv(EnvServerHttpPort)
 		if port != "" {
-			log.Infof("Got %s from %s setting to %s", FlagInferencePort, EnvMLServerHttpPort, port)
+			log.Infof("Got %s from %s setting to %s", FlagInferencePort, EnvServerHttpPort, port)
 			var err error
 			inferencePort, err = strconv.Atoi(port)
 			if err != nil {
-				log.WithError(err).Fatalf("Failed to parse %s with value %s", EnvMLServerHttpPort, port)
+				log.WithError(err).Fatalf("Failed to parse %s with value %s", EnvServerHttpPort, port)
 			}
 		}
 	}
@@ -139,6 +157,20 @@ func updateFlagsFromEnv() {
 			replicaConfigStr = val
 		}
 	}
+	if !isFlagPassed(FlagLogLevel) {
+		val := os.Getenv(EnvLogLevel)
+		if val != "" {
+			log.Infof("Got %s from %s setting to %s", FlagLogLevel, EnvLogLevel, val)
+			logLevel = val
+		}
+	}
+	if !isFlagPassed(FlagServerType) {
+		val := os.Getenv(EnvServerType)
+		if val != "" {
+			log.Infof("Got %s from %s setting to %s", FlagServerType, EnvServerType, val)
+			serverType = val
+		}
+	}
 }
 
 func runningInsideK8s() bool {
@@ -173,11 +205,49 @@ func updateFlags() {
 	updateNamespace()
 }
 
+func makeDirs() (string, string, error) {
+	modelRepositoryDir := filepath.Join(agentFolder, "models")
+	rcloneRepositoryDir := filepath.Join(agentFolder, "rclone")
+	err := os.MkdirAll(modelRepositoryDir, fs.ModePerm)
+	if err != nil {
+		return modelRepositoryDir, rcloneRepositoryDir, err
+	}
+	err = os.MkdirAll(rcloneRepositoryDir, fs.ModePerm)
+	return modelRepositoryDir, rcloneRepositoryDir, err
+}
+
+func getRepositoryHandler(logger log.FieldLogger) repository.ModelRepositoryHandler {
+	switch serverType {
+	case "mlserver":
+		logger.Infof("Creating MLServer repository handler")
+		return mlserver.NewMLServerRepositoryHandler(logger)
+	case "triton":
+		logger.Infof("Creating Triton repository handler")
+		return triton.NewTritonRepositoryHandler(logger)
+	default:
+		logger.Infof("Using default as no server type requested - creating MLServer repository handler")
+		return mlserver.NewMLServerRepositoryHandler(logger)
+	}
+}
+
 func main() {
 	logger := log.New()
-	log.SetLevel(log.DebugLevel)
 	flag.Parse()
 	updateFlags()
+	logIntLevel, err := log.ParseLevel(logLevel)
+	if err != nil {
+		logger.WithError(err).Fatalf("Failed to set log level %s", logLevel)
+	}
+	logger.Infof("Setting log level to %s", logLevel)
+	logger.SetLevel(logIntLevel)
+
+	// Make required folders
+	//TODO handle via initContainer?
+	modelRepositoryDir, rcloneRepositoryDir, err := makeDirs()
+	if err != nil {
+		logger.WithError(err).Fatalf("Failed to create required folders %s and %s", modelRepositoryDir, rcloneRepositoryDir)
+	}
+	log.Infof("Model repository dir %s, Rclone repository dir %s ", modelRepositoryDir, rcloneRepositoryDir)
 
 	done := make(chan bool, 1)
 
@@ -202,7 +272,7 @@ func main() {
 		}
 	}
 	// Start Agent configuration handler
-	agentConfigHandler, err := agent.NewAgentConfigHandler(configPath, namespace, logger, clientset)
+	agentConfigHandler, err := config.NewAgentConfigHandler(configPath, namespace, logger, clientset)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create agent config handler")
 	}
@@ -211,13 +281,25 @@ func main() {
 		logger.Info("Closed agent handler")
 	}()
 
-	rcloneClient := agent.NewRCloneClient(rcloneHost, rclonePort, modelRepository, logger)
+	// Create Rclone client and start configuration listener
+
+	rcloneClient := rclone.NewRCloneClient(rcloneHost, rclonePort, rcloneRepositoryDir, logger, namespace)
+	err = rcloneClient.StartConfigListener(agentConfigHandler)
+	if err != nil {
+		logger.WithError(err).Error("Failed to initialise rclone config listener")
+		close(done)
+	}
+
+	// Create Model Repository
+	modelRepository := repository.NewModelRepository(logger, rcloneClient, modelRepositoryDir, getRepositoryHandler(logger))
+	// Create V2 Protocol Handler
 	v2Client := agent.NewV2Client(inferenceHost, inferencePort, logger)
-	client := agent.NewClient(serverName, uint32(replicaIdx), schedulerHost, schedulerPort, logger, rcloneClient, v2Client, replicaConfig, inferenceSvcName, namespace)
+	// Create Agent
+	client := agent.NewClient(serverName, uint32(replicaIdx), schedulerHost, schedulerPort, logger, modelRepository, v2Client, replicaConfig, inferenceSvcName, namespace)
 
 	// Start client grpc server
 	go func() {
-		err = client.Start(agentConfigHandler)
+		err = client.Start()
 		if err != nil {
 			logger.WithError(err).Error("Failed to initialise client")
 		}

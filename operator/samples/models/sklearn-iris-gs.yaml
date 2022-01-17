@@ -4,6 +4,8 @@ metadata:
   name: iris
   namespace: seldon-mesh
 spec:
-  storageUri: "gs://seldon-models/mlserver/iris"
+  storageUri: "gs://seldon-models/mlserver/iris-multi-version"
+  artifactVersion: 1
   requirements:
   - sklearn
+  replicas: 1

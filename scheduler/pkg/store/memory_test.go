@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
+
 	. "github.com/onsi/gomega"
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	log "github.com/sirupsen/logrus"
@@ -15,48 +17,166 @@ func TestUpdateModel(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name   string
-		store  *LocalSchedulerStore
-		config *pb.ModelDetails
-		err    error
+		name            string
+		store           *LocalSchedulerStore
+		loadModelReq    *pb.LoadModelRequest
+		expectedVersion uint32
 	}
 
 	tests := []test{
 		{
-			name:   "simple",
-			store:  NewLocalSchedulerStore(),
-			config: &pb.ModelDetails{Name: "model", Version: "1"},
-			err:    nil,
+			name:  "simple",
+			store: NewLocalSchedulerStore(),
+			loadModelReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{
+						Name: "model",
+					},
+				},
+			},
+			expectedVersion: 1,
 		},
 		{
 			name: "VersionAlreadyExists",
-			store: &LocalSchedulerStore{models: map[string]*Model{"model": &Model{
-				versions: []*ModelVersion{&ModelVersion{config: &pb.ModelDetails{Name: "model", Version: "1"}}},
-			}}},
-			config: &pb.ModelDetails{Name: "model", Version: "1"},
-			err:    ModelVersionExistsErr,
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{
+					"model": {
+						versions: []*ModelVersion{
+							{
+								version: 1,
+								modelDefn: &pb.Model{
+									Meta: &pb.MetaData{
+										Name: "model",
+									},
+								},
+							},
+						},
+					},
+				}},
+			loadModelReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{
+						Name: "model",
+					},
+				},
+			},
+			expectedVersion: 1,
 		},
 		{
-			name: "VersionAdded",
-			store: &LocalSchedulerStore{models: map[string]*Model{"model": &Model{
-				versions: []*ModelVersion{&ModelVersion{config: &pb.ModelDetails{Name: "model", Version: "1"}}},
-			}}},
-			config: &pb.ModelDetails{Name: "model", Version: "2"},
-			err:    nil,
+			name: "Meta data is changed - no new version created assuming same name of model",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{
+					"model": {
+						versions: []*ModelVersion{
+							{
+								version: 1,
+								modelDefn: &pb.Model{
+									Meta: &pb.MetaData{
+										Name: "model",
+									},
+								},
+							},
+						},
+					},
+				}},
+			loadModelReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{
+						Name: "model",
+						KubernetesMeta: &pb.KubernetesMeta{
+							Generation: 2,
+						},
+					},
+				},
+			},
+			expectedVersion: 1,
+		},
+		{
+			name: "DeploymentSpecDiffers",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{
+					"model": {
+						versions: []*ModelVersion{
+							{
+								version: 1,
+								modelDefn: &pb.Model{
+									Meta: &pb.MetaData{
+										Name: "model",
+									},
+									ModelSpec: &pb.ModelSpec{
+										Uri: "gs:/models/iris",
+									},
+									DeploymentSpec: &pb.DeploymentSpec{
+										Replicas: 2,
+									},
+								},
+							},
+						},
+					},
+				}},
+			loadModelReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{
+						Name: "model",
+					},
+					ModelSpec: &pb.ModelSpec{
+						Uri: "gs:/models/iris",
+					},
+					DeploymentSpec: &pb.DeploymentSpec{
+						Replicas: 4,
+					},
+				},
+			},
+			expectedVersion: 1,
+		},
+		{
+			name: "ModelSpecDiffers",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{
+					"model": {
+						versions: []*ModelVersion{
+							{
+								version: 1,
+								modelDefn: &pb.Model{
+									Meta: &pb.MetaData{
+										Name: "model",
+									},
+									ModelSpec: &pb.ModelSpec{
+										Uri: "gs:/models/iris",
+									},
+									DeploymentSpec: &pb.DeploymentSpec{
+										Replicas: 2,
+									},
+								},
+							},
+						},
+					},
+				}},
+			loadModelReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{
+						Name: "model",
+					},
+					ModelSpec: &pb.ModelSpec{
+						Uri: "gs:/models/iris2",
+					},
+					DeploymentSpec: &pb.DeploymentSpec{
+						Replicas: 4,
+					},
+				},
+			},
+			expectedVersion: 2,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			ms := NewMemoryStore(logger, test.store)
-			err := ms.UpdateModel(test.config)
-			if test.err == nil {
-				g.Expect(err).To(BeNil())
-				m := test.store.models[test.config.Name]
-				g.Expect(m.versions[len(m.versions)-1].config).To(Equal(test.config))
-			} else {
-				g.Expect(err).ToNot(BeNil())
-			}
+			ms.UpdateModel(test.loadModelReq)
+			m := test.store.models[test.loadModelReq.GetModel().GetMeta().GetName()]
+			latest := m.Latest()
+			g.Expect(latest.modelDefn).To(Equal(test.loadModelReq.Model))
+			g.Expect(latest.GetVersion()).To(Equal(test.expectedVersion))
 		})
 	}
 }
@@ -83,9 +203,20 @@ func TestGetModel(t *testing.T) {
 		},
 		{
 			name: "VersionAlreadyExists",
-			store: &LocalSchedulerStore{models: map[string]*Model{"model": &Model{
-				versions: []*ModelVersion{&ModelVersion{config: &pb.ModelDetails{Name: "model", Version: "1"}}},
-			}}},
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{
+					"model": {
+						versions: []*ModelVersion{
+							{
+								modelDefn: &pb.Model{
+									Meta: &pb.MetaData{
+										Name: "model",
+									},
+								},
+							},
+						},
+					},
+				}},
 			key:      "model",
 			versions: 1,
 			err:      nil,
@@ -103,72 +234,6 @@ func TestGetModel(t *testing.T) {
 			} else {
 				g.Expect(err).ToNot(BeNil())
 			}
-		})
-	}
-}
-
-func TestExistsModelVersion(t *testing.T) {
-	logger := log.New()
-	g := NewGomegaWithT(t)
-
-	type test struct {
-		name     string
-		store    *LocalSchedulerStore
-		key      string
-		version  string
-		expected bool
-	}
-
-	tests := []test{
-		{
-			name:     "NoModel",
-			store:    NewLocalSchedulerStore(),
-			key:      "model",
-			version:  "1",
-			expected: false,
-		},
-		{
-			name: "VersionAlreadyExists",
-			store: &LocalSchedulerStore{models: map[string]*Model{"model": &Model{
-				versions: []*ModelVersion{
-					{config: &pb.ModelDetails{Name: "model", Version: "1"}},
-				},
-			}}},
-			key:      "model",
-			version:  "1",
-			expected: true,
-		},
-		{
-			name: "VersionAlreadyExistsMultiple",
-			store: &LocalSchedulerStore{models: map[string]*Model{"model": &Model{
-				versions: []*ModelVersion{
-					{config: &pb.ModelDetails{Name: "model", Version: "1"}},
-					{config: &pb.ModelDetails{Name: "model", Version: "2"}},
-				},
-			}}},
-			key:      "model",
-			version:  "2",
-			expected: true,
-		},
-		{
-			name: "VersionNotExists",
-			store: &LocalSchedulerStore{models: map[string]*Model{"model": &Model{
-				versions: []*ModelVersion{
-					{config: &pb.ModelDetails{Name: "model", Version: "1"}},
-					{config: &pb.ModelDetails{Name: "model", Version: "2"}},
-				},
-			}}},
-			key:      "model",
-			version:  "3",
-			expected: false,
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			ms := NewMemoryStore(logger, test.store)
-			exists := ms.ExistsModelVersion(test.key, test.version)
-			g.Expect(exists).To(Equal(test.expected))
 		})
 	}
 }
@@ -193,9 +258,20 @@ func TestRemoveModel(t *testing.T) {
 		},
 		{
 			name: "VersionAlreadyExists",
-			store: &LocalSchedulerStore{models: map[string]*Model{"model": &Model{
-				versions: []*ModelVersion{&ModelVersion{config: &pb.ModelDetails{Name: "model", Version: "1"}}},
-			}}},
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{
+					"model": {
+						versions: []*ModelVersion{
+							{
+								modelDefn: &pb.Model{
+									Meta: &pb.MetaData{
+										Name: "model",
+									},
+								},
+							},
+						},
+					},
+				}},
 			key: "model",
 			err: nil,
 		},
@@ -204,7 +280,7 @@ func TestRemoveModel(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			ms := NewMemoryStore(logger, test.store)
-			err := ms.RemoveModel(test.key)
+			err := ms.RemoveModel(&pb.UnloadModelRequest{Model: &pb.ModelReference{Name: test.key}})
 			if test.err == nil {
 				g.Expect(err).To(BeNil())
 			} else {
@@ -222,7 +298,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 		name           string
 		store          *LocalSchedulerStore
 		modelKey       string
-		version        string
+		version        uint32
 		serverKey      string
 		replicas       []*ServerReplica
 		expectedStates map[int]ReplicaStatus
@@ -236,11 +312,11 @@ func TestUpdateLoadedModels(t *testing.T) {
 				models: map[string]*Model{"model": &Model{
 					versions: []*ModelVersion{
 						{
-							config:   &pb.ModelDetails{Name: "model", Version: "1"},
+							version:  1,
 							replicas: map[int]ReplicaStatus{},
 						},
 						{
-							config:   &pb.ModelDetails{Name: "model", Version: "2"},
+							version:  2,
 							replicas: map[int]ReplicaStatus{},
 						},
 					},
@@ -252,7 +328,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 				},
 			},
 			modelKey:  "model",
-			version:   "1",
+			version:   1,
 			serverKey: "server",
 			replicas:  nil,
 			err:       nil,
@@ -263,7 +339,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 				models: map[string]*Model{"model": &Model{
 					versions: []*ModelVersion{
 						{
-							config:   &pb.ModelDetails{Name: "model", Version: "1"},
+							version:  1,
 							replicas: map[int]ReplicaStatus{},
 						},
 					},
@@ -279,7 +355,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 				},
 			},
 			modelKey:  "model",
-			version:   "1",
+			version:   1,
 			serverKey: "server",
 			replicas: []*ServerReplica{
 				{replicaIdx: 0}, {replicaIdx: 1},
@@ -293,7 +369,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 				models: map[string]*Model{"model": {
 					versions: []*ModelVersion{
 						{
-							config: &pb.ModelDetails{Name: "model", Version: "1"},
+							version: 1,
 							replicas: map[int]ReplicaStatus{
 								0: {State: Loaded},
 							},
@@ -311,7 +387,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 				},
 			},
 			modelKey:  "model",
-			version:   "1",
+			version:   1,
 			serverKey: "server",
 			replicas: []*ServerReplica{
 				{replicaIdx: 0}, {replicaIdx: 1},
@@ -325,7 +401,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 				models: map[string]*Model{"model": &Model{
 					versions: []*ModelVersion{
 						{
-							config: &pb.ModelDetails{Name: "model", Version: "1"},
+							version: 1,
 							replicas: map[int]ReplicaStatus{
 								0: {State: Loaded},
 							},
@@ -343,7 +419,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 				},
 			},
 			modelKey:  "model",
-			version:   "1",
+			version:   1,
 			serverKey: "server",
 			replicas: []*ServerReplica{
 				{replicaIdx: 1},
@@ -357,7 +433,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 				models: map[string]*Model{"model": &Model{
 					versions: []*ModelVersion{
 						{
-							config: &pb.ModelDetails{Name: "model", Version: "1"},
+							version: 1,
 							replicas: map[int]ReplicaStatus{
 								0: {State: Loaded},
 							},
@@ -376,7 +452,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 				},
 			},
 			modelKey:       "model",
-			version:        "1",
+			version:        1,
 			serverKey:      "server",
 			replicas:       []*ServerReplica{},
 			expectedStates: map[int]ReplicaStatus{0: {State: UnloadRequested}},
@@ -388,7 +464,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 				models: map[string]*Model{"model": &Model{
 					versions: []*ModelVersion{
 						{
-							config: &pb.ModelDetails{Name: "model", Version: "1"},
+							version: 1,
 							replicas: map[int]ReplicaStatus{
 								0: {State: Unloaded},
 							},
@@ -407,7 +483,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 				},
 			},
 			modelKey:       "model",
-			version:        "1",
+			version:        1,
 			serverKey:      "server",
 			replicas:       []*ServerReplica{},
 			expectedStates: map[int]ReplicaStatus{0: {State: Unloaded}},
@@ -442,7 +518,7 @@ func TestUpdateModelState(t *testing.T) {
 		name            string
 		store           *LocalSchedulerStore
 		modelKey        string
-		version         string
+		version         uint32
 		serverKey       string
 		replicaIdx      int
 		state           ReplicaStatus
@@ -459,7 +535,7 @@ func TestUpdateModelState(t *testing.T) {
 				models: map[string]*Model{"model": &Model{
 					versions: []*ModelVersion{
 						{
-							config:   &pb.ModelDetails{Name: "model", Version: "1"},
+							version:  1,
 							replicas: map[int]ReplicaStatus{},
 						},
 					},
@@ -475,7 +551,7 @@ func TestUpdateModelState(t *testing.T) {
 				},
 			},
 			modelKey:        "model",
-			version:         "1",
+			version:         1,
 			serverKey:       "server",
 			replicaIdx:      0,
 			state:           ReplicaStatus{State: Loaded},
@@ -489,7 +565,7 @@ func TestUpdateModelState(t *testing.T) {
 				models: map[string]*Model{"model": &Model{
 					versions: []*ModelVersion{
 						{
-							config:   &pb.ModelDetails{Name: "model", Version: "1"},
+							version:  1,
 							replicas: map[int]ReplicaStatus{},
 						},
 					},
@@ -505,7 +581,7 @@ func TestUpdateModelState(t *testing.T) {
 				},
 			},
 			modelKey:        "model",
-			version:         "1",
+			version:         1,
 			serverKey:       "server",
 			replicaIdx:      0,
 			state:           ReplicaStatus{State: Unloaded},
@@ -519,7 +595,7 @@ func TestUpdateModelState(t *testing.T) {
 				models: map[string]*Model{"model": &Model{
 					versions: []*ModelVersion{
 						{
-							config:   &pb.ModelDetails{Name: "model", Version: "1"},
+							version:  1,
 							replicas: map[int]ReplicaStatus{},
 						},
 					},
@@ -536,7 +612,7 @@ func TestUpdateModelState(t *testing.T) {
 				},
 			},
 			modelKey:        "model",
-			version:         "1",
+			version:         1,
 			serverKey:       "server",
 			replicaIdx:      0,
 			state:           ReplicaStatus{State: Unloaded},
@@ -576,7 +652,7 @@ func TestUpdateModelStatus(t *testing.T) {
 		name                      string
 		deleted                   bool
 		modelVersion              *ModelVersion
-		prevModelVersion          *ModelVersion
+		prevAvailableModelVersion *ModelVersion
 		expectedState             ModelState
 		expectedReason            string
 		expectedAvailableReplicas uint32
@@ -591,14 +667,15 @@ func TestUpdateModelStatus(t *testing.T) {
 			name:    "Available",
 			deleted: false,
 			modelVersion: NewModelVersion(
-				&pb.ModelDetails{Version: "1", Replicas: 1},
+				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
+				1,
 				"server",
 				map[int]ReplicaStatus{
 					0: {State: Available, Reason: "", Timestamp: d1},
 				},
 				false,
 				ModelProgressing),
-			prevModelVersion:          nil,
+			prevAvailableModelVersion: nil,
 			expectedState:             ModelAvailable,
 			expectedAvailableReplicas: 1,
 			expectedReason:            "",
@@ -608,7 +685,8 @@ func TestUpdateModelStatus(t *testing.T) {
 			name:    "Progressing",
 			deleted: false,
 			modelVersion: NewModelVersion(
-				&pb.ModelDetails{Version: "1", Replicas: 2},
+				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
+				1,
 				"server",
 				map[int]ReplicaStatus{
 					0: {State: Available, Reason: "", Timestamp: d1},
@@ -616,7 +694,7 @@ func TestUpdateModelStatus(t *testing.T) {
 				},
 				false,
 				ModelProgressing),
-			prevModelVersion:          nil,
+			prevAvailableModelVersion: nil,
 			expectedState:             ModelProgressing,
 			expectedAvailableReplicas: 1,
 			expectedReason:            "",
@@ -626,14 +704,15 @@ func TestUpdateModelStatus(t *testing.T) {
 			name:    "Failed",
 			deleted: false,
 			modelVersion: NewModelVersion(
-				&pb.ModelDetails{Version: "1", Replicas: 1},
+				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
+				1,
 				"server",
 				map[int]ReplicaStatus{
 					0: {State: LoadFailed, Reason: r1, Timestamp: d1},
 				},
 				false,
 				ModelProgressing),
-			prevModelVersion:          nil,
+			prevAvailableModelVersion: nil,
 			expectedState:             ModelFailed,
 			expectedAvailableReplicas: 0,
 			expectedReason:            r1,
@@ -643,7 +722,8 @@ func TestUpdateModelStatus(t *testing.T) {
 			name:    "AvailableAndFailed",
 			deleted: false,
 			modelVersion: NewModelVersion(
-				&pb.ModelDetails{Version: "1", Replicas: 2},
+				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
+				1,
 				"server",
 				map[int]ReplicaStatus{
 					0: {State: Loaded, Reason: "", Timestamp: d1},
@@ -651,7 +731,7 @@ func TestUpdateModelStatus(t *testing.T) {
 				},
 				false,
 				ModelProgressing),
-			prevModelVersion:          nil,
+			prevAvailableModelVersion: nil,
 			expectedState:             ModelFailed,
 			expectedAvailableReplicas: 0,
 			expectedReason:            r1,
@@ -661,7 +741,8 @@ func TestUpdateModelStatus(t *testing.T) {
 			name:    "TwoFailed",
 			deleted: false,
 			modelVersion: NewModelVersion(
-				&pb.ModelDetails{Version: "1", Replicas: 2},
+				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
+				1,
 				"server",
 				map[int]ReplicaStatus{
 					0: {State: LoadFailed, Reason: r1, Timestamp: d1},
@@ -669,7 +750,7 @@ func TestUpdateModelStatus(t *testing.T) {
 				},
 				false,
 				ModelProgressing),
-			prevModelVersion:          nil,
+			prevAvailableModelVersion: nil,
 			expectedState:             ModelFailed,
 			expectedAvailableReplicas: 0,
 			expectedReason:            r2,
@@ -679,7 +760,8 @@ func TestUpdateModelStatus(t *testing.T) {
 			name:    "AvailableV2",
 			deleted: false,
 			modelVersion: NewModelVersion(
-				&pb.ModelDetails{Version: "2", Replicas: 2},
+				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
+				1,
 				"server",
 				map[int]ReplicaStatus{
 					0: {State: Loading, Reason: "", Timestamp: d1},
@@ -687,8 +769,9 @@ func TestUpdateModelStatus(t *testing.T) {
 				},
 				false,
 				ModelProgressing),
-			prevModelVersion: NewModelVersion(
-				&pb.ModelDetails{Version: "1", Replicas: 1},
+			prevAvailableModelVersion: NewModelVersion(
+				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
+				1,
 				"server",
 				map[int]ReplicaStatus{
 					0: {State: Available, Reason: "", Timestamp: d1},
@@ -704,7 +787,8 @@ func TestUpdateModelStatus(t *testing.T) {
 			name:    "Terminating",
 			deleted: true,
 			modelVersion: NewModelVersion(
-				&pb.ModelDetails{Version: "2", Replicas: 2},
+				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
+				1,
 				"server",
 				map[int]ReplicaStatus{
 					0: {State: Unloading, Reason: "", Timestamp: d1},
@@ -721,7 +805,8 @@ func TestUpdateModelStatus(t *testing.T) {
 			name:    "TerminatingLoadingReplicas",
 			deleted: true,
 			modelVersion: NewModelVersion(
-				&pb.ModelDetails{Version: "2", Replicas: 2},
+				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
+				2,
 				"server",
 				map[int]ReplicaStatus{
 					0: {State: Loading, Reason: "", Timestamp: d1},
@@ -738,7 +823,8 @@ func TestUpdateModelStatus(t *testing.T) {
 			name:    "Terminated",
 			deleted: true,
 			modelVersion: NewModelVersion(
-				&pb.ModelDetails{Version: "2", Replicas: 2},
+				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
+				1,
 				"server",
 				map[int]ReplicaStatus{
 					0: {State: Unloaded, Reason: "", Timestamp: d1},
@@ -755,7 +841,8 @@ func TestUpdateModelStatus(t *testing.T) {
 			name:    "TerminateFailed",
 			deleted: true,
 			modelVersion: NewModelVersion(
-				&pb.ModelDetails{Version: "2", Replicas: 2},
+				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
+				1,
 				"server",
 				map[int]ReplicaStatus{
 					0: {State: UnloadFailed, Reason: r1, Timestamp: d1},
@@ -768,15 +855,196 @@ func TestUpdateModelStatus(t *testing.T) {
 			expectedReason:            r1,
 			expectedTimestamp:         d1,
 		},
+		{
+			name:    "AvailableV2PrevTerminated",
+			deleted: false,
+			modelVersion: NewModelVersion(
+				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
+				2,
+				"server",
+				map[int]ReplicaStatus{
+					0: {State: Available, Reason: "", Timestamp: d1},
+					1: {State: Available, Reason: "", Timestamp: d2},
+				},
+				false,
+				ModelProgressing),
+			prevAvailableModelVersion: NewModelVersion(
+				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
+				1,
+				"server",
+				map[int]ReplicaStatus{
+					0: {State: Available, Reason: "", Timestamp: d1},
+					1: {State: Available, Reason: "", Timestamp: d2},
+				},
+				false,
+				ModelTerminating),
+			expectedState:             ModelAvailable,
+			expectedAvailableReplicas: 2,
+			expectedReason:            "",
+			expectedTimestamp:         d2,
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			ms := NewMemoryStore(logger, &LocalSchedulerStore{})
-			ms.updateModelStatus(true, test.deleted, test.modelVersion, test.prevModelVersion)
+			ms.updateModelStatus(true, test.deleted, test.modelVersion, test.prevAvailableModelVersion)
 			g.Expect(test.modelVersion.state.State).To(Equal(test.expectedState))
 			g.Expect(test.modelVersion.state.Reason).To(Equal(test.expectedReason))
 			g.Expect(test.modelVersion.state.AvailableReplicas).To(Equal(test.expectedAvailableReplicas))
 			g.Expect(test.modelVersion.state.Timestamp).To(Equal(test.expectedTimestamp))
+		})
+	}
+}
+
+func TestAddModelVersionIfNotExists(t *testing.T) {
+	logger := log.New()
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name         string
+		store        *LocalSchedulerStore
+		modelVersion *agent.ModelVersion
+		expected     []uint32
+		latest       uint32
+	}
+
+	tests := []test{
+		{
+			name: "Add new version when none exist",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{}},
+			modelVersion: &agent.ModelVersion{
+				Version: 1,
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
+			expected: []uint32{1},
+			latest:   1,
+		},
+		{
+			name: "AddNewVersion",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"foo": {
+					versions: []*ModelVersion{},
+				}},
+			},
+			modelVersion: &agent.ModelVersion{
+				Version: 1,
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
+			expected: []uint32{1},
+			latest:   1,
+		},
+		{
+			name: "AddSecondVersion",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"foo": {
+					versions: []*ModelVersion{
+						{
+							version:   1,
+							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo"}},
+							replicas:  map[int]ReplicaStatus{},
+						},
+					},
+				}},
+			},
+			modelVersion: &agent.ModelVersion{
+				Version: 2,
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
+			expected: []uint32{1, 2},
+			latest:   2,
+		},
+		{
+			name: "Existing",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"foo": &Model{
+					versions: []*ModelVersion{
+						{
+							version:   1,
+							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo"}},
+							replicas:  map[int]ReplicaStatus{},
+						},
+					},
+				}},
+			},
+			modelVersion: &agent.ModelVersion{
+				Version: 1,
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
+			expected: []uint32{1},
+			latest:   1,
+		},
+		{
+			name: "AddThirdVersion",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"foo": &Model{
+					versions: []*ModelVersion{
+						{
+							version:   1,
+							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo"}},
+							replicas:  map[int]ReplicaStatus{},
+						},
+						{
+							version:   2,
+							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo"}},
+							replicas:  map[int]ReplicaStatus{},
+						},
+					},
+				}},
+			},
+			modelVersion: &agent.ModelVersion{
+				Version: 3,
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
+			expected: []uint32{1, 2, 3},
+			latest:   3,
+		},
+		{
+			name: "AddThirdVersionInMiddle",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"foo": &Model{
+					versions: []*ModelVersion{
+						{
+							version:   1,
+							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo"}},
+							replicas:  map[int]ReplicaStatus{},
+						},
+						{
+							version:   3,
+							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo"}},
+							replicas:  map[int]ReplicaStatus{},
+						},
+					},
+				}},
+			},
+			modelVersion: &agent.ModelVersion{
+				Version: 2,
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
+			expected: []uint32{1, 2, 3},
+			latest:   3,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ms := NewMemoryStore(logger, test.store)
+			ms.addModelVersionIfNotExists(test.modelVersion)
+			modelName := test.modelVersion.GetModel().GetMeta().GetName()
+			g.Expect(test.store.models[modelName].GetVersions()).To(Equal(test.expected))
+			g.Expect(test.store.models[modelName].Latest().version).To(Equal(test.latest))
 		})
 	}
 }

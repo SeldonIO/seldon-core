@@ -27,15 +27,16 @@ func NewSimpleScheduler(logger log.FieldLogger,
 	replicaFilters []ReplicaFilter,
 	serverSorts []sorters.ServerSorter,
 	replicaSorts []sorters.ReplicaSorter) *SimpleScheduler {
-	return &SimpleScheduler{
+	s := &SimpleScheduler{
 		store:          store,
-		logger:         logger,
+		logger:         logger.WithField("Name", "SimpleScheduler"),
 		serverFilters:  serverFilters,
 		serverSorts:    serverSorts,
 		replicaFilters: replicaFilters,
 		replicaSorts:   replicaSorts,
 		failedModels:   make(map[string]bool),
 	}
+	return s
 }
 
 func (s *SimpleScheduler) Schedule(modelKey string) error {
@@ -66,26 +67,27 @@ func (s *SimpleScheduler) ScheduleFailedModels() ([]string, error) {
 }
 
 //TODO - clarify non shared models should not be scheduled
-func (s *SimpleScheduler) scheduleToServer(modelKey string) error {
-	s.logger.Debugf("Schedule model %s", modelKey)
+func (s *SimpleScheduler) scheduleToServer(modelName string) error {
+	logger := s.logger.WithField("func", "scheduleToServer")
+	logger.Debugf("Schedule model %s", modelName)
 	// Get Model
-	model, err := s.store.GetModel(modelKey)
+	model, err := s.store.GetModel(modelName)
 	if err != nil {
 		return err
 	}
 	if model == nil {
-		return fmt.Errorf("Can't find model with key %s", modelKey)
+		return fmt.Errorf("Can't find model with key %s", modelName)
 	}
 	latestModel := model.GetLatest()
 	if latestModel == nil {
-		return fmt.Errorf("No latest model for %s", modelKey)
+		return fmt.Errorf("No latest model for %s", modelName)
 	}
 
 	if model.Deleted && latestModel.HasServer() {
-		s.logger.Debugf("Model %s is deleted ensuring removed", modelKey)
-		err = s.store.UpdateLoadedModels(modelKey, latestModel.GetVersion(), latestModel.Server(), []*store.ServerReplica{})
+		logger.Debugf("Model %s is deleted ensuring removed", modelName)
+		err = s.store.UpdateLoadedModels(modelName, latestModel.GetVersion(), latestModel.Server(), []*store.ServerReplica{})
 		if err != nil {
-			s.logger.Warnf("Failed to unschedule model replicas for model %s on server %s", modelKey, latestModel.Server())
+			logger.Warnf("Failed to unschedule model replicas for model %s on server %s", modelName, latestModel.Server())
 		}
 	} else {
 		// Get all servers
@@ -97,7 +99,7 @@ func (s *SimpleScheduler) scheduleToServer(modelKey string) error {
 		filteredServers := s.filterServers(latestModel, servers)
 		s.sortServers(latestModel, filteredServers)
 		ok := false
-		s.logger.Debugf("Model %s candidate servers %v", modelKey, filteredServers)
+		logger.Debugf("Model %s candidate servers %v", modelName, filteredServers)
 		// For each server filter and sort replicas and attempt schedule if enough replicas
 		for _, candidateServer := range filteredServers {
 			candidateReplicas := s.filterReplicas(latestModel, candidateServer)
@@ -106,20 +108,20 @@ func (s *SimpleScheduler) scheduleToServer(modelKey string) error {
 			}
 			s.sortReplicas(candidateReplicas)
 
-			err = s.store.UpdateLoadedModels(modelKey, latestModel.GetVersion(), candidateServer.Name, candidateReplicas.ChosenReplicas[0:latestModel.DesiredReplicas()])
+			err = s.store.UpdateLoadedModels(modelName, latestModel.GetVersion(), candidateServer.Name, candidateReplicas.ChosenReplicas[0:latestModel.DesiredReplicas()])
 			if err != nil {
-				s.logger.Warnf("Failed to update model replicas for model %s on server %s", modelKey, candidateServer.Name)
+				logger.Warnf("Failed to update model replicas for model %s on server %s", modelName, candidateServer.Name)
 			} else {
 				ok = true
 				break
 			}
 		}
 		if !ok {
-			return fmt.Errorf("failed to schedule model %s", modelKey)
+			return fmt.Errorf("failed to schedule model %s", modelName)
 		}
 	}
 
-	//TODO Cleanup other model versions
+	//TODO Cleanup previous version if needed?
 	return nil
 }
 

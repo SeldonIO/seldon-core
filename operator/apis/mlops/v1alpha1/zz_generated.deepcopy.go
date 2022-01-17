@@ -164,6 +164,11 @@ func (in *InferenceArtifactSpec) DeepCopyInto(out *InferenceArtifactSpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.ArtifactVersion != nil {
+		in, out := &in.ArtifactVersion, &out.ArtifactVersion
+		*out = new(uint32)
+		**out = **in
+	}
 	if in.SchemaURI != nil {
 		in, out := &in.SchemaURI, &out.SchemaURI
 		*out = new(string)

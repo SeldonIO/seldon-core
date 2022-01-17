@@ -20,11 +20,11 @@ type mockStore struct {
 	scheduledReplicas []int
 }
 
-func (f mockStore) RemoveModel(modelKey string) error {
+func (f mockStore) RemoveModel(req *pb.UnloadModelRequest) error {
 	panic("implement me")
 }
 
-func (f mockStore) UpdateModel(config *pb.ModelDetails) error {
+func (f mockStore) UpdateModel(config *pb.LoadModelRequest) {
 	panic("implement me")
 }
 
@@ -32,7 +32,7 @@ func (f mockStore) GetModel(key string) (*store.ModelSnapshot, error) {
 	return f.models[key], nil
 }
 
-func (f mockStore) ExistsModelVersion(key string, version string) bool {
+func (f mockStore) ExistsModelVersion(key string, version uint32) bool {
 	return false
 }
 
@@ -44,7 +44,7 @@ func (f mockStore) GetServer(serverKey string) (*store.ServerSnapshot, error) {
 	panic("implement me")
 }
 
-func (f *mockStore) UpdateLoadedModels(modelKey string, version string, serverKey string, replicas []*store.ServerReplica) error {
+func (f *mockStore) UpdateLoadedModels(modelKey string, version uint32, serverKey string, replicas []*store.ServerReplica) error {
 	f.scheduledServer = serverKey
 	var replicaIdxs []int
 	for _, rep := range replicas {
@@ -54,7 +54,7 @@ func (f *mockStore) UpdateLoadedModels(modelKey string, version string, serverKe
 	return nil
 }
 
-func (f mockStore) UpdateModelState(modelKey string, version string, serverKey string, replicaIdx int, availableMemory *uint64, state store.ModelReplicaState, reason string) error {
+func (f mockStore) UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, state store.ModelReplicaState, reason string) error {
 	panic("implement me")
 }
 
@@ -66,7 +66,7 @@ func (f mockStore) RemoveServerReplica(serverName string, replicaIdx int) ([]str
 	panic("implement me")
 }
 
-func (f mockStore) AddListener(c chan string) {
+func (f mockStore) AddListener(c chan *store.ModelSnapshot) {
 
 }
 
@@ -75,20 +75,14 @@ func TestScheduler(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	newTestModel := func(name string, requiredMemory uint64, requirements []string, server *string, replicas uint32, loadedModels []int, deleted bool, scheduledServer string) *store.ModelSnapshot {
-		config := &pb.ModelDetails{
-			Name:         name,
-			MemoryBytes:  &requiredMemory,
-			Requirements: requirements,
-			Server:       server,
-			Replicas:     replicas,
-		}
+		config := &pb.Model{ModelSpec: &pb.ModelSpec{MemoryBytes: &requiredMemory, Requirements: requirements, Server: server}, DeploymentSpec: &pb.DeploymentSpec{Replicas: replicas}}
 		rmap := make(map[int]store.ReplicaStatus)
 		for _, ridx := range loadedModels {
 			rmap[ridx] = store.ReplicaStatus{State: store.Loaded}
 		}
 		return &store.ModelSnapshot{
 			Name:     name,
-			Versions: []*store.ModelVersion{store.NewModelVersion(config, scheduledServer, rmap, false, store.ModelProgressing)},
+			Versions: []*store.ModelVersion{store.NewModelVersion(config, 1, scheduledServer, rmap, false, store.ModelProgressing)},
 			Deleted:  deleted,
 		}
 	}

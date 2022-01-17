@@ -28,11 +28,12 @@ type Model struct {
 }
 
 type ModelVersion struct {
-	config   *pb.ModelDetails
-	server   string
-	replicas map[int]ReplicaStatus
-	deleted  bool
-	state    ModelStatus
+	modelDefn *pb.Model
+	version   uint32
+	server    string
+	replicas  map[int]ReplicaStatus
+	deleted   bool
+	state     ModelStatus
 }
 
 type ModelStatus struct {
@@ -49,26 +50,24 @@ type ReplicaStatus struct {
 	Timestamp time.Time
 }
 
-func NewDefaultModelVersion(config *pb.ModelDetails) *ModelVersion {
+func NewDefaultModelVersion(model *pb.Model, version uint32) *ModelVersion {
 	return &ModelVersion{
-		config:   config,
-		replicas: make(map[int]ReplicaStatus),
-		deleted:  false,
-		state:    ModelStatus{State: ModelStateUnknown},
+		version:   version,
+		modelDefn: model,
+		replicas:  make(map[int]ReplicaStatus),
+		deleted:   false,
+		state:     ModelStatus{State: ModelStateUnknown},
 	}
 }
 
-func NewModelVersion(config *pb.ModelDetails,
-	server string,
-	replicas map[int]ReplicaStatus,
-	deleted bool,
-	state ModelState) *ModelVersion {
+func NewModelVersion(model *pb.Model, version uint32, server string, replicas map[int]ReplicaStatus, deleted bool, state ModelState) *ModelVersion {
 	return &ModelVersion{
-		config:   config,
-		server:   server,
-		replicas: replicas,
-		deleted:  deleted,
-		state:    ModelStatus{State: state},
+		version:   version,
+		modelDefn: model,
+		server:    server,
+		replicas:  replicas,
+		deleted:   deleted,
+		state:     ModelStatus{State: state},
 	}
 }
 
@@ -123,7 +122,7 @@ func NewServerReplica(inferenceSvc string,
 	}
 }
 
-func NewServerReplicaFromConfig(server *Server, replicaIdx int, loadedModels map[string]bool, config *pba.ReplicaConfig) *ServerReplica {
+func NewServerReplicaFromConfig(server *Server, replicaIdx int, loadedModels map[string]bool, config *pba.ReplicaConfig, availableMemoryBytes uint64) *ServerReplica {
 	return &ServerReplica{
 		inferenceSvc:      config.GetInferenceSvc(),
 		inferenceHttpPort: config.GetInferenceHttpPort(),
@@ -132,7 +131,7 @@ func NewServerReplicaFromConfig(server *Server, replicaIdx int, loadedModels map
 		server:            server,
 		capabilities:      config.GetCapabilities(),
 		memory:            config.GetMemoryBytes(),
-		availableMemory:   config.GetAvailableMemoryBytes(),
+		availableMemory:   availableMemoryBytes,
 		loadedModels:      loadedModels,
 		overCommit:        config.GetOverCommit(),
 	}
@@ -220,11 +219,37 @@ func (m *Model) Latest() *ModelVersion {
 	}
 }
 
-func (m *Model) GetVersion(version string) *ModelVersion {
+func (m *Model) GetVersion(version uint32) *ModelVersion {
 	for _, mv := range m.versions {
 		if mv.GetVersion() == version {
 			return mv
 		}
+	}
+	return nil
+}
+
+func (m *Model) GetVersions() []uint32 {
+	versions := make([]uint32, len(m.versions))
+	for idx, v := range m.versions {
+		versions[idx] = v.version
+	}
+	return versions
+}
+
+func (m *Model) getLastAvailableModelVersionIdx() int {
+	lastAvailableIdx := -1
+	for idx, mv := range m.versions {
+		if mv.state.State == ModelAvailable {
+			lastAvailableIdx = idx
+		}
+	}
+	return lastAvailableIdx
+}
+
+func (m *Model) GetLastAvailableModelVersion() *ModelVersion {
+	lastAvailableIdx := m.getLastAvailableModelVersionIdx()
+	if lastAvailableIdx != -1 {
+		return m.versions[lastAvailableIdx]
 	}
 	return nil
 }
@@ -246,24 +271,40 @@ func (m *Model) IsDeleted() bool {
 	return m.deleted
 }
 
-func (m *ModelVersion) GetVersion() string {
-	return m.config.GetVersion()
+func (m *ModelVersion) GetVersion() uint32 {
+	return m.version
 }
 
 func (m *ModelVersion) GetRequiredMemory() uint64 {
-	return m.config.GetMemoryBytes()
+	return m.modelDefn.GetModelSpec().GetMemoryBytes()
 }
 
 func (m *ModelVersion) GetRequirements() []string {
-	return m.config.GetRequirements()
+	return m.modelDefn.GetModelSpec().GetRequirements()
 }
 
 func (m *ModelVersion) DesiredReplicas() int {
-	return int(m.config.Replicas)
+	return int(m.modelDefn.GetDeploymentSpec().GetReplicas())
 }
 
-func (m *ModelVersion) Details() *pb.ModelDetails {
-	return proto.Clone(m.config).(*pb.ModelDetails)
+func (m *ModelVersion) GetModel() *pb.Model {
+	return proto.Clone(m.modelDefn).(*pb.Model)
+}
+
+func (m *ModelVersion) GetMeta() *pb.MetaData {
+	return proto.Clone(m.modelDefn.GetMeta()).(*pb.MetaData)
+}
+
+func (m *ModelVersion) GetModelSpec() *pb.ModelSpec {
+	return proto.Clone(m.modelDefn.GetModelSpec()).(*pb.ModelSpec)
+}
+
+func (m *ModelVersion) GetDeploymentSpec() *pb.DeploymentSpec {
+	return proto.Clone(m.modelDefn.GetDeploymentSpec()).(*pb.DeploymentSpec)
+}
+
+func (m *ModelVersion) SetDeploymentSpec(spec *pb.DeploymentSpec) {
+	m.modelDefn.DeploymentSpec = spec
 }
 
 func (m *ModelVersion) Server() string {
@@ -286,6 +327,10 @@ func (m *ModelVersion) GetModelReplicaState(replicaIdx int) ModelReplicaState {
 	return state.State
 }
 
+func (m *ModelVersion) UpdateKubernetesMeta(meta *pb.KubernetesMeta) {
+	m.modelDefn.Meta.KubernetesMeta = meta
+}
+
 func (m *ModelVersion) GetReplicaForState(state ModelReplicaState) []int {
 	var assignment []int
 	for k, v := range m.replicas {
@@ -297,7 +342,7 @@ func (m *ModelVersion) GetReplicaForState(state ModelReplicaState) []int {
 }
 
 func (m *ModelVersion) GetRequestedServer() *string {
-	return m.config.Server
+	return m.modelDefn.GetModelSpec().Server
 }
 
 func (m *ModelVersion) HasServer() bool {
@@ -342,7 +387,7 @@ func (m *ModelVersion) GetAssignment() []int {
 }
 
 func (m *ModelVersion) Key() string {
-	return m.config.Name
+	return m.modelDefn.GetMeta().GetName()
 }
 
 func (m *ModelVersion) IsDeleted() bool {

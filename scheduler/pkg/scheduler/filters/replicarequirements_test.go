@@ -13,10 +13,8 @@ func TestReplicaRequirementsFilter(t *testing.T) {
 
 	getTestModelWithRequirements := func(requirements []string) *store.ModelVersion {
 		return store.NewModelVersion(
-			&pb.ModelDetails{
-				Name:         "model1",
-				Requirements: requirements,
-			},
+			&pb.Model{ModelSpec: &pb.ModelSpec{Requirements: requirements}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
+			1,
 			"server",
 			map[int]store.ReplicaStatus{3: {State: store.Loading}},
 			false,

@@ -61,11 +61,15 @@ type LoggingSpec struct {
 }
 
 type InferenceArtifactSpec struct {
-	//Artifact type
+	// Model type
 	// +optional
 	ModelType *string `json:"modelType,omitempty"`
 	// Storage URI for the model repository
 	StorageURI string `json:"storageUri"`
+	// Artifact Version
+	// A v2 version folder to select from storage bucket
+	// +optional
+	ArtifactVersion *uint32 `json:"artifactVersion,omitempty"`
 	// Schema URI
 	// +optional
 	SchemaURI *string `json:"schemaUri,omitempty"`
@@ -106,21 +110,27 @@ func init() {
 }
 
 // Method to convert Model resource to scheduler proto for communication with Scheduler
-func (m Model) AsModelDetails() (*scheduler.ModelDetails, error) {
-	md := &scheduler.ModelDetails{
-		Name:         m.Name,
-		Version:      m.ResourceVersion,
-		Uri:          m.Spec.StorageURI,
-		Requirements: m.Spec.Requirements,
-		Server:       m.Spec.Server,
-		LogPayloads:  m.Spec.Logger != nil, // Simple boolean switch at present
-		KubernetesConfig: &scheduler.KubernetesConfig{
-			Namespace: m.Namespace,
+func (m Model) AsSchedulerModel() (*scheduler.Model, error) {
+	md := &scheduler.Model{
+		Meta: &scheduler.MetaData{
+			Name: m.Name,
+			KubernetesMeta: &scheduler.KubernetesMeta{
+				Namespace:  m.Namespace,
+				Generation: m.Generation,
+			},
+		},
+		ModelSpec: &scheduler.ModelSpec{
+			Uri:          m.Spec.StorageURI,
+			Requirements: m.Spec.Requirements,
+			Server:       m.Spec.Server,
+		},
+		DeploymentSpec: &scheduler.DeploymentSpec{
+			LogPayloads: m.Spec.Logger != nil, // Simple boolean switch at present
 		},
 	}
 	// Add storage secret if specified
 	if m.Spec.SecretName != nil {
-		md.StorageConfig = &scheduler.StorageConfig{
+		md.ModelSpec.StorageConfig = &scheduler.StorageConfig{
 			Config: &scheduler.StorageConfig_StorageSecretName{
 				StorageSecretName: *m.Spec.SecretName,
 			},
@@ -128,20 +138,31 @@ func (m Model) AsModelDetails() (*scheduler.ModelDetails, error) {
 	}
 	// Add modelType to requirements if specified
 	if m.Spec.ModelType != nil {
-		md.Requirements = append(md.Requirements, *m.Spec.ModelType)
+		md.ModelSpec.Requirements = append(md.ModelSpec.Requirements, *m.Spec.ModelType)
 	}
 	// Set Replicas
 	//TODO add min/max replicas
 	if m.Spec.Replicas != nil {
-		md.Replicas = uint32(*m.Spec.Replicas)
+		md.DeploymentSpec.Replicas = uint32(*m.Spec.Replicas)
 	} else {
-		md.Replicas = 1
+		md.DeploymentSpec.Replicas = 1
 	}
+
+	if m.Spec.MinReplicas != nil {
+		md.DeploymentSpec.MinReplicas = uint32(*m.Spec.MinReplicas)
+	} else {
+		md.DeploymentSpec.MinReplicas = 1
+	}
+
+	if m.Spec.MaxReplicas != nil {
+		md.DeploymentSpec.MaxReplicas = uint32(*m.Spec.MaxReplicas)
+	}
+
 	// Set memory bytes
 	if m.Spec.Memory != nil {
 		if i64, ok := m.Spec.Memory.AsInt64(); ok {
 			ui64 := uint64(i64)
-			md.MemoryBytes = &ui64
+			md.ModelSpec.MemoryBytes = &ui64
 		} else {
 			return nil, fmt.Errorf("Can't convert model memory quantity to bytes. %s", m.Spec.Memory.String())
 		}

@@ -1,4 +1,4 @@
-package agent
+package rclone
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/jarcoal/httpmock"
 	"github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/config"
 	"github.com/sirupsen/logrus"
 )
 
@@ -18,7 +18,7 @@ func TestLoadRcloneConfig(t *testing.T) {
 
 	type test struct {
 		name                string
-		agentConfiguration  *AgentConfiguration
+		agentConfiguration  *config.AgentConfiguration
 		rcloneListRemotes   *RcloneListRemotes
 		rcloneGetResponse   string
 		expectedDeleteCalls int
@@ -30,8 +30,8 @@ func TestLoadRcloneConfig(t *testing.T) {
 	tests := []test{
 		{
 			name: "config",
-			agentConfiguration: &AgentConfiguration{
-				Rclone: &RcloneConfiguration{
+			agentConfiguration: &config.AgentConfiguration{
+				Rclone: &config.RcloneConfiguration{
 					Config: []string{`{"type":"google cloud storage","name":"gs","parameters":{"anonymous":true}}`},
 				},
 			},
@@ -42,8 +42,8 @@ func TestLoadRcloneConfig(t *testing.T) {
 		},
 		{
 			name: "multipleCreate",
-			agentConfiguration: &AgentConfiguration{
-				Rclone: &RcloneConfiguration{
+			agentConfiguration: &config.AgentConfiguration{
+				Rclone: &config.RcloneConfiguration{
 					Config: []string{
 						`{"type":"google cloud storage","name":"gs","parameters":{"anonymous":true}}`,
 						`{"type":"google cloud storage","name":"gs2","parameters":{"anonymous":true}}`,
@@ -57,8 +57,8 @@ func TestLoadRcloneConfig(t *testing.T) {
 		},
 		{
 			name: "multipleUpdate",
-			agentConfiguration: &AgentConfiguration{
-				Rclone: &RcloneConfiguration{
+			agentConfiguration: &config.AgentConfiguration{
+				Rclone: &config.RcloneConfiguration{
 					Config: []string{
 						`{"type":"google cloud storage","name":"gs","parameters":{"anonymous":true}}`,
 						`{"type":"google cloud storage","name":"gs2","parameters":{"anonymous":true}}`,
@@ -73,8 +73,8 @@ func TestLoadRcloneConfig(t *testing.T) {
 		},
 		{
 			name: "configDeleted",
-			agentConfiguration: &AgentConfiguration{
-				Rclone: &RcloneConfiguration{
+			agentConfiguration: &config.AgentConfiguration{
+				Rclone: &config.RcloneConfiguration{
 					Config: []string{`{"type":"google cloud storage","name":"gs","parameters":{"anonymous":true}}`},
 				},
 			},
@@ -85,8 +85,8 @@ func TestLoadRcloneConfig(t *testing.T) {
 		},
 		{
 			name: "configUpdated",
-			agentConfiguration: &AgentConfiguration{
-				Rclone: &RcloneConfiguration{
+			agentConfiguration: &config.AgentConfiguration{
+				Rclone: &config.RcloneConfiguration{
 					Config: []string{`{"type":"google cloud storage","name":"gs","parameters":{"anonymous":true}}`},
 				},
 			},
@@ -98,8 +98,8 @@ func TestLoadRcloneConfig(t *testing.T) {
 		},
 		{
 			name: "badConfig",
-			agentConfiguration: &AgentConfiguration{
-				Rclone: &RcloneConfiguration{
+			agentConfiguration: &config.AgentConfiguration{
+				Rclone: &config.RcloneConfiguration{
 					Config: []string{`{"foo":"google cloud storage","bar":"gs","parameters":{"anonymous":true}}`},
 				},
 			},
@@ -111,12 +111,11 @@ func TestLoadRcloneConfig(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
-			v2Client := createTestV2Client([]string{}, 200)
 			logger := logrus.New()
 			logrus.SetLevel(logrus.DebugLevel)
 			host := "rclone-server"
 			port := 5572
-			rcloneClient := NewRCloneClient(host, port, "/tmp/rclone", logger)
+			rcloneClient := NewRCloneClient(host, port, "/tmp/rclone", logger, "default")
 
 			// Add expected Rclone list remotes response
 			b, err := json.Marshal(test.rcloneListRemotes)
@@ -138,8 +137,7 @@ func TestLoadRcloneConfig(t *testing.T) {
 				httpmock.NewStringResponder(200, "{}"))
 
 			g.Expect(err).To(gomega.BeNil())
-			client := NewClient("mlserver", 1, "scheduler", 9002, logger, rcloneClient, v2Client, &agent.ReplicaConfig{}, "0.0.0.0", "default")
-			err = client.loadRcloneConfiguration(test.agentConfiguration)
+			err = rcloneClient.loadRcloneConfiguration(test.agentConfiguration)
 			if test.error {
 				g.Expect(err).ToNot(gomega.BeNil())
 			} else {

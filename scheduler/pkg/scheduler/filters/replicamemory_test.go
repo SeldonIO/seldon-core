@@ -9,12 +9,10 @@ import (
 )
 
 func getTestModelWithMemory(requiredmemory *uint64) *store.ModelVersion {
+
 	return store.NewModelVersion(
-		&pb.ModelDetails{
-			Name:         "model1",
-			Requirements: []string{},
-			MemoryBytes:  requiredmemory,
-		},
+		&pb.Model{ModelSpec: &pb.ModelSpec{MemoryBytes: requiredmemory}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
+		1,
 		"server",
 		map[int]store.ReplicaStatus{3: {State: store.Loading}},
 		false,

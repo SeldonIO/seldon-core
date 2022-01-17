@@ -19,19 +19,15 @@ func TestSharingFilter(t *testing.T) {
 	}
 	serverName := "server1"
 	modelExplicitServer := store.NewModelVersion(
-		&pb.ModelDetails{
-			Name:   "model1",
-			Server: &serverName,
-		},
+		&pb.Model{ModelSpec: &pb.ModelSpec{Server: &serverName}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
+		1,
 		serverName,
 		map[int]store.ReplicaStatus{3: {State: store.Loading}},
 		false,
 		store.ModelProgressing)
 	modelSharedServer := store.NewModelVersion(
-		&pb.ModelDetails{
-			Name:   "model1",
-			Server: nil,
-		},
+		&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
+		1,
 		serverName,
 		map[int]store.ReplicaStatus{3: {State: store.Loading}},
 		false,

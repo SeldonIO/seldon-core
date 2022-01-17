@@ -16,6 +16,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+const (
+	grpcMaxConcurrentStreams = 1_000_000
+)
+
 type ServerKey struct {
 	serverName string
 	replicaIdx uint32
@@ -80,8 +84,9 @@ func (s *Server) StartGrpcServer(agentPort uint) error {
 	if err != nil {
 		log.Fatalf("failed to create listener: %v", err)
 	}
-	opts := []grpc.ServerOption{}
-	grpcServer := grpc.NewServer(opts...)
+	var grpcOptions []grpc.ServerOption
+	grpcOptions = append(grpcOptions, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
+	grpcServer := grpc.NewServer(grpcOptions...)
 	pb.RegisterAgentServiceServer(grpcServer, s)
 	s.logger.Printf("Agent server running on %d", agentPort)
 	return grpcServer.Serve(lis)
@@ -102,7 +107,7 @@ func (s *Server) Sync(modelName string) {
 		return
 	}
 
-	// Handle any load requests for latest version
+	// Handle any load requests for latest version - we don't want to load models from older versions
 	latestModel := model.GetLatest()
 	if latestModel != nil {
 		for _, replicaIdx := range latestModel.GetReplicaForState(store.LoadRequested) {
@@ -116,8 +121,8 @@ func (s *Server) Sync(modelName string) {
 			}
 
 			err = as.stream.Send(&pb.ModelOperationMessage{
-				Operation: pb.ModelOperationMessage_LOAD_MODEL,
-				Details:   latestModel.Details(),
+				Operation:    pb.ModelOperationMessage_LOAD_MODEL,
+				ModelVersion: &pb.ModelVersion{Model: latestModel.GetModel(), Version: latestModel.GetVersion()},
 			})
 			if err != nil {
 				logger.WithError(err).Errorf("stream message send failed for model %s and replicaidx %d", modelName, replicaIdx)
@@ -131,7 +136,7 @@ func (s *Server) Sync(modelName string) {
 		}
 	}
 
-	// Loop through all versions and unload any requested
+	// Loop through all versions and unload any requested - any version of a model might have an unload request
 	for _, modelVersion := range model.Versions {
 		for _, replicaIdx := range modelVersion.GetReplicaForState(store.UnloadRequested) {
 			s.logger.Infof("Sending unload model request for %s", modelName)
@@ -141,8 +146,8 @@ func (s *Server) Sync(modelName string) {
 				continue
 			}
 			err = as.stream.Send(&pb.ModelOperationMessage{
-				Operation: pb.ModelOperationMessage_UNLOAD_MODEL,
-				Details:   modelVersion.Details(),
+				Operation:    pb.ModelOperationMessage_UNLOAD_MODEL,
+				ModelVersion: &pb.ModelVersion{Model: modelVersion.GetModel(), Version: modelVersion.GetVersion()},
 			})
 			if err != nil {
 				logger.WithError(err).Errorf("stream message send failed for model %s and replicaidx %d", modelName, replicaIdx)

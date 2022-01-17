@@ -5,32 +5,28 @@ import (
 	"fmt"
 	"io"
 	"math"
-	"sync"
 	"time"
+
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/config"
 
 	backoff "github.com/cenkalti/backoff/v4"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 	pbs "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	k8s "github.com/seldonio/seldon-core/scheduler/pkg/agent/k8s"
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/repository"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type Client struct {
-	mu         sync.RWMutex
 	logger     log.FieldLogger
-	configChan chan AgentConfiguration
-	ClientState
+	configChan chan config.AgentConfiguration
+	*ClientState
 	ClientServices
 	SchedulerGrpcClientOptions
 	KubernetesOptions
-}
-
-type ClientState struct {
-	replicaConfig *agent.ReplicaConfig
-	loadedModels  map[string]*pbs.ModelDetails
 }
 
 type SchedulerGrpcClientOptions struct {
@@ -48,8 +44,8 @@ type KubernetesOptions struct {
 }
 
 type ClientServices struct {
-	RCloneClient *RCloneClient
-	V2Client     *V2Client
+	ModelRepository repository.ModelRepository
+	V2Client        *V2Client
 }
 
 func ParseReplicaConfig(json string) (*agent.ReplicaConfig, error) {
@@ -66,14 +62,13 @@ func NewClient(serverName string,
 	schedulerHost string,
 	schedulerPort int,
 	logger log.FieldLogger,
-	rcloneClient *RCloneClient,
+	modelRepository repository.ModelRepository,
 	v2Client *V2Client,
 	replicaConfig *agent.ReplicaConfig,
 	inferenceSvcName string,
 	namespace string) *Client {
 
 	replicaConfig.InferenceSvc = inferenceSvcName
-	replicaConfig.AvailableMemoryBytes = replicaConfig.MemoryBytes
 
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
@@ -81,15 +76,12 @@ func NewClient(serverName string,
 	}
 
 	return &Client{
-		logger:     logger.WithField("Name", "Client"),
-		configChan: make(chan AgentConfiguration),
-		ClientState: ClientState{
-			replicaConfig: replicaConfig,
-			loadedModels:  make(map[string]*pbs.ModelDetails),
-		},
+		logger:      logger.WithField("Name", "Client"),
+		configChan:  make(chan config.AgentConfiguration),
+		ClientState: NewClientState(replicaConfig),
 		ClientServices: ClientServices{
-			RCloneClient: rcloneClient,
-			V2Client:     v2Client,
+			ModelRepository: modelRepository,
+			V2Client:        v2Client,
 		},
 		SchedulerGrpcClientOptions: SchedulerGrpcClientOptions{
 			schedulerHost: schedulerHost,
@@ -104,36 +96,27 @@ func NewClient(serverName string,
 	}
 }
 
-func (c *Client) Start(configHandler *AgentConfigHandler) error {
+func (c *Client) Start() error {
 	logger := c.logger.WithField("func", "Start")
-	if configHandler == nil {
-		return fmt.Errorf("configHandler is nil. Can't start client grpc server.")
-	}
 	err := c.waitReady()
 	if err != nil {
-		c.logger.WithError(err).Errorf("Failed to wait for all agent dependent services to be ready")
+		logger.WithError(err).Errorf("Failed to wait for all agent dependent services to be ready")
 		return err
 	}
 	if c.conn == nil {
 		err = c.createConnection()
 		if err != nil {
-			c.logger.WithError(err).Errorf("Failed to create connection to scheduler")
+			logger.WithError(err).Errorf("Failed to create connection to scheduler")
 			return err
 		}
 	}
-	// Start config listener
-	go c.listenForConfigUpdates()
-	// Add ourself as listener on channel and handle initial config
-	logger.Info("Loading initial rclone configuration")
-	err = c.loadRcloneConfiguration(configHandler.AddListener(c.configChan))
-	if err != nil {
-		c.logger.WithError(err).Fatal("Failed to load rclone defaults")
-		return err
-	}
+
 	logFailure := func(err error, delay time.Duration) {
 		c.logger.WithError(err).Errorf("Scheduler not ready")
 	}
-	err = backoff.RetryNotify(c.StartService, backoff.NewExponentialBackOff(), logFailure)
+	backOffExp := backoff.NewExponentialBackOff()
+	backOffExp.MaxElapsedTime = 0 // Never stop due to large time between calls
+	err = backoff.RetryNotify(c.StartService, backOffExp, logFailure)
 	if err != nil {
 		c.logger.WithError(err).Fatal("Failed to start client")
 		return err
@@ -141,22 +124,9 @@ func (c *Client) Start(configHandler *AgentConfigHandler) error {
 	return nil
 }
 
-func (c *Client) listenForConfigUpdates() {
-	logger := c.logger.WithField("func", "listenForConfigUpdates")
-	for config := range c.configChan {
-		c.logger.Info("Received config update")
-		config := config
-		go func() {
-			err := c.loadRcloneConfiguration(&config)
-			if err != nil {
-				logger.WithError(err).Error("Failed to load rclone defaults")
-			}
-		}()
-	}
-}
-
 func (c *Client) createConnection() error {
-	c.logger.Infof("Creating connection to %s:%d", c.schedulerHost, c.schedulerPort)
+	logger := c.logger.WithField("func", "createConnection")
+	logger.Infof("Creating connection to %s:%d", c.schedulerHost, c.schedulerPort)
 	conn, err := getConnection(c.schedulerHost, c.schedulerPort)
 	if err != nil {
 		return err
@@ -168,11 +138,11 @@ func (c *Client) createConnection() error {
 func (c *Client) waitReady() error {
 	logger := c.logger.WithField("func", "waitReady")
 	logFailure := func(err error, delay time.Duration) {
-		logger.WithError(err).Errorf("Rclone not ready")
+		logger.WithError(err).Errorf("Model repository not ready")
 	}
-	logger.Infof("Waiting for Rclone server to be ready")
-	//TODO make rety configurable
-	err := backoff.RetryNotify(c.RCloneClient.Ready, backoff.NewExponentialBackOff(), logFailure)
+	logger.Infof("Waiting for Model Repository to be ready")
+	//TODO make retry configurable
+	err := backoff.RetryNotify(c.ModelRepository.Ready, backoff.NewExponentialBackOff(), logFailure)
 	if err != nil {
 		return err
 	}
@@ -207,17 +177,21 @@ func getConnection(host string, port int) (*grpc.ClientConn, error) {
 func (c *Client) StartService() error {
 	c.logger.Infof("Call subscribe to scheduler")
 	grpcClient := agent.NewAgentServiceClient(c.conn)
-	var loadedModels []*pbs.ModelDetails
-	for _, v := range c.loadedModels {
-		loadedModels = append(loadedModels, v)
+	var loadedModels []*agent.ModelVersion
+	for _, mv := range c.loadedModels {
+		for _, md := range mv.versions {
+			loadedModels = append(loadedModels, md)
+		}
+
 	}
 	stream, err := grpcClient.Subscribe(context.Background(), &agent.AgentSubscribeRequest{
-		ServerName:    c.serverName,
-		ReplicaIdx:    c.replicaIdx,
-		ReplicaConfig: c.replicaConfig,
-		LoadedModels:  loadedModels,
-		Shared:        true,
-	}, grpc_retry.WithMax(100)) //TODO: make config
+		ServerName:           c.serverName,
+		ReplicaIdx:           c.replicaIdx,
+		ReplicaConfig:        c.replicaConfig,
+		LoadedModels:         loadedModels,
+		Shared:               true,
+		AvailableMemoryBytes: c.availableMemoryBytes,
+	}, grpc_retry.WithMax(100)) //TODO make configurable
 	if err != nil {
 		return err
 	}
@@ -233,44 +207,33 @@ func (c *Client) StartService() error {
 		switch operation.Operation {
 		case agent.ModelOperationMessage_LOAD_MODEL:
 			c.logger.Infof("calling load model")
-			err := c.LoadModel(operation)
-			if err != nil {
-				c.logger.WithError(err).Errorf("Failed to handle load model")
-			}
+			go func() {
+				err := c.LoadModel(operation)
+				if err != nil {
+					c.logger.WithError(err).Errorf("Failed to handle load model")
+				}
+			}()
+
 		case agent.ModelOperationMessage_UNLOAD_MODEL:
 			c.logger.Infof("calling unload model")
-			err := c.UnloadModel(operation)
-			if err != nil {
-				c.logger.WithError(err).Errorf("Failed to handle unload model")
-			}
+			go func() {
+				err := c.UnloadModel(operation)
+				if err != nil {
+					c.logger.WithError(err).Errorf("Failed to handle unload model")
+				}
+			}()
 		}
 	}
 	return nil
 }
 
-func (c *Client) sendModelEventError(modelName string, modelVersion string, event agent.ModelEventMessage_Event, err error) {
-	grpcClient := agent.NewAgentServiceClient(c.conn)
-	_, err = grpcClient.AgentEvent(context.Background(), &agent.ModelEventMessage{
-		ServerName:           c.serverName,
-		ReplicaIdx:           c.replicaIdx,
-		ModelName:            modelName,
-		ModelVersion:         modelVersion,
-		Event:                event,
-		Message:              err.Error(),
-		AvailableMemoryBytes: c.replicaConfig.AvailableMemoryBytes,
-	})
-	if err != nil {
-		c.logger.WithError(err).Errorf("Failed to send error back on load model")
-	}
-}
-
 func (c *Client) getArtifactConfig(request *agent.ModelOperationMessage) ([]byte, error) {
-	if request.Details.StorageConfig == nil {
+	if request.GetModelVersion().GetModel().GetModelSpec().StorageConfig == nil {
 		return nil, nil
 	}
-	logger := c.logger.WithField("func", "setupArtifactConfig")
+	logger := c.logger.WithField("func", "getArtifactConfig")
 	logger.Infof("Getting Rclone configuration")
-	switch x := request.Details.StorageConfig.Config.(type) {
+	switch x := request.GetModelVersion().GetModel().GetModelSpec().StorageConfig.Config.(type) {
 	case *pbs.StorageConfig_StorageRcloneConfig:
 		return []byte(x.StorageRcloneConfig), nil
 	case *pbs.StorageConfig_StorageSecretName:
@@ -279,7 +242,12 @@ func (c *Client) getArtifactConfig(request *agent.ModelOperationMessage) ([]byte
 			if err != nil {
 				return nil, err
 			}
-			c.KubernetesOptions.secretsHandler = k8s.NewSecretsHandler(secretClientSet, c.namespace)
+			if request.GetModelVersion().GetModel().GetMeta().GetKubernetesMeta() != nil {
+				c.KubernetesOptions.secretsHandler = k8s.NewSecretsHandler(secretClientSet, request.GetModelVersion().GetModel().GetMeta().GetKubernetesMeta().GetNamespace())
+			} else {
+				return nil, fmt.Errorf("Can't load model %s:%dwith k8s secret %s when namespace not set", request.GetModelVersion().GetModel().GetMeta().GetName(), request.GetModelVersion().GetVersion(), x.StorageSecretName)
+			}
+
 		}
 		config, err := c.secretsHandler.GetSecretConfig(x.StorageSecretName)
 		if err != nil {
@@ -292,93 +260,109 @@ func (c *Client) getArtifactConfig(request *agent.ModelOperationMessage) ([]byte
 
 func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	logger := c.logger.WithField("func", "LoadModel")
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	if request == nil || request.Details == nil {
+	if request == nil || request.ModelVersion == nil {
 		return fmt.Errorf("Empty request received for load model")
 	}
-	modelName := request.Details.Name
-	if request.Details.GetMemoryBytes() > c.replicaConfig.AvailableMemoryBytes {
-		err := fmt.Errorf("Not enough memory on replica for model %s available %d requested %d", modelName, c.replicaConfig.AvailableMemoryBytes, request.Details.GetMemoryBytes())
-		c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
+	modelName := request.GetModelVersion().GetModel().GetMeta().GetName()
+	modelVersion := request.GetModelVersion().GetVersion()
+	logger.Infof("Load model %s:%d", modelName, modelVersion)
+
+	err := c.addModelVersion(request.GetModelVersion())
+	if err != nil {
+		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
 		return err
 	}
-
-	logger.Infof("Load model %s", modelName)
 
 	// Get Rclone configuration
 	config, err := c.getArtifactConfig(request)
 	if err != nil {
-		c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
+		c.removeModelVersion(request.GetModelVersion())
+		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
 		return err
 	}
-	// Copy model artifact using RClone
-	err = c.RCloneClient.Copy(request.Details.Name, request.Details.Uri, config)
+	// Copy model artifact
+	chosenVersionPath, err := c.ModelRepository.DownloadModelVersion(modelName, modelVersion, request.GetModelVersion().GetModel().GetModelSpec().ArtifactVersion, request.GetModelVersion().GetModel().GetModelSpec().Uri, config)
 	if err != nil {
-		c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
+		c.removeModelVersion(request.GetModelVersion())
+		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
 		return err
 	}
+	logger.Infof("Chose path %s for model %s:%d", *chosenVersionPath, modelName, modelVersion)
 	err = c.V2Client.LoadModel(modelName)
 	if err != nil {
-		c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_LOAD_FAILED, err)
+		c.removeModelVersion(request.GetModelVersion())
+		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
 		return err
 	}
-	logger.Infof("Load model %s success", modelName)
-	loadedModel, ok := c.loadedModels[modelName]
-	if ok {
-		c.replicaConfig.AvailableMemoryBytes = c.replicaConfig.AvailableMemoryBytes + loadedModel.GetMemoryBytes()
-	}
-	c.loadedModels[modelName] = request.Details
-	c.replicaConfig.AvailableMemoryBytes = c.replicaConfig.AvailableMemoryBytes - request.Details.GetMemoryBytes()
-	grpcClient := agent.NewAgentServiceClient(c.conn)
-	_, err = grpcClient.AgentEvent(context.Background(), &agent.ModelEventMessage{
-		ServerName:           c.serverName,
-		ReplicaIdx:           c.replicaIdx,
-		ModelName:            modelName,
-		ModelVersion:         request.Details.GetVersion(),
-		Event:                agent.ModelEventMessage_LOADED,
-		AvailableMemoryBytes: c.replicaConfig.AvailableMemoryBytes,
-	})
-	if err != nil {
-		return err
-	}
-	return nil
+	logger.Infof("Load model %s:%d success", modelName, modelVersion)
+
+	return c.sendAgentEvent(modelName, modelVersion, agent.ModelEventMessage_LOADED)
 }
 
 func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 	logger := c.logger.WithField("func", "UnloadModel")
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	if request == nil || request.Details == nil {
-		return fmt.Errorf("Empty request received for load model")
+	if request == nil || request.GetModelVersion() == nil {
+		return fmt.Errorf("Empty request received for unload model")
 	}
-	modelName := request.Details.Name
-	logger.Infof("Unload model %s", modelName)
-	err := c.V2Client.UnloadModel(modelName)
+	modelName := request.GetModelVersion().GetModel().GetMeta().GetName()
+	modelVersion := request.GetModelVersion().GetVersion()
+	logger.Infof("Unload model %s:%d", modelName, modelVersion)
+
+	remainingVersions, err := c.ModelRepository.RemoveModelVersion(modelName, modelVersion)
 	if err != nil {
-		c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_UNLOAD_FAILED, err)
+		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_UNLOAD_FAILED, err)
 		return err
 	}
-	loadedModel, ok := c.loadedModels[modelName]
-	if !ok {
-		err := fmt.Errorf("Unknown model with name %s", modelName)
-		c.sendModelEventError(modelName, request.Details.GetVersion(), agent.ModelEventMessage_UNLOAD_FAILED, err)
-		return err
+	if remainingVersions == 0 {
+		err := c.V2Client.UnloadModel(modelName)
+		if err != nil {
+			c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_UNLOAD_FAILED, err)
+			return err
+		}
+	} else {
+		err := c.V2Client.LoadModel(modelName) // Force a reload to resync server with available versions on disk
+		if err != nil {
+			c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_UNLOAD_FAILED, err)
+			return err
+		}
 	}
-	logger.Infof("Unload model %s success", modelName)
-	delete(c.loadedModels, modelName)
-	c.replicaConfig.AvailableMemoryBytes = c.replicaConfig.AvailableMemoryBytes + loadedModel.GetMemoryBytes()
+
+	removedModel := c.removeModelVersion(request.GetModelVersion())
+	noRemainingVersions := remainingVersions == 0
+	if noRemainingVersions != removedModel {
+		c.logger.Warnf("Mismatch in state. Removed all versions from state is [%v] but model repo says remaining versions [%d] for %s:%d", removedModel, remainingVersions, modelName, modelVersion)
+	}
+
+	logger.Infof("Unload model %s:%d success", modelName, modelVersion)
+
+	return c.sendAgentEvent(modelName, modelVersion, agent.ModelEventMessage_UNLOADED)
+}
+
+func (c *Client) sendModelEventError(modelName string, modelVersion uint32, event agent.ModelEventMessage_Event, err error) {
 	grpcClient := agent.NewAgentServiceClient(c.conn)
 	_, err = grpcClient.AgentEvent(context.Background(), &agent.ModelEventMessage{
 		ServerName:           c.serverName,
 		ReplicaIdx:           c.replicaIdx,
 		ModelName:            modelName,
-		ModelVersion:         loadedModel.GetVersion(),
-		Event:                agent.ModelEventMessage_UNLOADED,
-		AvailableMemoryBytes: c.replicaConfig.AvailableMemoryBytes,
+		ModelVersion:         modelVersion,
+		Event:                event,
+		Message:              err.Error(),
+		AvailableMemoryBytes: c.availableMemoryBytes,
 	})
 	if err != nil {
-		return err
+		c.logger.WithError(err).Errorf("Failed to send error back on load model")
 	}
-	return nil
+}
+
+func (c *Client) sendAgentEvent(modelName string, modelVersion uint32, event agent.ModelEventMessage_Event) error {
+	grpcClient := agent.NewAgentServiceClient(c.conn)
+	_, err := grpcClient.AgentEvent(context.Background(), &agent.ModelEventMessage{
+		ServerName:           c.serverName,
+		ReplicaIdx:           c.replicaIdx,
+		ModelName:            modelName,
+		ModelVersion:         modelVersion,
+		Event:                event,
+		AvailableMemoryBytes: c.availableMemoryBytes,
+	})
+	return err
 }

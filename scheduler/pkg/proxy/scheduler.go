@@ -33,12 +33,12 @@ func (s *Scheduler) Start() {
 		s.logger.Debugf(
 			"received %s event for model %s",
 			opName,
-			e.Details.Name,
+			e.GetModelVersion().GetModel().GetMeta().GetName(),
 		)
 
 		err := s.agentServer.HandleModelEvent(e)
 		if err != nil {
-			s.logger.WithError(err).Warnf("encountered issue scheduling update to model %s", e.Details.Name)
+			s.logger.WithError(err).Warnf("encountered issue scheduling update to model %s", e.GetModelVersion().GetModel().GetMeta().GetName())
 		}
 	}
 }

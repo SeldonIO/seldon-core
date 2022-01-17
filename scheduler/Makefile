@@ -15,29 +15,14 @@ build-proxy:
 build-agent: test
 	go build -o bin/agent -v ./cmd/agent
 
-build: build-scheduler build-agent
+build: build-scheduler build-agent build-proxy
 
 lint: ## Run go linters against code.
 	gofmt -w pkg
 	golangci-lint run --fix
 
 test:
-	go test ./pkg/...
-
-start-local-svcs:
-	docker run -d --rm --name=echo9100 -p 9100:8080 stevesloka/echo-server echo-server --echotext=Sample-Endpoint1!
-	docker run -d --rm --name=echo9101 -p 9101:8080 stevesloka/echo-server echo-server --echotext=Sample-Endpoint2!
-	docker run -d --rm --name=echo9102 -p 9102:8080 stevesloka/echo-server echo-server --echotext=Sample-Endpoint3!
-	docker run -d --rm --name=echo9103 -p 9103:8080 stevesloka/echo-server echo-server --echotext=Sample-Endpoint4!
-	docker run -d --rm --name=echo9104 -p 9104:8080 stevesloka/echo-server echo-server --echotext=Sample-Endpoint5!
-
-
-stop-svcs:
-	docker rm -f echo9100 
-	docker rm -f echo9101
-	docker rm -f echo9102 
-	docker rm -f echo9103 
-	docker rm -f echo9104
+	go test ./pkg/... -coverprofile cover.out
 
 start-scheduler:
 	./bin/scheduler
@@ -53,27 +38,45 @@ start-envoy:
 	./hack/start-envoy-delta.sh
 
 start-agent:
-	./bin/agent --model-repository ${PWD}/mlrepo --inference-port 8080 \
+	./bin/agent --agent-folder ${PWD}/mnt --inference-port 8080 \
+		--server-type mlserver \
+		--log-level debug \
 		--config-path ${PWD}/config \
-		--replica-config '{"inferenceSvc":"0.0.0.0","inferenceHttpPort":8080,"inferenceGrpcPort":8081,"memoryBytes":1000,"availableMemoryBytes":1000,"capabilities":["sklearn"],"overCommit":false}'
+		--replica-config '{"inferenceSvc":"0.0.0.0","inferenceHttpPort":8080,"inferenceGrpcPort":8081,"memoryBytes":1000,"capabilities":["sklearn"],"overCommit":false}'
 
-start-agent-k8s:
-	./bin/agent --model-repository ${PWD}/mlrepo --inference-port 8080 --namespace seldon-mesh \
+start-triton-agent:
+	./bin/agent --agent-folder ${PWD}/mnt --inference-port 8080 \
+		--server-name triton \
+		--server-type triton \
+		--log-level debug \
 		--config-path ${PWD}/config \
-		--replica-config '{"inferenceSvc":"0.0.0.0","inferenceHttpPort":8080,"inferenceGrpcPort":8081,"memoryBytes":1000,"availableMemoryBytes":1000,"capabilities":["sklearn"],"overCommit":false}'
+		--replica-config '{"inferenceSvc":"0.0.0.0","inferenceHttpPort":8080,"inferenceGrpcPort":8081,"memoryBytes":1000,"capabilities":["tensorflow","onnx","pytorch"],"overCommit":false}'
 
 start-mlserver:
-	cd mlrepo && mlserver start .
+	mkdir -p mnt/models
+	rm -rf mnt/models/*
+	mlserver start ${PWD}/mnt/models
+
+start-triton:
+	mkdir -p mnt/models
+	rm -rf mnt/models/*
+	docker run --rm --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 -p8080:8080 -p8081:8081 -v ${PWD}/mnt/models:/mnt/models nvcr.io/nvidia/tritonserver:21.12-py3 /opt/tritonserver/bin/tritonserver --model-repository=/mnt/models --http-port=8080 --grpc-port=8081 --log-verbose=1 --model-control-mode=explicit
 
 start-rclone:
+	mkdir -p mnt/rclone
+	rm -rf mnt/rclone/*
 	rm -f config/rclone.config
-	cd mlrepo && rclone rcd --config=../config/rclone.config --rc-no-auth --verbose
+	rclone rcd --config=config/rclone.config --rc-no-auth --verbose
 
 # sends host header to allow routing
 curl-model2:
 	watch -n1 curl -H \"Host: model2\" 0.0.0.0:9000/model2
 
-docker-build-scheduler:
+copy-apis:
+	rm -rf apis-TEMP
+	cp -r ../apis apis-TEMP
+
+docker-build-scheduler: copy-apis
 	docker build -t ${SCHEDULER_IMG} -f Dockerfile.scheduler .
 
 docker-push-scheduler: ## Push docker image with the manager.
@@ -82,7 +85,7 @@ docker-push-scheduler: ## Push docker image with the manager.
 kind-image-install-scheduler: docker-build-scheduler
 	kind load -v 3 docker-image ${SCHEDULER_IMG} --name ${KIND_NAME}
 
-docker-build-agent:
+docker-build-agent: copy-apis
 	docker build -t ${AGENT_IMG} -f Dockerfile.agent .
 
 docker-push-agent: ## Push docker image with the manager.
@@ -136,3 +139,11 @@ undeploy-mlserver:
 # ip address will change. Make automatic?
 curl-mlserver-test:
 	curl -v -H "Host: model2" -H "Content-Type: application/json" 172.18.255.1/v2/models/classifier/infer -d '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
+
+.PHONY: build-triton-protos
+build-triton-protos:
+	protoc \
+		-I. \
+		--go_opt=paths=source_relative \
+		--go_out=. \
+		./pkg/agent/repository/triton/config/model_config.proto

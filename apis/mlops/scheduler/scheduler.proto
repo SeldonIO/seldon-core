@@ -14,30 +14,44 @@ message ServerReference {
   string name = 1;
 }
 
-
 message LoadModelRequest {
-  ModelDetails model = 1;
-  bool async = 2;
+  Model model = 1;
+}
+
+message Model {
+  MetaData meta = 1;
+  ModelSpec modelSpec = 2;
+  DeploymentSpec deploymentSpec = 3;
+}
+
+message MetaData {
+  string name = 1;
+  optional string kind = 2;
+  optional string version = 3;
+  optional KubernetesMeta kubernetesMeta = 4; // Kubernetes specific config
+}
+
+message DeploymentSpec {
+  uint32 replicas = 1;
+  uint32 minReplicas = 2;
+  uint32 maxReplicas = 3;
+  bool logPayloads = 4;
 }
 
 /* ModelDetails
 */
-message ModelDetails {
-  string name = 1; // name of the model
-  string version = 2;
-  string uri = 3; // storage uri from where to download the artifacts
-  optional StorageConfig storageConfig = 4; // Storage auth configuration
-  repeated string requirements = 5; // list of capabilities the server must satisfy to run this model
-  //TODO maybe map for requirements
-  uint32 replicas = 6; // number of replicas of model to create
-  optional uint64 memoryBytes = 7; // Requested memory
-  optional string server = 8; // the particular model server to load the model. If unspecified will be chosen.
-  bool logPayloads = 9; // Whether to log request/response payloads to this model
-  optional KubernetesConfig kubernetesConfig = 10; // Kubernetes specific config
+message ModelSpec {
+  string uri = 1; // storage uri from where to download the artifacts
+  optional uint32 artifactVersion = 2; // Optional v2 version folder to select
+  optional StorageConfig storageConfig = 3; // Storage auth configuration
+  repeated string requirements = 4; // list of capabilities the server must satisfy to run this model
+  optional uint64 memoryBytes = 5; // Requested memory
+  optional string server = 6; // the particular model server to load the model. If unspecified will be chosen.
 }
 
-message KubernetesConfig {
+message KubernetesMeta {
   string namespace = 1;
+  int64 generation = 2;
 }
 
 message StorageConfig {
@@ -55,6 +69,12 @@ message LoadModelResponse {
 */
 message ModelReference {
   string name = 1;
+  optional uint32 version = 2;
+}
+
+message UnloadModelRequest {
+  ModelReference model = 1;
+  optional KubernetesMeta kubernetesMeta = 2;
 }
 
 message UnloadModelResponse {
@@ -64,9 +84,13 @@ message UnloadModelResponse {
 */
 message ModelStatusResponse {
   string modelName = 1;
-  string version = 2;
+  repeated ModelVersionStatus versions = 2;
+}
+
+message ModelVersionStatus {
+  uint32 version = 2;
   string serverName = 3;
-  optional string namespace = 4;
+  optional KubernetesMeta kubernetesMeta = 4;
   map<int32,ModelReplicaStatus> modelReplicaState = 5;
   ModelStatus state = 6;
 }
@@ -115,13 +139,19 @@ message ServerStatusResponse {
 }
 
 message ServerResources {
-  map<string,string> loadedModels = 1;
-  uint64 memory = 2;
-  uint64 availableMemoryBytes = 3;
+  uint32 replicaIdx = 1;
+  map<string,string> loadedModels = 2;
+  uint64 memory = 3;
+  uint64 availableMemoryBytes = 4;
 }
 
 message ModelSubscriptionRequest {
   string name = 1; //Name of the subscription caller
+}
+
+message ModelStatusRequest {
+  ModelReference model = 1;
+  bool allVersions = 2;
 }
 
 // [END Messages]
@@ -132,8 +162,8 @@ message ModelSubscriptionRequest {
 service Scheduler {
   rpc ServerStatus(ServerReference) returns (ServerStatusResponse) {}
   rpc LoadModel(LoadModelRequest) returns (LoadModelResponse) {};
-  rpc UnloadModel(ModelReference) returns (UnloadModelResponse) {};
-  rpc ModelStatus(ModelReference) returns (ModelStatusResponse) {}
+  rpc UnloadModel(UnloadModelRequest) returns (UnloadModelResponse) {};
+  rpc ModelStatus(ModelStatusRequest) returns (ModelStatusResponse) {}
   rpc SubscribeModelStatus(ModelSubscriptionRequest) returns (stream ModelStatusResponse) {};
 }
 

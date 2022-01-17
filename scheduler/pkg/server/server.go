@@ -34,7 +34,7 @@ type SchedulerServer struct {
 
 type EventStream struct {
 	streams   map[pb.Scheduler_SubscribeModelStatusServer]*Subscription
-	chanEvent chan string
+	chanEvent chan *store.ModelSnapshot
 }
 
 type Subscription struct {
@@ -55,87 +55,62 @@ func (s *SchedulerServer) StartGrpcServer(schedulerPort uint) error {
 	return grpcServer.Serve(lis)
 }
 
-func NewSchedulerServer(logger log.FieldLogger, store store.SchedulerStore, scheduler scheduler2.Scheduler, agentHandler agent.AgentHandler) *SchedulerServer {
+func NewSchedulerServer(logger log.FieldLogger, schedStore store.SchedulerStore, scheduler scheduler2.Scheduler, agentHandler agent.AgentHandler) *SchedulerServer {
 
 	s := &SchedulerServer{
 		logger:       logger.WithField("source", "SchedulerServer"),
-		store:        store,
+		store:        schedStore,
 		scheduler:    scheduler,
 		agentHandler: agentHandler,
 		EventStream: EventStream{
 			streams:   make(map[pb.Scheduler_SubscribeModelStatusServer]*Subscription),
-			chanEvent: make(chan string, 1),
+			chanEvent: make(chan *store.ModelSnapshot, 1),
 		},
 	}
-	store.AddListener(s.EventStream.chanEvent)
+	schedStore.AddListener(s.EventStream.chanEvent)
 	return s
 }
 
 func (s *SchedulerServer) LoadModel(ctx context.Context, req *pb.LoadModelRequest) (*pb.LoadModelResponse, error) {
 	logger := s.logger.WithField("func", "LoadModel")
-	logger.Debugf("Load model %s", req.GetModel().GetName())
-	exists := s.store.ExistsModelVersion(req.GetModel().Name, req.GetModel().Version)
-	if exists { //TODO check the model details match what we have otherwise error
-		logger.Infof("Model %s:%s already exists", req.GetModel().Name, req.Model.Version)
-		return &pb.LoadModelResponse{}, nil
-	}
-	err := s.store.UpdateModel(req.GetModel())
+	logger.Debugf("Load model %+v k8s meta %+v", req.GetModel().GetMeta(), req.GetModel().GetMeta().GetKubernetesMeta())
+	s.store.UpdateModel(req)
+	err := s.scheduler.Schedule(req.GetModel().GetMeta().GetName())
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
-	err = s.scheduler.Schedule(req.GetModel().GetName())
+	s.agentHandler.SendAgentSync(req.GetModel().GetMeta().GetName())
+	return &pb.LoadModelResponse{}, nil
+}
+
+func (s *SchedulerServer) UnloadModel(ctx context.Context, req *pb.UnloadModelRequest) (*pb.UnloadModelResponse, error) {
+	logger := s.logger.WithField("func", "UnloadModel")
+	logger.Debugf("Unload model %s", req.GetModel().Name)
+	err := s.store.RemoveModel(req)
+	if err != nil {
+		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+	}
+	err = s.scheduler.Schedule(req.GetModel().Name)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
 	s.agentHandler.SendAgentSync(req.GetModel().GetName())
-	return &pb.LoadModelResponse{}, nil
-}
-
-func (s *SchedulerServer) UnloadModel(ctx context.Context, reference *pb.ModelReference) (*pb.UnloadModelResponse, error) {
-	logger := s.logger.WithField("func", "UnloadModel")
-	logger.Debugf("Unload model %s", reference.Name)
-	err := s.store.RemoveModel(reference.Name)
-	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
-	}
-	err = s.scheduler.Schedule(reference.Name)
-	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
-	}
-	s.agentHandler.SendAgentSync(reference.GetName())
 	return &pb.UnloadModelResponse{}, nil
 }
 
-func (s *SchedulerServer) ModelStatus(ctx context.Context, reference *pb.ModelReference) (*pb.ModelStatusResponse, error) {
-	model, err := s.store.GetModel(reference.Name)
-	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
-	}
-	if model == nil {
-		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("Failed to find model %s", reference.Name))
-	}
-	latestModel := model.GetLatest()
-	if latestModel == nil {
-		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("Failed to find model %s", reference.Name))
-	}
+func createModelVersionStatus(mv *store.ModelVersion) *pb.ModelVersionStatus {
 	stateMap := make(map[int32]*pb.ModelReplicaStatus)
-	for k, v := range latestModel.ReplicaState() {
+	for k, v := range mv.ReplicaState() {
 		stateMap[int32(k)] = &pb.ModelReplicaStatus{
 			State:               pb.ModelReplicaStatus_ModelReplicaState(pb.ModelReplicaStatus_ModelReplicaState_value[v.State.String()]),
 			Reason:              v.Reason,
 			LastChangeTimestamp: timestamppb.New(v.Timestamp),
 		}
 	}
-	modelState := latestModel.ModelState()
-	var namespace *string
-	if latestModel.Details().KubernetesConfig != nil {
-		namespace = &latestModel.Details().KubernetesConfig.Namespace
-	}
-	return &pb.ModelStatusResponse{
-		ModelName:         reference.Name,
-		Version:           latestModel.GetVersion(),
-		ServerName:        latestModel.Server(),
-		Namespace:         namespace,
+	modelState := mv.ModelState()
+	mvs := &pb.ModelVersionStatus{
+		Version:           mv.GetVersion(),
+		ServerName:        mv.Server(),
 		ModelReplicaState: stateMap,
 		State: &pb.ModelStatus{
 			State:               pb.ModelStatus_ModelState(pb.ModelStatus_ModelState_value[modelState.State.String()]),
@@ -144,7 +119,42 @@ func (s *SchedulerServer) ModelStatus(ctx context.Context, reference *pb.ModelRe
 			AvailableReplicas:   modelState.AvailableReplicas,
 			UnavailableReplicas: modelState.UnavailableReplicas,
 		},
-	}, nil
+	}
+	if mv.GetMeta().KubernetesMeta != nil {
+		mvs.KubernetesMeta = mv.GetModel().GetMeta().GetKubernetesMeta()
+	}
+	return mvs
+}
+
+func (s *SchedulerServer) modelStatusImpl(ctx context.Context, model *store.ModelSnapshot, allVersions bool) (*pb.ModelStatusResponse, error) {
+	var modelVersionStatuses []*pb.ModelVersionStatus
+	if !allVersions {
+		latestModel := model.GetLatest()
+		if latestModel == nil {
+			return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("Failed to find model %s", model.Name))
+		}
+		modelVersionStatuses = append(modelVersionStatuses, createModelVersionStatus(latestModel))
+	} else {
+		for _, mv := range model.Versions {
+			modelVersionStatuses = append(modelVersionStatuses, createModelVersionStatus(mv))
+		}
+	}
+	msr := &pb.ModelStatusResponse{
+		ModelName: model.Name,
+		Versions:  modelVersionStatuses,
+	}
+	return msr, nil
+}
+
+func (s *SchedulerServer) ModelStatus(ctx context.Context, req *pb.ModelStatusRequest) (*pb.ModelStatusResponse, error) {
+	model, err := s.store.GetModel(req.Model.Name)
+	if err != nil {
+		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+	}
+	if model == nil || len(model.Versions) == 0 {
+		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("Failed to find model %s", req.Model.Name))
+	}
+	return s.modelStatusImpl(ctx, model, req.AllVersions)
 }
 
 func (s *SchedulerServer) ServerStatus(ctx context.Context, reference *pb.ServerReference) (*pb.ServerStatusResponse, error) {
@@ -161,6 +171,7 @@ func (s *SchedulerServer) ServerStatus(ctx context.Context, reference *pb.Server
 
 	for _, replica := range server.Replicas {
 		ss.Resources = append(ss.Resources, &pb.ServerResources{
+			ReplicaIdx:           uint32(replica.GetReplicaIdx()),
 			Memory:               replica.GetMemory(),
 			AvailableMemoryBytes: replica.GetAvailableMemory(),
 		})

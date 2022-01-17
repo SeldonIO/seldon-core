@@ -14,6 +14,7 @@ COPY main.go main.go
 COPY apis/ apis/
 COPY controllers/ controllers/
 COPY scheduler/ scheduler/
+COPY apis-TEMP scheduler/apis
 COPY pkg/ pkg/
 
 # Build

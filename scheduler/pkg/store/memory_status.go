@@ -14,6 +14,12 @@ type replicaStateStatistics struct {
 	lastFailedReason     string
 }
 
+func (m *MemoryStore) AddListener(c chan *ModelSnapshot) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.modelEventListeners = append(m.modelEventListeners, c)
+}
+
 func calcReplicaStateStatistics(modelVersion *ModelVersion, deleted bool) *replicaStateStatistics {
 	s := replicaStateStatistics{}
 	for _, replicaState := range modelVersion.ReplicaState() {
@@ -46,11 +52,11 @@ func calcReplicaStateStatistics(modelVersion *ModelVersion, deleted bool) *repli
 	return &s
 }
 
-func updateModelState(modelVersion *ModelVersion, prevModelVersion *ModelVersion, stats *replicaStateStatistics, deleted bool) {
+func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersion *ModelVersion, stats *replicaStateStatistics, deleted bool) {
 	var modelState ModelState
 	var modelReason string
 	modelTimestamp := stats.latestTime
-	if deleted {
+	if deleted || !isLatest {
 		if stats.replicasUnloadFailed > 0 {
 			modelState = ModelTerminateFailed
 			modelReason = stats.lastFailedReason
@@ -65,8 +71,8 @@ func updateModelState(modelVersion *ModelVersion, prevModelVersion *ModelVersion
 			modelState = ModelFailed
 			modelReason = stats.lastFailedReason
 			modelTimestamp = stats.lastFailedStateTime
-		} else if (modelVersion.Details() != nil && stats.replicasAvailable == modelVersion.Details().Replicas && prevModelVersion == nil) ||
-			(stats.replicasAvailable > 0 && prevModelVersion != nil && prevModelVersion.state.State == ModelAvailable) { //TODO In future check if available replicas is > minReplicas
+		} else if (modelVersion.GetModelSpec() != nil && stats.replicasAvailable == modelVersion.GetDeploymentSpec().Replicas) ||
+			(stats.replicasAvailable > 0 && prevModelVersion != nil && modelVersion != prevModelVersion && prevModelVersion.state.State == ModelAvailable) { //TODO In future check if available replicas is > minReplicas
 			modelState = ModelAvailable
 		} else {
 			modelState = ModelProgressing
@@ -83,12 +89,13 @@ func updateModelState(modelVersion *ModelVersion, prevModelVersion *ModelVersion
 
 func (m *MemoryStore) updateModelStatus(isLatest bool, deleted bool, modelVersion *ModelVersion, prevModelVersion *ModelVersion) {
 	stats := calcReplicaStateStatistics(modelVersion, deleted)
+	m.logger.Debugf("Stats %+v modelVersion %+v prev model %+v", stats, modelVersion, prevModelVersion)
+	updateModelState(isLatest, modelVersion, prevModelVersion, stats, deleted)
 
-	updateModelState(modelVersion, prevModelVersion, stats, deleted)
-
+	model := m.getModelImpl(modelVersion.GetMeta().GetName())
 	if isLatest {
 		for _, listener := range m.modelEventListeners {
-			listener <- modelVersion.Details().Name
+			listener <- model
 		}
 	}
 }

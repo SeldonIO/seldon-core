@@ -15,17 +15,17 @@ func TestAsModelDetails(t *testing.T) {
 	logrus.SetLevel(logrus.DebugLevel)
 	g := NewGomegaWithT(t)
 	type test struct {
-		name         string
-		model        *Model
-		modelDetails *scheduler.ModelDetails
-		error        bool
+		name    string
+		model   *Model
+		modelpb *scheduler.Model
+		error   bool
 	}
 	replicas := int32(4)
 	secret := "secret"
 	modelType := "sklearn"
 	server := "server"
 	m1 := resource.MustParse("1M")
-	m1bytes := uint64(1000000)
+	m1bytes := uint64(1_000_000)
 	tests := []test{
 		{
 			name: "simple",
@@ -34,6 +34,7 @@ func TestAsModelDetails(t *testing.T) {
 					Name:            "foo",
 					Namespace:       "default",
 					ResourceVersion: "1",
+					Generation:      1,
 				},
 				Spec: ModelSpec{
 					InferenceArtifactSpec: InferenceArtifactSpec{
@@ -41,21 +42,30 @@ func TestAsModelDetails(t *testing.T) {
 					},
 				},
 			},
-			modelDetails: &scheduler.ModelDetails{
-				Name:             "foo",
-				Version:          "1",
-				Uri:              "gs://test",
-				Replicas:         1,
-				KubernetesConfig: &scheduler.KubernetesConfig{Namespace: "default"},
+			modelpb: &scheduler.Model{
+				Meta: &scheduler.MetaData{
+					Name: "foo",
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+				ModelSpec: &scheduler.ModelSpec{
+					Uri: "gs://test",
+				},
+				DeploymentSpec: &scheduler.DeploymentSpec{
+					Replicas:    1,
+					MinReplicas: 1,
+				},
 			},
 		},
 		{
 			name: "complex",
 			model: &Model{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:            "foo",
-					Namespace:       "default",
-					ResourceVersion: "1",
+					Name:       "foo",
+					Namespace:  "default",
+					Generation: 1,
 				},
 				Spec: ModelSpec{
 					InferenceArtifactSpec: InferenceArtifactSpec{
@@ -69,25 +79,34 @@ func TestAsModelDetails(t *testing.T) {
 					Server:       &server,
 				},
 			},
-			modelDetails: &scheduler.ModelDetails{
-				Name:             "foo",
-				Version:          "1",
-				Uri:              "gs://test",
-				Replicas:         4,
-				Requirements:     []string{"a", "b", modelType},
-				StorageConfig:    &scheduler.StorageConfig{Config: &scheduler.StorageConfig_StorageSecretName{StorageSecretName: "secret"}},
-				Server:           &server,
-				LogPayloads:      true,
-				KubernetesConfig: &scheduler.KubernetesConfig{Namespace: "default"},
+			modelpb: &scheduler.Model{
+				Meta: &scheduler.MetaData{
+					Name: "foo",
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+				ModelSpec: &scheduler.ModelSpec{
+					Uri:           "gs://test",
+					Requirements:  []string{"a", "b", modelType},
+					StorageConfig: &scheduler.StorageConfig{Config: &scheduler.StorageConfig_StorageSecretName{StorageSecretName: secret}},
+					Server:        &server,
+				},
+				DeploymentSpec: &scheduler.DeploymentSpec{
+					Replicas:    4,
+					LogPayloads: true,
+					MinReplicas: 1,
+				},
 			},
 		},
 		{
 			name: "memory",
 			model: &Model{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:            "foo",
-					Namespace:       "default",
-					ResourceVersion: "1",
+					Name:       "foo",
+					Namespace:  "default",
+					Generation: 1,
 				},
 				Spec: ModelSpec{
 					InferenceArtifactSpec: InferenceArtifactSpec{
@@ -96,22 +115,31 @@ func TestAsModelDetails(t *testing.T) {
 					Memory: &m1,
 				},
 			},
-			modelDetails: &scheduler.ModelDetails{
-				Name:             "foo",
-				Version:          "1",
-				Uri:              "gs://test",
-				Replicas:         1,
-				MemoryBytes:      &m1bytes,
-				KubernetesConfig: &scheduler.KubernetesConfig{Namespace: "default"},
+			modelpb: &scheduler.Model{
+				Meta: &scheduler.MetaData{
+					Name: "foo",
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+				ModelSpec: &scheduler.ModelSpec{
+					Uri:         "gs://test",
+					MemoryBytes: &m1bytes,
+				},
+				DeploymentSpec: &scheduler.DeploymentSpec{
+					Replicas:    1,
+					MinReplicas: 1,
+				},
 			},
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			md, err := test.model.AsModelDetails()
+			md, err := test.model.AsSchedulerModel()
 			if !test.error {
 				g.Expect(err).To(BeNil())
-				g.Expect(md).To(Equal(test.modelDetails))
+				g.Expect(md).To(Equal(test.modelpb))
 			} else {
 				g.Expect(err).ToNot(BeNil())
 			}

@@ -19,6 +19,7 @@ func TestMemoryReplicaFilter(t *testing.T) {
 
 	model := store.NewModelVersion(
 		nil,
+		1,
 		"server1",
 		map[int]store.ReplicaStatus{3: {State: store.Loading}},
 		false,

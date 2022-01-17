@@ -11,6 +11,7 @@ import "mlops/scheduler/scheduler.proto";
 message LoadModelRequest {
   //repeated string agents = 1;
   seldon.mlops.scheduler.LoadModelRequest request = 1;
+  uint32 version = 2;
 }
 
 message LoadModelResponse {
@@ -19,6 +20,7 @@ message LoadModelResponse {
 message UnloadModelRequest {
   //repeated string agents = 1;
   seldon.mlops.scheduler.ModelReference model = 1;
+  uint32 version = 2;
 }
 
 message UnloadModelResponse {

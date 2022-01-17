@@ -8,11 +8,13 @@ type Listener struct {
 }
 
 type Route struct {
-	Name        string
-	Host        string
-	HttpCluster string
-	GrpcCluster string
-	LogPayloads bool
+	Name           string
+	Host           string
+	HttpCluster    string
+	GrpcCluster    string
+	LogPayloads    bool
+	TrafficPercent uint32
+	Version        uint32
 }
 
 type Cluster struct {

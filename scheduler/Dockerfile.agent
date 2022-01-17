@@ -3,6 +3,7 @@ FROM golang:alpine as builder
 RUN mkdir /build
 ADD . /build/
 WORKDIR /build
+RUN rm -r apis && mv apis-TEMP apis
 
 # Build the binary
 RUN go build -o agent ./cmd/agent/main.go

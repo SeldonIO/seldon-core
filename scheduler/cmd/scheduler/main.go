@@ -21,6 +21,8 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/scheduler/cleaner"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent"
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/processor"
 	"github.com/seldonio/seldon-core/scheduler/pkg/scheduler/filters"
@@ -109,6 +111,9 @@ func main() {
 		}
 	}()
 
+	versionCleaner := cleaner.NewVersionCleaner(ss, logger, as)
+	go versionCleaner.ListenForEvents()
+
 	err := as.StartGrpcServer(agentPort)
 	if err != nil {
 		log.Fatalf("Failed to start agent grpc server %s", err.Error())
@@ -117,4 +122,5 @@ func main() {
 	as.StopAgentSync()
 	es.StopEnvoySync()
 	s.StopListenForEvents()
+	versionCleaner.StopListenForEvents()
 }

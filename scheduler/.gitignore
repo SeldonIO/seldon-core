@@ -1,3 +1,6 @@
 .idea/
 *~
 /bin/*
+/mnt/*
+/apis-TEMP
+cover.out

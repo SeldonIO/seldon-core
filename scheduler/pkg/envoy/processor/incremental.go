@@ -2,7 +2,6 @@ package processor
 
 import (
 	"context"
-	"fmt"
 	"math"
 	"math/rand"
 	"strconv"
@@ -11,7 +10,6 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	rsrc "github.com/envoyproxy/go-control-plane/pkg/resource/v3"
-	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/xdscache"
 	"github.com/seldonio/seldon-core/scheduler/pkg/store"
 	"github.com/sirupsen/logrus"
@@ -27,7 +25,7 @@ type IncrementalProcessor struct {
 	// snapshotVersion holds the current version of the snapshot.
 	snapshotVersion int64
 	logger          logrus.FieldLogger
-	xdsCache        xdscache.SeldonXDSCache
+	xdsCache        *xdscache.SeldonXDSCache
 	mu              sync.RWMutex
 	store           store.SchedulerStore
 	source          chan string
@@ -39,14 +37,9 @@ func NewIncrementalProcessor(cache cache.SnapshotCache, nodeID string, log logru
 		nodeID:          nodeID,
 		snapshotVersion: rand.Int63n(1000),
 		logger:          log.WithField("source", "EnvoyServer"),
-		xdsCache: xdscache.SeldonXDSCache{
-			Listeners: make(map[string]resources.Listener),
-			Clusters:  make(map[string]resources.Cluster),
-			Routes:    make(map[string]resources.Route),
-			Endpoints: make(map[string]resources.Endpoint),
-		},
-		store:  store,
-		source: make(chan string, 1),
+		xdsCache:        xdscache.NewSeldonXDSCache(),
+		store:           store,
+		source:          make(chan string, 1),
 	}
 	ip.SetListener("seldon_http")
 	return ip
@@ -118,13 +111,44 @@ func (p *IncrementalProcessor) updateEnvoy() error {
 }
 
 func (p *IncrementalProcessor) removeModelForServerInEnvoy(modelName string) error {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-	p.xdsCache.RemoveRoute(modelName)
+	err := p.xdsCache.RemoveRoutes(modelName)
+	if err != nil {
+		return err
+	}
 	return p.updateEnvoy()
 }
 
+func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelName string, modelVersion *store.ModelVersion, server *store.ServerSnapshot, trafficPercent uint32) {
+	logger := p.logger.WithField("func", "updateEnvoyForModelVersion")
+	assignment := modelVersion.GetAssignment() // Get loaded replicas for model
+	clusterNameBase := server.Name + "_" + computeHashKeyForList(assignment)
+	httpClusterName := clusterNameBase + "_http"
+	grpcClusterName := clusterNameBase + "_grpc"
+	p.xdsCache.AddRoute(modelName, modelName, httpClusterName, grpcClusterName, modelVersion.GetDeploymentSpec().LogPayloads, trafficPercent, modelVersion.GetVersion())
+	p.xdsCache.AddCluster(httpClusterName, modelName, false)
+	for _, replicaIdx := range assignment {
+		replica, ok := server.Replicas[replicaIdx]
+		if !ok {
+			logger.Warnf("Invalid replica index %d for server %s", replicaIdx, server.Name)
+		} else {
+			p.xdsCache.AddEndpoint(httpClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceHttpPort()))
+		}
+	}
+	p.xdsCache.AddCluster(grpcClusterName, modelName, true)
+	for _, replicaIdx := range assignment {
+		replica, ok := server.Replicas[replicaIdx]
+		if !ok {
+			logger.Warnf("Invalid replica index %d for server %s", replicaIdx, server.Name)
+		} else {
+			p.xdsCache.AddEndpoint(grpcClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceGrpcPort()))
+		}
+	}
+}
+
 func (p *IncrementalProcessor) Sync(modelName string) error {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
 	logger := p.logger.WithField("func", "Sync")
 	model, err := p.store.GetModel(modelName)
 	if err != nil {
@@ -150,34 +174,32 @@ func (p *IncrementalProcessor) Sync(modelName string) error {
 		return p.removeModelForServerInEnvoy(modelName)
 	}
 
-	p.mu.Lock()
-	defer p.mu.Unlock()
-	assignment := latestModel.GetAssignment() // Get loaded replicas for model
-	clusterNameBase := server.Name + "_" + computeHashKeyForList(assignment)
-	httpClusterName := clusterNameBase + "_http"
-	grpcClusterName := clusterNameBase + "_grpc"
-	p.xdsCache.AddRoute(modelName, modelName, httpClusterName, grpcClusterName, latestModel.Details().LogPayloads)
-	if !p.xdsCache.HasCluster(httpClusterName) {
-		p.xdsCache.AddCluster(httpClusterName, modelName, false)
-		for _, serverIdx := range assignment {
-			replica, ok := server.Replicas[serverIdx]
-			if !ok {
-				return fmt.Errorf("Invalid replica index %d for server %s", serverIdx, server.Name)
-			}
-			p.xdsCache.AddEndpoint(httpClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceHttpPort()))
-		}
+	// Remove route before we recreate
+	err = p.xdsCache.RemoveRoutes(modelName)
+	if err != nil {
+		return err
 	}
-	if !p.xdsCache.HasCluster(grpcClusterName) {
-		p.xdsCache.AddCluster(grpcClusterName, modelName, true)
-		for _, serverIdx := range assignment {
-			replica, ok := server.Replicas[serverIdx]
-			if !ok {
-				return fmt.Errorf("Invalid replica index %d for server %s", serverIdx, server.Name)
-			}
-			p.xdsCache.AddEndpoint(grpcClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceGrpcPort()))
-		}
+	// Update last Available version
+	lastAvailableModelVersion := model.GetLastAvailableModel()
+	if lastAvailableModelVersion != nil && latestModel.GetVersion() != lastAvailableModelVersion.GetVersion() {
+		totalReplicas := len(lastAvailableModelVersion.GetAssignment()) + len(latestModel.GetAssignment())
+		trafficLastAvailable := uint32((len(lastAvailableModelVersion.GetAssignment()) * 100 / totalReplicas))
+		trafficLatest := 100 - trafficLastAvailable
+		logger.Debugf("Splitting traffic between latest %s:%d %d percent and %s:%d %d percent",
+			modelName,
+			latestModel.GetVersion(),
+			trafficLatest,
+			modelName,
+			lastAvailableModelVersion.GetVersion(),
+			trafficLastAvailable)
+		p.updateEnvoyForModelVersion(modelName, lastAvailableModelVersion, server, trafficLastAvailable)
+		p.updateEnvoyForModelVersion(modelName, latestModel, server, 100)
+	} else {
+		p.updateEnvoyForModelVersion(modelName, latestModel, server, 100)
 	}
+
 	err = p.updateEnvoy()
+
 	// Update the state after the envoy sync depending on whether we got an error doing the sync
 	state := store.Available
 	reason := ""
@@ -185,8 +207,8 @@ func (p *IncrementalProcessor) Sync(modelName string) error {
 		state = store.LoadedUnavailable
 		reason = err.Error()
 	}
-	for _, serverIdx := range assignment {
-		err2 := p.store.UpdateModelState(modelName, latestModel.GetVersion(), server.Name, serverIdx, nil, state, reason)
+	for _, replicaIdx := range latestModel.GetAssignment() {
+		err2 := p.store.UpdateModelState(modelName, latestModel.GetVersion(), server.Name, replicaIdx, nil, state, reason)
 		if err2 != nil {
 			return err2
 		}

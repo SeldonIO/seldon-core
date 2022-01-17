@@ -36,6 +36,11 @@ spec:
           spec:
             description: ModelSpec defines the desired state of Model
             properties:
+              artifactVersion:
+                description: Artifact Version A v2 version folder to select from storage
+                  bucket
+                format: int32
+                type: integer
               dedicated:
                 description: Dedicated server exclusive to this model Default false
                 type: boolean
@@ -62,7 +67,7 @@ spec:
                 format: int32
                 type: integer
               modelType:
-                description: Artifact type
+                description: Model type
                 type: string
               preloaded:
                 description: Model already loaded on a server. Don't schedule. Default

@@ -15,7 +15,11 @@
 package resources
 
 import (
+	"fmt"
 	"time"
+
+	envoy_type_matcher_v3 "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
+	envoy_type_v3 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 
 	matcher "github.com/envoyproxy/go-control-plane/envoy/config/common/matcher/v3"
 	envoy_extensions_common_tap_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/common/tap/v3"
@@ -118,7 +122,7 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 
 	for _, r := range routes {
 		rt := &route.Route{
-			Name: r.Name + "_http", // Seems optional
+			Name: fmt.Sprintf("%s_http_%d", r.Name, r.Version), // Seems optional
 			Match: &route.RouteMatch{
 				PathSpecifier: &route.RouteMatch_Prefix{
 					Prefix: "/v2",
@@ -142,6 +146,13 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 			},
 			Action: &route.Route_Route{
 				Route: &route.RouteAction{
+					RegexRewrite: &envoy_type_matcher_v3.RegexMatchAndSubstitute{
+						Pattern: &envoy_type_matcher_v3.RegexMatcher{
+							EngineType: &envoy_type_matcher_v3.RegexMatcher_GoogleRe2{},
+							Regex:      fmt.Sprintf("/v2/models/%s", r.Name), //TODO check this match for modelName is always ok
+						},
+						Substitution: fmt.Sprintf("/v2/models/%s/versions/%d", r.Name, r.Version),
+					},
 					ClusterSpecifier: &route.RouteAction_Cluster{
 						Cluster: r.HttpCluster,
 					},
@@ -153,10 +164,26 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 				{Header: &core.HeaderValue{Key: SeldonLoggingHeader, Value: "true"}},
 			}
 		}
+		if r.TrafficPercent < 100 {
+			rt.Match.RuntimeFraction = &core.RuntimeFractionalPercent{
+				DefaultValue: &envoy_type_v3.FractionalPercent{
+					Numerator:   r.TrafficPercent,
+					Denominator: envoy_type_v3.FractionalPercent_HUNDRED,
+				},
+			}
+		}
 		rts = append(rts, rt)
+		//TODO there is no easy way to implement version specific gRPC calls so this could mean we need to implement
+		//latest model policy on V2 servers and therefore also for REST as well
 		rt = &route.Route{
-			Name: r.Name + "_grpc", // Seems optional
+			Name: fmt.Sprintf("%s_grpc_%d", r.Name, r.Version),
 			Match: &route.RouteMatch{
+				RuntimeFraction: &core.RuntimeFractionalPercent{
+					DefaultValue: &envoy_type_v3.FractionalPercent{
+						Numerator:   r.TrafficPercent,
+						Denominator: envoy_type_v3.FractionalPercent_HUNDRED,
+					},
+				},
 				PathSpecifier: &route.RouteMatch_Prefix{
 					Prefix: "/inference.GRPCInferenceService",
 				},

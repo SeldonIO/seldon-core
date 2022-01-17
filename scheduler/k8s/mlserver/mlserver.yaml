@@ -75,7 +75,7 @@ metadata:
   name: mlserver
 spec:
   serviceName: "mlserver"
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: mlserver
@@ -108,28 +108,32 @@ spec:
             port: 5572
           timeoutSeconds: 1
         volumeMounts:
-        - mountPath: /mnt/models
+        - mountPath: /mnt/agent
           name: mlserver-models
       - image: agent:latest
         imagePullPolicy: IfNotPresent
         name: agent
         env:
-        - name: MLSERVER_HTTP_PORT
+        - name: SELDON_SERVER_HTTP_PORT
           value: "9000"
+        - name: SELDON_SERVER_GRPC_PORT
+          value: "9500"          
         - name: SELDON_SCHEDULER_HOST
           value: "seldon-scheduler"
         - name: SELDON_SCHEDULER_PORT
           value: "9005"
         - name: SELDON_SERVER_NAME
           value: "mlserver"
+        - name: SELDON_SERVER_TYPE
+          value: "mlserver"
         - name: SELDON_REPLICA_CONFIG
-          value: '{"inferenceSvc":"DYNAMIC","inferenceHttpPort":9000,"inferenceGrpcPort":9500,"memoryBytes":100000,"availableMemoryBytes":100000,"capabilities":["sklearn"],"overCommit":false}'
+          value: '{"inferenceSvc":"DYNAMIC","inferenceHttpPort":9000,"inferenceGrpcPort":9500,"memoryBytes":100000,"capabilities":["sklearn"],"overCommit":false}'
         - name: POD_NAME
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
         volumeMounts:
-        - mountPath: /mnt/models
+        - mountPath: /mnt/agent
           name: mlserver-models
         - name: config-volume
           mountPath: /mnt/config
@@ -141,10 +145,12 @@ spec:
         - name: MLSERVER_GRPC_PORT
           value: "9500"
         - name: MLSERVER_MODELS_DIR
-          value: "/mnt/models"
+          value: "/mnt/agent/models"
+        - name: MLSERVER_MODEL_PARALLEL_WORKERS
+          value: "1"
         resources:
           requests:
-            cpu: '0.5'
+            cpu: '0.1'
         lifecycle:
           preStop:
             exec:
@@ -177,7 +183,7 @@ spec:
             port: 9000
           timeoutSeconds: 1
         volumeMounts:
-        - mountPath: /mnt/models
+        - mountPath: /mnt/agent
           name: mlserver-models
           readOnly: true
       securityContext:

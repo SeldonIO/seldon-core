@@ -19,6 +19,8 @@ package mlops
 import (
 	"context"
 
+	"github.com/seldonio/seldon-core/operatorv2/pkg/constants"
+
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -44,27 +46,21 @@ type ModelReconciler struct {
 }
 
 func (r *ModelReconciler) handleFinalizer(ctx context.Context, model *mlopsv1alpha1.Model) (bool, error) {
-	finalizerName := "seldon.model.finalizer"
+
 	// Check if we are being deleted or not
 	if model.ObjectMeta.DeletionTimestamp.IsZero() { // Not being deleted
 
 		// Add our finalizer
-		if !utils.ContainsStr(model.ObjectMeta.Finalizers, finalizerName) {
-			model.ObjectMeta.Finalizers = append(model.ObjectMeta.Finalizers, finalizerName)
+		if !utils.ContainsStr(model.ObjectMeta.Finalizers, constants.ModelFinalizerName) {
+			model.ObjectMeta.Finalizers = append(model.ObjectMeta.Finalizers, constants.ModelFinalizerName)
 			if err := r.Update(context.Background(), model); err != nil {
 				return true, err
 			}
 		}
 	} else { // model is being deleted
-		if utils.ContainsStr(model.ObjectMeta.Finalizers, finalizerName) {
+		if utils.ContainsStr(model.ObjectMeta.Finalizers, constants.ModelFinalizerName) {
 			// Handle unload in scheduler
 			if err := r.Scheduler.UnloadModel(ctx, model); err != nil {
-				return true, err
-			}
-
-			// remove finalizer now we have completed successfully
-			model.ObjectMeta.Finalizers = utils.RemoveStr(model.ObjectMeta.Finalizers, finalizerName)
-			if err := r.Update(context.Background(), model); err != nil {
 				return true, err
 			}
 		}

@@ -46,8 +46,8 @@ func (p *ProxyServer) Start(port uint) error {
 func (p *ProxyServer) LoadModel(ctx context.Context, r *pb.LoadModelRequest) (*pb.LoadModelResponse, error) {
 	m := ModelEvent{
 		ModelOperationMessage: &pba.ModelOperationMessage{
-			Operation: pba.ModelOperationMessage_LOAD_MODEL,
-			Details:   r.Request.Model,
+			Operation:    pba.ModelOperationMessage_LOAD_MODEL,
+			ModelVersion: &pba.ModelVersion{Model: r.GetRequest().GetModel(), Version: r.GetVersion()},
 		},
 	}
 	p.modelEvents <- m
@@ -59,12 +59,11 @@ func (p *ProxyServer) UnloadModel(ctx context.Context, r *pb.UnloadModelRequest)
 	m := ModelEvent{
 		ModelOperationMessage: &pba.ModelOperationMessage{
 			Operation: pba.ModelOperationMessage_UNLOAD_MODEL,
-			Details: &pbs.ModelDetails{
-				Name: r.Model.Name,
-			},
+			ModelVersion: &pba.ModelVersion{
+				Model:   &pbs.Model{Meta: &pbs.MetaData{Name: r.GetModel().GetName()}},
+				Version: r.GetVersion()},
 		},
 	}
-
 	p.modelEvents <- m
 	return &pb.UnloadModelResponse{}, nil
 }
