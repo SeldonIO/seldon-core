@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-	"github.com/onsi/gomega"
+	. "github.com/onsi/gomega"
 )
 
 const (
@@ -131,7 +131,7 @@ func TestWorkerKafkaConfigurations(t *testing.T) {
 		expectError bool
 	}
 
-	g := gomega.NewWithT(t)
+	g := NewWithT(t)
 	config := tlsConfig(t)
 
 	tests := []test{
@@ -184,9 +184,9 @@ func TestWorkerKafkaConfigurations(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := kafka.NewProducer(&tt.kafkaConfig)
 			if tt.expectError {
-				g.Expect(err).ToNot(gomega.BeNil())
+				g.Expect(err).ToNot(BeNil())
 			} else {
-				g.Expect(err).To(gomega.BeNil())
+				g.Expect(err).To(BeNil())
 			}
 		})
 	}
