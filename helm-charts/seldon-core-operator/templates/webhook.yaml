@@ -34,13 +34,47 @@ webhooks:
   - v1
   - v1beta1
   clientConfig:
+{{- if not .Values.certManager.enabled }}
     caBundle: '{{ $ca.Cert | b64enc }}'
+{{- end }}
     service:
       name: seldon-webhook-service
       namespace: '{{ include "seldon.namespace" . }}'
       path: /validate-machinelearning-seldon-io-v1-seldondeployment
   failurePolicy: Fail
   name: v1.vseldondeployment.kb.io
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
+{{- if not .Values.singleNamespace }}
+  namespaceSelector:
+    matchExpressions:
+    - key: seldon.io/controller-id
+      operator: DoesNotExist
+{{- if .Values.kubeflow }}
+    matchLabels:
+      serving.kubeflow.org/inferenceservice: enabled
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if .Values.singleNamespace }}
+  namespaceSelector:
+    matchLabels:
+      seldon.io/controller-id: {{ include "seldon.namespace" . }}
+{{- end }}
+{{- if not .Values.kubeflow }}
+{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}
+{{- if not .Values.controllerId }}
+  objectSelector:
+    matchExpressions:
+    - key: seldon.io/controller-id
+      operator: DoesNotExist
+{{- end }}
+{{- end }}
+{{- if .Values.controllerId }}
+  objectSelector:
+    matchLabels:
+      seldon.io/controller-id: {{ .Values.controllerId }}
+{{- end }}
+{{- end }}
   rules:
   - apiGroups:
     - machinelearning.seldon.io
