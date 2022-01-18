@@ -85,9 +85,16 @@ func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, prot
 		if util.GetKafkaSecurityProtocol() == "SSL" {
 			sslKakfaServer := util.GetSslElements()
 			producerConfigMap["security.protocol"] = util.GetKafkaSecurityProtocol()
-			producerConfigMap["ssl.ca.location"] = sslKakfaServer.CACertFile
-			producerConfigMap["ssl.key.location"] = sslKakfaServer.ClientKeyFile
-			producerConfigMap["ssl.certificate.location"] = sslKakfaServer.ClientCertFile
+			if sslKakfaServer.CACertFile != "" && sslKakfaServer.ClientCertFile != "" {
+				producerConfigMap["ssl.ca.location"] = sslKakfaServer.CACertFile
+				producerConfigMap["ssl.key.location"] = sslKakfaServer.ClientKeyFile
+				producerConfigMap["ssl.certificate.location"] = sslKakfaServer.ClientCertFile
+			}
+			if sslKakfaServer.CACert != "" && sslKakfaServer.ClientCert != "" {
+				producerConfigMap["ssl.ca.pem"] = sslKakfaServer.CACert
+				producerConfigMap["ssl.key.pem"] = sslKakfaServer.ClientKey
+				producerConfigMap["ssl.certificate.pem"] = sslKakfaServer.ClientCert
+			}
 			producerConfigMap["ssl.key.password"] = sslKakfaServer.ClientKeyPass // Key password, if any
 
 		}
