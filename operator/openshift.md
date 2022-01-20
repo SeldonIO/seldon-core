@@ -19,7 +19,7 @@ Install [operator-sdk](https://sdk.operatorframework.io/).
 
 ```
 operator-sdk version
-operator-sdk version: "v1.2.0", commit: "215fc50b2d4acc7d92b36828f42d7d1ae212015c", kubernetes version: "v1.18.8", go version: "go1.15.3", GOOS: "linux", GOARCH: "amd64"
+operator-sdk version: "v1.13.0", commit: "6e84414b468029c5c3e07352cabe64cf3a682111", kubernetes version: "1.21", go version: "go1.16.8", GOOS: "linux", GOARCH: "amd64"
 ```
 
 
@@ -34,11 +34,11 @@ Version: version.Version{OpmVersion:"1.12.3", GitCommit:"", BuildDate:"2020-09-1
 
 ### Operator-Courier
 
-See [https://github.com/operator-framework/operator-courier](here).
+See [https://github.com/operator-framework/operator-courier](https://github.com/operator-framework/operator-courier).
 
 ```
 operator-courier -v
-2.1.10
+2.1.11
 ```
 
 ### Quay
@@ -83,11 +83,12 @@ Run [kind cluster tests](./openshift/tests/README.md#local-kind-cluster). k8s >=
 
 Run [Openshift cluster tests](./openshift/tests/README.md#openshift-cluster). Openshift >= 4.3.
 
-## Community and Upstream Operators
+
+## Community Operator
 
 Will need to be run in release branch
 
-Create a fork of https://github.com/operator-framework/community-operators
+Create a fork of https://github.com/k8s-operatorhub/community-operators
 
 Create a PR for community operator
 
@@ -95,107 +96,62 @@ Update the Makefile locally for
 
 ```
 COMMUNITY_OPERATORS_FOLDER=~/work/seldon-core/redhat/community-operators
+UPSTREAM_OPERATORS_FOLDER=~/work/seldon-core/redhat/community-operators-prod
 ```
-
-### Community Operator
 
 Create a branch for update in above fork. e.g.:
 
 ```
-git checkout -b 1.7.0_community
+git checkout -b 1.11.1
 ```
 
 ```
 make update_community
 ```
 
-To test, you will need Ansible >= 2.9 installed. Follow [instructions](https://operator-framework.github.io/community-operators/), e.g.
-
-```
-bash <(curl -sL https://cutt.ly/WhkV76k)   kiwi,lemon,orange community-operators/seldon-operator/1.6.0
-```
-
-Example output:
-
-```
-Info: No labels defined
-debug=0
-Using ansible 2.9.18 on host ...
-
-One can do 'tail -f /tmp/op-test/log.out' from second console to see full logs
-
-Checking for kind binary ...
- [ Preparing testing container 'op-test' from 'quay.io/operator_testing/operator-test-playbooks:latest' ]
- Test 'kiwi' for 'community-operators seldon-operator 1.6.0' ...
- [kiwi] Reseting kind cluster ...
- [kiwi] Running test ...
- ansible-playbook -i localhost, -e ansible_connection=local upstream/local.yml -e run_upstream=true -e image_protocol='docker://' -vv -e container_tool=podman -e run_prepare_catalog_repo_upstream=false -e operator_dir=/tmp/community-operators-for-catalog/community-operators/seldon-operator -e operator_version=1.6.0 --tags pure_test -e operator_channel_force=optest -e test_skip_deploy=true -e strict_mode=true
- Test 'kiwi' : [ OK ]
-
-Test 'lemon' for 'community-operators seldon-operator 1.6.0' ...
-[lemon] Reseting kind cluster ...
-[lemon] Running test ...
-ansible-playbook -i localhost, -e ansible_connection=local upstream/local.yml -e run_upstream=true -e image_protocol='docker://' -vv -e container_tool=podman -e run_prepare_catalog_repo_upstream=false -e operator_dir=/tmp/community-operators-for-catalog/community-operators/seldon-operator --tags deploy_bundles -e strict_mode=true
-
-```
+Follow [instructions](https://operator-framework.github.io/community-operators/). At present the test instructions fail to work.
 
 Add new folder and changed package yaml to a PR. Ensure you sign the commit.
 
 ```
-git commit -s -m "Update Seldon Community Operator to 1.7.0"
+git commit -s -m "Update Seldon Community Operator to 1.11.1"
 ```
 
 Push and create PR.
 
-### Upstream Operator
+## Upstream Operator
+
+Will need to be run in release branch
+
+Create a fork of https://github.com/redhat-openshift-ecosystem/community-operators-prod
+
+Create a PR for upstream operator
+
+Update the Makefile locally for 
+
+```
+UPSTREAM_OPERATORS_FOLDER=~/work/seldon-core/redhat/community-operators-prod
+```
 
 Create a branch for update in above fork. e.g.:
 
 ```
-git checkout -b 1.7.0_upstream
+git checkout -b 1.11.1
 ```
 
 ```
 make update_upstream
 ```
 
-Run tests
+Follow [instructions](https://operator-framework.github.io/community-operators/). At present the test instructions fail to work.
 
-
-To test, you will need Ansible >= 2.9 installed. Follow [instructions](https://operator-framework.github.io/community-operators/), e.g.
-
-```
-cd ${COMMUNITY_OPERATORS_FOLDER}
-bash <(curl -sL https://cutt.ly/WhkV76k)   kiwi,lemon,orange upstream-community-operators/seldon-operator/1.6.0
-```
+Add new folder and changed package yaml to a PR. Ensure you sign the commit.
 
 ```
-Info: No labels defined
-debug=0
-Using ansible 2.9.18 on host ...
-
-One can do 'tail -f /tmp/op-test/log.out' from second console to see full logs
-
-Checking for kind binary ...
- [ Preparing testing container 'op-test' from 'quay.io/operator_testing/operator-test-playbooks:latest' ]
- Test 'kiwi' for 'upstream-community-operators seldon-operator 1.6.0' ...
- [kiwi] Reseting kind cluster ...
- [sudo] password for clive:
- [kiwi] Running test ...
- ansible-playbook -i localhost, -e ansible_connection=local upstream/local.yml -e run_upstream=true -e image_protocol='docker://' -vv -e container_tool=podman -e run_prepare_catalog_repo_upstream=false -e operator_dir=/tmp/community-operators-for-catalog/upstream-community-operators/seldon-operator -e operator_version=1.6.0 --tags pure_test -e operator_channel_force=optest -e strict_mode=true
- Test 'kiwi' : [ OK ]
-
-Test 'lemon' for 'upstream-community-operators seldon-operator 1.6.0' ...
-[lemon] Reseting kind cluster ...
-[lemon] Running test ...
-ansible-playbook -i localhost, -e ansible_connection=local upstream/local.yml -e run_upstream=true -e image_protocol='docker://' -vv -e container_tool=podman -e run_prepare_catalog_repo_upstream=false -e operator_dir=/tmp/community-operators-for-catalog/upstream-community-operators/seldon-operator --tags deploy_bundles -e strict_mode=true
+git commit -s -m "Update Seldon Upstream Operator to 1.11.1"
 ```
 
-Ensure you sign the commit, e.g.:
-
-```
-git commit -s -m "Update Seldon Upstream Operator to 1.7.0"
-```
+Push and create PR.
 
 ## Certified Operators
 

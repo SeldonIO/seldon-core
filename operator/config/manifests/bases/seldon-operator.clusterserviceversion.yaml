@@ -49,6 +49,7 @@ metadata:
       and maintenance of machine learning systems at scale.
     repository: https://github.com/SeldonIO/seldon-core
     support: Clive Cox
+    olm.skipRange: "<1.12.0"
   name: seldon-operator.v1.7.0
   namespace: seldon-operator-system
 spec:
@@ -779,7 +780,6 @@ spec:
   minKubeVersion: 1.16.0
   provider:
     name: Seldon Technologies
-  replaces: seldon-operator.v1.7.0
   selector:
     matchLabels:
       name: seldon-operator

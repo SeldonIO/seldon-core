@@ -52,7 +52,7 @@ install-cert-manager:
 	kubectl rollout status deployment.apps/cert-manager-webhook -n cert-manager
 
 
-manifests_all: manifests manifests_v1
+manifests_all: manifests manifests_v1 manifests_v1_small
 
 # Install CRDs into a cluster
 install: manifests
@@ -132,6 +132,10 @@ manifests: controller-gen
 manifests_v1: controller-gen
 	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd_v1/bases crd:crdVersions=v1
 	#$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./apis/machinelearning.seldon.io/v1" output:crd:artifacts:config=config/crd_v1/bases crd:crdVersions=v1
+
+manifests_v1_small: controller-gen
+	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./apis/machinelearning.seldon.io/v1" output:crd:artifacts:config=config/crd_v1_small/bases crd:crdVersions=v1
+
 
 # Run go fmt against code
 fmt:
@@ -251,42 +255,24 @@ config/crd_v1/patches/graph_children.yaml:
 
 ###################################
 #
-# Openshift / OperatorHub addtions
+# Openshift community
 #
 ###################################
 
-#
-# Testing with operstor-sdk 1.0.1
-#
 
 .PHONY: bundle
 recreate_bundle:
-	rm -r bundle
-	kustomize build config/manifests | operator-sdk --verbose generate bundle --default-channel stable --version ${VERSION}
+	rm -fr bundle
+	kustomize build config/manifests | operator-sdk --verbose generate bundle --default-channel stable --version ${VERSION} --channels stable
 	python hack/csv_hack.py bundle/manifests/seldon-operator.clusterserviceversion.yaml ${VERSION}
+	echo '  com.redhat.openshift.versions: "v4.8"' >> bundle/metadata/annotations.yaml
+	echo 'LABEL com.redhat.openshift.versions=v4.8' >> bundle.Dockerfile
 
-.PHONY: update_packagemanifests
-update_packagemanifests:
-	kustomize build config/manifests | operator-sdk --verbose generate packagemanifests --default-channel --channel stable --version ${VERSION}
-	python hack/csv_hack.py packagemanifests/${VERSION}/seldon-operator.clusterserviceversion.yaml ${VERSION}
-	mv packagemanifests/${VERSION}/seldon-operator.clusterserviceversion.yaml packagemanifests/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
+create_bundle_image:
+	docker build . -f bundle.Dockerfile -t quay.io/seldon/seldon-operator:v${VERSION}
 
-
-# Not sure why clearing of replaces was added
-#.PHONY: clear_replaces
-#clear_replaces:
-#	sed -i '/replaces:.*/d' packagemanifests/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
-
-#
-# Tested with operator-courier 2.1.10
-#
-.PHONY: verify_package
-verify_package:
-	operator-courier verify packagemanifests/
-
-.PHONY: create_bundle_image
-create_push_bundle_image:
-	cd packagemanifests && make create_bundle_image_${VERSION} && make push_bundle_image_${VERSION}
+push_bundle_image:
+	docker push quay.io/seldon/seldon-operator:v${VERSION}
 
 .PHONY: validate_bundle_image
 validate_bundle_image:
@@ -296,7 +282,7 @@ validate_bundle_image:
 # Only index up to 1.2.2 as we have removed "replaces" in 1.2.2 to stop chain there for testing
 .PHONY: opm_index
 opm_index:
-	opm index add -c docker --bundles quay.io/seldon/seldon-operator:v${VERSION},quay.io/seldon/seldon-operator:v1.6.0,quay.io/seldon/seldon-operator:v1.5.0,quay.io/seldon/seldon-operator:v1.2.2 --mode replaces --tag quay.io/seldon/test-catalog:latest
+	opm index add -c docker --bundles quay.io/seldon/seldon-operator:v${VERSION} --mode replaces --tag quay.io/seldon/test-catalog:latest
 
 
 opm_push:
@@ -304,8 +290,7 @@ opm_push:
 
 
 .PHONY: update_openshift
-#update_openshift: recreate_bundle  update_packagemanifests clear_replaces create_push_bundle_image validate_bundle_image opm_index opm_push
-update_openshift: recreate_bundle  update_packagemanifests create_push_bundle_image validate_bundle_image opm_index opm_push
+update_openshift: recreate_bundle create_bundle_image push_bundle_image validate_bundle_image opm_index opm_push
 
 
 #
@@ -322,18 +307,25 @@ scorecard:
 
 # Change to local checkout
 COMMUNITY_OPERATORS_FOLDER=~/work/seldon-core/redhat/community-operators
+UPSTREAM_OPERATORS_FOLDER=~/work/seldon-core/redhat/community-operators-prod
 
-update_community: update_packagemanifests
-	cp -r packagemanifests/${VERSION} ${COMMUNITY_OPERATORS_FOLDER}/community-operators/seldon-operator
-	cp packagemanifests/seldon-operator.package.yaml ${COMMUNITY_OPERATORS_FOLDER}/community-operators/seldon-operator
+update_community: 
+	cp -r bundle ${COMMUNITY_OPERATORS_FOLDER}/operators/seldon-operator/${VERSION}
+
+# Presently fails
+test_community:
+	cd ${COMMUNITY_OPERATORS_FOLDER} && export OP_TEST_DEBUG=3 &&  bash <(curl -sL https://raw.githubusercontent.com/redhat-openshift-ecosystem/community-operators-pipeline/ci/latest/ci/scripts/opp.sh) kiwi,lemon,orange operators/seldon-operator/1.12.0
 
 update_upstream:
-	cp -r packagemanifests/${VERSION} ${COMMUNITY_OPERATORS_FOLDER}/upstream-community-operators/seldon-operator
-	cp packagemanifests/seldon-operator.package.yaml ${COMMUNITY_OPERATORS_FOLDER}/upstream-community-operators/seldon-operator
+	cp -r bundle ${UPSTREAM_OPERATORS_FOLDER}/operators/seldon-operator/${VERSION}
 
+
+###################################
 #
-# Certified Openshift Operator
+# Openshift Certified
 #
+###################################
+
 # https://redhat-connect.gitbook.io/certified-operator-guide/appendix/bundle-maintenance-after-migration
 
 PKG_CERT=packagemanifests-certified
@@ -345,7 +337,7 @@ create_certified_bundle:
 	cd ${PKG_CERT} && opm alpha bundle generate -c stable -e stable -p seldon-operator-certified -d ./${VERSION}/ -u ./${VERSION}/
 	mv ${PKG_CERT}/bundle.Dockerfile ${PKG_CERT}/bundle-${VERSION}.Dockerfile
 	echo '' >> ${PKG_CERT}/bundle-${VERSION}.Dockerfile
-	echo 'LABEL com.redhat.openshift.versions="v4.5,v4.6,v4.7"' >> ${PKG_CERT}/bundle-${VERSION}.Dockerfile
+	echo 'LABEL com.redhat.openshift.versions="v4.8"' >> ${PKG_CERT}/bundle-${VERSION}.Dockerfile
 	echo 'LABEL com.redhat.delivery.backport=true' >> ${PKG_CERT}/bundle-${VERSION}.Dockerfile
 	echo 'LABEL com.redhat.delivery.operator.bundle=true' >> ${PKG_CERT}/bundle-${VERSION}.Dockerfile
 	mv ${PKG_CERT}/${VERSION}/seldon-operator.clusterserviceversion.yaml ${PKG_CERT}/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
@@ -368,7 +360,7 @@ validate_bundle_image_certified:
 
 # beware --mode semver seems to cause old versions to be shown in openshift. Not sure why. 
 opm_index_certified:
-	opm index add -c docker --bundles quay.io/seldon/seldon-operator-certified:v${VERSION},quay.io/seldon/seldon-operator-certified:v1.6.0,quay.io/seldon/seldon-operator-certified:v1.5.0,quay.io/seldon/seldon-operator-certified:v1.2.2,quay.io/seldon/seldon-operator-certified:v1.2.1,quay.io/seldon/seldon-operator-certified:v1.2.0,quay.io/seldon/seldon-operator-certified:v1.1.0,quay.io/seldon/seldon-operator-certified:v0.1.5 --mode replaces --tag quay.io/seldon/test-catalog-certified:latest
+	opm index add -c docker --bundles quay.io/seldon/seldon-operator-certified:v${VERSION},quay.io/seldon/seldon-operator-certified:v1.7.0,quay.io/seldon/seldon-operator-certified:v1.6.0,quay.io/seldon/seldon-operator-certified:v1.5.0,quay.io/seldon/seldon-operator-certified:v1.2.2,quay.io/seldon/seldon-operator-certified:v1.2.1,quay.io/seldon/seldon-operator-certified:v1.2.0,quay.io/seldon/seldon-operator-certified:v1.1.0,quay.io/seldon/seldon-operator-certified:v0.1.5 --mode replaces --tag quay.io/seldon/test-catalog-certified:latest
 
 
 opm_push_certified:
