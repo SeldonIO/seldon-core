@@ -70,4 +70,7 @@ COPY --from=builder /opt/conda /opt/conda
 COPY --from=builder /usr/bin/rclone /usr/bin/rclone
 COPY --from=builder /licenses /licenses
 
+# This is to have writable numba cache directory
+ENV NUMBA_CACHE_DIR /tmp/numba-cache
+
 ENTRYPOINT ["python", "-m", "adserver"]
