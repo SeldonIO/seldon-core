@@ -78,7 +78,7 @@ Updated image should be available in quay.io (https://quay.io/signin)
 
 ## Tests
 
-Create an openshift cluster via [https://console.redhat.com/openshift/](https://console.redhat.com/openshift/). This uses a tool call [rosa](https://www.rosaworkshop.io/).
+Create an openshift cluster via [https://console.redhat.com/openshift/](https://console.redhat.com/openshift/). This uses a tool call [rosa](https://www.rosaworkshop.io/). For issues see [rosa github repo](https://github.com/openshift/rosa).
 
 Run [Openshift cluster tests](./openshift/tests/README.md#openshift-cluster). Openshift >= 4.9.
 
