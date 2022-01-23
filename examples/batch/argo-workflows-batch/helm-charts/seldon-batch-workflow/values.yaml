@@ -19,7 +19,7 @@ seldonDeployment:
   # Prepackaged model server to use [see https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html]
   server: SKLEARN_SERVER
   # The URL for the model that is to be used
-  modelUri: gs://seldon-models/v1.12.0/sklearn/iris
+  modelUri: gs://seldon-models/v1.13.0-dev/sklearn/iris
   # The number of seldon deployment replicas to launch
   replicas: 2
   # Waiting time before checks for deployment to ensure kubernetes cluster registers create

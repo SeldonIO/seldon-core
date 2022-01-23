@@ -9,12 +9,12 @@ spec:
       graph:
         name: iris-default
         implementation: SKLEARN_SERVER
-        modelUri: gs://seldon-models/v1.12.0/sklearn/iris
+        modelUri: gs://seldon-models/v1.13.0-dev/sklearn/iris
       replicas: 1
     - name: shadow
       graph:
         name: iris-shadow
         implementation: SKLEARN_SERVER
-        modelUri: gs://seldon-models/v1.12.0/sklearn/iris
+        modelUri: gs://seldon-models/v1.13.0-dev/sklearn/iris
       replicas: 1
       shadow: true

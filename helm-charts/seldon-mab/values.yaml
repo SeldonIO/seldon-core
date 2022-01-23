@@ -1,17 +1,17 @@
 modela:
   image:
     name: seldonio/mock_classifier
-    version: 1.12.0
+    version: 1.13.0-dev
   name: classifier-1
 modelb:
   image:
     name: seldonio/mock_classifier
-    version: 1.12.0
+    version: 1.13.0-dev
   name: classifier-2
 mab:
   image:
     name: seldonio/mab_epsilon_greedy
-    version: 1.12.0
+    version: 1.13.0-dev
   name: eg-router
   branches: 2
   epsilon: 0.2
@@ -22,7 +22,7 @@ sdepLabels:
   app: "seldon"
 
 predictorLabels:
-  version: 1.12.0
+  version: 1.13.0-dev
   fluentd: "true"
 
 engine:
