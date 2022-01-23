@@ -232,3 +232,10 @@ Update base config version for next release
 make update_config
 ```
 
+As we are running on a branch from the previous release. We need to rebase master before creating a PR. This will create a lot of merge conflicts unless we switch the version to that of master first in a final commit before rebasing, e.g. from project root
+
+```
+./release 1.13.0-dev
+```
+
+Then rebase master and create a PR.
