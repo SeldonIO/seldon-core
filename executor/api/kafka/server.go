@@ -2,6 +2,13 @@ package kafka
 
 import (
 	"fmt"
+	"net/url"
+	"os"
+	"os/signal"
+	"reflect"
+	"syscall"
+	"time"
+
 	"github.com/cloudevents/sdk-go/pkg/bindings/http"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/go-logr/logr"
@@ -13,14 +20,9 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/grpc/tensorflow"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/api/rest"
+	"github.com/seldonio/seldon-core/executor/api/util"
 	"github.com/seldonio/seldon-core/executor/predictor"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	"net/url"
-	"os"
-	"os/signal"
-	"reflect"
-	"syscall"
-	"time"
 )
 
 const (
@@ -76,12 +78,23 @@ func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, prot
 			return nil, fmt.Errorf("Unknown transport %s", transport)
 		}
 	}
+	var producerConfigMap = kafka.ConfigMap{"bootstrap.servers": broker,
+		"go.delivery.reports": false, // Need this othewise will get memory leak
+	}
+	if broker != "" {
+		if util.GetKafkaSecurityProtocol() == "SSL" {
+			sslKakfaServer := util.GetSslElements()
+			producerConfigMap["security.protocol"] = util.GetKafkaSecurityProtocol()
+			producerConfigMap["ssl.ca.location"] = sslKakfaServer.CACertFile
+			producerConfigMap["ssl.key.location"] = sslKakfaServer.ClientKeyFile
+			producerConfigMap["ssl.certificate.location"] = sslKakfaServer.ClientCertFile
+			producerConfigMap["ssl.key.password"] = sslKakfaServer.ClientKeyPass // Key password, if any
 
+		}
+	}
 	// Create Producer
 	log.Info("Creating producer", "broker", broker)
-	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": broker,
-		"go.delivery.reports": false, // Need this othewise will get memory leak
-	})
+	p, err := kafka.NewProducer(&producerConfigMap)
 	if err != nil {
 		return nil, err
 	}

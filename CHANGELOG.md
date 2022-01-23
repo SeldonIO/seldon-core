@@ -170,6 +170,7 @@
 - what is the best way for receiving/sending data fast? [\#3449](https://github.com/SeldonIO/seldon-core/issues/3449)
 - HPA support for autoscaling/v2beta2 API [\#3143](https://github.com/SeldonIO/seldon-core/issues/3143)
 
+
 ## [v1.11.0](https://github.com/seldonio/seldon-core/tree/v1.11.0)
 
 [Full Changelog](https://github.com/seldonio/seldon-core/compare/operator/v1.10.0...v1.11.0)

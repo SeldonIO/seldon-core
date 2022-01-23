@@ -5,7 +5,7 @@ Prior to Seldon Core 1.8 seldon core was using by default `kfserving/storage-ini
 
 ```yaml
 storageInitializer:
-  image: gcr.io/kfserving/storage-initializer:v0.4.0
+  image: kfserving/storage-initializer:v0.6.1
 ```
 
 > :warning: **NOTE:** Current default storage initializer is `seldonio/rclone-storage-initializer:1.13.0-dev` is described [here](./overview.md).

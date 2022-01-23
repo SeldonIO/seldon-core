@@ -75,7 +75,7 @@ This transition requires **creation of the new secrets** for the prepackaged mod
 If you do not wish to configure these secrets now and wish to preserve prior behaviour you can opt for usage of previous storage initializer by using following helm value:
 ```yaml
 storageInitializer:
-  image: gcr.io/kfserving/storage-initializer:v0.4.0
+  image: kfserving/storage-initializer:v0.6.1
 ```
 See further documentation [here](../servers/kfserving-storage-initializer.md).
 

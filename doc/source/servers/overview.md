@@ -325,7 +325,7 @@ stringData:
 ```
 
 Note: remote name is `gcs` here so urls would take form similar to `gcs:<your bucket>`.
-
+Tip: using `cat gcloud-application-credentials.json | jq -c .` can help to easily collapse credentials.json into one line.
 
 ### Directly from PVC
 

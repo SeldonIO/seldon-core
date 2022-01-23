@@ -3,7 +3,7 @@
 Seldon core converts your ML models into production ready REST/gRPC microservices.
 
 These are Seldon Core main components:
-- Reusable and non-reusable [model servers](./overview.html#model-servers)
+- Reusable and non-reusable [model servers](./overview.html#e2e-serving-with-model-servers)
 - [Language Wrappers](./overview.html#language-wrappers) to containerise models
 - [SeldonDeployment](./overview.html#seldondeployment-crd) CRD and [Seldon Core Operator](./overview.html#seldon-core-operator)
 - [Service Orchestrator](./overview.html#service-orchestrator) for advanced inference graphs
@@ -19,7 +19,7 @@ Keep reading to learn more!
 
 ## E2E Serving with Model Servers
 
-With `Seldon Core` you can take and put it directly into the production using our flexible `Model Servers`.
+With `Seldon Core` you can take your model and put it directly into the production using our flexible `Model Servers`.
 
 ![](../images/e2e-model-serving.svg)
 

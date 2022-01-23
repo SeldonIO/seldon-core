@@ -31,6 +31,9 @@ create your own image with a fixed set of dependencies.
 This image can then be re-used across different model versions using the same
 pre-loaded environment.
 
+Note that installation of `conda` packages may take longer than the `livenessProbe` limits.
+This can be worked around by setting longer limits, see our [elasticnet wine manifest](https://github.com/SeldonIO/seldon-core/blob/master/servers/mlflowserver/samples/elasticnet_wine.yaml) for an example.
+
 ## Examples
 
 An example for a saved Iris prediction model can be found below:

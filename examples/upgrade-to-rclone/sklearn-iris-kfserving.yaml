@@ -25,4 +25,4 @@ spec:
       implementation: SKLEARN_SERVER
       modelUri: s3://sklearn/iris
       envSecretRefName: seldon-kfserving-secret
-      storageInitializerImage: gcr.io/kfserving/storage-initializer:v0.4.0
+      storageInitializerImage: kfserving/storage-initializer:v0.6.1

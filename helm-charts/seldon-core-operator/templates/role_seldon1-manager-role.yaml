@@ -10,6 +10,13 @@ rules:
 - apiGroups:
   - ''
   resources:
+  - events
+  verbs:
+  - create
+  - patch
+- apiGroups:
+  - ''
+  resources:
   - services
   verbs:
   - create

@@ -1,0 +1,15 @@
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: mlflow
+spec:
+  protocol: kfserving  # Activate v2 protocol
+  name: wines
+  predictors:
+    - graph:
+        children: []
+        implementation: MLFLOW_SERVER
+        modelUri: gs://seldon-models/v1.12.0-dev/mlflow/elasticnet_wine
+        name: classifier
+      name: default
+      replicas: 1

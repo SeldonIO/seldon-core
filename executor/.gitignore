@@ -10,3 +10,4 @@ openapi/
 executor/api/rest/openapi/
 triton-inference-server/	
 _operator
+certs/

@@ -124,7 +124,7 @@ var configs = map[string]string{
      }`,
 	"storageInitializer": `
 	{
-	"image" : "gcr.io/kfserving/storage-initializer:v0.4.0",
+	"image" : "kfserving/storage-initializer:v0.6.1",
 	"memoryRequest": "100Mi",
 	"memoryLimit": "1Gi",
 	"cpuRequest": "100m",

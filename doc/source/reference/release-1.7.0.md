@@ -71,7 +71,7 @@ spec:
       name: classifier
       implementation: SKLEARN_SERVER
       modelUri: mys3:sklearn/iris
-      storageInitializerImage: gcr.io/kfserving/storage-initializer:v0.4.0    # Specify custom image here
+      storageInitializerImage: kfserving/storage-initializer:v0.6.1           # Specify custom image here
       envSecretRefName: seldon-init-container-secret                          # Specify custom secret here
 ```
 
@@ -82,7 +82,4 @@ We have updated our base Python images to address CVEs identified, which aligns 
 ## Other highlights
 
 * Updated request logging examples to use OpenDistro for Elasticsearch
-* 
-
-
-
+*
