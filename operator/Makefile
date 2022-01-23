@@ -400,7 +400,7 @@ run_certified_pipeline_submit:
 
 
 # Run last to prepare for future release
-PREV_VERSION=1.6.0
+PREV_VERSION=1.7.0
 update_config:
 	sed -i s#${PREV_VERSION}#${VERSION}# config/manifests/bases/seldon-operator.clusterserviceversion.yaml
 
