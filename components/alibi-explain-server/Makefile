@@ -5,7 +5,7 @@ VERSION := $(shell cat ../../version.txt)
 IMAGE=alibiexplainer
 
 BASE_IMAGE ?= seldonio/conda-ubi8
-PYTHON_VERSION ?= 3.8.12
+PYTHON_VERSION ?= 3.7.10
 CONDA_VERSION ?= 4.7.12
 
 #
