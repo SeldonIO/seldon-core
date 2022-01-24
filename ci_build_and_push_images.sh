@@ -88,19 +88,6 @@ function build_push_executor {
     EXECUTOR_EXIT_VALUE=$?
 }
 
-function build_push_engine {
-    make \
-	-C testing/scripts \
-	build_protos
-    make \
-	-C engine \
-	build_image \
-	push_to_registry \
-	docker-build-redhat \
-	docker-push-redhat	
-    ENGINE_EXIT_VALUE=$?
-}
-
 function build_push_mock {
     make \
 	-C examples/models/mean_classifier \
@@ -218,7 +205,6 @@ function build_push_lgbm {
 build_push_python
 build_push_operator
 build_push_executor
-build_push_engine
 build_push_mock
 build_push_alibi_detect
 build_push_request_logger
@@ -244,7 +230,6 @@ service docker stop || true
 # NOW THAT WE'VE CLEANED WE CAN EXIT ON TEST EXIT VALUE
 echo "PYTHON_EXIT_VALUE $PYTHON_EXIT_VALUE"
 echo "OPERATOR_EXIT_VALUE $OPERATOR_EXIT_VALUE"
-echo "ENGINE_EXIT_VALUE $ENGINE_EXIT_VALUE"
 echo "EXECUTOR_EXIT_VALUE $EXECUTOR_EXIT_VALUE"
 echo "MOCK_MODEL_EXIT_VALUE $MOCK_MODEL_EXIT_VALUE"
 echo "ALIBI_DETECT_EXIT_VALUE $ALIBI_DETECT_EXIT_VALUE"
@@ -264,7 +249,6 @@ echo "EXPLAIN_EXIT_VALUE $EXPLAIN_EXIT_VALUE"
 
 exit $((${PYTHON_EXIT_VALUE} \
     + ${OPERATOR_EXIT_VALUE} \
-    + ${ENGINE_EXIT_VALUE} \
     + ${EXECUTOR_EXIT_VALUE} \
     + ${MOCK_MODEL_EXIT_VALUE} \
     + ${ALIBI_DETECT_EXIT_VALUE} \

@@ -38,8 +38,6 @@ metadata:
     app: seldon
   name: seldon-model
 spec:
-  annotations:
-    seldon.io/executor: "true"
   name: test-deployment
   predictors:
   - componentSpecs:
@@ -321,8 +319,6 @@ metadata:
     app: seldon
   name: seldon-model
 spec:
-  annotations:
-    seldon.io/executor: "true"
   name: test-deployment
   predictors:
   - componentSpecs:
@@ -387,8 +383,6 @@ metadata:
     app: seldon
   name: seldon-model
 spec:
-  annotations:
-    seldon.io/executor: "true"
   name: test-deployment
   predictors:
   - componentSpecs:
@@ -665,8 +659,6 @@ metadata:
     app: seldon
   name: seldon-model
 spec:
-  annotations:
-    seldon.io/executor: "true"
   name: test-deployment
   predictors:
   - componentSpecs:

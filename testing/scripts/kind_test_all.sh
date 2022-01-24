@@ -70,25 +70,6 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
             echo "SKIPPING OPERATOR IMAGE BUILD..."
         fi
 
-        echo "Files changed in engine folder:"
-        git --no-pager diff --exit-code --name-only origin/master ../../engine
-        ENGINE_MODIFIED=$?
-        if [[ $ENGINE_MODIFIED -gt 0 ]]; then
-            make build_protos
-            PROTO_EXIT_VALUE=$?
-            if [[ $PROTO_EXIT_VALUE -gt 0 ]]; then
-                return 1
-            fi
-            make kind_build_engine
-            ENGINE_EXIT_VALUE=$?
-            if [[ $ENGINE_EXIT_VALUE -gt 0 ]]; then
-                echo "Engine build returned errors"
-                return 1
-            fi
-        else
-            echo "SKIPPING ENGINE IMAGE BUILD..."
-        fi
-
         echo "Files changed in executor folder:"
         git --no-pager diff --exit-code --name-only origin/master ../../executor
         EXECUTOR_MODIFIED=$?

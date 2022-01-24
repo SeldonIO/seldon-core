@@ -55,8 +55,6 @@ spec:
           value: ''
         - name: RELATED_IMAGE_EXECUTOR
           value: ''
-        - name: RELATED_IMAGE_ENGINE
-          value: ''
         - name: RELATED_IMAGE_STORAGE_INITIALIZER
           value: ''
         - name: RELATED_IMAGE_SKLEARNSERVER
@@ -85,16 +83,6 @@ spec:
           value: '{{ .Values.ambassador.enabled }}'
         - name: AMBASSADOR_SINGLE_NAMESPACE
           value: '{{ .Values.ambassador.singleNamespace }}'
-        - name: ENGINE_CONTAINER_IMAGE_AND_VERSION
-          value: '{{ .Values.engine.image.registry }}/{{ .Values.engine.image.repository }}:{{ .Values.engine.image.tag }}'
-        - name: ENGINE_CONTAINER_IMAGE_PULL_POLICY
-          value: '{{ .Values.engine.image.pullPolicy }}'
-        - name: ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME
-          value: '{{ .Values.engine.serviceAccount.name }}'
-        - name: ENGINE_CONTAINER_USER
-          value: '{{ .Values.engine.user }}'
-        - name: ENGINE_LOG_MESSAGES_EXTERNALLY
-          value: '{{ .Values.engine.logMessagesExternally }}'
         - name: PREDICTIVE_UNIT_HTTP_SERVICE_PORT
           value: '{{ .Values.predictiveUnit.httpPort }}'
         - name: PREDICTIVE_UNIT_GRPC_SERVICE_PORT
@@ -103,12 +91,6 @@ spec:
           value: '{{ .Values.predictiveUnit.defaultEnvSecretRefName }}'
         - name: PREDICTIVE_UNIT_METRICS_PORT_NAME
           value: '{{ .Values.predictiveUnit.metricsPortName }}'
-        - name: ENGINE_SERVER_GRPC_PORT
-          value: '{{ .Values.engine.grpc.port }}'
-        - name: ENGINE_SERVER_PORT
-          value: '{{ .Values.engine.port }}'
-        - name: ENGINE_PROMETHEUS_PATH
-          value: '{{ .Values.engine.prometheus.path }}'
         - name: ISTIO_ENABLED
           value: '{{ .Values.istio.enabled }}'
         - name: KEDA_ENABLED
@@ -149,14 +131,6 @@ spec:
           value: '{{ .Values.executor.resources.cpuLimit }}'
         - name: EXECUTOR_DEFAULT_MEMORY_LIMIT
           value: '{{ .Values.executor.resources.memoryLimit }}'
-        - name: ENGINE_DEFAULT_CPU_REQUEST
-          value: '{{ .Values.engine.resources.cpuRequest }}'
-        - name: ENGINE_DEFAULT_MEMORY_REQUEST
-          value: '{{ .Values.engine.resources.memoryRequest }}'
-        - name: ENGINE_DEFAULT_CPU_LIMIT
-          value: '{{ .Values.engine.resources.cpuLimit }}'
-        - name: ENGINE_DEFAULT_MEMORY_LIMIT
-          value: '{{ .Values.engine.resources.memoryLimit }}'
         - name: DEPLOYMENT_NAME_AS_PREFIX
           value: '{{ .Values.manager.deploymentNameAsPrefix }}'
         image: '{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}'

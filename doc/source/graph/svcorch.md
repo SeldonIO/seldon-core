@@ -201,15 +201,3 @@ spec:
 ```
 
 
-## Java Engine [DEPRECATED]
-
-.. Attention:: 
-   The Java version of the service orchestrator has now been deprecated and
-   will be completely removed in future versions of Seldon Core.
-   We strongly suggest **migrating to the new version of the service
-   orchestrator** (implemented in Go) before upgrading.
-   Note that the new version of the service orchestator is enabled by default
-   since Seldon Core `1.1`.
-
-For further details on the Java engine see previous versions of this page in the docs.
-

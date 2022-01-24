@@ -4,8 +4,6 @@ kind: SeldonDeployment
 metadata:
   name: minio-sklearn
 spec:
-  annotations:
-    seldon.io/executor: "true"
   name: iris
   predictors:
   - componentSpecs:

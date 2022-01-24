@@ -1,8 +1,0 @@
-{
-  "status": {
-    "code": 400,
-    "info": "test error message",
-    "reason": "exception in prediction",
-    "status": "FAILURE"
-  }
-}
