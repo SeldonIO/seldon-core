@@ -151,16 +151,17 @@ func (p *PredictorProcess) transformOutput(node *v1.PredictiveUnit, msg payload.
 	modelName := p.getModelName(node)
 
 	if callClient {
-		msg, err := p.Client.Chain(p.Ctx, modelName, msg)
-		if err != nil {
-			return nil, err
-		}
 		//Log Request
 		if node.Logger != nil && (node.Logger.Mode == v1.LogRequest || node.Logger.Mode == v1.LogAll) {
 			err := p.logPayload(node.Name, node.Logger, payloadLogger.InferenceRequest, msg, puid)
 			if err != nil {
 				return nil, err
 			}
+		}
+
+		msg, err := p.Client.Chain(p.Ctx, modelName, msg)
+		if err != nil {
+			return nil, err
 		}
 		tmsg, err := p.Client.TransformOutput(p.Ctx, modelName, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 		if tmsg != nil && err == nil {
@@ -232,7 +233,7 @@ func (p *PredictorProcess) route(node *v1.PredictiveUnit, msg payload.SeldonPayl
 	}
 }
 
-func (p *PredictorProcess) aggregate(node *v1.PredictiveUnit, msg []payload.SeldonPayload) (payload.SeldonPayload, error) {
+func (p *PredictorProcess) aggregate(node *v1.PredictiveUnit, cmsg []payload.SeldonPayload, msg payload.SeldonPayload, puid string) (payload.SeldonPayload, error) {
 	callClient := false
 	if (*node).Type != nil {
 		switch *node.Type {
@@ -247,12 +248,29 @@ func (p *PredictorProcess) aggregate(node *v1.PredictiveUnit, msg []payload.Seld
 	modelName := p.getModelName(node)
 
 	if callClient {
+		//Log Request
+		if node.Logger != nil && (node.Logger.Mode == v1.LogRequest || node.Logger.Mode == v1.LogAll) {
+			err := p.logPayload(node.Name, node.Logger, payloadLogger.InferenceRequest, msg, puid)
+			if err != nil {
+				return nil, err
+			}
+		}
 		p.RoutingMutex.Lock()
 		p.Routing[node.Name] = -1
 		p.RoutingMutex.Unlock()
-		return p.Client.Combine(p.Ctx, modelName, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
+		tmsg, err := p.Client.Combine(p.Ctx, modelName, node.Endpoint.ServiceHost, p.getPort(node), cmsg, p.Meta.Meta)
+		if tmsg != nil && err == nil {
+			// Log Response
+			if node.Logger != nil && (node.Logger.Mode == v1.LogResponse || node.Logger.Mode == v1.LogAll) {
+				err := p.logPayload(node.Name, node.Logger, payloadLogger.InferenceResponse, tmsg, puid)
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
+		return tmsg, err
 	} else {
-		return msg[0], nil
+		return cmsg[0], nil
 	}
 }
 
@@ -264,6 +282,7 @@ func (p *PredictorProcess) predictChildren(node *v1.PredictiveUnit, msg payload.
 		}
 		var cmsgs []payload.SeldonPayload
 		if route == -1 {
+
 			cmsgs = make([]payload.SeldonPayload, len(node.Children))
 			var errs = make([]error, len(node.Children))
 			wg := sync.WaitGroup{}
@@ -299,7 +318,7 @@ func (p *PredictorProcess) predictChildren(node *v1.PredictiveUnit, msg payload.
 				return cmsgs[0], err
 			}
 		}
-		return p.aggregate(node, cmsgs)
+		return p.aggregate(node, cmsgs, msg, puid)
 	} else {
 		// Don't add routing for leaf nodes
 		return msg, nil
