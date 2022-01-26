@@ -235,7 +235,7 @@
                     "tensor": {
                         "$ref": "#/components/schemas/Tensor"
                     },
-                    "ndarry": {
+                    "ndarray": {
                         "type": "array",
                         "maxItems": 2097152,
                         "items": {
