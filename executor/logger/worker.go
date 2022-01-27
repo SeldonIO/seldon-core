@@ -45,10 +45,18 @@ func NewWorker(id int, workQueue chan LogRequest, log logr.Logger, sdepName stri
 		if util.GetKafkaSecurityProtocol() == "SSL" {
 			sslKafka := util.GetSslElements()
 			producerConfigMap["security.protocol"] = util.GetKafkaSecurityProtocol()
-			producerConfigMap["ssl.ca.location"] = sslKafka.CACertFile
-			producerConfigMap["ssl.key.location"] = sslKafka.ClientKeyFile
-			producerConfigMap["ssl.certificate.location"] = sslKafka.ClientCertFile
+			if sslKafka.CACertFile != "" && sslKafka.ClientCertFile != "" {
+				producerConfigMap["ssl.ca.location"] = sslKafka.CACertFile
+				producerConfigMap["ssl.key.location"] = sslKafka.ClientKeyFile
+				producerConfigMap["ssl.certificate.location"] = sslKafka.ClientCertFile
+			}
+			if sslKafka.CACert != "" && sslKafka.ClientCert != "" {
+				producerConfigMap["ssl.ca.pem"] = sslKafka.CACert
+				producerConfigMap["ssl.key.pem"] = sslKafka.ClientKey
+				producerConfigMap["ssl.certificate.pem"] = sslKafka.ClientCert
+			}
 			producerConfigMap["ssl.key.password"] = sslKafka.ClientKeyPass // Key password, if any
+
 		}
 
 		producer, err = kafka.NewProducer(&producerConfigMap)
