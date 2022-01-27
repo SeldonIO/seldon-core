@@ -1,6 +1,6 @@
 # seldon-core-operator
 
-![Version: 1.12.0-dev](https://img.shields.io/static/v1?label=Version&message=1.12.0--dev&color=informational&style=flat-square)
+![Version: 1.12.0](https://img.shields.io/static/v1?label=Version&message=1.12.0&color=informational&style=flat-square)
 
 Seldon Core CRD and controller helm chart for Kubernetes.
 
@@ -46,7 +46,7 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | engine.image.pullPolicy | string | `"IfNotPresent"` |  |
 | engine.image.registry | string | `"docker.io"` |  |
 | engine.image.repository | string | `"seldonio/engine"` |  |
-| engine.image.tag | string | `"1.12.0-dev"` |  |
+| engine.image.tag | string | `"1.12.0"` |  |
 | engine.logMessagesExternally | bool | `false` |  |
 | engine.port | int | `8000` |  |
 | engine.prometheus.path | string | `"/prometheus"` |  |
@@ -59,7 +59,7 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | executor.image.pullPolicy | string | `"IfNotPresent"` |  |
 | executor.image.registry | string | `"docker.io"` |  |
 | executor.image.repository | string | `"seldonio/seldon-core-executor"` |  |
-| executor.image.tag | string | `"1.12.0-dev"` |  |
+| executor.image.tag | string | `"1.12.0"` |  |
 | executor.metricsPortName | string | `"metrics"` |  |
 | executor.port | int | `8000` |  |
 | executor.prometheus.path | string | `"/prometheus"` |  |
@@ -72,12 +72,12 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | executor.resources.memoryRequest | string | `"512Mi"` |  |
 | executor.serviceAccount.name | string | `"default"` |  |
 | executor.user | int | `8888` |  |
-| explainer.image | string | `"seldonio/alibiexplainer:1.12.0-dev"` |  |
+| explainer.image | string | `"seldonio/alibiexplainer:1.12.0"` |  |
 | explainer.image_v2 | string | `"seldonio/mlserver:1.0.0.rc1-alibi-explain"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.registry | string | `"docker.io"` |  |
 | image.repository | string | `"seldonio/seldon-core-operator"` |  |
-| image.tag | string | `"1.12.0-dev"` |  |
+| image.tag | string | `"1.12.0"` |  |
 | istio.enabled | bool | `false` |  |
 | istio.gateway | string | `"istio-system/seldon-gateway"` |  |
 | istio.tlsMode | string | `""` |  |
@@ -87,6 +87,7 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | manager.containerSecurityContext | object | `{}` |  |
 | manager.cpuLimit | string | `"500m"` |  |
 | manager.cpuRequest | string | `"100m"` |  |
+| manager.deploymentNameAsPrefix | bool | `false` |  |
 | manager.leaderElectionID | string | `"a33bd623.machinelearning.seldon.io"` |  |
 | manager.logLevel | string | `"INFO"` |  |
 | manager.memoryLimit | string | `"300Mi"` |  |
@@ -100,15 +101,15 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | predictiveUnit.metricsPortName | string | `"metrics"` |  |
 | predictor_servers.MLFLOW_SERVER.protocols.kfserving.defaultImageVersion | string | `"1.0.0.rc1-mlflow"` |  |
 | predictor_servers.MLFLOW_SERVER.protocols.kfserving.image | string | `"seldonio/mlserver"` |  |
-| predictor_servers.MLFLOW_SERVER.protocols.seldon.defaultImageVersion | string | `"1.12.0-dev"` |  |
+| predictor_servers.MLFLOW_SERVER.protocols.seldon.defaultImageVersion | string | `"1.12.0"` |  |
 | predictor_servers.MLFLOW_SERVER.protocols.seldon.image | string | `"seldonio/mlflowserver"` |  |
 | predictor_servers.SKLEARN_SERVER.protocols.kfserving.defaultImageVersion | string | `"1.0.0.rc1-sklearn"` |  |
 | predictor_servers.SKLEARN_SERVER.protocols.kfserving.image | string | `"seldonio/mlserver"` |  |
-| predictor_servers.SKLEARN_SERVER.protocols.seldon.defaultImageVersion | string | `"1.12.0-dev"` |  |
+| predictor_servers.SKLEARN_SERVER.protocols.seldon.defaultImageVersion | string | `"1.12.0"` |  |
 | predictor_servers.SKLEARN_SERVER.protocols.seldon.image | string | `"seldonio/sklearnserver"` |  |
 | predictor_servers.TEMPO_SERVER.protocols.kfserving.defaultImageVersion | string | `"1.0.0.rc1-slim"` |  |
 | predictor_servers.TEMPO_SERVER.protocols.kfserving.image | string | `"seldonio/mlserver"` |  |
-| predictor_servers.TENSORFLOW_SERVER.protocols.seldon.defaultImageVersion | string | `"1.12.0-dev"` |  |
+| predictor_servers.TENSORFLOW_SERVER.protocols.seldon.defaultImageVersion | string | `"1.12.0"` |  |
 | predictor_servers.TENSORFLOW_SERVER.protocols.seldon.image | string | `"seldonio/tfserving-proxy"` |  |
 | predictor_servers.TENSORFLOW_SERVER.protocols.tensorflow.defaultImageVersion | string | `"2.1.0"` |  |
 | predictor_servers.TENSORFLOW_SERVER.protocols.tensorflow.image | string | `"tensorflow/serving"` |  |
@@ -116,7 +117,7 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | predictor_servers.TRITON_SERVER.protocols.kfserving.image | string | `"nvcr.io/nvidia/tritonserver"` |  |
 | predictor_servers.XGBOOST_SERVER.protocols.kfserving.defaultImageVersion | string | `"1.0.0.rc1-xgboost"` |  |
 | predictor_servers.XGBOOST_SERVER.protocols.kfserving.image | string | `"seldonio/mlserver"` |  |
-| predictor_servers.XGBOOST_SERVER.protocols.seldon.defaultImageVersion | string | `"1.12.0-dev"` |  |
+| predictor_servers.XGBOOST_SERVER.protocols.seldon.defaultImageVersion | string | `"1.12.0"` |  |
 | predictor_servers.XGBOOST_SERVER.protocols.seldon.image | string | `"seldonio/xgboostserver"` |  |
 | rbac.configmap.create | bool | `true` |  |
 | rbac.create | bool | `true` |  |
@@ -125,7 +126,7 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | singleNamespace | bool | `false` |  |
 | storageInitializer.cpuLimit | string | `"1"` |  |
 | storageInitializer.cpuRequest | string | `"100m"` |  |
-| storageInitializer.image | string | `"seldonio/rclone-storage-initializer:1.12.0-dev"` |  |
+| storageInitializer.image | string | `"seldonio/rclone-storage-initializer:1.12.0"` |  |
 | storageInitializer.memoryLimit | string | `"1Gi"` |  |
 | storageInitializer.memoryRequest | string | `"100Mi"` |  |
 | usageMetrics.enabled | bool | `false` |  |

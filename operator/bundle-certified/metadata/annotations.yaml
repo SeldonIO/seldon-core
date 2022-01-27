@@ -9,8 +9,4 @@ annotations:
   operators.operatorframework.io.metrics.builder: operator-sdk-v1.15.0+git
   operators.operatorframework.io.metrics.mediatype.v1: metrics+v1
   operators.operatorframework.io.metrics.project_layout: go.kubebuilder.io/v2
-
-  # Annotations for testing.
-  operators.operatorframework.io.test.mediatype.v1: scorecard+v1
-  operators.operatorframework.io.test.config.v1: tests/scorecard/
   com.redhat.openshift.versions: "v4.8"
