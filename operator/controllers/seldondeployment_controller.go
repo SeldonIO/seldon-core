@@ -786,17 +786,14 @@ func createContainerService(deploy *appsv1.Deployment,
 		}
 	}
 
-	if !utils.HasEnvVar(con.Env, machinelearningv1.ENV_PREDICTIVE_UNIT_HTTP_SERVICE_PORT) {
-		con.Env = append(con.Env, corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_HTTP_SERVICE_PORT, Value: strconv.Itoa(int(pu.Endpoint.HttpPort))})
-	}
-	if !utils.HasEnvVar(con.Env, machinelearningv1.ENV_PREDICTIVE_UNIT_GRPC_SERVICE_PORT) {
-		con.Env = append(con.Env, corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_GRPC_SERVICE_PORT, Value: strconv.Itoa(int(pu.Endpoint.GrpcPort))})
-	}
+	addPortEnvs(pu, con)
 
 	if pu != nil && len(pu.Parameters) > 0 {
-		if !utils.HasEnvVar(con.Env, machinelearningv1.ENV_PREDICTIVE_UNIT_PARAMETERS) {
-			con.Env = append(con.Env, corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_PARAMETERS, Value: utils.GetPredictiveUnitAsJson(pu.Parameters)})
+		paramsEnvVar := corev1.EnvVar{
+			Name:  machinelearningv1.ENV_PREDICTIVE_UNIT_PARAMETERS,
+			Value: utils.GetPredictiveUnitAsJson(pu.Parameters),
 		}
+		con.Env = utils.SetEnvVar(con.Env, paramsEnvVar, false)
 	}
 
 	// Always set the predictive and deployment identifiers
@@ -826,6 +823,37 @@ func createContainerService(deploy *appsv1.Deployment,
 	}
 
 	return svc
+}
+
+func addPortEnvs(pu *machinelearningv1.PredictiveUnit, con *corev1.Container) {
+
+	// HTTP Ports
+	httpPort := strconv.Itoa(int(pu.Endpoint.HttpPort))
+	httpEnvVarNames := []string{
+		machinelearningv1.ENV_PREDICTIVE_UNIT_HTTP_SERVICE_PORT,
+		MLServerHTTPPortEnv,
+	}
+	for _, envVarName := range httpEnvVarNames {
+		httpEnvVar := corev1.EnvVar{
+			Name:  envVarName,
+			Value: httpPort,
+		}
+		con.Env = utils.SetEnvVar(con.Env, httpEnvVar, false)
+	}
+
+	// gRPC Ports
+	grpcPort := strconv.Itoa(int(pu.Endpoint.GrpcPort))
+	grpcEnvVarNames := []string{
+		machinelearningv1.ENV_PREDICTIVE_UNIT_GRPC_SERVICE_PORT,
+		MLServerGRPCPortEnv,
+	}
+	for _, envVarName := range grpcEnvVarNames {
+		grpcEnvVar := corev1.EnvVar{
+			Name:  envVarName,
+			Value: grpcPort,
+		}
+		con.Env = utils.SetEnvVar(con.Env, grpcEnvVar, false)
+	}
 }
 
 func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpec *machinelearningv1.SeldonPodSpec, p *machinelearningv1.PredictorSpec, mlDep *machinelearningv1.SeldonDeployment, podSecurityContext *corev1.PodSecurityContext, metricsEnabled bool) *appsv1.Deployment {
@@ -1464,7 +1492,7 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 			}
 			r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsCreateDeployment, "Created Deployment %q", deploy.GetName())
 		} else if err != nil {
-			return ready, progressing,  err
+			return ready, progressing, err
 		} else {
 			identical := true
 			if !equality.Semantic.DeepEqual(deploy.Spec.Template.Spec, found.Spec.Template.Spec) {
