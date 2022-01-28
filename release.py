@@ -233,6 +233,36 @@ def update_operator_kustomize_prepackaged_images(
         print(err)
 
 
+def update_operator_kustomize_alibiexplainer_image(
+    current_seldon_core_version, fpath, seldon_core_version, debug=False
+):
+    fpath = os.path.realpath(fpath)
+    if debug:
+        print("processing [{}]".format(fpath))
+    args = [
+        "sed",
+        "-i",
+        's/"seldonio/alibiexplainer:": "{current_seldon_core_version}"/"seldonio/alibiexplainer:": "{seldon_core_version}"/'.format(
+            **locals()
+        ),
+        fpath,
+    ]
+    err, out = run_command(args, debug)
+
+    if err == None:
+        print(
+            "updated operator kustomize yaml for alibi explainer image".format(
+                **locals()
+            )
+        )
+    else:
+        print(
+            "error updating operator kustomize yaml for alibi explainer image".format(
+                **locals()
+            )
+        )
+        print(err)
+
 def update_alibi_detect_image(
     fpath, current_seldon_core_version, seldon_core_version, debug=False
 ):
@@ -493,6 +523,12 @@ def set_version(
 
     if operator_kustomize_yaml_file != None:
         update_operator_kustomize_prepackaged_images(
+            current_seldon_core_version,
+            operator_kustomize_yaml_file_realpath,
+            seldon_core_version,
+            debug,
+        )
+        update_operator_kustomize_alibiexplainer_image(
             current_seldon_core_version,
             operator_kustomize_yaml_file_realpath,
             seldon_core_version,
