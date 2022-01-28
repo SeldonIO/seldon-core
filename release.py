@@ -242,7 +242,7 @@ def update_operator_kustomize_alibiexplainer_image(
     args = [
         "sed",
         "-i",
-        's/"seldonio/alibiexplainer:": "{current_seldon_core_version}"/"seldonio/alibiexplainer:": "{seldon_core_version}"/'.format(
+        's#seldonio/alibiexplainer:{current_seldon_core_version}#seldonio/alibiexplainer:{seldon_core_version}#'.format(
             **locals()
         ),
         fpath,
