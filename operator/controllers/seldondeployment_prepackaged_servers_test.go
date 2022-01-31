@@ -590,10 +590,10 @@ var _ = Describe("Create a prepacked sklearn server", func() {
 		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
 	})
 
-	It("should use MLServer when choosing the KFServing protocol", func() {
+	It("should use MLServer when choosing the V2 protocol", func() {
 		sdepName = "prepack6"
 		instance.Name = sdepName
-		instance.Spec.Protocol = machinelearningv1.ProtocolKfserving
+		instance.Spec.Protocol = machinelearningv1.ProtocolV2
 		key.Name = sdepName
 
 		instance.Default()

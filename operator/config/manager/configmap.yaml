@@ -35,7 +35,7 @@ data:
               "image": "seldonio/sklearnserver",
               "defaultImageVersion": "1.13.0-dev"
               },
-            "kfserving": {
+            "v2": {
               "image": "seldonio/mlserver",
               "defaultImageVersion": "1.0.0.rc1-sklearn"
               }
@@ -47,7 +47,7 @@ data:
               "image": "seldonio/xgboostserver",
               "defaultImageVersion": "1.13.0-dev"
               },
-            "kfserving": {
+            "v2": {
               "image": "seldonio/mlserver",
               "defaultImageVersion": "1.0.0.rc1-xgboost"
               }
@@ -59,7 +59,7 @@ data:
               "image": "seldonio/mlflowserver",
               "defaultImageVersion": "1.13.0-dev"
               },
-            "kfserving": {
+            "v2": {
               "image": "seldonio/mlserver",
               "defaultImageVersion": "1.0.0.rc1-mlflow"
               }
@@ -67,7 +67,7 @@ data:
         },
         "TRITON_SERVER": {
           "protocols" : {
-            "kfserving": {
+            "v2": {
               "image": "nvcr.io/nvidia/tritonserver",
               "defaultImageVersion": "21.08-py3"
               }
@@ -75,7 +75,7 @@ data:
         },
         "TEMPO_SERVER": {
           "protocols" : {
-            "kfserving": {
+            "v2": {
               "image": "seldonio/mlserver",
               "defaultImageVersion": "1.0.0.rc1-slim"
               }

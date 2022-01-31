@@ -145,7 +145,7 @@ func TestKFServingPredictionPath(t *testing.T) {
 			Namespace: "default",
 		},
 		Spec: machinelearningv1.SeldonDeploymentSpec{
-			Protocol: machinelearningv1.ProtocolKfserving,
+			Protocol: machinelearningv1.ProtocolV2,
 			Predictors: []machinelearningv1.PredictorSpec{
 				{
 					Name: "p1",
