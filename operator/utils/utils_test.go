@@ -161,6 +161,30 @@ func TestKFServingPredictionPath(t *testing.T) {
 	g.Expect(p).To(Equal("/v2/models/classifier/infer"))
 }
 
+func TestV2PredictionPath(t *testing.T) {
+	g := NewGomegaWithT(t)
+	sdep := &machinelearningv1.SeldonDeployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "default",
+		},
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Protocol: machinelearningv1.ProtocolV2,
+			Predictors: []machinelearningv1.PredictorSpec{
+				{
+					Name: "p1",
+					Graph: machinelearningv1.PredictiveUnit{
+						Name: "classifier",
+					},
+				},
+			},
+		},
+	}
+
+	p := GetPredictionPath(sdep)
+	g.Expect(p).To(Equal("/v2/models/classifier/infer"))
+}
+
 func TestTensorflowPredictionPath(t *testing.T) {
 	g := NewGomegaWithT(t)
 	sdep := &machinelearningv1.SeldonDeployment{

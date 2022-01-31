@@ -623,6 +623,40 @@ var _ = Describe("Create a prepacked sklearn server", func() {
 
 		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
 	})
+
+	It("should use MLServer when choosing the V2 protocol", func() {
+		sdepName = "prepack6"
+		instance.Name = sdepName
+		instance.Spec.Protocol = machinelearningv1.ProtocolV2
+		key.Name = sdepName
+
+		instance.Default()
+		Expect(k8sClient.Create(context.Background(), instance)).Should(Succeed())
+
+		fetched := &machinelearningv1.SeldonDeployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), key, fetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+		Expect(fetched.Name).Should(Equal(sdepName))
+
+		predictor := instance.Spec.Predictors[0]
+		sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(&predictor, predictor.Graph.Name)
+
+		depName := machinelearningv1.GetDeploymentName(instance, predictor, sPodSpec, idx)
+		depKey := types.NamespacedName{Name: depName, Namespace: "default"}
+		depFetched := &appsv1.Deployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), depKey, depFetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+
+		container := utils.GetContainerForDeployment(depFetched, predictor.Graph.Name)
+		expectedImage, _ := getMLServerImage(&predictor.Graph)
+		Expect(container.Image).To(Equal(expectedImage))
+
+		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
+	})
 })
 
 var _ = Describe("Create a prepacked triton server", func() {
@@ -648,7 +682,7 @@ var _ = Describe("Create a prepacked triton server", func() {
 			},
 			Spec: machinelearningv1.SeldonDeploymentSpec{
 				Name:     name,
-				Protocol: machinelearningv1.ProtocolKfserving,
+				Protocol: machinelearningv1.ProtocolV2,
 				Predictors: []machinelearningv1.PredictorSpec{
 					{
 						Name: "p1",

@@ -1464,7 +1464,7 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 			}
 			r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsCreateDeployment, "Created Deployment %q", deploy.GetName())
 		} else if err != nil {
-			return ready, progressing,  err
+			return ready, progressing, err
 		} else {
 			identical := true
 			if !equality.Semantic.DeepEqual(deploy.Spec.Template.Spec, found.Spec.Template.Spec) {
