@@ -103,10 +103,10 @@ For more details you can follow [a worked example of scaling](../examples/scale.
 
 ## Autoscaling Seldon Deployments
 
-To autoscale your Seldon Deployment resources you can add Horizontal Pod Template Specifications to the Pod Template Specifications you create. There are three steps:
+To autoscale your Seldon Deployment resources you can add Horizontal Pod Template Specifications to the Pod Template Specifications you create. There are two steps:
 
-  1. Ensure you have a resource request for the metric you want to scale on if it is a standard metric such as cpu or memory.
-  1. Add a HPA Spec referring to this Deployment. (We presently support v2beta2 version of k8s HPA Metrics spec)
+  1. Ensure you have a resource request for the metric you want to scale on if it is a standard metric such as cpu or memory. This has to be done for every container in the seldondeployment, except for the seldon-container-image and the storage initializer. Some combinations of protocol and server type may spawn additional support containers; resource requests have to be added to those containers as well.
+  2. Add a HPA Spec referring to this Deployment. (We presently support v2beta2 version of k8s HPA Metrics spec)
 
 To illustrate this we have an example Seldon Deployment below:
 
@@ -121,12 +121,12 @@ spec:
   - componentSpecs:
     - hpaSpec:
         maxReplicas: 3
+        minReplicas: 1
         metrics:
         - resource:
             name: cpu
             targetAverageUtilization: 70
           type: Resource
-        minReplicas: 1
       spec:
         containers:
         - image: seldonio/mock_classifier_rest:1.3
@@ -149,6 +149,8 @@ The key points here are:
 
  * We define a CPU request for our container. This is required to allow us to utilize cpu autoscaling in Kubernetes.
  * We define an HPA associated with our componentSpec which scales on CPU when the average CPU is above 70% up to a maximum of 3 replicas.
+
+Once deployed, the HPA resource may take a few minutes to start up. To check status of the HPA resource, `kubectl describe hpa -n <podname>` may be used.
 
 
 For a worked example see [this notebook](../examples/autoscaling_example.html).
