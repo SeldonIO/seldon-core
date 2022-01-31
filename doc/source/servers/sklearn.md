@@ -82,21 +82,15 @@ Acceptable values for the `method` parameter are `predict`, `predict_proba`,
 `decision_function`.
 
 
-## V2 KFServing protocol [Incubating]
-
-.. Warning:: 
-  Support for the V2 KFServing protocol is still considered an incubating
-  feature.
-  This means that some parts of Seldon Core may still not be supported (e.g.
-  tracing, graphs, etc.).
+## V2 protocol
 
 The SKLearn server can also be used to expose an API compatible with the [V2
-KFServing Protocol](../graph/protocols.md#v2-kfserving-protocol).
+V2 Protocol](../graph/protocols.md#v2-protocol).
 Note that, under the hood, it will use the [Seldon
 MLServer](https://github.com/SeldonIO/MLServer) runtime.
 
-In order to enable support for the V2 KFServing protocol, it's enough to
-specify the `protocol` of the `SeldonDeployment` to use `kfserving`.
+In order to enable support for the V2 protocol, it's enough to
+specify the `protocol` of the `SeldonDeployment` to use `v2`.
 For example,
 
 ```yaml
@@ -106,7 +100,7 @@ metadata:
   name: sklearn
 spec:
   name: iris-predict
-  protocol: kfserving # Activate the V2 protocol
+  protocol: v2 # Activate the V2 protocol
   predictors:
   - graph:
       children: []

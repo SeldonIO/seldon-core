@@ -71,7 +71,7 @@ spec:
       - name: LOGGER_KAFKA_TOPIC
         value: seldon
     replicas: 1
-  protocol: kfserving
+  protocol: v2
 
 ```
 

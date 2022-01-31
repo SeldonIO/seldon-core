@@ -183,7 +183,7 @@ Example response:
 ```
 
 
-## Deep dive: SeldonMessage and kfserving metadata reference
+## Deep dive: SeldonMessage and kfserving V2 metadata reference
 
 You can define inputs/outputs of your model metadata using one of two formats:
 - `v1` format that closely correlates to the current structure of `SeldonMessage`
@@ -300,9 +300,9 @@ custom:
 ```
 
 
-### kfserving TensorMetadata
+### V2 TensorMetadata
 
-You can easily define metadata for your models that is compatible with [kfserving dataplane proposal](https://github.com/kubeflow/kfserving/blob/master/docs/predict-api/v2/required_api.md#model-metadata) specification.
+You can easily define metadata for your models that is compatible with [kfserving V2 dataplane proposal](https://github.com/kubeflow/kfserving/blob/master/docs/predict-api/v2/required_api.md#model-metadata) specification.
 ```javascript
 $metadata_model_response =
 {

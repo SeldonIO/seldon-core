@@ -117,7 +117,7 @@ message SeldonMessageMetadata
   string messagetype = 1;
   google.protobuf.Value schema = 2;
 
-  // KFserving tesnor metadata fields
+  // v2 tensor metadata fields
   string name = 3;
   string datatype = 4;
   repeated int64 shape = 5;
