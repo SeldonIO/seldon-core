@@ -60,6 +60,8 @@ This should create the seldon-controller manager. Once running you can test. It 
 
 ## Openshift Cluster
 
+[Create Openshift Cluster](https://cloud.redhat.com/openshift/). We use AWS and this can be done simply using the rosa command line tool. You will need RedHat connect login details and AWS account details.
+
 Create catalog source
 
 ```bash
@@ -70,24 +72,6 @@ Check
 
 ```
 kubectl get catalogsource seldon-core-catalog -n openshift-marketplace -o yaml
-```
-
-At present need to create operator from Openshift UI.
-
-
-
-## Openshift Cluster Certified
-
-Create catalog source
-
-```bash
-kubectl create -f catalog-source-openshift-certified.yaml
-```
-
-Check
-
-```
-kubectl get catalogsource seldon-core-catalog-certified -n openshift-marketplace -o yaml
 ```
 
 At present need to create operator from Openshift UI.

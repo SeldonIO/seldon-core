@@ -191,3 +191,70 @@ func TestWorkerKafkaConfigurations(t *testing.T) {
 		})
 	}
 }
+
+func TestWorkerKafkaConfigurationsString(t *testing.T) {
+	type test struct {
+		name        string
+		kafkaConfig kafka.ConfigMap
+		expectError bool
+	}
+
+	g := NewWithT(t)
+
+	tests := []test{
+		{
+			name: "All options are valid",
+			kafkaConfig: kafka.ConfigMap{
+				"security.protocol":   "SSL",
+				"ssl.ca.pem":          caPEM,
+				"ssl.key.pem":         keyPEM,
+				"ssl.certificate.pem": certPEM,
+				"ssl.key.password":    keyPassword,
+			},
+			expectError: false,
+		},
+		{
+			name: "CA cert location is invalid",
+			kafkaConfig: kafka.ConfigMap{
+				"security.protocol":   "SSL",
+				"ssl.ca.pem":          "foobar",
+				"ssl.key.pem":         keyPEM,
+				"ssl.certificate.pem": certPEM,
+				"ssl.key.password":    keyPassword,
+			},
+			expectError: true,
+		},
+		{
+			name: "Private key file location is invalid",
+			kafkaConfig: kafka.ConfigMap{
+				"security.protocol":   "SSL",
+				"ssl.ca.pem":          caPEM,
+				"ssl.key.pem":         "foobar",
+				"ssl.certificate.pem": certPEM,
+				"ssl.key.password":    keyPassword,
+			},
+			expectError: true,
+		},
+		{
+			name: "Public key certificate location is invalid",
+			kafkaConfig: kafka.ConfigMap{
+				"security.protocol":   "SSL",
+				"ssl.ca.pem":          caPEM,
+				"ssl.key.pem":         keyPEM,
+				"ssl.certificate.pem": "foobar",
+				"ssl.key.password":    keyPassword,
+			},
+			expectError: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := kafka.NewProducer(&tt.kafkaConfig)
+			if tt.expectError {
+				g.Expect(err).ToNot(BeNil())
+			} else {
+				g.Expect(err).To(BeNil())
+			}
+		})
+	}
+}

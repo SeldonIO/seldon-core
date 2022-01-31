@@ -38,7 +38,6 @@ def main(argv):
     print(opts)
     with open(opts.path, "r") as stream:
         csv = yaml.safe_load(stream)
-        csv = remove_versions(csv)
         csv = update_container_image(csv, opts.version)
         fdata = yaml.dump(csv, width=1000, default_flow_style=False, sort_keys=False)
         with open(opts.path, "w") as outfile:

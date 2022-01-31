@@ -179,31 +179,6 @@ credentials:
 
 kubeflow: false
 
-# ## Engine parameters
-# Warning: Engine is being depricated in favour of Orchestrator
-# FOr more information please read the Upgrading section in the documentation
-engine:
-  grpc:
-    port: 5001
-  image:
-    pullPolicy: IfNotPresent
-    registry: docker.io
-    repository: seldonio/engine
-    tag: 1.13.0-dev
-  resources:
-    cpuLimit: 500m
-    cpuRequest: 500m
-    memoryLimit: 512Mi
-    memoryRequest: 512Mi
-  logMessagesExternally: false
-  port: 8000
-  prometheus:
-    path: /prometheus
-  serviceAccount:
-    name: default
-  user: 8888
-
-
 # Explainer image
 explainer:
   image: seldonio/alibiexplainer:1.13.0-dev

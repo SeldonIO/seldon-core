@@ -144,6 +144,9 @@ func GetEnvAsBool(key string, fallback bool) bool {
 }
 
 type SslKakfa struct {
+	ClientCert     string
+	ClientKey      string
+	CACert         string
 	ClientCertFile string
 	ClientKeyFile  string
 	CACertFile     string
@@ -160,10 +163,16 @@ func GetKafkaSecurityProtocol() string {
 
 func GetSslElements() *SslKakfa {
 	sslElements := SslKakfa{
+		ClientCert: GetEnv("KAFKA_SSL_CLIENT_CERT", ""),
+		ClientKey:  GetEnv("KAFKA_SSL_CLIENT_KEY", ""),
+		CACert:     GetEnv("KAFKA_SSL_CA_CERT", ""),
+		// If we use path to files instead of string
 		ClientCertFile: GetEnv("KAFKA_SSL_CLIENT_CERT_FILE", ""),
 		ClientKeyFile:  GetEnv("KAFKA_SSL_CLIENT_KEY_FILE", ""),
 		CACertFile:     GetEnv("KAFKA_SSL_CA_CERT_FILE", ""),
-		ClientKeyPass:  GetEnv("KAFKA_SSL_CLIENT_KEY_PASS", ""),
+		// Optional password
+		ClientKeyPass: GetEnv("KAFKA_SSL_CLIENT_KEY_PASS", ""),
 	}
 	return &sslElements
+
 }

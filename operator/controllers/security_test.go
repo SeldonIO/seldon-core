@@ -2,12 +2,13 @@ package controllers
 
 import (
 	"context"
+	"testing"
+
 	. "github.com/onsi/gomega"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"testing"
 )
 
 func TestSecurityContextCreateComponents(t *testing.T) {
@@ -60,7 +61,7 @@ func TestGetSecurityContextExecutorUser(t *testing.T) {
 			Name:      "test",
 			Namespace: "test",
 		},
-		Spec: machinelearningv1.SeldonDeploymentSpec{Annotations: map[string]string{machinelearningv1.ANNOTATION_EXECUTOR: "true"}},
+		Spec: machinelearningv1.SeldonDeploymentSpec{},
 	}
 	envDefaultUser = "2"
 

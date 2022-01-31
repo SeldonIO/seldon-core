@@ -6,5 +6,5 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
 - name: controller
-  newName: seldonio/seldon-core-operator
+  newName: docker.io/seldonio/seldon-core-operator
   newTag: 1.13.0-dev

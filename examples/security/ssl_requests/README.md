@@ -12,7 +12,7 @@ kubectl create ns cert-manager
 helm install \
   cert-manager jetstack/cert-manager \
   --namespace cert-manager \
-  --version v0.16.1 \
+  --version v1.6.1 \
   --set installCRDs=true
 ```
 
@@ -53,14 +53,13 @@ helm install \
 
     Error from server (AlreadyExists): namespaces "cert-manager" already exists
 
-
 #### Creating issuer so we can deploy certificates
 
 
 ```bash
 %%bash
 kubectl apply -f - << END
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: selfsigned-issuer
@@ -88,7 +87,7 @@ END
 ```bash
 %%bash 
 kubectl apply -f - << END
-apiVersion: cert-manager.io/v1alpha3
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: sklearn-default-cert

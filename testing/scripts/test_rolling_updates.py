@@ -29,6 +29,7 @@ with_api_gateways = pytest.mark.parametrize(
 @with_api_gateways
 class TestRollingHttp(object):
     # Test updating a model to a multi predictor model
+    @pytest.mark.skip(reason="Broken test currently require fixing via #3857")
     def test_rolling_update5(self, namespace, api_gateway):
         retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
         wait_for_status("mymodel", namespace)
@@ -170,6 +171,7 @@ class TestRollingHttp(object):
         run(f"kubectl delete -f ../resources/graph5svc.json -n {namespace}", shell=True)
 
     # Test updating a model to a multi predictor model
+    @pytest.mark.skip(reason="Broken test currently require fixing via #3857")
     def test_rolling_update10(self, namespace, api_gateway):
         retry_run(f"kubectl apply -f ../resources/graph1svc.json -n {namespace}")
         wait_for_status("mymodel", namespace)

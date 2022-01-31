@@ -2,6 +2,6 @@ domain: seldon.io
 layout: go.kubebuilder.io/v2
 projectName: seldon-operator
 repo: github.com/seldonio/seldon-core
-version: 3-alpha
+version: "3"
 plugins:
   go.sdk.operatorframework.io/v2-alpha: {}

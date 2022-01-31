@@ -46,13 +46,13 @@ run: generate fmt vet manifests_all
 install-cert-manager:
 	kubectl create namespace cert-manager || echo "Namespace cert-manager-exists"
 	kubectl label namespace cert-manager cert-manager.io/disable-validation=true || echo "namespace cert-manager-already labelled"
-	kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml
+	kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.6.1/cert-manager.yaml
 	kubectl rollout status deployment.apps/cert-manager -n cert-manager
 	kubectl rollout status deployment.apps/cert-manager-cainjector -n cert-manager
 	kubectl rollout status deployment.apps/cert-manager-webhook -n cert-manager
 
 
-manifests_all: manifests manifests_v1
+manifests_all: manifests manifests_v1 manifests_v1_small
 
 # Install CRDs into a cluster
 install: manifests
@@ -132,6 +132,10 @@ manifests: controller-gen
 manifests_v1: controller-gen
 	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd_v1/bases crd:crdVersions=v1
 	#$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./apis/machinelearning.seldon.io/v1" output:crd:artifacts:config=config/crd_v1/bases crd:crdVersions=v1
+
+manifests_v1_small: controller-gen
+	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./apis/machinelearning.seldon.io/v1" output:crd:artifacts:config=config/crd_v1_small/bases crd:crdVersions=v1
+
 
 # Run go fmt against code
 fmt:
@@ -253,42 +257,24 @@ config/crd_v1/patches/graph_children.yaml:
 
 ###################################
 #
-# Openshift / OperatorHub addtions
+# Openshift community
 #
 ###################################
 
-#
-# Testing with operstor-sdk 1.0.1
-#
 
 .PHONY: bundle
 recreate_bundle:
-	rm -r bundle
-	kustomize build config/manifests | operator-sdk --verbose generate bundle --default-channel stable --version ${VERSION}
+	rm -fr bundle
+	kustomize build config/manifests | operator-sdk --verbose generate bundle --default-channel stable --version ${VERSION} --channels stable
 	python hack/csv_hack.py bundle/manifests/seldon-operator.clusterserviceversion.yaml ${VERSION}
+	echo '  com.redhat.openshift.versions: "v4.8"' >> bundle/metadata/annotations.yaml
+	echo 'LABEL com.redhat.openshift.versions=v4.8' >> bundle.Dockerfile
 
-.PHONY: update_packagemanifests
-update_packagemanifests:
-	kustomize build config/manifests | operator-sdk --verbose generate packagemanifests --default-channel --channel stable --version ${VERSION}
-	python hack/csv_hack.py packagemanifests/${VERSION}/seldon-operator.clusterserviceversion.yaml ${VERSION}
-	mv packagemanifests/${VERSION}/seldon-operator.clusterserviceversion.yaml packagemanifests/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
+create_bundle_image:
+	docker build . -f bundle.Dockerfile -t quay.io/seldon/seldon-operator:v${VERSION}
 
-
-# Not sure why clearing of replaces was added
-#.PHONY: clear_replaces
-#clear_replaces:
-#	sed -i '/replaces:.*/d' packagemanifests/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
-
-#
-# Tested with operator-courier 2.1.10
-#
-.PHONY: verify_package
-verify_package:
-	operator-courier verify packagemanifests/
-
-.PHONY: create_bundle_image
-create_push_bundle_image:
-	cd packagemanifests && make create_bundle_image_${VERSION} && make push_bundle_image_${VERSION}
+push_bundle_image:
+	docker push quay.io/seldon/seldon-operator:v${VERSION}
 
 .PHONY: validate_bundle_image
 validate_bundle_image:
@@ -298,7 +284,7 @@ validate_bundle_image:
 # Only index up to 1.2.2 as we have removed "replaces" in 1.2.2 to stop chain there for testing
 .PHONY: opm_index
 opm_index:
-	opm index add -c docker --bundles quay.io/seldon/seldon-operator:v${VERSION},quay.io/seldon/seldon-operator:v1.6.0,quay.io/seldon/seldon-operator:v1.5.0,quay.io/seldon/seldon-operator:v1.2.2 --mode replaces --tag quay.io/seldon/test-catalog:latest
+	opm index add -c docker --bundles quay.io/seldon/seldon-operator:v${VERSION} --mode replaces --tag quay.io/seldon/test-catalog:latest
 
 
 opm_push:
@@ -306,8 +292,7 @@ opm_push:
 
 
 .PHONY: update_openshift
-#update_openshift: recreate_bundle  update_packagemanifests clear_replaces create_push_bundle_image validate_bundle_image opm_index opm_push
-update_openshift: recreate_bundle  update_packagemanifests create_push_bundle_image validate_bundle_image opm_index opm_push
+update_openshift: recreate_bundle create_bundle_image push_bundle_image validate_bundle_image opm_index opm_push
 
 
 #
@@ -324,62 +309,30 @@ scorecard:
 
 # Change to local checkout
 COMMUNITY_OPERATORS_FOLDER=~/work/seldon-core/redhat/community-operators
+UPSTREAM_OPERATORS_FOLDER=~/work/seldon-core/redhat/community-operators-prod
 
-update_community: update_packagemanifests
-	cp -r packagemanifests/${VERSION} ${COMMUNITY_OPERATORS_FOLDER}/community-operators/seldon-operator
-	cp packagemanifests/seldon-operator.package.yaml ${COMMUNITY_OPERATORS_FOLDER}/community-operators/seldon-operator
+update_community: 
+	cp -r bundle ${COMMUNITY_OPERATORS_FOLDER}/operators/seldon-operator/${VERSION}
+
+# Presently fails
+test_community:
+	cd ${COMMUNITY_OPERATORS_FOLDER} && export OP_TEST_DEBUG=3 &&  bash <(curl -sL https://raw.githubusercontent.com/redhat-openshift-ecosystem/community-operators-pipeline/ci/latest/ci/scripts/opp.sh) kiwi,lemon,orange operators/seldon-operator/1.12.0
 
 update_upstream:
-	cp -r packagemanifests/${VERSION} ${COMMUNITY_OPERATORS_FOLDER}/upstream-community-operators/seldon-operator
-	cp packagemanifests/seldon-operator.package.yaml ${COMMUNITY_OPERATORS_FOLDER}/upstream-community-operators/seldon-operator
+	cp -r bundle ${UPSTREAM_OPERATORS_FOLDER}/operators/seldon-operator/${VERSION}
 
-#
-# Certified Openshift Operator
-#
-# https://redhat-connect.gitbook.io/certified-operator-guide/appendix/bundle-maintenance-after-migration
 
-PKG_CERT=packagemanifests-certified
+###################################
+#
+# Openshift Certified
+#
+###################################
+
 create_certified_bundle:
-	rm -rf ${PKG_CERT}/${VERSION}
-	mkdir -p ${PKG_CERT}/${VERSION}
-	cp bundle/manifests/* ${PKG_CERT}/${VERSION}
+	rm -rf bundle-certified/manifests
+	cp -r bundle/manifests bundle-certified
+	mv bundle-certified/manifests/seldon-operator.clusterserviceversion.yaml bundle-certified/manifests/seldon-operator-certified.clusterserviceversion.yaml
 	./hack/update-openshift-certified.sh ${VERSION}
-	cd ${PKG_CERT} && opm alpha bundle generate -c stable -e stable -p seldon-operator-certified -d ./${VERSION}/ -u ./${VERSION}/
-	mv ${PKG_CERT}/bundle.Dockerfile ${PKG_CERT}/bundle-${VERSION}.Dockerfile
-	echo '' >> ${PKG_CERT}/bundle-${VERSION}.Dockerfile
-	echo 'LABEL com.redhat.openshift.versions="v4.5,v4.6,v4.7"' >> ${PKG_CERT}/bundle-${VERSION}.Dockerfile
-	echo 'LABEL com.redhat.delivery.backport=true' >> ${PKG_CERT}/bundle-${VERSION}.Dockerfile
-	echo 'LABEL com.redhat.delivery.operator.bundle=true' >> ${PKG_CERT}/bundle-${VERSION}.Dockerfile
-	mv ${PKG_CERT}/${VERSION}/seldon-operator.clusterserviceversion.yaml ${PKG_CERT}/${VERSION}/seldon-operator.v${VERSION}.clusterserviceversion.yaml
-	mv ${PKG_CERT}/${VERSION}/manifests/seldon-operator.clusterserviceversion.yaml ${PKG_CERT}/${VERSION}/manifests/seldon-operator.v${VERSION}.clusterserviceversion.yaml
-	cd ${PKG_CERT} && sed -i 's#seldon-operator.v.*#seldon-operator.v${VERSION}#' seldon-operator.package.yaml
-
-
-.PHONY: create_bundle_image_certified
-create_bundle_image_certified:
-	cd ${PKG_CERT} && docker build . -f bundle-${VERSION}.Dockerfile -t quay.io/seldon/seldon-operator-certified:v${VERSION}
-
-.PHONY: push_bundle_image_certified
-push_bundle_image_certified:
-	docker push quay.io/seldon/seldon-operator-certified:v${VERSION}
-
-.PHONY: validate_bundle_image
-validate_bundle_image_certified:
-	operator-sdk bundle validate quay.io/seldon/seldon-operator-certified:v${VERSION}
-
-
-# beware --mode semver seems to cause old versions to be shown in openshift. Not sure why. 
-opm_index_certified:
-	opm index add -c docker --bundles quay.io/seldon/seldon-operator-certified:v${VERSION},quay.io/seldon/seldon-operator-certified:v1.6.0,quay.io/seldon/seldon-operator-certified:v1.5.0,quay.io/seldon/seldon-operator-certified:v1.2.2,quay.io/seldon/seldon-operator-certified:v1.2.1,quay.io/seldon/seldon-operator-certified:v1.2.0,quay.io/seldon/seldon-operator-certified:v1.1.0,quay.io/seldon/seldon-operator-certified:v0.1.5 --mode replaces --tag quay.io/seldon/test-catalog-certified:latest
-
-
-opm_push_certified:
-	docker push quay.io/seldon/test-catalog-certified:latest
-
-
-# Build the docker image for Redhat
-docker-build-redhat: test generate-resources
-	docker build . -f Dockerfile.redhat -t ${IMG_REDHAT}
 
 
 # password can be found at: https://connect.redhat.com/project/1366481/view
@@ -392,19 +345,64 @@ redhat-image-scan:
 
 
 
-bundle_certified_push:
-	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
-		echo $${rh_password_operator_bundle} | docker login -u unused scan.connect.redhat.com --password-stdin
-	docker tag quay.io/seldon/seldon-operator-certified:v${VERSION} scan.connect.redhat.com/ospid-78efc0cc-a4a5-4244-a31d-6820eae1ccb1/seldon-operator-certified:${VERSION}
-	docker push scan.connect.redhat.com/ospid-78efc0cc-a4a5-4244-a31d-6820eae1ccb1/seldon-operator-certified:${VERSION}
+CERTIFIED_OPERATORS_FOLDER=/home/clive/work/seldon-core/redhat/certified-operators
 
-update_old_certified_packages:
-	cd packagemanifests-certified && make build_push
+#need to rename package in annotations.yaml to seldon-operator-certified
+update_certified: 
+	cp -r bundle-certified ${CERTIFIED_OPERATORS_FOLDER}/operators/seldon-operator-certified/${VERSION}
 
-update_openshift_certified: update_old_certified_packages create_certified_bundle create_bundle_image_certified push_bundle_image_certified validate_bundle_image_certified opm_index_certified opm_push_certified
+
+GIT_REPO_URL=git@github.com:cliveseldon/certified-operators.git
+BUNDLE_PATH=operators/seldon-operator-certified/${VERSION}
+OPENSHIFT_PIPELINES_FOLDER=/home/clive/work/seldon-core/redhat/operator-pipelines
+run_certified_pipeline_basic:
+	cd ${OPENSHIFT_PIPELINES_FOLDER} && tkn pipeline start operator-ci-pipeline \
+		--param git_repo_url=${GIT_REPO_URL} \
+		--param git_branch=${VERSION} \
+		--param bundle_path=${BUNDLE_PATH} \
+		--param env=stage \
+		--workspace name=pipeline,volumeClaimTemplateFile=templates/workspace-template.yml \
+		--workspace name=ssh-dir,secret=github-ssh-credentials \
+		--showlog
+
+# Run to pin images - presently will fail at later step but a new branch <version>-pinned will
+# have been created which can be used in next step or fo rmanually creating PR
+run_certified_pipeline_pinning:
+	cd ${OPENSHIFT_PIPELINES_FOLDER} && tkn pipeline start operator-ci-pipeline \
+		--param git_repo_url=${GIT_REPO_URL} \
+		--param git_branch=${VERSION} \
+		--param bundle_path=${BUNDLE_PATH} \
+		--param env=stage \
+		--param pin_digests=true \
+		--param git_username=${GIT_USERNAME} \
+		--param git_email=${GIT_EMAIL} \
+		--param registry=registry.connect.redhat.com \
+		--param image_namespace=seldonio \
+		--workspace name=pipeline,volumeClaimTemplateFile=templates/workspace-template.yml \
+		--workspace name=ssh-dir,secret=github-ssh-credentials \
+		--workspace name=registry-credentials,secret=registry-dockerconfig-secret \
+		--showlog
+
+# Does not work at present
+run_certified_pipeline_submit:
+	cd ${OPENSHIFT_PIPELINES_FOLDER} && tkn pipeline start operator-ci-pipeline \
+		--param git_repo_url=${GIT_REPO_URL} \
+		--param git_branch=${VERSION}-pinned \
+		--param bundle_path=${BUNDLE_PATH} \
+		--param env=stage \
+		--param pin_digests=false \
+		--param git_username=${GIT_USERNAME} \
+		--param git_email=${GIT_EMAIL} \
+		--param upstream_repo_name=redhat-openshift-ecosystem/certified-operators \
+		--param submit=true \
+		--param image_namespace=seldonio \
+		--workspace name=pipeline,volumeClaimTemplateFile=templates/workspace-template.yml \
+		--workspace name=ssh-dir,secret=github-ssh-credentials \
+		--showlog
+
 
 # Run last to prepare for future release
-PREV_VERSION=1.6.0
+PREV_VERSION=1.7.0
 update_config:
 	sed -i s#${PREV_VERSION}#${VERSION}# config/manifests/bases/seldon-operator.clusterserviceversion.yaml
 

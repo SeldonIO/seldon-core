@@ -1,5 +1,5 @@
 bases:
-- ../crd
+- ../crd_v1_small
 - ../rbac
 - ../manager
 

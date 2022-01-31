@@ -48,14 +48,15 @@ metadata:
     capabilities: Seamless Upgrades
     categories: AI/Machine Learning
     certified: 'false'
-    containerImage: seldonio/seldon-core-operator:1.7.0
+    containerImage: seldonio/seldon-core-operator:1.12.0
     createdAt: '2019-05-21 15:00:00'
     description: The Seldon operator for management, monitoring and operations of machine learning systems through the Seldon Engine. Once installed, the Seldon Operator provides multiple functions which facilitate the productisation, monitoring and maintenance of machine learning systems at scale.
-    operators.operatorframework.io/builder: operator-sdk-v1.2.0
+    olm.skipRange: <1.12.0
+    operators.operatorframework.io/builder: operator-sdk-v1.15.0+git
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v2
     repository: https://github.com/SeldonIO/seldon-core
     support: Clive Cox
-  name: seldon-operator.v1.7.0
+  name: seldon-operator.v1.12.0
   namespace: seldon-operator-system
 spec:
   apiservicedefinitions: {}
@@ -435,6 +436,10 @@ spec:
                 command:
                 - /manager
                 env:
+                - name: MANAGER_LEADER_ELECTION_ID
+                  value: a33bd623.machinelearning.seldon.io
+                - name: MANAGER_LOG_LEVEL
+                  value: INFO
                 - name: WATCH_NAMESPACE
                   valueFrom:
                     fieldRef:
@@ -461,7 +466,7 @@ spec:
                 - name: AMBASSADOR_SINGLE_NAMESPACE
                   value: 'false'
                 - name: ENGINE_CONTAINER_IMAGE_AND_VERSION
-                  value: docker.io/seldonio/engine:1.7.0
+                  value: docker.io/seldonio/engine:1.12.0
                 - name: ENGINE_CONTAINER_IMAGE_PULL_POLICY
                   value: IfNotPresent
                 - name: ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME
@@ -469,8 +474,10 @@ spec:
                 - name: ENGINE_CONTAINER_USER
                 - name: ENGINE_LOG_MESSAGES_EXTERNALLY
                   value: 'false'
-                - name: PREDICTIVE_UNIT_SERVICE_PORT
+                - name: PREDICTIVE_UNIT_HTTP_SERVICE_PORT
                   value: '9000'
+                - name: PREDICTIVE_UNIT_GRPC_SERVICE_PORT
+                  value: '9500'
                 - name: PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME
                 - name: PREDICTIVE_UNIT_METRICS_PORT_NAME
                   value: metrics
@@ -490,7 +497,7 @@ spec:
                 - name: USE_EXECUTOR
                   value: 'true'
                 - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
-                  value: seldonio/seldon-core-executor:1.7.0
+                  value: seldonio/seldon-core-executor:1.12.0
                 - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
                   value: IfNotPresent
                 - name: EXECUTOR_PROMETHEUS_PATH
@@ -504,6 +511,10 @@ spec:
                   value: metrics
                 - name: EXECUTOR_REQUEST_LOGGER_DEFAULT_ENDPOINT
                   value: http://default-broker
+                - name: EXECUTOR_REQUEST_LOGGER_WORK_QUEUE_SIZE
+                  value: '10000'
+                - name: EXECUTOR_REQUEST_LOGGER_WRITE_TIMEOUT_MS
+                  value: '2000'
                 - name: DEFAULT_USER_ID
                 - name: EXECUTOR_DEFAULT_CPU_REQUEST
                   value: '0.5'
@@ -521,7 +532,9 @@ spec:
                   value: '0.5'
                 - name: ENGINE_DEFAULT_MEMORY_LIMIT
                   value: 512Mi
-                image: seldonio/seldon-core-operator:1.7.0
+                - name: DEPLOYMENT_NAME_AS_PREFIX
+                  value: 'false'
+                image: docker.io/seldonio/seldon-core-operator:1.12.0
                 name: manager
                 ports:
                 - containerPort: 8443
@@ -541,6 +554,26 @@ spec:
         - apiGroups:
           - ''
           resources:
+          - configmaps/status
+          verbs:
+          - get
+          - update
+          - patch
+        - apiGroups:
+          - coordination.k8s.io
+          resources:
+          - leases
+          verbs:
+          - get
+          - list
+          - watch
+          - create
+          - update
+          - patch
+          - delete
+        - apiGroups:
+          - ''
+          resources:
           - configmaps
           verbs:
           - get
@@ -553,17 +586,10 @@ spec:
         - apiGroups:
           - ''
           resources:
-          - configmaps/status
-          verbs:
-          - get
-          - update
-          - patch
-        - apiGroups:
-          - ''
-          resources:
           - events
           verbs:
           - create
+          - patch
         serviceAccountName: seldon-manager
     strategy: deployment
   installModes:
@@ -594,8 +620,7 @@ spec:
   minKubeVersion: 1.16.0
   provider:
     name: Seldon Technologies
-  replaces: seldon-operator.v1.6.0
   selector:
     matchLabels:
       name: seldon-operator
-  version: 1.7.0
+  version: 1.12.0

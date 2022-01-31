@@ -196,6 +196,5 @@ Upgrading Examples
 .. toctree::
    :titlesonly:
 
-   Backwards Compatibility Tests <backwards_compatibility>
    RClone Storage Initializer - testing new secret format <rclone-upgrade>
    RClone Storage Initializer - upgrading your cluster (AWS S3 / MinIO) <global-rclone-upgrade>

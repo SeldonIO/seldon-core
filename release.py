@@ -53,39 +53,6 @@ def run_command(args, debug=False):
     return err, out
 
 
-def update_pom_file(fpath, seldon_core_version, debug=False):
-    fpath = os.path.realpath(fpath)
-    if debug:
-        print("processing [{}]".format(fpath))
-    comp_dir_path = os.path.dirname(fpath)
-    cwd = os.getcwd()
-    os.chdir(comp_dir_path)
-
-    MAVEN_REPOSITORY_LOCATION = os.getenv("MAVEN_REPOSITORY_LOCATION")
-    if MAVEN_REPOSITORY_LOCATION == None:
-        args = [
-            "mvn",
-            "versions:set",
-            "-DnewVersion={seldon_core_version}".format(**locals()),
-        ]
-    else:
-        args = [
-            "mvn",
-            "versions:set",
-            "-DnewVersion={seldon_core_version}".format(**locals()),
-            "-Dmaven.repo.local={MAVEN_REPOSITORY_LOCATION}".format(**locals()),
-        ]
-
-    err, out = run_command(args, debug)
-
-    if err == None:
-        print("updated {fpath}".format(**locals()))
-    else:
-        print("error {fpath}".format(**locals()))
-        print(err)
-    os.chdir(cwd)
-
-
 def update_chart_yaml_file(fpath, seldon_core_version, debug=False):
     fpath = os.path.realpath(fpath)
     if debug:
@@ -266,6 +233,36 @@ def update_operator_kustomize_prepackaged_images(
         print(err)
 
 
+def update_operator_kustomize_alibiexplainer_image(
+    current_seldon_core_version, fpath, seldon_core_version, debug=False
+):
+    fpath = os.path.realpath(fpath)
+    if debug:
+        print("processing [{}]".format(fpath))
+    args = [
+        "sed",
+        "-i",
+        's#seldonio/alibiexplainer:{current_seldon_core_version}#seldonio/alibiexplainer:{seldon_core_version}#'.format(
+            **locals()
+        ),
+        fpath,
+    ]
+    err, out = run_command(args, debug)
+
+    if err == None:
+        print(
+            "updated operator kustomize yaml for alibi explainer image".format(
+                **locals()
+            )
+        )
+    else:
+        print(
+            "error updating operator kustomize yaml for alibi explainer image".format(
+                **locals()
+            )
+        )
+        print(err)
+
 def update_alibi_detect_image(
     fpath, current_seldon_core_version, seldon_core_version, debug=False
 ):
@@ -340,24 +337,6 @@ def update_versions_py(seldon_core_version, debug=False):
     print("Updated python/seldon_core/version.py")
 
 
-def update_kustomize_engine_version(seldon_core_version, debug=False):
-    args = [
-        "sed",
-        "-i",
-        "s/docker.io\/seldonio\/engine:\(.*\)/docker.io\/seldonio\/engine:{seldon_core_version}/g".format(
-            **locals()
-        ),
-        "operator/config/manager/manager.yaml",
-    ]
-    err, out = run_command(args, debug)
-
-    if err == None:
-        print("updated kustomize".format(**locals()))
-    else:
-        print("error updating kustomize".format(**locals()))
-        print(err)
-
-
 def update_kustomize_executor_version(seldon_core_version, debug=False):
     args = [
         "sed",
@@ -418,7 +397,6 @@ def update_image_metadata_json(seldon_core_version, debug=False):
 def update_dockerfile_label_version(seldon_core_version, debug=False):
     paths = [
         "operator/Dockerfile.redhat",
-        "engine/Dockerfile.redhat",
         "executor/Dockerfile.executor",
         "executor/Dockerfile.executor.redhat",
         "servers/tfserving/Dockerfile.redhat",
@@ -467,7 +445,6 @@ def update_python_wrapper_fixed_versions(seldon_core_version, debug=False):
 def set_version(
     current_seldon_core_version,
     seldon_core_version,
-    pom_files,
     chart_yaml_files,
     operator_values_yaml_file,
     operator_kustomize_yaml_file,
@@ -480,7 +457,6 @@ def set_version(
     update_python_wrapper_fixed_versions(seldon_core_version, debug)
 
     # Normalize file paths
-    pom_files_realpaths = [os.path.realpath(x) for x in pom_files]
     chart_yaml_file_realpaths = [os.path.realpath(x) for x in chart_yaml_files]
     operator_values_yaml_file_realpath = (
         os.path.realpath(operator_values_yaml_file)
@@ -500,7 +476,6 @@ def set_version(
     )
 
     # Update kustomize
-    update_kustomize_engine_version(seldon_core_version, debug)
     update_kustomize_executor_version(seldon_core_version, debug)
     #
     # Update operator version
@@ -511,10 +486,6 @@ def set_version(
     #
     # Update version.py in python/seldon_core
     update_versions_py(seldon_core_version, debug)
-    #
-    # update the pom files
-    for fpath in pom_files_realpaths:
-        update_pom_file(fpath, seldon_core_version, debug)
 
     # update the helm chart files
     for chart_yaml_file_realpath in chart_yaml_file_realpaths:
@@ -557,6 +528,12 @@ def set_version(
             seldon_core_version,
             debug,
         )
+        update_operator_kustomize_alibiexplainer_image(
+            current_seldon_core_version,
+            operator_kustomize_yaml_file_realpath,
+            seldon_core_version,
+            debug,
+        )
 
     # update models' uris
     for model_name, paths in model_uri_updates.items():
@@ -575,7 +552,6 @@ def set_version(
 
 
 def main(argv):
-    POM_FILES = ["engine/pom.xml"]
     CHART_YAML_FILES = [
         "helm-charts/seldon-core-operator/Chart.yaml",
         "helm-charts/seldon-core-analytics/Chart.yaml",
@@ -647,7 +623,6 @@ def main(argv):
     set_version(
         current_version,
         opts.seldon_core_version,
-        POM_FILES,
         CHART_YAML_FILES,
         OPERATOR_VALUES_YAML_FILE,
         OPERATOR_KUSTOMIZE_CONFIGMAP,
