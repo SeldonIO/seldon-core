@@ -8888,12 +8888,11 @@ spec:
               server:
                 description: Server definition
                 properties:
-                  type:
-                    description: Server type - mlserver, triton or left out if custom
-                      container
+                  config:
+                    description: Server config name to match Required
                     type: string
                 required:
-                - type
+                - config
                 type: object
             type: object
           status:

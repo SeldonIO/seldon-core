@@ -1,0 +1,63 @@
+---
+apiVersion: getambassador.io/v3alpha1
+kind: Mapping
+metadata:
+  name: iris1-http
+spec:
+  hostname: "*"
+  prefix: /v2
+  rewrite: ""
+  service: seldon-mesh:80
+  add_request_headers:
+    seldon-model:
+      value: "iris1"
+  add_response_headers:
+    seldon_model:
+      value: "iris1"
+---
+apiVersion: getambassador.io/v3alpha1
+kind: Mapping
+metadata:
+  name: iris1-grpc
+spec:
+  hostname: "*"
+  grpc: true
+  prefix: /inference.GRPCInferenceService
+  rewrite: ""
+  service: seldon-mesh:80
+  add_request_headers:
+    seldon-model:
+      value: "iris1"
+---
+apiVersion: getambassador.io/v3alpha1
+kind: Mapping
+metadata:
+  name: iris2-http
+spec:
+  hostname: "*"
+  prefix: /v2
+  rewrite: ""
+  service: seldon-mesh:80
+  weight: 50
+  add_request_headers:
+    seldon-model:
+      value: "iris2"
+  add_response_headers:
+    seldon_model:
+      value: "iris2"
+---
+apiVersion: getambassador.io/v3alpha1
+kind: Mapping
+metadata:
+  name: iris2-grpc
+spec:
+  hostname: "*"
+  grpc: true
+  prefix: /inference.GRPCInferenceService
+  rewrite: ""
+  service: seldon-mesh:80
+  weight: 50
+  add_request_headers:
+    seldon-model:
+      value: "iris2"
+

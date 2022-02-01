@@ -13,7 +13,7 @@ spec:
       name: rclone
       ports:
       - containerPort: 5572
-        name: http
+        name: rclone
         protocol: TCP
       readinessProbe:
         failureThreshold: 3
@@ -103,6 +103,8 @@ spec:
       - containerPort: 9000
         name: http
         protocol: TCP
+      - containerPort: 8002
+        name: metrics
       readinessProbe:
         failureThreshold: 3
         initialDelaySeconds: 20

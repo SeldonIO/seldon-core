@@ -1,0 +1,8 @@
+namespace: seldon-mesh
+
+bases:
+- ../gateway
+
+resources:
+- model.yaml
+- virtualservice.yaml

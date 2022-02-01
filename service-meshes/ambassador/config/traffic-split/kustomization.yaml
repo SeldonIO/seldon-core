@@ -1,0 +1,8 @@
+namespace: seldon-mesh
+
+bases:
+- ../listener
+
+resources:
+- models.yaml
+- mappings.yaml

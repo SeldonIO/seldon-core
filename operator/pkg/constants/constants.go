@@ -20,7 +20,9 @@ var (
 
 // Label selector
 const (
-	ServerLabelKey            = "seldon-server"
+	AppKey                    = "app"
+	ServerLabelValue          = "seldon-server"
+	ServerLabelNameKey        = "seldon-server-name"
 	ServerReplicaLabelKey     = "seldon-server-replica"
 	ServerReplicaNameLabelKey = "seldon-server-replica-name"
 )

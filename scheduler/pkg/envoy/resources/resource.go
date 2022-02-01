@@ -43,6 +43,7 @@ const (
 	RouteConfigurationName = "listener_0"
 	SeldonLoggingHeader    = "Seldon-Logging"
 	EnvoyLogPathPrefix     = "/tmp/request-log"
+	SeldonModelHeader      = "seldon-model"
 )
 
 func MakeCluster(clusterName string, eps []Endpoint, isGrpc bool) *cluster.Cluster {
@@ -129,7 +130,7 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 				},
 				Headers: []*route.HeaderMatcher{
 					{
-						Name: "Host", // Header name we will match on
+						Name: SeldonModelHeader, // Header name we will match on
 						HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
 							ExactMatch: r.Host,
 						},
@@ -149,7 +150,7 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 					RegexRewrite: &envoy_type_matcher_v3.RegexMatchAndSubstitute{
 						Pattern: &envoy_type_matcher_v3.RegexMatcher{
 							EngineType: &envoy_type_matcher_v3.RegexMatcher_GoogleRe2{},
-							Regex:      fmt.Sprintf("/v2/models/%s", r.Name), //TODO check this match for modelName is always ok
+							Regex:      "/v2/models/([^/]+)",
 						},
 						Substitution: fmt.Sprintf("/v2/models/%s/versions/%d", r.Name, r.Version),
 					},
@@ -189,7 +190,7 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 				},
 				Headers: []*route.HeaderMatcher{
 					{
-						Name: "Seldon", // Header name we will match on
+						Name: SeldonModelHeader, // Header name we will match on
 						HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
 							ExactMatch: r.Host,
 						},

@@ -31,13 +31,13 @@ func TestServerReconcile(t *testing.T) {
 		expectedSvcNames        []string
 		expectedStatefulSetName string
 	}
-	mlserverServer := mlopsv1alpha1.MLServerServerType
+	mlserverConfigName := "mlserver-config"
 	tests := []test{
 		{
 			name: "MLServer",
 			serverConfig: &mlopsv1alpha1.ServerConfig{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      string(mlserverServer),
+					Name:      mlserverConfigName,
 					Namespace: constants.SeldonNamespace,
 				},
 				Spec: mlopsv1alpha1.ServerConfigSpec{
@@ -58,7 +58,7 @@ func TestServerReconcile(t *testing.T) {
 				},
 				Spec: mlopsv1alpha1.ServerSpec{
 					Server: mlopsv1alpha1.ServerDefn{
-						Type: mlserverServer,
+						Config: mlserverConfigName,
 					},
 				},
 			},
@@ -123,7 +123,7 @@ func TestNewServerReconciler(t *testing.T) {
 			name: "MLServer",
 			serverConfig: &mlopsv1alpha1.ServerConfig{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      string(mlopsv1alpha1.MLServerServerType),
+					Name:      "mlserver",
 					Namespace: constants.SeldonNamespace,
 				},
 				Spec: mlopsv1alpha1.ServerConfigSpec{
@@ -144,7 +144,7 @@ func TestNewServerReconciler(t *testing.T) {
 				},
 				Spec: mlopsv1alpha1.ServerSpec{
 					Server: mlopsv1alpha1.ServerDefn{
-						Type: mlopsv1alpha1.MLServerServerType,
+						Config: "mlserver",
 					},
 				},
 			},
@@ -158,7 +158,7 @@ func TestNewServerReconciler(t *testing.T) {
 				},
 				Spec: mlopsv1alpha1.ServerSpec{
 					Server: mlopsv1alpha1.ServerDefn{
-						Type: mlopsv1alpha1.MLServerServerType,
+						Config: "mlserver",
 					},
 				},
 			},
@@ -168,7 +168,7 @@ func TestNewServerReconciler(t *testing.T) {
 			name: "CustomPodSpec",
 			serverConfig: &mlopsv1alpha1.ServerConfig{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      string(mlopsv1alpha1.MLServerServerType),
+					Name:      "mlserver",
 					Namespace: constants.SeldonNamespace,
 				},
 				Spec: mlopsv1alpha1.ServerConfigSpec{
@@ -189,7 +189,7 @@ func TestNewServerReconciler(t *testing.T) {
 				},
 				Spec: mlopsv1alpha1.ServerSpec{
 					Server: mlopsv1alpha1.ServerDefn{
-						Type: mlopsv1alpha1.MLServerServerType,
+						Config: "mlserver",
 					},
 					PodSpec: &mlopsv1alpha1.PodSpec{
 						NodeName: "node",

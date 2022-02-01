@@ -1,0 +1,17 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: iris
+  namespace: seldon-mesh
+spec:
+  entryPoints:
+    - web
+  routes:
+  - match: PathPrefix(`/`)
+    kind: Rule
+    middlewares:
+    - name: iris-header
+    services:
+    - name: seldon-mesh
+      port: 80
+      scheme: h2c

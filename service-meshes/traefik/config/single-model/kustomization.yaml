@@ -1,0 +1,9 @@
+namespace: seldon-mesh
+
+bases:
+- ../ingress
+
+resources:
+- model.yaml
+- ingressroute.yaml
+- iris-header-middleware.yaml

@@ -1,0 +1,9 @@
+apiVersion: getambassador.io/v3alpha1
+kind: Host
+metadata:
+  name: wildcard
+spec:
+  hostname: "*"
+  requestPolicy:
+    insecure:
+      action: Route

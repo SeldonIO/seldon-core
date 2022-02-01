@@ -56,16 +56,10 @@ type MultiModelSpec struct {
 	RClone *v1.Container `json:"rclone,omitempty"`
 }
 
-type ServerType string
-
-const (
-	MLServerServerType ServerType = "mlserver"
-	TritonServerType   ServerType = "triton"
-)
-
 type ServerDefn struct {
-	// Server type - mlserver, triton or left out if custom container
-	Type ServerType `json:"type"`
+	// Server config name to match
+	// Required
+	Config string `json:"config"`
 }
 
 // ServerStatus defines the observed state of Server

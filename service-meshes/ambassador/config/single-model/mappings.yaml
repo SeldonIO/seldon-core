@@ -1,0 +1,28 @@
+---
+apiVersion: getambassador.io/v3alpha1
+kind: Mapping
+metadata:
+  name: iris-http
+spec:
+  hostname: "*"
+  prefix: /v2/
+  rewrite: ""
+  service: seldon-mesh:80
+  add_request_headers:
+    seldon-model:
+      value: "iris"
+---
+apiVersion: getambassador.io/v3alpha1
+kind: Mapping
+metadata:
+  name: iris-grpc
+spec:
+  hostname: "*"
+  grpc: true
+  prefix: /inference.GRPCInferenceService
+  rewrite: ""
+  service: seldon-mesh:80
+  add_request_headers:
+    seldon-model:
+      value: "iris"
+

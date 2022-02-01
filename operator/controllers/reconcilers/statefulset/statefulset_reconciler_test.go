@@ -150,16 +150,17 @@ func TestReconcile(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "default",
+					Labels:    map[string]string{constants.AppKey: constants.ServerLabelValue},
 				},
 				Spec: appsv1.StatefulSetSpec{
 					ServiceName: "foo",
 					Replicas:    getIntPtr(2),
 					Selector: &metav1.LabelSelector{
-						MatchLabels: map[string]string{constants.ServerLabelKey: "foo"},
+						MatchLabels: map[string]string{constants.ServerLabelNameKey: "foo"},
 					},
 					Template: v1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
-							Labels:    map[string]string{constants.ServerLabelKey: "foo"},
+							Labels:    map[string]string{constants.ServerLabelNameKey: "foo", constants.AppKey: constants.ServerLabelValue},
 							Name:      "foo",
 							Namespace: "default",
 						},
@@ -279,16 +280,17 @@ func TestToStatefulSet(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "default",
+					Labels:    map[string]string{constants.AppKey: constants.ServerLabelValue},
 				},
 				Spec: appsv1.StatefulSetSpec{
 					ServiceName: "foo",
 					Replicas:    getIntPtr(2),
 					Selector: &metav1.LabelSelector{
-						MatchLabels: map[string]string{constants.ServerLabelKey: "foo"},
+						MatchLabels: map[string]string{constants.ServerLabelNameKey: "foo"},
 					},
 					Template: v1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
-							Labels:    map[string]string{constants.ServerLabelKey: "foo"},
+							Labels:    map[string]string{constants.ServerLabelNameKey: "foo", constants.AppKey: constants.ServerLabelValue},
 							Name:      "foo",
 							Namespace: "default",
 						},

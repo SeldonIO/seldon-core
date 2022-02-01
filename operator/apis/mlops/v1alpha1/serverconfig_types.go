@@ -74,11 +74,11 @@ func init() {
 	SchemeBuilder.Register(&ServerConfig{}, &ServerConfigList{})
 }
 
-func GetServerConfigForServer(serverType ServerType, client client.Client) (*ServerConfig, error) {
-	if serverType == "" {
+func GetServerConfigForServer(serverConfig string, client client.Client) (*ServerConfig, error) {
+	if serverConfig == "" {
 		return nil, fmt.Errorf("ServerType not specified and is required")
 	}
 	sc := ServerConfig{}
-	err := client.Get(context.TODO(), types.NamespacedName{Name: string(serverType), Namespace: constants.SeldonNamespace}, &sc)
+	err := client.Get(context.TODO(), types.NamespacedName{Name: serverConfig, Namespace: constants.SeldonNamespace}, &sc)
 	return &sc, err
 }

@@ -1,0 +1,32 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: iris-route
+spec:
+  gateways:
+  - istio-system/seldon-gateway 
+  hosts:
+  - '*'
+  http:
+  - name: "iris-http"
+    match:
+    - uri:
+        prefix: "/v2"
+    route:
+    - destination:
+        host: seldon-mesh.seldon-mesh.svc.cluster.local
+      headers:
+        request:
+          set:
+            seldon-model: "iris"
+  - name: "iris-grpc"
+    match:
+    - uri:
+        prefix: "/inference.GRPCInferenceService"
+    route:
+    - destination:
+        host: seldon-mesh.seldon-mesh.svc.cluster.local
+      headers:
+        request:
+          set:
+            seldon-model: "iris"

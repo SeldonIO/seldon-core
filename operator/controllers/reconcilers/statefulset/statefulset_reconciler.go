@@ -42,16 +42,17 @@ func toStatefulSet(meta metav1.ObjectMeta, podSpec *v1.PodSpec, volumeClaimTempl
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      meta.Name,
 			Namespace: meta.Namespace,
+			Labels:    map[string]string{constants.AppKey: constants.ServerLabelValue},
 		},
 		Spec: appsv1.StatefulSetSpec{
 			ServiceName: meta.Name,
 			Replicas:    scaling.Replicas,
 			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{constants.ServerLabelKey: meta.Name},
+				MatchLabels: map[string]string{constants.ServerLabelNameKey: meta.Name},
 			},
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:    map[string]string{constants.ServerLabelKey: meta.Name},
+					Labels:    map[string]string{constants.ServerLabelNameKey: meta.Name, constants.AppKey: constants.ServerLabelValue},
 					Name:      meta.Name,
 					Namespace: meta.Namespace,
 				},
@@ -60,6 +61,7 @@ func toStatefulSet(meta metav1.ObjectMeta, podSpec *v1.PodSpec, volumeClaimTempl
 			PodManagementPolicy: appsv1.ParallelPodManagement,
 		},
 	}
+
 	// Add volume claim templates from internal resource
 	for _, vct := range volumeClaimTemplates {
 		ss.Spec.VolumeClaimTemplates = append(ss.Spec.VolumeClaimTemplates, v1.PersistentVolumeClaim{

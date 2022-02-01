@@ -1,0 +1,20 @@
+---
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: iris1
+  namespace: seldon-mesh
+spec:
+  storageUri: "gs://seldon-models/mlserver/iris"
+  requirements:
+  - sklearn
+---
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: iris2
+  namespace: seldon-mesh
+spec:
+  storageUri: "gs://seldon-models/mlserver/iris"
+  requirements:
+  - sklearn

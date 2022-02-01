@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/seldonio/seldon-core/operatorv2/pkg/constants"
+
 	logrtest "github.com/go-logr/logr/testing"
 	"github.com/seldonio/seldon-core/operatorv2/controllers/reconcilers/common"
 	testing2 "github.com/seldonio/seldon-core/operatorv2/pkg/utils/testing"
@@ -28,6 +30,7 @@ func TestToServices(t *testing.T) {
 		meta            metav1.ObjectMeta
 		replicas        int
 		numExpectedSvcs int
+		expectedLabels  []map[string]string
 	}
 
 	tests := []test{
@@ -38,7 +41,17 @@ func TestToServices(t *testing.T) {
 				Namespace: "default",
 			},
 			replicas:        2,
-			numExpectedSvcs: 3,
+			numExpectedSvcs: 2,
+			expectedLabels: []map[string]string{
+				{
+					constants.ServerReplicaLabelKey:     "foo",
+					constants.ServerReplicaNameLabelKey: "foo-0",
+				},
+				{
+					constants.ServerReplicaLabelKey:     "foo",
+					constants.ServerReplicaNameLabelKey: "foo-1",
+				},
+			},
 		},
 	}
 
@@ -46,9 +59,12 @@ func TestToServices(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			svcs := toServices(test.meta, test.replicas)
 			g.Expect(len(svcs)).To(Equal(test.numExpectedSvcs))
-			for _, svc := range svcs {
+			for idx, svc := range svcs {
 				g.Expect(svc.Spec.ClusterIP).To(Equal("None"))
 				g.Expect(strings.HasPrefix(svc.GetName(), test.meta.GetName())).To(BeTrue())
+				for k, v := range test.expectedLabels[idx] {
+					g.Expect(svc.Labels[k]).To(Equal(v))
+				}
 			}
 		})
 	}

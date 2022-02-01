@@ -26,6 +26,7 @@ func NewServerReconciler(server *mlopsv1alpha1.Server,
 	sr := &ServerReconciler{
 		ReconcilerConfig: common,
 	}
+
 	sr.StatefulSetReconciler, err = sr.createStatefulSetReconciler(server)
 	if err != nil {
 		return nil, err
@@ -63,7 +64,7 @@ func (s *ServerReconciler) Reconcile() error {
 
 func (s *ServerReconciler) createStatefulSetReconciler(server *mlopsv1alpha1.Server) (*statefulset.StatefulSetReconciler, error) {
 	//Get ServerConfig
-	serverConfig, err := mlopsv1alpha1.GetServerConfigForServer(server.Spec.Server.Type, s.Client)
+	serverConfig, err := mlopsv1alpha1.GetServerConfigForServer(server.Spec.Server.Config, s.Client)
 	if err != nil {
 		return nil, err
 	}

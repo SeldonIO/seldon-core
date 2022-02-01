@@ -18,7 +18,7 @@ func TestGetServerConfigForServer(t *testing.T) {
 	type test struct {
 		name         string
 		serverConfig *ServerConfig
-		serverType   ServerType
+		configName   string
 		err          bool
 	}
 
@@ -41,7 +41,7 @@ func TestGetServerConfigForServer(t *testing.T) {
 					},
 				},
 			},
-			serverType: MLServerServerType,
+			configName: "mlserver",
 		},
 		{
 			name: "Triton",
@@ -61,13 +61,13 @@ func TestGetServerConfigForServer(t *testing.T) {
 					},
 				},
 			},
-			serverType: TritonServerType,
+			configName: "triton",
 		},
 		{
 			name: "MlserverNotFound",
 			serverConfig: &ServerConfig{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "triton",
+					Name:      "mlserver",
 					Namespace: constants.SeldonNamespace,
 				},
 				Spec: ServerConfigSpec{
@@ -81,7 +81,7 @@ func TestGetServerConfigForServer(t *testing.T) {
 					},
 				},
 			},
-			serverType: MLServerServerType,
+			configName: "foo",
 			err:        true,
 		},
 		{
@@ -102,7 +102,7 @@ func TestGetServerConfigForServer(t *testing.T) {
 					},
 				},
 			},
-			serverType: "",
+			configName: "",
 			err:        true,
 		},
 		{
@@ -123,7 +123,7 @@ func TestGetServerConfigForServer(t *testing.T) {
 					},
 				},
 			},
-			serverType: "foo",
+			configName: "foo",
 			err:        true,
 		},
 	}
@@ -134,7 +134,7 @@ func TestGetServerConfigForServer(t *testing.T) {
 			err := AddToScheme(scheme)
 			g.Expect(err).To(BeNil())
 			client := testing2.NewFakeClient(scheme, test.serverConfig)
-			sc, err := GetServerConfigForServer(test.serverType, client)
+			sc, err := GetServerConfigForServer(test.configName, client)
 			if !test.err {
 				g.Expect(err).To(BeNil())
 				g.Expect(equality.Semantic.DeepEqual(sc.Spec, test.serverConfig.Spec)).To(BeTrue())

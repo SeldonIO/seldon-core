@@ -5,4 +5,4 @@ metadata:
   namespace: seldon-mesh
 spec:
   server:
-    type: triton
+    config: triton

@@ -56,35 +56,6 @@ func (s *ServiceReconciler) GetResources() []metav1.Object {
 func toServices(meta metav1.ObjectMeta, replicas int) []*v1.Service {
 	var svcs []*v1.Service
 
-	// top level svc is useful for prometheus metric scrapping
-	svc := &v1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      meta.GetName(),
-			Namespace: meta.GetNamespace(),
-			Labels:    map[string]string{constants.ServerLabelKey: meta.GetName()},
-		},
-		Spec: v1.ServiceSpec{
-			ClusterIP:       "None",
-			Selector:        map[string]string{constants.ServerLabelKey: meta.GetName()},
-			SessionAffinity: v1.ServiceAffinityNone,
-			Ports: []v1.ServicePort{
-				{
-					Port:       DefaultHttpPort,
-					TargetPort: intstr.FromInt(int(DefaultHttpPort)),
-					Protocol:   v1.ProtocolTCP,
-					Name:       DefaultHttpPortName,
-				},
-				{
-					Port:       DefaultGrpcPort,
-					TargetPort: intstr.FromInt(int(DefaultGrpcPort)),
-					Protocol:   v1.ProtocolTCP,
-					Name:       DefaultGrpcPortName,
-				},
-			},
-		},
-	}
-	svcs = append(svcs, svc)
-
 	// Create StatefulSet Services for each Replica
 	for i := 0; i < replicas; i++ {
 		name := utils.GetStatefulSetReplicaName(meta.GetName(), i)
@@ -93,7 +64,6 @@ func toServices(meta metav1.ObjectMeta, replicas int) []*v1.Service {
 				Name:      name,
 				Namespace: meta.GetNamespace(),
 				Labels: map[string]string{
-					constants.ServerLabelKey:            meta.GetName(), // Shared value for all replica services (incl top level svc above)
 					constants.ServerReplicaLabelKey:     meta.GetName(), // Shared value for all replicas
 					constants.ServerReplicaNameLabelKey: name,           //Unique for this replica
 				},
@@ -105,12 +75,14 @@ func toServices(meta metav1.ObjectMeta, replicas int) []*v1.Service {
 				},
 				Ports: []v1.ServicePort{
 					{
-						Port: DefaultHttpPort,
-						Name: DefaultHttpPortName,
+						Port:       DefaultHttpPort,
+						TargetPort: intstr.FromString(DefaultHttpPortName),
+						Name:       DefaultHttpPortName,
 					},
 					{
-						Port: DefaultGrpcPort,
-						Name: DefaultGrpcPortName,
+						Port:       DefaultGrpcPort,
+						TargetPort: intstr.FromString(DefaultGrpcPortName),
+						Name:       DefaultGrpcPortName,
 					},
 					{
 						Port: DefaultAgentPort,
@@ -167,11 +139,11 @@ func (s *ServiceReconciler) removeExtraSvcReplicas() error {
 	if err != nil {
 		return err
 	}
-	numReplicas := len(s.Services) - 1 // Don't include top level svc
+	numReplicas := len(s.Services)
 	if existingReplicas > numReplicas {
 		svcsNow := toServices(s.meta, existingReplicas)
 		for i := numReplicas; i < existingReplicas; i++ {
-			err = s.Client.Delete(s.Ctx, svcsNow[i+1])
+			err = s.Client.Delete(s.Ctx, svcsNow[i])
 			if err != nil {
 				return err
 			}
