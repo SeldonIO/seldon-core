@@ -12,5 +12,6 @@ build:
 		$(PROTOC_IMPORT_PATH) \
 		$(PROTOC_GO_OPTIONS) \
 		./mlops/agent/agent.proto \
+		./mlops/agent_debug/agent_debug.proto \
 		./mlops/proxy/proxy.proto \
 		./mlops/scheduler/scheduler.proto

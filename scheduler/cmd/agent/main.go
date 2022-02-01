@@ -30,55 +30,64 @@ import (
 )
 
 var (
-	serverName        string
-	replicaIdx        uint
-	schedulerHost     string
-	schedulerPort     int
-	rcloneHost        string
-	rclonePort        int
-	inferenceHost     string
-	inferenceHttpPort int
-	inferenceGrpcPort int
-	agentFolder       string
-	namespace         string
-	replicaConfigStr  string
-	inferenceSvcName  string
-	configPath        string
-	logLevel          string
-	serverType        string
-	memoryBytes       int
-	memoryBytes64     uint64
-	capabilitiesList  string
-	capabilities      []string
-	overCommit        bool
-	serverTypes       = [...]string{"mlserver", "triton"}
+	serverName           string
+	replicaIdx           uint
+	schedulerHost        string
+	schedulerPort        int
+	rcloneHost           string
+	rclonePort           int
+	inferenceHost        string
+	inferenceHttpPort    int
+	inferenceGrpcPort    int
+	reverseProxyHttpPort int
+	reverseProxyGrpcPort int
+	debugGrpcPort        int
+	agentFolder          string
+	namespace            string
+	replicaConfigStr     string
+	inferenceSvcName     string
+	configPath           string
+	logLevel             string
+	serverType           string
+	memoryBytes          int
+	memoryBytes64        uint64
+	capabilitiesList     string
+	capabilities         []string
+	overCommit           bool
+	serverTypes          = [...]string{"mlserver", "triton"}
 )
 
 const (
-	EnvServerHttpPort = "SELDON_SERVER_HTTP_PORT"
-	EnvServerGrpcPort = "SELDON_SERVER_GRPC_PORT"
-	EnvPodName        = "POD_NAME"
-	EnvSchedulerHost  = "SELDON_SCHEDULER_HOST"
-	EnvSchedulerPort  = "SELDON_SCHEDULER_PORT"
-	EnvReplicaConfig  = "SELDON_REPLICA_CONFIG"
-	EnvLogLevel       = "SELDON_LOG_LEVEL"
-	EnvServerType     = "SELDON_SERVER_TYPE"
-	EnvMemoryRequest  = "MEMORY_REQUEST"
-	EnvCapabilities   = "SELDON_SERVER_CAPABILITIES"
-	EnvOvercommit     = "SELDON_OVERCOMMIT"
+	EnvServerHttpPort       = "SELDON_SERVER_HTTP_PORT"
+	EnvServerGrpcPort       = "SELDON_SERVER_GRPC_PORT"
+	EnvReverseProxyHttpPort = "SELDON_REVERSE_PROXY_HTTP_PORT"
+	EnvReverseProxyGrpcPort = "SELDON_REVERSE_PROXY_GRPC_PORT"
+	EnvDebugGrpcPort        = "SELDON_DEBUG_GRPC_PORT"
+	EnvPodName              = "POD_NAME"
+	EnvSchedulerHost        = "SELDON_SCHEDULER_HOST"
+	EnvSchedulerPort        = "SELDON_SCHEDULER_PORT"
+	EnvReplicaConfig        = "SELDON_REPLICA_CONFIG"
+	EnvLogLevel             = "SELDON_LOG_LEVEL"
+	EnvServerType           = "SELDON_SERVER_TYPE"
+	EnvMemoryRequest        = "MEMORY_REQUEST"
+	EnvCapabilities         = "SELDON_SERVER_CAPABILITIES"
+	EnvOvercommit           = "SELDON_OVERCOMMIT"
 
-	FlagSchedulerHost     = "scheduler-host"
-	FlagSchedulerPort     = "scheduler-port"
-	FlagServerName        = "server-name"
-	FlagServerIdx         = "server-idx"
-	FlagInferenceHttpPort = "inference-http-port"
-	FlagInferenceGrpcPort = "inference-grpc-port"
-	FlagReplicaConfig     = "replica-config"
-	FlagLogLevel          = "log-level"
-	FlagServerType        = "server-type"
-	FlagMemoryBytes       = "memory-bytes"
-	FlagCapabilities      = "capabilities"
-	FlagOverCommit        = "overcommit"
+	FlagSchedulerHost        = "scheduler-host"
+	FlagSchedulerPort        = "scheduler-port"
+	FlagServerName           = "server-name"
+	FlagServerIdx            = "server-idx"
+	FlagInferenceHttpPort    = "inference-http-port"
+	FlagInferenceGrpcPort    = "inference-grpc-port"
+	FlagReverseProxyHttpPort = "reverse-proxy-http-port"
+	FlagReverseProxyGrpcPort = "reverse-proxy-grpc-port"
+	FlagDebugGrpcPort        = "debug-grpc-port"
+	FlagReplicaConfig        = "replica-config"
+	FlagLogLevel             = "log-level"
+	FlagServerType           = "server-type"
+	FlagMemoryBytes          = "memory-bytes"
+	FlagCapabilities         = "capabilities"
+	FlagOverCommit           = "overcommit"
 )
 
 func init() {
@@ -93,6 +102,9 @@ func init() {
 	flag.StringVar(&inferenceHost, "inference-host", "0.0.0.0", "Inference server host")
 	flag.IntVar(&inferenceHttpPort, FlagInferenceHttpPort, 8080, "Inference server http port")
 	flag.IntVar(&inferenceGrpcPort, FlagInferenceGrpcPort, 9500, "Inference server grpc port")
+	flag.IntVar(&reverseProxyHttpPort, FlagReverseProxyHttpPort, agent.ReverseProxyHTTPPort, "Reverse proxy http port")
+	flag.IntVar(&reverseProxyGrpcPort, FlagReverseProxyGrpcPort, 9998, "Reverse proxy grpc port")
+	flag.IntVar(&debugGrpcPort, FlagDebugGrpcPort, agent.GRPCDebugServicePort, "Debug grpc port")
 	flag.StringVar(&agentFolder, "agent-folder", "/mnt/agent", "Model repository folder")
 	flag.StringVar(&replicaConfigStr, FlagReplicaConfig, "", "Replica Json Config")
 	flag.StringVar(&namespace, "namespace", "", "Namespace")
@@ -189,6 +201,39 @@ func updateFlagsFromEnv() {
 			inferenceGrpcPort, err = strconv.Atoi(port)
 			if err != nil {
 				log.WithError(err).Fatalf("Failed to parse %s with value %s", EnvServerGrpcPort, port)
+			}
+		}
+	}
+	if !isFlagPassed(FlagReverseProxyHttpPort) {
+		port := os.Getenv(EnvReverseProxyHttpPort)
+		if port != "" {
+			log.Infof("Got %s from %s setting to %s", FlagReverseProxyHttpPort, EnvReverseProxyHttpPort, port)
+			var err error
+			reverseProxyHttpPort, err = strconv.Atoi(port)
+			if err != nil {
+				log.WithError(err).Fatalf("Failed to parse %s with value %s", EnvReverseProxyHttpPort, port)
+			}
+		}
+	}
+	if !isFlagPassed(FlagReverseProxyGrpcPort) {
+		port := os.Getenv(EnvReverseProxyGrpcPort)
+		if port != "" {
+			log.Infof("Got %s from %s setting to %s", FlagReverseProxyGrpcPort, EnvReverseProxyGrpcPort, port)
+			var err error
+			reverseProxyGrpcPort, err = strconv.Atoi(port)
+			if err != nil {
+				log.WithError(err).Fatalf("Failed to parse %s with value %s", EnvReverseProxyGrpcPort, port)
+			}
+		}
+	}
+	if !isFlagPassed(FlagDebugGrpcPort) {
+		port := os.Getenv(EnvDebugGrpcPort)
+		if port != "" {
+			log.Infof("Got %s from %s setting to %s", FlagDebugGrpcPort, EnvDebugGrpcPort, port)
+			var err error
+			debugGrpcPort, err = strconv.Atoi(port)
+			if err != nil {
+				log.WithError(err).Fatalf("Failed to parse %s with value %s", EnvDebugGrpcPort, port)
 			}
 		}
 	}
@@ -376,8 +421,15 @@ func main() {
 	modelRepository := repository.NewModelRepository(logger, rcloneClient, modelRepositoryDir, getRepositoryHandler(logger))
 	// Create V2 Protocol Handler
 	v2Client := agent.NewV2Client(inferenceHost, inferenceHttpPort, logger)
+
+	// TODO: move this one level up (outside of NewClient)
+	rpHTTP := agent.NewReverseHTTPProxy(logger, uint(reverseProxyHttpPort))
+
+	// TODO: move this one level up (outside of NewClient)
+	clientDebugService := agent.NewClientDebug(logger, uint(debugGrpcPort))
+
 	// Create Agent
-	client := agent.NewClient(serverName, uint32(replicaIdx), schedulerHost, schedulerPort, logger, modelRepository, v2Client, createReplicaConfig(), namespace)
+	client := agent.NewClient(serverName, uint32(replicaIdx), schedulerHost, schedulerPort, logger, modelRepository, v2Client, createReplicaConfig(), inferenceSvcName, namespace, rpHTTP, clientDebugService)
 
 	// Start client grpc server
 	go func() {

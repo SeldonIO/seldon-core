@@ -50,6 +50,25 @@ func (f FakeModelRepository) Ready() error {
 	return nil
 }
 
+type FakeClientService struct {
+	err error
+}
+
+func (f FakeClientService) SetState(state *LocalStateManager) {
+}
+
+func (f FakeClientService) Start() error {
+	return f.err
+}
+
+func (f FakeClientService) Ready() error {
+	return f.err
+}
+
+func (f FakeClientService) Stop() error {
+	return f.err
+}
+
 func dialerv2(mockAgentV2Server *mockAgentV2Server) func(context.Context, string) (net.Conn, error) {
 	listener := bufconn.Listen(1024 * 1024)
 
@@ -136,7 +155,11 @@ func TestClientCreate(t *testing.T) {
 			defer httpmock.DeactivateAndReset()
 			v2Client := createTestV2Client(test.models, test.v2Status)
 			modelRepository := FakeModelRepository{err: test.modelRepoErr}
-			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "default")
+			//dummy reverse http proxy
+			rpHTTP := FakeClientService{err: nil}
+			//dummyDebugService
+			clientDebug := FakeClientService{err: nil}
+			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "0.0.0.0", "default", rpHTTP, clientDebug)
 			mockAgentV2Server := &mockAgentV2Server{models: test.models}
 			conn, err := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(err).To(BeNil())
@@ -238,7 +261,11 @@ func TestLoadModel(t *testing.T) {
 			defer httpmock.DeactivateAndReset()
 			v2Client := createTestV2Client(test.models, test.v2Status)
 			modelRepository := FakeModelRepository{err: test.modelRepoErr}
-			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "default")
+			//dummy reverse http proxy
+			rpHTTP := FakeClientService{err: nil}
+			//dummyDebugService
+			clientDebug := FakeClientService{err: nil}
+			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "0.0.0.0", "default", rpHTTP, clientDebug)
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
@@ -250,12 +277,12 @@ func TestLoadModel(t *testing.T) {
 				g.Expect(err).To(BeNil())
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
 				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
-				g.Expect(client.availableMemoryBytes).To(Equal(test.expectedAvailableMemory))
+				g.Expect(client.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
 			} else {
 				g.Expect(err).ToNot(BeNil())
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(0))
 				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(1))
-				g.Expect(client.availableMemoryBytes).To(Equal(test.expectedAvailableMemory))
+				g.Expect(client.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
 			}
 			err = conn.Close()
 			g.Expect(err).To(BeNil())
@@ -349,7 +376,11 @@ parameters:
 			defer httpmock.DeactivateAndReset()
 			v2Client := createTestV2Client(test.models, test.v2Status)
 			modelRepository := FakeModelRepository{}
-			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "default")
+			//dummy reverse http proxy
+			rpHTTP := FakeClientService{err: nil}
+			//dummyDebugService
+			clientDebug := FakeClientService{err: nil}
+			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "0.0.0.0", "default", rpHTTP, clientDebug)
 			switch x := test.op.GetModelVersion().GetModel().GetModelSpec().StorageConfig.Config.(type) {
 			case *pbs.StorageConfig_StorageSecretName:
 				secret := &v1.Secret{ObjectMeta: metav1.ObjectMeta{Name: x.StorageSecretName, Namespace: client.namespace}, StringData: map[string]string{"mys3": test.secretData}}
@@ -368,7 +399,7 @@ parameters:
 				g.Expect(err).To(BeNil())
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
 				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
-				g.Expect(client.availableMemoryBytes).To(Equal(test.expectedAvailableMemory))
+				g.Expect(client.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
 			} else {
 				g.Expect(err).ToNot(BeNil())
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(0))
@@ -464,7 +495,10 @@ func TestUnloadModel(t *testing.T) {
 			defer httpmock.DeactivateAndReset()
 			v2Client := createTestV2Client(test.models, test.v2Status)
 			modelRepository := FakeModelRepository{}
-			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "default")
+			rpHTTP := FakeClientService{err: nil}
+			//dummyDebugService
+			clientDebug := FakeClientService{err: nil}
+			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "0.0.0.0", "default", rpHTTP, clientDebug)
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
@@ -480,7 +514,7 @@ func TestUnloadModel(t *testing.T) {
 				g.Expect(mockAgentV2Server.unloadedEvents).To(Equal(1))
 				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
 				g.Expect(mockAgentV2Server.unloadFailedEvents).To(Equal(0))
-				g.Expect(client.availableMemoryBytes).To(Equal(test.expectedAvailableMemory))
+				g.Expect(client.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
 			} else {
 				g.Expect(err).ToNot(BeNil())
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))

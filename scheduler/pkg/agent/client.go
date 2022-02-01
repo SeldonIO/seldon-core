@@ -20,10 +20,20 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
+type ClientServiceInterface interface {
+	SetState(state *LocalStateManager)
+	Start() error
+	Ready() error
+	Stop() error
+}
+
 type Client struct {
-	logger     log.FieldLogger
-	configChan chan config.AgentConfiguration
-	*ClientState
+	logger             log.FieldLogger
+	configChan         chan config.AgentConfiguration
+	replicaConfig      *agent.ReplicaConfig
+	stateManager       *LocalStateManager
+	rpHTTP             ClientServiceInterface
+	clientDebugService ClientServiceInterface
 	ClientServices
 	SchedulerGrpcClientOptions
 	KubernetesOptions
@@ -45,7 +55,6 @@ type KubernetesOptions struct {
 
 type ClientServices struct {
 	ModelRepository repository.ModelRepository
-	V2Client        *V2Client
 }
 
 func ParseReplicaConfig(json string) (*agent.ReplicaConfig, error) {
@@ -65,20 +74,32 @@ func NewClient(serverName string,
 	modelRepository repository.ModelRepository,
 	v2Client *V2Client,
 	replicaConfig *agent.ReplicaConfig,
-	namespace string) *Client {
+	inferenceSvcName string,
+	namespace string,
+	reverseProxyHTTP ClientServiceInterface,
+	clientDebugService ClientServiceInterface,
+) *Client {
 
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
 	}
+	modelState := NewModelState()
+
+	stateManager := NewLocalStateManager(modelState, logger, v2Client, int64(replicaConfig.GetMemoryBytes()))
+
+	clientDebugService.SetState(stateManager)
+	reverseProxyHTTP.SetState(stateManager)
 
 	return &Client{
-		logger:      logger.WithField("Name", "Client"),
-		configChan:  make(chan config.AgentConfiguration),
-		ClientState: NewClientState(replicaConfig),
+		logger:             logger.WithField("Name", "Client"),
+		configChan:         make(chan config.AgentConfiguration),
+		stateManager:       stateManager,
+		replicaConfig:      replicaConfig,
+		rpHTTP:             reverseProxyHTTP,
+		clientDebugService: clientDebugService,
 		ClientServices: ClientServices{
 			ModelRepository: modelRepository,
-			V2Client:        v2Client,
 		},
 		SchedulerGrpcClientOptions: SchedulerGrpcClientOptions{
 			schedulerHost: schedulerHost,
@@ -122,8 +143,7 @@ func (c *Client) Start() error {
 }
 
 func (c *Client) createConnection() error {
-	logger := c.logger.WithField("func", "createConnection")
-	logger.Infof("Creating connection to %s:%d", c.schedulerHost, c.schedulerPort)
+	c.logger.Infof("Creating connection to %s:%d", c.schedulerHost, c.schedulerPort)
 	conn, err := getConnection(c.schedulerHost, c.schedulerPort)
 	if err != nil {
 		return err
@@ -135,7 +155,7 @@ func (c *Client) createConnection() error {
 func (c *Client) waitReady() error {
 	logger := c.logger.WithField("func", "waitReady")
 	logFailure := func(err error, delay time.Duration) {
-		logger.WithError(err).Errorf("Model repository not ready")
+		logger.WithError(err).Errorf("Rclone not ready")
 	}
 	logger.Infof("Waiting for Model Repository to be ready")
 	//TODO make retry configurable
@@ -147,10 +167,33 @@ func (c *Client) waitReady() error {
 		logger.WithError(err).Errorf("Server not ready")
 	}
 	logger.Infof("Waiting for inference server to be ready")
-	err = backoff.RetryNotify(c.V2Client.Ready, backoff.NewExponentialBackOff(), logFailure)
+	err = backoff.RetryNotify(c.stateManager.v2Client.Ready, backoff.NewExponentialBackOff(), logFailure)
 	if err != nil {
 		return err
 	}
+
+	// TODO: move this outside and perhaps add to ClientServices
+
+	logger.Infof("Starting and waiting for Reverse Proxy to be ready")
+	err = c.rpHTTP.Start()
+	if err != nil {
+		return err
+	}
+	logFailure = func(err error, delay time.Duration) {
+		logger.WithError(err).Errorf("HTTP reverse proxy not ready")
+	}
+	err = backoff.RetryNotify(c.rpHTTP.Ready, backoff.NewExponentialBackOff(), logFailure)
+	if err != nil {
+		return err
+	}
+
+	// TODO: move this outside and perhaps add to ClientServices
+	logger.Infof("Starting client debug service")
+	err = c.clientDebugService.Start()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -172,28 +215,20 @@ func getConnection(host string, port int) (*grpc.ClientConn, error) {
 }
 
 func (c *Client) StartService() error {
-	logger := c.logger.WithField("func", "StartService")
-	logger.Infof("Call subscribe to scheduler")
+	c.logger.Infof("Call subscribe to scheduler")
 	grpcClient := agent.NewAgentServiceClient(c.conn)
-	var loadedModels []*agent.ModelVersion
-	for _, mv := range c.loadedModels {
-		for _, md := range mv.versions {
-			loadedModels = append(loadedModels, md)
-		}
 
-	}
 	stream, err := grpcClient.Subscribe(context.Background(), &agent.AgentSubscribeRequest{
 		ServerName:           c.serverName,
 		ReplicaIdx:           c.replicaIdx,
 		ReplicaConfig:        c.replicaConfig,
-		LoadedModels:         loadedModels,
+		LoadedModels:         c.stateManager.modelVersions.getVersionsForAllModels(),
 		Shared:               true,
-		AvailableMemoryBytes: c.availableMemoryBytes,
+		AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytes(),
 	}, grpc_retry.WithMax(100)) //TODO make configurable
 	if err != nil {
 		return err
 	}
-	logger.Infof("Subscribed to scheduler. Listening for events...")
 	for {
 		operation, err := stream.Recv()
 		if err == io.EOF {
@@ -202,10 +237,10 @@ func (c *Client) StartService() error {
 		if err != nil {
 			return err
 		}
-		logger.Infof("Received operation")
+		c.logger.Infof("Received operation")
 		switch operation.Operation {
 		case agent.ModelOperationMessage_LOAD_MODEL:
-			logger.Infof("calling load model")
+			c.logger.Infof("calling load model")
 			go func() {
 				err := c.LoadModel(operation)
 				if err != nil {
@@ -214,11 +249,11 @@ func (c *Client) StartService() error {
 			}()
 
 		case agent.ModelOperationMessage_UNLOAD_MODEL:
-			logger.Infof("calling unload model")
+			c.logger.Infof("calling unload model")
 			go func() {
 				err := c.UnloadModel(operation)
 				if err != nil {
-					logger.WithError(err).Errorf("Failed to handle unload model")
+					c.logger.WithError(err).Errorf("Failed to handle unload model")
 				}
 			}()
 		}
@@ -264,32 +299,31 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	}
 	modelName := request.GetModelVersion().GetModel().GetMeta().GetName()
 	modelVersion := request.GetModelVersion().GetVersion()
-	logger.Infof("Load model %s:%d", modelName, modelVersion)
 
-	err := c.addModelVersion(request.GetModelVersion())
-	if err != nil {
-		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
-		return err
-	}
+	c.stateManager.modelLoadLockCreate(modelName)
+	defer c.stateManager.modelLoadUnlock(modelName)
+
+	logger.Infof("Load model %s:%d", modelName, modelVersion)
 
 	// Get Rclone configuration
 	config, err := c.getArtifactConfig(request)
 	if err != nil {
-		c.removeModelVersion(request.GetModelVersion())
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
 		return err
 	}
 	// Copy model artifact
-	chosenVersionPath, err := c.ModelRepository.DownloadModelVersion(modelName, modelVersion, request.GetModelVersion().GetModel().GetModelSpec().ArtifactVersion, request.GetModelVersion().GetModel().GetModelSpec().Uri, config)
+	chosenVersionPath, err := c.ModelRepository.DownloadModelVersion(
+		modelName, modelVersion, request.GetModelVersion().GetModel().GetModelSpec().ArtifactVersion,
+		request.GetModelVersion().GetModel().GetModelSpec().Uri, config)
 	if err != nil {
-		c.removeModelVersion(request.GetModelVersion())
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
 		return err
 	}
 	logger.Infof("Chose path %s for model %s:%d", *chosenVersionPath, modelName, modelVersion)
-	err = c.V2Client.LoadModel(modelName)
+
+	err = c.stateManager.LoadModelVersion(request.GetModelVersion())
 	if err != nil {
-		c.removeModelVersion(request.GetModelVersion())
+		c.stateManager.modelVersions.removeModelVersion(request.GetModelVersion())
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
 		return err
 	}
@@ -305,31 +339,21 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 	}
 	modelName := request.GetModelVersion().GetModel().GetMeta().GetName()
 	modelVersion := request.GetModelVersion().GetVersion()
+
+	c.stateManager.modelLoadLockCreate(modelName)
+	defer c.stateManager.modelLoadUnlock(modelName)
+
 	logger.Infof("Unload model %s:%d", modelName, modelVersion)
 
-	remainingVersions, err := c.ModelRepository.RemoveModelVersion(modelName, modelVersion)
+	_, err := c.ModelRepository.RemoveModelVersion(modelName, modelVersion)
 	if err != nil {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_UNLOAD_FAILED, err)
 		return err
 	}
-	if remainingVersions == 0 {
-		err := c.V2Client.UnloadModel(modelName)
-		if err != nil {
-			c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_UNLOAD_FAILED, err)
-			return err
-		}
-	} else {
-		err := c.V2Client.LoadModel(modelName) // Force a reload to resync server with available versions on disk
-		if err != nil {
-			c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_UNLOAD_FAILED, err)
-			return err
-		}
-	}
 
-	removedModel := c.removeModelVersion(request.GetModelVersion())
-	noRemainingVersions := remainingVersions == 0
-	if noRemainingVersions != removedModel {
-		c.logger.Warnf("Mismatch in state. Removed all versions from state is [%v] but model repo says remaining versions [%d] for %s:%d", removedModel, remainingVersions, modelName, modelVersion)
+	if err := c.stateManager.UnloadModelVersion(request.ModelVersion); err != nil {
+		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_UNLOAD_FAILED, err)
+		return err
 	}
 
 	logger.Infof("Unload model %s:%d success", modelName, modelVersion)
@@ -346,7 +370,7 @@ func (c *Client) sendModelEventError(modelName string, modelVersion uint32, even
 		ModelVersion:         modelVersion,
 		Event:                event,
 		Message:              err.Error(),
-		AvailableMemoryBytes: c.availableMemoryBytes,
+		AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytes(),
 	})
 	if err != nil {
 		c.logger.WithError(err).Errorf("Failed to send error back on load model")
@@ -361,7 +385,7 @@ func (c *Client) sendAgentEvent(modelName string, modelVersion uint32, event age
 		ModelName:            modelName,
 		ModelVersion:         modelVersion,
 		Event:                event,
-		AvailableMemoryBytes: c.availableMemoryBytes,
+		AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytes(),
 	})
 	return err
 }

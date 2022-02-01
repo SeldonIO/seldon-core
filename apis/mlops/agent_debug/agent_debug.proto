@@ -1,0 +1,39 @@
+// Debug service for agent replica
+syntax = "proto3";
+
+package seldon.mlops.agent_debug;
+
+option go_package = "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent_debug";
+
+import "google/protobuf/timestamp.proto";
+
+// [START Messages]
+
+message ModelReplicaState {
+  enum ModelState {
+    Evicted = 0;
+    InMemory = 1;
+  }
+  ModelState state = 1;
+  google.protobuf.Timestamp lastAccessed = 2;
+  string name = 3;
+}
+
+message ReplicaStatusResponse {
+  uint64 availableMemoryBytes = 1;
+  repeated ModelReplicaState models = 2;
+}
+
+message ReplicaStatusRequest {
+
+}
+
+// [END Messages]
+
+// [START Services]
+
+service AgentDebugService {
+  rpc ReplicaStatus(ReplicaStatusRequest) returns (ReplicaStatusResponse) {}
+}
+
+// [END Services]

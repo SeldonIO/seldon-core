@@ -7,6 +7,7 @@ require (
 	github.com/envoyproxy/go-control-plane v0.9.10-0.20210910171841-453346fa5903
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/go-playground/validator/v10 v10.9.0
+	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/jarcoal/httpmock v1.0.8
 	github.com/onsi/gomega v1.16.0
@@ -18,6 +19,6 @@ require (
 	k8s.io/api v0.22.2
 	k8s.io/apimachinery v0.22.2
 	k8s.io/client-go v0.22.2
-	knative.dev/pkg v0.0.0-20211129153605-754f332c0c51
+	knative.dev/pkg v0.0.0-20211207151905-681fbddaeb50
 	sigs.k8s.io/controller-runtime v0.10.3
 )
