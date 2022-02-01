@@ -1,0 +1,5 @@
+{
+  "scheduler": "0.0.0.0:9004",
+  "httpEndpoint": "http://0.0.0.0:9000",
+  "grpcEndpoint": "0.0.0.0:9000"
+}

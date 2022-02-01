@@ -26,12 +26,14 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
 
+	accesslog "github.com/envoyproxy/go-control-plane/envoy/config/accesslog/v3"
 	cluster "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	endpoint "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
 	listener "github.com/envoyproxy/go-control-plane/envoy/config/listener/v3"
 	route "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	tap "github.com/envoyproxy/go-control-plane/envoy/config/tap/v3"
+	accesslog_file "github.com/envoyproxy/go-control-plane/envoy/extensions/access_loggers/file/v3"
 	tapfilter "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/tap/v3"
 	hcm "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 	http "github.com/envoyproxy/go-control-plane/envoy/extensions/upstreams/http/v3"
@@ -291,6 +293,30 @@ func createTapConfig() *anypb.Any {
 	return tapAny
 }
 
+func createAccessLogConfig() *anypb.Any {
+	accessFilter := accesslog_file.FileAccessLog{
+		Path: "/tmp/envoy-accesslog.txt",
+		/*
+			AccessLogFormat: &accesslog_file.FileAccessLog_LogFormat{
+				LogFormat: &core.SubstitutionFormatString{
+					Format: &core.SubstitutionFormatString_TextFormatSource{
+						TextFormatSource: &core.DataSource{
+							Specifier: &core.DataSource_InlineString{
+								InlineString: "%LOCAL_REPLY_BODY%:%RESPONSE_CODE%:path=%REQ(:path)%\n",
+							},
+						},
+					},
+				},
+			},
+		*/
+	}
+	accessAny, err := anypb.New(&accessFilter)
+	if err != nil {
+		panic(err)
+	}
+	return accessAny
+}
+
 func MakeHTTPListener(listenerName, address string, port uint32) *listener.Listener {
 
 	// HTTP filter configuration
@@ -312,6 +338,14 @@ func MakeHTTPListener(listenerName, address string, port uint32) *listener.Liste
 			},
 			{
 				Name: wellknown.Router,
+			},
+		},
+		AccessLog: []*accesslog.AccessLog{
+			{
+				Name: "envoy.access_loggers.file",
+				ConfigType: &accesslog.AccessLog_TypedConfig{
+					TypedConfig: createAccessLogConfig(),
+				},
 			},
 		},
 	}

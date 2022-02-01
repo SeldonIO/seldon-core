@@ -411,11 +411,6 @@ func main() {
 	// Create Rclone client and start configuration listener
 
 	rcloneClient := rclone.NewRCloneClient(rcloneHost, rclonePort, rcloneRepositoryDir, logger, namespace)
-	err = rcloneClient.StartConfigListener(agentConfigHandler)
-	if err != nil {
-		logger.WithError(err).Error("Failed to initialise rclone config listener")
-		close(done)
-	}
 
 	// Create Model Repository
 	modelRepository := repository.NewModelRepository(logger, rcloneClient, modelRepositoryDir, getRepositoryHandler(logger))
@@ -430,6 +425,20 @@ func main() {
 
 	// Create Agent
 	client := agent.NewClient(serverName, uint32(replicaIdx), schedulerHost, schedulerPort, logger, modelRepository, v2Client, createReplicaConfig(), inferenceSvcName, namespace, rpHTTP, clientDebugService)
+
+	// Wait for required services to be ready
+	err = client.WaitReady()
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to wait for all agent dependent services to be ready")
+		close(done)
+	}
+
+	// No we are ready start config listener
+	err = rcloneClient.StartConfigListener(agentConfigHandler)
+	if err != nil {
+		logger.WithError(err).Error("Failed to initialise rclone config listener")
+		close(done)
+	}
 
 	// Start client grpc server
 	go func() {

@@ -112,6 +112,10 @@ func (p *IncrementalProcessor) removeModelForServerInEnvoy(modelName string) err
 func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelName string, modelVersion *store.ModelVersion, server *store.ServerSnapshot, trafficPercent uint32) {
 	logger := p.logger.WithField("func", "updateEnvoyForModelVersion")
 	assignment := modelVersion.GetAssignment() // Get loaded replicas for model
+	if len(assignment) == 0 {
+		logger.Debugf("No assigned replicas so returning for %s", modelName)
+		return
+	}
 	clusterNameBase := server.Name + "_" + computeHashKeyForList(assignment)
 	httpClusterName := clusterNameBase + "_http"
 	grpcClusterName := clusterNameBase + "_grpc"

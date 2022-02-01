@@ -116,13 +116,9 @@ func NewClient(serverName string,
 
 func (c *Client) Start() error {
 	logger := c.logger.WithField("func", "Start")
-	err := c.waitReady()
-	if err != nil {
-		logger.WithError(err).Errorf("Failed to wait for all agent dependent services to be ready")
-		return err
-	}
+
 	if c.conn == nil {
-		err = c.createConnection()
+		err := c.createConnection()
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to create connection to scheduler")
 			return err
@@ -134,7 +130,7 @@ func (c *Client) Start() error {
 	}
 	backOffExp := backoff.NewExponentialBackOff()
 	backOffExp.MaxElapsedTime = 0 // Never stop due to large time between calls
-	err = backoff.RetryNotify(c.StartService, backOffExp, logFailure)
+	err := backoff.RetryNotify(c.StartService, backOffExp, logFailure)
 	if err != nil {
 		c.logger.WithError(err).Fatal("Failed to start client")
 		return err
@@ -152,8 +148,10 @@ func (c *Client) createConnection() error {
 	return nil
 }
 
-func (c *Client) waitReady() error {
+func (c *Client) WaitReady() error {
 	logger := c.logger.WithField("func", "waitReady")
+
+	// Wait for model repo to be ready
 	logFailure := func(err error, delay time.Duration) {
 		logger.WithError(err).Errorf("Rclone not ready")
 	}
@@ -163,6 +161,8 @@ func (c *Client) waitReady() error {
 	if err != nil {
 		return err
 	}
+
+	// Wait for V2 Server to be ready
 	logFailure = func(err error, delay time.Duration) {
 		logger.WithError(err).Errorf("Server not ready")
 	}
