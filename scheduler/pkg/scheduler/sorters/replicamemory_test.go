@@ -8,7 +8,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/pkg/store"
 )
 
-func TestMemoryReplicaFilter(t *testing.T) {
+func TestReplicaMemorySort(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {

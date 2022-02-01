@@ -97,7 +97,7 @@ func NewRCloneClient(host string, port int, localPath string, logger log.FieldLo
 		logger:     logger.WithField("Source", "RCloneClient"),
 		validate:   validator.New(),
 		namespace:  namespace,
-		configChan: make(chan config.AgentConfiguration, 1),
+		configChan: make(chan config.AgentConfiguration),
 	}
 }
 
@@ -244,6 +244,11 @@ func (r *RCloneClient) Config(config []byte) (string, error) {
 	}
 }
 
+func CreateRcloneModelHash(modelName string, srcUri string) (uint32, error) {
+	keyTohash := modelName + "-" + srcUri
+	return util.Hash(keyTohash)
+}
+
 // Call Rclone /sync/copy
 func (r *RCloneClient) Copy(modelName string, srcUri string, config []byte) (string, error) {
 	var srcUpdated string
@@ -257,7 +262,12 @@ func (r *RCloneClient) Copy(modelName string, srcUri string, config []byte) (str
 		srcUpdated = srcUri
 	}
 
-	hash, err := util.Hash(srcUri)
+	// Create key from srcUri plus modelName.
+	// If we just used srcUri it would mean models with same srcUri could share rclone download
+	// However, its unclear whether we might get partial updates under load if srcUri changes and two
+	// or more models are asking for the uri.
+	// TODO  reinvestigate how we can use rclone sharing maybe via an rclon eproxy caching layer?
+	hash, err := CreateRcloneModelHash(modelName, srcUri)
 	if err != nil {
 		return "", err
 	}

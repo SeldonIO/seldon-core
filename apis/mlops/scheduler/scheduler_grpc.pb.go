@@ -23,6 +23,8 @@ type SchedulerClient interface {
 	UnloadModel(ctx context.Context, in *UnloadModelRequest, opts ...grpc.CallOption) (*UnloadModelResponse, error)
 	ModelStatus(ctx context.Context, in *ModelStatusRequest, opts ...grpc.CallOption) (*ModelStatusResponse, error)
 	SubscribeModelStatus(ctx context.Context, in *ModelSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribeModelStatusClient, error)
+	ServerNotify(ctx context.Context, in *ServerNotifyRequest, opts ...grpc.CallOption) (*ServerNotifyResponse, error)
+	SubscribeServerStatus(ctx context.Context, in *ServerSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribeServerStatusClient, error)
 }
 
 type schedulerClient struct {
@@ -101,6 +103,47 @@ func (x *schedulerSubscribeModelStatusClient) Recv() (*ModelStatusResponse, erro
 	return m, nil
 }
 
+func (c *schedulerClient) ServerNotify(ctx context.Context, in *ServerNotifyRequest, opts ...grpc.CallOption) (*ServerNotifyResponse, error) {
+	out := new(ServerNotifyResponse)
+	err := c.cc.Invoke(ctx, "/seldon.mlops.scheduler.Scheduler/ServerNotify", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *schedulerClient) SubscribeServerStatus(ctx context.Context, in *ServerSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribeServerStatusClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Scheduler_ServiceDesc.Streams[1], "/seldon.mlops.scheduler.Scheduler/SubscribeServerStatus", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &schedulerSubscribeServerStatusClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Scheduler_SubscribeServerStatusClient interface {
+	Recv() (*ServerStatusResponse, error)
+	grpc.ClientStream
+}
+
+type schedulerSubscribeServerStatusClient struct {
+	grpc.ClientStream
+}
+
+func (x *schedulerSubscribeServerStatusClient) Recv() (*ServerStatusResponse, error) {
+	m := new(ServerStatusResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // SchedulerServer is the server API for Scheduler service.
 // All implementations must embed UnimplementedSchedulerServer
 // for forward compatibility
@@ -110,6 +153,8 @@ type SchedulerServer interface {
 	UnloadModel(context.Context, *UnloadModelRequest) (*UnloadModelResponse, error)
 	ModelStatus(context.Context, *ModelStatusRequest) (*ModelStatusResponse, error)
 	SubscribeModelStatus(*ModelSubscriptionRequest, Scheduler_SubscribeModelStatusServer) error
+	ServerNotify(context.Context, *ServerNotifyRequest) (*ServerNotifyResponse, error)
+	SubscribeServerStatus(*ServerSubscriptionRequest, Scheduler_SubscribeServerStatusServer) error
 	mustEmbedUnimplementedSchedulerServer()
 }
 
@@ -131,6 +176,12 @@ func (UnimplementedSchedulerServer) ModelStatus(context.Context, *ModelStatusReq
 }
 func (UnimplementedSchedulerServer) SubscribeModelStatus(*ModelSubscriptionRequest, Scheduler_SubscribeModelStatusServer) error {
 	return status.Errorf(codes.Unimplemented, "method SubscribeModelStatus not implemented")
+}
+func (UnimplementedSchedulerServer) ServerNotify(context.Context, *ServerNotifyRequest) (*ServerNotifyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ServerNotify not implemented")
+}
+func (UnimplementedSchedulerServer) SubscribeServerStatus(*ServerSubscriptionRequest, Scheduler_SubscribeServerStatusServer) error {
+	return status.Errorf(codes.Unimplemented, "method SubscribeServerStatus not implemented")
 }
 func (UnimplementedSchedulerServer) mustEmbedUnimplementedSchedulerServer() {}
 
@@ -238,6 +289,45 @@ func (x *schedulerSubscribeModelStatusServer) Send(m *ModelStatusResponse) error
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Scheduler_ServerNotify_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ServerNotifyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SchedulerServer).ServerNotify(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/seldon.mlops.scheduler.Scheduler/ServerNotify",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SchedulerServer).ServerNotify(ctx, req.(*ServerNotifyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Scheduler_SubscribeServerStatus_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ServerSubscriptionRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(SchedulerServer).SubscribeServerStatus(m, &schedulerSubscribeServerStatusServer{stream})
+}
+
+type Scheduler_SubscribeServerStatusServer interface {
+	Send(*ServerStatusResponse) error
+	grpc.ServerStream
+}
+
+type schedulerSubscribeServerStatusServer struct {
+	grpc.ServerStream
+}
+
+func (x *schedulerSubscribeServerStatusServer) Send(m *ServerStatusResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // Scheduler_ServiceDesc is the grpc.ServiceDesc for Scheduler service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -261,11 +351,20 @@ var Scheduler_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "ModelStatus",
 			Handler:    _Scheduler_ModelStatus_Handler,
 		},
+		{
+			MethodName: "ServerNotify",
+			Handler:    _Scheduler_ServerNotify_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "SubscribeModelStatus",
 			Handler:       _Scheduler_SubscribeModelStatus_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "SubscribeServerStatus",
+			Handler:       _Scheduler_SubscribeServerStatus_Handler,
 			ServerStreams: true,
 		},
 	},

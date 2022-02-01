@@ -91,7 +91,7 @@ kind-image-load: docker-build
 ##@ Deployment
 
 ifndef ignore-not-found
-  ignore-not-found = false
+  ignore-not-found = true
 endif
 
 # CRD is current too big for apply due to annotations size limit
@@ -112,6 +112,29 @@ deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in
 .PHONY: undeploy
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
 	$(KUSTOMIZE) build config/default | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
+
+.PHONY: deploy-server-configuration
+deploy-server-configuration:
+	$(KUSTOMIZE) build config/serverconfigs | kubectl create -f -
+
+.PHONY: undeploy-server-configuration
+undeploy-server-configuration:
+	$(KUSTOMIZE) build config/serverconfigs | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
+
+
+.PHONY: deploy-servers
+deploy-servers:
+	$(KUSTOMIZE) build config/servers | kubectl create -f -
+
+.PHONY: undeploy-servers
+undeploy-servers:
+	$(KUSTOMIZE) build config/servers | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
+
+.PHONY: deploy-all
+deploy-all: deploy deploy-server-configuration deploy-servers
+
+.PHONY: undeploy-all
+undeploy-all: undeploy-servers undeploy-server-configuration undeploy
 
 CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
 .PHONY: controller-gen

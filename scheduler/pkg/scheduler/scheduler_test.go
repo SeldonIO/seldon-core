@@ -7,8 +7,6 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
-	"github.com/seldonio/seldon-core/scheduler/pkg/scheduler/filters"
-	"github.com/seldonio/seldon-core/scheduler/pkg/scheduler/sorters"
 	"github.com/seldonio/seldon-core/scheduler/pkg/store"
 	log "github.com/sirupsen/logrus"
 )
@@ -20,12 +18,23 @@ type mockStore struct {
 	scheduledReplicas []int
 }
 
-func (f mockStore) RemoveModel(req *pb.UnloadModelRequest) error {
-	panic("implement me")
+func (f mockStore) FailedScheduling(modelVersion *store.ModelVersion, reason string) {
 }
 
-func (f mockStore) UpdateModel(config *pb.LoadModelRequest) {
-	panic("implement me")
+func (f mockStore) UnloadVersionModels(modelKey string, version uint32) (bool, error) {
+	return true, nil
+}
+
+func (f mockStore) ServerNotify(request *pb.ServerNotifyRequest) error {
+	return nil
+}
+
+func (f mockStore) RemoveModel(req *pb.UnloadModelRequest) error {
+	return nil
+}
+
+func (f mockStore) UpdateModel(config *pb.LoadModelRequest) error {
+	return nil
 }
 
 func (f mockStore) GetModel(key string) (*store.ModelSnapshot, error) {
@@ -66,7 +75,11 @@ func (f mockStore) RemoveServerReplica(serverName string, replicaIdx int) ([]str
 	panic("implement me")
 }
 
-func (f mockStore) AddListener(c chan *store.ModelSnapshot) {
+func (f mockStore) AddModelEventListener(c chan *store.ModelSnapshot) {
+
+}
+
+func (f mockStore) AddServerEventListener(c chan string) {
 
 }
 
@@ -95,10 +108,6 @@ func TestScheduler(t *testing.T) {
 		name              string
 		model             *store.ModelSnapshot
 		servers           []*store.ServerSnapshot
-		serverFilters     []ServerFilter
-		replicaFilters    []ReplicaFilter
-		serverSorts       []sorters.ServerSorter
-		replicaSort       []sorters.ReplicaSorter
 		scheduled         bool
 		scheduledServer   string
 		scheduledReplicas []int
@@ -110,15 +119,12 @@ func TestScheduler(t *testing.T) {
 			model: newTestModel("model1", 100, []string{"sklearn"}, nil, 1, []int{}, false, ""),
 			servers: []*store.ServerSnapshot{
 				{
-					Name:     "server1",
-					Replicas: map[int]*store.ServerReplica{0: gsr(0, 200, []string{"sklearn"})},
-					Shared:   true,
+					Name:             "server1",
+					Replicas:         map[int]*store.ServerReplica{0: gsr(0, 200, []string{"sklearn"})},
+					Shared:           true,
+					ExpectedReplicas: -1,
 				},
 			},
-			serverFilters:     []ServerFilter{filters.SharingServerFilter{}},
-			replicaFilters:    []ReplicaFilter{filters.RequirementsReplicaFilter{}, filters.AvailableMemoryFilter{}},
-			serverSorts:       []sorters.ServerSorter{},
-			replicaSort:       []sorters.ReplicaSorter{sorters.ModelAlreadyLoadedSorter{}},
 			scheduled:         true,
 			scheduledServer:   "server1",
 			scheduledReplicas: []int{0},
@@ -128,9 +134,10 @@ func TestScheduler(t *testing.T) {
 			model: newTestModel("model1", 100, []string{"sklearn"}, nil, 2, []int{}, false, ""),
 			servers: []*store.ServerSnapshot{
 				{
-					Name:     "server1",
-					Replicas: map[int]*store.ServerReplica{0: gsr(0, 200, []string{"sklearn"})},
-					Shared:   true,
+					Name:             "server1",
+					Replicas:         map[int]*store.ServerReplica{0: gsr(0, 200, []string{"sklearn"})},
+					Shared:           true,
+					ExpectedReplicas: -1,
 				},
 				{
 					Name: "server2",
@@ -138,13 +145,10 @@ func TestScheduler(t *testing.T) {
 						0: gsr(0, 200, []string{"sklearn"}),
 						1: gsr(1, 200, []string{"sklearn"}),
 					},
-					Shared: true,
+					Shared:           true,
+					ExpectedReplicas: -1,
 				},
 			},
-			serverFilters:     []ServerFilter{filters.SharingServerFilter{}},
-			replicaFilters:    []ReplicaFilter{filters.RequirementsReplicaFilter{}, filters.AvailableMemoryFilter{}},
-			serverSorts:       []sorters.ServerSorter{},
-			replicaSort:       []sorters.ReplicaSorter{sorters.ModelAlreadyLoadedSorter{}},
 			scheduled:         true,
 			scheduledServer:   "server2",
 			scheduledReplicas: []int{0, 1},
@@ -154,9 +158,10 @@ func TestScheduler(t *testing.T) {
 			model: newTestModel("model1", 100, []string{"sklearn"}, nil, 2, []int{}, false, ""),
 			servers: []*store.ServerSnapshot{
 				{
-					Name:     "server1",
-					Replicas: map[int]*store.ServerReplica{0: gsr(0, 200, []string{"sklearn"})},
-					Shared:   true,
+					Name:             "server1",
+					Replicas:         map[int]*store.ServerReplica{0: gsr(0, 200, []string{"sklearn"})},
+					Shared:           true,
+					ExpectedReplicas: -1,
 				},
 				{
 					Name: "server2",
@@ -164,36 +169,31 @@ func TestScheduler(t *testing.T) {
 						0: gsr(0, 200, []string{"sklearn"}),
 						1: gsr(1, 200, []string{"foo"}),
 					},
-					Shared: true,
+					Shared:           true,
+					ExpectedReplicas: -1,
 				},
 			},
-			serverFilters:  []ServerFilter{filters.SharingServerFilter{}},
-			replicaFilters: []ReplicaFilter{filters.RequirementsReplicaFilter{}, filters.AvailableMemoryFilter{}},
-			serverSorts:    []sorters.ServerSorter{},
-			replicaSort:    []sorters.ReplicaSorter{sorters.ModelAlreadyLoadedSorter{}},
-			scheduled:      false,
+			scheduled: false,
 		},
 		{
 			name:  "MemoryOneServer",
 			model: newTestModel("model1", 100, []string{"sklearn"}, nil, 1, []int{}, false, ""),
 			servers: []*store.ServerSnapshot{
 				{
-					Name:     "server1",
-					Replicas: map[int]*store.ServerReplica{0: gsr(0, 50, []string{"sklearn"})},
-					Shared:   true,
+					Name:             "server1",
+					Replicas:         map[int]*store.ServerReplica{0: gsr(0, 50, []string{"sklearn"})},
+					Shared:           true,
+					ExpectedReplicas: -1,
 				},
 				{
 					Name: "server2",
 					Replicas: map[int]*store.ServerReplica{
 						0: gsr(0, 200, []string{"sklearn"}),
 					},
-					Shared: true,
+					Shared:           true,
+					ExpectedReplicas: -1,
 				},
 			},
-			serverFilters:     []ServerFilter{filters.SharingServerFilter{}},
-			replicaFilters:    []ReplicaFilter{filters.RequirementsReplicaFilter{}, filters.AvailableMemoryFilter{}},
-			serverSorts:       []sorters.ServerSorter{},
-			replicaSort:       []sorters.ReplicaSorter{sorters.ModelAlreadyLoadedSorter{}},
 			scheduled:         true,
 			scheduledServer:   "server2",
 			scheduledReplicas: []int{0},
@@ -203,9 +203,10 @@ func TestScheduler(t *testing.T) {
 			model: newTestModel("model1", 100, []string{"sklearn"}, nil, 2, []int{1}, false, ""),
 			servers: []*store.ServerSnapshot{
 				{
-					Name:     "server1",
-					Replicas: map[int]*store.ServerReplica{0: gsr(0, 50, []string{"sklearn"})},
-					Shared:   true,
+					Name:             "server1",
+					Replicas:         map[int]*store.ServerReplica{0: gsr(0, 50, []string{"sklearn"})},
+					Shared:           true,
+					ExpectedReplicas: -1,
 				},
 				{
 					Name: "server2",
@@ -213,13 +214,10 @@ func TestScheduler(t *testing.T) {
 						0: gsr(0, 200, []string{"sklearn"}),
 						1: gsr(1, 200, []string{"sklearn"}),
 					},
-					Shared: true,
+					Shared:           true,
+					ExpectedReplicas: -1,
 				},
 			},
-			serverFilters:     []ServerFilter{filters.SharingServerFilter{}},
-			replicaFilters:    []ReplicaFilter{filters.RequirementsReplicaFilter{}, filters.AvailableMemoryFilter{}},
-			serverSorts:       []sorters.ServerSorter{},
-			replicaSort:       []sorters.ReplicaSorter{sorters.ModelAlreadyLoadedSorter{}},
 			scheduled:         true,
 			scheduledServer:   "server2",
 			scheduledReplicas: []int{1, 0},
@@ -234,16 +232,74 @@ func TestScheduler(t *testing.T) {
 						0: gsr(0, 200, []string{"sklearn"}),
 						1: gsr(1, 200, []string{"sklearn"}),
 					},
-					Shared: true,
+					Shared:           true,
+					ExpectedReplicas: -1,
 				},
 			},
-			serverFilters:     []ServerFilter{},
-			replicaFilters:    []ReplicaFilter{},
-			serverSorts:       []sorters.ServerSorter{},
-			replicaSort:       []sorters.ReplicaSorter{},
 			scheduled:         true,
 			scheduledServer:   "server2",
 			scheduledReplicas: nil,
+		},
+		{
+			name:  "DeletedServer",
+			model: newTestModel("model1", 100, []string{"sklearn"}, nil, 1, []int{}, false, ""),
+			servers: []*store.ServerSnapshot{
+				{
+					Name:             "server1",
+					Replicas:         map[int]*store.ServerReplica{0: gsr(0, 200, []string{"sklearn"})},
+					Shared:           true,
+					ExpectedReplicas: 0,
+				},
+				{
+					Name: "server2",
+					Replicas: map[int]*store.ServerReplica{
+						0: gsr(0, 200, []string{"sklearn"}),
+						1: gsr(1, 200, []string{"sklearn"}),
+					},
+					Shared:           true,
+					ExpectedReplicas: -1,
+				},
+			},
+			scheduled:         true,
+			scheduledServer:   "server2",
+			scheduledReplicas: []int{0},
+		},
+		{
+			name:  "Reschedule",
+			model: newTestModel("model1", 100, []string{"sklearn"}, nil, 1, []int{0}, false, "server1"),
+			servers: []*store.ServerSnapshot{
+				{
+					Name:             "server1",
+					Replicas:         map[int]*store.ServerReplica{0: gsr(0, 200, []string{"sklearn"})},
+					Shared:           true,
+					ExpectedReplicas: 0,
+				},
+				{
+					Name: "server2",
+					Replicas: map[int]*store.ServerReplica{
+						0: gsr(0, 200, []string{"sklearn"}),
+						1: gsr(1, 200, []string{"sklearn"}),
+					},
+					Shared:           true,
+					ExpectedReplicas: -1,
+				},
+			},
+			scheduled:         true,
+			scheduledServer:   "server2",
+			scheduledReplicas: []int{0},
+		},
+		{
+			name:  "DeletedServerFail",
+			model: newTestModel("model1", 100, []string{"sklearn"}, nil, 1, []int{1}, false, ""),
+			servers: []*store.ServerSnapshot{
+				{
+					Name:             "server1",
+					Replicas:         map[int]*store.ServerReplica{0: gsr(0, 200, []string{"sklearn"})},
+					Shared:           true,
+					ExpectedReplicas: 0,
+				},
+			},
+			scheduled: false,
 		},
 	}
 
@@ -258,9 +314,8 @@ func TestScheduler(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			//t.Logf("Running schedule test %d",tidx)
 			mockStore := newMockStore(test.model, test.servers)
-			scheduler := NewSimpleScheduler(logger, mockStore, test.serverFilters, test.replicaFilters, test.serverSorts, test.replicaSort)
+			scheduler := NewSimpleScheduler(logger, mockStore, DefaultSchedulerConfig())
 			err := scheduler.Schedule(test.model.Name)
 			if test.scheduled {
 				g.Expect(err).To(BeNil())

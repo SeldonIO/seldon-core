@@ -72,16 +72,27 @@ func NewModelVersion(model *pb.Model, version uint32, server string, replicas ma
 }
 
 type Server struct {
-	name     string
-	replicas map[int]*ServerReplica
-	shared   bool
+	name             string
+	replicas         map[int]*ServerReplica
+	shared           bool
+	expectedReplicas int
+	kubernetesMeta   *pb.KubernetesMeta
+}
+
+func (s *Server) SetExpectedReplicas(replicas int) {
+	s.expectedReplicas = replicas
+}
+
+func (s *Server) SetKubernetesMeta(meta *pb.KubernetesMeta) {
+	s.kubernetesMeta = meta
 }
 
 func NewServer(name string, shared bool) *Server {
 	return &Server{
-		name:     name,
-		replicas: make(map[int]*ServerReplica),
-		shared:   shared,
+		name:             name,
+		replicas:         make(map[int]*ServerReplica),
+		shared:           shared,
+		expectedReplicas: -1,
 	}
 }
 
@@ -147,10 +158,11 @@ const (
 	ModelTerminating
 	ModelTerminated
 	ModelTerminateFailed
+	ScheduleFailed
 )
 
 func (m ModelState) String() string {
-	return [...]string{"ModelStateUnknown", "ModelProgressing", "ModelAvailable", "ModelFailed", "ModelTerminating", "ModelTerminated", "ModelTerminateFailed"}[m]
+	return [...]string{"ModelStateUnknown", "ModelProgressing", "ModelAvailable", "ModelFailed", "ModelTerminating", "ModelTerminated", "ModelTerminateFailed", "ScheduleFailed"}[m]
 }
 
 type ModelReplicaState uint32
@@ -358,7 +370,10 @@ func (m *ModelVersion) Inactive() bool {
 	return true
 }
 
-func (m *ModelVersion) IsLoadingOrLoaded(replicaIdx int) bool {
+func (m *ModelVersion) IsLoadingOrLoaded(server string, replicaIdx int) bool {
+	if server != m.server {
+		return false
+	}
 	for r, v := range m.replicas {
 		if r == replicaIdx && v.State.IsLoadingOrLoaded() {
 			return true
@@ -392,6 +407,10 @@ func (m *ModelVersion) Key() string {
 
 func (m *ModelVersion) IsDeleted() bool {
 	return m.deleted
+}
+
+func (m *ModelVersion) SetReplicaState(replicaIdx int, state ReplicaStatus) {
+	m.replicas[replicaIdx] = state
 }
 
 func (s *Server) Key() string {

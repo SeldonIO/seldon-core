@@ -4,7 +4,4 @@ namePrefix: seldon-
 bases:
 - ../scheduler
 - ../envoy
-- ../server
-- ../mlserver
-- ../triton
 - ../config

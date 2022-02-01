@@ -3,6 +3,8 @@ package xdscache
 import (
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
 )
@@ -16,13 +18,15 @@ type SeldonXDSCache struct {
 	Listeners map[string]resources.Listener
 	Routes    map[string][]resources.Route
 	Clusters  map[string]resources.Cluster
+	logger    logrus.FieldLogger
 }
 
-func NewSeldonXDSCache() *SeldonXDSCache {
+func NewSeldonXDSCache(logger logrus.FieldLogger) *SeldonXDSCache {
 	return &SeldonXDSCache{
 		Listeners: make(map[string]resources.Listener),
 		Clusters:  make(map[string]resources.Cluster),
 		Routes:    make(map[string][]resources.Route),
+		logger:    logger.WithField("source", "XDSCache"),
 	}
 }
 
@@ -110,15 +114,19 @@ func (xds *SeldonXDSCache) AddCluster(name string, route string, isGrpc bool) {
 }
 
 func (xds *SeldonXDSCache) RemoveRoutes(modelName string) error {
+	logger := xds.logger.WithField("func", "RemoveRoute")
+	logger.Infof("Remove routes for model %s", modelName)
 	routeList, ok := xds.Routes[modelName]
 	if !ok {
+		logger.Warnf("No routes found for model %s", modelName)
 		return nil
 	}
 	delete(xds.Routes, modelName)
 	for _, route := range routeList {
+		logger.Debugf("Looking at removing route %+v for model %s", route, modelName)
 		httpCluster, ok := xds.Clusters[route.HttpCluster]
 		if !ok {
-			return fmt.Errorf("Can't find http cluster for model %s", modelName)
+			return fmt.Errorf("Can't find http cluster for model %s route %+v", modelName, route)
 		}
 		grpcCluster, ok := xds.Clusters[route.GrpcCluster]
 		if !ok {

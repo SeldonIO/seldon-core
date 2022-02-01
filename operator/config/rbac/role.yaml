@@ -14,6 +14,36 @@ rules:
   - create
   - patch
 - apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - statefulsets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - statefulsets/status
+  verbs:
+  - get
+- apiGroups:
   - mlops.seldon.io
   resources:
   - explainers
@@ -94,6 +124,32 @@ rules:
 - apiGroups:
   - mlops.seldon.io
   resources:
+  - serverconfigs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - serverconfigs/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - serverconfigs/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - mlops.seldon.io
+  resources:
   - servers
   verbs:
   - create
@@ -117,3 +173,21 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - v1
+  resources:
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - v1
+  resources:
+  - services/status
+  verbs:
+  - get

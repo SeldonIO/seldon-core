@@ -3,45 +3,40 @@ package cleaner
 import (
 	"fmt"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent"
+	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/store"
 	log "github.com/sirupsen/logrus"
 )
 
 type VersionCleaner struct {
-	store  store.SchedulerStore
-	logger log.FieldLogger
-	events chan *store.ModelSnapshot
-	agent  agent.AgentHandler
+	store     store.SchedulerStore
+	logger    log.FieldLogger
+	chanEvent chan coordinator.ModelEventMsg
 }
 
-func NewVersionCleaner(schedStore store.SchedulerStore, logger log.FieldLogger, agent agent.AgentHandler) *VersionCleaner {
+func NewVersionCleaner(schedStore store.SchedulerStore, logger log.FieldLogger, eventHub *coordinator.ModelEventHub) *VersionCleaner {
 	v := &VersionCleaner{
-		store:  schedStore,
-		logger: logger,
-		events: make(chan *store.ModelSnapshot, 1),
-		agent:  agent,
+		store:     schedStore,
+		logger:    logger.WithField("source", "VersionCleaner"),
+		chanEvent: make(chan coordinator.ModelEventMsg, 1),
 	}
-	schedStore.AddListener(v.events) // Add ourselves to listen for status updates
+	eventHub.AddListener(v.chanEvent)
 	return v
 }
 
 func (v *VersionCleaner) ListenForEvents() {
 	logger := v.logger.WithField("func", "ListenForEvents")
-	for modelSnapshot := range v.events {
-		logger.Infof("Got model state change for %s", modelSnapshot.Name)
-		modelName := modelSnapshot.Name
+	for evt := range v.chanEvent {
+		logger.Infof("Got model state change for %s", evt.String())
+		modelEventMsg := evt
 		go func() {
-			err := v.cleanupOldVersions(modelName)
+			err := v.cleanupOldVersions(modelEventMsg.ModelName)
 			if err != nil {
-				logger.WithError(err).Warnf("Failed to run cleanup old versions for model %s", modelName)
+				logger.WithError(err).Warnf("Failed to run cleanup old versions for model %s", modelEventMsg.String())
 			}
 		}()
 	}
-}
-
-func (v *VersionCleaner) StopListenForEvents() {
-	close(v.events)
 }
 
 func (v *VersionCleaner) cleanupOldVersions(modelName string) error {
@@ -61,12 +56,11 @@ func (v *VersionCleaner) cleanupOldVersions(modelName string) error {
 	}
 	if latest.ModelState().State == store.ModelAvailable {
 		for _, mv := range model.GetVersionsBeforeLastAvailable() {
-			err = v.store.UpdateLoadedModels(modelName, mv.GetVersion(), mv.Server(), []*store.ServerReplica{})
+			_, err := v.store.UnloadVersionModels(modelName, mv.GetVersion())
 			if err != nil {
 				return err
 			}
 		}
 	}
-	v.agent.SendAgentSync(modelName)
 	return nil
 }

@@ -15,9 +15,11 @@ type CandidateReplica struct {
 }
 
 type ServerSorter interface {
+	Name() string
 	IsLess(i *CandidateServer, j *CandidateServer) bool
 }
 
 type ReplicaSorter interface {
+	Name() string
 	IsLess(i *CandidateReplica, j *CandidateReplica) bool
 }

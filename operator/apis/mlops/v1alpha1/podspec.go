@@ -1,10 +1,14 @@
 package v1alpha1
 
 import (
+	"encoding/json"
+
 	v1 "k8s.io/api/core/v1"
 )
 
 // PodSpec is a description of a pod.
+// Modifies and in future limits a v1.PodSpec.
+// Optional containers.
 type PodSpec struct {
 	// List of volumes that can be mounted by containers belonging to the pod.
 	// More info: https://kubernetes.io/docs/concepts/storage/volumes
@@ -214,4 +218,20 @@ type PodSpec struct {
 	// Default to false.
 	// +optional
 	SetHostnameAsFQDN *bool `json:"setHostnameAsFQDN,omitempty" protobuf:"varint,35,opt,name=setHostnameAsFQDN"`
+}
+
+func (p *PodSpec) ToV1PodSpec() (*v1.PodSpec, error) {
+
+	corePodSpec := v1.PodSpec{}
+	// Marshal and Unmarshal to merge different types
+	overrides, err := json.Marshal(p)
+	if err != nil {
+		return nil, err
+	}
+	if err := json.Unmarshal(overrides, &corePodSpec); err != nil {
+		return nil, err
+	}
+
+	return &corePodSpec, nil
+
 }

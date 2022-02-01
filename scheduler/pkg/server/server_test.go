@@ -4,12 +4,12 @@ import (
 	"context"
 	"testing"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
+
 	. "github.com/onsi/gomega"
 	pba "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	scheduler2 "github.com/seldonio/seldon-core/scheduler/pkg/scheduler"
-	"github.com/seldonio/seldon-core/scheduler/pkg/scheduler/filters"
-	"github.com/seldonio/seldon-core/scheduler/pkg/scheduler/sorters"
 	"github.com/seldonio/seldon-core/scheduler/pkg/store"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -31,15 +31,13 @@ func TestLoadModel(t *testing.T) {
 	createTestScheduler := func() (*SchedulerServer, *mockAgentHandler) {
 		logger := log.New()
 		log.SetLevel(log.DebugLevel)
-		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore())
+		eventHub := &coordinator.ModelEventHub{}
+		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
 		mockAgent := &mockAgentHandler{}
 		scheduler := scheduler2.NewSimpleScheduler(logger,
 			schedulerStore,
-			[]scheduler2.ServerFilter{filters.SharingServerFilter{}},
-			[]scheduler2.ReplicaFilter{filters.RequirementsReplicaFilter{}, filters.AvailableMemoryFilter{}},
-			[]sorters.ServerSorter{},
-			[]sorters.ReplicaSorter{sorters.ModelAlreadyLoadedSorter{}})
-		s := NewSchedulerServer(logger, schedulerStore, scheduler, mockAgent)
+			scheduler2.DefaultSchedulerConfig())
+		s := NewSchedulerServer(logger, schedulerStore, scheduler, eventHub)
 		return s, mockAgent
 	}
 
@@ -108,7 +106,7 @@ func TestLoadModel(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			s, mockAgent := createTestScheduler()
+			s, _ := createTestScheduler()
 			for _, repReq := range test.req {
 				err := s.store.AddServerReplica(repReq)
 				g.Expect(err).To(BeNil())
@@ -125,7 +123,6 @@ func TestLoadModel(t *testing.T) {
 			} else {
 				g.Expect(err).To(BeNil())
 				g.Expect(r).ToNot(BeNil())
-				g.Expect(mockAgent.numSyncs).To(Equal(1))
 			}
 		})
 	}
@@ -135,19 +132,17 @@ func TestUnloadModel(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 
-	createTestScheduler := func() (*SchedulerServer, *mockAgentHandler) {
+	createTestScheduler := func() (*SchedulerServer, *mockAgentHandler, *coordinator.ModelEventHub) {
 		logger := log.New()
 		log.SetLevel(log.DebugLevel)
-		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore())
+		eventHub := &coordinator.ModelEventHub{}
+		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
 		mockAgent := &mockAgentHandler{}
 		scheduler := scheduler2.NewSimpleScheduler(logger,
 			schedulerStore,
-			[]scheduler2.ServerFilter{filters.SharingServerFilter{}},
-			[]scheduler2.ReplicaFilter{filters.RequirementsReplicaFilter{}, filters.AvailableMemoryFilter{}},
-			[]sorters.ServerSorter{},
-			[]sorters.ReplicaSorter{sorters.ModelAlreadyLoadedSorter{}})
-		s := NewSchedulerServer(logger, schedulerStore, scheduler, mockAgent)
-		return s, mockAgent
+			scheduler2.DefaultSchedulerConfig())
+		s := NewSchedulerServer(logger, schedulerStore, scheduler, eventHub)
+		return s, mockAgent, eventHub
 	}
 
 	type test struct {
@@ -199,9 +194,12 @@ func TestUnloadModel(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			s, mockAgent := createTestScheduler()
-			go s.ListenForEvents()
-			defer s.StopListenForEvents()
+			s, _, eventHub := createTestScheduler()
+			defer eventHub.Close()
+			go s.ListenForModelEvents()
+			defer s.StopSendModelEvents()
+			go s.ListenForServerEvents()
+			defer s.StopSendServerEvents()
 			for _, repReq := range test.req {
 				err := s.store.AddServerReplica(repReq)
 				g.Expect(err).To(BeNil())
@@ -227,7 +225,6 @@ func TestUnloadModel(t *testing.T) {
 				g.Expect(r).ToNot(BeNil())
 				ms, err := s.store.GetModel(modelName)
 				g.Expect(err).To(BeNil())
-				g.Expect(mockAgent.numSyncs).To(Equal(2))
 				for replicaIdx, state := range test.modelReplicaStates {
 					g.Expect(ms.GetLatest().GetModelReplicaState(replicaIdx)).To(Equal(state))
 				}

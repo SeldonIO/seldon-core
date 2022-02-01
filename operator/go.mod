@@ -5,6 +5,7 @@ go 1.16
 require (
 	github.com/go-logr/logr v0.4.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
+	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.16.0
 	github.com/sirupsen/logrus v1.8.1

@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
+
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	rsrc "github.com/envoyproxy/go-control-plane/pkg/resource/v3"
@@ -14,10 +16,6 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/pkg/store"
 	"github.com/sirupsen/logrus"
 )
-
-type EnvoyHandler interface {
-	SendEnvoySync(modelName string)
-}
 
 type IncrementalProcessor struct {
 	cache  cache.SnapshotCache
@@ -28,38 +26,31 @@ type IncrementalProcessor struct {
 	xdsCache        *xdscache.SeldonXDSCache
 	mu              sync.RWMutex
 	store           store.SchedulerStore
-	source          chan string
+	source          chan coordinator.ModelEventMsg
 }
 
-func NewIncrementalProcessor(cache cache.SnapshotCache, nodeID string, log logrus.FieldLogger, store store.SchedulerStore) *IncrementalProcessor {
+func NewIncrementalProcessor(cache cache.SnapshotCache, nodeID string, log logrus.FieldLogger, store store.SchedulerStore, hub *coordinator.ModelEventHub) *IncrementalProcessor {
 	ip := &IncrementalProcessor{
 		cache:           cache,
 		nodeID:          nodeID,
 		snapshotVersion: rand.Int63n(1000),
 		logger:          log.WithField("source", "EnvoyServer"),
-		xdsCache:        xdscache.NewSeldonXDSCache(),
+		xdsCache:        xdscache.NewSeldonXDSCache(log),
 		store:           store,
-		source:          make(chan string, 1),
+		source:          make(chan coordinator.ModelEventMsg, 1),
 	}
 	ip.SetListener("seldon_http")
+	hub.AddListener(ip.source)
 	return ip
-}
-
-func (p *IncrementalProcessor) SendEnvoySync(modelName string) {
-	p.source <- modelName
-}
-
-func (p *IncrementalProcessor) StopEnvoySync() {
-	close(p.source)
 }
 
 func (p *IncrementalProcessor) ListenForSyncs() {
 	logger := p.logger.WithField("func", "ListenForSyncs")
-	for msg := range p.source {
-		logger.Debugf("Received sync for model %s", msg)
-		err := p.Sync(msg)
+	for evt := range p.source {
+		logger.Debugf("Received sync for model %s", evt.String())
+		err := p.Sync(evt.ModelName)
 		if err != nil {
-			logger.Errorf("Failed to process sync")
+			logger.WithError(err).Errorf("Failed to process sync for model %s", evt.String())
 		}
 	}
 }
@@ -185,6 +176,11 @@ func (p *IncrementalProcessor) Sync(modelName string) error {
 		totalReplicas := len(lastAvailableModelVersion.GetAssignment()) + len(latestModel.GetAssignment())
 		trafficLastAvailable := uint32((len(lastAvailableModelVersion.GetAssignment()) * 100 / totalReplicas))
 		trafficLatest := 100 - trafficLastAvailable
+		lastAvailableServer, err := p.store.GetServer(lastAvailableModelVersion.Server())
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to find server %s for last available model for %s", lastAvailableModelVersion.Server(), modelName)
+			return err
+		}
 		logger.Debugf("Splitting traffic between latest %s:%d %d percent and %s:%d %d percent",
 			modelName,
 			latestModel.GetVersion(),
@@ -192,7 +188,7 @@ func (p *IncrementalProcessor) Sync(modelName string) error {
 			modelName,
 			lastAvailableModelVersion.GetVersion(),
 			trafficLastAvailable)
-		p.updateEnvoyForModelVersion(modelName, lastAvailableModelVersion, server, trafficLastAvailable)
+		p.updateEnvoyForModelVersion(modelName, lastAvailableModelVersion, lastAvailableServer, trafficLastAvailable)
 		p.updateEnvoyForModelVersion(modelName, latestModel, server, 100)
 	} else {
 		p.updateEnvoyForModelVersion(modelName, latestModel, server, 100)

@@ -1,0 +1,6 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: ServerConfig
+metadata:
+  name: serverconfig-sample
+spec:
+  # TODO(user): Add fields here

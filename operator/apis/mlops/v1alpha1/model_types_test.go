@@ -75,7 +75,7 @@ func TestAsModelDetails(t *testing.T) {
 					},
 					Logger:       &LoggingSpec{},
 					Requirements: []string{"a", "b"},
-					Replicas:     &replicas,
+					ScalingSpec:  ScalingSpec{Replicas: &replicas},
 					Server:       &server,
 				},
 			},

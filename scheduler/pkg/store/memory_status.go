@@ -1,6 +1,10 @@
 package store
 
-import "time"
+import (
+	"time"
+
+	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
+)
 
 type replicaStateStatistics struct {
 	replicasAvailable    uint32
@@ -12,12 +16,6 @@ type replicaStateStatistics struct {
 	lastFailedStateTime  time.Time
 	latestTime           time.Time
 	lastFailedReason     string
-}
-
-func (m *MemoryStore) AddListener(c chan *ModelSnapshot) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	m.modelEventListeners = append(m.modelEventListeners, c)
 }
 
 func calcReplicaStateStatistics(modelVersion *ModelVersion, deleted bool) *replicaStateStatistics {
@@ -71,7 +69,7 @@ func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersio
 			modelState = ModelFailed
 			modelReason = stats.lastFailedReason
 			modelTimestamp = stats.lastFailedStateTime
-		} else if (modelVersion.GetModelSpec() != nil && stats.replicasAvailable == modelVersion.GetDeploymentSpec().Replicas) ||
+		} else if (modelVersion.GetDeploymentSpec() != nil && stats.replicasAvailable == modelVersion.GetDeploymentSpec().Replicas) || // equal to desired replicas
 			(stats.replicasAvailable > 0 && prevModelVersion != nil && modelVersion != prevModelVersion && prevModelVersion.state.State == ModelAvailable) { //TODO In future check if available replicas is > minReplicas
 			modelState = ModelAvailable
 		} else {
@@ -87,15 +85,23 @@ func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersio
 	}
 }
 
+func (m *MemoryStore) FailedScheduling(modelVersion *ModelVersion, reason string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	modelVersion.state = ModelStatus{
+		State:               ScheduleFailed,
+		Reason:              reason,
+		Timestamp:           time.Now(),
+		AvailableReplicas:   0,
+		UnavailableReplicas: modelVersion.GetModel().GetDeploymentSpec().GetReplicas(),
+	}
+	go m.eventHub.TriggerModelEvent(coordinator.ModelEventMsg{ModelName: modelVersion.GetMeta().GetName(), ModelVersion: modelVersion.GetVersion()})
+}
+
 func (m *MemoryStore) updateModelStatus(isLatest bool, deleted bool, modelVersion *ModelVersion, prevModelVersion *ModelVersion) {
 	stats := calcReplicaStateStatistics(modelVersion, deleted)
 	m.logger.Debugf("Stats %+v modelVersion %+v prev model %+v", stats, modelVersion, prevModelVersion)
 	updateModelState(isLatest, modelVersion, prevModelVersion, stats, deleted)
 
-	model := m.getModelImpl(modelVersion.GetMeta().GetName())
-	if isLatest {
-		for _, listener := range m.modelEventListeners {
-			listener <- model
-		}
-	}
+	go m.eventHub.TriggerModelEvent(coordinator.ModelEventMsg{ModelName: modelVersion.GetMeta().GetName(), ModelVersion: modelVersion.GetVersion()})
 }

@@ -12,10 +12,8 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/repository/mlserver"
 
 	"github.com/jarcoal/httpmock"
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/rclone"
-	"github.com/seldonio/seldon-core/scheduler/pkg/util"
-
 	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/rclone"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -184,7 +182,7 @@ func TestDownloadModelVersion(t *testing.T) {
 			defer httpmock.DeactivateAndReset()
 			rclonePath := t.TempDir()
 			for folderName, ms := range test.folders {
-				hash, err := util.Hash(test.srcUri)
+				hash, err := rclone.CreateRcloneModelHash(test.modelName, test.srcUri)
 				g.Expect(err).To(BeNil())
 				folderPath := filepath.Join(rclonePath, fmt.Sprintf("%d/%s", hash, folderName))
 				err = os.MkdirAll(folderPath, fs.ModePerm)
@@ -198,7 +196,7 @@ func TestDownloadModelVersion(t *testing.T) {
 			if test.root != nil {
 				data, err := json.Marshal(test.root)
 				g.Expect(err).To(BeNil())
-				hash, err := util.Hash(test.srcUri)
+				hash, err := rclone.CreateRcloneModelHash(test.modelName, test.srcUri)
 				g.Expect(err).To(BeNil())
 				folderPath := filepath.Join(rclonePath, fmt.Sprintf("%d", hash))
 				err = os.MkdirAll(folderPath, fs.ModePerm)

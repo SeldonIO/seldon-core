@@ -136,7 +136,7 @@ func TestClientCreate(t *testing.T) {
 			defer httpmock.DeactivateAndReset()
 			v2Client := createTestV2Client(test.models, test.v2Status)
 			modelRepository := FakeModelRepository{err: test.modelRepoErr}
-			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "0.0.0.0", "default")
+			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "default")
 			mockAgentV2Server := &mockAgentV2Server{models: test.models}
 			conn, err := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(err).To(BeNil())
@@ -238,7 +238,7 @@ func TestLoadModel(t *testing.T) {
 			defer httpmock.DeactivateAndReset()
 			v2Client := createTestV2Client(test.models, test.v2Status)
 			modelRepository := FakeModelRepository{err: test.modelRepoErr}
-			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "0.0.0.0", "default")
+			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "default")
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
@@ -349,7 +349,7 @@ parameters:
 			defer httpmock.DeactivateAndReset()
 			v2Client := createTestV2Client(test.models, test.v2Status)
 			modelRepository := FakeModelRepository{}
-			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "0.0.0.0", "default")
+			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "default")
 			switch x := test.op.GetModelVersion().GetModel().GetModelSpec().StorageConfig.Config.(type) {
 			case *pbs.StorageConfig_StorageSecretName:
 				secret := &v1.Secret{ObjectMeta: metav1.ObjectMeta{Name: x.StorageSecretName, Namespace: client.namespace}, StringData: map[string]string{"mys3": test.secretData}}
@@ -464,7 +464,7 @@ func TestUnloadModel(t *testing.T) {
 			defer httpmock.DeactivateAndReset()
 			v2Client := createTestV2Client(test.models, test.v2Status)
 			modelRepository := FakeModelRepository{}
-			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "0.0.0.0", "default")
+			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "default")
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())

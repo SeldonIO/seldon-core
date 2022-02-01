@@ -114,6 +114,10 @@ spec:
         imagePullPolicy: IfNotPresent
         name: agent
         env:
+        - name: SELDON_SERVER_CAPABILITIES
+          value: "tensorflow,onnx,pytorch,tensorrt"
+        - name: SELDON_OVERCOMMIT
+          value: "false"
         - name: SELDON_SERVER_HTTP_PORT
           value: "9000"
         - name: SELDON_SERVER_GRPC_PORT
@@ -122,12 +126,8 @@ spec:
           value: "seldon-scheduler"
         - name: SELDON_SCHEDULER_PORT
           value: "9005"
-        - name: SELDON_SERVER_NAME
-          value: "triton"
         - name: SELDON_SERVER_TYPE
           value: "triton"
-        - name: SELDON_REPLICA_CONFIG
-          value: '{"inferenceSvc":"DYNAMIC","inferenceHttpPort":9000,"inferenceGrpcPort":9500,"memoryBytes":100000,"capabilities":["tensorflow","onnx","pytorch","tensorrt"],"overCommit":false}'
         - name: POD_NAME
           valueFrom:
             fieldRef:

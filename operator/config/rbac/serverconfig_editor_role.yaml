@@ -1,0 +1,24 @@
+# permissions for end users to edit serverconfigs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: serverconfig-editor-role
+rules:
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - serverconfigs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - serverconfigs/status
+  verbs:
+  - get

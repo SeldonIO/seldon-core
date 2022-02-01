@@ -97,6 +97,7 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	err = r.Scheduler.LoadModel(ctx, model)
 	if err != nil {
+		logger.Error(err, "Failed in call to load model")
 		return ctrl.Result{}, err
 	}
 

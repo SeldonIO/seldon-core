@@ -1,0 +1,11 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: simple
+  namespace: seldon-mesh
+spec:
+  storageUri: "gs://seldon-models/triton/simple"
+  artifactVersion: 1
+  requirements:
+  - tensorflow
+  replicas: 1

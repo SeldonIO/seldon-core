@@ -36,15 +36,11 @@ type ModelSpec struct {
 	// Memory needed for model
 	// +optional
 	Memory *resource.Quantity `json:"memory,omitempty"`
+	// Scaling spec
+	ScalingSpec `json:",inline"`
 	// Name of the Server to deploy this artifact
 	// +optional
 	Server *string `json:"server,omitempty"`
-	// Number of replicas - default 1
-	Replicas *int32 `json:"replicas,omitempty"`
-	// Min number of replicas - default equal to replicas
-	MinReplicas *int32 `json:"minReplicas,omitempty"`
-	// Max number of replicas - default equal to replicas
-	MaxReplicas *int32 `json:"maxReplicas,omitempty"`
 	// Model already loaded on a server. Don't schedule.
 	// Default false
 	PreLoaded bool `json:"preloaded,omitempty"`
@@ -53,6 +49,22 @@ type ModelSpec struct {
 	Dedicated bool `json:"dedicated,omitempty"`
 	// Payload logging
 	Logger *LoggingSpec `json:"logger,omitempty"`
+}
+
+type ScalingSpec struct {
+	// Number of replicas - default 1
+	Replicas *int32 `json:"replicas,omitempty"`
+	// Min number of replicas - default equal to replicas
+	MinReplicas *int32 `json:"minReplicas,omitempty"`
+	// Max number of replicas - default equal to replicas
+	MaxReplicas *int32 `json:"maxReplicas,omitempty"`
+}
+
+func (s *ScalingSpec) Default() {
+	defaultReplicas := int32(1)
+	if s.Replicas == nil {
+		s.Replicas = &defaultReplicas
+	}
 }
 
 type LoggingSpec struct {
@@ -171,43 +183,41 @@ func (m Model) AsSchedulerModel() (*scheduler.Model, error) {
 }
 
 const (
-	DeploymentsReady apis.ConditionType = "DeploymentsReady"
-	SeldonMeshReady  apis.ConditionType = "SeldonMeshReady"
+	ModelReady apis.ConditionType = "ModelReady"
 )
 
-var conditionSet = apis.NewLivingConditionSet(
-	DeploymentsReady,
-	SeldonMeshReady,
+var modelConditionSet = apis.NewLivingConditionSet(
+	ModelReady,
 )
 
 var _ apis.ConditionsAccessor = (*ModelStatus)(nil)
 
 func (ms *ModelStatus) InitializeConditions() {
-	conditionSet.Manage(ms).InitializeConditions()
+	modelConditionSet.Manage(ms).InitializeConditions()
 }
 
 func (ms *ModelStatus) IsReady() bool {
-	return conditionSet.Manage(ms).IsHappy()
+	return modelConditionSet.Manage(ms).IsHappy()
 }
 
 func (ms *ModelStatus) GetCondition(t apis.ConditionType) *apis.Condition {
-	return conditionSet.Manage(ms).GetCondition(t)
+	return modelConditionSet.Manage(ms).GetCondition(t)
 }
 
 func (ms *ModelStatus) IsConditionReady(t apis.ConditionType) bool {
-	return conditionSet.Manage(ms).GetCondition(t) != nil && conditionSet.Manage(ms).GetCondition(t).Status == v1.ConditionTrue
+	return modelConditionSet.Manage(ms).GetCondition(t) != nil && modelConditionSet.Manage(ms).GetCondition(t).Status == v1.ConditionTrue
 }
 
 func (ms *ModelStatus) SetCondition(conditionType apis.ConditionType, condition *apis.Condition) {
 	switch {
 	case condition == nil:
-		conditionSet.Manage(ms).MarkUnknown(conditionType, "", "")
+		modelConditionSet.Manage(ms).MarkUnknown(conditionType, "", "")
 	case condition.Status == v1.ConditionUnknown:
-		conditionSet.Manage(ms).MarkUnknown(conditionType, condition.Reason, condition.Message)
+		modelConditionSet.Manage(ms).MarkUnknown(conditionType, condition.Reason, condition.Message)
 	case condition.Status == v1.ConditionTrue:
-		conditionSet.Manage(ms).MarkTrueWithReason(conditionType, condition.Reason, condition.Message)
+		modelConditionSet.Manage(ms).MarkTrueWithReason(conditionType, condition.Reason, condition.Message)
 	case condition.Status == v1.ConditionFalse:
-		conditionSet.Manage(ms).MarkFalse(conditionType, condition.Reason, condition.Message)
+		modelConditionSet.Manage(ms).MarkFalse(conditionType, condition.Reason, condition.Message)
 	}
 }
 

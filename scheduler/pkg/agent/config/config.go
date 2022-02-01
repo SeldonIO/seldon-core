@@ -118,7 +118,7 @@ func (a *AgentConfigHandler) Close() error {
 	return nil
 }
 
-func (a *AgentConfigHandler) AddListener(c chan AgentConfiguration) *AgentConfiguration {
+func (a *AgentConfigHandler) AddListener(c chan<- AgentConfiguration) *AgentConfiguration {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	a.listeners = append(a.listeners, c)

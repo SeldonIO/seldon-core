@@ -1,5 +1,9 @@
 package utils
 
+import (
+	"fmt"
+)
+
 func ContainsStr(slice []string, value string) bool {
 	for _, v := range slice {
 		if v == value {
@@ -17,4 +21,8 @@ func RemoveStr(slice []string, s string) (result []string) {
 		result = append(result, item)
 	}
 	return
+}
+
+func GetStatefulSetReplicaName(name string, replicaIdx int) string {
+	return fmt.Sprintf("%s-%d", name, replicaIdx)
 }

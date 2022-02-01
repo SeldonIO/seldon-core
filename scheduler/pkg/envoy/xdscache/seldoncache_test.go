@@ -4,13 +4,14 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
 )
 
 // Checks bad use with only http cluster added
 func TestHttpRouteOnlyAdded(t *testing.T) {
 	g := NewGomegaWithT(t)
-
-	c := NewSeldonXDSCache()
+	logger := log.New()
+	c := NewSeldonXDSCache(logger)
 
 	httpCluster := "http1"
 	r1 := "r1"
@@ -28,6 +29,8 @@ func TestHttpRouteOnlyAdded(t *testing.T) {
 // Checks a cluster remains until all routes are removed
 func TestAddRemoveHttpAndGrpcRoute(t *testing.T) {
 	g := NewGomegaWithT(t)
+	logger := log.New()
+	c := NewSeldonXDSCache(logger)
 
 	addVersionedRoute := func(c *SeldonXDSCache, httpCluster, grpcCluster, route string, traffic uint32, version uint32) {
 		c.AddRoute(route, "m1", httpCluster, grpcCluster, false, traffic, version)
@@ -36,8 +39,6 @@ func TestAddRemoveHttpAndGrpcRoute(t *testing.T) {
 		c.AddCluster(grpcCluster, route, true)
 		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001)
 	}
-
-	c := NewSeldonXDSCache()
 
 	httpCluster := "http1"
 	grpcCluster := "grpc1"
@@ -63,6 +64,7 @@ func TestAddRemoveHttpAndGrpcRoute(t *testing.T) {
 // Checks a cluster remains until all routes and versions are removed
 func TestAddRemoveHttpAndGrpcRouteVersions(t *testing.T) {
 	g := NewGomegaWithT(t)
+	logger := log.New()
 
 	addVersionedRoute := func(c *SeldonXDSCache, httpCluster, grpcCluster, route string, traffic uint32, version uint32) {
 		c.AddRoute(route, "m1", httpCluster, grpcCluster, false, traffic, version)
@@ -72,7 +74,7 @@ func TestAddRemoveHttpAndGrpcRouteVersions(t *testing.T) {
 		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001)
 	}
 
-	c := NewSeldonXDSCache()
+	c := NewSeldonXDSCache(logger)
 
 	httpCluster := "http1"
 	grpcCluster := "grpc1"

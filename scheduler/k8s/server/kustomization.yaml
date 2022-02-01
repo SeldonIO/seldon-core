@@ -1,3 +1,10 @@
+namespace: seldon-mesh
+namePrefix: seldon-
+
+bases:
+- ../mlserver
+#- ../triton
+
 resources:
 - role.yaml
 - role_binding.yaml

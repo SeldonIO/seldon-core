@@ -19,6 +19,14 @@ package v1alpha1
 import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"knative.dev/pkg/apis"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
+)
+
+const (
+	AgentContainerName  = "agent"
+	RcloneContainerName = "rclone"
+	ServerContainerName = "server"
 )
 
 // ServerSpec defines the desired state of Server
@@ -26,26 +34,17 @@ import (
 type ServerSpec struct {
 	// Server definition
 	Server ServerDefn `json:"server,omitempty"`
-	// Either Models or Mesh needs to be provides
-	// Preloaded models for non mesh server
-	Models []PreLoadedModelSpec `json:"models,omitempty"`
-	// Seldon mesh specifications for mesh servers that can load models dynamically
-	Mesh *MeshDefn `json:"mesh"`
+	// Seldon mesh specifications for multi model servers that can load models dynamically
+	MMS *MultiModelSpec `json:"mms,omitempty"`
 	// PodSpec overrides
-	PodOverride PodSpec `json:"podSpec,omitempty"`
-	// Number of replicas - defaults to 1
-	Replicas *int32 `json:"replicas,omitempty"`
+	// Slices such as containers would be appended not overridden
+	PodSpec *PodSpec `json:"podSpec,omitempty"`
+	// Scaling spec
+	ScalingSpec `json:",inline"`
 }
 
-type PreLoadedModelSpec struct {
-	// Name override
-	// +optional
-	Name                  *string `json:"name,omitempty"`
-	InferenceArtifactSpec `json:",inline"`
-}
-
-type MeshDefn struct {
-	// The capabilities this server will advertise in the mesh
+type MultiModelSpec struct {
+	// The capabilities this server will advertise
 	Capabilities []string `json:"capabilities,omitempty"`
 	// How much memory to push to disk to allow overcommited models
 	SwapMemoryBytes bool `json:"swapMemoryBytes,omitempty"`
@@ -57,19 +56,25 @@ type MeshDefn struct {
 	RClone *v1.Container `json:"rclone,omitempty"`
 }
 
+type ServerType string
+
+const (
+	MLServerServerType ServerType = "mlserver"
+	TritonServerType   ServerType = "triton"
+)
+
 type ServerDefn struct {
 	// Server type - mlserver, triton or left out if custom container
-	Type *string `json:"type,omitempty"`
-	// +optional
-	RuntimeVersion *string `json:"runtimeVersion,omitempty"`
-	// Container overrides for server
-	Container *v1.Container `json:"container,omitempty"`
+	Type ServerType `json:"type"`
 }
 
 // ServerStatus defines the observed state of Server
 type ServerStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	duckv1.Status `json:",inline"`
+	// Number of loade models
+	LoadedModelReplicas int32 `json:"loadedModels"`
 }
 
 //+kubebuilder:object:root=true
@@ -95,4 +100,52 @@ type ServerList struct {
 
 func init() {
 	SchemeBuilder.Register(&Server{}, &ServerList{})
+}
+
+func (s *Server) Default() {
+	s.Spec.Default()
+}
+
+func (s *ServerSpec) Default() {
+	s.ScalingSpec.Default()
+}
+
+const (
+	StatefulSetReady apis.ConditionType = "StatefulSetReady"
+)
+
+var serverConditionSet = apis.NewLivingConditionSet(
+	StatefulSetReady,
+)
+
+var _ apis.ConditionsAccessor = (*ServerStatus)(nil)
+
+func (ss *ServerStatus) InitializeConditions() {
+	serverConditionSet.Manage(ss).InitializeConditions()
+}
+
+func (ss *ServerStatus) IsReady() bool {
+	return serverConditionSet.Manage(ss).IsHappy()
+}
+
+func (ss *ServerStatus) GetCondition(t apis.ConditionType) *apis.Condition {
+	return serverConditionSet.Manage(ss).GetCondition(t)
+}
+
+func (ss *ServerStatus) IsConditionReady(t apis.ConditionType) bool {
+	c := serverConditionSet.Manage(ss).GetCondition(t)
+	return c != nil && c.Status == v1.ConditionTrue
+}
+
+func (ss *ServerStatus) SetCondition(condition *apis.Condition) {
+	switch {
+	case condition == nil:
+		serverConditionSet.Manage(ss).MarkUnknown(condition.Type, "", "")
+	case condition.Status == v1.ConditionUnknown:
+		serverConditionSet.Manage(ss).MarkUnknown(condition.Type, condition.Reason, condition.Message)
+	case condition.Status == v1.ConditionTrue:
+		serverConditionSet.Manage(ss).MarkTrueWithReason(condition.Type, condition.Reason, condition.Message)
+	case condition.Status == v1.ConditionFalse:
+		serverConditionSet.Manage(ss).MarkFalse(condition.Type, condition.Reason, condition.Message)
+	}
 }

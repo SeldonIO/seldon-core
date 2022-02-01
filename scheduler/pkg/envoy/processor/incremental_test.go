@@ -136,7 +136,7 @@ func TestUpdateEnvoyForModelVersion(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			inc := IncrementalProcessor{
 				logger:   log.New(),
-				xdsCache: xdscache.NewSeldonXDSCache(),
+				xdsCache: xdscache.NewSeldonXDSCache(log.New()),
 			}
 			for _, mv := range test.modelVersions {
 				inc.updateEnvoyForModelVersion(mv.GetMeta().GetName(), mv, test.server, test.traffic)

@@ -6,9 +6,11 @@ import (
 )
 
 type ServerSnapshot struct {
-	Name     string
-	Replicas map[int]*ServerReplica
-	Shared   bool
+	Name             string
+	Replicas         map[int]*ServerReplica
+	Shared           bool
+	ExpectedReplicas int
+	KubernetesMeta   *pb.KubernetesMeta
 }
 
 type ModelSnapshot struct {
@@ -23,6 +25,15 @@ func (m *ModelSnapshot) GetLatest() *ModelVersion {
 	} else {
 		return nil
 	}
+}
+
+func (m *ModelSnapshot) GetVersion(version uint32) *ModelVersion {
+	for _, mv := range m.Versions {
+		if mv.GetVersion() == version {
+			return mv
+		}
+	}
+	return nil
 }
 
 func (m *ModelSnapshot) GetPrevious() *ModelVersion {
@@ -69,14 +80,16 @@ func (m *ModelSnapshot) GetVersionsBeforeLastAvailable() []*ModelVersion {
 }
 
 type SchedulerStore interface {
-	UpdateModel(config *pb.LoadModelRequest)
+	UpdateModel(config *pb.LoadModelRequest) error
 	GetModel(key string) (*ModelSnapshot, error)
 	RemoveModel(req *pb.UnloadModelRequest) error
 	GetServers() ([]*ServerSnapshot, error)
 	GetServer(serverKey string) (*ServerSnapshot, error)
 	UpdateLoadedModels(modelKey string, version uint32, serverKey string, replicas []*ServerReplica) error
+	UnloadVersionModels(modelKey string, version uint32) (bool, error)
 	UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, state ModelReplicaState, reason string) error
 	AddServerReplica(request *pba.AgentSubscribeRequest) error
+	ServerNotify(request *pb.ServerNotifyRequest) error
 	RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) // return previously loaded models
-	AddListener(c chan *ModelSnapshot)
+	FailedScheduling(modelVersion *ModelVersion, reason string)
 }

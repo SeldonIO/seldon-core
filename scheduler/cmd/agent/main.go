@@ -13,6 +13,8 @@ import (
 	"syscall"
 	"time"
 
+	agent2 "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/repository/mlserver"
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/repository/triton"
 
@@ -28,61 +30,78 @@ import (
 )
 
 var (
-	serverName       string
-	replicaIdx       uint
-	schedulerHost    string
-	schedulerPort    int
-	rcloneHost       string
-	rclonePort       int
-	inferenceHost    string
-	inferencePort    int
-	agentFolder      string
-	namespace        string
-	replicaConfigStr string
-	inferenceSvcName string
-	configPath       string
-	logLevel         string
-	serverType       string
-	serverTypes      = [...]string{"mlserver", "triton"}
+	serverName        string
+	replicaIdx        uint
+	schedulerHost     string
+	schedulerPort     int
+	rcloneHost        string
+	rclonePort        int
+	inferenceHost     string
+	inferenceHttpPort int
+	inferenceGrpcPort int
+	agentFolder       string
+	namespace         string
+	replicaConfigStr  string
+	inferenceSvcName  string
+	configPath        string
+	logLevel          string
+	serverType        string
+	memoryBytes       int
+	memoryBytes64     uint64
+	capabilitiesList  string
+	capabilities      []string
+	overCommit        bool
+	serverTypes       = [...]string{"mlserver", "triton"}
 )
 
 const (
 	EnvServerHttpPort = "SELDON_SERVER_HTTP_PORT"
-	EnvServerName     = "SELDON_SERVER_NAME"
-	EnvServerIdx      = "POD_NAME"
+	EnvServerGrpcPort = "SELDON_SERVER_GRPC_PORT"
+	EnvPodName        = "POD_NAME"
 	EnvSchedulerHost  = "SELDON_SCHEDULER_HOST"
 	EnvSchedulerPort  = "SELDON_SCHEDULER_PORT"
 	EnvReplicaConfig  = "SELDON_REPLICA_CONFIG"
 	EnvLogLevel       = "SELDON_LOG_LEVEL"
 	EnvServerType     = "SELDON_SERVER_TYPE"
+	EnvMemoryRequest  = "MEMORY_REQUEST"
+	EnvCapabilities   = "SELDON_SERVER_CAPABILITIES"
+	EnvOvercommit     = "SELDON_OVERCOMMIT"
 
-	FlagSchedulerHost = "scheduler-host"
-	FlagSchedulerPort = "scheduler-port"
-	FlagServerName    = "server-name"
-	FlagServerIdx     = "server-idx"
-	FlagInferencePort = "inference-port"
-	FlagReplicaConfig = "replica-config"
-	FlagLogLevel      = "log-level"
-	FlagServerType    = "server-type"
+	FlagSchedulerHost     = "scheduler-host"
+	FlagSchedulerPort     = "scheduler-port"
+	FlagServerName        = "server-name"
+	FlagServerIdx         = "server-idx"
+	FlagInferenceHttpPort = "inference-http-port"
+	FlagInferenceGrpcPort = "inference-grpc-port"
+	FlagReplicaConfig     = "replica-config"
+	FlagLogLevel          = "log-level"
+	FlagServerType        = "server-type"
+	FlagMemoryBytes       = "memory-bytes"
+	FlagCapabilities      = "capabilities"
+	FlagOverCommit        = "overcommit"
 )
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
 
 	flag.StringVar(&serverName, FlagServerName, "mlserver", "Server name")
-	flag.UintVar(&replicaIdx, "server-idx", 0, "server index")
+	flag.UintVar(&replicaIdx, "server-idx", 0, "Server index")
 	flag.StringVar(&schedulerHost, FlagSchedulerHost, "0.0.0.0", "Scheduler host")
 	flag.IntVar(&schedulerPort, FlagSchedulerPort, 9005, "Scheduler port")
 	flag.StringVar(&rcloneHost, "rclone-host", "0.0.0.0", "RClone host")
 	flag.IntVar(&rclonePort, "rclone-port", 5572, "RClone server port")
 	flag.StringVar(&inferenceHost, "inference-host", "0.0.0.0", "Inference server host")
-	flag.IntVar(&inferencePort, FlagInferencePort, 8080, "Inference server port")
+	flag.IntVar(&inferenceHttpPort, FlagInferenceHttpPort, 8080, "Inference server http port")
+	flag.IntVar(&inferenceGrpcPort, FlagInferenceGrpcPort, 9500, "Inference server grpc port")
 	flag.StringVar(&agentFolder, "agent-folder", "/mnt/agent", "Model repository folder")
 	flag.StringVar(&replicaConfigStr, FlagReplicaConfig, "", "Replica Json Config")
 	flag.StringVar(&namespace, "namespace", "", "Namespace")
 	flag.StringVar(&configPath, "config-path", "/mnt/config", "Path to folder with configuration files. Will assume agent.yaml or agent.json in this folder")
+	flag.StringVar(&serverType, FlagServerType, serverTypes[0], "Server type. Default mlserver")
+	flag.IntVar(&memoryBytes, FlagMemoryBytes, 1000000, "Memory available for server")
+	flag.StringVar(&capabilitiesList, FlagCapabilities, "sklearn,xgboost", "Server capabilities")
+	flag.BoolVar(&overCommit, FlagOverCommit, false, "Overcommit memory")
 	flag.StringVar(&logLevel, FlagLogLevel, "debug", "Log level - examples: debug, info, error")
-	flag.StringVar(&serverType, FlagServerType, serverTypes[0], "server type. Default mlserver")
 }
 
 func isFlagPassed(name string) bool {
@@ -95,42 +114,88 @@ func isFlagPassed(name string) bool {
 	return found
 }
 
+func setServerNameAndIdxFromPodName() {
+	log.Infof("Trying to set server name and replica index from pod name")
+	podName := os.Getenv(EnvPodName)
+	if podName != "" {
+		lastDashIdx := strings.LastIndex(podName, "-")
+		if lastDashIdx == -1 {
+			log.Infof("Can't decypher pod name to find last dash and index. %s", podName)
+		} else {
+			serverIdxStr := podName[lastDashIdx+1:]
+			var err error
+			serverIdx, err := strconv.Atoi(serverIdxStr)
+			if err != nil {
+				log.WithError(err).Fatalf("Failed to parse to integer %s with value %s", EnvPodName, serverIdxStr)
+			} else {
+				replicaIdx = uint(serverIdx)
+				serverName = podName[0:lastDashIdx]
+				log.Infof("Got server name and index from %s with value %s. Server name:%s Replica Idx:%d", EnvPodName, podName, serverName, replicaIdx)
+			}
+		}
+	}
+}
+
 func updateFlagsFromEnv() {
-	if !isFlagPassed(FlagInferencePort) {
+	if !isFlagPassed(FlagOverCommit) {
+		var err error
+		overCommitStr := os.Getenv(EnvOvercommit)
+		if overCommitStr != "" {
+			overCommit, err = strconv.ParseBool(overCommitStr)
+			if err != nil {
+				log.WithError(err).Fatalf("Failed to parse %s with value %s for overcommit", EnvOvercommit, overCommitStr)
+			}
+			log.Infof("Setting overcommit from env %s with value %s to %v", EnvOvercommit, overCommitStr, overCommit)
+		}
+	}
+	if !isFlagPassed(FlagCapabilities) {
+		capabilitiesList := os.Getenv(EnvCapabilities)
+		log.Infof("Updating capabilities from env %s with value %s", EnvCapabilities, capabilitiesList)
+		capabilities = strings.Split(capabilitiesList, ",")
+	} else {
+		capabilities = strings.Split(capabilitiesList, ",")
+	}
+	log.Infof("Server Capabilities %v", capabilities)
+	if !isFlagPassed(FlagMemoryBytes) {
+		memoryRequests := os.Getenv(EnvMemoryRequest)
+		var err error
+		if memoryRequests != "" {
+			memoryBytes64, err = strconv.ParseUint(memoryRequests, 10, 64)
+			if err != nil {
+				log.WithError(err).Fatalf("Failed to parse %s with value %s", EnvMemoryRequest, memoryRequests)
+			}
+		} else {
+			memoryBytes64 = uint64(memoryBytes)
+		}
+	} else {
+		memoryBytes64 = uint64(memoryBytes)
+	}
+	if !isFlagPassed(FlagInferenceHttpPort) {
 		port := os.Getenv(EnvServerHttpPort)
 		if port != "" {
-			log.Infof("Got %s from %s setting to %s", FlagInferencePort, EnvServerHttpPort, port)
+			log.Infof("Got %s from %s setting to %s", FlagInferenceHttpPort, EnvServerHttpPort, port)
 			var err error
-			inferencePort, err = strconv.Atoi(port)
+			inferenceHttpPort, err = strconv.Atoi(port)
 			if err != nil {
 				log.WithError(err).Fatalf("Failed to parse %s with value %s", EnvServerHttpPort, port)
 			}
 		}
 	}
-	if !isFlagPassed(FlagServerName) {
-		val := os.Getenv(EnvServerName)
-		if val != "" {
-			log.Infof("Got %s from %s setting to %s", FlagServerName, EnvServerName, val)
-			serverName = val
+	if !isFlagPassed(FlagInferenceGrpcPort) {
+		port := os.Getenv(EnvServerGrpcPort)
+		if port != "" {
+			log.Infof("Got %s from %s setting to %s", FlagInferenceGrpcPort, EnvServerGrpcPort, port)
+			var err error
+			inferenceGrpcPort, err = strconv.Atoi(port)
+			if err != nil {
+				log.WithError(err).Fatalf("Failed to parse %s with value %s", EnvServerGrpcPort, port)
+			}
 		}
 	}
-	if !isFlagPassed(FlagServerIdx) {
-		podName := os.Getenv(EnvServerIdx)
-		if podName != "" {
-			lastDashIdx := strings.LastIndex(podName, "-")
-			if lastDashIdx == -1 {
-				log.Info("Can't decypher pod name to find last dash and index")
-				return
-			}
-			val := podName[lastDashIdx+1:]
-			var err error
-			idxAsInt, err := strconv.Atoi(val)
-			if err != nil {
-				log.WithError(err).Fatalf("Failed to parse %s with value %s", EnvServerIdx, val)
-			}
-			replicaIdx = uint(idxAsInt)
-			log.Infof("Got %s from %s with value %s setting with %d", FlagServerIdx, EnvServerIdx, podName, replicaIdx)
-		}
+	if !isFlagPassed(FlagServerName) || !isFlagPassed(FlagServerIdx) {
+		setServerNameAndIdxFromPodName()
+	} else {
+		log.Warnf("Using passed in values for server name and server index. Server name %s server index %d", serverName, replicaIdx)
 	}
 	if !isFlagPassed(FlagSchedulerHost) {
 		val := os.Getenv(EnvSchedulerHost)
@@ -190,7 +255,7 @@ func updateNamespace() {
 }
 
 func setInferenceSvcName() {
-	podName := os.Getenv(EnvServerIdx)
+	podName := os.Getenv(EnvPodName)
 	if podName != "" {
 		inferenceSvcName = podName
 	} else {
@@ -230,6 +295,28 @@ func getRepositoryHandler(logger log.FieldLogger) repository.ModelRepositoryHand
 	}
 }
 
+func createReplicaConfig() *agent2.ReplicaConfig {
+	if isFlagPassed(FlagReplicaConfig) {
+		rc, err := agent.ParseReplicaConfig(replicaConfigStr)
+		if err != nil {
+			log.WithError(err).Fatalf("Failed to parse replica config %s", replicaConfigStr)
+		}
+		log.Infof("Created replicaConfig from command line %+v", rc)
+		return rc
+	} else {
+		rc := &agent2.ReplicaConfig{
+			InferenceSvc:      inferenceSvcName,
+			InferenceHttpPort: int32(inferenceHttpPort),
+			InferenceGrpcPort: int32(inferenceGrpcPort),
+			MemoryBytes:       memoryBytes64,
+			Capabilities:      capabilities,
+			OverCommit:        overCommit,
+		}
+		log.Infof("Created replicaConfig from environment %+v", rc)
+		return rc
+	}
+}
+
 func main() {
 	logger := log.New()
 	flag.Parse()
@@ -258,11 +345,6 @@ func main() {
 		logger.Info("shutting down due to SIGTERM or SIGINT")
 		close(done)
 	}()
-
-	replicaConfig, err := agent.ParseReplicaConfig(replicaConfigStr)
-	if err != nil {
-		log.Fatalf("Failed to parse replica config %s", replicaConfigStr)
-	}
 
 	var clientset kubernetes.Interface
 	if runningInsideK8s() {
@@ -293,9 +375,9 @@ func main() {
 	// Create Model Repository
 	modelRepository := repository.NewModelRepository(logger, rcloneClient, modelRepositoryDir, getRepositoryHandler(logger))
 	// Create V2 Protocol Handler
-	v2Client := agent.NewV2Client(inferenceHost, inferencePort, logger)
+	v2Client := agent.NewV2Client(inferenceHost, inferenceHttpPort, logger)
 	// Create Agent
-	client := agent.NewClient(serverName, uint32(replicaIdx), schedulerHost, schedulerPort, logger, modelRepository, v2Client, replicaConfig, inferenceSvcName, namespace)
+	client := agent.NewClient(serverName, uint32(replicaIdx), schedulerHost, schedulerPort, logger, modelRepository, v2Client, createReplicaConfig(), namespace)
 
 	// Start client grpc server
 	go func() {

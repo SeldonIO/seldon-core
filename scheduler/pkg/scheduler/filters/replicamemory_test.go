@@ -42,7 +42,7 @@ func TestReplicaMemoryFilter(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			filter := AvailableMemoryFilter{}
+			filter := AvailableMemoryReplicaFilter{}
 			ok := filter.Filter(test.model, test.server)
 			g.Expect(ok).To(Equal(test.expected))
 		})

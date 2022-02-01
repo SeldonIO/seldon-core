@@ -18,12 +18,14 @@ package main
 
 import (
 	"context"
+
+	"github.com/seldonio/seldon-core/operatorv2/scheduler"
+
 	"flag"
 	"os"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1"
 	mlopscontrollers "github.com/seldonio/seldon-core/operatorv2/controllers/mlops"
-	"github.com/seldonio/seldon-core/operatorv2/scheduler"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -31,9 +33,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	//+kubebuilder:scaffold:imports
 )
-
-//+kubebuilder:scaffold:imports
 
 var (
 	scheme   = runtime.NewScheme()
@@ -90,9 +91,16 @@ func main() {
 		os.Exit(1)
 	}
 	go func() {
-		err := schedulerClient.SubscribeEvents(context.Background())
+		err := schedulerClient.SubscribeModelEvents(context.Background())
 		if err != nil {
-			setupLog.Error(err, "Failed to subscribe to scheduler events")
+			setupLog.Error(err, "Failed to subscribe to scheduler model events")
+		}
+		os.Exit(1)
+	}()
+	go func() {
+		err := schedulerClient.SubscribeServerEvents(context.Background())
+		if err != nil {
+			setupLog.Error(err, "Failed to subscribe to scheduler server events")
 		}
 		os.Exit(1)
 	}()
@@ -107,8 +115,10 @@ func main() {
 		os.Exit(1)
 	}
 	if err = (&mlopscontrollers.ServerReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:    mgr.GetClient(),
+		Scheme:    mgr.GetScheme(),
+		Scheduler: schedulerClient,
+		Recorder:  mgr.GetEventRecorderFor("server-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Server")
 		os.Exit(1)
@@ -125,6 +135,13 @@ func main() {
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Explainer")
+		os.Exit(1)
+	}
+	if err = (&mlopscontrollers.ServerConfigReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "ServerConfig")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder

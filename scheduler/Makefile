@@ -38,14 +38,14 @@ start-envoy:
 	./hack/start-envoy-delta.sh
 
 start-agent:
-	./bin/agent --agent-folder ${PWD}/mnt --inference-port 8080 \
+	./bin/agent --agent-folder ${PWD}/mnt --inference-http-port 8080 \
 		--server-type mlserver \
 		--log-level debug \
 		--config-path ${PWD}/config \
 		--replica-config '{"inferenceSvc":"0.0.0.0","inferenceHttpPort":8080,"inferenceGrpcPort":8081,"memoryBytes":1000,"capabilities":["sklearn"],"overCommit":false}'
 
 start-triton-agent:
-	./bin/agent --agent-folder ${PWD}/mnt --inference-port 8080 \
+	./bin/agent --agent-folder ${PWD}/mnt --inference-http-port 8080 \
 		--server-name triton \
 		--server-type triton \
 		--log-level debug \
@@ -128,13 +128,11 @@ deploy-minio-secret:
 undeploy:
 	kustomize build k8s/default | kubectl delete -f -
 
-deploy-mlserver:
-	kubectl apply namespace seldon-mesh || echo "namespace seldon-mesh exists"
-	kustomize build k8s/testing/mlserver | kubectl create -f -
+deploy-servers:
+	kustomize build k8s/server | kubectl create -f -
 
-undeploy-mlserver:
-	kustomize build k8s/testing/mlserver | kubectl delete -f -
-
+undeploy-servers:
+	kustomize build k8s/server | kubectl delete -f -
 
 # ip address will change. Make automatic?
 curl-mlserver-test:

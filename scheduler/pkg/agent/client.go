@@ -65,10 +65,7 @@ func NewClient(serverName string,
 	modelRepository repository.ModelRepository,
 	v2Client *V2Client,
 	replicaConfig *agent.ReplicaConfig,
-	inferenceSvcName string,
 	namespace string) *Client {
-
-	replicaConfig.InferenceSvc = inferenceSvcName
 
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
@@ -175,7 +172,8 @@ func getConnection(host string, port int) (*grpc.ClientConn, error) {
 }
 
 func (c *Client) StartService() error {
-	c.logger.Infof("Call subscribe to scheduler")
+	logger := c.logger.WithField("func", "StartService")
+	logger.Infof("Call subscribe to scheduler")
 	grpcClient := agent.NewAgentServiceClient(c.conn)
 	var loadedModels []*agent.ModelVersion
 	for _, mv := range c.loadedModels {
@@ -195,6 +193,7 @@ func (c *Client) StartService() error {
 	if err != nil {
 		return err
 	}
+	logger.Infof("Subscribed to scheduler. Listening for events...")
 	for {
 		operation, err := stream.Recv()
 		if err == io.EOF {
@@ -203,10 +202,10 @@ func (c *Client) StartService() error {
 		if err != nil {
 			return err
 		}
-		c.logger.Infof("Received operation")
+		logger.Infof("Received operation")
 		switch operation.Operation {
 		case agent.ModelOperationMessage_LOAD_MODEL:
-			c.logger.Infof("calling load model")
+			logger.Infof("calling load model")
 			go func() {
 				err := c.LoadModel(operation)
 				if err != nil {
@@ -215,11 +214,11 @@ func (c *Client) StartService() error {
 			}()
 
 		case agent.ModelOperationMessage_UNLOAD_MODEL:
-			c.logger.Infof("calling unload model")
+			logger.Infof("calling unload model")
 			go func() {
 				err := c.UnloadModel(operation)
 				if err != nil {
-					c.logger.WithError(err).Errorf("Failed to handle unload model")
+					logger.WithError(err).Errorf("Failed to handle unload model")
 				}
 			}()
 		}

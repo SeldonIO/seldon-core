@@ -85,6 +85,7 @@ message UnloadModelResponse {
 message ModelStatusResponse {
   string modelName = 1;
   repeated ModelVersionStatus versions = 2;
+  bool deleted = 3;
 }
 
 message ModelVersionStatus {
@@ -104,6 +105,7 @@ message ModelStatus {
       ModelTerminating = 4;
       ModelTerminated = 5;
       ModelTerminateFailed = 6;
+      ScheduleFailed = 7;
   }
   ModelState state = 1;
   string reason = 2;
@@ -135,14 +137,18 @@ message ModelReplicaStatus {
 */
 message ServerStatusResponse {
   string serverName = 1;
-  repeated ServerResources resources = 2;
+  repeated ServerReplicaResources resources = 2;
+  int32 expectedReplicas = 3;
+  int32 availableReplicas = 4;
+  int32 numLoadedModelReplicas = 5;
+  optional KubernetesMeta kubernetesMeta = 6;
 }
 
-message ServerResources {
+message ServerReplicaResources {
   uint32 replicaIdx = 1;
-  map<string,string> loadedModels = 2;
-  uint64 memory = 3;
-  uint64 availableMemoryBytes = 4;
+  uint64 totalMemoryBytes = 2;
+  uint64 availableMemoryBytes = 3;
+  int32 numLoadedModels = 4;
 }
 
 message ModelSubscriptionRequest {
@@ -153,6 +159,22 @@ message ModelStatusRequest {
   ModelReference model = 1;
   bool allVersions = 2;
 }
+
+message ServerNotifyRequest {
+  string name = 1;
+  int32 expectedReplicas = 2;
+  bool shared = 3;
+  optional KubernetesMeta kubernetesMeta = 4;
+}
+
+message ServerNotifyResponse {
+
+}
+
+message ServerSubscriptionRequest {
+  string name = 1; //Name of the subscription caller
+}
+
 
 // [END Messages]
 
@@ -165,6 +187,8 @@ service Scheduler {
   rpc UnloadModel(UnloadModelRequest) returns (UnloadModelResponse) {};
   rpc ModelStatus(ModelStatusRequest) returns (ModelStatusResponse) {}
   rpc SubscribeModelStatus(ModelSubscriptionRequest) returns (stream ModelStatusResponse) {};
+  rpc ServerNotify(ServerNotifyRequest) returns (ServerNotifyResponse) {};
+  rpc SubscribeServerStatus(ServerSubscriptionRequest) returns (stream ServerStatusResponse) {};
 }
 
 // [END Services]

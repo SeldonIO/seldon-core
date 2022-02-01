@@ -3,7 +3,11 @@ package scheduler
 import (
 	"fmt"
 	"sort"
+	"strconv"
+	"strings"
 	"sync"
+
+	"github.com/seldonio/seldon-core/scheduler/pkg/scheduler/filters"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/scheduler/sorters"
 	store "github.com/seldonio/seldon-core/scheduler/pkg/store"
@@ -11,30 +15,37 @@ import (
 )
 
 type SimpleScheduler struct {
-	mu             sync.RWMutex
-	store          store.SchedulerStore
-	logger         log.FieldLogger
+	mu     sync.RWMutex
+	store  store.SchedulerStore
+	logger log.FieldLogger
+	SchedulerConfig
+	failedModels map[string]bool
+}
+
+type SchedulerConfig struct {
 	serverFilters  []ServerFilter
 	serverSorts    []sorters.ServerSorter
 	replicaFilters []ReplicaFilter
 	replicaSorts   []sorters.ReplicaSorter
-	failedModels   map[string]bool
+}
+
+func DefaultSchedulerConfig() SchedulerConfig {
+	return SchedulerConfig{
+		serverFilters:  []ServerFilter{filters.SharingServerFilter{}, filters.DeletedServerFilter{}},
+		replicaFilters: []ReplicaFilter{filters.RequirementsReplicaFilter{}, filters.AvailableMemoryReplicaFilter{}},
+		serverSorts:    []sorters.ServerSorter{},
+		replicaSorts:   []sorters.ReplicaSorter{sorters.ReplicaIndexSorter{}, sorters.ModelAlreadyLoadedSorter{}},
+	}
 }
 
 func NewSimpleScheduler(logger log.FieldLogger,
 	store store.SchedulerStore,
-	serverFilters []ServerFilter,
-	replicaFilters []ReplicaFilter,
-	serverSorts []sorters.ServerSorter,
-	replicaSorts []sorters.ReplicaSorter) *SimpleScheduler {
+	schedulerConfig SchedulerConfig) *SimpleScheduler {
 	s := &SimpleScheduler{
-		store:          store,
-		logger:         logger.WithField("Name", "SimpleScheduler"),
-		serverFilters:  serverFilters,
-		serverSorts:    serverSorts,
-		replicaFilters: replicaFilters,
-		replicaSorts:   replicaSorts,
-		failedModels:   make(map[string]bool),
+		store:           store,
+		logger:          logger.WithField("Name", "SimpleScheduler"),
+		SchedulerConfig: schedulerConfig,
+		failedModels:    make(map[string]bool),
 	}
 	return s
 }
@@ -83,12 +94,15 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		return fmt.Errorf("No latest model for %s", modelName)
 	}
 
-	if model.Deleted && latestModel.HasServer() {
-		logger.Debugf("Model %s is deleted ensuring removed", modelName)
-		err = s.store.UpdateLoadedModels(modelName, latestModel.GetVersion(), latestModel.Server(), []*store.ServerReplica{})
-		if err != nil {
-			logger.Warnf("Failed to unschedule model replicas for model %s on server %s", modelName, latestModel.Server())
+	if model.Deleted {
+		if latestModel.HasServer() {
+			logger.Debugf("Model %s is deleted ensuring removed", modelName)
+			err = s.store.UpdateLoadedModels(modelName, latestModel.GetVersion(), latestModel.Server(), []*store.ServerReplica{})
+			if err != nil {
+				logger.Warnf("Failed to unschedule model replicas for model %s on server %s", modelName, latestModel.Server())
+			}
 		}
+		delete(s.failedModels, modelName) // Ensure model removed from failed models if its there
 	} else {
 		// Get all servers
 		servers, err := s.store.GetServers()
@@ -117,6 +131,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 			}
 		}
 		if !ok {
+			s.store.FailedScheduling(latestModel, "Failed to schedule")
 			return fmt.Errorf("failed to schedule model %s", modelName)
 		}
 	}
@@ -125,30 +140,62 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 	return nil
 }
 
+func showServerSlice(servers []*store.ServerSnapshot) string {
+	var sb strings.Builder
+	for idx, server := range servers {
+		if idx > 0 {
+			sb.WriteString(",")
+		}
+		sb.WriteString(server.Name)
+	}
+	return sb.String()
+}
+
 func (s *SimpleScheduler) sortServers(model *store.ModelVersion, server []*store.ServerSnapshot) {
+	logger := s.logger.WithField("func", "sortServers")
 	for _, sorter := range s.serverSorts {
+		logger.Debugf("About to sort servers for %s:%d with %s: %s", model.Key(), model.GetVersion(), sorter.Name(), showServerSlice(server))
 		sort.SliceStable(server, func(i, j int) bool {
 			return sorter.IsLess(&sorters.CandidateServer{Model: model, Server: server[i]}, &sorters.CandidateServer{Model: model, Server: server[j]})
 		})
+		logger.Debugf("Sorted servers for %s:%d with %s: %s", model.Key(), model.GetVersion(), sorter.Name(), showServerSlice(server))
 	}
 }
 
+func showReplicaSlice(candidateServer *sorters.CandidateServer) string {
+	var sb strings.Builder
+	for idx, replica := range candidateServer.ChosenReplicas {
+		if idx > 0 {
+			sb.WriteString(",")
+		}
+		sb.WriteString(strconv.Itoa(replica.GetReplicaIdx()))
+		sb.WriteString(":")
+		sb.WriteString(replica.GetInferenceSvc())
+	}
+	return sb.String()
+}
+
 func (s *SimpleScheduler) sortReplicas(candidateServer *sorters.CandidateServer) {
+	logger := s.logger.WithField("func", "sortReplicas")
 	for _, sorter := range s.replicaSorts {
+		logger.Debugf("About to sort replicas for %s:%d with %s: %s", candidateServer.Model.Key(), candidateServer.Model.GetVersion(), sorter.Name(), showReplicaSlice(candidateServer))
 		sort.SliceStable(candidateServer.ChosenReplicas, func(i, j int) bool {
 			return sorter.IsLess(&sorters.CandidateReplica{Model: candidateServer.Model, Server: candidateServer.Server, Replica: candidateServer.ChosenReplicas[i]},
 				&sorters.CandidateReplica{Model: candidateServer.Model, Server: candidateServer.Server, Replica: candidateServer.ChosenReplicas[j]})
 		})
+		logger.Debugf("Sorted replicas for %s:%d with %s: %s", candidateServer.Model.Key(), candidateServer.Model.GetVersion(), sorter.Name(), showReplicaSlice(candidateServer))
 	}
 }
 
 // Filter servers for this model
 func (s *SimpleScheduler) filterServers(model *store.ModelVersion, servers []*store.ServerSnapshot) []*store.ServerSnapshot {
+	logger := s.logger.WithField("func", "filterServer")
 	var filteredServers []*store.ServerSnapshot
 	for _, server := range servers {
 		ok := true
 		for _, serverFilter := range s.serverFilters {
 			if !serverFilter.Filter(model, server) {
+				logger.Debugf("Scheduling for %s failed replica filter %s for server %s", model.Key(), serverFilter.Name(), server.Name)
 				ok = false
 				break
 			}
@@ -161,11 +208,13 @@ func (s *SimpleScheduler) filterServers(model *store.ModelVersion, servers []*st
 }
 
 func (s *SimpleScheduler) filterReplicas(model *store.ModelVersion, server *store.ServerSnapshot) *sorters.CandidateServer {
+	logger := s.logger.WithField("func", "filterReplicas")
 	candidateServer := sorters.CandidateServer{Model: model, Server: server}
 	for _, replica := range server.Replicas {
 		ok := true
 		for _, replicaFilter := range s.replicaFilters {
 			if !replicaFilter.Filter(model, replica) {
+				logger.Debugf("Scheduling for %s failed replica filter %s for server replica %s:%d", model.Key(), replicaFilter.Name(), server.Name, replica.GetReplicaIdx())
 				ok = false
 				break
 			}

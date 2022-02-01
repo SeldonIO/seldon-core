@@ -21,12 +21,12 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/scheduler/cleaner"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent"
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/processor"
-	"github.com/seldonio/seldon-core/scheduler/pkg/scheduler/filters"
-	"github.com/seldonio/seldon-core/scheduler/pkg/scheduler/sorters"
 	server2 "github.com/seldonio/seldon-core/scheduler/pkg/server"
 	"github.com/seldonio/seldon-core/scheduler/pkg/store"
 
@@ -79,6 +79,9 @@ func main() {
 	logger.SetLevel(log.DebugLevel)
 	flag.Parse()
 
+	// Create event Hub
+	eventHub := &coordinator.ModelEventHub{}
+
 	// Create a cache
 	cache := cache.NewSnapshotCache(false, cache.IDHash{}, logger)
 
@@ -89,21 +92,19 @@ func main() {
 		server.RunServer(ctx, srv, envoyPort)
 	}()
 
-	ss := store.NewMemoryStore(logger, store.NewLocalSchedulerStore())
-	es := processor.NewIncrementalProcessor(cache, nodeID, logger, ss)
+	ss := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+	es := processor.NewIncrementalProcessor(cache, nodeID, logger, ss, eventHub)
 	sched := scheduler.NewSimpleScheduler(logger,
 		ss,
-		[]scheduler.ServerFilter{filters.SharingServerFilter{}},
-		[]scheduler.ReplicaFilter{filters.RequirementsReplicaFilter{}, filters.AvailableMemoryFilter{}},
-		[]sorters.ServerSorter{},
-		[]sorters.ReplicaSorter{sorters.ModelAlreadyLoadedSorter{}})
-	as := agent.NewAgentServer(logger, ss, es, sched)
+		scheduler.DefaultSchedulerConfig())
+	as := agent.NewAgentServer(logger, ss, sched, eventHub)
 
 	go as.ListenForSyncs() // Start agent syncs
 	go es.ListenForSyncs() // Start envoy syncs
 
-	s := server2.NewSchedulerServer(logger, ss, sched, as)
-	go s.ListenForEvents()
+	s := server2.NewSchedulerServer(logger, ss, sched, eventHub)
+	go s.ListenForModelEvents()
+	go s.ListenForServerEvents()
 	go func() {
 		err := s.StartGrpcServer(schedulerPort)
 		if err != nil {
@@ -111,7 +112,7 @@ func main() {
 		}
 	}()
 
-	versionCleaner := cleaner.NewVersionCleaner(ss, logger, as)
+	versionCleaner := cleaner.NewVersionCleaner(ss, logger, eventHub)
 	go versionCleaner.ListenForEvents()
 
 	err := as.StartGrpcServer(agentPort)
@@ -119,8 +120,7 @@ func main() {
 		log.Fatalf("Failed to start agent grpc server %s", err.Error())
 	}
 
-	as.StopAgentSync()
-	es.StopEnvoySync()
-	s.StopListenForEvents()
-	versionCleaner.StopListenForEvents()
+	s.StopSendModelEvents()
+	s.StopSendServerEvents()
+	eventHub.Close()
 }

@@ -24,15 +24,33 @@ func TestModelAlreadyLoadedSort(t *testing.T) {
 		map[int]store.ReplicaStatus{3: {State: store.Loading}},
 		false,
 		store.ModelProgressing)
+	modelServer2 := store.NewModelVersion(
+		nil,
+		1,
+		"server2",
+		map[int]store.ReplicaStatus{3: {State: store.Loading}},
+		false,
+		store.ModelProgressing)
+	server := store.NewServer("server1", true)
+
 	tests := []test{
 		{
 			name: "OneLoadedModel",
 			replicas: []*CandidateReplica{
-				{Model: model, Replica: store.NewServerReplica("", 8080, 5001, 2, nil, []string{}, 100, 100, map[string]bool{}, true)},
-				{Model: model, Replica: store.NewServerReplica("", 8080, 5001, 1, nil, []string{}, 100, 100, map[string]bool{}, true)},
-				{Model: model, Replica: store.NewServerReplica("", 8080, 5001, 3, nil, []string{}, 100, 100, map[string]bool{}, true)},
+				{Model: model, Server: &store.ServerSnapshot{Name: "server1"}, Replica: store.NewServerReplica("", 8080, 5001, 2, server, []string{}, 100, 100, map[string]bool{}, true)},
+				{Model: model, Server: &store.ServerSnapshot{Name: "server1"}, Replica: store.NewServerReplica("", 8080, 5001, 1, server, []string{}, 100, 100, map[string]bool{}, true)},
+				{Model: model, Server: &store.ServerSnapshot{Name: "server1"}, Replica: store.NewServerReplica("", 8080, 5001, 3, server, []string{}, 100, 100, map[string]bool{}, true)},
 			},
 			ordering: []int{3, 2, 1},
+		},
+		{
+			name: "LoadedDifferentServer",
+			replicas: []*CandidateReplica{
+				{Model: modelServer2, Server: &store.ServerSnapshot{Name: "server1"}, Replica: store.NewServerReplica("", 8080, 5001, 2, server, []string{}, 100, 100, map[string]bool{}, true)},
+				{Model: modelServer2, Server: &store.ServerSnapshot{Name: "server1"}, Replica: store.NewServerReplica("", 8080, 5001, 1, server, []string{}, 100, 100, map[string]bool{}, true)},
+				{Model: modelServer2, Server: &store.ServerSnapshot{Name: "server1"}, Replica: store.NewServerReplica("", 8080, 5001, 3, server, []string{}, 100, 100, map[string]bool{}, true)},
+			},
+			ordering: []int{2, 1, 3},
 		},
 	}
 

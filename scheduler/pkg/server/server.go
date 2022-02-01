@@ -6,10 +6,11 @@ import (
 	"net"
 	"sync"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
+
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent"
 	scheduler2 "github.com/seldonio/seldon-core/scheduler/pkg/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/pkg/store"
 	log "github.com/sirupsen/logrus"
@@ -18,28 +19,43 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+const (
+	grpcMaxConcurrentStreams = 1_000_000
+)
+
 var (
 	ErrAddServerEmptyServerName = status.Errorf(codes.FailedPrecondition, "Empty server name passed")
 )
 
 type SchedulerServer struct {
 	pb.UnimplementedSchedulerServer
-	logger       log.FieldLogger
-	store        store.SchedulerStore
-	scheduler    scheduler2.Scheduler
-	agentHandler agent.AgentHandler
-	mutext       sync.RWMutex
-	EventStream
+	logger            log.FieldLogger
+	store             store.SchedulerStore
+	scheduler         scheduler2.Scheduler
+	mutext            sync.RWMutex
+	modelEventStream  ModelEventStream
+	serverEventStream ServerEventStream
 }
 
-type EventStream struct {
-	streams   map[pb.Scheduler_SubscribeModelStatusServer]*Subscription
-	chanEvent chan *store.ModelSnapshot
+type ModelEventStream struct {
+	streams   map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription
+	chanEvent chan coordinator.ModelEventMsg
 }
 
-type Subscription struct {
+type ServerEventStream struct {
+	streams   map[pb.Scheduler_SubscribeServerStatusServer]*ServerSubscription
+	chanEvent chan coordinator.ModelEventMsg
+}
+
+type ModelSubscription struct {
 	name   string
 	stream pb.Scheduler_SubscribeModelStatusServer
+	fin    chan bool
+}
+
+type ServerSubscription struct {
+	name   string
+	stream pb.Scheduler_SubscribeServerStatusServer
 	fin    chan bool
 }
 
@@ -49,37 +65,78 @@ func (s *SchedulerServer) StartGrpcServer(schedulerPort uint) error {
 		log.Fatalf("failed to create listener: %v", err)
 	}
 	opts := []grpc.ServerOption{}
+	opts = append(opts, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
 	grpcServer := grpc.NewServer(opts...)
 	pb.RegisterSchedulerServer(grpcServer, s)
 	s.logger.Printf("Scheduler server running on %d", schedulerPort)
 	return grpcServer.Serve(lis)
 }
 
-func NewSchedulerServer(logger log.FieldLogger, schedStore store.SchedulerStore, scheduler scheduler2.Scheduler, agentHandler agent.AgentHandler) *SchedulerServer {
+func NewSchedulerServer(logger log.FieldLogger, schedStore store.SchedulerStore, scheduler scheduler2.Scheduler, eventHub *coordinator.ModelEventHub) *SchedulerServer {
 
 	s := &SchedulerServer{
-		logger:       logger.WithField("source", "SchedulerServer"),
-		store:        schedStore,
-		scheduler:    scheduler,
-		agentHandler: agentHandler,
-		EventStream: EventStream{
-			streams:   make(map[pb.Scheduler_SubscribeModelStatusServer]*Subscription),
-			chanEvent: make(chan *store.ModelSnapshot, 1),
+		logger:    logger.WithField("source", "SchedulerServer"),
+		store:     schedStore,
+		scheduler: scheduler,
+		modelEventStream: ModelEventStream{
+			streams:   make(map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription),
+			chanEvent: make(chan coordinator.ModelEventMsg, 1),
+		},
+		serverEventStream: ServerEventStream{
+			streams:   make(map[pb.Scheduler_SubscribeServerStatusServer]*ServerSubscription),
+			chanEvent: make(chan coordinator.ModelEventMsg, 1),
 		},
 	}
-	schedStore.AddListener(s.EventStream.chanEvent)
+	eventHub.AddListener(s.modelEventStream.chanEvent)
+	eventHub.AddListener(s.serverEventStream.chanEvent)
 	return s
+}
+
+func (s *SchedulerServer) ServerNotify(ctx context.Context, req *pb.ServerNotifyRequest) (*pb.ServerNotifyResponse, error) {
+	logger := s.logger.WithField("func", "ServerNotify")
+	logger.Infof("Server notification %s expectedReplicas %d shared %v", req.GetName(), req.GetExpectedReplicas(), req.GetShared())
+	err := s.store.ServerNotify(req)
+	if err != nil {
+		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+	}
+	if req.ExpectedReplicas == 0 {
+		go s.rescheduleModels(req.GetName())
+	}
+	return &pb.ServerNotifyResponse{}, nil
+}
+
+func (s *SchedulerServer) rescheduleModels(serverKey string) {
+	logger := s.logger.WithField("func", "rescheduleModels")
+	server, err := s.store.GetServer(serverKey)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to get server %s", serverKey)
+		return
+	}
+	models := make(map[string]bool)
+	for _, replica := range server.Replicas {
+		for _, model := range replica.GetLoadedModels() {
+			models[model] = true
+		}
+	}
+	for model := range models {
+		err := s.scheduler.Schedule(model)
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to reschedule model %s for server %s", model, serverKey)
+		}
+	}
 }
 
 func (s *SchedulerServer) LoadModel(ctx context.Context, req *pb.LoadModelRequest) (*pb.LoadModelResponse, error) {
 	logger := s.logger.WithField("func", "LoadModel")
 	logger.Debugf("Load model %+v k8s meta %+v", req.GetModel().GetMeta(), req.GetModel().GetMeta().GetKubernetesMeta())
-	s.store.UpdateModel(req)
-	err := s.scheduler.Schedule(req.GetModel().GetMeta().GetName())
+	err := s.store.UpdateModel(req)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
-	s.agentHandler.SendAgentSync(req.GetModel().GetMeta().GetName())
+	err = s.scheduler.Schedule(req.GetModel().GetMeta().GetName())
+	if err != nil {
+		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+	}
 	return &pb.LoadModelResponse{}, nil
 }
 
@@ -94,7 +151,6 @@ func (s *SchedulerServer) UnloadModel(ctx context.Context, req *pb.UnloadModelRe
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
-	s.agentHandler.SendAgentSync(req.GetModel().GetName())
 	return &pb.UnloadModelResponse{}, nil
 }
 
@@ -142,6 +198,7 @@ func (s *SchedulerServer) modelStatusImpl(ctx context.Context, model *store.Mode
 	msr := &pb.ModelStatusResponse{
 		ModelName: model.Name,
 		Versions:  modelVersionStatuses,
+		Deleted:   model.Deleted,
 	}
 	return msr, nil
 }
@@ -166,15 +223,22 @@ func (s *SchedulerServer) ServerStatus(ctx context.Context, reference *pb.Server
 		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("Failed to find server %s", reference.Name))
 	}
 	ss := &pb.ServerStatusResponse{
-		ServerName: reference.Name,
+		ServerName:        reference.Name,
+		AvailableReplicas: int32(len(server.Replicas)),
+		ExpectedReplicas:  int32(server.ExpectedReplicas),
+		KubernetesMeta:    server.KubernetesMeta,
 	}
 
+	var totalModels int32
 	for _, replica := range server.Replicas {
-		ss.Resources = append(ss.Resources, &pb.ServerResources{
+		totalModels = totalModels + int32(len(replica.GetLoadedModels()))
+		ss.Resources = append(ss.Resources, &pb.ServerReplicaResources{
 			ReplicaIdx:           uint32(replica.GetReplicaIdx()),
-			Memory:               replica.GetMemory(),
+			TotalMemoryBytes:     replica.GetMemory(),
 			AvailableMemoryBytes: replica.GetAvailableMemory(),
+			NumLoadedModels:      int32(len(replica.GetLoadedModels())),
 		})
 	}
+	ss.NumLoadedModelReplicas = totalModels
 	return ss, nil
 }

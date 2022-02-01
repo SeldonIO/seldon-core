@@ -6,8 +6,9 @@ import (
 	"net"
 	"sync"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
+
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
-	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/processor"
 	"github.com/seldonio/seldon-core/scheduler/pkg/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/pkg/store"
 	log "github.com/sirupsen/logrus"
@@ -25,19 +26,14 @@ type ServerKey struct {
 	replicaIdx uint32
 }
 
-type AgentHandler interface {
-	SendAgentSync(modelName string)
-}
-
 type Server struct {
 	mutext sync.RWMutex
 	pb.UnimplementedAgentServiceServer
-	logger       log.FieldLogger
-	agents       map[ServerKey]*AgentSubscriber
-	store        store.SchedulerStore
-	envoyHandler processor.EnvoyHandler
-	source       chan string
-	scheduler    scheduler.Scheduler
+	logger    log.FieldLogger
+	agents    map[ServerKey]*AgentSubscriber
+	store     store.SchedulerStore
+	source    chan coordinator.ModelEventMsg
+	scheduler scheduler.Scheduler
 }
 
 type SchedulerAgent interface {
@@ -52,30 +48,24 @@ type AgentSubscriber struct {
 
 func NewAgentServer(logger log.FieldLogger,
 	store store.SchedulerStore,
-	envoyHandler processor.EnvoyHandler,
-	scheduler scheduler.Scheduler) *Server {
-	return &Server{
-		logger:       logger.WithField("source", "AgentServer"),
-		agents:       make(map[ServerKey]*AgentSubscriber),
-		store:        store,
-		envoyHandler: envoyHandler,
-		source:       make(chan string, 1),
-		scheduler:    scheduler,
+	scheduler scheduler.Scheduler,
+	hub *coordinator.ModelEventHub) *Server {
+	s := &Server{
+		logger:    logger.WithField("source", "AgentServer"),
+		agents:    make(map[ServerKey]*AgentSubscriber),
+		store:     store,
+		source:    make(chan coordinator.ModelEventMsg, 1),
+		scheduler: scheduler,
 	}
-}
-
-func (s *Server) SendAgentSync(modelName string) {
-	s.source <- modelName
-}
-
-func (s *Server) StopAgentSync() {
-	close(s.source)
+	hub.AddListener(s.source)
+	return s
 }
 
 func (s *Server) ListenForSyncs() {
-	for modelName := range s.source {
-		s.logger.Infof("Received sync for model %s", modelName)
-		go s.Sync(modelName)
+	for evt := range s.source {
+		s.logger.Infof("Received sync for model %s", evt.String())
+		modelEvtMsg := evt
+		go s.Sync(modelEvtMsg.ModelName)
 	}
 }
 
@@ -182,7 +172,6 @@ func (s *Server) AgentEvent(ctx context.Context, message *pb.ModelEventMessage) 
 		logger.WithError(err).Infof("Failed Updating state for model %s", message.ModelName)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	s.envoyHandler.SendEnvoySync(message.ModelName)
 	return &pb.ModelEventResponse{}, nil
 }
 
@@ -225,10 +214,7 @@ func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentSer
 				err = s.scheduler.Schedule(modelName)
 				if err != nil {
 					logger.Debugf("Failed to reschedule model %s when server %s replica %d disconnected", modelName, request.ServerName, request.ReplicaIdx)
-				} else {
-					s.SendAgentSync(modelName)
 				}
-
 			}
 			return nil
 		}
@@ -239,16 +225,14 @@ func (s *Server) syncMessage(request *pb.AgentSubscribeRequest, stream pb.AgentS
 	s.mutext.Lock()
 	defer s.mutext.Unlock()
 
+	s.logger.Debugf("Add Server Replica %+v with config %+v", request, request.ReplicaConfig)
 	err := s.store.AddServerReplica(request)
 	if err != nil {
 		return err
 	}
-	updatedModels, err := s.scheduler.ScheduleFailedModels()
+	_, err = s.scheduler.ScheduleFailedModels()
 	if err != nil {
 		return err
-	}
-	for _, updatedModels := range updatedModels {
-		s.SendAgentSync(updatedModels)
 	}
 	return nil
 }

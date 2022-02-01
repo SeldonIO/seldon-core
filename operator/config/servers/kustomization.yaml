@@ -1,0 +1,6 @@
+# Adds namespace to all resources.
+namespace: seldon-mesh
+
+resources:
+- mlserver.yaml
+- triton.yaml
