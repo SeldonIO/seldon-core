@@ -61,11 +61,7 @@ func mergeMLServerContainer(existing *v1.Container, mlServer *v1.Container) *v1.
 	}
 
 	for _, envVar := range existing.Env {
-		if utils.HasEnvVar(mlServer.Env, envVar.Name) {
-			mlServer.Env = utils.SetEnvVar(mlServer.Env, envVar)
-		} else {
-			mlServer.Env = append(mlServer.Env, envVar)
-		}
+		mlServer.Env = utils.SetEnvVar(mlServer.Env, envVar, true)
 	}
 	existing.Env = mlServer.Env
 

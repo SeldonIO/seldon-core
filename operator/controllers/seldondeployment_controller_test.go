@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"context"
+	"strconv"
 	"testing"
 	"time"
 
@@ -119,6 +120,29 @@ var _ = Describe("Create a Seldon Deployment", func() {
 		}, TestTimout, interval).Should(BeNil())
 		Expect(len(depFetched.Spec.Template.Spec.Containers)).Should(Equal(2))
 		Expect(*depFetched.Spec.Replicas).To(Equal(int32(1)))
+
+		// Check port envs have been added
+		containers := depFetched.Spec.Template.Spec.Containers
+		httpPort := strconv.Itoa(int(constants.FirstHttpPortNumber))
+		grpcPort := strconv.Itoa(int(constants.FirstGrpcPortNumber))
+		Expect(containers[0].Env).To(ContainElements(
+			v1.EnvVar{
+				Name:  machinelearningv1.ENV_PREDICTIVE_UNIT_HTTP_SERVICE_PORT,
+				Value: httpPort,
+			},
+			v1.EnvVar{
+				Name:  machinelearningv1.ENV_PREDICTIVE_UNIT_GRPC_SERVICE_PORT,
+				Value: grpcPort,
+			},
+			v1.EnvVar{
+				Name:  MLServerHTTPPortEnv,
+				Value: httpPort,
+			},
+			v1.EnvVar{
+				Name:  MLServerGRPCPortEnv,
+				Value: grpcPort,
+			},
+		))
 
 		//Update Deployment as pods not created with test client.
 		depUpdated := depFetched.DeepCopy()
