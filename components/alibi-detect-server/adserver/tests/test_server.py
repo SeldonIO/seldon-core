@@ -73,8 +73,8 @@ class TestSeldonHttpModel(AsyncHTTPTestCase):
                 },
             )
             self.assertEqual(response.code, 200)
-            expectedResponse = json.dumps(DummyModel.getResponse().data)
-            self.assertEqual(response.body.decode("utf-8"), expectedResponse)
+            expectedResponse = DummyModel.getResponse().data
+            self.assertEqual(response.body.decode("utf-8"), json.dumps(expectedResponse))
             self.assertEqual(m.request_history[0].json(), expectedResponse)
             headers: Dict = m.request_history[0]._request.headers
             self.assertEqual(headers["ce-source"], self.eventSource)
@@ -128,8 +128,8 @@ class TestKFservingV2HttpModel(AsyncHTTPTestCase):
                 },
             )
             self.assertEqual(response.code, 200)
-            expectedResponse = json.dumps(DummyModel.getResponse().data)
-            self.assertEqual(response.body.decode("utf-8"), expectedResponse)
+            expectedResponse = DummyModel.getResponse().data
+            self.assertEqual(response.body.decode("utf-8"), json.dumps(expectedResponse))
             self.assertEqual(m.request_history[0].json(), expectedResponse)
             headers: Dict = m.request_history[0]._request.headers
             self.assertEqual(headers["ce-source"], self.eventSource)
