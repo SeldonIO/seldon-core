@@ -35,7 +35,7 @@ def _extract_list(body: Dict) -> List:
         raise Exception("Unknown Seldon payload %s" % body)
 
 
-def _create_seldon_data_def(array: np.array, ty: SeldonPayload):
+def _create_seldon_data_def(array: np.ndarray, ty: SeldonPayload):
     datadef = {}
     if ty == SeldonPayload.TENSOR:
         datadef["tensor"] = {"shape": array.shape, "values": array.ravel().tolist()}

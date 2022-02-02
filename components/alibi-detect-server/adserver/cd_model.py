@@ -1,5 +1,5 @@
 import json
-from typing import List, Dict, Optional, Union
+from typing import List, Dict, Optional, Union, cast
 import logging
 import numpy as np
 from .numpy_encoder import NumpyEncoder
@@ -52,7 +52,7 @@ class AlibiDetectConceptDriftModel(
         """
         super().__init__(name, storage_uri, model)
         self.drift_batch_size = drift_batch_size
-        self.batch: np.array = None
+        self.batch: Optional[np.ndarray] = None
         self.model: Data = model
 
     def process_event(self, inputs: Union[List, Dict], headers: Dict) -> Optional[ModelResponse]:
@@ -85,6 +85,8 @@ class AlibiDetectConceptDriftModel(
             self.batch = X
         else:
             self.batch = np.concatenate((self.batch, X))
+
+        self.batch = cast(np.ndarray, self.batch)
 
         if self.batch.shape[0] >= self.drift_batch_size:
             logging.info(

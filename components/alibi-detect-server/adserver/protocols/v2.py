@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Dict, List
+from typing import Dict, List, Any
 
 import numpy as np
 import tornado
@@ -8,10 +8,9 @@ from adserver.protocols.request_handler import (
 )  # pylint: disable=no-name-in-module
 
 
-def _create_np_from_v2(data: list, ty: str, shape: list) -> np.array:
-    npty = np.float
+def _create_np_from_v2(data: list, ty: str, shape: list) -> np.ndarray:
     if ty == "BOOL":
-        npty = np.bool
+        npty: Any = bool
     elif ty == "UINT8":
         npty = np.uint8
     elif ty == "UINT16":
