@@ -269,7 +269,7 @@ var _ = Describe("Create a prepacked tfserving server for tensorflow protocol an
 var _ = Describe("Create a prepacked tfserving server for tensorflow protocol and REST with existing container", func() {
 	const interval = time.Second * 1
 	const name = "pp3"
-	const sdepName = "prepack3b"
+	const sdepName = "prepack4"
 	modelName := "classifier"
 	By("Creating a resource")
 	It("should create a resource with defaults", func() {
@@ -414,7 +414,7 @@ var _ = Describe("Create a prepacked tfserving server for tensorflow protocol an
 	const timeout = time.Second * 30
 	const interval = time.Second * 1
 	const name = "pp4"
-	const sdepName = "prepack4"
+	const sdepName = "prepack6"
 	modelName := "classifier"
 	By("Creating a resource")
 	It("should create a resource with defaults", func() {
@@ -513,7 +513,7 @@ var _ = Describe("Create a prepacked sklearn server", func() {
 	var key types.NamespacedName
 
 	BeforeEach(func() {
-		sdepName = "prepack5"
+		sdepName = "prepack6"
 		modelType := machinelearningv1.MODEL
 		impl := machinelearningv1.PredictiveUnitImplementation(constants.PrePackedServerSklearn)
 
@@ -591,7 +591,7 @@ var _ = Describe("Create a prepacked sklearn server", func() {
 	})
 
 	It("should use MLServer when choosing the V2 protocol", func() {
-		sdepName = "prepack6"
+		sdepName = "prepack7"
 		instance.Name = sdepName
 		instance.Spec.Protocol = machinelearningv1.ProtocolV2
 		key.Name = sdepName
@@ -625,7 +625,7 @@ var _ = Describe("Create a prepacked sklearn server", func() {
 	})
 
 	It("should use MLServer when choosing the V2 protocol", func() {
-		sdepName = "prepack6"
+		sdepName = "prepack8"
 		instance.Name = sdepName
 		instance.Spec.Protocol = machinelearningv1.ProtocolV2
 		key.Name = sdepName
@@ -663,7 +663,7 @@ var _ = Describe("Create a prepacked triton server", func() {
 	const timeout = time.Second * 30
 	const interval = time.Second * 1
 	const name = "pp1"
-	const sdepName = "prepack5"
+	const sdepName = "prepack9"
 	envExecutorUser = "2"
 	By("Creating a resource")
 	It("should create a resource with defaults and security context", func() {
@@ -760,7 +760,7 @@ var _ = Describe("Create a prepacked mlflow server with existing container", fun
 	const timeout = time.Second * 30
 	const interval = time.Second * 1
 	const name = "pp1"
-	const sdepName = "prepack1"
+	const sdepName = "prepack10"
 	envExecutorUser = "2"
 	By("Creating a resource")
 	It("should create a resource with defaults", func() {
