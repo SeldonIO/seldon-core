@@ -1,0 +1,4 @@
+{
+  "name": "mock-preprocessor",
+  "implementation": "runtime.MockPreprocessor"
+}

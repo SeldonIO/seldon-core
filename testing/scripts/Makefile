@@ -25,6 +25,7 @@ kind_build_test_models:
 	make -C ../../examples/models/testing run_kind_load_all
 	make -C ../docker/fixed-model kind_load_images
 	make -C ../docker/echo-model kind_load_image
+	make -C ../docker/mock-preprocessor kind_load_image
 
 .PHONY: kind_build_prepackaged
 kind_build_prepackaged:
