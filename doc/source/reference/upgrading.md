@@ -5,6 +5,17 @@ This page provides with instructions on how to upgrade from previous versions. E
 If you were running our Openshift 0.4.2 certified operator and are looking to upgrade to our 1.1 certified operator, you will also need to follow the "upgrading process" steps in the "Upgrading to 0.5.2 from previous versions" section.
 
 Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed features and bug-fixes in each version.
+
+## Upgrading to 1.13
+
+### Seldon Inference Payload Logging Changes
+
+The seldon executor logs the prediction request and respose payload to a configured URL post during the inference at each stage of a inference graph. These request/response pairs are now matched correctly to reflect the component's input/output at each node level as compared to pairing based on the tree structure of the inference graph previously. See [relevant issue](https://github.com/SeldonIO/seldon-core/issues/3873) for more details.
+
+### Alibi Detect Server Event Update
+
+The cloud event data that the alibi detect server sends to a configured replyURL post the outlier/drift detection was a JSON string. This is now updated to reflect the content type as JSON correctly.
+
 ## Upgrading to 1.12
 
 ### Support for Kubernetes 1.22
