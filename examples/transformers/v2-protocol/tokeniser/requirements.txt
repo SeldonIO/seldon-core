@@ -1,2 +1,2 @@
-mlserver==0.6.0.dev3
+mlserver==1.0.0.rc2
 transformers==4.12.3
