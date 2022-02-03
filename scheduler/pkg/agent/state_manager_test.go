@@ -144,6 +144,7 @@ func TestConcurrentReload(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Log("Setup test")
 			//activate mock http server for v2
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
@@ -157,6 +158,7 @@ func TestConcurrentReload(t *testing.T) {
 				_ = manager.LoadModelVersion(getDummyModelDetails(modelName, memBytes, uint32(1)))
 			}
 
+			t.Log("Start test")
 			// parallel load last model
 			var wg sync.WaitGroup
 			wg.Add(1000)
@@ -229,8 +231,10 @@ func TestConcurrentLoad(t *testing.T) {
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
 
+			t.Log("Setup test")
 			manager := setupLocalTestManager(test.numModels, dummyModelPrefix, nil, test.capacity)
 
+			t.Log("Start test")
 			var wg sync.WaitGroup
 			wg.Add(test.numModels)
 			for i := 0; i < test.numModels; i++ {
@@ -315,8 +319,10 @@ func TestConcurrentLoadWithVersions(t *testing.T) {
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
 
+			t.Log("Setup test")
 			manager := setupLocalTestManager(test.numModels, dummyModelPrefix, nil, test.capacity)
 
+			t.Log("Start test")
 			var wg sync.WaitGroup
 			wg.Add(test.numModels * numberOfVersionsToAdd)
 
@@ -405,7 +411,7 @@ func TestDataAndControlPlaneInteractionSmoke(t *testing.T) {
 			//activate mock http server for v2
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
-
+			t.Log("Setup test")
 			manager := setupLocalTestManager(test.numModels, dummyModelPrefix, nil, test.capacity)
 
 			t.Log("Add a single version for all models")
@@ -538,6 +544,23 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			expectedNumModels:       1,
 			expectedAvailableMemory: 0,
 		},
+		{
+			// note only one slot on server so Infer model_0 will evict model_1
+			name:                    "Infer ( model not in memory) then Infer (model in memory)",
+			step1:                   stepDetails{stepType: dataPlaneInfer, modelIdSuffix: 0, modelVersion: 1, inMemory: false, isLoaded: true},
+			step2:                   stepDetails{stepType: dataPlaneInfer, modelIdSuffix: 1, modelVersion: 1, inMemory: true, isLoaded: true},
+			isError:                 false,
+			expectedNumModels:       2,
+			expectedAvailableMemory: 0,
+		},
+		{
+			name:                    "Infer (model in memory) then Infer (model not in memory)",
+			step1:                   stepDetails{stepType: dataPlaneInfer, modelIdSuffix: 0, modelVersion: 1, inMemory: true, isLoaded: true},
+			step2:                   stepDetails{stepType: dataPlaneInfer, modelIdSuffix: 1, modelVersion: 1, inMemory: false, isLoaded: true},
+			isError:                 false,
+			expectedNumModels:       2,
+			expectedAvailableMemory: 0,
+		},
 	}
 
 	for _, test := range tests {
@@ -568,7 +591,7 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 
 			fn := func(wg *sync.WaitGroup, modelName string, memBytes uint64, modelVersion uint32, step step, sleep bool, errors chan<- error) {
 				if sleep {
-					time.Sleep(50 * time.Microsecond)
+					time.Sleep(20 * time.Microsecond)
 					barrier.Wait()
 					if step == controlPlaneLoad || step == controlPlaneUnload {
 						// mimics control plane locking

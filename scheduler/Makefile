@@ -34,7 +34,6 @@ test:
 # Build Docker
 #####################################
 
-
 docker-build-scheduler: copy-apis
 	docker build -t ${SCHEDULER_IMG} -f Dockerfile.scheduler .
 
@@ -92,8 +91,7 @@ kind-image-install-all: kind-image-install-scheduler kind-image-install-envoy ki
 
 start-scheduler:
 	docker run --name scheduler -d --rm --network host -p 9004:9004 -p 9002:9002 -p 9005:9005 ${SCHEDULER_IMG}
-
-
+  
 start-agent-mlserver:
 	docker run --name agent -d --rm --network host -v ${PWD}/config:/mnt/config -v ${PWD}/mnt:/mnt/agent -e SELDON_SERVER_CAPABILITIES='sklearn,xgboost' -e SELDON_OVERCOMMIT='false' -e SELDON_SERVER_HTTP_PORT='8080' -e SELDON_SERVER_GRPC_PORT='8081' -e SELDON_SCHEDULER_HOST='0.0.0.0' -e SELDON_SCHEDULER_PORT='9005' -e SELDON_SERVER_TYPE='mlserver' -e MEMORY_REQUEST='1000000' ${AGENT_IMG} /bin/agent --log-level debug --config-path /mnt/config
 
@@ -146,14 +144,14 @@ start-scheduler-local:
 	./bin/scheduler
 
 start-agent-local:
-	./bin/agent --agent-folder ${PWD}/mnt --inference-http-port 8080 \
+	./bin/agent --agent-folder ${PWD}/mnt --inference-http-port 8080 --inference-grpc-port 8081 \
 		--server-type mlserver \
 		--log-level debug \
 		--config-path ${PWD}/config \
 		--replica-config '{"inferenceSvc":"0.0.0.0","inferenceHttpPort":8080,"inferenceGrpcPort":8081,"memoryBytes":1000000,"capabilities":["sklearn"],"overCommit":false}'
 
 start-triton-agent-local:
-	./bin/agent --agent-folder ${PWD}/mnt --inference-http-port 8080 \
+	./bin/agent --agent-folder ${PWD}/mnt --inference-http-port 8080 --inference-grpc-port 8081 \
 		--server-name triton \
 		--server-type triton \
 		--log-level debug \

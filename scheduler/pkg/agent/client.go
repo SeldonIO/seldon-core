@@ -23,8 +23,9 @@ import (
 type ClientServiceInterface interface {
 	SetState(state *LocalStateManager)
 	Start() error
-	Ready() error
+	Ready() bool
 	Stop() error
+	Name() string
 }
 
 type Client struct {
@@ -33,6 +34,7 @@ type Client struct {
 	replicaConfig      *agent.ReplicaConfig
 	stateManager       *LocalStateManager
 	rpHTTP             ClientServiceInterface
+	rpGRPC             ClientServiceInterface
 	clientDebugService ClientServiceInterface
 	ClientServices
 	SchedulerGrpcClientOptions
@@ -77,6 +79,7 @@ func NewClient(serverName string,
 	inferenceSvcName string,
 	namespace string,
 	reverseProxyHTTP ClientServiceInterface,
+	reverseProxyGRPC ClientServiceInterface,
 	clientDebugService ClientServiceInterface,
 ) *Client {
 
@@ -90,6 +93,7 @@ func NewClient(serverName string,
 
 	clientDebugService.SetState(stateManager)
 	reverseProxyHTTP.SetState(stateManager)
+	reverseProxyGRPC.SetState(stateManager)
 
 	return &Client{
 		logger:             logger.WithField("Name", "Client"),
@@ -97,6 +101,7 @@ func NewClient(serverName string,
 		stateManager:       stateManager,
 		replicaConfig:      replicaConfig,
 		rpHTTP:             reverseProxyHTTP,
+		rpGRPC:             reverseProxyGRPC,
 		clientDebugService: clientDebugService,
 		ClientServices: ClientServices{
 			ModelRepository: modelRepository,
@@ -172,29 +177,45 @@ func (c *Client) WaitReady() error {
 		return err
 	}
 
-	// TODO: move this outside and perhaps add to ClientServices
-
-	logger.Infof("Starting and waiting for Reverse Proxy to be ready")
-	err = c.rpHTTP.Start()
-	if err != nil {
-		return err
-	}
-	logFailure = func(err error, delay time.Duration) {
-		logger.WithError(err).Errorf("HTTP reverse proxy not ready")
-	}
-	err = backoff.RetryNotify(c.rpHTTP.Ready, backoff.NewExponentialBackOff(), logFailure)
-	if err != nil {
+	// http reverse proxy
+	if err := startSubService(c.rpHTTP, logger); err != nil {
 		return err
 	}
 
-	// TODO: move this outside and perhaps add to ClientServices
-	logger.Infof("Starting client debug service")
-	err = c.clientDebugService.Start()
-	if err != nil {
+	// grpc reverse proxy
+	if err := startSubService(c.rpGRPC, logger); err != nil {
+		return err
+	}
+
+	// debug service
+	if err := startSubService(c.clientDebugService, logger); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func startSubService(service ClientServiceInterface, logger *log.Entry) error {
+	// debug service
+	logger.Infof("Starting and waiting for %s", service.Name())
+	err := service.Start()
+	if err != nil {
+		return err
+	}
+
+	logFailure := func(err error, delay time.Duration) {
+		logger.WithError(err).Errorf("%s service not ready", service.Name())
+	}
+
+	readyToError := func() error {
+		if service.Ready() {
+			return nil
+		} else {
+			return fmt.Errorf("Service %s not ready", service.Name())
+		}
+	}
+	err = backoff.RetryNotify(readyToError, backoff.NewExponentialBackOff(), logFailure)
+	return err
 }
 
 func getConnection(host string, port int) (*grpc.ClientConn, error) {

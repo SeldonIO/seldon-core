@@ -61,12 +61,16 @@ func (f FakeClientService) Start() error {
 	return f.err
 }
 
-func (f FakeClientService) Ready() error {
-	return f.err
+func (f FakeClientService) Ready() bool {
+	return f.err == nil
 }
 
 func (f FakeClientService) Stop() error {
 	return f.err
+}
+
+func (f FakeClientService) Name() string {
+	return "FakeService"
 }
 
 func dialerv2(mockAgentV2Server *mockAgentV2Server) func(context.Context, string) (net.Conn, error) {
@@ -155,11 +159,10 @@ func TestClientCreate(t *testing.T) {
 			defer httpmock.DeactivateAndReset()
 			v2Client := createTestV2Client(test.models, test.v2Status)
 			modelRepository := FakeModelRepository{err: test.modelRepoErr}
-			//dummy reverse http proxy
 			rpHTTP := FakeClientService{err: nil}
-			//dummyDebugService
+			rpGRPC := FakeClientService{err: nil}
 			clientDebug := FakeClientService{err: nil}
-			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "0.0.0.0", "default", rpHTTP, clientDebug)
+			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "0.0.0.0", "default", rpHTTP, rpGRPC, clientDebug)
 			mockAgentV2Server := &mockAgentV2Server{models: test.models}
 			conn, err := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(err).To(BeNil())
@@ -261,11 +264,10 @@ func TestLoadModel(t *testing.T) {
 			defer httpmock.DeactivateAndReset()
 			v2Client := createTestV2Client(test.models, test.v2Status)
 			modelRepository := FakeModelRepository{err: test.modelRepoErr}
-			//dummy reverse http proxy
 			rpHTTP := FakeClientService{err: nil}
-			//dummyDebugService
+			rpGRPC := FakeClientService{err: nil}
 			clientDebug := FakeClientService{err: nil}
-			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "0.0.0.0", "default", rpHTTP, clientDebug)
+			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "0.0.0.0", "default", rpHTTP, rpGRPC, clientDebug)
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
@@ -376,11 +378,10 @@ parameters:
 			defer httpmock.DeactivateAndReset()
 			v2Client := createTestV2Client(test.models, test.v2Status)
 			modelRepository := FakeModelRepository{}
-			//dummy reverse http proxy
 			rpHTTP := FakeClientService{err: nil}
-			//dummyDebugService
+			rpGRPC := FakeClientService{err: nil}
 			clientDebug := FakeClientService{err: nil}
-			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "0.0.0.0", "default", rpHTTP, clientDebug)
+			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "0.0.0.0", "default", rpHTTP, rpGRPC, clientDebug)
 			switch x := test.op.GetModelVersion().GetModel().GetModelSpec().StorageConfig.Config.(type) {
 			case *pbs.StorageConfig_StorageSecretName:
 				secret := &v1.Secret{ObjectMeta: metav1.ObjectMeta{Name: x.StorageSecretName, Namespace: client.namespace}, StringData: map[string]string{"mys3": test.secretData}}
@@ -496,9 +497,9 @@ func TestUnloadModel(t *testing.T) {
 			v2Client := createTestV2Client(test.models, test.v2Status)
 			modelRepository := FakeModelRepository{}
 			rpHTTP := FakeClientService{err: nil}
-			//dummyDebugService
+			rpGRPC := FakeClientService{err: nil}
 			clientDebug := FakeClientService{err: nil}
-			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "0.0.0.0", "default", rpHTTP, clientDebug)
+			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "0.0.0.0", "default", rpHTTP, rpGRPC, clientDebug)
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())

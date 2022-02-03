@@ -345,44 +345,6 @@ func (manager *LocalStateManager) modelLoadUnlock(modelId string) {
 	}
 }
 
-// func (manager *LocalStateManager) modelReloadLockWaitOrCreate(modelId string) bool {
-// 	var wg sync.WaitGroup
-// 	wg.Add(1)
-
-// 	sema, loaded := manager.semas.LoadOrStore(modelId, &wg)
-
-// 	if !loaded {
-// 		// because of race conditions we need to recheck model in cache again here
-// 		// this is because the initial branch is on model not existing in cache
-// 		// and if we wait for the first concurrent operation to reload the model
-// 		// if will be put back in the cache
-// 		if manager.cache.Exists(modelId) {
-// 			manager.logger.Warnf("Model is already in cache %s", modelId)
-// 			manager.modelReloadLockDelete(modelId)
-// 			return true // treat it as model loaded, TODO: can we simplify logic?
-// 		}
-// 	}
-
-// 	if loaded {
-// 		manager.logger.Debugf("Waiting for concurrent reload of model %s", modelId)
-// 		sema.(*sync.WaitGroup).Wait()
-// 	} else {
-// 		manager.logger.Debugf("Creating reload lock for model %s", modelId)
-// 	}
-// 	return loaded
-// }
-
-// func (manager *LocalStateManager) modelReloadLockDelete(modelId string) {
-// 	manager.logger.Debugf("Deleting reload lock for model %s", modelId)
-// 	sema, loaded := manager.semas.LoadAndDelete(modelId)
-// 	if loaded {
-// 		sema.(*sync.WaitGroup).Done()
-// 	} else {
-// 		manager.logger.Warnf("Model %s state is inconsistent", modelId)
-// 	}
-
-// }
-
 func (manager *LocalStateManager) modelReloadLockWaitOrCreate(modelId string) bool {
 	var lock sync.RWMutex
 

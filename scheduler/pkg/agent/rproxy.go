@@ -7,6 +7,7 @@ import (
 	"net/http/httputil"
 	"regexp"
 	"strconv"
+	"sync"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -21,6 +22,7 @@ type reverseHTTPProxy struct {
 	server       *http.Server
 	serverReady  bool
 	port         uint
+	mu           sync.RWMutex
 }
 
 // need to rewrite the host of the outbound request with the host of the incoming request
@@ -57,29 +59,39 @@ func (rp *reverseHTTPProxy) Start() error {
 	rp.server = &http.Server{Addr: ":" + strconv.Itoa(int(rp.port)), Handler: rp.addHandlers(proxy)}
 	// TODO: check for errors? we rely for now on Ready
 	go func() {
+		rp.mu.Lock()
 		rp.serverReady = true
+		rp.mu.Unlock()
 		err := rp.server.ListenAndServe()
 		rp.logger.Infof("HTTP/REST reverse proxy debug service stopped (%s)", err)
+		rp.mu.Lock()
 		rp.serverReady = false
+		rp.mu.Unlock()
 	}()
 	return nil
 }
 
 func (rp *reverseHTTPProxy) Stop() error {
 	// Shutdown is graceful
-	return rp.server.Shutdown(context.TODO())
+	rp.mu.Lock()
+	defer rp.mu.Unlock()
+	err := rp.server.Shutdown(context.TODO())
+	rp.serverReady = false
+	return err
 }
 
-func (rp *reverseHTTPProxy) Ready() error {
-	if rp.serverReady {
-		return nil
-	} else {
-		return fmt.Errorf("HTTP reverse proxy is not ready")
-	}
+func (rp *reverseHTTPProxy) Ready() bool {
+	rp.mu.RLock()
+	defer rp.mu.RUnlock()
+	return rp.serverReady
 }
 
 func (rp *reverseHTTPProxy) SetState(stateManager *LocalStateManager) {
 	rp.stateManager = stateManager
+}
+
+func (rp *reverseHTTPProxy) Name() string {
+	return "Reverse HTTP/REST Proxy"
 }
 
 func NewReverseHTTPProxy(
@@ -96,7 +108,7 @@ func NewReverseHTTPProxy(
 }
 
 func ExtractModelNamefromPath(path string) (string, error) {
-	re := regexp.MustCompile(`v2/models/(\w+)/`)
+	re := regexp.MustCompile(`v2/models/(\w+)`)
 	matches := re.FindStringSubmatch(path)
 	if len(matches) == 2 {
 		return matches[1], nil

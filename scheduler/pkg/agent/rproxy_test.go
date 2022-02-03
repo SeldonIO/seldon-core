@@ -2,10 +2,12 @@ package agent
 
 import (
 	"io"
+	"net"
 	"net/http"
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gorilla/mux"
 
@@ -35,7 +37,25 @@ func v2_unload(w http.ResponseWriter, req *http.Request) {
 	_, _ = w.Write([]byte("Model unload: " + model_name))
 }
 
+func isRegistered(port int) bool {
+	timeout := 5 * time.Second
+	conn, err := net.DialTimeout("tcp", ":"+strconv.Itoa(port), timeout)
+	if err != nil {
+		return false
+	}
+
+	if conn != nil {
+		conn.Close()
+		return true
+	}
+
+	return false
+}
 func setupMockMLServer() {
+	if isRegistered(backEndServerPort) {
+		log.Warnf("Port %d already running", backEndGRPCServerPort)
+		return
+	}
 	rtr := mux.NewRouter()
 	rtr.HandleFunc("/v2/models/{model_name:\\w+}/infer", v2_infer).Methods("POST")
 	rtr.HandleFunc("/v2/repository/models/{model_name:\\w+}/load", v2_load).Methods("POST")
@@ -44,7 +64,7 @@ func setupMockMLServer() {
 	http.Handle("/", rtr)
 
 	if err := http.ListenAndServe(":"+strconv.Itoa(backEndServerPort), nil); err != nil {
-		log.Fatal(err)
+		log.Warn(err)
 	}
 }
 
@@ -112,9 +132,9 @@ func TestReverseProxySmoke(t *testing.T) {
 	g.Expect(resp.StatusCode).To(Equal(404))
 
 	t.Log("Testing status")
-	g.Expect(rpHTTP.Ready()).To(BeNil())
+	g.Expect(rpHTTP.Ready()).To(Equal(true))
 	_ = rpHTTP.Stop()
-	g.Expect(rpHTTP.Ready()).NotTo(BeNil())
+	g.Expect(rpHTTP.Ready()).To(Equal(false))
 
 	t.Logf("Done!")
 }
@@ -138,6 +158,11 @@ func TestExtractModelNamefromPath(t *testing.T) {
 		{
 			name:     "withversion",
 			path:     "v2/models/dummy_model/versions/1/infer",
+			expected: "dummy_model",
+		},
+		{
+			name:     "metadata",
+			path:     "v2/models/dummy_model",
 			expected: "dummy_model",
 		},
 		{

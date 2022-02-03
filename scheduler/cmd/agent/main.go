@@ -103,7 +103,7 @@ func init() {
 	flag.IntVar(&inferenceHttpPort, FlagInferenceHttpPort, 8080, "Inference server http port")
 	flag.IntVar(&inferenceGrpcPort, FlagInferenceGrpcPort, 9500, "Inference server grpc port")
 	flag.IntVar(&reverseProxyHttpPort, FlagReverseProxyHttpPort, agent.ReverseProxyHTTPPort, "Reverse proxy http port")
-	flag.IntVar(&reverseProxyGrpcPort, FlagReverseProxyGrpcPort, 9998, "Reverse proxy grpc port")
+	flag.IntVar(&reverseProxyGrpcPort, FlagReverseProxyGrpcPort, agent.ReverseGRPCProxyPort, "Reverse proxy grpc port")
 	flag.IntVar(&debugGrpcPort, FlagDebugGrpcPort, agent.GRPCDebugServicePort, "Debug grpc port")
 	flag.StringVar(&agentFolder, "agent-folder", "/mnt/agent", "Model repository folder")
 	flag.StringVar(&replicaConfigStr, FlagReplicaConfig, "", "Replica Json Config")
@@ -417,14 +417,14 @@ func main() {
 	// Create V2 Protocol Handler
 	v2Client := agent.NewV2Client(inferenceHost, inferenceHttpPort, logger)
 
-	// TODO: move this one level up (outside of NewClient)
 	rpHTTP := agent.NewReverseHTTPProxy(logger, uint(reverseProxyHttpPort))
 
-	// TODO: move this one level up (outside of NewClient)
+	rpGRPC := agent.NewReverseGRPCProxy(logger, uint(inferenceGrpcPort), uint(reverseProxyGrpcPort))
+
 	clientDebugService := agent.NewClientDebug(logger, uint(debugGrpcPort))
 
 	// Create Agent
-	client := agent.NewClient(serverName, uint32(replicaIdx), schedulerHost, schedulerPort, logger, modelRepository, v2Client, createReplicaConfig(), inferenceSvcName, namespace, rpHTTP, clientDebugService)
+	client := agent.NewClient(serverName, uint32(replicaIdx), schedulerHost, schedulerPort, logger, modelRepository, v2Client, createReplicaConfig(), inferenceSvcName, namespace, rpHTTP, rpGRPC, clientDebugService)
 
 	// Wait for required services to be ready
 	err = client.WaitReady()

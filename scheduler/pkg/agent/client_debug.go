@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"sync"
 	"time"
 
 	pbad "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent_debug"
@@ -26,6 +27,7 @@ type ClientDebug struct {
 	grpcServer   *grpc.Server
 	serverReady  bool
 	port         uint
+	mu           sync.RWMutex
 }
 
 func NewClientDebug(logger log.FieldLogger, port uint) *ClientDebug {
@@ -56,25 +58,34 @@ func (cd *ClientDebug) Start() error {
 	cd.logger.Infof("Starting gRPC listening server on port %d", cd.port)
 	cd.grpcServer = grpcServer
 	go func() {
+		cd.mu.Lock()
 		cd.serverReady = true
+		cd.mu.Unlock()
 		err := cd.grpcServer.Serve(l)
 		cd.logger.Infof("Client debug service stopped (%s)", err)
+		cd.mu.Lock()
 		cd.serverReady = false
+		cd.mu.Unlock()
 	}()
 	return nil
 }
 
 func (cd *ClientDebug) Stop() error {
-	cd.grpcServer.Stop()
+	cd.mu.Lock()
+	defer cd.mu.Unlock()
+	cd.grpcServer.GracefulStop()
+	cd.serverReady = false
 	return nil
 }
 
-func (cd *ClientDebug) Ready() error {
-	if cd.serverReady {
-		return nil
-	} else {
-		return fmt.Errorf("Client Debug is not ready")
-	}
+func (cd *ClientDebug) Ready() bool {
+	cd.mu.RLock()
+	defer cd.mu.RUnlock()
+	return cd.serverReady
+}
+
+func (rp *ClientDebug) Name() string {
+	return "ClientDebug GRPC service"
 }
 
 func (cd *ClientDebug) ReplicaStatus(ctx context.Context, r *pbad.ReplicaStatusRequest) (*pbad.ReplicaStatusResponse, error) {
