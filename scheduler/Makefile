@@ -3,6 +3,8 @@ AGENT_IMG ?= seldonio/seldon-agent:latest
 RCLONE_IMG ?= seldonio/seldon-rclone:latest
 ENVOY_IMG ?= seldonio/seldon-envoy:latest
 ENVOY_LOCAL_IMG ?= seldonio/seldon-envoy-local:latest
+MLSERVER_IMG ?= seldonio/mlserver:1.0.0.rc1
+TRITON_IMG ?= nvcr.io/nvidia/tritonserver:21.12-py3
 KIND_NAME=ansible
 
 GO_LDFLAGS := -s -w $(patsubst %,-X %, $(GO_BUILD_VARS))
@@ -85,55 +87,77 @@ kind-image-install-rclone: docker-build-rclone
 
 kind-image-install-all: kind-image-install-scheduler kind-image-install-envoy kind-image-install-agent kind-image-install-rclone
 
+
 #####################################
-# Start with Docker
+# Start with Docker Compose
 #####################################
 
-start-scheduler:
-	docker run --name scheduler -d --rm --network host -p 9004:9004 -p 9002:9002 -p 9005:9005 ${SCHEDULER_IMG}
-  
-start-agent-mlserver:
-	docker run --name agent -d --rm --network host -v ${PWD}/config:/mnt/config -v ${PWD}/mnt:/mnt/agent -e SELDON_SERVER_CAPABILITIES='sklearn,xgboost' -e SELDON_OVERCOMMIT='false' -e SELDON_SERVER_HTTP_PORT='8080' -e SELDON_SERVER_GRPC_PORT='8081' -e SELDON_SCHEDULER_HOST='0.0.0.0' -e SELDON_SCHEDULER_PORT='9005' -e SELDON_SERVER_TYPE='mlserver' -e MEMORY_REQUEST='1000000' ${AGENT_IMG} /bin/agent --log-level debug --config-path /mnt/config
+DOCKER_COMPOSE_COMMON_IMAGES = \
+	SCHEDULER_IMAGE_AND_TAG=${SCHEDULER_IMG} \
+		AGENT_IMAGE_AND_TAG=${AGENT_IMG} \
+		ENVOY_IMAGE_AND_TAG=${ENVOY_LOCAL_IMG} \
+		RCLONE_IMAGE_AND_TAG=${RCLONE_IMG}
 
-start-agent-triton:
-	docker run --name agent -d --rm --network host -v ${PWD}/config:/mnt/config -v ${PWD}/mnt:/mnt/agent -e SELDON_SERVER_CAPABILITIES='tensorflow,onnx,pytorch' -e SELDON_OVERCOMMIT='false' -e SELDON_SERVER_HTTP_PORT='8080' -e SELDON_SERVER_GRPC_PORT='8081' -e SELDON_SCHEDULER_HOST='0.0.0.0' -e SELDON_SCHEDULER_PORT='9005' -e SELDON_SERVER_TYPE='triton' -e MEMORY_REQUEST='1000000' ${AGENT_IMG} /bin/agent --log-level debug --config-path /mnt/config
+DOCKER_COMPOSE_MLSERVER_IMAGES = \
+	${DOCKER_COMPOSE_COMMON_IMAGES} \
+		SERVER_IMAGE_AND_TAG=${MLSERVER_IMG}
+	
+DOCKER_COMPOSE_TRITON_IMAGES = \
+	${DOCKER_COMPOSE_COMMON_IMAGES} \
+		SERVER_IMAGE_AND_TAG=${TRITON_IMG}
 
-start-envoy:
-	docker run --name envoy -d --rm --network host -p 9003:9003 -p 9000:9000 ${ENVOY_LOCAL_IMG}
+DOCKER_COMPOSE_TRITON_LOG_LEVEL ?= 0
 
-start-rclone:
-	docker run --name rclone -d --rm -v ${PWD}/mnt:/mnt/agent -p 5572:5572 seldonio/seldon-rclone:latest
+DOCKER_COMPOSE_USE_EMPTY_VOLUMES ?= true
 
-start-mlserver:
-	mkdir -p mnt/models
-	rm -rf mnt/models/*
-	docker run --name mlserver -d --rm -v ${PWD}/mnt/models:/mnt/models -p 8080:8080 -p 8081:8081 seldonio/mlserver:1.0.0.rc1 mlserver start /mnt/models
+ifeq ($(DOCKER_COMPOSE_USE_EMPTY_VOLUMES),true)
+	DOCKER_COMPOSE_REMOVE_VOLUMES = -v
+else
+	DOCKER_COMPOSE_REMOVE_VOLUMES =
+endif
 
-start-triton-debug:
-	mkdir -p mnt/models
-	rm -rf mnt/models/*
-	docker run --name triton -d --rm --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 -p8080:8080 -p8081:8081 -v ${PWD}/mnt/models:/mnt/models nvcr.io/nvidia/tritonserver:21.12-py3 /opt/tritonserver/bin/tritonserver --model-repository=/mnt/models --http-port=8080 --grpc-port=8081 --log-verbose=1 --model-control-mode=explicit
+.PHONY: start-all-mlserver
+start-all-mlserver: copy-apis
+	${DOCKER_COMPOSE_MLSERVER_IMAGES} \
+		docker-compose -f all-base.yaml -f all-mlserver.yaml --env-file env.all -p scv2_mlserver up -d
 
-start-triton:
-	mkdir -p mnt/models
-	rm -rf mnt/models/*
-	docker run --name triton -d --rm --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 -p8080:8080 -p8081:8081 -v ${PWD}/mnt/models:/mnt/models nvcr.io/nvidia/tritonserver:21.12-py3 /opt/tritonserver/bin/tritonserver --model-repository=/mnt/models --http-port=8080 --grpc-port=8081 --model-control-mode=explicit
-
-
-start-all-mlserver: start-scheduler start-agent-mlserver start-mlserver start-envoy start-rclone
+.PHONY: stop-all-mlserver
 stop-all-mlserver:
-	docker rm -f scheduler
-	docker rm -f agent
-	docker rm -f mlserver
-	docker rm -f envoy
-	docker rm -f rclone
-start-all-triton: start-scheduler start-agent-triton start-triton start-envoy start-rclone
+	${DOCKER_COMPOSE_MLSERVER_IMAGES} \
+		docker-compose -f all-base.yaml -f all-mlserver.yaml --env-file env.all -p scv2_mlserver down ${DOCKER_COMPOSE_REMOVE_VOLUMES}
+
+.PHONY: start-all-triton
+start-all-triton: copy-apis
+	${DOCKER_COMPOSE_TRITON_IMAGES} \
+		TRITON_LOG_LEVEL=${DOCKER_COMPOSE_TRITON_LOG_LEVEL} \
+		docker-compose -f all-base.yaml -f all-triton.yaml --env-file env.all -p scv2_triton up -d
+
+.PHONY: stop-all-triton
 stop-all-triton:
-	docker rm -f scheduler
-	docker rm -f agent
-	docker rm -f triton
-	docker rm -f envoy
-	docker rm -f rclone
+	${DOCKER_COMPOSE_TRITON_IMAGES} \
+		docker-compose -f all-base.yaml -f all-triton.yaml --env-file env.all -p scv2_triton down ${DOCKER_COMPOSE_REMOVE_VOLUMES}
+
+# Single services
+
+.PHONY: start-mlserver
+start-mlserver:
+	${DOCKER_COMPOSE_MLSERVER_IMAGES} \
+		docker-compose -f all-base-yaml -f all-mlserver.yaml --env-file env.all -p scv2_mlserver run server -d
+
+.PHONY: stop-mlserver
+stop-mlserver:
+	${DOCKER_COMPOSE_MLSERVER_IMAGES} \
+		docker-compose -f all-base.yaml -f all-mlserver.yaml --env-file env.all -p scv2_mlserver rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES}
+
+.PHONY: start-triton
+start-triton:
+	${DOCKER_COMPOSE_MLSERVER_IMAGES} \
+		docker-compose -f all-base-yaml -f all-triton.yaml --env-file env.all -p scv2_triton run server -d
+
+.PHONY: stop-triton
+stop-triton:
+	${DOCKER_COMPOSE_MLSERVER_IMAGES} \
+		docker-compose -f all-base.yaml -f all-triton.yaml --env-file env.all -p scv2_triton rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES}
 
 
 #####################################

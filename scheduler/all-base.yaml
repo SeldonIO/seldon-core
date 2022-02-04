@@ -1,0 +1,78 @@
+version: "3.9"
+
+volumes:
+  downloads:
+  models:
+
+services:
+
+  agent:
+    build:
+      dockerfile: ./Dockerfile.agent
+      context: .
+    image: "${AGENT_IMAGE_AND_TAG}"
+    ports:
+      - "${AGENT_HTTP_PORT}:${AGENT_HTTP_PORT}"
+      - "${AGENT_GRPC_PORT}:${AGENT_GRPC_PORT}"
+    command:
+      - "/bin/agent"
+      - "--log-level"
+      - "debug"
+      - "--config-path"
+      - "/mnt/config"
+    environment:
+      - SELDON_OVERCOMMIT=${AGENT_ENABLE_OVERCOMMIT}
+      - SELDON_SERVER_HTTP_PORT=${AGENT_HTTP_PORT}
+      - SELDON_SERVER_GRPC_PORT=${AGENT_GRPC_PORT}
+      - SELDON_DEBUG_GRPC_PORT=${AGENT_DEBUG_PORT}
+      - SELDON_SCHEDULER_HOST=0.0.0.0
+      - SELDON_SCHEDULER_PORT=${SCHEDULER_AGENT_PORT}
+      - MEMORY_REQUEST=${AGENT_MEMORY_REQUEST}
+    volumes:
+      - type: bind
+        source: ./config
+        target: /mnt/config
+      - type: volume
+        source: downloads
+        target: /mnt/agent
+
+  envoy:
+    build:
+      dockerfile: ./Dockerfile.envoy-local
+      context: .
+    image: "${ENVOY_IMAGE_AND_TAG}"
+    ports:
+      - "${ENVOY_DATA_PORT}:${ENVOY_DATA_PORT}"
+      - "${ENVOY_CONTROL_PORT}:${ENVOY_CONTROL_PORT}"
+
+  rclone:
+    build:
+      dockerfile: ./Dockerfile.rclone
+      context: .
+    image: "${RCLONE_IMAGE_AND_TAG}"
+    ports:
+      - "${RCLONE_HTTP_PORT}:${RCLONE_HTTP_PORT}"
+    volumes:
+      - type: volume
+        source: downloads
+        target: /mnt/agent
+
+  scheduler:
+    build:
+      dockerfile: ./Dockerfile.scheduler
+      context: .
+    image: "${SCHEDULER_IMAGE_AND_TAG}"
+    ports:
+      - "${SCHEDULER_XDS_PORT}:${SCHEDULER_XDS_PORT}"
+      - "${SCHEDULER_SERVER_PORT}:${SCHEDULER_SERVER_PORT}"
+      - "${SCHEDULER_AGENT_PORT}:${SCHEDULER_AGENT_PORT}"
+
+  server:
+    image: "${SERVER_IMAGE_AND_TAG}"
+    ports:
+      - "${SERVER_HTTP_PORT}:${SERVER_HTTP_PORT}"
+      - "${SERVER_GRPC_PORT}:${SERVER_GRPC_PORT}"
+    volumes:
+      - type: volume
+        source: models
+        target: /mnt/models

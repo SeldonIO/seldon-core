@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+
+  agent:
+    environment:
+      - SELDON_SERVER_TYPE=triton
+      - SELDON_SERVER_CAPABILITIES=tensorflow,onnx,pytorch
+
+  server:
+    command:
+      - "/opt/tritonserver/bin/tritonserver"
+      - "--model-repository=/mnt/models"
+      - "--http-port=${SERVER_HTTP_PORT}"
+      - "--grpc-port=${SERVER_GRPC_PORT}"
+      - "--model-control-mode=explicit"
+      - "--log-verbose=${TRITON_LOG_LEVEL:-0}"
+    shm_size: 1g
+    ulimits:
+      memlock: "-1"
+      stack: 67108864

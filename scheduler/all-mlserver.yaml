@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+
+  agent:
+    environment:
+      - SELDON_SERVER_TYPE=mlserver
+      - SELDON_SERVER_CAPABILITIES=sklearn,xgboost
+
+  server:
+    command:
+      - "mlserver"
+      - "start"
+      - "/mnt/models"
+    environment:
+      - MLSERVER_LOAD_MODELS_AT_STARTUP=${MLSERVER_LOAD_MODELS_AT_STARTUP}
