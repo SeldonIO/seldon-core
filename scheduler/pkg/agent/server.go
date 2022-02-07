@@ -86,6 +86,8 @@ func (s *Server) Sync(modelName string) {
 	logger := s.logger.WithField("func", "Sync")
 	s.mutext.RLock()
 	defer s.mutext.RUnlock()
+	s.store.LockModel(modelName)
+	defer s.store.UnlockModel(modelName)
 
 	model, err := s.store.GetModel(modelName)
 	if err != nil {
@@ -118,7 +120,7 @@ func (s *Server) Sync(modelName string) {
 				logger.WithError(err).Errorf("stream message send failed for model %s and replicaidx %d", modelName, replicaIdx)
 				continue
 			}
-			err := s.store.UpdateModelState(latestModel.Key(), latestModel.GetVersion(), latestModel.Server(), replicaIdx, nil, store.Loading, "")
+			err := s.store.UpdateModelState(latestModel.Key(), latestModel.GetVersion(), latestModel.Server(), replicaIdx, nil, store.LoadRequested, store.Loading, "")
 			if err != nil {
 				logger.WithError(err).Errorf("Sync set model state failed for model %s replicaidx %d", modelName, replicaIdx)
 				continue
@@ -129,7 +131,7 @@ func (s *Server) Sync(modelName string) {
 	// Loop through all versions and unload any requested - any version of a model might have an unload request
 	for _, modelVersion := range model.Versions {
 		for _, replicaIdx := range modelVersion.GetReplicaForState(store.UnloadRequested) {
-			s.logger.Infof("Sending unload model request for %s", modelName)
+			s.logger.Infof("Sending unload model request for %s:%d", modelName, modelVersion.GetVersion())
 			as, ok := s.agents[ServerKey{serverName: modelVersion.Server(), replicaIdx: uint32(replicaIdx)}]
 			if !ok {
 				logger.Errorf("Failed to find server replica for %s:%d", modelVersion.Server(), replicaIdx)
@@ -143,7 +145,7 @@ func (s *Server) Sync(modelName string) {
 				logger.WithError(err).Errorf("stream message send failed for model %s and replicaidx %d", modelName, replicaIdx)
 				continue
 			}
-			err := s.store.UpdateModelState(modelVersion.Key(), modelVersion.GetVersion(), modelVersion.Server(), replicaIdx, nil, store.Unloading, "")
+			err := s.store.UpdateModelState(modelVersion.Key(), modelVersion.GetVersion(), modelVersion.Server(), replicaIdx, nil, store.UnloadRequested, store.Unloading, "")
 			if err != nil {
 				logger.WithError(err).Errorf("Sync set model state failed for model %s replicaidx %d", modelName, replicaIdx)
 				continue
@@ -154,20 +156,27 @@ func (s *Server) Sync(modelName string) {
 
 func (s *Server) AgentEvent(ctx context.Context, message *pb.ModelEventMessage) (*pb.ModelEventResponse, error) {
 	logger := s.logger.WithField("func", "AgentEvent")
-	var state store.ModelReplicaState
+	var desiredState store.ModelReplicaState
+	var expectedState store.ModelReplicaState
 	switch message.Event {
 	case pb.ModelEventMessage_LOADED:
-		state = store.Loaded
+		expectedState = store.Loading
+		desiredState = store.Loaded
 	case pb.ModelEventMessage_UNLOADED:
-		state = store.Unloaded
+		expectedState = store.Unloading
+		desiredState = store.Unloaded
 	case pb.ModelEventMessage_LOAD_FAILED,
 		pb.ModelEventMessage_LOAD_FAIL_MEMORY:
-		state = store.LoadFailed
+		expectedState = store.Loading
+		desiredState = store.LoadFailed
+	case pb.ModelEventMessage_UNLOAD_FAILED:
+		expectedState = store.Unloading
+		desiredState = store.UnloadFailed
 	default:
-		state = store.ModelReplicaStateUnknown
+		desiredState = store.ModelReplicaStateUnknown
 	}
-	logger.Infof("Updating state for model %s to %s", message.ModelName, state.String())
-	err := s.store.UpdateModelState(message.ModelName, message.GetModelVersion(), message.ServerName, int(message.ReplicaIdx), &message.AvailableMemoryBytes, state, message.GetMessage())
+	logger.Infof("Updating state for model %s to %s", message.ModelName, desiredState.String())
+	err := s.store.UpdateModelState(message.ModelName, message.GetModelVersion(), message.ServerName, int(message.ReplicaIdx), &message.AvailableMemoryBytes, expectedState, desiredState, message.GetMessage())
 	if err != nil {
 		logger.WithError(err).Infof("Failed Updating state for model %s", message.ModelName)
 		return nil, status.Error(codes.Internal, err.Error())

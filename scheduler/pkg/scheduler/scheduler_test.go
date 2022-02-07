@@ -41,6 +41,12 @@ func (f mockStore) GetModel(key string) (*store.ModelSnapshot, error) {
 	return f.models[key], nil
 }
 
+func (f mockStore) LockModel(modelId string) {
+}
+
+func (f mockStore) UnlockModel(modelId string) {
+}
+
 func (f mockStore) ExistsModelVersion(key string, version uint32) bool {
 	return false
 }
@@ -63,7 +69,7 @@ func (f *mockStore) UpdateLoadedModels(modelKey string, version uint32, serverKe
 	return nil
 }
 
-func (f mockStore) UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, state store.ModelReplicaState, reason string) error {
+func (f mockStore) UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState store.ModelReplicaState, reason string) error {
 	panic("implement me")
 }
 

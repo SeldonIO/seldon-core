@@ -81,6 +81,9 @@ func (s *SimpleScheduler) ScheduleFailedModels() ([]string, error) {
 func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 	logger := s.logger.WithField("func", "scheduleToServer")
 	logger.Debugf("Schedule model %s", modelName)
+	s.store.LockModel(modelName)
+	defer s.store.UnlockModel(modelName)
+
 	// Get Model
 	model, err := s.store.GetModel(modelName)
 	if err != nil {

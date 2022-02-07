@@ -11,6 +11,6 @@ services:
     command:
       - "mlserver"
       - "start"
-      - "/mnt/models"
+      - "/mnt/agent/models"
     environment:
       - MLSERVER_LOAD_MODELS_AT_STARTUP=${MLSERVER_LOAD_MODELS_AT_STARTUP}

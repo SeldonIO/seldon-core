@@ -64,7 +64,7 @@ func setupReverseGRPCService(numModels int, modelPrefix string) *reverseGRPCProx
 
 	v2Client := NewV2Client("localhost", backEndServerPort, logger)
 	localCacheManager := setupLocalTestManager(numModels, modelPrefix, v2Client, numModels-2)
-	rp := NewReverseGRPCProxy(logger, backEndGRPCServerPort, ReverseGRPCProxyPort)
+	rp := NewReverseGRPCProxy(logger, "localhost", backEndGRPCServerPort, ReverseGRPCProxyPort)
 	rp.SetState(localCacheManager)
 	return rp
 }

@@ -1,7 +1,6 @@
 version: "3.9"
 
 volumes:
-  downloads:
   models:
 
 services:
@@ -14,18 +13,28 @@ services:
     ports:
       - "${AGENT_HTTP_PORT}:${AGENT_HTTP_PORT}"
       - "${AGENT_GRPC_PORT}:${AGENT_GRPC_PORT}"
+      - "${SELDON_REVERSE_PROXY_HTTP_PORT}:${SELDON_REVERSE_PROXY_HTTP_PORT}"
+      - "${SELDON_REVERSE_PROXY_GRPC_PORT}:${SELDON_REVERSE_PROXY_GRPC_PORT}"
     command:
       - "/bin/agent"
       - "--log-level"
       - "debug"
       - "--config-path"
       - "/mnt/config"
+      - "--rclone-host"
+      - "rclone"
+      - "--inference-host"
+      - "server"
+      - "--agent-host"
+      - "agent"
     environment:
       - SELDON_OVERCOMMIT=${AGENT_ENABLE_OVERCOMMIT}
-      - SELDON_SERVER_HTTP_PORT=${AGENT_HTTP_PORT}
-      - SELDON_SERVER_GRPC_PORT=${AGENT_GRPC_PORT}
+      - SELDON_REVERSE_PROXY_HTTP_PORT=${SELDON_REVERSE_PROXY_HTTP_PORT}
+      - SELDON_REVERSE_PROXY_GRPC_PORT=${SELDON_REVERSE_PROXY_GRPC_PORT}
+      - SELDON_SERVER_HTTP_PORT=${SERVER_HTTP_PORT}
+      - SELDON_SERVER_GRPC_PORT=${SERVER_GRPC_PORT}
       - SELDON_DEBUG_GRPC_PORT=${AGENT_DEBUG_PORT}
-      - SELDON_SCHEDULER_HOST=0.0.0.0
+      - SELDON_SCHEDULER_HOST=scheduler
       - SELDON_SCHEDULER_PORT=${SCHEDULER_AGENT_PORT}
       - MEMORY_REQUEST=${AGENT_MEMORY_REQUEST}
     volumes:
@@ -33,7 +42,7 @@ services:
         source: ./config
         target: /mnt/config
       - type: volume
-        source: downloads
+        source: models
         target: /mnt/agent
 
   envoy:
@@ -54,7 +63,7 @@ services:
       - "${RCLONE_HTTP_PORT}:${RCLONE_HTTP_PORT}"
     volumes:
       - type: volume
-        source: downloads
+        source: models
         target: /mnt/agent
 
   scheduler:
@@ -75,4 +84,4 @@ services:
     volumes:
       - type: volume
         source: models
-        target: /mnt/models
+        target: /mnt/agent

@@ -28,6 +28,12 @@ func (m *mockStore) GetModel(key string) (*store.ModelSnapshot, error) {
 	return m.models[key], nil
 }
 
+func (m mockStore) LockModel(modelId string) {
+}
+
+func (m mockStore) UnlockModel(modelId string) {
+}
+
 func (m *mockStore) RemoveModel(req *pbs.UnloadModelRequest) error {
 	panic("implement me")
 }
@@ -52,11 +58,11 @@ func (m *mockStore) UnloadVersionModels(modelKey string, version uint32) (bool, 
 	panic("implement me")
 }
 
-func (m *mockStore) UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, state store.ModelReplicaState, reason string) error {
+func (m *mockStore) UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState store.ModelReplicaState, reason string) error {
 	model := m.models[modelKey]
 	for _, mv := range model.Versions {
 		if mv.GetVersion() == version {
-			mv.SetReplicaState(replicaIdx, store.ReplicaStatus{State: state, Reason: reason})
+			mv.SetReplicaState(replicaIdx, store.ReplicaStatus{State: desiredState, Reason: reason})
 		}
 	}
 	return nil

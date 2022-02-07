@@ -99,9 +99,11 @@ func (m *MemoryStore) FailedScheduling(modelVersion *ModelVersion, reason string
 }
 
 func (m *MemoryStore) updateModelStatus(isLatest bool, deleted bool, modelVersion *ModelVersion, prevModelVersion *ModelVersion) {
+	logger := m.logger.WithField("func", "updateModelStatus")
 	stats := calcReplicaStateStatistics(modelVersion, deleted)
-	m.logger.Debugf("Stats %+v modelVersion %+v prev model %+v", stats, modelVersion, prevModelVersion)
+	logger.Debugf("Stats %+v modelVersion %+v prev model %+v", stats, modelVersion, prevModelVersion)
 	updateModelState(isLatest, modelVersion, prevModelVersion, stats, deleted)
 
+	logger.Debugf("Trigger event for model %s:%d", modelVersion.GetMeta().GetName(), modelVersion.GetVersion())
 	go m.eventHub.TriggerModelEvent(coordinator.ModelEventMsg{ModelName: modelVersion.GetMeta().GetName(), ModelVersion: modelVersion.GetVersion()})
 }

@@ -154,7 +154,7 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 							EngineType: &envoy_type_matcher_v3.RegexMatcher_GoogleRe2{},
 							Regex:      "/v2/models/([^/]+)",
 						},
-						Substitution: fmt.Sprintf("/v2/models/%s/versions/%d", r.Name, r.Version),
+						Substitution: fmt.Sprintf("/v2/models/%s/versions/%d", r.Host, r.Version),
 					},
 					ClusterSpecifier: &route.RouteAction_Cluster{
 						Cluster: r.HttpCluster,

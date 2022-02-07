@@ -82,12 +82,14 @@ func (m *ModelSnapshot) GetVersionsBeforeLastAvailable() []*ModelVersion {
 type SchedulerStore interface {
 	UpdateModel(config *pb.LoadModelRequest) error
 	GetModel(key string) (*ModelSnapshot, error)
+	LockModel(modelId string)
+	UnlockModel(modelId string)
 	RemoveModel(req *pb.UnloadModelRequest) error
 	GetServers() ([]*ServerSnapshot, error)
 	GetServer(serverKey string) (*ServerSnapshot, error)
 	UpdateLoadedModels(modelKey string, version uint32, serverKey string, replicas []*ServerReplica) error
 	UnloadVersionModels(modelKey string, version uint32) (bool, error)
-	UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, state ModelReplicaState, reason string) error
+	UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState ModelReplicaState, reason string) error
 	AddServerReplica(request *pba.AgentSubscribeRequest) error
 	ServerNotify(request *pb.ServerNotifyRequest) error
 	RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) // return previously loaded models

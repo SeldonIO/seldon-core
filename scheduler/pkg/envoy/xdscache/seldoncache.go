@@ -88,7 +88,7 @@ func (xds *SeldonXDSCache) AddListener(name string) {
 }
 
 func (xds *SeldonXDSCache) AddRoute(name, modelName string, httpClusterName string, grpcClusterName string, logPayloads bool, trafficPercent uint32, version uint32) {
-	xds.Routes[name] = append(xds.Routes[name], resources.Route{
+	xds.Routes[modelName] = append(xds.Routes[modelName], resources.Route{
 		Name:           name,
 		Host:           modelName,
 		HttpCluster:    httpClusterName,
@@ -132,8 +132,10 @@ func (xds *SeldonXDSCache) RemoveRoutes(modelName string) error {
 		if !ok {
 			return fmt.Errorf("Can't find grpc cluster for model %s", modelName)
 		}
-		delete(httpCluster.Routes, modelName)
-		delete(grpcCluster.Routes, modelName)
+		//delete(httpCluster.Routes, modelName)
+		delete(httpCluster.Routes, route.Name)
+		//delete(grpcCluster.Routes, modelName)
+		delete(grpcCluster.Routes, route.Name)
 		if len(httpCluster.Routes) == 0 {
 			delete(xds.Clusters, route.HttpCluster)
 			delete(xds.Clusters, route.GrpcCluster)

@@ -2,6 +2,7 @@ package processor
 
 import (
 	"context"
+	"fmt"
 	"math"
 	"math/rand"
 	"strconv"
@@ -119,8 +120,9 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelName string, mode
 	clusterNameBase := server.Name + "_" + computeHashKeyForList(assignment)
 	httpClusterName := clusterNameBase + "_http"
 	grpcClusterName := clusterNameBase + "_grpc"
-	p.xdsCache.AddRoute(modelName, modelName, httpClusterName, grpcClusterName, modelVersion.GetDeploymentSpec().LogPayloads, trafficPercent, modelVersion.GetVersion())
-	p.xdsCache.AddCluster(httpClusterName, modelName, false)
+	routeName := fmt.Sprintf("%s%d", modelName, modelVersion.GetVersion())
+	p.xdsCache.AddRoute(routeName, modelName, httpClusterName, grpcClusterName, modelVersion.GetDeploymentSpec().LogPayloads, trafficPercent, modelVersion.GetVersion())
+	p.xdsCache.AddCluster(httpClusterName, routeName, false)
 	for _, replicaIdx := range assignment {
 		replica, ok := server.Replicas[replicaIdx]
 		if !ok {
@@ -143,6 +145,8 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelName string, mode
 func (p *IncrementalProcessor) Sync(modelName string) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	p.store.LockModel(modelName)
+	defer p.store.UnlockModel(modelName)
 
 	logger := p.logger.WithField("func", "Sync")
 	model, err := p.store.GetModel(modelName)
@@ -169,7 +173,7 @@ func (p *IncrementalProcessor) Sync(modelName string) error {
 		return p.removeModelForServerInEnvoy(modelName)
 	}
 
-	// Remove route before we recreate
+	// Remove routes before we recreate
 	err = p.xdsCache.RemoveRoutes(modelName)
 	if err != nil {
 		return err
@@ -208,7 +212,8 @@ func (p *IncrementalProcessor) Sync(modelName string) error {
 		reason = err.Error()
 	}
 	for _, replicaIdx := range latestModel.GetAssignment() {
-		err2 := p.store.UpdateModelState(modelName, latestModel.GetVersion(), server.Name, replicaIdx, nil, state, reason)
+		expectedState := latestModel.ReplicaState()[replicaIdx].State
+		err2 := p.store.UpdateModelState(modelName, latestModel.GetVersion(), server.Name, replicaIdx, nil, expectedState, state, reason)
 		if err2 != nil {
 			return err2
 		}

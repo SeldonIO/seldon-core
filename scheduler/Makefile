@@ -3,6 +3,7 @@ AGENT_IMG ?= seldonio/seldon-agent:latest
 RCLONE_IMG ?= seldonio/seldon-rclone:latest
 ENVOY_IMG ?= seldonio/seldon-envoy:latest
 ENVOY_LOCAL_IMG ?= seldonio/seldon-envoy-local:latest
+ENVOY_COMPOSE_IMG ?= seldonio/seldon-envoy-compose:latest
 MLSERVER_IMG ?= seldonio/mlserver:1.0.0.rc1
 TRITON_IMG ?= nvcr.io/nvidia/tritonserver:21.12-py3
 KIND_NAME=ansible
@@ -64,6 +65,9 @@ docker-build-envoy:
 docker-build-envoy-local:
 	docker build -t ${ENVOY_LOCAL_IMG} -f Dockerfile.envoy-local .
 
+docker-build-envoy-compose:
+	docker build -t ${ENVOY_COMPOSE_IMG} -f Dockerfile.envoy-compose .
+
 docker-push-envoy: ## Push docker image with the manager.
 	docker push ${ENVOY_IMG}
 
@@ -95,13 +99,13 @@ kind-image-install-all: kind-image-install-scheduler kind-image-install-envoy ki
 DOCKER_COMPOSE_COMMON_IMAGES = \
 	SCHEDULER_IMAGE_AND_TAG=${SCHEDULER_IMG} \
 		AGENT_IMAGE_AND_TAG=${AGENT_IMG} \
-		ENVOY_IMAGE_AND_TAG=${ENVOY_LOCAL_IMG} \
+		ENVOY_IMAGE_AND_TAG=${ENVOY_COMPOSE_IMG} \
 		RCLONE_IMAGE_AND_TAG=${RCLONE_IMG}
 
 DOCKER_COMPOSE_MLSERVER_IMAGES = \
 	${DOCKER_COMPOSE_COMMON_IMAGES} \
 		SERVER_IMAGE_AND_TAG=${MLSERVER_IMG}
-	
+
 DOCKER_COMPOSE_TRITON_IMAGES = \
 	${DOCKER_COMPOSE_COMMON_IMAGES} \
 		SERVER_IMAGE_AND_TAG=${TRITON_IMG}
@@ -158,6 +162,57 @@ start-triton:
 stop-triton:
 	${DOCKER_COMPOSE_MLSERVER_IMAGES} \
 		docker-compose -f all-base.yaml -f all-triton.yaml --env-file env.all -p scv2_triton rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES}
+
+#####################################
+# Start with Docker
+#####################################
+
+start-scheduler:
+	docker run --name scheduler -d --rm --network host -p 9004:9004 -p 9002:9002 -p 9005:9005 ${SCHEDULER_IMG}
+
+
+start-agent-mlserver:
+	docker run --name agent -d --rm --network host -v ${PWD}/config:/mnt/config -v ${PWD}/mnt:/mnt/agent -e SELDON_SERVER_CAPABILITIES='sklearn,xgboost' -e SELDON_OVERCOMMIT='false' -e SELDON_SERVER_HTTP_PORT='8080' -e SELDON_SERVER_GRPC_PORT='8081' -e SELDON_SCHEDULER_HOST='0.0.0.0' -e SELDON_SCHEDULER_PORT='9005' -e SELDON_SERVER_TYPE='mlserver' -e MEMORY_REQUEST='1000000' ${AGENT_IMG} /bin/agent --log-level debug --config-path /mnt/config
+
+start-agent-triton:
+	docker run --name agent -d --rm --network host -v ${PWD}/config:/mnt/config -v ${PWD}/mnt:/mnt/agent -e SELDON_SERVER_CAPABILITIES='tensorflow,onnx,pytorch' -e SELDON_OVERCOMMIT='false' -e SELDON_SERVER_HTTP_PORT='8080' -e SELDON_SERVER_GRPC_PORT='8081' -e SELDON_SCHEDULER_HOST='0.0.0.0' -e SELDON_SCHEDULER_PORT='9005' -e SELDON_SERVER_TYPE='triton' -e MEMORY_REQUEST='1000000' ${AGENT_IMG} /bin/agent --log-level debug --config-path /mnt/config
+
+start-envoy:
+	docker run --name envoy -d --rm --network host -p 9003:9003 -p 9000:9000 ${ENVOY_LOCAL_IMG}
+
+start-rclone:
+	docker run --name rclone -d --rm -v ${PWD}/mnt:/mnt/agent -p 5572:5572 seldonio/seldon-rclone:latest
+
+start-docker-mlserver:
+	mkdir -p mnt/models
+	rm -rf mnt/models/*
+	docker run --name mlserver -d --rm -v ${PWD}/mnt/models:/mnt/models -p 8080:8080 -p 8081:8081 seldonio/mlserver:1.0.0.rc1 mlserver start /mnt/models
+
+start-triton-debug:
+	mkdir -p mnt/models
+	rm -rf mnt/models/*
+	docker run --name triton -d --rm --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 -p8080:8080 -p8081:8081 -v ${PWD}/mnt/models:/mnt/models nvcr.io/nvidia/tritonserver:21.12-py3 /opt/tritonserver/bin/tritonserver --model-repository=/mnt/models --http-port=8080 --grpc-port=8081 --log-verbose=1 --model-control-mode=explicit
+
+start-docker-triton:
+	mkdir -p mnt/models
+	rm -rf mnt/models/*
+	docker run --name triton -d --rm --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 -p8080:8080 -p8081:8081 -v ${PWD}/mnt/models:/mnt/models nvcr.io/nvidia/tritonserver:21.12-py3 /opt/tritonserver/bin/tritonserver --model-repository=/mnt/models --http-port=8080 --grpc-port=8081 --model-control-mode=explicit
+
+start-all-docker-mlserver: start-scheduler start-agent-mlserver start-mlserver start-envoy start-rclone
+stop-all-docker-mlserver:
+	docker rm -f scheduler
+	docker rm -f agent
+	docker rm -f mlserver
+	docker rm -f envoy
+	docker rm -f rclone
+
+start-all-docker-triton: start-scheduler start-agent-triton start-triton start-envoy start-rclone
+stop-all-docker-triton:
+	docker rm -f scheduler
+	docker rm -f agent
+	docker rm -f triton
+	docker rm -f envoy
+	docker rm -f rclone
 
 
 #####################################

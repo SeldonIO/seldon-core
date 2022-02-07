@@ -1,7 +1,6 @@
 package store
 
 import (
-	"errors"
 	"testing"
 	"time"
 
@@ -565,11 +564,12 @@ func TestUpdateModelState(t *testing.T) {
 		version         uint32
 		serverKey       string
 		replicaIdx      int
-		state           ReplicaStatus
+		expectedState   ModelReplicaState
+		desiredState    ModelReplicaState
 		availableMemory uint64
 		loaded          bool
 		deleted         bool
-		err             error
+		err             bool
 	}
 
 	tests := []test{
@@ -598,10 +598,10 @@ func TestUpdateModelState(t *testing.T) {
 			version:         1,
 			serverKey:       "server",
 			replicaIdx:      0,
-			state:           ReplicaStatus{State: Loaded},
+			expectedState:   ModelReplicaStateUnknown,
+			desiredState:    Loaded,
 			loaded:          true,
 			availableMemory: 20,
-			err:             nil,
 		},
 		{
 			name: "UnloadedModel",
@@ -628,10 +628,43 @@ func TestUpdateModelState(t *testing.T) {
 			version:         1,
 			serverKey:       "server",
 			replicaIdx:      0,
-			state:           ReplicaStatus{State: Unloaded},
+			expectedState:   ModelReplicaStateUnknown,
+			desiredState:    Unloaded,
 			loaded:          false,
 			availableMemory: 20,
-			err:             nil,
+		},
+		{
+			name: "Unloaded model but not matching expected state",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"model": &Model{
+					versions: []*ModelVersion{
+						{
+							version: 1,
+							replicas: map[int]ReplicaStatus{
+								0: {State: LoadRequested},
+							},
+						},
+					},
+				}},
+				servers: map[string]*Server{
+					"server": {
+						name: "server",
+						replicas: map[int]*ServerReplica{
+							0: {loadedModels: map[string]bool{}},
+							1: {loadedModels: map[string]bool{}},
+						},
+					},
+				},
+			},
+			modelKey:        "model",
+			version:         1,
+			serverKey:       "server",
+			replicaIdx:      0,
+			expectedState:   Unloading,
+			desiredState:    Unloaded,
+			loaded:          false,
+			availableMemory: 20,
+			err:             true,
 		},
 		{
 			name: "DeletedModel",
@@ -659,11 +692,11 @@ func TestUpdateModelState(t *testing.T) {
 			version:         1,
 			serverKey:       "server",
 			replicaIdx:      0,
-			state:           ReplicaStatus{State: Unloaded},
+			expectedState:   ModelReplicaStateUnknown,
+			desiredState:    Unloaded,
 			loaded:          false,
 			availableMemory: 20,
 			deleted:         true,
-			err:             nil,
 		},
 	}
 
@@ -671,11 +704,11 @@ func TestUpdateModelState(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			eventHub := &coordinator.ModelEventHub{}
 			ms := NewMemoryStore(logger, test.store, eventHub)
-			err := ms.UpdateModelState(test.modelKey, test.version, test.serverKey, test.replicaIdx, &test.availableMemory, test.state.State, "")
-			if test.err == nil {
+			err := ms.UpdateModelState(test.modelKey, test.version, test.serverKey, test.replicaIdx, &test.availableMemory, test.expectedState, test.desiredState, "")
+			if !test.err {
 				g.Expect(err).To(BeNil())
 				if !test.deleted {
-					g.Expect(test.store.models[test.modelKey].Latest().GetModelReplicaState(test.replicaIdx)).To(Equal(test.state.State))
+					g.Expect(test.store.models[test.modelKey].Latest().GetModelReplicaState(test.replicaIdx)).To(Equal(test.desiredState))
 					g.Expect(test.store.servers[test.serverKey].replicas[test.replicaIdx].loadedModels[test.modelKey]).To(Equal(test.loaded))
 				} else {
 					//g.Expect(test.store.models[test.modelKey]).To(BeNil())
@@ -684,7 +717,6 @@ func TestUpdateModelState(t *testing.T) {
 
 			} else {
 				g.Expect(err).ToNot(BeNil())
-				g.Expect(errors.Is(err, test.err)).To(BeTrue())
 			}
 		})
 	}

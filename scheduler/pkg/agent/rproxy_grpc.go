@@ -29,15 +29,17 @@ type reverseGRPCProxy struct {
 	stateManager          *LocalStateManager
 	grpcServer            *grpc.Server
 	serverReady           bool
+	backendGRPCServerHost string
 	backendGRPCServerPort uint
 	v2GRPCClient          v2.GRPCInferenceServiceClient
 	port                  uint // service port
 	mu                    sync.RWMutex
 }
 
-func NewReverseGRPCProxy(logger log.FieldLogger, backendGRPCServerPort uint, servicePort uint) *reverseGRPCProxy {
+func NewReverseGRPCProxy(logger log.FieldLogger, backendGRPCServerHost string, backendGRPCServerPort uint, servicePort uint) *reverseGRPCProxy {
 	return &reverseGRPCProxy{
 		logger:                logger,
+		backendGRPCServerHost: backendGRPCServerHost,
 		backendGRPCServerPort: backendGRPCServerPort,
 		port:                  servicePort,
 	}
@@ -67,8 +69,7 @@ func (rp *reverseGRPCProxy) Start() error {
 	// TODO: add this to V2Client
 	rp.logger.Infof("Setting grpc v2 client on port %d", rp.backendGRPCServerPort)
 
-	// mlserver / triton should be local
-	conn, err := getConnection("", int(rp.backendGRPCServerPort))
+	conn, err := getConnection(rp.backendGRPCServerHost, int(rp.backendGRPCServerPort))
 
 	if err != nil {
 		rp.logger.Error("Cannot dial to backend server (%s)", err)

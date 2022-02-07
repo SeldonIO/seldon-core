@@ -22,7 +22,9 @@ func TestHttpRouteOnlyAdded(t *testing.T) {
 	c.AddRoute(r2, "m2", "http1", "grpc1", false, 100, 1)
 	c.AddCluster("http1", r2, false)
 	c.AddEndpoint(httpCluster, "0.0.0.0", 9000)
-	err := c.RemoveRoutes(r1)
+	err := c.RemoveRoutes("m1")
+	g.Expect(err).ToNot(BeNil())
+	err = c.RemoveRoutes("m2")
 	g.Expect(err).ToNot(BeNil())
 }
 
@@ -32,8 +34,8 @@ func TestAddRemoveHttpAndGrpcRoute(t *testing.T) {
 	logger := log.New()
 	c := NewSeldonXDSCache(logger)
 
-	addVersionedRoute := func(c *SeldonXDSCache, httpCluster, grpcCluster, route string, traffic uint32, version uint32) {
-		c.AddRoute(route, "m1", httpCluster, grpcCluster, false, traffic, version)
+	addVersionedRoute := func(c *SeldonXDSCache, modelName, httpCluster, grpcCluster, route string, traffic uint32, version uint32) {
+		c.AddRoute(route, modelName, httpCluster, grpcCluster, false, traffic, version)
 		c.AddCluster(httpCluster, route, false)
 		c.AddEndpoint(httpCluster, "0.0.0.0", 9000)
 		c.AddCluster(grpcCluster, route, true)
@@ -44,16 +46,18 @@ func TestAddRemoveHttpAndGrpcRoute(t *testing.T) {
 	grpcCluster := "grpc1"
 	r1 := "r1"
 	r2 := "r2"
-	addVersionedRoute(c, httpCluster, grpcCluster, r1, 50, 1)
-	addVersionedRoute(c, httpCluster, grpcCluster, r2, 100, 1)
+	model1 := "m1"
+	model2 := "m2"
+	addVersionedRoute(c, model1, httpCluster, grpcCluster, r1, 50, 1)
+	addVersionedRoute(c, model2, httpCluster, grpcCluster, r2, 100, 1)
 
-	err := c.RemoveRoutes(r1)
+	err := c.RemoveRoutes(model1)
 	g.Expect(err).To(BeNil())
 	_, ok := c.Clusters[httpCluster]
 	g.Expect(ok).To(BeTrue()) // http Cluster remains as r2 still connected
 	_, ok = c.Clusters[grpcCluster]
 	g.Expect(ok).To(BeTrue()) // grpc Cluster remains as r2 still connected
-	err = c.RemoveRoutes(r2)
+	err = c.RemoveRoutes(model2)
 	g.Expect(err).To(BeNil())
 	_, ok = c.Clusters[httpCluster]
 	g.Expect(ok).To(BeFalse()) // http Cluster removed
@@ -66,8 +70,8 @@ func TestAddRemoveHttpAndGrpcRouteVersions(t *testing.T) {
 	g := NewGomegaWithT(t)
 	logger := log.New()
 
-	addVersionedRoute := func(c *SeldonXDSCache, httpCluster, grpcCluster, route string, traffic uint32, version uint32) {
-		c.AddRoute(route, "m1", httpCluster, grpcCluster, false, traffic, version)
+	addVersionedRoute := func(c *SeldonXDSCache, modelName, httpCluster, grpcCluster, route string, traffic uint32, version uint32) {
+		c.AddRoute(route, modelName, httpCluster, grpcCluster, false, traffic, version)
 		c.AddCluster(httpCluster, route, false)
 		c.AddEndpoint(httpCluster, "0.0.0.0", 9000)
 		c.AddCluster(grpcCluster, route, true)
@@ -80,16 +84,18 @@ func TestAddRemoveHttpAndGrpcRouteVersions(t *testing.T) {
 	grpcCluster := "grpc1"
 	r1 := "r1"
 	r2 := "r2"
-	addVersionedRoute(c, httpCluster, grpcCluster, r1, 50, 1)
-	addVersionedRoute(c, httpCluster, grpcCluster, r1, 100, 2)
-	addVersionedRoute(c, httpCluster, grpcCluster, r2, 100, 1)
-	err := c.RemoveRoutes(r1)
+	model1 := "m1"
+	model2 := "m2"
+	addVersionedRoute(c, model1, httpCluster, grpcCluster, r1, 50, 1)
+	addVersionedRoute(c, model1, httpCluster, grpcCluster, r1, 100, 2)
+	addVersionedRoute(c, model2, httpCluster, grpcCluster, r2, 100, 1)
+	err := c.RemoveRoutes(model1)
 	g.Expect(err).To(BeNil())
 	_, ok := c.Clusters[httpCluster]
 	g.Expect(ok).To(BeTrue()) // http Cluster remains as r2 still connected
 	_, ok = c.Clusters[grpcCluster]
 	g.Expect(ok).To(BeTrue()) // grpc Cluster remains as r2 still connected
-	err = c.RemoveRoutes(r2)
+	err = c.RemoveRoutes(model2)
 	g.Expect(err).To(BeNil())
 	_, ok = c.Clusters[httpCluster]
 	g.Expect(ok).To(BeFalse()) // http Cluster removed

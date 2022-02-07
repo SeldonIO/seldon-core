@@ -204,6 +204,9 @@ func (s *SchedulerServer) modelStatusImpl(ctx context.Context, model *store.Mode
 }
 
 func (s *SchedulerServer) ModelStatus(ctx context.Context, req *pb.ModelStatusRequest) (*pb.ModelStatusResponse, error) {
+	s.store.LockModel(req.Model.Name)
+	defer s.store.UnlockModel(req.Model.Name)
+
 	model, err := s.store.GetModel(req.Model.Name)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())

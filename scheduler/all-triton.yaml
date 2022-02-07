@@ -10,7 +10,7 @@ services:
   server:
     command:
       - "/opt/tritonserver/bin/tritonserver"
-      - "--model-repository=/mnt/models"
+      - "--model-repository=/mnt/agent/models"
       - "--http-port=${SERVER_HTTP_PORT}"
       - "--grpc-port=${SERVER_GRPC_PORT}"
       - "--model-control-mode=explicit"

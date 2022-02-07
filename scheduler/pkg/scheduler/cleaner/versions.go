@@ -42,6 +42,10 @@ func (v *VersionCleaner) ListenForEvents() {
 func (v *VersionCleaner) cleanupOldVersions(modelName string) error {
 	logger := v.logger.WithField("func", "cleanupOldVersions")
 	logger.Debugf("Schedule model %s", modelName)
+
+	v.store.LockModel(modelName)
+	defer v.store.UnlockModel(modelName)
+
 	// Get Model
 	model, err := v.store.GetModel(modelName)
 	if err != nil {

@@ -460,6 +460,7 @@ func TestDataAndControlPlaneInteractionSmoke(t *testing.T) {
 }
 
 func TestControlAndDataPlaneUseCases(t *testing.T) {
+	t.Skip()
 	dummyModelPrefix := "dummy_model"
 
 	g := NewGomegaWithT(t)

@@ -30,6 +30,7 @@ import (
 )
 
 var (
+	agentHost            string
 	serverName           string
 	replicaIdx           uint
 	schedulerHost        string
@@ -58,6 +59,9 @@ var (
 )
 
 const (
+	DefaultInferenceSvcHttpPort = 9000
+	DefaultInferenceSvcGrpcPort = 9500
+
 	EnvServerHttpPort       = "SELDON_SERVER_HTTP_PORT"
 	EnvServerGrpcPort       = "SELDON_SERVER_GRPC_PORT"
 	EnvReverseProxyHttpPort = "SELDON_REVERSE_PROXY_HTTP_PORT"
@@ -93,6 +97,7 @@ const (
 func init() {
 	rand.Seed(time.Now().UnixNano())
 
+	flag.StringVar(&agentHost, "agent-host", "0.0.0.0", "Agent hostname")
 	flag.StringVar(&serverName, FlagServerName, "mlserver", "Server name")
 	flag.UintVar(&replicaIdx, "server-idx", 0, "Server index")
 	flag.StringVar(&schedulerHost, FlagSchedulerHost, "0.0.0.0", "Scheduler host")
@@ -112,7 +117,7 @@ func init() {
 	flag.StringVar(&serverType, FlagServerType, serverTypes[0], "Server type. Default mlserver")
 	flag.IntVar(&memoryBytes, FlagMemoryBytes, 1000000, "Memory available for server")
 	flag.StringVar(&capabilitiesList, FlagCapabilities, "sklearn,xgboost", "Server capabilities")
-	flag.BoolVar(&overCommit, FlagOverCommit, false, "Overcommit memory")
+	flag.BoolVar(&overCommit, FlagOverCommit, true, "Overcommit memory")
 	flag.StringVar(&logLevel, FlagLogLevel, "debug", "Log level - examples: debug, info, error")
 }
 
@@ -304,7 +309,7 @@ func setInferenceSvcName() {
 	if podName != "" {
 		inferenceSvcName = podName
 	} else {
-		inferenceSvcName = inferenceHost
+		inferenceSvcName = agentHost
 	}
 	log.Infof("Setting inference svc name to %s", inferenceSvcName)
 }
@@ -341,15 +346,16 @@ func getRepositoryHandler(logger log.FieldLogger) repository.ModelRepositoryHand
 }
 
 func createReplicaConfig() *agent2.ReplicaConfig {
+	var rc *agent2.ReplicaConfig
 	if isFlagPassed(FlagReplicaConfig) {
-		rc, err := agent.ParseReplicaConfig(replicaConfigStr)
+		var err error
+		rc, err = agent.ParseReplicaConfig(replicaConfigStr)
 		if err != nil {
 			log.WithError(err).Fatalf("Failed to parse replica config %s", replicaConfigStr)
 		}
-		log.Infof("Created replicaConfig from command line %+v", rc)
-		return rc
+		log.Infof("Created replicaConfig from command line")
 	} else {
-		rc := &agent2.ReplicaConfig{
+		rc = &agent2.ReplicaConfig{
 			InferenceSvc:      inferenceSvcName,
 			InferenceHttpPort: int32(inferenceHttpPort),
 			InferenceGrpcPort: int32(inferenceGrpcPort),
@@ -357,9 +363,20 @@ func createReplicaConfig() *agent2.ReplicaConfig {
 			Capabilities:      capabilities,
 			OverCommit:        overCommit,
 		}
-		log.Infof("Created replicaConfig from environment %+v", rc)
-		return rc
+		log.Infof("Created replicaConfig from environment")
 	}
+	//Setup ports correctly
+	if runningInsideK8s() {
+		// Inside k8s these will be fixed ports on a headless SVC pointing to the http and grpc named ports in this pod
+		rc.InferenceHttpPort = int32(DefaultInferenceSvcHttpPort)
+		rc.InferenceGrpcPort = int32(DefaultInferenceSvcGrpcPort)
+	} else {
+		// If not in k8s the we take whatever if set for reverse proxy ports
+		rc.InferenceHttpPort = int32(reverseProxyHttpPort)
+		rc.InferenceGrpcPort = int32(reverseProxyGrpcPort)
+	}
+	log.Infof("replicaConfig %+v", rc)
+	return rc
 }
 
 func main() {
@@ -419,7 +436,7 @@ func main() {
 
 	rpHTTP := agent.NewReverseHTTPProxy(logger, uint(reverseProxyHttpPort))
 
-	rpGRPC := agent.NewReverseGRPCProxy(logger, uint(inferenceGrpcPort), uint(reverseProxyGrpcPort))
+	rpGRPC := agent.NewReverseGRPCProxy(logger, inferenceHost, uint(inferenceGrpcPort), uint(reverseProxyGrpcPort))
 
 	clientDebugService := agent.NewClientDebug(logger, uint(debugGrpcPort))
 

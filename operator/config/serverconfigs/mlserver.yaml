@@ -38,6 +38,10 @@ spec:
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT
         value: "9500"          
+      - name: SELDON_REVERSE_PROXY_HTTP_PORT
+        value: "9001"
+      - name: SELDON_REVERSE_PROXY_GRPC_PORT
+        value: "9501"          
       - name: SELDON_SCHEDULER_HOST
         value: "seldon-scheduler"
       - name: SELDON_SCHEDULER_PORT
@@ -53,6 +57,13 @@ spec:
           resourceFieldRef:
             containerName: mlserver
             resource: requests.memory
+      ports:
+      - containerPort: 9501
+        name: grpc
+        protocol: TCP
+      - containerPort: 9001
+        name: http
+        protocol: TCP
       volumeMounts:
       - mountPath: /mnt/agent
         name: mlserver-models
@@ -83,26 +94,26 @@ spec:
       livenessProbe:
         httpGet:
           path: /v2/health/live
-          port: http
+          port: server-http
       readinessProbe:
         httpGet:
           path: /v2/health/ready
-          port: http
+          port: server-http
         initialDelaySeconds: 5
         periodSeconds: 5          
       startupProbe:
         httpGet:
           path: /v2/health/ready
-          port: http
+          port: server-http
         failureThreshold: 10
         periodSeconds: 10
       name: mlserver
       ports:
       - containerPort: 9500
-        name: grpc
+        name: server-grpc
         protocol: TCP
       - containerPort: 9000
-        name: http
+        name: server-http
         protocol: TCP
       readinessProbe:
         failureThreshold: 3

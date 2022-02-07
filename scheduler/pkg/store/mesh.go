@@ -203,8 +203,8 @@ func (m ModelReplicaState) AlreadyLoadingOrLoaded() bool {
 	return (m == Loading || m == Loaded || m == Available || m == LoadedUnavailable)
 }
 
-func (m ModelReplicaState) AlreadyUnloadingOrUnloaded() bool {
-	return (m == Unloading || m == Unloaded)
+func (m ModelReplicaState) UnloadingOrUnloaded() bool {
+	return (m == UnloadRequested || m == Unloading || m == Unloaded || m == ModelReplicaStateUnknown)
 }
 
 func (m ModelReplicaState) Inactive() bool {

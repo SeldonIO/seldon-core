@@ -15,6 +15,7 @@ import (
 
 type MemoryStore struct {
 	mu       sync.RWMutex
+	opLocks  sync.Map
 	store    *LocalSchedulerStore
 	logger   log.FieldLogger
 	eventHub *coordinator.ModelEventHub
@@ -112,6 +113,22 @@ func (m *MemoryStore) getModelImpl(key string) *ModelSnapshot {
 			Name:     key,
 			Versions: nil,
 		}
+	}
+}
+
+func (m *MemoryStore) LockModel(modelId string) {
+	var lock sync.RWMutex
+	existingLock, _ := m.opLocks.LoadOrStore(modelId, &lock)
+	existingLock.(*sync.RWMutex).Lock()
+}
+
+func (m *MemoryStore) UnlockModel(modelId string) {
+	logger := m.logger.WithField("func", "UnlockModel")
+	lock, loaded := m.opLocks.Load(modelId)
+	if loaded {
+		lock.(*sync.RWMutex).Unlock()
+	} else {
+		logger.Warnf("Trying to unlock model %s that was not locked.", modelId)
 	}
 }
 
@@ -237,12 +254,12 @@ func (m *MemoryStore) updateLoadedModelsImpl(modelKey string, version uint32, se
 	for replicaIdx, existingState := range modelVersion.replicas {
 		logger.Debugf("Looking at replicaidx %d with state %s but ignoring processed %v", replicaIdx, existingState.State.String(), updatedReplicas)
 		if _, ok := updatedReplicas[replicaIdx]; !ok {
-			if !existingState.State.AlreadyUnloadingOrUnloaded() {
+			if !existingState.State.UnloadingOrUnloaded() {
 				logger.Debugf("Setting model %s version %d on server %s replica %d to UnloadRequested", modelKey, modelVersion.version, serverKey, replicaIdx)
 				modelVersion.replicas[replicaIdx] = ReplicaStatus{State: UnloadRequested}
 				updated = true
 			} else {
-				logger.Debugf("model %s on server %s replica %d already unloaded", modelKey, serverKey, replicaIdx)
+				logger.Debugf("model %s on server %s replica %d already unloading or can't be unloaded", modelKey, serverKey, replicaIdx)
 			}
 		}
 	}
@@ -271,8 +288,8 @@ func (m *MemoryStore) UnloadVersionModels(modelKey string, version uint32) (bool
 
 	updated := false
 	for replicaIdx, existingState := range modelVersion.replicas {
-		if !existingState.State.AlreadyUnloadingOrUnloaded() {
-			logger.Debugf("Setting model %s version %d on server %s replica %d to UnloadRequested", modelKey, modelVersion.version, modelVersion.Server(), replicaIdx)
+		if !existingState.State.UnloadingOrUnloaded() {
+			logger.Debugf("Setting model %s version %d on server %s replica %d to UnloadRequested was %s", modelKey, modelVersion.version, modelVersion.Server(), replicaIdx, existingState.State.String())
 			modelVersion.replicas[replicaIdx] = ReplicaStatus{State: UnloadRequested}
 			updated = true
 		} else {
@@ -286,7 +303,7 @@ func (m *MemoryStore) UnloadVersionModels(modelKey string, version uint32) (bool
 	return updated, nil
 }
 
-func (m *MemoryStore) UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, state ModelReplicaState, reason string) error {
+func (m *MemoryStore) UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState ModelReplicaState, reason string) error {
 	logger := m.logger.WithField("func", "UpdateModelState")
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -298,16 +315,21 @@ func (m *MemoryStore) UpdateModelState(modelKey string, version uint32, serverKe
 	}
 
 	existingState, ok := modelVersion.replicas[replicaIdx]
-	if !ok || existingState.State != state {
-		modelVersion.replicas[replicaIdx] = ReplicaStatus{State: state, Reason: reason, Timestamp: time.Now()}
-		logger.Debugf("Setting model %s version %d on server %s replica %d to %s", modelKey, version, serverKey, replicaIdx, state.String())
+
+	if existingState.State != expectedState {
+		return fmt.Errorf("State mismatch for %s:%d expected state %s but was %s when trying to move to state %s", modelKey, version, expectedState.String(), existingState.State.String(), desiredState.String())
+	}
+
+	if !ok || existingState.State != desiredState {
+		modelVersion.replicas[replicaIdx] = ReplicaStatus{State: desiredState, Reason: reason, Timestamp: time.Now()}
+		logger.Debugf("Setting model %s version %d on server %s replica %d to %s", modelKey, version, serverKey, replicaIdx, desiredState.String())
 		// Update models loaded onto replica if loaded or unloaded is state
-		if state == Loaded || state == Unloaded {
+		if desiredState == Loaded || desiredState == Unloaded {
 			server, ok := m.store.servers[serverKey]
 			if ok {
 				replica, ok := server.replicas[replicaIdx]
 				if ok {
-					if state == Loaded {
+					if desiredState == Loaded {
 						replica.loadedModels[modelKey] = true
 					} else {
 						delete(replica.loadedModels, modelKey)
