@@ -17,7 +17,7 @@ You will need the Google Cloud SDK in order to retrieve your cluster authenticat
 Google Kubernetes Engine (GKE) Cluster
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you haven't already created a Kubernetes cluster on GKE, you can follow this quickstart guide to get set up with your first cluster:
+If you haven't already created a Kubernetes cluster on GKE, you can follow this quickstart guide to get set up with your first cluster. Ensure you create 3 nodes (``--num-nodes`` passed to ``gcloud container clusters create``) to be able to run a minimal example:
 
 * `Create GKE Cluster <https://cloud.google.com/kubernetes-engine/docs/quickstart>`_
 
