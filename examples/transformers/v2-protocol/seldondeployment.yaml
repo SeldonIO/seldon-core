@@ -17,14 +17,8 @@ spec:
             containers:
               - name: tokeniser
                 image: gpt2-tokeniser:0.1.0
-                securityContext:
-                  # Workaround for multi-user bug in custom images in MLServer:
-                  # https://github.com/SeldonIO/MLServer/issues/388
-                  runAsUser: 1000
-                ports:
-                  - containerPort: 8080
-                    name: http
-                    protocol: TCP
-                  - containerPort: 8081
-                    name: grpc
-                    protocol: TCP
+                env:
+                  # Use always a writable HuggingFace cache location regardless
+                  # of the user
+                  - name: TRANSFORMERS_CACHE
+                    value: /opt/mlserver/.cache

@@ -7,6 +7,9 @@ from e2e_utils.install import delete_seldon, install_seldon
 from e2e_utils.s2i import create_s2i_image, kind_load_image
 from seldon_e2e_utils import clean_string, get_seldon_version, retry_run
 
+ROOT_PATH = os.path.dirname(os.path.dirname(__file__))
+RESOURCES_PATH = os.path.join(ROOT_PATH, "resources")
+
 
 def _to_python_bool(val):
     # From Flask's docs:

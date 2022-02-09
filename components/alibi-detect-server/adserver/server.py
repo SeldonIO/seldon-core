@@ -253,7 +253,6 @@ class EventHandler(tornado.web.RequestHandler):
                 logging.error("Metrics returned are invalid: " + str(runtime_metrics))
 
         if response.data is not None:
-            responseStr = json.dumps(response.data)
 
             # Create event from response if reply_url is active
             if not self.reply_url == "":
@@ -264,7 +263,7 @@ class EventHandler(tornado.web.RequestHandler):
                 revent = (
                     v1.Event()
                     .SetContentType("application/json")
-                    .SetData(responseStr)
+                    .SetData(response.data)
                     .SetEventID(resp_event_id)
                     .SetSource(self.event_source)
                     .SetEventType(self.event_type)

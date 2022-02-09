@@ -105,7 +105,7 @@ func HasEnvVar(envVars []v1.EnvVar, name string) bool {
 	return false
 }
 
-func SetEnvVar(envVars []v1.EnvVar, newVar v1.EnvVar) (newEnvVars []v1.EnvVar) {
+func SetEnvVar(envVars []v1.EnvVar, newVar v1.EnvVar, override bool) (newEnvVars []v1.EnvVar) {
 	found := false
 	index := 0
 	for i, envVar := range envVars {
@@ -114,11 +114,14 @@ func SetEnvVar(envVars []v1.EnvVar, newVar v1.EnvVar) (newEnvVars []v1.EnvVar) {
 			index = i
 		}
 	}
-	if found {
+
+	if found && override {
 		newEnvVars = append(envVars[:index])
 		newEnvVars = append(newEnvVars, newVar)
 		newEnvVars = append(newEnvVars, envVars[index+1:]...)
-	} else {
+	}
+
+	if !found {
 		newEnvVars = envVars
 		newEnvVars = append(newEnvVars, newVar)
 	}

@@ -80,7 +80,7 @@ class TestPrepack(object):
                 ]
             },
         )
-        assert r.status_code == 200
+        assert len(r["outputs"]) > 0
 
     # Test prepackaged server for tfserving
     def test_tfserving(self, namespace):
@@ -158,7 +158,7 @@ class TestPrepack(object):
                 ]
             },
         )
-        assert r.status_code == 200
+        assert len(r["outputs"]) > 0
 
     # Test prepackaged server for MLflow
     def test_mlflow(self, namespace):
@@ -301,7 +301,7 @@ class TestPrepack(object):
                 ],
             },
         )
-        assert r.status_code == 200
+        assert len(r["outputs"]) > 0
 
     # Test prepackaged Text SKLearn Alibi Explainer
     def test_text_alibi_explainer(self, namespace):

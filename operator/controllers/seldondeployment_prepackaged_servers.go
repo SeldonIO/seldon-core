@@ -305,12 +305,11 @@ func (pi *PrePackedInitialiser) addModelDefaultServers(mlDepSepc *machinelearnin
 	}
 
 	if len(params) > 0 {
-		if !utils.HasEnvVar(c.Env, machinelearningv1.ENV_PREDICTIVE_UNIT_PARAMETERS) {
-			c.Env = append(c.Env, v1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_PARAMETERS, Value: string(paramStr)})
-		} else {
-			c.Env = utils.SetEnvVar(c.Env, v1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_PARAMETERS, Value: string(paramStr)})
+		paramsEnvVar := v1.EnvVar{
+			Name:  machinelearningv1.ENV_PREDICTIVE_UNIT_PARAMETERS,
+			Value: string(paramStr),
 		}
-
+		c.Env = utils.SetEnvVar(c.Env, paramsEnvVar, true)
 	}
 
 	// Add container to deployment
@@ -368,12 +367,11 @@ func SetUriParamsForTFServingProxyContainer(pu *machinelearningv1.PredictiveUnit
 	parameters = append(parameters, modelNameParam)
 
 	if len(parameters) > 0 {
-		if !utils.HasEnvVar(c.Env, machinelearningv1.ENV_PREDICTIVE_UNIT_PARAMETERS) {
-			c.Env = append(c.Env, v1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_PARAMETERS, Value: utils.GetPredictiveUnitAsJson(parameters)})
-		} else {
-			c.Env = utils.SetEnvVar(c.Env, v1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_PARAMETERS, Value: utils.GetPredictiveUnitAsJson(parameters)})
+		parametersEnvVar := v1.EnvVar{
+			Name:  machinelearningv1.ENV_PREDICTIVE_UNIT_PARAMETERS,
+			Value: utils.GetPredictiveUnitAsJson(parameters),
 		}
-
+		c.Env = utils.SetEnvVar(c.Env, parametersEnvVar, true)
 	}
 }
 
