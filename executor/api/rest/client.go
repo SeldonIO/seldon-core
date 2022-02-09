@@ -263,7 +263,7 @@ func (smc *JSONRestClient) modifyMethod(method string, modelName string) string 
 		case client.SeldonMetadataPath:
 			return "/v1/models/" + modelName + "/metadata"
 		}
-	case api.ProtocolV2:
+	case api.ProtocolV2, api.ProtocolKFServing:
 		switch method {
 		case client.SeldonPredictPath, client.SeldonTransformInputPath, client.SeldonTransformOutputPath:
 			return "/v2/models/" + modelName + "/infer"
@@ -346,7 +346,7 @@ func (smc *JSONRestClient) Chain(ctx context.Context, modelName string, msg payl
 		return msg, nil
 	case api.ProtocolTensorflow: // Attempt to chain tensorflow payload
 		return ChainTensorflow(msg)
-	case api.ProtocolV2:
+	case api.ProtocolV2, api.ProtocolKFServing:
 		return ChainKFserving(msg)
 	}
 	return nil, errors.Errorf("Unknown protocol %s", smc.Protocol)
