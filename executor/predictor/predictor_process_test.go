@@ -39,6 +39,22 @@ func createPredictorProcess(t *testing.T) *PredictorProcess {
 	return &pp
 }
 
+func createPredictorProcessWithMeta(t *testing.T, meta map[string][]string) *PredictorProcess {
+	url, _ := url.Parse(testSourceUrl)
+	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, testSeldonPuid)
+	pp := NewPredictorProcess(
+		ctx,
+		&test.SeldonMessageTestClient{},
+		logf.Log.WithName("SeldonMessageRestClient"),
+		url,
+		"default",
+		meta,
+		"",
+	)
+
+	return &pp
+}
+
 func createPredictorProcessWithModel(t *testing.T, modelName string) *PredictorProcess {
 	url, _ := url.Parse(testSourceUrl)
 	ctx := context.WithValue(context.TODO(), payload.SeldonPUIDHeader, testSeldonPuid)
@@ -572,4 +588,46 @@ func TestPredictNilPUIDError(t *testing.T) {
 	_, err := createPredictorProcessWithoutPUIDInContext(t).Predict(graph, createPredictPayload(g))
 	g.Expect(err).NotTo(BeNil())
 	g.Expect(err.Error()).Should(Equal(NilPUIDError))
+}
+
+func TestModelRequestSkipsLogging(t *testing.T) {
+	t.Logf("Started")
+	g := NewGomegaWithT(t)
+	modelName := "foo"
+	logged := false
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(""))
+		logged = true
+	})
+	server := httptest.NewServer(handler)
+	defer server.Close()
+
+	envRequestLoggerDefaultEndpoint = server.URL
+
+	logf.SetLogger(zap.New())
+	log := logf.Log.WithName("entrypoint")
+	logger.StartDispatcher(1, logger.DefaultWorkQueueSize, logger.DefaultWriteTimeoutMilliseconds, log, "", "", "", "", "")
+
+	model := v1.MODEL
+	graph := &v1.PredictiveUnit{
+		Name: modelName,
+		Type: &model,
+		Endpoint: &v1.Endpoint{
+			ServiceHost: "foo",
+			ServicePort: 9000,
+			Type:        v1.REST,
+		},
+		Logger: &v1.Logger{
+			Mode: v1.LogRequest,
+		},
+	}
+
+	meta := map[string][]string{payload.SeldonSkipLoggingHeader: {"true"}}
+	predictorProcess := createPredictorProcessWithMeta(t, meta)
+	pResp, err := predictorProcess.Predict(graph, createPredictPayload(g))
+	g.Expect(err).Should(BeNil())
+	smRes := pResp.GetPayload().(*proto.SeldonMessage)
+	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(Equal(1.1))
+	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(Equal(2.0))
+	g.Eventually(func() bool { return logged }).Should(Equal(false))
 }

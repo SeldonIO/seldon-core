@@ -375,7 +375,6 @@ func (p *PredictorProcess) getLogUrl(logger *v1.Logger) (*url.URL, error) {
 func (p *PredictorProcess) logPayload(nodeName string, logger *v1.Logger, reqType payloadLogger.LogRequestType, msg payload.SeldonPayload, puid string) error {
 	skipLogging := p.Meta.GetAsBoolean(payload.SeldonSkipLoggingHeader, false)
 	if skipLogging {
-		// TODO: log info message
 		p.Log.Info("Skip logging request with PUID", puid)
 		return nil
 	}
