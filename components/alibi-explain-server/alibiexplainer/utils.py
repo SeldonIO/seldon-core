@@ -23,6 +23,8 @@ GRPC_MAX_MSG_LEN = 1000000000
 TENSORFLOW_PREDICTOR_URL_FORMAT = "http://{0}/v1/models/{1}:predict"
 SELDON_PREDICTOR_URL_FORMAT = "http://{0}/api/v0.1/predictions"
 
+SELDON_SKIP_LOGGING_HEADER = "Seldon-Skip-Logging"
+
 _KERAS_MODEL_FILENAME = "model.h5"
 _EXPLAINER_FILENAME = "explainer.dill"
 
@@ -85,7 +87,9 @@ def construct_predict_fn(
         elif protocol == Protocol.seldon_http:
             payload = seldon.create_request(arr, seldon.SeldonPayload.NDARRAY)
             response_raw = requests.post(
-                SELDON_PREDICTOR_URL_FORMAT.format(predictor_host), json=payload
+                SELDON_PREDICTOR_URL_FORMAT.format(predictor_host),
+                json=payload,
+                headers={SELDON_SKIP_LOGGING_HEADER: "true"},
             )
             if response_raw.status_code == 200:
                 rh = seldon.SeldonRequestHandler(response_raw.json())
@@ -107,6 +111,7 @@ def construct_predict_fn(
             response = requests.post(
                 TENSORFLOW_PREDICTOR_URL_FORMAT.format(predictor_host, model_name),
                 json.dumps(request),
+                headers={SELDON_SKIP_LOGGING_HEADER: "true"},
             )
             if response.status_code != 200:
                 raise Exception(
@@ -122,6 +127,7 @@ def _grpc(arr: np.array, predictor_host: str, tf_data_type: Optional[str]) -> np
     options = [
         ("grpc.max_send_message_length", GRPC_MAX_MSG_LEN),
         ("grpc.max_receive_message_length", GRPC_MAX_MSG_LEN),
+        # TODO: Test skip functionality with gRPC's metadata
     ]
     channel = grpc.insecure_channel(predictor_host, options)
     stub = prediction_pb2_grpc.SeldonStub(channel)
