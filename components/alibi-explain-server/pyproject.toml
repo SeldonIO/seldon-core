@@ -6,19 +6,21 @@ authors = ["Seldon Technologies Ltd. <hello@seldon.io>"]
 license = "Apache-2.0"
 
 [tool.poetry.dependencies]
-python = "^3.7"
-alibi = "0.6.2"
+python = "^3.7,<3.8"
+alibi = "0.6.4"
 numpy = "1.19.5"
-tensorflow = "2.5.1"
-scikit-learn = "0.24.2"
-lightgbm = "3.1.1"
-xgboost = "1.4.2"
-catboost = "0.24.4"
+numba = "0.55.0"
+tensorflow = "2.7.0"
+scikit-learn = "1.0.2"
+xgboost = "1.5.2"
+lightgbm = "3.3.2"
+
+catboost = "^1.0"
 tornado = "^6.1"
-fastapi = "0.68.1"
+fastapi = "^0.73.0"
+protobuf = "^3.17.3"
 
 shap = { git = "https://github.com/slundberg/shap.git", tag = "v0.40.0" }
-protobuf = "^3.17.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.4"
