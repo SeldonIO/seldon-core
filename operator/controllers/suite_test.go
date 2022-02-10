@@ -83,7 +83,7 @@ var configs = map[string]string{
               "image": "seldonio/sklearnserver",
               "defaultImageVersion": "1.3.0-dev"
               },
-            "kfserving": {
+            "v2": {
               "image": "seldonio/mlserver",
               "defaultImageVersion": "0.1.0"
               }
@@ -95,7 +95,7 @@ var configs = map[string]string{
               "image": "seldonio/xgboostserver",
               "defaultImageVersion": "1.3.0-dev"
               },
-            "kfserving": {
+            "v2": {
               "image": "seldonio/mlserver",
               "defaultImageVersion": "0.1.0"
               }
@@ -107,7 +107,7 @@ var configs = map[string]string{
               "image": "seldonio/mlflowserver",
               "defaultImageVersion": "1.3.0-dev"
               },
-            "kfserving": {
+            "v2": {
               "image": "seldonio/mlserver",
               "defaultImageVersion": "0.1.0"
               }
@@ -115,7 +115,7 @@ var configs = map[string]string{
         },
         "TRITON_SERVER": {
           "protocols" : {
-            "kfserving": {
+            "v2": {
               "image": "nvcr.io/nvidia/tritonserver",
               "defaultImageVersion": "21.08-py3"
               }

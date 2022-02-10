@@ -254,6 +254,7 @@ const (
 	ProtocolSeldon     Protocol = "seldon"
 	ProtocolTensorflow Protocol = "tensorflow"
 	ProtocolKfserving  Protocol = "kfserving"
+	ProtocolV2         Protocol = "v2"
 )
 
 type Transport string

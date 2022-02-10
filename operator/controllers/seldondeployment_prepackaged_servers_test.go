@@ -269,7 +269,7 @@ var _ = Describe("Create a prepacked tfserving server for tensorflow protocol an
 var _ = Describe("Create a prepacked tfserving server for tensorflow protocol and REST with existing container", func() {
 	const interval = time.Second * 1
 	const name = "pp3"
-	const sdepName = "prepack3b"
+	const sdepName = "prepack4"
 	modelName := "classifier"
 	By("Creating a resource")
 	It("should create a resource with defaults", func() {
@@ -414,7 +414,7 @@ var _ = Describe("Create a prepacked tfserving server for tensorflow protocol an
 	const timeout = time.Second * 30
 	const interval = time.Second * 1
 	const name = "pp4"
-	const sdepName = "prepack4"
+	const sdepName = "prepack5"
 	modelName := "classifier"
 	By("Creating a resource")
 	It("should create a resource with defaults", func() {
@@ -513,7 +513,7 @@ var _ = Describe("Create a prepacked sklearn server", func() {
 	var key types.NamespacedName
 
 	BeforeEach(func() {
-		sdepName = "prepack5"
+		sdepName = "prepack6"
 		modelType := machinelearningv1.MODEL
 		impl := machinelearningv1.PredictiveUnitImplementation(constants.PrePackedServerSklearn)
 
@@ -585,15 +585,50 @@ var _ = Describe("Create a prepacked sklearn server", func() {
 		}, timeout, interval).Should(BeNil())
 		Expect(len(depFetched.Spec.Template.Spec.Containers)).Should(Equal(2))
 		Expect(depFetched.Spec.Template.Spec.SecurityContext).ToNot(BeNil())
+		Expect(depFetched.Spec.Template.Spec.SecurityContext.RunAsUser).ToNot(BeNil())
 		Expect(*depFetched.Spec.Template.Spec.SecurityContext.RunAsUser).To(Equal(int64(2)))
 
 		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
 	})
 
-	It("should use MLServer when choosing the KFServing protocol", func() {
-		sdepName = "prepack6"
+	It("should use MLServer when choosing the V2 protocol", func() {
+		sdepName = "prepack7"
 		instance.Name = sdepName
-		instance.Spec.Protocol = machinelearningv1.ProtocolKfserving
+		instance.Spec.Protocol = machinelearningv1.ProtocolV2
+		key.Name = sdepName
+
+		instance.Default()
+		Expect(k8sClient.Create(context.Background(), instance)).Should(Succeed())
+
+		fetched := &machinelearningv1.SeldonDeployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), key, fetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+		Expect(fetched.Name).Should(Equal(sdepName))
+
+		predictor := instance.Spec.Predictors[0]
+		sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(&predictor, predictor.Graph.Name)
+
+		depName := machinelearningv1.GetDeploymentName(instance, predictor, sPodSpec, idx)
+		depKey := types.NamespacedName{Name: depName, Namespace: "default"}
+		depFetched := &appsv1.Deployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), depKey, depFetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+
+		container := utils.GetContainerForDeployment(depFetched, predictor.Graph.Name)
+		expectedImage, _ := getMLServerImage(&predictor.Graph)
+		Expect(container.Image).To(Equal(expectedImage))
+
+		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
+	})
+
+	It("should use MLServer when choosing the V2 protocol", func() {
+		sdepName = "prepack8"
+		instance.Name = sdepName
+		instance.Spec.Protocol = machinelearningv1.ProtocolV2
 		key.Name = sdepName
 
 		instance.Default()
@@ -629,7 +664,104 @@ var _ = Describe("Create a prepacked triton server", func() {
 	const timeout = time.Second * 30
 	const interval = time.Second * 1
 	const name = "pp1"
-	const sdepName = "prepack5"
+	const sdepName = "prepack9"
+	envExecutorUser = "2"
+	By("Creating a resource")
+	It("should create a resource with defaults and security context", func() {
+		Expect(k8sClient).NotTo(BeNil())
+		var modelType = machinelearningv1.MODEL
+		modelName := "classifier"
+		var impl = machinelearningv1.PredictiveUnitImplementation(constants.PrePackedServerTriton)
+		key := types.NamespacedName{
+			Name:      sdepName,
+			Namespace: "default",
+		}
+		instance := &machinelearningv1.SeldonDeployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      key.Name,
+				Namespace: key.Namespace,
+			},
+			Spec: machinelearningv1.SeldonDeploymentSpec{
+				Name:     name,
+				Protocol: machinelearningv1.ProtocolV2,
+				Predictors: []machinelearningv1.PredictorSpec{
+					{
+						Name: "p1",
+						ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
+							{
+								Spec: corev1.PodSpec{
+									Containers: []corev1.Container{
+										{
+											Name: modelName,
+										},
+									},
+								},
+							},
+						},
+						Graph: machinelearningv1.PredictiveUnit{
+							Name:           modelName,
+							Type:           &modelType,
+							Implementation: &impl,
+							Endpoint:       &machinelearningv1.Endpoint{Type: machinelearningv1.REST},
+						},
+					},
+				},
+			},
+		}
+
+		configMapName := types.NamespacedName{Name: "seldon-config",
+			Namespace: "seldon-system"}
+
+		configResult := &corev1.ConfigMap{}
+		const timeout = time.Second * 30
+		Eventually(func() error { return k8sClient.Get(context.TODO(), configMapName, configResult) }, timeout).
+			Should(Succeed())
+
+		// Run Defaulter
+		instance.Default()
+
+		//set security user
+		envUseExecutor = "true"
+		envDefaultUser = "2"
+
+		Expect(k8sClient.Create(context.Background(), instance)).Should(Succeed())
+		//time.Sleep(time.Second * 5)
+
+		fetched := &machinelearningv1.SeldonDeployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), key, fetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+		Expect(fetched.Name).Should(Equal(sdepName))
+
+		sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(&instance.Spec.Predictors[0], instance.Spec.Predictors[0].Graph.Name)
+		depName := machinelearningv1.GetDeploymentName(instance, instance.Spec.Predictors[0], sPodSpec, idx)
+		depKey := types.NamespacedName{
+			Name:      depName,
+			Namespace: "default",
+		}
+		depFetched := &appsv1.Deployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), depKey, depFetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+		Expect(len(depFetched.Spec.Template.Spec.Containers)).Should(Equal(2))
+		Expect(depFetched.Spec.Template.Spec.SecurityContext).ToNot(BeNil())
+		Expect(*depFetched.Spec.Template.Spec.SecurityContext.RunAsUser).To(Equal(int64(2)))
+
+		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
+
+		//j, _ := json.Marshal(depFetched)
+		//fmt.Println(string(j))
+	})
+
+})
+
+var _ = Describe("Create a prepacked triton server with deprecated kfserving protocol", func() {
+	const timeout = time.Second * 30
+	const interval = time.Second * 1
+	const name = "pp1"
+	const sdepName = "prepack10"
 	envExecutorUser = "2"
 	By("Creating a resource")
 	It("should create a resource with defaults and security context", func() {
@@ -726,7 +858,7 @@ var _ = Describe("Create a prepacked mlflow server with existing container", fun
 	const timeout = time.Second * 30
 	const interval = time.Second * 1
 	const name = "pp1"
-	const sdepName = "prepack1"
+	const sdepName = "prepack11"
 	envExecutorUser = "2"
 	By("Creating a resource")
 	It("should create a resource with defaults", func() {

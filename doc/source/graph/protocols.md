@@ -6,7 +6,7 @@ Seldon Core supports the following data planes:
 
  * [REST and gRPC Seldon protocol](#rest-and-grpc-seldon-protocol)
  * [REST and gRPC Tensorflow Serving Protocol](#rest-and-grpc-tensorflow-protocol)
- * [REST and gRPC V2 KFServing Protocol](#v2-kfserving-protocol)
+ * [REST and gRPC V2 Protocol](#v2-protocol)
 
 ## REST and gRPC Seldon Protocol
 
@@ -40,17 +40,17 @@ General considerations:
   * The name of the model in the `graph` section of the SeldonDeployment spec must match the name of the model loaded onto the Tensorflow Server.
 
 
-## V2 KFServing Protocol 
+## V2 Protocol 
 
 Seldon has collaborated with the [NVIDIA Triton Server
-Project](https://github.com/triton-inference-server/server) and the [KFServing
-Project](https://github.com/kubeflow/kfserving) to create a new ML inference
+Project](https://github.com/triton-inference-server/server) and the [KServe
+Project](https://github.com/kserve) to create a new ML inference
 protocol.
 The core idea behind this joint effort is that this new protocol will become
 the standard inference protocol and will be used across multiple inference
 services.
 
-In Seldon Core, this protocol can be used by specifying `protocol: kfserving` on
+In Seldon Core, this protocol can be used by specifying `protocol: v2` on
 your `SeldonDeployment`. 
 For example, 
 
@@ -61,7 +61,7 @@ metadata:
   name: sklearn
 spec:
   name: iris-predict
-  protocol: kfserving
+  protocol: v2
   predictors:
   - graph:
       children: []
@@ -75,7 +75,7 @@ spec:
     name: default
 ```
 
-At present, the `kfserving` protocol is only supported in a subset of
+At present, the `v2` protocol is only supported in a subset of
 pre-packaged inference servers.
 In particular,
 
@@ -86,4 +86,4 @@ In particular,
 | [XGBOOST_SERVER](../servers/xgboost.md) | ✅  | [Seldon MLServer](https://github.com/seldonio/mlserver) |
 | [MLFLOW_SERVER](../servers/mlflow.md) | ✅  | [Seldon MLServer](https://github.com/seldonio/mlserver) |
 
-You can try out the `kfserving` in [this example notebook](../examples/protocol_examples.html). 
+You can try out the `v2` in [this example notebook](../examples/protocol_examples.html). 

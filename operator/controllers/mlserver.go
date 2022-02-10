@@ -173,6 +173,13 @@ func getMLServerImage(pu *machinelearningv1.PredictiveUnit) (string, error) {
 		}
 
 		return image, nil
+	} else if v2Config, ok := prepackConfig.Protocols[machinelearningv1.ProtocolV2]; ok {
+		// Ignore version if empty
+		image := v2Config.ContainerImage
+		if v2Config.DefaultImageVersion != "" {
+			image = fmt.Sprintf("%s:%s", image, v2Config.DefaultImageVersion)
+		}
+		return image, nil
 	} else {
 		err := fmt.Errorf("no image compatible with kfserving protocol for %s", *pu.Implementation)
 		return "", err

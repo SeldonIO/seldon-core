@@ -3,7 +3,7 @@ kind: SeldonDeployment
 metadata:
   name: mlflow
 spec:
-  protocol: kfserving  # Activate v2 protocol
+  protocol: v2  # Activate v2 protocol
   name: wines
   predictors:
     - graph:

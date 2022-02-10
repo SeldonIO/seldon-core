@@ -12,7 +12,7 @@ kind: SeldonDeployment
 metadata:
   name: triton
 spec:
-  protocol: kfserving
+  protocol: v2
   predictors:
   - graph:
       implementation: TRITON_SERVER

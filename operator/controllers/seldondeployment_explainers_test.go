@@ -152,11 +152,11 @@ var _ = Describe("createExplainer", func() {
 	)
 })
 
-var _ = Describe("Create a V2 Seldon Deployment with explainer", func() {
+var _ = Describe("Create a KFserving(V2) Seldon Deployment with explainer", func() {
 	const timeout = time.Second * 30
 	const interval = time.Second * 1
 	namespaceName := rand.String(10)
-	v2protocol := machinelearningv1.ProtocolKfserving
+	v2protocol := machinelearningv1.ProtocolV2
 	explainerInitParameters := "{'a': 1, 'b': 's', 'c': {'c1': [1, 1]}}"
 	By("Creating a resource")
 	It("should create a resource with defaults", func() {

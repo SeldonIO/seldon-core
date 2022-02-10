@@ -206,7 +206,7 @@ func (r *SeldonDeploymentSpec) validateShadow(allErrs field.ErrorList) field.Err
 func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 	var allErrs field.ErrorList
 
-	if r.Protocol != "" && !(r.Protocol == ProtocolSeldon || r.Protocol == ProtocolTensorflow || r.Protocol == ProtocolKfserving) {
+	if r.Protocol != "" && !(r.Protocol == ProtocolSeldon || r.Protocol == ProtocolTensorflow || r.Protocol == ProtocolKfserving || r.Protocol == ProtocolV2) {
 		fldPath := field.NewPath("spec")
 		allErrs = append(allErrs, field.Invalid(fldPath, r.Protocol, "Invalid protocol"))
 	}

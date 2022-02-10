@@ -108,8 +108,8 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		if mlDep.Spec.Protocol == machinelearningv1.ProtocolTensorflow {
 			explainerProtocol = string(machinelearningv1.ProtocolTensorflow)
 		}
-		if mlDep.Spec.Protocol == machinelearningv1.ProtocolKfserving {
-			explainerProtocol = string(machinelearningv1.ProtocolKfserving)
+		if mlDep.Spec.Protocol == machinelearningv1.ProtocolKfserving || mlDep.Spec.Protocol == machinelearningv1.ProtocolV2 {
+			explainerProtocol = string(machinelearningv1.ProtocolV2)
 		}
 
 		// Image from configMap or Relalated Image if its not set
@@ -121,7 +121,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 				if err != nil {
 					return err
 				}
-				if explainerProtocol == string(machinelearningv1.ProtocolKfserving) {
+				if explainerProtocol == string(machinelearningv1.ProtocolV2) {
 					explainerContainer.Image = config.Image_v2
 				} else {
 					explainerContainer.Image = config.Image
@@ -170,7 +170,8 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 			explainerContainer.Lifecycle = &corev1.Lifecycle{PreStop: &corev1.Handler{Exec: &corev1.ExecAction{Command: []string{"/bin/sh", "-c", "/bin/sleep 10"}}}}
 		}
 
-		if explainerProtocol == string(machinelearningv1.ProtocolKfserving) {
+		//TODO need to change python explainers to accept v2 as protocol name
+		if explainerProtocol == string(machinelearningv1.ProtocolV2) {
 			// add mlserver alibi runtime env vars
 			// alibi-specific json
 			explainEnvs, err := getAlibiExplainEnvVars(int(portNum), explainerContainer.Name, p.Explainer.Type, pSvcEndpoint, p.Graph.Name, p.Explainer.InitParameters)

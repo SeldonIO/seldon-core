@@ -40,6 +40,14 @@ func (p *PredictorServerConfig) PrepackImageName(protocol Protocol, pu *Predicti
 	}
 	imageConfig := p.PrepackImageConfig(protocol)
 
+	if imageConfig == nil && protocol == ProtocolV2 {
+		imageConfig = p.PrepackImageConfig(ProtocolKfserving)
+	}
+
+	if imageConfig == nil && protocol == ProtocolKfserving {
+		imageConfig = p.PrepackImageConfig(ProtocolV2)
+	}
+
 	if imageConfig == nil {
 		return ""
 	}

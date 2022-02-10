@@ -464,7 +464,7 @@ class Model:
 ```
 
 #### Validation
-Output of developer-defined `metadata` method will be validated to follow the [kfserving dataplane proposal](https://github.com/kubeflow/kfserving/blob/master/docs/predict-api/v2/required_api.md#model-metadata) protocol, see [this](https://github.com/SeldonIO/seldon-core/issues/1638) GitHub issue for details:
+Output of developer-defined `metadata` method will be validated to follow the [V2 dataplane proposal](https://github.com/kserve/kfserve/blob/master/docs/predict-api/v2/required_api.md#model-metadata) protocol, see [this](https://github.com/SeldonIO/seldon-core/issues/1638) GitHub issue for details:
 ```javascript
 $metadata_model_response =
 {

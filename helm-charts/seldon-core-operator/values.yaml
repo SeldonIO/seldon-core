@@ -119,7 +119,7 @@ predictor_servers:
       seldon:
         defaultImageVersion: "1.13.0-dev"
         image: seldonio/mlflowserver
-      kfserving:
+      v2:
         defaultImageVersion: "1.0.0.rc2-mlflow"
         image: seldonio/mlserver
   SKLEARN_SERVER:
@@ -127,7 +127,7 @@ predictor_servers:
       seldon:
         defaultImageVersion: "1.13.0-dev"
         image: seldonio/sklearnserver
-      kfserving:
+      v2:
         defaultImageVersion: "1.0.0.rc2-sklearn"
         image: seldonio/mlserver
   TENSORFLOW_SERVER:
@@ -143,17 +143,17 @@ predictor_servers:
       seldon:
         defaultImageVersion: "1.13.0-dev"
         image: seldonio/xgboostserver
-      kfserving:
+      v2:
         defaultImageVersion: "1.0.0.rc2-xgboost"
         image: seldonio/mlserver
   TRITON_SERVER:
     protocols:
-      kfserving:
+      v2:
         defaultImageVersion: "21.08-py3"
         image: nvcr.io/nvidia/tritonserver
   TEMPO_SERVER:
     protocols:
-      kfserving:
+      v2:
         defaultImageVersion: "1.0.0.rc2-slim"
         image: seldonio/mlserver
 

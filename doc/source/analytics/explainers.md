@@ -82,13 +82,13 @@ If you were port forwarding to Ambassador on localhost:8003 then the API call wo
 http://localhost:8003/seldon/seldon/income-explainer/default/api/v1.0/explain
 ```
 
-The explain method is also supported for tensorflow and v2 kfserving protocols. The full list of endpoint URIs is:
+The explain method is also supported for tensorflow and v2 protocols. The full list of endpoint URIs is:
 
 | Protocol | URI |
 | ------ | ----- |
 | seldon | `http://<host>/<ingress-path>/api/v1.0/explain` |
 | tensorflow | `http://<host>/<ingress-path>/v1/models/<model-name>:explain` |
-| kfserving | `http://<host>/<ingress-path>/v2/models/<model-name>/infer` |
+| v2 | `http://<host>/<ingress-path>/v2/models/<model-name>/infer` |
 
 
 Note: for `tensorflow` protocol we support similar non-standard extension as for the [prediction API](../graph/protocols.md#rest-and-grpc-tensorflow-protocol), `http://<host>/<ingress-path>/v1/models/:explain`.
