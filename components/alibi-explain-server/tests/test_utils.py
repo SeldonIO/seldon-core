@@ -1,14 +1,13 @@
-import pytest
 import numpy as np
-
+import pytest
 from requests_mock import Mocker
 
 from alibiexplainer.utils import (
-    construct_predict_fn,
-    Protocol,
-    SELDON_SKIP_LOGGING_HEADER,
     SELDON_PREDICTOR_URL_FORMAT,
+    SELDON_SKIP_LOGGING_HEADER,
     TENSORFLOW_PREDICTOR_URL_FORMAT,
+    Protocol,
+    construct_predict_fn,
 )
 
 
