@@ -138,6 +138,7 @@ def _grpc(arr: np.array, predictor_host: str, tf_data_type: Optional[str]) -> np
     else:
         datadef = prediction_pb2.DefaultData(tftensor=tf.make_tensor_proto(arr))
     request = prediction_pb2.SeldonMessage(data=datadef)
-    response = stub.Predict(request=request)
+    request_metadata = ((SELDON_SKIP_LOGGING_HEADER, "true"),)
+    response = stub.Predict(request=request, metadata=request_metadata)
     arr_resp = tf.make_ndarray(response.data.tftensor)
     return arr_resp
