@@ -120,7 +120,7 @@ predictor_servers:
         defaultImageVersion: "1.13.0-dev"
         image: seldonio/mlflowserver
       v2:
-        defaultImageVersion: "1.0.0.rc2-mlflow"
+        defaultImageVersion: "1.0.0-mlflow"
         image: seldonio/mlserver
   SKLEARN_SERVER:
     protocols:
@@ -128,7 +128,7 @@ predictor_servers:
         defaultImageVersion: "1.13.0-dev"
         image: seldonio/sklearnserver
       v2:
-        defaultImageVersion: "1.0.0.rc2-sklearn"
+        defaultImageVersion: "1.0.0-sklearn"
         image: seldonio/mlserver
   TENSORFLOW_SERVER:
     protocols:
@@ -144,7 +144,7 @@ predictor_servers:
         defaultImageVersion: "1.13.0-dev"
         image: seldonio/xgboostserver
       v2:
-        defaultImageVersion: "1.0.0.rc2-xgboost"
+        defaultImageVersion: "1.0.0-xgboost"
         image: seldonio/mlserver
   TRITON_SERVER:
     protocols:
@@ -154,7 +154,7 @@ predictor_servers:
   TEMPO_SERVER:
     protocols:
       v2:
-        defaultImageVersion: "1.0.0.rc2-slim"
+        defaultImageVersion: "1.0.0-slim"
         image: seldonio/mlserver
 
 # ## Other
@@ -182,4 +182,4 @@ kubeflow: false
 # Explainer image
 explainer:
   image: seldonio/alibiexplainer:1.13.0-dev
-  image_v2: seldonio/mlserver:1.0.0.rc2-alibi-explain
+  image_v2: seldonio/mlserver:1.0.0-alibi-explain
