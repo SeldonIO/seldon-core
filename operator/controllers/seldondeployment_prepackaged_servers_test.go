@@ -93,7 +93,6 @@ var _ = Describe("Create a prepacked sklearn server", func() {
 })
 
 var _ = Describe("Create a prepacked tfserving server for Seldon protocol and REST", func() {
-	const timeout = time.Second * 30
 	const interval = time.Second * 1
 	const name = "pp2"
 	const sdepName = "prepack2"
@@ -170,6 +169,118 @@ var _ = Describe("Create a prepacked tfserving server for Seldon protocol and RE
 						Expect(arg).To(Equal(constants.TfServingArgRestPort + strconv.Itoa(constants.TfServingRestPort)))
 					}
 				}
+			}
+		}
+
+		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
+	})
+
+})
+
+var _ = Describe("Create a prepacked tfserving server for Seldon protocol and REST with resource requests", func() {
+	const interval = time.Second * 1
+	const name = "pp2"
+	const sdepName = "prepack2b"
+	By("Creating a resource")
+	It("should create a resource with defaults", func() {
+		Expect(k8sClient).NotTo(BeNil())
+		cpuValue := "2"
+		cpuRequest, err := resource.ParseQuantity(cpuValue)
+		Expect(err).To(BeNil())
+		modelName := "classifier"
+		var modelType = machinelearningv1.MODEL
+		var impl = machinelearningv1.PredictiveUnitImplementation(constants.PrePackedServerTensorflow)
+		key := types.NamespacedName{
+			Name:      sdepName,
+			Namespace: "default",
+		}
+		instance := &machinelearningv1.SeldonDeployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      key.Name,
+				Namespace: key.Namespace,
+			},
+			Spec: machinelearningv1.SeldonDeploymentSpec{
+				Name: name,
+				Predictors: []machinelearningv1.PredictorSpec{
+					{
+						Name: name,
+						Graph: machinelearningv1.PredictiveUnit{
+							Name:           modelName,
+							Type:           &modelType,
+							Implementation: &impl,
+							Endpoint:       &machinelearningv1.Endpoint{Type: machinelearningv1.REST},
+						},
+						ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
+							{
+								Spec: corev1.PodSpec{
+									Containers: []corev1.Container{
+										{
+											Name: modelName,
+											Resources: corev1.ResourceRequirements{
+												Requests: corev1.ResourceList{corev1.ResourceCPU: cpuRequest},
+											},
+										},
+										{
+											Name: "tfserving",
+											Resources: corev1.ResourceRequirements{
+												Requests: corev1.ResourceList{corev1.ResourceCPU: cpuRequest},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		configMapName := types.NamespacedName{Name: "seldon-config",
+			Namespace: "seldon-system"}
+
+		configResult := &corev1.ConfigMap{}
+		const timeout = time.Second * 30
+		Eventually(func() error { return k8sClient.Get(context.TODO(), configMapName, configResult) }, timeout).
+			Should(Succeed())
+
+		// Run Defaulter
+		instance.Default()
+
+		Expect(k8sClient.Create(context.Background(), instance)).Should(Succeed())
+		//time.Sleep(time.Second * 5)
+
+		fetched := &machinelearningv1.SeldonDeployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), key, fetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+		Expect(fetched.Name).Should(Equal(sdepName))
+
+		sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(&instance.Spec.Predictors[0], instance.Spec.Predictors[0].Graph.Name)
+		depName := machinelearningv1.GetDeploymentName(instance, instance.Spec.Predictors[0], sPodSpec, idx)
+		depKey := types.NamespacedName{
+			Name:      depName,
+			Namespace: "default",
+		}
+		depFetched := &appsv1.Deployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), depKey, depFetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+		Expect(len(depFetched.Spec.Template.Spec.Containers)).Should(Equal(3))
+		for _, c := range depFetched.Spec.Template.Spec.Containers {
+			if c.Name == constants.TFServingContainerName {
+				for _, arg := range c.Args {
+					if strings.Index(arg, constants.TfServingArgPort) == 0 {
+						Expect(arg).To(Equal(constants.TfServingArgPort + strconv.Itoa(constants.TfServingGrpcPort)))
+					}
+					if strings.Index(arg, constants.TfServingArgRestPort) == 0 {
+						Expect(arg).To(Equal(constants.TfServingArgRestPort + strconv.Itoa(constants.TfServingRestPort)))
+					}
+				}
+				Expect(c.Resources.Requests.Cpu().String()).To(Equal(cpuValue))
+			} else if c.Name == modelName {
+				Expect(c.Resources.Requests.Cpu().String()).To(Equal(cpuValue))
 			}
 		}
 
