@@ -10,3 +10,4 @@ This page show organisations that are using Seldon Core in production or providi
 | OpenDataHub | https://opendatahub.io/ |
 | Pachyderm | https://pachyderm.io/ |
 | PostMates | https://postmates.com/ |
+| Iter8 | https://iter8.tools/ |
