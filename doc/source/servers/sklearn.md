@@ -40,7 +40,7 @@ spec:
   - graph:
       children: []
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.13.0-dev/sklearn/iris
+      modelUri: gs://seldon-models/v1.13.0/sklearn/iris
       name: classifier
     name: default
     replicas: 1
@@ -68,7 +68,7 @@ spec:
   - graph:
       children: []
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.13.0-dev/sklearn/iris
+      modelUri: gs://seldon-models/v1.13.0/sklearn/iris
       name: classifier
       parameters:
         - name: method
@@ -105,7 +105,7 @@ spec:
   - graph:
       children: []
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.13.0-dev/sklearn/iris
+      modelUri: gs://seldon-models/v1.13.0/sklearn/iris
       name: classifier
       parameters:
         - name: method
@@ -153,7 +153,7 @@ spec:
     graph:
       children: []
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.13.0-dev/sklearn/iris
+      modelUri: gs://seldon-models/v1.13.0/sklearn/iris
       name: classifier
     name: default
     replicas: 1
