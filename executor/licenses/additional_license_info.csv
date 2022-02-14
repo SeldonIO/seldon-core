@@ -43,7 +43,7 @@ https://github.com/cznic/mathutil/blob/master/LICENSE,BSD 3-Clause "New" or "Rev
 https://github.com/cznic/strutil/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
 https://github.com/cznic/xc/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
 https://github.com/protocolbuffers/protobuf-go/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
-https://github.com/aws/aws-lambda-go/blob/master/LICENSE,Apache License 2.0
+https://github.com/aws/aws-lambda-go/blob/main/LICENSE,Apache License 2.0
 https://github.com/hashicorp/go.net/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
 https://github.com/jmespath/go-jmespath/blob/master/LICENSE,Apache License 2.0
 https://github.com/miekg/dns/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
@@ -81,7 +81,7 @@ https://github.com/sean-/seed/blob/master/LICENSE,MIT License
 https://github.com/shirou/gopsutil/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
 https://github.com/shirou/w32/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
 https://github.com/smartystreets/assertions/blob/master/LICENSE.md,MIT License
-https://github.com/smartystreets-archives/go-aws-auth/blob/master/LICENSE.md,MIT License
+https://github.com/smarty-archives/go-aws-auth/blob/master/LICENSE.md,MIT License
 https://github.com/smartystreets/goconvey/blob/master/LICENSE.md,MIT License
 https://github.com/smartystreets/gunit/blob/master/LICENSE.md,MIT License
 https://github.com/sourcegraph/go-diff/blob/master/LICENSE,MIT License
