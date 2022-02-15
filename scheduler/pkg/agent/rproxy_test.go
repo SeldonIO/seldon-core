@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
+
 	"github.com/gorilla/mux"
 
 	. "github.com/onsi/gomega"
@@ -77,109 +79,125 @@ func setupReverseProxy(logger log.FieldLogger, numModels int, modelPrefix string
 }
 
 func TestReverseProxySmoke(t *testing.T) {
-
 	g := NewGomegaWithT(t)
-	dummyModelNamePrefix := "dummy_model"
-
 	logger := log.New()
 	logger.SetLevel(log.DebugLevel)
 
-	go setupMockMLServer()
-	rpHTTP := setupReverseProxy(logger, 3, dummyModelNamePrefix)
-	if err := rpHTTP.Start(); err != nil {
-		t.Errorf("Cannot start reverse proxy %s", err)
+	type test struct {
+		name           string
+		modelToLoad    string
+		modelToRequest string
+		statusCode     int
 	}
 
-	t.Log("Testing model found")
-
-	// load model
-	rpHTTP.stateManager.modelVersions.addModelVersion(
-		getDummyModelDetails(dummyModelNamePrefix+"_0", uint64(1), uint32(1)))
-
-	// make a dummy predict call
-	inferV2Path := "/v2/models/" + dummyModelNamePrefix + "_0" + "/infer"
-	resp, err := http.Post(
-		"http://localhost:"+strconv.Itoa(ReverseProxyHTTPPort)+inferV2Path,
-		"application/json",
-		nil)
-	if err != nil || resp.StatusCode != 200 {
-		t.Fatal("error")
-	}
-	defer resp.Body.Close()
-
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	bodyString := string(bodyBytes)
-
-	if !strings.Contains(bodyString, dummyModelNamePrefix+"_0") {
-		t.Fatal("Fail!!")
+	tests := []test{
+		{
+			name:           "model exists",
+			modelToLoad:    "foo",
+			modelToRequest: "foo",
+			statusCode:     200,
+		},
+		{
+			name:           "model does not exists",
+			modelToLoad:    "foo",
+			modelToRequest: "foo2",
+			statusCode:     404,
+		},
 	}
 
-	t.Logf("Testing model not found")
-	// then make a call, this should fail
-	// model_1 should not be loaded
-	inferV2Path = "/v2/models/" + dummyModelNamePrefix + "_1" + "/infer"
-	resp, err = http.Post(
-		"http://localhost:"+strconv.Itoa(ReverseProxyHTTPPort)+inferV2Path,
-		"application/json",
-		nil)
-	if err != nil {
-		t.Fatal("error")
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			go setupMockMLServer()
+			rpHTTP := setupReverseProxy(logger, 3, test.modelToLoad)
+			err := rpHTTP.Start()
+			g.Expect(err).To(BeNil())
+
+			// load model
+			rpHTTP.stateManager.modelVersions.addModelVersion(
+				getDummyModelDetails(test.modelToLoad, uint64(1), uint32(1)))
+
+			// make a dummy predict call with any model name
+			inferV2Path := "/v2/models/RANDOM/infer"
+			url := "http://localhost:" + strconv.Itoa(ReverseProxyHTTPPort) + inferV2Path
+			req, err := http.NewRequest(http.MethodPost, url, nil)
+			g.Expect(err).To(BeNil())
+			req.Header.Set("contentType", "application/json")
+			req.Header.Set(resources.SeldonInternalModel, test.modelToRequest)
+			resp, err := http.DefaultClient.Do(req)
+			g.Expect(err).To(BeNil())
+			defer resp.Body.Close()
+
+			g.Expect(resp.StatusCode).To(Equal(test.statusCode))
+			if test.statusCode == 200 {
+				bodyBytes, err := io.ReadAll(resp.Body)
+				g.Expect(err).To(BeNil())
+				bodyString := string(bodyBytes)
+				g.Expect(strings.Contains(bodyString, test.modelToLoad)).To(BeTrue())
+			}
+			g.Expect(rpHTTP.Ready()).To(Equal(true))
+			_ = rpHTTP.Stop()
+			g.Expect(rpHTTP.Ready()).To(Equal(false))
+		})
 	}
-	defer resp.Body.Close()
-	g.Expect(resp.StatusCode).To(Equal(404))
 
-	t.Log("Testing status")
-	g.Expect(rpHTTP.Ready()).To(Equal(true))
-	_ = rpHTTP.Stop()
-	g.Expect(rpHTTP.Ready()).To(Equal(false))
-
-	t.Logf("Done!")
 }
 
-func TestExtractModelNamefromPath(t *testing.T) {
-	t.Logf("Start!")
-
+func TestRewritePath(t *testing.T) {
 	g := NewGomegaWithT(t)
-
 	type test struct {
-		name     string
-		path     string
-		expected string
+		name         string
+		path         string
+		modelName    string
+		expectedPath string
 	}
 	tests := []test{
 		{
-			name:     "noversion",
-			path:     "v2/models/dummy_model/infer",
-			expected: "dummy_model",
+			name:         "default infer",
+			path:         "/v2/models/iris/infer",
+			modelName:    "foo",
+			expectedPath: "/v2/models/foo/infer",
 		},
 		{
-			name:     "withversion",
-			path:     "v2/models/dummy_model/versions/1/infer",
-			expected: "dummy_model",
+			name:         "default infer model with dash",
+			path:         "/v2/models/iris-1/infer",
+			modelName:    "foo",
+			expectedPath: "/v2/models/foo/infer",
 		},
 		{
-			name:     "metadata",
-			path:     "v2/models/dummy_model",
-			expected: "dummy_model",
+			name:         "default infer model with underscore",
+			path:         "/v2/models/iris_1/infer",
+			modelName:    "foo",
+			expectedPath: "/v2/models/foo/infer",
 		},
 		{
-			name:     "bad",
-			path:     "dummy",
-			expected: "",
+			name:         "metadata for model",
+			path:         "/v2/models/iris",
+			modelName:    "foo",
+			expectedPath: "/v2/models/foo",
+		},
+		{
+			name:         "for server calls no change",
+			path:         "/v2/health/live",
+			modelName:    "foo",
+			expectedPath: "/v2/health/live",
+		},
+		{
+			name:         "versioned infer",
+			path:         "/v2/models/iris/versions/1/infer",
+			modelName:    "foo",
+			expectedPath: "/v2/models/foo/versions/1/infer",
+		},
+		{
+			name:         "model ready",
+			path:         "/v2/models/iris/ready",
+			modelName:    "foo",
+			expectedPath: "/v2/models/foo/ready",
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			model, err := ExtractModelNamefromPath(test.path)
-			g.Expect(model).To(Equal(test.expected))
-			if model == "" {
-				g.Expect(err).NotTo(Equal(BeNil()))
-			}
+			rewrittenPath := rewritePath(test.path, test.modelName)
+			g.Expect(rewrittenPath).To(Equal(test.expectedPath))
 		})
 	}
-
-	t.Logf("Done!")
 }

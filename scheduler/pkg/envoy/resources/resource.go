@@ -18,9 +18,6 @@ import (
 	"fmt"
 	"time"
 
-	envoy_type_matcher_v3 "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
-	envoy_type_v3 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
-
 	matcher "github.com/envoyproxy/go-control-plane/envoy/config/common/matcher/v3"
 	envoy_extensions_common_tap_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/common/tap/v3"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -39,6 +36,7 @@ import (
 	http "github.com/envoyproxy/go-control-plane/envoy/extensions/upstreams/http/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
+	wrappers "github.com/golang/protobuf/ptypes/wrappers"
 )
 
 const (
@@ -46,10 +44,13 @@ const (
 	SeldonLoggingHeader    = "Seldon-Logging"
 	EnvoyLogPathPrefix     = "/tmp/request-log"
 	SeldonModelHeader      = "seldon-model"
+	SeldonInternalModel    = "seldon-internal-model"
 )
 
 func MakeCluster(clusterName string, eps []Endpoint, isGrpc bool) *cluster.Cluster {
 	if isGrpc {
+		// Need to ensure http 2 is used
+		// https://github.com/envoyproxy/go-control-plane/blob/d1a10d9a9366e8ab48f3f76b44a35930bac46fec/envoy/extensions/upstreams/http/v3/http_protocol_options.pb.go#L165-L166
 		httpProtocolOptions := http.HttpProtocolOptions{
 			UpstreamProtocolOptions: &http.HttpProtocolOptions_ExplicitHttpConfig_{
 				ExplicitHttpConfig: &http.HttpProtocolOptions_ExplicitHttpConfig{
@@ -72,14 +73,15 @@ func MakeCluster(clusterName string, eps []Endpoint, isGrpc bool) *cluster.Clust
 			DnsLookupFamily:               cluster.Cluster_V4_ONLY,
 			TypedExtensionProtocolOptions: map[string]*anypb.Any{"envoy.extensions.upstreams.http.v3.HttpProtocolOptions": hpoMarshalled},
 		}
-	}
-	return &cluster.Cluster{
-		Name:                 clusterName,
-		ConnectTimeout:       durationpb.New(5 * time.Second),
-		ClusterDiscoveryType: &cluster.Cluster_Type{Type: cluster.Cluster_STRICT_DNS},
-		LbPolicy:             cluster.Cluster_ROUND_ROBIN,
-		LoadAssignment:       MakeEndpoint(clusterName, eps),
-		DnsLookupFamily:      cluster.Cluster_V4_ONLY,
+	} else {
+		return &cluster.Cluster{
+			Name:                 clusterName,
+			ConnectTimeout:       durationpb.New(5 * time.Second),
+			ClusterDiscoveryType: &cluster.Cluster_Type{Type: cluster.Cluster_STRICT_DNS},
+			LbPolicy:             cluster.Cluster_ROUND_ROBIN,
+			LoadAssignment:       MakeEndpoint(clusterName, eps),
+			DnsLookupFamily:      cluster.Cluster_V4_ONLY,
+		}
 	}
 }
 
@@ -120,12 +122,49 @@ func MakeEndpoint(clusterName string, eps []Endpoint) *endpoint.ClusterLoadAssig
 	}
 }
 
+func createWeightedClusterAction(clusterTraffics []TrafficSplits, rest bool) *route.Route_Route {
+	// Add Weighted Clusters with given traffic percentages to each internal model
+	var clusters []*route.WeightedCluster_ClusterWeight
+	for _, clusterTraffic := range clusterTraffics {
+		clusterName := clusterTraffic.HttpCluster
+		if !rest {
+			clusterName = clusterTraffic.GrpcCluster
+		}
+		clusters = append(clusters,
+			&route.WeightedCluster_ClusterWeight{
+				Name: clusterName,
+				Weight: &wrappers.UInt32Value{
+					Value: clusterTraffic.TrafficPercent,
+				},
+				RequestHeadersToAdd: []*core.HeaderValueOption{
+					{
+						Header: &core.HeaderValue{
+							Key:   SeldonInternalModel,
+							Value: clusterTraffic.ModelName,
+						},
+					},
+				},
+			})
+
+	}
+	action := &route.Route_Route{
+		Route: &route.RouteAction{
+			ClusterSpecifier: &route.RouteAction_WeightedClusters{
+				WeightedClusters: &route.WeightedCluster{
+					Clusters: clusters,
+				},
+			},
+		},
+	}
+	return action
+}
+
 func MakeRoute(routes []Route) *route.RouteConfiguration {
 	var rts []*route.Route
 
 	for _, r := range routes {
 		rt := &route.Route{
-			Name: fmt.Sprintf("%s_http_%d", r.Name, r.Version), // Seems optional
+			Name: fmt.Sprintf("%s_http", r.ModelName),
 			Match: &route.RouteMatch{
 				PathSpecifier: &route.RouteMatch_Prefix{
 					Prefix: "/v2",
@@ -134,7 +173,7 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 					{
 						Name: SeldonModelHeader, // Header name we will match on
 						HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
-							ExactMatch: r.Host,
+							ExactMatch: r.ModelName,
 						},
 						//TODO: https://github.com/envoyproxy/envoy/blob/c75c1410c8682cb44c9136ce4ad01e6a58e16e8e/api/envoy/api/v2/route/route_components.proto#L1513
 						//HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
@@ -147,46 +186,21 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 					},
 				},
 			},
-			Action: &route.Route_Route{
-				Route: &route.RouteAction{
-					RegexRewrite: &envoy_type_matcher_v3.RegexMatchAndSubstitute{
-						Pattern: &envoy_type_matcher_v3.RegexMatcher{
-							EngineType: &envoy_type_matcher_v3.RegexMatcher_GoogleRe2{},
-							Regex:      "/v2/models/([^/]+)",
-						},
-						Substitution: fmt.Sprintf("/v2/models/%s/versions/%d", r.Host, r.Version),
-					},
-					ClusterSpecifier: &route.RouteAction_Cluster{
-						Cluster: r.HttpCluster,
-					},
-				},
-			},
 		}
+
+		rt.Action = createWeightedClusterAction(r.Clusters, true)
 		if r.LogPayloads {
 			rt.ResponseHeadersToAdd = []*core.HeaderValueOption{
 				{Header: &core.HeaderValue{Key: SeldonLoggingHeader, Value: "true"}},
 			}
 		}
-		if r.TrafficPercent < 100 {
-			rt.Match.RuntimeFraction = &core.RuntimeFractionalPercent{
-				DefaultValue: &envoy_type_v3.FractionalPercent{
-					Numerator:   r.TrafficPercent,
-					Denominator: envoy_type_v3.FractionalPercent_HUNDRED,
-				},
-			}
-		}
+
 		rts = append(rts, rt)
 		//TODO there is no easy way to implement version specific gRPC calls so this could mean we need to implement
 		//latest model policy on V2 servers and therefore also for REST as well
 		rt = &route.Route{
-			Name: fmt.Sprintf("%s_grpc_%d", r.Name, r.Version),
+			Name: fmt.Sprintf("%s_grpc", r.ModelName),
 			Match: &route.RouteMatch{
-				RuntimeFraction: &core.RuntimeFractionalPercent{
-					DefaultValue: &envoy_type_v3.FractionalPercent{
-						Numerator:   r.TrafficPercent,
-						Denominator: envoy_type_v3.FractionalPercent_HUNDRED,
-					},
-				},
 				PathSpecifier: &route.RouteMatch_Prefix{
 					Prefix: "/inference.GRPCInferenceService",
 				},
@@ -194,7 +208,7 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 					{
 						Name: SeldonModelHeader, // Header name we will match on
 						HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
-							ExactMatch: r.Host,
+							ExactMatch: r.ModelName,
 						},
 						//TODO: https://github.com/envoyproxy/envoy/blob/c75c1410c8682cb44c9136ce4ad01e6a58e16e8e/api/envoy/api/v2/route/route_components.proto#L1513
 						//HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
@@ -207,14 +221,8 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 					},
 				},
 			},
-			Action: &route.Route_Route{
-				Route: &route.RouteAction{
-					ClusterSpecifier: &route.RouteAction_Cluster{
-						Cluster: r.GrpcCluster,
-					},
-				},
-			},
 		}
+		rt.Action = createWeightedClusterAction(r.Clusters, false)
 		if r.LogPayloads {
 			rt.ResponseHeadersToAdd = []*core.HeaderValueOption{
 				{Header: &core.HeaderValue{Key: SeldonLoggingHeader, Value: "true"}},

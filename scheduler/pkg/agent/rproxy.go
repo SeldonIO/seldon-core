@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -35,13 +37,15 @@ func (rp *reverseHTTPProxy) addHandlers(proxy http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rp.rewriteHostHandler(r)
 
-		modelName, _ := ExtractModelNamefromPath(r.URL.Path)
-		//TODO: what is best practice here for dealing with err?
+		modelName := r.Header.Get(resources.SeldonInternalModel)
+		rp.logger.Infof("Extracted model name from header [%s]", modelName)
 
 		if err := rp.stateManager.EnsureLoadModel(modelName); err != nil {
 			rp.logger.Errorf("Cannot load model in agent %s", modelName)
 			http.NotFound(w, r)
 		} else {
+			r.URL.Path = rewritePath(r.URL.Path, modelName)
+			rp.logger.Infof("Calling %s", r.URL.Path)
 			proxy.ServeHTTP(w, r)
 		}
 	})
@@ -107,11 +111,8 @@ func NewReverseHTTPProxy(
 	return &rp
 }
 
-func ExtractModelNamefromPath(path string) (string, error) {
-	re := regexp.MustCompile(`v2/models/(\w+)`)
-	matches := re.FindStringSubmatch(path)
-	if len(matches) == 2 {
-		return matches[1], nil
-	}
-	return "", fmt.Errorf("cannot extract model from path %s", path)
+func rewritePath(path string, modelName string) string {
+	re := regexp.MustCompile(`^(/v2/models/)([\w\-]+)(.*)$`)
+	s := fmt.Sprintf("${1}%s${3}", modelName)
+	return re.ReplaceAllString(path, s)
 }

@@ -7,6 +7,7 @@ require (
 	github.com/envoyproxy/go-control-plane v0.9.10-0.20210910171841-453346fa5903
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/go-playground/validator/v10 v10.9.0
+	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/jarcoal/httpmock v1.0.8

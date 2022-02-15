@@ -16,7 +16,7 @@ const (
 
 type SeldonXDSCache struct {
 	Listeners map[string]resources.Listener
-	Routes    map[string][]resources.Route
+	Routes    map[string]resources.Route
 	Clusters  map[string]resources.Cluster
 	logger    logrus.FieldLogger
 }
@@ -25,7 +25,7 @@ func NewSeldonXDSCache(logger logrus.FieldLogger) *SeldonXDSCache {
 	return &SeldonXDSCache{
 		Listeners: make(map[string]resources.Listener),
 		Clusters:  make(map[string]resources.Cluster),
-		Routes:    make(map[string][]resources.Route),
+		Routes:    make(map[string]resources.Route),
 		logger:    logger.WithField("source", "XDSCache"),
 	}
 }
@@ -48,7 +48,7 @@ func (xds *SeldonXDSCache) RouteContents() []types.Resource {
 
 	var routesArray []resources.Route
 	for _, r := range xds.Routes { //This could be very large as is equal to number of models (100k?)
-		routesArray = append(routesArray, r...)
+		routesArray = append(routesArray, r)
 	}
 
 	return []types.Resource{resources.MakeRoute(routesArray)}
@@ -87,19 +87,32 @@ func (xds *SeldonXDSCache) AddListener(name string) {
 	}
 }
 
-func (xds *SeldonXDSCache) AddRoute(name, modelName string, httpClusterName string, grpcClusterName string, logPayloads bool, trafficPercent uint32, version uint32) {
-	xds.Routes[modelName] = append(xds.Routes[modelName], resources.Route{
-		Name:           name,
-		Host:           modelName,
+func (xds *SeldonXDSCache) AddRouteClusterTraffic(modelName string, modelVersion uint32, trafficPercent uint32, httpClusterName string, grpcClusterName string, logPayloads bool) {
+	route, ok := xds.Routes[modelName]
+	if !ok {
+		route = resources.Route{
+			ModelName:   modelName,
+			LogPayloads: logPayloads,
+		}
+	}
+	// Always log payloads if any version wants it - so during a rolling update if one wants it then it will done
+	if logPayloads {
+		route.LogPayloads = true
+	}
+
+	clusterTraffic := resources.TrafficSplits{
+		ModelName:      modelName,
+		ModelVersion:   modelVersion,
+		TrafficPercent: trafficPercent,
 		HttpCluster:    httpClusterName,
 		GrpcCluster:    grpcClusterName,
-		LogPayloads:    logPayloads,
-		TrafficPercent: trafficPercent,
-		Version:        version,
-	})
+	}
+
+	route.Clusters = append(route.Clusters, clusterTraffic)
+	xds.Routes[modelName] = route
 }
 
-func (xds *SeldonXDSCache) AddCluster(name string, route string, isGrpc bool) {
+func (xds *SeldonXDSCache) AddCluster(name string, modelName string, isGrpc bool) {
 	cluster, ok := xds.Clusters[name]
 	if !ok {
 		cluster = resources.Cluster{
@@ -109,39 +122,36 @@ func (xds *SeldonXDSCache) AddCluster(name string, route string, isGrpc bool) {
 			Grpc:      isGrpc,
 		}
 	}
-	cluster.Routes[route] = true
+	cluster.Routes[modelName] = true
 	xds.Clusters[name] = cluster
 }
 
-func (xds *SeldonXDSCache) RemoveRoutes(modelName string) error {
+func (xds *SeldonXDSCache) RemoveRoute(modelName string) error {
 	logger := xds.logger.WithField("func", "RemoveRoute")
 	logger.Infof("Remove routes for model %s", modelName)
-	routeList, ok := xds.Routes[modelName]
+	route, ok := xds.Routes[modelName]
 	if !ok {
-		logger.Warnf("No routes found for model %s", modelName)
+		logger.Warnf("No route found for model %s", modelName)
 		return nil
 	}
 	delete(xds.Routes, modelName)
-	for _, route := range routeList {
-		logger.Debugf("Looking at removing route %+v for model %s", route, modelName)
-		httpCluster, ok := xds.Clusters[route.HttpCluster]
+	for _, cluster := range route.Clusters {
+		httpCluster, ok := xds.Clusters[cluster.HttpCluster]
 		if !ok {
 			return fmt.Errorf("Can't find http cluster for model %s route %+v", modelName, route)
 		}
-		grpcCluster, ok := xds.Clusters[route.GrpcCluster]
+		delete(httpCluster.Routes, route.ModelName)
+		if len(httpCluster.Routes) == 0 {
+			delete(xds.Clusters, cluster.HttpCluster)
+		}
+
+		grpcCluster, ok := xds.Clusters[cluster.GrpcCluster]
 		if !ok {
 			return fmt.Errorf("Can't find grpc cluster for model %s", modelName)
 		}
-		//delete(httpCluster.Routes, modelName)
-		delete(httpCluster.Routes, route.Name)
-		//delete(grpcCluster.Routes, modelName)
-		delete(grpcCluster.Routes, route.Name)
-		if len(httpCluster.Routes) == 0 {
-			delete(xds.Clusters, route.HttpCluster)
-			delete(xds.Clusters, route.GrpcCluster)
-		} else {
-			xds.Clusters[route.HttpCluster] = httpCluster
-			xds.Clusters[route.GrpcCluster] = grpcCluster
+		delete(grpcCluster.Routes, route.ModelName)
+		if len(grpcCluster.Routes) == 0 {
+			delete(xds.Clusters, cluster.GrpcCluster)
 		}
 	}
 	return nil

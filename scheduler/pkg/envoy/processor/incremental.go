@@ -2,7 +2,6 @@ package processor
 
 import (
 	"context"
-	"fmt"
 	"math"
 	"math/rand"
 	"strconv"
@@ -103,7 +102,7 @@ func (p *IncrementalProcessor) updateEnvoy() error {
 }
 
 func (p *IncrementalProcessor) removeModelForServerInEnvoy(modelName string) error {
-	err := p.xdsCache.RemoveRoutes(modelName)
+	err := p.xdsCache.RemoveRoute(modelName)
 	if err != nil {
 		return err
 	}
@@ -120,9 +119,7 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelName string, mode
 	clusterNameBase := server.Name + "_" + computeHashKeyForList(assignment)
 	httpClusterName := clusterNameBase + "_http"
 	grpcClusterName := clusterNameBase + "_grpc"
-	routeName := fmt.Sprintf("%s%d", modelName, modelVersion.GetVersion())
-	p.xdsCache.AddRoute(routeName, modelName, httpClusterName, grpcClusterName, modelVersion.GetDeploymentSpec().LogPayloads, trafficPercent, modelVersion.GetVersion())
-	p.xdsCache.AddCluster(httpClusterName, routeName, false)
+	p.xdsCache.AddCluster(httpClusterName, modelName, false)
 	for _, replicaIdx := range assignment {
 		replica, ok := server.Replicas[replicaIdx]
 		if !ok {
@@ -140,6 +137,7 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelName string, mode
 			p.xdsCache.AddEndpoint(grpcClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceGrpcPort()))
 		}
 	}
+	p.xdsCache.AddRouteClusterTraffic(modelName, modelVersion.GetVersion(), trafficPercent, httpClusterName, grpcClusterName, modelVersion.GetDeploymentSpec().LogPayloads)
 }
 
 func (p *IncrementalProcessor) Sync(modelName string) error {
@@ -174,7 +172,7 @@ func (p *IncrementalProcessor) Sync(modelName string) error {
 	}
 
 	// Remove routes before we recreate
-	err = p.xdsCache.RemoveRoutes(modelName)
+	err = p.xdsCache.RemoveRoute(modelName)
 	if err != nil {
 		return err
 	}
@@ -182,8 +180,8 @@ func (p *IncrementalProcessor) Sync(modelName string) error {
 	lastAvailableModelVersion := model.GetLastAvailableModel()
 	if lastAvailableModelVersion != nil && latestModel.GetVersion() != lastAvailableModelVersion.GetVersion() {
 		totalReplicas := len(lastAvailableModelVersion.GetAssignment()) + len(latestModel.GetAssignment())
-		trafficLastAvailable := uint32((len(lastAvailableModelVersion.GetAssignment()) * 100 / totalReplicas))
-		trafficLatest := 100 - trafficLastAvailable
+		trafficLastAvailableModel := uint32((len(lastAvailableModelVersion.GetAssignment()) * 100 / totalReplicas))
+		trafficLatestModel := 100 - trafficLastAvailableModel
 		lastAvailableServer, err := p.store.GetServer(lastAvailableModelVersion.Server())
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to find server %s for last available model for %s", lastAvailableModelVersion.Server(), modelName)
@@ -192,12 +190,12 @@ func (p *IncrementalProcessor) Sync(modelName string) error {
 		logger.Debugf("Splitting traffic between latest %s:%d %d percent and %s:%d %d percent",
 			modelName,
 			latestModel.GetVersion(),
-			trafficLatest,
+			trafficLatestModel,
 			modelName,
 			lastAvailableModelVersion.GetVersion(),
-			trafficLastAvailable)
-		p.updateEnvoyForModelVersion(modelName, lastAvailableModelVersion, lastAvailableServer, trafficLastAvailable)
-		p.updateEnvoyForModelVersion(modelName, latestModel, server, 100)
+			trafficLastAvailableModel)
+		p.updateEnvoyForModelVersion(modelName, lastAvailableModelVersion, lastAvailableServer, trafficLastAvailableModel)
+		p.updateEnvoyForModelVersion(modelName, latestModel, server, trafficLatestModel)
 	} else {
 		p.updateEnvoyForModelVersion(modelName, latestModel, server, 100)
 	}

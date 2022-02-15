@@ -8,6 +8,8 @@ import (
 	"net"
 	"sync"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
+
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -19,7 +21,6 @@ import (
 
 const (
 	ReverseGRPCProxyPort          = 9998
-	ModelNameKeyInHeader          = "seldon-model"
 	grpcProxyMaxConcurrentStreams = 1_000_000
 )
 
@@ -114,10 +115,11 @@ func (rp *reverseGRPCProxy) Name() string {
 }
 
 func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequest) (*v2.ModelInferResponse, error) {
-
 	if modelId, inHeader := extractModelNameFromHeader(ctx); inHeader {
 		r.ModelName = modelId
 		rp.logger.Debugf("Model name set from header: %s", r.ModelName)
+	} else {
+		rp.logger.Warnf("Failed to find internal model name from header %s so leaving as %s", resources.SeldonInternalModel, r.ModelName)
 	}
 
 	if err := rp.ensureLoadModel(r.ModelName); err != nil {
@@ -162,7 +164,7 @@ func (rp *reverseGRPCProxy) ensureLoadModel(modelId string) error {
 func extractModelNameFromHeader(ctx context.Context) (string, bool) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if ok {
-		modelNameFromHeader, ok := md[ModelNameKeyInHeader]
+		modelNameFromHeader, ok := md[resources.SeldonInternalModel]
 		if ok {
 			if len(modelNameFromHeader) > 0 {
 				// note if there are more than one elements we just return the first one
