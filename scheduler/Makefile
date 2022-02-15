@@ -99,7 +99,7 @@ kind-image-install-all: kind-image-install-scheduler kind-image-install-envoy ki
 DOCKER_COMPOSE_COMMON_IMAGES = \
 	SCHEDULER_IMAGE_AND_TAG=${SCHEDULER_IMG} \
 		AGENT_IMAGE_AND_TAG=${AGENT_IMG} \
-		ENVOY_IMAGE_AND_TAG=${ENVOY_COMPOSE_IMG} \
+		ENVOY_IMAGE_AND_TAG=${ENVOY_LOCAL_IMG} \
 		RCLONE_IMAGE_AND_TAG=${RCLONE_IMG}
 
 DOCKER_COMPOSE_MLSERVER_IMAGES = \
@@ -120,10 +120,13 @@ else
 	DOCKER_COMPOSE_REMOVE_VOLUMES =
 endif
 
-DOCKER_COMPOSE_BASE_COMMAND = docker-compose --env-file env.all -f all-base.yaml
-DOCKER_COMPOSE_SERVICE_COMMAND = ${DOCKER_COMPOSE_COMMON_IMAGES} ${DOCKER_COMPOSE_BASE_COMMAND} -p scv2
-DOCKER_COMPOSE_MLSERVER_COMMAND = ${DOCKER_COMPOSE_MLSERVER_IMAGES} ${DOCKER_COMPOSE_BASE_COMMAND} -f all-mlserver.yaml -p scv2_mlserver
-DOCKER_COMPOSE_TRITON_COMMAND = ${DOCKER_COMPOSE_TRITON_IMAGES} ${DOCKER_COMPOSE_TRITON_LOG_LEVEL} ${DOCKER_COMPOSE_BASE_COMMAND} -f all-triton.yaml -p scv2_triton
+DOCKER_COMPOSE_BASE_COMMAND = docker-compose --env-file env.all -f all-base.yaml 
+DOCKER_COMPOSE_INTERNAL= -f all-internal.yaml
+DOCKER_COMPOSE_HOST= -f all-host-network.yaml 
+DOCKER_COMPOSE_SERVICE_COMMAND = ${DOCKER_COMPOSE_COMMON_IMAGES} ${DOCKER_COMPOSE_BASE_COMMAND} ${DOCKER_COMPOSE_INTERNAL} -p scv2
+DOCKER_COMPOSE_MLSERVER_COMMAND = ${DOCKER_COMPOSE_MLSERVER_IMAGES} ${DOCKER_COMPOSE_BASE_COMMAND} ${DOCKER_COMPOSE_INTERNAL} -f all-mlserver.yaml -p scv2_mlserver
+DOCKER_COMPOSE_TRITON_COMMAND = ${DOCKER_COMPOSE_TRITON_IMAGES} ${DOCKER_COMPOSE_TRITON_LOG_LEVEL} ${DOCKER_COMPOSE_BASE_COMMAND} ${DOCKER_COMPOSE_INTERNAL} -f all-triton.yaml -p scv2_triton
+DOCKER_COMPOSE_SERVICE_HOST_COMMAND = ${DOCKER_COMPOSE_COMMON_IMAGES} ${DOCKER_COMPOSE_BASE_COMMAND} ${DOCKER_COMPOSE_HOST} -p scv2
 
 .PHONY: start-all-mlserver
 start-all-mlserver: copy-apis
@@ -161,12 +164,28 @@ list-services:
 start-mlserver:
 	${DOCKER_COMPOSE_MLSERVER_IMAGES} \
 		${DOCKER_COMPOSE_BASE_COMMAND} \
+		${DOCKER_COMPOSE_INTERNAL} \
 		-f all-mlserver.yaml -p scv2 up -d server
 
 .PHONY: stop-mlserver
 stop-mlserver:
 	${DOCKER_COMPOSE_MLSERVER_IMAGES} \
 		${DOCKER_COMPOSE_BASE_COMMAND} \
+		${DOCKER_COMPOSE_INTERNAL} \
+		-f all-mlserver.yaml -p scv2 rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES} server
+
+.PHONY: start-mlserver-host
+start-mlserver-host:
+	${DOCKER_COMPOSE_MLSERVER_IMAGES} \
+		${DOCKER_COMPOSE_BASE_COMMAND} \
+		${DOCKER_COMPOSE_HOST} \
+		-f all-mlserver.yaml -p scv2 up -d server
+
+.PHONY: stop-mlserver-host
+stop-mlserver-host:
+	${DOCKER_COMPOSE_MLSERVER_IMAGES} \
+		${DOCKER_COMPOSE_BASE_COMMAND} \
+		${DOCKER_COMPOSE_HOST} \
 		-f all-mlserver.yaml -p scv2 rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES} server
 
 .PHONY: start-triton
@@ -174,33 +193,70 @@ start-triton:
 	${DOCKER_COMPOSE_TRITON_IMAGES} \
 		TRITON_LOG_LEVEL=${DOCKER_COMPOSE_TRITON_LOG_LEVEL} \
 		${DOCKER_COMPOSE_BASE_COMMAND} \
+		${DOCKER_COMPOSE_INTERNAL} \
 		-f all-triton.yaml -p scv2 up -d server
 
 .PHONY: stop-triton
 stop-triton:
 	${DOCKER_COMPOSE_TRITON_IMAGES} \
 		${DOCKER_COMPOSE_BASE_COMMAND} \
+		${DOCKER_COMPOSE_INTERNAL} \
+		-f all-triton.yaml -p scv2 rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES} server
+
+.PHONY: start-triton-host
+start-triton-host:
+	${DOCKER_COMPOSE_TRITON_IMAGES} \
+		TRITON_LOG_LEVEL=${DOCKER_COMPOSE_TRITON_LOG_LEVEL} \
+		${DOCKER_COMPOSE_BASE_COMMAND} \
+		${DOCKER_COMPOSE_HOST} \
+		-f all-triton.yaml -p scv2 up -d server
+
+.PHONY: stop-triton-host
+stop-triton-host:
+	${DOCKER_COMPOSE_TRITON_IMAGES} \
+		${DOCKER_COMPOSE_BASE_COMMAND} \
+		${DOCKER_COMPOSE_HOST} \
 		-f all-triton.yaml -p scv2 rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES} server
 
 .PHONY: start-agent-mlserver
 start-agent-mlserver:
 	${DOCKER_COMPOSE_MLSERVER_IMAGES} \
-		${DOCKER_COMPOSE_BASE_COMMAND} -f all-mlserver.yaml -p scv2 up -d agent
+		${DOCKER_COMPOSE_BASE_COMMAND} ${DOCKER_COMPOSE_INTERNAL} -f all-mlserver.yaml -p scv2 up -d agent
 
 .PHONY: stop-agent-mlserver
 stop-agent-mlserver:
 	${DOCKER_COMPOSE_MLSERVER_IMAGES} \
-		${DOCKER_COMPOSE_BASE_COMMAND} -f all-mlserver.yaml -p scv2 rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES} agent
+		${DOCKER_COMPOSE_BASE_COMMAND} ${DOCKER_COMPOSE_INTERNAL} -f all-mlserver.yaml -p scv2 rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES} agent
+
+.PHONY: start-agent-mlserver-host
+start-agent-mlserver-host:
+	${DOCKER_COMPOSE_MLSERVER_IMAGES} \
+		${DOCKER_COMPOSE_BASE_COMMAND} ${DOCKER_COMPOSE_HOST} -f all-mlserver.yaml -p scv2 up -d agent
+
+.PHONY: stop-agent-mlserver-host
+stop-agent-mlserver-host:
+	${DOCKER_COMPOSE_MLSERVER_IMAGES} \
+		${DOCKER_COMPOSE_BASE_COMMAND} ${DOCKER_COMPOSE_HOST} -f all-mlserver.yaml -p scv2 rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES} agent
 
 .PHONY: start-agent-triton
 start-agent-triton:
 	${DOCKER_COMPOSE_TRITON_IMAGES} \
-		${DOCKER_COMPOSE_BASE_COMMAND} -f all-triton.yaml -p scv2 up -d agent
+		${DOCKER_COMPOSE_BASE_COMMAND} ${DOCKER_COMPOSE_INTERNAL} -f all-triton.yaml -p scv2 up -d agent
 
 .PHONY: stop-agent-triton
 stop-agent-triton:
 	${DOCKER_COMPOSE_TRITON_IMAGES} \
-		${DOCKER_COMPOSE_BASE_COMMAND} -f all-triton.yaml -p scv2 rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES} agent
+		${DOCKER_COMPOSE_BASE_COMMAND} ${DOCKER_COMPOSE_INTERNAL} -f all-triton.yaml -p scv2 rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES} agent
+
+.PHONY: start-agent-triton-host
+start-agent-triton-host:
+	${DOCKER_COMPOSE_TRITON_IMAGES} \
+		${DOCKER_COMPOSE_BASE_COMMAND} ${DOCKER_COMPOSE_HOST} -f all-triton.yaml -p scv2 up -d agent
+
+.PHONY: stop-agent-triton-host
+stop-agent-triton-host:
+	${DOCKER_COMPOSE_TRITON_IMAGES} \
+		${DOCKER_COMPOSE_BASE_COMMAND} ${DOCKER_COMPOSE_HOST} -f all-triton.yaml -p scv2 rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES} agent
 
 .PHONY: start-scheduler
 start-scheduler:
@@ -210,6 +266,14 @@ start-scheduler:
 stop-scheduler:
 	${DOCKER_COMPOSE_SERVICE_COMMAND} rm --stop --force scheduler
 
+.PHONY: start-scheduler-host
+start-scheduler-host:
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d scheduler
+
+.PHONY: stop-scheduler-host
+stop-scheduler-host:
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} rm --stop --force scheduler
+
 .PHONY: start-envoy
 start-envoy:
 	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d envoy
@@ -218,6 +282,14 @@ start-envoy:
 stop-envoy:
 	${DOCKER_COMPOSE_SERVICE_COMMAND} rm --stop --force envoy
 
+.PHONY: start-envoy-host
+start-envoy-host:
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d envoy
+
+.PHONY: stop-envoy-host
+stop-envoy-host:
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} rm --stop --force envoy
+
 .PHONY: start-rclone
 start-rclone:
 	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d rclone
@@ -225,6 +297,14 @@ start-rclone:
 .PHONY: stop-rclone
 stop-rclone:
 	${DOCKER_COMPOSE_SERVICE_COMMAND} rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES} rclone
+
+.PHONY: start-rclone-host
+start-rclone-host:
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d rclone
+
+.PHONY: stop-rclone-host
+stop-rclone-host:
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES} rclone
 
 .PHONY: stop-all
 stop-all: stop-scheduler stop-envoy stop-rclone stop-agent-mlserver stop-agent-triton stop-mlserver stop-triton

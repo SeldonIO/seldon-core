@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+
+  agent:
+    network_mode: "host"
+    volumes:
+      - type: bind
+        source: ./config
+        target: /mnt/config
+      - type: bind
+        source: ./mnt
+        target: /mnt/agent
+
+  envoy:
+    network_mode: "host"
+
+  rclone:
+    network_mode: "host"
+    volumes:
+      - type: bind
+        source: ./mnt
+        target: /mnt/agent
+
+  scheduler:
+    network_mode: "host"
+
+  server:
+    network_mode: "host"
+    volumes:
+      - type: bind
+        source: ./mnt
+        target: /mnt/agent
+    
+  

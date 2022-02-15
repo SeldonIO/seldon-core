@@ -1,0 +1,48 @@
+version: "3.9"
+
+volumes:
+  models:
+
+services:
+
+  agent:
+    ports:
+      - "${AGENT_HTTP_PORT}:${AGENT_HTTP_PORT}"
+      - "${AGENT_GRPC_PORT}:${AGENT_GRPC_PORT}"
+      - "${SELDON_REVERSE_PROXY_HTTP_PORT}:${SELDON_REVERSE_PROXY_HTTP_PORT}"
+      - "${SELDON_REVERSE_PROXY_GRPC_PORT}:${SELDON_REVERSE_PROXY_GRPC_PORT}"
+    volumes:
+      - type: bind
+        source: ./config
+        target: /mnt/config
+      - type: volume
+        source: models
+        target: /mnt/agent
+
+  envoy:
+    ports:
+      - "${ENVOY_DATA_PORT}:${ENVOY_DATA_PORT}"
+      - "${ENVOY_CONTROL_PORT}:${ENVOY_CONTROL_PORT}"
+
+  rclone:
+    ports:
+      - "${RCLONE_HTTP_PORT}:${RCLONE_HTTP_PORT}"
+    volumes:
+      - type: volume
+        source: models
+        target: /mnt/agent
+
+  scheduler:
+    ports:
+      - "${SCHEDULER_XDS_PORT}:${SCHEDULER_XDS_PORT}"
+      - "${SCHEDULER_SERVER_PORT}:${SCHEDULER_SERVER_PORT}"
+      - "${SCHEDULER_AGENT_PORT}:${SCHEDULER_AGENT_PORT}"
+
+  server:
+    ports:
+      - "${SERVER_HTTP_PORT}:${SERVER_HTTP_PORT}"
+      - "${SERVER_GRPC_PORT}:${SERVER_GRPC_PORT}"
+    volumes:
+      - type: volume
+        source: models
+        target: /mnt/agent
