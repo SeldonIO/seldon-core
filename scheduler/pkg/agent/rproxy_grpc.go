@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"net"
 	"sync"
+	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/metrics"
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
 
 	log "github.com/sirupsen/logrus"
@@ -35,14 +37,16 @@ type reverseGRPCProxy struct {
 	v2GRPCClient          v2.GRPCInferenceServiceClient
 	port                  uint // service port
 	mu                    sync.RWMutex
+	metrics               metrics.MetricsHandler
 }
 
-func NewReverseGRPCProxy(logger log.FieldLogger, backendGRPCServerHost string, backendGRPCServerPort uint, servicePort uint) *reverseGRPCProxy {
+func NewReverseGRPCProxy(metricsHandler metrics.MetricsHandler, logger log.FieldLogger, backendGRPCServerHost string, backendGRPCServerPort uint, servicePort uint) *reverseGRPCProxy {
 	return &reverseGRPCProxy{
-		logger:                logger,
+		logger:                logger.WithField("Source", "GRPCProxy"),
 		backendGRPCServerHost: backendGRPCServerHost,
 		backendGRPCServerPort: backendGRPCServerPort,
 		port:                  servicePort,
+		metrics:               metricsHandler,
 	}
 }
 
@@ -64,6 +68,7 @@ func (rp *reverseGRPCProxy) Start() error {
 
 	opts := []grpc.ServerOption{}
 	opts = append(opts, grpc.MaxConcurrentStreams(grpcProxyMaxConcurrentStreams))
+	opts = append(opts, grpc.UnaryInterceptor(rp.metrics.UnaryServerInterceptor()))
 	grpcServer := grpc.NewServer(opts...)
 	v2.RegisterGRPCInferenceServiceServer(grpcServer, rp)
 
@@ -114,27 +119,43 @@ func (rp *reverseGRPCProxy) Name() string {
 	return "Reverse GRPC Proxy"
 }
 
-func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequest) (*v2.ModelInferResponse, error) {
-	if modelId, inHeader := extractModelNameFromHeader(ctx); inHeader {
-		r.ModelName = modelId
-		rp.logger.Debugf("Model name set from header: %s", r.ModelName)
+func (rp *reverseGRPCProxy) extractModelNamesFromContext(ctx context.Context) (string, string, error) {
+	var internalModelName, externalModelName string
+	var inHeader bool
+	if internalModelName, externalModelName, inHeader = extractModelNamesFromHeaders(ctx); inHeader {
+		rp.logger.Debugf("Extracted model name %s:%s %s:%s", resources.SeldonInternalModel, internalModelName, resources.SeldonModelHeader, externalModelName)
+		return internalModelName, externalModelName, nil
 	} else {
-		rp.logger.Warnf("Failed to find internal model name from header %s so leaving as %s", resources.SeldonInternalModel, r.ModelName)
+		msg := fmt.Sprintf("Failed to extract model name %s:[%s] %s:[%s]", resources.SeldonInternalModel, internalModelName, resources.SeldonModelHeader, externalModelName)
+		rp.logger.Error(msg)
+		return "", "", status.Error(codes.FailedPrecondition, msg)
 	}
+}
+
+func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequest) (*v2.ModelInferResponse, error) {
+	internalModelName, externalModelName, err := rp.extractModelNamesFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	r.ModelName = internalModelName
 
 	if err := rp.ensureLoadModel(r.ModelName); err != nil {
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("Model %s not found (err: %s)", r.ModelName, err))
 	}
 
-	return rp.v2GRPCClient.ModelInfer(ctx, r)
+	startTime := time.Now()
+	resp, err := rp.v2GRPCClient.ModelInfer(ctx, r)
+	elapsedTime := time.Since(startTime).Seconds()
+	go rp.metrics.AddInferMetrics(internalModelName, externalModelName, metrics.MethodTypeGrpc, elapsedTime)
+	return resp, err
 }
 
 func (rp *reverseGRPCProxy) ModelMetadata(ctx context.Context, r *v2.ModelMetadataRequest) (*v2.ModelMetadataResponse, error) {
-
-	if modelId, inHeader := extractModelNameFromHeader(ctx); inHeader {
-		r.Name = modelId
-		rp.logger.Debugf("Model name set from header: %s", r.Name)
+	internalModelName, _, err := rp.extractModelNamesFromContext(ctx)
+	if err != nil {
+		return nil, err
 	}
+	r.Name = internalModelName
 
 	if err := rp.ensureLoadModel(r.Name); err != nil {
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("Model %s not found (err: %s)", r.Name, err))
@@ -144,11 +165,11 @@ func (rp *reverseGRPCProxy) ModelMetadata(ctx context.Context, r *v2.ModelMetada
 }
 
 func (rp *reverseGRPCProxy) ModelReady(ctx context.Context, r *v2.ModelReadyRequest) (*v2.ModelReadyResponse, error) {
-
-	if modelId, inHeader := extractModelNameFromHeader(ctx); inHeader {
-		r.Name = modelId
-		rp.logger.Debugf("Model name set from header: %s", r.Name)
+	internalModelName, _, err := rp.extractModelNamesFromContext(ctx)
+	if err != nil {
+		return nil, err
 	}
+	r.Name = internalModelName
 
 	if err := rp.ensureLoadModel(r.Name); err != nil {
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("Model %s not found (err: %s)", r.Name, err))
@@ -161,16 +182,23 @@ func (rp *reverseGRPCProxy) ensureLoadModel(modelId string) error {
 	return rp.stateManager.EnsureLoadModel(modelId)
 }
 
-func extractModelNameFromHeader(ctx context.Context) (string, bool) {
-	md, ok := metadata.FromIncomingContext(ctx)
+func extractHeader(key string, md metadata.MD) string {
+	values, ok := md[key]
 	if ok {
-		modelNameFromHeader, ok := md[resources.SeldonInternalModel]
-		if ok {
-			if len(modelNameFromHeader) > 0 {
-				// note if there are more than one elements we just return the first one
-				return modelNameFromHeader[0], true
-			}
+		if len(values) > 0 {
+			// note if there are more than one elements we just return the first one
+			return values[0]
 		}
 	}
-	return "", false
+	return ""
+}
+
+func extractModelNamesFromHeaders(ctx context.Context) (string, string, bool) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if ok {
+		internalModelName := extractHeader(resources.SeldonInternalModel, md)
+		externalModelName := extractHeader(resources.SeldonModelHeader, md)
+		return internalModelName, externalModelName, internalModelName != "" && externalModelName != ""
+	}
+	return "", "", false
 }

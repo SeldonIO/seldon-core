@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"context"
 	"io"
 	"net"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
+	"google.golang.org/grpc"
 
 	"github.com/gorilla/mux"
 
@@ -70,10 +72,25 @@ func setupMockMLServer() {
 	}
 }
 
+type fakeMetricsHandler struct{}
+
+func (f fakeMetricsHandler) AddHistogramMetricsHandler(baseHandler http.HandlerFunc) http.HandlerFunc {
+	return baseHandler
+}
+
+func (f fakeMetricsHandler) AddInferMetrics(externalModelName string, internalModelName string, method string, elapsedTime float64) {
+}
+
+func (f fakeMetricsHandler) UnaryServerInterceptor() func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		return handler(ctx, req)
+	}
+}
+
 func setupReverseProxy(logger log.FieldLogger, numModels int, modelPrefix string) *reverseHTTPProxy {
 	v2Client := NewV2Client("localhost", backEndServerPort, logger)
 	localCacheManager := setupLocalTestManager(numModels, modelPrefix, v2Client, numModels-2)
-	rp := NewReverseHTTPProxy(logger, ReverseProxyHTTPPort)
+	rp := NewReverseHTTPProxy(logger, ReverseProxyHTTPPort, fakeMetricsHandler{})
 	rp.SetState(localCacheManager)
 	return rp
 }
@@ -122,6 +139,7 @@ func TestReverseProxySmoke(t *testing.T) {
 			req, err := http.NewRequest(http.MethodPost, url, nil)
 			g.Expect(err).To(BeNil())
 			req.Header.Set("contentType", "application/json")
+			req.Header.Set(resources.SeldonModelHeader, test.modelToRequest)
 			req.Header.Set(resources.SeldonInternalModel, test.modelToRequest)
 			resp, err := http.DefaultClient.Do(req)
 			g.Expect(err).To(BeNil())

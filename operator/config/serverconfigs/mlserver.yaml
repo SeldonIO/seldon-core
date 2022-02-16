@@ -46,6 +46,8 @@ spec:
         value: "seldon-scheduler"
       - name: SELDON_SCHEDULER_PORT
         value: "9005"
+      - name: SELDON_METRICS_PORT
+        value: "9006"
       - name: SELDON_SERVER_TYPE
         value: "mlserver"
       - name: POD_NAME
@@ -63,6 +65,9 @@ spec:
         protocol: TCP
       - containerPort: 9001
         name: http
+        protocol: TCP
+      - containerPort: 9006
+        name: metrics
         protocol: TCP
       volumeMounts:
       - mountPath: /mnt/agent

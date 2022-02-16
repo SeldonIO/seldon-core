@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: agent
+  namespace: seldon-mesh
+spec:
+  selector:
+    matchLabels:
+      app: seldon-server
+  namespaceSelector:
+    matchNames:
+    - seldon-mesh
+  podMetricsEndpoints:
+  - port: metrics
+    interval: 15s
+    path: /metrics
+
+

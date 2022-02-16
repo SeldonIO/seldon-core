@@ -107,7 +107,6 @@ func (xds *SeldonXDSCache) AddRouteClusterTraffic(modelName string, modelVersion
 		HttpCluster:    httpClusterName,
 		GrpcCluster:    grpcClusterName,
 	}
-
 	route.Clusters = append(route.Clusters, clusterTraffic)
 	xds.Routes[modelName] = route
 }

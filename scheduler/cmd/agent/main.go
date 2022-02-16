@@ -1,10 +1,12 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"io/fs"
 	"io/ioutil"
 	"math/rand"
+	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -12,6 +14,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/metrics"
 
 	agent2 "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 
@@ -43,6 +47,7 @@ var (
 	reverseProxyHttpPort int
 	reverseProxyGrpcPort int
 	debugGrpcPort        int
+	metricsPort          int
 	agentFolder          string
 	namespace            string
 	replicaConfigStr     string
@@ -59,9 +64,6 @@ var (
 )
 
 const (
-	DefaultInferenceSvcHttpPort = 9000
-	DefaultInferenceSvcGrpcPort = 9500
-
 	EnvServerHttpPort       = "SELDON_SERVER_HTTP_PORT"
 	EnvServerGrpcPort       = "SELDON_SERVER_GRPC_PORT"
 	EnvReverseProxyHttpPort = "SELDON_REVERSE_PROXY_HTTP_PORT"
@@ -76,6 +78,7 @@ const (
 	EnvMemoryRequest        = "MEMORY_REQUEST"
 	EnvCapabilities         = "SELDON_SERVER_CAPABILITIES"
 	EnvOvercommit           = "SELDON_OVERCOMMIT"
+	EnvMetricsPort          = "SELDON_METRICS_PORT"
 
 	FlagSchedulerHost        = "scheduler-host"
 	FlagSchedulerPort        = "scheduler-port"
@@ -92,6 +95,13 @@ const (
 	FlagMemoryBytes          = "memory-bytes"
 	FlagCapabilities         = "capabilities"
 	FlagOverCommit           = "overcommit"
+	FlagMetricsPort          = "metrics-port"
+
+	DefaultInferenceHttpPort = 8080
+	DefaultInferenceGrpcPort = 9500
+	DefaultRclonePort        = 5572
+	DefaultSchedulerPort     = 9005
+	DefaultMetricsPort       = 9006
 )
 
 func init() {
@@ -101,12 +111,12 @@ func init() {
 	flag.StringVar(&serverName, FlagServerName, "mlserver", "Server name")
 	flag.UintVar(&replicaIdx, "server-idx", 0, "Server index")
 	flag.StringVar(&schedulerHost, FlagSchedulerHost, "0.0.0.0", "Scheduler host")
-	flag.IntVar(&schedulerPort, FlagSchedulerPort, 9005, "Scheduler port")
+	flag.IntVar(&schedulerPort, FlagSchedulerPort, DefaultSchedulerPort, "Scheduler port")
 	flag.StringVar(&rcloneHost, "rclone-host", "0.0.0.0", "RClone host")
-	flag.IntVar(&rclonePort, "rclone-port", 5572, "RClone server port")
+	flag.IntVar(&rclonePort, "rclone-port", DefaultRclonePort, "RClone server port")
 	flag.StringVar(&inferenceHost, "inference-host", "0.0.0.0", "Inference server host")
-	flag.IntVar(&inferenceHttpPort, FlagInferenceHttpPort, 8080, "Inference server http port")
-	flag.IntVar(&inferenceGrpcPort, FlagInferenceGrpcPort, 9500, "Inference server grpc port")
+	flag.IntVar(&inferenceHttpPort, FlagInferenceHttpPort, DefaultInferenceHttpPort, "Inference server http port")
+	flag.IntVar(&inferenceGrpcPort, FlagInferenceGrpcPort, DefaultInferenceGrpcPort, "Inference server grpc port")
 	flag.IntVar(&reverseProxyHttpPort, FlagReverseProxyHttpPort, agent.ReverseProxyHTTPPort, "Reverse proxy http port")
 	flag.IntVar(&reverseProxyGrpcPort, FlagReverseProxyGrpcPort, agent.ReverseGRPCProxyPort, "Reverse proxy grpc port")
 	flag.IntVar(&debugGrpcPort, FlagDebugGrpcPort, agent.GRPCDebugServicePort, "Debug grpc port")
@@ -119,6 +129,7 @@ func init() {
 	flag.StringVar(&capabilitiesList, FlagCapabilities, "sklearn,xgboost", "Server capabilities")
 	flag.BoolVar(&overCommit, FlagOverCommit, true, "Overcommit memory")
 	flag.StringVar(&logLevel, FlagLogLevel, "debug", "Log level - examples: debug, info, error")
+	flag.IntVar(&metricsPort, FlagMetricsPort, DefaultMetricsPort, "Metrics Port")
 }
 
 func isFlagPassed(name string) bool {
@@ -286,6 +297,17 @@ func updateFlagsFromEnv() {
 			serverType = val
 		}
 	}
+	if !isFlagPassed(FlagMetricsPort) {
+		port := os.Getenv(EnvMetricsPort)
+		if port != "" {
+			log.Infof("Got %s from %s setting to %s", FlagMetricsPort, EnvMetricsPort, port)
+			var err error
+			metricsPort, err = strconv.Atoi(port)
+			if err != nil {
+				log.WithError(err).Fatalf("Failed to parse %s with value %s", EnvMetricsPort, port)
+			}
+		}
+	}
 }
 
 func runningInsideK8s() bool {
@@ -365,16 +387,9 @@ func createReplicaConfig() *agent2.ReplicaConfig {
 		}
 		log.Infof("Created replicaConfig from environment")
 	}
-	//Setup ports correctly
-	if runningInsideK8s() {
-		// Inside k8s these will be fixed ports on a headless SVC pointing to the http and grpc named ports in this pod
-		rc.InferenceHttpPort = int32(DefaultInferenceSvcHttpPort)
-		rc.InferenceGrpcPort = int32(DefaultInferenceSvcGrpcPort)
-	} else {
-		// If not in k8s the we take whatever if set for reverse proxy ports
-		rc.InferenceHttpPort = int32(reverseProxyHttpPort)
-		rc.InferenceGrpcPort = int32(reverseProxyGrpcPort)
-	}
+	//Point to proxy always in replica config
+	rc.InferenceHttpPort = int32(reverseProxyHttpPort)
+	rc.InferenceGrpcPort = int32(reverseProxyGrpcPort)
 	log.Infof("replicaConfig %+v", rc)
 	return rc
 }
@@ -434,11 +449,28 @@ func main() {
 	// Create V2 Protocol Handler
 	v2Client := agent.NewV2Client(inferenceHost, inferenceHttpPort, logger)
 
-	rpHTTP := agent.NewReverseHTTPProxy(logger, uint(reverseProxyHttpPort))
+	promMetrics, err := metrics.NewPrometheusMetrics(serverName, replicaIdx, namespace, logger)
+	if err != nil {
+		logger.WithError(err).Fatalf("Can't create prometheus metrics")
+	}
+	go func() {
+		err := promMetrics.Start(metricsPort)
+		if errors.Is(err, http.ErrServerClosed) {
+			return
+		}
+		logger.WithError(err).Error("Can't start metrics server")
+		close(done)
+	}()
+	defer func() { _ = promMetrics.Stop() }()
 
-	rpGRPC := agent.NewReverseGRPCProxy(logger, inferenceHost, uint(inferenceGrpcPort), uint(reverseProxyGrpcPort))
+	rpHTTP := agent.NewReverseHTTPProxy(logger, uint(reverseProxyHttpPort), promMetrics)
+	defer func() { _ = rpHTTP.Stop() }()
+
+	rpGRPC := agent.NewReverseGRPCProxy(promMetrics, logger, inferenceHost, uint(inferenceGrpcPort), uint(reverseProxyGrpcPort))
+	defer func() { _ = rpGRPC.Stop() }()
 
 	clientDebugService := agent.NewClientDebug(logger, uint(debugGrpcPort))
+	defer func() { _ = clientDebugService.Stop() }()
 
 	// Create Agent
 	client := agent.NewClient(serverName, uint32(replicaIdx), schedulerHost, schedulerPort, logger, modelRepository, v2Client, createReplicaConfig(), inferenceSvcName, namespace, rpHTTP, rpGRPC, clientDebugService)

@@ -8,7 +8,9 @@ import (
 	"regexp"
 	"strconv"
 	"sync"
+	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/metrics"
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
 
 	log "github.com/sirupsen/logrus"
@@ -25,6 +27,7 @@ type reverseHTTPProxy struct {
 	serverReady  bool
 	port         uint
 	mu           sync.RWMutex
+	metrics      metrics.MetricsHandler
 }
 
 // need to rewrite the host of the outbound request with the host of the incoming request
@@ -34,19 +37,30 @@ func (rp *reverseHTTPProxy) rewriteHostHandler(r *http.Request) {
 }
 
 func (rp *reverseHTTPProxy) addHandlers(proxy http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return rp.metrics.AddHistogramMetricsHandler(func(w http.ResponseWriter, r *http.Request) {
 		rp.rewriteHostHandler(r)
 
-		modelName := r.Header.Get(resources.SeldonInternalModel)
-		rp.logger.Infof("Extracted model name from header [%s]", modelName)
+		externalModelName := r.Header.Get(resources.SeldonModelHeader)
+		internalModelName := r.Header.Get(resources.SeldonInternalModel)
+		//TODO should we return a 404 if headers not found?
+		if externalModelName == "" || internalModelName == "" {
+			rp.logger.Warnf("Failed to extract model name %s:[%s] %s:[%s]", resources.SeldonInternalModel, internalModelName, resources.SeldonModelHeader, externalModelName)
+			proxy.ServeHTTP(w, r)
+			return
+		} else {
+			rp.logger.Debugf("Extracted model name %s:%s %s:%s", resources.SeldonInternalModel, internalModelName, resources.SeldonModelHeader, externalModelName)
+		}
 
-		if err := rp.stateManager.EnsureLoadModel(modelName); err != nil {
-			rp.logger.Errorf("Cannot load model in agent %s", modelName)
+		if err := rp.stateManager.EnsureLoadModel(internalModelName); err != nil {
+			rp.logger.Errorf("Cannot load model in agent %s", internalModelName)
 			http.NotFound(w, r)
 		} else {
-			r.URL.Path = rewritePath(r.URL.Path, modelName)
-			rp.logger.Infof("Calling %s", r.URL.Path)
+			r.URL.Path = rewritePath(r.URL.Path, internalModelName)
+			rp.logger.Debugf("Calling %s", r.URL.Path)
+			startTime := time.Now()
 			proxy.ServeHTTP(w, r)
+			elapsedTime := time.Since(startTime).Seconds()
+			go rp.metrics.AddInferMetrics(externalModelName, internalModelName, metrics.MethodTypeRest, elapsedTime)
 		}
 	})
 }
@@ -101,11 +115,13 @@ func (rp *reverseHTTPProxy) Name() string {
 func NewReverseHTTPProxy(
 	logger log.FieldLogger,
 	port uint,
+	metrics metrics.MetricsHandler,
 ) *reverseHTTPProxy {
 
 	rp := reverseHTTPProxy{
-		logger: logger,
-		port:   port,
+		logger:  logger.WithField("Source", "HTTPProxy"),
+		port:    port,
+		metrics: metrics,
 	}
 
 	return &rp
