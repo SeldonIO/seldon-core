@@ -112,7 +112,7 @@ def test_python_wrapper_v1_vs_v2_iris():
         protocol="seldon",
         server_list=["SKLEARN_SERVER"],
         benchmark_concurrency_list=benchmark_concurrency_list,
-        model_uri_list=["gs://seldon-models/v1.13.0/sklearn/iris"],
+        model_uri_list=["gs://seldon-models/v1.14.0-dev/sklearn/iris"],
         benchmark_data={"data": {"ndarray": [[1, 2, 3, 4]]}},
     )
     df_pywrapper = df_pywrapper.sort_values(sort_by)

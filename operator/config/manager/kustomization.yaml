@@ -7,4 +7,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: docker.io/seldonio/seldon-core-operator
-  newTag: 1.13.0
+  newTag: 1.14.0-dev
