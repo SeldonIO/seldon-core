@@ -161,6 +161,10 @@ docker-build: test generate-resources
 docker-build-no-test: generate-resources
 	docker build . -t ${IMG}
 
+# Build the docker image for Redhat
+docker-build-redhat: test generate-resources
+	docker build -f Dockerfile.redhat -t ${IMG_REDHAT} .
+
 # Push the docker image
 docker-push:
 	docker push ${IMG}

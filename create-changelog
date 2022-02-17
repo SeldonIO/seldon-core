@@ -6,14 +6,7 @@ set -o pipefail
 
 STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
-if [[ $# < 1 ]]; then
-    echo "Need GITHUB_PERSONAL_TOKEN"
-    exit 1
-fi
-
-GITHUB_PERSONAL_TOKEN=$1
-
 docker run --rm -it \
     -v $STARTUP_DIR:/work \
-    -w /work ruby \
-    bash -c "set -x && gem install github_changelog_generator && github_changelog_generator --token ${GITHUB_PERSONAL_TOKEN} --release-branch release-0.1  SeldonIO/seldon-core"
+    -w /work node \
+    bash -c "set -x && npm install -g auto-changelog && auto-changelog"

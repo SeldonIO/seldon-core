@@ -1,1 +1,1 @@
-{"labels": [{"name": "Seldon Mock Model"}, {"vendor": "Seldon Technologies"}, {"version": "1.13.0-dev"}, {"release": "1"}, {"summary": "A mock model for testing Seldon Core"}, {"description": "A mock REST model for testing Seldon Core"}]}
+{"labels": [{"name": "Seldon Mock Model"}, {"vendor": "Seldon Technologies"}, {"version": "1.14.0-dev"}, {"release": "1"}, {"summary": "A mock model for testing Seldon Core"}, {"description": "A mock REST model for testing Seldon Core"}]}
