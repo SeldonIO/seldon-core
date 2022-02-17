@@ -8,18 +8,72 @@ import (
 )
 
 type LRUCacheManager struct {
-	pq PriorityQueue
-	mu sync.RWMutex
+	pq        PriorityQueue
+	mu        sync.RWMutex
+	itemLocks sync.Map
 }
 
-func (cache *LRUCacheManager) Evict() (string, int64, error) {
+func (cache *LRUCacheManager) itemLock(id string) error {
+	var lock sync.RWMutex
+	existingLock, loaded := cache.itemLocks.LoadOrStore(id, &lock)
+	if loaded {
+		return fmt.Errorf("Model is already dirty %s", id)
+	}
+	existingLock.(*sync.RWMutex).Lock()
+	return nil
+}
+
+func (cache *LRUCacheManager) itemUnLock(id string) {
+	existingLock, loaded := cache.itemLocks.LoadAndDelete(id)
+	if loaded {
+		existingLock.(*sync.RWMutex).Unlock()
+	}
+}
+
+func (cache *LRUCacheManager) itemWait(id string) {
+	existingLock, loaded := cache.itemLocks.Load(id)
+	if loaded {
+		existingLock.(*sync.RWMutex).RLock()
+		defer existingLock.(*sync.RWMutex).RUnlock()
+	}
+}
+
+func (cache *LRUCacheManager) StartEvict() (string, int64, error) {
 	cache.mu.Lock()
 	defer cache.mu.Unlock()
 	if cache.pq.Len() > 0 {
 		item := heap.Pop(&(cache.pq)).(*Item)
+		if err := cache.itemLock(item.id); err != nil {
+			// re-add
+			cache.add(item.id, item.priority)
+			cache.itemUnLock(item.id)
+			return "", 0, fmt.Errorf("cannot evict")
+		}
 		return item.id, item.priority, nil
 	}
 	return "", 0, fmt.Errorf("empty cache, cannot evict")
+}
+
+func (cache *LRUCacheManager) EndEvict(id string, value int64, rollback bool) error {
+	_, loaded := cache.itemLocks.Load(id)
+	if !loaded {
+		// item is not dirty, abort
+		return fmt.Errorf("id %s is not dirty", id)
+	}
+	defer cache.itemUnLock(id)
+	if rollback {
+		// no locking here
+		cache.add(id, value)
+	}
+	return nil
+}
+
+func (cache *LRUCacheManager) add(id string, value int64) {
+	item := &Item{
+		id:       id,
+		priority: value,
+	}
+	heap.Push(&(cache.pq), item)
 }
 
 func (cache *LRUCacheManager) Add(id string, value int64) error {
@@ -31,11 +85,7 @@ func (cache *LRUCacheManager) Add(id string, value int64) error {
 	}
 	cache.mu.Lock()
 	defer cache.mu.Unlock()
-	item := &Item{
-		id:       id,
-		priority: value,
-	}
-	heap.Push(&(cache.pq), item)
+	cache.add(id, value)
 	return nil
 }
 
@@ -66,6 +116,7 @@ func (cache *LRUCacheManager) Exists(id string) bool {
 	// TODO: make it efficient?
 	cache.mu.RLock()
 	defer cache.mu.RUnlock()
+	cache.itemWait(id)
 	for _, item := range cache.pq {
 		if item.id == id {
 			return true
@@ -127,8 +178,9 @@ func MakeLRU(initItems map[string]int64) *LRUCacheManager {
 	}
 	heap.Init(&pq)
 	return &LRUCacheManager{
-		pq: pq,
-		mu: sync.RWMutex{},
+		pq:        pq,
+		mu:        sync.RWMutex{},
+		itemLocks: sync.Map{},
 	}
 }
 

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -20,25 +21,48 @@ import (
 )
 
 const (
-	backEndServerPort = 8088
+	backEndServerPort = 7777
 )
 
-func v2_infer(w http.ResponseWriter, req *http.Request) {
+type mockMLServerState struct {
+	models map[string]bool
+	mu     sync.Mutex
+}
+
+func (mlserver *mockMLServerState) v2Infer(w http.ResponseWriter, req *http.Request) {
 	params := mux.Vars(req)
 	model_name := params["model_name"]
 	_, _ = w.Write([]byte("Model inference: " + model_name))
 }
 
-func v2_load(w http.ResponseWriter, req *http.Request) {
+func (mlserver *mockMLServerState) v2Load(w http.ResponseWriter, req *http.Request) {
 	params := mux.Vars(req)
-	model_name := params["model_name"]
-	_, _ = w.Write([]byte("Model load: " + model_name))
+	modelName := params["model_name"]
+	mlserver.setModel(modelName, true)
+	_, _ = w.Write([]byte("Model load: " + modelName))
 }
 
-func v2_unload(w http.ResponseWriter, req *http.Request) {
+func (mlserver *mockMLServerState) v2Unload(w http.ResponseWriter, req *http.Request) {
 	params := mux.Vars(req)
-	model_name := params["model_name"]
-	_, _ = w.Write([]byte("Model unload: " + model_name))
+	modelName := params["model_name"]
+	mlserver.setModel(modelName, false)
+	_, _ = w.Write([]byte("Model unload: " + modelName))
+}
+
+func (mlserver *mockMLServerState) setModel(modelId string, val bool) {
+	mlserver.mu.Lock()
+	defer mlserver.mu.Unlock()
+	mlserver.models[modelId] = val
+}
+
+func (mlserver *mockMLServerState) isModelLoaded(modelId string) bool {
+	mlserver.mu.Lock()
+	defer mlserver.mu.Unlock()
+	val, loaded := mlserver.models[modelId]
+	if loaded {
+		return val
+	}
+	return false
 }
 
 func isRegistered(port int) bool {
@@ -55,15 +79,15 @@ func isRegistered(port int) bool {
 
 	return false
 }
-func setupMockMLServer() {
+func setupMockMLServer(mockMLServerState *mockMLServerState) {
 	if isRegistered(backEndServerPort) {
-		log.Warnf("Port %d already running", backEndGRPCServerPort)
+		log.Warnf("Port %d already running", backEndServerPort)
 		return
 	}
 	rtr := mux.NewRouter()
-	rtr.HandleFunc("/v2/models/{model_name:\\w+}/infer", v2_infer).Methods("POST")
-	rtr.HandleFunc("/v2/repository/models/{model_name:\\w+}/load", v2_load).Methods("POST")
-	rtr.HandleFunc("/v2/repository/models/{model_name:\\w+}/unload", v2_unload).Methods("POST")
+	rtr.HandleFunc("/v2/models/{model_name:\\w+}/infer", mockMLServerState.v2Infer).Methods("POST")
+	rtr.HandleFunc("/v2/repository/models/{model_name:\\w+}/load", mockMLServerState.v2Load).Methods("POST")
+	rtr.HandleFunc("/v2/repository/models/{model_name:\\w+}/unload", mockMLServerState.v2Unload).Methods("POST")
 
 	http.Handle("/", rtr)
 
@@ -124,10 +148,15 @@ func TestReverseProxySmoke(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			go setupMockMLServer()
+			mockMLServerState := &mockMLServerState{
+				models: make(map[string]bool),
+				mu:     sync.Mutex{},
+			}
+			go setupMockMLServer(mockMLServerState)
 			rpHTTP := setupReverseProxy(logger, 3, test.modelToLoad)
 			err := rpHTTP.Start()
 			g.Expect(err).To(BeNil())
+			time.Sleep(100 * time.Millisecond)
 
 			// load model
 			rpHTTP.stateManager.modelVersions.addModelVersion(
@@ -152,9 +181,9 @@ func TestReverseProxySmoke(t *testing.T) {
 				bodyString := string(bodyBytes)
 				g.Expect(strings.Contains(bodyString, test.modelToLoad)).To(BeTrue())
 			}
-			g.Expect(rpHTTP.Ready()).To(Equal(true))
+			g.Expect(rpHTTP.Ready()).To(BeTrue())
 			_ = rpHTTP.Stop()
-			g.Expect(rpHTTP.Ready()).To(Equal(false))
+			g.Expect(rpHTTP.Ready()).To(BeFalse())
 		})
 	}
 
@@ -200,14 +229,26 @@ func TestRewritePath(t *testing.T) {
 			expectedPath: "/v2/health/live",
 		},
 		{
+			name:         "model ready",
+			path:         "/v2/models/iris/ready",
+			modelName:    "foo",
+			expectedPath: "/v2/models/foo/ready",
+		},
+		{
 			name:         "versioned infer",
 			path:         "/v2/models/iris/versions/1/infer",
 			modelName:    "foo",
-			expectedPath: "/v2/models/foo/versions/1/infer",
+			expectedPath: "/v2/models/foo/infer",
 		},
 		{
-			name:         "model ready",
-			path:         "/v2/models/iris/ready",
+			name:         "versioned metadata",
+			path:         "/v2/models/iris/versions/1/infer",
+			modelName:    "foo",
+			expectedPath: "/v2/models/foo/infer",
+		},
+		{
+			name:         "versioned model ready",
+			path:         "/v2/models/iris/versions/1/ready",
 			modelName:    "foo",
 			expectedPath: "/v2/models/foo/ready",
 		},

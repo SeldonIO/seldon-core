@@ -1,8 +1,10 @@
 package cache
 
 type CacheManager interface {
-	// evict the least priority node and return key
-	Evict() (string, int64, error)
+	// evict the least priority node and return key, this should start a transaction (lock on id)
+	StartEvict() (string, int64, error)
+	// end the transaction, if false is provided the id should be put back in the queue
+	EndEvict(string, int64, bool) error
 	// add a new node with specific id and priority/value
 	Add(id string, value int64) error
 	// add a new node with specific id and default priority/value

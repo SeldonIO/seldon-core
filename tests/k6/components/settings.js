@@ -61,6 +61,13 @@ function unloadModel() {
     return true
 }
 
+function maxNumModels() {
+    if (__ENV.MAX_NUM_MODELS) {
+        return __ENV.MAX_NUM_MODELS
+    }
+    return 10
+}
+
 export function getConfig() {
     return {
         "schedulerEndpoint": schedulerEndpoint(),
@@ -71,6 +78,7 @@ export function getConfig() {
         "modelType": modelType(),
         "loadModel": loadModel(),
         "infer": infer(),
-        "unloadModel": unloadModel()
+        "unloadModel": unloadModel(),
+        "maxNumModels": maxNumModels(),
     }
 }

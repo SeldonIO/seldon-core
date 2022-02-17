@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"strconv"
+	"sync"
 	"testing"
 	"time"
 
@@ -42,11 +43,11 @@ func (mlserver *mockGRPCMLServer) Start(port uint) error {
 }
 
 func (mlserver *mockGRPCMLServer) ModelInfer(ctx context.Context, r *v2.ModelInferRequest) (*v2.ModelInferResponse, error) {
-	return &v2.ModelInferResponse{ModelName: r.ModelName}, nil
+	return &v2.ModelInferResponse{ModelName: r.ModelName, ModelVersion: r.ModelVersion}, nil
 }
 
 func (mlserver *mockGRPCMLServer) ModelMetadata(ctx context.Context, r *v2.ModelMetadataRequest) (*v2.ModelMetadataResponse, error) {
-	return &v2.ModelMetadataResponse{Name: r.Name}, nil
+	return &v2.ModelMetadataResponse{Name: r.Name, Versions: []string{r.Version}}, nil
 }
 
 func (mlserver *mockGRPCMLServer) ModelReady(ctx context.Context, r *v2.ModelReadyRequest) (*v2.ModelReadyResponse, error) {
@@ -77,7 +78,11 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 
 	dummyModelNamePrefix := "dummy_model"
 
-	go setupMockMLServer()
+	mockMLServerState := &mockMLServerState{
+		models: make(map[string]bool),
+		mu:     sync.Mutex{},
+	}
+	go setupMockMLServer(mockMLServerState)
 	go setupMockGRPCMLServer(dummyModelNamePrefix)
 
 	rpGRPC := setupReverseGRPCService(10, dummyModelNamePrefix)
@@ -124,18 +129,22 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	responseInfer, errInfer := doInfer("_0")
 	g.Expect(errInfer).To(BeNil())
 	g.Expect(responseInfer.ModelName).To(Equal(dummyModelNamePrefix + "_0"))
+	g.Expect(responseInfer.ModelVersion).To(Equal("")) // in practice this should be something else
 
 	responseMeta, errMeta := doMeta("_0")
 	g.Expect(responseMeta.Name).To(Equal(dummyModelNamePrefix + "_0"))
+	g.Expect(responseMeta.Versions).To(Equal([]string{""})) // in practice this should be something else
 	g.Expect(errMeta).To(BeNil())
 
 	responseReady, errReady := doModelReady("_0")
 	g.Expect(responseReady.Ready).To(Equal(true))
+	g.Expect(mockMLServerState.isModelLoaded(dummyModelNamePrefix + "_0")).To(Equal(true))
 	g.Expect(errReady).To(BeNil())
 
 	t.Log("Testing model not found")
 	_, errInfer = doInfer("_1")
 	g.Expect(errInfer).NotTo(BeNil())
+	g.Expect(mockMLServerState.isModelLoaded(dummyModelNamePrefix + "_1")).To(Equal(false))
 
 	_, errMeta = doMeta("_1")
 	g.Expect(errMeta).NotTo(BeNil())

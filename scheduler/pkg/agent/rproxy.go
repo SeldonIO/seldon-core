@@ -17,7 +17,11 @@ import (
 )
 
 const (
-	ReverseProxyHTTPPort = 9999
+	ReverseProxyHTTPPort    = 9999
+	maxIdleConnsHTTP        = 500
+	maxIdleConnsPerHostHTTP = 250
+	disableKeepAlivesHTTP   = false
+	maxConnsPerHostHTTP     = 500
 )
 
 type reverseHTTPProxy struct {
@@ -73,6 +77,12 @@ func (rp *reverseHTTPProxy) Start() error {
 
 	backend := rp.stateManager.GetBackEndPath()
 	proxy := httputil.NewSingleHostReverseProxy(backend)
+	proxy.Transport = &http.Transport{
+		MaxIdleConns:        maxIdleConnsHTTP,
+		MaxIdleConnsPerHost: maxIdleConnsPerHostHTTP,
+		DisableKeepAlives:   disableKeepAlivesHTTP,
+		MaxConnsPerHost:     maxConnsPerHostHTTP,
+	}
 	rp.logger.Infof("Start reverse proxy on port %d for %s", rp.port, backend)
 	rp.server = &http.Server{Addr: ":" + strconv.Itoa(int(rp.port)), Handler: rp.addHandlers(proxy)}
 	// TODO: check for errors? we rely for now on Ready
@@ -128,7 +138,8 @@ func NewReverseHTTPProxy(
 }
 
 func rewritePath(path string, modelName string) string {
-	re := regexp.MustCompile(`^(/v2/models/)([\w\-]+)(.*)$`)
-	s := fmt.Sprintf("${1}%s${3}", modelName)
+	re := regexp.MustCompile(`(/v2/models/)([\w\-]+)(/versions/\w+)?(.*)$`)
+	// ${3}, i.e. versions/<ver_num> is removed
+	s := fmt.Sprintf("${1}%s${4}", modelName)
 	return re.ReplaceAllString(path, s)
 }

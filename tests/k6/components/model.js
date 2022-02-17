@@ -5,7 +5,7 @@ const models = {
             "uriTemplate": "gs://seldon-models/testing/iris",
             "maxUriSuffix": 10,
             "requirements": ["sklearn"],
-            "memoryBytes": 2000,
+            "memoryBytes": 20000,
         },
         "inference":{
             "http": {"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]},
@@ -17,7 +17,7 @@ const models = {
             "uriTemplate": "gs://seldon-models/triton/simple",
             "maxUriSuffix": 0,
             "requirements": ["tensorflow"],
-            "memoryBytes": 500,
+            "memoryBytes": 20000,
         },
         "inference":{
             "http": {"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]},
@@ -26,7 +26,7 @@ const models = {
     },
 }
 
-export function generateModel(modelType, modelName, uriOffset, replicas) {
+export function generateModel(modelType, modelName, uriOffset, replicas, isProxy = false) {
     const data = models[modelType]
     const modelTemplate = data.modelTemplate
     var uri = modelTemplate.uriTemplate
@@ -36,15 +36,15 @@ export function generateModel(modelType, modelName, uriOffset, replicas) {
 
     const model = {"model": {
             "meta":{
-                "name":modelName
+                "name": modelName
             },
             "modelSpec":{
-                "uri":uri,
-                "requirements":modelTemplate.requirements,
-                "memoryBytes":modelTemplate.memoryBytes
+                "uri": uri,
+                "requirements": modelTemplate.requirements,
+                "memoryBytes": modelTemplate.memoryBytes
             },
-            "deploymentSpec":{
-                "replicas":replicas
+            "deploymentSpec": {
+                "replicas": replicas
             }
         }
     }
@@ -53,7 +53,7 @@ export function generateModel(modelType, modelName, uriOffset, replicas) {
 
     const inference = data.inference
     return {
-        "modelDefn": model,
+        "modelDefn": isProxy ? {"request": model} : model,
         "inference": JSON.parse(JSON.stringify(inference))
     }
 }

@@ -11,6 +11,7 @@ import (
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 	pbs "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/k8s"
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
@@ -71,6 +72,14 @@ func (f FakeClientService) Stop() error {
 
 func (f FakeClientService) Name() string {
 	return "FakeService"
+}
+
+func addVerionToModels(models []string, version uint32) []string {
+	modelsWithVersions := make([]string, len(models))
+	for i := 0; i < len(models); i++ {
+		modelsWithVersions[i] = util.GetVersionedModelName(models[i], version)
+	}
+	return modelsWithVersions
 }
 
 func dialerv2(mockAgentV2Server *mockAgentV2Server) func(context.Context, string) (net.Conn, error) {
@@ -157,7 +166,7 @@ func TestClientCreate(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
-			v2Client := createTestV2Client(test.models, test.v2Status)
+			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
 			modelRepository := FakeModelRepository{err: test.modelRepoErr}
 			rpHTTP := FakeClientService{err: nil}
 			rpGRPC := FakeClientService{err: nil}
@@ -262,7 +271,7 @@ func TestLoadModel(t *testing.T) {
 			t.Logf("Test #%d", tidx)
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
-			v2Client := createTestV2Client(test.models, test.v2Status)
+			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
 			modelRepository := FakeModelRepository{err: test.modelRepoErr}
 			rpHTTP := FakeClientService{err: nil}
 			rpGRPC := FakeClientService{err: nil}
@@ -376,7 +385,7 @@ parameters:
 			t.Logf("Test #%d", tidx)
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
-			v2Client := createTestV2Client(test.models, test.v2Status)
+			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
 			modelRepository := FakeModelRepository{}
 			rpHTTP := FakeClientService{err: nil}
 			rpGRPC := FakeClientService{err: nil}
@@ -494,7 +503,7 @@ func TestUnloadModel(t *testing.T) {
 			t.Logf("Test #%d", tidx)
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
-			v2Client := createTestV2Client(test.models, test.v2Status)
+			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
 			modelRepository := FakeModelRepository{}
 			rpHTTP := FakeClientService{err: nil}
 			rpGRPC := FakeClientService{err: nil}

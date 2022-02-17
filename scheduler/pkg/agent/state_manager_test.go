@@ -38,6 +38,20 @@ func getDummyModelDetails(modelId string, memBytes uint64, version uint32) *pba.
 	return &mv
 }
 
+func getDummyModelDetailsUnload(modelId string, version uint32) *pba.ModelVersion {
+	meta := pbs.MetaData{
+		Name: modelId,
+	}
+	model := pbs.Model{
+		Meta: &meta,
+	}
+	mv := pba.ModelVersion{
+		Model:   &model,
+		Version: version,
+	}
+	return &mv
+}
+
 func setupLocalTestManager(numModels int, modelPrefix string, v2Client *V2Client, capacity int) *LocalStateManager {
 
 	logger := log.New()
@@ -111,6 +125,7 @@ func TestLocalStateManagerSmoke(t *testing.T) {
 }
 
 // Ensures that we have a lock on model reloading
+// this tests only one model being reloaded with concurrent requests
 func TestConcurrentReload(t *testing.T) {
 	dummyModelPrefix := "dummy_model"
 
@@ -125,20 +140,20 @@ func TestConcurrentReload(t *testing.T) {
 	tests := []test{
 		{
 			name:                    "enough capacity",
-			numModels:               1000,
-			capacity:                1100,
-			expectedAvailableMemory: 100,
+			numModels:               100,
+			capacity:                110,
+			expectedAvailableMemory: 10,
 		},
 		{
 			name:                    "just enough capacity",
-			numModels:               1100,
-			capacity:                1100,
+			numModels:               110,
+			capacity:                110,
 			expectedAvailableMemory: 0,
 		},
 		{
 			name:                    "not enough capacity",
-			numModels:               1100,
-			capacity:                1000,
+			numModels:               200,
+			capacity:                100,
 			expectedAvailableMemory: 0,
 		},
 	}
@@ -185,6 +200,106 @@ func TestConcurrentReload(t *testing.T) {
 			} else {
 				g.Expect(len(cacheItems)).Should(BeNumerically("==", test.numModels))
 			}
+
+			t.Log("Test unload models")
+			for i := 0; i < test.numModels; i++ {
+				modelName := getModelId(dummyModelPrefix, i)
+				err := manager.unloadModelFn(getDummyModelDetailsUnload(modelName, uint32(1)))
+				g.Expect(err).To(BeNil())
+			}
+			g.Expect(manager.availableMemoryBytes).Should(BeNumerically("==", test.capacity))
+			g.Expect(manager.modelVersions.numModels()).Should(BeNumerically("==", 0))
+
+		})
+	}
+
+}
+
+// Test concurrent infer requests
+func TestConcurrentInfer(t *testing.T) {
+	dummyModelPrefix := "dummy_model"
+
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name                    string
+		numModels               int
+		capacity                int
+		expectedAvailableMemory uint64
+	}
+	tests := []test{
+		{
+			name:                    "enough capacity",
+			numModels:               100,
+			capacity:                110,
+			expectedAvailableMemory: 10,
+		},
+		{
+			name:                    "just enough capacity",
+			numModels:               110,
+			capacity:                110,
+			expectedAvailableMemory: 0,
+		},
+		{
+			name:                    "not enough capacity",
+			numModels:               110,
+			capacity:                100,
+			expectedAvailableMemory: 0,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Log("Setup test")
+			//activate mock http server for v2
+			httpmock.Activate()
+			defer httpmock.DeactivateAndReset()
+
+			manager := setupLocalTestManager(test.numModels, dummyModelPrefix, nil, test.capacity)
+
+			// load the first numModels, this will evict in reverse order
+			for i := test.numModels - 1; i >= 0; i-- {
+				modelName := getModelId(dummyModelPrefix, i)
+				memBytes := uint64(1)
+				_ = manager.LoadModelVersion(getDummyModelDetails(modelName, memBytes, uint32(1)))
+			}
+
+			t.Log("Start test")
+			var wg sync.WaitGroup
+			wg.Add(test.numModels * 10)
+			for i := 0; i < test.numModels*10; i++ {
+				modelId := rand.Intn(test.numModels)
+				modelName := getModelId(dummyModelPrefix, modelId)
+
+				checkerFn := func(wg *sync.WaitGroup, modelName string) {
+					err := manager.EnsureLoadModel(modelName)
+					for err != nil {
+						t.Logf("Error %s", err)
+						err = manager.EnsureLoadModel(modelName)
+					}
+					g.Expect(err).To(BeNil())
+					wg.Done()
+				}
+
+				go checkerFn(&wg, modelName)
+			}
+			wg.Wait()
+
+			g.Expect(manager.availableMemoryBytes).Should(BeNumerically("==", test.expectedAvailableMemory))
+			cacheItems, _ := manager.cache.GetItems()
+			if test.expectedAvailableMemory == 0 {
+				g.Expect(len(cacheItems)).Should(BeNumerically("==", test.capacity))
+			} else {
+				g.Expect(len(cacheItems)).Should(BeNumerically("==", test.numModels))
+			}
+
+			t.Log("Test unload models")
+			for i := 0; i < test.numModels; i++ {
+				modelName := getModelId(dummyModelPrefix, i)
+				err := manager.unloadModelFn(getDummyModelDetailsUnload(modelName, uint32(1)))
+				g.Expect(err).To(BeNil())
+			}
+			g.Expect(manager.availableMemoryBytes).Should(BeNumerically("==", test.capacity))
+			g.Expect(manager.modelVersions.numModels()).Should(BeNumerically("==", 0))
 		})
 	}
 
@@ -207,20 +322,20 @@ func TestConcurrentLoad(t *testing.T) {
 	tests := []test{
 		{
 			name:                    "enough capacity",
-			numModels:               1000,
-			capacity:                1100,
-			expectedAvailableMemory: 100,
+			numModels:               100,
+			capacity:                110,
+			expectedAvailableMemory: 10,
 		},
 		{
 			name:                    "just enough capacity",
-			numModels:               1100,
-			capacity:                1100,
+			numModels:               110,
+			capacity:                110,
 			expectedAvailableMemory: 0,
 		},
 		{
 			name:                    "not enough capacity",
-			numModels:               1100,
-			capacity:                1000,
+			numModels:               110,
+			capacity:                100,
 			expectedAvailableMemory: 0,
 		},
 	}
@@ -263,9 +378,8 @@ func TestConcurrentLoad(t *testing.T) {
 			wg.Add(test.numModels)
 			for i := 0; i < test.numModels; i++ {
 				modelName := getModelId(dummyModelPrefix, i)
-				memBytes := uint64(1)
 				checkerFn := func(wg *sync.WaitGroup, modelName string, modelVersion uint32) {
-					err := manager.unloadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion))
+					err := manager.unloadModelFn(getDummyModelDetailsUnload(modelName, modelVersion))
 					if err != nil {
 						t.Logf("Error %s", err)
 					}
@@ -358,7 +472,7 @@ func TestConcurrentLoadWithVersions(t *testing.T) {
 			wg.Add(test.numModels * numberOfVersionsToAdd)
 
 			checkerFn = func(wg *sync.WaitGroup, modelName string, memBytes uint64, modelVersion uint32) {
-				err := manager.unloadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion))
+				err := manager.unloadModelFn(getDummyModelDetailsUnload(modelName, modelVersion))
 				if err != nil {
 					t.Logf("Error %s", err)
 				}
@@ -386,7 +500,7 @@ func TestDataAndControlPlaneInteractionSmoke(t *testing.T) {
 
 	g := NewGomegaWithT(t)
 
-	numberOfVersionsToAdd := 2
+	numberOfVersionsToAdd := 1
 
 	type test struct {
 		name      string
@@ -396,13 +510,13 @@ func TestDataAndControlPlaneInteractionSmoke(t *testing.T) {
 	tests := []test{
 		{
 			name:      "enough capacity",
-			numModels: 100,
-			capacity:  100 * numberOfVersionsToAdd,
+			numModels: 10,
+			capacity:  10 * numberOfVersionsToAdd,
 		},
 		{
 			name:      "not enough capacity",
-			numModels: 100,
-			capacity:  (100 * numberOfVersionsToAdd) - (numberOfVersionsToAdd * 5),
+			numModels: 10,
+			capacity:  (10 * numberOfVersionsToAdd) - (numberOfVersionsToAdd * 5),
 		},
 	}
 
@@ -435,7 +549,7 @@ func TestDataAndControlPlaneInteractionSmoke(t *testing.T) {
 				case 0:
 					_ = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion))
 				case 1:
-					_ = manager.unloadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion))
+					_ = manager.unloadModelFn(getDummyModelDetailsUnload(modelName, modelVersion))
 				case 2:
 					_ = manager.EnsureLoadModel(modelName) // this can be any model version per test
 				}
@@ -452,15 +566,25 @@ func TestDataAndControlPlaneInteractionSmoke(t *testing.T) {
 			}
 			wg.Wait()
 
+			// we can unload as part of the test
 			g.Expect(manager.availableMemoryBytes).Should(BeNumerically("<=", test.capacity))
 			g.Expect(manager.modelVersions.numModels()).Should(BeNumerically("<=", test.numModels))
+
+			t.Log("Test unload models")
+			for i := 0; i < test.numModels; i++ {
+				modelName := getModelId(dummyModelPrefix, i)
+				for j := 1; j <= numberOfVersionsToAdd; j++ {
+					_ = manager.unloadModelFn(getDummyModelDetailsUnload(modelName, uint32(j)))
+				}
+			}
+			g.Expect(manager.availableMemoryBytes).Should(BeNumerically("==", test.capacity))
+			g.Expect(manager.modelVersions.numModels()).Should(BeNumerically("==", 0))
 
 		})
 	}
 }
 
 func TestControlAndDataPlaneUseCases(t *testing.T) {
-	t.Skip()
 	dummyModelPrefix := "dummy_model"
 
 	g := NewGomegaWithT(t)
@@ -491,6 +615,7 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 		isError                 bool
 		expectedNumModels       int
 		expectedAvailableMemory int64
+		onlyCheckLastErr        bool
 	}
 	tests := []test{
 		{
@@ -500,6 +625,7 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			isError:                 false,
 			expectedNumModels:       2,
 			expectedAvailableMemory: 0,
+			onlyCheckLastErr:        false,
 		},
 		{
 			// there could be a race condition here as the model might not be in
@@ -510,6 +636,7 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			isError:                 false,
 			expectedNumModels:       1,
 			expectedAvailableMemory: 1,
+			onlyCheckLastErr:        false,
 		},
 		{
 			// should be an error because model is unloaded first
@@ -519,6 +646,7 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			isError:                 true,
 			expectedNumModels:       1,
 			expectedAvailableMemory: 1,
+			onlyCheckLastErr:        true,
 		},
 		{
 			name:                    "Infer then Unload (existing model - not in memory)",
@@ -527,6 +655,7 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			isError:                 false,
 			expectedNumModels:       1,
 			expectedAvailableMemory: 1,
+			onlyCheckLastErr:        false,
 		},
 		{
 			name:                    "Infer then Unload other model being evicted",
@@ -535,6 +664,7 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			isError:                 false,
 			expectedNumModels:       1,
 			expectedAvailableMemory: 0,
+			onlyCheckLastErr:        false,
 		},
 		{
 			// note that this can sometimes be true under heavy load
@@ -544,6 +674,7 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			isError:                 false,
 			expectedNumModels:       1,
 			expectedAvailableMemory: 0,
+			onlyCheckLastErr:        true,
 		},
 		{
 			// note only one slot on server so Infer model_0 will evict model_1
@@ -553,6 +684,7 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			isError:                 false,
 			expectedNumModels:       2,
 			expectedAvailableMemory: 0,
+			onlyCheckLastErr:        true,
 		},
 		{
 			name:                    "Infer (model in memory) then Infer (model not in memory)",
@@ -561,6 +693,7 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			isError:                 false,
 			expectedNumModels:       2,
 			expectedAvailableMemory: 0,
+			onlyCheckLastErr:        true,
 		},
 	}
 
@@ -612,7 +745,7 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 				case controlPlaneLoad:
 					errors <- manager.LoadModelVersion(getDummyModelDetails(modelName, memBytes, modelVersion))
 				case controlPlaneUnload:
-					errors <- manager.UnloadModelVersion(getDummyModelDetails(modelName, memBytes, modelVersion))
+					errors <- manager.UnloadModelVersion(getDummyModelDetailsUnload(modelName, modelVersion))
 				case dataPlaneInfer:
 					errors <- manager.EnsureLoadModel(modelName)
 				}
@@ -654,7 +787,11 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 				if err != nil {
 					t.Log(err)
 				}
-				isErrorActual = (err != nil) || isErrorActual
+				if test.onlyCheckLastErr {
+					isErrorActual = (err != nil)
+				} else {
+					isErrorActual = (err != nil) || isErrorActual
+				}
 			}
 
 			g.Expect(isErrorActual).To(Equal(test.isError))

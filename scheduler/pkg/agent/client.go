@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/config"
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 
 	backoff "github.com/cenkalti/backoff/v4"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
@@ -320,6 +321,9 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	}
 	modelName := request.GetModelVersion().GetModel().GetMeta().GetName()
 	modelVersion := request.GetModelVersion().GetVersion()
+	memBytes := request.ModelVersion.GetModel().GetModelSpec().GetMemoryBytes()
+	modelWithVersion := util.GetVersionedModelName(modelName, modelVersion)
+	pinnedModelVersion := util.GetPinnedModelVersion()
 
 	c.stateManager.modelLoadLockCreate(modelName)
 	defer c.stateManager.modelLoadUnlock(modelName)
@@ -334,7 +338,7 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	}
 	// Copy model artifact
 	chosenVersionPath, err := c.ModelRepository.DownloadModelVersion(
-		modelName, modelVersion, request.GetModelVersion().GetModel().GetModelSpec().ArtifactVersion,
+		modelWithVersion, pinnedModelVersion, request.GetModelVersion().GetModel().GetModelSpec().ArtifactVersion,
 		request.GetModelVersion().GetModel().GetModelSpec().Uri, config)
 	if err != nil {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
@@ -342,9 +346,11 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	}
 	logger.Infof("Chose path %s for model %s:%d", *chosenVersionPath, modelName, modelVersion)
 
-	err = c.stateManager.LoadModelVersion(request.GetModelVersion())
+	// TODO: do we need the actual protos being sent
+	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, memBytes, pinnedModelVersion)
+	err = c.stateManager.LoadModelVersion(modifiedModelVersionRequest)
 	if err != nil {
-		c.stateManager.modelVersions.removeModelVersion(request.GetModelVersion())
+		c.stateManager.modelVersions.removeModelVersion(modifiedModelVersionRequest)
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
 		return err
 	}
@@ -360,19 +366,23 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 	}
 	modelName := request.GetModelVersion().GetModel().GetMeta().GetName()
 	modelVersion := request.GetModelVersion().GetVersion()
+	modelWithVersion := util.GetVersionedModelName(modelName, modelVersion)
+	pinnedModelVersion := util.GetPinnedModelVersion()
 
 	c.stateManager.modelLoadLockCreate(modelName)
 	defer c.stateManager.modelLoadUnlock(modelName)
 
 	logger.Infof("Unload model %s:%d", modelName, modelVersion)
 
-	_, err := c.ModelRepository.RemoveModelVersion(modelName, modelVersion)
+	_, err := c.ModelRepository.RemoveModelVersion(modelWithVersion, pinnedModelVersion)
 	if err != nil {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_UNLOAD_FAILED, err)
 		return err
 	}
 
-	if err := c.stateManager.UnloadModelVersion(request.ModelVersion); err != nil {
+	// we do not care about model versions here
+	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, 0, pinnedModelVersion)
+	if err := c.stateManager.UnloadModelVersion(modifiedModelVersionRequest); err != nil {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_UNLOAD_FAILED, err)
 		return err
 	}
@@ -409,4 +419,21 @@ func (c *Client) sendAgentEvent(modelName string, modelVersion uint32, event age
 		AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytes(),
 	})
 	return err
+}
+
+func getModifiedModelVersion(modelId string, memBytes uint64, version uint32) *agent.ModelVersion {
+	meta := pbs.MetaData{
+		Name: modelId,
+	}
+	model := pbs.Model{
+		Meta: &meta,
+		ModelSpec: &pbs.ModelSpec{
+			MemoryBytes: &memBytes,
+		},
+	}
+	mv := agent.ModelVersion{
+		Model:   &model,
+		Version: version,
+	}
+	return &mv
 }

@@ -5,6 +5,7 @@ package agent
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"net"
 	"sync"
 	"time"
@@ -23,7 +24,8 @@ import (
 
 const (
 	ReverseGRPCProxyPort          = 9998
-	grpcProxyMaxConcurrentStreams = 1_000_000
+	grpcProxyMaxConcurrentStreams = 100
+	maxConnsPerHostGRPC           = 100
 )
 
 type reverseGRPCProxy struct {
@@ -34,7 +36,7 @@ type reverseGRPCProxy struct {
 	serverReady           bool
 	backendGRPCServerHost string
 	backendGRPCServerPort uint
-	v2GRPCClient          v2.GRPCInferenceServiceClient
+	v2GRPCClientPool      []v2.GRPCInferenceServiceClient
 	port                  uint // service port
 	mu                    sync.RWMutex
 	metrics               metrics.MetricsHandler
@@ -72,22 +74,19 @@ func (rp *reverseGRPCProxy) Start() error {
 	grpcServer := grpc.NewServer(opts...)
 	v2.RegisterGRPCInferenceServiceServer(grpcServer, rp)
 
-	// TODO: add this to V2Client
-	rp.logger.Infof("Setting grpc v2 client on port %d", rp.backendGRPCServerPort)
+	rp.logger.Infof("Setting grpc v2 client pool on port %d", rp.backendGRPCServerPort)
 
-	conn, err := getConnection(rp.backendGRPCServerHost, int(rp.backendGRPCServerPort))
-
+	conns, clients, err := createV2CRPCClients(rp.backendGRPCServerHost, int(rp.backendGRPCServerPort), maxConnsPerHostGRPC)
 	if err != nil {
-		rp.logger.Error("Cannot dial to backend server (%s)", err)
-		conn.Close()
 		return err
 	}
-	rp.v2GRPCClient = v2.NewGRPCInferenceServiceClient(conn)
+
+	rp.v2GRPCClientPool = clients
 
 	rp.logger.Infof("Starting gRPC listening server on port %d", rp.port)
 	rp.grpcServer = grpcServer
 	go func() {
-		defer conn.Close()
+		defer closeV2CRPCConnections(conns)
 		rp.mu.Lock()
 		rp.serverReady = true
 		rp.mu.Unlock()
@@ -138,13 +137,14 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 		return nil, err
 	}
 	r.ModelName = internalModelName
+	r.ModelVersion = ""
 
 	if err := rp.ensureLoadModel(r.ModelName); err != nil {
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("Model %s not found (err: %s)", r.ModelName, err))
 	}
 
 	startTime := time.Now()
-	resp, err := rp.v2GRPCClient.ModelInfer(ctx, r)
+	resp, err := rp.getV2GRPCClient().ModelInfer(ctx, r)
 	elapsedTime := time.Since(startTime).Seconds()
 	go rp.metrics.AddInferMetrics(internalModelName, externalModelName, metrics.MethodTypeGrpc, elapsedTime)
 	return resp, err
@@ -156,12 +156,13 @@ func (rp *reverseGRPCProxy) ModelMetadata(ctx context.Context, r *v2.ModelMetada
 		return nil, err
 	}
 	r.Name = internalModelName
+	r.Version = ""
 
 	if err := rp.ensureLoadModel(r.Name); err != nil {
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("Model %s not found (err: %s)", r.Name, err))
 	}
 
-	return rp.v2GRPCClient.ModelMetadata(ctx, r)
+	return rp.getV2GRPCClient().ModelMetadata(ctx, r)
 }
 
 func (rp *reverseGRPCProxy) ModelReady(ctx context.Context, r *v2.ModelReadyRequest) (*v2.ModelReadyResponse, error) {
@@ -170,16 +171,47 @@ func (rp *reverseGRPCProxy) ModelReady(ctx context.Context, r *v2.ModelReadyRequ
 		return nil, err
 	}
 	r.Name = internalModelName
+	r.Version = ""
 
 	if err := rp.ensureLoadModel(r.Name); err != nil {
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("Model %s not found (err: %s)", r.Name, err))
 	}
 
-	return rp.v2GRPCClient.ModelReady(ctx, r)
+	return rp.getV2GRPCClient().ModelReady(ctx, r)
 }
 
 func (rp *reverseGRPCProxy) ensureLoadModel(modelId string) error {
 	return rp.stateManager.EnsureLoadModel(modelId)
+}
+
+func (rp *reverseGRPCProxy) getV2GRPCClient() v2.GRPCInferenceServiceClient {
+	i := rand.Intn(len(rp.v2GRPCClientPool))
+	return rp.v2GRPCClientPool[i]
+}
+
+func createV2CRPCClients(backendGRPCServerHost string, backendGRPCServerPort int, size int) ([]*grpc.ClientConn, []v2.GRPCInferenceServiceClient, error) {
+	conns := make([]*grpc.ClientConn, size)
+	clients := make([]v2.GRPCInferenceServiceClient, size)
+	for i := 0; i < size; i++ {
+		conn, err := getConnection(backendGRPCServerHost, backendGRPCServerPort)
+
+		if err != nil {
+			// TODO: this could fail in later iterations, so close earlier connections
+			conn.Close()
+			return nil, nil, err
+		}
+
+		conns[i] = conn
+		clients[i] = v2.NewGRPCInferenceServiceClient(conn)
+	}
+	return conns, clients, nil
+}
+
+func closeV2CRPCConnections(conns []*grpc.ClientConn) {
+	for i := 0; i < len(conns); i++ {
+		// TODO: handle errors in closing connections?
+		_ = conns[i].Close()
+	}
 }
 
 func extractHeader(key string, md metadata.MD) string {

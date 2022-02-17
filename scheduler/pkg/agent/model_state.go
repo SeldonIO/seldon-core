@@ -77,6 +77,21 @@ func (modelState *ModelState) getModelTotalMemoryBytes(modelId string) (uint64, 
 	return versions.totalMemoryBytes, nil
 }
 
+func (modelState *ModelState) getModelVersionMemoryBytes(modelId string, versionId uint32) (uint64, error) {
+	modelState.mu.RLock()
+	defer modelState.mu.RUnlock()
+	versions, ok := modelState.loadedModels[modelId]
+	if !ok {
+		return 0, fmt.Errorf("Model %s details not found", modelId)
+	}
+	versionDetails := versions.getModelVersionDetails(versionId)
+	if versionDetails == nil {
+		return 0, fmt.Errorf("Model %s (version %d) details not found", modelId, versionId)
+	} else {
+		return versionDetails.GetModel().GetModelSpec().GetMemoryBytes(), nil
+	}
+}
+
 func (modelState *ModelState) versionExists(modelId string, versionId uint32) bool {
 	modelState.mu.RLock()
 	defer modelState.mu.RUnlock()
@@ -86,13 +101,6 @@ func (modelState *ModelState) versionExists(modelId string, versionId uint32) bo
 	}
 	versionDetails := versions.getModelVersionDetails(versionId)
 	return versionDetails != nil
-}
-
-func (modelState *ModelState) modelExists(modelId string) bool {
-	modelState.mu.RLock()
-	defer modelState.mu.RUnlock()
-	_, ok := modelState.loadedModels[modelId]
-	return ok
 }
 
 func (modelState *ModelState) numVersions(modelId string) (int, error) {

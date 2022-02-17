@@ -47,7 +47,8 @@ func deleter(jobs <-chan int, wg *sync.WaitGroup, cache *LRUCacheManager) {
 
 func evicter(jobs <-chan int, wg *sync.WaitGroup, cache *LRUCacheManager) {
 	for range jobs {
-		_, _, _ = cache.Evict()
+		k, v, _ := cache.StartEvict()
+		_ = cache.EndEvict(k, v, false)
 		wg.Done()
 	}
 }
@@ -57,7 +58,8 @@ func randomer(jobs <-chan int, wg *sync.WaitGroup, cache *LRUCacheManager) {
 		modelId := fmt.Sprintf("model_%d", i)
 		switch rand.Intn(6) {
 		case 0:
-			_, _, _ = cache.Evict()
+			k, v, _ := cache.StartEvict()
+			_ = cache.EndEvict(k, v, false)
 		case 1:
 			_ = cache.AddDefault(modelId)
 		case 2:
@@ -92,7 +94,8 @@ func createJobs(f fn, numJobs int, numWorkers int, lruCache *LRUCacheManager) {
 func checkEvictOrder(numJobs int, lruCache *LRUCacheManager, g *WithT) {
 	counter := numJobs - 1
 	for {
-		id, value, err := lruCache.Evict()
+		id, value, err := lruCache.StartEvict()
+		_ = lruCache.EndEvict(id, value, false)
 		if err != nil {
 			break
 		}
@@ -246,7 +249,8 @@ func TestPQCacheSmoke(t *testing.T) {
 	g.Expect(priority).To(Equal(int64(7)))
 
 	// evict
-	deleted, deletedValue, _ := lruCache.Evict()
+	deleted, deletedValue, _ := lruCache.StartEvict()
+	_ = lruCache.EndEvict(deleted, deletedValue, false)
 	g.Expect(deleted).To(Equal("model_1"))
 	g.Expect(deletedValue).To(Equal(int64(7)))
 
@@ -267,12 +271,15 @@ func TestLRUCacheSmoke(t *testing.T) {
 	_ = lruCache.AddDefault("model_1")
 	_ = lruCache.AddDefault("model_2")
 	_ = lruCache.UpdateDefault("model_1")
-	deleted, _, _ := lruCache.Evict()
+	deleted, deletedValue, _ := lruCache.StartEvict()
+	_ = lruCache.EndEvict(deleted, deletedValue, false)
 	g.Expect(deleted).To(Equal("model_2"))
 	_ = lruCache.AddDefault("model_3")
-	deleted, _, _ = lruCache.Evict()
+	deleted, deletedValue, _ = lruCache.StartEvict()
+	_ = lruCache.EndEvict(deleted, deletedValue, false)
 	g.Expect(deleted).To(Equal("model_1"))
-	deleted, _, _ = lruCache.Evict()
+	deleted, deletedValue, _ = lruCache.StartEvict()
+	_ = lruCache.EndEvict(deleted, deletedValue, false)
 	g.Expect(deleted).To(Equal("model_3"))
 
 	t.Logf("Done!")
@@ -284,7 +291,7 @@ func TestLRUCacheSmokeEdgeCases(t *testing.T) {
 	//add new/update item with default priority
 	lruCache := MakeLRU(map[string]int64{})
 
-	_, _, err := lruCache.Evict()
+	_, _, err := lruCache.StartEvict()
 	g.Expect(err).ToNot(BeNil())
 
 	err = lruCache.Delete("model_1")
@@ -307,4 +314,65 @@ func TestLRUCacheSmokeEdgeCases(t *testing.T) {
 	g.Expect(err).ToNot(BeNil()) // error, empty id
 
 	t.Logf("Done!")
+}
+
+func TestLRUCacheEvictTransaction(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name     string
+		rollback bool
+	}
+	tests := []test{
+		{name: "evicted_rollback", rollback: true},
+		{name: "evicted_ok", rollback: false},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			id := "dummy_1"
+
+			lruCache := MakeLRU(map[string]int64{})
+			_ = lruCache.AddDefault(id)
+
+			result := make(chan bool, 1)
+
+			_, _, _ = lruCache.StartEvict() // only one model really
+			go func(r chan<- bool) {
+				r <- lruCache.Exists(id)
+			}(result)
+
+			_ = lruCache.EndEvict(id, 0, test.rollback)
+
+			actualResult := <-result
+			g.Expect(actualResult).To(Equal(test.rollback))
+
+		})
+	}
+}
+
+func TestLRUCacheEvictTransactionEdgeCases(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	id := "model_1"
+
+	lruCache := MakeLRU(map[string]int64{})
+	_ = lruCache.AddDefault(id)
+
+	_, _, err := lruCache.StartEvict()
+	g.Expect(err).To(BeNil()) // no error here
+
+	_, _, err = lruCache.StartEvict()
+	g.Expect(err).To(Equal(fmt.Errorf("empty cache, cannot evict"))) // err because cache is empty
+
+	_ = lruCache.EndEvict(id, 0, true) // rollback
+	id2, _, _ := lruCache.StartEvict()
+	g.Expect(id2).To(Equal(id)) // get the same id back now
+
+	err = lruCache.EndEvict(id, 0, false)
+	g.Expect(err).To(BeNil()) // no error here
+	err = lruCache.EndEvict(id, 0, false)
+	g.Expect(err).ToNot(BeNil()) // error because item is not dirty anymore
+
+	g.Expect(lruCache.Exists(id)).To(Equal(false))
 }

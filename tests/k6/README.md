@@ -4,6 +4,8 @@
  
 ## Setup
 
+ * Install K6
+   * [link](https://k6.io/docs/getting-started/installation/)
  * Local testing
    * `make docker-build-all`
    * `make start-all-mlserver` or `make start-all-triton`
@@ -17,6 +19,18 @@
 
 ```
 INFER_HTTP_ITERATIONS=10 SKIP_UNLOAD_MODEL=1 MODEL_TYPE="tfsimple" k6 run -u 10 -i 500 --http-debug --log-output=stdout scenarios/load_predict_unload.js > log.txt
+```
+
+For isolated agent test (influxdb - grafana)
+
+```
+sudo service influxdb start
+sudo /bin/systemctl start grafana-server
+
+
+SCHEDULER_ENDPOINT=0.0.0.0:8100 INFER_GRPC_ENDPOINT=0.0.0.0:8081 INFER_HTTP_ENDPOINT=http://0.0.0.0:8080 INFER_HTTP_ITERATIONS=1 INFER_GRPC_ITERATIONS=1 MODEL_TYPE="iris" MAX_NUM_MODELS=10 k6 run -u 1 -i 10 --http-debug --out influxdb=http://localhost:8086/k6db scenarios/predict_agent.js
+
+SCHEDULER_ENDPOINT=0.0.0.0:8100 INFER_GRPC_ENDPOINT=0.0.0.0:9998 INFER_HTTP_ENDPOINT=http://0.0.0.0:9999 INFER_HTTP_ITERATIONS=1 INFER_GRPC_ITERATIONS=1 MODEL_TYPE="iris" MAX_NUM_MODELS=10 k6 run -u 1 -i 10 --http-debug --out influxdb=http://localhost:8086/k6db scenarios/predict_agent.js
 ```
 
 For k8s you will need to update the default endpoints to the services exposed, e.g.

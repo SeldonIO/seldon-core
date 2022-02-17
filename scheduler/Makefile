@@ -30,7 +30,7 @@ lint: ## Run go linters against code.
 	golangci-lint run --fix
 
 test:
-	go test ./pkg/... -coverprofile cover.out
+	go test -v ./pkg/... -coverprofile cover.out
 
 
 #####################################

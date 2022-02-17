@@ -20,6 +20,7 @@ import (
 
 	matcher "github.com/envoyproxy/go-control-plane/envoy/config/common/matcher/v3"
 	envoy_extensions_common_tap_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/common/tap/v3"
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
 
@@ -139,8 +140,14 @@ func createWeightedClusterAction(clusterTraffics []TrafficSplits, rest bool) *ro
 				RequestHeadersToAdd: []*core.HeaderValueOption{
 					{
 						Header: &core.HeaderValue{
-							Key:   SeldonInternalModel,
-							Value: clusterTraffic.ModelName,
+							Key: SeldonInternalModel,
+							// note: this is implementation specific for agent and it is exposed here
+							// basically the model versions are flattened and it is loaded as
+							// <model_name>_<model_version>
+							// TODO: is there a nicer way of doing it?
+							// check client.go for how different model versions are treated internally
+							Value: util.GetVersionedModelName(
+								clusterTraffic.ModelName, clusterTraffic.ModelVersion),
 						},
 					},
 				},
