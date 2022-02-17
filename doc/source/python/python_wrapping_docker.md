@@ -76,6 +76,9 @@ EXPOSE 9000
 ENV MODEL_NAME MyModel
 ENV SERVICE_TYPE MODEL
 
+# Changing folder to default user
+RUN chown -R 8888 /app
+
 CMD exec seldon-core-microservice $MODEL_NAME --service-type $SERVICE_TYPE
 ```
 
