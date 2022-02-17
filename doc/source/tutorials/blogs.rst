@@ -17,7 +17,6 @@ Blog articles featuring different use cases of Seldon:
    Scalable Data Science - The State of DevOps/MLOps in 2018 <https://axsaucedo.github.io/scalable-data-science/#/>
    Overview of Openshift source-to-image use in Seldon-Core <openshift_s2i.md>
    CartPole game by Reinforcement Learning <https://github.com/hypnosapos/cartpole-rl-remote/>
-   Clear Linux Deep Learning Reference Stack <https://docs.01.org/clearlinux/latest/guides/stacks/dlrs-inference.html>
    MLOps: The end of end-to-end <https://www.mosaicventures.com/mosaicblog/2020/2/20/mlops-the-end-of-end-to-end>
    What would machine learning look like if you mixed in DevOps? <https://www.theregister.co.uk/2020/03/07/devops_machine_learning_mlops/>
    [Archive] Move Fast and Break Things? The AI Governance Dilemma <https://web.archive.org/web/20200212160350/https://hackernoon.com/move-fast-and-break-things-the-ai-governance-dilemma-dsq32ix>
