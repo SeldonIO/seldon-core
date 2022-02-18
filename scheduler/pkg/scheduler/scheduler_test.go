@@ -126,7 +126,7 @@ func TestScheduler(t *testing.T) {
 			servers: []*store.ServerSnapshot{
 				{
 					Name:             "server1",
-					Replicas:         map[int]*store.ServerReplica{0: gsr(0, 200, []string{"sklearn"})},
+					Replicas:         map[int]*store.ServerReplica{0: gsr(0, 200, []string{"sklearn"})}, // expect schedule here
 					Shared:           true,
 					ExpectedReplicas: -1,
 				},
@@ -148,8 +148,8 @@ func TestScheduler(t *testing.T) {
 				{
 					Name: "server2",
 					Replicas: map[int]*store.ServerReplica{
-						0: gsr(0, 200, []string{"sklearn"}),
-						1: gsr(1, 200, []string{"sklearn"}),
+						0: gsr(0, 200, []string{"sklearn"}), // expect schedule here
+						1: gsr(1, 200, []string{"sklearn"}), // expect schedule here
 					},
 					Shared:           true,
 					ExpectedReplicas: -1,
@@ -194,7 +194,7 @@ func TestScheduler(t *testing.T) {
 				{
 					Name: "server2",
 					Replicas: map[int]*store.ServerReplica{
-						0: gsr(0, 200, []string{"sklearn"}),
+						0: gsr(0, 200, []string{"sklearn"}), // expect schedule here
 					},
 					Shared:           true,
 					ExpectedReplicas: -1,
@@ -217,8 +217,8 @@ func TestScheduler(t *testing.T) {
 				{
 					Name: "server2",
 					Replicas: map[int]*store.ServerReplica{
-						0: gsr(0, 200, []string{"sklearn"}),
-						1: gsr(1, 200, []string{"sklearn"}),
+						0: gsr(0, 200, []string{"sklearn"}), // expect schedule here
+						1: gsr(1, 200, []string{"sklearn"}), // expect schedule here
 					},
 					Shared:           true,
 					ExpectedReplicas: -1,
@@ -259,7 +259,7 @@ func TestScheduler(t *testing.T) {
 				{
 					Name: "server2",
 					Replicas: map[int]*store.ServerReplica{
-						0: gsr(0, 200, []string{"sklearn"}),
+						0: gsr(0, 200, []string{"sklearn"}), // expect schedule here
 						1: gsr(1, 200, []string{"sklearn"}),
 					},
 					Shared:           true,
@@ -283,7 +283,7 @@ func TestScheduler(t *testing.T) {
 				{
 					Name: "server2",
 					Replicas: map[int]*store.ServerReplica{
-						0: gsr(0, 200, []string{"sklearn"}),
+						0: gsr(0, 200, []string{"sklearn"}), // expect schedule here
 						1: gsr(1, 200, []string{"sklearn"}),
 					},
 					Shared:           true,
@@ -306,6 +306,43 @@ func TestScheduler(t *testing.T) {
 				},
 			},
 			scheduled: false,
+		},
+		{
+			name:  "Available memory sorting",
+			model: newTestModel("model1", 100, []string{"sklearn"}, nil, 1, []int{1}, false, ""),
+			servers: []*store.ServerSnapshot{
+				{
+					Name: "server2",
+					Replicas: map[int]*store.ServerReplica{
+						0: gsr(0, 150, []string{"sklearn"}),
+						1: gsr(1, 200, []string{"sklearn"}), // expect schedule here
+					},
+					Shared:           true,
+					ExpectedReplicas: -1,
+				},
+			},
+			scheduled:         true,
+			scheduledServer:   "server2",
+			scheduledReplicas: []int{1},
+		},
+		{
+			name:  "Available memory sorting with multiple replicas",
+			model: newTestModel("model1", 100, []string{"sklearn"}, nil, 2, []int{1}, false, ""),
+			servers: []*store.ServerSnapshot{
+				{
+					Name: "server2",
+					Replicas: map[int]*store.ServerReplica{
+						0: gsr(0, 150, []string{"sklearn"}),
+						1: gsr(1, 200, []string{"sklearn"}), //expect schedule here
+						2: gsr(2, 175, []string{"sklearn"}), //expect schedule here
+					},
+					Shared:           true,
+					ExpectedReplicas: -1,
+				},
+			},
+			scheduled:         true,
+			scheduledServer:   "server2",
+			scheduledReplicas: []int{1, 2},
 		},
 	}
 

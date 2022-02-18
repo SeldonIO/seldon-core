@@ -1,5 +1,6 @@
 package sorters
 
+// Rationale - put models on replicas with more memory
 type AvailableMemorySorter struct{}
 
 func (m AvailableMemorySorter) Name() string {
