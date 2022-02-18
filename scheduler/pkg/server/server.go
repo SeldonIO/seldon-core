@@ -114,8 +114,8 @@ func (s *SchedulerServer) rescheduleModels(serverKey string) {
 	}
 	models := make(map[string]bool)
 	for _, replica := range server.Replicas {
-		for _, model := range replica.GetLoadedModels() {
-			models[model] = true
+		for _, model := range replica.GetLoadedModelVersions() {
+			models[model.Name] = true
 		}
 	}
 	for model := range models {
@@ -234,13 +234,14 @@ func (s *SchedulerServer) ServerStatus(ctx context.Context, reference *pb.Server
 
 	var totalModels int32
 	for _, replica := range server.Replicas {
-		totalModels = totalModels + int32(len(replica.GetLoadedModels()))
+		numLoadedModelsOnReplica := int32(replica.GetNumLoadedModels())
 		ss.Resources = append(ss.Resources, &pb.ServerReplicaResources{
 			ReplicaIdx:           uint32(replica.GetReplicaIdx()),
 			TotalMemoryBytes:     replica.GetMemory(),
 			AvailableMemoryBytes: replica.GetAvailableMemory(),
-			NumLoadedModels:      int32(len(replica.GetLoadedModels())),
+			NumLoadedModels:      numLoadedModelsOnReplica,
 		})
+		totalModels = totalModels + numLoadedModelsOnReplica
 	}
 	ss.NumLoadedModelReplicas = totalModels
 	return ss, nil

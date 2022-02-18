@@ -102,8 +102,10 @@ func (p *IncrementalProcessor) updateEnvoy() error {
 }
 
 func (p *IncrementalProcessor) removeModelForServerInEnvoy(modelName string) error {
+	logger := p.logger.WithField("func", "removeModelForServerInEnvoy")
 	err := p.xdsCache.RemoveRoute(modelName)
 	if err != nil {
+		logger.Debugf("Failed to remove route for %s", modelName)
 		return err
 	}
 	return p.updateEnvoy()
@@ -119,7 +121,7 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelName string, mode
 	clusterNameBase := server.Name + "_" + computeHashKeyForList(assignment)
 	httpClusterName := clusterNameBase + "_http"
 	grpcClusterName := clusterNameBase + "_grpc"
-	p.xdsCache.AddCluster(httpClusterName, modelName, false)
+	p.xdsCache.AddCluster(httpClusterName, modelName, modelVersion.GetVersion(), false)
 	for _, replicaIdx := range assignment {
 		replica, ok := server.Replicas[replicaIdx]
 		if !ok {
@@ -128,7 +130,7 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelName string, mode
 			p.xdsCache.AddEndpoint(httpClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceHttpPort()))
 		}
 	}
-	p.xdsCache.AddCluster(grpcClusterName, modelName, true)
+	p.xdsCache.AddCluster(grpcClusterName, modelName, modelVersion.GetVersion(), true)
 	for _, replicaIdx := range assignment {
 		replica, ok := server.Replicas[replicaIdx]
 		if !ok {
@@ -172,8 +174,11 @@ func (p *IncrementalProcessor) Sync(modelName string) error {
 	}
 
 	// Remove routes before we recreate
+	// This could be inefficient
+	// TODO make update incremental?
 	err = p.xdsCache.RemoveRoute(modelName)
 	if err != nil {
+		logger.Debugf("Failed to remove route before starting update for %s", modelName)
 		return err
 	}
 	// Update last Available version

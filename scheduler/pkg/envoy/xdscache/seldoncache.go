@@ -111,17 +111,17 @@ func (xds *SeldonXDSCache) AddRouteClusterTraffic(modelName string, modelVersion
 	xds.Routes[modelName] = route
 }
 
-func (xds *SeldonXDSCache) AddCluster(name string, modelName string, isGrpc bool) {
+func (xds *SeldonXDSCache) AddCluster(name string, modelName string, modelVersion uint32, isGrpc bool) {
 	cluster, ok := xds.Clusters[name]
 	if !ok {
 		cluster = resources.Cluster{
 			Name:      name,
 			Endpoints: make(map[string]resources.Endpoint),
-			Routes:    make(map[string]bool),
+			Routes:    make(map[resources.ModelVersionKey]bool),
 			Grpc:      isGrpc,
 		}
 	}
-	cluster.Routes[modelName] = true
+	cluster.Routes[resources.ModelVersionKey{Name: modelName, Version: modelVersion}] = true
 	xds.Clusters[name] = cluster
 }
 
@@ -139,7 +139,7 @@ func (xds *SeldonXDSCache) RemoveRoute(modelName string) error {
 		if !ok {
 			return fmt.Errorf("Can't find http cluster for model %s route %+v", modelName, route)
 		}
-		delete(httpCluster.Routes, route.ModelName)
+		delete(httpCluster.Routes, resources.ModelVersionKey{Name: route.ModelName, Version: cluster.ModelVersion})
 		if len(httpCluster.Routes) == 0 {
 			delete(xds.Clusters, cluster.HttpCluster)
 		}
@@ -148,7 +148,7 @@ func (xds *SeldonXDSCache) RemoveRoute(modelName string) error {
 		if !ok {
 			return fmt.Errorf("Can't find grpc cluster for model %s", modelName)
 		}
-		delete(grpcCluster.Routes, route.ModelName)
+		delete(grpcCluster.Routes, resources.ModelVersionKey{Name: route.ModelName, Version: cluster.ModelVersion})
 		if len(grpcCluster.Routes) == 0 {
 			delete(xds.Clusters, cluster.GrpcCluster)
 		}

@@ -21,11 +21,16 @@ type TrafficSplits struct {
 	GrpcCluster    string
 }
 
+type ModelVersionKey struct {
+	Name    string
+	Version uint32
+}
+
 type Cluster struct {
 	Name      string
 	Grpc      bool
 	Endpoints map[string]Endpoint
-	Routes    map[string]bool
+	Routes    map[ModelVersionKey]bool
 }
 
 type Endpoint struct {

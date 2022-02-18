@@ -1,6 +1,7 @@
 package store
 
 import (
+	"fmt"
 	"time"
 
 	pba "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
@@ -25,6 +26,15 @@ func NewLocalSchedulerStore() *LocalSchedulerStore {
 type Model struct {
 	versions []*ModelVersion
 	deleted  bool
+}
+
+type ModelVersionID struct {
+	Name    string
+	Version uint32
+}
+
+func (mv *ModelVersionID) String() string {
+	return fmt.Sprintf("%s:%d", mv.Name, mv.Version)
 }
 
 type ModelVersion struct {
@@ -105,7 +115,7 @@ type ServerReplica struct {
 	capabilities      []string
 	memory            uint64
 	availableMemory   uint64
-	loadedModels      map[string]bool
+	loadedModels      map[ModelVersionID]bool
 	overCommit        bool
 }
 
@@ -117,7 +127,7 @@ func NewServerReplica(inferenceSvc string,
 	capabilities []string,
 	memory uint64,
 	availableMemory uint64,
-	loadedModels map[string]bool,
+	loadedModels map[ModelVersionID]bool,
 	overCommit bool) *ServerReplica {
 	return &ServerReplica{
 		inferenceSvc:      inferenceSvc,
@@ -133,7 +143,7 @@ func NewServerReplica(inferenceSvc string,
 	}
 }
 
-func NewServerReplicaFromConfig(server *Server, replicaIdx int, loadedModels map[string]bool, config *pba.ReplicaConfig, availableMemoryBytes uint64) *ServerReplica {
+func NewServerReplicaFromConfig(server *Server, replicaIdx int, loadedModels map[ModelVersionID]bool, config *pba.ReplicaConfig, availableMemoryBytes uint64) *ServerReplica {
 	return &ServerReplica{
 		inferenceSvc:      config.GetInferenceSvc(),
 		inferenceHttpPort: config.GetInferenceHttpPort(),
@@ -443,12 +453,20 @@ func (s *Server) GetReplicaInferenceHttpPort(idx int) int32 {
 	return s.replicas[idx].inferenceHttpPort
 }
 
-func (s *ServerReplica) GetLoadedModels() []string {
-	var models []string
+func (s *ServerReplica) GetLoadedModelVersions() []ModelVersionID {
+	var models []ModelVersionID
 	for model := range s.loadedModels {
 		models = append(models, model)
 	}
 	return models
+}
+
+func (s *ServerReplica) GetNumLoadedModels() int {
+	modelMap := make(map[string]bool)
+	for model := range s.loadedModels {
+		modelMap[model.Name] = true
+	}
+	return len(modelMap)
 }
 
 func (s *ServerReplica) GetAvailableMemory() uint64 {

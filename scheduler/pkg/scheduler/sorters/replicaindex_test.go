@@ -28,9 +28,9 @@ func TestReplicaIndexSorter(t *testing.T) {
 		{
 			name: "OrderByIndex",
 			replicas: []*CandidateReplica{
-				{Model: model, Replica: store.NewServerReplica("", 8080, 5001, 20, nil, []string{}, 100, 200, map[string]bool{}, true)},
-				{Model: model, Replica: store.NewServerReplica("", 8080, 5001, 10, nil, []string{}, 100, 100, map[string]bool{}, true)},
-				{Model: model, Replica: store.NewServerReplica("", 8080, 5001, 30, nil, []string{}, 100, 150, map[string]bool{}, true)},
+				{Model: model, Replica: store.NewServerReplica("", 8080, 5001, 20, nil, []string{}, 100, 200, map[store.ModelVersionID]bool{}, true)},
+				{Model: model, Replica: store.NewServerReplica("", 8080, 5001, 10, nil, []string{}, 100, 100, map[store.ModelVersionID]bool{}, true)},
+				{Model: model, Replica: store.NewServerReplica("", 8080, 5001, 30, nil, []string{}, 100, 150, map[store.ModelVersionID]bool{}, true)},
 			},
 			ordering: []int{10, 20, 30},
 		},

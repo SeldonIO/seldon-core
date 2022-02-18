@@ -321,6 +321,9 @@ func (m *MemoryStore) UpdateModelState(modelKey string, version uint32, serverKe
 	}
 
 	if !ok || existingState.State != desiredState {
+		latestModel := model.Latest()
+		isLatest := latestModel.GetVersion() == modelVersion.GetVersion()
+
 		modelVersion.replicas[replicaIdx] = ReplicaStatus{State: desiredState, Reason: reason, Timestamp: time.Now()}
 		logger.Debugf("Setting model %s version %d on server %s replica %d to %s", modelKey, version, serverKey, replicaIdx, desiredState.String())
 		// Update models loaded onto replica if loaded or unloaded is state
@@ -330,9 +333,11 @@ func (m *MemoryStore) UpdateModelState(modelKey string, version uint32, serverKe
 				replica, ok := server.replicas[replicaIdx]
 				if ok {
 					if desiredState == Loaded {
-						replica.loadedModels[modelKey] = true
+						logger.Infof("Adding model %s(%d) to server %s replica %d list of loaded models", modelKey, version, serverKey, replicaIdx)
+						replica.loadedModels[ModelVersionID{Name: modelKey, Version: version}] = true
 					} else {
-						delete(replica.loadedModels, modelKey)
+						logger.Infof("Removing model %s(%d) from server %s replica %d list of loaded models", modelKey, version, serverKey, replicaIdx)
+						delete(replica.loadedModels, ModelVersionID{Name: modelKey, Version: version})
 					}
 				}
 			}
@@ -340,8 +345,6 @@ func (m *MemoryStore) UpdateModelState(modelKey string, version uint32, serverKe
 		if availableMemory != nil {
 			server.replicas[replicaIdx].availableMemory = *availableMemory
 		}
-		latestModel := model.Latest()
-		isLatest := latestModel.GetVersion() == modelVersion.GetVersion()
 
 		m.updateModelStatus(isLatest, model.IsDeleted(), modelVersion, model.GetLastAvailableModelVersion())
 	}
@@ -360,9 +363,10 @@ func (m *MemoryStore) AddServerReplica(request *agent.AgentSubscribeRequest) err
 	}
 	server.shared = request.Shared
 
-	loadedModels := make(map[string]bool)
+	loadedModels := make(map[ModelVersionID]bool)
 	for _, modelVersionReq := range request.LoadedModels {
-		loadedModels[modelVersionReq.GetModel().GetMeta().GetName()] = true
+		key := ModelVersionID{Name: modelVersionReq.GetModel().GetMeta().GetName(), Version: modelVersionReq.GetVersion()}
+		loadedModels[key] = true
 	}
 	serverReplica := NewServerReplicaFromConfig(server, int(request.ReplicaIdx), loadedModels, request.ReplicaConfig, request.AvailableMemoryBytes)
 	server.replicas[int(request.ReplicaIdx)] = serverReplica
@@ -378,6 +382,7 @@ func (m *MemoryStore) AddServerReplica(request *agent.AgentSubscribeRequest) err
 }
 
 func (m *MemoryStore) RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) {
+	logger := m.logger.WithField("func", "RemoveServerReplica")
 	server, ok := m.store.servers[serverName]
 	if !ok {
 		return nil, fmt.Errorf("Failed to find server %s", serverName)
@@ -393,16 +398,18 @@ func (m *MemoryStore) RemoveServerReplica(serverName string, replicaIdx int) ([]
 			delete(m.store.servers, serverName)
 		}
 		var modelNames []string
-		for modelName := range serverReplica.loadedModels {
-			model, ok := m.store.models[modelName]
+		// Find models to reschedule due to this server replica being removed
+		for modelVersionID := range serverReplica.loadedModels {
+			model, ok := m.store.models[modelVersionID.Name]
 			if ok {
-				latestVersion := model.Latest()
-				if latestVersion != nil {
-					//latestVersion.replicas[replicaIdx] = ModelReplicaStateUnknown
-					delete(latestVersion.replicas, replicaIdx)
+				modelVersion := model.GetVersion(modelVersionID.Version)
+				if modelVersion != nil {
+					delete(modelVersion.replicas, replicaIdx)
+					modelNames = append(modelNames, modelVersionID.Name)
+				} else {
+					logger.Warnf("Can't find model version %s", modelVersionID.String())
 				}
 			}
-			modelNames = append(modelNames, modelName)
 		}
 		return modelNames, nil
 	} else {

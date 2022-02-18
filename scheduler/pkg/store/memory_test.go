@@ -558,18 +558,19 @@ func TestUpdateModelState(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name            string
-		store           *LocalSchedulerStore
-		modelKey        string
-		version         uint32
-		serverKey       string
-		replicaIdx      int
-		expectedState   ModelReplicaState
-		desiredState    ModelReplicaState
-		availableMemory uint64
-		loaded          bool
-		deleted         bool
-		err             bool
+		name                   string
+		store                  *LocalSchedulerStore
+		modelKey               string
+		version                uint32
+		serverKey              string
+		replicaIdx             int
+		expectedState          ModelReplicaState
+		desiredState           ModelReplicaState
+		availableMemory        uint64
+		numModelVersionsLoaded int
+		modelVersionLoaded     bool
+		deleted                bool
+		err                    bool
 	}
 
 	tests := []test{
@@ -588,20 +589,21 @@ func TestUpdateModelState(t *testing.T) {
 					"server": {
 						name: "server",
 						replicas: map[int]*ServerReplica{
-							0: {loadedModels: map[string]bool{}},
-							1: {loadedModels: map[string]bool{}},
+							0: {loadedModels: map[ModelVersionID]bool{}},
+							1: {loadedModels: map[ModelVersionID]bool{}},
 						},
 					},
 				},
 			},
-			modelKey:        "model",
-			version:         1,
-			serverKey:       "server",
-			replicaIdx:      0,
-			expectedState:   ModelReplicaStateUnknown,
-			desiredState:    Loaded,
-			loaded:          true,
-			availableMemory: 20,
+			modelKey:               "model",
+			version:                1,
+			serverKey:              "server",
+			replicaIdx:             0,
+			expectedState:          ModelReplicaStateUnknown,
+			desiredState:           Loaded,
+			numModelVersionsLoaded: 1,
+			modelVersionLoaded:     true,
+			availableMemory:        20,
 		},
 		{
 			name: "UnloadedModel",
@@ -618,20 +620,21 @@ func TestUpdateModelState(t *testing.T) {
 					"server": {
 						name: "server",
 						replicas: map[int]*ServerReplica{
-							0: {loadedModels: map[string]bool{}},
-							1: {loadedModels: map[string]bool{}},
+							0: {loadedModels: map[ModelVersionID]bool{}},
+							1: {loadedModels: map[ModelVersionID]bool{}},
 						},
 					},
 				},
 			},
-			modelKey:        "model",
-			version:         1,
-			serverKey:       "server",
-			replicaIdx:      0,
-			expectedState:   ModelReplicaStateUnknown,
-			desiredState:    Unloaded,
-			loaded:          false,
-			availableMemory: 20,
+			modelKey:               "model",
+			version:                1,
+			serverKey:              "server",
+			replicaIdx:             0,
+			expectedState:          ModelReplicaStateUnknown,
+			desiredState:           Unloaded,
+			numModelVersionsLoaded: 0,
+			modelVersionLoaded:     false,
+			availableMemory:        20,
 		},
 		{
 			name: "Unloaded model but not matching expected state",
@@ -650,21 +653,22 @@ func TestUpdateModelState(t *testing.T) {
 					"server": {
 						name: "server",
 						replicas: map[int]*ServerReplica{
-							0: {loadedModels: map[string]bool{}},
-							1: {loadedModels: map[string]bool{}},
+							0: {loadedModels: map[ModelVersionID]bool{}},
+							1: {loadedModels: map[ModelVersionID]bool{}},
 						},
 					},
 				},
 			},
-			modelKey:        "model",
-			version:         1,
-			serverKey:       "server",
-			replicaIdx:      0,
-			expectedState:   Unloading,
-			desiredState:    Unloaded,
-			loaded:          false,
-			availableMemory: 20,
-			err:             true,
+			modelKey:               "model",
+			version:                1,
+			serverKey:              "server",
+			replicaIdx:             0,
+			expectedState:          Unloading,
+			desiredState:           Unloaded,
+			numModelVersionsLoaded: 0,
+			modelVersionLoaded:     false,
+			availableMemory:        20,
+			err:                    true,
 		},
 		{
 			name: "DeletedModel",
@@ -682,21 +686,102 @@ func TestUpdateModelState(t *testing.T) {
 					"server": {
 						name: "server",
 						replicas: map[int]*ServerReplica{
-							0: {loadedModels: map[string]bool{}},
-							1: {loadedModels: map[string]bool{}},
+							0: {loadedModels: map[ModelVersionID]bool{}},
+							1: {loadedModels: map[ModelVersionID]bool{}},
 						},
 					},
 				},
 			},
-			modelKey:        "model",
-			version:         1,
-			serverKey:       "server",
-			replicaIdx:      0,
-			expectedState:   ModelReplicaStateUnknown,
-			desiredState:    Unloaded,
-			loaded:          false,
-			availableMemory: 20,
-			deleted:         true,
+			modelKey:               "model",
+			version:                1,
+			serverKey:              "server",
+			replicaIdx:             0,
+			expectedState:          ModelReplicaStateUnknown,
+			desiredState:           Unloaded,
+			numModelVersionsLoaded: 0,
+			modelVersionLoaded:     false,
+			availableMemory:        20,
+			deleted:                true,
+		},
+		{
+			name: "Model updated butnot latest on replica which is loaded",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"foo": &Model{
+					versions: []*ModelVersion{
+						{
+							version: 1,
+							replicas: map[int]ReplicaStatus{
+								0: {State: Unloading},
+							},
+						},
+						{
+							version: 2,
+							replicas: map[int]ReplicaStatus{
+								0: {State: Loaded},
+							},
+						},
+					},
+				}},
+				servers: map[string]*Server{
+					"server": {
+						name: "server",
+						replicas: map[int]*ServerReplica{
+							0: {loadedModels: map[ModelVersionID]bool{ModelVersionID{Name: "foo", Version: 2}: true, ModelVersionID{Name: "foo", Version: 1}: true}},
+							1: {loadedModels: map[ModelVersionID]bool{}},
+						},
+					},
+				},
+			},
+			modelKey:               "foo",
+			version:                1,
+			serverKey:              "server",
+			replicaIdx:             0,
+			expectedState:          Unloading,
+			desiredState:           Unloaded,
+			numModelVersionsLoaded: 1,
+			modelVersionLoaded:     false,
+			availableMemory:        20,
+			err:                    false,
+		},
+		{
+			name: "Model updated butnot latest on replica which is Available",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"foo": &Model{
+					versions: []*ModelVersion{
+						{
+							version: 1,
+							replicas: map[int]ReplicaStatus{
+								0: {State: Unloading},
+							},
+						},
+						{
+							version: 2,
+							replicas: map[int]ReplicaStatus{
+								0: {State: Available},
+							},
+						},
+					},
+				}},
+				servers: map[string]*Server{
+					"server": {
+						name: "server",
+						replicas: map[int]*ServerReplica{
+							0: {loadedModels: map[ModelVersionID]bool{ModelVersionID{Name: "foo", Version: 2}: true, ModelVersionID{Name: "foo", Version: 1}: true}},
+							1: {loadedModels: map[ModelVersionID]bool{}},
+						},
+					},
+				},
+			},
+			modelKey:               "foo",
+			version:                1,
+			serverKey:              "server",
+			replicaIdx:             0,
+			expectedState:          Unloading,
+			desiredState:           Unloaded,
+			numModelVersionsLoaded: 1,
+			modelVersionLoaded:     false,
+			availableMemory:        20,
+			err:                    false,
 		},
 	}
 
@@ -708,8 +793,9 @@ func TestUpdateModelState(t *testing.T) {
 			if !test.err {
 				g.Expect(err).To(BeNil())
 				if !test.deleted {
-					g.Expect(test.store.models[test.modelKey].Latest().GetModelReplicaState(test.replicaIdx)).To(Equal(test.desiredState))
-					g.Expect(test.store.servers[test.serverKey].replicas[test.replicaIdx].loadedModels[test.modelKey]).To(Equal(test.loaded))
+					g.Expect(test.store.models[test.modelKey].GetVersion(test.version).GetModelReplicaState(test.replicaIdx)).To(Equal(test.desiredState))
+					g.Expect(test.store.servers[test.serverKey].replicas[test.replicaIdx].loadedModels[ModelVersionID{Name: test.modelKey, Version: test.version}]).To(Equal(test.modelVersionLoaded))
+					g.Expect(test.store.servers[test.serverKey].replicas[test.replicaIdx].GetNumLoadedModels()).To(Equal(test.numModelVersionsLoaded))
 				} else {
 					//g.Expect(test.store.models[test.modelKey]).To(BeNil())
 					g.Expect(test.store.models[test.modelKey].Latest().state.State).To(Equal(ModelTerminated))
@@ -1150,7 +1236,7 @@ func TestRemoveServerReplica(t *testing.T) {
 					"server1": {
 						name: "server1",
 						replicas: map[int]*ServerReplica{
-							0: {loadedModels: map[string]bool{"model1": true}},
+							0: {loadedModels: map[ModelVersionID]bool{ModelVersionID{Name: "model1", Version: 1}: true}},
 							1: {},
 						},
 						expectedReplicas: 2,
@@ -1166,11 +1252,20 @@ func TestRemoveServerReplica(t *testing.T) {
 		{
 			name: "ReplicaRemovedAndDeleted",
 			store: &LocalSchedulerStore{
+				models: map[string]*Model{
+					"model1": {
+						versions: []*ModelVersion{
+							{
+								version: 1,
+							},
+						},
+					},
+				},
 				servers: map[string]*Server{
 					"server1": {
 						name: "server1",
 						replicas: map[int]*ServerReplica{
-							0: {loadedModels: map[string]bool{"model1": true}},
+							0: {loadedModels: map[ModelVersionID]bool{ModelVersionID{Name: "model1", Version: 1}: true}},
 							1: {},
 						},
 						expectedReplicas: -1,
@@ -1186,11 +1281,20 @@ func TestRemoveServerReplica(t *testing.T) {
 		{
 			name: "ReplicaRemovedAndServerDeleted",
 			store: &LocalSchedulerStore{
+				models: map[string]*Model{
+					"model1": {
+						versions: []*ModelVersion{
+							{
+								version: 1,
+							},
+						},
+					},
+				},
 				servers: map[string]*Server{
 					"server1": {
 						name: "server1",
 						replicas: map[int]*ServerReplica{
-							0: {loadedModels: map[string]bool{"model1": true}},
+							0: {loadedModels: map[ModelVersionID]bool{ModelVersionID{Name: "model1", Version: 1}: true}},
 						},
 						expectedReplicas: 0,
 						shared:           true,
@@ -1202,6 +1306,25 @@ func TestRemoveServerReplica(t *testing.T) {
 			serverExists:   false,
 			modelsReturned: 1,
 		},
+		{
+			name: "ReplicaRemovedAndServerDeleted but no model version in store",
+			store: &LocalSchedulerStore{
+				servers: map[string]*Server{
+					"server1": {
+						name: "server1",
+						replicas: map[int]*ServerReplica{
+							0: {loadedModels: map[ModelVersionID]bool{ModelVersionID{Name: "model1", Version: 1}: true}},
+						},
+						expectedReplicas: 0,
+						shared:           true,
+					},
+				},
+			},
+			serverName:     "server1",
+			replicaIdx:     0,
+			serverExists:   false,
+			modelsReturned: 0,
+		},
 	}
 
 	for _, test := range tests {
@@ -1210,7 +1333,7 @@ func TestRemoveServerReplica(t *testing.T) {
 			ms := NewMemoryStore(logger, test.store, eventHub)
 			models, err := ms.RemoveServerReplica(test.serverName, test.replicaIdx)
 			g.Expect(err).To(BeNil())
-			g.Expect(len(models)).To(Equal(test.modelsReturned))
+			g.Expect(test.modelsReturned).To(Equal(len(models)))
 			server, err := ms.GetServer(test.serverName)
 			g.Expect(err).To(BeNil())
 			if test.serverExists {
