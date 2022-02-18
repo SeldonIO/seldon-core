@@ -1,4 +1,4 @@
-# KFserving Storage Initializer
+# KFserving Storage Initializer (Deprecated)
 
 Prior to Seldon Core 1.8 seldon core was using by default `kfserving/storage-initializer` for its pre-packaged model servers. This can be still used by configuring a following helm value:
 
