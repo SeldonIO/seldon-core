@@ -117,8 +117,11 @@ func maybeUpdateOverCommit() {
 		return
 	}
 
-	envOverCommit, found := getEnvBool(envOvercommit)
+	envOverCommit, found, parsed := getEnvBool(envOvercommit)
 	if !found {
+		return
+	}
+	if !parsed {
 		log.Fatalf("Failed to parse %s with value %t for overcommit", envOvercommit, envOverCommit)
 	}
 
@@ -137,7 +140,7 @@ func maybeUpdateCapabilities() {
 
 	capabilitiesFromEnv, found := getEnvString(envCapabilities)
 	if !found {
-		log.Fatalf("No server capabilities set")
+		return
 	}
 
 	cs := strings.Split(capabilitiesFromEnv, ",")
@@ -152,8 +155,11 @@ func maybeUpdateMemoryRequest() {
 		return
 	}
 
-	envMemoryBytes, found := getEnvUint(envMemoryRequest)
+	envMemoryBytes, found, parsed := getEnvUint(envMemoryRequest)
 	if !found {
+		return
+	}
+	if !parsed {
 		// TODO - don't print value as it'll always be default for type?
 		log.Fatalf("Failed to parse %s with value %d", envMemoryRequest, envMemoryBytes)
 	}
@@ -167,8 +173,11 @@ func maybeUpdatePort(flagName string, envName string, port *int) {
 		return
 	}
 
-	envPort, found := getEnvInt(envName)
+	envPort, found, parsed := getEnvInt(envName)
 	if !found {
+		return
+	}
+	if !parsed {
 		log.Fatalf("Failed to parse %s with value %d", envName, envPort)
 	}
 
