@@ -1,5 +1,5 @@
 import json
-
+from typing import List, Dict, Union
 import numpy as np
 
 
@@ -35,3 +35,17 @@ class NumpyEncoder(json.JSONEncoder):
         elif isinstance(obj, (np.ndarray,)):
             return obj.tolist()
         return json.JSONEncoder.default(self, obj)
+
+
+def read_inputs_as_numpy(inputs: Union[List, Dict]) -> np.ndarray:
+    """
+    Read payload inputs as np.ndarray enforcing float32/int32 dtypes.
+    See: https://github.com/SeldonIO/seldon-core/issues/3940 for details.
+    """
+    x = np.array(inputs)
+    if x.dtype == np.float64:
+        return x.astype(np.float32)
+    elif x.dtype == np.int64:
+        return x.astype(np.int32)
+    else:
+        return x

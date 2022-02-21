@@ -4,6 +4,7 @@ import os
 import logging
 import numpy as np
 from .numpy_encoder import NumpyEncoder
+from adserver.protocols.util import read_inputs_as_numpy
 from adserver.base import CEModel, ModelResponse
 from alibi_detect.utils.saving import load_detector, Data
 from adserver.base.storage import download_model
@@ -85,7 +86,7 @@ class AlibiDetectOutlierModel(CEModel):  # pylint:disable=c-extension-no-member
         logging.info(str(headers))
         logging.info("----")
         try:
-            X = np.array(inputs)
+            X = read_inputs_as_numpy(inputs)
         except Exception as e:
             raise Exception(
                 "Failed to initialize NumPy array from inputs: %s, %s" % (e, inputs)
