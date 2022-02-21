@@ -4,6 +4,7 @@ import logging
 import numpy as np
 from adserver.constants import HEADER_RETURN_INSTANCE_SCORE
 from .numpy_encoder import NumpyEncoder
+from adserver.protocols.util import read_inputs_as_numpy
 from alibi_detect.utils.saving import load_detector, Data
 from adserver.base import CEModel, ModelResponse
 from adserver.base.storage import download_model
@@ -60,7 +61,7 @@ class AlibiDetectAdversarialDetectionModel(
         logging.info(str(headers))
         logging.info("----")
         try:
-            X = np.array(inputs)
+            X = read_inputs_as_numpy(inputs)
         except Exception as e:
             raise Exception(
                 "Failed to initialize NumPy array from inputs: %s, %s" % (e, inputs)
