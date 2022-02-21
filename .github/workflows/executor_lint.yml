@@ -10,7 +10,7 @@ jobs:
   executor-lint:
 
     runs-on: ubuntu-18.04
-    container: seldonio/core-builder:0.26
+    container: seldonio/core-builder:0.27
 
     steps:
     - uses: actions/checkout@v2
