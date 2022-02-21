@@ -1,7 +1,7 @@
 FROM registry.access.redhat.com/ubi8/python-38
 LABEL name="Seldon Request Logger" \
       vendor="Seldon Technologies" \
-      version="1.14.0-dev" \
+      version="1.13.1" \
       release="1" \
       summary="The payload logger for Seldon Core" \
       description="The Seldon Payload Logger allows request and response payloads from a Seldon Core inference graph to be processed and sent to an ELK endpoint"
