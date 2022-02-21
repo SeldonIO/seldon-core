@@ -52,6 +52,7 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v2
     - name: security-image-executor
       uses: snyk/actions/docker@master
       env:
@@ -64,6 +65,7 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v2
     - name: security-image-operator
       uses: snyk/actions/docker@master
       env:
@@ -76,6 +78,7 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v2
     - name: security-image-python-base
       uses: snyk/actions/docker@master
       env:
@@ -124,6 +127,7 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v2
     - name: security-image-alibi-explain
       uses: snyk/actions/docker@master
       env:
@@ -136,6 +140,7 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v2
     - name: security-image-alibi-detect
       uses: snyk/actions/docker@master
       env:
@@ -148,6 +153,7 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v2
     - name: security-image-request-logger
       uses: snyk/actions/docker@master
       env:
@@ -160,6 +166,7 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v2
     - name: security-image-request-logger
       uses: snyk/actions/docker@master
       env:
