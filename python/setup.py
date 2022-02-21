@@ -47,7 +47,7 @@ setup(
         "urllib3 == 1.26.5",
         # Addresses flask dependecy bug https://github.com/pallets/flask/issues/4455
         "itsdangerous==1.1.0",
-        "markupsafe==1.1.1",
+        "markupsafe==2.1.0",
     ],
     extras_require=extras,
     entry_points={
