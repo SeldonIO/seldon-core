@@ -33,7 +33,7 @@ Guide" <../reference/upgrading.md>`__
    docs <../reference/upgrading.md>`__ to understand breaking changes
    and best practices for upgrading.
 -  Please see `Migrating from Helm v2 to Helm
-   v3 <https://helm.sh/blog/migrate-from-helm-v2-to-helm-v3/>`__ if you
+   v3 <https://helm.sh/docs/topics/v2_v3_migration/>`__ if you
    are already running Seldon Core using Helm v2 and wish to upgrade.
 
 Install Seldon Core with Helm
