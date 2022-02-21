@@ -45,6 +45,9 @@ setup(
         "click >= 8.0.0a1, < 8.1",
         # Addresses CVE CVE-2019-11236 and CVE-2020-26137 and SNYK-PYTHON-URLLIB3-1533435
         "urllib3 == 1.26.5",
+        # Addresses flask dependecy bug https://github.com/pallets/flask/issues/4455
+        "itsdangerous==1.1.0",
+        "markupsafe==1.1.1",
     ],
     extras_require=extras,
     entry_points={
