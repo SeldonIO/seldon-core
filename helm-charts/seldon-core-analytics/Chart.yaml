@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: 1.13.1
+appVersion: 1.14.0-dev
 dependencies:
 - condition: grafana.enabled
   name: grafana
@@ -27,4 +27,4 @@ name: seldon-core-analytics
 sources:
 - https://github.com/SeldonIO/seldon-core
 - https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core-analytics
-version: 1.13.1
+version: 1.14.0-dev
