@@ -175,7 +175,8 @@ func TestSync(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			logger := log.New()
-			eventHub := &coordinator.ModelEventHub{}
+			eventHub, err := coordinator.NewEventHub(logger)
+			g.Expect(err).To(BeNil())
 			server := NewAgentServer(logger, test.store, nil, eventHub)
 			server.agents = test.agents
 			server.Sync(test.modelName)

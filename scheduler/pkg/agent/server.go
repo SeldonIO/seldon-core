@@ -18,7 +18,9 @@ import (
 )
 
 const (
-	grpcMaxConcurrentStreams = 1_000_000
+	grpcMaxConcurrentStreams     = 1_000_000
+	pendingSyncsQueueSize    int = 10
+	modelEventHandlerName        = "agent.server.models"
 )
 
 type ServerKey struct {
@@ -32,7 +34,6 @@ type Server struct {
 	logger    log.FieldLogger
 	agents    map[ServerKey]*AgentSubscriber
 	store     store.SchedulerStore
-	source    chan coordinator.ModelEventMsg
 	scheduler scheduler.Scheduler
 }
 
@@ -46,27 +47,36 @@ type AgentSubscriber struct {
 	stream pb.AgentService_SubscribeServer
 }
 
-func NewAgentServer(logger log.FieldLogger,
+func NewAgentServer(
+	logger log.FieldLogger,
 	store store.SchedulerStore,
 	scheduler scheduler.Scheduler,
-	hub *coordinator.ModelEventHub) *Server {
+	hub *coordinator.EventHub,
+) *Server {
 	s := &Server{
 		logger:    logger.WithField("source", "AgentServer"),
 		agents:    make(map[ServerKey]*AgentSubscriber),
 		store:     store,
-		source:    make(chan coordinator.ModelEventMsg, 1),
 		scheduler: scheduler,
 	}
-	hub.AddListener(s.source)
+
+	hub.RegisterHandler(
+		modelEventHandlerName,
+		pendingSyncsQueueSize,
+		s.logger,
+		s.handleSyncs,
+	)
+
 	return s
 }
 
-func (s *Server) ListenForSyncs() {
-	for evt := range s.source {
-		s.logger.Infof("Received sync for model %s", evt.String())
-		modelEvtMsg := evt
-		go s.Sync(modelEvtMsg.ModelName)
-	}
+func (s *Server) handleSyncs(event coordinator.ModelEventMsg) {
+	logger := s.logger.WithField("func", "handleSyncs")
+	logger.Infof("Received sync for model %s", event.String())
+
+	// TODO - Should this spawn a goroutine?
+	// Surely we're risking reordering of events, e.g. load/unload -> unload/load?
+	go s.Sync(event.ModelName)
 }
 
 func (s *Server) StartGrpcServer(agentPort uint) error {

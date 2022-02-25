@@ -80,7 +80,11 @@ func main() {
 	flag.Parse()
 
 	// Create event Hub
-	eventHub := &coordinator.ModelEventHub{}
+	eventHub, err := coordinator.NewEventHub(logger)
+	if err != nil {
+		log.WithError(err).Fatal("Unable to create event hub")
+	}
+	defer eventHub.Close()
 
 	// Create a cache
 	cache := cache.NewSnapshotCache(false, cache.IDHash{}, logger)
@@ -93,18 +97,15 @@ func main() {
 	}()
 
 	ss := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
-	es := processor.NewIncrementalProcessor(cache, nodeID, logger, ss, eventHub)
-	sched := scheduler.NewSimpleScheduler(logger,
+	_ = processor.NewIncrementalProcessor(cache, nodeID, logger, ss, eventHub)
+	sched := scheduler.NewSimpleScheduler(
+		logger,
 		ss,
-		scheduler.DefaultSchedulerConfig())
+		scheduler.DefaultSchedulerConfig(),
+	)
 	as := agent.NewAgentServer(logger, ss, sched, eventHub)
 
-	go as.ListenForSyncs() // Start agent syncs
-	go es.ListenForSyncs() // Start envoy syncs
-
 	s := server2.NewSchedulerServer(logger, ss, sched, eventHub)
-	go s.ListenForModelEvents()
-	go s.ListenForServerEvents()
 	go func() {
 		err := s.StartGrpcServer(schedulerPort)
 		if err != nil {
@@ -112,15 +113,17 @@ func main() {
 		}
 	}()
 
-	versionCleaner := cleaner.NewVersionCleaner(ss, logger, eventHub)
-	go versionCleaner.ListenForEvents()
+	_ = cleaner.NewVersionCleaner(ss, logger, eventHub)
 
-	err := as.StartGrpcServer(agentPort)
+	// TODO - it's subtle (and thus fragile) to use the fact that this method
+	// is blocking to await shutdown.
+	// We should instead use a done channel (as elsewhere) and defer stops/shutdowns
+	// OR use a wait-group as defers runs sequentially.
+	err = as.StartGrpcServer(agentPort)
 	if err != nil {
 		log.Fatalf("Failed to start agent grpc server %s", err.Error())
 	}
 
 	s.StopSendModelEvents()
 	s.StopSendServerEvents()
-	eventHub.Close()
 }

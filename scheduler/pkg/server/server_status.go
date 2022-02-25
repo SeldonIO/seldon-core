@@ -39,18 +39,18 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 	}
 }
 
-func (s *SchedulerServer) ListenForModelEvents() {
-	logger := s.logger.WithField("func", "ListenForModelEvents")
-	for modelEventMsg := range s.modelEventStream.chanEvent {
-		logger.Infof("Got model event msg for %s", modelEventMsg.String())
-		msg := modelEventMsg
-		go func() {
-			err := s.sendModelStatusEvent(msg)
-			if err != nil {
-				logger.WithError(err).Errorf("Failed to update model status for model %s", msg.String())
-			}
-		}()
-	}
+func (s *SchedulerServer) handleModelEvent(event coordinator.ModelEventMsg) {
+	logger := s.logger.WithField("func", "handleModelEvent")
+	logger.Infof("Got model event msg for %s", event.String())
+
+	// TODO - Should this spawn a goroutine?
+	// Surely we're risking reordering of events, e.g. load/unload -> unload/load?
+	go func() {
+		err := s.sendModelStatusEvent(event)
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to update model status for model %s", event.String())
+		}
+	}()
 }
 
 func (s *SchedulerServer) StopSendModelEvents() {
@@ -113,19 +113,19 @@ func (s *SchedulerServer) SubscribeServerStatus(req *pb.ServerSubscriptionReques
 	}
 }
 
-func (s *SchedulerServer) ListenForServerEvents() {
-	logger := s.logger.WithField("func", "ListenForServerEvents")
-	for modelEventMsg := range s.serverEventStream.chanEvent {
-		logger.Infof("Got server state change for %s", modelEventMsg.String())
+// TODO - Create a ServerStatusMsg type to disambiguate?
+func (s *SchedulerServer) handleServerEvent(event coordinator.ModelEventMsg) {
+	logger := s.logger.WithField("func", "handleServerEvent")
+	logger.Infof("Got server state change for %s", event.String())
 
-		evt := modelEventMsg
-		go func() {
-			err := s.sendServerStatusEvent(evt)
-			if err != nil {
-				logger.WithError(err).Errorf("Failed to update server status for model event %s", evt.String())
-			}
-		}()
-	}
+	// TODO - Should this spawn a goroutine?
+	// Surely we're risking reordering of events, e.g. load/unload -> unload/load?
+	go func() {
+		err := s.sendServerStatusEvent(event)
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to update server status for model event %s", event.String())
+		}
+	}()
 }
 
 func (s *SchedulerServer) StopSendServerEvents() {

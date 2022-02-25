@@ -11,6 +11,7 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/jarcoal/httpmock v1.0.8
+	github.com/mustafaturan/bus/v3 v3.0.3
 	github.com/onsi/gomega v1.16.0
 	github.com/otiai10/copy v1.7.0
 	github.com/prometheus/client_golang v1.12.1

@@ -31,7 +31,8 @@ func TestLoadModel(t *testing.T) {
 	createTestScheduler := func() (*SchedulerServer, *mockAgentHandler) {
 		logger := log.New()
 		log.SetLevel(log.DebugLevel)
-		eventHub := &coordinator.ModelEventHub{}
+		eventHub, err := coordinator.NewEventHub(logger)
+		g.Expect(err).To(BeNil())
 		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
 		mockAgent := &mockAgentHandler{}
 		scheduler := scheduler2.NewSimpleScheduler(logger,
@@ -132,10 +133,11 @@ func TestUnloadModel(t *testing.T) {
 	t.Logf("Started")
 	g := NewGomegaWithT(t)
 
-	createTestScheduler := func() (*SchedulerServer, *mockAgentHandler, *coordinator.ModelEventHub) {
+	createTestScheduler := func() (*SchedulerServer, *mockAgentHandler, *coordinator.EventHub) {
 		logger := log.New()
 		log.SetLevel(log.DebugLevel)
-		eventHub := &coordinator.ModelEventHub{}
+		eventHub, err := coordinator.NewEventHub(logger)
+		g.Expect(err).To(BeNil())
 		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
 		mockAgent := &mockAgentHandler{}
 		scheduler := scheduler2.NewSimpleScheduler(logger,
@@ -194,12 +196,10 @@ func TestUnloadModel(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			s, _, eventHub := createTestScheduler()
-			defer eventHub.Close()
-			go s.ListenForModelEvents()
+			s, _, _ := createTestScheduler()
 			defer s.StopSendModelEvents()
-			go s.ListenForServerEvents()
 			defer s.StopSendServerEvents()
+
 			for _, repReq := range test.req {
 				err := s.store.AddServerReplica(repReq)
 				g.Expect(err).To(BeNil())

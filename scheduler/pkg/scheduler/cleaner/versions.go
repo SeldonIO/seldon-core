@@ -9,34 +9,46 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	pendingEventsQueueSize int = 100
+	modelEventHandlerName      = "version.cleaner.models"
+)
+
 type VersionCleaner struct {
-	store     store.SchedulerStore
-	logger    log.FieldLogger
-	chanEvent chan coordinator.ModelEventMsg
+	store  store.SchedulerStore
+	logger log.FieldLogger
 }
 
-func NewVersionCleaner(schedStore store.SchedulerStore, logger log.FieldLogger, eventHub *coordinator.ModelEventHub) *VersionCleaner {
+func NewVersionCleaner(
+	schedStore store.SchedulerStore,
+	logger log.FieldLogger,
+	eventHub *coordinator.EventHub,
+) *VersionCleaner {
 	v := &VersionCleaner{
-		store:     schedStore,
-		logger:    logger.WithField("source", "VersionCleaner"),
-		chanEvent: make(chan coordinator.ModelEventMsg, 1),
+		store:  schedStore,
+		logger: logger.WithField("source", "VersionCleaner"),
 	}
-	eventHub.AddListener(v.chanEvent)
+
+	eventHub.RegisterHandler(
+		modelEventHandlerName,
+		pendingEventsQueueSize,
+		v.logger,
+		v.handleEvents,
+	)
+
 	return v
 }
 
-func (v *VersionCleaner) ListenForEvents() {
+func (v *VersionCleaner) handleEvents(event coordinator.ModelEventMsg) {
 	logger := v.logger.WithField("func", "ListenForEvents")
-	for evt := range v.chanEvent {
-		logger.Infof("Got model state change for %s", evt.String())
-		modelEventMsg := evt
-		go func() {
-			err := v.cleanupOldVersions(modelEventMsg.ModelName)
-			if err != nil {
-				logger.WithError(err).Warnf("Failed to run cleanup old versions for model %s", modelEventMsg.String())
-			}
-		}()
-	}
+	logger.Infof("Got model state change for %s", event.String())
+
+	go func() {
+		err := v.cleanupOldVersions(event.ModelName)
+		if err != nil {
+			logger.WithError(err).Warnf("Failed to run cleanup old versions for model %s", event.String())
+		}
+	}()
 }
 
 func (v *VersionCleaner) cleanupOldVersions(modelName string) error {

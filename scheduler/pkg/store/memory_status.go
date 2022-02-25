@@ -6,6 +6,11 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
 )
 
+const (
+	modelFailureEventSource = "memory.status.scheduling.failed"
+	modelUpdateEventSource  = "memory.status.model.update"
+)
+
 type replicaStateStatistics struct {
 	replicasAvailable    uint32
 	replicasLoading      uint32
@@ -95,15 +100,29 @@ func (m *MemoryStore) FailedScheduling(modelVersion *ModelVersion, reason string
 		AvailableReplicas:   0,
 		UnavailableReplicas: modelVersion.GetModel().GetDeploymentSpec().GetReplicas(),
 	}
-	go m.eventHub.TriggerModelEvent(coordinator.ModelEventMsg{ModelName: modelVersion.GetMeta().GetName(), ModelVersion: modelVersion.GetVersion()})
+
+	m.eventHub.PublishModelEvent(
+		modelFailureEventSource,
+		coordinator.ModelEventMsg{
+			ModelName:    modelVersion.GetMeta().GetName(),
+			ModelVersion: modelVersion.GetVersion(),
+		},
+	)
 }
 
 func (m *MemoryStore) updateModelStatus(isLatest bool, deleted bool, modelVersion *ModelVersion, prevModelVersion *ModelVersion) {
 	logger := m.logger.WithField("func", "updateModelStatus")
 	stats := calcReplicaStateStatistics(modelVersion, deleted)
 	logger.Debugf("Stats %+v modelVersion %+v prev model %+v", stats, modelVersion, prevModelVersion)
+
 	updateModelState(isLatest, modelVersion, prevModelVersion, stats, deleted)
 
 	logger.Debugf("Trigger event for model %s:%d", modelVersion.GetMeta().GetName(), modelVersion.GetVersion())
-	go m.eventHub.TriggerModelEvent(coordinator.ModelEventMsg{ModelName: modelVersion.GetMeta().GetName(), ModelVersion: modelVersion.GetVersion()})
+	m.eventHub.PublishModelEvent(
+		modelUpdateEventSource,
+		coordinator.ModelEventMsg{
+			ModelName:    modelVersion.GetMeta().GetName(),
+			ModelVersion: modelVersion.GetVersion(),
+		},
+	)
 }

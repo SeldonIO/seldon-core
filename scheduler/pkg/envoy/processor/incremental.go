@@ -17,6 +17,11 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	pendingSyncsQueueSize int = 100
+	modelEventHandlerName     = "incremental.processor.models"
+)
+
 type IncrementalProcessor struct {
 	cache  cache.SnapshotCache
 	nodeID string
@@ -26,10 +31,15 @@ type IncrementalProcessor struct {
 	xdsCache        *xdscache.SeldonXDSCache
 	mu              sync.RWMutex
 	store           store.SchedulerStore
-	source          chan coordinator.ModelEventMsg
 }
 
-func NewIncrementalProcessor(cache cache.SnapshotCache, nodeID string, log logrus.FieldLogger, store store.SchedulerStore, hub *coordinator.ModelEventHub) *IncrementalProcessor {
+func NewIncrementalProcessor(
+	cache cache.SnapshotCache,
+	nodeID string,
+	log logrus.FieldLogger,
+	store store.SchedulerStore,
+	hub *coordinator.EventHub,
+) *IncrementalProcessor {
 	ip := &IncrementalProcessor{
 		cache:           cache,
 		nodeID:          nodeID,
@@ -37,21 +47,26 @@ func NewIncrementalProcessor(cache cache.SnapshotCache, nodeID string, log logru
 		logger:          log.WithField("source", "EnvoyServer"),
 		xdsCache:        xdscache.NewSeldonXDSCache(log),
 		store:           store,
-		source:          make(chan coordinator.ModelEventMsg, 1),
 	}
+
 	ip.SetListener("seldon_http")
-	hub.AddListener(ip.source)
+	hub.RegisterHandler(
+		modelEventHandlerName,
+		pendingSyncsQueueSize,
+		ip.logger,
+		ip.handleSyncs,
+	)
+
 	return ip
 }
 
-func (p *IncrementalProcessor) ListenForSyncs() {
-	logger := p.logger.WithField("func", "ListenForSyncs")
-	for evt := range p.source {
-		logger.Debugf("Received sync for model %s", evt.String())
-		err := p.Sync(evt.ModelName)
-		if err != nil {
-			logger.WithError(err).Errorf("Failed to process sync for model %s", evt.String())
-		}
+func (p *IncrementalProcessor) handleSyncs(event coordinator.ModelEventMsg) {
+	logger := p.logger.WithField("func", "handleSyncs")
+	logger.Debugf("Received sync for model %s", event.String())
+
+	err := p.Sync(event.ModelName)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to process sync for model %s", event.String())
 	}
 }
 

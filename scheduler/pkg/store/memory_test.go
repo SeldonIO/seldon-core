@@ -14,7 +14,6 @@ import (
 )
 
 func TestUpdateModel(t *testing.T) {
-	logger := log.New()
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -172,9 +171,11 @@ func TestUpdateModel(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			eventHub := &coordinator.ModelEventHub{}
+			logger := log.New()
+			eventHub, err := coordinator.NewEventHub(logger)
+			g.Expect(err).To(BeNil())
 			ms := NewMemoryStore(logger, test.store, eventHub)
-			err := ms.UpdateModel(test.loadModelReq)
+			err = ms.UpdateModel(test.loadModelReq)
 			g.Expect(err).To(BeNil())
 			m := test.store.models[test.loadModelReq.GetModel().GetMeta().GetName()]
 			latest := m.Latest()
@@ -185,7 +186,6 @@ func TestUpdateModel(t *testing.T) {
 }
 
 func TestGetModel(t *testing.T) {
-	logger := log.New()
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -228,7 +228,9 @@ func TestGetModel(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			eventHub := &coordinator.ModelEventHub{}
+			logger := log.New()
+			eventHub, err := coordinator.NewEventHub(logger)
+			g.Expect(err).To(BeNil())
 			ms := NewMemoryStore(logger, test.store, eventHub)
 			model, err := ms.GetModel(test.key)
 			if test.err == nil {
@@ -243,7 +245,6 @@ func TestGetModel(t *testing.T) {
 }
 
 func TestRemoveModel(t *testing.T) {
-	logger := log.New()
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -282,9 +283,11 @@ func TestRemoveModel(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			eventHub := &coordinator.ModelEventHub{}
+			logger := log.New()
+			eventHub, err := coordinator.NewEventHub(logger)
+			g.Expect(err).To(BeNil())
 			ms := NewMemoryStore(logger, test.store, eventHub)
-			err := ms.RemoveModel(&pb.UnloadModelRequest{Model: &pb.ModelReference{Name: test.key}})
+			err = ms.RemoveModel(&pb.UnloadModelRequest{Model: &pb.ModelReference{Name: test.key}})
 			if !test.err {
 				g.Expect(err).To(BeNil())
 			} else {
@@ -295,7 +298,6 @@ func TestRemoveModel(t *testing.T) {
 }
 
 func TestUpdateLoadedModels(t *testing.T) {
-	logger := log.New()
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -536,9 +538,11 @@ func TestUpdateLoadedModels(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			eventHub := &coordinator.ModelEventHub{}
+			logger := log.New()
+			eventHub, err := coordinator.NewEventHub(logger)
+			g.Expect(err).To(BeNil())
 			ms := NewMemoryStore(logger, test.store, eventHub)
-			err := ms.UpdateLoadedModels(test.modelKey, test.version, test.serverKey, test.replicas)
+			err = ms.UpdateLoadedModels(test.modelKey, test.version, test.serverKey, test.replicas)
 			if !test.err {
 				g.Expect(err).To(BeNil())
 				for replicaIdx, state := range test.expectedStates {
@@ -554,7 +558,6 @@ func TestUpdateLoadedModels(t *testing.T) {
 }
 
 func TestUpdateModelState(t *testing.T) {
-	logger := log.New()
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -787,9 +790,11 @@ func TestUpdateModelState(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			eventHub := &coordinator.ModelEventHub{}
+			logger := log.New()
+			eventHub, err := coordinator.NewEventHub(logger)
+			g.Expect(err).To(BeNil())
 			ms := NewMemoryStore(logger, test.store, eventHub)
-			err := ms.UpdateModelState(test.modelKey, test.version, test.serverKey, test.replicaIdx, &test.availableMemory, test.expectedState, test.desiredState, "")
+			err = ms.UpdateModelState(test.modelKey, test.version, test.serverKey, test.replicaIdx, &test.availableMemory, test.expectedState, test.desiredState, "")
 			if !test.err {
 				g.Expect(err).To(BeNil())
 				if !test.deleted {
@@ -809,7 +814,6 @@ func TestUpdateModelState(t *testing.T) {
 }
 
 func TestUpdateModelStatus(t *testing.T) {
-	logger := log.New()
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -1050,7 +1054,9 @@ func TestUpdateModelStatus(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			eventHub := &coordinator.ModelEventHub{}
+			logger := log.New()
+			eventHub, err := coordinator.NewEventHub(logger)
+			g.Expect(err).To(BeNil())
 			ms := NewMemoryStore(logger, &LocalSchedulerStore{}, eventHub)
 			ms.updateModelStatus(true, test.deleted, test.modelVersion, test.prevAvailableModelVersion)
 			g.Expect(test.modelVersion.state.State).To(Equal(test.expectedState))
@@ -1062,7 +1068,6 @@ func TestUpdateModelStatus(t *testing.T) {
 }
 
 func TestAddModelVersionIfNotExists(t *testing.T) {
-	logger := log.New()
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -1205,7 +1210,9 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			eventHub := &coordinator.ModelEventHub{}
+			logger := log.New()
+			eventHub, err := coordinator.NewEventHub(logger)
+			g.Expect(err).To(BeNil())
 			ms := NewMemoryStore(logger, test.store, eventHub)
 			ms.addModelVersionIfNotExists(test.modelVersion)
 			modelName := test.modelVersion.GetModel().GetMeta().GetName()
@@ -1216,7 +1223,6 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 }
 
 func TestRemoveServerReplica(t *testing.T) {
-	logger := log.New()
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -1329,7 +1335,9 @@ func TestRemoveServerReplica(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			eventHub := &coordinator.ModelEventHub{}
+			logger := log.New()
+			eventHub, err := coordinator.NewEventHub(logger)
+			g.Expect(err).To(BeNil())
 			ms := NewMemoryStore(logger, test.store, eventHub)
 			models, err := ms.RemoveServerReplica(test.serverName, test.replicaIdx)
 			g.Expect(err).To(BeNil())

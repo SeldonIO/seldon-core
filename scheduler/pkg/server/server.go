@@ -20,7 +20,10 @@ import (
 )
 
 const (
-	grpcMaxConcurrentStreams = 1_000_000
+	grpcMaxConcurrentStreams     = 1_000_000
+	pendingEventsQueueSize   int = 10
+	modelEventHandlerName        = "scheduler.server.models"
+	serverEventHandlerName       = "scheduler.server.servers"
 )
 
 var (
@@ -38,13 +41,11 @@ type SchedulerServer struct {
 }
 
 type ModelEventStream struct {
-	streams   map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription
-	chanEvent chan coordinator.ModelEventMsg
+	streams map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription
 }
 
 type ServerEventStream struct {
-	streams   map[pb.Scheduler_SubscribeServerStatusServer]*ServerSubscription
-	chanEvent chan coordinator.ModelEventMsg
+	streams map[pb.Scheduler_SubscribeServerStatusServer]*ServerSubscription
 }
 
 type ModelSubscription struct {
@@ -72,23 +73,37 @@ func (s *SchedulerServer) StartGrpcServer(schedulerPort uint) error {
 	return grpcServer.Serve(lis)
 }
 
-func NewSchedulerServer(logger log.FieldLogger, schedStore store.SchedulerStore, scheduler scheduler2.Scheduler, eventHub *coordinator.ModelEventHub) *SchedulerServer {
-
+func NewSchedulerServer(
+	logger log.FieldLogger,
+	schedStore store.SchedulerStore,
+	scheduler scheduler2.Scheduler,
+	eventHub *coordinator.EventHub,
+) *SchedulerServer {
 	s := &SchedulerServer{
 		logger:    logger.WithField("source", "SchedulerServer"),
 		store:     schedStore,
 		scheduler: scheduler,
 		modelEventStream: ModelEventStream{
-			streams:   make(map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription),
-			chanEvent: make(chan coordinator.ModelEventMsg, 1),
+			streams: make(map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription),
 		},
 		serverEventStream: ServerEventStream{
-			streams:   make(map[pb.Scheduler_SubscribeServerStatusServer]*ServerSubscription),
-			chanEvent: make(chan coordinator.ModelEventMsg, 1),
+			streams: make(map[pb.Scheduler_SubscribeServerStatusServer]*ServerSubscription),
 		},
 	}
-	eventHub.AddListener(s.modelEventStream.chanEvent)
-	eventHub.AddListener(s.serverEventStream.chanEvent)
+
+	eventHub.RegisterHandler(
+		modelEventHandlerName,
+		pendingEventsQueueSize,
+		s.logger,
+		s.handleModelEvent,
+	)
+	eventHub.RegisterHandler(
+		serverEventHandlerName,
+		pendingEventsQueueSize,
+		s.logger,
+		s.handleServerEvent,
+	)
+
 	return s
 }
 
