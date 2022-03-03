@@ -24,25 +24,32 @@ const (
 )
 
 type mockGRPCMLServer struct {
+	listener net.Listener
+	server   *grpc.Server
 	v2.UnimplementedGRPCInferenceServiceServer
-	modelPrefix string
 }
 
-func (mlserver *mockGRPCMLServer) Start(port uint) error {
-	l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+func (m *mockGRPCMLServer) setup(port uint) error {
+	var err error
+	m.listener, err = net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		return err
 	}
-
 	opts := []grpc.ServerOption{}
-	grpcServer := grpc.NewServer(opts...)
-	v2.RegisterGRPCInferenceServiceServer(grpcServer, mlserver)
-
-	fmt.Printf("starting gRPC listening server on port %d", port)
-	return grpcServer.Serve(l)
+	m.server = grpc.NewServer(opts...)
+	v2.RegisterGRPCInferenceServiceServer(m.server, m)
+	return nil
 }
 
-func (mlserver *mockGRPCMLServer) ModelInfer(ctx context.Context, r *v2.ModelInferRequest) (*v2.ModelInferResponse, error) {
+func (m *mockGRPCMLServer) start() error {
+	return m.server.Serve(m.listener)
+}
+
+func (m *mockGRPCMLServer) stop() {
+	m.server.Stop()
+}
+
+func (m *mockGRPCMLServer) ModelInfer(ctx context.Context, r *v2.ModelInferRequest) (*v2.ModelInferResponse, error) {
 	return &v2.ModelInferResponse{ModelName: r.ModelName, ModelVersion: r.ModelVersion}, nil
 }
 
@@ -52,13 +59,6 @@ func (mlserver *mockGRPCMLServer) ModelMetadata(ctx context.Context, r *v2.Model
 
 func (mlserver *mockGRPCMLServer) ModelReady(ctx context.Context, r *v2.ModelReadyRequest) (*v2.ModelReadyResponse, error) {
 	return &v2.ModelReadyResponse{Ready: true}, nil
-}
-
-func setupMockGRPCMLServer(modelPrefix string) {
-	mockMLServer := mockGRPCMLServer{modelPrefix: modelPrefix}
-	if err := mockMLServer.Start(backEndGRPCServerPort); err != nil {
-		log.Fatal(err)
-	}
 }
 
 func setupReverseGRPCService(numModels int, modelPrefix string) *reverseGRPCProxy {
@@ -83,7 +83,14 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 		mu:     sync.Mutex{},
 	}
 	go setupMockMLServer(mockMLServerState)
-	go setupMockGRPCMLServer(dummyModelNamePrefix)
+	mockMLServer := &mockGRPCMLServer{}
+	err := mockMLServer.setup(backEndGRPCServerPort)
+	g.Expect(err).To(BeNil())
+	go func() {
+		err := mockMLServer.start()
+		g.Expect(err).To(BeNil())
+	}()
+	defer mockMLServer.stop()
 
 	rpGRPC := setupReverseGRPCService(10, dummyModelNamePrefix)
 	_ = rpGRPC.Start()

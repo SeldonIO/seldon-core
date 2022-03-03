@@ -1,3 +1,6 @@
 rclone:
   config:
   - '{"type":"google cloud storage","name":"gs","parameters":{"anonymous":true}}'
+kafka:
+  active: true
+  broker: "kafka:29092"

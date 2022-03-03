@@ -104,6 +104,7 @@ func updateFlagsFromEnv() {
 	maybeUpdateReverseProxyHttpPort()
 	maybeUpdateReverseProxyGrpcPort()
 	maybeUpdateDebugGrpcPort()
+	maybeUpdateSchedulerHost()
 	maybeUpdateSchedulerPort()
 	maybeUpdateMetricsPort()
 	maybeUpdateServerNameAndIndex()

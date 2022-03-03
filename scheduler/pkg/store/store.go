@@ -94,4 +94,5 @@ type SchedulerStore interface {
 	ServerNotify(request *pb.ServerNotifyRequest) error
 	RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) // return previously loaded models
 	FailedScheduling(modelVersion *ModelVersion, reason string)
+	GetAllModels() []string
 }

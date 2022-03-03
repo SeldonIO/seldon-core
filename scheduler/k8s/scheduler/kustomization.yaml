@@ -4,7 +4,6 @@ kind: Kustomization
 resources:
 - scheduler.yaml
 - svc.yaml
-- configmap.yaml
 - role.yaml
 - role_binding.yaml
 - serviceaccount.yaml

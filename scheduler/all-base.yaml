@@ -50,3 +50,35 @@ services:
 
   server:
     image: "${SERVER_IMAGE_AND_TAG}"
+
+  stream:
+    build:
+      dockerfile: ./Dockerfile.stream
+      context: .
+    image: "${STREAM_IMAGE_AND_TAG}"
+    command:
+      - "/bin/stream"
+      - "--log-level"
+      - "debug"
+      - "--config-path"
+      - "/mnt/config"
+      - "--scheduler-host"
+      - "scheduler"
+      - "--scheduler-port"
+      - ${SCHEDULER_SERVER_PORT}
+      - "--envoy-host"
+      - "envoy"
+      - "--envoy-port"
+      - ${ENVOY_DATA_PORT}
+
+  kafka:
+    image: quay.io/strimzi/kafka:0.28.0-kafka-3.1.0
+    command: [
+      "sh", "-c",
+      "./bin/kafka-storage.sh format -t $$(./bin/kafka-storage.sh random-uuid) -c ./config/kraft/server.properties && ./bin/kafka-server-start.sh ./config/kraft/server.properties"
+    ]
+    ports:
+    - "9092:9092"    
+    environment:
+      LOG_DIR: "/tmp/logs"
+            

@@ -25,11 +25,17 @@ const (
 
 type AgentConfiguration struct {
 	Rclone *RcloneConfiguration `json:"rclone,omitempty" yaml:"rclone,omitempty"`
+	Kafka  *KafkaConfiguration  `json:"kafka,omitempty" yaml:"kafka,omitempty"`
 }
 
 type RcloneConfiguration struct {
 	ConfigSecrets []string `json:"config_secrets,omitempty" yaml:"config_secrets,omitempty"`
 	Config        []string `json:"config,omitempty" yaml:"config,omitempty"`
+}
+
+type KafkaConfiguration struct {
+	Active bool   `json:"active,omitempty" yaml:"active,omitempty"`
+	Broker string `json:"broker,omitempty" yaml:"broker,omitempty"`
 }
 
 type AgentConfigHandler struct {
@@ -50,6 +56,7 @@ func NewAgentConfigHandler(configPath string, namespace string, logger log.Field
 		namespace: namespace,
 	}
 	if configPath != "" {
+		logger.Infof("Init config from path %s", configPath)
 		err := configHandler.initConfigFromPath(configPath)
 		if err != nil {
 			return nil, err

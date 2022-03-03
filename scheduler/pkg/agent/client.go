@@ -354,6 +354,7 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
 		return err
 	}
+
 	logger.Infof("Load model %s:%d success", modelName, modelVersion)
 
 	return c.sendAgentEvent(modelName, modelVersion, agent.ModelEventMessage_LOADED)

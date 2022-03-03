@@ -59,6 +59,14 @@ func (f mockStore) GetServer(serverKey string) (*store.ServerSnapshot, error) {
 	panic("implement me")
 }
 
+func (m *mockStore) GetAllModels() []string {
+	var modelNames []string
+	for modelName := range m.models {
+		modelNames = append(modelNames, modelName)
+	}
+	return modelNames
+}
+
 func (f *mockStore) UpdateLoadedModels(modelKey string, version uint32, serverKey string, replicas []*store.ServerReplica) error {
 	f.scheduledServer = serverKey
 	var replicaIdxs []int

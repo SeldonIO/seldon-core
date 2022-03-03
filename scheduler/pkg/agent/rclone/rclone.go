@@ -118,7 +118,7 @@ func (r *RCloneClient) StartConfigListener(configHandler *config.AgentConfigHand
 func (r *RCloneClient) listenForConfigUpdates() {
 	logger := r.logger.WithField("func", "listenForConfigUpdates")
 	for config := range r.configChan {
-		r.logger.Info("Received config update")
+		logger.Info("Received config update")
 		config := config
 		go func() {
 			err := r.loadRcloneConfiguration(&config)

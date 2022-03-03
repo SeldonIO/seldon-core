@@ -33,6 +33,16 @@ func NewMemoryStore(
 	}
 }
 
+func (m *MemoryStore) GetAllModels() []string {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	var modelNames []string
+	for modelName := range m.store.models {
+		modelNames = append(modelNames, modelName)
+	}
+	return modelNames
+}
+
 func (m *MemoryStore) addModelVersionIfNotExists(req *agent.ModelVersion) (*Model, *ModelVersion) {
 	modelName := req.GetModel().GetMeta().GetName()
 	model, ok := m.store.models[modelName]

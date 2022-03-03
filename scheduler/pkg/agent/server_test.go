@@ -80,6 +80,14 @@ func (m *mockStore) RemoveServerReplica(serverName string, replicaIdx int) ([]st
 	panic("implement me")
 }
 
+func (m *mockStore) GetAllModels() []string {
+	var modelNames []string
+	for modelName := range m.models {
+		modelNames = append(modelNames, modelName)
+	}
+	return modelNames
+}
+
 type mockGrpcStream struct {
 	grpc.ServerStream
 }

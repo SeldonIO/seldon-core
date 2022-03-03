@@ -55,7 +55,6 @@ func getDummyModelDetailsUnload(modelId string, version uint32) *pba.ModelVersio
 func setupLocalTestManager(numModels int, modelPrefix string, v2Client *V2Client, capacity int) *LocalStateManager {
 
 	logger := log.New()
-	logger.SetLevel(log.DebugLevel)
 
 	modelState := NewModelState()
 	models := make([]string, numModels)

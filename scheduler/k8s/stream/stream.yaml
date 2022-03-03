@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stream
+  namespace: system
+  labels:
+    control-plane: seldon-stream
+spec:
+  selector:
+    matchLabels:
+      control-plane: seldon-stream
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        control-plane: seldon-stream
+    spec:
+      securityContext:
+        runAsUser: 8888
+      containers:
+      - command:
+        - /bin/stream
+        args:
+        - --scheduler-host=seldon-scheduler
+        - --scheduler-port=9004
+        - --envoy-host=seldon-mesh
+        - --envoy-port=80
+        image: stream:latest
+        imagePullPolicy: IfNotPresent
+        name: stream
+        resources:
+          limits:
+            cpu: 500m
+            memory: 300Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - name: config-volume
+          mountPath: /mnt/config
+      volumes:
+      - name: config-volume
+        configMap:
+          name: seldon-agent
+      terminationGracePeriodSeconds: 5
+      serviceAccountName: scheduler

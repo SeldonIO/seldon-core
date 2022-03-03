@@ -23,6 +23,10 @@ services:
     ports:
       - "${ENVOY_DATA_PORT}:${ENVOY_DATA_PORT}"
       - "${ENVOY_CONTROL_PORT}:${ENVOY_CONTROL_PORT}"
+    command:
+      - "/usr/local/bin/envoy"
+      - "-c"
+      - "/etc/envoy-compose.yaml"
 
   rclone:
     ports:
@@ -46,3 +50,20 @@ services:
       - type: volume
         source: models
         target: /mnt/agent
+
+  stream:
+    volumes:
+      - type: bind
+        source: ./config
+        target: /mnt/config
+
+  kafka:
+    command: [
+      "sh", "-c",
+      "./bin/kafka-storage.sh format -t $$(./bin/kafka-storage.sh random-uuid) -c ./config/kraft/server.properties && ./bin/kafka-server-start.sh ./config/kraft/server.properties --override advertised.listeners=$${KAFKA_ADVERTISED_LISTENERS} --override listener.security.protocol.map=$${KAFKA_LISTENER_SECURITY_PROTOCOL_MAP} --override listeners=$${KAFKA_LISTENERS}"
+    ]    
+    environment:
+      LOG_DIR: "/tmp/logs"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://:29092,PLAINTEXT_HOST://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092

@@ -22,6 +22,7 @@ message Model {
   MetaData meta = 1;
   ModelSpec modelSpec = 2;
   DeploymentSpec deploymentSpec = 3;
+  StreamSpec streamSpec = 4;
 }
 
 message MetaData {
@@ -52,6 +53,11 @@ message ModelSpec {
 message KubernetesMeta {
   string namespace = 1;
   int64 generation = 2;
+}
+
+message StreamSpec {
+  string inputTopic = 2;
+  string outputTopic = 3;
 }
 
 message StorageConfig {
@@ -94,6 +100,7 @@ message ModelVersionStatus {
   optional KubernetesMeta kubernetesMeta = 4;
   map<int32,ModelReplicaStatus> modelReplicaState = 5;
   ModelStatus state = 6;
+  optional Model modelDefn = 7;
 }
 
 message ModelStatus {

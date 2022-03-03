@@ -22,6 +22,11 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 	}
 	s.mutext.Unlock()
 
+	err := s.sendCurrentModelStatuses(stream)
+	if err != nil {
+		return err
+	}
+
 	ctx := stream.Context()
 	// Keep this scope alive because once this scope exits - the stream is closed
 	for {
@@ -37,6 +42,26 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 			return nil
 		}
 	}
+}
+
+//TODO as this could be 1000s of models may need to look at ways to optimize?
+func (s *SchedulerServer) sendCurrentModelStatuses(stream pb.Scheduler_SubscribeModelStatusServer) error {
+	modelNames := s.store.GetAllModels()
+	for _, modelName := range modelNames {
+		model, err := s.store.GetModel(modelName)
+		if err != nil {
+			return err
+		}
+		ms, err := s.modelStatusImpl(context.Background(), model, false)
+		if err != nil {
+			return err
+		}
+		err = stream.Send(ms)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s *SchedulerServer) handleModelEvent(event coordinator.ModelEventMsg) {
@@ -78,7 +103,6 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 			}
 		}
 	}
-
 	return nil
 }
 

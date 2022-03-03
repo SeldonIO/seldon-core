@@ -14,6 +14,10 @@ services:
 
   envoy:
     network_mode: "host"
+    command:
+      - "/usr/local/bin/envoy"
+      - "-c"
+      - "/etc/envoy-local.yaml"
 
   rclone:
     network_mode: "host"
@@ -31,5 +35,21 @@ services:
       - type: bind
         source: ./mnt
         target: /mnt/agent
-    
+
+  stream:
+    network_mode: "host"    
+    volumes:
+      - type: bind
+        source: ./config
+        target: /mnt/config
+    command:
+      - "/bin/stream"
+      - "--log-level"
+      - "debug"
+      - "--config-path"
+      - "/mnt/config"
+      - "--scheduler-port"
+      - ${SCHEDULER_SERVER_PORT}
+      - "--envoy-port"
+      - ${ENVOY_DATA_PORT}
   

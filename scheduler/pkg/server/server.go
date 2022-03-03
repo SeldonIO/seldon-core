@@ -190,6 +190,7 @@ func createModelVersionStatus(mv *store.ModelVersion) *pb.ModelVersionStatus {
 			AvailableReplicas:   modelState.AvailableReplicas,
 			UnavailableReplicas: modelState.UnavailableReplicas,
 		},
+		ModelDefn: mv.GetModel(),
 	}
 	if mv.GetMeta().KubernetesMeta != nil {
 		mvs.KubernetesMeta = mv.GetModel().GetMeta().GetKubernetesMeta()
