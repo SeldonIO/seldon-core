@@ -113,7 +113,7 @@ func (f fakeMetricsHandler) UnaryServerInterceptor() func(ctx context.Context, r
 
 func setupReverseProxy(logger log.FieldLogger, numModels int, modelPrefix string) *reverseHTTPProxy {
 	v2Client := NewV2Client("localhost", backEndServerPort, logger)
-	localCacheManager := setupLocalTestManager(numModels, modelPrefix, v2Client, numModels-2)
+	localCacheManager := setupLocalTestManager(numModels, modelPrefix, v2Client, numModels-2, 1)
 	rp := NewReverseHTTPProxy(logger, ReverseProxyHTTPPort, fakeMetricsHandler{})
 	rp.SetState(localCacheManager)
 	return rp
@@ -159,7 +159,7 @@ func TestReverseProxySmoke(t *testing.T) {
 			time.Sleep(100 * time.Millisecond)
 
 			// load model
-			rpHTTP.stateManager.modelVersions.addModelVersion(
+			_, _ = rpHTTP.stateManager.modelVersions.addModelVersion(
 				getDummyModelDetails(test.modelToLoad, uint64(1), uint32(1)))
 
 			// make a dummy predict call with any model name

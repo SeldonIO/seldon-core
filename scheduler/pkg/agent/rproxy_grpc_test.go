@@ -66,7 +66,7 @@ func setupReverseGRPCService(numModels int, modelPrefix string) *reverseGRPCProx
 	log.SetLevel(log.DebugLevel)
 
 	v2Client := NewV2Client("localhost", backEndServerPort, logger)
-	localCacheManager := setupLocalTestManager(numModels, modelPrefix, v2Client, numModels-2)
+	localCacheManager := setupLocalTestManager(numModels, modelPrefix, v2Client, numModels-2, 1)
 	rp := NewReverseGRPCProxy(fakeMetricsHandler{}, logger, "localhost", backEndGRPCServerPort, ReverseGRPCProxyPort)
 	rp.SetState(localCacheManager)
 	return rp
@@ -98,9 +98,9 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	t.Log("Testing model found")
 
 	// load model
-	loaded := rpGRPC.stateManager.modelVersions.addModelVersion(
+	loaded, err := rpGRPC.stateManager.modelVersions.addModelVersion(
 		getDummyModelDetails(dummyModelNamePrefix+"_0", uint64(1), uint32(1)))
-
+	g.Expect(err).To(BeNil())
 	g.Expect(loaded).To(Equal(true))
 
 	time.Sleep(10 * time.Millisecond)

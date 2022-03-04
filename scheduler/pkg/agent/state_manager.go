@@ -35,13 +35,12 @@ func (manager *LocalStateManager) GetBackEndPath() *url.URL {
 }
 
 // this should be called from control plane (if directly)
-// the load request will always come with a version attached and the actual load
-// is done for all versions, whether this is the first or subequent versions
+// the load request will always come with versioned model name (only one version)
 func (manager *LocalStateManager) LoadModelVersion(modelVersionDetails *agent.ModelVersion) error {
 	modelId := modelVersionDetails.GetModel().GetMeta().GetName()
 	modelVersion := modelVersionDetails.GetVersion()
 
-	manager.logger.Debugf("Loading model %s, version %d", modelId, modelVersion)
+	manager.logger.Debugf("Loading model %s", modelId)
 
 	// model version already assigned to this instance (although could be not in main memory),
 	// so do nothing
@@ -52,58 +51,61 @@ func (manager *LocalStateManager) LoadModelVersion(modelVersionDetails *agent.Mo
 		return nil
 	}
 
-	manager.modelVersions.addModelVersion(modelVersionDetails)
-
-	var memBytesToLoad uint64
-	var err error
-	memBytesToLoad, err = manager.getMemoryDelta(modelId, modelVersionDetails)
-	if err != nil {
+	if _, err := manager.modelVersions.addModelVersion(modelVersionDetails); err != nil {
 		return err
 	}
 
-	if manager.cache.Exists(modelId) {
-		// this is a bit hacky, we bump up priority so it is less likely to be evicted
-		// TODO: fixme
-		// this is only in case of non-flattened versions
-		if err := manager.cache.UpdateDefault(modelId); err != nil {
-			return err
+	var memBytesToLoad uint64
+	var err error
+	memBytesToLoad, err = manager.getMemoryDelta(modelId)
+	if err != nil {
+		if _, err := manager.modelVersions.removeModelVersion(modelVersionDetails); err != nil {
+			manager.logger.WithError(err).Warnf("Model removing failed %s", modelId)
 		}
+		return err
 	}
 
 	if err := manager.makeRoomIfNeeded(modelId, memBytesToLoad); err != nil {
-		manager.modelVersions.removeModelVersion(modelVersionDetails)
+		if _, err := manager.modelVersions.removeModelVersion(modelVersionDetails); err != nil {
+			manager.logger.WithError(err).Warnf("Model removing failed %s", modelId)
+		}
 		return err
 	}
 
 	// be optimistic and mark model memory
 	if err := manager.updateAvailableMemory(memBytesToLoad, true); err != nil {
-		manager.modelVersions.removeModelVersion(modelVersionDetails)
+		if _, err := manager.modelVersions.removeModelVersion(modelVersionDetails); err != nil {
+			manager.logger.WithError(err).Warnf("Model removing failed %s", modelId)
+		}
 		return err
 	}
 
 	if err := manager.v2Client.LoadModel(modelId); err != nil {
-		manager.modelVersions.removeModelVersion(modelVersionDetails)
+		if _, err := manager.modelVersions.removeModelVersion(modelVersionDetails); err != nil {
+			manager.logger.WithError(err).Warnf("Model removing failed %s", modelId)
+		}
 		if err := manager.updateAvailableMemory(memBytesToLoad, false); err != nil {
-			manager.logger.Warn("Could not update memory %s", err)
+			manager.logger.WithError(err).Warnf("Could not update memory for model %s", modelId)
 		}
 		return err
 	}
 
-	if manager.cache.Exists(modelId) {
-		err = manager.cache.UpdateDefault(modelId)
-	} else {
-		err = manager.cache.AddDefault(modelId)
-	}
-	if err != nil {
-		manager.modelVersions.removeModelVersion(modelVersionDetails)
+	if err := manager.cache.AddDefault(modelId); err != nil {
+		manager.logger.WithError(err).Infof("Cannot load model %s, aborting", modelId)
+		if err := manager.v2Client.UnloadModel(modelId); err != nil {
+			manager.logger.WithError(err).Warnf("Model unload failed %s", modelId)
+		}
 		if err := manager.updateAvailableMemory(memBytesToLoad, false); err != nil {
-			manager.logger.Warn("Could not update memory %s", err)
+			manager.logger.WithError(err).Warnf("Could not update memory %s", modelId)
+		}
+		if _, err := manager.modelVersions.removeModelVersion(modelVersionDetails); err != nil {
+			manager.logger.WithError(err).Warnf("Model removing failed %s", modelId)
 		}
 		return err
 	}
 
-	manager.logger.Debugf("Load model %s version %d success, available memory is %d",
-		modelId, modelVersion, manager.GetAvailableMemoryBytes())
+	manager.logger.Debugf("Load model %s success, available memory is %d",
+		modelId, manager.GetAvailableMemoryBytes())
 	return nil
 }
 
@@ -120,39 +122,21 @@ func (manager *LocalStateManager) UnloadModelVersion(modelVersionDetails *agent.
 		return err
 	}
 
-	numVersions, err := manager.modelVersions.numVersions(modelId)
-	if err != nil {
-		return err
-	}
-
 	if manager.cache.Exists(modelId) {
-		if numVersions > 1 {
-			// we assume here that after we remove below the model version there is still
-			// other versions of this model that exist, therefore we reload the model
-			// to sync the remaining versions from disk.
-			if err := manager.v2Client.LoadModel(modelId); err != nil {
-				return err
-			}
-		} else {
-			// otherwise we remove the model from server
-			if err := manager.v2Client.UnloadModel(modelId); err != nil {
-				return err
-			}
+		if err := manager.v2Client.UnloadModel(modelId); err != nil {
+			return err
 		}
 
 		updateMemoryFlag := true
-		if numVersions == 1 {
-			// this is the last version of the model so delete from cache
-			if err := manager.cache.Delete(modelId); err != nil {
-				manager.logger.Warnf("Delete model %s from cache failed", modelId)
-				updateMemoryFlag = false
-			}
-			manager.logger.Infof("Removed last version of model %s", modelId)
+		if err := manager.cache.Delete(modelId); err != nil {
+			manager.logger.WithError(err).Warnf("Delete model %s from cache failed", modelId)
+			updateMemoryFlag = false
 		}
+		manager.logger.Infof("Removed model %s", modelId)
 
-		memBytes, err := manager.modelVersions.getModelVersionMemoryBytes(modelId, modelVersion)
+		memBytes, err := manager.modelVersions.getModelMemoryBytes(modelId)
 		if err != nil {
-			manager.logger.Warnf("Failed to get memory details for model %s version %d", modelId, modelVersion)
+			manager.logger.WithError(err).Warnf("Failed to get memory details for model %s", modelId)
 			updateMemoryFlag = false
 		}
 
@@ -160,24 +144,21 @@ func (manager *LocalStateManager) UnloadModelVersion(modelVersionDetails *agent.
 			// if the model has been removed from the cache and/or server (by a concurrent request),
 			// skip updateing memory
 			if err := manager.updateAvailableMemory(memBytes, false); err != nil {
-				manager.logger.Warn("Could not update memory %s", err)
+				manager.logger.WithError(err).Warnf("Could not update memory for model %s", modelId)
 			}
 		} else {
-			manager.logger.Warnf("Race condition with %s version %d", modelId, modelVersion)
+			manager.logger.Debugf("Race condition for model %s", modelId)
 		}
 
 	}
 
-	modelRemoved := manager.modelVersions.removeModelVersion(modelVersionDetails)
-
-	noRemainingVersions := (numVersions - 1) == 0
-	if noRemainingVersions != modelRemoved {
-		manager.logger.Warnf("Mismatch in state. Removed all versions from state is [%v] but model repo says remaining versions [%d] for %s:%d",
-			modelRemoved, (numVersions - 1), modelId, modelVersion)
+	_, modelRemovedErr := manager.modelVersions.removeModelVersion(modelVersionDetails)
+	if modelRemovedErr != nil {
+		manager.logger.Warn("Model removing failed %s with err %s", modelId, modelRemovedErr)
 	}
 
-	manager.logger.Debugf("Unload model %s version %d success, available memory is %d",
-		modelId, modelVersion, manager.GetAvailableMemoryBytes())
+	manager.logger.Debugf("Unload model %s success, available memory is %d",
+		modelId, manager.GetAvailableMemoryBytes())
 	return nil
 }
 
@@ -208,7 +189,7 @@ func (manager *LocalStateManager) EnsureLoadModel(modelId string) error {
 		manager.logger.Debugf("Making room for %s", modelId)
 		// here we need to make sure that we can load the models
 		// we also assume that the model exists aleady in the models maps
-		modelMemoryBytes, err := manager.modelVersions.getModelTotalMemoryBytes(modelId)
+		modelMemoryBytes, err := manager.modelVersions.getModelMemoryBytes(modelId)
 		if err != nil {
 			manager.logger.Errorf("Error getting memory for model %s - %s (concurency)", err, modelId)
 			return err
@@ -269,21 +250,10 @@ func (manager *LocalStateManager) GetAvailableMemoryBytes() uint64 {
 	}
 }
 
-func (manager *LocalStateManager) getMemoryDelta(modelId string, modelVersionDetails *agent.ModelVersion) (uint64, error) {
-	if manager.cache.Exists(modelId) {
-		// if the model exists in cache and we are loading a new version of it then we only consider the delta of this
-		// new version
-		memBytesToLoad := modelVersionDetails.GetModel().GetModelSpec().GetMemoryBytes()
-		return memBytesToLoad, nil
+func (manager *LocalStateManager) getMemoryDelta(modelId string) (uint64, error) {
+	if memBytesToLoad, err := manager.modelVersions.getModelMemoryBytes(modelId); err != nil {
+		return 0, err
 	} else {
-		// otherwise we consider the entirety of a new model:
-		// - if this model has other versions (this means that it has been evicted)
-		// - if this is the only version then the delta is just this version anyway
-		var err error
-		memBytesToLoad, err := manager.modelVersions.getModelTotalMemoryBytes(modelId)
-		if err != nil {
-			return 0, err
-		}
 		return memBytesToLoad, nil
 	}
 }
@@ -382,7 +352,7 @@ func (manager *LocalStateManager) modelReloadLockWaitOrCreate(modelId string) bo
 	} else {
 		manager.logger.Debugf("Creating reload lock for model %s", modelId)
 		existingLock.(*sync.RWMutex).Lock()
-		manager.logger.Infof("MODEL %s +WD", modelId)
+		manager.logger.Debugf("MODEL %s +WD", modelId)
 	}
 	return loaded
 }
@@ -392,7 +362,7 @@ func (manager *LocalStateManager) modelReloadLockDelete(modelId string) {
 	existingLock, loaded := manager.semas.LoadAndDelete(modelId)
 	if loaded {
 		existingLock.(*sync.RWMutex).Unlock()
-		manager.logger.Infof("MODEL %s -WD", modelId)
+		manager.logger.Debugf("MODEL %s -WD", modelId)
 	} else {
 		manager.logger.Warnf("Model %s state is inconsistent", modelId)
 	}
@@ -425,18 +395,6 @@ func (manager *LocalStateManager) makeRoomIfNeeded(modelId string, modelMemoryBy
 			}
 		}
 
-		if evictedModelId == modelId {
-			// we are trying to load a new version of a model that has a previous version in memory
-			// as we cannot unload the previous version on its own we put the model back in the
-			// cache with latest timestamp and try the next model to evict if any
-			// if this is the last model in the cache break and err
-			manager.logger.Warnf(
-				"Re-adding model %s to cache as it is the same as new model (different versions?)",
-				modelId)
-			_ = manager.cache.EndEvict(evictedModelId, evictedModelValue, true) // rollback
-			continue
-		}
-
 		// note that we unload here all versions of the same model
 		if err := manager.v2Client.UnloadModel(evictedModelId); err != nil {
 			// if we get an error here, proceed and assume that the model has been unloaded
@@ -449,9 +407,9 @@ func (manager *LocalStateManager) makeRoomIfNeeded(modelId string, modelMemoryBy
 		}
 
 		// we evict all versions of a model
-		evictedModelMemoryBytes, err := manager.modelVersions.getModelTotalMemoryBytes(evictedModelId)
+		evictedModelMemoryBytes, err := manager.modelVersions.getModelMemoryBytes(evictedModelId)
 		if err != nil {
-			manager.logger.Warn(
+			manager.logger.Warnf(
 				"Could not get memory details for model %s with error %s", evictedModelId, err)
 			_ = manager.cache.EndEvict(evictedModelId, evictedModelValue, false)
 			continue

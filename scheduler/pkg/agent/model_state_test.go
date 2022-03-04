@@ -16,11 +16,11 @@ func TestAddModelVersion(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name                    string
-		state                   *ModelState
-		modelVersion            *pb.ModelVersion
-		versionAdded            bool
-		expectedTotalModelBytes uint64
+		name               string
+		state              *ModelState
+		modelVersion       *pb.ModelVersion
+		versionAdded       bool
+		expectedModelBytes uint64
 	}
 
 	tests := []test{
@@ -38,27 +38,25 @@ func TestAddModelVersion(t *testing.T) {
 				},
 				Version: 1,
 			},
-			versionAdded:            true,
-			expectedTotalModelBytes: 500,
+			versionAdded:       true,
+			expectedModelBytes: 500,
 		},
 		{
 			name: "NewModel (Another Model Exsits)",
 			state: &ModelState{
-				loadedModels: map[string]*ModelVersions{
+				loadedModels: map[string]*modelVersion{
 					"mnist": {
-						versions: map[uint32]*pb.ModelVersion{
-							1: {
-								Model: &pbs.Model{
-									Meta: &pbs.MetaData{
-										Name: "mnist",
-									},
-									ModelSpec: &pbs.ModelSpec{
-										MemoryBytes: getUint64Ptr(500),
-									},
+						&pb.ModelVersion{
+							Model: &pbs.Model{
+								Meta: &pbs.MetaData{
+									Name: "mnist",
+								},
+								ModelSpec: &pbs.ModelSpec{
+									MemoryBytes: getUint64Ptr(500),
 								},
 							},
+							Version: 1,
 						},
-						totalMemoryBytes: 500,
 					},
 				},
 			},
@@ -73,27 +71,25 @@ func TestAddModelVersion(t *testing.T) {
 				},
 				Version: 1,
 			},
-			versionAdded:            true,
-			expectedTotalModelBytes: 500,
+			versionAdded:       true,
+			expectedModelBytes: 500,
 		},
 		{
 			name: "NewVersion",
 			state: &ModelState{
-				loadedModels: map[string]*ModelVersions{
+				loadedModels: map[string]*modelVersion{
 					"iris": {
-						versions: map[uint32]*pb.ModelVersion{
-							1: {
-								Model: &pbs.Model{
-									Meta: &pbs.MetaData{
-										Name: "iris",
-									},
-									ModelSpec: &pbs.ModelSpec{
-										MemoryBytes: getUint64Ptr(500),
-									},
+						&pb.ModelVersion{
+							Model: &pbs.Model{
+								Meta: &pbs.MetaData{
+									Name: "iris",
+								},
+								ModelSpec: &pbs.ModelSpec{
+									MemoryBytes: getUint64Ptr(500),
 								},
 							},
+							Version: 1,
 						},
-						totalMemoryBytes: 500,
 					},
 				},
 			},
@@ -108,27 +104,25 @@ func TestAddModelVersion(t *testing.T) {
 				},
 				Version: 2,
 			},
-			versionAdded:            true,
-			expectedTotalModelBytes: 1000,
+			versionAdded:       false,
+			expectedModelBytes: 500,
 		},
 		{
 			name: "VersionExists",
 			state: &ModelState{
-				loadedModels: map[string]*ModelVersions{
+				loadedModels: map[string]*modelVersion{
 					"iris": {
-						versions: map[uint32]*pb.ModelVersion{
-							1: {
-								Model: &pbs.Model{
-									Meta: &pbs.MetaData{
-										Name: "iris",
-									},
-									ModelSpec: &pbs.ModelSpec{
-										MemoryBytes: getUint64Ptr(500),
-									},
+						&pb.ModelVersion{
+							Model: &pbs.Model{
+								Meta: &pbs.MetaData{
+									Name: "iris",
+								},
+								ModelSpec: &pbs.ModelSpec{
+									MemoryBytes: getUint64Ptr(500),
 								},
 							},
+							Version: 1,
 						},
-						totalMemoryBytes: 500,
 					},
 				},
 			},
@@ -143,18 +137,22 @@ func TestAddModelVersion(t *testing.T) {
 				},
 				Version: 1,
 			},
-			versionAdded:            false,
-			expectedTotalModelBytes: 500,
+			versionAdded:       false,
+			expectedModelBytes: 500,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			versionAdded := test.state.addModelVersion(test.modelVersion)
+			versionAdded, err := test.state.addModelVersion(test.modelVersion)
 			g.Expect(versionAdded).To(Equal(test.versionAdded))
 			//check version exists
-			g.Expect(test.state.versionExists("iris", test.modelVersion.GetVersion())).To(Equal(true))
-			g.Expect(test.state.getModelTotalMemoryBytes("iris")).To(Equal(test.expectedTotalModelBytes))
+			if versionAdded {
+				g.Expect(test.state.versionExists("iris", test.modelVersion.GetVersion())).To(Equal(true))
+			} else if err != nil {
+				g.Expect(test.state.versionExists("iris", test.modelVersion.GetVersion())).To(Equal(false))
+			}
+			g.Expect(test.state.getModelMemoryBytes("iris")).To(Equal(test.expectedModelBytes))
 		})
 	}
 }
@@ -163,33 +161,31 @@ func TestRemoveModelVersion(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name                    string
-		state                   *ModelState
-		modelVersion            *pb.ModelVersion
-		modelDeleted            bool
-		expectedTotalModelBytes uint64
-		numModels               int
+		name               string
+		state              *ModelState
+		modelVersion       *pb.ModelVersion
+		modelDeleted       bool
+		expectedModelBytes uint64
+		numModels          int
 	}
 
 	tests := []test{
 		{
 			name: "ModelDeleted",
 			state: &ModelState{
-				loadedModels: map[string]*ModelVersions{
+				loadedModels: map[string]*modelVersion{
 					"iris": {
-						versions: map[uint32]*pb.ModelVersion{
-							1: {
-								Model: &pbs.Model{
-									Meta: &pbs.MetaData{
-										Name: "iris",
-									},
-									ModelSpec: &pbs.ModelSpec{
-										MemoryBytes: getUint64Ptr(500),
-									},
+						&pb.ModelVersion{
+							Model: &pbs.Model{
+								Meta: &pbs.MetaData{
+									Name: "iris",
+								},
+								ModelSpec: &pbs.ModelSpec{
+									MemoryBytes: getUint64Ptr(500),
 								},
 							},
+							Version: 1,
 						},
-						totalMemoryBytes: 500,
 					},
 				},
 			},
@@ -201,38 +197,26 @@ func TestRemoveModelVersion(t *testing.T) {
 				},
 				Version: 1,
 			},
-			modelDeleted:            true,
-			expectedTotalModelBytes: 0,
-			numModels:               0,
+			modelDeleted:       true,
+			expectedModelBytes: 0,
+			numModels:          0,
 		},
 		{
 			name: "ModelNotDeleted",
 			state: &ModelState{
-				loadedModels: map[string]*ModelVersions{
+				loadedModels: map[string]*modelVersion{
 					"iris": {
-						versions: map[uint32]*pb.ModelVersion{
-							1: {
-								Model: &pbs.Model{
-									Meta: &pbs.MetaData{
-										Name: "iris",
-									},
-									ModelSpec: &pbs.ModelSpec{
-										MemoryBytes: getUint64Ptr(500),
-									},
+						&pb.ModelVersion{
+							Model: &pbs.Model{
+								Meta: &pbs.MetaData{
+									Name: "iris",
+								},
+								ModelSpec: &pbs.ModelSpec{
+									MemoryBytes: getUint64Ptr(500),
 								},
 							},
-							2: {
-								Model: &pbs.Model{
-									Meta: &pbs.MetaData{
-										Name: "iris",
-									},
-									ModelSpec: &pbs.ModelSpec{
-										MemoryBytes: getUint64Ptr(500),
-									},
-								},
-							},
+							Version: 1,
 						},
-						totalMemoryBytes: 1000,
 					},
 				},
 			},
@@ -242,79 +226,22 @@ func TestRemoveModelVersion(t *testing.T) {
 						Name: "iris",
 					},
 				},
-				Version: 1,
+				Version: 2,
 			},
-			modelDeleted:            false,
-			expectedTotalModelBytes: 500,
-			numModels:               1,
-		},
-		{
-			name: "ModelNotDeleted With Another Model Existing",
-			state: &ModelState{
-				loadedModels: map[string]*ModelVersions{
-					"mnist": {
-						versions: map[uint32]*pb.ModelVersion{
-							1: {
-								Model: &pbs.Model{
-									Meta: &pbs.MetaData{
-										Name: "mnist",
-									},
-									ModelSpec: &pbs.ModelSpec{
-										MemoryBytes: getUint64Ptr(500),
-									},
-								},
-							},
-						},
-					},
-					"iris": {
-						versions: map[uint32]*pb.ModelVersion{
-							1: {
-								Model: &pbs.Model{
-									Meta: &pbs.MetaData{
-										Name: "iris",
-									},
-									ModelSpec: &pbs.ModelSpec{
-										MemoryBytes: getUint64Ptr(500),
-									},
-								},
-							},
-							2: {
-								Model: &pbs.Model{
-									Meta: &pbs.MetaData{
-										Name: "iris",
-									},
-									ModelSpec: &pbs.ModelSpec{
-										MemoryBytes: getUint64Ptr(500),
-									},
-								},
-							},
-						},
-						totalMemoryBytes: 1000,
-					},
-				},
-			},
-			modelVersion: &pb.ModelVersion{
-				Model: &pbs.Model{
-					Meta: &pbs.MetaData{
-						Name: "iris",
-					},
-				},
-				Version: 1,
-			},
-			modelDeleted:            false,
-			expectedTotalModelBytes: 500,
-			numModels:               2,
+			modelDeleted:       false,
+			expectedModelBytes: 500,
+			numModels:          1,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			modelDeleted := test.state.removeModelVersion(test.modelVersion)
+			modelDeleted, _ := test.state.removeModelVersion(test.modelVersion)
 			g.Expect(modelDeleted).To(Equal(test.modelDeleted))
 			//check version not exists
 			g.Expect(test.state.versionExists("iris", test.modelVersion.GetVersion())).To(Equal(false))
 			if !modelDeleted {
-				g.Expect(test.state.getModelTotalMemoryBytes("iris")).To(Equal(test.expectedTotalModelBytes))
+				g.Expect(test.state.getModelMemoryBytes("iris")).To(Equal(test.expectedModelBytes))
 			}
 			g.Expect(test.state.numModels()).To(Equal(test.numModels))
 		})

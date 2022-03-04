@@ -16,7 +16,7 @@ import (
 func setupService(numModels int, modelPrefix string, capacity int) *ClientDebug {
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
-	stateManager := setupLocalTestManager(numModels, modelPrefix, nil, capacity)
+	stateManager := setupLocalTestManager(numModels, modelPrefix, nil, capacity, 1)
 	clientDebugService := NewClientDebug(logger, GRPCDebugServicePort)
 	clientDebugService.SetState(stateManager)
 	return clientDebugService
@@ -37,11 +37,11 @@ func TestAgentDebugServiceSmoke(t *testing.T) {
 
 	mem := uint64(1)
 	httpmock.Activate()
-	_ = service.stateManager.LoadModelVersion(
+	err = service.stateManager.LoadModelVersion(
 		&pba.ModelVersion{
 			Model: &pbs.Model{
 				Meta: &pbs.MetaData{
-					Name: "dummy_1",
+					Name: "dummy_1_1",
 				},
 				ModelSpec: &pbs.ModelSpec{
 					Uri:         "gs://dummy",
@@ -50,6 +50,7 @@ func TestAgentDebugServiceSmoke(t *testing.T) {
 			},
 		},
 	)
+	g.Expect(err).To(BeNil())
 	httpmock.DeactivateAndReset()
 
 	response, err = service.ReplicaStatus(context.TODO(), &pbad.ReplicaStatusRequest{})
@@ -61,7 +62,7 @@ func TestAgentDebugServiceSmoke(t *testing.T) {
 	// check that we get it back
 	models := response.Models
 	g.Expect(len(models)).To(Equal(1))
-	g.Expect(models[0].Name).To(Equal("dummy_1"))
+	g.Expect(models[0].Name).To(Equal("dummy_1_1"))
 	g.Expect(models[0].State).To(Equal(pbad.ModelReplicaState_InMemory))
 	// we check up to a second resolution because of latency
 	actualTs := models[0].GetLastAccessed().AsTime().Truncate(time.Second)

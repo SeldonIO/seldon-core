@@ -325,8 +325,8 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	modelWithVersion := util.GetVersionedModelName(modelName, modelVersion)
 	pinnedModelVersion := util.GetPinnedModelVersion()
 
-	c.stateManager.modelLoadLockCreate(modelName)
-	defer c.stateManager.modelLoadUnlock(modelName)
+	c.stateManager.modelLoadLockCreate(modelWithVersion)
+	defer c.stateManager.modelLoadUnlock(modelWithVersion)
 
 	logger.Infof("Load model %s:%d", modelName, modelVersion)
 
@@ -350,7 +350,6 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, memBytes, pinnedModelVersion)
 	err = c.stateManager.LoadModelVersion(modifiedModelVersionRequest)
 	if err != nil {
-		c.stateManager.modelVersions.removeModelVersion(modifiedModelVersionRequest)
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
 		return err
 	}
@@ -370,8 +369,8 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 	modelWithVersion := util.GetVersionedModelName(modelName, modelVersion)
 	pinnedModelVersion := util.GetPinnedModelVersion()
 
-	c.stateManager.modelLoadLockCreate(modelName)
-	defer c.stateManager.modelLoadUnlock(modelName)
+	c.stateManager.modelLoadLockCreate(modelWithVersion)
+	defer c.stateManager.modelLoadUnlock(modelWithVersion)
 
 	logger.Infof("Unload model %s:%d", modelName, modelVersion)
 

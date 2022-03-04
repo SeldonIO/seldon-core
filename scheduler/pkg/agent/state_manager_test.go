@@ -2,6 +2,8 @@ package agent
 
 import (
 	"math/rand"
+	"reflect"
+	"sort"
 	"strconv"
 	"sync"
 	"testing"
@@ -10,11 +12,28 @@ import (
 	"github.com/jarcoal/httpmock"
 	pba "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 	pbs "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 
 	log "github.com/sirupsen/logrus"
 
 	. "github.com/onsi/gomega"
 )
+
+func checkModelsStateIsSame(manager *LocalStateManager, v2State *v2State) bool {
+	modelsInCache, _ := manager.cache.GetItems()
+	modelsInCacheMLServer := make([]string, len(modelsInCache))
+	counter := 0
+	for model := range v2State.models {
+		if v2State.isModelLoaded(model) {
+			modelsInCacheMLServer[counter] = model
+			counter++
+		}
+	}
+	sort.Strings(modelsInCache)
+	sort.Strings(modelsInCacheMLServer)
+
+	return reflect.DeepEqual(modelsInCache, modelsInCacheMLServer)
+}
 
 func getModelId(prefix string, suffix int) string {
 	return prefix + "_" + strconv.Itoa(suffix)
@@ -52,18 +71,23 @@ func getDummyModelDetailsUnload(modelId string, version uint32) *pba.ModelVersio
 	return &mv
 }
 
-func setupLocalTestManager(numModels int, modelPrefix string, v2Client *V2Client, capacity int) *LocalStateManager {
+func setupLocalTestManagerWithState(numModels int, modelPrefix string, v2Client *V2Client, capacity int, numVersions int) (*LocalStateManager, *v2State) {
 
 	logger := log.New()
+	logger.SetLevel(log.InfoLevel)
 
 	modelState := NewModelState()
-	models := make([]string, numModels)
+	models := make([]string, numModels*numVersions)
 	for i := 0; i < numModels; i++ {
-		models[i] = getModelId(modelPrefix, i)
+		for j := 0; j < numVersions; j++ {
+			// we append versions here ad `getModelId` is meant to just return the modelId (not versioned)
+			models[(i*numVersions)+j] = getModelId(modelPrefix, i) + "_" + strconv.Itoa(j+1)
+		}
 	}
 	//create mock v2 client
+	var v2ClientState *v2State
 	if v2Client == nil {
-		v2Client = createTestV2Client(models, 200)
+		v2Client, v2ClientState = createTestV2ClientwithState(models, 200)
 	}
 	manager := NewLocalStateManager(
 		modelState,
@@ -71,29 +95,52 @@ func setupLocalTestManager(numModels int, modelPrefix string, v2Client *V2Client
 		v2Client,
 		int64(capacity),
 	)
+	return manager, v2ClientState
+}
+
+func setupLocalTestManager(numModels int, modelPrefix string, v2Client *V2Client, capacity int, numVersions int) *LocalStateManager {
+	manager, _ := setupLocalTestManagerWithState(numModels, modelPrefix, v2Client, capacity, numVersions)
 
 	return manager
-
 }
 
 // this mimics LoadModel in client.go with regards to locking
 func (manager *LocalStateManager) loadModelFn(modelVersionDetails *pba.ModelVersion) error {
 	modelName := modelVersionDetails.GetModel().GetMeta().GetName()
+	modelVersion := modelVersionDetails.GetVersion()
+	memBytes := modelVersionDetails.GetModel().GetModelSpec().GetMemoryBytes()
 
-	manager.modelLoadLockCreate(modelName)
-	defer manager.modelLoadUnlock(modelName)
+	modelWithVersion := util.GetVersionedModelName(modelName, modelVersion)
+	pinnedModelVersion := util.GetPinnedModelVersion()
+	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, memBytes, pinnedModelVersion)
 
-	return manager.LoadModelVersion(modelVersionDetails)
+	manager.modelLoadLockCreate(modelWithVersion)
+	defer manager.modelLoadUnlock(modelWithVersion)
+
+	return manager.LoadModelVersion(modifiedModelVersionRequest)
 }
 
 // this mimics UnoadModel in client.go with regards to locking
 func (manager *LocalStateManager) unloadModelFn(modelVersionDetails *pba.ModelVersion) error {
 	modelName := modelVersionDetails.GetModel().GetMeta().GetName()
+	modelVersion := modelVersionDetails.GetVersion()
 
-	manager.modelLoadLockCreate(modelName)
-	defer manager.modelLoadUnlock(modelName)
+	modelWithVersion := util.GetVersionedModelName(modelName, modelVersion)
+	pinnedModelVersion := util.GetPinnedModelVersion()
+	// we dont have memory actually requirement in unload
+	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, 0, pinnedModelVersion)
 
-	return manager.UnloadModelVersion(modelVersionDetails)
+	manager.modelLoadLockCreate(modelWithVersion)
+	defer manager.modelLoadUnlock(modelWithVersion)
+
+	return manager.UnloadModelVersion(modifiedModelVersionRequest)
+}
+
+// construct versioned model id (similar to what envoy is sending us)
+func (manager *LocalStateManager) ensureLoadModelFn(modelName string, modelVersion uint32) error {
+	modelWithVersion := util.GetVersionedModelName(modelName, modelVersion)
+
+	return manager.EnsureLoadModel(modelWithVersion)
 }
 
 func TestLocalStateManagerSmoke(t *testing.T) {
@@ -104,22 +151,28 @@ func TestLocalStateManagerSmoke(t *testing.T) {
 	numModels := 100
 	dummyModelPrefix := "dummy_model"
 
-	manager := setupLocalTestManager(numModels, dummyModelPrefix, nil, numModels-2)
+	manager, v2State := setupLocalTestManagerWithState(numModels, dummyModelPrefix, nil, numModels-2, 1)
 
 	g := NewGomegaWithT(t)
 
 	for i := 0; i < numModels; i++ {
 		modelName := getModelId(dummyModelPrefix, i)
 		memBytes := uint64(1)
-		err := manager.LoadModelVersion(getDummyModelDetails(modelName, memBytes, uint32(1)))
+		err := manager.loadModelFn(getDummyModelDetails(modelName, memBytes, uint32(1)))
 		g.Expect(err).To(BeNil())
 	}
 
+	// check that models in the two caches are equal
+	g.Expect(checkModelsStateIsSame(manager, v2State)).To(Equal(true))
+
 	for i := numModels - 1; i >= 0; i-- {
 		modelName := getModelId(dummyModelPrefix, i)
-		err := manager.EnsureLoadModel(modelName)
+		err := manager.ensureLoadModelFn(modelName, 1)
 		g.Expect(err).To(BeNil())
 	}
+
+	// check that models in the two caches are equal
+	g.Expect(checkModelsStateIsSame(manager, v2State)).To(Equal(true))
 
 }
 
@@ -163,13 +216,13 @@ func TestConcurrentReload(t *testing.T) {
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
 
-			manager := setupLocalTestManager(test.numModels, dummyModelPrefix, nil, test.capacity)
+			manager, v2State := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, 1)
 
 			// load the first numModels, this will evict in reverse order
 			for i := test.numModels - 1; i >= 0; i-- {
 				modelName := getModelId(dummyModelPrefix, i)
 				memBytes := uint64(1)
-				_ = manager.LoadModelVersion(getDummyModelDetails(modelName, memBytes, uint32(1)))
+				_ = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, uint32(1)))
 			}
 
 			t.Log("Start test")
@@ -180,7 +233,7 @@ func TestConcurrentReload(t *testing.T) {
 				modelName := getModelId(dummyModelPrefix, test.numModels-1)
 
 				checkerFn := func(wg *sync.WaitGroup, modelName string) {
-					err := manager.EnsureLoadModel(modelName)
+					err := manager.ensureLoadModelFn(modelName, 1)
 					if err != nil {
 						t.Logf("Error %s", err)
 					}
@@ -199,6 +252,9 @@ func TestConcurrentReload(t *testing.T) {
 			} else {
 				g.Expect(len(cacheItems)).Should(BeNumerically("==", test.numModels))
 			}
+
+			// check that models in the two caches are equal
+			g.Expect(checkModelsStateIsSame(manager, v2State)).To(Equal(true))
 
 			t.Log("Test unload models")
 			for i := 0; i < test.numModels; i++ {
@@ -253,13 +309,13 @@ func TestConcurrentInfer(t *testing.T) {
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
 
-			manager := setupLocalTestManager(test.numModels, dummyModelPrefix, nil, test.capacity)
+			manager, v2State := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, 1)
 
 			// load the first numModels, this will evict in reverse order
 			for i := test.numModels - 1; i >= 0; i-- {
 				modelName := getModelId(dummyModelPrefix, i)
 				memBytes := uint64(1)
-				_ = manager.LoadModelVersion(getDummyModelDetails(modelName, memBytes, uint32(1)))
+				_ = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, uint32(1)))
 			}
 
 			t.Log("Start test")
@@ -270,10 +326,10 @@ func TestConcurrentInfer(t *testing.T) {
 				modelName := getModelId(dummyModelPrefix, modelId)
 
 				checkerFn := func(wg *sync.WaitGroup, modelName string) {
-					err := manager.EnsureLoadModel(modelName)
+					err := manager.ensureLoadModelFn(modelName, 1)
 					for err != nil {
 						t.Logf("Error %s", err)
-						err = manager.EnsureLoadModel(modelName)
+						err = manager.ensureLoadModelFn(modelName, 1)
 					}
 					g.Expect(err).To(BeNil())
 					wg.Done()
@@ -290,6 +346,9 @@ func TestConcurrentInfer(t *testing.T) {
 			} else {
 				g.Expect(len(cacheItems)).Should(BeNumerically("==", test.numModels))
 			}
+
+			// check that models in the two caches are equal
+			g.Expect(checkModelsStateIsSame(manager, v2State)).To(Equal(true))
 
 			t.Log("Test unload models")
 			for i := 0; i < test.numModels; i++ {
@@ -346,7 +405,7 @@ func TestConcurrentLoad(t *testing.T) {
 			defer httpmock.DeactivateAndReset()
 
 			t.Log("Setup test")
-			manager := setupLocalTestManager(test.numModels, dummyModelPrefix, nil, test.capacity)
+			manager, v2State := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, 1)
 
 			t.Log("Start test")
 			var wg sync.WaitGroup
@@ -372,6 +431,8 @@ func TestConcurrentLoad(t *testing.T) {
 			// memory available should be zero
 			g.Expect(manager.GetAvailableMemoryBytes()).Should(BeNumerically("==", test.expectedAvailableMemory))
 			g.Expect(manager.modelVersions.numModels()).Should(BeNumerically("==", test.numModels))
+			// check that models in the two caches are equal
+			g.Expect(checkModelsStateIsSame(manager, v2State)).To(Equal(true))
 
 			// then do unload
 			wg.Add(test.numModels)
@@ -433,7 +494,7 @@ func TestConcurrentLoadWithVersions(t *testing.T) {
 			defer httpmock.DeactivateAndReset()
 
 			t.Log("Setup test")
-			manager := setupLocalTestManager(test.numModels, dummyModelPrefix, nil, test.capacity)
+			manager, v2State := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, numberOfVersionsToAdd)
 
 			t.Log("Start test")
 			var wg sync.WaitGroup
@@ -459,13 +520,11 @@ func TestConcurrentLoadWithVersions(t *testing.T) {
 			}
 			wg.Wait()
 
-			// because of multiversions there could be cases where we need to evict more models than needed
-			g.Expect(manager.GetAvailableMemoryBytes()).Should(BeNumerically(">=", test.expectedAvailableMemory))
-			g.Expect(manager.modelVersions.numModels()).Should(BeNumerically("==", test.numModels))
-			models := manager.modelVersions.modelNames()
-			for _, model := range models {
-				g.Expect(manager.modelVersions.numVersions(model)).To(Equal(numberOfVersionsToAdd))
-			}
+			g.Expect(manager.GetAvailableMemoryBytes()).Should(BeNumerically("==", test.expectedAvailableMemory))
+			// we treat each model version as a separate model
+			g.Expect(manager.modelVersions.numModels()).Should(BeNumerically("==", test.numModels*numberOfVersionsToAdd))
+			// check that models in the two caches are equal
+			g.Expect(checkModelsStateIsSame(manager, v2State)).To(Equal(true))
 
 			// then do unload
 			wg.Add(test.numModels * numberOfVersionsToAdd)
@@ -524,8 +583,9 @@ func TestDataAndControlPlaneInteractionSmoke(t *testing.T) {
 			//activate mock http server for v2
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
+
 			t.Log("Setup test")
-			manager := setupLocalTestManager(test.numModels, dummyModelPrefix, nil, test.capacity)
+			manager, v2State := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, numberOfVersionsToAdd)
 
 			t.Log("Add a single version for all models")
 			// add a single version of all models before actual test
@@ -546,11 +606,14 @@ func TestDataAndControlPlaneInteractionSmoke(t *testing.T) {
 				op := rand.Intn(3)
 				switch op {
 				case 0:
+					t.Logf("Load model %s", modelName)
 					_ = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion))
 				case 1:
+					t.Logf("Unload model %s", modelName)
 					_ = manager.unloadModelFn(getDummyModelDetailsUnload(modelName, modelVersion))
 				case 2:
-					_ = manager.EnsureLoadModel(modelName) // this can be any model version per test
+					t.Logf("Ensure load model %s", modelName)
+					_ = manager.ensureLoadModelFn(modelName, modelVersion) // this can be any model version per test
 				}
 				wg.Done()
 			}
@@ -568,6 +631,9 @@ func TestDataAndControlPlaneInteractionSmoke(t *testing.T) {
 			// we can unload as part of the test
 			g.Expect(manager.availableMemoryBytes).Should(BeNumerically("<=", test.capacity))
 			g.Expect(manager.modelVersions.numModels()).Should(BeNumerically("<=", test.numModels))
+
+			// check that models in the two caches are equal
+			g.Expect(checkModelsStateIsSame(manager, v2State)).To(Equal(true))
 
 			t.Log("Test unload models")
 			for i := 0; i < test.numModels; i++ {
@@ -614,7 +680,6 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 		isError                 bool
 		expectedNumModels       int
 		expectedAvailableMemory int64
-		onlyCheckLastErr        bool
 	}
 	tests := []test{
 		{
@@ -624,7 +689,6 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			isError:                 false,
 			expectedNumModels:       2,
 			expectedAvailableMemory: 0,
-			onlyCheckLastErr:        false,
 		},
 		{
 			// there could be a race condition here as the model might not be in
@@ -635,7 +699,6 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			isError:                 false,
 			expectedNumModels:       1,
 			expectedAvailableMemory: 1,
-			onlyCheckLastErr:        false,
 		},
 		{
 			// should be an error because model is unloaded first
@@ -645,7 +708,6 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			isError:                 true,
 			expectedNumModels:       1,
 			expectedAvailableMemory: 1,
-			onlyCheckLastErr:        true,
 		},
 		{
 			name:                    "Infer then Unload (existing model - not in memory)",
@@ -654,7 +716,6 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			isError:                 false,
 			expectedNumModels:       1,
 			expectedAvailableMemory: 1,
-			onlyCheckLastErr:        false,
 		},
 		{
 			name:                    "Infer then Unload other model being evicted",
@@ -663,7 +724,6 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			isError:                 false,
 			expectedNumModels:       1,
 			expectedAvailableMemory: 0,
-			onlyCheckLastErr:        false,
 		},
 		{
 			// note that this can sometimes be true under heavy load
@@ -673,7 +733,6 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			isError:                 false,
 			expectedNumModels:       1,
 			expectedAvailableMemory: 0,
-			onlyCheckLastErr:        true,
 		},
 		{
 			// note only one slot on server so Infer model_0 will evict model_1
@@ -683,7 +742,6 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			isError:                 false,
 			expectedNumModels:       2,
 			expectedAvailableMemory: 0,
-			onlyCheckLastErr:        true,
 		},
 		{
 			name:                    "Infer (model in memory) then Infer (model not in memory)",
@@ -692,7 +750,6 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			isError:                 false,
 			expectedNumModels:       2,
 			expectedAvailableMemory: 0,
-			onlyCheckLastErr:        true,
 		},
 	}
 
@@ -702,7 +759,7 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
 
-			manager := setupLocalTestManager(numModels, dummyModelPrefix, nil, capacity)
+			manager, v2State := setupLocalTestManagerWithState(numModels, dummyModelPrefix, nil, capacity, 1)
 			var barrier sync.WaitGroup
 			barrier.Add(1)
 
@@ -710,7 +767,7 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			for i := 0; i < capacity; i++ {
 				modelName := getModelId(dummyModelPrefix, i)
 				modelVersion := uint32(1)
-				_ = manager.LoadModelVersion(getDummyModelDetails(modelName, memBytes, modelVersion))
+				_ = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion))
 			}
 
 			var wg sync.WaitGroup
@@ -723,30 +780,34 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			errors := make(chan error, 1+repeats)
 
 			fn := func(wg *sync.WaitGroup, modelName string, memBytes uint64, modelVersion uint32, step step, sleep bool, errors chan<- error) {
+				// this is logic from load/unload in client.go
+				modelWithVersion := util.GetVersionedModelName(modelName, modelVersion)
+				pinnedModelVersion := util.GetPinnedModelVersion()
+
 				if sleep {
 					time.Sleep(20 * time.Microsecond)
 					barrier.Wait()
 					if step == controlPlaneLoad || step == controlPlaneUnload {
 						// mimics control plane locking
-						manager.modelLoadLockCreate(modelName)
-						defer manager.modelLoadUnlock(modelName)
+						manager.modelLoadLockCreate(modelWithVersion)
+						defer manager.modelLoadUnlock(modelWithVersion)
 					}
 				} else {
 
 					if step == controlPlaneLoad || step == controlPlaneUnload {
 						// mimics control plane locking
-						manager.modelLoadLockCreate(modelName)
-						defer manager.modelLoadUnlock(modelName)
+						manager.modelLoadLockCreate(modelWithVersion)
+						defer manager.modelLoadUnlock(modelWithVersion)
 					}
 					barrier.Done()
 				}
 				switch step {
 				case controlPlaneLoad:
-					errors <- manager.LoadModelVersion(getDummyModelDetails(modelName, memBytes, modelVersion))
+					errors <- manager.LoadModelVersion(getDummyModelDetails(modelWithVersion, memBytes, pinnedModelVersion))
 				case controlPlaneUnload:
-					errors <- manager.UnloadModelVersion(getDummyModelDetailsUnload(modelName, modelVersion))
+					errors <- manager.UnloadModelVersion(getDummyModelDetailsUnload(modelWithVersion, pinnedModelVersion))
 				case dataPlaneInfer:
-					errors <- manager.EnsureLoadModel(modelName)
+					errors <- manager.ensureLoadModelFn(modelName, modelVersion)
 				}
 				wg.Done()
 			}
@@ -754,20 +815,20 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			t.Log("Setup step1")
 
 			if test.step1.isLoaded {
-				_ = manager.LoadModelVersion(getDummyModelDetails(getModelId(dummyModelPrefix, test.step1.modelIdSuffix), memBytes, uint32(test.step1.modelVersion)))
+				_ = manager.loadModelFn(getDummyModelDetails(getModelId(dummyModelPrefix, test.step1.modelIdSuffix), memBytes, uint32(test.step1.modelVersion)))
 				if !test.step1.inMemory {
 					// ensure load the other model 0, so evicts model_1 if in memory
-					_ = manager.EnsureLoadModel(getModelId(dummyModelPrefix, 0))
+					_ = manager.ensureLoadModelFn(getModelId(dummyModelPrefix, 0), 1)
 				}
 			}
 
 			t.Log("Setup step2")
 
 			if test.step2.isLoaded {
-				_ = manager.LoadModelVersion(getDummyModelDetails(getModelId(dummyModelPrefix, test.step2.modelIdSuffix), memBytes, uint32(test.step2.modelVersion)))
+				_ = manager.loadModelFn(getDummyModelDetails(getModelId(dummyModelPrefix, test.step2.modelIdSuffix), memBytes, uint32(test.step2.modelVersion)))
 				if !test.step2.inMemory {
 					// ensure load the other model 0, so evicts model_1 if in memory
-					_ = manager.EnsureLoadModel(getModelId(dummyModelPrefix, 0))
+					_ = manager.ensureLoadModelFn(getModelId(dummyModelPrefix, 0), 1)
 				}
 			}
 
@@ -780,22 +841,28 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 
 			wg.Wait()
 
-			isErrorActual := false
+			cond := false
 			for i := 0; i <= repeats; i++ {
 				err := <-errors
 				if err != nil {
 					t.Log(err)
 				}
-				if test.onlyCheckLastErr {
-					isErrorActual = (err != nil)
+				if test.isError {
+					if err != nil {
+						cond = true
+					}
 				} else {
-					isErrorActual = (err != nil) || isErrorActual
+					if err == nil {
+						cond = true
+					}
 				}
 			}
 
-			g.Expect(isErrorActual).To(Equal(test.isError))
+			g.Expect(cond).To(Equal(true))
 			g.Expect(manager.modelVersions.numModels()).To(Equal(test.expectedNumModels))
 			g.Expect(manager.availableMemoryBytes).To(Equal(test.expectedAvailableMemory))
+			// check that models in the two caches are equal
+			g.Expect(checkModelsStateIsSame(manager, v2State)).To(Equal(true))
 		})
 	}
 }

@@ -129,6 +129,7 @@ func (cache *LRUCacheManager) Get(id string) (int64, error) {
 	// TODO: make it efficient?
 	cache.mu.RLock()
 	defer cache.mu.RUnlock()
+	cache.itemWait(id)
 	for _, item := range cache.pq {
 		if item.id == id {
 			return item.priority, nil
@@ -140,20 +141,20 @@ func (cache *LRUCacheManager) Get(id string) (int64, error) {
 func (cache *LRUCacheManager) Delete(id string) error {
 	cache.mu.Lock()
 	defer cache.mu.Unlock()
-
+	cache.itemWait(id)
 	for _, item := range cache.pq {
 		if item.id == id {
 			heap.Remove(&(cache.pq), item.index)
 			return nil
 		}
 	}
-
 	return fmt.Errorf("could not find item %s", id)
 }
 
 func (cache *LRUCacheManager) GetItems() ([]string, []int64) {
 	// TODO: make it efficient?
 	// this is not in priority order
+	// this is also not guarded by 	itemLock
 	cache.mu.RLock()
 	defer cache.mu.RUnlock()
 	ids := make([]string, cache.pq.Len())

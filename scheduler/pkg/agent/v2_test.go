@@ -3,6 +3,8 @@ package agent
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"sync"
 	"testing"
 
 	"github.com/jarcoal/httpmock"
@@ -10,24 +12,78 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func createTestV2ClientMockResponders(host string, port int, modelName string, status int) {
+type v2State struct {
+	models map[string]bool
+	mu     sync.Mutex
+}
+
+func (s *v2State) loadResponder(model string, status int) func(req *http.Request) (*http.Response, error) {
+	return func(req *http.Request) (*http.Response, error) {
+		s.setModel(model, true)
+		if status == 200 {
+			return httpmock.NewStringResponse(status, ""), nil
+		} else {
+			return httpmock.NewStringResponse(status, ""), V2BadRequestErr
+		}
+	}
+}
+
+func (s *v2State) unloadResponder(model string, status int) func(req *http.Request) (*http.Response, error) {
+	return func(req *http.Request) (*http.Response, error) {
+		s.setModel(model, false)
+		if status == 200 {
+			return httpmock.NewStringResponse(status, ""), nil
+		} else {
+			return httpmock.NewStringResponse(status, ""), V2BadRequestErr
+		}
+	}
+}
+
+func (s *v2State) setModel(modelId string, val bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.models[modelId] = val
+}
+
+func (s *v2State) isModelLoaded(modelId string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	val, loaded := s.models[modelId]
+	if loaded {
+		return val
+	}
+	return false
+}
+
+func createTestV2ClientMockResponders(host string, port int, modelName string, status int, state *v2State) {
+
 	httpmock.RegisterResponder("POST", fmt.Sprintf("http://%s:%d/v2/repository/models/%s/load", host, port, modelName),
-		httpmock.NewStringResponder(status, `{}`))
+		state.loadResponder(modelName, status))
 	httpmock.RegisterResponder("POST", fmt.Sprintf("http://%s:%d/v2/repository/models/%s/unload", host, port, modelName),
-		httpmock.NewStringResponder(status, `{}`))
+		state.unloadResponder(modelName, status))
+	// we do not care about ready in tests
 	httpmock.RegisterResponder("GET", fmt.Sprintf("http://%s:%d/v2/health/ready", host, port),
 		httpmock.NewStringResponder(200, `{}`))
 }
 
-func createTestV2Client(models []string, status int) *V2Client {
+func createTestV2ClientwithState(models []string, status int) (*V2Client, *v2State) {
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
 	host := "model-server"
 	port := 8080
 	v2 := NewV2Client(host, port, logger)
-	for _, model := range models {
-		createTestV2ClientMockResponders(host, port, model, status)
+	state := &v2State{
+		models: make(map[string]bool, len(models)),
 	}
+
+	for _, model := range models {
+		createTestV2ClientMockResponders(host, port, model, status, state)
+	}
+	return v2, state
+}
+
+func createTestV2Client(models []string, status int) *V2Client {
+	v2, _ := createTestV2ClientwithState(models, status)
 	return v2
 }
 
