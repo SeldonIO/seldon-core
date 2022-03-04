@@ -8,64 +8,42 @@ import (
 )
 
 type LRUCacheManager struct {
-	pq        PriorityQueue
-	mu        sync.RWMutex
-	itemLocks sync.Map
+	pq PriorityQueue
+	mu sync.RWMutex
 }
 
-func (cache *LRUCacheManager) itemLock(id string) error {
-	var lock sync.RWMutex
-	existingLock, loaded := cache.itemLocks.LoadOrStore(id, &lock)
-	if loaded {
-		return fmt.Errorf("Model is already dirty %s", id)
-	}
-	existingLock.(*sync.RWMutex).Lock()
-	return nil
-}
-
-func (cache *LRUCacheManager) itemUnLock(id string) {
-	existingLock, loaded := cache.itemLocks.LoadAndDelete(id)
-	if loaded {
-		existingLock.(*sync.RWMutex).Unlock()
-	}
-}
-
-func (cache *LRUCacheManager) itemWait(id string) {
-	existingLock, loaded := cache.itemLocks.Load(id)
-	if loaded {
-		existingLock.(*sync.RWMutex).RLock()
-		defer existingLock.(*sync.RWMutex).RUnlock()
-	}
-}
-
-func (cache *LRUCacheManager) StartEvict() (string, int64, error) {
+func (cache *LRUCacheManager) Peek() (string, int64, error) {
 	cache.mu.Lock()
 	defer cache.mu.Unlock()
+
+	return cache.peek()
+}
+
+func (cache *LRUCacheManager) peek() (string, int64, error) {
+	// implement peek naively
+	// TODO: find a better way
+
+	item, priority, err := cache.evict()
+	if err == nil {
+		cache.add(item, priority)
+	}
+	return item, priority, err
+
+}
+
+func (cache *LRUCacheManager) Evict() (string, int64, error) {
+	cache.mu.Lock()
+	defer cache.mu.Unlock()
+
+	return cache.evict()
+}
+
+func (cache *LRUCacheManager) evict() (string, int64, error) {
 	if cache.pq.Len() > 0 {
 		item := heap.Pop(&(cache.pq)).(*Item)
-		if err := cache.itemLock(item.id); err != nil {
-			// re-add
-			cache.add(item.id, item.priority)
-			cache.itemUnLock(item.id)
-			return "", 0, fmt.Errorf("cannot evict")
-		}
 		return item.id, item.priority, nil
 	}
 	return "", 0, fmt.Errorf("empty cache, cannot evict")
-}
-
-func (cache *LRUCacheManager) EndEvict(id string, value int64, rollback bool) error {
-	_, loaded := cache.itemLocks.Load(id)
-	if !loaded {
-		// item is not dirty, abort
-		return fmt.Errorf("id %s is not dirty", id)
-	}
-	defer cache.itemUnLock(id)
-	if rollback {
-		// no locking here
-		cache.add(id, value)
-	}
-	return nil
 }
 
 func (cache *LRUCacheManager) add(id string, value int64) {
@@ -77,14 +55,14 @@ func (cache *LRUCacheManager) add(id string, value int64) {
 }
 
 func (cache *LRUCacheManager) Add(id string, value int64) error {
+	cache.mu.Lock()
+	defer cache.mu.Unlock()
 	if id == "" {
 		return fmt.Errorf("cannot use empty string")
 	}
-	if cache.Exists(id) {
+	if cache.exists(id) {
 		return fmt.Errorf("item already exists in cache %s", id)
 	}
-	cache.mu.Lock()
-	defer cache.mu.Unlock()
 	cache.add(id, value)
 	return nil
 }
@@ -112,11 +90,8 @@ func (cache *LRUCacheManager) UpdateDefault(id string) error {
 	return cache.Update(id, -ts())
 }
 
-func (cache *LRUCacheManager) Exists(id string) bool {
+func (cache *LRUCacheManager) exists(id string) bool {
 	// TODO: make it efficient?
-	cache.mu.RLock()
-	defer cache.mu.RUnlock()
-	cache.itemWait(id)
 	for _, item := range cache.pq {
 		if item.id == id {
 			return true
@@ -125,11 +100,17 @@ func (cache *LRUCacheManager) Exists(id string) bool {
 	return false
 }
 
+func (cache *LRUCacheManager) Exists(id string) bool {
+	cache.mu.RLock()
+	defer cache.mu.RUnlock()
+	return cache.exists(id)
+}
+
 func (cache *LRUCacheManager) Get(id string) (int64, error) {
 	// TODO: make it efficient?
 	cache.mu.RLock()
 	defer cache.mu.RUnlock()
-	cache.itemWait(id)
+
 	for _, item := range cache.pq {
 		if item.id == id {
 			return item.priority, nil
@@ -141,7 +122,6 @@ func (cache *LRUCacheManager) Get(id string) (int64, error) {
 func (cache *LRUCacheManager) Delete(id string) error {
 	cache.mu.Lock()
 	defer cache.mu.Unlock()
-	cache.itemWait(id)
 	for _, item := range cache.pq {
 		if item.id == id {
 			heap.Remove(&(cache.pq), item.index)
@@ -179,9 +159,8 @@ func MakeLRU(initItems map[string]int64) *LRUCacheManager {
 	}
 	heap.Init(&pq)
 	return &LRUCacheManager{
-		pq:        pq,
-		mu:        sync.RWMutex{},
-		itemLocks: sync.Map{},
+		pq: pq,
+		mu: sync.RWMutex{},
 	}
 }
 

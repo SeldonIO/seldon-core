@@ -62,7 +62,7 @@ func (cd *ClientDebug) Start() error {
 		cd.serverReady = true
 		cd.mu.Unlock()
 		err := cd.grpcServer.Serve(l)
-		cd.logger.Infof("Client debug service stopped (%s)", err)
+		cd.logger.WithError(err).Info("Client debug service stopped")
 		cd.mu.Lock()
 		cd.serverReady = false
 		cd.mu.Unlock()

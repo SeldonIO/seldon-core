@@ -19,7 +19,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func checkModelsStateIsSame(manager *LocalStateManager, v2State *v2State) bool {
+func checkModelsStateIsSame(manager *LocalStateManager, v2State *v2State) (bool, []string) {
 	modelsInCache, _ := manager.cache.GetItems()
 	modelsInCacheMLServer := make([]string, len(modelsInCache))
 	counter := 0
@@ -32,7 +32,19 @@ func checkModelsStateIsSame(manager *LocalStateManager, v2State *v2State) bool {
 	sort.Strings(modelsInCache)
 	sort.Strings(modelsInCacheMLServer)
 
-	return reflect.DeepEqual(modelsInCache, modelsInCacheMLServer)
+	var modelsDiff []string
+	modelsMap := make(map[string]bool)
+	for _, model := range modelsInCacheMLServer {
+		modelsMap[model] = true
+	}
+	for _, model := range modelsInCache {
+		_, ok := modelsMap[model]
+		if !ok {
+			modelsDiff = append(modelsDiff, model)
+		}
+	}
+
+	return reflect.DeepEqual(modelsInCache, modelsInCacheMLServer), modelsDiff
 }
 
 func getModelId(prefix string, suffix int) string {
@@ -114,8 +126,8 @@ func (manager *LocalStateManager) loadModelFn(modelVersionDetails *pba.ModelVers
 	pinnedModelVersion := util.GetPinnedModelVersion()
 	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, memBytes, pinnedModelVersion)
 
-	manager.modelLoadLockCreate(modelWithVersion)
-	defer manager.modelLoadUnlock(modelWithVersion)
+	manager.cache.Lock(modelWithVersion)
+	defer manager.cache.Unlock(modelWithVersion)
 
 	return manager.LoadModelVersion(modifiedModelVersionRequest)
 }
@@ -130,8 +142,8 @@ func (manager *LocalStateManager) unloadModelFn(modelVersionDetails *pba.ModelVe
 	// we dont have memory actually requirement in unload
 	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, 0, pinnedModelVersion)
 
-	manager.modelLoadLockCreate(modelWithVersion)
-	defer manager.modelLoadUnlock(modelWithVersion)
+	manager.cache.Lock(modelWithVersion)
+	defer manager.cache.Unlock(modelWithVersion)
 
 	return manager.UnloadModelVersion(modifiedModelVersionRequest)
 }
@@ -148,7 +160,7 @@ func TestLocalStateManagerSmoke(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	numModels := 100
+	numModels := 10
 	dummyModelPrefix := "dummy_model"
 
 	manager, v2State := setupLocalTestManagerWithState(numModels, dummyModelPrefix, nil, numModels-2, 1)
@@ -163,7 +175,11 @@ func TestLocalStateManagerSmoke(t *testing.T) {
 	}
 
 	// check that models in the two caches are equal
-	g.Expect(checkModelsStateIsSame(manager, v2State)).To(Equal(true))
+	isMatch, modelsDiff := checkModelsStateIsSame(manager, v2State)
+	if !isMatch {
+		t.Logf("Difference in models %v", modelsDiff)
+	}
+	g.Expect(isMatch).To(Equal(true))
 
 	for i := numModels - 1; i >= 0; i-- {
 		modelName := getModelId(dummyModelPrefix, i)
@@ -172,7 +188,11 @@ func TestLocalStateManagerSmoke(t *testing.T) {
 	}
 
 	// check that models in the two caches are equal
-	g.Expect(checkModelsStateIsSame(manager, v2State)).To(Equal(true))
+	isMatch, modelsDiff = checkModelsStateIsSame(manager, v2State)
+	if !isMatch {
+		t.Logf("Difference in models %v", modelsDiff)
+	}
+	g.Expect(isMatch).To(Equal(true))
 
 }
 
@@ -254,7 +274,11 @@ func TestConcurrentReload(t *testing.T) {
 			}
 
 			// check that models in the two caches are equal
-			g.Expect(checkModelsStateIsSame(manager, v2State)).To(Equal(true))
+			isMatch, modelsDiff := checkModelsStateIsSame(manager, v2State)
+			if !isMatch {
+				t.Logf("Difference in models %v", modelsDiff)
+			}
+			g.Expect(isMatch).To(Equal(true))
 
 			t.Log("Test unload models")
 			for i := 0; i < test.numModels; i++ {
@@ -348,7 +372,11 @@ func TestConcurrentInfer(t *testing.T) {
 			}
 
 			// check that models in the two caches are equal
-			g.Expect(checkModelsStateIsSame(manager, v2State)).To(Equal(true))
+			isMatch, modelsDiff := checkModelsStateIsSame(manager, v2State)
+			if !isMatch {
+				t.Logf("Difference in models %v", modelsDiff)
+			}
+			g.Expect(isMatch).To(Equal(true))
 
 			t.Log("Test unload models")
 			for i := 0; i < test.numModels; i++ {
@@ -432,7 +460,11 @@ func TestConcurrentLoad(t *testing.T) {
 			g.Expect(manager.GetAvailableMemoryBytes()).Should(BeNumerically("==", test.expectedAvailableMemory))
 			g.Expect(manager.modelVersions.numModels()).Should(BeNumerically("==", test.numModels))
 			// check that models in the two caches are equal
-			g.Expect(checkModelsStateIsSame(manager, v2State)).To(Equal(true))
+			isMatch, modelsDiff := checkModelsStateIsSame(manager, v2State)
+			if !isMatch {
+				t.Logf("Difference in models %v", modelsDiff)
+			}
+			g.Expect(isMatch).To(Equal(true))
 
 			// then do unload
 			wg.Add(test.numModels)
@@ -524,7 +556,11 @@ func TestConcurrentLoadWithVersions(t *testing.T) {
 			// we treat each model version as a separate model
 			g.Expect(manager.modelVersions.numModels()).Should(BeNumerically("==", test.numModels*numberOfVersionsToAdd))
 			// check that models in the two caches are equal
-			g.Expect(checkModelsStateIsSame(manager, v2State)).To(Equal(true))
+			isMatch, modelsDiff := checkModelsStateIsSame(manager, v2State)
+			if !isMatch {
+				t.Logf("Difference in models %v", modelsDiff)
+			}
+			g.Expect(isMatch).To(Equal(true))
 
 			// then do unload
 			wg.Add(test.numModels * numberOfVersionsToAdd)
@@ -607,13 +643,19 @@ func TestDataAndControlPlaneInteractionSmoke(t *testing.T) {
 				switch op {
 				case 0:
 					t.Logf("Load model %s", modelName)
-					_ = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion))
+					if err := manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion)); err != nil {
+						t.Logf("Load model %s failed (%s)", modelName, err)
+					}
 				case 1:
 					t.Logf("Unload model %s", modelName)
-					_ = manager.unloadModelFn(getDummyModelDetailsUnload(modelName, modelVersion))
+					if err := manager.unloadModelFn(getDummyModelDetailsUnload(modelName, modelVersion)); err != nil {
+						t.Logf("Unload model %s failed (%s)", modelName, err)
+					}
 				case 2:
 					t.Logf("Ensure load model %s", modelName)
-					_ = manager.ensureLoadModelFn(modelName, modelVersion) // this can be any model version per test
+					if err := manager.ensureLoadModelFn(modelName, modelVersion); err != nil {
+						t.Logf("Ensure load model %s failed (%s)", modelName, err)
+					}
 				}
 				wg.Done()
 			}
@@ -633,7 +675,11 @@ func TestDataAndControlPlaneInteractionSmoke(t *testing.T) {
 			g.Expect(manager.modelVersions.numModels()).Should(BeNumerically("<=", test.numModels))
 
 			// check that models in the two caches are equal
-			g.Expect(checkModelsStateIsSame(manager, v2State)).To(Equal(true))
+			isMatch, modelsDiff := checkModelsStateIsSame(manager, v2State)
+			if !isMatch {
+				t.Logf("Difference in models %v", modelsDiff)
+			}
+			g.Expect(isMatch).To(Equal(true))
 
 			t.Log("Test unload models")
 			for i := 0; i < test.numModels; i++ {
@@ -789,15 +835,15 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 					barrier.Wait()
 					if step == controlPlaneLoad || step == controlPlaneUnload {
 						// mimics control plane locking
-						manager.modelLoadLockCreate(modelWithVersion)
-						defer manager.modelLoadUnlock(modelWithVersion)
+						manager.cache.Lock(modelWithVersion)
+						defer manager.cache.Unlock(modelWithVersion)
 					}
 				} else {
 
 					if step == controlPlaneLoad || step == controlPlaneUnload {
 						// mimics control plane locking
-						manager.modelLoadLockCreate(modelWithVersion)
-						defer manager.modelLoadUnlock(modelWithVersion)
+						manager.cache.Lock(modelWithVersion)
+						defer manager.cache.Unlock(modelWithVersion)
 					}
 					barrier.Done()
 				}
@@ -862,7 +908,11 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			g.Expect(manager.modelVersions.numModels()).To(Equal(test.expectedNumModels))
 			g.Expect(manager.availableMemoryBytes).To(Equal(test.expectedAvailableMemory))
 			// check that models in the two caches are equal
-			g.Expect(checkModelsStateIsSame(manager, v2State)).To(Equal(true))
+			isMatch, modelsDiff := checkModelsStateIsSame(manager, v2State)
+			if !isMatch {
+				t.Logf("Difference in models %v", modelsDiff)
+			}
+			g.Expect(isMatch).To(Equal(true))
 		})
 	}
 }

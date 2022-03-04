@@ -358,7 +358,7 @@ start-scheduler-local:
 	./bin/scheduler
 
 start-agent-local:
-	./bin/agent --agent-folder ${PWD}/mnt --inference-http-port 8080 --inference-grpc-port 8081 \
+	./bin/agent --agent-folder ${PWD}/mnt --inference-http-port 8080 --inference-grpc-port 8081 --scheduler-host "0.0.0.0" --scheduler-port 9005 \
 		--server-type mlserver \
 		--log-level debug \
 		--config-path ${PWD}/config \
@@ -366,7 +366,7 @@ start-agent-local:
 
 
 start-triton-agent-local:
-	./bin/agent --agent-folder ${PWD}/mnt --inference-http-port 8080 --inference-grpc-port 8081 \
+	./bin/agent --agent-folder ${PWD}/mnt --inference-http-port 8080 --inference-grpc-port 8081 --scheduler-host "0.0.0.0" --scheduler-port 9005 \
 		--server-name triton \
 		--server-type triton \
 		--log-level debug \

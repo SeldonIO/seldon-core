@@ -19,15 +19,11 @@ type LocalStateManager struct {
 	v2Client      *V2Client
 	logger        log.FieldLogger
 	modelVersions *ModelState
-	cache         cache.CacheManager
+	cache         *cache.CacheTransactionManager
 	// because of race conditions we might occassionatly go into negative memory
 	availableMemoryBytes int64
-	// lock for `state.loadedModels`
+	// lock for `availableMemoryBytes`
 	mu sync.RWMutex
-	// semas for model reloading synchronisation
-	semas sync.Map
-	// locks for model operation on control plane
-	opLocks sync.Map
 }
 
 func (manager *LocalStateManager) GetBackEndPath() *url.URL {
@@ -37,6 +33,8 @@ func (manager *LocalStateManager) GetBackEndPath() *url.URL {
 // this should be called from control plane (if directly)
 // the load request will always come with versioned model name (only one version)
 func (manager *LocalStateManager) LoadModelVersion(modelVersionDetails *agent.ModelVersion) error {
+	// note this function is guarded by per-model lock from the caller
+
 	modelId := modelVersionDetails.GetModel().GetMeta().GetName()
 	modelVersion := modelVersionDetails.GetVersion()
 
@@ -111,6 +109,8 @@ func (manager *LocalStateManager) LoadModelVersion(modelVersionDetails *agent.Mo
 
 // this should be called from control plane (if directly)
 func (manager *LocalStateManager) UnloadModelVersion(modelVersionDetails *agent.ModelVersion) error {
+	// note this function is guarded by per-model lock from the caller
+
 	modelId := modelVersionDetails.GetModel().GetMeta().GetName()
 	modelVersion := modelVersionDetails.GetVersion()
 
@@ -122,39 +122,37 @@ func (manager *LocalStateManager) UnloadModelVersion(modelVersionDetails *agent.
 		return err
 	}
 
-	if manager.cache.Exists(modelId) {
+	if manager.cache.Exists(modelId, false) {
+
 		if err := manager.v2Client.UnloadModel(modelId); err != nil {
+			manager.logger.WithError(err).Errorf("Cannot unload model %s from server", modelId)
 			return err
 		}
 
-		updateMemoryFlag := true
+		// TODO: should we reload if we get an error here?
 		if err := manager.cache.Delete(modelId); err != nil {
-			manager.logger.WithError(err).Warnf("Delete model %s from cache failed", modelId)
-			updateMemoryFlag = false
+			manager.logger.WithError(err).Errorf("Delete model %s from cache failed", modelId)
+			return err
 		}
 		manager.logger.Infof("Removed model %s", modelId)
 
 		memBytes, err := manager.modelVersions.getModelMemoryBytes(modelId)
 		if err != nil {
-			manager.logger.WithError(err).Warnf("Failed to get memory details for model %s", modelId)
-			updateMemoryFlag = false
+			manager.logger.WithError(err).Errorf("Failed to get memory details for model %s", modelId)
 		}
 
-		if updateMemoryFlag {
-			// if the model has been removed from the cache and/or server (by a concurrent request),
-			// skip updateing memory
-			if err := manager.updateAvailableMemory(memBytes, false); err != nil {
-				manager.logger.WithError(err).Warnf("Could not update memory for model %s", modelId)
-			}
-		} else {
-			manager.logger.Debugf("Race condition for model %s", modelId)
+		if err := manager.updateAvailableMemory(memBytes, false); err != nil {
+			manager.logger.WithError(err).Errorf("Could not update memory for model %s", modelId)
+			return err
 		}
+
+		manager.logger.Infof("Removed model from cache %s", modelId)
 
 	}
 
-	_, modelRemovedErr := manager.modelVersions.removeModelVersion(modelVersionDetails)
-	if modelRemovedErr != nil {
-		manager.logger.Warn("Model removing failed %s with err %s", modelId, modelRemovedErr)
+	if _, err := manager.modelVersions.removeModelVersion(modelVersionDetails); err != nil {
+		manager.logger.WithError(err).Errorf("Model removing failed for %s", modelId)
+		return err
 	}
 
 	manager.logger.Debugf("Unload model %s success, available memory is %d",
@@ -164,34 +162,17 @@ func (manager *LocalStateManager) UnloadModelVersion(modelVersionDetails *agent.
 
 // this should be called from data plane (on incoming inference)
 func (manager *LocalStateManager) EnsureLoadModel(modelId string) error {
-	// wait for any concurrent operations from the control plane on the same model
-
-	// this is the crux of the logic to go
 	manager.logger.Debugf("Ensure that model %s is loaded in memory", modelId)
-	manager.modelReadLoadLockCreate(modelId)
 
-	if !manager.cache.Exists(modelId) {
-		// wait if the model is currently being reloaded (by another request)
-		waiter := manager.modelReloadLockWaitOrCreate(modelId)
-
-		if waiter {
-			// concurrent reload is done, retry now
-			manager.logger.Warnf("Model %s is reloading concurrently, retry", modelId)
-
-			manager.modelReadLoadUnlock(modelId)
-			return manager.EnsureLoadModel(modelId)
-		} else {
-			// mark sema as done to signal others to go ahead
-			defer manager.modelReloadLockDelete(modelId)
-		}
-
-		defer manager.modelReadLoadUnlock(modelId)
+	endReloadFn, modelExists := manager.cache.StartReloadIfNotExists(modelId)
+	defer endReloadFn()
+	if !modelExists {
 		manager.logger.Debugf("Making room for %s", modelId)
 		// here we need to make sure that we can load the models
 		// we also assume that the model exists aleady in the models maps
 		modelMemoryBytes, err := manager.modelVersions.getModelMemoryBytes(modelId)
 		if err != nil {
-			manager.logger.Errorf("Error getting memory for model %s - %s (concurency)", err, modelId)
+			manager.logger.WithError(err).Errorf("Error getting memory for model %s, model unloaded?", modelId)
 			return err
 		}
 		if err := manager.makeRoomIfNeeded(modelId, modelMemoryBytes); err != nil {
@@ -201,41 +182,36 @@ func (manager *LocalStateManager) EnsureLoadModel(modelId string) error {
 
 		// be optimistic before actual load
 		if err := manager.updateAvailableMemory(modelMemoryBytes, true); err != nil {
-			manager.logger.Errorf("Cannot update memory for model %s, %s", modelId, err)
+			manager.logger.WithError(err).Errorf("Cannot update memory for model %s", modelId)
 			return err
 		}
 
 		if err := manager.v2Client.LoadModel(modelId); err != nil {
-			manager.logger.Errorf("Cannot reload %s - %s", err, modelId)
+			manager.logger.WithError(err).Errorf("Cannot reload %s", modelId)
 			if err := manager.updateAvailableMemory(modelMemoryBytes, false); err != nil {
-				manager.logger.Warn("Could not update memory %s", err)
+				manager.logger.WithError(err).Warnf("Could not update memory %s", modelId)
 			}
 			return err
 		}
 
-		// worse case scenario here is that we have a model in cache that we unloaded and taking a slot
-		// however this should (quickly?) go down in priority
 		if err := manager.cache.AddDefault(modelId); err != nil {
-			manager.logger.Errorf("Cannot re-add to cache %s - %s", err, modelId)
-			if err := manager.v2Client.UnloadModel(modelId); err != nil {
-				manager.logger.Warnf("Failed to unload model %s with %err", modelId, err)
-			}
+			// we were not too quick and the model has been added by a concurrent request
+			// this should not happen in practice, but we need to confirm
+			manager.logger.WithError(err).Warnf("Cannot re-add to cache %s", modelId)
 			if err := manager.updateAvailableMemory(modelMemoryBytes, false); err != nil {
-				manager.logger.Warn("Could not update memory %s", err)
+				manager.logger.WithError(err).Warnf("Could not update memory %s", modelId)
 			}
-			return err
 		}
 
 		manager.logger.Infof("Reload model %s success, available memory is %d",
 			modelId, manager.GetAvailableMemoryBytes())
 	} else {
-		defer manager.modelReadLoadUnlock(modelId)
-		manager.logger.Debugf("Model exsits in cache %s", modelId)
 		if err := manager.cache.UpdateDefault(modelId); err != nil {
-			// we try to be speculative here perhaps and still try the inference request
-			// this should be very rare in practice
-			manager.logger.Warnf("Model %s has been unloaded by a concurrent request (error %s)", modelId, err)
+			manager.logger.WithError(err).Errorf(
+				"Model %s has been unloaded by a concurrent request", modelId)
+			return err
 		}
+		manager.logger.Debugf("Model exists in cache %s", modelId)
 	}
 	return nil
 }
@@ -274,101 +250,6 @@ func (manager *LocalStateManager) updateAvailableMemory(memBytes uint64, isLoadi
 	return nil
 }
 
-func (manager *LocalStateManager) modelLoadLockCreate(modelId string) bool {
-	var lock sync.RWMutex
-
-	// TODO: find a way to recycle / trim used locks
-	existingLock, loaded := manager.opLocks.LoadOrStore(modelId, &lock)
-
-	if !loaded {
-		manager.logger.Debugf("Creating load/unload lock for model %s", modelId)
-	}
-	existingLock.(*sync.RWMutex).Lock()
-	manager.logger.Debugf("MODEL %s +WC", modelId)
-	manager.logger.Debugf("After lock for model %s", modelId)
-	return loaded
-}
-
-func (manager *LocalStateManager) modelReadLoadLockCreate(modelId string) bool {
-	var lock sync.RWMutex
-
-	// TODO: find a way to recycle / trim used locks
-	existingLock, loaded := manager.opLocks.LoadOrStore(modelId, &lock)
-
-	if !loaded {
-		manager.logger.Debugf("Creating read load/unload lock for model %s", modelId)
-	}
-	existingLock.(*sync.RWMutex).RLock()
-	manager.logger.Debugf("MODEL %s +RC", modelId)
-	manager.logger.Debugf("After read lock for model %s", modelId)
-	return loaded
-}
-
-func (manager *LocalStateManager) modelReadLoadUnlock(modelId string) {
-	manager.logger.Debugf("Deleting read load/unload lock for model %s", modelId)
-	lock, loaded := manager.opLocks.Load(modelId)
-	if loaded {
-		lock.(*sync.RWMutex).RUnlock()
-		manager.logger.Debugf("MODEL %s -RC", modelId)
-	} else {
-		manager.logger.Warnf("Model %s state is inconsistent", modelId)
-	}
-}
-
-func (manager *LocalStateManager) modelLoadUnlock(modelId string) {
-	manager.logger.Debugf("Deleting load/unload lock for model %s", modelId)
-	lock, loaded := manager.opLocks.Load(modelId)
-	if loaded {
-		lock.(*sync.RWMutex).Unlock()
-		manager.logger.Debugf("MODEL %s -WC", modelId)
-	} else {
-		manager.logger.Warnf("Model %s state is inconsistent", modelId)
-	}
-}
-
-func (manager *LocalStateManager) modelReloadLockWaitOrCreate(modelId string) bool {
-	var lock sync.RWMutex
-
-	existingLock, loaded := manager.semas.LoadOrStore(modelId, &lock)
-
-	if !loaded {
-		// because of race conditions we need to recheck model in cache again here
-		// this is because the initial branch is on model not existing in cache
-		// and if we wait for the first concurrent operation to reload the model
-		// if will be put back in the cache
-		if manager.cache.Exists(modelId) {
-			manager.logger.Warnf("Model is already in cache %s", modelId)
-			manager.modelReloadLockDelete(modelId)
-			return true // treat it as model loaded, TODO: can we simplify logic?
-		}
-	}
-
-	if loaded {
-		manager.logger.Debugf("Waiting for concurrent reload of model %s", modelId)
-		existingLock.(*sync.RWMutex).RLock()
-		manager.logger.Infof("MODEL %s +RD", modelId)
-		defer existingLock.(*sync.RWMutex).RUnlock()
-		manager.logger.Infof("MODEL %s -RD", modelId)
-	} else {
-		manager.logger.Debugf("Creating reload lock for model %s", modelId)
-		existingLock.(*sync.RWMutex).Lock()
-		manager.logger.Debugf("MODEL %s +WD", modelId)
-	}
-	return loaded
-}
-
-func (manager *LocalStateManager) modelReloadLockDelete(modelId string) {
-	manager.logger.Debugf("Deleting reload lock for model %s", modelId)
-	existingLock, loaded := manager.semas.LoadAndDelete(modelId)
-	if loaded {
-		existingLock.(*sync.RWMutex).Unlock()
-		manager.logger.Debugf("MODEL %s -WD", modelId)
-	} else {
-		manager.logger.Warnf("Model %s state is inconsistent", modelId)
-	}
-
-}
-
 func (manager *LocalStateManager) makeRoomIfNeeded(modelId string, modelMemoryBytes uint64) error {
 	// note that we might evict a lot of models to make room and we do not know until
 	// we have evicted them all.
@@ -382,17 +263,32 @@ func (manager *LocalStateManager) makeRoomIfNeeded(modelId string, modelMemoryBy
 		// note there is a race condition here between the above and below statement
 		// this can happen if there is a parallel unload / evict in between so the
 		// cache and memory is not reflected
-		evictedModelId, evictedModelValue, err := manager.cache.StartEvict()
+		evictedModelId, _, err := manager.cache.Peek()
+		if err != nil {
+			manager.logger.WithError(err).Errorf("Cannot peek cache for model %s", modelId)
+			return err
+		}
+
+		endEvictFn, err := manager.cache.StartEvict(evictedModelId)
 
 		if err != nil {
 			// due to race condition this could be a false error in the cases we have room
 			// so test again memory space
+			endEvictFn()
 			if manager.GetAvailableMemoryBytes() >= modelMemoryBytes {
-				manager.logger.Warnf("Model %s has room now", modelId)
+				manager.logger.WithError(err).Warnf("Model %s has room now", modelId)
 				return nil
 			} else {
-				return err
+				continue
 			}
+		}
+
+		evictedModelMemoryBytes, err := manager.modelVersions.getModelMemoryBytes(evictedModelId)
+		if err != nil {
+			manager.logger.WithError(err).Warnf(
+				"Could not get memory details for model %s (for reload model %s)", evictedModelId, modelId)
+			endEvictFn()
+			continue
 		}
 
 		// note that we unload here all versions of the same model
@@ -401,23 +297,17 @@ func (manager *LocalStateManager) makeRoomIfNeeded(modelId string, modelMemoryBy
 			// by a concurrent request!
 			// TODO: what can we really do about that?
 			// is memory calculationn correct, we decide to be conservative and not update memory
-			manager.logger.Warnf("Cannot unload model %s from server", evictedModelId)
-			_ = manager.cache.EndEvict(evictedModelId, evictedModelValue, false) // should we rollback??
+			manager.logger.WithError(err).Warnf(
+				"Cannot unload model %s from server (for reload model %s)", evictedModelId, modelId)
+			endEvictFn()
 			continue
 		}
 
-		// we evict all versions of a model
-		evictedModelMemoryBytes, err := manager.modelVersions.getModelMemoryBytes(evictedModelId)
-		if err != nil {
-			manager.logger.Warnf(
-				"Could not get memory details for model %s with error %s", evictedModelId, err)
-			_ = manager.cache.EndEvict(evictedModelId, evictedModelValue, false)
-			continue
-		}
 		if err := manager.updateAvailableMemory(evictedModelMemoryBytes, false); err != nil {
-			manager.logger.Warn("Could not update memory %s", err)
+			manager.logger.WithError(err).Warnf("Could not update memory %s", evictedModelId)
 		}
-		_ = manager.cache.EndEvict(evictedModelId, evictedModelValue, false)
+
+		endEvictFn()
 		manager.logger.Infof(
 			"model %s %d evicted (for model %s %d), available memory bytes: %d",
 			evictedModelId, evictedModelMemoryBytes, modelId, modelMemoryBytes, manager.GetAvailableMemoryBytes())
@@ -433,14 +323,14 @@ func NewLocalStateManager(
 ) *LocalStateManager {
 	// if we are here it means that it is a fresh instance with no state yet
 	// i.e. should not have any models loaded / cache is empty etc.
-	var cache cache.CacheManager = cache.MakeLRU(map[string]int64{})
+	cacheWithTransaction := cache.NewLRUCacheTransactionManager(logger)
+
 	return &LocalStateManager{
 		v2Client:             v2Client,
-		logger:               logger,
+		logger:               logger.WithField("Source", "StateManager"),
 		modelVersions:        modelVersions,
-		cache:                cache,
+		cache:                cacheWithTransaction,
 		availableMemoryBytes: availableMemoryBytes,
 		mu:                   sync.RWMutex{},
-		semas:                sync.Map{},
 	}
 }

@@ -91,7 +91,7 @@ func (rp *reverseHTTPProxy) Start() error {
 		rp.serverReady = true
 		rp.mu.Unlock()
 		err := rp.server.ListenAndServe()
-		rp.logger.Infof("HTTP/REST reverse proxy debug service stopped (%s)", err)
+		rp.logger.WithError(err).Info("HTTP/REST reverse proxy debug service stopped")
 		rp.mu.Lock()
 		rp.serverReady = false
 		rp.mu.Unlock()
