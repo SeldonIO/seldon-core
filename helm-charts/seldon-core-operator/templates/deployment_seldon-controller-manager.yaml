@@ -25,6 +25,7 @@ spec:
 {{- toYaml . | nindent 8}}
 {{- end }}
         prometheus.io/scrape: 'true'
+        prometheus.io/port: '{{ .Values.metrics.port }}'
         sidecar.istio.io/inject: 'false'
       labels:
         app: seldon
@@ -140,7 +141,7 @@ spec:
         - containerPort: {{ .Values.webhook.port }}
           name: webhook-server
           protocol: TCP
-        - containerPort: 8080
+        - containerPort: {{ .Values.metrics.port }}
           name: metrics
           protocol: TCP
         resources:
@@ -167,3 +168,4 @@ spec:
           defaultMode: 420
           secretName: seldon-webhook-server-cert
 {{- end }}
+      hostNetwork: {{ .Values.hostNetwork }}

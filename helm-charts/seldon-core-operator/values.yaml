@@ -2,7 +2,7 @@
 # Below are the default values when installing Seldon Core
 
 # Defaults to .Release.Namespace
-namespaceOverride: "" 
+namespaceOverride: ""
 
 # ## Ingress Options
 # You are able to choose between Istio and Ambassador
@@ -69,6 +69,7 @@ executor:
     workQueueSize: 10000
     writeTimeoutMs: 2000
 
+
 # ## Seldon Core Controller Manager Options
 image:
   pullPolicy: IfNotPresent
@@ -101,13 +102,18 @@ storageInitializer:
   memoryRequest: 100Mi
 usageMetrics:
   enabled: false
+# In scenarios like EKS with non-standard CNI plugin like calico, the control plane cannot reach the webhook
+# hence it is needed to set hostNetwork: true
+hostNetwork: false
 webhook:
-  port: 4443
+  port: 4443 # If 'hostNetwork: true' you might need to change this port if it is already used by the node
+metrics: # these are the metrics exposed by the controller pod
+  port: 8080 # If 'hostNetwork: true' you might need to change this port if it is already used by the node
 
 # ## Predictive Unit Values
 predictiveUnit:
   httpPort: 9000
-  grpcPort: 9500  
+  grpcPort: 9500
   metricsPortName: metrics
   # If you would like to add extra environment variables to the init container to make available
   #   secrets such as cloud credentials, you can provide a default secret name that will be loaded
@@ -135,7 +141,7 @@ predictor_servers:
       seldon:
         defaultImageVersion: "1.14.0-dev"
         image: seldonio/tfserving-proxy
-      tensorflow: 
+      tensorflow:
         defaultImageVersion: 2.1.0
         image:  tensorflow/serving
   XGBOOST_SERVER:
