@@ -42,7 +42,6 @@ spec:
         - --log-level=$(MANAGER_LOG_LEVEL)
         - --leader-election-id=$(MANAGER_LEADER_ELECTION_ID)
         - '{{- if .Values.singleNamespace }}--namespace={{ include "seldon.namespace" . }}{{- end }}'
-        - '{{- if .Values.singleNamespace }}--namespace={{ include "seldon.namespace" . }}{{- end }}'
 {{- with .Values.manager.containerSecurityContext }}
 {{- toYaml . | nindent 8}}
 {{- end }}

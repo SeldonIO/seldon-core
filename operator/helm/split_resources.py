@@ -219,10 +219,6 @@ if __name__ == "__main__":
                     if portSpec["name"] == "metrics":
                         portSpec["containerPort"] = helm_value("metrics.port")
 
-                res["spec"]["template"]["spec"]["containers"][0]["args"].append(
-                    '{{- if .Values.singleNamespace }}--namespace={{ include "seldon.namespace" . }}{{- end }}'
-                )
-
                 # Networking
                 res["spec"]["template"]["spec"]["hostNetwork"] = helm_value("hostNetwork")
 
