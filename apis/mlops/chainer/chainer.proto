@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package seldon.mlops.chainer;
+
+option go_package = "github.com/seldonio/seldon-core/scheduler/apis/mlops/chainer";
+option java_package = "io.seldon.mlops.chainer";
+
+message PipelineSubscriptionRequest {
+  string name = 1;
+}
+
+message PipelineUpdateMessage {
+  string pipeline = 1;
+  uint32 version = 2;
+  string uid = 3;
+  string step = 4;
+  PipelineJoinUpdate join = 5;
+}
+
+message PipelineJoinUpdate {
+  enum PipelineJoinOperation {
+    Unknown = 0;
+    Create = 1;
+    Delete = 2;
+  }
+  enum PipelineJoinType {
+    Inner = 0;
+  }
+  repeated string sources = 1;
+  string sink = 2;
+  PipelineJoinOperation op = 3;
+  PipelineJoinOperation ty = 4;
+  int64 windowMsecs = 5;
+}
+
+message PipelineUpdateStatusMessage {
+  PipelineUpdateMessage update = 1;
+  bool success = 2;
+  string reason = 3;
+}
+
+message PipelineUpdateStatusResponse {
+}
+
+service Chainer {
+  rpc SubscribePipelineUpdates(PipelineSubscriptionRequest) returns (stream PipelineUpdateMessage) {};
+  rpc PipelineUpdateEvent(PipelineUpdateStatusMessage) returns (PipelineUpdateStatusResponse) {};
+}
