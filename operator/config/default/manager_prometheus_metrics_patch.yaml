@@ -9,6 +9,7 @@ spec:
     metadata:
       annotations:
         prometheus.io/scrape: 'true'
+        prometheus.io/port: '8080'
     spec:
       containers:
       # Expose the prometheus metrics on default port

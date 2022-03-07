@@ -211,6 +211,21 @@ if __name__ == "__main__":
                     '{{- if .Values.singleNamespace }}--namespace={{ include "seldon.namespace" . }}{{- end }}'
                 )
 
+                # Update metrics port
+                res["spec"]["template"]["metadata"]["annotations"]["prometheus.io/port"] = helm_value('metrics.port')
+                for portSpec in res["spec"]["template"]["spec"]["containers"][0][
+                    "ports"
+                ]:
+                    if portSpec["name"] == "metrics":
+                        portSpec["containerPort"] = helm_value("metrics.port")
+
+                res["spec"]["template"]["spec"]["containers"][0]["args"].append(
+                    '{{- if .Values.singleNamespace }}--namespace={{ include "seldon.namespace" . }}{{- end }}'
+                )
+
+                # Networking
+                res["spec"]["template"]["spec"]["hostNetwork"] = helm_value("hostNetwork")
+
             if kind == "configmap" and name == "seldon-config":
                 res["data"]["credentials"] = helm_value_json("credentials")
                 res["data"]["predictor_servers"] = helm_value_json(
@@ -454,6 +469,10 @@ if __name__ == "__main__":
                     re.M,
                 )
 
+            # make sure metric is not quoted as its an int
+            fdata = fdata.replace(
+                "containerPort: '{{ .Values.metrics.port }}'", "containerPort: {{ .Values.metrics.port }}"
+            )
             # make sure webhook is not quoted as its an int
             fdata = fdata.replace(
                 "'{{ .Values.webhook.port }}'", "{{ .Values.webhook.port }}"
