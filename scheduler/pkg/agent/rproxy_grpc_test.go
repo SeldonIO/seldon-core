@@ -115,21 +115,21 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	doInfer := func(modelSuffix string) (*v2.ModelInferResponse, error) {
 		client := v2.NewGRPCInferenceServiceClient(conn)
 		ctx := context.Background()
-		ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonInternalModel, dummyModelNamePrefix+modelSuffix, resources.SeldonModelHeader, dummyModelNamePrefix+modelSuffix)
+		ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonInternalModelHeader, dummyModelNamePrefix+modelSuffix, resources.SeldonModelHeader, dummyModelNamePrefix+modelSuffix)
 		return client.ModelInfer(ctx, &v2.ModelInferRequest{ModelName: dummyModelNamePrefix}) // note without suffix
 	}
 
 	doMeta := func(modelSuffix string) (*v2.ModelMetadataResponse, error) {
 		client := v2.NewGRPCInferenceServiceClient(conn)
 		ctx := context.Background()
-		ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonInternalModel, dummyModelNamePrefix+modelSuffix, resources.SeldonModelHeader, dummyModelNamePrefix+modelSuffix)
+		ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonInternalModelHeader, dummyModelNamePrefix+modelSuffix, resources.SeldonModelHeader, dummyModelNamePrefix+modelSuffix)
 		return client.ModelMetadata(ctx, &v2.ModelMetadataRequest{Name: dummyModelNamePrefix}) // note without suffix
 	}
 
 	doModelReady := func(modelSuffix string) (*v2.ModelReadyResponse, error) {
 		client := v2.NewGRPCInferenceServiceClient(conn)
 		ctx := context.Background()
-		ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonInternalModel, dummyModelNamePrefix+modelSuffix, resources.SeldonModelHeader, dummyModelNamePrefix+modelSuffix)
+		ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonInternalModelHeader, dummyModelNamePrefix+modelSuffix, resources.SeldonModelHeader, dummyModelNamePrefix+modelSuffix)
 		return client.ModelReady(ctx, &v2.ModelReadyRequest{Name: dummyModelNamePrefix}) // note without suffix
 	}
 

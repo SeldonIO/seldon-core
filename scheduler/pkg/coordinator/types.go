@@ -10,3 +10,17 @@ type ModelEventMsg struct {
 func (m ModelEventMsg) String() string {
 	return fmt.Sprintf("%s:%d", m.ModelName, m.ModelVersion)
 }
+
+type ExperimentEventMsg struct {
+	ExperimentName string
+	Status         *ExperimentEventStatus
+}
+
+type ExperimentEventStatus struct {
+	Active            bool
+	StatusDescription string
+}
+
+func (e ExperimentEventMsg) String() string {
+	return e.ExperimentName
+}

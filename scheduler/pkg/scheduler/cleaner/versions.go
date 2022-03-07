@@ -15,12 +15,12 @@ const (
 )
 
 type VersionCleaner struct {
-	store  store.SchedulerStore
+	store  store.ModelStore
 	logger log.FieldLogger
 }
 
 func NewVersionCleaner(
-	schedStore store.SchedulerStore,
+	schedStore store.ModelStore,
 	logger log.FieldLogger,
 	eventHub *coordinator.EventHub,
 ) *VersionCleaner {
@@ -29,7 +29,7 @@ func NewVersionCleaner(
 		logger: logger.WithField("source", "VersionCleaner"),
 	}
 
-	eventHub.RegisterHandler(
+	eventHub.RegisterModelEventHandler(
 		modelEventHandlerName,
 		pendingEventsQueueSize,
 		v.logger,

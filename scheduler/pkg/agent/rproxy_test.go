@@ -169,7 +169,7 @@ func TestReverseProxySmoke(t *testing.T) {
 			g.Expect(err).To(BeNil())
 			req.Header.Set("contentType", "application/json")
 			req.Header.Set(resources.SeldonModelHeader, test.modelToRequest)
-			req.Header.Set(resources.SeldonInternalModel, test.modelToRequest)
+			req.Header.Set(resources.SeldonInternalModelHeader, test.modelToRequest)
 			resp, err := http.DefaultClient.Do(req)
 			g.Expect(err).To(BeNil())
 			defer resp.Body.Close()

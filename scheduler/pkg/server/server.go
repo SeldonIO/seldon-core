@@ -6,6 +6,8 @@ import (
 	"net"
 	"sync"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/store/experiment"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -20,10 +22,11 @@ import (
 )
 
 const (
-	grpcMaxConcurrentStreams     = 1_000_000
-	pendingEventsQueueSize   int = 10
-	modelEventHandlerName        = "scheduler.server.models"
-	serverEventHandlerName       = "scheduler.server.servers"
+	grpcMaxConcurrentStreams       = 1_000_000
+	pendingEventsQueueSize     int = 10
+	modelEventHandlerName          = "scheduler.server.models"
+	serverEventHandlerName         = "scheduler.server.servers"
+	experimentEventHandlerName     = "scheduler.server.experiments"
 )
 
 var (
@@ -32,12 +35,14 @@ var (
 
 type SchedulerServer struct {
 	pb.UnimplementedSchedulerServer
-	logger            log.FieldLogger
-	store             store.SchedulerStore
-	scheduler         scheduler2.Scheduler
-	mutext            sync.RWMutex
-	modelEventStream  ModelEventStream
-	serverEventStream ServerEventStream
+	logger                log.FieldLogger
+	modelStore            store.ModelStore
+	experiementServer     experiment.ExperimentServer
+	scheduler             scheduler2.Scheduler
+	mu                    sync.RWMutex
+	modelEventStream      ModelEventStream
+	serverEventStream     ServerEventStream
+	experimentEventStream ExperimentEventStream
 }
 
 type ModelEventStream struct {
@@ -46,6 +51,10 @@ type ModelEventStream struct {
 
 type ServerEventStream struct {
 	streams map[pb.Scheduler_SubscribeServerStatusServer]*ServerSubscription
+}
+
+type ExperimentEventStream struct {
+	streams map[pb.Scheduler_SubscribeExperimentStatusServer]*ExperimentSubscription
 }
 
 type ModelSubscription struct {
@@ -57,6 +66,12 @@ type ModelSubscription struct {
 type ServerSubscription struct {
 	name   string
 	stream pb.Scheduler_SubscribeServerStatusServer
+	fin    chan bool
+}
+
+type ExperimentSubscription struct {
+	name   string
+	stream pb.Scheduler_SubscribeExperimentStatusServer
 	fin    chan bool
 }
 
@@ -75,14 +90,16 @@ func (s *SchedulerServer) StartGrpcServer(schedulerPort uint) error {
 
 func NewSchedulerServer(
 	logger log.FieldLogger,
-	schedStore store.SchedulerStore,
+	modelStore store.ModelStore,
+	experiementServer experiment.ExperimentServer,
 	scheduler scheduler2.Scheduler,
 	eventHub *coordinator.EventHub,
 ) *SchedulerServer {
 	s := &SchedulerServer{
-		logger:    logger.WithField("source", "SchedulerServer"),
-		store:     schedStore,
-		scheduler: scheduler,
+		logger:            logger.WithField("source", "SchedulerServer"),
+		modelStore:        modelStore,
+		experiementServer: experiementServer,
+		scheduler:         scheduler,
 		modelEventStream: ModelEventStream{
 			streams: make(map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription),
 		},
@@ -91,26 +108,31 @@ func NewSchedulerServer(
 		},
 	}
 
-	eventHub.RegisterHandler(
+	eventHub.RegisterModelEventHandler(
 		modelEventHandlerName,
 		pendingEventsQueueSize,
 		s.logger,
 		s.handleModelEvent,
 	)
-	eventHub.RegisterHandler(
+	eventHub.RegisterModelEventHandler(
 		serverEventHandlerName,
 		pendingEventsQueueSize,
 		s.logger,
 		s.handleServerEvent,
 	)
-
+	eventHub.RegisterExperimentEventHandler(
+		experimentEventHandlerName,
+		pendingEventsQueueSize,
+		s.logger,
+		s.handleExperimentEvents,
+	)
 	return s
 }
 
 func (s *SchedulerServer) ServerNotify(ctx context.Context, req *pb.ServerNotifyRequest) (*pb.ServerNotifyResponse, error) {
 	logger := s.logger.WithField("func", "ServerNotify")
 	logger.Infof("Server notification %s expectedReplicas %d shared %v", req.GetName(), req.GetExpectedReplicas(), req.GetShared())
-	err := s.store.ServerNotify(req)
+	err := s.modelStore.ServerNotify(req)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
@@ -122,7 +144,7 @@ func (s *SchedulerServer) ServerNotify(ctx context.Context, req *pb.ServerNotify
 
 func (s *SchedulerServer) rescheduleModels(serverKey string) {
 	logger := s.logger.WithField("func", "rescheduleModels")
-	server, err := s.store.GetServer(serverKey)
+	server, err := s.modelStore.GetServer(serverKey)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to get server %s", serverKey)
 		return
@@ -144,7 +166,7 @@ func (s *SchedulerServer) rescheduleModels(serverKey string) {
 func (s *SchedulerServer) LoadModel(ctx context.Context, req *pb.LoadModelRequest) (*pb.LoadModelResponse, error) {
 	logger := s.logger.WithField("func", "LoadModel")
 	logger.Debugf("Load model %+v k8s meta %+v", req.GetModel().GetMeta(), req.GetModel().GetMeta().GetKubernetesMeta())
-	err := s.store.UpdateModel(req)
+	err := s.modelStore.UpdateModel(req)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
@@ -158,7 +180,7 @@ func (s *SchedulerServer) LoadModel(ctx context.Context, req *pb.LoadModelReques
 func (s *SchedulerServer) UnloadModel(ctx context.Context, req *pb.UnloadModelRequest) (*pb.UnloadModelResponse, error) {
 	logger := s.logger.WithField("func", "UnloadModel")
 	logger.Debugf("Unload model %s", req.GetModel().Name)
-	err := s.store.RemoveModel(req)
+	err := s.modelStore.RemoveModel(req)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
@@ -220,10 +242,10 @@ func (s *SchedulerServer) modelStatusImpl(ctx context.Context, model *store.Mode
 }
 
 func (s *SchedulerServer) ModelStatus(ctx context.Context, req *pb.ModelStatusRequest) (*pb.ModelStatusResponse, error) {
-	s.store.LockModel(req.Model.Name)
-	defer s.store.UnlockModel(req.Model.Name)
+	s.modelStore.LockModel(req.Model.Name)
+	defer s.modelStore.UnlockModel(req.Model.Name)
 
-	model, err := s.store.GetModel(req.Model.Name)
+	model, err := s.modelStore.GetModel(req.Model.Name)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
@@ -234,7 +256,7 @@ func (s *SchedulerServer) ModelStatus(ctx context.Context, req *pb.ModelStatusRe
 }
 
 func (s *SchedulerServer) ServerStatus(ctx context.Context, reference *pb.ServerReference) (*pb.ServerStatusResponse, error) {
-	server, err := s.store.GetServer(reference.Name)
+	server, err := s.modelStore.GetServer(reference.Name)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
@@ -261,4 +283,20 @@ func (s *SchedulerServer) ServerStatus(ctx context.Context, reference *pb.Server
 	}
 	ss.NumLoadedModelReplicas = totalModels
 	return ss, nil
+}
+
+func (s *SchedulerServer) StartExperiment(ctx context.Context, req *pb.StartExperimentRequest) (*pb.StartExperimentResponse, error) {
+	err := s.experiementServer.StartExperiment(experiment.CreateExperimentFromRequest(req))
+	if err != nil {
+		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+	}
+	return &pb.StartExperimentResponse{}, nil
+}
+
+func (s *SchedulerServer) StopExperiment(ctx context.Context, req *pb.StopExperimentRequest) (*pb.StopExperimentResponse, error) {
+	err := s.experiementServer.StopExperiment(req.GetName())
+	if err != nil {
+		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+	}
+	return &pb.StopExperimentResponse{}, nil
 }

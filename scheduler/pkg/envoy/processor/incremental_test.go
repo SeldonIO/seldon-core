@@ -10,6 +10,101 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+func TestGetTrafficShare(t *testing.T) {
+	g := NewGomegaWithT(t)
+	type test struct {
+		name                             string
+		latestModel                      *store.ModelVersion
+		lastAvailableModel               *store.ModelVersion
+		weight                           uint32
+		expectedLatestModelWeight        uint32
+		expectedLastAvailableModelWeight uint32
+	}
+
+	tests := []test{
+		{
+			name: "50 - 50",
+			latestModel: store.NewModelVersion(nil, 1, "server", map[int]store.ReplicaStatus{
+				1: {
+					State: store.Available,
+				},
+			}, false, store.ModelAvailable),
+			lastAvailableModel: store.NewModelVersion(nil, 1, "server", map[int]store.ReplicaStatus{
+				1: {
+					State: store.Available,
+				},
+			}, false, store.ModelAvailable),
+			weight:                           100,
+			expectedLatestModelWeight:        50,
+			expectedLastAvailableModelWeight: 50,
+		},
+		{
+			name: "2 latest replicas to 1 last available",
+			latestModel: store.NewModelVersion(nil, 1, "server", map[int]store.ReplicaStatus{
+				1: {
+					State: store.Available,
+				},
+				2: {
+					State: store.Available,
+				},
+			}, false, store.ModelAvailable),
+			lastAvailableModel: store.NewModelVersion(nil, 1, "server", map[int]store.ReplicaStatus{
+				1: {
+					State: store.Available,
+				},
+			}, false, store.ModelAvailable),
+			weight:                           100,
+			expectedLatestModelWeight:        67,
+			expectedLastAvailableModelWeight: 33,
+		},
+		{
+			name: "1 latest replicas to 2 last available",
+			latestModel: store.NewModelVersion(nil, 1, "server", map[int]store.ReplicaStatus{
+				1: {
+					State: store.Available,
+				},
+			}, false, store.ModelAvailable),
+			lastAvailableModel: store.NewModelVersion(nil, 1, "server", map[int]store.ReplicaStatus{
+				1: {
+					State: store.Available,
+				},
+				2: {
+					State: store.Available,
+				},
+			}, false, store.ModelAvailable),
+			weight:                           100,
+			expectedLatestModelWeight:        34,
+			expectedLastAvailableModelWeight: 66,
+		},
+		{
+			name: "model failed so all to latest",
+			latestModel: store.NewModelVersion(nil, 1, "server", map[int]store.ReplicaStatus{
+				1: {
+					State: store.Available,
+				},
+				2: {
+					State: store.Available,
+				},
+			}, false, store.ModelAvailable),
+			lastAvailableModel: store.NewModelVersion(nil, 1, "server", map[int]store.ReplicaStatus{
+				1: {
+					State: store.LoadFailed,
+				},
+			}, false, store.ModelAvailable),
+			weight:                           100,
+			expectedLatestModelWeight:        100,
+			expectedLastAvailableModelWeight: 0,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			lastestModelTraffic, lastAvailableModelTraffic := getTrafficShare(test.latestModel, test.lastAvailableModel, test.weight)
+			g.Expect(lastestModelTraffic).To(Equal(test.expectedLatestModelWeight))
+			g.Expect(lastAvailableModelTraffic).To(Equal(test.expectedLastAvailableModelWeight))
+		})
+	}
+}
+
 func TestUpdateEnvoyForModelVersion(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {

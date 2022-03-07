@@ -25,6 +25,9 @@ type SchedulerClient interface {
 	SubscribeModelStatus(ctx context.Context, in *ModelSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribeModelStatusClient, error)
 	ServerNotify(ctx context.Context, in *ServerNotifyRequest, opts ...grpc.CallOption) (*ServerNotifyResponse, error)
 	SubscribeServerStatus(ctx context.Context, in *ServerSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribeServerStatusClient, error)
+	StartExperiment(ctx context.Context, in *StartExperimentRequest, opts ...grpc.CallOption) (*StartExperimentResponse, error)
+	StopExperiment(ctx context.Context, in *StopExperimentRequest, opts ...grpc.CallOption) (*StopExperimentResponse, error)
+	SubscribeExperimentStatus(ctx context.Context, in *ExperimentSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribeExperimentStatusClient, error)
 }
 
 type schedulerClient struct {
@@ -144,6 +147,56 @@ func (x *schedulerSubscribeServerStatusClient) Recv() (*ServerStatusResponse, er
 	return m, nil
 }
 
+func (c *schedulerClient) StartExperiment(ctx context.Context, in *StartExperimentRequest, opts ...grpc.CallOption) (*StartExperimentResponse, error) {
+	out := new(StartExperimentResponse)
+	err := c.cc.Invoke(ctx, "/seldon.mlops.scheduler.Scheduler/StartExperiment", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *schedulerClient) StopExperiment(ctx context.Context, in *StopExperimentRequest, opts ...grpc.CallOption) (*StopExperimentResponse, error) {
+	out := new(StopExperimentResponse)
+	err := c.cc.Invoke(ctx, "/seldon.mlops.scheduler.Scheduler/StopExperiment", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *schedulerClient) SubscribeExperimentStatus(ctx context.Context, in *ExperimentSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribeExperimentStatusClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Scheduler_ServiceDesc.Streams[2], "/seldon.mlops.scheduler.Scheduler/SubscribeExperimentStatus", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &schedulerSubscribeExperimentStatusClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Scheduler_SubscribeExperimentStatusClient interface {
+	Recv() (*ExperimentStatusResponse, error)
+	grpc.ClientStream
+}
+
+type schedulerSubscribeExperimentStatusClient struct {
+	grpc.ClientStream
+}
+
+func (x *schedulerSubscribeExperimentStatusClient) Recv() (*ExperimentStatusResponse, error) {
+	m := new(ExperimentStatusResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // SchedulerServer is the server API for Scheduler service.
 // All implementations must embed UnimplementedSchedulerServer
 // for forward compatibility
@@ -155,6 +208,9 @@ type SchedulerServer interface {
 	SubscribeModelStatus(*ModelSubscriptionRequest, Scheduler_SubscribeModelStatusServer) error
 	ServerNotify(context.Context, *ServerNotifyRequest) (*ServerNotifyResponse, error)
 	SubscribeServerStatus(*ServerSubscriptionRequest, Scheduler_SubscribeServerStatusServer) error
+	StartExperiment(context.Context, *StartExperimentRequest) (*StartExperimentResponse, error)
+	StopExperiment(context.Context, *StopExperimentRequest) (*StopExperimentResponse, error)
+	SubscribeExperimentStatus(*ExperimentSubscriptionRequest, Scheduler_SubscribeExperimentStatusServer) error
 	mustEmbedUnimplementedSchedulerServer()
 }
 
@@ -182,6 +238,15 @@ func (UnimplementedSchedulerServer) ServerNotify(context.Context, *ServerNotifyR
 }
 func (UnimplementedSchedulerServer) SubscribeServerStatus(*ServerSubscriptionRequest, Scheduler_SubscribeServerStatusServer) error {
 	return status.Errorf(codes.Unimplemented, "method SubscribeServerStatus not implemented")
+}
+func (UnimplementedSchedulerServer) StartExperiment(context.Context, *StartExperimentRequest) (*StartExperimentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartExperiment not implemented")
+}
+func (UnimplementedSchedulerServer) StopExperiment(context.Context, *StopExperimentRequest) (*StopExperimentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StopExperiment not implemented")
+}
+func (UnimplementedSchedulerServer) SubscribeExperimentStatus(*ExperimentSubscriptionRequest, Scheduler_SubscribeExperimentStatusServer) error {
+	return status.Errorf(codes.Unimplemented, "method SubscribeExperimentStatus not implemented")
 }
 func (UnimplementedSchedulerServer) mustEmbedUnimplementedSchedulerServer() {}
 
@@ -328,6 +393,63 @@ func (x *schedulerSubscribeServerStatusServer) Send(m *ServerStatusResponse) err
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Scheduler_StartExperiment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StartExperimentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SchedulerServer).StartExperiment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/seldon.mlops.scheduler.Scheduler/StartExperiment",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SchedulerServer).StartExperiment(ctx, req.(*StartExperimentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Scheduler_StopExperiment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StopExperimentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SchedulerServer).StopExperiment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/seldon.mlops.scheduler.Scheduler/StopExperiment",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SchedulerServer).StopExperiment(ctx, req.(*StopExperimentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Scheduler_SubscribeExperimentStatus_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ExperimentSubscriptionRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(SchedulerServer).SubscribeExperimentStatus(m, &schedulerSubscribeExperimentStatusServer{stream})
+}
+
+type Scheduler_SubscribeExperimentStatusServer interface {
+	Send(*ExperimentStatusResponse) error
+	grpc.ServerStream
+}
+
+type schedulerSubscribeExperimentStatusServer struct {
+	grpc.ServerStream
+}
+
+func (x *schedulerSubscribeExperimentStatusServer) Send(m *ExperimentStatusResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // Scheduler_ServiceDesc is the grpc.ServiceDesc for Scheduler service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -355,6 +477,14 @@ var Scheduler_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "ServerNotify",
 			Handler:    _Scheduler_ServerNotify_Handler,
 		},
+		{
+			MethodName: "StartExperiment",
+			Handler:    _Scheduler_StartExperiment_Handler,
+		},
+		{
+			MethodName: "StopExperiment",
+			Handler:    _Scheduler_StopExperiment_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -365,6 +495,11 @@ var Scheduler_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "SubscribeServerStatus",
 			Handler:       _Scheduler_SubscribeServerStatus_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "SubscribeExperimentStatus",
+			Handler:       _Scheduler_SubscribeExperimentStatus_Handler,
 			ServerStreams: true,
 		},
 	},

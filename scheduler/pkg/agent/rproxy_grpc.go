@@ -122,10 +122,10 @@ func (rp *reverseGRPCProxy) extractModelNamesFromContext(ctx context.Context) (s
 	var internalModelName, externalModelName string
 	var inHeader bool
 	if internalModelName, externalModelName, inHeader = extractModelNamesFromHeaders(ctx); inHeader {
-		rp.logger.Debugf("Extracted model name %s:%s %s:%s", resources.SeldonInternalModel, internalModelName, resources.SeldonModelHeader, externalModelName)
+		rp.logger.Debugf("Extracted model name %s:%s %s:%s", resources.SeldonInternalModelHeader, internalModelName, resources.SeldonModelHeader, externalModelName)
 		return internalModelName, externalModelName, nil
 	} else {
-		msg := fmt.Sprintf("Failed to extract model name %s:[%s] %s:[%s]", resources.SeldonInternalModel, internalModelName, resources.SeldonModelHeader, externalModelName)
+		msg := fmt.Sprintf("Failed to extract model name %s:[%s] %s:[%s]", resources.SeldonInternalModelHeader, internalModelName, resources.SeldonModelHeader, externalModelName)
 		rp.logger.Error(msg)
 		return "", "", status.Error(codes.FailedPrecondition, msg)
 	}
@@ -228,7 +228,7 @@ func extractHeader(key string, md metadata.MD) string {
 func extractModelNamesFromHeaders(ctx context.Context) (string, string, bool) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if ok {
-		internalModelName := extractHeader(resources.SeldonInternalModel, md)
+		internalModelName := extractHeader(resources.SeldonInternalModelHeader, md)
 		externalModelName := extractHeader(resources.SeldonModelHeader, md)
 		return internalModelName, externalModelName, internalModelName != "" && externalModelName != ""
 	}

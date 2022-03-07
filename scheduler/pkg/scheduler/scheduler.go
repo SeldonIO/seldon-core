@@ -16,7 +16,7 @@ import (
 
 type SimpleScheduler struct {
 	mu     sync.RWMutex
-	store  store.SchedulerStore
+	store  store.ModelStore
 	logger log.FieldLogger
 	SchedulerConfig
 	failedModels map[string]bool
@@ -39,7 +39,7 @@ func DefaultSchedulerConfig() SchedulerConfig {
 }
 
 func NewSimpleScheduler(logger log.FieldLogger,
-	store store.SchedulerStore,
+	store store.ModelStore,
 	schedulerConfig SchedulerConfig) *SimpleScheduler {
 	s := &SimpleScheduler{
 		store:           store,

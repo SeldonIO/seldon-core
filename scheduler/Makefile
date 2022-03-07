@@ -14,13 +14,13 @@ GO_LDFLAGS := -s -w $(patsubst %,-X %, $(GO_BUILD_VARS))
 #####################################
 
 build-scheduler: test
-	go build -o bin/scheduler -v ./cmd/scheduler
+	go build -o bin/scheduler ./cmd/scheduler
 
 build-proxy:
-	go build -o bin/proxy -v ./cmd/proxy
+	go build -o bin/proxy ./cmd/proxy
 
 build-agent: test
-	go build -o bin/agent -v ./cmd/agent
+	go build -o bin/agent ./cmd/agent
 
 build-stream: test
 	go build -o bin/stream -v ./cmd/stream

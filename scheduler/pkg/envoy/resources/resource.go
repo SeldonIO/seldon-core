@@ -41,11 +41,12 @@ import (
 )
 
 const (
-	RouteConfigurationName = "listener_0"
-	SeldonLoggingHeader    = "Seldon-Logging"
-	EnvoyLogPathPrefix     = "/tmp/request-log"
-	SeldonModelHeader      = "seldon-model"
-	SeldonInternalModel    = "seldon-internal-model"
+	RouteConfigurationName    = "listener_0"
+	SeldonLoggingHeader       = "Seldon-Logging"
+	EnvoyLogPathPrefix        = "/tmp/request-log"
+	SeldonModelHeader         = "seldon-model"
+	SeldonInternalModelHeader = "seldon-internal-model"
+	SeldonRouteHeader         = "seldon-route"
 )
 
 func MakeCluster(clusterName string, eps []Endpoint, isGrpc bool) *cluster.Cluster {
@@ -123,29 +124,42 @@ func MakeEndpoint(clusterName string, eps []Endpoint) *endpoint.ClusterLoadAssig
 	}
 }
 
+// weighted clusters do not play well with session affinity see https://github.com/envoyproxy/envoy/issues/8167
+// Traffic shifting may need to be reinvesigated https://github.com/envoyproxy/envoy/pull/18207
 func createWeightedClusterAction(clusterTraffics []TrafficSplits, rest bool) *route.Route_Route {
 	// Add Weighted Clusters with given traffic percentages to each internal model
 	var clusters []*route.WeightedCluster_ClusterWeight
+	var totWeight uint32
 	for _, clusterTraffic := range clusterTraffics {
 		clusterName := clusterTraffic.HttpCluster
 		if !rest {
 			clusterName = clusterTraffic.GrpcCluster
 		}
+		totWeight = totWeight + clusterTraffic.TrafficWeight
 		clusters = append(clusters,
 			&route.WeightedCluster_ClusterWeight{
 				Name: clusterName,
 				Weight: &wrappers.UInt32Value{
-					Value: clusterTraffic.TrafficPercent,
+					Value: clusterTraffic.TrafficWeight,
 				},
 				RequestHeadersToAdd: []*core.HeaderValueOption{
 					{
 						Header: &core.HeaderValue{
-							Key: SeldonInternalModel,
+							Key: SeldonInternalModelHeader,
 							// note: this is implementation specific for agent and it is exposed here
 							// basically the model versions are flattened and it is loaded as
 							// <model_name>_<model_version>
 							// TODO: is there a nicer way of doing it?
 							// check client.go for how different model versions are treated internally
+							Value: util.GetVersionedModelName(
+								clusterTraffic.ModelName, clusterTraffic.ModelVersion),
+						},
+					},
+				},
+				ResponseHeadersToAdd: []*core.HeaderValueOption{
+					{
+						Header: &core.HeaderValue{
+							Key: SeldonRouteHeader,
 							Value: util.GetVersionedModelName(
 								clusterTraffic.ModelName, clusterTraffic.ModelVersion),
 						},
@@ -158,7 +172,8 @@ func createWeightedClusterAction(clusterTraffics []TrafficSplits, rest bool) *ro
 		Route: &route.RouteAction{
 			ClusterSpecifier: &route.RouteAction_WeightedClusters{
 				WeightedClusters: &route.WeightedCluster{
-					Clusters: clusters,
+					Clusters:    clusters,
+					TotalWeight: &wrappers.UInt32Value{Value: totWeight},
 				},
 			},
 		},
@@ -171,7 +186,7 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 
 	for _, r := range routes {
 		rt := &route.Route{
-			Name: fmt.Sprintf("%s_http", r.ModelName),
+			Name: fmt.Sprintf("%s_http", r.RouteName),
 			Match: &route.RouteMatch{
 				PathSpecifier: &route.RouteMatch_Prefix{
 					Prefix: "/v2",
@@ -180,7 +195,7 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 					{
 						Name: SeldonModelHeader, // Header name we will match on
 						HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
-							ExactMatch: r.ModelName,
+							ExactMatch: r.RouteName,
 						},
 						//TODO: https://github.com/envoyproxy/envoy/blob/c75c1410c8682cb44c9136ce4ad01e6a58e16e8e/api/envoy/api/v2/route/route_components.proto#L1513
 						//HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
@@ -206,7 +221,7 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 		//TODO there is no easy way to implement version specific gRPC calls so this could mean we need to implement
 		//latest model policy on V2 servers and therefore also for REST as well
 		rt = &route.Route{
-			Name: fmt.Sprintf("%s_grpc", r.ModelName),
+			Name: fmt.Sprintf("%s_grpc", r.RouteName),
 			Match: &route.RouteMatch{
 				PathSpecifier: &route.RouteMatch_Prefix{
 					Prefix: "/inference.GRPCInferenceService",
@@ -215,7 +230,7 @@ func MakeRoute(routes []Route) *route.RouteConfiguration {
 					{
 						Name: SeldonModelHeader, // Header name we will match on
 						HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
-							ExactMatch: r.ModelName,
+							ExactMatch: r.RouteName,
 						},
 						//TODO: https://github.com/envoyproxy/envoy/blob/c75c1410c8682cb44c9136ce4ad01e6a58e16e8e/api/envoy/api/v2/route/route_components.proto#L1513
 						//HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{

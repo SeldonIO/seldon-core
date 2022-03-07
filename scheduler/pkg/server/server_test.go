@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/store/experiment"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
 
 	. "github.com/onsi/gomega"
@@ -34,11 +36,12 @@ func TestLoadModel(t *testing.T) {
 		eventHub, err := coordinator.NewEventHub(logger)
 		g.Expect(err).To(BeNil())
 		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+		experimentServer := experiment.NewExperimentServer(logger, eventHub)
 		mockAgent := &mockAgentHandler{}
 		scheduler := scheduler2.NewSimpleScheduler(logger,
 			schedulerStore,
 			scheduler2.DefaultSchedulerConfig())
-		s := NewSchedulerServer(logger, schedulerStore, scheduler, eventHub)
+		s := NewSchedulerServer(logger, schedulerStore, experimentServer, scheduler, eventHub)
 		return s, mockAgent
 	}
 
@@ -109,7 +112,7 @@ func TestLoadModel(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			s, _ := createTestScheduler()
 			for _, repReq := range test.req {
-				err := s.store.AddServerReplica(repReq)
+				err := s.modelStore.AddServerReplica(repReq)
 				g.Expect(err).To(BeNil())
 			}
 			lm := pb.LoadModelRequest{
@@ -139,11 +142,12 @@ func TestUnloadModel(t *testing.T) {
 		eventHub, err := coordinator.NewEventHub(logger)
 		g.Expect(err).To(BeNil())
 		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+		experimentServer := experiment.NewExperimentServer(logger, eventHub)
 		mockAgent := &mockAgentHandler{}
 		scheduler := scheduler2.NewSimpleScheduler(logger,
 			schedulerStore,
 			scheduler2.DefaultSchedulerConfig())
-		s := NewSchedulerServer(logger, schedulerStore, scheduler, eventHub)
+		s := NewSchedulerServer(logger, schedulerStore, experimentServer, scheduler, eventHub)
 		return s, mockAgent, eventHub
 	}
 
@@ -201,7 +205,7 @@ func TestUnloadModel(t *testing.T) {
 			defer s.StopSendServerEvents()
 
 			for _, repReq := range test.req {
-				err := s.store.AddServerReplica(repReq)
+				err := s.modelStore.AddServerReplica(repReq)
 				g.Expect(err).To(BeNil())
 			}
 
@@ -223,7 +227,7 @@ func TestUnloadModel(t *testing.T) {
 			} else {
 				g.Expect(err).To(BeNil())
 				g.Expect(r).ToNot(BeNil())
-				ms, err := s.store.GetModel(modelName)
+				ms, err := s.modelStore.GetModel(modelName)
 				g.Expect(err).To(BeNil())
 				for replicaIdx, state := range test.modelReplicaStates {
 					g.Expect(ms.GetLatest().GetModelReplicaState(replicaIdx)).To(Equal(state))

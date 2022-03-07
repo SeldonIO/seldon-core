@@ -21,6 +21,8 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/store/experiment"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/scheduler/cleaner"
@@ -97,7 +99,8 @@ func main() {
 	}()
 
 	ss := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
-	_ = processor.NewIncrementalProcessor(cache, nodeID, logger, ss, eventHub)
+	es := experiment.NewExperimentServer(logger, eventHub)
+	_ = processor.NewIncrementalProcessor(cache, nodeID, logger, ss, es, eventHub)
 	sched := scheduler.NewSimpleScheduler(
 		logger,
 		ss,
@@ -105,7 +108,7 @@ func main() {
 	)
 	as := agent.NewAgentServer(logger, ss, sched, eventHub)
 
-	s := server2.NewSchedulerServer(logger, ss, sched, eventHub)
+	s := server2.NewSchedulerServer(logger, ss, es, sched, eventHub)
 	go func() {
 		err := s.StartGrpcServer(schedulerPort)
 		if err != nil {
@@ -126,4 +129,5 @@ func main() {
 
 	s.StopSendModelEvents()
 	s.StopSendServerEvents()
+	s.StopSendExperimentEvents()
 }

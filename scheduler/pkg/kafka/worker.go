@@ -147,7 +147,7 @@ func (iw *InferWorker) produce(job *InferWork, b []byte, headerType string) erro
 	logger := iw.logger.WithField("func", "produce")
 	kafkaHeaders := make([]kafka.Header, 1)
 	kafkaHeaders[0] = kafka.Header{Key: HeaderKeyType, Value: []byte(headerType)}
-	logger.Infof("Produce grpc response to topic %s", iw.consumer.modelConfig.OutputTopic)
+	logger.Infof("Produce response to topic %s with header %s", iw.consumer.modelConfig.OutputTopic, headerType)
 	err := iw.consumer.producer.Produce(&kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &iw.consumer.modelConfig.OutputTopic, Partition: kafka.PartitionAny},
 		Key:            job.key,

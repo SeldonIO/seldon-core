@@ -221,7 +221,7 @@ func maybeUpdateSchedulerHost() {
 
 	schedulerHostFromEnv, found := getEnvString(envSchedulerHost)
 	if !found {
-		log.Fatalf("No %s set", flagSchedulerHost)
+		return
 	}
 
 	log.Infof("Setting %s from %s to %s", flagSchedulerHost, envSchedulerHost, schedulerHostFromEnv)

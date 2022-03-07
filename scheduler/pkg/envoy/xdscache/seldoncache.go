@@ -87,11 +87,11 @@ func (xds *SeldonXDSCache) AddListener(name string) {
 	}
 }
 
-func (xds *SeldonXDSCache) AddRouteClusterTraffic(modelName string, modelVersion uint32, trafficPercent uint32, httpClusterName string, grpcClusterName string, logPayloads bool) {
-	route, ok := xds.Routes[modelName]
+func (xds *SeldonXDSCache) AddRouteClusterTraffic(routeName string, modelName string, modelVersion uint32, trafficPercent uint32, httpClusterName string, grpcClusterName string, logPayloads bool) {
+	route, ok := xds.Routes[routeName]
 	if !ok {
 		route = resources.Route{
-			ModelName:   modelName,
+			RouteName:   routeName,
 			LogPayloads: logPayloads,
 		}
 	}
@@ -101,14 +101,14 @@ func (xds *SeldonXDSCache) AddRouteClusterTraffic(modelName string, modelVersion
 	}
 
 	clusterTraffic := resources.TrafficSplits{
-		ModelName:      modelName,
-		ModelVersion:   modelVersion,
-		TrafficPercent: trafficPercent,
-		HttpCluster:    httpClusterName,
-		GrpcCluster:    grpcClusterName,
+		ModelName:     modelName,
+		ModelVersion:  modelVersion,
+		TrafficWeight: trafficPercent,
+		HttpCluster:   httpClusterName,
+		GrpcCluster:   grpcClusterName,
 	}
 	route.Clusters = append(route.Clusters, clusterTraffic)
-	xds.Routes[modelName] = route
+	xds.Routes[routeName] = route
 }
 
 func (xds *SeldonXDSCache) AddCluster(name string, modelName string, modelVersion uint32, isGrpc bool) {
@@ -139,7 +139,7 @@ func (xds *SeldonXDSCache) RemoveRoute(modelName string) error {
 		if !ok {
 			return fmt.Errorf("Can't find http cluster for model %s route %+v", modelName, route)
 		}
-		delete(httpCluster.Routes, resources.ModelVersionKey{Name: route.ModelName, Version: cluster.ModelVersion})
+		delete(httpCluster.Routes, resources.ModelVersionKey{Name: cluster.ModelName, Version: cluster.ModelVersion})
 		if len(httpCluster.Routes) == 0 {
 			delete(xds.Clusters, cluster.HttpCluster)
 		}
@@ -148,7 +148,7 @@ func (xds *SeldonXDSCache) RemoveRoute(modelName string) error {
 		if !ok {
 			return fmt.Errorf("Can't find grpc cluster for model %s", modelName)
 		}
-		delete(grpcCluster.Routes, resources.ModelVersionKey{Name: route.ModelName, Version: cluster.ModelVersion})
+		delete(grpcCluster.Routes, resources.ModelVersionKey{Name: cluster.ModelName, Version: cluster.ModelVersion})
 		if len(grpcCluster.Routes) == 0 {
 			delete(xds.Clusters, cluster.GrpcCluster)
 		}

@@ -45,14 +45,14 @@ func (rp *reverseHTTPProxy) addHandlers(proxy http.Handler) http.Handler {
 		rp.rewriteHostHandler(r)
 
 		externalModelName := r.Header.Get(resources.SeldonModelHeader)
-		internalModelName := r.Header.Get(resources.SeldonInternalModel)
+		internalModelName := r.Header.Get(resources.SeldonInternalModelHeader)
 		//TODO should we return a 404 if headers not found?
 		if externalModelName == "" || internalModelName == "" {
-			rp.logger.Warnf("Failed to extract model name %s:[%s] %s:[%s]", resources.SeldonInternalModel, internalModelName, resources.SeldonModelHeader, externalModelName)
+			rp.logger.Warnf("Failed to extract model name %s:[%s] %s:[%s]", resources.SeldonInternalModelHeader, internalModelName, resources.SeldonModelHeader, externalModelName)
 			proxy.ServeHTTP(w, r)
 			return
 		} else {
-			rp.logger.Debugf("Extracted model name %s:%s %s:%s", resources.SeldonInternalModel, internalModelName, resources.SeldonModelHeader, externalModelName)
+			rp.logger.Debugf("Extracted model name %s:%s %s:%s", resources.SeldonInternalModelHeader, internalModelName, resources.SeldonModelHeader, externalModelName)
 		}
 
 		if err := rp.stateManager.EnsureLoadModel(internalModelName); err != nil {

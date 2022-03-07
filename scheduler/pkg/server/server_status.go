@@ -14,13 +14,13 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 
 	fin := make(chan bool)
 
-	s.mutext.Lock()
+	s.mu.Lock()
 	s.modelEventStream.streams[stream] = &ModelSubscription{
 		name:   req.Name,
 		stream: stream,
 		fin:    fin,
 	}
-	s.mutext.Unlock()
+	s.mu.Unlock()
 
 	err := s.sendCurrentModelStatuses(stream)
 	if err != nil {
@@ -36,9 +36,9 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 			return nil
 		case <-ctx.Done():
 			logger.Infof("Stream disconnected %s", req.GetName())
-			s.mutext.Lock()
+			s.mu.Lock()
 			delete(s.modelEventStream.streams, stream)
-			s.mutext.Unlock()
+			s.mu.Unlock()
 			return nil
 		}
 	}
@@ -46,9 +46,9 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 
 //TODO as this could be 1000s of models may need to look at ways to optimize?
 func (s *SchedulerServer) sendCurrentModelStatuses(stream pb.Scheduler_SubscribeModelStatusServer) error {
-	modelNames := s.store.GetAllModels()
+	modelNames := s.modelStore.GetAllModels()
 	for _, modelName := range modelNames {
-		model, err := s.store.GetModel(modelName)
+		model, err := s.modelStore.GetModel(modelName)
 		if err != nil {
 			return err
 		}
@@ -86,7 +86,7 @@ func (s *SchedulerServer) StopSendModelEvents() {
 
 func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) error {
 	logger := s.logger.WithField("func", "sendModelStatusEvent")
-	model, err := s.store.GetModel(evt.ModelName)
+	model, err := s.modelStore.GetModel(evt.ModelName)
 	if err != nil {
 		return err
 	}
@@ -112,13 +112,13 @@ func (s *SchedulerServer) SubscribeServerStatus(req *pb.ServerSubscriptionReques
 
 	fin := make(chan bool)
 
-	s.mutext.Lock()
+	s.mu.Lock()
 	s.serverEventStream.streams[stream] = &ServerSubscription{
 		name:   req.Name,
 		stream: stream,
 		fin:    fin,
 	}
-	s.mutext.Unlock()
+	s.mu.Unlock()
 
 	ctx := stream.Context()
 	// Keep this scope alive because once this scope exits - the stream is closed
@@ -129,9 +129,9 @@ func (s *SchedulerServer) SubscribeServerStatus(req *pb.ServerSubscriptionReques
 			return nil
 		case <-ctx.Done():
 			logger.Infof("Stream disconnected %s", req.GetName())
-			s.mutext.Lock()
+			s.mu.Lock()
 			delete(s.serverEventStream.streams, stream)
-			s.mutext.Unlock()
+			s.mu.Unlock()
 			return nil
 		}
 	}
@@ -160,7 +160,7 @@ func (s *SchedulerServer) StopSendServerEvents() {
 
 func (s *SchedulerServer) sendServerStatusEvent(evt coordinator.ModelEventMsg) error {
 	logger := s.logger.WithField("func", "sendServerStatusEvent")
-	model, err := s.store.GetModel(evt.ModelName)
+	model, err := s.modelStore.GetModel(evt.ModelName)
 	if err != nil {
 		return err
 	}

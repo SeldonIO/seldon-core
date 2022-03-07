@@ -33,12 +33,12 @@ type Server struct {
 	pb.UnimplementedAgentServiceServer
 	logger    log.FieldLogger
 	agents    map[ServerKey]*AgentSubscriber
-	store     store.SchedulerStore
+	store     store.ModelStore
 	scheduler scheduler.Scheduler
 }
 
 type SchedulerAgent interface {
-	Sync(modelName string) error
+	modelSync(modelName string) error
 }
 
 type AgentSubscriber struct {
@@ -49,7 +49,7 @@ type AgentSubscriber struct {
 
 func NewAgentServer(
 	logger log.FieldLogger,
-	store store.SchedulerStore,
+	store store.ModelStore,
 	scheduler scheduler.Scheduler,
 	hub *coordinator.EventHub,
 ) *Server {
@@ -60,7 +60,7 @@ func NewAgentServer(
 		scheduler: scheduler,
 	}
 
-	hub.RegisterHandler(
+	hub.RegisterModelEventHandler(
 		modelEventHandlerName,
 		pendingSyncsQueueSize,
 		s.logger,

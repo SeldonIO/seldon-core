@@ -8,17 +8,17 @@ type Listener struct {
 }
 
 type Route struct {
-	ModelName   string
+	RouteName   string
 	LogPayloads bool
 	Clusters    []TrafficSplits
 }
 
 type TrafficSplits struct {
-	ModelName      string
-	ModelVersion   uint32
-	TrafficPercent uint32
-	HttpCluster    string
-	GrpcCluster    string
+	ModelName     string
+	ModelVersion  uint32
+	TrafficWeight uint32
+	HttpCluster   string
+	GrpcCluster   string
 }
 
 type ModelVersionKey struct {

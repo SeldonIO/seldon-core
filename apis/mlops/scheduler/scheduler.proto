@@ -182,6 +182,49 @@ message ServerSubscriptionRequest {
   string name = 1; //Name of the subscription caller
 }
 
+// Experiments
+
+message StartExperimentRequest {
+  string name = 1;
+  optional ExperimentCandidate baseline = 2;
+  repeated ExperimentCandidate candidates = 3;
+  optional ExperimentMirror mirror = 4;
+  optional ExperimentConfig config = 5;
+}
+
+message ExperimentConfig {
+  bool stickySessions = 1;
+}
+
+message ExperimentCandidate {
+  string modelName = 1;
+  uint32 weight = 2;
+}
+
+message ExperimentMirror {
+  string modelName = 1;
+  int32 percent = 2;
+}
+
+message StartExperimentResponse {
+}
+
+message StopExperimentRequest {
+  string name = 1;
+}
+
+message StopExperimentResponse {
+}
+
+message ExperimentSubscriptionRequest {
+  string name = 1; //Name of the subscription caller
+}
+
+message ExperimentStatusResponse {
+  string experimentName = 1;
+  bool active = 2;
+  string statusDescription = 3;
+}
 
 // [END Messages]
 
@@ -196,6 +239,9 @@ service Scheduler {
   rpc SubscribeModelStatus(ModelSubscriptionRequest) returns (stream ModelStatusResponse) {};
   rpc ServerNotify(ServerNotifyRequest) returns (ServerNotifyResponse) {};
   rpc SubscribeServerStatus(ServerSubscriptionRequest) returns (stream ServerStatusResponse) {};
+  rpc StartExperiment(StartExperimentRequest) returns (StartExperimentResponse) {};
+  rpc StopExperiment(StopExperimentRequest) returns (StopExperimentResponse) {};
+  rpc SubscribeExperimentStatus(ExperimentSubscriptionRequest) returns (stream ExperimentStatusResponse) {};
 }
 
 // [END Services]

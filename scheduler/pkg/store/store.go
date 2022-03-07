@@ -79,7 +79,7 @@ func (m *ModelSnapshot) GetVersionsBeforeLastAvailable() []*ModelVersion {
 	return nil
 }
 
-type SchedulerStore interface {
+type ModelStore interface {
 	UpdateModel(config *pb.LoadModelRequest) error
 	GetModel(key string) (*ModelSnapshot, error)
 	LockModel(modelId string)
