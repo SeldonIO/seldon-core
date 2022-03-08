@@ -465,7 +465,11 @@ if __name__ == "__main__":
                     re.M,
                 )
 
-            # make sure metric is not quoted as its an int
+            # make sure hostNetwork is not quoted as its a bool
+            fdata = fdata.replace(
+                "'{{ .Values.hostNetwork }}'", "{{ .Values.hostNetwork }}"
+            )
+            # make sure metrics.port is not quoted as its an int
             fdata = fdata.replace(
                 "containerPort: '{{ .Values.metrics.port }}'", "containerPort: {{ .Values.metrics.port }}"
             )
