@@ -1,0 +1,11 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: seldon-operator-subscription
+  namespace: default
+spec:
+  channel: stable
+  name: seldon-operator
+  source: seldon-core-catalog
+  sourceNamespace: olm
+  startingCSV: seldon-operator.v1.13.1

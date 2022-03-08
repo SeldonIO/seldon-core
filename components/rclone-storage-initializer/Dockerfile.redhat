@@ -1,0 +1,20 @@
+FROM rclone/rclone:1.56.2 as builder
+
+RUN mkdir /licenses && wget -O /licenses/license.txt https://raw.githubusercontent.com/rclone/rclone/master/COPYING
+
+FROM registry.access.redhat.com/ubi8/ubi-minimal
+LABEL name="Rclone Storage Initializer" \
+      vendor="Seldon Technologies" \
+      version="1.13.1" \
+      release="1" \
+      summary="Storage Initializer for Seldon Core" \
+      description="Allows Seldon Core to download artifacts from cloud and local storage to a local volume"
+
+COPY --from=builder /usr/local/bin/ /usr/local/bin/
+COPY --from=builder /licenses/ /licenses/
+
+ENV RCLONE_CONFIG_GS_TYPE google cloud storage
+ENV RCLONE_CONFIG_GS_ANONYMOUS true
+
+
+ENTRYPOINT ["rclone", "copy", "-vv"]
