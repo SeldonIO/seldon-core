@@ -10,27 +10,27 @@ message PipelineSubscriptionRequest {
 }
 
 message PipelineUpdateMessage {
-  string pipeline = 1;
-  uint32 version = 2;
-  string uid = 3;
-  string step = 4;
-  PipelineJoinUpdate join = 5;
-}
-
-message PipelineJoinUpdate {
-  enum PipelineJoinOperation {
+  enum PipelineOperation {
     Unknown = 0;
     Create = 1;
     Delete = 2;
   }
+  PipelineOperation op = 1;
+  string pipeline = 2;
+  uint32 version = 3;
+  string uid = 4;
+  repeated PipelineStepUpdate updates = 5;
+}
+
+message PipelineStepUpdate {
   enum PipelineJoinType {
-    Inner = 0;
+    Unknown = 0;
+    Inner = 1;
   }
   repeated string sources = 1;
   string sink = 2;
-  PipelineJoinOperation op = 3;
-  PipelineJoinOperation ty = 4;
-  int64 windowMsecs = 5;
+  PipelineJoinType ty = 3;
+  int64 windowMsecs = 4; //TODO is this needed and what are reasonable ranges
 }
 
 message PipelineUpdateStatusMessage {
