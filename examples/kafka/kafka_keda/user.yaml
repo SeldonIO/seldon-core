@@ -1,0 +1,10 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: seldon-user
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: seldon
+spec:
+  authentication:
+    type: tls

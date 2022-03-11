@@ -1,0 +1,8 @@
+broker.ip
+ca.crt
+ca.p12
+ca.password
+kafka-keystore.jks
+kafka-truststore.jks
+user.p12
+user.password

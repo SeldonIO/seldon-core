@@ -1,0 +1,19 @@
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: seldon-kafka-auth
+  namespace: kafka
+spec:
+  secretTargetRef:
+  - parameter: tls
+    name: keda-enable-tls
+    key: tls
+  - parameter: ca
+    name: seldon-cluster-ca-cert
+    key: ca.crt
+  - parameter: cert
+    name: seldon-user
+    key: user.crt
+  - parameter: key
+    name: seldon-user
+    key: user.key
