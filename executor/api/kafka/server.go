@@ -157,16 +157,36 @@ func getProto(messageType string, messageBytes []byte) (proto2.Message, error) {
 }
 
 func (ks *SeldonKafkaServer) Serve() error {
-	c, err := kafka.NewConsumer(&kafka.ConfigMap{
+
+	consumerConfigMap := kafka.ConfigMap{
 		"bootstrap.servers":     ks.Broker,
 		"broker.address.family": "v4",
 		"group.id":              ks.getGroupName(),
 		"session.timeout.ms":    6000,
-		"auto.offset.reset":     "earliest"})
+		"enable.auto.commit":    true,
+		"auto.offset.reset":     "earliest"}
+
+	if util.GetKafkaSecurityProtocol() == "SSL" {
+		sslKakfaServer := util.GetSslElements()
+		consumerConfigMap["security.protocol"] = util.GetKafkaSecurityProtocol()
+		if sslKakfaServer.CACertFile != "" && sslKakfaServer.ClientCertFile != "" {
+			consumerConfigMap["ssl.ca.location"] = sslKakfaServer.CACertFile
+			consumerConfigMap["ssl.key.location"] = sslKakfaServer.ClientKeyFile
+			consumerConfigMap["ssl.certificate.location"] = sslKakfaServer.ClientCertFile
+		}
+		if sslKakfaServer.CACert != "" && sslKakfaServer.ClientCert != "" {
+			consumerConfigMap["ssl.ca.pem"] = sslKakfaServer.CACert
+			consumerConfigMap["ssl.key.pem"] = sslKakfaServer.ClientKey
+			consumerConfigMap["ssl.certificate.pem"] = sslKakfaServer.ClientCert
+		}
+		consumerConfigMap["ssl.key.password"] = sslKakfaServer.ClientKeyPass // Key password, if any
+	}
+
+	c, err := kafka.NewConsumer(&consumerConfigMap)
 	if err != nil {
 		return err
 	}
-	ks.Log.Info("Created", "consumer", c.String())
+	ks.Log.Info("Created", "consumer", c.String(), "consumer group", ks.getGroupName(), "topic", ks.TopicIn)
 
 	err = c.SubscribeTopics([]string{ks.TopicIn}, nil)
 	if err != nil {
