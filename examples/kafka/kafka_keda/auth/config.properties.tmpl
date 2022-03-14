@@ -1,0 +1,10 @@
+bootstrap.servers=BROKER_IP:9093
+security.protocol=SSL
+#ssl.truststore.type=PKCS12
+#ssl.truststore.location=auth/ca.crt
+ssl.truststore.location=auth/kafka-truststore.jks
+ssl.truststore.password=TRUSTSTORE_PASSWORD
+#ssl.keystore.type=PKCS12
+#ssl.keystore.location=auth/user.p12
+ssl.keystore.location=auth/kafka-keystore.jks
+ssl.keystore.password=KEYSTORE_PASSWORD
