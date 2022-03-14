@@ -21,6 +21,7 @@ func TestAddModelVersion(t *testing.T) {
 		modelVersion       *pb.ModelVersion
 		versionAdded       bool
 		expectedModelBytes uint64
+		expectedTotalBytes uint64
 	}
 
 	tests := []test{
@@ -40,6 +41,7 @@ func TestAddModelVersion(t *testing.T) {
 			},
 			versionAdded:       true,
 			expectedModelBytes: 500,
+			expectedTotalBytes: 500,
 		},
 		{
 			name: "NewModel (Another Model Exsits)",
@@ -59,6 +61,7 @@ func TestAddModelVersion(t *testing.T) {
 						},
 					},
 				},
+				totalMemoryForAllModels: 500,
 			},
 			modelVersion: &pb.ModelVersion{
 				Model: &pbs.Model{
@@ -73,6 +76,7 @@ func TestAddModelVersion(t *testing.T) {
 			},
 			versionAdded:       true,
 			expectedModelBytes: 500,
+			expectedTotalBytes: 1000,
 		},
 		{
 			name: "NewVersion",
@@ -92,6 +96,7 @@ func TestAddModelVersion(t *testing.T) {
 						},
 					},
 				},
+				totalMemoryForAllModels: 500,
 			},
 			modelVersion: &pb.ModelVersion{
 				Model: &pbs.Model{
@@ -106,6 +111,7 @@ func TestAddModelVersion(t *testing.T) {
 			},
 			versionAdded:       false,
 			expectedModelBytes: 500,
+			expectedTotalBytes: 500,
 		},
 		{
 			name: "VersionExists",
@@ -125,6 +131,7 @@ func TestAddModelVersion(t *testing.T) {
 						},
 					},
 				},
+				totalMemoryForAllModels: 500,
 			},
 			modelVersion: &pb.ModelVersion{
 				Model: &pbs.Model{
@@ -139,6 +146,7 @@ func TestAddModelVersion(t *testing.T) {
 			},
 			versionAdded:       false,
 			expectedModelBytes: 500,
+			expectedTotalBytes: 500,
 		},
 	}
 
@@ -153,6 +161,7 @@ func TestAddModelVersion(t *testing.T) {
 				g.Expect(test.state.versionExists("iris", test.modelVersion.GetVersion())).To(Equal(false))
 			}
 			g.Expect(test.state.getModelMemoryBytes("iris")).To(Equal(test.expectedModelBytes))
+			g.Expect(test.state.getTotalMemoryBytesForAllModels()).To(Equal(test.expectedTotalBytes))
 		})
 	}
 }
@@ -166,6 +175,7 @@ func TestRemoveModelVersion(t *testing.T) {
 		modelVersion       *pb.ModelVersion
 		modelDeleted       bool
 		expectedModelBytes uint64
+		expectedTotalBytes uint64
 		numModels          int
 	}
 
@@ -188,6 +198,7 @@ func TestRemoveModelVersion(t *testing.T) {
 						},
 					},
 				},
+				totalMemoryForAllModels: 500,
 			},
 			modelVersion: &pb.ModelVersion{
 				Model: &pbs.Model{
@@ -200,6 +211,7 @@ func TestRemoveModelVersion(t *testing.T) {
 			modelDeleted:       true,
 			expectedModelBytes: 0,
 			numModels:          0,
+			expectedTotalBytes: 0,
 		},
 		{
 			name: "ModelNotDeleted",
@@ -219,6 +231,7 @@ func TestRemoveModelVersion(t *testing.T) {
 						},
 					},
 				},
+				totalMemoryForAllModels: 500,
 			},
 			modelVersion: &pb.ModelVersion{
 				Model: &pbs.Model{
@@ -231,6 +244,7 @@ func TestRemoveModelVersion(t *testing.T) {
 			modelDeleted:       false,
 			expectedModelBytes: 500,
 			numModels:          1,
+			expectedTotalBytes: 500,
 		},
 	}
 
@@ -244,6 +258,7 @@ func TestRemoveModelVersion(t *testing.T) {
 				g.Expect(test.state.getModelMemoryBytes("iris")).To(Equal(test.expectedModelBytes))
 			}
 			g.Expect(test.state.numModels()).To(Equal(test.numModels))
+			g.Expect(test.state.getTotalMemoryBytesForAllModels()).To(Equal(test.expectedTotalBytes))
 		})
 	}
 }

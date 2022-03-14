@@ -46,8 +46,6 @@ type ServerSpec struct {
 type MultiModelSpec struct {
 	// The capabilities this server will advertise
 	Capabilities []string `json:"capabilities,omitempty"`
-	// How much memory to push to disk to allow overcommited models
-	SwapMemoryBytes bool `json:"swapMemoryBytes,omitempty"`
 	// The Init container overrides to download preset models
 	Init *v1.Container `json:"init,omitempty"`
 	// The Agent overrides

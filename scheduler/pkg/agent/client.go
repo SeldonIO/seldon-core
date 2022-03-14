@@ -90,7 +90,8 @@ func NewClient(serverName string,
 	}
 	modelState := NewModelState()
 
-	stateManager := NewLocalStateManager(modelState, logger, v2Client, int64(replicaConfig.GetMemoryBytes()))
+	stateManager := NewLocalStateManager(
+		modelState, logger, v2Client, replicaConfig.GetMemoryBytes(), replicaConfig.GetOverCommitPercentage())
 
 	clientDebugService.SetState(stateManager)
 	reverseProxyHTTP.SetState(stateManager)
@@ -246,7 +247,7 @@ func (c *Client) StartService() error {
 		ReplicaConfig:        c.replicaConfig,
 		LoadedModels:         c.stateManager.modelVersions.getVersionsForAllModels(),
 		Shared:               true,
-		AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytes(),
+		AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytesWithOverCommit(),
 	}, grpc_retry.WithMax(100)) //TODO make configurable
 	if err != nil {
 		return err
@@ -401,7 +402,7 @@ func (c *Client) sendModelEventError(modelName string, modelVersion uint32, even
 		ModelVersion:         modelVersion,
 		Event:                event,
 		Message:              err.Error(),
-		AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytes(),
+		AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytesWithOverCommit(),
 	})
 	if err != nil {
 		c.logger.WithError(err).Errorf("Failed to send error back on load model")
@@ -416,7 +417,7 @@ func (c *Client) sendAgentEvent(modelName string, modelVersion uint32, event age
 		ModelName:            modelName,
 		ModelVersion:         modelVersion,
 		Event:                event,
-		AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytes(),
+		AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytesWithOverCommit(),
 	})
 	return err
 }

@@ -65,12 +65,12 @@ func createReplicaConfig() *agent2.ReplicaConfig {
 		log.Infof("Created replicaConfig from command line")
 	} else {
 		rc = &agent2.ReplicaConfig{
-			InferenceSvc:      cli.InferenceSvcName,
-			InferenceHttpPort: int32(cli.InferenceHttpPort),
-			InferenceGrpcPort: int32(cli.InferenceGrpcPort),
-			MemoryBytes:       cli.MemoryBytes64,
-			Capabilities:      cli.Capabilities,
-			OverCommit:        cli.OverCommit,
+			InferenceSvc:         cli.InferenceSvcName,
+			InferenceHttpPort:    int32(cli.InferenceHttpPort),
+			InferenceGrpcPort:    int32(cli.InferenceGrpcPort),
+			MemoryBytes:          cli.MemoryBytes64,
+			Capabilities:         cli.Capabilities,
+			OverCommitPercentage: uint32(cli.OverCommitPercentage),
 		}
 		log.Infof("Created replicaConfig from environment")
 	}

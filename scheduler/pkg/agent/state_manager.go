@@ -11,18 +11,20 @@ import (
 )
 
 const (
-	DefaultModelMemoryBytes = uint64(1 * 1024 * 1024) // set a 1MB default
+	DefaultModelMemoryBytes = uint64(1 * 1024 * 1024) // use 1MB default
 )
 
 // manages the state associated with models on local agent
 type LocalStateManager struct {
-	v2Client      *V2Client
-	logger        log.FieldLogger
-	modelVersions *ModelState
-	cache         *cache.CacheTransactionManager
+	v2Client             *V2Client
+	logger               log.FieldLogger
+	modelVersions        *ModelState
+	cache                *cache.CacheTransactionManager
+	totalMainMemoryBytes uint64
+	overCommitPercentage uint32
 	// because of race conditions we might occassionatly go into negative memory
-	availableMemoryBytes int64
-	// lock for `availableMemoryBytes`
+	availableMainMemoryBytes int64
+	// lock for `availableMainMemoryBytes`
 	mu sync.RWMutex
 }
 
@@ -219,10 +221,23 @@ func (manager *LocalStateManager) EnsureLoadModel(modelId string) error {
 func (manager *LocalStateManager) GetAvailableMemoryBytes() uint64 {
 	manager.mu.RLock()
 	defer manager.mu.RUnlock()
-	if manager.availableMemoryBytes < 0 {
+	if manager.availableMainMemoryBytes < 0 {
 		return 0
 	} else {
-		return uint64(manager.availableMemoryBytes)
+		return uint64(manager.availableMainMemoryBytes)
+	}
+}
+
+func (manager *LocalStateManager) GetAvailableMemoryBytesWithOverCommit() uint64 {
+	manager.mu.RLock()
+	defer manager.mu.RUnlock()
+	overCommitBytesMax := (float32(manager.overCommitPercentage) / 100.) * float32(manager.totalMainMemoryBytes)
+	if manager.modelVersions.getTotalMemoryBytesForAllModels() > manager.totalMainMemoryBytes {
+		// we are overcommiting already, so there should be no main memory available
+		overCommitUsedBytes := manager.modelVersions.getTotalMemoryBytesForAllModels() - manager.totalMainMemoryBytes
+		return uint64(overCommitBytesMax) - overCommitUsedBytes
+	} else {
+		return uint64(manager.availableMainMemoryBytes) + uint64(overCommitBytesMax)
 	}
 }
 
@@ -237,16 +252,16 @@ func (manager *LocalStateManager) getMemoryDelta(modelId string) (uint64, error)
 func (manager *LocalStateManager) updateAvailableMemory(memBytes uint64, isLoadingModel bool) error {
 	manager.mu.Lock()
 	defer manager.mu.Unlock()
-	manager.logger.Debugf("Before memory update %d, %d", manager.availableMemoryBytes, memBytes)
+	manager.logger.Debugf("Before memory update %d, %d", manager.availableMainMemoryBytes, memBytes)
 	if isLoadingModel {
-		if manager.availableMemoryBytes-int64(memBytes) < 0 {
-			return fmt.Errorf("Memory will go below zero %d", manager.availableMemoryBytes)
+		if manager.availableMainMemoryBytes-int64(memBytes) < 0 {
+			return fmt.Errorf("Memory will go below zero %d", manager.availableMainMemoryBytes)
 		}
-		manager.availableMemoryBytes -= int64(memBytes)
+		manager.availableMainMemoryBytes -= int64(memBytes)
 	} else {
-		manager.availableMemoryBytes += int64(memBytes)
+		manager.availableMainMemoryBytes += int64(memBytes)
 	}
-	manager.logger.Debugf("After memory update %d, %d", manager.availableMemoryBytes, memBytes)
+	manager.logger.Debugf("After memory update %d, %d", manager.availableMainMemoryBytes, memBytes)
 	return nil
 }
 
@@ -319,18 +334,21 @@ func NewLocalStateManager(
 	modelVersions *ModelState,
 	logger log.FieldLogger,
 	v2Client *V2Client,
-	availableMemoryBytes int64,
+	totalMainMemoryBytes uint64,
+	overCommitPercentage uint32,
 ) *LocalStateManager {
 	// if we are here it means that it is a fresh instance with no state yet
 	// i.e. should not have any models loaded / cache is empty etc.
 	cacheWithTransaction := cache.NewLRUCacheTransactionManager(logger)
 
 	return &LocalStateManager{
-		v2Client:             v2Client,
-		logger:               logger.WithField("Source", "StateManager"),
-		modelVersions:        modelVersions,
-		cache:                cacheWithTransaction,
-		availableMemoryBytes: availableMemoryBytes,
-		mu:                   sync.RWMutex{},
+		v2Client:                 v2Client,
+		logger:                   logger.WithField("Source", "StateManager"),
+		modelVersions:            modelVersions,
+		cache:                    cacheWithTransaction,
+		availableMainMemoryBytes: int64(totalMainMemoryBytes),
+		mu:                       sync.RWMutex{},
+		totalMainMemoryBytes:     totalMainMemoryBytes,
+		overCommitPercentage:     overCommitPercentage,
 	}
 }

@@ -49,7 +49,7 @@ message ReplicaConfig {
   int32 inferenceGrpcPort = 3; // Inference grpc port
   uint64 memoryBytes = 4; // The memory capacity of the server replica
   repeated string capabilities = 5; // The list of capabilities of the server, e.g. sklearn, pytorch, xgboost, mlflow
-  bool overCommit = 6; // Allow models to be swapped to disk to allow over committing on memory
+  uint32 overCommitPercentage = 6; // The percentage of over commit to allow, set to 0 (%) to disable over commit
 }
 
 message ModelOperationMessage {

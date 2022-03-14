@@ -116,8 +116,8 @@ spec:
         env:
         - name: SELDON_SERVER_CAPABILITIES
           value: "sklearn,xgboost"
-        - name: SELDON_OVERCOMMIT
-          value: "false"
+        - name: SELDON_OVERCOMMIT_PERCENTAGE
+          value: "0"
         - name: SELDON_SERVER_HTTP_PORT
           value: "9000"
         - name: SELDON_SERVER_GRPC_PORT

@@ -37,18 +37,18 @@ func TestModelAlreadyLoadedSort(t *testing.T) {
 		{
 			name: "OneLoadedModel",
 			replicas: []*CandidateReplica{
-				{Model: model, Server: &store.ServerSnapshot{Name: "server1"}, Replica: store.NewServerReplica("", 8080, 5001, 2, server, []string{}, 100, 100, map[store.ModelVersionID]bool{}, true)},
-				{Model: model, Server: &store.ServerSnapshot{Name: "server1"}, Replica: store.NewServerReplica("", 8080, 5001, 1, server, []string{}, 100, 100, map[store.ModelVersionID]bool{}, true)},
-				{Model: model, Server: &store.ServerSnapshot{Name: "server1"}, Replica: store.NewServerReplica("", 8080, 5001, 3, server, []string{}, 100, 100, map[store.ModelVersionID]bool{}, true)},
+				{Model: model, Server: &store.ServerSnapshot{Name: "server1"}, Replica: store.NewServerReplica("", 8080, 5001, 2, server, []string{}, 100, 100, map[store.ModelVersionID]bool{}, 100)},
+				{Model: model, Server: &store.ServerSnapshot{Name: "server1"}, Replica: store.NewServerReplica("", 8080, 5001, 1, server, []string{}, 100, 100, map[store.ModelVersionID]bool{}, 100)},
+				{Model: model, Server: &store.ServerSnapshot{Name: "server1"}, Replica: store.NewServerReplica("", 8080, 5001, 3, server, []string{}, 100, 100, map[store.ModelVersionID]bool{}, 100)},
 			},
 			ordering: []int{3, 2, 1},
 		},
 		{
 			name: "LoadedDifferentServer",
 			replicas: []*CandidateReplica{
-				{Model: modelServer2, Server: &store.ServerSnapshot{Name: "server1"}, Replica: store.NewServerReplica("", 8080, 5001, 2, server, []string{}, 100, 100, map[store.ModelVersionID]bool{}, true)},
-				{Model: modelServer2, Server: &store.ServerSnapshot{Name: "server1"}, Replica: store.NewServerReplica("", 8080, 5001, 1, server, []string{}, 100, 100, map[store.ModelVersionID]bool{}, true)},
-				{Model: modelServer2, Server: &store.ServerSnapshot{Name: "server1"}, Replica: store.NewServerReplica("", 8080, 5001, 3, server, []string{}, 100, 100, map[store.ModelVersionID]bool{}, true)},
+				{Model: modelServer2, Server: &store.ServerSnapshot{Name: "server1"}, Replica: store.NewServerReplica("", 8080, 5001, 2, server, []string{}, 100, 100, map[store.ModelVersionID]bool{}, 100)},
+				{Model: modelServer2, Server: &store.ServerSnapshot{Name: "server1"}, Replica: store.NewServerReplica("", 8080, 5001, 1, server, []string{}, 100, 100, map[store.ModelVersionID]bool{}, 100)},
+				{Model: modelServer2, Server: &store.ServerSnapshot{Name: "server1"}, Replica: store.NewServerReplica("", 8080, 5001, 3, server, []string{}, 100, 100, map[store.ModelVersionID]bool{}, 100)},
 			},
 			ordering: []int{2, 1, 3},
 		},

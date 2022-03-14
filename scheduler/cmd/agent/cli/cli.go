@@ -26,7 +26,7 @@ const (
 	envServerType           = "SELDON_SERVER_TYPE"
 	envMemoryRequest        = "MEMORY_REQUEST"
 	envCapabilities         = "SELDON_SERVER_CAPABILITIES"
-	envOvercommit           = "SELDON_OVERCOMMIT"
+	envOverCommitPercentage = "SELDON_OVERCOMMIT_PERCENTAGE"
 
 	flagSchedulerHost        = "scheduler-host"
 	flagSchedulerPort        = "scheduler-port"
@@ -43,7 +43,7 @@ const (
 	flagServerType           = "server-type"
 	flagMemoryBytes          = "memory-bytes"
 	flagCapabilities         = "capabilities"
-	flagOverCommit           = "overcommit"
+	flagOverCommitPercentage = "over-commit-percentage"
 )
 
 const (
@@ -80,7 +80,7 @@ var (
 	MemoryBytes64        uint64
 	capabilitiesList     string
 	Capabilities         []string
-	OverCommit           bool
+	OverCommitPercentage int
 	serverTypes          = [...]string{"mlserver", "triton"}
 )
 
@@ -96,7 +96,7 @@ func UpdateArgs() {
 }
 
 func updateFlagsFromEnv() {
-	maybeUpdateOverCommit()
+	maybeUpdateOverCommitPercentage()
 	maybeUpdateCapabilities()
 	maybeUpdateMemoryRequest()
 	maybeUpdateInferenceHttpPort()
@@ -113,25 +113,27 @@ func updateFlagsFromEnv() {
 	maybeUpdateServerType()
 }
 
-func maybeUpdateOverCommit() {
-	if isFlagPassed(flagOverCommit) {
+func maybeUpdateOverCommitPercentage() {
+	if isFlagPassed(flagOverCommitPercentage) {
 		return
 	}
 
-	envOverCommit, found, parsed := getEnvBool(envOvercommit)
+	overCommitPercentageFromEnv, found, parsed := getEnvUint(envOverCommitPercentage)
 	if !found {
 		return
 	}
 	if !parsed {
-		log.Fatalf("Failed to parse %s with value %t for overcommit", envOvercommit, envOverCommit)
+		log.Fatalf(
+			"Failed to parse %s for overcommit percentage",
+			envOverCommitPercentage)
 	}
 
 	log.Infof(
-		"Setting overcommit from env %s with value %t",
-		envOvercommit,
-		envOverCommit,
+		"Setting overcommit percentage from env %s with value %d",
+		envOverCommitPercentage,
+		uint32(overCommitPercentageFromEnv),
 	)
-	OverCommit = envOverCommit
+	OverCommitPercentage = int(overCommitPercentageFromEnv)
 }
 
 func maybeUpdateCapabilities() {

@@ -278,6 +278,7 @@ func (s *SchedulerServer) ServerStatus(ctx context.Context, reference *pb.Server
 			TotalMemoryBytes:     replica.GetMemory(),
 			AvailableMemoryBytes: replica.GetAvailableMemory(),
 			NumLoadedModels:      numLoadedModelsOnReplica,
+			OverCommitPercentage: replica.GetOverCommitPercentage(),
 		})
 		totalModels = totalModels + numLoadedModelsOnReplica
 	}

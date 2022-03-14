@@ -120,7 +120,7 @@ This greatly reduces duplication between the MLServer and Triton setups at the c
 
   ```bash
   $ docker inspect -f '{{ range $i, $v := .Config.Env }}{{ $v }}{{ println }}{{ end }}' scv2_mlserver_agent_1
-  SELDON_OVERCOMMIT=false
+  SELDON_OVERCOMMIT_PERCENTAGE=0
   SELDON_SERVER_HTTP_PORT=8090
   SELDON_SERVER_GRPC_PORT=8091
   SELDON_DEBUG_GRPC_PORT=7777

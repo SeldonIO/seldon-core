@@ -45,7 +45,7 @@ func makeArgs() {
 	flag.StringVar(&ServerType, flagServerType, serverTypes[0], "Server type. Default mlserver")
 	flag.IntVar(&memoryBytes, flagMemoryBytes, 1000000, "Memory available for server")
 	flag.StringVar(&capabilitiesList, flagCapabilities, "sklearn,xgboost", "Server capabilities")
-	flag.BoolVar(&OverCommit, flagOverCommit, true, "Overcommit memory")
+	flag.IntVar(&OverCommitPercentage, flagOverCommitPercentage, 0, "Overcommit memory pecentage")
 	flag.StringVar(&LogLevel, flagLogLevel, "debug", "Log level - examples: debug, info, error")
 }
 

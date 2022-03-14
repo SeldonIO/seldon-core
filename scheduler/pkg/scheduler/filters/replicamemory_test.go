@@ -20,7 +20,7 @@ func getTestModelWithMemory(requiredmemory *uint64) *store.ModelVersion {
 }
 
 func getTestServerReplicaWithMemory(availableMemory uint64) *store.ServerReplica {
-	return store.NewServerReplica("svc", 8080, 5001, 1, nil, []string{}, availableMemory, availableMemory, nil, true)
+	return store.NewServerReplica("svc", 8080, 5001, 1, nil, []string{}, availableMemory, availableMemory, nil, 100)
 }
 
 func TestReplicaMemoryFilter(t *testing.T) {

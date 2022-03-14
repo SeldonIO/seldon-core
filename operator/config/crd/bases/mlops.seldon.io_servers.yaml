@@ -3543,10 +3543,6 @@ spec:
                     required:
                     - name
                     type: object
-                  swapMemoryBytes:
-                    description: How much memory to push to disk to allow overcommited
-                      models
-                    type: boolean
                 type: object
               podSpec:
                 description: PodSpec overrides Slices such as containers would be

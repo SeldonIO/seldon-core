@@ -156,6 +156,7 @@ message ServerReplicaResources {
   uint64 totalMemoryBytes = 2;
   uint64 availableMemoryBytes = 3;
   int32 numLoadedModels = 4;
+  uint32 overCommitPercentage = 5;
 }
 
 message ModelSubscriptionRequest {

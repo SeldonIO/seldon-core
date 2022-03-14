@@ -8,13 +8,16 @@ import (
 )
 
 type ModelState struct {
-	mu           sync.RWMutex
-	loadedModels map[string]*modelVersion
+	mu                      sync.RWMutex
+	loadedModels            map[string]*modelVersion
+	totalMemoryForAllModels uint64
 }
 
 func NewModelState() *ModelState {
 	return &ModelState{
-		loadedModels: make(map[string]*modelVersion),
+		mu:                      sync.RWMutex{},
+		loadedModels:            make(map[string]*modelVersion),
+		totalMemoryForAllModels: 0,
 	}
 }
 
@@ -32,7 +35,9 @@ func (modelState *ModelState) addModelVersionImpl(modelVersionDetails *agent.Mod
 
 	exsistingVersion, ok := modelState.loadedModels[modelName]
 	if !ok {
-		modelState.loadedModels[modelName] = &modelVersion{versionInfo: modelVersionDetails}
+		newVersionDetails := &modelVersion{versionInfo: modelVersionDetails}
+		modelState.totalMemoryForAllModels += newVersionDetails.getVersionMemory()
+		modelState.loadedModels[modelName] = newVersionDetails
 		return true, nil
 	} else {
 		if exsistingVersion.getVersion() == versionId {
@@ -63,6 +68,7 @@ func (modelState *ModelState) removeModelVersionImpl(modelVersionDetails *agent.
 		return true, nil
 	}
 	if exsistingVersion.getVersion() == versionId {
+		modelState.totalMemoryForAllModels -= exsistingVersion.getVersionMemory()
 		delete(modelState.loadedModels, modelName)
 		return true, nil
 	} else {
@@ -90,6 +96,13 @@ func (modelState *ModelState) versionExists(modelId string, versionId uint32) bo
 		return false
 	}
 	return version.getVersion() == versionId
+}
+
+// this includes the ones that are evicted as we do not differentiate at this level
+func (modelState *ModelState) getTotalMemoryBytesForAllModels() uint64 {
+	modelState.mu.RLock()
+	defer modelState.mu.RUnlock()
+	return modelState.totalMemoryForAllModels
 }
 
 func (modelState *ModelState) numModels() int {

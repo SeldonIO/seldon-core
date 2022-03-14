@@ -22,7 +22,7 @@ func TestReplicaRequirementsFilter(t *testing.T) {
 	}
 
 	getTestServerReplicaWithCaps := func(capabilities []string) *store.ServerReplica {
-		return store.NewServerReplica("svc", 8080, 5001, 1, nil, capabilities, 100, 100, nil, true)
+		return store.NewServerReplica("svc", 8080, 5001, 1, nil, capabilities, 100, 100, nil, 100)
 	}
 
 	type test struct {

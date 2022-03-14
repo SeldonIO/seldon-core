@@ -107,16 +107,16 @@ func NewServer(name string, shared bool) *Server {
 }
 
 type ServerReplica struct {
-	inferenceSvc      string
-	inferenceHttpPort int32
-	inferenceGrpcPort int32
-	replicaIdx        int
-	server            *Server
-	capabilities      []string
-	memory            uint64
-	availableMemory   uint64
-	loadedModels      map[ModelVersionID]bool
-	overCommit        bool
+	inferenceSvc         string
+	inferenceHttpPort    int32
+	inferenceGrpcPort    int32
+	replicaIdx           int
+	server               *Server
+	capabilities         []string
+	memory               uint64
+	availableMemory      uint64
+	loadedModels         map[ModelVersionID]bool
+	overCommitPercentage uint32
 }
 
 func NewServerReplica(inferenceSvc string,
@@ -128,33 +128,33 @@ func NewServerReplica(inferenceSvc string,
 	memory uint64,
 	availableMemory uint64,
 	loadedModels map[ModelVersionID]bool,
-	overCommit bool) *ServerReplica {
+	overCommitPercentage uint32) *ServerReplica {
 	return &ServerReplica{
-		inferenceSvc:      inferenceSvc,
-		inferenceHttpPort: inferenceHttpPort,
-		inferenceGrpcPort: inferenceGrpcPort,
-		replicaIdx:        replicaIdx,
-		server:            server,
-		capabilities:      capabilities,
-		memory:            memory,
-		availableMemory:   availableMemory,
-		loadedModels:      loadedModels,
-		overCommit:        overCommit,
+		inferenceSvc:         inferenceSvc,
+		inferenceHttpPort:    inferenceHttpPort,
+		inferenceGrpcPort:    inferenceGrpcPort,
+		replicaIdx:           replicaIdx,
+		server:               server,
+		capabilities:         capabilities,
+		memory:               memory,
+		availableMemory:      availableMemory,
+		loadedModels:         loadedModels,
+		overCommitPercentage: overCommitPercentage,
 	}
 }
 
 func NewServerReplicaFromConfig(server *Server, replicaIdx int, loadedModels map[ModelVersionID]bool, config *pba.ReplicaConfig, availableMemoryBytes uint64) *ServerReplica {
 	return &ServerReplica{
-		inferenceSvc:      config.GetInferenceSvc(),
-		inferenceHttpPort: config.GetInferenceHttpPort(),
-		inferenceGrpcPort: config.GetInferenceGrpcPort(),
-		replicaIdx:        replicaIdx,
-		server:            server,
-		capabilities:      config.GetCapabilities(),
-		memory:            config.GetMemoryBytes(),
-		availableMemory:   availableMemoryBytes,
-		loadedModels:      loadedModels,
-		overCommit:        config.GetOverCommit(),
+		inferenceSvc:         config.GetInferenceSvc(),
+		inferenceHttpPort:    config.GetInferenceHttpPort(),
+		inferenceGrpcPort:    config.GetInferenceGrpcPort(),
+		replicaIdx:           replicaIdx,
+		server:               server,
+		capabilities:         config.GetCapabilities(),
+		memory:               config.GetMemoryBytes(),
+		availableMemory:      availableMemoryBytes,
+		loadedModels:         loadedModels,
+		overCommitPercentage: config.GetOverCommitPercentage(),
 	}
 }
 
@@ -495,4 +495,8 @@ func (s *ServerReplica) GetInferenceHttpPort() int32 {
 
 func (s *ServerReplica) GetInferenceGrpcPort() int32 {
 	return s.inferenceGrpcPort
+}
+
+func (s *ServerReplica) GetOverCommitPercentage() uint32 {
+	return s.overCommitPercentage
 }
