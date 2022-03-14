@@ -1,2 +1,2 @@
-mlflow==1.19.0
+mlflow==1.23.1
 conda-pack==0.6.0
