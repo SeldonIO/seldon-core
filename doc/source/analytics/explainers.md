@@ -9,7 +9,7 @@ We support explainers saved using python 3.7 in v1 explainer server. However, fo
 
 | Package | Version |
 | ------ | ----- |
-| `alibi` | `0.6.2` |
+| `alibi` | `0.6.4` |
 
 
 ## Available Methods
