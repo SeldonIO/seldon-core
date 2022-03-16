@@ -1,4 +1,4 @@
-package kafka
+package gateway
 
 const (
 	HeaderKeyType       = "seldon-infer-type"

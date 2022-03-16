@@ -10,13 +10,13 @@ import (
 
 func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest, stream pb.Scheduler_SubscribeModelStatusServer) error {
 	logger := s.logger.WithField("func", "SubscribeModelStatus")
-	logger.Infof("Received subscribe request from %s", req.GetName())
+	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
 
 	fin := make(chan bool)
 
 	s.mu.Lock()
 	s.modelEventStream.streams[stream] = &ModelSubscription{
-		name:   req.Name,
+		name:   req.GetSubscriberName(),
 		stream: stream,
 		fin:    fin,
 	}
@@ -32,10 +32,10 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 	for {
 		select {
 		case <-fin:
-			logger.Infof("Closing stream for %s", req.GetName())
+			logger.Infof("Closing stream for %s", req.GetSubscriberName())
 			return nil
 		case <-ctx.Done():
-			logger.Infof("Stream disconnected %s", req.GetName())
+			logger.Infof("Stream disconnected %s", req.GetSubscriberName())
 			s.mu.Lock()
 			delete(s.modelEventStream.streams, stream)
 			s.mu.Unlock()
@@ -108,13 +108,13 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 
 func (s *SchedulerServer) SubscribeServerStatus(req *pb.ServerSubscriptionRequest, stream pb.Scheduler_SubscribeServerStatusServer) error {
 	logger := s.logger.WithField("func", "SubscribeModelStatus")
-	logger.Infof("Received server subscribe request from %s", req.GetName())
+	logger.Infof("Received server subscribe request from %s", req.GetSubscriberName())
 
 	fin := make(chan bool)
 
 	s.mu.Lock()
 	s.serverEventStream.streams[stream] = &ServerSubscription{
-		name:   req.Name,
+		name:   req.GetSubscriberName(),
 		stream: stream,
 		fin:    fin,
 	}
@@ -125,10 +125,10 @@ func (s *SchedulerServer) SubscribeServerStatus(req *pb.ServerSubscriptionReques
 	for {
 		select {
 		case <-fin:
-			logger.Infof("Closing stream for %s", req.GetName())
+			logger.Infof("Closing stream for %s", req.GetSubscriberName())
 			return nil
 		case <-ctx.Done():
-			logger.Infof("Stream disconnected %s", req.GetName())
+			logger.Infof("Stream disconnected %s", req.GetSubscriberName())
 			s.mu.Lock()
 			delete(s.serverEventStream.streams, stream)
 			s.mu.Unlock()

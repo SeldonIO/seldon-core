@@ -1,4 +1,4 @@
-package kafka
+package gateway
 
 type KafkaModelConfig struct {
 	ModelName   string

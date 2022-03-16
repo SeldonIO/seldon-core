@@ -160,7 +160,7 @@ message ServerReplicaResources {
 }
 
 message ModelSubscriptionRequest {
-  string name = 1; //Name of the subscription caller
+  string subscriberName = 1; //Name of the subscription caller
 }
 
 message ModelStatusRequest {
@@ -180,7 +180,7 @@ message ServerNotifyResponse {
 }
 
 message ServerSubscriptionRequest {
-  string name = 1; //Name of the subscription caller
+  string subscriberName = 1; //Name of the subscription caller
 }
 
 // Experiments
@@ -218,7 +218,7 @@ message StopExperimentResponse {
 }
 
 message ExperimentSubscriptionRequest {
-  string name = 1; //Name of the subscription caller
+  string subscriberName = 1; //Name of the subscription caller
 }
 
 message ExperimentStatusResponse {
@@ -226,6 +226,78 @@ message ExperimentStatusResponse {
   bool active = 2;
   string statusDescription = 3;
 }
+
+message LoadPipelineRequest {
+  Pipeline pipeline = 1;
+}
+
+message Pipeline {
+  string name = 1;
+  repeated PipelineStep steps = 2;
+  optional PipelineOutput output = 3;
+}
+
+message PipelineStep {
+  string name = 1;
+  repeated string inputs = 2;
+  bool passEmptyResponses = 3; // Forward empty response to following steps, default false
+  optional uint32 joinWindowMs = 4; // Join window millisecs, some nozero default (TBD)
+}
+
+message PipelineOutput {
+  repeated string inputs = 1;
+  uint32 joinWindowMs = 2; // Join window millisecs for output, default 0
+}
+
+message LoadPipelineResponse {
+
+}
+
+message UnloadPipelineRequest {
+  string name = 1;
+}
+
+message UnloadPipelineResponse {
+
+}
+
+
+message PipelineStatusRequest {
+  string name = 1;
+  bool allVersions = 2;
+}
+
+message PipelineSubscriptionRequest {
+  string subscriberName = 1; //Name of the subscription caller
+}
+
+message PipelineStatusResponse {
+  string pipelineName = 1;
+  repeated PipelineWithState versions = 2;
+}
+
+message PipelineWithState {
+  Pipeline pipeline = 1;
+  PipelineVersionState state = 2;
+}
+
+message PipelineVersionState {
+  enum PipelineStatus {
+    PipelineStatusUnknown = 0;
+    PipelineCreate = 1;
+    PipelineCreating = 2;
+    PipelineReady = 3;
+    PipelineFailed = 4;
+    PipelineTerminate = 5;
+    PipelineTerminating = 6;
+    PipelineTerminated = 7;
+  }
+  uint32 pipelineVersion = 1;
+  PipelineStatus status = 2;
+  string reason = 3;
+  google.protobuf.Timestamp lastChangeTimestamp = 4;
+}
+
 
 // [END Messages]
 
@@ -243,6 +315,10 @@ service Scheduler {
   rpc StartExperiment(StartExperimentRequest) returns (StartExperimentResponse) {};
   rpc StopExperiment(StopExperimentRequest) returns (StopExperimentResponse) {};
   rpc SubscribeExperimentStatus(ExperimentSubscriptionRequest) returns (stream ExperimentStatusResponse) {};
+  rpc LoadPipeline(LoadPipelineRequest) returns (LoadPipelineResponse) {};
+  rpc UnloadPipeline(UnloadPipelineRequest) returns (UnloadPipelineResponse) {};
+  rpc PipelineStatus(PipelineStatusRequest) returns (PipelineStatusResponse) {};
+  rpc SubscribePipelineStatus(PipelineSubscriptionRequest) returns (stream PipelineStatusResponse) {};
 }
 
 // [END Services]

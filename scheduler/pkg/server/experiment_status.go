@@ -7,13 +7,13 @@ import (
 
 func (s *SchedulerServer) SubscribeExperimentStatus(req *pb.ExperimentSubscriptionRequest, stream pb.Scheduler_SubscribeExperimentStatusServer) error {
 	logger := s.logger.WithField("func", "SubscribeExperimentStatus")
-	logger.Infof("Received subscribe request from %s", req.GetName())
+	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
 
 	fin := make(chan bool)
 
 	s.mu.Lock()
 	s.experimentEventStream.streams[stream] = &ExperimentSubscription{
-		name:   req.Name,
+		name:   req.GetSubscriberName(),
 		stream: stream,
 		fin:    fin,
 	}
@@ -24,10 +24,10 @@ func (s *SchedulerServer) SubscribeExperimentStatus(req *pb.ExperimentSubscripti
 	for {
 		select {
 		case <-fin:
-			logger.Infof("Closing stream for %s", req.GetName())
+			logger.Infof("Closing stream for %s", req.GetSubscriberName())
 			return nil
 		case <-ctx.Done():
-			logger.Infof("Stream disconnected %s", req.GetName())
+			logger.Infof("Stream disconnected %s", req.GetSubscriberName())
 			s.mu.Lock()
 			delete(s.experimentEventStream.streams, stream)
 			s.mu.Unlock()

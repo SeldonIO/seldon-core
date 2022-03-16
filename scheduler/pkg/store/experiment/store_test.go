@@ -252,7 +252,6 @@ func TestGetExperiment(t *testing.T) {
 		experimentName string
 		err            error
 	}
-	var experimentNotFoundErr *ExperimentNotFound
 	tests := []test{
 		{
 			name: "experiment found",
@@ -273,7 +272,7 @@ func TestGetExperiment(t *testing.T) {
 				},
 			},
 			experimentName: "a",
-			err:            experimentNotFoundErr,
+			err:            &ExperimentNotFound{},
 		},
 		{
 			name: "deleted",
@@ -291,7 +290,7 @@ func TestGetExperiment(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			experiment, err := test.store.GetExperiment(test.experimentName)
 			if test.err != nil {
-				g.Expect(errors.As(err, &test.err)).To(BeTrue())
+				g.Expect(errors.Is(err, test.err)).To(BeTrue())
 			} else {
 				g.Expect(err).To(BeNil())
 				g.Expect(experiment).To(Equal(test.store.experiments[test.experimentName]))

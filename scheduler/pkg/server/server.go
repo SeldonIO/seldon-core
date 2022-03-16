@@ -6,6 +6,8 @@ import (
 	"net"
 	"sync"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/store/pipeline"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/store/experiment"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
@@ -27,6 +29,7 @@ const (
 	modelEventHandlerName          = "scheduler.server.models"
 	serverEventHandlerName         = "scheduler.server.servers"
 	experimentEventHandlerName     = "scheduler.server.experiments"
+	pipelineEventHandlerName       = "scheduler.server.pipelines"
 )
 
 var (
@@ -38,11 +41,13 @@ type SchedulerServer struct {
 	logger                log.FieldLogger
 	modelStore            store.ModelStore
 	experiementServer     experiment.ExperimentServer
+	pipelineHandler       pipeline.PipelineHandler
 	scheduler             scheduler2.Scheduler
 	mu                    sync.RWMutex
 	modelEventStream      ModelEventStream
 	serverEventStream     ServerEventStream
 	experimentEventStream ExperimentEventStream
+	pipelineEventStream   PipelineEventStream
 }
 
 type ModelEventStream struct {
@@ -55,6 +60,10 @@ type ServerEventStream struct {
 
 type ExperimentEventStream struct {
 	streams map[pb.Scheduler_SubscribeExperimentStatusServer]*ExperimentSubscription
+}
+
+type PipelineEventStream struct {
+	streams map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription
 }
 
 type ModelSubscription struct {
@@ -75,6 +84,12 @@ type ExperimentSubscription struct {
 	fin    chan bool
 }
 
+type PipelineSubscription struct {
+	name   string
+	stream pb.Scheduler_SubscribePipelineStatusServer
+	fin    chan bool
+}
+
 func (s *SchedulerServer) StartGrpcServer(schedulerPort uint) error {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", schedulerPort))
 	if err != nil {
@@ -92,6 +107,7 @@ func NewSchedulerServer(
 	logger log.FieldLogger,
 	modelStore store.ModelStore,
 	experiementServer experiment.ExperimentServer,
+	pipelineHandler pipeline.PipelineHandler,
 	scheduler scheduler2.Scheduler,
 	eventHub *coordinator.EventHub,
 ) *SchedulerServer {
@@ -99,12 +115,16 @@ func NewSchedulerServer(
 		logger:            logger.WithField("source", "SchedulerServer"),
 		modelStore:        modelStore,
 		experiementServer: experiementServer,
+		pipelineHandler:   pipelineHandler,
 		scheduler:         scheduler,
 		modelEventStream: ModelEventStream{
 			streams: make(map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription),
 		},
 		serverEventStream: ServerEventStream{
 			streams: make(map[pb.Scheduler_SubscribeServerStatusServer]*ServerSubscription),
+		},
+		pipelineEventStream: PipelineEventStream{
+			streams: make(map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription),
 		},
 	}
 
@@ -126,6 +146,13 @@ func NewSchedulerServer(
 		s.logger,
 		s.handleExperimentEvents,
 	)
+
+	eventHub.RegisterPipelineEventHandler(
+		pipelineEventHandlerName,
+		pendingEventsQueueSize,
+		s.logger,
+		s.handlePipelineEvents)
+
 	return s
 }
 
@@ -300,4 +327,59 @@ func (s *SchedulerServer) StopExperiment(ctx context.Context, req *pb.StopExperi
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
 	return &pb.StopExperimentResponse{}, nil
+}
+
+func (s *SchedulerServer) LoadPipeline(ctx context.Context, req *pb.LoadPipelineRequest) (*pb.LoadPipelineResponse, error) {
+	err := s.pipelineHandler.AddPipeline(req.Pipeline)
+	if err != nil {
+		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+	}
+	return &pb.LoadPipelineResponse{}, nil
+}
+
+func (s *SchedulerServer) UnloadPipeline(ctx context.Context, req *pb.UnloadPipelineRequest) (*pb.UnloadPipelineResponse, error) {
+	err := s.pipelineHandler.RemovePipeline(req.GetName())
+	if err != nil {
+		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+	}
+	return &pb.UnloadPipelineResponse{}, nil
+}
+
+func createPipelineVersionState(pv *pipeline.PipelineVersion) *pb.PipelineWithState {
+	pvs := &pb.PipelineVersionState{
+		PipelineVersion:     pv.Version,
+		Status:              pb.PipelineVersionState_PipelineStatus(pb.PipelineVersionState_PipelineStatus_value[pv.State.Status.String()]),
+		Reason:              pv.State.Reason,
+		LastChangeTimestamp: timestamppb.New(pv.State.Timestamp),
+	}
+	return &pb.PipelineWithState{
+		Pipeline: pipeline.CreateProtoFromPipeline(pv),
+		State:    pvs,
+	}
+}
+
+func createPipelineStatus(p *pipeline.Pipeline, allVersions bool) *pb.PipelineStatusResponse {
+	var pipelineVersions []*pb.PipelineWithState
+	pipelineLastVersion := p.GetLatestPipelineVersion()
+	if !allVersions {
+		pipelineWithState := createPipelineVersionState(pipelineLastVersion)
+		pipelineVersions = append(pipelineVersions, pipelineWithState)
+	} else {
+		for _, pv := range p.Versions {
+			pipelineWithState := createPipelineVersionState(pv)
+			pipelineVersions = append(pipelineVersions, pipelineWithState)
+		}
+	}
+	return &pb.PipelineStatusResponse{
+		PipelineName: pipelineLastVersion.Name,
+		Versions:     pipelineVersions,
+	}
+}
+
+func (s *SchedulerServer) PipelineStatus(ctx context.Context, req *pb.PipelineStatusRequest) (*pb.PipelineStatusResponse, error) {
+	p, err := s.pipelineHandler.GetPipeline(req.GetName())
+	if err != nil {
+		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+	}
+	return createPipelineStatus(p, req.GetAllVersions()), nil
 }

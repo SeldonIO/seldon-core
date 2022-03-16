@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/store/pipeline"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/store/experiment"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
@@ -27,7 +29,6 @@ func (m *mockAgentHandler) SendAgentSync(modelName string) {
 }
 
 func TestLoadModel(t *testing.T) {
-	t.Logf("Started")
 	g := NewGomegaWithT(t)
 
 	createTestScheduler := func() (*SchedulerServer, *mockAgentHandler) {
@@ -37,11 +38,12 @@ func TestLoadModel(t *testing.T) {
 		g.Expect(err).To(BeNil())
 		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
 		experimentServer := experiment.NewExperimentServer(logger, eventHub)
+		pipelineServer := pipeline.NewPipelineStore(logger, eventHub)
 		mockAgent := &mockAgentHandler{}
 		scheduler := scheduler2.NewSimpleScheduler(logger,
 			schedulerStore,
 			scheduler2.DefaultSchedulerConfig())
-		s := NewSchedulerServer(logger, schedulerStore, experimentServer, scheduler, eventHub)
+		s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub)
 		return s, mockAgent
 	}
 
@@ -133,7 +135,6 @@ func TestLoadModel(t *testing.T) {
 }
 
 func TestUnloadModel(t *testing.T) {
-	t.Logf("Started")
 	g := NewGomegaWithT(t)
 
 	createTestScheduler := func() (*SchedulerServer, *mockAgentHandler, *coordinator.EventHub) {
@@ -143,11 +144,12 @@ func TestUnloadModel(t *testing.T) {
 		g.Expect(err).To(BeNil())
 		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
 		experimentServer := experiment.NewExperimentServer(logger, eventHub)
+		pipelineServer := pipeline.NewPipelineStore(logger, eventHub)
 		mockAgent := &mockAgentHandler{}
 		scheduler := scheduler2.NewSimpleScheduler(logger,
 			schedulerStore,
 			scheduler2.DefaultSchedulerConfig())
-		s := NewSchedulerServer(logger, schedulerStore, experimentServer, scheduler, eventHub)
+		s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub)
 		return s, mockAgent, eventHub
 	}
 
@@ -235,4 +237,228 @@ func TestUnloadModel(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestLoadPipeline(t *testing.T) {
+	g := NewGomegaWithT(t)
+	type test struct {
+		name   string
+		req    *pb.LoadPipelineRequest
+		server *SchedulerServer
+		err    bool
+	}
+
+	tests := []test{
+		{
+			name: "pipeline with no output",
+			req: &pb.LoadPipelineRequest{
+				Pipeline: &pb.Pipeline{
+					Name: "p1",
+					Steps: []*pb.PipelineStep{
+						{
+							Name: "a",
+						},
+						{
+							Name:   "b",
+							Inputs: []string{"a"},
+						},
+					},
+				},
+			},
+			server: &SchedulerServer{pipelineHandler: pipeline.NewPipelineStore(log.New(), nil)},
+		},
+		{
+			name: "pipeline with output",
+			req: &pb.LoadPipelineRequest{
+				Pipeline: &pb.Pipeline{
+					Name: "p1",
+					Steps: []*pb.PipelineStep{
+						{
+							Name: "a",
+						},
+						{
+							Name:   "b",
+							Inputs: []string{"a"},
+						},
+					},
+					Output: &pb.PipelineOutput{
+						Inputs: []string{"b"},
+					},
+				},
+			},
+			server: &SchedulerServer{pipelineHandler: pipeline.NewPipelineStore(log.New(), nil)},
+		},
+		{
+			name: "pipeline with two input steps",
+			req: &pb.LoadPipelineRequest{
+				Pipeline: &pb.Pipeline{
+					Name: "p1",
+					Steps: []*pb.PipelineStep{
+						{
+							Name: "a",
+						},
+						{
+							Name: "b",
+						},
+					},
+					Output: &pb.PipelineOutput{
+						Inputs: []string{"b"},
+					},
+				},
+			},
+			server: &SchedulerServer{pipelineHandler: pipeline.NewPipelineStore(log.New(), nil)},
+			err:    true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := test.server.LoadPipeline(context.Background(), test.req)
+			if test.err {
+				g.Expect(err).ToNot(BeNil())
+			} else {
+				g.Expect(err).To(BeNil())
+			}
+		})
+	}
+
+}
+
+func TestUnloadPipeline(t *testing.T) {
+	g := NewGomegaWithT(t)
+	type test struct {
+		name      string
+		loadReq   *pb.LoadPipelineRequest
+		unloadReq *pb.UnloadPipelineRequest
+		server    *SchedulerServer
+		err       bool
+	}
+
+	tests := []test{
+		{
+			name:      "pipeline does not exist",
+			unloadReq: &pb.UnloadPipelineRequest{Name: "foo"},
+			server:    &SchedulerServer{pipelineHandler: pipeline.NewPipelineStore(log.New(), nil)},
+			err:       true,
+		},
+		{
+			name: "pipeline removed",
+			loadReq: &pb.LoadPipelineRequest{
+				Pipeline: &pb.Pipeline{
+					Name: "foo",
+					Steps: []*pb.PipelineStep{
+						{
+							Name: "a",
+						},
+						{
+							Name:   "b",
+							Inputs: []string{"a"},
+						},
+					},
+				},
+			},
+			unloadReq: &pb.UnloadPipelineRequest{Name: "foo"},
+			server:    &SchedulerServer{pipelineHandler: pipeline.NewPipelineStore(log.New(), nil)},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if test.loadReq != nil {
+				err := test.server.pipelineHandler.AddPipeline(test.loadReq.Pipeline)
+				g.Expect(err).To(BeNil())
+			}
+			_, err := test.server.UnloadPipeline(context.Background(), test.unloadReq)
+			if test.err {
+				g.Expect(err).ToNot(BeNil())
+			} else {
+				g.Expect(err).To(BeNil())
+			}
+		})
+	}
+
+}
+
+func TestPipelineStatus(t *testing.T) {
+	g := NewGomegaWithT(t)
+	type test struct {
+		name      string
+		loadReq   *pb.LoadPipelineRequest
+		statusReq *pb.PipelineStatusRequest
+		statusRes *pb.PipelineStatusResponse
+		server    *SchedulerServer
+		err       bool
+	}
+
+	tests := []test{
+		{
+			name:      "pipeline does not exist",
+			statusReq: &pb.PipelineStatusRequest{Name: "foo"},
+			server:    &SchedulerServer{pipelineHandler: pipeline.NewPipelineStore(log.New(), nil)},
+			err:       true,
+		},
+		{
+			name: "pipeline status",
+			loadReq: &pb.LoadPipelineRequest{
+				Pipeline: &pb.Pipeline{
+					Name: "foo",
+					Steps: []*pb.PipelineStep{
+						{
+							Name: "a",
+						},
+						{
+							Name:   "b",
+							Inputs: []string{"a"},
+						},
+					},
+				},
+			},
+			statusReq: &pb.PipelineStatusRequest{Name: "foo"},
+			statusRes: &pb.PipelineStatusResponse{
+				PipelineName: "foo",
+				Versions: []*pb.PipelineWithState{
+					{
+						Pipeline: &pb.Pipeline{
+							Name: "foo",
+							Steps: []*pb.PipelineStep{
+								{
+									Name: "a",
+								},
+								{
+									Name:   "b",
+									Inputs: []string{"a"},
+								},
+							},
+						},
+						State: &pb.PipelineVersionState{
+							PipelineVersion: 1,
+							Status:          pb.PipelineVersionState_PipelineCreate,
+						},
+					},
+				},
+			},
+			server: &SchedulerServer{pipelineHandler: pipeline.NewPipelineStore(log.New(), nil)},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if test.loadReq != nil {
+				err := test.server.pipelineHandler.AddPipeline(test.loadReq.Pipeline)
+				g.Expect(err).To(BeNil())
+			}
+			psr, err := test.server.PipelineStatus(context.Background(), test.statusReq)
+			if test.err {
+				g.Expect(err).ToNot(BeNil())
+			} else {
+				g.Expect(err).To(BeNil())
+				// clear timestamps before checking equality
+				for _, pv := range psr.Versions {
+					pv.State.LastChangeTimestamp = nil
+				}
+				g.Expect(psr).To(Equal(test.statusRes))
+			}
+		})
+	}
+
 }

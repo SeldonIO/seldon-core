@@ -155,7 +155,7 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context) error {
 	logger := s.logger.WithName("SubscribeModelEvents")
 	grcpClient := scheduler.NewSchedulerClient(s.conn)
 
-	stream, err := grcpClient.SubscribeModelStatus(ctx, &scheduler.ModelSubscriptionRequest{Name: "seldon manager"}, grpc_retry.WithMax(1))
+	stream, err := grcpClient.SubscribeModelStatus(ctx, &scheduler.ModelSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(1))
 	if err != nil {
 		return err
 	}
@@ -277,7 +277,7 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context) error {
 	logger := s.logger.WithName("SubscribeServerEvents")
 	grcpClient := scheduler.NewSchedulerClient(s.conn)
 
-	stream, err := grcpClient.SubscribeServerStatus(ctx, &scheduler.ServerSubscriptionRequest{Name: "seldon manager"}, grpc_retry.WithMax(1))
+	stream, err := grcpClient.SubscribeServerStatus(ctx, &scheduler.ServerSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(1))
 	if err != nil {
 		return err
 	}

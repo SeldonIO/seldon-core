@@ -1,4 +1,4 @@
-package kafka
+package gateway
 
 import (
 	"context"
@@ -55,7 +55,7 @@ func (kc *KafkaSchedulerClient) SubscribeModelEvents(ctx context.Context) error 
 	logger := kc.logger.WithField("func", "SubscribeModelEvents")
 	grcpClient := scheduler.NewSchedulerClient(kc.conn)
 
-	stream, err := grcpClient.SubscribeModelStatus(ctx, &scheduler.ModelSubscriptionRequest{Name: "seldon stream"}, grpc_retry.WithMax(100))
+	stream, err := grcpClient.SubscribeModelStatus(ctx, &scheduler.ModelSubscriptionRequest{SubscriberName: "seldon stream"}, grpc_retry.WithMax(100))
 	if err != nil {
 		return err
 	}

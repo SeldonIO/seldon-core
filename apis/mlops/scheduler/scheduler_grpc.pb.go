@@ -28,6 +28,10 @@ type SchedulerClient interface {
 	StartExperiment(ctx context.Context, in *StartExperimentRequest, opts ...grpc.CallOption) (*StartExperimentResponse, error)
 	StopExperiment(ctx context.Context, in *StopExperimentRequest, opts ...grpc.CallOption) (*StopExperimentResponse, error)
 	SubscribeExperimentStatus(ctx context.Context, in *ExperimentSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribeExperimentStatusClient, error)
+	LoadPipeline(ctx context.Context, in *LoadPipelineRequest, opts ...grpc.CallOption) (*LoadPipelineResponse, error)
+	UnloadPipeline(ctx context.Context, in *UnloadPipelineRequest, opts ...grpc.CallOption) (*UnloadPipelineResponse, error)
+	PipelineStatus(ctx context.Context, in *PipelineStatusRequest, opts ...grpc.CallOption) (*PipelineStatusResponse, error)
+	SubscribePipelineStatus(ctx context.Context, in *PipelineSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribePipelineStatusClient, error)
 }
 
 type schedulerClient struct {
@@ -197,6 +201,65 @@ func (x *schedulerSubscribeExperimentStatusClient) Recv() (*ExperimentStatusResp
 	return m, nil
 }
 
+func (c *schedulerClient) LoadPipeline(ctx context.Context, in *LoadPipelineRequest, opts ...grpc.CallOption) (*LoadPipelineResponse, error) {
+	out := new(LoadPipelineResponse)
+	err := c.cc.Invoke(ctx, "/seldon.mlops.scheduler.Scheduler/LoadPipeline", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *schedulerClient) UnloadPipeline(ctx context.Context, in *UnloadPipelineRequest, opts ...grpc.CallOption) (*UnloadPipelineResponse, error) {
+	out := new(UnloadPipelineResponse)
+	err := c.cc.Invoke(ctx, "/seldon.mlops.scheduler.Scheduler/UnloadPipeline", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *schedulerClient) PipelineStatus(ctx context.Context, in *PipelineStatusRequest, opts ...grpc.CallOption) (*PipelineStatusResponse, error) {
+	out := new(PipelineStatusResponse)
+	err := c.cc.Invoke(ctx, "/seldon.mlops.scheduler.Scheduler/PipelineStatus", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *schedulerClient) SubscribePipelineStatus(ctx context.Context, in *PipelineSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribePipelineStatusClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Scheduler_ServiceDesc.Streams[3], "/seldon.mlops.scheduler.Scheduler/SubscribePipelineStatus", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &schedulerSubscribePipelineStatusClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Scheduler_SubscribePipelineStatusClient interface {
+	Recv() (*PipelineStatusResponse, error)
+	grpc.ClientStream
+}
+
+type schedulerSubscribePipelineStatusClient struct {
+	grpc.ClientStream
+}
+
+func (x *schedulerSubscribePipelineStatusClient) Recv() (*PipelineStatusResponse, error) {
+	m := new(PipelineStatusResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // SchedulerServer is the server API for Scheduler service.
 // All implementations must embed UnimplementedSchedulerServer
 // for forward compatibility
@@ -211,6 +274,10 @@ type SchedulerServer interface {
 	StartExperiment(context.Context, *StartExperimentRequest) (*StartExperimentResponse, error)
 	StopExperiment(context.Context, *StopExperimentRequest) (*StopExperimentResponse, error)
 	SubscribeExperimentStatus(*ExperimentSubscriptionRequest, Scheduler_SubscribeExperimentStatusServer) error
+	LoadPipeline(context.Context, *LoadPipelineRequest) (*LoadPipelineResponse, error)
+	UnloadPipeline(context.Context, *UnloadPipelineRequest) (*UnloadPipelineResponse, error)
+	PipelineStatus(context.Context, *PipelineStatusRequest) (*PipelineStatusResponse, error)
+	SubscribePipelineStatus(*PipelineSubscriptionRequest, Scheduler_SubscribePipelineStatusServer) error
 	mustEmbedUnimplementedSchedulerServer()
 }
 
@@ -247,6 +314,18 @@ func (UnimplementedSchedulerServer) StopExperiment(context.Context, *StopExperim
 }
 func (UnimplementedSchedulerServer) SubscribeExperimentStatus(*ExperimentSubscriptionRequest, Scheduler_SubscribeExperimentStatusServer) error {
 	return status.Errorf(codes.Unimplemented, "method SubscribeExperimentStatus not implemented")
+}
+func (UnimplementedSchedulerServer) LoadPipeline(context.Context, *LoadPipelineRequest) (*LoadPipelineResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LoadPipeline not implemented")
+}
+func (UnimplementedSchedulerServer) UnloadPipeline(context.Context, *UnloadPipelineRequest) (*UnloadPipelineResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UnloadPipeline not implemented")
+}
+func (UnimplementedSchedulerServer) PipelineStatus(context.Context, *PipelineStatusRequest) (*PipelineStatusResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PipelineStatus not implemented")
+}
+func (UnimplementedSchedulerServer) SubscribePipelineStatus(*PipelineSubscriptionRequest, Scheduler_SubscribePipelineStatusServer) error {
+	return status.Errorf(codes.Unimplemented, "method SubscribePipelineStatus not implemented")
 }
 func (UnimplementedSchedulerServer) mustEmbedUnimplementedSchedulerServer() {}
 
@@ -450,6 +529,81 @@ func (x *schedulerSubscribeExperimentStatusServer) Send(m *ExperimentStatusRespo
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Scheduler_LoadPipeline_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoadPipelineRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SchedulerServer).LoadPipeline(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/seldon.mlops.scheduler.Scheduler/LoadPipeline",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SchedulerServer).LoadPipeline(ctx, req.(*LoadPipelineRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Scheduler_UnloadPipeline_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnloadPipelineRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SchedulerServer).UnloadPipeline(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/seldon.mlops.scheduler.Scheduler/UnloadPipeline",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SchedulerServer).UnloadPipeline(ctx, req.(*UnloadPipelineRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Scheduler_PipelineStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PipelineStatusRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SchedulerServer).PipelineStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/seldon.mlops.scheduler.Scheduler/PipelineStatus",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SchedulerServer).PipelineStatus(ctx, req.(*PipelineStatusRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Scheduler_SubscribePipelineStatus_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(PipelineSubscriptionRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(SchedulerServer).SubscribePipelineStatus(m, &schedulerSubscribePipelineStatusServer{stream})
+}
+
+type Scheduler_SubscribePipelineStatusServer interface {
+	Send(*PipelineStatusResponse) error
+	grpc.ServerStream
+}
+
+type schedulerSubscribePipelineStatusServer struct {
+	grpc.ServerStream
+}
+
+func (x *schedulerSubscribePipelineStatusServer) Send(m *PipelineStatusResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // Scheduler_ServiceDesc is the grpc.ServiceDesc for Scheduler service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -485,6 +639,18 @@ var Scheduler_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "StopExperiment",
 			Handler:    _Scheduler_StopExperiment_Handler,
 		},
+		{
+			MethodName: "LoadPipeline",
+			Handler:    _Scheduler_LoadPipeline_Handler,
+		},
+		{
+			MethodName: "UnloadPipeline",
+			Handler:    _Scheduler_UnloadPipeline_Handler,
+		},
+		{
+			MethodName: "PipelineStatus",
+			Handler:    _Scheduler_PipelineStatus_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -500,6 +666,11 @@ var Scheduler_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "SubscribeExperimentStatus",
 			Handler:       _Scheduler_SubscribeExperimentStatus_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "SubscribePipelineStatus",
+			Handler:       _Scheduler_SubscribePipelineStatus_Handler,
 			ServerStreams: true,
 		},
 	},

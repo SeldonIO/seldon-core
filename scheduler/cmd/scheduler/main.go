@@ -21,6 +21,9 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/chainer"
+	"github.com/seldonio/seldon-core/scheduler/pkg/store/pipeline"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/store/experiment"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
@@ -43,6 +46,7 @@ var (
 	envoyPort     uint
 	agentPort     uint
 	schedulerPort uint
+	chainerPort   uint
 	namespace     string
 
 	nodeID string
@@ -60,8 +64,14 @@ func init() {
 	// The agent port to listen for agent subscriptions
 	flag.UintVar(&agentPort, "agent-port", 9005, "agent server port")
 
+	// The chainer port to listen for data flow agents
+	flag.UintVar(&chainerPort, "chainer-port", 9008, "chainer server port")
+
 	// Tell Envoy to use this Node ID
 	flag.StringVar(&nodeID, "nodeID", "test-id", "Node ID")
+
+	// Kubernetes namespace
+	flag.StringVar(&namespace, "namespace", "", "Namespace")
 
 }
 
@@ -80,6 +90,8 @@ func main() {
 	logger := log.New()
 	logger.SetLevel(log.DebugLevel)
 	flag.Parse()
+
+	namespace = getNamespace()
 
 	// Create event Hub
 	eventHub, err := coordinator.NewEventHub(logger)
@@ -108,7 +120,17 @@ func main() {
 	)
 	as := agent.NewAgentServer(logger, ss, sched, eventHub)
 
-	s := server2.NewSchedulerServer(logger, ss, es, sched, eventHub)
+	ps := pipeline.NewPipelineStore(logger, eventHub)
+
+	cs := chainer.NewChainerServer(logger, eventHub, ps, namespace)
+	go func() {
+		err := cs.StartGrpcServer(chainerPort)
+		if err != nil {
+			log.WithError(err).Fatalf("Chainer server start error")
+		}
+	}()
+
+	s := server2.NewSchedulerServer(logger, ss, es, ps, sched, eventHub)
 	go func() {
 		err := s.StartGrpcServer(schedulerPort)
 		if err != nil {
@@ -130,4 +152,6 @@ func main() {
 	s.StopSendModelEvents()
 	s.StopSendServerEvents()
 	s.StopSendExperimentEvents()
+	s.StopSendPipelineEvents()
+	cs.StopSendPipelineEvents()
 }

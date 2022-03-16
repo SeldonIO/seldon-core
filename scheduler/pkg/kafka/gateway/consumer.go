@@ -1,4 +1,4 @@
-package kafka
+package gateway
 
 import (
 	"github.com/confluentinc/confluent-kafka-go/kafka"

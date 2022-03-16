@@ -12,6 +12,7 @@ import (
 const (
 	topicModelEvents      = "model.event"
 	topicExperimentEvents = "experiment.event"
+	topicPipelineEvents   = "pipeline.event"
 )
 
 type SequenceGenerator struct {
@@ -30,6 +31,7 @@ type EventHub struct {
 	logger                         log.FieldLogger
 	modelEventHandlerChannels      []chan ModelEventMsg
 	experimentEventHandlerChannels []chan ExperimentEventMsg
+	pipelineEventHandlerChannels   []chan PipelineEventMsg
 	lock                           sync.RWMutex
 	closed                         bool
 }
@@ -48,7 +50,7 @@ func NewEventHub(l log.FieldLogger) (*EventHub, error) {
 		bus:    bus,
 	}
 
-	hub.bus.RegisterTopics(topicModelEvents, topicExperimentEvents)
+	hub.bus.RegisterTopics(topicModelEvents, topicExperimentEvents, topicPipelineEvents)
 
 	return &hub, nil
 }
@@ -64,6 +66,10 @@ func (h *EventHub) Close() {
 	}
 
 	for _, c := range h.experimentEventHandlerChannels {
+		close(c)
+	}
+
+	for _, c := range h.pipelineEventHandlerChannels {
 		close(c)
 	}
 }

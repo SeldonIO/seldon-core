@@ -8,9 +8,10 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/gateway"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/config"
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/k8s"
-	"github.com/seldonio/seldon-core/scheduler/pkg/kafka"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
 )
@@ -113,7 +114,7 @@ func main() {
 		logger.Info("Closed config handler")
 	}()
 
-	kafkaManager := kafka.NewKafkaManager(logger, &kafka.KafkaServerConfig{
+	kafkaManager := gateway.NewKafkaManager(logger, &gateway.KafkaServerConfig{
 		Host:     envoyHost,
 		HttpPort: envoyPort,
 		GrpcPort: envoyPort,
@@ -122,7 +123,7 @@ func main() {
 
 	kafkaManager.StartConfigListener(agentConfigHandler)
 
-	kafkaSchedulerClient := kafka.NewKafkaSchedulerClient(logger, kafkaManager)
+	kafkaSchedulerClient := gateway.NewKafkaSchedulerClient(logger, kafkaManager)
 	err = kafkaSchedulerClient.ConnectToScheduler(schedulerHost, schedulerPort)
 	if err != nil {
 		logger.Fatalf("Failed to connect to scheduler")

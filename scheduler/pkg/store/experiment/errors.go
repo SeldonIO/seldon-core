@@ -6,6 +6,11 @@ type ExperimentNotFound struct {
 	experimentName string
 }
 
+func (enf *ExperimentNotFound) Is(tgt error) bool {
+	_, ok := tgt.(*ExperimentNotFound)
+	return ok
+}
+
 func (enf *ExperimentNotFound) Error() string {
 	return fmt.Sprintf("Experiment not found %s", enf.experimentName)
 }

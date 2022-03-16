@@ -1,7 +1,6 @@
 package experiment
 
 import (
-	"errors"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -17,8 +16,6 @@ func TestValidateExperiment(t *testing.T) {
 		err        error
 	}
 
-	var baselineError *ExperimentBaselineExists
-	var noCandidatesError *ExperimentNoCandidates
 	tests := []test{
 		{
 			name: "valid",
@@ -55,7 +52,7 @@ func TestValidateExperiment(t *testing.T) {
 					},
 				},
 			},
-			err: baselineError,
+			err: &ExperimentBaselineExists{experimentName: "a", modelName: "model1"},
 		},
 		{
 			name: "No candidates in experiment",
@@ -69,7 +66,7 @@ func TestValidateExperiment(t *testing.T) {
 					ModelName: "model1",
 				},
 			},
-			err: noCandidatesError,
+			err: &ExperimentNoCandidates{experimentName: "a"},
 		},
 	}
 
@@ -77,7 +74,7 @@ func TestValidateExperiment(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			err := test.store.validate(test.experiment)
 			if test.err != nil {
-				g.Expect(errors.As(err, &test.err)).To(BeTrue())
+				g.Expect(err.Error()).To(Equal(test.err.Error()))
 			} else {
 				g.Expect(err).To(BeNil())
 			}

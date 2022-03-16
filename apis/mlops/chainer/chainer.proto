@@ -30,7 +30,8 @@ message PipelineStepUpdate {
   repeated string sources = 1;
   string sink = 2;
   PipelineJoinType ty = 3;
-  int64 windowMsecs = 4; //TODO is this needed and what are reasonable ranges
+  bool passEmptyResponses = 4; // Forward empty response to following steps, default false
+  optional uint32 joinWindowMs = 5; // Join window millisecs, some nozero default (TBD)
 }
 
 message PipelineUpdateStatusMessage {

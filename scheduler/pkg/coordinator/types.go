@@ -24,3 +24,13 @@ type ExperimentEventStatus struct {
 func (e ExperimentEventMsg) String() string {
 	return e.ExperimentName
 }
+
+type PipelineEventMsg struct {
+	PipelineName    string
+	PipelineVersion uint32
+	UID             string
+}
+
+func (p PipelineEventMsg) String() string {
+	return fmt.Sprintf("%s:%d (%s)", p.PipelineName, p.PipelineVersion, p.UID)
+}
