@@ -128,13 +128,17 @@ func checkTraffic(spec *SeldonDeploymentSpec, fldPath *field.Path, allErrs field
 	var shadows int = 0
 	for i := 0; i < len(spec.Predictors); i++ {
 		p := spec.Predictors[i]
-		trafficSum = trafficSum + p.Traffic
 
 		if p.Shadow == true {
 			shadows += 1
 			if shadows > 1 {
 				allErrs = append(allErrs, field.Invalid(fldPath, spec.Predictors[i].Name, "Multiple shadows are not allowed"))
 			}
+			if p.Traffic < 0 || p.Traffic > 100 {
+				allErrs = append(allErrs, field.Invalid(fldPath, spec.Predictors[i].Name, "shadow traffic is illegal, the traffic number should be between [0, 100]"))
+			}
+		} else {
+			trafficSum = trafficSum + p.Traffic
 		}
 	}
 

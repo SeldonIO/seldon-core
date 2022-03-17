@@ -327,6 +327,17 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 				},
 			}
 
+			if p.Traffic > 0 {
+				//if shadow predictor's traffic is greater than 0, set the mirror percentage (like https://istio.io/latest/docs/tasks/traffic-management/mirroring/#mirroring-traffic-to-v2) in VirtualService
+				vsvc.Spec.Http[0].MirrorPercentage = &istio_networking.Percent{
+					Value: float64(p.Traffic),
+				}
+
+				vsvc.Spec.Http[1].MirrorPercentage = &istio_networking.Percent{
+					Value: float64(p.Traffic),
+				}
+			}
+
 			continue
 		}
 
