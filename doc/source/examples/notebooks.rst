@@ -64,6 +64,7 @@ Incubating Projects Examples
    Stream Processing with KNative Eventing <knative_eventing_streaming>
    Kafka CIFAR10 <cifar10_kafka>
    Kafka SpaCy SKlearn NLP <kafka_spacy_sklearn>
+   Kafka KEDA Autoscaling <kafka_keda>
    CPP Wrapper Simple Single File <cpp_simple>
    CPP Wrapper Advanced Custom Build System <cpp_advanced>
 
@@ -81,7 +82,7 @@ Cloud-Specific Examples
    Triton GPT2 Example Azure <triton_gpt2_example_azure>
    Setup for Triton GPT2 Example Azure <triton_gpt2_example_azure_setup>
 
-Advanced Machine Learning Insights
+Advanced Machine Learning Monitoring
 ----------------------------------
 
 .. toctree::
