@@ -36,6 +36,16 @@ func (s *SchedulerServer) SubscribeExperimentStatus(req *pb.ExperimentSubscripti
 	}
 }
 
+func asKubernetesMeta(event coordinator.ExperimentEventMsg) *pb.KubernetesMeta {
+	if event.KubernetesMeta != nil {
+		return &pb.KubernetesMeta{
+			Namespace:  event.KubernetesMeta.Namespace,
+			Generation: event.KubernetesMeta.Generation,
+		}
+	}
+	return nil
+}
+
 func (s *SchedulerServer) handleExperimentEvents(event coordinator.ExperimentEventMsg) {
 	logger := s.logger.WithField("func", "handleExperimentEvents")
 	logger.Debugf("Received experiment event %s", event.String())
@@ -45,6 +55,7 @@ func (s *SchedulerServer) handleExperimentEvents(event coordinator.ExperimentEve
 				ExperimentName:    event.ExperimentName,
 				Active:            event.Status.Active,
 				StatusDescription: event.Status.StatusDescription,
+				KubernetesMeta:    asKubernetesMeta(event),
 			})
 			if err != nil {
 				logger.WithError(err).Errorf("Failed to send experiment status event to %s for %s", subscription.name, event.String())

@@ -25,18 +25,12 @@ func (es *ExperimentStore) removeModelReference(modelName string, experiment *Ex
 }
 
 func (es *ExperimentStore) addModelReferences(experiment *Experiment) {
-	if experiment.Baseline != nil {
-		es.addModelReference(experiment.Baseline.ModelName, experiment)
-	}
 	for _, candidate := range experiment.Candidates {
 		es.addModelReference(candidate.ModelName, experiment)
 	}
 }
 
 func (es *ExperimentStore) removeModelReferences(experiment *Experiment) {
-	if experiment.Baseline != nil {
-		es.removeModelReference(experiment.Baseline.ModelName, experiment)
-	}
 	for _, candidate := range experiment.Candidates {
 		es.removeModelReference(candidate.ModelName, experiment)
 	}
@@ -56,14 +50,14 @@ func (es *ExperimentStore) cleanExperimentState(experiment *Experiment) {
 		return
 	}
 	// if Baseline changed update
-	if existingExperiment.Baseline != nil {
-		delete(es.baselines, existingExperiment.Baseline.ModelName)
-		if (experiment.Baseline != nil && existingExperiment.Baseline.ModelName != experiment.Baseline.ModelName) ||
-			experiment.Baseline == nil {
+	if existingExperiment.DefaultModel != nil {
+		delete(es.baselines, *existingExperiment.DefaultModel)
+		if (experiment.DefaultModel != nil && *existingExperiment.DefaultModel != *experiment.DefaultModel) ||
+			experiment.DefaultModel == nil {
 			// Model connected has been changed or removed so need to update it
 			if es.eventHub != nil {
 				es.eventHub.PublishModelEvent(experimentStateEventSource, coordinator.ModelEventMsg{
-					ModelName: existingExperiment.Baseline.ModelName,
+					ModelName: *existingExperiment.DefaultModel,
 					//Empty model version
 				})
 			}
@@ -73,8 +67,8 @@ func (es *ExperimentStore) cleanExperimentState(experiment *Experiment) {
 }
 
 func (es *ExperimentStore) updateExperimentState(experiment *Experiment) {
-	if experiment.Baseline != nil {
-		es.baselines[experiment.Baseline.ModelName] = experiment
+	if experiment.DefaultModel != nil {
+		es.baselines[*experiment.DefaultModel] = experiment
 	}
 	es.addModelReferences(experiment)
 }

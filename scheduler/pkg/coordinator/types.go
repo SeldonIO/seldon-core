@@ -14,11 +14,17 @@ func (m ModelEventMsg) String() string {
 type ExperimentEventMsg struct {
 	ExperimentName string
 	Status         *ExperimentEventStatus
+	KubernetesMeta *KubernetesMeta
 }
 
 type ExperimentEventStatus struct {
 	Active            bool
 	StatusDescription string
+}
+
+type KubernetesMeta struct {
+	Namespace  string
+	Generation int64
 }
 
 func (e ExperimentEventMsg) String() string {

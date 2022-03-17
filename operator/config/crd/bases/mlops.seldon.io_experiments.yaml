@@ -6,20 +6,20 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.7.0
   creationTimestamp: null
-  name: pipelines.mlops.seldon.io
+  name: experiments.mlops.seldon.io
 spec:
   group: mlops.seldon.io
   names:
-    kind: Pipeline
-    listKind: PipelineList
-    plural: pipelines
-    singular: pipeline
+    kind: Experiment
+    listKind: ExperimentList
+    plural: experiments
+    singular: experiment
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Pipeline is the Schema for the pipelines API
+        description: Experiment is the Schema for the experiments API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -34,51 +34,39 @@ spec:
           metadata:
             type: object
           spec:
-            description: PipelineSpec defines the desired state of Pipeline
+            description: ExperimentSpec defines the desired state of Experiment
             properties:
-              output:
-                properties:
-                  inputs:
-                    description: Previous step to receive data from
-                    items:
-                      type: string
-                    type: array
-                  joinWindowMs:
-                    description: msecs to wait for messages from multiple inputs to
-                      arrive before joining the inputs
-                    format: int32
-                    type: integer
-                type: object
-              steps:
-                description: The steps of this inference graph pipeline
+              candidates:
                 items:
                   properties:
-                    inputs:
-                      description: Previous step to receive data from
-                      items:
-                        type: string
-                      type: array
-                    joinWindowMs:
-                      description: msecs to wait for messages from multiple inputs
-                        to arrive before joining the inputs
+                    modelName:
+                      type: string
+                    weight:
                       format: int32
                       type: integer
-                    name:
-                      description: Name of the step
-                      type: string
-                    passEmptyResponses:
-                      description: 'Whether empty tensors output should be passed
-                        to onwards Default: false'
-                      type: boolean
                   required:
-                  - name
+                  - modelName
+                  - weight
                   type: object
                 type: array
+              defaultModel:
+                type: string
+              mirror:
+                properties:
+                  model_name:
+                    type: string
+                  percent:
+                    format: int32
+                    type: integer
+                required:
+                - model_name
+                - percent
+                type: object
             required:
-            - steps
+            - candidates
             type: object
           status:
-            description: PipelineStatus defines the observed state of Pipeline
+            description: ExperimentStatus defines the observed state of Experiment
             properties:
               annotations:
                 additionalProperties:

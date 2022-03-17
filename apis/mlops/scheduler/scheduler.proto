@@ -186,11 +186,16 @@ message ServerSubscriptionRequest {
 // Experiments
 
 message StartExperimentRequest {
+  Experiment experiment = 1;
+}
+
+message Experiment {
   string name = 1;
-  optional ExperimentCandidate baseline = 2;
+  optional string defaultModel = 2;
   repeated ExperimentCandidate candidates = 3;
   optional ExperimentMirror mirror = 4;
   optional ExperimentConfig config = 5;
+  optional KubernetesMeta kubernetesMeta = 6;
 }
 
 message ExperimentConfig {
@@ -204,7 +209,7 @@ message ExperimentCandidate {
 
 message ExperimentMirror {
   string modelName = 1;
-  int32 percent = 2;
+  uint32 percent = 2;
 }
 
 message StartExperimentResponse {
@@ -225,6 +230,7 @@ message ExperimentStatusResponse {
   string experimentName = 1;
   bool active = 2;
   string statusDescription = 3;
+  optional KubernetesMeta kubernetesMeta = 4;
 }
 
 message LoadPipelineRequest {
@@ -234,7 +240,8 @@ message LoadPipelineRequest {
 message Pipeline {
   string name = 1;
   repeated PipelineStep steps = 2;
-  optional PipelineOutput output = 3;
+    optional PipelineOutput output = 3;
+  optional KubernetesMeta kubernetesMeta = 4;
 }
 
 message PipelineStep {

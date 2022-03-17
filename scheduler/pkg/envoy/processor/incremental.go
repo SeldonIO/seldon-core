@@ -234,18 +234,14 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.Mo
 func (p *IncrementalProcessor) addExperimentBaselineTraffic(model *store.ModelSnapshot, exp *experiment.Experiment) error {
 	logger := p.logger.WithField("func", "addExperimentTraffic")
 	logger.Infof("Trying to setup experiment for %s", model.Name)
-	if exp.Baseline == nil {
+	if exp.DefaultModel == nil {
 		return fmt.Errorf("Didn't find baseline in experiment for model %s", model.Name)
 	}
-	if exp.Baseline.ModelName != model.Name {
-		return fmt.Errorf("Didn't find expected model name baseline in experiment for model found %s but expected %s", exp.Baseline.ModelName, model.Name)
+	if *exp.DefaultModel != model.Name {
+		return fmt.Errorf("Didn't find expected model name baseline in experiment for model found %s but expected %s", *exp.DefaultModel, model.Name)
 	}
 	if exp.Deleted {
-		return fmt.Errorf("Experiment on model %s, but %s is deleted", model.Name, exp.Baseline.ModelName)
-	}
-	err := p.addModelTraffic(model.Name, model, exp.Baseline.Weight)
-	if err != nil {
-		return err
+		return fmt.Errorf("Experiment on model %s, but %s is deleted", model.Name, *exp.DefaultModel)
 	}
 	for _, candidate := range exp.Candidates {
 		candidateModel, err := p.modelStore.GetModel(candidate.ModelName)
@@ -313,12 +309,14 @@ func (p *IncrementalProcessor) experimentSync(experimentName string) error {
 	if err != nil {
 		return err
 	}
-	if exp.Baseline != nil {
-		logger.Infof("Experiment %s sync - calling for model %s", experimentName, exp.Baseline.ModelName)
-		return p.modelSync(exp.Baseline.ModelName)
-	} else {
-		return p.addExperiment(exp)
+	if exp.DefaultModel != nil {
+		logger.Infof("Experiment %s sync - calling for model %s", experimentName, *exp.DefaultModel)
+		err := p.modelSync(*exp.DefaultModel)
+		if err != nil {
+			return err
+		}
 	}
+	return p.addExperiment(exp)
 }
 
 func (p *IncrementalProcessor) modelSync(modelName string) error {

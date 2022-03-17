@@ -2,22 +2,16 @@ package experiment
 
 import "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 
-func CreateExperimentFromRequest(request *scheduler.StartExperimentRequest) *Experiment {
+func CreateExperimentFromRequest(request *scheduler.Experiment) *Experiment {
 	var candidates []*Candidate
-	var baseline *Candidate
 	var mirror *Mirror
 	var config *Config
+	var k8sMeta *KubernetesMeta
 	for _, reqCandidate := range request.Candidates {
 		candidates = append(candidates, &Candidate{
 			ModelName: reqCandidate.ModelName,
 			Weight:    reqCandidate.Weight,
 		})
-	}
-	if request.Baseline != nil {
-		baseline = &Candidate{
-			ModelName: request.Baseline.ModelName,
-			Weight:    request.Baseline.Weight,
-		}
 	}
 	if request.Mirror != nil {
 		mirror = &Mirror{
@@ -30,12 +24,19 @@ func CreateExperimentFromRequest(request *scheduler.StartExperimentRequest) *Exp
 			StickySessions: request.Config.StickySessions,
 		}
 	}
+	if request.KubernetesMeta != nil {
+		k8sMeta = &KubernetesMeta{
+			Namespace:  request.KubernetesMeta.Namespace,
+			Generation: request.KubernetesMeta.Generation,
+		}
+	}
 	return &Experiment{
-		Name:       request.Name,
-		Active:     false,
-		Candidates: candidates,
-		Baseline:   baseline,
-		Mirror:     mirror,
-		Config:     config,
+		Name:           request.Name,
+		DefaultModel:   request.DefaultModel,
+		Active:         false,
+		Candidates:     candidates,
+		Mirror:         mirror,
+		Config:         config,
+		KubernetesMeta: k8sMeta,
 	}
 }

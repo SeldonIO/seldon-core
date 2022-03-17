@@ -3,8 +3,10 @@ package constants
 import "os"
 
 const (
-	ModelFinalizerName  = "seldon.model.finalizer"
-	ServerFinalizerName = "seldon.server.finalizer"
+	ModelFinalizerName      = "seldon.model.finalizer"
+	ServerFinalizerName     = "seldon.server.finalizer"
+	PipelineFinalizerName   = "seldon.pipeline.finalizer"
+	ExperimentFinalizerName = "seldon.experiment.finalizer"
 )
 
 func getEnvOrDefault(key string, fallback string) string {

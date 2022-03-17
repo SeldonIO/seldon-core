@@ -34,30 +34,30 @@ import (
 	scheduler "github.com/seldonio/seldon-core/operatorv2/scheduler"
 )
 
-// PipelineReconciler reconciles a Pipeline object
-type PipelineReconciler struct {
+// ExperimentReconciler reconciles a Experiment object
+type ExperimentReconciler struct {
 	client.Client
 	Scheme    *runtime.Scheme
 	Scheduler *scheduler.SchedulerClient
 	Recorder  record.EventRecorder
 }
 
-func (r *PipelineReconciler) handleFinalizer(ctx context.Context, pipeline *mlopsv1alpha1.Pipeline) (bool, error) {
+func (r *ExperimentReconciler) handleFinalizer(ctx context.Context, experiment *mlopsv1alpha1.Experiment) (bool, error) {
 
 	// Check if we are being deleted or not
-	if pipeline.ObjectMeta.DeletionTimestamp.IsZero() { // Not being deleted
+	if experiment.ObjectMeta.DeletionTimestamp.IsZero() { // Not being deleted
 
 		// Add our finalizer
-		if !utils.ContainsStr(pipeline.ObjectMeta.Finalizers, constants.PipelineFinalizerName) {
-			pipeline.ObjectMeta.Finalizers = append(pipeline.ObjectMeta.Finalizers, constants.PipelineFinalizerName)
-			if err := r.Update(context.Background(), pipeline); err != nil {
+		if !utils.ContainsStr(experiment.ObjectMeta.Finalizers, constants.ExperimentFinalizerName) {
+			experiment.ObjectMeta.Finalizers = append(experiment.ObjectMeta.Finalizers, constants.ExperimentFinalizerName)
+			if err := r.Update(context.Background(), experiment); err != nil {
 				return true, err
 			}
 		}
-	} else { // pipeline is being deleted
-		if utils.ContainsStr(pipeline.ObjectMeta.Finalizers, constants.PipelineFinalizerName) {
+	} else { // experiment is being deleted
+		if utils.ContainsStr(experiment.ObjectMeta.Finalizers, constants.ExperimentFinalizerName) {
 			// Handle unload in scheduler
-			if err := r.Scheduler.UnloadPipeline(ctx, pipeline); err != nil {
+			if err := r.Scheduler.StopExperiment(ctx, experiment); err != nil {
 				return true, err
 			}
 		}
@@ -67,41 +67,40 @@ func (r *PipelineReconciler) handleFinalizer(ctx context.Context, pipeline *mlop
 	return false, nil
 }
 
-//+kubebuilder:rbac:groups=mlops.seldon.io,resources=pipelines,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=mlops.seldon.io,resources=pipelines/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=mlops.seldon.io,resources=pipelines/finalizers,verbs=update
-//+kubebuilder:rbac:groups="",resources=events,verbs=create;patch
+//+kubebuilder:rbac:groups=mlops.seldon.io,resources=experiments,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=mlops.seldon.io,resources=experiments/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=mlops.seldon.io,resources=experiments/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 // TODO(user): Modify the Reconcile function to compare the state specified by
-// the Pipeline object against the actual cluster state, and then
+// the Experiment object against the actual cluster state, and then
 // perform operations to make the cluster state reflect the state specified by
 // the user.
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.10.0/pkg/reconcile
-func (r *PipelineReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *ExperimentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx).WithName("Reconcile")
 
-	pipeline := &mlopsv1alpha1.Pipeline{}
-	if err := r.Get(ctx, req.NamespacedName, pipeline); err != nil {
+	experiment := &mlopsv1alpha1.Experiment{}
+	if err := r.Get(ctx, req.NamespacedName, experiment); err != nil {
 		if errors.IsNotFound(err) {
 			// we'll ignore not-found errors, since they can't be fixed by an immediate
 			// requeue (we'll need to wait for a new notification), and we can get them
 			// on deleted requests.
 			return reconcile.Result{}, nil
 		}
-		logger.Error(err, "unable to fetch Pipeline", "name", req.Name, "namespace", req.Namespace)
+		logger.Error(err, "unable to fetch Experiment", "name", req.Name, "namespace", req.Namespace)
 		return reconcile.Result{}, err
 	}
 
-	stop, err := r.handleFinalizer(ctx, pipeline)
+	stop, err := r.handleFinalizer(ctx, experiment)
 	if stop {
 		return reconcile.Result{}, err
 	}
 
-	err = r.Scheduler.LoadPipeline(ctx, pipeline)
+	err = r.Scheduler.StartExperiment(ctx, experiment)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
@@ -110,8 +109,8 @@ func (r *PipelineReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *PipelineReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *ExperimentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&mlopsv1alpha1.Pipeline{}).
+		For(&mlopsv1alpha1.Experiment{}).
 		Complete(r)
 }

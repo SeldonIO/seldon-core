@@ -42,6 +42,31 @@ func TestAddPipeline(t *testing.T) {
 			expectedVersion: 1,
 		},
 		{
+			name: "add pipeline none existing with k8s meta",
+			proto: &scheduler.Pipeline{
+				Name: "pipeline",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name:   "step1",
+						Inputs: []string{},
+					},
+					{
+						Name:   "",
+						Inputs: []string{"step1"},
+					},
+				},
+				KubernetesMeta: &scheduler.KubernetesMeta{
+					Namespace:  "default",
+					Generation: 1,
+				},
+			},
+			store: &PipelineStore{
+				logger:    logrus.New(),
+				pipelines: map[string]*Pipeline{},
+			},
+			expectedVersion: 1,
+		},
+		{
 			name: "version added",
 			proto: &scheduler.Pipeline{
 				Name: "pipeline",

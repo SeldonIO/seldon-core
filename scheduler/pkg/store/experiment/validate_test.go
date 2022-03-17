@@ -16,6 +16,7 @@ func TestValidateExperiment(t *testing.T) {
 		err        error
 	}
 
+	getStrPtr := func(val string) *string { return &val }
 	tests := []test{
 		{
 			name: "valid",
@@ -24,11 +25,12 @@ func TestValidateExperiment(t *testing.T) {
 				experiments: map[string]*Experiment{},
 			},
 			experiment: &Experiment{
-				Name: "a",
-				Baseline: &Candidate{
-					ModelName: "model1",
-				},
+				Name:         "a",
+				DefaultModel: getStrPtr("model1"),
 				Candidates: []*Candidate{
+					{
+						ModelName: "model1",
+					},
 					{
 						ModelName: "model2",
 					},
@@ -38,15 +40,16 @@ func TestValidateExperiment(t *testing.T) {
 		{
 			name: "baseline already exists",
 			store: &ExperimentStore{
-				baselines:   map[string]*Experiment{"model1": {}},
+				baselines:   map[string]*Experiment{"model1": {Name: "b"}},
 				experiments: map[string]*Experiment{},
 			},
 			experiment: &Experiment{
-				Name: "a",
-				Baseline: &Candidate{
-					ModelName: "model1",
-				},
+				Name:         "a",
+				DefaultModel: getStrPtr("model1"),
 				Candidates: []*Candidate{
+					{
+						ModelName: "model1",
+					},
 					{
 						ModelName: "model2",
 					},
@@ -55,18 +58,46 @@ func TestValidateExperiment(t *testing.T) {
 			err: &ExperimentBaselineExists{experimentName: "a", modelName: "model1"},
 		},
 		{
-			name: "No candidates in experiment",
+			name: "baseline already exists but its this model so ignore",
+			store: &ExperimentStore{
+				baselines:   map[string]*Experiment{"model1": {Name: "a"}},
+				experiments: map[string]*Experiment{},
+			},
+			experiment: &Experiment{
+				Name:         "a",
+				DefaultModel: getStrPtr("model1"),
+				Candidates: []*Candidate{
+					{
+						ModelName: "model1",
+					},
+					{
+						ModelName: "model2",
+					},
+				},
+			},
+		},
+		{
+			name: "No Canidadates",
 			store: &ExperimentStore{
 				baselines:   map[string]*Experiment{},
 				experiments: map[string]*Experiment{},
 			},
 			experiment: &Experiment{
 				Name: "a",
-				Baseline: &Candidate{
-					ModelName: "model1",
-				},
 			},
 			err: &ExperimentNoCandidates{experimentName: "a"},
+		},
+		{
+			name: "Default model is not candidate",
+			store: &ExperimentStore{
+				baselines:   map[string]*Experiment{},
+				experiments: map[string]*Experiment{},
+			},
+			experiment: &Experiment{
+				Name:         "a",
+				DefaultModel: getStrPtr("model1"),
+			},
+			err: &ExperimentDefaultModelNotFound{experimentName: "a", defaultModel: "model1"},
 		},
 	}
 

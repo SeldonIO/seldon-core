@@ -87,12 +87,20 @@ func (es *ExperimentStore) SetStatus(experimentName string, active bool, reason 
 		experiment.Active = active
 		experiment.StatusDescription = reason
 		if currentActive != experiment.Active {
+			var k8sMeta *coordinator.KubernetesMeta
+			if experiment.KubernetesMeta != nil {
+				k8sMeta = &coordinator.KubernetesMeta{
+					Namespace:  experiment.KubernetesMeta.Namespace,
+					Generation: experiment.KubernetesMeta.Generation,
+				}
+			}
 			es.eventHub.PublishExperimentEvent(experimentStartEventSource, coordinator.ExperimentEventMsg{
 				ExperimentName: experiment.Name,
 				Status: &coordinator.ExperimentEventStatus{
 					Active:            experiment.Active,
 					StatusDescription: experiment.StatusDescription,
 				},
+				KubernetesMeta: k8sMeta,
 			})
 		}
 	}
@@ -126,10 +134,30 @@ func (es *ExperimentStore) StopExperiment(experimentName string) error {
 	defer es.mu.Unlock()
 	if experiment, ok := es.experiments[experimentName]; ok {
 		experiment.Deleted = true
+		experiment.Active = false
 		es.cleanExperimentState(experiment)
 		if es.eventHub != nil {
+			if experiment.DefaultModel != nil {
+				es.eventHub.PublishModelEvent(experimentStateEventSource, coordinator.ModelEventMsg{
+					ModelName: *experiment.DefaultModel,
+					//Empty model version
+				})
+			}
+			//Update state of model
+			var k8sMeta *coordinator.KubernetesMeta
+			if experiment.KubernetesMeta != nil {
+				k8sMeta = &coordinator.KubernetesMeta{
+					Namespace:  experiment.KubernetesMeta.Namespace,
+					Generation: experiment.KubernetesMeta.Generation,
+				}
+			}
 			es.eventHub.PublishExperimentEvent(experimentStopEventSource, coordinator.ExperimentEventMsg{
 				ExperimentName: experimentName,
+				Status: &coordinator.ExperimentEventStatus{
+					Active:            experiment.Active,
+					StatusDescription: experiment.StatusDescription,
+				},
+				KubernetesMeta: k8sMeta,
 			})
 		}
 		return nil

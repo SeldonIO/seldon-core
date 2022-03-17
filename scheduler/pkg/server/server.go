@@ -126,6 +126,9 @@ func NewSchedulerServer(
 		pipelineEventStream: PipelineEventStream{
 			streams: make(map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription),
 		},
+		experimentEventStream: ExperimentEventStream{
+			streams: make(map[pb.Scheduler_SubscribeExperimentStatusServer]*ExperimentSubscription),
+		},
 	}
 
 	eventHub.RegisterModelEventHandler(
@@ -314,7 +317,7 @@ func (s *SchedulerServer) ServerStatus(ctx context.Context, reference *pb.Server
 }
 
 func (s *SchedulerServer) StartExperiment(ctx context.Context, req *pb.StartExperimentRequest) (*pb.StartExperimentResponse, error) {
-	err := s.experiementServer.StartExperiment(experiment.CreateExperimentFromRequest(req))
+	err := s.experiementServer.StartExperiment(experiment.CreateExperimentFromRequest(req.Experiment))
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}

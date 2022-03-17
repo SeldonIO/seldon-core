@@ -31,3 +31,17 @@ type ExperimentNoCandidates struct {
 func (enc *ExperimentNoCandidates) Error() string {
 	return fmt.Sprintf("experiment %s has no candidates", enc.experimentName)
 }
+
+type ExperimentDefaultModelNotFound struct {
+	experimentName string
+	defaultModel   string
+}
+
+func (enc *ExperimentDefaultModelNotFound) Is(tgt error) bool {
+	_, ok := tgt.(*ExperimentDefaultModelNotFound)
+	return ok
+}
+
+func (enc *ExperimentDefaultModelNotFound) Error() string {
+	return fmt.Sprintf("default model %s not found in experiment %s candidates", enc.defaultModel, enc.experimentName)
+}

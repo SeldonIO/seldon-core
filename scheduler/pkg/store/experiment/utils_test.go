@@ -11,22 +11,20 @@ func TestLoadModel(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
 		name       string
-		proto      *scheduler.StartExperimentRequest
+		proto      *scheduler.Experiment
 		experiment *Experiment
 	}
 
+	getStrPtr := func(val string) *string { return &val }
 	tests := []test{
 		{
 			name: "basic",
-			proto: &scheduler.StartExperimentRequest{
-				Name: "foo",
-				Baseline: &scheduler.ExperimentCandidate{
-					ModelName: "model1",
-					Weight:    60,
-				},
+			proto: &scheduler.Experiment{
+				Name:         "foo",
+				DefaultModel: getStrPtr("model1"),
 				Candidates: []*scheduler.ExperimentCandidate{
 					{
-						ModelName: "model2",
+						ModelName: "model1",
 						Weight:    20,
 					},
 					{
@@ -41,17 +39,18 @@ func TestLoadModel(t *testing.T) {
 				Config: &scheduler.ExperimentConfig{
 					StickySessions: true,
 				},
+				KubernetesMeta: &scheduler.KubernetesMeta{
+					Namespace:  "default",
+					Generation: 1,
+				},
 			},
 			experiment: &Experiment{
-				Name:   "foo",
-				Active: false,
-				Baseline: &Candidate{
-					ModelName: "model1",
-					Weight:    60,
-				},
+				Name:         "foo",
+				Active:       false,
+				DefaultModel: getStrPtr("model1"),
 				Candidates: []*Candidate{
 					{
-						ModelName: "model2",
+						ModelName: "model1",
 						Weight:    20,
 					},
 					{
@@ -65,6 +64,62 @@ func TestLoadModel(t *testing.T) {
 				},
 				Config: &Config{
 					StickySessions: true,
+				},
+				KubernetesMeta: &KubernetesMeta{
+					Namespace:  "default",
+					Generation: 1,
+				},
+			},
+		},
+		{
+			name: "candidates",
+			proto: &scheduler.Experiment{
+				Name: "foo",
+				Candidates: []*scheduler.ExperimentCandidate{
+					{
+						ModelName: "model1",
+						Weight:    20,
+					},
+					{
+						ModelName: "model3",
+						Weight:    20,
+					},
+				},
+				Mirror: &scheduler.ExperimentMirror{
+					ModelName: "model4",
+					Percent:   80,
+				},
+				Config: &scheduler.ExperimentConfig{
+					StickySessions: true,
+				},
+				KubernetesMeta: &scheduler.KubernetesMeta{
+					Namespace:  "default",
+					Generation: 1,
+				},
+			},
+			experiment: &Experiment{
+				Name:   "foo",
+				Active: false,
+				Candidates: []*Candidate{
+					{
+						ModelName: "model1",
+						Weight:    20,
+					},
+					{
+						ModelName: "model3",
+						Weight:    20,
+					},
+				},
+				Mirror: &Mirror{
+					ModelName: "model4",
+					Percent:   80,
+				},
+				Config: &Config{
+					StickySessions: true,
+				},
+				KubernetesMeta: &KubernetesMeta{
+					Namespace:  "default",
+					Generation: 1,
 				},
 			},
 		},

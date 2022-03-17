@@ -17,6 +17,7 @@ func TestAddModelReference(t *testing.T) {
 		experiment *Experiment
 	}
 
+	getStrPtr := func(val string) *string { return &val }
 	tests := []test{
 		{
 			name: "empty store add experiment",
@@ -25,9 +26,13 @@ func TestAddModelReference(t *testing.T) {
 			},
 			modelName: "model1",
 			experiment: &Experiment{
-				Name: "a",
-				Baseline: &Candidate{
-					ModelName: "model1",
+				Name:         "a",
+				DefaultModel: getStrPtr("model1"),
+				Candidates: []*Candidate{
+					{
+						ModelName: "model1",
+						Weight:    100,
+					},
 				},
 			},
 		},
@@ -40,9 +45,13 @@ func TestAddModelReference(t *testing.T) {
 			},
 			modelName: "model1",
 			experiment: &Experiment{
-				Name: "a",
-				Baseline: &Candidate{
-					ModelName: "model1",
+				Name:         "a",
+				DefaultModel: getStrPtr("model1"),
+				Candidates: []*Candidate{
+					{
+						ModelName: "model1",
+						Weight:    100,
+					},
 				},
 			},
 		},
@@ -55,9 +64,13 @@ func TestAddModelReference(t *testing.T) {
 			},
 			modelName: "model1",
 			experiment: &Experiment{
-				Name: "a",
-				Baseline: &Candidate{
-					ModelName: "model1",
+				Name:         "a",
+				DefaultModel: getStrPtr("model1"),
+				Candidates: []*Candidate{
+					{
+						ModelName: "model1",
+						Weight:    100,
+					},
 				},
 			},
 		},
@@ -84,6 +97,7 @@ func TestRemoveModelReference(t *testing.T) {
 		expectedReferences int
 	}
 
+	getStrPtr := func(val string) *string { return &val }
 	tests := []test{
 		{
 			name: "empty store remove experiment",
@@ -92,9 +106,13 @@ func TestRemoveModelReference(t *testing.T) {
 			},
 			modelName: "model1",
 			experiment: &Experiment{
-				Name: "a",
-				Baseline: &Candidate{
-					ModelName: "model1",
+				Name:         "a",
+				DefaultModel: getStrPtr("model1"),
+				Candidates: []*Candidate{
+					{
+						ModelName: "model1",
+						Weight:    100,
+					},
 				},
 			},
 			expectedReferences: 0,
@@ -108,9 +126,13 @@ func TestRemoveModelReference(t *testing.T) {
 			},
 			modelName: "model1",
 			experiment: &Experiment{
-				Name: "a",
-				Baseline: &Candidate{
-					ModelName: "model1",
+				Name:         "a",
+				DefaultModel: getStrPtr("model1"),
+				Candidates: []*Candidate{
+					{
+						ModelName: "model1",
+						Weight:    100,
+					},
 				},
 			},
 			expectedReferences: 0,
@@ -124,9 +146,13 @@ func TestRemoveModelReference(t *testing.T) {
 			},
 			modelName: "model1",
 			experiment: &Experiment{
-				Name: "a",
-				Baseline: &Candidate{
-					ModelName: "model1",
+				Name:         "a",
+				DefaultModel: getStrPtr("model1"),
+				Candidates: []*Candidate{
+					{
+						ModelName: "model1",
+						Weight:    100,
+					},
 				},
 			},
 			expectedReferences: 1,
@@ -151,6 +177,7 @@ func TestCleanExperimentState(t *testing.T) {
 		expectedReferences int
 	}
 
+	getStrPtr := func(val string) *string { return &val }
 	tests := []test{
 		{
 			name: "empty server",
@@ -169,11 +196,12 @@ func TestCleanExperimentState(t *testing.T) {
 				baselines:       map[string]*Experiment{"model1": nil},
 				modelReferences: map[string]map[string]*Experiment{"model2": {"a": nil}, "model1": {"a": nil}},
 				experiments: map[string]*Experiment{"a": {
-					Name: "a",
-					Baseline: &Candidate{
-						ModelName: "model1",
-					},
+					Name:         "a",
+					DefaultModel: getStrPtr("model1"),
 					Candidates: []*Candidate{
+						{
+							ModelName: "model1",
+						},
 						{
 							ModelName: "model2",
 						},
@@ -192,11 +220,12 @@ func TestCleanExperimentState(t *testing.T) {
 				baselines:       map[string]*Experiment{"model1": nil},
 				modelReferences: map[string]map[string]*Experiment{"model2": {"a": nil, "b": nil}, "model1": {"a": nil, "b": nil}},
 				experiments: map[string]*Experiment{"a": {
-					Name: "a",
-					Baseline: &Candidate{
-						ModelName: "model1",
-					},
+					Name:         "a",
+					DefaultModel: getStrPtr("model1"),
 					Candidates: []*Candidate{
+						{
+							ModelName: "model1",
+						},
 						{
 							ModelName: "model2",
 						},
@@ -228,17 +257,8 @@ func TestUpdateExperimentState(t *testing.T) {
 		expectedReferences int
 	}
 
+	getStrPtr := func(val string) *string { return &val }
 	tests := []test{
-		{
-			name: "empty server",
-			server: &ExperimentStore{
-				logger:          logrus.New(),
-				baselines:       map[string]*Experiment{},
-				modelReferences: map[string]map[string]*Experiment{},
-			},
-			experiment:         &Experiment{Name: "a"},
-			expectedReferences: 0,
-		},
 		{
 			name: "existing experiment but empty store",
 			server: &ExperimentStore{
@@ -248,11 +268,12 @@ func TestUpdateExperimentState(t *testing.T) {
 				experiments:     map[string]*Experiment{},
 			},
 			experiment: &Experiment{
-				Name: "a",
-				Baseline: &Candidate{
-					ModelName: "model1",
-				},
+				Name:         "a",
+				DefaultModel: getStrPtr("model1"),
 				Candidates: []*Candidate{
+					{
+						ModelName: "model1",
+					},
 					{
 						ModelName: "model2",
 					},
@@ -264,16 +285,17 @@ func TestUpdateExperimentState(t *testing.T) {
 			name: "existing experiment and model in store",
 			server: &ExperimentStore{
 				logger:          logrus.New(),
-				baselines:       map[string]*Experiment{"model1": nil},
+				baselines:       map[string]*Experiment{"model1": {Name: "a"}},
 				modelReferences: map[string]map[string]*Experiment{"model2": {"a": nil}, "model1": {"a": nil}},
 				experiments:     map[string]*Experiment{},
 			},
 			experiment: &Experiment{
-				Name: "a",
-				Baseline: &Candidate{
-					ModelName: "model1",
-				},
+				Name:         "a",
+				DefaultModel: getStrPtr("model1"),
 				Candidates: []*Candidate{
+					{
+						ModelName: "model1",
+					},
 					{
 						ModelName: "model2",
 					},
@@ -285,16 +307,17 @@ func TestUpdateExperimentState(t *testing.T) {
 			name: "other experiments",
 			server: &ExperimentStore{
 				logger:          logrus.New(),
-				baselines:       map[string]*Experiment{"model1": nil},
+				baselines:       map[string]*Experiment{"model1": {Name: "a"}},
 				modelReferences: map[string]map[string]*Experiment{"model2": {"b": nil}, "model1": {"b": nil}},
 				experiments:     map[string]*Experiment{},
 			},
 			experiment: &Experiment{
-				Name: "a",
-				Baseline: &Candidate{
-					ModelName: "model1",
-				},
+				Name:         "a",
+				DefaultModel: getStrPtr("model1"),
 				Candidates: []*Candidate{
+					{
+						ModelName: "model1",
+					},
 					{
 						ModelName: "model2",
 					},
@@ -305,8 +328,9 @@ func TestUpdateExperimentState(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			err := test.server.validate(test.experiment)
+			g.Expect(err).To(BeNil())
 			test.server.updateExperimentState(test.experiment)
-			g.Expect(test.server.baselines[test.experiment.Name]).To(BeNil())
 			g.Expect(test.server.getTotalModelReferences()).To(Equal(test.expectedReferences))
 		})
 	}

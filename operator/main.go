@@ -24,8 +24,6 @@ import (
 	"flag"
 	"os"
 
-	mlopsv1alpha1 "github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1"
-	mlopscontrollers "github.com/seldonio/seldon-core/operatorv2/controllers/mlops"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -33,6 +31,9 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+
+	mlopsv1alpha1 "github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1"
+	mlopscontrollers "github.com/seldonio/seldon-core/operatorv2/controllers/mlops"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -83,6 +84,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Create and connect to scheduler
 	schedulerClient := scheduler.NewSchedulerClient(logger, mgr.GetClient(),
 		mgr.GetEventRecorderFor("scheduler-client"))
 	err = schedulerClient.ConnectToScheduler(schedulerHost, schedulerPort)
@@ -90,6 +92,8 @@ func main() {
 		setupLog.Error(err, "unable to connect to scheduler")
 		os.Exit(1)
 	}
+
+	// Subscribe the event streams from scheduler
 	go func() {
 		err := schedulerClient.SubscribeModelEvents(context.Background())
 		if err != nil {
@@ -101,6 +105,20 @@ func main() {
 		err := schedulerClient.SubscribeServerEvents(context.Background())
 		if err != nil {
 			setupLog.Error(err, "Failed to subscribe to scheduler server events")
+		}
+		os.Exit(1)
+	}()
+	go func() {
+		err := schedulerClient.SubscribePipelineEvents(context.Background())
+		if err != nil {
+			setupLog.Error(err, "Failed to subscribe to scheduler pipeline events")
+		}
+		os.Exit(1)
+	}()
+	go func() {
+		err := schedulerClient.SubscribeExperimentEvents(context.Background())
+		if err != nil {
+			setupLog.Error(err, "Failed to subscribe to scheduler experiment events")
 		}
 		os.Exit(1)
 	}()
@@ -124,8 +142,10 @@ func main() {
 		os.Exit(1)
 	}
 	if err = (&mlopscontrollers.PipelineReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:    mgr.GetClient(),
+		Scheme:    mgr.GetScheme(),
+		Scheduler: schedulerClient,
+		Recorder:  mgr.GetEventRecorderFor("pipeline-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Pipeline")
 		os.Exit(1)
@@ -142,6 +162,15 @@ func main() {
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ServerConfig")
+		os.Exit(1)
+	}
+	if err = (&mlopscontrollers.ExperimentReconciler{
+		Client:    mgr.GetClient(),
+		Scheme:    mgr.GetScheme(),
+		Scheduler: schedulerClient,
+		Recorder:  mgr.GetEventRecorderFor("pipeline-controller"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Experiment")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder

@@ -35,16 +35,22 @@ func (p *Pipeline) GetPreviousPipelineVersion() *PipelineVersion {
 }
 
 type PipelineVersion struct {
-	Name    string
-	Version uint32
-	UID     string
-	Steps   map[string]*PipelineStep
-	State   *PipelineState
-	Output  *PipelineOutput
+	Name           string
+	Version        uint32
+	UID            string
+	Steps          map[string]*PipelineStep
+	State          *PipelineState
+	Output         *PipelineOutput
+	KubernetesMeta *KubernetesMeta
 }
 
 func (pv *PipelineVersion) String() string {
 	return fmt.Sprintf("%s:%d (%s)", pv.Name, pv.Version, pv.UID)
+}
+
+type KubernetesMeta struct {
+	Namespace  string
+	Generation int64
 }
 
 type PipelineStatus uint32

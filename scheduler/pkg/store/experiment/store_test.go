@@ -23,6 +23,7 @@ func TestStartExperiment(t *testing.T) {
 		expectedNumExp int
 	}
 
+	getStrPtr := func(val string) *string { return &val }
 	tests := []test{
 		{
 			name: "add one",
@@ -97,11 +98,12 @@ func TestStartExperiment(t *testing.T) {
 			experiments: []*experimentAddition{
 				{
 					experiment: &Experiment{
-						Name: "a",
-						Baseline: &Candidate{
-							ModelName: "model1",
-						},
+						Name:         "a",
+						DefaultModel: getStrPtr("model1"),
 						Candidates: []*Candidate{
+							{
+								ModelName: "model1",
+							},
 							{
 								ModelName: "model2",
 							},
@@ -116,11 +118,12 @@ func TestStartExperiment(t *testing.T) {
 			experiments: []*experimentAddition{
 				{
 					experiment: &Experiment{
-						Name: "a",
-						Baseline: &Candidate{
-							ModelName: "model1",
-						},
+						Name:         "a",
+						DefaultModel: getStrPtr("model1"),
 						Candidates: []*Candidate{
+							{
+								ModelName: "model1",
+							},
 							{
 								ModelName: "model2",
 							},
@@ -135,11 +138,12 @@ func TestStartExperiment(t *testing.T) {
 			experiments: []*experimentAddition{
 				{
 					experiment: &Experiment{
-						Name: "a",
-						Baseline: &Candidate{
-							ModelName: "model1",
-						},
+						Name:         "a",
+						DefaultModel: getStrPtr("model1"),
 						Candidates: []*Candidate{
+							{
+								ModelName: "model1",
+							},
 							{
 								ModelName: "model2",
 							},
@@ -148,11 +152,12 @@ func TestStartExperiment(t *testing.T) {
 				},
 				{
 					experiment: &Experiment{
-						Name: "b",
-						Baseline: &Candidate{
-							ModelName: "model1",
-						},
+						Name:         "b",
+						DefaultModel: getStrPtr("model1"),
 						Candidates: []*Candidate{
+							{
+								ModelName: "model1",
+							},
 							{
 								ModelName: "model2",
 							},

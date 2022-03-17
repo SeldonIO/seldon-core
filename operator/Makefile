@@ -76,7 +76,7 @@ run: manifests generate fmt vet ## Run a controller from your host.
 
 .PHONY: docker-build
 docker-build: test ## Build docker image with the manager.
-	cp -r ../apis apis-TEMP
+	cp -r ../apis apis-TEMP && rm -fr apis-TEMP/python
 	docker build -t ${IMG} .
 	rm -rf apis-TEMP
 

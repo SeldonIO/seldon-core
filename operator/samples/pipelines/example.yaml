@@ -1,0 +1,16 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: example
+spec:
+  steps:
+    - name: a
+    - name: b
+      inputs:
+      - a
+    - name: c
+      inputs:
+      - b
+  output:
+    inputs:
+    - c

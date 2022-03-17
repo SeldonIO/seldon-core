@@ -1,0 +1,24 @@
+# permissions for end users to edit experiments.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: experiment-editor-role
+rules:
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - experiments
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - experiments/status
+  verbs:
+  - get

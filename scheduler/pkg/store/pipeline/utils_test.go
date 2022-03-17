@@ -57,6 +57,68 @@ func TestCreatePipelineFromProto(t *testing.T) {
 				State: &PipelineState{},
 			},
 		},
+		{
+			name:    "simple with k8s meta",
+			version: 1,
+			proto: &scheduler.Pipeline{
+				Name: "pipeline",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name:   "step1",
+						Inputs: []string{},
+					},
+				},
+				KubernetesMeta: &scheduler.KubernetesMeta{
+					Namespace:  "default",
+					Generation: 22,
+				},
+			},
+			pipeline: &PipelineVersion{
+				Name:    "pipeline",
+				Version: 1,
+				Steps: map[string]*PipelineStep{
+					"step1": {
+						Name:   "step1",
+						Inputs: []string{},
+					},
+				},
+				State: &PipelineState{},
+				KubernetesMeta: &KubernetesMeta{
+					Namespace:  "default",
+					Generation: 22,
+				},
+			},
+		},
+		{
+			name:    "multi input",
+			version: 1,
+			proto: &scheduler.Pipeline{
+				Name: "pipeline",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name:   "step1",
+						Inputs: []string{"a.inputs", "c.inputs.inp1", "d.outputs", "e.outputs.out1", "f"},
+					},
+				},
+				Output: &scheduler.PipelineOutput{
+					Inputs: []string{"step1"},
+				},
+			},
+			pipeline: &PipelineVersion{
+				Name:    "pipeline",
+				Version: 1,
+				Steps: map[string]*PipelineStep{
+					"step1": {
+						Name:   "step1",
+						Inputs: []string{"a.inputs", "c.inputs.inp1", "d.outputs", "e.outputs.out1", "f"},
+					},
+				},
+				Output: &PipelineOutput{
+					Inputs: []string{"b"},
+				},
+				State: &PipelineState{},
+			},
+		},
 	}
 
 	for _, test := range tests {

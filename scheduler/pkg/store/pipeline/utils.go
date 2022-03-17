@@ -31,10 +31,18 @@ func CreateProtoFromPipeline(pv *PipelineVersion) *scheduler.Pipeline {
 			JoinWindowMs: pv.Output.JoinWindowMs,
 		}
 	}
+	var kubernetesMeta *scheduler.KubernetesMeta
+	if pv.KubernetesMeta != nil {
+		kubernetesMeta = &scheduler.KubernetesMeta{
+			Namespace:  pv.KubernetesMeta.Namespace,
+			Generation: pv.KubernetesMeta.Generation,
+		}
+	}
 	return &scheduler.Pipeline{
-		Name:   pv.Name,
-		Steps:  protoSteps,
-		Output: protoOutput,
+		Name:           pv.Name,
+		Steps:          protoSteps,
+		Output:         protoOutput,
+		KubernetesMeta: kubernetesMeta,
 	}
 }
 
@@ -56,13 +64,21 @@ func CreatePipelineFromProto(pipelineProto *scheduler.Pipeline, version uint32) 
 			JoinWindowMs: pipelineProto.Output.JoinWindowMs,
 		}
 	}
+	var kubernetesMeta *KubernetesMeta
+	if pipelineProto.KubernetesMeta != nil {
+		kubernetesMeta = &KubernetesMeta{
+			Namespace:  pipelineProto.KubernetesMeta.Namespace,
+			Generation: pipelineProto.KubernetesMeta.Generation,
+		}
+	}
 
 	return &PipelineVersion{
-		Name:    pipelineProto.Name,
-		Version: version,
-		UID:     xid.New().String(),
-		Steps:   steps,
-		State:   &PipelineState{},
-		Output:  output,
+		Name:           pipelineProto.Name,
+		Version:        version,
+		UID:            xid.New().String(),
+		Steps:          steps,
+		State:          &PipelineState{},
+		Output:         output,
+		KubernetesMeta: kubernetesMeta,
 	}, nil
 }

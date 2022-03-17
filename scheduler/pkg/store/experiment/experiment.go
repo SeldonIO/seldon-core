@@ -4,11 +4,17 @@ type Experiment struct {
 	Name              string
 	Active            bool
 	Deleted           bool
-	Baseline          *Candidate
+	DefaultModel      *string
 	Candidates        []*Candidate
 	Mirror            *Mirror
 	Config            *Config
 	StatusDescription string
+	KubernetesMeta    *KubernetesMeta
+}
+
+type KubernetesMeta struct {
+	Namespace  string
+	Generation int64
 }
 
 type Candidate struct {
@@ -18,7 +24,7 @@ type Candidate struct {
 
 type Mirror struct {
 	ModelName string
-	Percent   int32
+	Percent   uint32
 }
 
 type Config struct {
