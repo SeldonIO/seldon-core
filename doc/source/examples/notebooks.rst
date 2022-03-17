@@ -83,7 +83,7 @@ Cloud-Specific Examples
    Setup for Triton GPT2 Example Azure <triton_gpt2_example_azure_setup>
 
 Advanced Machine Learning Monitoring
-----------------------------------
+---------------------------------------
 
 .. toctree::
    :titlesonly:
