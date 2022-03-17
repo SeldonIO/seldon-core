@@ -24,6 +24,7 @@ spec:
 {{- with .Values.manager.annotations }}
 {{- toYaml . | nindent 8}}
 {{- end }}
+        prometheus.io/port: '{{ .Values.metrics.port }}'
         prometheus.io/scrape: 'true'
         sidecar.istio.io/inject: 'false'
       labels:
@@ -140,7 +141,7 @@ spec:
         - containerPort: {{ .Values.webhook.port }}
           name: webhook-server
           protocol: TCP
-        - containerPort: 8080
+        - containerPort: {{ .Values.metrics.port }}
           name: metrics
           protocol: TCP
         resources:
@@ -156,6 +157,7 @@ spec:
           name: cert
           readOnly: true
 {{- end }}
+      hostNetwork: {{ .Values.hostNetwork }}
       securityContext:
         runAsUser: {{ .Values.managerUserID }}
       serviceAccountName: '{{ .Values.serviceAccount.name }}'

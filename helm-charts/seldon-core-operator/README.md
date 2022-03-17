@@ -117,3 +117,5 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | storageInitializer.memoryRequest | string | `"100Mi"` |  |
 | usageMetrics.enabled | bool | `false` |  |
 | webhook.port | int | `4443` |  |
+| metrics.port | int | `8080` |  |
+| hostNetwork | bool | `false` |  |
