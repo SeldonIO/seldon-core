@@ -155,7 +155,7 @@ apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
   name: iris-model
-  namespace: seldon
+  namespace: model-namespace
 spec:
   name: iris
   predictors:
