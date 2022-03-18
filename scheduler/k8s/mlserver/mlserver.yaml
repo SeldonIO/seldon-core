@@ -148,6 +148,8 @@ spec:
           value: "/mnt/agent/models"
         - name: MLSERVER_MODEL_PARALLEL_WORKERS
           value: "1"
+      - name: MLSERVER_LOAD_MODELS_AT_STARTUP
+        value: "false"
         resources:
           requests:
             cpu: '0.1'
