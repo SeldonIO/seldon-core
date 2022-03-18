@@ -161,10 +161,10 @@ spec:
   predictors:
   - componentSpecs:
     - spec:
-      containers:
-      - name: classifier
-        image: sklearn_iris:0.1
-  - graph:
+        containers:
+        - name: classifier
+          image: sklearn_iris:0.1
+    graph:
       name: classifier
     name: default
     replicas: 1
