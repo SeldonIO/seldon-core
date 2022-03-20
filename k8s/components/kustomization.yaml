@@ -1,0 +1,6 @@
+namespace: seldon-mesh
+bases:
+- ../../scheduler/k8s/default
+- ../../operator/config/default
+- ../../operator/config/serverconfigs
+

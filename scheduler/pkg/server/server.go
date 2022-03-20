@@ -332,6 +332,25 @@ func (s *SchedulerServer) StopExperiment(ctx context.Context, req *pb.StopExperi
 	return &pb.StopExperimentResponse{}, nil
 }
 
+func (s *SchedulerServer) ExperimentStatus(ctx context.Context, req *pb.ExperimentStatusRequest) (*pb.ExperimentStatusResponse, error) {
+	exp, err := s.experiementServer.GetExperiment(req.GetName())
+	if err != nil {
+		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+	}
+	res := &pb.ExperimentStatusResponse{
+		ExperimentName:    req.GetName(),
+		Active:            exp.Active,
+		StatusDescription: exp.StatusDescription,
+	}
+	if exp.KubernetesMeta != nil {
+		res.KubernetesMeta = &pb.KubernetesMeta{
+			Namespace:  exp.KubernetesMeta.Namespace,
+			Generation: exp.KubernetesMeta.Generation,
+		}
+	}
+	return res, nil
+}
+
 func (s *SchedulerServer) LoadPipeline(ctx context.Context, req *pb.LoadPipelineRequest) (*pb.LoadPipelineResponse, error) {
 	err := s.pipelineHandler.AddPipeline(req.Pipeline)
 	if err != nil {

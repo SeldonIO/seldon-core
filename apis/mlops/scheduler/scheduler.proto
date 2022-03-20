@@ -237,6 +237,10 @@ message LoadPipelineRequest {
   Pipeline pipeline = 1;
 }
 
+message ExperimentStatusRequest {
+  string name = 1;
+}
+
 message Pipeline {
   string name = 1;
   repeated PipelineStep steps = 2;
@@ -267,7 +271,6 @@ message UnloadPipelineRequest {
 message UnloadPipelineResponse {
 
 }
-
 
 message PipelineStatusRequest {
   string name = 1;
@@ -322,6 +325,7 @@ service Scheduler {
   rpc StartExperiment(StartExperimentRequest) returns (StartExperimentResponse) {};
   rpc StopExperiment(StopExperimentRequest) returns (StopExperimentResponse) {};
   rpc SubscribeExperimentStatus(ExperimentSubscriptionRequest) returns (stream ExperimentStatusResponse) {};
+  rpc ExperimentStatus(ExperimentStatusRequest) returns (ExperimentStatusResponse) {};
   rpc LoadPipeline(LoadPipelineRequest) returns (LoadPipelineResponse) {};
   rpc UnloadPipeline(UnloadPipelineRequest) returns (UnloadPipelineResponse) {};
   rpc PipelineStatus(PipelineStatusRequest) returns (PipelineStatusResponse) {};
