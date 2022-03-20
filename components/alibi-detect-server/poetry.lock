@@ -1771,7 +1771,7 @@ numpy = ">=1.16.5,<1.23.0"
 
 [[package]]
 name = "seldon-core"
-version = "1.13.1"
+version = "1.14.0.dev0"
 description = "Seldon Core client and microservice wrapper"
 category = "main"
 optional = false
