@@ -27,7 +27,7 @@ spec:
         - name: MANAGER_CREATE_RESOURCES
           value: "true"
         - name: ENGINE_CONTAINER_USER
-          value: ""          
+          value: ""
         - name: EXECUTOR_CONTAINER_USER
           value: ""
         name: manager
@@ -59,7 +59,7 @@ Version: version.Version{OpmVersion:"1.12.3", GitCommit:"", BuildDate:"2020-09-1
 
 ### Quay
 
-Login to quay.io as seldon. Password in 1password. 
+Login to quay.io as seldon. Password in 1password.
 
 
 ## Version Update
@@ -91,7 +91,7 @@ Create a fork of https://github.com/k8s-operatorhub/community-operators
 
 Create a PR for community operator
 
-Update the Makefile locally for 
+Update the Makefile locally for
 
 ```
 COMMUNITY_OPERATORS_FOLDER=~/work/seldon-core/redhat/community-operators
@@ -118,7 +118,14 @@ git commit -s -m "Update Seldon Community Operator to 1.12.0"
 
 Push and create PR.
 
-if you need to redo and create a new commit. As they allow only 1 commit on the PR rebase and change previous commit to "FixUp" or "f" via:
+if you need to redo and create a new commit. As they allow only 1 commit the simplest option is to amend existing commit and force-push it with
+
+```
+git commit --amend
+git push -f
+```
+
+Other option is to do the rebase and change previous commit to "FixUp" or "f" via:
 
 ```
 git rebase -i HEAD~2
@@ -133,7 +140,7 @@ Create a fork of https://github.com/redhat-openshift-ecosystem/community-operato
 
 Create a PR for upstream operator
 
-Update the Makefile locally for 
+Update the Makefile locally for
 
 ```
 UPSTREAM_OPERATORS_FOLDER=~/work/seldon-core/redhat/community-operators-prod
@@ -208,7 +215,7 @@ With an openshift cluster authenticated first run the basic pipeline after follo
 make run_certified_pipeline_basic
 ```
 
-There may be an issue with the Tekton pipeline w.r.t TLSVERIFY: see [here](https://github.com/tektoncd/pipeline/issues/3243) and [here](https://bugzilla.redhat.com/show_bug.cgi?id=1879680). To allow the pipeline to run succesfully you will need to switch off TLSVERIFY by modifying [the buildah setps](https://github.com/cliveseldon/operator-pipelines/commit/72b2e12620a9a2d9a5f84b3f218d65f2e936a0ff). 
+There may be an issue with the Tekton pipeline w.r.t TLSVERIFY: see [here](https://github.com/tektoncd/pipeline/issues/3243) and [here](https://bugzilla.redhat.com/show_bug.cgi?id=1879680). To allow the pipeline to run succesfully you will need to switch off TLSVERIFY by modifying [the buildah setps](https://github.com/cliveseldon/operator-pipelines/commit/72b2e12620a9a2d9a5f84b3f218d65f2e936a0ff).
 
 When successful we can rerun but also with pinning. This failed last time but does create a pinned branch in your fork which can be used for a manual PR. For example, run with:
 

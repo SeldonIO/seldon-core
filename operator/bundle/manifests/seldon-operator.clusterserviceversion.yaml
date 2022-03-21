@@ -48,7 +48,7 @@ metadata:
     capabilities: Seamless Upgrades
     categories: AI/Machine Learning
     certified: 'false'
-    containerImage: seldonio/seldon-core-operator:1.12.0
+    containerImage: seldonio/seldon-core-operator:1.13.1
     createdAt: '2019-05-21 15:00:00'
     description: The Seldon operator for management, monitoring and operations of machine learning systems through the Seldon Engine. Once installed, the Seldon Operator provides multiple functions which facilitate the productisation, monitoring and maintenance of machine learning systems at scale.
     olm.skipRange: <1.12.0
@@ -56,7 +56,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v2
     repository: https://github.com/SeldonIO/seldon-core
     support: Clive Cox
-  name: seldon-operator.v1.12.0
+  name: seldon-operator.v1.13.1
   namespace: seldon-operator-system
 spec:
   apiservicedefinitions: {}
@@ -436,6 +436,10 @@ spec:
                 command:
                 - /manager
                 env:
+                - name: MANAGER_CREATE_RESOURCES
+                  value: 'true'
+                - name: ENGINE_CONTAINER_USER
+                - name: EXECUTOR_CONTAINER_USER
                 - name: MANAGER_LEADER_ELECTION_ID
                   value: a33bd623.machinelearning.seldon.io
                 - name: MANAGER_LOG_LEVEL
@@ -445,7 +449,6 @@ spec:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
                 - name: RELATED_IMAGE_EXECUTOR
-                - name: RELATED_IMAGE_ENGINE
                 - name: RELATED_IMAGE_STORAGE_INITIALIZER
                 - name: RELATED_IMAGE_SKLEARNSERVER
                 - name: RELATED_IMAGE_XGBOOSTSERVER
@@ -454,8 +457,6 @@ spec:
                 - name: RELATED_IMAGE_TENSORFLOW
                 - name: RELATED_IMAGE_EXPLAINER
                 - name: RELATED_IMAGE_MOCK_CLASSIFIER
-                - name: MANAGER_CREATE_RESOURCES
-                  value: 'true'
                 - name: POD_NAMESPACE
                   valueFrom:
                     fieldRef:
@@ -465,15 +466,6 @@ spec:
                   value: 'true'
                 - name: AMBASSADOR_SINGLE_NAMESPACE
                   value: 'false'
-                - name: ENGINE_CONTAINER_IMAGE_AND_VERSION
-                  value: docker.io/seldonio/engine:1.12.0
-                - name: ENGINE_CONTAINER_IMAGE_PULL_POLICY
-                  value: IfNotPresent
-                - name: ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME
-                  value: default
-                - name: ENGINE_CONTAINER_USER
-                - name: ENGINE_LOG_MESSAGES_EXTERNALLY
-                  value: 'false'
                 - name: PREDICTIVE_UNIT_HTTP_SERVICE_PORT
                   value: '9000'
                 - name: PREDICTIVE_UNIT_GRPC_SERVICE_PORT
@@ -481,12 +473,6 @@ spec:
                 - name: PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME
                 - name: PREDICTIVE_UNIT_METRICS_PORT_NAME
                   value: metrics
-                - name: ENGINE_SERVER_GRPC_PORT
-                  value: '5001'
-                - name: ENGINE_SERVER_PORT
-                  value: '8000'
-                - name: ENGINE_PROMETHEUS_PATH
-                  value: /prometheus
                 - name: ISTIO_ENABLED
                   value: 'false'
                 - name: KEDA_ENABLED
@@ -497,14 +483,13 @@ spec:
                 - name: USE_EXECUTOR
                   value: 'true'
                 - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
-                  value: seldonio/seldon-core-executor:1.12.0
+                  value: seldonio/seldon-core-executor:1.13.1
                 - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
                   value: IfNotPresent
                 - name: EXECUTOR_PROMETHEUS_PATH
                   value: /prometheus
                 - name: EXECUTOR_SERVER_PORT
                   value: '8000'
-                - name: EXECUTOR_CONTAINER_USER
                 - name: EXECUTOR_CONTAINER_SERVICE_ACCOUNT_NAME
                   value: default
                 - name: EXECUTOR_SERVER_METRICS_PORT_NAME
@@ -524,17 +509,9 @@ spec:
                   value: '0.5'
                 - name: EXECUTOR_DEFAULT_MEMORY_LIMIT
                   value: 512Mi
-                - name: ENGINE_DEFAULT_CPU_REQUEST
-                  value: '0.5'
-                - name: ENGINE_DEFAULT_MEMORY_REQUEST
-                  value: 512Mi
-                - name: ENGINE_DEFAULT_CPU_LIMIT
-                  value: '0.5'
-                - name: ENGINE_DEFAULT_MEMORY_LIMIT
-                  value: 512Mi
                 - name: DEPLOYMENT_NAME_AS_PREFIX
                   value: 'false'
-                image: docker.io/seldonio/seldon-core-operator:1.12.0
+                image: docker.io/seldonio/seldon-core-operator:1.13.1
                 name: manager
                 ports:
                 - containerPort: 8443
@@ -620,7 +597,8 @@ spec:
   minKubeVersion: 1.16.0
   provider:
     name: Seldon Technologies
+  replaces: seldon-operator.v1.12.0
   selector:
     matchLabels:
       name: seldon-operator
-  version: 1.12.0
+  version: 1.13.1

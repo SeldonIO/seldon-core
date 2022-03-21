@@ -271,8 +271,8 @@ recreate_bundle:
 	rm -fr bundle
 	kustomize build config/manifests | operator-sdk --verbose generate bundle --default-channel stable --version ${VERSION} --channels stable
 	python hack/csv_hack.py bundle/manifests/seldon-operator.clusterserviceversion.yaml ${VERSION}
-	echo '  com.redhat.openshift.versions: "v4.8"' >> bundle/metadata/annotations.yaml
-	echo 'LABEL com.redhat.openshift.versions=v4.8' >> bundle.Dockerfile
+	echo '  com.redhat.openshift.versions: "v4.8-v4.9"' >> bundle/metadata/annotations.yaml
+	echo 'LABEL com.redhat.openshift.versions=v4.8-v4.9' >> bundle.Dockerfile
 
 create_bundle_image:
 	docker build . -f bundle.Dockerfile -t quay.io/seldon/seldon-operator:v${VERSION}
@@ -312,18 +312,21 @@ scorecard:
 #
 
 # Change to local checkout
-COMMUNITY_OPERATORS_FOLDER=~/work/seldon-core/redhat/community-operators
-UPSTREAM_OPERATORS_FOLDER=~/work/seldon-core/redhat/community-operators-prod
+# This should be paths to forks of
+# - https://github.com/k8s-operatorhub/community-operators
+# - https://github.com/redhat-openshift-ecosystem/community-operators-prod
+COMMUNITY_OPERATORS_FOLDER=~/work/red-hat/community-operators
+UPSTREAM_OPERATORS_FOLDER=~/work/red-hat/community-operators-prod
 
-update_community: 
-	cp -r bundle ${COMMUNITY_OPERATORS_FOLDER}/operators/seldon-operator/${VERSION}
+update_community:
+	cp -r bundle/. ${COMMUNITY_OPERATORS_FOLDER}/operators/seldon-operator/${VERSION}
 
 # Presently fails
 test_community:
-	cd ${COMMUNITY_OPERATORS_FOLDER} && export OP_TEST_DEBUG=3 &&  bash <(curl -sL https://raw.githubusercontent.com/redhat-openshift-ecosystem/community-operators-pipeline/ci/latest/ci/scripts/opp.sh) kiwi,lemon,orange operators/seldon-operator/1.12.0
+	cd ${COMMUNITY_OPERATORS_FOLDER} && export OP_TEST_DEBUG=3 &&  bash <(curl -sL https://raw.githubusercontent.com/redhat-openshift-ecosystem/community-operators-pipeline/ci/latest/ci/scripts/opp.sh) kiwi,lemon,orange operators/seldon-operator/${VERSION}
 
 update_upstream:
-	cp -r bundle ${UPSTREAM_OPERATORS_FOLDER}/operators/seldon-operator/${VERSION}
+	cp -r bundle/. ${UPSTREAM_OPERATORS_FOLDER}/operators/seldon-operator/${VERSION}
 
 
 ###################################
@@ -349,16 +352,16 @@ redhat-image-scan:
 
 
 
-CERTIFIED_OPERATORS_FOLDER=/home/clive/work/seldon-core/redhat/certified-operators
+CERTIFIED_OPERATORS_FOLDER=~/work/red-hat/certified-operators
 
 #need to rename package in annotations.yaml to seldon-operator-certified
-update_certified: 
-	cp -r bundle-certified ${CERTIFIED_OPERATORS_FOLDER}/operators/seldon-operator-certified/${VERSION}
+update_certified:
+	cp -r bundle-certified/. ${CERTIFIED_OPERATORS_FOLDER}/operators/seldon-operator-certified/${VERSION}
 
 
-GIT_REPO_URL=git@github.com:cliveseldon/certified-operators.git
+GIT_REPO_URL=git@github.com:rafalskolasinski/certified-operators.git
 BUNDLE_PATH=operators/seldon-operator-certified/${VERSION}
-OPENSHIFT_PIPELINES_FOLDER=/home/clive/work/seldon-core/redhat/operator-pipelines
+OPENSHIFT_PIPELINES_FOLDER=~/work/red-hat/operator-pipelines
 run_certified_pipeline_basic:
 	cd ${OPENSHIFT_PIPELINES_FOLDER} && tkn pipeline start operator-ci-pipeline \
 		--param git_repo_url=${GIT_REPO_URL} \
@@ -406,8 +409,6 @@ run_certified_pipeline_submit:
 
 
 # Run last to prepare for future release
-PREV_VERSION=1.7.0
+PREV_VERSION=1.12.0
 update_config:
 	sed -i s#${PREV_VERSION}#${VERSION}# config/manifests/bases/seldon-operator.clusterserviceversion.yaml
-
-
