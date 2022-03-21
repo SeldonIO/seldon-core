@@ -1,0 +1,19 @@
+FROM grafana/k6
+
+USER root
+
+RUN mkdir k6
+RUN mkdir /home/apis
+
+ADD tests/k6 k6/
+# copy protos
+ADD apis /home/apis/
+
+WORKDIR k6
+
+RUN mkdir results
+
+ENTRYPOINT ["k6", "run"]
+
+# should be overriden in practice 
+CMD ["-u", "5", "scenarios/predict_agent.js"]

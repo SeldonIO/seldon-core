@@ -1,8 +1,10 @@
-SCHEDULER_IMG ?= seldonio/seldon-scheduler:latest
-AGENT_IMG ?= seldonio/seldon-agent:latest
-RCLONE_IMG ?= seldonio/seldon-rclone:latest
-STREAM_IMG ?= seldonio/seldon-stream:latest
-ENVOY_IMG ?= seldonio/seldon-envoy:latest
+CUSTOM_IMAGE_TAG ?= latest
+DOCKERHUB_USERNAME ?= seldonio
+SCHEDULER_IMG ?= ${DOCKERHUB_USERNAME}/seldon-scheduler:${CUSTOM_IMAGE_TAG}
+AGENT_IMG ?= ${DOCKERHUB_USERNAME}/seldon-agent:${CUSTOM_IMAGE_TAG}
+RCLONE_IMG ?= ${DOCKERHUB_USERNAME}/seldon-rclone:${CUSTOM_IMAGE_TAG}
+STREAM_IMG ?= ${DOCKERHUB_USERNAME}/seldon-stream:${CUSTOM_IMAGE_TAG}
+ENVOY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-envoy:${CUSTOM_IMAGE_TAG}
 MLSERVER_IMG ?= seldonio/mlserver:1.0.0.rc1
 TRITON_IMG ?= nvcr.io/nvidia/tritonserver:21.12-py3
 KIND_NAME=ansible
@@ -97,7 +99,6 @@ kind-image-install-stream: docker-build-stream
 	kind load -v 3 docker-image ${STREAM_IMG} --name ${KIND_NAME}
 
 kind-image-install-all: kind-image-install-scheduler kind-image-install-envoy kind-image-install-agent kind-image-install-rclone kind-image-install-stream
-
 
 #####################################
 # Start with Docker Compose
@@ -399,11 +400,13 @@ start-stream-local:
 
 deploy:
 	cd k8s/scheduler && kustomize edit set image scheduler=${SCHEDULER_IMG}
-	cd k8s/envoy && kustomize edit set image scheduler=${ENVOY_IMG}
+	cd k8s/envoy && kustomize edit set image envoy=${ENVOY_IMG}
 	cd k8s/mlserver && kustomize edit set image agent=${AGENT_IMG}
 	cd k8s/mlserver && kustomize edit set image rclone=${RCLONE_IMG}
 	cd k8s/stream && kustomize edit set image stream=${STREAM_IMG}
 	kustomize build k8s/default | kubectl apply -f -
+
+build-push-deploy: build docker-build-all docker-push-all deploy
 
 deploy-minio-secret:
 	kubectl create namespace seldon-mesh || echo "seldon-mesh namespace exists"

@@ -8,7 +8,7 @@ spec:
     terminationGracePeriodSeconds: 30
     serviceAccountName: seldon-server
     containers:
-    - image: seldonio/seldon-rclone:latest
+    - image: rclone:latest
       imagePullPolicy: IfNotPresent
       name: rclone
       ports:
@@ -26,7 +26,7 @@ spec:
       volumeMounts:
       - mountPath: /mnt/agent
         name: mlserver-models
-    - image: seldonio/seldon-agent:latest
+    - image: agent:latest
       imagePullPolicy: IfNotPresent
       name: agent
       env:
@@ -135,7 +135,9 @@ spec:
         name: mlserver-models
         readOnly: true
     securityContext:
+      fsGroup: 2000
       runAsUser: 1000
+      runAsNonRoot: true
     volumes:
     - name: config-volume
       configMap:

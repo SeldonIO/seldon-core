@@ -1,0 +1,16 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: k6
+spec:
+  template:
+    spec:
+      containers:
+      - name: k6
+        env:
+        - name: INFER_GRPC_ENDPOINT
+          value: "10.244.0.16:9500"
+        - name: INFER_HTTP_ENDPOINT
+          value: "http://10.244.0.16:9000"
+        - name: ENVOY
+          value: "false"

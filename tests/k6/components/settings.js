@@ -68,6 +68,28 @@ function maxNumModels() {
     return 10
 }
 
+function isSchedulerProxy() {
+    if (__ENV.SCHEDULER_PROXY) {
+        return __ENV.SCHEDULER_PROXY
+    }
+    return false
+}
+
+function isEnvoy() {
+    if (__ENV.ENVOY) {
+        return (__ENV.ENVOY === "true")
+    }
+    return true
+}
+
+function modelMemoryBytes() {
+    if (__ENV.MODEL_MEMORY_BYTES) {
+        return __ENV.MODEL_MEMORY_BYTES
+    }
+    return null
+}
+
+
 export function getConfig() {
     return {
         "schedulerEndpoint": schedulerEndpoint(),
@@ -80,5 +102,8 @@ export function getConfig() {
         "infer": infer(),
         "unloadModel": unloadModel(),
         "maxNumModels": maxNumModels(),
+        "isSchedulerProxy": isSchedulerProxy(),
+        "isEnvoy": isEnvoy(),
+        "modelMemoryBytes": modelMemoryBytes()
     }
 }

@@ -7,3 +7,12 @@ resources:
 - serviceaccount.yaml
 - mlserver.yaml
 - triton.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+images:
+- name: agent
+  newName: seldonio/seldon-agent
+  newTag: latest
+- name: rclone
+  newName: seldonio/seldon-rclone
+  newTag: latest

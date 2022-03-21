@@ -9,6 +9,3 @@ images:
 - name: envoy
   newName: seldonio/seldon-envoy
   newTag: latest
-- name: scheduler
-  newName: seldonio/seldon-envoy
-  newTag: latest

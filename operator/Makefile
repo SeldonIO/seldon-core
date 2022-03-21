@@ -1,6 +1,9 @@
-
+CUSTOM_IMAGE_TAG ?= latest
+DOCKERHUB_USERNAME ?= seldonio
 # Image URL to use all building/pushing image targets
-IMG ?= seldonio/seldonv2-controller:latest
+IMG ?= ${DOCKERHUB_USERNAME}/seldonv2-controller:${CUSTOM_IMAGE_TAG}
+AGENT_IMG ?= ${DOCKERHUB_USERNAME}/seldon-agent:${CUSTOM_IMAGE_TAG}
+RCLONE_IMG ?= ${DOCKERHUB_USERNAME}/seldon-rclone:${CUSTOM_IMAGE_TAG}
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.22
 KIND_NAME=ansible
@@ -118,6 +121,8 @@ undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/confi
 
 .PHONY: deploy-server-configuration
 deploy-server-configuration:
+	cd config/serverconfigs && $(KUSTOMIZE) edit set image agent=${AGENT_IMG}
+	cd config/serverconfigs && $(KUSTOMIZE) edit set image rclone=${RCLONE_IMG}
 	$(KUSTOMIZE) build config/serverconfigs | kubectl create -f -
 
 .PHONY: undeploy-server-configuration
@@ -138,6 +143,8 @@ deploy-all: deploy deploy-server-configuration deploy-servers
 
 .PHONY: undeploy-all
 undeploy-all: undeploy-servers undeploy-server-configuration undeploy
+
+build-push-deploy: build docker-build docker-push deploy-all
 
 CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
 .PHONY: controller-gen

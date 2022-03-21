@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: k6
+spec:
+  template:
+    spec:
+      containers:
+      - name: k6
+        image: k6:latest
+        args: [
+          "-u",
+          "10",
+          "-i",
+          "10",
+          "scenarios/predict_agent.js"
+          ]
+        env:
+        - name: SCHEDULER_ENDPOINT
+          value: "10.59.254.51:9004"
+        - name: INFER_HTTP_ITERATIONS
+          value: "10"
+        - name: INFER_GRPC_ITERATIONS
+          value: "10"
+        - name: MODEL_TYPE
+          value: "iris"
+        - name: MODEL_MEMORY_BYTES
+          value: "100000000"
+        - name: MAX_NUM_MODELS
+          value: "10"
+      restartPolicy: Never

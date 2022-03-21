@@ -26,7 +26,7 @@ const models = {
     },
 }
 
-export function generateModel(modelType, modelName, uriOffset, replicas, isProxy = false) {
+export function generateModel(modelType, modelName, uriOffset, replicas, isProxy = false, memoryBytes = null) {
     const data = models[modelType]
     const modelTemplate = data.modelTemplate
     var uri = modelTemplate.uriTemplate
@@ -41,7 +41,7 @@ export function generateModel(modelType, modelName, uriOffset, replicas, isProxy
             "modelSpec":{
                 "uri": uri,
                 "requirements": modelTemplate.requirements,
-                "memoryBytes": modelTemplate.memoryBytes
+                "memoryBytes": (memoryBytes == null)?modelTemplate.memoryBytes:memoryBytes
             },
             "deploymentSpec": {
                 "replicas": replicas
