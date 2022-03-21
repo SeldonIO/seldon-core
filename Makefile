@@ -21,3 +21,34 @@ undeploy-k8s:
 	kubectl delete -f k8s/seldon-v2-servers.yaml
 	kubectl delete -f k8s/seldon-v2-components.yaml
 	kubectl delete -f k8s/seldon-v2-crds.yaml
+
+
+#
+# Dev
+#
+
+# use -W option for warnings as errors
+docs_build_html:
+	cd docs && \
+		SPHINXOPTS=-W make html
+
+docs_serve_html: docs_clean docs_build_html
+	cd docs/build/html && \
+		python -m http.server 8000
+
+docs_clean:
+	cd docs && \
+		make clean
+
+docs_install_requirements:
+	cd docs && \
+		pip install -r requirements-docs.txt
+
+docs_dev_server: docs_clean
+	cd docs && \
+		sphinx-autobuild --host 0.0.0.0 source build/html
+
+# can be installed here: https://github.com/client9/misspell#install
+docs_spellcheck:
+	misspell -w docs/source/contents
+
