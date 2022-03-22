@@ -6,9 +6,9 @@ WORKDIR /build
 RUN rm -r apis && mv apis-TEMP apis
 
 # Build the binary
-RUN go build -o stream ./cmd/stream/main.go
+RUN go build -o modelgateway ./cmd/modelgateway/main.go
 
 # Copy into scratch
 FROM gcr.io/distroless/base-debian10:latest
-COPY --from=builder /build/stream /bin/stream
-CMD ["/bin/stream"]
+COPY --from=builder /build/modelgateway /bin/modelgateway
+CMD ["/bin/modelgateway"]

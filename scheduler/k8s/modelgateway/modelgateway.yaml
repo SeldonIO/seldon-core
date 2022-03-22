@@ -1,33 +1,33 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: stream
+  name: modelgateway
   namespace: system
   labels:
-    control-plane: seldon-stream
+    control-plane: seldon-modelgateway
 spec:
   selector:
     matchLabels:
-      control-plane: seldon-stream
+      control-plane: seldon-modelgateway
   replicas: 1
   template:
     metadata:
       labels:
-        control-plane: seldon-stream
+        control-plane: seldon-modelgateway
     spec:
       securityContext:
         runAsUser: 8888
       containers:
       - command:
-        - /bin/stream
+        - /bin/modelgateway
         args:
         - --scheduler-host=seldon-scheduler
         - --scheduler-port=9004
         - --envoy-host=seldon-mesh
         - --envoy-port=80
-        image: stream:latest
+        image: modelgateway:latest
         imagePullPolicy: IfNotPresent
-        name: stream
+        name: modelgateway
         resources:
           limits:
             cpu: 500m

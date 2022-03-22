@@ -2,9 +2,9 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-- stream.yaml
+- modelgateway.yaml
 
 images:
-- name: stream
-  newName: seldonio/seldon-stream
+- name: modelgateway
+  newName: seldonio/seldon-modelgateway
   newTag: latest

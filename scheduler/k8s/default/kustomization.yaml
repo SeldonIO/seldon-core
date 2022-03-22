@@ -5,4 +5,4 @@ bases:
 - ../scheduler
 - ../envoy
 - ../config
-- ../stream
+- ../modelgateway

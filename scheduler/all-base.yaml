@@ -51,13 +51,13 @@ services:
   server:
     image: "${SERVER_IMAGE_AND_TAG}"
 
-  stream:
+  modelgateway:
     build:
-      dockerfile: ./Dockerfile.stream
+      dockerfile: ./Dockerfile.modelgateway
       context: .
-    image: "${STREAM_IMAGE_AND_TAG}"
+    image: "${MODELGATEWAY_IMAGE_AND_TAG}"
     command:
-      - "/bin/stream"
+      - "/bin/modelgateway"
       - "--log-level"
       - "debug"
       - "--config-path"

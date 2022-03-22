@@ -36,14 +36,14 @@ services:
         source: ./mnt
         target: /mnt/agent
 
-  stream:
+  modelgateway:
     network_mode: "host"    
     volumes:
       - type: bind
         source: ./config
         target: /mnt/config
     command:
-      - "/bin/stream"
+      - "/bin/modelgateway"
       - "--log-level"
       - "debug"
       - "--config-path"

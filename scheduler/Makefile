@@ -3,7 +3,7 @@ DOCKERHUB_USERNAME ?= seldonio
 SCHEDULER_IMG ?= ${DOCKERHUB_USERNAME}/seldon-scheduler:${CUSTOM_IMAGE_TAG}
 AGENT_IMG ?= ${DOCKERHUB_USERNAME}/seldon-agent:${CUSTOM_IMAGE_TAG}
 RCLONE_IMG ?= ${DOCKERHUB_USERNAME}/seldon-rclone:${CUSTOM_IMAGE_TAG}
-STREAM_IMG ?= ${DOCKERHUB_USERNAME}/seldon-stream:${CUSTOM_IMAGE_TAG}
+MODELGATEWAY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-modelgateway:${CUSTOM_IMAGE_TAG}
 ENVOY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-envoy:${CUSTOM_IMAGE_TAG}
 MLSERVER_IMG ?= seldonio/mlserver:1.0.0.rc1
 TRITON_IMG ?= nvcr.io/nvidia/tritonserver:21.12-py3
@@ -24,10 +24,10 @@ build-proxy:
 build-agent: test
 	go build -o bin/agent ./cmd/agent
 
-build-stream: test
-	go build -o bin/stream -v ./cmd/stream
+build-modelgateway: test
+	go build -o bin/modelgateway -v ./cmd/modelgateway
 
-build: build-scheduler build-agent build-proxy build-stream
+build: build-scheduler build-agent build-proxy build-modelgateway
 
 lint: ## Run go linters against code.
 	gofmt -w pkg
@@ -63,11 +63,11 @@ docker-build-rclone:
 docker-push-rclone: 
 	docker push ${RCLONE_IMG}
 
-docker-build-stream: copy-apis
-	docker build -t ${STREAM_IMG} -f Dockerfile.stream .
+docker-build-modelgateway: copy-apis
+	docker build -t ${MODELGATEWAY_IMG} -f Dockerfile.modelgateway .
 
-docker-push-stream: 
-	docker push ${STREAM_IMG}
+docker-push-modelgateway: 
+	docker push ${MODELGATEWAY_IMG}
 
 docker-build-envoy:
 	docker build -t ${ENVOY_IMG} -f Dockerfile.envoy .
@@ -75,9 +75,9 @@ docker-build-envoy:
 docker-push-envoy: 
 	docker push ${ENVOY_IMG}
 
-docker-build-all: docker-build-agent docker-build-envoy docker-build-rclone docker-build-scheduler docker-build-stream
+docker-build-all: docker-build-agent docker-build-envoy docker-build-rclone docker-build-scheduler docker-build-modelgateway
 
-docker-push-all: docker-push-agent docker-push-envoy docker-push-rclone docker-push-scheduler docker-push-stream
+docker-push-all: docker-push-agent docker-push-envoy docker-push-rclone docker-push-scheduler docker-push-modelgateway
 
 #####################################
 # Kind 
@@ -95,10 +95,10 @@ kind-image-install-envoy: docker-build-envoy
 kind-image-install-rclone: docker-build-rclone
 	kind load -v 3 docker-image ${RCLONE_IMG} --name ${KIND_NAME}
 
-kind-image-install-stream: docker-build-stream
-	kind load -v 3 docker-image ${STREAM_IMG} --name ${KIND_NAME}
+kind-image-install-modelgateway: docker-build-modelgateway
+	kind load -v 3 docker-image ${MODELGATEWAY_IMG} --name ${KIND_NAME}
 
-kind-image-install-all: kind-image-install-scheduler kind-image-install-envoy kind-image-install-agent kind-image-install-rclone kind-image-install-stream
+kind-image-install-all: kind-image-install-scheduler kind-image-install-envoy kind-image-install-agent kind-image-install-rclone kind-image-install-modelgateway
 
 #####################################
 # Start with Docker Compose
@@ -151,6 +151,12 @@ start-all-triton: copy-apis
 .PHONY: stop-all-triton
 stop-all-triton:
 	${DOCKER_COMPOSE_TRITON_COMMAND} down ${DOCKER_COMPOSE_REMOVE_VOLUMES}
+
+.PHONY: start-all
+start-all: start-all-mlserver
+
+.PHONY: stop-all
+stop-all: stop-all-mlserver
 
 # Tooling
 
@@ -314,21 +320,21 @@ start-rclone-host:
 stop-rclone-host:
 	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES} rclone
 
-.PHONY: start-stream
-start-stream:
-	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d stream
+.PHONY: start-modelgateway
+start-modelgateway:
+	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d modelgateway
 
-.PHONY: stop-stream
-stop-stream:
-	${DOCKER_COMPOSE_SERVICE_COMMAND} rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES} stream
+.PHONY: stop-modelgateway
+stop-modelgateway:
+	${DOCKER_COMPOSE_SERVICE_COMMAND} rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES} modelgateway
 
-.PHONY: start-stream-host
-start-stream-host:
-	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d stream
+.PHONY: start-modelgateway-host
+start-modelgateway-host:
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d modelgateway
 
-.PHONY: stop-stream-host
-stop-stream-host:
-	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES} stream
+.PHONY: stop-modelgateway-host
+stop-modelgateway-host:
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES} modelgateway
 
 .PHONY: start-kafka
 start-kafka:
@@ -348,7 +354,7 @@ stop-kafka-host:
 
 
 .PHONY: stop-all
-stop-all: stop-scheduler stop-envoy stop-rclone stop-agent-mlserver stop-agent-triton stop-mlserver stop-triton stop-stream stop-kafka
+stop-all: stop-scheduler stop-envoy stop-rclone stop-agent-mlserver stop-agent-triton stop-mlserver stop-triton stop-modelgateway stop-kafka
 
 
 #####################################
@@ -391,8 +397,8 @@ else
 	./bin/proxy
 endif
 
-start-stream-local:
-	./bin/stream --config-path ${PWD}/config --log-level debug
+start-modelgateway-local:
+	./bin/modelgateway --config-path ${PWD}/config --log-level debug
 
 #####################################
 # K8S Testing
@@ -403,7 +409,7 @@ deploy:
 	cd k8s/envoy && kustomize edit set image envoy=${ENVOY_IMG}
 	cd k8s/mlserver && kustomize edit set image agent=${AGENT_IMG}
 	cd k8s/mlserver && kustomize edit set image rclone=${RCLONE_IMG}
-	cd k8s/stream && kustomize edit set image stream=${STREAM_IMG}
+	cd k8s/modelgateway && kustomize edit set image modelgateway=${MODELGATEWAY_IMG}
 	kustomize build k8s/default | kubectl apply -f -
 
 build-push-deploy: build docker-build-all docker-push-all deploy
