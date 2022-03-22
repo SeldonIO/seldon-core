@@ -6,4 +6,5 @@
 :includehidden:
 
 contents/getting-started/index
+contents/software-design
 ```

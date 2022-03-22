@@ -4,12 +4,11 @@
 
  1. Git clone seldon-core-v2
 
-  ```bash
-  git clone https://github.com/SeldonIO/seldon-core-v2
-  ```
- 3. Build [Seldon CLI](../cli.md)
- 4. Install [Docker Compose](https://docs.docker.com/compose/install/).
- 5. Install `make`.
+        git clone https://github.com/SeldonIO/seldon-core-v2
+
+ 2. Build [Seldon CLI](../cli.md)
+ 3. Install [Docker Compose](https://docs.docker.com/compose/install/).
+ 4. Install `make`.
 
 
 ## Deploy
