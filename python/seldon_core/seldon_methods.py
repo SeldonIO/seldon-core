@@ -59,7 +59,10 @@ def handle_raw_custom_metrics(
     """
     metrics = []
     if is_proto:
-        metrics = seldon_message_to_json(msg.meta).get("metrics", [])
+        # proto to json extracts dictionary in no particular order
+        # sorting it here to ensure unique key in metrics.py _generate_tags_key
+        unordered_metrics = seldon_message_to_json(msg.meta).get("metrics", [])
+        metrics = dict(sorted(unordered_metrics.items(), key=lambda item: item[1])
         if metrics and not INCLUDE_METRICS_IN_CLIENT_RESPONSE:
             del msg.meta.metrics[:]
     elif isinstance(msg, dict):
