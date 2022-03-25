@@ -21,6 +21,7 @@ export function inferHttp(endpoint, modelName, payload, viaEnvoy) {
     };
     //console.debug("URL:",url,"Payload:",payloadStr,"Params:",JSON.stringify(params))
     const response = http.post(url, payloadStr, params);
+    //console.log(response.status, JSON.stringify(response.error), response.body)
     check(response, {'model http prediction success': (r) => r.status === 200});
 }
 
@@ -42,7 +43,7 @@ export function inferGrpc(modelName, payload, viaEnvoy) {
     };
     payload.model_name = modelName
     const response = v2Client.invoke('inference.GRPCInferenceService/ModelInfer', payload, params);
-    //console.log(response.status,JSON.stringify(response.error),response.message)
+    //console.log(response.status, JSON.stringify(response.error),  JSON.stringify(response.message))
     check(response, {'model grpc prediction success': (r) => r && r.status === grpc.StatusOK})
 }
 

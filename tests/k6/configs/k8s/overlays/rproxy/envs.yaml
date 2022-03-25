@@ -8,9 +8,11 @@ spec:
       containers:
       - name: k6
         env:
+        - name: TEST_METADATA
+          value: "rproxy_test"
         - name: INFER_GRPC_ENDPOINT
-          value: "10.244.0.16:9501"
+          value: "10.56.2.18:9501"
         - name: INFER_HTTP_ENDPOINT
-          value: "http://10.244.0.16:9001"
+          value: "http://10.56.2.18:9001"
         - name: ENVOY
           value: "false"

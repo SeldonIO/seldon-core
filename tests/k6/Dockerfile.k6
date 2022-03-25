@@ -1,6 +1,23 @@
+FROM alpine:3.6 AS builder
+
+RUN apk add --update \
+ python \
+ curl \
+ which \
+ bash
+
+RUN curl -sSL https://sdk.cloud.google.com | bash
+
 FROM grafana/k6
 
 USER root
+
+
+RUN apk add --update python2 uuidgen sed
+
+COPY --from=builder /root/google-cloud-sdk /root/google-cloud-sdk
+
+ENV PATH $PATH:/root/google-cloud-sdk/bin
 
 RUN mkdir k6
 RUN mkdir /home/apis
@@ -13,7 +30,13 @@ WORKDIR k6
 
 RUN mkdir results
 
-ENTRYPOINT ["k6", "run"]
+RUN chmod +x k6wrapper.sh
+ENTRYPOINT ["./k6wrapper.sh", "run"]
+
+ARG GIT_COMMIT $GIT_COMMIT}
+ARG GIT_BRANCH ${GIT_COMMIT}
+ENV GIT_COMMIT ${GIT_COMMIT}
+ENV GIT_BRANCH ${GIT_BRANCH}
 
 # should be overriden in practice 
 CMD ["-u", "5", "scenarios/predict_agent.js"]

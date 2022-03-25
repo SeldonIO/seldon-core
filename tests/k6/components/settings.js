@@ -70,7 +70,7 @@ function maxNumModels() {
 
 function isSchedulerProxy() {
     if (__ENV.SCHEDULER_PROXY) {
-        return __ENV.SCHEDULER_PROXY
+        return (__ENV.SCHEDULER_PROXY === "true")
     }
     return false
 }
@@ -89,6 +89,13 @@ function modelMemoryBytes() {
     return null
 }
 
+function inferBatchSize() {
+    if (__ENV.INFER_BATCH_SIZE) {
+        return parseInt(__ENV.INFER_BATCH_SIZE)
+    }
+    return 1
+}
+
 
 export function getConfig() {
     return {
@@ -104,6 +111,7 @@ export function getConfig() {
         "maxNumModels": maxNumModels(),
         "isSchedulerProxy": isSchedulerProxy(),
         "isEnvoy": isEnvoy(),
-        "modelMemoryBytes": modelMemoryBytes()
+        "modelMemoryBytes": modelMemoryBytes(),
+        "inferBatchSize": inferBatchSize(),
     }
 }

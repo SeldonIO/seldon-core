@@ -18,17 +18,24 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type GRPCInferenceServiceClient interface {
-	// Check liveness of the inference server.
+	// The ServerLive API indicates if the inference server is able to receive
+	// and respond to metadata and inference requests.
 	ServerLive(ctx context.Context, in *ServerLiveRequest, opts ...grpc.CallOption) (*ServerLiveResponse, error)
-	// Check readiness of the inference server.
+	// The ServerReady API indicates if the server is ready for inferencing.
 	ServerReady(ctx context.Context, in *ServerReadyRequest, opts ...grpc.CallOption) (*ServerReadyResponse, error)
-	// Check readiness of a model in the inference server.
+	// The ModelReady API indicates if a specific model is ready for inferencing.
 	ModelReady(ctx context.Context, in *ModelReadyRequest, opts ...grpc.CallOption) (*ModelReadyResponse, error)
-	// Get server metadata.
+	// The ServerMetadata API provides information about the server. Errors are
+	// indicated by the google.rpc.Status returned for the request. The OK code
+	// indicates success and other codes indicate failure.
 	ServerMetadata(ctx context.Context, in *ServerMetadataRequest, opts ...grpc.CallOption) (*ServerMetadataResponse, error)
-	// Get model metadata.
+	// The per-model metadata API provides information about a model. Errors are
+	// indicated by the google.rpc.Status returned for the request. The OK code
+	// indicates success and other codes indicate failure.
 	ModelMetadata(ctx context.Context, in *ModelMetadataRequest, opts ...grpc.CallOption) (*ModelMetadataResponse, error)
-	// Perform inference using a specific model.
+	// The ModelInfer API performs inference using the specified model. Errors are
+	// indicated by the google.rpc.Status returned for the request. The OK code
+	// indicates success and other codes indicate failure.
 	ModelInfer(ctx context.Context, in *ModelInferRequest, opts ...grpc.CallOption) (*ModelInferResponse, error)
 }
 
@@ -98,17 +105,24 @@ func (c *gRPCInferenceServiceClient) ModelInfer(ctx context.Context, in *ModelIn
 // All implementations must embed UnimplementedGRPCInferenceServiceServer
 // for forward compatibility
 type GRPCInferenceServiceServer interface {
-	// Check liveness of the inference server.
+	// The ServerLive API indicates if the inference server is able to receive
+	// and respond to metadata and inference requests.
 	ServerLive(context.Context, *ServerLiveRequest) (*ServerLiveResponse, error)
-	// Check readiness of the inference server.
+	// The ServerReady API indicates if the server is ready for inferencing.
 	ServerReady(context.Context, *ServerReadyRequest) (*ServerReadyResponse, error)
-	// Check readiness of a model in the inference server.
+	// The ModelReady API indicates if a specific model is ready for inferencing.
 	ModelReady(context.Context, *ModelReadyRequest) (*ModelReadyResponse, error)
-	// Get server metadata.
+	// The ServerMetadata API provides information about the server. Errors are
+	// indicated by the google.rpc.Status returned for the request. The OK code
+	// indicates success and other codes indicate failure.
 	ServerMetadata(context.Context, *ServerMetadataRequest) (*ServerMetadataResponse, error)
-	// Get model metadata.
+	// The per-model metadata API provides information about a model. Errors are
+	// indicated by the google.rpc.Status returned for the request. The OK code
+	// indicates success and other codes indicate failure.
 	ModelMetadata(context.Context, *ModelMetadataRequest) (*ModelMetadataResponse, error)
-	// Perform inference using a specific model.
+	// The ModelInfer API performs inference using the specified model. Errors are
+	// indicated by the google.rpc.Status returned for the request. The OK code
+	// indicates success and other codes indicate failure.
 	ModelInfer(context.Context, *ModelInferRequest) (*ModelInferResponse, error)
 	mustEmbedUnimplementedGRPCInferenceServiceServer()
 }

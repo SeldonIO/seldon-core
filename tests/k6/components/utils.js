@@ -21,12 +21,12 @@ export function setupBase(config ) {
 
         for (let i = 0; i < config.maxNumModels; i++) {
             const modelName = "model" + i.toString()
-            const model = generateModel(config.modelType, modelName, 1, 1, config.isSchedulerProxy, config.modelMemoryBytes)
+            const model = generateModel(config.modelType, modelName, 1, 1, config.isSchedulerProxy, config.modelMemoryBytes, config.inferBatchSize)
             const modelDefn = model.modelDefn
 
             var loadModelFn = loadModel
             if (config.isSchedulerProxy) {
-                connectSchedulerFn = loadModelProxy
+                loadModelFn = loadModelProxy
             }
 
             loadModelFn(modelName, modelDefn, false)
@@ -37,7 +37,8 @@ export function setupBase(config ) {
         // warm up
         for (let i = 0; i < config.maxNumModels; i++) {
             const modelName = "model" + i.toString()
-            const modelNameWithVersion = modelName + "_1"  // first version
+
+            const modelNameWithVersion = modelName + getVersionSuffix(config)  // first version
             
             const model = generateModel(config.modelType, modelNameWithVersion, 1, 1, config.isSchedulerProxy, config.modelMemoryBytes)
 
@@ -83,7 +84,7 @@ export function teardownBase(config ) {
 }
 
 export function doInfer(modelName, modelNameWithVersion, config, isHttp) {
-    const model = generateModel(config.modelType, modelName, 1, 1, config.isSchedulerProxy, config.modelMemoryBytes)
+    const model = generateModel(config.modelType, modelName, 1, 1, config.isSchedulerProxy, config.modelMemoryBytes, config.inferBatchSize)
     const httpEndpoint = config.inferHttpEndpoint
     const grpcEndpoint = config.inferGrpcEndpoint
 
@@ -94,4 +95,12 @@ export function doInfer(modelName, modelNameWithVersion, config, isHttp) {
             inferGrpcLoop(grpcEndpoint, config.isEnvoy?modelName:modelNameWithVersion, model.inference.grpc, config.inferGrpcIterations, config.isEnvoy)
         }
     }
+}
+
+export function getVersionSuffix(config) {
+    var versionSuffix = "_1"
+    if (config.isSchedulerProxy) {
+        versionSuffix = "_0"
+    }
+    return versionSuffix
 }
