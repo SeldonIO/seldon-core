@@ -116,6 +116,10 @@ message ModelMetadataResponse
     // The tensor shape. A variable-size dimension is represented
     // by a -1 value.
     repeated int64 shape = 3;
+
+    // Optional default parameters for input.
+    // NOTE: This is an extension to the standard
+    map<string, InferParameter> parameters = 4;
   }
 
   // The model name.
@@ -132,6 +136,10 @@ message ModelMetadataResponse
 
   // The model's outputs.
   repeated TensorMetadata outputs = 5;
+
+  // Optional default parameters for the request / response.
+  // NOTE: This is an extension to the standard
+  map<string, InferParameter> parameters = 6;
 }
 
 message ModelInferRequest
