@@ -19,10 +19,6 @@ import (
 	v2 "github.com/seldonio/seldon-core/scheduler/apis/mlops/v2_dataplane"
 )
 
-const (
-	backEndGRPCServerPort = 8087
-)
-
 type mockGRPCMLServer struct {
 	listener net.Listener
 	server   *grpc.Server
@@ -61,13 +57,13 @@ func (mlserver *mockGRPCMLServer) ModelReady(ctx context.Context, r *v2.ModelRea
 	return &v2.ModelReadyResponse{Ready: true}, nil
 }
 
-func setupReverseGRPCService(numModels int, modelPrefix string) *reverseGRPCProxy {
+func setupReverseGRPCService(numModels int, modelPrefix string, backEndGRPCPort, rpPort int) *reverseGRPCProxy {
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
 
 	v2Client := NewV2Client("localhost", backEndServerPort, logger)
 	localCacheManager := setupLocalTestManager(numModels, modelPrefix, v2Client, numModels-2, 1)
-	rp := NewReverseGRPCProxy(fakeMetricsHandler{}, logger, "localhost", backEndGRPCServerPort, ReverseGRPCProxyPort)
+	rp := NewReverseGRPCProxy(fakeMetricsHandler{}, logger, "localhost", uint(backEndGRPCPort), uint(rpPort))
 	rp.SetState(localCacheManager)
 	return rp
 }
@@ -84,7 +80,13 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	}
 	go setupMockMLServer(mockMLServerState)
 	mockMLServer := &mockGRPCMLServer{}
-	err := mockMLServer.setup(backEndGRPCServerPort)
+
+	backEndGRPCPort, err := getFreePort()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = mockMLServer.setup(uint(backEndGRPCPort))
 	g.Expect(err).To(BeNil())
 	go func() {
 		err := mockMLServer.start()
@@ -92,7 +94,11 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	}()
 	defer mockMLServer.stop()
 
-	rpGRPC := setupReverseGRPCService(10, dummyModelNamePrefix)
+	rpPort, err := getFreePort()
+	if err != nil {
+		t.Fatal(err)
+	}
+	rpGRPC := setupReverseGRPCService(10, dummyModelNamePrefix, backEndGRPCPort, rpPort)
 	_ = rpGRPC.Start()
 
 	t.Log("Testing model found")
@@ -106,7 +112,7 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	time.Sleep(10 * time.Millisecond)
 
 	// client to proxy
-	conn, err := grpc.Dial(":"+strconv.Itoa(ReverseGRPCProxyPort), grpc.WithInsecure())
+	conn, err := grpc.Dial(":"+strconv.Itoa(rpPort), grpc.WithInsecure())
 	if err != nil {
 		t.Fatalf("Cannot connect to server (%s)", err)
 	}

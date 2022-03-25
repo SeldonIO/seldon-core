@@ -24,6 +24,20 @@ const (
 	backEndServerPort = 7777
 )
 
+func getFreePort() (int, error) {
+	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
+	if err != nil {
+		return 0, err
+	}
+
+	l, err := net.ListenTCP("tcp", addr)
+	if err != nil {
+		return 0, err
+	}
+	defer l.Close()
+	return l.Addr().(*net.TCPAddr).Port, nil
+}
+
 type mockMLServerState struct {
 	models map[string]bool
 	mu     sync.Mutex
@@ -111,10 +125,10 @@ func (f fakeMetricsHandler) UnaryServerInterceptor() func(ctx context.Context, r
 	}
 }
 
-func setupReverseProxy(logger log.FieldLogger, numModels int, modelPrefix string) *reverseHTTPProxy {
+func setupReverseProxy(logger log.FieldLogger, numModels int, modelPrefix string, rpPort int) *reverseHTTPProxy {
 	v2Client := NewV2Client("localhost", backEndServerPort, logger)
 	localCacheManager := setupLocalTestManager(numModels, modelPrefix, v2Client, numModels-2, 1)
-	rp := NewReverseHTTPProxy(logger, ReverseProxyHTTPPort, fakeMetricsHandler{})
+	rp := NewReverseHTTPProxy(logger, uint(rpPort), fakeMetricsHandler{})
 	rp.SetState(localCacheManager)
 	return rp
 }
@@ -153,8 +167,12 @@ func TestReverseProxySmoke(t *testing.T) {
 				mu:     sync.Mutex{},
 			}
 			go setupMockMLServer(mockMLServerState)
-			rpHTTP := setupReverseProxy(logger, 3, test.modelToLoad)
-			err := rpHTTP.Start()
+			rpPort, err := getFreePort()
+			if err != nil {
+				t.Fatal(err)
+			}
+			rpHTTP := setupReverseProxy(logger, 3, test.modelToLoad, rpPort)
+			err = rpHTTP.Start()
 			g.Expect(err).To(BeNil())
 			time.Sleep(100 * time.Millisecond)
 
@@ -164,7 +182,7 @@ func TestReverseProxySmoke(t *testing.T) {
 
 			// make a dummy predict call with any model name
 			inferV2Path := "/v2/models/RANDOM/infer"
-			url := "http://localhost:" + strconv.Itoa(ReverseProxyHTTPPort) + inferV2Path
+			url := "http://localhost:" + strconv.Itoa(rpPort) + inferV2Path
 			req, err := http.NewRequest(http.MethodPost, url, nil)
 			g.Expect(err).To(BeNil())
 			req.Header.Set("contentType", "application/json")
