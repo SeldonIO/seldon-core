@@ -27,6 +27,12 @@ build-agent: test
 build-modelgateway: test
 	go build -o bin/modelgateway -v ./cmd/modelgateway
 
+build-dataflow-producer:
+	go build -o data-flow/scripts/bin/producer ./data-flow/scripts/producer.go ./data-flow/scripts/common.go
+
+build-dataflow-consumer:
+	go build -o data-flow/scripts/bin/consumer ./data-flow/scripts/consumer.go ./data-flow/scripts/common.go
+
 build: build-scheduler build-agent build-proxy build-modelgateway
 
 lint: ## Run go linters against code.
@@ -346,7 +352,7 @@ stop-kafka:
 
 .PHONY: start-kafka-host
 start-kafka-host:
-	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d kafka
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up kafka
 
 .PHONY: stop-kafka-host
 stop-kafka-host:

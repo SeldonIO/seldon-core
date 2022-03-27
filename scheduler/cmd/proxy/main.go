@@ -56,6 +56,16 @@ func main() {
 		agentServer,
 	)
 
+	proxyChainer := proxy.New(l)
+	go func() {
+		err := proxyChainer.Start(config.ChainerListenPort)
+		if err != nil {
+			l.WithError(err).Errorf("chainer server failed")
+		}
+
+		close(done)
+	}()
+
 	go func() {
 		err := agentServer.Start(config.AgentListenPort)
 		if err != nil {

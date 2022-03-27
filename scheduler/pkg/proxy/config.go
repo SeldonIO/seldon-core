@@ -10,6 +10,7 @@ type Config struct {
 	LogConfig
 	ProxyConfig
 	AgentConfig
+	ChainerConfig
 }
 
 const (
@@ -38,6 +39,14 @@ type AgentConfig struct {
 	AgentListenPort uint
 }
 
+const (
+	ChainerDefaultListenPort = 10101
+)
+
+type ChainerConfig struct {
+	ChainerListenPort uint
+}
+
 func GetConfig() *Config {
 	return ParseArgs()
 }
@@ -45,6 +54,7 @@ func GetConfig() *Config {
 func ParseArgs() *Config {
 	logLevel := flag.String("level", "info", "Log level, e.g. info warn error debug")
 	agentListenPort := flag.Uint("agentPort", AgentDefaultListenPort, "Port on which to listen for agent connections")
+	chainerListenPort := flag.Uint("chainerPort", ChainerDefaultListenPort, "Port on which to listen for data-flow chainer connections")
 	proxyListenPort := flag.Uint("proxyPort", ProxyDefaultListenPort, "Port on which to listen for model requests")
 	proxyBufferSize := flag.Uint("eventBufferSize", ProxyDefaultEventBufferSize, "Number of pending model requests permitted")
 
@@ -58,6 +68,7 @@ func ParseArgs() *Config {
 	c := Config{}
 	c.LogLevel = l
 	c.AgentListenPort = *agentListenPort
+	c.ChainerListenPort = *chainerListenPort
 	c.ProxyListenPort = *proxyListenPort
 	c.ProxyEventBufferSize = *proxyBufferSize
 

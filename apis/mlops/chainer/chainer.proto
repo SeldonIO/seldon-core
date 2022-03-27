@@ -27,6 +27,9 @@ message PipelineStepUpdate {
     Unknown = 0;
     Inner = 1;
   }
+  // https://docs.google.com/document/d/1tX-uaOvngx1RpEyWEZ4EbEcU8D0OgYuRWVb2UAi85n4/edit
+  // Pipeline Resource example, e.g. transform.outputs.traffic
+  //    seldon.<namespace>.<model name>.<inputs|outputs>.<tensor name>
   repeated string sources = 1;
   string sink = 2;
   PipelineJoinType ty = 3;
@@ -35,6 +38,7 @@ message PipelineStepUpdate {
 }
 
 message PipelineUpdateStatusMessage {
+  // TODO - include `name` to identify transformer message comes from
   PipelineUpdateMessage update = 1;
   bool success = 2;
   string reason = 3;

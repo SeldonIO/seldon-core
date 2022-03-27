@@ -16,6 +16,7 @@ syntax = "proto3";
 package inference;
 
 option go_package = "github.com/seldonio/seldon-core/scheduler/apis/mlops/v2_dataplane";
+option java_package = "io.seldon.mlops.inference.v2";
 
 // Inference Server GRPC endpoints.
 service GRPCInferenceService
