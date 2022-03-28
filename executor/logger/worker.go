@@ -113,6 +113,12 @@ func getCEType(logReq LogRequest) (string, error) {
 }
 
 func (w *Worker) sendKafkaEvent(logReq LogRequest) error {
+
+	data, err := payload.DecompressBytes(*logReq.Bytes, logReq.ContentEncoding)
+	if err != nil {
+		return fmt.Errorf("while creating kafka transport: %s", err)
+	}
+
 	reqType, err := getCEType(logReq)
 	if err != nil {
 		return err
@@ -130,7 +136,7 @@ func (w *Worker) sendKafkaEvent(logReq LogRequest) error {
 	w.Log.Info("kafkaHeaders is", "kafkaHeaders", kafkaHeaders)
 	err = w.Producer.Produce(&kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &w.KafkaTopic, Partition: kafka.PartitionAny},
-		Value:          *logReq.Bytes,
+		Value:          data,
 		Headers:        kafkaHeaders,
 	}, nil)
 	if err != nil {
