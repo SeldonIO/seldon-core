@@ -58,18 +58,72 @@ BUILD SUCCESSFUL in 536ms
 <details>
 <summary>Unsupported class file major version</summary>
 
-If you see an error like the below, your **Gradle** version is not high enough.
+If you see an error like the below, your **Gradle** version is not high enough:
 
 ```
 _BuildScript_' Unsupported class file major version 61
 ```
 
-Check for a new enough version for your Java and Kotlin SDK versions.
-Update the version of `distributionUrl` in `./gradle/wrapper/gradle-wrapper.properties`.
+The use of JDK 17 [requires](https://docs.gradle.org/current/userguide/compatibility.html) Gradle 7.3+.
+The default in this project is Gradle 7.4, specified in `./gradle/wrapper/gradle-wrapper.properties`.
+
+Check the [compatibility matrix](https://docs.gradle.org/current/userguide/compatibility.html) for a new enough version
+for your Java and Kotlin SDK versions.
+You can then update the version in `distributionUrl` under `./gradle/wrapper/gradle-wrapper.properties`.
 
 If you run `./gradlew build` again, it should download new dependencies and progress.
 
 If you are in JetBrains IDEA, you will need to close and re-open the project, as it gets confused.
+</details>
+
+<details>
+<summary>Invalid target release</summary>
+
+If you see an error like the below, then there are a few things to check:
+
+```
+> Task :compileJava FAILED
+...
+Execution failed for task ':compileJava'.
+> invalid target release: 17
+```
+
+It could be that your Gradle version is too old to recognise JDK 17+.
+In this case, refer to the above section for `Unsupported class file major version`.
+
+Alternatively, it could be that your JDK version is too low or that Gradle is failing to detect it.
+Ensure you have [installed a suitable JDK version](#jdk), then run the below to check which toolchains Gradle is aware of:
+
+```bash
+$ ./gradlew -q javaToolchains
+```
+
+The output should look similar to the below:
+```
+ + Options
+     | Auto-detection:     Enabled
+     | Auto-download:      Enabled
+
+ + GraalVM Community JDK 17.0.2+8-jvmci-22.0-b05
+     | Location:           <home>/.asdf/installs/java/graalvm-22.0.0.2+java17
+     | Language Version:   17
+     | Vendor:             GraalVM Community
+     | Architecture:       amd64
+     | Is JDK:             true
+     | Detected by:        Current JVM
+
+ + Zulu JDK 17.0.2+8-LTS
+     | Location:           <home>/.asdf/installs/java/zulu-17.32.13
+     | Language Version:   17
+     | Vendor:             Zulu
+     | Architecture:       amd64
+     | Is JDK:             true
+     | Detected by:        asdf-vm
+```
+
+If the expected JDK is not present, check that it is available in your `PATH`.
+If it is present, check the allowed versions and vendors for `java.toolchain` or `kotlin.jvmToolchain` in `build.gradle.kts`.
+Ensure your chosen JDK is compatible with these settings.
 </details>
 
 <details>

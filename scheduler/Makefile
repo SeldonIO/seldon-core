@@ -33,14 +33,22 @@ build-dataflow-producer:
 build-dataflow-consumer:
 	go build -o data-flow/scripts/bin/consumer ./data-flow/scripts/consumer.go ./data-flow/scripts/common.go
 
-build: build-scheduler build-agent build-proxy build-modelgateway
+build-dataflow-engine:
+	cd data-flow; ./gradlew clean build -x test --no-daemon
+
+build: build-scheduler build-agent build-proxy build-modelgateway build-dataflow-engine
 
 lint: ## Run go linters against code.
 	gofmt -w pkg
 	golangci-lint run --fix
 
-test:
+test-go:
 	go test ./pkg/... -coverprofile cover.out
+
+test-jvm:
+	cd data-flow; ./gradlew clean test --no-daemon
+
+test: test-go test-jvm
 
 
 #####################################

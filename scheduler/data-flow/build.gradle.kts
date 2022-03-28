@@ -52,12 +52,17 @@ tasks.test {
     useJUnitPlatform()
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
 tasks.withType<KotlinCompile> {
     kotlinOptions {
         jvmTarget = "17"
         freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
     }
-
 }
 
 application {
