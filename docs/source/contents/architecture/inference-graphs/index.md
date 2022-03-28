@@ -1,8 +1,4 @@
-# Seldon Core v2 design
-
-Seldon Core underwent a complete re-design internally, compared to version 1. Here we go over the main concepts and design decisions taken in V2.
-
-## Inference graph
+# Inference Graphs
 
 This section talks about inference graph and its components.
 

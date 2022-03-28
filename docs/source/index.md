@@ -5,6 +5,12 @@
 :titlesonly:
 :includehidden:
 
+contents/about/index
 contents/getting-started/index
-contents/software-design
+contents/kubernetes/index
+contents/examples/index
+contents/cli/index
+contents/apis/index
+contents/architecture/index
+contents/faqs/index
 ```
