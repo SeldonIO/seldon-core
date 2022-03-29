@@ -63,6 +63,7 @@ def handle_raw_custom_metrics(
         # sorting tags it here to ensure unique key in metrics.py _generate_tags_key
         metrics = seldon_message_to_json(msg.meta).get("metrics", [])
         metrics["tags"] = dict(sorted(metrics["tags"].items(), key=lambda item: item[1]))
+        
         if metrics and not INCLUDE_METRICS_IN_CLIENT_RESPONSE:
             del msg.meta.metrics[:]
     elif isinstance(msg, dict):
