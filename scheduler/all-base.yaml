@@ -30,6 +30,16 @@ services:
       - SELDON_SCHEDULER_PORT=${SCHEDULER_AGENT_PORT}
       - MEMORY_REQUEST=${AGENT_MEMORY_REQUEST}
 
+  dataflow:
+    build:
+      dockerfile: ./Dockerfile.dataflow
+      context: .
+    image: "${DATAFLOW_IMAGE_AND_TAG}"
+    environment:
+      - SELDON_UPSTREAM_PORT=${SCHEDULER_DATAFLOW_PORT}
+      - SELDON_KAFKA_BOOTSTRAP_SERVERS="kafka:${KAFKA_BROKER_PORT}"
+      - SELDON_CORES_COUNT=4
+
   envoy:
     build:
       dockerfile: ./Dockerfile.envoy-local
@@ -72,13 +82,13 @@ services:
       - ${ENVOY_DATA_PORT}
 
   kafka:
-    image: quay.io/strimzi/kafka:0.28.0-kafka-3.1.0
+    image: "${KAFKA_IMAGE_AND_TAG}"
     command: [
       "sh", "-c",
       "./bin/kafka-storage.sh format -t $$(./bin/kafka-storage.sh random-uuid) -c ./config/kraft/server.properties && ./bin/kafka-server-start.sh ./config/kraft/server.properties"
     ]
     ports:
-    - "9092:9092"    
+    - "${KAFKA_BROKER_PORT}:${KAFKA_BROKER_PORT}"
     environment:
       LOG_DIR: "/tmp/logs"
-            
+

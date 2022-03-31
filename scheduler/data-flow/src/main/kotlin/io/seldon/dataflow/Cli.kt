@@ -4,7 +4,7 @@ import com.natpryce.konfig.*
 import io.klogging.noCoLogger
 
 object Cli {
-    private const val envVarPrefix = "SELDON"
+    private const val envVarPrefix = "SELDON_"
     private val logger = noCoLogger(Cli::class)
 
     val bootstrapServers = Key("kafka.bootstrap.servers", stringType)

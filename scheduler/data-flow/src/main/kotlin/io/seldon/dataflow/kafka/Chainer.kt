@@ -78,7 +78,7 @@ class Chainer(
     }
 
     override fun start() {
-        streams.cleanUp()
+        streams.cleanUp() // TODO - make configurable via CLI
         logger.info("starting for ($inputTopic) -> ($outputTopic)")
         streams.start()
     }

@@ -19,6 +19,10 @@ services:
         source: models
         target: /mnt/agent
 
+  dataflow:
+    environment:
+      - SELDON_UPSTREAM_HOST=scheduler
+
   envoy:
     ports:
       - "${ENVOY_DATA_PORT}:${ENVOY_DATA_PORT}"

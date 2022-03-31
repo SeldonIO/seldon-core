@@ -12,12 +12,34 @@ services:
         source: ./mnt
         target: /mnt/agent
 
+  dataflow:
+    network_mode: "host"
+    environment:
+      - SELDON_UPSTREAM_HOST=localhost
+
   envoy:
     network_mode: "host"
     command:
       - "/usr/local/bin/envoy"
       - "-c"
       - "/etc/envoy-local.yaml"
+
+  modelgateway:
+    network_mode: "host"
+    volumes:
+      - type: bind
+        source: ./config
+        target: /mnt/config
+    command:
+      - "/bin/modelgateway"
+      - "--log-level"
+      - "debug"
+      - "--config-path"
+      - "/mnt/config"
+      - "--scheduler-port"
+      - ${SCHEDULER_SERVER_PORT}
+      - "--envoy-port"
+      - ${ENVOY_DATA_PORT}
 
   rclone:
     network_mode: "host"
@@ -36,20 +58,3 @@ services:
         source: ./mnt
         target: /mnt/agent
 
-  modelgateway:
-    network_mode: "host"    
-    volumes:
-      - type: bind
-        source: ./config
-        target: /mnt/config
-    command:
-      - "/bin/modelgateway"
-      - "--log-level"
-      - "debug"
-      - "--config-path"
-      - "/mnt/config"
-      - "--scheduler-port"
-      - ${SCHEDULER_SERVER_PORT}
-      - "--envoy-port"
-      - ${ENVOY_DATA_PORT}
-  

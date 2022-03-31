@@ -1,0 +1,21 @@
+FROM azul/zulu-openjdk-alpine:17.0.2-17.32.13 AS builder
+
+WORKDIR /build
+COPY apis-TEMP apis
+COPY data-flow src/data-flow
+
+# TODO - build with Gradle image, with Zulu added in
+WORKDIR src/data-flow
+RUN ./gradlew build
+
+################################################################################
+
+# Some dependencies require glibc, which Alpine does not provide
+FROM azul/zulu-openjdk-debian:17.0.2-17.32.13-jre
+
+WORKDIR /app
+COPY --from=builder /build/src/data-flow/build/libs/*.jar .
+USER 1000
+
+# TODO - inject JAR name & version from build pipeline
+CMD ["java", "-jar", "dataflow-1.0-SNAPSHOT.jar"]

@@ -65,6 +65,22 @@ tasks.withType<KotlinCompile> {
     }
 }
 
+val dataflowMainClass = "io.seldon.dataflow.Main"
+
+tasks.withType<Jar> {
+    manifest {
+        attributes["Main-Class"] = dataflowMainClass
+    }
+
+    from(
+        configurations.runtimeClasspath
+            .get()
+            .map { if (it is Directory) it else zipTree(it) }
+    )
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 application {
-    mainClass.set("io.seldon.dataflow.Main")
+    mainClass.set(dataflowMainClass)
 }

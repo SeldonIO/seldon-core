@@ -15,39 +15,51 @@ GO_LDFLAGS := -s -w $(patsubst %,-X %, $(GO_BUILD_VARS))
 # Build
 #####################################
 
+.PHONY: build-scheduler
 build-scheduler: test
 	go build -o bin/scheduler ./cmd/scheduler
 
+.PHONY: build-proxy
 build-proxy:
 	go build -o bin/proxy ./cmd/proxy
 
+.PHONY: build-agent
 build-agent: test
 	go build -o bin/agent ./cmd/agent
 
+.PHONY: build-modelgateway
 build-modelgateway: test
 	go build -o bin/modelgateway -v ./cmd/modelgateway
 
+.PHONY: build-dataflow-producer
 build-dataflow-producer:
 	go build -o data-flow/scripts/bin/producer ./data-flow/scripts/producer.go ./data-flow/scripts/common.go
 
+.PHONY: build-dataflow-consumer
 build-dataflow-consumer:
 	go build -o data-flow/scripts/bin/consumer ./data-flow/scripts/consumer.go ./data-flow/scripts/common.go
 
+.PHONY: build-dataflow-engine
 build-dataflow-engine:
 	cd data-flow; ./gradlew clean build -x test --no-daemon
 
+.PHONY: build
 build: build-scheduler build-agent build-proxy build-modelgateway build-dataflow-engine
 
+.PHONY: lint
 lint: ## Run go linters against code.
 	gofmt -w pkg
 	golangci-lint run --fix
 
+.PHONY: test-go
 test-go:
 	go test ./pkg/... -coverprofile cover.out
 
+.PHONY: test-jvm
 test-jvm:
 	cd data-flow; ./gradlew clean test --no-daemon
 
+.PHONY: test
 test: test-go test-jvm
 
 
@@ -55,63 +67,90 @@ test: test-go test-jvm
 # Build Docker
 #####################################
 
+.PHONY: docker-build-scheduler
 docker-build-scheduler: copy-apis
 	docker build -t ${SCHEDULER_IMG} -f Dockerfile.scheduler .
 
+.PHONY: docker-push-scheduler
 docker-push-scheduler: 
 	docker push ${SCHEDULER_IMG}
 
+.PHONY: copy-apis
 copy-apis:
 	rm -rf apis-TEMP
 	cp -r ../apis apis-TEMP
 
+.PHONY: docker-build-agent
 docker-build-agent: copy-apis
 	docker build -t ${AGENT_IMG} -f Dockerfile.agent .
 
+.PHONY: docker-push-agent
 docker-push-agent: 
 	docker push ${AGENT_IMG}
 
+.PHONY: docker-build-rclone
 docker-build-rclone:
 	docker build -t ${RCLONE_IMG} -f Dockerfile.rclone .
 
+.PHONY: docker-push-rclone
 docker-push-rclone: 
 	docker push ${RCLONE_IMG}
 
+.PHONY: docker-build-modelgateway
 docker-build-modelgateway: copy-apis
 	docker build -t ${MODELGATEWAY_IMG} -f Dockerfile.modelgateway .
 
+.PHONY: docker-push-modelgateway
 docker-push-modelgateway: 
 	docker push ${MODELGATEWAY_IMG}
 
+.PHONY: docker-build-envoy
 docker-build-envoy:
 	docker build -t ${ENVOY_IMG} -f Dockerfile.envoy .
 
+.PHONY: docker-push-envoy
 docker-push-envoy: 
 	docker push ${ENVOY_IMG}
 
+.PHONY: docker-build-dataflow
+docker-build-dataflow: copy-apis
+	docker build -t ${DATAFLOW_IMG} -f Dockerfile.dataflow .
+
+.PHONY: docker-push-dataflow
+docker-push-dataflow:
+	docker push ${DATAFLOW_IMG}
+
+.PHONY: docker-build-all
 docker-build-all: docker-build-agent docker-build-envoy docker-build-rclone docker-build-scheduler docker-build-modelgateway
 
+.PHONY: docker-push-all
 docker-push-all: docker-push-agent docker-push-envoy docker-push-rclone docker-push-scheduler docker-push-modelgateway
 
 #####################################
 # Kind 
 #####################################
 
+.PHONY: kind-image-install-scheduler
 kind-image-install-scheduler: docker-build-scheduler
 	kind load -v 3 docker-image ${SCHEDULER_IMG} --name ${KIND_NAME}
 
+.PHONY: kind-image-install-agent
 kind-image-install-agent: docker-build-agent
 	kind load -v 3 docker-image ${AGENT_IMG} --name ${KIND_NAME}
 
+.PHONY: kind-image-install-envoy
 kind-image-install-envoy: docker-build-envoy 
 	kind load -v 3 docker-image ${ENVOY_IMG} --name ${KIND_NAME}
 
+.PHONY: kind-image-install-rclone
 kind-image-install-rclone: docker-build-rclone
 	kind load -v 3 docker-image ${RCLONE_IMG} --name ${KIND_NAME}
 
+.PHONY: kind-image-install-modelgateway
 kind-image-install-modelgateway: docker-build-modelgateway
 	kind load -v 3 docker-image ${MODELGATEWAY_IMG} --name ${KIND_NAME}
 
+.PHONY: kind-image-install-all
 kind-image-install-all: kind-image-install-scheduler kind-image-install-envoy kind-image-install-agent kind-image-install-rclone kind-image-install-modelgateway
 
 #####################################
@@ -366,6 +405,22 @@ start-kafka-host:
 stop-kafka-host:
 	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES} kafka
 
+.PHONY: start-dataflow-engine
+start-dataflow-engine:
+	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d dataflow
+
+.PHONY: stop-dataflow-engine
+stop-dataflow-engine:
+	${DOCKER_COMPOSE_SERVICE_COMMAND} rm --stop --force dataflow
+
+.PHONY: start-dataflow-engine-host
+start-dataflow-engine-host:
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d dataflow
+
+.PHONY: stop-dataflow-engine-host
+stop-dataflow-engine-host:
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} rm --stop --force dataflow
+
 
 .PHONY: stop-all
 stop-all: stop-scheduler stop-envoy stop-rclone stop-agent-mlserver stop-agent-triton stop-mlserver stop-triton stop-modelgateway stop-kafka
@@ -375,9 +430,11 @@ stop-all: stop-scheduler stop-envoy stop-rclone stop-agent-mlserver stop-agent-t
 # Start local binaries
 #####################################
 
+.PHONY: start-scheduler-local
 start-scheduler-local:
 	./bin/scheduler
 
+.PHONY: start-agent-local
 start-agent-local:
 	./bin/agent --agent-folder ${PWD}/mnt --inference-http-port 8080 --inference-grpc-port 8081 --scheduler-host "0.0.0.0" --scheduler-port 9005 \
 		--server-type mlserver \
@@ -386,6 +443,7 @@ start-agent-local:
 		--replica-config '{"inferenceSvc":"0.0.0.0","inferenceHttpPort":8080,"inferenceGrpcPort":8081,"memoryBytes":1000000,"capabilities":["sklearn"],"overCommitPercentage":20}'
 
 
+.PHONY: start-triton-agent-local
 start-triton-agent-local:
 	./bin/agent --agent-folder ${PWD}/mnt --inference-http-port 8080 --inference-grpc-port 8081 --scheduler-host "0.0.0.0" --scheduler-port 9005 \
 		--server-name triton \
@@ -394,16 +452,19 @@ start-triton-agent-local:
 		--config-path ${PWD}/config \
 		--replica-config '{"inferenceSvc":"0.0.0.0","inferenceHttpPort":8080,"inferenceGrpcPort":8081,"memoryBytes":1000000,"capabilities":["tensorflow","onnx","pytorch"],"overCommitPercentage":20}'
 
+.PHONY: start-envoy-local
 start-envoy-local:
 	./hack/start-envoy-delta.sh
 
 
+.PHONY: start-rclone-local
 start-rclone-local:
 	mkdir -p mnt/rclone
 	rm -rf mnt/rclone/*
 	rm -f config/rclone.config
 	rclone rcd --config=config/rclone.config --rc-no-auth --verbose
 
+.PHONY: start-proxy-local
 start-proxy-local:
 ifdef LOG_LEVEL
 	./bin/proxy --level $(LOG_LEVEL)
@@ -411,13 +472,23 @@ else
 	./bin/proxy
 endif
 
+.PHONY: start-modelgateway-local
 start-modelgateway-local:
 	./bin/modelgateway --config-path ${PWD}/config --log-level debug
+
+.PHONY: start-dataflow-engine-local
+start-dataflow-engine-local:
+	SELDON_UPSTREAM_HOST=localhost \
+        SELDON_UPSTREAM_PORT=9008 \
+        SELDON_KAFKA_BOOTSTRAP_SERVERS=localhost:9092 \
+        SELDON_CORES_COUNT=4 \
+        java -jar ./data-flow/build/libs/dataflow-1.0-SNAPSHOT.jar
 
 #####################################
 # K8S Testing
 #####################################
 
+.PHONY: deploy
 deploy:
 	cd k8s/scheduler && kustomize edit set image scheduler=${SCHEDULER_IMG}
 	cd k8s/envoy && kustomize edit set image envoy=${ENVOY_IMG}
@@ -426,18 +497,23 @@ deploy:
 	cd k8s/modelgateway && kustomize edit set image modelgateway=${MODELGATEWAY_IMG}
 	kustomize build k8s/default | kubectl apply -f -
 
+.PHONY: build-push-deploy
 build-push-deploy: build docker-build-all docker-push-all deploy
 
+.PHONY: deploy-minio-secret
 deploy-minio-secret:
 	kubectl create namespace seldon-mesh || echo "seldon-mesh namespace exists"
 	kustomize build k8s/auth | kubectl apply -f -
 
+.PHONY: undeploy
 undeploy:
 	kustomize build k8s/default | kubectl delete -f -
 
+.PHONY: deploy-servers
 deploy-servers:
 	kustomize build k8s/server | kubectl create -f -
 
+.PHONY: undeploy-servers
 undeploy-servers:
 	kustomize build k8s/server | kubectl delete -f -
 
