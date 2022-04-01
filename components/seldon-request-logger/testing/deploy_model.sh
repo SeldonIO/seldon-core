@@ -1,1 +1,0 @@
-kubectl apply -n seldon -f ../../servers/sklearnserver/samples/iris.yaml
