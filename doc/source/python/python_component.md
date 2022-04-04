@@ -7,7 +7,7 @@ In order to run a custom python model on Seldon Core, you first need to wrap the
 To wrap your machine learning model create a Class that has a predict method with the following signature:
 
 ```python
-    def predict(self, X: np.ndarray, names: Iterable[str], meta: Dict = None) -> Union[np.ndarray, List, str, bytes]:
+    def predict(self, X: Union[np.ndarray, List, str, bytes, Dict], names: Optional[List[str]], meta: Optional[Dict] = None) -> Union[np.ndarray, List, str, bytes, Dict]:
 ```
 
 Your predict method will receive a numpy array `X` with iterable set of column names (if they exist in the input features) and optional Dictionary of meta data. It should return the result of the prediction as either:
@@ -15,6 +15,7 @@ Your predict method will receive a numpy array `X` with iterable set of column n
 - Numpy array
 - List of values
 - String or Bytes
+- Dictionary
 
 A simple example is shown below:
 
@@ -60,9 +61,9 @@ You can follow [various notebook examples](../examples/notebooks.html#python-lan
 Seldon Core allows you to create components to transform features either in the input request direction (input transformer) or the output response direction (output transformer). For these components create methods with the signatures below:
 
 ```python
-    def transform_input(self, X: np.ndarray, names: Iterable[str], meta: Dict = None) -> Union[np.ndarray, List, str, bytes]:
+    def transform_input(self, X: Union[np.ndarray, List, str, bytes, Dict], names: Optional[List[str]], meta: Optional[Dict] = None) -> Union[np.ndarray, List, str, bytes, Dict]:
 
-    def transform_output(self, X: np.ndarray, names: Iterable[str], meta: Dict = None) -> Union[np.ndarray, List, str, bytes]:
+    def transform_output(self, X: Union[np.ndarray, List, str, bytes, Dict], names: Optional[List[str]], meta: Optional[Dict] = None) -> Union[np.ndarray, List, str, bytes, Dict]:
 ```
 
 ## Combiners
@@ -70,7 +71,7 @@ Seldon Core allows you to create components to transform features either in the 
 Seldon Core allows you to create components that combine responses from multiple models into a single response. To create a class for this add a method with signature below:
 
 ```python
-    def aggregate(self, features_list: List[Union[np.ndarray, str, bytes]], feature_names_list: List) -> Union[np.ndarray, List, str, bytes]:
+    def aggregate(self, features_list: List[Union[np.ndarray, str, bytes]], feature_names_list: List) -> Union[np.ndarray, List, str, bytes, Dict]:
 ```
 
 A simple example that averages a set of responses is shown below:
@@ -267,13 +268,13 @@ spec:
 If you want more control you can provide a low-level methods that will provide as input the raw proto buffer payloads. The signatures for these are shown below for release `seldon_core>=0.2.6.1`:
 
 ```python
-    def predict_raw(self, msg: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
+    def predict_raw(self, msg: Union[Dict, prediction_pb2.SeldonMessage]) -> prediction_pb2.SeldonMessage:
 
     def send_feedback_raw(self, feedback: prediction_pb2.Feedback) -> prediction_pb2.SeldonMessage:
 
-    def transform_input_raw(self, msg: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
+    def transform_input_raw(self, msg: Union[Dict, prediction_pb2.SeldonMessage]) -> prediction_pb2.SeldonMessage:
 
-    def transform_output_raw(self, msg: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
+    def transform_output_raw(self, msg: Union[Dict, prediction_pb2.SeldonMessage]) -> prediction_pb2.SeldonMessage:
 
     def route_raw(self, msg: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
 
