@@ -341,7 +341,7 @@ def main():
     parser.add_argument(
         "--grpc-workers",
         type=int,
-        default=os.environ.get("GRPC_WORKERS", default="0"),
+        default=os.environ.get("GRPC_WORKERS", default="1"),
         help="Number of GPRC workers.",
     )
 
