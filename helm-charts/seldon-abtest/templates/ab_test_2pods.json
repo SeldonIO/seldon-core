@@ -38,7 +38,7 @@
 			"spec":{
 			    "containers":[
 				{
-                                "image": "{{ .Values.modela.image.name }}:{{ .Values.modela.image.version }}",
+                                "image": "{{ .Values.modelb.image.name }}:{{ .Values.modelb.image.version }}",
 				"imagePullPolicy": "IfNotPresent",
 				"name": "{{ .Values.modelb.name }}",
 				"resources": {
