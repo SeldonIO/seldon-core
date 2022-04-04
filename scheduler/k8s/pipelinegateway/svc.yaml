@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pipelinegateway
+  labels:
+    app: seldon-mesh
+spec:
+  clusterIP: None
+  ports:
+  - name: http
+    port: 9010
+    targetPort: http
+    protocol: TCP
+  - name: grpc
+    port: 9011
+    targetPort: grpc
+    protocol: TCP
+  selector:
+    app: pipelinegateway

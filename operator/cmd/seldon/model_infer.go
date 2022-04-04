@@ -38,7 +38,11 @@ func createModelInfer() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			verbose, err := cmd.Flags().GetBool(verboseFlag)
+			showRequest, err := cmd.Flags().GetBool(showRequestFlag)
+			if err != nil {
+				return err
+			}
+			showResponse, err := cmd.Flags().GetBool(showResponseFlag)
 			if err != nil {
 				return err
 			}
@@ -61,7 +65,7 @@ func createModelInfer() *cobra.Command {
 				return fmt.Errorf("required inline data or from file with -f <file-path>")
 			}
 
-			err = inferenceClient.Infer(modelName, inferMode, data, verbose, iterations)
+			err = inferenceClient.Infer(modelName, inferMode, data, showRequest, showResponse, iterations, cli.InferModel)
 			return err
 		},
 	}

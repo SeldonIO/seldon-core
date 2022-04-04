@@ -59,10 +59,21 @@ func (ps *PipelineStore) AddPipeline(req *scheduler.Pipeline) error {
 	defer ps.mu.Unlock()
 	var pipeline *Pipeline
 	var ok bool
-	if pipeline, ok = ps.pipelines[req.Name]; (ok && pipeline.GetLatestPipelineVersion().State.Status == PipelineTerminated) || !ok {
+	if pipeline, ok = ps.pipelines[req.Name]; !ok {
 		pipeline = &Pipeline{
 			Name:        req.Name,
 			LastVersion: 0,
+		}
+	} else {
+		lastPipeline := pipeline.GetLatestPipelineVersion()
+		switch lastPipeline.State.Status {
+		case PipelineTerminate:
+			return &PipelineTerminatingErr{pipeline: req.Name}
+		case PipelineTerminating, PipelineTerminated:
+			pipeline = &Pipeline{
+				Name:        req.Name,
+				LastVersion: 0,
+			}
 		}
 	}
 	err := validateAndAddPipelineVersion(req, pipeline)
@@ -91,12 +102,13 @@ func (ps *PipelineStore) RemovePipeline(name string) error {
 		}
 		lastState := lastPipelineVersion.State
 		switch lastState.Status {
-		case PipelineTerminating, PipelineTerminate:
+		case PipelineTerminate:
 			return &PipelineTerminatingErr{pipeline: name}
 		case PipelineTerminated:
 			return &PipelineAlreadyTerminatedErr{pipeline: name}
 		default:
-			lastPipelineVersion.State.Status = PipelineTerminate
+			pipeline.Deleted = true
+			lastPipelineVersion.State.setState(PipelineTerminate, "pipeline removed")
 			if ps.eventHub != nil {
 				ps.eventHub.PublishPipelineEvent(removePipelineEventSource, coordinator.PipelineEventMsg{
 					PipelineName:    lastPipelineVersion.Name,

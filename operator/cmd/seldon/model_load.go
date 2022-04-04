@@ -26,12 +26,16 @@ func createModelLoad() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			verbose, err := cmd.Flags().GetBool(verboseFlag)
+			showRequest, err := cmd.Flags().GetBool(showRequestFlag)
+			if err != nil {
+				return err
+			}
+			showResponse, err := cmd.Flags().GetBool(showResponseFlag)
 			if err != nil {
 				return err
 			}
 			schedulerClient := cli.NewSchedulerClient(schedulerHost, schedulerPort)
-			err = schedulerClient.LoadModel(loadFile(filename), verbose)
+			err = schedulerClient.LoadModel(loadFile(filename), showRequest, showResponse)
 			return err
 		},
 	}

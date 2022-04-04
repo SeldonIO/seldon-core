@@ -5,6 +5,7 @@ import io.grpc.Status
 object GrpcServiceConfigProvider {
     // Details: https://github.com/grpc/proposal/blob/master/A6-client-retries.md#validation-of-retrypolicy
     // Example: https://github.com/grpc/grpc-java/blob/v1.35.0/examples/src/main/resources/io/grpc/examples/retrying/retrying_service_config.json
+    // However does not work: https://github.com/grpc/grpc-kotlin/issues/277
     val config = mapOf<String, Any>(
         "methodConfig" to listOf(
             mapOf(

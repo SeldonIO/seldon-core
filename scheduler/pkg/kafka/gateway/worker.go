@@ -145,8 +145,12 @@ func (iw *InferWorker) processRequest(job *InferWork) error {
 
 func (iw *InferWorker) produce(job *InferWork, b []byte, headerType string) error {
 	logger := iw.logger.WithField("func", "produce")
-	kafkaHeaders := make([]kafka.Header, 1)
-	kafkaHeaders[0] = kafka.Header{Key: HeaderKeyType, Value: []byte(headerType)}
+	var kafkaHeaders []kafka.Header
+	kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: HeaderKeyType, Value: []byte(headerType)})
+	if pipelineName, ok := job.headers[resources.SeldonPipelineHeader]; ok {
+		logger.Debugf("Adding pipeline header %s:%s", resources.SeldonPipelineHeader, pipelineName)
+		kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: resources.SeldonPipelineHeaderSuffix, Value: []byte(pipelineName)})
+	}
 	logger.Infof("Produce response to topic %s with header %s", iw.consumer.modelConfig.OutputTopic, headerType)
 	err := iw.consumer.producer.Produce(&kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &iw.consumer.modelConfig.OutputTopic, Partition: kafka.PartitionAny},
@@ -196,10 +200,12 @@ func (iw *InferWorker) grpcRequest(job *InferWork, req *v2.ModelInferRequest) er
 	req.ModelVersion = fmt.Sprintf("%d", util.GetPinnedModelVersion())
 	ctx := context.TODO()
 	ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonModelHeader, iw.consumer.modelConfig.ModelName)
+	iw.logger.Infof("Request: %v", req)
 	resp, err := iw.grpcClient.ModelInfer(ctx, req)
 	if err != nil {
 		return err
 	}
+	iw.logger.Infof("Response: %v", resp)
 	b, err := proto.Marshal(resp)
 	if err != nil {
 		return err

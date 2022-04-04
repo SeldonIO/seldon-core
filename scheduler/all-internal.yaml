@@ -41,6 +41,12 @@ services:
         target: /mnt/agent
 
   scheduler:
+    command:
+      - "/bin/scheduler"
+      - "--log-level"
+      - "debug"
+      - "--pipeline-gateway-host"
+      - "pipelinegateway"
     ports:
       - "${SCHEDULER_XDS_PORT}:${SCHEDULER_XDS_PORT}"
       - "${SCHEDULER_SERVER_PORT}:${SCHEDULER_SERVER_PORT}"
@@ -60,6 +66,15 @@ services:
       - type: bind
         source: ./config
         target: /mnt/config
+
+  pipelinegateway:
+    volumes:
+      - type: bind
+        source: ./config
+        target: /mnt/config
+    ports:
+      - "${PIPELINEGATEWAY_HTTP_PORT}:${PIPELINEGATEWAY_HTTP_PORT}"
+      - "${PIPELINEGATEWAY_GRPC_PORT}:${PIPELINEGATEWAY_GRPC_PORT}"      
 
   kafka:
     command: [

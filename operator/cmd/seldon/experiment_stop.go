@@ -22,21 +22,25 @@ func createExperimentStop() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			experimentName, err := cmd.Flags().GetString(experimentFlagName)
+			experimentName, err := cmd.Flags().GetString(experimentFlag)
 			if err != nil {
 				return err
 			}
-			verbose, err := cmd.Flags().GetBool(verboseFlag)
+			showRequest, err := cmd.Flags().GetBool(showRequestFlag)
+			if err != nil {
+				return err
+			}
+			showResponse, err := cmd.Flags().GetBool(showResponseFlag)
 			if err != nil {
 				return err
 			}
 			schedulerClient := cli.NewSchedulerClient(schedulerHost, schedulerPort)
-			err = schedulerClient.StopExperiment(experimentName, verbose)
+			err = schedulerClient.StopExperiment(experimentName, showRequest, showResponse)
 			return err
 		},
 	}
-	cmdStopExperiment.Flags().StringP(experimentFlagName, "e", "", "experiment to stop")
-	if err := cmdStopExperiment.MarkFlagRequired(experimentFlagName); err != nil {
+	cmdStopExperiment.Flags().StringP(experimentFlag, "e", "", "experiment to stop")
+	if err := cmdStopExperiment.MarkFlagRequired(experimentFlag); err != nil {
 		os.Exit(-1)
 	}
 	cmdStopExperiment.Flags().String(schedulerHostFlag, "0.0.0.0", "seldon scheduler host")

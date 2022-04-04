@@ -118,11 +118,13 @@ func (m *MemoryStore) updateModelStatus(isLatest bool, deleted bool, modelVersio
 	updateModelState(isLatest, modelVersion, prevModelVersion, stats, deleted)
 
 	logger.Debugf("Trigger event for model %s:%d", modelVersion.GetMeta().GetName(), modelVersion.GetVersion())
-	m.eventHub.PublishModelEvent(
-		modelUpdateEventSource,
-		coordinator.ModelEventMsg{
-			ModelName:    modelVersion.GetMeta().GetName(),
-			ModelVersion: modelVersion.GetVersion(),
-		},
-	)
+	if m.eventHub != nil {
+		m.eventHub.PublishModelEvent(
+			modelUpdateEventSource,
+			coordinator.ModelEventMsg{
+				ModelName:    modelVersion.GetMeta().GetName(),
+				ModelVersion: modelVersion.GetVersion(),
+			},
+		)
+	}
 }

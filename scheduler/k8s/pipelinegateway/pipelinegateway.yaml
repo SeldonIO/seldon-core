@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pipelinegateway
+  namespace: system
+  labels:
+    app: pipelinegateway
+spec:
+  selector:
+    matchLabels:
+      app: pipelinegateway
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: pipelinegateway
+    spec:
+      securityContext:
+        runAsUser: 8888
+      containers:
+      - command:
+        - /bin/pipelinegateway
+        args:
+        - --http-port=9010
+        - --grpc-port=9011
+        - --config-path=/mnt/config
+        image: pipelinegateway:latest
+        imagePullPolicy: IfNotPresent
+        name: pipelinegateway
+        resources:
+          limits:
+            cpu: 500m
+            memory: 300Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        ports:
+        - containerPort: 9010
+          name: http
+          protocol: TCP
+        - containerPort: 9011
+          name: grpc
+          protocol: TCP
+        volumeMounts:
+        - name: config-volume
+          mountPath: /mnt/config
+      volumes:
+      - name: config-volume
+        configMap:
+          name: seldon-agent
+      terminationGracePeriodSeconds: 5
+      serviceAccountName: scheduler

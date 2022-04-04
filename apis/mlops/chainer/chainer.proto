@@ -35,6 +35,8 @@ message PipelineStepUpdate {
   PipelineJoinType ty = 3;
   bool passEmptyResponses = 4; // Forward empty response to following steps, default false
   optional uint32 joinWindowMs = 5; // Join window millisecs, some nozero default (TBD)
+  repeated string tensorNames = 6; // optional list of output tensors - must be same cardinality as tensors in inputs
+  map<string,string> tensorMap = 7; // optional map of tensor name mappings
 }
 
 message PipelineUpdateStatusMessage {

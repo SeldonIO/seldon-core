@@ -8,6 +8,29 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 )
 
+func TestUpdateInputsSteps(t *testing.T) {
+	g := NewGomegaWithT(t)
+	type test struct {
+		name     string
+		inputs   []string
+		expected []string
+	}
+
+	tests := []test{
+		{
+			name:     "test update inputs",
+			inputs:   []string{"a", "a.outputs", "a.inputs", "a.inputs.t1"},
+			expected: []string{"a.outputs", "a.outputs", "a.inputs", "a.inputs.t1"},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			updated := updateInputSteps(test.inputs)
+			g.Expect(updated).To(Equal(test.expected))
+		})
+	}
+}
+
 func TestCreatePipelineFromProto(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
@@ -48,7 +71,47 @@ func TestCreatePipelineFromProto(t *testing.T) {
 					},
 					"b": {
 						Name:   "b",
-						Inputs: []string{"a"},
+						Inputs: []string{"a.outputs"},
+					},
+				},
+				Output: &PipelineOutput{
+					Inputs: []string{"b"},
+				},
+				State: &PipelineState{},
+			},
+		},
+		{
+			name:    "simple with tensor map",
+			version: 1,
+			proto: &scheduler.Pipeline{
+				Name: "pipeline",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name:   "a",
+						Inputs: []string{},
+					},
+					{
+						Name:      "b",
+						Inputs:    []string{"a.outputs"},
+						TensorMap: map[string]string{"output1": "input1"},
+					},
+				},
+				Output: &scheduler.PipelineOutput{
+					Inputs: []string{"b"},
+				},
+			},
+			pipeline: &PipelineVersion{
+				Name:    "pipeline",
+				Version: 1,
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name:   "a",
+						Inputs: []string{},
+					},
+					"b": {
+						Name:      "b",
+						Inputs:    []string{"a.outputs"},
+						TensorMap: map[string]string{"output1": "input1"},
 					},
 				},
 				Output: &PipelineOutput{
@@ -110,7 +173,7 @@ func TestCreatePipelineFromProto(t *testing.T) {
 				Steps: map[string]*PipelineStep{
 					"step1": {
 						Name:   "step1",
-						Inputs: []string{"a.inputs", "c.inputs.inp1", "d.outputs", "e.outputs.out1", "f"},
+						Inputs: []string{"a.inputs", "c.inputs.inp1", "d.outputs", "e.outputs.out1", "f.outputs"},
 					},
 				},
 				Output: &PipelineOutput{

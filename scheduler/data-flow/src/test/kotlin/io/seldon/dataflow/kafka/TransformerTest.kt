@@ -30,6 +30,7 @@ internal class TransformerTest {
             transformerFor(
                 defaultPipelineName,
                 sources,
+                emptyMap(),
                 defaultSink,
                 baseKafkaProperties,
             )
@@ -105,7 +106,10 @@ internal class TransformerTest {
                 ),
                 arguments(
                     "multiple sources, no tensors",
-                    Joiner(),
+                    makeJoinerFor(
+                        inputTopics = setOf("seldon.namespace.model1.outputs","seldon.namespace.model2.outputs"),
+                        tensors = emptyMap(),
+                    ),
                     listOf(
                         "seldon.namespace.modelA.outputs",
                         "seldon.namespace.modelB.outputs",
@@ -113,7 +117,10 @@ internal class TransformerTest {
                 ),
                 arguments(
                     "multiple sources, multiple tensors",
-                    Joiner(),
+                    makeJoinerFor(
+                        inputTopics = setOf("seldon.namespace.model1.outputs","seldon.namespace.model2.outputs"),
+                        tensors = mapOf("seldon.namespace.model1.outputs" to setOf("OUTPUT0","OUTPUT1")),
+                    ),
                     listOf(
                         "seldon.namespace.modelA.outputs.tensorA",
                         "seldon.namespace.modelB.outputs.tensorB",
@@ -139,6 +146,17 @@ internal class TransformerTest {
                 outputTopic = defaultSink,
                 pipelineName = defaultPipelineName,
                 properties = KafkaProperties(),
+                tensorMap = emptyMap(),
+            )
+
+        private fun makeJoinerFor(inputTopics: Set<TopicName>, tensors: Map<TensorName, Set<TensorName>>): Joiner =
+            Joiner(
+                inputTopics = inputTopics,
+                tensors = tensors,
+                outputTopic = defaultSink,
+                pipelineName = defaultPipelineName,
+                properties = KafkaProperties(),
+                tensorMap = emptyMap()
             )
     }
 }

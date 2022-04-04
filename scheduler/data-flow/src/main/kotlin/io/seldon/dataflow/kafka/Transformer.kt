@@ -1,6 +1,8 @@
 package io.seldon.dataflow.kafka
 
 import java.util.*
+import java.math.BigInteger
+import java.security.MessageDigest
 
 typealias KafkaProperties = Properties
 typealias TopicName = String
@@ -22,6 +24,7 @@ data class TopicTensors(
 fun transformerFor(
     pipelineName: String,
     sources: List<TopicName>,
+    tensorMap: kotlin.collections.Map<TensorName,TensorName>,
     sink: TopicName,
     baseKafkaProperties: KafkaProperties,
 ): Transformer? {
@@ -33,6 +36,7 @@ fun transformerFor(
             sink,
             null,
             pipelineName,
+            tensorMap
         )
         is SourceProjection.SingleSubset -> Chainer(
             baseKafkaProperties.withAppId(nameFor(sources, sink, "chainer")),
@@ -40,8 +44,24 @@ fun transformerFor(
             sink,
             result.tensors,
             pipelineName,
+            tensorMap
         )
-        else -> { Joiner() } // TODO
+        is SourceProjection.Many -> Joiner(
+            baseKafkaProperties.withAppId(nameFor(sources, sink, "joiner")),
+            result.topicNames,
+            sink,
+            null,
+            pipelineName,
+            tensorMap
+        )
+        is SourceProjection.ManySubsets -> Joiner(
+            baseKafkaProperties.withAppId(nameFor(sources, sink, "joiner")),
+            result.topicNames,
+            sink,
+            result.tensorMap,
+            pipelineName,
+            tensorMap
+        )
     }
 }
 
@@ -61,7 +81,7 @@ sealed class SourceProjection {
     data class Single(val topicName: TopicName) : SourceProjection()
     data class SingleSubset(val topicName: TopicName, val tensors: Set<TensorName>): SourceProjection()
     data class Many(val topicNames: Set<TopicName>): SourceProjection()
-    data class ManySubsets(val topicNames: Set<TopicTensors>): SourceProjection()
+    data class ManySubsets(val topicNames: Set<TensorName>, val tensorMap: Map<TopicName,Set<TensorName>>): SourceProjection()
 }
 
 fun parseSources(sources: List<TopicName>): SourceProjection {
@@ -83,7 +103,7 @@ fun parseSources(sources: List<TopicName>): SourceProjection {
         topicsAndTensors.all { it.tensors.isEmpty() } ->
             SourceProjection.Many(topicsAndTensors.map { it.topicName }.toSet())
         else ->
-            SourceProjection.ManySubsets(topicsAndTensors.toSet())
+            SourceProjection.ManySubsets(topicsAndTensors.map { it.topicName }.toSet(), topicsAndTensors.map { it.topicName to it.tensors }.toMap())
     }
 }
 
@@ -95,8 +115,12 @@ fun parseSource(source: TopicName): Pair<TopicName, TensorName?> {
     }
 }
 
+fun md5(input:String): String {
+    val md = MessageDigest.getInstance("MD5")
+    return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')
+}
 fun nameFor(sources: List<TopicName>, sink: TopicName, type: String): String {
-    return "$type:${sources.joinToString(":")}:$sink"
+    return md5("$type:${sources.joinToString(":")}:$sink")
 }
 
 object SeldonHeaders {

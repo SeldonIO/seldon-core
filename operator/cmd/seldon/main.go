@@ -8,12 +8,14 @@ import (
 )
 
 const (
-	fileFlag           = "file-path"
-	schedulerHostFlag  = "scheduler-host"
-	schedulerPortFlag  = "scheduler-port"
-	modelNameFlag      = "model-name"
-	experimentFlagName = "experiment-name"
-	verboseFlag        = "verbose"
+	fileFlag          = "file-path"
+	schedulerHostFlag = "scheduler-host"
+	schedulerPortFlag = "scheduler-port"
+	modelNameFlag     = "model-name"
+	experimentFlag    = "experiment-name"
+	showResponseFlag  = "show-response"
+	showRequestFlag   = "show-request"
+	waitConditionFlag = "wait"
 )
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -77,16 +79,18 @@ func Execute() error {
 	cmdPipelineLoad := createPipelineLoad()
 	cmdPipelineUnload := createPipelineUnload()
 	cmdPipelineStatus := createPipelineStatus()
+	cmdPipelineInfer := createPipelineInfer()
 
 	var rootCmd = &cobra.Command{Use: "app"}
 
-	rootCmd.PersistentFlags().BoolP(verboseFlag, "v", false, "verbose output")
+	rootCmd.PersistentFlags().BoolP(showRequestFlag, "r", false, "show request")
+	rootCmd.PersistentFlags().BoolP(showResponseFlag, "s", true, "show response")
 
 	rootCmd.AddCommand(cmdModel, cmdServer, cmdExperiment, cmdPipeline)
 	cmdModel.AddCommand(cmdModelLoad, cmdModelUnload, cmdModelStatus, cmdModelInfer)
 	cmdServer.AddCommand(cmdServerStatus)
 	cmdExperiment.AddCommand(cmdExperimentStart, cmdExperimentStop, cmdExperimentStatus)
-	cmdPipeline.AddCommand(cmdPipelineLoad, cmdPipelineUnload, cmdPipelineStatus)
+	cmdPipeline.AddCommand(cmdPipelineLoad, cmdPipelineUnload, cmdPipelineStatus, cmdPipelineInfer)
 	return rootCmd.Execute()
 }
 

@@ -18,6 +18,7 @@ class Chainer(
     internal val outputTopic: TopicName,
     internal val tensors: Set<TensorName>?,
     internal val pipelineName: String,
+    internal val tensorMap: Map<TensorName, TensorName>,
 ) : Transformer {
     private val streams: KafkaStreams by lazy {
         val consumerSerde: Consumed<RequestId, TRecord> = Consumed.with(Serdes.String(), Serdes.ByteArray())
@@ -52,24 +53,30 @@ class Chainer(
             .apply {
                 // Loop instead of `addAllInputs` to minimise intermediate memory usage, as tensors can be large
                 response.outputsList
-                    .filter { tensor ->
-                        tensor.name in tensors
-                    }
-                    .forEach { tensor ->
-                        addInputs(
-                            convertOutputToInputTensor(tensor)
-                        )
+                    //.filter { tensor ->
+                    //    tensor.name in tensors
+                    //}
+                    .forEachIndexed { idx, tensor ->
+                        if (tensor.name in tensors) {
+                            addInputs(
+                                convertOutputToInputTensor(tensorMap.getOrDefault(inputTopic + "." + tensor.name, tensor.name), tensor)
+                            )
+                            if (response.rawOutputContentsCount > idx) {
+                                addRawInputContents(response.getRawOutputContents(idx))
+                            }
+                        }
                     }
             }
             .build()
     }
 
     private fun convertOutputToInputTensor(
-        output: ModelInferResponse.InferOutputTensor
+        tensorName: TensorName,
+        output: ModelInferResponse.InferOutputTensor,
     ): ModelInferRequest.InferInputTensor {
         return ModelInferRequest.InferInputTensor
             .newBuilder()
-            .setName(output.name)
+            .setName(tensorName)
             .setDatatype(output.datatype)
             .addAllShape(output.shapeList)
             .putAllParameters(output.parametersMap)
@@ -84,6 +91,7 @@ class Chainer(
     }
 
     override fun stop() {
+        logger.info("Stopping chainer")
         streams.close()
     }
 

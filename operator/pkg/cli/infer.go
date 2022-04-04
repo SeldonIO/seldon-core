@@ -22,7 +22,16 @@ import (
 )
 
 const (
-	SeldonModelHeader = "seldon-model"
+	SeldonModelHeader    = "seldon-model"
+	SeldonPipelineHeader = "pipeline"
+)
+
+type InferType uint32
+
+const (
+	InferModel InferType = iota
+	InferPipeline
+	InferExplainer
 )
 
 type InferenceClient struct {
@@ -83,14 +92,20 @@ func (ic *InferenceClient) getUrl(path string) *url.URL {
 	}
 }
 
-func (ic *InferenceClient) call(modelName string, path string, data []byte) ([]byte, error) {
+func (ic *InferenceClient) call(resourceName string, path string, data []byte, inferType InferType) ([]byte, error) {
 	v2Url := ic.getUrl(path)
 	req, err := http.NewRequest("POST", v2Url.String(), bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set(SeldonModelHeader, modelName)
+	switch inferType {
+	case InferModel:
+		req.Header.Set(SeldonModelHeader, resourceName)
+	case InferPipeline:
+		req.Header.Set(SeldonModelHeader, fmt.Sprintf("%s.%s", resourceName, SeldonPipelineHeader))
+	}
+
 	response, err := ic.httpClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -126,13 +141,13 @@ func (ic *InferenceClient) updateSummary(modelName string) {
 	}
 }
 
-func (ic *InferenceClient) InferRest(modelName string, data []byte, verbose bool, iterations int) error {
-	if verbose {
+func (ic *InferenceClient) InferRest(resourceName string, data []byte, showRequest bool, showResponse bool, iterations int, inferType InferType) error {
+	if showRequest {
 		printPrettyJson(data)
 	}
-	path := fmt.Sprintf("/v2/models/%s/infer", modelName)
+	path := fmt.Sprintf("/v2/models/%s/infer", resourceName)
 	for i := 0; i < iterations; i++ {
-		res, err := ic.call(modelName, path, data)
+		res, err := ic.call(resourceName, path, data, inferType)
 		if err != nil {
 			return err
 		}
@@ -142,7 +157,9 @@ func (ic *InferenceClient) InferRest(modelName string, data []byte, verbose bool
 			return err
 		}
 		if iterations == 1 {
-			printPrettyJson(res)
+			if showResponse {
+				printPrettyJson(res)
+			}
 		} else {
 			ic.updateSummary(v2InferResponse.ModelName)
 		}
@@ -153,34 +170,38 @@ func (ic *InferenceClient) InferRest(modelName string, data []byte, verbose bool
 	return nil
 }
 
-func (ic *InferenceClient) InferGrpc(modelName string, data []byte, verbose bool, iterations int) error {
-	if verbose {
-		printPrettyJson(data)
-	}
+func (ic *InferenceClient) InferGrpc(resourceName string, data []byte, showRequest bool, showResponse bool, iterations int, inferType InferType) error {
 	req := &v2_dataplane.ModelInferRequest{}
 	err := protojson.Unmarshal(data, req)
 	if err != nil {
 		return err
 	}
-	req.ModelName = modelName
+	req.ModelName = resourceName
+	if showRequest {
+		printProto(req)
+	}
 	conn, err := ic.getConnection()
 	if err != nil {
 		return err
 	}
 	grpcClient := v2_dataplane.NewGRPCInferenceServiceClient(conn)
 	ctx := context.TODO()
-	ctx = metadata.AppendToOutgoingContext(ctx, SeldonModelHeader, modelName)
+	switch inferType {
+	case InferModel:
+		ctx = metadata.AppendToOutgoingContext(ctx, SeldonModelHeader, resourceName)
+	case InferPipeline:
+		ctx = metadata.AppendToOutgoingContext(ctx, SeldonPipelineHeader, resourceName)
+	}
+
 	for i := 0; i < iterations; i++ {
 		res, err := grpcClient.ModelInfer(ctx, req)
 		if err != nil {
 			return err
 		}
-		resBytesPretty, err := json.MarshalIndent(res, "", "    ")
-		if err != nil {
-			return err
-		}
 		if iterations == 1 {
-			fmt.Printf("%s\n", string(resBytesPretty))
+			if showResponse {
+				printProto(res)
+			}
 		} else {
 			ic.updateSummary(res.ModelName)
 		}
@@ -191,12 +212,12 @@ func (ic *InferenceClient) InferGrpc(modelName string, data []byte, verbose bool
 	return nil
 }
 
-func (ic *InferenceClient) Infer(modelName string, inferMode string, data []byte, verbose bool, iterations int) error {
+func (ic *InferenceClient) Infer(modelName string, inferMode string, data []byte, showRequest bool, showResponse bool, iterations int, inferType InferType) error {
 	switch inferMode {
 	case "rest":
-		return ic.InferRest(modelName, data, verbose, iterations)
+		return ic.InferRest(modelName, data, showRequest, showResponse, iterations, inferType)
 	case "grpc":
-		return ic.InferGrpc(modelName, data, verbose, iterations)
+		return ic.InferGrpc(modelName, data, showRequest, showResponse, iterations, inferType)
 	default:
 		return fmt.Errorf("Unknown infer mode - needs to be grpc or rest")
 	}

@@ -41,6 +41,8 @@ type PipelineStep struct {
 	PassEmptyResponses bool `json:"passEmptyResponses,omitempty"`
 	// msecs to wait for messages from multiple inputs to arrive before joining the inputs
 	JoinWindowMs *uint32 `json:"joinWindowMs,omitempty"`
+	// Map of tensor name conversions to use e.g. output1 -> input1
+	TensorMap map[string]string `json:"tensorMap,omitempty"`
 }
 
 type PipelineOutput struct {
@@ -89,6 +91,7 @@ func (p Pipeline) AsSchedulerPipeline() *scheduler.Pipeline {
 			Inputs:             step.Inputs,
 			JoinWindowMs:       step.JoinWindowMs,
 			PassEmptyResponses: step.PassEmptyResponses,
+			TensorMap:          step.TensorMap,
 		})
 	}
 	if p.Spec.Output != nil {

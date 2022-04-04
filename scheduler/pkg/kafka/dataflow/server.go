@@ -1,10 +1,12 @@
-package chainer
+package dataflow
 
 import (
 	"context"
 	"fmt"
 	"net"
 	"sync"
+
+	"github.com/seldonio/seldon-core/scheduler/pkg/kafka"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -18,20 +20,17 @@ import (
 
 const (
 	grpcMaxConcurrentStreams     = 1_000_000
-	pipelineEventHandlerName     = "kafka.chainer.server.pipelines"
+	pipelineEventHandlerName     = "kafka.dataflow.server.pipelines"
 	pendingEventsQueueSize   int = 10
-	seldonTopicPrefix            = "seldon"
-	modelTopic                   = "model"
-	pipelineTopic                = "pipeline"
 )
 
 type ChainerServer struct {
 	logger          log.FieldLogger
 	mu              sync.Mutex
-	namespace       string
 	streams         map[chainer.Chainer_SubscribePipelineUpdatesServer]*ChainerSubscription
 	eventHub        *coordinator.EventHub
 	pipelineHandler pipeline.PipelineHandler
+	topicNamer      *kafka.TopicNamer
 	chainer.UnimplementedChainerServer
 }
 
@@ -43,11 +42,11 @@ type ChainerSubscription struct {
 
 func NewChainerServer(logger log.FieldLogger, eventHub *coordinator.EventHub, pipelineHandler pipeline.PipelineHandler, namespace string) *ChainerServer {
 	c := &ChainerServer{
-		logger:          logger.WithField("source", "chainer"),
-		namespace:       namespace,
+		logger:          logger.WithField("source", "dataflow"),
 		streams:         make(map[chainer.Chainer_SubscribePipelineUpdatesServer]*ChainerSubscription),
 		eventHub:        eventHub,
 		pipelineHandler: pipelineHandler,
+		topicNamer:      kafka.NewTopicNamer(namespace),
 	}
 
 	eventHub.RegisterPipelineEventHandler(
@@ -74,7 +73,22 @@ func (c *ChainerServer) StartGrpcServer(agentPort uint) error {
 
 func (c *ChainerServer) PipelineUpdateEvent(ctx context.Context, message *chainer.PipelineUpdateStatusMessage) (*chainer.PipelineUpdateStatusResponse, error) {
 	logger := c.logger.WithField("func", "PipelineUpdateEvent")
-	statusVal := pipeline.PipelineReady
+	var statusVal pipeline.PipelineStatus
+	switch message.Update.Op {
+	case chainer.PipelineUpdateMessage_Create:
+		if message.Success {
+			statusVal = pipeline.PipelineReady
+		} else {
+			statusVal = pipeline.PipelineFailed
+		}
+	case chainer.PipelineUpdateMessage_Delete:
+		if message.Success {
+			statusVal = pipeline.PipelineTerminated
+		} else {
+			statusVal = pipeline.PipelineFailed
+		}
+	}
+
 	if !message.Success {
 		statusVal = pipeline.PipelineFailed
 	}
@@ -126,11 +140,11 @@ func (c *ChainerServer) StopSendPipelineEvents() {
 func (c *ChainerServer) createTopicSources(inputs []string, pipelineName string) []string {
 	var sources []string
 	for _, inp := range inputs {
-		source := fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, c.namespace, modelTopic, inp)
+		source := c.topicNamer.GetModelTopic(inp)
 		sources = append(sources, source)
 	}
 	if len(sources) == 0 {
-		sources = append(sources, fmt.Sprintf("%s.%s.%s.%s.inputs", seldonTopicPrefix, c.namespace, pipelineTopic, pipelineName))
+		sources = append(sources, c.topicNamer.GetPipelineTopicInputs(pipelineName))
 	}
 	return sources
 }
@@ -139,18 +153,21 @@ func (c *ChainerServer) createPipelineMessage(pv *pipeline.PipelineVersion) *cha
 	var stepUpdates []*chainer.PipelineStepUpdate
 	for _, step := range pv.Steps {
 		stepUpdate := chainer.PipelineStepUpdate{
-			Sources: c.createTopicSources(step.Inputs, pv.Name),
-			Sink:    step.Name,
-			Ty:      chainer.PipelineStepUpdate_Inner,
+			Sources:   c.createTopicSources(step.Inputs, pv.Name),
+			Sink:      c.topicNamer.GetModelTopicInputs(step.Name),
+			Ty:        chainer.PipelineStepUpdate_Inner,
+			TensorMap: c.topicNamer.GetFullyQualifiedTensorMap(step.TensorMap),
 		}
+		c.logger.Infof("Adding sources %v to %s", stepUpdate.Sources, stepUpdate.Sink)
 		stepUpdates = append(stepUpdates, &stepUpdate)
 	}
 	if pv.Output != nil {
 		stepUpdate := chainer.PipelineStepUpdate{
 			Sources: c.createTopicSources(pv.Output.Inputs, pv.Name),
-			Sink:    fmt.Sprintf("%s.%s.%s.%s.outputs", seldonTopicPrefix, c.namespace, pipelineTopic, pv.Name),
+			Sink:    c.topicNamer.GetPipelineTopicOutputs(pv.Name),
 			Ty:      chainer.PipelineStepUpdate_Inner,
 		}
+		c.logger.Infof("Adding sources %v to %s", stepUpdate.Sources, stepUpdate.Sink)
 		stepUpdates = append(stepUpdates, &stepUpdate)
 	}
 	op := chainer.PipelineUpdateMessage_Create
@@ -175,7 +192,7 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 	}
 	logger.Debugf("Received event %s with state %s", event.String(), pv.State.Status.String())
 	switch pv.State.Status {
-	case pipeline.PipelineCreate, pipeline.PipelineTerminate:
+	case pipeline.PipelineCreate:
 		msg := c.createPipelineMessage(pv)
 		for _, subscription := range c.streams {
 			if err := subscription.stream.Send(msg); err != nil {
@@ -183,6 +200,17 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 			} else {
 				if err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineCreating, ""); err != nil {
 					logger.WithError(err).Errorf("Failed to set pipeline %s to creating state", pv.String())
+				}
+			}
+		}
+	case pipeline.PipelineTerminate:
+		msg := c.createPipelineMessage(pv)
+		for _, subscription := range c.streams {
+			if err := subscription.stream.Send(msg); err != nil {
+				logger.WithError(err).Errorf("Failed to send msg for pipeline %s", pv.String())
+			} else {
+				if err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineTerminating, ""); err != nil {
+					logger.WithError(err).Errorf("Failed to set pipeline %s to terminate state", pv.String())
 				}
 			}
 		}

@@ -244,7 +244,7 @@ message ExperimentStatusRequest {
 message Pipeline {
   string name = 1;
   repeated PipelineStep steps = 2;
-    optional PipelineOutput output = 3;
+  optional PipelineOutput output = 3;
   optional KubernetesMeta kubernetesMeta = 4;
 }
 
@@ -253,6 +253,7 @@ message PipelineStep {
   repeated string inputs = 2;
   bool passEmptyResponses = 3; // Forward empty response to following steps, default false
   optional uint32 joinWindowMs = 4; // Join window millisecs, some nozero default (TBD)
+  map<string,string> tensorMap = 5; // optional map of tensor name mappings
 }
 
 message PipelineOutput {

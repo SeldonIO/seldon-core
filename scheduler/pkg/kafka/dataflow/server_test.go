@@ -1,7 +1,9 @@
-package chainer
+package dataflow
 
 import (
 	"testing"
+
+	"github.com/seldonio/seldon-core/scheduler/pkg/kafka"
 
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
@@ -22,8 +24,8 @@ func TestCreateTopicSources(t *testing.T) {
 		{
 			name: "misc inputs",
 			server: &ChainerServer{
-				logger:    log.New(),
-				namespace: "ns1",
+				logger:     log.New(),
+				topicNamer: kafka.NewTopicNamer("default"),
 			},
 			pipelineName: "p1",
 			inputs: []string{
@@ -32,16 +34,16 @@ func TestCreateTopicSources(t *testing.T) {
 				"c.inputs.t1",
 			},
 			sources: []string{
-				"seldon.ns1.model.a",
-				"seldon.ns1.model.b.inputs",
-				"seldon.ns1.model.c.inputs.t1",
+				"seldon.default.model.a",
+				"seldon.default.model.b.inputs",
+				"seldon.default.model.c.inputs.t1",
 			},
 		},
 		{
 			name: "misc inputs",
 			server: &ChainerServer{
-				logger:    log.New(),
-				namespace: "ns1",
+				logger:     log.New(),
+				topicNamer: kafka.NewTopicNamer("ns1"),
 			},
 			pipelineName: "p1",
 			inputs:       []string{},

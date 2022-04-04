@@ -28,6 +28,8 @@ spec:
       containers:
       - command:
         - /bin/scheduler
+        args:
+        - --pipeline-gateway-host=seldon-pipelinegateway
         image: scheduler:latest
         imagePullPolicy: IfNotPresent
         name: scheduler

@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	pipelineNameFlag = "pipeline"
+	pipelineNameFlag = "pipeline-name"
 )
 
 func createPipelineUnload() *cobra.Command {
@@ -30,12 +30,16 @@ func createPipelineUnload() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			verbose, err := cmd.Flags().GetBool(verboseFlag)
+			showRequest, err := cmd.Flags().GetBool(showRequestFlag)
+			if err != nil {
+				return err
+			}
+			showResponse, err := cmd.Flags().GetBool(showResponseFlag)
 			if err != nil {
 				return err
 			}
 			schedulerClient := cli.NewSchedulerClient(schedulerHost, schedulerPort)
-			err = schedulerClient.UnloadPipeline(pipelineName, verbose)
+			err = schedulerClient.UnloadPipeline(pipelineName, showRequest, showResponse)
 			return err
 		},
 	}

@@ -29,10 +29,9 @@ func TestAddPipeline(t *testing.T) {
 						Name:   "step1",
 						Inputs: []string{},
 					},
-					{
-						Name:   "",
-						Inputs: []string{"step1"},
-					},
+				},
+				Output: &scheduler.PipelineOutput{
+					Inputs: []string{"step1.outputs"},
 				},
 			},
 			store: &PipelineStore{
@@ -50,10 +49,9 @@ func TestAddPipeline(t *testing.T) {
 						Name:   "step1",
 						Inputs: []string{},
 					},
-					{
-						Name:   "",
-						Inputs: []string{"step1"},
-					},
+				},
+				Output: &scheduler.PipelineOutput{
+					Inputs: []string{"step1.outputs"},
 				},
 				KubernetesMeta: &scheduler.KubernetesMeta{
 					Namespace:  "default",
@@ -75,10 +73,9 @@ func TestAddPipeline(t *testing.T) {
 						Name:   "step1",
 						Inputs: []string{},
 					},
-					{
-						Name:   "",
-						Inputs: []string{"step1"},
-					},
+				},
+				Output: &scheduler.PipelineOutput{
+					Inputs: []string{"step1.outputs"},
 				},
 			},
 			store: &PipelineStore{
@@ -118,6 +115,7 @@ func TestAddPipeline(t *testing.T) {
 					"pipeline": {
 						Name:        "pipeline",
 						LastVersion: 1,
+						Deleted:     true,
 						Versions: []*PipelineVersion{
 							1: {
 								Name:    "pipeline",
@@ -131,6 +129,68 @@ func TestAddPipeline(t *testing.T) {
 				},
 			},
 			expectedVersion: 1,
+		},
+		{
+			name: "version added when previous terminating",
+			proto: &scheduler.Pipeline{
+				Name: "pipeline",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name:   "step1",
+						Inputs: []string{},
+					},
+				},
+			},
+			store: &PipelineStore{
+				logger: logrus.New(),
+				pipelines: map[string]*Pipeline{
+					"pipeline": {
+						Name:        "pipeline",
+						LastVersion: 1,
+						Versions: []*PipelineVersion{
+							1: {
+								Name:    "pipeline",
+								Version: 1,
+								State: &PipelineState{
+									Status: PipelineTerminating,
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedVersion: 1,
+		},
+		{
+			name: "version failed when previous terminate state",
+			proto: &scheduler.Pipeline{
+				Name: "pipeline",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name:   "step1",
+						Inputs: []string{},
+					},
+				},
+			},
+			store: &PipelineStore{
+				logger: logrus.New(),
+				pipelines: map[string]*Pipeline{
+					"pipeline": {
+						Name:        "pipeline",
+						LastVersion: 1,
+						Versions: []*PipelineVersion{
+							1: {
+								Name:    "pipeline",
+								Version: 1,
+								State: &PipelineState{
+									Status: PipelineTerminate,
+								},
+							},
+						},
+					},
+				},
+			},
+			err: &PipelineTerminatingErr{pipeline: "pipeline"},
 		},
 	}
 
@@ -194,7 +254,6 @@ func TestRemovePipeline(t *testing.T) {
 					},
 				},
 			},
-			err: &PipelineTerminatingErr{pipeline: "pipeline"},
 		},
 		{
 			name:         "pipeline terminated err",
@@ -234,6 +293,35 @@ func TestRemovePipeline(t *testing.T) {
 								Version: 1,
 								State: &PipelineState{
 									Status: PipelineReady,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name:         "deleted ok",
+			pipelineName: "pipeline",
+			store: &PipelineStore{
+				logger: logrus.New(),
+				pipelines: map[string]*Pipeline{
+					"pipeline": {
+						Name:        "pipeline",
+						LastVersion: 1,
+						Versions: []*PipelineVersion{
+							{
+								Name:    "pipeline",
+								Version: 1,
+								State: &PipelineState{
+									Status: PipelineCreating,
+								},
+							},
+							{
+								Name:    "pipeline",
+								Version: 2,
+								State: &PipelineState{
+									Status: PipelineCreating,
 								},
 							},
 						},

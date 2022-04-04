@@ -2,10 +2,12 @@ package cli
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"math"
 	"time"
+
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1"
 
@@ -49,10 +51,16 @@ func (sc *SchedulerClient) getConnection() (*grpc.ClientConn, error) {
 	return conn, nil
 }
 
-func (sc *SchedulerClient) LoadModel(data []byte, verbose bool) error {
-	if verbose {
-		fmt.Printf("%s\n", string(data))
+func printProto(msg proto.Message) {
+	resJson, err := protojson.Marshal(msg)
+	if err != nil {
+		fmt.Printf("Failed to print proto: %s", err.Error())
+	} else {
+		fmt.Printf("%s\n", string(resJson))
 	}
+}
+
+func (sc *SchedulerClient) LoadModel(data []byte, showRequest bool, showResponse bool) error {
 	model := &mlopsv1alpha1.Model{}
 	err := yaml.Unmarshal(data, model)
 	if err != nil {
@@ -63,73 +71,78 @@ func (sc *SchedulerClient) LoadModel(data []byte, verbose bool) error {
 		return err
 	}
 	req := &scheduler.LoadModelRequest{Model: schModel}
+	if showRequest {
+		printProto(req)
+	}
 	conn, err := sc.getConnection()
 	if err != nil {
 		return err
 	}
 	grpcClient := scheduler.NewSchedulerClient(conn)
-	_, err = grpcClient.LoadModel(context.Background(), req)
+	res, err := grpcClient.LoadModel(context.Background(), req)
 	if err != nil {
 		return err
 	}
-	if verbose {
-		fmt.Printf("Scheduled model %s for load\n", req.Model.Meta.Name)
+	if showResponse {
+		printProto(res)
 	}
 	return nil
 }
 
-func (sc *SchedulerClient) ModelStatus(modelName string, verbose bool, waitCondition string) error {
+func (sc *SchedulerClient) ModelStatus(modelName string, showRequest bool, showResponse bool, waitCondition string) error {
 	req := &scheduler.ModelStatusRequest{
 		Model: &scheduler.ModelReference{
 			Name: modelName,
 		},
 	}
+	if showRequest {
+		printProto(req)
+	}
 	conn, err := sc.getConnection()
 	if err != nil {
 		return err
 	}
 	grpcClient := scheduler.NewSchedulerClient(conn)
+	var res *scheduler.ModelStatusResponse
 	if waitCondition != "" {
 		for {
-			res, err := grpcClient.ModelStatus(context.Background(), req)
+			res, err = grpcClient.ModelStatus(context.Background(), req)
 			if err != nil {
 				return err
 			}
 			if len(res.Versions) > 0 {
 				modelStatus := res.Versions[0].State.GetState().String()
 				if modelStatus == waitCondition {
-					fmt.Printf("{\"%s\":\"%s\"}\n", modelName, modelStatus)
 					break
 				}
 			}
 			time.Sleep(1 * time.Second)
 		}
 	} else {
-		res, err := grpcClient.ModelStatus(context.Background(), req)
+		res, err = grpcClient.ModelStatus(context.Background(), req)
 		if err != nil {
 			return err
 		}
-		if !verbose {
-			if len(res.Versions) > 0 {
-				modelStatus := res.Versions[0].State.GetState().String()
-				fmt.Printf("{\"%s\":\"%s\"}\n", modelName, modelStatus)
-			} else {
-				fmt.Println("Unknown")
-			}
+	}
+	if !showResponse {
+		if len(res.Versions) > 0 {
+			modelStatus := res.Versions[0].State.GetState().String()
+			fmt.Printf("{\"%s\":\"%s\"}\n", modelName, modelStatus)
 		} else {
-			resBytesPretty, err := json.MarshalIndent(res, "", "    ")
-			if err != nil {
-				return err
-			}
-			fmt.Printf("%s\n", string(resBytesPretty))
+			fmt.Println("Unknown")
 		}
+	} else {
+		printProto(res)
 	}
 	return nil
 }
 
-func (sc *SchedulerClient) ServerStatus(serverName string, verbose bool) error {
+func (sc *SchedulerClient) ServerStatus(serverName string, showRequest bool, showResponse bool) error {
 	req := &scheduler.ServerReference{
 		Name: serverName,
+	}
+	if showRequest {
+		printProto(req)
 	}
 	conn, err := sc.getConnection()
 	if err != nil {
@@ -140,43 +153,39 @@ func (sc *SchedulerClient) ServerStatus(serverName string, verbose bool) error {
 	if err != nil {
 		return err
 	}
-	if !verbose {
+	if !showResponse {
 		fmt.Printf("%s loaded models %d available replicas %d\n", res.ServerName, res.NumLoadedModelReplicas, res.AvailableReplicas)
 	} else {
-		resBytesPretty, err := json.MarshalIndent(res, "", "    ")
-		if err != nil {
-			return err
-		}
-		fmt.Printf("%s\n", string(resBytesPretty))
+		printProto(res)
 	}
 	return nil
 }
 
-func (sc *SchedulerClient) UnloadModel(modelName string, verbose bool) error {
+func (sc *SchedulerClient) UnloadModel(modelName string, showRequest bool, showResponse bool) error {
 	req := &scheduler.UnloadModelRequest{
 		Model: &scheduler.ModelReference{
 			Name: modelName,
 		},
+	}
+	if showRequest {
+		printProto(req)
 	}
 	conn, err := sc.getConnection()
 	if err != nil {
 		return err
 	}
 	grpcClient := scheduler.NewSchedulerClient(conn)
-	_, err = grpcClient.UnloadModel(context.Background(), req)
+	res, err := grpcClient.UnloadModel(context.Background(), req)
 	if err != nil {
 		return err
 	}
-	if verbose {
-		fmt.Printf("Scheduled model %s for unload\n", req.Model.Name)
+	if showResponse {
+		printProto(res)
 	}
 	return nil
 }
 
-func (sc *SchedulerClient) StartExperiment(data []byte, verbose bool) error {
-	if verbose {
-		fmt.Printf("%s\n", string(data))
-	}
+func (sc *SchedulerClient) StartExperiment(data []byte, showRequest bool, showResponse bool) error {
 	experiment := &mlopsv1alpha1.Experiment{}
 	err := yaml.Unmarshal(data, experiment)
 	if err != nil {
@@ -187,43 +196,52 @@ func (sc *SchedulerClient) StartExperiment(data []byte, verbose bool) error {
 		return err
 	}
 	req := &scheduler.StartExperimentRequest{Experiment: schExperiment}
+	if showRequest {
+		printProto(req)
+	}
 	conn, err := sc.getConnection()
 	if err != nil {
 		return err
 	}
 	grpcClient := scheduler.NewSchedulerClient(conn)
-	_, err = grpcClient.StartExperiment(context.Background(), req)
+	res, err := grpcClient.StartExperiment(context.Background(), req)
 	if err != nil {
 		return err
 	}
-	if verbose {
-		fmt.Printf("Scheduled experiment %s\n", schExperiment.Name)
+	if showResponse {
+		printProto(res)
 	}
 	return nil
 }
 
-func (sc *SchedulerClient) StopExperiment(experimentName string, verbose bool) error {
+func (sc *SchedulerClient) StopExperiment(experimentName string, showRequest bool, showResponse bool) error {
 	req := &scheduler.StopExperimentRequest{
 		Name: experimentName,
 	}
+	if showRequest {
+		printProto(req)
+	}
 	conn, err := sc.getConnection()
 	if err != nil {
 		return err
 	}
 	grpcClient := scheduler.NewSchedulerClient(conn)
-	_, err = grpcClient.StopExperiment(context.Background(), req)
+	res, err := grpcClient.StopExperiment(context.Background(), req)
 	if err != nil {
 		return err
 	}
-	if verbose {
-		fmt.Printf("Scheduled experiment %s to stop\n", req.Name)
+	if showResponse {
+		printProto(res)
 	}
 	return nil
 }
 
-func (sc *SchedulerClient) ExperimentStatus(experimentName string, verbose bool, wait bool) error {
+func (sc *SchedulerClient) ExperimentStatus(experimentName string, showRequest bool, showResponse bool, wait bool) error {
 	req := &scheduler.ExperimentStatusRequest{
 		Name: experimentName,
+	}
+	if showRequest {
+		printProto(req)
 	}
 	conn, err := sc.getConnection()
 	if err != nil {
@@ -248,22 +266,15 @@ func (sc *SchedulerClient) ExperimentStatus(experimentName string, verbose bool,
 			return err
 		}
 	}
-	if verbose {
-		resBytesPretty, err := json.MarshalIndent(res, "", "    ")
-		if err != nil {
-			return err
-		}
-		fmt.Printf("%s\n", string(resBytesPretty))
+	if showResponse {
+		printProto(res)
 	} else {
 		fmt.Printf("%v", res.Active)
 	}
 	return nil
 }
 
-func (sc *SchedulerClient) LoadPipeline(data []byte, verbose bool) error {
-	if verbose {
-		fmt.Printf("%s\n", string(data))
-	}
+func (sc *SchedulerClient) LoadPipeline(data []byte, showRequest bool, showResponse bool) error {
 	pipeline := &mlopsv1alpha1.Pipeline{}
 	err := yaml.Unmarshal(data, pipeline)
 	if err != nil {
@@ -274,59 +285,81 @@ func (sc *SchedulerClient) LoadPipeline(data []byte, verbose bool) error {
 		return err
 	}
 	req := &scheduler.LoadPipelineRequest{Pipeline: schPipeline}
+	if showRequest {
+		printProto(req)
+	}
 	conn, err := sc.getConnection()
 	if err != nil {
 		return err
 	}
 	grpcClient := scheduler.NewSchedulerClient(conn)
-	_, err = grpcClient.LoadPipeline(context.Background(), req)
+	res, err := grpcClient.LoadPipeline(context.Background(), req)
 	if err != nil {
 		return err
 	}
-	if verbose {
-		fmt.Printf("Scheduled pipeline %s for load\n", req.Pipeline.Name)
+	if showResponse {
+		printProto(res)
 	}
 	return nil
 }
 
-func (sc *SchedulerClient) UnloadPipeline(pipelineName string, verbose bool) error {
+func (sc *SchedulerClient) UnloadPipeline(pipelineName string, showRequest bool, showResponse bool) error {
 	req := &scheduler.UnloadPipelineRequest{
 		Name: pipelineName,
 	}
+	if showRequest {
+		printProto(req)
+	}
 	conn, err := sc.getConnection()
 	if err != nil {
 		return err
 	}
 	grpcClient := scheduler.NewSchedulerClient(conn)
-	_, err = grpcClient.UnloadPipeline(context.Background(), req)
+	res, err := grpcClient.UnloadPipeline(context.Background(), req)
 	if err != nil {
 		return err
 	}
-	if verbose {
-		fmt.Printf("Scheduled pipeline %s for unload\n", req.Name)
+	if showResponse {
+		printProto(res)
 	}
 	return nil
 }
 
-func (sc *SchedulerClient) PipelineStatus(pipelineName string, verbose bool) error {
+func (sc *SchedulerClient) PipelineStatus(pipelineName string, showRequest bool, showResponse bool, waitCondition string) error {
 	req := &scheduler.PipelineStatusRequest{
 		Name: pipelineName,
+	}
+	if showRequest {
+		printProto(req)
 	}
 	conn, err := sc.getConnection()
 	if err != nil {
 		return err
 	}
 	grpcClient := scheduler.NewSchedulerClient(conn)
-	res, err := grpcClient.PipelineStatus(context.Background(), req)
-	if err != nil {
-		return err
-	}
-	if verbose {
-		resBytesPretty, err := json.MarshalIndent(res, "", "    ")
+	var res *scheduler.PipelineStatusResponse
+	if waitCondition != "" {
+		for {
+			res, err = grpcClient.PipelineStatus(context.Background(), req)
+			if err != nil {
+				return err
+			}
+			if len(res.Versions) > 0 {
+				modelStatus := res.Versions[0].GetState().GetStatus().String()
+				if modelStatus == waitCondition {
+					break
+				}
+			}
+			time.Sleep(1 * time.Second)
+		}
+	} else {
+		res, err = grpcClient.PipelineStatus(context.Background(), req)
 		if err != nil {
 			return err
 		}
-		fmt.Printf("%s\n", string(resBytesPretty))
+	}
+	if showResponse {
+		printProto(res)
 	} else {
 		if len(res.Versions) > 0 {
 			fmt.Printf("%v", res.Versions[0].State.Status.String())

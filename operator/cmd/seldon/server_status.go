@@ -28,12 +28,16 @@ func createServerStatus() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			verbose, err := cmd.Flags().GetBool(verboseFlag)
+			showRequest, err := cmd.Flags().GetBool(showRequestFlag)
+			if err != nil {
+				return err
+			}
+			showResponse, err := cmd.Flags().GetBool(showResponseFlag)
 			if err != nil {
 				return err
 			}
 			schedulerClient := cli.NewSchedulerClient(schedulerHost, schedulerPort)
-			err = schedulerClient.ServerStatus(serverName, verbose)
+			err = schedulerClient.ServerStatus(serverName, showRequest, showResponse)
 			return err
 		},
 	}

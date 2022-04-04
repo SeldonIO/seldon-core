@@ -6,4 +6,6 @@ data:
   agent.yaml: |-
     rclone: 
       config_secrets: ["seldon-rclone-gs-public"]
-
+    kafka:
+      active: true
+      broker: "seldon-kafka-plain-bootstrap.kafka:9092"

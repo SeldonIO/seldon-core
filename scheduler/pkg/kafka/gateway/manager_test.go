@@ -25,9 +25,9 @@ func TestManagerAddModel(t *testing.T) {
 			name:                "basic with empty stream spec",
 			modelName:           "foo",
 			streamSpec:          nil,
-			expectedInputTopic:  "foo-in",
-			expectedOutputTopic: "foo-out",
-			expectedErrorTopic:  "foo-err",
+			expectedInputTopic:  "seldon.default.model.foo.inputs",
+			expectedOutputTopic: "seldon.default.model.foo.outputs",
+			expectedErrorTopic:  "seldon-errors",
 		},
 		{
 			name:      "basic with stream spec",
@@ -38,13 +38,13 @@ func TestManagerAddModel(t *testing.T) {
 			},
 			expectedInputTopic:  "input",
 			expectedOutputTopic: "output",
-			expectedErrorTopic:  "foo-err",
+			expectedErrorTopic:  "seldon-errors",
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			logger := log.New()
-			km := NewKafkaManager(logger, &KafkaServerConfig{})
+			km := NewKafkaManager(logger, &KafkaServerConfig{}, "default")
 			km.active = true
 			err := km.AddModel(test.modelName, test.streamSpec)
 			g.Expect(err).To(BeNil())

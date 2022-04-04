@@ -118,7 +118,7 @@ func main() {
 		Host:     envoyHost,
 		HttpPort: envoyPort,
 		GrpcPort: envoyPort,
-	})
+	}, namespace)
 	defer func() { _ = kafkaManager.Stop() }()
 
 	kafkaManager.StartConfigListener(agentConfigHandler)

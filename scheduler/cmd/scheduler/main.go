@@ -21,7 +21,9 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/chainer"
+	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/xdscache"
+
+	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/dataflow"
 	"github.com/seldonio/seldon-core/scheduler/pkg/store/pipeline"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/store/experiment"
@@ -43,11 +45,15 @@ import (
 )
 
 var (
-	envoyPort     uint
-	agentPort     uint
-	schedulerPort uint
-	chainerPort   uint
-	namespace     string
+	envoyPort               uint
+	agentPort               uint
+	schedulerPort           uint
+	chainerPort             uint
+	namespace               string
+	pipelineGatewayHost     string
+	pipelineGatewayHttpPort int
+	pipelineGatewayGrpcPort int
+	logLevel                string
 
 	nodeID string
 )
@@ -64,8 +70,8 @@ func init() {
 	// The agent port to listen for agent subscriptions
 	flag.UintVar(&agentPort, "agent-port", 9005, "agent server port")
 
-	// The chainer port to listen for data flow agents
-	flag.UintVar(&chainerPort, "chainer-port", 9008, "chainer server port")
+	// The dataflow port to listen for data flow agents
+	flag.UintVar(&chainerPort, "dataflow-port", 9008, "dataflow server port")
 
 	// Tell Envoy to use this Node ID
 	flag.StringVar(&nodeID, "nodeID", "test-id", "Node ID")
@@ -73,6 +79,10 @@ func init() {
 	// Kubernetes namespace
 	flag.StringVar(&namespace, "namespace", "", "Namespace")
 
+	flag.StringVar(&pipelineGatewayHost, "pipeline-gateway-host", "0.0.0.0", "Pipeline gateway server host")
+	flag.IntVar(&pipelineGatewayHttpPort, "pipeline-gateway-http-port", 9010, "Pipeline gateway server http port")
+	flag.IntVar(&pipelineGatewayGrpcPort, "pipeline-gateway-grpc-port", 9011, "Pipeline gateway server grpc port")
+	flag.StringVar(&logLevel, "log-level", "debug", "Log level - examples: debug, info, error")
 }
 
 func getNamespace() string {
@@ -88,8 +98,13 @@ func getNamespace() string {
 
 func main() {
 	logger := log.New()
-	logger.SetLevel(log.DebugLevel)
 	flag.Parse()
+	logIntLevel, err := log.ParseLevel(logLevel)
+	if err != nil {
+		logger.WithError(err).Fatalf("Failed to set log level %s", logLevel)
+	}
+	logger.Infof("Setting log level to %s", logLevel)
+	logger.SetLevel(logIntLevel)
 
 	namespace = getNamespace()
 
@@ -110,9 +125,15 @@ func main() {
 		server.RunServer(ctx, srv, envoyPort)
 	}()
 
+	ps := pipeline.NewPipelineStore(logger, eventHub)
 	ss := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
 	es := experiment.NewExperimentServer(logger, eventHub)
-	_ = processor.NewIncrementalProcessor(cache, nodeID, logger, ss, es, eventHub)
+	pipelineGatewayDetails := xdscache.PipelineGatewayDetails{
+		Host:     pipelineGatewayHost,
+		HttpPort: pipelineGatewayHttpPort,
+		GrpcPort: pipelineGatewayGrpcPort,
+	}
+	_ = processor.NewIncrementalProcessor(cache, nodeID, logger, ss, es, ps, eventHub, &pipelineGatewayDetails)
 	sched := scheduler.NewSimpleScheduler(
 		logger,
 		ss,
@@ -120,9 +141,7 @@ func main() {
 	)
 	as := agent.NewAgentServer(logger, ss, sched, eventHub)
 
-	ps := pipeline.NewPipelineStore(logger, eventHub)
-
-	cs := chainer.NewChainerServer(logger, eventHub, ps, namespace)
+	cs := dataflow.NewChainerServer(logger, eventHub, ps, namespace)
 	go func() {
 		err := cs.StartGrpcServer(chainerPort)
 		if err != nil {

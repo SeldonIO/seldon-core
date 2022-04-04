@@ -15,7 +15,10 @@ services:
   dataflow:
     network_mode: "host"
     environment:
-      - SELDON_UPSTREAM_HOST=localhost
+      - SELDON_UPSTREAM_HOST=localhost      
+      - SELDON_UPSTREAM_PORT=${SCHEDULER_DATAFLOW_PORT}
+      - SELDON_KAFKA_BOOTSTRAP_SERVERS=kafka:${KAFKA_BROKER_EXTERNAL_PORT}
+      - SELDON_CORES_COUNT=4
 
   envoy:
     network_mode: "host"
@@ -40,6 +43,24 @@ services:
       - ${SCHEDULER_SERVER_PORT}
       - "--envoy-port"
       - ${ENVOY_DATA_PORT}
+      
+  pipelinegateway:
+    network_mode: "host"    
+    volumes:
+      - type: bind
+        source: ./config
+        target: /mnt/config
+    command:
+      - "/bin/pipelinegateway"
+      - "--log-level"
+      - "debug"
+      - "--config-path"
+      - "/mnt/config"
+      - "--http-port"
+      - ${PIPELINEGATEWAY_HTTP_PORT}
+      - "--grpc-port"
+      - ${PIPELINEGATEWAY_GRPC_PORT}
+  
 
   rclone:
     network_mode: "host"

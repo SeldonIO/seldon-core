@@ -25,16 +25,15 @@ func TestCheckStepReferencesExist(t *testing.T) {
 					},
 					"b": {
 						Name:   "b",
-						Inputs: []string{"a.outputs.t1", "a.inputs", "a.outputs", "a"},
+						Inputs: []string{"a.outputs.t1", "a.inputs", "a.outputs"},
 					},
 					"c": {
 						Name:   "c",
-						Inputs: []string{"b"},
+						Inputs: []string{"b.inputs"},
 					},
-					"": {
-						Name:   "",
-						Inputs: []string{"c"},
-					},
+				},
+				Output: &PipelineOutput{
+					Inputs: []string{"c.outputs"},
 				},
 			},
 		},
@@ -90,11 +89,11 @@ func TestCheckStepInputsSpecifier(t *testing.T) {
 					},
 					"b": {
 						Name:   "b",
-						Inputs: []string{"a.outputs.t1", "a.inputs", "a.outputs", "a"},
+						Inputs: []string{"a.outputs.t1", "a.inputs", "a.outputs"},
 					},
 					"c": {
 						Name:   "c",
-						Inputs: []string{"a.outputs.t1", "b"},
+						Inputs: []string{"a.outputs.t1"},
 					},
 				},
 			},
@@ -135,66 +134,6 @@ func TestCheckStepInputsSpecifier(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			err := checkStepInputs(test.pipelineVersion)
-			if test.err == nil {
-				g.Expect(err).To(BeNil())
-			} else {
-				g.Expect(err.Error()).To(Equal(test.err.Error()))
-			}
-			err = validate(test.pipelineVersion)
-			if test.err == nil {
-				g.Expect(err).To(BeNil())
-			} else {
-				g.Expect(err.Error()).To(Equal(test.err.Error()))
-			}
-		})
-	}
-}
-
-func TestCheckOnlyOneInput(t *testing.T) {
-	g := NewGomegaWithT(t)
-	tests := []validateTest{
-		{
-			name: "single input ok",
-			pipelineVersion: &PipelineVersion{
-				Name: "test",
-				Steps: map[string]*PipelineStep{
-					"a": {
-						Name: "a",
-					},
-					"b": {
-						Name:   "b",
-						Inputs: []string{"a"},
-					},
-					"c": {
-						Name:   "c",
-						Inputs: []string{"b"},
-					},
-					"": {
-						Name:   "",
-						Inputs: []string{"c"},
-					},
-				},
-			},
-		},
-		{
-			name: "multiple inputs",
-			pipelineVersion: &PipelineVersion{
-				Name: "test",
-				Steps: map[string]*PipelineStep{
-					"a": {
-						Name: "a",
-					},
-					"b": {
-						Name: "b",
-					},
-				},
-			},
-			err: &PipelineMultipleInputsErr{pipeline: "test"},
-		},
-	}
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			err := checkOnlyOneInput(test.pipelineVersion)
 			if test.err == nil {
 				g.Expect(err).To(BeNil())
 			} else {

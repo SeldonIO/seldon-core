@@ -4,15 +4,15 @@
 package io.seldon.mlops.chainer;
 
 @kotlin.jvm.JvmSynthetic
-public inline fun pipelineStepUpdate(block: io.seldon.mlops.chainer.PipelineStepUpdateKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate =
+inline fun pipelineStepUpdate(block: io.seldon.mlops.chainer.PipelineStepUpdateKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate =
   io.seldon.mlops.chainer.PipelineStepUpdateKt.Dsl._create(io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.newBuilder()).apply { block() }._build()
-public object PipelineStepUpdateKt {
+object PipelineStepUpdateKt {
   @kotlin.OptIn(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
   @com.google.protobuf.kotlin.ProtoDslMarker
-  public class Dsl private constructor(
+  class Dsl private constructor(
     private val _builder: io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.Builder
   ) {
-    public companion object {
+    companion object {
       @kotlin.jvm.JvmSynthetic
       @kotlin.PublishedApi
       internal fun _create(builder: io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.Builder): Dsl = Dsl(builder)
@@ -27,7 +27,7 @@ public object PipelineStepUpdateKt {
      * generics.
      */
     @kotlin.OptIn(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
-    public class SourcesProxy private constructor() : com.google.protobuf.kotlin.DslProxy()
+    class SourcesProxy private constructor() : com.google.protobuf.kotlin.DslProxy()
     /**
      * <pre>
      * https://docs.google.com/document/d/1tX-uaOvngx1RpEyWEZ4EbEcU8D0OgYuRWVb2UAi85n4/edit
@@ -38,8 +38,8 @@ public object PipelineStepUpdateKt {
      * <code>repeated string sources = 1;</code>
      * @return A list containing the sources.
      */
-    public val sources: com.google.protobuf.kotlin.DslList<kotlin.String, SourcesProxy>
-      @kotlin.jvm.JvmSynthetic
+    val sources: com.google.protobuf.kotlin.DslList<kotlin.String, SourcesProxy>
+      @kotlin.OptIn(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
       get() = com.google.protobuf.kotlin.DslList(
         _builder.getSourcesList()
       )
@@ -55,7 +55,7 @@ public object PipelineStepUpdateKt {
      */
     @kotlin.jvm.JvmSynthetic
     @kotlin.jvm.JvmName("addSources")
-    public fun com.google.protobuf.kotlin.DslList<kotlin.String, SourcesProxy>.add(value: kotlin.String) {
+    fun com.google.protobuf.kotlin.DslList<kotlin.String, SourcesProxy>.add(value: kotlin.String) {
       _builder.addSources(value)
     }
     /**
@@ -70,9 +70,8 @@ public object PipelineStepUpdateKt {
      */
     @kotlin.jvm.JvmSynthetic
     @kotlin.jvm.JvmName("plusAssignSources")
-    @Suppress("NOTHING_TO_INLINE")
-    public inline operator fun com.google.protobuf.kotlin.DslList<kotlin.String, SourcesProxy>.plusAssign(value: kotlin.String) {
-      add(value)
+    operator fun com.google.protobuf.kotlin.DslList<kotlin.String, SourcesProxy>.plusAssign(value: kotlin.String) {
+      _builder.addSources(value)
     }
     /**
      * <pre>
@@ -86,7 +85,7 @@ public object PipelineStepUpdateKt {
      */
     @kotlin.jvm.JvmSynthetic
     @kotlin.jvm.JvmName("addAllSources")
-    public fun com.google.protobuf.kotlin.DslList<kotlin.String, SourcesProxy>.addAll(values: kotlin.collections.Iterable<kotlin.String>) {
+    fun com.google.protobuf.kotlin.DslList<kotlin.String, SourcesProxy>.addAll(values: kotlin.collections.Iterable<kotlin.String>) {
       _builder.addAllSources(values)
     }
     /**
@@ -101,9 +100,8 @@ public object PipelineStepUpdateKt {
      */
     @kotlin.jvm.JvmSynthetic
     @kotlin.jvm.JvmName("plusAssignAllSources")
-    @Suppress("NOTHING_TO_INLINE")
-    public inline operator fun com.google.protobuf.kotlin.DslList<kotlin.String, SourcesProxy>.plusAssign(values: kotlin.collections.Iterable<kotlin.String>) {
-      addAll(values)
+    operator fun com.google.protobuf.kotlin.DslList<kotlin.String, SourcesProxy>.plusAssign(values: kotlin.collections.Iterable<kotlin.String>) {
+      _builder.addAllSources(values)
     }
     /**
      * <pre>
@@ -118,7 +116,7 @@ public object PipelineStepUpdateKt {
      */
     @kotlin.jvm.JvmSynthetic
     @kotlin.jvm.JvmName("setSources")
-    public operator fun com.google.protobuf.kotlin.DslList<kotlin.String, SourcesProxy>.set(index: kotlin.Int, value: kotlin.String) {
+    operator fun com.google.protobuf.kotlin.DslList<kotlin.String, SourcesProxy>.set(index: kotlin.Int, value: kotlin.String) {
       _builder.setSources(index, value)
     }/**
      * <pre>
@@ -131,13 +129,13 @@ public object PipelineStepUpdateKt {
      */
     @kotlin.jvm.JvmSynthetic
     @kotlin.jvm.JvmName("clearSources")
-    public fun com.google.protobuf.kotlin.DslList<kotlin.String, SourcesProxy>.clear() {
+    fun com.google.protobuf.kotlin.DslList<kotlin.String, SourcesProxy>.clear() {
       _builder.clearSources()
     }
     /**
      * <code>string sink = 2;</code>
      */
-    public var sink: kotlin.String
+    var sink: kotlin.String
       @JvmName("getSink")
       get() = _builder.getSink()
       @JvmName("setSink")
@@ -147,14 +145,14 @@ public object PipelineStepUpdateKt {
     /**
      * <code>string sink = 2;</code>
      */
-    public fun clearSink() {
+    fun clearSink() {
       _builder.clearSink()
     }
 
     /**
      * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType ty = 3;</code>
      */
-    public var ty: io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType
+    var ty: io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType
       @JvmName("getTy")
       get() = _builder.getTy()
       @JvmName("setTy")
@@ -164,7 +162,7 @@ public object PipelineStepUpdateKt {
     /**
      * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType ty = 3;</code>
      */
-    public fun clearTy() {
+    fun clearTy() {
       _builder.clearTy()
     }
 
@@ -175,7 +173,7 @@ public object PipelineStepUpdateKt {
      *
      * <code>bool passEmptyResponses = 4;</code>
      */
-    public var passEmptyResponses: kotlin.Boolean
+    var passEmptyResponses: kotlin.Boolean
       @JvmName("getPassEmptyResponses")
       get() = _builder.getPassEmptyResponses()
       @JvmName("setPassEmptyResponses")
@@ -189,7 +187,7 @@ public object PipelineStepUpdateKt {
      *
      * <code>bool passEmptyResponses = 4;</code>
      */
-    public fun clearPassEmptyResponses() {
+    fun clearPassEmptyResponses() {
       _builder.clearPassEmptyResponses()
     }
 
@@ -200,7 +198,7 @@ public object PipelineStepUpdateKt {
      *
      * <code>optional uint32 joinWindowMs = 5;</code>
      */
-    public var joinWindowMs: kotlin.Int
+    var joinWindowMs: kotlin.Int
       @JvmName("getJoinWindowMs")
       get() = _builder.getJoinWindowMs()
       @JvmName("setJoinWindowMs")
@@ -214,7 +212,7 @@ public object PipelineStepUpdateKt {
      *
      * <code>optional uint32 joinWindowMs = 5;</code>
      */
-    public fun clearJoinWindowMs() {
+    fun clearJoinWindowMs() {
       _builder.clearJoinWindowMs()
     }
     /**
@@ -225,11 +223,191 @@ public object PipelineStepUpdateKt {
      * <code>optional uint32 joinWindowMs = 5;</code>
      * @return Whether the joinWindowMs field is set.
      */
-    public fun hasJoinWindowMs(): kotlin.Boolean {
+    fun hasJoinWindowMs(): kotlin.Boolean {
       return _builder.hasJoinWindowMs()
     }
+
+    /**
+     * An uninstantiable, behaviorless type to represent the field in
+     * generics.
+     */
+    @kotlin.OptIn(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
+    class TensorNamesProxy private constructor() : com.google.protobuf.kotlin.DslProxy()
+    /**
+     * <pre>
+     * optional list of output tensors - must be same cardinality as tensors in inputs
+     * </pre>
+     *
+     * <code>repeated string tensorNames = 6;</code>
+     * @return A list containing the tensorNames.
+     */
+    val tensorNames: com.google.protobuf.kotlin.DslList<kotlin.String, TensorNamesProxy>
+      @kotlin.OptIn(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
+      get() = com.google.protobuf.kotlin.DslList(
+        _builder.getTensorNamesList()
+      )
+    /**
+     * <pre>
+     * optional list of output tensors - must be same cardinality as tensors in inputs
+     * </pre>
+     *
+     * <code>repeated string tensorNames = 6;</code>
+     * @param value The tensorNames to add.
+     */
+    @kotlin.jvm.JvmSynthetic
+    @kotlin.jvm.JvmName("addTensorNames")
+    fun com.google.protobuf.kotlin.DslList<kotlin.String, TensorNamesProxy>.add(value: kotlin.String) {
+      _builder.addTensorNames(value)
+    }
+    /**
+     * <pre>
+     * optional list of output tensors - must be same cardinality as tensors in inputs
+     * </pre>
+     *
+     * <code>repeated string tensorNames = 6;</code>
+     * @param value The tensorNames to add.
+     */
+    @kotlin.jvm.JvmSynthetic
+    @kotlin.jvm.JvmName("plusAssignTensorNames")
+    operator fun com.google.protobuf.kotlin.DslList<kotlin.String, TensorNamesProxy>.plusAssign(value: kotlin.String) {
+      _builder.addTensorNames(value)
+    }
+    /**
+     * <pre>
+     * optional list of output tensors - must be same cardinality as tensors in inputs
+     * </pre>
+     *
+     * <code>repeated string tensorNames = 6;</code>
+     * @param values The tensorNames to add.
+     */
+    @kotlin.jvm.JvmSynthetic
+    @kotlin.jvm.JvmName("addAllTensorNames")
+    fun com.google.protobuf.kotlin.DslList<kotlin.String, TensorNamesProxy>.addAll(values: kotlin.collections.Iterable<kotlin.String>) {
+      _builder.addAllTensorNames(values)
+    }
+    /**
+     * <pre>
+     * optional list of output tensors - must be same cardinality as tensors in inputs
+     * </pre>
+     *
+     * <code>repeated string tensorNames = 6;</code>
+     * @param values The tensorNames to add.
+     */
+    @kotlin.jvm.JvmSynthetic
+    @kotlin.jvm.JvmName("plusAssignAllTensorNames")
+    operator fun com.google.protobuf.kotlin.DslList<kotlin.String, TensorNamesProxy>.plusAssign(values: kotlin.collections.Iterable<kotlin.String>) {
+      _builder.addAllTensorNames(values)
+    }
+    /**
+     * <pre>
+     * optional list of output tensors - must be same cardinality as tensors in inputs
+     * </pre>
+     *
+     * <code>repeated string tensorNames = 6;</code>
+     * @param index The index to set the value at.
+     * @param value The tensorNames to set.
+     */
+    @kotlin.jvm.JvmSynthetic
+    @kotlin.jvm.JvmName("setTensorNames")
+    operator fun com.google.protobuf.kotlin.DslList<kotlin.String, TensorNamesProxy>.set(index: kotlin.Int, value: kotlin.String) {
+      _builder.setTensorNames(index, value)
+    }/**
+     * <pre>
+     * optional list of output tensors - must be same cardinality as tensors in inputs
+     * </pre>
+     *
+     * <code>repeated string tensorNames = 6;</code>
+     */
+    @kotlin.jvm.JvmSynthetic
+    @kotlin.jvm.JvmName("clearTensorNames")
+    fun com.google.protobuf.kotlin.DslList<kotlin.String, TensorNamesProxy>.clear() {
+      _builder.clearTensorNames()
+    }
+    /**
+     * An uninstantiable, behaviorless type to represent the field in
+     * generics.
+     */
+    @kotlin.OptIn(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
+    class TensorMapProxy private constructor() : com.google.protobuf.kotlin.DslProxy()
+    /**
+     * <pre>
+     * optional map of tensor name mappings
+     * </pre>
+     *
+     * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+     */
+     val tensorMap: com.google.protobuf.kotlin.DslMap<kotlin.String, kotlin.String, TensorMapProxy>
+      @kotlin.jvm.JvmSynthetic
+      @JvmName("getTensorMapMap")
+      get() = com.google.protobuf.kotlin.DslMap(
+        _builder.getTensorMapMap()
+      )
+    /**
+     * <pre>
+     * optional map of tensor name mappings
+     * </pre>
+     *
+     * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+     */
+    @JvmName("putTensorMap")
+    fun com.google.protobuf.kotlin.DslMap<kotlin.String, kotlin.String, TensorMapProxy>
+      .put(key: kotlin.String, value: kotlin.String) {
+         _builder.putTensorMap(key, value)
+       }
+    /**
+     * <pre>
+     * optional map of tensor name mappings
+     * </pre>
+     *
+     * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+     */
+    @kotlin.jvm.JvmSynthetic
+    @JvmName("setTensorMap")
+    inline operator fun com.google.protobuf.kotlin.DslMap<kotlin.String, kotlin.String, TensorMapProxy>
+      .set(key: kotlin.String, value: kotlin.String) {
+         put(key, value)
+       }
+    /**
+     * <pre>
+     * optional map of tensor name mappings
+     * </pre>
+     *
+     * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+     */
+    @kotlin.jvm.JvmSynthetic
+    @JvmName("removeTensorMap")
+    fun com.google.protobuf.kotlin.DslMap<kotlin.String, kotlin.String, TensorMapProxy>
+      .remove(key: kotlin.String) {
+         _builder.removeTensorMap(key)
+       }
+    /**
+     * <pre>
+     * optional map of tensor name mappings
+     * </pre>
+     *
+     * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+     */
+    @kotlin.jvm.JvmSynthetic
+    @JvmName("putAllTensorMap")
+    fun com.google.protobuf.kotlin.DslMap<kotlin.String, kotlin.String, TensorMapProxy>
+      .putAll(map: kotlin.collections.Map<kotlin.String, kotlin.String>) {
+         _builder.putAllTensorMap(map)
+       }
+    /**
+     * <pre>
+     * optional map of tensor name mappings
+     * </pre>
+     *
+     * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+     */
+    @kotlin.jvm.JvmSynthetic
+    @JvmName("clearTensorMap")
+    fun com.google.protobuf.kotlin.DslMap<kotlin.String, kotlin.String, TensorMapProxy>
+      .clear() {
+         _builder.clearTensorMap()
+       }
   }
 }
 @kotlin.jvm.JvmSynthetic
-public inline fun io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.copy(block: io.seldon.mlops.chainer.PipelineStepUpdateKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate =
+inline fun io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.copy(block: io.seldon.mlops.chainer.PipelineStepUpdateKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate =
   io.seldon.mlops.chainer.PipelineStepUpdateKt.Dsl._create(this.toBuilder()).apply { block() }._build()

@@ -1,5 +1,10 @@
 package resources
 
+const (
+	PipelineGatewayHttpClusterName = "pipelinegateway_http"
+	PipelineGatewayGrpcClusterName = "pipelinegateway_grpc"
+)
+
 type Listener struct {
 	Name    string
 	Address string
@@ -21,19 +26,24 @@ type TrafficSplits struct {
 	GrpcCluster   string
 }
 
-type ModelVersionKey struct {
-	Name    string
-	Version uint32
+type RouteVersionKey struct {
+	RouteName string
+	ModelName string
+	Version   uint32
 }
 
 type Cluster struct {
 	Name      string
 	Grpc      bool
 	Endpoints map[string]Endpoint
-	Routes    map[ModelVersionKey]bool
+	Routes    map[RouteVersionKey]bool
 }
 
 type Endpoint struct {
 	UpstreamHost string
 	UpstreamPort uint32
+}
+
+type PipelineRoute struct {
+	PipelineName string
 }

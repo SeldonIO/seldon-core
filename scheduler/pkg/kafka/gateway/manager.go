@@ -1,8 +1,9 @@
 package gateway
 
 import (
-	"fmt"
 	"sync"
+
+	"github.com/seldonio/seldon-core/scheduler/pkg/kafka"
 
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/config"
@@ -20,19 +21,21 @@ type KafkaManager struct {
 	broker       string
 	serverConfig *KafkaServerConfig
 	configChan   chan config.AgentConfiguration
+	topicNamer   *kafka.TopicNamer
 }
 
 func (km *KafkaManager) Name() string {
 	panic("implement me")
 }
 
-func NewKafkaManager(logger log.FieldLogger, serverConfig *KafkaServerConfig) *KafkaManager {
+func NewKafkaManager(logger log.FieldLogger, serverConfig *KafkaServerConfig, namespace string) *KafkaManager {
 	return &KafkaManager{
 		active:       false,
 		logger:       logger.WithField("source", "KafkaManager"),
 		gateways:     make(map[string]*InferKafkaGateway),
 		serverConfig: serverConfig,
 		configChan:   make(chan config.AgentConfiguration),
+		topicNamer:   kafka.NewTopicNamer(namespace),
 	}
 }
 
@@ -84,9 +87,9 @@ func (km *KafkaManager) AddModel(modelName string, streamSpec *scheduler.StreamS
 		} else {
 			modelConfig := &KafkaModelConfig{
 				ModelName:   modelName,
-				InputTopic:  fmt.Sprintf("%s-in", modelName),
-				OutputTopic: fmt.Sprintf("%s-out", modelName),
-				ErrorTopic:  fmt.Sprintf("%s-err", modelName),
+				InputTopic:  km.topicNamer.GetModelTopicInputs(modelName),
+				OutputTopic: km.topicNamer.GetModelTopicOutputs(modelName),
+				ErrorTopic:  "seldon-errors",
 			}
 			if streamSpec != nil {
 				if streamSpec.InputTopic != "" {
@@ -96,7 +99,7 @@ func (km *KafkaManager) AddModel(modelName string, streamSpec *scheduler.StreamS
 					modelConfig.OutputTopic = streamSpec.OutputTopic
 				}
 			}
-			km.logger.Infof("Adding consumer to broker %s for model %s", km.broker, modelName)
+			km.logger.Infof("Adding consumer to broker %s for model %s, input topic %s output topic %s", km.broker, modelName, modelConfig.InputTopic, modelConfig.OutputTopic)
 			inferGateway, err := NewInferKafkaGateway(km.logger, DEFAULT_NWORKERS, km.broker, modelConfig, km.serverConfig)
 			km.gateways[modelName] = inferGateway
 			if err != nil {

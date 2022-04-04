@@ -260,7 +260,7 @@ func TestLoadPipeline(t *testing.T) {
 						},
 						{
 							Name:   "b",
-							Inputs: []string{"a"},
+							Inputs: []string{"a.inputs"},
 						},
 					},
 				},
@@ -278,36 +278,15 @@ func TestLoadPipeline(t *testing.T) {
 						},
 						{
 							Name:   "b",
-							Inputs: []string{"a"},
+							Inputs: []string{"a.inputs"},
 						},
 					},
 					Output: &pb.PipelineOutput{
-						Inputs: []string{"b"},
+						Inputs: []string{"b.outputs"},
 					},
 				},
 			},
 			server: &SchedulerServer{pipelineHandler: pipeline.NewPipelineStore(log.New(), nil)},
-		},
-		{
-			name: "pipeline with two input steps",
-			req: &pb.LoadPipelineRequest{
-				Pipeline: &pb.Pipeline{
-					Name: "p1",
-					Steps: []*pb.PipelineStep{
-						{
-							Name: "a",
-						},
-						{
-							Name: "b",
-						},
-					},
-					Output: &pb.PipelineOutput{
-						Inputs: []string{"b"},
-					},
-				},
-			},
-			server: &SchedulerServer{pipelineHandler: pipeline.NewPipelineStore(log.New(), nil)},
-			err:    true,
 		},
 	}
 
@@ -352,7 +331,7 @@ func TestUnloadPipeline(t *testing.T) {
 						},
 						{
 							Name:   "b",
-							Inputs: []string{"a"},
+							Inputs: []string{"a.outputs"},
 						},
 					},
 				},
@@ -408,7 +387,7 @@ func TestPipelineStatus(t *testing.T) {
 						},
 						{
 							Name:   "b",
-							Inputs: []string{"a"},
+							Inputs: []string{"a.outputs"},
 						},
 					},
 				},
@@ -426,7 +405,7 @@ func TestPipelineStatus(t *testing.T) {
 								},
 								{
 									Name:   "b",
-									Inputs: []string{"a"},
+									Inputs: []string{"a.outputs"},
 								},
 							},
 						},

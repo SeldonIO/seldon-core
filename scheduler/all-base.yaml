@@ -37,7 +37,7 @@ services:
     image: "${DATAFLOW_IMAGE_AND_TAG}"
     environment:
       - SELDON_UPSTREAM_PORT=${SCHEDULER_DATAFLOW_PORT}
-      - SELDON_KAFKA_BOOTSTRAP_SERVERS="kafka:${KAFKA_BROKER_PORT}"
+      - SELDON_KAFKA_BOOTSTRAP_SERVERS=kafka:${KAFKA_BROKER_INTERNAL_PORT}
       - SELDON_CORES_COUNT=4
 
   envoy:
@@ -81,6 +81,22 @@ services:
       - "--envoy-port"
       - ${ENVOY_DATA_PORT}
 
+  pipelinegateway:
+    build:
+      dockerfile: ./Dockerfile.pipelinegateway
+      context: .
+    image: "${PIPELINEGATEWAY_IMAGE_AND_TAG}"
+    command:
+      - "/bin/pipelinegateway"
+      - "--log-level"
+      - "debug"
+      - "--config-path"
+      - "/mnt/config"
+      - "--http-port"
+      - ${PIPELINEGATEWAY_HTTP_PORT}
+      - "--grpc-port"
+      - ${PIPELINEGATEWAY_GRPC_PORT}
+      
   kafka:
     image: "${KAFKA_IMAGE_AND_TAG}"
     command: [
@@ -88,7 +104,8 @@ services:
       "./bin/kafka-storage.sh format -t $$(./bin/kafka-storage.sh random-uuid) -c ./config/kraft/server.properties && ./bin/kafka-server-start.sh ./config/kraft/server.properties"
     ]
     ports:
-    - "${KAFKA_BROKER_PORT}:${KAFKA_BROKER_PORT}"
+    - "${KAFKA_BROKER_INTERNAL_PORT}:${KAFKA_BROKER_INTERNAL_PORT}"
+    - "${KAFKA_BROKER_EXTERNAL_PORT}:${KAFKA_BROKER_EXTERNAL_PORT}"    
     environment:
       LOG_DIR: "/tmp/logs"
 

@@ -9,6 +9,7 @@ type Pipeline struct {
 	Name        string
 	LastVersion uint32
 	Versions    []*PipelineVersion
+	Deleted     bool
 }
 
 func (p *Pipeline) GetPipelineVersion(versionNumber uint32) *PipelineVersion {
@@ -85,6 +86,7 @@ func (ps *PipelineState) setState(status PipelineStatus, reason string) {
 type PipelineStep struct {
 	Name             string
 	Inputs           []string
+	TensorMap        map[string]string
 	JoinWindowMs     *uint32
 	PassEmptyOutputs bool
 }

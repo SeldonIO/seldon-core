@@ -15,23 +15,48 @@ const (
 )
 
 type SeldonXDSCache struct {
-	Listeners map[string]resources.Listener
-	Routes    map[string]resources.Route
-	Clusters  map[string]resources.Cluster
-	logger    logrus.FieldLogger
+	Listeners              map[string]resources.Listener
+	Routes                 map[string]resources.Route
+	Clusters               map[string]resources.Cluster
+	Pipelines              map[string]resources.PipelineRoute
+	PipelineGatewayDetails *PipelineGatewayDetails
+	logger                 logrus.FieldLogger
 }
 
-func NewSeldonXDSCache(logger logrus.FieldLogger) *SeldonXDSCache {
+type PipelineGatewayDetails struct {
+	Host     string
+	HttpPort int
+	GrpcPort int
+}
+
+func NewSeldonXDSCache(logger logrus.FieldLogger, pipelineGatewayDetails *PipelineGatewayDetails) *SeldonXDSCache {
 	return &SeldonXDSCache{
-		Listeners: make(map[string]resources.Listener),
-		Clusters:  make(map[string]resources.Cluster),
-		Routes:    make(map[string]resources.Route),
-		logger:    logger.WithField("source", "XDSCache"),
+		Listeners:              make(map[string]resources.Listener),
+		Clusters:               make(map[string]resources.Cluster),
+		Routes:                 make(map[string]resources.Route),
+		Pipelines:              make(map[string]resources.PipelineRoute),
+		PipelineGatewayDetails: pipelineGatewayDetails,
+		logger:                 logger.WithField("source", "XDSCache"),
 	}
 }
 
 func (xds *SeldonXDSCache) ClusterContents() []types.Resource {
 	var r []types.Resource
+
+	//Add pipeline gateway clusters
+	xds.logger.Infof("Add http pipeline cluster %s host:%s port:%d", resources.PipelineGatewayHttpClusterName, xds.PipelineGatewayDetails.Host, xds.PipelineGatewayDetails.HttpPort)
+	r = append(r, resources.MakeCluster(resources.PipelineGatewayHttpClusterName, []resources.Endpoint{
+		{
+			UpstreamHost: xds.PipelineGatewayDetails.Host,
+			UpstreamPort: uint32(xds.PipelineGatewayDetails.HttpPort),
+		},
+	}, false))
+	r = append(r, resources.MakeCluster(resources.PipelineGatewayGrpcClusterName, []resources.Endpoint{
+		{
+			UpstreamHost: xds.PipelineGatewayDetails.Host,
+			UpstreamPort: uint32(xds.PipelineGatewayDetails.GrpcPort),
+		},
+	}, true))
 
 	for _, c := range xds.Clusters {
 		endpoints := make([]resources.Endpoint, 0, len(c.Endpoints))
@@ -51,7 +76,12 @@ func (xds *SeldonXDSCache) RouteContents() []types.Resource {
 		routesArray = append(routesArray, r)
 	}
 
-	return []types.Resource{resources.MakeRoute(routesArray)}
+	var pipelinesArray []resources.PipelineRoute
+	for _, r := range xds.Pipelines { // Likely to be less pipelines than models
+		pipelinesArray = append(pipelinesArray, r)
+	}
+
+	return []types.Resource{resources.MakeRoute(routesArray, pipelinesArray)}
 }
 
 func (xds *SeldonXDSCache) ListenerContents() []types.Resource {
@@ -65,18 +95,26 @@ func (xds *SeldonXDSCache) ListenerContents() []types.Resource {
 }
 
 //Note: We don;t use endpoints at present as Envoy does not allow strict_dns with EDS
-func (xds *SeldonXDSCache) EndpointsContents() []types.Resource {
-	var r []types.Resource
+//func (xds *SeldonXDSCache) EndpointsContents() []types.Resource {
+//	var r []types.Resource
+//
+//	for _, c := range xds.Clusters {
+//		endpoints := make([]resources.Endpoint, 0, len(c.Endpoints))
+//		for _, value := range c.Endpoints {
+//			endpoints = append(endpoints, value)
+//		}
+//		r = append(r, resources.MakeEndpoint(c.Name, endpoints))
+//	}
+//
+//	return r
+//}
 
-	for _, c := range xds.Clusters {
-		endpoints := make([]resources.Endpoint, 0, len(c.Endpoints))
-		for _, value := range c.Endpoints {
-			endpoints = append(endpoints, value)
-		}
-		r = append(r, resources.MakeEndpoint(c.Name, endpoints))
-	}
+func (xds *SeldonXDSCache) AddPipelineRoute(pipelineName string) {
+	xds.Pipelines[pipelineName] = resources.PipelineRoute{PipelineName: pipelineName}
+}
 
-	return r
+func (xds *SeldonXDSCache) RemovePipelineRoute(pipelineName string) {
+	delete(xds.Pipelines, pipelineName)
 }
 
 func (xds *SeldonXDSCache) AddListener(name string) {
@@ -111,44 +149,44 @@ func (xds *SeldonXDSCache) AddRouteClusterTraffic(routeName string, modelName st
 	xds.Routes[routeName] = route
 }
 
-func (xds *SeldonXDSCache) AddCluster(name string, modelName string, modelVersion uint32, isGrpc bool) {
+func (xds *SeldonXDSCache) AddCluster(name string, routeName string, modelName string, modelVersion uint32, isGrpc bool) {
 	cluster, ok := xds.Clusters[name]
 	if !ok {
 		cluster = resources.Cluster{
 			Name:      name,
 			Endpoints: make(map[string]resources.Endpoint),
-			Routes:    make(map[resources.ModelVersionKey]bool),
+			Routes:    make(map[resources.RouteVersionKey]bool),
 			Grpc:      isGrpc,
 		}
 	}
-	cluster.Routes[resources.ModelVersionKey{Name: modelName, Version: modelVersion}] = true
+	cluster.Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: modelName, Version: modelVersion}] = true
 	xds.Clusters[name] = cluster
 }
 
-func (xds *SeldonXDSCache) RemoveRoute(modelName string) error {
+func (xds *SeldonXDSCache) RemoveRoute(routeName string) error {
 	logger := xds.logger.WithField("func", "RemoveRoute")
-	logger.Infof("Remove routes for model %s", modelName)
-	route, ok := xds.Routes[modelName]
+	logger.Infof("Remove routes for model %s", routeName)
+	route, ok := xds.Routes[routeName]
 	if !ok {
-		logger.Warnf("No route found for model %s", modelName)
+		logger.Warnf("No route found for model %s", routeName)
 		return nil
 	}
-	delete(xds.Routes, modelName)
+	delete(xds.Routes, routeName)
 	for _, cluster := range route.Clusters {
 		httpCluster, ok := xds.Clusters[cluster.HttpCluster]
 		if !ok {
-			return fmt.Errorf("Can't find http cluster for model %s route %+v", modelName, route)
+			return fmt.Errorf("Can't find http cluster for route %s cluster %s route %+v", routeName, cluster.HttpCluster, route)
 		}
-		delete(httpCluster.Routes, resources.ModelVersionKey{Name: cluster.ModelName, Version: cluster.ModelVersion})
+		delete(httpCluster.Routes, resources.RouteVersionKey{RouteName: routeName, ModelName: cluster.ModelName, Version: cluster.ModelVersion})
 		if len(httpCluster.Routes) == 0 {
 			delete(xds.Clusters, cluster.HttpCluster)
 		}
 
 		grpcCluster, ok := xds.Clusters[cluster.GrpcCluster]
 		if !ok {
-			return fmt.Errorf("Can't find grpc cluster for model %s", modelName)
+			return fmt.Errorf("Can't find grpc cluster for route %s cluster %s route %+v", routeName, cluster.GrpcCluster, route)
 		}
-		delete(grpcCluster.Routes, resources.ModelVersionKey{Name: cluster.ModelName, Version: cluster.ModelVersion})
+		delete(grpcCluster.Routes, resources.RouteVersionKey{RouteName: routeName, ModelName: cluster.ModelName, Version: cluster.ModelVersion})
 		if len(grpcCluster.Routes) == 0 {
 			delete(xds.Clusters, cluster.GrpcCluster)
 		}

@@ -26,12 +26,16 @@ func createExperimentStart() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			verbose, err := cmd.Flags().GetBool(verboseFlag)
+			showRequest, err := cmd.Flags().GetBool(showRequestFlag)
+			if err != nil {
+				return err
+			}
+			showResponse, err := cmd.Flags().GetBool(showResponseFlag)
 			if err != nil {
 				return err
 			}
 			schedulerClient := cli.NewSchedulerClient(schedulerHost, schedulerPort)
-			err = schedulerClient.StartExperiment(loadFile(filename), verbose)
+			err = schedulerClient.StartExperiment(loadFile(filename), showRequest, showResponse)
 			return err
 		},
 	}

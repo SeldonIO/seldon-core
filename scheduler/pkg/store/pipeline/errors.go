@@ -48,7 +48,7 @@ type PipelineTerminatingErr struct {
 }
 
 func (pnf *PipelineTerminatingErr) Error() string {
-	return fmt.Sprintf("pipeline %s not found", pnf.pipeline)
+	return fmt.Sprintf("pipeline %s still terminating", pnf.pipeline)
 }
 
 type PipelineAlreadyTerminatedErr struct {

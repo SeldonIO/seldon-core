@@ -41,12 +41,15 @@ import (
 )
 
 const (
-	RouteConfigurationName    = "listener_0"
-	SeldonLoggingHeader       = "Seldon-Logging"
-	EnvoyLogPathPrefix        = "/tmp/request-log"
-	SeldonModelHeader         = "seldon-model"
-	SeldonInternalModelHeader = "seldon-internal-model"
-	SeldonRouteHeader         = "seldon-route"
+	RouteConfigurationName     = "listener_0"
+	SeldonLoggingHeader        = "Seldon-Logging"
+	EnvoyLogPathPrefix         = "/tmp/request-log"
+	SeldonModelHeader          = "seldon-model"
+	SeldonPipelineHeader       = "pipeline"
+	SeldonInternalModelHeader  = "seldon-internal-model"
+	SeldonRouteHeader          = "seldon-route"
+	SeldonModelHeaderSuffix    = "model"
+	SeldonPipelineHeaderSuffix = "pipeline"
 )
 
 func MakeCluster(clusterName string, eps []Endpoint, isGrpc bool) *cluster.Cluster {
@@ -181,75 +184,147 @@ func createWeightedClusterAction(clusterTraffics []TrafficSplits, rest bool) *ro
 	return action
 }
 
-func MakeRoute(routes []Route) *route.RouteConfiguration {
+func makeModelHttpRoute(r Route) *route.Route {
+	rt := &route.Route{
+		Name: fmt.Sprintf("%s_http", r.RouteName),
+		Match: &route.RouteMatch{
+			PathSpecifier: &route.RouteMatch_Prefix{
+				Prefix: "/v2",
+			},
+			Headers: []*route.HeaderMatcher{
+				{
+					Name: SeldonModelHeader, // Header name we will match on
+					HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
+						ExactMatch: r.RouteName,
+					},
+					//TODO: https://github.com/envoyproxy/envoy/blob/c75c1410c8682cb44c9136ce4ad01e6a58e16e8e/api/envoy/api/v2/route/route_components.proto#L1513
+					//HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
+					//	StringMatch: &matcher.StringMatcher{
+					//		MatchPattern: &matcher.StringMatcher_Exact{
+					//			Exact: r.Host,
+					//		},
+					//	},
+					//},
+				},
+			},
+		},
+	}
+
+	rt.Action = createWeightedClusterAction(r.Clusters, true)
+	if r.LogPayloads {
+		rt.ResponseHeadersToAdd = []*core.HeaderValueOption{
+			{Header: &core.HeaderValue{Key: SeldonLoggingHeader, Value: "true"}},
+		}
+	}
+	return rt
+}
+
+func makeModelGrpcRoute(r Route) *route.Route {
+	//TODO there is no easy way to implement version specific gRPC calls so this could mean we need to implement
+	//latest model policy on V2 servers and therefore also for REST as well
+	rt := &route.Route{
+		Name: fmt.Sprintf("%s_grpc", r.RouteName),
+		Match: &route.RouteMatch{
+			PathSpecifier: &route.RouteMatch_Prefix{
+				Prefix: "/inference.GRPCInferenceService",
+			},
+			Headers: []*route.HeaderMatcher{
+				{
+					Name: SeldonModelHeader, // Header name we will match on
+					HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
+						ExactMatch: r.RouteName,
+					},
+					//TODO: https://github.com/envoyproxy/envoy/blob/c75c1410c8682cb44c9136ce4ad01e6a58e16e8e/api/envoy/api/v2/route/route_components.proto#L1513
+					//HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
+					//	StringMatch: &matcher.StringMatcher{
+					//		MatchPattern: &matcher.StringMatcher_Exact{
+					//			Exact: r.Host,
+					//		},
+					//	},
+					//},
+				},
+			},
+		},
+	}
+	rt.Action = createWeightedClusterAction(r.Clusters, false)
+	if r.LogPayloads {
+		rt.ResponseHeadersToAdd = []*core.HeaderValueOption{
+			{Header: &core.HeaderValue{Key: SeldonLoggingHeader, Value: "true"}},
+		}
+	}
+	return rt
+}
+
+func makePipelineHttpRoute(r PipelineRoute) *route.Route {
+	rt := &route.Route{
+		Name: fmt.Sprintf("%s_pipeline_http", r.PipelineName),
+		Match: &route.RouteMatch{
+			PathSpecifier: &route.RouteMatch_Prefix{
+				Prefix: "/v2",
+			},
+			Headers: []*route.HeaderMatcher{
+				{
+					Name: SeldonModelHeader, // Header name we will match on
+					HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
+						ExactMatch: fmt.Sprintf("%s.pipeline", r.PipelineName),
+					},
+				},
+			},
+		},
+		Action: &route.Route_Route{
+			Route: &route.RouteAction{
+				ClusterSpecifier: &route.RouteAction_Cluster{
+					Cluster: PipelineGatewayHttpClusterName,
+				},
+			},
+		},
+	}
+	return rt
+}
+
+func makePipelineGrpcRoute(r PipelineRoute) *route.Route {
+	rt := &route.Route{
+		Name: fmt.Sprintf("%s_pipeline_grpc", r.PipelineName),
+		Match: &route.RouteMatch{
+			PathSpecifier: &route.RouteMatch_Prefix{
+				Prefix: "/inference.GRPCInferenceService",
+			},
+			Headers: []*route.HeaderMatcher{
+				{
+					Name: SeldonModelHeader, // Header name we will match on
+					HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
+						ExactMatch: fmt.Sprintf("%s.pipeline", r.PipelineName),
+					},
+				},
+			},
+		},
+		Action: &route.Route_Route{
+			Route: &route.RouteAction{
+				ClusterSpecifier: &route.RouteAction_Cluster{
+					Cluster: PipelineGatewayGrpcClusterName,
+				},
+			},
+		},
+	}
+	return rt
+}
+
+func MakeRoute(modelRoutes []Route, pipelineRoutes []PipelineRoute) *route.RouteConfiguration {
 	var rts []*route.Route
 
-	for _, r := range routes {
-		rt := &route.Route{
-			Name: fmt.Sprintf("%s_http", r.RouteName),
-			Match: &route.RouteMatch{
-				PathSpecifier: &route.RouteMatch_Prefix{
-					Prefix: "/v2",
-				},
-				Headers: []*route.HeaderMatcher{
-					{
-						Name: SeldonModelHeader, // Header name we will match on
-						HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
-							ExactMatch: r.RouteName,
-						},
-						//TODO: https://github.com/envoyproxy/envoy/blob/c75c1410c8682cb44c9136ce4ad01e6a58e16e8e/api/envoy/api/v2/route/route_components.proto#L1513
-						//HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
-						//	StringMatch: &matcher.StringMatcher{
-						//		MatchPattern: &matcher.StringMatcher_Exact{
-						//			Exact: r.Host,
-						//		},
-						//	},
-						//},
-					},
-				},
-			},
-		}
-
-		rt.Action = createWeightedClusterAction(r.Clusters, true)
-		if r.LogPayloads {
-			rt.ResponseHeadersToAdd = []*core.HeaderValueOption{
-				{Header: &core.HeaderValue{Key: SeldonLoggingHeader, Value: "true"}},
-			}
-		}
-
+	// Create Model Routes
+	for _, r := range modelRoutes {
+		rt := makeModelHttpRoute(r)
 		rts = append(rts, rt)
-		//TODO there is no easy way to implement version specific gRPC calls so this could mean we need to implement
-		//latest model policy on V2 servers and therefore also for REST as well
-		rt = &route.Route{
-			Name: fmt.Sprintf("%s_grpc", r.RouteName),
-			Match: &route.RouteMatch{
-				PathSpecifier: &route.RouteMatch_Prefix{
-					Prefix: "/inference.GRPCInferenceService",
-				},
-				Headers: []*route.HeaderMatcher{
-					{
-						Name: SeldonModelHeader, // Header name we will match on
-						HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
-							ExactMatch: r.RouteName,
-						},
-						//TODO: https://github.com/envoyproxy/envoy/blob/c75c1410c8682cb44c9136ce4ad01e6a58e16e8e/api/envoy/api/v2/route/route_components.proto#L1513
-						//HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
-						//	StringMatch: &matcher.StringMatcher{
-						//		MatchPattern: &matcher.StringMatcher_Exact{
-						//			Exact: r.Host,
-						//		},
-						//	},
-						//},
-					},
-				},
-			},
-		}
-		rt.Action = createWeightedClusterAction(r.Clusters, false)
-		if r.LogPayloads {
-			rt.ResponseHeadersToAdd = []*core.HeaderValueOption{
-				{Header: &core.HeaderValue{Key: SeldonLoggingHeader, Value: "true"}},
-			}
-		}
+		rt = makeModelGrpcRoute(r)
+		rts = append(rts, rt)
+	}
+
+	//Create Pipeline Routes
+	for _, r := range pipelineRoutes {
+		rt := makePipelineHttpRoute(r)
+		rts = append(rts, rt)
+		rt = makePipelineGrpcRoute(r)
 		rts = append(rts, rt)
 	}
 

@@ -4,6 +4,8 @@ SCHEDULER_IMG ?= ${DOCKERHUB_USERNAME}/seldon-scheduler:${CUSTOM_IMAGE_TAG}
 AGENT_IMG ?= ${DOCKERHUB_USERNAME}/seldon-agent:${CUSTOM_IMAGE_TAG}
 RCLONE_IMG ?= ${DOCKERHUB_USERNAME}/seldon-rclone:${CUSTOM_IMAGE_TAG}
 MODELGATEWAY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-modelgateway:${CUSTOM_IMAGE_TAG}
+PIPELINEGATEWAY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-pipelinegateway:${CUSTOM_IMAGE_TAG}
+DATAFLOW_IMG ?= ${DOCKERHUB_USERNAME}/seldon-dataflow-engine:${CUSTOM_IMAGE_TAG}
 ENVOY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-envoy:${CUSTOM_IMAGE_TAG}
 MLSERVER_IMG ?= seldonio/mlserver:1.0.0.rc1
 TRITON_IMG ?= nvcr.io/nvidia/tritonserver:21.12-py3
@@ -16,23 +18,27 @@ GO_LDFLAGS := -s -w $(patsubst %,-X %, $(GO_BUILD_VARS))
 #####################################
 
 .PHONY: build-scheduler
-build-scheduler: test
+build-scheduler: test-go
 	go build -o bin/scheduler ./cmd/scheduler
 
 .PHONY: build-proxy
-build-proxy:
+build-proxy: test-go
 	go build -o bin/proxy ./cmd/proxy
 
 .PHONY: build-agent
-build-agent: test
+build-agent: test-go
 	go build -o bin/agent ./cmd/agent
 
 .PHONY: build-modelgateway
-build-modelgateway: test
+build-modelgateway: test-go
 	go build -o bin/modelgateway -v ./cmd/modelgateway
 
+.PHONY: build-pipelinegateway
+build-pipelinegateway: test-go
+	go build -o bin/pipelinegateway -v ./cmd/pipelinegateway
+
 .PHONY: build-dataflow-producer
-build-dataflow-producer:
+build-dataflow-producer: test-jvm
 	go build -o data-flow/scripts/bin/producer ./data-flow/scripts/producer.go ./data-flow/scripts/common.go
 
 .PHONY: build-dataflow-consumer
@@ -43,12 +49,19 @@ build-dataflow-consumer:
 build-dataflow-engine:
 	cd data-flow; ./gradlew clean build -x test --no-daemon
 
+.PHONY: build-go
+build-go: build-scheduler build-agent build-proxy build-modelgateway build-pipelinegateway
+
+.PHONY: build-jvm
+build-jvm: build-dataflow-engine
+
 .PHONY: build
-build: build-scheduler build-agent build-proxy build-modelgateway build-dataflow-engine
+build: build-go build-jvm
 
 .PHONY: lint
 lint: ## Run go linters against code.
 	gofmt -w pkg
+	gofmt -w cmd
 	golangci-lint run --fix
 
 .PHONY: test-go
@@ -104,6 +117,12 @@ docker-build-modelgateway: copy-apis
 docker-push-modelgateway: 
 	docker push ${MODELGATEWAY_IMG}
 
+docker-build-pipelinegateway: copy-apis
+	docker build -t ${PIPELINEGATEWAY_IMG} -f Dockerfile.pipelinegateway .
+
+docker-push-pipelinegateway: 
+	docker push ${PIPELINEGATEWAY_IMG}
+
 .PHONY: docker-build-envoy
 docker-build-envoy:
 	docker build -t ${ENVOY_IMG} -f Dockerfile.envoy .
@@ -121,10 +140,11 @@ docker-push-dataflow:
 	docker push ${DATAFLOW_IMG}
 
 .PHONY: docker-build-all
-docker-build-all: docker-build-agent docker-build-envoy docker-build-rclone docker-build-scheduler docker-build-modelgateway
+docker-build-all: docker-build-agent docker-build-envoy docker-build-rclone docker-build-scheduler docker-build-modelgateway docker-build-pipelinegateway docker-build-dataflow
 
 .PHONY: docker-push-all
-docker-push-all: docker-push-agent docker-push-envoy docker-push-rclone docker-push-scheduler docker-push-modelgateway
+docker-push-all: docker-push-agent docker-push-envoy docker-push-rclone docker-push-scheduler docker-push-modelgateway docker-push-pipelinegateway docker-push-dataflow
+
 
 #####################################
 # Kind 
@@ -150,8 +170,16 @@ kind-image-install-rclone: docker-build-rclone
 kind-image-install-modelgateway: docker-build-modelgateway
 	kind load -v 3 docker-image ${MODELGATEWAY_IMG} --name ${KIND_NAME}
 
+.PHONY: kind-image-install-pipelinegateway
+kind-image-install-pipelinegateway: docker-build-pipelinegateway
+	kind load -v 3 docker-image ${PIPELINEGATEWAY_IMG} --name ${KIND_NAME}
+
+.PHONY: kind-image-install-dataflow
+kind-image-install-dataflow: docker-build-dataflow
+	kind load -v 3 docker-image ${DATAFLOW_IMG} --name ${KIND_NAME}
+
 .PHONY: kind-image-install-all
-kind-image-install-all: kind-image-install-scheduler kind-image-install-envoy kind-image-install-agent kind-image-install-rclone kind-image-install-modelgateway
+kind-image-install-all: kind-image-install-scheduler kind-image-install-envoy kind-image-install-agent kind-image-install-rclone kind-image-install-modelgateway kind-image-install-pipelinegateway kind-image-install-dataflow
 
 #####################################
 # Start with Docker Compose
@@ -186,7 +214,7 @@ DOCKER_COMPOSE_INTERNAL= -f all-internal.yaml
 DOCKER_COMPOSE_HOST= -f all-host-network.yaml
 DOCKER_COMPOSE_SERVICE_COMMAND = ${DOCKER_COMPOSE_COMMON_IMAGES} ${DOCKER_COMPOSE_BASE_COMMAND} ${DOCKER_COMPOSE_INTERNAL} -p scv2
 DOCKER_COMPOSE_MLSERVER_COMMAND = ${DOCKER_COMPOSE_MLSERVER_IMAGES} ${DOCKER_COMPOSE_BASE_COMMAND} ${DOCKER_COMPOSE_INTERNAL} -f all-mlserver.yaml -p scv2_mlserver
-DOCKER_COMPOSE_TRITON_COMMAND = ${DOCKER_COMPOSE_TRITON_IMAGES} ${DOCKER_COMPOSE_TRITON_LOG_LEVEL} ${DOCKER_COMPOSE_BASE_COMMAND} ${DOCKER_COMPOSE_INTERNAL} -f all-triton.yaml -p scv2_triton
+DOCKER_COMPOSE_TRITON_COMMAND = ${DOCKER_COMPOSE_TRITON_IMAGES} TRITON_LOG_LEVEL=${DOCKER_COMPOSE_TRITON_LOG_LEVEL} ${DOCKER_COMPOSE_BASE_COMMAND} ${DOCKER_COMPOSE_INTERNAL} -f all-triton.yaml -p scv2_triton
 DOCKER_COMPOSE_SERVICE_HOST_COMMAND = ${DOCKER_COMPOSE_COMMON_IMAGES} ${DOCKER_COMPOSE_BASE_COMMAND} ${DOCKER_COMPOSE_HOST} -p scv2
 
 .PHONY: start-all-mlserver
@@ -389,6 +417,22 @@ start-modelgateway-host:
 stop-modelgateway-host:
 	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES} modelgateway
 
+.PHONY: start-pipelinegateway
+start-pipelinegateway:
+	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d pipelinegateway
+
+.PHONY: stop-pipelinegateway
+stop-pipelinegateway:
+	${DOCKER_COMPOSE_SERVICE_COMMAND} rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES} pipelinegateway
+
+.PHONY: start-pipelinegateway-host
+start-pipelinegateway-host:
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d pipelinegateway
+
+.PHONY: stop-pipelinegateway-host
+stop-pipelinegateway-host:
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES} pipelinegateway
+
 .PHONY: start-kafka
 start-kafka:
 	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d kafka
@@ -399,7 +443,7 @@ stop-kafka:
 
 .PHONY: start-kafka-host
 start-kafka-host:
-	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up kafka
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d kafka
 
 .PHONY: stop-kafka-host
 stop-kafka-host:
@@ -423,7 +467,7 @@ stop-dataflow-engine-host:
 
 
 .PHONY: stop-all
-stop-all: stop-scheduler stop-envoy stop-rclone stop-agent-mlserver stop-agent-triton stop-mlserver stop-triton stop-modelgateway stop-kafka
+stop-all: stop-scheduler stop-envoy stop-rclone stop-agent-mlserver stop-agent-triton stop-mlserver stop-triton stop-modelgateway stop-pipelinegateway stop-kafka
 
 
 #####################################
@@ -443,8 +487,8 @@ start-agent-local:
 		--replica-config '{"inferenceSvc":"0.0.0.0","inferenceHttpPort":8080,"inferenceGrpcPort":8081,"memoryBytes":1000000,"capabilities":["sklearn"],"overCommitPercentage":20}'
 
 
-.PHONY: start-triton-agent-local
-start-triton-agent-local:
+.PHONY: start-agent-local-triton
+start-agent-local-triton:
 	./bin/agent --agent-folder ${PWD}/mnt --inference-http-port 8080 --inference-grpc-port 8081 --scheduler-host "0.0.0.0" --scheduler-port 9005 \
 		--server-name triton \
 		--server-type triton \
@@ -476,6 +520,10 @@ endif
 start-modelgateway-local:
 	./bin/modelgateway --config-path ${PWD}/config --log-level debug
 
+.PHONY: start-pipelinegateway-local
+start-pipelinegateway-local:
+	./bin/pipelinegateway --config-path ${PWD}/config --log-level debug
+
 .PHONY: start-dataflow-engine-local
 start-dataflow-engine-local:
 	SELDON_UPSTREAM_HOST=localhost \
@@ -483,6 +531,7 @@ start-dataflow-engine-local:
         SELDON_KAFKA_BOOTSTRAP_SERVERS=localhost:9092 \
         SELDON_CORES_COUNT=4 \
         java -jar ./data-flow/build/libs/dataflow-1.0-SNAPSHOT.jar
+
 
 #####################################
 # K8S Testing
@@ -495,6 +544,7 @@ deploy:
 	cd k8s/mlserver && kustomize edit set image agent=${AGENT_IMG}
 	cd k8s/mlserver && kustomize edit set image rclone=${RCLONE_IMG}
 	cd k8s/modelgateway && kustomize edit set image modelgateway=${MODELGATEWAY_IMG}
+	cd k8s/pipelinegateway && kustomize edit set image pipelinegateway=${PIPELINEGATEWAY_IMG}
 	kustomize build k8s/default | kubectl apply -f -
 
 .PHONY: build-push-deploy

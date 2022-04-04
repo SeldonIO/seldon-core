@@ -7,10 +7,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	modelWaitConditionFlag = "wait"
-)
-
 func createModelStatus() *cobra.Command {
 	cmdModelStatus := &cobra.Command{
 		Use:   "status",
@@ -30,16 +26,20 @@ func createModelStatus() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			verbose, err := cmd.Flags().GetBool(verboseFlag)
+			showRequest, err := cmd.Flags().GetBool(showRequestFlag)
 			if err != nil {
 				return err
 			}
-			modelWaitCondition, err := cmd.Flags().GetString(modelWaitConditionFlag)
+			showResponse, err := cmd.Flags().GetBool(showResponseFlag)
+			if err != nil {
+				return err
+			}
+			modelWaitCondition, err := cmd.Flags().GetString(waitConditionFlag)
 			if err != nil {
 				return err
 			}
 			schedulerClient := cli.NewSchedulerClient(schedulerHost, schedulerPort)
-			err = schedulerClient.ModelStatus(modelName, verbose, modelWaitCondition)
+			err = schedulerClient.ModelStatus(modelName, showRequest, showResponse, modelWaitCondition)
 			return err
 		},
 	}
@@ -49,6 +49,6 @@ func createModelStatus() *cobra.Command {
 	}
 	cmdModelStatus.Flags().String(schedulerHostFlag, "0.0.0.0", "seldon scheduler host")
 	cmdModelStatus.Flags().Int(schedulerPortFlag, 9004, "seldon scheduler port")
-	cmdModelStatus.Flags().StringP(modelWaitConditionFlag, "w", "", "model wait condition")
+	cmdModelStatus.Flags().StringP(waitConditionFlag, "w", "", "model wait condition")
 	return cmdModelStatus
 }

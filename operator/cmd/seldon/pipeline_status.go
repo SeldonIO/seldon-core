@@ -8,7 +8,7 @@ import (
 )
 
 func createPipelineStatus() *cobra.Command {
-	cmdPipelineUnload := &cobra.Command{
+	cmdPipelineStatus := &cobra.Command{
 		Use:   "status",
 		Short: "status of a pipeline",
 		Long:  `status of a pipeline`,
@@ -26,20 +26,29 @@ func createPipelineStatus() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			verbose, err := cmd.Flags().GetBool(verboseFlag)
+			showRequest, err := cmd.Flags().GetBool(showRequestFlag)
+			if err != nil {
+				return err
+			}
+			showResponse, err := cmd.Flags().GetBool(showResponseFlag)
+			if err != nil {
+				return err
+			}
+			waitCondition, err := cmd.Flags().GetString(waitConditionFlag)
 			if err != nil {
 				return err
 			}
 			schedulerClient := cli.NewSchedulerClient(schedulerHost, schedulerPort)
-			err = schedulerClient.PipelineStatus(pipelineName, verbose)
+			err = schedulerClient.PipelineStatus(pipelineName, showRequest, showResponse, waitCondition)
 			return err
 		},
 	}
-	cmdPipelineUnload.Flags().StringP(pipelineNameFlag, "p", "", "pipeline name for status")
-	if err := cmdPipelineUnload.MarkFlagRequired(pipelineNameFlag); err != nil {
+	cmdPipelineStatus.Flags().StringP(pipelineNameFlag, "p", "", "pipeline name for status")
+	if err := cmdPipelineStatus.MarkFlagRequired(pipelineNameFlag); err != nil {
 		os.Exit(-1)
 	}
-	cmdPipelineUnload.Flags().String(schedulerHostFlag, "0.0.0.0", "seldon scheduler host")
-	cmdPipelineUnload.Flags().Int(schedulerPortFlag, 9004, "seldon scheduler port")
-	return cmdPipelineUnload
+	cmdPipelineStatus.Flags().String(schedulerHostFlag, "0.0.0.0", "seldon scheduler host")
+	cmdPipelineStatus.Flags().Int(schedulerPortFlag, 9004, "seldon scheduler port")
+	cmdPipelineStatus.Flags().StringP(waitConditionFlag, "w", "", "pipeline wait condition")
+	return cmdPipelineStatus
 }

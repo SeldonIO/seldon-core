@@ -4,15 +4,15 @@
 package io.seldon.mlops.chainer;
 
 @kotlin.jvm.JvmSynthetic
-public inline fun pipelineUpdateStatusResponse(block: io.seldon.mlops.chainer.PipelineUpdateStatusResponseKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse =
+inline fun pipelineUpdateStatusResponse(block: io.seldon.mlops.chainer.PipelineUpdateStatusResponseKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse =
   io.seldon.mlops.chainer.PipelineUpdateStatusResponseKt.Dsl._create(io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse.newBuilder()).apply { block() }._build()
-public object PipelineUpdateStatusResponseKt {
+object PipelineUpdateStatusResponseKt {
   @kotlin.OptIn(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
   @com.google.protobuf.kotlin.ProtoDslMarker
-  public class Dsl private constructor(
+  class Dsl private constructor(
     private val _builder: io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse.Builder
   ) {
-    public companion object {
+    companion object {
       @kotlin.jvm.JvmSynthetic
       @kotlin.PublishedApi
       internal fun _create(builder: io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse.Builder): Dsl = Dsl(builder)
@@ -24,5 +24,5 @@ public object PipelineUpdateStatusResponseKt {
   }
 }
 @kotlin.jvm.JvmSynthetic
-public inline fun io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse.copy(block: io.seldon.mlops.chainer.PipelineUpdateStatusResponseKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse =
+inline fun io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse.copy(block: io.seldon.mlops.chainer.PipelineUpdateStatusResponseKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse =
   io.seldon.mlops.chainer.PipelineUpdateStatusResponseKt.Dsl._create(this.toBuilder()).apply { block() }._build()

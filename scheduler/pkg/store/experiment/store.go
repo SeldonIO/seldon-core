@@ -42,12 +42,14 @@ func NewExperimentServer(logger logrus.FieldLogger, eventHub *coordinator.EventH
 		eventHub:        eventHub,
 	}
 
-	eventHub.RegisterModelEventHandler(
-		modelEventHandlerName,
-		pendingSyncsQueueSize,
-		es.logger,
-		es.handleModelEvents,
-	)
+	if eventHub != nil {
+		eventHub.RegisterModelEventHandler(
+			modelEventHandlerName,
+			pendingSyncsQueueSize,
+			es.logger,
+			es.handleModelEvents,
+		)
+	}
 
 	return es
 }

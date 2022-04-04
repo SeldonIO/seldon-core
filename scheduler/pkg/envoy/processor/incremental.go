@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/store/pipeline"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/store/experiment"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
@@ -24,6 +26,7 @@ const (
 	pendingSyncsQueueSize      int = 100
 	modelEventHandlerName          = "incremental.processor.models"
 	experimentEventHandlerName     = "incremental.processor.experiments"
+	pipelineEventHandlerName       = "incremental.processor.pipelines"
 )
 
 type IncrementalProcessor struct {
@@ -36,6 +39,7 @@ type IncrementalProcessor struct {
 	mu               sync.RWMutex
 	modelStore       store.ModelStore
 	experimentServer experiment.ExperimentServer
+	pipelineHandler  pipeline.PipelineHandler
 }
 
 func NewIncrementalProcessor(
@@ -44,16 +48,19 @@ func NewIncrementalProcessor(
 	log logrus.FieldLogger,
 	modelStore store.ModelStore,
 	experimentServer experiment.ExperimentServer,
+	pipelineHandler pipeline.PipelineHandler,
 	hub *coordinator.EventHub,
+	pipelineGatewayDetails *xdscache.PipelineGatewayDetails,
 ) *IncrementalProcessor {
 	ip := &IncrementalProcessor{
 		cache:            cache,
 		nodeID:           nodeID,
 		snapshotVersion:  rand.Int63n(1000),
 		logger:           log.WithField("source", "EnvoyServer"),
-		xdsCache:         xdscache.NewSeldonXDSCache(log),
+		xdsCache:         xdscache.NewSeldonXDSCache(log, pipelineGatewayDetails),
 		modelStore:       modelStore,
 		experimentServer: experimentServer,
+		pipelineHandler:  pipelineHandler,
 	}
 
 	ip.SetListener("seldon_http")
@@ -69,24 +76,62 @@ func NewIncrementalProcessor(
 		ip.logger,
 		ip.handleExperimentEvents,
 	)
+	hub.RegisterPipelineEventHandler(
+		pipelineEventHandlerName,
+		pendingSyncsQueueSize,
+		ip.logger,
+		ip.handlePipelinesEvents,
+	)
 
 	return ip
+}
+
+func (p *IncrementalProcessor) handlePipelinesEvents(event coordinator.PipelineEventMsg) {
+	logger := p.logger.WithField("func", "handleExperimentEvents")
+	pip, err := p.pipelineHandler.GetPipeline(event.PipelineName)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to get pipeline %s", event.PipelineName)
+	} else {
+		if pip.Deleted {
+			err := p.removePipeline(pip)
+			if err != nil {
+				logger.WithError(err).Errorf("Failed to remove pipeline %s", pip.Name)
+			}
+		} else {
+			err := p.addPipeline(pip)
+			if err != nil {
+				logger.WithError(err).Errorf("Dailed to add pipeline %s", pip.Name)
+			}
+		}
+	}
 }
 
 func (p *IncrementalProcessor) handleExperimentEvents(event coordinator.ExperimentEventMsg) {
 	logger := p.logger.WithField("func", "handleExperimentEvents")
 	logger.Debugf("Received sync for experiment %s", event.String())
-	if event.Status == nil {
-		err := p.experimentSync(event.ExperimentName)
-		var err2 error
-		if err != nil {
-			logger.WithError(err).Errorf("Failed to process sync for experiment %s", event.String())
-			err2 = p.experimentServer.SetStatus(event.ExperimentName, false, err.Error())
+	exp, err := p.experimentServer.GetExperiment(event.ExperimentName)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to get experiment %s", event.ExperimentName)
+	} else {
+		if exp.Deleted {
+			err := p.removeExperiment(exp)
+			if err != nil {
+				logger.WithError(err).Errorf("Failed to get experiment %s", event.ExperimentName)
+			}
 		} else {
-			err2 = p.experimentServer.SetStatus(event.ExperimentName, true, "experiment active")
-		}
-		if err2 != nil {
-			logger.WithError(err2).Errorf("Failed to set experiment activation")
+			if event.Status == nil {
+				err := p.experimentSync(exp)
+				var err2 error
+				if err != nil {
+					logger.WithError(err).Errorf("Failed to process sync for experiment %s", event.String())
+					err2 = p.experimentServer.SetStatus(event.ExperimentName, false, err.Error())
+				} else {
+					err2 = p.experimentServer.SetStatus(event.ExperimentName, true, "experiment active")
+				}
+				if err2 != nil {
+					logger.WithError(err2).Errorf("Failed to set experiment activation")
+				}
+			}
 		}
 	}
 }
@@ -167,7 +212,7 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelRouteName string,
 	clusterNameBase := server.Name + "_" + computeHashKeyForList(assignment)
 	httpClusterName := clusterNameBase + "_http"
 	grpcClusterName := clusterNameBase + "_grpc"
-	p.xdsCache.AddCluster(httpClusterName, modelVersion.GetModel().GetMeta().GetName(), modelVersion.GetVersion(), false)
+	p.xdsCache.AddCluster(httpClusterName, modelRouteName, modelVersion.GetModel().GetMeta().GetName(), modelVersion.GetVersion(), false)
 	for _, replicaIdx := range assignment {
 		replica, ok := server.Replicas[replicaIdx]
 		if !ok {
@@ -176,7 +221,7 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelRouteName string,
 			p.xdsCache.AddEndpoint(httpClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceHttpPort()))
 		}
 	}
-	p.xdsCache.AddCluster(grpcClusterName, modelVersion.GetModel().GetMeta().GetName(), modelVersion.GetVersion(), true)
+	p.xdsCache.AddCluster(grpcClusterName, modelRouteName, modelVersion.GetModel().GetMeta().GetName(), modelVersion.GetVersion(), true)
 	for _, replicaIdx := range assignment {
 		replica, ok := server.Replicas[replicaIdx]
 		if !ok {
@@ -303,14 +348,33 @@ func (p *IncrementalProcessor) addExperiment(exp *experiment.Experiment) error {
 	return p.updateEnvoy()
 }
 
-func (p *IncrementalProcessor) experimentSync(experimentName string) error {
+func (p *IncrementalProcessor) removeExperiment(exp *experiment.Experiment) error {
+	logger := p.logger.WithField("func", "addExperiment")
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	routeName := fmt.Sprintf("%s.experiment", exp.Name)
+	logger.Debugf("Remove experiment route %s", routeName)
+	return p.removeRouteForServerInEnvoy(routeName)
+}
+
+func (p *IncrementalProcessor) addPipeline(pip *pipeline.Pipeline) error {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.xdsCache.AddPipelineRoute(pip.Name)
+	return p.updateEnvoy()
+}
+
+func (p *IncrementalProcessor) removePipeline(pip *pipeline.Pipeline) error {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.xdsCache.RemovePipelineRoute(pip.Name)
+	return p.updateEnvoy()
+}
+
+func (p *IncrementalProcessor) experimentSync(exp *experiment.Experiment) error {
 	logger := p.logger.WithField("func", "experimentSync")
-	exp, err := p.experimentServer.GetExperiment(experimentName)
-	if err != nil {
-		return err
-	}
 	if exp.DefaultModel != nil {
-		logger.Infof("Experiment %s sync - calling for model %s", experimentName, *exp.DefaultModel)
+		logger.Infof("Experiment %s sync - calling for model %s", exp.Name, *exp.DefaultModel)
 		err := p.modelSync(*exp.DefaultModel)
 		if err != nil {
 			return err

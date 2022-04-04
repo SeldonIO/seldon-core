@@ -15,6 +15,7 @@ require (
 	github.com/mitchellh/copystructure v1.2.0
 	github.com/mustafaturan/bus/v3 v3.0.3
 	github.com/onsi/gomega v1.16.0
+	github.com/orcaman/concurrent-map v1.0.0 // indirect
 	github.com/otiai10/copy v1.7.0
 	github.com/prometheus/client_golang v1.12.1
 	github.com/rs/xid v1.3.0

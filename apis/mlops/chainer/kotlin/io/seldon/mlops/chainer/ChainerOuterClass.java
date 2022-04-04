@@ -2073,6 +2073,101 @@ public final class ChainerOuterClass {
      * @return The joinWindowMs.
      */
     int getJoinWindowMs();
+
+    /**
+     * <pre>
+     * optional list of output tensors - must be same cardinality as tensors in inputs
+     * </pre>
+     *
+     * <code>repeated string tensorNames = 6;</code>
+     * @return A list containing the tensorNames.
+     */
+    java.util.List<java.lang.String>
+        getTensorNamesList();
+    /**
+     * <pre>
+     * optional list of output tensors - must be same cardinality as tensors in inputs
+     * </pre>
+     *
+     * <code>repeated string tensorNames = 6;</code>
+     * @return The count of tensorNames.
+     */
+    int getTensorNamesCount();
+    /**
+     * <pre>
+     * optional list of output tensors - must be same cardinality as tensors in inputs
+     * </pre>
+     *
+     * <code>repeated string tensorNames = 6;</code>
+     * @param index The index of the element to return.
+     * @return The tensorNames at the given index.
+     */
+    java.lang.String getTensorNames(int index);
+    /**
+     * <pre>
+     * optional list of output tensors - must be same cardinality as tensors in inputs
+     * </pre>
+     *
+     * <code>repeated string tensorNames = 6;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the tensorNames at the given index.
+     */
+    com.google.protobuf.ByteString
+        getTensorNamesBytes(int index);
+
+    /**
+     * <pre>
+     * optional map of tensor name mappings
+     * </pre>
+     *
+     * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+     */
+    int getTensorMapCount();
+    /**
+     * <pre>
+     * optional map of tensor name mappings
+     * </pre>
+     *
+     * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+     */
+    boolean containsTensorMap(
+        java.lang.String key);
+    /**
+     * Use {@link #getTensorMapMap()} instead.
+     */
+    @java.lang.Deprecated
+    java.util.Map<java.lang.String, java.lang.String>
+    getTensorMap();
+    /**
+     * <pre>
+     * optional map of tensor name mappings
+     * </pre>
+     *
+     * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+     */
+    java.util.Map<java.lang.String, java.lang.String>
+    getTensorMapMap();
+    /**
+     * <pre>
+     * optional map of tensor name mappings
+     * </pre>
+     *
+     * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+     */
+
+    java.lang.String getTensorMapOrDefault(
+        java.lang.String key,
+        java.lang.String defaultValue);
+    /**
+     * <pre>
+     * optional map of tensor name mappings
+     * </pre>
+     *
+     * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+     */
+
+    java.lang.String getTensorMapOrThrow(
+        java.lang.String key);
   }
   /**
    * Protobuf type {@code seldon.mlops.chainer.PipelineStepUpdate}
@@ -2090,6 +2185,7 @@ public final class ChainerOuterClass {
       sources_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       sink_ = "";
       ty_ = 0;
+      tensorNames_ = com.google.protobuf.LazyStringArrayList.EMPTY;
     }
 
     @java.lang.Override
@@ -2154,6 +2250,28 @@ public final class ChainerOuterClass {
               joinWindowMs_ = input.readUInt32();
               break;
             }
+            case 50: {
+              java.lang.String s = input.readStringRequireUtf8();
+              if (!((mutable_bitField0_ & 0x00000004) != 0)) {
+                tensorNames_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000004;
+              }
+              tensorNames_.add(s);
+              break;
+            }
+            case 58: {
+              if (!((mutable_bitField0_ & 0x00000008) != 0)) {
+                tensorMap_ = com.google.protobuf.MapField.newMapField(
+                    TensorMapDefaultEntryHolder.defaultEntry);
+                mutable_bitField0_ |= 0x00000008;
+              }
+              com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
+              tensorMap__ = input.readMessage(
+                  TensorMapDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+              tensorMap_.getMutableMap().put(
+                  tensorMap__.getKey(), tensorMap__.getValue());
+              break;
+            }
             default: {
               if (!parseUnknownField(
                   input, unknownFields, extensionRegistry, tag)) {
@@ -2172,6 +2290,9 @@ public final class ChainerOuterClass {
         if (((mutable_bitField0_ & 0x00000001) != 0)) {
           sources_ = sources_.getUnmodifiableView();
         }
+        if (((mutable_bitField0_ & 0x00000004) != 0)) {
+          tensorNames_ = tensorNames_.getUnmodifiableView();
+        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
@@ -2181,6 +2302,18 @@ public final class ChainerOuterClass {
       return io.seldon.mlops.chainer.ChainerOuterClass.internal_static_seldon_mlops_chainer_PipelineStepUpdate_descriptor;
     }
 
+    @SuppressWarnings({"rawtypes"})
+    @java.lang.Override
+    protected com.google.protobuf.MapField internalGetMapField(
+        int number) {
+      switch (number) {
+        case 7:
+          return internalGetTensorMap();
+        default:
+          throw new RuntimeException(
+              "Invalid map field number: " + number);
+      }
+    }
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
@@ -2456,6 +2589,154 @@ public final class ChainerOuterClass {
       return joinWindowMs_;
     }
 
+    public static final int TENSORNAMES_FIELD_NUMBER = 6;
+    private com.google.protobuf.LazyStringList tensorNames_;
+    /**
+     * <pre>
+     * optional list of output tensors - must be same cardinality as tensors in inputs
+     * </pre>
+     *
+     * <code>repeated string tensorNames = 6;</code>
+     * @return A list containing the tensorNames.
+     */
+    public com.google.protobuf.ProtocolStringList
+        getTensorNamesList() {
+      return tensorNames_;
+    }
+    /**
+     * <pre>
+     * optional list of output tensors - must be same cardinality as tensors in inputs
+     * </pre>
+     *
+     * <code>repeated string tensorNames = 6;</code>
+     * @return The count of tensorNames.
+     */
+    public int getTensorNamesCount() {
+      return tensorNames_.size();
+    }
+    /**
+     * <pre>
+     * optional list of output tensors - must be same cardinality as tensors in inputs
+     * </pre>
+     *
+     * <code>repeated string tensorNames = 6;</code>
+     * @param index The index of the element to return.
+     * @return The tensorNames at the given index.
+     */
+    public java.lang.String getTensorNames(int index) {
+      return tensorNames_.get(index);
+    }
+    /**
+     * <pre>
+     * optional list of output tensors - must be same cardinality as tensors in inputs
+     * </pre>
+     *
+     * <code>repeated string tensorNames = 6;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the tensorNames at the given index.
+     */
+    public com.google.protobuf.ByteString
+        getTensorNamesBytes(int index) {
+      return tensorNames_.getByteString(index);
+    }
+
+    public static final int TENSORMAP_FIELD_NUMBER = 7;
+    private static final class TensorMapDefaultEntryHolder {
+      static final com.google.protobuf.MapEntry<
+          java.lang.String, java.lang.String> defaultEntry =
+              com.google.protobuf.MapEntry
+              .<java.lang.String, java.lang.String>newDefaultInstance(
+                  io.seldon.mlops.chainer.ChainerOuterClass.internal_static_seldon_mlops_chainer_PipelineStepUpdate_TensorMapEntry_descriptor, 
+                  com.google.protobuf.WireFormat.FieldType.STRING,
+                  "",
+                  com.google.protobuf.WireFormat.FieldType.STRING,
+                  "");
+    }
+    private com.google.protobuf.MapField<
+        java.lang.String, java.lang.String> tensorMap_;
+    private com.google.protobuf.MapField<java.lang.String, java.lang.String>
+    internalGetTensorMap() {
+      if (tensorMap_ == null) {
+        return com.google.protobuf.MapField.emptyMapField(
+            TensorMapDefaultEntryHolder.defaultEntry);
+      }
+      return tensorMap_;
+    }
+
+    public int getTensorMapCount() {
+      return internalGetTensorMap().getMap().size();
+    }
+    /**
+     * <pre>
+     * optional map of tensor name mappings
+     * </pre>
+     *
+     * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+     */
+
+    @java.lang.Override
+    public boolean containsTensorMap(
+        java.lang.String key) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      return internalGetTensorMap().getMap().containsKey(key);
+    }
+    /**
+     * Use {@link #getTensorMapMap()} instead.
+     */
+    @java.lang.Override
+    @java.lang.Deprecated
+    public java.util.Map<java.lang.String, java.lang.String> getTensorMap() {
+      return getTensorMapMap();
+    }
+    /**
+     * <pre>
+     * optional map of tensor name mappings
+     * </pre>
+     *
+     * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+     */
+    @java.lang.Override
+
+    public java.util.Map<java.lang.String, java.lang.String> getTensorMapMap() {
+      return internalGetTensorMap().getMap();
+    }
+    /**
+     * <pre>
+     * optional map of tensor name mappings
+     * </pre>
+     *
+     * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+     */
+    @java.lang.Override
+
+    public java.lang.String getTensorMapOrDefault(
+        java.lang.String key,
+        java.lang.String defaultValue) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      java.util.Map<java.lang.String, java.lang.String> map =
+          internalGetTensorMap().getMap();
+      return map.containsKey(key) ? map.get(key) : defaultValue;
+    }
+    /**
+     * <pre>
+     * optional map of tensor name mappings
+     * </pre>
+     *
+     * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+     */
+    @java.lang.Override
+
+    public java.lang.String getTensorMapOrThrow(
+        java.lang.String key) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      java.util.Map<java.lang.String, java.lang.String> map =
+          internalGetTensorMap().getMap();
+      if (!map.containsKey(key)) {
+        throw new java.lang.IllegalArgumentException();
+      }
+      return map.get(key);
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -2485,6 +2766,15 @@ public final class ChainerOuterClass {
       if (((bitField0_ & 0x00000001) != 0)) {
         output.writeUInt32(5, joinWindowMs_);
       }
+      for (int i = 0; i < tensorNames_.size(); i++) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 6, tensorNames_.getRaw(i));
+      }
+      com.google.protobuf.GeneratedMessageV3
+        .serializeStringMapTo(
+          output,
+          internalGetTensorMap(),
+          TensorMapDefaultEntryHolder.defaultEntry,
+          7);
       unknownFields.writeTo(output);
     }
 
@@ -2517,6 +2807,24 @@ public final class ChainerOuterClass {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(5, joinWindowMs_);
       }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < tensorNames_.size(); i++) {
+          dataSize += computeStringSizeNoTag(tensorNames_.getRaw(i));
+        }
+        size += dataSize;
+        size += 1 * getTensorNamesList().size();
+      }
+      for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
+           : internalGetTensorMap().getMap().entrySet()) {
+        com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
+        tensorMap__ = TensorMapDefaultEntryHolder.defaultEntry.newBuilderForType()
+            .setKey(entry.getKey())
+            .setValue(entry.getValue())
+            .build();
+        size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(7, tensorMap__);
+      }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
@@ -2544,6 +2852,10 @@ public final class ChainerOuterClass {
         if (getJoinWindowMs()
             != other.getJoinWindowMs()) return false;
       }
+      if (!getTensorNamesList()
+          .equals(other.getTensorNamesList())) return false;
+      if (!internalGetTensorMap().equals(
+          other.internalGetTensorMap())) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -2569,6 +2881,14 @@ public final class ChainerOuterClass {
       if (hasJoinWindowMs()) {
         hash = (37 * hash) + JOINWINDOWMS_FIELD_NUMBER;
         hash = (53 * hash) + getJoinWindowMs();
+      }
+      if (getTensorNamesCount() > 0) {
+        hash = (37 * hash) + TENSORNAMES_FIELD_NUMBER;
+        hash = (53 * hash) + getTensorNamesList().hashCode();
+      }
+      if (!internalGetTensorMap().getMap().isEmpty()) {
+        hash = (37 * hash) + TENSORMAP_FIELD_NUMBER;
+        hash = (53 * hash) + internalGetTensorMap().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -2677,6 +2997,28 @@ public final class ChainerOuterClass {
         return io.seldon.mlops.chainer.ChainerOuterClass.internal_static_seldon_mlops_chainer_PipelineStepUpdate_descriptor;
       }
 
+      @SuppressWarnings({"rawtypes"})
+      protected com.google.protobuf.MapField internalGetMapField(
+          int number) {
+        switch (number) {
+          case 7:
+            return internalGetTensorMap();
+          default:
+            throw new RuntimeException(
+                "Invalid map field number: " + number);
+        }
+      }
+      @SuppressWarnings({"rawtypes"})
+      protected com.google.protobuf.MapField internalGetMutableMapField(
+          int number) {
+        switch (number) {
+          case 7:
+            return internalGetMutableTensorMap();
+          default:
+            throw new RuntimeException(
+                "Invalid map field number: " + number);
+        }
+      }
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
@@ -2713,6 +3055,9 @@ public final class ChainerOuterClass {
 
         joinWindowMs_ = 0;
         bitField0_ = (bitField0_ & ~0x00000002);
+        tensorNames_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        internalGetMutableTensorMap().clear();
         return this;
       }
 
@@ -2753,6 +3098,13 @@ public final class ChainerOuterClass {
           result.joinWindowMs_ = joinWindowMs_;
           to_bitField0_ |= 0x00000001;
         }
+        if (((bitField0_ & 0x00000004) != 0)) {
+          tensorNames_ = tensorNames_.getUnmodifiableView();
+          bitField0_ = (bitField0_ & ~0x00000004);
+        }
+        result.tensorNames_ = tensorNames_;
+        result.tensorMap_ = internalGetTensorMap();
+        result.tensorMap_.makeImmutable();
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -2825,6 +3177,18 @@ public final class ChainerOuterClass {
         if (other.hasJoinWindowMs()) {
           setJoinWindowMs(other.getJoinWindowMs());
         }
+        if (!other.tensorNames_.isEmpty()) {
+          if (tensorNames_.isEmpty()) {
+            tensorNames_ = other.tensorNames_;
+            bitField0_ = (bitField0_ & ~0x00000004);
+          } else {
+            ensureTensorNamesIsMutable();
+            tensorNames_.addAll(other.tensorNames_);
+          }
+          onChanged();
+        }
+        internalGetMutableTensorMap().mergeFrom(
+            other.internalGetTensorMap());
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
@@ -3244,6 +3608,308 @@ public final class ChainerOuterClass {
         bitField0_ = (bitField0_ & ~0x00000002);
         joinWindowMs_ = 0;
         onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.LazyStringList tensorNames_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureTensorNamesIsMutable() {
+        if (!((bitField0_ & 0x00000004) != 0)) {
+          tensorNames_ = new com.google.protobuf.LazyStringArrayList(tensorNames_);
+          bitField0_ |= 0x00000004;
+         }
+      }
+      /**
+       * <pre>
+       * optional list of output tensors - must be same cardinality as tensors in inputs
+       * </pre>
+       *
+       * <code>repeated string tensorNames = 6;</code>
+       * @return A list containing the tensorNames.
+       */
+      public com.google.protobuf.ProtocolStringList
+          getTensorNamesList() {
+        return tensorNames_.getUnmodifiableView();
+      }
+      /**
+       * <pre>
+       * optional list of output tensors - must be same cardinality as tensors in inputs
+       * </pre>
+       *
+       * <code>repeated string tensorNames = 6;</code>
+       * @return The count of tensorNames.
+       */
+      public int getTensorNamesCount() {
+        return tensorNames_.size();
+      }
+      /**
+       * <pre>
+       * optional list of output tensors - must be same cardinality as tensors in inputs
+       * </pre>
+       *
+       * <code>repeated string tensorNames = 6;</code>
+       * @param index The index of the element to return.
+       * @return The tensorNames at the given index.
+       */
+      public java.lang.String getTensorNames(int index) {
+        return tensorNames_.get(index);
+      }
+      /**
+       * <pre>
+       * optional list of output tensors - must be same cardinality as tensors in inputs
+       * </pre>
+       *
+       * <code>repeated string tensorNames = 6;</code>
+       * @param index The index of the value to return.
+       * @return The bytes of the tensorNames at the given index.
+       */
+      public com.google.protobuf.ByteString
+          getTensorNamesBytes(int index) {
+        return tensorNames_.getByteString(index);
+      }
+      /**
+       * <pre>
+       * optional list of output tensors - must be same cardinality as tensors in inputs
+       * </pre>
+       *
+       * <code>repeated string tensorNames = 6;</code>
+       * @param index The index to set the value at.
+       * @param value The tensorNames to set.
+       * @return This builder for chaining.
+       */
+      public Builder setTensorNames(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureTensorNamesIsMutable();
+        tensorNames_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * optional list of output tensors - must be same cardinality as tensors in inputs
+       * </pre>
+       *
+       * <code>repeated string tensorNames = 6;</code>
+       * @param value The tensorNames to add.
+       * @return This builder for chaining.
+       */
+      public Builder addTensorNames(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureTensorNamesIsMutable();
+        tensorNames_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * optional list of output tensors - must be same cardinality as tensors in inputs
+       * </pre>
+       *
+       * <code>repeated string tensorNames = 6;</code>
+       * @param values The tensorNames to add.
+       * @return This builder for chaining.
+       */
+      public Builder addAllTensorNames(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureTensorNamesIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, tensorNames_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * optional list of output tensors - must be same cardinality as tensors in inputs
+       * </pre>
+       *
+       * <code>repeated string tensorNames = 6;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearTensorNames() {
+        tensorNames_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * optional list of output tensors - must be same cardinality as tensors in inputs
+       * </pre>
+       *
+       * <code>repeated string tensorNames = 6;</code>
+       * @param value The bytes of the tensorNames to add.
+       * @return This builder for chaining.
+       */
+      public Builder addTensorNamesBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        ensureTensorNamesIsMutable();
+        tensorNames_.add(value);
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.MapField<
+          java.lang.String, java.lang.String> tensorMap_;
+      private com.google.protobuf.MapField<java.lang.String, java.lang.String>
+      internalGetTensorMap() {
+        if (tensorMap_ == null) {
+          return com.google.protobuf.MapField.emptyMapField(
+              TensorMapDefaultEntryHolder.defaultEntry);
+        }
+        return tensorMap_;
+      }
+      private com.google.protobuf.MapField<java.lang.String, java.lang.String>
+      internalGetMutableTensorMap() {
+        onChanged();;
+        if (tensorMap_ == null) {
+          tensorMap_ = com.google.protobuf.MapField.newMapField(
+              TensorMapDefaultEntryHolder.defaultEntry);
+        }
+        if (!tensorMap_.isMutable()) {
+          tensorMap_ = tensorMap_.copy();
+        }
+        return tensorMap_;
+      }
+
+      public int getTensorMapCount() {
+        return internalGetTensorMap().getMap().size();
+      }
+      /**
+       * <pre>
+       * optional map of tensor name mappings
+       * </pre>
+       *
+       * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+       */
+
+      @java.lang.Override
+      public boolean containsTensorMap(
+          java.lang.String key) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        return internalGetTensorMap().getMap().containsKey(key);
+      }
+      /**
+       * Use {@link #getTensorMapMap()} instead.
+       */
+      @java.lang.Override
+      @java.lang.Deprecated
+      public java.util.Map<java.lang.String, java.lang.String> getTensorMap() {
+        return getTensorMapMap();
+      }
+      /**
+       * <pre>
+       * optional map of tensor name mappings
+       * </pre>
+       *
+       * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+       */
+      @java.lang.Override
+
+      public java.util.Map<java.lang.String, java.lang.String> getTensorMapMap() {
+        return internalGetTensorMap().getMap();
+      }
+      /**
+       * <pre>
+       * optional map of tensor name mappings
+       * </pre>
+       *
+       * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+       */
+      @java.lang.Override
+
+      public java.lang.String getTensorMapOrDefault(
+          java.lang.String key,
+          java.lang.String defaultValue) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        java.util.Map<java.lang.String, java.lang.String> map =
+            internalGetTensorMap().getMap();
+        return map.containsKey(key) ? map.get(key) : defaultValue;
+      }
+      /**
+       * <pre>
+       * optional map of tensor name mappings
+       * </pre>
+       *
+       * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+       */
+      @java.lang.Override
+
+      public java.lang.String getTensorMapOrThrow(
+          java.lang.String key) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        java.util.Map<java.lang.String, java.lang.String> map =
+            internalGetTensorMap().getMap();
+        if (!map.containsKey(key)) {
+          throw new java.lang.IllegalArgumentException();
+        }
+        return map.get(key);
+      }
+
+      public Builder clearTensorMap() {
+        internalGetMutableTensorMap().getMutableMap()
+            .clear();
+        return this;
+      }
+      /**
+       * <pre>
+       * optional map of tensor name mappings
+       * </pre>
+       *
+       * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+       */
+
+      public Builder removeTensorMap(
+          java.lang.String key) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        internalGetMutableTensorMap().getMutableMap()
+            .remove(key);
+        return this;
+      }
+      /**
+       * Use alternate mutation accessors instead.
+       */
+      @java.lang.Deprecated
+      public java.util.Map<java.lang.String, java.lang.String>
+      getMutableTensorMap() {
+        return internalGetMutableTensorMap().getMutableMap();
+      }
+      /**
+       * <pre>
+       * optional map of tensor name mappings
+       * </pre>
+       *
+       * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+       */
+      public Builder putTensorMap(
+          java.lang.String key,
+          java.lang.String value) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        if (value == null) { throw new java.lang.NullPointerException(); }
+        internalGetMutableTensorMap().getMutableMap()
+            .put(key, value);
+        return this;
+      }
+      /**
+       * <pre>
+       * optional map of tensor name mappings
+       * </pre>
+       *
+       * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+       */
+
+      public Builder putAllTensorMap(
+          java.util.Map<java.lang.String, java.lang.String> values) {
+        internalGetMutableTensorMap().getMutableMap()
+            .putAll(values);
         return this;
       }
       @java.lang.Override
@@ -4635,6 +5301,11 @@ public final class ChainerOuterClass {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_seldon_mlops_chainer_PipelineStepUpdate_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_seldon_mlops_chainer_PipelineStepUpdate_TensorMapEntry_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_seldon_mlops_chainer_PipelineStepUpdate_TensorMapEntry_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_seldon_mlops_chainer_PipelineUpdateStatusMessage_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -4661,26 +5332,30 @@ public final class ChainerOuterClass {
       "\t\022\017\n\007version\030\003 \001(\r\022\013\n\003uid\030\004 \001(\t\0229\n\007updat" +
       "es\030\005 \003(\0132(.seldon.mlops.chainer.Pipeline" +
       "StepUpdate\"8\n\021PipelineOperation\022\013\n\007Unkno" +
-      "wn\020\000\022\n\n\006Create\020\001\022\n\n\006Delete\020\002\"\356\001\n\022Pipelin" +
+      "wn\020\000\022\n\n\006Create\020\001\022\n\n\006Delete\020\002\"\201\003\n\022Pipelin" +
       "eStepUpdate\022\017\n\007sources\030\001 \003(\t\022\014\n\004sink\030\002 \001" +
       "(\t\022E\n\002ty\030\003 \001(\01629.seldon.mlops.chainer.Pi" +
       "pelineStepUpdate.PipelineJoinType\022\032\n\022pas" +
       "sEmptyResponses\030\004 \001(\010\022\031\n\014joinWindowMs\030\005 " +
-      "\001(\rH\000\210\001\001\"*\n\020PipelineJoinType\022\013\n\007Unknown\020" +
-      "\000\022\t\n\005Inner\020\001B\017\n\r_joinWindowMs\"{\n\033Pipelin" +
-      "eUpdateStatusMessage\022;\n\006update\030\001 \001(\0132+.s" +
-      "eldon.mlops.chainer.PipelineUpdateMessag" +
-      "e\022\017\n\007success\030\002 \001(\010\022\016\n\006reason\030\003 \001(\t\"\036\n\034Pi" +
-      "pelineUpdateStatusResponse2\211\002\n\007Chainer\022~" +
-      "\n\030SubscribePipelineUpdates\0221.seldon.mlop" +
-      "s.chainer.PipelineSubscriptionRequest\032+." +
-      "seldon.mlops.chainer.PipelineUpdateMessa" +
-      "ge\"\0000\001\022~\n\023PipelineUpdateEvent\0221.seldon.m" +
-      "lops.chainer.PipelineUpdateStatusMessage" +
-      "\0322.seldon.mlops.chainer.PipelineUpdateSt" +
-      "atusResponse\"\000BW\n\027io.seldon.mlops.chaine" +
-      "rZ<github.com/seldonio/seldon-core/sched" +
-      "uler/apis/mlops/chainerb\006proto3"
+      "\001(\rH\000\210\001\001\022\023\n\013tensorNames\030\006 \003(\t\022J\n\ttensorM" +
+      "ap\030\007 \003(\01327.seldon.mlops.chainer.Pipeline" +
+      "StepUpdate.TensorMapEntry\0320\n\016TensorMapEn" +
+      "try\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"*\n\020P" +
+      "ipelineJoinType\022\013\n\007Unknown\020\000\022\t\n\005Inner\020\001B" +
+      "\017\n\r_joinWindowMs\"{\n\033PipelineUpdateStatus" +
+      "Message\022;\n\006update\030\001 \001(\0132+.seldon.mlops.c" +
+      "hainer.PipelineUpdateMessage\022\017\n\007success\030" +
+      "\002 \001(\010\022\016\n\006reason\030\003 \001(\t\"\036\n\034PipelineUpdateS" +
+      "tatusResponse2\211\002\n\007Chainer\022~\n\030SubscribePi" +
+      "pelineUpdates\0221.seldon.mlops.chainer.Pip" +
+      "elineSubscriptionRequest\032+.seldon.mlops." +
+      "chainer.PipelineUpdateMessage\"\0000\001\022~\n\023Pip" +
+      "elineUpdateEvent\0221.seldon.mlops.chainer." +
+      "PipelineUpdateStatusMessage\0322.seldon.mlo" +
+      "ps.chainer.PipelineUpdateStatusResponse\"" +
+      "\000BW\n\027io.seldon.mlops.chainerZ<github.com" +
+      "/seldonio/seldon-core/scheduler/apis/mlo" +
+      "ps/chainerb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -4703,7 +5378,13 @@ public final class ChainerOuterClass {
     internal_static_seldon_mlops_chainer_PipelineStepUpdate_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_seldon_mlops_chainer_PipelineStepUpdate_descriptor,
-        new java.lang.String[] { "Sources", "Sink", "Ty", "PassEmptyResponses", "JoinWindowMs", "JoinWindowMs", });
+        new java.lang.String[] { "Sources", "Sink", "Ty", "PassEmptyResponses", "JoinWindowMs", "TensorNames", "TensorMap", "JoinWindowMs", });
+    internal_static_seldon_mlops_chainer_PipelineStepUpdate_TensorMapEntry_descriptor =
+      internal_static_seldon_mlops_chainer_PipelineStepUpdate_descriptor.getNestedTypes().get(0);
+    internal_static_seldon_mlops_chainer_PipelineStepUpdate_TensorMapEntry_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_seldon_mlops_chainer_PipelineStepUpdate_TensorMapEntry_descriptor,
+        new java.lang.String[] { "Key", "Value", });
     internal_static_seldon_mlops_chainer_PipelineUpdateStatusMessage_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_seldon_mlops_chainer_PipelineUpdateStatusMessage_fieldAccessorTable = new

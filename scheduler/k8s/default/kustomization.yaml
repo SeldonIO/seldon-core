@@ -6,3 +6,4 @@ bases:
 - ../envoy
 - ../config
 - ../modelgateway
+- ../pipelinegateway

@@ -22,9 +22,9 @@ func validate(pv *PipelineVersion) error {
 	if err := checkStepInputs(pv); err != nil {
 		return err
 	}
-	if err := checkOnlyOneInput(pv); err != nil {
-		return err
-	}
+	//if err := checkOnlyOneInput(pv); err != nil {
+	//	return err
+	//}
 	return nil
 }
 
@@ -49,10 +49,8 @@ func checkStepInputs(pv *PipelineVersion) error {
 		for _, inp := range v.Inputs {
 			parts := strings.Split(inp, StepNameSeperator)
 			switch len(parts) {
-			case 1:
-				return nil
-			case 0, 2, 3:
-				if !(parts[1] == "" || parts[1] == StepInputSpecifier || parts[1] == StepOutputSpecifier) {
+			case 2, 3:
+				if !(parts[1] == StepInputSpecifier || parts[1] == StepOutputSpecifier) {
 					return &PipelineStepInputSpecifierErr{
 						pipeline:   pv.Name,
 						step:       v.Name,
