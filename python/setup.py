@@ -42,7 +42,7 @@ setup(
         # Addresses CVE SNYK-PYTHON-PYYAML-590151
         "PyYAML >= 5.4, < 5.5",
         # Addresses CVE PRISMA-2021-0020
-        "click >= 8.0.0a1, < 8.1",
+        "click >= 8.0.0a1, < 8.2",
         # Addresses CVE CVE-2019-11236 and CVE-2020-26137 and SNYK-PYTHON-URLLIB3-1533435
         "urllib3 == 1.26.5",
         # Addresses flask dependecy bug https://github.com/pallets/flask/issues/4455
