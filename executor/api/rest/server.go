@@ -164,10 +164,11 @@ func (r *SeldonRestApi) Initialise() {
 			api10.Handle("/feedback", r.wrapMetrics(metric.FeedbackHttpServiceName, r.feedback))
 			r.Router.NewRoute().Path("/api/v1.0/status/{"+ModelHttpPathVariable+"}").Methods("GET", "OPTIONS").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
 			r.Router.NewRoute().Path("/api/v1.0/status").Methods("GET", "OPTIONS").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.checkReady))
-			r.Router.NewRoute().Path("/api/v1.0/health/status").Methods("GET", "OPTIONS").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.checkReady))
 			r.Router.NewRoute().Path("/api/v1.0/metadata").Methods("GET", "OPTIONS").HandlerFunc(r.wrapMetrics(metric.MetadataHttpServiceName, r.graphMetadata))
 			r.Router.NewRoute().Path("/api/v1.0/metadata/{"+ModelHttpPathVariable+"}").Methods("GET", "OPTIONS").HandlerFunc(r.wrapMetrics(metric.MetadataHttpServiceName, r.metadata))
 			r.Router.NewRoute().PathPrefix("/api/v1.0/doc/").Handler(http.StripPrefix("/api/v1.0/doc/", http.FileServer(http.Dir("./openapi/"))))
+			//health
+			r.Router.NewRoute().Path("/api/v1.0/health/status").Methods("GET", "OPTIONS").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.checkReady))
 		case api.ProtocolTensorflow:
 			r.Router.NewRoute().Path("/v1/models/{"+ModelHttpPathVariable+"}/:predict").Methods("OPTIONS", "POST").HandlerFunc(r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions))
 			r.Router.NewRoute().Path("/v1/models/{"+ModelHttpPathVariable+"}:predict").Methods("OPTIONS", "POST").HandlerFunc(r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions))
@@ -183,13 +184,15 @@ func (r *SeldonRestApi) Initialise() {
 			r.Router.NewRoute().Path("/v2/models/infer").Methods("OPTIONS", "POST").HandlerFunc(r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions)) // Nonstandard path - Seldon extension
 			r.Router.NewRoute().Path("/v2/models/{"+ModelHttpPathVariable+"}/ready").Methods("GET", "OPTIONS").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
 			r.Router.NewRoute().Path("/v2/models/{"+ModelHttpPathVariable+"}").Methods("GET", "OPTIONS").HandlerFunc(r.wrapMetrics(metric.MetadataHttpServiceName, r.metadata))
+			// Health
+			r.Router.NewRoute().Path("/v2/health/ready").Methods("GET", "OPTIONS").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.checkReady))
 
 		}
 	}
 }
 
 func (r *SeldonRestApi) checkReady(w http.ResponseWriter, req *http.Request) {
-	err := predictor.Ready(&r.predictor.Graph)
+	err := predictor.Ready(r.Protocol, &r.predictor.Graph)
 	if err != nil {
 		r.Log.Error(err, "Ready check failed")
 		w.WriteHeader(http.StatusServiceUnavailable)

@@ -51,6 +51,7 @@ type SeldonKafkaServer struct {
 	ServerUrl      *url.URL
 	Workers        int
 	Log            logr.Logger
+	Protocol       string
 }
 
 func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, protocol, transport string, annotations map[string]string, serverUrl *url.URL, predictor *v1.PredictorSpec, broker, topicIn, topicOut string, log logr.Logger) (*SeldonKafkaServer, error) {
@@ -120,6 +121,7 @@ func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, prot
 		ServerUrl:      serverUrl,
 		Workers:        workers,
 		Log:            log.WithName("KafkaServer"),
+		Protocol:       protocol,
 	}, nil
 }
 
@@ -208,7 +210,7 @@ func (ks *SeldonKafkaServer) Serve() error {
 	//wait for graph to be ready
 	ready := false
 	for ready == false {
-		err := predictor.Ready(&ks.Predictor.Graph)
+		err := predictor.Ready(ks.Protocol, &ks.Predictor.Graph)
 		ready = err == nil
 		if !ready {
 			ks.Log.Info("Waiting for graph to be ready")
