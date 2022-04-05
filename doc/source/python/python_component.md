@@ -262,6 +262,8 @@ spec:
             timeoutSeconds: 1
 ```
 
+However, note if `executor.fullHealthChecks` is set to `true` then the Seldon orchestrator will call your health status method to check the model is ready.
+
 ## Low level Methods
 
 If you want more control you can provide a low-level methods that will provide as input the raw proto buffer payloads. The signatures for these are shown below for release `seldon_core>=0.2.6.1`:
