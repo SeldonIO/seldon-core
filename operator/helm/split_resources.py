@@ -66,6 +66,7 @@ HELM_ENV_SUBST = {
     "EXECUTOR_REQUEST_LOGGER_WORK_QUEUE_SIZE": "executor.requestLogger.workQueueSize",
     "EXECUTOR_REQUEST_LOGGER_WRITE_TIMEOUT_MS": "executor.requestLogger.writeTimeoutMs",
     "DEPLOYMENT_NAME_AS_PREFIX": "manager.deploymentNameAsPrefix",
+    "EXECUTOR_FULL_HEALTH_CHECKS": "executor.fullHealthChecks"
 }
 HELM_VALUES_IMAGE_PULL_POLICY = "{{ .Values.image.pullPolicy }}"
 

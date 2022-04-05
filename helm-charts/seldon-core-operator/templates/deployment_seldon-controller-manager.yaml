@@ -134,6 +134,8 @@ spec:
           value: '{{ .Values.executor.resources.memoryLimit }}'
         - name: DEPLOYMENT_NAME_AS_PREFIX
           value: '{{ .Values.manager.deploymentNameAsPrefix }}'
+        - name: EXECUTOR_FULL_HEALTH_CHECKS
+          value: '{{ .Values.executor.fullHealthChecks }}'
         image: '{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}'
         imagePullPolicy: '{{ .Values.image.pullPolicy }}'
         name: manager

@@ -10,13 +10,16 @@ import (
 	"strconv"
 )
 
-func Ready(protocol string, node *v1.PredictiveUnit) error {
+func Ready(protocol string, node *v1.PredictiveUnit, fullHealthCheck bool) error {
+	if !fullHealthCheck {
+		return ReadyTCP(node)
+	}
 	switch protocol {
 	case api.ProtocolSeldon:
 		return ReadyHealth(node, "/api/v1.0/health/status")
 	case api.ProtocolTensorflow:
 		return ReadyTCP(node)
-	case api.ProtocolV2:
+	case api.ProtocolV2, api.ProtocolKFServing:
 		return ReadyHealth(node, "/v2/health/ready")
 	default:
 		return fmt.Errorf("Unknown protocol for health check: %s", protocol)

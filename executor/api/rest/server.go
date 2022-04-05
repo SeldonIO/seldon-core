@@ -27,20 +27,21 @@ import (
 )
 
 type SeldonRestApi struct {
-	Router         *mux.Router
-	Client         client.SeldonApiClient
-	predictor      *v1.PredictorSpec
-	Log            logr.Logger
-	ProbesOnly     bool
-	ServerUrl      *url.URL
-	Namespace      string
-	Protocol       string
-	DeploymentName string
-	metrics        *metric.ServerMetrics
-	prometheusPath string
+	Router          *mux.Router
+	Client          client.SeldonApiClient
+	predictor       *v1.PredictorSpec
+	Log             logr.Logger
+	ProbesOnly      bool
+	ServerUrl       *url.URL
+	Namespace       string
+	Protocol        string
+	DeploymentName  string
+	metrics         *metric.ServerMetrics
+	prometheusPath  string
+	fullHealthCheck bool
 }
 
-func NewServerRestApi(predictor *v1.PredictorSpec, client client.SeldonApiClient, probesOnly bool, serverUrl *url.URL, namespace string, protocol string, deploymentName string, prometheusPath string) *SeldonRestApi {
+func NewServerRestApi(predictor *v1.PredictorSpec, client client.SeldonApiClient, probesOnly bool, serverUrl *url.URL, namespace string, protocol string, deploymentName string, prometheusPath string, fullHealthCheck bool) *SeldonRestApi {
 	var serverMetrics *metric.ServerMetrics
 	if !probesOnly {
 		serverMetrics = metric.NewServerMetrics(predictor, deploymentName)
@@ -57,6 +58,7 @@ func NewServerRestApi(predictor *v1.PredictorSpec, client client.SeldonApiClient
 		deploymentName,
 		serverMetrics,
 		prometheusPath,
+		fullHealthCheck,
 	}
 }
 
@@ -192,7 +194,7 @@ func (r *SeldonRestApi) Initialise() {
 }
 
 func (r *SeldonRestApi) checkReady(w http.ResponseWriter, req *http.Request) {
-	err := predictor.Ready(r.Protocol, &r.predictor.Graph)
+	err := predictor.Ready(r.Protocol, &r.predictor.Graph, r.fullHealthCheck)
 	if err != nil {
 		r.Log.Error(err, "Ready check failed")
 		w.WriteHeader(http.StatusServiceUnavailable)

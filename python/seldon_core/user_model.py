@@ -524,6 +524,9 @@ def client_health_status(
        Health check results
     """
     if hasattr(user_model, "health_status"):
-        return user_model.health_status()
+        try:
+            return user_model.health_status()
+        except SeldonNotImplementedError:
+            return "not implemented - assuming healthy"
     else:
         return "healthy"
