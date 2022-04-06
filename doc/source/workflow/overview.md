@@ -189,7 +189,7 @@ Read more about [metadata provenance on its dedicated documentation page](../ref
 Metrics is important aspect of serving ML inference models in production.
 Out of the box Seldon Core deployments expose standard metrics to [Prometheus](https://prometheus.io/) on the `Service Orchestrator`.
 
-![](../images/metrics.svg)
+![](../images/metrics.png)
 
 Read more about [metrics on its dedicated documentation page](../analytics/analytics.html).
 

@@ -1,0 +1,17 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: echo
+  namespace: seldon
+spec:
+  predictors:
+  - name: default
+    replicas: 1
+    graph:
+      name: classifier
+      type: MODEL
+    componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/echo-model:1.14.0-dev
+          name: classifier
