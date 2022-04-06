@@ -1,7 +1,8 @@
 package io.seldon.dataflow
 
 import io.klogging.noCoLogger
-import io.seldon.dataflow.kafka.KafkaParams
+import io.seldon.dataflow.kafka.KafkaDomainParams
+import io.seldon.dataflow.kafka.KafkaStreamsParams
 import io.seldon.dataflow.kafka.getKafkaProperties
 import kotlinx.coroutines.runBlocking
 
@@ -16,14 +17,19 @@ object Main {
         logger.info("initialised")
 
         val kafkaProperties = getKafkaProperties(
-            KafkaParams(
-                bootstrapServers = config[Cli.bootstrapServers],
+            KafkaStreamsParams(
+                bootstrapServers = config[Cli.kafkaBootstrapServers],
                 numCores = config[Cli.numCores],
             ),
+        )
+        val kafkaDomainParams = KafkaDomainParams(
+            useCleanState = config[Cli.kafkaUseCleanState],
+            joinWindowMillis = config[Cli.kafkaJoinWindowMillis],
         )
         val subscriber = PipelineSubscriber(
             "seldon-dataflow-transformer",
             kafkaProperties,
+            kafkaDomainParams,
             config[Cli.upstreamHost],
             config[Cli.upstreamPort],
             GrpcServiceConfigProvider.config,
@@ -47,13 +53,5 @@ object Main {
         )
     }
 }
-
-// Steps:
-// - Should not create any topics - just do joins (check Kafka settings to disable auto-creation)
-//      - Can log warning and retry
-// - Know how to parse source/sink names (seldon.<...>.<uid?>)
-// - Read input topic(s), transform into single output message (maybe many tensors), write to output topic
-// - Add gRPC client to connect to scheduler
-// - Respond to management calls over protos - start/stop handling topics
 
 // TODO - explore converting (sync?) KStreams into async Kotlin coroutines

@@ -4,4 +4,3 @@ rclone:
 kafka:
   active: true
   broker: "0.0.0.0:9092"
-  #broker: "kafka:29092"

@@ -33,6 +33,7 @@ internal class TransformerTest {
                 emptyMap(),
                 defaultSink,
                 baseKafkaProperties,
+                kafkaDomainParams,
             )
 
         expect {
@@ -47,8 +48,9 @@ internal class TransformerTest {
         private const val defaultSink = "seldon.namespace.sinkModel.inputs"
         private const val defaultPipelineName = "some-pipeline"
         private val baseKafkaProperties = getKafkaProperties(
-            KafkaParams(bootstrapServers = "", numCores = 0),
+            KafkaStreamsParams(bootstrapServers = "", numCores = 0),
         )
+        private val kafkaDomainParams = KafkaDomainParams(useCleanState = true, joinWindowMillis = 1_000L)
 
         @JvmStatic
         fun areTensorsFromSameTopic(): Stream<Arguments> =
@@ -73,6 +75,7 @@ internal class TransformerTest {
                     ),
                 ),
             )
+
         @JvmStatic
         fun transformerFor(): Stream<Arguments> =
             Stream.of(
@@ -107,8 +110,8 @@ internal class TransformerTest {
                 arguments(
                     "multiple sources, no tensors",
                     makeJoinerFor(
-                        inputTopics = setOf("seldon.namespace.model1.outputs","seldon.namespace.model2.outputs"),
-                        tensors = emptyMap(),
+                        inputTopics = setOf("seldon.namespace.modelA.outputs", "seldon.namespace.modelB.outputs"),
+                        tensorsByTopic = null,
                     ),
                     listOf(
                         "seldon.namespace.modelA.outputs",
@@ -118,12 +121,18 @@ internal class TransformerTest {
                 arguments(
                     "multiple sources, multiple tensors",
                     makeJoinerFor(
-                        inputTopics = setOf("seldon.namespace.model1.outputs","seldon.namespace.model2.outputs"),
-                        tensors = mapOf("seldon.namespace.model1.outputs" to setOf("OUTPUT0","OUTPUT1")),
+                        inputTopics = setOf(
+                            "seldon.namespace.modelA.outputs",
+                            "seldon.namespace.modelB.outputs",
+                        ),
+                        tensorsByTopic = mapOf(
+                            "seldon.namespace.modelA.outputs" to setOf("tensor1"),
+                            "seldon.namespace.modelB.outputs" to setOf("tensor2"),
+                        ),
                     ),
                     listOf(
-                        "seldon.namespace.modelA.outputs.tensorA",
-                        "seldon.namespace.modelB.outputs.tensorB",
+                        "seldon.namespace.modelA.outputs.tensor1",
+                        "seldon.namespace.modelB.outputs.tensor2",
                     ),
                 ),
                 arguments(
@@ -146,17 +155,22 @@ internal class TransformerTest {
                 outputTopic = defaultSink,
                 pipelineName = defaultPipelineName,
                 properties = KafkaProperties(),
-                tensorMap = emptyMap(),
+                tensorRenaming = emptyMap(),
+                kafkaDomainParams = kafkaDomainParams,
             )
 
-        private fun makeJoinerFor(inputTopics: Set<TopicName>, tensors: Map<TensorName, Set<TensorName>>): Joiner =
+        private fun makeJoinerFor(
+            inputTopics: Set<TopicName>,
+            tensorsByTopic: Map<TopicName, Set<TensorName>>?,
+        ): Joiner =
             Joiner(
                 inputTopics = inputTopics,
-                tensors = tensors,
+                tensorsByTopic = tensorsByTopic,
                 outputTopic = defaultSink,
                 pipelineName = defaultPipelineName,
                 properties = KafkaProperties(),
-                tensorMap = emptyMap()
+                tensorRenaming = emptyMap(),
+                kafkaDomainParams = kafkaDomainParams,
             )
     }
 }
@@ -180,7 +194,16 @@ fun Assertion.Builder<Transformer>.matches(expected: Transformer) =
                     get { tensors }.isEqualTo(expected.tensors)
                 }
             }
-            it is Joiner && expected is Joiner -> pass()
+            it is Joiner && expected is Joiner -> expect {
+                that(it) {
+                    get { pipelineName }.isEqualTo(expected.pipelineName)
+                    get { inputTopics }.isEqualTo(expected.inputTopics)
+                    get { outputTopic }.isEqualTo(expected.outputTopic)
+                    get { tensorsByTopic }.isEqualTo(expected.tensorsByTopic)
+                    get { tensorRenaming }.isEqualTo(expected.tensorRenaming)
+                    get { kafkaDomainParams }.isEqualTo(expected.kafkaDomainParams)
+                }
+            }
             else -> fail(actual = expected)
         }
     }

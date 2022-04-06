@@ -1,15 +1,7 @@
 package io.seldon.dataflow.kafka
 
-import java.util.*
 import java.math.BigInteger
 import java.security.MessageDigest
-
-typealias KafkaProperties = Properties
-typealias TopicName = String
-typealias TensorName = String
-typealias RequestId = String
-typealias TRecord = ByteArray
-typealias TopicsAndTensors = Pair<Set<TopicName>, Set<TensorName>>
 
 interface Transformer {
     fun start()
@@ -24,9 +16,10 @@ data class TopicTensors(
 fun transformerFor(
     pipelineName: String,
     sources: List<TopicName>,
-    tensorMap: kotlin.collections.Map<TensorName,TensorName>,
+    tensorMap: Map<TensorName, TensorName>,
     sink: TopicName,
     baseKafkaProperties: KafkaProperties,
+    kafkaDomainParams: KafkaDomainParams,
 ): Transformer? {
     return when (val result = parseSources(sources)) {
         is SourceProjection.Empty -> null
@@ -36,7 +29,8 @@ fun transformerFor(
             sink,
             null,
             pipelineName,
-            tensorMap
+            tensorMap,
+            kafkaDomainParams,
         )
         is SourceProjection.SingleSubset -> Chainer(
             baseKafkaProperties.withAppId(nameFor(sources, sink, "chainer")),
@@ -44,7 +38,8 @@ fun transformerFor(
             sink,
             result.tensors,
             pipelineName,
-            tensorMap
+            tensorMap,
+            kafkaDomainParams,
         )
         is SourceProjection.Many -> Joiner(
             baseKafkaProperties.withAppId(nameFor(sources, sink, "joiner")),
@@ -52,15 +47,17 @@ fun transformerFor(
             sink,
             null,
             pipelineName,
-            tensorMap
+            tensorMap,
+            kafkaDomainParams,
         )
         is SourceProjection.ManySubsets -> Joiner(
             baseKafkaProperties.withAppId(nameFor(sources, sink, "joiner")),
-            result.topicNames,
+            result.tensorsByTopic.keys,
             sink,
-            result.tensorMap,
+            result.tensorsByTopic,
             pipelineName,
-            tensorMap
+            tensorMap,
+            kafkaDomainParams,
         )
     }
 }
@@ -79,9 +76,9 @@ fun List<TopicName>.areTensorsFromSameTopic(): Pair<Boolean, TopicsAndTensors> {
 sealed class SourceProjection {
     object Empty : SourceProjection()
     data class Single(val topicName: TopicName) : SourceProjection()
-    data class SingleSubset(val topicName: TopicName, val tensors: Set<TensorName>): SourceProjection()
-    data class Many(val topicNames: Set<TopicName>): SourceProjection()
-    data class ManySubsets(val topicNames: Set<TensorName>, val tensorMap: Map<TopicName,Set<TensorName>>): SourceProjection()
+    data class SingleSubset(val topicName: TopicName, val tensors: Set<TensorName>) : SourceProjection()
+    data class Many(val topicNames: Set<TopicName>) : SourceProjection()
+    data class ManySubsets(val tensorsByTopic: Map<TopicName, Set<TensorName>>) : SourceProjection()
 }
 
 fun parseSources(sources: List<TopicName>): SourceProjection {
@@ -103,7 +100,9 @@ fun parseSources(sources: List<TopicName>): SourceProjection {
         topicsAndTensors.all { it.tensors.isEmpty() } ->
             SourceProjection.Many(topicsAndTensors.map { it.topicName }.toSet())
         else ->
-            SourceProjection.ManySubsets(topicsAndTensors.map { it.topicName }.toSet(), topicsAndTensors.map { it.topicName to it.tensors }.toMap())
+            SourceProjection.ManySubsets(
+                topicsAndTensors.associate { it.topicName to it.tensors },
+            )
     }
 }
 
@@ -115,10 +114,13 @@ fun parseSource(source: TopicName): Pair<TopicName, TensorName?> {
     }
 }
 
-fun md5(input:String): String {
+fun md5(input: String): String {
     val md = MessageDigest.getInstance("MD5")
-    return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')
+    return BigInteger(1, md.digest(input.toByteArray()))
+        .toString(16)
+        .padStart(32, '0')
 }
+
 fun nameFor(sources: List<TopicName>, sink: TopicName, type: String): String {
     return md5("$type:${sources.joinToString(":")}:$sink")
 }

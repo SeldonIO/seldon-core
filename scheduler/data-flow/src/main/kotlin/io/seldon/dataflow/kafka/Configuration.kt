@@ -3,12 +3,17 @@ package io.seldon.dataflow.kafka
 import org.apache.kafka.streams.StreamsConfig
 import java.util.*
 
-data class KafkaParams(
+data class KafkaStreamsParams(
     val bootstrapServers: String,
     val numCores: Int,
 )
 
-fun getKafkaProperties(params: KafkaParams): KafkaProperties {
+data class KafkaDomainParams(
+    val useCleanState: Boolean,
+    val joinWindowMillis: Long,
+)
+
+fun getKafkaProperties(params: KafkaStreamsParams): KafkaProperties {
     // See https://docs.confluent.io/platform/current/streams/developer-guide/config-streams.html
 
     return Properties().apply {

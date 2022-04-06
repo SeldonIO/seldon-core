@@ -23,7 +23,6 @@ dependencies {
 
     // Kafka
     implementation("org.apache.kafka:kafka-streams:3.1.0")
-    implementation("io.confluent:kafka-streams-protobuf-serde:7.0.1")
     implementation("io.klogging:slf4j-klogging:0.2.5")
 
     // gRPC
@@ -34,6 +33,7 @@ dependencies {
     implementation("com.google.protobuf:protobuf-java:3.19.4")
     implementation("com.google.protobuf:protobuf-kotlin:3.19.4")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+    implementation("com.michael-bull.kotlin-retry:kotlin-retry:1.0.9")
 
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")

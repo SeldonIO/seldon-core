@@ -7,10 +7,16 @@ object Cli {
     private const val envVarPrefix = "SELDON_"
     private val logger = noCoLogger(Cli::class)
 
-    val bootstrapServers = Key("kafka.bootstrap.servers", stringType)
-    val numCores = Key("cores.count", intType)
     val upstreamHost = Key("upstream.host", stringType)
     val upstreamPort = Key("upstream.port", intType)
+
+    val numCores = Key("cores.count", intType)
+
+    val kafkaBootstrapServers = Key("kafka.bootstrap.servers", stringType)
+    val kafkaPartitions = Key("kafka.partitions.default", intType)
+    val kafkaReplicationFactor = Key("kafka.replication.factor", intType)
+    val kafkaUseCleanState = Key("kafka.state.clean", booleanType)
+    val kafkaJoinWindowMillis = Key("kafka.join.window.millis", longType)
 
     fun configWith(rawArgs: Array<String>): Configuration {
         val fromProperties = ConfigurationProperties.fromResource("local.properties")
@@ -23,7 +29,11 @@ object Cli {
     private fun parseArguments(rawArgs: Array<String>): Configuration {
         val (config, unparsedArgs) = parseArgs(
             rawArgs,
-            CommandLineOption(bootstrapServers),
+            CommandLineOption(kafkaBootstrapServers),
+            CommandLineOption(kafkaPartitions),
+            CommandLineOption(kafkaReplicationFactor),
+            CommandLineOption(kafkaUseCleanState),
+            CommandLineOption(kafkaJoinWindowMillis),
             CommandLineOption(numCores),
             CommandLineOption(upstreamHost),
             CommandLineOption(upstreamPort),

@@ -1,11 +1,15 @@
 package io.seldon.dataflow
 
+import com.github.michaelbull.retry.ContinueRetrying
+import com.github.michaelbull.retry.StopRetrying
+import com.github.michaelbull.retry.policy.RetryPolicy
+import com.github.michaelbull.retry.policy.binaryExponentialBackoff
+import com.github.michaelbull.retry.policy.plus
+import com.github.michaelbull.retry.retry
 import io.grpc.ManagedChannelBuilder
 import io.grpc.StatusException
-import io.seldon.dataflow.kafka.KafkaProperties
-import io.seldon.dataflow.kafka.Transformer
-import io.seldon.dataflow.kafka.parseSource
-import io.seldon.dataflow.kafka.transformerFor
+import io.grpc.StatusRuntimeException
+import io.seldon.dataflow.kafka.*
 import io.seldon.mlops.chainer.ChainerGrpcKt
 import io.seldon.mlops.chainer.ChainerOuterClass.*
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation
@@ -15,11 +19,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
-import org.apache.kafka.clients.admin.Admin
-import org.apache.kafka.clients.admin.NewTopic
-import org.apache.kafka.common.errors.TopicExistsException
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ExecutionException
 import io.klogging.logger as coLogger
 
 typealias PipelineId = String
@@ -39,10 +39,13 @@ data class PipelineTopology(
 class PipelineSubscriber(
     private val name: String,
     private val kafkaProperties: KafkaProperties,
+    private val kafkaDomainParams: KafkaDomainParams,
     upstreamHost: String,
     upstreamPort: Int,
     grpcServiceConfig: Map<String, Any>,
-) {
+    ) {
+    private val kafkaAdmin = KafkaAdmin(kafkaProperties)
+
     private val channel = ManagedChannelBuilder
         .forAddress(upstreamHost, upstreamPort)
         .defaultServiceConfig(grpcServiceConfig)
@@ -50,8 +53,22 @@ class PipelineSubscriber(
         .enableRetry()
         .build()
     private val client = ChainerGrpcKt.ChainerCoroutineStub(channel)
-    private val pipelines = ConcurrentHashMap<PipelineId, PipelineTopology>()
 
+    private val pipelines = ConcurrentHashMap<PipelineId, PipelineTopology>()
+    private val grpcFailurePolicy: RetryPolicy<Throwable> = {
+        when (reason) {
+            is StatusException,
+            is StatusRuntimeException -> ContinueRetrying
+            else -> StopRetrying
+            // TODO - be more intelligent about non-retryable errors (e.g. not implemented)
+        }
+    }
+
+    suspend fun subscribe() {
+        retry(grpcFailurePolicy + binaryExponentialBackoff(50..5_000L)) {
+            subscribePipelines()
+        }
+    }
 
     // TODO
     //  - If a topology encounters an error, we should signal back to the scheduler about this.
@@ -60,44 +77,28 @@ class PipelineSubscriber(
     //  Pipeline UID should be enough to uniquely key it, even across versions?
     //  ...
     //  - Add map of model name -> (weak) referrents/reference count to avoid recreation of streams
-    suspend fun subscribe() {
-        val retryCountMax = 10
-        var retries = 0
-        var retry = true
-        while (retry){
-            try {
-                client
-                    .subscribePipelineUpdates(request = makeSubscriptionRequest())
-                    .onEach { update ->
-                        logger.info("received request for ${update.pipeline}:${update.version} Id:${update.uid}")
+    private suspend fun subscribePipelines() {
+        client
+            .subscribePipelineUpdates(request = makeSubscriptionRequest())
+            .onEach { update ->
+                logger.info("received request for ${update.pipeline}:${update.version} Id:${update.uid}")
 
-                        val metadata = PipelineMetadata(
-                            id = update.uid,
-                            name = update.pipeline,
-                            version = update.version,
-                        )
+                val metadata = PipelineMetadata(
+                    id = update.uid,
+                    name = update.pipeline,
+                    version = update.version,
+                )
 
-                        when (update.op) {
-                            PipelineOperation.Create -> handleCreate(metadata, update.updatesList)
-                            PipelineOperation.Delete -> handleDelete(metadata)
-                            else -> logger.warn("unrecognised pipeline operation (${update.op})")
-                        }
-                    }
-                    .onCompletion {
-                        logger.info("pipeline subscription terminated")
-                    }
-                    .collect()
-            } catch (e: StatusException) {
-                retries++
-                if (retries < retryCountMax) {
-                    logger.info("Got status exception. Sleeping..")
-                    Thread.sleep(1_000)
-                } else {
-                    throw e
+                when (update.op) {
+                    PipelineOperation.Create -> handleCreate(metadata, update.updatesList)
+                    PipelineOperation.Delete -> handleDelete(metadata)
+                    else -> logger.warn("unrecognised pipeline operation (${update.op})")
                 }
-
             }
-        }
+            .onCompletion {
+                logger.info("pipeline subscription terminated")
+            }
+            .collect()
         // TODO - error handling?
         // TODO - use supervisor job(s) for spawning coroutines?
     }
@@ -108,66 +109,53 @@ class PipelineSubscriber(
             .setName(name)
             .build()
 
-    // Create topics if they don't exist
-    private suspend fun createTopics(
-        steps: List<PipelineStepUpdate>,
-    )
-    {
-        val admin = Admin.create(kafkaProperties)
-        var topicNames = steps.flatMap { step -> step.sourcesList }
-        topicNames += steps.map { step -> step.sink }
-        val uniqueTopicNames = topicNames.map { topicName -> parseSource(topicName).first }.toSet()
-        logger.info("Topics found are ${uniqueTopicNames}")
-        val newTopics = uniqueTopicNames.map { topicName ->  NewTopic(topicName, 1, 1)}
-        val result = admin.createTopics(newTopics)
-        result.values().forEach { result ->
-            try {
-                result.value.get()
-            }
-            catch (e: ExecutionException)
-            {
-                if (e.cause is TopicExistsException) {
-                    logger.info("Topic already exists ${result.key}")
-                } else {
-                    throw e
-                }
-            }
-        }
-    }
 
     private suspend fun handleCreate(
         metadata: PipelineMetadata,
         steps: List<PipelineStepUpdate>,
     ) {
-        val transformers = steps.mapNotNull { transformerFor(metadata.name, it.sourcesList, it.tensorMapMap, it.sink, kafkaProperties) }
+        val transformers = steps
+            .mapNotNull {
+                transformerFor(
+                    metadata.name,
+                    it.sourcesList,
+                    it.tensorMapMap,
+                    it.sink,
+                    kafkaProperties,
+                    kafkaDomainParams,
+                )
+            }
+            .also { transformers ->
+                if (transformers.size != steps.size) {
+                    client.pipelineUpdateEvent(
+                        makePipelineUpdateEvent(
+                            metadata = metadata,
+                            operation = PipelineOperation.Create,
+                            success = false,
+                            reason = "failed to create all pipeline steps"
+                        )
+                    )
+                    return
+                }
+            }
 
-        createTopics(steps)
-
-        if (transformers.size != steps.size) {
-            client.pipelineUpdateEvent(makePipelineUpdateEvent(
-                metadata = metadata,
-                operation = PipelineOperation.Create,
-                success = false,
-                reason = "failed to create all pipeline steps"
-            ))
-            return
-        }
-
+        kafkaAdmin.ensureTopicsExist(steps)
 
         val previous = pipelines
             .putIfAbsent(
                 metadata.id,
                 PipelineTopology(metadata, transformers),
             )
-
         if (previous == null) {
             transformers.forEach { it.start() }
-            client.pipelineUpdateEvent(makePipelineUpdateEvent(
-                metadata = metadata,
-                operation = PipelineOperation.Create,
-                success = true,
-                reason = "Created pipeline"
-            ))
+            client.pipelineUpdateEvent(
+                makePipelineUpdateEvent(
+                    metadata = metadata,
+                    operation = PipelineOperation.Create,
+                    success = true,
+                    reason = "Created pipeline"
+                )
+            )
         } else {
             logger.warn("not creating pipeline ${metadata.id} as it already exists")
         }
@@ -186,7 +174,8 @@ class PipelineSubscriber(
                             concurrency = pipeline.transformers.size,
                         ) { step ->
                             cancelPipelineStep(pipeline.metadata, step, "removal requested")
-                        }.collect()
+                        }
+                        .collect()
                 }
             }
         client.pipelineUpdateEvent(
@@ -195,7 +184,8 @@ class PipelineSubscriber(
                 operation = PipelineOperation.Delete,
                 success = true,
                 reason = "Pipeline removed",
-            ))
+            )
+        )
     }
 
     fun cancelPipelines(reason: String) {
