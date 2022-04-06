@@ -14,12 +14,12 @@ jobs:
       - name: lint-operator
         uses: golangci/golangci-lint-action@v2
         with:
-          version: v1.42.1
+          version: v1.45.2
           working-directory: operator
           skip-go-installation: true
       - name: lint-scheduler
         uses: golangci/golangci-lint-action@v2
         with:
-          version: v1.42.1
+          version: v1.45.2
           working-directory: scheduler
           skip-go-installation: true

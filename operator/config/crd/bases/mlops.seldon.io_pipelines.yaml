@@ -76,12 +76,6 @@ spec:
                       description: Map of tensor name conversions to use e.g. output1
                         -> input1
                       type: object
-                    tensorNames:
-                      description: Names of tensor to use instead of inputs in strict
-                        order
-                      items:
-                        type: string
-                      type: array
                   required:
                   - name
                   type: object
