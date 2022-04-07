@@ -149,19 +149,6 @@ jobs:
         image: seldonio/alibi-detect-server:1.14.0-dev
         args: --fail-on=upgradable --severity-threshold=high --file=components/alibi-detect-server/Dockerfile
 
-  security-image-request-logger:
-
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: security-image-request-logger
-      uses: snyk/actions/docker@master
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      with:
-        image: seldonio/seldon-request-logger:1.14.0-dev
-        args: --fail-on=upgradable --severity-threshold=high --file=components/seldon-request-logger/Dockerfile
-
   security-image-initializer-rclone:
 
     runs-on: ubuntu-latest
