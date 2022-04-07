@@ -175,7 +175,8 @@ ports:
   protocol: TCP
 ```
 
-This require us to use a following entry
+If you configured Prometheus using Prometheus Operator as discussed above you should be set to go.
+If, however, you are configuring Prometheus not using Prometheus Operator this require us to use a following entry
 ```yaml
   - source_labels: [__meta_kubernetes_pod_container_port_name]
     action: keep
