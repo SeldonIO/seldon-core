@@ -54,13 +54,13 @@ private fun convertToRequest(
             // Loop instead of `addAllInputs` to minimise intermediate memory usage, as tensors can be large
             response.outputsList
                 .forEachIndexed { idx, tensor ->
-                    if (tensor.name in desiredTensors) {
+                    if (tensor.name in desiredTensors || desiredTensors == null) {
                         val newName = tensorRenaming
                             .getOrDefault(
                                 "${inputTopic}.${tensor.name}",
                                 tensor.name,
                             )
-                        val convertedTensor = convertOutputToInputTensor(newName, tensor)
+                        val convertedTensor = convertOutputToInputTensor(newName, tensor, response.rawOutputContentsCount>0)
 
                         addInputs(convertedTensor)
                         if (idx < response.rawOutputContentsCount) {
@@ -71,20 +71,22 @@ private fun convertToRequest(
                         }
                     }
                 }
-        }
-        .build()
+        }.build()
 }
 
 private fun convertOutputToInputTensor(
     tensorName: TensorName,
     output: ModelInferResponse.InferOutputTensor,
+    rawContents: Boolean
 ): ModelInferRequest.InferInputTensor {
-    return ModelInferRequest.InferInputTensor
+    val req = ModelInferRequest.InferInputTensor
         .newBuilder()
         .setName(tensorName)
         .setDatatype(output.datatype)
         .addAllShape(output.shapeList)
         .putAllParameters(output.parametersMap)
-        .setContents(output.contents)
-        .build()
+    if (!rawContents) {
+        req.setContents(output.contents)
+    }
+    return req.build()
 }

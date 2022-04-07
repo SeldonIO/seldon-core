@@ -19,13 +19,21 @@ class Chainer(
     private val streams: KafkaStreams by lazy {
         val builder = StreamsBuilder()
 
-        builder
-            .stream(inputTopic, consumerSerde)
-            .filterForPipeline(pipelineName)
-            .unmarshallInferenceV2()
-            .convertToRequests(inputTopic, tensors, tensorRenaming)
-            .marshallInferenceV2()
-            .to(outputTopic, producerSerde)
+        if (inputTopic.endsWith("outputs") && outputTopic.endsWith("inputs")) {
+            builder
+                .stream(inputTopic, consumerSerde)
+                .filterForPipeline(pipelineName)
+                .unmarshallInferenceV2()
+                .convertToRequests(inputTopic, tensors, tensorRenaming)
+                .marshallInferenceV2()
+                .to(outputTopic, producerSerde)
+        } else {
+            builder
+                .stream(inputTopic, consumerSerde)
+                .filterForPipeline(pipelineName)
+                .to(outputTopic, producerSerde)
+        }
+
         // TODO - when does K-Streams send an ack?  On consuming or only once a new value has been produced?
         // TODO - wait until streams exists, if it does not already
 

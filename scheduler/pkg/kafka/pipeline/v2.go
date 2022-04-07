@@ -49,11 +49,12 @@ type InferenceRequest struct {
 //}
 
 type InferenceResponse struct {
-	ModelName    string                 `json:"model_name"`
-	ModelVersion string                 `json:"model_version,omitempty"`
-	Id           string                 `json:"id,omitempty"`
-	Parameters   map[string]interface{} `json:"parameters,omitempty"`
-	Outputs      []*NamedTensor         `json:"outputs,omitempty"`
+	ModelName         string                 `json:"model_name"`
+	ModelVersion      string                 `json:"model_version,omitempty"`
+	Id                string                 `json:"id,omitempty"`
+	Parameters        map[string]interface{} `json:"parameters,omitempty"`
+	Outputs           []*NamedTensor         `json:"outputs,omitempty"`
+	RawOutputContents [][]byte               `json:"rawOutputContents,omitempty"`
 }
 
 type NamedTensor struct {
@@ -200,7 +201,7 @@ func createParametersFromv2(v2Params map[string]*v2_dataplane.InferParameter) ma
 
 func convertV2InferOutputToNamedTensor(v2Output *v2_dataplane.ModelInferResponse_InferOutputTensor) *NamedTensor {
 	td := &TensorData{
-		boolContents:   v2Output.Contents.BoolContents,
+		boolContents:   v2Output.Contents.GetBoolContents(),
 		uint32Contents: v2Output.Contents.GetUintContents(),
 		uint64Contents: v2Output.Contents.GetUint64Contents(),
 		int32Contents:  v2Output.Contents.GetIntContents(),
@@ -224,11 +225,12 @@ func convertV2toInferenceResponse(resV2 *v2_dataplane.ModelInferResponse) *Infer
 		outputs = append(outputs, convertV2InferOutputToNamedTensor(v2Out))
 	}
 	return &InferenceResponse{
-		ModelName:    resV2.ModelName,
-		ModelVersion: resV2.ModelVersion,
-		Id:           resV2.Id,
-		Parameters:   createParametersFromv2(resV2.Parameters),
-		Outputs:      outputs,
+		ModelName:         resV2.ModelName,
+		ModelVersion:      resV2.ModelVersion,
+		Id:                resV2.Id,
+		Parameters:        createParametersFromv2(resV2.Parameters),
+		Outputs:           outputs,
+		RawOutputContents: resV2.RawOutputContents,
 	}
 }
 

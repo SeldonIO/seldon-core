@@ -122,7 +122,8 @@ fun md5(input: String): String {
 }
 
 fun nameFor(sources: List<TopicName>, sink: TopicName, type: String): String {
-    return md5("$type:${sources.joinToString(":")}:$sink")
+    //limit as kstream files based on name can get too long
+    return md5("$type:${sources.joinToString(":")}:$sink").substring(0,10)
 }
 
 object SeldonHeaders {

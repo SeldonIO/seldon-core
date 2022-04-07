@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"time"
 
+	"encoding/binary"
 	"encoding/json"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
@@ -24,6 +25,22 @@ import (
 const (
 	SeldonModelHeader    = "seldon-model"
 	SeldonPipelineHeader = "pipeline"
+)
+
+const (
+	tyBool   = "BOOL"
+	tyUint8  = "UINT8"
+	tyUint16 = "UINT16"
+	tyUint32 = "UINT32"
+	tyUint64 = "UINT64"
+	tyInt8   = "INT8"
+	tyInt16  = "INT16"
+	tyInt32  = "INT32"
+	tyInt64  = "INT64"
+	tyFp16   = "FP16"
+	tyFp32   = "FP32"
+	tyFp64   = "FP64"
+	tyBytes  = "BYTES"
 )
 
 type InferType uint32
@@ -170,6 +187,54 @@ func (ic *InferenceClient) InferRest(resourceName string, data []byte, showReque
 	return nil
 }
 
+func getDataSize(shape []int64) int64 {
+	tot := int64(1)
+	for _, dim := range shape {
+		tot = tot * dim
+	}
+	return tot
+}
+
+func updateResponseFromRawContents(res *v2_dataplane.ModelInferResponse) error {
+	if len(res.RawOutputContents) > 0 {
+		for idx, output := range res.Outputs {
+			contents := &v2_dataplane.InferTensorContents{}
+			output.Contents = contents
+			var err error
+			switch output.Datatype {
+			case tyBool:
+				output.Contents.BoolContents = make([]bool, getDataSize(output.Shape))
+				err = binary.Read(bytes.NewBuffer(res.RawOutputContents[idx]), binary.LittleEndian, &output.Contents.BoolContents)
+			case tyUint8, tyUint16, tyUint32:
+				output.Contents.UintContents = make([]uint32, getDataSize(output.Shape))
+				err = binary.Read(bytes.NewBuffer(res.RawOutputContents[idx]), binary.LittleEndian, &output.Contents.UintContents)
+			case tyUint64:
+				output.Contents.Uint64Contents = make([]uint64, getDataSize(output.Shape))
+				err = binary.Read(bytes.NewBuffer(res.RawOutputContents[idx]), binary.LittleEndian, &output.Contents.Uint64Contents)
+			case tyInt8, tyInt16, tyInt32:
+				output.Contents.IntContents = make([]int32, getDataSize(output.Shape))
+				err = binary.Read(bytes.NewBuffer(res.RawOutputContents[idx]), binary.LittleEndian, &output.Contents.IntContents)
+			case tyInt64:
+				output.Contents.Int64Contents = make([]int64, getDataSize(output.Shape))
+				err = binary.Read(bytes.NewBuffer(res.RawOutputContents[idx]), binary.LittleEndian, &output.Contents.Int64Contents)
+			case tyFp16, tyFp32:
+				output.Contents.Fp32Contents = make([]float32, getDataSize(output.Shape))
+				err = binary.Read(bytes.NewBuffer(res.RawOutputContents[idx]), binary.LittleEndian, &output.Contents.Fp32Contents)
+			case tyFp64:
+				output.Contents.Fp64Contents = make([]float64, getDataSize(output.Shape))
+				err = binary.Read(bytes.NewBuffer(res.RawOutputContents[idx]), binary.LittleEndian, &output.Contents.Fp64Contents)
+			case tyBytes:
+				output.Contents.BytesContents = make([][]byte, 1)
+				output.Contents.BytesContents[0] = res.RawOutputContents[idx]
+			}
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 func (ic *InferenceClient) InferGrpc(resourceName string, data []byte, showRequest bool, showResponse bool, iterations int, inferType InferType) error {
 	req := &v2_dataplane.ModelInferRequest{}
 	err := protojson.Unmarshal(data, req)
@@ -190,7 +255,7 @@ func (ic *InferenceClient) InferGrpc(resourceName string, data []byte, showReque
 	case InferModel:
 		ctx = metadata.AppendToOutgoingContext(ctx, SeldonModelHeader, resourceName)
 	case InferPipeline:
-		ctx = metadata.AppendToOutgoingContext(ctx, SeldonPipelineHeader, resourceName)
+		ctx = metadata.AppendToOutgoingContext(ctx, SeldonModelHeader, fmt.Sprintf("%s.%s", resourceName, SeldonPipelineHeader))
 	}
 
 	for i := 0; i < iterations; i++ {
@@ -200,6 +265,10 @@ func (ic *InferenceClient) InferGrpc(resourceName string, data []byte, showReque
 		}
 		if iterations == 1 {
 			if showResponse {
+				err := updateResponseFromRawContents(res)
+				if err != nil {
+					return err
+				}
 				printProto(res)
 			}
 		} else {

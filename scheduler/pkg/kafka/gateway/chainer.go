@@ -30,7 +30,8 @@ func chainProtoResponseToRequest(response *v2.ModelInferResponse) *v2.ModelInfer
 	}
 
 	return &v2.ModelInferRequest{
-		Inputs: inputTensors,
+		Inputs:           inputTensors,
+		RawInputContents: response.RawOutputContents,
 	}
 }
 
