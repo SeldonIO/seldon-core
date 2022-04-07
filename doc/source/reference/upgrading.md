@@ -10,7 +10,7 @@ Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed fe
 
 ## Request Logger
 
-The Python request logger component example has been depricated and removed as part of [#4013](https://github.com/SeldonIO/seldon-core/issues/4013).
+The Python request logger component example has been deprecated and removed as part of [#4013](https://github.com/SeldonIO/seldon-core/issues/4013).
 
 ## Upgrading to 1.13
 
