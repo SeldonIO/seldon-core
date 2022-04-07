@@ -284,6 +284,27 @@ def update_alibi_detect_image(
         print(err)
 
 
+def update_echo_model_image(
+    fpath, current_seldon_core_version, seldon_core_version, debug=False
+):
+    fpath = os.path.realpath(fpath)
+    if debug:
+        print("processing [{}]".format(fpath))
+    args = [
+        "sed",
+        "-i",
+        f"s|seldonio/echo-model:{current_seldon_core_version}|seldonio/echo-model:{seldon_core_version}|",
+        fpath,
+    ]
+    err, out = run_command(args, debug)
+
+    if err is None:
+        print(f"updated echo-model version in {fpath}")
+    else:
+        print(f"error updating echo-model version in {fpath}")
+        print(err)
+
+
 def update_models_version(
     fpath, model_name, current_seldon_core_version, seldon_core_version, debug=False
 ):
@@ -448,6 +469,7 @@ def set_version(
     operator_values_yaml_file,
     operator_kustomize_yaml_file,
     alibi_detect_image_files,
+    echo_model_image_files,
     abtest_yaml_file,
     mab_yaml_file,
     model_uri_updates,
@@ -545,6 +567,10 @@ def set_version(
     for fpath in alibi_detect_image_files:
         update_alibi_detect_image(fpath, current_seldon_core_version, seldon_core_version)
 
+    # update echo image references
+    for fpath in echo_model_image_files:
+        update_echo_model_image(fpath, current_seldon_core_version, seldon_core_version)
+
     # Update image version labels
     update_image_metadata_json(seldon_core_version, debug)
     update_dockerfile_label_version(seldon_core_version, debug)
@@ -615,6 +641,10 @@ def main(argv):
         "examples/feedback/feedback-metrics-server/README.md",
     ]
 
+    ECHO_MODEL_FILES = [
+        "examples/models/metrics/metrics.ipynb",
+    ]
+
     opts = getOpts(argv[1:])
     current_version = get_current_version()
     if opts.debug:
@@ -626,6 +656,7 @@ def main(argv):
         OPERATOR_VALUES_YAML_FILE,
         OPERATOR_KUSTOMIZE_CONFIGMAP,
         ALIBI_DETECT_FILES,
+        ECHO_MODEL_FILES,
         AB_VALUES_YAML_FILE,
         MAB_VALUES_YAML_FILE,
         MODEL_URI_UPDATES,
