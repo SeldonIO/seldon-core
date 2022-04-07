@@ -8,6 +8,14 @@ deploy-local:
 undeploy-local:
 	make -C scheduler stop-all
 
+.PHONY: deploy-local-triton
+deploy-local-triton:
+	make -C scheduler start-all-triton
+
+.PHONY: undeploy-local-triton
+undeploy-local-triton:
+	make -C scheduler stop-all-triton
+
 .PHONY: deploy-k8s
 deploy-k8s:
 	kubectl create -f k8s/seldon-v2-crds.yaml
