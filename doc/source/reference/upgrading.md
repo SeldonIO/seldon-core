@@ -6,6 +6,12 @@ If you were running our Openshift 0.4.2 certified operator and are looking to up
 
 Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed features and bug-fixes in each version.
 
+## Upgrading to 1.14
+
+## Request Logger
+
+The Python request logger component example has been deprecated and removed as part of [#4013](https://github.com/SeldonIO/seldon-core/issues/4013).
+
 ## Upgrading to 1.13
 
 ### Seldon Inference Payload Logging Changes

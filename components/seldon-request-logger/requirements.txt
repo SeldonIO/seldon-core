@@ -1,7 +1,0 @@
-Flask>=1.0.2
-numpy>=1.14.5
-dict_digger==0.2.1
-seldon_core
-elasticsearch==7.12.1
-click==8.0.0a1
-seldon-deploy-sdk==1.4.1.2
