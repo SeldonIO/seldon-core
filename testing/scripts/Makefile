@@ -48,7 +48,6 @@ kind_build_rclone_storage_initializer:
 
 .PHONY: kind_build_misc
 kind_build_misc:
-	cd ../../components/seldon-request-logger && make kind_load
 	cd ../../components/storage-initializer && make kind_load
 	cd ../../components/routers/epsilon-greedy && make kind_load
 

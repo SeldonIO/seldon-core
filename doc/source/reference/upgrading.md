@@ -103,7 +103,7 @@ See further documentation [here](../servers/kfserving-storage-initializer.md).
 
 ### Request Logger
 
-In Seldon Core 1.9 we will be moving [seldon-request-logger](https://github.com/SeldonIO/seldon-core/tree/master/components/seldon-request-logger) to separate repository.
+In Seldon Core 1.9 we will be moving [seldon-request-logger](https://github.com/SeldonIO/seldon-core/tree/v1.8.0/components/seldon-request-logger) to separate repository.
 
 
 ### Legacy Java Engine Orchestrator
