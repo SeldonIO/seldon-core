@@ -7,3 +7,4 @@ bases:
 - ../config
 - ../modelgateway
 - ../pipelinegateway
+- ../dataflow-engine

@@ -40,6 +40,8 @@ spec:
           containerPort: 9004
         - name: agent
           containerPort: 9005
+        - name: dataflow
+          containerPort: 9008
         resources:
           limits:
             cpu: 500m

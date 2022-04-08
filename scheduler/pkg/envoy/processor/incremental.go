@@ -230,7 +230,13 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelRouteName string,
 			p.xdsCache.AddEndpoint(grpcClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceGrpcPort()))
 		}
 	}
-	p.xdsCache.AddRouteClusterTraffic(modelRouteName, modelVersion.GetModel().GetMeta().GetName(), modelVersion.GetVersion(), trafficPercent, httpClusterName, grpcClusterName, modelVersion.GetDeploymentSpec().LogPayloads)
+	logPayloads := false
+	if modelVersion.GetDeploymentSpec() != nil {
+		logPayloads = modelVersion.GetDeploymentSpec().LogPayloads
+	} else {
+		logger.Warnf("model %s has not deployment spec", modelVersion.GetModel().GetMeta().GetName())
+	}
+	p.xdsCache.AddRouteClusterTraffic(modelRouteName, modelVersion.GetModel().GetMeta().GetName(), modelVersion.GetVersion(), trafficPercent, httpClusterName, grpcClusterName, logPayloads)
 }
 
 func getTrafficShare(latestModel *store.ModelVersion, lastAvailableModelVersion *store.ModelVersion, weight uint32) (uint32, uint32) {

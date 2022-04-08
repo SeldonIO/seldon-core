@@ -19,6 +19,7 @@ undeploy-local-triton:
 .PHONY: deploy-k8s
 deploy-k8s:
 	kubectl create -f k8s/seldon-v2-crds.yaml
+	sleep 1
 	kubectl wait --for condition=established --timeout=60s crd/servers.mlops.seldon.io
 	kubectl wait --for condition=established --timeout=60s crd/serverconfigs.mlops.seldon.io
 	kubectl create -f k8s/seldon-v2-components.yaml

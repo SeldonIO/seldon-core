@@ -459,6 +459,11 @@ spec:
                     passEmptyResponses:
                       description: 'Whether empty tensors output should be passed to onwards Default: false'
                       type: boolean
+                    tensorMap:
+                      additionalProperties:
+                        type: string
+                      description: Map of tensor name conversions to use e.g. output1 -> input1
+                      type: object
                   required:
                   - name
                   type: object

@@ -45,7 +45,8 @@ class PipelineSubscriber(
     grpcServiceConfig: Map<String, Any>,
     ) {
     private val kafkaAdmin = KafkaAdmin(kafkaProperties)
-
+    private val upstreamHost = upstreamHost
+    private val upstreamPort = upstreamPort
     private val channel = ManagedChannelBuilder
         .forAddress(upstreamHost, upstreamPort)
         .defaultServiceConfig(grpcServiceConfig)
@@ -65,6 +66,7 @@ class PipelineSubscriber(
     }
 
     suspend fun subscribe() {
+        logger.info("Will connect to ${upstreamHost}:${upstreamPort}")
         retry(grpcFailurePolicy + binaryExponentialBackoff(50..5_000L)) {
             subscribePipelines()
         }
@@ -78,6 +80,7 @@ class PipelineSubscriber(
     //  ...
     //  - Add map of model name -> (weak) referrents/reference count to avoid recreation of streams
     private suspend fun subscribePipelines() {
+
         client
             .subscribePipelineUpdates(request = makeSubscriptionRequest())
             .onEach { update ->

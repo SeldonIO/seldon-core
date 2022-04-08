@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dataflow-engine
+  namespace: system
+  labels:
+    control-plane: seldon-dataflow-engine
+spec:
+  selector:
+    matchLabels:
+      control-plane: seldon-dataflow-engine
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        control-plane: seldon-dataflow-engine
+    spec:
+      securityContext:
+        runAsUser: 8888
+      containers:
+      - image: dataflow-engine:latest
+        imagePullPolicy: IfNotPresent
+        name: dataflow-engine
+        env:
+        - name: SELDON_KAFKA_BOOTSTRAP_SERVERS
+          value: "seldon-kafka-plain-bootstrap.kafka:9092"
+        - name: SELDON_UPSTREAM_HOST
+          value: "seldon-scheduler"
+        - name: SELDON_UPSTREAM_PORT
+          value: "9008"
+        - name: SELDON_CORES_COUNT
+          value: "4"
+        resources:
+          limits:
+            cpu: 4
+            memory: 2G
+          requests:
+            cpu: 1
+            memory: 1G
+      terminationGracePeriodSeconds: 5

@@ -19,6 +19,8 @@ package mlops
 import (
 	"context"
 
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
+
 	"github.com/seldonio/seldon-core/operatorv2/pkg/constants"
 	"github.com/seldonio/seldon-core/operatorv2/pkg/utils"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -111,7 +113,9 @@ func (r *PipelineReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *PipelineReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	pred := predicate.GenerationChangedPredicate{}
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&mlopsv1alpha1.Pipeline{}).
+		WithEventFilter(pred).
 		Complete(r)
 }

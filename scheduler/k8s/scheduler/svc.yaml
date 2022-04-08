@@ -19,5 +19,9 @@ spec:
     port: 9005
     targetPort: agent
     protocol: TCP
+  - name: dataflow
+    port: 9008
+    targetPort: dataflow
+    protocol: TCP
   selector:
     control-plane: seldon-scheduler

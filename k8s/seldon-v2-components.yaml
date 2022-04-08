@@ -413,7 +413,7 @@ subjects:
 ---
 apiVersion: v1
 data:
-  agent.yaml: "rclone: \n  config_secrets: [\"seldon-rclone-gs-public\"]"
+  agent.yaml: "rclone: \n  config_secrets: [\"seldon-rclone-gs-public\"]\nkafka:\n  active: true\n  broker: \"seldon-kafka-plain-bootstrap.kafka:9092\""
 kind: ConfigMap
 metadata:
   name: seldon-agent
@@ -492,6 +492,27 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
+    app: seldon-mesh
+  name: seldon-pipelinegateway
+  namespace: seldon-mesh
+spec:
+  clusterIP: None
+  ports:
+  - name: http
+    port: 9010
+    protocol: TCP
+    targetPort: http
+  - name: grpc
+    port: 9011
+    protocol: TCP
+    targetPort: grpc
+  selector:
+    app: pipelinegateway
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
     app: seldon-scheduler
   name: seldon-scheduler
   namespace: seldon-mesh
@@ -509,6 +530,10 @@ spec:
     port: 9005
     protocol: TCP
     targetPort: agent
+  - name: dataflow
+    port: 9008
+    protocol: TCP
+    targetPort: dataflow
   selector:
     control-plane: seldon-scheduler
   type: LoadBalancer
@@ -594,6 +619,47 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
+    control-plane: seldon-dataflow-engine
+  name: seldon-dataflow-engine
+  namespace: seldon-mesh
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      control-plane: seldon-dataflow-engine
+  template:
+    metadata:
+      labels:
+        control-plane: seldon-dataflow-engine
+    spec:
+      containers:
+      - env:
+        - name: SELDON_KAFKA_BOOTSTRAP_SERVERS
+          value: seldon-kafka-plain-bootstrap.kafka:9092
+        - name: SELDON_UPSTREAM_HOST
+          value: seldon-scheduler
+        - name: SELDON_UPSTREAM_PORT
+          value: "9008"
+        - name: SELDON_CORES_COUNT
+          value: "4"
+        image: seldonio/seldon-dataflow-engine:latest
+        imagePullPolicy: IfNotPresent
+        name: dataflow-engine
+        resources:
+          limits:
+            cpu: 4
+            memory: 2G
+          requests:
+            cpu: 1
+            memory: 1G
+      securityContext:
+        runAsUser: 8888
+      terminationGracePeriodSeconds: 5
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
     app: seldon-envoy
   name: seldon-envoy
   namespace: seldon-mesh
@@ -625,60 +691,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    control-plane: seldon-scheduler
-  name: seldon-scheduler
+    control-plane: seldon-modelgateway
+  name: seldon-modelgateway
   namespace: seldon-mesh
 spec:
   replicas: 1
   selector:
     matchLabels:
-      control-plane: seldon-scheduler
+      control-plane: seldon-modelgateway
   template:
     metadata:
       labels:
-        control-plane: seldon-scheduler
-    spec:
-      containers:
-      - command:
-        - /bin/scheduler
-        image: seldonio/seldon-scheduler:latest
-        imagePullPolicy: IfNotPresent
-        name: scheduler
-        ports:
-        - containerPort: 9002
-          name: xds
-        - containerPort: 9004
-          name: scheduler
-        - containerPort: 9005
-          name: agent
-        resources:
-          limits:
-            cpu: 500m
-            memory: 300Mi
-          requests:
-            cpu: 100m
-            memory: 200Mi
-      securityContext:
-        runAsUser: 8888
-      serviceAccountName: seldon-scheduler
-      terminationGracePeriodSeconds: 5
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    control-plane: seldon-stream
-  name: seldon-stream
-  namespace: seldon-mesh
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      control-plane: seldon-stream
-  template:
-    metadata:
-      labels:
-        control-plane: seldon-stream
+        control-plane: seldon-modelgateway
     spec:
       containers:
       - args:
@@ -687,10 +711,10 @@ spec:
         - --envoy-host=seldon-mesh
         - --envoy-port=80
         command:
-        - /bin/stream
-        image: seldonio/seldon-stream:latest
+        - /bin/modelgateway
+        image: seldonio/seldon-modelgateway:latest
         imagePullPolicy: IfNotPresent
-        name: stream
+        name: modelgateway
         resources:
           limits:
             cpu: 500m
@@ -709,6 +733,105 @@ spec:
       - configMap:
           name: seldon-agent
         name: config-volume
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pipelinegateway
+  name: seldon-pipelinegateway
+  namespace: seldon-mesh
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pipelinegateway
+  template:
+    metadata:
+      labels:
+        app: pipelinegateway
+    spec:
+      containers:
+      - args:
+        - --http-port=9010
+        - --grpc-port=9011
+        - --config-path=/mnt/config
+        command:
+        - /bin/pipelinegateway
+        image: seldonio/seldon-pipelinegateway:latest
+        imagePullPolicy: IfNotPresent
+        name: pipelinegateway
+        ports:
+        - containerPort: 9010
+          name: http
+          protocol: TCP
+        - containerPort: 9011
+          name: grpc
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 500m
+            memory: 300Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - mountPath: /mnt/config
+          name: config-volume
+      securityContext:
+        runAsUser: 8888
+      serviceAccountName: seldon-scheduler
+      terminationGracePeriodSeconds: 5
+      volumes:
+      - configMap:
+          name: seldon-agent
+        name: config-volume
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    control-plane: seldon-scheduler
+  name: seldon-scheduler
+  namespace: seldon-mesh
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      control-plane: seldon-scheduler
+  template:
+    metadata:
+      labels:
+        control-plane: seldon-scheduler
+    spec:
+      containers:
+      - args:
+        - --pipeline-gateway-host=seldon-pipelinegateway
+        command:
+        - /bin/scheduler
+        image: seldonio/seldon-scheduler:latest
+        imagePullPolicy: IfNotPresent
+        name: scheduler
+        ports:
+        - containerPort: 9002
+          name: xds
+        - containerPort: 9004
+          name: scheduler
+        - containerPort: 9005
+          name: agent
+        - containerPort: 9008
+          name: dataflow
+        resources:
+          limits:
+            cpu: 500m
+            memory: 300Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+      securityContext:
+        runAsUser: 8888
+      serviceAccountName: seldon-scheduler
+      terminationGracePeriodSeconds: 5
 ---
 apiVersion: mlops.seldon.io/v1alpha1
 kind: ServerConfig
@@ -839,6 +962,8 @@ spec:
         name: mlserver-models
         readOnly: true
     securityContext:
+      fsGroup: 2000
+      runAsNonRoot: true
       runAsUser: 1000
     serviceAccountName: seldon-server
     terminationGracePeriodSeconds: 30
@@ -983,6 +1108,8 @@ spec:
         name: triton-models
         readOnly: true
     securityContext:
+      fsGroup: 2000
+      runAsNonRoot: true
       runAsUser: 1000
     serviceAccountName: seldon-server
     terminationGracePeriodSeconds: 30
