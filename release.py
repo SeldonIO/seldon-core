@@ -402,7 +402,6 @@ def update_dockerfile_label_version(seldon_core_version, debug=False):
         "servers/tfserving/Dockerfile.redhat",
         "components/alibi-detect-server/Dockerfile",
         "components/storage-initializer/Dockerfile",
-        "components/seldon-request-logger/Dockerfile",
         "components/alibi-explain-server/Dockerfile",
     ]
     replaces = [
