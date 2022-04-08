@@ -26,7 +26,6 @@ def scan_images(debug=False):
     "executor",
     "examples/models/mean_classifier",
     "components/alibi-detect-server",
-    "components/seldon-request-logger",
     "servers/sklearnserver",
     "servers/mlflowserver",
     "servers/xgboostserver",
