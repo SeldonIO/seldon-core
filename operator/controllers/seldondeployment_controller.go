@@ -698,7 +698,7 @@ func createContainerService(deploy *appsv1.Deployment,
 	con *corev1.Container,
 	c components,
 	seldonId string) *corev1.Service {
-	containerServiceKey := machinelearningv1.Label_seldon_app_svc
+	containerServiceKey := fmt.Sprintf("%s-%s", machinelearningv1.Label_seldon_app_svc, con.Name)
 	containerServiceValue := machinelearningv1.GetContainerServiceName(mlDep.Name, p, con)
 	pSvcName := machinelearningv1.GetPredictorKey(mlDep, &p)
 	pu := machinelearningv1.GetPredictiveUnit(&p.Graph, con.Name)

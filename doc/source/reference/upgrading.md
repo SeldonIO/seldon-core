@@ -12,6 +12,10 @@ Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed fe
 
 The Python request logger component example has been deprecated and removed as part of [#4013](https://github.com/SeldonIO/seldon-core/issues/4013).
 
+## Container Services
+
+The label on services pointing to containers for each node in your inference graph has been changed to stop clashes in key-values for label selectors when you have multiple nodes in your inference graph. This will cause all your existing seldon deployments to be recreated with a rolling update as their service and deployment specs will have changed in the upgrade.
+
 ## Upgrading to 1.13
 
 ### Seldon Inference Payload Logging Changes
