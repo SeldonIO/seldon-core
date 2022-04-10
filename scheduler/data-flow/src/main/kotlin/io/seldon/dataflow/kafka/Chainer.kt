@@ -2,7 +2,9 @@ package io.seldon.dataflow.kafka
 
 import io.klogging.noCoLogger
 import org.apache.kafka.streams.KafkaStreams
+import org.apache.kafka.streams.KafkaStreams.State
 import org.apache.kafka.streams.StreamsBuilder
+import java.util.concurrent.CountDownLatch
 
 /**
  * A *transformer* for a single input stream to a single output stream.
@@ -15,7 +17,8 @@ class Chainer(
     internal val pipelineName: String,
     internal val tensorRenaming: Map<TensorName, TensorName>,
     private val kafkaDomainParams: KafkaDomainParams,
-) : Transformer {
+) : Transformer, KafkaStreams.StateListener {
+    private val latch = CountDownLatch(1)
     private val streams: KafkaStreams by lazy {
         val builder = StreamsBuilder()
 
@@ -42,12 +45,23 @@ class Chainer(
         KafkaStreams(builder.build(), properties)
     }
 
+    override fun onChange(s1: State, s2: State) {
+        logger.info("State now ${s1} ")
+        when(s1) {
+            State.RUNNING ->
+                latch.countDown()
+            else -> {}
+        }
+    }
+
     override fun start() {
         if (kafkaDomainParams.useCleanState) {
             streams.cleanUp()
         }
         logger.info("starting for ($inputTopic) -> ($outputTopic)")
+        streams.setStateListener(this)
         streams.start()
+        latch.await()
     }
 
     override fun stop() {

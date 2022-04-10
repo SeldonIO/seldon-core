@@ -118,6 +118,8 @@ class PipelineSubscriber(
         metadata: PipelineMetadata,
         steps: List<PipelineStepUpdate>,
     ) {
+        kafkaAdmin.ensureTopicsExist(steps)
+
         val transformers = steps
             .mapNotNull {
                 transformerFor(
@@ -144,7 +146,7 @@ class PipelineSubscriber(
                 }
             }
 
-        kafkaAdmin.ensureTopicsExist(steps)
+
 
         val previous = pipelines
             .putIfAbsent(

@@ -6,6 +6,7 @@ import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.kstream.*
 import java.time.Duration
+import java.util.concurrent.CountDownLatch
 
 /**
  * A *transformer* which joins multiple input streams into a single output stream.
@@ -19,7 +20,8 @@ class Joiner(
     internal val tensorRenaming: Map<TensorName, TensorName>,
     internal val kafkaDomainParams: KafkaDomainParams,
     internal val outerJoin: Boolean,
-) : Transformer {
+) : Transformer, KafkaStreams.StateListener {
+    private val latch = CountDownLatch(1)
     private val streams: KafkaStreams by lazy {
         val builder = StreamsBuilder()
         buildTopology(builder, inputTopics).to(outputTopic, producerSerde)
@@ -103,11 +105,21 @@ class Joiner(
         return request.toByteArray()
     }
 
+    override fun onChange(s1: KafkaStreams.State, s2: KafkaStreams.State) {
+        logger.info("State now ${s1} ")
+        when(s1) {
+            KafkaStreams.State.RUNNING ->
+                latch.countDown()
+            else -> {}
+        }
+    }
+
     override fun start() {
         if (kafkaDomainParams.useCleanState) {
             streams.cleanUp()
         }
         logger.info("starting for ($inputTopics) -> ($outputTopic) outerJoin:${outerJoin}")
+        streams.setStateListener(this)
         streams.start()
     }
 
