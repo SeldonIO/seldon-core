@@ -5,7 +5,7 @@ services:
   agent:
     environment:
       - SELDON_SERVER_TYPE=triton
-      - SELDON_SERVER_CAPABILITIES=tensorflow,onnx,pytorch
+      - SELDON_SERVER_CAPABILITIES=tensorflow,onnx,pytorch,triton-python
 
   server:
     command:

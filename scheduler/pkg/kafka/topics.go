@@ -8,8 +8,10 @@ const (
 	seldonTopicPrefix = "seldon"
 	modelTopic        = "model"
 	pipelineTopic     = "pipeline"
+	errorsTopic       = "errors"
 	inputsSuffix      = "inputs"
 	outputsSuffix     = "outputs"
+	TopicErrorHeader  = "seldon-pipeline-errors"
 )
 
 type TopicNamer struct {
@@ -23,6 +25,10 @@ func NewTopicNamer(namespace string) *TopicNamer {
 	return &TopicNamer{
 		namespace: namespace,
 	}
+}
+
+func (tn *TopicNamer) GetModelErrorTopic() string {
+	return fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, errorsTopic, outputsSuffix)
 }
 
 func (tn *TopicNamer) GetModelTopicInputs(modelName string) string {

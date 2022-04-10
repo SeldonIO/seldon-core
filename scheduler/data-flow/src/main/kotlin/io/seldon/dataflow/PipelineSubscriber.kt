@@ -12,6 +12,7 @@ import io.grpc.StatusRuntimeException
 import io.seldon.dataflow.kafka.*
 import io.seldon.mlops.chainer.ChainerGrpcKt
 import io.seldon.mlops.chainer.ChainerOuterClass.*
+import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.asFlow
@@ -124,6 +125,7 @@ class PipelineSubscriber(
                     it.sourcesList,
                     it.tensorMapMap,
                     it.sink,
+                    it.ty == PipelineJoinType.Outer,
                     kafkaProperties,
                     kafkaDomainParams,
                 )
@@ -211,7 +213,6 @@ class PipelineSubscriber(
         transformer: Transformer,
         reason: String,
     ) {
-        logger.info("cancel pipeline ${metadata.name}")
         transformer.stop()
     }
 

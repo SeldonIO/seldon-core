@@ -158,18 +158,38 @@ func (c *ChainerServer) createPipelineMessage(pv *pipeline.PipelineVersion) *cha
 			Ty:        chainer.PipelineStepUpdate_Inner,
 			TensorMap: c.topicNamer.GetFullyQualifiedTensorMap(step.TensorMap),
 		}
+		if step.OuterJoin {
+			stepUpdate.Ty = chainer.PipelineStepUpdate_Outer
+		}
+		if step.Batch != nil {
+			stepUpdate.Batch = &chainer.Batch{
+				Size:     step.Batch.Size,
+				WindowMs: step.Batch.WindowMs,
+				Rolling:  step.Batch.Rolling,
+			}
+		}
 		c.logger.Infof("Adding sources %v to %s", stepUpdate.Sources, stepUpdate.Sink)
 		stepUpdates = append(stepUpdates, &stepUpdate)
 	}
 	if pv.Output != nil {
 		stepUpdate := chainer.PipelineStepUpdate{
-			Sources: c.createTopicSources(pv.Output.Inputs, pv.Name),
+			Sources: c.createTopicSources(pv.Output.Steps, pv.Name),
 			Sink:    c.topicNamer.GetPipelineTopicOutputs(pv.Name),
 			Ty:      chainer.PipelineStepUpdate_Inner,
+		}
+		if pv.Output.OuterJoin {
+			stepUpdate.Ty = chainer.PipelineStepUpdate_Outer
 		}
 		c.logger.Infof("Adding sources %v to %s", stepUpdate.Sources, stepUpdate.Sink)
 		stepUpdates = append(stepUpdates, &stepUpdate)
 	}
+	//Append an error step to send any errors to pipeline output
+	stepUpdates = append(stepUpdates, &chainer.PipelineStepUpdate{
+		Sources: []string{c.topicNamer.GetModelErrorTopic()},
+		Sink:    c.topicNamer.GetPipelineTopicOutputs(pv.Name),
+		Ty:      chainer.PipelineStepUpdate_Inner,
+	})
+
 	op := chainer.PipelineUpdateMessage_Create
 	if pv.State.Status != pipeline.PipelineCreate {
 		op = chainer.PipelineUpdateMessage_Delete

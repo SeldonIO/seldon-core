@@ -129,3 +129,20 @@ type PipelineMultiStepNoOutput struct {
 func (por *PipelineMultiStepNoOutput) Error() string {
 	return fmt.Sprintf("multi step pipeline %s must specify output", por.pipeline)
 }
+
+type PipelineStepRepeatedErr struct {
+	pipeline string
+	step     string
+}
+
+func (psr *PipelineStepRepeatedErr) Error() string {
+	return fmt.Sprintf("pipeline %s has repeated step %s", psr.pipeline, psr.step)
+}
+
+type PipelineCycleErr struct {
+	pipeline string
+}
+
+func (psr *PipelineCycleErr) Error() string {
+	return fmt.Sprintf("pipeline %s has a cycle", psr.pipeline)
+}

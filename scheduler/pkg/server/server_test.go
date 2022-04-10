@@ -282,7 +282,7 @@ func TestLoadPipeline(t *testing.T) {
 						},
 					},
 					Output: &pb.PipelineOutput{
-						Inputs: []string{"b.outputs"},
+						Steps: []string{"b.outputs"},
 					},
 				},
 			},

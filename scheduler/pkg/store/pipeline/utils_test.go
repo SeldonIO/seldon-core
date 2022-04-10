@@ -1,7 +1,6 @@
 package pipeline
 
 import (
-	"errors"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -41,6 +40,7 @@ func TestCreatePipelineFromProto(t *testing.T) {
 		err      error
 	}
 
+	getUintPtr := func(val uint32) *uint32 { return &val }
 	tests := []test{
 		{
 			name:    "simple",
@@ -58,7 +58,7 @@ func TestCreatePipelineFromProto(t *testing.T) {
 					},
 				},
 				Output: &scheduler.PipelineOutput{
-					Inputs: []string{"b"},
+					Steps: []string{"b"},
 				},
 			},
 			pipeline: &PipelineVersion{
@@ -75,7 +75,7 @@ func TestCreatePipelineFromProto(t *testing.T) {
 					},
 				},
 				Output: &PipelineOutput{
-					Inputs: []string{"b"},
+					Steps: []string{"b"},
 				},
 				State: &PipelineState{},
 			},
@@ -97,7 +97,7 @@ func TestCreatePipelineFromProto(t *testing.T) {
 					},
 				},
 				Output: &scheduler.PipelineOutput{
-					Inputs: []string{"b"},
+					Steps: []string{"b"},
 				},
 			},
 			pipeline: &PipelineVersion{
@@ -115,7 +115,61 @@ func TestCreatePipelineFromProto(t *testing.T) {
 					},
 				},
 				Output: &PipelineOutput{
-					Inputs: []string{"b"},
+					Steps: []string{"b"},
+				},
+				State: &PipelineState{},
+			},
+		},
+		{
+			name:    "simple with join and batch",
+			version: 1,
+			proto: &scheduler.Pipeline{
+				Name: "pipeline",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name:   "a",
+						Inputs: []string{},
+					},
+					{
+						Name:      "b",
+						Inputs:    []string{"a.outputs"},
+						TensorMap: map[string]string{"output1": "input1"},
+						OuterJoin: true,
+						Batch: &scheduler.Batch{
+							Size:     getUintPtr(100),
+							WindowMs: getUintPtr(1000),
+							Rolling:  true,
+						},
+					},
+				},
+				Output: &scheduler.PipelineOutput{
+					Steps:     []string{"b"},
+					OuterJoin: true,
+				},
+			},
+			pipeline: &PipelineVersion{
+				Name:    "pipeline",
+				Version: 1,
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name:   "a",
+						Inputs: []string{},
+					},
+					"b": {
+						Name:      "b",
+						Inputs:    []string{"a.outputs"},
+						TensorMap: map[string]string{"output1": "input1"},
+						OuterJoin: true,
+						Batch: &Batch{
+							Size:     getUintPtr(100),
+							WindowMs: getUintPtr(1000),
+							Rolling:  true,
+						},
+					},
+				},
+				Output: &PipelineOutput{
+					Steps:     []string{"b"},
+					OuterJoin: true,
 				},
 				State: &PipelineState{},
 			},
@@ -164,7 +218,7 @@ func TestCreatePipelineFromProto(t *testing.T) {
 					},
 				},
 				Output: &scheduler.PipelineOutput{
-					Inputs: []string{"step1"},
+					Steps: []string{"step1"},
 				},
 			},
 			pipeline: &PipelineVersion{
@@ -177,10 +231,31 @@ func TestCreatePipelineFromProto(t *testing.T) {
 					},
 				},
 				Output: &PipelineOutput{
-					Inputs: []string{"b"},
+					Steps: []string{"b"},
 				},
 				State: &PipelineState{},
 			},
+		},
+		{
+			name:    "pipeline step repeated",
+			version: 1,
+			proto: &scheduler.Pipeline{
+				Name: "pipeline",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name:   "foo",
+						Inputs: []string{},
+					},
+					{
+						Name:   "foo",
+						Inputs: []string{},
+					},
+				},
+				Output: &scheduler.PipelineOutput{
+					Steps: []string{"b"},
+				},
+			},
+			err: &PipelineStepRepeatedErr{pipeline: "pipeline", step: "foo"},
 		},
 	}
 
@@ -194,7 +269,7 @@ func TestCreatePipelineFromProto(t *testing.T) {
 					g.Expect(test.pipeline.Steps[k]).To(Equal(v))
 				}
 			} else {
-				g.Expect(errors.Is(err, test.err)).To(BeTrue())
+				g.Expect(err.Error()).To(Equal(test.err.Error()))
 			}
 		})
 	}

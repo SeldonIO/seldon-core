@@ -20,18 +20,26 @@ func CreateProtoFromPipeline(pv *PipelineVersion) *scheduler.Pipeline {
 	for _, stepName := range keys {
 		step := pv.Steps[stepName]
 		protoStep := &scheduler.PipelineStep{
-			Name:               step.Name,
-			Inputs:             step.Inputs,
-			TensorMap:          step.TensorMap,
-			PassEmptyResponses: step.PassEmptyOutputs,
-			JoinWindowMs:       step.JoinWindowMs,
+			Name:         step.Name,
+			Inputs:       step.Inputs,
+			TensorMap:    step.TensorMap,
+			JoinWindowMs: step.JoinWindowMs,
+			OuterJoin:    step.OuterJoin,
+		}
+		if step.Batch != nil {
+			protoStep.Batch = &scheduler.Batch{
+				Size:     step.Batch.Size,
+				WindowMs: step.Batch.WindowMs,
+				Rolling:  step.Batch.Rolling,
+			}
 		}
 		protoSteps = append(protoSteps, protoStep)
 	}
 	if pv.Output != nil {
 		protoOutput = &scheduler.PipelineOutput{
-			Inputs:       pv.Output.Inputs,
+			Steps:        pv.Output.Steps,
 			JoinWindowMs: pv.Output.JoinWindowMs,
+			OuterJoin:    pv.Output.OuterJoin,
 		}
 	}
 	var kubernetesMeta *scheduler.KubernetesMeta
@@ -53,11 +61,21 @@ func CreatePipelineFromProto(pipelineProto *scheduler.Pipeline, version uint32) 
 	steps := make(map[string]*PipelineStep)
 	for _, stepProto := range pipelineProto.Steps {
 		step := &PipelineStep{
-			Name:             stepProto.GetName(),
-			Inputs:           updateInputSteps(stepProto.Inputs),
-			TensorMap:        stepProto.TensorMap,
-			PassEmptyOutputs: stepProto.PassEmptyResponses,
-			JoinWindowMs:     stepProto.JoinWindowMs,
+			Name:         stepProto.GetName(),
+			Inputs:       updateInputSteps(stepProto.Inputs),
+			TensorMap:    stepProto.TensorMap,
+			JoinWindowMs: stepProto.JoinWindowMs,
+			OuterJoin:    stepProto.OuterJoin,
+		}
+		if stepProto.Batch != nil {
+			step.Batch = &Batch{
+				Size:     stepProto.Batch.Size,
+				WindowMs: stepProto.Batch.WindowMs,
+				Rolling:  stepProto.Batch.Rolling,
+			}
+		}
+		if _, ok := steps[stepProto.Name]; ok {
+			return nil, &PipelineStepRepeatedErr{pipeline: pipelineProto.GetName(), step: stepProto.GetName()}
 		}
 		steps[stepProto.Name] = step
 	}
@@ -65,8 +83,9 @@ func CreatePipelineFromProto(pipelineProto *scheduler.Pipeline, version uint32) 
 	var output *PipelineOutput
 	if pipelineProto.Output != nil {
 		output = &PipelineOutput{
-			Inputs:       updateInputSteps(pipelineProto.Output.Inputs),
+			Steps:        updateInputSteps(pipelineProto.Output.Steps),
 			JoinWindowMs: pipelineProto.Output.JoinWindowMs,
+			OuterJoin:    pipelineProto.Output.OuterJoin,
 		}
 	}
 	var kubernetesMeta *KubernetesMeta

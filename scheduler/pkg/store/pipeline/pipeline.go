@@ -84,14 +84,22 @@ func (ps *PipelineState) setState(status PipelineStatus, reason string) {
 }
 
 type PipelineStep struct {
-	Name             string
-	Inputs           []string
-	TensorMap        map[string]string
-	JoinWindowMs     *uint32
-	PassEmptyOutputs bool
+	Name         string
+	Inputs       []string
+	TensorMap    map[string]string
+	JoinWindowMs *uint32
+	OuterJoin    bool
+	Batch        *Batch
+}
+
+type Batch struct {
+	Size     *uint32
+	WindowMs *uint32
+	Rolling  bool
 }
 
 type PipelineOutput struct {
-	Inputs       []string
+	Steps        []string
 	JoinWindowMs uint32
+	OuterJoin    bool
 }

@@ -494,7 +494,7 @@ start-agent-local-triton:
 		--server-type triton \
 		--log-level debug \
 		--config-path ${PWD}/config \
-		--replica-config '{"inferenceSvc":"0.0.0.0","inferenceHttpPort":8080,"inferenceGrpcPort":8081,"memoryBytes":1000000,"capabilities":["tensorflow","onnx","pytorch"],"overCommitPercentage":20}'
+		--replica-config '{"inferenceSvc":"0.0.0.0","inferenceHttpPort":8080,"inferenceGrpcPort":8081,"memoryBytes":1000000,"capabilities":["tensorflow","onnx","pytorch","triton-python"],"overCommitPercentage":20}'
 
 .PHONY: start-envoy-local
 start-envoy-local:

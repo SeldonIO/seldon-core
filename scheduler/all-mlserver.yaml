@@ -5,7 +5,7 @@ services:
   agent:
     environment:
       - SELDON_SERVER_TYPE=mlserver
-      - SELDON_SERVER_CAPABILITIES=sklearn,xgboost
+      - SELDON_SERVER_CAPABILITIES=sklearn,xgboost,python
 
   server:
     command:

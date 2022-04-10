@@ -1,5 +1,6 @@
 package io.seldon.dataflow.kafka
 
+import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.streams.StreamsConfig
 import java.util.*
 
@@ -18,11 +19,12 @@ fun getKafkaProperties(params: KafkaStreamsParams): KafkaProperties {
 
     return Properties().apply {
         // TODO - add version to app ID?  (From env var.)
-        this[StreamsConfig.APPLICATION_ID_CONFIG] = "seldon-dataflow-transformer"
+        this[StreamsConfig.APPLICATION_ID_CONFIG] = "seldon-dataflow"
         this[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = params.bootstrapServers
         this[StreamsConfig.PROCESSING_GUARANTEE_CONFIG] = "at_least_once"
         this[StreamsConfig.NUM_STREAM_THREADS_CONFIG] = params.numCores * 16
         this[StreamsConfig.SECURITY_PROTOCOL_CONFIG] = "PLAINTEXT"
+        this[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "latest"
 
         // Testing
         this[StreamsConfig.REPLICATION_FACTOR_CONFIG] = 1
@@ -34,8 +36,7 @@ fun KafkaProperties.withAppId(name: String): KafkaProperties {
     val properties = KafkaProperties()
 
     properties.putAll(this.toMap())
-    val appIdPrefix = this[StreamsConfig.APPLICATION_ID_CONFIG] as String
-    this[StreamsConfig.APPLICATION_ID_CONFIG] = "$appIdPrefix-$name"
+    this[StreamsConfig.APPLICATION_ID_CONFIG] = "seldon-dataflow-$name"
 
     return properties
 }

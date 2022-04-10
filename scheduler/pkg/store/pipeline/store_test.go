@@ -31,7 +31,7 @@ func TestAddPipeline(t *testing.T) {
 					},
 				},
 				Output: &scheduler.PipelineOutput{
-					Inputs: []string{"step1.outputs"},
+					Steps: []string{"step1.outputs"},
 				},
 			},
 			store: &PipelineStore{
@@ -51,7 +51,7 @@ func TestAddPipeline(t *testing.T) {
 					},
 				},
 				Output: &scheduler.PipelineOutput{
-					Inputs: []string{"step1.outputs"},
+					Steps: []string{"step1.outputs"},
 				},
 				KubernetesMeta: &scheduler.KubernetesMeta{
 					Namespace:  "default",
@@ -75,7 +75,7 @@ func TestAddPipeline(t *testing.T) {
 					},
 				},
 				Output: &scheduler.PipelineOutput{
-					Inputs: []string{"step1.outputs"},
+					Steps: []string{"step1.outputs"},
 				},
 			},
 			store: &PipelineStore{

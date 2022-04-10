@@ -232,109 +232,13 @@ object PipelineStepUpdateKt {
      * generics.
      */
     @kotlin.OptIn(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
-    class TensorNamesProxy private constructor() : com.google.protobuf.kotlin.DslProxy()
-    /**
-     * <pre>
-     * optional list of output tensors - must be same cardinality as tensors in inputs
-     * </pre>
-     *
-     * <code>repeated string tensorNames = 6;</code>
-     * @return A list containing the tensorNames.
-     */
-    val tensorNames: com.google.protobuf.kotlin.DslList<kotlin.String, TensorNamesProxy>
-      @kotlin.OptIn(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
-      get() = com.google.protobuf.kotlin.DslList(
-        _builder.getTensorNamesList()
-      )
-    /**
-     * <pre>
-     * optional list of output tensors - must be same cardinality as tensors in inputs
-     * </pre>
-     *
-     * <code>repeated string tensorNames = 6;</code>
-     * @param value The tensorNames to add.
-     */
-    @kotlin.jvm.JvmSynthetic
-    @kotlin.jvm.JvmName("addTensorNames")
-    fun com.google.protobuf.kotlin.DslList<kotlin.String, TensorNamesProxy>.add(value: kotlin.String) {
-      _builder.addTensorNames(value)
-    }
-    /**
-     * <pre>
-     * optional list of output tensors - must be same cardinality as tensors in inputs
-     * </pre>
-     *
-     * <code>repeated string tensorNames = 6;</code>
-     * @param value The tensorNames to add.
-     */
-    @kotlin.jvm.JvmSynthetic
-    @kotlin.jvm.JvmName("plusAssignTensorNames")
-    operator fun com.google.protobuf.kotlin.DslList<kotlin.String, TensorNamesProxy>.plusAssign(value: kotlin.String) {
-      _builder.addTensorNames(value)
-    }
-    /**
-     * <pre>
-     * optional list of output tensors - must be same cardinality as tensors in inputs
-     * </pre>
-     *
-     * <code>repeated string tensorNames = 6;</code>
-     * @param values The tensorNames to add.
-     */
-    @kotlin.jvm.JvmSynthetic
-    @kotlin.jvm.JvmName("addAllTensorNames")
-    fun com.google.protobuf.kotlin.DslList<kotlin.String, TensorNamesProxy>.addAll(values: kotlin.collections.Iterable<kotlin.String>) {
-      _builder.addAllTensorNames(values)
-    }
-    /**
-     * <pre>
-     * optional list of output tensors - must be same cardinality as tensors in inputs
-     * </pre>
-     *
-     * <code>repeated string tensorNames = 6;</code>
-     * @param values The tensorNames to add.
-     */
-    @kotlin.jvm.JvmSynthetic
-    @kotlin.jvm.JvmName("plusAssignAllTensorNames")
-    operator fun com.google.protobuf.kotlin.DslList<kotlin.String, TensorNamesProxy>.plusAssign(values: kotlin.collections.Iterable<kotlin.String>) {
-      _builder.addAllTensorNames(values)
-    }
-    /**
-     * <pre>
-     * optional list of output tensors - must be same cardinality as tensors in inputs
-     * </pre>
-     *
-     * <code>repeated string tensorNames = 6;</code>
-     * @param index The index to set the value at.
-     * @param value The tensorNames to set.
-     */
-    @kotlin.jvm.JvmSynthetic
-    @kotlin.jvm.JvmName("setTensorNames")
-    operator fun com.google.protobuf.kotlin.DslList<kotlin.String, TensorNamesProxy>.set(index: kotlin.Int, value: kotlin.String) {
-      _builder.setTensorNames(index, value)
-    }/**
-     * <pre>
-     * optional list of output tensors - must be same cardinality as tensors in inputs
-     * </pre>
-     *
-     * <code>repeated string tensorNames = 6;</code>
-     */
-    @kotlin.jvm.JvmSynthetic
-    @kotlin.jvm.JvmName("clearTensorNames")
-    fun com.google.protobuf.kotlin.DslList<kotlin.String, TensorNamesProxy>.clear() {
-      _builder.clearTensorNames()
-    }
-    /**
-     * An uninstantiable, behaviorless type to represent the field in
-     * generics.
-     */
-    @kotlin.OptIn(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
     class TensorMapProxy private constructor() : com.google.protobuf.kotlin.DslProxy()
     /**
      * <pre>
      * optional map of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+     * <code>map&lt;string, string&gt; tensorMap = 6;</code>
      */
      val tensorMap: com.google.protobuf.kotlin.DslMap<kotlin.String, kotlin.String, TensorMapProxy>
       @kotlin.jvm.JvmSynthetic
@@ -347,7 +251,7 @@ object PipelineStepUpdateKt {
      * optional map of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+     * <code>map&lt;string, string&gt; tensorMap = 6;</code>
      */
     @JvmName("putTensorMap")
     fun com.google.protobuf.kotlin.DslMap<kotlin.String, kotlin.String, TensorMapProxy>
@@ -359,7 +263,7 @@ object PipelineStepUpdateKt {
      * optional map of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+     * <code>map&lt;string, string&gt; tensorMap = 6;</code>
      */
     @kotlin.jvm.JvmSynthetic
     @JvmName("setTensorMap")
@@ -372,7 +276,7 @@ object PipelineStepUpdateKt {
      * optional map of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+     * <code>map&lt;string, string&gt; tensorMap = 6;</code>
      */
     @kotlin.jvm.JvmSynthetic
     @JvmName("removeTensorMap")
@@ -385,7 +289,7 @@ object PipelineStepUpdateKt {
      * optional map of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+     * <code>map&lt;string, string&gt; tensorMap = 6;</code>
      */
     @kotlin.jvm.JvmSynthetic
     @JvmName("putAllTensorMap")
@@ -398,7 +302,7 @@ object PipelineStepUpdateKt {
      * optional map of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 7;</code>
+     * <code>map&lt;string, string&gt; tensorMap = 6;</code>
      */
     @kotlin.jvm.JvmSynthetic
     @JvmName("clearTensorMap")
@@ -406,6 +310,42 @@ object PipelineStepUpdateKt {
       .clear() {
          _builder.clearTensorMap()
        }
+
+    /**
+     * <pre>
+     * Batch settings
+     * </pre>
+     *
+     * <code>.seldon.mlops.chainer.Batch batch = 7;</code>
+     */
+    var batch: io.seldon.mlops.chainer.ChainerOuterClass.Batch
+      @JvmName("getBatch")
+      get() = _builder.getBatch()
+      @JvmName("setBatch")
+      set(value) {
+        _builder.setBatch(value)
+      }
+    /**
+     * <pre>
+     * Batch settings
+     * </pre>
+     *
+     * <code>.seldon.mlops.chainer.Batch batch = 7;</code>
+     */
+    fun clearBatch() {
+      _builder.clearBatch()
+    }
+    /**
+     * <pre>
+     * Batch settings
+     * </pre>
+     *
+     * <code>.seldon.mlops.chainer.Batch batch = 7;</code>
+     * @return Whether the batch field is set.
+     */
+    fun hasBatch(): kotlin.Boolean {
+      return _builder.hasBatch()
+    }
   }
 }
 @kotlin.jvm.JvmSynthetic

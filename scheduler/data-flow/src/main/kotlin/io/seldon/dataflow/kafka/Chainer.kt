@@ -25,6 +25,8 @@ class Chainer(
                 .filterForPipeline(pipelineName)
                 .unmarshallInferenceV2()
                 .convertToRequests(inputTopic, tensors, tensorRenaming)
+                // handle cases where there are no tensors we want
+                .filter { _, value -> value.inputsList.size != 0}
                 .marshallInferenceV2()
                 .to(outputTopic, producerSerde)
         } else {
@@ -49,8 +51,9 @@ class Chainer(
     }
 
     override fun stop() {
-        logger.info("stopping chainer")
+        logger.info("stopping chainer ${inputTopic}->${outputTopic}")
         streams.close()
+        streams.cleanUp()
     }
 
     companion object {

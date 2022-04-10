@@ -47,6 +47,7 @@ type Request struct {
 	active   bool
 	wg       *sync.WaitGroup
 	response []byte
+	isError  bool
 }
 
 func NewKafkaManager(logger logrus.FieldLogger, namespace string) *KafkaManager {
@@ -197,7 +198,19 @@ func (km *KafkaManager) Infer(resourceName string, isModel bool, data []byte) ([
 		return nil, err
 	}
 	request.wg.Wait()
+	if request.isError {
+		return nil, fmt.Errorf("%s", string(request.response))
+	}
 	return request.response, nil
+}
+
+func hasErrorHeader(headers []kafka.Header) bool {
+	for _, header := range headers {
+		if header.Key == kafka2.TopicErrorHeader {
+			return true
+		}
+	}
+	return false
 }
 
 func (km *KafkaManager) consume(pipeline *Pipeline) error {
@@ -230,6 +243,7 @@ func (km *KafkaManager) consume(pipeline *Pipeline) error {
 					request := val.(*Request)
 					request.mu.Lock()
 					if request.active {
+						request.isError = hasErrorHeader(e.Headers)
 						request.response = e.Value
 						request.wg.Done()
 						request.active = false

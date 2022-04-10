@@ -22,14 +22,50 @@ func validate(pv *PipelineVersion) error {
 	if err := checkStepInputs(pv); err != nil {
 		return err
 	}
-	//if err := checkOnlyOneInput(pv); err != nil {
-	//	return err
-	//}
+	if err := checkForCycles(pv); err != nil {
+		return err
+	}
 	return nil
 }
 
 func getStepNameFromInput(stepName string) string {
 	return strings.Split(stepName, StepNameSeperator)[0]
+}
+
+func checkForCyclesFromStep(step *PipelineStep, pv *PipelineVersion, visited map[string]bool) error {
+	visited[step.Name] = true
+	stepNames := make(map[string]bool)
+	for _, inp := range step.Inputs {
+		stepNames[getStepNameFromInput(inp)] = true
+	}
+	for stepName := range stepNames {
+		if _, ok := visited[stepName]; ok {
+			return &PipelineCycleErr{pipeline: pv.Name}
+		}
+		err := checkForCyclesFromStep(pv.Steps[stepName], pv, visited)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func checkForCycles(pv *PipelineVersion) error {
+	checked := make(map[string]bool)
+	for k, v := range pv.Steps {
+		if _, ok := checked[k]; ok {
+			continue
+		}
+		visited := make(map[string]bool)
+		err := checkForCyclesFromStep(v, pv, visited)
+		if err != nil {
+			return err
+		}
+		for k := range visited {
+			checked[k] = true
+		}
+	}
+	return nil
 }
 
 func checkStepReferencesExist(pv *PipelineVersion) error {
@@ -38,6 +74,14 @@ func checkStepReferencesExist(pv *PipelineVersion) error {
 			stepName := getStepNameFromInput(inp)
 			if _, ok := pv.Steps[stepName]; !ok {
 				return &PipelineStepNotFoundErr{pipeline: pv.Name, step: k, badRef: stepName}
+			}
+		}
+	}
+	if pv.Output != nil {
+		for _, step := range pv.Output.Steps {
+			stepName := getStepNameFromInput(step)
+			if _, ok := pv.Steps[stepName]; !ok {
+				return &PipelineOutputStepNotFoundErr{pipeline: pv.Name, step: stepName}
 			}
 		}
 	}
@@ -63,20 +107,6 @@ func checkStepInputs(pv *PipelineVersion) error {
 					step:       v.Name,
 					outputStep: inp,
 				}
-			}
-		}
-	}
-	return nil
-}
-
-func checkOnlyOneInput(pv *PipelineVersion) error {
-	foundInputStep := false
-	for _, v := range pv.Steps {
-		if len(v.Inputs) == 0 {
-			if foundInputStep {
-				return &PipelineMultipleInputsErr{pipeline: pv.Name}
-			} else {
-				foundInputStep = true
 			}
 		}
 	}

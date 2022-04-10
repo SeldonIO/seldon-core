@@ -26,6 +26,7 @@ message PipelineStepUpdate {
   enum PipelineJoinType {
     Unknown = 0;
     Inner = 1;
+    Outer = 2;
   }
   // https://docs.google.com/document/d/1tX-uaOvngx1RpEyWEZ4EbEcU8D0OgYuRWVb2UAi85n4/edit
   // Pipeline Resource example, e.g. transform.outputs.traffic
@@ -35,8 +36,14 @@ message PipelineStepUpdate {
   PipelineJoinType ty = 3;
   bool passEmptyResponses = 4; // Forward empty response to following steps, default false
   optional uint32 joinWindowMs = 5; // Join window millisecs, some nozero default (TBD)
-  repeated string tensorNames = 6; // optional list of output tensors - must be same cardinality as tensors in inputs
-  map<string,string> tensorMap = 7; // optional map of tensor name mappings
+  map<string,string> tensorMap = 6; // optional map of tensor name mappings
+  Batch batch = 7; // Batch settings
+}
+
+message Batch {
+  optional uint32 size = 1;
+  optional uint32 windowMs = 2;
+  bool rolling = 3;
 }
 
 message PipelineUpdateStatusMessage {

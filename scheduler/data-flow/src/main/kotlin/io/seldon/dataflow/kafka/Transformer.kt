@@ -18,6 +18,7 @@ fun transformerFor(
     sources: List<TopicName>,
     tensorMap: Map<TensorName, TensorName>,
     sink: TopicName,
+    outerJoin: Boolean,
     baseKafkaProperties: KafkaProperties,
     kafkaDomainParams: KafkaDomainParams,
 ): Transformer? {
@@ -49,6 +50,7 @@ fun transformerFor(
             pipelineName,
             tensorMap,
             kafkaDomainParams,
+            outerJoin,
         )
         is SourceProjection.ManySubsets -> Joiner(
             baseKafkaProperties.withAppId(nameFor(sources, sink, "joiner")),
@@ -58,6 +60,7 @@ fun transformerFor(
             pipelineName,
             tensorMap,
             kafkaDomainParams,
+            outerJoin,
         )
     }
 }

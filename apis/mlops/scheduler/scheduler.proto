@@ -251,14 +251,22 @@ message Pipeline {
 message PipelineStep {
   string name = 1;
   repeated string inputs = 2;
-  bool passEmptyResponses = 3; // Forward empty response to following steps, default false
-  optional uint32 joinWindowMs = 4; // Join window millisecs, some nozero default (TBD)
-  map<string,string> tensorMap = 5; // optional map of tensor name mappings
+  optional uint32 joinWindowMs = 3; // Join window millisecs, some nozero default (TBD)
+  map<string,string> tensorMap = 4; // optional map of tensor name mappings
+  bool outerJoin = 5;
+  Batch batch = 6;
+}
+
+message Batch {
+  optional uint32 size = 1;
+  optional uint32 windowMs = 2;
+  bool rolling = 3;
 }
 
 message PipelineOutput {
-  repeated string inputs = 1;
+  repeated string steps = 1;
   uint32 joinWindowMs = 2; // Join window millisecs for output, default 0
+  bool outerJoin = 3;
 }
 
 message LoadPipelineResponse {

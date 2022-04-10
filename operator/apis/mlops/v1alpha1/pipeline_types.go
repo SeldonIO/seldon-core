@@ -36,20 +36,26 @@ type PipelineStep struct {
 	Name string `json:"name"`
 	// Previous step to receive data from
 	Inputs []string `json:"inputs,omitempty"`
-	// Whether empty tensors output should be passed to onwards
-	// Default: false
-	PassEmptyResponses bool `json:"passEmptyResponses,omitempty"`
 	// msecs to wait for messages from multiple inputs to arrive before joining the inputs
 	JoinWindowMs *uint32 `json:"joinWindowMs,omitempty"`
 	// Map of tensor name conversions to use e.g. output1 -> input1
 	TensorMap map[string]string `json:"tensorMap,omitempty"`
+	OuterJoin bool              `json:"outerJoin,omitempty"`
+	Batch     *PipelineBatch    `json:"batch,omitempty"`
+}
+
+type PipelineBatch struct {
+	Size     *uint32 `json:"size,omitempty"`
+	WindowMs *uint32 `json:"windowMs,omitempty"`
+	Rolling  bool    `json:"rolling,omitempty"`
 }
 
 type PipelineOutput struct {
 	// Previous step to receive data from
-	Inputs []string `json:"inputs,omitempty"`
+	Steps []string `json:"steps,omitempty"`
 	// msecs to wait for messages from multiple inputs to arrive before joining the inputs
 	JoinWindowMs uint32 `json:"joinWindowMs,omitempty"`
+	OuterJoin    bool   `json:"outerJoin,omitempty"`
 }
 
 // PipelineStatus defines the observed state of Pipeline
@@ -86,18 +92,27 @@ func (p Pipeline) AsSchedulerPipeline() *scheduler.Pipeline {
 	var steps []*scheduler.PipelineStep
 	var output *scheduler.PipelineOutput
 	for _, step := range p.Spec.Steps {
-		steps = append(steps, &scheduler.PipelineStep{
-			Name:               step.Name,
-			Inputs:             step.Inputs,
-			JoinWindowMs:       step.JoinWindowMs,
-			PassEmptyResponses: step.PassEmptyResponses,
-			TensorMap:          step.TensorMap,
-		})
+		pipelineStep := &scheduler.PipelineStep{
+			Name:         step.Name,
+			Inputs:       step.Inputs,
+			JoinWindowMs: step.JoinWindowMs,
+			TensorMap:    step.TensorMap,
+			OuterJoin:    step.OuterJoin,
+		}
+		if step.Batch != nil {
+			pipelineStep.Batch = &scheduler.Batch{
+				Size:     step.Batch.Size,
+				WindowMs: step.Batch.WindowMs,
+				Rolling:  step.Batch.Rolling,
+			}
+		}
+		steps = append(steps, pipelineStep)
 	}
 	if p.Spec.Output != nil {
 		output = &scheduler.PipelineOutput{
-			Inputs:       p.Spec.Output.Inputs,
+			Steps:        p.Spec.Output.Steps,
 			JoinWindowMs: p.Spec.Output.JoinWindowMs,
+			OuterJoin:    p.Spec.Output.OuterJoin,
 		}
 	}
 	return &scheduler.Pipeline{

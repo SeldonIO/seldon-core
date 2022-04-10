@@ -32,6 +32,7 @@ internal class TransformerTest {
                 sources,
                 emptyMap(),
                 defaultSink,
+                false,
                 baseKafkaProperties,
                 kafkaDomainParams,
             )
@@ -171,6 +172,7 @@ internal class TransformerTest {
                 properties = KafkaProperties(),
                 tensorRenaming = emptyMap(),
                 kafkaDomainParams = kafkaDomainParams,
+                outerJoin = false,
             )
     }
 }

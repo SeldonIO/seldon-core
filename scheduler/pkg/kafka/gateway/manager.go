@@ -89,7 +89,7 @@ func (km *KafkaManager) AddModel(modelName string, streamSpec *scheduler.StreamS
 				ModelName:   modelName,
 				InputTopic:  km.topicNamer.GetModelTopicInputs(modelName),
 				OutputTopic: km.topicNamer.GetModelTopicOutputs(modelName),
-				ErrorTopic:  "seldon-errors",
+				ErrorTopic:  km.topicNamer.GetModelErrorTopic(),
 			}
 			if streamSpec != nil {
 				if streamSpec.InputTopic != "" {

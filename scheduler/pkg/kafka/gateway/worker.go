@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"time"
 
+	kafka2 "github.com/seldonio/seldon-core/scheduler/pkg/kafka"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
 	"google.golang.org/grpc/metadata"
 
@@ -143,7 +145,7 @@ func (iw *InferWorker) processRequest(job *InferWork) error {
 	}
 }
 
-func (iw *InferWorker) produce(job *InferWork, b []byte, headerType string) error {
+func (iw *InferWorker) produce(job *InferWork, topic string, b []byte) error {
 	logger := iw.logger.WithField("func", "produce")
 	var kafkaHeaders []kafka.Header
 	//kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: HeaderKeyType, Value: []byte(headerType)})
@@ -151,21 +153,25 @@ func (iw *InferWorker) produce(job *InferWork, b []byte, headerType string) erro
 		logger.Debugf("Adding pipeline header %s:%s", resources.SeldonPipelineHeader, pipelineName)
 		kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: resources.SeldonPipelineHeaderSuffix, Value: []byte(pipelineName)})
 	}
-	logger.Infof("Produce response to topic %s with header %s", iw.consumer.modelConfig.OutputTopic, headerType)
+	if topic == iw.consumer.modelConfig.ErrorTopic {
+		kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: kafka2.TopicErrorHeader, Value: []byte("")})
+	}
+	logger.Infof("Produce response to topic %s", topic)
 	err := iw.consumer.producer.Produce(&kafka.Message{
-		TopicPartition: kafka.TopicPartition{Topic: &iw.consumer.modelConfig.OutputTopic, Partition: kafka.PartitionAny},
+		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
 		Key:            job.key,
 		Value:          b,
 		Headers:        kafkaHeaders,
 	}, nil)
 	if err != nil {
-		iw.logger.WithError(err).Errorf("Failed to produce response for model %s", iw.consumer.modelConfig.ModelName)
+		iw.logger.WithError(err).Errorf("Failed to produce response for model %s", topic)
 		return err
 	}
 	return nil
 }
 
 func (iw *InferWorker) restRequest(job *InferWork, maybeConvert bool) error {
+	logger := iw.logger.WithField("func", "restRequest")
 	if maybeConvert {
 		job.value = maybeChainRest(job.value)
 	}
@@ -189,12 +195,14 @@ func (iw *InferWorker) restRequest(job *InferWork, maybeConvert bool) error {
 	}
 	iw.logger.Infof("v2 server response: %s", b)
 	if response.StatusCode != http.StatusOK {
-		return fmt.Errorf("Failed infer call code:%d", response.StatusCode)
+		logger.Warnf("Failed infer request with status code %d and payload %s", response.StatusCode, string(b))
+		return iw.produce(job, iw.consumer.modelConfig.ErrorTopic, b)
 	}
-	return iw.produce(job, b, HeaderValueJsonRes)
+	return iw.produce(job, iw.consumer.modelConfig.OutputTopic, b)
 }
 
 func (iw *InferWorker) grpcRequest(job *InferWork, req *v2.ModelInferRequest) error {
+	logger := iw.logger.WithField("func", "grpcRequest")
 	//Update req with correct modelName
 	req.ModelName = iw.consumer.modelConfig.ModelName
 	req.ModelVersion = fmt.Sprintf("%d", util.GetPinnedModelVersion())
@@ -202,11 +210,12 @@ func (iw *InferWorker) grpcRequest(job *InferWork, req *v2.ModelInferRequest) er
 	ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonModelHeader, iw.consumer.modelConfig.ModelName)
 	resp, err := iw.grpcClient.ModelInfer(ctx, req)
 	if err != nil {
-		return err
+		logger.WithError(err).Warnf("Failed infer request")
+		return iw.produce(job, iw.consumer.modelConfig.ErrorTopic, []byte(err.Error()))
 	}
 	b, err := proto.Marshal(resp)
 	if err != nil {
 		return err
 	}
-	return iw.produce(job, b, HeaderValueProtoRes)
+	return iw.produce(job, iw.consumer.modelConfig.OutputTopic, b)
 }

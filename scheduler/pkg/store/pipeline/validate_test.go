@@ -33,7 +33,7 @@ func TestCheckStepReferencesExist(t *testing.T) {
 					},
 				},
 				Output: &PipelineOutput{
-					Inputs: []string{"c.outputs"},
+					Steps: []string{"c.outputs"},
 				},
 			},
 		},
@@ -56,6 +56,25 @@ func TestCheckStepReferencesExist(t *testing.T) {
 				},
 			},
 			err: &PipelineStepNotFoundErr{pipeline: "test", step: "c", badRef: "f"},
+		},
+		{
+			name: "output step does not exist",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name: "a",
+					},
+					"b": {
+						Name:   "b",
+						Inputs: []string{"a.outputs.out1"},
+					},
+				},
+				Output: &PipelineOutput{
+					Steps: []string{"a", "b", "foo"},
+				},
+			},
+			err: &PipelineOutputStepNotFoundErr{pipeline: "test", step: "foo"},
 		},
 	}
 	for _, test := range tests {
@@ -134,6 +153,91 @@ func TestCheckStepInputsSpecifier(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			err := checkStepInputs(test.pipelineVersion)
+			if test.err == nil {
+				g.Expect(err).To(BeNil())
+			} else {
+				g.Expect(err.Error()).To(Equal(test.err.Error()))
+			}
+			err = validate(test.pipelineVersion)
+			if test.err == nil {
+				g.Expect(err).To(BeNil())
+			} else {
+				g.Expect(err.Error()).To(Equal(test.err.Error()))
+			}
+		})
+	}
+}
+
+func TestCheckForCycles(t *testing.T) {
+	g := NewGomegaWithT(t)
+	tests := []validateTest{
+		{
+			name: "no loops",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name: "a",
+					},
+					"b": {
+						Name:   "b",
+						Inputs: []string{"a.outputs.t1", "a.inputs", "a.outputs"},
+					},
+					"c": {
+						Name:   "c",
+						Inputs: []string{"a.outputs.t1"},
+					},
+				},
+			},
+		},
+		{
+			name: "loop",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name: "a",
+					},
+					"b": {
+						Name:   "b",
+						Inputs: []string{"a.outputs", "c.outputs"},
+					},
+					"c": {
+						Name:   "c",
+						Inputs: []string{"b.outputs"},
+					},
+				},
+			},
+			err: &PipelineCycleErr{pipeline: "test"},
+		},
+		{
+			name: "separate loop",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name: "a",
+					},
+					"b": {
+						Name:   "b",
+						Inputs: []string{"a.outputs"},
+					},
+					"c": {
+						Name:   "c",
+						Inputs: []string{"a.outputs", "d.outputs"},
+					},
+					"d": {
+						Name:   "c",
+						Inputs: []string{"c.outputs"},
+					},
+				},
+			},
+			err: &PipelineCycleErr{pipeline: "test"},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := checkForCycles(test.pipelineVersion)
 			if test.err == nil {
 				g.Expect(err).To(BeNil())
 			} else {
