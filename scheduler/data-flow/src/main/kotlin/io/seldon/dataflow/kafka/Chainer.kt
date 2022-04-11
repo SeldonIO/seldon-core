@@ -46,7 +46,7 @@ class Chainer(
     }
 
     override fun onChange(s1: State, s2: State) {
-        logger.info("State now ${s1} ")
+        logger.info("State ${inputTopic}->${outputTopic} ${s1} ")
         when(s1) {
             State.RUNNING ->
                 latch.countDown()

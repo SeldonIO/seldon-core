@@ -106,7 +106,7 @@ class Joiner(
     }
 
     override fun onChange(s1: KafkaStreams.State, s2: KafkaStreams.State) {
-        logger.info("State now ${s1} ")
+        logger.info("State (${inputTopics})->${outputTopic} ${s1} ")
         when(s1) {
             KafkaStreams.State.RUNNING ->
                 latch.countDown()
