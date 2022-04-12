@@ -5,6 +5,9 @@ on:
     branches: [ master ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   security-python:
 
@@ -89,6 +92,8 @@ jobs:
 
   security-image-python-sklearn:
 
+    permissions:
+      contents: none
     runs-on: ubuntu-latest
     steps:
     - name: security-image-python-sklearn
@@ -101,6 +106,8 @@ jobs:
 
   security-image-python-mlflow:
 
+    permissions:
+      contents: none
     runs-on: ubuntu-latest
     steps:
     - name: security-image-python-mlflow
@@ -113,6 +120,8 @@ jobs:
 
   security-image-python-xgboost:
 
+    permissions:
+      contents: none
     runs-on: ubuntu-latest
     steps:
     - name: security-image-python-xgboost
