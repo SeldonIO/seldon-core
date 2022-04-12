@@ -51,6 +51,8 @@ const (
 	certMountPathEnvVar   = "SELDON_CERT_MOUNT_PATH"
 	certFileEnvVar        = "SELDON_CERT_FILE_NAME"
 	certKeyFileNameEnvVar = "SELDON_CERT_KEY_FILE_NAME"
+	http11NextProtoTLS    = "http/1.1"
+	http2NextProtoTLS     = "h2"
 )
 
 var (
@@ -393,15 +395,15 @@ func main() {
 	wg := sync.WaitGroup{}
 	logger.Info("Running http server ", "port", *httpPort)
 	httpStop := make(chan bool, 1)
-	go runHttpServer(&wg, httpStop, createListener(*httpPort, logger), logger, predictor, clientRest, *httpPort, false, serverUrl, *namespace, *protocol, *sdepName, *prometheusPath)
+	go runHttpServer(&wg, httpStop, createListener(*httpPort, logger, []string{http2NextProtoTLS, http11NextProtoTLS}), logger, predictor, clientRest, *httpPort, false, serverUrl, *namespace, *protocol, *sdepName, *prometheusPath)
 
 	logger.Info("Running grpc server ", "port", *grpcPort)
 	grpcStop := make(chan bool, 1)
-	go runGrpcServer(&wg, grpcStop, createListener(*grpcPort, logger), logger, predictor, clientGrpc, serverUrl, *namespace, *protocol, *sdepName, annotations)
+	go runGrpcServer(&wg, grpcStop, createListener(*grpcPort, logger, []string{http2NextProtoTLS}), logger, predictor, clientGrpc, serverUrl, *namespace, *protocol, *sdepName, annotations)
 	waitForShutdown(logger, &wg, httpStop, grpcStop)
 }
 
-func createListener(port int, logger logr.Logger) net.Listener {
+func createListener(port int, logger logr.Logger, nextProtos []string) net.Listener {
 	// Create a listener at the desired port.
 	var lis net.Listener
 	var err error
@@ -413,7 +415,10 @@ func createListener(port int, logger logr.Logger) net.Listener {
 		if err != nil {
 			log.Fatalf("Error certificate could not be found: %v", err)
 		}
-		lis, err = tls.Listen("tcp", fmt.Sprintf(":%d", port), &tls.Config{Certificates: []tls.Certificate{cert}})
+		lis, err = tls.Listen("tcp", fmt.Sprintf(":%d", port), &tls.Config{
+			Certificates: []tls.Certificate{cert},
+			NextProtos:   nextProtos,
+		})
 		if err != nil {
 			log.Fatalf("failed to create listener: %v", err)
 		}
