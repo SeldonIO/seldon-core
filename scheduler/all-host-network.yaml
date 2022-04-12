@@ -2,22 +2,63 @@ version: "3.9"
 
 services:
 
-  agent:
+  agent-mlserver:
     network_mode: "host"
     volumes:
       - type: bind
         source: ./config
         target: /mnt/config
       - type: bind
-        source: ./mnt
+        source: ./mnt/mlserver
         target: /mnt/agent
+
+  agent-triton:
+    network_mode: "host"
+    volumes:
+      - type: bind
+        source: ./config
+        target: /mnt/config
+      - type: bind
+        source: ./mnt/triton
+        target: /mnt/agent
+        
+  rclone-mlserver:
+    network_mode: "host"
+    volumes:
+      - type: bind
+        source: ${PWD}/mnt/mlserver
+        target: ${PWD}/mnt/mlserver
+
+  rclone-triton:
+    network_mode: "host"
+    volumes:
+      - type: bind
+        source: ${PWD}/mnt/triton
+        target: ${PWD}/mnt/triton
+
+  mlserver:
+    network_mode: "host"
+    volumes:
+      - type: bind
+        source: ${PWD}/mnt/mlserver
+        target: /mnt/agent
+        
+  triton:
+    network_mode: "host"
+    volumes:
+      - type: bind
+        source: ${PWD}/mnt/triton
+        target: /mnt/agent
+        
+  scheduler:
+    network_mode: "host"
 
   dataflow:
     network_mode: "host"
     environment:
       - SELDON_UPSTREAM_HOST=localhost      
       - SELDON_UPSTREAM_PORT=${SCHEDULER_DATAFLOW_PORT}
-      - SELDON_KAFKA_BOOTSTRAP_SERVERS=kafka:${KAFKA_BROKER_EXTERNAL_PORT}
+      - SELDON_KAFKA_BOOTSTRAP_SERVERS=0.0.0.0:${KAFKA_BROKER_EXTERNAL_PORT}
       - SELDON_CORES_COUNT=4
 
   envoy:
@@ -60,22 +101,3 @@ services:
       - ${PIPELINEGATEWAY_HTTP_PORT}
       - "--grpc-port"
       - ${PIPELINEGATEWAY_GRPC_PORT}
-  
-
-  rclone:
-    network_mode: "host"
-    volumes:
-      - type: bind
-        source: ${PWD}/mnt
-        target: ${PWD}/mnt
-
-  scheduler:
-    network_mode: "host"
-
-  server:
-    network_mode: "host"
-    volumes:
-      - type: bind
-        source: ./mnt
-        target: /mnt/agent
-

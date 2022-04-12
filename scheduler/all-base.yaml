@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
 
-  agent:
+  agent-mlserver:
     build:
       dockerfile: ./Dockerfile.agent
       context: .
@@ -14,22 +14,60 @@ services:
       - "--config-path"
       - "/mnt/config"
       - "--rclone-host"
-      - "rclone"
+      - "rclone-mlserver"
       - "--inference-host"
-      - "server"
+      - "mlserver"
       - "--agent-host"
-      - "agent"
+      - "agent-mlserver"
+      - "--server-name"
+      - "mlserver"
     environment:
       - SELDON_OVERCOMMIT_PERCENTAGE=${AGENT_OVERCOMMIT_PERCENTAGE}
-      - SELDON_REVERSE_PROXY_HTTP_PORT=${SELDON_REVERSE_PROXY_HTTP_PORT}
-      - SELDON_REVERSE_PROXY_GRPC_PORT=${SELDON_REVERSE_PROXY_GRPC_PORT}
-      - SELDON_SERVER_HTTP_PORT=${SERVER_HTTP_PORT}
-      - SELDON_SERVER_GRPC_PORT=${SERVER_GRPC_PORT}
-      - SELDON_DEBUG_GRPC_PORT=${AGENT_DEBUG_PORT}
+      - SELDON_REVERSE_PROXY_HTTP_PORT=${SELDON_MLSERVER_REVERSE_PROXY_HTTP_PORT}
+      - SELDON_REVERSE_PROXY_GRPC_PORT=${SELDON_MLSERVER_REVERSE_PROXY_GRPC_PORT}
+      - SELDON_SERVER_HTTP_PORT=${SERVER_MLSERVER_HTTP_PORT}
+      - SELDON_SERVER_GRPC_PORT=${SERVER_MLSERVER_GRPC_PORT}
+      - SELDON_DEBUG_GRPC_PORT=${AGENT_MLSERVER_DEBUG_PORT}
       - SELDON_SCHEDULER_HOST=scheduler
       - SELDON_SCHEDULER_PORT=${SCHEDULER_AGENT_PORT}
       - MEMORY_REQUEST=${AGENT_MEMORY_REQUEST}
+      - SELDON_SERVER_TYPE=mlserver
+      - SELDON_SERVER_CAPABILITIES=sklearn,xgboost,python
 
+  agent-triton:
+    build:
+      dockerfile: ./Dockerfile.agent
+      context: .
+    image: "${AGENT_IMAGE_AND_TAG}"
+    command:
+      - "/bin/agent"
+      - "--log-level"
+      - "debug"
+      - "--config-path"
+      - "/mnt/config"
+      - "--rclone-host"
+      - "rclone-triton"
+      - "--rclone-port"
+      - ${RCLONE_TRITON_HTTP_PORT}
+      - "--inference-host"
+      - "triton"
+      - "--agent-host"
+      - "agent-triton"
+      - "--server-name"
+      - "triton"
+    environment:
+      - SELDON_OVERCOMMIT_PERCENTAGE=${AGENT_OVERCOMMIT_PERCENTAGE}
+      - SELDON_REVERSE_PROXY_HTTP_PORT=${SELDON_TRITON_REVERSE_PROXY_HTTP_PORT}
+      - SELDON_REVERSE_PROXY_GRPC_PORT=${SELDON_TRITON_REVERSE_PROXY_GRPC_PORT}
+      - SELDON_SERVER_HTTP_PORT=${SERVER_TRITON_HTTP_PORT}
+      - SELDON_SERVER_GRPC_PORT=${SERVER_TRITON_GRPC_PORT}
+      - SELDON_DEBUG_GRPC_PORT=${AGENT_TRITON_DEBUG_PORT}
+      - SELDON_SCHEDULER_HOST=scheduler
+      - SELDON_SCHEDULER_PORT=${SCHEDULER_AGENT_PORT}
+      - MEMORY_REQUEST=${AGENT_MEMORY_REQUEST}
+      - SELDON_SERVER_TYPE=triton
+      - SELDON_SERVER_CAPABILITIES=tensorflow,onnx,pytorch,triton-python
+      
   dataflow:
     build:
       dockerfile: ./Dockerfile.dataflow
@@ -46,11 +84,23 @@ services:
       context: .
     image: "${ENVOY_IMAGE_AND_TAG}"
 
-  rclone:
+  rclone-mlserver:
     build:
       dockerfile: ./Dockerfile.rclone
       context: .
     image: "${RCLONE_IMAGE_AND_TAG}"
+    
+  rclone-triton:
+    build:
+      dockerfile: ./Dockerfile.rclone
+      context: .
+    image: "${RCLONE_IMAGE_AND_TAG}"
+    command:
+      - "rcd"
+      - "--rc-no-auth"
+      - "--config=/rclone/rclone.conf"
+      - "--rc-addr=0.0.0.0:${RCLONE_TRITON_HTTP_PORT}"
+      - "--verbose"
 
   scheduler:
     build:
@@ -58,8 +108,28 @@ services:
       context: .
     image: "${SCHEDULER_IMAGE_AND_TAG}"
 
-  server:
-    image: "${SERVER_IMAGE_AND_TAG}"
+  mlserver:
+    image: "${SERVER_MLSERVER_IMAGE_AND_TAG}"
+    command:
+      - "mlserver"
+      - "start"
+      - "/mnt/agent/models"
+    environment:
+      - MLSERVER_LOAD_MODELS_AT_STARTUP=${MLSERVER_LOAD_MODELS_AT_STARTUP}
+    
+  triton:
+    image: "${SERVER_TRITON_IMAGE_AND_TAG}"
+    command:
+      - "/opt/tritonserver/bin/tritonserver"
+      - "--model-repository=/mnt/agent/models"
+      - "--http-port=${SERVER_TRITON_HTTP_PORT}"
+      - "--grpc-port=${SERVER_TRITON_GRPC_PORT}"
+      - "--model-control-mode=explicit"
+      - "--log-verbose=${TRITON_LOG_LEVEL:-0}"
+    shm_size: 1g
+    ulimits:
+      memlock: "-1"
+      stack: 67108864
 
   modelgateway:
     build:

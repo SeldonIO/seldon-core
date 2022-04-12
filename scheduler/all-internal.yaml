@@ -1,43 +1,71 @@
 version: "3.9"
 
 volumes:
-  models:
+  models-mlserver:
+  models-triton:
 
 services:
 
-  agent:
+  agent-mlserver:
     ports:
-      - "${AGENT_HTTP_PORT}:${AGENT_HTTP_PORT}"
-      - "${AGENT_GRPC_PORT}:${AGENT_GRPC_PORT}"
-      - "${SELDON_REVERSE_PROXY_HTTP_PORT}:${SELDON_REVERSE_PROXY_HTTP_PORT}"
-      - "${SELDON_REVERSE_PROXY_GRPC_PORT}:${SELDON_REVERSE_PROXY_GRPC_PORT}"
+      - "${AGENT_MLSERVER_HTTP_PORT}:${AGENT_MLSERVER_HTTP_PORT}"
+      - "${AGENT_MLSERVER_GRPC_PORT}:${AGENT_MLSERVER_GRPC_PORT}"
+      - "${SELDON_MLSERVER_REVERSE_PROXY_HTTP_PORT}:${SELDON_MLSERVER_REVERSE_PROXY_HTTP_PORT}"
+      - "${SELDON_MLSERVER_REVERSE_PROXY_GRPC_PORT}:${SELDON_MLSERVER_REVERSE_PROXY_GRPC_PORT}"
     volumes:
       - type: bind
         source: ./config
         target: /mnt/config
       - type: volume
-        source: models
+        source: models-mlserver
+        target: /mnt/agent
+        
+  agent-triton:
+    ports:
+      - "${AGENT_TRITON_HTTP_PORT}:${AGENT_TRITON_HTTP_PORT}"
+      - "${AGENT_TRITON_GRPC_PORT}:${AGENT_TRITON_GRPC_PORT}"
+      - "${SELDON_TRITON_REVERSE_PROXY_HTTP_PORT}:${SELDON_TRITON_REVERSE_PROXY_HTTP_PORT}"
+      - "${SELDON_TRITON_REVERSE_PROXY_GRPC_PORT}:${SELDON_TRITON_REVERSE_PROXY_GRPC_PORT}"
+    volumes:
+      - type: bind
+        source: ./config
+        target: /mnt/config
+      - type: volume
+        source: models-triton
         target: /mnt/agent
 
-  dataflow:
-    environment:
-      - SELDON_UPSTREAM_HOST=scheduler
-
-  envoy:
+  rclone-mlserver:
     ports:
-      - "${ENVOY_DATA_PORT}:${ENVOY_DATA_PORT}"
-      - "${ENVOY_CONTROL_PORT}:${ENVOY_CONTROL_PORT}"
-    command:
-      - "/usr/local/bin/envoy"
-      - "-c"
-      - "/etc/envoy-compose.yaml"
-
-  rclone:
-    ports:
-      - "${RCLONE_HTTP_PORT}:${RCLONE_HTTP_PORT}"
+      - "${RCLONE_MLSERVER_HTTP_PORT}:${RCLONE_MLSERVER_HTTP_PORT}"
     volumes:
       - type: volume
-        source: models
+        source: models-mlserver
+        target: /mnt/agent
+        
+  rclone-triton:
+    ports:
+      - "${RCLONE_TRITON_HTTP_PORT}:${RCLONE_TRITON_HTTP_PORT}"
+    volumes:
+      - type: volume
+        source: models-triton
+        target: /mnt/agent
+
+  mlserver:
+    ports:
+      - "${SERVER_MLSERVER_HTTP_PORT}:${SERVER_MLSERVER_HTTP_PORT}"
+      - "${SERVER_MLSERVER_GRPC_PORT}:${SERVER_MLSERVER_GRPC_PORT}"
+    volumes:
+      - type: volume
+        source: models-mlserver
+        target: /mnt/agent
+        
+  triton:
+    ports:
+      - "${SERVER_TRITON_HTTP_PORT}:${SERVER_TRITON_HTTP_PORT}"
+      - "${SERVER_TRITON_GRPC_PORT}:${SERVER_TRITON_GRPC_PORT}"
+    volumes:
+      - type: volume
+        source: models-triton
         target: /mnt/agent
 
   scheduler:
@@ -52,15 +80,7 @@ services:
       - "${SCHEDULER_SERVER_PORT}:${SCHEDULER_SERVER_PORT}"
       - "${SCHEDULER_AGENT_PORT}:${SCHEDULER_AGENT_PORT}"
 
-  server:
-    ports:
-      - "${SERVER_HTTP_PORT}:${SERVER_HTTP_PORT}"
-      - "${SERVER_GRPC_PORT}:${SERVER_GRPC_PORT}"
-    volumes:
-      - type: volume
-        source: models
-        target: /mnt/agent
-
+        
   modelgateway:
     volumes:
       - type: bind
@@ -86,3 +106,17 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_LISTENERS: PLAINTEXT://:29092,PLAINTEXT_HOST://:9092,CONTROLLER://:9093
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+
+  dataflow:
+    environment:
+      - SELDON_UPSTREAM_HOST=scheduler
+
+  envoy:
+    ports:
+      - "${ENVOY_DATA_PORT}:${ENVOY_DATA_PORT}"
+      - "${ENVOY_CONTROL_PORT}:${ENVOY_CONTROL_PORT}"
+    command:
+      - "/usr/local/bin/envoy"
+      - "-c"
+      - "/etc/envoy-compose.yaml"
+
