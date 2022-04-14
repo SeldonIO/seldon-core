@@ -1,0 +1,17 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: cifar10
+  namespace: cifar10
+spec:
+  protocol: tensorflow
+  predictors:
+  - name: default
+    replicas: 1
+    graph:
+      implementation: TENSORFLOW_SERVER
+      modelUri: gs://seldon-models/tfserving/cifar10/resnet32
+      name: cifar10-container
+      logger:
+        mode: all    
+        url: http://broker-ingress.knative-eventing.svc.cluster.local/cifar10/default
