@@ -1,12 +1,15 @@
 FROM azul/zulu-openjdk-alpine:17.0.2-17.32.13 AS builder
 
+COPY --from=gradle:7.4.2-jdk17 /opt/gradle /opt/gradle
+RUN ln -s /opt/gradle/bin/gradle /usr/bin/gradle
+
 WORKDIR /build
 COPY apis-TEMP apis
 COPY data-flow src/data-flow
 
 # TODO - build with Gradle image, with Zulu added in
 WORKDIR src/data-flow
-RUN ./gradlew build
+RUN gradle build --no-daemon --info
 
 ################################################################################
 
