@@ -861,7 +861,7 @@ spec:
         name: mlserver-models
     - env:
       - name: SELDON_SERVER_CAPABILITIES
-        value: sklearn,xgboost
+        value: lightgbm,mlflow,python,sklearn,spark-mlib,xgboost
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: "10"
       - name: SELDON_SERVER_HTTP_PORT
@@ -1008,7 +1008,7 @@ spec:
         name: triton-models
     - env:
       - name: SELDON_SERVER_CAPABILITIES
-        value: tensorflow,pytorch,onnx,tensorrt
+        value: dali,fil,onnx,openvino,pytorch,tensorflow,tensorrt,triton-python
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: "10"
       - name: SELDON_SERVER_HTTP_PORT

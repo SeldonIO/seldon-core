@@ -430,20 +430,33 @@ spec:
             properties:
               output:
                 properties:
-                  inputs:
-                    description: Previous step to receive data from
-                    items:
-                      type: string
-                    type: array
                   joinWindowMs:
                     description: msecs to wait for messages from multiple inputs to arrive before joining the inputs
                     format: int32
                     type: integer
+                  outerJoin:
+                    type: boolean
+                  steps:
+                    description: Previous step to receive data from
+                    items:
+                      type: string
+                    type: array
                 type: object
               steps:
                 description: The steps of this inference graph pipeline
                 items:
                   properties:
+                    batch:
+                      properties:
+                        rolling:
+                          type: boolean
+                        size:
+                          format: int32
+                          type: integer
+                        windowMs:
+                          format: int32
+                          type: integer
+                      type: object
                     inputs:
                       description: Previous step to receive data from
                       items:
@@ -456,8 +469,7 @@ spec:
                     name:
                       description: Name of the step
                       type: string
-                    passEmptyResponses:
-                      description: 'Whether empty tensors output should be passed to onwards Default: false'
+                    outerJoin:
                       type: boolean
                     tensorMap:
                       additionalProperties:
@@ -4633,7 +4645,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: ServerSpec defines the desired state of Server TODO do we need autoscaling spec?
+            description: ServerSpec defines the desired state of Server
             properties:
               maxReplicas:
                 description: Max number of replicas - default equal to replicas

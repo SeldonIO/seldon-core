@@ -31,7 +31,7 @@ spec:
       name: agent
       env:
       - name: SELDON_SERVER_CAPABILITIES
-        value: "sklearn,xgboost"
+        value: "lightgbm,mlflow,python,sklearn,spark-mlib,xgboost"
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: "10"
       - name: SELDON_SERVER_HTTP_PORT

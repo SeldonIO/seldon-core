@@ -17,10 +17,6 @@ From the project root run:
 make deploy-local
 ```
 
-## Example Use
-
-Try out some [simple examples](examples.md).
-
 ## Undeploy
 
 From the project root run:
@@ -33,5 +29,4 @@ make undeploy-local
 :maxdepth: 1
 :hidden:
 
-examples.md
 ```

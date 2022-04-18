@@ -4,7 +4,7 @@ metadata:
   name: iris-route
 spec:
   gateways:
-  - istio-system/seldon-gateway 
+  - seldon-gateway 
   hosts:
   - '*'
   http:

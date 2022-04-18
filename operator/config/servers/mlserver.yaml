@@ -6,3 +6,5 @@ metadata:
 spec:
   server:
     config: mlserver
+  replicas: 1
+

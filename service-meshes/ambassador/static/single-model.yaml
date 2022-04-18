@@ -1,0 +1,62 @@
+apiVersion: getambassador.io/v3alpha1
+kind: Host
+metadata:
+  name: wildcard
+  namespace: seldon-mesh
+spec:
+  hostname: '*'
+  requestPolicy:
+    insecure:
+      action: Route
+---
+apiVersion: getambassador.io/v3alpha1
+kind: Listener
+metadata:
+  name: emissary-ingress-listener-8080
+  namespace: seldon-mesh
+spec:
+  hostBinding:
+    namespace:
+      from: ALL
+  port: 8080
+  protocol: HTTP
+  securityModel: INSECURE
+---
+apiVersion: getambassador.io/v3alpha1
+kind: Mapping
+metadata:
+  name: iris-grpc
+  namespace: seldon-mesh
+spec:
+  add_request_headers:
+    seldon-model:
+      value: iris
+  grpc: true
+  hostname: '*'
+  prefix: /inference.GRPCInferenceService
+  rewrite: ""
+  service: seldon-mesh:80
+---
+apiVersion: getambassador.io/v3alpha1
+kind: Mapping
+metadata:
+  name: iris-http
+  namespace: seldon-mesh
+spec:
+  add_request_headers:
+    seldon-model:
+      value: iris
+  hostname: '*'
+  prefix: /v2/
+  rewrite: ""
+  service: seldon-mesh:80
+---
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: iris
+  namespace: seldon-mesh
+spec:
+  requirements:
+  - sklearn
+  storageUri: gs://seldon-models/mlserver/iris

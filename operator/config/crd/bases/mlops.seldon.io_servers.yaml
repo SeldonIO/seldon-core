@@ -34,8 +34,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: ServerSpec defines the desired state of Server TODO do we
-              need autoscaling spec?
+            description: ServerSpec defines the desired state of Server
             properties:
               maxReplicas:
                 description: Max number of replicas - default equal to replicas

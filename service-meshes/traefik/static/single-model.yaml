@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapps
+  namespace: seldon-mesh
+spec:
+  ports:
+  - name: web
+    port: 80
+    protocol: TCP
+  selector:
+    app: traefik-ingress-lb
+  type: LoadBalancer
+---
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: iris
+  namespace: seldon-mesh
+spec:
+  requirements:
+  - sklearn
+  storageUri: gs://seldon-models/mlserver/iris
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: iris
+  namespace: seldon-mesh
+spec:
+  entryPoints:
+  - web
+  routes:
+  - kind: Rule
+    match: PathPrefix(`/`)
+    middlewares:
+    - name: iris-header
+    services:
+    - name: seldon-mesh
+      port: 80
+      scheme: h2c
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: iris-header
+  namespace: seldon-mesh
+spec:
+  headers:
+    customRequestHeaders:
+      seldon-model: iris

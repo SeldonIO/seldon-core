@@ -7,5 +7,5 @@ spec:
   steps:
     - name: iris
   output:
-    inputs:
+    steps:
     - iris

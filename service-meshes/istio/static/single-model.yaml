@@ -1,0 +1,70 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: iris
+  namespace: seldon-mesh
+spec:
+  requirements:
+  - sklearn
+  storageUri: gs://seldon-models/mlserver/iris
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: seldon-gateway
+  namespace: seldon-mesh
+spec:
+  selector:
+    app: istio-ingressgateway
+    istio: ingressgateway
+  servers:
+  - hosts:
+    - '*'
+    port:
+      name: http
+      number: 80
+      protocol: HTTP
+  - hosts:
+    - '*'
+    port:
+      name: https
+      number: 443
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      privateKey: /etc/istio/ingressgateway-certs/tls.key
+      serverCertificate: /etc/istio/ingressgateway-certs/tls.crt
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: iris-route
+  namespace: seldon-mesh
+spec:
+  gateways:
+  - istio-system/seldon-gateway
+  hosts:
+  - '*'
+  http:
+  - match:
+    - uri:
+        prefix: /v2
+    name: iris-http
+    route:
+    - destination:
+        host: seldon-mesh.seldon-mesh.svc.cluster.local
+      headers:
+        request:
+          set:
+            seldon-model: iris
+  - match:
+    - uri:
+        prefix: /inference.GRPCInferenceService
+    name: iris-grpc
+    route:
+    - destination:
+        host: seldon-mesh.seldon-mesh.svc.cluster.local
+      headers:
+        request:
+          set:
+            seldon-model: iris

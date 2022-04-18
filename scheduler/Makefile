@@ -465,7 +465,7 @@ start-agent-local-mlserver:
 		--server-type mlserver \
 		--log-level debug \
 		--config-path ${PWD}/config \
-		--replica-config '{"inferenceSvc":"0.0.0.0","inferenceHttpPort":8080,"inferenceGrpcPort":8081,"memoryBytes":1000000,"capabilities":["sklearn"],"overCommitPercentage":20}'
+		--replica-config '{"inferenceSvc":"0.0.0.0","inferenceHttpPort":8080,"inferenceGrpcPort":8081,"memoryBytes":1000000,"capabilities":["lightgbm","python","sklearn","xgboost"],"overCommitPercentage":20}'
 
 
 .PHONY: start-agent-local-triton
@@ -475,7 +475,7 @@ start-agent-local-triton:
 		--server-type triton \
 		--log-level debug \
 		--config-path ${PWD}/config \
-		--replica-config '{"inferenceSvc":"0.0.0.0","inferenceHttpPort":8080,"inferenceGrpcPort":8081,"memoryBytes":1000000,"capabilities":["tensorflow","onnx","pytorch","triton-python"],"overCommitPercentage":20}'
+		--replica-config '{"inferenceSvc":"0.0.0.0","inferenceHttpPort":8080,"inferenceGrpcPort":8081,"memoryBytes":1000000,"capabilities":["dali","fil","onnx","openvino","pytorch","tensorflow","tensorrt","triton-python"],"overCommitPercentage":20}'
 
 .PHONY: start-envoy-local
 start-envoy-local:

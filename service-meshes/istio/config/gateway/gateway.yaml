@@ -14,13 +14,3 @@ spec:
       name: http
       number: 80
       protocol: HTTP
-  - hosts:
-    - "*"
-    port:
-      number: 443
-      name: https
-      protocol: HTTPS
-    tls:
-      mode: SIMPLE
-      serverCertificate: /etc/istio/ingressgateway-certs/tls.crt
-      privateKey: /etc/istio/ingressgateway-certs/tls.key

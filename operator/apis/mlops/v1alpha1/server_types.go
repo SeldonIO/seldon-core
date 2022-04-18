@@ -30,7 +30,6 @@ const (
 )
 
 // ServerSpec defines the desired state of Server
-// TODO do we need autoscaling spec?
 type ServerSpec struct {
 	// Server definition
 	Server ServerDefn `json:"server,omitempty"`
