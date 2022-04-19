@@ -73,7 +73,6 @@ class TestNotebooks(object):
     # def test_tracing(self):
     #    create_and_run_script("../../examples/models/tracing", "tracing")
 
-
     # Disabling prometheus tests temporarily as they seem to be flaky
     # def test_metrics(self):
     #     try:
