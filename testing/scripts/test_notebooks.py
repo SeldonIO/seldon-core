@@ -73,16 +73,18 @@ class TestNotebooks(object):
     # def test_tracing(self):
     #    create_and_run_script("../../examples/models/tracing", "tracing")
 
-    def test_metrics(self):
-        try:
-            create_and_run_script("../../examples/models/metrics", "metrics")
-        except CalledProcessError as e:
-            run(
-                "helm uninstall -n seldon-system prometheus",
-                shell=True,
-                check=False,
-            )
-            raise e
+
+    # Disabling prometheus tests temporarily as they seem to be flaky
+    # def test_metrics(self):
+    #     try:
+    #         create_and_run_script("../../examples/models/metrics", "metrics")
+    #     except CalledProcessError as e:
+    #         run(
+    #             "helm uninstall -n seldon-system prometheus",
+    #             shell=True,
+    #             check=False,
+    #         )
+    #         raise e
 
     def test_metadata(self):
         create_and_run_script("../../examples/models/metadata", "metadata")
