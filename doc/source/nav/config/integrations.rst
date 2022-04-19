@@ -12,7 +12,6 @@ Integrations
     Stream Processing with KNative </streaming/knative_eventing.md>
     Metrics with Prometheus </analytics/analytics.md>
     Native Kafka Integration </streaming/kafka.md>
-    Drift Detection </analytics/drift_detection.md>
     Model Explanations </analytics/explainers.md>
     Outlier Detection </analytics/outlier_detection.md>
-
+    Drift Detection </analytics/drift_detection.md>
