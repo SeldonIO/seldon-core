@@ -1,0 +1,13 @@
+services:
+
+  rclone-mlserver:
+    volumes:
+      - type: bind
+        source: ${LOCAL_MODEL_FOLDER}
+        target: /mnt/models
+        
+  rclone-triton:
+    volumes:
+      - type: bind
+        source: ${LOCAL_MODEL_FOLDER}
+        target: /mnt/models
