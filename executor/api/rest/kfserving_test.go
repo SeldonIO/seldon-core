@@ -31,6 +31,7 @@ func TestChainKFServingInputs(t *testing.T) {
 	outputMap := output.(map[string]interface{})
 
 	g.Expect(inputMap["inputs"]).To(Equal(outputMap["inputs"]))
+	g.Expect(outputMap["outputs"]).To(BeNil())
 }
 
 func TestChainKFServingOutputs(t *testing.T) {
@@ -56,6 +57,7 @@ func TestChainKFServingOutputs(t *testing.T) {
 	outputMap := output.(map[string]interface{})
 
 	g.Expect(inputMap["outputs"]).To(Equal(outputMap["inputs"]))
+	g.Expect(outputMap["outputs"]).To(BeNil())
 }
 
 func TestChainKFServingParams(t *testing.T) {
@@ -81,4 +83,5 @@ func TestChainKFServingParams(t *testing.T) {
 	outputMap := output.(map[string]interface{})
 
 	g.Expect(inputMap["parameters"]).To(Equal(outputMap["parameters"]))
+	g.Expect(outputMap["outputs"]).To(BeNil())
 }
