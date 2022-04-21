@@ -10,6 +10,11 @@ To run your model inside Seldon you must supply an inference artifact that can b
   - Tag
   - Server Docs
   - Example
+* - Alibi-Detect
+  - MLServer
+  - `alibi-detect`
+  - [docs](https://docs.seldon.io/projects/alibi-detect/en/stable/)
+  - TBC
 * - DALI
   - Triton
   - `dali`

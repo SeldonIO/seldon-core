@@ -32,7 +32,7 @@ services:
       - SELDON_SCHEDULER_PORT=${SCHEDULER_AGENT_PORT}
       - MEMORY_REQUEST=${AGENT_MEMORY_REQUEST}
       - SELDON_SERVER_TYPE=mlserver
-      - SELDON_SERVER_CAPABILITIES=lightgbm,mlflow,python,sklearn,spark-mlib,xgboost
+      - SELDON_SERVER_CAPABILITIES=alibi-detect,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost
 
   agent-triton:
     build:

@@ -7,6 +7,7 @@
 
 contents/about/index
 contents/getting-started/index
+contents/tutorials/index
 contents/inference-artifacts/index
 contents/kubernetes/index
 contents/examples/index
