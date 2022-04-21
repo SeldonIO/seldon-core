@@ -27,17 +27,20 @@ message PipelineStepUpdate {
     Unknown = 0;
     Inner = 1;
     Outer = 2;
+    Any = 3;
   }
   // https://docs.google.com/document/d/1tX-uaOvngx1RpEyWEZ4EbEcU8D0OgYuRWVb2UAi85n4/edit
   // Pipeline Resource example, e.g. transform.outputs.traffic
   //    seldon.<namespace>.<model name>.<inputs|outputs>.<tensor name>
   repeated string sources = 1;
-  string sink = 2;
-  PipelineJoinType ty = 3;
-  bool passEmptyResponses = 4; // Forward empty response to following steps, default false
-  optional uint32 joinWindowMs = 5; // Join window millisecs, some nozero default (TBD)
-  map<string,string> tensorMap = 6; // optional map of tensor name mappings
-  Batch batch = 7; // Batch settings
+  repeated string triggers = 2;
+  string sink = 3;
+  PipelineJoinType inputJoinTy = 4;
+  PipelineJoinType triggersJoinTy = 5;
+  bool passEmptyResponses = 6; // Forward empty response to following steps, default false
+  optional uint32 joinWindowMs = 7; // Join window millisecs, some nozero default (TBD)
+  map<string,string> tensorMap = 8; // optional map of tensor name mappings
+  Batch batch = 9; // Batch settings
 }
 
 message Batch {

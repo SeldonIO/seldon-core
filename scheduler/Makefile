@@ -257,11 +257,11 @@ list-services:
 # Single services
 
 .PHONY: start-mlserver
-start-mlserver-host: 
+start-mlserver: 
 	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d mlserver
 
 .PHONY: stop-mlserver
-stop-mlserver-host:
+stop-mlserver:
 	${DOCKER_COMPOSE_SERVICE_COMMAND} \
 		rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES} mlserver
 
@@ -465,7 +465,7 @@ stop-dataflow-engine-host:
 start-scheduler-local:
 	./bin/scheduler
 
-.PHONY: start-agent-local
+.PHONY: start-agent-local-mlserver
 start-agent-local-mlserver:
 	./bin/agent --agent-folder ${PWD}/mnt/mlserver --inference-http-port 8080 --inference-grpc-port 8081 --scheduler-host "0.0.0.0" --scheduler-port 9005 \
 		--server-type mlserver \
@@ -476,7 +476,7 @@ start-agent-local-mlserver:
 
 .PHONY: start-agent-local-triton
 start-agent-local-triton:
-	./bin/agent --agent-folder ${PWD}/mnt/triton --inference-http-port 8082 --inference-grpc-port 8083 --scheduler-host "0.0.0.0" --scheduler-port 9005 \
+	./bin/agent --agent-folder ${PWD}/mnt/triton --inference-http-port 8082 --inference-grpc-port 8083 --scheduler-host "0.0.0.0" --scheduler-port 9005 --rclone-port 5573 \
 		--server-name triton \
 		--server-type triton \
 		--log-level debug \

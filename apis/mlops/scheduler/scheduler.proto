@@ -249,24 +249,35 @@ message Pipeline {
 }
 
 message PipelineStep {
+  enum JoinOp {
+    INNER = 0;
+    OUTER = 1;
+    ANY = 2;
+  }
   string name = 1;
   repeated string inputs = 2;
-  optional uint32 joinWindowMs = 3; // Join window millisecs, some nozero default (TBD)
+  optional uint32 joinWindowMs = 3; // Join window millisecs, some nonzero default (TBD)
   map<string,string> tensorMap = 4; // optional map of tensor name mappings
-  bool outerJoin = 5;
-  Batch batch = 6;
+  JoinOp inputsJoin = 5;
+  repeated string triggers = 6;
+  JoinOp triggersJoin = 7;
+  Batch batch = 8;
 }
 
 message Batch {
   optional uint32 size = 1;
   optional uint32 windowMs = 2;
-  bool rolling = 3;
 }
 
 message PipelineOutput {
+  enum JoinOp {
+    INNER = 0;
+    OUTER = 1;
+    ANY = 2;
+  }
   repeated string steps = 1;
   uint32 joinWindowMs = 2; // Join window millisecs for output, default 0
-  bool outerJoin = 3;
+  JoinOp stepsJoin = 3;
 }
 
 message LoadPipelineResponse {

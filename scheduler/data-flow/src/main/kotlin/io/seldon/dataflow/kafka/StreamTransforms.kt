@@ -54,7 +54,7 @@ private fun convertToRequest(
             // Loop instead of `addAllInputs` to minimise intermediate memory usage, as tensors can be large
             response.outputsList
                 .forEachIndexed { idx, tensor ->
-                    if (tensor.name in desiredTensors || desiredTensors == null) {
+                    if (tensor.name in desiredTensors || desiredTensors == null || desiredTensors.isEmpty()) {
                         val newName = tensorRenaming
                             .getOrDefault(
                                 "${inputTopic}.${tensor.name}",

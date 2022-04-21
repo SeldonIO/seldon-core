@@ -20,4 +20,4 @@ spec:
     steps:
     - mul10
     - add10
-    outerJoin: true
+    stepsJoin: any

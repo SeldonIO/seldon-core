@@ -1,0 +1,13 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: outlier
+spec:
+  steps:
+    - name: outlier-error
+    - name: add10
+      triggers:
+      - outlier-error
+  output:
+    steps:
+    - add10

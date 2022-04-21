@@ -211,6 +211,27 @@ func TestCheckForCycles(t *testing.T) {
 			err: &PipelineCycleErr{pipeline: "test"},
 		},
 		{
+			name: "loop via trigger",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name: "a",
+					},
+					"b": {
+						Name:     "b",
+						Inputs:   []string{"a.outputs"},
+						Triggers: []string{"c.outputs"},
+					},
+					"c": {
+						Name:   "c",
+						Inputs: []string{"b.outputs"},
+					},
+				},
+			},
+			err: &PipelineCycleErr{pipeline: "test"},
+		},
+		{
 			name: "separate loop",
 			pipelineVersion: &PipelineVersion{
 				Name: "test",
@@ -234,10 +255,72 @@ func TestCheckForCycles(t *testing.T) {
 			},
 			err: &PipelineCycleErr{pipeline: "test"},
 		},
+		{
+			name: "valid inputs",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name: "a",
+					},
+					"b": {
+						Name:   "b",
+						Inputs: []string{"a.outputs.t1", "a.inputs", "a.outputs"},
+					},
+					"c": {
+						Name:     "c",
+						Inputs:   []string{"b.outputs", "a.outputs"},
+						Triggers: []string{},
+					},
+				},
+			},
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			err := checkForCycles(test.pipelineVersion)
+			if test.err == nil {
+				g.Expect(err).To(BeNil())
+			} else {
+				g.Expect(err.Error()).To(Equal(test.err.Error()))
+			}
+			err = validate(test.pipelineVersion)
+			if test.err == nil {
+				g.Expect(err).To(BeNil())
+			} else {
+				g.Expect(err.Error()).To(Equal(test.err.Error()))
+			}
+		})
+	}
+}
+
+func TestCheckInputsAndTriggersDiffer(t *testing.T) {
+	g := NewGomegaWithT(t)
+	tests := []validateTest{
+		{
+			name: "valid inputs",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name: "a",
+					},
+					"b": {
+						Name:   "b",
+						Inputs: []string{"a.outputs.t1", "a.inputs", "a.outputs"},
+					},
+					"c": {
+						Name:     "c",
+						Inputs:   []string{"b.outputs", "a.outputs"},
+						Triggers: []string{},
+					},
+				},
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := checkInputsAndTriggersDiffer(test.pipelineVersion)
 			if test.err == nil {
 				g.Expect(err).To(BeNil())
 			} else {

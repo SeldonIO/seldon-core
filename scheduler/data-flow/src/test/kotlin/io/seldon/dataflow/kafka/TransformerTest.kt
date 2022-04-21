@@ -1,5 +1,6 @@
 package io.seldon.dataflow.kafka
 
+import io.seldon.mlops.chainer.ChainerOuterClass
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.Arguments.arguments
@@ -30,9 +31,11 @@ internal class TransformerTest {
             transformerFor(
                 defaultPipelineName,
                 sources,
+                emptyList(),
                 emptyMap(),
                 defaultSink,
-                false,
+                ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Inner,
+                ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Inner,
                 baseKafkaProperties,
                 kafkaDomainParams,
             )
@@ -158,6 +161,9 @@ internal class TransformerTest {
                 properties = KafkaProperties(),
                 tensorRenaming = emptyMap(),
                 kafkaDomainParams = kafkaDomainParams,
+                inputTriggerTopics = emptySet(),
+                triggerJoinType = ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Inner,
+                triggerTensorsByTopic = emptyMap(),
             )
 
         private fun makeJoinerFor(
@@ -172,7 +178,10 @@ internal class TransformerTest {
                 properties = KafkaProperties(),
                 tensorRenaming = emptyMap(),
                 kafkaDomainParams = kafkaDomainParams,
-                outerJoin = false,
+                joinType = ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Inner,
+                inputTriggerTopics = emptySet(),
+                triggerJoinType = ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Inner,
+                triggerTensorsByTopic = emptyMap(),
             )
     }
 }

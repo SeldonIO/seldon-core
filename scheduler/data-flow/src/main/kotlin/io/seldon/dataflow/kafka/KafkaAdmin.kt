@@ -18,7 +18,7 @@ class KafkaAdmin(kafkaProperties: KafkaProperties) {
         steps: List<PipelineStepUpdate>,
     ) {
         steps
-            .flatMap { step -> step.sourcesList + step.sink }
+            .flatMap { step -> step.sourcesList + step.sink + step.triggersList}
             .map { topicName -> parseSource(topicName).first }
             .toSet()
             .also {

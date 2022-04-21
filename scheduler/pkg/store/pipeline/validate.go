@@ -25,6 +25,24 @@ func validate(pv *PipelineVersion) error {
 	if err := checkForCycles(pv); err != nil {
 		return err
 	}
+	if err := checkInputsAndTriggersDiffer(pv); err != nil {
+		return err
+	}
+	return nil
+}
+
+func checkInputsAndTriggersDiffer(pv *PipelineVersion) error {
+	for _, v := range pv.Steps {
+		inputMap := make(map[string]bool)
+		for _, inp := range v.Inputs {
+			inputMap[getStepNameFromInput(inp)] = true
+		}
+		for _, trg := range v.Triggers {
+			if _, ok := inputMap[trg]; ok {
+				return &PipelineInputAndTriggerErr{pipeline: pv.Name, input: trg}
+			}
+		}
+	}
 	return nil
 }
 
@@ -38,6 +56,9 @@ func checkForCyclesFromStep(step *PipelineStep, pv *PipelineVersion, visited map
 	for _, inp := range step.Inputs {
 		stepNames[getStepNameFromInput(inp)] = true
 	}
+	for _, inp := range step.Triggers {
+		stepNames[getStepNameFromInput(inp)] = true
+	}
 	for stepName := range stepNames {
 		if _, ok := visited[stepName]; ok {
 			return &PipelineCycleErr{pipeline: pv.Name}
@@ -47,6 +68,7 @@ func checkForCyclesFromStep(step *PipelineStep, pv *PipelineVersion, visited map
 			return err
 		}
 	}
+	delete(visited, step.Name)
 	return nil
 }
 

@@ -2023,34 +2023,70 @@ public final class ChainerOuterClass {
         getSourcesBytes(int index);
 
     /**
-     * <code>string sink = 2;</code>
+     * <code>repeated string triggers = 2;</code>
+     * @return A list containing the triggers.
+     */
+    java.util.List<java.lang.String>
+        getTriggersList();
+    /**
+     * <code>repeated string triggers = 2;</code>
+     * @return The count of triggers.
+     */
+    int getTriggersCount();
+    /**
+     * <code>repeated string triggers = 2;</code>
+     * @param index The index of the element to return.
+     * @return The triggers at the given index.
+     */
+    java.lang.String getTriggers(int index);
+    /**
+     * <code>repeated string triggers = 2;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the triggers at the given index.
+     */
+    com.google.protobuf.ByteString
+        getTriggersBytes(int index);
+
+    /**
+     * <code>string sink = 3;</code>
      * @return The sink.
      */
     java.lang.String getSink();
     /**
-     * <code>string sink = 2;</code>
+     * <code>string sink = 3;</code>
      * @return The bytes for sink.
      */
     com.google.protobuf.ByteString
         getSinkBytes();
 
     /**
-     * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType ty = 3;</code>
-     * @return The enum numeric value on the wire for ty.
+     * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType inputJoinTy = 4;</code>
+     * @return The enum numeric value on the wire for inputJoinTy.
      */
-    int getTyValue();
+    int getInputJoinTyValue();
     /**
-     * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType ty = 3;</code>
-     * @return The ty.
+     * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType inputJoinTy = 4;</code>
+     * @return The inputJoinTy.
      */
-    io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType getTy();
+    io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType getInputJoinTy();
+
+    /**
+     * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType triggersJoinTy = 5;</code>
+     * @return The enum numeric value on the wire for triggersJoinTy.
+     */
+    int getTriggersJoinTyValue();
+    /**
+     * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType triggersJoinTy = 5;</code>
+     * @return The triggersJoinTy.
+     */
+    io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType getTriggersJoinTy();
 
     /**
      * <pre>
      * Forward empty response to following steps, default false
      * </pre>
      *
-     * <code>bool passEmptyResponses = 4;</code>
+     * <code>bool passEmptyResponses = 6;</code>
      * @return The passEmptyResponses.
      */
     boolean getPassEmptyResponses();
@@ -2060,7 +2096,7 @@ public final class ChainerOuterClass {
      * Join window millisecs, some nozero default (TBD)
      * </pre>
      *
-     * <code>optional uint32 joinWindowMs = 5;</code>
+     * <code>optional uint32 joinWindowMs = 7;</code>
      * @return Whether the joinWindowMs field is set.
      */
     boolean hasJoinWindowMs();
@@ -2069,7 +2105,7 @@ public final class ChainerOuterClass {
      * Join window millisecs, some nozero default (TBD)
      * </pre>
      *
-     * <code>optional uint32 joinWindowMs = 5;</code>
+     * <code>optional uint32 joinWindowMs = 7;</code>
      * @return The joinWindowMs.
      */
     int getJoinWindowMs();
@@ -2079,7 +2115,7 @@ public final class ChainerOuterClass {
      * optional map of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 6;</code>
+     * <code>map&lt;string, string&gt; tensorMap = 8;</code>
      */
     int getTensorMapCount();
     /**
@@ -2087,7 +2123,7 @@ public final class ChainerOuterClass {
      * optional map of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 6;</code>
+     * <code>map&lt;string, string&gt; tensorMap = 8;</code>
      */
     boolean containsTensorMap(
         java.lang.String key);
@@ -2102,7 +2138,7 @@ public final class ChainerOuterClass {
      * optional map of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 6;</code>
+     * <code>map&lt;string, string&gt; tensorMap = 8;</code>
      */
     java.util.Map<java.lang.String, java.lang.String>
     getTensorMapMap();
@@ -2111,7 +2147,7 @@ public final class ChainerOuterClass {
      * optional map of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 6;</code>
+     * <code>map&lt;string, string&gt; tensorMap = 8;</code>
      */
 
     java.lang.String getTensorMapOrDefault(
@@ -2122,7 +2158,7 @@ public final class ChainerOuterClass {
      * optional map of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 6;</code>
+     * <code>map&lt;string, string&gt; tensorMap = 8;</code>
      */
 
     java.lang.String getTensorMapOrThrow(
@@ -2133,7 +2169,7 @@ public final class ChainerOuterClass {
      * Batch settings
      * </pre>
      *
-     * <code>.seldon.mlops.chainer.Batch batch = 7;</code>
+     * <code>.seldon.mlops.chainer.Batch batch = 9;</code>
      * @return Whether the batch field is set.
      */
     boolean hasBatch();
@@ -2142,7 +2178,7 @@ public final class ChainerOuterClass {
      * Batch settings
      * </pre>
      *
-     * <code>.seldon.mlops.chainer.Batch batch = 7;</code>
+     * <code>.seldon.mlops.chainer.Batch batch = 9;</code>
      * @return The batch.
      */
     io.seldon.mlops.chainer.ChainerOuterClass.Batch getBatch();
@@ -2151,7 +2187,7 @@ public final class ChainerOuterClass {
      * Batch settings
      * </pre>
      *
-     * <code>.seldon.mlops.chainer.Batch batch = 7;</code>
+     * <code>.seldon.mlops.chainer.Batch batch = 9;</code>
      */
     io.seldon.mlops.chainer.ChainerOuterClass.BatchOrBuilder getBatchOrBuilder();
   }
@@ -2169,8 +2205,10 @@ public final class ChainerOuterClass {
     }
     private PipelineStepUpdate() {
       sources_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      triggers_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       sink_ = "";
-      ty_ = 0;
+      inputJoinTy_ = 0;
+      triggersJoinTy_ = 0;
     }
 
     @java.lang.Override
@@ -2215,31 +2253,46 @@ public final class ChainerOuterClass {
             }
             case 18: {
               java.lang.String s = input.readStringRequireUtf8();
+              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
+                triggers_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              triggers_.add(s);
+              break;
+            }
+            case 26: {
+              java.lang.String s = input.readStringRequireUtf8();
 
               sink_ = s;
               break;
             }
-            case 24: {
+            case 32: {
               int rawValue = input.readEnum();
 
-              ty_ = rawValue;
+              inputJoinTy_ = rawValue;
               break;
             }
-            case 32: {
+            case 40: {
+              int rawValue = input.readEnum();
+
+              triggersJoinTy_ = rawValue;
+              break;
+            }
+            case 48: {
 
               passEmptyResponses_ = input.readBool();
               break;
             }
-            case 40: {
+            case 56: {
               bitField0_ |= 0x00000001;
               joinWindowMs_ = input.readUInt32();
               break;
             }
-            case 50: {
-              if (!((mutable_bitField0_ & 0x00000004) != 0)) {
+            case 66: {
+              if (!((mutable_bitField0_ & 0x00000008) != 0)) {
                 tensorMap_ = com.google.protobuf.MapField.newMapField(
                     TensorMapDefaultEntryHolder.defaultEntry);
-                mutable_bitField0_ |= 0x00000004;
+                mutable_bitField0_ |= 0x00000008;
               }
               com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
               tensorMap__ = input.readMessage(
@@ -2248,7 +2301,7 @@ public final class ChainerOuterClass {
                   tensorMap__.getKey(), tensorMap__.getValue());
               break;
             }
-            case 58: {
+            case 74: {
               io.seldon.mlops.chainer.ChainerOuterClass.Batch.Builder subBuilder = null;
               if (batch_ != null) {
                 subBuilder = batch_.toBuilder();
@@ -2279,6 +2332,9 @@ public final class ChainerOuterClass {
         if (((mutable_bitField0_ & 0x00000001) != 0)) {
           sources_ = sources_.getUnmodifiableView();
         }
+        if (((mutable_bitField0_ & 0x00000002) != 0)) {
+          triggers_ = triggers_.getUnmodifiableView();
+        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
@@ -2293,7 +2349,7 @@ public final class ChainerOuterClass {
     protected com.google.protobuf.MapField internalGetMapField(
         int number) {
       switch (number) {
-        case 6:
+        case 8:
           return internalGetTensorMap();
         default:
           throw new RuntimeException(
@@ -2325,6 +2381,10 @@ public final class ChainerOuterClass {
        * <code>Outer = 2;</code>
        */
       Outer(2),
+      /**
+       * <code>Any = 3;</code>
+       */
+      Any(3),
       UNRECOGNIZED(-1),
       ;
 
@@ -2340,6 +2400,10 @@ public final class ChainerOuterClass {
        * <code>Outer = 2;</code>
        */
       public static final int Outer_VALUE = 2;
+      /**
+       * <code>Any = 3;</code>
+       */
+      public static final int Any_VALUE = 3;
 
 
       public final int getNumber() {
@@ -2369,6 +2433,7 @@ public final class ChainerOuterClass {
           case 0: return Unknown;
           case 1: return Inner;
           case 2: return Outer;
+          case 3: return Any;
           default: return null;
         }
       }
@@ -2485,10 +2550,45 @@ public final class ChainerOuterClass {
       return sources_.getByteString(index);
     }
 
-    public static final int SINK_FIELD_NUMBER = 2;
+    public static final int TRIGGERS_FIELD_NUMBER = 2;
+    private com.google.protobuf.LazyStringList triggers_;
+    /**
+     * <code>repeated string triggers = 2;</code>
+     * @return A list containing the triggers.
+     */
+    public com.google.protobuf.ProtocolStringList
+        getTriggersList() {
+      return triggers_;
+    }
+    /**
+     * <code>repeated string triggers = 2;</code>
+     * @return The count of triggers.
+     */
+    public int getTriggersCount() {
+      return triggers_.size();
+    }
+    /**
+     * <code>repeated string triggers = 2;</code>
+     * @param index The index of the element to return.
+     * @return The triggers at the given index.
+     */
+    public java.lang.String getTriggers(int index) {
+      return triggers_.get(index);
+    }
+    /**
+     * <code>repeated string triggers = 2;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the triggers at the given index.
+     */
+    public com.google.protobuf.ByteString
+        getTriggersBytes(int index) {
+      return triggers_.getByteString(index);
+    }
+
+    public static final int SINK_FIELD_NUMBER = 3;
     private volatile java.lang.Object sink_;
     /**
-     * <code>string sink = 2;</code>
+     * <code>string sink = 3;</code>
      * @return The sink.
      */
     @java.lang.Override
@@ -2505,7 +2605,7 @@ public final class ChainerOuterClass {
       }
     }
     /**
-     * <code>string sink = 2;</code>
+     * <code>string sink = 3;</code>
      * @return The bytes for sink.
      */
     @java.lang.Override
@@ -2523,33 +2623,52 @@ public final class ChainerOuterClass {
       }
     }
 
-    public static final int TY_FIELD_NUMBER = 3;
-    private int ty_;
+    public static final int INPUTJOINTY_FIELD_NUMBER = 4;
+    private int inputJoinTy_;
     /**
-     * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType ty = 3;</code>
-     * @return The enum numeric value on the wire for ty.
+     * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType inputJoinTy = 4;</code>
+     * @return The enum numeric value on the wire for inputJoinTy.
      */
-    @java.lang.Override public int getTyValue() {
-      return ty_;
+    @java.lang.Override public int getInputJoinTyValue() {
+      return inputJoinTy_;
     }
     /**
-     * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType ty = 3;</code>
-     * @return The ty.
+     * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType inputJoinTy = 4;</code>
+     * @return The inputJoinTy.
      */
-    @java.lang.Override public io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType getTy() {
+    @java.lang.Override public io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType getInputJoinTy() {
       @SuppressWarnings("deprecation")
-      io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.valueOf(ty_);
+      io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.valueOf(inputJoinTy_);
       return result == null ? io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.UNRECOGNIZED : result;
     }
 
-    public static final int PASSEMPTYRESPONSES_FIELD_NUMBER = 4;
+    public static final int TRIGGERSJOINTY_FIELD_NUMBER = 5;
+    private int triggersJoinTy_;
+    /**
+     * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType triggersJoinTy = 5;</code>
+     * @return The enum numeric value on the wire for triggersJoinTy.
+     */
+    @java.lang.Override public int getTriggersJoinTyValue() {
+      return triggersJoinTy_;
+    }
+    /**
+     * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType triggersJoinTy = 5;</code>
+     * @return The triggersJoinTy.
+     */
+    @java.lang.Override public io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType getTriggersJoinTy() {
+      @SuppressWarnings("deprecation")
+      io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.valueOf(triggersJoinTy_);
+      return result == null ? io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.UNRECOGNIZED : result;
+    }
+
+    public static final int PASSEMPTYRESPONSES_FIELD_NUMBER = 6;
     private boolean passEmptyResponses_;
     /**
      * <pre>
      * Forward empty response to following steps, default false
      * </pre>
      *
-     * <code>bool passEmptyResponses = 4;</code>
+     * <code>bool passEmptyResponses = 6;</code>
      * @return The passEmptyResponses.
      */
     @java.lang.Override
@@ -2557,14 +2676,14 @@ public final class ChainerOuterClass {
       return passEmptyResponses_;
     }
 
-    public static final int JOINWINDOWMS_FIELD_NUMBER = 5;
+    public static final int JOINWINDOWMS_FIELD_NUMBER = 7;
     private int joinWindowMs_;
     /**
      * <pre>
      * Join window millisecs, some nozero default (TBD)
      * </pre>
      *
-     * <code>optional uint32 joinWindowMs = 5;</code>
+     * <code>optional uint32 joinWindowMs = 7;</code>
      * @return Whether the joinWindowMs field is set.
      */
     @java.lang.Override
@@ -2576,7 +2695,7 @@ public final class ChainerOuterClass {
      * Join window millisecs, some nozero default (TBD)
      * </pre>
      *
-     * <code>optional uint32 joinWindowMs = 5;</code>
+     * <code>optional uint32 joinWindowMs = 7;</code>
      * @return The joinWindowMs.
      */
     @java.lang.Override
@@ -2584,7 +2703,7 @@ public final class ChainerOuterClass {
       return joinWindowMs_;
     }
 
-    public static final int TENSORMAP_FIELD_NUMBER = 6;
+    public static final int TENSORMAP_FIELD_NUMBER = 8;
     private static final class TensorMapDefaultEntryHolder {
       static final com.google.protobuf.MapEntry<
           java.lang.String, java.lang.String> defaultEntry =
@@ -2615,7 +2734,7 @@ public final class ChainerOuterClass {
      * optional map of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 6;</code>
+     * <code>map&lt;string, string&gt; tensorMap = 8;</code>
      */
 
     @java.lang.Override
@@ -2637,7 +2756,7 @@ public final class ChainerOuterClass {
      * optional map of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 6;</code>
+     * <code>map&lt;string, string&gt; tensorMap = 8;</code>
      */
     @java.lang.Override
 
@@ -2649,7 +2768,7 @@ public final class ChainerOuterClass {
      * optional map of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 6;</code>
+     * <code>map&lt;string, string&gt; tensorMap = 8;</code>
      */
     @java.lang.Override
 
@@ -2666,7 +2785,7 @@ public final class ChainerOuterClass {
      * optional map of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 6;</code>
+     * <code>map&lt;string, string&gt; tensorMap = 8;</code>
      */
     @java.lang.Override
 
@@ -2681,14 +2800,14 @@ public final class ChainerOuterClass {
       return map.get(key);
     }
 
-    public static final int BATCH_FIELD_NUMBER = 7;
+    public static final int BATCH_FIELD_NUMBER = 9;
     private io.seldon.mlops.chainer.ChainerOuterClass.Batch batch_;
     /**
      * <pre>
      * Batch settings
      * </pre>
      *
-     * <code>.seldon.mlops.chainer.Batch batch = 7;</code>
+     * <code>.seldon.mlops.chainer.Batch batch = 9;</code>
      * @return Whether the batch field is set.
      */
     @java.lang.Override
@@ -2700,7 +2819,7 @@ public final class ChainerOuterClass {
      * Batch settings
      * </pre>
      *
-     * <code>.seldon.mlops.chainer.Batch batch = 7;</code>
+     * <code>.seldon.mlops.chainer.Batch batch = 9;</code>
      * @return The batch.
      */
     @java.lang.Override
@@ -2712,7 +2831,7 @@ public final class ChainerOuterClass {
      * Batch settings
      * </pre>
      *
-     * <code>.seldon.mlops.chainer.Batch batch = 7;</code>
+     * <code>.seldon.mlops.chainer.Batch batch = 9;</code>
      */
     @java.lang.Override
     public io.seldon.mlops.chainer.ChainerOuterClass.BatchOrBuilder getBatchOrBuilder() {
@@ -2736,26 +2855,32 @@ public final class ChainerOuterClass {
       for (int i = 0; i < sources_.size(); i++) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, sources_.getRaw(i));
       }
-      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(sink_)) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, sink_);
+      for (int i = 0; i < triggers_.size(); i++) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, triggers_.getRaw(i));
       }
-      if (ty_ != io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Unknown.getNumber()) {
-        output.writeEnum(3, ty_);
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(sink_)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, sink_);
+      }
+      if (inputJoinTy_ != io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Unknown.getNumber()) {
+        output.writeEnum(4, inputJoinTy_);
+      }
+      if (triggersJoinTy_ != io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Unknown.getNumber()) {
+        output.writeEnum(5, triggersJoinTy_);
       }
       if (passEmptyResponses_ != false) {
-        output.writeBool(4, passEmptyResponses_);
+        output.writeBool(6, passEmptyResponses_);
       }
       if (((bitField0_ & 0x00000001) != 0)) {
-        output.writeUInt32(5, joinWindowMs_);
+        output.writeUInt32(7, joinWindowMs_);
       }
       com.google.protobuf.GeneratedMessageV3
         .serializeStringMapTo(
           output,
           internalGetTensorMap(),
           TensorMapDefaultEntryHolder.defaultEntry,
-          6);
+          8);
       if (batch_ != null) {
-        output.writeMessage(7, getBatch());
+        output.writeMessage(9, getBatch());
       }
       unknownFields.writeTo(output);
     }
@@ -2774,20 +2899,32 @@ public final class ChainerOuterClass {
         size += dataSize;
         size += 1 * getSourcesList().size();
       }
-      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(sink_)) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, sink_);
+      {
+        int dataSize = 0;
+        for (int i = 0; i < triggers_.size(); i++) {
+          dataSize += computeStringSizeNoTag(triggers_.getRaw(i));
+        }
+        size += dataSize;
+        size += 1 * getTriggersList().size();
       }
-      if (ty_ != io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Unknown.getNumber()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(sink_)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, sink_);
+      }
+      if (inputJoinTy_ != io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Unknown.getNumber()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeEnumSize(3, ty_);
+          .computeEnumSize(4, inputJoinTy_);
+      }
+      if (triggersJoinTy_ != io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Unknown.getNumber()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(5, triggersJoinTy_);
       }
       if (passEmptyResponses_ != false) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(4, passEmptyResponses_);
+          .computeBoolSize(6, passEmptyResponses_);
       }
       if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(5, joinWindowMs_);
+          .computeUInt32Size(7, joinWindowMs_);
       }
       for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
            : internalGetTensorMap().getMap().entrySet()) {
@@ -2797,11 +2934,11 @@ public final class ChainerOuterClass {
             .setValue(entry.getValue())
             .build();
         size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(6, tensorMap__);
+            .computeMessageSize(8, tensorMap__);
       }
       if (batch_ != null) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(7, getBatch());
+          .computeMessageSize(9, getBatch());
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -2820,9 +2957,12 @@ public final class ChainerOuterClass {
 
       if (!getSourcesList()
           .equals(other.getSourcesList())) return false;
+      if (!getTriggersList()
+          .equals(other.getTriggersList())) return false;
       if (!getSink()
           .equals(other.getSink())) return false;
-      if (ty_ != other.ty_) return false;
+      if (inputJoinTy_ != other.inputJoinTy_) return false;
+      if (triggersJoinTy_ != other.triggersJoinTy_) return false;
       if (getPassEmptyResponses()
           != other.getPassEmptyResponses()) return false;
       if (hasJoinWindowMs() != other.hasJoinWindowMs()) return false;
@@ -2852,10 +2992,16 @@ public final class ChainerOuterClass {
         hash = (37 * hash) + SOURCES_FIELD_NUMBER;
         hash = (53 * hash) + getSourcesList().hashCode();
       }
+      if (getTriggersCount() > 0) {
+        hash = (37 * hash) + TRIGGERS_FIELD_NUMBER;
+        hash = (53 * hash) + getTriggersList().hashCode();
+      }
       hash = (37 * hash) + SINK_FIELD_NUMBER;
       hash = (53 * hash) + getSink().hashCode();
-      hash = (37 * hash) + TY_FIELD_NUMBER;
-      hash = (53 * hash) + ty_;
+      hash = (37 * hash) + INPUTJOINTY_FIELD_NUMBER;
+      hash = (53 * hash) + inputJoinTy_;
+      hash = (37 * hash) + TRIGGERSJOINTY_FIELD_NUMBER;
+      hash = (53 * hash) + triggersJoinTy_;
       hash = (37 * hash) + PASSEMPTYRESPONSES_FIELD_NUMBER;
       hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
           getPassEmptyResponses());
@@ -2982,7 +3128,7 @@ public final class ChainerOuterClass {
       protected com.google.protobuf.MapField internalGetMapField(
           int number) {
         switch (number) {
-          case 6:
+          case 8:
             return internalGetTensorMap();
           default:
             throw new RuntimeException(
@@ -2993,7 +3139,7 @@ public final class ChainerOuterClass {
       protected com.google.protobuf.MapField internalGetMutableMapField(
           int number) {
         switch (number) {
-          case 6:
+          case 8:
             return internalGetMutableTensorMap();
           default:
             throw new RuntimeException(
@@ -3028,14 +3174,18 @@ public final class ChainerOuterClass {
         super.clear();
         sources_ = com.google.protobuf.LazyStringArrayList.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000001);
+        triggers_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000002);
         sink_ = "";
 
-        ty_ = 0;
+        inputJoinTy_ = 0;
+
+        triggersJoinTy_ = 0;
 
         passEmptyResponses_ = false;
 
         joinWindowMs_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000004);
         internalGetMutableTensorMap().clear();
         if (batchBuilder_ == null) {
           batch_ = null;
@@ -3076,10 +3226,16 @@ public final class ChainerOuterClass {
           bitField0_ = (bitField0_ & ~0x00000001);
         }
         result.sources_ = sources_;
+        if (((bitField0_ & 0x00000002) != 0)) {
+          triggers_ = triggers_.getUnmodifiableView();
+          bitField0_ = (bitField0_ & ~0x00000002);
+        }
+        result.triggers_ = triggers_;
         result.sink_ = sink_;
-        result.ty_ = ty_;
+        result.inputJoinTy_ = inputJoinTy_;
+        result.triggersJoinTy_ = triggersJoinTy_;
         result.passEmptyResponses_ = passEmptyResponses_;
-        if (((from_bitField0_ & 0x00000002) != 0)) {
+        if (((from_bitField0_ & 0x00000004) != 0)) {
           result.joinWindowMs_ = joinWindowMs_;
           to_bitField0_ |= 0x00000001;
         }
@@ -3149,12 +3305,25 @@ public final class ChainerOuterClass {
           }
           onChanged();
         }
+        if (!other.triggers_.isEmpty()) {
+          if (triggers_.isEmpty()) {
+            triggers_ = other.triggers_;
+            bitField0_ = (bitField0_ & ~0x00000002);
+          } else {
+            ensureTriggersIsMutable();
+            triggers_.addAll(other.triggers_);
+          }
+          onChanged();
+        }
         if (!other.getSink().isEmpty()) {
           sink_ = other.sink_;
           onChanged();
         }
-        if (other.ty_ != 0) {
-          setTyValue(other.getTyValue());
+        if (other.inputJoinTy_ != 0) {
+          setInputJoinTyValue(other.getInputJoinTyValue());
+        }
+        if (other.triggersJoinTy_ != 0) {
+          setTriggersJoinTyValue(other.getTriggersJoinTyValue());
         }
         if (other.getPassEmptyResponses() != false) {
           setPassEmptyResponses(other.getPassEmptyResponses());
@@ -3361,9 +3530,119 @@ public final class ChainerOuterClass {
         return this;
       }
 
+      private com.google.protobuf.LazyStringList triggers_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureTriggersIsMutable() {
+        if (!((bitField0_ & 0x00000002) != 0)) {
+          triggers_ = new com.google.protobuf.LazyStringArrayList(triggers_);
+          bitField0_ |= 0x00000002;
+         }
+      }
+      /**
+       * <code>repeated string triggers = 2;</code>
+       * @return A list containing the triggers.
+       */
+      public com.google.protobuf.ProtocolStringList
+          getTriggersList() {
+        return triggers_.getUnmodifiableView();
+      }
+      /**
+       * <code>repeated string triggers = 2;</code>
+       * @return The count of triggers.
+       */
+      public int getTriggersCount() {
+        return triggers_.size();
+      }
+      /**
+       * <code>repeated string triggers = 2;</code>
+       * @param index The index of the element to return.
+       * @return The triggers at the given index.
+       */
+      public java.lang.String getTriggers(int index) {
+        return triggers_.get(index);
+      }
+      /**
+       * <code>repeated string triggers = 2;</code>
+       * @param index The index of the value to return.
+       * @return The bytes of the triggers at the given index.
+       */
+      public com.google.protobuf.ByteString
+          getTriggersBytes(int index) {
+        return triggers_.getByteString(index);
+      }
+      /**
+       * <code>repeated string triggers = 2;</code>
+       * @param index The index to set the value at.
+       * @param value The triggers to set.
+       * @return This builder for chaining.
+       */
+      public Builder setTriggers(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureTriggersIsMutable();
+        triggers_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string triggers = 2;</code>
+       * @param value The triggers to add.
+       * @return This builder for chaining.
+       */
+      public Builder addTriggers(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureTriggersIsMutable();
+        triggers_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string triggers = 2;</code>
+       * @param values The triggers to add.
+       * @return This builder for chaining.
+       */
+      public Builder addAllTriggers(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureTriggersIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, triggers_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string triggers = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearTriggers() {
+        triggers_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string triggers = 2;</code>
+       * @param value The bytes of the triggers to add.
+       * @return This builder for chaining.
+       */
+      public Builder addTriggersBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        ensureTriggersIsMutable();
+        triggers_.add(value);
+        onChanged();
+        return this;
+      }
+
       private java.lang.Object sink_ = "";
       /**
-       * <code>string sink = 2;</code>
+       * <code>string sink = 3;</code>
        * @return The sink.
        */
       public java.lang.String getSink() {
@@ -3379,7 +3658,7 @@ public final class ChainerOuterClass {
         }
       }
       /**
-       * <code>string sink = 2;</code>
+       * <code>string sink = 3;</code>
        * @return The bytes for sink.
        */
       public com.google.protobuf.ByteString
@@ -3396,7 +3675,7 @@ public final class ChainerOuterClass {
         }
       }
       /**
-       * <code>string sink = 2;</code>
+       * <code>string sink = 3;</code>
        * @param value The sink to set.
        * @return This builder for chaining.
        */
@@ -3411,7 +3690,7 @@ public final class ChainerOuterClass {
         return this;
       }
       /**
-       * <code>string sink = 2;</code>
+       * <code>string sink = 3;</code>
        * @return This builder for chaining.
        */
       public Builder clearSink() {
@@ -3421,7 +3700,7 @@ public final class ChainerOuterClass {
         return this;
       }
       /**
-       * <code>string sink = 2;</code>
+       * <code>string sink = 3;</code>
        * @param value The bytes for sink to set.
        * @return This builder for chaining.
        */
@@ -3437,56 +3716,110 @@ public final class ChainerOuterClass {
         return this;
       }
 
-      private int ty_ = 0;
+      private int inputJoinTy_ = 0;
       /**
-       * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType ty = 3;</code>
-       * @return The enum numeric value on the wire for ty.
+       * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType inputJoinTy = 4;</code>
+       * @return The enum numeric value on the wire for inputJoinTy.
        */
-      @java.lang.Override public int getTyValue() {
-        return ty_;
+      @java.lang.Override public int getInputJoinTyValue() {
+        return inputJoinTy_;
       }
       /**
-       * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType ty = 3;</code>
-       * @param value The enum numeric value on the wire for ty to set.
+       * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType inputJoinTy = 4;</code>
+       * @param value The enum numeric value on the wire for inputJoinTy to set.
        * @return This builder for chaining.
        */
-      public Builder setTyValue(int value) {
+      public Builder setInputJoinTyValue(int value) {
         
-        ty_ = value;
+        inputJoinTy_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType ty = 3;</code>
-       * @return The ty.
+       * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType inputJoinTy = 4;</code>
+       * @return The inputJoinTy.
        */
       @java.lang.Override
-      public io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType getTy() {
+      public io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType getInputJoinTy() {
         @SuppressWarnings("deprecation")
-        io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.valueOf(ty_);
+        io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.valueOf(inputJoinTy_);
         return result == null ? io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.UNRECOGNIZED : result;
       }
       /**
-       * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType ty = 3;</code>
-       * @param value The ty to set.
+       * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType inputJoinTy = 4;</code>
+       * @param value The inputJoinTy to set.
        * @return This builder for chaining.
        */
-      public Builder setTy(io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType value) {
+      public Builder setInputJoinTy(io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType value) {
         if (value == null) {
           throw new NullPointerException();
         }
         
-        ty_ = value.getNumber();
+        inputJoinTy_ = value.getNumber();
         onChanged();
         return this;
       }
       /**
-       * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType ty = 3;</code>
+       * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType inputJoinTy = 4;</code>
        * @return This builder for chaining.
        */
-      public Builder clearTy() {
+      public Builder clearInputJoinTy() {
         
-        ty_ = 0;
+        inputJoinTy_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int triggersJoinTy_ = 0;
+      /**
+       * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType triggersJoinTy = 5;</code>
+       * @return The enum numeric value on the wire for triggersJoinTy.
+       */
+      @java.lang.Override public int getTriggersJoinTyValue() {
+        return triggersJoinTy_;
+      }
+      /**
+       * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType triggersJoinTy = 5;</code>
+       * @param value The enum numeric value on the wire for triggersJoinTy to set.
+       * @return This builder for chaining.
+       */
+      public Builder setTriggersJoinTyValue(int value) {
+        
+        triggersJoinTy_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType triggersJoinTy = 5;</code>
+       * @return The triggersJoinTy.
+       */
+      @java.lang.Override
+      public io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType getTriggersJoinTy() {
+        @SuppressWarnings("deprecation")
+        io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.valueOf(triggersJoinTy_);
+        return result == null ? io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.UNRECOGNIZED : result;
+      }
+      /**
+       * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType triggersJoinTy = 5;</code>
+       * @param value The triggersJoinTy to set.
+       * @return This builder for chaining.
+       */
+      public Builder setTriggersJoinTy(io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        
+        triggersJoinTy_ = value.getNumber();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType triggersJoinTy = 5;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearTriggersJoinTy() {
+        
+        triggersJoinTy_ = 0;
         onChanged();
         return this;
       }
@@ -3497,7 +3830,7 @@ public final class ChainerOuterClass {
        * Forward empty response to following steps, default false
        * </pre>
        *
-       * <code>bool passEmptyResponses = 4;</code>
+       * <code>bool passEmptyResponses = 6;</code>
        * @return The passEmptyResponses.
        */
       @java.lang.Override
@@ -3509,7 +3842,7 @@ public final class ChainerOuterClass {
        * Forward empty response to following steps, default false
        * </pre>
        *
-       * <code>bool passEmptyResponses = 4;</code>
+       * <code>bool passEmptyResponses = 6;</code>
        * @param value The passEmptyResponses to set.
        * @return This builder for chaining.
        */
@@ -3524,7 +3857,7 @@ public final class ChainerOuterClass {
        * Forward empty response to following steps, default false
        * </pre>
        *
-       * <code>bool passEmptyResponses = 4;</code>
+       * <code>bool passEmptyResponses = 6;</code>
        * @return This builder for chaining.
        */
       public Builder clearPassEmptyResponses() {
@@ -3540,19 +3873,19 @@ public final class ChainerOuterClass {
        * Join window millisecs, some nozero default (TBD)
        * </pre>
        *
-       * <code>optional uint32 joinWindowMs = 5;</code>
+       * <code>optional uint32 joinWindowMs = 7;</code>
        * @return Whether the joinWindowMs field is set.
        */
       @java.lang.Override
       public boolean hasJoinWindowMs() {
-        return ((bitField0_ & 0x00000002) != 0);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <pre>
        * Join window millisecs, some nozero default (TBD)
        * </pre>
        *
-       * <code>optional uint32 joinWindowMs = 5;</code>
+       * <code>optional uint32 joinWindowMs = 7;</code>
        * @return The joinWindowMs.
        */
       @java.lang.Override
@@ -3564,12 +3897,12 @@ public final class ChainerOuterClass {
        * Join window millisecs, some nozero default (TBD)
        * </pre>
        *
-       * <code>optional uint32 joinWindowMs = 5;</code>
+       * <code>optional uint32 joinWindowMs = 7;</code>
        * @param value The joinWindowMs to set.
        * @return This builder for chaining.
        */
       public Builder setJoinWindowMs(int value) {
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000004;
         joinWindowMs_ = value;
         onChanged();
         return this;
@@ -3579,11 +3912,11 @@ public final class ChainerOuterClass {
        * Join window millisecs, some nozero default (TBD)
        * </pre>
        *
-       * <code>optional uint32 joinWindowMs = 5;</code>
+       * <code>optional uint32 joinWindowMs = 7;</code>
        * @return This builder for chaining.
        */
       public Builder clearJoinWindowMs() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000004);
         joinWindowMs_ = 0;
         onChanged();
         return this;
@@ -3620,7 +3953,7 @@ public final class ChainerOuterClass {
        * optional map of tensor name mappings
        * </pre>
        *
-       * <code>map&lt;string, string&gt; tensorMap = 6;</code>
+       * <code>map&lt;string, string&gt; tensorMap = 8;</code>
        */
 
       @java.lang.Override
@@ -3642,7 +3975,7 @@ public final class ChainerOuterClass {
        * optional map of tensor name mappings
        * </pre>
        *
-       * <code>map&lt;string, string&gt; tensorMap = 6;</code>
+       * <code>map&lt;string, string&gt; tensorMap = 8;</code>
        */
       @java.lang.Override
 
@@ -3654,7 +3987,7 @@ public final class ChainerOuterClass {
        * optional map of tensor name mappings
        * </pre>
        *
-       * <code>map&lt;string, string&gt; tensorMap = 6;</code>
+       * <code>map&lt;string, string&gt; tensorMap = 8;</code>
        */
       @java.lang.Override
 
@@ -3671,7 +4004,7 @@ public final class ChainerOuterClass {
        * optional map of tensor name mappings
        * </pre>
        *
-       * <code>map&lt;string, string&gt; tensorMap = 6;</code>
+       * <code>map&lt;string, string&gt; tensorMap = 8;</code>
        */
       @java.lang.Override
 
@@ -3696,7 +4029,7 @@ public final class ChainerOuterClass {
        * optional map of tensor name mappings
        * </pre>
        *
-       * <code>map&lt;string, string&gt; tensorMap = 6;</code>
+       * <code>map&lt;string, string&gt; tensorMap = 8;</code>
        */
 
       public Builder removeTensorMap(
@@ -3719,7 +4052,7 @@ public final class ChainerOuterClass {
        * optional map of tensor name mappings
        * </pre>
        *
-       * <code>map&lt;string, string&gt; tensorMap = 6;</code>
+       * <code>map&lt;string, string&gt; tensorMap = 8;</code>
        */
       public Builder putTensorMap(
           java.lang.String key,
@@ -3735,7 +4068,7 @@ public final class ChainerOuterClass {
        * optional map of tensor name mappings
        * </pre>
        *
-       * <code>map&lt;string, string&gt; tensorMap = 6;</code>
+       * <code>map&lt;string, string&gt; tensorMap = 8;</code>
        */
 
       public Builder putAllTensorMap(
@@ -3753,7 +4086,7 @@ public final class ChainerOuterClass {
        * Batch settings
        * </pre>
        *
-       * <code>.seldon.mlops.chainer.Batch batch = 7;</code>
+       * <code>.seldon.mlops.chainer.Batch batch = 9;</code>
        * @return Whether the batch field is set.
        */
       public boolean hasBatch() {
@@ -3764,7 +4097,7 @@ public final class ChainerOuterClass {
        * Batch settings
        * </pre>
        *
-       * <code>.seldon.mlops.chainer.Batch batch = 7;</code>
+       * <code>.seldon.mlops.chainer.Batch batch = 9;</code>
        * @return The batch.
        */
       public io.seldon.mlops.chainer.ChainerOuterClass.Batch getBatch() {
@@ -3779,7 +4112,7 @@ public final class ChainerOuterClass {
        * Batch settings
        * </pre>
        *
-       * <code>.seldon.mlops.chainer.Batch batch = 7;</code>
+       * <code>.seldon.mlops.chainer.Batch batch = 9;</code>
        */
       public Builder setBatch(io.seldon.mlops.chainer.ChainerOuterClass.Batch value) {
         if (batchBuilder_ == null) {
@@ -3799,7 +4132,7 @@ public final class ChainerOuterClass {
        * Batch settings
        * </pre>
        *
-       * <code>.seldon.mlops.chainer.Batch batch = 7;</code>
+       * <code>.seldon.mlops.chainer.Batch batch = 9;</code>
        */
       public Builder setBatch(
           io.seldon.mlops.chainer.ChainerOuterClass.Batch.Builder builderForValue) {
@@ -3817,7 +4150,7 @@ public final class ChainerOuterClass {
        * Batch settings
        * </pre>
        *
-       * <code>.seldon.mlops.chainer.Batch batch = 7;</code>
+       * <code>.seldon.mlops.chainer.Batch batch = 9;</code>
        */
       public Builder mergeBatch(io.seldon.mlops.chainer.ChainerOuterClass.Batch value) {
         if (batchBuilder_ == null) {
@@ -3839,7 +4172,7 @@ public final class ChainerOuterClass {
        * Batch settings
        * </pre>
        *
-       * <code>.seldon.mlops.chainer.Batch batch = 7;</code>
+       * <code>.seldon.mlops.chainer.Batch batch = 9;</code>
        */
       public Builder clearBatch() {
         if (batchBuilder_ == null) {
@@ -3857,7 +4190,7 @@ public final class ChainerOuterClass {
        * Batch settings
        * </pre>
        *
-       * <code>.seldon.mlops.chainer.Batch batch = 7;</code>
+       * <code>.seldon.mlops.chainer.Batch batch = 9;</code>
        */
       public io.seldon.mlops.chainer.ChainerOuterClass.Batch.Builder getBatchBuilder() {
         
@@ -3869,7 +4202,7 @@ public final class ChainerOuterClass {
        * Batch settings
        * </pre>
        *
-       * <code>.seldon.mlops.chainer.Batch batch = 7;</code>
+       * <code>.seldon.mlops.chainer.Batch batch = 9;</code>
        */
       public io.seldon.mlops.chainer.ChainerOuterClass.BatchOrBuilder getBatchOrBuilder() {
         if (batchBuilder_ != null) {
@@ -3884,7 +4217,7 @@ public final class ChainerOuterClass {
        * Batch settings
        * </pre>
        *
-       * <code>.seldon.mlops.chainer.Batch batch = 7;</code>
+       * <code>.seldon.mlops.chainer.Batch batch = 9;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           io.seldon.mlops.chainer.ChainerOuterClass.Batch, io.seldon.mlops.chainer.ChainerOuterClass.Batch.Builder, io.seldon.mlops.chainer.ChainerOuterClass.BatchOrBuilder> 
@@ -6017,33 +6350,36 @@ public final class ChainerOuterClass {
       "\t\022\017\n\007version\030\003 \001(\r\022\013\n\003uid\030\004 \001(\t\0229\n\007updat" +
       "es\030\005 \003(\0132(.seldon.mlops.chainer.Pipeline" +
       "StepUpdate\"8\n\021PipelineOperation\022\013\n\007Unkno" +
-      "wn\020\000\022\n\n\006Create\020\001\022\n\n\006Delete\020\002\"\243\003\n\022Pipelin" +
-      "eStepUpdate\022\017\n\007sources\030\001 \003(\t\022\014\n\004sink\030\002 \001" +
-      "(\t\022E\n\002ty\030\003 \001(\01629.seldon.mlops.chainer.Pi" +
-      "pelineStepUpdate.PipelineJoinType\022\032\n\022pas" +
-      "sEmptyResponses\030\004 \001(\010\022\031\n\014joinWindowMs\030\005 " +
-      "\001(\rH\000\210\001\001\022J\n\ttensorMap\030\006 \003(\01327.seldon.mlo" +
-      "ps.chainer.PipelineStepUpdate.TensorMapE" +
-      "ntry\022*\n\005batch\030\007 \001(\0132\033.seldon.mlops.chain" +
-      "er.Batch\0320\n\016TensorMapEntry\022\013\n\003key\030\001 \001(\t\022" +
-      "\r\n\005value\030\002 \001(\t:\0028\001\"5\n\020PipelineJoinType\022\013" +
-      "\n\007Unknown\020\000\022\t\n\005Inner\020\001\022\t\n\005Outer\020\002B\017\n\r_jo" +
-      "inWindowMs\"X\n\005Batch\022\021\n\004size\030\001 \001(\rH\000\210\001\001\022\025" +
-      "\n\010windowMs\030\002 \001(\rH\001\210\001\001\022\017\n\007rolling\030\003 \001(\010B\007" +
-      "\n\005_sizeB\013\n\t_windowMs\"{\n\033PipelineUpdateSt" +
-      "atusMessage\022;\n\006update\030\001 \001(\0132+.seldon.mlo" +
-      "ps.chainer.PipelineUpdateMessage\022\017\n\007succ" +
-      "ess\030\002 \001(\010\022\016\n\006reason\030\003 \001(\t\"\036\n\034PipelineUpd" +
-      "ateStatusResponse2\211\002\n\007Chainer\022~\n\030Subscri" +
-      "bePipelineUpdates\0221.seldon.mlops.chainer" +
-      ".PipelineSubscriptionRequest\032+.seldon.ml" +
-      "ops.chainer.PipelineUpdateMessage\"\0000\001\022~\n" +
-      "\023PipelineUpdateEvent\0221.seldon.mlops.chai" +
-      "ner.PipelineUpdateStatusMessage\0322.seldon" +
-      ".mlops.chainer.PipelineUpdateStatusRespo" +
-      "nse\"\000BW\n\027io.seldon.mlops.chainerZ<github" +
-      ".com/seldonio/seldon-core/scheduler/apis" +
-      "/mlops/chainerb\006proto3"
+      "wn\020\000\022\n\n\006Create\020\001\022\n\n\006Delete\020\002\"\232\004\n\022Pipelin" +
+      "eStepUpdate\022\017\n\007sources\030\001 \003(\t\022\020\n\010triggers" +
+      "\030\002 \003(\t\022\014\n\004sink\030\003 \001(\t\022N\n\013inputJoinTy\030\004 \001(" +
+      "\01629.seldon.mlops.chainer.PipelineStepUpd" +
+      "ate.PipelineJoinType\022Q\n\016triggersJoinTy\030\005" +
+      " \001(\01629.seldon.mlops.chainer.PipelineStep" +
+      "Update.PipelineJoinType\022\032\n\022passEmptyResp" +
+      "onses\030\006 \001(\010\022\031\n\014joinWindowMs\030\007 \001(\rH\000\210\001\001\022J" +
+      "\n\ttensorMap\030\010 \003(\01327.seldon.mlops.chainer" +
+      ".PipelineStepUpdate.TensorMapEntry\022*\n\005ba" +
+      "tch\030\t \001(\0132\033.seldon.mlops.chainer.Batch\0320" +
+      "\n\016TensorMapEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002" +
+      " \001(\t:\0028\001\">\n\020PipelineJoinType\022\013\n\007Unknown\020" +
+      "\000\022\t\n\005Inner\020\001\022\t\n\005Outer\020\002\022\007\n\003Any\020\003B\017\n\r_joi" +
+      "nWindowMs\"X\n\005Batch\022\021\n\004size\030\001 \001(\rH\000\210\001\001\022\025\n" +
+      "\010windowMs\030\002 \001(\rH\001\210\001\001\022\017\n\007rolling\030\003 \001(\010B\007\n" +
+      "\005_sizeB\013\n\t_windowMs\"{\n\033PipelineUpdateSta" +
+      "tusMessage\022;\n\006update\030\001 \001(\0132+.seldon.mlop" +
+      "s.chainer.PipelineUpdateMessage\022\017\n\007succe" +
+      "ss\030\002 \001(\010\022\016\n\006reason\030\003 \001(\t\"\036\n\034PipelineUpda" +
+      "teStatusResponse2\211\002\n\007Chainer\022~\n\030Subscrib" +
+      "ePipelineUpdates\0221.seldon.mlops.chainer." +
+      "PipelineSubscriptionRequest\032+.seldon.mlo" +
+      "ps.chainer.PipelineUpdateMessage\"\0000\001\022~\n\023" +
+      "PipelineUpdateEvent\0221.seldon.mlops.chain" +
+      "er.PipelineUpdateStatusMessage\0322.seldon." +
+      "mlops.chainer.PipelineUpdateStatusRespon" +
+      "se\"\000BW\n\027io.seldon.mlops.chainerZ<github." +
+      "com/seldonio/seldon-core/scheduler/apis/" +
+      "mlops/chainerb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -6066,7 +6402,7 @@ public final class ChainerOuterClass {
     internal_static_seldon_mlops_chainer_PipelineStepUpdate_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_seldon_mlops_chainer_PipelineStepUpdate_descriptor,
-        new java.lang.String[] { "Sources", "Sink", "Ty", "PassEmptyResponses", "JoinWindowMs", "TensorMap", "Batch", "JoinWindowMs", });
+        new java.lang.String[] { "Sources", "Triggers", "Sink", "InputJoinTy", "TriggersJoinTy", "PassEmptyResponses", "JoinWindowMs", "TensorMap", "Batch", "JoinWindowMs", });
     internal_static_seldon_mlops_chainer_PipelineStepUpdate_TensorMapEntry_descriptor =
       internal_static_seldon_mlops_chainer_PipelineStepUpdate_descriptor.getNestedTypes().get(0);
     internal_static_seldon_mlops_chainer_PipelineStepUpdate_TensorMapEntry_fieldAccessorTable = new

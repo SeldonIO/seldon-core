@@ -1,6 +1,7 @@
 package io.seldon.dataflow.kafka
 
 import io.klogging.noCoLogger
+import io.seldon.mlops.chainer.ChainerOuterClass
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.KafkaStreams.State
 import org.apache.kafka.streams.StreamsBuilder
@@ -17,13 +18,16 @@ class Chainer(
     internal val pipelineName: String,
     internal val tensorRenaming: Map<TensorName, TensorName>,
     private val kafkaDomainParams: KafkaDomainParams,
+    internal val inputTriggerTopics: Set<TopicName>,
+    internal val triggerJoinType: ChainerOuterClass.PipelineStepUpdate.PipelineJoinType,
+    internal val triggerTensorsByTopic: Map<TopicName, Set<TensorName>>?,
 ) : Transformer, KafkaStreams.StateListener {
     private val latch = CountDownLatch(1)
     private val streams: KafkaStreams by lazy {
         val builder = StreamsBuilder()
 
         if (inputTopic.endsWith("outputs") && outputTopic.endsWith("inputs")) {
-            builder
+            val s1 = builder
                 .stream(inputTopic, consumerSerde)
                 .filterForPipeline(pipelineName)
                 .unmarshallInferenceV2()
@@ -31,11 +35,13 @@ class Chainer(
                 // handle cases where there are no tensors we want
                 .filter { _, value -> value.inputsList.size != 0}
                 .marshallInferenceV2()
+            addTriggerTopology(pipelineName, kafkaDomainParams, builder, inputTriggerTopics, triggerTensorsByTopic, triggerJoinType, s1)
                 .to(outputTopic, producerSerde)
         } else {
-            builder
+            val s1 = builder
                 .stream(inputTopic, consumerSerde)
                 .filterForPipeline(pipelineName)
+            addTriggerTopology(pipelineName, kafkaDomainParams, builder, inputTriggerTopics, triggerTensorsByTopic, triggerJoinType, s1)
                 .to(outputTopic, producerSerde)
         }
 
@@ -58,7 +64,7 @@ class Chainer(
         if (kafkaDomainParams.useCleanState) {
             streams.cleanUp()
         }
-        logger.info("starting for ($inputTopic) -> ($outputTopic)")
+        logger.info("starting for ($inputTopic) -> ($outputTopic) triggers ${inputTriggerTopics} triggerTensorMap ${triggerTensorsByTopic}")
         streams.setStateListener(this)
         streams.start()
         latch.await()

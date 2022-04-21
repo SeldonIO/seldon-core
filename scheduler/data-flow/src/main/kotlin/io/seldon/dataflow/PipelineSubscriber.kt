@@ -125,9 +125,11 @@ class PipelineSubscriber(
                 transformerFor(
                     metadata.name,
                     it.sourcesList,
+                    it.triggersList,
                     it.tensorMapMap,
                     it.sink,
-                    it.ty == PipelineJoinType.Outer,
+                    it.inputJoinTy,
+                    it.triggersJoinTy,
                     kafkaProperties,
                     kafkaDomainParams,
                 )

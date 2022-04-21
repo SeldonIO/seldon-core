@@ -31,6 +31,14 @@ type PipelineSpec struct {
 	Output *PipelineOutput `json:"output,omitempty"`
 }
 
+type JoinType string
+
+const (
+	JoinTypeInner JoinType = "inner"
+	JoinTypeOuter JoinType = "outer"
+	JoinTypeAny   JoinType = "any"
+)
+
 type PipelineStep struct {
 	// Name of the step
 	Name string `json:"name"`
@@ -40,8 +48,11 @@ type PipelineStep struct {
 	JoinWindowMs *uint32 `json:"joinWindowMs,omitempty"`
 	// Map of tensor name conversions to use e.g. output1 -> input1
 	TensorMap map[string]string `json:"tensorMap,omitempty"`
-	OuterJoin bool              `json:"outerJoin,omitempty"`
-	Batch     *PipelineBatch    `json:"batch,omitempty"`
+	// Triggers required to activate step
+	Triggers         []string       `json:"triggers,omitempty"`
+	InputsJoinType   *JoinType      `json:"inputsJoinType,omitempty"`
+	TriggersJoinType *JoinType      `json:"triggersJoinType,omitempty"`
+	Batch            *PipelineBatch `json:"batch,omitempty"`
 }
 
 type PipelineBatch struct {
@@ -54,8 +65,8 @@ type PipelineOutput struct {
 	// Previous step to receive data from
 	Steps []string `json:"steps,omitempty"`
 	// msecs to wait for messages from multiple inputs to arrive before joining the inputs
-	JoinWindowMs uint32 `json:"joinWindowMs,omitempty"`
-	OuterJoin    bool   `json:"outerJoin,omitempty"`
+	JoinWindowMs uint32    `json:"joinWindowMs,omitempty"`
+	StepsJoin    *JoinType `json:"stepsJoin,omitempty"`
 }
 
 // PipelineStatus defines the observed state of Pipeline
@@ -97,13 +108,36 @@ func (p Pipeline) AsSchedulerPipeline() *scheduler.Pipeline {
 			Inputs:       step.Inputs,
 			JoinWindowMs: step.JoinWindowMs,
 			TensorMap:    step.TensorMap,
-			OuterJoin:    step.OuterJoin,
+			Triggers:     step.Triggers,
+		}
+		if step.InputsJoinType != nil {
+			switch *step.InputsJoinType {
+			case JoinTypeInner:
+				pipelineStep.InputsJoin = scheduler.PipelineStep_INNER
+			case JoinTypeOuter:
+				pipelineStep.InputsJoin = scheduler.PipelineStep_OUTER
+			case JoinTypeAny:
+				pipelineStep.InputsJoin = scheduler.PipelineStep_ANY
+			default:
+				pipelineStep.InputsJoin = scheduler.PipelineStep_INNER
+			}
+		}
+		if step.TriggersJoinType != nil {
+			switch *step.TriggersJoinType {
+			case JoinTypeInner:
+				pipelineStep.TriggersJoin = scheduler.PipelineStep_INNER
+			case JoinTypeOuter:
+				pipelineStep.TriggersJoin = scheduler.PipelineStep_OUTER
+			case JoinTypeAny:
+				pipelineStep.TriggersJoin = scheduler.PipelineStep_ANY
+			default:
+				pipelineStep.TriggersJoin = scheduler.PipelineStep_INNER
+			}
 		}
 		if step.Batch != nil {
 			pipelineStep.Batch = &scheduler.Batch{
 				Size:     step.Batch.Size,
 				WindowMs: step.Batch.WindowMs,
-				Rolling:  step.Batch.Rolling,
 			}
 		}
 		steps = append(steps, pipelineStep)
@@ -112,7 +146,18 @@ func (p Pipeline) AsSchedulerPipeline() *scheduler.Pipeline {
 		output = &scheduler.PipelineOutput{
 			Steps:        p.Spec.Output.Steps,
 			JoinWindowMs: p.Spec.Output.JoinWindowMs,
-			OuterJoin:    p.Spec.Output.OuterJoin,
+		}
+		if p.Spec.Output.StepsJoin != nil {
+			switch *p.Spec.Output.StepsJoin {
+			case JoinTypeInner:
+				output.StepsJoin = scheduler.PipelineOutput_INNER
+			case JoinTypeOuter:
+				output.StepsJoin = scheduler.PipelineOutput_OUTER
+			case JoinTypeAny:
+				output.StepsJoin = scheduler.PipelineOutput_ANY
+			default:
+				output.StepsJoin = scheduler.PipelineOutput_INNER
+			}
 		}
 	}
 	return &scheduler.Pipeline{

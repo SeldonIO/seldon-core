@@ -131,20 +131,19 @@ func TestCreatePipelineFromProto(t *testing.T) {
 						Inputs: []string{},
 					},
 					{
-						Name:      "b",
-						Inputs:    []string{"a.outputs"},
-						TensorMap: map[string]string{"output1": "input1"},
-						OuterJoin: true,
+						Name:       "b",
+						Inputs:     []string{"a.outputs"},
+						TensorMap:  map[string]string{"output1": "input1"},
+						InputsJoin: scheduler.PipelineStep_OUTER,
 						Batch: &scheduler.Batch{
 							Size:     getUintPtr(100),
 							WindowMs: getUintPtr(1000),
-							Rolling:  true,
 						},
 					},
 				},
 				Output: &scheduler.PipelineOutput{
 					Steps:     []string{"b"},
-					OuterJoin: true,
+					StepsJoin: scheduler.PipelineOutput_INNER,
 				},
 			},
 			pipeline: &PipelineVersion{
@@ -156,20 +155,75 @@ func TestCreatePipelineFromProto(t *testing.T) {
 						Inputs: []string{},
 					},
 					"b": {
-						Name:      "b",
-						Inputs:    []string{"a.outputs"},
-						TensorMap: map[string]string{"output1": "input1"},
-						OuterJoin: true,
+						Name:           "b",
+						Inputs:         []string{"a.outputs"},
+						TensorMap:      map[string]string{"output1": "input1"},
+						InputsJoinType: JoinOuter,
 						Batch: &Batch{
 							Size:     getUintPtr(100),
 							WindowMs: getUintPtr(1000),
-							Rolling:  true,
 						},
 					},
 				},
 				Output: &PipelineOutput{
+					Steps:         []string{"b"},
+					StepsJoinType: JoinInner,
+				},
+				State: &PipelineState{},
+			},
+		},
+		{
+			name:    "simple with trigger",
+			version: 1,
+			proto: &scheduler.Pipeline{
+				Name: "pipeline",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name:   "a",
+						Inputs: []string{},
+					},
+					{
+						Name:         "b",
+						Inputs:       []string{"a.outputs"},
+						TensorMap:    map[string]string{"output1": "input1"},
+						InputsJoin:   scheduler.PipelineStep_OUTER,
+						Triggers:     []string{"a"},
+						TriggersJoin: scheduler.PipelineStep_INNER,
+						Batch: &scheduler.Batch{
+							Size:     getUintPtr(100),
+							WindowMs: getUintPtr(1000),
+						},
+					},
+				},
+				Output: &scheduler.PipelineOutput{
 					Steps:     []string{"b"},
-					OuterJoin: true,
+					StepsJoin: scheduler.PipelineOutput_OUTER,
+				},
+			},
+			pipeline: &PipelineVersion{
+				Name:    "pipeline",
+				Version: 1,
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name:   "a",
+						Inputs: []string{},
+					},
+					"b": {
+						Name:             "b",
+						Inputs:           []string{"a.outputs"},
+						TensorMap:        map[string]string{"output1": "input1"},
+						InputsJoinType:   JoinOuter,
+						Triggers:         []string{"a.outputs"},
+						TriggersJoinType: JoinInner,
+						Batch: &Batch{
+							Size:     getUintPtr(100),
+							WindowMs: getUintPtr(1000),
+						},
+					},
+				},
+				Output: &PipelineOutput{
+					Steps:         []string{"b"},
+					StepsJoinType: JoinOuter,
 				},
 				State: &PipelineState{},
 			},

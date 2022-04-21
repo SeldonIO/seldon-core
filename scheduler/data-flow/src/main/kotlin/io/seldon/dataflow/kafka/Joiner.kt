@@ -1,6 +1,7 @@
 package io.seldon.dataflow.kafka
 
 import io.klogging.noCoLogger
+import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType
 import io.seldon.mlops.inference.v2.V2Dataplane
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
@@ -19,12 +20,17 @@ class Joiner(
     internal val pipelineName: String,
     internal val tensorRenaming: Map<TensorName, TensorName>,
     internal val kafkaDomainParams: KafkaDomainParams,
-    internal val outerJoin: Boolean,
+    internal val joinType: PipelineJoinType,
+    internal val inputTriggerTopics: Set<TopicName>,
+    internal val triggerJoinType: PipelineJoinType,
+    internal val triggerTensorsByTopic: Map<TopicName, Set<TensorName>>?,
 ) : Transformer, KafkaStreams.StateListener {
     private val latch = CountDownLatch(1)
     private val streams: KafkaStreams by lazy {
         val builder = StreamsBuilder()
-        buildTopology(builder, inputTopics).to(outputTopic, producerSerde)
+        val s1 = buildTopology(builder, inputTopics)
+        addTriggerTopology(pipelineName, kafkaDomainParams, builder, inputTriggerTopics, triggerTensorsByTopic, triggerJoinType, s1)
+            .to(outputTopic, producerSerde)
         KafkaStreams(builder.build(), properties)
     }
 
@@ -54,34 +60,55 @@ class Joiner(
                 .marshallInferenceV2()
         }
 
-        if (outerJoin) {
-            val nextPending = pending
-                ?.outerJoin(
-                    nextStream,
-                    ::joinRequests,
-                    //JoinWindows.ofTimeDifferenceAndGrace(Duration.ofMillis(1), Duration.ofMillis(1)),
-                    // Required because this "fix" causes outer joins to wait for next record to come in if all streams
-                    // don't produce a record during grace period. https://issues.apache.org/jira/browse/KAFKA-10847
-                    // Also see https://confluentcommunity.slack.com/archives/C6UJNMY67/p1649520904545229?thread_ts=1649324912.542999&cid=C6UJNMY67
-                    // Issue created at https://issues.apache.org/jira/browse/KAFKA-13813
-                    JoinWindows.of(Duration.ofMillis(1)),
-                    joinSerde,
-                ) ?: nextStream
+       when (joinType) {
+           PipelineJoinType.Any -> {
+               val nextPending = pending
+                   ?.outerJoin(
+                       nextStream,
+                       ::joinRequests,
+                       //JoinWindows.ofTimeDifferenceAndGrace(Duration.ofMillis(1), Duration.ofMillis(1)),
+                       // Required because this "fix" causes outer joins to wait for next record to come in if all streams
+                       // don't produce a record during grace period. https://issues.apache.org/jira/browse/KAFKA-10847
+                       // Also see https://confluentcommunity.slack.com/archives/C6UJNMY67/p1649520904545229?thread_ts=1649324912.542999&cid=C6UJNMY67
+                       // Issue created at https://issues.apache.org/jira/browse/KAFKA-13813
+                       JoinWindows.of(Duration.ofMillis(1)),
+                       joinSerde,
+                   ) ?: nextStream
 
-            return buildTopology(builder, inputTopics.minus(topic), nextPending)
-        } else {
-            val nextPending = pending
-                ?.join(
-                    nextStream,
-                    ::joinRequests,
-                    JoinWindows.ofTimeDifferenceWithNoGrace(
-                        Duration.ofMillis(kafkaDomainParams.joinWindowMillis),
-                    ),
-                    joinSerde,
-                ) ?: nextStream
 
-            return buildTopology(builder, inputTopics.minus(topic), nextPending)
-        }
+               return buildTopology(builder, inputTopics.minus(topic), nextPending)
+           }
+
+           PipelineJoinType.Outer -> {
+               val nextPending = pending
+                   ?.outerJoin(
+                       nextStream,
+                       ::joinRequests,
+                       // See above for Any case as this will wait until next record comes in before emitting a result after window
+                       JoinWindows.ofTimeDifferenceWithNoGrace(
+                           Duration.ofMillis(kafkaDomainParams.joinWindowMillis),
+                       ),
+                       joinSerde,
+                   ) ?: nextStream
+
+
+               return buildTopology(builder, inputTopics.minus(topic), nextPending)
+           }
+
+           else -> {
+               val nextPending = pending
+                   ?.join(
+                       nextStream,
+                       ::joinRequests,
+                       JoinWindows.ofTimeDifferenceWithNoGrace(
+                           Duration.ofMillis(kafkaDomainParams.joinWindowMillis),
+                       ),
+                       joinSerde,
+                   ) ?: nextStream
+
+               return buildTopology(builder, inputTopics.minus(topic), nextPending)
+           }
+       }
     }
 
     private fun joinRequests(left: ByteArray?, right: ByteArray?): ByteArray {
@@ -118,7 +145,7 @@ class Joiner(
         if (kafkaDomainParams.useCleanState) {
             streams.cleanUp()
         }
-        logger.info("starting for ($inputTopics) -> ($outputTopic) outerJoin:${outerJoin}")
+        logger.info("starting for ($inputTopics) -> ($outputTopic) joinType:${joinType} triggers ${inputTriggerTopics} triggerTensorMap ${triggerTensorsByTopic}")
         streams.setStateListener(this)
         streams.start()
     }

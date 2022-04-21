@@ -133,7 +133,75 @@ object PipelineStepUpdateKt {
       _builder.clearSources()
     }
     /**
-     * <code>string sink = 2;</code>
+     * An uninstantiable, behaviorless type to represent the field in
+     * generics.
+     */
+    @kotlin.OptIn(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
+    class TriggersProxy private constructor() : com.google.protobuf.kotlin.DslProxy()
+    /**
+     * <code>repeated string triggers = 2;</code>
+     * @return A list containing the triggers.
+     */
+    val triggers: com.google.protobuf.kotlin.DslList<kotlin.String, TriggersProxy>
+      @kotlin.OptIn(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
+      get() = com.google.protobuf.kotlin.DslList(
+        _builder.getTriggersList()
+      )
+    /**
+     * <code>repeated string triggers = 2;</code>
+     * @param value The triggers to add.
+     */
+    @kotlin.jvm.JvmSynthetic
+    @kotlin.jvm.JvmName("addTriggers")
+    fun com.google.protobuf.kotlin.DslList<kotlin.String, TriggersProxy>.add(value: kotlin.String) {
+      _builder.addTriggers(value)
+    }
+    /**
+     * <code>repeated string triggers = 2;</code>
+     * @param value The triggers to add.
+     */
+    @kotlin.jvm.JvmSynthetic
+    @kotlin.jvm.JvmName("plusAssignTriggers")
+    operator fun com.google.protobuf.kotlin.DslList<kotlin.String, TriggersProxy>.plusAssign(value: kotlin.String) {
+      _builder.addTriggers(value)
+    }
+    /**
+     * <code>repeated string triggers = 2;</code>
+     * @param values The triggers to add.
+     */
+    @kotlin.jvm.JvmSynthetic
+    @kotlin.jvm.JvmName("addAllTriggers")
+    fun com.google.protobuf.kotlin.DslList<kotlin.String, TriggersProxy>.addAll(values: kotlin.collections.Iterable<kotlin.String>) {
+      _builder.addAllTriggers(values)
+    }
+    /**
+     * <code>repeated string triggers = 2;</code>
+     * @param values The triggers to add.
+     */
+    @kotlin.jvm.JvmSynthetic
+    @kotlin.jvm.JvmName("plusAssignAllTriggers")
+    operator fun com.google.protobuf.kotlin.DslList<kotlin.String, TriggersProxy>.plusAssign(values: kotlin.collections.Iterable<kotlin.String>) {
+      _builder.addAllTriggers(values)
+    }
+    /**
+     * <code>repeated string triggers = 2;</code>
+     * @param index The index to set the value at.
+     * @param value The triggers to set.
+     */
+    @kotlin.jvm.JvmSynthetic
+    @kotlin.jvm.JvmName("setTriggers")
+    operator fun com.google.protobuf.kotlin.DslList<kotlin.String, TriggersProxy>.set(index: kotlin.Int, value: kotlin.String) {
+      _builder.setTriggers(index, value)
+    }/**
+     * <code>repeated string triggers = 2;</code>
+     */
+    @kotlin.jvm.JvmSynthetic
+    @kotlin.jvm.JvmName("clearTriggers")
+    fun com.google.protobuf.kotlin.DslList<kotlin.String, TriggersProxy>.clear() {
+      _builder.clearTriggers()
+    }
+    /**
+     * <code>string sink = 3;</code>
      */
     var sink: kotlin.String
       @JvmName("getSink")
@@ -143,27 +211,44 @@ object PipelineStepUpdateKt {
         _builder.setSink(value)
       }
     /**
-     * <code>string sink = 2;</code>
+     * <code>string sink = 3;</code>
      */
     fun clearSink() {
       _builder.clearSink()
     }
 
     /**
-     * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType ty = 3;</code>
+     * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType inputJoinTy = 4;</code>
      */
-    var ty: io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType
-      @JvmName("getTy")
-      get() = _builder.getTy()
-      @JvmName("setTy")
+    var inputJoinTy: io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType
+      @JvmName("getInputJoinTy")
+      get() = _builder.getInputJoinTy()
+      @JvmName("setInputJoinTy")
       set(value) {
-        _builder.setTy(value)
+        _builder.setInputJoinTy(value)
       }
     /**
-     * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType ty = 3;</code>
+     * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType inputJoinTy = 4;</code>
      */
-    fun clearTy() {
-      _builder.clearTy()
+    fun clearInputJoinTy() {
+      _builder.clearInputJoinTy()
+    }
+
+    /**
+     * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType triggersJoinTy = 5;</code>
+     */
+    var triggersJoinTy: io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType
+      @JvmName("getTriggersJoinTy")
+      get() = _builder.getTriggersJoinTy()
+      @JvmName("setTriggersJoinTy")
+      set(value) {
+        _builder.setTriggersJoinTy(value)
+      }
+    /**
+     * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType triggersJoinTy = 5;</code>
+     */
+    fun clearTriggersJoinTy() {
+      _builder.clearTriggersJoinTy()
     }
 
     /**
@@ -171,7 +256,7 @@ object PipelineStepUpdateKt {
      * Forward empty response to following steps, default false
      * </pre>
      *
-     * <code>bool passEmptyResponses = 4;</code>
+     * <code>bool passEmptyResponses = 6;</code>
      */
     var passEmptyResponses: kotlin.Boolean
       @JvmName("getPassEmptyResponses")
@@ -185,7 +270,7 @@ object PipelineStepUpdateKt {
      * Forward empty response to following steps, default false
      * </pre>
      *
-     * <code>bool passEmptyResponses = 4;</code>
+     * <code>bool passEmptyResponses = 6;</code>
      */
     fun clearPassEmptyResponses() {
       _builder.clearPassEmptyResponses()
@@ -196,7 +281,7 @@ object PipelineStepUpdateKt {
      * Join window millisecs, some nozero default (TBD)
      * </pre>
      *
-     * <code>optional uint32 joinWindowMs = 5;</code>
+     * <code>optional uint32 joinWindowMs = 7;</code>
      */
     var joinWindowMs: kotlin.Int
       @JvmName("getJoinWindowMs")
@@ -210,7 +295,7 @@ object PipelineStepUpdateKt {
      * Join window millisecs, some nozero default (TBD)
      * </pre>
      *
-     * <code>optional uint32 joinWindowMs = 5;</code>
+     * <code>optional uint32 joinWindowMs = 7;</code>
      */
     fun clearJoinWindowMs() {
       _builder.clearJoinWindowMs()
@@ -220,7 +305,7 @@ object PipelineStepUpdateKt {
      * Join window millisecs, some nozero default (TBD)
      * </pre>
      *
-     * <code>optional uint32 joinWindowMs = 5;</code>
+     * <code>optional uint32 joinWindowMs = 7;</code>
      * @return Whether the joinWindowMs field is set.
      */
     fun hasJoinWindowMs(): kotlin.Boolean {
@@ -238,7 +323,7 @@ object PipelineStepUpdateKt {
      * optional map of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 6;</code>
+     * <code>map&lt;string, string&gt; tensorMap = 8;</code>
      */
      val tensorMap: com.google.protobuf.kotlin.DslMap<kotlin.String, kotlin.String, TensorMapProxy>
       @kotlin.jvm.JvmSynthetic
@@ -251,7 +336,7 @@ object PipelineStepUpdateKt {
      * optional map of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 6;</code>
+     * <code>map&lt;string, string&gt; tensorMap = 8;</code>
      */
     @JvmName("putTensorMap")
     fun com.google.protobuf.kotlin.DslMap<kotlin.String, kotlin.String, TensorMapProxy>
@@ -263,7 +348,7 @@ object PipelineStepUpdateKt {
      * optional map of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 6;</code>
+     * <code>map&lt;string, string&gt; tensorMap = 8;</code>
      */
     @kotlin.jvm.JvmSynthetic
     @JvmName("setTensorMap")
@@ -276,7 +361,7 @@ object PipelineStepUpdateKt {
      * optional map of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 6;</code>
+     * <code>map&lt;string, string&gt; tensorMap = 8;</code>
      */
     @kotlin.jvm.JvmSynthetic
     @JvmName("removeTensorMap")
@@ -289,7 +374,7 @@ object PipelineStepUpdateKt {
      * optional map of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 6;</code>
+     * <code>map&lt;string, string&gt; tensorMap = 8;</code>
      */
     @kotlin.jvm.JvmSynthetic
     @JvmName("putAllTensorMap")
@@ -302,7 +387,7 @@ object PipelineStepUpdateKt {
      * optional map of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 6;</code>
+     * <code>map&lt;string, string&gt; tensorMap = 8;</code>
      */
     @kotlin.jvm.JvmSynthetic
     @JvmName("clearTensorMap")
@@ -316,7 +401,7 @@ object PipelineStepUpdateKt {
      * Batch settings
      * </pre>
      *
-     * <code>.seldon.mlops.chainer.Batch batch = 7;</code>
+     * <code>.seldon.mlops.chainer.Batch batch = 9;</code>
      */
     var batch: io.seldon.mlops.chainer.ChainerOuterClass.Batch
       @JvmName("getBatch")
@@ -330,7 +415,7 @@ object PipelineStepUpdateKt {
      * Batch settings
      * </pre>
      *
-     * <code>.seldon.mlops.chainer.Batch batch = 7;</code>
+     * <code>.seldon.mlops.chainer.Batch batch = 9;</code>
      */
     fun clearBatch() {
       _builder.clearBatch()
@@ -340,7 +425,7 @@ object PipelineStepUpdateKt {
      * Batch settings
      * </pre>
      *
-     * <code>.seldon.mlops.chainer.Batch batch = 7;</code>
+     * <code>.seldon.mlops.chainer.Batch batch = 9;</code>
      * @return Whether the batch field is set.
      */
     fun hasBatch(): kotlin.Boolean {

@@ -18,6 +18,7 @@ func TestAsPipelineDetails(t *testing.T) {
 	}
 
 	getUintPtr := func(val uint32) *uint32 { return &val }
+	getJoinPtr := func(val JoinType) *JoinType { return &val }
 	tests := []test{
 		{
 			name: "basic",
@@ -37,10 +38,10 @@ func TestAsPipelineDetails(t *testing.T) {
 							Inputs: []string{"a"},
 						},
 						{
-							Name:         "c",
-							Inputs:       []string{"b"},
-							JoinWindowMs: getUintPtr(20),
-							OuterJoin:    true,
+							Name:           "c",
+							Inputs:         []string{"b"},
+							JoinWindowMs:   getUintPtr(20),
+							InputsJoinType: getJoinPtr(JoinTypeInner),
 							Batch: &PipelineBatch{
 								Size:     getUintPtr(100),
 								WindowMs: getUintPtr(1000),
@@ -51,7 +52,7 @@ func TestAsPipelineDetails(t *testing.T) {
 					Output: &PipelineOutput{
 						Steps:        []string{"c"},
 						JoinWindowMs: 2,
-						OuterJoin:    true,
+						StepsJoin:    getJoinPtr(JoinTypeAny),
 					},
 				},
 			},
@@ -69,18 +70,17 @@ func TestAsPipelineDetails(t *testing.T) {
 						Name:         "c",
 						Inputs:       []string{"b"},
 						JoinWindowMs: getUintPtr(20),
-						OuterJoin:    true,
+						InputsJoin:   scheduler.PipelineStep_INNER,
 						Batch: &scheduler.Batch{
 							Size:     getUintPtr(100),
 							WindowMs: getUintPtr(1000),
-							Rolling:  true,
 						},
 					},
 				},
 				Output: &scheduler.PipelineOutput{
 					Steps:        []string{"c"},
 					JoinWindowMs: 2,
-					OuterJoin:    true,
+					StepsJoin:    scheduler.PipelineOutput_ANY,
 				},
 				KubernetesMeta: &scheduler.KubernetesMeta{
 					Namespace:  "default",

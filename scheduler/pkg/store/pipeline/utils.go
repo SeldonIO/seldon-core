@@ -24,13 +24,28 @@ func CreateProtoFromPipeline(pv *PipelineVersion) *scheduler.Pipeline {
 			Inputs:       step.Inputs,
 			TensorMap:    step.TensorMap,
 			JoinWindowMs: step.JoinWindowMs,
-			OuterJoin:    step.OuterJoin,
+			Triggers:     step.Triggers,
+		}
+		switch step.InputsJoinType {
+		case JoinInner:
+			protoStep.InputsJoin = scheduler.PipelineStep_INNER
+		case JoinOuter:
+			protoStep.InputsJoin = scheduler.PipelineStep_OUTER
+		case JoinAny:
+			protoStep.InputsJoin = scheduler.PipelineStep_ANY
+		}
+		switch step.TriggersJoinType {
+		case JoinInner:
+			protoStep.TriggersJoin = scheduler.PipelineStep_INNER
+		case JoinOuter:
+			protoStep.TriggersJoin = scheduler.PipelineStep_OUTER
+		case JoinAny:
+			protoStep.TriggersJoin = scheduler.PipelineStep_ANY
 		}
 		if step.Batch != nil {
 			protoStep.Batch = &scheduler.Batch{
 				Size:     step.Batch.Size,
 				WindowMs: step.Batch.WindowMs,
-				Rolling:  step.Batch.Rolling,
 			}
 		}
 		protoSteps = append(protoSteps, protoStep)
@@ -39,7 +54,14 @@ func CreateProtoFromPipeline(pv *PipelineVersion) *scheduler.Pipeline {
 		protoOutput = &scheduler.PipelineOutput{
 			Steps:        pv.Output.Steps,
 			JoinWindowMs: pv.Output.JoinWindowMs,
-			OuterJoin:    pv.Output.OuterJoin,
+		}
+		switch pv.Output.StepsJoinType {
+		case JoinInner:
+			protoOutput.StepsJoin = scheduler.PipelineOutput_INNER
+		case JoinOuter:
+			protoOutput.StepsJoin = scheduler.PipelineOutput_OUTER
+		case JoinAny:
+			protoOutput.StepsJoin = scheduler.PipelineOutput_ANY
 		}
 	}
 	var kubernetesMeta *scheduler.KubernetesMeta
@@ -65,13 +87,28 @@ func CreatePipelineFromProto(pipelineProto *scheduler.Pipeline, version uint32) 
 			Inputs:       updateInputSteps(stepProto.Inputs),
 			TensorMap:    stepProto.TensorMap,
 			JoinWindowMs: stepProto.JoinWindowMs,
-			OuterJoin:    stepProto.OuterJoin,
+			Triggers:     updateInputSteps(stepProto.Triggers),
+		}
+		switch stepProto.InputsJoin {
+		case scheduler.PipelineStep_INNER:
+			step.InputsJoinType = JoinInner
+		case scheduler.PipelineStep_OUTER:
+			step.InputsJoinType = JoinOuter
+		case scheduler.PipelineStep_ANY:
+			step.InputsJoinType = JoinAny
+		}
+		switch stepProto.TriggersJoin {
+		case scheduler.PipelineStep_INNER:
+			step.TriggersJoinType = JoinInner
+		case scheduler.PipelineStep_OUTER:
+			step.TriggersJoinType = JoinOuter
+		case scheduler.PipelineStep_ANY:
+			step.TriggersJoinType = JoinAny
 		}
 		if stepProto.Batch != nil {
 			step.Batch = &Batch{
 				Size:     stepProto.Batch.Size,
 				WindowMs: stepProto.Batch.WindowMs,
-				Rolling:  stepProto.Batch.Rolling,
 			}
 		}
 		if _, ok := steps[stepProto.Name]; ok {
@@ -85,7 +122,14 @@ func CreatePipelineFromProto(pipelineProto *scheduler.Pipeline, version uint32) 
 		output = &PipelineOutput{
 			Steps:        updateInputSteps(pipelineProto.Output.Steps),
 			JoinWindowMs: pipelineProto.Output.JoinWindowMs,
-			OuterJoin:    pipelineProto.Output.OuterJoin,
+		}
+		switch pipelineProto.Output.StepsJoin {
+		case scheduler.PipelineOutput_INNER:
+			output.StepsJoinType = JoinInner
+		case scheduler.PipelineOutput_OUTER:
+			output.StepsJoinType = JoinOuter
+		case scheduler.PipelineOutput_ANY:
+			output.StepsJoinType = JoinAny
 		}
 	}
 	var kubernetesMeta *KubernetesMeta

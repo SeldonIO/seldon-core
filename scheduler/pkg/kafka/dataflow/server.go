@@ -149,23 +149,44 @@ func (c *ChainerServer) createTopicSources(inputs []string, pipelineName string)
 	return sources
 }
 
+func (c *ChainerServer) createTriggerSources(inputs []string) []string {
+	var sources []string
+	for _, inp := range inputs {
+		source := c.topicNamer.GetModelTopic(inp)
+		sources = append(sources, source)
+	}
+	return sources
+}
+
 func (c *ChainerServer) createPipelineMessage(pv *pipeline.PipelineVersion) *chainer.PipelineUpdateMessage {
 	var stepUpdates []*chainer.PipelineStepUpdate
 	for _, step := range pv.Steps {
 		stepUpdate := chainer.PipelineStepUpdate{
 			Sources:   c.createTopicSources(step.Inputs, pv.Name),
+			Triggers:  c.createTriggerSources(step.Triggers),
 			Sink:      c.topicNamer.GetModelTopicInputs(step.Name),
-			Ty:        chainer.PipelineStepUpdate_Inner,
 			TensorMap: c.topicNamer.GetFullyQualifiedTensorMap(step.TensorMap),
 		}
-		if step.OuterJoin {
-			stepUpdate.Ty = chainer.PipelineStepUpdate_Outer
+		switch step.InputsJoinType {
+		case pipeline.JoinInner:
+			stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Inner
+		case pipeline.JoinOuter:
+			stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Outer
+		case pipeline.JoinAny:
+			stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Any
+		}
+		switch step.TriggersJoinType {
+		case pipeline.JoinInner:
+			stepUpdate.TriggersJoinTy = chainer.PipelineStepUpdate_Inner
+		case pipeline.JoinOuter:
+			stepUpdate.TriggersJoinTy = chainer.PipelineStepUpdate_Outer
+		case pipeline.JoinAny:
+			stepUpdate.TriggersJoinTy = chainer.PipelineStepUpdate_Any
 		}
 		if step.Batch != nil {
 			stepUpdate.Batch = &chainer.Batch{
 				Size:     step.Batch.Size,
 				WindowMs: step.Batch.WindowMs,
-				Rolling:  step.Batch.Rolling,
 			}
 		}
 		c.logger.Infof("Adding sources %v to %s", stepUpdate.Sources, stepUpdate.Sink)
@@ -175,19 +196,23 @@ func (c *ChainerServer) createPipelineMessage(pv *pipeline.PipelineVersion) *cha
 		stepUpdate := chainer.PipelineStepUpdate{
 			Sources: c.createTopicSources(pv.Output.Steps, pv.Name),
 			Sink:    c.topicNamer.GetPipelineTopicOutputs(pv.Name),
-			Ty:      chainer.PipelineStepUpdate_Inner,
 		}
-		if pv.Output.OuterJoin {
-			stepUpdate.Ty = chainer.PipelineStepUpdate_Outer
+		switch pv.Output.StepsJoinType {
+		case pipeline.JoinInner:
+			stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Inner
+		case pipeline.JoinOuter:
+			stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Outer
+		case pipeline.JoinAny:
+			stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Any
 		}
 		c.logger.Infof("Adding sources %v to %s", stepUpdate.Sources, stepUpdate.Sink)
 		stepUpdates = append(stepUpdates, &stepUpdate)
 	}
 	//Append an error step to send any errors to pipeline output
 	stepUpdates = append(stepUpdates, &chainer.PipelineStepUpdate{
-		Sources: []string{c.topicNamer.GetModelErrorTopic()},
-		Sink:    c.topicNamer.GetPipelineTopicOutputs(pv.Name),
-		Ty:      chainer.PipelineStepUpdate_Inner,
+		Sources:     []string{c.topicNamer.GetModelErrorTopic()},
+		Sink:        c.topicNamer.GetPipelineTopicOutputs(pv.Name),
+		InputJoinTy: chainer.PipelineStepUpdate_Inner,
 	})
 
 	op := chainer.PipelineUpdateMessage_Create

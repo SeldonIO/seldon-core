@@ -1,5 +1,6 @@
 package io.seldon.dataflow.kafka
 
+import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType
 import java.math.BigInteger
 import java.security.MessageDigest
 
@@ -16,12 +17,15 @@ data class TopicTensors(
 fun transformerFor(
     pipelineName: String,
     sources: List<TopicName>,
+    triggerSources: List<TopicName>,
     tensorMap: Map<TensorName, TensorName>,
     sink: TopicName,
-    outerJoin: Boolean,
+    joinType: PipelineJoinType,
+    triggerJoinType: PipelineJoinType,
     baseKafkaProperties: KafkaProperties,
     kafkaDomainParams: KafkaDomainParams,
 ): Transformer? {
+    val triggerTopicsToTensors = parseTriggers(triggerSources)
     return when (val result = parseSources(sources)) {
         is SourceProjection.Empty -> null
         is SourceProjection.Single -> Chainer(
@@ -32,6 +36,9 @@ fun transformerFor(
             pipelineName,
             tensorMap,
             kafkaDomainParams,
+            triggerTopicsToTensors.keys,
+            triggerJoinType,
+            triggerTopicsToTensors
         )
         is SourceProjection.SingleSubset -> Chainer(
             baseKafkaProperties.withAppId(nameFor(sources, sink, "chainer")),
@@ -41,6 +48,9 @@ fun transformerFor(
             pipelineName,
             tensorMap,
             kafkaDomainParams,
+            triggerTopicsToTensors.keys,
+            triggerJoinType,
+            triggerTopicsToTensors
         )
         is SourceProjection.Many -> Joiner(
             baseKafkaProperties.withAppId(nameFor(sources, sink, "joiner")),
@@ -50,7 +60,10 @@ fun transformerFor(
             pipelineName,
             tensorMap,
             kafkaDomainParams,
-            outerJoin,
+            joinType,
+            triggerTopicsToTensors.keys,
+            triggerJoinType,
+            triggerTopicsToTensors
         )
         is SourceProjection.ManySubsets -> Joiner(
             baseKafkaProperties.withAppId(nameFor(sources, sink, "joiner")),
@@ -60,7 +73,10 @@ fun transformerFor(
             pipelineName,
             tensorMap,
             kafkaDomainParams,
-            outerJoin,
+            joinType,
+            triggerTopicsToTensors.keys,
+            triggerJoinType,
+            triggerTopicsToTensors
         )
     }
 }
@@ -82,6 +98,15 @@ sealed class SourceProjection {
     data class SingleSubset(val topicName: TopicName, val tensors: Set<TensorName>) : SourceProjection()
     data class Many(val topicNames: Set<TopicName>) : SourceProjection()
     data class ManySubsets(val tensorsByTopic: Map<TopicName, Set<TensorName>>) : SourceProjection()
+}
+
+fun parseTriggers(sources: List<TopicName>): Map<TopicName,Set<TensorName>> {
+    return sources
+        .map { parseSource(it) }
+        .groupBy(keySelector = { it.first }, valueTransform = { it.second })
+        .mapValues { it.value.filterNotNull().toSet() }
+        .map { TopicTensors(it.key, it.value) }
+        .associate { it.topicName to it.tensors }
 }
 
 fun parseSources(sources: List<TopicName>): SourceProjection {

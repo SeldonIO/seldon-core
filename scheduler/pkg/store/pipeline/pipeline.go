@@ -83,23 +83,32 @@ func (ps *PipelineState) setState(status PipelineStatus, reason string) {
 	ps.Timestamp = time.Now()
 }
 
+type JoinType uint32
+
+const (
+	JoinInner = iota
+	JoinOuter
+	JoinAny
+)
+
 type PipelineStep struct {
-	Name         string
-	Inputs       []string
-	TensorMap    map[string]string
-	JoinWindowMs *uint32
-	OuterJoin    bool
-	Batch        *Batch
+	Name             string
+	Inputs           []string
+	Triggers         []string
+	TensorMap        map[string]string
+	JoinWindowMs     *uint32
+	InputsJoinType   JoinType
+	TriggersJoinType JoinType
+	Batch            *Batch
 }
 
 type Batch struct {
 	Size     *uint32
 	WindowMs *uint32
-	Rolling  bool
 }
 
 type PipelineOutput struct {
-	Steps        []string
-	JoinWindowMs uint32
-	OuterJoin    bool
+	Steps         []string
+	JoinWindowMs  uint32
+	StepsJoinType JoinType
 }

@@ -63,14 +63,14 @@ func (pc *ProxyChainer) SubscribePipelineUpdates(
 				Uid:      "1234",
 				Updates: []*chainer.PipelineStepUpdate{
 					&chainer.PipelineStepUpdate{
-						Sources: []string{chainerInputTopic1},
-						Sink:    chainerOutputTopic1,
-						Ty:      chainer.PipelineStepUpdate_Inner,
+						Sources:     []string{chainerInputTopic1},
+						Sink:        chainerOutputTopic1,
+						InputJoinTy: chainer.PipelineStepUpdate_Inner,
 					},
 					&chainer.PipelineStepUpdate{
-						Sources: []string{chainerInputTopic2},
-						Sink:    chainerOutputTopic2,
-						Ty:      chainer.PipelineStepUpdate_Inner,
+						Sources:     []string{chainerInputTopic2},
+						Sink:        chainerOutputTopic2,
+						InputJoinTy: chainer.PipelineStepUpdate_Inner,
 					},
 				},
 			},
