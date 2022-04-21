@@ -125,6 +125,8 @@ spec:
           value: "512Mi"
         - name: DEPLOYMENT_NAME_AS_PREFIX
           value: "false"
+        - name: EXECUTOR_FULL_HEALTH_CHECKS
+          value: "false"
         image: controller:latest
         name: manager
         resources:

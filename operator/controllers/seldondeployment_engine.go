@@ -43,6 +43,7 @@ const (
 	ENV_EXECUTOR_PROMETHEUS_PATH                 = "EXECUTOR_PROMETHEUS_PATH"
 	ENV_EXECUTOR_REQUEST_LOGGER_WORK_QUEUE_SIZE  = "EXECUTOR_REQUEST_LOGGER_WORK_QUEUE_SIZE"
 	ENV_EXECUTOR_REQUEST_LOGGER_WRITE_TIMEOUT_MS = "EXECUTOR_REQUEST_LOGGER_WRITE_TIMEOUT_MS"
+	ENV_EXECUTOR_FULL_HEALTH_CHECKS              = "EXECUTOR_FULL_HEALTH_CHECKS"
 	ENV_EXECUTOR_USER                            = "EXECUTOR_CONTAINER_USER"
 	ENV_USE_EXECUTOR                             = "USE_EXECUTOR"
 
@@ -234,6 +235,7 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 			"--server_type", string(serverType),
 			"--log_work_buffer_size", loggerQSize,
 			"--log_write_timeout_ms", loggerWriteTimeout,
+			fmt.Sprintf("--full_health_checks=%s", utils.GetEnv(ENV_EXECUTOR_FULL_HEALTH_CHECKS, "false")),
 		},
 		ImagePullPolicy:          corev1.PullPolicy(utils.GetEnv("EXECUTOR_CONTAINER_IMAGE_PULL_POLICY", "IfNotPresent")),
 		TerminationMessagePath:   "/dev/termination-log",

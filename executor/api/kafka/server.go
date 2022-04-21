@@ -39,21 +39,23 @@ const (
 )
 
 type SeldonKafkaServer struct {
-	Client         client.SeldonApiClient
-	Producer       *kafka.Producer
-	DeploymentName string
-	Namespace      string
-	Transport      string
-	Predictor      *v1.PredictorSpec
-	Broker         string
-	TopicIn        string
-	TopicOut       string
-	ServerUrl      *url.URL
-	Workers        int
-	Log            logr.Logger
+	Client          client.SeldonApiClient
+	Producer        *kafka.Producer
+	DeploymentName  string
+	Namespace       string
+	Transport       string
+	Predictor       *v1.PredictorSpec
+	Broker          string
+	TopicIn         string
+	TopicOut        string
+	ServerUrl       *url.URL
+	Workers         int
+	Log             logr.Logger
+	Protocol        string
+	FullHealthCheck bool
 }
 
-func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, protocol, transport string, annotations map[string]string, serverUrl *url.URL, predictor *v1.PredictorSpec, broker, topicIn, topicOut string, log logr.Logger) (*SeldonKafkaServer, error) {
+func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, protocol, transport string, annotations map[string]string, serverUrl *url.URL, predictor *v1.PredictorSpec, broker, topicIn, topicOut string, log logr.Logger, fullHealthCheck bool) (*SeldonKafkaServer, error) {
 	var apiClient client.SeldonApiClient
 	var err error
 	if fullGraph {
@@ -108,18 +110,20 @@ func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, prot
 	log.Info("Created", "producer", p.String())
 
 	return &SeldonKafkaServer{
-		Client:         apiClient,
-		Producer:       p,
-		DeploymentName: deploymentName,
-		Namespace:      namespace,
-		Transport:      transport,
-		Predictor:      predictor,
-		Broker:         broker,
-		TopicIn:        topicIn,
-		TopicOut:       topicOut,
-		ServerUrl:      serverUrl,
-		Workers:        workers,
-		Log:            log.WithName("KafkaServer"),
+		Client:          apiClient,
+		Producer:        p,
+		DeploymentName:  deploymentName,
+		Namespace:       namespace,
+		Transport:       transport,
+		Predictor:       predictor,
+		Broker:          broker,
+		TopicIn:         topicIn,
+		TopicOut:        topicOut,
+		ServerUrl:       serverUrl,
+		Workers:         workers,
+		Log:             log.WithName("KafkaServer"),
+		Protocol:        protocol,
+		FullHealthCheck: fullHealthCheck,
 	}, nil
 }
 
@@ -208,7 +212,7 @@ func (ks *SeldonKafkaServer) Serve() error {
 	//wait for graph to be ready
 	ready := false
 	for ready == false {
-		err := predictor.Ready(&ks.Predictor.Graph)
+		err := predictor.Ready(ks.Protocol, &ks.Predictor.Graph, ks.FullHealthCheck)
 		ready = err == nil
 		if !ready {
 			ks.Log.Info("Waiting for graph to be ready")

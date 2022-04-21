@@ -68,6 +68,8 @@ executor:
     defaultEndpoint: 'http://default-broker'
     workQueueSize: 10000
     writeTimeoutMs: 2000
+  # Whether to run full protocol API based health checks on models in deployment graph. False will just do TCP connects
+  fullHealthChecks: false
 
 
 # ## Seldon Core Controller Manager Options
