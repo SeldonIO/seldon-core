@@ -3,6 +3,9 @@ package kfserving
 import (
 	"context"
 	"fmt"
+	"io"
+	"math"
+
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 	"github.com/seldonio/seldon-core/executor/api/client"
@@ -11,8 +14,6 @@ import (
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"google.golang.org/grpc"
-	"io"
-	"math"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
@@ -133,8 +134,9 @@ func (s *KFServingGrpcClient) Chain(ctx context.Context, modelName string, msg p
 		}
 
 		pr := inference.ModelInferRequest{
-			ModelName: modelName,
-			Inputs:    inputTensors,
+			ModelName:  modelName,
+			Inputs:     inputTensors,
+			Parameters: v.Parameters,
 		}
 		msg2 := payload.ProtoPayload{Msg: &pr}
 		return &msg2, nil
