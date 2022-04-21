@@ -167,6 +167,9 @@ if __name__ == "__main__":
                     "runAsUser"
                 ] = helm_value("managerUserID")
 
+                # Priority class name
+                res["spec"]["template"]["spec"]["priorityClassName"] = helm_value("manager.priorityClassName")
+
                 # Resource requests
                 res["spec"]["template"]["spec"]["containers"][0]["resources"][
                     "requests"

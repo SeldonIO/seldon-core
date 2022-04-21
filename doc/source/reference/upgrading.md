@@ -17,6 +17,10 @@ We have updated the health checks done by Seldon for the model nodes in your inf
 
 By default we have set `executor.fullHealthChecks` to false for 1.14 release as users would need to rebuild their custom python models if they have not implemented the `health_status` method. In future we will default to `true`.
 
+## Request Logger
+
+The Python request logger component example has been deprecated and removed as part of [#4013](https://github.com/SeldonIO/seldon-core/issues/4013).
+
 ## Upgrading to 1.13
 
 ### Seldon Inference Payload Logging Changes
@@ -104,7 +108,7 @@ See further documentation [here](../servers/kfserving-storage-initializer.md).
 
 ### Request Logger
 
-In Seldon Core 1.9 we will be moving [seldon-request-logger](https://github.com/SeldonIO/seldon-core/tree/master/components/seldon-request-logger) to separate repository.
+In Seldon Core 1.9 we will be moving [seldon-request-logger](https://github.com/SeldonIO/seldon-core/tree/v1.8.0/components/seldon-request-logger) to separate repository.
 
 
 ### Legacy Java Engine Orchestrator

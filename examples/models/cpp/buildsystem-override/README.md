@@ -2,7 +2,7 @@
 
 In this example we will show how we can wrap a complex CPP project by extending the buildsystem defaults provided, which will give us flexibility to configure the required bindings.
 
-If you are looking for a basic implementation of the C++ wrapper, you can get started with the ["Single file C++ Example"](../simple-cpp/README.ipynb).
+If you are looking for a basic implementation of the C++ wrapper, you can get started with the ["Single file C++ Example"](https://docs.seldon.io/projects/seldon-core/en/latest/examples/cpp_simple.html).
 
 You can read about how to configure your environment in the [CPP Wrapper documentation page](https://docs.seldon.io/projects/seldon-core/en/latest/cpp/README.html).
 
@@ -106,7 +106,7 @@ In our case it is `CustomSeldonPackage.MyModelClass` as follows:
 
 ```python
 %writefile .s2i/environment
-MODEL_NAME=CustomSeldonPackage.MyModelClass
+MODEL_NAME = CustomSeldonPackage.MyModelClass
 ```
 
     UsageError: Line magic function `%writefile` not found (But cell magic `%%writefile` exists, did you mean that instead?).
@@ -153,7 +153,7 @@ We can now build our seldon microservice using `s2i`:
 
 
 ```python
-!docker run --name "advanced_cpp" -d --rm -p 5000:5000 seldonio/advanced-cpp:0.1
+!docker run --name "advanced_cpp" -d --rm -p 9000:9000 seldonio/advanced-cpp:0.1
 ```
 
     aaa5795779f2e605f7ead2772e912c8dd7de04002457eb4b3966b2b2182c63f4
@@ -165,7 +165,7 @@ We can now build our seldon microservice using `s2i`:
 ```python
 !curl -X POST -H 'Content-Type: application/json' \
    -d '{"strData":"hello"}' \
-    http://localhost:5000/api/v1.0/predictions
+    http://localhost:9000/api/v1.0/predictions
 ```
 
     {"strData":"hello"}

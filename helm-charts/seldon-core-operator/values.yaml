@@ -88,6 +88,7 @@ manager:
   annotations: {}
   containerSecurityContext: {}
   deploymentNameAsPrefix: false
+  priorityClassName:
 rbac:
   configmap:
     create: true

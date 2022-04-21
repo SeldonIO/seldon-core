@@ -3,22 +3,35 @@ kind: SeldonDeployment
 metadata:
   name: gpt2
 spec:
-  protocol: kfserving
+  protocol: v2
   predictors:
     - name: default
       graph:
-        name: tokeniser
+        name: tokeniser-encoder
         children:
           - name: gpt2
             implementation: TRITON_SERVER
             modelUri: gs://seldon-models/triton/onnx_gpt2
+            children:
+              - name: tokeniser-decoder
       componentSpecs:
         - spec:
             containers:
-              - name: tokeniser
-                image: gpt2-tokeniser:0.1.0
+              - name: tokeniser-encoder
+                image: seldonio/gpt2-tokeniser:0.1.0
                 env:
-                  # Use always a writable HuggingFace cache location regardless
-                  # of the user
+                  # Use always a writable HuggingFace cache location regardless of the user
                   - name: TRANSFORMERS_CACHE
                     value: /opt/mlserver/.cache
+                  - name: MLSERVER_MODEL_NAME
+                    value: "tokeniser-encoder"
+              - name: tokeniser-decoder
+                image: seldonio/gpt2-tokeniser:0.1.0
+                env:
+                  - name: SELDON_TOKENIZER_TYPE
+                    value: "DECODER"
+                  # Use always a writable HuggingFace cache location regardless of the user
+                  - name: TRANSFORMERS_CACHE
+                    value: /opt/mlserver/.cache
+                  - name: MLSERVER_MODEL_NAME
+                    value: "tokeniser-decoder"

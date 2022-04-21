@@ -533,7 +533,7 @@ def main():
             for worker in workers:
                 worker.join()
 
-    server2_func = grpc_prediction_server
+    server2_func = grpc_prediction_server if args.grpc_workers > 0 else None
 
     def rest_metrics_server():
         app = seldon_microservice.get_metrics_microservice(seldon_metrics)

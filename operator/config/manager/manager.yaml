@@ -25,6 +25,7 @@ spec:
         control-plane: seldon-controller-manager
     spec:
       hostNetwork: false
+      priorityClassName: ""
       serviceAccountName: manager
       securityContext:
         runAsUser: 8888

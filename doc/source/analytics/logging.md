@@ -145,7 +145,3 @@ This can simply specify a URL to call. In the usual kubernetes fashion, if a ser
 You will still want to make sure the model is deployed with a specification on what requests will be logged, i.e. all, request or response (as outlined above).
 
 
-### Example Notebook
-
-You can try out an [example notebook with logging](../examples/payload_logging.html)
-

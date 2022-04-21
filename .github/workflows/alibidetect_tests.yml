@@ -30,6 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip setuptools
+          apt-get update
           apt-get -y install ffmpeg libsm6 libxext6
           make -C components/alibi-detect-server dev_install
       - name: Test

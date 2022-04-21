@@ -112,14 +112,6 @@ function build_push_alibi_detect {
     ALIBI_DETECT_EXIT_VALUE=$?
 }
 
-function build_push_request_logger {
-    make \
-	-C components/seldon-request-logger \
-        build_image \
-	push_image 
-    LOGGER_EXIT_VALUE=$?
-}
-
 function build_push_sklearnserver {
     make \
 	-C servers/sklearnserver \
@@ -207,7 +199,6 @@ build_push_operator
 build_push_executor
 build_push_mock
 build_push_alibi_detect
-build_push_request_logger
 build_push_sklearnserver
 build_push_mlflowserver
 build_push_xgboostserver
@@ -233,7 +224,6 @@ echo "OPERATOR_EXIT_VALUE $OPERATOR_EXIT_VALUE"
 echo "EXECUTOR_EXIT_VALUE $EXECUTOR_EXIT_VALUE"
 echo "MOCK_MODEL_EXIT_VALUE $MOCK_MODEL_EXIT_VALUE"
 echo "ALIBI_DETECT_EXIT_VALUE $ALIBI_DETECT_EXIT_VALUE"
-echo "LOGGER_EXIT_VALUE $LOGGER_EXIT_VALUE"
 echo "SKLEARN_EXIT_VALUE $SKLEARN_EXIT_VALUE"
 echo "MLFLOW_EXIT_VALUE $MLFLOW_EXIT_VALUE"
 echo "XGBOOST_EXIT_VALUE $XGBOOST_EXIT_VALUE"
@@ -252,7 +242,6 @@ exit $((${PYTHON_EXIT_VALUE} \
     + ${EXECUTOR_EXIT_VALUE} \
     + ${MOCK_MODEL_EXIT_VALUE} \
     + ${ALIBI_DETECT_EXIT_VALUE} \
-    + ${LOGGER_EXIT_VALUE} \
     + ${SKLEARN_EXIT_VALUE} \
     + ${MLFLOW_EXIT_VALUE} \
     + ${XGBOOST_EXIT_VALUE} \

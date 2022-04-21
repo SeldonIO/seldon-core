@@ -160,6 +160,7 @@ spec:
           readOnly: true
 {{- end }}
       hostNetwork: {{ .Values.hostNetwork }}
+      priorityClassName: '{{ .Values.manager.priorityClassName }}'
       securityContext:
         runAsUser: {{ .Values.managerUserID }}
       serviceAccountName: '{{ .Values.serviceAccount.name }}'
