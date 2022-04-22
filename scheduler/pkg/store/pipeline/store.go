@@ -180,8 +180,8 @@ func (ps *PipelineStore) terminateOldUnterminatedPipelinesIfNeeded(pipeline *Pip
 }
 
 func (ps *PipelineStore) SetPipelineState(name string, versionNumber uint32, uid string, status PipelineStatus, reason string) error {
-	ps.mu.RLock()
-	defer ps.mu.RUnlock()
+	ps.mu.Lock()
+	defer ps.mu.Unlock()
 	if pipeline, ok := ps.pipelines[name]; ok {
 		if pipelineVersion := pipeline.GetPipelineVersion(versionNumber); pipelineVersion != nil {
 			if pipelineVersion.UID == uid {
